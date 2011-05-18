@@ -40,7 +40,8 @@ another program, such as
 (Note that this is currently only supported when
 creating a raw image file using the 
 .B \-r
-option, since the process of creating a normal image file currently
+option, since the process of creating a normal image file, or QCOW2
+image currently
 requires random access to the file, which cannot be done using a
 pipe.  This restriction will hopefully be lifted in a future version of
 .BR e2image .)
@@ -56,13 +57,14 @@ accessible in the case where the filesystem has been badly damaged.
 .PP
 To save disk space, 
 .B e2image
-creates the image file as a sparse file.  
-Hence, if the image file
+creates the image file as a sparse file, or in QCOW2 format.
+Hence, if the sparse image file
 needs to be copied to another location, it should
 either be compressed first or copied using the 
 .B \-\-sparse=always
 option to the GNU version of 
-.BR cp .  
+.BR cp .
+This does not apply to the QCOW2 image, which is not sparse.
 .PP
 The size of an ext2 image file depends primarily on the size of the
 filesystems and how many inodes are in use.  For a typical 10 gigabyte
@@ -128,6 +130,42 @@ the
 .B \-s
 option will prevent analysis of problems related to hash-tree indexed
 directories.
+.PP
+.SH QCOW2 IMAGE FILES
+The
+.B \-Q
+option will create a QCOW2 image file instead of a normal, or raw image file.
+A QCOW2 image contains all the information the raw image does, however unlike
+the raw image it is not sparse. The QCOW2 image minimize the amount of disk
+space by storing data in special format with pack data closely together, hence
+avoiding holes while still minimizing size.
+.PP
+In order to send filesystem to the maintainer as a part of bug report to
+e2fsprogs, use following commands (replace hda1 with the appropriate device):
+.PP
+.br
+\	\fBe2image \-Q /dev/hda1 hda1.qcow2\fR
+.br
+\	\fBbzip2 -z hda1.qcow2\fR
+.PP
+This will only send the metadata information, without any data blocks.
+However, the filenames in the directory blocks can still reveal
+information about the contents of the filesystem that the bug reporter
+may wish to keep confidential.  To address this concern, the
+.B \-s
+option can be specified.  This will cause
+.B e2image
+to scramble directory entries and zero out any unused portions
+of the directory blocks before writing the image file.  However, the
+.B \-s
+option will prevent analysis of problems related to hash-tree indexed
+directories.
+.PP
+Note that QCOW2 image created by
+.B e2image
+is regular QCOW2 image and can be processed by tools aware of QCOW2 format
+such as for example
+.BR qemu-img .
 .PP
 .SH AUTHOR
 .B e2image 

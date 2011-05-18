@@ -70,6 +70,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	openfs.o \
 	progress.o \
 	punch.o \
+	qcow2.o \
 	read_bb.o \
 	read_bb_file.o \
 	res_gdt.o \
@@ -138,6 +139,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/openfs.c \
 	$(srcdir)/progress.c \
 	$(srcdir)/punch.c \
+	$(srcdir)/qcow2.c \
 	$(srcdir)/read_bb.c \
 	$(srcdir)/read_bb_file.c \
 	$(srcdir)/res_gdt.c \
@@ -158,7 +160,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/write_bb_file.c
 
 HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_ext_attr.h ext3_extents.h \
-	tdb.h
+	tdb.h qcow2.h
 HFILES_IN=  ext2_err.h ext2_types.h
 
 LIBRARY= libext2fs

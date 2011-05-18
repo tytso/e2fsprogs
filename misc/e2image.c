@@ -33,6 +33,7 @@ extern int optind;
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <assert.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
@@ -40,51 +41,119 @@ extern int optind;
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
 #include "ext2fs/e2image.h"
+#include "ext2fs/qcow2.h"
 
 #include "../version.h"
 #include "nls-enable.h"
 
+#define QCOW_OFLAG_COPIED     (1LL << 63)
+
+
 const char * program_name = "e2image";
 char * device_name = NULL;
 
+static void lseek_error_and_exit(int errnum)
+{
+	perror("seek");
+	exit(1);
+}
+
+static blk64_t align_offset(blk64_t offset, int n)
+{
+	return (offset + n - 1) & ~(n - 1);
+}
+
+static int get_bits_from_size(size_t size)
+{
+	int res = 0;
+
+	if (size == 0)
+		return -1;
+
+	while (size != 1) {
+		/* Not a power of two */
+		if (size & 1)
+			return -1;
+
+		size >>= 1;
+		res++;
+	}
+	return res;
+}
+
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-rsI] device image_file\n"),
+	fprintf(stderr, _("Usage: %s [-rsIQ] device image_file\n"),
 		program_name);
 	exit (1);
 }
 
-static void write_header(int fd, struct ext2_image_hdr *hdr, int blocksize)
+static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
+{
+	int count, free_buf = 0;
+	errcode_t err;
+	blk64_t offset;
+
+	if (!blocksize)
+		return;
+
+	if (!buf) {
+		free_buf = 1;
+		err = ext2fs_get_arrayzero(1, blocksize, &buf);
+		if (err) {
+			com_err(program_name, err, "while allocating buffer");
+			exit(1);
+		}
+	}
+
+	count = write(fd, buf, blocksize);
+	if (count != blocksize) {
+		if (count == -1)
+			err = errno;
+		else
+			err = 0;
+
+		if (block)
+			com_err(program_name, err, "error writing block %llu",
+				block);
+		else
+			com_err(program_name, err, "error in write()");
+
+		exit(1);
+	}
+	if (free_buf)
+		ext2fs_free_mem(&buf);
+}
+
+static void write_header(int fd, void *hdr, int hdr_size, int wrt_size)
 {
 	char *header_buf;
-	int actual;
+	int actual, ret;
 
-	header_buf = malloc(blocksize);
-	if (!header_buf) {
+	/* Sanity check */
+	if (hdr_size > wrt_size) {
+		fprintf(stderr, _("Error: header size is bigger than "
+				  "wrt_size\n"));
+	}
+
+	ret = ext2fs_get_mem(wrt_size, &header_buf);
+	if (ret) {
 		fputs(_("Couldn't allocate header buffer\n"), stderr);
 		exit(1);
 	}
 
-	if (lseek(fd, 0, SEEK_SET) < 0) {
-		perror("lseek while writing header");
+	if (ext2fs_llseek(fd, 0, SEEK_SET) < 0) {
+		perror("ext2fs_llseek while writing header");
 		exit(1);
 	}
-	memset(header_buf, 0, blocksize);
+	memset(header_buf, 0, wrt_size);
 
 	if (hdr)
-		memcpy(header_buf, hdr, sizeof(struct ext2_image_hdr));
+		memcpy(header_buf, hdr, hdr_size);
 
-	actual = write(fd, header_buf, blocksize);
-	if (actual < 0) {
-		perror("write header");
-		exit(1);
-	}
-	if (actual != blocksize) {
-		fprintf(stderr, _("short write (only %d bytes) for "
-				  "writing image header"), actual);
-		exit(1);
-	}
-	free(header_buf);
+	generic_write(fd, header_buf, wrt_size, 0);
+
+	ext2fs_free_mem(&header_buf);
 }
 
 static void write_image_file(ext2_filsys fs, int fd)
@@ -93,17 +162,17 @@ static void write_image_file(ext2_filsys fs, int fd)
 	struct stat		st;
 	errcode_t		retval;
 
-	write_header(fd, NULL, fs->blocksize);
+	write_header(fd, NULL, fs->blocksize, fs->blocksize);
 	memset(&hdr, 0, sizeof(struct ext2_image_hdr));
 
-	hdr.offset_super = lseek(fd, 0, SEEK_CUR);
+	hdr.offset_super = ext2fs_llseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_super_write(fs, fd, 0);
 	if (retval) {
 		com_err(program_name, retval, _("while writing superblock"));
 		exit(1);
 	}
 
-	hdr.offset_inode = lseek(fd, 0, SEEK_CUR);
+	hdr.offset_inode = ext2fs_llseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_inode_write(fs, fd,
 				  (fd != 1) ? IMAGER_FLAG_SPARSEWRITE : 0);
 	if (retval) {
@@ -111,14 +180,14 @@ static void write_image_file(ext2_filsys fs, int fd)
 		exit(1);
 	}
 
-	hdr.offset_blockmap = lseek(fd, 0, SEEK_CUR);
+	hdr.offset_blockmap = ext2fs_llseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_bitmap_write(fs, fd, 0);
 	if (retval) {
 		com_err(program_name, retval, _("while writing block bitmap"));
 		exit(1);
 	}
 
-	hdr.offset_inodemap = lseek(fd, 0, SEEK_CUR);
+	hdr.offset_inodemap = ext2fs_llseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_bitmap_write(fs, fd, IMAGER_FLAG_INODEMAP);
 	if (retval) {
 		com_err(program_name, retval, _("while writing inode bitmap"));
@@ -142,7 +211,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 	memcpy(hdr.fs_uuid, fs->super->s_uuid, sizeof(hdr.fs_uuid));
 
 	hdr.image_time = time(0);
-	write_header(fd, &hdr, fs->blocksize);
+	write_header(fd, &hdr, fs->blocksize, fs->blocksize);
 }
 
 /*
@@ -150,6 +219,7 @@ static void write_image_file(ext2_filsys fs, int fd)
  */
 ext2fs_block_bitmap meta_block_map;
 ext2fs_block_bitmap scramble_block_map;	/* Directory blocks to be scrambled */
+blk64_t meta_blocks_count;
 
 struct process_block_struct {
 	ext2_ino_t	ino;
@@ -226,6 +296,7 @@ static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 	p = (struct process_block_struct *) priv_data;
 
 	ext2fs_mark_block_bitmap2(meta_block_map, *block_nr);
+	meta_blocks_count++;
 	if (scramble_block_map && p->is_dir && blockcnt >= 0)
 		ext2fs_mark_block_bitmap2(scramble_block_map, *block_nr);
 	return 0;
@@ -240,6 +311,7 @@ static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 {
 	if (blockcnt < 0) {
 		ext2fs_mark_block_bitmap2(meta_block_map, *block_nr);
+		meta_blocks_count++;
 	}
 	return 0;
 }
@@ -254,6 +326,7 @@ static void mark_table_blocks(ext2_filsys fs)
 	 * Mark primary superblock
 	 */
 	ext2fs_mark_block_bitmap2(meta_block_map, first_block);
+	meta_blocks_count++;
 
 	/*
 	 * Mark the primary superblock descriptors
@@ -262,6 +335,7 @@ static void mark_table_blocks(ext2_filsys fs)
 		ext2fs_mark_block_bitmap2(meta_block_map,
 			 ext2fs_descriptor_block_loc2(fs, first_block, j));
 	}
+	meta_blocks_count += fs->desc_blocks;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		/*
@@ -272,6 +346,7 @@ static void mark_table_blocks(ext2_filsys fs)
 			     j < (unsigned) fs->inode_blocks_per_group;
 			     j++, b++)
 				ext2fs_mark_block_bitmap2(meta_block_map, b);
+			meta_blocks_count += fs->inode_blocks_per_group;
 		}
 
 		/*
@@ -280,6 +355,7 @@ static void mark_table_blocks(ext2_filsys fs)
 		if (ext2fs_block_bitmap_loc(fs, i)) {
 			ext2fs_mark_block_bitmap2(meta_block_map,
 				     ext2fs_block_bitmap_loc(fs, i));
+			meta_blocks_count++;
 		}
 
 		/*
@@ -288,6 +364,7 @@ static void mark_table_blocks(ext2_filsys fs)
 		if (ext2fs_inode_bitmap_loc(fs, i)) {
 			ext2fs_mark_block_bitmap2(meta_block_map,
 				 ext2fs_inode_bitmap_loc(fs, i));
+			meta_blocks_count++;
 		}
 	}
 }
@@ -311,30 +388,14 @@ static int check_zero_block(char *buf, int blocksize)
 static void write_block(int fd, char *buf, int sparse_offset,
 			int blocksize, blk64_t block)
 {
-	int		count;
-	errcode_t	err;
+	ext2_loff_t	ret = 0;
 
-	if (sparse_offset) {
-#ifdef HAVE_LSEEK64
-		if (lseek64(fd, sparse_offset, SEEK_CUR) < 0)
-			perror("lseek");
-#else
-		if (lseek(fd, sparse_offset, SEEK_CUR) < 0)
-			perror("lseek");
-#endif
-	}
-	if (blocksize) {
-		count = write(fd, buf, blocksize);
-		if (count != blocksize) {
-			if (count == -1)
-				err = errno;
-			else
-				err = 0;
-			com_err(program_name, err, "error writing block %llu",
-				block);
-			exit(1);
-		}
-	}
+	if (sparse_offset)
+		ret = ext2fs_llseek(fd, sparse_offset, SEEK_CUR);
+
+	if (ret < 0)
+		lseek_error_and_exit(errno);
+	generic_write(fd, buf, blocksize, block);
 }
 
 int name_id[256];
@@ -410,17 +471,16 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	char		*buf, *zero_buf;
 	int		sparse = 0;
 
-	buf = malloc(fs->blocksize);
-	if (!buf) {
-		com_err(program_name, ENOMEM, "while allocating buffer");
+	retval = ext2fs_get_mem(fs->blocksize, &buf);
+	if (retval) {
+		com_err(program_name, retval, "while allocating buffer");
 		exit(1);
 	}
-	zero_buf = malloc(fs->blocksize);
-	if (!zero_buf) {
-		com_err(program_name, ENOMEM, "while allocating buffer");
+	retval = ext2fs_get_memzero(fs->blocksize, &zero_buf);
+	if (retval) {
+		com_err(program_name, retval, "while allocating buffer");
 		exit(1);
 	}
-	memset(zero_buf, 0, fs->blocksize);
 	for (blk = 0; blk < ext2fs_blocks_count(fs->super); blk++) {
 		if ((blk >= fs->super->s_first_data_block) &&
 		    ext2fs_test_block_bitmap2(meta_block_map, blk)) {
@@ -445,6 +505,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 			}
 			sparse += fs->blocksize;
 			if (sparse >= 1024*1024) {
+
 				write_block(fd, 0, sparse, 0, 0);
 				sparse = 0;
 			}
@@ -452,11 +513,530 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	}
 	if (sparse)
 		write_block(fd, zero_buf, sparse-1, 1, -1);
-	free(zero_buf);
-	free(buf);
+	ext2fs_free_mem(&zero_buf);
+	ext2fs_free_mem(&buf);
 }
 
-static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
+static void init_l1_table(struct ext2_super_block *sb,
+			  struct ext2_qcow2_image *image)
+{
+	__u64 *l1_table;
+	errcode_t ret;
+
+	ret = ext2fs_get_arrayzero(image->l1_size, sizeof(__u64), &l1_table);
+	if (ret) {
+		com_err(program_name, ret, "while allocating l1 table");
+		exit(1);
+	}
+
+	image->l1_table = l1_table;
+}
+
+static void init_l2_cache(struct ext2_qcow2_image *image)
+{
+	unsigned int count, i;
+	struct ext2_qcow2_l2_cache *cache;
+	struct ext2_qcow2_l2_table *table;
+	errcode_t ret;
+
+	ret = ext2fs_get_arrayzero(1, sizeof(struct ext2_qcow2_l2_cache),
+				   &cache);
+	if (ret)
+		goto alloc_err;
+
+	count = (image->l1_size > L2_CACHE_PREALLOC) ? L2_CACHE_PREALLOC :
+		 image->l1_size;
+
+	cache->count = count;
+	cache->free = count;
+	cache->next_offset = image->l2_offset;
+
+	for (i = 0; i < count; i++) {
+		ret = ext2fs_get_arrayzero(1,
+				sizeof(struct ext2_qcow2_l2_table), &table);
+		if (ret)
+			goto alloc_err;
+
+		ret = ext2fs_get_arrayzero(image->l2_size,
+						   sizeof(__u64), &table->data);
+		if (ret)
+			goto alloc_err;
+
+		table->next = cache->free_head;
+		cache->free_head = table;
+	}
+
+	image->l2_cache = cache;
+	return;
+
+alloc_err:
+	com_err(program_name, ret, "while allocating l2 cache");
+	exit(1);
+}
+
+static void put_l2_cache(struct ext2_qcow2_image *image)
+{
+	struct ext2_qcow2_l2_cache *cache = image->l2_cache;
+	struct ext2_qcow2_l2_table *tmp, *table;
+
+	if (!cache)
+		return;
+
+	table = cache->free_head;
+	cache->free_head = NULL;
+again:
+	while (table) {
+		tmp = table;
+		table = table->next;
+		ext2fs_free_mem(&tmp->data);
+		ext2fs_free_mem(&tmp);
+	}
+
+	if (cache->free != cache->count) {
+		fprintf(stderr, "Warning: There are still tables in the "
+				"cache while putting the cache, data will "
+				"be lost so the image may not be valid.\n");
+		table = cache->used_head;
+		cache->used_head = NULL;
+		goto again;
+	}
+
+	ext2fs_free_mem(&cache);
+}
+
+static int init_refcount(struct ext2_qcow2_image *img, blk64_t table_offset)
+{
+	struct	ext2_qcow2_refcount	*ref;
+	blk64_t table_clusters;
+	errcode_t ret;
+
+	ref = &(img->refcount);
+
+	/*
+	 * One refcount block addresses 2048 clusters, one refcount table
+	 * addresses cluster/sizeof(__u64) refcount blocks, and we need
+	 * to address meta_blocks_count clusters + qcow2 metadata clusters
+	 * in the worst case.
+	 */
+	table_clusters = meta_blocks_count + (table_offset >>
+					      img->cluster_bits);
+	table_clusters >>= (img->cluster_bits + 6 - 1);
+	table_clusters = (table_clusters == 0) ? 1 : table_clusters;
+
+	ref->refcount_table_offset = table_offset;
+	ref->refcount_table_clusters = table_clusters;
+	ref->refcount_table_index = 0;
+	ref->refcount_block_index = 0;
+
+	/* Allocate refcount table */
+	ret = ext2fs_get_arrayzero(ref->refcount_table_clusters,
+				   img->cluster_size, &ref->refcount_table);
+	if (ret)
+		return ret;
+
+	/* Allocate refcount block */
+	ret = ext2fs_get_arrayzero(1, img->cluster_size, &ref->refcount_block);
+	if (ret)
+		ext2fs_free_mem(&ref->refcount_table);
+
+	return ret;
+}
+
+static int initialize_qcow2_image(int fd, ext2_filsys fs,
+			    struct ext2_qcow2_image *image)
+{
+	struct ext2_qcow2_hdr *header;
+	blk64_t total_size, offset;
+	int shift, l2_bits, header_size, l1_size, ret;
+	int cluster_bits = get_bits_from_size(fs->blocksize);
+	struct ext2_super_block *sb = fs->super;
+
+	/* Allocate header */
+	ret = ext2fs_get_memzero(sizeof(struct ext2_qcow2_hdr), &header);
+	if (ret)
+		return ret;
+
+	total_size = ext2fs_blocks_count(sb) << cluster_bits;
+	image->cluster_size = fs->blocksize;
+	image->l2_size = 1 << (cluster_bits - 3);
+	image->cluster_bits = cluster_bits;
+	image->fd = fd;
+
+	header->magic = ext2fs_cpu_to_be32(QCOW_MAGIC);
+	header->version = ext2fs_cpu_to_be32(QCOW_VERSION);
+	header->size = ext2fs_cpu_to_be64(total_size);
+	header->cluster_bits = ext2fs_cpu_to_be32(cluster_bits);
+
+	header_size = (sizeof(struct ext2_qcow2_hdr) + 7) & ~7;
+	offset = align_offset(header_size, image->cluster_size);
+
+	header->l1_table_offset = ext2fs_cpu_to_be64(offset);
+	image->l1_offset = offset;
+
+	l2_bits = cluster_bits - 3;
+	shift = cluster_bits + l2_bits;
+	l1_size = ((total_size + (1LL << shift) - 1) >> shift);
+	header->l1_size = ext2fs_cpu_to_be32(l1_size);
+	image->l1_size = l1_size;
+
+	/* Make space for L1 table */
+	offset += align_offset(l1_size * sizeof(blk64_t), image->cluster_size);
+
+	/* Initialize refcounting */
+	ret = init_refcount(image, offset);
+	if (ret) {
+		ext2fs_free_mem(&header);
+		return ret;
+	}
+	header->refcount_table_offset = ext2fs_cpu_to_be64(offset);
+	header->refcount_table_clusters =
+		ext2fs_cpu_to_be32(image->refcount.refcount_table_clusters);
+	offset += image->cluster_size;
+	offset += image->refcount.refcount_table_clusters <<
+		image->cluster_bits;
+
+	/* Make space for L2 tables */
+	image->l2_offset = offset;
+	offset += image->cluster_size;
+
+	/* Make space for first refcount block */
+	image->refcount.refcount_block_offset = offset;
+
+	image->hdr = header;
+	/* Initialize l1 and l2 tables */
+	init_l1_table(sb, image);
+	init_l2_cache(image);
+
+	return 0;
+}
+
+static void free_qcow2_image(struct ext2_qcow2_image *img)
+{
+	unsigned int i;
+
+	if (!img)
+		return;
+
+	if (img->hdr)
+		ext2fs_free_mem(&img->hdr);
+
+	if (img->l1_table)
+		ext2fs_free_mem(&img->l1_table);
+
+	if (img->refcount.refcount_table)
+		ext2fs_free_mem(&img->refcount.refcount_table);
+	if (img->refcount.refcount_block)
+		ext2fs_free_mem(&img->refcount.refcount_block);
+
+	put_l2_cache(img);
+
+	ext2fs_free_mem(&img);
+}
+
+/**
+ * Put table from used list (used_head) into free list (free_head).
+ * l2_table is used to return pointer to the next used table (used_head).
+ */
+static void put_used_table(struct ext2_qcow2_image *img,
+			  struct ext2_qcow2_l2_table **l2_table)
+{
+	struct ext2_qcow2_l2_cache *cache = img->l2_cache;
+	struct ext2_qcow2_l2_table *table;
+
+	table = cache->used_head;
+	cache->used_head = table->next;
+
+	assert(table);
+	if (!table->next)
+		cache->used_tail = NULL;
+
+	/* Clean the table for case we will need to use it again */
+	memset(table->data, 0, img->cluster_size);
+	table->next = cache->free_head;
+	cache->free_head = table;
+
+	cache->free++;
+
+	*l2_table = cache->used_head;
+}
+
+static void flush_l2_cache(struct ext2_qcow2_image *image)
+{
+	blk64_t offset, seek = 0;
+	struct ext2_qcow2_l2_cache *cache = image->l2_cache;
+	struct ext2_qcow2_l2_table *table = cache->used_head;
+	int fd = image->fd;
+
+	/* Store current position */
+	if ((offset = ext2fs_llseek(fd, 0, SEEK_CUR)) < 0)
+		lseek_error_and_exit(errno);
+
+	assert(table);
+	while (cache->free < cache->count) {
+		if (seek != table->offset) {
+			if (ext2fs_llseek(fd, table->offset, SEEK_SET) < 0)
+				lseek_error_and_exit(errno);
+			seek = table->offset;
+		}
+
+		generic_write(fd, (char *)table->data, image->cluster_size , 0);
+		put_used_table(image, &table);
+		seek += image->cluster_size;
+	}
+
+	/* Restore previous position */
+	if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
+		lseek_error_and_exit(errno);
+}
+
+/**
+ * Get first free table (from free_head) and put it into tail of used list
+ * (to used_tail).
+ * l2_table is used to return pointer to moved table.
+ * Returns 1 if the cache is full, 0 otherwise.
+ */
+static void get_free_table(struct ext2_qcow2_image *image,
+			  struct ext2_qcow2_l2_table **l2_table)
+{
+	struct ext2_qcow2_l2_table *table;
+	struct ext2_qcow2_l2_cache *cache = image->l2_cache;
+
+	if (0 == cache->free)
+		flush_l2_cache(image);
+
+	table = cache->free_head;
+	assert(table);
+	cache->free_head = table->next;
+
+	if (cache->used_tail)
+		cache->used_tail->next = table;
+	else
+		/* First item in the used list */
+		cache->used_head = table;
+
+	cache->used_tail = table;
+	cache->free--;
+
+	*l2_table = table;
+}
+
+static int add_l2_item(struct ext2_qcow2_image *img, blk64_t blk,
+		       blk64_t data, blk64_t next)
+{
+	struct ext2_qcow2_l2_cache *cache = img->l2_cache;
+	struct ext2_qcow2_l2_table *table = cache->used_tail;
+	blk64_t l1_index = blk / img->l2_size;
+	blk64_t l2_index = blk & (img->l2_size - 1);
+	int ret = 0;
+
+	/*
+	 * Need to create new table if it does not exist,
+	 * or if it is full
+	 */
+	if (!table || (table->l1_index != l1_index)) {
+		get_free_table(img, &table);
+		table->l1_index = l1_index;
+		table->offset = cache->next_offset;
+		cache->next_offset = next;
+		img->l1_table[l1_index] =
+			ext2fs_cpu_to_be64(table->offset | QCOW_OFLAG_COPIED);
+		ret++;
+	}
+
+	table->data[l2_index] = ext2fs_cpu_to_be64(data | QCOW_OFLAG_COPIED);
+	return ret;
+}
+
+static int update_refcount(int fd, struct ext2_qcow2_image *img,
+			   blk64_t offset, blk64_t rfblk_pos)
+{
+	struct	ext2_qcow2_refcount	*ref;
+	__u32	table_index;
+	int ret = 0;
+
+	ref = &(img->refcount);
+	table_index = offset >> (2 * img->cluster_bits - 1);
+
+	/*
+	 * Need to create new refcount block when the offset addresses
+	 * another item in the refcount table
+	 */
+	if (table_index != ref->refcount_table_index) {
+
+		if (ext2fs_llseek(fd, ref->refcount_block_offset, SEEK_SET) < 0)
+			lseek_error_and_exit(errno);
+
+		generic_write(fd, (char *)ref->refcount_block,
+			      img->cluster_size, 0);
+		memset(ref->refcount_block, 0, img->cluster_size);
+
+		ref->refcount_table[ref->refcount_table_index] =
+			ext2fs_cpu_to_be64(ref->refcount_block_offset);
+		ref->refcount_block_offset = rfblk_pos;
+		ref->refcount_block_index = 0;
+		ref->refcount_table_index = table_index;
+		ret++;
+	}
+
+	/*
+	 * We are relying on the fact that we are creating the qcow2
+	 * image sequentially, hence we will always allocate refcount
+	 * block items sequentialy.
+	 */
+	ref->refcount_block[ref->refcount_block_index] = ext2fs_cpu_to_be16(1);
+	ref->refcount_block_index++;
+	return ret;
+}
+
+static int sync_refcount(int fd, struct ext2_qcow2_image *img)
+{
+	struct	ext2_qcow2_refcount	*ref;
+
+	ref = &(img->refcount);
+
+	ref->refcount_table[ref->refcount_table_index] =
+		ext2fs_cpu_to_be64(ref->refcount_block_offset);
+	if (ext2fs_llseek(fd, ref->refcount_table_offset, SEEK_SET) < 0)
+		lseek_error_and_exit(errno);
+	generic_write(fd, (char *)ref->refcount_table,
+		ref->refcount_table_clusters << img->cluster_bits, 0);
+
+	if (ext2fs_llseek(fd, ref->refcount_block_offset, SEEK_SET) < 0)
+		lseek_error_and_exit(errno);
+	generic_write(fd, (char *)ref->refcount_block, img->cluster_size, 0);
+	return 0;
+}
+
+static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
+{
+	errcode_t		retval;
+	blk64_t			blk, datablk, offset, size, actual, end;
+	char			*buf;
+	int			sparse = 0;
+	struct ext2_qcow2_image	*img;
+	unsigned int		header_size, i;
+	blk64_t			l1_index, l2_offset, l2_index;
+	char			*buffer;
+	__u64			*l2_table;
+
+	/* allocate  struct ext2_qcow2_image */
+	retval = ext2fs_get_mem(sizeof(struct ext2_qcow2_image), &img);
+	if (retval) {
+		com_err(program_name, retval,
+			"while allocating ext2_qcow2_image");
+		exit(1);
+	}
+
+	retval = initialize_qcow2_image(fd, fs, img);
+	if (retval) {
+		com_err(program_name, retval,
+			"while initializing ext2_qcow2_image");
+		exit(1);
+	}
+	header_size = align_offset(sizeof(struct ext2_qcow2_hdr),
+				   img->cluster_size);
+	write_header(fd, img->hdr, sizeof(struct ext2_qcow2_hdr), header_size);
+
+	/* Refcount all qcow2 related metadata up to refcount_block_offset */
+	end = img->refcount.refcount_block_offset;
+	if (ext2fs_llseek(fd, end, SEEK_SET) < 0)
+		lseek_error_and_exit(errno);
+	blk = end + img->cluster_size;
+	for (offset = 0; offset <= end; offset += img->cluster_size) {
+		if (update_refcount(fd, img, offset, blk)) {
+			blk += img->cluster_size;
+			/*
+			 * If we create new refcount block, we need to refcount
+			 * it as well.
+			 */
+			end += img->cluster_size;
+		}
+	}
+	if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
+		lseek_error_and_exit(errno);
+
+	retval = ext2fs_get_mem(fs->blocksize, &buf);
+	if (retval) {
+		com_err(program_name, retval, "while allocating buffer");
+		exit(1);
+	}
+	/* Write qcow2 data blocks */
+	for (blk = 0; blk < ext2fs_blocks_count(fs->super); blk++) {
+		if ((blk >= fs->super->s_first_data_block) &&
+		    ext2fs_test_block_bitmap2(meta_block_map, blk)) {
+			retval = io_channel_read_blk64(fs->io, blk, 1, buf);
+			if (retval) {
+				com_err(program_name, retval,
+					"error reading block %llu", blk);
+				continue;
+			}
+			if (scramble_block_map &&
+			    ext2fs_test_block_bitmap2(scramble_block_map, blk))
+				scramble_dir_block(fs, blk, buf);
+			if (check_zero_block(buf, fs->blocksize))
+				continue;
+
+			if (update_refcount(fd, img, offset, offset)) {
+				/* Make space for another refcount block */
+				offset += img->cluster_size;
+				if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
+					lseek_error_and_exit(errno);
+				/*
+				 * We have created the new refcount block, this
+				 * means that we need to refcount it as well.
+				 * So the previous update_refcount refcounted
+				 * the block itself and now we are going to
+				 * create refcount for data. New refcount
+				 * block should not be created!
+				 */
+				if (update_refcount(fd, img, offset, offset)) {
+					fprintf(stderr, "Programming error: "
+						"multiple sequential refcount "
+						"blocks created!\n");
+					exit(1);
+				}
+			}
+
+			generic_write(fd, buf, fs->blocksize, 0);
+
+			if (add_l2_item(img, blk, offset,
+					offset + img->cluster_size)) {
+				offset += img->cluster_size;
+				if (update_refcount(fd, img, offset,
+					offset + img->cluster_size)) {
+					offset += img->cluster_size;
+					if (update_refcount(fd, img, offset,
+							    offset)) {
+						fprintf(stderr,
+			"Programming error: multiple sequential refcount "
+			"blocks created!\n");
+						exit(1);
+					}
+				}
+				offset += img->cluster_size;
+				if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
+					lseek_error_and_exit(errno);
+				continue;
+			}
+
+			offset += img->cluster_size;
+		}
+	}
+	update_refcount(fd, img, offset, offset);
+	flush_l2_cache(img);
+	sync_refcount(fd, img);
+
+	/* Write l1_table*/
+	if (ext2fs_llseek(fd, img->l1_offset, SEEK_SET) < 0)
+		lseek_error_and_exit(errno);
+	size = img->l1_size * sizeof(__u64);
+	generic_write(fd, (char *)img->l1_table, size, 0);
+
+	ext2fs_free_mem(&buf);
+	free_qcow2_image(img);
+}
+
+static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 {
 	struct process_block_struct	pb;
 	struct ext2_inode		inode;
@@ -465,6 +1045,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 	errcode_t			retval;
 	char *				block_buf;
 
+	meta_blocks_count = 0;
 	retval = ext2fs_allocate_block_bitmap(fs, "in-use block map",
 					      &meta_block_map);
 	if (retval) {
@@ -472,7 +1053,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		exit(1);
 	}
 
-	if (scramble_flag) {
+	if (flags & E2IMAGE_SCRAMBLE_FLAG) {
 		retval = ext2fs_allocate_block_bitmap(fs, "scramble block map",
 						      &scramble_block_map);
 		if (retval) {
@@ -490,8 +1071,8 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		exit(1);
 	}
 
-	block_buf = malloc(fs->blocksize * 3);
-	if (!block_buf) {
+	retval = ext2fs_get_mem(fs->blocksize * 3, &block_buf);
+	if (retval) {
 		com_err(program_name, 0, "Can't allocate block buffer");
 		exit(1);
 	}
@@ -514,6 +1095,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		if (ext2fs_file_acl_block(&inode)) {
 			ext2fs_mark_block_bitmap2(meta_block_map,
 						 ext2fs_file_acl_block(&inode));
+			meta_blocks_count++;
 		}
 		if (!ext2fs_inode_has_valid_blocks(&inode))
 			continue;
@@ -551,21 +1133,31 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		}
 	}
 	use_inode_shortcuts(fs, 0);
-	output_meta_data_blocks(fs, fd);
-	free(block_buf);
+
+	if (type & E2IMAGE_QCOW2)
+		output_qcow2_meta_data_blocks(fs, fd);
+	else
+		output_meta_data_blocks(fs, fd);
+
+	ext2fs_free_mem(&block_buf);
+	ext2fs_close_inode_scan(scan);
+	ext2fs_free_block_bitmap(meta_block_map);
+	if (type & E2IMAGE_SCRAMBLE_FLAG)
+		ext2fs_free_block_bitmap(scramble_block_map);
 }
 
-static void install_image(char *device, char *image_fn, int raw_flag)
+static void install_image(char *device, char *image_fn, int type)
 {
 	errcode_t retval;
 	ext2_filsys fs;
 	int open_flag = EXT2_FLAG_IMAGE_FILE;
 	int fd = 0;
 	io_manager	io_ptr;
-	io_channel	io, image_io;
+	io_channel	io;
 
-	if (raw_flag) {
-		com_err(program_name, 0, "Raw images cannot be installed");
+	if (type) {
+		com_err(program_name, 0, "Raw and qcow2 images cannot"
+			"be installed");
 		exit(1);
 	}
 
@@ -607,12 +1199,10 @@ static void install_image(char *device, char *image_fn, int raw_flag)
 		exit(1);
 	}
 
-	image_io = fs->io;
-
 	ext2fs_rewrite_to_io(fs, io);
 
-	if (lseek(fd, fs->image_header->offset_inode, SEEK_SET) < 0) {
-		perror("lseek");
+	if (ext2fs_llseek(fd, fs->image_header->offset_inode, SEEK_SET) < 0) {
+		perror("ext2fs_llseek");
 		exit(1);
 	}
 
@@ -633,9 +1223,8 @@ int main (int argc, char ** argv)
 	ext2_filsys fs;
 	char *image_fn;
 	int open_flag = EXT2_FLAG_64BITS;
-	int raw_flag = 0;
-	int install_flag = 0;
-	int scramble_flag = 0;
+	int img_type = 0;
+	int flags = 0;
 	int fd = 0;
 
 #ifdef ENABLE_NLS
@@ -649,16 +1238,23 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt (argc, argv, "rsI")) != EOF)
+	while ((c = getopt(argc, argv, "rsIQ")) != EOF)
 		switch (c) {
+		case 'I':
+			flags |= E2IMAGE_INSTALL_FLAG;
+			break;
+		case 'Q':
+			if (img_type)
+				usage();
+			img_type |= E2IMAGE_QCOW2;
+			break;
 		case 'r':
-			raw_flag++;
+			if (img_type)
+				usage();
+			img_type |= E2IMAGE_RAW;
 			break;
 		case 's':
-			scramble_flag++;
-			break;
-		case 'I':
-			install_flag++;
+			flags |= E2IMAGE_SCRAMBLE_FLAG;
 			break;
 		default:
 			usage();
@@ -668,8 +1264,8 @@ int main (int argc, char ** argv)
 	device_name = argv[optind];
 	image_fn = argv[optind+1];
 
-	if (install_flag) {
-		install_image(device_name, image_fn, raw_flag);
+	if (flags & E2IMAGE_INSTALL_FLAG) {
+		install_image(device_name, image_fn, img_type);
 		exit (0);
 	}
 
@@ -697,8 +1293,14 @@ int main (int argc, char ** argv)
 		}
 	}
 
-	if (raw_flag)
-		write_raw_image_file(fs, fd, scramble_flag);
+	if ((img_type & E2IMAGE_QCOW2) && (fd == 1)) {
+		com_err(program_name, 0, "QCOW2 image can not be written to "
+					 "the stdout!\n");
+		exit(1);
+	}
+
+	if (img_type)
+		write_raw_image_file(fs, fd, img_type, flags);
 	else
 		write_image_file(fs, fd);
 
