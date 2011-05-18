@@ -131,6 +131,10 @@ the
 option will prevent analysis of problems related to hash-tree indexed
 directories.
 .PP
+Note that this will work even if you substitute "/dev/hda1" for another raw
+disk image, or QCOW2 image previously created by
+.BR e2image .
+.PP
 .SH QCOW2 IMAGE FILES
 The
 .B \-Q

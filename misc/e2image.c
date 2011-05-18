@@ -1216,16 +1216,33 @@ static void install_image(char *device, char *image_fn, int type)
 	exit (0);
 }
 
+static struct ext2_qcow2_hdr *check_qcow2_image(int *fd, char *name)
+{
+
+#ifdef HAVE_OPEN64
+	*fd = open64(name, O_RDONLY, 0600);
+#else
+	*fd = open(name, O_RDONLY, 0600);
+#endif
+	if (*fd < 0)
+		return NULL;
+
+	return qcow2_read_header(*fd);
+}
+
 int main (int argc, char ** argv)
 {
 	int c;
 	errcode_t retval;
 	ext2_filsys fs;
 	char *image_fn;
+	struct ext2_qcow2_hdr *header = NULL;
 	int open_flag = EXT2_FLAG_64BITS;
 	int img_type = 0;
 	int flags = 0;
+	int qcow2_fd = 0;
 	int fd = 0;
+	int ret = 0;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1269,6 +1286,14 @@ int main (int argc, char ** argv)
 		exit (0);
 	}
 
+	if (img_type & E2IMAGE_RAW) {
+		header = check_qcow2_image(&qcow2_fd, device_name);
+		if (header) {
+			flags |= E2IMAGE_IS_QCOW2_FLAG;
+			goto skip_device;
+		}
+	}
+
 	retval = ext2fs_open (device_name, open_flag, 0, 0,
 			      unix_io_manager, &fs);
         if (retval) {
@@ -1278,6 +1303,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
+skip_device:
 	if (strcmp(image_fn, "-") == 0)
 		fd = 1;
 	else {
@@ -1299,12 +1325,35 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
+	if (flags & E2IMAGE_IS_QCOW2_FLAG) {
+		ret = qcow2_write_raw_image(qcow2_fd, fd, header);
+		if (ret) {
+			if (ret == -QCOW_COMPRESSED)
+				fprintf(stderr, "Image (%s) is compressed\n",
+					image_fn);
+			if (ret == -QCOW_ENCRYPTED)
+				fprintf(stderr, "Image (%s) is encrypted\n",
+					image_fn);
+			com_err(program_name, ret,
+				_("while trying to convert qcow2 image"
+				" (%s) into raw image (%s)"),
+				device_name, image_fn);
+		}
+		goto out;
+	}
+
+
 	if (img_type)
 		write_raw_image_file(fs, fd, img_type, flags);
 	else
 		write_image_file(fs, fd);
 
 	ext2fs_close (fs);
+out:
+	if (header)
+		free(header);
+	if (qcow2_fd)
+		close(qcow2_fd);
 	remove_error_table(&et_ext2_error_table);
-	exit (0);
+	return ret;
 }
