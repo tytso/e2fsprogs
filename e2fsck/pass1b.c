@@ -310,12 +310,14 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 			pctx.errcode = ext2fs_block_iterate3(fs, ino,
 					     BLOCK_FLAG_READ_ONLY, block_buf,
 					     process_pass1b_block, &pb);
-		if (ext2fs_file_acl_block(&inode)) {
+		/* If the feature is not set, attrs will be cleared later anyway */
+		if ((fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) &&
+		    ext2fs_file_acl_block(&inode)) {
 			blk64_t blk = ext2fs_file_acl_block(&inode);
 			process_pass1b_block(fs, &blk,
 					     BLOCK_COUNT_EXTATTR, 0, 0, &pb);
 			ext2fs_file_acl_block_set(&inode, blk);
-			}
+		}
 		if (pb.dup_blocks) {
 			end_problem_latch(ctx, PR_LATCH_DBLOCK);
 			if (ino >= EXT2_FIRST_INODE(fs->super) ||
