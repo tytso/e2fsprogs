@@ -1705,6 +1705,12 @@ retry_open:
 		printf(_("Setting reserved blocks gid to %lu\n"), resgid);
 	}
 	if (i_flag) {
+		if (interval >= (1ULL << 32)) {
+			com_err(program_name, 0,
+				_("interval between checks is too big (%lu)"),
+				interval);
+			exit(1);
+		}
 		sb->s_checkinterval = interval;
 		ext2fs_mark_super_dirty(fs);
 		printf(_("Setting interval between checks to %lu seconds\n"),
@@ -1718,7 +1724,7 @@ retry_open:
 			reserved_ratio, ext2fs_r_blocks_count(sb));
 	}
 	if (r_flag) {
-		if (reserved_blocks >= ext2fs_blocks_count(sb)/2) {
+		if (reserved_blocks > ext2fs_blocks_count(sb)/2) {
 			com_err(program_name, 0,
 				_("reserved blocks count is too big (%llu)"),
 				reserved_blocks);
