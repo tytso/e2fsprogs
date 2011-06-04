@@ -178,7 +178,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	super->s_creator_os = CREATOR_OS;
 
 	fs->blocksize = EXT2_BLOCK_SIZE(super);
-	fs->clustersize = EXT2_CLUSTER_SIZE(super);
+	fs->cluster_ratio_bits = super->s_log_cluster_size -
+		super->s_log_block_size;
 
 	/* default: (fs->blocksize*8) blocks/group, up to 2^16 (GDT limit) */
 	set_field(s_blocks_per_group, fs->blocksize * 8);

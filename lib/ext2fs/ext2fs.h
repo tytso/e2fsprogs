@@ -195,7 +195,7 @@ struct struct_ext2_filsys {
 	char *				device_name;
 	struct ext2_super_block	* 	super;
 	unsigned int			blocksize;
-	int				clustersize;
+	int				cluster_ratio_bits;
 	dgrp_t				group_desc_count;
 	unsigned long			desc_blocks;
 	struct ext2_group_desc *	group_desc;
@@ -546,6 +546,17 @@ typedef struct ext2_icount *ext2_icount_t;
  */
 #define EXT2_LIB_SOFTSUPP_INCOMPAT	(0)
 #define EXT2_LIB_SOFTSUPP_RO_COMPAT	(EXT4_FEATURE_RO_COMPAT_BIGALLOC)
+
+
+/* Translate a block number to a cluster number */
+#define EXT2FS_CLUSTER_RATIO(fs)	(1 << (fs)->cluster_ratio_bits)
+#define EXT2FS_CLUSTER_MASK(fs)		(EXT2FS_CLUSTER_RATIO(fs) - 1)
+#define EXT2FS_B2C(fs, blk)		((blk) >> (fs)->cluster_ratio_bits)
+/* Translate a cluster number to a block number */
+#define EXT2FS_C2B(fs, cluster)		((cluster) << (fs)->cluster_ratio_bits)
+/* Translate # of blks to # of clusters */
+#define EXT2FS_NUM_B2C(fs, blks)	(((blks) + EXT2FS_CLUSTER_MASK(fs)) >> \
+					 (fs)->cluster_ratio_bits)
 
 /*
  * function prototypes

@@ -619,9 +619,10 @@ static void show_stats(ext2_filsys fs)
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
 		printf(_("Cluster size=%u (log=%u)\n"),
-		       fs->clustersize, s->s_log_cluster_size);
+		       fs->blocksize << fs->cluster_ratio_bits,
+		       s->s_log_cluster_size);
 	else
-		printf(_("Fragment size=%u (log=%u)\n"), fs->clustersize,
+		printf(_("Fragment size=%u (log=%u)\n"), EXT2_CLUSTER_SIZE(s),
 		       s->s_log_cluster_size);
 	printf(_("Stride=%u blocks, Stripe width=%u blocks\n"),
 	       s->s_raid_stride, s->s_raid_stripe_width);
