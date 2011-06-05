@@ -37,7 +37,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	char 		*block_buf, *inode_buf;
 	int		csum_flag = 0;
 	blk_t		blk;
-	blk_t		blk_itr = fs->super->s_first_data_block;
+	blk_t		blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	ext2_ino_t	ino_itr = 1;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -51,7 +51,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	inode_nbytes = block_nbytes = 0;
 	if (do_block) {
-		block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+		block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 		retval = ext2fs_get_memalign(fs->blocksize, fs->blocksize,
 					     &block_buf);
 		if (retval)
@@ -83,9 +83,10 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 		if (i == fs->group_desc_count - 1) {
 			/* Force bitmap padding for the last group */
-			nbits = ((fs->super->s_blocks_count
-				  - fs->super->s_first_data_block)
-				 % EXT2_BLOCKS_PER_GROUP(fs->super));
+			nbits = EXT2FS_NUM_B2C(fs,
+			       ((fs->super->s_blocks_count
+				 - fs->super->s_first_data_block)
+				% EXT2_BLOCKS_PER_GROUP(fs->super)));
 			if (nbits)
 				for (j = nbits; j < fs->blocksize * 8; j++)
 					ext2fs_set_bit(j, block_buf);
@@ -141,13 +142,13 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	char *block_bitmap = 0, *inode_bitmap = 0;
 	char *buf;
 	errcode_t retval;
-	int block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+	int block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	int inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
 	int csum_flag = 0;
 	int do_image = fs->flags & EXT2_FLAG_IMAGE_FILE;
 	unsigned int	cnt;
 	blk_t	blk;
-	blk_t	blk_itr = fs->super->s_first_data_block;
+	blk_t	blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	blk_t   blk_cnt;
 	ext2_ino_t ino_itr = 1;
 	ext2_ino_t ino_cnt;
@@ -219,7 +220,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		}
 		blk = (fs->image_header->offset_blockmap /
 		       fs->blocksize);
-		blk_cnt = EXT2_BLOCKS_PER_GROUP(fs->super) *
+		blk_cnt = EXT2_CLUSTERS_PER_GROUP(fs->super) *
 			fs->group_desc_count;
 		while (block_nbytes > 0) {
 			retval = io_channel_read_blk(fs->image_io, blk++,

@@ -79,7 +79,7 @@ errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 
 	start = fs->super->s_first_data_block;
 	end = fs->super->s_blocks_count-1;
-	real_end = (EXT2_BLOCKS_PER_GROUP(fs->super)
+	real_end = (EXT2_CLUSTERS_PER_GROUP(fs->super)
 		    * fs->group_desc_count)-1 + start;
 
 	return (ext2fs_make_generic_bitmap(EXT2_ET_MAGIC_BLOCK_BITMAP, fs,
