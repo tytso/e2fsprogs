@@ -71,25 +71,26 @@ static void print_range(unsigned long long a, unsigned long long b)
 		printf("%llu-%llu", a, b);
 }
 
-static void print_free (unsigned long group, char * bitmap,
-			unsigned long nbytes, unsigned long offset)
+static void print_free(unsigned long group, char * bitmap,
+		       unsigned long num, unsigned long offset, int ratio)
 {
 	int p = 0;
 	unsigned long i;
 	unsigned long j;
 
-	offset += group * nbytes;
-	for (i = 0; i < nbytes; i++)
+	offset /= ratio;
+	offset += group * num;
+	for (i = 0; i < num; i++)
 		if (!in_use (bitmap, i))
 		{
 			if (p)
 				printf (", ");
-			print_number(i + offset);
-			for (j = i; j < nbytes && !in_use (bitmap, j); j++)
+			print_number((i + offset) * ratio);
+			for (j = i; j < num && !in_use (bitmap, j); j++)
 				;
 			if (--j != i) {
 				fputc('-', stdout);
-				print_number(j + offset);
+				print_number((j + offset) * ratio);
 				i = j;
 			}
 			p = 1;
@@ -150,10 +151,10 @@ static void list_desc (ext2_filsys fs)
 	int inode_blocks_per_group, old_desc_blocks, reserved_gdt;
 	int		block_nbytes, inode_nbytes;
 	int has_super;
-	blk64_t		blk_itr = fs->super->s_first_data_block;
+	blk64_t		blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	ext2_ino_t	ino_itr = 1;
 
-	block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+	block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
 
 	if (fs->block_map)
@@ -238,18 +239,19 @@ static void list_desc (ext2_filsys fs)
 			fputs(_("  Free blocks: "), stdout);
 			ext2fs_get_block_bitmap_range2(fs->block_map,
 				 blk_itr, block_nbytes << 3, block_bitmap);
-			print_free (i, block_bitmap,
-				    fs->super->s_blocks_per_group,
-				    fs->super->s_first_data_block);
+			print_free(i, block_bitmap,
+				   fs->super->s_clusters_per_group,
+				   fs->super->s_first_data_block,
+				   EXT2FS_CLUSTER_RATIO(fs));
 			fputc('\n', stdout);
-			blk_itr += fs->super->s_blocks_per_group;
+			blk_itr += fs->super->s_clusters_per_group;
 		}
 		if (inode_bitmap) {
 			fputs(_("  Free inodes: "), stdout);
 			ext2fs_get_inode_bitmap_range2(fs->inode_map,
 				 ino_itr, inode_nbytes << 3, inode_bitmap);
-			print_free (i, inode_bitmap,
-				    fs->super->s_inodes_per_group, 1);
+			print_free(i, inode_bitmap,
+				   fs->super->s_inodes_per_group, 1, 1);
 			fputc('\n', stdout);
 			ino_itr += fs->super->s_inodes_per_group;
 		}

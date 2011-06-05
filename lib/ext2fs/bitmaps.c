@@ -92,7 +92,7 @@ errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 
 	start = fs->super->s_first_data_block;
 	end = ext2fs_blocks_count(fs->super)-1;
-	real_end = ((__u64) EXT2_BLOCKS_PER_GROUP(fs->super)
+	real_end = ((__u64) EXT2_CLUSTERS_PER_GROUP(fs->super)
 		    * (__u64) fs->group_desc_count)-1 + start;
 
 	if (fs->flags & EXT2_FLAG_64BITS)
