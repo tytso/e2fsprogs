@@ -2136,7 +2136,7 @@ int main (int argc, char *argv[])
 	}
 
 	/* Can't undo discard ... */
-	if (discard && (io_ptr != undo_io_manager)) {
+	if (!noaction && discard && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_device(fs);
 		if (!retval && io_channel_discard_zeroes_data(fs->io)) {
 			if (verbose)
