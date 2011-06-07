@@ -2142,7 +2142,7 @@ int main (int argc, char *argv[])
 	}
 
 	/* Can't undo discard ... */
-	if (discard && (io_ptr != undo_io_manager)) {
+	if (!noaction && discard && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_blocks(fs);
 
 		if (!retval && mke2fs_discard_zeroes_data(fs)) {
