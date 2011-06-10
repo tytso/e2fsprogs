@@ -41,7 +41,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	retval = ext2fs_allocate_block_bitmap(fs, "check_desc map", &bmap);
+	retval = ext2fs_allocate_subcluster_bitmap(fs, "check_desc map", &bmap);
 	if (retval)
 		return retval;
 

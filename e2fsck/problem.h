@@ -520,6 +520,9 @@ struct problem_context {
 /* EOFBLOCKS flag set when not necessary */
 #define PR_1_EOFBLOCKS_FL_SET		0x010060
 
+/* Failed to convert subcluster bitmap */
+#define PR_1_CONVERT_SUBCLUSTER		0x010061
+
 /*
  * Pass 1b errors
  */

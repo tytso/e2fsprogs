@@ -617,8 +617,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_block_bitmap(fs, _("in-use block map"),
-					      &ctx->block_found_map);
+	pctx.errcode = ext2fs_allocate_subcluster_bitmap(fs,
+						_("in-use block map"),
+						&ctx->block_found_map);
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
@@ -668,6 +669,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 
 	mark_table_blocks(ctx);
+	pctx.errcode = ext2fs_convert_subcluster_bitmap(fs,
+						&ctx->block_found_map);
+	if (pctx.errcode) {
+		fix_problem(ctx, PR_1_CONVERT_SUBCLUSTER, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		ext2fs_free_mem(&inode);
+		return;
+	}
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
 						    "block interate buffer");
 	e2fsck_use_inode_shortcuts(ctx, 1);
@@ -1789,7 +1798,15 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
 		     i < extent.e_len;
 		     blk++, blockcnt++, i++) {
-			mark_block_used(ctx, blk);
+			if (!(ctx->fs->cluster_ratio_bits &&
+			      pb->previous_block &&
+			      (EXT2FS_B2C(ctx->fs, blk) ==
+			       EXT2FS_B2C(ctx->fs, pb->previous_block)) &&
+			      (blk & EXT2FS_CLUSTER_MASK(ctx->fs)) ==
+			      (blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs))))
+				mark_block_used(ctx, blk);
+
+			pb->previous_block = blk;
 
 			if (is_dir) {
 				pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist, pctx->ino, blk, blockcnt);

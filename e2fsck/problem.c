@@ -890,6 +890,11 @@ static struct e2fsck_problem problem_table[] = {
 	     "(size %Is, lblk %r)\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
+	/* Failed to convert subcluster bitmap */
+	{ PR_1_CONVERT_SUBCLUSTER,
+	  N_("Error converting subcluster @b @B: %m\n"),
+	  PROMPT_NONE, PR_FATAL },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
