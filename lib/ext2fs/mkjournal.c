@@ -232,10 +232,16 @@ static int mkjournal_proc(ext2_filsys	fs,
 		es->goal = *blocknr;
 		return 0;
 	}
-	retval = ext2fs_new_block2(fs, es->goal, 0, &new_blk);
-	if (retval) {
-		es->err = retval;
-		return BLOCK_ABORT;
+	if (blockcnt &&
+	    (EXT2FS_B2C(fs, es->goal) == EXT2FS_B2C(fs, es->goal+1)))
+		new_blk = es->goal+1;
+	else {
+		es->goal &= ~EXT2FS_CLUSTER_MASK(fs);
+		retval = ext2fs_new_block2(fs, es->goal, 0, &new_blk);
+		if (retval) {
+			es->err = retval;
+			return BLOCK_ABORT;
+		}
 	}
 	if (blockcnt >= 0)
 		es->num_blocks--;
