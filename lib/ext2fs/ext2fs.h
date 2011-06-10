@@ -686,6 +686,10 @@ extern errcode_t ext2fs_read_block_bitmap(ext2_filsys fs);
 extern errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 					      const char *descr,
 					      ext2fs_block_bitmap *ret);
+extern errcode_t ext2fs_allocate_subcluster_bitmap(ext2_filsys fs,
+						   const char *descr,
+						   ext2fs_block_bitmap *ret);
+extern int ext2fs_get_bitmap_granularity(ext2fs_block_bitmap bitmap);
 extern errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
 					      const char *descr,
 					      ext2fs_inode_bitmap *ret);
@@ -1118,6 +1122,8 @@ errcode_t ext2fs_get_generic_bmap_range(ext2fs_generic_bitmap bmap,
 errcode_t ext2fs_set_generic_bmap_range(ext2fs_generic_bitmap bmap,
 					__u64 start, unsigned int num,
 					void *in);
+errcode_t ext2fs_convert_subcluster_bitmap(ext2_filsys fs,
+					   ext2fs_block_bitmap *bitmap);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,

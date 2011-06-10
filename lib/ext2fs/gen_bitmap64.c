@@ -107,12 +107,14 @@ errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 	bitmap->end = end;
 	bitmap->real_end = real_end;
 	bitmap->bitmap_ops = ops;
+	bitmap->cluster_bits = 0;
 	switch (magic) {
 	case EXT2_ET_MAGIC_INODE_BITMAP64:
 		bitmap->base_error_code = EXT2_ET_BAD_INODE_MARK;
 		break;
 	case EXT2_ET_MAGIC_BLOCK_BITMAP64:
 		bitmap->base_error_code = EXT2_ET_BAD_BLOCK_MARK;
+		bitmap->cluster_bits = fs->cluster_ratio_bits;
 		break;
 	default:
 		bitmap->base_error_code = EXT2_ET_BAD_GENERIC_MARK;
@@ -315,6 +317,8 @@ int ext2fs_mark_generic_bmap(ext2fs_generic_bitmap bitmap,
 	if (!EXT2FS_IS_64_BITMAP(bitmap))
 		return 0;
 
+	arg >>= bitmap->cluster_bits;
+
 	if ((arg < bitmap->start) || (arg > bitmap->end)) {
 		warn_bitmap(bitmap, EXT2FS_MARK_ERROR, arg);
 		return 0;
@@ -341,6 +345,8 @@ int ext2fs_unmark_generic_bmap(ext2fs_generic_bitmap bitmap,
 	if (!EXT2FS_IS_64_BITMAP(bitmap))
 		return 0;
 
+	arg >>= bitmap->cluster_bits;
+
 	if ((arg < bitmap->start) || (arg > bitmap->end)) {
 		warn_bitmap(bitmap, EXT2FS_UNMARK_ERROR, arg);
 		return 0;
@@ -366,6 +372,8 @@ int ext2fs_test_generic_bmap(ext2fs_generic_bitmap bitmap,
 
 	if (!EXT2FS_IS_64_BITMAP(bitmap))
 		return 0;
+
+	arg >>= bitmap->cluster_bits;
 
 	if ((arg < bitmap->start) || (arg > bitmap->end)) {
 		warn_bitmap(bitmap, EXT2FS_TEST_ERROR, arg);
@@ -559,4 +567,47 @@ int ext2fs_warn_bitmap32(ext2fs_generic_bitmap bitmap, const char *func)
 		com_err(0, EXT2_ET_MAGIC_GENERIC_BITMAP,
 			"called %s with 64-bit bitmap", func);
 #endif
+}
+
+errcode_t ext2fs_convert_subcluster_bitmap(ext2_filsys fs,
+					   ext2fs_block_bitmap *bitmap)
+{
+	ext2fs_block_bitmap	cmap, bmap;
+	errcode_t		retval;
+	blk64_t			i, b_end, c_end;
+	int			n, ratio;
+
+	bmap = *bitmap;
+
+	if (fs->cluster_ratio_bits == ext2fs_get_bitmap_granularity(bmap))
+		return 0;	/* Nothing to do */
+
+	retval = ext2fs_allocate_block_bitmap(fs, "converted cluster bitmap",
+					      &cmap);
+	if (retval)
+		return retval;
+
+	i = bmap->start;
+	b_end = bmap->end;
+	bmap->end = bmap->real_end;
+	c_end = cmap->end;
+	cmap->end = cmap->real_end;
+	n = 0;
+	ratio = 1 << fs->cluster_ratio_bits;
+	while (i < bmap->real_end) {
+		if (ext2fs_test_block_bitmap2(bmap, i)) {
+			ext2fs_mark_block_bitmap2(cmap, i);
+			i += ratio - n;
+			n = 0;
+			continue;
+		}
+		i++; n++;
+		if (n >= ratio)
+			n = 0;
+	}
+	bmap->end = b_end;
+	cmap->end = c_end;
+	ext2fs_free_block_bitmap(bmap);
+	*bitmap = cmap;
+	return 0;
 }
