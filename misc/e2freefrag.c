@@ -144,7 +144,7 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info)
 	unsigned long total_chunks;
 	char *unitp = "KMGTPEZY";
 	int units = 10;
-	unsigned long start = 0, end, cum;
+	unsigned long start = 0, end;
 	int i, retval = 0;
 
 	scan_block_bitmap(fs, info);
@@ -218,7 +218,7 @@ void close_device(char *device_name, ext2_filsys fs)
 
 void collect_info(ext2_filsys fs, struct chunk_info *chunk_info)
 {
-	unsigned int retval = 0, i, free_blks;
+	unsigned int retval = 0;
 
 	printf("Device: %s\n", fs->device_name);
 	printf("Blocksize: %u bytes\n", fs->blocksize);

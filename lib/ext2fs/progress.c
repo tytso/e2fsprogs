@@ -77,8 +77,6 @@ void ext2fs_numeric_progress_close(ext2_filsys fs,
 				   struct ext2fs_numeric_progress_struct * progress,
 				   const char *message)
 {
-	unsigned int len;
-
 	if (!(fs->flags & EXT2_FLAG_PRINT_PROGRESS))
 		return;
 	fprintf(stdout, "%.*s", (2*progress->log_max)+1, spaces);

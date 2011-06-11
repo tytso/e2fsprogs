@@ -75,7 +75,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 
 	retval = ext2fs_get_array(2, fs->blocksize, &dindir_buf);
 	if (retval)
-		goto out_free;
+		return retval;
 	gdt_buf = (__u32 *)((char *)dindir_buf + fs->blocksize);
 
 	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);

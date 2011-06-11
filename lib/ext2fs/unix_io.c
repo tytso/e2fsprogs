@@ -17,7 +17,9 @@
 
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <stdio.h>
 #include <string.h>

@@ -430,12 +430,13 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 		return retval;
 	dirent = (struct ext2_dir_entry *) block_start;
 	prev_rec_len = 0;
+	rec_len = 0;
 	left = fs->blocksize;
 	slack = fd->compress ? 12 :
 		(fs->blocksize * ctx->htree_slack_percentage)/100;
 	if (slack < 12)
 		slack = 12;
-	for (i=0; i < fd->num_array; i++) {
+	for (i = 0; i < fd->num_array; i++) {
 		ent = fd->harray + i;
 		if (ent->dir->inode == 0)
 			continue;

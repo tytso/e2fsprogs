@@ -348,7 +348,6 @@ static void update_feature_set(ext2_filsys fs, char *features)
 {
 	struct ext2_super_block *sb = fs->super;
 	struct ext2_group_desc *gd;
-	errcode_t	retval;
 	__u32		old_features[3];
 	int		i, type_err;
 	unsigned int	mask_err;
@@ -992,7 +991,7 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 					"Extended mount options too long\n");
 				continue;
 			}
-			strcpy(fs->super->s_mount_opts, arg);
+			strcpy((char *)fs->super->s_mount_opts, arg);
 			ext2fs_mark_super_dirty(fs);
 		} else
 			r_usage++;
@@ -1097,7 +1096,7 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 {
 
 	char *buf;
-	dgrp_t group;
+	dgrp_t group = 0;
 	errcode_t retval;
 	int meta_data = 0;
 	blk64_t blk, new_blk, goal;

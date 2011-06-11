@@ -29,7 +29,9 @@
  * 			 list.  (Work done by David Beattie)
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* for O_DIRECT */
+#endif
 
 #ifndef O_LARGEFILE
 #define O_LARGEFILE 0

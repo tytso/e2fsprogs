@@ -377,7 +377,7 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 	truncate_block = ((size + file->fs->blocksize - 1) >>
 			  EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
 	old_size = file->inode.i_size +
-		((blk64_t) file->inode.i_size_high) << 32;
+		((blk64_t)file->inode.i_size_high << 32);
 	old_truncate = ((old_size + file->fs->blocksize - 1) >>
 		      EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
 

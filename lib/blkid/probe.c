@@ -248,7 +248,7 @@ static int linux_version_code()
 {
 #ifdef __linux__
 	struct utsname	ut;
-	static		version_code = -1;
+	static int	version_code = -1;
 	int		major, minor, rev;
 	char		*endptr;
 	const char 	*cp;
@@ -1175,7 +1175,7 @@ static int probe_hfs(struct blkid_probe *probe __BLKID_ATTR((unused)),
 		sprintf(uuid_str, "%016llX", uuid);
 		blkid_set_tag(probe->dev, "UUID", uuid_str, 0);
 	}
-	blkid_set_tag(probe->dev, "LABEL", hfs->label, hfs->label_len);
+	blkid_set_tag(probe->dev, "LABEL", (char *)hfs->label, hfs->label_len);
 	return 0;
 }
 
@@ -1296,7 +1296,8 @@ static int probe_hfsplus(struct blkid_probe *probe,
 		return 0;
 
 	label_len = blkid_be16(key->unicode_len) * 2;
-	unicode_16be_to_utf8(label, sizeof(label), key->unicode, label_len);
+	unicode_16be_to_utf8((unsigned char *)label, sizeof(label),
+			     key->unicode, label_len);
 	blkid_set_tag(probe->dev, "LABEL", label, 0);
 	return 0;
 }

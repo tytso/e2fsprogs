@@ -77,7 +77,6 @@ static void e2fsck_discard_blocks(e2fsck_t ctx, io_manager manager,
 				  blk64_t start, blk64_t count)
 {
 	ext2_filsys fs = ctx->fs;
-	int ret = 0;
 
 	/*
 	 * If the filesystem has changed it means that there was an corruption

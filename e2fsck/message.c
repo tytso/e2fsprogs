@@ -263,7 +263,6 @@ static _INLINE_ void expand_inode_expression(ext2_filsys fs, char ch,
 {
 	struct ext2_inode	*inode;
 	struct ext2_inode_large	*large_inode;
-	time_t			t;
 
 	if (!ctx || !ctx->inode)
 		goto no_inode;

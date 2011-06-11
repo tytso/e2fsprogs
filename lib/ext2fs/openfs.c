@@ -365,7 +365,6 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	 */
 	if (superblock > 1 && EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
-		struct ext2_group_desc *gd;
 		dgrp_t group;
 
 		for (group = 0; group < fs->group_desc_count; group++) {

@@ -855,7 +855,7 @@ void do_stat(int argc, char *argv[])
 	return;
 }
 
-void do_dump_extents(int argc, char *argv[])
+void do_dump_extents(int argc, char **argv)
 {
 	struct ext2_inode inode;
 	ext2_ino_t	ino;
@@ -876,8 +876,7 @@ void do_dump_extents(int argc, char *argv[])
 		}
 	}
 
-	if (argc != optind+1) {
-	print_usage:
+	if (argc != optind + 1) {
 		com_err(0, 0, "Usage: dump_extents [-n] [-l] file");
 		return;
 	}

@@ -383,7 +383,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		tm = sb->s_first_error_time;
 		fprintf(f, "First error time:         %s", ctime(&tm));
 		memset(buf, 0, sizeof(buf));
-		strncpy(buf, sb->s_first_error_func,
+		strncpy(buf, (char *)sb->s_first_error_func,
 			sizeof(sb->s_first_error_func));
 		fprintf(f, "First error function:     %s\n", buf);
 		fprintf(f, "First error line #:       %u\n",
@@ -397,7 +397,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		tm = sb->s_last_error_time;
 		fprintf(f, "Last error time:          %s", ctime(&tm));
 		memset(buf, 0, sizeof(buf));
-		strncpy(buf, sb->s_last_error_func,
+		strncpy(buf, (char *)sb->s_last_error_func,
 			sizeof(sb->s_last_error_func));
 		fprintf(f, "Last error function:      %s\n", buf);
 		fprintf(f, "Last error line #:        %u\n",

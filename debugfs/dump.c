@@ -5,7 +5,9 @@
  * under the terms of the GNU Public License.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* for O_LARGEFILE */
+#endif
 
 #include <stdio.h>
 #include <unistd.h>

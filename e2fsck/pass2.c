@@ -404,7 +404,8 @@ static int check_dotdot(e2fsck_t ctx,
 			struct ext2_dir_entry *dirent,
 			ext2_ino_t ino, struct problem_context *pctx)
 {
-	int	rec_len, problem = 0;
+	int		problem = 0;
+	unsigned int	rec_len;
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;

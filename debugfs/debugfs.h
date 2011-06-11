@@ -103,6 +103,7 @@ extern void do_unlink(int argc, char **argv);
 extern void do_find_free_block(int argc, char **argv);
 extern void do_find_free_inode(int argc, char **argv);
 extern void do_stat(int argc, char **argv);
+extern void do_dump_extents(int argc, char **argv);
 
 extern void do_chroot(int argc, char **argv);
 extern void do_clri(int argc, char **argv);

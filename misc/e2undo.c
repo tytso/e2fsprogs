@@ -29,12 +29,11 @@ unsigned char blksize_key[] = "filesystem BLKSIZE";
 
 char *prg_name;
 
-static void usage(char *prg_name)
+static void usage(void)
 {
 	fprintf(stderr,
 		_("Usage: %s <transaction file> <filesystem>\n"), prg_name);
 	exit(1);
-
 }
 
 static int check_filesystem(TDB_CONTEXT *tdb, io_channel channel)
@@ -145,12 +144,12 @@ int main(int argc, char *argv[])
 				force = 1;
 				break;
 			default:
-				usage(prg_name);
+				usage();
 		}
 	}
 
-	if (argc != optind+2)
-		usage(prg_name);
+	if (argc != optind + 2)
+		usage();
 
 	tdb_file = argv[optind];
 	device_name = argv[optind+1];

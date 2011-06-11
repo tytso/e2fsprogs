@@ -404,7 +404,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_dir_entry 	*dirent;
 	const char		*old_op;
 	errcode_t		retval;
-	blk64_t			blk, first_dir_blk;
+	blk64_t			blk;
 	unsigned int		i, rec_len, not_device = 0;
 	int			extent_fs;
 
@@ -436,7 +436,8 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	 * with it.
 	 */
 
-	extent_fs = (ctx->fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS);
+	extent_fs = (ctx->fs->super->s_feature_incompat &
+		     EXT3_FEATURE_INCOMPAT_EXTENTS);
 	if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) {
 		/* extent mapped */
 		if  (ext2fs_bmap2(ctx->fs, pctx->ino, inode, 0, 0, 0, 0,

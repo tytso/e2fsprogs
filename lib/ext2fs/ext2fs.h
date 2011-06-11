@@ -1414,7 +1414,8 @@ _INLINE_ errcode_t ext2fs_get_memalign(unsigned long size,
 
 	if (align == 0)
 		align = 8;
-	if (retval = posix_memalign((void **) ptr, align, size)) {
+	retval = posix_memalign((void **) ptr, align, size);
+	if (retval) {
 		if (retval == ENOMEM)
 			return EXT2_ET_NO_MEMORY;
 		return retval;
