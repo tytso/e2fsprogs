@@ -474,8 +474,10 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
 	if (flags & IO_FLAG_EXCLUSIVE)
 		open_flags |= O_EXCL;
+#ifdef O_DIRECT
 	if (flags & IO_FLAG_DIRECT_IO)
 		open_flags |= O_DIRECT;
+#endif
 	data->flags = flags;
 
 #ifdef HAVE_OPEN64
