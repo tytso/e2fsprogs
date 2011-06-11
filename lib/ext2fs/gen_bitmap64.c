@@ -556,7 +556,7 @@ void ext2fs_unmark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 	bmap->bitmap_ops->unmark_bmap_extent(bmap, block, num);
 }
 
-int ext2fs_warn_bitmap32(ext2fs_generic_bitmap bitmap, const char *func)
+void ext2fs_warn_bitmap32(ext2fs_generic_bitmap bitmap, const char *func)
 {
 #ifndef OMIT_COM_ERR
 	if (bitmap && bitmap->description)
