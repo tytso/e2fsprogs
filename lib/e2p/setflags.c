@@ -38,7 +38,6 @@
 
 int setflags (int fd, unsigned long flags)
 {
-	struct stat buf;
 #if HAVE_CHFLAGS
 	unsigned long bsd_flags = 0;
 
@@ -58,6 +57,7 @@ int setflags (int fd, unsigned long flags)
 	return fchflags (fd, bsd_flags);
 #else
 #if HAVE_EXT2_IOCTLS
+	struct stat buf;
 	int	f;
 
 	if (!fstat(fd, &buf) &&
@@ -66,7 +66,8 @@ int setflags (int fd, unsigned long flags)
 		return -1;
 	}
 	f = (int) flags;
-	return ioctl (fd, EXT2_IOC_SETFLAGS, &f);
+
+	return ioctl(fd, EXT2_IOC_SETFLAGS, &f);
 #endif /* HAVE_EXT2_IOCTLS */
 #endif
 	errno = EOPNOTSUPP;

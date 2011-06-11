@@ -235,7 +235,7 @@ errcode_t ext2fs_get_device_size2(const char *file, int blocksize,
 #endif /* HAVE_SYS_DISKLABEL_H */
 
 	{
-#ifdef HAVE_FSTAT64
+#if defined(HAVE_FSTAT64) && !defined(__OSX__)
 		struct stat64   st;
 		if (fstat64(fd, &st) == 0)
 #else
