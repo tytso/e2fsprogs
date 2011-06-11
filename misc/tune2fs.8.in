@@ -491,6 +491,9 @@ The following filesystem features can be set or cleared using
 .B dir_index
 Use hashed b-trees to speed up lookups in large directories.
 .TP
+.B dir_nlink
+Allow more than 65000 subdirectories per directory.
+.TP
 .B filetype
 Store file type information in directory entries.
 .TP
