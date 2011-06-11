@@ -45,7 +45,7 @@ echo Exit status is $status >> $OUT
 # Do the verification
 #
 
-rm -f $test_name.ok $test_name.failed $VERIFY_DATA $TEST_DATA $TMPFILE
+rm -f $test_name.ok $test_name.failed $VERIFY_DATA $TEST_DATA $TMPFILE $OUT.new
 cmp -s $OUT $EXP
 status=$?
 
