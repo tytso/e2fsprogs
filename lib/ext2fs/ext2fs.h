@@ -204,10 +204,9 @@ typedef struct ext2_file *ext2_file_t;
 
 /*
  * Flags for mkjournal
- *
- * EXT2_MKJOURNAL_V1_SUPER	Make a (deprecated) V1 journal superblock
  */
-#define EXT2_MKJOURNAL_V1_SUPER	0x0000001
+#define EXT2_MKJOURNAL_V1_SUPER	0x0000001 /* create V1 superblock (deprecated) */
+#define EXT2_MKJOURNAL_LAZYINIT	0x0000002 /* don't zero journal inode before use*/
 
 struct opaque_ext2_group_desc;
 

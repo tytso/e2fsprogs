@@ -503,6 +503,10 @@ static void create_journal_dev(ext2_filsys fs)
 			_("while initializing journal superblock"));
 		exit(1);
 	}
+
+	if (journal_flags & EXT2_MKJOURNAL_LAZYINIT)
+		goto write_superblock;
+
 	ext2fs_numeric_progress_init(fs, &progress,
 				     _("Zeroing journal device: "),
 				     ext2fs_blocks_count(fs->super));
@@ -527,6 +531,8 @@ static void create_journal_dev(ext2_filsys fs)
 	}
 	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
 
+	ext2fs_numeric_progress_close(fs, &progress, NULL);
+write_superblock:
 	retval = io_channel_write_blk64(fs->io,
 					fs->super->s_first_data_block+1,
 					1, buf);
@@ -535,7 +541,6 @@ static void create_journal_dev(ext2_filsys fs)
 			_("while writing journal superblock"));
 		exit(1);
 	}
-	ext2fs_numeric_progress_close(fs, &progress, NULL);
 }
 
 static void show_stats(ext2_filsys fs)
@@ -762,6 +767,12 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				lazy_itable_init = strtoul(arg, &p, 0);
 			else
 				lazy_itable_init = 1;
+		} else if (!strcmp(token, "lazy_journal_init")) {
+			if (arg)
+				journal_flags |= strtoul(arg, &p, 0) ?
+						EXT2_MKJOURNAL_LAZYINIT : 0;
+			else
+				journal_flags |= EXT2_MKJOURNAL_LAZYINIT;
 		} else if (!strcmp(token, "discard")) {
 			discard = 1;
 		} else if (!strcmp(token, "nodiscard")) {
@@ -781,6 +792,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
 			"\tresize=<resize maximum size in blocks>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
+			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n\n"),
@@ -1821,6 +1833,9 @@ profile_error:
 						 "lazy_itable_init",
 						 lazy_itable_init);
 	discard = get_bool_from_profile(fs_types, "discard" , discard);
+	journal_flags |= get_bool_from_profile(fs_types,
+					       "lazy_journal_init", 0) ?
+					       EXT2_MKJOURNAL_LAZYINIT : 0;
 
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {
