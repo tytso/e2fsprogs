@@ -29,6 +29,10 @@ extern "C" {
 #define NO_INLINE_FUNCS
 #endif
 
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 600	/* for posix_memalign() */
+#endif
+
 /*
  * Where the master copy of the superblock is located, and how big
  * superblocks are supposed to be.  We define SUPERBLOCK_SIZE because
@@ -37,7 +41,7 @@ extern "C" {
  * 1032 bytes long).
  */
 #define SUPERBLOCK_OFFSET	1024
-#define SUPERBLOCK_SIZE 	1024
+#define SUPERBLOCK_SIZE		1024
 
 /*
  * The last ext2fs revision level that this version of the library is
@@ -53,6 +57,13 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+
+#ifndef __USE_XOPEN2K
+/* If the "#define _XOPEN_SOURCE 600" didn't succeed in declaring
+ * posix_memalign(), maybe due to <features.h> or <stdlib.h> included beforej
+ * _XOPEN_SOURCE, declare it here to avoid compiler warnings. */
+extern int posix_memalign(void **__memptr, size_t __alignment, size_t __size);
+#endif
 
 #if EXT2_FLAT_INCLUDES
 #include "e2_types.h"
