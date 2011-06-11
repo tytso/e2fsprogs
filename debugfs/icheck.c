@@ -106,13 +106,15 @@ void do_icheck(int argc, char **argv)
 	}
 
 	while (ino) {
+		blk64_t blk;
+
 		if (!inode.i_links_count)
 			goto next;
 
 		bw.inode = ino;
 
-		if (ext2fs_file_acl_block(&inode)) {
-			blk64_t blk;
+		blk = ext2fs_file_acl_block(&inode);
+		if (blk) {
 			icheck_proc(current_fs, &blk, 0,
 				    0, 0, &bw);
 			if (bw.blocks_left == 0)
