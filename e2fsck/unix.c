@@ -1374,7 +1374,8 @@ print_unsupp_features:
 	 * find the default journal size.
 	 */
 	if (sb->s_jnl_backup_type == EXT3_JNL_BACKUP_BLOCKS)
-		journal_size = sb->s_jnl_blocks[16] >> 20;
+		journal_size = (sb->s_jnl_blocks[15] << (32 - 20)) |
+			       (sb->s_jnl_blocks[16] >> 20);
 	else
 		journal_size = -1;
 

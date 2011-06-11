@@ -83,16 +83,16 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 		sb->s_hash_seed[i] = ext2fs_swab32(sb->s_hash_seed[i]);
 
 	/* if journal backup is for a valid extent-based journal... */
-	if (!ext2fs_extent_header_verify(sb->s_jnl_blocks,
-					 sizeof(sb->s_jnl_blocks))) {
-		/* ... swap only the journal i_size */
-		sb->s_jnl_blocks[16] = ext2fs_swab32(sb->s_jnl_blocks[16]);
-		/* and the extent data is not swapped on read */
-		return;
+	if (ext2fs_extent_header_verify(sb->s_jnl_blocks,
+					sizeof(sb->s_jnl_blocks)) == 0) {
+		/* ... swap only the journal i_size and i_size_high,
+		 * and the extent data is not swapped on read */
+		i = 15;
+	} else {
+		/* direct/indirect journal: swap it all */
+		i = 0;
 	}
-
-	/* direct/indirect journal: swap it all */
-	for (i=0; i < 17; i++)
+	for (; i < 17; i++)
 		sb->s_jnl_blocks[i] = ext2fs_swab32(sb->s_jnl_blocks[i]);
 }
 

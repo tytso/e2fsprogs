@@ -1879,6 +1879,7 @@ static errcode_t fix_sb_journal_backup(ext2_filsys fs)
 	if (retval)
 		return retval;
 	memcpy(fs->super->s_jnl_blocks, inode.i_block, EXT2_N_BLOCKS*4);
+	fs->super->s_jnl_blocks[15] = inode.i_size_high;
 	fs->super->s_jnl_blocks[16] = inode.i_size;
 	fs->super->s_jnl_backup_type = EXT3_JNL_BACKUP_BLOCKS;
 	ext2fs_mark_super_dirty(fs);

@@ -209,6 +209,7 @@ void do_logdump(int argc, char **argv)
 			memset(&journal_inode, 0, sizeof(struct ext2_inode));
 			memcpy(&journal_inode.i_block[0], es->s_jnl_blocks,
 			       EXT2_N_BLOCKS*4);
+			journal_inode.i_size_high = es->s_jnl_blocks[15];
 			journal_inode.i_size = es->s_jnl_blocks[16];
 			journal_inode.i_links_count = 1;
 			journal_inode.i_mode = LINUX_S_IFREG | 0600;

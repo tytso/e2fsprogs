@@ -288,6 +288,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			memset(&j_inode->i_ext2, 0, sizeof(struct ext2_inode));
 			memcpy(&j_inode->i_ext2.i_block[0], sb->s_jnl_blocks,
 			       EXT2_N_BLOCKS*4);
+			j_inode->i_ext2.i_size_high = sb->s_jnl_blocks[15];
 			j_inode->i_ext2.i_size = sb->s_jnl_blocks[16];
 			j_inode->i_ext2.i_links_count = 1;
 			j_inode->i_ext2.i_mode = LINUX_S_IFREG | 0600;
@@ -301,7 +302,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			retval = EXT2_ET_NO_JOURNAL;
 			goto try_backup_journal;
 		}
-		if (j_inode->i_ext2.i_size / journal->j_blocksize <
+		if (EXT2_I_SIZE(&j_inode->i_ext2) / journal->j_blocksize <
 		    JFS_MIN_JOURNAL_BLOCKS) {
 			retval = EXT2_ET_JOURNAL_TOO_SMALL;
 			goto try_backup_journal;
@@ -310,8 +311,8 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 		retval = ext2fs_block_iterate3(ctx->fs, j_inode->i_ino,
 					       BLOCK_FLAG_HOLE, 0,
 					       process_journal_block, &pb);
-		if ((pb.last_block+1) * ctx->fs->blocksize <
-		    j_inode->i_ext2.i_size) {
+		if ((pb.last_block + 1) * ctx->fs->blocksize <
+		    EXT2_I_SIZE(&j_inode->i_ext2)) {
 			retval = EXT2_ET_JOURNAL_TOO_SMALL;
 			goto try_backup_journal;
 		}
@@ -322,7 +323,8 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 				goto errout;
 		}
 
-		journal->j_maxlen = j_inode->i_ext2.i_size / journal->j_blocksize;
+		journal->j_maxlen = EXT2_I_SIZE(&j_inode->i_ext2) /
+			journal->j_blocksize;
 
 #ifdef USE_INODE_IO
 		retval = ext2fs_inode_io_intern2(ctx->fs, sb->s_journal_inum,
@@ -943,6 +945,7 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 		if (fix_problem(ctx, PR_0_BACKUP_JNL, &pctx)) {
 			memcpy(sb->s_jnl_blocks, inode.i_block,
 			       EXT2_N_BLOCKS*4);
+			sb->s_jnl_blocks[15] = inode.i_size_high;
 			sb->s_jnl_blocks[16] = inode.i_size;
 			sb->s_jnl_backup_type = EXT3_JNL_BACKUP_BLOCKS;
 			ext2fs_mark_super_dirty(fs);

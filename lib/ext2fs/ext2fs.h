@@ -1273,15 +1273,15 @@ extern errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum
 extern errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 				    blk_t *ret_blk, int *ret_count);
 extern errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
-				     blk64_t *ret_blk, int *ret_count); 
+				     blk64_t *ret_blk, int *ret_count);
 extern errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
-						  __u32 size, int flags,
+						  __u32 num_blocks, int flags,
 						  char  **ret_jsb);
 extern errcode_t ext2fs_add_journal_device(ext2_filsys fs,
 					   ext2_filsys journal_dev);
-extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size,
+extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks,
 					  int flags);
-extern int ext2fs_default_journal_size(__u64 blocks);
+extern int ext2fs_default_journal_size(__u64 num_blocks);
 
 /* openfs.c */
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
