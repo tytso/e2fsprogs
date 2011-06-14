@@ -65,7 +65,7 @@ file.  They will be described in more detail in future sections of this
 document.
 .TP 
 .I [defaults]
-Contains relations which define the default parameters 
+Contains relations which define the default parameters
 used by
 .BR mke2fs (8).
 In general, these defaults may be overridden by a definition in the
@@ -395,6 +395,20 @@ on a per-filesystem type basis.
 This relation is a boolean which specifies whether the
 .BR mke2fs (8)
 should attempt to discard device prior to filesystem creation.
+.SH THE [devices] STANZA
+Each tag in the
+.I [devices] 
+stanza names device name so that per-device defaults can be specified.
+.TP
+.I fs_type
+This relation specifies the default parameter for the
+.B \-t
+option, if this option isn't specified on the command line.
+.TP
+.I usage_types
+This relation specifies the default parameter for the
+.B \-T
+option, if this option isn't specified on the command line.
 .SH FILES
 .TP
 .I /etc/mke2fs.conf

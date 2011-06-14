@@ -1190,8 +1190,8 @@ static void PRS(int argc, char *argv[])
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
 	char *		extended_opts = 0;
-	const char *	fs_type = 0;
-	const char *	usage_types = 0;
+	char *		fs_type = 0;
+	char *		usage_types = 0;
 	blk64_t		dev_size;
 	blk64_t		fs_blocks_count = 0;
 #ifdef __linux__
@@ -1448,10 +1448,10 @@ profile_error:
 			super_only = 1;
 			break;
 		case 't':
-			fs_type = optarg;
+			fs_type = strdup(optarg);
 			break;
 		case 'T':
-			usage_types = optarg;
+			usage_types = strdup(optarg);
 			break;
 		case 'U':
 			fs_uuid = optarg;
@@ -1588,6 +1588,13 @@ profile_error:
 			_("Filesystem larger than apparent device size."));
 		proceed_question();
 	}
+
+	if (!fs_type)
+		profile_get_string(profile, "devices", device_name,
+				   "fs_type", 0, &fs_type);
+	if (!usage_types)
+		profile_get_string(profile, "devices", device_name,
+				   "usage_types", 0, &usage_types);
 
 	/*
 	 * We have the file system (or device) size, so we can now
@@ -1946,6 +1953,9 @@ profile_error:
 	 */
 	ext2fs_r_blocks_count_set(&fs_param, reserved_ratio *
 				  ext2fs_blocks_count(&fs_param) / 100.0);
+
+	free(fs_type);
+	free(usage_types);
 }
 
 static int should_do_undo(const char *name)
