@@ -1177,7 +1177,7 @@ out:
 static void PRS(int argc, char *argv[])
 {
 	int		b, c;
-	int		size;
+	int		cluster_size = 0;
 	char 		*tmp, **cpp;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
@@ -1305,16 +1305,14 @@ profile_error:
 			cflag++;
 			break;
 		case 'C':
-			size = strtoul(optarg, &tmp, 0);
-			if (size < EXT2_MIN_CLUSTER_SIZE ||
-			    size > EXT2_MAX_CLUSTER_SIZE || *tmp) {
+			cluster_size = strtoul(optarg, &tmp, 0);
+			if (cluster_size < EXT2_MIN_CLUSTER_SIZE ||
+			    cluster_size > EXT2_MAX_CLUSTER_SIZE || *tmp) {
 				com_err(program_name, 0,
 					_("invalid fragment size - %s"),
 					optarg);
 				exit(1);
 			}
-			fs_param.s_log_cluster_size =
-				int_log2(size >> EXT2_MIN_CLUSTER_LOG_SIZE);
 			break;
 		case 'g':
 			fs_param.s_blocks_per_group = strtoul(optarg, &tmp, 0);
@@ -1801,9 +1799,12 @@ profile_error:
 	fs_param.s_log_block_size =
 		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) {
-		if (fs_param.s_log_cluster_size == 0)
-			fs_param.s_log_cluster_size =
-				fs_param.s_log_block_size + 4;
+		if (!cluster_size)
+			cluster_size = get_int_from_profile(fs_types,
+							    "cluster_size",
+							    blocksize*4);
+		fs_param.s_log_cluster_size =
+			int_log2(cluster_size >> EXT2_MIN_CLUSTER_LOG_SIZE);
 	} else
 		fs_param.s_log_cluster_size = fs_param.s_log_block_size;
 
