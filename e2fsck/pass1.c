@@ -1804,8 +1804,10 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			      (EXT2FS_B2C(ctx->fs, blk) ==
 			       EXT2FS_B2C(ctx->fs, pb->previous_block)) &&
 			      (blk & EXT2FS_CLUSTER_MASK(ctx->fs)) ==
-			      (blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs))))
+			      (blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
 				mark_block_used(ctx, blk);
+				pb->num_blocks++;
+			}
 
 			pb->previous_block = blk;
 
@@ -1824,7 +1826,6 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		if (is_dir && extent.e_len > 0)
 			pb->last_db_block = blockcnt - 1;
-		pb->num_blocks += extent.e_len;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
 		start_block = pb->last_block = extent.e_lblk + extent.e_len - 1;
 	next:
@@ -1981,8 +1982,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ||
 	    !(inode->i_flags & EXT4_HUGE_FILE_FL))
 		pb.num_blocks *= (fs->blocksize / 512);
+	pb.num_blocks *= EXT2FS_CLUSTER_RATIO(fs);
 #if 0
-	printf("inode %u, i_size = %lu, last_block = %lld, i_blocks=%lu, num_blocks = %lu\n",
+	printf("inode %u, i_size = %u, last_block = %lld, i_blocks=%llu, num_blocks = %llu\n",
 	       ino, inode->i_size, pb.last_block, ext2fs_inode_i_blocks(fs, inode),
 	       pb.num_blocks);
 #endif

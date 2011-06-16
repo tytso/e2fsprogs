@@ -249,11 +249,11 @@ static int mkjournal_proc(ext2_filsys	fs,
 			es->err = retval;
 			return BLOCK_ABORT;
 		}
+		es->newblocks++;
 	}
 	if (blockcnt >= 0)
 		es->num_blocks--;
 
-	es->newblocks++;
 	retval = 0;
 	if (blockcnt <= 0)
 		retval = io_channel_write_blk64(fs->io, new_blk, 1, es->buf);
