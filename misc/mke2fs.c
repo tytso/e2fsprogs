@@ -1802,7 +1802,7 @@ profile_error:
 		if (!cluster_size)
 			cluster_size = get_int_from_profile(fs_types,
 							    "cluster_size",
-							    blocksize*4);
+							    blocksize*16);
 		fs_param.s_log_cluster_size =
 			int_log2(cluster_size >> EXT2_MIN_CLUSTER_LOG_SIZE);
 	} else
