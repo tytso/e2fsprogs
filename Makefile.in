@@ -140,5 +140,5 @@ distclean-local: clean-local
 realclean-local: distclean-local
 	$(RM) -f configure
 
-check::	subs check-recursive
+check::	all check-recursive
 
