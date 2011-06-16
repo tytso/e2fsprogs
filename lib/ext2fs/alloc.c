@@ -258,7 +258,7 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 errcode_t ext2fs_get_free_blocks2(ext2_filsys fs, blk64_t start, blk64_t finish,
 				 int num, ext2fs_block_bitmap map, blk64_t *ret)
 {
-	blk64_t	b = start, c = 0;
+	blk64_t	b = start;
 	int	c_ratio;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);

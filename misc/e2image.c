@@ -92,7 +92,6 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 {
 	int count, free_buf = 0;
 	errcode_t err;
-	blk64_t offset;
 
 	if (!blocksize)
 		return;
@@ -128,7 +127,7 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 static void write_header(int fd, void *hdr, int hdr_size, int wrt_size)
 {
 	char *header_buf;
-	int actual, ret;
+	int ret;
 
 	/* Sanity check */
 	if (hdr_size > wrt_size) {
@@ -712,8 +711,6 @@ static int initialize_qcow2_image(int fd, ext2_filsys fs,
 
 static void free_qcow2_image(struct ext2_qcow2_image *img)
 {
-	unsigned int i;
-
 	if (!img)
 		return;
 
@@ -910,14 +907,10 @@ static int sync_refcount(int fd, struct ext2_qcow2_image *img)
 static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 {
 	errcode_t		retval;
-	blk64_t			blk, datablk, offset, size, actual, end;
+	blk64_t			blk, offset, size, end;
 	char			*buf;
-	int			sparse = 0;
 	struct ext2_qcow2_image	*img;
-	unsigned int		header_size, i;
-	blk64_t			l1_index, l2_offset, l2_index;
-	char			*buffer;
-	__u64			*l2_table;
+	unsigned int		header_size;
 
 	/* allocate  struct ext2_qcow2_image */
 	retval = ext2fs_get_mem(sizeof(struct ext2_qcow2_image), &img);

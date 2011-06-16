@@ -2110,7 +2110,7 @@ static int mke2fs_discard_device(ext2_filsys fs)
 	return retval;
 }
 
-static fix_cluster_bg_counts(ext2_filsys fs)
+static void fix_cluster_bg_counts(ext2_filsys fs)
 {
 	blk64_t	cluster, num_clusters, tot_free;
 	int	grp_free, num_free, group, num;
