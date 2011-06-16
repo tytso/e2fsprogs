@@ -212,10 +212,12 @@ struct e2fsck_struct {
 	char *io_options;
 	int	flags;		/* E2fsck internal flags */
 	int	options;
+	int	blocksize;	/* blocksize */
 	blk64_t	use_superblock;	/* sb requested by user */
 	blk64_t	superblock;	/* sb used to open fs */
-	int	blocksize;	/* blocksize */
 	blk64_t	num_blocks;	/* Total number of blocks */
+	blk64_t free_blocks;
+	ino_t	free_inodes;
 	int	mount_flags;
 	blkid_cache blkid;	/* blkid cache */
 

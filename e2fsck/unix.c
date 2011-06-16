@@ -287,6 +287,7 @@ static int is_on_batt(void)
 static void check_if_skip(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
+	struct problem_context pctx;
 	const char *reason = NULL;
 	unsigned int reason_arg = 0;
 	long next_check;
@@ -349,6 +350,36 @@ static void check_if_skip(e2fsck_t ctx)
 		fputs(_(", check forced.\n"), stdout);
 		return;
 	}
+
+	/*
+	 * Update the global counts from the block group counts.  This
+	 * is needed since modern kernels don't update the global
+	 * counts so as to avoid locking the entire file system.  So
+	 * if the filesystem is not unmounted cleanly, the global
+	 * counts may not be accurate.  Update them here if we can,
+	 * for the benefit of users who might examine the file system
+	 * using dumpe2fs.  (This is for cosmetic reasons only.)
+	 */
+	clear_problem_context(&pctx);
+	pctx.ino = fs->super->s_free_inodes_count;
+	pctx.ino2 = ctx->free_inodes;
+	if ((pctx.ino != pctx.ino2) &&
+	    !(ctx->options & E2F_OPT_READONLY) &&
+	    fix_problem(ctx, PR_0_FREE_INODE_COUNT, &pctx)) {
+		fs->super->s_free_inodes_count = ctx->free_inodes;
+		ext2fs_mark_super_dirty(fs);
+	}
+	clear_problem_context(&pctx);
+	pctx.blk = ext2fs_free_blocks_count(fs->super);
+	pctx.blk2 = ctx->free_blocks;
+	if ((pctx.blk != pctx.blk2) &&
+	    !(ctx->options & E2F_OPT_READONLY) &&
+	    fix_problem(ctx, PR_0_FREE_BLOCK_COUNT, &pctx)) {
+		ext2fs_free_blocks_count_set(fs->super, ctx->free_blocks);
+		ext2fs_mark_super_dirty(fs);
+	}
+
+	/* Print the summary message when we're skipping a full check */
 	printf(_("%s: clean, %u/%u files, %llu/%llu blocks"), ctx->device_name,
 	       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
 	       fs->super->s_inodes_count,

@@ -690,23 +690,8 @@ void check_super_block(e2fsck_t ctx)
 			return;
 	}
 
-	/*
-	 * Update the global counts from the block group counts.  This
-	 * is needed for an experimental patch which eliminates
-	 * locking the entire filesystem when allocating blocks or
-	 * inodes; if the filesystem is not unmounted cleanly, the
-	 * global counts may not be accurate.
-	 */
-	if ((free_blocks != ext2fs_free_blocks_count(sb)) ||
-	    (free_inodes != sb->s_free_inodes_count)) {
-		if (ctx->options & E2F_OPT_READONLY)
-			ext2fs_unmark_valid(fs);
-		else {
-			ext2fs_free_blocks_count_set(sb, free_blocks);
-			sb->s_free_inodes_count = free_inodes;
-			ext2fs_mark_super_dirty(fs);
-		}
-	}
+	ctx->free_blocks = free_blocks;
+	ctx->free_inodes = free_inodes;
 
 	if ((ext2fs_free_blocks_count(sb) > ext2fs_blocks_count(sb)) ||
 	    (sb->s_free_inodes_count > sb->s_inodes_count))

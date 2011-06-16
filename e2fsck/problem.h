@@ -227,6 +227,12 @@ struct problem_context {
 /* Block group checksum (latch question) */
 #define PR_0_GDT_CSUM_LATCH			0x00003E
 
+/* Free inodes count wrong */
+#define PR_0_FREE_INODE_COUNT			0x00003F
+
+/* Free blocks count wrong */
+#define PR_0_FREE_BLOCK_COUNT			0x000040
+
 
 /*
  * Pass 1 errors

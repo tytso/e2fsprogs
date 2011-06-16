@@ -402,6 +402,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("One or more @b @g descriptor checksums are invalid.  "),
 	     PROMPT_FIX, PR_PREEN_OK },
 
+	/* Free inodes count wrong */
+	{ PR_0_FREE_INODE_COUNT,
+	  N_("Setting free @is count to %j (was %i)\n"),
+	  PROMPT_NONE, PR_PREEN_NOMSG },
+
+	/* Free blocks count wrong */
+	{ PR_0_FREE_BLOCK_COUNT,
+	  N_("Setting free @bs count to %c (was %b)\n"),
+	  PROMPT_NONE, PR_PREEN_NOMSG },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
