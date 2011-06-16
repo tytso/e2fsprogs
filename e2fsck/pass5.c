@@ -401,6 +401,7 @@ redo_counts:
 				ext2fs_unmark_valid(fs);
 		}
 	}
+	free_blocks = EXT2FS_C2B(fs, free_blocks);
 	if (free_blocks != ext2fs_free_blocks_count(fs->super)) {
 		pctx.group = 0;
 		pctx.blk = ext2fs_free_blocks_count(fs->super);

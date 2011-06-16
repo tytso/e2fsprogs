@@ -265,7 +265,7 @@ static int release_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
 	group = ext2fs_group_of_blk2(fs, block);
 	ext2fs_bg_free_blocks_count_set(fs, group, ext2fs_bg_free_blocks_count(fs, group) + 1);
 	ext2fs_group_desc_csum_set(fs, group);
-	ext2fs_free_blocks_count_add(fs->super, 1);
+	ext2fs_free_blocks_count_add(fs->super, EXT2FS_CLUSTER_RATIO(fs));
 	return 0;
 }
 
@@ -1402,6 +1402,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 			group_free = 0;
 		}
 	}
+	total_free = EXT2FS_C2B(fs, total_free);
 	ext2fs_free_blocks_count_set(fs->super, total_free);
 
 	/*

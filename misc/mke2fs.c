@@ -2134,7 +2134,7 @@ static void fix_cluster_bg_counts(ext2_filsys fs)
 			group++;
 		}
 	}
-	ext2fs_free_blocks_count_set(fs->super, tot_free);
+	ext2fs_free_blocks_count_set(fs->super, EXT2FS_C2B(fs, tot_free));
 }
 
 int main (int argc, char *argv[])

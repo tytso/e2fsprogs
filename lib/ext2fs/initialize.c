@@ -91,6 +91,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	unsigned int	overhead = 0;
 	unsigned int	ipg;
 	dgrp_t		i;
+	blk64_t		free_blocks;
 	blk_t		numblocks;
 	int		rsv_gdt;
 	int		csum_flag;
@@ -431,7 +432,7 @@ ipg_retry:
 	 * superblock and group descriptors (the inode tables and
 	 * bitmaps will be accounted for when allocated).
 	 */
-	ext2fs_free_blocks_count_set(super, 0);
+	free_blocks = 0;
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 	for (i = 0; i < fs->group_desc_count; i++) {
@@ -453,14 +454,14 @@ ipg_retry:
 		if (fs->super->s_log_groups_per_flex)
 			numblocks += 2 + fs->inode_blocks_per_group;
 
-		ext2fs_free_blocks_count_set(super,
-					     ext2fs_free_blocks_count(super) +
-					     numblocks);
+		free_blocks += numblocks;
 		ext2fs_bg_free_blocks_count_set(fs, i, numblocks);
 		ext2fs_bg_free_inodes_count_set(fs, i, fs->super->s_inodes_per_group);
 		ext2fs_bg_used_dirs_count_set(fs, i, 0);
 		ext2fs_group_desc_csum_set(fs, i);
 	}
+	free_blocks &= ~EXT2FS_CLUSTER_MASK(fs);
+	ext2fs_free_blocks_count_set(super, free_blocks);
 
 	c = (char) 255;
 	if (((int) c) == -1) {

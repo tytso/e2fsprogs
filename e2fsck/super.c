@@ -690,7 +690,7 @@ void check_super_block(e2fsck_t ctx)
 			return;
 	}
 
-	ctx->free_blocks = free_blocks;
+	ctx->free_blocks = EXT2FS_C2B(fs, free_blocks);
 	ctx->free_inodes = free_inodes;
 
 	if ((ext2fs_free_blocks_count(sb) > ext2fs_blocks_count(sb)) ||
