@@ -55,6 +55,8 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++)
 		ext2fs_fast_unmark_block_bitmap2(map, blk);
 
+	blk = (group * fs->super->s_blocks_per_group) +
+		fs->super->s_first_data_block;
 	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++) {
 		if ((blk == super_blk) ||
 		    (old_desc_blk && old_desc_blocks &&
