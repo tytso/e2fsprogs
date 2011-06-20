@@ -579,11 +579,12 @@ mklost+found.o: $(srcdir)/mklost+found.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/version.h \
  $(srcdir)/nls-enable.h
 mke2fs.o: $(srcdir)/mke2fs.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fsP.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(srcdir)/util.h $(srcdir)/../e2fsck/profile.h prof_err.h \
  $(top_srcdir)/version.h $(srcdir)/nls-enable.h
 chattr.o: $(srcdir)/chattr.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
