@@ -1,3 +1,134 @@
+E2fsprogs 1.42-WIP (July 2, 2011) -- 1ca87790b91
+=================================
+
+Add support for 64-bit file systems.
+
+Add initial support for bigalloc file systems.
+
+Fix a bug in e2fsck where if the free blocks and inodes counts are
+incorrect, e2fsck would fix them without printing an error message.
+This would cause a "*** FILE SYSTEM WAS MODIFIED ***" message without
+any explanation of what was fixed.
+
+E2fsck will no longer attempt to clone an extended attribute block in
+pass1b handling if the file system does not support extended
+attributes.
+
+E2fsck will be more careful accidentally asking the user to continue
+if the file system is mounted, so that an escape sequence won't cause
+a false positive.  (Addresses Debian Bug: #619859)
+
+E2fsck now uses less cpu time in pass 5 when large portions of the
+bitmaps are uninitialized.
+
+E2fsck will no longer segault when a corrupted file system has a bad
+extent, and removing it leads to a block needing to be deallocated.
+(Addresses SourceForge Bug: #2971800)
+
+E2fsck now supports an extended "discard" option which will cause
+e2fsck to attempt discard all unused blocks after a full, successful
+file system check.
+
+The e2image program now supports the qcow2 format, which is a more
+efficient way of capturing file system dumps.
+
+Mke2fs now supports the [devices] stanza in mke2fs.conf which allows
+per-device defaults to be specified in the configuration file.
+
+Mke2fs now supports the reserved_ratio relation in the [defaults] and
+[fs_types] section in mke2fs.conf.
+
+Mke2fs now creates extent-mapped directories for the root and
+lost+found directories.
+
+Mke2fs will skip zero'ing the journal if the extended option
+"lazy_journal_init" is specified.  This can save a lot of time, but it
+does add a small amount of risk if the system crashes before the
+journal is overwritten entirely once.  It is epsecially useful for
+testing.
+
+Mke2fs will now create file systems that enable user namespace
+extended attributes and with time- and mount count-based file
+system checks disabled.
+
+Mke2fs will not set a stride or strip size of one block based on block
+device attributes obtained from sysfs.
+
+Mke2fs now displays a progress report during the discard process.
+
+Mke2fs now handles extreme file system parameters correctly which
+previously caused the inodes per group to drop below 8, leading to a
+segfault.  (The inodes per group must be a multiple of 8, but the code
+didn't correctly deal with an inodes per group count less than 8.)
+
+Debugfs's icheck will now correctly find inodes which use the
+searched-for block as an extended attribute block.
+
+Debugfs now has a new "punch" command which remove blocks from the
+middle of an inode.
+
+The badblocks program now correctly recovers from I/O errors when
+direct I/O is being used.  The badblocks command now also supports a
+-B option which forces the use of buffered I/O, and the -v option will
+provide a more detailed breakdown of read, write, and failed
+comparison errors.
+
+Added e4defrag tool which uses the EXT4_IOC_MOVE_EXT ioctl.
+
+Added support for journals larger than 2GB.
+
+Support using both hard links and symlinks when installing e2fsprogs.
+
+Add overflow checking to tune2fs -i's fsck interval, which must fit in
+a 32-bit field.
+
+Filefrag will report 0 extents correctly in verbose mode.  (Addresses
+RedHat Bugzilla: #653234)
+
+Logsave's usage message has been fixed.  (Addresses Debian Bug:
+#619788)
+
+Added a useful "fallocate" program to the contrib directory.
+
+Update translations: French, Chinese, Germany, Indonesian, Swedish,
+Vietnamese, Polish, Dutch, Czech,
+
+Updated/clarified man pages.
+
+Programming notes
+-----------------
+
+The ext2fs library now has the new functions ext2fs_punch(),
+ext2fs_get_memzero() and ext2fs_file_get_inode().
+
+The I/O manager now supports the discard operation.
+
+Reserved file system code points for new 1st class quota feature.
+
+Fixed a potential free of an unitialized pointer in
+ext2fs_update_bb_inode().
+
+Fixed miscellaneous compile warnings.
+
+Fixed portability issues for Mac OS X.
+
+Fixed FreeBSD portability where gettext is not in libc.
+
+Fixed a build failure when OMIT_COM_ERR is defined.
+
+Improved error checking and fixed memory leaks caused by error return
+paths.
+
+Added a regression test for extent-mapped journals by mke2fs and tune2fs.
+
+Added a test for creating a large (over 4GB) journal using mke2fs.
+
+Fixed the dependencies for "make check" so all required dependencies
+are built before running the gression tests.
+
+A link to com_err.h is installed in $(includedir) during a "make install".
+
+
 E2fsprogs 1.41.14 (December 22, 2010)
 =====================================
 

@@ -1,3 +1,60 @@
+e2fsprogs (1.42~WIP-2011-07-02-1) unstable; urgency=low
+
+  * New upstream release
+  * Add support for 64-bit file systems
+  * Add support for bigalloc file systems
+  * Fixed an e2fsck bug which caused "*** FILE SYSTEM WAS MODIFIED ***"
+      without an explanation of what was fixed.
+  * E2fsck will no longer attempt to clone an extended attribute block
+      in pass1b handling if the file system does not support extended
+      attributes.
+  * E2fsck will be more careful accidentally asking the user to continue
+      if the file system is mounted, so that an escape sequence won't
+      cause a false positive.  (Closes: #619859)
+  * E2fsck now uses less cpu time in pass 5
+  * E2fsck will no longer segault when a corrupted file system has a bad
+    extent, and removing it leads to a block needing to be deallocated.
+  * E2fsck now supports an extended "discard" option which will cause
+      e2fsck to attempt discard all unused blocks after a full check
+  * The e2image program now supports the qcow2 format, a more efficient
+      way of capturing file system metadata snapshots.
+  * Mke2fs now supports the [devices] stanza in mke2fs.conf.
+  * Mke2fs now supports the reserved_ratio relation in mke2fs.conf.
+  * Mke2fs now creates extent-mapped directories for the root and
+      lost+found directories.
+  * Mke2fs will skip zero'ing the journal if the extended option
+      "lazy_journal_init" is specified.
+  * Mke2fs will now create file systems that enable user namespace
+      extended attributes and with time- and mount count-based file
+      system checks disabled.
+   * Mke2fs will not set a stride or strip size of one block based on
+       block bevice attributes obtained from sysfs.
+   * Mke2fs now displays a progress report during the discard process.
+   * Mke2fs now handles extreme file system parameters correctly which
+       previously caused the inodes per group to drop below 8, leading
+       to a segfault.
+   * Debugfs's icheck will now correctly find inodes which use the
+       searched-for block as an extended attribute block.
+   * Debugfs now has a new "punch" command which remove blocks from the
+       middle of an inode.
+   * The badblocks program now correctly recovers from I/O errors when
+       direct I/O is being used.  The badblocks command now also
+       supports a -B option which forces the use of buffered I/O, and
+       the -v option will provide a more detailed breakdown of read,
+       write, and failed comparison errors.
+   * Added e4defrag tool which uses the EXT4_IOC_MOVE_EXT ioctl.
+   * Added support for journals larger than 2GB.
+   * Support using both hard links and symlinks when installing e2fsprogs.
+   * Add overflow checking to tune2fs -i's fsck interval, which must fit
+       in a 32-bit field.
+   * Filefrag will report 0 extents correctly in verbose mode.
+   * Logsave's usage message has been fixed.  (Closes: #619788)
+   * Update translations: French, Chinese, Germany, Indonesian, Swedish,
+        Vietnamese, Polish, Dutch, Czech.
+   * Updated/clarified man pages.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 02 Jul 2011 22:38:57 -0400
+
 e2fsprogs (1.41.14-1) experimental; urgency=low
 
   * New upstream release
