@@ -136,7 +136,7 @@ else
 COMMON_CONF_FLAGS += --enable-fsck
 endif
 
-STD_CONF_FLAGS = --enable-compression
+STD_CONF_FLAGS = --enable-symlink-install
 
 BF_CONF_FLAGS = --disable-nls --disable-imager --disable-testio-debug \
 	--disable-uuidd --disable-tls \
