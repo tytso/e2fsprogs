@@ -937,7 +937,7 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 				continue;
 			}
 			stride = strtoul(arg, &p, 0);
-			if (*p || (stride == 0)) {
+			if (*p) {
 				fprintf(stderr,
 				       _("Invalid RAID stride: %s\n"),
 					arg);
@@ -952,7 +952,7 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 				continue;
 			}
 			stripe_width = strtoul(arg, &p, 0);
-			if (*p || (stripe_width == 0)) {
+			if (*p) {
 				fprintf(stderr,
 					_("Invalid RAID stripe-width: %s\n"),
 					arg);
