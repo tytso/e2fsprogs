@@ -80,6 +80,7 @@ static int stride, stripe_width;
 static int stride_set, stripe_width_set;
 static char *extended_cmd;
 static unsigned long new_inode_size;
+static char *ext_mount_opts;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -979,7 +980,7 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 				 "to %s (%d)\n"),
 			       arg, hash_alg);
 			ext2fs_mark_super_dirty(fs);
-		} else if (strcmp(token, "mount-options")) {
+		} else if (!strcmp(token, "mount_opts")) {
 			if (!arg) {
 				r_usage++;
 				continue;
@@ -989,8 +990,7 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 					"Extended mount options too long\n");
 				continue;
 			}
-			strcpy(fs->super->s_mount_opts, arg);
-			ext2fs_mark_super_dirty(fs);
+			ext_mount_opts = strdup(arg);
 		} else
 			r_usage++;
 	}
@@ -1000,9 +1000,10 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
+			"\thash_alg=<hash algorithm>\n"
+			"\tmount_opts=<extended default mount options>\n"
 			"\tstride=<RAID per-disk chunk size in blocks>\n"
 			"\tstripe_width=<RAID stride*data disks in blocks>\n"
-			"\thash_alg=<hash algorithm>\n"
 			"\ttest_fs\n"
 			"\t^test_fs\n"));
 		free(buf);
@@ -1858,6 +1859,15 @@ retry_open:
 		sb->s_raid_stripe_width = stripe_width;
 		ext2fs_mark_super_dirty(fs);
 		printf(_("Setting stripe width to %d\n"), stripe_width);
+	}
+	if (ext_mount_opts) {
+		strncpy(fs->super->s_mount_opts, ext_mount_opts,
+			sizeof(fs->super->s_mount_opts));
+		fs->super->s_mount_opts[sizeof(fs->super->s_mount_opts)-1] = 0;
+		ext2fs_mark_super_dirty(fs);
+		printf(_("Setting extended default mount options to '%s'\n"),
+		       ext_mount_opts);
+		free(ext_mount_opts);
 	}
 	free(device_name);
 	remove_error_table(&et_ext2_error_table);
