@@ -400,6 +400,8 @@ void check_resize_inode(e2fsck_t ctx)
 
 	gdt_off = fs->desc_blocks;
 	pblk = fs->super->s_first_data_block + 1 + fs->desc_blocks;
+	if (fs->blocksize == 1024 && fs->super->s_first_data_block == 0)
+		pblk++;	/* Deal with 1024 blocksize bigalloc fs */
 	for (i = 0; i < fs->super->s_reserved_gdt_blocks / 4;
 	     i++, gdt_off++, pblk++) {
 		gdt_off %= fs->blocksize/4;
@@ -555,7 +557,8 @@ void check_super_block(e2fsck_t ctx)
 		}
 	}
 
-	should_be = (sb->s_log_block_size == 0) ? 1 : 0;
+	should_be = (sb->s_log_block_size == 0 &&
+		     EXT2FS_CLUSTER_RATIO(fs) == 1) ? 1 : 0;
 	if (sb->s_first_data_block != should_be) {
 		pctx.blk = sb->s_first_data_block;
 		pctx.blk2 = should_be;

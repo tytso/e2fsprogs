@@ -59,6 +59,9 @@ int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
 
 	if (super_blk || (group == 0))
 		ext2fs_mark_block_bitmap2(bmap, super_blk);
+	if ((group == 0) && (fs->blocksize == 1024) &&
+	    EXT2FS_CLUSTER_RATIO(fs) > 1)
+		ext2fs_mark_block_bitmap2(bmap, 0);
 
 	if (old_desc_blk) {
 		if (fs->super->s_reserved_gdt_blocks && fs->block_map == bmap)

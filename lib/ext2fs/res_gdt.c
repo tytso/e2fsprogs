@@ -67,7 +67,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 	unsigned long long	apb, inode_size;
 	/* FIXME-64 - can't deal with extents */
 	blk_t			dindir_blk, rsv_off, gdt_off, gdt_blk;
-	int			dindir_dirty = 0, inode_dirty = 0;
+	int			dindir_dirty = 0, inode_dirty = 0, sb_blk = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -82,6 +82,15 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 	if (retval)
 		goto out_free;
 
+	/*
+	 * File systems with a blocksize of 1024 and bigalloc have
+	 * sb->s_first_data_block of 0; yet the superblock is still at
+	 * block #1.  We compensate for it here.
+	 */
+	sb_blk = sb->s_first_data_block;
+	if (fs->blocksize == 1024 && sb_blk == 0)
+		sb_blk = 1;
+
 	/* Maximum possible file size (we donly use the dindirect blocks) */
 	apb = EXT2_ADDR_PER_BLOCK(sb);
 	if ((dindir_blk = inode.i_block[EXT2_DIND_BLOCK])) {
@@ -92,7 +101,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 		if (retval)
 			goto out_inode;
 	} else {
-		blk_t goal = sb->s_first_data_block + fs->desc_blocks +
+		blk_t goal = sb_blk + fs->desc_blocks +
 			sb->s_reserved_gdt_blocks + 2 +
 			fs->inode_blocks_per_group;
 
@@ -120,7 +129,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 	}
 
 	for (rsv_off = 0, gdt_off = fs->desc_blocks,
-	     gdt_blk = sb->s_first_data_block + 1 + fs->desc_blocks;
+	     gdt_blk = sb_blk + 1 + fs->desc_blocks;
 	     rsv_off < sb->s_reserved_gdt_blocks;
 	     rsv_off++, gdt_off++, gdt_blk++) {
 		unsigned int three = 1, five = 5, seven = 7;

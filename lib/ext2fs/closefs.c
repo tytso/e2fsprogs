@@ -73,6 +73,8 @@ errcode_t ext2fs_super_and_bgd_loc2(ext2_filsys fs,
 	int	has_super;
 
 	group_block = ext2fs_group_first_block2(fs, group);
+	if (group_block == 0 && fs->blocksize == 1024)
+		group_block = 1; /* Deal with 1024 blocksize && bigalloc */
 
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;

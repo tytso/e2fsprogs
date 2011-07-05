@@ -322,6 +322,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		goto cleanup;
 	if (!group_block)
 		group_block = fs->super->s_first_data_block;
+	if (group_block == 0 && fs->blocksize == 1024)
+		group_block = 1; /* Deal with 1024 blocksize && bigalloc */
 	dest = (char *) fs->group_desc;
 	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
