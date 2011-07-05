@@ -680,7 +680,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 			param->s_raid_stride = strtoul(arg, &p, 0);
-			if (*p || (param->s_raid_stride == 0)) {
+			if (*p) {
 				fprintf(stderr,
 					_("Invalid stride parameter: %s\n"),
 					arg);
@@ -695,7 +695,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 			param->s_raid_stripe_width = strtoul(arg, &p, 0);
-			if (*p || (param->s_raid_stripe_width == 0)) {
+			if (*p) {
 				fprintf(stderr,
 					_("Invalid stripe-width parameter: %s\n"),
 					arg);
