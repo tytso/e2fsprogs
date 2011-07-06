@@ -522,7 +522,8 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ext2_ino_t *ino,
 errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode * inode, int bufsize)
 {
-	unsigned long 	group, block, block_nr, offset;
+	blk64_t		block_nr;
+	unsigned long 	group, block, offset;
 	char 		*ptr;
 	errcode_t	retval;
 	int 		clen, i, inodes_per_block, length;
@@ -628,7 +629,8 @@ errcode_t ext2fs_read_inode(ext2_filsys fs, ext2_ino_t ino,
 errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 				  struct ext2_inode * inode, int bufsize)
 {
-	unsigned long group, block, block_nr, offset;
+	blk64_t block_nr;
+	unsigned long group, block, offset;
 	errcode_t retval = 0;
 	struct ext2_inode_large temp_inode, *w_inode;
 	char *ptr;
