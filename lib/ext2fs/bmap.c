@@ -135,6 +135,7 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 {
 	struct ext2_inode inode_buf;
 	ext2_extent_handle_t handle = 0;
+	blk64_t blk64;
 	blk_t addr_per_block;
 	blk_t	b, blk32;
 	char	*buf = 0;
@@ -186,11 +187,16 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		}
 	got_block:
 		if ((*phys_blk == 0) && (bmap_flags & BMAP_ALLOC)) {
-			retval = ext2fs_alloc_block(fs, b, block_buf, &b);
+			retval = ext2fs_bmap2(fs, ino, inode, block_buf,
+					      0, block-1, 0, &blk64);
+			if (retval)
+				blk64 = 0;
+			retval = ext2fs_alloc_block2(fs, blk64, block_buf,
+						     &blk64);
 			if (retval)
 				goto done;
 			retval = ext2fs_extent_set_bmap(handle, block,
-							(blk64_t) b, 0);
+							blk64, 0);
 			if (retval)
 				goto done;
 			/* Update inode after setting extent */
@@ -198,7 +204,7 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 			if (retval)
 				return retval;
 			blocks_alloc++;
-			*phys_blk = b;
+			*phys_blk = blk64;
 		}
 		retval = 0;
 		goto done;
