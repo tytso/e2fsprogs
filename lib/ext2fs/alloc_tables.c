@@ -42,6 +42,8 @@ static blk64_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 	blk64_t		last_blk, first_free = 0;
 	dgrp_t	       	last_grp;
 
+	flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+	flexbg = group / flexbg_size;
 	size = rem_grp * elem_size;
 
 	if (size > (int) (fs->super->s_blocks_per_group / 8))
