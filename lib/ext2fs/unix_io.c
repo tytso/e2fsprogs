@@ -161,12 +161,13 @@ static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 static errcode_t raw_read_blk(io_channel channel,
 			      struct unix_private_data *data,
 			      unsigned long long block,
-			      int count, void *buf)
+			      int count, void *bufv)
 {
 	errcode_t	retval;
 	ssize_t		size;
 	ext2_loff_t	location;
 	int		actual = 0;
+	unsigned char	*buf = bufv;
 
 	size = (count < 0) ? -count : count * channel->block_size;
 	data->io_stats.bytes_read += size;
@@ -221,12 +222,13 @@ error_out:
 static errcode_t raw_write_blk(io_channel channel,
 			       struct unix_private_data *data,
 			       unsigned long long block,
-			       int count, const void *buf)
+			       int count, const void *bufv)
 {
 	ssize_t		size;
 	ext2_loff_t	location;
 	int		actual = 0;
 	errcode_t	retval;
+	const unsigned char *buf = bufv;
 
 	if (count == 1)
 		size = channel->block_size;

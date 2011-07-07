@@ -231,11 +231,12 @@ struct ext2_dx_countlimit {
 #define EXT2_CLUSTERS_PER_GROUP(s)	(EXT2_SB(s)->s_clusters_per_group)
 #define EXT2_INODES_PER_BLOCK(s)	(EXT2_BLOCK_SIZE(s)/EXT2_INODE_SIZE(s))
 /* limits imposed by 16-bit value gd_free_{blocks,inode}_count */
-#define EXT2_MAX_BLOCKS_PER_GROUP(s)	(((1 << 16) - 8) *	\
+#define EXT2_MAX_BLOCKS_PER_GROUP(s)	((((unsigned) 1 << 16) - 8) *	\
 					 (EXT2_CLUSTER_SIZE(s) / \
 					  EXT2_BLOCK_SIZE(s)))
-#define EXT2_MAX_CLUSTERS_PER_GROUP(s)	((1 << 16) - 8)
-#define EXT2_MAX_INODES_PER_GROUP(s)	((1 << 16) - EXT2_INODES_PER_BLOCK(s))
+#define EXT2_MAX_CLUSTERS_PER_GROUP(s)	(((unsigned) 1 << 16) - 8)
+#define EXT2_MAX_INODES_PER_GROUP(s)	(((unsigned) 1 << 16) - \
+					 EXT2_INODES_PER_BLOCK(s))
 #ifdef __KERNEL__
 #define EXT2_DESC_PER_BLOCK(s)		(EXT2_SB(s)->s_desc_per_block)
 #define EXT2_DESC_PER_BLOCK_BITS(s)	(EXT2_SB(s)->s_desc_per_block_bits)

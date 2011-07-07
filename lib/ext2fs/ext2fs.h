@@ -221,7 +221,7 @@ struct struct_ext2_filsys {
 	dgrp_t				group_desc_count;
 	unsigned long			desc_blocks;
 	struct opaque_ext2_group_desc *	group_desc;
-	int				inode_blocks_per_group;
+	unsigned int			inode_blocks_per_group;
 	ext2fs_inode_bitmap		inode_map;
 	ext2fs_block_bitmap		block_map;
 	/* XXX FIXME-64: not 64-bit safe, but not used? */
@@ -1362,6 +1362,11 @@ extern errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
 extern errcode_t ext2fs_get_memalign(unsigned long size,
 				     unsigned long align, void *ptr);
+extern errcode_t ext2fs_get_memzero(unsigned long size, void *ptr);
+extern errcode_t ext2fs_get_array(unsigned long count,
+				  unsigned long size, void *ptr);
+extern errcode_t ext2fs_get_arrayzero(unsigned long count,
+				      unsigned long size, void *ptr);
 extern errcode_t ext2fs_free_mem(void *ptr);
 extern errcode_t ext2fs_resize_mem(unsigned long old_size,
 				   unsigned long size, void *ptr);

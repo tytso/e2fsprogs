@@ -92,7 +92,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	errcode_t	retval;
 	unsigned long	i, first_meta_bg;
 	__u32		features;
-	int		groups_per_block, blocks_per_group, io_flags;
+	unsigned int	groups_per_block, blocks_per_group, io_flags;
 	blk64_t		group_block, blk;
 	char		*dest, *cp;
 #ifdef WORDS_BIGENDIAN

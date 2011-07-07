@@ -37,7 +37,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 	blk64_t first_block = fs->super->s_first_data_block;
 	blk64_t last_block = ext2fs_blocks_count(fs->super)-1;
 	blk64_t blk, b;
-	int j;
+	unsigned int j;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
