@@ -134,12 +134,47 @@ static errcode_t extent_bmap(ext2_filsys fs, ext2_ino_t ino,
 			     ext2_extent_handle_t handle,
 			     char *block_buf, int bmap_flags, blk64_t block,
 			     int *ret_flags, int *blocks_alloc,
+			     blk64_t *phys_blk);
+
+static errcode_t implied_cluster_alloc(ext2_filsys fs, ext2_ino_t ino,
+				       struct ext2_inode *inode,
+				       ext2_extent_handle_t handle,
+				       blk64_t block, blk64_t *phys_blk)
+{
+	blk64_t	base_block, pblock = 0;
+	int i;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+		return 0;
+
+	base_block = block & ~EXT2FS_CLUSTER_MASK(fs);
+	for (i = 0; i < EXT2FS_CLUSTER_RATIO(fs); i++) {
+		if (block == base_block)
+			return 0;
+		extent_bmap(fs, ino, inode, handle, 0, 0,
+			    base_block + i, 0, 0, &pblock);
+		if (pblock)
+			break;
+	}
+	if (pblock == 0)
+		return 0;
+	*phys_blk = pblock - i + (block - base_block);
+	return 0;
+}
+
+static errcode_t extent_bmap(ext2_filsys fs, ext2_ino_t ino,
+			     struct ext2_inode *inode,
+			     ext2_extent_handle_t handle,
+			     char *block_buf, int bmap_flags, blk64_t block,
+			     int *ret_flags, int *blocks_alloc,
 			     blk64_t *phys_blk)
 {
 	struct ext2fs_extent	extent;
 	unsigned int		offset;
 	errcode_t		retval = 0;
-	blk64_t			blk64;
+	blk64_t			blk64 = 0;
+	int			alloc = 0;
 
 	if (bmap_flags & BMAP_SET) {
 		retval = ext2fs_extent_set_bmap(handle, block,
@@ -164,6 +199,9 @@ static errcode_t extent_bmap(ext2_filsys fs, ext2_ino_t ino,
 	}
 got_block:
 	if ((*phys_blk == 0) && (bmap_flags & BMAP_ALLOC)) {
+		implied_cluster_alloc(fs, ino, inode, handle, block, &blk64);
+		if (blk64)
+			goto set_extent;
 		retval = extent_bmap(fs, ino, inode, handle, block_buf,
 				     0, block-1, 0, blocks_alloc, &blk64);
 		if (retval)
@@ -172,6 +210,10 @@ got_block:
 					     &blk64);
 		if (retval)
 			return retval;
+		blk64 &= ~EXT2FS_CLUSTER_MASK(fs);
+		blk64 += EXT2FS_CLUSTER_MASK(fs) & block;
+		alloc++;
+	set_extent:
 		retval = ext2fs_extent_set_bmap(handle, block,
 						blk64, 0);
 		if (retval)
@@ -180,7 +222,7 @@ got_block:
 		retval = ext2fs_read_inode(fs, ino, inode);
 		if (retval)
 			return retval;
-		*blocks_alloc += 1;
+		*blocks_alloc += alloc;
 		*phys_blk = blk64;
 	}
 	return 0;
