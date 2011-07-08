@@ -164,10 +164,7 @@ void do_lsdel(int argc, char **argv)
 			delarray[num_delarray].ino = ino;
 			delarray[num_delarray].mode = inode.i_mode;
 			delarray[num_delarray].uid = inode_uid(inode);
-			delarray[num_delarray].size = inode.i_size;
-			if (!LINUX_S_ISDIR(inode.i_mode))
-				delarray[num_delarray].size |=
-					((__u64) inode.i_size_high << 32);
+			delarray[num_delarray].size = EXT2_I_SIZE(&inode);
 			delarray[num_delarray].dtime = inode.i_dtime;
 			delarray[num_delarray].num_blocks = lsd.num_blocks;
 			delarray[num_delarray].free_blocks = lsd.free_blocks;

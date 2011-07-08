@@ -256,7 +256,7 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 {
 	struct ext2_inode *inode = pctx->inode;
 
-	if ((inode->i_size == 0) && (inode->i_size_high == 0))
+	if (EXT2_I_SIZE(inode) == 0)
 		return;
 
 	if (!fix_problem(ctx, PR_1_SET_NONZSIZE, pctx))
@@ -2045,8 +2045,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		pctx->num = 0;
 	}
-	if (LINUX_S_ISREG(inode->i_mode) &&
-	    (inode->i_size_high || inode->i_size & 0x80000000UL))
+	if (LINUX_S_ISREG(inode->i_mode) && EXT2_I_SIZE(inode) >= 0x80000000UL)
 		ctx->large_files++;
 	if ((pb.num_blocks != ext2fs_inode_i_blocks(fs, inode)) ||
 	    ((fs->super->s_feature_ro_compat &

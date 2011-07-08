@@ -722,12 +722,9 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	}
 	fprintf(out, "%sUser: %5d   Group: %5d   Size: ",
 		prefix, inode_uid(*inode), inode_gid(*inode));
-	if (LINUX_S_ISREG(inode->i_mode)) {
-		unsigned long long i_size = (inode->i_size |
-				    ((unsigned long long)inode->i_size_high << 32));
-
-		fprintf(out, "%llu\n", i_size);
-	} else
+	if (LINUX_S_ISREG(inode->i_mode))
+		fprintf(out, "%llu\n", EXT2_I_SIZE(inode));
+	else
 		fprintf(out, "%d\n", inode->i_size);
 	if (os == EXT2_OS_HURD)
 		fprintf(out,
@@ -901,9 +898,7 @@ void do_dump_extents(int argc, char **argv)
 		return;
 	}
 
-	logical_width = int_log10(((inode.i_size |
-				    (__u64) inode.i_size_high << 32) +
-				   current_fs->blocksize - 1) /
+	logical_width = int_log10((EXT2_I_SIZE(&inode)+current_fs->blocksize-1)/
 				  current_fs->blocksize) + 1;
 	if (logical_width < 5)
 		logical_width = 5;

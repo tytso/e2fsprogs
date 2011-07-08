@@ -253,9 +253,8 @@ extern errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
 	handle->path[0].max_entries = ext2fs_le16_to_cpu(eh->eh_max);
 	handle->path[0].curr = 0;
 	handle->path[0].end_blk =
-		((((__u64) handle->inode->i_size_high << 32) +
-		  handle->inode->i_size + (fs->blocksize - 1))
-		 >> EXT2_BLOCK_SIZE_BITS(fs->super));
+		(EXT2_I_SIZE(handle->inode) + fs->blocksize - 1) >>
+		 EXT2_BLOCK_SIZE_BITS(fs->super);
 	handle->path[0].visit_num = 1;
 	handle->level = 0;
 	handle->magic = EXT2_ET_MAGIC_EXTENT_HANDLE;

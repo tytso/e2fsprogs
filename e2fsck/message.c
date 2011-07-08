@@ -282,8 +282,7 @@ static _INLINE_ void expand_inode_expression(ext2_filsys fs, char ch,
 			else
 				printf("%u", inode->i_size);
 #else
-			printf("%llu", inode->i_size |
-				       ((long long)inode->i_size_high << 32));
+			printf("%llu", EXT2_I_SIZE(inode));
 #endif
 		}
 		break;

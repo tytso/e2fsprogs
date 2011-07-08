@@ -170,8 +170,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	if (inode->i_links_count) {
 		pb.truncating = 1;
 		pb.truncate_block = (e2_blkcnt_t)
-			((((long long)inode->i_size_high << 32) +
-			  inode->i_size + fs->blocksize - 1) /
+			((EXT2_I_SIZE(inode) + fs->blocksize - 1) /
 			 fs->blocksize);
 		pb.truncate_offset = inode->i_size % fs->blocksize;
 	} else {

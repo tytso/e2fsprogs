@@ -1220,8 +1220,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	if (!ext2fs_inode_has_valid_blocks(&inode))
 		return;
 
-	if (LINUX_S_ISREG(inode.i_mode) &&
-	    (inode.i_size_high || inode.i_size & 0x80000000UL))
+	if (LINUX_S_ISREG(inode.i_mode) && EXT2_I_SIZE(&inode) >= 0x80000000UL)
 		ctx->large_files--;
 
 	pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
