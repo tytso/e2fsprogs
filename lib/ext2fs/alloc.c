@@ -164,6 +164,8 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 		goal = fs->super->s_first_data_block;
 	i = goal;
 	c_ratio = 1 << ext2fs_get_bitmap_granularity(map);
+	if (c_ratio > 1)
+		goal &= ~EXT2FS_CLUSTER_MASK(fs);
 	check_block_uninit(fs, map,
 			   (i - fs->super->s_first_data_block) /
 			   EXT2_BLOCKS_PER_GROUP(fs->super));
