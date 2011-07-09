@@ -157,6 +157,11 @@ This is a list of the commands which
 .B debugfs
 supports.
 .TP
+.I blocks filespace
+Print the blocks used by the inode
+.I filespec
+to stdout.
+.TP
 .I bmap filespec logical_block
 Print the physical block number corresponding to the logical block number
 .I logical_block

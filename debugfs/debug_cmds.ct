@@ -46,6 +46,9 @@ request do_stat, "Show inode information ",
 request do_dump_extents, "Dump extents information ",
 	dump_extents, extents, ex;
 
+request do_blocks, "Dump blocks used by an inode ",
+	blocks;
+
 request do_link, "Create directory link",
 	link, ln;
 

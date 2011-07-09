@@ -912,6 +912,34 @@ void do_dump_extents(int argc, char **argv)
 	return;
 }
 
+static int print_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
+			     blk64_t *blocknr,
+			     e2_blkcnt_t blockcnt,
+			     blk64_t ref_block EXT2FS_ATTR((unused)),
+			     int ref_offset EXT2FS_ATTR((unused)),
+			     void *private EXT2FS_ATTR((unused)))
+{
+	printf("%llu ", *blocknr);
+	return 0;
+}
+
+void do_blocks(int argc, char *argv[])
+{
+	ext2_ino_t	inode;
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	if (common_inode_args_process(argc, argv, &inode, 0)) {
+		return;
+	}
+
+	ext2fs_block_iterate3(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
+			      print_blocks_proc, NULL);
+	fputc('\n', stdout);
+	return;
+}
+
 void do_chroot(int argc, char *argv[])
 {
 	ext2_ino_t inode;
