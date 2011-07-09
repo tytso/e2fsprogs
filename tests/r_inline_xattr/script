@@ -10,20 +10,20 @@ gunzip < $IMAGE > $TMPFILE
 echo "resize2fs test" > $OUT
 
 # Look at existing inline extended attribute
-echo "debugfs -R ''stat file'' $TMPFILE 2>&1 | grep ''^Inode\|in inode body\|name = ''" >> $OUT
+echo "debugfs -R ''stat file'' test.img 2>&1 | grep ''^Inode\|in inode body\|name = ''" >> $OUT
 $DEBUGFS -R "stat file" $TMPFILE 2>&1 | grep "^Inode\|in inode body\|name = " >> $OUT
 status=$?
 echo Exit status is $status >> $OUT
 
 # resize it
-echo "resize2fs $TMPFILE 5M" >> $OUT
+echo "resize2fs test.img 5M" >> $OUT
 $RESIZE2FS $TMPFILE 5M 2>&1 >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -e '1d' $OUT.new >> $OUT
+sed -e '1d' $OUT.new | sed -e "s;$TMPFILE;test.img;" >> $OUT
 
 # Look at inline extended attribute in resized fs
-echo "debugfs -R ''stat file'' $TMPFILE 2>&1 | grep ''^Inode\|in inode body\|name = ''" >> $OUT
+echo "debugfs -R ''stat file'' test.img 2>&1 | grep ''^Inode\|in inode body\|name = ''" >> $OUT
 $DEBUGFS -R "stat file" $TMPFILE 2>&1 | grep "^Inode\|in inode body\|name = " >> $OUT
 status=$?
 echo Exit status is $status >> $OUT

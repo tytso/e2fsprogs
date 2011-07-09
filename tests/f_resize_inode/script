@@ -26,7 +26,7 @@ rm -f $OUT.new
 echo ----------------------------------------------- >> $OUT
 
 echo " " >> $OUT
-echo "debugfs -R ''set_inode_field <7> block[2] 42'' -w $TMPFILE" > $OUT.new
+echo "debugfs -R ''set_inode_field <7> block[2] 42'' -w test.img" > $OUT.new
 $DEBUGFS -R "set_inode_field <7> block[2] 42" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
@@ -47,7 +47,7 @@ rm -f $OUT.new
 echo ----------------------------------------------- >> $OUT
 
 echo " " >> $OUT
-echo "debugfs -R ''clri <7>'' -w $TMPFILE" > $OUT.new
+echo "debugfs -R ''clri <7>'' -w test.img" > $OUT.new
 $DEBUGFS -R "clri <7>" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
@@ -68,7 +68,7 @@ rm -f $OUT.new
 echo ----------------------------------------------- >> $OUT
 
 echo " " >> $OUT
-echo "debugfs -R ''set_inode_field <7> bmap[524] 57'' -w $TMPFILE" > $OUT.new
+echo "debugfs -R ''set_inode_field <7> bmap[524] 57'' -w test.img" > $OUT.new
 $DEBUGFS -R "set_inode_field <7> bmap[524] 57" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
@@ -89,7 +89,7 @@ rm -f $OUT.new
 echo ----------------------------------------------- >> $OUT
 
 echo " " >> $OUT
-echo "debugfs -R ''set_super_value reserved_gdt_blocks 15679'' -w $TMPFILE" > $OUT.new
+echo "debugfs -R ''set_super_value reserved_gdt_blocks 15679'' -w test.img" > $OUT.new
 $DEBUGFS -R "set_super_value reserved_gdt_blocks 15679" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
@@ -104,7 +104,7 @@ rm -f $OUT.new
 echo ----------------------------------------------- >> $OUT
 
 echo " " >> $OUT
-echo "debugfs -R ''set_super_value reserved_gdt_blocks 32'' -w $TMPFILE" > $OUT.new
+echo "debugfs -R ''set_super_value reserved_gdt_blocks 32'' -w test.img" > $OUT.new
 $DEBUGFS -R "set_super_value reserved_gdt_blocks 32" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new

@@ -50,14 +50,16 @@ eval $PREP_CMD
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT1.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT1.new
-sed -e '1d' $OUT1.new | sed -e '/^JFS DEBUG:/d'  | tr -d \\015 >> $OUT1
+sed -e '1d' $OUT1.new | sed -e '/^JFS DEBUG:/d' | \
+	    sed -e "s;$TMPFILE;test.img;" | tr -d \\015 >> $OUT1
 rm -f $OUT1.new
 
 if [ "$ONE_PASS_ONLY" != "true" ]; then
 	$FSCK $SECOND_FSCK_OPT -N test_filesys $TMPFILE > $OUT2.new 2>&1 
 	status=$?
 	echo Exit status is $status >> $OUT2.new
-	sed -e '1d' $OUT2.new | sed -e '/^JFS DEBUG:/d'  > $OUT2
+	sed -e '1d' $OUT2.new | sed -e '/^JFS DEBUG:/d' | \
+	    sed -e "s;$TMPFILE;test.img;" > $OUT2
 	rm -f $OUT2.new
 fi
 

@@ -19,7 +19,8 @@ $MKE2FS -q -F -o Linux -b 1024 -g 256 $TMPFILE 1024 2>&1 \
 	grep -v "whichever comes first" >> $OUT 
 
 echo resize2fs -p test.img 10000 >> $OUT
-$RESIZE2FS -p $TMPFILE 10000 2>&1 | sed -e '1d' >> $OUT
+$RESIZE2FS -p $TMPFILE 10000 2>&1 | sed -e '1d' | \
+	   sed -e "s;$TMPFILE;test.img;" >> $OUT
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
@@ -38,7 +39,8 @@ $DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter_dumpe2fs >> $OUT
 echo "--------------------------------" >> $OUT
 
 echo resize2fs -p test.img 20000 >> $OUT
-$RESIZE2FS -p $TMPFILE 20000 2>&1 | sed -e '1d' >> $OUT
+$RESIZE2FS -p $TMPFILE 20000 2>&1 | sed -e '1d' | \
+	   sed -e "s;$TMPFILE;test.img;" >> $OUT
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
@@ -57,7 +59,8 @@ $DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter_dumpe2fs >> $OUT
 echo "--------------------------------" >> $OUT
 
 echo resize2fs -p test.img 30000 >> $OUT
-$RESIZE2FS -p $TMPFILE 30000 2>&1 | sed -e '1d' >> $OUT
+$RESIZE2FS -p $TMPFILE 30000 2>&1 | sed -e '1d' | \
+	   sed -e "s;$TMPFILE;test.img;" >> $OUT
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
@@ -76,7 +79,8 @@ $DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter_dumpe2fs >> $OUT
 echo "--------------------------------" >> $OUT
 
 echo resize2fs -p test.img 40000 >> $OUT
-$RESIZE2FS -p $TMPFILE 40000 2>&1 | sed -e '1d' >> $OUT
+$RESIZE2FS -p $TMPFILE 40000 2>&1 | sed -e '1d' | \
+	   sed -e "s;$TMPFILE;test.img;" >> $OUT
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?

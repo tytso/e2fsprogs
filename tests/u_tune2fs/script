@@ -1,9 +1,9 @@
 printf "e2undo with tune2fs: "
 if test -x $E2UNDO_EXE; then
 
-E2FSPROGS_UNDO_DIR=./
+E2FSPROGS_UNDO_DIR=/tmp
 export E2FSPROGS_UNDO_DIR
-TDB_FILE=./tune2fs-test.img.e2undo
+TDB_FILE=$E2FSPROGS_UNDO_DIR/tune2fs-$(basename $TMPFILE).e2undo
 OUT=$test_name.log
 rm -f $TDB_FILE >/dev/null 2>&1
 

@@ -39,6 +39,8 @@ fi
 
 . $TEST_CONFIG
 
+TMPFILE=$(mktemp)
+
 for test_dir in $TESTS
 do
 	test_name=`echo $test_dir | sed -e 's;.*/;;'`
