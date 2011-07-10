@@ -2199,7 +2199,6 @@ static int process_block(ext2_filsys fs,
 			p->fragmented = 1;
 		}
 	}
-	p->previous_block = blk;
 
 	if (p->is_dir && blockcnt > (1 << (21 - fs->super->s_log_block_size)))
 		problem = PR_1_TOOBIG_DIR;
@@ -2245,11 +2244,19 @@ static int process_block(ext2_filsys fs,
 		 */
 		if (blockcnt == BLOCK_COUNT_DIND)
 			mark_block_used(ctx, blk);
-	} else
+		p->num_blocks++;
+	} else if (!(ctx->fs->cluster_ratio_bits &&
+		     p->previous_block &&
+		     (EXT2FS_B2C(ctx->fs, blk) ==
+		      EXT2FS_B2C(ctx->fs, p->previous_block)) &&
+		     (blk & EXT2FS_CLUSTER_MASK(ctx->fs)) ==
+		     (blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
 		mark_block_used(ctx, blk);
-	p->num_blocks++;
+		p->num_blocks++;
+	}
 	if (blockcnt >= 0)
 		p->last_block = blockcnt;
+	p->previous_block = blk;
 mark_dir:
 	if (p->is_dir && (blockcnt >= 0)) {
 		while (++p->last_db_block < blockcnt) {
