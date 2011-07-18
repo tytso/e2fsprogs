@@ -209,7 +209,7 @@ This mostly affects placement of filesystem metadata like bitmaps at
 time to avoid placing them on a single disk, which can hurt performance.
 It may also be used by the block allocator.
 .TP
-.BI stripe-width= stripe-width
+.BI stripe_width= stripe-width
 Configure the filesystem for a RAID array with
 .I stripe-width
 filesystem blocks per stripe. This is typically stride-size * N, where
