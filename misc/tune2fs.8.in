@@ -77,6 +77,11 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .RI [^] feature [,...]
 ]
 [
+.B \-Q
+.I quota-options
+]
+[
+[
 .B \-T
 .I time-last-checked
 ]
@@ -560,6 +565,16 @@ features are only supported by the ext4 filesystem.
 .TP
 .BI \-r " reserved-blocks-count"
 Set the number of reserved filesystem blocks.
+.TP
+.BI \-Q " quota-options"
+Sets 'quota' feature on the superblock and works on the quota files for the
+given quota type. Quota options could be one or more of the following:
+.RS 1.2i
+.TP
+.BR [^]usrquota
+Sets/clears user quota inode in the superblock.
+.BR [^]usrquota
+Sets/clears group quota inode in the superblock.
 .TP
 .BI \-T " time-last-checked"
 Set the time the filesystem was last checked using

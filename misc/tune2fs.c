@@ -55,16 +55,22 @@ extern int optind;
 #include "jfs_user.h"
 #include "util.h"
 #include "blkid/blkid.h"
+#include "quota/mkquota.h"
 
 #include "../version.h"
 #include "nls-enable.h"
+
+#define QOPT_ENABLE	(1)
+#define QOPT_DISABLE	(-1)
+
+extern int ask_yn(const char *string, int def);
 
 const char *program_name = "tune2fs";
 char *device_name;
 char *new_label, *new_last_mounted, *new_UUID;
 char *io_options;
 static int c_flag, C_flag, e_flag, f_flag, g_flag, i_flag, l_flag, L_flag;
-static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag, T_flag;
+static int m_flag, M_flag, Q_flag, r_flag, s_flag = -1, u_flag, U_flag, T_flag;
 static int I_flag;
 static time_t last_check_time;
 static int print_label;
@@ -82,6 +88,7 @@ static int stride_set, stripe_width_set;
 static char *extended_cmd;
 static unsigned long new_inode_size;
 static char *ext_mount_opts;
+static int usrquota, grpquota;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -131,7 +138,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
-		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER |
+		EXT4_FEATURE_RO_COMPAT_QUOTA
 };
 
 static __u32 clear_ok_features[3] = {
@@ -147,7 +155,8 @@ static __u32 clear_ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
 		EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
-		EXT4_FEATURE_RO_COMPAT_GDT_CSUM
+		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
+		EXT4_FEATURE_RO_COMPAT_QUOTA
 };
 
 /*
@@ -477,6 +486,36 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	}
 
+	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
+				EXT4_FEATURE_RO_COMPAT_QUOTA)) {
+		/*
+		 * Set the Q_flag here and handle the quota options in the code
+		 * below.
+		 */
+		if (!Q_flag) {
+			Q_flag = 1;
+			/* Enable both user quota and group quota by default */
+			usrquota = QOPT_ENABLE;
+			grpquota = QOPT_ENABLE;
+		}
+		sb->s_feature_ro_compat &= ~EXT4_FEATURE_RO_COMPAT_QUOTA;
+	}
+
+	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
+				EXT4_FEATURE_RO_COMPAT_QUOTA)) {
+		/*
+		 * Set the Q_flag here and handle the quota options in the code
+		 * below.
+		 */
+		if (Q_flag)
+			fputs(_("\nWarning: '^quota' option overrides '-Q'"
+				"arguments.\n"), stderr);
+		Q_flag = 1;
+		/* Disable both user quota and group quota by default */
+		usrquota = QOPT_DISABLE;
+		grpquota = QOPT_DISABLE;
+	}
+
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
 	    (sb->s_feature_compat || sb->s_feature_ro_compat ||
 	     sb->s_feature_incompat))
@@ -576,6 +615,93 @@ err:
 	exit(1);
 }
 
+void handle_quota_options(ext2_filsys fs)
+{
+	quota_ctx_t qctx;
+	errcode_t retval;
+	ext2_ino_t qf_ino;
+
+	if (!usrquota && !grpquota)
+		/* Nothing to do. */
+		return;
+
+	init_quota_context(&qctx, fs, -1);
+
+	if (usrquota == QOPT_ENABLE && !fs->super->s_usr_quota_inum) {
+		if ((qf_ino = quota_file_exists(fs, USRQUOTA, QFMT_VFS_V1)) > 0)
+			set_sb_quota_inum(fs, qf_ino, USRQUOTA);
+		else
+			write_quota_inode(qctx, USRQUOTA);
+	} else if (usrquota == QOPT_DISABLE) {
+		remove_quota_inode(fs, USRQUOTA);
+	}
+
+	if (grpquota == QOPT_ENABLE && !fs->super->s_grp_quota_inum) {
+		if ((qf_ino = quota_file_exists(fs, GRPQUOTA, QFMT_VFS_V1)) > 0)
+			set_sb_quota_inum(fs, qf_ino, GRPQUOTA);
+		else
+			write_quota_inode(qctx, GRPQUOTA);
+	} else if (grpquota == QOPT_DISABLE) {
+		remove_quota_inode(fs, GRPQUOTA);
+	}
+
+	release_quota_context(&qctx);
+
+	if ((usrquota == QOPT_ENABLE) || (grpquota == QOPT_ENABLE)) {
+		fs->super->s_feature_ro_compat |= EXT4_FEATURE_RO_COMPAT_QUOTA;
+		ext2fs_mark_super_dirty(fs);
+	} else if ((usrquota == QOPT_DISABLE) && (grpquota == QOPT_DISABLE)) {
+		fs->super->s_feature_ro_compat &= ~EXT4_FEATURE_RO_COMPAT_QUOTA;
+		ext2fs_mark_super_dirty(fs);
+	}
+
+	return;
+}
+
+void parse_quota_opts(const char *opts)
+{
+	char	*buf, *token, *next, *p, *arg;
+	int	len;
+
+	len = strlen(opts);
+	buf = malloc(len+1);
+	if (!buf) {
+		fputs(_("Couldn't allocate memory to parse quota "
+			"options!\n"), stderr);
+		exit(1);
+	}
+	strcpy(buf, opts);
+	for (token = buf; token && *token; token = next) {
+		p = strchr(token, ',');
+		next = 0;
+		if (p) {
+			*p = 0;
+			next = p+1;
+		}
+
+		if (strcmp(token, "usrquota") == 0) {
+			usrquota = QOPT_ENABLE;
+		} else if (strcmp(token, "^usrquota") == 0) {
+			usrquota = QOPT_DISABLE;
+		} else if (strcmp(token, "grpquota") == 0) {
+			grpquota = QOPT_ENABLE;
+		} else if (strcmp(token, "^grpquota") == 0) {
+			grpquota = QOPT_DISABLE;
+		} else {
+			fputs(_("\nBad quota options specified.\n\n"
+				"Following valid quota options are available "
+				"(pass by separating with comma):\n"
+				"\t[^]usrquota\n"
+				"\t[^]grpquota\n"
+				"\n\n"), stderr);
+			free(buf);
+			exit(1);
+		}
+	}
+	free(buf);
+}
+
+
 
 static void parse_e2label_options(int argc, char ** argv)
 {
@@ -641,7 +767,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	open_flag = 0;
 
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:T:U:")) != EOF)
+	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:Q:T:U:")) != EOF)
 		switch (c) {
 		case 'c':
 			max_mount_count = strtol(optarg, &tmp, 0);
@@ -794,6 +920,11 @@ static void parse_tune2fs_options(int argc, char **argv)
 				usage();
 			}
 			features_cmd = optarg;
+			open_flag = EXT2_FLAG_RW;
+			break;
+		case 'Q':
+			Q_flag = 1;
+			parse_quota_opts(optarg);
 			open_flag = EXT2_FLAG_RW;
 			break;
 		case 'r':
@@ -1789,6 +1920,15 @@ retry_open:
 		parse_extended_opts(fs, extended_cmd);
 	if (journal_size || journal_device)
 		add_journal(fs);
+
+	if (Q_flag) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("The quota feature may only be changed when "
+				"the filesystem is unmounted.\n"), stderr);
+			exit(1);
+		}
+		handle_quota_options(fs);
+	}
 
 	if (U_flag) {
 		int set_csum = 0;
