@@ -63,6 +63,7 @@ extern int optind;
 #include "prof_err.h"
 #include "../version.h"
 #include "nls-enable.h"
+#include "quota/mkquota.h"
 
 #define STRIDE_LENGTH 8
 
@@ -829,7 +830,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM|
-		EXT4_FEATURE_RO_COMPAT_BIGALLOC
+		EXT4_FEATURE_RO_COMPAT_BIGALLOC|
+		EXT4_FEATURE_RO_COMPAT_QUOTA
 };
 
 
@@ -2137,6 +2139,19 @@ static void fix_cluster_bg_counts(ext2_filsys fs)
 	ext2fs_free_blocks_count_set(fs->super, EXT2FS_C2B(fs, tot_free));
 }
 
+static int create_quota_inodes(ext2_filsys fs)
+{
+	quota_ctx_t qctx;
+
+	init_quota_context(&qctx, fs, -1);
+	compute_quota(qctx, -1);
+	write_quota_inode(qctx, USRQUOTA);
+	write_quota_inode(qctx, GRPQUOTA);
+	release_quota_context(&qctx);
+
+	return;
+}
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -2466,6 +2481,10 @@ no_journal:
 	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
 				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
 		fix_cluster_bg_counts(fs);
+	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
+				       EXT4_FEATURE_RO_COMPAT_QUOTA))
+		create_quota_inodes(fs);
+
 	if (!quiet)
 		printf(_("Writing superblocks and "
 		       "filesystem accounting information: "));

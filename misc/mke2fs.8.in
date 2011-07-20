@@ -528,6 +528,11 @@ option).
 Filesystem can contain files that are greater than 2GB.  (Modern kernels
 set this feature automatically when a file > 2GB is created.)
 .TP
+.B quota
+Create quota inodes (inode# 3 for userquota and inode# 4 for group quota) and
+set them in the superblock.  With this feature, the quotas will be enabled
+automatically when the filesystem is mounted.
+.TP
 .B resize_inode
 Reserve space so the block group descriptor table may grow in the future.
 Useful for online resizing using
