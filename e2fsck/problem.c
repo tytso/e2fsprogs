@@ -412,6 +412,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Setting free @bs count to %c (was %b)\n"),
 	  PROMPT_NONE, PR_PREEN_NOMSG },
 
+	/* Making quota file hidden */
+	{ PR_0_HIDE_QUOTA,
+	  N_("Making @q @is hidden.\n\n"),
+	  PROMPT_NONE, PR_PREEN_OK },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
@@ -904,6 +909,21 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1_CONVERT_SUBCLUSTER,
 	  N_("Error converting subcluster @b @B: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
+
+	/* Quota inode has bad mode */
+	{ PR_1_QUOTA_BAD_MODE,
+	  N_("@q is not regular file.  "),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Quota inode is not in use, but contains data */
+	{ PR_1_QUOTA_INODE_NOT_CLEAR,
+	  N_("@q @i is not in use, but contains data.  "),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Quota inode is user visible */
+	{ PR_1_QUOTA_INODE_NOT_HIDDEN,
+	  N_("@q @i is visible to the user.  "),
+	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Pass 1b errors */
 

@@ -233,6 +233,9 @@ struct problem_context {
 /* Free blocks count wrong */
 #define PR_0_FREE_BLOCK_COUNT			0x000040
 
+/* Make quota file hidden */
+#define	PR_0_HIDE_QUOTA				0x000041
+
 
 /*
  * Pass 1 errors
@@ -528,6 +531,15 @@ struct problem_context {
 
 /* Failed to convert subcluster bitmap */
 #define PR_1_CONVERT_SUBCLUSTER		0x010061
+
+/* Quota inode has wrong mode */
+#define PR_1_QUOTA_BAD_MODE		0x010062
+
+/* Quota inode is not in use, but contains data */
+#define PR_1_QUOTA_INODE_NOT_CLEAR	0x010063
+
+/* Quota inode is user visible */
+#define PR_1_QUOTA_INODE_NOT_HIDDEN	0x010064
 
 /*
  * Pass 1b errors

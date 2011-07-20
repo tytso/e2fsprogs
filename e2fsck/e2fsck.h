@@ -61,6 +61,8 @@
 #define P_(singular, plural, n) ((n) == 1 ? (singular) : (plural))
 #endif
 
+#include "quota/mkquota.h"
+
 /*
  * Exit codes used by fsck-type programs
  */
@@ -305,6 +307,10 @@ struct e2fsck_struct {
 	io_channel	journal_io;
 	char	*journal_name;
 
+	/*
+	 * Ext4 quota support
+	 */
+	quota_ctx_t qctx;
 #ifdef RESOURCE_TRACK
 	/*
 	 * For timing purposes
@@ -440,6 +446,9 @@ extern int e2fsck_check_ext3_journal(e2fsck_t ctx);
 extern int e2fsck_run_ext3_journal(e2fsck_t ctx);
 extern void e2fsck_move_ext3_journal(e2fsck_t ctx);
 extern int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx);
+
+/* quota.c */
+extern void e2fsck_hide_quota(e2fsck_t ctx);
 
 /* pass1.c */
 extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,

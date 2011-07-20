@@ -63,6 +63,7 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i,
 			e2fsck_read_bitmaps(ctx);
 			ext2fs_inode_alloc_stats2(fs, i, -1,
 						  LINUX_S_ISDIR(inode->i_mode));
+			quota_data_inodes(ctx->qctx, inode, i, -1);
 			return 0;
 		}
 	}

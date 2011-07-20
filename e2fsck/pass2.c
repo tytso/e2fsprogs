@@ -1149,6 +1149,11 @@ abort_free_dict:
 	return DIRENT_ABORT;
 }
 
+struct del_block {
+	e2fsck_t	ctx;
+	e2_blkcnt_t	num;
+};
+
 /*
  * This function is called to deallocate a block, and is an interator
  * functioned called by deallocate inode via ext2fs_iterate_block().
@@ -1160,15 +1165,16 @@ static int deallocate_inode_block(ext2_filsys fs,
 				  int ref_offset EXT2FS_ATTR((unused)),
 				  void *priv_data)
 {
-	e2fsck_t	ctx = (e2fsck_t) priv_data;
+	struct del_block *p = priv_data;
 
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 	if ((*block_nr < fs->super->s_first_data_block) ||
 	    (*block_nr >= ext2fs_blocks_count(fs->super)))
 		return 0;
-	ext2fs_unmark_block_bitmap2(ctx->block_found_map, *block_nr);
+	ext2fs_unmark_block_bitmap2(p->ctx->block_found_map, *block_nr);
 	ext2fs_block_alloc_stats2(fs, *block_nr, -1);
+	p->num++;
 	return 0;
 }
 
@@ -1181,6 +1187,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	struct ext2_inode	inode;
 	struct problem_context	pctx;
 	__u32			count;
+	struct del_block	del_block;
 
 	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
 	e2fsck_clear_inode(ctx, ino, &inode, 0, "deallocate_inode");
@@ -1223,8 +1230,11 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	if (LINUX_S_ISREG(inode.i_mode) && EXT2_I_SIZE(&inode) >= 0x80000000UL)
 		ctx->large_files--;
 
+	del_block.ctx = ctx;
+	del_block.num = 0;
 	pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
-					     deallocate_inode_block, ctx);
+					     deallocate_inode_block,
+					     &del_block);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_2_DEALLOC_INODE, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;

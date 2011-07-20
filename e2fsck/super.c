@@ -856,6 +856,11 @@ void check_super_block(e2fsck_t ctx)
 	 */
 	e2fsck_fix_dirhash_hint(ctx);
 
+	/*
+	 * Hide quota inodes if necessary.
+	 */
+	e2fsck_hide_quota(ctx);
+
 	return;
 }
 

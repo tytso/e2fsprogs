@@ -596,6 +596,7 @@ static int delete_file_block(ext2_filsys fs,
 	} else {
 		ext2fs_unmark_block_bitmap2(ctx->block_found_map, *block_nr);
 		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
+		pb->dup_blocks++;
 	}
 
 	return 0;
@@ -612,7 +613,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 
 	clear_problem_context(&pctx);
 	pctx.ino = pb.ino = ino;
-	pb.dup_blocks = dp->num_dupblocks;
+	pb.dup_blocks = 0;
 	pb.ctx = ctx;
 	pctx.str = "delete_file";
 
@@ -625,6 +626,8 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	if (ctx->inode_bad_map)
 		ext2fs_unmark_inode_bitmap2(ctx->inode_bad_map, ino);
 	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
+	quota_data_sub(ctx->qctx, &inode, ino, pb.dup_blocks * fs->blocksize);
+	quota_data_inodes(ctx->qctx, &inode, ino, -1);
 
 	/* Inode may have changed by block_iterate, so reread it */
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
@@ -656,6 +659,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 			delete_file_block(fs, &blk,
 					  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
 			ext2fs_file_acl_block_set(&inode, blk);
+			quota_data_sub(ctx->qctx, &inode, ino, fs->blocksize);
 		}
 	}
 }

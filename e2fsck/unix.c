@@ -1411,6 +1411,18 @@ print_unsupp_features:
 	else
 		journal_size = -1;
 
+	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA) {
+		int qtype;
+		/* Quotas were enabled. Do quota accounting during fsck. */
+		if ((sb->s_usr_quota_inum && sb->s_grp_quota_inum) ||
+		    (!sb->s_usr_quota_inum && !sb->s_grp_quota_inum))
+			qtype = -1;
+		else
+			qtype = sb->s_usr_quota_inum ? USRQUOTA : GRPQUOTA;
+
+		init_quota_context(&ctx->qctx, ctx->fs, qtype);
+	}
+
 	run_result = e2fsck_run(ctx);
 	e2fsck_clear_progbar(ctx);
 
@@ -1442,6 +1454,11 @@ print_unsupp_features:
 		}
 	}
 no_journal:
+
+	if (ctx->qctx) {
+		write_quota_inode(ctx->qctx, -1);
+		release_quota_context(&ctx->qctx);
+	}
 
 	if (run_result == E2F_FLAG_RESTART) {
 		printf(_("Restarting e2fsck from the beginning...\n"));

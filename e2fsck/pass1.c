@@ -893,6 +893,33 @@ void e2fsck_pass1(e2fsck_t ctx)
 				e2fsck_write_inode_full(ctx, ino, inode,
 							inode_size, "pass1");
 			}
+		} else if ((ino == EXT4_USR_QUOTA_INO) ||
+			   (ino == EXT4_GRP_QUOTA_INO)) {
+			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
+			if ((fs->super->s_feature_ro_compat &
+					EXT4_FEATURE_RO_COMPAT_QUOTA) &&
+			    (fs->super->s_usr_quota_inum == ino) ||
+			    (fs->super->s_grp_quota_inum == ino)) {
+				if (!LINUX_S_ISREG(inode->i_mode) &&
+				    fix_problem(ctx, PR_1_QUOTA_BAD_MODE,
+							&pctx)) {
+					inode->i_mode = LINUX_S_IFREG;
+					e2fsck_write_inode(ctx, ino, inode,
+							"pass1");
+				}
+				check_blocks(ctx, &pctx, block_buf);
+				continue;
+			}
+			if ((inode->i_links_count ||
+			     inode->i_blocks || inode->i_block[0]) &&
+			    fix_problem(ctx, PR_1_QUOTA_INODE_NOT_CLEAR,
+					&pctx)) {
+				memset(inode, 0, inode_size);
+				ext2fs_icount_store(ctx->inode_link_info,
+						    ino, 0);
+				e2fsck_write_inode_full(ctx, ino, inode,
+							inode_size, "pass1");
+			}
 		} else if (ino < EXT2_FIRST_INODE(fs->super)) {
 			int	problem = 0;
 
@@ -918,6 +945,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			check_blocks(ctx, &pctx, block_buf);
 			continue;
 		}
+
 		/*
 		 * Check for inodes who might have been part of the
 		 * orphaned list linked list.  They should have gotten
@@ -1976,6 +2004,12 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			ctx->fs_directory_count--;
 			return;
 		}
+	}
+
+	if (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super)) {
+		quota_data_add(ctx->qctx, inode, ino,
+			       pb.num_blocks * fs->blocksize);
+		quota_data_inodes(ctx->qctx, inode, ino, +1);
 	}
 
 	if (!(fs->super->s_feature_ro_compat &

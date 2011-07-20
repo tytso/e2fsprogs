@@ -76,6 +76,7 @@
  *	@n	invalid
  * 	@o	orphaned
  * 	@p	problem in
+ *	@q	quota
  * 	@r	root inode
  * 	@s	should be
  * 	@S	superblock
@@ -131,6 +132,7 @@ static const char *abbrevs[] = {
 	N_("ninvalid"),
 	N_("oorphaned"),
 	N_("pproblem in"),
+	N_("qquota"),
 	N_("rroot @i"),
 	N_("sshould be"),
 	N_("Ssuper@b"),
