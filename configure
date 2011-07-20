@@ -677,6 +677,13 @@ DEFRAG_CMT
 RESIZER_CMT
 IMAGER_CMT
 DEBUGFS_CMT
+QUOTA_CMT
+DEPPROFILED_LIBQUOTA
+PROFILED_LIBQUOTA
+DEPSTATIC_LIBQUOTA
+STATIC_LIBQUOTA
+DEPLIBQUOTA
+LIBQUOTA
 BLKID_CMT
 DEPPROFILED_LIBBLKID
 PROFILED_LIBBLKID
@@ -802,6 +809,7 @@ enable_blkid_debug
 enable_testio_debug
 enable_libuuid
 enable_libblkid
+enable_libquota
 enable_debugfs
 enable_imager
 enable_resizer
@@ -1454,6 +1462,7 @@ Optional Features:
   --disable-testio-debug  disable the use of the test I/O manager for debugging
   --disable-libuuid	  do not build private uuid library
   --disable-libblkid	  do not build private blkid library
+  --disable-libquota	  do not build private quota library
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
@@ -5331,6 +5340,220 @@ $as_echo "#define CONFIG_BUILD_FINDFS 1" >>confdefs.h
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private blkid library by default" >&5
 $as_echo "Enabling private blkid library by default" >&6; }
+
+fi
+
+
+
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+        if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_PKG_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_ac_pt_PKG_CONFIG+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+        _pkg_min_version=0.9.0
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+        if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+        else
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+                PKG_CONFIG=""
+        fi
+
+fi
+LIBQUOTA=
+DEPLIBQUOTA=
+STATIC_LIBQUOTA=
+DEPSTATIC_LIBQUOTA=
+PROFILED_LIBQUOTA=
+DEPPROFILED_LIBQUOTA=
+QUOTA_CMT=
+# Check whether --enable-libquota was given.
+if test "${enable_libquota+set}" = set; then :
+  enableval=$enable_libquota; if test "$enableval" = "no"
+then
+	if test -z "$PKG_CONFIG"; then
+		as_fn_error "pkg-config not installed; please install it." "$LINENO" 5
+	fi
+
+	as_ac_Lib=`$as_echo "ac_cv_lib_quota_LIBQUOTA=\`$PKG_CONFIG --libs quota\`;
+		 STATIC_LIBQUOTA=\`$PKG_CONFIG --static --libs quota\`" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBQUOTA=\`$PKG_CONFIG --libs quota\`;
+		 STATIC_LIBQUOTA=\`$PKG_CONFIG --static --libs quota\` in -lquota" >&5
+$as_echo_n "checking for LIBQUOTA=\`$PKG_CONFIG --libs quota\`;
+		 STATIC_LIBQUOTA=\`$PKG_CONFIG --static --libs quota\` in -lquota... " >&6; }
+if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lquota  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char LIBQUOTA=`$PKG_CONFIG --libs quota`;
+		 STATIC_LIBQUOTA=`$PKG_CONFIG --static --libs quota` ();
+int
+main ()
+{
+return LIBQUOTA=`$PKG_CONFIG --libs quota`;
+		 STATIC_LIBQUOTA=`$PKG_CONFIG --static --libs quota` ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+eval as_val=\$$as_ac_Lib
+   if test "x$as_val" = x""yes; then :
+  as_fn_error "external quota library not found" "$LINENO" 5
+else
+  $LIBQUOTA
+fi
+
+	QUOTA_CMT=#
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling private quota library" >&5
+$as_echo "Disabling private quota library" >&6; }
+else
+	LIBQUOTA='$(LIB)/libquota'$LIB_EXT
+	DEPLIBQUOTA=$LIBQUOTA
+	STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
+	DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
+	PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private quota library" >&5
+$as_echo "Enabling private quota library" >&6; }
+fi
+
+else
+  LIBQUOTA='$(LIB)/libquota'$LIB_EXT
+DEPLIBQUOTA=$LIBQUOTA
+STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
+DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
+PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
+DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private quota library by default" >&5
+$as_echo "Enabling private quota library by default" >&6; }
 
 fi
 
@@ -11118,7 +11341,7 @@ for i in MCONFIG Makefile e2fsprogs.spec \
 	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
 	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
 	lib/uuid/Makefile lib/uuid/uuid_types.h \
-	lib/blkid/Makefile lib/blkid/blkid_types.h \
+	lib/blkid/Makefile lib/blkid/blkid_types.h lib/quota/Makefile \
 	lib/ss/ss.pc lib/uuid/uuid.pc lib/et/com_err.pc \
 	lib/e2p/e2p.pc lib/blkid/blkid.pc lib/ext2fs/ext2fs.pc \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \

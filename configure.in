@@ -527,6 +527,57 @@ AC_SUBST(PROFILED_LIBBLKID)
 AC_SUBST(DEPPROFILED_LIBBLKID)
 AC_SUBST(BLKID_CMT)
 dnl
+dnl handle --disable-libquota
+dnl
+PKG_PROG_PKG_CONFIG
+LIBQUOTA=
+DEPLIBQUOTA=
+STATIC_LIBQUOTA=
+DEPSTATIC_LIBQUOTA=
+PROFILED_LIBQUOTA=
+DEPPROFILED_LIBQUOTA=
+QUOTA_CMT=
+AC_ARG_ENABLE([libquota],
+[  --disable-libquota	  do not build private quota library],
+if test "$enableval" = "no"
+then
+	if test -z "$PKG_CONFIG"; then
+		AC_MSG_ERROR([pkg-config not installed; please install it.])
+	fi
+
+	AC_CHECK_LIB(quota,
+		[LIBQUOTA=`$PKG_CONFIG --libs quota`;
+		 STATIC_LIBQUOTA=`$PKG_CONFIG --static --libs quota`],
+		[AC_MSG_ERROR([external quota library not found])],
+		[$LIBQUOTA])
+	QUOTA_CMT=#
+	AC_MSG_RESULT([Disabling private quota library])
+else
+	LIBQUOTA='$(LIB)/libquota'$LIB_EXT
+	DEPLIBQUOTA=$LIBQUOTA
+	STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
+	DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
+	PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
+	AC_MSG_RESULT([Enabling private quota library])
+fi
+,
+LIBQUOTA='$(LIB)/libquota'$LIB_EXT
+DEPLIBQUOTA=$LIBQUOTA
+STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
+DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
+PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
+DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
+AC_MSG_RESULT([Enabling private quota library by default])
+)
+AC_SUBST(LIBQUOTA)
+AC_SUBST(DEPLIBQUOTA)
+AC_SUBST(STATIC_LIBQUOTA)
+AC_SUBST(DEPSTATIC_LIBQUOTA)
+AC_SUBST(PROFILED_LIBQUOTA)
+AC_SUBST(DEPPROFILED_LIBQUOTA)
+AC_SUBST(QUOTA_CMT)
+dnl
 dnl handle --enable-debugfs
 dnl
 AC_ARG_ENABLE([debugfs],
@@ -1096,7 +1147,7 @@ for i in MCONFIG Makefile e2fsprogs.spec \
 	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
 	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
 	lib/uuid/Makefile lib/uuid/uuid_types.h \
-	lib/blkid/Makefile lib/blkid/blkid_types.h \
+	lib/blkid/Makefile lib/blkid/blkid_types.h lib/quota/Makefile \
 	lib/ss/ss.pc lib/uuid/uuid.pc lib/et/com_err.pc \
 	lib/e2p/e2p.pc lib/blkid/blkid.pc lib/ext2fs/ext2fs.pc \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
