@@ -193,6 +193,7 @@ errcode_t ext2fs_copy_generic_bmap(ext2fs_generic_bitmap src,
 	new_bmap->real_end = src->real_end;
 	new_bmap->bitmap_ops = src->bitmap_ops;
 	new_bmap->base_error_code = src->base_error_code;
+	new_bmap->cluster_bits = src->cluster_bits;
 
 	descr = src->description;
 	if (descr) {
