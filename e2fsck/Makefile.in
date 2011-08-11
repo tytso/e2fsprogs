@@ -64,7 +64,8 @@ COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 OBJS= crc32.o dict.o unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o \
 	pass3.o pass4.o pass5.o journal.o badblocks.o util.o dirinfo.o \
 	dx_dirinfo.o ehandler.o problem.o message.o recovery.o region.o \
-	revoke.o ea_refcount.o rehash.o profile.o prof_err.o $(MTRACE_OBJ)
+	revoke.o ea_refcount.o rehash.o profile.o prof_err.o sigcatcher.o \
+	$(MTRACE_OBJ)
 
 PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
 	profiled/super.o profiled/pass1.o profiled/pass1b.o \
@@ -74,7 +75,7 @@ PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
 	profiled/message.o profiled/problem.o \
 	profiled/recovery.o profiled/region.o profiled/revoke.o \
 	profiled/ea_refcount.o profiled/rehash.o profiled/profile.o \
-	profiled/crc32.o profiled/prof_err.o
+	profiled/crc32.o profiled/prof_err.o profiled/sigcatcher.o
 
 SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/crc32.c \
@@ -102,6 +103,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/rehash.c \
 	$(srcdir)/region.c \
 	$(srcdir)/profile.c \
+	$(srcdir)/sigcatcher.c \
 	prof_err.c \
 	$(MTRACE_SRC)
 
@@ -115,7 +117,7 @@ prof_err.c prof_err.h: prof_err.et
 
 e2fsck: $(OBJS)  $(DEPLIBS)
 	$(E) "	LD $@"
-	$(Q) $(LD) $(ALL_LDFLAGS) -o e2fsck $(OBJS) $(LIBS) 
+	$(Q) $(LD) $(ALL_LDFLAGS) $(RDYNAMIC) -o e2fsck $(OBJS) $(LIBS) 
 
 e2fsck.static: $(OBJS) $(STATIC_DEPLIBS)
 	$(E) "	LD $@"
@@ -134,6 +136,10 @@ gen_crc32table: $(srcdir)/gen_crc32table.c
 crc32table.h: gen_crc32table
 	$(E) "	GEN32TABLE $@"
 	$(Q) ./gen_crc32table > crc32table.h
+
+tst_sigcatcher: $(srcdir)/sigcatcher.c
+	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) $(RDYNAMIC) \
+		$(srcdir)/sigcatcher.c -DDEBUG -o tst_sigcatcher
 
 tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(LIBEXT2FS) \
 	$(DEPLIBCOM_ERR)
@@ -437,5 +443,12 @@ region.o: $(srcdir)/region.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(srcdir)/profile.h prof_err.h
 profile.o: $(srcdir)/profile.c $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/profile.h prof_err.h
+sigcatcher.o: $(srcdir)/sigcatcher.c $(srcdir)/e2fsck.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(srcdir)/profile.h prof_err.h
 prof_err.o: prof_err.c

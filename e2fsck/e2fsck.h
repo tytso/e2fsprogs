@@ -475,6 +475,9 @@ extern int region_allocate(region_t region, region_addr_t start, int n);
 errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino);
 void e2fsck_rehash_directories(e2fsck_t ctx);
 
+/* sigcatcher.c */
+void sigcatcher_setup(void);
+
 /* super.c */
 void check_super_block(e2fsck_t ctx);
 int check_backup_super_block(e2fsck_t ctx);

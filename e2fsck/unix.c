@@ -1024,6 +1024,7 @@ int main (int argc, char *argv[])
 	char *cp;
 
 	clear_problem_context(&pctx);
+	sigcatcher_setup();
 #ifdef MTRACE
 	mtrace();
 #endif
