@@ -337,7 +337,8 @@ Create an internal journal (i.e., stored inside the filesystem) of size
 megabytes.
 The size of the journal must be at least 1024 filesystem blocks
 (i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.)
-and may be no more than 102,400 filesystem blocks.
+and may be no more than 10,240,000 filesystem blocks or half the total
+file system size (whichever is smaller)
 @JDEV@.TP
 @JDEV@.BI device= external-journal
 @JDEV@Attach the filesystem to the journal block device located on
