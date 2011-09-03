@@ -1,3 +1,10 @@
+if test -x $DEBUGFS_EXE; then
+
 IMAGE=$test_dir/../f_imagic/image.gz
 PREP_CMD='$DEBUGFS -w -R "feature imagic_inodes" $TMPFILE > /dev/null 2>&1'
 . $cmd_dir/run_e2fsck
+
+else #if test -x $DEBUGFS_EXE; then
+	rm -f $test_name.ok $test_name.failed
+	echo "skipped"
+fi 

@@ -1,3 +1,5 @@
+if test -x $DEBUGFS_EXE; then
+
 printf "e2fsck with resize_inode: "
 FSCK_OPT=-yf
 OUT=$test_name.log
@@ -138,3 +140,7 @@ fi
 
 unset IMAGE FSCK_OPT OUT EXP
 
+else #if test -x $DEBUGFS_EXE; then
+	rm -f $test_name.ok $test_name.failed
+	echo "skipped"
+fi 

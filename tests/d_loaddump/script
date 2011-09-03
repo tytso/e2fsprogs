@@ -1,3 +1,5 @@
+if test -x $DEBUGFS_EXE; then
+
 OUT=$test_name.log
 EXP=$test_dir/expect
 VERIFY_FSCK_OPT=-yf
@@ -59,3 +61,7 @@ fi
 
 unset VERIFY_FSCK_OPT NATIVE_FSCK_OPT OUT EXP TEST_DATA VERIFY_DATA
 
+else #if test -x $DEBUGFS_EXE; then
+	rm -f $test_name.ok $test_name.failed
+	echo "skipped"
+fi 

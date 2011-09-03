@@ -1,4 +1,4 @@
-if test -x $RESIZE2FS_EXE; then
+if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
 
 FSCK_OPT=-yf
 OUT=$test_name.log
@@ -112,7 +112,7 @@ fi
 
 unset IMAGE FSCK_OPT OUT EXP
 
-else #if test -x $RESIZE2FS; then
+else #if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
 	rm -f $test_name.ok $test_name.failed
 	echo "skipped"
 fi 
