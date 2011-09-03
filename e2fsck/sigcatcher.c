@@ -218,6 +218,7 @@ void sigcatcher_setup(void)
 {
 	struct sigaction	sa;
 	
+	memset(&sa, 0, sizeof(struct sigaction));
 	sa.sa_sigaction = die_signal_handler;
 	sa.sa_flags = SA_SIGINFO;
 
