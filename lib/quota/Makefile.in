@@ -82,8 +82,8 @@ install:: all installdirs
 	$(Q) $(INSTALL_DATA) libquota.a $(DESTDIR)$(libdir)/libquota.a
 	-$(Q) $(RANLIB) $(DESTDIR)$(libdir)/libquota.a
 	$(Q) $(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libquota.a
-	$(E) "	INSTALL_DATA $(includedir)/quota/quota.h"
-	$(Q) $(INSTALL_DATA) mkquota.h $(DESTDIR)$(includedir)/quota/mkquota.h
+	$(E) "	INSTALL_DATA $(includedir)/quota/mkquota.h"
+	$(Q) $(INSTALL_DATA) $(srcdir)/mkquota.h $(DESTDIR)$(includedir)/quota/mkquota.h
 	$(Q) for i in $(SMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man3dir)/$$i.gz; \
 		echo "	INSTALL_DATA $(man3dir)/$$i"; \
