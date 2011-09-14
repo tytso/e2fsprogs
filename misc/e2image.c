@@ -759,7 +759,8 @@ static void put_used_table(struct ext2_qcow2_image *img,
 
 static void flush_l2_cache(struct ext2_qcow2_image *image)
 {
-	blk64_t offset, seek = 0;
+	blk64_t seek = 0;
+	ext2_loff_t offset;
 	struct ext2_qcow2_l2_cache *cache = image->l2_cache;
 	struct ext2_qcow2_l2_table *table = cache->used_head;
 	int fd = image->fd;
