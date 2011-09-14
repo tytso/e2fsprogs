@@ -2158,7 +2158,7 @@ int main (int argc, char *argv[])
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
 	unsigned int	journal_blocks;
-	unsigned int	i;
+	unsigned int	i, max_mnt_count, checkinterval;
 	int		val, hash_alg;
 	int		flags;
 	int		old_bitmaps;
@@ -2488,22 +2488,23 @@ no_journal:
 	if (!quiet)
 		printf(_("Writing superblocks and "
 		       "filesystem accounting information: "));
-	retval = ext2fs_flush(fs);
+	checkinterval = fs->super->s_checkinterval;
+	max_mnt_count = fs->super->s_max_mnt_count;
+	retval = ext2fs_close(fs);
 	if (retval) {
 		fprintf(stderr,
 			_("\nWarning, had trouble writing out superblocks."));
-	}
-	if (!quiet) {
+	} else if (!quiet) {
 		printf(_("done\n\n"));
 		if (!getenv("MKE2FS_SKIP_CHECK_MSG"))
-			print_check_message(fs);
+			print_check_message(max_mnt_count, checkinterval);
 	}
-	val = ext2fs_close(fs);
+
 	remove_error_table(&et_ext2_error_table);
 	remove_error_table(&et_prof_error_table);
 	profile_release(profile);
 	for (i=0; fs_types[i]; i++)
 		free(fs_types[i]);
 	free(fs_types);
-	return (retval || val) ? 1 : 0;
+	return retval;
 }

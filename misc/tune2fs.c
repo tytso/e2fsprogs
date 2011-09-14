@@ -607,7 +607,8 @@ static void add_journal(ext2_filsys fs)
 		if ((mount_flags & EXT2_MF_MOUNTED) == 0)
 			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	}
-	print_check_message(fs);
+	print_check_message(fs->super->s_max_mnt_count,
+			    fs->super->s_checkinterval);
 	return;
 
 err:
