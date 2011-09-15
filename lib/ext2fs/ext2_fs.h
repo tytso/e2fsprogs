@@ -109,6 +109,18 @@
 #define EXT2_CLUSTER_SIZE_BITS(s)	((s)->s_log_cluster_size + 10)
 
 /*
+ * Macro-instructions used to manage fragments
+ *
+ * Note: for backwards compatibility only, for the dump program.
+ * Ext2/3/4 will never support fragments....
+ */
+#define EXT2_MIN_FRAG_SIZE              EXT2_MIN_BLOCK_SIZE
+#define EXT2_MAX_FRAG_SIZE              EXT2_MAX_BLOCK_SIZE
+#define EXT2_MIN_FRAG_LOG_SIZE          EXT2_MIN_BLOCK_LOG_SIZE
+#define EXT2_FRAG_SIZE(s)		EXT2_BLOCK_SIZE(s)
+#define EXT2_FRAGS_PER_BLOCK(s)		1
+
+/*
  * ACL structures
  */
 struct ext2_acl_header	/* Header of Access Control Lists */

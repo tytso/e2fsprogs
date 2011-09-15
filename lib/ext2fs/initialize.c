@@ -177,7 +177,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 
 	super->s_creator_os = CREATOR_OS;
 
-	fs->blocksize = EXT2_BLOCK_SIZE(super);
+	fs->fragsize = fs->blocksize = EXT2_BLOCK_SIZE(super);
 	fs->cluster_ratio_bits = super->s_log_cluster_size -
 		super->s_log_block_size;
 

@@ -195,7 +195,7 @@ struct struct_ext2_filsys {
 	char *				device_name;
 	struct ext2_super_block	* 	super;
 	unsigned int			blocksize;
-	int				cluster_ratio_bits;
+	int				fragsize;
 	dgrp_t				group_desc_count;
 	unsigned long			desc_blocks;
 	struct ext2_group_desc *	group_desc;
@@ -216,10 +216,11 @@ struct struct_ext2_filsys {
 	struct ext2_image_hdr *		image_header;
 	__u32				umask;
 	time_t				now;
+	int				cluster_ratio_bits;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[7];
+	__u32				reserved[6];
 
 	/*
 	 * Reserved for the use of the calling application.
