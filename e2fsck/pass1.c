@@ -364,8 +364,8 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 	printf("inode #%u, i_extra_size %d\n", pctx->ino,
 			inode->i_extra_isize);
 #endif
-	/* i_extra_isize must cover i_extra_isize + i_pad1 at least */
-	min = sizeof(inode->i_extra_isize) + sizeof(inode->i_pad1);
+	/* i_extra_isize must cover i_extra_isize + i_checksum_hi at least */
+	min = sizeof(inode->i_extra_isize) + sizeof(inode->i_checksum_hi);
 	max = EXT2_INODE_SIZE(sb) - EXT2_GOOD_OLD_INODE_SIZE;
 	/*
 	 * For now we will allow i_extra_isize to be 0, but really

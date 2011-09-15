@@ -78,6 +78,8 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_snapshot_list = ext2fs_swab32(sb->s_snapshot_list);
 	sb->s_usr_quota_inum = ext2fs_swab32(sb->s_usr_quota_inum);
 	sb->s_grp_quota_inum = ext2fs_swab32(sb->s_grp_quota_inum);
+	sb->s_overhead_blocks = ext2fs_swab32(sb->s_overhead_blocks);
+	sb->s_checksum = ext2fs_swab32(sb->s_checksum);
 
 	for (i=0; i < 4; i++)
 		sb->s_hash_seed[i] = ext2fs_swab32(sb->s_hash_seed[i]);
@@ -106,6 +108,11 @@ void ext2fs_swap_group_desc2(ext2_filsys fs, struct ext2_group_desc *gdp)
 	gdp->bg_free_inodes_count = ext2fs_swab16(gdp->bg_free_inodes_count);
 	gdp->bg_used_dirs_count = ext2fs_swab16(gdp->bg_used_dirs_count);
 	gdp->bg_flags = ext2fs_swab16(gdp->bg_flags);
+	gdp->bg_exclude_bitmap_lo = ext2fs_swab32(gdp->bg_exclude_bitmap_lo);
+	gdp->bg_block_bitmap_csum_lo =
+		ext2fs_swab16(gdp->bg_block_bitmap_csum_lo);
+	gdp->bg_inode_bitmap_csum_lo =
+		ext2fs_swab16(gdp->bg_inode_bitmap_csum_lo);
 	gdp->bg_itable_unused = ext2fs_swab16(gdp->bg_itable_unused);
 	gdp->bg_checksum = ext2fs_swab16(gdp->bg_checksum);
 	/* If we're 32-bit, we're done */
@@ -125,6 +132,11 @@ void ext2fs_swap_group_desc2(ext2_filsys fs, struct ext2_group_desc *gdp)
 	gdp4->bg_used_dirs_count_hi =
 		ext2fs_swab16(gdp4->bg_used_dirs_count_hi);
 	gdp4->bg_itable_unused_hi = ext2fs_swab16(gdp4->bg_itable_unused_hi);
+	gdp->bg_exclude_bitmap_hi = ext2fs_swab16(gdp->bg_exclude_bitmap_hi);
+	gdp->bg_block_bitmap_csum_hi =
+		ext2fs_swab16(gdp->bg_block_bitmap_csum_hi);
+	gdp->bg_inode_bitmap_csum_hi =
+		ext2fs_swab16(gdp->bg_inode_bitmap_csum_hi);
 }
 
 void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
@@ -244,8 +256,8 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		  ext2fs_swab16 (f->osd2.linux2.l_i_uid_high);
 		t->osd2.linux2.l_i_gid_high =
 		  ext2fs_swab16 (f->osd2.linux2.l_i_gid_high);
-		t->osd2.linux2.l_i_reserved2 =
-			ext2fs_swab32(f->osd2.linux2.l_i_reserved2);
+		t->osd2.linux2.l_i_checksum =
+			ext2fs_swab32(f->osd2.linux2.checksum);
 		break;
 	case EXT2_OS_HURD:
 		t->osd1.hurd1.h_i_translator =

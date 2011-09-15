@@ -61,7 +61,8 @@ void check_structure_fields()
 	check_field(osd2.linux2.l_i_file_acl_high);
 	check_field(osd2.linux2.l_i_uid_high);
 	check_field(osd2.linux2.l_i_gid_high);
-	check_field(osd2.linux2.l_i_reserved2);
+	check_field(osd2.linux2.l_i_checksum_lo);
+	check_field(osd2.linux2.l_i_reserved);
 	printf("Ending offset is %d\n\n", cur_offset);
 #endif
 }

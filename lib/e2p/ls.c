@@ -413,6 +413,10 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (sb->s_grp_quota_inum)
 		fprintf(f, "Group quota inode:        %u\n",
 			sb->s_grp_quota_inum);
+
+	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
+		fprintf(f, "Checksum:                 0x%08x\n",
+			sb->s_checksum);
 }
 
 void list_super (struct ext2_super_block * s)

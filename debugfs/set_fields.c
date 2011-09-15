@@ -144,6 +144,7 @@ static struct field_set_info super_fields[] = {
 	{ "usr_quota_inum", &set_sb.s_usr_quota_inum, 4, parse_uint },
 	{ "grp_quota_inum", &set_sb.s_grp_quota_inum, 4, parse_uint },
 	{ "overhead_blocks", &set_sb.s_overhead_blocks, 4, parse_uint },
+	{ "checksum", &set_sb.s_checksum, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 
@@ -179,6 +180,7 @@ static struct field_set_info inode_fields[] = {
 	{ "fsize", &set_inode.osd2.hurd2.h_i_fsize, 1, parse_uint },
 	{ "uid_high", &set_inode.osd2.linux2.l_i_uid_high, 2, parse_uint },
 	{ "gid_high", &set_inode.osd2.linux2.l_i_gid_high, 2, parse_uint },
+	{ "checksum", &set_inode.osd2.linux2.l_i_checksum_lo, 2, parse_uint },
 	{ "author", &set_inode.osd2.hurd2.h_i_author, 4, parse_uint },
 	{ "bmap", NULL, 4, parse_bmap, FLAG_ARRAY },
 	{ 0, 0, 0, 0 }
@@ -192,7 +194,6 @@ static struct field_set_info ext2_bg_fields[] = {
 	{ "free_inodes_count", &set_gd.bg_free_inodes_count, 2, parse_uint },
 	{ "used_dirs_count", &set_gd.bg_used_dirs_count, 2, parse_uint },
 	{ "flags", &set_gd.bg_flags, 2, parse_uint },
-	{ "reserved", &set_gd.bg_reserved, 2, parse_uint, FLAG_ARRAY, 2 },
 	{ "itable_unused", &set_gd.bg_itable_unused, 2, parse_uint },
 	{ "checksum", &set_gd.bg_checksum, 2, parse_gd_csum },
 	{ 0, 0, 0, 0 }
