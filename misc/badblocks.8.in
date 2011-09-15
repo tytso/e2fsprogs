@@ -184,7 +184,8 @@ are specified then all blocks will be tested with one pattern
 before proceeding to the next pattern.
 .TP
 .B \-v
-Verbose mode.
+Verbose mode.  Will write the number of read errors, write errors and data-
+corruptions to stderr.
 .TP
 .B \-w
 Use write-mode test. With this option,
