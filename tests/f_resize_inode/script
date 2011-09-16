@@ -17,6 +17,7 @@ dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
 echo mke2fs -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 16384 > $OUT
 $MKE2FS -F -O resize_inode -o Linux -b 1024 -g 1024 $TMPFILE 16384 2>&1 \
 	| sed -e '1d' | grep -v "automatically checked" | 
+	grep -v 'Discarding device blocks' |
 	grep -v "whichever comes first" >> $OUT 
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1

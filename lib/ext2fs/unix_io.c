@@ -49,6 +49,9 @@
 #if HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
+#if HAVE_LINUX_FALLOC_H
+#include <linux/falloc.h>
+#endif
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKROGET)
 #define BLKROGET   _IO(0x12, 94) /* Get read-only status (0 = read_write).  */
@@ -488,6 +491,20 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		goto cleanup;
 	}
 
+	/*
+	 * If the device is really a block device, then set the
+	 * appropriate flag, otherwise we can set DISCARD_ZEROES flag
+	 * because we are going to use punch hole instead of discard
+	 * and if it succeed, subsequent read from sparse area returns
+	 * zero.
+	 */
+	if (ext2fs_stat(io->name, &st) == 0) {
+		if (S_ISBLK(st.st_mode))
+			io->flags |= CHANNEL_FLAGS_BLOCK_DEVICE;
+		else
+			io->flags |= CHANNEL_FLAGS_DISCARD_ZEROES;
+	}
+
 #ifdef BLKSSZGET
 	if (flags & IO_FLAG_DIRECT_IO) {
 		if (ioctl(data->dev, BLKSSZGET, &data->align) != 0)
@@ -853,13 +870,12 @@ static errcode_t unix_set_option(io_channel channel, const char *option,
 }
 
 #if defined(__linux__) && !defined(BLKDISCARD)
-#define BLKDISCARD	_IO(0x12,119)
+#define BLKDISCARD		_IO(0x12,119)
 #endif
 
 static errcode_t unix_discard(io_channel channel, unsigned long long block,
 			      unsigned long long count)
 {
-#ifdef BLKDISCARD
 	struct unix_private_data *data;
 	__uint64_t	range[2];
 	int		ret;
@@ -868,14 +884,35 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
-	range[0] = (__uint64_t)(block) * channel->block_size;
-	range[1] = (__uint64_t)(count) * channel->block_size;
+	if (channel->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
+#ifdef BLKDISCARD
+		range[0] = (__uint64_t)(block) * channel->block_size;
+		range[1] = (__uint64_t)(count) * channel->block_size;
 
-	ret = ioctl(data->dev, BLKDISCARD, &range);
-	if (ret < 0)
-		return errno;
-	return 0;
+		ret = ioctl(data->dev, BLKDISCARD, &range);
 #else
-	return EXT2_ET_UNIMPLEMENTED;
+		goto unimplemented;
 #endif
+	} else {
+#ifdef FALLOC_FL_PUNCH_HOLE
+		/*
+		 * If we are not on block device, try to use punch hole
+		 * to reclaim free space.
+		 */
+		ret = fallocate(data->dev,
+				FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
+				(off_t)(block) * channel->block_size,
+				(off_t)(count) * channel->block_size);
+#else
+		goto unimplemented;
+#endif
+	}
+	if (ret < 0) {
+		if (errno == EOPNOTSUPP)
+			goto unimplemented;
+		return errno;
+	}
+	return 0;
+unimplemented:
+	return EXT2_ET_UNIMPLEMENTED;
 }
