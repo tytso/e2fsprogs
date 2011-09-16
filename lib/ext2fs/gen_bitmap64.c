@@ -392,7 +392,7 @@ errcode_t ext2fs_set_generic_bmap_range(ext2fs_generic_bitmap bmap,
 		return EINVAL;
 
 	if (EXT2FS_IS_32_BITMAP(bmap)) {
-		if ((start+num) & ~0xffffffffULL) {
+		if ((start+num-1) & ~0xffffffffULL) {
 			ext2fs_warn_bitmap2(bmap, EXT2FS_UNMARK_ERROR,
 					    0xffffffff);
 			return EINVAL;
@@ -415,7 +415,7 @@ errcode_t ext2fs_get_generic_bmap_range(ext2fs_generic_bitmap bmap,
 		return EINVAL;
 
 	if (EXT2FS_IS_32_BITMAP(bmap)) {
-		if ((start+num) & ~0xffffffffULL) {
+		if ((start+num-1) & ~0xffffffffULL) {
 			ext2fs_warn_bitmap2(bmap,
 					    EXT2FS_UNMARK_ERROR, 0xffffffff);
 			return EINVAL;
@@ -486,7 +486,7 @@ int ext2fs_test_block_bitmap_range2(ext2fs_block_bitmap bmap,
 						 bmap, block);
 
 	if (EXT2FS_IS_32_BITMAP(bmap)) {
-		if ((block+num) & ~0xffffffffULL) {
+		if ((block+num-1) & ~0xffffffffULL) {
 			ext2fs_warn_bitmap2((ext2fs_generic_bitmap) bmap,
 					    EXT2FS_UNMARK_ERROR, 0xffffffff);
 			return EINVAL;
@@ -508,7 +508,7 @@ void ext2fs_mark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 		return;
 
 	if (EXT2FS_IS_32_BITMAP(bmap)) {
-		if ((block+num) & ~0xffffffffULL) {
+		if ((block+num-1) & ~0xffffffffULL) {
 			ext2fs_warn_bitmap2((ext2fs_generic_bitmap) bmap,
 					    EXT2FS_UNMARK_ERROR, 0xffffffff);
 			return;
@@ -536,7 +536,7 @@ void ext2fs_unmark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 		return;
 
 	if (EXT2FS_IS_32_BITMAP(bmap)) {
-		if ((block+num) & ~0xffffffffULL) {
+		if ((block+num-1) & ~0xffffffffULL) {
 			ext2fs_warn_bitmap2((ext2fs_generic_bitmap) bmap,
 					    EXT2FS_UNMARK_ERROR, 0xffffffff);
 			return;
