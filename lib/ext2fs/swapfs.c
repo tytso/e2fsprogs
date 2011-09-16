@@ -132,16 +132,16 @@ void ext2fs_swap_group_desc2(ext2_filsys fs, struct ext2_group_desc *gdp)
 	gdp4->bg_used_dirs_count_hi =
 		ext2fs_swab16(gdp4->bg_used_dirs_count_hi);
 	gdp4->bg_itable_unused_hi = ext2fs_swab16(gdp4->bg_itable_unused_hi);
-	gdp->bg_exclude_bitmap_hi = ext2fs_swab16(gdp->bg_exclude_bitmap_hi);
-	gdp->bg_block_bitmap_csum_hi =
-		ext2fs_swab16(gdp->bg_block_bitmap_csum_hi);
-	gdp->bg_inode_bitmap_csum_hi =
-		ext2fs_swab16(gdp->bg_inode_bitmap_csum_hi);
+	gdp4->bg_exclude_bitmap_hi = ext2fs_swab16(gdp4->bg_exclude_bitmap_hi);
+	gdp4->bg_block_bitmap_csum_hi =
+		ext2fs_swab16(gdp4->bg_block_bitmap_csum_hi);
+	gdp4->bg_inode_bitmap_csum_hi =
+		ext2fs_swab16(gdp4->bg_inode_bitmap_csum_hi);
 }
 
 void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
 {
-	return ext2fs_swap_group_desc2(0, gdp);
+	ext2fs_swap_group_desc2(0, gdp);
 }
 
 
@@ -256,8 +256,8 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		  ext2fs_swab16 (f->osd2.linux2.l_i_uid_high);
 		t->osd2.linux2.l_i_gid_high =
 		  ext2fs_swab16 (f->osd2.linux2.l_i_gid_high);
-		t->osd2.linux2.l_i_checksum =
-			ext2fs_swab32(f->osd2.linux2.checksum);
+		t->osd2.linux2.l_i_checksum_lo =
+			ext2fs_swab32(f->osd2.linux2.l_i_checksum_lo);
 		break;
 	case EXT2_OS_HURD:
 		t->osd1.hurd1.h_i_translator =
@@ -290,6 +290,23 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		/* this is error case: i_extra_size is too large */
 		return;
 	}
+
+	if (extra_isize >= 2)
+		t->i_checksum_hi = ext2fs_swab16(f->i_checksum_hi);
+	if (extra_isize >= 6)
+		t->i_checksum_hi = ext2fs_swab32(f->i_checksum_hi);
+	if (extra_isize >= 10)
+		t->i_ctime_extra = ext2fs_swab32(f->i_ctime_extra);
+	if (extra_isize >= 14)
+		t->i_mtime_extra = ext2fs_swab32(f->i_mtime_extra);
+	if (extra_isize >= 18)
+		t->i_atime_extra = ext2fs_swab32(f->i_atime_extra);
+	if (extra_isize >= 22)
+		t->i_crtime = ext2fs_swab32(f->i_crtime);
+	if (extra_isize >= 26)
+		t->i_crtime_extra = ext2fs_swab32(f->i_crtime_extra);
+	if (extra_isize >= 30)
+		t->i_version_hi = ext2fs_swab32(f->i_version_hi);
 
 	i = sizeof(struct ext2_inode) + extra_isize + sizeof(__u32);
 	if (bufsize < (int) i)

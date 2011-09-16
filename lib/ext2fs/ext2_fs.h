@@ -382,8 +382,8 @@ struct ext2_inode {
 			__u16	l_i_file_acl_high;
 			__u16	l_i_uid_high;	/* these 2 fields    */
 			__u16	l_i_gid_high;	/* were reserved2[0] */
-			__u16	l_i_checksum_lo;	/* crc32c(uuid+inum+inode) */
-			__u16	l_i_reserved;	/* crc32c(uuid+inum+inode) */
+			__u16	l_i_checksum_lo; /* crc32c(uuid+inum+inode) */
+			__u16	l_i_reserved;
 		} linux2;
 		struct {
 			__u8	h_i_frag;	/* Fragment number */
@@ -462,7 +462,6 @@ struct ext2_inode_large {
 #define i_gid_low	i_gid
 #define i_uid_high	osd2.linux2.l_i_uid_high
 #define i_gid_high	osd2.linux2.l_i_gid_high
-#define i_checksum	osd2.linux2.l_i_checksum
 #else
 #if defined(__GNU__)
 
