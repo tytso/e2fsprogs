@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
 	check_structure_fields();
 	printf("Size of struct ext2_inode is %d\n", l);
-	if (l != 256) {
+	if (l != 128) {
 		exit(1);
 	}
 	exit(0);
