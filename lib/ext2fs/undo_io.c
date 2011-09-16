@@ -400,7 +400,8 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 	 * setup err handler for read so that we know
 	 * when the backing manager fails do short read
 	 */
-	undo_err_handler_init(data->real);
+	if (data->real)
+		undo_err_handler_init(data->real);
 
 	*channel = io;
 	return 0;
