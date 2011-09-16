@@ -276,6 +276,7 @@ static errcode_t get_dirlist(const char *dirname, char***ret_array)
 			new_array = realloc(array, sizeof(char *) * (max+1));
 			if (!new_array) {
 				retval = ENOMEM;
+				free(fn);
 				goto errout;
 			}
 			array = new_array;
@@ -290,6 +291,8 @@ static errcode_t get_dirlist(const char *dirname, char***ret_array)
 	closedir(dir);
 	return 0;
 errout:
+	if (array)
+		array[num] = 0;
 	closedir(dir);
 	free_list(array);
 	return retval;
@@ -345,8 +348,8 @@ profile_init(const char **files, profile_t *ret_profile)
 	     * If all the files were not found, return the appropriate error.
 	     */
 	    if (!profile->first_file) {
-		profile_release(profile);
-		return ENOENT;
+		retval = ENOENT;
+		goto errout;
 	    }
 	}
 
