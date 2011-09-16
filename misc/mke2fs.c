@@ -1516,17 +1516,6 @@ profile_error:
 		ext2fs_close(jfs);
 	}
 
-	if (blocksize > sys_page_size) {
-		if (!force) {
-			com_err(program_name, 0,
-				_("%d-byte blocks too big for system (max %d)"),
-				blocksize, sys_page_size);
-			proceed_question();
-		}
-		fprintf(stderr, _("Warning: %d-byte blocks too big for system "
-				  "(max %d), forced to continue\n"),
-			blocksize, sys_page_size);
-	}
 	if (optind < argc) {
 		fs_blocks_count = parse_num_blocks2(argv[optind++],
 						   fs_param.s_log_block_size);
@@ -1834,6 +1823,19 @@ profile_error:
 #endif
 
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
+
+	/* This check should happen beyond the last assignment to blocksize */
+	if (blocksize > sys_page_size) {
+		if (!force) {
+			com_err(program_name, 0,
+				_("%d-byte blocks too big for system (max %d)"),
+				blocksize, sys_page_size);
+			proceed_question();
+		}
+		fprintf(stderr, _("Warning: %d-byte blocks too big for system "
+				  "(max %d), forced to continue\n"),
+			blocksize, sys_page_size);
+	}
 
 	lazy_itable_init = 0;
 	if (access("/sys/fs/ext4/features/lazy_itable_init", R_OK) == 0)
