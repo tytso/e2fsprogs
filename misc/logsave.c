@@ -325,7 +325,8 @@ int main(int argc, char **argv)
 		write_all(outfd, outbuf, outbufsize);
 		free(outbuf);
 	}
-	close(outfd);
+	if (outfd >= 0)
+		close(outfd);
 
 	exit(rc);
 }

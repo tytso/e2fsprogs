@@ -542,14 +542,16 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 
 #define PATH_SET "PATH=/sbin"
 
+/*
+ * Make sure 0,1,2 file descriptors are open, so that we don't open
+ * the filesystem using the same file descriptor as stdout or stderr.
+ */
 static void reserve_stdio_fds(void)
 {
-	int	fd;
+	int	fd = 0;
 
-	while (1) {
+	while (fd <= 2) {
 		fd = open("/dev/null", O_RDWR);
-		if (fd > 2)
-			break;
 		if (fd < 0) {
 			fprintf(stderr, _("ERROR: Couldn't open "
 				"/dev/null (%s)\n"),
@@ -557,7 +559,6 @@ static void reserve_stdio_fds(void)
 			break;
 		}
 	}
-	close(fd);
 }
 
 #ifdef HAVE_SIGNAL_H

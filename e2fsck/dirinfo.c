@@ -62,6 +62,10 @@ static void setup_tdb(e2fsck_t ctx, ext2_ino_t num_dirs)
 	uuid_unparse(ctx->fs->super->s_uuid, uuid);
 	sprintf(db->tdb_fn, "%s/%s-dirinfo-XXXXXX", tdb_dir, uuid);
 	fd = mkstemp(db->tdb_fn);
+	if (fd < 0) {
+		db->tdb = NULL;
+		return;
+	}
 	db->tdb = tdb_open(db->tdb_fn, 0, TDB_CLEAR_IF_FIRST,
 			   O_RDWR | O_CREAT | O_TRUNC, 0600);
 	close(fd);
