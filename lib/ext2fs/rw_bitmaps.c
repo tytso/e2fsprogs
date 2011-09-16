@@ -34,7 +34,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	int		block_nbytes, inode_nbytes;
 	unsigned int	nbits;
 	errcode_t	retval;
-	char 		*block_buf, *inode_buf;
+	char		*block_buf = NULL, *inode_buf = NULL;
 	int		csum_flag = 0;
 	blk64_t		blk;
 	blk64_t		blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
@@ -55,7 +55,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_get_memalign(fs->blocksize, fs->blocksize,
 					     &block_buf);
 		if (retval)
-			return retval;
+			goto errout;
 		memset(block_buf, 0xff, fs->blocksize);
 	}
 	if (do_inode) {
@@ -64,7 +64,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_get_memalign(fs->blocksize, fs->blocksize,
 					     &inode_buf);
 		if (retval)
-			return retval;
+			goto errout;
 		memset(inode_buf, 0xff, fs->blocksize);
 	}
 
@@ -79,7 +79,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_get_block_bitmap_range2(fs->block_map,
 				blk_itr, block_nbytes << 3, block_buf);
 		if (retval)
-			return retval;
+			goto errout;
 
 		if (i == fs->group_desc_count - 1) {
 			/* Force bitmap padding for the last group */
@@ -95,8 +95,10 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (blk) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 							block_buf);
-			if (retval)
-				return EXT2_ET_BLOCK_BITMAP_WRITE;
+			if (retval) {
+				retval = EXT2_ET_BLOCK_BITMAP_WRITE;
+				goto errout;
+			}
 		}
 	skip_this_block_bitmap:
 		blk_itr += block_nbytes << 3;
@@ -112,14 +114,16 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_get_inode_bitmap_range2(fs->inode_map,
 				ino_itr, inode_nbytes << 3, inode_buf);
 		if (retval)
-			return retval;
+			goto errout;
 
 		blk = ext2fs_inode_bitmap_loc(fs, i);
 		if (blk) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 						      inode_buf);
-			if (retval)
-				return EXT2_ET_INODE_BITMAP_WRITE;
+			if (retval) {
+				retval = EXT2_ET_INODE_BITMAP_WRITE;
+				goto errout;
+			}
 		}
 	skip_this_inode_bitmap:
 		ino_itr += inode_nbytes << 3;
@@ -134,6 +138,12 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		ext2fs_free_mem(&inode_buf);
 	}
 	return 0;
+errout:
+	if (inode_buf)
+		ext2fs_free_mem(&inode_buf);
+	if (block_buf)
+		ext2fs_free_mem(&block_buf);
+	return retval;
 }
 
 static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
