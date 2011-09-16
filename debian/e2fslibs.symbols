@@ -117,6 +117,8 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_copy_generic_bitmap@Base 1.41.0
  ext2fs_copy_generic_bmap@Base 1.42~WIP-2011-07-02
  ext2fs_crc16@Base 1.41.1
+ ext2fs_crc32c_be@Base 1.42~WIP-2011-09-16-1
+ ext2fs_crc32c_le@Base 1.42~WIP-2011-09-16-1
  ext2fs_create_icount2@Base 1.37
  ext2fs_create_icount@Base 1.37
  ext2fs_create_icount_tdb@Base 1.40
@@ -251,6 +253,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_get_num_dirs@Base 1.37
  ext2fs_get_pathname@Base 1.37
  ext2fs_get_rec_len@Base 1.41.7
+ ext2fs_group_blocks_count@Base 1.42~WIP-2011-09-16-1
  ext2fs_group_desc@Base 1.42~WIP-2011-07-02
  ext2fs_group_desc_csum_set@Base 1.41.0
  ext2fs_group_desc_csum_verify@Base 1.41.0
@@ -322,6 +325,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_numeric_progress_update@Base 1.42~WIP-2011-07-02
  ext2fs_open2@Base 1.37
  ext2fs_open@Base 1.37
+ ext2fs_open_file@Base 1.42~WIP-2011-09-16-1
  ext2fs_open_inode_scan@Base 1.37
  ext2fs_parse_version_string@Base 1.37
  ext2fs_process_dir_block@Base 1.37
@@ -371,6 +375,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_set_inode_bitmap_range@Base 1.41.0
  ext2fs_set_inode_callback@Base 1.37
  ext2fs_set_rec_len@Base 1.41.7
+ ext2fs_stat@Base 1.42~WIP-2011-09-16-1
  ext2fs_super_and_bgd_loc2@Base 1.42~WIP-2011-07-02
  ext2fs_super_and_bgd_loc@Base 1.37
  ext2fs_swab16@Base 1.37

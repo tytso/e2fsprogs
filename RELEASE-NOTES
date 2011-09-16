@@ -1,9 +1,19 @@
-E2fsprogs 1.42-WIP (July 2, 2011) -- 1ca87790b91
-=================================
+E2fsprogs 1.42-WIP (September 16, 2011) -- cd0b97ed9313
+=======================================
 
-Add support for 64-bit file systems.
+This release of e2fsprogs has support for file systems > 16TB.
 
-Add initial support for bigalloc file systems.
+This release of e2fsprogs has support for clustered allocation.  This
+reduces the number of block (now cluster) bitmaps by allocating and
+deallocating space in contiguous power-of-2 collections of blocks,
+which are called clustered.  This is a file system level feature,
+called 'bigalloc', which must be enabled when the file system is
+initially formatted.  It is not backwards compatible with older
+kernels.
+
+This release of e2fsprogs has support for integrated feature, where
+the quota files are hidden system files that are automatically
+maintained by e2fsck.
 
 Fix a bug in e2fsck where if the free blocks and inodes counts are
 incorrect, e2fsck would fix them without printing an error message.
@@ -25,9 +35,23 @@ E2fsck will no longer segault when a corrupted file system has a bad
 extent, and removing it leads to a block needing to be deallocated.
 (Addresses SourceForge Bug: #2971800)
 
+E2fsck will catch termination signals (segfaults, bus errors, sigfpe)
+and print debugging information to make it easier to find potential
+problems.
+
+Fixed a bug in the libext2fs library (in the binary search routine of
+the icount abstraction) that could (very, very rarely) cause e2fsck to
+die in the middle of pass 1 or pass 2 processing.
+
+E2fsck will not try to do a discard operation if the -n option was
+specified on the command line.
+
 E2fsck now supports an extended "discard" option which will cause
 e2fsck to attempt discard all unused blocks after a full, successful
 file system check.
+
+The mke2fs and e2fsck programs now tries to use the punch hole command
+as a "discard" when operating on normal files.
 
 The e2image program now supports the qcow2 format, which is a more
 efficient way of capturing file system dumps.
@@ -61,6 +85,20 @@ previously caused the inodes per group to drop below 8, leading to a
 segfault.  (The inodes per group must be a multiple of 8, but the code
 didn't correctly deal with an inodes per group count less than 8.)
 
+Mke2fs and tune2fs previously would give an error if the user tried
+setting the stride and stripe-width parameters to zero; but this is
+necessary to disable the stride and stripe-width settings.  So allow
+setting these superblock fields to zero.  (Addresses Google Bug:
+#4988557)
+
+Mke2fs now gives a warning if the auto-detected block size exceeds the
+system's page size.
+
+The resize2fs program now has support for a new online resize ioctl
+that can support file systems > 16TB, once it arrives in v3.x kernels.
+
+Fixed tune2fs's mount options parsing.  (Addresses Debian Bug: #641667)
+
 Debugfs's icheck will now correctly find inodes which use the
 searched-for block as an extended attribute block.
 
@@ -82,6 +120,10 @@ Support using both hard links and symlinks when installing e2fsprogs.
 Add overflow checking to tune2fs -i's fsck interval, which must fit in
 a 32-bit field.
 
+The debugfs command now has a new 'blocks' command which prints out
+data blocks of a particular inode in a format which is useful for
+scripting.
+
 Filefrag will report 0 extents correctly in verbose mode.  (Addresses
 RedHat Bugzilla: #653234)
 
@@ -90,16 +132,30 @@ Logsave's usage message has been fixed.  (Addresses Debian Bug:
 
 Added a useful "fallocate" program to the contrib directory.
 
+Fixed an ABI compatibility problem in libext2fs which broke the dump
+program.  Also added back some macros which dump needed so it could
+compile against the latest version of ext2_fs.h (Addresses Debian Bug:
+#636418)
+
+Fixed parsing of MNTOPT_ options for tune2fs and debugfs (Addresses
+Debian Bug: #641667)
+
 Update translations: French, Chinese, Germany, Indonesian, Swedish,
 Vietnamese, Polish, Dutch, Czech,
 
-Updated/clarified man pages.
+Updated/clarified man pages.  (Addresses Debian Big: #639411)
 
 Programming notes
 -----------------
 
+Reserved the on-disk fields for the metadata checksum and snapshot
+features, which are currently in development.
+
 The ext2fs library now has the new functions ext2fs_punch(),
 ext2fs_get_memzero() and ext2fs_file_get_inode().
+
+The ext2fs library now has support for calculating the crc32c checksum
+(via the new functions ext2fs_crc32c_be and ext2fs_crc32c_le).
 
 The I/O manager now supports the discard operation.
 
@@ -119,9 +175,20 @@ Fixed a build failure when OMIT_COM_ERR is defined.
 Improved error checking and fixed memory leaks caused by error return
 paths.
 
-Added a regression test for extent-mapped journals by mke2fs and tune2fs.
+Added a test for extent-mapped journals by mke2fs and tune2fs.
 
 Added a test for creating a large (over 4GB) journal using mke2fs.
+
+Added a test to make sure the inode size remains constant.
+
+The regression test script now prints the list of which tests failed.
+
+The regression test system now uses /tmp for its scratch files, which
+is often a tmpfs mounted file system and hence much faster.
+
+The i_e2image test was fixed so it works with valgrind.
+
+Tests that rely on debugfs are now skipped if debugfs wasn't built.
 
 Fixed the dependencies for "make check" so all required dependencies
 are built before running the gression tests.

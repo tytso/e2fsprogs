@@ -1,3 +1,28 @@
+e2fsprogs (1.42~WIP-2011-09-16-1) unstable; urgency=low
+
+  * New upstream release
+  * Added support for the integrated quota feature
+  * Improved 64-bit and bigalloc support
+  * Mke2fs and tune2fs now allows setting the stride and stripe width to zero
+  * Fixed tune2fs's mount options parsing  (Closes: #641667)
+  * Fixed an ABI compatibility problem which broke the dump program
+      (Closes: #636418)
+  * Resize2fs has forward compatibility for a new on-line resize ioctl
+      for > 16TB file systems.
+  * Fixed a (very hard to hit) bug that could cause e2fsck to crash in
+       pass 1 or pass 2
+  * Debugfs has a new 'blocks' command
+  * Mke2fs now gives a warning if the auto-detected block size exceeds
+      the page size
+  * Mke2fs and e2fsck now tries to use the punch hole command as a
+      "discard" when operating on normal files
+  * Mke2fs will not try to do any discard operations if -n is specified
+      on the command line
+  * Updated/clarified man pages (Closes: #639411)
+  * Fixed parsing of MNTOPT_ options for tune2fs and debugfs (Closes: #641667)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 16 Sep 2011 10:33:59 -0400
+
 e2fsprogs (1.42~WIP-2011-07-02-1) unstable; urgency=low
 
   * New upstream release
