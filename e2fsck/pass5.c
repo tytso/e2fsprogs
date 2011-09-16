@@ -226,9 +226,8 @@ redo_counts:
 				count = 0;
 				cmp_block = fs->super->s_clusters_per_group;
 				if (group == (int)fs->group_desc_count - 1)
-					cmp_block =
-						EXT2FS_NUM_B2C(fs,
-		ext2fs_blocks_count(fs->super) % fs->super->s_blocks_per_group);
+					cmp_block = EXT2FS_NUM_B2C(fs,
+						    ext2fs_group_blocks_count(fs, group));
 			}
 
 			bitmap = 0;
