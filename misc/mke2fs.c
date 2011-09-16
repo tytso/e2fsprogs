@@ -2024,18 +2024,21 @@ open_err_out:
 static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 {
 	errcode_t retval = ENOMEM;
-	char *tdb_dir, *tdb_file = NULL;
+	char *tdb_dir = NULL, *tdb_file = NULL;
 	char *device_name, *tmp_name;
+	int free_tdb_dir = 0;
 
 	/*
 	 * Configuration via a conf file would be
 	 * nice
 	 */
 	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
-	if (!tdb_dir)
+	if (!tdb_dir) {
 		profile_get_string(profile, "defaults",
 				   "undo_dir", 0, "/var/lib/e2fsprogs",
 				   &tdb_dir);
+		free_tdb_dir = 1;
+	}
 
 	if (!strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
 	    access(tdb_dir, W_OK))
@@ -2069,10 +2072,14 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 		 "using the command:\n"
 		 "    e2undo %s %s\n\n"), tdb_file, name);
 
+	if (free_tdb_dir)
+		free(tdb_dir);
 	free(tdb_file);
 	return 0;
 
 errout:
+	if (free_tdb_dir)
+		free(tdb_dir);
 	free(tdb_file);
 	com_err(program_name, retval,
 		_("while trying to setup undo file\n"));
