@@ -1445,9 +1445,19 @@ profile_error:
 			super_only = 1;
 			break;
 		case 't':
+			if (fs_type) {
+				com_err(program_name, 0,
+				    _("The -t option may only be used once"));
+				exit(1);
+			}
 			fs_type = strdup(optarg);
 			break;
 		case 'T':
+			if (usage_types) {
+				com_err(program_name, 0,
+				    _("The -T option may only be used once"));
+				exit(1);
+			}
 			usage_types = strdup(optarg);
 			break;
 		case 'U':
