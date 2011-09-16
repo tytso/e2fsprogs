@@ -214,7 +214,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		features = fs->super->s_feature_incompat;
 #ifdef EXT2_LIB_SOFTSUPP_INCOMPAT
 		if (flags & EXT2_FLAG_SOFTSUPP_FEATURES)
-			features &= !EXT2_LIB_SOFTSUPP_INCOMPAT;
+			features &= ~EXT2_LIB_SOFTSUPP_INCOMPAT;
 #endif
 		if (features & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
 			retval = EXT2_ET_UNSUPP_FEATURE;
@@ -224,7 +224,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		features = fs->super->s_feature_ro_compat;
 #ifdef EXT2_LIB_SOFTSUPP_RO_COMPAT
 		if (flags & EXT2_FLAG_SOFTSUPP_FEATURES)
-			features &= !EXT2_LIB_SOFTSUPP_RO_COMPAT;
+			features &= ~EXT2_LIB_SOFTSUPP_RO_COMPAT;
 #endif
 		if ((flags & EXT2_FLAG_RW) &&
 		    (features & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
