@@ -73,7 +73,7 @@ static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size,
 
 	retval = ext2fs_get_mem(sizeof(struct ext2_struct_dblist), &dblist);
 	if (retval)
-		return retval;
+		goto cleanup;
 	memset(dblist, 0, sizeof(struct ext2_struct_dblist));
 
 	dblist->magic = EXT2_ET_MAGIC_DBLIST;

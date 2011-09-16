@@ -357,7 +357,7 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 		return EXT2_ET_BAD_DEVICE_NAME;
 	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)
-		return retval;
+		goto cleanup;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
 	retval = ext2fs_get_mem(sizeof(struct undo_private_data), &data);
@@ -407,7 +407,7 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 	return 0;
 
 cleanup:
-	if (data->real)
+	if (data && data->real)
 		io_channel_close(data->real);
 	if (data)
 		ext2fs_free_mem(&data);

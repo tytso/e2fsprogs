@@ -453,7 +453,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		return EXT2_ET_BAD_DEVICE_NAME;
 	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)
-		return retval;
+		goto cleanup;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
 	retval = ext2fs_get_mem(sizeof(struct unix_private_data), &data);
