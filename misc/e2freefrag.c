@@ -282,10 +282,8 @@ int main(int argc, char *argv[])
 			}
 			chunk_info.chunkbytes *= 1024;
 			break;
-		default:
-			fprintf(stderr, "%s: bad option '%c'\n",
-				progname, c);
 		case 'h':
+		default:
 			usage(progname);
 			break;
 		}
