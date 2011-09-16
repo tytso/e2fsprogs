@@ -43,6 +43,25 @@ blk64_t ext2fs_group_last_block2(ext2_filsys fs, dgrp_t group)
 }
 
 /*
+ * Return the number of blocks in a group
+ */
+int ext2fs_group_blocks_count(ext2_filsys fs, dgrp_t group)
+{
+	int num_blocks;
+
+	if (group == fs->group_desc_count - 1) {
+		num_blocks = (ext2fs_blocks_count(fs->super) -
+				fs->super->s_first_data_block) %
+			      fs->super->s_blocks_per_group;
+		if (!num_blocks)
+			num_blocks = fs->super->s_blocks_per_group;
+	} else
+		num_blocks = fs->super->s_blocks_per_group;
+
+	return num_blocks;
+}
+
+/*
  * Return the inode data block count
  */
 blk64_t ext2fs_inode_data_blocks2(ext2_filsys fs,

@@ -499,18 +499,10 @@ retry:
 		ext2fs_bg_flags_zap(fs, i);
 		if (csum_flag)
 			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_UNINIT | EXT2_BG_INODE_ZEROED);
-		if (i == fs->group_desc_count-1) {
-			numblocks = (ext2fs_blocks_count(fs->super) -
-				     fs->super->s_first_data_block) %
-					     fs->super->s_blocks_per_group;
-			if (!numblocks)
-				numblocks = fs->super->s_blocks_per_group;
-		} else {
-			numblocks = fs->super->s_blocks_per_group;
-			if (csum_flag)
-				ext2fs_bg_flags_set(fs, i,
-						    EXT2_BG_BLOCK_UNINIT);
-		}
+
+		numblocks = ext2fs_group_blocks_count(fs, i);
+		if ((i < fs->group_desc_count - 1) && csum_flag)
+			ext2fs_bg_flags_set(fs, i, EXT2_BG_BLOCK_UNINIT);
 
 		has_super = ext2fs_bg_has_super(fs, i);
 		if (has_super) {

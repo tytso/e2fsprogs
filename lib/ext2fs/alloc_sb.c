@@ -74,15 +74,7 @@ int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
 	if (new_desc_blk)
 		ext2fs_mark_block_bitmap2(bmap, new_desc_blk);
 
-	if (group == fs->group_desc_count-1) {
-		num_blocks = (ext2fs_blocks_count(fs->super) -
-			     fs->super->s_first_data_block) %
-			fs->super->s_blocks_per_group;
-		if (!num_blocks)
-			num_blocks = fs->super->s_blocks_per_group;
-	} else
-		num_blocks = fs->super->s_blocks_per_group;
-
+	num_blocks = ext2fs_group_blocks_count(fs, group);
 	num_blocks -= 2 + fs->inode_blocks_per_group + used_blks;
 
 	return num_blocks  ;

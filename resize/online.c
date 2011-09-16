@@ -152,12 +152,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		input.block_bitmap = ext2fs_block_bitmap_loc(new_fs, i);
 		input.inode_bitmap = ext2fs_inode_bitmap_loc(new_fs, i);
 		input.inode_table = ext2fs_inode_table_loc(new_fs, i);
-		input.blocks_count = sb->s_blocks_per_group;
-		if (i == new_fs->group_desc_count-1) {
-			input.blocks_count = ext2fs_blocks_count(new_fs->super) -
-				sb->s_first_data_block -
-				(i * sb->s_blocks_per_group);
-		}
+		input.blocks_count = ext2fs_group_blocks_count(new_fs, i);
 		input.reserved_blocks = (blk_t) (percent * input.blocks_count
 						 / 100.0);
 
