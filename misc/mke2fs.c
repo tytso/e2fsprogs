@@ -1029,15 +1029,12 @@ static char **parse_fs_type(const char *fs_type,
 	if (!usage_types)
 		usage_types = size_type;
 
-	parse_str = malloc(usage_types ? strlen(usage_types)+1 : 1);
+	parse_str = malloc(strlen(usage_types)+1);
 	if (!parse_str) {
 		free(list.list);
 		return 0;
 	}
-	if (usage_types)
-		strcpy(parse_str, usage_types);
-	else
-		*parse_str = '\0';
+	strcpy(parse_str, usage_types);
 
 	if (ext_type)
 		push_string(&list, ext_type);
