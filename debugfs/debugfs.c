@@ -308,6 +308,7 @@ static void print_bg_opts(ext2_filsys fs, dgrp_t group, int mask,
 
 void do_show_super_stats(int argc, char *argv[])
 {
+	const char *units ="block";
 	dgrp_t	i;
 	FILE 	*out;
 	int	c, header_only = 0;
@@ -330,6 +331,10 @@ void do_show_super_stats(int argc, char *argv[])
 		return;
 	out = open_pager();
 
+	if (EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
+				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+		units = "cluster";
+
 	list_super2(current_fs->super, out);
 	for (i=0; i < current_fs->group_desc_count; i++)
 		numdirs += ext2fs_bg_used_dirs_count(current_fs, i);
@@ -346,15 +351,15 @@ void do_show_super_stats(int argc, char *argv[])
 		fprintf(out, " Group %2d: block bitmap at %llu, "
 		        "inode bitmap at %llu, "
 		        "inode table at %llu\n"
-		        "           %u free %s, "
+		        "           %u free %s%s, "
 		        "%u free %s, "
 		        "%u used %s%s",
 		        i, ext2fs_block_bitmap_loc(current_fs, i),
 		        ext2fs_inode_bitmap_loc(current_fs, i),
 			ext2fs_inode_table_loc(current_fs, i),
-		        ext2fs_bg_free_blocks_count(current_fs, i),
+		        ext2fs_bg_free_blocks_count(current_fs, i), units,
 		        ext2fs_bg_free_blocks_count(current_fs, i) != 1 ?
-			"blocks" : "block",
+			"s" : "",
 		        ext2fs_bg_free_inodes_count(current_fs, i),
 		        ext2fs_bg_free_inodes_count(current_fs, i) != 1 ?
 			"inodes" : "inode",

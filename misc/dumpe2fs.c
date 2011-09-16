@@ -148,11 +148,16 @@ static void list_desc (ext2_filsys fs)
 	blk64_t	first_block, last_block;
 	blk64_t	super_blk, old_desc_blk, new_desc_blk;
 	char *block_bitmap=NULL, *inode_bitmap=NULL;
+	const char *units = _("blocks");
 	int inode_blocks_per_group, old_desc_blocks, reserved_gdt;
 	int		block_nbytes, inode_nbytes;
 	int has_super;
 	blk64_t		blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	ext2_ino_t	ino_itr = 1;
+
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+		units = _("clusters");
 
 	block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
@@ -226,9 +231,9 @@ static void list_desc (ext2_filsys fs)
 			    inode_blocks_per_group - 1);
 		print_bg_rel_offset(fs, ext2fs_inode_table_loc(fs, i), 1,
 				    first_block, last_block);
-		printf (_("\n  %u free blocks, %u free inodes, "
+		printf (_("\n  %u free %s, %u free inodes, "
 			  "%u directories%s"),
-			ext2fs_bg_free_blocks_count(fs, i),
+			ext2fs_bg_free_blocks_count(fs, i), units,
 			ext2fs_bg_free_inodes_count(fs, i),
 			ext2fs_bg_used_dirs_count(fs, i),
 			ext2fs_bg_itable_unused(fs, i) ? "" : "\n");
