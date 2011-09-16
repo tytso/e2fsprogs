@@ -203,8 +203,9 @@ static void print_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino)
 		return;
 	}
 
-	retval = ext2fs_get_pathname(fs, dir, ino, &path);
-	if (retval)
+	if (fs)
+		retval = ext2fs_get_pathname(fs, dir, ino, &path);
+	if (!fs || retval)
 		fputs("???", stdout);
 	else {
 		safe_print(path, -1);
