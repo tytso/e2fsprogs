@@ -399,13 +399,16 @@ static int calc_entry_counts(const char *file EXT2FS_ATTR((unused)),
 static int page_in_core(int fd, struct move_extent defrag_data,
 			unsigned char **vec, unsigned int *page_num)
 {
-	long	pagesize = sysconf(_SC_PAGESIZE);
+	long	pagesize;
 	void	*page = NULL;
 	loff_t	offset, end_offset, length;
 
 	if (vec == NULL || *vec != NULL)
 		return -1;
 
+	pagesize = sysconf(_SC_PAGESIZE);
+	if (pagesize < 0)
+		return -1;
 	/* In mmap, offset should be a multiple of the page size */
 	offset = (loff_t)defrag_data.orig_start * block_size;
 	length = (loff_t)defrag_data.len * block_size;
