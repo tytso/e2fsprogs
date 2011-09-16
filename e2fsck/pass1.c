@@ -402,7 +402,6 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 {
 	struct ext2_inode *inode = pctx->inode;
 	struct ext2_dir_entry 	*dirent;
-	const char		*old_op;
 	errcode_t		retval;
 	blk64_t			blk;
 	unsigned int		i, rec_len, not_device = 0;
@@ -472,7 +471,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 		return;
 
 	/* read the first block */
-	old_op = ehandler_operation(_("reading directory block"));
+	ehandler_operation(_("reading directory block"));
 	retval = ext2fs_read_dir_block3(ctx->fs, blk, buf, 0);
 	ehandler_operation(0);
 	if (retval)
