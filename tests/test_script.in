@@ -78,4 +78,12 @@ num_failed=`ls *.failed 2>/dev/null | wc -l`
 
 echo "$num_ok tests succeeded	$num_failed tests failed"
 
-test "$num_failed" -eq 0 || exit 1
+test "$num_failed" -eq 0 && exit 0
+
+echo -n "Tests failed: "
+for fname in $(ls *.failed); do
+	echo -n "${fname%%.failed} "
+done
+echo ""
+
+exit 1
