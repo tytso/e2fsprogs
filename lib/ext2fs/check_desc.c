@@ -53,8 +53,6 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 					       EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
 			first_block = ext2fs_group_first_block2(fs, i);
 			last_block = ext2fs_group_last_block2(fs, i);
-			if (i == (fs->group_desc_count - 1))
-				last_block = ext2fs_blocks_count(fs->super)-1;
 		}
 
 		/*
