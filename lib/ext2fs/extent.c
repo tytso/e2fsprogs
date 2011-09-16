@@ -373,9 +373,11 @@ retry:
 	case EXT2_EXTENT_ROOT:
 		handle->level = 0;
 		path = handle->path + handle->level;
+		/* fallthrough */
 	case EXT2_EXTENT_FIRST_SIB:
 		path->left = path->entries;
 		path->curr = 0;
+		/* fallthrough */
 	case EXT2_EXTENT_NEXT_SIB:
 		if (path->left <= 0)
 			return EXT2_ET_EXTENT_NO_NEXT;

@@ -307,6 +307,7 @@ int e2p_edit_feature2(const char *str, __u32 *compat_array, __u32 *ok_array,
 		case '-':
 		case '^':
 			neg++;
+			/* fallthrough */
 		case '+':
 			cp++;
 			break;

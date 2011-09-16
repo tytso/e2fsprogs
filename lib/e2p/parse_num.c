@@ -26,10 +26,13 @@ unsigned long long parse_num_blocks2(const char *arg, int log_block_size)
 	switch (*p) {		/* Using fall-through logic */
 	case 'T': case 't':
 		num <<= 10;
+		/* fallthrough */
 	case 'G': case 'g':
 		num <<= 10;
+		/* fallthrough */
 	case 'M': case 'm':
 		num <<= 10;
+		/* fallthrough */
 	case 'K': case 'k':
 		num >>= log_block_size;
 		break;
