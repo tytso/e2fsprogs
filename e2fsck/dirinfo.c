@@ -318,7 +318,6 @@ extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
 
 	iter = e2fsck_allocate_memory(ctx, sizeof(struct dir_info_iter),
 				      "dir_info iterator");
-	memset(iter, 0, sizeof(iter));
 
 	if (db->tdb)
 		iter->tdb_iter = tdb_firstkey(db->tdb);
