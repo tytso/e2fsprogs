@@ -884,6 +884,10 @@ extern int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 				    int *ret_meta_bg);
 extern void ext2fs_update_dynamic_rev(ext2_filsys fs);
 
+/* crc32c.c */
+extern __u32 crc32c_be(__u32 crc, unsigned char const *p, size_t len);
+extern __u32 crc32c_le(__u32 crc, unsigned char const *p, size_t len);
+
 /* csum.c */
 extern void ext2fs_group_desc_csum_set(ext2_filsys fs, dgrp_t group);
 extern int ext2fs_group_desc_csum_verify(ext2_filsys fs, dgrp_t group);

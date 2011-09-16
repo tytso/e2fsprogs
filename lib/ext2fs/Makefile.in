@@ -7,6 +7,8 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
+XTRA_CFLAGS=	-I.
+
 @DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o inode_io.o write_bb_file.o
 
 MK_CMDS=	_SS_DIR_OVERRIDE=../ss ../ss/mk_cmds
@@ -33,6 +35,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	check_desc.o \
 	closefs.o \
 	crc16.o \
+	crc32c.o \
 	csum.o \
 	dblist.o \
 	dblist_dir.o \
@@ -99,6 +102,8 @@ SRCS= ext2_err.c \
 	$(srcdir)/check_desc.c \
 	$(srcdir)/closefs.c \
 	$(srcdir)/crc16.c \
+	$(srcdir)/crc32c.c \
+	$(srcdir)/gen_crc32ctable.c \
 	$(srcdir)/csum.c \
 	$(srcdir)/dblist.c \
 	$(srcdir)/dblist_dir.c \
@@ -341,11 +346,15 @@ tst_csum: csum.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR) \
 	$(Q) $(CC) -o tst_csum $(srcdir)/csum.c -DDEBUG \
 		$(ALL_CFLAGS) $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(LIBE2P)
 
+tst_crc32c: $(srcdir)/crc32c.c
+	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32c $(srcdir)/crc32c.c \
+		-DUNITTEST
+
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 
-check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size tst_types tst_inode_size tst_csum
+check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size tst_types tst_inode_size tst_csum tst_crc32c
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_bitops
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_badblocks
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_iscan
@@ -353,6 +362,7 @@ check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size t
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_icount
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_super_size
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_csum
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_crc32c
 
 installdirs::
 	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
@@ -386,7 +396,8 @@ clean::
 		tst_byteswap tst_ismounted tst_getsize tst_sectgetsize \
 		tst_bitops tst_types tst_icount tst_super_size tst_csum \
 		ext2_tdbtool mkjournal debug_cmds.c \
-		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a
+		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a \
+		crc32c_table.h
 
 mostlyclean:: clean
 distclean:: clean
@@ -398,6 +409,15 @@ distclean:: clean
 $(top_builddir)/lib/ext2fs/ext2_err.h: ext2_err.h
 
 $(OBJS): subdirs
+
+gen_crc32ctable: $(srcdir)/gen_crc32ctable.c
+	$(E) "	CC $@"
+	$(Q) $(BUILD_CC) $(BUILD_CFLAGS) -o gen_crc32ctable \
+		$(srcdir)/gen_crc32ctable.c
+
+crc32c_table.h: gen_crc32ctable
+	$(E) "	GEN32CTABLE $@"
+	$(Q) ./gen_crc32ctable > crc32c_table.h
 
 # +++ Dependency line eater +++
 # 
@@ -482,6 +502,8 @@ closefs.o: $(srcdir)/closefs.c $(srcdir)/ext2_fs.h \
  $(srcdir)/bitops.h
 crc16.o: $(srcdir)/crc16.c $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(srcdir)/crc16.h
+crc32c.o: $(srcdir)/crc32c.c $(srcdir)/crc32c_defs.h crc32c_table.h
+gen_crc32ctable.o: $(srcdir)/gen_crc32ctable.c $(srcdir)/crc32c_defs.h
 csum.o: $(srcdir)/csum.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
