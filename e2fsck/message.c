@@ -372,8 +372,6 @@ static _INLINE_ void expand_dirent_expression(ext2_filsys fs, char ch,
 		break;
 	case 'n':
 		len = dirent->name_len & 0xFF;
-		if (len > EXT2_NAME_LEN)
-			len = EXT2_NAME_LEN;
 		if ((ext2fs_get_rec_len(fs, dirent, &rec_len) == 0) &&
 		    (len > rec_len))
 			len = rec_len;

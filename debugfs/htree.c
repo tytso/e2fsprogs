@@ -81,8 +81,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 				blk);
 			break;
 		}
-		thislen = ((dirent->name_len & 0xFF) < EXT2_NAME_LEN) ?
-			(dirent->name_len & 0xFF) : EXT2_NAME_LEN;
+		thislen = dirent->name_len & 0xFF;
 		strncpy(name, dirent->name, thislen);
 		name[thislen] = '\0';
 		errcode = ext2fs_dirhash(hash_alg, name,

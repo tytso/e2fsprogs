@@ -60,8 +60,7 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	int			thislen;
 	struct list_dir_struct *ls = (struct list_dir_struct *) private;
 
-	thislen = ((dirent->name_len & 0xFF) < EXT2_NAME_LEN) ?
-		(dirent->name_len & 0xFF) : EXT2_NAME_LEN;
+	thislen = dirent->name_len & 0xFF;
 	strncpy(name, dirent->name, thislen);
 	name[thislen] = '\0';
 	ino = dirent->inode;

@@ -858,12 +858,6 @@ out_htree:
 			} else
 				goto abort_free_dict;
 		}
-		if ((dirent->name_len & 0xFF) > EXT2_NAME_LEN) {
-			if (fix_problem(ctx, PR_2_FILENAME_LONG, &cd->pctx)) {
-				dirent->name_len = EXT2_NAME_LEN;
-				dir_modified++;
-			}
-		}
 
 		if (dot_state == 0) {
 			if (check_dot(ctx, dirent, ino, &cd->pctx))
