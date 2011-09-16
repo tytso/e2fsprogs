@@ -87,7 +87,8 @@ static void e2fsck_discard_blocks(e2fsck_t ctx, io_manager manager,
 	if (ext2fs_test_changed(ctx->fs))
 		ctx->options &= ~E2F_OPT_DISCARD;
 
-	if ((ctx->options & E2F_OPT_DISCARD) &&
+	if (!(ctx->options & E2F_OPT_NO) &&
+	    (ctx->options & E2F_OPT_DISCARD) &&
 	    (io_channel_discard(fs->io, start, count)))
 		ctx->options &= ~E2F_OPT_DISCARD;
 }
@@ -331,11 +332,9 @@ redo_counts:
 			if (first_free > i)
 				first_free = i;
 		} else {
-			if ((i > first_free) &&
-			   (ctx->options & E2F_OPT_DISCARD)) {
+			if (i > first_free)
 				e2fsck_discard_blocks(ctx, manager, first_free,
 						      (i - first_free));
-			}
 			first_free = ext2fs_blocks_count(fs->super);
 		}
 		blocks ++;
