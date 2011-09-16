@@ -585,6 +585,12 @@ typedef struct ext2_icount *ext2_icount_t;
 #define EXT2FS_NUM_B2C(fs, blks)	(((blks) + EXT2FS_CLUSTER_MASK(fs)) >> \
 					 (fs)->cluster_ratio_bits)
 
+#ifdef HAVE_OPEN64
+typedef struct stat64 ext2fs_struct_stat;
+#else
+typedef struct stat ext2fs_struct_stat;
+#endif
+
 /*
  * function prototypes
  */
@@ -1393,6 +1399,8 @@ extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
+extern int ext2fs_open_file(const char *pathname, int flags, ...);
+extern int ext2fs_stat(const char *path, ext2fs_struct_stat *buf);
 
 /*
  * The actual inlined functions definitions themselves...
@@ -1641,6 +1649,36 @@ _INLINE_ __u64 ext2fs_div64_ceil(__u64 a, __u64 b)
 	if (!a)
 		return 0;
 	return ((a - 1) / b) + 1;
+}
+
+_INLINE_ int ext2fs_open_file(const char *pathname, int flags, ...)
+{
+	va_list args;
+	mode_t mode;
+
+	va_start(args, flags);
+	mode = va_arg(args, mode_t);
+	va_end(args);
+
+	if (mode)
+#ifdef HAVE_OPEN64
+		return open64(pathname, flags, mode);
+	else
+		return open64(pathname, flags);
+#else
+		return open(pathname, flags, mode);
+	else
+		return open(pathname, flags);
+#endif
+}
+
+_INLINE_ int ext2fs_stat(const char *path, ext2fs_struct_stat *buf)
+{
+#ifdef HAVE_OPEN64
+	return stat64(path, buf);
+#else
+	return open(path, buf);
+#endif
 }
 
 #undef _INLINE_

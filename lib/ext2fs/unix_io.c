@@ -441,7 +441,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
 	int		open_flags, zeroes = 0;
-	struct stat	st;
+	ext2fs_struct_stat st;
 #ifdef __linux__
 	struct 		utsname ut;
 #endif
@@ -482,11 +482,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 #endif
 	data->flags = flags;
 
-#ifdef HAVE_OPEN64
-	data->dev = open64(io->name, open_flags);
-#else
-	data->dev = open(io->name, open_flags);
-#endif
+	data->dev = ext2fs_open_file(io->name, open_flags);
 	if (data->dev < 0) {
 		retval = errno;
 		goto cleanup;
@@ -552,7 +548,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	     (ut.release[2] == '4') && (ut.release[3] == '.') &&
 	     (ut.release[4] == '1') && (ut.release[5] >= '0') &&
 	     (ut.release[5] < '8')) &&
-	    (fstat(data->dev, &st) == 0) &&
+	    (ext2fs_stat(io->name, &st) == 0) &&
 	    (S_ISBLK(st.st_mode))) {
 		struct rlimit	rlim;
 

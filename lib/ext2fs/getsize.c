@@ -159,11 +159,7 @@ errcode_t ext2fs_get_device_size2(const char *file, int blocksize,
 	char ch;
 #endif /* HAVE_SYS_DISKLABEL_H */
 
-#ifdef HAVE_OPEN64
-	fd = open64(file, O_RDONLY);
-#else
-	fd = open(file, O_RDONLY);
-#endif
+	fd = ext2fs_open_file(file, O_RDONLY);
 	if (fd < 0)
 		return errno;
 

@@ -1177,11 +1177,7 @@ static void install_image(char *device, char *image_fn, int type)
 		exit(1);
 	}
 
-#ifdef HAVE_OPEN64
-	fd = open64(image_fn, O_RDONLY);
-#else
-	fd = open(image_fn, O_RDONLY);
-#endif
+	fd = ext2fs_open_file(image_fn, O_RDONLY);
 	if (fd < 0) {
 		perror(image_fn);
 		exit(1);
@@ -1213,11 +1209,7 @@ static void install_image(char *device, char *image_fn, int type)
 static struct ext2_qcow2_hdr *check_qcow2_image(int *fd, char *name)
 {
 
-#ifdef HAVE_OPEN64
-	*fd = open64(name, O_RDONLY, 0600);
-#else
-	*fd = open(name, O_RDONLY, 0600);
-#endif
+	*fd = ext2fs_open_file(name, O_RDONLY, 0600);
 	if (*fd < 0)
 		return NULL;
 
@@ -1301,11 +1293,7 @@ skip_device:
 	if (strcmp(image_fn, "-") == 0)
 		fd = 1;
 	else {
-#ifdef HAVE_OPEN64
-		fd = open64(image_fn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
-#else
-		fd = open(image_fn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
-#endif
+		fd = ext2fs_open_file(image_fn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
 		if (fd < 0) {
 			com_err(program_name, errno,
 				_("while trying to open %s"), argv[optind+1]);

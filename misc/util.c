@@ -79,15 +79,9 @@ void proceed_question(void)
 void check_plausibility(const char *device)
 {
 	int val;
-#ifdef HAVE_OPEN64
-	struct stat64 s;
+	ext2fs_struct_stat s;
 
-	val = stat64(device, &s);
-#else
-	struct stat s;
-
-	val = stat(device, &s);
-#endif
+	val = ext2fs_stat(device, &s);
 
 	if(val == -1) {
 		fprintf(stderr, _("Could not stat %s --- %s\n"),

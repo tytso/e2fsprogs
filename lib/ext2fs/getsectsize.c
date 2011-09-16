@@ -45,11 +45,7 @@ errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize)
 {
 	int	fd;
 
-#ifdef HAVE_OPEN64
-	fd = open64(file, O_RDONLY);
-#else
-	fd = open(file, O_RDONLY);
-#endif
+	fd = ext2fs_open_file(file, O_RDONLY);
 	if (fd < 0)
 		return errno;
 
@@ -71,11 +67,7 @@ errcode_t ext2fs_get_device_phys_sectsize(const char *file, int *sectsize)
 {
 	int	fd;
 
-#ifdef HAVE_OPEN64
-	fd = open64(file, O_RDONLY);
-#else
-	fd = open(file, O_RDONLY);
-#endif
+	fd = ext2fs_open_file(file, O_RDONLY);
 	if (fd < 0)
 		return errno;
 

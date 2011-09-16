@@ -256,11 +256,7 @@ int main (int argc, char ** argv)
 		len = 2 * len;
 	}
 
-#ifdef HAVE_OPEN64
-	fd = open64(device_name, O_RDWR);
-#else
-	fd = open(device_name, O_RDWR);
-#endif
+	fd = ext2fs_open_file(device_name, O_RDWR);
 	if (fd < 0) {
 		com_err("open", errno, _("while opening %s"),
 			device_name);
