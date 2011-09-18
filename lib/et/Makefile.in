@@ -148,12 +148,16 @@ $(OBJS): subdirs
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-error_message.o: $(srcdir)/error_message.c $(srcdir)/com_err.h \
- $(srcdir)/error_table.h $(srcdir)/internal.h
-et_name.o: $(srcdir)/et_name.c $(srcdir)/com_err.h $(srcdir)/error_table.h \
+error_message.o: $(srcdir)/error_message.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/com_err.h $(srcdir)/error_table.h \
  $(srcdir)/internal.h
-init_et.o: $(srcdir)/init_et.c $(srcdir)/com_err.h $(srcdir)/error_table.h
-com_err.o: $(srcdir)/com_err.c $(srcdir)/com_err.h $(srcdir)/error_table.h \
+et_name.o: $(srcdir)/et_name.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/com_err.h $(srcdir)/error_table.h \
  $(srcdir)/internal.h
-com_right.o: $(srcdir)/com_right.c $(srcdir)/com_err.h \
- $(srcdir)/error_table.h
+init_et.o: $(srcdir)/init_et.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/com_err.h $(srcdir)/error_table.h
+com_err.o: $(srcdir)/com_err.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/com_err.h $(srcdir)/error_table.h \
+ $(srcdir)/internal.h
+com_right.o: $(srcdir)/com_right.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/com_err.h $(srcdir)/error_table.h

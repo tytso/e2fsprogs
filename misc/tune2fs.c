@@ -27,6 +27,7 @@
 
 #define _XOPEN_SOURCE 600 /* for inclusion of strptime() */
 #define _BSD_SOURCE /* for inclusion of strcasecmp() */
+#include "config.h"
 #include <fcntl.h>
 #include <grp.h>
 #ifdef HAVE_GETOPT_H

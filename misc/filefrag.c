@@ -9,6 +9,7 @@
  * %End-Header%
  */
 
+#include "config.h"
 #ifndef __linux__
 #include <stdio.h>
 #include <stdlib.h>

@@ -3,6 +3,7 @@
  *
  */
 
+#include "config.h"
 #ifdef HAVE_SYS_MOUNT_H
 #include <sys/param.h>
 #include <sys/mount.h>

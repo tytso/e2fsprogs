@@ -14,6 +14,7 @@ Copyright (C) 1995 Gadi Oxman
 
 */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -487,7 +488,7 @@ int process_configuration_file (void)
 	char option [80],value [80];
 	FILE *fp;
 
-	strcpy (buffer, ETC_DIR);
+	strcpy (buffer, ROOT_SYSCONFDIR);
 	strcat (buffer,"/ext2ed.conf");
 
 	if ((fp=fopen (buffer,"rt"))==NULL) {

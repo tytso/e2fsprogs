@@ -9,6 +9,7 @@
 #define _GNU_SOURCE /* for O_LARGEFILE */
 #endif
 
+#include "config.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

@@ -16,6 +16,7 @@
  * %End-Header%
  */
 
+#include "config.h"
 #include "resize2fs.h"
 
 struct ext2_extent_entry {

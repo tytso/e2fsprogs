@@ -2,6 +2,7 @@
  * scantest.c - test the speed of the inode scan routine
  */
 
+#include "config.h"
 #include <string.h>
 #include <fcntl.h>
 #include <ctype.h>

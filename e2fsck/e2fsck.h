@@ -127,6 +127,8 @@ struct dx_dirblock_info {
 #define DX_FLAG_FIRST		4
 #define DX_FLAG_LAST		8
 
+#define RESOURCE_TRACK
+
 #ifdef RESOURCE_TRACK
 /*
  * This structure is used for keeping track of how much resources have

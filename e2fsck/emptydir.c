@@ -12,6 +12,7 @@
  * blocks and get rid of them.
  */
 
+#include "config.h"
 #include "e2fsck.h"
 #include "problem.h"
 

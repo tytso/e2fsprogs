@@ -14,6 +14,7 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #if HAVE_UNISTD_H

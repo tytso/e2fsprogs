@@ -10,6 +10,7 @@
  * %End-Header%
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef HAVE_GETOPT_H

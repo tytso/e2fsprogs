@@ -13,6 +13,7 @@
  * 	- A bitmap of which inodes are imagic inodes.	(inode_imagic_map)
  */
 
+#include "config.h"
 #include "e2fsck.h"
 #include "problem.h"
 #include <ext2fs/ext2_ext_attr.h>

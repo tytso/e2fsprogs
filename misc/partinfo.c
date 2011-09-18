@@ -7,6 +7,7 @@
  *
  */
 
+#include "config.h"
 #include <sys/types.h>
 #include <fcntl.h>
 #ifdef HAVE_SYS_IOCTL_H

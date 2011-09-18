@@ -33,6 +33,7 @@
  * 	5.  Move the inode tables, if necessary.
  */
 
+#include "config.h"
 #include "resize2fs.h"
 #include <time.h>
 

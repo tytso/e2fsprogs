@@ -5,6 +5,7 @@
  * redistributed under the terms of the GNU Public License.
  */
 
+#include "config.h"
 #include <time.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>

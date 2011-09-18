@@ -5,6 +5,7 @@
  * redistributed under the terms of the GNU Public License.
  */
 
+#include "config.h"
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif

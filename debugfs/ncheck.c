@@ -5,6 +5,7 @@
  * under the terms of the GNU Public License.
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

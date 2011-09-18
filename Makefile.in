@@ -19,7 +19,8 @@ LIB_SUBDIRS=lib/et lib/ss lib/e2p $(UUID_LIB_SUBDIR) lib/ext2fs $(BLKID_LIB_SUBD
 PROG_SUBDIRS=e2fsck $(DEBUGFS_DIR) misc $(RESIZE_DIR) tests/progs po
 SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
-SUBS= lib/ext2fs/ext2_types.h lib/blkid/blkid_types.h lib/uuid/uuid_types.h
+SUBS= util/subst.conf lib/config.h lib/dirpaths.h \
+	lib/ext2fs/ext2_types.h lib/blkid/blkid_types.h lib/uuid/uuid_types.h
 
 TAR=tar
 

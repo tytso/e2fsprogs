@@ -42,6 +42,7 @@
  */
 
 #define _GNU_SOURCE 1 /* get strnlen() */
+#include "config.h"
 #include <string.h>
 
 #include "e2fsck.h"

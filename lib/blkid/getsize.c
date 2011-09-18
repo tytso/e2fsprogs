@@ -13,6 +13,7 @@
 #define _LARGEFILE64_SOURCE
 
 /* include this before sys/queues.h! */
+#include "config.h"
 #include "blkidP.h"
 
 #include <stdio.h>

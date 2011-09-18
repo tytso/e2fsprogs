@@ -37,6 +37,7 @@
 #define O_LARGEFILE 0
 #endif
 
+#include "config.h"
 #include <errno.h>
 #include <fcntl.h>
 #ifdef HAVE_GETOPT_H

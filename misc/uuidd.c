@@ -11,6 +11,7 @@
 
 #define _GNU_SOURCE /* for setres[ug]id() */
 
+#include "config.h"
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>

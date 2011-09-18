@@ -12,6 +12,7 @@
  */
 
 
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #if HAVE_UNISTD_H

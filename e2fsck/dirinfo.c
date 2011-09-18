@@ -7,6 +7,7 @@
 
 #undef DIRINFO_DEBUG
 
+#include "config.h"
 #include "e2fsck.h"
 #include <sys/stat.h>
 #include <fcntl.h>

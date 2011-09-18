@@ -11,6 +11,7 @@
  * License version 2.
  * %End-Header%
  */
+#include "config.h"
 #include <stdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

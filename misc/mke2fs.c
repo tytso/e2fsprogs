@@ -18,6 +18,7 @@
 
 #define _XOPEN_SOURCE 600 /* for inclusion of PATH_MAX in Solaris */
 
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>

@@ -15,6 +15,7 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
+#include "config.h"
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
