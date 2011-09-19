@@ -27,21 +27,21 @@ SRCS=		$(srcdir)/common.c \
 LIBRARY= libquota
 LIBDIR= quota
 
-ELF_VERSION = 1.0
-ELF_SO_VERSION = 1
-ELF_IMAGE = libquota
-ELF_MYDIR = quota
-ELF_INSTALL_DIR = $(root_libdir)
-ELF_OTHER_LIBS = -L../.. -lext2fs
+#ELF_VERSION = 1.0
+#ELF_SO_VERSION = 1
+#ELF_IMAGE = libquota
+#ELF_MYDIR = quota
+#ELF_INSTALL_DIR = $(root_libdir)
+#ELF_OTHER_LIBS = -L../.. -lext2fs
 
-BSDLIB_VERSION = 1.0
-BSDLIB_IMAGE = libquota
-BSDLIB_MYDIR = quota
-BSDLIB_INSTALL_DIR = $(root_libdir)
+#BSDLIB_VERSION = 1.0
+#BSDLIB_IMAGE = libquota
+#BSDLIB_MYDIR = quota
+#BSDLIB_INSTALL_DIR = $(root_libdir)
 
 @MAKEFILE_LIBRARY@
-@MAKEFILE_ELF@
-@MAKEFILE_BSDLIB@
+#MAKEFILE_ELF#
+#MAKEFILE_BSDLIB#
 @MAKEFILE_PROFILE@
 @MAKEFILE_CHECKER@
 
@@ -50,8 +50,8 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 @CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+#ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+#BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 all:: $(SMANPAGES) quota.pc
 
@@ -66,10 +66,10 @@ dict.o:
 @PROFILE_CMT@	$(top_srcdir)/e2fsck/dict.c
 @CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c \
 @CHECKER_CMT@	$(top_srcdir)/e2fsck/dict.c
-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c \
-@ELF_CMT@	$(top_srcdir)/e2fsck/dict.c
-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c \
-@BSDLIB_CMT@	$(top_srcdir)/e2fsck/dict.c
+#ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c \
+#ELF_CMT#	$(top_srcdir)/e2fsck/dict.c
+#BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c \
+#BSDLIB_CMT#	$(top_srcdir)/e2fsck/dict.c
 
 installdirs::
 	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/quota $(man3dir)"

@@ -353,6 +353,9 @@ install-std: build
   # statically-linked fsck
 	${INSTALL_PROGRAM} $(E2FSCK_STATIC) ${tmpdir}/sbin
 	cp ${mandir}/man8/e2fsck.8 ${mandir}/man8/e2fsck.static.8
+  # remove static quota library for now
+	rm ${tmpdir}/usr/include/quota/mkquota.h
+	find ${tmpdir}/usr/lib -name quota.pc -o -name libquota.a | xargs rm
 
 	dh_movefiles
 	test -z "`find ${tmpdir} -type f`"
