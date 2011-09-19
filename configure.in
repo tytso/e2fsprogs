@@ -1068,6 +1068,14 @@ AC_SUBST(root_sbindir)
 AC_SUBST(root_libdir)
 AC_SUBST(root_sysconfdir)
 dnl
+dnl Allow specification of the multiarch arch
+dnl
+AC_ARG_WITH([multiarch],
+[  --with-multiarch=ARCH specify the multiarch triplet],
+libdir=$libdir/$withval
+root_libdir=$root_libdir/$withval
+)dnl
+dnl
 dnl See if -static works.
 dnl
 AC_MSG_CHECKING([whether linker accepts -static])

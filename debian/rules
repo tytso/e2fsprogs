@@ -24,6 +24,7 @@ DEB_BUILD_ARCH   ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 DEB_HOST_OS   ?= $(shell dpkg-architecture -qDEB_HOST_OS)
 DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+DEB_HOST_MULTIARCH  ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null)
 
 # find the version for the main package, from changelog file
 MAIN_VERSION = $(shell head -n 1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
@@ -127,8 +128,8 @@ endif
 
 BF_CFLAGS = -Os -fomit-frame-pointer
 
-COMMON_CONF_FLAGS =  \
-                --enable-elf-shlibs --infodir=/usr/share/info
+COMMON_CONF_FLAGS = --disable-e2initrd-helper --enable-elf-shlibs \
+	--infodir=/usr/share/info
 ifeq ($(UTIL_LINUX_NG),yes)
 COMMON_CONF_FLAGS += --disable-fsck --disable-libblkid \
 			--disable-libuuid --disable-uuidd
@@ -136,15 +137,23 @@ else
 COMMON_CONF_FLAGS += --enable-fsck
 endif
 
-STD_CONF_FLAGS = --enable-symlink-install
+ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
+MULTIARCH_CONF = --with-multiarch=$(DEB_HOST_MULTIARCH)
+# This doesn't work yet because gdb and lintian don't expect and/or
+# don't work with /usr/lib/<triplet>/debug
+#USRLIB = /usr/lib/$(DEB_HOST_MULTIARCH)
+USRLIB = /usr/lib
+else
+USRLIB = /usr/lib
+endif
+
+STD_CONF_FLAGS = --enable-symlink-install $(MULTIARCH_CONF)
 
 BF_CONF_FLAGS = --disable-nls --disable-imager --disable-testio-debug \
-	--disable-uuidd --disable-tls \
-	--disable-debugfs  --disable-e2initrd-helper
+	--disable-uuidd --disable-tls --disable-debugfs
 
 STATIC_CONF_FLAGS = --disable-nls --disable-imager \
-	--disable-uuidd --disable-tls \
-	--disable-e2initrd-helper
+	--disable-uuidd --disable-tls
 
 MIPS_NOPIC_CONF_FLAGS = --disable-nls --disable-imager \
 	--disable-uuidd --disable-tls \
@@ -167,13 +176,30 @@ else
 M4_ARGS+=-UUTIL_LINUX_NG
 endif
 
+ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
+M4_ARGS+=-DDO_MULTIARCH
+else
+M4_ARGS+=-UDO_MULTIARCH
+endif
+
+FILES_FIXUP= libcomerr2.files comerr-dev.files libss2.files ss-dev.files \
+	libuuid1.files uuid-dev.files libblkid1.files libblkid-dev.files \
+	e2fslibs.files e2fslibs-dev.files
+
 debian-files: debian/control debian/e2fsprogs.shlibs.local
+ifeq ($(strip $(DEB_HOST_MULTIARCH)),)
+	for i in $(FILES_FIXUP); do \
+		sed -e 's;lib/\*/;lib/;' debian/$$i.in > debian/$$i; \
+	done
+else
+	for i in $(FILES_FIXUP); do cp debian/$$i.in debian/$$i; done
+endif
 
 mrproper: clean
 	rm debian/control debian/e2fsprogs.shlibs.local
 
 debian/control: debian/control.in debian/rules
-	m4 $(M4_ARGS) < debian/control.in > $@
+	m4 $(M4_ARGS) < debian/control.in | grep -v ^REMOVE_ME$$ > $@
 
 debian/e2fsprogs.shlibs.local: debian/e2fsprogs.shlibs.local.in
 	m4 $(M4_ARGS) < debian/e2fsprogs.shlibs.local.in > $@
@@ -250,6 +276,8 @@ endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTATICSTAMP}
 
+build-arch: build
+build-indep: build
 build: build-std build-bf $(BUILD_STATIC)
 
 build-std: ${BUILDSTDSTAMP}
@@ -468,38 +496,38 @@ ifneq ($(UTIL_LINUX_NG),yes)
 	rm -rf ${uuidudebdir}/usr
 endif
 
-	mkdir -p ${debugdir}/usr/lib
-	mv ${maindir}/usr/lib/debug ${debugdir}/usr/lib
+	mkdir -p ${debugdir}/$(USRLIB)
+	mv ${maindir}/usr/lib/debug ${debugdir}/$(USRLIB)
 	rm -rf ${maindir}/usr/lib/debug
 	mv ${e2fsckstaticdir}/usr/lib/debug/sbin/* \
-		${debugdir}/usr/lib/debug
+		${debugdir}/$(USRLIB)/debug
 	rm -rf ${e2fsckstaticdir}/usr/lib
 
 ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${uuidruntimedbgdir}/usr/lib
-	mv ${uuidruntimedir}/usr/lib/debug ${uuidruntimedbgdir}/usr/lib
+	mkdir -p ${uuidruntimedbgdir}/$(USRLIB)
+	mv ${uuidruntimedir}/usr/lib/debug ${uuidruntimedbgdir}/$(USRLIB)
 	rmdir ${uuidruntimedir}/usr/lib
 endif
 
-	mkdir -p ${libext2dbgdir}/usr/lib
-	mv ${libext2dir}/usr/lib/debug ${libext2dbgdir}/usr/lib
+	mkdir -p ${libext2dbgdir}/$(USRLIB)
+	mv ${libext2dir}/usr/lib/debug ${libext2dbgdir}/$(USRLIB)
 	rmdir ${libext2dir}/usr/lib
 
-	mkdir -p ${libcomerrdbgdir}/usr/lib
-	mv ${libcomerrdir}/usr/lib/debug ${libcomerrdbgdir}/usr/lib
+	mkdir -p ${libcomerrdbgdir}/$(USRLIB)
+	mv ${libcomerrdir}/usr/lib/debug ${libcomerrdbgdir}/$(USRLIB)
 	rmdir ${libcomerrdir}/usr/lib
 
-	mkdir -p ${libssdbgdir}/usr/lib
-	mv ${libssdir}/usr/lib/debug ${libssdbgdir}/usr/lib
+	mkdir -p ${libssdbgdir}/$(USRLIB)
+	mv ${libssdir}/usr/lib/debug ${libssdbgdir}/$(USRLIB)
 	rmdir ${libssdir}/usr/lib
 
 ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${libuuiddbgdir}/usr/lib
-	mv ${libuuiddir}/usr/lib/debug ${libuuiddbgdir}/usr/lib
+	mkdir -p ${libuuiddbgdir}/$(USRLIB)
+	mv ${libuuiddir}/usr/lib/debug ${libuuiddbgdir}/$(USRLIB)
 	rmdir ${libuuiddir}/usr/lib
 
-	mkdir -p ${libblkiddbgdir}/usr/lib
-	mv ${libblkiddir}/usr/lib/debug ${libblkiddbgdir}/usr/lib
+	mkdir -p ${libblkiddbgdir}/$(USRLIB)
+	mv ${libblkiddir}/usr/lib/debug ${libblkiddbgdir}/$(USRLIB)
 	rmdir ${libblkiddir}/usr/lib
 endif
 
