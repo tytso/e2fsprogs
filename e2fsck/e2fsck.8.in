@@ -206,7 +206,7 @@ option may prevent you from further manual data recovery.
 .TP
 .BI nodiscard
 Do not attempt to discard free blocks and unused inode blocks. This option is
-exacly the opposite of discard option. This is set as default.
+exactly the opposite of discard option. This is set as default.
 .RE
 .TP
 .B \-f
