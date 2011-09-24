@@ -202,7 +202,8 @@ static void remove_journal_device(ext2_filsys fs)
 			_("while trying to open external journal"));
 		goto no_valid_journal;
 	}
-	if (!(jfs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+	if (!(jfs->super->s_feature_incompat &
+	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
 		fprintf(stderr, _("%s is not a journal device.\n"),
 			journal_path);
 		goto no_valid_journal;
@@ -216,8 +217,8 @@ static void remove_journal_device(ext2_filsys fs)
 	}
 
 	jsb = (journal_superblock_t *) buf;
-	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
-	    (jsb->s_header.h_blocktype != (unsigned) ntohl(JFS_SUPERBLOCK_V2))) {
+	if ((jsb->s_header.h_magic != (unsigned)ntohl(JFS_MAGIC_NUMBER)) ||
+	    (jsb->s_header.h_blocktype != (unsigned)ntohl(JFS_SUPERBLOCK_V2))) {
 		fputs(_("Journal superblock not found!\n"), stderr);
 		goto no_valid_journal;
 	}
@@ -225,8 +226,7 @@ static void remove_journal_device(ext2_filsys fs)
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
 	for (i = 0; i < nr_users; i++) {
-		if (memcmp(fs->super->s_uuid,
-			   &jsb->s_users[i*16], 16) == 0)
+		if (memcmp(fs->super->s_uuid, &jsb->s_users[i * 16], 16) == 0)
 			break;
 	}
 	if (i >= nr_users) {
@@ -237,7 +237,7 @@ static void remove_journal_device(ext2_filsys fs)
 	}
 	nr_users--;
 	for (i = 0; i < nr_users; i++)
-		memcpy(&jsb->s_users[i*16], &jsb->s_users[(i+1)*16], 16);
+		memcpy(&jsb->s_users[i * 16], &jsb->s_users[(i + 1) * 16], 16);
 	jsb->s_nr_users = htonl(nr_users);
 
 	/* Write back the journal superblock */
