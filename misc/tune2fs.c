@@ -184,7 +184,7 @@ static void remove_journal_device(ext2_filsys fs)
 		journal_path =
 			ext2fs_find_block_device(fs->super->s_journal_dev);
 		if (!journal_path)
-			return;
+			goto no_valid_journal;
 	}
 
 #ifdef CONFIG_TESTIO_DEBUG
@@ -251,7 +251,9 @@ static void remove_journal_device(ext2_filsys fs)
 
 no_valid_journal:
 	if (commit_remove_journal == 0) {
-		fputs(_("Journal NOT removed\n"), stderr);
+		fputs(_("Cannot locate journal device. It was NOT removed\n"
+			"Use -f option to remove missing journal device.\n"),
+		      stderr);
 		exit(1);
 	}
 	fs->super->s_journal_dev = 0;
