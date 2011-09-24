@@ -2017,7 +2017,7 @@ retry_open:
 		printf(_("Setting stripe width to %d\n"), stripe_width);
 	}
 	if (ext_mount_opts) {
-		strncpy(fs->super->s_mount_opts, ext_mount_opts,
+		strncpy((char *)(fs->super->s_mount_opts), ext_mount_opts,
 			sizeof(fs->super->s_mount_opts));
 		fs->super->s_mount_opts[sizeof(fs->super->s_mount_opts)-1] = 0;
 		ext2fs_mark_super_dirty(fs);

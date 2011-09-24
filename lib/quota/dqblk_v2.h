@@ -32,7 +32,7 @@ struct v2_mem_dqinfo {
 };
 
 struct v2_mem_dqblk {
-	loff_t dqb_off;		/* Offset of dquot in file */
+	long long dqb_off;	/* Offset of dquot in file */
 };
 
 struct quotafile_ops;		/* Will be defined later in quotaio.h */

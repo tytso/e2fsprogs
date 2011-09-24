@@ -30,7 +30,6 @@
  */
 #include "config.h"
 #include <stdint.h>
-#include <endian.h>
 #include <stdlib.h>
 #include <stdio.h>
 #define __force

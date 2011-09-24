@@ -407,8 +407,8 @@ int main(int argc, char **argv)
 			size = bcode_program[i++];
 			retval = ea_refcount_create(size, &refcount);
 			if (retval) {
-				com_err("ea_refcount_create",
-					retval, "");
+				com_err("ea_refcount_create", retval,
+					"while creating size %d", size);
 				exit(1);
 			} else
 				printf("Creating refcount with size %d\n",
@@ -422,35 +422,35 @@ int main(int argc, char **argv)
 		case BCODE_STORE:
 			blk = (blk_t) bcode_program[i++];
 			arg = bcode_program[i++];
-			retval = ea_refcount_store(refcount, blk, arg);
 			printf("Storing blk %u with value %d\n", blk, arg);
+			retval = ea_refcount_store(refcount, blk, arg);
 			if (retval)
-				com_err("ea_refcount_store", retval, "");
+				com_err("ea_refcount_store", retval,
+					"while storing blk %u", blk);
 			break;
 		case BCODE_FETCH:
 			blk = (blk_t) bcode_program[i++];
 			retval = ea_refcount_fetch(refcount, blk, &arg);
 			if (retval)
-				com_err("ea_refcount_fetch", retval, "");
+				com_err("ea_refcount_fetch", retval,
+					"while fetching blk %u", blk);
 			else
 				printf("bcode_fetch(%u) returns %d\n",
 				       blk, arg);
 			break;
 		case BCODE_INCR:
 			blk = (blk_t) bcode_program[i++];
-			retval = ea_refcount_increment(refcount, blk,
-							   &arg);
+			retval = ea_refcount_increment(refcount, blk, &arg);
 			if (retval)
 				com_err("ea_refcount_increment", retval,
-					"");
+					"while incrementing blk %u", blk);
 			else
 				printf("bcode_increment(%u) returns %d\n",
 				       blk, arg);
 			break;
 		case BCODE_DECR:
 			blk = (blk_t) bcode_program[i++];
-			retval = ea_refcount_decrement(refcount, blk,
-							   &arg);
+			retval = ea_refcount_decrement(refcount, blk, &arg);
 			if (retval)
 				com_err("ea_refcount_decrement", retval,
 					"while decrementing blk %u", blk);
@@ -461,20 +461,18 @@ int main(int argc, char **argv)
 		case BCODE_VALIDATE:
 			retval = ea_refcount_validate(refcount, stderr);
 			if (retval)
-				com_err("ea_refcount_validate",
-					retval, "");
+				com_err("ea_refcount_validate", retval,
+					"while validating");
 			else
 				printf("Refcount validation OK.\n");
 			break;
 		case BCODE_LIST:
 			ea_refcount_intr_begin(refcount);
 			while (1) {
-				blk = ea_refcount_intr_next(refcount,
-								&arg);
+				blk = ea_refcount_intr_next(refcount, &arg);
 				if (!blk)
 					break;
-				printf("\tblk=%u, count=%d\n", blk,
-				       arg);
+				printf("\tblk=%u, count=%d\n", blk, arg);
 			}
 			break;
 		case BCODE_COLLAPSE:

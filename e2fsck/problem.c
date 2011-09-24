@@ -1979,6 +1979,7 @@ int main(int argc, char *argv[])
 	e2fsck_t ctx;
 	int rc;
 
+	memset(&ctx, 0, sizeof(ctx)); /* just to quiet compiler */
 	rc = verify_problem_table(ctx);
 	if (rc == 0)
 		printf("e2fsck problem table verified\n");

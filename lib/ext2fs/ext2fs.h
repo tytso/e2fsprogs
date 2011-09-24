@@ -586,7 +586,7 @@ typedef struct ext2_icount *ext2_icount_t;
 #define EXT2FS_NUM_B2C(fs, blks)	(((blks) + EXT2FS_CLUSTER_MASK(fs)) >> \
 					 (fs)->cluster_ratio_bits)
 
-#ifdef HAVE_OPEN64
+#if defined(HAVE_STAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 typedef struct stat64 ext2fs_struct_stat;
 #else
 typedef struct stat ext2fs_struct_stat;
@@ -1411,6 +1411,7 @@ extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
 extern int ext2fs_open_file(const char *pathname, int flags, ...);
 extern int ext2fs_stat(const char *path, ext2fs_struct_stat *buf);
+extern int ext2fs_fstat(int fd, ext2fs_struct_stat *buf);
 
 /*
  * The actual inlined functions definitions themselves...
@@ -1671,7 +1672,7 @@ _INLINE_ int ext2fs_open_file(const char *pathname, int flags, ...)
 	va_end(args);
 
 	if (mode)
-#ifdef HAVE_OPEN64
+#if defined(HAVE_OPEN64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 		return open64(pathname, flags, mode);
 	else
 		return open64(pathname, flags);
@@ -1684,10 +1685,19 @@ _INLINE_ int ext2fs_open_file(const char *pathname, int flags, ...)
 
 _INLINE_ int ext2fs_stat(const char *path, ext2fs_struct_stat *buf)
 {
-#ifdef HAVE_OPEN64
+#if defined(HAVE_STAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 	return stat64(path, buf);
 #else
-	return open(path, buf);
+	return stat(path, buf);
+#endif
+}
+
+_INLINE_ int ext2fs_fstat(int fd, ext2fs_struct_stat *buf)
+{
+#if defined(HAVE_STAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
+	return fstat64(fd, buf);
+#else
+	return fstat(fd, buf);
 #endif
 }
 
