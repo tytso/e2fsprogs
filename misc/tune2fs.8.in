@@ -543,9 +543,9 @@ future.
 only supports clearing this filesystem feature.
 .TP
 .B mmp
-Enable or disable multiple mount protection(MMP) feature. MMP helps to protect
-the filesystem from being multiply mounted and is useful in shared storage
-environments.
+Enable or disable multiple mount protection (MMP) feature.  MMP helps to
+protect the filesystem from being multiply mounted and is useful in
+shared storage environments.
 .TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.

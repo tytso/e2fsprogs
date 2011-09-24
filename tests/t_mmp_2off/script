@@ -1,0 +1,40 @@
+FSCK_OPT=-yf
+
+TMPFILE=test.img
+rm -f $test_name.failed $test_name.ok
+> $TMPFILE
+
+stat -f $TMPFILE | grep -q "Type: tmpfs"
+if [ $? == 0 ]; then
+	rm -f $TMPFILE
+	echo "skipped for tmpfs (no O_DIRECT support)"
+	return 0
+fi
+
+$MKE2FS -q -F -o Linux -b 1024 -O mmp $TMPFILE 100 > $test_name.log 2>&1
+status=$?
+if [ "$status" != 0 ] ; then
+	echo "mke2fs -O mmp failed" > $test_name.failed
+	echo "failed"
+	return $status
+fi
+
+$TUNE2FS -O ^mmp $TMPFILE > $test_name.log 2>&1
+status=$?
+if [ "$status" != 0 ] ; then
+	echo "tune2fs -O ^mmp failed" > $test_name.failed
+	echo "failed"
+	return $status
+fi
+
+$FSCK $FSCK_OPT $TMPFILE > $test_name.log 2>&1
+status=$?
+if [ "$status" = 0 ] ; then
+	echo "ok"
+	touch $test_name.ok
+else
+	echo "e2fsck after MMP disable failed" > $test_name.failed
+	echo "failed"
+	return $status
+fi
+rm -f $TMPFILE

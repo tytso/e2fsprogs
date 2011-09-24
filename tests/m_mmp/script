@@ -1,0 +1,15 @@
+DESCRIPTION="enable MMP during mke2fs"
+FS_SIZE=65536
+MKE2FS_DEVICE_SECTSIZE=2048
+export MKE2FS_DEVICE_SECTSIZE
+TMPFILE=test.img
+> $TMPFILE
+stat -f $TMPFILE | grep -q "Type: tmpfs"
+if [ $? == 0 ]; then
+	rm -f $TMPFILE
+	echo "skipped for tmpfs (no O_DIRECT support)"
+	return 0
+fi
+MKE2FS_OPTS="-O mmp"
+. $cmd_dir/run_mke2fs
+unset MKE2FS_DEVICE_SECTSIZE
