@@ -236,6 +236,12 @@ struct problem_context {
 /* Make quota file hidden */
 #define	PR_0_HIDE_QUOTA				0x000041
 
+/* Superblock has invalid MMP block. */
+#define PR_0_MMP_INVALID_BLK			0x000042
+
+/* Superblock has invalid MMP magic. */
+#define PR_0_MMP_INVALID_MAGIC			0x000043
+
 
 /*
  * Pass 1 errors

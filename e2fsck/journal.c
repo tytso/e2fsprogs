@@ -882,6 +882,8 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 		ctx->fs->io->manager->get_stats(ctx->fs->io, &stats);
 	if (stats && stats->bytes_written)
 		kbytes_written = stats->bytes_written >> 10;
+
+	ext2fs_mmp_stop(ctx->fs);
 	ext2fs_free(ctx->fs);
 	retval = ext2fs_open(ctx->filesystem_name, EXT2_FLAG_RW,
 			     ctx->superblock, blocksize, io_ptr,

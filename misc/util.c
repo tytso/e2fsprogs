@@ -24,6 +24,7 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#include <time.h>
 
 #include "et/com_err.h"
 #include "e2p/e2p.h"
@@ -284,4 +285,17 @@ void print_check_message(unsigned int mnt, unsigned int check)
 		 "%g days, whichever comes first.  "
 		 "Use tune2fs -c or -i to override.\n"),
 	       mnt, ((double) check) / (3600 * 24));
+}
+
+void dump_mmp_msg(struct mmp_struct *mmp, const char *msg)
+{
+
+	if (msg)
+		printf("MMP check failed: %s\n", msg);
+	if (mmp) {
+		time_t t = mmp->mmp_time;
+
+		printf("MMP error info: last update: %s node: %s device: %s\n",
+		       ctime(&t), mmp->mmp_nodename, mmp->mmp_bdevname);
+	}
 }

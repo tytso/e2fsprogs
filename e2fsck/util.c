@@ -41,6 +41,7 @@
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
 
+#include <time.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
@@ -49,6 +50,7 @@ void fatal_error(e2fsck_t ctx, const char *msg)
 	if (msg)
 		fprintf (stderr, "e2fsck: %s\n", msg);
 	if (ctx->fs && ctx->fs->io) {
+		ext2fs_mmp_stop(ctx->fs);
 		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_CHANNEL)
 			io_channel_flush(ctx->fs->io);
 		else
@@ -709,4 +711,30 @@ int write_all(int fd, char *buf, size_t count)
 		c += ret;
 	}
 	return c;
+}
+
+void dump_mmp_msg(struct mmp_struct *mmp, const char *msg)
+{
+
+	if (msg)
+		printf("MMP check failed: %s\n", msg);
+	if (mmp) {
+		time_t t = mmp->mmp_time;
+
+		printf("MMP error info: last update: %s node: %s device: %s\n",
+		       ctime(&t), mmp->mmp_nodename, mmp->mmp_bdevname);
+	}
+}
+
+errcode_t e2fsck_mmp_update(ext2_filsys fs)
+{
+	errcode_t retval;
+
+	retval = ext2fs_mmp_update(fs);
+	if (retval == EXT2_ET_MMP_CHANGE_ABORT)
+		dump_mmp_msg(fs->mmp_cmp,
+			     _("UNEXPECTED INCONSISTENCY: the filesystem is "
+			       "being modified while fsck is running.\n"));
+
+	return retval;
 }

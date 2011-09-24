@@ -418,6 +418,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Making @q @is hidden.\n\n"),
 	  PROMPT_NONE, PR_PREEN_OK },
 
+	/* Superblock has invalid MMP block. */
+	{ PR_0_MMP_INVALID_BLK,
+	  N_("@S has invalid MMP block.  "),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Superblock has invalid MMP magic. */
+	{ PR_0_MMP_INVALID_MAGIC,
+	  N_("@S has invalid MMP magic.  "),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
@@ -968,7 +978,6 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1B_ADJ_EA_REFCOUNT,
 	  N_("Error adjusting refcount for @a @b %b (@i %i): %m\n"),
 	  PROMPT_NONE, 0 },
-
 
 	/* Pass 1C: Scan directories for inodes with multiply-claimed blocks. */
 	{ PR_1C_PASS_HEADER,

@@ -133,7 +133,7 @@ static struct field_set_info super_fields[] = {
 	{ "flags", &set_sb.s_flags, NULL, 4, parse_uint },
 	{ "raid_stride", &set_sb.s_raid_stride, NULL, 2, parse_uint },
 	{ "min_extra_isize", &set_sb.s_min_extra_isize, NULL, 4, parse_uint },
-	{ "mmp_interval", &set_sb.s_mmp_interval, NULL, 2, parse_uint },
+	{ "mmp_interval", &set_sb.s_mmp_update_interval, NULL, 2, parse_uint },
 	{ "mmp_block", &set_sb.s_mmp_block, NULL, 8, parse_uint },
 	{ "raid_stripe_width", &set_sb.s_raid_stripe_width, NULL, 4, parse_uint },
 	{ "log_groups_per_flex", &set_sb.s_log_groups_per_flex, NULL, 1, parse_uint },
@@ -726,3 +726,86 @@ void do_set_block_group_descriptor(int argc, char *argv[])
 		ext2fs_mark_super_dirty(current_fs);
 	}
 }
+
+static errcode_t parse_mmp_clear(struct field_set_info *info, char *field,
+				 char *arg)
+{
+	errcode_t retval;
+
+	retval = ext2fs_mmp_clear(current_fs);
+	if (retval != 0)
+		com_err("set_mmp_value", retval, "while clearing MMP block\n");
+	else
+		memcpy(info->ptr, current_fs->mmp_buf, info->size);
+
+	return 1; /* we don't need the MMP block written again */
+}
+
+struct mmp_struct set_mmp;
+static struct field_set_info mmp_fields[] = {
+	{ "clear", &set_mmp.mmp_magic, NULL, sizeof(set_mmp), parse_mmp_clear },
+	{ "magic", &set_mmp.mmp_magic, NULL, 4, parse_uint },
+	{ "seq", &set_mmp.mmp_seq, NULL, 4, parse_uint },
+	{ "time", &set_mmp.mmp_time, NULL, 8, parse_uint },
+	{ "nodename", &set_mmp.mmp_nodename, NULL, sizeof(set_mmp.mmp_nodename),
+		parse_string },
+	{ "bdevname", &set_mmp.mmp_bdevname, NULL, sizeof(set_mmp.mmp_bdevname),
+		parse_string },
+	{ "check_interval", &set_mmp.mmp_check_interval, NULL, 2, parse_uint },
+};
+
+void do_set_mmp_value(int argc, char *argv[])
+{
+	const char *usage = "<field> <value>\n"
+		"\t\"set_mmp_value -l\" will list the names of "
+		"MMP fields\n\twhich can be set.";
+	static struct field_set_info *smmp;
+	struct mmp_struct *mmp_s;
+	errcode_t retval;
+
+	if (argc == 2 && strcmp(argv[1], "-l") == 0) {
+		print_possible_fields(mmp_fields);
+		return;
+	}
+
+	if (current_fs->super->s_mmp_block == 0) {
+		com_err(argv[0], 0, "no MMP block allocated\n");
+		return;
+	}
+
+	if (common_args_process(argc, argv, 2, 3, "set_mmp_value",
+				usage, CHECK_FS_RW))
+		return;
+
+	mmp_s = current_fs->mmp_buf;
+	if (mmp_s == NULL) {
+		retval = ext2fs_get_mem(current_fs->blocksize, &mmp_s);
+		if (retval) {
+			com_err(argv[0], retval, "allocating MMP buffer\n");
+			return;
+		}
+		retval = ext2fs_mmp_read(current_fs,
+					 current_fs->super->s_mmp_block, mmp_s);
+		if (retval) {
+			com_err(argv[0], retval, "reading MMP block %llu.\n",
+				(long long)current_fs->super->s_mmp_block);
+			ext2fs_free_mem(mmp_s);
+			return;
+		}
+		current_fs->mmp_buf = mmp_s;
+	}
+
+	smmp = find_field(mmp_fields, argv[1]);
+	if (smmp == 0) {
+		com_err(argv[0], 0, "invalid field specifier: %s", argv[1]);
+		return;
+	}
+
+	set_mmp = *mmp_s;
+	if (smmp->func(smmp, argv[1], argv[2]) == 0) {
+		ext2fs_mmp_write(current_fs, current_fs->super->s_mmp_block,
+				 &set_mmp);
+		*mmp_s = set_mmp;
+	}
+}
+

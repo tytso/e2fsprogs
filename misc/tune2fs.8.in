@@ -172,6 +172,21 @@ separated, and may take an argument using the equals ('=') sign.
 The following extended options are supported:
 .RS 1.2i
 .TP
+.B clear_mmp
+Reset the MMP block (if any) back to the clean state.  Use only if
+absolutely certain the device is not currently mounted or being
+fscked, or major filesystem corruption can result.  Needs '-f'.
+.TP
+.BI mmp_update_interval= interval
+Adjust the initial MMP update interval to
+.I interval
+seconds.  Specifying an
+.I interval
+of 0 means to use the default interval.  The specified interval must
+be less than 300 seconds.  Requires that the
+.B mmp
+feature be enabled.
+.TP
 .BI stride= stride-size
 Configure the filesystem for a RAID array with
 .I stride-size
@@ -527,6 +542,11 @@ future.
 .B Tune2fs 
 only supports clearing this filesystem feature.
 .TP
+.B mmp
+Enable or disable multiple mount protection(MMP) feature. MMP helps to protect
+the filesystem from being multiply mounted and is useful in shared storage
+environments.
+.TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.
 .TP
@@ -562,6 +582,9 @@ mounted by kernels which do not support those features.  In particular, the
 and
 .BR flex_bg
 features are only supported by the ext4 filesystem.
+.TP
+.BI \-p " mmp_check_interval"
+Set the desired MMP check interval in seconds. It is 5 seconds by default.
 .TP
 .BI \-r " reserved-blocks-count"
 Set the number of reserved filesystem blocks.

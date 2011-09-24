@@ -79,6 +79,8 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 			"opening read-only because of catastrophic mode");
 		open_flags &= ~EXT2_FLAG_RW;
 	}
+	if (catastrophic)
+		open_flags |= EXT2_FLAG_SKIP_MMP;
 
 	retval = ext2fs_open(device, open_flags, superblock, blocksize,
 			     unix_io_manager, &current_fs);
@@ -2159,6 +2161,48 @@ void do_punch(int argc, char *argv[])
 			(unsigned long long) start, (unsigned long long) end);
 		return;
 	}
+}
+
+void do_dump_mmp(int argc, char *argv[])
+{
+	struct ext2_super_block *sb = current_fs->super;
+	struct mmp_struct *mmp_s;
+	time_t t;
+	errcode_t retval = 0;
+
+	if (sb->s_mmp_block <= sb->s_first_data_block ||
+	    sb->s_mmp_block >= ext2fs_blocks_count(sb)) {
+		com_err(argv[0], EXT2_ET_MMP_BAD_BLOCK, "while dumping it.\n");
+		return;
+	}
+
+	if (current_fs->mmp_buf == NULL) {
+		retval = ext2fs_get_mem(current_fs->blocksize,
+					&current_fs->mmp_buf);
+		if (retval) {
+			com_err(argv[0], retval, "allocating MMP buffer.\n");
+			return;
+		}
+	}
+
+	mmp_s = current_fs->mmp_buf;
+
+	retval = ext2fs_mmp_read(current_fs, current_fs->super->s_mmp_block,
+				 current_fs->mmp_buf);
+	if (retval) {
+		com_err(argv[0], retval, "reading MMP block.\n");
+		return;
+	}
+
+	t = mmp_s->mmp_time;
+	fprintf(stdout, "block_number: %llu\n", current_fs->super->s_mmp_block);
+	fprintf(stdout, "update_interval: %d\n",
+		current_fs->super->s_mmp_update_interval);
+	fprintf(stdout, "check_interval: %d\n", mmp_s->mmp_check_interval);
+	fprintf(stdout, "sequence: %08x\n", mmp_s->mmp_seq);
+	fprintf(stdout, "time: %lld -- %s", mmp_s->mmp_time, ctime(&t));
+	fprintf(stdout, "node_name: %s\n", mmp_s->mmp_nodename);
+	fprintf(stdout, "device_name: %s\n", mmp_s->mmp_bdevname);
 }
 
 static int source_file(const char *cmd_file, int sci_idx)

@@ -614,7 +614,7 @@ struct ext2_super_block {
 	__u16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
 	__u32	s_flags;		/* Miscellaneous flags */
 	__u16   s_raid_stride;		/* RAID stride */
-	__u16   s_mmp_interval;         /* # seconds to wait in MMP checking */
+	__u16   s_mmp_update_interval;  /* # seconds to wait in MMP checking */
 	__u64   s_mmp_block;            /* Block for multi-mount protection */
 	__u32   s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
 	__u8	s_log_groups_per_flex;	/* FLEX_BG group size */
@@ -721,7 +721,8 @@ struct ext2_super_block {
 #define EXT4_FEATURE_INCOMPAT_DIRDATA		0x1000
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
-#define EXT2_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE)
+#define EXT2_FEATURE_INCOMPAT_SUPP    (EXT2_FEATURE_INCOMPAT_FILETYPE| \
+				       EXT4_FEATURE_INCOMPAT_MMP)
 #define EXT2_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER| \
 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
 					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK| \
@@ -802,28 +803,52 @@ struct ext2_dir_entry_2 {
 					 ~EXT2_DIR_ROUND)
 
 /*
- * This structure will be used for multiple mount protection. It will be
- * written into the block number saved in the s_mmp_block field in the
- * superblock.
+ * This structure is used for multiple mount protection. It is written
+ * into the block number saved in the s_mmp_block field in the superblock.
+ * Programs that check MMP should assume that if SEQ_FSCK (or any unknown
+ * code above SEQ_MAX) is present then it is NOT safe to use the filesystem,
+ * regardless of how old the timestamp is.
+ *
+ * The timestamp in the MMP structure will be updated by e2fsck at some
+ * arbitary intervals (start of passes, after every few groups of inodes
+ * in pass1 and pass1b).  There is no guarantee that e2fsck is updating
+ * the MMP block in a timely manner, and the updates it does are purely
+ * for the convenience of the sysadmin and not for automatic validation.
+ *
+ * Note: Only the mmp_seq value is used to determine whether the MMP block
+ *	is being updated.  The mmp_time, mmp_nodename, and mmp_bdevname
+ *	fields are only for informational purposes for the administrator,
+ *	due to clock skew between nodes and hostname HA service takeover.
  */
-#define	EXT2_MMP_MAGIC    0x004D4D50 /* ASCII for MMP */
-#define	EXT2_MMP_CLEAN    0xFF4D4D50 /* Value of mmp_seq for clean unmount */
-#define	EXT2_MMP_FSCK_ON  0xE24D4D50 /* Value of mmp_seq when being fscked */
+#define EXT4_MMP_MAGIC     0x004D4D50U /* ASCII for MMP */
+#define EXT4_MMP_SEQ_CLEAN 0xFF4D4D50U /* mmp_seq value for clean unmount */
+#define EXT4_MMP_SEQ_FSCK  0xE24D4D50U /* mmp_seq value when being fscked */
+#define EXT4_MMP_SEQ_MAX   0xE24D4D4FU /* maximum valid mmp_seq value */
 
 struct mmp_struct {
-	__u32	mmp_magic;
-	__u32	mmp_seq;
-	__u64	mmp_time;
-	char	mmp_nodename[64];
-	char	mmp_bdevname[32];
-	__u16	mmp_interval;
+	__u32	mmp_magic;		/* Magic number for MMP */
+	__u32	mmp_seq;		/* Sequence no. updated periodically */
+	__u64	mmp_time;		/* Time last updated */
+	char	mmp_nodename[64];	/* Node which last updated MMP block */
+	char	mmp_bdevname[32];	/* Bdev which last updated MMP block */
+	__u16	mmp_check_interval;	/* Changed mmp_check_interval */
 	__u16	mmp_pad1;
-	__u32	mmp_pad2;
+	__u32	mmp_pad2[227];
 };
 
 /*
- * Interval in number of seconds to update the MMP sequence number.
+ * Default interval for MMP update in seconds.
  */
-#define EXT2_MMP_DEF_INTERVAL	5
+#define EXT4_MMP_UPDATE_INTERVAL	5
+
+/*
+ * Maximum interval for MMP update in seconds.
+ */
+#define EXT4_MMP_MAX_UPDATE_INTERVAL	300
+
+/*
+ * Minimum interval for MMP checking in seconds.
+ */
+#define EXT4_MMP_MIN_CHECK_INTERVAL     5
 
 #endif	/* _LINUX_EXT2_FS_H */

@@ -101,7 +101,7 @@ void check_superblock_fields()
 	check_field(s_want_extra_isize);
 	check_field(s_flags);
 	check_field(s_raid_stride);
-	check_field(s_mmp_interval);
+	check_field(s_mmp_update_interval);
 	check_field(s_mmp_block);
 	check_field(s_raid_stripe_width);
 	check_field(s_log_groups_per_flex);

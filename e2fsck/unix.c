@@ -1006,6 +1006,88 @@ static errcode_t try_open_fs(e2fsck_t ctx, int flags, io_manager io_ptr,
 static const char *my_ver_string = E2FSPROGS_VERSION;
 static const char *my_ver_date = E2FSPROGS_DATE;
 
+int e2fsck_check_mmp(ext2_filsys fs, e2fsck_t ctx)
+{
+	struct mmp_struct *mmp_s;
+	unsigned int mmp_check_interval;
+	errcode_t retval = 0;
+	struct problem_context pctx;
+	unsigned int wait_time = 0;
+
+	clear_problem_context(&pctx);
+	if (fs->mmp_buf == NULL) {
+		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		if (retval)
+			goto check_error;
+	}
+
+	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, fs->mmp_buf);
+	if (retval)
+		goto check_error;
+
+	mmp_s = fs->mmp_buf;
+
+	mmp_check_interval = fs->super->s_mmp_update_interval;
+	if (mmp_check_interval < EXT4_MMP_MIN_CHECK_INTERVAL)
+		mmp_check_interval = EXT4_MMP_MIN_CHECK_INTERVAL;
+
+	/*
+	 * If check_interval in MMP block is larger, use that instead of
+	 * check_interval from the superblock.
+	 */
+	if (mmp_s->mmp_check_interval > mmp_check_interval)
+		mmp_check_interval = mmp_s->mmp_check_interval;
+
+	wait_time = mmp_check_interval * 2 + 1;
+
+	if (mmp_s->mmp_seq == EXT4_MMP_SEQ_CLEAN)
+		retval = 0;
+	else if (mmp_s->mmp_seq == EXT4_MMP_SEQ_FSCK)
+		retval = EXT2_ET_MMP_FSCK_ON;
+	else if (mmp_s->mmp_seq > EXT4_MMP_SEQ_MAX)
+		retval = EXT2_ET_MMP_UNKNOWN_SEQ;
+
+	if (retval)
+		goto check_error;
+
+	/* Print warning if e2fck will wait for more than 20 secs. */
+	if (verbose || wait_time > EXT4_MMP_MIN_CHECK_INTERVAL * 4) {
+		printf("MMP interval is %u seconds and total wait time is %u "
+		       "seconds. Please wait...\n",
+			mmp_check_interval, wait_time * 2);
+	}
+
+	return 0;
+
+check_error:
+
+	if (retval == EXT2_ET_MMP_BAD_BLOCK) {
+		if (fix_problem(ctx, PR_0_MMP_INVALID_BLK, &pctx)) {
+			fs->super->s_mmp_block = 0;
+			ext2fs_mark_super_dirty(fs);
+			retval = 0;
+		}
+	} else if (retval == EXT2_ET_MMP_FAILED) {
+		com_err(ctx->program_name, retval,
+			_("while checking MMP block"));
+		dump_mmp_msg(fs->mmp_buf, NULL);
+	} else if (retval == EXT2_ET_MMP_FSCK_ON ||
+		   retval == EXT2_ET_MMP_UNKNOWN_SEQ) {
+		com_err(ctx->program_name, retval,
+			_("while checking MMP block"));
+		dump_mmp_msg(fs->mmp_buf,
+			     _("If you are sure the filesystem is not "
+			       "in use on any node, run:\n"
+			       "'tune2fs -f -E clear_mmp {device}'\n"));
+	} else if (retval == EXT2_ET_MMP_MAGIC_INVALID) {
+		if (fix_problem(ctx, PR_0_MMP_INVALID_MAGIC, &pctx)) {
+			ext2fs_mmp_clear(fs);
+			retval = 0;
+		}
+	}
+	return retval;
+}
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0, retval2 = 0, orig_retval = 0;
@@ -1076,6 +1158,8 @@ int main (int argc, char *argv[])
 				    _("need terminal for interactive repairs"));
 	}
 	ctx->superblock = ctx->use_superblock;
+
+	flags = EXT2_FLAG_SKIP_MMP;
 restart:
 #ifdef CONFIG_TESTIO_DEBUG
 	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
@@ -1084,7 +1168,7 @@ restart:
 	} else
 #endif
 		io_ptr = unix_io_manager;
-	flags = EXT2_FLAG_NOFREE_ON_ERROR;
+	flags |= EXT2_FLAG_NOFREE_ON_ERROR;
 	profile_get_boolean(ctx->profile, "options", "old_bitmaps", 0, 0,
 			    &old_bitmaps);
 	if (!old_bitmaps)
@@ -1256,6 +1340,21 @@ failure:
 			*cp = '_';
 
 	ehandler_init(fs->io);
+
+	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
+	    (flags & EXT2_FLAG_SKIP_MMP)) {
+		if (e2fsck_check_mmp(fs, ctx))
+			fatal_error(ctx, 0);
+	}
+
+	 /*
+	  * Restart in order to reopen fs but this time start mmp.
+	  */
+	if (flags & EXT2_FLAG_SKIP_MMP) {
+		ext2fs_close(fs);
+		flags &= ~EXT2_FLAG_SKIP_MMP;
+		goto restart;
+	}
 
 	if ((ctx->mount_flags & EXT2_MF_MOUNTED) &&
 	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER))

@@ -81,8 +81,10 @@ static struct feature feature_list[] = {
 			"meta_bg" },
 	{	E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_64BIT,
 			"64bit" },
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_MMP,
+			"mmp" },
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_FLEX_BG,
-                        "flex_bg"},
+			"flex_bg"},
 	{	0, 0, 0 },
 };
 

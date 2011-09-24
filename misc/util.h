@@ -24,3 +24,4 @@ extern void parse_journal_opts(const char *opts);
 extern void check_mount(const char *device, int force, const char *type);
 extern unsigned int figure_journal_size(int size, ext2_filsys fs);
 extern void print_check_message(unsigned int, unsigned int);
+extern void dump_mmp_msg(struct mmp_struct *mmp, const char *msg);

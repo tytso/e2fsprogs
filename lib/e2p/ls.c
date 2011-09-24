@@ -408,6 +408,12 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Last error block #:       %llu\n",
 			sb->s_last_error_block);
 	}
+	if (sb->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) {
+		fprintf(f, "MMP block number:         %llu\n",
+			(long long)sb->s_mmp_block);
+		fprintf(f, "MMP update interval:      %u\n",
+			sb->s_mmp_update_interval);
+	}
 	if (sb->s_usr_quota_inum)
 		fprintf(f, "User quota inode:         %u\n",
 			sb->s_usr_quota_inum);

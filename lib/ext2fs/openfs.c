@@ -23,6 +23,9 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include "ext2_fs.h"
 
@@ -83,6 +86,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
  * 	EXT2_FLAG_FORCE - Open the filesystem even if some of the
  *				features aren't supported.
  *	EXT2_FLAG_JOURNAL_DEV_OK - Open an ext3 journal device
+ *	EXT2_FLAG_SKIP_MMP - Open without multi-mount protection check.
  */
 errcode_t ext2fs_open2(const char *name, const char *io_options,
 		       int flags, int superblock,
@@ -380,6 +384,18 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 
 	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;
 	*ret_fs = fs;
+
+	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
+	    !(flags & EXT2_FLAG_SKIP_MMP) &&
+	    (flags & (EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE))) {
+		retval = ext2fs_mmp_start(fs);
+		if (retval) {
+			fs->flags |= EXT2_FLAG_SKIP_MMP; /* just do cleanup */
+			ext2fs_mmp_stop(fs);
+			goto cleanup;
+		}
+	}
+
 	return 0;
 cleanup:
 	if (flags & EXT2_FLAG_NOFREE_ON_ERROR)

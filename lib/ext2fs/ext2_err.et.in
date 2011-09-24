@@ -422,4 +422,25 @@ ec	EXT2_NO_MTAB_FILE,
 ec	EXT2_ET_CANT_USE_LEGACY_BITMAPS,
 	"Filesystem too large to use legacy bitmaps"
 
+ec	EXT2_ET_MMP_MAGIC_INVALID,
+	"MMP: invalid magic number"
+
+ec	EXT2_ET_MMP_FAILED,
+	"MMP: device currently active"
+
+ec	EXT2_ET_MMP_FSCK_ON,
+	"MMP: fsck being run"
+
+ec	EXT2_ET_MMP_BAD_BLOCK,
+	"MMP: block number beyond filesystem range"
+
+ec	EXT2_ET_MMP_UNKNOWN_SEQ,
+	"MMP: undergoing an unknown operation"
+
+ec	EXT2_ET_MMP_CHANGE_ABORT,
+	"MMP: filesystem still in use"
+
+ec	EXT2_ET_MMP_OPEN_DIRECT,
+	"MMP: open with O_DIRECT failed"
+
 	end

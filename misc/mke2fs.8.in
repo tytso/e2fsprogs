@@ -198,6 +198,16 @@ option is still accepted for backwards compatibility.   The
 following extended options are supported:
 .RS 1.2i
 .TP
+.BI mmp_update_interval= interval
+Adjust the initial MMP update interval to
+.I interval
+seconds.  Specifying an
+.I interval
+of 0 means to use the default interval.  The specified interval must
+be less than 300 seconds.  Requires that the
+.B mmp
+feature be enabled.
+.TP
 .BI stride= stride-size
 Configure the filesystem for a RAID array with
 .I stride-size

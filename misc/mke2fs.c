@@ -675,7 +675,21 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			*arg = 0;
 			arg++;
 		}
-		if (strcmp(token, "stride") == 0) {
+		if (strcmp(token, "mmp_update_interval") == 0) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			param->s_mmp_update_interval = strtoul(arg, &p, 0);
+			if (*p) {
+				fprintf(stderr,
+					_("Invalid mmp_update_interval: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
+		} else if (strcmp(token, "stride") == 0) {
 			if (!arg) {
 				r_usage++;
 				badopt = token;
@@ -823,6 +837,7 @@ static __u32 ok_features[3] = {
 		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|
 		EXT2_FEATURE_INCOMPAT_META_BG|
 		EXT4_FEATURE_INCOMPAT_FLEX_BG|
+		EXT4_FEATURE_INCOMPAT_MMP |
 		EXT4_FEATURE_INCOMPAT_64BIT,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE|
@@ -2500,6 +2515,19 @@ int main (int argc, char *argv[])
 			printf(_("done\n"));
 	}
 no_journal:
+	if (!super_only &&
+	    fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) {
+		retval = ext2fs_mmp_init(fs);
+		if (retval) {
+			fprintf(stderr, _("\nError while enabling multiple "
+					  "mount protection feature."));
+			exit(1);
+		}
+		if (!quiet)
+			printf(_("Multiple mount protection is enabled "
+				 "with update interval %d seconds.\n"),
+			       fs->super->s_mmp_update_interval);
+	}
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
 				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))

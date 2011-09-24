@@ -195,6 +195,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_64BITS		0x20000
 #define EXT2_FLAG_PRINT_PROGRESS	0x40000
 #define EXT2_FLAG_DIRECT_IO		0x80000
+#define EXT2_FLAG_SKIP_MMP		0x100000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -255,6 +256,18 @@ struct struct_ext2_filsys {
 	 */
 	struct ext2_inode_cache		*icache;
 	io_channel			image_io;
+
+	/*
+	 * Buffers for Multiple mount protection(MMP) block.
+	 */
+	void *mmp_buf;
+	void *mmp_cmp;
+	int mmp_fd;
+
+	/*
+	 * Time at which e2fsck last updated the MMP block.
+	 */
+	long mmp_last_written;
 
 	/*
 	 * More callback functions
@@ -549,6 +562,7 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT3_FEATURE_INCOMPAT_RECOVER|\
 					 EXT3_FEATURE_INCOMPAT_EXTENTS|\
 					 EXT4_FEATURE_INCOMPAT_FLEX_BG|\
+					 EXT4_FEATURE_INCOMPAT_MMP|\
 					 EXT4_FEATURE_INCOMPAT_64BIT)
 #else
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
@@ -557,6 +571,7 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT3_FEATURE_INCOMPAT_RECOVER|\
 					 EXT3_FEATURE_INCOMPAT_EXTENTS|\
 					 EXT4_FEATURE_INCOMPAT_FLEX_BG|\
+					 EXT4_FEATURE_INCOMPAT_MMP|\
 					 EXT4_FEATURE_INCOMPAT_64BIT)
 #endif
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
@@ -1329,6 +1344,16 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir, const char *name,
 			ext2_ino_t ino, int flags);
 
+/* mmp.c */
+errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf);
+errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf);
+errcode_t ext2fs_mmp_clear(ext2_filsys fs);
+errcode_t ext2fs_mmp_init(ext2_filsys fs);
+errcode_t ext2fs_mmp_start(ext2_filsys fs);
+errcode_t ext2fs_mmp_update(ext2_filsys fs);
+errcode_t ext2fs_mmp_stop(ext2_filsys fs);
+unsigned ext2fs_mmp_new_seq();
+
 /* read_bb.c */
 extern errcode_t ext2fs_read_bb_inode(ext2_filsys fs,
 				      ext2_badblocks_list *bb_list);
@@ -1364,6 +1389,7 @@ extern void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 				   int bufsize);
 extern void ext2fs_swap_inode(ext2_filsys fs,struct ext2_inode *t,
 			      struct ext2_inode *f, int hostorder);
+extern void ext2fs_swap_mmp(struct mmp_struct *mmp);
 
 /* valid_blk.c */
 extern int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode);

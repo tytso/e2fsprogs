@@ -704,7 +704,17 @@ void e2fsck_pass1(e2fsck_t ctx)
 	    (fs->super->s_mtime < fs->super->s_inodes_count))
 		busted_fs_time = 1;
 
+	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
+	    !(fs->super->s_mmp_block <= fs->super->s_first_data_block ||
+	      fs->super->s_mmp_block >= fs->super->s_blocks_count))
+		ext2fs_mark_block_bitmap2(ctx->block_found_map,
+					  fs->super->s_mmp_block);
+
 	while (1) {
+		if (ino % (fs->super->s_inodes_per_group * 4) == 1) {
+			if (e2fsck_mmp_update(fs))
+				fatal_error(ctx, 0);
+		}
 		old_op = ehandler_operation(_("getting next inode from scan"));
 		pctx.errcode = ext2fs_get_next_inode_full(scan, &ino,
 							  inode, inode_size);
