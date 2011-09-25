@@ -1,3 +1,16 @@
+e2fsprogs (1.42~WIP-2011-09-25-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix FTBFS on big-endian architectures (Closes: #641838)
+  * Add support for multiarch (Closes: #632169)
+  * Clarify and update debian/copyright file (Closes: #614662)
+  * Add support for Multi-Mount Protection (MMP)
+  * Allow tune2fs to remove the external journal if the device is not found
+  * Updated/clarified man pages (Closes: #642193)
+  * Fix a potential FTBFS caused by overly long compile lines (Closes: #629883)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 25 Sep 2011 01:28:34 -0400
+
 e2fsprogs (1.42~WIP-2011-09-16-1) unstable; urgency=low
 
   * New upstream release

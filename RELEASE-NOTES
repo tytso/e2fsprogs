@@ -1,4 +1,4 @@
-E2fsprogs 1.42-WIP (September 16, 2011) -- cd0b97ed9313
+E2fsprogs 1.42-WIP (September 16, 2011) -- f40aadb05a5f
 =======================================
 
 This release of e2fsprogs has support for file systems > 16TB.
@@ -14,6 +14,8 @@ kernels.
 This release of e2fsprogs has support for integrated feature, where
 the quota files are hidden system files that are automatically
 maintained by e2fsck.
+
+Added support for the Multi-Mount Protection (MMP) feature.
 
 Fix a bug in e2fsck where if the free blocks and inodes counts are
 incorrect, e2fsck would fix them without printing an error message.
@@ -99,6 +101,9 @@ that can support file systems > 16TB, once it arrives in v3.x kernels.
 
 Fixed tune2fs's mount options parsing.  (Addresses Debian Bug: #641667)
 
+Allow tune2fs to remove external journals if the device can not be
+found.
+
 Debugfs's icheck will now correctly find inodes which use the
 searched-for block as an extended attribute block.
 
@@ -143,7 +148,10 @@ Debian Bug: #641667)
 Update translations: French, Chinese, Germany, Indonesian, Swedish,
 Vietnamese, Polish, Dutch, Czech,
 
-Updated/clarified man pages.  (Addresses Debian Big: #639411)
+Fixed various Debian Packaging issues.  (Addresses Debian Bugs:
+#614662, #632169, #641838)
+
+Updated/clarified man pages.  (Addresses Debian Bugs: #639411, #642193)
 
 Programming notes
 -----------------
@@ -161,10 +169,13 @@ The I/O manager now supports the discard operation.
 
 Reserved file system code points for new 1st class quota feature.
 
+Shortened the compilation lines by moving the autoconf defines to
+a config.h header file.
+
 Fixed a potential free of an unitialized pointer in
 ext2fs_update_bb_inode().
 
-Fixed miscellaneous compile warnings.
+Fixed miscellaneous gcc -Wall and coverity warnings.
 
 Fixed portability issues for Mac OS X.
 
@@ -174,6 +185,9 @@ Fixed a build failure when OMIT_COM_ERR is defined.
 
 Improved error checking and fixed memory leaks caused by error return
 paths.
+
+Add ext2fs_flush2() and ext2fs_close2() which takes a flag to allow
+the fsync() to be skipped.
 
 Added a test for extent-mapped journals by mke2fs and tune2fs.
 
