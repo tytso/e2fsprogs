@@ -499,6 +499,7 @@ ifneq ($(UTIL_LINUX_NG),yes)
 	rm -rf ${uuidudebdir}/usr
 endif
 
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 	mkdir -p ${debugdir}/$(USRLIB)
 	mv ${maindir}/usr/lib/debug ${debugdir}/$(USRLIB)
 	rm -rf ${maindir}/usr/lib/debug
@@ -532,6 +533,7 @@ ifneq ($(UTIL_LINUX_NG),yes)
 	mkdir -p ${libblkiddbgdir}/$(USRLIB)
 	mv ${libblkiddir}/usr/lib/debug ${libblkiddbgdir}/$(USRLIB)
 	rmdir ${libblkiddir}/usr/lib
+endif
 endif
 
 	# dpkg symbol handling
