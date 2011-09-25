@@ -211,6 +211,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_free_icount@Base 1.37
  ext2fs_free_inode_bitmap@Base 1.37
  ext2fs_free_mem@Base 1.37
+ ext2fs_fstat@Base 1.41.99
  ext2fs_fudge_block_bitmap_end2@Base 1.41.99
  ext2fs_fudge_block_bitmap_end@Base 1.37
  ext2fs_fudge_generic_bitmap_end@Base 1.41.0
@@ -315,6 +316,14 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_mark_valid@Base 1.37
  ext2fs_mem_is_zero@Base 1.41.99
  ext2fs_mkdir@Base 1.37
+ ext2fs_mmp_clear@Base 1.41.99
+ ext2fs_mmp_init@Base 1.41.99
+ ext2fs_mmp_new_seq@Base 1.41.99
+ ext2fs_mmp_read@Base 1.41.99
+ ext2fs_mmp_start@Base 1.41.99
+ ext2fs_mmp_stop@Base 1.41.99
+ ext2fs_mmp_update@Base 1.41.99
+ ext2fs_mmp_write@Base 1.41.99
  ext2fs_namei@Base 1.37
  ext2fs_namei_follow@Base 1.37
  ext2fs_native_flag@Base 1.37
