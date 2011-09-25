@@ -550,16 +550,15 @@ endif
 	done
 endif
 
-	$(INSTALL) -p -m 0644 debian/e2fsprogs.copyright \
-		${debugdir}/usr/share/doc/e2fsprogs-dbg/copyright
+	for i in e2fsprogs e2fsprogs-dbg e2fslibs e2fslibs-dbg; do \
+	   $(INSTALL) -p -m 0644 debian/copyright \
+		${debdir}/$$i/usr/share/doc/$$i/copyright; \
+	done
 
 ifneq ($(UTIL_LINUX_NG),yes)
 	$(INSTALL) -p -m 0644 debian/uuid-runtime.copyright \
 		${uuidruntimedbgdir}/usr/share/doc/uuid-runtime-dbg/copyright
 endif
-
-	$(INSTALL) -p -m 0644 debian/e2fslibs.copyright \
-		${libext2dbgdir}/usr/share/doc/e2fslibs-dbg/copyright
 
 	$(INSTALL) -p -m 0644 debian/libcomerr2.copyright \
 		${libcomerrdbgdir}/usr/share/doc/libcomerr2-dbg/copyright
