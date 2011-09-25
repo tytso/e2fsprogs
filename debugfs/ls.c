@@ -74,15 +74,18 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		lbr = rbr = ' ';
 	}
 	if (ls->options & PARSE_OPT) {
-		if (ino && debugfs_read_inode(ino, &inode, name)) return 0;
+		if (ino) {
+			if (debugfs_read_inode(ino, &inode, name))
+				return 0;
+		} else
+			memset(&inode, 0, sizeof(struct ext2_inode));
 		fprintf(ls->f,"/%u/%06o/%d/%d/%s/",ino,inode.i_mode,inode.i_uid, inode.i_gid,name);
 		if (LINUX_S_ISDIR(inode.i_mode))
 			fprintf(ls->f, "/");
 		else
 			fprintf(ls->f, "%lld/", EXT2_I_SIZE(&inode));
 		fprintf(ls->f, "\n");
-	}
-	else if (ls->options & LONG_OPT) {
+	} else if (ls->options & LONG_OPT) {
 		if (ino) {
 			if (debugfs_read_inode(ino, &inode, name))
 				return 0;
