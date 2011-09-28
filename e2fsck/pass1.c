@@ -821,6 +821,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (ino == EXT2_BAD_INO) {
 			struct process_block_struct pb;
 
+			if ((inode->i_mode || inode->i_uid || inode->i_gid ||
+			     inode->i_links_count || inode->i_file_acl) &&
+			    fix_problem(ctx, PR_1_INVALID_BAD_INODE, &pctx)) {
+				memset(inode, 0, sizeof(struct ext2_inode));
+				e2fsck_write_inode(ctx, ino, inode,
+						   "clear bad inode");
+			}
+
 			pctx.errcode = ext2fs_copy_bitmap(ctx->block_found_map,
 							  &pb.fs_meta_blocks);
 			if (pctx.errcode) {
@@ -1714,6 +1722,9 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 	 * was aborted, we need to restart the pass 1 scan.
 	 */
 	ctx->flags |= restart_flag;
+
+	if (ino == EXT2_BAD_INO)
+		memset(inode, 0, sizeof(struct ext2_inode));
 
 	e2fsck_write_inode(ctx, ino, inode, source);
 }

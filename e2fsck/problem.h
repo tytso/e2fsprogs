@@ -547,6 +547,9 @@ struct problem_context {
 /* Quota inode is user visible */
 #define PR_1_QUOTA_INODE_NOT_HIDDEN	0x010064
 
+/* Invalid bad inode */
+#define PR_1_INVALID_BAD_INODE		0x010065
+
 /*
  * Pass 1b errors
  */

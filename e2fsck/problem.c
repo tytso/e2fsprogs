@@ -936,6 +936,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@q @i is visible to the user.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
+	/* Invalid bad inode */
+	{ PR_1_INVALID_BAD_INODE,
+	  N_("The bad @b @i looks @n.  "),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
