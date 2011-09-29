@@ -35,6 +35,7 @@
 
 #include <errno.h>
 #include <sys/types.h>
+#include <ext2fs/ext2_types.h>
 
 #define __DQUOT_VERSION__	"dquot_6.5.2"
 

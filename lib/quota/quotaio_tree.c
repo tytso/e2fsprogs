@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <asm/byteorder.h>
 
 #include "common.h"
 #include "quotaio_tree.h"
@@ -83,7 +82,7 @@ static int get_free_dqblk(struct quota_handle *h)
 	if (info->dqi_free_blk) {
 		blk = info->dqi_free_blk;
 		read_blk(h, blk, buf);
-		info->dqi_free_blk = __le32_to_cpu(dh->dqdh_next_free);
+		info->dqi_free_blk = ext2fs_le32_to_cpu(dh->dqdh_next_free);
 	} else {
 		memset(buf, 0, QT_BLKSIZE);
 		/* Assure block allocation... */
@@ -106,9 +105,9 @@ static void put_free_dqblk(struct quota_handle *h, dqbuf_t buf, uint blk)
 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
 
-	dh->dqdh_next_free = __cpu_to_le32(info->dqi_free_blk);
-	dh->dqdh_prev_free = __cpu_to_le32(0);
-	dh->dqdh_entries = __cpu_to_le16(0);
+	dh->dqdh_next_free = ext2fs_cpu_to_le32(info->dqi_free_blk);
+	dh->dqdh_prev_free = ext2fs_cpu_to_le32(0);
+	dh->dqdh_entries = ext2fs_cpu_to_le16(0);
 	info->dqi_free_blk = blk;
 	mark_quotafile_info_dirty(h);
 	write_blk(h, blk, buf);
@@ -119,9 +118,9 @@ static void remove_free_dqentry(struct quota_handle *h, dqbuf_t buf, uint blk)
 {
 	dqbuf_t tmpbuf = getdqbuf();
 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
-	uint nextblk = __le32_to_cpu(dh->dqdh_next_free), prevblk =
+	uint nextblk = ext2fs_le32_to_cpu(dh->dqdh_next_free), prevblk =
 
-		__le32_to_cpu(dh->dqdh_prev_free);
+		ext2fs_le32_to_cpu(dh->dqdh_prev_free);
 
 	if (nextblk) {
 		read_blk(h, nextblk, tmpbuf);
@@ -139,7 +138,7 @@ static void remove_free_dqentry(struct quota_handle *h, dqbuf_t buf, uint blk)
 		mark_quotafile_info_dirty(h);
 	}
 	freedqbuf(tmpbuf);
-	dh->dqdh_next_free = dh->dqdh_prev_free = __cpu_to_le32(0);
+	dh->dqdh_next_free = dh->dqdh_prev_free = ext2fs_cpu_to_le32(0);
 	write_blk(h, blk, buf);	/* No matter whether write succeeds
 				 * block is out of list */
 }
@@ -151,13 +150,13 @@ static void insert_free_dqentry(struct quota_handle *h, dqbuf_t buf, uint blk)
 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
 
-	dh->dqdh_next_free = __cpu_to_le32(info->dqi_free_entry);
-	dh->dqdh_prev_free = __cpu_to_le32(0);
+	dh->dqdh_next_free = ext2fs_cpu_to_le32(info->dqi_free_entry);
+	dh->dqdh_prev_free = ext2fs_cpu_to_le32(0);
 	write_blk(h, blk, buf);
 	if (info->dqi_free_entry) {
 		read_blk(h, info->dqi_free_entry, tmpbuf);
 		((struct qt_disk_dqdbheader *)tmpbuf)->dqdh_prev_free =
-				__cpu_to_le32(blk);
+				ext2fs_cpu_to_le32(blk);
 		write_blk(h, info->dqi_free_entry, tmpbuf);
 	}
 	freedqbuf(tmpbuf);
@@ -194,10 +193,12 @@ static uint find_free_dqentry(struct quota_handle *h, struct dquot *dquot,
 	}
 
 	/* Block will be full? */
-	if (__le16_to_cpu(dh->dqdh_entries) + 1 >= qtree_dqstr_in_blk(info))
+	if (ext2fs_le16_to_cpu(dh->dqdh_entries) + 1 >=
+	    qtree_dqstr_in_blk(info))
 		remove_free_dqentry(h, buf, blk);
 
-	dh->dqdh_entries = __cpu_to_le16(__le16_to_cpu(dh->dqdh_entries) + 1);
+	dh->dqdh_entries =
+		ext2fs_cpu_to_le16(ext2fs_le16_to_cpu(dh->dqdh_entries) + 1);
 	/* Find free structure in block */
 	ddquot = buf + sizeof(struct qt_disk_dqdbheader);
 	for (i = 0;
@@ -241,7 +242,7 @@ static int do_insert_tree(struct quota_handle *h, struct dquot *dquot,
 	}
 
 	ref = (u_int32_t *) buf;
-	newblk = __le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
+	newblk = ext2fs_le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
 	if (!newblk)
 		newson = 1;
 	if (depth == QT_TREEDEPTH - 1) {
@@ -255,7 +256,8 @@ static int do_insert_tree(struct quota_handle *h, struct dquot *dquot,
 	}
 
 	if (newson && ret >= 0) {
-		ref[get_index(dquot->dq_id, depth)] = __cpu_to_le32(newblk);
+		ref[get_index(dquot->dq_id, depth)] =
+			ext2fs_cpu_to_le32(newblk);
 		write_blk(h, *treeblk, buf);
 	} else if (newact && ret < 0) {
 		put_free_dqblk(h, buf, *treeblk);
@@ -320,9 +322,10 @@ static void free_dqentry(struct quota_handle *h, struct dquot *dquot, uint blk)
 
 	read_blk(h, blk, buf);
 	dh = (struct qt_disk_dqdbheader *)buf;
-	dh->dqdh_entries = __cpu_to_le16(__le16_to_cpu(dh->dqdh_entries) - 1);
+	dh->dqdh_entries =
+		ext2fs_cpu_to_le16(ext2fs_le16_to_cpu(dh->dqdh_entries) - 1);
 
-	if (!__le16_to_cpu(dh->dqdh_entries)) {	/* Block got free? */
+	if (!ext2fs_le16_to_cpu(dh->dqdh_entries)) {	/* Block got free? */
 		remove_free_dqentry(h, buf, blk);
 		put_free_dqblk(h, buf, blk);
 	} else {
@@ -331,7 +334,7 @@ static void free_dqentry(struct quota_handle *h, struct dquot *dquot, uint blk)
 		       0, info->dqi_entry_size);
 
 		/* First free entry? */
-		if (__le16_to_cpu(dh->dqdh_entries) ==
+		if (ext2fs_le16_to_cpu(dh->dqdh_entries) ==
 				qtree_dqstr_in_blk(info) - 1)
 			/* This will also write data block */
 			insert_free_dqentry(h, buf, blk);
@@ -351,7 +354,7 @@ static void remove_tree(struct quota_handle *h, struct dquot *dquot,
 	u_int32_t *ref = (u_int32_t *) buf;
 
 	read_blk(h, *blk, buf);
-	newblk = __le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
+	newblk = ext2fs_le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
 	if (depth == QT_TREEDEPTH - 1) {
 		free_dqentry(h, dquot, newblk);
 		newblk = 0;
@@ -362,7 +365,7 @@ static void remove_tree(struct quota_handle *h, struct dquot *dquot,
 	if (!newblk) {
 		int i;
 
-		ref[get_index(dquot->dq_id, depth)] = __cpu_to_le32(0);
+		ref[get_index(dquot->dq_id, depth)] = ext2fs_cpu_to_le32(0);
 
 		/* Block got empty? */
 		for (i = 0; i < QT_BLKSIZE && !buf[i]; i++);
@@ -421,7 +424,7 @@ static loff_t find_tree_dqentry(struct quota_handle *h, struct dquot *dquot,
 
 	read_blk(h, blk, buf);
 	ret = 0;
-	blk = __le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
+	blk = ext2fs_le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
 	if (!blk)	/* No reference? */
 		goto out_buf;
 	if (depth < QT_TREEDEPTH - 1)
@@ -493,7 +496,7 @@ static int report_block(struct dquot *dquot, uint blk, char *bitmap,
 	read_blk(dquot->dq_h, blk, buf);
 	dh = (struct qt_disk_dqdbheader *)buf;
 	ddata = buf + sizeof(struct qt_disk_dqdbheader);
-	entries = __le16_to_cpu(dh->dqdh_entries);
+	entries = ext2fs_le16_to_cpu(dh->dqdh_entries);
 	for (i = 0; i < qtree_dqstr_in_blk(info);
 			i++, ddata += info->dqi_entry_size)
 		if (!qtree_entry_unused(info, ddata)) {
@@ -526,7 +529,7 @@ static int report_tree(struct dquot *dquot, uint blk, int depth, char *bitmap,
 	read_blk(dquot->dq_h, blk, buf);
 	if (depth == QT_TREEDEPTH - 1) {
 		for (i = 0; i < QT_BLKSIZE >> 2; i++) {
-			blk = __le32_to_cpu(ref[i]);
+			blk = ext2fs_le32_to_cpu(ref[i]);
 			check_reference(dquot->dq_h, blk);
 			if (blk && !get_bit(bitmap, blk))
 				entries += report_block(dquot, blk, bitmap,
@@ -534,7 +537,7 @@ static int report_tree(struct dquot *dquot, uint blk, int depth, char *bitmap,
 		}
 	} else {
 		for (i = 0; i < QT_BLKSIZE >> 2; i++)
-			blk = __le32_to_cpu(ref[i]);
+			blk = ext2fs_le32_to_cpu(ref[i]);
 			if (blk) {
 				check_reference(dquot->dq_h, blk);
 				entries += report_tree(dquot, blk, depth + 1,
