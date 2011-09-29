@@ -2196,7 +2196,8 @@ int main (int argc, char *argv[])
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
 	unsigned int	journal_blocks;
-	unsigned int	i, max_mnt_count, checkinterval;
+	unsigned int	i, checkinterval;
+	int		max_mnt_count;
 	int		val, hash_alg;
 	int		flags;
 	int		old_bitmaps;
@@ -2329,7 +2330,8 @@ int main (int argc, char *argv[])
 		for (i = 0, val = 0 ; i < sizeof(fs->super->s_uuid); i++)
 			val += fs->super->s_uuid[i];
 		fs->super->s_max_mnt_count += val % EXT2_DFL_MAX_MNT_COUNT;
-	}
+	} else
+		fs->super->s_max_mnt_count = -1;
 
 	/*
 	 * Override the creator OS, if applicable

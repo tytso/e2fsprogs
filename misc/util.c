@@ -278,8 +278,12 @@ unsigned int figure_journal_size(int size, ext2_filsys fs)
 	return j_blocks;
 }
 
-void print_check_message(unsigned int mnt, unsigned int check)
+void print_check_message(int mnt, unsigned int check)
 {
+	if (mnt < 0)
+		mnt = 0;
+	if (!mnt && !check)
+		return;
 	printf(_("This filesystem will be automatically "
 		 "checked every %d mounts or\n"
 		 "%g days, whichever comes first.  "
