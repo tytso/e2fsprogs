@@ -357,6 +357,10 @@ install-std: build
 	rm ${tmpdir}/usr/include/quota/mkquota.h
 	find ${tmpdir}/usr/lib -name quota.pc -o -name libquota.a | xargs rm
 
+ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu) 
+	${INSTALL} -m 0644 misc/mke2fs-hurd.conf ${tmpdir}/etc/mke2fs.conf
+endif
+
 	dh_movefiles
 	test -z "`find ${tmpdir} -type f`"
 
