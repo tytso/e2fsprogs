@@ -29,39 +29,105 @@ struct str_table {
 #define END_TABLE		{ 0, 0 }
 
 static struct str_table sig_table[] = {
+#ifdef SIGHUP
 	DEFINE_ENTRY(SIGHUP)
+#endif
+#ifdef SIGINT
 	DEFINE_ENTRY(SIGINT)
+#endif
+#ifdef SIGQUIT
 	DEFINE_ENTRY(SIGQUIT)
+#endif
+#ifdef SIGILL
 	DEFINE_ENTRY(SIGILL)
+#endif
+#ifdef SIGTRAP
 	DEFINE_ENTRY(SIGTRAP)
+#endif
+#ifdef SIGABRT
 	DEFINE_ENTRY(SIGABRT)
+#endif
+#ifdef SIGIOT
 	DEFINE_ENTRY(SIGIOT)
+#endif
+#ifdef SIGBUS
 	DEFINE_ENTRY(SIGBUS)
+#endif
+#ifdef SIGFPE
 	DEFINE_ENTRY(SIGFPE)
+#endif
+#ifdef SIGKILL
 	DEFINE_ENTRY(SIGKILL)
+#endif
+#ifdef SIGUSR1
 	DEFINE_ENTRY(SIGUSR1)
+#endif
+#ifdef SIGSEGV
 	DEFINE_ENTRY(SIGSEGV)
+#endif
+#ifdef SIGUSR2
 	DEFINE_ENTRY(SIGUSR2)
+#endif
+#ifdef SIGPIPE
 	DEFINE_ENTRY(SIGPIPE)
+#endif
+#ifdef SIGALRM
 	DEFINE_ENTRY(SIGALRM)
+#endif
+#ifdef SIGTERM
 	DEFINE_ENTRY(SIGTERM)
+#endif
+#ifdef SIGSTKFLT
 	DEFINE_ENTRY(SIGSTKFLT)
+#endif
+#ifdef SIGCHLD
 	DEFINE_ENTRY(SIGCHLD)
+#endif
+#ifdef SIGCONT
 	DEFINE_ENTRY(SIGCONT)
+#endif
+#ifdef SIGSTOP
 	DEFINE_ENTRY(SIGSTOP)
+#endif
+#ifdef SIGTSTP
 	DEFINE_ENTRY(SIGTSTP)
+#endif
+#ifdef SIGTTIN
 	DEFINE_ENTRY(SIGTTIN)
+#endif
+#ifdef SIGTTOU
 	DEFINE_ENTRY(SIGTTOU)
+#endif
+#ifdef SIGURG
 	DEFINE_ENTRY(SIGURG)
+#endif
+#ifdef SIGXCPU
 	DEFINE_ENTRY(SIGXCPU)
+#endif
+#ifdef SIGXFSZ
 	DEFINE_ENTRY(SIGXFSZ)
+#endif
+#ifdef SIGVTALRM
 	DEFINE_ENTRY(SIGVTALRM)
+#endif
+#ifdef SIGPROF
 	DEFINE_ENTRY(SIGPROF)
+#endif
+#ifdef SIGWINCH
 	DEFINE_ENTRY(SIGWINCH)
+#endif
+#ifdef SIGIO
 	DEFINE_ENTRY(SIGIO)
+#endif
+#ifdef SIGPOLL
 	DEFINE_ENTRY(SIGPOLL)
+#endif
+#ifdef SIGPWR
 	DEFINE_ENTRY(SIGPWR)
+#endif
+#ifdef SIGSYS
 	DEFINE_ENTRY(SIGSYS)
+#endif
 	END_TABLE
 };
 
@@ -79,69 +145,145 @@ static struct str_table generic_code_table[] = {
 };
 
 static struct str_table sigill_code_table[] = {
+#ifdef ILL_ILLOPC
 	DEFINE_ENTRY(ILL_ILLOPC)
+#endif
+#ifdef ILL_ILLOPN
 	DEFINE_ENTRY(ILL_ILLOPN)
+#endif
+#ifdef ILL_ILLADR
 	DEFINE_ENTRY(ILL_ILLADR)
+#endif
+#ifdef ILL_ILLTRP
 	DEFINE_ENTRY(ILL_ILLTRP)
+#endif
+#ifdef ILL_PRVOPC
 	DEFINE_ENTRY(ILL_PRVOPC)
+#endif
+#ifdef ILL_PRVREG
 	DEFINE_ENTRY(ILL_PRVREG)
+#endif
+#ifdef ILL_COPROC
 	DEFINE_ENTRY(ILL_COPROC)
+#endif
+#ifdef ILL_BADSTK
 	DEFINE_ENTRY(ILL_BADSTK)
+#endif
+#ifdef BUS_ADRALN
 	DEFINE_ENTRY(BUS_ADRALN)
+#endif
+#ifdef BUS_ADRERR
 	DEFINE_ENTRY(BUS_ADRERR)
+#endif
+#ifdef BUS_OBJERR
 	DEFINE_ENTRY(BUS_OBJERR)
+#endif
 	END_TABLE
 };
 
 static struct str_table sigfpe_code_table[] = {
+#ifdef FPE_INTDIV
 	DEFINE_ENTRY(FPE_INTDIV)
+#endif
+#ifdef FPE_INTOVF
 	DEFINE_ENTRY(FPE_INTOVF)
+#endif
+#ifdef FPE_FLTDIV
 	DEFINE_ENTRY(FPE_FLTDIV)
+#endif
+#ifdef FPE_FLTOVF
 	DEFINE_ENTRY(FPE_FLTOVF)
+#endif
+#ifdef FPE_FLTUND
 	DEFINE_ENTRY(FPE_FLTUND)
+#endif
+#ifdef FPE_FLTRES
 	DEFINE_ENTRY(FPE_FLTRES)
+#endif
+#ifdef FPE_FLTINV
 	DEFINE_ENTRY(FPE_FLTINV)
+#endif
+#ifdef FPE_FLTSUB
 	DEFINE_ENTRY(FPE_FLTSUB)
+#endif
 	END_TABLE
 };
 
 static struct str_table sigsegv_code_table[] = {
+#ifdef SEGV_MAPERR
 	DEFINE_ENTRY(SEGV_MAPERR)
+#endif
+#ifdef SEGV_ACCERR
 	DEFINE_ENTRY(SEGV_ACCERR)
+#endif
 	END_TABLE
 };
 
 
 static struct str_table sigbus_code_table[] = {
+#ifdef BUS_ADRALN
 	DEFINE_ENTRY(BUS_ADRALN)
+#endif
+#ifdef BUS_ADRERR
 	DEFINE_ENTRY(BUS_ADRERR)
+#endif
+#ifdef BUS_OBJERR
 	DEFINE_ENTRY(BUS_OBJERR)
+#endif
 	END_TABLE
 };
 
 static struct str_table sigstrap_code_table[] = {
+#ifdef TRAP_BRKPT
 	DEFINE_ENTRY(TRAP_BRKPT)
+#endif
+#ifdef TRAP_TRACE
 	DEFINE_ENTRY(TRAP_TRACE)
+#endif
 	END_TABLE
 };
 
 static struct str_table sigcld_code_table[] = {
+#ifdef CLD_EXITED
 	DEFINE_ENTRY(CLD_EXITED)
+#endif
+#ifdef CLD_KILLED
 	DEFINE_ENTRY(CLD_KILLED)
+#endif
+#ifdef CLD_DUMPED
 	DEFINE_ENTRY(CLD_DUMPED)
+#endif
+#ifdef CLD_TRAPPED
 	DEFINE_ENTRY(CLD_TRAPPED)
+#endif
+#ifdef CLD_STOPPED
 	DEFINE_ENTRY(CLD_STOPPED)
+#endif
+#ifdef CLD_CONTINUED
 	DEFINE_ENTRY(CLD_CONTINUED)
+#endif
 	END_TABLE
 };
 
 static struct str_table sigpoll_code_table[] = {
+#ifdef POLL_IN
 	DEFINE_ENTRY(POLL_IN)
+#endif
+#ifdef POLL_OUT
 	DEFINE_ENTRY(POLL_OUT)
+#endif
+#ifdef POLL_MSG
 	DEFINE_ENTRY(POLL_MSG)
+#endif
+#ifdef POLL_ERR
 	DEFINE_ENTRY(POLL_ERR)
+#endif
+#ifdef POLL_PRI
 	DEFINE_ENTRY(POLL_PRI)
+#endif
+#ifdef POLL_HUP
 	DEFINE_ENTRY(POLL_HUP)
+#endif
 	END_TABLE
 };
 
