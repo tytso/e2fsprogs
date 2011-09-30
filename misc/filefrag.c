@@ -223,11 +223,6 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 			fiemap_header_printed = 1;
 		}
 
-		if (!verbose) {
-			*num_extents = fiemap->fm_mapped_extents;
-			goto out;
-		}
-
 		/* If 0 extents are returned, then more ioctls are not needed */
 		if (fiemap->fm_mapped_extents == 0)
 			break;
@@ -244,7 +239,9 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 				tot_extents++;
 			else
 				last_blk = 0;
-			print_extent_info(&fm_ext[i], n, last_blk, blk_shift);
+			if (verbose)
+				print_extent_info(&fm_ext[i], n, last_blk,
+						  blk_shift);
 
 			last_blk = phy_blk + ext_len - 1;
 			if (fm_ext[i].fe_flags & FIEMAP_EXTENT_LAST)
