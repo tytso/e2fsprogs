@@ -91,9 +91,8 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	}
 
 	mmp_cmp = fs->mmp_cmp;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->flags & EXT2_FLAG_SWAP_BYTES)
-		ext2fs_swap_mmp(mmp_cmp);
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_mmp(mmp_cmp);
 #endif
 
 	if (buf != NULL && buf != fs->mmp_cmp)
@@ -122,18 +121,16 @@ errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	    fs->super->s_mmp_block > ext2fs_blocks_count(fs->super))
 		return EXT2_ET_MMP_BAD_BLOCK;
 
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->super->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC))
-		ext2fs_swap_mmp(mmp_s);
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_mmp(mmp_s);
 #endif
 
 	/* I was tempted to make this use O_DIRECT and the mmp_fd, but
 	 * this caused no end of grief, while leaving it as-is works. */
 	retval = io_channel_write_blk64(fs->io, mmp_blk, -fs->blocksize, buf);
 
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->super->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC))
-		ext2fs_swap_mmp(mmp_s);
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_mmp(mmp_s);
 #endif
 
 	/* Make sure the block gets to disk quickly */
