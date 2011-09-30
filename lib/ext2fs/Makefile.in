@@ -398,7 +398,7 @@ clean::
 		tst_bitops tst_types tst_icount tst_super_size tst_csum \
 		ext2_tdbtool mkjournal debug_cmds.c \
 		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a \
-		crc32c_table.h
+		crc32c_table.h gen_crc32ctable tst_crc32c
 
 mostlyclean:: clean
 distclean:: clean

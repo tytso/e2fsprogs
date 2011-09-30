@@ -260,7 +260,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		t->osd2.linux2.l_i_gid_high =
 		  ext2fs_swab16 (f->osd2.linux2.l_i_gid_high);
 		t->osd2.linux2.l_i_checksum_lo =
-			ext2fs_swab32(f->osd2.linux2.l_i_checksum_lo);
+			ext2fs_swab16(f->osd2.linux2.l_i_checksum_lo);
 		break;
 	case EXT2_OS_HURD:
 		t->osd1.hurd1.h_i_translator =
@@ -294,21 +294,19 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		return;
 	}
 
-	if (extra_isize >= 2)
+	if (extra_isize >= 4)
 		t->i_checksum_hi = ext2fs_swab16(f->i_checksum_hi);
-	if (extra_isize >= 6)
-		t->i_checksum_hi = ext2fs_swab32(f->i_checksum_hi);
-	if (extra_isize >= 10)
+	if (extra_isize >= 8)
 		t->i_ctime_extra = ext2fs_swab32(f->i_ctime_extra);
-	if (extra_isize >= 14)
+	if (extra_isize >= 12)
 		t->i_mtime_extra = ext2fs_swab32(f->i_mtime_extra);
-	if (extra_isize >= 18)
+	if (extra_isize >= 16)
 		t->i_atime_extra = ext2fs_swab32(f->i_atime_extra);
-	if (extra_isize >= 22)
+	if (extra_isize >= 20)
 		t->i_crtime = ext2fs_swab32(f->i_crtime);
-	if (extra_isize >= 26)
+	if (extra_isize >= 24)
 		t->i_crtime_extra = ext2fs_swab32(f->i_crtime_extra);
-	if (extra_isize >= 30)
+	if (extra_isize >= 28)
 		t->i_version_hi = ext2fs_swab32(f->i_version_hi);
 
 	i = sizeof(struct ext2_inode) + extra_isize + sizeof(__u32);
