@@ -155,9 +155,7 @@ static struct ea_refcount_el *insert_refcount_el(ext2_refcount_t refcount,
 static struct ea_refcount_el *get_refcount_el(ext2_refcount_t refcount,
 					      blk_t blk, int create)
 {
-	float	range;
 	int	low, high, mid;
-	blk_t	lowval, highval;
 
 	if (!refcount || !refcount->list)
 		return 0;
@@ -183,31 +181,7 @@ retry:
 	printf("Non-cursor get_refcount_el: %u\n", blk);
 #endif
 	while (low <= high) {
-#if 0
 		mid = (low+high)/2;
-#else
-		if (low == high)
-			mid = low;
-		else {
-			/* Interpolate for efficiency */
-			lowval = refcount->list[low].ea_blk;
-			highval = refcount->list[high].ea_blk;
-
-			if (blk < lowval)
-				range = 0;
-			else if (blk > highval)
-				range = 1;
-			else {
-				range = ((float) (blk - lowval)) /
-					(highval - lowval);
-				if (range > 0.9)
-					range = 0.9;
-				if (range < 0.1)
-					range = 0.1;
-			}
-			mid = low + ((int) (range * (high-low)));
-		}
-#endif
 		if (blk == refcount->list[mid].ea_blk) {
 			refcount->cursor = mid+1;
 			return &refcount->list[mid];
