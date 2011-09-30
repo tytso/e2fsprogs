@@ -170,7 +170,7 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	struct fiemap_extent *fm_ext = &fiemap->fm_extents[0];
 	int count = (sizeof(buf) - sizeof(*fiemap)) /
 			sizeof(struct fiemap_extent);
-	unsigned long long last_blk = 0;
+	unsigned long long expected = 0;
 	unsigned long flags = 0;
 	unsigned int i;
 	static int fiemap_incompat_printed;
@@ -235,15 +235,15 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 			ext_len = fm_ext[i].fe_length >> blk_shift;
 			logical_blk = fm_ext[i].fe_logical >> blk_shift;
 
-			if (logical_blk && phy_blk != last_blk + 1)
+			if (logical_blk && phy_blk != expected)
 				tot_extents++;
 			else
-				last_blk = 0;
+				expected = 0;
 			if (verbose)
-				print_extent_info(&fm_ext[i], n, last_blk,
+				print_extent_info(&fm_ext[i], n, expected,
 						  blk_shift);
 
-			last_blk = phy_blk + ext_len - 1;
+			expected = phy_blk + ext_len;
 			if (fm_ext[i].fe_flags & FIEMAP_EXTENT_LAST)
 				last = 1;
 			n++;
