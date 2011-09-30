@@ -1352,6 +1352,7 @@ failure:
 	  */
 	if (flags & EXT2_FLAG_SKIP_MMP) {
 		ext2fs_close(fs);
+		ctx->fs = NULL;
 		flags &= ~EXT2_FLAG_SKIP_MMP;
 		goto restart;
 	}
