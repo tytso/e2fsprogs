@@ -415,7 +415,9 @@ binary-arch: install install-udeb
   # lintian overrides
 	for i in $$(cd debian && echo *.lintian-overrides); do \
 		pkg=$${i%.lintian-overrides} ;\
-		$(INSTALL) -m 0644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
+		if test "$${pkg}" != source ; then \
+			$(INSTALL) -m 0644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
+		fi ;\
 	done
 
   # symlinks to prepare dh_installdocs run
