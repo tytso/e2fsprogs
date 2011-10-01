@@ -309,10 +309,8 @@ Pass 2: Checking directory structure
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
-
-test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
 test_filesys: 11/2496 files (0.0% non-contiguous), 1644/19969 blocks
-Exit status is 1
+Exit status is 0
 dumpe2fs test.img
 
 Filesystem volume name:   <none>
@@ -846,10 +844,8 @@ Pass 2: Checking directory structure
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
-
-test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
 test_filesys: 11/3744 files (0.0% non-contiguous), 2007/29953 blocks
-Exit status is 1
+Exit status is 0
 dumpe2fs test.img
 
 Filesystem volume name:   <none>
@@ -1619,10 +1615,8 @@ Pass 2: Checking directory structure
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
-
-test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
 test_filesys: 11/5024 files (0.0% non-contiguous), 2376/40000 blocks
-Exit status is 1
+Exit status is 0
 dumpe2fs test.img
 
 Filesystem volume name:   <none>

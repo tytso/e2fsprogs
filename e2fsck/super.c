@@ -719,7 +719,7 @@ void check_super_block(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_READONLY) && uuid_is_null(sb->s_uuid)) {
 		if (fix_problem(ctx, PR_0_ADD_UUID, &pctx)) {
 			uuid_generate(sb->s_uuid);
-			ext2fs_mark_super_dirty(fs);
+			fs->flags |= EXT2_FLAG_DIRTY;
 			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 		}
 	}
@@ -737,7 +737,7 @@ void check_super_block(e2fsck_t ctx)
 	    (fs_proc_check("ext4") || check_for_modules("ext4"))) {
 		if (fix_problem(ctx, PR_0_CLEAR_TESTFS_FLAG, &pctx)) {
 			fs->super->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
-			ext2fs_mark_super_dirty(fs);
+			fs->flags |= EXT2_FLAG_DIRTY;
 			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 		}
 	}
@@ -826,7 +826,7 @@ void check_super_block(e2fsck_t ctx)
 			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
 			fs->super->s_mtime = ctx->now;
-			ext2fs_mark_super_dirty(fs);
+			fs->flags |= EXT2_FLAG_DIRTY;
 		}
 	}
 	if (!broken_system_clock &&
@@ -838,7 +838,7 @@ void check_super_block(e2fsck_t ctx)
 			problem = PR_0_FUTURE_SB_LAST_WRITE_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
 			fs->super->s_wtime = ctx->now;
-			ext2fs_mark_super_dirty(fs);
+			fs->flags |= EXT2_FLAG_DIRTY;
 		}
 	}
 
