@@ -1,7 +1,10 @@
-E2fsprogs 1.42-WIP (September 16, 2011) -- f40aadb05a5f
+E2fsprogs 1.42-WIP (October 1, 2011) -- 636019ecdb2a
 =======================================
 
-This release of e2fsprogs has support for file systems > 16TB.
+This release of e2fsprogs has support for file systems > 16TB.  Online
+resize requires kernel support which will hopefully be in Linux
+version 3.2.  Offline support is not yet available for > 16TB file
+systems, but will be coming.
 
 This release of e2fsprogs has support for clustered allocation.  This
 reduces the number of block (now cluster) bitmaps by allocating and
@@ -41,6 +44,17 @@ E2fsck will catch termination signals (segfaults, bus errors, sigfpe)
 and print debugging information to make it easier to find potential
 problems.
 
+E2fsck will check to see if the bad block inode looks insane, and will
+skip trying to use if it certain fields which should be zero look
+non-zero.  This is to avoid a corrupted bad block inode causing e2fsck
+to get confused and do more harm than good.
+
+If e2fsck modifies certain superblock fields which the kernel doesn't
+look at, it will now mark the superblock as dirty without marking the
+file system as changed.  This avoids signalling the init scripts that
+a reboot is necessary, since the kernel isn't going to look at those
+fields, so it won't care if they have been changed.
+
 Fixed a bug in the libext2fs library (in the binary search routine of
 the icount abstraction) that could (very, very rarely) cause e2fsck to
 die in the middle of pass 1 or pass 2 processing.
@@ -51,6 +65,10 @@ specified on the command line.
 E2fsck now supports an extended "discard" option which will cause
 e2fsck to attempt discard all unused blocks after a full, successful
 file system check.
+
+E2fsck will check for the bad block inode to make sure it looks sane
+before trusting it, to avoid causing more harm than good to the file
+system.
 
 The mke2fs and e2fsck programs now tries to use the punch hole command
 as a "discard" when operating on normal files.
@@ -96,6 +114,12 @@ setting these superblock fields to zero.  (Addresses Google Bug:
 Mke2fs now gives a warning if the auto-detected block size exceeds the
 system's page size.
 
+If the enable_periodic_fsck option is false in /etc/mke2fs.conf (which
+is the default), mke2fs will now set the s_max_mnt_count superblock
+field to -1, instead of 0.  Kernels older then 3.0 will print a
+spurious message on each mount then they see a s_max_mnt_count set to
+0, which will annoy users.  (Addresses Debian Bug: #632637)
+    
 The resize2fs program now has support for a new online resize ioctl
 that can support file systems > 16TB, once it arrives in v3.x kernels.
 
@@ -132,6 +156,15 @@ scripting.
 Filefrag will report 0 extents correctly in verbose mode.  (Addresses
 RedHat Bugzilla: #653234)
 
+Filefrag has been fixed so its -v erport prints the correct expected
+block number (previously there had been an off-by-one error).  In
+addition, it will now display the number of contiguous extents when -v
+is not specified.  This makes it consistent with the number of extents
+printed when the -v option was specified.  In addition, the number of
+contiguous extents is far more interesting/useful than the number of
+physical extents for very large files.  (Addresses Debian Bug:
+#631498)
+    
 Logsave's usage message has been fixed.  (Addresses Debian Bug:
 #619788)
 
@@ -149,9 +182,10 @@ Update translations: French, Chinese, Germany, Indonesian, Swedish,
 Vietnamese, Polish, Dutch, Czech,
 
 Fixed various Debian Packaging issues.  (Addresses Debian Bugs:
-#614662, #632169, #641838)
+#614662, #632169, #641838, #627535, #629355)
 
-Updated/clarified man pages.  (Addresses Debian Bugs: #639411, #642193)
+Updated/clarified man pages.  (Addresses Debian Bugs: #639411,
+#642193, #634883)
 
 Programming notes
 -----------------

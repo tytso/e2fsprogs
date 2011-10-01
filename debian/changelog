@@ -1,3 +1,25 @@
+e2fsprogs (1.42~WIP-2011-10-01-1) unstable; urgency=low
+
+  * New upstream release
+  * Avoid unnecessary reboots when checking the root fs in some special cases
+  * Fix an off-by-one error in filefrag -v's output
+  * Make filefrag display the number of contiguous (not physical)
+      extents (Closes: #631498)
+  * Clarify the mke2fs.conf.5 man page (Closes: #634883)
+  * Add a hurd-specific mke2fs.conf file (Closes: #629355)
+  * mke2fs will set s_max_mnt_count to -1 instead of 0 by default to
+      work around a bug in pre-3.0 kernels which caused a spurious
+      message to be printed when the file system was mounted (Closes: #632637)
+  * Fixed portability problems which was causing build failures on
+      non-Linux/non-x86 systems.
+  * Verify that the bad block inode looks sane before trusting it, to
+      avoid it causing more harm than good.
+  * Fixed the debian/rules file so that it build successfully if
+      DEB_BUILD_OPTIONS contains "nostrip" (Closes: #627535)
+  * Fixed some big-endian bugs in the MMP code
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 30 Sep 2011 22:33:41 -0400
+
 e2fsprogs (1.42~WIP-2011-09-25-1) unstable; urgency=low
 
   * New upstream release
