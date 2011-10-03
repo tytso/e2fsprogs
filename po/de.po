@@ -68,15 +68,14 @@ msgstr ""
 "Project-Id-Version: e2fsprogs-1.41.14\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2010-12-13 08:35-0500\n"
-"PO-Revision-Date: 2011-01-25 17:24+0100\n"
+"PO-Revision-Date: 2011-09-27 17:05+0200\n"
 "Last-Translator: Philipp Thomas <pth@suse.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
+"Language: deX-Generator: Lokalize 1.2\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: deX-Generator: Lokalize 1.2\n"
-"X-Generator: Lokalize 1.2\n"
 
 #: e2fsck/badblocks.c:22 misc/mke2fs.c:169
 #, c-format
@@ -2508,7 +2507,7 @@ msgid ""
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
-"Notfallhile:\n"
+"Notfallhilfe:\n"
 " -p        automatische Reparatur (keine Fragen)\n"
 " -n        keine Veränderungen am Dateisystem vornehmen\n"
 " -y        \" Ja \" auf alle Fragen annehmen\n"
@@ -4077,7 +4076,7 @@ msgstr ""
 #: misc/mke2fs.c:882 misc/tune2fs.c:369
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
-msgstr "Unvollständige Dateisystem-Option gesetzt: %s\n"
+msgstr "Ungültige Dateisystem-Option gesetzt: %s\n"
 
 #: misc/mke2fs.c:1019
 #, c-format
@@ -4245,11 +4244,11 @@ msgid ""
 "\ta modified partition being busy and in use.  You may need to reboot\n"
 "\tto re-read your partition table.\n"
 msgstr ""
-"Zurückgegebene Gerätegröße ist gleich null. Unvollständige Partition\n"
-"\tangegeben oder die Partitionstabelle wurde nach einem fdisk-Lauf\n"
-"\tnicht wieder eingelesen, weil eine veränderte Partition in Gebrauch\n"
-"\tund gesperrt ist. Sie könnten gezwungen sein, neu zu booten, um die\n"
-"\tPartitionstabelle neu einzulesen.\n"
+"Zurückgegebene Gerätegröße ist gleich null. Es wurde eine ungültige\n"
+"\tPartition angegeben oder die Partitionstabelle wurde nach einem\n"
+"\tfdisk-Lauf nicht wieder eingelesen, weil eine veränderte Partition\n"
+"\tin Gebrauch und gesperrt ist. Sie könnten gezwungen sein, neu zu\n"
+"\tbooten, um die Partitionstabelle neu einzulesen.\n"
 
 #: misc/mke2fs.c:1608
 msgid "Filesystem larger than apparent device size."
@@ -5034,7 +5033,7 @@ msgid ""
 msgstr ""
 "\n"
 "Die angegebene Journalgröße beträgt %d Blöcke. Sie muss aber zwischen\n"
-"1024 und 102400 Dateisystem-Blöcken liegen. Abbruch! \n"
+"1024 und 10240000 Dateisystem-Blöcken liegen. Abbruch! \n"
 
 #: misc/util.c:277
 msgid ""
