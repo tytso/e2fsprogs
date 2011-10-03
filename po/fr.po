@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: GNU e2fsprogs 1.41.14\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2010-12-13 08:35-0500\n"
-"PO-Revision-Date: 2011-03-05 16:41+0100\n"
+"PO-Revision-Date: 2011-10-02 20:23+0200\n"
 "Last-Translator: Samuel Thibault <samuel.thibault@ens-lyon.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -5216,7 +5216,7 @@ msgstr ""
 #: resize/main.c:455
 #, c-format
 msgid "Resizing the filesystem on %s to %u (%dk) blocks.\n"
-msgstr "En train de retailler le système de fichiers sur %s à %u (%dk) blocs.\n"
+msgstr "En train de redimensionner le système de fichiers sur %s à %u (%dk) blocs.\n"
 
 #: resize/main.c:464
 #, c-format
@@ -5266,7 +5266,7 @@ msgstr "lors de la tentative d'ouverture du point de montage %s"
 
 #: resize/online.c:75
 msgid "Permission denied to resize filesystem"
-msgstr "Permission de retailler le système de fichiers refusée"
+msgstr "Permission de redimensionner le système de fichiers refusée"
 
 #: resize/online.c:78
 msgid "Kernel does not support online resizing"
