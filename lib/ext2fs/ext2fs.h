@@ -57,6 +57,9 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #ifndef __USE_XOPEN2K
 /* If the "#define _XOPEN_SOURCE 600" didn't succeed in declaring
