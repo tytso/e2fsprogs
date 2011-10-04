@@ -113,7 +113,7 @@ int linux_version_code = 0;
 static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s [-c|-l filename] [-b block-size] "
-	"[-f fragment-size]\n\t[-i bytes-per-inode] [-I inode-size] "
+	"[-C cluster-size]\n\t[-i bytes-per-inode] [-I inode-size] "
 	"[-J journal-options]\n"
 	"\t[-G meta group size] [-N number-of-inodes]\n"
 	"\t[-m reserved-blocks-percentage] [-o creator-os]\n"
@@ -1324,7 +1324,7 @@ profile_error:
 			if (cluster_size < EXT2_MIN_CLUSTER_SIZE ||
 			    cluster_size > EXT2_MAX_CLUSTER_SIZE || *tmp) {
 				com_err(program_name, 0,
-					_("invalid fragment size - %s"),
+					_("invalid cluster size - %s"),
 					optarg);
 				exit(1);
 			}
