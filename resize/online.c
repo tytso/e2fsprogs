@@ -19,6 +19,8 @@
 
 extern char *program_name;
 
+#define MAX_32_NUM ((((unsigned long long) 1) << 32) - 1)
+
 errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 			   blk64_t *new_size, int flags EXT2FS_ATTR((unused)))
 {
@@ -31,7 +33,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	errcode_t 		retval;
 	double			percent;
 	dgrp_t			i;
-	blk64_t			size;
+	blk_t			size;
 	int			fd, overhead;
 	int			use_old_ioctl = 1;
 
@@ -69,10 +71,8 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		exit(1);
 	}
 
-	size=ext2fs_blocks_count(sb);
-
 	if (ioctl(fd, EXT4_IOC_RESIZE_FS, new_size)) {
-		if (errno != ENOTTY) {
+		if (errno != EINVAL) {
 			if (errno == EPERM)
 				com_err(program_name, 0,
 				_("Permission denied to resize filesystem"));
@@ -86,6 +86,14 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		close(fd);
 		return 0;
 	}
+
+	if ((ext2fs_blocks_count(sb) > MAX_32_NUM) ||
+	    (*new_size > MAX_32_NUM)) {
+		com_err(program_name, 0,
+			_("Kernel does not resizing a file system this large"));
+		exit(1);
+	}
+	size = ext2fs_blocks_count(sb);
 
 	if (ioctl(fd, EXT2_IOC_GROUP_EXTEND, &size)) {
 		if (errno == EPERM)
