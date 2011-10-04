@@ -218,7 +218,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		else
 			super->s_clusters_per_group = fs->blocksize * 8;
 		if (super->s_clusters_per_group > EXT2_MAX_CLUSTERS_PER_GROUP(super))
-			super->s_blocks_per_group = EXT2_MAX_CLUSTERS_PER_GROUP(super);
+			super->s_clusters_per_group = EXT2_MAX_CLUSTERS_PER_GROUP(super);
 		super->s_blocks_per_group = EXT2FS_C2B(fs,
 				       super->s_clusters_per_group);
 	} else {
