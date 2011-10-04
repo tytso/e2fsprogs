@@ -77,7 +77,7 @@ CATALOGS = @CATALOGS@
 
 all: all-@USE_NLS@
 
-all-yes: @MAINTAINER_CMT@stamp-po
+all-yes: $(GMOFILES) @MAINTAINER_CMT@stamp-po
 all-no:
 
 # stamp-po is a timestamp denoting the last time at which the CATALOGS have
