@@ -13,41 +13,19 @@
 # endif
 #endif
 
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#include <locale.h>
-#define _(a) (gettext (a))
-#ifdef gettext_noop
-#define N_(a) gettext_noop (a)
-#else
-#define N_(a) (a)
-#endif
-#define P_(singular, plural, n) (ngettext (singular, plural, n))
-#ifndef NLS_CAT_NAME
-#define NLS_CAT_NAME "e2fsprogs"
-#endif
-#ifndef LOCALEDIR
-#define LOCALEDIR "/usr/share/locale"
-#endif
-#else
-#define _(a) (a)
-#define N_(a) a
-#define P_(singular, plural, n) ((n) == 1 ? (singular) : (plural))
-#endif
-
 #define log_fatal(exit_code, format, ...)	do { \
-		fprintf(stderr, _("[FATAL] %s:%d:%s:: " format "\n"), \
+		fprintf(stderr, "[FATAL] %s:%d:%s:: " format "\n", \
 			__FILE__, __LINE__, __func__, __VA_ARGS__); \
 		exit(exit_code); \
 	} while (0)
 
 #define log_err(format, ...)	fprintf(stderr, \
-				_("[ERROR] %s:%d:%s:: " format "\n"), \
+				"[ERROR] %s:%d:%s:: " format "\n", \
 				__FILE__, __LINE__, __func__, __VA_ARGS__)
 
 #ifdef DEBUG_QUOTA
 # define log_debug(format, ...)	fprintf(stderr, \
-				_("[DEBUG] %s:%d:%s:: " format "\n"), \
+				"[DEBUG] %s:%d:%s:: " format "\n", \
 				__FILE__, __LINE__, __func__, __VA_ARGS__)
 #else
 # define log_debug(format, ...)
@@ -55,7 +33,7 @@
 
 #define BUG_ON(x)		do { if ((x)) { \
 					fprintf(stderr, \
-						_("BUG_ON: %s:%d:: ##x"), \
+						"BUG_ON: %s:%d:: ##x", \
 						__FILE__, __LINE__); \
 					exit(2); \
 				} } while (0)
