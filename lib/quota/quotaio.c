@@ -133,7 +133,8 @@ static ext2_off64_t compute_inode_size(ext2_filsys fs, ext2_ino_t ino)
 }
 
 /* Functions to read/write quota file. */
-static unsigned int quota_write_nomount(struct quota_file *qf, loff_t offset,
+static unsigned int quota_write_nomount(struct quota_file *qf,
+					ext2_loff_t offset,
 					void *buf, unsigned int size)
 {
 	ext2_file_t	e2_file = qf->e2_file;
@@ -156,8 +157,9 @@ static unsigned int quota_write_nomount(struct quota_file *qf, loff_t offset,
 	return bytes_written;
 }
 
-static unsigned int quota_read_nomount(struct quota_file *qf, loff_t offset,
-					void *buf, unsigned int size)
+static unsigned int quota_read_nomount(struct quota_file *qf,
+				       ext2_loff_t offset,
+				       void *buf, unsigned int size)
 {
 	ext2_file_t	e2_file = qf->e2_file;
 	unsigned int	bytes_read = 0;

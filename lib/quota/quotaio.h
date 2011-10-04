@@ -56,9 +56,9 @@ struct quota_handle {
 	int qh_fmt;		/* Quotafile format */
 	int qh_io_flags;	/* IO flags for file */
 	struct quota_file qh_qf;
-	unsigned int (*e2fs_read)(struct quota_file *qf, loff_t offset,
+	unsigned int (*e2fs_read)(struct quota_file *qf, ext2_loff_t offset,
 			 void *buf, unsigned int size);
-	unsigned int (*e2fs_write)(struct quota_file *qf, loff_t offset,
+	unsigned int (*e2fs_write)(struct quota_file *qf, ext2_loff_t offset,
 			  void *buf, unsigned int size);
 	struct quotafile_ops *qh_ops;	/* Operations on quotafile */
 	struct util_dqinfo qh_info;	/* Generic quotafile info */

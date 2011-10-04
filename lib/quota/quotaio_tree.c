@@ -392,8 +392,8 @@ void qtree_delete_dquot(struct dquot *dquot)
 }
 
 /* Find entry in block */
-static loff_t find_block_dqentry(struct quota_handle *h,
-				 struct dquot *dquot, uint blk)
+static ext2_loff_t find_block_dqentry(struct quota_handle *h,
+				      struct dquot *dquot, uint blk)
 {
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
 	dqbuf_t buf = getdqbuf();
@@ -415,11 +415,12 @@ static loff_t find_block_dqentry(struct quota_handle *h,
 }
 
 /* Find entry for given id in the tree */
-static loff_t find_tree_dqentry(struct quota_handle *h, struct dquot *dquot,
-				uint blk, int depth)
+static ext2_loff_t find_tree_dqentry(struct quota_handle *h,
+				     struct dquot *dquot,
+				     uint blk, int depth)
 {
 	dqbuf_t buf = getdqbuf();
-	loff_t ret = 0;
+	ext2_loff_t ret = 0;
 	u_int32_t *ref = (u_int32_t *) buf;
 
 	read_blk(h, blk, buf);
@@ -437,7 +438,8 @@ out_buf:
 }
 
 /* Find entry for given id in the tree - wrapper function */
-static inline loff_t find_dqentry(struct quota_handle *h, struct dquot *dquot)
+static inline ext2_loff_t find_dqentry(struct quota_handle *h,
+				       struct dquot *dquot)
 {
 	return find_tree_dqentry(h, dquot, QT_TREEOFF, 0);
 }
@@ -449,7 +451,7 @@ static inline loff_t find_dqentry(struct quota_handle *h, struct dquot *dquot)
 struct dquot *qtree_read_dquot(struct quota_handle *h, qid_t id)
 {
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
-	loff_t offset;
+	ext2_loff_t offset;
 	ssize_t ret;
 	char *ddquot = smalloc(info->dqi_entry_size);
 	struct dquot *dquot = get_empty_dquot();
