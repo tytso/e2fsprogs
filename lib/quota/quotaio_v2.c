@@ -32,14 +32,14 @@ static int v2_scan_dquots(struct quota_handle *h,
 static int v2_report(struct quota_handle *h, int verbose);
 
 struct quotafile_ops quotafile_ops_2 = {
-check_file:	v2_check_file,
-init_io:	v2_init_io,
-new_io:		v2_new_io,
-write_info:	v2_write_info,
-read_dquot:	v2_read_dquot,
-commit_dquot:	v2_commit_dquot,
-scan_dquots:	v2_scan_dquots,
-report:	v2_report
+	.check_file	= v2_check_file,
+	.init_io 	= v2_init_io,
+	.new_io 	= v2_new_io,
+	.write_info	= v2_write_info,
+	.read_dquot	= v2_read_dquot,
+	.commit_dquot	= v2_commit_dquot,
+	.scan_dquots	= v2_scan_dquots,
+	.report		= v2_report,
 };
 
 #define getdqbuf() smalloc(V2_DQBLKSIZE)

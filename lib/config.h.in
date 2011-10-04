@@ -281,6 +281,9 @@
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
 
+/* Define to 1 if you have the `quotactl' function. */
+#undef HAVE_QUOTACTL
+
 /* Define to 1 if dirent has d_reclen */
 #undef HAVE_RECLEN_DIRENT
 
@@ -398,6 +401,9 @@
 
 /* Define to 1 if you have the <sys/queue.h> header file. */
 #undef HAVE_SYS_QUEUE_H
+
+/* Define to 1 if you have the <sys/quota.h> header file. */
+#undef HAVE_SYS_QUOTA_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H

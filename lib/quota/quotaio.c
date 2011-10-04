@@ -117,7 +117,6 @@ static int compute_num_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
 void truncate_quota_inode(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct ext2_inode inode;
-	int i;
 
 	if (ext2fs_read_inode(fs, ino, &inode))
 		return;
@@ -135,7 +134,6 @@ void truncate_quota_inode(ext2_filsys fs, ext2_ino_t ino)
 
 static ext2_off64_t compute_inode_size(ext2_filsys fs, ext2_ino_t ino)
 {
-	struct ext2_inode inode;
 	blk64_t num_blocks = 0;
 
 	ext2fs_block_iterate3(fs, ino,
@@ -241,14 +239,9 @@ static errcode_t init_new_quota_inode(ext2_filsys fs, ext2_ino_t ino)
  */
 int new_io(struct quota_handle *h, ext2_filsys fs, int type, int fmt)
 {
-	int fd = 0;
 	ext2_file_t e2_file;
-	const char *mnt_fsname;
-	char qf_name[PATH_MAX];
 	int err;
-	struct ext2_inode inode;
 	unsigned long qf_inum;
-	struct stat st;
 
 	if (fmt == -1)
 		fmt = QFMT_VFS_V1;

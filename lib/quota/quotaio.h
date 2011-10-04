@@ -160,4 +160,6 @@ void truncate_quota_inode(ext2_filsys fs, ext2_ino_t ino);
 
 const char *type2name(int type);
 
+void update_grace_times(struct dquot *q);
+
 #endif /* GUARD_QUOTAIO_H */

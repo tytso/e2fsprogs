@@ -103,42 +103,6 @@ typedef int64_t qsize_t;	/* Type in which we store size limitations */
 #define QIF_DQBLKSIZE (1 << QIF_DQBLKSIZE_BITS)
 
 /*
- * Quota structure used for communication with userspace via quotactl
- * Following flags are used to specify which fields are valid
- */
-enum {
-	QIF_BLIMITS_B = 0,
-	QIF_SPACE_B,
-	QIF_ILIMITS_B,
-	QIF_INODES_B,
-	QIF_BTIME_B,
-	QIF_ITIME_B,
-};
-
-#define QIF_BLIMITS	(1 << QIF_BLIMITS_B)
-#define QIF_SPACE	(1 << QIF_SPACE_B)
-#define QIF_ILIMITS	(1 << QIF_ILIMITS_B)
-#define QIF_INODES	(1 << QIF_INODES_B)
-#define QIF_BTIME	(1 << QIF_BTIME_B)
-#define QIF_ITIME	(1 << QIF_ITIME_B)
-#define QIF_LIMITS	(QIF_BLIMITS | QIF_ILIMITS)
-#define QIF_USAGE	(QIF_SPACE | QIF_INODES)
-#define QIF_TIMES	(QIF_BTIME | QIF_ITIME)
-#define QIF_ALL		(QIF_LIMITS | QIF_USAGE | QIF_TIMES)
-
-struct if_dqblk {
-	__u64 dqb_bhardlimit;
-	__u64 dqb_bsoftlimit;
-	__u64 dqb_curspace;
-	__u64 dqb_ihardlimit;
-	__u64 dqb_isoftlimit;
-	__u64 dqb_curinodes;
-	__u64 dqb_btime;
-	__u64 dqb_itime;
-	__u32 dqb_valid;
-};
-
-/*
  * Structure used for setting quota information about file via quotactl
  * Following flags are used to specify which fields are valid
  */

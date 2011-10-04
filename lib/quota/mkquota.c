@@ -6,6 +6,9 @@
 #include "config.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_QUOTA_H
+#include <sys/quota.h>
+#endif
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -51,8 +54,10 @@ int is_quota_on(ext2_filsys fs, int type)
 	char tmp[1024];
 	qid_t id = (type == USRQUOTA) ? getuid() : getgid();
 
+#ifdef HAVE_QUOTACTL
 	if (!quotactl(QCMD(Q_V2_GETQUOTA, type), fs->device_name, id, tmp))
 		return 1;
+#endif
 	return 0;
 }
 
@@ -114,10 +119,8 @@ errcode_t remove_quota_inode(ext2_filsys fs, int qtype)
 
 static void write_dquots(dict_t *dict, struct quota_handle *qh)
 {
-	int		i = 0;
 	dnode_t		*n;
 	struct dquot	*dq;
-	__u32		key;
 
 	for (n = dict_first(dict); n; n = dict_next(dict, n)) {
 		dq = dnode_get(n);
@@ -131,16 +134,14 @@ static void write_dquots(dict_t *dict, struct quota_handle *qh)
 
 errcode_t write_quota_inode(quota_ctx_t qctx, int qtype)
 {
-	int		retval, i;
-	unsigned long	qf_inums[MAXQUOTAS];
-	struct dquot	*dquot;
+	int		retval = 0, i;
 	dict_t		*dict;
 	ext2_filsys	fs;
 	struct quota_handle *h;
 	int		fmt = QFMT_VFS_V1;
 
 	if (!qctx)
-		return;
+		return 0;
 
 	fs = qctx->fs;
 	h = smalloc(sizeof(struct quota_handle));
@@ -179,7 +180,6 @@ errcode_t write_quota_inode(quota_ctx_t qctx, int qtype)
 	}
 
 	ext2fs_write_bitmaps(fs);
-out:
 	free(h);
 	return retval;
 }
@@ -361,7 +361,6 @@ void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode,
 errcode_t compute_quota(quota_ctx_t qctx, int qtype)
 {
 	ext2_filsys fs;
-	const char *name = "lost+found";
 	ext2_ino_t ino;
 	errcode_t ret;
 	struct ext2_inode inode;
@@ -369,7 +368,7 @@ errcode_t compute_quota(quota_ctx_t qctx, int qtype)
 	ext2_inode_scan scan;
 
 	if (!qctx)
-		return;
+		return 0;
 
 	fs = qctx->fs;
 	ret = ext2fs_open_inode_scan(fs, 0, &scan);
