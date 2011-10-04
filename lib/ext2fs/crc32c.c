@@ -40,6 +40,23 @@
 #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
 #include "crc32c_defs.h"
 
+#include "ext2fs.h"
+#ifdef WORDS_BIGENDIAN
+#define __constant_cpu_to_le32(x) ___constant_swab32((x))
+#define __constant_cpu_to_be32(x) (x)
+#define __be32_to_cpu(x) (x)
+#define __cpu_to_be32(x) (x)
+#define __cpu_to_le32(x) (ext2fs_cpu_to_le32((x)))
+#define __le32_to_cpu(x) (ext2fs_le32_to_cpu((x)))
+#else
+#define __constant_cpu_to_le32(x) (x)
+#define __constant_cpu_to_be32(x) ___constant_swab32((x))
+#define __be32_to_cpu(x) (ext2fs_be32_to_cpu((x)))
+#define __cpu_to_be32(x) (ext2fs_cpu_to_be32((x)))
+#define __cpu_to_le32(x) (x)
+#define __le32_to_cpu(x) (x)
+#endif
+
 #if CRC_LE_BITS > 8
 # define tole(x) (__force uint32_t) __constant_cpu_to_le32(x)
 #else

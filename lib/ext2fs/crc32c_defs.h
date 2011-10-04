@@ -42,23 +42,6 @@
 		(((uint32_t)(x) & (uint32_t)0xff000000UL) >> 24)))
 
 
-#include "ext2fs.h"
-#ifdef WORDS_BIGENDIAN
-#define __constant_cpu_to_le32(x) ___constant_swab32((x))
-#define __constant_cpu_to_be32(x) (x)
-#define __be32_to_cpu(x) (x)
-#define __cpu_to_be32(x) (x)
-#define __cpu_to_le32(x) (ext2fs_cpu_to_le32((x)))
-#define __le32_to_cpu(x) (ext2fs_le32_to_cpu((x)))
-#else
-#define __constant_cpu_to_le32(x) (x)
-#define __constant_cpu_to_be32(x) ___constant_swab32((x))
-#define __be32_to_cpu(x) (ext2fs_be32_to_cpu((x)))
-#define __cpu_to_be32(x) (ext2fs_cpu_to_be32((x)))
-#define __cpu_to_le32(x) (x)
-#define __le32_to_cpu(x) (x)
-#endif
-
 #if (__GNUC__ >= 3)
 #define likely(x)	__builtin_expect(!!(x), 1)
 #define unlikely(x)	__builtin_expect(!!(x), 0)
