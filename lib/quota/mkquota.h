@@ -55,10 +55,7 @@ void release_quota_context(quota_ctx_t *qctx);
 
 errcode_t remove_quota_inode(ext2_filsys fs, int qtype);
 int is_quota_on(ext2_filsys fs, int type);
-int quota_file_exists(ext2_filsys fs, int qtype, int fmt);
+int quota_file_exists(ext2_filsys fs, int qtype);
 void set_sb_quota_inum(ext2_filsys fs, ext2_ino_t ino, int qtype);
-
-/* in quotaio.c */
-const char *get_qf_name(int type, int fmt, char *buf);
 
 #endif  /* __QUOTA_QUOTAIO_H__ */

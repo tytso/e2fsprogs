@@ -38,7 +38,8 @@ static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 
 	ext2fs_write_new_inode(fs, to_ino, &inode);
 	/* unlink the old inode */
-	get_qf_name(qtype, QFMT_VFS_V1, qf_name);
+	snprintf(qf_name, sizeof(qf_name), "aquota.%s",
+		 qtype ? "group" : "user");
 	ext2fs_unlink(fs, EXT2_ROOT_INO, qf_name, from_ino, 0);
 	ext2fs_inode_alloc_stats(fs, from_ino, -1);
 }

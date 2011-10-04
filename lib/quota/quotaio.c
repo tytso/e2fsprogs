@@ -49,18 +49,6 @@ const char *type2name(int type)
 	return extensions[type];
 }
 
-/**
- * Creates a quota file name for given type and format.
- */
-const char *get_qf_name(int type, int fmt, char *buf)
-{
-	BUG_ON(!buf);
-	snprintf(buf, PATH_MAX, "%s.%s",
-		 basenames[fmt], extensions[type]);
-
-	return buf;
-}
-
 /*
  * Set grace time if needed
  */

@@ -65,16 +65,16 @@ int is_quota_on(ext2_filsys fs, int type)
  * Returns 0 if not able to find the quota file, otherwise returns its
  * inode number.
  */
-int quota_file_exists(ext2_filsys fs, int qtype, int fmt)
+int quota_file_exists(ext2_filsys fs, int qtype)
 {
 	char qf_name[256];
 	errcode_t ret;
 	ext2_ino_t ino;
 
-	if (qtype >= MAXQUOTAS || fmt > QFMT_VFS_V1)
+	if (qtype >= MAXQUOTAS)
 		return -EINVAL;
 
-	get_qf_name(qtype, fmt, qf_name);
+	snprintf(qf_name, sizeof(qf_name), "aquota.%s", type2name(qtype));
 
 	ret = ext2fs_lookup(fs, EXT2_ROOT_INO, qf_name, strlen(qf_name), 0,
 			    &ino);

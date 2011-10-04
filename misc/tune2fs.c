@@ -710,7 +710,7 @@ void handle_quota_options(ext2_filsys fs)
 	init_quota_context(&qctx, fs, -1);
 
 	if (usrquota == QOPT_ENABLE && !fs->super->s_usr_quota_inum) {
-		if ((qf_ino = quota_file_exists(fs, USRQUOTA, QFMT_VFS_V1)) > 0)
+		if ((qf_ino = quota_file_exists(fs, USRQUOTA)) > 0)
 			set_sb_quota_inum(fs, qf_ino, USRQUOTA);
 		else
 			write_quota_inode(qctx, USRQUOTA);
@@ -719,7 +719,7 @@ void handle_quota_options(ext2_filsys fs)
 	}
 
 	if (grpquota == QOPT_ENABLE && !fs->super->s_grp_quota_inum) {
-		if ((qf_ino = quota_file_exists(fs, GRPQUOTA, QFMT_VFS_V1)) > 0)
+		if ((qf_ino = quota_file_exists(fs, GRPQUOTA)) > 0)
 			set_sb_quota_inum(fs, qf_ino, GRPQUOTA);
 		else
 			write_quota_inode(qctx, GRPQUOTA);
