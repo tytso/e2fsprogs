@@ -61,24 +61,6 @@ const char *get_qf_name(int type, int fmt, char *buf)
 	return buf;
 }
 
-const char *get_qf_path(const char *mntpt, int qtype, int fmt,
-			char *path_buf, size_t path_buf_size)
-{
-	struct stat	qf_stat;
-	char qf_name[PATH_MAX] = {0};
-
-	BUG_ON(!mntpt);
-	BUG_ON(!path_buf);
-	BUG_ON(!path_buf_size);
-
-	strncpy(path_buf, mntpt, path_buf_size);
-	strncat(path_buf, "/", 1);
-	strncat(path_buf, get_qf_name(qtype, fmt, qf_name),
-		path_buf_size - strlen(path_buf));
-
-	return path_buf;
-}
-
 /*
  * Set grace time if needed
  */

@@ -60,7 +60,5 @@ void set_sb_quota_inum(ext2_filsys fs, ext2_ino_t ino, int qtype);
 
 /* in quotaio.c */
 const char *get_qf_name(int type, int fmt, char *buf);
-const char *get_qf_path(const char *mntpt, int qtype, int fmt,
-			char *path_buf, size_t path_buf_size);
 
 #endif  /* __QUOTA_QUOTAIO_H__ */
