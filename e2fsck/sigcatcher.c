@@ -132,15 +132,33 @@ static struct str_table sig_table[] = {
 };
 
 static struct str_table generic_code_table[] = {
+#ifdef SI_ASYNCNL
 	DEFINE_ENTRY(SI_ASYNCNL)
+#endif
+#ifdef SI_TKILL
 	DEFINE_ENTRY(SI_TKILL)
+#endif
+#ifdef SI_SIGIO
 	DEFINE_ENTRY(SI_SIGIO)
+#endif
+#ifdef SI_ASYNCIO
 	DEFINE_ENTRY(SI_ASYNCIO)
+#endif
+#ifdef SI_MESGQ
 	DEFINE_ENTRY(SI_MESGQ)
+#endif
+#ifdef SI_TIMER
 	DEFINE_ENTRY(SI_TIMER)
+#endif
+#ifdef SI_QUEUE
 	DEFINE_ENTRY(SI_QUEUE)
+#endif
+#ifdef SI_USER
 	DEFINE_ENTRY(SI_USER)
+#endif
+#ifdef SI_KERNEL
 	DEFINE_ENTRY(SI_KERNEL)
+#endif
 	END_TABLE
 };
 
