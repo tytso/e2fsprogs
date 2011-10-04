@@ -1,3 +1,13 @@
+e2fsprogs (1.42~WIP-2011-10-01-2) unstable; urgency=low
+
+  * Update translations: French, German (Closes: #620659)
+  * Fix compilation problems in hermetic environments
+  * Fix on-line resizing in resize2fs (Closes: #451388)
+  * Add definitions for "big" and "huge" filesystems to /etc/mke2fs.conf
+  * Fix mke2fs when there are more than 2**32 block groups
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 04 Oct 2011 00:04:25 -0400
+
 e2fsprogs (1.42~WIP-2011-10-01-1) unstable; urgency=low
 
   * New upstream release
