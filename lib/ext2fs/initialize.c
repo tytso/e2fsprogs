@@ -248,7 +248,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	}
 
 retry:
-	fs->group_desc_count = (blk_t) ext2fs_div64_ceil(
+	fs->group_desc_count = (dgrp_t) ext2fs_div64_ceil(
 		ext2fs_blocks_count(super) - super->s_first_data_block,
 		EXT2_BLOCKS_PER_GROUP(super));
 	if (fs->group_desc_count == 0) {
