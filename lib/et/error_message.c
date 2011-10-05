@@ -100,7 +100,7 @@ int et_list_unlock(void)
 
 typedef char *(*gettextf) (const char *);
 
-gettextf com_err_gettext = NULL;
+static gettextf com_err_gettext = NULL;
 
 gettextf set_com_err_gettext (new_proc)
     gettextf new_proc;
