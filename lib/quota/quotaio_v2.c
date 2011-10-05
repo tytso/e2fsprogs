@@ -25,7 +25,7 @@ static int v2_init_io(struct quota_handle *h);
 static int v2_new_io(struct quota_handle *h);
 static int v2_write_info(struct quota_handle *h);
 static struct dquot *v2_read_dquot(struct quota_handle *h, qid_t id);
-static int v2_commit_dquot(struct dquot *dquot, int flags);
+static int v2_commit_dquot(struct dquot *dquot);
 static int v2_scan_dquots(struct quota_handle *h,
 			  int (*process_dquot) (struct dquot *dquot,
 						char *dqname));
@@ -285,7 +285,7 @@ static struct dquot *v2_read_dquot(struct quota_handle *h, qid_t id)
  * became fake one and user has no blocks.
  * User can process use 'errno' to detect errstr.
  */
-static int v2_commit_dquot(struct dquot *dquot, int flags)
+static int v2_commit_dquot(struct dquot *dquot)
 {
 	struct util_dqblk *b = &dquot->dq_dqb;
 

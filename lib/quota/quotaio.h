@@ -101,13 +101,6 @@ struct dquot {
 	struct util_dqblk dq_dqb;	/* Parsed data of dquot */
 };
 
-/* Flags for commit function (have effect only when quota in kernel is
- * turned on) */
-#define COMMIT_USAGE QIF_USAGE
-#define COMMIT_LIMITS QIF_LIMITS
-#define COMMIT_TIMES QIF_TIMES
-#define COMMIT_ALL (COMMIT_USAGE | COMMIT_LIMITS | COMMIT_TIMES)
-
 /* Structure of quotafile operations */
 struct quotafile_ops {
 	/* Check whether quotafile is in our format */
@@ -123,7 +116,7 @@ struct quotafile_ops {
 	/* Read dquot into memory */
 	struct dquot *(*read_dquot) (struct quota_handle *h, qid_t id);
 	/* Write given dquot to disk */
-	int (*commit_dquot) (struct dquot *dquot, int flag);
+	int (*commit_dquot) (struct dquot *dquot);
 	/* Scan quotafile and call callback on every structure */
 	int (*scan_dquots) (struct quota_handle *h,
 			    int (*process_dquot) (struct dquot *dquot,

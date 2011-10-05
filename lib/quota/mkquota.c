@@ -127,7 +127,7 @@ static void write_dquots(dict_t *dict, struct quota_handle *qh)
 		if (dq) {
 			dq->dq_h = qh;
 			update_grace_times(dq);
-			qh->qh_ops->commit_dquot(dq, COMMIT_ALL);
+			qh->qh_ops->commit_dquot(dq);
 		}
 	}
 }
