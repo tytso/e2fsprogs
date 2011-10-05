@@ -1,3 +1,18 @@
+e2fsprogs (1.42~WIP-2011-10-05-1) unstable; urgency=low
+
+  * Update translations: German (Closes: #520985)
+  * Fixed usage and error text for mke2fs -C option
+  * Updated e2fsprogs.pot file for translators
+  * Added support for internationalized error strings for libcom_err
+  * Fixed various portability nits that were causing FTBFS problems on
+    Hurd and FreeBSD
+  * Added "big" and "huge" types to mke2fs.conf, since they are needed
+    for very large file systems
+  * Fixed on-line resizing which had been broken in the 1.42 series
+    (Closes: #451388)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 05 Oct 2011 02:10:53 -0400
+
 e2fsprogs (1.42~WIP-2011-10-01-2) unstable; urgency=low
 
   * Update translations: French, German (Closes: #620659)

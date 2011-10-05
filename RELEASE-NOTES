@@ -1,4 +1,4 @@
-E2fsprogs 1.42-WIP (October 1, 2011) -- 636019ecdb2a
+E2fsprogs 1.42-WIP (October 5, 2011) -- 6a287f7f66661d
 =======================================
 
 This release of e2fsprogs has support for file systems > 16TB.  Online
@@ -120,6 +120,9 @@ field to -1, instead of 0.  Kernels older then 3.0 will print a
 spurious message on each mount then they see a s_max_mnt_count set to
 0, which will annoy users.  (Addresses Debian Bug: #632637)
     
+The default mke2fs.conf now has entries for "big" and "huge", which
+are needed for very big file systems.
+
 The resize2fs program now has support for a new online resize ioctl
 that can support file systems > 16TB, once it arrives in v3.x kernels.
 
@@ -178,8 +181,11 @@ compile against the latest version of ext2_fs.h (Addresses Debian Bug:
 Fixed parsing of MNTOPT_ options for tune2fs and debugfs (Addresses
 Debian Bug: #641667)
 
+Added internationalization support for libcom_err error table strings.
+
 Update translations: French, Chinese, Germany, Indonesian, Swedish,
-Vietnamese, Polish, Dutch, Czech,
+Vietnamese, Polish, Dutch, Czech.  (Addresses Debian Bugs: #520985,
+#620659)
 
 Fixed various Debian Packaging issues.  (Addresses Debian Bugs:
 #614662, #632169, #641838, #627535, #629355)
@@ -211,9 +217,7 @@ ext2fs_update_bb_inode().
 
 Fixed miscellaneous gcc -Wall and coverity warnings.
 
-Fixed portability issues for Mac OS X.
-
-Fixed FreeBSD portability where gettext is not in libc.
+Fixed portability issues for Mac OS X, Hurd, and FreeBSD.
 
 Fixed a build failure when OMIT_COM_ERR is defined.
 
@@ -242,6 +246,9 @@ Fixed the dependencies for "make check" so all required dependencies
 are built before running the gression tests.
 
 A link to com_err.h is installed in $(includedir) during a "make install".
+
+The po/*.gmo files are automatically rebuilt if they are missing or
+out of date.  This helps out Debian packaging.
 
 
 E2fsprogs 1.41.14 (December 22, 2010)
