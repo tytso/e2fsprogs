@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs-1.41.14\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2010-12-13 08:35-0500\n"
-"PO-Revision-Date: 2011-09-27 17:05+0200\n"
+"PO-Revision-Date: 2011-10-04 13:52+0200\n"
 "Last-Translator: Philipp Thomas <pth@suse.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: deX-Generator: Lokalize 1.2\n"
@@ -2903,7 +2903,7 @@ msgstr "beim Rücksetzen des Kontexts"
 #: e2fsck/unix.c:1410
 #, c-format
 msgid "%s: e2fsck canceled.\n"
-msgstr "%s: e2fsck abgebrochhen.\n"
+msgstr "%s: e2fsck abgebrochen.\n"
 
 #: e2fsck/unix.c:1415
 msgid "aborted"
