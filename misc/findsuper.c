@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
 	setlocale(LC_CTYPE, "");
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
+	set_com_err_gettext(gettext);
 #endif
 
 	while ((c = getopt (argc, argv, "j")) != EOF) {
