@@ -356,7 +356,7 @@ static void die_signal_handler(int signum, siginfo_t *siginfo, void *context)
 	       fprintf(stderr, "si_code=%s ",
 		       lookup_table_fallback(siginfo->si_code,
 					     sigbus_code_table));
-       else if (signum == SIGCLD)
+       else if (signum == SIGCHLD)
 	       fprintf(stderr, "si_code=%s ",
 		       lookup_table_fallback(siginfo->si_code,
 					     sigcld_code_table));
