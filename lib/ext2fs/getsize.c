@@ -160,7 +160,7 @@ errcode_t ext2fs_get_device_size2(const char *file, int blocksize,
 	char ch;
 #endif /* HAVE_SYS_DISKLABEL_H */
 
-	fd = ext2fs_open_file(file, O_RDONLY);
+	fd = ext2fs_open_file(file, O_RDONLY, 0);
 	if (fd < 0)
 		return errno;
 

@@ -1178,7 +1178,7 @@ static void install_image(char *device, char *image_fn, int type)
 		exit(1);
 	}
 
-	fd = ext2fs_open_file(image_fn, O_RDONLY);
+	fd = ext2fs_open_file(image_fn, O_RDONLY, 0);
 	if (fd < 0) {
 		perror(image_fn);
 		exit(1);

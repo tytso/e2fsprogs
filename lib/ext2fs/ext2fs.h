@@ -1438,7 +1438,7 @@ extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
-extern int ext2fs_open_file(const char *pathname, int flags, ...);
+extern int ext2fs_open_file(const char *pathname, int flags, mode_t mode);
 extern int ext2fs_stat(const char *path, ext2fs_struct_stat *buf);
 extern int ext2fs_fstat(int fd, ext2fs_struct_stat *buf);
 
@@ -1691,14 +1691,9 @@ _INLINE_ __u64 ext2fs_div64_ceil(__u64 a, __u64 b)
 	return ((a - 1) / b) + 1;
 }
 
-_INLINE_ int ext2fs_open_file(const char *pathname, int flags, ...)
+_INLINE_ int ext2fs_open_file(const char *pathname, int flags, mode_t mode)
 {
 	va_list args;
-	mode_t mode;
-
-	va_start(args, flags);
-	mode = va_arg(args, mode_t);
-	va_end(args);
 
 	if (mode)
 #if defined(HAVE_OPEN64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)

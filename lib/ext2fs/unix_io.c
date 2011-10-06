@@ -486,7 +486,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 #endif
 	data->flags = flags;
 
-	data->dev = ext2fs_open_file(io->name, open_flags);
+	data->dev = ext2fs_open_file(io->name, open_flags, 0);
 	if (data->dev < 0) {
 		retval = errno;
 		goto cleanup;

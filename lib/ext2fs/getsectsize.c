@@ -46,7 +46,7 @@ errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize)
 {
 	int	fd;
 
-	fd = ext2fs_open_file(file, O_RDONLY);
+	fd = ext2fs_open_file(file, O_RDONLY, 0);
 	if (fd < 0)
 		return errno;
 
@@ -68,7 +68,7 @@ errcode_t ext2fs_get_device_phys_sectsize(const char *file, int *sectsize)
 {
 	int	fd;
 
-	fd = ext2fs_open_file(file, O_RDONLY);
+	fd = ext2fs_open_file(file, O_RDONLY, 0);
 	if (fd < 0)
 		return errno;
 
