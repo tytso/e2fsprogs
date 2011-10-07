@@ -1,3 +1,15 @@
+e2fsprogs (1.42~WIP-2011-10-05-2) unstable; urgency=low
+
+  * Fix portability issues with non-Linux platforms and for the mips
+    platform, which does some really strange things vis-a-vis
+    32/64-bit support without actually having a 64-bit version of
+    the architecture (Closes: #644502)
+  * Fix dependency problem which causes the newer version of libcom_err2
+    to get pulled in when upgrading to e2fsprogs, which needs the new
+    interface exported by libcom_err2.  (Closes: #644425, #644584)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 07 Oct 2011 18:27:06 -0400
+
 e2fsprogs (1.42~WIP-2011-10-05-1) unstable; urgency=low
 
   * Update translations: German (Closes: #520985)
