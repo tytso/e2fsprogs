@@ -203,7 +203,7 @@ void ext2fs_extent_dump(ext2_extent extent, FILE *out)
 	fprintf(out, _("#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"),
 	       extent->num, extent->size, extent->cursor, extent->sorted);
 	for (i=0, ent=extent->list; i < extent->num; i++, ent++) {
-		fprintf(out, _("#\t\t %llu -> %llu (%llu)\n"), ent->old_loc,
+		fprintf(out, "#\t\t %llu -> %llu (%llu)\n", ent->old_loc,
 			ent->new_loc, ent->size);
 	}
 }

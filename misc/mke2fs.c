@@ -1944,7 +1944,7 @@ profile_error:
 				num_inodes = MAX_32_NUM;
 			else {
 				com_err(program_name, 0,
-					_("too many inodes (%llu), raise"
+					_("too many inodes (%llu), raise "
 					  "inode ratio?"), n);
 				exit(1);
 			}
