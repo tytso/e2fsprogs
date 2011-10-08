@@ -723,17 +723,26 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 {
 	journal_revoke_header_t *header;
 	int offset, max;
+	int record_len = 4;
 
 	header = (journal_revoke_header_t *) bh->b_data;
 	offset = sizeof(journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
 
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
+		record_len = 8;
+
 	while (offset < max) {
 		unsigned long blocknr;
 		int err;
 
-		blocknr = be32_to_cpu(* ((__be32 *) (bh->b_data+offset)));
-		offset += 4;
+		if (record_len == 4)
+			blocknr = ext2fs_be32_to_cpu(*((__be32 *)(bh->b_data +
+								  offset)));
+		else
+			blocknr = ext2fs_be64_to_cpu(*((__be64 *)(bh->b_data +
+								  offset)));
+		offset += record_len;
 		err = journal_set_revoke(journal, blocknr, sequence);
 		if (err)
 			return err;
