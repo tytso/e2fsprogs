@@ -181,13 +181,6 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 
 	memset(fiemap, 0, sizeof(struct fiemap));
 
-	/*
-	 * If count (and therefore fm_extent_count) == 0, FIEMAP
-	 * returns count of extents found without filling in details.
-	 */
-	if (!verbose)
-		count = 0;
-
 	if (sync_file)
 		flags |= FIEMAP_FLAG_SYNC;
 
