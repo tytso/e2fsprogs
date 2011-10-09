@@ -120,7 +120,7 @@ ec	EXT2_ET_SHORT_READ,
 	"Attempt to read block from filesystem resulted in short read"
 
 ec	EXT2_ET_SHORT_WRITE,
-	"Attempt to write block from filesystem resulted in short write"
+	"Attempt to write block to filesystem resulted in short write"
 
 ec	EXT2_ET_DIR_NO_SPACE,
 	"No free space in the directory"
@@ -294,7 +294,7 @@ ec	EXT2_ET_RESIZE_INODE_CORRUPT,
 	"Resize inode is corrupt"
 
 ec	EXT2_ET_SET_BMAP_NO_IND,
-	"Missing indirect block not present"
+	"Tried to set block bmap with missing indirect block"
 
 ec	EXT2_ET_TDB_SUCCESS,
 	"TDB: Success"

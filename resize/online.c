@@ -90,7 +90,8 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	if ((ext2fs_blocks_count(sb) > MAX_32_NUM) ||
 	    (*new_size > MAX_32_NUM)) {
 		com_err(program_name, 0,
-			_("Kernel does not resizing a file system this large"));
+			_("Kernel does not support resizing a file system "
+			  "this large"));
 		exit(1);
 	}
 	size = ext2fs_blocks_count(sb);

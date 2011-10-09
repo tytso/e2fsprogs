@@ -1164,8 +1164,11 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				r_usage++;
 				continue;
 			}
-			printf(_("Setting multiple mount protection update "
-				 "interval to %lu seconds\n"), interval);
+			printf(P_("Setting multiple mount protection update "
+				  "interval to %lu second\n",
+				  "Setting multiple mount protection update "
+				  "interval to %lu seconds\n", interval),
+			       interval);
 			fs->super->s_mmp_update_interval = interval;
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "test_fs")) {
@@ -1709,7 +1712,7 @@ static int resize_inode(ext2_filsys fs, unsigned long new_size)
 	}
 	retval = ext2fs_read_block_bitmap(fs);
 	if (retval) {
-		fputs(_("Failed to read blockbitmap\n"), stderr);
+		fputs(_("Failed to read block bitmap\n"), stderr);
 		return retval;
 	}
 	INIT_LIST_HEAD(&blk_move_list);

@@ -396,8 +396,11 @@ static void server_loop(const char *socket_path, const char *pidfile_path,
 			uuid__generate_time(uu, &num);
 			if (debug) {
 				uuid_unparse(uu, str);
-				printf(_("Generated time UUID %s and %d "
-					 "following\n"), str, num);
+				printf(P_("Generated time UUID %s and "
+					  "subsequent UUID\n",
+					  "Generated time UUID %s and %d "
+					  "subsequent UUIDs\n", num),
+				       str, num);
 			}
 			memcpy(reply_buf, uu, sizeof(uu));
 			reply_len = sizeof(uu);
@@ -537,7 +540,9 @@ int main(int argc, char **argv)
 
 			uuid_unparse((unsigned char *) buf, str);
 
-			printf(_("%s and subsequent %d UUID's\n"), str, num);
+			printf(P_("%s and subsequent UUID\n",
+				  "%s and subsequent %d UUIDs\n", num),
+			       str, num);
 		} else {
 			printf(_("List of UUID's:\n"));
 			cp = buf + 4;

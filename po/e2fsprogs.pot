@@ -1,9 +1,7 @@
-# E2fsprogs translation template file
-# Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 
-#     2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-#     by Theodore Ts'o
-# This file is distributed under the same license as the e2fsprogs package.
-# Theodore Ts'o <tytso@mit.edu>, 2011.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Theodore Tso
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -66,15 +64,16 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.42-WIP\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2011-10-05 02:02-0400\n"
+"POT-Creation-Date: 2011-10-09 17:54-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: e2fsck/badblocks.c:23 misc/mke2fs.c:176
 #, c-format
@@ -90,10 +89,10 @@ msgid "while reading the bad blocks inode"
 msgstr ""
 
 #: e2fsck/badblocks.c:72 e2fsck/iscan.c:113 e2fsck/scantest.c:110
-#: e2fsck/unix.c:1237 e2fsck/unix.c:1322 misc/badblocks.c:1215
+#: e2fsck/unix.c:1239 e2fsck/unix.c:1324 misc/badblocks.c:1215
 #: misc/badblocks.c:1223 misc/badblocks.c:1237 misc/badblocks.c:1249
 #: misc/dumpe2fs.c:572 misc/e2image.c:1170 misc/e2image.c:1288
-#: misc/e2image.c:1301 misc/mke2fs.c:192 misc/tune2fs.c:1891 resize/main.c:308
+#: misc/e2image.c:1301 misc/mke2fs.c:192 misc/tune2fs.c:1894 resize/main.c:308
 #, c-format
 msgid "while trying to open %s"
 msgstr ""
@@ -187,12 +186,12 @@ msgstr ""
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr ""
 
-#: e2fsck/iscan.c:84 e2fsck/unix.c:900
+#: e2fsck/iscan.c:84 e2fsck/unix.c:902
 #, c-format
 msgid "while opening %s for flushing"
 msgstr ""
 
-#: e2fsck/iscan.c:89 e2fsck/unix.c:906 resize/main.c:284
+#: e2fsck/iscan.c:89 e2fsck/unix.c:908 resize/main.c:284
 #, c-format
 msgid "while trying to flush %s"
 msgstr ""
@@ -1136,7 +1135,7 @@ msgid "Setting free @bs count to %c (was %b)\n"
 msgstr ""
 
 #: e2fsck/problem.c:418
-#. @-expanded: Making @q inodes hidden.\n
+#. @-expanded: Making quota inodes hidden.\n
 #. @-expanded: \n
 msgid ""
 "Making @q @is hidden.\n"
@@ -1688,17 +1687,17 @@ msgid "Error converting subcluster @b @B: %m\n"
 msgstr ""
 
 #: e2fsck/problem.c:926
-#. @-expanded: @q is not regular file.  
-msgid "@q is not regular file.  "
+#. @-expanded: quota inode is not regular file.  
+msgid "@q @i is not regular file.  "
 msgstr ""
 
 #: e2fsck/problem.c:931
-#. @-expanded: @q inode is not in use, but contains data.  
+#. @-expanded: quota inode is not in use, but contains data.  
 msgid "@q @i is not in use, but contains data.  "
 msgstr ""
 
 #: e2fsck/problem.c:936
-#. @-expanded: @q inode is visible to the user.  
+#. @-expanded: quota inode is visible to the user.  
 msgid "@q @i is visible to the user.  "
 msgstr ""
 
@@ -2490,6 +2489,31 @@ msgstr ""
 msgid "%s: %u/%u files (%0d.%d%% non-contiguous), %llu/%llu blocks\n"
 msgstr ""
 
+#: e2fsck/unix.c:139
+#, c-format
+msgid ""
+"\n"
+"%8u inode used (%2.2f%%)\n"
+msgid_plural ""
+"\n"
+"%8u inodes used (%2.2f%%)\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:141
+#, c-format
+msgid "%8u non-contiguous file (%0d.%d%%)\n"
+msgid_plural "%8u non-contiguous files (%0d.%d%%)\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:146
+#, c-format
+msgid "%8u non-contiguous directory (%0d.%d%%)\n"
+msgid_plural "%8u non-contiguous directories (%0d.%d%%)\n"
+msgstr[0] ""
+msgstr[1] ""
+
 #: e2fsck/unix.c:151
 #, c-format
 msgid "         # of inodes with ind/dind/tind blocks: %u/%u/%u\n"
@@ -2500,7 +2524,102 @@ msgstr ""
 msgid "         Extent depth histogram: "
 msgstr ""
 
-#: e2fsck/unix.c:209 misc/badblocks.c:984 misc/tune2fs.c:1962 misc/util.c:147
+#: e2fsck/unix.c:167
+#, c-format
+msgid "%8llu block used (%2.2f%%)\n"
+msgid_plural "%8llu blocks used (%2.2f%%)\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:170
+#, c-format
+msgid "%8u bad block\n"
+msgid_plural "%8u bad blocks\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:172
+#, c-format
+msgid "%8u large file\n"
+msgid_plural "%8u large files\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:174
+#, c-format
+msgid ""
+"\n"
+"%8u regular file\n"
+msgid_plural ""
+"\n"
+"%8u regular files\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:176
+#, c-format
+msgid "%8u directory\n"
+msgid_plural "%8u directories\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:178
+#, c-format
+msgid "%8u character device file\n"
+msgid_plural "%8u character device files\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:181
+#, c-format
+msgid "%8u block device file\n"
+msgid_plural "%8u block device files\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:183
+#, c-format
+msgid "%8u fifo\n"
+msgid_plural "%8u fifos\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:185
+#, c-format
+msgid "%8u link\n"
+msgid_plural "%8u links\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:188
+#, c-format
+msgid "%8u symbolic link"
+msgid_plural "%8u symbolic links"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:190
+#, c-format
+msgid " (%u fast symbolic link)\n"
+msgid_plural " (%u fast symbolic links)\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:192
+#, c-format
+msgid "%8u socket\n"
+msgid_plural "%8u sockets\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:195
+#, c-format
+msgid "%8u file\n"
+msgid_plural "%8u files\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#: e2fsck/unix.c:209 misc/badblocks.c:984 misc/tune2fs.c:1965 misc/util.c:147
 #: resize/main.c:251
 #, c-format
 msgid "while determining whether %s is mounted."
@@ -2522,145 +2641,144 @@ msgid ""
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:234
+#: e2fsck/unix.c:235
 #, c-format
 msgid ""
 "\n"
 "\n"
-"\a\a\a\aWARNING!!!  The filesystem is mounted.   If you continue you "
-"***WILL***\n"
-"cause ***SEVERE*** filesystem damage.\a\a\a\n"
+"WARNING!!!  The filesystem is mounted.   If you continue you ***WILL***\n"
+"cause ***SEVERE*** filesystem damage.\n"
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:237
+#: e2fsck/unix.c:239
 msgid "Do you really want to continue"
 msgstr ""
 
-#: e2fsck/unix.c:239
+#: e2fsck/unix.c:241
 #, c-format
 msgid "check aborted.\n"
 msgstr ""
 
-#: e2fsck/unix.c:321
+#: e2fsck/unix.c:323
 msgid " contains a file system with errors"
 msgstr ""
 
-#: e2fsck/unix.c:323
+#: e2fsck/unix.c:325
 msgid " was not cleanly unmounted"
 msgstr ""
 
-#: e2fsck/unix.c:325
+#: e2fsck/unix.c:327
 msgid " primary superblock features different from backup"
 msgstr ""
 
-#: e2fsck/unix.c:329
+#: e2fsck/unix.c:331
 #, c-format
 msgid " has been mounted %u times without being checked"
 msgstr ""
 
-#: e2fsck/unix.c:336
+#: e2fsck/unix.c:338
 msgid " has filesystem last checked time in the future"
 msgstr ""
 
-#: e2fsck/unix.c:342
+#: e2fsck/unix.c:344
 #, c-format
 msgid " has gone %u days without being checked"
 msgstr ""
 
-#: e2fsck/unix.c:351
+#: e2fsck/unix.c:353
 msgid ", check forced.\n"
 msgstr ""
 
-#: e2fsck/unix.c:384
+#: e2fsck/unix.c:386
 #, c-format
 msgid "%s: clean, %u/%u files, %llu/%llu blocks"
 msgstr ""
 
-#: e2fsck/unix.c:402
+#: e2fsck/unix.c:404
 msgid " (check deferred; on battery)"
 msgstr ""
 
-#: e2fsck/unix.c:405
+#: e2fsck/unix.c:407
 msgid " (check after next mount)"
 msgstr ""
 
-#: e2fsck/unix.c:407
+#: e2fsck/unix.c:409
 #, c-format
 msgid " (check in %ld mounts)"
 msgstr ""
 
-#: e2fsck/unix.c:557
+#: e2fsck/unix.c:559
 #, c-format
 msgid "ERROR: Couldn't open /dev/null (%s)\n"
 msgstr ""
 
-#: e2fsck/unix.c:626
+#: e2fsck/unix.c:628
 #, c-format
 msgid "Invalid EA version.\n"
 msgstr ""
 
-#: e2fsck/unix.c:647
+#: e2fsck/unix.c:649
 #, c-format
 msgid "Unknown extended option: %s\n"
 msgstr ""
 
-#: e2fsck/unix.c:672
+#: e2fsck/unix.c:674
 #, c-format
 msgid ""
 "Syntax error in e2fsck config file (%s, line #%d)\n"
 "\t%s\n"
 msgstr ""
 
-#: e2fsck/unix.c:741
+#: e2fsck/unix.c:743
 #, c-format
 msgid "Error validating file descriptor %d: %s\n"
 msgstr ""
 
-#: e2fsck/unix.c:745
+#: e2fsck/unix.c:747
 msgid "Invalid completion information file descriptor"
 msgstr ""
 
-#: e2fsck/unix.c:760
+#: e2fsck/unix.c:762
 msgid "Only one of the options -p/-a, -n or -y may be specified."
 msgstr ""
 
-#: e2fsck/unix.c:781
+#: e2fsck/unix.c:783
 #, c-format
 msgid "The -t option is not supported on this version of e2fsck.\n"
 msgstr ""
 
-#: e2fsck/unix.c:812 e2fsck/unix.c:884 misc/tune2fs.c:799 misc/tune2fs.c:1088
+#: e2fsck/unix.c:814 e2fsck/unix.c:886 misc/tune2fs.c:799 misc/tune2fs.c:1088
 #: misc/tune2fs.c:1106
 #, c-format
 msgid "Unable to resolve '%s'"
 msgstr ""
 
-#: e2fsck/unix.c:863
+#: e2fsck/unix.c:865
 msgid "The -n and -D options are incompatible."
 msgstr ""
 
-#: e2fsck/unix.c:868
+#: e2fsck/unix.c:870
 msgid "The -n and -c options are incompatible."
 msgstr ""
 
-#: e2fsck/unix.c:873
+#: e2fsck/unix.c:875
 msgid "The -n and -l/-L options are incompatible."
 msgstr ""
 
-#: e2fsck/unix.c:913
+#: e2fsck/unix.c:915
 #, c-format
 msgid "The -c and the -l/-L options may not be both used at the same time.\n"
 msgstr ""
 
-#: e2fsck/unix.c:961
+#: e2fsck/unix.c:963
 #, c-format
 msgid ""
 "E2FSCK_JBD_DEBUG \"%s\" not an integer\n"
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:970
+#: e2fsck/unix.c:972
 #, c-format
 msgid ""
 "\n"
@@ -2668,53 +2786,53 @@ msgid ""
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:1072 e2fsck/unix.c:1077
+#: e2fsck/unix.c:1074 e2fsck/unix.c:1079
 msgid "while checking MMP block"
 msgstr ""
 
-#: e2fsck/unix.c:1079 misc/tune2fs.c:1896
+#: e2fsck/unix.c:1081 misc/tune2fs.c:1899
 msgid ""
 "If you are sure the filesystem is not in use on any node, run:\n"
 "'tune2fs -f -E clear_mmp {device}'\n"
 msgstr ""
 
-#: e2fsck/unix.c:1128
+#: e2fsck/unix.c:1130
 #, c-format
 msgid "Error: ext2fs library version out of date!\n"
 msgstr ""
 
-#: e2fsck/unix.c:1136
+#: e2fsck/unix.c:1138
 msgid "while trying to initialize program"
 msgstr ""
 
-#: e2fsck/unix.c:1147
+#: e2fsck/unix.c:1149
 #, c-format
 msgid "\tUsing %s, %s\n"
 msgstr ""
 
-#: e2fsck/unix.c:1159
+#: e2fsck/unix.c:1161
 msgid "need terminal for interactive repairs"
 msgstr ""
 
-#: e2fsck/unix.c:1198
+#: e2fsck/unix.c:1200
 #, c-format
 msgid "%s: %s trying backup blocks...\n"
 msgstr ""
 
-#: e2fsck/unix.c:1200
+#: e2fsck/unix.c:1202
 msgid "Superblock invalid,"
 msgstr ""
 
-#: e2fsck/unix.c:1201
+#: e2fsck/unix.c:1203
 msgid "Group descriptors look bad..."
 msgstr ""
 
-#: e2fsck/unix.c:1213
+#: e2fsck/unix.c:1215
 #, c-format
 msgid "%s: going back to original superblock\n"
 msgstr ""
 
-#: e2fsck/unix.c:1240
+#: e2fsck/unix.c:1242
 #, c-format
 msgid ""
 "The filesystem revision is apparently too high for this version of e2fsck.\n"
@@ -2722,147 +2840,147 @@ msgid ""
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:1246
+#: e2fsck/unix.c:1248
 #, c-format
 msgid "Could this be a zero-length partition?\n"
 msgstr ""
 
-#: e2fsck/unix.c:1248
+#: e2fsck/unix.c:1250
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
 msgstr ""
 
-#: e2fsck/unix.c:1253
+#: e2fsck/unix.c:1255
 #, c-format
 msgid "Possibly non-existent or swap device?\n"
 msgstr ""
 
-#: e2fsck/unix.c:1255
+#: e2fsck/unix.c:1257
 #, c-format
 msgid "Filesystem mounted or opened exclusively by another program?\n"
 msgstr ""
 
-#: e2fsck/unix.c:1258
+#: e2fsck/unix.c:1260
 #, c-format
 msgid "Possibly non-existent device?\n"
 msgstr ""
 
-#: e2fsck/unix.c:1261
+#: e2fsck/unix.c:1263
 #, c-format
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
 "check of the device.\n"
 msgstr ""
 
-#: e2fsck/unix.c:1325
+#: e2fsck/unix.c:1327
 msgid "Get a newer version of e2fsck!"
 msgstr ""
 
-#: e2fsck/unix.c:1371
+#: e2fsck/unix.c:1373
 #, c-format
 msgid "while checking ext3 journal for %s"
 msgstr ""
 
-#: e2fsck/unix.c:1382
+#: e2fsck/unix.c:1384
 #, c-format
 msgid ""
 "Warning: skipping journal recovery because doing a read-only filesystem "
 "check.\n"
 msgstr ""
 
-#: e2fsck/unix.c:1395
+#: e2fsck/unix.c:1397
 #, c-format
 msgid "unable to set superblock flags on %s\n"
 msgstr ""
 
-#: e2fsck/unix.c:1401
+#: e2fsck/unix.c:1403
 #, c-format
 msgid "while recovering ext3 journal of %s"
 msgstr ""
 
-#: e2fsck/unix.c:1426
+#: e2fsck/unix.c:1428
 #, c-format
 msgid "%s has unsupported feature(s):"
 msgstr ""
 
-#: e2fsck/unix.c:1442
+#: e2fsck/unix.c:1444
 msgid "Warning: compression support is experimental.\n"
 msgstr ""
 
-#: e2fsck/unix.c:1447
+#: e2fsck/unix.c:1449
 #, c-format
 msgid ""
 "E2fsck not compiled with HTREE support,\n"
 "\tbut filesystem %s has HTREE directories.\n"
 msgstr ""
 
-#: e2fsck/unix.c:1500
+#: e2fsck/unix.c:1502
 msgid "while reading bad blocks inode"
 msgstr ""
 
-#: e2fsck/unix.c:1502
+#: e2fsck/unix.c:1504
 #, c-format
 msgid "This doesn't bode well, but we'll try to go on...\n"
 msgstr ""
 
-#: e2fsck/unix.c:1541
+#: e2fsck/unix.c:1543
 msgid "Couldn't determine journal size"
 msgstr ""
 
-#: e2fsck/unix.c:1544
+#: e2fsck/unix.c:1546
 #, c-format
 msgid "Creating journal (%d blocks): "
 msgstr ""
 
-#: e2fsck/unix.c:1551 misc/mke2fs.c:2514
+#: e2fsck/unix.c:1553 misc/mke2fs.c:2514
 msgid ""
 "\n"
 "\twhile trying to create journal"
 msgstr ""
 
-#: e2fsck/unix.c:1554
+#: e2fsck/unix.c:1556
 #, c-format
 msgid " Done.\n"
 msgstr ""
 
-#: e2fsck/unix.c:1555
+#: e2fsck/unix.c:1557
 #, c-format
 msgid ""
 "\n"
 "*** journal has been re-created - filesystem is now ext3 again ***\n"
 msgstr ""
 
-#: e2fsck/unix.c:1567
+#: e2fsck/unix.c:1569
 #, c-format
 msgid "Restarting e2fsck from the beginning...\n"
 msgstr ""
 
-#: e2fsck/unix.c:1571
+#: e2fsck/unix.c:1573
 msgid "while resetting context"
 msgstr ""
 
-#: e2fsck/unix.c:1578
+#: e2fsck/unix.c:1580
 #, c-format
 msgid "%s: e2fsck canceled.\n"
 msgstr ""
 
-#: e2fsck/unix.c:1583
+#: e2fsck/unix.c:1585
 msgid "aborted"
 msgstr ""
 
-#: e2fsck/unix.c:1595
+#: e2fsck/unix.c:1597
 #, c-format
 msgid ""
 "\n"
 "%s: ***** FILE SYSTEM WAS MODIFIED *****\n"
 msgstr ""
 
-#: e2fsck/unix.c:1598
+#: e2fsck/unix.c:1600
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
 msgstr ""
 
-#: e2fsck/unix.c:1606
+#: e2fsck/unix.c:1608
 #, c-format
 msgid ""
 "\n"
@@ -2870,7 +2988,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:1646
+#: e2fsck/unix.c:1648
 msgid "while setting block group checksum info"
 msgstr ""
 
@@ -3423,7 +3541,7 @@ msgstr ""
 msgid "\tUsing %s\n"
 msgstr ""
 
-#: misc/dumpe2fs.c:574 misc/e2image.c:1290 misc/tune2fs.c:1907
+#: misc/dumpe2fs.c:574 misc/e2image.c:1290 misc/tune2fs.c:1910
 #: resize/main.c:310
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
@@ -3491,7 +3609,7 @@ msgstr ""
 msgid "e2label: not an ext2 filesystem\n"
 msgstr ""
 
-#: misc/e2label.c:97 misc/tune2fs.c:2057
+#: misc/e2label.c:97 misc/tune2fs.c:2060
 #, c-format
 msgid "Warning: label too long, truncating.\n"
 msgstr ""
@@ -3573,86 +3691,86 @@ msgstr ""
 msgid "WARNING: bad format on line %d of %s\n"
 msgstr ""
 
-#: misc/fsck.c:369
+#: misc/fsck.c:371
 msgid ""
-"\a\a\aWARNING: Your /etc/fstab does not contain the fsck passno\n"
+"WARNING: Your /etc/fstab does not contain the fsck passno\n"
 "\tfield.  I will kludge around things for you, but you\n"
 "\tshould fix your /etc/fstab file as soon as you can.\n"
 "\n"
 msgstr ""
 
-#: misc/fsck.c:478
+#: misc/fsck.c:479
 #, c-format
 msgid "fsck: %s: not found\n"
 msgstr ""
 
-#: misc/fsck.c:594
+#: misc/fsck.c:595
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
 msgstr ""
 
-#: misc/fsck.c:616
+#: misc/fsck.c:617
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
 msgstr ""
 
-#: misc/fsck.c:622
+#: misc/fsck.c:623
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
 msgstr ""
 
-#: misc/fsck.c:661
+#: misc/fsck.c:662
 #, c-format
 msgid "Finished with %s (exit status %d)\n"
 msgstr ""
 
-#: misc/fsck.c:721
+#: misc/fsck.c:722
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
 msgstr ""
 
-#: misc/fsck.c:742
+#: misc/fsck.c:743
 msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
 msgstr ""
 
-#: misc/fsck.c:761
+#: misc/fsck.c:762
 msgid "Couldn't allocate memory for filesystem types\n"
 msgstr ""
 
-#: misc/fsck.c:884
+#: misc/fsck.c:885
 #, c-format
 msgid ""
 "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
 "number\n"
 msgstr ""
 
-#: misc/fsck.c:911
+#: misc/fsck.c:912
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
 msgstr ""
 
-#: misc/fsck.c:967
+#: misc/fsck.c:968
 msgid "Checking all file systems.\n"
 msgstr ""
 
-#: misc/fsck.c:1058
+#: misc/fsck.c:1059
 #, c-format
 msgid "--waiting-- (pass %d)\n"
 msgstr ""
 
-#: misc/fsck.c:1078
+#: misc/fsck.c:1079
 msgid ""
 "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
 msgstr ""
 
-#: misc/fsck.c:1120
+#: misc/fsck.c:1121
 #, c-format
 msgid "%s: too many devices\n"
 msgstr ""
 
-#: misc/fsck.c:1153 misc/fsck.c:1239
+#: misc/fsck.c:1154 misc/fsck.c:1240
 #, c-format
 msgid "%s: too many arguments\n"
 msgstr ""
@@ -4228,7 +4346,7 @@ msgstr ""
 
 #: misc/mke2fs.c:1947
 #, c-format
-msgid "too many inodes (%llu), raiseinode ratio?"
+msgid "too many inodes (%llu), raise inode ratio?"
 msgstr ""
 
 #: misc/mke2fs.c:1954
@@ -4644,30 +4762,33 @@ msgstr ""
 
 #: misc/tune2fs.c:1167
 #, c-format
-msgid "Setting multiple mount protection update interval to %lu seconds\n"
-msgstr ""
+msgid "Setting multiple mount protection update interval to %lu second\n"
+msgid_plural ""
+"Setting multiple mount protection update interval to %lu seconds\n"
+msgstr[0] ""
+msgstr[1] ""
 
-#: misc/tune2fs.c:1187
+#: misc/tune2fs.c:1190
 #, c-format
 msgid "Invalid RAID stride: %s\n"
 msgstr ""
 
-#: misc/tune2fs.c:1202
+#: misc/tune2fs.c:1205
 #, c-format
 msgid "Invalid RAID stripe-width: %s\n"
 msgstr ""
 
-#: misc/tune2fs.c:1217
+#: misc/tune2fs.c:1220
 #, c-format
 msgid "Invalid hash algorithm: %s\n"
 msgstr ""
 
-#: misc/tune2fs.c:1223
+#: misc/tune2fs.c:1226
 #, c-format
 msgid "Setting default hash algorithm to %s (%d)\n"
 msgstr ""
 
-#: misc/tune2fs.c:1242
+#: misc/tune2fs.c:1245
 #, c-format
 msgid ""
 "\n"
@@ -4686,46 +4807,46 @@ msgid ""
 "\t^test_fs\n"
 msgstr ""
 
-#: misc/tune2fs.c:1707
+#: misc/tune2fs.c:1710
 msgid "Failed to read inode bitmap\n"
 msgstr ""
 
-#: misc/tune2fs.c:1712
-msgid "Failed to read blockbitmap\n"
+#: misc/tune2fs.c:1715
+msgid "Failed to read block bitmap\n"
 msgstr ""
 
-#: misc/tune2fs.c:1729 resize/resize2fs.c:784
+#: misc/tune2fs.c:1732 resize/resize2fs.c:784
 msgid "blocks to be moved"
 msgstr ""
 
-#: misc/tune2fs.c:1732
+#: misc/tune2fs.c:1735
 msgid "Failed to allocate block bitmap when increasing inode size\n"
 msgstr ""
 
-#: misc/tune2fs.c:1738
+#: misc/tune2fs.c:1741
 msgid "Not enough space to increase inode size \n"
 msgstr ""
 
-#: misc/tune2fs.c:1743
+#: misc/tune2fs.c:1746
 msgid "Failed to relocate blocks during inode resize \n"
 msgstr ""
 
-#: misc/tune2fs.c:1775
+#: misc/tune2fs.c:1778
 msgid ""
 "Error in resizing the inode size.\n"
 "Run e2undo to undo the file system changes. \n"
 msgstr ""
 
-#: misc/tune2fs.c:1802
+#: misc/tune2fs.c:1805
 msgid "Couldn't allocate memory for tdb filename\n"
 msgstr ""
 
-#: misc/tune2fs.c:1824
+#: misc/tune2fs.c:1827
 #, c-format
 msgid "while trying to delete %s"
 msgstr ""
 
-#: misc/tune2fs.c:1834
+#: misc/tune2fs.c:1837
 #, c-format
 msgid ""
 "To undo the tune2fs operation please run the command\n"
@@ -4733,141 +4854,141 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/tune2fs.c:1903
+#: misc/tune2fs.c:1906
 #, c-format
 msgid ""
 "MMP block magic is bad. Try to fix it by running:\n"
 "'e2fsck -f %s'\n"
 msgstr ""
 
-#: misc/tune2fs.c:1920
+#: misc/tune2fs.c:1923
 #, c-format
 msgid "The inode size is already %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:1926
+#: misc/tune2fs.c:1929
 #, c-format
 msgid "Shrinking the inode size is not supported\n"
 msgstr ""
 
-#: misc/tune2fs.c:1973
+#: misc/tune2fs.c:1976
 #, c-format
 msgid "Setting maximal mount count to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1979
+#: misc/tune2fs.c:1982
 #, c-format
 msgid "Setting current mount count to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1984
+#: misc/tune2fs.c:1987
 #, c-format
 msgid "Setting error behavior to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1989
+#: misc/tune2fs.c:1992
 #, c-format
 msgid "Setting reserved blocks gid to %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:1994
+#: misc/tune2fs.c:1997
 #, c-format
 msgid "interval between checks is too big (%lu)"
 msgstr ""
 
-#: misc/tune2fs.c:2001
+#: misc/tune2fs.c:2004
 #, c-format
 msgid "Setting interval between checks to %lu seconds\n"
 msgstr ""
 
-#: misc/tune2fs.c:2008
+#: misc/tune2fs.c:2011
 #, c-format
 msgid "Setting reserved blocks percentage to %g%% (%llu blocks)\n"
 msgstr ""
 
-#: misc/tune2fs.c:2014
+#: misc/tune2fs.c:2017
 #, c-format
 msgid "reserved blocks count is too big (%llu)"
 msgstr ""
 
-#: misc/tune2fs.c:2021
+#: misc/tune2fs.c:2024
 #, c-format
 msgid "Setting reserved blocks count to %llu\n"
 msgstr ""
 
-#: misc/tune2fs.c:2027
+#: misc/tune2fs.c:2030
 msgid ""
 "\n"
 "The filesystem already has sparse superblocks.\n"
 msgstr ""
 
-#: misc/tune2fs.c:2034
+#: misc/tune2fs.c:2037
 #, c-format
 msgid ""
 "\n"
 "Sparse superblock flag set.  %s"
 msgstr ""
 
-#: misc/tune2fs.c:2039
+#: misc/tune2fs.c:2042
 msgid ""
 "\n"
 "Clearing the sparse superflag not supported.\n"
 msgstr ""
 
-#: misc/tune2fs.c:2047
+#: misc/tune2fs.c:2050
 #, c-format
 msgid "Setting time filesystem last checked to %s\n"
 msgstr ""
 
-#: misc/tune2fs.c:2053
+#: misc/tune2fs.c:2056
 #, c-format
 msgid "Setting reserved blocks uid to %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:2085
+#: misc/tune2fs.c:2088
 msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr ""
 
-#: misc/tune2fs.c:2103
+#: misc/tune2fs.c:2106
 msgid ""
 "The quota feature may only be changed when the filesystem is unmounted.\n"
 msgstr ""
 
-#: misc/tune2fs.c:2136
+#: misc/tune2fs.c:2139
 msgid "Invalid UUID format\n"
 msgstr ""
 
-#: misc/tune2fs.c:2149
+#: misc/tune2fs.c:2152
 msgid "The inode size may only be changed when the filesystem is unmounted.\n"
 msgstr ""
 
-#: misc/tune2fs.c:2157
+#: misc/tune2fs.c:2160
 msgid ""
 "Changing the inode size not supported for filesystems with the flex_bg\n"
 "feature enabled.\n"
 msgstr ""
 
-#: misc/tune2fs.c:2170
+#: misc/tune2fs.c:2173
 #, c-format
 msgid "Setting inode size %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:2173
+#: misc/tune2fs.c:2176
 #, c-format
 msgid "Failed to change inode size\n"
 msgstr ""
 
-#: misc/tune2fs.c:2184
+#: misc/tune2fs.c:2187
 #, c-format
 msgid "Setting stride size to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:2189
+#: misc/tune2fs.c:2192
 #, c-format
 msgid "Setting stripe width to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:2196
+#: misc/tune2fs.c:2199
 #, c-format
 msgid "Setting extended default mount options to '%s'\n"
 msgstr ""
@@ -5041,50 +5162,54 @@ msgstr ""
 
 #: misc/uuidd.c:399
 #, c-format
-msgid "Generated time UUID %s and %d following\n"
-msgstr ""
+msgid "Generated time UUID %s and subsequent UUID\n"
+msgid_plural "Generated time UUID %s and %d subsequent UUIDs\n"
+msgstr[0] ""
+msgstr[1] ""
 
-#: misc/uuidd.c:417
+#: misc/uuidd.c:420
 #, c-format
 msgid "Generated %d UUID's:\n"
 msgstr ""
 
-#: misc/uuidd.c:429
+#: misc/uuidd.c:432
 #, c-format
 msgid "Invalid operation %d\n"
 msgstr ""
 
-#: misc/uuidd.c:473 misc/uuidd.c:495
+#: misc/uuidd.c:476 misc/uuidd.c:498
 #, c-format
 msgid "Bad number: %s\n"
 msgstr ""
 
-#: misc/uuidd.c:530 misc/uuidd.c:557
+#: misc/uuidd.c:533 misc/uuidd.c:562
 #, c-format
 msgid "Error calling uuidd daemon (%s): %s\n"
 msgstr ""
 
-#: misc/uuidd.c:540
+#: misc/uuidd.c:543
 #, c-format
-msgid "%s and subsequent %d UUID's\n"
-msgstr ""
+msgid "%s and subsequent UUID\n"
+msgid_plural "%s and subsequent %d UUIDs\n"
+msgstr[0] ""
+msgstr[1] ""
 
-#: misc/uuidd.c:542
+#: misc/uuidd.c:547
 #, c-format
 msgid "List of UUID's:\n"
 msgstr ""
 
-#: misc/uuidd.c:563
+#: misc/uuidd.c:568
 #, c-format
 msgid "Unexpected reply length from server %d\n"
 msgstr ""
 
-#: misc/uuidd.c:580
+#: misc/uuidd.c:585
 #, c-format
 msgid "Couldn't kill uuidd running at pid %d: %s\n"
 msgstr ""
 
-#: misc/uuidd.c:586
+#: misc/uuidd.c:591
 #, c-format
 msgid "Killed uuidd running at pid %d\n"
 msgstr ""
@@ -5101,11 +5226,6 @@ msgstr ""
 #: resize/extent.c:203
 #, c-format
 msgid "#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"
-msgstr ""
-
-#: resize/extent.c:206
-#, c-format
-msgid "#\t\t %llu -> %llu (%llu)\n"
 msgstr ""
 
 #: resize/main.c:43
@@ -5253,37 +5373,37 @@ msgstr ""
 msgid "while trying to open mountpoint %s"
 msgstr ""
 
-#: resize/online.c:78 resize/online.c:101
+#: resize/online.c:78 resize/online.c:102
 msgid "Permission denied to resize filesystem"
 msgstr ""
 
-#: resize/online.c:81 resize/online.c:107
+#: resize/online.c:81 resize/online.c:108
 msgid "While checking for on-line resizing support"
 msgstr ""
 
 #: resize/online.c:93
-msgid "Kernel does not resizing a file system this large"
+msgid "Kernel does not support resizing a file system this large"
 msgstr ""
 
-#: resize/online.c:104
+#: resize/online.c:105
 msgid "Kernel does not support online resizing"
 msgstr ""
 
-#: resize/online.c:137
+#: resize/online.c:138
 #, c-format
 msgid "Performing an on-line resize of %s to %llu (%dk) blocks.\n"
 msgstr ""
 
-#: resize/online.c:147
+#: resize/online.c:148
 msgid "While trying to extend the last group"
 msgstr ""
 
-#: resize/online.c:201
+#: resize/online.c:202
 #, c-format
 msgid "While trying to add group #%d"
 msgstr ""
 
-#: resize/online.c:212
+#: resize/online.c:213
 #, c-format
 msgid ""
 "Filesystem at %s is mounted on %s, and on-line resizing is not supported on "
@@ -5917,7 +6037,7 @@ msgid "Bad linked list in profile structures"
 msgstr ""
 
 #: e2fsck/prof_err.c:18
-msgid "Bad group level in profile strctures"
+msgid "Bad group level in profile structures"
 msgstr ""
 
 #: e2fsck/prof_err.c:19

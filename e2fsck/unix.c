@@ -231,9 +231,11 @@ static void check_mount(e2fsck_t ctx)
 	printf(_("%s is mounted.  "), ctx->filesystem_name);
 	if (!ctx->interactive)
 		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
-	printf(_("\n\n\007\007\007\007WARNING!!!  "
+	puts("\007\007\007\007");
+	printf(_("\n\nWARNING!!!  "
 	       "The filesystem is mounted.   If you continue you ***WILL***\n"
-	       "cause ***SEVERE*** filesystem damage.\007\007\007\n\n"));
+	       "cause ***SEVERE*** filesystem damage.\n\n"));
+	puts("\007\007\007");
 	cont = ask_yn(_("Do you really want to continue"), 0);
 	if (!cont) {
 		printf (_("check aborted.\n"));
