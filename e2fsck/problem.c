@@ -923,7 +923,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Quota inode has bad mode */
 	{ PR_1_QUOTA_BAD_MODE,
-	  N_("@q is not regular file.  "),
+	  N_("@q @i is not regular file.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Quota inode is not in use, but contains data */
