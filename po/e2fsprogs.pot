@@ -1,7 +1,9 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Theodore Tso
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# E2fsprogs translation template file
+# Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 
+#     2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+#     by Theodore Ts'o
+# This file is distributed under the same license as the e2fsprogs package.
+# Theodore Ts'o <tytso@mit.edu>, 2011.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -64,9 +66,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: e2fsprogs 1.42-WIP\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2011-10-09 17:54-0400\n"
+"POT-Creation-Date: 2011-10-09 20:32-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5577,7 +5579,7 @@ msgid "Attempt to read block from filesystem resulted in short read"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:48
-msgid "Attempt to write block from filesystem resulted in short write"
+msgid "Attempt to write block to filesystem resulted in short write"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:49
@@ -5809,7 +5811,7 @@ msgid "Resize inode is corrupt"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:106
-msgid "Missing indirect block not present"
+msgid "Tried to set block bmap with missing indirect block"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:107
@@ -6041,7 +6043,7 @@ msgid "Bad group level in profile structures"
 msgstr ""
 
 #: e2fsck/prof_err.c:19
-msgid "Bad parent pointer in profile strctures"
+msgid "Bad parent pointer in profile structures"
 msgstr ""
 
 #: e2fsck/prof_err.c:20

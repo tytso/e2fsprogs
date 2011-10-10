@@ -1,4 +1,4 @@
-E2fsprogs 1.42-WIP (October 5, 2011) -- 6a287f7f66661d
+E2fsprogs 1.42-WIP (October 9, 2011) -- 72db94e1fe1798
 =======================================
 
 This release of e2fsprogs has support for file systems > 16TB.  Online
@@ -159,14 +159,14 @@ scripting.
 Filefrag will report 0 extents correctly in verbose mode.  (Addresses
 RedHat Bugzilla: #653234)
 
-Filefrag has been fixed so its -v erport prints the correct expected
+Filefrag has been fixed so its -v report prints the correct expected
 block number (previously there had been an off-by-one error).  In
 addition, it will now display the number of contiguous extents when -v
 is not specified.  This makes it consistent with the number of extents
 printed when the -v option was specified.  In addition, the number of
 contiguous extents is far more interesting/useful than the number of
 physical extents for very large files.  (Addresses Debian Bug:
-#631498)
+#631498, #644792)
     
 Logsave's usage message has been fixed.  (Addresses Debian Bug:
 #619788)
@@ -182,6 +182,9 @@ Fixed parsing of MNTOPT_ options for tune2fs and debugfs (Addresses
 Debian Bug: #641667)
 
 Added internationalization support for libcom_err error table strings.
+
+Fixed various spelling mistakes found in various output strings found
+by I18N translators.
 
 Update translations: French, Chinese, Germany, Indonesian, Swedish,
 Vietnamese, Polish, Dutch, Czech.  (Addresses Debian Bugs: #520985,

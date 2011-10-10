@@ -1,3 +1,16 @@
+e2fsprogs (1.42~WIP-2011-10-09-1) unstable; urgency=low
+
+  * New upstream release
+  * Fixed infinite loop in filefrag (Closes: #644792)
+  * Fixed various spelling and translation problems
+  * Fixed various man pages
+  * Fixed 64-bit block numbers in e2fsck's journal replay
+  * Fixed mipsel FTBFS that was fixed for mips
+  * Update Sweedish, French, and Czech translations
+  * Convert to debian source 3.0 (quilt) format
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 09 Oct 2011 22:24:31 -0400
+
 e2fsprogs (1.42~WIP-2011-10-05-2) unstable; urgency=low
 
   * Fix portability issues with non-Linux platforms and for the mips

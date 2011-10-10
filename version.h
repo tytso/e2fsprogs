@@ -8,4 +8,4 @@
  */
 
 #define E2FSPROGS_VERSION "1.42-WIP"
-#define E2FSPROGS_DATE "5-Oct-2011"
+#define E2FSPROGS_DATE "9-Oct-2011"
