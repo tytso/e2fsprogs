@@ -335,7 +335,7 @@ retry:
 		fs->super->s_blocks_per_group;
 	if ((fs->group_desc_count == 1) && rem && (rem < overhead))
 		return EXT2_ET_TOOSMALL;
-	if (rem && (rem < overhead+50)) {
+	if ((fs->group_desc_count > 1) && rem && (rem < overhead+50)) {
 		ext2fs_blocks_count_set(fs->super,
 					ext2fs_blocks_count(fs->super) - rem);
 		goto retry;
