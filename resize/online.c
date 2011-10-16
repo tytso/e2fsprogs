@@ -72,7 +72,12 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	}
 
 	if (ioctl(fd, EXT4_IOC_RESIZE_FS, new_size)) {
-		if (errno != EINVAL) {
+		/*
+		 * If kernel does not support EXT4_IOC_RESIZE_FS, use the
+		 * old online resize. Note that the old approach does not
+		 * handle >32 bit file systems
+		 */
+		if (errno != ENOTTY) {
 			if (errno == EPERM)
 				com_err(program_name, 0,
 				_("Permission denied to resize filesystem"));
