@@ -1,3 +1,16 @@
+e2fsprogs (1.42~WIP-2011-10-16-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix online resizing with resize2fs (Closes: #644989)
+  * Fix bug which caused shrinking an empty file system file system to
+    its minimal size to sometimes fail.
+  * Don't look at the high 16 bits of i_file_acl if the 64-bit feature
+    is not enabled; this fixes a Hurd compatibility field since this is
+    used for the high 16 bits of i_mode on Hurd.
+  * Update Sweedish, Polish, French, German, and Czech translations
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 16 Oct 2011 22:07:03 -0400
+
 e2fsprogs (1.42~WIP-2011-10-09-1) unstable; urgency=low
 
   * New upstream release

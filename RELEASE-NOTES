@@ -1,4 +1,4 @@
-E2fsprogs 1.42-WIP (October 9, 2011) -- 72db94e1fe1798
+E2fsprogs 1.42-WIP (October 16, 2011) -- c2c2b959bd87
 =======================================
 
 This release of e2fsprogs has support for file systems > 16TB.  Online
@@ -126,6 +126,9 @@ are needed for very big file systems.
 The resize2fs program now has support for a new online resize ioctl
 that can support file systems > 16TB, once it arrives in v3.x kernels.
 
+Fixed bug which caused resize2fs to fail when shrinking an empty file
+system down to its minimal size.  (Addresses Sourceforge Bug #3404051)
+
 Fixed tune2fs's mount options parsing.  (Addresses Debian Bug: #641667)
 
 Allow tune2fs to remove external journals if the device can not be
@@ -252,6 +255,9 @@ A link to com_err.h is installed in $(includedir) during a "make install".
 
 The po/*.gmo files are automatically rebuilt if they are missing or
 out of date.  This helps out Debian packaging.
+
+Allow ext2fs_get_memalign() to compile on systems that don't have
+posix_memalign().
 
 
 E2fsprogs 1.41.14 (December 22, 2010)
