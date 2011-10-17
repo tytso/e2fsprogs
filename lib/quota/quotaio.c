@@ -110,7 +110,7 @@ void truncate_quota_inode(ext2_filsys fs, ext2_ino_t ino)
 		return;
 
 	inode.i_dtime = fs->now ? fs->now : time(0);
-	if (!ext2fs_inode_has_valid_blocks(&inode))
+	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 		return;
 
 	ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_READ_ONLY, NULL,

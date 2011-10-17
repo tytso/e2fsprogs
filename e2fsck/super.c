@@ -160,7 +160,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	errcode_t			retval;
 	__u32				count;
 
-	if (!ext2fs_inode_has_valid_blocks(inode))
+	if (!ext2fs_inode_has_valid_blocks2(fs, inode))
 		return 0;
 
 	pb.buf = block_buf + 3 * ctx->fs->blocksize;
@@ -197,9 +197,10 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	if (pb.truncated_blocks)
 		ext2fs_iblk_sub_blocks(fs, inode, pb.truncated_blocks);
 
-	if (ext2fs_file_acl_block(inode)) {
-		retval = ext2fs_adjust_ea_refcount2(fs, ext2fs_file_acl_block(inode),
-						   block_buf, -1, &count);
+	if (ext2fs_file_acl_block(fs, inode)) {
+		retval = ext2fs_adjust_ea_refcount2(fs,
+					ext2fs_file_acl_block(fs, inode),
+					block_buf, -1, &count);
 		if (retval == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			retval = 0;
 			count = 1;
@@ -212,9 +213,8 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		}
 		if (count == 0)
 			ext2fs_block_alloc_stats2(fs,
-						 ext2fs_file_acl_block(inode),
-						 -1);
-		ext2fs_file_acl_block_set(inode, 0);
+					ext2fs_file_acl_block(fs, inode), -1);
+		ext2fs_file_acl_block_set(fs, inode, 0);
 	}
 	return 0;
 }

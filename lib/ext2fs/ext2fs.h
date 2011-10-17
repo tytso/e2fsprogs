@@ -841,8 +841,10 @@ extern void ext2fs_bg_flags_set(ext2_filsys fs, dgrp_t group, __u16 bg_flags);
 extern void ext2fs_bg_flags_clear(ext2_filsys fs, dgrp_t group, __u16 bg_flags);
 extern __u16 ext2fs_bg_checksum(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_bg_checksum_set(ext2_filsys fs, dgrp_t group, __u16 checksum);
-extern blk64_t ext2fs_file_acl_block(const struct ext2_inode *inode);
-extern void ext2fs_file_acl_block_set(struct ext2_inode *inode, blk64_t blk);
+extern blk64_t ext2fs_file_acl_block(ext2_filsys fs,
+				     const struct ext2_inode *inode);
+extern void ext2fs_file_acl_block_set(ext2_filsys fs,
+				      struct ext2_inode *inode, blk64_t blk);
 
 /* block.c */
 extern errcode_t ext2fs_block_iterate(ext2_filsys fs,
@@ -1396,6 +1398,8 @@ extern void ext2fs_swap_mmp(struct mmp_struct *mmp);
 
 /* valid_blk.c */
 extern int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode);
+extern int ext2fs_inode_has_valid_blocks2(ext2_filsys fs,
+					  struct ext2_inode *inode);
 
 /* version.c */
 extern int ext2fs_parse_version_string(const char *ver_string);

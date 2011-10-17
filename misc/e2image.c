@@ -1087,12 +1087,12 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 			break;
 		if (!inode.i_links_count)
 			continue;
-		if (ext2fs_file_acl_block(&inode)) {
+		if (ext2fs_file_acl_block(fs, &inode)) {
 			ext2fs_mark_block_bitmap2(meta_block_map,
-						 ext2fs_file_acl_block(&inode));
+					ext2fs_file_acl_block(fs, &inode));
 			meta_blocks_count++;
 		}
-		if (!ext2fs_inode_has_valid_blocks(&inode))
+		if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 			continue;
 
 		stashed_ino = ino;
@@ -1100,7 +1100,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 		pb.is_dir = LINUX_S_ISDIR(inode.i_mode);
 		if (LINUX_S_ISDIR(inode.i_mode) ||
 		    (LINUX_S_ISLNK(inode.i_mode) &&
-		     ext2fs_inode_has_valid_blocks(&inode)) ||
+		     ext2fs_inode_has_valid_blocks2(fs, &inode)) ||
 		    ino == fs->super->s_journal_inum) {
 			retval = ext2fs_block_iterate3(fs, ino,
 					BLOCK_FLAG_READ_ONLY, block_buf,

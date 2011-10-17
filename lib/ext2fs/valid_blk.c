@@ -24,7 +24,7 @@
  * This function returns 1 if the inode's block entries actually
  * contain block entries.
  */
-int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode)
+int ext2fs_inode_has_valid_blocks2(ext2_filsys fs, struct ext2_inode *inode)
 {
 	/*
 	 * Only directories, regular files, and some symbolic links
@@ -39,7 +39,7 @@ int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode)
 	 * target is stored in the block entries.
 	 */
 	if (LINUX_S_ISLNK (inode->i_mode)) {
-		if (ext2fs_file_acl_block(inode) == 0) {
+		if (ext2fs_file_acl_block(fs, inode) == 0) {
 			/* With no EA block, we can rely on i_blocks */
 			if (inode->i_blocks == 0)
 				return 0;
@@ -53,4 +53,9 @@ int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode)
 		}
 	}
 	return 1;
+}
+
+int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode)
+{
+	return ext2fs_inode_has_valid_blocks2(NULL, inode);
 }

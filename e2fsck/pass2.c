@@ -1194,31 +1194,31 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	e2fsck_read_bitmaps(ctx);
 	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
 
-	if (ext2fs_file_acl_block(&inode) &&
+	if (ext2fs_file_acl_block(fs, &inode) &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
-		pctx.errcode = ext2fs_adjust_ea_refcount2(fs, ext2fs_file_acl_block(&inode),
-						   block_buf, -1, &count);
+		pctx.errcode = ext2fs_adjust_ea_refcount2(fs,
+					ext2fs_file_acl_block(fs, &inode),
+					block_buf, -1, &count);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
 			count = 1;
 		}
 		if (pctx.errcode) {
-			pctx.blk = ext2fs_file_acl_block(&inode);
+			pctx.blk = ext2fs_file_acl_block(fs, &inode);
 			fix_problem(ctx, PR_2_ADJ_EA_REFCOUNT, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
 		}
 		if (count == 0) {
 			ext2fs_unmark_block_bitmap2(ctx->block_found_map,
-						ext2fs_file_acl_block(&inode));
+					ext2fs_file_acl_block(fs, &inode));
 			ext2fs_block_alloc_stats2(fs,
-					        ext2fs_file_acl_block(&inode),
-					        -1);
+				  ext2fs_file_acl_block(fs, &inode), -1);
 		}
-		ext2fs_file_acl_block_set(&inode, 0);
+		ext2fs_file_acl_block_set(fs, &inode, 0);
 	}
 
-	if (!ext2fs_inode_has_valid_blocks(&inode))
+	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 		return;
 
 	if (LINUX_S_ISREG(inode.i_mode) && EXT2_I_SIZE(&inode) >= 0x80000000UL)
@@ -1269,10 +1269,10 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	pctx.dir = dir;
 	pctx.inode = &inode;
 
-	if (ext2fs_file_acl_block(&inode) &&
+	if (ext2fs_file_acl_block(fs, &inode) &&
 	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
 		if (fix_problem(ctx, PR_2_FILE_ACL_ZERO, &pctx)) {
-			ext2fs_file_acl_block_set(&inode, 0);
+			ext2fs_file_acl_block_set(fs, &inode, 0);
 			inode_modified++;
 		} else
 			not_fixed++;
@@ -1368,11 +1368,11 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 			not_fixed++;
 	}
 
-	if (ext2fs_file_acl_block(&inode) &&
-	    ((ext2fs_file_acl_block(&inode) < fs->super->s_first_data_block) ||
-	     (ext2fs_file_acl_block(&inode) >= ext2fs_blocks_count(fs->super)))) {
+	if (ext2fs_file_acl_block(fs, &inode) &&
+	    ((ext2fs_file_acl_block(fs, &inode) < fs->super->s_first_data_block) ||
+	     (ext2fs_file_acl_block(fs, &inode) >= ext2fs_blocks_count(fs->super)))) {
 		if (fix_problem(ctx, PR_2_FILE_ACL_BAD, &pctx)) {
-			ext2fs_file_acl_block_set(&inode, 0);
+			ext2fs_file_acl_block_set(fs, &inode, 0);
 			inode_modified++;
 		} else
 			not_fixed++;

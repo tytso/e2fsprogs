@@ -114,16 +114,16 @@ void do_icheck(int argc, char **argv)
 
 		bw.inode = ino;
 
-		blk = ext2fs_file_acl_block(&inode);
+		blk = ext2fs_file_acl_block(current_fs, &inode);
 		if (blk) {
 			icheck_proc(current_fs, &blk, 0,
 				    0, 0, &bw);
 			if (bw.blocks_left == 0)
 				break;
-			ext2fs_file_acl_block_set(&inode, blk);
+			ext2fs_file_acl_block_set(current_fs, &inode, blk);
 		}
 
-		if (!ext2fs_inode_has_valid_blocks(&inode))
+		if (!ext2fs_inode_has_valid_blocks2(current_fs, &inode))
 			goto next;
 		/*
 		 * To handle filesystems touched by 0.3c extfs; can be

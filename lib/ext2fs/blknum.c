@@ -475,23 +475,24 @@ void ext2fs_bg_checksum_set(ext2_filsys fs, dgrp_t group, __u16 checksum)
 
 /*
  * Get the acl block of a file
- *
- * XXX Ignoring 64-bit file system flag - most places where this is
- * called don't have access to the fs struct, and the high bits should
- * be 0 in the non-64-bit case anyway.
  */
-blk64_t ext2fs_file_acl_block(const struct ext2_inode *inode)
+blk64_t ext2fs_file_acl_block(ext2_filsys fs, const struct ext2_inode *inode)
 {
-	return (inode->i_file_acl |
-		(__u64) inode->osd2.linux2.l_i_file_acl_high << 32);
+	blk64_t	blk = inode->i_file_acl;
+
+	if (fs && fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+		blk |= ((__u64) inode->osd2.linux2.l_i_file_acl_high) << 32;
+	return blk;
 }
 
 /*
  * Set the acl block of a file
  */
-void ext2fs_file_acl_block_set(struct ext2_inode *inode, blk64_t blk)
+void ext2fs_file_acl_block_set(ext2_filsys fs, struct ext2_inode *inode,
+			       blk64_t blk)
 {
 	inode->i_file_acl = blk;
-	inode->osd2.linux2.l_i_file_acl_high = (__u64) blk >> 32;
+	if (fs && fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+		inode->osd2.linux2.l_i_file_acl_high = (__u64) blk >> 32;
 }
 

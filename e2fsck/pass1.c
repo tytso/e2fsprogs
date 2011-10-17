@@ -1064,12 +1064,12 @@ void e2fsck_pass1(e2fsck_t ctx)
 		check_is_really_dir(ctx, &pctx, block_buf);
 
 		/*
-		 * ext2fs_inode_has_valid_blocks does not actually look
+		 * ext2fs_inode_has_valid_blocks2 does not actually look
 		 * at i_block[] values, so not endian-sensitive here.
 		 */
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL) &&
 		    LINUX_S_ISLNK(inode->i_mode) &&
-		    !ext2fs_inode_has_valid_blocks(inode) &&
+		    !ext2fs_inode_has_valid_blocks2(fs, inode) &&
 		    fix_problem(ctx, PR_1_FAST_SYMLINK_EXTENT_FL, &pctx)) {
 			inode->i_flags &= ~EXT4_EXTENTS_FL;
 			e2fsck_write_inode(ctx, ino, inode, "pass1");
@@ -1127,7 +1127,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    (inode->i_block[EXT2_IND_BLOCK] ||
 		     inode->i_block[EXT2_DIND_BLOCK] ||
 		     inode->i_block[EXT2_TIND_BLOCK] ||
-		     ext2fs_file_acl_block(inode))) {
+		     ext2fs_file_acl_block(fs, inode))) {
 			inodes_to_process[process_inode_count].ino = ino;
 			inodes_to_process[process_inode_count].inode = *inode;
 			process_inode_count++;
@@ -1309,8 +1309,13 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 	ret = (ib_a->inode.i_block[EXT2_IND_BLOCK] -
 	       ib_b->inode.i_block[EXT2_IND_BLOCK]);
 	if (ret == 0)
-		ret = ext2fs_file_acl_block(&(ib_a->inode)) -
-			ext2fs_file_acl_block(&ib_b->inode);
+		/*
+		 * We only call process_inodes() for non-extent
+		 * inodes, so it's OK to pass NULL to
+		 * ext2fs_file_acl_block() here.
+		 */
+		ret = ext2fs_file_acl_block(0, &(ib_a->inode)) -
+			ext2fs_file_acl_block(0, &(ib_b->inode));
 	if (ret == 0)
 		ret = ib_a->ino - ib_b->ino;
 	return ret;
@@ -1475,7 +1480,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	int		count;
 	region_t	region = 0;
 
-	blk = ext2fs_file_acl_block(inode);
+	blk = ext2fs_file_acl_block(fs, inode);
 	if (blk == 0)
 		return 0;
 
@@ -1550,7 +1555,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
 		goto clear_extattr;
 	header = (struct ext2_ext_attr_header *) block_buf;
-	pctx->blk = ext2fs_file_acl_block(inode);
+	pctx->blk = ext2fs_file_acl_block(fs, inode);
 	if (((ctx->ext_attr_ver == 1) &&
 	     (header->h_magic != EXT2_EXT_ATTR_MAGIC_v1)) ||
 	    ((ctx->ext_attr_ver == 2) &&
@@ -1638,7 +1643,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 clear_extattr:
 	if (region)
 		region_free(region);
-	ext2fs_file_acl_block_set(inode, 0);
+	ext2fs_file_acl_block_set(fs, inode, 0);
 	e2fsck_write_inode(ctx, ino, inode, "check_ext_attr");
 	return 0;
 }
@@ -1973,14 +1978,14 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
-	if (ext2fs_file_acl_block(inode) &&
+	if (ext2fs_file_acl_block(fs, inode) &&
 	    check_ext_attr(ctx, pctx, block_buf)) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			goto out;
 		pb.num_blocks++;
 	}
 
-	if (ext2fs_inode_has_valid_blocks(inode)) {
+	if (ext2fs_inode_has_valid_blocks2(fs, inode)) {
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
 		else

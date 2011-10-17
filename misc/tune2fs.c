@@ -1486,14 +1486,15 @@ static int inode_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 		 * Do we need to fix this ??
 		 */
 
-		if (ext2fs_file_acl_block(&inode) &&
+		if (ext2fs_file_acl_block(fs, &inode) &&
 		    ext2fs_test_block_bitmap2(bmap,
-					      ext2fs_file_acl_block(&inode))) {
-			blk = translate_block(ext2fs_file_acl_block(&inode));
+					ext2fs_file_acl_block(fs, &inode))) {
+			blk = translate_block(ext2fs_file_acl_block(fs,
+								    &inode));
 			if (!blk)
 				continue;
 
-			ext2fs_file_acl_block_set(&inode, blk);
+			ext2fs_file_acl_block_set(fs, &inode, blk);
 
 			/*
 			 * Write the inode to disk so that inode table
@@ -1504,7 +1505,7 @@ static int inode_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 				goto err_out;
 		}
 
-		if (!ext2fs_inode_has_valid_blocks(&inode))
+		if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 			continue;
 
 		retval = ext2fs_block_iterate3(fs, ino, 0, block_buf,
