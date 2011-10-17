@@ -1479,22 +1479,6 @@ _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 	return 0;
 }
 
-_INLINE_ errcode_t ext2fs_get_memalign(unsigned long size,
-				       unsigned long align, void *ptr)
-{
-	errcode_t retval;
-
-	if (align == 0)
-		align = 8;
-	retval = posix_memalign((void **) ptr, align, size);
-	if (retval) {
-		if (retval == ENOMEM)
-			return EXT2_ET_NO_MEMORY;
-		return retval;
-	}
-	return 0;
-}
-
 _INLINE_ errcode_t ext2fs_get_memzero(unsigned long size, void *ptr)
 {
 	void *pp;

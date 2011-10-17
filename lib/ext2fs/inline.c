@@ -31,3 +31,38 @@
 #define INCLUDE_INLINE_FUNCS
 #include "ext2fs.h"
 
+/*
+ * We used to define this as an inline, but since we are now using
+ * autoconf-defined #ifdef's, we need to export this as a
+ * library-provided function exclusively.
+ */
+errcode_t ext2fs_get_memalign(unsigned long size,
+			      unsigned long align, void *ptr)
+{
+	errcode_t retval;
+
+	if (align == 0)
+		align = 8;
+#ifdef HAVE_POSIX_MEMALIGN
+	retval = posix_memalign((void **) ptr, align, size);
+	if (retval) {
+		if (retval == ENOMEM)
+			return EXT2_ET_NO_MEMORY;
+		return retval;
+	}
+#else
+#ifdef HAVE_MEMALIGN
+	*ptr = memalign(align, size);
+	if (*ptr == NULL) {
+		if (errno)
+			return errno;
+		else
+			return EXT2_ET_NO_MEMORY;
+	}
+#else
+#error memalign or posix_memalign must be defined!
+#endif
+#endif
+	return 0;
+}
+
