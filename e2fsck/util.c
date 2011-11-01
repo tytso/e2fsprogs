@@ -47,19 +47,38 @@ extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
 
 void fatal_error(e2fsck_t ctx, const char *msg)
 {
+	ext2_filsys fs = ctx->fs;
+	int exit_value = FSCK_ERROR;
+
 	if (msg)
 		fprintf (stderr, "e2fsck: %s\n", msg);
-	if (ctx->fs && ctx->fs->io) {
+	if (!fs)
+		goto out;
+	if (fs->io) {
 		ext2fs_mmp_stop(ctx->fs);
 		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_CHANNEL)
 			io_channel_flush(ctx->fs->io);
 		else
 			fprintf(stderr, "e2fsck: io manager magic bad!\n");
 	}
+	if (ext2fs_test_changed(fs)) {
+		exit_value |= FSCK_NONDESTRUCT;
+		printf(_("\n%s: ***** FILE SYSTEM WAS MODIFIED *****\n"),
+			ctx->device_name);
+		if (ctx->mount_flags & EXT2_MF_ISROOT)
+			exit_value |= FSCK_REBOOT;
+	}
+	if (!ext2fs_test_valid(fs)) {
+		printf(_("\n%s: ********** WARNING: Filesystem still has "
+			 "errors **********\n\n"), ctx->device_name);
+		exit_value |= FSCK_UNCORRECTED;
+		exit_value &= ~FSCK_NONDESTRUCT;
+	}
+out:
 	ctx->flags |= E2F_FLAG_ABORT;
 	if (ctx->flags & E2F_FLAG_SETJMP_OK)
 		longjmp(ctx->abort_loc, 1);
-	exit(FSCK_ERROR);
+	exit(exit_value);
 }
 
 void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
