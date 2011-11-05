@@ -108,6 +108,8 @@ typedef int bool;
 
 #include "tdb.h"
 
+static TDB_DATA tdb_null;
+
 #ifndef u32
 #define u32 unsigned
 #endif
@@ -3057,8 +3059,6 @@ int tdb_printfreelist(struct tdb_context *tdb)
 }
 
 /* file: tdb.c */
-
-TDB_DATA tdb_null;
 
 /*
   non-blocking increment of the tdb sequence number if the tdb has been opened using

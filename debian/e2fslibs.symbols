@@ -515,7 +515,6 @@ libext2fs.so.2 e2fslibs #MINVER#
  qcow2_write_raw_image@Base 1.41.99
  set_undo_io_backing_manager@Base 1.41.0
  set_undo_io_backup_file@Base 1.41.0
- tdb_null@Base 1.40
  test_io_backing_manager@Base 1.37
  test_io_cb_read_blk64@Base 1.41.0
  test_io_cb_read_blk@Base 1.37
