@@ -285,6 +285,7 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
 	$(MAKE) -C ${stdbuilddir} all
 	$(MAKE) -C ${stdbuilddir}/e2fsck e2fsck.static
+	$(MAKE) -C ${stdbuilddir}/po update-gmo
 
 	( cd ${stdbuilddir}/doc && $(MAKE) libext2fs_abt.html )
 	( cd ${stdbuilddir}/lib/et && $(MAKE) com_err.info com_err_abt.html )
