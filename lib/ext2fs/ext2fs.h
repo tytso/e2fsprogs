@@ -604,7 +604,7 @@ typedef struct ext2_icount *ext2_icount_t;
 #define EXT2FS_NUM_B2C(fs, blks)	(((blks) + EXT2FS_CLUSTER_MASK(fs)) >> \
 					 (fs)->cluster_ratio_bits)
 
-#if defined(HAVE_STAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
+#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 typedef struct stat64 ext2fs_struct_stat;
 #else
 typedef struct stat ext2fs_struct_stat;
@@ -1697,7 +1697,7 @@ _INLINE_ int ext2fs_open_file(const char *pathname, int flags, mode_t mode)
 
 _INLINE_ int ext2fs_stat(const char *path, ext2fs_struct_stat *buf)
 {
-#if defined(HAVE_STAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
+#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 	return stat64(path, buf);
 #else
 	return stat(path, buf);
@@ -1706,7 +1706,7 @@ _INLINE_ int ext2fs_stat(const char *path, ext2fs_struct_stat *buf)
 
 _INLINE_ int ext2fs_fstat(int fd, ext2fs_struct_stat *buf)
 {
-#if defined(HAVE_STAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
+#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 	return fstat64(fd, buf);
 #else
 	return fstat(fd, buf);
