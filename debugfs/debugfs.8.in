@@ -210,6 +210,9 @@ option is given set the owner, group and permissions information on
 to match 
 .IR filespec .
 .TP
+.I dump_mmp
+Display the multiple-mount protection (mmp) field values.
+.TP
 .I dx_hash [-h hash_alg] [-s hash_seed] filename
 Calculate the directory hash of
 .IR filename .
@@ -484,6 +487,16 @@ has value
 The list of valid inode fields which can be set via this command 
 can be displayed by using the command:
 .B set_inode_field -l
+.TP
+.I set_mmp_value field value
+Modify the multiple-mount protection (mmp) data so that the
+mmp field
+.I field
+has value
+.I value.
+The list of valid mmp fields which can be set via this command
+can be displayed by using the command:
+.B set_mmp_value -l
 .TP
 .I set_super_value field value
 Set the superblock field
