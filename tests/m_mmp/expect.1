@@ -1,55 +1,55 @@
 Filesystem label=
 OS type: Linux
-Block size=2048 (log=1)
-Fragment size=2048 (log=1)
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
 Stride=0 blocks, Stripe width=0 blocks
-16384 inodes, 32768 blocks
-1638 blocks (5.00%) reserved for the super user
+65536 inodes, 65536 blocks
+3276 blocks (5.00%) reserved for the super user
 First data block=0
-Maximum filesystem blocks=33554432
+Maximum filesystem blocks=67108864
 2 block groups
-16384 blocks per group, 16384 fragments per group
-8192 inodes per group
+32768 blocks per group, 32768 fragments per group
+32768 inodes per group
 Superblock backups stored on blocks: 
-	16384
+	32768
 
 Allocating group tables: 0/21/2   done                            
 Writing inode tables: 0/21/2   done                            
 Multiple mount protection is enabled with update interval 5 seconds.
 Writing superblocks and filesystem accounting information: 0/21/2   done
 
-Filesystem features: ext_attr resize_inode dir_index filetype mmp sparse_super
+Filesystem features: ext_attr resize_inode dir_index filetype mmp sparse_super large_file
  
 Pass 1: Checking inodes, blocks, and sizes
 Pass 2: Checking directory structure
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
-test_filesys: 11/16384 files (0.0% non-contiguous), 1105/32768 blocks
+test_filesys: 11/65536 files (0.0% non-contiguous), 2093/65536 blocks
 Exit status is 0
 
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      ext_attr resize_inode dir_index filetype mmp sparse_super
+Filesystem features:      ext_attr resize_inode dir_index filetype mmp sparse_super large_file
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
 Filesystem OS type:       Linux
-Inode count:              16384
-Block count:              32768
-Reserved block count:     1638
-Free blocks:              31663
-Free inodes:              16373
+Inode count:              65536
+Block count:              65536
+Reserved block count:     3276
+Free blocks:              63443
+Free inodes:              65525
 First block:              0
-Block size:               2048
-Fragment size:            2048
-Reserved GDT blocks:      31
-Blocks per group:         16384
-Fragments per group:      16384
-Inodes per group:         8192
-Inode blocks per group:   512
+Block size:               4096
+Fragment size:            4096
+Reserved GDT blocks:      15
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         32768
+Inode blocks per group:   1024
 Mount count:              0
 Check interval:           15552000 (6 months)
 Reserved blocks uid:      0
@@ -57,23 +57,23 @@ Reserved blocks gid:      0
 First inode:              11
 Inode size:	          128
 Default directory hash:   half_md4
-MMP block number:         557
+MMP block number:         1049
 MMP update interval:      5
 
 
-Group 0: (Blocks 0-16383)
+Group 0: (Blocks 0-32767)
   Primary superblock at 0, Group descriptors at 1-1
-  Reserved GDT blocks at 2-32
-  Block bitmap at 33 (+33), Inode bitmap at 34 (+34)
-  Inode table at 35-546 (+35)
-  15826 free blocks, 8181 free inodes, 2 directories
-  Free blocks: 558-16383
-  Free inodes: 12-8192
-Group 1: (Blocks 16384-32767)
-  Backup superblock at 16384, Group descriptors at 16385-16385
-  Reserved GDT blocks at 16386-16416
-  Block bitmap at 16417 (+33), Inode bitmap at 16418 (+34)
-  Inode table at 16419-16930 (+35)
-  15837 free blocks, 8192 free inodes, 0 directories
-  Free blocks: 16931-32767
-  Free inodes: 8193-16384
+  Reserved GDT blocks at 2-16
+  Block bitmap at 17 (+17), Inode bitmap at 18 (+18)
+  Inode table at 19-1042 (+19)
+  31718 free blocks, 32757 free inodes, 2 directories
+  Free blocks: 1050-32767
+  Free inodes: 12-32768
+Group 1: (Blocks 32768-65535)
+  Backup superblock at 32768, Group descriptors at 32769-32769
+  Reserved GDT blocks at 32770-32784
+  Block bitmap at 32785 (+17), Inode bitmap at 32786 (+18)
+  Inode table at 32787-33810 (+19)
+  31725 free blocks, 32768 free inodes, 0 directories
+  Free blocks: 33811-65535
+  Free inodes: 32769-65536

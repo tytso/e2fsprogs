@@ -10,6 +10,6 @@ if [ $? == 0 ]; then
 	echo "skipped for tmpfs (no O_DIRECT support)"
 	return 0
 fi
-MKE2FS_OPTS="-O mmp"
+MKE2FS_OPTS="-b 4096 -O mmp"
 . $cmd_dir/run_mke2fs
 unset MKE2FS_DEVICE_SECTSIZE
