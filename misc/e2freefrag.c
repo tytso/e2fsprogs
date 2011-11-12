@@ -121,7 +121,7 @@ void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 				chunk_start_blk = blk;
 			}
 			used = ext2fs_fast_test_block_bitmap2(fs->block_map,
-							     chunk_start_blk);
+				chunk_start_blk >> fs->cluster_ratio_bits);
 			if (!used) {
 				last_chunk_size++;
 				chunk_free++;
