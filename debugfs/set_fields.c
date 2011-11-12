@@ -242,6 +242,9 @@ static struct field_set_info ext4_bg_fields[] = {
 	{ 0, 0, 0, 0 }
 };
 
+/* forward declaration */
+static struct field_set_info mmp_fields[];
+
 static int check_suffix(const char *field)
 {
 	int len = strlen(field);
@@ -561,6 +564,9 @@ static void print_possible_fields(struct field_set_info *fields)
 	} else if (fields == inode_fields) {
 		type = "Inode";
 		cmd = "set_inode";
+	} else if (fields == mmp_fields) {
+		type = "MMP";
+		cmd = "set_mmp_value";
 	} else {
 		type = "Block group descriptor";
 		cmd = "set_block_group";
@@ -767,6 +773,9 @@ void do_set_mmp_value(int argc, char *argv[])
 		print_possible_fields(mmp_fields);
 		return;
 	}
+
+	if (check_fs_open(argv[0]))
+		return;
 
 	if (current_fs->super->s_mmp_block == 0) {
 		com_err(argv[0], 0, "no MMP block allocated\n");

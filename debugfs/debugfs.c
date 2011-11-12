@@ -2165,11 +2165,15 @@ void do_punch(int argc, char *argv[])
 
 void do_dump_mmp(int argc, char *argv[])
 {
-	struct ext2_super_block *sb = current_fs->super;
+	struct ext2_super_block *sb;
 	struct mmp_struct *mmp_s;
 	time_t t;
 	errcode_t retval = 0;
 
+	if (check_fs_open(argv[0]))
+		return;
+
+	sb  = current_fs->super;
 	if (sb->s_mmp_block <= sb->s_first_data_block ||
 	    sb->s_mmp_block >= ext2fs_blocks_count(sb)) {
 		com_err(argv[0], EXT2_ET_MMP_BAD_BLOCK, "while dumping it.\n");
@@ -2203,6 +2207,7 @@ void do_dump_mmp(int argc, char *argv[])
 	fprintf(stdout, "time: %lld -- %s", mmp_s->mmp_time, ctime(&t));
 	fprintf(stdout, "node_name: %s\n", mmp_s->mmp_nodename);
 	fprintf(stdout, "device_name: %s\n", mmp_s->mmp_bdevname);
+	fprintf(stdout, "magic: 0x%x\n", mmp_s->mmp_magic);
 }
 
 static int source_file(const char *cmd_file, int sci_idx)
