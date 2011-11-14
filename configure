@@ -808,7 +808,7 @@ enable_blkid_debug
 enable_testio_debug
 enable_libuuid
 enable_libblkid
-enable_libquota
+enable_quota
 enable_debugfs
 enable_imager
 enable_resizer
@@ -1462,7 +1462,7 @@ Optional Features:
   --disable-testio-debug  disable the use of the test I/O manager for debugging
   --disable-libuuid	  do not build private uuid library
   --disable-libblkid	  do not build private blkid library
-  --disable-libquota	  do not build private quota library
+  --enable-libquota	  enable quota support
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
@@ -5204,97 +5204,32 @@ $as_echo "no" >&6; }
         fi
 
 fi
-LIBQUOTA=
-DEPLIBQUOTA=
-STATIC_LIBQUOTA=
-DEPSTATIC_LIBQUOTA=
-PROFILED_LIBQUOTA=
-DEPPROFILED_LIBQUOTA=
-QUOTA_CMT=
-# Check whether --enable-libquota was given.
-if test "${enable_libquota+set}" = set; then :
-  enableval=$enable_libquota; if test "$enableval" = "no"
+
+# Check whether --enable-quota was given.
+if test "${enable_quota+set}" = set; then :
+  enableval=$enable_quota; if test "$enableval" = "no"
 then
-	if test -z "$PKG_CONFIG"; then
-		as_fn_error "pkg-config not installed; please install it." "$LINENO" 5
-	fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support" >&5
+$as_echo "Disabling quota support" >&6; }
+else
+	$as_echo "#define CONFIG_QUOTA 1" >>confdefs.h
 
-	as_ac_Lib=`$as_echo "ac_cv_lib_quota_LIBQUOTA=\`$PKG_CONFIG --libs quota\`;
-		 STATIC_LIBQUOTA=\`$PKG_CONFIG --static --libs quota\`" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBQUOTA=\`$PKG_CONFIG --libs quota\`;
-		 STATIC_LIBQUOTA=\`$PKG_CONFIG --static --libs quota\` in -lquota" >&5
-$as_echo_n "checking for LIBQUOTA=\`$PKG_CONFIG --libs quota\`;
-		 STATIC_LIBQUOTA=\`$PKG_CONFIG --static --libs quota\` in -lquota... " >&6; }
-if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lquota  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char LIBQUOTA=`$PKG_CONFIG --libs quota`;
-		 STATIC_LIBQUOTA=`$PKG_CONFIG --static --libs quota` ();
-int
-main ()
-{
-return LIBQUOTA=`$PKG_CONFIG --libs quota`;
-		 STATIC_LIBQUOTA=`$PKG_CONFIG --static --libs quota` ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  eval "$as_ac_Lib=yes"
-else
-  eval "$as_ac_Lib=no"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-eval ac_res=\$$as_ac_Lib
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-eval as_val=\$$as_ac_Lib
-   if test "x$as_val" = x""yes; then :
-  as_fn_error "external quota library not found" "$LINENO" 5
-else
-  $LIBQUOTA
-fi
-
-	QUOTA_CMT=#
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling private quota library" >&5
-$as_echo "Disabling private quota library" >&6; }
-else
-	LIBQUOTA='$(LIB)/libquota'$LIB_EXT
-	DEPLIBQUOTA=$LIBQUOTA
-	STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
-	DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
-	PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
-	DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private quota library" >&5
-$as_echo "Enabling private quota library" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling quota support" >&5
+$as_echo "Enabling quota support" >&6; }
 fi
 
 else
-  LIBQUOTA='$(LIB)/libquota'$LIB_EXT
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support by default" >&5
+$as_echo "Disabling quota support by default" >&6; }
+
+fi
+
+LIBQUOTA='$(LIB)/libquota'$LIB_EXT
 DEPLIBQUOTA=$LIBQUOTA
 STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
 DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
 PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
 DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private quota library by default" >&5
-$as_echo "Enabling private quota library by default" >&6; }
-
-fi
-
 
 
 

@@ -14,10 +14,6 @@ called 'bigalloc', which must be enabled when the file system is
 initially formatted.  It is not backwards compatible with older
 kernels.
 
-This release of e2fsprogs has support for integrated feature, where
-the quota files are hidden system files that are automatically
-maintained by e2fsck.
-
 Added support for the Multi-Mount Protection (MMP) feature.
 
 Fix a bug in e2fsck where if the free blocks and inodes counts are
@@ -201,6 +197,11 @@ Updated/clarified man pages.  (Addresses Debian Bugs: #639411,
 
 Programming notes
 -----------------
+
+Initial support for quota as an integrated feature, where the quota
+files are hidden system files that are automatically maintained by
+e2fsck is present, although disabled by default.  It must be enabled
+by using the configure option --enable-quota.
 
 Reserved the on-disk fields for the metadata checksum and snapshot
 features, which are currently in development.

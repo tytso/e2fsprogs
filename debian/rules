@@ -129,7 +129,7 @@ endif
 BF_CFLAGS = -Os -fomit-frame-pointer
 
 COMMON_CONF_FLAGS = --disable-e2initrd-helper --enable-elf-shlibs \
-	--infodir=/usr/share/info
+	--enable-quota --infodir=/usr/share/info
 ifeq ($(UTIL_LINUX_NG),yes)
 COMMON_CONF_FLAGS += --disable-fsck --disable-libblkid \
 			--disable-libuuid --disable-uuidd
