@@ -402,8 +402,7 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 		if (ino == 0)
 			break;
 		if (inode.i_links_count) {
-			/* Convert i_blocks to # of 1k blocks */
-			space = (ext2fs_inode_i_blocks(fs, &inode) + 1) >> 1;
+			space = ext2fs_inode_i_blocks(fs, &inode) << 9;
 			quota_data_add(qctx, &inode, ino, space);
 			quota_data_inodes(qctx, &inode, ino, +1);
 		}
