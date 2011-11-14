@@ -700,7 +700,6 @@ err:
 void handle_quota_options(ext2_filsys fs)
 {
 	quota_ctx_t qctx;
-	errcode_t retval;
 	ext2_ino_t qf_ino;
 
 	if (!usrquota && !grpquota)
@@ -712,15 +711,33 @@ void handle_quota_options(ext2_filsys fs)
 	if (usrquota == QOPT_ENABLE || grpquota == QOPT_ENABLE)
 		quota_compute_usage(qctx);
 
-	if (usrquota == QOPT_ENABLE)
-		quota_write_inode(qctx, USRQUOTA);
-	else if (usrquota == QOPT_DISABLE)
+	if (usrquota == QOPT_ENABLE && !fs->super->s_usr_quota_inum) {
+		if ((qf_ino = quota_file_exists(fs, USRQUOTA,
+						QFMT_VFS_V1)) > 0) {
+			if (quota_update_inode(qctx, qf_ino, USRQUOTA) == 0)
+				quota_set_sb_inum(fs, qf_ino, USRQUOTA);
+			else
+				quota_write_inode(qctx, USRQUOTA);
+		} else {
+			quota_write_inode(qctx, USRQUOTA);
+		}
+	} else if (usrquota == QOPT_DISABLE) {
 		quota_remove_inode(fs, USRQUOTA);
+	}
 
-	if (grpquota == QOPT_ENABLE)
-		quota_write_inode(qctx, GRPQUOTA);
-	else if (grpquota == QOPT_DISABLE)
+	if (grpquota == QOPT_ENABLE && !fs->super->s_grp_quota_inum) {
+		if ((qf_ino = quota_file_exists(fs, GRPQUOTA,
+						QFMT_VFS_V1)) > 0) {
+			if (quota_update_inode(qctx, qf_ino, GRPQUOTA) == 0)
+				quota_set_sb_inum(fs, qf_ino, GRPQUOTA);
+			else
+				quota_write_inode(qctx, GRPQUOTA);
+		} else {
+			quota_write_inode(qctx, GRPQUOTA);
+		}
+	} else if (grpquota == QOPT_DISABLE) {
 		quota_remove_inode(fs, GRPQUOTA);
+	}
 
 	quota_release_context(&qctx);
 
