@@ -95,6 +95,7 @@ int	journal_flags;
 int	lazy_itable_init;
 char	*bad_blocks_filename;
 __u32	fs_stride;
+int	quotatype = -1;  /* Initialize both user and group quotas by default */
 
 struct ext2_super_block fs_param;
 char *fs_uuid = NULL;
@@ -793,6 +794,23 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			discard = 1;
 		} else if (!strcmp(token, "nodiscard")) {
 			discard = 0;
+		} else if (!strcmp(token, "quotatype")) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			if (!strncmp(arg, "usr", 3)) {
+				quotatype = 0;
+			} else if (!strncmp(arg, "grp", 3)) {
+				quotatype = 1;
+			} else {
+				fprintf(stderr,
+					_("Invalid quotatype parameter: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
 		} else {
 			r_usage++;
 			badopt = token;
@@ -811,7 +829,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
 			"\ttest_fs\n"
 			"\tdiscard\n"
-			"\tnodiscard\n\n"),
+			"\tnodiscard\n"
+			"\tquotatype=<usr OR grp>\n\n"),
 			badopt ? badopt : "");
 		free(buf);
 		exit(1);
@@ -2186,8 +2205,7 @@ static int create_quota_inodes(ext2_filsys fs)
 
 	quota_init_context(&qctx, fs, -1);
 	quota_compute_usage(qctx);
-	quota_write_inode(qctx, USRQUOTA);
-	quota_write_inode(qctx, GRPQUOTA);
+	quota_write_inode(qctx, quotatype);
 	quota_release_context(&qctx);
 
 	return 0;

@@ -266,6 +266,13 @@ as default.
 .TP
 .BI nodiscard
 Do not attempt to discard blocks at mkfs time.
+.TP
+.BI quotatype
+Specify which quota type ('usr' or 'grp') is to be initialized. This
+option has any effect only if
+.B quota
+feature is set. Without this extended option, the default behavior is to
+initialize both user and group quotas.
 .RE
 .TP
 .BI \-f " fragment-size"
