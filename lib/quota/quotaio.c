@@ -232,7 +232,7 @@ errcode_t quota_file_open(struct quota_handle *h, ext2_filsys fs,
 	log_debug("Opening quota ino=%lu, type=%d", qf_ino, type);
 	err = ext2fs_file_open(fs, qf_ino, flags, &e2_file);
 	if (err) {
-		log_err("ext2fs_file_open failed: %d", err);
+		log_err("ext2fs_file_open failed: %s", error_message(err));
 		return err;
 	}
 	h->qh_qf.e2_file = e2_file;
