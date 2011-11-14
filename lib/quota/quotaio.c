@@ -49,6 +49,36 @@ const char *type2name(int type)
 	return extensions[type];
 }
 
+/**
+ * Creates a quota file name for given type and format.
+ */
+const char *quota_get_qf_name(int type, int fmt, char *buf)
+{
+	if (!buf)
+		return NULL;
+	snprintf(buf, PATH_MAX, "%s.%s",
+		 basenames[fmt], extensions[type]);
+
+	return buf;
+}
+
+const char *quota_get_qf_path(const char *mntpt, int qtype, int fmt,
+			      char *path_buf, size_t path_buf_size)
+{
+	struct stat	qf_stat;
+	char qf_name[PATH_MAX] = {0};
+
+	if (!mntpt || !path_buf || !path_buf_size)
+		return NULL;
+
+	strncpy(path_buf, mntpt, path_buf_size);
+	strncat(path_buf, "/", 1);
+	strncat(path_buf, quota_get_qf_name(qtype, fmt, qf_name),
+		path_buf_size - strlen(path_buf));
+
+	return path_buf;
+}
+
 /*
  * Set grace time if needed
  */
@@ -102,12 +132,14 @@ static int compute_num_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
 	return 0;
 }
 
-void truncate_quota_inode(ext2_filsys fs, ext2_ino_t ino)
+errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct ext2_inode inode;
+	errcode_t err;
+	int i;
 
-	if (ext2fs_read_inode(fs, ino, &inode))
-		return;
+	if ((err = ext2fs_read_inode(fs, ino, &inode)))
+		return err;
 
 	inode.i_dtime = fs->now ? fs->now : time(0);
 	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
@@ -117,7 +149,8 @@ void truncate_quota_inode(ext2_filsys fs, ext2_ino_t ino)
 			      release_blocks_proc, NULL);
 
 	memset(&inode, 0, sizeof(struct ext2_inode));
-	ext2fs_write_inode(fs, ino, &inode);
+	err = ext2fs_write_inode(fs, ino, &inode);
+	return err;
 }
 
 static ext2_off64_t compute_inode_size(ext2_filsys fs, ext2_ino_t ino)
@@ -183,15 +216,14 @@ static unsigned int quota_read_nomount(struct quota_file *qf,
 /*
  * Detect quota format and initialize quota IO
  */
-struct quota_handle *init_io(ext2_filsys fs, const char *mntpt, int type,
-			     int fmt, int flags)
+errcode_t quota_file_open(struct quota_handle *h, ext2_filsys fs,
+			  int type, int fmt, int flags)
 {
 	log_err("Not Implemented.", "");
-	BUG_ON(1);
-	return NULL;
+	return -1;
 }
 
-static errcode_t init_new_quota_inode(ext2_filsys fs, ext2_ino_t ino)
+static errcode_t quota_inode_init_new(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct ext2_inode inode;
 	errcode_t err = 0;
@@ -203,7 +235,7 @@ static errcode_t init_new_quota_inode(ext2_filsys fs, ext2_ino_t ino)
 	}
 
 	if (EXT2_I_SIZE(&inode))
-		truncate_quota_inode(fs, ino);
+		quota_inode_truncate(fs, ino);
 
 	memset(&inode, 0, sizeof(struct ext2_inode));
 	ext2fs_iblk_set(fs, &inode, 0);
@@ -227,7 +259,7 @@ static errcode_t init_new_quota_inode(ext2_filsys fs, ext2_ino_t ino)
 /*
  * Create new quotafile of specified format on given filesystem
  */
-int new_io(struct quota_handle *h, ext2_filsys fs, int type, int fmt)
+errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs, int type, int fmt)
 {
 	ext2_file_t e2_file;
 	int err;
@@ -242,12 +274,13 @@ int new_io(struct quota_handle *h, ext2_filsys fs, int type, int fmt)
 	else if (type == GRPQUOTA)
 		qf_inum = EXT4_GRP_QUOTA_INO;
 	else
-		BUG_ON(1);
+		return -1;
+
 	err = ext2fs_read_bitmaps(fs);
 	if (err)
 		goto out_err;
 
-	err = init_new_quota_inode(fs, qf_inum);
+	err = quota_inode_init_new(fs, qf_inum);
 	if (err) {
 		log_err("init_new_quota_inode failed", "");
 		goto out_err;
@@ -283,7 +316,7 @@ out_err1:
 out_err:
 
 	if (qf_inum)
-		truncate_quota_inode(fs, qf_inum);
+		quota_inode_truncate(fs, qf_inum);
 
 	return -1;
 }
@@ -291,7 +324,7 @@ out_err:
 /*
  * Close quotafile and release handle
  */
-int end_io(struct quota_handle *h)
+errcode_t quota_file_close(struct quota_handle *h)
 {
 	if (h->qh_io_flags & IOFL_INFODIRTY) {
 		if (h->qh_ops->write_info && h->qh_ops->write_info(h) < 0)
@@ -316,9 +349,13 @@ int end_io(struct quota_handle *h)
  */
 struct dquot *get_empty_dquot(void)
 {
-	struct dquot *dquot = smalloc(sizeof(struct dquot));
+	struct dquot *dquot;
 
-	memset(dquot, 0, sizeof(*dquot));
+	if (ext2fs_get_memzero(sizeof(struct dquot), &dquot)) {
+		log_err("Failed to allocate dquot", "");
+		return NULL;
+	}
+
 	dquot->dq_id = -1;
 	return dquot;
 }

@@ -2184,13 +2184,13 @@ static int create_quota_inodes(ext2_filsys fs)
 {
 	quota_ctx_t qctx;
 
-	init_quota_context(&qctx, fs, -1);
-	compute_quota(qctx, -1);
-	write_quota_inode(qctx, USRQUOTA);
-	write_quota_inode(qctx, GRPQUOTA);
-	release_quota_context(&qctx);
+	quota_init_context(&qctx, fs, -1);
+	quota_compute_usage(qctx);
+	quota_write_inode(qctx, USRQUOTA);
+	quota_write_inode(qctx, GRPQUOTA);
+	quota_release_context(&qctx);
 
-	return;
+	return 0;
 }
 
 int main (int argc, char *argv[])

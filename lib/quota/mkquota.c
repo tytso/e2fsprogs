@@ -49,7 +49,7 @@ static void print_inode(struct ext2_inode *inode)
 	return;
 }
 
-int is_quota_on(ext2_filsys fs, int type)
+int quota_is_on(ext2_filsys fs, int type)
 {
 	char tmp[1024];
 	qid_t id = (type == USRQUOTA) ? getuid() : getgid();
@@ -65,7 +65,7 @@ int is_quota_on(ext2_filsys fs, int type)
  * Returns 0 if not able to find the quota file, otherwise returns its
  * inode number.
  */
-int quota_file_exists(ext2_filsys fs, int qtype)
+int quota_file_exists(ext2_filsys fs, int qtype, int fmt)
 {
 	char qf_name[256];
 	errcode_t ret;
@@ -74,7 +74,7 @@ int quota_file_exists(ext2_filsys fs, int qtype)
 	if (qtype >= MAXQUOTAS)
 		return -EINVAL;
 
-	snprintf(qf_name, sizeof(qf_name), "aquota.%s", type2name(qtype));
+	quota_get_qf_name(qtype, fmt, qf_name);
 
 	ret = ext2fs_lookup(fs, EXT2_ROOT_INO, qf_name, strlen(qf_name), 0,
 			    &ino);
@@ -87,7 +87,7 @@ int quota_file_exists(ext2_filsys fs, int qtype)
 /*
  * Set the value for reserved quota inode number field in superblock.
  */
-void set_sb_quota_inum(ext2_filsys fs, ext2_ino_t ino, int qtype)
+void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, int qtype)
 {
 	ext2_ino_t *inump;
 
@@ -100,17 +100,17 @@ void set_sb_quota_inum(ext2_filsys fs, ext2_ino_t ino, int qtype)
 	ext2fs_mark_super_dirty(fs);
 }
 
-errcode_t remove_quota_inode(ext2_filsys fs, int qtype)
+errcode_t quota_remove_inode(ext2_filsys fs, int qtype)
 {
 	ext2_ino_t qf_ino;
 
 	ext2fs_read_bitmaps(fs);
 	qf_ino = (qtype == USRQUOTA) ? fs->super->s_usr_quota_inum :
 		fs->super->s_grp_quota_inum;
-	set_sb_quota_inum(fs, 0, qtype);
+	quota_set_sb_inum(fs, 0, qtype);
 	/* Truncate the inode only if its a reserved one. */
 	if (qf_ino < EXT2_FIRST_INODE(fs->super))
-		truncate_quota_inode(fs, qf_ino);
+		quota_inode_truncate(fs, qf_ino);
 
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_write_bitmaps(fs);
@@ -132,7 +132,7 @@ static void write_dquots(dict_t *dict, struct quota_handle *qh)
 	}
 }
 
-errcode_t write_quota_inode(quota_ctx_t qctx, int qtype)
+errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 {
 	int		retval = 0, i;
 	dict_t		*dict;
@@ -144,7 +144,12 @@ errcode_t write_quota_inode(quota_ctx_t qctx, int qtype)
 		return 0;
 
 	fs = qctx->fs;
-	h = smalloc(sizeof(struct quota_handle));
+	retval = ext2fs_get_mem(sizeof(struct quota_handle), &h);
+	if (retval) {
+		log_err("Unable to allocate quota handle", "");
+		goto out;
+	}
+
 	ext2fs_read_bitmaps(fs);
 
 	for (i = 0; i < MAXQUOTAS; i++) {
@@ -155,32 +160,34 @@ errcode_t write_quota_inode(quota_ctx_t qctx, int qtype)
 		if (!dict)
 			continue;
 
-		retval = new_io(h, fs, i, fmt);
+		retval = quota_file_create(h, fs, i, fmt);
 		if (retval < 0) {
 			log_err("Cannot initialize io on quotafile", "");
 			continue;
 		}
 
 		write_dquots(dict, h);
-		retval = end_io(h);
+		retval = quota_file_close(h);
 		if (retval < 0) {
 			log_err("Cannot finish IO on new quotafile: %s",
 				strerror(errno));
 			if (h->qh_qf.e2_file)
 				ext2fs_file_close(h->qh_qf.e2_file);
-			truncate_quota_inode(fs, h->qh_qf.ino);
+			quota_inode_truncate(fs, h->qh_qf.ino);
 			continue;
 		}
 
 		/* Set quota inode numbers in superblock. */
-		set_sb_quota_inum(fs, h->qh_qf.ino, i);
+		quota_set_sb_inum(fs, h->qh_qf.ino, i);
 		ext2fs_mark_super_dirty(fs);
 		ext2fs_mark_bb_dirty(fs);
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	}
 
 	ext2fs_write_bitmaps(fs);
-	free(h);
+out:
+	if (h)
+		ext2fs_free_mem(&h);
 	return retval;
 }
 
@@ -198,17 +205,11 @@ static int dict_uint_cmp(const void *a, const void *b)
 	return c - d;
 }
 
-static qid_t get_qid(struct ext2_inode *inode, int qtype)
+static inline qid_t get_qid(struct ext2_inode *inode, int qtype)
 {
-	switch (qtype) {
-	case USRQUOTA:
+	if (qtype == USRQUOTA)
 		return inode_uid(*inode);
-	case GRPQUOTA:
-		return inode_gid(*inode);
-	default:
-		log_err("Invalid quota type: %d", qtype);
-		BUG_ON(1);
-	}
+	return inode_gid(*inode);
 }
 
 static void quota_dnode_free(dnode_t *node,
@@ -216,25 +217,34 @@ static void quota_dnode_free(dnode_t *node,
 {
 	void *ptr = node ? dnode_get(node) : 0;
 
-	free(ptr);
+	ext2fs_free_mem(&ptr);
 	free(node);
 }
 
 /*
- * Called in Pass #1 to set up the quota tracking data structures.
+ * Set up the quota tracking data structures.
  */
-void init_quota_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
+errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 {
-	int	i;
+	int	i, err = 0;
 	dict_t	*dict;
 	quota_ctx_t ctx;
 
-	ctx = (quota_ctx_t)smalloc(sizeof(struct quota_ctx));
+	err = ext2fs_get_mem(sizeof(struct quota_ctx), &ctx);
+	if (err) {
+		log_err("Failed to allocate quota context", "");
+		return err;
+	}
+
 	memset(ctx, 0, sizeof(struct quota_ctx));
 	for (i = 0; i < MAXQUOTAS; i++) {
 		if ((qtype != -1) && (i != qtype))
 			continue;
-		dict = (dict_t *)smalloc(sizeof(dict_t));
+		err = ext2fs_get_mem(sizeof(dict_t), &dict);
+		if (err) {
+			log_err("Failed to allocate dictionary", "");
+			return err;
+		}
 		ctx->quota_dict[i] = dict;
 		dict_init(dict, DICTCOUNT_T_MAX, dict_uint_cmp);
 		dict_set_allocator(dict, NULL, quota_dnode_free, NULL);
@@ -242,9 +252,10 @@ void init_quota_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 
 	ctx->fs = fs;
 	*qctx = ctx;
+	return 0;
 }
 
-void release_quota_context(quota_ctx_t *qctx)
+void quota_release_context(quota_ctx_t *qctx)
 {
 	dict_t	*dict;
 	int	i;
@@ -275,7 +286,10 @@ static struct dquot *get_dq(dict_t *dict, __u32 key)
 	if (n)
 		dq = dnode_get(n);
 	else {
-		dq = smalloc(sizeof(struct dquot));
+		if (ext2fs_get_mem(sizeof(struct dquot), &dq)) {
+			log_err("Unable to allocate dquot", "");
+			return NULL;
+		}
 		memset(dq, 0, sizeof(struct dquot));
 		dict_alloc_insert(dict, UINT_TO_VOIDPTR(key), dq);
 	}
@@ -303,7 +317,8 @@ void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
 		dict = qctx->quota_dict[i];
 		if (dict) {
 			dq = get_dq(dict, get_qid(inode, i));
-			dq->dq_dqb.dqb_curspace += space;
+			if (dq)
+				dq->dq_dqb.dqb_curspace += space;
 		}
 	}
 }
@@ -358,7 +373,7 @@ void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode,
 	}
 }
 
-errcode_t compute_quota(quota_ctx_t qctx, int qtype)
+errcode_t quota_compute_usage(quota_ctx_t qctx)
 {
 	ext2_filsys fs;
 	ext2_ino_t ino;

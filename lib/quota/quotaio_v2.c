@@ -197,8 +197,8 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 
 	if (ext2fs_le32_to_cpu(dqh.dqh_magic) != file_magics[type]) {
 		if (ext2fs_be32_to_cpu(dqh.dqh_magic) == file_magics[type])
-			log_fatal(3, "Your quota file is stored in wrong "
-				  "endianity.", "");
+			log_err("Your quota file is stored in wrong "
+				"endianity.", "");
 		return 0;
 	}
 	if (ext2fs_le32_to_cpu(dqh.dqh_version) > known_versions[type])
@@ -214,7 +214,6 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 static int v2_init_io(struct quota_handle *h)
 {
 	log_err("Not Implemented.", "");
-	BUG_ON(1);
 	return 0;
 }
 
@@ -228,7 +227,8 @@ static int v2_new_io(struct quota_handle *h)
 	struct v2_disk_dqinfo ddqinfo;
 	int version = 1;
 
-	BUG_ON(h->qh_fmt != QFMT_VFS_V1);
+	if (h->qh_fmt != QFMT_VFS_V1)
+		return -1;
 
 	/* Write basic quota header */
 	ddqheader.dqh_magic = ext2fs_cpu_to_le32(file_magics[h->qh_type]);
@@ -272,8 +272,7 @@ static int v2_write_info(struct quota_handle *h)
 }
 
 /*
- * Read dquot (either from disk or from kernel)
- * User can use errno to detect errstr when NULL is returned
+ * Read dquot from disk
  */
 static struct dquot *v2_read_dquot(struct quota_handle *h, qid_t id)
 {
@@ -310,6 +309,5 @@ static int v2_scan_dquots(struct quota_handle *h,
 static int v2_report(struct quota_handle *h, int verbose)
 {
 	log_err("Not Implemented.", "");
-	BUG_ON(1);
-	return 0;
+	return -1;
 }

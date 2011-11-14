@@ -18,8 +18,18 @@
 
 typedef char *dqbuf_t;
 
-#define getdqbuf()		smalloc(QT_BLKSIZE)
-#define freedqbuf(buf)		free(buf)
+#define freedqbuf(buf)		ext2fs_free_mem(&buf)
+
+static inline dqbuf_t getdqbuf(void)
+{
+	dqbuf_t buf;
+	if (ext2fs_get_memzero(QT_BLKSIZE, &buf)) {
+		log_err("Failed to allocate dqbuf", "");
+		return NULL;
+	}
+
+	return buf;
+}
 
 /* Is given dquot empty? */
 int qtree_entry_unused(struct qtree_mem_dqinfo *info, char *disk)
@@ -51,7 +61,7 @@ static void read_blk(struct quota_handle *h, uint blk, dqbuf_t buf)
 	err = h->e2fs_read(&h->qh_qf, blk << QT_BLKSIZE_BITS, buf,
 			QT_BLKSIZE);
 	if (err < 0)
-		log_fatal(2, "Cannot read block %u: %s", blk, strerror(errno));
+		log_err("Cannot read block %u: %s", blk, strerror(errno));
 	else if (err != QT_BLKSIZE)
 		memset(buf + err, 0, QT_BLKSIZE - err);
 }
@@ -64,8 +74,7 @@ static int write_blk(struct quota_handle *h, uint blk, dqbuf_t buf)
 	err = h->e2fs_write(&h->qh_qf, blk << QT_BLKSIZE_BITS, buf,
 			QT_BLKSIZE);
 	if (err < 0 && errno != ENOSPC)
-		log_fatal(2, "Cannot write block (%u): %s",
-			  blk, strerror(errno));
+		log_err("Cannot write block (%u): %s", blk, strerror(errno));
 	if (err != QT_BLKSIZE)
 		return -ENOSPC;
 	return 0;
@@ -78,6 +87,9 @@ static int get_free_dqblk(struct quota_handle *h)
 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
 	int blk;
+
+	if (!buf)
+		return -ENOMEM;
 
 	if (info->dqi_free_blk) {
 		blk = info->dqi_free_blk;
@@ -122,6 +134,9 @@ static void remove_free_dqentry(struct quota_handle *h, dqbuf_t buf, uint blk)
 
 		ext2fs_le32_to_cpu(dh->dqdh_prev_free);
 
+	if (!tmpbuf)
+		return;
+
 	if (nextblk) {
 		read_blk(h, nextblk, tmpbuf);
 		((struct qt_disk_dqdbheader *)tmpbuf)->dqdh_prev_free =
@@ -150,6 +165,9 @@ static void insert_free_dqentry(struct quota_handle *h, dqbuf_t buf, uint blk)
 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
 
+	if (!tmpbuf)
+		return;
+
 	dh->dqdh_next_free = ext2fs_cpu_to_le32(info->dqi_free_entry);
 	dh->dqdh_prev_free = ext2fs_cpu_to_le32(0);
 	write_blk(h, blk, buf);
@@ -176,6 +194,11 @@ static uint find_free_dqentry(struct quota_handle *h, struct dquot *dquot,
 
 	*err = 0;
 	buf = getdqbuf();
+	if (!buf) {
+		*err = -ENOMEM;
+		return 0;
+	}
+
 	dh = (struct qt_disk_dqdbheader *)buf;
 	if (info->dqi_free_entry) {
 		blk = info->dqi_free_entry;
@@ -207,8 +230,8 @@ static uint find_free_dqentry(struct quota_handle *h, struct dquot *dquot,
 		ddquot += info->dqi_entry_size;
 
 	if (i == qtree_dqstr_in_blk(info))
-		log_fatal(2, "find_free_dqentry(): Data block full but it "
-			     "shouldn't.", "");
+		log_err("find_free_dqentry(): Data block full but it "
+			"shouldn't.", "");
 
 	write_blk(h, blk, buf);
 	dquot->dq_dqb.u.v2_mdqb.dqb_off =
@@ -230,6 +253,9 @@ static int do_insert_tree(struct quota_handle *h, struct dquot *dquot,
 
 	log_debug("inserting in tree: treeblk=%u, depth=%d", *treeblk, depth);
 	buf = getdqbuf();
+	if (!buf)
+		return -ENOMEM;
+
 	if (!*treeblk) {
 		ret = get_free_dqblk(h);
 		if (ret < 0)
@@ -247,9 +273,9 @@ static int do_insert_tree(struct quota_handle *h, struct dquot *dquot,
 		newson = 1;
 	if (depth == QT_TREEDEPTH - 1) {
 		if (newblk)
-			log_fatal(2, "Inserting already present quota entry "
-				     "(block %u).",
-				  ref[get_index(dquot->dq_id, depth)]);
+			log_err("Inserting already present quota entry "
+				"(block %u).",
+				ref[get_index(dquot->dq_id, depth)]);
 		newblk = find_free_dqentry(h, dquot, &ret);
 	} else {
 		ret = do_insert_tree(h, dquot, &newblk, depth + 1);
@@ -274,21 +300,28 @@ static void dq_insert_tree(struct quota_handle *h, struct dquot *dquot)
 	uint tmp = QT_TREEOFF;
 
 	if (do_insert_tree(h, dquot, &tmp, 0) < 0)
-		log_fatal(2, "Cannot write quota (id %u): %s",
-			  (uint) dquot->dq_id, strerror(errno));
+		log_err("Cannot write quota (id %u): %s",
+			(uint) dquot->dq_id, strerror(errno));
 }
 
 /* Write dquot to file */
 void qtree_write_dquot(struct dquot *dquot)
 {
 	ssize_t ret;
+	char *ddquot;
 	struct quota_handle *h = dquot->dq_h;
 	struct qtree_mem_dqinfo *info =
 			&dquot->dq_h->qh_info.u.v2_mdqi.dqi_qtree;
 	log_debug("writing ddquot 1: off=%llu, info->dqi_entry_size=%u",
 			dquot->dq_dqb.u.v2_mdqb.dqb_off,
 			info->dqi_entry_size);
-	char *ddquot = (char *)smalloc(info->dqi_entry_size);
+	ret = ext2fs_get_mem(info->dqi_entry_size, &ddquot);
+	if (ret) {
+		errno = ENOMEM;
+		log_err("Quota write failed (id %u): %s",
+			(uint)dquot->dq_id, strerror(errno));
+		return;
+	}
 
 	if (!dquot->dq_dqb.u.v2_mdqb.dqb_off)
 		dq_insert_tree(dquot->dq_h, dquot);
@@ -302,9 +335,10 @@ void qtree_write_dquot(struct dquot *dquot)
 	if (ret != info->dqi_entry_size) {
 		if (ret > 0)
 			errno = ENOSPC;
-		log_fatal(2, "Quota write failed (id %u): %s",
-			  (uint)dquot->dq_id, strerror(errno));
+		log_err("Quota write failed (id %u): %s",
+			(uint)dquot->dq_id, strerror(errno));
 	}
+	ext2fs_free_mem(&ddquot);
 }
 
 /* Free dquot entry in data block */
@@ -314,9 +348,12 @@ static void free_dqentry(struct quota_handle *h, struct dquot *dquot, uint blk)
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
 	dqbuf_t buf = getdqbuf();
 
+	if (!buf)
+		return;
+
 	if (dquot->dq_dqb.u.v2_mdqb.dqb_off >> QT_BLKSIZE_BITS != blk)
-		log_fatal(2, "Quota structure has offset to other block (%u) "
-			     "than it should (%u).", blk,
+		log_err("Quota structure has offset to other block (%u) "
+			"than it should (%u).", blk,
 			  (uint) (dquot->dq_dqb.u.v2_mdqb.dqb_off >>
 				  QT_BLKSIZE_BITS));
 
@@ -352,6 +389,9 @@ static void remove_tree(struct quota_handle *h, struct dquot *dquot,
 	dqbuf_t buf = getdqbuf();
 	uint newblk;
 	u_int32_t *ref = (u_int32_t *) buf;
+
+	if (!buf)
+		return;
 
 	read_blk(h, *blk, buf);
 	newblk = ext2fs_le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
@@ -400,6 +440,9 @@ static ext2_loff_t find_block_dqentry(struct quota_handle *h,
 	int i;
 	char *ddquot = buf + sizeof(struct qt_disk_dqdbheader);
 
+	if (!buf)
+		return -ENOMEM;
+
 	read_blk(h, blk, buf);
 	for (i = 0;
 	     i < qtree_dqstr_in_blk(info) && !info->dqi_ops->is_id(ddquot, dquot);
@@ -407,8 +450,8 @@ static ext2_loff_t find_block_dqentry(struct quota_handle *h,
 		ddquot += info->dqi_entry_size;
 
 	if (i == qtree_dqstr_in_blk(info))
-		log_fatal(2, "Quota for id %u referenced but not present.",
-			  dquot->dq_id);
+		log_err("Quota for id %u referenced but not present.",
+			dquot->dq_id);
 	freedqbuf(buf);
 	return (blk << QT_BLKSIZE_BITS) + sizeof(struct qt_disk_dqdbheader) +
 		i * info->dqi_entry_size;
@@ -422,6 +465,9 @@ static ext2_loff_t find_tree_dqentry(struct quota_handle *h,
 	dqbuf_t buf = getdqbuf();
 	ext2_loff_t ret = 0;
 	u_int32_t *ref = (u_int32_t *) buf;
+
+	if (!buf)
+		return -ENOMEM;
 
 	read_blk(h, blk, buf);
 	ret = 0;
@@ -445,16 +491,22 @@ static inline ext2_loff_t find_dqentry(struct quota_handle *h,
 }
 
 /*
- *  Read dquot (either from disk or from kernel)
- *  User can use errno to detect errstr when NULL is returned
+ *  Read dquot from disk.
  */
 struct dquot *qtree_read_dquot(struct quota_handle *h, qid_t id)
 {
 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
 	ext2_loff_t offset;
 	ssize_t ret;
-	char *ddquot = smalloc(info->dqi_entry_size);
+	char *ddquot;
 	struct dquot *dquot = get_empty_dquot();
+
+	if (!dquot)
+		return NULL;
+	if (ext2fs_get_mem(info->dqi_entry_size, &ddquot)) {
+		ext2fs_free_mem(&dquot);
+		return NULL;
+	}
 
 	dquot->dq_id = id;
 	dquot->dq_h = h;
@@ -469,17 +521,17 @@ struct dquot *qtree_read_dquot(struct quota_handle *h, qid_t id)
 		if (ret != info->dqi_entry_size) {
 			if (ret > 0)
 				errno = EIO;
-			log_fatal(2,
-				"Cannot read quota structure for id %u: %s",
+			log_err("Cannot read quota structure for id %u: %s",
 				dquot->dq_id, strerror(errno));
 		}
 		info->dqi_ops->disk2mem_dqblk(dquot, ddquot);
 	}
+	ext2fs_free_mem(&ddquot);
 	return dquot;
 }
 
 /*
- *	Scan all dquots in file and call callback on each
+ * Scan all dquots in file and call callback on each
  */
 #define set_bit(bmp, ind) ((bmp)[(ind) >> 3] |= (1 << ((ind) & 7)))
 #define get_bit(bmp, ind) ((bmp)[(ind) >> 3] & (1 << ((ind) & 7)))
@@ -493,6 +545,9 @@ static int report_block(struct dquot *dquot, uint blk, char *bitmap,
 	struct qt_disk_dqdbheader *dh;
 	char *ddata;
 	int entries, i;
+
+	if (!buf)
+		return 0;
 
 	set_bit(bitmap, blk);
 	read_blk(dquot->dq_h, blk, buf);
@@ -513,12 +568,12 @@ static int report_block(struct dquot *dquot, uint blk, char *bitmap,
 static void check_reference(struct quota_handle *h, uint blk)
 {
 	if (blk >= h->qh_info.u.v2_mdqi.dqi_qtree.dqi_blocks)
-		log_fatal(2, "Illegal reference (%u >= %u) in %s quota file. "
-			     "Quota file is probably corrupted.\n"
-			     "Please run e2fsck (8) to fix it.",
-			  blk,
-			  h->qh_info.u.v2_mdqi.dqi_qtree.dqi_blocks,
-			  type2name(h->qh_type));
+		log_err("Illegal reference (%u >= %u) in %s quota file. "
+			"Quota file is probably corrupted.\n"
+			"Please run e2fsck (8) to fix it.",
+			blk,
+			h->qh_info.u.v2_mdqi.dqi_qtree.dqi_blocks,
+			type2name(h->qh_type));
 }
 
 static int report_tree(struct dquot *dquot, uint blk, int depth, char *bitmap,
@@ -527,6 +582,9 @@ static int report_tree(struct dquot *dquot, uint blk, int depth, char *bitmap,
 	int entries = 0, i;
 	dqbuf_t buf = getdqbuf();
 	u_int32_t *ref = (u_int32_t *) buf;
+
+	if (!buf)
+		return 0;
 
 	read_blk(dquot->dq_h, blk, buf);
 	if (depth == QT_TREEDEPTH - 1) {
@@ -568,13 +626,18 @@ int qtree_scan_dquots(struct quota_handle *h,
 	struct qtree_mem_dqinfo *info = &v2info->dqi_qtree;
 	struct dquot *dquot = get_empty_dquot();
 
+	if (!dquot)
+		return -1;
+
 	dquot->dq_h = h;
-	bitmap = smalloc((info->dqi_blocks + 7) >> 3);
-	memset(bitmap, 0, (info->dqi_blocks + 7) >> 3);
+	if (ext2fs_get_memzero((info->dqi_blocks + 7) >> 3, &bitmap)) {
+		ext2fs_free_mem(&dquot);
+		return -1;
+	}
 	v2info->dqi_used_entries = report_tree(dquot, QT_TREEOFF, 0, bitmap,
 					       process_dquot);
 	v2info->dqi_data_blocks = find_set_bits(bitmap, info->dqi_blocks);
-	free(bitmap);
-	free(dquot);
+	ext2fs_free_mem(&bitmap);
+	ext2fs_free_mem(&dquot);
 	return 0;
 }

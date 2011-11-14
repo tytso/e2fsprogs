@@ -15,10 +15,9 @@ all::
 SMANPAGES=
 
 
-OBJS=		common.o mkquota.o quotaio.o quotaio_v2.o quotaio_tree.o dict.o
+OBJS=		mkquota.o quotaio.o quotaio_v2.o quotaio_tree.o dict.o
 
-SRCS=		$(srcdir)/common.c \
-		$(srcdir)/mkquota.c \
+SRCS=		$(srcdir)/mkquota.c \
 		$(srcdir)/quotaio.c \
 		$(srcdir)/quotaio_tree.c \
 		$(srcdir)/quotaio_v2.c \
@@ -125,8 +124,6 @@ $(OBJS):
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-common.o: $(srcdir)/common.c $(top_builddir)/lib/config.h \
- $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h
 mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \

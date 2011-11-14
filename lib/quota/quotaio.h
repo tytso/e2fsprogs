@@ -136,20 +136,22 @@ static inline void mark_quotafile_info_dirty(struct quota_handle *h)
 #define QIO_ENABLED(h)	((h)->qh_io_flags & IOFL_QUOTAON)
 #define QIO_RO(h)	((h)->qh_io_flags & IOFL_RO)
 
-/* Check quota format used on specified medium and initialize it */
-struct quota_handle *init_io(ext2_filsys fs, const char *mntpt, int type,
-			     int fmt, int flags);
+/* Open existing quotafile of given type (and verify its format) on given
+ * filesystem. */
+errcode_t quota_file_open(struct quota_handle *h, ext2_filsys fs,
+			  int type, int fmt, int flags);
 
 /* Create new quotafile of specified format on given filesystem */
-int new_io(struct quota_handle *h, ext2_filsys fs, int type, int fmt);
+errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,
+			    int type, int fmt);
 
 /* Close quotafile */
-int end_io(struct quota_handle *h);
+errcode_t quota_file_close(struct quota_handle *h);
 
 /* Get empty quota structure */
 struct dquot *get_empty_dquot(void);
 
-void truncate_quota_inode(ext2_filsys fs, ext2_ino_t ino);
+errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino);
 
 const char *type2name(int type);
 

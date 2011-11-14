@@ -1525,7 +1525,7 @@ print_unsupp_features:
 		else
 			qtype = sb->s_usr_quota_inum ? USRQUOTA : GRPQUOTA;
 
-		init_quota_context(&ctx->qctx, ctx->fs, qtype);
+		quota_init_context(&ctx->qctx, ctx->fs, qtype);
 	}
 
 	run_result = e2fsck_run(ctx);
@@ -1561,8 +1561,8 @@ print_unsupp_features:
 no_journal:
 
 	if (ctx->qctx) {
-		write_quota_inode(ctx->qctx, -1);
-		release_quota_context(&ctx->qctx);
+		quota_write_inode(ctx->qctx, -1);
+		quota_release_context(&ctx->qctx);
 	}
 
 	if (run_result == E2F_FLAG_RESTART) {

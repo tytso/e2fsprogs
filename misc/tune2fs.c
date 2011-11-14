@@ -707,27 +707,27 @@ void handle_quota_options(ext2_filsys fs)
 		/* Nothing to do. */
 		return;
 
-	init_quota_context(&qctx, fs, -1);
+	quota_init_context(&qctx, fs, -1);
 
 	if (usrquota == QOPT_ENABLE && !fs->super->s_usr_quota_inum) {
-		if ((qf_ino = quota_file_exists(fs, USRQUOTA)) > 0)
-			set_sb_quota_inum(fs, qf_ino, USRQUOTA);
+		if ((qf_ino = quota_file_exists(fs, USRQUOTA, QFMT_VFS_V1)) > 0)
+			quota_set_sb_inum(fs, qf_ino, USRQUOTA);
 		else
-			write_quota_inode(qctx, USRQUOTA);
+			quota_write_inode(qctx, USRQUOTA);
 	} else if (usrquota == QOPT_DISABLE) {
-		remove_quota_inode(fs, USRQUOTA);
+		quota_remove_inode(fs, USRQUOTA);
 	}
 
 	if (grpquota == QOPT_ENABLE && !fs->super->s_grp_quota_inum) {
-		if ((qf_ino = quota_file_exists(fs, GRPQUOTA)) > 0)
-			set_sb_quota_inum(fs, qf_ino, GRPQUOTA);
+		if ((qf_ino = quota_file_exists(fs, GRPQUOTA, QFMT_VFS_V1)) > 0)
+			quota_set_sb_inum(fs, qf_ino, GRPQUOTA);
 		else
-			write_quota_inode(qctx, GRPQUOTA);
+			quota_write_inode(qctx, GRPQUOTA);
 	} else if (grpquota == QOPT_DISABLE) {
-		remove_quota_inode(fs, GRPQUOTA);
+		quota_remove_inode(fs, GRPQUOTA);
 	}
 
-	release_quota_context(&qctx);
+	quota_release_context(&qctx);
 
 	if ((usrquota == QOPT_ENABLE) || (grpquota == QOPT_ENABLE)) {
 		fs->super->s_feature_ro_compat |= EXT4_FEATURE_RO_COMPAT_QUOTA;
