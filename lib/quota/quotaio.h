@@ -120,7 +120,8 @@ struct quotafile_ops {
 	/* Scan quotafile and call callback on every structure */
 	int (*scan_dquots) (struct quota_handle *h,
 			    int (*process_dquot) (struct dquot *dquot,
-						  char *dqname));
+						  void *data),
+			    void *data);
 	/* Function to print format specific file information */
 	int (*report) (struct quota_handle *h, int verbose);
 };
@@ -139,7 +140,8 @@ static inline void mark_quotafile_info_dirty(struct quota_handle *h)
 /* Open existing quotafile of given type (and verify its format) on given
  * filesystem. */
 errcode_t quota_file_open(struct quota_handle *h, ext2_filsys fs,
-			  int type, int fmt, int flags);
+			  ext2_ino_t qf_ino, int type, int fmt, int flags);
+
 
 /* Create new quotafile of specified format on given filesystem */
 errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,

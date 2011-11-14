@@ -413,3 +413,100 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 
 	return 0;
 }
+
+struct scan_dquots_data {
+	quota_ctx_t         qctx;
+	int                 limit_only; /* read limit only */
+};
+
+static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
+{
+	struct scan_dquots_data *scan_data =
+		(struct scan_dquots_data *)cb_data;
+	quota_ctx_t qctx = scan_data->qctx;
+	struct dquot *dq;
+
+	dq = get_dq(qctx->quota_dict[dquot->dq_h->qh_type], dquot->dq_id);
+
+	dq->dq_id = dquot->dq_id;
+	if (scan_data->limit_only) {
+		dq->dq_dqb.u.v2_mdqb.dqb_off = dquot->dq_dqb.u.v2_mdqb.dqb_off;
+		dq->dq_dqb.dqb_ihardlimit = dquot->dq_dqb.dqb_ihardlimit;
+		dq->dq_dqb.dqb_isoftlimit = dquot->dq_dqb.dqb_isoftlimit;
+		dq->dq_dqb.dqb_bhardlimit = dquot->dq_dqb.dqb_bhardlimit;
+		dq->dq_dqb.dqb_bsoftlimit = dquot->dq_dqb.dqb_bsoftlimit;
+	} else {
+		dq->dq_dqb = dquot->dq_dqb;
+	}
+	return 0;
+}
+
+/*
+ * Read all dquots from quota file into memory
+ */
+static errcode_t quota_read_all_dquots(struct quota_handle *qh,
+                                       quota_ctx_t qctx, int limit_only)
+{
+	struct scan_dquots_data scan_data;
+
+	scan_data.qctx = qctx;
+	scan_data.limit_only = limit_only;
+
+	return qh->qh_ops->scan_dquots(qh, scan_dquots_callback, &scan_data);
+}
+
+/*
+ * Write all memory dquots into quota file
+ */
+static errcode_t quota_write_all_dquots(struct quota_handle *qh,
+                                        quota_ctx_t qctx)
+{
+	errcode_t err;
+
+	err = ext2fs_read_bitmaps(qctx->fs);
+	if (err)
+		return err;
+	write_dquots(qctx->quota_dict[qh->qh_type], qh);
+	ext2fs_mark_bb_dirty(qctx->fs);
+	qctx->fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+	ext2fs_write_bitmaps(qctx->fs);
+	return 0;
+}
+
+/*
+ * Update usage of in quota file, limits keep unchaged
+ */
+errcode_t quota_update_inode(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
+{
+	struct quota_handle *qh;
+	errcode_t err;
+
+	if (!qctx)
+		return 0;
+
+	err = ext2fs_get_mem(sizeof(struct quota_handle), &qh);
+	if (err) {
+		log_err("Unable to allocate quota handle", "");
+		return err;
+	}
+
+	err = quota_file_open(qh, qctx->fs, qf_ino, type, -1, EXT2_FILE_WRITE);
+	if (err) {
+		log_err("Open quota file failed", "");
+		goto out;
+	}
+
+	quota_read_all_dquots(qh, qctx, 1);
+	quota_write_all_dquots(qh, qctx);
+
+	err = quota_file_close(qh);
+	if (err) {
+		log_err("Cannot finish IO on new quotafile: %s",
+			strerror(errno));
+		if (qh->qh_qf.e2_file)
+			ext2fs_file_close(qh->qh_qf.e2_file);
+	}
+out:
+	ext2fs_free_mem(&qh);
+	return err;
+}

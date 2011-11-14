@@ -56,7 +56,7 @@ struct dquot *qtree_read_dquot(struct quota_handle *h, qid_t id);
 void qtree_delete_dquot(struct dquot *dquot);
 int qtree_entry_unused(struct qtree_mem_dqinfo *info, char *disk);
 int qtree_scan_dquots(struct quota_handle *h,
-		int (*process_dquot) (struct dquot *, char *));
+		int (*process_dquot) (struct dquot *, void *), void *data);
 
 int qtree_dqstr_in_blk(struct qtree_mem_dqinfo *info);
 

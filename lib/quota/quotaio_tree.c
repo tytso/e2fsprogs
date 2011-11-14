@@ -537,7 +537,8 @@ struct dquot *qtree_read_dquot(struct quota_handle *h, qid_t id)
 #define get_bit(bmp, ind) ((bmp)[(ind) >> 3] & (1 << ((ind) & 7)))
 
 static int report_block(struct dquot *dquot, uint blk, char *bitmap,
-			int (*process_dquot) (struct dquot *, char *))
+			int (*process_dquot) (struct dquot *, void *),
+			void *data)
 {
 	struct qtree_mem_dqinfo *info =
 			&dquot->dq_h->qh_info.u.v2_mdqi.dqi_qtree;
@@ -557,8 +558,12 @@ static int report_block(struct dquot *dquot, uint blk, char *bitmap,
 	for (i = 0; i < qtree_dqstr_in_blk(info);
 			i++, ddata += info->dqi_entry_size)
 		if (!qtree_entry_unused(info, ddata)) {
+			dquot->dq_dqb.u.v2_mdqb.dqb_off =
+				(blk << QT_BLKSIZE_BITS) +
+				sizeof(struct qt_disk_dqdbheader) +
+				i * info->dqi_entry_size;
 			info->dqi_ops->disk2mem_dqblk(dquot, ddata);
-			if (process_dquot(dquot, NULL) < 0)
+			if (process_dquot(dquot, data) < 0)
 				break;
 		}
 	freedqbuf(buf);
@@ -577,7 +582,8 @@ static void check_reference(struct quota_handle *h, uint blk)
 }
 
 static int report_tree(struct dquot *dquot, uint blk, int depth, char *bitmap,
-		       int (*process_dquot) (struct dquot *, char *))
+		       int (*process_dquot) (struct dquot *, void *),
+		       void *data)
 {
 	int entries = 0, i;
 	dqbuf_t buf = getdqbuf();
@@ -593,16 +599,18 @@ static int report_tree(struct dquot *dquot, uint blk, int depth, char *bitmap,
 			check_reference(dquot->dq_h, blk);
 			if (blk && !get_bit(bitmap, blk))
 				entries += report_block(dquot, blk, bitmap,
-							process_dquot);
+							process_dquot, data);
 		}
 	} else {
-		for (i = 0; i < QT_BLKSIZE >> 2; i++)
+		for (i = 0; i < QT_BLKSIZE >> 2; i++) {
 			blk = ext2fs_le32_to_cpu(ref[i]);
 			if (blk) {
 				check_reference(dquot->dq_h, blk);
 				entries += report_tree(dquot, blk, depth + 1,
-						       bitmap, process_dquot);
+						       bitmap, process_dquot,
+						       data);
 			}
+		}
 	}
 	freedqbuf(buf);
 	return entries;
@@ -619,7 +627,8 @@ static uint find_set_bits(char *bmp, int blocks)
 }
 
 int qtree_scan_dquots(struct quota_handle *h,
-		      int (*process_dquot) (struct dquot *, char *))
+		      int (*process_dquot) (struct dquot *, void *),
+		      void *data)
 {
 	char *bitmap;
 	struct v2_mem_dqinfo *v2info = &h->qh_info.u.v2_mdqi;
@@ -635,7 +644,7 @@ int qtree_scan_dquots(struct quota_handle *h,
 		return -1;
 	}
 	v2info->dqi_used_entries = report_tree(dquot, QT_TREEOFF, 0, bitmap,
-					       process_dquot);
+					       process_dquot, data);
 	v2info->dqi_data_blocks = find_set_bits(bitmap, info->dqi_blocks);
 	ext2fs_free_mem(&bitmap);
 	ext2fs_free_mem(&dquot);

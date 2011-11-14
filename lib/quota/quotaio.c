@@ -217,10 +217,50 @@ static unsigned int quota_read_nomount(struct quota_file *qf,
  * Detect quota format and initialize quota IO
  */
 errcode_t quota_file_open(struct quota_handle *h, ext2_filsys fs,
-			  int type, int fmt, int flags)
+			  ext2_ino_t qf_ino, int type, int fmt, int flags)
 {
-	log_err("Not Implemented.", "");
-	return -1;
+	ext2_file_t e2_file;
+	errcode_t err;
+
+	if (fmt == -1)
+		fmt = QFMT_VFS_V1;
+
+	err = ext2fs_read_bitmaps(fs);
+	if (err)
+		return err;
+
+	log_debug("Opening quota ino=%lu, type=%d", qf_ino, type);
+	err = ext2fs_file_open(fs, qf_ino, flags, &e2_file);
+	if (err) {
+		log_err("ext2fs_file_open failed: %d", err);
+		return err;
+	}
+	h->qh_qf.e2_file = e2_file;
+
+	h->qh_qf.fs = fs;
+	h->qh_qf.ino = qf_ino;
+	h->e2fs_write = quota_write_nomount;
+	h->e2fs_read = quota_read_nomount;
+	h->qh_io_flags = 0;
+	h->qh_type = type;
+	h->qh_fmt = fmt;
+	memset(&h->qh_info, 0, sizeof(h->qh_info));
+	h->qh_ops = &quotafile_ops_2;
+
+	if (h->qh_ops->check_file &&
+	    (h->qh_ops->check_file(h, type, fmt) == 0)) {
+		log_err("qh_ops->check_file failed", "");
+		ext2fs_file_close(e2_file);
+		return -1;
+	}
+
+	if (h->qh_ops->init_io && (h->qh_ops->init_io(h) < 0)) {
+		log_err("qh_ops->init_io failed", "");
+		ext2fs_file_close(e2_file);
+		return -1;
+	}
+
+	return 0;
 }
 
 static errcode_t quota_inode_init_new(ext2_filsys fs, ext2_ino_t ino)
