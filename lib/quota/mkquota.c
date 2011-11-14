@@ -292,6 +292,7 @@ static struct dquot *get_dq(dict_t *dict, __u32 key)
 		}
 		memset(dq, 0, sizeof(struct dquot));
 		dict_alloc_insert(dict, UINT_TO_VOIDPTR(key), dq);
+		dq->dq_id = key;
 	}
 	return dq;
 }
