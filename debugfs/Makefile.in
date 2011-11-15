@@ -11,13 +11,16 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-PROGS=		debugfs
+PROGS=		debugfs rdebugfs
 MANPAGES=	debugfs.8
 
 MK_CMDS=	_SS_DIR_OVERRIDE=../lib/ss ../lib/ss/mk_cmds
 
 DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o \
 	lsdel.o dump.o set_fields.o logdump.o htree.o unused.o
+
+RO_DEBUG_OBJS= ro_debug_cmds.o ro_debugfs.o util.o ncheck.o icheck.o ls.o \
+	lsdel.o logdump.o htree.o
 
 SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c $(srcdir)/ls.c \
 	$(srcdir)/ncheck.c $(srcdir)/icheck.c $(srcdir)/lsdel.c \
@@ -39,9 +42,21 @@ debugfs: $(DEBUG_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o debugfs $(DEBUG_OBJS) $(LIBS)
 
+rdebugfs: $(RO_DEBUG_OBJS) $(DEPLIBS)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -o rdebugfs $(RO_DEBUG_OBJS) $(LIBS)
+
 debug_cmds.c debug_cmds.h: debug_cmds.ct
 	$(E) "	MK_CMDS $@"
 	$(Q) $(MK_CMDS) $(srcdir)/debug_cmds.ct
+
+ro_debug_cmds.c ro_debug_cmds.h: ro_debug_cmds.ct
+	$(E) "	MK_CMDS $@"
+	$(Q) $(MK_CMDS) $(srcdir)/ro_debug_cmds.ct
+
+ro_debugfs.o: debugfs.c
+	$(E) "	CC $@"
+	$(Q) $(CC) -c $(ALL_CFLAGS) $< -DREAD_ONLY -o $@
 
 debugfs.8: $(DEP_SUBSTITUTE) $(srcdir)/debugfs.8.in
 	$(E) "	SUBST $@"
@@ -80,7 +95,8 @@ uninstall:
 	done
 
 clean:
-	$(RM) -f debugfs debugfs.8 \#* *.s *.o *.a *~ debug_cmds.c core
+	$(RM) -f $(PROGS) debugfs.8 \#* *.s *.o *.a *~ debug_cmds.c \
+		ro_debug_cmds.c core
 
 mostlyclean: clean
 distclean: clean

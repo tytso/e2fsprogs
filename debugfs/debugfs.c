@@ -140,7 +140,11 @@ void do_open_filesys(int argc, char **argv)
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
 			break;
 		case 'w':
+#ifdef READ_ONLY
+			goto print_usage;
+#else
 			open_flags |= EXT2_FLAG_RW;
+#endif /* READ_ONLY */
 			break;
 		case 'f':
 			open_flags |= EXT2_FLAG_FORCE;
@@ -184,8 +188,11 @@ void do_open_filesys(int argc, char **argv)
 	return;
 
 print_usage:
-	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] "
-		"[-c] [-w] <device>\n", argv[0]);
+	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] [-c] "
+#ifndef READ_ONLY
+		"[-w] "
+#endif
+		"<device>\n", argv[0]);
 }
 
 void do_lcd(int argc, char **argv)
@@ -251,6 +258,7 @@ void do_close_filesys(int argc, char **argv)
 	close_filesystem();
 }
 
+#ifndef READ_ONLY
 void do_init_filesys(int argc, char **argv)
 {
 	struct ext2_super_block param;
@@ -276,6 +284,7 @@ void do_init_filesys(int argc, char **argv)
 	root = cwd = EXT2_ROOT_INO;
 	return;
 }
+#endif /* READ_ONLY */
 
 static void print_features(struct ext2_super_block * s, FILE *f)
 {
@@ -393,6 +402,7 @@ print_usage:
 	fprintf(stderr, "%s: Usage: show_super [-h]\n", argv[0]);
 }
 
+#ifndef READ_ONLY
 void do_dirty_filesys(int argc EXT2FS_ATTR((unused)),
 		      char **argv EXT2FS_ATTR((unused)))
 {
@@ -407,6 +417,7 @@ void do_dirty_filesys(int argc EXT2FS_ATTR((unused)),
 		current_fs->super->s_state &= ~EXT2_VALID_FS;
 	ext2fs_mark_super_dirty(current_fs);
 }
+#endif /* READ_ONLY */
 
 struct list_blocks_struct {
 	FILE		*f;
@@ -964,6 +975,7 @@ void do_chroot(int argc, char *argv[])
 	root = inode;
 }
 
+#ifndef READ_ONLY
 void do_clri(int argc, char *argv[])
 {
 	ext2_ino_t inode;
@@ -1006,6 +1018,7 @@ void do_seti(int argc, char *argv[])
 	ext2fs_mark_inode_bitmap2(current_fs->inode_map,inode);
 	ext2fs_mark_ib_dirty(current_fs);
 }
+#endif /* READ_ONLY */
 
 void do_testi(int argc, char *argv[])
 {
@@ -1020,6 +1033,7 @@ void do_testi(int argc, char *argv[])
 		printf("Inode %u is not in use\n", inode);
 }
 
+#ifndef READ_ONLY
 void do_freeb(int argc, char *argv[])
 {
 	blk64_t block;
@@ -1057,6 +1071,7 @@ void do_setb(int argc, char *argv[])
 	}
 	ext2fs_mark_bb_dirty(current_fs);
 }
+#endif /* READ_ONLY */
 
 void do_testb(int argc, char *argv[])
 {
@@ -1074,6 +1089,7 @@ void do_testb(int argc, char *argv[])
 	}
 }
 
+#ifndef READ_ONLY
 static void modify_u8(char *com, const char *prompt,
 		      const char *format, __u8 *val)
 {
@@ -1217,6 +1233,7 @@ void do_modify_inode(int argc, char *argv[])
 	if (debugfs_write_inode(inode_num, &inode, argv[1]))
 		return;
 }
+#endif /* READ_ONLY */
 
 void do_change_working_dir(int argc, char *argv[])
 {
@@ -1298,6 +1315,7 @@ static int ext2_file_type(unsigned int mode)
 	return 0;
 }
 
+#ifndef READ_ONLY
 static void make_link(char *sourcename, char *destname)
 {
 	ext2_ino_t	ino;
@@ -1445,6 +1463,7 @@ void do_unlink(int argc, char *argv[])
 
 	unlink_file_by_name(argv[1]);
 }
+#endif /* READ_ONLY */
 
 void do_find_free_block(int argc, char *argv[])
 {
@@ -1537,6 +1556,7 @@ void do_find_free_inode(int argc, char *argv[])
 		printf("Free inode found: %u\n", free_inode);
 }
 
+#ifndef READ_ONLY
 static errcode_t copy_file(int fd, ext2_ino_t newfile)
 {
 	ext2_file_t	e2_file;
@@ -1944,6 +1964,7 @@ void do_rmdir(int argc, char *argv[])
 			return;
 	}
 }
+#endif /* READ_ONLY */
 
 void do_show_debugfs_params(int argc EXT2FS_ATTR((unused)),
 			    char *argv[] EXT2FS_ATTR((unused)))
@@ -1957,6 +1978,7 @@ void do_show_debugfs_params(int argc EXT2FS_ATTR((unused)),
 		current_fs ? current_fs->device_name : "--none--");
 }
 
+#ifndef READ_ONLY
 void do_expand_dir(int argc, char *argv[])
 {
 	ext2_ino_t inode;
@@ -1990,6 +2012,7 @@ void do_features(int argc, char *argv[])
 	}
 	print_features(current_fs->super, stdout);
 }
+#endif /* READ_ONLY */
 
 void do_bmap(int argc, char *argv[])
 {
@@ -2047,6 +2070,7 @@ void do_imap(int argc, char *argv[])
 
 }
 
+#ifndef READ_ONLY
 void do_set_current_time(int argc, char *argv[])
 {
 	time_t now;
@@ -2066,6 +2090,7 @@ void do_set_current_time(int argc, char *argv[])
 		current_fs->now = now;
 	}
 }
+#endif /* READ_ONLY */
 
 static int find_supp_feature(__u32 *supp, int feature_type, char *name)
 {
@@ -2132,6 +2157,7 @@ void do_supported_features(int argc, char *argv[])
 	}
 }
 
+#ifndef READ_ONLY
 void do_punch(int argc, char *argv[])
 {
 	ext2_ino_t	ino;
@@ -2162,6 +2188,7 @@ void do_punch(int argc, char *argv[])
 		return;
 	}
 }
+#endif /* READ_ONLY */
 
 void do_dump_mmp(int argc, char *argv[])
 {
@@ -2256,7 +2283,13 @@ int main(int argc, char **argv)
 {
 	int		retval;
 	int		sci_idx;
-	const char	*usage = "Usage: %s [-b blocksize] [-s superblock] [-f cmd_file] [-R request] [-V] [[-w] [-c] device]";
+	const char	*usage = 
+		"Usage: %s [-b blocksize] [-s superblock] [-f cmd_file] "
+		"[-R request] [-V] ["
+#ifndef READ_ONLY
+		"[-w] "
+#endif
+		"[-c] device]";
 	int		c;
 	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS;
 	char		*request = 0;
@@ -2266,15 +2299,23 @@ int main(int argc, char **argv)
 	blk64_t		blocksize = 0;
 	int		catastrophic = 0;
 	char		*data_filename = 0;
+#ifdef READ_ONLY
+	const char	*opt_string = "icR:f:b:s:Vd:D";
+#else
+	const char	*opt_string = "iwcR:f:b:s:Vd:D";
+#endif
 
 	if (debug_prog_name == 0)
+#ifdef READ_ONLY
+		debug_prog_name = "rdebugfs";
+#else
 		debug_prog_name = "debugfs";
-
+#endif
 	add_error_table(&et_ext2_error_table);
 	fprintf (stderr, "%s %s (%s)\n", debug_prog_name,
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
-	while ((c = getopt (argc, argv, "iwcR:f:b:s:Vd:D")) != EOF) {
+	while ((c = getopt (argc, argv, opt_string)) != EOF) {
 		switch (c) {
 		case 'R':
 			request = optarg;
@@ -2288,9 +2329,11 @@ int main(int argc, char **argv)
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
 			break;
+#ifndef READ_ONLY
 		case 'w':
 			open_flags |= EXT2_FLAG_RW;
 			break;
+#endif
 		case 'D':
 			open_flags |= EXT2_FLAG_DIRECT_IO;
 			break;
