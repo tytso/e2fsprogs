@@ -280,6 +280,16 @@ blocks starting at block number
 .I block
 will be marked as not allocated.
 .TP
+.I freefrag [-c chunk_kb ]
+Report free space fragmentation on the currently open file system.
+If the
+.I \-c
+option is specified then the filefrag command will print how many free
+chunks of size
+.I chunk_kb
+can be found in the file system.  The chunk size must be a power of two
+and be larger than the file system block size.
+.TP
 .I freei filespec
 Free the inode specified by 
 .IR filespec .

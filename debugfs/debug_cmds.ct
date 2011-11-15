@@ -13,6 +13,9 @@ request do_open_filesys, "Open a filesystem",
 request do_close_filesys, "Close the filesystem",
 	close_filesys, close;
 
+request do_freefrag, "Report free space fragmentation",
+	freefrag, e2freefrag;
+
 request do_features, "Set/print superblock features",
 	feature, features;
 
