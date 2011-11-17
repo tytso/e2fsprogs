@@ -251,6 +251,27 @@ Set or clear various filesystem features in the superblock.  After setting
 or clearing any filesystem features that were requested, print the current
 state of the filesystem feature set.
 .TP
+.I filefrag [-dvr] filespec
+Print the number of contiguous extents in
+.IR filespec .
+If
+.I filespec
+is a directory and the
+.I -d
+option is not specified,
+.I filefrag
+will print the number of contiguous extents for each file in
+the directory.  The
+.I -v
+option will cause
+.I filefrag
+print a tabular listing of the contiguous extents in the
+file.  The
+.I -r
+option will cause
+.I filefrag
+to do a recursive listing of the directory.
+.TP
 .I find_free_block [count [goal]]
 Find the first 
 .I count

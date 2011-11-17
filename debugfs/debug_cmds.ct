@@ -52,6 +52,9 @@ request do_dump_extents, "Dump extents information ",
 request do_blocks, "Dump blocks used by an inode ",
 	blocks;
 
+request do_filefrag, "Report fragmentation information for an inode",
+	filefrag;
+
 request do_link, "Create directory link",
 	link, ln;
 

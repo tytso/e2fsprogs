@@ -134,3 +134,4 @@ extern void do_supported_features(int argc, char **argv);
 extern void do_punch(int argc, char **argv);
 
 extern void do_freefrag(int argc, char **argv);
+extern void do_filefrag(int argc, char *argv[]);
