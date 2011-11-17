@@ -44,6 +44,7 @@ static struct ext2_super_block set_sb;
 static struct ext2_inode_large set_inode;
 static struct ext2_group_desc set_gd;
 static struct ext4_group_desc set_gd4;
+static struct mmp_struct set_mmp;
 static dgrp_t set_bg;
 static ext2_ino_t set_ino;
 static int array_idx;
@@ -68,6 +69,8 @@ static errcode_t parse_hashalg(struct field_set_info *info, char *field, char *a
 static errcode_t parse_time(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_bmap(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_gd_csum(struct field_set_info *info, char *field, char *arg);
+static errcode_t parse_mmp_clear(struct field_set_info *info, char *field,
+				 char *arg);
 
 static struct field_set_info super_fields[] = {
 	{ "inodes_count", &set_sb.s_inodes_count, NULL, 4, parse_uint },
@@ -242,8 +245,17 @@ static struct field_set_info ext4_bg_fields[] = {
 	{ 0, 0, 0, 0 }
 };
 
-/* forward declaration */
-static struct field_set_info mmp_fields[];
+static struct field_set_info mmp_fields[] = {
+	{ "clear", &set_mmp.mmp_magic, NULL, sizeof(set_mmp), parse_mmp_clear },
+	{ "magic", &set_mmp.mmp_magic, NULL, 4, parse_uint },
+	{ "seq", &set_mmp.mmp_seq, NULL, 4, parse_uint },
+	{ "time", &set_mmp.mmp_time, NULL, 8, parse_uint },
+	{ "nodename", &set_mmp.mmp_nodename, NULL, sizeof(set_mmp.mmp_nodename),
+		parse_string },
+	{ "bdevname", &set_mmp.mmp_bdevname, NULL, sizeof(set_mmp.mmp_bdevname),
+		parse_string },
+	{ "check_interval", &set_mmp.mmp_check_interval, NULL, 2, parse_uint },
+};
 
 static int check_suffix(const char *field)
 {
@@ -412,7 +424,8 @@ static errcode_t parse_uint(struct field_set_info *info, char *field,
 	return 0;
 }
 
-static errcode_t parse_int(struct field_set_info *info, char *field, char *arg)
+static errcode_t parse_int(struct field_set_info *info,
+			   char *field EXT2FS_ATTR((unused)), char *arg)
 {
 	long	num;
 	char *tmp;
@@ -443,8 +456,8 @@ static errcode_t parse_int(struct field_set_info *info, char *field, char *arg)
 	return 0;
 }
 
-static errcode_t parse_string(struct field_set_info *info, char *field,
-			      char *arg)
+static errcode_t parse_string(struct field_set_info *info,
+			      char *field EXT2FS_ATTR((unused)), char *arg)
 {
 	char	*cp = (char *) info->ptr;
 
@@ -457,7 +470,8 @@ static errcode_t parse_string(struct field_set_info *info, char *field,
 	return 0;
 }
 
-static errcode_t parse_time(struct field_set_info *info, char *field, char *arg)
+static errcode_t parse_time(struct field_set_info *info,
+			    char *field EXT2FS_ATTR((unused)), char *arg)
 {
 	time_t		t;
 	__u32		*ptr32;
@@ -475,7 +489,8 @@ static errcode_t parse_time(struct field_set_info *info, char *field, char *arg)
 	return 0;
 }
 
-static errcode_t parse_uuid(struct field_set_info *info, char *field, char *arg)
+static errcode_t parse_uuid(struct field_set_info *info,
+			    char *field EXT2FS_ATTR((unused)), char *arg)
 {
 	unsigned char *	p = (unsigned char *) info->ptr;
 
@@ -493,8 +508,8 @@ static errcode_t parse_uuid(struct field_set_info *info, char *field, char *arg)
 	return 0;
 }
 
-static errcode_t parse_hashalg(struct field_set_info *info, char *field,
-			       char *arg)
+static errcode_t parse_hashalg(struct field_set_info *info,
+			       char *field EXT2FS_ATTR((unused)), char *arg)
 {
 	int	hashv;
 	unsigned char	*p = (unsigned char *) info->ptr;
@@ -508,8 +523,8 @@ static errcode_t parse_hashalg(struct field_set_info *info, char *field,
 	return 0;
 }
 
-static errcode_t parse_bmap(struct field_set_info *info, char *field,
-			    char *arg)
+static errcode_t parse_bmap(struct field_set_info *info,
+			    char *field EXT2FS_ATTR((unused)), char *arg)
 {
 	unsigned long	num;
 	blk_t		blk;
@@ -733,8 +748,9 @@ void do_set_block_group_descriptor(int argc, char *argv[])
 	}
 }
 
-static errcode_t parse_mmp_clear(struct field_set_info *info, char *field,
-				 char *arg)
+static errcode_t parse_mmp_clear(struct field_set_info *info,
+				 char *field EXT2FS_ATTR((unused)),
+				 char *arg EXT2FS_ATTR((unused)))
 {
 	errcode_t retval;
 
@@ -746,19 +762,6 @@ static errcode_t parse_mmp_clear(struct field_set_info *info, char *field,
 
 	return 1; /* we don't need the MMP block written again */
 }
-
-struct mmp_struct set_mmp;
-static struct field_set_info mmp_fields[] = {
-	{ "clear", &set_mmp.mmp_magic, NULL, sizeof(set_mmp), parse_mmp_clear },
-	{ "magic", &set_mmp.mmp_magic, NULL, 4, parse_uint },
-	{ "seq", &set_mmp.mmp_seq, NULL, 4, parse_uint },
-	{ "time", &set_mmp.mmp_time, NULL, 8, parse_uint },
-	{ "nodename", &set_mmp.mmp_nodename, NULL, sizeof(set_mmp.mmp_nodename),
-		parse_string },
-	{ "bdevname", &set_mmp.mmp_bdevname, NULL, sizeof(set_mmp.mmp_bdevname),
-		parse_string },
-	{ "check_interval", &set_mmp.mmp_check_interval, NULL, 2, parse_uint },
-};
 
 void do_set_mmp_value(int argc, char *argv[])
 {

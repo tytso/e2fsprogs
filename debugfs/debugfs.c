@@ -284,7 +284,6 @@ void do_init_filesys(int argc, char **argv)
 	root = cwd = EXT2_ROOT_INO;
 	return;
 }
-#endif /* READ_ONLY */
 
 static void print_features(struct ext2_super_block * s, FILE *f)
 {
@@ -304,6 +303,7 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 		fputs("(none)", f);
 	fputs("\n", f);
 }
+#endif /* READ_ONLY */
 
 static void print_bg_opts(ext2_filsys fs, dgrp_t group, int mask,
 			  const char *str, int *first, FILE *f)
@@ -933,7 +933,7 @@ void do_dump_extents(int argc, char **argv)
 
 static int print_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 			     blk64_t *blocknr,
-			     e2_blkcnt_t blockcnt,
+			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
 			     blk64_t ref_block EXT2FS_ATTR((unused)),
 			     int ref_offset EXT2FS_ATTR((unused)),
 			     void *private EXT2FS_ATTR((unused)))
@@ -1286,6 +1286,7 @@ void do_print_working_directory(int argc, char *argv[])
 	return;
 }
 
+#ifndef READ_ONLY
 /*
  * Given a mode, return the ext2 file type
  */
@@ -1315,7 +1316,6 @@ static int ext2_file_type(unsigned int mode)
 	return 0;
 }
 
-#ifndef READ_ONLY
 static void make_link(char *sourcename, char *destname)
 {
 	ext2_ino_t	ino;
@@ -2190,7 +2190,7 @@ void do_punch(int argc, char *argv[])
 }
 #endif /* READ_ONLY */
 
-void do_dump_mmp(int argc, char *argv[])
+void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
 	struct ext2_super_block *sb;
 	struct mmp_struct *mmp_s;

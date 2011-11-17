@@ -271,7 +271,7 @@ void do_filefrag(int argc, char *argv[])
 		return;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "dvr")) != EOF) {
+	while ((c = getopt(argc, argv, "dvr")) != EOF) {
 		switch (c) {
 		case 'd':
 			fs.options |= DIR_OPT;

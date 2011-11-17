@@ -30,7 +30,7 @@ extern int optind;
 #include "ext2fs/ext2fs.h"
 #include "e2freefrag.h"
 
-void usage(const char *prog)
+static void usage(const char *prog)
 {
 	fprintf(stderr, "usage: %s [-c chunksize in kb] [-h] "
 		"device_name\n", prog);
@@ -51,7 +51,7 @@ static int ul_log2(unsigned long arg)
         return l;
 }
 
-void init_chunk_info(ext2_filsys fs, struct chunk_info *info)
+static void init_chunk_info(ext2_filsys fs, struct chunk_info *info)
 {
 	int i;
 
@@ -74,15 +74,16 @@ void init_chunk_info(ext2_filsys fs, struct chunk_info *info)
 	}
 }
 
-void update_chunk_stats(struct chunk_info *info, unsigned long chunk_size)
+static void update_chunk_stats(struct chunk_info *info,
+			       unsigned long chunk_size)
 {
-	unsigned long index;
+	unsigned long idx;
 
-	index = ul_log2(chunk_size) + 1;
-	if (index >= MAX_HIST)
-		index = MAX_HIST-1;
-	info->histogram.fc_chunks[index]++;
-	info->histogram.fc_blocks[index] += chunk_size;
+	idx = ul_log2(chunk_size) + 1;
+	if (idx >= MAX_HIST)
+		idx = MAX_HIST-1;
+	info->histogram.fc_chunks[idx]++;
+	info->histogram.fc_blocks[idx] += chunk_size;
 
 	if (chunk_size > info->max)
 		info->max = chunk_size;
@@ -92,7 +93,7 @@ void update_chunk_stats(struct chunk_info *info, unsigned long chunk_size)
 	info->real_free_chunks++;
 }
 
-void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
+static void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 {
 	unsigned long long blocks_count = ext2fs_blocks_count(fs->super);
 	unsigned long long chunks = (blocks_count + info->blks_in_chunk) >>
@@ -142,10 +143,11 @@ void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 		update_chunk_stats(info, last_chunk_size);
 }
 
-errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info, FILE *f)
+static errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info,
+				FILE *f)
 {
 	unsigned long total_chunks;
-	char *unitp = "KMGTPEZY";
+	const char *unitp = "KMGTPEZY";
 	int units = 10;
 	unsigned long start = 0, end;
 	int i, retval = 0;
@@ -211,7 +213,7 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info, FILE *f)
 	return retval;
 }
 
-void close_device(char *device_name, ext2_filsys fs)
+static void close_device(char *device_name, ext2_filsys fs)
 {
 	int retval = ext2fs_close(fs);
 
@@ -219,7 +221,7 @@ void close_device(char *device_name, ext2_filsys fs)
 		com_err(device_name, retval, "while closing the filesystem.\n");
 }
 
-void collect_info(ext2_filsys fs, struct chunk_info *chunk_info, FILE *f)
+static void collect_info(ext2_filsys fs, struct chunk_info *chunk_info, FILE *f)
 {
 	unsigned int retval = 0;
 
@@ -243,7 +245,8 @@ void collect_info(ext2_filsys fs, struct chunk_info *chunk_info, FILE *f)
 	}
 }
 
-void open_device(char *device_name, ext2_filsys *fs)
+#ifndef DEBUGFS
+static void open_device(char *device_name, ext2_filsys *fs)
 {
 	int retval;
 	int flag = EXT2_FLAG_FORCE;
@@ -254,9 +257,9 @@ void open_device(char *device_name, ext2_filsys *fs)
 		exit(1);
 	}
 }
+#endif
 
 #ifdef DEBUGFS
-
 #include "debugfs.h"
 
 void do_freefrag(int argc, char **argv)
@@ -264,10 +267,8 @@ void do_freefrag(int argc, char **argv)
 int main(int argc, char *argv[])
 #endif
 {
-	struct chunk_info chunk_info = { };
-	errcode_t retval = 0;
+	struct chunk_info chunk_info;
 	ext2_filsys fs = NULL;
-	char *device_name;
 	char *progname;
 	char *end;
 	int c;
@@ -276,9 +277,12 @@ int main(int argc, char *argv[])
 	if (check_fs_open(argv[0]))
 		return;
 #else
+	char *device_name;
+
 	add_error_table(&et_ext2_error_table);
 #endif
 	progname = argv[0];
+	memset(&chunk_info, 0, sizeof(chunk_info));
 
 	while ((c = getopt(argc, argv, "c:h")) != EOF) {
 		switch (c) {
@@ -326,6 +330,6 @@ int main(int argc, char *argv[])
 #ifndef DEBUGFS
 	close_device(device_name, fs);
 
-	return retval;
+	return 0;
 #endif
 }
