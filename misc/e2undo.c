@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 				_("Failed tdb_fetch %s\n"), tdb_errorstr(tdb));
 			exit(1);
 		}
-		blk_num = *(unsigned long *)key.dptr;
+		blk_num = *(blk64_t *)key.dptr;
 		printf(_("Replayed transaction of size %zd at location %llu\n"),
 							data.dsize, blk_num);
 		retval = io_channel_write_blk64(channel, blk_num,
