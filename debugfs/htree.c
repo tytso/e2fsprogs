@@ -39,7 +39,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	int		thislen, col = 0;
 	unsigned int	offset = 0;
 	char		name[EXT2_NAME_LEN + 1];
-	char		tmp[EXT2_NAME_LEN + 16];
+	char		tmp[EXT2_NAME_LEN + 64];
 	blk64_t		pblk;
 	ext2_dirhash_t 	hash, minor_hash;
 	unsigned int	rec_len;
@@ -91,8 +91,8 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		if (errcode)
 			com_err("htree_dump_leaf_node", errcode,
 				"while calculating hash");
-		sprintf(tmp, "%u 0x%08x-%08x (%d) %s   ", dirent->inode,
-			hash, minor_hash, rec_len, name);
+		snprintf(tmp, EXT2_NAME_LEN + 64, "%u 0x%08x-%08x (%d) %s   ",
+			dirent->inode, hash, minor_hash, rec_len, name);
 		thislen = strlen(tmp);
 		if (col + thislen > 80) {
 			fprintf(pager, "\n");
