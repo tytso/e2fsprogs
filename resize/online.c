@@ -76,8 +76,17 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		 * If kernel does not support EXT4_IOC_RESIZE_FS, use the
 		 * old online resize. Note that the old approach does not
 		 * handle >32 bit file systems
+		 *
+		 * Sigh, if we are running a 32-bit binary on a 64-bit
+		 * kernel (which happens all the time on the MIPS
+		 * architecture in Debian, but can happen on other CPU
+		 * architectures as well) we will get EINVAL returned
+		 * when an ioctl doesn't exist, at least up to Linux
+		 * 3.1.  See compat_sys_ioctl() in fs/compat_ioctl.c
+		 * in the kernel sources.  This is probably a kernel
+		 * bug, but work around it here.
 		 */
-		if (errno != ENOTTY) {
+		if ((errno != ENOTTY) && (errno != EINVAL)) {
 			if (errno == EPERM)
 				com_err(program_name, 0,
 				_("Permission denied to resize filesystem"));
