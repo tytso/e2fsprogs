@@ -11,7 +11,7 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-PROGS=		debugfs rdebugfs
+PROGS=		debugfs
 MANPAGES=	debugfs.8
 
 MK_CMDS=	_SS_DIR_OVERRIDE=../lib/ss ../lib/ss/mk_cmds
@@ -102,7 +102,7 @@ uninstall:
 
 clean:
 	$(RM) -f $(PROGS) debugfs.8 \#* *.s *.o *.a *~ debug_cmds.c \
-		ro_debug_cmds.c core
+		ro_debug_cmds.c core rdebugfs
 
 mostlyclean: clean
 distclean: clean
