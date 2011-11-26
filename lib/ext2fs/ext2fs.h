@@ -261,6 +261,13 @@ struct struct_ext2_filsys {
 	io_channel			image_io;
 
 	/*
+	 * More callback functions
+	 */
+	errcode_t (*get_alloc_block)(ext2_filsys fs, blk64_t goal,
+				     blk64_t *ret);
+	void (*block_alloc_stats)(ext2_filsys fs, blk64_t blk, int inuse);
+
+	/*
 	 * Buffers for Multiple mount protection(MMP) block.
 	 */
 	void *mmp_buf;
@@ -271,13 +278,6 @@ struct struct_ext2_filsys {
 	 * Time at which e2fsck last updated the MMP block.
 	 */
 	long mmp_last_written;
-
-	/*
-	 * More callback functions
-	 */
-	errcode_t (*get_alloc_block)(ext2_filsys fs, blk64_t goal,
-				     blk64_t *ret);
-	void (*block_alloc_stats)(ext2_filsys fs, blk64_t blk, int inuse);
 };
 
 #if EXT2_FLAT_INCLUDES
