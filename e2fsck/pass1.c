@@ -583,7 +583,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(i);
 		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i);
 		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i) * EXT2_BPP(i);
-		max_sizes = (max_sizes * (1UL << i)) - 1;
+		max_sizes = (max_sizes * (1UL << i));
 		ext2_max_sizes[i - EXT2_MIN_BLOCK_LOG_SIZE] = max_sizes;
 	}
 #undef EXT2_BPP
