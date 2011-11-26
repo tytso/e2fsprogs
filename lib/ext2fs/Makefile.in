@@ -267,6 +267,12 @@ tst_super_size: tst_super_size.o
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_super_size tst_super_size.o 
 
+tst_fs_struct.o: $(srcdir)/tst_fs_struct.c $(srcdir)/ext2fs.h
+
+tst_fs_struct: tst_fs_struct.o
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_fs_struct tst_fs_struct.o 
+
 tst_inode_size.o: $(srcdir)/tst_inode_size.c $(srcdir)/ext2_fs.h
 
 tst_inode_size: tst_inode_size.o
