@@ -259,6 +259,7 @@ struct process_block_struct {
 	e2fsck_t	ctx;
 	ext2_ino_t	ino;
 	int		dup_blocks;
+	blk64_t		cur_cluster;
 	struct ext2_inode *inode;
 	struct problem_context *pctx;
 };
@@ -310,6 +311,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		pb.ino = ino;
 		pb.dup_blocks = 0;
 		pb.inode = &inode;
+		pb.cur_cluster = ~0;
 
 		if (ext2fs_inode_has_valid_blocks2(fs, &inode) ||
 		    (ino == EXT2_BAD_INO))
@@ -339,21 +341,23 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 
 static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 				blk64_t	*block_nr,
-				e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+				e2_blkcnt_t blockcnt,
 				blk64_t ref_blk EXT2FS_ATTR((unused)),
 				int ref_offset EXT2FS_ATTR((unused)),
 				void *priv_data)
 {
 	struct process_block_struct *p;
 	e2fsck_t ctx;
+	blk64_t	lc;
 
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 	p = (struct process_block_struct *) priv_data;
 	ctx = p->ctx;
+	lc = EXT2FS_B2C(fs, blockcnt);
 
 	if (!ext2fs_test_block_bitmap2(ctx->block_dup_map, *block_nr))
-		return 0;
+		goto finish;
 
 	/* OK, this is a duplicate block */
 	if (p->ino != EXT2_BAD_INO) {
@@ -363,8 +367,11 @@ static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 	p->dup_blocks++;
 	ext2fs_mark_inode_bitmap2(inode_dup_map, p->ino);
 
-	add_dupe(ctx, p->ino, EXT2FS_B2C(fs, *block_nr), p->inode);
+	if (lc != p->cur_cluster)
+		add_dupe(ctx, p->ino, EXT2FS_B2C(fs, *block_nr), p->inode);
 
+finish:
+	p->cur_cluster = lc;
 	return 0;
 }
 
@@ -571,7 +578,7 @@ static void decrement_badcount(e2fsck_t ctx, blk64_t block,
 
 static int delete_file_block(ext2_filsys fs,
 			     blk64_t	*block_nr,
-			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+			     e2_blkcnt_t blockcnt,
 			     blk64_t ref_block EXT2FS_ATTR((unused)),
 			     int ref_offset EXT2FS_ATTR((unused)),
 			     void *priv_data)
@@ -580,7 +587,7 @@ static int delete_file_block(ext2_filsys fs,
 	struct dup_cluster *p;
 	dnode_t	*n;
 	e2fsck_t ctx;
-	blk64_t c;
+	blk64_t c, lc;
 
 	pb = (struct process_block_struct *) priv_data;
 	ctx = pb->ctx;
@@ -589,11 +596,13 @@ static int delete_file_block(ext2_filsys fs,
 		return 0;
 
 	c = EXT2FS_B2C(fs, *block_nr);
+	lc = EXT2FS_B2C(fs, blockcnt);
 	if (ext2fs_test_block_bitmap2(ctx->block_dup_map, *block_nr)) {
 		n = dict_lookup(&clstr_dict, INT_TO_VOIDPTR(c));
 		if (n) {
 			p = (struct dup_cluster *) dnode_get(n);
-			decrement_badcount(ctx, *block_nr, p);
+			if (lc != pb->cur_cluster)
+				decrement_badcount(ctx, *block_nr, p);
 		} else
 			com_err("delete_file_block", 0,
 			    _("internal error: can't find dup_blk for %llu\n"),
@@ -603,6 +612,7 @@ static int delete_file_block(ext2_filsys fs,
 		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 		pb->dup_blocks++;
 	}
+	pb->cur_cluster = lc;
 
 	return 0;
 }
@@ -621,6 +631,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	pb.dup_blocks = 0;
 	pb.ctx = ctx;
 	pctx.str = "delete_file";
+	pb.cur_cluster = ~0;
 
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
 	if (ext2fs_inode_has_valid_blocks2(fs, &inode))
@@ -703,8 +714,12 @@ static int clone_file_block(ext2_filsys fs,
 	if (check_if_fs_cluster(ctx, EXT2FS_B2C(fs, *block_nr)))
 		is_meta = 1;
 
-	if (((blockcnt > 0) && c == cs->dup_cluster) ||
-	    ext2fs_test_block_bitmap2(ctx->block_dup_map, *block_nr)) {
+	if (c == cs->dup_cluster && cs->alloc_block) {
+		new_block = cs->alloc_block;
+		goto got_block;
+	}
+
+	if (ext2fs_test_block_bitmap2(ctx->block_dup_map, *block_nr)) {
 		n = dict_lookup(&clstr_dict,
 				INT_TO_VOIDPTR(EXT2FS_B2C(fs, *block_nr)));
 		if (!n) {
@@ -718,28 +733,6 @@ static int clone_file_block(ext2_filsys fs,
 		if (!is_meta)
 			decrement_badcount(ctx, *block_nr, p);
 
-		if (p->num_bad == 0 && !is_meta) {
-			/*
-			 * Normally num_bad never gets to zero; but in
-			 * the case of bigalloc file systems, we don't
-			 * how many blocks might be in use by a
-			 * particular inode.  So we may end up
-			 * relocating the cluster even though this
-			 * inode is the last user of the cluster.  In
-			 * that case, since we've already moved some
-			 * of the blocks of that cluster, we'll
-			 * complete the relocation and free the
-			 * original cluster here.
-			 */
-			ext2fs_unmark_block_bitmap2(ctx->block_found_map,
-						    *block_nr);
-			ext2fs_block_alloc_stats2(fs, *block_nr, -1);
-		}
-
-		if ((blockcnt > 0) && c == cs->dup_cluster) {
-			new_block = cs->alloc_block;
-			goto got_block;
-		}
 		cs->dup_cluster = c;
 
 		retval = ext2fs_new_block2(fs, 0, ctx->block_found_map,
@@ -799,7 +792,7 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	clear_problem_context(&pctx);
 	cs.errcode = 0;
 	cs.dir = 0;
-	cs.dup_cluster = 0;
+	cs.dup_cluster = ~0;
 	cs.alloc_block = 0;
 	cs.ctx = ctx;
 	retval = ext2fs_get_mem(fs->blocksize, &cs.buf);
