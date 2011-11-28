@@ -60,9 +60,4 @@ int quota_is_on(ext2_filsys fs, int type);
 int quota_file_exists(ext2_filsys fs, int qtype, int fmt);
 void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, int qtype);
 
-/* In quotaio.c */
-const char *quota_get_qf_name(int type, int fmt, char *buf);
-const char *quota_get_qf_path(const char *mntpt, int qtype, int fmt,
-			      char *path_buf, size_t path_buf_size);
-
 #endif  /* __QUOTA_QUOTAIO_H__ */

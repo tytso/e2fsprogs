@@ -159,4 +159,12 @@ const char *type2name(int type);
 
 void update_grace_times(struct dquot *q);
 
+/* size for the buffer returned by quota_get_qf_name(); must be greater
+   than maxlen of extensions[] and fmtnames[] (plus 2) found in quotaio.c */
+#define QUOTA_NAME_LEN 16
+
+const char *quota_get_qf_name(int type, int fmt, char *buf);
+const char *quota_get_qf_path(const char *mntpt, int qtype, int fmt,
+			      char *path_buf, size_t path_buf_size);
+
 #endif /* GUARD_QUOTAIO_H */

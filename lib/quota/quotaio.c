@@ -56,7 +56,7 @@ const char *quota_get_qf_name(int type, int fmt, char *buf)
 {
 	if (!buf)
 		return NULL;
-	snprintf(buf, PATH_MAX, "%s.%s",
+	snprintf(buf, QUOTA_NAME_LEN, "%s.%s",
 		 basenames[fmt], extensions[type]);
 
 	return buf;
@@ -66,7 +66,7 @@ const char *quota_get_qf_path(const char *mntpt, int qtype, int fmt,
 			      char *path_buf, size_t path_buf_size)
 {
 	struct stat	qf_stat;
-	char qf_name[PATH_MAX] = {0};
+	char qf_name[QUOTA_NAME_LEN];
 
 	if (!mntpt || !path_buf || !path_buf_size)
 		return NULL;
