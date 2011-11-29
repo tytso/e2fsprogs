@@ -67,7 +67,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.41.99.1009\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2011-10-09 20:32-0400\n"
-"PO-Revision-Date: 2011-10-13 19:58+0200\n"
+"PO-Revision-Date: 2011-10-30 17:19+0100\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
 "Language: cs\n"
@@ -229,12 +229,12 @@ msgstr "%s: žurnál příliš krátký\n"
 #: e2fsck/journal.c:864
 #, c-format
 msgid "%s: recovering journal\n"
-msgstr "%s: obnovuji žurnál\n"
+msgstr "%s: obnovuje se žurnál\n"
 
 #: e2fsck/journal.c:866
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
-msgstr "%s: nebudu obnovovat žurnál v režimu jen pro čtení\n"
+msgstr "%s: v režimu jen pro čtení se žurnál obnovovat nebude\n"
 
 #: e2fsck/journal.c:893
 #, c-format
@@ -964,7 +964,7 @@ msgstr "Systém souborů má příznak(y) vlastností nastaveny, ačkoliv se jed
 #. @-expanded: %s orphaned inode %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n
 #: e2fsck/problem.c:251
 msgid "%s @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"
-msgstr "%s osiřelý iuzel %i (uid=%Iu, gid=%Ig, režim=%Im, velikost=%Is)\n"
+msgstr "%s osiřelý iuzel %i (uid=%Iu, gid=%Ig, práva=%Im, velikost=%Is)\n"
 
 #. @-expanded: illegal %B (%b) found in orphaned inode %i.\n
 #: e2fsck/problem.c:256
@@ -1211,7 +1211,7 @@ msgstr "Superblok má neplatná čísla MMP.  "
 #. @-expanded: Pass 1: Checking inodes, blocks, and sizes\n
 #: e2fsck/problem.c:435
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
-msgstr "Průchod 1: Kontroluji iuzly, bloky a velikosti\n"
+msgstr "Průchod 1: Kontrolují se iuzly, bloky a velikosti\n"
 
 #. @-expanded: root inode is not a directory.  
 #: e2fsck/problem.c:439
@@ -1883,7 +1883,7 @@ msgstr "Nemohu klonovat soubor: %m\n"
 #. @-expanded: Pass 2: Checking directory structure\n
 #: e2fsck/problem.c:1040
 msgid "Pass 2: Checking @d structure\n"
-msgstr "Průchod 2: Kontroluji strukturu adresářů\n"
+msgstr "Průchod 2: Kontroluje se strukturu adresářů\n"
 
 #. @-expanded: invalid inode number for '.' in directory inode %i.\n
 #: e2fsck/problem.c:1045
@@ -2235,7 +2235,7 @@ msgstr "i_file_acl_hi pro iuzel %i (%Q) je %N, mělo by být nula.\n"
 #. @-expanded: Pass 3: Checking directory connectivity\n
 #: e2fsck/problem.c:1370
 msgid "Pass 3: Checking @d connectivity\n"
-msgstr "Průchod 3: Kontroluji dosažitelnost adresářů\n"
+msgstr "Průchod 3: Kontroluje se dosažitelnost adresářů\n"
 
 #. @-expanded: root inode not allocated.  
 #: e2fsck/problem.c:1375
@@ -2384,7 +2384,7 @@ msgstr "Optimalizuji adresáře: "
 
 #: e2fsck/problem.c:1524
 msgid "Pass 4: Checking reference counts\n"
-msgstr "Průchod 4: Kontroluji počty odkazů\n"
+msgstr "Průchod 4: Kontrolují se počty odkazů\n"
 
 #. @-expanded: unattached zero-length inode %i.  
 #: e2fsck/problem.c:1529
@@ -2420,7 +2420,7 @@ msgstr ""
 #. @-expanded: Pass 5: Checking group summary information\n
 #: e2fsck/problem.c:1553
 msgid "Pass 5: Checking @g summary information\n"
-msgstr "Průchod 5: Kontroluji souhrnné informace skupin\n"
+msgstr "Průchod 5: Kontrolují se souhrnné informace skupin\n"
 
 #. @-expanded: Padding at end of inode bitmap is not set. 
 #: e2fsck/problem.c:1558
@@ -2445,12 +2445,12 @@ msgstr "Rozdíly v bitmapě iuzlů: "
 #. @-expanded: Free inodes count wrong for group #%g (%i, counted=%j).\n
 #: e2fsck/problem.c:1608
 msgid "Free @is count wrong for @g #%g (%i, counted=%j).\n"
-msgstr "Počet volných iuzlů ve skupině #%g špatně (%i, spočteno=%j).\n"
+msgstr "Počet volných iuzlů ve skupině č. %g špatně (%i, spočteno=%j).\n"
 
 #. @-expanded: Directories count wrong for group #%g (%i, counted=%j).\n
 #: e2fsck/problem.c:1613
 msgid "Directories count wrong for @g #%g (%i, counted=%j).\n"
-msgstr "Počet adresářů ve skupině #%g špatně (%i, spočteno=%j).\n"
+msgstr "Počet adresářů ve skupině č. %g špatně (%i, spočteno=%j).\n"
 
 #. @-expanded: Free inodes count wrong (%i, counted=%j).\n
 #: e2fsck/problem.c:1618
@@ -2460,7 +2460,7 @@ msgstr "Počet volných iuzlů špatně (%i, spočteno=%j).\n"
 #. @-expanded: Free blocks count wrong for group #%g (%b, counted=%c).\n
 #: e2fsck/problem.c:1623
 msgid "Free @bs count wrong for @g #%g (%b, counted=%c).\n"
-msgstr "Počet volných bloků ve skupině #%g špatně (%b, spočteno=%c).\n"
+msgstr "Počet volných bloků ve skupině č. %g špatně (%b, spočteno=%c).\n"
 
 #. @-expanded: Free blocks count wrong (%b, counted=%c).\n
 #: e2fsck/problem.c:1628
@@ -3099,7 +3099,7 @@ msgstr "Velikost žurnálu nelze určit"
 #: e2fsck/unix.c:1546
 #, c-format
 msgid "Creating journal (%d blocks): "
-msgstr "Vytvářím žurnál (%d bloků): "
+msgstr "Vytváří se žurnál (%d bloků): "
 
 #: e2fsck/unix.c:1553 misc/mke2fs.c:2514
 msgid ""
@@ -3366,15 +3366,15 @@ msgstr "při alokaci vyrovnávacích paměti"
 #: misc/badblocks.c:507
 #, c-format
 msgid "Checking blocks %lu to %lu\n"
-msgstr "Ověřuji bloky %lu až %lu\n"
+msgstr "Ověřují se bloky %lu až %lu\n"
 
 #: misc/badblocks.c:512
 msgid "Checking for bad blocks in read-only mode\n"
-msgstr "Hledám špatné bloky v režimu jen pro čtení\n"
+msgstr "Hledají se špatné bloky v režimu jen pro čtení\n"
 
 #: misc/badblocks.c:521
 msgid "Checking for bad blocks (read-only test): "
-msgstr "Hledám špatné bloky (test jen pro čtení): "
+msgstr "Hledají se špatné bloky (test jen pro čtení): "
 
 #: misc/badblocks.c:529 misc/badblocks.c:635 misc/badblocks.c:677
 #: misc/badblocks.c:823
@@ -3383,7 +3383,7 @@ msgstr "Příliš mnoho špatných bloků, přerušuji test\n"
 
 #: misc/badblocks.c:610
 msgid "Checking for bad blocks in read-write mode\n"
-msgstr "Hledám špatné bloky v režimu čtení i zápis\n"
+msgstr "Hledají se špatné bloky v režimu čtení i zápis\n"
 
 #: misc/badblocks.c:612 misc/badblocks.c:773
 #, c-format
@@ -3392,15 +3392,15 @@ msgstr "Od bloku %lu do %lu\n"
 
 #: misc/badblocks.c:667
 msgid "Reading and comparing: "
-msgstr "Čtu a porovnávám: "
+msgstr "Čtení a porovnání: "
 
 #: misc/badblocks.c:772
 msgid "Checking for bad blocks in non-destructive read-write mode\n"
-msgstr "Hledám špatné bloky v nedestruktivním režimu čtení i zápis\n"
+msgstr "Hledají se špatné bloky v nedestruktivním režimu čtení i zápis\n"
 
 #: misc/badblocks.c:778
 msgid "Checking for bad blocks (non-destructive read-write test)\n"
-msgstr "Hledám špatné bloky (nedestruktivní test čtení i zápisu)\n"
+msgstr "Hledají se špatné bloky (nedestruktivní test čtení i zápisu)\n"
 
 #: misc/badblocks.c:785
 msgid ""
@@ -3408,7 +3408,7 @@ msgid ""
 "Interrupt caught, cleaning up\n"
 msgstr ""
 "\n"
-"Zachyceno přerušení, uklízím\n"
+"Zachyceno přerušení, uklízí se\n"
 
 #: misc/badblocks.c:868
 #, c-format
@@ -3422,7 +3422,7 @@ msgstr "%s je připojen; "
 
 #: misc/badblocks.c:991
 msgid "badblocks forced anyway.  Hope /etc/mtab is incorrect.\n"
-msgstr "badblocks přesto vynucen. Doufám, že /etc/mtab je nesprávná.\n"
+msgstr "badblocks přesto vynucen. Doufám, že /etc/mtab je nesprávný.\n"
 
 #: misc/badblocks.c:996
 msgid "it's not safe to run badblocks!\n"
@@ -3982,7 +3982,7 @@ msgstr "fsck: nemohu zkontrolovat %s: fsck.%s nenalezen\n"
 
 #: misc/fsck.c:968
 msgid "Checking all file systems.\n"
-msgstr "Kontroluji všechny systémy souborů.\n"
+msgstr "Kontrolují se všechny systémy souborů.\n"
 
 #: misc/fsck.c:1059
 #, c-format
@@ -4738,7 +4738,7 @@ msgstr "V režimu jen-superdata bude vynechána tvorba žurnálu\n"
 #: misc/mke2fs.c:2506
 #, c-format
 msgid "Creating journal (%u blocks): "
-msgstr "Vytvářím žurnál (%'u bloků): "
+msgstr "Vytváří se žurnál (%'u bloků): "
 
 #: misc/mke2fs.c:2525 misc/tune2fs.c:446
 #, c-format
@@ -4989,7 +4989,7 @@ msgstr ""
 #: misc/tune2fs.c:657
 #, c-format
 msgid "Creating journal on device %s: "
-msgstr "Vytvářím žurnál na zařízení %s: "
+msgstr "Vytváří se žurnál na zařízení %s: "
 
 #: misc/tune2fs.c:665
 #, c-format
@@ -4998,7 +4998,7 @@ msgstr "při přidávání systému souborů do žurnálu na %s"
 
 #: misc/tune2fs.c:671
 msgid "Creating journal inode: "
-msgstr "Vytvářím iuzel žurnálu: "
+msgstr "Vytváří se iuzel žurnálu: "
 
 #: misc/tune2fs.c:680
 msgid ""
