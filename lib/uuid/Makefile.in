@@ -192,13 +192,23 @@ $(OBJS): subdirs uuid.h
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-clear.o: $(srcdir)/clear.c $(srcdir)/uuidP.h
-compare.o: $(srcdir)/compare.c $(srcdir)/uuidP.h
-copy.o: $(srcdir)/copy.c $(srcdir)/uuidP.h
-gen_uuid.o: $(srcdir)/gen_uuid.c $(srcdir)/uuidP.h $(srcdir)/uuidd.h
-isnull.o: $(srcdir)/isnull.c $(srcdir)/uuidP.h
-pack.o: $(srcdir)/pack.c $(srcdir)/uuidP.h
-parse.o: $(srcdir)/parse.c $(srcdir)/uuidP.h
-unpack.o: $(srcdir)/unpack.c $(srcdir)/uuidP.h
-unparse.o: $(srcdir)/unparse.c $(srcdir)/uuidP.h
-uuid_time.o: $(srcdir)/uuid_time.c $(srcdir)/uuidP.h
+clear.o: $(srcdir)/clear.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+compare.o: $(srcdir)/compare.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+copy.o: $(srcdir)/copy.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+gen_uuid.o: $(srcdir)/gen_uuid.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h $(srcdir)/uuidd.h
+isnull.o: $(srcdir)/isnull.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+pack.o: $(srcdir)/pack.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+parse.o: $(srcdir)/parse.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+unpack.o: $(srcdir)/unpack.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+unparse.o: $(srcdir)/unparse.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h
+uuid_time.o: $(srcdir)/uuid_time.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/uuidP.h

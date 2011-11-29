@@ -1,3 +1,16 @@
+e2fsprogs (1.42-1) unstable; urgency=low
+
+  * New upstream release
+  * Fixed hurd FTBFS (Closes: #649689)
+  * Optimized e2fsck speed on large file systems when using [scratch_files]
+  * Fixed e2fsck handling of blocks claimed by multiple inodes in
+    bigalloc file systems
+  * Fixed e2fsck's calculation of max file size for non-extent based
+    files when huge_file is enabled
+  * Update Czech and Swedish translations
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 29 Nov 2011 15:50:07 -0500
+
 e2fsprogs (1.42~WIP-2011-11-20-1) unstable; urgency=low
 
   * New upstream release

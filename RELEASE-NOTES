@@ -1,5 +1,5 @@
-E2fsprogs 1.42-WIP (November 20, 2011) -- f62516f33b
-=======================================
+E2fsprogs 1.42 (November 29, 2011)
+==================================
 
 This release of e2fsprogs has support for file systems > 16TB.  Online
 resize requires kernel support which will hopefully be in Linux
@@ -15,6 +15,10 @@ initially formatted.  It is not backwards compatible with older
 kernels.
 
 Added support for the Multi-Mount Protection (MMP) feature.
+
+E2fsck more efficiently uses scratch files for really big file
+systems.  (This is a feature that has to be turned on explicitly; see
+[scratch_files] in the e2fsck.conf man page.)
 
 Fix a bug in e2fsck where if the free blocks and inodes counts are
 incorrect, e2fsck would fix them without printing an error message.
@@ -68,6 +72,9 @@ system.
 
 E2fsck now returns additional status bits in its exit code if it
 aborts early in the e2fsck run.
+
+E2fsck now correctly calculates the maximum file size in the case of
+the huge_file file system feature enabled without extents.
 
 The mke2fs and e2fsck programs now tries to use the punch hole command
 as a "discard" when operating on normal files.
@@ -2700,7 +2707,7 @@ loop forever on really big filesystems with a large inode count.
 Fix memory leak in ext2fs_write_new_inode()
 
 Add support for using a scratch files directory to reduce e2fsck's
-emory utilization on really big filesystems.  This uses the TDB
+memory utilization on really big filesystems.  This uses the TDB
 library.  See the [scratch_files] section of the e2fsck.conf man page
 for more details.
 

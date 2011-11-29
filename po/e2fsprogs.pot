@@ -66,9 +66,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.42-WIP\n"
+"Project-Id-Version: e2fsprogs 1.42\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2011-11-20 21:24-0500\n"
+"POT-Creation-Date: 2011-11-29 16:03-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -468,21 +468,21 @@ msgstr ""
 msgid "multiply claimed inode map"
 msgstr ""
 
-#: e2fsck/pass1b.c:599 e2fsck/pass1b.c:712
+#: e2fsck/pass1b.c:608 e2fsck/pass1b.c:727
 #, c-format
 msgid "internal error: can't find dup_blk for %llu\n"
 msgstr ""
 
-#: e2fsck/pass1b.c:825
+#: e2fsck/pass1b.c:818
 msgid "returned from clone_file_block"
 msgstr ""
 
-#: e2fsck/pass1b.c:847
+#: e2fsck/pass1b.c:840
 #, c-format
 msgid "internal error: couldn't lookup EA block record for %llu"
 msgstr ""
 
-#: e2fsck/pass1b.c:859
+#: e2fsck/pass1b.c:852
 #, c-format
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr ""
