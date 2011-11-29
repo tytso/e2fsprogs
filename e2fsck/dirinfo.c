@@ -67,7 +67,11 @@ static void setup_tdb(e2fsck_t ctx, ext2_ino_t num_dirs)
 		db->tdb = NULL;
 		return;
 	}
-	db->tdb = tdb_open(db->tdb_fn, 0, TDB_CLEAR_IF_FIRST,
+
+	if (num_dirs < 99991)
+		num_dirs = 99991; /* largest 5 digit prime */
+
+	db->tdb = tdb_open(db->tdb_fn, num_dirs, TDB_NOLOCK | TDB_NOSYNC,
 			   O_RDWR | O_CREAT | O_TRUNC, 0600);
 	close(fd);
 }
