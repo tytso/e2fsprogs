@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the e2fsprogs package.
 # Göran Uddeborg <goeran@uddeborg.se>, 2003, 2005, 2006, 2008, 2009, 2010, 2011.
 #
-# $Revision: 1.62 $
+# $Revision: 1.65 $
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.41.99.1009\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2011-10-09 20:32-0400\n"
-"PO-Revision-Date: 2011-10-16 23:20+0200\n"
+"PO-Revision-Date: 2011-10-22 18:10+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -5581,9 +5581,9 @@ msgid "Couldn't kill uuidd running at pid %d: %s\n"
 msgstr "Kunde inte döda uuidd som kör med pid %d: %s\n"
 
 #: misc/uuidd.c:591
-#, fuzzy, c-format
+#, c-format
 msgid "Killed uuidd running at pid %d\n"
-msgstr "Dödade uuidd kör på pid% d"
+msgstr "Dödade uuidd som körde med pid %d\n"
 
 #: misc/uuidgen.c:32
 #, c-format
@@ -5595,9 +5595,9 @@ msgid "# Extent dump:\n"
 msgstr "# Områdesdump:\n"
 
 #: resize/extent.c:203
-#, fuzzy, c-format
+#, c-format
 msgid "#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"
-msgstr "# Antal=%d, Storlek=%d, Markör=%d, Sorterad=%d\n"
+msgstr "#\tAntal=%llu, Storlek=%llu, Markör=%llu, Sorterad=%llu\n"
 
 #: resize/main.c:43
 #, c-format
@@ -5666,9 +5666,9 @@ msgstr ""
 "\n"
 
 #: resize/main.c:353
-#, fuzzy, c-format
+#, c-format
 msgid "Estimated minimum size of the filesystem: %llu\n"
-msgstr "Uppskattad minsta storlek på filsystemet: %u\n"
+msgstr "Uppskattad minsta storlek på filsystemet: %llu\n"
 
 #: resize/main.c:389
 #, c-format
@@ -5676,43 +5676,42 @@ msgid "Invalid new size: %s\n"
 msgstr "Ogiltig ny storlek: %s\n"
 
 #: resize/main.c:397
-#, fuzzy
 msgid "New size too large to be expressed in 32 bits\n"
-msgstr "Ny storlek för stor för att uttryckas i 32 bitar"
+msgstr "Ny storlek för stor för att uttryckas i 32 bitar\n"
 
 #: resize/main.c:409
-#, fuzzy, c-format
+#, c-format
 msgid "New size smaller than minimum (%llu)\n"
-msgstr "Ny storlek mindre än minimum (%u)\n"
+msgstr "Ny storlek mindre än minimum (%llu)\n"
 
 #: resize/main.c:415
 msgid "Invalid stride length"
 msgstr "Ogiltig stride-längd"
 
 #: resize/main.c:439
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The containing partition (or device) is only %llu (%dk) blocks.\n"
 "You requested a new size of %llu blocks.\n"
 "\n"
 msgstr ""
-"Den rymmande partitionen (eller enheten) är bara %u (%d k) block.\n"
-"De begärde en ny storlek på %u block.\n"
+"Den rymmande partitionen (eller enheten) är bara %llu (%d k) block.\n"
+"Du begärde en ny storlek på %llu block.\n"
 "\n"
 
 #: resize/main.c:446
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The filesystem is already %llu blocks long.  Nothing to do!\n"
 "\n"
 msgstr ""
-"Filsystemet är redan %u block långt.  Inget behöver göras!\n"
+"Filsystemet är redan %llu block långt.  Inget behöver göras!\n"
 "\n"
 
 #: resize/main.c:461
-#, fuzzy, c-format
+#, c-format
 msgid "Resizing the filesystem on %s to %llu (%dk) blocks.\n"
-msgstr "Ändrar storlek på filsystemet på %s till %u (%d k) block.\n"
+msgstr "Ändrar storlek på filsystemet på %s till %llu (%d k) block.\n"
 
 #: resize/main.c:470
 #, c-format
@@ -5729,12 +5728,12 @@ msgstr ""
 "efter den avbrutna storleksändringen.\n"
 
 #: resize/main.c:479
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The filesystem on %s is now %llu blocks long.\n"
 "\n"
 msgstr ""
-"Filsystemet på %s är nu %u block långt.\n"
+"Filsystemet på %s är nu %llu block långt.\n"
 "\n"
 
 #: resize/main.c:494
@@ -5769,18 +5768,17 @@ msgid "While checking for on-line resizing support"
 msgstr "Vid kontroll av stöd för storleksändring uppkopplat"
 
 #: resize/online.c:93
-#, fuzzy
 msgid "Kernel does not support resizing a file system this large"
-msgstr "Kärnan inte ändra storlek på ett filsystem denna stora"
+msgstr "Kärnan stödjer inte ändring av storlek på så stora filsystem"
 
 #: resize/online.c:105
 msgid "Kernel does not support online resizing"
 msgstr "Kärnan stödjer inte storleksändring uppkopplat"
 
 #: resize/online.c:138
-#, fuzzy, c-format
+#, c-format
 msgid "Performing an on-line resize of %s to %llu (%dk) blocks.\n"
-msgstr "Utför en storleksändring on-line av %s till %u (%d k) block.\n"
+msgstr "Utför en storleksändring on-line av %s till %llu (%d k) block.\n"
 
 #: resize/online.c:148
 msgid "While trying to extend the last group"
@@ -5815,482 +5813,388 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Skulle aldrig inträffa: storleksändringsinoden trasig!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-#, fuzzy
 msgid "EXT2FS Library version 1.42-WIP"
-msgstr "EXT2FS Bibliotek version 1,42-WIP"
+msgstr "EXT2FS-bibliotek version 1.42-WIP"
 
 #: lib/ext2fs/ext2_err.c:12
-#, fuzzy
 msgid "Wrong magic number for ext2_filsys structure"
-msgstr "Fel magiska numret för ext2_filsys struktur"
+msgstr "Fel magiskt tal för ext2_filsys-post"
 
 #: lib/ext2fs/ext2_err.c:13
-#, fuzzy
 msgid "Wrong magic number for badblocks_list structure"
-msgstr "Fel magiska numret för badblocks_list struktur"
+msgstr "Fel magiskt tal för badblocks_list-post"
 
 #: lib/ext2fs/ext2_err.c:14
-#, fuzzy
 msgid "Wrong magic number for badblocks_iterate structure"
-msgstr "Fel magiska numret för badblocks_iterate struktur"
+msgstr "Fel magiskt tal för badblocks_iterate-post"
 
 #: lib/ext2fs/ext2_err.c:15
-#, fuzzy
 msgid "Wrong magic number for inode_scan structure"
-msgstr "Fel magiska numret för inode_scan struktur"
+msgstr "Fel magiskt tal för inode_scan-post"
 
 #: lib/ext2fs/ext2_err.c:16
-#, fuzzy
 msgid "Wrong magic number for io_channel structure"
-msgstr "Fel magiska numret för io_channel struktur"
+msgstr "Fel magiskt tal för io_channel-post"
 
 #: lib/ext2fs/ext2_err.c:17
-#, fuzzy
 msgid "Wrong magic number for unix io_channel structure"
-msgstr "Fel magiska numret för UNIX io_channel struktur"
+msgstr "Fel magiskt tal för unix-io_channel-post"
 
 #: lib/ext2fs/ext2_err.c:18
-#, fuzzy
 msgid "Wrong magic number for io_manager structure"
-msgstr "Fel magiska numret för io_manager struktur"
+msgstr "Fel magiskt tal för io_manager-post"
 
 #: lib/ext2fs/ext2_err.c:19
-#, fuzzy
 msgid "Wrong magic number for block_bitmap structure"
-msgstr "Fel magiska numret för block_bitmap struktur"
+msgstr "Fel magiskt tal för block_bitmap-post"
 
 #: lib/ext2fs/ext2_err.c:20
-#, fuzzy
 msgid "Wrong magic number for inode_bitmap structure"
-msgstr "Fel magiska numret för inode_bitmap struktur"
+msgstr "Fel magiskt tal för inode_bitmap-post"
 
 #: lib/ext2fs/ext2_err.c:21
-#, fuzzy
 msgid "Wrong magic number for generic_bitmap structure"
-msgstr "Fel magiska numret för generic_bitmap struktur"
+msgstr "Fel magiskt tal för generic_bitmap-post"
 
 #: lib/ext2fs/ext2_err.c:22
-#, fuzzy
 msgid "Wrong magic number for test io_channel structure"
-msgstr "Fel magiska numret för test io_channel struktur"
+msgstr "Fel magiskt tal för test io_channel-post"
 
 #: lib/ext2fs/ext2_err.c:23
-#, fuzzy
 msgid "Wrong magic number for directory block list structure"
-msgstr "Fel magiska numret för katalogen blockeringslistan struktur"
+msgstr "Fel magiskt tal för katalogenblocklistepost"
 
 #: lib/ext2fs/ext2_err.c:24
-#, fuzzy
 msgid "Wrong magic number for icount structure"
-msgstr "Fel magiska numret för iCount struktur"
+msgstr "Fel magiskt tal för icount-post"
 
 #: lib/ext2fs/ext2_err.c:25
-#, fuzzy
 msgid "Wrong magic number for Powerquest io_channel structure"
-msgstr "Fel magiska numret för PowerQuest io_channel struktur"
+msgstr "Fel magiskt tal för PowerQuest-io_channel-post"
 
 #: lib/ext2fs/ext2_err.c:26
-#, fuzzy
 msgid "Wrong magic number for ext2 file structure"
-msgstr "Fel magiska numret för ext2 filstruktur"
+msgstr "Fel magiskt tal för ext2-filstruktur"
 
 #: lib/ext2fs/ext2_err.c:27
-#, fuzzy
 msgid "Wrong magic number for Ext2 Image Header"
-msgstr "Fel magiska numret för ext2 Image Header"
+msgstr "Fel magiskt tal för ext2-avbildshuvud"
 
 #: lib/ext2fs/ext2_err.c:28
-#, fuzzy
 msgid "Wrong magic number for inode io_channel structure"
-msgstr "Fel magiska numret för inode io_channel struktur"
+msgstr "Fel magiskt tal för inods-io_channel-post"
 
 #: lib/ext2fs/ext2_err.c:29
-#, fuzzy
 msgid "Wrong magic number for ext4 extent handle"
-msgstr "Fel magiska numret för ext4 utsträckning hantera"
+msgstr "Fel magiskt tal för ext4-utsträckningshandtag"
 
 #: lib/ext2fs/ext2_err.c:30
-#, fuzzy
 msgid "Bad magic number in super-block"
-msgstr "läser journalsuperblock\n"
+msgstr "Fel magiskt tal i superblocket"
 
 #: lib/ext2fs/ext2_err.c:31
-#, fuzzy
 msgid "Filesystem revision too high"
-msgstr "Filesystem version för hög"
+msgstr "Filesystemversionen är för hög"
 
 #: lib/ext2fs/ext2_err.c:32
-#, fuzzy
 msgid "Attempt to write to filesystem opened read-only"
-msgstr "Försök att skriva till filsystemet öppnas skrivskyddad"
+msgstr "Försök att skriva till ett filsystem öppnat skrivskyddat"
 
 #: lib/ext2fs/ext2_err.c:33
-#, fuzzy
 msgid "Can't read group descriptors"
-msgstr ", Gruppbeskrivare vid "
+msgstr "Kan inte läsa gruppbeskrivare"
 
 #: lib/ext2fs/ext2_err.c:34
-#, fuzzy
 msgid "Can't write group descriptors"
-msgstr ", Gruppbeskrivare vid "
+msgstr "Kan inte skriva gruppbeskrivare"
 
 #: lib/ext2fs/ext2_err.c:35
-#, fuzzy
 msgid "Corrupt group descriptor: bad block for block bitmap"
-msgstr "Corrupt grupp deskriptor: felaktigt block för block bitmapp"
+msgstr "Trasig gruppbeskrivare: felaktigt block för blockbitkarta"
 
 #: lib/ext2fs/ext2_err.c:36
-#, fuzzy
 msgid "Corrupt group descriptor: bad block for inode bitmap"
-msgstr "Corrupt grupp deskriptor: dåliga block för inode bitmapp"
+msgstr "Trasig gruppbeskrivare: felaktigt block för inodsbitkarta"
 
 #: lib/ext2fs/ext2_err.c:37
-#, fuzzy
 msgid "Corrupt group descriptor: bad block for inode table"
-msgstr "Corrupt grupp deskriptor: dåliga block för inode tabell"
+msgstr "Trasig gruppbeskrivare: dåligt block för inodstabell"
 
 #: lib/ext2fs/ext2_err.c:38
-#, fuzzy
 msgid "Can't write an inode bitmap"
-msgstr "vid skrivning av inodbitkarta"
+msgstr "Kan inte skriva en inodsbitkarta"
 
 #: lib/ext2fs/ext2_err.c:39
-#, fuzzy
 msgid "Can't read an inode bitmap"
-msgstr "skiver block- och inodsbitkartor"
+msgstr "Kan inte läsa en inodsbitkarta"
 
 #: lib/ext2fs/ext2_err.c:40
-#, fuzzy
 msgid "Can't write an block bitmap"
-msgstr "läser inod- och blockbitkartor"
+msgstr "Kan inte skriva en blockbitkarta"
 
 #: lib/ext2fs/ext2_err.c:41
-#, fuzzy
 msgid "Can't read an block bitmap"
-msgstr "läser inod- och blockbitkartor"
+msgstr "Kan inte läsa en blockbitkarta"
 
 #: lib/ext2fs/ext2_err.c:42
-#, fuzzy
 msgid "Can't write an inode table"
-msgstr "vid skrivning av inodtabell"
+msgstr "Kan inte skriva en inodstabell"
 
 #: lib/ext2fs/ext2_err.c:43
-#, fuzzy
 msgid "Can't read an inode table"
-msgstr "Söker igenom inodstabell"
+msgstr "Kan inte läsa en inodstabell"
 
 #: lib/ext2fs/ext2_err.c:44
-#, fuzzy
 msgid "Can't read next inode"
-msgstr "Kan inte läsa nästa inode"
+msgstr "Kan inte läsa nästa inod"
 
 #: lib/ext2fs/ext2_err.c:45
-#, fuzzy
 msgid "Filesystem has unexpected block size"
-msgstr "Filsystem större än synbar enhetsstorlek."
+msgstr "Filsystemet har oväntad blockstorlek."
 
 #: lib/ext2fs/ext2_err.c:46
-#, fuzzy
 msgid "EXT2 directory corrupted"
-msgstr "EXT2 katalog skadad"
+msgstr "EXT2-katalog skadad"
 
 #: lib/ext2fs/ext2_err.c:47
-#, fuzzy
 msgid "Attempt to read block from filesystem resulted in short read"
-msgstr "Försök att läsa kvarter från filsystemet resulterade i korta läsa"
+msgstr "Försök att läsa block från filsystemet resulterade i en kort läsning"
 
 #: lib/ext2fs/ext2_err.c:48
-#, fuzzy
 msgid "Attempt to write block to filesystem resulted in short write"
-msgstr "Försök att skriva kvarter från filsystemet resulterade i kort skriva"
+msgstr "Försök att skriva block till filsystemet resulterade i en kort skrivning"
 
 #: lib/ext2fs/ext2_err.c:49
-#, fuzzy
 msgid "No free space in the directory"
 msgstr "Inget ledigt utrymme i katalogen"
 
 #: lib/ext2fs/ext2_err.c:50
-#, fuzzy
 msgid "Inode bitmap not loaded"
-msgstr ", Inodsbitkarta vid "
+msgstr "Inodsbitkartan inte inläst"
 
 #: lib/ext2fs/ext2_err.c:51
-#, fuzzy
 msgid "Block bitmap not loaded"
-msgstr "  Blockbitkarta vid "
+msgstr "Blockbitkartan inte inläst"
 
 #: lib/ext2fs/ext2_err.c:52
-#, fuzzy
 msgid "Illegal inode number"
-msgstr "Otillåtet antal block!\n"
+msgstr "Otillåtet inodsnummer"
 
 #: lib/ext2fs/ext2_err.c:53
-#, fuzzy
 msgid "Illegal block number"
-msgstr "Otillåtet antal block!\n"
+msgstr "Otillåtet blocknummer"
 
 #: lib/ext2fs/ext2_err.c:54
-#, fuzzy
 msgid "Internal error in ext2fs_expand_dir"
 msgstr "Internt fel i ext2fs_expand_dir"
 
 #: lib/ext2fs/ext2_err.c:55
-#, fuzzy
 msgid "Not enough space to build proposed filesystem"
-msgstr "Inte tillräckligt med utrymme för att öka inodsstorleken \n"
+msgstr "Inte tillräckligt med utrymme för att bygga det föreslagna filsystemet"
 
 #: lib/ext2fs/ext2_err.c:56
-#, fuzzy
 msgid "Illegal block number passed to ext2fs_mark_block_bitmap"
-msgstr "Olaglig blocknummer vidare till ext2fs_mark_block_bitmap"
+msgstr "Otillåtet blocknummer skickat till ext2fs_mark_block_bitmap"
 
 #: lib/ext2fs/ext2_err.c:57
-#, fuzzy
 msgid "Illegal block number passed to ext2fs_unmark_block_bitmap"
-msgstr "Olaglig blocknummer vidare till ext2fs_unmark_block_bitmap"
+msgstr "Otillåtet blocknummer skickat till ext2fs_unmark_block_bitmap"
 
 #: lib/ext2fs/ext2_err.c:58
-#, fuzzy
 msgid "Illegal block number passed to ext2fs_test_block_bitmap"
-msgstr "Olaglig blocknummer vidare till ext2fs_test_block_bitmap"
+msgstr "Otillåtet blocknummer skickat till ext2fs_test_block_bitmap"
 
 #: lib/ext2fs/ext2_err.c:59
-#, fuzzy
 msgid "Illegal inode number passed to ext2fs_mark_inode_bitmap"
-msgstr "Olaglig inode nummer vidare till ext2fs_mark_inode_bitmap"
+msgstr "Otillåtet inodsnummer skickat till ext2fs_mark_inode_bitmap"
 
 #: lib/ext2fs/ext2_err.c:60
-#, fuzzy
 msgid "Illegal inode number passed to ext2fs_unmark_inode_bitmap"
-msgstr "Olaglig inode nummer vidare till ext2fs_unmark_inode_bitmap"
+msgstr "Otillåtet inodsnummer skickat till ext2fs_unmark_inode_bitmap"
 
 #: lib/ext2fs/ext2_err.c:61
-#, fuzzy
 msgid "Illegal inode number passed to ext2fs_test_inode_bitmap"
-msgstr "Olaglig inode nummer vidare till ext2fs_test_inode_bitmap"
+msgstr "Otillåtet inodsnummer skickat till ext2fs_test_inode_bitmap"
 
 #: lib/ext2fs/ext2_err.c:62
-#, fuzzy
 msgid "Attempt to fudge end of block bitmap past the real end"
-msgstr "Försök att kola slutet av blocket bitmapp förbi det riktiga slutet"
+msgstr "Försök att fuska till slutet av blockbitkartan bortom det riktiga slutet"
 
 #: lib/ext2fs/ext2_err.c:63
-#, fuzzy
 msgid "Attempt to fudge end of inode bitmap past the real end"
-msgstr "Försök att kola slutet av inode bitmapp förbi det riktiga slutet"
+msgstr "Försök att fuska till slutet av inodsbitkartan bortom det riktiga slutet"
 
 #: lib/ext2fs/ext2_err.c:64
-#, fuzzy
 msgid "Illegal indirect block found"
-msgstr "dubbelt indirekt block"
+msgstr "Otillåtet indirektblock hittat"
 
 #: lib/ext2fs/ext2_err.c:65
-#, fuzzy
 msgid "Illegal doubly indirect block found"
-msgstr "dubbelt indirekt block"
+msgstr "Otillåtet dubbelt indirektblock hittat"
 
 #: lib/ext2fs/ext2_err.c:66
-#, fuzzy
 msgid "Illegal triply indirect block found"
-msgstr "trippelt indirekt block"
+msgstr "Otillåtet trippelt indirektblock hittat"
 
 #: lib/ext2fs/ext2_err.c:67
-#, fuzzy
 msgid "Block bitmaps are not the same"
-msgstr "  Blockbitkarta vid "
+msgstr "Blockbitkartorna är inte desamma"
 
 #: lib/ext2fs/ext2_err.c:68
-#, fuzzy
 msgid "Inode bitmaps are not the same"
-msgstr ", Inodsbitkarta vid "
+msgstr "Inodsbitkartorna är inte desamma"
 
 #: lib/ext2fs/ext2_err.c:69
-#, fuzzy
 msgid "Illegal or malformed device name"
-msgstr "Olagligt eller missbildade enhetsnamn"
+msgstr "Otillåtet eller felformat enhetsnamn"
 
 #: lib/ext2fs/ext2_err.c:70
-#, fuzzy
 msgid "A block group is missing an inode table"
-msgstr "Ett block grupp saknas en inode tabell"
+msgstr "En blockgrupp saknar en inodstabell"
 
 #: lib/ext2fs/ext2_err.c:71
-#, fuzzy
 msgid "The ext2 superblock is corrupt"
-msgstr "Den ext2 superblock är skadad"
+msgstr "Ext2-superblocket är skadat"
 
 #: lib/ext2fs/ext2_err.c:72
-#, fuzzy
 msgid "Illegal generic bit number passed to ext2fs_mark_generic_bitmap"
-msgstr "Olaglig generiska bitars nummer vidare till ext2fs_mark_generic_bitmap"
+msgstr "Otillåtet generiskt bittal skickat till ext2fs_mark_generic_bitmap"
 
 #: lib/ext2fs/ext2_err.c:73
-#, fuzzy
 msgid "Illegal generic bit number passed to ext2fs_unmark_generic_bitmap"
-msgstr "Olaglig generiska bitars nummer vidare till ext2fs_unmark_generic_bitmap"
+msgstr "Otillåtet generiskt bittal skickat till ext2fs_unmark_generic_bitmap"
 
 #: lib/ext2fs/ext2_err.c:74
-#, fuzzy
 msgid "Illegal generic bit number passed to ext2fs_test_generic_bitmap"
-msgstr "Olaglig generiska bitars nummer vidare till ext2fs_test_generic_bitmap"
+msgstr "Otillåtet generiskt bittal skickat till ext2fs_test_generic_bitmap"
 
 #: lib/ext2fs/ext2_err.c:75
-#, fuzzy
 msgid "Too many symbolic links encountered."
-msgstr "Alltför många symboliska länkar stött på."
+msgstr "Alltför många symboliska länkar påträffade."
 
 #: lib/ext2fs/ext2_err.c:76
-#, fuzzy
 msgid "The callback function will not handle this case"
-msgstr "Callback-funktionen kommer inte att hantera detta fallet"
+msgstr "Återanropsfunktionen kommer inte att hantera detta fall"
 
 #: lib/ext2fs/ext2_err.c:77
-#, fuzzy
 msgid "The inode is from a bad block in the inode table"
-msgstr "Den inode är från ett dåligt block i inode tabellen"
+msgstr "Inoden är från ett dåligt block i inodstabellen"
 
 #: lib/ext2fs/ext2_err.c:78
-#, fuzzy
 msgid "Filesystem has unsupported feature(s)"
-msgstr "%s har funktioner som inte stöds:"
+msgstr "Filsystemet har funktioner som inte stödjs"
 
 #: lib/ext2fs/ext2_err.c:79
-#, fuzzy
 msgid "Filesystem has unsupported read-only feature(s)"
-msgstr "%s har funktioner som inte stöds:"
+msgstr "Filsystemet har endast-läsbart-funktioner som inte stödjs"
 
 #: lib/ext2fs/ext2_err.c:80
-#, fuzzy
 msgid "IO Channel failed to seek on read or write"
-msgstr "IO Kanal underlåtit att söka på läsa eller skriva"
+msgstr "IO-kanalen misslyckades söka vid läsning eller skrivning"
 
 #: lib/ext2fs/ext2_err.c:81
-#, fuzzy
 msgid "Memory allocation failed"
-msgstr "Afel vid allokering"
+msgstr "Minnesallokering misslyckades"
 
 #: lib/ext2fs/ext2_err.c:82
-#, fuzzy
 msgid "Invalid argument passed to ext2 library"
-msgstr "Ogiltig argumentet som skickas till ext2 biblioteket"
+msgstr "Ogiltigt argumentet skickat till ext2-biblioteket"
 
 #: lib/ext2fs/ext2_err.c:83
-#, fuzzy
 msgid "Could not allocate block in ext2 filesystem"
-msgstr "Kunde inte allokera minne för filsystemtyper\n"
+msgstr "Kunde inte allokera block i ext2-filsystem"
 
 #: lib/ext2fs/ext2_err.c:84
-#, fuzzy
 msgid "Could not allocate inode in ext2 filesystem"
-msgstr "Kunde inte allokera minne för filsystemtyper\n"
+msgstr "Kunde inte allokera inoder i ext2-filsystem"
 
 #: lib/ext2fs/ext2_err.c:85
-#, fuzzy
 msgid "Ext2 inode is not a directory"
-msgstr "Ext2 inode är inte en katalog"
+msgstr "Ext2-inod är inte en katalog"
 
 #: lib/ext2fs/ext2_err.c:86
-#, fuzzy
 msgid "Too many references in table"
 msgstr "För många referenser i tabellen"
 
 #: lib/ext2fs/ext2_err.c:87
-#, fuzzy
 msgid "File not found by ext2_lookup"
 msgstr "Filen hittades inte av ext2_lookup"
 
 #: lib/ext2fs/ext2_err.c:88
-#, fuzzy
 msgid "File open read-only"
 msgstr "Filen öppnas skrivskyddad"
 
 #: lib/ext2fs/ext2_err.c:89
-#, fuzzy
 msgid "Ext2 directory block not found"
-msgstr "Tomt katalogblock %u (nr. %d) i inod %u\n"
+msgstr "Ext2-katalogblock hittades inte"
 
 #: lib/ext2fs/ext2_err.c:90
-#, fuzzy
 msgid "Ext2 directory already exists"
 msgstr "Ext2-katalogen finns redan"
 
 #: lib/ext2fs/ext2_err.c:91
-#, fuzzy
 msgid "Unimplemented ext2 library function"
-msgstr "Inte genomförts ext2 biblioteket funktion"
+msgstr "Oimplementerad ext2-biblioteksfunktion"
 
 #: lib/ext2fs/ext2_err.c:92
-#, fuzzy
 msgid "User cancel requested"
-msgstr "Användare avbryta begärda"
+msgstr "Användarannullering begärd"
 
 #: lib/ext2fs/ext2_err.c:93
-#, fuzzy
 msgid "Ext2 file too big"
-msgstr "Ext2-filen för stor"
+msgstr "Ext2-fil för stor"
 
 #: lib/ext2fs/ext2_err.c:94
-#, fuzzy
 msgid "Supplied journal device not a block device"
-msgstr "Använder journalenhetens blockstorlek: %d\n"
+msgstr "Angiven journalenhet är inte en blockenhet"
 
 #: lib/ext2fs/ext2_err.c:95
-#, fuzzy
 msgid "Journal superblock not found"
-msgstr "Journalsuperblock inte funnet!\n"
+msgstr "Journalsuperblock inte funnet"
 
 #: lib/ext2fs/ext2_err.c:96
-#, fuzzy
 msgid "Journal must be at least 1024 blocks"
-msgstr "Journal måste vara minst 1024 block"
+msgstr "Journalen måste vara minst 1024 block"
 
 #: lib/ext2fs/ext2_err.c:97
-#, fuzzy
 msgid "Unsupported journal version"
-msgstr "Stöds tidskriften version"
+msgstr "Ej stödd journalversion"
 
 #: lib/ext2fs/ext2_err.c:98
-#, fuzzy
 msgid "Error loading external journal"
-msgstr "vid försök att öppna extern journal"
+msgstr "Fel vid läsning av en extern journal"
 
 #: lib/ext2fs/ext2_err.c:99
-#, fuzzy
 msgid "Journal not found"
-msgstr "Journalsuperblock inte funnet!\n"
+msgstr "Journalen inte funnen"
 
 #: lib/ext2fs/ext2_err.c:100
-#, fuzzy
 msgid "Directory hash unsupported"
-msgstr "Directory hash stöds"
+msgstr "Katalog-hash stödjs inte"
 
 #: lib/ext2fs/ext2_err.c:101
-#, fuzzy
 msgid "Illegal extended attribute block number"
-msgstr "autökat attribut"
+msgstr "Ogiltigt blocknummer för utökat attribut"
 
 #: lib/ext2fs/ext2_err.c:102
-#, fuzzy
 msgid "Cannot create filesystem with requested number of inodes"
-msgstr "Kan inte skapa filsystem med begärt antal inodes"
+msgstr "Kan inte skapa ett filsystem med begärt antal inoder"
 
 #: lib/ext2fs/ext2_err.c:103
 msgid "E2image snapshot not in use"
 msgstr "E2image-ögonblicksbild används inte"
 
 #: lib/ext2fs/ext2_err.c:104
-#, fuzzy
 msgid "Too many reserved group descriptor blocks"
-msgstr "<Gruppidentifierarinoden>"
+msgstr "För många reserverade gruppidentifierarblock"
 
 #: lib/ext2fs/ext2_err.c:105
 msgid "Resize inode is corrupt"
 msgstr "Storleksändringsinoden är trasig"
 
 #: lib/ext2fs/ext2_err.c:106
-#, fuzzy
 msgid "Tried to set block bmap with missing indirect block"
-msgstr "Kunde inte allokera blockbitkarta när inodsstorleken ökades\n"
+msgstr "Försökte sätta en blockbitkarta med saknat indirektblock"
 
 #: lib/ext2fs/ext2_err.c:107
 msgid "TDB: Success"
@@ -6321,9 +6225,8 @@ msgid "TDB: Lock exists on other keys"
 msgstr "TDB: Lås finns på andra nycklar"
 
 #: lib/ext2fs/ext2_err.c:114
-#, fuzzy
 msgid "TDB: Invalid parameter"
-msgstr "Ogiltig stride-parameter: %s\n"
+msgstr "TBD: Ogiltig parameter"
 
 #: lib/ext2fs/ext2_err.c:115
 msgid "TDB: Record does not exist"
@@ -6406,9 +6309,8 @@ msgid "Inode does not use extents"
 msgstr "Inoder använder inte utsträckningar"
 
 #: lib/ext2fs/ext2_err.c:135
-#, fuzzy
 msgid "No 'next' extent"
-msgstr "xutsträckning"
+msgstr "Ingen \"nästa\" utsträckning"
 
 #: lib/ext2fs/ext2_err.c:136
 msgid "No 'previous' extent"
@@ -6439,9 +6341,8 @@ msgid "Splitting would result in empty node"
 msgstr "Uppdelning skulle resultera i en tom nod"
 
 #: lib/ext2fs/ext2_err.c:143
-#, fuzzy
 msgid "Extent not found"
-msgstr "/lost+found inte funnen.  "
+msgstr "Utsräckningen inte funnen"
 
 #: lib/ext2fs/ext2_err.c:144
 msgid "Operation not supported for inodes containing extents"
@@ -6500,14 +6401,12 @@ msgid "Bad magic value in profile_node"
 msgstr "Felaktigt magiskt värde i profile_node"
 
 #: e2fsck/prof_err.c:13
-#, fuzzy
 msgid "Profile section not found"
-msgstr "vid skapande av /lost+found"
+msgstr "Profilsektionen inte funnen"
 
 #: e2fsck/prof_err.c:14
-#, fuzzy
 msgid "Profile relation not found"
-msgstr "vid skapande av /lost+found"
+msgstr "Profilrelationen inte funnen"
 
 #: e2fsck/prof_err.c:15
 msgid "Attempt to add a relation to node which is not a section"
@@ -6522,12 +6421,10 @@ msgid "Bad linked list in profile structures"
 msgstr "Felaktig länkad lista i profilstrukturer"
 
 #: e2fsck/prof_err.c:18
-#, fuzzy
 msgid "Bad group level in profile structures"
 msgstr "Felaktig gruppnivå i profilstrukturer"
 
 #: e2fsck/prof_err.c:19
-#, fuzzy
 msgid "Bad parent pointer in profile structures"
 msgstr "Felaktig föräldrapekare i profilstrukturer"
 
@@ -6580,9 +6477,8 @@ msgid "Iteration through all top level section not supported"
 msgstr "Iteration över alla toppnivåsektioner stödjs inte"
 
 #: e2fsck/prof_err.c:32
-#, fuzzy
 msgid "Invalid profile_section object"
-msgstr "Ogiltig filsystemsflagga satt: %s\n"
+msgstr "Ogiltigt profile_section-objekt"
 
 #: e2fsck/prof_err.c:33
 msgid "No more sections"
@@ -6601,9 +6497,8 @@ msgid "Bad magic value in profile_file_t"
 msgstr "Felaktigt magiskt värde i profile_file_t"
 
 #: e2fsck/prof_err.c:37
-#, fuzzy
 msgid "Couldn't open profile file"
-msgstr "Kunde inte klona fil: %m\n"
+msgstr "Kunde inte öppna profilfilen"
 
 #: e2fsck/prof_err.c:38
 msgid "Section already exists"
@@ -6614,34 +6509,9 @@ msgid "Invalid boolean value"
 msgstr "Ogiltigt booleskt värde"
 
 #: e2fsck/prof_err.c:40
-#, fuzzy
 msgid "Invalid integer value"
-msgstr "Ogiltig stride-längd"
+msgstr "Ogiltigt heltalsvärde"
 
 #: e2fsck/prof_err.c:41
 msgid "Bad magic value in profile_file_data_t"
 msgstr "Felaktigt magiskt värde i profile_file_data_t"
-
-#~ msgid "<The ACL index inode>"
-#~ msgstr "<ACL-indexinoden>"
-
-#~ msgid "<The ACL data inode>"
-#~ msgstr "<ACL-datainoden>"
-
-#~ msgid "short write (only %d bytes) for writing image header"
-#~ msgstr "kort skrivning (endast %d byte) för skrivning av bildhuvud"
-
-#~ msgid "invalid fragment size - %s"
-#~ msgstr "ogiltig fragmentstorlek - %s"
-
-#~ msgid "Warning: fragments not supported.  Ignoring -f option\n"
-#~ msgstr "Varning: fragment stöds inte.  Ignorerar -f-flagga\n"
-
-#~ msgid "Calling BLKDISCARD from %llu to %llu "
-#~ msgstr "Anropar BLKDISCARD från %llu till %llu "
-
-#~ msgid "succeeded.\n"
-#~ msgstr "lyckades.\n"
-
-#~ msgid "Journal NOT removed\n"
-#~ msgstr "Journal INTE borttagen\n"
