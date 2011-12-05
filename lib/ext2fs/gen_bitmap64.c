@@ -297,8 +297,8 @@ void ext2fs_clear_generic_bmap(ext2fs_generic_bitmap bitmap)
 {
 	if (EXT2FS_IS_32_BITMAP(bitmap))
 		ext2fs_clear_generic_bitmap(bitmap);
-
-	bitmap->bitmap_ops->clear_bmap (bitmap);
+	else
+		bitmap->bitmap_ops->clear_bmap (bitmap);
 }
 
 int ext2fs_mark_generic_bmap(ext2fs_generic_bitmap bitmap,
