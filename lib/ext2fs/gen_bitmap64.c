@@ -88,6 +88,9 @@ errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 	struct ext2_bitmap_ops	*ops;
 	errcode_t retval;
 
+	if (!type)
+		type = EXT2FS_BMAP64_BITARRAY;
+
 	switch (type) {
 	case EXT2FS_BMAP64_BITARRAY:
 		ops = &ext2fs_blkmap64_bitarray;

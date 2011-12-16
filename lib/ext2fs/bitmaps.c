@@ -67,9 +67,9 @@ errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
 	/* Are we permitted to use new-style bitmaps? */
 	if (fs->flags & EXT2_FLAG_64BITS)
 		return (ext2fs_alloc_generic_bmap(fs,
-				  EXT2_ET_MAGIC_INODE_BITMAP64,
-				  EXT2FS_BMAP64_BITARRAY,
-				  start, end, real_end, descr, ret));
+				EXT2_ET_MAGIC_INODE_BITMAP64,
+				fs->default_bitmap_type,
+				start, end, real_end, descr, ret));
 
 	/* Otherwise, check to see if the file system is small enough
 	 * to use old-style 32-bit bitmaps */
@@ -99,9 +99,9 @@ errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 
 	if (fs->flags & EXT2_FLAG_64BITS)
 		return (ext2fs_alloc_generic_bmap(fs,
-				  EXT2_ET_MAGIC_BLOCK_BITMAP64,
-				  EXT2FS_BMAP64_BITARRAY,
-				  start, end, real_end, descr, ret));
+				EXT2_ET_MAGIC_BLOCK_BITMAP64,
+				fs->default_bitmap_type,
+				start, end, real_end, descr, ret));
 
 	if ((end > ~0U) || (real_end > ~0U))
 		return EXT2_ET_CANT_USE_LEGACY_BITMAPS;
@@ -143,7 +143,7 @@ errcode_t ext2fs_allocate_subcluster_bitmap(ext2_filsys fs,
 		    * (__u64) fs->group_desc_count)-1 + start;
 
 	retval = ext2fs_alloc_generic_bmap(fs, EXT2_ET_MAGIC_BLOCK_BITMAP64,
-					   EXT2FS_BMAP64_BITARRAY, start,
+					   fs->default_bitmap_type, start,
 					   end, real_end, descr, &bmap);
 	if (retval)
 		return retval;

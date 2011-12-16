@@ -244,10 +244,12 @@ struct struct_ext2_filsys {
 	__u32				umask;
 	time_t				now;
 	int				cluster_ratio_bits;
+	__u16				default_bitmap_type;
+	__u16				pad;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[6];
+	__u32				reserved[5];
 
 	/*
 	 * Reserved for the use of the calling application.
@@ -285,6 +287,12 @@ struct struct_ext2_filsys {
 #else
 #include <ext2fs/bitops.h>
 #endif
+
+/*
+ * 64-bit bitmap backend types
+ */
+
+#define EXT2FS_BMAP64_BITARRAY	1
 
 /*
  * Return flags for the block iterator functions

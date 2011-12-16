@@ -109,8 +109,6 @@ extern void ext2fs_numeric_progress_close(ext2_filsys fs,
  * 64-bit bitmap support
  */
 
-#define EXT2FS_BMAP64_BITARRAY	1
-
 extern errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 					   int type, __u64 start, __u64 end,
 					   __u64 real_end,
