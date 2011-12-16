@@ -112,6 +112,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
 	fs->flags = flags | EXT2_FLAG_RW;
 	fs->umask = 022;
+	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
 #ifdef WORDS_BIGENDIAN
 	fs->flags |= EXT2_FLAG_SWAP_BYTES;
 #endif
