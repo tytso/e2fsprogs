@@ -557,6 +557,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		scan_callback_struct scan_struct;
 	struct ext2_super_block *sb = ctx->fs->super;
 	const char	*old_op;
+	unsigned int	save_type;
 	int		imagic_fs, extent_fs;
 	int		busted_fs_time = 0;
 	int		inode_size;
@@ -594,33 +595,38 @@ void e2fsck_pass1(e2fsck_t ctx)
 	/*
 	 * Allocate bitmaps structures
 	 */
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, _("in-use inode map"),
-					      &ctx->inode_used_map);
+	pctx.errcode = e2fsck_allocate_inode_bitmap(fs, _("in-use inode map"),
+						    EXT2FS_BMAP64_RBTREE,
+						    "inode_used_map",
+						    &ctx->inode_used_map);
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
-				_("directory inode map"), &ctx->inode_dir_map);
+	pctx.errcode = e2fsck_allocate_inode_bitmap(fs,
+			_("directory inode map"),
+			EXT2FS_BMAP64_AUTODIR,
+			"inode_dir_map", &ctx->inode_dir_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
-			_("regular file inode map"), &ctx->inode_reg_map);
+	pctx.errcode = e2fsck_allocate_inode_bitmap(fs,
+			_("regular file inode map"), EXT2FS_BMAP64_RBTREE,
+			"inode_reg_map", &ctx->inode_reg_map);
 	if (pctx.errcode) {
 		pctx.num = 6;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_subcluster_bitmap(fs,
-						_("in-use block map"),
-						&ctx->block_found_map);
+	pctx.errcode = e2fsck_allocate_subcluster_bitmap(fs,
+			_("in-use block map"), EXT2FS_BMAP64_RBTREE,
+			"block_found_map", &ctx->block_found_map);
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
@@ -628,9 +634,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 		return;
 	}
 	e2fsck_setup_tdb_icount(ctx, 0, &ctx->inode_link_info);
-	if (!ctx->inode_link_info)
+	if (!ctx->inode_link_info) {
+		e2fsck_set_bitmap_type(fs, EXT2FS_BMAP64_RBTREE,
+				       "inode_link_info", &save_type);
 		pctx.errcode = ext2fs_create_icount2(fs, 0, 0, 0,
 						     &ctx->inode_link_info);
+		fs->default_bitmap_type = save_type;
+	}
+
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ALLOCATE_ICOUNT, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
@@ -1331,8 +1342,9 @@ static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
 	if (!ctx->inode_bad_map) {
 		clear_problem_context(&pctx);
 
-		pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
-			    _("bad inode map"), &ctx->inode_bad_map);
+		pctx.errcode = e2fsck_allocate_inode_bitmap(ctx->fs,
+				_("bad inode map"), EXT2FS_BMAP64_RBTREE,
+				"inode_bad_map", &ctx->inode_bad_map);
 		if (pctx.errcode) {
 			pctx.num = 3;
 			fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
@@ -1353,9 +1365,9 @@ static void alloc_bb_map(e2fsck_t ctx)
 	struct		problem_context pctx;
 
 	clear_problem_context(&pctx);
-	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
-					      _("inode in bad block map"),
-					      &ctx->inode_bb_map);
+	pctx.errcode = e2fsck_allocate_inode_bitmap(ctx->fs,
+			_("inode in bad block map"), EXT2FS_BMAP64_RBTREE,
+			"inode_bb_map", &ctx->inode_bb_map);
 	if (pctx.errcode) {
 		pctx.num = 4;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
@@ -1373,9 +1385,9 @@ static void alloc_imagic_map(e2fsck_t ctx)
 	struct		problem_context pctx;
 
 	clear_problem_context(&pctx);
-	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
-					      _("imagic inode map"),
-					      &ctx->inode_imagic_map);
+	pctx.errcode = e2fsck_allocate_inode_bitmap(ctx->fs,
+			_("imagic inode map"), EXT2FS_BMAP64_RBTREE,
+			"inode_imagic_map", &ctx->inode_imagic_map);
 	if (pctx.errcode) {
 		pctx.num = 5;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
@@ -1400,9 +1412,10 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk64_t block)
 
 	if (ext2fs_fast_test_block_bitmap2(ctx->block_found_map, block)) {
 		if (!ctx->block_dup_map) {
-			pctx.errcode = ext2fs_allocate_block_bitmap(ctx->fs,
-			      _("multiply claimed block map"),
-			      &ctx->block_dup_map);
+			pctx.errcode = e2fsck_allocate_block_bitmap(ctx->fs,
+					_("multiply claimed block map"),
+					EXT2FS_BMAP64_RBTREE, "block_dup_map",
+					&ctx->block_dup_map);
 			if (pctx.errcode) {
 				pctx.num = 3;
 				fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR,
@@ -1500,9 +1513,10 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 	/* If ea bitmap hasn't been allocated, create it */
 	if (!ctx->block_ea_map) {
-		pctx->errcode = ext2fs_allocate_block_bitmap(fs,
-						      _("ext attr block map"),
-						      &ctx->block_ea_map);
+		pctx->errcode = e2fsck_allocate_block_bitmap(fs,
+					_("ext attr block map"),
+					EXT2FS_BMAP64_RBTREE, "block_ea_map",
+					&ctx->block_ea_map);
 		if (pctx->errcode) {
 			pctx->num = 2;
 			fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, pctx);

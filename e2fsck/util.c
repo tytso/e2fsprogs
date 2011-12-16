@@ -237,6 +237,7 @@ void e2fsck_read_bitmaps(e2fsck_t ctx)
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
 	const char	*old_op;
+	unsigned int	save_type;
 
 	if (ctx->invalid_bitmaps) {
 		com_err(ctx->program_name, 0,
@@ -246,7 +247,10 @@ void e2fsck_read_bitmaps(e2fsck_t ctx)
 	}
 
 	old_op = ehandler_operation(_("reading inode and block bitmaps"));
+	e2fsck_set_bitmap_type(fs, EXT2FS_BMAP64_RBTREE, "fs_bitmaps",
+			       &save_type);
 	retval = ext2fs_read_bitmaps(fs);
+	fs->default_bitmap_type = save_type;
 	ehandler_operation(old_op);
 	if (retval) {
 		com_err(ctx->program_name, retval,
@@ -755,5 +759,62 @@ errcode_t e2fsck_mmp_update(ext2_filsys fs)
 			     _("UNEXPECTED INCONSISTENCY: the filesystem is "
 			       "being modified while fsck is running.\n"));
 
+	return retval;
+}
+
+void e2fsck_set_bitmap_type(ext2_filsys fs, unsigned int default_type,
+			    const char *profile_name, unsigned int *old_type)
+{
+	unsigned type;
+	errcode_t	retval;
+
+	if (old_type)
+		*old_type = fs->default_bitmap_type;
+	profile_get_uint(e2fsck_global_ctx->profile, "bitmaps",
+			 profile_name, 0, default_type, &type);
+	profile_get_uint(e2fsck_global_ctx->profile, "bitmaps",
+			 "all", 0, type, &type);
+	fs->default_bitmap_type = type ? type : default_type;
+}
+
+errcode_t e2fsck_allocate_inode_bitmap(ext2_filsys fs, const char *descr,
+				       int deftype,
+				       const char *name,
+				       ext2fs_inode_bitmap *ret)
+{
+	errcode_t	retval;
+	unsigned int	save_type;
+
+	e2fsck_set_bitmap_type(fs, deftype, name, &save_type);
+	retval = ext2fs_allocate_inode_bitmap(fs, descr, ret);
+	fs->default_bitmap_type = save_type;
+	return retval;
+}
+
+errcode_t e2fsck_allocate_block_bitmap(ext2_filsys fs, const char *descr,
+				       int deftype,
+				       const char *name,
+				       ext2fs_block_bitmap *ret)
+{
+	errcode_t	retval;
+	unsigned int	save_type;
+
+	e2fsck_set_bitmap_type(fs, deftype, name, &save_type);
+	retval = ext2fs_allocate_block_bitmap(fs, descr, ret);
+	fs->default_bitmap_type = save_type;
+	return retval;
+}
+
+errcode_t e2fsck_allocate_subcluster_bitmap(ext2_filsys fs, const char *descr,
+					    int deftype,
+					    const char *name,
+					    ext2fs_block_bitmap *ret)
+{
+	errcode_t	retval;
+	unsigned int	save_type;
+
+	e2fsck_set_bitmap_type(fs, deftype, name, &save_type);
+	retval = ext2fs_allocate_subcluster_bitmap(fs, descr, ret);
+	fs->default_bitmap_type = save_type;
 	return retval;
 }

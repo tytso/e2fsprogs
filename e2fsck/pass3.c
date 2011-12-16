@@ -74,8 +74,9 @@ void e2fsck_pass3(e2fsck_t ctx)
 	/*
 	 * Allocate some bitmaps to do loop detection.
 	 */
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, _("inode done bitmap"),
-						    &inode_done_map);
+	pctx.errcode = e2fsck_allocate_inode_bitmap(fs, _("inode done bitmap"),
+					EXT2FS_BMAP64_AUTODIR,
+					"inode_done_map", &inode_done_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
 		fix_problem(ctx, PR_3_ALLOCATE_IBITMAP_ERROR, &pctx);
@@ -318,7 +319,7 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 			if (inode_loop_detect)
 				ext2fs_clear_inode_bitmap(inode_loop_detect);
 			else {
-				pctx->errcode = ext2fs_allocate_inode_bitmap(fs, _("inode loop detection bitmap"), &inode_loop_detect);
+				pctx->errcode = e2fsck_allocate_inode_bitmap(fs, _("inode loop detection bitmap"), EXT2FS_BMAP64_AUTODIR, "inode_loop_detect", &inode_loop_detect);
 				if (pctx->errcode) {
 					pctx->num = 1;
 					fix_problem(ctx,

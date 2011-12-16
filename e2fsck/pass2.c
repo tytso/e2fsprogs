@@ -91,6 +91,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct check_dir_struct cd;
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db, *dx_parent;
+	unsigned int		save_type;
 	int			b;
 	int			i, depth;
 	problem_t		code;
@@ -110,11 +111,15 @@ void e2fsck_pass2(e2fsck_t ctx)
 				&ctx->inode_count);
 	if (ctx->inode_count)
 		cd.pctx.errcode = 0;
-	else
+	else {
+		e2fsck_set_bitmap_type(fs, EXT2FS_BMAP64_RBTREE,
+				       "inode_count", &save_type);
 		cd.pctx.errcode = ext2fs_create_icount2(fs,
 						EXT2_ICOUNT_OPT_INCREMENT,
 						0, ctx->inode_link_info,
 						&ctx->inode_count);
+		fs->default_bitmap_type = save_type;
+	}
 	if (cd.pctx.errcode) {
 		fix_problem(ctx, PR_2_ALLOCATE_ICOUNT, &cd.pctx);
 		ctx->flags |= E2F_FLAG_ABORT;

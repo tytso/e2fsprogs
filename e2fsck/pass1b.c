@@ -218,8 +218,10 @@ void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf)
 
 	clear_problem_context(&pctx);
 
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
-		      _("multiply claimed inode map"), &inode_dup_map);
+	pctx.errcode = e2fsck_allocate_inode_bitmap(fs,
+			_("multiply claimed inode map"),
+			EXT2FS_BMAP64_RBTREE, "inode_dup_map",
+			&inode_dup_map);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1B_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;

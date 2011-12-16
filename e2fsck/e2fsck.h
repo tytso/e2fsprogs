@@ -540,6 +540,26 @@ extern int write_all(int fd, char *buf, size_t count);
 void dump_mmp_msg(struct mmp_struct *mmp, const char *msg);
 errcode_t e2fsck_mmp_update(ext2_filsys fs);
 
+extern void e2fsck_set_bitmap_type(ext2_filsys fs,
+				   unsigned int default_type,
+				   const char *profile_name,
+				   unsigned int *old_type);
+extern errcode_t e2fsck_allocate_inode_bitmap(ext2_filsys fs,
+					      const char *descr,
+					      int default_type,
+					      const char *profile_name,
+					      ext2fs_inode_bitmap *ret);
+extern errcode_t e2fsck_allocate_block_bitmap(ext2_filsys fs,
+					      const char *descr,
+					      int default_type,
+					      const char *profile_name,
+					      ext2fs_block_bitmap *ret);
+extern errcode_t e2fsck_allocate_subcluster_bitmap(ext2_filsys fs,
+						   const char *descr,
+						   int default_type,
+						   const char *profile_name,
+						   ext2fs_block_bitmap *ret);
+
 /* unix.c */
 extern void e2fsck_clear_progbar(e2fsck_t ctx);
 extern int e2fsck_simple_progress(e2fsck_t ctx, const char *label,

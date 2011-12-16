@@ -291,7 +291,6 @@ struct struct_ext2_filsys {
 /*
  * 64-bit bitmap backend types
  */
-
 #define EXT2FS_BMAP64_BITARRAY	1
 #define EXT2FS_BMAP64_RBTREE	2
 #define EXT2FS_BMAP64_AUTODIR	3
