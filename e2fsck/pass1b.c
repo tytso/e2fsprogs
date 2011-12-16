@@ -267,7 +267,7 @@ struct process_block_struct {
 static void pass1b(e2fsck_t ctx, char *block_buf)
 {
 	ext2_filsys fs = ctx->fs;
-	ext2_ino_t ino;
+	ext2_ino_t ino = 0;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
 	struct process_block_struct pb;

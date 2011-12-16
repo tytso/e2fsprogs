@@ -545,7 +545,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	int	i;
 	__u64	max_sizes;
 	ext2_filsys fs = ctx->fs;
-	ext2_ino_t	ino;
+	ext2_ino_t	ino = 0;
 	struct ext2_inode *inode;
 	ext2_inode_scan	scan;
 	char		*block_buf;
