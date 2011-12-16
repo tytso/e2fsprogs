@@ -310,6 +310,13 @@ static void ba_clear_bmap(ext2fs_generic_bitmap bitmap)
 	       (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1));
 }
 
+static void ba_print_stats(ext2fs_generic_bitmap bitmap)
+{
+	fprintf(stderr, "%16llu Bytes used by bitarray\n",
+		((bitmap->real_end - bitmap->start) >> 3) + 1 +
+		sizeof(struct ext2fs_ba_private_struct));
+}
+
 struct ext2_bitmap_ops ext2fs_blkmap64_bitarray = {
 	.type = EXT2FS_BMAP64_BITARRAY,
 	.new_bmap = ba_new_bmap,
@@ -325,4 +332,5 @@ struct ext2_bitmap_ops ext2fs_blkmap64_bitarray = {
 	.set_bmap_range = ba_set_bmap_range,
 	.get_bmap_range = ba_get_bmap_range,
 	.clear_bmap = ba_clear_bmap,
+	.print_stats = ba_print_stats,
 };

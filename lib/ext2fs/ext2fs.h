@@ -1168,6 +1168,10 @@ extern errcode_t ext2fs_set_generic_bitmap_range(ext2fs_generic_bitmap bmap,
 						 void *in);
 
 /* gen_bitmap64.c */
+
+/* Generate and print bitmap usage statistics */
+#define BMAP_STATS
+
 void ext2fs_free_generic_bmap(ext2fs_generic_bitmap bmap);
 errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 				    int type, __u64 start, __u64 end,

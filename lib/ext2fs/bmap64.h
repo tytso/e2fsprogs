@@ -9,6 +9,34 @@
  * %End-Header%
  */
 
+struct ext2_bmap_statistics {
+	int		type;
+	struct timeval	created;
+
+#ifdef BMAP_STATS_OPS
+	unsigned long	copy_count;
+	unsigned long	resize_count;
+	unsigned long	mark_count;
+	unsigned long	unmark_count;
+	unsigned long	test_count;
+	unsigned long	mark_ext_count;
+	unsigned long	unmark_ext_count;
+	unsigned long	test_ext_count;
+	unsigned long	set_range_count;
+	unsigned long	get_range_count;
+	unsigned long	clear_count;
+
+	blk64_t		last_marked;
+	blk64_t		last_tested;
+	blk64_t		mark_back;
+	blk64_t		test_back;
+
+	unsigned long	mark_seq;
+	unsigned long	test_seq;
+#endif /* BMAP_STATS_OPS */
+};
+
+
 struct ext2fs_struct_generic_bitmap {
 	errcode_t		magic;
 	ext2_filsys 		fs;
@@ -20,6 +48,9 @@ struct ext2fs_struct_generic_bitmap {
 	char			*description;
 	void			*private;
 	errcode_t		base_error_code;
+#ifdef BMAP_STATS
+	struct ext2_bmap_statistics	stats;
+#endif
 };
 
 #define EXT2FS_IS_32_BITMAP(bmap) \
@@ -57,6 +88,7 @@ struct ext2_bitmap_ops {
 	errcode_t (*get_bmap_range)(ext2fs_generic_bitmap bitmap,
 				    __u64 start, size_t num, void *out);
 	void (*clear_bmap)(ext2fs_generic_bitmap bitmap);
+	void (*print_stats)(ext2fs_generic_bitmap);
 };
 
 extern struct ext2_bitmap_ops ext2fs_blkmap64_bitarray;
