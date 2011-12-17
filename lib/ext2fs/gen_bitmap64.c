@@ -212,12 +212,12 @@ errcode_t ext2fs_copy_generic_bmap(ext2fs_generic_bitmap src,
 
 	descr = src->description;
 	if (descr) {
-		retval = ext2fs_get_mem(strlen(descr)+1, &new_descr);
+		retval = ext2fs_get_mem(strlen(descr)+10, &new_descr);
 		if (retval) {
 			ext2fs_free_mem(&new_bmap);
 			return retval;
 		}
-		strcpy(new_descr, descr);
+		sprintf(new_descr, "copy of %s", descr);
 		new_bmap->description = new_descr;
 	}
 
