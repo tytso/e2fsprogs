@@ -279,7 +279,7 @@ redo_counts:
 		else
 			bitmap = ext2fs_fast_test_block_bitmap2(fs->block_map, i);
 
-		if (actual == bitmap)
+		if (!actual == !bitmap)
 			goto do_counts;
 
 		if (!actual && bitmap) {
@@ -511,7 +511,7 @@ redo_counts:
 			bitmap = actual;
 		else if (!skip_group)
 			bitmap = ext2fs_fast_test_inode_bitmap2(fs->inode_map, i);
-		if (actual == bitmap)
+		if (!actual == !bitmap)
 			goto do_counts;
 
 		if (!actual && bitmap) {
