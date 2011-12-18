@@ -60,3 +60,4 @@ struct ext2_bitmap_ops {
 };
 
 extern struct ext2_bitmap_ops ext2fs_blkmap64_bitarray;
+extern struct ext2_bitmap_ops ext2fs_blkmap64_rbtree;

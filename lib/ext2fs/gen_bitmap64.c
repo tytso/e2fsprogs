@@ -95,6 +95,9 @@ errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 	case EXT2FS_BMAP64_BITARRAY:
 		ops = &ext2fs_blkmap64_bitarray;
 		break;
+	case EXT2FS_BMAP64_RBTREE:
+		ops = &ext2fs_blkmap64_rbtree;
+		break;
 	default:
 		return EINVAL;
 	}
