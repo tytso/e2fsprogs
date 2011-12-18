@@ -294,6 +294,7 @@ struct struct_ext2_filsys {
 
 #define EXT2FS_BMAP64_BITARRAY	1
 #define EXT2FS_BMAP64_RBTREE	2
+#define EXT2FS_BMAP64_AUTODIR	3
 
 /*
  * Return flags for the block iterator functions

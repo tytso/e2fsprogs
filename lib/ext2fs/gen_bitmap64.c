@@ -86,6 +86,7 @@ errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 {
 	ext2fs_generic_bitmap	bitmap;
 	struct ext2_bitmap_ops	*ops;
+	ext2_ino_t num_dirs;
 	errcode_t retval;
 
 	if (!type)
@@ -97,6 +98,13 @@ errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 		break;
 	case EXT2FS_BMAP64_RBTREE:
 		ops = &ext2fs_blkmap64_rbtree;
+		break;
+	case EXT2FS_BMAP64_AUTODIR:
+		retval = ext2fs_get_num_dirs(fs, &num_dirs);
+		if (retval || num_dirs > (fs->super->s_inodes_count / 320))
+			ops = &ext2fs_blkmap64_bitarray;
+		else
+			ops = &ext2fs_blkmap64_rbtree;
 		break;
 	default:
 		return EINVAL;
