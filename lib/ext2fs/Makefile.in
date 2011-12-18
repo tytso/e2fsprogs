@@ -347,6 +347,16 @@ filefrag.o: $(top_srcdir)/debugfs/filefrag.c
 	$(E) "	CC $<"
 	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
+tst_bitmaps_cmd.c: tst_bitmaps_cmd.ct
+	$(E) "	MK_CMDS $@"
+	$(Q) DIR=$(srcdir) $(MK_CMDS) $(srcdir)/tst_bitmaps_cmd.ct
+
+tst_bitmaps: tst_bitmaps.o tst_bitmaps_cmd.o $(STATIC_LIBEXT2FS) $(DEPLIBSS) \
+		$(DEPLIBCOM_ERR)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o $@ tst_bitmaps.o tst_bitmaps_cmd.o $(ALL_CFLAGS) \
+		$(STATIC_LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)
+
 tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(DEPLIBSS) \
 	$(LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
@@ -369,7 +379,8 @@ mkjournal: mkjournal.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 
-check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size tst_types tst_inode_size tst_csum tst_crc32c
+check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
+    tst_super_size tst_types tst_inode_size tst_csum tst_crc32c tst_bitmaps
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_bitops
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_badblocks
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_iscan
@@ -379,6 +390,9 @@ check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size t
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_inode_size
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_csum
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_crc32c
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) \
+		./tst_bitmaps -f $(srcdir)/tst_bitmaps_cmds > tst_bitmaps_out
+	diff $(srcdir)/tst_bitmaps_exp tst_bitmaps_out
 
 installdirs::
 	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
@@ -411,6 +425,7 @@ clean::
 		tst_badblocks tst_iscan ext2_err.et ext2_err.c ext2_err.h \
 		tst_byteswap tst_ismounted tst_getsize tst_sectgetsize \
 		tst_bitops tst_types tst_icount tst_super_size tst_csum \
+		tst_bitmaps tst_bitmaps_out tst_bitmaps_cmd.c \
 		ext2_tdbtool mkjournal debug_cmds.c \
 		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a \
 		crc32c_table.h gen_crc32ctable tst_crc32c
