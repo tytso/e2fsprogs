@@ -121,7 +121,8 @@ static void usage(void)
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
-	"\t[-T fs-type] [-U UUID] [-jnqvFKSV] device [blocks-count]\n"),
+	"\t[-t fs-type] [-T usage-type ] [-U UUID] "
+	"[-jnqvFKSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
