@@ -114,10 +114,6 @@ static TDB_DATA tdb_null;
 #define u32 unsigned
 #endif
 
-#ifndef HAVE_GETPAGESIZE
-#define getpagesize() 0x2000
-#endif
-
 typedef u32 tdb_len_t;
 typedef u32 tdb_off_t;
 
@@ -3839,7 +3835,7 @@ struct tdb_context *tdb_open_ex(const char *name, int hash_size, int tdb_flags,
 	tdb->hash_fn = hash_fn ? hash_fn : default_tdb_hash;
 
 	/* cache the page size */
-	tdb->page_size = getpagesize();
+	tdb->page_size = sysconf(_SC_PAGESIZE);
 	if (tdb->page_size <= 0) {
 		tdb->page_size = 0x2000;
 	}
