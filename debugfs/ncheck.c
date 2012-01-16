@@ -20,11 +20,13 @@
 #include "debugfs.h"
 
 struct inode_walk_struct {
+	ext2_ino_t		dir;
 	ext2_ino_t		*iarray;
 	int			inodes_left;
 	int			num_inodes;
 	int			position;
 	char			*parent;
+	unsigned int		get_pathname_failed;
 };
 
 static int ncheck_proc(struct ext2_dir_entry *dirent,
@@ -34,15 +36,32 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 		       void	*private)
 {
 	struct inode_walk_struct *iw = (struct inode_walk_struct *) private;
-	int	i;
+	errcode_t	retval;
+	int		i;
 
 	iw->position++;
 	if (iw->position <= 2)
 		return 0;
 	for (i=0; i < iw->num_inodes; i++) {
 		if (iw->iarray[i] == dirent->inode) {
-			printf("%u\t%s/%.*s\n", iw->iarray[i], iw->parent,
-			       (dirent->name_len & 0xFF), dirent->name);
+			if (!iw->parent && !iw->get_pathname_failed) {
+				retval = ext2fs_get_pathname(current_fs,
+							     iw->dir,
+							     0, &iw->parent);
+				if (retval) {
+					com_err("ncheck", retval,
+		"while calling ext2fs_get_pathname for inode #%u", iw->dir);
+					iw->get_pathname_failed = 1;
+				}
+			}
+			if (iw->parent)
+				printf("%u\t%s/%.*s\n", iw->iarray[i],
+				       iw->parent,
+				       (dirent->name_len & 0xFF), dirent->name);
+			else
+				printf("%u\t<%u>/%.*s\n", iw->iarray[i],
+				       iw->dir,
+				       (dirent->name_len & 0xFF), dirent->name);
 		}
 	}
 	if (!iw->inodes_left)
@@ -115,13 +134,9 @@ void do_ncheck(int argc, char **argv)
 			goto next;
 
 		iw.position = 0;
-
-		retval = ext2fs_get_pathname(current_fs, ino, 0, &iw.parent);
-		if (retval) {
-			com_err("ncheck", retval, 
-				"while calling ext2fs_get_pathname");
-			goto next;
-		}
+		iw.parent = 0;
+		iw.dir = ino;
+		iw.get_pathname_failed = 0;
 
 		retval = ext2fs_dir_iterate(current_fs, ino, 0, 0,
 					    ncheck_proc, &iw);
