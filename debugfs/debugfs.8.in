@@ -427,9 +427,12 @@ and
 .I minor
 device numbers must be specified.
 .TP
-.I ncheck inode_num ...
+.I ncheck [-c] inode_num ...
 Take the requested list of inode numbers, and print a listing of pathnames
-to those inodes.
+to those inodes.  The
+.I -c
+flag will enable checking the file type information in the directory
+entry to make sure it matches the inode's type.
 .TP
 .I open [-w] [-e] [-f] [-i] [-c] [-D] [-b blocksize] [-s superblock] device
 Open a filesystem for editing.  The 
