@@ -75,7 +75,7 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 				if (!debugfs_read_inode(dirent->inode, &inode,
 							"ncheck") &&
 				    filetype != ext2_file_type(inode.i_mode)) {
-					printf("  <--- BAD FILETYLE");
+					printf("  <--- BAD FILETYPE");
 				}
 			}
 			putc('\n', stdout);
