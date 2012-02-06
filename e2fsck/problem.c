@@ -362,11 +362,6 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@g descriptor %g marked uninitialized without feature set.\n"),
 	     PROMPT_FIX, PR_PREEN_OK },
 
-	/* group N block bitmap uninitialized but inode bitmap in use. */
-	{ PR_0_BB_UNINIT_IB_INIT,
-	  N_("@g %g @b @B uninitialized but @i @B in use.\n"),
-	     PROMPT_FIX, PR_PREEN_OK },
-
 	/* Group descriptor N has invalid unused inodes count. */
 	{ PR_0_GDT_ITABLE_UNUSED,
 	  N_("@g descriptor %g has invalid unused inodes count %b.  "),

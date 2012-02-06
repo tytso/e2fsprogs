@@ -666,15 +666,6 @@ void check_super_block(e2fsck_t ctx)
 			ext2fs_unmark_valid(fs);
 		}
 
-		if (ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT) &&
-		    !ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT)) {
-			if (fix_problem(ctx, PR_0_BB_UNINIT_IB_INIT, &pctx)) {
-				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
-				should_be = 1;
-			}
-			ext2fs_unmark_valid(fs);
-		}
-
 		if (csum_flag &&
 		    (ext2fs_bg_itable_unused(fs, i) > ext2fs_bg_free_inodes_count(fs, i) ||
 		     ext2fs_bg_itable_unused(fs, i) > sb->s_inodes_per_group)) {

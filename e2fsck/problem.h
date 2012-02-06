@@ -203,8 +203,8 @@ struct problem_context {
 /* Group descriptor N marked uninitialized without feature set. */
 #define PR_0_GDT_UNINIT				0x000036
 
-/* Block bitmap is not initialised and Inode bitmap is */
-#define PR_0_BB_UNINIT_IB_INIT			0x000037
+/* Block bitmap is not initialised and Inode bitmap is -- NO LONGER USED */
+/* #define PR_0_BB_UNINIT_IB_INIT			0x000037 */
 
 /* Group descriptor N has invalid unused inodes count. */
 #define PR_0_GDT_ITABLE_UNUSED			0x000038
