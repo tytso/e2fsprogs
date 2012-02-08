@@ -378,6 +378,9 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
 			ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
 			ext2fs_bg_itable_unused_set(fs, group, 0);
+			/* The checksum will be reset later, but fix it here
+			 * anyway to avoid printing a lot of spurious errors. */
+			ext2fs_group_desc_csum_set(fs, group);
 		}
 		ext2fs_mark_super_dirty(fs);
 	}
