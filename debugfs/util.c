@@ -26,6 +26,7 @@ extern char *optarg;
 extern int optreset;		/* defined by BSD, but not others */
 #endif
 
+#include "ss/ss.h"
 #include "debugfs.h"
 
 /*
@@ -79,14 +80,14 @@ static const char *find_pager(char *buf)
 FILE *open_pager(void)
 {
 	FILE *outfile = 0;
-	const char *pager = getenv("DEBUGFS_PAGER");
+	const char *pager = ss_safe_getenv("DEBUGFS_PAGER");
 	char buf[80];
 
 	signal(SIGPIPE, SIG_IGN);
 	if (!isatty(1))
 		return stdout;
 	if (!pager)
-		pager = getenv("PAGER");
+		pager = ss_safe_getenv("PAGER");
 	if (!pager)
 		pager = find_pager(buf);
 	if (!pager ||
@@ -197,7 +198,7 @@ char *time_to_string(__u32 cl)
 
 	if (do_gmt == -1) {
 		/* The diet libc doesn't respect the TZ environemnt variable */
-		tz = getenv("TZ");
+		tz = ss_safe_getenv("TZ");
 		if (!tz)
 			tz = "";
 		do_gmt = !strcmp(tz, "GMT");
