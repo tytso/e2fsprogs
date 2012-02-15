@@ -113,6 +113,16 @@ INSTALL_PROGRAM = $(INSTALL) -p -o root -g root -m 0755
 #INSTALL_PROGRAM += -s
 #endif
 
+DEFAULT_CFLAGS = -g -O2
+DEFAULT_LDFLAGS = -Wl,-Bsymbolic-functions
+
+CFLAGS = $(shell if dpkg-buildflags >& /dev/null; then \
+	dpkg-buildflags --get CFLAGS; else echo $(DEFAULT_CFLAGS) ; fi)
+LDFLAGS = $(shell if dpkg-buildflags >& /dev/null; then \
+	dpkg-buildflags --get LDFLAGS; else echo $(DEFAULT_LDFLAGS) ; fi)
+CPPFLAGS = $(shell if dpkg-buildflags >& /dev/null; then \
+	dpkg-buildflags --get CPPFLAGS; fi)
+
 ifeq (${DEB_HOST_ARCH},alpha)
 CFLAGS += -DHAVE_NETINET_IN_H
 else
@@ -214,12 +224,12 @@ ${CFGSTDSTAMP}:
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
-		CFLAGS="${CFLAGS}"
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 else
 	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
-		CFLAGS="${CFLAGS}"
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 
   # specially-built MIPS libs
@@ -242,12 +252,12 @@ ${CFGBFSTAMP}:
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${bfbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
-		CFLAGS="${CFLAGS} ${BF_CFLAGS}"
+		CFLAGS="${CFLAGS} ${BF_CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 else
 	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
-		CFLAGS="${CFLAGS}"
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGBFSTAMP}
@@ -271,7 +281,7 @@ else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
-		CFLAGS="${CFLAGS}"
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTATICSTAMP}
@@ -633,4 +643,10 @@ endif
 
 binary: binary-indep binary-arch
 
-.PHONY: binary binary-arch binary-indep clean checkroot mrproper debian-files
+.PHONY: binary binary-arch binary-indep clean checkroot mrproper \
+	debug_flags debian-files
+
+debug_flags:
+	@echo CFLAGS is $(CFLAGS)
+	@echo LDFLAGS is $(LDFLAGS)
+	@echo CPPFLAGS is $(CPPFLAGS)
