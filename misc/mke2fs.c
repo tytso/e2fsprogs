@@ -1014,6 +1014,8 @@ static char **parse_fs_type(const char *fs_type,
 		ext_type = "ext2";
 	else if (!strcmp(program_name, "mke3fs"))
 		ext_type = "ext3";
+	else if (!strcmp(program_name, "mke4fs"))
+		ext_type = "ext4";
 	else if (progname) {
 		ext_type = strrchr(progname, '/');
 		if (ext_type)
