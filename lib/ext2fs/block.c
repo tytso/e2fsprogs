@@ -414,7 +414,7 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 						0, 0, priv_data);
 				ret |= r;
 				check_for_ro_violation_goto(&ctx, ret,
-							    extent_errout);
+							    extent_done);
 				if (r & BLOCK_CHANGED) {
 					ctx.errcode =
 						ext2fs_extent_set_bmap(handle,
@@ -448,6 +448,8 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 						if (ctx.errcode)
 							break;
 					}
+					if (ret & BLOCK_ABORT)
+						break;
 				}
 				continue;
 			}
@@ -473,23 +475,23 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 						0, 0, priv_data);
 				ret |= r;
 				check_for_ro_violation_goto(&ctx, ret,
-							    extent_errout);
+							    extent_done);
 				if (r & BLOCK_CHANGED) {
 					ctx.errcode =
 						ext2fs_extent_set_bmap(handle,
 						       (blk64_t) blockcnt,
 						       new_blk, uninit);
 					if (ctx.errcode)
-						goto extent_errout;
+						goto extent_done;
 				}
 				if (ret & BLOCK_ABORT)
-					break;
+					goto extent_done;
 			}
 		}
 
-	extent_errout:
+	extent_done:
 		ext2fs_extent_free(handle);
-		ret |= BLOCK_ERROR | BLOCK_ABORT;
+		ret |= BLOCK_ERROR; /* ctx.errcode is always valid here */
 		goto errout;
 	}
 
