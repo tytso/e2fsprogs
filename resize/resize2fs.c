@@ -2033,6 +2033,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 
 	if (ext2fs_bg_has_super(fs, groups-1))
 		overhead += SUPER_OVERHEAD(fs);
+	overhead += fs->super->s_first_data_block;
 
 	/*
 	 * since our last group doesn't have to be BLOCKS_PER_GROUP large, we
