@@ -389,7 +389,7 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 			return retval;
 	}
 
-	if (truncate_block <= old_truncate)
+	if (truncate_block >= old_truncate)
 		return 0;
 
 	return ext2fs_punch(file->fs, file->ino, &file->inode, 0,
