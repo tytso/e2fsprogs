@@ -1,5 +1,6 @@
 autom4te.cache
 build
+build.profiled
 build.static
 FILES
 ^core
