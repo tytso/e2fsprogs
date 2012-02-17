@@ -1,3 +1,28 @@
+e2fsprogs (1.42.1-1) unstable; urgency=low
+
+  * New upstream release
+  * dpkg-buildflags is now used if it is present.  This allows Debian
+    Wheezy to build with security hardened build flags.  (Closes: #654457)
+  * mke2fs and e2fsck now use much less memory for large file systems
+  * Fixed mke2fs -S so it can be usefully used as a last ditch recovery
+    command when for ext4 filesystems that have the uninit_bg feature enabled.
+  * The mke4fs argv[0] is now recognized by mke2fs.
+  * Fixed usage and help messages for mke2fs.
+  * Eliminated spurious bad block group checksum warnings when e2fsck
+    falls back to using the backup group descriptors.
+  * Debugfs's ncheck command is now much more useful when used to
+    diagnose badly corrupted file system.  Added a new -c option.
+  * Fixed bug in e2image which could cause it to fail to set i_size
+    correctly if the last hole in the file is an exact multiple of a
+    megabyte.
+  * Fixed a bug with resize2fs where for 1k and 2k file systems, the
+    minimum file size used for resize2fs -M could be a block too small.
+  * Fixed the badblocks program to honor the -s flag when in read-only -t
+    mode.  (Closes: #646629)
+  * Update Czech, Dutch, French, Polish, and Swedish translations
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 17 Feb 2012 15:07:13 -0500
+
 e2fsprogs (1.42-1) unstable; urgency=low
 
   * New upstream release
