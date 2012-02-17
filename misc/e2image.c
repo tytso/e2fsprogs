@@ -510,8 +510,19 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 			}
 		}
 	}
+#ifdef HAVE_FTRUNCATE64
+	if (sparse) {
+		ext2_loff_t offset = ext2fs_llseek(fd, sparse, SEEK_CUR);
+
+		if (offset < 0)
+			lseek_error_and_exit(errno);
+		if (ftruncate64(fd, offset) < 0)
+			write_block(fd, zero_buf, -1, 1, -1);
+	}
+#else
 	if (sparse)
 		write_block(fd, zero_buf, sparse-1, 1, -1);
+#endif
 	ext2fs_free_mem(&zero_buf);
 	ext2fs_free_mem(&buf);
 }
