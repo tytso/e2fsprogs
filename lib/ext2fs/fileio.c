@@ -106,6 +106,14 @@ struct ext2_inode *ext2fs_file_get_inode(ext2_file_t file)
 	return &file->inode;
 }
 
+/* This function returns the inode number from the structure */
+ext2_ino_t ext2fs_file_get_inode_num(ext2_file_t file)
+{
+	if (file->magic != EXT2_ET_MAGIC_EXT2_FILE)
+		return 0;
+	return file->ino;
+}
+
 /*
  * This function flushes the dirty block buffer out to disk if
  * necessary.
