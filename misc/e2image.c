@@ -504,10 +504,9 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 				continue;
 			}
 			sparse += fs->blocksize;
-			if (sparse >= 1024*1024) {
-
-				write_block(fd, 0, sparse, 0, 0);
-				sparse = 0;
+			if (sparse > 1024*1024) {
+				write_block(fd, 0, 1024*1024, 0, 0);
+				sparse -= 1024*1024;
 			}
 		}
 	}
