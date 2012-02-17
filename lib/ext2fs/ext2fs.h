@@ -610,7 +610,7 @@ typedef struct ext2_icount *ext2_icount_t;
  * to ext2fs_openfs()
  */
 #define EXT2_LIB_SOFTSUPP_INCOMPAT	(0)
-#define EXT2_LIB_SOFTSUPP_RO_COMPAT	(EXT4_FEATURE_RO_COMPAT_BIGALLOC)
+#define EXT2_LIB_SOFTSUPP_RO_COMPAT	(EXT4_FEATURE_RO_COMPAT_REPLICA)
 
 
 /* Translate a block number to a cluster number */
