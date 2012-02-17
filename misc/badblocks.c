@@ -517,11 +517,10 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	try = blocks_at_once;
 	currently_testing = first_block;
 	num_blocks = last_block - 1;
-	if (!t_flag && (s_flag || v_flag)) {
+	if (!t_flag && (s_flag || v_flag))
 		fputs(_("Checking for bad blocks (read-only test): "), stderr);
-		if (v_flag <= 1)
-			alarm_intr(SIGALRM);
-	}
+	if (s_flag && v_flag <= 1)
+		alarm_intr(SIGALRM);
 	while (currently_testing < last_block)
 	{
 		if (max_bb && bb_count >= max_bb) {
