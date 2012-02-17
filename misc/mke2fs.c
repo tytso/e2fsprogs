@@ -2434,6 +2434,17 @@ int main (int argc, char *argv[])
 	if (super_only) {
 		fs->super->s_state |= EXT2_ERROR_FS;
 		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);
+		/* 
+		 * The command "mke2fs -S" is used to recover
+		 * corrupted file systems, so do not mark any of the
+		 * inodes as unused; we want e2fsck to consider all
+		 * inodes as potentially containing recoverable data.
+		 */
+		if (fs->super->s_feature_ro_compat &
+		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
+			for (i = 1; i < fs->group_desc_count; i++)
+				ext2fs_bg_itable_unused_set(fs, i, 0);
+		}
 	} else {
 		/* rsv must be a power of two (64kB is MD RAID sb alignment) */
 		blk64_t rsv = 65536 / fs->blocksize;
