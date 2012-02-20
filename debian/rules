@@ -293,21 +293,21 @@ build: build-std build-bf $(BUILD_STATIC)
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
-	$(MAKE) -C ${stdbuilddir} all
-	$(MAKE) -C ${stdbuilddir}/e2fsck e2fsck.static
-	$(MAKE) -C ${stdbuilddir}/po update-gmo
+	$(MAKE) -C ${stdbuilddir} V=1 all
+	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
+	$(MAKE) -C ${stdbuilddir}/po V=1 update-gmo
 
-	( cd ${stdbuilddir}/doc && $(MAKE) libext2fs_abt.html )
-	( cd ${stdbuilddir}/lib/et && $(MAKE) com_err.info com_err_abt.html )
+	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs_abt.html )
+	( cd ${stdbuilddir}/lib/et && $(MAKE) V=1 com_err.info com_err_abt.html )
 
   # specially-built MIPS libs
 ifneq ($(ismips),)
-	$(MAKE) -C ${mipsbuilddir}/util
-	$(MAKE) -C ${mipsbuilddir} \
+	$(MAKE) -C ${mipsbuilddir}/util V=1
+	$(MAKE) -C ${mipsbuilddir} V=1 \
 		CFLAGS="${CFLAGS} ${MIPS_CFLAGS}" \
 		LIB_SUBDIRS="lib/et lib/ext2fs" libs
-	$(MAKE) -C ${mipsbuilddir64}/util
-	$(MAKE) -C ${mipsbuilddir64} \
+	$(MAKE) -C ${mipsbuilddir64}/util V=1
+	$(MAKE) -C ${mipsbuilddir64} V=1 \
 		CFLAGS="${CFLAGS} ${MIPS_CFLAGS_64}" \
 		LIB_SUBDIRS="lib/et lib/ext2fs" libs
 endif
@@ -317,16 +317,16 @@ endif
 build-bf: ${BUILDBFSTAMP}
 ${BUILDBFSTAMP}: ${CFGBFSTAMP}
 	dh_testdir
-	$(MAKE) -C ${bfbuilddir} libs
-	$(MAKE) -C ${bfbuilddir}/e2fsck all
-	$(MAKE) -C ${bfbuilddir}/misc all
+	$(MAKE) -C ${bfbuilddir} V=1 libs
+	$(MAKE) -C ${bfbuilddir}/e2fsck V=1 all
+	$(MAKE) -C ${bfbuilddir}/misc V=1 all
 	touch ${BUILDBFSTAMP}
 
 build-static: ${BUILDSTATICSTAMP}
 ${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
 	dh_testdir
-	$(MAKE) -C ${staticbuilddir} libs
-	$(MAKE) -C ${staticbuilddir}/e2fsck all e2fsck.static
+	$(MAKE) -C ${staticbuilddir} V=1 libs
+	$(MAKE) -C ${staticbuilddir}/e2fsck V=1 all e2fsck.static
 	touch ${BUILDSTATICSTAMP}
 
 clean:
