@@ -143,7 +143,7 @@ errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino)
 
 	inode.i_dtime = fs->now ? fs->now : time(0);
 	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
-		return;
+		return 0;
 
 	ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
 			      release_blocks_proc, NULL);
