@@ -1,3 +1,13 @@
+e2fsprogs (1.42.1-2) unstable; urgency=low
+
+  * Fix the fact that dpkg-buildflags was being ignored due to a
+    bash'ism in debian/rules.
+  * Check the new /sys/class/power_supply/AC/online since
+    /proc/acpi/ac_adapter/... is deprecated and may not be present on
+    newer kernels.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 20 Feb 2012 19:12:20 -0500
+
 e2fsprogs (1.42.1-1) unstable; urgency=low
 
   * New upstream release
