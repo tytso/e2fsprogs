@@ -252,6 +252,14 @@ static int is_on_batt(void)
 	unsigned int	acflag;
 	struct dirent*	de;
 
+	f = fopen("/sys/class/power_supply/AC/online", "r");
+	if (f) {
+		if (fscanf(f, "%d\n", &acflag) == 1) {
+			fclose(f);
+			return (!acflag);
+		}
+		fclose(f);
+	}
 	f = fopen("/proc/apm", "r");
 	if (f) {
 		if (fscanf(f, "%s %s %s %x", tmp, tmp, tmp, &acflag) != 4)
