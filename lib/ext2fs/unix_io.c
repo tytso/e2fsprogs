@@ -445,6 +445,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
 	int		open_flags, zeroes = 0;
+	int		f_nocache = 0;
 	ext2fs_struct_stat st;
 #ifdef __linux__
 	struct 		utsname ut;
@@ -480,9 +481,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
 	if (flags & IO_FLAG_EXCLUSIVE)
 		open_flags |= O_EXCL;
-#ifdef O_DIRECT
+#if defined(O_DIRECT)
 	if (flags & IO_FLAG_DIRECT_IO)
 		open_flags |= O_DIRECT;
+#elif defined(F_NOCACHE)
+	if (flags & IO_FLAG_DIRECT_IO)
+		f_nocache = F_NOCACHE;
 #endif
 	data->flags = flags;
 
@@ -490,6 +494,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	if (data->dev < 0) {
 		retval = errno;
 		goto cleanup;
+	}
+	if (f_nocache) {
+		if (fcntl(data->dev, f_nocache, 1) < 0) {
+			retval = errno;
+			goto cleanup;
+		}
 	}
 
 	/*
