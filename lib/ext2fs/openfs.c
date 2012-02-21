@@ -382,7 +382,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			 * anyway to avoid printing a lot of spurious errors. */
 			ext2fs_group_desc_csum_set(fs, group);
 		}
-		ext2fs_mark_super_dirty(fs);
+		if (fs->flags & EXT2_FLAG_RW)
+			ext2fs_mark_super_dirty(fs);
 	}
 
 	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;
