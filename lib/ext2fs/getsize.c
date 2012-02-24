@@ -183,7 +183,7 @@ errcode_t ext2fs_get_device_size2(const char *file, int blocksize,
 		*retblocks = size64 / blocksize;
 		goto out;
 	}
-#endif
+#endif /* BLKGETSIZE64 */
 
 #ifdef BLKGETSIZE
 	if (ioctl(fd, BLKGETSIZE, &size) >= 0) {

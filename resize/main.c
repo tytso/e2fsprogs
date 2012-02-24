@@ -165,11 +165,7 @@ int main (int argc, char ** argv)
 	io_manager	io_ptr;
 	char		*new_size_str = 0;
 	int		use_stride = -1;
-#ifdef HAVE_FSTAT64
-	struct stat64	st_buf;
-#else
-	struct stat	st_buf;
-#endif
+	ext2fs_struct_stat st_buf;
 	__s64		new_file_size;
 	unsigned int	sys_page_size = 4096;
 	long		sysval;
@@ -265,11 +261,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
-#ifdef HAVE_FSTAT64
-	ret = fstat64(fd, &st_buf);
-#else
-	ret = fstat(fd, &st_buf);
-#endif
+	ret = ext2fs_fstat(fd, &st_buf);
 	if (ret < 0) {
 		com_err("open", errno,
 			_("while getting stat information for %s"),

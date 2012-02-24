@@ -77,7 +77,7 @@ blkid_loff_t blkid_get_dev_size(int fd)
 {
 	int valid_blkgetsize64 = 1;
 #ifdef __linux__
-	struct 		utsname ut;
+	struct		utsname ut;
 #endif
 	unsigned long long size64;
 	unsigned long size;
@@ -116,7 +116,7 @@ blkid_loff_t blkid_get_dev_size(int fd)
 			return 0; /* EFBIG */
 		return size64;
 	}
-#endif
+#endif /* BLKGETSIZE64 */
 
 #ifdef BLKGETSIZE
 	if (ioctl(fd, BLKGETSIZE, &size) >= 0)
@@ -143,8 +143,9 @@ blkid_loff_t blkid_get_dev_size(int fd)
 	 * Note that FreeBSD >= 4.0 has disk devices as unbuffered (raw,
 	 * character) devices, so we need to check for S_ISCHR, too.
 	 */
-	if ((fstat(fd, &st) >= 0) && (S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode)))
+	if (fstat(fd, &st) >= 0 && (S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode)))
 		part = st.st_rdev & 7;
+
 	if (part >= 0 && (ioctl(fd, DIOCGDINFO, (char *)&lab) >= 0)) {
 		pp = &lab.d_partitions[part];
 		if (pp->p_size)
@@ -152,7 +153,7 @@ blkid_loff_t blkid_get_dev_size(int fd)
 	}
 #endif /* HAVE_SYS_DISKLABEL_H */
 	{
-#ifdef HAVE_FSTAT64
+#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 		struct stat64   st;
 		if (fstat64(fd, &st) == 0)
 #else
@@ -163,7 +164,6 @@ blkid_loff_t blkid_get_dev_size(int fd)
 				return st.st_size;
 	}
 
-
 	/*
 	 * OK, we couldn't figure it out by using a specialized ioctl,
 	 * which is generally the best way.  So do binary search to
@@ -172,8 +172,7 @@ blkid_loff_t blkid_get_dev_size(int fd)
 	low = 0;
 	for (high = 1024; valid_offset(fd, high); high *= 2)
 		low = high;
-	while (low < high - 1)
-	{
+	while (low < high - 1) {
 		const blkid_loff_t mid = (low + high) / 2;
 
 		if (valid_offset(fd, mid))
