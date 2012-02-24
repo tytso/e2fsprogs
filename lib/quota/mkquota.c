@@ -6,9 +6,6 @@
 #include "config.h"
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef HAVE_SYS_QUOTA_H
-#include <sys/quota.h>
-#endif
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
