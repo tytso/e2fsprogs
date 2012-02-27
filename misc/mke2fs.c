@@ -2442,7 +2442,7 @@ int main (int argc, char *argv[])
 		 */
 		if (fs->super->s_feature_ro_compat &
 		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
-			for (i = 1; i < fs->group_desc_count; i++)
+			for (i = 0; i < fs->group_desc_count; i++)
 				ext2fs_bg_itable_unused_set(fs, i, 0);
 		}
 	} else {
