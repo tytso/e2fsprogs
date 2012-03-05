@@ -387,6 +387,15 @@ redo_counts:
 		if ((blocks == fs->super->s_clusters_per_group) ||
 		    (EXT2FS_B2C(fs, i) ==
 		     EXT2FS_B2C(fs, ext2fs_blocks_count(fs->super)-1))) {
+			/*
+			 * If the last block of this group is free, then we can
+			 * discard it as well.
+			 */
+			if (!bitmap && i >= first_free)
+				e2fsck_discard_blocks(ctx, first_free,
+						      (i - first_free) + 1);
+			first_free = ext2fs_blocks_count(fs->super);
+
 			free_array[group] = group_free;
 			group ++;
 			blocks = 0;
