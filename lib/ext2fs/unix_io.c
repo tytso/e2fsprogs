@@ -905,7 +905,7 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 		goto unimplemented;
 #endif
 	} else {
-#ifdef FALLOC_FL_PUNCH_HOLE
+#if defined(HAVE_FALLOCATE) && defined(FALLOC_FL_PUNCH_HOLE)
 		/*
 		 * If we are not on block device, try to use punch hole
 		 * to reclaim free space.
