@@ -239,6 +239,9 @@
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
 
+/* Define to 1 if you have the `msync' function. */
+#undef HAVE_MSYNC
+
 /* Define to 1 if you have the `munmap' function. */
 #undef HAVE_MUNMAP
 
@@ -404,9 +407,6 @@
 
 /* Define to 1 if you have the <sys/queue.h> header file. */
 #undef HAVE_SYS_QUEUE_H
-
-/* Define to 1 if you have the <sys/quota.h> header file. */
-#undef HAVE_SYS_QUOTA_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H

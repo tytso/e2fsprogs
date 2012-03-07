@@ -784,7 +784,48 @@ if test $cross_compiling = no; then
 else
   AC_CHECK_PROGS(BUILD_CC, gcc cc)
 fi
-AC_CHECK_HEADERS(dirent.h errno.h execinfo.h getopt.h malloc.h mntent.h paths.h semaphore.h setjmp.h signal.h stdarg.h stdint.h stdlib.h termios.h termio.h unistd.h utime.h linux/falloc.h linux/fd.h linux/major.h net/if_dl.h netinet/in.h sys/disklabel.h sys/file.h sys/ioctl.h sys/mkdev.h sys/mman.h sys/prctl.h sys/queue.h sys/resource.h sys/select.h sys/socket.h sys/sockio.h sys/stat.h sys/syscall.h sys/sysmacros.h sys/time.h sys/types.h sys/un.h sys/wait.h)
+AC_CHECK_HEADERS(m4_flatten([
+	dirent.h
+	errno.h
+	execinfo.h
+	getopt.h
+	malloc.h
+	mntent.h
+	paths.h
+	semaphore.h
+	setjmp.h
+	signal.h
+	stdarg.h
+	stdint.h
+	stdlib.h
+	termios.h
+	termio.h
+	unistd.h
+	utime.h
+	linux/falloc.h
+	linux/fd.h
+	linux/major.h
+	net/if_dl.h
+	netinet/in.h
+	sys/disklabel.h
+	sys/file.h
+	sys/ioctl.h
+	sys/mkdev.h
+	sys/mman.h
+	sys/prctl.h
+	sys/queue.h
+	sys/resource.h
+	sys/select.h
+	sys/socket.h
+	sys/sockio.h
+	sys/stat.h
+	sys/syscall.h
+	sys/sysmacros.h
+	sys/time.h
+	sys/types.h
+	sys/un.h
+	sys/wait.h
+]))
 AC_CHECK_HEADERS(sys/disk.h sys/mount.h,,,
 [[
 #if HAVE_SYS_QUEUE_H
@@ -914,7 +955,50 @@ if test -n "$BLKID_CMT"; then
   AC_SEARCH_LIBS([blkid_probe_all], [blkid])
 fi
 dnl
-AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 fstat64 ftruncate64 getmntinfo strtoull strcasecmp srandom jrand48 fchown mallinfo fdatasync quotactl strnlen strptime strdup sysconf pathconf posix_memalign memalign valloc __secure_getenv prctl mmap msync utime setresuid setresgid usleep nanosleep getdtablesize getrlimit sync_file_range posix_fadvise fallocate fallocate64 blkid_probe_get_topology mbstowcs backtrace)
+AC_CHECK_FUNCS(m4_flatten([
+	__secure_getenv
+	backtrace
+	blkid_probe_get_topology
+	chflags
+	fallocate
+	fallocate64
+	fchown
+	fdatasync
+	fstat64
+	ftruncate64
+	getdtablesize
+	getmntinfo
+	getrlimit
+	getrusage
+	jrand48
+	llseek
+	lseek64
+	mallinfo
+	mbstowcs
+	memalign
+	mmap
+	msync
+	nanosleep
+	open64
+	pathconf
+	posix_fadvise
+	posix_memalign
+	prctl
+	quotactl
+	setresgid
+	setresuid
+	srandom
+	strcasecmp
+	strdup
+	strnlen
+	strptime
+	strtoull
+	sync_file_range
+	sysconf
+	usleep
+	utime
+	valloc
+]))
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library
