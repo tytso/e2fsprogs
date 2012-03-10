@@ -762,3 +762,31 @@ errcode_t ext2fs_convert_subcluster_bitmap(ext2_filsys fs,
 	*bitmap = cmap;
 	return 0;
 }
+
+errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitmap,
+					      __u64 start, __u64 end, __u64 *out)
+{
+	int b;
+
+	if (bitmap->bitmap_ops->find_first_zero)
+		return bitmap->bitmap_ops->find_first_zero(bitmap, start, end, out);
+
+	if (!bitmap || !EXT2FS_IS_64_BITMAP(bitmap) || bitmap->cluster_bits)
+		return EINVAL;
+
+	if (start < bitmap->start || end > bitmap->end || start > end) {
+		warn_bitmap(bitmap, EXT2FS_TEST_ERROR, start);
+		return EINVAL;
+	}
+
+	while (start <= end) {
+		b = bitmap->bitmap_ops->test_bmap(bitmap, start);
+		if (!b) {
+			*out = start;
+			return 0;
+		}
+		start++;
+	}
+
+	return ENOENT;
+}

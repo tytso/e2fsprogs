@@ -152,6 +152,14 @@ extern void ext2fs_fast_unmark_inode_bitmap2(ext2fs_inode_bitmap bitmap,
 					    ext2_ino_t inode);
 extern int ext2fs_fast_test_inode_bitmap2(ext2fs_inode_bitmap bitmap,
 					  ext2_ino_t inode);
+extern errcode_t ext2fs_find_first_zero_block_bitmap2(ext2fs_block_bitmap bitmap,
+						      ext2_ino_t start,
+						      ext2_ino_t end,
+						      ext2_ino_t *out);
+extern errcode_t ext2fs_find_first_zero_inode_bitmap2(ext2fs_inode_bitmap bitmap,
+						      ext2_ino_t start,
+						      ext2_ino_t end,
+						      ext2_ino_t *out);
 extern blk64_t ext2fs_get_block_bitmap_start2(ext2fs_block_bitmap bitmap);
 extern ext2_ino_t ext2fs_get_inode_bitmap_start2(ext2fs_inode_bitmap bitmap);
 extern blk64_t ext2fs_get_block_bitmap_end2(ext2fs_block_bitmap bitmap);
@@ -188,6 +196,9 @@ extern void ext2fs_mark_block_bitmap_range2(ext2fs_block_bitmap bitmap,
 					    blk64_t block, unsigned int num);
 extern void ext2fs_unmark_block_bitmap_range2(ext2fs_block_bitmap bitmap,
 					      blk64_t block, unsigned int num);
+extern errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitmap,
+						     __u64 start, __u64 end,
+						     __u64 *out);
 
 /*
  * The inline routines themselves...
@@ -591,6 +602,36 @@ _INLINE_ int ext2fs_fast_test_inode_bitmap2(ext2fs_inode_bitmap bitmap,
 {
 	return ext2fs_test_generic_bmap((ext2fs_generic_bitmap) bitmap,
 					inode);
+}
+
+_INLINE_ errcode_t ext2fs_find_first_zero_block_bitmap2(ext2fs_block_bitmap bitmap,
+							ext2_ino_t start,
+							ext2_ino_t end,
+							ext2_ino_t *out)
+{
+	__u64 o;
+	errcode_t rv;
+
+	rv = ext2fs_find_first_zero_generic_bmap((ext2fs_generic_bitmap) bitmap,
+						 start, end, &o);
+	if (!rv)
+		*out = o;
+	return rv;
+}
+
+_INLINE_ errcode_t ext2fs_find_first_zero_inode_bitmap2(ext2fs_inode_bitmap bitmap,
+							ext2_ino_t start,
+							ext2_ino_t end,
+							ext2_ino_t *out)
+{
+	__u64 o;
+	errcode_t rv;
+
+	rv = ext2fs_find_first_zero_generic_bmap((ext2fs_generic_bitmap) bitmap,
+						 start, end, &o);
+	if (!rv)
+		*out = o;
+	return rv;
 }
 
 _INLINE_ blk64_t ext2fs_get_block_bitmap_start2(ext2fs_block_bitmap bitmap)

@@ -106,10 +106,10 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 			   int mode EXT2FS_ATTR((unused)),
 			   ext2fs_inode_bitmap map, ext2_ino_t *ret)
 {
-	ext2_ino_t	dir_group = 0;
-	ext2_ino_t	i;
-	ext2_ino_t	start_inode;
-	ext2_ino_t	ino_in_group;
+	ext2_ino_t	start_inode = 0;
+	ext2_ino_t	i, ino_in_group, upto, first_zero;
+	errcode_t	retval;
+	dgrp_t		group;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -118,31 +118,37 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 	if (!map)
 		return EXT2_ET_NO_INODE_BITMAP;
 
-	if (dir > 0)
-		dir_group = (dir - 1) / EXT2_INODES_PER_GROUP(fs->super);
-
-	start_inode = (dir_group * EXT2_INODES_PER_GROUP(fs->super)) + 1;
+	if (dir > 0) {
+		group = (dir - 1) / EXT2_INODES_PER_GROUP(fs->super);
+		start_inode = (group * EXT2_INODES_PER_GROUP(fs->super)) + 1;
+	}
 	if (start_inode < EXT2_FIRST_INODE(fs->super))
 		start_inode = EXT2_FIRST_INODE(fs->super);
 	if (start_inode > fs->super->s_inodes_count)
 		return EXT2_ET_INODE_ALLOC_FAIL;
 	i = start_inode;
-	ino_in_group = (i - 1) % EXT2_INODES_PER_GROUP(fs->super);
-
 	do {
-		if (ino_in_group == 0)
-			check_inode_uninit(fs, map, (i - 1) /
-					   EXT2_INODES_PER_GROUP(fs->super));
+		ino_in_group = (i - 1) % EXT2_INODES_PER_GROUP(fs->super);
+		group = (i - 1) / EXT2_INODES_PER_GROUP(fs->super);
 
-		if (!ext2fs_fast_test_inode_bitmap2(map, i))
+		check_inode_uninit(fs, map, group);
+		upto = i + (EXT2_INODES_PER_GROUP(fs->super) - ino_in_group);
+		if (i < start_inode && upto >= start_inode)
+			upto = start_inode - 1;
+		if (upto > fs->super->s_inodes_count)
+			upto = fs->super->s_inodes_count;
+
+		retval = ext2fs_find_first_zero_inode_bitmap2(map, i, upto,
+							      &first_zero);
+		if (retval == 0) {
+			i = first_zero;
 			break;
-		if (++ino_in_group == EXT2_INODES_PER_GROUP(fs->super))
-			ino_in_group = 0;
-		if (++i > fs->super->s_inodes_count) {
-			i = EXT2_FIRST_INODE(fs->super);
-			ino_in_group = ((i - 1) % 
-					EXT2_INODES_PER_GROUP(fs->super));
 		}
+		if (retval != ENOENT)
+			return EXT2_ET_INODE_ALLOC_FAIL;
+		i = upto + 1;
+		if (i > fs->super->s_inodes_count)
+			i = EXT2_FIRST_INODE(fs->super);
 	} while (i != start_inode);
 
 	if (ext2fs_test_inode_bitmap2(map, i))
