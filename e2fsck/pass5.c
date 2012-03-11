@@ -372,15 +372,14 @@ redo_counts:
 		ctx->options &= ~E2F_OPT_DISCARD;
 
 	do_counts:
-		if (!bitmap && (!skip_group || csum_flag)) {
+		if (!bitmap) {
 			group_free++;
 			free_blocks++;
 			if (first_free > i)
 				first_free = i;
-		} else {
-			if (i > first_free)
-				e2fsck_discard_blocks(ctx, first_free,
-						      (i - first_free));
+		} else if (i > first_free) {
+			e2fsck_discard_blocks(ctx, first_free,
+					      (i - first_free));
 			first_free = ext2fs_blocks_count(fs->super);
 		}
 		blocks ++;
@@ -627,7 +626,7 @@ do_counts:
 						      inodes - first_free);
 				first_free = fs->super->s_inodes_per_group + 1;
 			}
-		} else if (!skip_group || csum_flag) {
+		} else {
 			group_free++;
 			free_inodes++;
 			if (first_free > inodes)
