@@ -74,8 +74,8 @@ void e2fsck_pass5(e2fsck_t ctx)
 	print_resource_track(ctx, _("Pass 5"), &rtrack, ctx->fs->io);
 }
 
-static void e2fsck_discard_blocks(e2fsck_t ctx, io_manager manager,
-				  blk64_t start, blk64_t count)
+static void e2fsck_discard_blocks(e2fsck_t ctx, blk64_t start,
+				  blk64_t count)
 {
 	ext2_filsys fs = ctx->fs;
 
@@ -85,7 +85,7 @@ static void e2fsck_discard_blocks(e2fsck_t ctx, io_manager manager,
 	 * not enough to fix the problem, hence it is not safe to run discard
 	 * in this case.
 	 */
-	if (ext2fs_test_changed(ctx->fs))
+	if (ext2fs_test_changed(fs))
 		ctx->options &= ~E2F_OPT_DISCARD;
 
 	if (!(ctx->options & E2F_OPT_NO) &&
@@ -137,7 +137,7 @@ static void e2fsck_discard_inodes(e2fsck_t ctx, int group,
 	num = count / EXT2_INODES_PER_BLOCK(fs->super);
 
 	if (num > 0)
-		e2fsck_discard_blocks(ctx, fs->io->manager, blk, num);
+		e2fsck_discard_blocks(ctx, blk, num);
 }
 
 #define NO_BLK ((blk64_t) -1)
@@ -379,7 +379,7 @@ redo_counts:
 				first_free = i;
 		} else {
 			if (i > first_free)
-				e2fsck_discard_blocks(ctx, manager, first_free,
+				e2fsck_discard_blocks(ctx, first_free,
 						      (i - first_free));
 			first_free = ext2fs_blocks_count(fs->super);
 		}
