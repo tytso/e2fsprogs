@@ -903,6 +903,11 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	profile_set_syntax_err_cb(syntax_err_report);
 	profile_init(config_fn, &ctx->profile);
 
+	/* Turn off discard in read-only mode */
+	if ((ctx->options & E2F_OPT_NO) &&
+	    (ctx->options & E2F_OPT_DISCARD))
+		ctx->options &= ~E2F_OPT_DISCARD;
+
 	if (flush) {
 		fd = open(ctx->filesystem_name, O_RDONLY, 0);
 		if (fd < 0) {

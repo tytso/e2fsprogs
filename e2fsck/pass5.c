@@ -88,8 +88,7 @@ static void e2fsck_discard_blocks(e2fsck_t ctx, blk64_t start,
 	if (ext2fs_test_changed(fs))
 		ctx->options &= ~E2F_OPT_DISCARD;
 
-	if (!(ctx->options & E2F_OPT_NO) &&
-	    (ctx->options & E2F_OPT_DISCARD) &&
+	if ((ctx->options & E2F_OPT_DISCARD) &&
 	    (io_channel_discard(fs->io, start, count)))
 		ctx->options &= ~E2F_OPT_DISCARD;
 }
@@ -117,7 +116,7 @@ static void e2fsck_discard_inodes(e2fsck_t ctx, int group,
 		ctx->options &= ~E2F_OPT_DISCARD;
 	}
 
-	if ((ctx->options & E2F_OPT_NO) || !(ctx->options & E2F_OPT_DISCARD))
+	if (!(ctx->options & E2F_OPT_DISCARD))
 		return;
 
 	/*
