@@ -94,6 +94,52 @@ static void e2fsck_discard_blocks(e2fsck_t ctx, io_manager manager,
 		ctx->options &= ~E2F_OPT_DISCARD;
 }
 
+/*
+ * This will try to discard number 'count' inodes starting at
+ * inode number 'start' within the 'group'. Note that 'start'
+ * is 1-based, it means that we need to adjust it by -1 in this
+ * function to compute right offset in the particular inode table.
+ */
+static void e2fsck_discard_inodes(e2fsck_t ctx, int group,
+				  int start, int count)
+{
+	ext2_filsys fs = ctx->fs;
+	blk64_t blk, num;
+	int orig = count;
+
+	/*
+	 * Sanity check for 'start'
+	 */
+	if ((start < 1) || (start > EXT2_INODES_PER_GROUP(fs->super))) {
+		printf("PROGRAMMING ERROR: Got start %d outside of group %d!"
+		       " Disabling discard\n",
+			start, group);
+		ctx->options &= ~E2F_OPT_DISCARD;
+	}
+
+	if ((ctx->options & E2F_OPT_NO) || !(ctx->options & E2F_OPT_DISCARD))
+		return;
+
+	/*
+	 * Start is inode number within the group which starts
+	 * counting from 1, so we need to adjust it.
+	 */
+	start -= 1;
+
+	/*
+	 * We can discard only blocks containing only unused
+	 * inodes in the table.
+	 */
+	blk = DIV_ROUND_UP(start,
+		EXT2_INODES_PER_BLOCK(fs->super));
+	count -= (blk * EXT2_INODES_PER_BLOCK(fs->super) - start);
+	blk += ext2fs_inode_table_loc(fs, group);
+	num = count / EXT2_INODES_PER_BLOCK(fs->super);
+
+	if (num > 0)
+		e2fsck_discard_blocks(ctx, fs->io->manager, blk, num);
+}
+
 #define NO_BLK ((blk64_t) -1)
 
 static void print_bitmap_problem(e2fsck_t ctx, int problem,
@@ -435,6 +481,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int		skip_group = 0;
 	int		redo_flag = 0;
 	io_manager	manager = ctx->fs->io->manager;
+	int		first_free = fs->super->s_inodes_per_group + 1;
 
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -497,6 +544,7 @@ redo_counts:
 				 * are 0, count the free inode,
 				 * skip the current block group.
 				 */
+				first_free = 1;
 				inodes = fs->super->s_inodes_per_group - 1;
 				group_free = inodes;
 				free_inodes += inodes;
@@ -561,50 +609,46 @@ redo_counts:
 		ctx->options &= ~E2F_OPT_DISCARD;
 
 do_counts:
+		inodes++;
 		if (bitmap) {
 			if (ext2fs_test_inode_bitmap2(ctx->inode_dir_map, i))
 				dirs_count++;
+			if (inodes > first_free) {
+				e2fsck_discard_inodes(ctx, group, first_free,
+						      inodes - first_free);
+				first_free = fs->super->s_inodes_per_group + 1;
+			}
 		} else if (!skip_group || csum_flag) {
 			group_free++;
 			free_inodes++;
+			if (first_free > inodes)
+				first_free = inodes;
 		}
 
-		inodes++;
 		if ((inodes == fs->super->s_inodes_per_group) ||
 		    (i == fs->super->s_inodes_count)) {
-
-			free_array[group] = group_free;
-			dir_array[group] = dirs_count;
-
-			/* Discard inode table */
-			if (ctx->options & E2F_OPT_DISCARD) {
-				blk64_t used_blks, blk, num;
-
-				used_blks = DIV_ROUND_UP(
-					(EXT2_INODES_PER_GROUP(fs->super) -
-					group_free),
-					EXT2_INODES_PER_BLOCK(fs->super));
-
-				blk = ext2fs_inode_table_loc(fs, group) +
-				      used_blks;
-				num = fs->inode_blocks_per_group -
-				      used_blks;
-				e2fsck_discard_blocks(ctx, manager, blk, num);
-			}
-
+			/*
+			 * If the last inode is free, we can discard it as well.
+			 */
+			if (!bitmap && inodes >= first_free)
+				e2fsck_discard_inodes(ctx, group, first_free,
+						      inodes - first_free + 1);
 			/*
 			 * If discard zeroes data and the group inode table
 			 * was not zeroed yet, set itable as zeroed
 			 */
 			if ((ctx->options & E2F_OPT_DISCARD) &&
-			    (io_channel_discard_zeroes_data(fs->io)) &&
+			    io_channel_discard_zeroes_data(fs->io) &&
 			    !(ext2fs_bg_flags_test(fs, group,
-						  EXT2_BG_INODE_ZEROED))) {
+						   EXT2_BG_INODE_ZEROED))) {
 				ext2fs_bg_flags_set(fs, group,
 						    EXT2_BG_INODE_ZEROED);
 				ext2fs_group_desc_csum_set(fs, group);
 			}
 
+			first_free = fs->super->s_inodes_per_group + 1;
+			free_array[group] = group_free;
+			dir_array[group] = dirs_count;
 			group ++;
 			inodes = 0;
 			skip_group = 0;
