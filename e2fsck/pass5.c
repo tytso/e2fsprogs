@@ -116,7 +116,18 @@ static void e2fsck_discard_inodes(e2fsck_t ctx, int group,
 		ctx->options &= ~E2F_OPT_DISCARD;
 	}
 
-	if (!(ctx->options & E2F_OPT_DISCARD))
+	/*
+	 * Do not attempt to discard if E2F_OPT_DISCARD is not set. And also
+	 * skip the discard on this group if discard does not zero data.
+	 * The reason is that if the inode table is not zeroed discard would
+	 * no help us since we need to zero it anyway, or if the inode table
+	 * is zeroed then the read after discard would not be deterministic
+	 * anyway and we would not be able to assume that this inode table
+	 * was zeroed anymore so we would have to zero it again, which does
+	 * not really make sense.
+	 */
+	if (!(ctx->options & E2F_OPT_DISCARD) ||
+	    !io_channel_discard_zeroes_data(fs->io))
 		return;
 
 	/*
