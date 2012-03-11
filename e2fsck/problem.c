@@ -936,6 +936,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("The bad @b @i looks @n.  "),
 	  PROMPT_CLEAR, 0 },
 
+	/* Extent has zero length */
+	{ PR_1_EXTENT_LENGTH_ZERO,
+	  N_("@i %i has zero length extent\n\t(@n logical @b %c, physical @b %b)\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

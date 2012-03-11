@@ -550,6 +550,9 @@ struct problem_context {
 /* Invalid bad inode */
 #define PR_1_INVALID_BAD_INODE		0x010065
 
+/* Extent has zero length */
+#define PR_1_EXTENT_LENGTH_ZERO		0x010066
+
 /*
  * Pass 1b errors
  */
