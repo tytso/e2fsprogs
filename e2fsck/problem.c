@@ -1824,10 +1824,13 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		reconfigure_bool(ctx, ptr, key, PR_NO_NOMSG, "no_nomsg");
 		reconfigure_bool(ctx, ptr, key, PR_PREEN_NOHDR, "preen_noheader");
 		reconfigure_bool(ctx, ptr, key, PR_FORCE_NO, "force_no");
+		profile_get_integer(ctx->profile, "problems", key, "max_count",
+				    ptr->max_count, &ptr->max_count);
 
 		ptr->flags |= PR_CONFIG;
 	}
 	def_yn = 1;
+	ptr->count++;
 	if ((ptr->flags & PR_NO_DEFAULT) ||
 	    ((ptr->flags & PR_PREEN_NO) && (ctx->options & E2F_OPT_PREEN)) ||
 	    (ctx->options & E2F_OPT_NO))
@@ -1856,6 +1859,16 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	if ((ptr->flags & PR_NO_NOMSG) &&
 	    ((ctx->options & E2F_OPT_NO) || (ptr->flags & PR_FORCE_NO)))
 		suppress++;
+	if (ptr->max_count && (ptr->count > ptr->max_count)) {
+		if (ctx->options & (E2F_OPT_NO | E2F_OPT_YES))
+			suppress++;
+		if ((ctx->options & E2F_OPT_PREEN) &&
+		    (ptr->flags & PR_PREEN_OK))
+			suppress++;
+		if ((ptr->flags & PR_LATCH_MASK) &&
+		    (ldesc->flags & (PRL_YES | PRL_NO)))
+			suppress++;
+	}
 	if (!suppress) {
 		message = ptr->e2p_description;
 		if ((ctx->options & E2F_OPT_PREEN) &&
@@ -1923,6 +1936,13 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 errcode_t
 profile_get_boolean(profile_t profile, const char *name, const char *subname,
 		    const char *subsubname, int def_val, int *ret_boolean)
+{
+	return 0;
+}
+
+errcode_t
+profile_get_integer(profile_t profile, const char *name, const char *subname,
+		    const char *subsubname, int def_val, int *ret_int)
 {
 	return 0;
 }
