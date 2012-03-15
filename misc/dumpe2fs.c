@@ -190,10 +190,16 @@ static void list_desc (ext2_filsys fs)
 		print_range(first_block, last_block);
 		fputs(")", stdout);
 		print_bg_opts(fs, i);
-		if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
-			printf(_("  Checksum 0x%04x, unused inodes %u\n"),
-			       ext2fs_bg_checksum(fs, i),
+		if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
+			unsigned csum = ext2fs_bg_checksum(fs, i);
+			unsigned exp_csum = ext2fs_group_desc_csum(fs, i);
+
+			printf(_("  Checksum 0x%04x"), csum);
+			if (csum != exp_csum)
+				printf(_(" (EXPECTED 0x%04x)"), exp_csum);
+			printf(_(", unused inodes %u\n"),
 			       ext2fs_bg_itable_unused(fs, i));
+		}
 		has_super = ((i==0) || super_blk);
 		if (has_super) {
 			printf (_("  %s superblock at "),

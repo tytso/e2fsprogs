@@ -259,6 +259,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_get_pathname@Base 1.37
  ext2fs_get_rec_len@Base 1.41.7
  ext2fs_group_blocks_count@Base 1.42
+ ext2fs_group_desc_csum@Base 1.42.2
  ext2fs_group_desc@Base 1.42
  ext2fs_group_desc_csum_set@Base 1.41.0
  ext2fs_group_desc_csum_verify@Base 1.41.0

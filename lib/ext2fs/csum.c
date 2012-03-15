@@ -30,7 +30,7 @@
 #define STATIC static
 #endif
 
-STATIC __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
+__u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 {
 	__u16 crc = 0;
 	struct ext2_group_desc *desc;
