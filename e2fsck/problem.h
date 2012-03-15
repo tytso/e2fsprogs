@@ -19,6 +19,7 @@ struct problem_context {
 	blk64_t	blk, blk2;
 	e2_blkcnt_t	blkcount;
 	int		group;
+	__u32		csum1, csum2;
 	__u64	num;
 	const char *str;
 };

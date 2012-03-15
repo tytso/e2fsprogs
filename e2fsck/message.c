@@ -500,12 +500,18 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 	case 'T':
 		print_time(e2fsck_ctx ? e2fsck_ctx->now : time(0));
 		break;
+	case 'x':
+		printf("0x%0*x", width, ctx->csum1);
+		break;
 	case 'X':
 #ifdef EXT2_NO_64_TYPE
-		printf("0x%*x", width, ctx->num);
+		printf("0x%0*x", width, ctx->num);
 #else
-		printf("0x%*llx", width, (long long)ctx->num);
+		printf("0x%0*llx", width, (long long)ctx->num);
 #endif
+		break;
+	case 'y':
+		printf("0x%0*x", width, ctx->csum2);
 		break;
 	default:
 	no_context:

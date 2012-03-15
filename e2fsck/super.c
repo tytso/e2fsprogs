@@ -635,6 +635,8 @@ void check_super_block(e2fsck_t ctx)
 
 		should_be = 0;
 		if (!ext2fs_group_desc_csum_verify(fs, i)) {
+			pctx.csum1 = ext2fs_bg_checksum(fs, i);
+			pctx.csum2 = ext2fs_group_desc_csum(fs, i);
 			if (fix_problem(ctx, PR_0_GDT_CSUM, &pctx)) {
 				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
 				ext2fs_bg_flags_clear(fs, i, EXT2_BG_INODE_UNINIT);
