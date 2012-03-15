@@ -580,6 +580,7 @@ int main (int argc, char ** argv)
 		printf (_("Couldn't find valid filesystem superblock.\n"));
 		exit (1);
 	}
+	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
 	if (print_badblocks) {
 		list_bad_blocks(fs, 1);
 	} else {

@@ -89,6 +89,7 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 		current_fs = NULL;
 		return;
 	}
+	current_fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
 
 	if (catastrophic)
 		com_err(device, 0, "catastrophic mode - not reading inode or group bitmaps");
