@@ -1868,6 +1868,11 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		if ((ptr->flags & PR_LATCH_MASK) &&
 		    (ldesc->flags & (PRL_YES | PRL_NO)))
 			suppress++;
+		if (ptr->count == ptr->max_count + 1) {
+			printf("...problem 0x%06x suppressed\n",
+			       ptr->e2p_code);
+			fflush(stdout);
+		}
 	}
 	if (!suppress) {
 		message = ptr->e2p_description;
