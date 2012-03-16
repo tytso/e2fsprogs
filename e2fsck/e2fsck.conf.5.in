@@ -136,6 +136,13 @@ filesystem checks (either based on time or number of mounts) should
 be doubled if the system is running on battery.  This setting defaults to 
 true.
 .TP
+.I max_count_problems
+This relation specifies the maximum number of problem reports of a
+particular type will be printed to stdout before further problem reports
+of that type are squelched.  This can be useful if the console is slow
+(i.e., connected to a serial port) and so a large amount of output could
+end up delaying the boot process for a long time (potentially hours).
+.TP
 .I indexed_dir_slack_percentage
 When
 .BR e2fsck (8)
@@ -170,6 +177,11 @@ This boolean relation overrides the default behavior controlling
 whether this filesystem problem should be automatically fixed when
 .B e2fsck
 is running in preen mode.
+.TP
+.I max_count
+This integer relation overrides the 
+.I max_count_problems
+parameter (set in the options section) for this particular problem.
 .TP
 .I no_ok
 This boolean relation overrides the default behavior determining

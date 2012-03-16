@@ -1824,6 +1824,9 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		reconfigure_bool(ctx, ptr, key, PR_NO_NOMSG, "no_nomsg");
 		reconfigure_bool(ctx, ptr, key, PR_PREEN_NOHDR, "preen_noheader");
 		reconfigure_bool(ctx, ptr, key, PR_FORCE_NO, "force_no");
+		profile_get_integer(ctx->profile, "options",
+				    "max_count_problems", 0, 0,
+				    &ptr->max_count);
 		profile_get_integer(ctx->profile, "problems", key, "max_count",
 				    ptr->max_count, &ptr->max_count);
 
