@@ -1034,7 +1034,7 @@ int get_latch_flags(int mask, int *value);
 void clear_problem_context(struct problem_context *pctx);
 
 /* message.c */
-void print_e2fsck_message(e2fsck_t ctx, const char *msg,
+void print_e2fsck_message(FILE *f, e2fsck_t ctx, const char *msg,
 			  struct problem_context *pctx, int first,
 			  int recurse);
 

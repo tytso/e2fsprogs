@@ -130,70 +130,76 @@ static void show_stats(e2fsck_t	ctx)
 	frag_percent_total = (frag_percent_total + 5) / 10;
 
 	if (!verbose) {
-		printf(_("%s: %u/%u files (%0d.%d%% non-contiguous), %llu/%llu blocks\n"),
-		       ctx->device_name, inodes_used, inodes,
-		       frag_percent_total / 10, frag_percent_total % 10,
-		       blocks_used, blocks);
+		log_out(ctx, _("%s: %u/%u files (%0d.%d%% non-contiguous), "
+			       "%llu/%llu blocks\n"),
+			ctx->device_name, inodes_used, inodes,
+			frag_percent_total / 10, frag_percent_total % 10,
+			blocks_used, blocks);
 		return;
 	}
-	printf (P_("\n%8u inode used (%2.2f%%)\n", "\n%8u inodes used (%2.2f%%)\n",
-		   inodes_used), inodes_used, 100.0 * inodes_used / inodes);
-	printf (P_("%8u non-contiguous file (%0d.%d%%)\n",
-		   "%8u non-contiguous files (%0d.%d%%)\n",
-		   ctx->fs_fragmented),
+	log_out(ctx, P_("\n%8u inode used (%2.2f%%)\n",
+			"\n%8u inodes used (%2.2f%%)\n",
+			inodes_used), inodes_used,
+		100.0 * inodes_used / inodes);
+	log_out(ctx, P_("%8u non-contiguous file (%0d.%d%%)\n",
+			"%8u non-contiguous files (%0d.%d%%)\n",
+			ctx->fs_fragmented),
 		ctx->fs_fragmented, frag_percent_file / 10,
 		frag_percent_file % 10);
-	printf (P_("%8u non-contiguous directory (%0d.%d%%)\n",
-		   "%8u non-contiguous directories (%0d.%d%%)\n",
-		   ctx->fs_fragmented_dir),
+	log_out(ctx, P_("%8u non-contiguous directory (%0d.%d%%)\n",
+			"%8u non-contiguous directories (%0d.%d%%)\n",
+			ctx->fs_fragmented_dir),
 		ctx->fs_fragmented_dir, frag_percent_dir / 10,
 		frag_percent_dir % 10);
-	printf (_("         # of inodes with ind/dind/tind blocks: %u/%u/%u\n"),
+	log_out(ctx, _("         # of inodes with ind/dind/tind blocks: "
+		       "%u/%u/%u\n"),
 		ctx->fs_ind_count, ctx->fs_dind_count, ctx->fs_tind_count);
 
 	for (j=MAX_EXTENT_DEPTH_COUNT-1; j >=0; j--)
 		if (ctx->extent_depth_count[j])
 			break;
 	if (++j) {
-		printf (_("         Extent depth histogram: "));
+		log_out(ctx, _("         Extent depth histogram: "));
 		for (i=0; i < j; i++) {
 			if (i)
 				fputc('/', stdout);
-			printf("%u", ctx->extent_depth_count[i]);
+			log_out(ctx, "%u", ctx->extent_depth_count[i]);
 		}
-		fputc('\n', stdout);
+		log_out(ctx, "\n");
 	}
 
-	printf (P_("%8llu block used (%2.2f%%)\n",
-		   "%8llu blocks used (%2.2f%%)\n",
+	log_out(ctx, P_("%8llu block used (%2.2f%%)\n",
+			"%8llu blocks used (%2.2f%%)\n",
 		   blocks_used), blocks_used, 100.0 * blocks_used / blocks);
-	printf (P_("%8u bad block\n", "%8u bad blocks\n",
-		   ctx->fs_badblocks_count), ctx->fs_badblocks_count);
-	printf (P_("%8u large file\n", "%8u large files\n",
-		   ctx->large_files), ctx->large_files);
-	printf (P_("\n%8u regular file\n", "\n%8u regular files\n",
-		   ctx->fs_regular_count), ctx->fs_regular_count);
-	printf (P_("%8u directory\n", "%8u directories\n",
-		   ctx->fs_directory_count), ctx->fs_directory_count);
-	printf (P_("%8u character device file\n",
-		   "%8u character device files\n", ctx->fs_chardev_count),
+	log_out(ctx, P_("%8u bad block\n", "%8u bad blocks\n",
+			ctx->fs_badblocks_count), ctx->fs_badblocks_count);
+	log_out(ctx, P_("%8u large file\n", "%8u large files\n",
+			ctx->large_files), ctx->large_files);
+	log_out(ctx, P_("\n%8u regular file\n", "\n%8u regular files\n",
+			ctx->fs_regular_count), ctx->fs_regular_count);
+	log_out(ctx, P_("%8u directory\n", "%8u directories\n",
+			ctx->fs_directory_count), ctx->fs_directory_count);
+	log_out(ctx, P_("%8u character device file\n",
+			"%8u character device files\n", ctx->fs_chardev_count),
 		ctx->fs_chardev_count);
-	printf (P_("%8u block device file\n", "%8u block device files\n",
-		   ctx->fs_blockdev_count), ctx->fs_blockdev_count);
-	printf (P_("%8u fifo\n", "%8u fifos\n", ctx->fs_fifo_count),
+	log_out(ctx, P_("%8u block device file\n", "%8u block device files\n",
+			ctx->fs_blockdev_count), ctx->fs_blockdev_count);
+	log_out(ctx, P_("%8u fifo\n", "%8u fifos\n", ctx->fs_fifo_count),
 		ctx->fs_fifo_count);
-	printf (P_("%8u link\n", "%8u links\n",
-		   ctx->fs_links_count - dir_links),
+	log_out(ctx, P_("%8u link\n", "%8u links\n",
+			ctx->fs_links_count - dir_links),
 		ctx->fs_links_count - dir_links);
-	printf (P_("%8u symbolic link", "%8u symbolic links",
-		   ctx->fs_symlinks_count), ctx->fs_symlinks_count);
-	printf (P_(" (%u fast symbolic link)\n", " (%u fast symbolic links)\n",
-		   ctx->fs_fast_symlinks_count), ctx->fs_fast_symlinks_count);
-	printf (P_("%8u socket\n", "%8u sockets\n", ctx->fs_sockets_count),
+	log_out(ctx, P_("%8u symbolic link", "%8u symbolic links",
+			ctx->fs_symlinks_count), ctx->fs_symlinks_count);
+	log_out(ctx, P_(" (%u fast symbolic link)\n",
+			" (%u fast symbolic links)\n",
+			ctx->fs_fast_symlinks_count),
+		ctx->fs_fast_symlinks_count);
+	log_out(ctx, P_("%8u socket\n", "%8u sockets\n", ctx->fs_sockets_count),
 		ctx->fs_sockets_count);
-	printf ("--------\n");
-	printf (P_("%8u file\n", "%8u files\n",
-		   ctx->fs_total_count - dir_links),
+	log_out(ctx, "--------\n");
+	log_out(ctx, P_("%8u file\n", "%8u files\n",
+			ctx->fs_total_count - dir_links),
 		ctx->fs_total_count - dir_links);
 }
 
@@ -224,19 +230,21 @@ static void check_mount(e2fsck_t ctx)
 
 	if ((ctx->options & E2F_OPT_READONLY) &&
 	    !(ctx->options & E2F_OPT_WRITECHECK)) {
-		printf(_("Warning!  %s is mounted.\n"), ctx->filesystem_name);
+		log_out(ctx, _("Warning!  %s is mounted.\n"),
+			ctx->filesystem_name);
 		return;
 	}
 
-	printf(_("%s is mounted.  "), ctx->filesystem_name);
+	log_out(ctx, _("%s is mounted.  "), ctx->filesystem_name);
 	if (!ctx->interactive)
 		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
 	puts("\007\007\007\007");
-	printf(_("\n\nWARNING!!!  "
-	       "The filesystem is mounted.   If you continue you ***WILL***\n"
-	       "cause ***SEVERE*** filesystem damage.\n\n"));
+	log_out(ctx, _("\n\nWARNING!!!  "
+		       "The filesystem is mounted.   "
+		       "If you continue you ***WILL***\n"
+		       "cause ***SEVERE*** filesystem damage.\n\n"));
 	puts("\007\007\007");
-	cont = ask_yn(_("Do you really want to continue"), 0);
+	cont = ask_yn(ctx, _("Do you really want to continue"), 0);
 	if (!cont) {
 		printf (_("check aborted.\n"));
 		exit (0);
@@ -356,9 +364,9 @@ static void check_if_skip(e2fsck_t ctx)
 			reason = 0;
 	}
 	if (reason) {
-		fputs(ctx->device_name, stdout);
-		printf(reason, reason_arg);
-		fputs(_(", check forced.\n"), stdout);
+		log_out(ctx, "%s", ctx->device_name);
+		log_out(ctx, reason, reason_arg);
+		log_out(ctx, _(", check forced.\n"));
 		return;
 	}
 
@@ -391,12 +399,13 @@ static void check_if_skip(e2fsck_t ctx)
 	}
 
 	/* Print the summary message when we're skipping a full check */
-	printf(_("%s: clean, %u/%u files, %llu/%llu blocks"), ctx->device_name,
-	       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
-	       fs->super->s_inodes_count,
-	       ext2fs_blocks_count(fs->super) -
-	       ext2fs_free_blocks_count(fs->super),
-	       ext2fs_blocks_count(fs->super));
+	log_out(ctx, _("%s: clean, %u/%u files, %llu/%llu blocks"),
+		ctx->device_name,
+		fs->super->s_inodes_count - fs->super->s_free_inodes_count,
+		fs->super->s_inodes_count,
+		ext2fs_blocks_count(fs->super) -
+		ext2fs_free_blocks_count(fs->super),
+		ext2fs_blocks_count(fs->super));
 	next_check = 100000;
 	if (fs->super->s_max_mnt_count > 0) {
 		next_check = fs->super->s_max_mnt_count - fs->super->s_mnt_count;
@@ -409,14 +418,14 @@ static void check_if_skip(e2fsck_t ctx)
 	if (next_check <= 5) {
 		if (next_check == 1) {
 			if (batt)
-				fputs(_(" (check deferred; on battery)"),
-				      stdout);
+				log_out(ctx, _(" (check deferred; "
+					       "on battery)"));
 			else
-				fputs(_(" (check after next mount)"), stdout);
+				log_out(ctx, _(" (check after next mount)"));
 		} else
-			printf(_(" (check in %ld mounts)"), next_check);
+			log_out(ctx, _(" (check in %ld mounts)"), next_check);
 	}
-	fputc('\n', stdout);
+	log_out(ctx, "\n");
 skip:
 	ext2fs_close(fs);
 	ctx->fs = NULL;
@@ -652,6 +661,12 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 			continue;
 		} else if (strcmp(token, "nodiscard") == 0) {
 			ctx->options &= ~E2F_OPT_DISCARD;
+			continue;
+		} else if (strcmp(token, "log_filename") == 0) {
+			if (!arg)
+				extended_usage++;
+			else
+				ctx->log_fn = string_copy(ctx, arg, 0);
 			continue;
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
@@ -1071,8 +1086,8 @@ int e2fsck_check_mmp(ext2_filsys fs, e2fsck_t ctx)
 
 	/* Print warning if e2fck will wait for more than 20 secs. */
 	if (verbose || wait_time > EXT4_MMP_MIN_CHECK_INTERVAL * 4) {
-		printf("MMP interval is %u seconds and total wait time is %u "
-		       "seconds. Please wait...\n",
+		log_out(ctx, _("MMP interval is %u seconds and total wait "
+			       "time is %u seconds. Please wait...\n"),
 			mmp_check_interval, wait_time * 2);
 	}
 
@@ -1157,13 +1172,25 @@ int main (int argc, char *argv[])
 	}
 	reserve_stdio_fds();
 
+	set_up_logging(ctx);
+	if (ctx->logf) {
+		int i;
+		fputs("E2fsck run: ", ctx->logf);
+		for (i = 0; i < argc; i++) {
+			if (i)
+				fputc(' ', ctx->logf);
+			fputs(argv[i], ctx->logf);
+		}
+		fputc('\n', ctx->logf);
+	}
+
 	init_resource_track(&ctx->global_rtrack, NULL);
 	if (!(ctx->options & E2F_OPT_PREEN) || show_version_only)
-		fprintf(stderr, "e2fsck %s (%s)\n", my_ver_string,
+		log_err(ctx, "e2fsck %s (%s)\n", my_ver_string,
 			 my_ver_date);
 
 	if (show_version_only) {
-		fprintf(stderr, _("\tUsing %s, %s\n"),
+		log_err(ctx, _("\tUsing %s, %s\n"),
 			error_message(EXT2_ET_BASE), lib_ver_date);
 		exit(FSCK_OK);
 	}
@@ -1214,10 +1241,10 @@ restart:
 			fs = NULL;
 		}
 		if (!fs || (fs->group_desc_count > 1)) {
-			printf(_("%s: %s trying backup blocks...\n"),
-			       ctx->program_name,
-			       retval ? _("Superblock invalid,") :
-			       _("Group descriptors look bad..."));
+			log_out(ctx, _("%s: %s trying backup blocks...\n"),
+				ctx->program_name,
+				retval ? _("Superblock invalid,") :
+				_("Group descriptors look bad..."));
 			orig_superblock = ctx->superblock;
 			get_backup_sb(ctx, fs, ctx->filesystem_name, io_ptr);
 			if (fs)
@@ -1227,10 +1254,13 @@ restart:
 			if ((orig_retval == 0) && retval != 0) {
 				if (fs)
 					ext2fs_close(fs);
-				com_err(ctx->program_name, retval,
-					"when using the backup blocks");
-				printf(_("%s: going back to original "
-					 "superblock\n"), ctx->program_name);
+				log_out(ctx, _("%s: %s while using the "
+					       "backup blocks"),
+					ctx->program_name,
+					error_message(retval));
+				log_out(ctx, _("%s: going back to original "
+					       "superblock\n"),
+					ctx->program_name);
 				ctx->superblock = orig_superblock;
 				retval = try_open_fs(ctx, flags, io_ptr, &fs);
 			}
@@ -1256,30 +1286,32 @@ failure:
 		com_err(ctx->program_name, retval, _("while trying to open %s"),
 			ctx->filesystem_name);
 		if (retval == EXT2_ET_REV_TOO_HIGH) {
-			printf(_("The filesystem revision is apparently "
+			log_out(ctx, _("The filesystem revision is apparently "
 			       "too high for this version of e2fsck.\n"
 			       "(Or the filesystem superblock "
 			       "is corrupt)\n\n"));
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
 		} else if (retval == EXT2_ET_SHORT_READ)
-			printf(_("Could this be a zero-length partition?\n"));
+			log_out(ctx, _("Could this be a zero-length "
+				       "partition?\n"));
 		else if ((retval == EPERM) || (retval == EACCES))
-			printf(_("You must have %s access to the "
+			log_out(ctx, _("You must have %s access to the "
 			       "filesystem or be root\n"),
 			       (ctx->options & E2F_OPT_READONLY) ?
 			       "r/o" : "r/w");
 		else if (retval == ENXIO)
-			printf(_("Possibly non-existent or swap device?\n"));
+			log_out(ctx, _("Possibly non-existent or "
+				       "swap device?\n"));
 		else if (retval == EBUSY)
-			printf(_("Filesystem mounted or opened exclusively "
-				 "by another program?\n"));
+			log_out(ctx, _("Filesystem mounted or opened "
+				 "exclusively by another program?\n"));
 		else if (retval == ENOENT)
-			printf(_("Possibly non-existent device?\n"));
+			log_out(ctx, _("Possibly non-existent device?\n"));
 #ifdef EROFS
 		else if (retval == EROFS)
-			printf(_("Disk write-protected; use the -n option "
-			       "to do a read-only\n"
-			       "check of the device.\n"));
+			log_out(ctx, _("Disk write-protected; use the -n "
+				       "option to do a read-only\n"
+				       "check of the device.\n"));
 #endif
 		else
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
@@ -1336,6 +1368,7 @@ failure:
 	fs->priv_data = ctx;
 	fs->now = ctx->now;
 	sb = fs->super;
+
 	if (sb->s_rev_level > E2FSCK_CURRENT_REV) {
 		com_err(ctx->program_name, EXT2_ET_REV_TOO_HIGH,
 			_("while trying to open %s"),
@@ -1377,6 +1410,10 @@ failure:
 		goto restart;
 	}
 
+	if (ctx->logf)
+		fprintf(ctx->logf, "Filesystem UUID: %s\n",
+			e2p_uuid2str(sb->s_uuid));
+
 	if ((ctx->mount_flags & EXT2_MF_MOUNTED) &&
 	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER))
 		goto skip_journal;
@@ -1398,9 +1435,9 @@ failure:
 	 */
 	if (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
 		if (ctx->options & E2F_OPT_READONLY) {
-			printf(_("Warning: skipping journal recovery "
-				 "because doing a read-only filesystem "
-				 "check.\n"));
+			log_out(ctx, _("Warning: skipping journal recovery "
+				       "because doing a read-only filesystem "
+				       "check.\n"));
 			io_channel_flush(ctx->fs->io);
 		} else {
 			if (ctx->flags & E2F_FLAG_RESTARTED) {
@@ -1442,30 +1479,30 @@ print_unsupp_features:
 		int	i, j;
 		__u32	*mask = features, m;
 
-		fprintf(stderr, _("%s has unsupported feature(s):"),
+		log_err(ctx, _("%s has unsupported feature(s):"),
 			ctx->filesystem_name);
 
 		for (i=0; i <3; i++,mask++) {
 			for (j=0,m=1; j < 32; j++, m<<=1) {
 				if (*mask & m)
-					fprintf(stderr, " %s",
+					log_err(ctx, " %s",
 						e2p_feature2string(i, m));
 			}
 		}
-		putc('\n', stderr);
+		log_err(ctx, "\n");
 		goto get_newer;
 	}
 #ifdef ENABLE_COMPRESSION
 	if (sb->s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
-		com_err(ctx->program_name, 0,
-			_("Warning: compression support is experimental.\n"));
+		log_err(ctx, _("%s: warning: compression support "
+			       "is experimental.\n"),
+			ctx->program_name);
 #endif
 #ifndef ENABLE_HTREE
 	if (sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
-		com_err(ctx->program_name, 0,
-			_("E2fsck not compiled with HTREE support,\n\t"
+		log_err(ctx, _("%s: e2fsck not compiled with HTREE support,\n\t"
 			  "but filesystem %s has HTREE directories.\n"),
-			ctx->device_name);
+			ctx->program_name, ctx->device_name);
 		goto get_newer;
 	}
 #endif
@@ -1515,11 +1552,11 @@ print_unsupp_features:
 
 	retval = ext2fs_read_bb_inode(fs, &fs->badblocks);
 	if (retval) {
-		com_err(ctx->program_name, retval,
-			_("while reading bad blocks inode"));
+		log_out(ctx, _("%s: %s while reading bad blocks inode\n"),
+			ctx->program_name, error_message(retval));
 		preenhalt(ctx);
-		printf(_("This doesn't bode well,"
-			 " but we'll try to go on...\n"));
+		log_out(ctx, _("This doesn't bode well, "
+			       "but we'll try to go on...\n"));
 	}
 
 	/*
@@ -1556,22 +1593,22 @@ print_unsupp_features:
 				fs->super->s_feature_compat &=
 					~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-				com_err(ctx->program_name, 0,
-					_("Couldn't determine journal size"));
+				log_out(ctx, "%s: Couldn't determine "
+					"journal size\n", ctx->program_name);
 				goto no_journal;
 			}
-			printf(_("Creating journal (%d blocks): "),
+			log_out(ctx, _("Creating journal (%d blocks): "),
 			       journal_size);
 			fflush(stdout);
 			retval = ext2fs_add_journal_inode(fs,
 							  journal_size, 0);
 			if (retval) {
-				com_err("Error ", retval,
-					_("\n\twhile trying to create journal"));
+				log_out(ctx, "%s: while trying to create "
+					"journal\n", error_message(retval));
 				goto no_journal;
 			}
-			printf(_(" Done.\n"));
-			printf(_("\n*** journal has been re-created - "
+			log_out(ctx, _(" Done.\n"));
+			log_out(ctx, _("\n*** journal has been re-created - "
 				       "filesystem is now ext3 again ***\n"));
 		}
 	}
@@ -1583,7 +1620,7 @@ no_journal:
 	}
 
 	if (run_result == E2F_FLAG_RESTART) {
-		printf(_("Restarting e2fsck from the beginning...\n"));
+		log_out(ctx, _("Restarting e2fsck from the beginning...\n"));
 		retval = e2fsck_reset_context(ctx);
 		if (retval) {
 			com_err(ctx->program_name, retval,
@@ -1594,8 +1631,8 @@ no_journal:
 		goto restart;
 	}
 	if (run_result & E2F_FLAG_CANCEL) {
-		printf(_("%s: e2fsck canceled.\n"), ctx->device_name ?
-		       ctx->device_name : ctx->filesystem_name);
+		log_out(ctx, _("%s: e2fsck canceled.\n"), ctx->device_name ?
+			ctx->device_name : ctx->filesystem_name);
 		exit_value |= FSCK_CANCELED;
 	}
 	if (run_result & E2F_FLAG_ABORT)
@@ -1611,19 +1648,20 @@ no_journal:
 	if (ext2fs_test_changed(fs)) {
 		exit_value |= FSCK_NONDESTRUCT;
 		if (!(ctx->options & E2F_OPT_PREEN))
-		    printf(_("\n%s: ***** FILE SYSTEM WAS MODIFIED *****\n"),
-			       ctx->device_name);
+			log_out(ctx, _("\n%s: ***** FILE SYSTEM WAS "
+				       "MODIFIED *****\n"),
+				ctx->device_name);
 		if (ctx->mount_flags & EXT2_MF_ISROOT) {
-			printf(_("%s: ***** REBOOT LINUX *****\n"),
-			       ctx->device_name);
+			log_out(ctx, _("%s: ***** REBOOT LINUX *****\n"),
+				ctx->device_name);
 			exit_value |= FSCK_REBOOT;
 		}
 	}
 	if (!ext2fs_test_valid(fs) ||
 	    ((exit_value & FSCK_CANCELED) &&
 	     (sb->s_state & EXT2_ERROR_FS))) {
-		printf(_("\n%s: ********** WARNING: Filesystem still has "
-			 "errors **********\n\n"), ctx->device_name);
+		log_out(ctx, _("\n%s: ********** WARNING: Filesystem still has "
+			       "errors **********\n\n"), ctx->device_name);
 		exit_value |= FSCK_UNCORRECTED;
 		exit_value &= ~FSCK_NONDESTRUCT;
 	}

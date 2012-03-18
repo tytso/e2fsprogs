@@ -187,6 +187,9 @@ void e2fsck_free_context(e2fsck_t ctx)
 	if (ctx->device_name)
 		ext2fs_free_mem(&ctx->device_name);
 
+	if (ctx->log_fn)
+		free(ctx->log_fn);
+
 	ext2fs_free_mem(&ctx);
 }
 

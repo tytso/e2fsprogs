@@ -41,6 +41,7 @@
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
 
+#include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -59,18 +60,18 @@ void fatal_error(e2fsck_t ctx, const char *msg)
 		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_CHANNEL)
 			io_channel_flush(ctx->fs->io);
 		else
-			fprintf(stderr, "e2fsck: io manager magic bad!\n");
+			log_err(ctx, "e2fsck: io manager magic bad!\n");
 	}
 	if (ext2fs_test_changed(fs)) {
 		exit_value |= FSCK_NONDESTRUCT;
-		printf(_("\n%s: ***** FILE SYSTEM WAS MODIFIED *****\n"),
+		log_out(ctx, _("\n%s: ***** FILE SYSTEM WAS MODIFIED *****\n"),
 			ctx->device_name);
 		if (ctx->mount_flags & EXT2_MF_ISROOT)
 			exit_value |= FSCK_REBOOT;
 	}
 	if (!ext2fs_test_valid(fs)) {
-		printf(_("\n%s: ********** WARNING: Filesystem still has "
-			 "errors **********\n\n"), ctx->device_name);
+		log_out(ctx, _("\n%s: ********** WARNING: Filesystem still has "
+			       "errors **********\n\n"), ctx->device_name);
 		exit_value |= FSCK_UNCORRECTED;
 		exit_value &= ~FSCK_NONDESTRUCT;
 	}
@@ -79,6 +80,34 @@ out:
 	if (ctx->flags & E2F_FLAG_SETJMP_OK)
 		longjmp(ctx->abort_loc, 1);
 	exit(exit_value);
+}
+
+void log_out(e2fsck_t ctx, const char *fmt, ...)
+{
+	va_list pvar;
+
+	va_start(pvar, fmt);
+	vprintf(fmt, pvar);
+	va_end(pvar);
+	if (ctx->logf) {
+		va_start(pvar, fmt);
+		vfprintf(ctx->logf, fmt, pvar);
+		va_end(pvar);
+	}
+}
+
+void log_err(e2fsck_t ctx, const char *fmt, ...)
+{
+	va_list pvar;
+
+	va_start(pvar, fmt);
+	vfprintf(stderr, fmt, pvar);
+	va_end(pvar);
+	if (ctx->logf) {
+		va_start(pvar, fmt);
+		vfprintf(ctx->logf, fmt, pvar);
+		va_end(pvar);
+	}
 }
 
 void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
@@ -153,7 +182,7 @@ static int read_a_char(void)
 }
 #endif
 
-int ask_yn(const char * string, int def)
+int ask_yn(e2fsck_t ctx, const char * string, int def)
 {
 	int		c;
 	const char	*defstr;
@@ -177,7 +206,7 @@ int ask_yn(const char * string, int def)
 		defstr = _(_("<n>"));
 	else
 		defstr = _(" (y/n)");
-	printf("%s%s? ", string, defstr);
+	log_out(ctx, "%s%s? ", string, defstr);
 	while (1) {
 		fflush (stdout);
 		if ((c = read_a_char()) == EOF)
@@ -186,12 +215,11 @@ int ask_yn(const char * string, int def)
 #ifdef HAVE_TERMIOS_H
 			tcsetattr (0, TCSANOW, &termios);
 #endif
-			if (e2fsck_global_ctx &&
-			    e2fsck_global_ctx->flags & E2F_FLAG_SETJMP_OK) {
-				puts("\n");
+			if (ctx->flags & E2F_FLAG_SETJMP_OK) {
+				log_out(ctx, "\n");
 				longjmp(e2fsck_global_ctx->abort_loc, 1);
 			}
-			puts(_("cancelled!\n"));
+			log_out(ctx, _("cancelled!\n"));
 			return 0;
 		}
 		if (strchr(short_yes, (char) c)) {
@@ -206,9 +234,9 @@ int ask_yn(const char * string, int def)
 			break;
 	}
 	if (def)
-		puts(_("yes\n"));
+		log_out(ctx, _("yes\n"));
 	else
-		puts (_("no\n"));
+		log_out(ctx, _("no\n"));
 #ifdef HAVE_TERMIOS_H
 	tcsetattr (0, TCSANOW, &termios);
 #endif
@@ -218,18 +246,18 @@ int ask_yn(const char * string, int def)
 int ask (e2fsck_t ctx, const char * string, int def)
 {
 	if (ctx->options & E2F_OPT_NO) {
-		printf (_("%s? no\n\n"), string);
+		log_out(ctx, _("%s? no\n\n"), string);
 		return 0;
 	}
 	if (ctx->options & E2F_OPT_YES) {
-		printf (_("%s? yes\n\n"), string);
+		log_out(ctx, _("%s? yes\n\n"), string);
 		return 1;
 	}
 	if (ctx->options & E2F_OPT_PREEN) {
-		printf ("%s? %s\n\n", string, def ? _("yes") : _("no"));
+		log_out(ctx, "%s? %s\n\n", string, def ? _("yes") : _("no"));
 		return def;
 	}
-	return ask_yn(string, def);
+	return ask_yn(ctx, string, def);
 }
 
 void e2fsck_read_bitmaps(e2fsck_t ctx)
@@ -283,7 +311,7 @@ void preenhalt(e2fsck_t ctx)
 
 	if (!(ctx->options & E2F_OPT_PREEN))
 		return;
-	fprintf(stderr, _("\n\n%s: UNEXPECTED INCONSISTENCY; "
+	log_err(ctx, _("\n\n%s: UNEXPECTED INCONSISTENCY; "
 		"RUN fsck MANUALLY.\n\t(i.e., without -a or -p options)\n"),
 	       ctx->device_name);
 	ctx->flags |= E2F_FLAG_EXITING;
@@ -358,30 +386,30 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 	gettimeofday(&time_end, 0);
 
 	if (desc)
-		printf("%s: ", desc);
+		log_out(ctx, "%s: ", desc);
 
 #ifdef HAVE_MALLINFO
 #define kbytes(x)	(((unsigned long)(x) + 1023) / 1024)
 
 	malloc_info = mallinfo();
-	printf(_("Memory used: %luk/%luk (%luk/%luk), "),
-	       kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
-	       kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
+	log_out(ctx, _("Memory used: %luk/%luk (%luk/%luk), "),
+		kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
+		kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
 #else
-	printf(_("Memory used: %lu, "),
-	       (unsigned long) (((char *) sbrk(0)) - 
-				((char *) track->brk_start)));
+	log_out(ctx, _("Memory used: %lu, "),
+		(unsigned long) (((char *) sbrk(0)) -
+				 ((char *) track->brk_start)));
 #endif
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
-	printf(_("time: %5.2f/%5.2f/%5.2f\n"),
-	       timeval_subtract(&time_end, &track->time_start),
-	       timeval_subtract(&r.ru_utime, &track->user_start),
-	       timeval_subtract(&r.ru_stime, &track->system_start));
+	log_out(ctx, _("time: %5.2f/%5.2f/%5.2f\n"),
+		timeval_subtract(&time_end, &track->time_start),
+		timeval_subtract(&r.ru_utime, &track->user_start),
+		timeval_subtract(&r.ru_stime, &track->system_start));
 #else
-	printf(_("elapsed time: %6.3f\n"),
-	       timeval_subtract(&time_end, &track->time_start));
+	log_out(ctx, _("elapsed time: %6.3f\n"),
+		timeval_subtract(&time_end, &track->time_start));
 #endif
 #define mbytes(x)	(((x) + 1048575) / 1048576)
 	if (channel && channel->manager && channel->manager->get_stats) {
@@ -390,7 +418,7 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 		unsigned long long bytes_written = 0;
 
 		if (desc)
-			printf("%s: ", desc);
+			log_out(ctx, "%s: ", desc);
 
 		channel->manager->get_stats(channel, &delta);
 		if (delta) {
@@ -398,10 +426,11 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 			bytes_written = delta->bytes_written -
 				track->bytes_written;
 		}
-		printf("I/O read: %lluMB, write: %lluMB, rate: %.2fMB/s\n",
-		       mbytes(bytes_read), mbytes(bytes_written),
-		       (double)mbytes(bytes_read + bytes_written) /
-		       timeval_subtract(&time_end, &track->time_start));
+		log_out(ctx, "I/O read: %lluMB, write: %lluMB, "
+			"rate: %.2fMB/s\n",
+			mbytes(bytes_read), mbytes(bytes_written),
+			(double)mbytes(bytes_read + bytes_written) /
+			timeval_subtract(&time_end, &track->time_start));
 	}
 }
 #endif /* RESOURCE_TRACK */

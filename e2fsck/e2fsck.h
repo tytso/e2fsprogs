@@ -61,6 +61,12 @@
 #define P_(singular, plural, n) ((n) == 1 ? (singular) : (plural))
 #endif
 
+#ifdef __GNUC__
+#define E2FSCK_ATTR(x) __attribute__(x)
+#else
+#define E2FSCK_ATTR(x)
+#endif
+
 #include "quota/mkquota.h"
 
 /*
@@ -214,6 +220,8 @@ struct e2fsck_struct {
 	char *filesystem_name;
 	char *device_name;
 	char *io_options;
+	FILE	*logf;
+	char	*log_fn;
 	int	flags;		/* E2fsck internal flags */
 	int	options;
 	int	blocksize;	/* blocksize */
@@ -449,6 +457,9 @@ extern int e2fsck_run_ext3_journal(e2fsck_t ctx);
 extern void e2fsck_move_ext3_journal(e2fsck_t ctx);
 extern int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx);
 
+/* logfile.c */
+extern void set_up_logging(e2fsck_t ctx);
+
 /* quota.c */
 extern void e2fsck_hide_quota(e2fsck_t ctx);
 
@@ -498,8 +509,12 @@ void check_resize_inode(e2fsck_t ctx);
 extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 				    const char *description);
 extern int ask(e2fsck_t ctx, const char * string, int def);
-extern int ask_yn(const char * string, int def);
+extern int ask_yn(e2fsck_t ctx, const char * string, int def);
 extern void fatal_error(e2fsck_t ctx, const char * fmt_string);
+extern void log_out(e2fsck_t ctx, const char *fmt, ...)
+	E2FSCK_ATTR((format(printf, 2, 3)));
+extern void log_err(e2fsck_t ctx, const char *fmt, ...)
+	E2FSCK_ATTR((format(printf, 2, 3)));
 extern void e2fsck_read_bitmaps(e2fsck_t ctx);
 extern void e2fsck_write_bitmaps(e2fsck_t ctx);
 extern void preenhalt(e2fsck_t ctx);

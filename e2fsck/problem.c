@@ -1877,16 +1877,20 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 			fflush(stdout);
 		}
 	}
+	message = ptr->e2p_description;
+	if (*message)
+		message = _(message);
 	if (!suppress) {
-		message = ptr->e2p_description;
 		if ((ctx->options & E2F_OPT_PREEN) &&
 		    !(ptr->flags & PR_PREEN_NOHDR)) {
 			printf("%s: ", ctx->device_name ?
 			       ctx->device_name : ctx->filesystem_name);
 		}
 		if (*message)
-			print_e2fsck_message(ctx, _(message), pctx, 1, 0);
+			print_e2fsck_message(stdout, ctx, message, pctx, 1, 0);
 	}
+	if (ctx->logf && message)
+		print_e2fsck_message(ctx->logf, ctx, message, pctx, 1, 0);
 	if (!(ptr->flags & PR_PREEN_OK) && (ptr->prompt != PROMPT_NONE))
 		preenhalt(ctx);
 
@@ -1901,16 +1905,14 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	} else {
 		if (ptr->flags & PR_FORCE_NO) {
 			answer = 0;
-			if (!suppress)
-				print_answer = 1;
+			print_answer = 1;
 		} else if (ctx->options & E2F_OPT_PREEN) {
 			answer = def_yn;
 			if (!(ptr->flags & PR_PREEN_NOMSG))
 				print_answer = 1;
 		} else if ((ptr->flags & PR_LATCH_MASK) &&
 			   (ldesc->flags & (PRL_YES | PRL_NO))) {
-			if (!suppress)
-				print_answer = 1;
+			print_answer = 1;
 			if (ldesc->flags & PRL_YES)
 				answer = 1;
 			else
@@ -1921,10 +1923,16 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		if (!answer && !(ptr->flags & PR_NO_OK))
 			ext2fs_unmark_valid(fs);
 
-		if (print_answer)
-			printf("%s.\n", answer ?
-			       _(preen_msg[(int) ptr->prompt]) : _("IGNORED"));
-
+		if (print_answer) {
+			if (!suppress)
+				printf("%s.\n", answer ?
+				       _(preen_msg[(int) ptr->prompt]) :
+				       _("IGNORED"));
+			if (ctx->logf)
+				fprintf(ctx->logf, "%s.\n", answer ?
+					_(preen_msg[(int) ptr->prompt]) :
+					_("IGNORED"));
+		}
 	}
 
 	if ((ptr->prompt == PROMPT_ABORT) && answer)
@@ -1955,7 +1963,7 @@ profile_get_integer(profile_t profile, const char *name, const char *subname,
 	return 0;
 }
 
-void print_e2fsck_message(e2fsck_t ctx, const char *msg,
+void print_e2fsck_message(FILE *f, e2fsck_t ctx, const char *msg,
 			  struct problem_context *pctx, int first,
 			  int recurse)
 {
