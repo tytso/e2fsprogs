@@ -46,7 +46,7 @@ testnew:
 	@echo "Creating a new e2fsck testcase in ${TDIR}"
 	@mkdir -p ${TDIR}
 	dd if=/dev/zero of=${TDIR}/image bs=1k count=8k
-	mke2fs -j -F -N 256 ${TDIR}/image
+	$(top_srcdir)/misc/mke2fs -j -F -N 256 ${TDIR}/image
 	@echo "new test description" > ${TDIR}/name
 	@echo; echo; echo "New test filesystem at ${TDIR}/image."
 	@echo "Now, break the filesystem as appropriate, and run 'make testend'"
