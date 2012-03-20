@@ -16,67 +16,70 @@
 
 #include "ext2_fs.h"
 
-struct ext2_inode inode;
+struct ext2_inode_large inode;
 
-int verbose = 0;
+#define offsetof(type, member)  __builtin_offsetof(type, member)
+#define check_field(x, s) cur_offset = do_field(#x, s, sizeof(inode.x),	       \
+					offsetof(struct ext2_inode_large, x),  \
+					cur_offset)
 
-#define offsetof(type, member)  __builtin_offsetof (type, member)
-#define check_field(x) cur_offset = do_field(#x, sizeof(inode.x),	\
-				offsetof(struct ext2_inode, x), \
-				cur_offset)
-
-static int do_field(const char *field, size_t size, int offset, int cur_offset)
+static int do_field(const char *field, unsigned size, unsigned cur_size,
+		    unsigned offset, unsigned cur_offset)
 {
+	if (size != cur_size) {
+		printf("error: %s size %u should be %u\n",
+		       field, cur_size, size);
+		exit(1);
+	}
 	if (offset != cur_offset) {
-		printf("Warning!  Unexpected offset at %s\n", field);
+		printf("error: %s offset %u should be %u\n",
+		       field, cur_offset, offset);
 		exit(1);
 	}
 	printf("%8d %-30s %3u\n", offset, field, (unsigned) size);
 	return offset + size;
 }
 
-void check_structure_fields()
+int main(int argc, char **argv)
 {
 #if (__GNUC__ >= 4)
 	int cur_offset = 0;
 
 	printf("%8s %-30s %3s\n", "offset", "field", "size");
-	check_field(i_mode);
-	check_field(i_uid);
-	check_field(i_size);
-	check_field(i_atime);
-	check_field(i_ctime);
-	check_field(i_mtime);
-	check_field(i_dtime);
-	check_field(i_gid);
-	check_field(i_links_count);
-	check_field(i_blocks);
-	check_field(i_flags);
-	check_field(osd1.linux1.l_i_version);
-	check_field(i_block);
-	check_field(i_generation);
-	check_field(i_file_acl);
-	check_field(i_size_high);
-	check_field(i_faddr);
-	check_field(osd2.linux2.l_i_blocks_hi);
-	check_field(osd2.linux2.l_i_file_acl_high);
-	check_field(osd2.linux2.l_i_uid_high);
-	check_field(osd2.linux2.l_i_gid_high);
-	check_field(osd2.linux2.l_i_checksum_lo);
-	check_field(osd2.linux2.l_i_reserved);
-	printf("Ending offset is %d\n\n", cur_offset);
+	check_field(i_mode, 2);
+	check_field(i_uid, 2);
+	check_field(i_size, 4);
+	check_field(i_atime, 4);
+	check_field(i_ctime, 4);
+	check_field(i_mtime, 4);
+	check_field(i_dtime, 4);
+	check_field(i_gid, 2);
+	check_field(i_links_count, 2);
+	check_field(i_blocks, 4);
+	check_field(i_flags, 4);
+	check_field(osd1.linux1.l_i_version, 4);
+	check_field(i_block, 15 * 4);
+	check_field(i_generation, 4);
+	check_field(i_file_acl, 4);
+	check_field(i_size_high, 4);
+	check_field(i_faddr, 4);
+	check_field(osd2.linux2.l_i_blocks_hi, 2);
+	check_field(osd2.linux2.l_i_file_acl_high, 2);
+	check_field(osd2.linux2.l_i_uid_high, 2);
+	check_field(osd2.linux2.l_i_gid_high, 2);
+	check_field(osd2.linux2.l_i_checksum_lo, 2);
+	check_field(osd2.linux2.l_i_reserved, 2);
+	do_field("Small inode end", 0, 0, cur_offset, 128);
+	check_field(i_extra_isize, 2);
+	check_field(i_checksum_hi, 2);
+	check_field(i_ctime_extra, 4);
+	check_field(i_mtime_extra, 4);
+	check_field(i_atime_extra, 4);
+	check_field(i_crtime, 4);
+	check_field(i_crtime_extra, 4);
+	check_field(i_version_hi, 4);
+	/* This size will change as new fields are added */
+	do_field("Large inode end", 0, 0, cur_offset, sizeof(inode));
 #endif
-}
-
-
-int main(int argc, char **argv)
-{
-	int l = sizeof(struct ext2_inode);
-
-	check_structure_fields();
-	printf("Size of struct ext2_inode is %d\n", l);
-	if (l != 128) {
-		exit(1);
-	}
-	exit(0);
+	return 0;
 }
