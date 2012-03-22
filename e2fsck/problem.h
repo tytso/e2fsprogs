@@ -243,6 +243,11 @@ struct problem_context {
 /* Superblock has invalid MMP magic. */
 #define PR_0_MMP_INVALID_MAGIC			0x000043
 
+/* Opening file system failed */
+#define PR_0_OPEN_FAILED			0x000044
+
+/* Checking group descriptor failed */
+#define PR_0_CHECK_DESC_FAILED			0x000045
 
 /*
  * Pass 1 errors

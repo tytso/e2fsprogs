@@ -1232,6 +1232,15 @@ restart:
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
 	     (retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
 	     ((retval == 0) && (retval2 = ext2fs_check_desc(fs))))) {
+		if (retval) {
+			pctx.errcode = retval;
+			fix_problem(ctx, PR_0_OPEN_FAILED, &pctx);
+		}
+		if (retval2) {
+			pctx.errcode = retval2;
+			fix_problem(ctx, PR_0_CHECK_DESC_FAILED, &pctx);
+		}
+		pctx.errcode = 0;
 		if (retval2 == ENOMEM || retval2 == EXT2_ET_NO_MEMORY) {
 			retval = retval2;
 			goto failure;

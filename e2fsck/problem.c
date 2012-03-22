@@ -423,6 +423,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@S has invalid MMP magic.  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
 
+	/* Opening file system failed */
+	{ PR_0_OPEN_FAILED,
+	  N_("ext2fs_open2: %m\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Checking group descriptor failed */
+	{ PR_0_CHECK_DESC_FAILED,
+	  N_("ext2fs_check_desc: %m\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
