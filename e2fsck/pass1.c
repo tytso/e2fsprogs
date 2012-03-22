@@ -84,6 +84,7 @@ struct process_block_struct {
 	blk64_t		num_blocks;
 	blk64_t		max_blocks;
 	e2_blkcnt_t	last_block;
+	e2_blkcnt_t	last_init_lblock;
 	e2_blkcnt_t	last_db_block;
 	int		num_illegal_blocks;
 	blk64_t		previous_block;
@@ -1898,6 +1899,9 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pb->last_db_block = blockcnt - 1;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
 		start_block = pb->last_block = extent.e_lblk + extent.e_len - 1;
+		if (is_leaf && !is_dir &&
+		    !(extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT))
+			pb->last_init_lblock = extent.e_lblk + extent.e_len - 1;
 	next:
 		pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_NEXT_SIB,
@@ -1964,6 +1968,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.ino = ino;
 	pb.num_blocks = 0;
 	pb.last_block = -1;
+	pb.last_init_lblock = -1;
 	pb.last_db_block = -1;
 	pb.num_illegal_blocks = 0;
 	pb.suppress = 0; pb.clear = 0;
@@ -2004,10 +2009,16 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (ext2fs_inode_has_valid_blocks2(fs, inode)) {
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
-		else
+		else {
 			pctx->errcode = ext2fs_block_iterate3(fs, ino,
 						pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 						block_buf, process_block, &pb);
+			/*
+			 * We do not have uninitialized extents in non extent
+			 * files.
+			 */
+			pb.last_init_lblock = pb.last_block;
+		}
 	}
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	end_problem_latch(ctx, PR_LATCH_TOOBIG);
@@ -2079,12 +2090,12 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		e2_blkcnt_t blkpg = ctx->blocks_per_page;
 
 		size = EXT2_I_SIZE(inode);
-		if ((pb.last_block >= 0) &&
+		if ((pb.last_init_lblock >= 0) &&
 		    /* allow allocated blocks to end of PAGE_SIZE */
-		    (size < (__u64)pb.last_block * fs->blocksize) &&
-		    (pb.last_block / blkpg * blkpg != pb.last_block ||
-		     size < (__u64)(pb.last_block & ~(blkpg-1)) *fs->blocksize) &&
-		    !(inode->i_flags & EXT4_EOFBLOCKS_FL))
+		    (size < (__u64)pb.last_init_lblock * fs->blocksize) &&
+		    (pb.last_init_lblock / blkpg * blkpg != pb.last_init_lblock ||
+		     size < (__u64)(pb.last_init_lblock & ~(blkpg-1)) *
+		     fs->blocksize))
 			bad_size = 3;
 		else if (!(extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
 			 size > ext2_max_sizes[fs->super->s_log_block_size])
@@ -2095,19 +2106,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 ((1ULL << (32 + EXT2_BLOCK_SIZE_BITS(fs->super))) - 1))
 			/* too big for an extent-based file - 32bit ee_block */
 			bad_size = 6;
-
-		/*
-		 * Check to see if the EOFBLOCKS flag is set where it
-		 * doesn't need to be.
-		 */
-		if ((inode->i_flags & EXT4_EOFBLOCKS_FL) &&
-		    (size >= (((__u64)pb.last_block + 1) * fs->blocksize))) {
-			pctx->blkcount = pb.last_block;
-			if (fix_problem(ctx, PR_1_EOFBLOCKS_FL_SET, pctx)) {
-				inode->i_flags &= ~EXT4_EOFBLOCKS_FL;
-				dirty_inode++;
-			}
-		}
 	}
 	/* i_size for symlinks is checked elsewhere */
 	if (bad_size && !LINUX_S_ISLNK(inode->i_mode)) {

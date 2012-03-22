@@ -538,8 +538,7 @@ struct problem_context {
 /* Extent node header invalid */
 #define PR_1_EXTENT_HEADER_INVALID	0x01005F
 
-/* EOFBLOCKS flag set when not necessary */
-#define PR_1_EOFBLOCKS_FL_SET		0x010060
+/* PR_1_EOFBLOCKS_FL_SET 0x010060 was here */
 
 /* Failed to convert subcluster bitmap */
 #define PR_1_CONVERT_SUBCLUSTER		0x010061

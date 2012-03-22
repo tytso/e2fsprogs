@@ -916,11 +916,6 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has an invalid extent node (blk %b, lblk %c)\n"),
 	  PROMPT_CLEAR, 0 },
 
-	{ PR_1_EOFBLOCKS_FL_SET,
-	  N_("@i %i should not have EOFBLOCKS_FL set "
-	     "(size %Is, lblk %r)\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK },
-
 	/* Failed to convert subcluster bitmap */
 	{ PR_1_CONVERT_SUBCLUSTER,
 	  N_("Error converting subcluster @b @B: %m\n"),
