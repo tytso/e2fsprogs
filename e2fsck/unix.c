@@ -1398,12 +1398,10 @@ failure:
 	    (flags & EXT2_FLAG_SKIP_MMP)) {
 		if (e2fsck_check_mmp(fs, ctx))
 			fatal_error(ctx, 0);
-	}
 
-	 /*
-	  * Restart in order to reopen fs but this time start mmp.
-	  */
-	if (flags & EXT2_FLAG_SKIP_MMP) {
+		/*
+		 * Restart in order to reopen fs but this time start mmp.
+		 */
 		ext2fs_close(fs);
 		ctx->fs = NULL;
 		flags &= ~EXT2_FLAG_SKIP_MMP;
