@@ -87,6 +87,8 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
  *				features aren't supported.
  *	EXT2_FLAG_JOURNAL_DEV_OK - Open an ext3 journal device
  *	EXT2_FLAG_SKIP_MMP - Open without multi-mount protection check.
+ *	EXT2_FLAG_64BITS - Allow 64-bit bitfields (needed for large
+ *				filesystems)
  */
 errcode_t ext2fs_open2(const char *name, const char *io_options,
 		       int flags, int superblock,
