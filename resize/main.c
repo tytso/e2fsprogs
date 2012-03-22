@@ -294,6 +294,9 @@ int main (int argc, char ** argv)
 
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
+
+	io_flags |= EXT2_FLAG_64BITS;
+
 	retval = ext2fs_open2(device_name, io_options, io_flags,
 			      0, 0, io_ptr, &fs);
 	if (retval) {
