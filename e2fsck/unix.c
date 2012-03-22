@@ -1232,7 +1232,7 @@ restart:
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
 	     (retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
 	     ((retval == 0) && (retval2 = ext2fs_check_desc(fs))))) {
-		if (retval2 == ENOMEM) {
+		if (retval2 == ENOMEM || retval2 == EXT2_ET_NO_MEMORY) {
 			retval = retval2;
 			goto failure;
 		}
