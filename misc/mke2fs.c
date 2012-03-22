@@ -88,6 +88,7 @@ int	verbose;
 int	quiet;
 int	super_only;
 int	discard = 1;	/* attempt to discard device before fs creation */
+int	direct_io;
 int	force;
 int	noaction;
 int	journal_size;
@@ -122,7 +123,7 @@ static void usage(void)
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
 	"\t[-t fs-type] [-T usage-type ] [-U UUID] "
-	"[-jnqvFKSV] device [blocks-count]\n"),
+	"[-jnqvDFKSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -1321,7 +1322,7 @@ profile_error:
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cg:i:jl:m:no:qr:s:t:vC:E:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
+		    "b:cg:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1353,6 +1354,9 @@ profile_error:
 					optarg);
 				exit(1);
 			}
+			break;
+		case 'D':
+			direct_io = 1;
 			break;
 		case 'g':
 			fs_param.s_blocks_per_group = strtoul(optarg, &tmp, 0);
@@ -2257,6 +2261,8 @@ int main (int argc, char *argv[])
 	 * Initialize the superblock....
 	 */
 	flags = EXT2_FLAG_EXCLUSIVE;
+	if (direct_io)
+		flags |= EXT2_FLAG_DIRECT_IO;
 	profile_get_boolean(profile, "options", "old_bitmaps", 0, 0,
 			    &old_bitmaps);
 	if (!old_bitmaps)

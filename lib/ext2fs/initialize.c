@@ -119,6 +119,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	io_flags = IO_FLAG_RW;
 	if (flags & EXT2_FLAG_EXCLUSIVE)
 		io_flags |= IO_FLAG_EXCLUSIVE;
+	if (flags & EXT2_FLAG_DIRECT_IO)
+		io_flags |= IO_FLAG_DIRECT_IO;
 	retval = manager->open(name, io_flags, &fs->io);
 	if (retval)
 		goto cleanup;
