@@ -109,6 +109,7 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 	ext2_ino_t	dir_group = 0;
 	ext2_ino_t	i;
 	ext2_ino_t	start_inode;
+	ext2_ino_t	ino_in_group;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -126,17 +127,22 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 	if (start_inode > fs->super->s_inodes_count)
 		return EXT2_ET_INODE_ALLOC_FAIL;
 	i = start_inode;
+	ino_in_group = (i - 1) % EXT2_INODES_PER_GROUP(fs->super);
 
 	do {
-		if (((i - 1) % EXT2_INODES_PER_GROUP(fs->super)) == 0)
+		if (ino_in_group == 0)
 			check_inode_uninit(fs, map, (i - 1) /
 					   EXT2_INODES_PER_GROUP(fs->super));
 
 		if (!ext2fs_fast_test_inode_bitmap2(map, i))
 			break;
-		i++;
-		if (i > fs->super->s_inodes_count)
+		if (++ino_in_group == EXT2_INODES_PER_GROUP(fs->super))
+			ino_in_group = 0;
+		if (++i > fs->super->s_inodes_count) {
 			i = EXT2_FIRST_INODE(fs->super);
+			ino_in_group = ((i - 1) % 
+					EXT2_INODES_PER_GROUP(fs->super));
+		}
 	} while (i != start_inode);
 
 	if (ext2fs_test_inode_bitmap2(map, i))
