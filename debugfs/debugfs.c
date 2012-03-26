@@ -994,29 +994,61 @@ void do_clri(int argc, char *argv[])
 
 void do_freei(int argc, char *argv[])
 {
-	ext2_ino_t inode;
+	unsigned int	len = 1;
+	int		err = 0;
+	ext2_ino_t	inode;
 
-	if (common_inode_args_process(argc, argv, &inode,
-				      CHECK_FS_RW | CHECK_FS_BITMAPS))
+	if (common_args_process(argc, argv, 2, 3, argv[0], "<file> [num]",
+				CHECK_FS_RW | CHECK_FS_BITMAPS))
+		return 1;
+	if (check_fs_read_write(argv[0]))
 		return;
 
-	if (!ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
+	inode = string_to_inode(argv[1]);
+	if (!inode)
+		return;
+
+	if (argc == 3) {
+		len = parse_ulong(argv[2], argv[0], "length", &err);
+		if (err)
+			return;
+	}
+
+	if (len == 1 &&
+	    !ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
 		com_err(argv[0], 0, "Warning: inode already clear");
-	ext2fs_unmark_inode_bitmap2(current_fs->inode_map,inode);
+	while (len-- > 0)
+		ext2fs_unmark_inode_bitmap2(current_fs->inode_map, inode);
 	ext2fs_mark_ib_dirty(current_fs);
 }
 
 void do_seti(int argc, char *argv[])
 {
-	ext2_ino_t inode;
+	unsigned int	len = 1;
+	int		err = 0;
+	ext2_ino_t	inode;
 
-	if (common_inode_args_process(argc, argv, &inode,
-				      CHECK_FS_RW | CHECK_FS_BITMAPS))
+	if (common_args_process(argc, argv, 2, 3, argv[0], "<file> [num]",
+				CHECK_FS_RW | CHECK_FS_BITMAPS))
+		return;
+	if (check_fs_read_write(argv[0]))
 		return;
 
-	if (ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
+	inode = string_to_inode(argv[1]);
+	if (!inode)
+		return;
+
+	if (argc == 3) {
+		len = parse_ulong(argv[2], argv[0], "length", &err);
+		if (err)
+			return;
+	}
+
+	if ((len == 1) &&
+	    ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
 		com_err(argv[0], 0, "Warning: inode already set");
-	ext2fs_mark_inode_bitmap2(current_fs->inode_map,inode);
+	while (len-- > 0)
+		ext2fs_mark_inode_bitmap2(current_fs->inode_map, inode++);
 	ext2fs_mark_ib_dirty(current_fs);
 }
 #endif /* READ_ONLY */

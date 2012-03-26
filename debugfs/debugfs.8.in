@@ -311,9 +311,12 @@ chunks of size
 can be found in the file system.  The chunk size must be a power of two
 and be larger than the file system block size.
 .TP
-.I freei filespec
+.I freei filespec [num]
 Free the inode specified by 
 .IR filespec .
+If
+.I num
+is specified, also clear num-1 inodes after the specified inode.
 .TP
 .I help
 Print a list of commands understood by 
@@ -506,10 +509,12 @@ so that the block group descriptor field
 has value
 .I value.
 .TP
-.I seti filespec
+.I seti filespec [num]
 Mark inode 
 .I filespec
-as in use in the inode bitmap.
+as in use in the inode bitmap.  If
+.I num
+is specified, also set num-1 inodes after the specified inode.
 .TP
 .I set_inode_field filespec field value
 Modify the inode specified by 
