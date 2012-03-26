@@ -26,6 +26,9 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#if HAVE_MALLOC_H
+#include <malloc.h>
+#endif
 
 #include "ext2_fs.h"
 #define INCLUDE_INLINE_FUNCS
@@ -40,11 +43,12 @@ errcode_t ext2fs_get_memalign(unsigned long size,
 			      unsigned long align, void *ptr)
 {
 	errcode_t retval;
+	void **p = ptr;
 
 	if (align == 0)
 		align = 8;
 #ifdef HAVE_POSIX_MEMALIGN
-	retval = posix_memalign((void **) ptr, align, size);
+	retval = posix_memalign(p, align, size);
 	if (retval) {
 		if (retval == ENOMEM)
 			return EXT2_ET_NO_MEMORY;
@@ -52,8 +56,8 @@ errcode_t ext2fs_get_memalign(unsigned long size,
 	}
 #else
 #ifdef HAVE_MEMALIGN
-	*ptr = memalign(align, size);
-	if (*ptr == NULL) {
+	*p = memalign(align, size);
+	if (*p == NULL) {
 		if (errno)
 			return errno;
 		else
