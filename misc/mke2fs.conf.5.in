@@ -385,6 +385,7 @@ together to create one large virtual block group on an ext4 filesystem.
 This improves meta-data locality and performance on meta-data heavy
 workloads.  The number of groups must be a power of 2 and may only be
 specified if the flex_bg filesystem feature is enabled.
+.TP
 .I options
 This relation specifies additional extended options which should be
 treated by

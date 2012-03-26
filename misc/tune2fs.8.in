@@ -596,7 +596,8 @@ given quota type. Quota options could be one or more of the following:
 .TP
 .BR [^]usrquota
 Sets/clears user quota inode in the superblock.
-.BR [^]usrquota
+.TP
+.BR [^]grpquota
 Sets/clears group quota inode in the superblock.
 .TP
 .BI \-T " time-last-checked"
