@@ -191,6 +191,14 @@ else
 M4_ARGS+=-UDO_MULTIARCH
 endif
 
+ifneq ($(SKIP_DIETLIBC),)
+M4_ARGS+=-UDIETLIBC
+WITH_DIET_LIBC = 
+else
+M4_ARGS+=-DDIETLIBC
+WITH_DIET_LIBC = --with-diet-libc 
+endif
+
 FILES_FIXUP= libcomerr2.files comerr-dev.files libss2.files ss-dev.files \
 	libuuid1.files uuid-dev.files libblkid1.files libblkid-dev.files \
 	e2fslibs.files e2fslibs-dev.files
@@ -270,7 +278,7 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	if type diet > /dev/null  2>&1 ; then \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${STATIC_CONF_FLAGS} \
-		--with-diet-libc CFLAGS="${CFLAGS}"; \
+		${WITH_DIET_LIBC} CFLAGS="${CFLAGS}"; \
 	else \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
 			${topdir}/configure ${STATIC_CONF_FLAGS} \
