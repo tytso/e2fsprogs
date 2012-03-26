@@ -73,6 +73,8 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 	}
 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
 	ext2fs_group_desc_csum_set(fs, group);
+	ext2fs_mark_super_dirty(fs);
+	ext2fs_mark_bb_dirty(fs);
 }
 
 /*
@@ -93,6 +95,9 @@ static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 		ext2fs_fast_unmark_inode_bitmap2(map, ino);
 
 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
+	ext2fs_group_desc_csum_set(fs, group);
+	ext2fs_mark_ib_dirty(fs);
+	ext2fs_mark_super_dirty(fs);
 	check_block_uninit(fs, fs->block_map, group);
 }
 
