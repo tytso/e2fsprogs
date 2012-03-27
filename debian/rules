@@ -117,9 +117,12 @@ INSTALL_PROGRAM ?= $(INSTALL) -p -o root -g root -m 0755
 DEFAULT_CFLAGS ?= -g -O2
 DEFAULT_LDFLAGS ?= -Wl,-Bsymbolic-functions
 
-CFLAGS += $(shell dpkg-buildflags --get CFLAGS)
-LDFLAGS += $(shell dpkg-buildflags --get LDFLAGS)
-CPPFLAGS += $(shell dpkg-buildflags --get CPPFLAGS)
+CFLAGS ?= $(shell if dpkg-buildflags > /dev/null 2>&1 ; then \
+	dpkg-buildflags --get CFLAGS; else echo $(DEFAULT_CFLAGS) ; fi)
+LDFLAGS ?= $(shell if dpkg-buildflags > /dev/null 2>&1 ; then \
+	dpkg-buildflags --get LDFLAGS; else echo $(DEFAULT_LDFLAGS) ; fi)
+CPPFLAGS ?= $(shell if dpkg-buildflags > /dev/null 2>&1 ; then \
+	dpkg-buildflags --get CPPFLAGS; fi)
 
 ifeq (${DEB_HOST_ARCH},alpha)
 CFLAGS += -DHAVE_NETINET_IN_H
