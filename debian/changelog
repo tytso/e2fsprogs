@@ -1,3 +1,32 @@
+e2fsprogs (1.42.2-1) unstable; urgency=low
+
+  * New upstream version
+  * Fixed various man pages (Closes: #665427)
+  * Speed up resize2fs for large file systems (Closes: #663237)
+  * Be less strict about the EXT4_EOFBLOCKS_FL flag (which will
+    eventually be going away in the ext4 file system format)
+  * Teach mke2fs to use direct I/O if the -D option is given
+  * Print errors returned by ext2fs_open2() and ext2fs_check_desc() so
+    we can more easily diagnose memory allocation failures caused by
+    insufficient memory and abort on memory allocation failures
+  * E2fsck can now write log files containing the details of the
+    problems that were found and fixed directly.
+  * E2fsck can now limit the number of messages issued and printed on
+    the console
+  * The dumpe2fs, debugfs, and tune2fs now use rbtree bitmaps, which
+    cause them to use much less memory for large file systems.
+  * E2fsck will now check for zero-length extents, since older kernels will
+    OOPS if they comes across one
+  * Fix e2fsck's discard behaviour so it does not discard too many
+    blocks, and it will not use discard if the device advertises
+    that discard does not persistently zero data.  Also, if e2fsck is
+    run in read-only mode, do not try to discard data.
+  * Fix mke2fs -S so it does not corrupt the first block group's
+    information.
+  * Add pointer for e2fsprogs-udeb to libcomerr2.shlibs (Closes: #665885)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 27 Mar 2012 15:55:57 -0700
+
 e2fsprogs (1.42.1-2) unstable; urgency=low
 
   * Fix the fact that dpkg-buildflags was being ignored due to a
