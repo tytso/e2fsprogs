@@ -81,7 +81,6 @@ maindir		?= ${debdir}/e2fsprogs
 e2fsckstaticdir	?= ${debdir}/e2fsck-static
 debugdir	?= ${debdir}/e2fsprogs-dbg
 stdbuilddir	?= ${debdir}/BUILD-STD
-bfbuilddir	?= ${debdir}/BUILD-BF
 staticbuilddir	?= ${debdir}/BUILD-STATIC
 mipsbuilddir	?= ${debdir}/BUILD-MIPS
 mipsbuilddir64	?= ${debdir}/BUILD-MIPS-64
@@ -133,6 +132,14 @@ BUILD_STATIC = build-static
 E2FSCK_STATIC = ${staticbuilddir}/e2fsck/e2fsck.static
 else
 E2FSCK_STATIC = ${stdbuilddir}/e2fsck/e2fsck.static
+endif
+
+ifeq ($(SKIP_BF),yes)
+BUILD_BF =
+bfbuilddir	?= ${stdbuilddir}
+else
+BUILD_BF = build-bf
+bfbuilddir	?= ${debdir}/BUILD-BF
 endif
 
 BF_CFLAGS = -Os -fomit-frame-pointer
@@ -295,7 +302,7 @@ endif
 
 build-arch: build
 build-indep: build
-build: build-std build-bf $(BUILD_STATIC)
+build: build-std $(BUILD_BF) $(BUILD_STATIC)
 
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
@@ -409,10 +416,10 @@ install-udeb: build
 		-a ! -name mke2fs -a ! -name tune2fs \
 		-a ! -name resize2fs -a ! -name badblocks -print | xargs rm
 
-	(cd ${udebdir}/sbin; ln -s e2fsck fsck.ext2 ; \
-		ln -s e2fsck fsck.ext3 ; ln -s e2fsck fsck.ext4 ; \
-		ln -s mke2fs mkfs.ext2 ; ln -s mke2fs mkfs.ext3 ; \
-		ln -s mke2fs mkfs.ext4)
+	(cd ${udebdir}/sbin; ln -sf e2fsck fsck.ext2 ; \
+		ln -sf e2fsck fsck.ext3 ; ln -sf e2fsck fsck.ext4 ; \
+		ln -sf mke2fs mkfs.ext2 ; ln -sf mke2fs mkfs.ext3 ; \
+		ln -sf mke2fs mkfs.ext4)
 
 ifneq ($(UTIL_LINUX_NG),yes)
 	mkdir -p ${blkidudebdir}/lib
