@@ -127,11 +127,16 @@ else
 CFLAGS += -D__NO_STRING_INLINES
 endif
 
-ifeq (${DEB_HOST_ARCH_OS},linux)
+ifneq (${DEB_HOST_ARCH_OS},linux)
+SKIP_STATIC = yes
+endif
+
+ifeq ($(SKIP_STATIC),yes)
+BUILD_STATIC =
+E2FSCK_STATIC = ${stdbuilddir}/e2fsck/e2fsck.static
+else
 BUILD_STATIC = build-static
 E2FSCK_STATIC = ${staticbuilddir}/e2fsck/e2fsck.static
-else
-E2FSCK_STATIC = ${stdbuilddir}/e2fsck/e2fsck.static
 endif
 
 ifeq ($(SKIP_BF),yes)
