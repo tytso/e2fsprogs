@@ -121,9 +121,16 @@ profile.h: $(top_srcdir)/e2fsck/profile.h
 	$(E) "	CP $<"
 	$(Q) cp $< $@
 
-default_profile.c: $(srcdir)/mke2fs.conf $(srcdir)/profile-to-c.awk
+mke2fs.conf: $(srcdir)/mke2fs.conf.in
+	if test -f $(srcdir)/mke2fs.conf.custom.in ; then \
+		cp $(srcdir)/mke2fs.conf.custom.in mke2fs.conf; \
+	else \
+		cp $(srcdir)/mke2fs.conf.in mke2fs.conf; \
+	fi
+
+default_profile.c: mke2fs.conf $(srcdir)/profile-to-c.awk
 	$(E) "	PROFILE_TO_C mke2fs.conf"
-	$(Q) $(AWK) -f $(srcdir)/profile-to-c.awk < $(srcdir)/mke2fs.conf \
+	$(Q) $(AWK) -f $(srcdir)/profile-to-c.awk < mke2fs.conf \
 		>  default_profile.c
 profile.o:
 	$(E) "	CC $<"
@@ -477,12 +484,12 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	done
 	$(Q) if test -f $(DESTDIR)$(root_sysconfdir)/mke2fs.conf; then \
 		if cmp -s $(DESTDIR)$(root_sysconfdir)/mke2fs.conf \
-			$(srcdir)/mke2fs.conf; then \
+			mke2fs.conf; then \
 			true; \
 		else \
 			if grep -q ext4dev $(DESTDIR)$(root_sysconfdir)/mke2fs.conf ; then \
 				echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf.e2fsprogs-new"; \
-				$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
+				$(INSTALL_DATA) mke2fs.conf \
 					$(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-new; \
 				echo "Warning: installing mke2fs.conf in $(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-new"; \
 				echo "Check to see if you need to update your $(root_sysconfdir)/mke2fs.conf"; \
@@ -490,7 +497,7 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 				echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
 				mv $(DESTDIR)$(root_sysconfdir)/mke2fs.conf \
 				   $(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-old; \
-				$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
+				$(INSTALL_DATA) mke2fs.conf \
 					$(DESTDIR)$(root_sysconfdir)/mke2fs.conf; \
 				echo "Your mke2fs.conf is too old.  Backing up old version in"; \
 				echo "$(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-old.  Please check to see"; \
@@ -500,7 +507,7 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		fi; \
 	else \
 		echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
-		$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
+		$(INSTALL_DATA) mke2fs.conf \
 			$(DESTDIR)$(root_sysconfdir)/mke2fs.conf; \
 	fi
 
@@ -547,7 +554,7 @@ uninstall:
 	for i in $(FMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man5dir)/$$i; \
 	done
-	if cmp -s $(srcdir)/mke2fs.conf $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; then \
+	if cmp -s mke2fs.conf $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; then \
 		$(RM) $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; \
 	fi
 
@@ -560,7 +567,7 @@ clean:
 		blkid.profiled tune2fs.profiled e2image.profiled \
 		e2undo.profiled mke2fs.profiled dumpe2fs.profiled \
 		logsave.profiled filefrag.profiled uuidgen.profiled \
-		uuidd.profiled e2image.profiled \
+		uuidd.profiled e2image.profiled mke2fs.conf \
 		profiled/*.o \#* *.s *.o *.a *~ core gmon.out
 
 mostlyclean: clean
