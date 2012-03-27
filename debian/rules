@@ -618,7 +618,7 @@ endif
 	dh_compress
 
 	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
-	dh_makeshlibs -plibcomerr${COMERR_SOVERSION} \
+	dh_makeshlibs --add-udeb=e2fsprogs-udeb -plibcomerr${COMERR_SOVERSION} \
 		-V 'libcomerr2 (>= 1.33-3)'
 ifneq ($(UTIL_LINUX_NG),yes)
 	dh_makeshlibs -plibblkid${BLKID_SOVERSION} -V 'libblkid1 (>= 1.39-1)'
