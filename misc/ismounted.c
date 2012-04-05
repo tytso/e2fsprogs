@@ -78,7 +78,7 @@ static char *parse_word(char **buf)
 static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 				   int *mount_flags)
 {
-#ifdef HAVE_MNTENT_H
+#ifdef HAVE_SETMNTENT
 	struct stat	st_buf;
 	errcode_t	retval = 0;
 	dev_t		file_dev=0, file_rdev=0;
@@ -178,7 +178,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 errout:
 	endmntent (f);
 	return retval;
-#else /* !HAVE_MNTENT_H */
+#else /* !HAVE_SETMNTENT */
 	return 0;
 #endif /* HAVE_MNTENT_H */
 }

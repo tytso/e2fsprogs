@@ -35,7 +35,7 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
-#ifdef HAVE_MNTENT_H
+#ifdef HAVE_SETMNTENT
 /*
  * Helper function which checks a file in /etc/mtab format to see if a
  * filesystem is mounted.  Returns an error if the file doesn't exist
@@ -231,7 +231,7 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags,
 	return 0;
 }
 #endif /* HAVE_GETMNTINFO */
-#endif /* HAVE_MNTENT_H */
+#endif /* HAVE_SETMNTENT */
 
 /*
  * Check to see if we're dealing with the swap device.
@@ -310,7 +310,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
 		strncpy(mtpt, "<swap>", mtlen);
 	} else {
-#ifdef HAVE_MNTENT_H
+#ifdef HAVE_SETMNTENT
 		retval = check_mntent(device, mount_flags, mtpt, mtlen);
 #else
 #ifdef HAVE_GETMNTINFO
@@ -321,7 +321,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 #endif
 		*mount_flags = 0;
 #endif /* HAVE_GETMNTINFO */
-#endif /* HAVE_MNTENT_H */
+#endif /* HAVE_SETMNTENT */
 	}
 	if (retval)
 		return retval;

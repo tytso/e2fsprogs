@@ -43,9 +43,6 @@ extern int optind;
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
-#ifdef HAVE_MNTENT_H
-#include <mntent.h>
-#endif
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>

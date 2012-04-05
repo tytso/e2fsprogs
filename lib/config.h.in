@@ -314,6 +314,9 @@
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
 
+/* Define to 1 if you have the `setmntent' function. */
+#undef HAVE_SETMNTENT
+
 /* Define to 1 if you have the `setresgid' function. */
 #undef HAVE_SETRESGID
 
