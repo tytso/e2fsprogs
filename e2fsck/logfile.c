@@ -126,7 +126,11 @@ static void expand_percent_expression(e2fsck_t ctx, char ch,
 		strcpy(buf, "tytso");
 		break;
 #else
+#ifdef HAVE_GETPWUID_R
 		getpwuid_r(getuid(), &pw_struct, buf, sizeof(buf), &pw);
+#else
+		pw = getpwuid(getuid());
+#endif
 		if (pw)
 			append_string(s, pw->pw_name, 0);
 		return;

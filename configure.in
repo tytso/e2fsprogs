@@ -968,6 +968,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	ftruncate64
 	getdtablesize
 	getmntinfo
+	getpwuid_r
 	getrlimit
 	getrusage
 	jrand48
