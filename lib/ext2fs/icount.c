@@ -351,9 +351,7 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
 					    ext2_ino_t ino, int create)
 {
-	float	range;
 	int	low, high, mid;
-	ext2_ino_t	lowval, highval;
 
 	if (!icount || !icount->list)
 		return 0;

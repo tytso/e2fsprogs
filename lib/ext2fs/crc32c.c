@@ -35,9 +35,9 @@
 #define __force
 #define min(x, y)		((x) > (y) ? (y) : (x))
 #define __ALIGN_KERNEL_MASK(x, mask)	(((x) + (mask)) & ~(mask))
-#define __ALIGN_KERNEL(x, a)	__ALIGN_KERNEL_MASK(x, (typeof(x))(a) - 1)
+#define __ALIGN_KERNEL(x, a)	__ALIGN_KERNEL_MASK(x, (__typeof__(x))(a) - 1)
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
-#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
+#define PTR_ALIGN(p, a)		((__typeof__(p))ALIGN((unsigned long)(p), (a)))
 #include "crc32c_defs.h"
 
 #include "ext2fs.h"

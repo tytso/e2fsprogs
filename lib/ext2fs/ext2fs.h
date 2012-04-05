@@ -1706,8 +1706,6 @@ _INLINE_ __u64 ext2fs_div64_ceil(__u64 a, __u64 b)
 
 _INLINE_ int ext2fs_open_file(const char *pathname, int flags, mode_t mode)
 {
-	va_list args;
-
 	if (mode)
 #if defined(HAVE_OPEN64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
 		return open64(pathname, flags, mode);

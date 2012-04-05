@@ -21,10 +21,7 @@
 static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 			     ext2_ino_t to_ino, int qtype)
 {
-	struct ext2_super_block *sb = fs->super;
-	ext2_ino_t		ino;
 	struct ext2_inode	inode;
-	errcode_t		retval;
 	char			qf_name[QUOTA_NAME_LEN];
 
 	if (ext2fs_read_inode(fs, from_ino, &inode))

@@ -754,7 +754,7 @@ void handle_quota_options(ext2_filsys fs)
 
 void parse_quota_opts(const char *opts)
 {
-	char	*buf, *token, *next, *p, *arg;
+	char	*buf, *token, *next, *p;
 	int	len;
 
 	len = strlen(opts);

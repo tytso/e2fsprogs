@@ -99,12 +99,11 @@ static void e2fsck_discard_blocks(e2fsck_t ctx, blk64_t start,
  * is 1-based, it means that we need to adjust it by -1 in this
  * function to compute right offset in the particular inode table.
  */
-static void e2fsck_discard_inodes(e2fsck_t ctx, int group,
-				  int start, int count)
+static void e2fsck_discard_inodes(e2fsck_t ctx, dgrp_t group,
+				  ext2_ino_t start, int count)
 {
 	ext2_filsys fs = ctx->fs;
 	blk64_t blk, num;
-	int orig = count;
 
 	/*
 	 * Sanity check for 'start'
@@ -196,12 +195,12 @@ static void check_block_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	blk64_t	i;
-	int	*free_array;
+	unsigned int	*free_array;
 	int	group = 0;
-	int	blocks = 0;
+	unsigned int	blocks = 0;
 	blk64_t	free_blocks = 0;
 	blk64_t first_free = ext2fs_blocks_count(fs->super);
-	int	group_free = 0;
+	unsigned int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;
 	int	problem, save_problem, fixit, had_problem;
@@ -213,11 +212,10 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	int	cmp_block = 0;
 	int	redo_flag = 0;
 	blk64_t	super_blk, old_desc_blk, new_desc_blk;
-	io_manager	manager = ctx->fs->io->manager;
 
 	clear_problem_context(&pctx);
-	free_array = (int *) e2fsck_allocate_memory(ctx,
-	    fs->group_desc_count * sizeof(int), "free block count array");
+	free_array = (unsigned int *) e2fsck_allocate_memory(ctx,
+	    fs->group_desc_count * sizeof(unsigned int), "free block count array");
 
 	if ((B2C(fs->super->s_first_data_block) <
 	     ext2fs_get_block_bitmap_start2(ctx->block_found_map)) ||
@@ -489,8 +487,8 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int		dirs_count = 0;
 	int		group = 0;
 	unsigned int	inodes = 0;
-	int		*free_array;
-	int		*dir_array;
+	ext2_ino_t	*free_array;
+	ext2_ino_t	*dir_array;
 	int		actual, bitmap;
 	errcode_t	retval;
 	struct problem_context	pctx;
@@ -498,15 +496,14 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int		csum_flag;
 	int		skip_group = 0;
 	int		redo_flag = 0;
-	io_manager	manager = ctx->fs->io->manager;
-	int		first_free = fs->super->s_inodes_per_group + 1;
+	ext2_ino_t		first_free = fs->super->s_inodes_per_group + 1;
 
 	clear_problem_context(&pctx);
-	free_array = (int *) e2fsck_allocate_memory(ctx,
-	    fs->group_desc_count * sizeof(int), "free inode count array");
+	free_array = (ext2_ino_t *) e2fsck_allocate_memory(ctx,
+	    fs->group_desc_count * sizeof(ext2_ino_t), "free inode count array");
 
-	dir_array = (int *) e2fsck_allocate_memory(ctx,
-	   fs->group_desc_count * sizeof(int), "directory count array");
+	dir_array = (ext2_ino_t *) e2fsck_allocate_memory(ctx,
+	   fs->group_desc_count * sizeof(ext2_ino_t), "directory count array");
 
 	if ((1 < ext2fs_get_inode_bitmap_start2(ctx->inode_used_map)) ||
 	    (fs->super->s_inodes_count >

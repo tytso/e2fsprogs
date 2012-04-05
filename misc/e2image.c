@@ -55,7 +55,7 @@ char * device_name = NULL;
 
 static void lseek_error_and_exit(int errnum)
 {
-	perror("seek");
+	fprintf(stderr, "seek: %s\n", error_message(errnum));
 	exit(1);
 }
 
@@ -537,8 +537,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	ext2fs_free_mem(&buf);
 }
 
-static void init_l1_table(struct ext2_super_block *sb,
-			  struct ext2_qcow2_image *image)
+static void init_l1_table(struct ext2_qcow2_image *image)
 {
 	__u64 *l1_table;
 	errcode_t ret;
@@ -724,7 +723,7 @@ static int initialize_qcow2_image(int fd, ext2_filsys fs,
 
 	image->hdr = header;
 	/* Initialize l1 and l2 tables */
-	init_l1_table(sb, image);
+	init_l1_table(image);
 	init_l2_cache(image);
 
 	return 0;

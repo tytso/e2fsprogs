@@ -1000,7 +1000,7 @@ void do_freei(int argc, char *argv[])
 
 	if (common_args_process(argc, argv, 2, 3, argv[0], "<file> [num]",
 				CHECK_FS_RW | CHECK_FS_BITMAPS))
-		return 1;
+		return;
 	if (check_fs_read_write(argv[0]))
 		return;
 

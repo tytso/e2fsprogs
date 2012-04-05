@@ -318,7 +318,6 @@ rb_test_bit(struct ext2fs_rb_private *bp, __u64 bit)
 	struct rb_node *parent = NULL;
 	struct rb_node **n = &bp->root.rb_node;
 	struct bmap_rb_extent *ext;
-	int i=0;
 
 	rcursor = *bp->rcursor;
 	if (!rcursor)
@@ -542,8 +541,6 @@ static int rb_remove_extent(__u64 start, __u64 count,
 static int rb_mark_bmap(ext2fs_generic_bitmap bitmap, __u64 arg)
 {
 	struct ext2fs_rb_private *bp;
-	int i;
-
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	arg -= bitmap->start;
@@ -580,7 +577,6 @@ static void rb_mark_bmap_extent(ext2fs_generic_bitmap bitmap, __u64 arg,
 				unsigned int num)
 {
 	struct ext2fs_rb_private *bp;
-	struct bmap_rb_extent *new_ext;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	arg -= bitmap->start;
@@ -592,7 +588,6 @@ static void rb_unmark_bmap_extent(ext2fs_generic_bitmap bitmap, __u64 arg,
 				  unsigned int num)
 {
 	struct ext2fs_rb_private *bp;
-	int ret;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	arg -= bitmap->start;
@@ -752,8 +747,11 @@ static void rb_print_stats(ext2fs_generic_bitmap bitmap)
 	__u64 max_size = 0;
 	__u64 min_size = ULONG_MAX;
 	__u64 size = 0, avg_size = 0;
+	double eff;
+#ifdef BMAP_STATS_OPS
 	__u64 mark_all, test_all;
-	double eff, m_hit = 0.0, t_hit = 0.0;
+	double m_hit = 0.0, t_hit = 0.0;
+#endif
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 
