@@ -1900,6 +1900,7 @@ profile_error:
 	journal_flags |= get_bool_from_profile(fs_types,
 					       "lazy_journal_init", 0) ?
 					       EXT2_MKJOURNAL_LAZYINIT : 0;
+	journal_flags |= EXT2_MKJOURNAL_NO_MNT_CHECK;
 
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {

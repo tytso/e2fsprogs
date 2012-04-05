@@ -499,8 +499,11 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 	int			mount_flags, f;
 	int			fd = -1;
 
-	if ((retval = ext2fs_check_mount_point(fs->device_name, &mount_flags,
-					       jfile, sizeof(jfile)-10)))
+	if (flags & EXT2_MKJOURNAL_NO_MNT_CHECK)
+		mount_flags = 0;
+	else if ((retval = ext2fs_check_mount_point(fs->device_name,
+						    &mount_flags,
+						    jfile, sizeof(jfile)-10)))
 		return retval;
 
 	if (mount_flags & EXT2_MF_MOUNTED) {
@@ -612,7 +615,7 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	retval = ext2fs_add_journal_inode(fs, 1024);
+	retval = ext2fs_add_journal_inode(fs, 1024, 0);
 	if (retval) {
 		com_err(argv[0], retval, "while adding journal to %s",
 			device_name);
