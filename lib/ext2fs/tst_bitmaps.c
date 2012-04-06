@@ -151,7 +151,7 @@ int check_fs_open(char *name)
 
 static void setup_filesystem(const char *name,
 			     unsigned int blocks, unsigned int inodes,
-			     unsigned int type)
+			     unsigned int type, int flags)
 {
 	struct ext2_super_block param;
 	errcode_t retval;
@@ -160,7 +160,7 @@ static void setup_filesystem(const char *name,
 	ext2fs_blocks_count_set(&param, blocks);
 	param.s_inodes_count = inodes;
 
-	retval = ext2fs_initialize("test fs", EXT2_FLAG_64BITS, &param,
+	retval = ext2fs_initialize("test fs", flags, &param,
 				   test_io_manager, &test_fs);
 
 	if (retval) {
@@ -198,6 +198,7 @@ void setup_cmd(int argc, char **argv)
 	unsigned int	blocks = 128;
 	unsigned int	inodes = 0;
 	unsigned int	type = EXT2FS_BMAP64_BITARRAY;
+	int		flags = EXT2_FLAG_64BITS;
 
 	if (test_fs) {
 		ext2fs_close(test_fs);
@@ -205,7 +206,7 @@ void setup_cmd(int argc, char **argv)
 	}
 
 	reset_getopt();
-	while ((c = getopt(argc, argv, "b:i:t:")) != EOF) {
+	while ((c = getopt(argc, argv, "b:i:lt:")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocks = parse_ulong(optarg, argv[0],
@@ -219,6 +220,9 @@ void setup_cmd(int argc, char **argv)
 			if (err)
 				return;
 			break;
+		case 'l':	/* Legacy bitmaps */
+			flags = 0;
+			break;
 		case 't':
 			type = parse_ulong(optarg, argv[0],
 					   "bitmap backend type", &err);
@@ -231,7 +235,7 @@ void setup_cmd(int argc, char **argv)
 			return;
 		}
 	}
-	setup_filesystem(argv[0], blocks, inodes, type);
+	setup_filesystem(argv[0], blocks, inodes, type, flags);
 }
 
 void close_cmd(int argc, char **argv)
@@ -399,6 +403,40 @@ void do_testb(int argc, char *argv[])
 	printf("Block %u is %s\n", block, test_result ? "set" : "clear");
 }
 
+void do_ffzb(int argc, char *argv[])
+{
+	unsigned int start, end;
+	int err;
+	errcode_t retval;
+	blk64_t out;
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	if (argc != 3 && argc != 3) {
+		com_err(argv[0], 0, "Usage: ffzb <start> <end>");
+		return;
+	}
+
+	start = parse_ulong(argv[1], argv[0], "start", &err);
+	if (err)
+		return;
+
+	end = parse_ulong(argv[2], argv[0], "end", &err);
+	if (err)
+		return;
+
+	retval = ext2fs_find_first_zero_block_bitmap2(test_fs->block_map,
+						      start, end, &out);
+	if (retval) {
+		printf("ext2fs_find_first_zero_block_bitmap2() returned %s\n",
+		       error_message(retval));
+		return;
+	}
+	printf("First unmarked block is %llu\n", out);
+}
+
+
 void do_zerob(int argc, char *argv[])
 {
 	if (check_fs_open(argv[0]))
@@ -488,6 +526,40 @@ void do_testi(int argc, char *argv[])
 	printf("Inode %u is %s\n", inode, test_result ? "set" : "clear");
 }
 
+void do_ffzi(int argc, char *argv[])
+{
+	unsigned int start, end;
+	int err;
+	errcode_t retval;
+	ext2_ino_t out;
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	if (argc != 3 && argc != 3) {
+		com_err(argv[0], 0, "Usage: ffzi <start> <end>");
+		return;
+	}
+
+	start = parse_ulong(argv[1], argv[0], "start", &err);
+	if (err)
+		return;
+
+	end = parse_ulong(argv[2], argv[0], "end", &err);
+	if (err)
+		return;
+
+	retval = ext2fs_find_first_zero_inode_bitmap2(test_fs->inode_map,
+						      start, end, &out);
+	if (retval) {
+		printf("ext2fs_find_first_zero_inode_bitmap2() returned %s\n",
+		       error_message(retval));
+		return;
+	}
+	printf("First unmarked inode is %u\n", out);
+}
+
+
 void do_zeroi(int argc, char *argv[])
 {
 	if (check_fs_open(argv[0]))
@@ -506,10 +578,11 @@ int main(int argc, char **argv)
 	char		*request = (char *)NULL;
 	char		*cmd_file = 0;
 	int		sci_idx;
+	int		flags = EXT2_FLAG_64BITS;
 
 	add_error_table(&et_ss_error_table);
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt (argc, argv, "b:i:t:R:f:")) != EOF) {
+	while ((c = getopt (argc, argv, "b:i:lt:R:f:")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocks = parse_ulong(optarg, argv[0],
@@ -522,6 +595,9 @@ int main(int argc, char **argv)
 					     "number of blocks", &err);
 			if (err)
 				return;
+			break;
+		case 'l':	/* Legacy bitmaps */
+			flags = 0;
 			break;
 		case 't':
 			type = parse_ulong(optarg, argv[0],
@@ -558,7 +634,7 @@ int main(int argc, char **argv)
 	printf("%s %s.  Type '?' for a list of commands.\n\n",
 	       subsystem_name, version);
 
-	setup_filesystem(argv[0], blocks, inodes, type);
+	setup_filesystem(argv[0], blocks, inodes, type, flags);
 
 	if (request) {
 		code = ss_execute_line(sci_idx, request);

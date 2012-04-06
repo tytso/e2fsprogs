@@ -21,6 +21,9 @@ request do_clearb, "Clear block",
 request do_testb, "Test block",
 	test_block, testb;
 
+request do_ffzb, "Find first zero block",
+	find_first_zero_block, ffzb;
+
 request do_zerob, "Clear block bitmap",
 	clear_block_bitmap, zerob;
 
@@ -32,6 +35,9 @@ request do_cleari, "Clear inode",
 
 request do_testi, "Test inode",
 	test_inode, testi;
+
+request do_ffzi, "Find first zero inode",
+	find_first_zero_inode, ffzi;
 
 request do_zeroi, "Clear inode bitmap",
 	clear_inode_bitmap, zeroi;
