@@ -153,9 +153,9 @@ extern void ext2fs_fast_unmark_inode_bitmap2(ext2fs_inode_bitmap bitmap,
 extern int ext2fs_fast_test_inode_bitmap2(ext2fs_inode_bitmap bitmap,
 					  ext2_ino_t inode);
 extern errcode_t ext2fs_find_first_zero_block_bitmap2(ext2fs_block_bitmap bitmap,
-						      ext2_ino_t start,
-						      ext2_ino_t end,
-						      ext2_ino_t *out);
+						      blk64_t start,
+						      blk64_t end,
+						      blk64_t *out);
 extern errcode_t ext2fs_find_first_zero_inode_bitmap2(ext2fs_inode_bitmap bitmap,
 						      ext2_ino_t start,
 						      ext2_ino_t end,
@@ -605,9 +605,9 @@ _INLINE_ int ext2fs_fast_test_inode_bitmap2(ext2fs_inode_bitmap bitmap,
 }
 
 _INLINE_ errcode_t ext2fs_find_first_zero_block_bitmap2(ext2fs_block_bitmap bitmap,
-							ext2_ino_t start,
-							ext2_ino_t end,
-							ext2_ino_t *out)
+							blk64_t start,
+							blk64_t end,
+							blk64_t *out)
 {
 	__u64 o;
 	errcode_t rv;
