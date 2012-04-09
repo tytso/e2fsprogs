@@ -1,3 +1,12 @@
+e2fsprogs (1.42.2-2) unstable; urgency=low
+
+  * Fixed e2fsck.conf's man page (Closes: #646963)
+  * Fixed 32-bit binary compatibility problem for the libext2fs shared
+    library introduced in 1.42.2
+  * mke2fs will no longer fail if the /etc/mtab file is not present
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 09 Apr 2012 14:54:33 -0400
+
 e2fsprogs (1.42.2-1) unstable; urgency=low
 
   * New upstream version
