@@ -24,6 +24,10 @@ static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 	struct ext2_inode	inode;
 	char			qf_name[QUOTA_NAME_LEN];
 
+	/* We need the inode bitmap to be loaded */
+	if (ext2fs_read_bitmaps(fs))
+		return;
+
 	if (ext2fs_read_inode(fs, from_ino, &inode))
 		return;
 
@@ -39,6 +43,9 @@ static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 	quota_get_qf_name(qtype, QFMT_VFS_V1, qf_name);
 	ext2fs_unlink(fs, EXT2_ROOT_INO, qf_name, from_ino, 0);
 	ext2fs_inode_alloc_stats(fs, from_ino, -1);
+	/* Clear out the original inode in the inode-table block. */
+	memset(&inode, 0, sizeof(struct ext2_inode));
+	ext2fs_write_inode(fs, from_ino, &inode);
 }
 
 void e2fsck_hide_quota(e2fsck_t ctx)
@@ -53,31 +60,19 @@ void e2fsck_hide_quota(e2fsck_t ctx)
 	    !(sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA))
 		return;
 
-	/* We need the inode bitmap to be loaded */
-	if (ext2fs_read_bitmaps(fs))
-		return;
-
-	if (!sb->s_usr_quota_inum && !sb->s_grp_quota_inum)
-		/* nothing to do */
-		return;
-
-	if (sb->s_usr_quota_inum == EXT4_USR_QUOTA_INO &&
-	    sb->s_grp_quota_inum == EXT4_GRP_QUOTA_INO)
-		/* nothing to do */
-		return;
-
-	if (!fix_problem(ctx, PR_0_HIDE_QUOTA, &pctx))
-		return;
-
+	pctx.ino = sb->s_usr_quota_inum;
 	if (sb->s_usr_quota_inum &&
-	    sb->s_usr_quota_inum != EXT4_USR_QUOTA_INO) {
+	    (sb->s_usr_quota_inum != EXT4_USR_QUOTA_INO) &&
+	    fix_problem(ctx, PR_0_HIDE_QUOTA, &pctx)) {
 		move_quota_inode(fs, sb->s_usr_quota_inum, EXT4_USR_QUOTA_INO,
 				 USRQUOTA);
 		sb->s_usr_quota_inum = EXT4_USR_QUOTA_INO;
 	}
 
+	pctx.ino = sb->s_grp_quota_inum;
 	if (sb->s_grp_quota_inum &&
-	    sb->s_grp_quota_inum != EXT4_GRP_QUOTA_INO) {
+	    (sb->s_grp_quota_inum != EXT4_GRP_QUOTA_INO) &&
+	    fix_problem(ctx, PR_0_HIDE_QUOTA, &pctx)) {
 		move_quota_inode(fs, sb->s_grp_quota_inum, EXT4_GRP_QUOTA_INO,
 				 GRPQUOTA);
 		sb->s_grp_quota_inum = EXT4_GRP_QUOTA_INO;
