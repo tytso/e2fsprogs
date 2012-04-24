@@ -81,7 +81,6 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .I quota-options
 ]
 [
-[
 .B \-T
 .I time-last-checked
 ]
@@ -599,6 +598,7 @@ Sets/clears user quota inode in the superblock.
 .TP
 .BR [^]grpquota
 Sets/clears group quota inode in the superblock.
+.RE
 .TP
 .BI \-T " time-last-checked"
 Set the time the filesystem was last checked using
