@@ -1973,13 +1973,11 @@ void do_rmdir(int argc, char *argv[])
 void do_show_debugfs_params(int argc EXT2FS_ATTR((unused)),
 			    char *argv[] EXT2FS_ATTR((unused)))
 {
-	FILE *out = stdout;
-
 	if (current_fs)
-		fprintf(out, "Open mode: read-%s\n",
-			current_fs->flags & EXT2_FLAG_RW ? "write" : "only");
-	fprintf(out, "Filesystem in use: %s\n",
-		current_fs ? current_fs->device_name : "--none--");
+		printf("Open mode: read-%s\n",
+		       current_fs->flags & EXT2_FLAG_RW ? "write" : "only");
+	printf("Filesystem in use: %s\n",
+	       current_fs ? current_fs->device_name : "--none--");
 }
 
 #ifndef READ_ONLY
