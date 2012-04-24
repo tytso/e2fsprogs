@@ -412,29 +412,43 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 }
 
 struct scan_dquots_data {
-	quota_ctx_t         qctx;
-	int                 limit_only; /* read limit only */
+	dict_t		*quota_dict;
+	int             update_limits; /* update limits from disk */
+	int		update_usage;
+	int		usage_is_inconsistent;
 };
 
 static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 {
-	struct scan_dquots_data *scan_data =
-		(struct scan_dquots_data *)cb_data;
-	quota_ctx_t qctx = scan_data->qctx;
+	struct scan_dquots_data *scan_data = cb_data;
+	dict_t *quota_dict = scan_data->quota_dict;
 	struct dquot *dq;
 
-	dq = get_dq(qctx->quota_dict[dquot->dq_h->qh_type], dquot->dq_id);
-
+	dq = get_dq(quota_dict, dquot->dq_id);
 	dq->dq_id = dquot->dq_id;
-	if (scan_data->limit_only) {
-		dq->dq_dqb.u.v2_mdqb.dqb_off = dquot->dq_dqb.u.v2_mdqb.dqb_off;
+
+	/* Check if there is inconsistancy. */
+	if (dq->dq_dqb.dqb_curspace != dquot->dq_dqb.dqb_curspace ||
+	    dq->dq_dqb.dqb_curinodes != dquot->dq_dqb.dqb_curinodes) {
+		scan_data->usage_is_inconsistent = 1;
+		log_err("Usage inconsistent for ID %d: (%llu, %llu) != "
+			"(%llu,	%llu)", dq->dq_id, dq->dq_dqb.dqb_curspace,
+			dq->dq_dqb.dqb_curinodes, dquot->dq_dqb.dqb_curspace,
+			dquot->dq_dqb.dqb_curinodes);
+	}
+
+	if (scan_data->update_limits) {
 		dq->dq_dqb.dqb_ihardlimit = dquot->dq_dqb.dqb_ihardlimit;
 		dq->dq_dqb.dqb_isoftlimit = dquot->dq_dqb.dqb_isoftlimit;
 		dq->dq_dqb.dqb_bhardlimit = dquot->dq_dqb.dqb_bhardlimit;
 		dq->dq_dqb.dqb_bsoftlimit = dquot->dq_dqb.dqb_bsoftlimit;
-	} else {
-		dq->dq_dqb = dquot->dq_dqb;
 	}
+
+	if (scan_data->update_usage) {
+		dq->dq_dqb.dqb_curspace = dquot->dq_dqb.dqb_curspace;
+		dq->dq_dqb.dqb_curinodes = dquot->dq_dqb.dqb_curinodes;
+	}
+
 	return 0;
 }
 
@@ -442,12 +456,13 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
  * Read all dquots from quota file into memory
  */
 static errcode_t quota_read_all_dquots(struct quota_handle *qh,
-                                       quota_ctx_t qctx, int limit_only)
+                                       quota_ctx_t qctx, int update_limits)
 {
 	struct scan_dquots_data scan_data;
 
-	scan_data.qctx = qctx;
-	scan_data.limit_only = limit_only;
+	scan_data.quota_dict = qctx->quota_dict[qh->qh_type];
+	scan_data.update_limits = update_limits;
+	scan_data.update_usage = 0;
 
 	return qh->qh_ops->scan_dquots(qh, scan_dquots_callback, &scan_data);
 }
@@ -505,5 +520,45 @@ errcode_t quota_update_inode(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
 	}
 out:
 	ext2fs_free_mem(&qh);
+	return err;
+}
+
+/*
+ * Compares the measured quota in qctx->quota_dict with that in the quota inode
+ * on disk and updates the limits in qctx->quota_dict. 'usage_inconsistent' is
+ * set to 1 if the supplied and on-disk quota usage values are not identical.
+ */
+errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
+				   int *usage_inconsistent)
+{
+	ext2_filsys fs = qctx->fs;
+	struct quota_handle qh;
+	struct scan_dquots_data scan_data;
+	ext2_ino_t qf_ino;
+	errcode_t err = 0;
+
+	if (!qctx->quota_dict[qtype])
+		goto out;
+
+	qf_ino = qtype == USRQUOTA ? fs->super->s_usr_quota_inum :
+				     fs->super->s_grp_quota_inum;
+	err = quota_file_open(&qh, fs, qf_ino, qtype, -1, 0);
+	if (err) {
+		log_err("Open quota file failed", "");
+		goto out;
+	}
+
+	scan_data.quota_dict = qctx->quota_dict[qtype];
+	scan_data.update_limits = 1;
+	scan_data.update_usage = 0;
+	scan_data.usage_is_inconsistent = 0;
+	err = qh.qh_ops->scan_dquots(&qh, scan_dquots_callback, &scan_data);
+	if (err) {
+		log_err("Error scanning dquots", "");
+		goto out;
+	}
+	*usage_inconsistent = scan_data.usage_is_inconsistent;
+
+out:
 	return err;
 }

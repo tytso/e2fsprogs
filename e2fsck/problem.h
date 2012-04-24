@@ -1028,6 +1028,9 @@ struct problem_context {
 /* Recreate the journal if E2F_FLAG_JOURNAL_INODE flag is set */
 #define PR_6_RECREATE_JOURNAL		0x060001
 
+/* Update quota information if it is inconsistent */
+#define PR_6_UPDATE_QUOTAS		0x060002
+
 /*
  * Function declarations
  */

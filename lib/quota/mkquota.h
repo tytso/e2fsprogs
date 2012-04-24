@@ -59,5 +59,7 @@ errcode_t quota_remove_inode(ext2_filsys fs, int qtype);
 int quota_is_on(ext2_filsys fs, int type);
 int quota_file_exists(ext2_filsys fs, int qtype, int fmt);
 void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, int qtype);
+errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
+				   int *usage_inconsistent);
 
 #endif  /* __QUOTA_QUOTAIO_H__ */

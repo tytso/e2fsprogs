@@ -1137,6 +1137,7 @@ int main (int argc, char *argv[])
 	int old_bitmaps;
 	__u32 features[3];
 	char *cp;
+	int qtype;  /* quota type */
 
 	clear_problem_context(&pctx);
 	sigcatcher_setup();
@@ -1575,7 +1576,6 @@ print_unsupp_features:
 		journal_size = -1;
 
 	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA) {
-		int qtype;
 		/* Quotas were enabled. Do quota accounting during fsck. */
 		if ((sb->s_usr_quota_inum && sb->s_grp_quota_inum) ||
 		    (!sb->s_usr_quota_inum && !sb->s_grp_quota_inum))
@@ -1619,7 +1619,18 @@ print_unsupp_features:
 no_journal:
 
 	if (ctx->qctx) {
-		quota_write_inode(ctx->qctx, -1);
+		int i, needs_writeout;
+		for (i = 0; i < MAXQUOTAS; i++) {
+			if (qtype != -1 && qtype != i)
+				continue;
+			needs_writeout = 0;
+			pctx.num = i;
+			retval = quota_compare_and_update(ctx->qctx, i,
+							  &needs_writeout);
+			if ((retval || needs_writeout) &&
+			    fix_problem(ctx, PR_6_UPDATE_QUOTAS, &pctx))
+				quota_write_inode(ctx->qctx, i);
+		}
 		quota_release_context(&ctx->qctx);
 	}
 

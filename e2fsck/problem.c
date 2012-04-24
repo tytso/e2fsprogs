@@ -1691,6 +1691,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Recreate @j"),
 	  PROMPT_NULL, PR_PREEN_OK | PR_NO_OK },
 
+	/* Update quota information if it is inconsistent */
+	{ PR_6_UPDATE_QUOTAS,
+	  N_("Update quota info for quota type %N"),
+	  PROMPT_NULL, PR_PREEN_OK | PR_NO_OK },
+
 	{ 0 }
 };
 
