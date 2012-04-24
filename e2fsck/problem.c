@@ -1621,7 +1621,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Free inodes count wrong */
 	{ PR_5_FREE_INODE_COUNT,
 	  N_("Free @is count wrong (%i, counted=%j).\n"),
-	  PROMPT_FIX, PR_PREEN_OK | PR_PREEN_NOMSG },
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK | PR_PREEN_NOMSG },
 
 	/* Free blocks count for group wrong */
 	{ PR_5_FREE_BLOCK_COUNT_GROUP,
@@ -1631,7 +1631,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Free blocks count wrong */
 	{ PR_5_FREE_BLOCK_COUNT,
 	  N_("Free @bs count wrong (%b, counted=%c).\n"),
-	  PROMPT_FIX, PR_PREEN_OK | PR_PREEN_NOMSG },
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK | PR_PREEN_NOMSG },
 
 	/* Programming error: bitmap endpoints don't match */
 	{ PR_5_BMAP_ENDPOINTS,

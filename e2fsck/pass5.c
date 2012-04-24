@@ -471,8 +471,7 @@ redo_counts:
 		if (fix_problem(ctx, PR_5_FREE_BLOCK_COUNT, &pctx)) {
 			ext2fs_free_blocks_count_set(fs->super, free_blocks);
 			ext2fs_mark_super_dirty(fs);
-		} else
-			ext2fs_unmark_valid(fs);
+		}
 	}
 errout:
 	ext2fs_free_mem(&free_array);
@@ -746,8 +745,7 @@ do_counts:
 		if (fix_problem(ctx, PR_5_FREE_INODE_COUNT, &pctx)) {
 			fs->super->s_free_inodes_count = free_inodes;
 			ext2fs_mark_super_dirty(fs);
-		} else
-			ext2fs_unmark_valid(fs);
+		}
 	}
 errout:
 	ext2fs_free_mem(&free_array);
