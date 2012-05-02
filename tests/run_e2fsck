@@ -79,8 +79,14 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 	else
 		status2=0
 	fi
+	if [ "$PASS_ZERO" = "true" ]; then
+		cmp -s $test_name.0.log	$test_dir/expect.0
+		status3=$?
+	else
+		status3=0
+	fi
 
-	if [ "$status1" = 0 -a "$status2" = 0 ] ; then
+	if [ "$status1" -eq 0 -a "$status2" -eq 0 -a "$status3" -eq 0 ] ; then
 		echo "ok"
 		touch $test_name.ok
 	else
@@ -96,6 +102,6 @@ fi
 if [ "$SKIP_CLEANUP" != "true" ] ; then
 	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2 
 	unset SKIP_VERIFY SKIP_CLEANUP SKIP_GUNZIP ONE_PASS_ONLY PREP_CMD
-	unset DESCRIPTION SKIP_UNLINK AFTER_CMD
+	unset DESCRIPTION SKIP_UNLINK AFTER_CMD PASS_ZERO
 fi
 
