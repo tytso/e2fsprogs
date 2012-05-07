@@ -58,6 +58,7 @@ struct struct_io_channel {
 	long		reserved[14];
 	void		*private_data;
 	void		*app_data;
+	int		align;
 };
 
 struct struct_io_stats {

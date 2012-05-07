@@ -180,8 +180,9 @@ static errcode_t raw_read_blk(io_channel channel,
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 		goto error_out;
 	}
-	if ((data->align == 0) ||
-	    ((IS_ALIGNED(buf, data->align)) && IS_ALIGNED(size, data->align))) {
+	if ((channel->align == 0) ||
+	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(size, channel->align))) {
 		actual = read(data->dev, buf, size);
 		if (actual != size) {
 		short_read:
@@ -250,8 +251,9 @@ static errcode_t raw_write_blk(io_channel channel,
 		goto error_out;
 	}
 
-	if ((data->align == 0) ||
-	    ((IS_ALIGNED(buf, data->align)) && IS_ALIGNED(size, data->align))) {
+	if ((channel->align == 0) ||
+	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(size, channel->align))) {
 		actual = write(data->dev, buf, size);
 		if (actual != size) {
 		short_write:
@@ -319,14 +321,15 @@ static errcode_t alloc_cache(io_channel channel,
 		if (cache->buf)
 			ext2fs_free_mem(&cache->buf);
 		retval = ext2fs_get_memalign(channel->block_size,
-					     data->align, &cache->buf);
+					     channel->align, &cache->buf);
 		if (retval)
 			return retval;
 	}
-	if (data->align) {
+	if (channel->align) {
 		if (data->bounce)
 			ext2fs_free_mem(&data->bounce);
-		retval = ext2fs_get_memalign(channel->block_size, data->align,
+		retval = ext2fs_get_memalign(channel->block_size,
+					     channel->align,
 					     &data->bounce);
 	}
 	return retval;
@@ -518,8 +521,8 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 #ifdef BLKSSZGET
 	if (flags & IO_FLAG_DIRECT_IO) {
-		if (ioctl(data->dev, BLKSSZGET, &data->align) != 0)
-			data->align = io->block_size;
+		if (ioctl(data->dev, BLKSSZGET, &io->align) != 0)
+			io->align = io->block_size;
 	}
 #endif
 
@@ -534,7 +537,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	 * Some operating systems require that the buffers be aligned,
 	 * regardless of O_DIRECT
 	 */
-	data->align = 512;
+	io->align = 512;
 #endif
 
 
@@ -810,7 +813,7 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
-	if (data->align != 0) {
+	if (channel->align != 0) {
 #ifdef ALIGN_DEBUG
 		printf("unix_write_byte: O_DIRECT fallback\n");
 #endif

@@ -247,6 +247,9 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 	if ((value = safe_getenv("TEST_IO_WRITE_ABORT")) != NULL)
 		data->write_abort_count = strtoul(value, NULL, 0);
 
+	if (data->real)
+		io->align = data->real->align;
+
 	*channel = io;
 	return 0;
 
@@ -292,8 +295,10 @@ static errcode_t test_set_blksize(io_channel channel, int blksize)
 	data = (struct test_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
 
-	if (data->real)
+	if (data->real) {
 		retval = io_channel_set_blksize(data->real, blksize);
+		channel->align = data->real->align;
+	}
 	if (data->set_blksize)
 		data->set_blksize(blksize, retval);
 	if (data->flags & TEST_FLAG_SET_BLKSIZE)
