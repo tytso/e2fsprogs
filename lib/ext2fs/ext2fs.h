@@ -1213,6 +1213,7 @@ extern errcode_t ext2fs_get_device_size2(const char *file, int blocksize,
 					blk64_t *retblocks);
 
 /* getsectsize.c */
+extern int ext2fs_get_dio_alignment(int fd);
 errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize);
 errcode_t ext2fs_get_device_phys_sectsize(const char *file, int *sectsize);
 

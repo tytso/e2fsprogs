@@ -58,10 +58,6 @@
 #define BLKROGET   _IO(0x12, 94) /* Get read-only status (0 = read_write).  */
 #endif
 
-#if defined(__linux__) && defined(_IO) && !defined(BLKSSZGET)
-#define BLKSSZGET  _IO(0x12,104)/* get block device sector size */
-#endif
-
 #undef ALIGN_DEBUG
 
 #include "ext2_fs.h"
@@ -485,11 +481,15 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	if (flags & IO_FLAG_EXCLUSIVE)
 		open_flags |= O_EXCL;
 #if defined(O_DIRECT)
-	if (flags & IO_FLAG_DIRECT_IO)
+	if (flags & IO_FLAG_DIRECT_IO) {
 		open_flags |= O_DIRECT;
+		io->align = ext2fs_get_dio_alignment(data->dev);
+	}
 #elif defined(F_NOCACHE)
-	if (flags & IO_FLAG_DIRECT_IO)
+	if (flags & IO_FLAG_DIRECT_IO) {
 		f_nocache = F_NOCACHE;
+		io->align = 4096;
+	}
 #endif
 	data->flags = flags;
 
@@ -519,13 +519,6 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 			io->flags |= CHANNEL_FLAGS_DISCARD_ZEROES;
 	}
 
-#ifdef BLKSSZGET
-	if (flags & IO_FLAG_DIRECT_IO) {
-		if (ioctl(data->dev, BLKSSZGET, &io->align) != 0)
-			io->align = io->block_size;
-	}
-#endif
-
 #ifdef BLKDISCARDZEROES
 	ioctl(data->dev, BLKDISCARDZEROES, &zeroes);
 	if (zeroes)
@@ -537,7 +530,8 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	 * Some operating systems require that the buffers be aligned,
 	 * regardless of O_DIRECT
 	 */
-	io->align = 512;
+	if (!io->align)
+		io->align = 512;
 #endif
 
 
