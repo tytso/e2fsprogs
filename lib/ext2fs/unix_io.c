@@ -316,17 +316,14 @@ static errcode_t alloc_cache(io_channel channel,
 		cache->in_use = 0;
 		if (cache->buf)
 			ext2fs_free_mem(&cache->buf);
-		retval = ext2fs_get_memalign(channel->block_size,
-					     channel->align, &cache->buf);
+		retval = io_channel_alloc_buf(channel, 0, &cache->buf);
 		if (retval)
 			return retval;
 	}
 	if (channel->align) {
 		if (data->bounce)
 			ext2fs_free_mem(&data->bounce);
-		retval = ext2fs_get_memalign(channel->block_size,
-					     channel->align,
-					     &data->bounce);
+		retval = io_channel_alloc_buf(channel, 0, &data->bounce);
 	}
 	return retval;
 }

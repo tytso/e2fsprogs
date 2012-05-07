@@ -53,8 +53,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	inode_nbytes = block_nbytes = 0;
 	if (do_block) {
 		block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
-		retval = ext2fs_get_memalign(fs->blocksize, fs->blocksize,
-					     &block_buf);
+		retval = io_channel_alloc_buf(fs->io, 0, &block_buf);
 		if (retval)
 			goto errout;
 		memset(block_buf, 0xff, fs->blocksize);
@@ -62,8 +61,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	if (do_inode) {
 		inode_nbytes = (size_t)
 			((EXT2_INODES_PER_GROUP(fs->super)+7) / 8);
-		retval = ext2fs_get_memalign(fs->blocksize, fs->blocksize,
-					     &inode_buf);
+		retval = io_channel_alloc_buf(fs->io, 0, &inode_buf);
 		if (retval)
 			goto errout;
 		memset(inode_buf, 0xff, fs->blocksize);
@@ -186,13 +184,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_allocate_block_bitmap(fs, buf, &fs->block_map);
 		if (retval)
 			goto cleanup;
-		if (do_image)
-			retval = ext2fs_get_mem(fs->blocksize, &block_bitmap);
-		else
-			retval = ext2fs_get_memalign(fs->blocksize,
-						     fs->blocksize,
-						     &block_bitmap);
-			
+		retval = io_channel_alloc_buf(fs->io, 0, &block_bitmap);
 		if (retval)
 			goto cleanup;
 	} else
@@ -205,7 +197,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_allocate_inode_bitmap(fs, buf, &fs->inode_map);
 		if (retval)
 			goto cleanup;
-		retval = ext2fs_get_mem(fs->blocksize, &inode_bitmap);
+		retval = io_channel_alloc_buf(fs->io, 0, &inode_bitmap);
 		if (retval)
 			goto cleanup;
 	} else
