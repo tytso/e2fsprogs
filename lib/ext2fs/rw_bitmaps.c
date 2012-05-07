@@ -166,6 +166,9 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	if ((block_nbytes > fs->blocksize) || (inode_nbytes > fs->blocksize))
+		return EXT2_ET_CORRUPT_SUPERBLOCK;
+
 	fs->write_bitmaps = ext2fs_write_bitmaps;
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
@@ -186,7 +189,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (do_image)
 			retval = ext2fs_get_mem(fs->blocksize, &block_bitmap);
 		else
-			retval = ext2fs_get_memalign((unsigned) block_nbytes,
+			retval = ext2fs_get_memalign(fs->blocksize,
 						     fs->blocksize,
 						     &block_bitmap);
 			
@@ -202,8 +205,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_allocate_inode_bitmap(fs, buf, &fs->inode_map);
 		if (retval)
 			goto cleanup;
-		retval = ext2fs_get_mem(do_image ? fs->blocksize :
-					(unsigned) inode_nbytes, &inode_bitmap);
+		retval = ext2fs_get_mem(fs->blocksize, &inode_bitmap);
 		if (retval)
 			goto cleanup;
 	} else
@@ -261,7 +263,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 				blk = 0;
 			if (blk) {
 				retval = io_channel_read_blk64(fs->io, blk,
-					     -block_nbytes, block_bitmap);
+							       1, block_bitmap);
 				if (retval) {
 					retval = EXT2_ET_BLOCK_BITMAP_READ;
 					goto cleanup;
@@ -283,7 +285,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 				blk = 0;
 			if (blk) {
 				retval = io_channel_read_blk64(fs->io, blk,
-					     -inode_nbytes, inode_bitmap);
+							       1, inode_bitmap);
 				if (retval) {
 					retval = EXT2_ET_INODE_BITMAP_READ;
 					goto cleanup;
