@@ -73,6 +73,8 @@ install-libs: install-libs-recursive
 
 uninstall-libs: uninstall-libs-recursive
 
+check-recursive: all
+
 TAGS clean-recursive distclean-recursive depend-recursive check-recursive \
   mostlyclean-recursive realclean-recursive:
 	@for subdir in $(SUBDIRS); do \

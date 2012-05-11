@@ -76,7 +76,7 @@ uuid.h: $(srcdir)/uuid.h.in
 $(top_builddir)/lib/uuid/uuid_types.h: $(srcdir)/uuid_types.h.in $(top_builddir)/config.status
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/uuid_types.h ./config.status
 
-tst_uuid.o: $(srcdir)/tst_uuid.c
+tst_uuid.o: $(srcdir)/tst_uuid.c uuid.h
 	$(E) "	CC $@"
 	$(Q) $(CC) $(ALL_CFLAGS) -c $(srcdir)/tst_uuid.c -o tst_uuid.o
 
