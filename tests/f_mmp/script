@@ -5,7 +5,7 @@ rm -f $test_name.failed $test_name.ok
 > $TMPFILE
 
 stat -f $TMPFILE | grep -q "Type: tmpfs"
-if [ $? == 0 ]; then
+if [ $? = 0 ]; then
 	rm -f $TMPFILE
 	echo "skipped for tmpfs (no O_DIRECT support)"
 	return 0
@@ -39,7 +39,7 @@ killall -9 debugfs >> $test_name.log
 echo "e2fsck (should fail mmp_seq = EXT2_MMP_SEQ_FSCK) ..." >> $test_name.log
 $FSCK $FSCK_OPT $TMPFILE >> $test_name.log 2>&1
 status=$?
-if [ "$status" == 0 ] ; then
+if [ "$status" = 0 ] ; then
 	echo "e2fsck with MMP as EXT2_MMP_SEQ_FSCK ran!" > $test_name.failed
 	echo "failed"
 	return 1

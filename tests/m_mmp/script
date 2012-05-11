@@ -5,7 +5,7 @@ export MKE2FS_DEVICE_SECTSIZE
 TMPFILE=test.img
 > $TMPFILE
 stat -f $TMPFILE | grep -q "Type: tmpfs"
-if [ $? == 0 ]; then
+if [ $? = 0 ]; then
 	rm -f $TMPFILE
 	echo "skipped for tmpfs (no O_DIRECT support)"
 	return 0

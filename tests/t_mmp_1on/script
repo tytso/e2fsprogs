@@ -5,7 +5,7 @@ rm -f $test_name.failed $test_name.ok
 > $TMPFILE
 
 stat -f $TMPFILE | grep -q "Type: tmpfs"
-if [ $? == 0 ] ; then
+if [ $? = 0 ] ; then
 	rm -f $TMPFILE
 	echo "skipped for tmpfs (no O_DIRECT support)"
 	return 0
