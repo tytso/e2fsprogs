@@ -136,6 +136,23 @@ $(top_builddir)/util/subst:
 	cd $(top_builddir)/util ; $(MAKE) subst
 
 #
+# Script for installing symlinks (for shared libraries)
+#
+$(top_builddir)/util/install-symlink: $(top_srcdir)/util/install-symlink.in \
+			      $(top_builddir)/config.status
+	cd $(top_builddir); CONFIG_FILES=util/install-symlink ./config.status
+	chmod +x $(top_builddir)/util/install-symlink
+
+$(top_builddir)/util/symlinks:
+	cd $(top_builddir)/util ; $(MAKE) symlinks
+
+INSTALL_SYMLINK = /bin/sh $(top_builddir)/util/install-symlink \
+			@SYMLINK_RELATIVE@ \
+			--symlinks=$(top_builddir)/util/symlinks
+DEP_INSTALL_SYMLINK = $(top_builddir)/util/install-symlink \
+			$(top_builddir)/util/symlinks
+
+#
 # Warning flags
 #
 # Run make gcc-wall to do a build with warning messages.

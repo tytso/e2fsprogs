@@ -715,6 +715,7 @@ HTREE_CMT
 Q
 E
 LINK_BUILD_FLAGS
+SYMLINK_RELATIVE
 LINK_INSTALL_FLAGS
 MAINTAINER_CMT
 CPP
@@ -795,6 +796,7 @@ with_ldopts
 with_root_prefix
 enable_maintainer_mode
 enable_symlink_install
+enable_symlink_relative_symlinks
 enable_symlink_build
 enable_verbose_makecmds
 enable_compression
@@ -1449,6 +1451,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-maintainer-mode enable makefile rules useful for maintainers
   --enable-symlink-install use symlinks when installing instead of hard links
+  --enable-relative-symlinks use relative symlinks when installing
   --enable-symlink-build  use symlinks while building instead of hard links
   --enable-verbose-makecmds enable verbose make command output
   --enable-compression	  enable EXPERIMENTAL compression support
@@ -4376,8 +4379,29 @@ fi
 
 else
   LINK_INSTALL_FLAGS=-f
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for install" >&5
-$as_echo "Disabling symlinks for install" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for install by default" >&5
+$as_echo "Disabling symlinks for install by default" >&6; }
+
+fi
+
+
+# Check whether --enable-symlink-relative-symlinks was given.
+if test "${enable_symlink_relative_symlinks+set}" = set; then :
+  enableval=$enable_symlink_relative_symlinks; if test "$enableval" = "no"
+then
+	SYMLINK_RELATIVE=
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling relative symlinks for install" >&5
+$as_echo "Disabling relative symlinks for install" >&6; }
+else
+	SYMLINK_RELATIVE=--relative
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling symlinks for install" >&5
+$as_echo "Enabling symlinks for install" >&6; }
+fi
+
+else
+  SYMLINK_RELATIVE=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling relative symlinks for install by default" >&5
+$as_echo "Disabling relative symlinks for install by default" >&6; }
 
 fi
 
@@ -4397,8 +4421,8 @@ fi
 
 else
   LINK_BUILD_FLAGS=
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for build" >&5
-$as_echo "Disabling symlinks for build" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for build by default" >&5
+$as_echo "Disabling symlinks for build by default" >&6; }
 
 fi
 
@@ -11293,7 +11317,7 @@ test -d include || mkdir include
 test -d include/linux || mkdir include/linux
 test -d include/asm || mkdir include/asm
 for i in MCONFIG Makefile e2fsprogs.spec \
-	util/Makefile util/subst.conf util/gen-tarball \
+	util/Makefile util/subst.conf util/gen-tarball util/install-symlink \
 	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
 	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
 	lib/uuid/Makefile lib/uuid/uuid_types.h \
