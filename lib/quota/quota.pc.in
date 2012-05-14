@@ -7,5 +7,5 @@ Name: quota
 Description: Quota management library
 Version: @E2FSPROGS_VERSION@
 Requires:
-Cflags: -I${includedir}/quota
+Cflags: -I${includedir}/quota -I${includedir}
 Libs: -L${libdir} -lquota
