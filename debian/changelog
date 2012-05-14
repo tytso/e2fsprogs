@@ -1,3 +1,21 @@
+e2fsprogs (1.42.3-1) unstable; urgency=low
+
+  * New upstream version
+  * Fix bugs on 32-bit systems which could corrupt > 16TB file systems
+  * Quiet complaints in e2fsck when the total free blocks or inodes are
+    incorrect in the superblock after an system crash, since we don't
+    update nor depend on the superblock summaries at each commit boundary
+  * Fixed support for (hidden) quota files built into ext4; in
+    particular, don't rewrite the quota inode unless the quotas are
+    inconsistent
+  * Optimized reading and writing bitmaps if direct I/O was enabled
+  * Update Czech, Dutch, French, German, Polish, Sweedish, and
+    Vietnamese translations
+  * Fixed incorrect indentation in tune2fs man page
+  * Update debian policy compliance to 3.9.3
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 14 May 2012 14:43:09 -0400
+
 e2fsprogs (1.42.2-2) unstable; urgency=low
 
   * Fixed e2fsck.conf's man page (Closes: #646963)
