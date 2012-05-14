@@ -71,11 +71,11 @@
 	  if ((struct)->magic != (code)) return (code)
 
 struct unix_cache {
-	char		*buf;
-	unsigned long	block;
-	int		access_time;
-	unsigned	dirty:1;
-	unsigned	in_use:1;
+	char			*buf;
+	unsigned long long	block;
+	int			access_time;
+	unsigned		dirty:1;
+	unsigned		in_use:1;
 };
 
 #define CACHE_SIZE 8
