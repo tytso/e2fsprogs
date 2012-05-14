@@ -48,6 +48,7 @@ extern int optind;
 const char * program_name = "dumpe2fs";
 char * device_name = NULL;
 int hex_format = 0;
+int blocks64 = 0;
 
 static void usage(void)
 {
@@ -56,19 +57,25 @@ static void usage(void)
 	exit (1);
 }
 
-static void print_number(unsigned long num)
+static void print_number(unsigned long long num)
 {
-	if (hex_format)
-		printf("0x%04lx", num);
-	else
-		printf("%lu", num);
+	if (hex_format) {
+		if (blocks64)
+			printf("0x%08llx", num);
+		else
+			printf("0x%04llx", num);
+	} else
+		printf("%llu", num);
 }
 
 static void print_range(unsigned long long a, unsigned long long b)
 {
-	if (hex_format)
-		printf("0x%llx-0x%llx", a, b);
-	else
+	if (hex_format) {
+		if (blocks64)
+			printf("0x%08llx-0x%08llx", a, b);
+		else
+			printf("0x%04llx-0x%04llx", a, b);
+	} else
 		printf("%llu-%llu", a, b);
 }
 
@@ -581,6 +588,8 @@ int main (int argc, char ** argv)
 		exit (1);
 	}
 	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
+	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+		blocks64 = 1;
 	if (print_badblocks) {
 		list_bad_blocks(fs, 1);
 	} else {
