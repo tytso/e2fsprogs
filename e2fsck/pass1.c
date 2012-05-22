@@ -928,8 +928,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
 			if ((fs->super->s_feature_ro_compat &
 					EXT4_FEATURE_RO_COMPAT_QUOTA) &&
-			    (fs->super->s_usr_quota_inum == ino) ||
-			    (fs->super->s_grp_quota_inum == ino)) {
+			    ((fs->super->s_usr_quota_inum == ino) ||
+			     (fs->super->s_grp_quota_inum == ino))) {
 				if (!LINUX_S_ISREG(inode->i_mode) &&
 				    fix_problem(ctx, PR_1_QUOTA_BAD_MODE,
 							&pctx)) {
