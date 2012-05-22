@@ -44,7 +44,7 @@ static int bh_count = 0;
  * to use the recovery.c file virtually unchanged from the kernel, so we
  * don't have to do much to keep kernel and user recovery in sync.
  */
-int journal_bmap(journal_t *journal, blk64_t block, unsigned long *phys)
+int journal_bmap(journal_t *journal, blk64_t block, unsigned long long *phys)
 {
 #ifdef USE_INODE_IO
 	*phys = block;
@@ -80,8 +80,8 @@ struct buffer_head *getblk(kdev_t kdev, blk64_t blocknr, int blocksize)
 	if (journal_enable_debug >= 3)
 		bh_count++;
 #endif
-	jfs_debug(4, "getblk for block %lu (%d bytes)(total %d)\n",
-		  (unsigned long) blocknr, blocksize, bh_count);
+	jfs_debug(4, "getblk for block %llu (%d bytes)(total %d)\n",
+		  (unsigned long long) blocknr, blocksize, bh_count);
 
 	bh->b_ctx = kdev->k_ctx;
 	if (kdev->k_dev == K_DEV_FS)
@@ -114,38 +114,39 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 	for (; nr > 0; --nr) {
 		bh = *bhp++;
 		if (rw == READ && !bh->b_uptodate) {
-			jfs_debug(3, "reading block %lu/%p\n",
-				  (unsigned long) bh->b_blocknr, (void *) bh);
+			jfs_debug(3, "reading block %llu/%p\n",
+				  bh->b_blocknr, (void *) bh);
 			retval = io_channel_read_blk64(bh->b_io,
 						     bh->b_blocknr,
 						     1, bh->b_data);
 			if (retval) {
 				com_err(bh->b_ctx->device_name, retval,
-					"while reading block %lu\n",
-					(unsigned long) bh->b_blocknr);
+					"while reading block %llu\n",
+					bh->b_blocknr);
 				bh->b_err = retval;
 				continue;
 			}
 			bh->b_uptodate = 1;
 		} else if (rw == WRITE && bh->b_dirty) {
-			jfs_debug(3, "writing block %lu/%p\n",
-				  (unsigned long) bh->b_blocknr, (void *) bh);
+			jfs_debug(3, "writing block %llu/%p\n",
+				  bh->b_blocknr,
+				  (void *) bh);
 			retval = io_channel_write_blk64(bh->b_io,
 						      bh->b_blocknr,
 						      1, bh->b_data);
 			if (retval) {
 				com_err(bh->b_ctx->device_name, retval,
-					"while writing block %lu\n",
-					(unsigned long) bh->b_blocknr);
+					"while writing block %llu\n",
+					bh->b_blocknr);
 				bh->b_err = retval;
 				continue;
 			}
 			bh->b_dirty = 0;
 			bh->b_uptodate = 1;
 		} else {
-			jfs_debug(3, "no-op %s for block %lu\n",
+			jfs_debug(3, "no-op %s for block %llu\n",
 				  rw == READ ? "read" : "write",
-				  (unsigned long) bh->b_blocknr);
+				  bh->b_blocknr);
 		}
 	}
 }
@@ -164,8 +165,8 @@ void brelse(struct buffer_head *bh)
 {
 	if (bh->b_dirty)
 		ll_rw_block(WRITE, 1, &bh);
-	jfs_debug(3, "freeing block %lu/%p (total %d)\n",
-		  (unsigned long) bh->b_blocknr, (void *) bh, --bh_count);
+	jfs_debug(3, "freeing block %llu/%p (total %d)\n",
+		  bh->b_blocknr, (void *) bh, --bh_count);
 	ext2fs_free_mem(&bh);
 }
 
@@ -237,7 +238,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	journal_t		*journal = NULL;
 	errcode_t		retval = 0;
 	io_manager		io_ptr = 0;
-	unsigned long		start = 0;
+	unsigned long long	start = 0;
 	int			ext_journal = 0;
 	int			tried_backup_jnl = 0;
 
