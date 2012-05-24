@@ -219,7 +219,7 @@ static void check_mount(e2fsck_t ctx)
 	 * filesystem and it's mounted read-only, and we're not doing
 	 * a read/write check, then everything's fine.
 	 */
-	if ((!(ctx->mount_flags & EXT2_MF_MOUNTED)) ||
+	if ((!(ctx->mount_flags & (EXT2_MF_MOUNTED | EXT2_MF_BUSY))) ||
 	    ((ctx->mount_flags & EXT2_MF_ISROOT) &&
 	     (ctx->mount_flags & EXT2_MF_READONLY) &&
 	     !(ctx->options & E2F_OPT_WRITECHECK)))
@@ -227,13 +227,16 @@ static void check_mount(e2fsck_t ctx)
 
 	if ((ctx->options & E2F_OPT_READONLY) &&
 	    !(ctx->options & E2F_OPT_WRITECHECK)) {
-		log_out(ctx, _("Warning!  %s is mounted.\n"),
-			ctx->filesystem_name);
+		log_out(ctx, _("Warning!  %s is %s.\n"),
+			ctx->filesystem_name,
+			ctx->mount_flags & EXT2_MF_MOUNTED ?
+				"mounted" : "in use");
 		return;
 	}
 
-	log_out(ctx, _("%s is mounted.  "), ctx->filesystem_name);
-	if (!ctx->interactive)
+	log_out(ctx, _("%s is %s.\n"), ctx->filesystem_name,
+		ctx->mount_flags & EXT2_MF_MOUNTED ? "mounted" : "in use");
+	if (!ctx->interactive || ctx->mount_flags & EXT2_MF_BUSY)
 		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
 	puts("\007\007\007\007");
 	log_out(ctx, _("\n\nWARNING!!!  "
@@ -1219,9 +1222,7 @@ restart:
 	if (!old_bitmaps)
 		flags |= EXT2_FLAG_64BITS;
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
-		flags |= EXT2_FLAG_RW;
-	if ((ctx->mount_flags & EXT2_MF_MOUNTED) == 0)
-		flags |= EXT2_FLAG_EXCLUSIVE;
+		flags |= EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
 
 	retval = try_open_fs(ctx, flags, io_ptr, &fs);
 
