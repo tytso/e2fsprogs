@@ -33,7 +33,7 @@
 struct bmap_rb_extent {
 	struct rb_node node;
 	__u64 start;
-	__u32 count;
+	__u64 count;
 };
 
 struct ext2fs_rb_private {
