@@ -435,6 +435,38 @@ static errcode_t flush_cached_blocks(io_channel channel,
 #endif
 #endif
 
+int ext2fs_open_file(const char *pathname, int flags, mode_t mode)
+{
+	if (mode)
+#if defined(HAVE_OPEN64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
+		return open64(pathname, flags, mode);
+	else
+		return open64(pathname, flags);
+#else
+		return open(pathname, flags, mode);
+	else
+		return open(pathname, flags);
+#endif
+}
+
+int ext2fs_stat(const char *path, ext2fs_struct_stat *buf)
+{
+#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
+	return stat64(path, buf);
+#else
+	return stat(path, buf);
+#endif
+}
+
+int ext2fs_fstat(int fd, ext2fs_struct_stat *buf)
+{
+#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
+	return fstat64(fd, buf);
+#else
+	return fstat(fd, buf);
+#endif
+}
+
 static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 {
 	io_channel	io = NULL;

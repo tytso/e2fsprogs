@@ -29,10 +29,6 @@ extern "C" {
 #define NO_INLINE_FUNCS
 #endif
 
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 600	/* for posix_memalign() */
-#endif
-
 /*
  * Where the master copy of the superblock is located, and how big
  * superblocks are supposed to be.  We define SUPERBLOCK_SIZE because
@@ -57,16 +53,6 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#ifndef __USE_XOPEN2K
-/* If the "#define _XOPEN_SOURCE 600" didn't succeed in declaring
- * posix_memalign(), maybe due to <features.h> or <stdlib.h> included beforej
- * _XOPEN_SOURCE, declare it here to avoid compiler warnings. */
-extern int posix_memalign(void **__memptr, size_t __alignment, size_t __size);
-#endif
 
 #if EXT2_FLAT_INCLUDES
 #include "e2_types.h"
@@ -1707,38 +1693,6 @@ _INLINE_ __u64 ext2fs_div64_ceil(__u64 a, __u64 b)
 	if (!a)
 		return 0;
 	return ((a - 1) / b) + 1;
-}
-
-_INLINE_ int ext2fs_open_file(const char *pathname, int flags, mode_t mode)
-{
-	if (mode)
-#if defined(HAVE_OPEN64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
-		return open64(pathname, flags, mode);
-	else
-		return open64(pathname, flags);
-#else
-		return open(pathname, flags, mode);
-	else
-		return open(pathname, flags);
-#endif
-}
-
-_INLINE_ int ext2fs_stat(const char *path, ext2fs_struct_stat *buf)
-{
-#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
-	return stat64(path, buf);
-#else
-	return stat(path, buf);
-#endif
-}
-
-_INLINE_ int ext2fs_fstat(int fd, ext2fs_struct_stat *buf)
-{
-#if defined(HAVE_FSTAT64) && !defined(__OSX_AVAILABLE_BUT_DEPRECATED)
-	return fstat64(fd, buf);
-#else
-	return fstat(fd, buf);
-#endif
 }
 
 #undef _INLINE_

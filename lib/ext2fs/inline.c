@@ -11,6 +11,9 @@
  * %End-Header%
  */
 
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 600	/* for posix_memalign() */
+#endif
 
 #include "config.h"
 #include <stdio.h>

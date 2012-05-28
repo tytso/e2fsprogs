@@ -13,6 +13,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "e2fsck.h"
 #include <pwd.h>
