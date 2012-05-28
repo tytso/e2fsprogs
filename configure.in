@@ -1003,7 +1003,6 @@ AC_CHECK_FUNCS(m4_flatten([
 	posix_fadvise
 	posix_memalign
 	prctl
-	quotactl
 	setmntent
 	setresgid
 	setresuid

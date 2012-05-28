@@ -72,25 +72,6 @@ typedef int64_t qsize_t;	/* Type in which we store size limitations */
 #define kb2qb(x) ((x) >> (QUOTABLOCK_BITS-10))
 #define toqb(x) (((x) + QUOTABLOCK_SIZE - 1) >> QUOTABLOCK_BITS)
 
-/*
- * Command definitions for the 'quotactl' system call.
- * The commands are broken into a main command defined below
- * and a subcommand that is used to convey the type of
- * quota that is being manipulated (see above).
- */
-#define SUBCMDMASK  0x00ff
-#define SUBCMDSHIFT 8
-#define QCMD(cmd, type)  (((cmd) << SUBCMDSHIFT) | ((type) & SUBCMDMASK))
-
-#define Q_SYNC     0x800001	/* sync disk copy of a filesystems quotas */
-#define Q_QUOTAON  0x800002	/* turn quotas on */
-#define Q_QUOTAOFF 0x800003	/* turn quotas off */
-#define Q_GETFMT   0x800004	/* get quota format used on given filesystem */
-#define Q_GETINFO  0x800005	/* get information about quota files */
-#define Q_SETINFO  0x800006	/* set information about quota files */
-#define Q_GETQUOTA 0x800007	/* get user quota structure */
-#define Q_SETQUOTA 0x800008	/* set user quota structure */
-
 /* Quota format type IDs */
 #define	QFMT_VFS_OLD 1
 #define	QFMT_VFS_V0 2
@@ -101,22 +82,6 @@ typedef int64_t qsize_t;	/* Type in which we store size limitations */
  * interface */
 #define QIF_DQBLKSIZE_BITS 10
 #define QIF_DQBLKSIZE (1 << QIF_DQBLKSIZE_BITS)
-
-/*
- * Structure used for setting quota information about file via quotactl
- * Following flags are used to specify which fields are valid
- */
-#define IIF_BGRACE	1
-#define IIF_IGRACE	2
-#define IIF_FLAGS	4
-#define IIF_ALL		(IIF_BGRACE | IIF_IGRACE | IIF_FLAGS)
-
-struct if_dqinfo {
-	__u64 dqi_bgrace;
-	__u64 dqi_igrace;
-	__u32 dqi_flags;
-	__u32 dqi_valid;
-};
 
 /*
  * Definitions for quota netlink interface

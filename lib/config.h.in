@@ -290,9 +290,6 @@
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
 
-/* Define to 1 if you have the `quotactl' function. */
-#undef HAVE_QUOTACTL
-
 /* Define to 1 if dirent has d_reclen */
 #undef HAVE_RECLEN_DIRENT
 

@@ -46,18 +46,6 @@ static void print_inode(struct ext2_inode *inode)
 	return;
 }
 
-int quota_is_on(ext2_filsys fs, int type)
-{
-	char tmp[1024];
-	qid_t id = (type == USRQUOTA) ? getuid() : getgid();
-
-#ifdef HAVE_QUOTACTL
-	if (!quotactl(QCMD(Q_V2_GETQUOTA, type), fs->device_name, id, tmp))
-		return 1;
-#endif
-	return 0;
-}
-
 /*
  * Returns 0 if not able to find the quota file, otherwise returns its
  * inode number.
