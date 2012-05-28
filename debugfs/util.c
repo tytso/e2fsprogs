@@ -298,7 +298,7 @@ unsigned long long parse_ulonglong(const char *str, const char *cmd,
  */
 int strtoblk(const char *cmd, const char *str, blk64_t *ret)
 {
-	blk_t	blk;
+	blk64_t	blk;
 	int	err;
 
 	blk = parse_ulonglong(str, cmd, "block number", &err);
