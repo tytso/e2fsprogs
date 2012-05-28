@@ -177,9 +177,10 @@ tests/progs/test_icount_cmds.c
 tests/*.ok
 tests/*.failed
 tests/*.log
-tests/*.log
+tests/*.tmp
 tests/mke2fs.conf
 tests/test_script
+tests/test_one
 util/gen-tarball
 util/subst
 util/subst.conf

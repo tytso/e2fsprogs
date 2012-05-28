@@ -1,5 +1,5 @@
 if [ "$DESCRIPTION"x != x ]; then
-	printf "%s" "$DESCRIPTION: "
+	test_description="$DESCRIPTION"
 fi
 if [ "$IMAGE"x = x ]; then
 	IMAGE=$test_dir/image.gz
@@ -23,7 +23,7 @@ fi
 
 if [ "$EXP1"x = x ]; then
 	if [ -f $test_dir/expect.1.gz ]; then
-		EXP1=tmp_expect
+		EXP1=$test_name.1.tmp
 		gunzip < $test_dir/expect.1.gz > $EXP1
 	else
 		EXP1=$test_dir/expect.1
@@ -32,7 +32,7 @@ fi
 
 if [ "$EXP2"x = x ]; then
 	if [ -f $test_dir/expect.2.gz ]; then
-		EXP2=tmp_expect
+		EXP2=$test_name.2.tmp
 		gunzip < $test_dir/expect.2.gz > $EXP2
 	else
 		EXP2=$test_dir/expect.2
@@ -65,10 +65,6 @@ fi
 
 eval $AFTER_CMD
 
-if [ "$SKIP_UNLINK" != "true" ] ; then
-	rm $TMPFILE
-fi
-
 if [ "$SKIP_VERIFY" != "true" ] ; then
 	rm -f $test_name.ok $test_name.failed
 	cmp -s $OUT1 $EXP1
@@ -87,10 +83,10 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 	fi
 
 	if [ "$status1" -eq 0 -a "$status2" -eq 0 -a "$status3" -eq 0 ] ; then
-		echo "ok"
+		echo "$test_name: $test_description: ok"
 		touch $test_name.ok
 	else
-		echo "failed"
+		echo "$test_name: $test_description: failed"
 		diff $DIFF_OPTS $EXP1 $OUT1 > $test_name.failed
 		if [ "$ONE_PASS_ONLY" != "true" ]; then
 			diff $DIFF_OPTS $EXP2 $OUT2 >> $test_name.failed

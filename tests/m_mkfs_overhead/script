@@ -1,4 +1,4 @@
-echo -n "test bg overhead calculation: "
+test_description="test bg overhead calculation"
 
 OUT=$test_name.log
 EXP=$test_dir/expect
@@ -17,17 +17,15 @@ $MKE2FS -F -o Linux $MKE2FS_OPTS $TMPFILE $FS_SIZE 2>&1 | sed -e 1d | \
 
 rm -f $TMPFILE
 
-rm -f $test_name.ok $test_name.failed
 cmp -s $OUT $EXP
 status1=$?
 
 if [ "$status1" = 0 ] ; then
-	echo "ok"
+	echo "$test_name: $test_description: ok"
 	touch $test_name.ok
 else
-	echo "failed"
+	echo "$test_name: $test_description: failed"
 	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
 fi
-rm -f tmp_expect
 
 unset OUT EXP DESCRIPTION FS_SIZE MKE2FS_OPTS MKE2FS_SKIP_PROGRESS

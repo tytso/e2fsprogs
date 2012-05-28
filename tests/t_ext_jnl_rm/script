@@ -1,4 +1,4 @@
-printf "remove missing external journal device: "
+test_description="remove missing external journal device"
 OUT=$test_name.log
 
 dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
@@ -17,12 +17,10 @@ echo "tune2fs -f -O ^has_journal $TMPFILE" >> $OUT
 $TUNE2FS -f -O ^has_journal $TMPFILE >> $OUT 2>&1
 $DUMPE2FS -h $TMPFILE >> $OUT 2>&1
 if [ "$(grep 'Journal UUID:' $OUT)" ]; then
-	rm -f $test_name.ok
 	mv $test_name.log $test_name.failed
-	echo "failed"
+	echo "$test_name: $test_description: failed"
 else
-	echo "ok"
+	echo "$test_name: $test_description: ok"
 	mv $test_name.log $test_name.ok
-	rm -f $test_name.failed
 fi
 rm -f $TMPFILE

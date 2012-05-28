@@ -1,7 +1,7 @@
 if test -x $DEBUGFS_EXE; then
 
 SKIP_GUNZIP="true"
-TEST_DATA="test.data"
+TEST_DATA="$test_name.tmp"
 
 dd if=$TEST_BITS of=$TEST_DATA bs=63k count=1 conv=sync > /dev/null 2>&1
 
@@ -26,6 +26,5 @@ rm -f $TEST_DATA
 unset E2FSCK_TIME TEST_DATA
 
 else #if test -x $DEBUGFS_EXE; then
-	rm -f $test_name.ok $test_name.failed
-	echo "skipped"
+	echo "$test_name: $test_description: skipped"
 fi 

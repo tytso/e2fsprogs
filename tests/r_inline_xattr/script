@@ -34,22 +34,20 @@ rm $TMPFILE $OUT.new
 # Do the verification
 #
 
-rm -f $test_name.ok $test_name.failed
 cmp -s $OUT $EXP
 status=$?
 
 if [ "$status" = 0 ] ; then
-	echo "ok"
+	echo "$test_name: $test_description: ok"
 	touch $test_name.ok
 else
-	echo "failed"
+	echo "$test_name: $test_description: failed"
 	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
 fi
 
 unset IMAGE FSCK_OPT OUT EXP
 
 else #if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-        rm -f $test_name.ok $test_name.failed
-        echo "skipped"
+	echo "$test_name: $test_description: skipped"
 fi
 

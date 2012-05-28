@@ -1,4 +1,4 @@
-printf "e2undo with tune2fs: "
+test_description="e2undo with tune2fs"
 if test -x $E2UNDO_EXE; then
 
 E2FSPROGS_UNDO_DIR=/tmp
@@ -24,13 +24,11 @@ new_md5=`md5sum $TMPFILE | cut -d " " -f 1`
 echo md5sum after e2undo $new_md5 >> $OUT
 
 if [ $md5 = $new_md5 ]; then
-	echo "ok"
+	echo "$test_name: $test_description: ok"
 	touch $test_name.ok
-	rm -f $test_name.failed
 else
-	rm -f $test_name.ok
 	ln -f $test_name.log $test_name.failed
-	echo "failed"
+	echo "$test_name: $test_description: failed"
 fi
 rm -f $TDB_FILE $TMPFILE
 fi

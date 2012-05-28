@@ -1,10 +1,10 @@
 if test -x $DEBUGFS_EXE; then
 
-printf "e2fsck with resize_inode: "
+test_description="e2fsck with resize_inode"
 FSCK_OPT=-yf
 OUT=$test_name.log
 if [ -f $test_dir/expect.gz ]; then
-	EXP=tmp_expect
+	EXP=$test_name.tmp
 	gunzip < $test_dir/expect.gz > $EXP1
 else
 	EXP=$test_dir/expect
@@ -126,15 +126,14 @@ sed -e '1d' $OUT.new | sed -e '/^JFS DEBUG:/d'  | tr -d \\015 >> $OUT
 rm -f $OUT.new
 
 
-rm -f $test_name.ok $test_name.failed
 cmp -s $OUT $EXP
 status=$?
 
 if [ "$status" = 0 ] ; then
-	echo "ok"
+	echo "$test_name: $test_description: ok"
 	touch $test_name.ok
 else
-	echo "failed"
+	echo "$test_name: $test_description: failed"
 	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
 	rm -f tmp_expect
 fi
@@ -142,6 +141,5 @@ fi
 unset IMAGE FSCK_OPT OUT EXP
 
 else #if test -x $DEBUGFS_EXE; then
-	rm -f $test_name.ok $test_name.failed
-	echo "skipped"
+	echo "$test_name: $test_description: skipped"
 fi 
