@@ -803,6 +803,19 @@ no_has_journal:
 		 */
 	}
 
+	/*
+	 * If we don't need to do replay the journal, check to see if
+	 * the journal's errno is set; if so, we need to mark the file
+	 * system as being corrupt and clear the journal's s_errno.
+	 */
+	if (!(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
+	    journal->j_superblock->s_errno) {
+		ctx->fs->super->s_state |= EXT2_ERROR_FS;
+		ext2fs_mark_super_dirty(ctx->fs);
+		journal->j_superblock->s_errno = 0;
+		mark_buffer_dirty(journal->j_sb_buffer);
+	}
+
 	e2fsck_journal_release(ctx, journal, reset, 0);
 	return retval;
 }
