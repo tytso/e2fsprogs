@@ -1221,8 +1221,12 @@ restart:
 			    &old_bitmaps);
 	if (!old_bitmaps)
 		flags |= EXT2_FLAG_64BITS;
-	if ((ctx->options & E2F_OPT_READONLY) == 0)
-		flags |= EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
+	if ((ctx->options & E2F_OPT_READONLY) == 0) {
+		flags |= EXT2_FLAG_RW;
+		if (!(ctx->mount_flags & EXT2_MF_ISROOT &&
+		      ctx->mount_flags & EXT2_MF_READONLY))
+			flags |= EXT2_FLAG_EXCLUSIVE;
+	}
 
 	retval = try_open_fs(ctx, flags, io_ptr, &fs);
 
