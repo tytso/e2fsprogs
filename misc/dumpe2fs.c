@@ -382,6 +382,9 @@ static void print_inline_journal_information(ext2_filsys fs)
 	       (unsigned int)ntohl(jsb->s_maxlen),
 	       (unsigned int)ntohl(jsb->s_sequence),
 	       (unsigned int)ntohl(jsb->s_start));
+	if (jsb->s_errno != 0)
+		printf(_("Journal errno:            %d\n"),
+		       (int) ntohl(jsb->s_errno));
 }
 
 static void print_journal_information(ext2_filsys fs)
