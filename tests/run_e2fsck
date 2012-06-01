@@ -82,12 +82,23 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 		status3=0
 	fi
 
+	if [ -z "$test_description" ] ; then
+		description="$test_name"
+	else
+		description="$test_name: $test_description"
+	fi
+
 	if [ "$status1" -eq 0 -a "$status2" -eq 0 -a "$status3" -eq 0 ] ; then
-		echo "$test_name: $test_description: ok"
+		echo "$description: ok"
 		touch $test_name.ok
 	else
-		echo "$test_name: $test_description: failed"
-		diff $DIFF_OPTS $EXP1 $OUT1 > $test_name.failed
+		echo "$description: failed"
+		rm -f $test_name.failed
+		if [ "$PASS_ZERO" = "true" ]; then
+			diff $DIFF_OPTS $test_dir/expect.0 \
+				$test_name.0.log >> $test_name.failed
+		fi
+		diff $DIFF_OPTS $EXP1 $OUT1 >> $test_name.failed
 		if [ "$ONE_PASS_ONLY" != "true" ]; then
 			diff $DIFF_OPTS $EXP2 $OUT2 >> $test_name.failed
 		fi
