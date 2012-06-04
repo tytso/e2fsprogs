@@ -15,7 +15,6 @@
 #include "ext2fs/ext2fs.h"
 #include "e2p/e2p.h"
 
-#include "quota.h"
 #include "quotaio.h"
 #include "quotaio_v2.h"
 #include "quotaio_tree.h"
@@ -59,7 +58,7 @@ int quota_file_exists(ext2_filsys fs, int qtype, int fmt)
 	if (qtype >= MAXQUOTAS)
 		return -EINVAL;
 
-	quota_get_qf_name(qtype, fmt, qf_name);
+	quota_get_qf_name(qtype, QFMT_VFS_V1, qf_name);
 
 	ret = ext2fs_lookup(fs, EXT2_ROOT_INO, qf_name, strlen(qf_name), 0,
 			    &ino);

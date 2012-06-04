@@ -15,25 +15,18 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <sys/quota.h>
 
 #include "common.h"
 #include "quotaio.h"
 
-static const char extensions[MAXQUOTAS + 2][20] = INITQFNAMES;
+static const char * const extensions[MAXQUOTAS] = {"user", "group"};
 static const char * const basenames[] = {
 	"",		/* undefined */
 	"quota",	/* QFMT_VFS_OLD */
 	"aquota",	/* QFMT_VFS_V0 */
 	"",		/* QFMT_OCFS2 */
 	"aquota"	/* QFMT_VFS_V1 */
-};
-
-static const char * const fmtnames[] = {
-	"vfsold",
-	"vfsv0",
-	"vfsv1",
-	"rpc",
-	"xfs"
 };
 
 /* Header in all newer quotafiles */
@@ -66,7 +59,6 @@ const char *quota_get_qf_name(int type, int fmt, char *buf)
 const char *quota_get_qf_path(const char *mntpt, int qtype, int fmt,
 			      char *path_buf, size_t path_buf_size)
 {
-	struct stat	qf_stat;
 	char qf_name[QUOTA_NAME_LEN];
 
 	if (!mntpt || !path_buf || !path_buf_size)

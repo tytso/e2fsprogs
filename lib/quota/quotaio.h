@@ -12,13 +12,33 @@
 #include <sys/stat.h>
 
 #include "ext2fs/ext2fs.h"
-#include "quota.h"
 #include "dqblk_v2.h"
 
+typedef int64_t qsize_t;	/* Type in which we store size limitations */
+
+#define MAXQUOTAS 2
+#define USRQUOTA 0
+#define GRPQUOTA 1
+
 /*
- * Definitions for disk quotas imposed on the average user
- * (big brother finally hits Linux).
- *
+ * Definitions of magics and versions of current quota files
+ */
+#define INITQMAGICS {\
+	0xd9c01f11,	/* USRQUOTA */\
+	0xd9c01927	/* GRPQUOTA */\
+}
+
+/* Size of blocks in which are counted size limits in generic utility parts */
+#define QUOTABLOCK_BITS 10
+#define QUOTABLOCK_SIZE (1 << QUOTABLOCK_BITS)
+#define toqb(x) (((x) + QUOTABLOCK_SIZE - 1) >> QUOTABLOCK_BITS)
+
+/* Quota format type IDs */
+#define	QFMT_VFS_OLD 1
+#define	QFMT_VFS_V0 2
+#define	QFMT_VFS_V1 4
+
+/*
  * The following constants define the default amount of time given a user
  * before the soft limits are treated as hard limits (usually resulting
  * in an allocation failure). The timer is started when the user crosses
@@ -27,11 +47,7 @@
 #define MAX_IQ_TIME  604800	/* (7*24*60*60) 1 week */
 #define MAX_DQ_TIME  604800	/* (7*24*60*60) 1 week */
 
-#define IOFL_QUOTAON	0x01	/* Is quota enabled in kernel? */
-#define IOFL_INFODIRTY	0x02	/* Did info change? */
-#define IOFL_RO		0x04	/* Just RO access? */
-#define IOFL_NFS_MIXED_PATHS	0x08	/* Should we trim leading slashes
-					   from NFSv4 mountpoints? */
+#define IOFL_INFODIRTY	0x01	/* Did info change? */
 
 struct quotafile_ops;
 
@@ -62,19 +78,6 @@ struct quota_handle {
 			  void *buf, unsigned int size);
 	struct quotafile_ops *qh_ops;	/* Operations on quotafile */
 	struct util_dqinfo qh_info;	/* Generic quotafile info */
-};
-
-/* Statistics gathered from kernel */
-struct util_dqstats {
-	u_int32_t lookups;
-	u_int32_t drops;
-	u_int32_t reads;
-	u_int32_t writes;
-	u_int32_t cache_hits;
-	u_int32_t allocated_dquots;
-	u_int32_t free_dquots;
-	u_int32_t syncs;
-	u_int32_t version;
 };
 
 /* Utility quota block */
@@ -133,9 +136,6 @@ static inline void mark_quotafile_info_dirty(struct quota_handle *h)
 {
 	h->qh_io_flags |= IOFL_INFODIRTY;
 }
-
-#define QIO_ENABLED(h)	((h)->qh_io_flags & IOFL_QUOTAON)
-#define QIO_RO(h)	((h)->qh_io_flags & IOFL_RO)
 
 /* Open existing quotafile of given type (and verify its format) on given
  * filesystem. */

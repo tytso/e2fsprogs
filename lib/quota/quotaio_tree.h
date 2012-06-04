@@ -6,7 +6,8 @@
 #define _LINUX_QUOTA_TREE_H
 
 #include <sys/types.h>
-#include "quota.h"
+
+typedef u_int32_t qid_t;        /* Type in which we store ids in memory */
 
 #define QT_TREEOFF	1	/* Offset of tree in file in blocks */
 #define QT_TREEDEPTH	4	/* Depth of quota tree */

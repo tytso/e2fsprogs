@@ -18,8 +18,6 @@
 #include "quotaio.h"
 #include "quotaio_tree.h"
 
-typedef char *dqbuf_t;
-
 static int v2_check_file(struct quota_handle *h, int type, int fmt);
 static int v2_init_io(struct quota_handle *h);
 static int v2_new_io(struct quota_handle *h);
@@ -42,9 +40,6 @@ struct quotafile_ops quotafile_ops_2 = {
 	.scan_dquots	= v2_scan_dquots,
 	.report		= v2_report,
 };
-
-#define getdqbuf() smalloc(V2_DQBLKSIZE)
-#define freedqbuf(buf) free(buf)
 
 /*
  * Copy dquot from disk to memory
@@ -140,34 +135,6 @@ static inline void v2_mem2diskdqinfo(struct v2_disk_dqinfo *d,
 		ext2fs_cpu_to_le32(m->u.v2_mdqi.dqi_qtree.dqi_free_entry);
 }
 
-/* Convert kernel quotablock format to utility one */
-static inline void v2_kern2utildqblk(struct util_dqblk *u,
-				     struct v2_kern_dqblk *k)
-{
-	u->dqb_ihardlimit = k->dqb_ihardlimit;
-	u->dqb_isoftlimit = k->dqb_isoftlimit;
-	u->dqb_bhardlimit = k->dqb_bhardlimit;
-	u->dqb_bsoftlimit = k->dqb_bsoftlimit;
-	u->dqb_curinodes = k->dqb_curinodes;
-	u->dqb_curspace = k->dqb_curspace;
-	u->dqb_itime = k->dqb_itime;
-	u->dqb_btime = k->dqb_btime;
-}
-
-/* Convert utility quotablock format to kernel one */
-static inline void v2_util2kerndqblk(struct v2_kern_dqblk *k,
-				     struct util_dqblk *u)
-{
-	k->dqb_ihardlimit = u->dqb_ihardlimit;
-	k->dqb_isoftlimit = u->dqb_isoftlimit;
-	k->dqb_bhardlimit = u->dqb_bhardlimit;
-	k->dqb_bsoftlimit = u->dqb_bsoftlimit;
-	k->dqb_curinodes = u->dqb_curinodes;
-	k->dqb_curspace = u->dqb_curspace;
-	k->dqb_itime = u->dqb_itime;
-	k->dqb_btime = u->dqb_btime;
-}
-
 static int v2_read_header(struct quota_handle *h, struct v2_disk_dqheader *dqh)
 {
 	if (h->e2fs_read(&h->qh_qf, 0, dqh, sizeof(struct v2_disk_dqheader)) !=
@@ -184,16 +151,11 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 {
 	struct v2_disk_dqheader dqh;
 	int file_magics[] = INITQMAGICS;
-	int known_versions[] = INIT_V2_VERSIONS;
-	int version;
+
+	if (fmt != QFMT_VFS_V1)
+		return 0;
 
 	if (!v2_read_header(h, &dqh))
-		return 0;
-	if (fmt == QFMT_VFS_V0)
-		version = 0;
-	else if (fmt == QFMT_VFS_V1)
-		version = 1;
-	else
 		return 0;
 
 	if (ext2fs_le32_to_cpu(dqh.dqh_magic) != file_magics[type]) {
@@ -202,9 +164,7 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 				"endianity.", "");
 		return 0;
 	}
-	if (ext2fs_le32_to_cpu(dqh.dqh_version) > known_versions[type])
-		return 0;
-	if (version != ext2fs_le32_to_cpu(dqh.dqh_version))
+	if (V2_VERSION != ext2fs_le32_to_cpu(dqh.dqh_version))
 		return 0;
 	return 1;
 }
@@ -236,14 +196,13 @@ static int v2_new_io(struct quota_handle *h)
 	int file_magics[] = INITQMAGICS;
 	struct v2_disk_dqheader ddqheader;
 	struct v2_disk_dqinfo ddqinfo;
-	int version = 1;
 
 	if (h->qh_fmt != QFMT_VFS_V1)
 		return -1;
 
 	/* Write basic quota header */
 	ddqheader.dqh_magic = ext2fs_cpu_to_le32(file_magics[h->qh_type]);
-	ddqheader.dqh_version = ext2fs_cpu_to_le32(version);
+	ddqheader.dqh_version = ext2fs_cpu_to_le32(V2_VERSION);
 	if (h->e2fs_write(&h->qh_qf, 0, &ddqheader, sizeof(ddqheader)) !=
 			sizeof(ddqheader))
 		return -1;
