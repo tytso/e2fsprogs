@@ -1027,7 +1027,8 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 		goto done;
 
 	/* new node hooked in, so update inode block count (do this here?) */
-	handle->inode->i_blocks += handle->fs->blocksize / 512;
+	handle->inode->i_blocks += (handle->fs->blocksize *
+				    EXT2FS_CLUSTER_RATIO(handle->fs)) / 512;
 	retval = ext2fs_write_inode(handle->fs, handle->ino,
 				    handle->inode);
 	if (retval)
@@ -1501,7 +1502,9 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 				return retval;
 
 			retval = ext2fs_extent_delete(handle, flags);
-			handle->inode->i_blocks -= handle->fs->blocksize / 512;
+			handle->inode->i_blocks -=
+				(handle->fs->blocksize *
+				 EXT2FS_CLUSTER_RATIO(handle->fs)) / 512;
 			retval = ext2fs_write_inode(handle->fs, handle->ino,
 						    handle->inode);
 			ext2fs_block_alloc_stats2(handle->fs,
