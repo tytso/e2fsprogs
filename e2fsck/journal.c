@@ -848,15 +848,7 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 	if (journal->j_failed_commit) {
 		pctx.ino = journal->j_failed_commit;
 		fix_problem(ctx, PR_0_JNL_TXN_CORRUPT, &pctx);
-		ctx->fs->super->s_state |= EXT2_ERROR_FS;
-		ext2fs_mark_super_dirty(ctx->fs);
-	}
-
-
-	if (journal->j_superblock->s_errno) {
-		ctx->fs->super->s_state |= EXT2_ERROR_FS;
-		ext2fs_mark_super_dirty(ctx->fs);
-		journal->j_superblock->s_errno = 0;
+		journal->j_superblock->s_errno = -EINVAL;
 		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 
@@ -915,7 +907,13 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 
 	/* Set the superblock flags */
 	e2fsck_clear_recover(ctx, recover_retval);
-	return recover_retval;
+
+	/*
+	 * Do one last sanity check, and propagate journal->s_errno to
+	 * the EXT2_ERROR_FS flag in the fs superblock if needed.
+	 */
+	retval = e2fsck_check_ext3_journal(ctx);
+	return retval ? retval : recover_retval;
 }
 
 /*
