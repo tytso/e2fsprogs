@@ -143,6 +143,7 @@ static int release_inode_block(ext2_filsys fs,
 	}
 
 	ext2fs_block_alloc_stats2(fs, blk, -1);
+	ctx->free_blocks++;
 	return retval;
 }
 
@@ -211,9 +212,11 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 				ino);
 			return 1;
 		}
-		if (count == 0)
+		if (count == 0) {
 			ext2fs_block_alloc_stats2(fs,
 					ext2fs_file_acl_block(fs, inode), -1);
+			ctx->free_blocks++;
+		}
 		ext2fs_file_acl_block_set(fs, inode, 0);
 	}
 	return 0;
@@ -286,6 +289,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		if (!inode.i_links_count) {
 			ext2fs_inode_alloc_stats2(fs, ino, -1,
 						  LINUX_S_ISDIR(inode.i_mode));
+			ctx->free_inodes++;
 			inode.i_dtime = ctx->now;
 		} else {
 			inode.i_dtime = 0;
