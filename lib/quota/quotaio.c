@@ -15,7 +15,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
-#include <sys/quota.h>
 
 #include "common.h"
 #include "quotaio.h"

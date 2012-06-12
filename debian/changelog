@@ -1,3 +1,9 @@
+e2fsprogs (1.42.4-2) unstable; urgency=medium
+
+  * Fix FTBFS problem on the hurd and freebsd platforms
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 12 Jun 2012 18:26:40 -0400
+
 e2fsprogs (1.42.4-1) unstable; urgency=medium
 
   * New upstream version
