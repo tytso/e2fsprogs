@@ -1,3 +1,26 @@
+e2fsprogs (1.42.4-1) unstable; urgency=medium
+
+  * New upstream version
+  * Fix 64-bit block number bugs in e2fsck, dumpe2fs, and debugfs which
+    could corrupt file systems
+  * Fixed e2fsck's handling of how errors propagate from the journal to
+    the file system superblock
+  * Fixed a false positive complaint from e2fsck if all of the extents
+    in the last extent block are uninitialized and located after the
+    end of the file.
+  * dumpe2fs will display the journal's error indicator in the
+    superblock if it is set
+  * Fixed a  bug which caused e2fsck to incorrectly use O_EXCLUSIVE in
+    some corner cases.
+  * Fix truncation of extent-mapped inodes in e2fsck and libext2fs
+  * Fixed i_blocks accounting in bigalloc file systems.
+  * Add support for btrfs's No_COW flag to lsattr and chattr
+  * Debugfs interprets the date strings of the form "@ddd" as ddd
+    seconds after the epoch
+  * Updated/fixed various man pages  (Closes: #674453, #674694)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 12 Jun 2012 18:20:55 -0400
+
 e2fsprogs (1.42.3-1) unstable; urgency=low
 
   * New upstream version
