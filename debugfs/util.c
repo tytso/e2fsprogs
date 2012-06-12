@@ -220,6 +220,13 @@ extern time_t string_to_time(const char *arg)
 	if (strcmp(arg, "now") == 0) {
 		return time(0);
 	}
+	if (arg[0] == '@') {
+		/* interpret it as an integer */
+		ret = strtoul(arg+1, &tmp, 0);
+		if (*tmp)
+			return ((time_t) -1);
+		return ret;
+	}
 	memset(&ts, 0, sizeof(ts));
 #ifdef HAVE_STRPTIME
 	strptime(arg, "%Y%m%d%H%M%S", &ts);
