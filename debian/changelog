@@ -1,3 +1,12 @@
+e2fsprogs (1.42.4-3) unstable; urgency=medium
+
+  * Add the -C option to chattr's usage message
+  * Fix e2fsprogs so it is blhc (build log hardening check) clean.  This
+    fixed e2fsck.static which previously was not getting built with the
+    security hardening flags.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 13 Jun 2012 16:03:24 -0400
+
 e2fsprogs (1.42.4-2) unstable; urgency=medium
 
   * Fix FTBFS problem on the hurd and freebsd platforms
