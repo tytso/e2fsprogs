@@ -463,7 +463,7 @@ $(OBJS): subdirs
 
 gen_crc32ctable: $(srcdir)/gen_crc32ctable.c
 	$(E) "	CC $@"
-	$(Q) $(BUILD_CC) $(BUILD_CFLAGS) -o gen_crc32ctable \
+	$(Q) $(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o gen_crc32ctable \
 		$(srcdir)/gen_crc32ctable.c
 
 crc32c_table.h: gen_crc32ctable

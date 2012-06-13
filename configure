@@ -713,6 +713,7 @@ BSDLIB_CMT
 ELF_CMT
 HTREE_CMT
 Q
+ES
 E
 LINK_BUILD_FLAGS
 SYMLINK_RELATIVE
@@ -4434,11 +4435,13 @@ then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling verbose make commands" >&5
 $as_echo "Disabling verbose make commands" >&6; }
 	E=@echo
+	ES=echo
 	Q=@
 else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling verbose make commands" >&5
 $as_echo "Enabling verbose make commands" >&6; }
 	E=@\\#
+	ES=\\#
 	Q=
 fi
 
@@ -4446,9 +4449,11 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling verbose make commands" >&5
 $as_echo "Disabling verbose make commands" >&6; }
 E=@echo
+ES=echo
 Q=@
 
 fi
+
 
 
 
@@ -11304,7 +11309,7 @@ if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
 fi
 
 if test $cross_compiling = no; then
-   BUILD_CFLAGS="$CFLAGS"
+   BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
    BUILD_LDFLAGS="$LDFLAGS"
 else
    BUILD_CFLAGS=

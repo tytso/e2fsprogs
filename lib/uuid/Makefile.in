@@ -86,8 +86,8 @@ tst_uuid: tst_uuid.o $(DEPSTATIC_LIBUUID)
 
 uuid_time: $(srcdir)/uuid_time.c $(DEPLIBUUID)
 	$(E) "	LD $@"
-	$(Q) $(CC) $(ALL_CFLAGS) -DDEBUG -o uuid_time $(srcdir)/uuid_time.c \
-		$(LIBUUID)
+	$(Q) $(CC) $(ALL_CFLAGS) $(LDFLAGS) -DDEBUG -o uuid_time \
+		$(srcdir)/uuid_time.c $(LIBUUID)
 
 uuid.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid.3.in
 	$(E) "	SUBST $@"

@@ -258,9 +258,11 @@ endif
 ifneq ($(ismips),)
 	mkdir -p ${mipsbuilddir} ${mipsbuilddir64}
 	cd ${mipsbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}"
+		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} \
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 	cd ${mipsbuilddir64} && AWK=/usr/bin/awk \
-		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}"
+		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} \
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 
 	mkdir -p ${STAMPSDIR}
@@ -293,11 +295,13 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	if type diet > /dev/null  2>&1 ; then \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${STATIC_CONF_FLAGS} \
-		${WITH_DIET_LIBC} CFLAGS="${CFLAGS}"; \
+		${WITH_DIET_LIBC} CFLAGS="${CFLAGS}" \
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	else \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
 			${topdir}/configure ${STATIC_CONF_FLAGS} \
-			CFLAGS="${CFLAGS}"; \
+			CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" \
+			LDFLAGS="$(LDFLAGS)"; \
 	fi
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
@@ -342,6 +346,7 @@ ${BUILDBFSTAMP}: ${CFGBFSTAMP}
 	$(MAKE) -C ${bfbuilddir} V=1 libs
 	$(MAKE) -C ${bfbuilddir}/e2fsck V=1 all
 	$(MAKE) -C ${bfbuilddir}/misc V=1 all
+	$(MAKE) -C ${bfbuilddir}/resize V=1 all
 	touch ${BUILDBFSTAMP}
 
 build-static: ${BUILDSTATICSTAMP}
@@ -354,9 +359,9 @@ ${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
 clean:
 	dh_testdir
 	rm -rf ${STAMPSDIR}
-	[ ! -f ${stdbuilddir}/Makefile ] || $(MAKE) -C ${stdbuilddir} distclean
-	[ ! -f ${bfbuilddir}/Makefile ] || $(MAKE) -C ${bfbuilddir} distclean
-	[ ! -f ${staticbuilddir}/Makefile ] || $(MAKE) -C ${staticbuilddir} distclean
+	[ ! -f ${stdbuilddir}/Makefile ] || $(MAKE) -C ${stdbuilddir} V=1 distclean
+	[ ! -f ${bfbuilddir}/Makefile ] || $(MAKE) -C ${bfbuilddir} V=1 distclean
+	[ ! -f ${staticbuilddir}/Makefile ] || $(MAKE) -C ${staticbuilddir} V=1 distclean
 	rm -rf ${stdbuilddir} ${bfbuilddir} ${staticbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
 	rm -f debian/*.substvars
 	dh_clean
@@ -378,10 +383,10 @@ install-std: build
 	dh_installdirs
 
 	mkdir -p ${tmpdir}/sbin
-	$(MAKE) -C ${stdbuilddir} install DESTDIR=${tmpdir} \
+	$(MAKE) -C ${stdbuilddir} V=1 install DESTDIR=${tmpdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
   # static libs and .h files
-	$(MAKE) -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
+	$(MAKE) -C ${stdbuilddir} V=1 install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
   # statically-linked fsck
 	${INSTALL_PROGRAM} $(E2FSCK_STATIC) ${tmpdir}/sbin
@@ -410,13 +415,13 @@ install-udeb: build
 	dh_testdir
 	dh_testroot
 
-	$(MAKE) -C ${bfbuilddir} install-shlibs-libs-recursive DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir} V=1 install-shlibs-libs-recursive DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${bfbuilddir}/e2fsck install DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir}/e2fsck V=1 install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${bfbuilddir}/misc install DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir}/misc V=1 install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${bfbuilddir}/resize install DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir}/resize V=1 install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
 
 	rm -rf ${udebdir}/usr

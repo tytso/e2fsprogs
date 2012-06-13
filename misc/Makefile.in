@@ -410,7 +410,7 @@ blkid.1: $(DEP_SUBSTITUTE) $(srcdir)/blkid.1.in
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/blkid.1.in blkid.1 
 
 e2freefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/e2freefrag.8.in
-	@echo "	SUBST $@"
+	$(E) "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2freefrag.8.in e2freefrag.8
 
 filefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/filefrag.8.in
@@ -427,44 +427,44 @@ installdirs:
 
 install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	$(Q) for i in $(SPROGS); do \
-		echo "	INSTALL $(root_sbindir)/$$i"; \
+		$(ES) "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 	$(Q) for i in $(USPROGS); do \
-		echo "	INSTALL $(sbindir)/$$i"; \
+		$(ES) "	INSTALL $(sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(sbindir)/$$i; \
 	done
 	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
-		echo "	LINK $(root_sbindir)/mkfs.$$i"; \
+		$(ES) "	LINK $(root_sbindir)/mkfs.$$i"; \
 		(cd $(DESTDIR)$(root_sbindir); \
 			$(LN) $(LINK_INSTALL_FLAGS) mke2fs mkfs.$$i); \
 	done
 	$(Q) (cd $(DESTDIR)$(root_sbindir); \
 		$(LN) $(LINK_INSTALL_FLAGS) tune2fs e2label)
 	$(Q) if test -n "$(FINDFS_LINK)"; then \
-		echo "	LINK $(root_sbindir)/findfs"; \
+		$(ES) "	LINK $(root_sbindir)/findfs"; \
 		(cd $(DESTDIR)$(root_sbindir); \
 		$(LN) $(LINK_INSTALL_FLAGS) tune2fs $(FINDFS_LINK)); \
 	fi
 	$(Q) for i in $(UPROGS); do \
-		echo "	INSTALL $(bindir)/$$i"; \
+		$(ES) "	INSTALL $(bindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(bindir)/$$i; \
 	done
 	$(Q) for i in $(LPROGS); do \
-		echo "	INSTALL $(libdir)/$$i"; \
+		$(ES) "	INSTALL $(libdir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(libdir)/$$i; \
 	done
 	$(Q) for i in $(SMANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
 		done; \
-		echo "	INSTALL_DATA $(man8dir)/$$i"; \
+		$(ES) "	INSTALL_DATA $(man8dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
 	$(Q) $(RM) -f $(DESTDIR)$(man8dir)/mkfs.ext2.8.gz \
 		$(DESTDIR)$(man8dir)/mkfs.ext3.8.gz
 	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
-		echo "	LINK mkfs.$$i.8"; \
+		$(ES) "	LINK mkfs.$$i.8"; \
 		(cd $(DESTDIR)$(man8dir); \
 			$(LN) $(LINK_INSTALL_FLAGS) mke2fs.8 mkfs.$$i.8); \
 	done
@@ -472,14 +472,14 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man1dir)/$$i.$$j; \
 		done; \
-		echo "	INSTALL_DATA $(man1dir)/$$i"; \
+		$(ES) "	INSTALL_DATA $(man1dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man1dir)/$$i; \
 	done
 	$(Q) for i in $(FMANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man5dir)/$$i.$$j; \
 		done; \
-		echo "	INSTALL_DATA $(man5dir)/$$i"; \
+		$(ES) "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
 	$(Q) if test -f $(DESTDIR)$(root_sysconfdir)/mke2fs.conf; then \
@@ -488,13 +488,13 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 			true; \
 		else \
 			if grep -q ext4dev $(DESTDIR)$(root_sysconfdir)/mke2fs.conf ; then \
-				echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf.e2fsprogs-new"; \
+				$(ES) "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf.e2fsprogs-new"; \
 				$(INSTALL_DATA) mke2fs.conf \
 					$(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-new; \
 				echo "Warning: installing mke2fs.conf in $(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-new"; \
 				echo "Check to see if you need to update your $(root_sysconfdir)/mke2fs.conf"; \
 			else \
-				echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
+				$(ES) "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
 				mv $(DESTDIR)$(root_sysconfdir)/mke2fs.conf \
 				   $(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-old; \
 				$(INSTALL_DATA) mke2fs.conf \
@@ -506,18 +506,18 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 			echo " "; \
 		fi; \
 	else \
-		echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
+		$(ES) "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
 		$(INSTALL_DATA) mke2fs.conf \
 			$(DESTDIR)$(root_sysconfdir)/mke2fs.conf; \
 	fi
 
 install-strip: install
 	$(Q) for i in $(SPROGS); do \
-		echo "	STRIP $(root_sbindir)/$$i"; \
+		$(E) "	STRIP $(root_sbindir)/$$i"; \
 		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 	$(Q) for i in $(USPROGS); do \
-		echo "	STRIP $(sbindir)/$$i"; \
+		$(E) "	STRIP $(sbindir)/$$i"; \
 		$(STRIP) $(DESTDIR)$(sbindir)/$$i; \
 	done
 

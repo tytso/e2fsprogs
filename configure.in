@@ -212,18 +212,22 @@ if test "$enableval" = "no"
 then
 	AC_MSG_RESULT([Disabling verbose make commands])
 	E=@echo
+	ES=echo
 	Q=@
 else
 	AC_MSG_RESULT([Enabling verbose make commands])
 	E=@\\#
+	ES=\\#
 	Q= 
 fi
 ,
 AC_MSG_RESULT([Disabling verbose make commands])
 E=@echo
+ES=echo
 Q=@
 )
 AC_SUBST(E)
+AC_SUBST(ES)
 AC_SUBST(Q)
 dnl
 dnl handle --enable-compression
@@ -1230,7 +1234,7 @@ dnl
 dnl Build CFLAGS
 dnl
 if test $cross_compiling = no; then
-   BUILD_CFLAGS="$CFLAGS"
+   BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
    BUILD_LDFLAGS="$LDFLAGS"
 else
    BUILD_CFLAGS=

@@ -136,7 +136,7 @@ e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
 
 gen_crc32table: $(srcdir)/gen_crc32table.c
 	$(E) "	CC $@"
-	$(Q) $(BUILD_CC) $(BUILD_CFLAGS) -o gen_crc32table \
+	$(Q) $(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o gen_crc32table \
 		$(srcdir)/gen_crc32table.c
 
 crc32table.h: gen_crc32table
@@ -216,11 +216,11 @@ installdirs:
 
 install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
 	$(Q) for i in $(PROGS); do \
-		echo "	INSTALL $(root_sbindir)/$$i"; \
+		$(ES) "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
-		echo "	LINK $(root_sbindir)/fsck.$$i"; \
+		$(ES) "	LINK $(root_sbindir)/fsck.$$i"; \
 		(cd $(DESTDIR)$(root_sbindir); \
 			$(LN) $(LINK_INSTALL_FLAGS) e2fsck fsck.$$i); \
 	done
@@ -228,25 +228,25 @@ install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
 		done; \
-		echo "	INSTALL_DATA $(man8dir)/$$i"; \
+		$(ES) "	INSTALL_DATA $(man8dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
 	$(Q) for i in $(FMANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man5dir)/$$i.$$j; \
 		done; \
-		echo "	INSTALL_DATA $(man5dir)/$$i"; \
+		$(ES) "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
 	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
-		echo "	LINK $(man8dir)/fsck.$$i.8"; \
+		$(ES) "	LINK $(man8dir)/fsck.$$i.8"; \
 		(cd $(DESTDIR)$(man8dir); \
 			$(LN) $(LINK_INSTALL_FLAGS) e2fsck.8 fsck.$$i.8); \
 	done
 
 install-strip: install
 	$(Q) for i in $(PROGS); do \
-		echo "	STRIP $(root_sbindir)/$$i"; \
+		$(ES) "	STRIP $(root_sbindir)/$$i"; \
 		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 

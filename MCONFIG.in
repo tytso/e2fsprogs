@@ -35,15 +35,19 @@ datadir = @datadir@
 @ifGNUmake@ V =
 @ifGNUmake@ ifeq ($(strip $(V)),)
 @ifGNUmake@ #  E = @echo
+@ifGNUmake@ #  ES = echo
 @ifGNUmake@ #  Q = @
 @ifGNUmake@    E = @E@
+@ifGNUmake@    ES = @ES@
 @ifGNUmake@    Q = @Q@
 @ifGNUmake@ else
 @ifGNUmake@    E = @\#
+@ifGNUmake@    ES = \#
 @ifGNUmake@    Q =
 @ifGNUmake@ endif
 
 @ifNotGNUmake@ E = @E@
+@ifNotGNUmake@ ES = @ES@
 @ifNotGNUmake@ Q = @Q@
 
 CC = @CC@
