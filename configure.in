@@ -746,6 +746,23 @@ AC_MSG_RESULT([Building uuidd by default])
 )
 AC_SUBST(UUIDD_CMT)
 dnl
+dnl handle --disable-mmp
+dnl
+AH_TEMPLATE([CONFIG_MMP], [Define to 1 to enable mmp support])
+AC_ARG_ENABLE([mmp],
+[  --disable-mmp           disable support mmp, Multi Mount Protection],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling mmp support])
+else
+	AC_MSG_RESULT([Enabling mmp support])
+	AC_DEFINE(CONFIG_MMP, 1)
+fi
+,
+AC_MSG_RESULT([Enabling mmp support by default])
+AC_DEFINE(CONFIG_MMP, 1)
+)
+dnl
 dnl
 dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library

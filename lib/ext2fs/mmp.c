@@ -33,6 +33,7 @@
 
 errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 {
+#ifdef CONFIG_MMP
 	struct mmp_struct *mmp_cmp;
 	errcode_t retval = 0;
 
@@ -88,10 +89,14 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 
 out:
 	return retval;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }
 
 errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 {
+#ifdef CONFIG_MMP
 	struct mmp_struct *mmp_s = buf;
 	struct timeval tv;
 	errcode_t retval = 0;
@@ -119,6 +124,9 @@ errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	/* Make sure the block gets to disk quickly */
 	io_channel_flush(fs->io);
 	return retval;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }
 
 #ifdef HAVE_SRANDOM
@@ -128,6 +136,7 @@ errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 
 unsigned ext2fs_mmp_new_seq()
 {
+#ifdef CONFIG_MMP
 	unsigned new_seq;
 	struct timeval tv;
 
@@ -144,6 +153,9 @@ unsigned ext2fs_mmp_new_seq()
 	} while (new_seq > EXT4_MMP_SEQ_MAX);
 
 	return new_seq;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }
 
 static errcode_t ext2fs_mmp_reset(ext2_filsys fs)
@@ -182,6 +194,7 @@ out:
 
 errcode_t ext2fs_mmp_clear(ext2_filsys fs)
 {
+#ifdef CONFIG_MMP
 	errcode_t retval = 0;
 
 	if (!(fs->flags & EXT2_FLAG_RW))
@@ -190,10 +203,14 @@ errcode_t ext2fs_mmp_clear(ext2_filsys fs)
 	retval = ext2fs_mmp_reset(fs);
 
 	return retval;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }
 
 errcode_t ext2fs_mmp_init(ext2_filsys fs)
 {
+#ifdef CONFIG_MMP
 	struct ext2_super_block *sb = fs->super;
 	blk64_t mmp_block;
 	errcode_t retval;
@@ -222,6 +239,9 @@ errcode_t ext2fs_mmp_init(ext2_filsys fs)
 
 out:
 	return retval;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }
 
 /*
@@ -229,6 +249,7 @@ out:
  */
 errcode_t ext2fs_mmp_start(ext2_filsys fs)
 {
+#ifdef CONFIG_MMP
 	struct mmp_struct *mmp_s;
 	unsigned seq;
 	unsigned int mmp_check_interval;
@@ -318,6 +339,9 @@ clean_seq:
 
 mmp_error:
 	return retval;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }
 
 /*
@@ -328,6 +352,7 @@ mmp_error:
  */
 errcode_t ext2fs_mmp_stop(ext2_filsys fs)
 {
+#ifdef CONFIG_MMP
 	struct mmp_struct *mmp, *mmp_cmp;
 	errcode_t retval = 0;
 
@@ -357,6 +382,9 @@ mmp_error:
 	}
 
 	return retval;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }
 
 #define EXT2_MIN_MMP_UPDATE_INTERVAL 60
@@ -366,6 +394,7 @@ mmp_error:
  */
 errcode_t ext2fs_mmp_update(ext2_filsys fs)
 {
+#ifdef CONFIG_MMP
 	struct mmp_struct *mmp, *mmp_cmp;
 	struct timeval tv;
 	errcode_t retval = 0;
@@ -394,4 +423,7 @@ errcode_t ext2fs_mmp_update(ext2_filsys fs)
 
 mmp_error:
 	return retval;
+#else
+	return EXT2_ET_OP_NOT_SUPPORTED;
+#endif
 }

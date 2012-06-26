@@ -2194,6 +2194,7 @@ void do_punch(int argc, char *argv[])
 
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
+#if CONFIG_MMP
 	struct ext2_super_block *sb;
 	struct mmp_struct *mmp_s;
 	time_t t;
@@ -2237,6 +2238,10 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 	fprintf(stdout, "node_name: %s\n", mmp_s->mmp_nodename);
 	fprintf(stdout, "device_name: %s\n", mmp_s->mmp_bdevname);
 	fprintf(stdout, "magic: 0x%x\n", mmp_s->mmp_magic);
+#else
+	fprintf(stdout, "MMP is unsupported, please recompile with "
+	                "--enable-mmp\n");
+#endif
 }
 
 static int source_file(const char *cmd_file, int sci_idx)
