@@ -270,9 +270,9 @@ static errcode_t meta_read_inode(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return 0;
 }
 
-static void use_inode_shortcuts(ext2_filsys fs, int bool)
+static void use_inode_shortcuts(ext2_filsys fs, int use_shortcuts)
 {
-	if (bool) {
+	if (use_shortcuts) {
 		fs->get_blocks = meta_get_blocks;
 		fs->check_directory = meta_check_directory;
 		fs->read_inode = meta_read_inode;

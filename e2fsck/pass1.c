@@ -2822,11 +2822,11 @@ static void e2fsck_block_alloc_stats(ext2_filsys fs, blk64_t blk, int inuse)
 	}
 }
 
-void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool)
+void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int use_shortcuts)
 {
 	ext2_filsys fs = ctx->fs;
 
-	if (bool) {
+	if (use_shortcuts) {
 		fs->get_blocks = pass1_get_blocks;
 		fs->check_directory = pass1_check_directory;
 		fs->read_inode = pass1_read_inode;
