@@ -386,7 +386,9 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 		}
 		if (ino == 0)
 			break;
-		if (inode.i_links_count) {
+		if (inode.i_links_count &&
+		    (ino == EXT2_ROOT_INO ||
+		     ino >= EXT2_FIRST_INODE(fs->super))) {
 			space = ext2fs_inode_i_blocks(fs, &inode) << 9;
 			quota_data_add(qctx, &inode, ino, space);
 			quota_data_inodes(qctx, &inode, ino, +1);
@@ -413,13 +415,15 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 
 	dq = get_dq(quota_dict, dquot->dq_id);
 	dq->dq_id = dquot->dq_id;
+	dq->dq_dqb.u.v2_mdqb.dqb_off = dquot->dq_dqb.u.v2_mdqb.dqb_off;
 
 	/* Check if there is inconsistancy. */
 	if (dq->dq_dqb.dqb_curspace != dquot->dq_dqb.dqb_curspace ||
 	    dq->dq_dqb.dqb_curinodes != dquot->dq_dqb.dqb_curinodes) {
 		scan_data->usage_is_inconsistent = 1;
-		log_err("Usage inconsistent for ID %d: (%llu, %llu) != "
-			"(%llu,	%llu)", dq->dq_id, dq->dq_dqb.dqb_curspace,
+		fprintf(stderr, "[QUOTA WARNING] Usage inconsistent for ID %d:"
+			"actual (%llu, %llu) != expected (%llu, %llu)\n",
+			dq->dq_id, dq->dq_dqb.dqb_curspace,
 			dq->dq_dqb.dqb_curinodes, dquot->dq_dqb.dqb_curspace,
 			dquot->dq_dqb.dqb_curinodes);
 	}
@@ -473,9 +477,9 @@ static errcode_t quota_write_all_dquots(struct quota_handle *qh,
 }
 
 /*
- * Update usage of in quota file, limits keep unchaged
+ * Updates the in-memory quota limits from the given quota inode.
  */
-errcode_t quota_update_inode(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
+errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
 {
 	struct quota_handle *qh;
 	errcode_t err;
@@ -489,14 +493,13 @@ errcode_t quota_update_inode(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
 		return err;
 	}
 
-	err = quota_file_open(qh, qctx->fs, qf_ino, type, -1, EXT2_FILE_WRITE);
+	err = quota_file_open(qh, qctx->fs, qf_ino, type, -1, 0);
 	if (err) {
 		log_err("Open quota file failed", "");
 		goto out;
 	}
 
 	quota_read_all_dquots(qh, qctx, 1);
-	quota_write_all_dquots(qh, qctx);
 
 	err = quota_file_close(qh);
 	if (err) {

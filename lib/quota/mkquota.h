@@ -51,7 +51,7 @@ void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
 void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
 		qsize_t space);
 errcode_t quota_write_inode(quota_ctx_t qctx, int qtype);
-errcode_t quota_update_inode(quota_ctx_t qctx, ext2_ino_t qf_ino, int type);
+errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino, int type);
 errcode_t quota_compute_usage(quota_ctx_t qctx);
 void quota_release_context(quota_ctx_t *qctx);
 
