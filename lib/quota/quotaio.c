@@ -133,14 +133,18 @@ errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino)
 	if ((err = ext2fs_read_inode(fs, ino, &inode)))
 		return err;
 
-	inode.i_dtime = fs->now ? fs->now : time(0);
-	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
-		return 0;
+	if ((ino == EXT4_USR_QUOTA_INO) || (ino == EXT4_GRP_QUOTA_INO)) {
+		inode.i_dtime = fs->now ? fs->now : time(0);
+		if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
+			return 0;
 
-	ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
-			      release_blocks_proc, NULL);
-
-	memset(&inode, 0, sizeof(struct ext2_inode));
+		ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
+				      release_blocks_proc, NULL);
+		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+		memset(&inode, 0, sizeof(struct ext2_inode));
+	} else {
+		inode.i_flags &= ~EXT2_IMMUTABLE_FL;
+	}
 	err = ext2fs_write_inode(fs, ino, &inode);
 	return err;
 }
