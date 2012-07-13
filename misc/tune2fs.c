@@ -734,7 +734,8 @@ void handle_quota_options(ext2_filsys fs)
 	if ((usrquota == QOPT_ENABLE) || (grpquota == QOPT_ENABLE)) {
 		fs->super->s_feature_ro_compat |= EXT4_FEATURE_RO_COMPAT_QUOTA;
 		ext2fs_mark_super_dirty(fs);
-	} else if ((usrquota == QOPT_DISABLE) && (grpquota == QOPT_DISABLE)) {
+	} else if (!fs->super->s_usr_quota_inum &&
+		   !fs->super->s_grp_quota_inum) {
 		fs->super->s_feature_ro_compat &= ~EXT4_FEATURE_RO_COMPAT_QUOTA;
 		ext2fs_mark_super_dirty(fs);
 	}
