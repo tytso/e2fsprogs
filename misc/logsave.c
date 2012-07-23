@@ -190,6 +190,7 @@ static int run_program(char **argv)
 		dup2(fds[1],1);		/* fds[1] replaces stdout */
 		dup2(fds[1],2);  	/* fds[1] replaces stderr */
 		close(fds[0]);	/* don't need this here */
+		close(fds[1]);
 
 		execvp(argv[0], argv);
 		perror(argv[0]);
