@@ -266,8 +266,15 @@ static int get_mount_point(const char *devname, char *mount_point,
 {
 	/* Refer to /etc/mtab */
 	const char	*mtab = MOUNTED;
-	FILE	*fp = NULL;
+	FILE		*fp = NULL;
 	struct mntent	*mnt = NULL;
+	struct stat64	sb;
+
+	if (stat64(devname, &sb) < 0) {
+		perror(NGMSG_FILE_INFO);
+		PRINT_FILE_NAME(devname);
+		return -1;
+	}
 
 	fp = setmntent(mtab, "r");
 	if (fp == NULL) {
@@ -276,7 +283,15 @@ static int get_mount_point(const char *devname, char *mount_point,
 	}
 
 	while ((mnt = getmntent(fp)) != NULL) {
-		if (strcmp(devname, mnt->mnt_fsname) != 0)
+		struct stat64 ms;
+
+		/*
+		 * To handle device symlinks, we see if the
+		 * device number matches, not the name
+		 */
+		if (stat64(mnt->mnt_fsname, &ms) < 0)
+			continue;
+		if (sb.st_rdev != ms.st_rdev)
 			continue;
 
 		endmntent(fp);
@@ -1768,6 +1783,15 @@ int main(int argc, char *argv[])
 			perror(NGMSG_FILE_INFO);
 			PRINT_FILE_NAME(argv[i]);
 			continue;
+		}
+
+		/* Handle i.e. lvm device symlinks */
+		if (S_ISLNK(buf.st_mode)) {
+			struct stat64	buf2;
+
+			if (stat64(argv[i], &buf2) == 0 &&
+			    S_ISBLK(buf2.st_mode))
+				buf = buf2;
 		}
 
 		if (S_ISBLK(buf.st_mode)) {

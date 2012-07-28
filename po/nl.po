@@ -71,7 +71,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.42.2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2012-03-27 12:00-0700\n"
+"POT-Creation-Date: 2012-06-12 14:40-0400\n"
 "PO-Revision-Date: 2012-04-10 21:14+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -82,7 +82,7 @@ msgstr ""
 "X-Generator: Lokalize 1.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: e2fsck/badblocks.c:23 misc/mke2fs.c:179
+#: e2fsck/badblocks.c:23 misc/mke2fs.c:176
 #, c-format
 msgid "Bad block %u out of range; ignored.\n"
 msgstr "Slecht blok %u ligt buiten bereik; genegeerd.\n"
@@ -95,11 +95,11 @@ msgstr "tijdens controle van de slechteblokken-inode"
 msgid "while reading the bad blocks inode"
 msgstr "tijdens lezen van de slechteblokken-inode"
 
-#: e2fsck/badblocks.c:72 e2fsck/iscan.c:113 e2fsck/scantest.c:110
-#: e2fsck/unix.c:1295 e2fsck/unix.c:1383 misc/badblocks.c:1214
+#: e2fsck/badblocks.c:72 e2fsck/iscan.c:110 e2fsck/scantest.c:107
+#: e2fsck/unix.c:1298 e2fsck/unix.c:1386 misc/badblocks.c:1214
 #: misc/badblocks.c:1222 misc/badblocks.c:1236 misc/badblocks.c:1248
-#: misc/dumpe2fs.c:578 misc/e2image.c:1190 misc/e2image.c:1308
-#: misc/e2image.c:1321 misc/mke2fs.c:195 misc/tune2fs.c:1907 resize/main.c:303
+#: misc/dumpe2fs.c:588 misc/e2image.c:1189 misc/e2image.c:1307
+#: misc/e2image.c:1320 misc/mke2fs.c:192 misc/tune2fs.c:1907 resize/main.c:303
 #, c-format
 msgid "while trying to open %s"
 msgstr "tijdens openen van %s"
@@ -109,7 +109,7 @@ msgstr "tijdens openen van %s"
 msgid "while trying popen '%s'"
 msgstr "tijdens een popen() van %s"
 
-#: e2fsck/badblocks.c:94 misc/mke2fs.c:202
+#: e2fsck/badblocks.c:94 misc/mke2fs.c:199
 msgid "while reading in list of bad blocks from file"
 msgstr "tijdens lezen van lijst van slechte blokken uit bestand"
 
@@ -120,7 +120,8 @@ msgstr "tijdens bijwerken van de inode van een slecht blok"
 #: e2fsck/badblocks.c:131
 #, c-format
 msgid "Warning: illegal block %u found in bad block inode.  Cleared.\n"
-msgstr "Waarschuwing: ongeldig blok %u gevonden in inode van slecht blok.  Gewist.\n"
+msgstr ""
+"Waarschuwing: ongeldig blok %u gevonden in inode van slecht blok.  Gewist.\n"
 
 #: e2fsck/ehandler.c:55
 #, c-format
@@ -186,61 +187,62 @@ msgstr "Gebruik:  %s schijfnaam\n"
 #: e2fsck/flushb.c:64
 #, c-format
 msgid "BLKFLSBUF ioctl not supported!  Can't flush buffers.\n"
-msgstr "ioctl(BLKFLSBUF) wordt niet ondersteund!  Kan buffers niet leegmaken.\n"
+msgstr ""
+"ioctl(BLKFLSBUF) wordt niet ondersteund!  Kan buffers niet leegmaken.\n"
 
-#: e2fsck/iscan.c:47
+#: e2fsck/iscan.c:44
 #, c-format
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr "Gebruik:  %s [-F] [-I inodebufferblokken] apparaat\n"
 
-#: e2fsck/iscan.c:84 e2fsck/unix.c:930
+#: e2fsck/iscan.c:81 e2fsck/unix.c:930
 #, c-format
 msgid "while opening %s for flushing"
 msgstr "tijdens openen van %s om deze leeg te maken"
 
-#: e2fsck/iscan.c:89 e2fsck/unix.c:936 resize/main.c:276
+#: e2fsck/iscan.c:86 e2fsck/unix.c:936 resize/main.c:276
 #, c-format
 msgid "while trying to flush %s"
 msgstr "tijdens leegmaken van %s"
 
-#: e2fsck/iscan.c:122 e2fsck/scantest.c:117 misc/e2image.c:1085
+#: e2fsck/iscan.c:119 e2fsck/scantest.c:114 misc/e2image.c:1084
 msgid "while opening inode scan"
 msgstr "tijdens openen voor inode-scan"
 
-#: e2fsck/iscan.c:130 misc/e2image.c:1103
+#: e2fsck/iscan.c:127 misc/e2image.c:1102
 msgid "while getting next inode"
 msgstr "tijdens halen van volgende inode"
 
-#: e2fsck/iscan.c:139
+#: e2fsck/iscan.c:136
 #, c-format
 msgid "%u inodes scanned.\n"
 msgstr "%u inodes gescand.\n"
 
-#: e2fsck/journal.c:511
+#: e2fsck/journal.c:512
 msgid "reading journal superblock\n"
 msgstr "lezen van journal-superblok...\n"
 
-#: e2fsck/journal.c:568
+#: e2fsck/journal.c:569
 #, c-format
 msgid "%s: no valid journal superblock found\n"
 msgstr "%s: geen geldig journal-superblok gevonden\n"
 
-#: e2fsck/journal.c:577
+#: e2fsck/journal.c:578
 #, c-format
 msgid "%s: journal too short\n"
 msgstr "%s: journal is te kort\n"
 
-#: e2fsck/journal.c:864
+#: e2fsck/journal.c:870
 #, c-format
 msgid "%s: recovering journal\n"
 msgstr "%s: herstellen van journal...\n"
 
-#: e2fsck/journal.c:866
+#: e2fsck/journal.c:872
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
 msgstr "%s: geen herstelling van journal bij alleen-lezen\n"
 
-#: e2fsck/journal.c:893
+#: e2fsck/journal.c:899
 #, c-format
 msgid "while trying to re-open %s"
 msgstr "tijdens heropenen van %s"
@@ -916,12 +918,16 @@ msgstr "Het externe journal ondersteunt dit bestandssysteem niet.\n"
 #: e2fsck/problem.c:213
 msgid ""
 "@f @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
+"format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
-"Het superblok van het journal is van een onbekend en niet-ondersteund type %N.\n"
-"Vermoedelijk gebruikt u een ouder 'e2fsck'-programma dat deze journal-indeling\n"
-"niet ondersteunt.  Het kan ook zijn dat het journal-superblok beschadigd is.\n"
+"Het superblok van het journal is van een onbekend en niet-ondersteund type "
+"%N.\n"
+"Vermoedelijk gebruikt u een ouder 'e2fsck'-programma dat deze journal-"
+"indeling\n"
+"niet ondersteunt.  Het kan ook zijn dat het journal-superblok beschadigd "
+"is.\n"
 
 #. @-expanded: journal superblock is corrupt.\n
 #: e2fsck/problem.c:221
@@ -932,7 +938,8 @@ msgstr "Het superblok van het journal is beschadigd.\n"
 #: e2fsck/problem.c:226
 #, c-format
 msgid "@S has_@j flag is clear, but a @j %s is present.\n"
-msgstr "Journal-vlag in superblok is niet gezet, maar er is wel een journal %s.\n"
+msgstr ""
+"Journal-vlag in superblok is niet gezet, maar er is wel een journal %s.\n"
 
 #. @-expanded: superblock needs_recovery flag is set, but no journal is present.\n
 #: e2fsck/problem.c:231
@@ -942,7 +949,8 @@ msgstr "Reddingsvlag in superblok is gezet, maar er is geen journal.\n"
 #. @-expanded: superblock needs_recovery flag is clear, but journal has data.\n
 #: e2fsck/problem.c:236
 msgid "@S needs_recovery flag is clear, but @j has data.\n"
-msgstr "Reddingsvlag in superblok is niet gezet, maar het journal bevat gegevens.\n"
+msgstr ""
+"Reddingsvlag in superblok is niet gezet, maar het journal bevat gegevens.\n"
 
 #. @-expanded: Clear journal
 #: e2fsck/problem.c:241
@@ -984,12 +992,14 @@ msgstr "Ongeldige inode %i in lijst van verweesde inodes.\n"
 #. @-expanded: journal superblock has an unknown read-only feature flag set.\n
 #: e2fsck/problem.c:276
 msgid "@j @S has an unknown read-only feature flag set.\n"
-msgstr "Journal-superblok heeft een onbekende alleen-lezen-functievlag gezet.\n"
+msgstr ""
+"Journal-superblok heeft een onbekende alleen-lezen-functievlag gezet.\n"
 
 #. @-expanded: journal superblock has an unknown incompatible feature flag set.\n
 #: e2fsck/problem.c:281
 msgid "@j @S has an unknown incompatible feature flag set.\n"
-msgstr "Journal-superblok heeft een onbekende en incompatibele functievlag gezet.\n"
+msgstr ""
+"Journal-superblok heeft een onbekende en incompatibele functievlag gezet.\n"
 
 #. @-expanded: journal version not supported by this e2fsck.\n
 #: e2fsck/problem.c:286
@@ -1066,7 +1076,9 @@ msgstr ""
 #. @-expanded: Resize_inode not enabled, but the resize inode is non-zero.  
 #: e2fsck/problem.c:328
 msgid "Resize_@i not enabled, but the resize @i is non-zero.  "
-msgstr "Functie 'resize_inode' is uitgeschakeld, maar de 'resize'-inode is niet nul.  "
+msgstr ""
+"Functie 'resize_inode' is uitgeschakeld, maar de 'resize'-inode is niet "
+"nul.  "
 
 #. @-expanded: Resize inode not valid.  
 #: e2fsck/problem.c:333
@@ -1112,18 +1124,21 @@ msgstr ""
 #. @-expanded: group descriptor %g checksum is %04x, should be %04y.  
 #: e2fsck/problem.c:357
 msgid "@g descriptor %g checksum is %04x, should be %04y.  "
-msgstr "Van groepsbeschrijver %g is de controlesom %04x, zou %04y moeten zijn.  "
+msgstr ""
+"Van groepsbeschrijver %g is de controlesom %04x, zou %04y moeten zijn.  "
 
 #. @-expanded: group descriptor %g marked uninitialized without feature set.\n
 #: e2fsck/problem.c:362
 #, c-format
 msgid "@g descriptor %g marked uninitialized without feature set.\n"
-msgstr "Groepsbeschrijver %g is gemarkeerd als ongeïnitialiseerd zonder functies.\n"
+msgstr ""
+"Groepsbeschrijver %g is gemarkeerd als ongeïnitialiseerd zonder functies.\n"
 
 #. @-expanded: group descriptor %g has invalid unused inodes count %b.  
 #: e2fsck/problem.c:367
 msgid "@g descriptor %g has invalid unused inodes count %b.  "
-msgstr "Groepsbeschrijver %g heeft een ongeldig aantal (%b) ongebruikte inodes.  "
+msgstr ""
+"Groepsbeschrijver %g heeft een ongeldig aantal (%b) ongebruikte inodes.  "
 
 #. @-expanded: Last group block bitmap uninitialized.  
 #: e2fsck/problem.c:372
@@ -1145,10 +1160,12 @@ msgstr "De functievlag 'test_fs' is gezet (en ext4 is beschikbaar).  "
 #: e2fsck/problem.c:386
 msgid ""
 "@S last mount time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set)  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set)  "
 msgstr ""
 "Laatste aankoppelingstijd ligt volgens het superblok in de toekomst.\n"
-"    (Maar minder dan een dag; vermoedelijk is de hardwareklok onjuist ingesteld.)  "
+"    (Maar minder dan een dag; vermoedelijk is de hardwareklok onjuist "
+"ingesteld.)  "
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
@@ -1156,10 +1173,12 @@ msgstr ""
 #: e2fsck/problem.c:392
 msgid ""
 "@S last write time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set).  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set).  "
 msgstr ""
 "Laatste schrijftijd ligt volgens het superblok in de toekomst.\n"
-"    (Maar minder dan een dag; vermoedelijk is de hardwareklok onjuist ingesteld.)  "
+"    (Maar minder dan een dag; vermoedelijk is de hardwareklok onjuist "
+"ingesteld.)  "
 
 #. @-expanded: One or more block group descriptor checksums are invalid.  
 #: e2fsck/problem.c:398
@@ -1176,12 +1195,10 @@ msgstr "Het aantal vrije inodes is op %j gezet (was %i)\n"
 msgid "Setting free @bs count to %c (was %b)\n"
 msgstr "Het aantal vrije blokken is op %c gezet (was %b)\n"
 
-#. @-expanded: Making quota inodes hidden.\n
-#. @-expanded: \n
+#. @-expanded: Making quota inode %i (%Q) hidden.\n
 #: e2fsck/problem.c:413
-msgid ""
-"Making @q @is hidden.\n"
-"\n"
+#, fuzzy
+msgid "Making @q @i %i (%Q) hidden.\n"
 msgstr ""
 "De quota-inodes worden verborgen.\n"
 "\n"
@@ -1219,7 +1236,9 @@ msgstr "De hoofd-inode is geen map.  "
 #. @-expanded: root inode has dtime set (probably due to old mke2fs).  
 #: e2fsck/problem.c:449
 msgid "@r has dtime set (probably due to old mke2fs).  "
-msgstr "De verwijderingstijd van de hoofd-inode is niet nul (waarschijnlijk veroorzaakt door een oude mke2fs).  "
+msgstr ""
+"De verwijderingstijd van de hoofd-inode is niet nul (waarschijnlijk "
+"veroorzaakt door een oude mke2fs).  "
 
 #. @-expanded: Reserved inode %i (%Q) has invalid mode.  
 #: e2fsck/problem.c:454
@@ -1247,12 +1266,14 @@ msgstr "Inode %i is een map met lengte nul.  "
 #. @-expanded: group %g's block bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:474
 msgid "@g %g's @b @B at %b @C.\n"
-msgstr "De blok-bitkaart van groep %g botst bij %b met een bestandssysteemblok.\n"
+msgstr ""
+"De blok-bitkaart van groep %g botst bij %b met een bestandssysteemblok.\n"
 
 #. @-expanded: group %g's inode bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:479
 msgid "@g %g's @i @B at %b @C.\n"
-msgstr "De inode-bitkaart van groep %g botst bij %b met een bestandssysteemblok.\n"
+msgstr ""
+"De inode-bitkaart van groep %g botst bij %b met een bestandssysteemblok.\n"
 
 #. @-expanded: group %g's inode table at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:484
@@ -1319,7 +1340,9 @@ msgstr "Een dubbel of slecht blok is in gebruik!\n"
 #. @-expanded: Bad block %b used as bad block inode indirect block.  
 #: e2fsck/problem.c:544
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
-msgstr "Slecht blok %b is in gebruik als indirect blok voor de slechteblokken-inode.  "
+msgstr ""
+"Slecht blok %b is in gebruik als indirect blok voor de slechteblokken-"
+"inode.  "
 
 #. @-expanded: \n
 #. @-expanded: The bad block inode has probably been corrupted.  You probably\n
@@ -1345,7 +1368,8 @@ msgid ""
 "If the @b is really bad, the @f can not be fixed.\n"
 msgstr ""
 "\n"
-"Als het blok echt slecht is, kan het bestandssysteem niet gerepareerd worden.\n"
+"Als het blok echt slecht is, kan het bestandssysteem niet gerepareerd "
+"worden.\n"
 
 #. @-expanded: You can remove this block from the bad block list and hope\n
 #. @-expanded: that the block is really OK.  But there are no guarantees.\n
@@ -1368,7 +1392,8 @@ msgstr "Het primaire superblok (%b) staat in de lijst van slechte blokken.\n"
 #. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
 #: e2fsck/problem.c:572
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
-msgstr "Een groepsbeschrijversblok (%b) staat in de lijst van slechte blokken.\n"
+msgstr ""
+"Een groepsbeschrijversblok (%b) staat in de lijst van slechte blokken.\n"
 
 #. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
 #: e2fsck/problem.c:578
@@ -1378,17 +1403,21 @@ msgstr "Waarschuwing: groep %g heeft een slecht superblok (%b).\n"
 #. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
 #: e2fsck/problem.c:583
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr "Waarschuwing: groep %g bevat een slecht blok (%b) in de groepsbeschrijvers.\n"
+msgstr ""
+"Waarschuwing: groep %g bevat een slecht blok (%b) in de groepsbeschrijvers.\n"
 
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
 #: e2fsck/problem.c:589
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
-msgstr "Interne fout?: blok %b is zonder reden geclaimd in process_bad_block().\n"
+msgstr ""
+"Interne fout?: blok %b is zonder reden geclaimd in process_bad_block().\n"
 
 #. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
 #: e2fsck/problem.c:595
 msgid "@A %N contiguous @b(s) in @b @g %g for %s: %m\n"
-msgstr "Fout tijdens reserveren van %N aaneengsloten blokken in groep %g voor %s: %m\n"
+msgstr ""
+"Fout tijdens reserveren van %N aaneengsloten blokken in groep %g voor %s: "
+"%m\n"
 
 #. @-expanded: error allocating block buffer for relocating %s\n
 #: e2fsck/problem.c:600
@@ -1460,7 +1489,9 @@ msgstr "Fout tijdens opslaan van inodetal (inode=%i, aantal=%N): %m\n"
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
 #: e2fsck/problem.c:660
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr "Fout tijdens opslaan van mapblokkeninformatie (inode=%i, blok=%b, aantal=%N): %m\n"
+msgstr ""
+"Fout tijdens opslaan van mapblokkeninformatie (inode=%i, blok=%b, aantal="
+"%N): %m\n"
 
 #. @-expanded: Error reading inode %i: %m\n
 #: e2fsck/problem.c:666
@@ -1489,7 +1520,9 @@ msgstr ""
 #: e2fsck/problem.c:685
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
-msgstr "Inode %i heeft de compressievlag gezet op een bestandssysteem zonder compressie-ondersteuning.  "
+msgstr ""
+"Inode %i heeft de compressievlag gezet op een bestandssysteem zonder "
+"compressie-ondersteuning.  "
 
 #. @-expanded: Special (device/socket/fifo) inode %i has non-zero size.  
 #: e2fsck/problem.c:690
@@ -1516,7 +1549,9 @@ msgstr "Inode %i was deel van de lijst van verweesde inodes.  "
 #. @-expanded: inodes that were part of a corrupted orphan linked list found.  
 #: e2fsck/problem.c:716
 msgid "@is that were part of a corrupted orphan linked list found.  "
-msgstr "Inodes gevonden die deel waren van een beschadigde lijst van verweesde inodes.  "
+msgstr ""
+"Inodes gevonden die deel waren van een beschadigde lijst van verweesde "
+"inodes.  "
 
 #. @-expanded: error allocating refcount structure (%N): %m\n
 #: e2fsck/problem.c:721
@@ -1526,7 +1561,8 @@ msgstr "Fout tijdens reserveren van 'refcount'-structuur (%N): %m\n"
 #. @-expanded: Error reading extended attribute block %b for inode %i.  
 #: e2fsck/problem.c:726
 msgid "Error reading @a @b %b for @i %i.  "
-msgstr "Fout tijdens lezen van blok %b met uitgebreide kenmerken voor inode %i.  "
+msgstr ""
+"Fout tijdens lezen van blok %b met uitgebreide kenmerken voor inode %i.  "
 
 #. @-expanded: inode %i has a bad extended attribute block %b.  
 #: e2fsck/problem.c:731
@@ -1541,7 +1577,9 @@ msgstr "Fout tijdens lezen van blok %b met uitgebreide kenmerken: %m  "
 #. @-expanded: extended attribute block %b has reference count %r, should be %N.  
 #: e2fsck/problem.c:741
 msgid "@a @b %b has reference count %r, @s %N.  "
-msgstr "Blok %b met uitgebreide kenmerken heeft verwijzingstal %r, zou %N moeten zijn.  "
+msgstr ""
+"Blok %b met uitgebreide kenmerken heeft verwijzingstal %r, zou %N moeten "
+"zijn.  "
 
 #. @-expanded: Error writing extended attribute block %b (%m).  
 #: e2fsck/problem.c:746
@@ -1561,7 +1599,8 @@ msgstr "Fout tijdens reserveren van blok %b met uitgebreide kenmerken.  "
 #. @-expanded: extended attribute block %b is corrupt (allocation collision).  
 #: e2fsck/problem.c:761
 msgid "@a @b %b is corrupt (allocation collision).  "
-msgstr "Blok %b met uitgebreide kenmerken is beschadigd (reserveringsoverlap).  "
+msgstr ""
+"Blok %b met uitgebreide kenmerken is beschadigd (reserveringsoverlap).  "
 
 #. @-expanded: extended attribute block %b is corrupt (invalid name).  
 #: e2fsck/problem.c:766
@@ -1596,7 +1635,9 @@ msgstr "Blok %B (%b) maakt symbolische koppeling te groot.  "
 #: e2fsck/problem.c:795
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
-msgstr "Inode %i heeft de 'INDEX_FL'-vlag gezet op een bestandssysteem zonder 'htree'-ondersteuning.\n"
+msgstr ""
+"Inode %i heeft de 'INDEX_FL'-vlag gezet op een bestandssysteem zonder "
+"'htree'-ondersteuning.\n"
 
 #. @-expanded: inode %i has INDEX_FL flag set but is not a directory.\n
 #: e2fsck/problem.c:800
@@ -1613,7 +1654,8 @@ msgstr "Inode %i van 'htree'-map heeft een ongeldige wortelknoop.\n"
 #. @-expanded: HTREE directory inode %i has an unsupported hash version (%N)\n
 #: e2fsck/problem.c:810
 msgid "@h %i has an unsupported hash version (%N)\n"
-msgstr "Inode %i van 'htree'-map gebruikt een niet-ondersteunde hash-versie (%N).\n"
+msgstr ""
+"Inode %i van 'htree'-map gebruikt een niet-ondersteunde hash-versie (%N).\n"
 
 #. @-expanded: HTREE directory inode %i uses an incompatible htree root node flag.\n
 #: e2fsck/problem.c:815
@@ -1650,32 +1692,39 @@ msgstr "Inode %i heeft een ongeldige extra grootte (%IS).\n"
 #. @-expanded: extended attribute in inode %i has a namelen (%N) which is invalid\n
 #: e2fsck/problem.c:841
 msgid "@a in @i %i has a namelen (%N) which is @n\n"
-msgstr "Een uitgebreid kenmerk in inode %i heeft een ongeldige naamlengte (%N).\n"
+msgstr ""
+"Een uitgebreid kenmerk in inode %i heeft een ongeldige naamlengte (%N).\n"
 
 #. @-expanded: extended attribute in inode %i has a value offset (%N) which is invalid\n
 #: e2fsck/problem.c:846
 msgid "@a in @i %i has a value offset (%N) which is @n\n"
-msgstr "Een uitgebreid kenmerk in inode %i heeft een ongeldige waardeoffset (%N).\n"
+msgstr ""
+"Een uitgebreid kenmerk in inode %i heeft een ongeldige waardeoffset (%N).\n"
 
 #. @-expanded: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
 #: e2fsck/problem.c:851
 msgid "@a in @i %i has a value @b (%N) which is @n (must be 0)\n"
-msgstr "Een uitgebreid kenmerk in inode %i heeft een ongeldig waardeblok (%N, moet 0 zijn).\n"
+msgstr ""
+"Een uitgebreid kenmerk in inode %i heeft een ongeldig waardeblok (%N, moet 0 "
+"zijn).\n"
 
 #. @-expanded: extended attribute in inode %i has a value size (%N) which is invalid\n
 #: e2fsck/problem.c:856
 msgid "@a in @i %i has a value size (%N) which is @n\n"
-msgstr "Een uitgebreid kenmerk in inode %i heeft een ongeldige waardegrootte (%N).\n"
+msgstr ""
+"Een uitgebreid kenmerk in inode %i heeft een ongeldige waardegrootte (%N).\n"
 
 #. @-expanded: extended attribute in inode %i has a hash (%N) which is invalid\n
 #: e2fsck/problem.c:861
 msgid "@a in @i %i has a hash (%N) which is @n\n"
-msgstr "Een uitgebreid kenmerk in inode %i heeft een ongeldige hash-waarde (%N).\n"
+msgstr ""
+"Een uitgebreid kenmerk in inode %i heeft een ongeldige hash-waarde (%N).\n"
 
 #. @-expanded: inode %i is a %It but it looks like it is really a directory.\n
 #: e2fsck/problem.c:866
 msgid "@i %i is a %It but it looks like it is really a directory.\n"
-msgstr "Inode %i is gemarkeerd als een %It, maar lijkt feitelijk een map te zijn.\n"
+msgstr ""
+"Inode %i is gemarkeerd als een %It, maar lijkt feitelijk een map te zijn.\n"
 
 #. @-expanded: Error while reading over extent tree in inode %i: %m\n
 #: e2fsck/problem.c:871
@@ -1717,19 +1766,24 @@ msgstr ""
 #: e2fsck/problem.c:892
 #, c-format
 msgid "@i %i has EXTENTS_FL flag set on @f without extents support.\n"
-msgstr "Inode %i heeft de 'EXTENTS_FL'-vlag gezet op een bestandssysteem zonder 'htree'-ondersteuning.\n"
+msgstr ""
+"Inode %i heeft de 'EXTENTS_FL'-vlag gezet op een bestandssysteem zonder "
+"'htree'-ondersteuning.\n"
 
 #. @-expanded: inode %i is in extent format, but superblock is missing EXTENTS feature\n
 #: e2fsck/problem.c:897
 #, c-format
 msgid "@i %i is in extent format, but @S is missing EXTENTS feature\n"
-msgstr "Inode %i heeft extent-opmaak, maar superblok heeft EXTENTS-functievlag niet gezet.\n"
+msgstr ""
+"Inode %i heeft extent-opmaak, maar superblok heeft EXTENTS-functievlag niet "
+"gezet.\n"
 
 #. @-expanded: inode %i missing EXTENT_FL, but is in extents format\n
 #: e2fsck/problem.c:902
 #, c-format
 msgid "@i %i missing EXTENT_FL, but is in extents format\n"
-msgstr "Inode %i heeft extent-opmaak, maar heeft 'EXTENT_FL'-vlag niet gezet.\n"
+msgstr ""
+"Inode %i heeft extent-opmaak, maar heeft 'EXTENT_FL'-vlag niet gezet.\n"
 
 #: e2fsck/problem.c:907
 #, c-format
@@ -1827,12 +1881,15 @@ msgstr "Fout tijdens langslopen van blokken van inode %i (%s): %m\n"
 #. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
 #: e2fsck/problem.c:989 e2fsck/problem.c:1304
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr "Fout tijdens bijstellen van verwijzingstal van blok %b met uitgebreide kenmerken (inode %i): %m\n"
+msgstr ""
+"Fout tijdens bijstellen van verwijzingstal van blok %b met uitgebreide "
+"kenmerken (inode %i): %m\n"
 
 #. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
 #: e2fsck/problem.c:994
 msgid "Pass 1C: Scanning directories for @is with @m @bs\n"
-msgstr "Stap 1C: Doorzoeken van mappen naar inodes met meervoudig-geclaimde blokken\n"
+msgstr ""
+"Stap 1C: Doorzoeken van mappen naar inodes met meervoudig-geclaimde blokken\n"
 
 #. @-expanded: Pass 1D: Reconciling multiply-claimed blocks\n
 #: e2fsck/problem.c:1000
@@ -2122,7 +2179,9 @@ msgstr "Blok van uitgebreide kenmerken @F is ongeldig (%If).\n"
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
 #: e2fsck/problem.c:1270
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
-msgstr "Bestandssysteem bevat grote bestanden, maar heeft in het superblok niet de 'large-file'-vlag gezet.\n"
+msgstr ""
+"Bestandssysteem bevat grote bestanden, maar heeft in het superblok niet de "
+"'large-file'-vlag gezet.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B not referenced\n
 #: e2fsck/problem.c:1275
@@ -2137,12 +2196,14 @@ msgstr "Probleem in 'htree'-map-inode %d: naar %B wordt twee keer verwezen.\n"
 #. @-expanded: problem in HTREE directory inode %d: %B has bad min hash\n
 #: e2fsck/problem.c:1285
 msgid "@p @h %d: %B has bad min hash\n"
-msgstr "Probleem in 'htree'-map-inode %d: %B heeft een ongeldige minimum hash.\n"
+msgstr ""
+"Probleem in 'htree'-map-inode %d: %B heeft een ongeldige minimum hash.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B has bad max hash\n
 #: e2fsck/problem.c:1290
 msgid "@p @h %d: %B has bad max hash\n"
-msgstr "Probleem in 'htree'-map-inode %d: %B heeft een ongeldige maximum hash.\n"
+msgstr ""
+"Probleem in 'htree'-map-inode %d: %B heeft een ongeldige maximum hash.\n"
 
 #. @-expanded: invalid HTREE directory inode %d (%q).  
 #: e2fsck/problem.c:1295
@@ -2163,7 +2224,8 @@ msgstr "Probleem in 'htree'-map-inode %d: de wortelknoop is ongeldig.\n"
 #. @-expanded: problem in HTREE directory inode %d: %B has invalid limit (%N)\n
 #: e2fsck/problem.c:1314
 msgid "@p @h %d: %B has @n limit (%N)\n"
-msgstr "Probleem in 'htree'-map-inode %d: %B heeft een ongeldige limiet (%N).\n"
+msgstr ""
+"Probleem in 'htree'-map-inode %d: %B heeft een ongeldige limiet (%N).\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B has invalid count (%N)\n
 #: e2fsck/problem.c:1319
@@ -2173,12 +2235,14 @@ msgstr "Probleem in 'htree'-map-inode %d: %B heeft een ongeldig aantal (%N).\n"
 #. @-expanded: problem in HTREE directory inode %d: %B has an unordered hash table\n
 #: e2fsck/problem.c:1324
 msgid "@p @h %d: %B has an unordered hash table\n"
-msgstr "Probleem in 'htree'-map-inode %d: %B heeft een ongeordende hash-tabel.\n"
+msgstr ""
+"Probleem in 'htree'-map-inode %d: %B heeft een ongeordende hash-tabel.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B has invalid depth (%N)\n
 #: e2fsck/problem.c:1329
 msgid "@p @h %d: %B has @n depth (%N)\n"
-msgstr "Probleem in 'htree'-map-inode %d: %B heeft een ongeldige diepte (%N).\n"
+msgstr ""
+"Probleem in 'htree'-map-inode %d: %B heeft een ongeldige diepte (%N).\n"
 
 #. @-expanded: Duplicate entry '%Dn' in %p (%i) found.  
 #: e2fsck/problem.c:1334
@@ -2222,12 +2286,15 @@ msgstr "Onverwacht blok in 'htree'-map-inode %d (%q)\n"
 #. @-expanded: entry '%Dn' in %p (%i) references inode %Di in group %g where _INODE_UNINIT is set.\n
 #: e2fsck/problem.c:1358
 msgid "@E references @i %Di in @g %g where _INODE_UNINIT is set.\n"
-msgstr "@E verwijst naar inode %Di in groep %g die gemarkeerd is als _INODE_UNINIT.\n"
+msgstr ""
+"@E verwijst naar inode %Di in groep %g die gemarkeerd is als _INODE_UNINIT.\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) references inode %Di found in group %g's unused inodes area.\n
 #: e2fsck/problem.c:1363
 msgid "@E references @i %Di found in @g %g's unused inodes area.\n"
-msgstr "@E verwijst naar inode %Di in het gebied met ongebruikte inodes van groep %g.\n"
+msgstr ""
+"@E verwijst naar inode %Di in het gebied met ongebruikte inodes van groep "
+"%g.\n"
 
 #. @-expanded: i_file_acl_hi for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1368
@@ -2268,7 +2335,8 @@ msgstr "'..' in %Q (%i) is %P (%j), moet %q (%d) zijn.\n"
 #. @-expanded: Bad or non-existent /lost+found.  Cannot reconnect.\n
 #: e2fsck/problem.c:1405
 msgid "Bad or non-existent /@l.  Cannot reconnect.\n"
-msgstr "Beschadigde of niet-bestaande /lost+found.  Kan inode niet herverbinden.\n"
+msgstr ""
+"Beschadigde of niet-bestaande /lost+found.  Kan inode niet herverbinden.\n"
 
 #. @-expanded: Could not expand /lost+found: %m\n
 #: e2fsck/problem.c:1410
@@ -2309,7 +2377,8 @@ msgstr "ext2fs_new_dir_block(): %m tijdens maken van nieuw mapblok\n"
 #: e2fsck/problem.c:1440
 #, c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
-msgstr "ext2fs_write_dir_block(): %m tijdens maken van mapblok voor /lost+found\n"
+msgstr ""
+"ext2fs_write_dir_block(): %m tijdens maken van mapblok voor /lost+found\n"
 
 #. @-expanded: Error while adjusting inode count on inode %i\n
 #: e2fsck/problem.c:1445
@@ -2336,7 +2405,8 @@ msgid ""
 "Couldn't fix parent of @i %i: Couldn't find parent @d @e\n"
 "\n"
 msgstr ""
-"Kan ouderverwijzing van inode %i niet herstellen: kan de oudermap niet vinden.\n"
+"Kan ouderverwijzing van inode %i niet herstellen: kan de oudermap niet "
+"vinden.\n"
 "\n"
 
 #. @-expanded: Error creating root directory (%s): %m\n
@@ -2473,8 +2543,12 @@ msgstr "Verkeerd aantal blokken (%b, geteld=%c).\n"
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:1638
-msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
-msgstr "PROGRAMMAFOUT in e2fsck: in bestandssysteem %N komen de bitkaart-eindpunten (%b, %c) niet overeen met de berekende eindpunten (%i, %j)\n"
+msgid ""
+"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
+"endpoints (%i, %j)\n"
+msgstr ""
+"PROGRAMMAFOUT in e2fsck: in bestandssysteem %N komen de bitkaart-eindpunten "
+"(%b, %c) niet overeen met de berekende eindpunten (%i, %j)\n"
 
 #: e2fsck/problem.c:1644
 msgid "Internal error: fudging end of bitmap (%N)\n"
@@ -2496,65 +2570,72 @@ msgstr "Fout tijdens kopiëren naar vervangende blok-bitkaart: %m\n"
 #: e2fsck/problem.c:1679
 #, c-format
 msgid "@g %g @b(s) in use but @g is marked BLOCK_UNINIT\n"
-msgstr "Blok(ken) van groep %g in gebruik, maar groep is gemarkeerd als BLOCK_UNINIT\n"
+msgstr ""
+"Blok(ken) van groep %g in gebruik, maar groep is gemarkeerd als "
+"BLOCK_UNINIT\n"
 
 #. @-expanded: group %g inode(s) in use but group is marked INODE_UNINIT\n
 #: e2fsck/problem.c:1684
 #, c-format
 msgid "@g %g @i(s) in use but @g is marked INODE_UNINIT\n"
-msgstr "Inode(s) van groep %g in gebruik, maar groep is gemarkeerd als INODE_UNINIT\n"
+msgstr ""
+"Inode(s) van groep %g in gebruik, maar groep is gemarkeerd als INODE_UNINIT\n"
 
 #. @-expanded: Recreate journal
 #: e2fsck/problem.c:1691
 msgid "Recreate @j"
 msgstr "Journal heraanmaken"
 
-#: e2fsck/problem.c:1810
+#: e2fsck/problem.c:1696
+msgid "Update quota info for quota type %N"
+msgstr ""
+
+#: e2fsck/problem.c:1815
 #, c-format
 msgid "Unhandled error code (0x%x)!\n"
 msgstr "Onbekende foutcode (0x%x)!\n"
 
-#: e2fsck/problem.c:1935 e2fsck/problem.c:1939
+#: e2fsck/problem.c:1940 e2fsck/problem.c:1944
 msgid "IGNORED"
 msgstr "GENEGEERD"
 
-#: e2fsck/scantest.c:82
+#: e2fsck/scantest.c:79
 #, c-format
 msgid "Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n"
 msgstr "Gebruikt geheugen: %d, verlopen tijd: %6.3f/%6.3f/%6.3f\n"
 
-#: e2fsck/scantest.c:101
+#: e2fsck/scantest.c:98
 #, c-format
 msgid "size of inode=%d\n"
 msgstr "grootte van inode is %d\n"
 
-#: e2fsck/scantest.c:122
+#: e2fsck/scantest.c:119
 msgid "while starting inode scan"
 msgstr "tijdens start van inode-scan"
 
-#: e2fsck/scantest.c:133
+#: e2fsck/scantest.c:130
 msgid "while doing inode scan"
 msgstr "tijdens uitvoering van inode-scan"
 
-#: e2fsck/super.c:187
+#: e2fsck/super.c:188
 #, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
 msgstr "tijdens aanroep van ext2fs_block_iterate() voor inode %d"
 
-#: e2fsck/super.c:210
+#: e2fsck/super.c:211
 #, c-format
 msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
 msgstr "tijdens aanroep van ext2fs_adjust_ea_refcount2() voor inode %d"
 
-#: e2fsck/super.c:269
+#: e2fsck/super.c:272
 msgid "Truncating"
 msgstr "Afkappen"
 
-#: e2fsck/super.c:270
+#: e2fsck/super.c:273
 msgid "Clearing"
 msgstr "Wissen"
 
-#: e2fsck/unix.c:77
+#: e2fsck/unix.c:74
 #, c-format
 msgid ""
 "Usage: %s [-panyrcdfvtDFV] [-b superblock] [-B blocksize]\n"
@@ -2568,7 +2649,7 @@ msgstr ""
 "          [-l|-L slechte_blokkenbestand] [-P procesinode-grootte]\n"
 "          apparaat\n"
 
-#: e2fsck/unix.c:83
+#: e2fsck/unix.c:80
 #, c-format
 msgid ""
 "\n"
@@ -2576,7 +2657,8 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock list\n"
+" -c                   Check for bad blocks and add them to the badblock "
+"list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -2587,7 +2669,7 @@ msgstr ""
 " -c   Op slechte blokken controleren en deze aan lijst toevoegen.\n"
 " -f   Een controle afdwingen, ook als het bestandssysteem schoon is.\n"
 
-#: e2fsck/unix.c:89
+#: e2fsck/unix.c:86
 #, c-format
 msgid ""
 " -v                   Be verbose\n"
@@ -2601,15 +2683,17 @@ msgstr ""
 " -b superblok        Dit superblok gebruiken.\n"
 " -B blokgrootte      Deze blokgrootte gebruiken bij zoeken naar superblok.\n"
 " -j extern_journal   Dit externe journal gebruiken.\n"
-" -l slechte_blokkenbestand   Deze lijst aan de slechte_blokkenlijst toevoegen.\n"
+" -l slechte_blokkenbestand   Deze lijst aan de slechte_blokkenlijst "
+"toevoegen.\n"
 " -L slechte_blokkenbestand   Deze slechte_blokkenlijst gebruiken.\n"
 
-#: e2fsck/unix.c:133
+#: e2fsck/unix.c:130
 #, c-format
 msgid "%s: %u/%u files (%0d.%d%% non-contiguous), %llu/%llu blocks\n"
-msgstr "%s: %u/%u bestanden (%0d.%d%% niet-aaneengesloten), %llu/%llu blokken\n"
+msgstr ""
+"%s: %u/%u bestanden (%0d.%d%% niet-aaneengesloten), %llu/%llu blokken\n"
 
-#: e2fsck/unix.c:140
+#: e2fsck/unix.c:137
 #, c-format
 msgid ""
 "\n"
@@ -2624,51 +2708,53 @@ msgstr[1] ""
 "\n"
 "%8u inodes gebruikt (%2.2f%%)\n"
 
-#: e2fsck/unix.c:144
+#: e2fsck/unix.c:141
 #, c-format
 msgid "%8u non-contiguous file (%0d.%d%%)\n"
 msgid_plural "%8u non-contiguous files (%0d.%d%%)\n"
 msgstr[0] "%8u niet-aaneengesloten bestand (%0d.%d%%)\n"
 msgstr[1] "%8u niet-aaneengesloten bestanden (%0d.%d%%)\n"
 
-#: e2fsck/unix.c:149
+#: e2fsck/unix.c:146
 #, c-format
 msgid "%8u non-contiguous directory (%0d.%d%%)\n"
 msgid_plural "%8u non-contiguous directories (%0d.%d%%)\n"
 msgstr[0] "%8u niet-aaneengesloten map (%0d.%d%%)\n"
 msgstr[1] "%8u niet-aaneengesloten mappen (%0d.%d%%)\n"
 
-#: e2fsck/unix.c:154
+#: e2fsck/unix.c:151
 #, c-format
 msgid "         # of inodes with ind/dind/tind blocks: %u/%u/%u\n"
-msgstr "         aantal inodes met indirecte blokken: %u enkel, %u dubbel, %u triple\n"
+msgstr ""
+"         aantal inodes met indirecte blokken: %u enkel, %u dubbel, %u "
+"triple\n"
 
-#: e2fsck/unix.c:162
+#: e2fsck/unix.c:159
 msgid "         Extent depth histogram: "
 msgstr "         Extents-dieptehistogram: "
 
-#: e2fsck/unix.c:171
+#: e2fsck/unix.c:168
 #, c-format
 msgid "%8llu block used (%2.2f%%)\n"
 msgid_plural "%8llu blocks used (%2.2f%%)\n"
 msgstr[0] "%8llu blok gebruikt (%2.2f%%)\n"
 msgstr[1] "%8llu blokken gebruikt (%2.2f%%)\n"
 
-#: e2fsck/unix.c:174
+#: e2fsck/unix.c:171
 #, c-format
 msgid "%8u bad block\n"
 msgid_plural "%8u bad blocks\n"
 msgstr[0] "%8u slecht blok\n"
 msgstr[1] "%8u slechte blokken\n"
 
-#: e2fsck/unix.c:176
+#: e2fsck/unix.c:173
 #, c-format
 msgid "%8u large file\n"
 msgid_plural "%8u large files\n"
 msgstr[0] "%8u groot bestand\n"
 msgstr[1] "%8u grote bestanden\n"
 
-#: e2fsck/unix.c:178
+#: e2fsck/unix.c:175
 #, c-format
 msgid ""
 "\n"
@@ -2683,84 +2769,84 @@ msgstr[1] ""
 "\n"
 "%8u normale bestanden\n"
 
-#: e2fsck/unix.c:180
+#: e2fsck/unix.c:177
 #, c-format
 msgid "%8u directory\n"
 msgid_plural "%8u directories\n"
 msgstr[0] "%8u map\n"
 msgstr[1] "%8u mappen\n"
 
-#: e2fsck/unix.c:182
+#: e2fsck/unix.c:179
 #, c-format
 msgid "%8u character device file\n"
 msgid_plural "%8u character device files\n"
 msgstr[0] "%8u byte-apparaat\n"
 msgstr[1] "%8u byte-apparaten\n"
 
-#: e2fsck/unix.c:185
+#: e2fsck/unix.c:182
 #, c-format
 msgid "%8u block device file\n"
 msgid_plural "%8u block device files\n"
 msgstr[0] "%8u blok-apparaat\n"
 msgstr[1] "%8u blok-apparaten\n"
 
-#: e2fsck/unix.c:187
+#: e2fsck/unix.c:184
 #, c-format
 msgid "%8u fifo\n"
 msgid_plural "%8u fifos\n"
 msgstr[0] "%8u fifo\n"
 msgstr[1] "%8u fifo's\n"
 
-#: e2fsck/unix.c:189
+#: e2fsck/unix.c:186
 #, c-format
 msgid "%8u link\n"
 msgid_plural "%8u links\n"
 msgstr[0] "%8u koppeling\n"
 msgstr[1] "%8u koppelingen\n"
 
-#: e2fsck/unix.c:192
+#: e2fsck/unix.c:189
 #, c-format
 msgid "%8u symbolic link"
 msgid_plural "%8u symbolic links"
 msgstr[0] "%8u symbolische koppeling"
 msgstr[1] "%8u symbolische koppelingen"
 
-#: e2fsck/unix.c:194
+#: e2fsck/unix.c:191
 #, c-format
 msgid " (%u fast symbolic link)\n"
 msgid_plural " (%u fast symbolic links)\n"
 msgstr[0] " (%u snelle koppeling)\n"
 msgstr[1] " (%u snelle koppelingen)\n"
 
-#: e2fsck/unix.c:198
+#: e2fsck/unix.c:195
 #, c-format
 msgid "%8u socket\n"
 msgid_plural "%8u sockets\n"
 msgstr[0] "%8u socket\n"
 msgstr[1] "%8u sockets\n"
 
-#: e2fsck/unix.c:201
+#: e2fsck/unix.c:198
 #, c-format
 msgid "%8u file\n"
 msgid_plural "%8u files\n"
 msgstr[0] "%8u bestand\n"
 msgstr[1] "%8u bestanden\n"
 
-#: e2fsck/unix.c:215 misc/badblocks.c:983 misc/tune2fs.c:1979 misc/util.c:147
+#: e2fsck/unix.c:212 misc/badblocks.c:983 misc/tune2fs.c:1979 misc/util.c:147
 #: resize/main.c:247
 #, c-format
 msgid "while determining whether %s is mounted."
 msgstr "tijdens bepalen of %s aangekoppeld is."
 
-#: e2fsck/unix.c:233
-#, c-format
-msgid "Warning!  %s is mounted.\n"
+#: e2fsck/unix.c:230
+#, fuzzy, c-format
+msgid "Warning!  %s is %s.\n"
 msgstr "WAARSCHUWING: %s is aangekoppeld!\n"
 
-#: e2fsck/unix.c:238
+#: e2fsck/unix.c:237
 #, c-format
-msgid "%s is mounted.  "
-msgstr "Partitie %s is aangekoppeld.  "
+msgid "%s is %s.\n"
+msgstr ""
 
 #: e2fsck/unix.c:240
 msgid ""
@@ -2803,7 +2889,9 @@ msgstr " is niet goed ontkoppeld"
 
 #: e2fsck/unix.c:343
 msgid " primary superblock features different from backup"
-msgstr " het primaire superblok heeft andere functievlaggen gezet dan de reserveblokken"
+msgstr ""
+" het primaire superblok heeft andere functievlaggen gezet dan de "
+"reserveblokken"
 
 #: e2fsck/unix.c:347
 #, c-format
@@ -2928,8 +3016,12 @@ msgstr ""
 
 #: e2fsck/unix.c:1089
 #, c-format
-msgid "MMP interval is %u seconds and total wait time is %u seconds. Please wait...\n"
-msgstr "Het MMP-interval is %u seconden, en de totale wachttijd is %u seconden.  Even geduld...\n"
+msgid ""
+"MMP interval is %u seconds and total wait time is %u seconds. Please "
+"wait...\n"
+msgstr ""
+"Het MMP-interval is %u seconden, en de totale wachttijd is %u seconden.  "
+"Even geduld...\n"
 
 #: e2fsck/unix.c:1106 e2fsck/unix.c:1111
 msgid "while checking MMP block"
@@ -2943,50 +3035,50 @@ msgstr ""
 "Als u zeker weet dat het bestandssysteem nergens gebruikt wordt,\n"
 "geef dan deze opdracht: 'tune2fs -f -E clear_mmp {apparaat}'\n"
 
-#: e2fsck/unix.c:1162
+#: e2fsck/unix.c:1163
 #, c-format
 msgid "Error: ext2fs library version out of date!\n"
 msgstr "Fout: de ext2fs-bibliotheek is te oud!\n"
 
-#: e2fsck/unix.c:1170
+#: e2fsck/unix.c:1171
 msgid "while trying to initialize program"
 msgstr "tijdens programma-initialisatie"
 
-#: e2fsck/unix.c:1193
+#: e2fsck/unix.c:1194
 #, c-format
 msgid "\tUsing %s, %s\n"
 msgstr "    gebruik makend van %s, %s\n"
 
-#: e2fsck/unix.c:1205
+#: e2fsck/unix.c:1206
 msgid "need terminal for interactive repairs"
 msgstr "voor interactieve reparaties is een terminal vereist"
 
-#: e2fsck/unix.c:1253
+#: e2fsck/unix.c:1256
 #, c-format
 msgid "%s: %s trying backup blocks...\n"
 msgstr "%s: %s reservekopieblokken worden bekeken...\n"
 
 # Gebruik van '--' in deze en volgende string is opzettelijk;
 # één van deze strings wordt ingevuld voor de tweede %s hierboven.
-#: e2fsck/unix.c:1255
+#: e2fsck/unix.c:1258
 msgid "Superblock invalid,"
 msgstr "Superblok is ongeldig --"
 
-#: e2fsck/unix.c:1256
+#: e2fsck/unix.c:1259
 msgid "Group descriptors look bad..."
 msgstr "Groepsbeschrijvers zien er slecht uit --"
 
-#: e2fsck/unix.c:1266
+#: e2fsck/unix.c:1269
 #, c-format
 msgid "%s: %s while using the backup blocks"
 msgstr "%s: %s tijdens gebruik van de reservekopieblokken"
 
-#: e2fsck/unix.c:1270
+#: e2fsck/unix.c:1273
 #, c-format
 msgid "%s: going back to original superblock\n"
 msgstr "%s: er wordt teruggevallen op het eerste superblok\n"
 
-#: e2fsck/unix.c:1298
+#: e2fsck/unix.c:1301
 msgid ""
 "The filesystem revision is apparently too high for this version of e2fsck.\n"
 "(Or the filesystem superblock is corrupt)\n"
@@ -2996,28 +3088,31 @@ msgstr ""
 "(Of het superblok is beschadigd.)\n"
 "\n"
 
-#: e2fsck/unix.c:1304
+#: e2fsck/unix.c:1307
 msgid "Could this be a zero-length partition?\n"
 msgstr "Is dit misschien een partitie met lengte nul?\n"
 
-#: e2fsck/unix.c:1307
+#: e2fsck/unix.c:1310
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
-msgstr "U dient %s-toegang tot het bestandssyteem te hebben, of root te zijn.\n"
+msgstr ""
+"U dient %s-toegang tot het bestandssyteem te hebben, of root te zijn.\n"
 
-#: e2fsck/unix.c:1312
+#: e2fsck/unix.c:1315
 msgid "Possibly non-existent or swap device?\n"
 msgstr "Mogelijk een niet-bestaand apparaat of een swap-apparaat?\n"
 
-#: e2fsck/unix.c:1315
-msgid "Filesystem mounted or opened exclusively by another program?\n"
-msgstr "Is bestandssysteem exclusief aangekoppeld of geopend door een ander programma?\n"
-
 #: e2fsck/unix.c:1318
+msgid "Filesystem mounted or opened exclusively by another program?\n"
+msgstr ""
+"Is bestandssysteem exclusief aangekoppeld of geopend door een ander "
+"programma?\n"
+
+#: e2fsck/unix.c:1321
 msgid "Possibly non-existent device?\n"
 msgstr "Mogelijk een niet-bestaand apparaat?\n"
 
-#: e2fsck/unix.c:1321
+#: e2fsck/unix.c:1324
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
 "check of the device.\n"
@@ -3025,42 +3120,45 @@ msgstr ""
 "De schijf is schrijfbeveiligd.  Gebruik de optie '-n' om een\n"
 "alleen-lezencontrole van het apparaat uit te voeren.\n"
 
-#: e2fsck/unix.c:1386
+#: e2fsck/unix.c:1389
 msgid "Get a newer version of e2fsck!"
 msgstr "Installeer een nieuwere versie van e2fsck!"
 
-#: e2fsck/unix.c:1434
+#: e2fsck/unix.c:1437
 #, c-format
 msgid "while checking ext3 journal for %s"
 msgstr "tijdens controle van het ext3-journal van %s"
 
-#: e2fsck/unix.c:1445
-msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
+#: e2fsck/unix.c:1448
+msgid ""
+"Warning: skipping journal recovery because doing a read-only filesystem "
+"check.\n"
 msgstr ""
 "Waarschuwing: afspelen van journal wordt overgeslagen\n"
 "omdat een alleen-lezencontrole uitgevoerd wordt.\n"
 
-#: e2fsck/unix.c:1458
+#: e2fsck/unix.c:1461
 #, c-format
 msgid "unable to set superblock flags on %s\n"
 msgstr "Kan superblokvlaggen van %s niet zetten.\n"
 
-#: e2fsck/unix.c:1464
+#: e2fsck/unix.c:1467
 #, c-format
 msgid "while recovering ext3 journal of %s"
 msgstr "tijdens afspelen van het ext3-journal van %s"
 
-#: e2fsck/unix.c:1489
+#: e2fsck/unix.c:1492
 #, c-format
 msgid "%s has unsupported feature(s):"
-msgstr "Bestandssysteem %s heeft functies ingeschakeld die niet ondersteund worden:"
+msgstr ""
+"Bestandssysteem %s heeft functies ingeschakeld die niet ondersteund worden:"
 
-#: e2fsck/unix.c:1504
+#: e2fsck/unix.c:1507
 #, c-format
 msgid "%s: warning: compression support is experimental.\n"
 msgstr "%s: Waarschuwing: compressie-ondersteuning is nog experimenteel.\n"
 
-#: e2fsck/unix.c:1510
+#: e2fsck/unix.c:1513
 #, c-format
 msgid ""
 "%s: e2fsck not compiled with HTREE support,\n"
@@ -3069,50 +3167,51 @@ msgstr ""
 "%s: Deze 'e2fsck' is niet gecompileerd met 'htree'-ondersteuning,\n"
 "    maar het bestandssysteem %s bevat 'htree'-mappen.\n"
 
-#: e2fsck/unix.c:1562
+#: e2fsck/unix.c:1565
 #, c-format
 msgid "%s: %s while reading bad blocks inode\n"
 msgstr "%s: %s tijdens lezen van slechteblokken-inode\n"
 
-#: e2fsck/unix.c:1565
+#: e2fsck/unix.c:1568
 msgid "This doesn't bode well, but we'll try to go on...\n"
 msgstr "Dit ziet er niet goed uit, maar we zullen doorgaan...\n"
 
-#: e2fsck/unix.c:1607
+#: e2fsck/unix.c:1609
 #, c-format
 msgid "Creating journal (%d blocks): "
 msgstr "Aanmaken van journal (%d blokken): "
 
-#: e2fsck/unix.c:1617
+#: e2fsck/unix.c:1619
 msgid " Done.\n"
 msgstr " voltooid.\n"
 
-#: e2fsck/unix.c:1618
+#: e2fsck/unix.c:1620
 msgid ""
 "\n"
 "*** journal has been re-created - filesystem is now ext3 again ***\n"
 msgstr ""
 "\n"
-"*** journal is opnieuw aangemaakt -- het bestandssysteem is nu weer ext3 ***\n"
+"*** journal is opnieuw aangemaakt -- het bestandssysteem is nu weer ext3 "
+"***\n"
 
-#: e2fsck/unix.c:1630
+#: e2fsck/unix.c:1643
 msgid "Restarting e2fsck from the beginning...\n"
 msgstr "E2fsck wordt opnieuw gestart vanaf het begin...\n"
 
-#: e2fsck/unix.c:1634
+#: e2fsck/unix.c:1647
 msgid "while resetting context"
 msgstr "tijdens wissen van de context"
 
-#: e2fsck/unix.c:1641
+#: e2fsck/unix.c:1654
 #, c-format
 msgid "%s: e2fsck canceled.\n"
 msgstr "%s: 'e2fsck' is geannuleerd.\n"
 
-#: e2fsck/unix.c:1646
+#: e2fsck/unix.c:1659
 msgid "aborted"
 msgstr "afgebroken"
 
-#: e2fsck/unix.c:1658 e2fsck/util.c:67
+#: e2fsck/unix.c:1671 e2fsck/util.c:67
 #, c-format
 msgid ""
 "\n"
@@ -3121,12 +3220,12 @@ msgstr ""
 "\n"
 "%s: ***** BESTANDSSYSTEEM IS VERANDERD *****\n"
 
-#: e2fsck/unix.c:1662
+#: e2fsck/unix.c:1675
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
 msgstr "%s: ***** HERSTART UW SYSTEEM *****\n"
 
-#: e2fsck/unix.c:1670 e2fsck/util.c:73
+#: e2fsck/unix.c:1683 e2fsck/util.c:73
 #, c-format
 msgid ""
 "\n"
@@ -3137,7 +3236,7 @@ msgstr ""
 "%s: ********** WAARSCHUWING: bestandssysteem bevat nog fouten **********\n"
 "\n"
 
-#: e2fsck/unix.c:1710
+#: e2fsck/unix.c:1723
 msgid "while setting block group checksum info"
 msgstr "tijdens zetten van controlesom van blokgroep"
 
@@ -3274,8 +3373,12 @@ msgid "while allocating zeroizing buffer"
 msgstr "tijdens reserveren van nulmakingsbuffer"
 
 #: e2fsck/util.c:788
-msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is running.\n"
-msgstr "ONVERWACHTE INCONSISTENTIE: het bestandssysteem wordt gewijzigd terwijl 'fsck' uitgevoerd wordt.\n"
+msgid ""
+"UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is "
+"running.\n"
+msgstr ""
+"ONVERWACHTE INCONSISTENTIE: het bestandssysteem wordt gewijzigd terwijl "
+"'fsck' uitgevoerd wordt.\n"
 
 #: misc/badblocks.c:69
 msgid "done                                                 \n"
@@ -3285,12 +3388,14 @@ msgstr "voltooid                                             \n"
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e max_bad_blocks]\n"
+"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e "
+"max_bad_blocks]\n"
 "       [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 "       device [last_block [first_block]]\n"
 msgstr ""
 "Gebruik:  %s [-b blokgrootte] [-i invoerbestand] [-o uitvoerbestand]\n"
-"          [-c aantal_blokken_tegelijk] [-d vertragingsfactor_tussen_leesacties]\n"
+"          [-c aantal_blokken_tegelijk] [-d "
+"vertragingsfactor_tussen_leesacties]\n"
 "          [-e maximum_aantal_slechte_blokken] [-p aantal_controles]\n"
 "          [-t testpatroon [-t testpatroon [...]]]  [-fnsvw]\n"
 "          apparaat  [eindblok [beginblok]]\n"
@@ -3332,7 +3437,8 @@ msgstr "tijdens leegmaken van de buffers"
 
 #: misc/badblocks.c:489 misc/badblocks.c:749
 msgid "while beginning bad block list iteration"
-msgstr "tijdens voorbereiding van het langslopen van de lijst met slechte blokken"
+msgstr ""
+"tijdens voorbereiding van het langslopen van de lijst met slechte blokken"
 
 #: misc/badblocks.c:503 misc/badblocks.c:602 misc/badblocks.c:759
 msgid "while allocating buffers"
@@ -3371,11 +3477,13 @@ msgstr "Lezen en vergelijken: "
 
 #: misc/badblocks.c:771
 msgid "Checking for bad blocks in non-destructive read-write mode\n"
-msgstr "Zoeken naar slechte blokken in niet-destructieve lezen-en-schrijven-modus\n"
+msgstr ""
+"Zoeken naar slechte blokken in niet-destructieve lezen-en-schrijven-modus\n"
 
 #: misc/badblocks.c:777
 msgid "Checking for bad blocks (non-destructive read-write test)\n"
-msgstr "Zoeken naar slechte blokken (niet-destructieve lezen-en-schrijven-test)\n"
+msgstr ""
+"Zoeken naar slechte blokken (niet-destructieve lezen-en-schrijven-test)\n"
 
 #: misc/badblocks.c:784
 msgid ""
@@ -3526,58 +3634,60 @@ msgstr "'=' gaat niet samen met '-' en '+'\n"
 msgid "Must use '-v', =, - or +\n"
 msgstr "Gebruik '-v', '=', '-' of '+'.\n"
 
-#: misc/dumpe2fs.c:54
+#: misc/dumpe2fs.c:55
 #, c-format
 msgid "Usage: %s [-bfhixV] [-o superblock=<num>] [-o blocksize=<num>] device\n"
-msgstr "Gebruik:  %s [-bfhixV] [-o superblock=<nummer>] [-o blocksize=<getal>] apparaat\n"
+msgstr ""
+"Gebruik:  %s [-bfhixV] [-o superblock=<nummer>] [-o blocksize=<getal>] "
+"apparaat\n"
 
-#: misc/dumpe2fs.c:152
+#: misc/dumpe2fs.c:159
 msgid "blocks"
 msgstr "blokken"
 
-#: misc/dumpe2fs.c:161
+#: misc/dumpe2fs.c:168
 msgid "clusters"
 msgstr "clusters"
 
-#: misc/dumpe2fs.c:189
+#: misc/dumpe2fs.c:196
 #, c-format
 msgid "Group %lu: (Blocks "
 msgstr "Groep %lu: (Blokken "
 
-#: misc/dumpe2fs.c:197
+#: misc/dumpe2fs.c:204
 #, c-format
 msgid "  Checksum 0x%04x"
 msgstr "  Controlesom is 0x%04x"
 
-#: misc/dumpe2fs.c:199
+#: misc/dumpe2fs.c:206
 #, c-format
 msgid " (EXPECTED 0x%04x)"
 msgstr " (0x%04x WERD VERWACHT)"
 
-#: misc/dumpe2fs.c:200
+#: misc/dumpe2fs.c:207
 #, c-format
 msgid ", unused inodes %u\n"
 msgstr ", %u ongebruikte inodes\n"
 
-#: misc/dumpe2fs.c:205
+#: misc/dumpe2fs.c:212
 #, c-format
 msgid "  %s superblock at "
 msgstr "  %s superblok op "
 
-#: misc/dumpe2fs.c:206
+#: misc/dumpe2fs.c:213
 msgid "Primary"
 msgstr "Primair"
 
-#: misc/dumpe2fs.c:206
+#: misc/dumpe2fs.c:213
 msgid "Backup"
 msgstr "Reservekopie"
 
-#: misc/dumpe2fs.c:210
+#: misc/dumpe2fs.c:217
 #, c-format
 msgid ", Group descriptors at "
 msgstr ", Groepsbeschrijvers op "
 
-#: misc/dumpe2fs.c:214
+#: misc/dumpe2fs.c:221
 #, c-format
 msgid ""
 "\n"
@@ -3586,20 +3696,20 @@ msgstr ""
 "\n"
 "  Blokken voor groepsbeschrijverstabel gereserveerd op "
 
-#: misc/dumpe2fs.c:221
+#: misc/dumpe2fs.c:228
 #, c-format
 msgid " Group descriptor at "
 msgstr " Groepsbeschrijver op "
 
-#: misc/dumpe2fs.c:227
+#: misc/dumpe2fs.c:234
 msgid "  Block bitmap at "
 msgstr "  Blok-bitkaart op "
 
-#: misc/dumpe2fs.c:231
+#: misc/dumpe2fs.c:238
 msgid ", Inode bitmap at "
 msgstr ", Inode-bitkaart op "
 
-#: misc/dumpe2fs.c:235
+#: misc/dumpe2fs.c:242
 msgid ""
 "\n"
 "  Inode table at "
@@ -3607,7 +3717,7 @@ msgstr ""
 "\n"
 "  Inodetabel op "
 
-#: misc/dumpe2fs.c:241
+#: misc/dumpe2fs.c:248
 #, c-format
 msgid ""
 "\n"
@@ -3616,50 +3726,50 @@ msgstr ""
 "\n"
 "  %u vrije %s, %u vrije inodes, %u mappen%s"
 
-#: misc/dumpe2fs.c:248
+#: misc/dumpe2fs.c:255
 #, c-format
 msgid ", %u unused inodes\n"
 msgstr ", %u ongebruikte inodes\n"
 
-#: misc/dumpe2fs.c:251
+#: misc/dumpe2fs.c:258
 msgid "  Free blocks: "
 msgstr "  Vrije blokken: "
 
-#: misc/dumpe2fs.c:262
+#: misc/dumpe2fs.c:269
 msgid "  Free inodes: "
 msgstr "  Vrije inodes: "
 
-#: misc/dumpe2fs.c:293
+#: misc/dumpe2fs.c:300
 msgid "while printing bad block list"
 msgstr "tijdens printen van lijst van slechte blokken"
 
-#: misc/dumpe2fs.c:299
+#: misc/dumpe2fs.c:306
 #, c-format
 msgid "Bad blocks: %u"
 msgstr "Slechte blokken: %u"
 
-#: misc/dumpe2fs.c:326 misc/tune2fs.c:302
+#: misc/dumpe2fs.c:333 misc/tune2fs.c:302
 msgid "while reading journal inode"
 msgstr "tijdens lezen van journal-inode"
 
-#: misc/dumpe2fs.c:332
+#: misc/dumpe2fs.c:339
 msgid "while opening journal inode"
 msgstr "tijdens openen van journal-inode"
 
-#: misc/dumpe2fs.c:338
+#: misc/dumpe2fs.c:345
 msgid "while reading journal super block"
 msgstr "tijdens lezen van journal-superblok"
 
-#: misc/dumpe2fs.c:348
+#: misc/dumpe2fs.c:355
 #, c-format
 msgid "Journal features:        "
 msgstr "Journal-functies:         "
 
-#: misc/dumpe2fs.c:361
+#: misc/dumpe2fs.c:368
 msgid "Journal size:             "
 msgstr "Grootte van journal:      "
 
-#: misc/dumpe2fs.c:372
+#: misc/dumpe2fs.c:379
 #, c-format
 msgid ""
 "Journal length:           %u\n"
@@ -3670,15 +3780,20 @@ msgstr ""
 "Journal-sequentie:        0x%08x\n"
 "Begin van journal:        %u\n"
 
-#: misc/dumpe2fs.c:391 misc/tune2fs.c:218
+#: misc/dumpe2fs.c:386
+#, fuzzy, c-format
+msgid "Journal errno:            %d\n"
+msgstr "Journal-gebruikers:       %s\n"
+
+#: misc/dumpe2fs.c:401 misc/tune2fs.c:218
 msgid "while reading journal superblock"
 msgstr "tijdens lezen van journal-superblok"
 
-#: misc/dumpe2fs.c:399
+#: misc/dumpe2fs.c:409
 msgid "Couldn't find journal superblock magic numbers"
 msgstr "Kan magische getallen van journal-superblok niet vinden"
 
-#: misc/dumpe2fs.c:403
+#: misc/dumpe2fs.c:413
 #, c-format
 msgid ""
 "\n"
@@ -3697,27 +3812,27 @@ msgstr ""
 "Begin van journal:          %u\n"
 "Aantal journal-gebruikers:  %u\n"
 
-#: misc/dumpe2fs.c:416
+#: misc/dumpe2fs.c:426
 #, c-format
 msgid "Journal users:            %s\n"
 msgstr "Journal-gebruikers:       %s\n"
 
-#: misc/dumpe2fs.c:432 misc/mke2fs.c:665 misc/tune2fs.c:1137
+#: misc/dumpe2fs.c:442 misc/mke2fs.c:662 misc/tune2fs.c:1137
 #, c-format
 msgid "Couldn't allocate memory to parse options!\n"
 msgstr "Kan geen geheugen reserveren om opties te ontleden!\n"
 
-#: misc/dumpe2fs.c:458
+#: misc/dumpe2fs.c:468
 #, c-format
 msgid "Invalid superblock parameter: %s\n"
 msgstr "Ongeldig superblok opgegeven: %s\n"
 
-#: misc/dumpe2fs.c:473
+#: misc/dumpe2fs.c:483
 #, c-format
 msgid "Invalid blocksize parameter: %s\n"
 msgstr "Ongeldige blokgrootte opgegeven: %s\n"
 
-#: misc/dumpe2fs.c:484
+#: misc/dumpe2fs.c:494
 #, c-format
 msgid ""
 "\n"
@@ -3740,18 +3855,18 @@ msgstr ""
 "    superblock=<superbloknummer>\n"
 "    blocksize=<blokgrootte>\n"
 
-#: misc/dumpe2fs.c:544 misc/mke2fs.c:1528
+#: misc/dumpe2fs.c:554 misc/mke2fs.c:1525
 #, c-format
 msgid "\tUsing %s\n"
 msgstr "\tgebruik makend van %s\n"
 
-#: misc/dumpe2fs.c:580 misc/e2image.c:1310 misc/tune2fs.c:1923
+#: misc/dumpe2fs.c:590 misc/e2image.c:1309 misc/tune2fs.c:1923
 #: resize/main.c:305
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Kan geen geldig bestandssysteem-superblok vinden.\n"
 
-#: misc/dumpe2fs.c:606
+#: misc/dumpe2fs.c:618
 #, c-format
 msgid ""
 "\n"
@@ -3790,10 +3905,11 @@ msgstr "tijdens schrijven van blok-bitkaart"
 msgid "while writing inode bitmap"
 msgstr "tijdens schrijven van inode-bitkaart"
 
-#: misc/e2image.c:1342
+#: misc/e2image.c:1341
 #, c-format
 msgid "while trying to convert qcow2 image (%s) into raw image (%s)"
-msgstr "tijdens converteren van een qcow2-image (%s) naar een raw-imagebestand (%s)"
+msgstr ""
+"tijdens converteren van een qcow2-image (%s) naar een raw-imagebestand (%s)"
 
 #: misc/e2label.c:58
 #, c-format
@@ -3852,11 +3968,14 @@ msgstr "Lezen van transactiegegevens is mislukt: %s\n"
 #: misc/e2undo.c:70
 #, c-format
 msgid "The file system Mount time didn't match %u\n"
-msgstr "aankoppelingstijd van bestandssysteem komt niet overeen met %u uit transactiebestand\n"
+msgstr ""
+"aankoppelingstijd van bestandssysteem komt niet overeen met %u uit "
+"transactiebestand\n"
 
 #: misc/e2undo.c:89
 msgid "The file system UUID didn't match \n"
-msgstr "UUID's van bestandssysteem en uit transactiebestand komen niet overeen\n"
+msgstr ""
+"UUID's van bestandssysteem en uit transactiebestand komen niet overeen\n"
 
 #: misc/e2undo.c:163
 #, c-format
@@ -3887,17 +4006,17 @@ msgstr "Een transactie met grootte %zd is afgespeeld op locatie %llu.\n"
 msgid "Failed write %s\n"
 msgstr "Schrijven is mislukt: %s\n"
 
-#: misc/fsck.c:344
+#: misc/fsck.c:343
 #, c-format
 msgid "WARNING: couldn't open %s: %s\n"
 msgstr "WAARSCHUWING: kan %s niet openen: %s\n"
 
-#: misc/fsck.c:354
+#: misc/fsck.c:353
 #, c-format
 msgid "WARNING: bad format on line %d of %s\n"
 msgstr "WAARSCHUWING: foute indeling op regel %d van %s\n"
 
-#: misc/fsck.c:371
+#: misc/fsck.c:370
 msgid ""
 "WARNING: Your /etc/fstab does not contain the fsck passno\n"
 "\tfield.  I will kludge around things for you, but you\n"
@@ -3909,37 +4028,37 @@ msgstr ""
 "    de eerstvolgende gelegenheid toe dienen te voegen.\n"
 "\n"
 
-#: misc/fsck.c:479
+#: misc/fsck.c:478
 #, c-format
 msgid "fsck: %s: not found\n"
 msgstr "fsck: %s: niet gevonden\n"
 
-#: misc/fsck.c:595
+#: misc/fsck.c:594
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
 msgstr "%s: wait: geen dochterprocessen meer?!?\n"
 
-#: misc/fsck.c:617
+#: misc/fsck.c:616
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
 msgstr "Waarschuwing: %s voor apparaat %s werd beëindigd met signaal %d.\n"
 
-#: misc/fsck.c:623
+#: misc/fsck.c:622
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
 msgstr "%s %s: de status is %x, dit zou nooit voor mogen komen.\n"
 
-#: misc/fsck.c:662
+#: misc/fsck.c:661
 #, c-format
 msgid "Finished with %s (exit status %d)\n"
 msgstr "Afgesloten met %s (afsluitwaarde %d).\n"
 
-#: misc/fsck.c:722
+#: misc/fsck.c:721
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
 msgstr "%s: Fout %d tijdens uitvoering van fsck.%s voor %s\n"
 
-#: misc/fsck.c:743
+#: misc/fsck.c:742
 msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
@@ -3947,43 +4066,46 @@ msgstr ""
 "Óf geen óf alle bestandsssysteemsoorten bij optie -t\n"
 "dienen voorafgegaan te worden door 'no' of '!'.\n"
 
-#: misc/fsck.c:762
+#: misc/fsck.c:761
 msgid "Couldn't allocate memory for filesystem types\n"
 msgstr "Kan geen geheugen reserveren voor bestandssysteemsoorten.\n"
 
-#: misc/fsck.c:885
+#: misc/fsck.c:884
 #, c-format
-msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
+msgid ""
+"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
+"number\n"
 msgstr ""
 "%s: ongeldige regel in /etc/fstab wordt overgeslagen:\n"
 "zesde veld van 'bind'-aankoppeling is niet nul (fsck-volgnummer)\n"
 
-#: misc/fsck.c:912
+#: misc/fsck.c:911
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
 msgstr "fsck: kan %s niet controleren: fsck.%s niet gevonden\n"
 
-#: misc/fsck.c:968
+#: misc/fsck.c:967
 msgid "Checking all file systems.\n"
 msgstr "Alle bestandssystemen worden gecontroleerd.\n"
 
-#: misc/fsck.c:1059
+#: misc/fsck.c:1058
 #, c-format
 msgid "--waiting-- (pass %d)\n"
 msgstr "--wachten-- (volgnummer %d)\n"
 
-#: misc/fsck.c:1079
-msgid "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
+#: misc/fsck.c:1078
+msgid ""
+"Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
 msgstr ""
 "Gebruik:  fsck [-AMNPRTV] [-C [descriptor]] [-t bestandssysteemsoort]\n"
 "          [bestandssysteemopties] [bestandssysteem...]\n"
 
-#: misc/fsck.c:1121
+#: misc/fsck.c:1120
 #, c-format
 msgid "%s: too many devices\n"
 msgstr "%s: te veel apparaten\n"
 
-#: misc/fsck.c:1154 misc/fsck.c:1240
+#: misc/fsck.c:1153 misc/fsck.c:1239
 #, c-format
 msgid "%s: too many arguments\n"
 msgstr "%s: te veel argumenten\n"
@@ -4003,7 +4125,7 @@ msgstr "Tijdens lezen van vlaggen op %s"
 msgid "While reading version on %s"
 msgstr "Tijdens lezen van versie op %s"
 
-#: misc/mke2fs.c:117
+#: misc/mke2fs.c:114
 #, c-format
 msgid ""
 "Usage: %s [-c|-l filename] [-b block-size] [-C cluster-size]\n"
@@ -4012,47 +4134,54 @@ msgid ""
 "\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 "\t[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]\n"
 "\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]\n"
-"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-count]\n"
+"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-"
+"count]\n"
 msgstr ""
 "Gebruik:  %s [-b blokgrootte] [-c|-l bestandsnaam] [-C clustergrootte]\n"
 "          [-g blokken_per_groep] [-G flexgroepgrootte] [-i bytes_per_inode]\n"
-"          [-I inode-grootte] [-J journal-opties] [-L label] [-N aantal_inodes]\n"
-"          [-m percentage_gereserveerde_blokken] [-M laatste_aankoppelingspunt]\n"
-"          [-o naam_van_aanmakende_besturingssyteem] [-O functie[,...]] [-U UUID]\n"
-"          [-r bestandssysteemversie] [-t bestandssysteemsoort] [-T gebruikstype]\n"
-"          [-E uitgebreide_optie[,...]] [-jnqvDFKSV]  apparaat  [aantal_blokken]\n"
+"          [-I inode-grootte] [-J journal-opties] [-L label] [-N "
+"aantal_inodes]\n"
+"          [-m percentage_gereserveerde_blokken] [-M "
+"laatste_aankoppelingspunt]\n"
+"          [-o naam_van_aanmakende_besturingssyteem] [-O functie[,...]] [-U "
+"UUID]\n"
+"          [-r bestandssysteemversie] [-t bestandssysteemsoort] [-T "
+"gebruikstype]\n"
+"          [-E uitgebreide_optie[,...]] [-jnqvDFKSV]  apparaat  "
+"[aantal_blokken]\n"
 
-#: misc/mke2fs.c:220
+#: misc/mke2fs.c:217
 #, c-format
 msgid "Running command: %s\n"
 msgstr "Uitgevoerde opdracht is: %s\n"
 
-#: misc/mke2fs.c:224
+#: misc/mke2fs.c:221
 #, c-format
 msgid "while trying to run '%s'"
 msgstr "tijdens uitvoering van '%s'"
 
-#: misc/mke2fs.c:231
+#: misc/mke2fs.c:228
 msgid "while processing list of bad blocks from program"
 msgstr "tijdens verwerken van de gemaakte lijst van slechte blokken"
 
-#: misc/mke2fs.c:258
+#: misc/mke2fs.c:255
 #, c-format
 msgid "Block %d in primary superblock/group descriptor area bad.\n"
-msgstr "Blok %d in het primaire superblok of de groepsbeschrijvers is slecht.\n"
+msgstr ""
+"Blok %d in het primaire superblok of de groepsbeschrijvers is slecht.\n"
 
-#: misc/mke2fs.c:260
+#: misc/mke2fs.c:257
 #, c-format
 msgid "Blocks %u through %u must be good in order to build a filesystem.\n"
 msgstr ""
 "Blokken %u tot en met %u moeten goed zijn\n"
 "om een bestandssysteem aan te kunnen maken.\n"
 
-#: misc/mke2fs.c:263
+#: misc/mke2fs.c:260
 msgid "Aborting....\n"
 msgstr "Gestopt...\n"
 
-#: misc/mke2fs.c:283
+#: misc/mke2fs.c:280
 #, c-format
 msgid ""
 "Warning: the backup superblock/group descriptors at block %u contain\n"
@@ -4063,15 +4192,15 @@ msgstr ""
 "beginnend bij blok %u, bevat slechte blokken.\n"
 "\n"
 
-#: misc/mke2fs.c:302
+#: misc/mke2fs.c:299
 msgid "while marking bad blocks as used"
 msgstr "tijdens het markeren van slechte blokken (als zijnde in gebruik)"
 
-#: misc/mke2fs.c:319
+#: misc/mke2fs.c:316
 msgid "Writing inode tables: "
 msgstr "Schrijven van inodetabellen: "
 
-#: misc/mke2fs.c:340
+#: misc/mke2fs.c:337
 #, c-format
 msgid ""
 "\n"
@@ -4080,72 +4209,72 @@ msgstr ""
 "\n"
 "Kan %d blokken in inodetabel niet schrijven, beginnend bij %llu: %s\n"
 
-#: misc/mke2fs.c:354 misc/mke2fs.c:2177 misc/mke2fs.c:2431
+#: misc/mke2fs.c:351 misc/mke2fs.c:2175 misc/mke2fs.c:2429
 #, c-format
 msgid "done                            \n"
 msgstr "voltooid                        \n"
 
-#: misc/mke2fs.c:365
+#: misc/mke2fs.c:362
 msgid "while creating root dir"
 msgstr "tijdens aanmaken van hoofdmap"
 
-#: misc/mke2fs.c:372
+#: misc/mke2fs.c:369
 msgid "while reading root inode"
 msgstr "tijdens lezen van hoofd-inode"
 
-#: misc/mke2fs.c:386
+#: misc/mke2fs.c:383
 msgid "while setting root inode ownership"
 msgstr "tijdens zetten van eigenaar van hoofd-inode"
 
-#: misc/mke2fs.c:404
+#: misc/mke2fs.c:401
 msgid "while creating /lost+found"
 msgstr "tijdens aanmaken van /lost+found"
 
-#: misc/mke2fs.c:411
+#: misc/mke2fs.c:408
 msgid "while looking up /lost+found"
 msgstr "tijdens zoeken van /lost+found"
 
-#: misc/mke2fs.c:424
+#: misc/mke2fs.c:421
 msgid "while expanding /lost+found"
 msgstr "tijdens uitbreiden van /lost+found"
 
-#: misc/mke2fs.c:439
+#: misc/mke2fs.c:436
 msgid "while setting bad block inode"
 msgstr "tijdens zetten van slechteblokken-inode"
 
-#: misc/mke2fs.c:466
+#: misc/mke2fs.c:463
 #, c-format
 msgid "Out of memory erasing sectors %d-%d\n"
 msgstr "Onvoldoende geheugen tijdens wissen van sectoren %d-%d.\n"
 
-#: misc/mke2fs.c:476
+#: misc/mke2fs.c:473
 #, c-format
 msgid "Warning: could not read block 0: %s\n"
 msgstr "Waarschuwing: kan blok 0 niet lezen: %s\n"
 
-#: misc/mke2fs.c:492
+#: misc/mke2fs.c:489
 #, c-format
 msgid "Warning: could not erase sector %d: %s\n"
 msgstr "Waarschuwing: kan sector %d niet wissen: %s\n"
 
-#: misc/mke2fs.c:508
+#: misc/mke2fs.c:505
 msgid "while initializing journal superblock"
 msgstr "tijdens initialiseren van het journal-superblok"
 
-#: misc/mke2fs.c:516
+#: misc/mke2fs.c:513
 msgid "Zeroing journal device: "
 msgstr "Nulmaken van journal-apparaat: "
 
-#: misc/mke2fs.c:528
+#: misc/mke2fs.c:525
 #, c-format
 msgid "while zeroing journal device (block %llu, count %d)"
 msgstr "tijdens nulmaken van journal-apparaat (blok %llu, nummer %d)"
 
-#: misc/mke2fs.c:546
+#: misc/mke2fs.c:543
 msgid "while writing journal superblock"
 msgstr "tijdens schrijven van journal-superblok"
 
-#: misc/mke2fs.c:561
+#: misc/mke2fs.c:558
 #, c-format
 msgid ""
 "warning: %llu blocks unused.\n"
@@ -4154,123 +4283,126 @@ msgstr ""
 "Waarschuwing: %llu ongebruikte blokken.\n"
 "\n"
 
-#: misc/mke2fs.c:566
+#: misc/mke2fs.c:563
 #, c-format
 msgid "Filesystem label=%s\n"
 msgstr "Bestandssysteemlabel=%s\n"
 
-#: misc/mke2fs.c:569
+#: misc/mke2fs.c:566
 #, c-format
 msgid "OS type: %s\n"
 msgstr "Soort besturingssysteem: %s\n"
 
-#: misc/mke2fs.c:571
+#: misc/mke2fs.c:568
 #, c-format
 msgid "Block size=%u (log=%u)\n"
 msgstr "Blokgrootte=%u (log=%u)\n"
 
-#: misc/mke2fs.c:575
+#: misc/mke2fs.c:572
 #, c-format
 msgid "Cluster size=%u (log=%u)\n"
 msgstr "Clustergrootte=%u (log=%u)\n"
 
-#: misc/mke2fs.c:579
+#: misc/mke2fs.c:576
 #, c-format
 msgid "Fragment size=%u (log=%u)\n"
 msgstr "Fragmentgrootte=%u (log=%u)\n"
 
-#: misc/mke2fs.c:581
+#: misc/mke2fs.c:578
 #, c-format
 msgid "Stride=%u blocks, Stripe width=%u blocks\n"
 msgstr "'stride'=%u blokken, 'stripe'-breedte=%u blokken\n"
 
-#: misc/mke2fs.c:583
+#: misc/mke2fs.c:580
 #, c-format
 msgid "%u inodes, %llu blocks\n"
 msgstr "%u inodes, %llu blokken\n"
 
-#: misc/mke2fs.c:585
+#: misc/mke2fs.c:582
 #, c-format
 msgid "%llu blocks (%2.2f%%) reserved for the super user\n"
 msgstr "%llu blokken (%2.2f%%) gereserveerd voor systeembeheer\n"
 
-#: misc/mke2fs.c:588
+#: misc/mke2fs.c:585
 #, c-format
 msgid "First data block=%u\n"
 msgstr "Eerste gegevensblok=%u\n"
 
-#: misc/mke2fs.c:590
+#: misc/mke2fs.c:587
 #, c-format
 msgid "Maximum filesystem blocks=%lu\n"
 msgstr "Maximum aantal bestandssysteemblokken=%lu\n"
 
-#: misc/mke2fs.c:594
+#: misc/mke2fs.c:591
 #, c-format
 msgid "%u block groups\n"
 msgstr "%u blokgroepen\n"
 
-#: misc/mke2fs.c:596
+#: misc/mke2fs.c:593
 #, c-format
 msgid "%u block group\n"
 msgstr "%u blokgroep\n"
 
-#: misc/mke2fs.c:599
+#: misc/mke2fs.c:596
 #, c-format
 msgid "%u blocks per group, %u clusters per group\n"
 msgstr "%u blokken per groep, %u clusters per groep\n"
 
-#: misc/mke2fs.c:602
+#: misc/mke2fs.c:599
 #, c-format
 msgid "%u blocks per group, %u fragments per group\n"
 msgstr "%u blokken per groep, %u fragmenten per groep\n"
 
 # src/main.c:425
-#: misc/mke2fs.c:604
+#: misc/mke2fs.c:601
 #, c-format
 msgid "%u inodes per group\n"
 msgstr "%u inodes per groep\n"
 
-#: misc/mke2fs.c:611
+#: misc/mke2fs.c:608
 #, c-format
 msgid "Superblock backups stored on blocks: "
 msgstr "Superblokreservekopieën opgeslagen in blokken: "
 
-#: misc/mke2fs.c:690 misc/tune2fs.c:1165
+#: misc/mke2fs.c:687 misc/tune2fs.c:1165
 #, c-format
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr "Ongeldig mmp_update_interval: %s\n"
 
-#: misc/mke2fs.c:704
+#: misc/mke2fs.c:701
 #, c-format
 msgid "Invalid stride parameter: %s\n"
 msgstr "Ongeldig argument van 'stride': %s\n"
 
-#: misc/mke2fs.c:719
+#: misc/mke2fs.c:716
 #, c-format
 msgid "Invalid stripe-width parameter: %s\n"
 msgstr "Ongeldig argument van 'stripe_width': %s\n"
 
-#: misc/mke2fs.c:742
+#: misc/mke2fs.c:739
 #, c-format
 msgid "Invalid resize parameter: %s\n"
 msgstr "Ongeldig argument van 'resize': %s\n"
 
-#: misc/mke2fs.c:749
+#: misc/mke2fs.c:746
 #, c-format
 msgid "The resize maximum must be greater than the filesystem size.\n"
-msgstr "De maximum grootte moet groter zijn dan de huidige bestandssysteemgrootte.\n"
+msgstr ""
+"De maximum grootte moet groter zijn dan de huidige bestandssysteemgrootte.\n"
 
-#: misc/mke2fs.c:773
+#: misc/mke2fs.c:770
 #, c-format
 msgid "On-line resizing not supported with revision 0 filesystems\n"
-msgstr "Live vergroten of verkleinen is niet mogelijk op een bestandssysteem van versie 0.\n"
+msgstr ""
+"Live vergroten of verkleinen is niet mogelijk op een bestandssysteem van "
+"versie 0.\n"
 
-#: misc/mke2fs.c:811
+#: misc/mke2fs.c:808
 #, c-format
 msgid "Invalid quotatype parameter: %s\n"
 msgstr "Ongeldig argument van 'quotatype': %s\n"
 
-#: misc/mke2fs.c:822
+#: misc/mke2fs.c:819
 #, c-format
 msgid ""
 "\n"
@@ -4298,8 +4430,10 @@ msgstr ""
 "hun argument wordt voorafgegaan door een '='-teken.\n"
 "\n"
 "Geldige uitgebreide opties zijn:\n"
-"    stride=<aantal blokken dat samen per RAID-schijf wordt gelezen/geschreven>\n"
-"    stripe_width=<aantal blokken per stripe> (meestal stride × aantal schijven)\n"
+"    stride=<aantal blokken dat samen per RAID-schijf wordt gelezen/"
+"geschreven>\n"
+"    stripe_width=<aantal blokken per stripe> (meestal stride × aantal "
+"schijven)\n"
 "    resize=<maximum grootte van bestandssysteem in blokken>\n"
 "    lazy_itable_init=<0 voor uitschakelen, 1 voor inschakelen>\n"
 "    lazy_journal_init=<0 voor uitschakelen, 1 voor inschakelen>\n"
@@ -4308,7 +4442,7 @@ msgstr ""
 "    nodiscard\n"
 "    quotatype=<usr OF grp>\n"
 
-#: misc/mke2fs.c:842
+#: misc/mke2fs.c:839
 #, c-format
 msgid ""
 "\n"
@@ -4319,7 +4453,7 @@ msgstr ""
 "Waarschuwing: 'stripe'-breedte %u is geen even veelvoud van 'stride' %u.\n"
 "\n"
 
-#: misc/mke2fs.c:881
+#: misc/mke2fs.c:878
 #, c-format
 msgid ""
 "Syntax error in mke2fs config file (%s, line #%d)\n"
@@ -4329,17 +4463,17 @@ msgstr ""
 "    %s\n"
 
 # Dit gaat over het argument van optie -O.
-#: misc/mke2fs.c:894 misc/tune2fs.c:393
+#: misc/mke2fs.c:891 misc/tune2fs.c:393
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr "Ongeldige bestandssysteemfunctie: %s\n"
 
-#: misc/mke2fs.c:906 misc/tune2fs.c:345
+#: misc/mke2fs.c:903 misc/tune2fs.c:345
 #, c-format
 msgid "Invalid mount option set: %s\n"
 msgstr "Ongeldige aankoppelingsoptie: %s\n"
 
-#: misc/mke2fs.c:1046
+#: misc/mke2fs.c:1043
 #, c-format
 msgid ""
 "\n"
@@ -4348,7 +4482,7 @@ msgstr ""
 "\n"
 "Uw mke2fs.conf definieert geen bestandssysteemtype %s.\n"
 
-#: misc/mke2fs.c:1050
+#: misc/mke2fs.c:1047
 #, c-format
 msgid ""
 "You probably need to install an updated mke2fs.conf file.\n"
@@ -4357,12 +4491,12 @@ msgstr ""
 "U dient waarschijnlijk een nieuwer mke2fs.conf-bestand te installeren.\n"
 "\n"
 
-#: misc/mke2fs.c:1054
+#: misc/mke2fs.c:1051
 #, c-format
 msgid "Aborting...\n"
 msgstr "Gestopt...\n"
 
-#: misc/mke2fs.c:1094
+#: misc/mke2fs.c:1091
 #, c-format
 msgid ""
 "\n"
@@ -4373,122 +4507,126 @@ msgstr ""
 "Waarschuwing: bestandssysteemtype %s is niet gedefinieerd in mke2fs.conf\n"
 "\n"
 
-#: misc/mke2fs.c:1252
+#: misc/mke2fs.c:1249
 #, c-format
 msgid "Couldn't allocate memory for new PATH.\n"
 msgstr "Kan geen geheugen reserveren voor nieuwe PATH.\n"
 
-#: misc/mke2fs.c:1293
+#: misc/mke2fs.c:1290
 #, c-format
 msgid "Couldn't init profile successfully (error: %ld).\n"
 msgstr "Initialiseren van profile is mislukt (fout: %ld).\n"
 
-#: misc/mke2fs.c:1333
+#: misc/mke2fs.c:1330
 #, c-format
 msgid "invalid block size - %s"
 msgstr "ongeldige blokgrootte: %s"
 
-#: misc/mke2fs.c:1337
+#: misc/mke2fs.c:1334
 #, c-format
 msgid "Warning: blocksize %d not usable on most systems.\n"
-msgstr "Waarschuwing: blokgrootte %d is op de meeste systemen niet bruikbaar.\n"
+msgstr ""
+"Waarschuwing: blokgrootte %d is op de meeste systemen niet bruikbaar.\n"
 
-#: misc/mke2fs.c:1353
+#: misc/mke2fs.c:1350
 #, c-format
 msgid "invalid cluster size - %s"
 msgstr "ongeldige clustergrootte: %s"
 
-#: misc/mke2fs.c:1365
+#: misc/mke2fs.c:1362
 msgid "Illegal number for blocks per group"
 msgstr "Ongeldig aantal blokken per groep"
 
-#: misc/mke2fs.c:1370
+#: misc/mke2fs.c:1367
 msgid "blocks per group must be multiple of 8"
 msgstr "argument van -g (blokken per groep) is geen veelvoud van 8"
 
-#: misc/mke2fs.c:1378
+#: misc/mke2fs.c:1375
 msgid "Illegal number for flex_bg size"
 msgstr "Ongeldig getal voor metagroepgrootte"
 
-#: misc/mke2fs.c:1384
+#: misc/mke2fs.c:1381
 msgid "flex_bg size must be a power of 2"
 msgstr "Metagroepgrootte moet een macht van 2 zijn"
 
-#: misc/mke2fs.c:1394
+#: misc/mke2fs.c:1391
 #, c-format
 msgid "invalid inode ratio %s (min %d/max %d)"
 msgstr "ongeldige inodeverhouding %s (min %d / max %d)"
 
-#: misc/mke2fs.c:1404
+#: misc/mke2fs.c:1401
 #, c-format
-msgid "Warning: -K option is deprecated and should not be used anymore. Use '-E nodiscard' extended option instead!\n"
+msgid ""
+"Warning: -K option is deprecated and should not be used anymore. Use '-E "
+"nodiscard' extended option instead!\n"
 msgstr ""
 "Waarschuwing: optie '-K' is verouderd en zou u niet meer moeten gebruiken;\n"
 "gebruik in plaats daarvan de uitgebreide optie '-E nodiscard'.\n"
 
-#: misc/mke2fs.c:1418
+#: misc/mke2fs.c:1415
 msgid "in malloc for bad_blocks_filename"
 msgstr "onvoldoende geheugen in bad_blocks_filename()"
 
-#: misc/mke2fs.c:1428
+#: misc/mke2fs.c:1425
 #, c-format
 msgid "invalid reserved blocks percent - %s"
 msgstr "ongeldig percentage gereserveerde blokken: %s"
 
 # lib/prange.c:299 lib/prange.c:316
-#: misc/mke2fs.c:1446
+#: misc/mke2fs.c:1443
 #, c-format
 msgid "bad revision level - %s"
 msgstr "ongeldig versienummer: %s"
 
-#: misc/mke2fs.c:1458
+#: misc/mke2fs.c:1455
 #, c-format
 msgid "invalid inode size - %s"
 msgstr "ongeldige grootte van inode: %s"
 
 # lib/prange.c:299 lib/prange.c:316
-#: misc/mke2fs.c:1478
+#: misc/mke2fs.c:1475
 #, c-format
 msgid "bad num inodes - %s"
 msgstr "ongeldig aantal inodes: %s"
 
-#: misc/mke2fs.c:1495
+#: misc/mke2fs.c:1492
 msgid "The -t option may only be used once"
 msgstr "Optie '-t' mag slechts één keer gegeven worden"
 
-#: misc/mke2fs.c:1503
+#: misc/mke2fs.c:1500
 msgid "The -T option may only be used once"
 msgstr "Optie '-T' mag slechts één keer gegeven worden"
 
-#: misc/mke2fs.c:1553 misc/mke2fs.c:2510
+#: misc/mke2fs.c:1550 misc/mke2fs.c:2508
 #, c-format
 msgid "while trying to open journal device %s\n"
 msgstr "tijdens openen van journal-apparaat %s\n"
 
-#: misc/mke2fs.c:1559
+#: misc/mke2fs.c:1556
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
-msgstr "Blokgrootte %d van journal-apparaat is kleiner dan minimum blokgrootte %d.\n"
+msgstr ""
+"Blokgrootte %d van journal-apparaat is kleiner dan minimum blokgrootte %d.\n"
 
-#: misc/mke2fs.c:1565
+#: misc/mke2fs.c:1562
 #, c-format
 msgid "Using journal device's blocksize: %d\n"
 msgstr "Blokgrootte van het journal-apparaat wordt gebruikt: %d\n"
 
-#: misc/mke2fs.c:1576
+#: misc/mke2fs.c:1573
 #, c-format
 msgid "invalid blocks '%s' on device '%s'"
 msgstr "ongeldige blokken '%s' op apparaat '%s'"
 
-#: misc/mke2fs.c:1586
+#: misc/mke2fs.c:1583
 msgid "filesystem"
 msgstr "bestandssysteem"
 
-#: misc/mke2fs.c:1599 resize/main.c:374
+#: misc/mke2fs.c:1596 resize/main.c:374
 msgid "while trying to determine filesystem size"
 msgstr "tijdens bepalen van grootte van bestandssysteem"
 
-#: misc/mke2fs.c:1605
+#: misc/mke2fs.c:1602
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size of the filesystem\n"
@@ -4496,7 +4634,7 @@ msgstr ""
 "Kan de grootte van het apparaat niet bepalen;\n"
 "u dient zelf de grootte van het bestandssysteem aan te geven.\n"
 
-#: misc/mke2fs.c:1612
+#: misc/mke2fs.c:1609
 msgid ""
 "Device size reported to be zero.  Invalid partition specified, or\n"
 "\tpartition table wasn't reread after running fdisk, due to\n"
@@ -4509,16 +4647,16 @@ msgstr ""
 "    in-gebruik-zijn van een gewijzigde partitie.  Mogelijk dient u uw\n"
 "    computer te herstarten om de juiste partitietabel te verkrijgen.\n"
 
-#: misc/mke2fs.c:1629
+#: misc/mke2fs.c:1626
 msgid "Filesystem larger than apparent device size."
 msgstr "Bestandssysteem is groter dan de schijnbare apparaatgrootte."
 
-#: misc/mke2fs.c:1649
+#: misc/mke2fs.c:1646
 #, c-format
 msgid "Failed to parse fs types list\n"
 msgstr "Verwerken van lijst met bestandssysteemsoorten is mislukt\n"
 
-#: misc/mke2fs.c:1703
+#: misc/mke2fs.c:1700
 #, c-format
 msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to be expressed\n"
@@ -4527,31 +4665,34 @@ msgstr ""
 "%s: De grootte (0x%llx blokken) van apparaat %s kan niet uitgedrukt\n"
 "    worden in 32 bits bij een blokgrootte van %d.\n"
 
-#: misc/mke2fs.c:1719
+#: misc/mke2fs.c:1716
 msgid "fs_types for mke2fs.conf resolution: "
 msgstr "Lijst met bestandssysteemsoorten voor mke2fs.conf: "
 
-#: misc/mke2fs.c:1726
+#: misc/mke2fs.c:1723
 #, c-format
 msgid "Filesystem features not supported with revision 0 filesystems\n"
-msgstr "Extra functies worden niet ondersteund op een bestandssysteem van versie 0.\n"
+msgstr ""
+"Extra functies worden niet ondersteund op een bestandssysteem van versie 0.\n"
 
-#: misc/mke2fs.c:1733
+#: misc/mke2fs.c:1730
 #, c-format
 msgid "Sparse superblocks not supported with revision 0 filesystems\n"
-msgstr "Schaarse superblokken zijn niet mogelijk op een bestandssysteem van versie 0.\n"
+msgstr ""
+"Schaarse superblokken zijn niet mogelijk op een bestandssysteem van versie "
+"0.\n"
 
-#: misc/mke2fs.c:1745
+#: misc/mke2fs.c:1742
 #, c-format
 msgid "Journals not supported with revision 0 filesystems\n"
 msgstr "Een journal is niet mogelijk op een bestandssysteem van versie 0.\n"
 
-#: misc/mke2fs.c:1759
+#: misc/mke2fs.c:1756
 #, c-format
 msgid "invalid reserved blocks percent - %lf"
 msgstr "ongeldig percentage gereserveerde blokken: %lf"
 
-#: misc/mke2fs.c:1775
+#: misc/mke2fs.c:1772
 #, c-format
 msgid ""
 "The resize_inode and meta_bg features are not compatible.\n"
@@ -4560,80 +4701,89 @@ msgstr ""
 "De functies 'resize_inode' en 'meta_bg' gaan niet samen.\n"
 "Ze kunnen niet beide ingeschakeld worden.\n"
 
-#: misc/mke2fs.c:1792
+#: misc/mke2fs.c:1789
 msgid "while trying to determine hardware sector size"
 msgstr "tijdens bepalen van de hardware-sectorgrootte"
 
-#: misc/mke2fs.c:1798
+#: misc/mke2fs.c:1795
 msgid "while trying to determine physical sector size"
 msgstr "tijdens bepalen van de fysieke sectorgrootte"
 
-#: misc/mke2fs.c:1831
+#: misc/mke2fs.c:1828
 msgid "while setting blocksize; too small for device\n"
 msgstr "tijdens instellen van de blokgrootte; te klein voor apparaat\n"
 
-#: misc/mke2fs.c:1836
+#: misc/mke2fs.c:1833
 #, c-format
-msgid "Warning: specified blocksize %d is less than device physical sectorsize %d\n"
-msgstr "Waarschuwing: de gegeven blokgrootte %d is kleiner dan de fysieke sectorgrootte %d van het apparaat\n"
+msgid ""
+"Warning: specified blocksize %d is less than device physical sectorsize %d\n"
+msgstr ""
+"Waarschuwing: de gegeven blokgrootte %d is kleiner dan de fysieke "
+"sectorgrootte %d van het apparaat\n"
 
-#: misc/mke2fs.c:1867
+#: misc/mke2fs.c:1864
 #, c-format
 msgid "warning: Unable to get device geometry for %s\n"
 msgstr "Waarschuwing: kan logische schijfopbouw van %s niet verkrijgen.\n"
 
-#: misc/mke2fs.c:1870
+#: misc/mke2fs.c:1867
 #, c-format
 msgid "%s alignment is offset by %lu bytes.\n"
 msgstr "Uitlijning van %s is %lu bytes verschoven.\n"
 
-#: misc/mke2fs.c:1872
+#: misc/mke2fs.c:1869
 #, c-format
-msgid "This may result in very poor performance, (re)-partitioning suggested.\n"
+msgid ""
+"This may result in very poor performance, (re)-partitioning suggested.\n"
 msgstr ""
 "Dit kan zeer slechte prestaties tot gevolg hebben;\n"
 "(her)partitionering wordt aanbevolen.\n"
 
-#: misc/mke2fs.c:1883
+#: misc/mke2fs.c:1880
 #, c-format
 msgid "%d-byte blocks too big for system (max %d)"
 msgstr "Blokken van %d bytes zijn te groot voor dit systeem (max %d)."
 
-#: misc/mke2fs.c:1887
+#: misc/mke2fs.c:1884
 #, c-format
-msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgid ""
+"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
 msgstr ""
 "Waarschuwing: blokken van %d bytes zijn te groot voor dit systeem,\n"
 "het maximum is %d -- maar 'mke2fs' wordt gedwongen uitgevoerd.\n"
 
-#: misc/mke2fs.c:1922
+#: misc/mke2fs.c:1920
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
-msgstr "het reserveren van blokken voor bestandssysteemvergroting wordt niet ondersteund op een niet-schaars bestandssysteem"
+msgstr ""
+"het reserveren van blokken voor bestandssysteemvergroting wordt niet "
+"ondersteund op een niet-schaars bestandssysteem"
 
-#: misc/mke2fs.c:1931
+#: misc/mke2fs.c:1929
 msgid "blocks per group count out of range"
 msgstr "teller van blokken-per-groep ligt buiten het toegestane bereik"
 
-#: misc/mke2fs.c:1946
+#: misc/mke2fs.c:1944
 msgid "Flex_bg feature not enabled, so flex_bg size may not be specified"
-msgstr "De functie 'flex_bg' is niet ingeschakeld, dus de metagroepgrootte mag niet opgegeven worden"
+msgstr ""
+"De functie 'flex_bg' is niet ingeschakeld, dus de metagroepgrootte mag niet "
+"opgegeven worden"
 
-#: misc/mke2fs.c:1958
+#: misc/mke2fs.c:1956
 #, c-format
 msgid "invalid inode size %d (min %d/max %d)"
 msgstr "ongeldige inode-grootte %d (min %d / max %d)"
 
-#: misc/mke2fs.c:1976
+#: misc/mke2fs.c:1974
 #, c-format
 msgid "too many inodes (%llu), raise inode ratio?"
 msgstr "te veel inodes (%llu) -- inodeverhouding verhogen?"
 
-#: misc/mke2fs.c:1983
+#: misc/mke2fs.c:1981
 #, c-format
 msgid "too many inodes (%llu), specify < 2^32 inodes"
 msgstr "te veel inodes (%llu) -- geef minder dan 2^32 op"
 
-#: misc/mke2fs.c:1997
+#: misc/mke2fs.c:1995
 #, c-format
 msgid ""
 "inode_size (%u) * inodes_count (%u) too big for a\n"
@@ -4645,7 +4795,7 @@ msgstr ""
 "   geef een hogere bytes-per-inodeverhouding op (-i),\n"
 "   of verklein het aantal inodes (-N).\n"
 
-#: misc/mke2fs.c:2116
+#: misc/mke2fs.c:2114
 #, c-format
 msgid ""
 "Overwriting existing filesystem; this can be undone using the command:\n"
@@ -4657,42 +4807,44 @@ msgstr ""
 "    e2undo %s %s\n"
 "\n"
 
-#: misc/mke2fs.c:2130
+#: misc/mke2fs.c:2128
 msgid "while trying to setup undo file\n"
 msgstr "tijdens aanmaken van 'undo'-bestand\n"
 
-#: misc/mke2fs.c:2156
+#: misc/mke2fs.c:2154
 msgid "Discarding device blocks: "
 msgstr "Verwerpen van blokken: "
 
-#: misc/mke2fs.c:2172
+#: misc/mke2fs.c:2170
 msgid "failed - "
 msgstr "is mislukt - "
 
-#: misc/mke2fs.c:2279
+#: misc/mke2fs.c:2277
 msgid "while setting up superblock"
 msgstr "tijdens aanmaken van superblok"
 
-#: misc/mke2fs.c:2288
+#: misc/mke2fs.c:2286
 #, c-format
 msgid "Discard succeeded and will return 0s  - skipping inode table wipe\n"
-msgstr "Verwerping is gelukt en zal nullen retourneren -- wissen van inode-tabel wordt overgeslagen\n"
+msgstr ""
+"Verwerping is gelukt en zal nullen retourneren -- wissen van inode-tabel "
+"wordt overgeslagen\n"
 
-#: misc/mke2fs.c:2371
+#: misc/mke2fs.c:2369
 #, c-format
 msgid "unknown os - %s"
 msgstr "onbekend besturingssysteem: %s"
 
-#: misc/mke2fs.c:2423
+#: misc/mke2fs.c:2421
 #, c-format
 msgid "Allocating group tables: "
 msgstr "Reserveren van groepstabellen: "
 
-#: misc/mke2fs.c:2427
+#: misc/mke2fs.c:2425
 msgid "while trying to allocate filesystem tables"
 msgstr "tijdens reserveren van bestandssysteemtabellen"
 
-#: misc/mke2fs.c:2436
+#: misc/mke2fs.c:2434
 msgid ""
 "\n"
 "\twhile converting subcluster bitmap"
@@ -4700,25 +4852,25 @@ msgstr ""
 "\n"
 "    tijdens converteren van subcluster-bitkaart"
 
-#: misc/mke2fs.c:2479
+#: misc/mke2fs.c:2477
 #, c-format
 msgid "while zeroing block %llu at end of filesystem"
 msgstr "tijdens nulmaken van blok %llu aan het eind van het bestandssysteem"
 
-#: misc/mke2fs.c:2492
+#: misc/mke2fs.c:2490
 msgid "while reserving blocks for online resize"
 msgstr "tijdens reserveren van uitbreidingsblokken"
 
-#: misc/mke2fs.c:2503 misc/tune2fs.c:640
+#: misc/mke2fs.c:2501 misc/tune2fs.c:640
 msgid "journal"
 msgstr "journal"
 
-#: misc/mke2fs.c:2515
+#: misc/mke2fs.c:2513
 #, c-format
 msgid "Adding journal to device %s: "
 msgstr "Toevoegen van journal aan apparaat %s: "
 
-#: misc/mke2fs.c:2522
+#: misc/mke2fs.c:2520
 #, c-format
 msgid ""
 "\n"
@@ -4727,22 +4879,22 @@ msgstr ""
 "\n"
 "    tijdens toevoegen van journal aan apparaat %s"
 
-#: misc/mke2fs.c:2527 misc/mke2fs.c:2559 misc/tune2fs.c:669 misc/tune2fs.c:683
+#: misc/mke2fs.c:2525 misc/mke2fs.c:2557 misc/tune2fs.c:669 misc/tune2fs.c:683
 #, c-format
 msgid "done\n"
 msgstr "voltooid\n"
 
-#: misc/mke2fs.c:2536
+#: misc/mke2fs.c:2534
 #, c-format
 msgid "Skipping journal creation in super-only mode\n"
 msgstr "Aanmaken van journal wordt overgeslagen wegens optie '-S'.\n"
 
-#: misc/mke2fs.c:2547
+#: misc/mke2fs.c:2545
 #, c-format
 msgid "Creating journal (%u blocks): "
 msgstr "Aanmaken van journal (%u blokken): "
 
-#: misc/mke2fs.c:2555
+#: misc/mke2fs.c:2553
 msgid ""
 "\n"
 "\twhile trying to create journal"
@@ -4750,28 +4902,29 @@ msgstr ""
 "\n"
 "    tijdens aanmaken van journal"
 
-#: misc/mke2fs.c:2566 misc/tune2fs.c:446
+#: misc/mke2fs.c:2564 misc/tune2fs.c:446
 #, c-format
 msgid ""
 "\n"
 "Error while enabling multiple mount protection feature."
 msgstr ""
 "\n"
-"Fout tijdens inschakelen van MMP (bescherming tegen meervoudige aankoppelingen)."
+"Fout tijdens inschakelen van MMP (bescherming tegen meervoudige "
+"aankoppelingen)."
 
-#: misc/mke2fs.c:2571
+#: misc/mke2fs.c:2569
 #, c-format
 msgid "Multiple mount protection is enabled with update interval %d seconds.\n"
 msgstr ""
 "Bescherming tegen meervoudige aankoppelingen is ingeschakeld\n"
 "met een bijwerkingsinterval van %d seconden.\n"
 
-#: misc/mke2fs.c:2584
+#: misc/mke2fs.c:2582
 #, c-format
 msgid "Writing superblocks and filesystem accounting information: "
 msgstr "Schrijven van superblokken en bestandssysteem-metagegevens: "
 
-#: misc/mke2fs.c:2591
+#: misc/mke2fs.c:2589
 #, c-format
 msgid ""
 "\n"
@@ -4780,7 +4933,7 @@ msgstr ""
 "\n"
 "Waarschuwing: problemen tijdens schrijven van superblokken."
 
-#: misc/mke2fs.c:2593
+#: misc/mke2fs.c:2591
 #, c-format
 msgid ""
 "done\n"
@@ -4839,16 +4992,19 @@ msgstr "Controleer het bestandssysteem met 'e2fsck'.\n"
 msgid ""
 "Usage: %s [-c max_mounts_count] [-e errors_behavior] [-g group]\n"
 "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
-"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p mmp_update_interval]\n"
+"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p "
+"mmp_update_interval]\n"
 "\t[-r reserved_blocks_count] [-u user] [-C mount_count] [-L volume_label]\n"
 "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
 "\t[-E extended-option[,...]] [-T last_check_time] [-U UUID]\n"
 "\t[ -I new_inode_size ] device\n"
 msgstr ""
 "Gebruik:  %s [-c maximum_aantal_aankoppelingen] [-C aankoppelingental]\n"
-"          [-e gedrag_bij_fouten] [-E uitgebreide_optie[,...]] [-f] [-g groep]\n"
+"          [-e gedrag_bij_fouten] [-E uitgebreide_optie[,...]] [-f] [-g "
+"groep]\n"
 "          [-i interval[d|w|m]] [-j] [-J journal-opties] [-l] [-L label]\n"
-"          [-m percentage_gereserveerde_blokken] [-M laatste_aankoppelingspunt]\n"
+"          [-m percentage_gereserveerde_blokken] [-M "
+"laatste_aankoppelingspunt]\n"
 "          [-o [^]aankoppelingsopties[,...]] [-O [^]functie[,...]]\n"
 "          [-p MMP-bijwerkingsinterval] [-r aantal_gereserveerde_blokken]\n"
 "          [-T tijdstip_van_laatste_controle] [-u gebruiker] [-U UUID]\n"
@@ -5033,7 +5189,8 @@ msgid ""
 "\n"
 "Bad quota options specified.\n"
 "\n"
-"Following valid quota options are available (pass by separating with comma):\n"
+"Following valid quota options are available (pass by separating with "
+"comma):\n"
 "\t[^]usrquota\n"
 "\t[^]grpquota\n"
 "\n"
@@ -5115,7 +5272,8 @@ msgstr "MMP-bijwerkingsinterval is te groot: %lu\n"
 #: misc/tune2fs.c:1179
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
-msgid_plural "Setting multiple mount protection update interval to %lu seconds\n"
+msgid_plural ""
+"Setting multiple mount protection update interval to %lu seconds\n"
 msgstr[0] "Het MMP-bijwerkingsinterval is op %lu seconde gezet\n"
 msgstr[1] "Het MMP-bijwerkingsinterval is op %lu seconden gezet\n"
 
@@ -5167,8 +5325,10 @@ msgstr ""
 "    clear_mmp\n"
 "    hash_alg=<hash-algoritme>\n"
 "    mount_opts=<uitgebreide standaard aankoppelingsopties>\n"
-"    stride=<aantal blokken dat samen per RAID-schijf wordt gelezen/geschreven>\n"
-"    stripe_width=<aantal blokken per stripe> (meestal stride × aantal schijven)\n"
+"    stride=<aantal blokken dat samen per RAID-schijf wordt gelezen/"
+"geschreven>\n"
+"    stripe_width=<aantal blokken per stripe> (meestal stride × aantal "
+"schijven)\n"
 "    test_fs\n"
 "    ^test_fs\n"
 
@@ -5186,7 +5346,8 @@ msgstr "te verplaatsen blokken"
 
 #: misc/tune2fs.c:1748
 msgid "Failed to allocate block bitmap when increasing inode size\n"
-msgstr "Reserveren van blok-bitkaart tijdens inode-grootteverandering is mislukt.\n"
+msgstr ""
+"Reserveren van blok-bitkaart tijdens inode-grootteverandering is mislukt.\n"
 
 #: misc/tune2fs.c:1754
 msgid "Not enough space to increase inode size \n"
@@ -5194,7 +5355,8 @@ msgstr "Er is onvoldoende ruimte om de inode-grootte te vergroten. \n"
 
 #: misc/tune2fs.c:1759
 msgid "Failed to relocate blocks during inode resize \n"
-msgstr "Herplaatsen van blokken tijdens inode-grootteverandering is mislukt. \n"
+msgstr ""
+"Herplaatsen van blokken tijdens inode-grootteverandering is mislukt. \n"
 
 #: misc/tune2fs.c:1791
 msgid ""
@@ -5330,7 +5492,8 @@ msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr "Fout in gebruik van 'clear_mmp'.  Het moet samengaan met '-f'.\n"
 
 #: misc/tune2fs.c:2120
-msgid "The quota feature may only be changed when the filesystem is unmounted.\n"
+msgid ""
+"The quota feature may only be changed when the filesystem is unmounted.\n"
 msgstr ""
 "De quota-functie mag alleen gewijzigd worden wanneer het bestandssysteem\n"
 "ontkoppeld is.\n"
@@ -5717,7 +5880,8 @@ msgstr "Ongeldige nieuwe grootte: %s\n"
 
 #: resize/main.c:392
 msgid "New size too large to be expressed in 32 bits\n"
-msgstr "Nieuwe grootte is te groot om uitgedrukt te kunnen worden in 32 bits.\n"
+msgstr ""
+"Nieuwe grootte is te groot om uitgedrukt te kunnen worden in 32 bits.\n"
 
 #: resize/main.c:404
 #, c-format
@@ -5751,7 +5915,9 @@ msgstr ""
 #: resize/main.c:456
 #, c-format
 msgid "Resizing the filesystem on %s to %llu (%dk) blocks.\n"
-msgstr "Van grootte veranderen van bestandssysteem op %s naar %llu blokken (van %dK).\n"
+msgstr ""
+"Van grootte veranderen van bestandssysteem op %s naar %llu blokken (van "
+"%dK).\n"
 
 #: resize/main.c:465
 #, c-format
@@ -5835,7 +6001,9 @@ msgstr "Tijdens toevoegen van groep #%d"
 
 #: resize/online.c:227
 #, c-format
-msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
+msgid ""
+"Filesystem at %s is mounted on %s, and on-line resizing is not supported on "
+"this system.\n"
 msgstr ""
 "Bestandssysteem op %s is aangekoppled op %s;\n"
 "op dit systeem is live vergroten/verkleinen niet mogelijk.\n"
@@ -5859,7 +6027,8 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Zou nooit mogen gebeuren: de 'resize'-inode is beschadigd!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.2"
+#, fuzzy
+msgid "EXT2FS Library version 1.42.4"
 msgstr "EXT2FS-bibliotheek  versie 1.42.2"
 
 #: lib/ext2fs/ext2_err.c:12
@@ -5944,7 +6113,8 @@ msgstr "Bestandssysteemrevisie is te hoog"
 
 #: lib/ext2fs/ext2_err.c:32
 msgid "Attempt to write to filesystem opened read-only"
-msgstr "Poging tot schrijven naar bestandssysteem dat geopend is voor alleen-lezen"
+msgstr ""
+"Poging tot schrijven naar bestandssysteem dat geopend is voor alleen-lezen"
 
 #: lib/ext2fs/ext2_err.c:33
 msgid "Can't read group descriptors"
@@ -6036,7 +6206,8 @@ msgstr "**Interne programmafout** in ext2fs_expand_dir()"
 
 #: lib/ext2fs/ext2_err.c:55
 msgid "Not enough space to build proposed filesystem"
-msgstr "Er is onvoldoende ruimte om het voorgestelde bestandssysteem te creëren"
+msgstr ""
+"Er is onvoldoende ruimte om het voorgestelde bestandssysteem te creëren"
 
 #: lib/ext2fs/ext2_err.c:56
 msgid "Illegal block number passed to ext2fs_mark_block_bitmap"
@@ -6068,7 +6239,8 @@ msgstr "Poging om het eind van blok-bitkaart voorbij het echte eind te smurfen"
 
 #: lib/ext2fs/ext2_err.c:63
 msgid "Attempt to fudge end of inode bitmap past the real end"
-msgstr "Poging om het eind van inode-bitkaart voorbij het echte eind te smurfen"
+msgstr ""
+"Poging om het eind van inode-bitkaart voorbij het echte eind te smurfen"
 
 #: lib/ext2fs/ext2_err.c:64
 msgid "Illegal indirect block found"
@@ -6459,7 +6631,8 @@ msgstr "Profile-relatie niet gevonden"
 
 #: e2fsck/prof_err.c:15
 msgid "Attempt to add a relation to node which is not a section"
-msgstr "Poging tot het toevoegen van een relatie aan een knoop die geen sectie is"
+msgstr ""
+"Poging tot het toevoegen van een relatie aan een knoop die geen sectie is"
 
 #: e2fsck/prof_err.c:16
 msgid "A profile section header has a non-zero value"
@@ -6566,11 +6739,18 @@ msgstr "Ongeldig geheel getal"
 msgid "Bad magic value in profile_file_data_t"
 msgstr "Ongeldig magisch getal in 'profile_file_data_t'"
 
+#~ msgid "%s is mounted.  "
+#~ msgstr "Partitie %s is aangekoppeld.  "
+
 #~ msgid "@g %g @b @B uninitialized but @i @B in use.\n"
-#~ msgstr "Groepsbeschrijver %g heeft een ongeïnitialiseerde blok-bitkaart maar de inode-bitkaart is in gebruik.\n"
+#~ msgstr ""
+#~ "Groepsbeschrijver %g heeft een ongeïnitialiseerde blok-bitkaart maar de "
+#~ "inode-bitkaart is in gebruik.\n"
 
 #~ msgid "@i %i should not have EOFBLOCKS_FL set (size %Is, lblk %r)\n"
-#~ msgstr "Inode %i zou niet de 'EOFBLOCKS_FL'-vlag gezet moeten hebben (grootte %Is, lblk %r)\n"
+#~ msgstr ""
+#~ "Inode %i zou niet de 'EOFBLOCKS_FL'-vlag gezet moeten hebben (grootte "
+#~ "%Is, lblk %r)\n"
 
 #~ msgid "Couldn't determine journal size"
 #~ msgstr "Kan journal-grootte niet bepalen"
@@ -6591,7 +6771,9 @@ msgstr "Ongeldig magisch getal in 'profile_file_data_t'"
 #~ msgstr "ongeldige fragmentgrootte: %s"
 
 #~ msgid "Warning: fragments not supported.  Ignoring -f option\n"
-#~ msgstr "Waarschuwing: fragmenten worden niet ondersteund; optie '-f' wordt genegeerd\n"
+#~ msgstr ""
+#~ "Waarschuwing: fragmenten worden niet ondersteund; optie '-f' wordt "
+#~ "genegeerd\n"
 
 #~ msgid "Calling BLKDISCARD from %llu to %llu "
 #~ msgstr "Aanroepen van BLKDISCARD van %llu tot %llu "
@@ -6603,13 +6785,16 @@ msgstr "Ongeldig magisch getal in 'profile_file_data_t'"
 #~ msgstr "Journal is NIET verwijderd.\n"
 
 #~ msgid "@S doesn't have has_@j flag, but has ext3 @j %s.\n"
-#~ msgstr "Superblok heeft journal-vlag niet gezet, maar heeft wel een ext3-journal %s.\n"
+#~ msgstr ""
+#~ "Superblok heeft journal-vlag niet gezet, maar heeft wel een ext3-journal "
+#~ "%s.\n"
 
 #~ msgid "Error while deleting extent: %m\n"
 #~ msgstr "Fout tijdens verwijderen van extent: %m\n"
 
 #~ msgid "Recreate journal to make the filesystem ext3 again?\n"
-#~ msgstr "Het journal heraanmaken om het bestandssysteem weer ext3 te maken?\n"
+#~ msgstr ""
+#~ "Het journal heraanmaken om het bestandssysteem weer ext3 te maken?\n"
 
 #~ msgid "bad block size - %s"
 #~ msgstr "ongeldige blokgrootte: %s"
@@ -6630,7 +6815,9 @@ msgstr "Ongeldig magisch getal in 'profile_file_data_t'"
 #~ msgstr "Opvragen van grootte"
 
 #~ msgid "@a in @i %i has a hash (%N) which is @n (must be 0)\n"
-#~ msgstr "Een uitgebreid kenmerk in inode %i heeft een ongeldige hashwaarde (%N, moet 0 zijn).\n"
+#~ msgstr ""
+#~ "Een uitgebreid kenmerk in inode %i heeft een ongeldige hashwaarde (%N, "
+#~ "moet 0 zijn).\n"
 
 #~ msgid "while calling ext2fs_block_iterate"
 #~ msgstr "tijdens aanroep van ext2fs_block_iterate()"
@@ -6648,7 +6835,8 @@ msgstr "Ongeldig magisch getal in 'profile_file_data_t'"
 #~ msgstr "tijdens schrijven van inodetabel (groep %d)"
 
 #~ msgid "Pass 0: Doing byte-swap of filesystem\n"
-#~ msgstr "Stap 0: Omwisseling van hoge en lage bytes in hele bestandssysteem\n"
+#~ msgstr ""
+#~ "Stap 0: Omwisseling van hoge en lage bytes in hele bestandssysteem\n"
 
 #~ msgid ""
 #~ "%s: the filesystem must be freshly checked using fsck\n"
@@ -6694,4 +6882,5 @@ msgstr "Ongeldig magisch getal in 'profile_file_data_t'"
 #~ "\n"
 
 #~ msgid "Warning: %d-byte inodes not usable on older systems\n"
-#~ msgstr "Waarschuwing: inodes van %d bytes zijn onbruikbaar op oudere systemen\n"
+#~ msgstr ""
+#~ "Waarschuwing: inodes van %d bytes zijn onbruikbaar op oudere systemen\n"

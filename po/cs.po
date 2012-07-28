@@ -66,7 +66,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2012-03-27 12:00-0700\n"
+"POT-Creation-Date: 2012-06-12 14:40-0400\n"
 "PO-Revision-Date: 2012-04-10 20:44+0200\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
@@ -76,7 +76,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-#: e2fsck/badblocks.c:23 misc/mke2fs.c:179
+#: e2fsck/badblocks.c:23 misc/mke2fs.c:176
 #, c-format
 msgid "Bad block %u out of range; ignored.\n"
 msgstr "Špatný blok %u mimo rozsah; ignorován.\n"
@@ -89,11 +89,11 @@ msgstr "při kontrole správnosti iuzlu špatných bloků"
 msgid "while reading the bad blocks inode"
 msgstr "při čtení iuzlu špatných bloků"
 
-#: e2fsck/badblocks.c:72 e2fsck/iscan.c:113 e2fsck/scantest.c:110
-#: e2fsck/unix.c:1295 e2fsck/unix.c:1383 misc/badblocks.c:1214
+#: e2fsck/badblocks.c:72 e2fsck/iscan.c:110 e2fsck/scantest.c:107
+#: e2fsck/unix.c:1298 e2fsck/unix.c:1386 misc/badblocks.c:1214
 #: misc/badblocks.c:1222 misc/badblocks.c:1236 misc/badblocks.c:1248
-#: misc/dumpe2fs.c:578 misc/e2image.c:1190 misc/e2image.c:1308
-#: misc/e2image.c:1321 misc/mke2fs.c:195 misc/tune2fs.c:1907 resize/main.c:303
+#: misc/dumpe2fs.c:588 misc/e2image.c:1189 misc/e2image.c:1307
+#: misc/e2image.c:1320 misc/mke2fs.c:192 misc/tune2fs.c:1907 resize/main.c:303
 #, c-format
 msgid "while trying to open %s"
 msgstr "při pokusu otevřít %s"
@@ -103,7 +103,7 @@ msgstr "při pokusu otevřít %s"
 msgid "while trying popen '%s'"
 msgstr "při pokusu popen „%s“"
 
-#: e2fsck/badblocks.c:94 misc/mke2fs.c:202
+#: e2fsck/badblocks.c:94 misc/mke2fs.c:199
 msgid "while reading in list of bad blocks from file"
 msgstr "při načítání seznamu špatných bloků ze souboru"
 
@@ -114,7 +114,8 @@ msgstr "při aktualizaci iuzlu špatných bloků"
 #: e2fsck/badblocks.c:131
 #, c-format
 msgid "Warning: illegal block %u found in bad block inode.  Cleared.\n"
-msgstr "Varování: v iuzlu špatných bloků nalezen nepovolený blok %u. Vymazán.\n"
+msgstr ""
+"Varování: v iuzlu špatných bloků nalezen nepovolený blok %u. Vymazán.\n"
 
 #: e2fsck/ehandler.c:55
 #, c-format
@@ -184,59 +185,59 @@ msgstr ""
 "ioctl BLKFLSBUF nepodporováno! Nemohu synchronizovat vyrovnávací paměti.\n"
 "\n"
 
-#: e2fsck/iscan.c:47
+#: e2fsck/iscan.c:44
 #, c-format
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr "Použití: %s [-F] [-I bloky_inode_bufferů] zařízení\n"
 
-#: e2fsck/iscan.c:84 e2fsck/unix.c:930
+#: e2fsck/iscan.c:81 e2fsck/unix.c:930
 #, c-format
 msgid "while opening %s for flushing"
 msgstr "při otevírání %s pro synchronizaci"
 
-#: e2fsck/iscan.c:89 e2fsck/unix.c:936 resize/main.c:276
+#: e2fsck/iscan.c:86 e2fsck/unix.c:936 resize/main.c:276
 #, c-format
 msgid "while trying to flush %s"
 msgstr "při pokusu synchronizovat %s"
 
-#: e2fsck/iscan.c:122 e2fsck/scantest.c:117 misc/e2image.c:1085
+#: e2fsck/iscan.c:119 e2fsck/scantest.c:114 misc/e2image.c:1084
 msgid "while opening inode scan"
 msgstr "při zahájení průchodu iuzly"
 
-#: e2fsck/iscan.c:130 misc/e2image.c:1103
+#: e2fsck/iscan.c:127 misc/e2image.c:1102
 msgid "while getting next inode"
 msgstr "při získávání dalšího iuzlu"
 
-#: e2fsck/iscan.c:139
+#: e2fsck/iscan.c:136
 #, c-format
 msgid "%u inodes scanned.\n"
 msgstr "prozkoumáno %u iuzlů.\n"
 
-#: e2fsck/journal.c:511
+#: e2fsck/journal.c:512
 msgid "reading journal superblock\n"
 msgstr "čtení superbloku žurnálu\n"
 
-#: e2fsck/journal.c:568
+#: e2fsck/journal.c:569
 #, c-format
 msgid "%s: no valid journal superblock found\n"
 msgstr "%s: nenalezen platný superblok žurnálu\n"
 
-#: e2fsck/journal.c:577
+#: e2fsck/journal.c:578
 #, c-format
 msgid "%s: journal too short\n"
 msgstr "%s: žurnál příliš krátký\n"
 
-#: e2fsck/journal.c:864
+#: e2fsck/journal.c:870
 #, c-format
 msgid "%s: recovering journal\n"
 msgstr "%s: obnovuje se žurnál\n"
 
-#: e2fsck/journal.c:866
+#: e2fsck/journal.c:872
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
 msgstr "%s: v režimu jen pro čtení se žurnál obnovovat nebude\n"
 
-#: e2fsck/journal.c:893
+#: e2fsck/journal.c:899
 #, c-format
 msgid "while trying to re-open %s"
 msgstr "při pokusu znovu otevřít %s"
@@ -916,11 +917,13 @@ msgstr "Externí žurnál nepodporuje tento systém souborů\n"
 #: e2fsck/problem.c:213
 msgid ""
 "@f @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
+"format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
 "Superblok žurnálu systému souborů je neznámého typu %N (nepodporováno).\n"
-"Je pravděpodobné, že vaše kopie e2fsck je stará a/nebo nepodporuje tento formát žurnálu.\n"
+"Je pravděpodobné, že vaše kopie e2fsck je stará a/nebo nepodporuje tento "
+"formát žurnálu.\n"
 "Je také možné, že superblok žurnálu je poškozen.\n"
 
 #. @-expanded: journal superblock is corrupt.\n
@@ -932,17 +935,23 @@ msgstr "Superblok žurnálu je poškozen.\n"
 #: e2fsck/problem.c:226
 #, c-format
 msgid "@S has_@j flag is clear, but a @j %s is present.\n"
-msgstr "Příznak superbloku has_journal (má_žurnál) není nastaven, avšak žurnálový %s je přítomen.\n"
+msgstr ""
+"Příznak superbloku has_journal (má_žurnál) není nastaven, avšak žurnálový %s "
+"je přítomen.\n"
 
 #. @-expanded: superblock needs_recovery flag is set, but no journal is present.\n
 #: e2fsck/problem.c:231
 msgid "@S needs_recovery flag is set, but no @j is present.\n"
-msgstr "Superblok má nastaven příznak needs_recovery (potřebuje_obnovit), avšak žádný žurnál neexistuje.\n"
+msgstr ""
+"Superblok má nastaven příznak needs_recovery (potřebuje_obnovit), avšak "
+"žádný žurnál neexistuje.\n"
 
 #. @-expanded: superblock needs_recovery flag is clear, but journal has data.\n
 #: e2fsck/problem.c:236
 msgid "@S needs_recovery flag is clear, but @j has data.\n"
-msgstr "Příznak superbloku needs_recovery (potřebuje_obnovit) není nastaven, avšak žurnál obsahuje data.\n"
+msgstr ""
+"Příznak superbloku needs_recovery (potřebuje_obnovit) není nastaven, avšak "
+"žurnál obsahuje data.\n"
 
 #. @-expanded: Clear journal
 #: e2fsck/problem.c:241
@@ -952,7 +961,9 @@ msgstr "Vymazat žurnál"
 #. @-expanded: filesystem has feature flag(s) set, but is a revision 0 filesystem.  
 #: e2fsck/problem.c:246 e2fsck/problem.c:695
 msgid "@f has feature flag(s) set, but is a revision 0 @f.  "
-msgstr "Systém souborů má příznak(y) vlastností nastaveny, ačkoliv se jedná o revizi 0. "
+msgstr ""
+"Systém souborů má příznak(y) vlastností nastaveny, ačkoliv se jedná o revizi "
+"0. "
 
 #. @-expanded: %s orphaned inode %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n
 #: e2fsck/problem.c:251
@@ -984,12 +995,14 @@ msgstr "Neplatný iuzel %i v seznamu osiřelých iuzlů.\n"
 #. @-expanded: journal superblock has an unknown read-only feature flag set.\n
 #: e2fsck/problem.c:276
 msgid "@j @S has an unknown read-only feature flag set.\n"
-msgstr "Superblok žurnálu má nastaven příznak neznámé vlastnosti „jen pro čtení“.\n"
+msgstr ""
+"Superblok žurnálu má nastaven příznak neznámé vlastnosti „jen pro čtení“.\n"
 
 #. @-expanded: journal superblock has an unknown incompatible feature flag set.\n
 #: e2fsck/problem.c:281
 msgid "@j @S has an unknown incompatible feature flag set.\n"
-msgstr "Superblok žurnálu má nastaven příznak neznámé vlastnosti „nekompatibilní“.\n"
+msgstr ""
+"Superblok žurnálu má nastaven příznak neznámé vlastnosti „nekompatibilní“.\n"
 
 #. @-expanded: journal version not supported by this e2fsck.\n
 #: e2fsck/problem.c:286
@@ -1039,7 +1052,9 @@ msgstr "Přesto spustit žurnál"
 #. @-expanded: Recovery flag not set in backup superblock, so running journal anyway.\n
 #: e2fsck/problem.c:312
 msgid "Recovery flag not set in backup @S, so running @j anyway.\n"
-msgstr "Příznak obnovení není nastaven v záložním superbloku, takže přesto spouštím žurnál.\n"
+msgstr ""
+"Příznak obnovení není nastaven v záložním superbloku, takže přesto spouštím "
+"žurnál.\n"
 
 #. @-expanded: Backing up journal inode block information.\n
 #. @-expanded: \n
@@ -1116,7 +1131,8 @@ msgstr "Kontrolní součet deskriptoru skupiny %g je %04x, měl by být %04y. "
 #: e2fsck/problem.c:362
 #, c-format
 msgid "@g descriptor %g marked uninitialized without feature set.\n"
-msgstr "Deskriptor skupiny %g označen jako neinicializovaný bez sady vlastností.\n"
+msgstr ""
+"Deskriptor skupiny %g označen jako neinicializovaný bez sady vlastností.\n"
 
 #. @-expanded: group descriptor %g has invalid unused inodes count %b.  
 #: e2fsck/problem.c:367
@@ -1143,10 +1159,12 @@ msgstr "Příznak test_fs je nastaven (a ext4 je dostupný). "
 #: e2fsck/problem.c:386
 msgid ""
 "@S last mount time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set)  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set)  "
 msgstr ""
 "Čas posledního připojení superbloku leží v budoucnosti.\n"
-"\t(rozdíl menší než den, pravděpodobně jsou chybně nastaveny hardwarové hodiny  "
+"\t(rozdíl menší než den, pravděpodobně jsou chybně nastaveny hardwarové "
+"hodiny  "
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
@@ -1154,15 +1172,18 @@ msgstr ""
 #: e2fsck/problem.c:392
 msgid ""
 "@S last write time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set).  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set).  "
 msgstr ""
 "Čas posledního zápisu superbloku leží v budoucnosti.\n"
-"\t(rozdíl menší než den, pravděpodobně jsou chybně nastaveny hardwarové hodiny. "
+"\t(rozdíl menší než den, pravděpodobně jsou chybně nastaveny hardwarové "
+"hodiny. "
 
 #. @-expanded: One or more block group descriptor checksums are invalid.  
 #: e2fsck/problem.c:398
 msgid "One or more @b @g descriptor checksums are invalid.  "
-msgstr "Jeden nebo více kontrolních součtů deskriptoru skupiny bloků je chybných. "
+msgstr ""
+"Jeden nebo více kontrolních součtů deskriptoru skupiny bloků je chybných. "
 
 #. @-expanded: Setting free inodes count to %j (was %i)\n
 #: e2fsck/problem.c:403
@@ -1174,12 +1195,10 @@ msgstr "Nastavuje se počet volných iuzlů na %j (byl %i)\n"
 msgid "Setting free @bs count to %c (was %b)\n"
 msgstr "Nastavuje se počet volných bloků na %c (byl %b)\n"
 
-#. @-expanded: Making quota inodes hidden.\n
-#. @-expanded: \n
+#. @-expanded: Making quota inode %i (%Q) hidden.\n
 #: e2fsck/problem.c:413
-msgid ""
-"Making @q @is hidden.\n"
-"\n"
+#, fuzzy
+msgid "Making @q @i %i (%Q) hidden.\n"
 msgstr ""
 "Iuzly kvóty se označují jako za skryté.\n"
 "\n"
@@ -1245,17 +1264,20 @@ msgstr "Iuzel %i je adresář nulové délky. "
 #. @-expanded: group %g's block bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:474
 msgid "@g %g's @b @B at %b @C.\n"
-msgstr "Bitmapa bloků skupiny %g v %b koliduje s jiným blokem systému souborů.\n"
+msgstr ""
+"Bitmapa bloků skupiny %g v %b koliduje s jiným blokem systému souborů.\n"
 
 #. @-expanded: group %g's inode bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:479
 msgid "@g %g's @i @B at %b @C.\n"
-msgstr "Bitmapa iuzlů skupiny %g v %b koliduje s jiným blokem systému souborů.\n"
+msgstr ""
+"Bitmapa iuzlů skupiny %g v %b koliduje s jiným blokem systému souborů.\n"
 
 #. @-expanded: group %g's inode table at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:484
 msgid "@g %g's @i table at %b @C.\n"
-msgstr "Tabulka iuzlů skupiny %g v %b koliduje s jiným blokem systému souborů.\n"
+msgstr ""
+"Tabulka iuzlů skupiny %g v %b koliduje s jiným blokem systému souborů.\n"
 
 #. @-expanded: group %g's block bitmap (%b) is bad.  
 #: e2fsck/problem.c:489
@@ -1365,7 +1387,8 @@ msgstr "Primární superblok (%b) je na seznamu špatných bloků.\n"
 #. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
 #: e2fsck/problem.c:572
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
-msgstr "Blok %b v primárních deskriptorech skupin je na seznamu špatných bloků\n"
+msgstr ""
+"Blok %b v primárních deskriptorech skupin je na seznamu špatných bloků\n"
 
 #. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
 #: e2fsck/problem.c:578
@@ -1375,12 +1398,14 @@ msgstr "Varování: superblok skupiny %g (%b) je špatný.\n"
 #. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
 #: e2fsck/problem.c:583
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr "Varování: Kopie deskriptorů skupin ve skupině %g má špatný blok (%b).\n"
+msgstr ""
+"Varování: Kopie deskriptorů skupin ve skupině %g má špatný blok (%b).\n"
 
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
 #: e2fsck/problem.c:589
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
-msgstr "Chyba při programování? Blok #%b bezdůvodně použit v process_bad_blocks.\n"
+msgstr ""
+"Chyba při programování? Blok #%b bezdůvodně použit v process_bad_blocks.\n"
 
 #. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
 #: e2fsck/problem.c:595
@@ -1452,12 +1477,15 @@ msgstr "Chyba při iteraci přes bloky v iuzlu %i: %m\n"
 #. @-expanded: Error storing inode count information (inode=%i, count=%N): %m\n
 #: e2fsck/problem.c:655
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
-msgstr "Chyba při ukládání informace o četnosti iuzlu (iuzel=%i, počet=%N): %m\n"
+msgstr ""
+"Chyba při ukládání informace o četnosti iuzlu (iuzel=%i, počet=%N): %m\n"
 
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
 #: e2fsck/problem.c:660
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr "Chyba při ukládání informace o bloku adresáře (iuzel=%i, blok=%b, čís=%N): %m\n"
+msgstr ""
+"Chyba při ukládání informace o bloku adresáře (iuzel=%i, blok=%b, čís=%N): "
+"%m\n"
 
 #. @-expanded: Error reading inode %i: %m\n
 #: e2fsck/problem.c:666
@@ -1479,14 +1507,17 @@ msgid ""
 "Special (@v/socket/fifo/symlink) file (@i %i) has immutable\n"
 "or append-only flag set.  "
 msgstr ""
-"Speciální (zařízení/socket/fifo/symbolický odkaz) soubor (iuzel %i) má nastaven\n"
+"Speciální (zařízení/socket/fifo/symbolický odkaz) soubor (iuzel %i) má "
+"nastaven\n"
 "příznak immutable nebo append-only. "
 
 #. @-expanded: inode %i has compression flag set on filesystem without compression support.  
 #: e2fsck/problem.c:685
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
-msgstr "Iuzel %i má nastaven příznak komprimace na systému souborů bez podpory komprimace. "
+msgstr ""
+"Iuzel %i má nastaven příznak komprimace na systému souborů bez podpory "
+"komprimace. "
 
 #. @-expanded: Special (device/socket/fifo) inode %i has non-zero size.  
 #: e2fsck/problem.c:690
@@ -1513,7 +1544,8 @@ msgstr "Iuzel %i byl součástí seznamu osiřelých iuzlů. "
 #. @-expanded: inodes that were part of a corrupted orphan linked list found.  
 #: e2fsck/problem.c:716
 msgid "@is that were part of a corrupted orphan linked list found.  "
-msgstr "Nalezeny iuzly, které byly součástí poškozeného spojového seznamu osiřelých. "
+msgstr ""
+"Nalezeny iuzly, které byly součástí poškozeného spojového seznamu osiřelých. "
 
 #. @-expanded: error allocating refcount structure (%N): %m\n
 #: e2fsck/problem.c:721
@@ -1593,7 +1625,8 @@ msgstr "%B (%b) způsobuje, že symbolický odkaz je příliš velký. "
 #: e2fsck/problem.c:795
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
-msgstr "Iuzel %i má nastaven příznak INDEX_FL na systému souborů bez podpory htree.\n"
+msgstr ""
+"Iuzel %i má nastaven příznak INDEX_FL na systému souborů bez podpory htree.\n"
 
 #. @-expanded: inode %i has INDEX_FL flag set but is not a directory.\n
 #: e2fsck/problem.c:800
@@ -1616,12 +1649,15 @@ msgstr "Iuzel HTREE adresáře %i má nepodporovanou verzi hashe (%N)\n"
 #: e2fsck/problem.c:815
 #, c-format
 msgid "@h %i uses an incompatible htree root node flag.\n"
-msgstr "Iuzel HTREE adresáře %i používá nekompatibilní příznak kořenového uzlu htree.\n"
+msgstr ""
+"Iuzel HTREE adresáře %i používá nekompatibilní příznak kořenového uzlu "
+"htree.\n"
 
 #. @-expanded: HTREE directory inode %i has a tree depth (%N) which is too big\n
 #: e2fsck/problem.c:820
 msgid "@h %i has a tree depth (%N) which is too big\n"
-msgstr "Iuzel HTREE adresáře %i má hloubku stromu (%N), která je příliš velká\n"
+msgstr ""
+"Iuzel HTREE adresáře %i má hloubku stromu (%N), která je příliš velká\n"
 
 #. @-expanded: Bad block inode has an indirect block (%b) that conflicts with\n
 #. @-expanded: filesystem metadata.  
@@ -1652,17 +1688,21 @@ msgstr "Rozšířený atribut v iuzlu %i má délku jména (%N), která není p
 #. @-expanded: extended attribute in inode %i has a value offset (%N) which is invalid\n
 #: e2fsck/problem.c:846
 msgid "@a in @i %i has a value offset (%N) which is @n\n"
-msgstr "Rozšířený atribut v iuzlu %i má pozici hodnoty (%N), která není platná\n"
+msgstr ""
+"Rozšířený atribut v iuzlu %i má pozici hodnoty (%N), která není platná\n"
 
 #. @-expanded: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
 #: e2fsck/problem.c:851
 msgid "@a in @i %i has a value @b (%N) which is @n (must be 0)\n"
-msgstr "Rozšířený atribut v iuzlu %i má blok hodnot (%N), který není platný (musí být 0)\n"
+msgstr ""
+"Rozšířený atribut v iuzlu %i má blok hodnot (%N), který není platný (musí "
+"být 0)\n"
 
 #. @-expanded: extended attribute in inode %i has a value size (%N) which is invalid\n
 #: e2fsck/problem.c:856
 msgid "@a in @i %i has a value size (%N) which is @n\n"
-msgstr "Rozšířený atribut v iuzlu %i má velikost hodnoty (%N), která není platná\n"
+msgstr ""
+"Rozšířený atribut v iuzlu %i má velikost hodnoty (%N), která není platná\n"
 
 #. @-expanded: extended attribute in inode %i has a hash (%N) which is invalid\n
 #: e2fsck/problem.c:861
@@ -1714,7 +1754,9 @@ msgstr ""
 #: e2fsck/problem.c:892
 #, c-format
 msgid "@i %i has EXTENTS_FL flag set on @f without extents support.\n"
-msgstr "Iuzel %i má nastaven příznak EXTENTS_FL na systému souborů bez podpory rozsahů.\n"
+msgstr ""
+"Iuzel %i má nastaven příznak EXTENTS_FL na systému souborů bez podpory "
+"rozsahů.\n"
 
 #. @-expanded: inode %i is in extent format, but superblock is missing EXTENTS feature\n
 #: e2fsck/problem.c:897
@@ -1824,7 +1866,8 @@ msgstr "Chyba při iteraci přes bloky v iuzlu %i (%s): %m\n"
 #. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
 #: e2fsck/problem.c:989 e2fsck/problem.c:1304
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr "Chyba při úpravě počtu odkazů bloku rozšířených atributů %b (iuzel %i): %m\n"
+msgstr ""
+"Chyba při úpravě počtu odkazů bloku rozšířených atributů %b (iuzel %i): %m\n"
 
 #. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
 #: e2fsck/problem.c:994
@@ -1910,7 +1953,8 @@ msgstr "Položka „%Dn“ v %p (%i) je odkaz na „.“ "
 #. @-expanded: entry '%Dn' in %p (%i) points to inode (%Di) located in a bad block.\n
 #: e2fsck/problem.c:1070
 msgid "@E points to @i (%Di) located in a bad @b.\n"
-msgstr "Položka „%Dn“ v %p (%i) ukazuje na iuzel (%Di) umístěný ve špatném bloku.\n"
+msgstr ""
+"Položka „%Dn“ v %p (%i) ukazuje na iuzel (%Di) umístěný ve špatném bloku.\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to directory %P (%Di).\n
 #: e2fsck/problem.c:1075
@@ -1942,7 +1986,8 @@ msgstr "Chybí „..“ v iuzlu adresáře %i.\n"
 #. @-expanded: First entry '%Dn' (inode=%Di) in directory inode %i (%p) should be '.'\n
 #: e2fsck/problem.c:1100
 msgid "First @e '%Dn' (@i=%Di) in @d @i %i (%p) @s '.'\n"
-msgstr "První položka „%Dn“ (iuzel=%Di) v iuzlu adresáře %i (%p) by měla být „.“\n"
+msgstr ""
+"První položka „%Dn“ (iuzel=%Di) v iuzlu adresáře %i (%p) by měla být „.“\n"
 
 #. @-expanded: Second entry '%Dn' (inode=%Di) in directory inode %i should be '..'\n
 #: e2fsck/problem.c:1105
@@ -2120,7 +2165,9 @@ msgstr "Blok rozšířených atributů pro iuzel %i (%Q) není platný (%If).\n"
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
 #: e2fsck/problem.c:1270
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
-msgstr "Systém souborů obsahuje velké soubory, ale v superbloku nemá příznak LARGE_FILE.\n"
+msgstr ""
+"Systém souborů obsahuje velké soubory, ale v superbloku nemá příznak "
+"LARGE_FILE.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B not referenced\n
 #: e2fsck/problem.c:1275
@@ -2221,12 +2268,16 @@ msgstr "Neočekávaný blok v iuzlu HTREE adresáře %d (%q).\n"
 #. @-expanded: entry '%Dn' in %p (%i) references inode %Di in group %g where _INODE_UNINIT is set.\n
 #: e2fsck/problem.c:1358
 msgid "@E references @i %Di in @g %g where _INODE_UNINIT is set.\n"
-msgstr "Položka „%Di“ v %p (%i) odkazuje na iuzel %Di ve skupině %g, kde je nastaveno _INODE_UNINIT.\n"
+msgstr ""
+"Položka „%Di“ v %p (%i) odkazuje na iuzel %Di ve skupině %g, kde je "
+"nastaveno _INODE_UNINIT.\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) references inode %Di found in group %g's unused inodes area.\n
 #: e2fsck/problem.c:1363
 msgid "@E references @i %Di found in @g %g's unused inodes area.\n"
-msgstr "Položka „%Dn“ v %p (%i) odkazuje na iuzel %Di nalezený ve skupině %g oblasti nepoužitých iuzlů.\n"
+msgstr ""
+"Položka „%Dn“ v %p (%i) odkazuje na iuzel %Di nalezený ve skupině %g oblasti "
+"nepoužitých iuzlů.\n"
 
 #. @-expanded: i_file_acl_hi for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1368
@@ -2302,7 +2353,8 @@ msgstr "ext2fs_new_inode: %m při pokusu vytvořit adresář /lost+found\n"
 #: e2fsck/problem.c:1435
 #, c-format
 msgid "ext2fs_new_dir_@b: %m while creating new @d @b\n"
-msgstr "ext2fs_new_dir_block: %m při pokusu vytváření nového adresáře /lost+found\n"
+msgstr ""
+"ext2fs_new_dir_block: %m při pokusu vytváření nového adresáře /lost+found\n"
 
 #. @-expanded: ext2fs_write_dir_block: %m while writing the directory block for /lost+found\n
 #: e2fsck/problem.c:1440
@@ -2471,8 +2523,12 @@ msgstr "Počet volných bloků špatně (%b, spočteno=%c).\n"
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:1638
-msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
-msgstr "CHYBA PŘI PROGRAMOVÁNÍ: hranice (%b, %c) bitmapy systému souborů (#%N) neodpovídají vypočteným hranicím bitmapy (%i, %j)\n"
+msgid ""
+"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
+"endpoints (%i, %j)\n"
+msgstr ""
+"CHYBA PŘI PROGRAMOVÁNÍ: hranice (%b, %c) bitmapy systému souborů (#%N) "
+"neodpovídají vypočteným hranicím bitmapy (%i, %j)\n"
 
 #: e2fsck/problem.c:1644
 msgid "Internal error: fudging end of bitmap (%N)\n"
@@ -2494,65 +2550,73 @@ msgstr "Chyba při kopírování do náhradní bitmapy bloků: %m\n"
 #: e2fsck/problem.c:1679
 #, c-format
 msgid "@g %g @b(s) in use but @g is marked BLOCK_UNINIT\n"
-msgstr "Blok(y) skupiny %g je/jsou používán(y), ale skupina je označena jako BLOCK_UNINIT\n"
+msgstr ""
+"Blok(y) skupiny %g je/jsou používán(y), ale skupina je označena jako "
+"BLOCK_UNINIT\n"
 
 #. @-expanded: group %g inode(s) in use but group is marked INODE_UNINIT\n
 #: e2fsck/problem.c:1684
 #, c-format
 msgid "@g %g @i(s) in use but @g is marked INODE_UNINIT\n"
-msgstr "Iuzel/iuzly skupiny %g je/jsou používán(y), ale skupina je označena jako INODE_UNINIT\n"
+msgstr ""
+"Iuzel/iuzly skupiny %g je/jsou používán(y), ale skupina je označena jako "
+"INODE_UNINIT\n"
 
 #. @-expanded: Recreate journal
 #: e2fsck/problem.c:1691
 msgid "Recreate @j"
 msgstr "Znovu vytvořit žurnál"
 
-#: e2fsck/problem.c:1810
+#: e2fsck/problem.c:1696
+msgid "Update quota info for quota type %N"
+msgstr ""
+
+#: e2fsck/problem.c:1815
 #, c-format
 msgid "Unhandled error code (0x%x)!\n"
 msgstr "Neobsloužený kód chyby (0x%x)!\n"
 
-#: e2fsck/problem.c:1935 e2fsck/problem.c:1939
+#: e2fsck/problem.c:1940 e2fsck/problem.c:1944
 msgid "IGNORED"
 msgstr "IGNOROVÁNO"
 
-#: e2fsck/scantest.c:82
+#: e2fsck/scantest.c:79
 #, c-format
 msgid "Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n"
 msgstr "Použitá paměť: %d, strávený čas: %6.3f/%6.3f/%6.3f\n"
 
-#: e2fsck/scantest.c:101
+#: e2fsck/scantest.c:98
 #, c-format
 msgid "size of inode=%d\n"
 msgstr "velikost iuzlu=%d\n"
 
-#: e2fsck/scantest.c:122
+#: e2fsck/scantest.c:119
 msgid "while starting inode scan"
 msgstr "při spouštění prohlídky iuzlů"
 
-#: e2fsck/scantest.c:133
+#: e2fsck/scantest.c:130
 msgid "while doing inode scan"
 msgstr "při provádění prohlídky iuzlů"
 
-#: e2fsck/super.c:187
+#: e2fsck/super.c:188
 #, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
 msgstr "při volání ext2fs_block_iterate pro iuzel %d"
 
-#: e2fsck/super.c:210
+#: e2fsck/super.c:211
 #, c-format
 msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
 msgstr "při volání ext2fs_adjust_ea_refcount2 pro iuzel %d"
 
-#: e2fsck/super.c:269
+#: e2fsck/super.c:272
 msgid "Truncating"
 msgstr "Usekávám"
 
-#: e2fsck/super.c:270
+#: e2fsck/super.c:273
 msgid "Clearing"
 msgstr "Mažu"
 
-#: e2fsck/unix.c:77
+#: e2fsck/unix.c:74
 #, c-format
 msgid ""
 "Usage: %s [-panyrcdfvtDFV] [-b superblock] [-B blocksize]\n"
@@ -2565,7 +2629,7 @@ msgstr ""
 "\t\t[-l|-L soubor_špatných_bloků] [-C fd] [-j externí_žurnál]\n"
 "\t\t[-E rozšířené-přepínače] zařízení\n"
 
-#: e2fsck/unix.c:83
+#: e2fsck/unix.c:80
 #, c-format
 msgid ""
 "\n"
@@ -2573,7 +2637,8 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock list\n"
+" -c                   Check for bad blocks and add them to the badblock "
+"list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -2581,10 +2646,12 @@ msgstr ""
 " -p                   Automatická oprava (žádné otázky)\n"
 " -n                   Neprovádět žádné změny systému souborů\n"
 " -y                   Předpokládat „ano“ u všech otázek\n"
-" -c                   Hledat špatné bloky a přidat je do seznamu špatných bloků\n"
-" -f                   Vynutit kontrolu, i když je systém souborů označen čistý\n"
+" -c                   Hledat špatné bloky a přidat je do seznamu špatných "
+"bloků\n"
+" -f                   Vynutit kontrolu, i když je systém souborů označen "
+"čistý\n"
 
-#: e2fsck/unix.c:89
+#: e2fsck/unix.c:86
 #, c-format
 msgid ""
 " -v                   Be verbose\n"
@@ -2603,12 +2670,12 @@ msgstr ""
 " -L soubor_špatných_bloků\n"
 "                      Nastavit seznam špatných bloků\n"
 
-#: e2fsck/unix.c:133
+#: e2fsck/unix.c:130
 #, c-format
 msgid "%s: %u/%u files (%0d.%d%% non-contiguous), %llu/%llu blocks\n"
 msgstr "%s: %'u/%'u souborů (%0d,%d %% nesouvislých), %'llu/%'llu bloků\n"
 
-#: e2fsck/unix.c:140
+#: e2fsck/unix.c:137
 #, c-format
 msgid ""
 "\n"
@@ -2626,7 +2693,7 @@ msgstr[2] ""
 "\n"
 "%8u použitých iuzlů (%2.2f %%)\n"
 
-#: e2fsck/unix.c:144
+#: e2fsck/unix.c:141
 #, c-format
 msgid "%8u non-contiguous file (%0d.%d%%)\n"
 msgid_plural "%8u non-contiguous files (%0d.%d%%)\n"
@@ -2634,7 +2701,7 @@ msgstr[0] "%8u nesouvislý soubor (%0d,%d %%)\n"
 msgstr[1] "%8u nesouvislé soubory (%0d,%d %%)\n"
 msgstr[2] "%8u nesouvislých souborů (%0d,%d %%)\n"
 
-#: e2fsck/unix.c:149
+#: e2fsck/unix.c:146
 #, c-format
 msgid "%8u non-contiguous directory (%0d.%d%%)\n"
 msgid_plural "%8u non-contiguous directories (%0d.%d%%)\n"
@@ -2642,16 +2709,16 @@ msgstr[0] "%8u nesouvislý adresář (%0d,%d %%)\n"
 msgstr[1] "%8u nesouvislé adresáře (%0d,%d %%)\n"
 msgstr[2] "%8u nesouvislých adresářů (%0d,%d %%)\n"
 
-#: e2fsck/unix.c:154
+#: e2fsck/unix.c:151
 #, c-format
 msgid "         # of inodes with ind/dind/tind blocks: %u/%u/%u\n"
 msgstr "         Počet iuzlů s ind/dind/tind bloky: %'u/%'u/%'u\n"
 
-#: e2fsck/unix.c:162
+#: e2fsck/unix.c:159
 msgid "         Extent depth histogram: "
 msgstr "         Histogram hloubky rozsahu: "
 
-#: e2fsck/unix.c:171
+#: e2fsck/unix.c:168
 #, c-format
 msgid "%8llu block used (%2.2f%%)\n"
 msgid_plural "%8llu blocks used (%2.2f%%)\n"
@@ -2659,7 +2726,7 @@ msgstr[0] "%8llu použitý blok (%2.2f %%)\n"
 msgstr[1] "%8llu použité bloky (%2.2f %%)\n"
 msgstr[2] "%8llu použitých bloků (%2.2f %%)\n"
 
-#: e2fsck/unix.c:174
+#: e2fsck/unix.c:171
 #, c-format
 msgid "%8u bad block\n"
 msgid_plural "%8u bad blocks\n"
@@ -2667,7 +2734,7 @@ msgstr[0] "%8u chybný blok\n"
 msgstr[1] "%8u chybné bloky\n"
 msgstr[2] "%8u chybných bloků\n"
 
-#: e2fsck/unix.c:176
+#: e2fsck/unix.c:173
 #, c-format
 msgid "%8u large file\n"
 msgid_plural "%8u large files\n"
@@ -2675,7 +2742,7 @@ msgstr[0] "%8u velký soubor\n"
 msgstr[1] "%8u velké soubory\n"
 msgstr[2] "%8u velkých souborů\n"
 
-#: e2fsck/unix.c:178
+#: e2fsck/unix.c:175
 #, c-format
 msgid ""
 "\n"
@@ -2693,7 +2760,7 @@ msgstr[2] ""
 "\n"
 "%8u obyčejných souborů\n"
 
-#: e2fsck/unix.c:180
+#: e2fsck/unix.c:177
 #, c-format
 msgid "%8u directory\n"
 msgid_plural "%8u directories\n"
@@ -2701,7 +2768,7 @@ msgstr[0] "%8u adresář\n"
 msgstr[1] "%8u adresáře\n"
 msgstr[2] "%8u adresářů\n"
 
-#: e2fsck/unix.c:182
+#: e2fsck/unix.c:179
 #, c-format
 msgid "%8u character device file\n"
 msgid_plural "%8u character device files\n"
@@ -2709,7 +2776,7 @@ msgstr[0] "%8u znakové zařízení\n"
 msgstr[1] "%8u znaková zařízení\n"
 msgstr[2] "%8u znakových zařízení\n"
 
-#: e2fsck/unix.c:185
+#: e2fsck/unix.c:182
 #, c-format
 msgid "%8u block device file\n"
 msgid_plural "%8u block device files\n"
@@ -2717,7 +2784,7 @@ msgstr[0] "%8u blokové zařízení\n"
 msgstr[1] "%8u bloková zařízení\n"
 msgstr[2] "%8u blokových zařízení\n"
 
-#: e2fsck/unix.c:187
+#: e2fsck/unix.c:184
 #, c-format
 msgid "%8u fifo\n"
 msgid_plural "%8u fifos\n"
@@ -2725,7 +2792,7 @@ msgstr[0] "%8u roura\n"
 msgstr[1] "%8u roury\n"
 msgstr[2] "%8u rour\n"
 
-#: e2fsck/unix.c:189
+#: e2fsck/unix.c:186
 #, c-format
 msgid "%8u link\n"
 msgid_plural "%8u links\n"
@@ -2733,7 +2800,7 @@ msgstr[0] "%8u odkaz\n"
 msgstr[1] "%8u odkazy\n"
 msgstr[2] "%8u odkazů\n"
 
-#: e2fsck/unix.c:192
+#: e2fsck/unix.c:189
 #, c-format
 msgid "%8u symbolic link"
 msgid_plural "%8u symbolic links"
@@ -2741,7 +2808,7 @@ msgstr[0] "%8u symbolický odkaz"
 msgstr[1] "%8u symbolické odkazy"
 msgstr[2] "%8u symbolických odkazů"
 
-#: e2fsck/unix.c:194
+#: e2fsck/unix.c:191
 #, c-format
 msgid " (%u fast symbolic link)\n"
 msgid_plural " (%u fast symbolic links)\n"
@@ -2749,7 +2816,7 @@ msgstr[0] "(%u rychlý symbolický odkaz)\n"
 msgstr[1] "(%u rychlé symbolické odkazy)\n"
 msgstr[2] "(%u rychlých symbolických odkazů)\n"
 
-#: e2fsck/unix.c:198
+#: e2fsck/unix.c:195
 #, c-format
 msgid "%8u socket\n"
 msgid_plural "%8u sockets\n"
@@ -2757,7 +2824,7 @@ msgstr[0] "%8u socket\n"
 msgstr[1] "%8u sockety\n"
 msgstr[2] "%8u socketů\n"
 
-#: e2fsck/unix.c:201
+#: e2fsck/unix.c:198
 #, c-format
 msgid "%8u file\n"
 msgid_plural "%8u files\n"
@@ -2765,21 +2832,21 @@ msgstr[0] "%8u soubor\n"
 msgstr[1] "%8u soubory\n"
 msgstr[2] "%8u souborů\n"
 
-#: e2fsck/unix.c:215 misc/badblocks.c:983 misc/tune2fs.c:1979 misc/util.c:147
+#: e2fsck/unix.c:212 misc/badblocks.c:983 misc/tune2fs.c:1979 misc/util.c:147
 #: resize/main.c:247
 #, c-format
 msgid "while determining whether %s is mounted."
 msgstr "při zjišťování, jestli je %s připojen."
 
-#: e2fsck/unix.c:233
-#, c-format
-msgid "Warning!  %s is mounted.\n"
+#: e2fsck/unix.c:230
+#, fuzzy, c-format
+msgid "Warning!  %s is %s.\n"
 msgstr "Varování! %s je připojen.\n"
 
-#: e2fsck/unix.c:238
+#: e2fsck/unix.c:237
 #, c-format
-msgid "%s is mounted.  "
-msgstr "%s je připojen. "
+msgid "%s is %s.\n"
+msgstr ""
 
 #: e2fsck/unix.c:240
 msgid ""
@@ -2947,8 +3014,12 @@ msgstr ""
 
 #: e2fsck/unix.c:1089
 #, c-format
-msgid "MMP interval is %u seconds and total wait time is %u seconds. Please wait...\n"
-msgstr "Interval MMP je %u sekund a celková doba čekání je %u sekund. Prosím o strpení…\n"
+msgid ""
+"MMP interval is %u seconds and total wait time is %u seconds. Please "
+"wait...\n"
+msgstr ""
+"Interval MMP je %u sekund a celková doba čekání je %u sekund. Prosím "
+"o strpení…\n"
 
 #: e2fsck/unix.c:1106 e2fsck/unix.c:1111
 msgid "while checking MMP block"
@@ -2959,51 +3030,52 @@ msgid ""
 "If you are sure the filesystem is not in use on any node, run:\n"
 "'tune2fs -f -E clear_mmp {device}'\n"
 msgstr ""
-"Jste-li si jisti, že souborový systém není používán na žádném uzlu, spusťte:\n"
+"Jste-li si jisti, že souborový systém není používán na žádném uzlu, "
+"spusťte:\n"
 "„tune2fs -f -E clear_mmp ZAŘÍZENÍ“\n"
 
-#: e2fsck/unix.c:1162
+#: e2fsck/unix.c:1163
 #, c-format
 msgid "Error: ext2fs library version out of date!\n"
 msgstr "Chyba: stará verze knihovny ext2fs!\n"
 
-#: e2fsck/unix.c:1170
+#: e2fsck/unix.c:1171
 msgid "while trying to initialize program"
 msgstr "při pokusu inicializovat program"
 
-#: e2fsck/unix.c:1193
+#: e2fsck/unix.c:1194
 #, c-format
 msgid "\tUsing %s, %s\n"
 msgstr "\tPoužívám %s, %s\n"
 
-#: e2fsck/unix.c:1205
+#: e2fsck/unix.c:1206
 msgid "need terminal for interactive repairs"
 msgstr "pro interaktivní opravy potřebuji terminál"
 
-#: e2fsck/unix.c:1253
+#: e2fsck/unix.c:1256
 #, c-format
 msgid "%s: %s trying backup blocks...\n"
 msgstr "%s: %s zkouším záložní bloky…\n"
 
-#: e2fsck/unix.c:1255
+#: e2fsck/unix.c:1258
 msgid "Superblock invalid,"
 msgstr "Neplatný superblok,"
 
-#: e2fsck/unix.c:1256
+#: e2fsck/unix.c:1259
 msgid "Group descriptors look bad..."
 msgstr "Deskriptory skupin vypadají špatně…"
 
-#: e2fsck/unix.c:1266
+#: e2fsck/unix.c:1269
 #, c-format
 msgid "%s: %s while using the backup blocks"
 msgstr "%s: %s při použití záložních bloků"
 
-#: e2fsck/unix.c:1270
+#: e2fsck/unix.c:1273
 #, c-format
 msgid "%s: going back to original superblock\n"
 msgstr "%s: návrat k původnímu superbloku\n"
 
-#: e2fsck/unix.c:1298
+#: e2fsck/unix.c:1301
 msgid ""
 "The filesystem revision is apparently too high for this version of e2fsck.\n"
 "(Or the filesystem superblock is corrupt)\n"
@@ -3013,28 +3085,28 @@ msgstr ""
 "(Nebo je superblok systému souborů poškozen)\n"
 "\n"
 
-#: e2fsck/unix.c:1304
+#: e2fsck/unix.c:1307
 msgid "Could this be a zero-length partition?\n"
 msgstr "Mohl by toto být oddíl nulové délky?\n"
 
-#: e2fsck/unix.c:1307
+#: e2fsck/unix.c:1310
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
 msgstr "Musíte mít přístup %s k systému souborů nebo být root\n"
 
-#: e2fsck/unix.c:1312
+#: e2fsck/unix.c:1315
 msgid "Possibly non-existent or swap device?\n"
 msgstr "Pravděpodobně neexistující nebo odkládací zařízení?\n"
 
-#: e2fsck/unix.c:1315
+#: e2fsck/unix.c:1318
 msgid "Filesystem mounted or opened exclusively by another program?\n"
 msgstr "Systém souborů připojen nebo otevřen výlučně jiným programem?\n"
 
-#: e2fsck/unix.c:1318
+#: e2fsck/unix.c:1321
 msgid "Possibly non-existent device?\n"
 msgstr "Pravděpodobně neexistující zařízení?\n"
 
-#: e2fsck/unix.c:1321
+#: e2fsck/unix.c:1324
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
 "check of the device.\n"
@@ -3042,42 +3114,44 @@ msgstr ""
 "Disk chráněn proti zápisu; použijte přepínač -n pro provedení\n"
 "kontroly zařízení jen pro čtení.\n"
 
-#: e2fsck/unix.c:1386
+#: e2fsck/unix.c:1389
 msgid "Get a newer version of e2fsck!"
 msgstr "Sežeňte novější verzi e2fsck!"
 
-#: e2fsck/unix.c:1434
+#: e2fsck/unix.c:1437
 #, c-format
 msgid "while checking ext3 journal for %s"
 msgstr "při kontrole žurnálu ext3 pro %s"
 
-#: e2fsck/unix.c:1445
-msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
+#: e2fsck/unix.c:1448
+msgid ""
+"Warning: skipping journal recovery because doing a read-only filesystem "
+"check.\n"
 msgstr ""
 "Varování: přeskakuji obnovu žurnálu, protože provádím kontrolu systému\n"
 "souborů jen pro čtení.\n"
 
-#: e2fsck/unix.c:1458
+#: e2fsck/unix.c:1461
 #, c-format
 msgid "unable to set superblock flags on %s\n"
 msgstr "nemohu nastavit příznaky superbloku na %s\n"
 
-#: e2fsck/unix.c:1464
+#: e2fsck/unix.c:1467
 #, c-format
 msgid "while recovering ext3 journal of %s"
 msgstr "při obnově žurnálu ext3 %s"
 
-#: e2fsck/unix.c:1489
+#: e2fsck/unix.c:1492
 #, c-format
 msgid "%s has unsupported feature(s):"
 msgstr "%s má nepodporovanou vlastnost(i):"
 
-#: e2fsck/unix.c:1504
+#: e2fsck/unix.c:1507
 #, c-format
 msgid "%s: warning: compression support is experimental.\n"
 msgstr "%s: pozor: podpora komprese je experimentální.\n"
 
-#: e2fsck/unix.c:1510
+#: e2fsck/unix.c:1513
 #, c-format
 msgid ""
 "%s: e2fsck not compiled with HTREE support,\n"
@@ -3086,25 +3160,25 @@ msgstr ""
 "%s: E2fsck nepřeložen s podporou HTREE,\n"
 "\tale systém souborů %s má adresáře HTREE.\n"
 
-#: e2fsck/unix.c:1562
+#: e2fsck/unix.c:1565
 #, c-format
 msgid "%s: %s while reading bad blocks inode\n"
 msgstr "%s: %s při čtení iuzlu špatných bloků\n"
 
-#: e2fsck/unix.c:1565
+#: e2fsck/unix.c:1568
 msgid "This doesn't bode well, but we'll try to go on...\n"
 msgstr "Toto nevypadá dobře, ale zkusíme pokračovat…\n"
 
-#: e2fsck/unix.c:1607
+#: e2fsck/unix.c:1609
 #, c-format
 msgid "Creating journal (%d blocks): "
 msgstr "Vytváří se žurnál (%d bloků): "
 
-#: e2fsck/unix.c:1617
+#: e2fsck/unix.c:1619
 msgid " Done.\n"
 msgstr " Hotovo.\n"
 
-#: e2fsck/unix.c:1618
+#: e2fsck/unix.c:1620
 msgid ""
 "\n"
 "*** journal has been re-created - filesystem is now ext3 again ***\n"
@@ -3112,24 +3186,24 @@ msgstr ""
 "\n"
 "*** žurnál by znovu vytvořen – souborový systém se opět stal ext3 ***\n"
 
-#: e2fsck/unix.c:1630
+#: e2fsck/unix.c:1643
 msgid "Restarting e2fsck from the beginning...\n"
 msgstr "Spouštím e2fsck od začátku…\n"
 
-#: e2fsck/unix.c:1634
+#: e2fsck/unix.c:1647
 msgid "while resetting context"
 msgstr "při nulování kontextu"
 
-#: e2fsck/unix.c:1641
+#: e2fsck/unix.c:1654
 #, c-format
 msgid "%s: e2fsck canceled.\n"
 msgstr "%s: e2fsck přerušen.\n"
 
-#: e2fsck/unix.c:1646
+#: e2fsck/unix.c:1659
 msgid "aborted"
 msgstr "přerušen"
 
-#: e2fsck/unix.c:1658 e2fsck/util.c:67
+#: e2fsck/unix.c:1671 e2fsck/util.c:67
 #, c-format
 msgid ""
 "\n"
@@ -3138,12 +3212,12 @@ msgstr ""
 "\n"
 "%s: ***** SYSTÉM SOUBORŮ BYL ZMĚNĚN *****\n"
 
-#: e2fsck/unix.c:1662
+#: e2fsck/unix.c:1675
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
 msgstr "%s: ***** ZNOVU ZAVEĎTE LINUX *****\n"
 
-#: e2fsck/unix.c:1670 e2fsck/util.c:73
+#: e2fsck/unix.c:1683 e2fsck/util.c:73
 #, c-format
 msgid ""
 "\n"
@@ -3154,7 +3228,7 @@ msgstr ""
 "%s: ********** VAROVÁNÍ: Systém souborů má stále chyby **********\n"
 "\n"
 
-#: e2fsck/unix.c:1710
+#: e2fsck/unix.c:1723
 msgid "while setting block group checksum info"
 msgstr "při nastavování informace o kontrolním součtu skupiny bloků"
 
@@ -3287,8 +3361,11 @@ msgid "while allocating zeroizing buffer"
 msgstr "Při alokaci nulovací vyrovnávací paměti"
 
 #: e2fsck/util.c:788
-msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is running.\n"
-msgstr "NEČEKANÁ NEKONZISTENCE: souborový systém je měněn, zatímco fsck běží.\n"
+msgid ""
+"UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is "
+"running.\n"
+msgstr ""
+"NEČEKANÁ NEKONZISTENCE: souborový systém je měněn, zatímco fsck běží.\n"
 
 #: misc/badblocks.c:69
 msgid "done                                                 \n"
@@ -3298,7 +3375,8 @@ msgstr "hotovo                                               \n"
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e max_bad_blocks]\n"
+"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e "
+"max_bad_blocks]\n"
 "       [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 "       device [last_block [first_block]]\n"
 msgstr ""
@@ -3539,59 +3617,59 @@ msgstr "= je neslučitelné s - a +\n"
 msgid "Must use '-v', =, - or +\n"
 msgstr "Musíte použít '-v', =, - nebo +\n"
 
-#: misc/dumpe2fs.c:54
+#: misc/dumpe2fs.c:55
 #, c-format
 msgid "Usage: %s [-bfhixV] [-o superblock=<num>] [-o blocksize=<num>] device\n"
 msgstr "Použití: %s [-bfhixV] [-o superblock=N] [-o blocksize=N] zařízení\n"
 
 # Unit name after numeric value
-#: misc/dumpe2fs.c:152
+#: misc/dumpe2fs.c:159
 msgid "blocks"
 msgstr "bloků"
 
-#: misc/dumpe2fs.c:161
+#: misc/dumpe2fs.c:168
 msgid "clusters"
 msgstr "clusterů"
 
-#: misc/dumpe2fs.c:189
+#: misc/dumpe2fs.c:196
 #, c-format
 msgid "Group %lu: (Blocks "
 msgstr "Skupina %lu: (Bloky "
 
-#: misc/dumpe2fs.c:197
+#: misc/dumpe2fs.c:204
 #, c-format
 msgid "  Checksum 0x%04x"
 msgstr "  Kontrolní součet 0x%04x"
 
-#: misc/dumpe2fs.c:199
+#: misc/dumpe2fs.c:206
 #, c-format
 msgid " (EXPECTED 0x%04x)"
 msgstr " (OČEKÁVÁNO 0x%04x)"
 
-#: misc/dumpe2fs.c:200
+#: misc/dumpe2fs.c:207
 #, c-format
 msgid ", unused inodes %u\n"
 msgstr ", nepoužitých iuzlů %u\n"
 
-#: misc/dumpe2fs.c:205
+#: misc/dumpe2fs.c:212
 #, c-format
 msgid "  %s superblock at "
 msgstr "  %s superblok v "
 
-#: misc/dumpe2fs.c:206
+#: misc/dumpe2fs.c:213
 msgid "Primary"
 msgstr "Primární"
 
-#: misc/dumpe2fs.c:206
+#: misc/dumpe2fs.c:213
 msgid "Backup"
 msgstr "Záložní"
 
-#: misc/dumpe2fs.c:210
+#: misc/dumpe2fs.c:217
 #, c-format
 msgid ", Group descriptors at "
 msgstr ", Deskriptory skupin v "
 
-#: misc/dumpe2fs.c:214
+#: misc/dumpe2fs.c:221
 #, c-format
 msgid ""
 "\n"
@@ -3600,20 +3678,20 @@ msgstr ""
 "\n"
 "  Rezervované GDT bloky na "
 
-#: misc/dumpe2fs.c:221
+#: misc/dumpe2fs.c:228
 #, c-format
 msgid " Group descriptor at "
 msgstr " Deskriptor skupiny v "
 
-#: misc/dumpe2fs.c:227
+#: misc/dumpe2fs.c:234
 msgid "  Block bitmap at "
 msgstr "  Bitmapa bloků v "
 
-#: misc/dumpe2fs.c:231
+#: misc/dumpe2fs.c:238
 msgid ", Inode bitmap at "
 msgstr ", Bitmapa iuzlů v "
 
-#: misc/dumpe2fs.c:235
+#: misc/dumpe2fs.c:242
 msgid ""
 "\n"
 "  Inode table at "
@@ -3622,7 +3700,7 @@ msgstr ""
 "  Tabulka iuzlů v "
 
 # The second string is i18ned `blocks' or `clusters'
-#: misc/dumpe2fs.c:241
+#: misc/dumpe2fs.c:248
 #, c-format
 msgid ""
 "\n"
@@ -3631,50 +3709,50 @@ msgstr ""
 "\n"
 "  %u volných %s, %u volných iuzlů, %u adresářů%s"
 
-#: misc/dumpe2fs.c:248
+#: misc/dumpe2fs.c:255
 #, c-format
 msgid ", %u unused inodes\n"
 msgstr ", %u nepoužitých iuzlů\n"
 
-#: misc/dumpe2fs.c:251
+#: misc/dumpe2fs.c:258
 msgid "  Free blocks: "
 msgstr "  Volné bloky: "
 
-#: misc/dumpe2fs.c:262
+#: misc/dumpe2fs.c:269
 msgid "  Free inodes: "
 msgstr "  Volné iuzly: "
 
-#: misc/dumpe2fs.c:293
+#: misc/dumpe2fs.c:300
 msgid "while printing bad block list"
 msgstr "při tisku seznamu špatných bloků"
 
-#: misc/dumpe2fs.c:299
+#: misc/dumpe2fs.c:306
 #, c-format
 msgid "Bad blocks: %u"
 msgstr "Špatné bloky: %u"
 
-#: misc/dumpe2fs.c:326 misc/tune2fs.c:302
+#: misc/dumpe2fs.c:333 misc/tune2fs.c:302
 msgid "while reading journal inode"
 msgstr "při čtení iuzlu žurnálu"
 
-#: misc/dumpe2fs.c:332
+#: misc/dumpe2fs.c:339
 msgid "while opening journal inode"
 msgstr "při otevírání iuzlu žurnálu"
 
-#: misc/dumpe2fs.c:338
+#: misc/dumpe2fs.c:345
 msgid "while reading journal super block"
 msgstr "při čtení superbloku žurnálu"
 
-#: misc/dumpe2fs.c:348
+#: misc/dumpe2fs.c:355
 #, c-format
 msgid "Journal features:        "
 msgstr "Vlastnosti žurnálu:      "
 
-#: misc/dumpe2fs.c:361
+#: misc/dumpe2fs.c:368
 msgid "Journal size:             "
 msgstr "Velikost žurnálu:         "
 
-#: misc/dumpe2fs.c:372
+#: misc/dumpe2fs.c:379
 #, c-format
 msgid ""
 "Journal length:           %u\n"
@@ -3685,15 +3763,20 @@ msgstr ""
 "Sekvence žurnálu:         0x%08x\n"
 "Začátek žurnálu:          %u\n"
 
-#: misc/dumpe2fs.c:391 misc/tune2fs.c:218
+#: misc/dumpe2fs.c:386
+#, fuzzy, c-format
+msgid "Journal errno:            %d\n"
+msgstr "Uživatelé žurnálu:        %s\n"
+
+#: misc/dumpe2fs.c:401 misc/tune2fs.c:218
 msgid "while reading journal superblock"
 msgstr "při čtení superbloku žurnálu"
 
-#: misc/dumpe2fs.c:399
+#: misc/dumpe2fs.c:409
 msgid "Couldn't find journal superblock magic numbers"
 msgstr "Nemohu najít magická čísla superbloku žurnálu"
 
-#: misc/dumpe2fs.c:403
+#: misc/dumpe2fs.c:413
 #, c-format
 msgid ""
 "\n"
@@ -3712,27 +3795,27 @@ msgstr ""
 "Začátek žurnálu:          %u\n"
 "Počet uživatelů žurnálu:  %u\n"
 
-#: misc/dumpe2fs.c:416
+#: misc/dumpe2fs.c:426
 #, c-format
 msgid "Journal users:            %s\n"
 msgstr "Uživatelé žurnálu:        %s\n"
 
-#: misc/dumpe2fs.c:432 misc/mke2fs.c:665 misc/tune2fs.c:1137
+#: misc/dumpe2fs.c:442 misc/mke2fs.c:662 misc/tune2fs.c:1137
 #, c-format
 msgid "Couldn't allocate memory to parse options!\n"
 msgstr "Nemohu alokovat paměť pro zpracování přepínačů!\n"
 
-#: misc/dumpe2fs.c:458
+#: misc/dumpe2fs.c:468
 #, c-format
 msgid "Invalid superblock parameter: %s\n"
 msgstr "Neplatný parametr superblok: %s\n"
 
-#: misc/dumpe2fs.c:473
+#: misc/dumpe2fs.c:483
 #, c-format
 msgid "Invalid blocksize parameter: %s\n"
 msgstr "Neplatný parametr blocksize (velikost_bloku): %s\n"
 
-#: misc/dumpe2fs.c:484
+#: misc/dumpe2fs.c:494
 #, c-format
 msgid ""
 "\n"
@@ -3755,18 +3838,18 @@ msgstr ""
 "\tsuperblock=<číslo superbloku>\n"
 "\tblocksize=<velikost bloku>\n"
 
-#: misc/dumpe2fs.c:544 misc/mke2fs.c:1528
+#: misc/dumpe2fs.c:554 misc/mke2fs.c:1525
 #, c-format
 msgid "\tUsing %s\n"
 msgstr "\tPoužívám %s\n"
 
-#: misc/dumpe2fs.c:580 misc/e2image.c:1310 misc/tune2fs.c:1923
+#: misc/dumpe2fs.c:590 misc/e2image.c:1309 misc/tune2fs.c:1923
 #: resize/main.c:305
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Nemohu najít platný superblok systému souborů.\n"
 
-#: misc/dumpe2fs.c:606
+#: misc/dumpe2fs.c:618
 #, c-format
 msgid ""
 "\n"
@@ -3805,7 +3888,7 @@ msgstr "při zápisu bitmapy bloků"
 msgid "while writing inode bitmap"
 msgstr "při zápisu bitmapy iuzlů"
 
-#: misc/e2image.c:1342
+#: misc/e2image.c:1341
 #, c-format
 msgid "while trying to convert qcow2 image (%s) into raw image (%s)"
 msgstr "při pokusu převést obraz qcow2 (%s) do binární obrazu (%s)"
@@ -3902,17 +3985,17 @@ msgstr "Přehraná transakce o velikosti %zd na pozici %llu\n"
 msgid "Failed write %s\n"
 msgstr "Selhal zápis %s\n"
 
-#: misc/fsck.c:344
+#: misc/fsck.c:343
 #, c-format
 msgid "WARNING: couldn't open %s: %s\n"
 msgstr "VAROVÁNÍ: nemohu otevřít %s: %s\n"
 
-#: misc/fsck.c:354
+#: misc/fsck.c:353
 #, c-format
 msgid "WARNING: bad format on line %d of %s\n"
 msgstr "VAROVÁNÍ: špatný formát na řádku %d %s\n"
 
-#: misc/fsck.c:371
+#: misc/fsck.c:370
 msgid ""
 "WARNING: Your /etc/fstab does not contain the fsck passno\n"
 "\tfield.  I will kludge around things for you, but you\n"
@@ -3924,37 +4007,37 @@ msgstr ""
 "\topravit, jak nejdříve budete moci.\n"
 "\n"
 
-#: misc/fsck.c:479
+#: misc/fsck.c:478
 #, c-format
 msgid "fsck: %s: not found\n"
 msgstr "fsck: %s: nenalezen\n"
 
-#: misc/fsck.c:595
+#: misc/fsck.c:594
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
 msgstr "%s: wait: Žádný další synovský proces?!?\n"
 
-#: misc/fsck.c:617
+#: misc/fsck.c:616
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
 msgstr "Varování… %s pro zařízení %s skončil se signálem %d.\n"
 
-#: misc/fsck.c:623
+#: misc/fsck.c:622
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
 msgstr "%s %s: stav je %x, nemělo by se nikdy stát.\n"
 
-#: misc/fsck.c:662
+#: misc/fsck.c:661
 #, c-format
 msgid "Finished with %s (exit status %d)\n"
 msgstr "Dokončen s %s (stav ukončení %d)\n"
 
-#: misc/fsck.c:722
+#: misc/fsck.c:721
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
 msgstr "%s: Chyba %d při spouštění fsck.%s pro %s\n"
 
-#: misc/fsck.c:743
+#: misc/fsck.c:742
 msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
@@ -3962,41 +4045,46 @@ msgstr ""
 "Buď všechny nebo žádný typ systému souborů předaný -t musí mít předponu\n"
 "„no“ nebo „!“.\n"
 
-#: misc/fsck.c:762
+#: misc/fsck.c:761
 msgid "Couldn't allocate memory for filesystem types\n"
 msgstr "Nemohu alokovat paměť pro typy systému souborů\n"
 
-#: misc/fsck.c:885
+#: misc/fsck.c:884
 #, c-format
-msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
+msgid ""
+"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
+"number\n"
 msgstr ""
 "%s: přeskakuji chybný řádek v /etc/fstab: připojení typu bind s nenulovým\n"
 "pořadím průchodu skrze fsck\n"
 
-#: misc/fsck.c:912
+#: misc/fsck.c:911
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
 msgstr "fsck: nemohu zkontrolovat %s: fsck.%s nenalezen\n"
 
-#: misc/fsck.c:968
+#: misc/fsck.c:967
 msgid "Checking all file systems.\n"
 msgstr "Kontrolují se všechny systémy souborů.\n"
 
-#: misc/fsck.c:1059
+#: misc/fsck.c:1058
 #, c-format
 msgid "--waiting-- (pass %d)\n"
 msgstr "--čekám-- (průchod %d)\n"
 
-#: misc/fsck.c:1079
-msgid "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
-msgstr "Použití: fsck [-AMNPRTV] [-C [fd]] [-t typss] [přepínače-ss] [systémsouborů…]\n"
+#: misc/fsck.c:1078
+msgid ""
+"Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
+msgstr ""
+"Použití: fsck [-AMNPRTV] [-C [fd]] [-t typss] [přepínače-ss] "
+"[systémsouborů…]\n"
 
-#: misc/fsck.c:1121
+#: misc/fsck.c:1120
 #, c-format
 msgid "%s: too many devices\n"
 msgstr "%s: příliš mnoho zařízení\n"
 
-#: misc/fsck.c:1154 misc/fsck.c:1240
+#: misc/fsck.c:1153 misc/fsck.c:1239
 #, c-format
 msgid "%s: too many arguments\n"
 msgstr "%s: příliš mnoho argumentů\n"
@@ -4016,7 +4104,7 @@ msgstr "Při čtení příznaků %s"
 msgid "While reading version on %s"
 msgstr "Při čtení verze %s"
 
-#: misc/mke2fs.c:117
+#: misc/mke2fs.c:114
 #, c-format
 msgid ""
 "Usage: %s [-c|-l filename] [-b block-size] [-C cluster-size]\n"
@@ -4025,7 +4113,8 @@ msgid ""
 "\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 "\t[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]\n"
 "\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]\n"
-"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-count]\n"
+"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-"
+"count]\n"
 msgstr ""
 "Použití: %s [-c|-l názevsouboru] [-b velikost-bloku] [-C velkost-clusteru]\n"
 "\t[-i bajtů-na-iuzel] [-I velikost-iuzlu] [-J přepínače-žurnálu]\n"
@@ -4036,35 +4125,35 @@ msgstr ""
 "\t[-E rozšířený-přepínač[,…]] [-t druh-ss] [-T způsob-použití] [-U UUID]\n"
 "\t[-jnqvDFKSV] zařízení [počet-bloků]\n"
 
-#: misc/mke2fs.c:220
+#: misc/mke2fs.c:217
 #, c-format
 msgid "Running command: %s\n"
 msgstr "Spouštím příkaz: %s\n"
 
-#: misc/mke2fs.c:224
+#: misc/mke2fs.c:221
 #, c-format
 msgid "while trying to run '%s'"
 msgstr "při pokusu spustit „%s“"
 
-#: misc/mke2fs.c:231
+#: misc/mke2fs.c:228
 msgid "while processing list of bad blocks from program"
 msgstr "při zpracovávání seznamu špatných bloků z programu"
 
-#: misc/mke2fs.c:258
+#: misc/mke2fs.c:255
 #, c-format
 msgid "Block %d in primary superblock/group descriptor area bad.\n"
 msgstr "Blok %d v oblasti primárního superbloku/deskriptorů skupin špatný.\n"
 
-#: misc/mke2fs.c:260
+#: misc/mke2fs.c:257
 #, c-format
 msgid "Blocks %u through %u must be good in order to build a filesystem.\n"
 msgstr "Bloky %u až %u musí být pro vytvoření systému souborů v pořádku.\n"
 
-#: misc/mke2fs.c:263
+#: misc/mke2fs.c:260
 msgid "Aborting....\n"
 msgstr "Končím…\n"
 
-#: misc/mke2fs.c:283
+#: misc/mke2fs.c:280
 #, c-format
 msgid ""
 "Warning: the backup superblock/group descriptors at block %u contain\n"
@@ -4075,15 +4164,15 @@ msgstr ""
 "\tšpatné bloky.\n"
 "\n"
 
-#: misc/mke2fs.c:302
+#: misc/mke2fs.c:299
 msgid "while marking bad blocks as used"
 msgstr "při označování špatných bloků jako použité"
 
-#: misc/mke2fs.c:319
+#: misc/mke2fs.c:316
 msgid "Writing inode tables: "
 msgstr "Zapisuji tabulky iuzlů: "
 
-#: misc/mke2fs.c:340
+#: misc/mke2fs.c:337
 #, c-format
 msgid ""
 "\n"
@@ -4092,73 +4181,73 @@ msgstr ""
 "\n"
 "Nemohu zapsat %d bloků do tabulky iuzlů počínaje %llu: %s\n"
 
-#: misc/mke2fs.c:354 misc/mke2fs.c:2177 misc/mke2fs.c:2431
+#: misc/mke2fs.c:351 misc/mke2fs.c:2175 misc/mke2fs.c:2429
 #, c-format
 msgid "done                            \n"
 msgstr "hotovo                          \n"
 
-#: misc/mke2fs.c:365
+#: misc/mke2fs.c:362
 msgid "while creating root dir"
 msgstr "při vytváření kořenového adresáře"
 
-#: misc/mke2fs.c:372
+#: misc/mke2fs.c:369
 msgid "while reading root inode"
 msgstr "při čtení kořenového iuzlu"
 
-#: misc/mke2fs.c:386
+#: misc/mke2fs.c:383
 msgid "while setting root inode ownership"
 msgstr "při nastavování vlastnictví kořenového iuzlu"
 
-#: misc/mke2fs.c:404
+#: misc/mke2fs.c:401
 msgid "while creating /lost+found"
 msgstr "při vytváření /lost+found"
 
-#: misc/mke2fs.c:411
+#: misc/mke2fs.c:408
 msgid "while looking up /lost+found"
 msgstr "při vyhledávání /lost+found"
 
-#: misc/mke2fs.c:424
+#: misc/mke2fs.c:421
 msgid "while expanding /lost+found"
 msgstr "při zvětšování /lost+found"
 
-#: misc/mke2fs.c:439
+#: misc/mke2fs.c:436
 msgid "while setting bad block inode"
 msgstr "při nastavování iuzlu špatných bloků"
 
-#: misc/mke2fs.c:466
+#: misc/mke2fs.c:463
 #, c-format
 msgid "Out of memory erasing sectors %d-%d\n"
 msgstr "Nedostatek paměti při mazání sektorů %d-%d\n"
 
-#: misc/mke2fs.c:476
+#: misc/mke2fs.c:473
 #, c-format
 msgid "Warning: could not read block 0: %s\n"
 msgstr "Varování: nemohu načíst blok 0: %s\n"
 
-#: misc/mke2fs.c:492
+#: misc/mke2fs.c:489
 #, c-format
 msgid "Warning: could not erase sector %d: %s\n"
 msgstr "Varování: nemohu vymazat sektor %d: %s\n"
 
-#: misc/mke2fs.c:508
+#: misc/mke2fs.c:505
 msgid "while initializing journal superblock"
 msgstr "při inicializaci superbloku žurnálu"
 
-#: misc/mke2fs.c:516
+#: misc/mke2fs.c:513
 msgid "Zeroing journal device: "
 msgstr "Nuluji zařízení žurnálu: "
 
-#: misc/mke2fs.c:528
+#: misc/mke2fs.c:525
 #, c-format
 msgid "while zeroing journal device (block %llu, count %d)"
 msgstr "při nulování zařízení žurnálu (blok %llu, počet %d)"
 
-#: misc/mke2fs.c:546
+#: misc/mke2fs.c:543
 msgid "while writing journal superblock"
 msgstr "při zápisu superbloku žurnálu"
 
 # TODO pluralize
-#: misc/mke2fs.c:561
+#: misc/mke2fs.c:558
 #, c-format
 msgid ""
 "warning: %llu blocks unused.\n"
@@ -4167,122 +4256,122 @@ msgstr ""
 "pozor: nepoužito %'llu bloků.\n"
 "\n"
 
-#: misc/mke2fs.c:566
+#: misc/mke2fs.c:563
 #, c-format
 msgid "Filesystem label=%s\n"
 msgstr "Jmenovka systému souborů=%s\n"
 
-#: misc/mke2fs.c:569
+#: misc/mke2fs.c:566
 #, c-format
 msgid "OS type: %s\n"
 msgstr "Typ OS: %s\n"
 
-#: misc/mke2fs.c:571
+#: misc/mke2fs.c:568
 #, c-format
 msgid "Block size=%u (log=%u)\n"
 msgstr "Velikost bloku=%u (log=%u)\n"
 
-#: misc/mke2fs.c:575
+#: misc/mke2fs.c:572
 #, c-format
 msgid "Cluster size=%u (log=%u)\n"
 msgstr "Velikost clusteru=%u (log=%u)\n"
 
-#: misc/mke2fs.c:579
+#: misc/mke2fs.c:576
 #, c-format
 msgid "Fragment size=%u (log=%u)\n"
 msgstr "Velikost fragmentu=%u (log=%u)\n"
 
-#: misc/mke2fs.c:581
+#: misc/mke2fs.c:578
 #, c-format
 msgid "Stride=%u blocks, Stripe width=%u blocks\n"
 msgstr "Krok=%u bloků, Šířka pásu=%u bloků\n"
 
-#: misc/mke2fs.c:583
+#: misc/mke2fs.c:580
 #, c-format
 msgid "%u inodes, %llu blocks\n"
 msgstr "%u iuzlů, %llu bloků\n"
 
-#: misc/mke2fs.c:585
+#: misc/mke2fs.c:582
 #, c-format
 msgid "%llu blocks (%2.2f%%) reserved for the super user\n"
 msgstr "%llu bloků (%2.2f %%) rezervováno pro superuživatele\n"
 
-#: misc/mke2fs.c:588
+#: misc/mke2fs.c:585
 #, c-format
 msgid "First data block=%u\n"
 msgstr "První blok dat=%u\n"
 
-#: misc/mke2fs.c:590
+#: misc/mke2fs.c:587
 #, c-format
 msgid "Maximum filesystem blocks=%lu\n"
 msgstr "Maximum bloků v systému souborů=%'lu\n"
 
-#: misc/mke2fs.c:594
+#: misc/mke2fs.c:591
 #, c-format
 msgid "%u block groups\n"
 msgstr "%u skupin bloků\n"
 
-#: misc/mke2fs.c:596
+#: misc/mke2fs.c:593
 #, c-format
 msgid "%u block group\n"
 msgstr "%u skupina bloků\n"
 
-#: misc/mke2fs.c:599
+#: misc/mke2fs.c:596
 #, c-format
 msgid "%u blocks per group, %u clusters per group\n"
 msgstr "%u bloků ve skupině, %u clusterů ve skupině\n"
 
-#: misc/mke2fs.c:602
+#: misc/mke2fs.c:599
 #, c-format
 msgid "%u blocks per group, %u fragments per group\n"
 msgstr "%u bloků ve skupině, %u fragmentů ve skupině\n"
 
-#: misc/mke2fs.c:604
+#: misc/mke2fs.c:601
 #, c-format
 msgid "%u inodes per group\n"
 msgstr "%u iuzlů ve skupině\n"
 
-#: misc/mke2fs.c:611
+#: misc/mke2fs.c:608
 #, c-format
 msgid "Superblock backups stored on blocks: "
 msgstr "Zálohy superbloku uloženy v blocích: "
 
-#: misc/mke2fs.c:690 misc/tune2fs.c:1165
+#: misc/mke2fs.c:687 misc/tune2fs.c:1165
 #, c-format
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr "Neplatný interval_aktualizace_mmp: %s\n"
 
-#: misc/mke2fs.c:704
+#: misc/mke2fs.c:701
 #, c-format
 msgid "Invalid stride parameter: %s\n"
 msgstr "Neplatný parametr kroku (stride): %s\n"
 
-#: misc/mke2fs.c:719
+#: misc/mke2fs.c:716
 #, c-format
 msgid "Invalid stripe-width parameter: %s\n"
 msgstr "Neplatný parametr šířka-pásu (stripe-width): %s\n"
 
-#: misc/mke2fs.c:742
+#: misc/mke2fs.c:739
 #, c-format
 msgid "Invalid resize parameter: %s\n"
 msgstr "Neplatný parametr změny velikosti: %s\n"
 
-#: misc/mke2fs.c:749
+#: misc/mke2fs.c:746
 #, c-format
 msgid "The resize maximum must be greater than the filesystem size.\n"
 msgstr "Maximum změny velkosti musí být větší než velikost systému souborů.\n"
 
-#: misc/mke2fs.c:773
+#: misc/mke2fs.c:770
 #, c-format
 msgid "On-line resizing not supported with revision 0 filesystems\n"
 msgstr "Revize 0 souborového systému nepodporuje změnu velikosti za běhu\n"
 
-#: misc/mke2fs.c:811
+#: misc/mke2fs.c:808
 #, c-format
 msgid "Invalid quotatype parameter: %s\n"
 msgstr "Neplatný parametr druhu kvót: %s\n"
 
-#: misc/mke2fs.c:822
+#: misc/mke2fs.c:819
 #, c-format
 msgid ""
 "\n"
@@ -4321,7 +4410,7 @@ msgstr ""
 "\tquotatype=<druh kvót: usr (uživatelé), nebo grp (skupiny)>\n"
 "\n"
 
-#: misc/mke2fs.c:842
+#: misc/mke2fs.c:839
 #, c-format
 msgid ""
 "\n"
@@ -4332,7 +4421,7 @@ msgstr ""
 "Varování: šířka pruhu RAIDu %u není sudý násobek kroku (stride) %u.\n"
 "\n"
 
-#: misc/mke2fs.c:881
+#: misc/mke2fs.c:878
 #, c-format
 msgid ""
 "Syntax error in mke2fs config file (%s, line #%d)\n"
@@ -4341,17 +4430,17 @@ msgstr ""
 "Chyba syntaxe v konfiguračním souboru mke2fs (%s, řádek č. %d)\n"
 "\t%s\n"
 
-#: misc/mke2fs.c:894 misc/tune2fs.c:393
+#: misc/mke2fs.c:891 misc/tune2fs.c:393
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr "Neplatný sada přepínačů systému souborů: %s\n"
 
-#: misc/mke2fs.c:906 misc/tune2fs.c:345
+#: misc/mke2fs.c:903 misc/tune2fs.c:345
 #, c-format
 msgid "Invalid mount option set: %s\n"
 msgstr "Nastaven neplatný přepínač připojení: %s\n"
 
-#: misc/mke2fs.c:1046
+#: misc/mke2fs.c:1043
 #, c-format
 msgid ""
 "\n"
@@ -4360,7 +4449,7 @@ msgstr ""
 "\n"
 "Váš soubor mke2fs.conf nedefinuje druh souborového systému %s.\n"
 
-#: misc/mke2fs.c:1050
+#: misc/mke2fs.c:1047
 #, c-format
 msgid ""
 "You probably need to install an updated mke2fs.conf file.\n"
@@ -4369,12 +4458,12 @@ msgstr ""
 "Pravděpodobně potřebujete nainstalovat aktualizovaný soubor mke2fs.conf.\n"
 "\n"
 
-#: misc/mke2fs.c:1054
+#: misc/mke2fs.c:1051
 #, c-format
 msgid "Aborting...\n"
 msgstr "Přerušuje se…\n"
 
-#: misc/mke2fs.c:1094
+#: misc/mke2fs.c:1091
 #, c-format
 msgid ""
 "\n"
@@ -4385,118 +4474,123 @@ msgstr ""
 "Pozor: fs_type (druh SS) %s není v mke2fs.conf definován\n"
 "\n"
 
-#: misc/mke2fs.c:1252
+#: misc/mke2fs.c:1249
 #, c-format
 msgid "Couldn't allocate memory for new PATH.\n"
 msgstr "Nemohu alokovat paměť pro novou proměnnou PATH.\n"
 
-#: misc/mke2fs.c:1293
+#: misc/mke2fs.c:1290
 #, c-format
 msgid "Couldn't init profile successfully (error: %ld).\n"
 msgstr "Profil nebylo možné správně inicializovat (chyba: %ld).\n"
 
-#: misc/mke2fs.c:1333
+#: misc/mke2fs.c:1330
 #, c-format
 msgid "invalid block size - %s"
 msgstr "špatná velikost bloku – %s"
 
-#: misc/mke2fs.c:1337
+#: misc/mke2fs.c:1334
 #, c-format
 msgid "Warning: blocksize %d not usable on most systems.\n"
 msgstr "Varování: velikost bloku %d není na většině systémů použitelná.\n"
 
-#: misc/mke2fs.c:1353
+#: misc/mke2fs.c:1350
 #, c-format
 msgid "invalid cluster size - %s"
 msgstr "špatná velikost clusteru – %s"
 
-#: misc/mke2fs.c:1365
+#: misc/mke2fs.c:1362
 msgid "Illegal number for blocks per group"
 msgstr "Neplatný počet bloků ve skupině"
 
-#: misc/mke2fs.c:1370
+#: misc/mke2fs.c:1367
 msgid "blocks per group must be multiple of 8"
 msgstr "bloky ve skupině musí být násobek 8"
 
-#: misc/mke2fs.c:1378
+#: misc/mke2fs.c:1375
 msgid "Illegal number for flex_bg size"
 msgstr "Neplatné číslo pro velikost flex_bg"
 
-#: misc/mke2fs.c:1384
+#: misc/mke2fs.c:1381
 msgid "flex_bg size must be a power of 2"
 msgstr "Velikost flex_bg musí být mocninou 2"
 
-#: misc/mke2fs.c:1394
+#: misc/mke2fs.c:1391
 #, c-format
 msgid "invalid inode ratio %s (min %d/max %d)"
 msgstr "špatný podíl iuzlů %s (min %d/max %d)"
 
-#: misc/mke2fs.c:1404
+#: misc/mke2fs.c:1401
 #, c-format
-msgid "Warning: -K option is deprecated and should not be used anymore. Use '-E nodiscard' extended option instead!\n"
-msgstr "Pozor: Přepínač -K je zastaralý a neměl by se již používat. Místo něj použijte rozšířený přepínač „-E nodiscard“!\n"
+msgid ""
+"Warning: -K option is deprecated and should not be used anymore. Use '-E "
+"nodiscard' extended option instead!\n"
+msgstr ""
+"Pozor: Přepínač -K je zastaralý a neměl by se již používat. Místo něj "
+"použijte rozšířený přepínač „-E nodiscard“!\n"
 
-#: misc/mke2fs.c:1418
+#: misc/mke2fs.c:1415
 msgid "in malloc for bad_blocks_filename"
 msgstr "v malloc pro bad_blocks_filename"
 
-#: misc/mke2fs.c:1428
+#: misc/mke2fs.c:1425
 #, c-format
 msgid "invalid reserved blocks percent - %s"
 msgstr "špatné procento rezervovaných bloků – %s"
 
-#: misc/mke2fs.c:1446
+#: misc/mke2fs.c:1443
 #, c-format
 msgid "bad revision level - %s"
 msgstr "špatné číslo revize – %s"
 
-#: misc/mke2fs.c:1458
+#: misc/mke2fs.c:1455
 #, c-format
 msgid "invalid inode size - %s"
 msgstr "špatná velikost iuzlu – %s"
 
-#: misc/mke2fs.c:1478
+#: misc/mke2fs.c:1475
 #, c-format
 msgid "bad num inodes - %s"
 msgstr "chybný počet iuzlů – %s"
 
-#: misc/mke2fs.c:1495
+#: misc/mke2fs.c:1492
 msgid "The -t option may only be used once"
 msgstr "Přepínač -t lze použít jen jednou"
 
-#: misc/mke2fs.c:1503
+#: misc/mke2fs.c:1500
 msgid "The -T option may only be used once"
 msgstr "Přepínač -T lze použít jen jednou"
 
-#: misc/mke2fs.c:1553 misc/mke2fs.c:2510
+#: misc/mke2fs.c:1550 misc/mke2fs.c:2508
 #, c-format
 msgid "while trying to open journal device %s\n"
 msgstr "při pokusu otevřít zařízení žurnálu %s\n"
 
-#: misc/mke2fs.c:1559
+#: misc/mke2fs.c:1556
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
-msgstr "Velikost bloku zařízení žurnálu (%d) menší než minimální velikost bloku %d\n"
+msgstr ""
+"Velikost bloku zařízení žurnálu (%d) menší než minimální velikost bloku %d\n"
 
-#: misc/mke2fs.c:1565
+#: misc/mke2fs.c:1562
 #, c-format
 msgid "Using journal device's blocksize: %d\n"
 msgstr "Použiji velikost bloku žurnálovacího zařízení: %d\n"
 
-#: misc/mke2fs.c:1576
+#: misc/mke2fs.c:1573
 #, c-format
 msgid "invalid blocks '%s' on device '%s'"
 msgstr "špatné bloky „%s“ na zařízení „%s“"
 
-#: misc/mke2fs.c:1586
+#: misc/mke2fs.c:1583
 msgid "filesystem"
 msgstr "systém souborů"
 
-#: misc/mke2fs.c:1599 resize/main.c:374
+#: misc/mke2fs.c:1596 resize/main.c:374
 msgid "while trying to determine filesystem size"
 msgstr "při pokusu zjistit velikost systému souborů"
 
-#: misc/mke2fs.c:1605
+#: misc/mke2fs.c:1602
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size of the filesystem\n"
@@ -4504,7 +4598,7 @@ msgstr ""
 "Nemohu zjistit velikost zařízení; musíte zadat\n"
 "velikost systému souborů\n"
 
-#: misc/mke2fs.c:1612
+#: misc/mke2fs.c:1609
 msgid ""
 "Device size reported to be zero.  Invalid partition specified, or\n"
 "\tpartition table wasn't reread after running fdisk, due to\n"
@@ -4516,16 +4610,16 @@ msgstr ""
 "         oddíl se používá. Možná budete muset pro opětovné načtení\n"
 "         své tabulky oddílů znovu zavést systém.\n"
 
-#: misc/mke2fs.c:1629
+#: misc/mke2fs.c:1626
 msgid "Filesystem larger than apparent device size."
 msgstr "Systém souborů větší než velikost zařízení."
 
-#: misc/mke2fs.c:1649
+#: misc/mke2fs.c:1646
 #, c-format
 msgid "Failed to parse fs types list\n"
 msgstr "Seznam druhů souborových systému se nezdařilo rozebrat\n"
 
-#: misc/mke2fs.c:1703
+#: misc/mke2fs.c:1700
 #, c-format
 msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to be expressed\n"
@@ -4534,31 +4628,31 @@ msgstr ""
 "%s: Velikost zařízení (0x%llx bloků) %s je příliš velká, aby byla\n"
 "vyjádřena v 32 bitech za použití bloku o velikosti %d.\n"
 
-#: misc/mke2fs.c:1719
+#: misc/mke2fs.c:1716
 msgid "fs_types for mke2fs.conf resolution: "
 msgstr "fs_types (druhy SS) pro řešení v mke2fs.conf: "
 
-#: misc/mke2fs.c:1726
+#: misc/mke2fs.c:1723
 #, c-format
 msgid "Filesystem features not supported with revision 0 filesystems\n"
 msgstr "Vlastnosti systému souborů nejsou v revizi 0 podporovány\n"
 
-#: misc/mke2fs.c:1733
+#: misc/mke2fs.c:1730
 #, c-format
 msgid "Sparse superblocks not supported with revision 0 filesystems\n"
 msgstr "Řídké superbloky systému souborů nejsou v revizi 0 podporovány\n"
 
-#: misc/mke2fs.c:1745
+#: misc/mke2fs.c:1742
 #, c-format
 msgid "Journals not supported with revision 0 filesystems\n"
 msgstr "Revize 0 systému souborů žurnály nepodporuje\n"
 
-#: misc/mke2fs.c:1759
+#: misc/mke2fs.c:1756
 #, c-format
 msgid "invalid reserved blocks percent - %lf"
 msgstr "špatné procento rezervovaných bloků – %lf"
 
-#: misc/mke2fs.c:1775
+#: misc/mke2fs.c:1772
 #, c-format
 msgid ""
 "The resize_inode and meta_bg features are not compatible.\n"
@@ -4567,78 +4661,86 @@ msgstr ""
 "Vlastnosti resize_inode a meta_bg nejsou slučitelné.\n"
 "Obě nemohou být zapnuty současně.\n"
 
-#: misc/mke2fs.c:1792
+#: misc/mke2fs.c:1789
 msgid "while trying to determine hardware sector size"
 msgstr "při pokusu zjistit velikost hardwarového sektoru"
 
-#: misc/mke2fs.c:1798
+#: misc/mke2fs.c:1795
 msgid "while trying to determine physical sector size"
 msgstr "při pokusu určit velikost fyzického sektoru"
 
-#: misc/mke2fs.c:1831
+#: misc/mke2fs.c:1828
 msgid "while setting blocksize; too small for device\n"
 msgstr "při nastavování velikosti bloku; pro zařízení příliš malá hodnota\n"
 
-#: misc/mke2fs.c:1836
+#: misc/mke2fs.c:1833
 #, c-format
-msgid "Warning: specified blocksize %d is less than device physical sectorsize %d\n"
-msgstr "Pozor: zadaná velikost bloku %d je menší než velikost fyzického sektoru %d\n"
+msgid ""
+"Warning: specified blocksize %d is less than device physical sectorsize %d\n"
+msgstr ""
+"Pozor: zadaná velikost bloku %d je menší než velikost fyzického sektoru %d\n"
 
-#: misc/mke2fs.c:1867
+#: misc/mke2fs.c:1864
 #, c-format
 msgid "warning: Unable to get device geometry for %s\n"
 msgstr "varování: Není možné zjistit geometrii %s\n"
 
-#: misc/mke2fs.c:1870
+#: misc/mke2fs.c:1867
 #, c-format
 msgid "%s alignment is offset by %lu bytes.\n"
 msgstr "Zarovnání %s představuje posun o %'lu bajtů.\n"
 
-#: misc/mke2fs.c:1872
+#: misc/mke2fs.c:1869
 #, c-format
-msgid "This may result in very poor performance, (re)-partitioning suggested.\n"
-msgstr "Toto může vést k velmi špatnému výkonu, doporučuje se (nové) vytvoření oddílů.\n"
+msgid ""
+"This may result in very poor performance, (re)-partitioning suggested.\n"
+msgstr ""
+"Toto může vést k velmi špatnému výkonu, doporučuje se (nové) vytvoření "
+"oddílů.\n"
 
-#: misc/mke2fs.c:1883
+#: misc/mke2fs.c:1880
 #, c-format
 msgid "%d-byte blocks too big for system (max %d)"
 msgstr "%d-bajtové bloky příliš velké pro systém (max %d)"
 
-#: misc/mke2fs.c:1887
+#: misc/mke2fs.c:1884
 #, c-format
-msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
-msgstr "Varování: %d-bajtové bloky příliš velké pro systém (max %d), donucen pokračovat\n"
+msgid ""
+"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgstr ""
+"Varování: %d-bajtové bloky příliš velké pro systém (max %d), donucen "
+"pokračovat\n"
 
-#: misc/mke2fs.c:1922
+#: misc/mke2fs.c:1920
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
 msgstr ""
 "bloky vyhrazené pro změnu velikosti za běhu nejsou podporovány na neřídkém\n"
 "\tsystému souborů"
 
-#: misc/mke2fs.c:1931
+#: misc/mke2fs.c:1929
 msgid "blocks per group count out of range"
 msgstr "počet bloků ve skupině mimo rozsah"
 
-#: misc/mke2fs.c:1946
+#: misc/mke2fs.c:1944
 msgid "Flex_bg feature not enabled, so flex_bg size may not be specified"
 msgstr "Vlastnost flex_bg není povolena, takže její velikost nemůže být zadána"
 
-#: misc/mke2fs.c:1958
+#: misc/mke2fs.c:1956
 #, c-format
 msgid "invalid inode size %d (min %d/max %d)"
 msgstr "špatná velikost iuzlu %d (min %d/max %d)"
 
-#: misc/mke2fs.c:1976
+#: misc/mke2fs.c:1974
 #, c-format
 msgid "too many inodes (%llu), raise inode ratio?"
 msgstr "příliš mnoho iuzlů (%'llu), zvýšit poměr iuzlů?"
 
-#: misc/mke2fs.c:1983
+#: misc/mke2fs.c:1981
 #, c-format
 msgid "too many inodes (%llu), specify < 2^32 inodes"
 msgstr "příliš mnoho iuzlů (%'llu), zadejte < 2^32 iuzlů"
 
-#: misc/mke2fs.c:1997
+#: misc/mke2fs.c:1995
 #, c-format
 msgid ""
 "inode_size (%u) * inodes_count (%u) too big for a\n"
@@ -4649,7 +4751,7 @@ msgstr ""
 "\tsystém souborů s %'llu bloky, zadejte vyšší poměr_iuzlu (-i)\n"
 "\tnebo snižte počet iuzlů (-N).\n"
 
-#: misc/mke2fs.c:2116
+#: misc/mke2fs.c:2114
 #, c-format
 msgid ""
 "Overwriting existing filesystem; this can be undone using the command:\n"
@@ -4659,43 +4761,45 @@ msgstr ""
 "Přepisuji existující systém souborů, toto může být odčiněno příkazem:\n"
 "   e2undo %s %s\n"
 
-#: misc/mke2fs.c:2130
+#: misc/mke2fs.c:2128
 msgid "while trying to setup undo file\n"
 msgstr "při pokusu nastavit soubor pro odvolání změn\n"
 
-#: misc/mke2fs.c:2156
+#: misc/mke2fs.c:2154
 msgid "Discarding device blocks: "
 msgstr "Zahazují se bloky zařízení: "
 
 # Continuation of "Calling BLKDISCARD from %llu to %llu "
-#: misc/mke2fs.c:2172
+#: misc/mke2fs.c:2170
 msgid "failed - "
 msgstr "selhalo – "
 
-#: misc/mke2fs.c:2279
+#: misc/mke2fs.c:2277
 msgid "while setting up superblock"
 msgstr "při nastavování superbloku"
 
-#: misc/mke2fs.c:2288
+#: misc/mke2fs.c:2286
 #, c-format
 msgid "Discard succeeded and will return 0s  - skipping inode table wipe\n"
-msgstr "Skartování (discard) uspělo a bude vráceno 0s – vynechá se výmaz tabulky iuzlů\n"
+msgstr ""
+"Skartování (discard) uspělo a bude vráceno 0s – vynechá se výmaz tabulky "
+"iuzlů\n"
 
-#: misc/mke2fs.c:2371
+#: misc/mke2fs.c:2369
 #, c-format
 msgid "unknown os - %s"
 msgstr "neznámý os – %s"
 
-#: misc/mke2fs.c:2423
+#: misc/mke2fs.c:2421
 #, c-format
 msgid "Allocating group tables: "
 msgstr "Alokují se tabulky skupin: "
 
-#: misc/mke2fs.c:2427
+#: misc/mke2fs.c:2425
 msgid "while trying to allocate filesystem tables"
 msgstr "při pokusu alokovat tabulky systému souborů"
 
-#: misc/mke2fs.c:2436
+#: misc/mke2fs.c:2434
 msgid ""
 "\n"
 "\twhile converting subcluster bitmap"
@@ -4703,25 +4807,25 @@ msgstr ""
 "\n"
 "\tpři převodu bitmapy subclusterů"
 
-#: misc/mke2fs.c:2479
+#: misc/mke2fs.c:2477
 #, c-format
 msgid "while zeroing block %llu at end of filesystem"
 msgstr "při nulování bloku %llu na konci systému souborů"
 
-#: misc/mke2fs.c:2492
+#: misc/mke2fs.c:2490
 msgid "while reserving blocks for online resize"
 msgstr "při rezervaci bloků pro změnu velikosti za běhu"
 
-#: misc/mke2fs.c:2503 misc/tune2fs.c:640
+#: misc/mke2fs.c:2501 misc/tune2fs.c:640
 msgid "journal"
 msgstr "žurnál"
 
-#: misc/mke2fs.c:2515
+#: misc/mke2fs.c:2513
 #, c-format
 msgid "Adding journal to device %s: "
 msgstr "Přidávám žurnál k zařízení %s: "
 
-#: misc/mke2fs.c:2522
+#: misc/mke2fs.c:2520
 #, c-format
 msgid ""
 "\n"
@@ -4730,22 +4834,22 @@ msgstr ""
 "\n"
 "\tpři pokusu přidat žurnál k zařízení %s"
 
-#: misc/mke2fs.c:2527 misc/mke2fs.c:2559 misc/tune2fs.c:669 misc/tune2fs.c:683
+#: misc/mke2fs.c:2525 misc/mke2fs.c:2557 misc/tune2fs.c:669 misc/tune2fs.c:683
 #, c-format
 msgid "done\n"
 msgstr "hotovo\n"
 
-#: misc/mke2fs.c:2536
+#: misc/mke2fs.c:2534
 #, c-format
 msgid "Skipping journal creation in super-only mode\n"
 msgstr "V režimu jen-superdata bude vynechána tvorba žurnálu\n"
 
-#: misc/mke2fs.c:2547
+#: misc/mke2fs.c:2545
 #, c-format
 msgid "Creating journal (%u blocks): "
 msgstr "Vytváří se žurnál (%'u bloků): "
 
-#: misc/mke2fs.c:2555
+#: misc/mke2fs.c:2553
 msgid ""
 "\n"
 "\twhile trying to create journal"
@@ -4753,7 +4857,7 @@ msgstr ""
 "\n"
 "\tpři pokusu vytvořit žurnál"
 
-#: misc/mke2fs.c:2566 misc/tune2fs.c:446
+#: misc/mke2fs.c:2564 misc/tune2fs.c:446
 #, c-format
 msgid ""
 "\n"
@@ -4763,17 +4867,19 @@ msgstr ""
 "Chyba při zapínání ochrany proti násobnému připojení."
 
 # TODO: Pluralize
-#: misc/mke2fs.c:2571
+#: misc/mke2fs.c:2569
 #, c-format
 msgid "Multiple mount protection is enabled with update interval %d seconds.\n"
-msgstr "Ochrana proti násobnému připojení je zapnuta s aktualizačním intervalem %d sekund.\n"
+msgstr ""
+"Ochrana proti násobnému připojení je zapnuta s aktualizačním intervalem %d "
+"sekund.\n"
 
-#: misc/mke2fs.c:2584
+#: misc/mke2fs.c:2582
 #, c-format
 msgid "Writing superblocks and filesystem accounting information: "
 msgstr "Zapisuji superbloky a účtovací informace systému souborů: "
 
-#: misc/mke2fs.c:2591
+#: misc/mke2fs.c:2589
 #, c-format
 msgid ""
 "\n"
@@ -4782,7 +4888,7 @@ msgstr ""
 "\n"
 "Varování, měl jsem problémy při zápisu superbloků."
 
-#: misc/mke2fs.c:2593
+#: misc/mke2fs.c:2591
 #, c-format
 msgid ""
 "done\n"
@@ -4840,7 +4946,8 @@ msgstr "Spusťte prosím na tomto systému souborů e2fsck.\n"
 msgid ""
 "Usage: %s [-c max_mounts_count] [-e errors_behavior] [-g group]\n"
 "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
-"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p mmp_update_interval]\n"
+"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p "
+"mmp_update_interval]\n"
 "\t[-r reserved_blocks_count] [-u user] [-C mount_count] [-L volume_label]\n"
 "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
 "\t[-E extended-option[,...]] [-T last_check_time] [-U UUID]\n"
@@ -4939,7 +5046,9 @@ msgstr ""
 #: misc/tune2fs.c:456
 #, c-format
 msgid "Multiple mount protection has been enabled with update interval %ds.\n"
-msgstr "Ochrana před násobným připojením byla zapnuta s intervalem aktualizace %d s.\n"
+msgstr ""
+"Ochrana před násobným připojením byla zapnuta s intervalem aktualizace "
+"%d s.\n"
 
 #: misc/tune2fs.c:465
 msgid ""
@@ -4956,7 +5065,8 @@ msgstr "Chyba při čtení bitmap\n"
 #: misc/tune2fs.c:482
 #, c-format
 msgid "Magic number in MMP block does not match. expected: %x, actual: %x\n"
-msgstr "Magické číslo v bloku MMP se neshoduje. Očekáváno: %x, skutečnost: %x\n"
+msgstr ""
+"Magické číslo v bloku MMP se neshoduje. Očekáváno: %x, skutečnost: %x\n"
 
 #: misc/tune2fs.c:487
 msgid "while reading MMP block."
@@ -5030,7 +5140,8 @@ msgid ""
 "\n"
 "Bad quota options specified.\n"
 "\n"
-"Following valid quota options are available (pass by separating with comma):\n"
+"Following valid quota options are available (pass by separating with "
+"comma):\n"
 "\t[^]usrquota\n"
 "\t[^]grpquota\n"
 "\n"
@@ -5111,10 +5222,17 @@ msgstr "interval_aktualizace_mmp je příliš velký: %lu\n"
 #: misc/tune2fs.c:1179
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
-msgid_plural "Setting multiple mount protection update interval to %lu seconds\n"
-msgstr[0] "Nastavuje se interval aktualizace ochrany proti násobnému připojení na %'lu sekundu\n"
-msgstr[1] "Nastavuje se interval aktualizace ochrany proti násobnému připojení na %'lu sekundy\n"
-msgstr[2] "Nastavuje se interval aktualizace ochrany proti násobnému připojení na %'lu sekund\n"
+msgid_plural ""
+"Setting multiple mount protection update interval to %lu seconds\n"
+msgstr[0] ""
+"Nastavuje se interval aktualizace ochrany proti násobnému připojení na %'lu "
+"sekundu\n"
+msgstr[1] ""
+"Nastavuje se interval aktualizace ochrany proti násobnému připojení na %'lu "
+"sekundy\n"
+msgstr[2] ""
+"Nastavuje se interval aktualizace ochrany proti násobnému připojení na %'lu "
+"sekund\n"
 
 #: misc/tune2fs.c:1202
 #, c-format
@@ -5325,7 +5443,8 @@ msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr "Chybné použití clear_mmp. Je třeba jej použít s -f\n"
 
 #: misc/tune2fs.c:2120
-msgid "The quota feature may only be changed when the filesystem is unmounted.\n"
+msgid ""
+"The quota feature may only be changed when the filesystem is unmounted.\n"
 msgstr "Vlastnost kvóty smí být změněna, jen když je systém souborů odpojen.\n"
 
 #: misc/tune2fs.c:2153
@@ -5341,7 +5460,8 @@ msgid ""
 "Changing the inode size not supported for filesystems with the flex_bg\n"
 "feature enabled.\n"
 msgstr ""
-"Na souborových systémech se zapnutou vlastností flex_bg není změna velikosti\n"
+"Na souborových systémech se zapnutou vlastností flex_bg není změna "
+"velikosti\n"
 "iuzlu podporována.\n"
 
 #: misc/tune2fs.c:2187
@@ -5484,7 +5604,8 @@ msgid ""
 "%g days, whichever comes first.  Use tune2fs -c or -i to override.\n"
 msgstr ""
 "Tento systém souborů bude automaticky kontrolován každých %d připojení nebo\n"
-"%g dní, podle toho, co nastane dříve. Pro změnu použijte tune2fs -c nebo -i.\n"
+"%g dní, podle toho, co nastane dříve. Pro změnu použijte tune2fs -c nebo -"
+"i.\n"
 
 #: misc/uuidd.c:48
 #, c-format
@@ -5826,8 +5947,12 @@ msgstr "Při pokusu přidat skupinu č. %d"
 
 #: resize/online.c:227
 #, c-format
-msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
-msgstr "Systém souborů v %s je připojen do %s a změna velikost za běhu není na tomto systému podporována.\n"
+msgid ""
+"Filesystem at %s is mounted on %s, and on-line resizing is not supported on "
+"this system.\n"
+msgstr ""
+"Systém souborů v %s je připojen do %s a změna velikost za běhu není na tomto "
+"systému podporována.\n"
 
 #: resize/resize2fs.c:348
 #, c-format
@@ -5845,10 +5970,12 @@ msgstr "bloky meta-dat"
 #: resize/resize2fs.c:1735
 #, c-format
 msgid "Should never happen: resize inode corrupt!\n"
-msgstr "Toto by se nikdy nemělo stát: iuzly pro změnu velikosti jsou poškozeny!\n"
+msgstr ""
+"Toto by se nikdy nemělo stát: iuzly pro změnu velikosti jsou poškozeny!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.2"
+#, fuzzy
+msgid "EXT2FS Library version 1.42.4"
 msgstr "Knihovna EXT2FS verze 1.42.2"
 
 #: lib/ext2fs/ext2_err.c:12
@@ -6394,11 +6521,14 @@ msgstr "I/O Channel nepodporuje 64bitová čísla bloků"
 
 #: lib/ext2fs/ext2_err.c:147
 msgid "Can't check if filesystem is mounted due to missing mtab file"
-msgstr "Kvůli chybějícímu souboru mtab nelze zjistit, zda-li je systém souborů připojený"
+msgstr ""
+"Kvůli chybějícímu souboru mtab nelze zjistit, zda-li je systém souborů "
+"připojený"
 
 #: lib/ext2fs/ext2_err.c:148
 msgid "Filesystem too large to use legacy bitmaps"
-msgstr "Souborový systém je příliš velký na to, aby se použily zastaralé bitmapy"
+msgstr ""
+"Souborový systém je příliš velký na to, aby se použily zastaralé bitmapy"
 
 #: lib/ext2fs/ext2_err.c:149
 msgid "MMP: invalid magic number"
@@ -6552,11 +6682,17 @@ msgstr "Neplatná celočíselná hodnota"
 msgid "Bad magic value in profile_file_data_t"
 msgstr "Chybné magické číslo v profile_file_data_t"
 
+#~ msgid "%s is mounted.  "
+#~ msgstr "%s je připojen. "
+
 #~ msgid "@g %g @b @B uninitialized but @i @B in use.\n"
-#~ msgstr "Bitmapa bloků skupiny %g neinicializována, ačkoliv bitmapa iuzlů je použita.\n"
+#~ msgstr ""
+#~ "Bitmapa bloků skupiny %g neinicializována, ačkoliv bitmapa iuzlů je "
+#~ "použita.\n"
 
 #~ msgid "@i %i should not have EOFBLOCKS_FL set (size %Is, lblk %r)\n"
-#~ msgstr "Iuzel %i by neměl mít nastaveno EOFBLOCKS_FL (velikost %Is, lblk %r)\n"
+#~ msgstr ""
+#~ "Iuzel %i by neměl mít nastaveno EOFBLOCKS_FL (velikost %Is, lblk %r)\n"
 
 #~ msgid "Couldn't determine journal size"
 #~ msgstr "Velikost žurnálu nelze určit"
@@ -6623,7 +6759,9 @@ msgstr "Chybné magické číslo v profile_file_data_t"
 #~ msgstr "ioctl BLKGETSIZE"
 
 #~ msgid "@a in @i %i has a hash (%N) which is @n (must be 0)\n"
-#~ msgstr "Rozšířený atribut v iuzlu %i má hash (%N), který není platný (musí být 0)\n"
+#~ msgstr ""
+#~ "Rozšířený atribut v iuzlu %i má hash (%N), který není platný (musí být "
+#~ "0)\n"
 
 #~ msgid "while calling ext2fs_block_iterate"
 #~ msgstr "při volání ext2fs_block_iterate"
@@ -6654,7 +6792,8 @@ msgstr "Chybné magické číslo v profile_file_data_t"
 #~ msgstr "Přehození bajtů"
 
 #~ msgid "Byte-swapping filesystems not compiled in this version of e2fsck\n"
-#~ msgstr "Přehození bajtů systémů souborů není zabudováno v této verzi e2fsck\n"
+#~ msgstr ""
+#~ "Přehození bajtů systémů souborů není zabudováno v této verzi e2fsck\n"
 
 #~ msgid "Incompatible options not allowed when byte-swapping.\n"
 #~ msgstr "Při přehození bajtů nejsou dovoleny nekompatibilní přepínače.\n"
@@ -6672,7 +6811,8 @@ msgstr "Chybné magické číslo v profile_file_data_t"
 #~ "Filesystem too large.  No more than 2**31-1 blocks\n"
 #~ "\t (8TB using a blocksize of 4k) are currently supported."
 #~ msgstr ""
-#~ "Souborový systém je příliš velký. V současnosti není podporováno více jak\n"
+#~ "Souborový systém je příliš velký. V současnosti není podporováno více "
+#~ "jak\n"
 #~ "\t2**31-1 bloků (8 TB při 4k blocích)."
 
 #~ msgid ""
@@ -6682,7 +6822,8 @@ msgstr "Chybné magické číslo v profile_file_data_t"
 #~ "\n"
 #~ msgstr ""
 #~ "\n"
-#~ "Varování: některá jádra z řady 2.4 nepodporují na ext3 bloky větší než 4096\n"
+#~ "Varování: některá jádra z řady 2.4 nepodporují na ext3 bloky větší než "
+#~ "4096\n"
 #~ "\tJe-li to váš případ, použijte „-b 4096“.\n"
 #~ "\n"
 
@@ -6731,7 +6872,8 @@ msgstr "Chybné magické číslo v profile_file_data_t"
 #~ msgstr "Duplikovaný/špatný blok(y) v inode %i:"
 
 #~ msgid "Forcibly clearing HTREE flag on @i %d (%q).  (Beta test code)\n"
-#~ msgstr "Vynuceně mažu příznak HTREE v inode %d (%q). (Kód v beta testování)\n"
+#~ msgstr ""
+#~ "Vynuceně mažu příznak HTREE v inode %d (%q). (Kód v beta testování)\n"
 
 #~ msgid ""
 #~ "%8d blocks used (%d%%)\n"

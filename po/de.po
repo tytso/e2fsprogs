@@ -68,7 +68,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.42.2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2012-03-27 12:00-0700\n"
+"POT-Creation-Date: 2012-06-12 14:40-0400\n"
 "PO-Revision-Date: 2012-04-13 12:41+0200\n"
 "Last-Translator: Philipp Thomas <pth@suse.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -78,7 +78,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: e2fsck/badblocks.c:23 misc/mke2fs.c:179
+#: e2fsck/badblocks.c:23 misc/mke2fs.c:176
 #, c-format
 msgid "Bad block %u out of range; ignored.\n"
 msgstr "Bad block %u außerhalb des gültigen Bereichs; ignoriert.\n"
@@ -91,11 +91,11 @@ msgstr "während der logischen Prüfung des „Bad Block“-Inodes"
 msgid "while reading the bad blocks inode"
 msgstr "während des Lesens des „Bad Block“-Inodes"
 
-#: e2fsck/badblocks.c:72 e2fsck/iscan.c:113 e2fsck/scantest.c:110
-#: e2fsck/unix.c:1295 e2fsck/unix.c:1383 misc/badblocks.c:1214
+#: e2fsck/badblocks.c:72 e2fsck/iscan.c:110 e2fsck/scantest.c:107
+#: e2fsck/unix.c:1298 e2fsck/unix.c:1386 misc/badblocks.c:1214
 #: misc/badblocks.c:1222 misc/badblocks.c:1236 misc/badblocks.c:1248
-#: misc/dumpe2fs.c:578 misc/e2image.c:1190 misc/e2image.c:1308
-#: misc/e2image.c:1321 misc/mke2fs.c:195 misc/tune2fs.c:1907 resize/main.c:303
+#: misc/dumpe2fs.c:588 misc/e2image.c:1189 misc/e2image.c:1307
+#: misc/e2image.c:1320 misc/mke2fs.c:192 misc/tune2fs.c:1907 resize/main.c:303
 #, c-format
 msgid "while trying to open %s"
 msgstr "beim Versuch, %s zu öffnen"
@@ -105,7 +105,7 @@ msgstr "beim Versuch, %s zu öffnen"
 msgid "while trying popen '%s'"
 msgstr "beim Versuch, „%s“ mittels „popen“ zu öffnen"
 
-#: e2fsck/badblocks.c:94 misc/mke2fs.c:202
+#: e2fsck/badblocks.c:94 misc/mke2fs.c:199
 msgid "while reading in list of bad blocks from file"
 msgstr "beim Lesen der „Bad Block“-Liste aus der Datei"
 
@@ -116,7 +116,9 @@ msgstr "beim Updaten des „Bad Block“-Inodes"
 #: e2fsck/badblocks.c:131
 #, c-format
 msgid "Warning: illegal block %u found in bad block inode.  Cleared.\n"
-msgstr "Warnung: Nicht zulässiger Block %u im „Bad Blocks“-Inode gefunden! Bereinigt.\n"
+msgstr ""
+"Warnung: Nicht zulässiger Block %u im „Bad Blocks“-Inode gefunden! "
+"Bereinigt.\n"
 
 #: e2fsck/ehandler.c:55
 #, c-format
@@ -184,59 +186,59 @@ msgstr "Aufruf: %s Laufwerk\n"
 msgid "BLKFLSBUF ioctl not supported!  Can't flush buffers.\n"
 msgstr "BLKFLSBUF ioctl nicht unterstützt!  Kann Puffer nicht leeren.\n"
 
-#: e2fsck/iscan.c:47
+#: e2fsck/iscan.c:44
 #, c-format
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr "Aufruf: %s [-F] [-I inode_buffer_blocks] Gerät\n"
 
-#: e2fsck/iscan.c:84 e2fsck/unix.c:930
+#: e2fsck/iscan.c:81 e2fsck/unix.c:930
 #, c-format
 msgid "while opening %s for flushing"
 msgstr "beim Öffnen von %s für die Puffer-Leerung."
 
-#: e2fsck/iscan.c:89 e2fsck/unix.c:936 resize/main.c:276
+#: e2fsck/iscan.c:86 e2fsck/unix.c:936 resize/main.c:276
 #, c-format
 msgid "while trying to flush %s"
 msgstr "während des Rückschreibeversuches auf %s"
 
-#: e2fsck/iscan.c:122 e2fsck/scantest.c:117 misc/e2image.c:1085
+#: e2fsck/iscan.c:119 e2fsck/scantest.c:114 misc/e2image.c:1084
 msgid "while opening inode scan"
 msgstr "beim Start des Inode-Scans"
 
-#: e2fsck/iscan.c:130 misc/e2image.c:1103
+#: e2fsck/iscan.c:127 misc/e2image.c:1102
 msgid "while getting next inode"
 msgstr "beim Laden des nächsten Inodes"
 
-#: e2fsck/iscan.c:139
+#: e2fsck/iscan.c:136
 #, c-format
 msgid "%u inodes scanned.\n"
 msgstr "%u Inodes untersucht.\n"
 
-#: e2fsck/journal.c:511
+#: e2fsck/journal.c:512
 msgid "reading journal superblock\n"
 msgstr "Lese Journal-Superblock\n"
 
-#: e2fsck/journal.c:568
+#: e2fsck/journal.c:569
 #, c-format
 msgid "%s: no valid journal superblock found\n"
 msgstr "%s: keinen gültigen Journal-Superblock gefunden\n"
 
-#: e2fsck/journal.c:577
+#: e2fsck/journal.c:578
 #, c-format
 msgid "%s: journal too short\n"
 msgstr "%s: Das Journal ist zu kurz\n"
 
-#: e2fsck/journal.c:864
+#: e2fsck/journal.c:870
 #, c-format
 msgid "%s: recovering journal\n"
 msgstr "%s: stelle das Journal wieder her\n"
 
-#: e2fsck/journal.c:866
+#: e2fsck/journal.c:872
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
 msgstr "%s: Das Journal ist nur lesbar - Keine Wiederherstellung\n"
 
-#: e2fsck/journal.c:893
+#: e2fsck/journal.c:899
 #, c-format
 msgid "while trying to re-open %s"
 msgstr "beim Versuch, %s erneut zu öffnen"
@@ -816,7 +818,8 @@ msgid ""
 "from the @b size.\n"
 msgstr ""
 "@S @b_size = %b, fragsize = %c.\n"
-"Diese Version von e2fsck unterstützt keine von @b-Größen verschiedene Fragmentgrößen.\n"
+"Diese Version von e2fsck unterstützt keine von @b-Größen verschiedene "
+"Fragmentgrößen.\n"
 
 #. @-expanded: superblock blocks_per_group = %b, should have been %c\n
 #: e2fsck/problem.c:145
@@ -909,11 +912,13 @@ msgstr "Externes @j unterstützt nicht @f\n"
 #: e2fsck/problem.c:213
 msgid ""
 "@f @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
+"format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
 "Ext3 @j @S ist eine unbekannter Type %N (nicht unterstützt).\n"
-"Es ist möglich, dass ihr e2fsck älter ist und/oder dieses @j Format nicht unterstützt.\n"
+"Es ist möglich, dass ihr e2fsck älter ist und/oder dieses @j Format nicht "
+"unterstützt.\n"
 "Es ist ebenso möglich, dass @j @S defekt ist.\n"
 
 #. @-expanded: journal superblock is corrupt.\n
@@ -930,7 +935,9 @@ msgstr "ext3 Recovery-Flag sauber, aber ein @j %s ist vorhanden.\n"
 #. @-expanded: superblock needs_recovery flag is set, but no journal is present.\n
 #: e2fsck/problem.c:231
 msgid "@S needs_recovery flag is set, but no @j is present.\n"
-msgstr "@S hat das ext3 „needs_recovery“-Flag gesetzt, aber ein @j ist nicht vorhanden.\n"
+msgstr ""
+"@S hat das ext3 „needs_recovery“-Flag gesetzt, aber ein @j ist nicht "
+"vorhanden.\n"
 
 #. @-expanded: superblock needs_recovery flag is clear, but journal has data.\n
 #: e2fsck/problem.c:236
@@ -1032,7 +1039,9 @@ msgstr "Starte @j trotzdem"
 #. @-expanded: Recovery flag not set in backup superblock, so running journal anyway.\n
 #: e2fsck/problem.c:312
 msgid "Recovery flag not set in backup @S, so running @j anyway.\n"
-msgstr "Recovery-Kennzeichen in Backup @S nicht gesetzt, @j wird trotzdem gestartet.\n"
+msgstr ""
+"Recovery-Kennzeichen in Backup @S nicht gesetzt, @j wird trotzdem "
+"gestartet.\n"
 
 #. @-expanded: Backing up journal inode block information.\n
 #. @-expanded: \n
@@ -1057,7 +1066,8 @@ msgstr ""
 #. @-expanded: Resize_inode not enabled, but the resize inode is non-zero.  
 #: e2fsck/problem.c:328
 msgid "Resize_@i not enabled, but the resize @i is non-zero.  "
-msgstr "Resize_@i nicht aktiviert, aber die zu modifgizierende Inod ist nicht-Null."
+msgstr ""
+"Resize_@i nicht aktiviert, aber die zu modifgizierende Inod ist nicht-Null."
 
 #. @-expanded: Resize inode not valid.  
 #: e2fsck/problem.c:333
@@ -1109,12 +1119,15 @@ msgstr "Die Prüfsumme des @g -Deskriptors %g ist %04x, sie sollte %04y sein.  "
 #: e2fsck/problem.c:362
 #, c-format
 msgid "@g descriptor %g marked uninitialized without feature set.\n"
-msgstr "@g -Deskriptor %g ist als nicht initialisiert gekennzeichnet ohne eine gesetzte Eigenschaft.\n"
+msgstr ""
+"@g -Deskriptor %g ist als nicht initialisiert gekennzeichnet ohne eine "
+"gesetzte Eigenschaft.\n"
 
 #. @-expanded: group descriptor %g has invalid unused inodes count %b.  
 #: e2fsck/problem.c:367
 msgid "@g descriptor %g has invalid unused inodes count %b.  "
-msgstr "@g Deskriptor %g hat eine ungültige Anzahl ungenutzter Inodes von %b.  "
+msgstr ""
+"@g Deskriptor %g hat eine ungültige Anzahl ungenutzter Inodes von %b.  "
 
 #. @-expanded: Last group block bitmap uninitialized.  
 #: e2fsck/problem.c:372
@@ -1124,7 +1137,8 @@ msgstr "Die letzte @g @b @B ist nicht initialisiert.  "
 #: e2fsck/problem.c:377
 #, c-format
 msgid "Journal transaction %i was corrupt, replay was aborted.\n"
-msgstr "Journaltransaktion %i war beschädigt, die Wiederholung wurde abgegrochen.\n"
+msgstr ""
+"Journaltransaktion %i war beschädigt, die Wiederholung wurde abgegrochen.\n"
 
 #: e2fsck/problem.c:381
 msgid "The test_fs flag is set (and ext4 is available).  "
@@ -1136,10 +1150,12 @@ msgstr "Die Kennung test_fs wurde gesetzt (und ext4 ist verfügbar).  "
 #: e2fsck/problem.c:386
 msgid ""
 "@S last mount time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set)  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set)  "
 msgstr ""
 "Der Zeitpunkt des letzten Einhängens von @S liegt in der Zukunft.\n"
-"\t(weniger als ein Tag, wahrscheinlich aufgrund falsch gesetzter Hardware-Uhr)  "
+"\t(weniger als ein Tag, wahrscheinlich aufgrund falsch gesetzter Hardware-"
+"Uhr)  "
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
@@ -1147,10 +1163,12 @@ msgstr ""
 #: e2fsck/problem.c:392
 msgid ""
 "@S last write time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set).  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set).  "
 msgstr ""
 "Der Zeitpunkt des letzten Schreibens von @S liegt in der Zukunft.\n"
-"\t(weniger als ein Tag, wahrscheinlich aufgrund falsch gesetzter Hardware-Uhr)  "
+"\t(weniger als ein Tag, wahrscheinlich aufgrund falsch gesetzter Hardware-"
+"Uhr)  "
 
 #. @-expanded: One or more block group descriptor checksums are invalid.  
 #: e2fsck/problem.c:398
@@ -1167,12 +1185,10 @@ msgstr "Setze die Anzahl der freien Inodes auf %j (war %i)\n"
 msgid "Setting free @bs count to %c (was %b)\n"
 msgstr "Setze die Anzahl der freien Blöcke auf %c (war %b)\n"
 
-#. @-expanded: Making quota inodes hidden.\n
-#. @-expanded: \n
+#. @-expanded: Making quota inode %i (%Q) hidden.\n
 #: e2fsck/problem.c:413
-msgid ""
-"Making @q @is hidden.\n"
-"\n"
+#, fuzzy
+msgid "Making @q @i %i (%Q) hidden.\n"
 msgstr ""
 "Verstecke @q Inodes.\n"
 "\n"
@@ -1446,7 +1462,8 @@ msgstr "Fehler beim Iterieren über @bs in @i %i: %m\n"
 #. @-expanded: Error storing inode count information (inode=%i, count=%N): %m\n
 #: e2fsck/problem.c:655
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
-msgstr "Fehler beim Speichern von @i count Informationen (@i=%i, count=%N): %m\n"
+msgstr ""
+"Fehler beim Speichern von @i count Informationen (@i=%i, count=%N): %m\n"
 
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
 #: e2fsck/problem.c:660
@@ -1668,7 +1685,9 @@ msgstr "@a in %i hat einen @n Hashwert von (%N)\n"
 #. @-expanded: inode %i is a %It but it looks like it is really a directory.\n
 #: e2fsck/problem.c:866
 msgid "@i %i is a %It but it looks like it is really a directory.\n"
-msgstr "@i ist ein %It aber es sieht so aus, als ob es tatsächlich ein Verzeichnis ist.\n"
+msgstr ""
+"@i ist ein %It aber es sieht so aus, als ob es tatsächlich ein Verzeichnis "
+"ist.\n"
 
 #. @-expanded: Error while reading over extent tree in inode %i: %m\n
 #: e2fsck/problem.c:871
@@ -1710,13 +1729,17 @@ msgstr ""
 #: e2fsck/problem.c:892
 #, c-format
 msgid "@i %i has EXTENTS_FL flag set on @f without extents support.\n"
-msgstr "@i %i hat  EXTENTS_FL Kennung auf einem @f ohne Unterstützung für Erweiterungen.\n"
+msgstr ""
+"@i %i hat  EXTENTS_FL Kennung auf einem @f ohne Unterstützung für "
+"Erweiterungen.\n"
 
 #. @-expanded: inode %i is in extent format, but superblock is missing EXTENTS feature\n
 #: e2fsck/problem.c:897
 #, c-format
 msgid "@i %i is in extent format, but @S is missing EXTENTS feature\n"
-msgstr "@i %i besitzt das Erweiterungsformat, aber dem @S fehlt die Eigenschaft EXTENTS\n"
+msgstr ""
+"@i %i besitzt das Erweiterungsformat, aber dem @S fehlt die Eigenschaft "
+"EXTENTS\n"
 
 #. @-expanded: inode %i missing EXTENT_FL, but is in extents format\n
 #: e2fsck/problem.c:902
@@ -2114,7 +2137,8 @@ msgstr "@a @b @F ist falsch (%If).\n"
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
 #: e2fsck/problem.c:1270
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
-msgstr "@f enthält große Dateien, aber das LARGE_FILE Flag in @S ist nicht gesetzt.\n"
+msgstr ""
+"@f enthält große Dateien, aber das LARGE_FILE Flag in @S ist nicht gesetzt.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B not referenced\n
 #: e2fsck/problem.c:1275
@@ -2408,7 +2432,8 @@ msgid ""
 msgstr ""
 "WARNUNG: PROGRAMMIERFEHLER IN E2FSCK!\n"
 "\tODER EIN TROTTEL (SIE) PRÜFT EIN EINGEHÄNGTES (AKTIVES) DATEISYSTEM.\n"
-"@i_link_info[%i] ist %N, @i.i_links_count ist %Il.  Sie sollten identisch sein!\n"
+"@i_link_info[%i] ist %N, @i.i_links_count ist %Il.  Sie sollten identisch "
+"sein!\n"
 
 #. @-expanded: Pass 5: Checking group summary information\n
 #: e2fsck/problem.c:1558
@@ -2463,8 +2488,12 @@ msgstr "Die Anzahl freier Blöcke ist falsch (%b, gezählt=%c).\n"
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:1638
-msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
-msgstr "PROGRAMMIERFEHLER: @f (#%N) @B Endpunkte (%b, %c) passen nicht zu den berechneten @B Endpunkten (%i, %j)\n"
+msgid ""
+"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
+"endpoints (%i, %j)\n"
+msgstr ""
+"PROGRAMMIERFEHLER: @f (#%N) @B Endpunkte (%b, %c) passen nicht zu den "
+"berechneten @B Endpunkten (%i, %j)\n"
 
 #: e2fsck/problem.c:1644
 msgid "Internal error: fudging end of bitmap (%N)\n"
@@ -2486,65 +2515,71 @@ msgstr "Fehler beim hineinkopieren von @b @B: %m\n"
 #: e2fsck/problem.c:1679
 #, c-format
 msgid "@g %g @b(s) in use but @g is marked BLOCK_UNINIT\n"
-msgstr "Blöcke von @g %g sind in Beutzung obwohl @g als BLOCK_UNINIT markiert ist\n"
+msgstr ""
+"Blöcke von @g %g sind in Beutzung obwohl @g als BLOCK_UNINIT markiert ist\n"
 
 #. @-expanded: group %g inode(s) in use but group is marked INODE_UNINIT\n
 #: e2fsck/problem.c:1684
 #, c-format
 msgid "@g %g @i(s) in use but @g is marked INODE_UNINIT\n"
-msgstr "@g %g @i(s) sind in Benutzung obwohl @g als INODE_UNINIT markiert ist\n"
+msgstr ""
+"@g %g @i(s) sind in Benutzung obwohl @g als INODE_UNINIT markiert ist\n"
 
 #. @-expanded: Recreate journal
 #: e2fsck/problem.c:1691
 msgid "Recreate @j"
 msgstr "@j zurücksetzen"
 
-#: e2fsck/problem.c:1810
+#: e2fsck/problem.c:1696
+msgid "Update quota info for quota type %N"
+msgstr ""
+
+#: e2fsck/problem.c:1815
 #, c-format
 msgid "Unhandled error code (0x%x)!\n"
 msgstr "Unbenutzter Fehlercode (0x%x)!\n"
 
-#: e2fsck/problem.c:1935 e2fsck/problem.c:1939
+#: e2fsck/problem.c:1940 e2fsck/problem.c:1944
 msgid "IGNORED"
 msgstr "IGNORIERT"
 
-#: e2fsck/scantest.c:82
+#: e2fsck/scantest.c:79
 #, c-format
 msgid "Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n"
 msgstr "benutzter Speicher: %d, vergangende Zeit: %6.3f/%6.3f/%6.3f\n"
 
-#: e2fsck/scantest.c:101
+#: e2fsck/scantest.c:98
 #, c-format
 msgid "size of inode=%d\n"
 msgstr "Größe des Inode=%d\n"
 
-#: e2fsck/scantest.c:122
+#: e2fsck/scantest.c:119
 msgid "while starting inode scan"
 msgstr "beim Starten der Inodeprüfung"
 
-#: e2fsck/scantest.c:133
+#: e2fsck/scantest.c:130
 msgid "while doing inode scan"
 msgstr "während der Inodeprüfung"
 
-#: e2fsck/super.c:187
+#: e2fsck/super.c:188
 #, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
 msgstr "während des Aufrufs von ext2fs_block_iterate für Inode %d"
 
-#: e2fsck/super.c:210
+#: e2fsck/super.c:211
 #, c-format
 msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
 msgstr "während des Aufrufs von ext2fs_adjust_ea_refcount2 für Inode %d"
 
-#: e2fsck/super.c:269
+#: e2fsck/super.c:272
 msgid "Truncating"
 msgstr "Kürzen"
 
-#: e2fsck/super.c:270
+#: e2fsck/super.c:273
 msgid "Clearing"
 msgstr "Bereinigen"
 
-#: e2fsck/unix.c:77
+#: e2fsck/unix.c:74
 #, c-format
 msgid ""
 "Usage: %s [-panyrcdfvtDFV] [-b superblock] [-B blocksize]\n"
@@ -2557,7 +2592,7 @@ msgstr ""
 "\t\t[-l|-L Bad_Blocks_Datei] [-C Dateideskriptor] [-j externes_Journal]\n"
 "\t\t[-E erweiterte_Optionen] Gerät\n"
 
-#: e2fsck/unix.c:83
+#: e2fsck/unix.c:80
 #, c-format
 msgid ""
 "\n"
@@ -2565,7 +2600,8 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock list\n"
+" -c                   Check for bad blocks and add them to the badblock "
+"list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -2576,7 +2612,7 @@ msgstr ""
 " -c        suche nach defekten Blöcken\n"
 " -f        erzwinge die Überprüfung auch wenn alles i.O. erscheint\n"
 
-#: e2fsck/unix.c:89
+#: e2fsck/unix.c:86
 #, c-format
 msgid ""
 " -v                   Be verbose\n"
@@ -2593,12 +2629,12 @@ msgstr ""
 " -l bad_blocks_file   zur Liste der defekten Blöcke hinzufügen\n"
 " -L bad_blocks_file   Liste der defekten Blöcke definieren\n"
 
-#: e2fsck/unix.c:133
+#: e2fsck/unix.c:130
 #, c-format
 msgid "%s: %u/%u files (%0d.%d%% non-contiguous), %llu/%llu blocks\n"
 msgstr "%s: %u/%u Dateien (%0d.%d%% nicht zusammenhängend), %llu/%llu Blöcke\n"
 
-#: e2fsck/unix.c:140
+#: e2fsck/unix.c:137
 #, c-format
 msgid ""
 "\n"
@@ -2613,51 +2649,51 @@ msgstr[1] ""
 "\n"
 "%u Inodes sind in Benutzung (%2.2f%%)\n"
 
-#: e2fsck/unix.c:144
+#: e2fsck/unix.c:141
 #, c-format
 msgid "%8u non-contiguous file (%0d.%d%%)\n"
 msgid_plural "%8u non-contiguous files (%0d.%d%%)\n"
 msgstr[0] "%8u nicht zusammenhängende Datei (%0d.%d%%)\n"
 msgstr[1] "%8u nicht zusammenhängende Dateien (%0d.%d%%)\n"
 
-#: e2fsck/unix.c:149
+#: e2fsck/unix.c:146
 #, c-format
 msgid "%8u non-contiguous directory (%0d.%d%%)\n"
 msgid_plural "%8u non-contiguous directories (%0d.%d%%)\n"
 msgstr[0] "%8u nicht zusammenhängendes Verzeichnis (%0d.%d%%)\n"
 msgstr[1] "%8u nicht zusammenhängende Verzeichnisse (%0d.%d%%)\n"
 
-#: e2fsck/unix.c:154
+#: e2fsck/unix.c:151
 #, c-format
 msgid "         # of inodes with ind/dind/tind blocks: %u/%u/%u\n"
 msgstr "         # von Inodes mit ind/dind/tind Blöcken: %u/%u/%u\n"
 
-#: e2fsck/unix.c:162
+#: e2fsck/unix.c:159
 msgid "         Extent depth histogram: "
 msgstr "         Erweiterungstiefe Histogramm: "
 
-#: e2fsck/unix.c:171
+#: e2fsck/unix.c:168
 #, c-format
 msgid "%8llu block used (%2.2f%%)\n"
 msgid_plural "%8llu blocks used (%2.2f%%)\n"
 msgstr[0] "%8llu Block wird benutzt (%2.2f%%)\n"
 msgstr[1] "%8llu Blöcke werden benutzt (%2.2f%%)\n"
 
-#: e2fsck/unix.c:174
+#: e2fsck/unix.c:171
 #, c-format
 msgid "%8u bad block\n"
 msgid_plural "%8u bad blocks\n"
 msgstr[0] "%u ungültiger Block\n"
 msgstr[1] "%u ungültige Blöcke\n"
 
-#: e2fsck/unix.c:176
+#: e2fsck/unix.c:173
 #, c-format
 msgid "%8u large file\n"
 msgid_plural "%8u large files\n"
 msgstr[0] "%8u große Datei\n"
 msgstr[1] "%8u große Dateien\n"
 
-#: e2fsck/unix.c:178
+#: e2fsck/unix.c:175
 #, c-format
 msgid ""
 "\n"
@@ -2672,84 +2708,84 @@ msgstr[1] ""
 "\n"
 "%8u reguläre Dateien\n"
 
-#: e2fsck/unix.c:180
+#: e2fsck/unix.c:177
 #, c-format
 msgid "%8u directory\n"
 msgid_plural "%8u directories\n"
 msgstr[0] "%8u Verzeichnis\n"
 msgstr[1] "%8u Verzeichnisse\n"
 
-#: e2fsck/unix.c:182
+#: e2fsck/unix.c:179
 #, c-format
 msgid "%8u character device file\n"
 msgid_plural "%8u character device files\n"
 msgstr[0] "%8u zeichenorientierte Gerätedatei\n"
 msgstr[1] "%8u zeichenorientierte Gerätedateien\n"
 
-#: e2fsck/unix.c:185
+#: e2fsck/unix.c:182
 #, c-format
 msgid "%8u block device file\n"
 msgid_plural "%8u block device files\n"
 msgstr[0] "%8u Blockgerätedatei\n"
 msgstr[1] "%8u Blockgerätedateien\n"
 
-#: e2fsck/unix.c:187
+#: e2fsck/unix.c:184
 #, c-format
 msgid "%8u fifo\n"
 msgid_plural "%8u fifos\n"
 msgstr[0] "%8u Fifo\n"
 msgstr[1] "%8u Fifos\n"
 
-#: e2fsck/unix.c:189
+#: e2fsck/unix.c:186
 #, c-format
 msgid "%8u link\n"
 msgid_plural "%8u links\n"
 msgstr[0] "%8u Verknüpfung\n"
 msgstr[1] "%8u Verknüpfungen\n"
 
-#: e2fsck/unix.c:192
+#: e2fsck/unix.c:189
 #, c-format
 msgid "%8u symbolic link"
 msgid_plural "%8u symbolic links"
 msgstr[0] "%8u symbolische Verknüpfung"
 msgstr[1] "%8u symbolische Verknüpfungen"
 
-#: e2fsck/unix.c:194
+#: e2fsck/unix.c:191
 #, c-format
 msgid " (%u fast symbolic link)\n"
 msgid_plural " (%u fast symbolic links)\n"
 msgstr[0] " (%u schnelle symbolische Verknüpfung)\n"
 msgstr[1] " (%u schnelle symbolische Verknüpfungen)\n"
 
-#: e2fsck/unix.c:198
+#: e2fsck/unix.c:195
 #, c-format
 msgid "%8u socket\n"
 msgid_plural "%8u sockets\n"
 msgstr[0] "%8u Socket\n"
 msgstr[1] "%8u Sockets\n"
 
-#: e2fsck/unix.c:201
+#: e2fsck/unix.c:198
 #, c-format
 msgid "%8u file\n"
 msgid_plural "%8u files\n"
 msgstr[0] "%8u Datei\n"
 msgstr[1] "%8u Dateien\n"
 
-#: e2fsck/unix.c:215 misc/badblocks.c:983 misc/tune2fs.c:1979 misc/util.c:147
+#: e2fsck/unix.c:212 misc/badblocks.c:983 misc/tune2fs.c:1979 misc/util.c:147
 #: resize/main.c:247
 #, c-format
 msgid "while determining whether %s is mounted."
 msgstr "bei der Prüfung, ob %s eingehängt ist."
 
-#: e2fsck/unix.c:233
-#, c-format
-msgid "Warning!  %s is mounted.\n"
+#: e2fsck/unix.c:230
+#, fuzzy, c-format
+msgid "Warning!  %s is %s.\n"
 msgstr "Warnung!  %s ist eingehängt.\n"
 
-#: e2fsck/unix.c:238
+#: e2fsck/unix.c:237
 #, c-format
-msgid "%s is mounted.  "
-msgstr "%s ist eingehängt.  "
+msgid "%s is %s.\n"
+msgstr ""
 
 #: e2fsck/unix.c:240
 msgid ""
@@ -2769,7 +2805,8 @@ msgid ""
 msgstr ""
 "\n"
 "\n"
-"WARNUNG!!!  Das Dateisystem ist eingehängt, Wenn Sie fortfahren, ***WERDEN***\n"
+"WARNUNG!!!  Das Dateisystem ist eingehängt, Wenn Sie fortfahren, "
+"***WERDEN***\n"
 "Sie ***SCHWERWIEGENDE*** Schäden am Dateisystem verursachen.\n"
 "\n"
 
@@ -2801,7 +2838,9 @@ msgstr " wurde %u mal ohne Überprüfung eingehängt"
 
 #: e2fsck/unix.c:354
 msgid " has filesystem last checked time in the future"
-msgstr " hat einen in der Zukunft liegenden Zeitpunkt der letzten Püfung des Dateisystems"
+msgstr ""
+" hat einen in der Zukunft liegenden Zeitpunkt der letzten Püfung des "
+"Dateisystems"
 
 #: e2fsck/unix.c:360
 #, c-format
@@ -2893,7 +2932,8 @@ msgstr "Die Optionen -n und -l/-L schliessen sich gegenseitig aus."
 #: e2fsck/unix.c:943
 #, c-format
 msgid "The -c and the -l/-L options may not be both used at the same time.\n"
-msgstr "Die -c und -l/-L Optionen dürfen nicht gleichzeitig verwendet werden.\n"
+msgstr ""
+"Die -c und -l/-L Optionen dürfen nicht gleichzeitig verwendet werden.\n"
 
 #: e2fsck/unix.c:991
 #, c-format
@@ -2915,7 +2955,9 @@ msgstr ""
 
 #: e2fsck/unix.c:1089
 #, c-format
-msgid "MMP interval is %u seconds and total wait time is %u seconds. Please wait...\n"
+msgid ""
+"MMP interval is %u seconds and total wait time is %u seconds. Please "
+"wait...\n"
 msgstr ""
 "MMP Intervall ist %u Sekunden und die gesammte Wartezeit ist %u Sekunden.\n"
 "Bitte warten...\n"
@@ -2933,48 +2975,48 @@ msgstr ""
 "starten Sie bitte:\n"
 "„tune2fs -f -E clear_mmp {device}“\n"
 
-#: e2fsck/unix.c:1162
+#: e2fsck/unix.c:1163
 #, c-format
 msgid "Error: ext2fs library version out of date!\n"
 msgstr "Fehler: ext2fs-Bibliotheks-Version ist zu alt!\n"
 
-#: e2fsck/unix.c:1170
+#: e2fsck/unix.c:1171
 msgid "while trying to initialize program"
 msgstr "bei der Programminitialisierung"
 
-#: e2fsck/unix.c:1193
+#: e2fsck/unix.c:1194
 #, c-format
 msgid "\tUsing %s, %s\n"
 msgstr "\tBenutze %s, %s\n"
 
-#: e2fsck/unix.c:1205
+#: e2fsck/unix.c:1206
 msgid "need terminal for interactive repairs"
 msgstr "Benötige ein Terminal für interaktive Reparaturen"
 
-#: e2fsck/unix.c:1253
+#: e2fsck/unix.c:1256
 #, c-format
 msgid "%s: %s trying backup blocks...\n"
 msgstr "%s: %s versuche es mit Backup-Blöcken...\n"
 
-#: e2fsck/unix.c:1255
+#: e2fsck/unix.c:1258
 msgid "Superblock invalid,"
 msgstr "Superblock ungültig"
 
-#: e2fsck/unix.c:1256
+#: e2fsck/unix.c:1259
 msgid "Group descriptors look bad..."
 msgstr "Gruppen-Deskriptoren scheinen defekt zu sein..."
 
-#: e2fsck/unix.c:1266
+#: e2fsck/unix.c:1269
 #, c-format
 msgid "%s: %s while using the backup blocks"
 msgstr "%s: %s beim Benutzen der Backup-Blöcke"
 
-#: e2fsck/unix.c:1270
+#: e2fsck/unix.c:1273
 #, c-format
 msgid "%s: going back to original superblock\n"
 msgstr "%s: es wird zum originalen Superblock zurück gekehrt\n"
 
-#: e2fsck/unix.c:1298
+#: e2fsck/unix.c:1301
 msgid ""
 "The filesystem revision is apparently too high for this version of e2fsck.\n"
 "(Or the filesystem superblock is corrupt)\n"
@@ -2984,31 +3026,32 @@ msgstr ""
 "von e2fsck (oder der Dateisystem-Superblock ist defekt).\n"
 "\n"
 
-#: e2fsck/unix.c:1304
+#: e2fsck/unix.c:1307
 msgid "Could this be a zero-length partition?\n"
 msgstr "Könnte es eine Partion der Länge Null sein?\n"
 
-#: e2fsck/unix.c:1307
+#: e2fsck/unix.c:1310
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
 msgstr "Sie benötigen %s- oder root-Rechte für das Dateisystem.\n"
 
-#: e2fsck/unix.c:1312
-msgid "Possibly non-existent or swap device?\n"
-msgstr "Möglicherweise ist die Partition nicht vorhanden oder eine Swap-Partition?\n"
-
 #: e2fsck/unix.c:1315
+msgid "Possibly non-existent or swap device?\n"
+msgstr ""
+"Möglicherweise ist die Partition nicht vorhanden oder eine Swap-Partition?\n"
+
+#: e2fsck/unix.c:1318
 msgid "Filesystem mounted or opened exclusively by another program?\n"
 msgstr ""
 "Ist das Dateisystem eingehängt or exklusiv von einem anderen Programm\n"
 "\n"
 "geöffnet worden?\n"
 
-#: e2fsck/unix.c:1318
+#: e2fsck/unix.c:1321
 msgid "Possibly non-existent device?\n"
 msgstr "Ist das Gerät möglicherweise nicht vorhanden?\n"
 
-#: e2fsck/unix.c:1321
+#: e2fsck/unix.c:1324
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
 "check of the device.\n"
@@ -3016,40 +3059,44 @@ msgstr ""
 "Laufwerk ist schreibgeschützt, nutzen Sie die -n Option\n"
 "um es im Nur-Lesen-Modus zu prüfen.\n"
 
-#: e2fsck/unix.c:1386
+#: e2fsck/unix.c:1389
 msgid "Get a newer version of e2fsck!"
 msgstr "Neuere Version von e2fsck benötigt!"
 
-#: e2fsck/unix.c:1434
+#: e2fsck/unix.c:1437
 #, c-format
 msgid "while checking ext3 journal for %s"
 msgstr "während der Prüfung des ext3-Journals für %s"
 
-#: e2fsck/unix.c:1445
-msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
-msgstr "Warnung: Überspringe Journal-Wiederherstellung, da das Dateisystem im Nur-Lesen-Modus ist.\n"
+#: e2fsck/unix.c:1448
+msgid ""
+"Warning: skipping journal recovery because doing a read-only filesystem "
+"check.\n"
+msgstr ""
+"Warnung: Überspringe Journal-Wiederherstellung, da das Dateisystem im Nur-"
+"Lesen-Modus ist.\n"
 
-#: e2fsck/unix.c:1458
+#: e2fsck/unix.c:1461
 #, c-format
 msgid "unable to set superblock flags on %s\n"
 msgstr "Superblock-Flags konntan auf %s nicht gesetzt werden\n"
 
-#: e2fsck/unix.c:1464
+#: e2fsck/unix.c:1467
 #, c-format
 msgid "while recovering ext3 journal of %s"
 msgstr "bei der Wiederherstellung des ext3-Journals von %s"
 
-#: e2fsck/unix.c:1489
+#: e2fsck/unix.c:1492
 #, c-format
 msgid "%s has unsupported feature(s):"
 msgstr "%s besitzt nicht unterstützte Eigenschaft(en):"
 
-#: e2fsck/unix.c:1504
+#: e2fsck/unix.c:1507
 #, c-format
 msgid "%s: warning: compression support is experimental.\n"
 msgstr "%s: Warnung: Die Kompressionsunterstützung ist experimentell.\n"
 
-#: e2fsck/unix.c:1510
+#: e2fsck/unix.c:1513
 #, c-format
 msgid ""
 "%s: e2fsck not compiled with HTREE support,\n"
@@ -3058,25 +3105,25 @@ msgstr ""
 "%s: e2fsck wurde ohne Unterstützung für HTREE kompiliert,\n"
 "\taber das Dateisystem %s besitzt HTREE Verzeichnisse.\n"
 
-#: e2fsck/unix.c:1562
+#: e2fsck/unix.c:1565
 #, c-format
 msgid "%s: %s while reading bad blocks inode\n"
 msgstr "%s: %s beim Lesen des Bad-Block-Inodes\n"
 
-#: e2fsck/unix.c:1565
+#: e2fsck/unix.c:1568
 msgid "This doesn't bode well, but we'll try to go on...\n"
 msgstr "Das verheißt nichts gutes, aber wir versuchen es trotzdem ..\n"
 
-#: e2fsck/unix.c:1607
+#: e2fsck/unix.c:1609
 #, c-format
 msgid "Creating journal (%d blocks): "
 msgstr "Erstelle Journal (%d Blöcke): "
 
-#: e2fsck/unix.c:1617
+#: e2fsck/unix.c:1619
 msgid " Done.\n"
 msgstr " Erledigt.\n"
 
-#: e2fsck/unix.c:1618
+#: e2fsck/unix.c:1620
 msgid ""
 "\n"
 "*** journal has been re-created - filesystem is now ext3 again ***\n"
@@ -3084,24 +3131,24 @@ msgstr ""
 "\n"
 "*** Journal wurde wiederhergestellt - Dateisystem ist nun wieder ext3 ***\n"
 
-#: e2fsck/unix.c:1630
+#: e2fsck/unix.c:1643
 msgid "Restarting e2fsck from the beginning...\n"
 msgstr "Beginne e2fsck neu ...\n"
 
-#: e2fsck/unix.c:1634
+#: e2fsck/unix.c:1647
 msgid "while resetting context"
 msgstr "beim Rücksetzen des Kontexts"
 
-#: e2fsck/unix.c:1641
+#: e2fsck/unix.c:1654
 #, c-format
 msgid "%s: e2fsck canceled.\n"
 msgstr "%s: e2fsck abgebrochen.\n"
 
-#: e2fsck/unix.c:1646
+#: e2fsck/unix.c:1659
 msgid "aborted"
 msgstr "abgebrochen"
 
-#: e2fsck/unix.c:1658 e2fsck/util.c:67
+#: e2fsck/unix.c:1671 e2fsck/util.c:67
 #, c-format
 msgid ""
 "\n"
@@ -3110,12 +3157,12 @@ msgstr ""
 "\n"
 "%s: ***** DATEISYSTEM WURDE VERÄNDERT *****\n"
 
-#: e2fsck/unix.c:1662
+#: e2fsck/unix.c:1675
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
 msgstr "%s: ***** LINUX MUSS NEU GESTARTET WERDEN *****\n"
 
-#: e2fsck/unix.c:1670 e2fsck/util.c:73
+#: e2fsck/unix.c:1683 e2fsck/util.c:73
 #, c-format
 msgid ""
 "\n"
@@ -3126,7 +3173,7 @@ msgstr ""
 "%s: ********** WARNUNG: Noch Fehler im Dateisystem  **********\n"
 "\n"
 
-#: e2fsck/unix.c:1710
+#: e2fsck/unix.c:1723
 msgid "while setting block group checksum info"
 msgstr "beim Setzen der Blockgruppen-Prüfsummeninfo"
 
@@ -3209,7 +3256,9 @@ msgstr "Schreibe Block- und Inode-Bitmaps"
 #: e2fsck/util.c:302
 #, c-format
 msgid "while rewriting block and inode bitmaps for %s"
-msgstr "während des wiederholten Versuches, Block- und Inode-Bitmaps für %s zu schreiben."
+msgstr ""
+"während des wiederholten Versuches, Block- und Inode-Bitmaps für %s zu "
+"schreiben."
 
 #: e2fsck/util.c:314
 #, c-format
@@ -3259,8 +3308,12 @@ msgid "while allocating zeroizing buffer"
 msgstr "beim reservieren eines Puffers zum Nullen"
 
 #: e2fsck/util.c:788
-msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is running.\n"
-msgstr "UNERWARTETE INKONSISTENZ: das Dateisystem wird modifiziert während fsck läuft.\n"
+msgid ""
+"UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is "
+"running.\n"
+msgstr ""
+"UNERWARTETE INKONSISTENZ: das Dateisystem wird modifiziert während fsck "
+"läuft.\n"
 
 #: misc/badblocks.c:69
 msgid "done                                                 \n"
@@ -3270,12 +3323,14 @@ msgstr "erledigt                                             \n"
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e max_bad_blocks]\n"
+"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e "
+"max_bad_blocks]\n"
 "       [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 "       device [last_block [first_block]]\n"
 msgstr ""
 "Aufruf: %s [-b Blockgröße] [-i Eingabedatei] [-o Ausgabedatei] [-svwnf]\n"
-"        [-c Blöcke_auf_einmal] [-d Verzögerungsfaktor_zwischen_Lesedurchgängen]\n"
+"        [-c Blöcke_auf_einmal] [-d "
+"Verzögerungsfaktor_zwischen_Lesedurchgängen]\n"
 "        [-e maximale_Bad_Blocks] [-p Anzahl_Durchgänge]\n"
 "        [-t Testmuster [-t Testmuster [...]]]\n"
 "        Gerät [letzter_Block [Startblock]]\n"
@@ -3356,11 +3411,13 @@ msgstr "Lesen und Vergleichen:"
 
 #: misc/badblocks.c:771
 msgid "Checking for bad blocks in non-destructive read-write mode\n"
-msgstr "Suche nach defekten Blöcken im zerstörungsfreien Lesen+Schreiben-Modus\n"
+msgstr ""
+"Suche nach defekten Blöcken im zerstörungsfreien Lesen+Schreiben-Modus\n"
 
 #: misc/badblocks.c:777
 msgid "Checking for bad blocks (non-destructive read-write test)\n"
-msgstr "Suche nach defekten Blöcken (zerstörungsfreier Lesen+Schreiben-Modus)\n"
+msgstr ""
+"Suche nach defekten Blöcken (zerstörungsfreier Lesen+Schreiben-Modus)\n"
 
 #: misc/badblocks.c:784
 msgid ""
@@ -3382,7 +3439,8 @@ msgstr "%s ist eingehängt; "
 
 #: misc/badblocks.c:990
 msgid "badblocks forced anyway.  Hope /etc/mtab is incorrect.\n"
-msgstr "Badblocks wird trotzdem erzwungen. Hoffentlich ist /etc/mtab nicht korrekt.\n"
+msgstr ""
+"Badblocks wird trotzdem erzwungen. Hoffentlich ist /etc/mtab nicht korrekt.\n"
 
 #: misc/badblocks.c:995
 msgid "it's not safe to run badblocks!\n"
@@ -3395,7 +3453,8 @@ msgstr "%s wird offensichtlich vom System genutzt; "
 
 #: misc/badblocks.c:1003
 msgid "badblocks forced anyway.\n"
-msgstr "Badblocks wird trotzdem erzwungen. Hoffentlich ist /etc/mtab nicht korrekt.\n"
+msgstr ""
+"Badblocks wird trotzdem erzwungen. Hoffentlich ist /etc/mtab nicht korrekt.\n"
 
 #: misc/badblocks.c:1023
 #, c-format
@@ -3419,7 +3478,8 @@ msgstr "Zufälliges Testmuster ist im Nur-Lesen-Modus nicht erlaubt"
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size manually\n"
-msgstr "Größe des Gerätes ist nicht feststellbar. Sie müssen sie manuell angeben.\n"
+msgstr ""
+"Größe des Gerätes ist nicht feststellbar. Sie müssen sie manuell angeben.\n"
 
 #: misc/badblocks.c:1189
 msgid "while trying to determine device size"
@@ -3511,58 +3571,59 @@ msgstr "= ist inkompatibel mit - und +\n"
 msgid "Must use '-v', =, - or +\n"
 msgstr "Benutze „-v“, =, - oder +\n"
 
-#: misc/dumpe2fs.c:54
+#: misc/dumpe2fs.c:55
 #, c-format
 msgid "Usage: %s [-bfhixV] [-o superblock=<num>] [-o blocksize=<num>] device\n"
-msgstr "Aufruf: %s [-bfhixV] [-o superblock=<Nummer>] [-o blocksize=<Nummer>] Gerät\n"
+msgstr ""
+"Aufruf: %s [-bfhixV] [-o superblock=<Nummer>] [-o blocksize=<Nummer>] Gerät\n"
 
-#: misc/dumpe2fs.c:152
+#: misc/dumpe2fs.c:159
 msgid "blocks"
 msgstr "Blöcke"
 
-#: misc/dumpe2fs.c:161
+#: misc/dumpe2fs.c:168
 msgid "clusters"
 msgstr "Cluster"
 
-#: misc/dumpe2fs.c:189
+#: misc/dumpe2fs.c:196
 #, c-format
 msgid "Group %lu: (Blocks "
 msgstr "Gruppe %lu: (Blöcke "
 
-#: misc/dumpe2fs.c:197
+#: misc/dumpe2fs.c:204
 #, c-format
 msgid "  Checksum 0x%04x"
 msgstr " Prüfsumme 0x%04x"
 
-#: misc/dumpe2fs.c:199
+#: misc/dumpe2fs.c:206
 #, c-format
 msgid " (EXPECTED 0x%04x)"
 msgstr " (0x%04x ERWARTET)"
 
-#: misc/dumpe2fs.c:200
+#: misc/dumpe2fs.c:207
 #, c-format
 msgid ", unused inodes %u\n"
 msgstr ", ungenutzte Inodes %u\n"
 
-#: misc/dumpe2fs.c:205
+#: misc/dumpe2fs.c:212
 #, c-format
 msgid "  %s superblock at "
 msgstr "  %s Superblock in "
 
-#: misc/dumpe2fs.c:206
+#: misc/dumpe2fs.c:213
 msgid "Primary"
 msgstr "Primary"
 
-#: misc/dumpe2fs.c:206
+#: misc/dumpe2fs.c:213
 msgid "Backup"
 msgstr "Backup"
 
-#: misc/dumpe2fs.c:210
+#: misc/dumpe2fs.c:217
 #, c-format
 msgid ", Group descriptors at "
 msgstr ", Gruppendeskriptoren in "
 
-#: misc/dumpe2fs.c:214
+#: misc/dumpe2fs.c:221
 #, c-format
 msgid ""
 "\n"
@@ -3571,20 +3632,20 @@ msgstr ""
 "\n"
 "  reservierte GDT Blöcke bei "
 
-#: misc/dumpe2fs.c:221
+#: misc/dumpe2fs.c:228
 #, c-format
 msgid " Group descriptor at "
 msgstr ", Gruppendeskriptor in "
 
-#: misc/dumpe2fs.c:227
+#: misc/dumpe2fs.c:234
 msgid "  Block bitmap at "
 msgstr "  Block bitmap in "
 
-#: misc/dumpe2fs.c:231
+#: misc/dumpe2fs.c:238
 msgid ", Inode bitmap at "
 msgstr ", Inode Bitmap in "
 
-#: misc/dumpe2fs.c:235
+#: misc/dumpe2fs.c:242
 msgid ""
 "\n"
 "  Inode table at "
@@ -3592,7 +3653,7 @@ msgstr ""
 "\n"
 "  Inode-Tabelle in "
 
-#: misc/dumpe2fs.c:241
+#: misc/dumpe2fs.c:248
 #, c-format
 msgid ""
 "\n"
@@ -3601,50 +3662,50 @@ msgstr ""
 "\n"
 "  %u freie %s, %u freie Inodes, %u Verzeichnisse%s"
 
-#: misc/dumpe2fs.c:248
+#: misc/dumpe2fs.c:255
 #, c-format
 msgid ", %u unused inodes\n"
 msgstr ", %u ungenutzte Inodes\n"
 
-#: misc/dumpe2fs.c:251
+#: misc/dumpe2fs.c:258
 msgid "  Free blocks: "
 msgstr "  Freie Blöcke: "
 
-#: misc/dumpe2fs.c:262
+#: misc/dumpe2fs.c:269
 msgid "  Free inodes: "
 msgstr "  Freie Inodes: "
 
-#: misc/dumpe2fs.c:293
+#: misc/dumpe2fs.c:300
 msgid "while printing bad block list"
 msgstr "beim Ausgeben der „Bad Block“-Liste"
 
-#: misc/dumpe2fs.c:299
+#: misc/dumpe2fs.c:306
 #, c-format
 msgid "Bad blocks: %u"
 msgstr "Bad Blocks: %u"
 
-#: misc/dumpe2fs.c:326 misc/tune2fs.c:302
+#: misc/dumpe2fs.c:333 misc/tune2fs.c:302
 msgid "while reading journal inode"
 msgstr "beim Lesen des Journal-Inodes"
 
-#: misc/dumpe2fs.c:332
+#: misc/dumpe2fs.c:339
 msgid "while opening journal inode"
 msgstr "beim Lesen des Journal-Inodes"
 
-#: misc/dumpe2fs.c:338
+#: misc/dumpe2fs.c:345
 msgid "while reading journal super block"
 msgstr "beim Lesen des Journal-Superblocks"
 
-#: misc/dumpe2fs.c:348
+#: misc/dumpe2fs.c:355
 #, c-format
 msgid "Journal features:        "
 msgstr "Jounaleigenschaften:        "
 
-#: misc/dumpe2fs.c:361
+#: misc/dumpe2fs.c:368
 msgid "Journal size:             "
 msgstr "Journalgrösse:            "
 
-#: misc/dumpe2fs.c:372
+#: misc/dumpe2fs.c:379
 #, c-format
 msgid ""
 "Journal length:           %u\n"
@@ -3655,15 +3716,20 @@ msgstr ""
 "Journal-Sequenz:          0x%08x\n"
 "Journal-Start:            %u\n"
 
-#: misc/dumpe2fs.c:391 misc/tune2fs.c:218
+#: misc/dumpe2fs.c:386
+#, fuzzy, c-format
+msgid "Journal errno:            %d\n"
+msgstr "Jounalnutzer:            %s\n"
+
+#: misc/dumpe2fs.c:401 misc/tune2fs.c:218
 msgid "while reading journal superblock"
 msgstr "beim Lesen des Journal-Superblocks"
 
-#: misc/dumpe2fs.c:399
+#: misc/dumpe2fs.c:409
 msgid "Couldn't find journal superblock magic numbers"
 msgstr "Konnte die magische Nummer des Journal-Superblocks nicht finden"
 
-#: misc/dumpe2fs.c:403
+#: misc/dumpe2fs.c:413
 #, c-format
 msgid ""
 "\n"
@@ -3682,27 +3748,27 @@ msgstr ""
 "Journal Start:            %u\n"
 "Journal Anzahl Nutzer:    %u\n"
 
-#: misc/dumpe2fs.c:416
+#: misc/dumpe2fs.c:426
 #, c-format
 msgid "Journal users:            %s\n"
 msgstr "Jounalnutzer:            %s\n"
 
-#: misc/dumpe2fs.c:432 misc/mke2fs.c:665 misc/tune2fs.c:1137
+#: misc/dumpe2fs.c:442 misc/mke2fs.c:662 misc/tune2fs.c:1137
 #, c-format
 msgid "Couldn't allocate memory to parse options!\n"
 msgstr "Speicher zum Parsen der Optionen konnte nicht reserviert werden!\n"
 
-#: misc/dumpe2fs.c:458
+#: misc/dumpe2fs.c:468
 #, c-format
 msgid "Invalid superblock parameter: %s\n"
 msgstr "Ungültiger Superblock-Parameter: %s\n"
 
-#: misc/dumpe2fs.c:473
+#: misc/dumpe2fs.c:483
 #, c-format
 msgid "Invalid blocksize parameter: %s\n"
 msgstr "Ungültiger Blockgrössen-Parameter: %s\n"
 
-#: misc/dumpe2fs.c:484
+#: misc/dumpe2fs.c:494
 #, c-format
 msgid ""
 "\n"
@@ -3726,18 +3792,18 @@ msgstr ""
 "\tblocksize=<Blockgrösse>\n"
 "\n"
 
-#: misc/dumpe2fs.c:544 misc/mke2fs.c:1528
+#: misc/dumpe2fs.c:554 misc/mke2fs.c:1525
 #, c-format
 msgid "\tUsing %s\n"
 msgstr "\tBenutze %s\n"
 
-#: misc/dumpe2fs.c:580 misc/e2image.c:1310 misc/tune2fs.c:1923
+#: misc/dumpe2fs.c:590 misc/e2image.c:1309 misc/tune2fs.c:1923
 #: resize/main.c:305
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Kann keinen gültigen Dateisystem-Superblock finden.\n"
 
-#: misc/dumpe2fs.c:606
+#: misc/dumpe2fs.c:618
 #, c-format
 msgid ""
 "\n"
@@ -3776,10 +3842,11 @@ msgstr "beim Schreiben der Block-Bitmap"
 msgid "while writing inode bitmap"
 msgstr "beim Schreiben der Inode-Bitmap"
 
-#: misc/e2image.c:1342
+#: misc/e2image.c:1341
 #, c-format
 msgid "while trying to convert qcow2 image (%s) into raw image (%s)"
-msgstr "beim Versuch, das Qcow2-Image (%s) in ein rohes Image (%s) zu konvertieren"
+msgstr ""
+"beim Versuch, das Qcow2-Image (%s) in ein rohes Image (%s) zu konvertieren"
 
 #: misc/e2label.c:58
 #, c-format
@@ -3873,17 +3940,17 @@ msgstr "Zurückgespielte Transaktion der Größe %zd an Position %llu\n"
 msgid "Failed write %s\n"
 msgstr "Gescheitertes Schreiben von %s\n"
 
-#: misc/fsck.c:344
+#: misc/fsck.c:343
 #, c-format
 msgid "WARNING: couldn't open %s: %s\n"
 msgstr "WARNUNG: Konnte %s nicht öffnen: %s\n"
 
-#: misc/fsck.c:354
+#: misc/fsck.c:353
 #, c-format
 msgid "WARNING: bad format on line %d of %s\n"
 msgstr "WARNUNG: falsches Format in Zeile %d von %s\n"
 
-#: misc/fsck.c:371
+#: misc/fsck.c:370
 msgid ""
 "WARNING: Your /etc/fstab does not contain the fsck passno\n"
 "\tfield.  I will kludge around things for you, but you\n"
@@ -3896,37 +3963,37 @@ msgstr ""
 "\twie möglich korrigieren.\n"
 "\n"
 
-#: misc/fsck.c:479
+#: misc/fsck.c:478
 #, c-format
 msgid "fsck: %s: not found\n"
 msgstr "fsck: %s: nicht gefunden\n"
 
-#: misc/fsck.c:595
+#: misc/fsck.c:594
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
 msgstr "%s: wait: kein Kindprozess mehr?!?\n"
 
-#: misc/fsck.c:617
+#: misc/fsck.c:616
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
 msgstr "Warnung... %s für Gerät %s wurde mit Signal %d beendet.\n"
 
-#: misc/fsck.c:623
+#: misc/fsck.c:622
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
 msgstr "%s %s: Status ist %x, sollte nie vorkommen.\n"
 
-#: misc/fsck.c:662
+#: misc/fsck.c:661
 #, c-format
 msgid "Finished with %s (exit status %d)\n"
 msgstr "Beendet mit %s (exit status %d)\n"
 
-#: misc/fsck.c:722
+#: misc/fsck.c:721
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
 msgstr "%s: Fehler %d bei Ausführung von fsck.%s für %s\n"
 
-#: misc/fsck.c:743
+#: misc/fsck.c:742
 msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
@@ -3934,41 +4001,46 @@ msgstr ""
 "Bei -t müssen entweder allen oder keinem Dateisystem ein „no“ bzw. „!“\n"
 "vorangestellt werden.\n"
 
-#: misc/fsck.c:762
+#: misc/fsck.c:761
 msgid "Couldn't allocate memory for filesystem types\n"
 msgstr "Kann keinen Speicher für Dateisystemtypen reservieren.\n"
 
-#: misc/fsck.c:885
+#: misc/fsck.c:884
 #, c-format
-msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
+msgid ""
+"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
+"number\n"
 msgstr ""
 "%s: überspringe die ungültige Zeile in /etc/fstab: bind mount mit\n"
 " Durchgangsnummer für fsck, die nicht Null ist\n"
 
-#: misc/fsck.c:912
+#: misc/fsck.c:911
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
 msgstr "fsck: kann %s nicht überprüfen: fsck.%s nicht gefunden\n"
 
-#: misc/fsck.c:968
+#: misc/fsck.c:967
 msgid "Checking all file systems.\n"
 msgstr "Alle Dateisysteme werden überprüft.\n"
 
-#: misc/fsck.c:1059
+#: misc/fsck.c:1058
 #, c-format
 msgid "--waiting-- (pass %d)\n"
 msgstr "--warten-- (Durchgang %d)\n"
 
-#: misc/fsck.c:1079
-msgid "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
-msgstr "Aufruf: fsck [-AMNPRTV] [ -C [ fd ] ] [-t Datesystemtyp] [FS-Optionen] [Dateisystem...]\n"
+#: misc/fsck.c:1078
+msgid ""
+"Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
+msgstr ""
+"Aufruf: fsck [-AMNPRTV] [ -C [ fd ] ] [-t Datesystemtyp] [FS-Optionen] "
+"[Dateisystem...]\n"
 
-#: misc/fsck.c:1121
+#: misc/fsck.c:1120
 #, c-format
 msgid "%s: too many devices\n"
 msgstr "%s: zu viele Geräte\n"
 
-#: misc/fsck.c:1154 misc/fsck.c:1240
+#: misc/fsck.c:1153 misc/fsck.c:1239
 #, c-format
 msgid "%s: too many arguments\n"
 msgstr "%s: zu viele Argumente\n"
@@ -3988,7 +4060,7 @@ msgstr "Beim Lesen der Flags von %s"
 msgid "While reading version on %s"
 msgstr "Beim Lesen der Version von %s"
 
-#: misc/mke2fs.c:117
+#: misc/mke2fs.c:114
 #, c-format
 msgid ""
 "Usage: %s [-c|-l filename] [-b block-size] [-C cluster-size]\n"
@@ -3997,7 +4069,8 @@ msgid ""
 "\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 "\t[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]\n"
 "\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]\n"
-"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-count]\n"
+"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-"
+"count]\n"
 msgstr ""
 "Aufruf: %s [-c|-l Dateiname] [-b Blockgröße] [-C Clustergröße]\n"
 "\t[-i Bytes-pro-Inode] [-I Inodegrösse] [-J Journal-Optionen]\n"
@@ -4009,130 +4082,132 @@ msgstr ""
 "\t[-t Dateisystemtyp] [-T Verwendungs-Typ ] [-U UUID] [-jnqvFKSV]\n"
 "\tGerät [Block-Anzahl]\n"
 
-#: misc/mke2fs.c:220
+#: misc/mke2fs.c:217
 #, c-format
 msgid "Running command: %s\n"
 msgstr "Es wird ausgeführt: %s\n"
 
-#: misc/mke2fs.c:224
+#: misc/mke2fs.c:221
 #, c-format
 msgid "while trying to run '%s'"
 msgstr "während des Versuchs, „%s“ auszuführen"
 
-#: misc/mke2fs.c:231
+#: misc/mke2fs.c:228
 msgid "while processing list of bad blocks from program"
 msgstr "beim Auswerten der „Bad Block“-Liste vom Programm"
 
-#: misc/mke2fs.c:258
+#: misc/mke2fs.c:255
 #, c-format
 msgid "Block %d in primary superblock/group descriptor area bad.\n"
 msgstr "Block %d im primären Superblock/Gruppendeskriptorbereich defekt.\n"
 
-#: misc/mke2fs.c:260
+#: misc/mke2fs.c:257
 #, c-format
 msgid "Blocks %u through %u must be good in order to build a filesystem.\n"
 msgstr ""
 "Die Blöcke %u bis einschließlich %u müssen in Ordung sein, um ein\n"
 "\tDateisystem zu erstellen.\n"
 
-#: misc/mke2fs.c:263
+#: misc/mke2fs.c:260
 msgid "Aborting....\n"
 msgstr "Abbruch...\n"
 
-#: misc/mke2fs.c:283
+#: misc/mke2fs.c:280
 #, c-format
 msgid ""
 "Warning: the backup superblock/group descriptors at block %u contain\n"
 "\tbad blocks.\n"
 "\n"
 msgstr ""
-"Warnung: die Sicherung des Superblock bzw. Gruppendeskriptors in Block %u enthält\n"
+"Warnung: die Sicherung des Superblock bzw. Gruppendeskriptors in Block %u "
+"enthält\n"
 "\tdefekte Blöcke.\n"
 "\n"
 
-#: misc/mke2fs.c:302
+#: misc/mke2fs.c:299
 msgid "while marking bad blocks as used"
 msgstr "beim Markieren von defekten Blöcken als „belegt“"
 
-#: misc/mke2fs.c:319
+#: misc/mke2fs.c:316
 msgid "Writing inode tables: "
 msgstr "Inode-Tabellen werden geschrieben: "
 
-#: misc/mke2fs.c:340
+#: misc/mke2fs.c:337
 #, c-format
 msgid ""
 "\n"
 "Could not write %d blocks in inode table starting at %llu: %s\n"
 msgstr ""
 "\n"
-"%d Blöcke konnten nicht in die Inoden-Tabellen beginnend bei %llu geschrieben werden: %s\n"
+"%d Blöcke konnten nicht in die Inoden-Tabellen beginnend bei %llu "
+"geschrieben werden: %s\n"
 
-#: misc/mke2fs.c:354 misc/mke2fs.c:2177 misc/mke2fs.c:2431
+#: misc/mke2fs.c:351 misc/mke2fs.c:2175 misc/mke2fs.c:2429
 #, c-format
 msgid "done                            \n"
 msgstr "erledigt                        \n"
 
-#: misc/mke2fs.c:365
+#: misc/mke2fs.c:362
 msgid "while creating root dir"
 msgstr "beim Erstellen des Wurzelverzeichnisses"
 
-#: misc/mke2fs.c:372
+#: misc/mke2fs.c:369
 msgid "while reading root inode"
 msgstr "beim Lesen des Root-Inode"
 
-#: misc/mke2fs.c:386
+#: misc/mke2fs.c:383
 msgid "while setting root inode ownership"
 msgstr "beim Setzen des Root-Inode-Eigentümers"
 
-#: misc/mke2fs.c:404
+#: misc/mke2fs.c:401
 msgid "while creating /lost+found"
 msgstr "beim Erstellen von /lost+found"
 
-#: misc/mke2fs.c:411
+#: misc/mke2fs.c:408
 msgid "while looking up /lost+found"
 msgstr "beim Suchen von /lost+found"
 
-#: misc/mke2fs.c:424
+#: misc/mke2fs.c:421
 msgid "while expanding /lost+found"
 msgstr "beim Expandieren von /lost+found"
 
-#: misc/mke2fs.c:439
+#: misc/mke2fs.c:436
 msgid "while setting bad block inode"
 msgstr "beim Setzen des „Bad Block“-Inodes"
 
-#: misc/mke2fs.c:466
+#: misc/mke2fs.c:463
 #, c-format
 msgid "Out of memory erasing sectors %d-%d\n"
 msgstr "Speicher voll beim Löschen der Sektoren %d-%d\n"
 
-#: misc/mke2fs.c:476
+#: misc/mke2fs.c:473
 #, c-format
 msgid "Warning: could not read block 0: %s\n"
 msgstr "Warnung: konnte Block %s nicht lesen\n"
 
-#: misc/mke2fs.c:492
+#: misc/mke2fs.c:489
 #, c-format
 msgid "Warning: could not erase sector %d: %s\n"
 msgstr "Warnung: konnte Sektor %d: %s nicht löschen\n"
 
-#: misc/mke2fs.c:508
+#: misc/mke2fs.c:505
 msgid "while initializing journal superblock"
 msgstr "beim Initialisieren des Journal-Superblocks"
 
-#: misc/mke2fs.c:516
+#: misc/mke2fs.c:513
 msgid "Zeroing journal device: "
 msgstr "Überschreibe Journal-Device mit Nullen: "
 
-#: misc/mke2fs.c:528
+#: misc/mke2fs.c:525
 #, c-format
 msgid "while zeroing journal device (block %llu, count %d)"
 msgstr "beim Überschreiben des Journal-Device mit Nullen (Block %llu, Nr. %d)"
 
-#: misc/mke2fs.c:546
+#: misc/mke2fs.c:543
 msgid "while writing journal superblock"
 msgstr "beim Schreiben des Journal-Superblocks"
 
-#: misc/mke2fs.c:561
+#: misc/mke2fs.c:558
 #, c-format
 msgid ""
 "warning: %llu blocks unused.\n"
@@ -4141,124 +4216,126 @@ msgstr ""
 "Warnung: %llu Blöcke unbenutzt.\n"
 "\n"
 
-#: misc/mke2fs.c:566
+#: misc/mke2fs.c:563
 #, c-format
 msgid "Filesystem label=%s\n"
 msgstr "Dateisystem-Label=%s\n"
 
-#: misc/mke2fs.c:569
+#: misc/mke2fs.c:566
 #, c-format
 msgid "OS type: %s\n"
 msgstr "OS-Typ: %s\n"
 
-#: misc/mke2fs.c:571
+#: misc/mke2fs.c:568
 #, c-format
 msgid "Block size=%u (log=%u)\n"
 msgstr "Blockgröße=%u (log=%u)\n"
 
-#: misc/mke2fs.c:575
+#: misc/mke2fs.c:572
 #, c-format
 msgid "Cluster size=%u (log=%u)\n"
 msgstr "Clustergröße=%u (log=%u)\n"
 
-#: misc/mke2fs.c:579
+#: misc/mke2fs.c:576
 #, c-format
 msgid "Fragment size=%u (log=%u)\n"
 msgstr "Fragmentgröße=%u (log=%u)\n"
 
-#: misc/mke2fs.c:581
+#: misc/mke2fs.c:578
 #, c-format
 msgid "Stride=%u blocks, Stripe width=%u blocks\n"
 msgstr "Stride=%u Blöcke, Stripebreite=%u Blöcke\n"
 
-#: misc/mke2fs.c:583
+#: misc/mke2fs.c:580
 #, c-format
 msgid "%u inodes, %llu blocks\n"
 msgstr "%u Inodes, %llu Blöcke\n"
 
-#: misc/mke2fs.c:585
+#: misc/mke2fs.c:582
 #, c-format
 msgid "%llu blocks (%2.2f%%) reserved for the super user\n"
 msgstr "%llu Blöcke (%2.2f%%) reserviert für den Superuser\n"
 
-#: misc/mke2fs.c:588
+#: misc/mke2fs.c:585
 #, c-format
 msgid "First data block=%u\n"
 msgstr "Erster Datenblock=%u\n"
 
-#: misc/mke2fs.c:590
+#: misc/mke2fs.c:587
 #, c-format
 msgid "Maximum filesystem blocks=%lu\n"
 msgstr "Maximale Dateisystem-Blöcke=%lu\n"
 
-#: misc/mke2fs.c:594
+#: misc/mke2fs.c:591
 #, c-format
 msgid "%u block groups\n"
 msgstr "%u Blockgruppen\n"
 
-#: misc/mke2fs.c:596
+#: misc/mke2fs.c:593
 #, c-format
 msgid "%u block group\n"
 msgstr "%u Blockgruppe\n"
 
-#: misc/mke2fs.c:599
+#: misc/mke2fs.c:596
 #, c-format
 msgid "%u blocks per group, %u clusters per group\n"
 msgstr "%u Blöcke pro Gruppe, %u Cluster pro Gruppe\n"
 
-#: misc/mke2fs.c:602
+#: misc/mke2fs.c:599
 #, c-format
 msgid "%u blocks per group, %u fragments per group\n"
 msgstr "%u Blöcke pro Gruppe, %u Fragmente pro Gruppe\n"
 
-#: misc/mke2fs.c:604
+#: misc/mke2fs.c:601
 #, c-format
 msgid "%u inodes per group\n"
 msgstr "%u Inodes pro Gruppe\n"
 
-#: misc/mke2fs.c:611
+#: misc/mke2fs.c:608
 #, c-format
 msgid "Superblock backups stored on blocks: "
 msgstr "Superblock-Sicherungskopien gespeichert in den Blöcken: "
 
-#: misc/mke2fs.c:690 misc/tune2fs.c:1165
+#: misc/mke2fs.c:687 misc/tune2fs.c:1165
 #, c-format
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr "Ungültiges mmp_update_interval: %s\n"
 
-#: misc/mke2fs.c:704
+#: misc/mke2fs.c:701
 #, c-format
 msgid "Invalid stride parameter: %s\n"
 msgstr "Ungültiger \"stride\"-Parameter: %s\n"
 
-#: misc/mke2fs.c:719
+#: misc/mke2fs.c:716
 #, c-format
 msgid "Invalid stripe-width parameter: %s\n"
 msgstr "Ungültiger Stripebreite-Parameter: %s\n"
 
-#: misc/mke2fs.c:742
+#: misc/mke2fs.c:739
 #, c-format
 msgid "Invalid resize parameter: %s\n"
 msgstr "Ungültiger \"resize\"-Parameter: %s\n"
 
-#: misc/mke2fs.c:749
+#: misc/mke2fs.c:746
 #, c-format
 msgid "The resize maximum must be greater than the filesystem size.\n"
-msgstr "Das Maximum der Vergrösserung muss oberhalb als der Dateisystem-Grösse liegen.\n"
+msgstr ""
+"Das Maximum der Vergrösserung muss oberhalb als der Dateisystem-Grösse "
+"liegen.\n"
 
-#: misc/mke2fs.c:773
+#: misc/mke2fs.c:770
 #, c-format
 msgid "On-line resizing not supported with revision 0 filesystems\n"
 msgstr ""
 "Online-Grössenänderungen werden bei Revison 0 Dateisystemen nicht\n"
 "\tunterstützt\n"
 
-#: misc/mke2fs.c:811
+#: misc/mke2fs.c:808
 #, c-format
 msgid "Invalid quotatype parameter: %s\n"
 msgstr "Ungültiger Quotatyp-Parameter: %s\n"
 
-#: misc/mke2fs.c:822
+#: misc/mke2fs.c:819
 #, c-format
 msgid ""
 "\n"
@@ -4299,7 +4376,7 @@ msgstr ""
 "\tquotatype=<usr ODER grp>\n"
 "\n"
 
-#: misc/mke2fs.c:842
+#: misc/mke2fs.c:839
 #, c-format
 msgid ""
 "\n"
@@ -4311,7 +4388,7 @@ msgstr ""
 "\tStride %u.\n"
 "\n"
 
-#: misc/mke2fs.c:881
+#: misc/mke2fs.c:878
 #, c-format
 msgid ""
 "Syntax error in mke2fs config file (%s, line #%d)\n"
@@ -4320,17 +4397,17 @@ msgstr ""
 "Syntax Fehler in der Konfigurationsdatei von mkefs (%s, Zeile %d)\n"
 "\t%s\n"
 
-#: misc/mke2fs.c:894 misc/tune2fs.c:393
+#: misc/mke2fs.c:891 misc/tune2fs.c:393
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr "Ungültige Dateisystem-Option gesetzt: %s\n"
 
-#: misc/mke2fs.c:906 misc/tune2fs.c:345
+#: misc/mke2fs.c:903 misc/tune2fs.c:345
 #, c-format
 msgid "Invalid mount option set: %s\n"
 msgstr "Ungültige Einhänge-Option gesetzt: %s\n"
 
-#: misc/mke2fs.c:1046
+#: misc/mke2fs.c:1043
 #, c-format
 msgid ""
 "\n"
@@ -4339,21 +4416,22 @@ msgstr ""
 "\n"
 "Ihre mke2fs.conf Datei enhält keine Definitiion des %s Dateisystems.\n"
 
-#: misc/mke2fs.c:1050
+#: misc/mke2fs.c:1047
 #, c-format
 msgid ""
 "You probably need to install an updated mke2fs.conf file.\n"
 "\n"
 msgstr ""
-"Sie müssen wahrscheinlich eine aktualisierte mke2fs.conf Datei installieren.\n"
+"Sie müssen wahrscheinlich eine aktualisierte mke2fs.conf Datei "
+"installieren.\n"
 "\n"
 
-#: misc/mke2fs.c:1054
+#: misc/mke2fs.c:1051
 #, c-format
 msgid "Aborting...\n"
 msgstr "Breche ab...\n"
 
-#: misc/mke2fs.c:1094
+#: misc/mke2fs.c:1091
 #, c-format
 msgid ""
 "\n"
@@ -4364,118 +4442,122 @@ msgstr ""
 "Warnung: Der fs_type %s ist in mke2fs.conf nicht definiert\n"
 "\n"
 
-#: misc/mke2fs.c:1252
+#: misc/mke2fs.c:1249
 #, c-format
 msgid "Couldn't allocate memory for new PATH.\n"
 msgstr "Kann keinen Speicher für den neuen PATH reservieren\n"
 
-#: misc/mke2fs.c:1293
+#: misc/mke2fs.c:1290
 #, c-format
 msgid "Couldn't init profile successfully (error: %ld).\n"
 msgstr "Das Profil konnte nicht erfolgreich initiiert werden (Fehler: %ld).\n"
 
-#: misc/mke2fs.c:1333
+#: misc/mke2fs.c:1330
 #, c-format
 msgid "invalid block size - %s"
 msgstr "bad block Größe - %s"
 
-#: misc/mke2fs.c:1337
+#: misc/mke2fs.c:1334
 #, c-format
 msgid "Warning: blocksize %d not usable on most systems.\n"
 msgstr "Warnung: Blockgröße %d ist auf den meisten Systemen unbrauchbar.\n"
 
-#: misc/mke2fs.c:1353
+#: misc/mke2fs.c:1350
 #, c-format
 msgid "invalid cluster size - %s"
 msgstr "unzulässige Clustergröße - %s"
 
-#: misc/mke2fs.c:1365
+#: misc/mke2fs.c:1362
 msgid "Illegal number for blocks per group"
 msgstr "unzulässige Angabe für Blöcke pro Gruppe"
 
-#: misc/mke2fs.c:1370
+#: misc/mke2fs.c:1367
 msgid "blocks per group must be multiple of 8"
 msgstr "Anzahl der Blöcke pro Gruppe muss ein Vielfaches von 8 sein"
 
-#: misc/mke2fs.c:1378
+#: misc/mke2fs.c:1375
 msgid "Illegal number for flex_bg size"
 msgstr "Illegale Zahl für flex_bg Größe"
 
-#: misc/mke2fs.c:1384
+#: misc/mke2fs.c:1381
 msgid "flex_bg size must be a power of 2"
 msgstr "flex_bg Größe muss eine Zweierpotenz sein"
 
-#: misc/mke2fs.c:1394
+#: misc/mke2fs.c:1391
 #, c-format
 msgid "invalid inode ratio %s (min %d/max %d)"
 msgstr "Unzulässiges Inode-Verhältnis %s (Min %d/Max %d"
 
-#: misc/mke2fs.c:1404
+#: misc/mke2fs.c:1401
 #, c-format
-msgid "Warning: -K option is deprecated and should not be used anymore. Use '-E nodiscard' extended option instead!\n"
-msgstr "Warnung: die Option -K ist veraltet und sollte nicht mehr verwendet werden. Verwenden Sie bitte stattdessen die erweiterte Option „-E nodiscard“\n"
+msgid ""
+"Warning: -K option is deprecated and should not be used anymore. Use '-E "
+"nodiscard' extended option instead!\n"
+msgstr ""
+"Warnung: die Option -K ist veraltet und sollte nicht mehr verwendet werden. "
+"Verwenden Sie bitte stattdessen die erweiterte Option „-E nodiscard“\n"
 
-#: misc/mke2fs.c:1418
+#: misc/mke2fs.c:1415
 msgid "in malloc for bad_blocks_filename"
 msgstr "in malloc for bad_blocks_filename"
 
-#: misc/mke2fs.c:1428
+#: misc/mke2fs.c:1425
 #, c-format
 msgid "invalid reserved blocks percent - %s"
 msgstr "Unzulässige \"Reservierte Blöcke\"-Prozentangabe - %s"
 
-#: misc/mke2fs.c:1446
+#: misc/mke2fs.c:1443
 #, c-format
 msgid "bad revision level - %s"
 msgstr "ungültiges Intervall - %s"
 
-#: misc/mke2fs.c:1458
+#: misc/mke2fs.c:1455
 #, c-format
 msgid "invalid inode size - %s"
 msgstr "Unzulässige Inode-Größe - %s"
 
-#: misc/mke2fs.c:1478
+#: misc/mke2fs.c:1475
 #, c-format
 msgid "bad num inodes - %s"
 msgstr "ungültiges Intervall - %s"
 
-#: misc/mke2fs.c:1495
+#: misc/mke2fs.c:1492
 msgid "The -t option may only be used once"
 msgstr "Die Option -t darf nur eimal angegeben werden"
 
-#: misc/mke2fs.c:1503
+#: misc/mke2fs.c:1500
 msgid "The -T option may only be used once"
 msgstr "Die Option -T darf nur eimal angegeben werden"
 
-#: misc/mke2fs.c:1553 misc/mke2fs.c:2510
+#: misc/mke2fs.c:1550 misc/mke2fs.c:2508
 #, c-format
 msgid "while trying to open journal device %s\n"
 msgstr "beim Versuch, das Journal-Device %s zu öffnen\n"
 
-#: misc/mke2fs.c:1559
+#: misc/mke2fs.c:1556
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
 msgstr "Journal-Device Blockgröße (%d) kleiner als Minimum-Blockgröße %d\n"
 
-#: misc/mke2fs.c:1565
+#: misc/mke2fs.c:1562
 #, c-format
 msgid "Using journal device's blocksize: %d\n"
 msgstr "Verwende die Blockgrösse des Geräts: %d\n"
 
-#: misc/mke2fs.c:1576
+#: misc/mke2fs.c:1573
 #, c-format
 msgid "invalid blocks '%s' on device '%s'"
 msgstr "ungültige Blöcke  „%s“ auf Gerät „%s“"
 
-#: misc/mke2fs.c:1586
+#: misc/mke2fs.c:1583
 msgid "filesystem"
 msgstr "Dateisystem"
 
-#: misc/mke2fs.c:1599 resize/main.c:374
+#: misc/mke2fs.c:1596 resize/main.c:374
 msgid "while trying to determine filesystem size"
 msgstr "beim Bestimmen der Dateisystemgröße"
 
-#: misc/mke2fs.c:1605
+#: misc/mke2fs.c:1602
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size of the filesystem\n"
@@ -4483,7 +4565,7 @@ msgstr ""
 "Konnte die Gerätegröße nicht ermitteln. Geben\n"
 "Sie die Größe des Dateisystems an\n"
 
-#: misc/mke2fs.c:1612
+#: misc/mke2fs.c:1609
 msgid ""
 "Device size reported to be zero.  Invalid partition specified, or\n"
 "\tpartition table wasn't reread after running fdisk, due to\n"
@@ -4496,16 +4578,16 @@ msgstr ""
 "\tin Gebrauch und gesperrt ist. Sie könnten gezwungen sein, neu zu\n"
 "\tbooten, um die Partitionstabelle neu einzulesen.\n"
 
-#: misc/mke2fs.c:1629
+#: misc/mke2fs.c:1626
 msgid "Filesystem larger than apparent device size."
 msgstr "Dateisystem ist größer als augenscheinlich das Gerät selbst."
 
-#: misc/mke2fs.c:1649
+#: misc/mke2fs.c:1646
 #, c-format
 msgid "Failed to parse fs types list\n"
 msgstr "Analyse der Liste von Dateisystemen war nicht möglich\n"
 
-#: misc/mke2fs.c:1703
+#: misc/mke2fs.c:1700
 #, c-format
 msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to be expressed\n"
@@ -4514,35 +4596,35 @@ msgstr ""
 "%1$s: Die Größe von Gerät %3$s (0x%2$llx) lässt sich bei Verwendung einer\n"
 "\tBlockgröße von %4$d nicht mit 32 Bits darstellen.\n"
 
-#: misc/mke2fs.c:1719
+#: misc/mke2fs.c:1716
 msgid "fs_types for mke2fs.conf resolution: "
 msgstr "fs_types für mke2fs.conf Lösung: "
 
-#: misc/mke2fs.c:1726
+#: misc/mke2fs.c:1723
 #, c-format
 msgid "Filesystem features not supported with revision 0 filesystems\n"
 msgstr ""
 "Dateisystem-Eigenschaften werden für Dateisysteme der Revision 0 nicht\n"
 "\tunterstützt\n"
 
-#: misc/mke2fs.c:1733
+#: misc/mke2fs.c:1730
 #, c-format
 msgid "Sparse superblocks not supported with revision 0 filesystems\n"
 msgstr ""
 "Verteilte Superblöcke werden für Dateisysteme der Revision 0 nicht\n"
 "\tunterstützt\n"
 
-#: misc/mke2fs.c:1745
+#: misc/mke2fs.c:1742
 #, c-format
 msgid "Journals not supported with revision 0 filesystems\n"
 msgstr "Journale werden für Dateisysteme der Revision 0 nicht unterstützt\n"
 
-#: misc/mke2fs.c:1759
+#: misc/mke2fs.c:1756
 #, c-format
 msgid "invalid reserved blocks percent - %lf"
 msgstr "Unzulässige \"Reservierte Blöcke\"-Prozentangabe - %lf"
 
-#: misc/mke2fs.c:1775
+#: misc/mke2fs.c:1772
 #, c-format
 msgid ""
 "The resize_inode and meta_bg features are not compatible.\n"
@@ -4551,80 +4633,89 @@ msgstr ""
 "Die Eigenschaften resize_inode und meta_bg sind nicht kompatibel.\n"
 "Sie können nicht gleichzeitig aktiviert werden.\n"
 
-#: misc/mke2fs.c:1792
+#: misc/mke2fs.c:1789
 msgid "while trying to determine hardware sector size"
 msgstr "beim Ermitteln der Hardware-Sektorgröße"
 
-#: misc/mke2fs.c:1798
+#: misc/mke2fs.c:1795
 msgid "while trying to determine physical sector size"
 msgstr "beim Ermitteln der physischen Sektorgröße"
 
-#: misc/mke2fs.c:1831
+#: misc/mke2fs.c:1828
 msgid "while setting blocksize; too small for device\n"
 msgstr "beim Setzen der Blockgröße; zu klein für das Gerät\n"
 
-#: misc/mke2fs.c:1836
+#: misc/mke2fs.c:1833
 #, c-format
-msgid "Warning: specified blocksize %d is less than device physical sectorsize %d\n"
-msgstr "Warnung: die vorgegebene Blockgröße %d ist kleiner als die physische Sektorgröße %d\n"
+msgid ""
+"Warning: specified blocksize %d is less than device physical sectorsize %d\n"
+msgstr ""
+"Warnung: die vorgegebene Blockgröße %d ist kleiner als die physische "
+"Sektorgröße %d\n"
 
-#: misc/mke2fs.c:1867
+#: misc/mke2fs.c:1864
 #, c-format
 msgid "warning: Unable to get device geometry for %s\n"
 msgstr "Warnung: Die Geometrie für Gerät %s konnte nicht erfragt werden\n"
 
-#: misc/mke2fs.c:1870
+#: misc/mke2fs.c:1867
 #, c-format
 msgid "%s alignment is offset by %lu bytes.\n"
 msgstr "Die Ausrichtung von %s ist um %lu Bytes verschoben.\n"
 
-#: misc/mke2fs.c:1872
+#: misc/mke2fs.c:1869
 #, c-format
-msgid "This may result in very poor performance, (re)-partitioning suggested.\n"
+msgid ""
+"This may result in very poor performance, (re)-partitioning suggested.\n"
 msgstr ""
 "Das könnte zu sehr schlechter Leistung führen. Eine (Neu-)Partionierung\n"
 " wird empfohlen.\n"
 
-#: misc/mke2fs.c:1883
+#: misc/mke2fs.c:1880
 #, c-format
 msgid "%d-byte blocks too big for system (max %d)"
 msgstr "%d-Byte Blöcke zu groß für das System (max %d)"
 
-#: misc/mke2fs.c:1887
+#: misc/mke2fs.c:1884
 #, c-format
-msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
-msgstr "Warnung: %d-byte Blöcke sind zu groß für das System (max %d), fahre dennoch fort\n"
+msgid ""
+"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgstr ""
+"Warnung: %d-byte Blöcke sind zu groß für das System (max %d), fahre dennoch "
+"fort\n"
 
-#: misc/mke2fs.c:1922
+#: misc/mke2fs.c:1920
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
 msgstr ""
 "Für Online-Grössenänderungen reservierte Blöcke werden auf Dateisystemen\n"
 "\tohne Unterstützung für Lückenkompression  nicht unterstützt"
 
-#: misc/mke2fs.c:1931
+#: misc/mke2fs.c:1929
 msgid "blocks per group count out of range"
 msgstr "Anzahl der Blöcke pro Gruppe ausserhaalb des gültigen Bereichs"
 
-#: misc/mke2fs.c:1946
+#: misc/mke2fs.c:1944
 msgid "Flex_bg feature not enabled, so flex_bg size may not be specified"
-msgstr "Eigenschaft flex_bg wurde nicht aktiviert, daher darf flex_bg Grösse nicht angegeben werden"
+msgstr ""
+"Eigenschaft flex_bg wurde nicht aktiviert, daher darf flex_bg Grösse nicht "
+"angegeben werden"
 
-#: misc/mke2fs.c:1958
+#: misc/mke2fs.c:1956
 #, c-format
 msgid "invalid inode size %d (min %d/max %d)"
 msgstr "ungültige Inode-Größe %d (min %d/max %d)"
 
-#: misc/mke2fs.c:1976
+#: misc/mke2fs.c:1974
 #, c-format
 msgid "too many inodes (%llu), raise inode ratio?"
 msgstr "zu viele Inodes (%llu), Inode-Verhältnis erhöhen?"
 
-#: misc/mke2fs.c:1983
+#: misc/mke2fs.c:1981
 #, c-format
 msgid "too many inodes (%llu), specify < 2^32 inodes"
 msgstr "zu viele Inodes (%llu), sie müssen weniger als 2^32 Inodes angeben"
 
-#: misc/mke2fs.c:1997
+#: misc/mke2fs.c:1995
 #, c-format
 msgid ""
 "inode_size (%u) * inodes_count (%u) too big for a\n"
@@ -4635,54 +4726,57 @@ msgstr ""
 "\tDateisystem mit %llu Blöcken, geben Sie bitte entweder ein höheres\n"
 "\tInodeverhältnis (-i) oder eine niedrigere Anzahl an Inodes (-N) an.\n"
 
-#: misc/mke2fs.c:2116
+#: misc/mke2fs.c:2114
 #, c-format
 msgid ""
 "Overwriting existing filesystem; this can be undone using the command:\n"
 "    e2undo %s %s\n"
 "\n"
 msgstr ""
-"Überschreibe das bestehende Dateisystem; dies kann rückgängig gemacht werden\n"
+"Überschreibe das bestehende Dateisystem; dies kann rückgängig gemacht "
+"werden\n"
 "durch den Befehl:\n"
 "    e2undo %s %s\n"
 "\n"
 
-#: misc/mke2fs.c:2130
+#: misc/mke2fs.c:2128
 msgid "while trying to setup undo file\n"
 msgstr "beim Erstellen der Undodatei\n"
 
-#: misc/mke2fs.c:2156
+#: misc/mke2fs.c:2154
 msgid "Discarding device blocks: "
 msgstr "Blöcke des Gerätes werden verworfen: "
 
-#: misc/mke2fs.c:2172
+#: misc/mke2fs.c:2170
 msgid "failed - "
 msgstr "nicht erfolgreich - "
 
-#: misc/mke2fs.c:2279
+#: misc/mke2fs.c:2277
 msgid "while setting up superblock"
 msgstr "beim Erstellen des Superblocks"
 
-#: misc/mke2fs.c:2288
+#: misc/mke2fs.c:2286
 #, c-format
 msgid "Discard succeeded and will return 0s  - skipping inode table wipe\n"
-msgstr "Verwerfen war erfolgreich und wird Nullen zurückliefern - das Löschen der Inode-Tabelle wird übersprungen \n"
+msgstr ""
+"Verwerfen war erfolgreich und wird Nullen zurückliefern - das Löschen der "
+"Inode-Tabelle wird übersprungen \n"
 
-#: misc/mke2fs.c:2371
+#: misc/mke2fs.c:2369
 #, c-format
 msgid "unknown os - %s"
 msgstr "unbekanntes OS - %s"
 
-#: misc/mke2fs.c:2423
+#: misc/mke2fs.c:2421
 #, c-format
 msgid "Allocating group tables: "
 msgstr "Platz für Gruppentabellen wird angefordert: "
 
-#: misc/mke2fs.c:2427
+#: misc/mke2fs.c:2425
 msgid "while trying to allocate filesystem tables"
 msgstr "beim Zuordnen von Dateisystemtabellen"
 
-#: misc/mke2fs.c:2436
+#: misc/mke2fs.c:2434
 msgid ""
 "\n"
 "\twhile converting subcluster bitmap"
@@ -4690,25 +4784,25 @@ msgstr ""
 "\n"
 "\tbeim Konvertieren der Subcluster-Bitmap"
 
-#: misc/mke2fs.c:2479
+#: misc/mke2fs.c:2477
 #, c-format
 msgid "while zeroing block %llu at end of filesystem"
 msgstr "beim Nullen von Block %llu am Ende des Dateisystems"
 
-#: misc/mke2fs.c:2492
+#: misc/mke2fs.c:2490
 msgid "while reserving blocks for online resize"
 msgstr "beim Lesen des Bad-Block-Inodes"
 
-#: misc/mke2fs.c:2503 misc/tune2fs.c:640
+#: misc/mke2fs.c:2501 misc/tune2fs.c:640
 msgid "journal"
 msgstr "Journal"
 
-#: misc/mke2fs.c:2515
+#: misc/mke2fs.c:2513
 #, c-format
 msgid "Adding journal to device %s: "
 msgstr "Erstelle Journal auf Gerät %s: "
 
-#: misc/mke2fs.c:2522
+#: misc/mke2fs.c:2520
 #, c-format
 msgid ""
 "\n"
@@ -4717,22 +4811,22 @@ msgstr ""
 "\n"
 "\tbeim Erstellen des Journals auf Gerät %s"
 
-#: misc/mke2fs.c:2527 misc/mke2fs.c:2559 misc/tune2fs.c:669 misc/tune2fs.c:683
+#: misc/mke2fs.c:2525 misc/mke2fs.c:2557 misc/tune2fs.c:669 misc/tune2fs.c:683
 #, c-format
 msgid "done\n"
 msgstr "erledigt\n"
 
-#: misc/mke2fs.c:2536
+#: misc/mke2fs.c:2534
 #, c-format
 msgid "Skipping journal creation in super-only mode\n"
 msgstr "Die Erzeugung eines Journals wird im Nur-Super Modus übersprungen\n"
 
-#: misc/mke2fs.c:2547
+#: misc/mke2fs.c:2545
 #, c-format
 msgid "Creating journal (%u blocks): "
 msgstr "Erstelle Journal (%u Blöcke): "
 
-#: misc/mke2fs.c:2555
+#: misc/mke2fs.c:2553
 msgid ""
 "\n"
 "\twhile trying to create journal"
@@ -4740,7 +4834,7 @@ msgstr ""
 "\n"
 "\tbeim Erstellen des Journals"
 
-#: misc/mke2fs.c:2566 misc/tune2fs.c:446
+#: misc/mke2fs.c:2564 misc/tune2fs.c:446
 #, c-format
 msgid ""
 "\n"
@@ -4749,17 +4843,19 @@ msgstr ""
 "\n"
 "Fehler beim Aktivieren des Schutzes vor mehrfachem Einhängen."
 
-#: misc/mke2fs.c:2571
+#: misc/mke2fs.c:2569
 #, c-format
 msgid "Multiple mount protection is enabled with update interval %d seconds.\n"
-msgstr "Der Schutz vor mehrfachem Einhängen wurde mit einem Intervall von %d Sekunden aktiviert\n"
+msgstr ""
+"Der Schutz vor mehrfachem Einhängen wurde mit einem Intervall von %d "
+"Sekunden aktiviert\n"
 
-#: misc/mke2fs.c:2584
+#: misc/mke2fs.c:2582
 #, c-format
 msgid "Writing superblocks and filesystem accounting information: "
 msgstr "Schreibe Superblöcke und Dateisystem-Accountinginformationen: "
 
-#: misc/mke2fs.c:2591
+#: misc/mke2fs.c:2589
 #, c-format
 msgid ""
 "\n"
@@ -4768,7 +4864,7 @@ msgstr ""
 "\n"
 "Warnung: Probleme beim Schreiben der Superblöcke."
 
-#: misc/mke2fs.c:2593
+#: misc/mke2fs.c:2591
 #, c-format
 msgid ""
 "done\n"
@@ -4826,7 +4922,8 @@ msgstr "Lassen Sie bitte e2fsck über das Dateisystem laufen.\n"
 msgid ""
 "Usage: %s [-c max_mounts_count] [-e errors_behavior] [-g group]\n"
 "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
-"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p mmp_update_interval]\n"
+"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p "
+"mmp_update_interval]\n"
 "\t[-r reserved_blocks_count] [-u user] [-C mount_count] [-L volume_label]\n"
 "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
 "\t[-E extended-option[,...]] [-T last_check_time] [-U UUID]\n"
@@ -4834,7 +4931,8 @@ msgid ""
 msgstr ""
 "Aufruf: %s [-c max-Anzahl-Einhängen] [-e Fehler-Verhalten] [-g Gruppe]\n"
 "\t[-i Intervall[d|m|w]] [-j] [-J Journal-Optionen] [-l]\n"
-"\t[-m reservierte_Blöcke_Prozent] [-o [^]Einhäng_Optionen[,...]] [-p mmp_update_intervall]\n"
+"\t[-m reservierte_Blöcke_Prozent] [-o [^]Einhäng_Optionen[,...]] [-p "
+"mmp_update_intervall]\n"
 "\t[-r Anzahl_reservierte_Blöcke] [-u Benutzer] [-C Anzahl_Einhängen]\n"
 "\t[-L Volume_Label] [-M letztes_eingehängtes_Verzeichnis]\n"
 "\t[-O [^]Eigenschaft[,...]] [-E erweiterte-Option[,...]]\n"
@@ -4889,7 +4987,8 @@ msgstr "(und hinterher das System neu starten!)\n"
 #: misc/tune2fs.c:396
 #, c-format
 msgid "Clearing filesystem feature '%s' not supported.\n"
-msgstr "Das Zurücksetzen von Dateisystem-Eigenschaft „%s“ wird nicht unterstützt.\n"
+msgstr ""
+"Das Zurücksetzen von Dateisystem-Eigenschaft „%s“ wird nicht unterstützt.\n"
 
 #: misc/tune2fs.c:402
 #, c-format
@@ -4944,7 +5043,8 @@ msgstr "Fehler beim Lesen der Bitmaps\n"
 #: misc/tune2fs.c:482
 #, c-format
 msgid "Magic number in MMP block does not match. expected: %x, actual: %x\n"
-msgstr "Die magische Zahl im MMP-Block passt nicht. Erwartet: %x, tatsächlich: %x\n"
+msgstr ""
+"Die magische Zahl im MMP-Block passt nicht. Erwartet: %x, tatsächlich: %x\n"
 
 #: misc/tune2fs.c:487
 msgid "while reading MMP block."
@@ -5011,14 +5111,16 @@ msgstr ""
 
 #: misc/tune2fs.c:763
 msgid "Couldn't allocate memory to parse quota options!\n"
-msgstr "Speicher zum Parsen der Quota-Optionen konnte nicht reserviert werden!\n"
+msgstr ""
+"Speicher zum Parsen der Quota-Optionen konnte nicht reserviert werden!\n"
 
 #: misc/tune2fs.c:785
 msgid ""
 "\n"
 "Bad quota options specified.\n"
 "\n"
-"Following valid quota options are available (pass by separating with comma):\n"
+"Following valid quota options are available (pass by separating with "
+"comma):\n"
 "\t[^]usrquota\n"
 "\t[^]grpquota\n"
 "\n"
@@ -5027,7 +5129,8 @@ msgstr ""
 "\n"
 "Es wurden ungültige Quota-Optionen angegeben.\n"
 "\n"
-"Following valid quota options are available (pass by separating with comma):\n"
+"Following valid quota options are available (pass by separating with "
+"comma):\n"
 "Die folgenden Quotaoptionen sind verfügbar (durch Komma getrennt angeben):\n"
 "\t[^]usrquota\n"
 "\t[^]grpquota\n"
@@ -5100,9 +5203,13 @@ msgstr "mmp_update_interval ist zu groß: %lu\n"
 #: misc/tune2fs.c:1179
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
-msgid_plural "Setting multiple mount protection update interval to %lu seconds\n"
-msgstr[0] "Setze das Intervall für den Schutz vor mehrfachem Einhängen auf %lu Sekunde\n"
-msgstr[1] "Setze das Intervall für den Schutz vor mehrfachem Einhängen auf %lu Sekunden\n"
+msgid_plural ""
+"Setting multiple mount protection update interval to %lu seconds\n"
+msgstr[0] ""
+"Setze das Intervall für den Schutz vor mehrfachem Einhängen auf %lu Sekunde\n"
+msgstr[1] ""
+"Setze das Intervall für den Schutz vor mehrfachem Einhängen auf %lu "
+"Sekunden\n"
 
 #: misc/tune2fs.c:1202
 #, c-format
@@ -5172,7 +5279,8 @@ msgstr "zu verschiebende Blöcke"
 
 #: misc/tune2fs.c:1748
 msgid "Failed to allocate block bitmap when increasing inode size\n"
-msgstr "Beim Vergrössern der Inodes konnte keine Block-Bitmap angelegt werden\n"
+msgstr ""
+"Beim Vergrössern der Inodes konnte keine Block-Bitmap angelegt werden\n"
 
 #: misc/tune2fs.c:1754
 msgid "Not enough space to increase inode size \n"
@@ -5180,7 +5288,8 @@ msgstr "Der Platz reicht nicht aus um die Inodegrösse zu erhöhen \n"
 
 #: misc/tune2fs.c:1759
 msgid "Failed to relocate blocks during inode resize \n"
-msgstr "Beim Vergrössern der Inodes konnten die Blöcke nicht verschoben werden \n"
+msgstr ""
+"Beim Vergrössern der Inodes konnten die Blöcke nicht verschoben werden \n"
 
 #: misc/tune2fs.c:1791
 msgid ""
@@ -5264,7 +5373,8 @@ msgstr "Das Intervall zwischen zwei Checks wird auf %lu Sekunden gesetzt\n"
 #: misc/tune2fs.c:2025
 #, c-format
 msgid "Setting reserved blocks percentage to %g%% (%llu blocks)\n"
-msgstr "Der Prozentsatz reservierter Böcke wird auf %g%% (%llu Blöcke) gesetzt\n"
+msgstr ""
+"Der Prozentsatz reservierter Böcke wird auf %g%% (%llu Blöcke) gesetzt\n"
 
 #: misc/tune2fs.c:2031
 #, c-format
@@ -5319,9 +5429,11 @@ msgstr ""
 "verwendet werden\n"
 
 #: misc/tune2fs.c:2120
-msgid "The quota feature may only be changed when the filesystem is unmounted.\n"
+msgid ""
+"The quota feature may only be changed when the filesystem is unmounted.\n"
 msgstr ""
-"Quotas können nur aktiviert bzw. deaktiviert werden, wenn das Dateisystem nicht\n"
+"Quotas können nur aktiviert bzw. deaktiviert werden, wenn das Dateisystem "
+"nicht\n"
 "eingehängt ist\n"
 
 #: misc/tune2fs.c:2153
@@ -5777,7 +5889,9 @@ msgstr "beim Versuch, %s zu kürzen"
 #: resize/online.c:40
 #, c-format
 msgid "Filesystem at %s is mounted on %s; on-line resizing required\n"
-msgstr "Das Dateisystem auf %s ist auf %s eingehängt; Online-Grössenveränderung nötig\n"
+msgstr ""
+"Das Dateisystem auf %s ist auf %s eingehängt; Online-Grössenveränderung "
+"nötig\n"
 
 #: resize/online.c:44
 msgid "On-line shrinking not supported"
@@ -5802,7 +5916,9 @@ msgstr "Beim Überprüfen, ob Online-Vergrösserung unterstützt wird"
 
 #: resize/online.c:107
 msgid "Kernel does not support resizing a file system this large"
-msgstr "Der Kernel lässt eine Veränderung der Größe eines Dateisystems diesen Ausmaßes nicht zu"
+msgstr ""
+"Der Kernel lässt eine Veränderung der Größe eines Dateisystems diesen "
+"Ausmaßes nicht zu"
 
 #: resize/online.c:119
 msgid "Kernel does not support online resizing"
@@ -5811,7 +5927,8 @@ msgstr "Der Kernel unterstützt die Online-Vergrösserung nicht"
 #: resize/online.c:152
 #, c-format
 msgid "Performing an on-line resize of %s to %llu (%dk) blocks.\n"
-msgstr "Eine Online-Grössenänderung von %s auf %llu (%dk) Blöcke wird durchgeführt.\n"
+msgstr ""
+"Eine Online-Grössenänderung von %s auf %llu (%dk) Blöcke wird durchgeführt.\n"
 
 #: resize/online.c:162
 msgid "While trying to extend the last group"
@@ -5824,8 +5941,12 @@ msgstr "Beim Versuch, Gruppe %d hinzu zu fügen"
 
 #: resize/online.c:227
 #, c-format
-msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
-msgstr "Dateisystem auf %s ist auf %s eingehängt und Online-Grössenänderung wird auf diesem System nicht unterstützt.\n"
+msgid ""
+"Filesystem at %s is mounted on %s, and on-line resizing is not supported on "
+"this system.\n"
+msgstr ""
+"Dateisystem auf %s ist auf %s eingehängt und Online-Grössenänderung wird auf "
+"diesem System nicht unterstützt.\n"
 
 #: resize/resize2fs.c:348
 #, c-format
@@ -5846,7 +5967,8 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Das sollte niemals passieren: Die zu verändernde Inode ist defekt!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.2"
+#, fuzzy
+msgid "EXT2FS Library version 1.42.4"
 msgstr "EXT2FS Bibliothek Version 1.42.2"
 
 #: lib/ext2fs/ext2_err.c:12
@@ -5931,7 +6053,8 @@ msgstr "Die Dateisystemrevision ist zu hoch"
 
 #: lib/ext2fs/ext2_err.c:32
 msgid "Attempt to write to filesystem opened read-only"
-msgstr "Es wird versucht, auf ein nur zum Lesen geöffnetes Dateisystem zu schreiben"
+msgstr ""
+"Es wird versucht, auf ein nur zum Lesen geöffnetes Dateisystem zu schreiben"
 
 #: lib/ext2fs/ext2_err.c:33
 msgid "Can't read group descriptors"
@@ -5943,15 +6066,18 @@ msgstr "Die Gruppendeskriptoren können nicht geschrieben werden"
 
 #: lib/ext2fs/ext2_err.c:35
 msgid "Corrupt group descriptor: bad block for block bitmap"
-msgstr "Beschädigter Gruppendeskriptor: nicht lesbarer Block ür die Block-Bitmap"
+msgstr ""
+"Beschädigter Gruppendeskriptor: nicht lesbarer Block ür die Block-Bitmap"
 
 #: lib/ext2fs/ext2_err.c:36
 msgid "Corrupt group descriptor: bad block for inode bitmap"
-msgstr "Beschädigter Gruppendeskriptor: nicht lesbarer Block ür die Inode-Bitmap"
+msgstr ""
+"Beschädigter Gruppendeskriptor: nicht lesbarer Block ür die Inode-Bitmap"
 
 #: lib/ext2fs/ext2_err.c:37
 msgid "Corrupt group descriptor: bad block for inode table"
-msgstr "Beschädigter Gruppendeskriptor: nicht lesbarer Block ür die Inodetabelle"
+msgstr ""
+"Beschädigter Gruppendeskriptor: nicht lesbarer Block ür die Inodetabelle"
 
 #: lib/ext2fs/ext2_err.c:38
 msgid "Can't write an inode bitmap"
@@ -6031,7 +6157,8 @@ msgstr "ext2fs_mark_block_bitmap wurde eine unzulässige Blocknummer übergeben"
 
 #: lib/ext2fs/ext2_err.c:57
 msgid "Illegal block number passed to ext2fs_unmark_block_bitmap"
-msgstr "ext2fs_unmark_block_bitmap wurde eine unzulässige Blocknummer übergeben"
+msgstr ""
+"ext2fs_unmark_block_bitmap wurde eine unzulässige Blocknummer übergeben"
 
 #: lib/ext2fs/ext2_err.c:58
 msgid "Illegal block number passed to ext2fs_test_block_bitmap"
@@ -6043,7 +6170,8 @@ msgstr "ext2fs_mark_inode_bitmap wurde eine unzulässige Blocknummer übergeben"
 
 #: lib/ext2fs/ext2_err.c:60
 msgid "Illegal inode number passed to ext2fs_unmark_inode_bitmap"
-msgstr "ext2fs_unmark_inode_bitmap wurde eine unzulässige Blocknummer übergeben"
+msgstr ""
+"ext2fs_unmark_inode_bitmap wurde eine unzulässige Blocknummer übergeben"
 
 #: lib/ext2fs/ext2_err.c:61
 msgid "Illegal inode number passed to ext2fs_test_inode_bitmap"
@@ -6051,11 +6179,15 @@ msgstr "ext2fs_test_inode_bitmap wurde eine unzulässige Blocknummer übergeben"
 
 #: lib/ext2fs/ext2_err.c:62
 msgid "Attempt to fudge end of block bitmap past the real end"
-msgstr "Es wurde versucht, das Ende der Blockbitmap über das echte Ende hinaus zu verschieben"
+msgstr ""
+"Es wurde versucht, das Ende der Blockbitmap über das echte Ende hinaus zu "
+"verschieben"
 
 #: lib/ext2fs/ext2_err.c:63
 msgid "Attempt to fudge end of inode bitmap past the real end"
-msgstr "Es wurde versucht, das Ende der Inodebitmap über das echte Ende hinaus zu verschieben"
+msgstr ""
+"Es wurde versucht, das Ende der Inodebitmap über das echte Ende hinaus zu "
+"verschieben"
 
 #: lib/ext2fs/ext2_err.c:64
 msgid "Illegal indirect block found"
@@ -6091,15 +6223,21 @@ msgstr "Der Ext2-Superblock ist beschädigt"
 
 #: lib/ext2fs/ext2_err.c:72
 msgid "Illegal generic bit number passed to ext2fs_mark_generic_bitmap"
-msgstr "ext2fs_mark_generic_bitmap wurde eine unzulässige generische Bitnummer übergeben"
+msgstr ""
+"ext2fs_mark_generic_bitmap wurde eine unzulässige generische Bitnummer "
+"übergeben"
 
 #: lib/ext2fs/ext2_err.c:73
 msgid "Illegal generic bit number passed to ext2fs_unmark_generic_bitmap"
-msgstr "ext2fs_unmark_generic_bitmap wurde eine unzulässige generische Bitnummer übergeben"
+msgstr ""
+"ext2fs_unmark_generic_bitmap wurde eine unzulässige generische Bitnummer "
+"übergeben"
 
 #: lib/ext2fs/ext2_err.c:74
 msgid "Illegal generic bit number passed to ext2fs_test_generic_bitmap"
-msgstr "ext2fs_test_generic_bitmap wurde eine unzulässige generische Bitnummer übergeben"
+msgstr ""
+"ext2fs_test_generic_bitmap wurde eine unzulässige generische Bitnummer "
+"übergeben"
 
 #: lib/ext2fs/ext2_err.c:75
 msgid "Too many symbolic links encountered."
@@ -6123,7 +6261,8 @@ msgstr "Das Dateisystem besitzt nicht unterstützte nur-lesen Eigenschaft(en):"
 
 #: lib/ext2fs/ext2_err.c:80
 msgid "IO Channel failed to seek on read or write"
-msgstr "E/A Kanal ist beim Suchen während des Lesens oder Schreibens gescheitert"
+msgstr ""
+"E/A Kanal ist beim Suchen während des Lesens oder Schreibens gescheitert"
 
 #: lib/ext2fs/ext2_err.c:81
 msgid "Memory allocation failed"
@@ -6211,7 +6350,9 @@ msgstr "Unzulässige Nummer für den Block für erweiterte Attribute"
 
 #: lib/ext2fs/ext2_err.c:102
 msgid "Cannot create filesystem with requested number of inodes"
-msgstr "Ein Dateisystem mit der gewünschten Anzahl von Inodes kann nicht erzeugt werden"
+msgstr ""
+"Ein Dateisystem mit der gewünschten Anzahl von Inodes kann nicht erzeugt "
+"werden"
 
 #: lib/ext2fs/ext2_err.c:103
 msgid "E2image snapshot not in use"
@@ -6227,7 +6368,8 @@ msgstr "Der zu modifizierende Inode ist defekt"
 
 #: lib/ext2fs/ext2_err.c:106
 msgid "Tried to set block bmap with missing indirect block"
-msgstr "Es wurde versucht, eine Block-Bmap mit fehlendem indirektem Block zu setzen"
+msgstr ""
+"Es wurde versucht, eine Block-Bmap mit fehlendem indirektem Block zu setzen"
 
 #: lib/ext2fs/ext2_err.c:107
 msgid "TDB: Success"
@@ -6275,7 +6417,9 @@ msgstr "Die Ext2fs-Verzeichnisblockliste ist leer"
 
 #: lib/ext2fs/ext2_err.c:118
 msgid "Attempt to modify a block mapping via a read-only block iterator"
-msgstr "Es wird versucht, ein Blockmapping mittels nur-lesenden Blockiteratoren zu modifizieren"
+msgstr ""
+"Es wird versucht, ein Blockmapping mittels nur-lesenden Blockiteratoren zu "
+"modifizieren"
 
 #: lib/ext2fs/ext2_err.c:119
 msgid "Wrong magic number for ext4 extent saved path"
@@ -6379,7 +6523,9 @@ msgstr "Erweiterung wurde nicht gefunden"
 
 #: lib/ext2fs/ext2_err.c:144
 msgid "Operation not supported for inodes containing extents"
-msgstr "Die Operation wird für Inodes, die Erweiterungen beinhalten, nicht unterstützt"
+msgstr ""
+"Die Operation wird für Inodes, die Erweiterungen beinhalten, nicht "
+"unterstützt"
 
 #: lib/ext2fs/ext2_err.c:145
 msgid "Extent length is invalid"
@@ -6391,11 +6537,14 @@ msgstr "Der EA-Kanal unterstützt keine 64-bittigen Blocknummern"
 
 #: lib/ext2fs/ext2_err.c:147
 msgid "Can't check if filesystem is mounted due to missing mtab file"
-msgstr "Überprüfung ob das Dateisystem eingehängt ist mangels mtab Datei nicht möglich"
+msgstr ""
+"Überprüfung ob das Dateisystem eingehängt ist mangels mtab Datei nicht "
+"möglich"
 
 #: lib/ext2fs/ext2_err.c:148
 msgid "Filesystem too large to use legacy bitmaps"
-msgstr "Das Dateisystem ist für die Verwendung von altertümlichen Bitmaps zu groß"
+msgstr ""
+"Das Dateisystem ist für die Verwendung von altertümlichen Bitmaps zu groß"
 
 #: lib/ext2fs/ext2_err.c:149
 msgid "MMP: invalid magic number"
@@ -6443,7 +6592,9 @@ msgstr "Der Profilbezug wurde nicht gefunden"
 
 #: e2fsck/prof_err.c:15
 msgid "Attempt to add a relation to node which is not a section"
-msgstr "Es wird versucht, einen Bezug zu einem Knoten hinzu zu fügen, der keine Sektion ist"
+msgstr ""
+"Es wird versucht, einen Bezug zu einem Knoten hinzu zu fügen, der keine "
+"Sektion ist"
 
 #: e2fsck/prof_err.c:16
 msgid "A profile section header has a non-zero value"
@@ -6507,7 +6658,8 @@ msgstr "Ungültige magische Zahl in profile_section_t"
 
 #: e2fsck/prof_err.c:31
 msgid "Iteration through all top level section not supported"
-msgstr "Iteration über alle Sektionen der obersten Ebene wird nicht unterstützt"
+msgstr ""
+"Iteration über alle Sektionen der obersten Ebene wird nicht unterstützt"
 
 #: e2fsck/prof_err.c:32
 msgid "Invalid profile_section object"
@@ -6549,11 +6701,16 @@ msgstr "Ungültiger Wert für eine Ganzzahl"
 msgid "Bad magic value in profile_file_data_t"
 msgstr "Ungültige magische Zahl in profile_data_t"
 
+#~ msgid "%s is mounted.  "
+#~ msgstr "%s ist eingehängt.  "
+
 #~ msgid "@g %g @b @B uninitialized but @i @B in use.\n"
-#~ msgstr "Die @b @B von @g %g ist nicht initialisiert aber @i @B wird verwendet.\n"
+#~ msgstr ""
+#~ "Die @b @B von @g %g ist nicht initialisiert aber @i @B wird verwendet.\n"
 
 #~ msgid "@i %i should not have EOFBLOCKS_FL set (size %Is, lblk %r)\n"
-#~ msgstr " in @i %i sollte EOFBLOCKS_FL nicht gesetzt sein (Größe %Is, lblk %r)\n"
+#~ msgstr ""
+#~ " in @i %i sollte EOFBLOCKS_FL nicht gesetzt sein (Größe %Is, lblk %r)\n"
 
 #~ msgid "Couldn't determine journal size"
 #~ msgstr "Konnte die Größe des Dateisystems nicht ermitteln"
