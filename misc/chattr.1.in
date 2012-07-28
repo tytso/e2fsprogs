@@ -19,17 +19,18 @@ chattr \- change file attributes on a Linux file system
 .B chattr
 changes the file attributes on a Linux file system.
 .PP
-The format of a symbolic mode is +-=[acdeijstuADST].
+The format of a symbolic mode is +-=[acdeijstuACDST].
 .PP
 The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
 `=' causes them to be the only attributes that the files have.
 .PP
-The letters `acdeijstuADST' select the new attributes for the files:
+The letters `acdeijstuACDST' select the new attributes for the files:
 append only (a), compressed (c), no dump (d), extent format (e), immutable (i),
 data journalling (j), secure deletion (s), no tail-merging (t),
-undeletable (u), no atime updates (A), synchronous directory updates (D),
-synchronous updates (S), and top of directory hierarchy (T).
+undeletable (u), no atime updates (A), no copy on write (C),
+synchronous directory updates (D), synchronous updates (S),
+and top of directory hierarchy (T).
 .PP
 The following attributes are read-only, and may be listed by
 .BR lsattr (1)
