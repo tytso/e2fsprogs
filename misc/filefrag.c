@@ -360,11 +360,12 @@ static void frag_report(const char *filename)
 	else
 		printf("%s: %d extents found", filename, num_extents);
 	/* count, and thus expected, only set for indirect FIBMAP'd files */
-	expected = (count/((bs*8)-(fsinfo.f_files/8/cylgroups)-3))+1;
-	if (is_ext2 && expected && expected < num_extents)
-		printf(", perfection would be %d extent%s\n", expected,
-			(expected>1) ? "s" : "");
-	else
+	if (is_ext2) {
+		expected = (count/((bs*8)-(fsinfo.f_files/8/cylgroups)-3))+1;
+		if (expected && expected < num_extents)
+			printf(", perfection would be %d extent%s\n", expected,
+				(expected>1) ? "s" : "");
+	} else
 		fputc('\n', stdout);
 	close(fd);
 	once = 0;
