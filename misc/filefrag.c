@@ -175,7 +175,7 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	unsigned int i;
 	static int fiemap_incompat_printed;
 	int fiemap_header_printed = 0;
-	int tot_extents = 1, n = 0;
+	int tot_extents = 0, n = 0;
 	int last = 0;
 	int rc;
 
@@ -201,24 +201,16 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 			return rc;
 		}
 
+		/* If 0 extents are returned, then more ioctls are not needed */
+		if (fiemap->fm_mapped_extents == 0)
+			break;
+
 		if (verbose && !fiemap_header_printed) {
-			/*
-			 * No extents on first call?
-			 * Skip header and show 0 extents.
-			 */
-			if (fiemap->fm_mapped_extents == 0) {
-				*num_extents = 0;
-				goto out;
-			}
 			printf(" ext %*s %*s %*s length flags\n", logical_width,
 			       "logical", physical_width, "physical",
 			       physical_width, "expected");
 			fiemap_header_printed = 1;
 		}
-
-		/* If 0 extents are returned, then more ioctls are not needed */
-		if (fiemap->fm_mapped_extents == 0)
-			break;
 
 		for (i = 0; i < fiemap->fm_mapped_extents; i++) {
 			__u64 phy_blk, logical_blk;
@@ -228,10 +220,13 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 			ext_len = fm_ext[i].fe_length >> blk_shift;
 			logical_blk = fm_ext[i].fe_logical >> blk_shift;
 
-			if (logical_blk && phy_blk != expected)
+			if (logical_blk && phy_blk != expected) {
 				tot_extents++;
-			else
+			} else {
 				expected = 0;
+				if (!tot_extents)
+					tot_extents = 1;
+			}
 			if (verbose)
 				print_extent_info(&fm_ext[i], n, expected,
 						  blk_shift);
