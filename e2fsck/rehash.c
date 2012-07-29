@@ -370,7 +370,7 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 		mutate_name(new_name, &new_len);
 		for (j=0; j < fd->num_array; j++) {
 			if ((i==j) ||
-			    ((ent->dir->name_len & 0xFF) !=
+			    ((new_len & 0xFF) !=
 			     (fd->harray[j].dir->name_len & 0xFF)) ||
 			    (strncmp(new_name, fd->harray[j].dir->name,
 				     new_len & 0xFF)))
