@@ -225,7 +225,9 @@ static void check_mount(e2fsck_t ctx)
 	     !(ctx->options & E2F_OPT_WRITECHECK)))
 		return;
 
-	if ((ctx->options & E2F_OPT_READONLY) &&
+	if (((ctx->options & E2F_OPT_READONLY) ||
+	     ((ctx->options & E2F_OPT_FORCE) &&
+	      (ctx->mount_flags & EXT2_MF_READONLY))) &&
 	    !(ctx->options & E2F_OPT_WRITECHECK)) {
 		log_out(ctx, _("Warning!  %s is %s.\n"),
 			ctx->filesystem_name,
@@ -1226,6 +1228,9 @@ restart:
 		if (!(ctx->mount_flags & EXT2_MF_ISROOT &&
 		      ctx->mount_flags & EXT2_MF_READONLY))
 			flags |= EXT2_FLAG_EXCLUSIVE;
+		if ((ctx->mount_flags & EXT2_MF_READONLY) &&
+		    (ctx->options & E2F_OPT_FORCE))
+			flags &= ~EXT2_FLAG_EXCLUSIVE;
 	}
 
 	retval = try_open_fs(ctx, flags, io_ptr, &fs);
