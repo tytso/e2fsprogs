@@ -154,10 +154,10 @@ static void show_stats(e2fsck_t	ctx)
 		log_out(ctx, "\n");
 	}
 
-	log_out(ctx, P_("\n%12u inode used (%2.2f%%)\n",
-			"\n%12u inodes used (%2.2f%%)\n",
+	log_out(ctx, P_("\n%12u inode used (%2.2f%%, out of %u)\n",
+			"\n%12u inodes used (%2.2f%%, out of %u)\n",
 			inodes_used), inodes_used,
-		100.0 * inodes_used / inodes);
+		100.0 * inodes_used / inodes, inodes);
 	log_out(ctx, P_("%12u non-contiguous file (%0d.%d%%)\n",
 			"%12u non-contiguous files (%0d.%d%%)\n",
 			ctx->fs_fragmented),
@@ -185,9 +185,10 @@ static void show_stats(e2fsck_t	ctx)
 		log_out(ctx, "\n");
 	}
 
-	log_out(ctx, P_("%12llu block used (%2.2f%%)\n",
-			"%12llu blocks used (%2.2f%%)\n",
-		   blocks_used), blocks_used, 100.0 * blocks_used / blocks);
+	log_out(ctx, P_("%12llu block used (%2.2f%%, out of %llu)\n",
+			"%12llu blocks used (%2.2f%%, out of %llu)\n",
+		   blocks_used),
+		blocks_used, 100.0 * blocks_used / blocks, blocks);
 	log_out(ctx, P_("%12u bad block\n", "%12u bad blocks\n",
 			ctx->fs_badblocks_count), ctx->fs_badblocks_count);
 	log_out(ctx, P_("%12u large file\n", "%12u large files\n",
