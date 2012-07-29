@@ -1424,10 +1424,6 @@ failure:
 		fprintf(ctx->logf, "Filesystem UUID: %s\n",
 			e2p_uuid2str(sb->s_uuid));
 
-	if ((ctx->mount_flags & EXT2_MF_MOUNTED) &&
-	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER))
-		goto skip_journal;
-
 	/*
 	 * Make sure the ext3 superblock fields are consistent.
 	 */
@@ -1475,7 +1471,6 @@ failure:
 		}
 	}
 
-skip_journal:
 	/*
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
