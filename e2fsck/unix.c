@@ -102,8 +102,9 @@ static void show_stats(e2fsck_t	ctx)
 	blk64_t blocks, blocks_used;
 	unsigned int dir_links;
 	unsigned int num_files, num_links;
+	__u32 *mask, m;
 	int frag_percent_file, frag_percent_dir, frag_percent_total;
-	int i, j;
+	int i, j, printed = 0;
 
 	dir_links = 2 * ctx->fs_directory_count - 1;
 	num_files = ctx->fs_total_count - dir_links;
@@ -134,6 +135,25 @@ static void show_stats(e2fsck_t	ctx)
 			blocks_used, blocks);
 		return;
 	}
+	profile_get_boolean(ctx->profile, "options", "report_features", 0, 0,
+			    &i);
+	if (verbose && i) {
+		log_out(ctx, "\nFilesystem features:");
+		mask = &ctx->fs->super->s_feature_compat;
+		for (i = 0; i < 3; i++, mask++) {
+			for (j = 0, m = 1; j < 32; j++, m <<= 1) {
+				if (*mask & m) {
+					log_out(ctx, " %s",
+						e2p_feature2string(i, m));
+					printed++;
+				}
+			}
+		}
+		if (printed == 0)
+			log_out(ctx, " (none)");
+		log_out(ctx, "\n");
+	}
+
 	log_out(ctx, P_("\n%8u inode used (%2.2f%%)\n",
 			"\n%8u inodes used (%2.2f%%)\n",
 			inodes_used), inodes_used,
@@ -919,6 +939,15 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		config_fn[0] = cp;
 	profile_set_syntax_err_cb(syntax_err_report);
 	profile_init(config_fn, &ctx->profile);
+
+	profile_get_boolean(ctx->profile, "options", "report_time", 0, 0,
+			    &c);
+	if (c)
+		ctx->options |= E2F_OPT_TIME | E2F_OPT_TIME2;
+	profile_get_boolean(ctx->profile, "options", "report_verbose", 0, 0,
+			    &c);
+	if (c)
+		verbose = 1;
 
 	/* Turn off discard in read-only mode */
 	if ((ctx->options & E2F_OPT_NO) &&

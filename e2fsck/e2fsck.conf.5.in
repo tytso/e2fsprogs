@@ -148,6 +148,16 @@ filesystem checks (either based on time or number of mounts) should
 be doubled if the system is running on battery.  This setting defaults to 
 true.
 .TP
+.I indexed_dir_slack_percentage
+When
+.BR e2fsck (8)
+repacks a indexed directory, reserve the specified percentage of
+empty space in each leaf nodes so that a few new entries can
+be added to the directory without splitting leaf nodes, so that
+the average fill ratio of directories can be maintained at a
+higher, more efficient level.  This relation defaults to 20
+percent.
+.TP
 .I log_dir
 If the
 .I log_filename
@@ -196,15 +206,23 @@ of that type are squelched.  This can be useful if the console is slow
 (i.e., connected to a serial port) and so a large amount of output could
 end up delaying the boot process for a long time (potentially hours).
 .TP
-.I indexed_dir_slack_percentage
-When
-.BR e2fsck (8)
-repacks a indexed directory, reserve the specified percentage of
-empty space in each leaf nodes so that a few new entries can
-be added to the directory without splitting leaf nodes, so that
-the average fill ratio of directories can be maintained at a
-higher, more efficient level.  This relation defaults to 20
-percent.
+.I report_features
+If this boolean relation is true, e2fsck will print the file system
+features as part of its verbose reporting (i.e., if the
+.B -v
+option is specified)
+.TP
+.I report_time
+If this boolean relation is true, e2fsck will run as if the options
+.B -tt
+are always specified.  This will cause e2fsck to print timing statistics
+on a pass by pass basis for full file system checks.
+.TP
+.I report_verbose
+If this boolean relation is true, e2fsck will run as if the option
+.B -v
+is always specified.  This will cause e2fsck to print some additional
+information at the end of each full file system check.
 .SH THE [problems] STANZA
 Each tag in the
 .I [problems] 
