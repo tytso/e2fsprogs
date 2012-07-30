@@ -271,6 +271,9 @@ struct struct_ext2_filsys {
 
 	/* progress operation functions */
 	struct ext2fs_progress_ops *progress_ops;
+
+	/* Precomputed FS UUID checksum for seeding other checksums */
+	__u32 csum_seed;
 };
 
 #if EXT2_FLAT_INCLUDES
@@ -1431,6 +1434,7 @@ extern errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 
 
 /* inline functions */
+extern void ext2fs_init_csum_seed(ext2_filsys fs);
 extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
 extern errcode_t ext2fs_get_memalign(unsigned long size,
 				     unsigned long align, void *ptr);
@@ -1483,6 +1487,16 @@ extern int ext2fs_fstat(int fd, ext2fs_struct_stat *buf);
 
 #ifndef EXT2_CUSTOM_MEMORY_ROUTINES
 #include <string.h>
+_INLINE_ void ext2fs_init_csum_seed(ext2_filsys fs)
+{
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return;
+
+	fs->csum_seed = ext2fs_crc32c_le(~0, fs->super->s_uuid,
+					 sizeof(fs->super->s_uuid));
+}
+
 /*
  *  Allocate memory
  */

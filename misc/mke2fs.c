@@ -2323,6 +2323,7 @@ int main (int argc, char *argv[])
 		}
 	} else
 		uuid_generate(fs->super->s_uuid);
+	ext2fs_init_csum_seed(fs);
 
 	/*
 	 * Initialize the directory index variables

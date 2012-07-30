@@ -315,6 +315,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
+	/* Precompute the FS UUID to seed other checksums */
+	ext2fs_init_csum_seed(fs);
 
 	/*
 	 * Read group descriptors
