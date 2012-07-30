@@ -804,6 +804,19 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
 		internal_dump_inode_extra(out, prefix, inode_num,
 					  (struct ext2_inode_large *) inode);
+	if (current_fs->super->s_creator_os == EXT2_OS_LINUX &&
+	    current_fs->super->s_feature_ro_compat &
+		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+		__u32 crc = inode->i_checksum_lo;
+		if (is_large_inode &&
+		    large_inode->i_extra_isize >=
+				(offsetof(struct ext2_inode_large,
+					  i_checksum_hi) -
+				 EXT2_GOOD_OLD_INODE_SIZE))
+			crc |= ((__u32)large_inode->i_checksum_hi) << 16;
+		fprintf(out, "Inode checksum: 0x%08x\n", crc);
+	}
+
 	if (LINUX_S_ISLNK(inode->i_mode) && ext2fs_inode_data_blocks(current_fs,inode) == 0)
 		fprintf(out, "%sFast_link_dest: %.*s\n", prefix,
 			(int) inode->i_size, (char *)inode->i_block);
