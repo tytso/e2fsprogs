@@ -417,7 +417,7 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 	errcode_t	retval;
 	int		extra_bytes = 0;
 	const int	length = EXT2_INODE_SIZE(scan->fs->super);
-	struct ext2_inode	*iptr = inode;
+	struct ext2_inode_large	*iptr = (struct ext2_inode_large *)inode;
 
 	EXT2_CHECK_MAGIC(scan, EXT2_ET_MAGIC_INODE_SCAN);
 
@@ -493,6 +493,12 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 		scan->ptr += scan->inode_size - extra_bytes;
 		scan->bytes_left -= scan->inode_size - extra_bytes;
 
+		/* Verify the inode checksum. */
+		if (!(scan->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+		    !ext2fs_inode_csum_verify(scan->fs, scan->current_inode + 1,
+				(struct ext2_inode_large *)scan->temp_buffer))
+			retval = EXT2_ET_INODE_CSUM_INVALID;
+
 #ifdef WORDS_BIGENDIAN
 		memset(iptr, 0, length);
 		ext2fs_swap_inode_full(scan->fs,
@@ -506,6 +512,12 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 			retval = EXT2_ET_BAD_BLOCK_IN_INODE_TABLE;
 		scan->scan_flags &= ~EXT2_SF_BAD_EXTRA_BYTES;
 	} else {
+		/* Verify the inode checksum. */
+		if (!(scan->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+		    !ext2fs_inode_csum_verify(scan->fs, scan->current_inode + 1,
+				(struct ext2_inode_large *)scan->ptr))
+			retval = EXT2_ET_INODE_CSUM_INVALID;
+
 #ifdef WORDS_BIGENDIAN
 		memset(iptr, 0, length);
 		ext2fs_swap_inode_full(scan->fs,
@@ -524,7 +536,7 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 	scan->inodes_left--;
 	scan->current_inode++;
 	*ino = scan->current_inode;
-	if (inode != iptr) {
+	if (iptr != (struct ext2_inode_large *)inode) {
 		memcpy(inode, iptr, bufsize);
 		ext2fs_free_mem(&iptr);
 	}
@@ -551,7 +563,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	int		clen, i, inodes_per_block;
 	io_channel	io;
 	int		length = EXT2_INODE_SIZE(fs->super);
-	struct ext2_inode	*iptr;
+	struct ext2_inode_large	*iptr;
 	int		cache_slot;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -600,7 +612,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	offset &= (EXT2_BLOCK_SIZE(fs->super) - 1);
 
 	cache_slot = (fs->icache->cache_last + 1) % fs->icache->cache_size;
-	iptr = fs->icache->cache[cache_slot].inode;
+	iptr = (struct ext2_inode_large *)fs->icache->cache[cache_slot].inode;
 
 	ptr = (char *) iptr;
 	while (length) {
@@ -625,6 +637,11 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 		block_nr++;
 	}
 	length = EXT2_INODE_SIZE(fs->super);
+
+	/* Verify the inode checksum. */
+	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+	    !ext2fs_inode_csum_verify(fs, ino, iptr))
+		return EXT2_ET_INODE_CSUM_INVALID;
 
 #ifdef WORDS_BIGENDIAN
 	ext2fs_swap_inode_full(fs, (struct ext2_inode_large *) iptr,
@@ -674,12 +691,17 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	retval = ext2fs_get_mem(length, &w_inode);
 	if (retval)
 		return retval;
-	if (bufsize < length)
+
+	if (bufsize < length) {
+		int old_flags = fs->flags;
+		fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		retval = ext2fs_read_inode_full(fs, ino,
 						(struct ext2_inode *)w_inode,
 						length);
-	if (retval)
-		goto errout;
+		fs->flags = old_flags;
+		if (retval)
+			goto errout;
+	}
 
 	/* Check to see if the inode cache needs to be updated */
 	if (fs->icache) {
@@ -705,6 +727,10 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 #ifdef WORDS_BIGENDIAN
 	ext2fs_swap_inode_full(fs, w_inode, w_inode, 1, length);
 #endif
+
+	retval = ext2fs_inode_csum_set(fs, ino, w_inode);
+	if (retval)
+		goto errout;
 
 	group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
 	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *

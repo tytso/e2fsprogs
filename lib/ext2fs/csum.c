@@ -30,6 +30,88 @@
 #define STATIC static
 #endif
 
+static errcode_t ext2fs_inode_csum(ext2_filsys fs, ext2_ino_t inum,
+			       struct ext2_inode_large *inode,
+			       __u32 *crc, int has_hi)
+{
+	__u32 gen;
+	struct ext2_inode_large *desc = inode;
+	size_t size = fs->super->s_inode_size;
+	__u16 old_lo;
+	__u16 old_hi = 0;
+
+	old_lo = inode->i_checksum_lo;
+	inode->i_checksum_lo = 0;
+	if (has_hi) {
+		old_hi = inode->i_checksum_hi;
+		inode->i_checksum_hi = 0;
+	}
+
+	inum = ext2fs_cpu_to_le32(inum);
+	gen = inode->i_generation;
+	*crc = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)&inum,
+				sizeof(inum));
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)&gen, sizeof(gen));
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)desc, size);
+
+	inode->i_checksum_lo = old_lo;
+	if (has_hi)
+		inode->i_checksum_hi = old_hi;
+	return 0;
+}
+
+int ext2fs_inode_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+			     struct ext2_inode_large *inode)
+{
+	errcode_t retval;
+	__u32 provided, calculated;
+	int has_hi;
+
+	if (fs->super->s_creator_os != EXT2_OS_LINUX ||
+	    !EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 1;
+
+	has_hi = (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE &&
+		  inode->i_extra_isize >= EXT4_INODE_CSUM_HI_EXTRA_END);
+
+	provided = ext2fs_le16_to_cpu(inode->i_checksum_lo);
+	retval = ext2fs_inode_csum(fs, inum, inode, &calculated, has_hi);
+	if (retval)
+		return 0;
+	if (has_hi) {
+		__u32 hi = ext2fs_le16_to_cpu(inode->i_checksum_hi);
+		provided |= hi << 16;
+	} else
+		calculated &= 0xFFFF;
+
+	return provided == calculated;
+}
+
+errcode_t ext2fs_inode_csum_set(ext2_filsys fs, ext2_ino_t inum,
+			   struct ext2_inode_large *inode)
+{
+	errcode_t retval;
+	__u32 crc;
+	int has_hi;
+
+	if (fs->super->s_creator_os != EXT2_OS_LINUX ||
+	    !EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 0;
+
+	has_hi = (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE &&
+		  inode->i_extra_isize >= EXT4_INODE_CSUM_HI_EXTRA_END);
+
+	retval = ext2fs_inode_csum(fs, inum, inode, &crc, has_hi);
+	if (retval)
+		return retval;
+	inode->i_checksum_lo = ext2fs_cpu_to_le16(crc & 0xFFFF);
+	if (has_hi)
+		inode->i_checksum_hi = ext2fs_cpu_to_le16(crc >> 16);
+	return 0;
+}
+
 __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 {
 	__u16 crc = 0;

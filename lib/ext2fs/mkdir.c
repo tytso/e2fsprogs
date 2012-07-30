@@ -93,12 +93,14 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	inode.i_size = fs->blocksize;
 
 	/*
-	 * Write out the inode and inode data block
+	 * Write out the inode and inode data block.  The inode generation
+	 * number is assigned by write_new_inode, which means that the call
+	 * to write_dir_block must come after that.
 	 */
-	retval = ext2fs_write_dir_block(fs, blk, block);
+	retval = ext2fs_write_new_inode(fs, ino, &inode);
 	if (retval)
 		goto cleanup;
-	retval = ext2fs_write_new_inode(fs, ino, &inode);
+	retval = ext2fs_write_dir_block(fs, blk, block);
 	if (retval)
 		goto cleanup;
 

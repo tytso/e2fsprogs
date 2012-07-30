@@ -446,4 +446,7 @@ ec	EXT2_ET_MMP_OPEN_DIRECT,
 ec	EXT2_ET_BAD_DESC_SIZE,
 	"Block group descriptor size incorrect"
 
+ec	EXT2_ET_INODE_CSUM_INVALID,
+	"Inode checksum does not match inode"
+
 	end

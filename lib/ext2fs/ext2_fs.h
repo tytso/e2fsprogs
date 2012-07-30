@@ -461,6 +461,10 @@ struct ext2_inode_large {
 	__u32	i_version_hi;	/* high 32 bits for 64-bit version */
 };
 
+#define EXT4_INODE_CSUM_HI_EXTRA_END	\
+	(offsetof(struct ext2_inode_large, i_checksum_hi) + sizeof(__u16) - \
+	 EXT2_GOOD_OLD_INODE_SIZE)
+
 #define i_dir_acl	i_size_high
 
 #if defined(__KERNEL__) || defined(__linux__)
