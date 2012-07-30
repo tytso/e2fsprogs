@@ -558,6 +558,12 @@ struct problem_context {
 /* Extent has zero length */
 #define PR_1_EXTENT_LENGTH_ZERO		0x010066
 
+/* inode checksum does not match inode */
+#define PR_1_INODE_CSUM_INVALID                0x010067
+
+/* inode passes checks, but checksum does not match inode */
+#define PR_1_INODE_ONLY_CSUM_INVALID   0x010068
+
 /*
  * Pass 1b errors
  */

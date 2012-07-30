@@ -541,6 +541,40 @@ extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,
 		*ret = 0;
 }
 
+static errcode_t recheck_bad_inode_checksum(ext2_filsys fs, ext2_ino_t ino,
+					    e2fsck_t ctx,
+					    struct problem_context *pctx)
+{
+	errcode_t retval;
+	struct ext2_inode_large inode;
+
+	/*
+	 * Reread inode.  If we don't see checksum error, then this inode
+	 * has been fixed elsewhere.
+	 */
+	retval = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
+					sizeof(inode));
+	if (retval && retval != EXT2_ET_INODE_CSUM_INVALID)
+		return retval;
+	if (!retval)
+		return 0;
+
+	/*
+	 * Checksum still doesn't match.  That implies that the inode passes
+	 * all the sanity checks, so maybe the checksum is simply corrupt.
+	 * See if the user will go for fixing that.
+	 */
+	if (!fix_problem(ctx, PR_1_INODE_ONLY_CSUM_INVALID, pctx))
+		return 0;
+
+	retval = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
+					 sizeof(inode));
+	if (retval)
+		return retval;
+
+	return 0;
+}
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
@@ -562,6 +596,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	int		imagic_fs, extent_fs;
 	int		busted_fs_time = 0;
 	int		inode_size;
+	int		failed_csum = 0;
 
 	init_resource_track(&rtrack, ctx->fs->io);
 	clear_problem_context(&pctx);
@@ -741,7 +776,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
 			continue;
 		}
-		if (pctx.errcode) {
+		if (pctx.errcode &&
+		    pctx.errcode != EXT2_ET_INODE_CSUM_INVALID) {
 			fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
@@ -751,6 +787,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 		pctx.ino = ino;
 		pctx.inode = inode;
 		ctx->stashed_ino = ino;
+
+		/* Clear corrupt inode? */
+		if (pctx.errcode == EXT2_ET_INODE_CSUM_INVALID) {
+			if (fix_problem(ctx, PR_1_INODE_CSUM_INVALID, &pctx))
+				goto clear_inode;
+			failed_csum = 1;
+		}
+
 		if (inode->i_links_count) {
 			pctx.errcode = ext2fs_icount_store(ctx->inode_link_info,
 					   ino, inode->i_links_count);
@@ -1146,6 +1190,20 @@ void e2fsck_pass1(e2fsck_t ctx)
 			process_inode_count++;
 		} else
 			check_blocks(ctx, &pctx, block_buf);
+
+		/*
+		 * If the inode failed the checksum and the user didn't
+		 * clear the inode, test the checksum again -- if it still
+		 * fails, ask the user if the checksum should be corrected.
+		 */
+		if (failed_csum) {
+			pctx.errcode = recheck_bad_inode_checksum(fs, ino, ctx,
+								  &pctx);
+			if (pctx.errcode) {
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
+			}
+		}
 
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
