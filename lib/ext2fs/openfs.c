@@ -263,6 +263,21 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
+
+	/* Enforce the block group descriptor size */
+	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) {
+		if (fs->super->s_desc_size != EXT2_MIN_DESC_SIZE_64BIT) {
+			retval = EXT2_ET_BAD_DESC_SIZE;
+			goto cleanup;
+		}
+	} else {
+		if (fs->super->s_desc_size &&
+		    fs->super->s_desc_size != EXT2_MIN_DESC_SIZE) {
+			retval = EXT2_ET_BAD_DESC_SIZE;
+			goto cleanup;
+		}
+	}
+
 	fs->cluster_ratio_bits = fs->super->s_log_cluster_size -
 		fs->super->s_log_block_size;
 	if (EXT2_BLOCKS_PER_GROUP(fs->super) !=

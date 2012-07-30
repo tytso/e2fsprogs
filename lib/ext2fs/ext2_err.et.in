@@ -443,4 +443,7 @@ ec	EXT2_ET_MMP_CHANGE_ABORT,
 ec	EXT2_ET_MMP_OPEN_DIRECT,
 	"MMP: open with O_DIRECT failed"
 
+ec	EXT2_ET_BAD_DESC_SIZE,
+	"Block group descriptor size incorrect"
+
 	end
