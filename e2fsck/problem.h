@@ -1030,6 +1030,9 @@ struct problem_context {
 /* Inode bitmap checksum does not match */
 #define PR_5_INODE_BITMAP_CSUM_INVALID	0x05001A
 
+/* Block bitmap checksum does not match */
+#define PR_5_BLOCK_BITMAP_CSUM_INVALID	0x05001B
+
 /*
  * Post-Pass 5 errors
  */

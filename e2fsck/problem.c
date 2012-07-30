@@ -1699,6 +1699,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@g %g @i bitmap does not match checksum\n"),
 	  PROMPT_FIX, PR_LATCH_IBITMAP | PR_PREEN_OK },
 
+	/* Group N block bitmap does not match checksum */
+	{ PR_5_BLOCK_BITMAP_CSUM_INVALID,
+	  N_("@g %g @b bitmap does not match checksum\n"),
+	  PROMPT_FIX, PR_LATCH_BBITMAP | PR_PREEN_OK },
+
 	/* Post-Pass 5 errors */
 
 	/* Recreate journal if E2F_FLAG_JOURNAL_INODE flag is set */
