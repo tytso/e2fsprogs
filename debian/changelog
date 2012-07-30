@@ -1,3 +1,41 @@
+e2fsprogs (1.42.5-1) unstable; urgency=low
+
+  * New upstream version
+  * Mark the e2fsprogs package as Multi-Arch: foreign, so if a package
+    foo:i386 depends on e2fsprogs and is installed on an amd64 system,
+    the native e2fsprogs will satisfy the dependency.  (Closes: #678395)
+  * Fix a fd leak which could cause logsave (and hence a boot-time rc
+    init script) to hang (Closes: #682592)
+  * Fix a problem if e2fsck where if the root file system is mounted
+    read-only, e2fsck would not clear an error indication in the journal
+    superblock.  Combined with a kernel bug, this would cause the e2fsck
+    to check the file system after every single boot
+  * Fixed filefrag so it would not seg fault on virtual filesystems such
+    as /proc: e.g., "filefrag /proc/partitions"
+  * Fix filefrag so that it correctly reports the number of extents
+  * Fixed a bug which caused "mke2fs -N 256 -t ext4 /tmp/foo.img 256m"
+    to write blocks out until /tmp filled
+  * Fixed a bug in how e2fsck would uniquify directory entry names
+  * Change e2fsck so it will allow file systems mounted read-only to be
+    checked with the -f option.
+  * Fix e2fsck so that the file system is marked as containing an
+    error if the user chooses not to fix the quota usage information.
+  * Fix tune2fs so that it correctly removes the quota feature when
+    the last quota inode is removed.
+  * Fix tune2fs so that after removing a quota inode, the block bitmap
+    is updated; otherwise, e2fsck would complain after running 'tune2fs
+    -O ^quota <dev>'.
+  * Fix tune2fs so that when converting a file system from using legacy
+    quota files to the new quota file system feature with hidden quota
+    files, the accounting for these files is handled correctly so that
+    e2fsck doesn't complain.
+  * The e4defrag program now allows device symlinks, such as
+    /dev/mapper/testvg-testlv, instead of insisting on less
+    human-friendly names such as /dev/dm-2
+  * Updated/fixed various man pages  (Closes: #680114)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 29 Jul 2012 19:59:56 -0400
+
 e2fsprogs (1.42.4-3) unstable; urgency=medium
 
   * Add the -C option to chattr's usage message
