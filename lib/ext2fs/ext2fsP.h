@@ -75,7 +75,7 @@ struct ext2_inode_cache {
 
 struct ext2_inode_cache_ent {
 	ext2_ino_t		ino;
-	struct ext2_inode	inode;
+	struct ext2_inode	*inode;
 };
 
 /* Function prototypes */
