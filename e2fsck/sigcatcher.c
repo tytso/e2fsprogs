@@ -387,6 +387,7 @@ void sigcatcher_setup(void)
 	sigaction(SIGILL, &sa, 0);
 	sigaction(SIGBUS, &sa, 0);
 	sigaction(SIGSEGV, &sa, 0);
+	sigaction(SIGABRT, &sa, 0);
 }	
 
 
