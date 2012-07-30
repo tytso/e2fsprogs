@@ -203,6 +203,21 @@ static struct ext4_group_desc *ext4fs_group_desc(ext2_filsys fs,
 }
 
 /*
+ * Return the block bitmap checksum of a group
+ */
+__u32 ext2fs_block_bitmap_checksum(ext2_filsys fs, dgrp_t group)
+{
+	struct ext4_group_desc *gdp;
+	__u32 csum;
+
+	gdp = ext4fs_group_desc(fs, fs->group_desc, group);
+	csum = gdp->bg_block_bitmap_csum_lo;
+	if (fs->super->s_desc_size >= EXT4_BG_BLOCK_BITMAP_CSUM_HI_LOCATION)
+		csum |= ((__u32)gdp->bg_block_bitmap_csum_hi << 16);
+	return csum;
+}
+
+/*
  * Return the block bitmap block of a group
  */
 blk64_t ext2fs_block_bitmap_loc(ext2_filsys fs, dgrp_t group)
@@ -239,7 +254,7 @@ __u32 ext2fs_inode_bitmap_checksum(ext2_filsys fs, dgrp_t group)
 
 	gdp = ext4fs_group_desc(fs, fs->group_desc, group);
 	csum = gdp->bg_inode_bitmap_csum_lo;
-	if (fs->super->s_desc_size < EXT4_BG_INODE_BITMAP_CSUM_HI_END)
+	if (fs->super->s_desc_size >= EXT4_BG_INODE_BITMAP_CSUM_HI_END)
 		csum |= ((__u32)gdp->bg_inode_bitmap_csum_hi << 16);
 	return csum;
 }

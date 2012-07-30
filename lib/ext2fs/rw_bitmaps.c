@@ -90,6 +90,13 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 				for (j = nbits; j < fs->blocksize * 8; j++)
 					ext2fs_set_bit(j, block_buf);
 		}
+
+		retval = ext2fs_block_bitmap_csum_set(fs, i, block_buf,
+						      block_nbytes);
+		if (retval)
+			return retval;
+		ext2fs_group_desc_csum_set(fs, i);
+
 		blk = ext2fs_block_bitmap_loc(fs, i);
 		if (blk) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
@@ -264,6 +271,15 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 							       1, block_bitmap);
 				if (retval) {
 					retval = EXT2_ET_BLOCK_BITMAP_READ;
+					goto cleanup;
+				}
+				/* verify block bitmap checksum */
+				if (!(fs->flags &
+				      EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+				    !ext2fs_block_bitmap_csum_verify(fs, i,
+						block_bitmap, block_nbytes)) {
+					retval =
+					EXT2_ET_BLOCK_BITMAP_READ;
 					goto cleanup;
 				}
 			} else
