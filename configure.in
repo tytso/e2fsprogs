@@ -763,6 +763,43 @@ AC_MSG_RESULT([Enabling mmp support by default])
 AC_DEFINE(CONFIG_MMP, 1)
 )
 dnl
+dnl handle --disable-bmap-stats
+dnl
+AH_TEMPLATE([ENABLE_BMAP_STATS], [Define to 1 to enable bitmap stats.])
+AC_ARG_ENABLE([bmap-stats],
+[  --disable-bmap-stats    disable collection of bitmap stats.],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling bitmap statistics support])
+else
+	AC_MSG_RESULT([Enabling bitmap statistics support])
+	AC_DEFINE(ENABLE_BMAP_STATS, 1)
+fi
+,
+AC_MSG_RESULT([Enabling bitmap statistics support by default])
+AC_DEFINE(ENABLE_BMAP_STATS, 1)
+)
+dnl
+dnl handle --enable-bmap-stats-ops
+dnl
+AH_TEMPLATE([ENABLE_BMAP_STATS_OPS], [Define to 1 to enable bitmap stats.])
+AC_ARG_ENABLE([bmap-stats-ops],
+[  --enable-bmap-stats-ops enable collection of additional bitmap stats],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling additional bitmap statistics])
+else
+	dnl There has to be a better way!
+	AS_IF([test "x${enable_bmap_stats}" = "xno"],
+	 AC_MSG_FAILURE([Error --enable-bmap-stats-ops requires bmap-stats]))
+
+	AC_MSG_RESULT([Enabling additional bitmap statistics])
+	AC_DEFINE(ENABLE_BMAP_STATS_OPS, 1)
+fi
+,
+AC_MSG_RESULT([Disabling additional bitmap statistics by default])
+)
+dnl
 dnl
 dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library

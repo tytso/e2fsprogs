@@ -29,6 +29,12 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* Define to 1 to enable bitmap stats. */
+#undef ENABLE_BMAP_STATS
+
+/* Define to 1 to enable bitmap stats. */
+#undef ENABLE_BMAP_STATS_OPS
+
 /* Define to 1 if ext2 compression enabled */
 #undef ENABLE_COMPRESSION
 

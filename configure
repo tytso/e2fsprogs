@@ -849,6 +849,8 @@ enable_e2initrd_helper
 enable_tls
 enable_uuidd
 enable_mmp
+enable_bmap_stats
+enable_bmap_stats_ops
 enable_nls
 with_gnu_ld
 enable_rpath
@@ -1504,6 +1506,8 @@ Optional Features:
   --disable-tls           disable use of thread local support
   --disable-uuidd         disable building the uuid daemon
   --disable-mmp           disable support mmp, Multi Mount Protection
+  --disable-bmap-stats    disable collection of bitmap stats.
+  --enable-bmap-stats-ops enable collection of additional bitmap stats
   --disable-nls           do not use Native Language Support
   --disable-rpath         do not hardcode runtime library paths
 
@@ -5573,6 +5577,55 @@ else
 $as_echo "Enabling mmp support by default" >&6; }
 $as_echo "#define CONFIG_MMP 1" >>confdefs.h
 
+
+fi
+
+
+# Check whether --enable-bmap-stats was given.
+if test "${enable_bmap_stats+set}" = set; then :
+  enableval=$enable_bmap_stats; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling bitmap statistics support" >&5
+$as_echo "Disabling bitmap statistics support" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling bitmap statistics support" >&5
+$as_echo "Enabling bitmap statistics support" >&6; }
+	$as_echo "#define ENABLE_BMAP_STATS 1" >>confdefs.h
+
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling bitmap statistics support by default" >&5
+$as_echo "Enabling bitmap statistics support by default" >&6; }
+$as_echo "#define ENABLE_BMAP_STATS 1" >>confdefs.h
+
+
+fi
+
+
+# Check whether --enable-bmap-stats-ops was given.
+if test "${enable_bmap_stats_ops+set}" = set; then :
+  enableval=$enable_bmap_stats_ops; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling additional bitmap statistics" >&5
+$as_echo "Disabling additional bitmap statistics" >&6; }
+else
+		if test "x${enable_bmap_stats}" = "xno"; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Error --enable-bmap-stats-ops requires bmap-stats
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling additional bitmap statistics" >&5
+$as_echo "Enabling additional bitmap statistics" >&6; }
+	$as_echo "#define ENABLE_BMAP_STATS_OPS 1" >>confdefs.h
+
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling additional bitmap statistics by default" >&5
+$as_echo "Disabling additional bitmap statistics by default" >&6; }
 
 fi
 
