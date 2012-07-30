@@ -310,12 +310,16 @@ static void ba_clear_bmap(ext2fs_generic_bitmap bitmap)
 	       (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1));
 }
 
+#ifdef ENABLE_BMAP_STATS
 static void ba_print_stats(ext2fs_generic_bitmap bitmap)
 {
 	fprintf(stderr, "%16llu Bytes used by bitarray\n",
 		((bitmap->real_end - bitmap->start) >> 3) + 1 +
 		sizeof(struct ext2fs_ba_private_struct));
 }
+#else
+static void ba_print_stats(ext2fs_generic_bitmap bitmap) {}
+#endif
 
 /* Find the first zero bit between start and end, inclusive. */
 static errcode_t ba_find_first_zero(ext2fs_generic_bitmap bitmap,
