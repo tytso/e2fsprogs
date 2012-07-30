@@ -340,14 +340,16 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	else
 		old_desc_blocks = fs->desc_blocks;
 
-	ext2fs_numeric_progress_init(fs, &progress, NULL,
-				     fs->group_desc_count);
+	if (fs->progress_ops && fs->progress_ops->init)
+		(fs->progress_ops->init)(fs, &progress, NULL,
+					 fs->group_desc_count);
 
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		blk64_t	super_blk, old_desc_blk, new_desc_blk;
 
-		ext2fs_numeric_progress_update(fs, &progress, i);
+		if (fs->progress_ops && fs->progress_ops->update)
+			(fs->progress_ops->update)(fs, &progress, i);
 		ext2fs_super_and_bgd_loc2(fs, i, &super_blk, &old_desc_blk,
 					 &new_desc_blk, 0);
 
@@ -376,7 +378,8 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 		}
 	}
 
-	ext2fs_numeric_progress_close(fs, &progress, NULL);
+	if (fs->progress_ops && fs->progress_ops->close)
+		(fs->progress_ops->close)(fs, &progress, NULL);
 
 	/*
 	 * If the write_bitmaps() function is present, call it to

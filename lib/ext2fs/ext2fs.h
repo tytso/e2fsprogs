@@ -267,6 +267,9 @@ struct struct_ext2_filsys {
 	 * Time at which e2fsck last updated the MMP block.
 	 */
 	long mmp_last_written;
+
+	/* progress operation functions */
+	struct ext2fs_progress_ops *progress_ops;
 };
 
 #if EXT2_FLAT_INCLUDES

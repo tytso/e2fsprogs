@@ -2277,6 +2277,7 @@ int main (int argc, char *argv[])
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
 	}
+	fs->progress_ops = &ext2fs_numeric_progress_ops;
 
 	/* Can't undo discard ... */
 	if (!noaction && discard && (io_ptr != undo_io_manager)) {

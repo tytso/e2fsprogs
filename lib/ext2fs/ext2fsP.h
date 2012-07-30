@@ -95,6 +95,23 @@ struct ext2fs_numeric_progress_struct {
 	int		skip_progress;
 };
 
+/*
+ * progress callback functions
+ */
+struct ext2fs_progress_ops {
+	void (*init)(ext2_filsys fs,
+		     struct ext2fs_numeric_progress_struct * progress,
+		     const char *label, __u64 max);
+	void (*update)(ext2_filsys fs,
+		       struct ext2fs_numeric_progress_struct * progress,
+		       __u64 val);
+	void (*close)(ext2_filsys fs,
+		      struct ext2fs_numeric_progress_struct * progress,
+		      const char *message);
+};
+
+extern struct ext2fs_progress_ops ext2fs_numeric_progress_ops;
+
 extern void ext2fs_numeric_progress_init(ext2_filsys fs,
 					 struct ext2fs_numeric_progress_struct * progress,
 					 const char *label, __u64 max);

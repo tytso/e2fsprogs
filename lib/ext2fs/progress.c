@@ -16,6 +16,12 @@
 
 static char spaces[80], backspaces[80];
 
+struct ext2fs_progress_ops ext2fs_numeric_progress_ops = {
+	.init		= ext2fs_numeric_progress_init,
+	.update		= ext2fs_numeric_progress_update,
+	.close		= ext2fs_numeric_progress_close,
+};
+
 static int int_log10(unsigned int arg)
 {
 	int	l;
