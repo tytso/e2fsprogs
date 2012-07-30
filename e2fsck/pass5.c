@@ -27,6 +27,7 @@ static void check_block_bitmaps(e2fsck_t ctx);
 static void check_inode_bitmaps(e2fsck_t ctx);
 static void check_inode_end(e2fsck_t ctx);
 static void check_block_end(e2fsck_t ctx);
+static void check_inode_bitmap_checksum(e2fsck_t ctx);
 
 void e2fsck_pass5(e2fsck_t ctx)
 {
@@ -64,6 +65,8 @@ void e2fsck_pass5(e2fsck_t ctx)
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 
+	check_inode_bitmap_checksum(ctx);
+
 	ext2fs_free_inode_bitmap(ctx->inode_used_map);
 	ctx->inode_used_map = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_dir_map);
@@ -72,6 +75,65 @@ void e2fsck_pass5(e2fsck_t ctx)
 	ctx->block_found_map = 0;
 
 	print_resource_track(ctx, _("Pass 5"), &rtrack, ctx->fs->io);
+}
+
+static void check_inode_bitmap_checksum(e2fsck_t ctx)
+{
+	struct problem_context	pctx;
+	struct ext4_group_desc	*gdp;
+	char		*buf;
+	dgrp_t		i;
+	int		nbytes;
+	ext2_ino_t	ino_itr;
+	errcode_t	retval;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(ctx->fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return;
+
+	/* If bitmap is dirty from being fixed, checksum will be corrected */
+	if (ext2fs_test_ib_dirty(ctx->fs))
+		return;
+
+	nbytes = (size_t)(EXT2_INODES_PER_GROUP(ctx->fs->super) / 8);
+	retval = ext2fs_get_memalign(ctx->fs->blocksize, ctx->fs->blocksize,
+				     &buf);
+	if (retval) {
+		com_err(ctx->program_name, 0,
+		    _("check_inode_bitmap_checksum: Memory allocation error"));
+		fatal_error(ctx, 0);
+	}
+
+	clear_problem_context(&pctx);
+	for (i = 0; i < ctx->fs->group_desc_count; i++) {
+		if (ext2fs_bg_flags_test(ctx->fs, i, EXT2_BG_INODE_UNINIT))
+			continue;
+
+		ino_itr = 1 + (i * (nbytes << 3));
+		gdp = (struct ext4_group_desc *)ext2fs_group_desc(ctx->fs,
+				ctx->fs->group_desc, i);
+		retval = ext2fs_get_inode_bitmap_range2(ctx->fs->inode_map,
+							ino_itr, nbytes << 3,
+							buf);
+		if (retval)
+			break;
+
+		if (ext2fs_inode_bitmap_csum_verify(ctx->fs, i, buf, nbytes))
+			continue;
+		pctx.group = i;
+		if (!fix_problem(ctx, PR_5_INODE_BITMAP_CSUM_INVALID, &pctx))
+			continue;
+
+		/*
+		 * Fixing one checksum will rewrite all of them.  The bitmap
+		 * will be checked against the one we made during pass1 for
+		 * discrepancies, and fixed if need be.
+		 */
+		ext2fs_mark_ib_dirty(ctx->fs);
+		break;
+	}
+
+	ext2fs_free_mem(&buf);
 }
 
 static void e2fsck_discard_blocks(e2fsck_t ctx, blk64_t start,
