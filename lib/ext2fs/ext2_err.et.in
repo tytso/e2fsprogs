@@ -455,4 +455,7 @@ ec	EXT2_ET_INODE_BITMAP_CSUM_INVALID,
 ec	EXT2_ET_EXTENT_CSUM_INVALID,
 	"Extent block checksum does not match extent block"
 
+ec	EXT2_ET_DIR_NO_SPACE_FOR_CSUM,
+	"Directory block does not have space for checksum"
+
 	end

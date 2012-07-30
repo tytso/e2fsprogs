@@ -943,6 +943,10 @@ extern __u32 ext2fs_crc32c_be(__u32 crc, unsigned char const *p, size_t len);
 extern __u32 ext2fs_crc32c_le(__u32 crc, unsigned char const *p, size_t len);
 
 /* csum.c */
+extern errcode_t ext2fs_get_dx_countlimit(ext2_filsys fs,
+					  struct ext2_dir_entry *dirent,
+					  struct ext2_dx_countlimit **cc,
+					  int *offset);
 extern errcode_t ext2fs_extent_block_csum_set(ext2_filsys fs,
 					      ext2_ino_t inum,
 					      struct ext3_extent_header *eh);
