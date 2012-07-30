@@ -91,6 +91,7 @@ static char *extended_cmd;
 static unsigned long new_inode_size;
 static char *ext_mount_opts;
 static int usrquota, grpquota;
+static int rewrite_checksums;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -142,7 +143,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER |
-		EXT4_FEATURE_RO_COMPAT_QUOTA
+		EXT4_FEATURE_RO_COMPAT_QUOTA |
+		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM
 };
 
 static __u32 clear_ok_features[3] = {
@@ -160,7 +162,8 @@ static __u32 clear_ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
-		EXT4_FEATURE_RO_COMPAT_QUOTA
+		EXT4_FEATURE_RO_COMPAT_QUOTA |
+		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM
 };
 
 /*
@@ -351,6 +354,16 @@ static int update_mntopts(ext2_filsys fs, char *mntopts)
 	return 0;
 }
 
+static int check_fsck_needed(ext2_filsys fs)
+{
+	if (fs->super->s_state & EXT2_VALID_FS)
+		return 0;
+	printf("\n%s\n", _(please_fsck));
+	if (mount_flags & EXT2_MF_READONLY)
+		printf(_("(and reboot afterwards!)\n"));
+	return 1;
+}
+
 static void request_fsck_afterwards(ext2_filsys fs)
 {
 	static int requested = 0;
@@ -361,6 +374,60 @@ static void request_fsck_afterwards(ext2_filsys fs)
 	printf("\n%s\n", _(please_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
 		printf(_("(and reboot afterwards!)\n"));
+}
+
+/*
+ * Forcibly set checksums in all inodes.
+ */
+static void rewrite_inodes(ext2_filsys fs)
+{
+	int length = EXT2_INODE_SIZE(fs->super);
+	struct ext2_inode *inode;
+	ext2_inode_scan	scan;
+	errcode_t	retval;
+	ext2_ino_t	ino;
+
+	if (fs->super->s_creator_os != EXT2_OS_LINUX)
+		return;
+
+	retval = ext2fs_open_inode_scan(fs, 0, &scan);
+	if (retval) {
+		com_err("set_csum", retval, "while opening inode scan");
+		exit(1);
+	}
+
+	retval = ext2fs_get_mem(length, &inode);
+	if (retval) {
+		com_err("set_csum", retval, "while allocating memory");
+		exit(1);
+	}
+
+	do {
+		retval = ext2fs_get_next_inode_full(scan, &ino, inode, length);
+		if (retval) {
+			com_err("set_csum", retval, "while getting next inode");
+			exit(1);
+		}
+		if (!ino)
+			break;
+
+		retval = ext2fs_write_inode_full(fs, ino, inode, length);
+		if (retval) {
+			com_err("set_csum", retval, "while writing inode");
+			exit(1);
+		}
+	} while (ino);
+
+	ext2fs_free_mem(&inode);
+	ext2fs_close_inode_scan(scan);
+}
+
+static void rewrite_metadata_checksums(ext2_filsys fs)
+{
+	fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+	ext2fs_init_csum_seed(fs);
+	rewrite_inodes(fs);
+	fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 }
 
 /*
@@ -533,6 +600,20 @@ mmp_error:
 				"read-only.\n"), stderr);
 			return 1;
 		}
+	}
+
+	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
+		       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		if (check_fsck_needed(fs))
+			exit(1);
+		rewrite_checksums = 1;
+	}
+
+	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
+			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		if (check_fsck_needed(fs))
+			exit(1);
+		rewrite_checksums = 1;
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
@@ -2120,6 +2201,23 @@ retry_open:
 		int set_csum = 0;
 		dgrp_t i;
 
+		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+			/*
+			 * Changing the UUID requires rewriting all metadata,
+			 * which can race with a mounted fs.  Don't allow that.
+			 */
+			if (mount_flags & EXT2_MF_MOUNTED) {
+				fputs(_("The UUID may only be "
+					"changed when the filesystem is "
+					"unmounted.\n"), stderr);
+				exit(1);
+			}
+
+			if (check_fsck_needed(fs))
+				exit(1);
+		}
+
 		if (sb->s_feature_ro_compat &
 		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
 			/*
@@ -2145,13 +2243,19 @@ retry_open:
 			rc = 1;
 			goto closefs;
 		}
+		ext2fs_init_csum_seed(fs);
 		if (set_csum) {
 			for (i = 0; i < fs->group_desc_count; i++)
 				ext2fs_group_desc_csum_set(fs, i);
 			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 		}
 		ext2fs_mark_super_dirty(fs);
+		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+			rewrite_checksums = 1;
 	}
+	if (rewrite_checksums)
+		rewrite_metadata_checksums(fs);
 	if (I_flag) {
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("The inode size may only be "
