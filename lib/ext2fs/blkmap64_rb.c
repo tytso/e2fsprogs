@@ -134,10 +134,8 @@ static void rb_get_new_extent(struct bmap_rb_extent **ext, __u64 start,
 
 	retval = ext2fs_get_mem(sizeof (struct bmap_rb_extent),
 				&new_ext);
-	if (retval) {
-		perror("ext2fs_get_mem");
-		exit(1);
-	}
+	if (retval)
+		abort();
 
 	new_ext->start = start;
 	new_ext->count = count;
