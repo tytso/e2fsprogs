@@ -288,6 +288,23 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 
 	fs->super->s_wtime = fs->now ? fs->now : time(NULL);
 	fs->super->s_block_group_nr = 0;
+
+	/*
+	 * If the write_bitmaps() function is present, call it to
+	 * flush the bitmaps.  This is done this way so that a simple
+	 * program that doesn't mess with the bitmaps doesn't need to
+	 * drag in the bitmaps.c code.
+	 *
+	 * Bitmap checksums live in the group descriptor, so the
+	 * bitmaps need to be written before the descriptors.
+	 */
+	if (fs->write_bitmaps) {
+		retval = fs->write_bitmaps(fs);
+		if (retval)
+			goto errout;
+	}
+
+	/* Prepare the group descriptors for writing */
 #ifdef WORDS_BIGENDIAN
 	retval = EXT2_ET_NO_MEMORY;
 	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &super_shadow);
@@ -380,18 +397,6 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 
 	if (fs->progress_ops && fs->progress_ops->close)
 		(fs->progress_ops->close)(fs, &progress, NULL);
-
-	/*
-	 * If the write_bitmaps() function is present, call it to
-	 * flush the bitmaps.  This is done this way so that a simple
-	 * program that doesn't mess with the bitmaps doesn't need to
-	 * drag in the bitmaps.c code.
-	 */
-	if (fs->write_bitmaps) {
-		retval = fs->write_bitmaps(fs);
-		if (retval)
-			goto errout;
-	}
 
 write_primary_superblock_only:
 	/*

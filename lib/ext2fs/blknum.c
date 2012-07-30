@@ -230,6 +230,21 @@ void ext2fs_block_bitmap_loc_set(ext2_filsys fs, dgrp_t group, blk64_t blk)
 }
 
 /*
+ * Return the inode bitmap checksum of a group
+ */
+__u32 ext2fs_inode_bitmap_checksum(ext2_filsys fs, dgrp_t group)
+{
+	struct ext4_group_desc *gdp;
+	__u32 csum;
+
+	gdp = ext4fs_group_desc(fs, fs->group_desc, group);
+	csum = gdp->bg_inode_bitmap_csum_lo;
+	if (fs->super->s_desc_size < EXT4_BG_INODE_BITMAP_CSUM_HI_END)
+		csum |= ((__u32)gdp->bg_inode_bitmap_csum_hi << 16);
+	return csum;
+}
+
+/*
  * Return the inode bitmap block of a group
  */
 blk64_t ext2fs_inode_bitmap_loc(ext2_filsys fs, dgrp_t group)

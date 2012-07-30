@@ -115,6 +115,12 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (retval)
 			goto errout;
 
+		retval = ext2fs_inode_bitmap_csum_set(fs, i, inode_buf,
+						      inode_nbytes);
+		if (retval)
+			goto errout;
+		ext2fs_group_desc_csum_set(fs, i);
+
 		blk = ext2fs_inode_bitmap_loc(fs, i);
 		if (blk) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
@@ -280,6 +286,16 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 							       1, inode_bitmap);
 				if (retval) {
 					retval = EXT2_ET_INODE_BITMAP_READ;
+					goto cleanup;
+				}
+
+				/* verify inode bitmap checksum */
+				if (!(fs->flags &
+				      EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+				    !ext2fs_inode_bitmap_csum_verify(fs, i,
+						inode_bitmap, inode_nbytes)) {
+					retval =
+					EXT2_ET_INODE_BITMAP_CSUM_INVALID;
 					goto cleanup;
 				}
 			} else
