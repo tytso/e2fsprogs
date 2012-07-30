@@ -185,6 +185,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_PRINT_PROGRESS	0x40000
 #define EXT2_FLAG_DIRECT_IO		0x80000
 #define EXT2_FLAG_SKIP_MMP		0x100000
+#define EXT2_FLAG_IGNORE_CSUM_ERRORS	0x200000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is

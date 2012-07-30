@@ -19,6 +19,17 @@
  */
 
 /*
+ * This is extent tail on-disk structure.
+ * All other extent structures are 12 bytes long.  It turns out that
+ * block_size % 12 >= 4 for at least all powers of 2 greater than 512, which
+ * covers all valid ext4 block sizes.  Therefore, this tail structure can be
+ * crammed into the end of the block without having to rebalance the tree.
+ */
+struct ext3_extent_tail {
+	__u32	et_checksum;	/* crc32c(uuid+inum+extent_block) */
+};
+
+/*
  * this is extent on-disk structure
  * it's used at the bottom of the tree
  */

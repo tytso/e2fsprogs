@@ -235,6 +235,13 @@ struct ext2_dx_countlimit {
 	__u16 count;
 };
 
+/*
+ * This goes at the end of each htree block.
+ */
+struct ext2_dx_tail {
+	__u32 dt_reserved;
+	__u32 dt_checksum;	/* crc32c(uuid+inum+dxblock) */
+};
 
 /*
  * Macro-instructions used to manage group descriptors
@@ -464,6 +471,7 @@ struct ext2_inode_large {
 #define i_gid_low	i_gid
 #define i_uid_high	osd2.linux2.l_i_uid_high
 #define i_gid_high	osd2.linux2.l_i_gid_high
+#define i_checksum_lo	osd2.linux2.l_i_checksum_lo
 #else
 #if defined(__GNU__)
 
@@ -534,6 +542,9 @@ struct ext2_inode_large {
 #else
 #define ext4_offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 #endif
+
+/* Metadata checksum algorithms */
+#define EXT2_CRC32C_CHKSUM		1
 
 /*
  * Structure of the super block
@@ -620,7 +631,7 @@ struct ext2_super_block {
 	__u64   s_mmp_block;            /* Block for multi-mount protection */
 	__u32   s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
 	__u8	s_log_groups_per_flex;	/* FLEX_BG group size */
-	__u8    s_reserved_char_pad;
+	__u8    s_checksum_type;	/* metadata checksum algorithm */
 	__u16	s_reserved_pad;		/* Padding to next 32bits */
 	__u64	s_kbytes_written;	/* nr of lifetime kilobytes written */
 	__u32	s_snapshot_inum;	/* Inode number of active snapshot */
@@ -708,6 +719,11 @@ struct ext2_super_block {
 #define EXT4_FEATURE_RO_COMPAT_HAS_SNAPSHOT	0x0080
 #define EXT4_FEATURE_RO_COMPAT_QUOTA		0x0100
 #define EXT4_FEATURE_RO_COMPAT_BIGALLOC		0x0200
+/*
+ * METADATA_CSUM implies GDT_CSUM.  When METADATA_CSUM is set, group
+ * descriptor checksums use the same algorithm as all other data
+ * structures' checksums.
+ */
 #define EXT4_FEATURE_RO_COMPAT_METADATA_CSUM	0x0400
 #define EXT4_FEATURE_RO_COMPAT_REPLICA		0x0800
 
@@ -784,6 +800,17 @@ struct ext2_dir_entry_2 {
 };
 
 /*
+ * This is a bogus directory entry at the end of each leaf block that
+ * records checksums.
+ */
+struct ext2_dir_entry_tail {
+	__u32	det_reserved_zero1;	/* Pretend to be unused */
+	__u16	det_rec_len;		/* 12 */
+	__u16	det_reserved_name_len;	/* 0xDE00, fake namelen/filetype */
+	__u32	det_checksum;		/* crc32c(uuid+inode+dirent) */
+};
+
+/*
  * Ext2 directory file types.  Only the low 3 bits are used.  The
  * other bits are reserved for now.
  */
@@ -797,6 +824,14 @@ struct ext2_dir_entry_2 {
 #define EXT2_FT_SYMLINK		7
 
 #define EXT2_FT_MAX		8
+
+/*
+ * Annoyingly, e2fsprogs always swab16s ext2_dir_entry.name_len, so we
+ * have to build ext2_dir_entry_tail with that assumption too.  This
+ * constant helps to build the dir_entry_tail to look like it has an
+ * "invalid" file type.
+ */
+#define EXT2_DIR_NAME_LEN_CSUM	0xDE00
 
 /*
  * EXT2_DIR_PAD defines the directory entries boundaries
@@ -839,7 +874,8 @@ struct mmp_struct {
 	char	mmp_bdevname[32];	/* Bdev which last updated MMP block */
 	__u16	mmp_check_interval;	/* Changed mmp_check_interval */
 	__u16	mmp_pad1;
-	__u32	mmp_pad2[227];
+	__u32	mmp_pad2[226];
+	__u32	mmp_checksum;		/* crc32c(uuid+mmp_block) */
 };
 
 /*
