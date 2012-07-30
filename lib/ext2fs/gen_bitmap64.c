@@ -322,7 +322,8 @@ errcode_t ext2fs_copy_generic_bmap(ext2fs_generic_bitmap src,
 			ext2fs_free_mem(&new_bmap);
 			return retval;
 		}
-		sprintf(new_descr, "copy of %s", descr);
+		strcpy(new_descr, "copy of ");
+		strcat(new_descr, descr);
 		new_bmap->description = new_descr;
 	}
 
