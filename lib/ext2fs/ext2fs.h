@@ -938,8 +938,6 @@ extern errcode_t ext2fs_set_gdt_csum(ext2_filsys fs);
 extern __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group);
 
 /* dblist.c */
-
-extern errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs);
 extern errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist);
 extern errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ext2_ino_t ino,
 				      blk_t blk, int blockcnt);
@@ -1188,6 +1186,9 @@ errcode_t ext2fs_set_generic_bmap_range(ext2fs_generic_bitmap bmap,
 					void *in);
 errcode_t ext2fs_convert_subcluster_bitmap(ext2_filsys fs,
 					   ext2fs_block_bitmap *bitmap);
+
+/* get_num_dirs.c */
+extern errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,
