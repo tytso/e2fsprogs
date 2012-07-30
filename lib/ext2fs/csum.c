@@ -30,6 +30,85 @@
 #define STATIC static
 #endif
 
+#define EXT3_EXTENT_TAIL_OFFSET(hdr)	(sizeof(struct ext3_extent_header) + \
+	(sizeof(struct ext3_extent) * ext2fs_le16_to_cpu((hdr)->eh_max)))
+
+static struct ext3_extent_tail *get_extent_tail(struct ext3_extent_header *h)
+{
+	return (struct ext3_extent_tail *)(((void *)h) +
+					   EXT3_EXTENT_TAIL_OFFSET(h));
+}
+
+static errcode_t ext2fs_extent_block_csum(ext2_filsys fs, ext2_ino_t inum,
+					  struct ext3_extent_header *eh,
+					  __u32 *crc)
+{
+	int size;
+	__u32 gen;
+	errcode_t retval;
+	struct ext2_inode inode;
+
+	size = EXT3_EXTENT_TAIL_OFFSET(eh) + offsetof(struct ext3_extent_tail,
+						      et_checksum);
+
+	retval = ext2fs_read_inode(fs, inum, &inode);
+	if (retval)
+		return retval;
+	inum = ext2fs_cpu_to_le32(inum);
+	gen = ext2fs_cpu_to_le32(inode.i_generation);
+	*crc = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)&inum,
+				sizeof(inum));
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)&gen, sizeof(gen));
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)eh, size);
+
+	return 0;
+}
+
+int ext2fs_extent_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+				    struct ext3_extent_header *eh)
+{
+	errcode_t retval;
+	__u32 provided, calculated;
+	struct ext3_extent_tail *t = get_extent_tail(eh);
+
+	/*
+	 * The extent tree structures are accessed in LE order, so we must
+	 * swap the checksum bytes here.
+	 */
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 1;
+
+	provided = ext2fs_le32_to_cpu(t->et_checksum);
+	retval = ext2fs_extent_block_csum(fs, inum, eh, &calculated);
+	if (retval)
+		return 0;
+
+	return provided == calculated;
+}
+
+errcode_t ext2fs_extent_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
+				       struct ext3_extent_header *eh)
+{
+	errcode_t retval;
+	__u32 crc;
+	struct ext3_extent_tail *t = get_extent_tail(eh);
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 0;
+
+	/*
+	 * The extent tree structures are accessed in LE order, so we must
+	 * swap the checksum bytes here.
+	 */
+	retval = ext2fs_extent_block_csum(fs, inum, eh, &crc);
+	if (retval)
+		return retval;
+	t->et_checksum = ext2fs_cpu_to_le32(crc);
+	return retval;
+}
+
 int ext2fs_inode_bitmap_csum_verify(ext2_filsys fs, dgrp_t group,
 				    char *bitmap, int size)
 {

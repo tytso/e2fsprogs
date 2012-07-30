@@ -455,6 +455,13 @@ retry:
 			return retval;
 		}
 
+		if (!(handle->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+		    !ext2fs_extent_block_csum_verify(handle->fs, handle->ino,
+						     eh)) {
+			handle->level--;
+			return EXT2_ET_EXTENT_CSUM_INVALID;
+		}
+
 		newpath->left = newpath->entries =
 			ext2fs_le16_to_cpu(eh->eh_entries);
 		newpath->max_entries = ext2fs_le16_to_cpu(eh->eh_max);
@@ -541,6 +548,7 @@ static errcode_t update_path(ext2_extent_handle_t handle)
 	blk64_t				blk;
 	errcode_t			retval;
 	struct ext3_extent_idx		*ix;
+	struct ext3_extent_header	*eh;
 
 	if (handle->level == 0) {
 		retval = ext2fs_write_inode(handle->fs, handle->ino,
@@ -549,6 +557,14 @@ static errcode_t update_path(ext2_extent_handle_t handle)
 		ix = handle->path[handle->level - 1].curr;
 		blk = ext2fs_le32_to_cpu(ix->ei_leaf) +
 			((__u64) ext2fs_le16_to_cpu(ix->ei_leaf_hi) << 32);
+
+		/* then update the checksum */
+		eh = (struct ext3_extent_header *)
+				handle->path[handle->level].buf;
+		retval = ext2fs_extent_block_csum_set(handle->fs, handle->ino,
+						      eh);
+		if (retval)
+			return retval;
 
 		retval = io_channel_write_blk64(handle->fs->io,
 				      blk, 1, handle->path[handle->level].buf);
@@ -957,6 +973,11 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 		sizeof(struct ext3_extent_idx) * tocopy);
 
 	new_node_start = ext2fs_le32_to_cpu(EXT_FIRST_INDEX(neweh)->ei_block);
+
+	/* then update the checksum */
+	retval = ext2fs_extent_block_csum_set(handle->fs, handle->ino, neweh);
+	if (retval)
+		goto done;
 
 	/* ...and write the new node block out to disk. */
 	retval = io_channel_write_blk64(handle->fs->io, new_node_pblk, 1,
