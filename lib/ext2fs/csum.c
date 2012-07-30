@@ -40,7 +40,7 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 	if (size < EXT2_MIN_DESC_SIZE)
 		size = EXT2_MIN_DESC_SIZE;
 	if (size > sizeof(struct ext4_group_desc)) {
-		printf("%s: illegal s_desc_size(%zd)\n", __func__, size);
+		/* This should never happen, but cap it for safety's sake */
 		size = sizeof(struct ext4_group_desc);
 	}
 
