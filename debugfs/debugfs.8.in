@@ -8,7 +8,7 @@ debugfs \- ext2/ext3/ext4 file system debugger
 .SH SYNOPSIS
 .B debugfs
 [
-.B \-DVwci
+.B \-DVwcin
 ]
 [
 .B \-b
@@ -47,6 +47,11 @@ file system (e.g /dev/hdXX).
 .I \-w
 Specifies that the file system should be opened in read-write mode.
 Without this option, the file system is opened in read-only mode.
+.TP
+.I \-n
+Disables metadata checksum verification.  This should only be used if
+you believe the metadata to be correct despite the complaints of
+e2fsprogs.
 .TP
 .I \-c
 Specifies that the file system should be opened in catastrophic mode, in

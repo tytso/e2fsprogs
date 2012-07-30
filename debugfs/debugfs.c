@@ -2307,9 +2307,9 @@ int main(int argc, char **argv)
 	int		catastrophic = 0;
 	char		*data_filename = 0;
 #ifdef READ_ONLY
-	const char	*opt_string = "icR:f:b:s:Vd:D";
+	const char	*opt_string = "nicR:f:b:s:Vd:D";
 #else
-	const char	*opt_string = "iwcR:f:b:s:Vd:D";
+	const char	*opt_string = "niwcR:f:b:s:Vd:D";
 #endif
 
 	if (debug_prog_name == 0)
@@ -2335,6 +2335,9 @@ int main(int argc, char **argv)
 			break;
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
+			break;
+		case 'n':
+			open_flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 			break;
 #ifndef READ_ONLY
 		case 'w':
