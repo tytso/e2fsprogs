@@ -277,7 +277,9 @@ void e2fsck_read_bitmaps(e2fsck_t ctx)
 	old_op = ehandler_operation(_("reading inode and block bitmaps"));
 	e2fsck_set_bitmap_type(fs, EXT2FS_BMAP64_RBTREE, "fs_bitmaps",
 			       &save_type);
+	ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	retval = ext2fs_read_bitmaps(fs);
+	ctx->fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	fs->default_bitmap_type = save_type;
 	ehandler_operation(old_op);
 	if (retval) {
