@@ -956,6 +956,21 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i passes checks, but checksum does not match @i.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* Inode extent block checksum does not match extent */
+	{ PR_1_EXTENT_CSUM_INVALID,
+	  N_("@i %i extent block checksum does not match extent\n\t(logical @b "
+	     "%c, @n physical @b %b, len %N)\n"),
+	  PROMPT_CLEAR, 0 },
+
+	/*
+	 * Inode extent block passes checks, but checksum does not match
+	 * extent
+	 */
+	{ PR_1_EXTENT_ONLY_CSUM_INVALID,
+	  N_("@i %i extent block passes checks, but checksum does not match "
+	     "extent\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

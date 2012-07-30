@@ -1820,6 +1820,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	int			is_dir, is_leaf;
 	errcode_t		problem;
 	struct ext2_extent_info	info;
+	int			failed_csum;
 
 	pctx->errcode = ext2fs_extent_get_info(ehandle, &info);
 	if (pctx->errcode)
@@ -1827,11 +1828,25 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 
 	pctx->errcode = ext2fs_extent_get(ehandle, EXT2_EXTENT_FIRST_SIB,
 					  &extent);
-	while (!pctx->errcode && info.num_entries-- > 0) {
+	while ((pctx->errcode == 0 ||
+		pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) &&
+	       info.num_entries-- > 0) {
+		failed_csum = 0;
 		is_leaf = extent.e_flags & EXT2_EXTENT_FLAGS_LEAF;
 		is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
 
 		problem = 0;
+		/* Ask to clear a corrupt extent block */
+		if (pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) {
+			pctx->blk = extent.e_pblk;
+			pctx->blk2 = extent.e_lblk;
+			pctx->num = extent.e_len;
+			problem = PR_1_EXTENT_CSUM_INVALID;
+			if (fix_problem(ctx, problem, pctx))
+				goto fix_problem_now;
+			failed_csum = 1;
+		}
+
 		if (extent.e_pblk == 0 ||
 		    extent.e_pblk < ctx->fs->super->s_first_data_block ||
 		    extent.e_pblk >= ext2fs_blocks_count(ctx->fs->super))
@@ -1845,12 +1860,24 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			 ext2fs_blocks_count(ctx->fs->super))
 			problem = PR_1_EXTENT_ENDS_BEYOND;
 
+		/* Corrupt but passes checks?  Ask to fix checksum. */
+		if (failed_csum) {
+			pctx->blk = extent.e_pblk;
+			pctx->blk2 = extent.e_lblk;
+			pctx->num = extent.e_len;
+			problem = 0;
+			if (fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID,
+					pctx))
+				ext2fs_extent_replace(ehandle, 0, &extent);
+		}
+
 		if (problem) {
 		report_problem:
 			pctx->blk = extent.e_pblk;
 			pctx->blk2 = extent.e_lblk;
 			pctx->num = extent.e_len;
 			if (fix_problem(ctx, problem, pctx)) {
+fix_problem_now:
 				e2fsck_read_bitmaps(ctx);
 				pctx->errcode =
 					ext2fs_extent_delete(ehandle, 0);
@@ -1877,7 +1904,10 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			if (pctx->errcode) {
 				pctx->str = "EXT2_EXTENT_DOWN";
 				problem = PR_1_EXTENT_HEADER_INVALID;
-				if (pctx->errcode == EXT2_ET_EXTENT_HEADER_BAD)
+				if (pctx->errcode ==
+					EXT2_ET_EXTENT_HEADER_BAD ||
+				    pctx->errcode ==
+					EXT2_ET_EXTENT_CSUM_INVALID)
 					goto report_problem;
 				return;
 			}
