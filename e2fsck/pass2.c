@@ -754,6 +754,7 @@ static int check_dir_block(ext2_filsys fs,
 	int	dups_found = 0;
 	int	ret;
 	int	dx_csum_size = 0;
+	int	failed_csum = 0;
 
 	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
@@ -804,10 +805,14 @@ static int check_dir_block(ext2_filsys fs,
 #endif
 
 	ehandler_operation(_("reading directory block"));
-	cd->pctx.errcode = ext2fs_read_dir_block3(fs, block_nr, buf, 0);
+	cd->pctx.errcode = ext2fs_read_dir_block4(fs, block_nr, buf, 0, ino);
 	ehandler_operation(0);
 	if (cd->pctx.errcode == EXT2_ET_DIR_CORRUPTED)
 		cd->pctx.errcode = 0; /* We'll handle this ourselves */
+	else if (cd->pctx.errcode == EXT2_ET_DIR_CSUM_INVALID) {
+		cd->pctx.errcode = 0; /* We'll handle this ourselves */
+		failed_csum = 1;
+	}
 	if (cd->pctx.errcode) {
 		if (!fix_problem(ctx, PR_2_READ_DIRBLOCK, &cd->pctx)) {
 			ctx->flags |= E2F_FLAG_ABORT;
@@ -1145,7 +1150,7 @@ out_htree:
 		cd->pctx.dir = cd->pctx.ino;
 		if ((dx_db->type == DX_DIRBLOCK_ROOT) ||
 		    (dx_db->type == DX_DIRBLOCK_NODE))
-			parse_int_node(fs, db, cd, dx_dir, buf, 0);
+			parse_int_node(fs, db, cd, dx_dir, buf, failed_csum);
 	}
 #endif /* ENABLE_HTREE */
 	if (offset != fs->blocksize) {
@@ -1156,7 +1161,8 @@ out_htree:
 		}
 	}
 	if (dir_modified) {
-		cd->pctx.errcode = ext2fs_write_dir_block(fs, block_nr, buf);
+		cd->pctx.errcode = ext2fs_write_dir_block4(fs, block_nr, buf,
+							   0, ino);
 		if (cd->pctx.errcode) {
 			if (!fix_problem(ctx, PR_2_WRITE_DIRBLOCK,
 					 &cd->pctx))
@@ -1476,7 +1482,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 		return 1;
 	}
 
-	pctx->errcode = ext2fs_write_dir_block(fs, blk, block);
+	pctx->errcode = ext2fs_write_dir_block4(fs, blk, block, 0, db->ino);
 	ext2fs_free_mem(&block);
 	if (pctx->errcode) {
 		pctx->str = "ext2fs_write_dir_block";

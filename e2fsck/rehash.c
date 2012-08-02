@@ -81,6 +81,7 @@ struct fill_dir_struct {
 	int dir_size;
 	int compress;
 	ino_t parent;
+	ext2_ino_t dir;
 };
 
 struct hash_entry {
@@ -125,7 +126,10 @@ static int fill_dir_block(ext2_filsys fs,
 		dirent = (struct ext2_dir_entry *) dir;
 		(void) ext2fs_set_rec_len(fs, fs->blocksize, dirent);
 	} else {
-		fd->err = ext2fs_read_dir_block3(fs, *block_nr, dir, 0);
+		fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		fd->err = ext2fs_read_dir_block4(fs, *block_nr, dir, 0,
+						 fd->dir);
+		fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		if (fd->err)
 			return BLOCK_ABORT;
 	}
@@ -416,7 +420,8 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 
 static errcode_t copy_dir_entries(e2fsck_t ctx,
 				  struct fill_dir_struct *fd,
-				  struct out_dir *outdir)
+				  struct out_dir *outdir,
+				  ext2_ino_t ino)
 {
 	ext2_filsys 		fs = ctx->fs;
 	errcode_t		retval;
@@ -427,6 +432,8 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 	int			i, left;
 	ext2_dirhash_t		prev_hash;
 	int			offset, slack;
+	int			csum_size = 0;
+	struct			ext2_dir_entry_tail *t;
 
 	if (ctx->htree_slack_percentage == 255) {
 		profile_get_uint(ctx->profile, "options",
@@ -436,6 +443,10 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 		if (ctx->htree_slack_percentage > 100)
 			ctx->htree_slack_percentage = 20;
 	}
+
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	outdir->max = 0;
 	retval = alloc_size_dir(fs, outdir,
@@ -451,9 +462,9 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 	dirent = (struct ext2_dir_entry *) block_start;
 	prev_rec_len = 0;
 	rec_len = 0;
-	left = fs->blocksize;
+	left = fs->blocksize - csum_size;
 	slack = fd->compress ? 12 :
-		(fs->blocksize * ctx->htree_slack_percentage)/100;
+		((fs->blocksize - csum_size) * ctx->htree_slack_percentage)/100;
 	if (slack < 12)
 		slack = 12;
 	for (i = 0; i < fd->num_array; i++) {
@@ -468,12 +479,17 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 				if (retval)
 					return retval;
 			}
+			if (csum_size) {
+				t = EXT2_DIRENT_TAIL(block_start,
+						     fs->blocksize);
+				ext2fs_initialize_dirent_tail(fs, t);
+			}
 			if ((retval = get_next_block(fs, outdir,
 						      &block_start)))
 				return retval;
 			offset = 0;
 		}
-		left = fs->blocksize - offset;
+		left = (fs->blocksize - csum_size) - offset;
 		dirent = (struct ext2_dir_entry *) (block_start + offset);
 		if (offset == 0) {
 			if (ent->hash == prev_hash)
@@ -502,6 +518,10 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 	}
 	if (left)
 		retval = ext2fs_set_rec_len(fs, rec_len + left, dirent);
+	if (csum_size) {
+		t = EXT2_DIRENT_TAIL(block_start, fs->blocksize);
+		ext2fs_initialize_dirent_tail(fs, t);
+	}
 
 	return retval;
 }
@@ -659,6 +679,7 @@ struct write_dir_struct {
 	errcode_t	err;
 	e2fsck_t	ctx;
 	int		cleared;
+	ext2_ino_t	dir;
 };
 
 /*
@@ -690,7 +711,7 @@ static int write_dir_block(ext2_filsys fs,
 		return 0;
 
 	dir = wd->outdir->buf + (blockcnt * fs->blocksize);
-	wd->err = ext2fs_write_dir_block3(fs, *block_nr, dir, 0);
+	wd->err = ext2fs_write_dir_block4(fs, *block_nr, dir, 0, wd->dir);
 	if (wd->err)
 		return BLOCK_ABORT;
 	return 0;
@@ -712,6 +733,7 @@ static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 	wd.err = 0;
 	wd.ctx = ctx;
 	wd.cleared = 0;
+	wd.dir = ino;
 
 	retval = ext2fs_block_iterate3(fs, ino, 0, 0,
 				       write_dir_block, &wd);
@@ -764,6 +786,7 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 	fd.err = 0;
 	fd.dir_size = 0;
 	fd.compress = 0;
+	fd.dir = ino;
 	if (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) ||
 	    (inode.i_size / fs->blocksize) < 2)
 		fd.compress = 1;
@@ -823,7 +846,7 @@ resort:
 	 * Copy the directory entries.  In a htree directory these
 	 * will become the leaf nodes.
 	 */
-	retval = copy_dir_entries(ctx, &fd, &outdir);
+	retval = copy_dir_entries(ctx, &fd, &outdir, ino);
 	if (retval)
 		goto errout;
 

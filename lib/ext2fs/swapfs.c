@@ -350,4 +350,66 @@ void ext2fs_swap_mmp(struct mmp_struct *mmp)
 	mmp->mmp_check_interval = ext2fs_swab16(mmp->mmp_check_interval);
 }
 
+errcode_t ext2fs_dirent_swab_in(ext2_filsys fs, char *buf, int flags)
+{
+	errcode_t	retval;
+	char		*p, *end;
+	struct ext2_dir_entry *dirent;
+	unsigned int	name_len, rec_len;
+
+	p = (char *) buf;
+	end = (char *) buf + fs->blocksize;
+	while (p < end-8) {
+		dirent = (struct ext2_dir_entry *) p;
+		dirent->inode = ext2fs_swab32(dirent->inode);
+		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
+		dirent->name_len = ext2fs_swab16(dirent->name_len);
+		name_len = dirent->name_len;
+		if (flags & EXT2_DIRBLOCK_V2_STRUCT)
+			dirent->name_len = ext2fs_swab16(dirent->name_len);
+		retval = ext2fs_get_rec_len(fs, dirent, &rec_len);
+		if (retval)
+			return retval;
+		if ((rec_len < 8) || (rec_len % 4)) {
+			rec_len = 8;
+			retval = EXT2_ET_DIR_CORRUPTED;
+		} else if (((name_len & 0xFF) + 8) > rec_len)
+			retval = EXT2_ET_DIR_CORRUPTED;
+		p += rec_len;
+	}
+
+	return 0;
+}
+
+errcode_t ext2fs_dirent_swab_out(ext2_filsys fs, char *buf, int flags)
+{
+	errcode_t	retval;
+	char		*p, *end;
+	unsigned int	rec_len;
+	struct ext2_dir_entry *dirent;
+
+	p = buf;
+	end = buf + fs->blocksize;
+	while (p < end) {
+		dirent = (struct ext2_dir_entry *) p;
+		retval = ext2fs_get_rec_len(fs, dirent, &rec_len);
+		if (retval)
+			return retval;
+		if ((rec_len < 8) ||
+		    (rec_len % 4)) {
+			ext2fs_free_mem(&buf);
+			return EXT2_ET_DIR_CORRUPTED;
+		}
+		p += rec_len;
+		dirent->inode = ext2fs_swab32(dirent->inode);
+		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
+		dirent->name_len = ext2fs_swab16(dirent->name_len);
+
+		if (flags & EXT2_DIRBLOCK_V2_STRUCT)
+			dirent->name_len = ext2fs_swab16(dirent->name_len);
+	}
+
+	return 0;
+}
+
 #endif

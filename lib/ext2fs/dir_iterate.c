@@ -192,17 +192,23 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 	unsigned int	rec_len, size;
 	int		entry;
 	struct ext2_dir_entry *dirent;
+	int		csum_size = 0;
 
 	if (blockcnt < 0)
 		return 0;
 
 	entry = blockcnt ? DIRENT_OTHER_FILE : DIRENT_DOT_FILE;
 
-	ctx->errcode = ext2fs_read_dir_block3(fs, *blocknr, ctx->buf, 0);
+	ctx->errcode = ext2fs_read_dir_block4(fs, *blocknr, ctx->buf, 0,
+					      ctx->dir);
 	if (ctx->errcode)
 		return BLOCK_ABORT;
 
-	while (offset < fs->blocksize) {
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dir_entry_tail);
+
+	while (offset < (fs->blocksize - csum_size)) {
 		dirent = (struct ext2_dir_entry *) (ctx->buf + offset);
 		if (ext2fs_get_rec_len(fs, dirent, &rec_len))
 			return BLOCK_ABORT;
@@ -259,8 +265,8 @@ next:
 	}
 
 	if (changed) {
-		ctx->errcode = ext2fs_write_dir_block3(fs, *blocknr, ctx->buf,
-						       0);
+		ctx->errcode = ext2fs_write_dir_block4(fs, *blocknr, ctx->buf,
+						       0, ctx->dir);
 		if (ctx->errcode)
 			return BLOCK_ABORT;
 	}

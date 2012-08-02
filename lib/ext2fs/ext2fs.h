@@ -943,6 +943,18 @@ extern __u32 ext2fs_crc32c_be(__u32 crc, unsigned char const *p, size_t len);
 extern __u32 ext2fs_crc32c_le(__u32 crc, unsigned char const *p, size_t len);
 
 /* csum.c */
+#define EXT2_DIRENT_TAIL(block, blocksize) \
+	((struct ext2_dir_entry_tail *)(((void *)(block)) + \
+	(blocksize) - sizeof(struct ext2_dir_entry_tail)))
+
+extern void ext2fs_initialize_dirent_tail(ext2_filsys fs,
+					  struct ext2_dir_entry_tail *t);
+extern int ext2fs_dirent_has_tail(ext2_filsys fs,
+				  struct ext2_dir_entry *dirent);
+extern int ext2fs_dir_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+					struct ext2_dir_entry *dirent);
+extern errcode_t ext2fs_dir_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
+					   struct ext2_dir_entry *dirent);
 extern errcode_t ext2fs_get_dx_countlimit(ext2_filsys fs,
 					  struct ext2_dir_entry *dirent,
 					  struct ext2_dx_countlimit **cc,
@@ -1025,12 +1037,16 @@ extern errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
 					void *buf, int flags);
 extern errcode_t ext2fs_read_dir_block3(ext2_filsys fs, blk64_t block,
 					void *buf, int flags);
+extern errcode_t ext2fs_read_dir_block4(ext2_filsys fs, blk64_t block,
+					void *buf, int flags, ext2_ino_t ino);
 extern errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 					void *buf);
 extern errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 					 void *buf, int flags);
 extern errcode_t ext2fs_write_dir_block3(ext2_filsys fs, blk64_t block,
 					 void *buf, int flags);
+extern errcode_t ext2fs_write_dir_block4(ext2_filsys fs, blk64_t block,
+					 void *buf, int flags, ext2_ino_t ino);
 
 /* dirhash.c */
 extern errcode_t ext2fs_dirhash(int version, const char *name, int len,
@@ -1427,6 +1443,8 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
 
 /* swapfs.c */
+extern errcode_t ext2fs_dirent_swab_in(ext2_filsys fs, char *buf, int flags);
+extern errcode_t ext2fs_dirent_swab_out(ext2_filsys fs, char *buf, int flags);
 extern void ext2fs_swap_ext_attr(char *to, char *from, int bufsize,
 				 int has_header);
 extern void ext2fs_swap_ext_attr_header(struct ext2_ext_attr_header *to_header,

@@ -93,6 +93,122 @@ errcode_t ext2fs_get_dx_countlimit(ext2_filsys fs,
 	return __get_dx_countlimit(fs, dirent, cc, offset, 0);
 }
 
+void ext2fs_initialize_dirent_tail(ext2_filsys fs,
+				   struct ext2_dir_entry_tail *t)
+{
+	memset(t, 0, sizeof(struct ext2_dir_entry_tail));
+	ext2fs_set_rec_len(fs, sizeof(struct ext2_dir_entry_tail),
+			   (struct ext2_dir_entry *)t);
+	t->det_reserved_name_len = EXT2_DIR_NAME_LEN_CSUM;
+}
+
+static errcode_t __get_dirent_tail(ext2_filsys fs,
+				   struct ext2_dir_entry *dirent,
+				   struct ext2_dir_entry_tail **tt,
+				   int need_swab)
+{
+	struct ext2_dir_entry *d;
+	void *top;
+	struct ext2_dir_entry_tail *t;
+	unsigned int rec_len;
+	errcode_t retval = 0;
+	__u16 (*translate)(__u16) = (need_swab ? disk_to_host16 : do_nothing16);
+
+	d = dirent;
+	top = EXT2_DIRENT_TAIL(dirent, fs->blocksize);
+
+	rec_len = translate(d->rec_len);
+	while (rec_len && !(rec_len & 0x3)) {
+		d = (struct ext2_dir_entry *)(((void *)d) + rec_len);
+		if ((void *)d >= top)
+			break;
+		rec_len = translate(d->rec_len);
+	}
+
+	if (d != top)
+		return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
+
+	t = (struct ext2_dir_entry_tail *)d;
+	if (t->det_reserved_zero1 ||
+	    translate(t->det_rec_len) != sizeof(struct ext2_dir_entry_tail) ||
+	    translate(t->det_reserved_name_len) != EXT2_DIR_NAME_LEN_CSUM)
+		return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
+
+	if (tt)
+		*tt = t;
+	return retval;
+}
+
+int ext2fs_dirent_has_tail(ext2_filsys fs, struct ext2_dir_entry *dirent)
+{
+	return __get_dirent_tail(fs, dirent, NULL, 0) == 0;
+}
+
+static errcode_t ext2fs_dirent_csum(ext2_filsys fs, ext2_ino_t inum,
+				    struct ext2_dir_entry *dirent, __u32 *crc,
+				    int size)
+{
+	errcode_t retval;
+	char *buf = (char *)dirent;
+	__u32 gen;
+	struct ext2_inode inode;
+
+	retval = ext2fs_read_inode(fs, inum, &inode);
+	if (retval)
+		return retval;
+
+	inum = ext2fs_cpu_to_le32(inum);
+	gen = ext2fs_cpu_to_le32(inode.i_generation);
+	*crc = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)&inum,
+				sizeof(inum));
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)&gen, sizeof(gen));
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)buf, size);
+
+	return 0;
+}
+
+int ext2fs_dirent_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+			      struct ext2_dir_entry *dirent)
+{
+	errcode_t retval;
+	__u32 calculated;
+	struct ext2_dir_entry_tail *t;
+
+	retval = __get_dirent_tail(fs, dirent, &t, 1);
+	if (retval)
+		return 1;
+
+	/*
+	 * The checksum field is overlaid with the dirent->name field
+	 * so the swapfs.c functions won't change the endianness.
+	 */
+	retval = ext2fs_dirent_csum(fs, inum, dirent, &calculated,
+				    (void *)t - (void *)dirent);
+	if (retval)
+		return 0;
+	return ext2fs_le32_to_cpu(t->det_checksum) == calculated;
+}
+
+static errcode_t ext2fs_dirent_csum_set(ext2_filsys fs, ext2_ino_t inum,
+					struct ext2_dir_entry *dirent)
+{
+	errcode_t retval;
+	__u32 crc;
+	struct ext2_dir_entry_tail *t;
+
+	retval = __get_dirent_tail(fs, dirent, &t, 1);
+	if (retval)
+		return retval;
+
+	/* swapfs.c functions don't change the checksum endianness */
+	retval = ext2fs_dirent_csum(fs, inum, dirent, &crc,
+				    (void *)t - (void *)dirent);
+	if (retval)
+		return retval;
+	t->det_checksum = ext2fs_cpu_to_le32(crc);
+	return 0;
+}
+
 static errcode_t ext2fs_dx_csum(ext2_filsys fs, ext2_ino_t inum,
 				struct ext2_dir_entry *dirent,
 				__u32 *crc, int count_offset, int count,
@@ -177,6 +293,38 @@ static errcode_t ext2fs_dx_csum_set(ext2_filsys fs, ext2_ino_t inum,
 		return retval;
 	t->dt_checksum = ext2fs_cpu_to_le32(crc);
 	return retval;
+}
+
+int ext2fs_dir_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+				 struct ext2_dir_entry *dirent)
+{
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 1;
+
+	if (__get_dirent_tail(fs, dirent, NULL, 1) == 0)
+		return ext2fs_dirent_csum_verify(fs, inum, dirent);
+	if (__get_dx_countlimit(fs, dirent, NULL, NULL, 1) == 0)
+		return ext2fs_dx_csum_verify(fs, inum, dirent);
+
+	return 0;
+}
+
+errcode_t ext2fs_dir_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
+				    struct ext2_dir_entry *dirent)
+{
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 0;
+
+	if (__get_dirent_tail(fs, dirent, NULL, 1) == 0)
+		return ext2fs_dirent_csum_set(fs, inum, dirent);
+	if (__get_dx_countlimit(fs, dirent, NULL, NULL, 1) == 0)
+		return ext2fs_dx_csum_set(fs, inum, dirent);
+
+	if (fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS)
+		return 0;
+	return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
 }
 
 #define EXT3_EXTENT_TAIL_OFFSET(hdr)	(sizeof(struct ext3_extent_header) + \

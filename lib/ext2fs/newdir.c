@@ -34,6 +34,8 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 	char			*buf;
 	int			rec_len;
 	int			filetype = 0;
+	struct ext2_dir_entry_tail	*t;
+	int			csum_size = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -43,7 +45,11 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 	memset(buf, 0, fs->blocksize);
 	dir = (struct ext2_dir_entry *) buf;
 
-	retval = ext2fs_set_rec_len(fs, fs->blocksize, dir);
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dir_entry_tail);
+
+	retval = ext2fs_set_rec_len(fs, fs->blocksize - csum_size, dir);
 	if (retval)
 		return retval;
 
@@ -57,7 +63,7 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 		dir->inode = dir_ino;
 		dir->name_len = 1 | filetype;
 		dir->name[0] = '.';
-		rec_len = fs->blocksize - EXT2_DIR_REC_LEN(1);
+		rec_len = (fs->blocksize - csum_size) - EXT2_DIR_REC_LEN(1);
 		dir->rec_len = EXT2_DIR_REC_LEN(1);
 
 		/*
@@ -72,6 +78,11 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 		dir->name[0] = '.';
 		dir->name[1] = '.';
 
+	}
+
+	if (csum_size) {
+		t = EXT2_DIRENT_TAIL(buf, fs->blocksize);
+		ext2fs_initialize_dirent_tail(fs, t);
 	}
 	*block = buf;
 	return 0;

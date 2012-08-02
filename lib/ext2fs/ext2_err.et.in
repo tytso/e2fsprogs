@@ -458,4 +458,7 @@ ec	EXT2_ET_EXTENT_CSUM_INVALID,
 ec	EXT2_ET_DIR_NO_SPACE_FOR_CSUM,
 	"Directory block does not have space for checksum"
 
+ec	EXT2_ET_DIR_CSUM_INVALID,
+	"Directory block checksum does not match directory block"
+
 	end

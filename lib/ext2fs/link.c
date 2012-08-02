@@ -41,6 +41,7 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	struct ext2_dir_entry *next;
 	unsigned int rec_len, min_rec_len, curr_rec_len;
 	int ret = 0;
+	int csum_size = 0;
 
 	rec_len = EXT2_DIR_REC_LEN(ls->namelen);
 
@@ -48,12 +49,15 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	if (ls->err)
 		return DIRENT_ABORT;
 
+	if (EXT2_HAS_RO_COMPAT_FEATURE(ls->fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dir_entry_tail);
 	/*
 	 * See if the following directory entry (if any) is unused;
 	 * if so, absorb it into this one.
 	 */
 	next = (struct ext2_dir_entry *) (buf + offset + curr_rec_len);
-	if ((offset + (int) curr_rec_len < blocksize - 8) &&
+	if ((offset + (int) curr_rec_len < blocksize - (8 + csum_size)) &&
 	    (next->inode == 0) &&
 	    (offset + (int) curr_rec_len + (int) next->rec_len <= blocksize)) {
 		curr_rec_len += next->rec_len;

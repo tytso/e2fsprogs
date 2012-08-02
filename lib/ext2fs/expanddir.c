@@ -24,6 +24,7 @@ struct expand_dir_struct {
 	int		newblocks;
 	blk64_t		goal;
 	errcode_t	err;
+	ext2_ino_t	dir;
 };
 
 static int expand_dir_proc(ext2_filsys	fs,
@@ -62,7 +63,8 @@ static int expand_dir_proc(ext2_filsys	fs,
 			return BLOCK_ABORT;
 		}
 		es->done = 1;
-		retval = ext2fs_write_dir_block(fs, new_blk, block);
+		retval = ext2fs_write_dir_block4(fs, new_blk, block, 0,
+						 es->dir);
 	} else {
 		retval = ext2fs_get_mem(fs->blocksize, &block);
 		if (retval) {
@@ -110,6 +112,7 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir)
 	es.err = 0;
 	es.goal = 0;
 	es.newblocks = 0;
+	es.dir = dir;
 
 	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);

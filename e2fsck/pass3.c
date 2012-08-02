@@ -198,7 +198,8 @@ static void check_root(e2fsck_t ctx)
 		return;
 	}
 
-	pctx.errcode = ext2fs_write_dir_block(fs, blk, block);
+	pctx.errcode = ext2fs_write_dir_block4(fs, blk, block, 0,
+					       EXT2_ROOT_INO);
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_write_dir_block";
 		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
@@ -444,7 +445,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		return 0;
 	}
 
-	retval = ext2fs_write_dir_block(fs, blk, block);
+	retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
 	ext2fs_free_mem(&block);
 	if (retval) {
 		pctx.errcode = retval;
@@ -685,6 +686,7 @@ struct expand_dir_struct {
 	blk64_t			last_block;
 	errcode_t		err;
 	e2fsck_t		ctx;
+	ext2_ino_t		dir;
 };
 
 static int expand_dir_proc(ext2_filsys fs,
@@ -725,7 +727,8 @@ static int expand_dir_proc(ext2_filsys fs,
 			return BLOCK_ABORT;
 		}
 		es->num--;
-		retval = ext2fs_write_dir_block(fs, new_blk, block);
+		retval = ext2fs_write_dir_block4(fs, new_blk, block, 0,
+						 es->dir);
 	} else {
 		retval = ext2fs_get_mem(fs->blocksize, &block);
 		if (retval) {
@@ -778,6 +781,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	es.err = 0;
 	es.newblocks = 0;
 	es.ctx = ctx;
+	es.dir = dir;
 
 	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);

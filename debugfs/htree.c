@@ -44,6 +44,11 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	ext2_dirhash_t 	hash, minor_hash;
 	unsigned int	rec_len;
 	int		hash_alg;
+	int		csum_size = 0;
+
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	errcode = ext2fs_bmap2(fs, ino, inode, buf, 0, blk, 0, &pblk);
 	if (errcode) {
@@ -53,7 +58,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	printf("Reading directory block %llu, phys %llu\n", blk, pblk);
-	errcode = ext2fs_read_dir_block2(current_fs, pblk, buf, 0);
+	errcode = ext2fs_read_dir_block4(current_fs, pblk, buf, 0, ino);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
 			"while reading block %llu (%llu)\n",
@@ -65,7 +70,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	    (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH))
 		hash_alg += 3;
 
-	while (offset < fs->blocksize) {
+	while (offset < (fs->blocksize - csum_size)) {
 		dirent = (struct ext2_dir_entry *) (buf + offset);
 		errcode = ext2fs_get_rec_len(fs, dirent, &rec_len);
 		if (errcode) {

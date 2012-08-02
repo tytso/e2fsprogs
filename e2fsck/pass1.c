@@ -474,7 +474,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 
 	/* read the first block */
 	ehandler_operation(_("reading directory block"));
-	retval = ext2fs_read_dir_block3(ctx->fs, blk, buf, 0);
+	retval = ext2fs_read_dir_block4(ctx->fs, blk, buf, 0, pctx->ino);
 	ehandler_operation(0);
 	if (retval)
 		return;
