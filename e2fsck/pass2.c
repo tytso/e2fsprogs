@@ -753,8 +753,9 @@ static int check_dir_block(ext2_filsys fs,
 	struct problem_context	pctx;
 	int	dups_found = 0;
 	int	ret;
-	int	dx_csum_size = 0;
+	int	dx_csum_size = 0, de_csum_size = 0;
 	int	failed_csum = 0;
+	int	is_leaf = 1;
 
 	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
@@ -767,8 +768,10 @@ static int check_dir_block(ext2_filsys fs,
 		return DIRENT_ABORT;
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
 		dx_csum_size = sizeof(struct ext2_dx_tail);
+		de_csum_size = sizeof(struct ext2_dir_entry_tail);
+	}
 
 	/*
 	 * Make sure the inode is still in use (could have been
@@ -814,11 +817,15 @@ static int check_dir_block(ext2_filsys fs,
 		failed_csum = 1;
 	}
 	if (cd->pctx.errcode) {
+		char *buf2;
 		if (!fix_problem(ctx, PR_2_READ_DIRBLOCK, &cd->pctx)) {
 			ctx->flags |= E2F_FLAG_ABORT;
 			return DIRENT_ABORT;
 		}
-		memset(buf, 0, fs->blocksize);
+		ext2fs_new_dir_block(fs, db->blockcnt == 0 ? ino : 0,
+				     EXT2_ROOT_INO, &buf2);
+		memcpy(buf, buf2, fs->blocksize);
+		ext2fs_free_mem(&buf2);
 	}
 #ifdef ENABLE_HTREE
 	dx_dir = e2fsck_get_dx_dir_info(ctx, ino);
@@ -866,10 +873,43 @@ static int check_dir_block(ext2_filsys fs,
 			    ((fs->blocksize - (8 + dx_csum_size)) /
 			     sizeof(struct ext2_dx_entry))))
 			dx_db->type = DX_DIRBLOCK_NODE;
+		is_leaf = 0;
 	}
 out_htree:
 #endif /* ENABLE_HTREE */
 
+	/* Verify checksum. */
+	if (is_leaf && de_csum_size) {
+		/* No space for csum?  Rebuild dirs in pass 3A. */
+		if (!ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf)) {
+			de_csum_size = 0;
+			if (e2fsck_dir_will_be_rehashed(ctx, ino))
+				goto skip_checksum;
+			if (!fix_problem(cd->ctx, PR_2_LEAF_NODE_MISSING_CSUM,
+					 &cd->pctx))
+				goto skip_checksum;
+			e2fsck_rehash_dir_later(ctx, ino);
+			goto skip_checksum;
+		}
+		if (failed_csum) {
+			char *buf2;
+			if (!fix_problem(cd->ctx, PR_2_LEAF_NODE_CSUM_INVALID,
+					 &cd->pctx))
+				goto skip_checksum;
+			ext2fs_new_dir_block(fs,
+					     db->blockcnt == 0 ? ino : 0,
+					     EXT2_ROOT_INO, &buf2);
+			memcpy(buf, buf2, fs->blocksize);
+			ext2fs_free_mem(&buf2);
+			dir_modified++;
+			failed_csum = 0;
+		}
+	}
+	/* htree nodes don't use fake dirents to store checksums */
+	if (!is_leaf)
+		de_csum_size = 0;
+
+skip_checksum:
 	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	prev = 0;
 	do {
@@ -1117,10 +1157,7 @@ out_htree:
 			pctx.ino = ino;
 			pctx.dirent = dirent;
 			fix_problem(ctx, PR_2_REPORT_DUP_DIRENT, &pctx);
-			if (!ctx->dirs_to_hash)
-				ext2fs_u32_list_create(&ctx->dirs_to_hash, 50);
-			if (ctx->dirs_to_hash)
-				ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
+			e2fsck_rehash_dir_later(ctx, ino);
 			dups_found++;
 		} else
 			dict_alloc_insert(&de_dict, dirent, dirent);
@@ -1136,7 +1173,7 @@ out_htree:
 			(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 		offset += rec_len;
 		dot_state++;
-	} while (offset < fs->blocksize);
+	} while (offset < fs->blocksize - de_csum_size);
 #if 0
 	printf("\n");
 #endif
@@ -1153,22 +1190,44 @@ out_htree:
 			parse_int_node(fs, db, cd, dx_dir, buf, failed_csum);
 	}
 #endif /* ENABLE_HTREE */
-	if (offset != fs->blocksize) {
-		cd->pctx.num = rec_len - fs->blocksize + offset;
+
+	if (offset != fs->blocksize - de_csum_size) {
+		cd->pctx.num = rec_len - (fs->blocksize - de_csum_size) +
+			       offset;
 		if (fix_problem(ctx, PR_2_FINAL_RECLEN, &cd->pctx)) {
 			dirent->rec_len = cd->pctx.num;
 			dir_modified++;
 		}
 	}
 	if (dir_modified) {
+		/* leaf block with no tail?  Rehash dirs later. */
+		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
+		    is_leaf &&
+		    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf))
+			e2fsck_rehash_dir_later(ctx, ino);
+
+write_and_fix:
+		if (e2fsck_dir_will_be_rehashed(ctx, ino))
+			ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		cd->pctx.errcode = ext2fs_write_dir_block4(fs, block_nr, buf,
 							   0, ino);
+		if (e2fsck_dir_will_be_rehashed(ctx, ino))
+			ctx->fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		if (cd->pctx.errcode) {
 			if (!fix_problem(ctx, PR_2_WRITE_DIRBLOCK,
 					 &cd->pctx))
 				goto abort_free_dict;
 		}
 		ext2fs_mark_changed(fs);
+	} else if (is_leaf && failed_csum && !dir_modified) {
+		/*
+		 * If a leaf node that fails csum makes it this far without
+		 * alteration, ask the user if the checksum should be fixed.
+		 */
+		if (fix_problem(ctx, PR_2_LEAF_NODE_ONLY_CSUM_INVALID,
+				&cd->pctx))
+			goto write_and_fix;
 	}
 	dict_free_nodes(&de_dict);
 	return 0;

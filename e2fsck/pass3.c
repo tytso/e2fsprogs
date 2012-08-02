@@ -659,8 +659,12 @@ static void fix_dotdot(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 
 	clear_problem_context(&pctx);
 	pctx.ino = ino;
+	if (e2fsck_dir_will_be_rehashed(ctx, ino))
+		ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	retval = ext2fs_dir_iterate(fs, ino, DIRENT_FLAG_INCLUDE_EMPTY,
 				    0, fix_dotdot_proc, &fp);
+	if (e2fsck_dir_will_be_rehashed(ctx, ino))
+		ctx->fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	if (retval || !fp.done) {
 		pctx.errcode = retval;
 		fix_problem(ctx, retval ? PR_3_FIX_PARENT_ERR :

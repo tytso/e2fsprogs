@@ -841,6 +841,15 @@ struct problem_context {
 /* htree node fails checksum */
 #define PR_2_HTREE_NODE_CSUM_INVALID	0x02004A
 
+/* dir leaf node fails checksum */
+#define PR_2_LEAF_NODE_CSUM_INVALID	0x02004B
+
+/* no space in leaf for checksum */
+#define PR_2_LEAF_NODE_MISSING_CSUM	0x02004C
+
+/* dir leaf node passes checks, but fails checksum */
+#define PR_2_LEAF_NODE_ONLY_CSUM_INVALID	0x02004D
+
 /*
  * Pass 3 errors
  */
