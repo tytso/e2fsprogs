@@ -527,7 +527,7 @@ static void parse_int_node(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
 			   struct check_dir_struct *cd,
 			   struct dx_dir_info	*dx_dir,
-			   char *block_buf)
+			   char *block_buf, int failed_csum)
 {
 	struct 		ext2_dx_root_info  *root;
 	struct 		ext2_dx_entry *ent;
@@ -538,6 +538,7 @@ static void parse_int_node(ext2_filsys fs,
 	ext2_dirhash_t	min_hash = 0xffffffff;
 	ext2_dirhash_t	max_hash = 0;
 	ext2_dirhash_t	hash = 0, prev_hash;
+	int		csum_size = 0;
 
 	if (db->blockcnt == 0) {
 		root = (struct ext2_dx_root_info *) (block_buf + 24);
@@ -552,9 +553,22 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 
 		ent = (struct ext2_dx_entry *) (block_buf + 24 + root->info_length);
+
+		if (failed_csum &&
+		    (e2fsck_dir_will_be_rehashed(cd->ctx, cd->pctx.ino) ||
+		     fix_problem(cd->ctx, PR_2_HTREE_ROOT_CSUM_INVALID,
+				&cd->pctx)))
+			goto clear_and_exit;
 	} else {
 		ent = (struct ext2_dx_entry *) (block_buf+8);
+
+		if (failed_csum &&
+		    (e2fsck_dir_will_be_rehashed(cd->ctx, cd->pctx.ino) ||
+		     fix_problem(cd->ctx, PR_2_HTREE_NODE_CSUM_INVALID,
+				&cd->pctx)))
+			goto clear_and_exit;
 	}
+
 	limit = (struct ext2_dx_countlimit *) ent;
 
 #ifdef DX_DEBUG
@@ -565,8 +579,12 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 
 	count = ext2fs_le16_to_cpu(limit->count);
-	expect_limit = (fs->blocksize - ((char *) ent - block_buf)) /
-		sizeof(struct ext2_dx_entry);
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dx_tail);
+	expect_limit = (fs->blocksize -
+			(csum_size + ((char *) ent - block_buf))) /
+		       sizeof(struct ext2_dx_entry);
 	if (ext2fs_le16_to_cpu(limit->limit) != expect_limit) {
 		cd->pctx.num = ext2fs_le16_to_cpu(limit->limit);
 		if (fix_problem(cd->ctx, PR_2_HTREE_BAD_LIMIT, &cd->pctx))
@@ -632,6 +650,7 @@ static void parse_int_node(ext2_filsys fs,
 clear_and_exit:
 	clear_htree(cd->ctx, cd->pctx.ino);
 	dx_dir->numblocks = 0;
+	e2fsck_rehash_dir_later(cd->ctx, cd->pctx.ino);
 }
 #endif /* ENABLE_HTREE */
 
@@ -734,6 +753,7 @@ static int check_dir_block(ext2_filsys fs,
 	struct problem_context	pctx;
 	int	dups_found = 0;
 	int	ret;
+	int	dx_csum_size = 0;
 
 	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
@@ -744,6 +764,10 @@ static int check_dir_block(ext2_filsys fs,
 
 	if (ctx->progress && (ctx->progress)(ctx, 2, cd->count++, cd->max))
 		return DIRENT_ABORT;
+
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		dx_csum_size = sizeof(struct ext2_dx_tail);
 
 	/*
 	 * Make sure the inode is still in use (could have been
@@ -834,7 +858,7 @@ static int check_dir_block(ext2_filsys fs,
 			   (rec_len == fs->blocksize) &&
 			   (dirent->name_len == 0) &&
 			   (ext2fs_le16_to_cpu(limit->limit) ==
-			    ((fs->blocksize-8) /
+			    ((fs->blocksize - (8 + dx_csum_size)) /
 			     sizeof(struct ext2_dx_entry))))
 			dx_db->type = DX_DIRBLOCK_NODE;
 	}
@@ -1121,7 +1145,7 @@ out_htree:
 		cd->pctx.dir = cd->pctx.ino;
 		if ((dx_db->type == DX_DIRBLOCK_ROOT) ||
 		    (dx_db->type == DX_DIRBLOCK_NODE))
-			parse_int_node(fs, db, cd, dx_dir, buf);
+			parse_int_node(fs, db, cd, dx_dir, buf, 0);
 	}
 #endif /* ENABLE_HTREE */
 	if (offset != fs->blocksize) {

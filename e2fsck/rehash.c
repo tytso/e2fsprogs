@@ -52,6 +52,25 @@
 #include "e2fsck.h"
 #include "problem.h"
 
+/* Schedule a dir to be rebuilt during pass 3A. */
+void e2fsck_rehash_dir_later(e2fsck_t ctx, ext2_ino_t ino)
+{
+	if (!ctx->dirs_to_hash)
+		ext2fs_u32_list_create(&ctx->dirs_to_hash, 50);
+	if (ctx->dirs_to_hash)
+		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
+}
+
+/* Ask if a dir will be rebuilt during pass 3A. */
+int e2fsck_dir_will_be_rehashed(e2fsck_t ctx, ext2_ino_t ino)
+{
+	if (ctx->options & E2F_OPT_COMPRESS_DIRS)
+		return 1;
+	if (!ctx->dirs_to_hash)
+		return 0;
+	return ext2fs_u32_list_test(ctx->dirs_to_hash, ino);
+}
+
 struct fill_dir_struct {
 	char *buf;
 	struct ext2_inode *inode;
@@ -495,6 +514,7 @@ static struct ext2_dx_root_info *set_root_node(ext2_filsys fs, char *buf,
 	struct ext2_dx_root_info  	*root;
 	struct ext2_dx_countlimit	*limits;
 	int				filetype = 0;
+	int				csum_size = 0;
 
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_FILETYPE)
 		filetype = EXT2_FT_DIR << 8;
@@ -519,8 +539,13 @@ static struct ext2_dx_root_info *set_root_node(ext2_filsys fs, char *buf,
 	root->indirect_levels = 0;
 	root->unused_flags = 0;
 
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dx_tail);
+
 	limits = (struct ext2_dx_countlimit *) (buf+32);
-	limits->limit = (fs->blocksize - 32) / sizeof(struct ext2_dx_entry);
+	limits->limit = (fs->blocksize - (32 + csum_size)) /
+			sizeof(struct ext2_dx_entry);
 	limits->count = 0;
 
 	return root;
@@ -531,14 +556,20 @@ static struct ext2_dx_entry *set_int_node(ext2_filsys fs, char *buf)
 {
 	struct ext2_dir_entry 		*dir;
 	struct ext2_dx_countlimit	*limits;
+	int				csum_size = 0;
 
 	memset(buf, 0, fs->blocksize);
 	dir = (struct ext2_dir_entry *) buf;
 	dir->inode = 0;
 	(void) ext2fs_set_rec_len(fs, fs->blocksize, dir);
 
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		csum_size = sizeof(struct ext2_dx_tail);
+
 	limits = (struct ext2_dx_countlimit *) (buf+8);
-	limits->limit = (fs->blocksize - 8) / sizeof(struct ext2_dx_entry);
+	limits->limit = (fs->blocksize - (8 + csum_size)) /
+			sizeof(struct ext2_dx_entry);
 	limits->count = 0;
 
 	return (struct ext2_dx_entry *) limits;
@@ -836,8 +867,6 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	if (!ctx->dirs_to_hash && !all_dirs)
 		return;
 
-	e2fsck_get_lost_and_found(ctx, 0);
-
 	clear_problem_context(&pctx);
 
 	dir_index = ctx->fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX;
@@ -865,8 +894,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 			if (!ext2fs_u32_list_iterate(iter, &ino))
 				break;
 		}
-		if (ino == ctx->lost_and_found)
-			continue;
+
 		pctx.dir = ino;
 		if (first) {
 			fix_problem(ctx, PR_3A_PASS_HEADER, &pctx);

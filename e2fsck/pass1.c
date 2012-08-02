@@ -758,6 +758,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ext2fs_mark_block_bitmap2(ctx->block_found_map,
 					  fs->super->s_mmp_block);
 
+	/* Set up ctx->lost_and_found if possible */
+	(void) e2fsck_get_lost_and_found(ctx, 0);
+
 	while (1) {
 		if (ino % (fs->super->s_inodes_per_group * 4) == 1) {
 			if (e2fsck_mmp_update(fs))
@@ -2225,9 +2228,10 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	}
 
 	if (ctx->dirs_to_hash && pb.is_dir &&
+	    (ctx->lost_and_found == ino) &&
 	    !(inode->i_flags & EXT2_INDEX_FL) &&
 	    ((inode->i_size / fs->blocksize) >= 3))
-		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
+		e2fsck_rehash_dir_later(ctx, ino);
 
 out:
 	if (dirty_inode)

@@ -494,6 +494,8 @@ extern void region_free(region_t region);
 extern int region_allocate(region_t region, region_addr_t start, int n);
 
 /* rehash.c */
+void e2fsck_rehash_dir_later(e2fsck_t ctx, ext2_ino_t ino);
+int e2fsck_dir_will_be_rehashed(e2fsck_t ctx, ext2_ino_t ino);
 errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino);
 void e2fsck_rehash_directories(e2fsck_t ctx);
 
