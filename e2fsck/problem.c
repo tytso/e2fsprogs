@@ -433,6 +433,15 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("ext2fs_check_desc: %m\n"),
 	  PROMPT_NONE, 0 },
 
+	/*
+	 * metadata_csum implies uninit_bg; both feature bits cannot
+	 * be set simultaneously.
+	 */
+	{ PR_0_META_AND_GDT_CSUM_SET,
+	  N_("@S metadata_csum supersedes uninit_bg; both feature "
+	     "bits cannot be set simultaneously."),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */

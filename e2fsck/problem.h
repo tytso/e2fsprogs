@@ -250,6 +250,13 @@ struct problem_context {
 #define PR_0_CHECK_DESC_FAILED			0x000045
 
 /*
+ * metadata_csum supersedes uninit_bg; both feature bits cannot be set
+ * simultaneously.
+ */
+#define PR_0_META_AND_GDT_CSUM_SET		0x000046
+
+
+/*
  * Pass 1 errors
  */
 
@@ -575,6 +582,7 @@ struct problem_context {
 
 /* ea block passes checks, but checksum invalid */
 #define PR_1_EA_BLOCK_ONLY_CSUM_INVALID        0x01006C
+
 
 /*
  * Pass 1b errors
