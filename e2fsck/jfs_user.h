@@ -104,17 +104,6 @@ _INLINE_ void do_cache_destroy(lkmem_cache_t *cache)
 	free(cache);
 }
 
-/*
- * helper functions to deal with 32 or 64bit block numbers.
- */
-_INLINE_ size_t journal_tag_bytes(journal_t *journal)
-{
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
-		return JBD_TAG_SIZE64;
-	else
-		return JBD_TAG_SIZE32;
-}
-
 #undef _INLINE_
 #endif
 

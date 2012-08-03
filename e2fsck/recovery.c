@@ -393,6 +393,25 @@ static int jbd2_commit_block_csum_verify(journal_t *j, void *buf)
 	return provided == calculated;
 }
 
+static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
+				      void *buf, __u32 sequence)
+{
+	__u32 provided, calculated;
+
+	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		return 1;
+
+	sequence = ext2fs_cpu_to_be32(sequence);
+	calculated = ext2fs_crc32c_le(~0, j->j_superblock->s_uuid,
+				      sizeof(j->j_superblock->s_uuid));
+	calculated = ext2fs_crc32c_le(calculated, (__u8 *)&sequence,
+				      sizeof(sequence));
+	calculated = ext2fs_crc32c_le(calculated, buf, j->j_blocksize) & 0xffff;
+	provided = ext2fs_be16_to_cpu(tag->t_checksum);
+
+	return provided == ext2fs_cpu_to_be32(calculated);
+}
+
 static int do_one_pass(journal_t *journal,
 			struct recovery_info *info, enum passtype pass)
 {
@@ -572,6 +591,19 @@ static int do_one_pass(journal_t *journal,
 						brelse(obh);
 						++info->nr_revoke_hits;
 						goto skip_write;
+					}
+
+					/* Look for block corruption */
+					if (!jbd2_block_tag_csum_verify(
+						journal, tag, obh->b_data,
+						be32_to_cpu(tmp->h_sequence))) {
+						brelse(obh);
+						success = -EIO;
+						printk(KERN_ERR "JBD: Invalid "
+						       "checksum recovering "
+						       "block %ld in log\n",
+						       blocknr);
+						continue;
 					}
 
 					/* Find a buffer for the new

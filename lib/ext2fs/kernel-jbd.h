@@ -261,6 +261,36 @@ typedef struct journal_superblock_s
 					 JFS_FEATURE_INCOMPAT_ASYNC_COMMIT|\
 					 JFS_FEATURE_INCOMPAT_64BIT)
 
+#if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
+#ifdef E2FSCK_INCLUDE_INLINE_FUNCS
+#define _INLINE_ extern
+#else
+#ifdef __GNUC__
+#define _INLINE_ extern __inline__
+#else				/* For Watcom C */
+#define _INLINE_ extern inline
+#endif
+#endif
+
+/*
+ * helper functions to deal with 32 or 64bit block numbers.
+ */
+_INLINE_ size_t journal_tag_bytes(journal_t *journal)
+{
+	journal_block_tag_t tag;
+	size_t x = 0;
+
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		x += sizeof(tag.t_checksum);
+
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
+		return x + JBD_TAG_SIZE64;
+	else
+		return x + JBD_TAG_SIZE32;
+}
+#undef _INLINE_
+#endif
+
 #ifdef __KERNEL__
 
 #include <linux/fs.h>
