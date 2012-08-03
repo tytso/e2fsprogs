@@ -106,6 +106,8 @@ struct blk_move {
 
 
 static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
+static const char *please_dir_fsck =
+		N_("Please run e2fsck -D on the filesystem.\n");
 
 #ifdef CONFIG_BUILD_FINDFS
 void do_findfs(int argc, char **argv);
@@ -364,6 +366,18 @@ static int check_fsck_needed(ext2_filsys fs)
 	return 1;
 }
 
+static void request_dir_fsck_afterwards(ext2_filsys fs)
+{
+	static int requested;
+
+	if (requested++)
+		return;
+	fs->super->s_state &= ~EXT2_VALID_FS;
+	printf("\n%s\n", _(please_dir_fsck));
+	if (mount_flags & EXT2_MF_READONLY)
+		printf(_("(and reboot afterwards!)\n"));
+}
+
 static void request_fsck_afterwards(ext2_filsys fs)
 {
 	static int requested = 0;
@@ -419,6 +433,178 @@ static errcode_t rewrite_extents(ext2_filsys fs, ext2_ino_t ino,
 }
 
 /*
+ * Rewrite directory blocks with checksums
+ */
+struct rewrite_dir_context {
+	char *buf;
+	errcode_t errcode;
+	ext2_ino_t dir;
+	int is_htree;
+};
+
+static int rewrite_dir_block(ext2_filsys fs,
+			     blk64_t	*blocknr,
+			     e2_blkcnt_t blockcnt,
+			     blk64_t	ref_block EXT2FS_ATTR((unused)),
+			     int	ref_offset EXT2FS_ATTR((unused)),
+			     void	*priv_data)
+{
+	struct ext2_dx_countlimit *dcl = NULL;
+	struct rewrite_dir_context *ctx = priv_data;
+	int dcl_offset, changed = 0;
+
+	ctx->errcode = ext2fs_read_dir_block4(fs, *blocknr, ctx->buf, 0,
+					      ctx->dir);
+	if (ctx->errcode)
+		return BLOCK_ABORT;
+
+	/* if htree node... */
+	if (ctx->is_htree)
+		ext2fs_get_dx_countlimit(fs, (struct ext2_dir_entry *)ctx->buf,
+					 &dcl, &dcl_offset);
+	if (dcl) {
+		if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+			/* Ensure limit is the max size */
+			int max_entries = (fs->blocksize - dcl_offset) /
+					  sizeof(struct ext2_dx_entry);
+			if (ext2fs_le16_to_cpu(dcl->limit) != max_entries) {
+				changed = 1;
+				dcl->limit = ext2fs_cpu_to_le16(max_entries);
+			}
+		} else {
+			/* If htree block is full then rebuild the dir */
+			if (ext2fs_le16_to_cpu(dcl->count) ==
+			    ext2fs_le16_to_cpu(dcl->limit)) {
+				request_dir_fsck_afterwards(fs);
+				return 0;
+			}
+			/*
+			 * Ensure dcl->limit is small enough to leave room for
+			 * the checksum tail.
+			 */
+			int max_entries = (fs->blocksize - (dcl_offset +
+						sizeof(struct ext2_dx_tail))) /
+					  sizeof(struct ext2_dx_entry);
+			if (ext2fs_le16_to_cpu(dcl->limit) != max_entries)
+				dcl->limit = ext2fs_cpu_to_le16(max_entries);
+			/* Always rewrite checksum */
+			changed = 1;
+		}
+	} else {
+		unsigned int rec_len, name_size;
+		char *top = ctx->buf + fs->blocksize;
+		struct ext2_dir_entry *de = (struct ext2_dir_entry *)ctx->buf;
+		struct ext2_dir_entry *last_de = NULL, *penultimate_de = NULL;
+
+		/* Find last and penultimate dirent */
+		while ((char *)de < top) {
+			penultimate_de = last_de;
+			last_de = de;
+			ctx->errcode = ext2fs_get_rec_len(fs, de, &rec_len);
+			if (!ctx->errcode && !rec_len)
+				ctx->errcode = EXT2_ET_DIR_CORRUPTED;
+			if (ctx->errcode)
+				return BLOCK_ABORT;
+			de = (struct ext2_dir_entry *)(((void *)de) + rec_len);
+		}
+		ctx->errcode = ext2fs_get_rec_len(fs, last_de, &rec_len);
+		if (ctx->errcode)
+			return BLOCK_ABORT;
+		name_size = last_de->name_len & 0xFF;
+
+		if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+			if (!penultimate_de)
+				return 0;
+			if (last_de->inode ||
+			    name_size ||
+			    rec_len != sizeof(struct ext2_dir_entry_tail))
+				return 0;
+			/*
+			 * The last dirent is unused and the right length to
+			 * have stored a checksum.  Erase it.
+			 */
+			ctx->errcode = ext2fs_get_rec_len(fs, penultimate_de,
+							  &rec_len);
+			if (!rec_len)
+				ctx->errcode = EXT2_ET_DIR_CORRUPTED;
+			if (ctx->errcode)
+				return BLOCK_ABORT;
+			ext2fs_set_rec_len(fs, rec_len +
+					sizeof(struct ext2_dir_entry_tail),
+					penultimate_de);
+			changed = 1;
+		} else {
+			int csum_size = sizeof(struct ext2_dir_entry_tail);
+			struct ext2_dir_entry_tail *t;
+
+			/*
+			 * If the last dirent looks like the tail, just update
+			 * the checksum.
+			 */
+			if (!last_de->inode &&
+			    rec_len == csum_size) {
+				t = (struct ext2_dir_entry_tail *)last_de;
+				t->det_reserved_name_len =
+						EXT2_DIR_NAME_LEN_CSUM;
+				changed = 1;
+				goto out;
+			}
+			if (name_size & 3)
+				name_size = (name_size & ~3) + 4;
+			/* If there's not enough space for the tail, e2fsck */
+			if (rec_len <= (8 + name_size + csum_size)) {
+				request_dir_fsck_afterwards(fs);
+				return 0;
+			}
+			/* Shorten that last de and insert the tail */
+			ext2fs_set_rec_len(fs, rec_len - csum_size, last_de);
+			t = EXT2_DIRENT_TAIL(ctx->buf, fs->blocksize);
+			ext2fs_initialize_dirent_tail(fs, t);
+
+			/* Always update checksum */
+			changed = 1;
+		}
+	}
+
+out:
+	if (!changed)
+		return 0;
+
+	ctx->errcode = ext2fs_write_dir_block4(fs, *blocknr, ctx->buf,
+					       0, ctx->dir);
+	if (ctx->errcode)
+		return BLOCK_ABORT;
+
+	return 0;
+}
+
+errcode_t rewrite_directory(ext2_filsys fs, ext2_ino_t dir,
+			    struct ext2_inode *inode)
+{
+	errcode_t	retval;
+	struct rewrite_dir_context ctx;
+
+	retval = ext2fs_get_mem(fs->blocksize, &ctx.buf);
+	if (retval)
+		return retval;
+
+	ctx.is_htree = (inode->i_flags & EXT2_INDEX_FL);
+	ctx.dir = dir;
+	ctx.errcode = 0;
+	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_READ_ONLY |
+						BLOCK_FLAG_DATA_ONLY,
+				       0, rewrite_dir_block, &ctx);
+
+	ext2fs_free_mem(&ctx.buf);
+	if (retval)
+		return retval;
+
+	return ctx.errcode;
+}
+
+/*
  * Forcibly set checksums in all inodes.
  */
 static void rewrite_inodes(ext2_filsys fs)
@@ -464,6 +650,15 @@ static void rewrite_inodes(ext2_filsys fs)
 			com_err("rewrite_extents", retval,
 				"while rewriting extents");
 			exit(1);
+		}
+
+		if (LINUX_S_ISDIR(inode->i_mode)) {
+			retval = rewrite_directory(fs, ino, inode);
+			if (retval) {
+				com_err("rewrite_directory", retval,
+					"while rewriting directories");
+				exit(1);
+			}
 		}
 	} while (ino);
 
