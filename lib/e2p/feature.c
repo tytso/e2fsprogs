@@ -108,6 +108,8 @@ static struct feature jrnl_feature_list[] = {
                        "journal_64bit" },
        {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_ASYNC_COMMIT,
                        "journal_async_commit" },
+       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_CSUM_V2,
+                       "journal_checksum_v2" },
        {       0, 0, 0 },
 };
 

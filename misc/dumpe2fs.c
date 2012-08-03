@@ -324,6 +324,16 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	ext2fs_badblocks_list_free(bb_list);
 }
 
+static char *journal_checksum_type_str(__u8 type)
+{
+	switch (type) {
+	case JBD2_CRC32C_CHKSUM:
+		return "crc32c";
+	default:
+		return "unknown";
+	}
+}
+
 static void print_inline_journal_information(ext2_filsys fs)
 {
 	journal_superblock_t	*jsb;
@@ -390,6 +400,15 @@ static void print_inline_journal_information(ext2_filsys fs)
 	       (unsigned int)ntohl(jsb->s_maxlen),
 	       (unsigned int)ntohl(jsb->s_sequence),
 	       (unsigned int)ntohl(jsb->s_start));
+	if (jsb->s_feature_compat &
+	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
+		printf(_("Journal checksum type:    crc32\n"));
+	if (jsb->s_feature_incompat &
+	    ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2))
+		printf(_("Journal checksum type:    %s\n"
+			 "Journal checksum:         0x%08x\n"),
+		       journal_checksum_type_str(jsb->s_checksum_type),
+		       ext2fs_be32_to_cpu(jsb->s_checksum));
 	if (jsb->s_errno != 0)
 		printf(_("Journal errno:            %d\n"),
 		       (int) ntohl(jsb->s_errno));
@@ -417,6 +436,16 @@ static void print_journal_information(ext2_filsys fs)
 			_("Couldn't find journal superblock magic numbers"));
 		exit(1);
 	}
+
+	if (jsb->s_feature_compat &
+	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
+		printf(_("Journal checksum type:    crc32\n"));
+	if (jsb->s_feature_incompat &
+	    ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2))
+		printf(_("Journal checksum type:    %s\n"
+			 "Journal checksum:         0x%08x\n"),
+		       journal_checksum_type_str(jsb->s_checksum_type),
+		       ext2fs_be32_to_cpu(jsb->s_checksum));
 
 	printf(_("\nJournal block size:       %u\n"
 		 "Journal length:           %u\n"
