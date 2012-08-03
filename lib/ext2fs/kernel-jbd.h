@@ -114,12 +114,24 @@ typedef struct journal_header_s
 #define JBD2_CRC32_CHKSUM   1
 #define JBD2_MD5_CHKSUM     2
 #define JBD2_SHA1_CHKSUM    3
+#define JBD2_CRC32C_CHKSUM  4
 
 #define JBD2_CRC32_CHKSUM_SIZE 4
 
 #define JBD2_CHECKSUM_BYTES (32 / sizeof(__u32))
 /*
  * Commit block header for storing transactional checksums:
+ *
+ * NOTE: If FEATURE_COMPAT_CHECKSUM (checksum v1) is set, the h_chksum*
+ * fields are used to store a checksum of the descriptor and data blocks.
+ *
+ * If FEATURE_INCOMPAT_CSUM_V2 (checksum v2) is set, then the h_chksum
+ * field is used to store crc32c(uuid+commit_block).  Each journal metadata
+ * block gets its own checksum, and data block checksums are stored in
+ * journal_block_tag (in the descriptor).  The other h_chksum* fields are
+ * not used.
+ *
+ * Checksum v1 and v2 are mutually exclusive features.
  */
 struct commit_header {
 	__u32		h_magic;
@@ -139,12 +151,18 @@ struct commit_header {
 typedef struct journal_block_tag_s
 {
 	__u32		t_blocknr;	/* The on-disk block number */
-	__u32		t_flags;	/* See below */
+	__u16		t_checksum;	/* truncated crc32c(uuid+seq+block) */
+	__u16		t_flags;	/* See below */
 	__u32		t_blocknr_high; /* most-significant high 32bits. */
 } journal_block_tag_t;
 
 #define JBD_TAG_SIZE64 (sizeof(journal_block_tag_t))
 #define JBD_TAG_SIZE32 (8)
+
+/* Tail of descriptor block, for checksumming */
+struct journal_block_tail {
+	__u32		t_checksum;
+};
 
 /*
  * The revoke descriptor: used on disk to describe a series of blocks to
@@ -156,6 +174,10 @@ typedef struct journal_revoke_header_s
 	int		 r_count;	/* Count of bytes used in the block */
 } journal_revoke_header_t;
 
+/* Tail of revoke block, for checksumming */
+struct journal_revoke_tail {
+	__u32		r_checksum;
+};
 
 /* Definitions for the journal tag flags word: */
 #define JFS_FLAG_ESCAPE		1	/* on-disk block is escaped */
@@ -205,7 +227,10 @@ typedef struct journal_superblock_s
 	__u32	s_max_trans_data;	/* Limit of data blocks per trans. */
 
 /* 0x0050 */
-	__u32	s_padding[44];
+	__u8	s_checksum_type;	/* checksum type */
+	__u8	s_padding2[3];
+	__u32	s_padding[42];
+	__u32	s_checksum;		/* crc32c(superblock) */
 
 /* 0x0100 */
 	__u8	s_users[16*48];		/* ids of all fs'es sharing the log */
@@ -224,11 +249,10 @@ typedef struct journal_superblock_s
 
 #define JFS_FEATURE_COMPAT_CHECKSUM	0x00000001
 
-#define JFS_FEATURE_INCOMPAT_REVOKE	0x00000001
-
 #define JFS_FEATURE_INCOMPAT_REVOKE		0x00000001
 #define JFS_FEATURE_INCOMPAT_64BIT		0x00000002
 #define JFS_FEATURE_INCOMPAT_ASYNC_COMMIT	0x00000004
+#define JFS_FEATURE_INCOMPAT_CSUM_V2		0x00000008
 
 /* Features known to this kernel version: */
 #define JFS_KNOWN_COMPAT_FEATURES	0

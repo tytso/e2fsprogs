@@ -501,7 +501,7 @@ static void dump_descriptor_block(FILE *out_file,
 			break;
 
 		tag_block = be32_to_cpu(tag->t_blocknr);
-		tag_flags = be32_to_cpu(tag->t_flags);
+		tag_flags = be16_to_cpu(tag->t_flags);
 
 		if (!(tag_flags & JFS_FLAG_SAME_UUID))
 			offset += 16;
