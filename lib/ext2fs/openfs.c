@@ -195,10 +195,14 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	if (fs->orig_super)
 		memcpy(fs->orig_super, fs->super, SUPERBLOCK_SIZE);
 
-	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
-	    !ext2fs_superblock_csum_verify(fs, fs->super)) {
-		retval = EXT2_ET_SB_CSUM_INVALID;
-		goto cleanup;
+	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS)) {
+		retval = 0;
+		if (!ext2fs_verify_csum_type(fs, fs->super))
+			retval = EXT2_ET_UNKNOWN_CSUM;
+		if (!ext2fs_superblock_csum_verify(fs, fs->super))
+			retval = EXT2_ET_SB_CSUM_INVALID;
+		if (retval)
+			goto cleanup;
 	}
 
 #ifdef WORDS_BIGENDIAN

@@ -467,4 +467,7 @@ ec	EXT2_ET_EXT_ATTR_CSUM_INVALID,
 ec	EXT2_ET_SB_CSUM_INVALID,
 	"Superblock checksum does not match superblock"
 
+ec	EXT2_ET_UNKNOWN_CSUM,
+	"Unknown checksum algorithm"
+
 	end

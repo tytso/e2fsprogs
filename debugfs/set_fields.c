@@ -151,6 +151,7 @@ static struct field_set_info super_fields[] = {
 	{ "grp_quota_inum", &set_sb.s_grp_quota_inum, NULL, 4, parse_uint },
 	{ "overhead_blocks", &set_sb.s_overhead_blocks, NULL, 4, parse_uint },
 	{ "checksum", &set_sb.s_checksum, NULL, 4, parse_uint },
+	{ "checksum_type", &set_sb.s_checksum_type, NULL, 1, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 

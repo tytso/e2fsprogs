@@ -196,6 +196,16 @@ static __u64 e2p_free_blocks_count(struct ext2_super_block *super)
 #define EXT2_GOOD_OLD_REV 0
 #endif
 
+static const char *checksum_type(__u8 type)
+{
+	switch (type) {
+	case EXT2_CRC32C_CHKSUM:
+		return "crc32c";
+	default:
+		return "unknown";
+	}
+}
+
 void list_super2(struct ext2_super_block * sb, FILE *f)
 {
 	int inode_blocks_per_group;
@@ -421,9 +431,12 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Group quota inode:        %u\n",
 			sb->s_grp_quota_inum);
 
-	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
+	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+		fprintf(f, "Checksum type:            %s\n",
+			checksum_type(sb->s_checksum_type));
 		fprintf(f, "Checksum:                 0x%08x\n",
 			sb->s_checksum);
+	}
 }
 
 void list_super (struct ext2_super_block * s)

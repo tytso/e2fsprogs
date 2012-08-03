@@ -30,6 +30,15 @@
 #define STATIC static
 #endif
 
+int ext2fs_verify_csum_type(ext2_filsys fs, struct ext2_super_block *sb)
+{
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 1;
+
+	return sb->s_checksum_type == EXT2_CRC32C_CHKSUM;
+}
+
 static __u32 ext2fs_superblock_csum(ext2_filsys fs, struct ext2_super_block *sb)
 {
 	int offset = offsetof(struct ext2_super_block, s_checksum);
