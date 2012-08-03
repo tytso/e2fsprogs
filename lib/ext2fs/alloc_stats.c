@@ -38,8 +38,7 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 	/* We don't strictly need to be clearing the uninit flag if inuse < 0
 	 * (i.e. freeing inodes) but it also means something is bad. */
 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+	if (ext2fs_has_group_desc_csum(fs)) {
 		ext2_ino_t first_unused_inode =	fs->super->s_inodes_per_group -
 			ext2fs_bg_itable_unused(fs, group) +
 			group * fs->super->s_inodes_per_group + 1;

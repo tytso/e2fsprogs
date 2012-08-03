@@ -358,8 +358,7 @@ void do_show_super_stats(int argc, char *argv[])
 		return;
 	}
 
-	gdt_csum = EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
-					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	gdt_csum = ext2fs_has_group_desc_csum(current_fs);
 	for (i = 0; i < current_fs->group_desc_count; i++) {
 		fprintf(out, " Group %2d: block bitmap at %llu, "
 		        "inode bitmap at %llu, "

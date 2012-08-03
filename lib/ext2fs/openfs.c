@@ -399,8 +399,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	 * If recovery is from backup superblock, Clear _UNININT flags &
 	 * reset bg_itable_unused to zero
 	 */
-	if (superblock > 1 && EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+	if (superblock > 1 && ext2fs_has_group_desc_csum(fs)) {
 		dgrp_t group;
 
 		for (group = 0; group < fs->group_desc_count; group++) {

@@ -684,39 +684,56 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 
 	desc = ext2fs_group_desc(fs, fs->group_desc, group);
 
-	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
-		size_t offset = offsetof(struct ext2_group_desc, bg_checksum);
-
 #ifdef WORDS_BIGENDIAN
-		struct ext4_group_desc swabdesc;
+	struct ext4_group_desc swabdesc;
 
-		/* Have to swab back to little-endian to do the checksum */
-		memcpy(&swabdesc, desc, size);
-		ext2fs_swap_group_desc2(fs,
-					(struct ext2_group_desc *) &swabdesc);
-		desc = (struct ext2_group_desc *) &swabdesc;
+	/* Have to swab back to little-endian to do the checksum */
+	memcpy(&swabdesc, desc, size);
+	ext2fs_swap_group_desc2(fs,
+				(struct ext2_group_desc *) &swabdesc);
+	desc = (struct ext2_group_desc *) &swabdesc;
 
-		group = ext2fs_swab32(group);
+	group = ext2fs_swab32(group);
 #endif
-		crc = ext2fs_crc16(~0, fs->super->s_uuid,
-				   sizeof(fs->super->s_uuid));
-		crc = ext2fs_crc16(crc, &group, sizeof(group));
-		crc = ext2fs_crc16(crc, desc, offset);
-		offset += sizeof(desc->bg_checksum); /* skip checksum */
-		/* for checksum of struct ext4_group_desc do the rest...*/
-		if (offset < size) {
-			crc = ext2fs_crc16(crc, (char *)desc + offset,
-					   size - offset);
-		}
+
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		/* new metadata csum code */
+		__u16 old_crc;
+		__u32 crc32;
+
+		old_crc = desc->bg_checksum;
+		desc->bg_checksum = 0;
+		crc32 = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)&group,
+					 sizeof(group));
+		crc32 = ext2fs_crc32c_le(crc32, (unsigned char *)desc,
+					 size);
+		desc->bg_checksum = old_crc;
+
+		crc = crc32 & 0xFFFF;
+		goto out;
 	}
 
+	/* old crc16 code */
+	size_t offset = offsetof(struct ext2_group_desc, bg_checksum);
+	crc = ext2fs_crc16(~0, fs->super->s_uuid,
+			   sizeof(fs->super->s_uuid));
+	crc = ext2fs_crc16(crc, &group, sizeof(group));
+	crc = ext2fs_crc16(crc, desc, offset);
+	offset += sizeof(desc->bg_checksum); /* skip checksum */
+	/* for checksum of struct ext4_group_desc do the rest...*/
+	if (offset < size) {
+		crc = ext2fs_crc16(crc, (char *)desc + offset,
+				   size - offset);
+	}
+
+out:
 	return crc;
 }
 
 int ext2fs_group_desc_csum_verify(ext2_filsys fs, dgrp_t group)
 {
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
+	if (ext2fs_has_group_desc_csum(fs) &&
 	    (ext2fs_bg_checksum(fs, group) !=
 	     ext2fs_group_desc_csum(fs, group)))
 		return 0;
@@ -726,8 +743,7 @@ int ext2fs_group_desc_csum_verify(ext2_filsys fs, dgrp_t group)
 
 void ext2fs_group_desc_csum_set(ext2_filsys fs, dgrp_t group)
 {
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+	if (!ext2fs_has_group_desc_csum(fs))
 		return;
 
 	/* ext2fs_bg_checksum_set() sets the actual checksum field but
@@ -761,8 +777,7 @@ errcode_t ext2fs_set_gdt_csum(ext2_filsys fs)
 	if (!fs->inode_map)
 		return EXT2_ET_NO_INODE_BITMAP;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+	if (!ext2fs_has_group_desc_csum(fs))
 		return 0;
 
 	for (i = 0; i < fs->group_desc_count; i++) {

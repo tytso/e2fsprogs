@@ -36,8 +36,7 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 	blk64_t		blk, super_blk, old_desc_blk, new_desc_blk;
 	int		old_desc_blocks;
 
-	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
+	if (!ext2fs_has_group_desc_csum(fs) ||
 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
 		return;
 
@@ -85,8 +84,7 @@ static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 {
 	ext2_ino_t	i, ino;
 
-	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
+	if (!ext2fs_has_group_desc_csum(fs) ||
 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT)))
 		return;
 

@@ -36,7 +36,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	unsigned int	nbits;
 	errcode_t	retval;
 	char		*block_buf = NULL, *inode_buf = NULL;
-	int		csum_flag = 0;
+	int		csum_flag;
 	blk64_t		blk;
 	blk64_t		blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	ext2_ino_t	ino_itr = 1;
@@ -46,9 +46,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		csum_flag = 1;
+	csum_flag = ext2fs_has_group_desc_csum(fs);
 
 	inode_nbytes = block_nbytes = 0;
 	if (do_block) {
@@ -166,7 +164,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	errcode_t retval;
 	int block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	int inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
-	int csum_flag = 0;
+	int csum_flag;
 	int do_image = fs->flags & EXT2_FLAG_IMAGE_FILE;
 	unsigned int	cnt;
 	blk64_t	blk;
@@ -182,9 +180,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	fs->write_bitmaps = ext2fs_write_bitmaps;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		csum_flag = 1;
+	csum_flag = ext2fs_has_group_desc_csum(fs);
 
 	retval = ext2fs_get_mem(strlen(fs->device_name) + 80, &buf);
 	if (retval)

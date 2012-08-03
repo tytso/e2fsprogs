@@ -438,8 +438,7 @@ ipg_retry:
 	 * bitmaps will be accounted for when allocated).
 	 */
 	free_blocks = 0;
-	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	csum_flag = ext2fs_has_group_desc_csum(fs);
 	reserved_inos = super->s_first_ino;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		/*

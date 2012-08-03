@@ -121,7 +121,7 @@ static void print_bg_opts(ext2_filsys fs, dgrp_t i)
 {
 	int first = 1, bg_flags = 0;
 
-	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
+	if (ext2fs_has_group_desc_csum(fs))
 		bg_flags = ext2fs_bg_flags(fs, i);
 
 	print_bg_opt(bg_flags, EXT2_BG_INODE_UNINIT, "INODE_UNINIT",
@@ -197,7 +197,7 @@ static void list_desc (ext2_filsys fs)
 		print_range(first_block, last_block);
 		fputs(")", stdout);
 		print_bg_opts(fs, i);
-		if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
+		if (ext2fs_has_group_desc_csum(fs)) {
 			unsigned csum = ext2fs_bg_checksum(fs, i);
 			unsigned exp_csum = ext2fs_group_desc_csum(fs, i);
 

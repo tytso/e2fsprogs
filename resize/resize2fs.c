@@ -191,8 +191,7 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
 	int		old_desc_blocks;
 	dgrp_t		g;
 
-	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)))
+	if (!ext2fs_has_group_desc_csum(fs))
 		return;
 
 	for (g=0; g < fs->group_desc_count; g++) {
@@ -482,8 +481,7 @@ retry:
 	group_block = fs->super->s_first_data_block +
 		old_fs->group_desc_count * fs->super->s_blocks_per_group;
 
-	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	csum_flag = ext2fs_has_group_desc_csum(fs);
 	adj = old_fs->group_desc_count;
 	max_group = fs->group_desc_count - adj;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
@@ -743,8 +741,7 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 	} else if (IS_INODE_TB(fs, group, blk)) {
 		ext2fs_inode_table_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
-	} else if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
+	} else if (ext2fs_has_group_desc_csum(fs) &&
 		   (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT))) {
 		/*
 		 * If the block bitmap is uninitialized, which means
@@ -804,8 +801,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	for (blk = ext2fs_blocks_count(fs->super);
 	     blk < ext2fs_blocks_count(old_fs->super); blk++) {
 		g = ext2fs_group_of_blk2(fs, blk);
-		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
+		if (ext2fs_has_group_desc_csum(fs) &&
 		    ext2fs_bg_flags_test(old_fs, g, EXT2_BG_BLOCK_UNINIT)) {
 			/*
 			 * The block bitmap is uninitialized, so skip
