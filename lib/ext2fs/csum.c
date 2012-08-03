@@ -30,6 +30,41 @@
 #define STATIC static
 #endif
 
+static __u32 ext2fs_superblock_csum(ext2_filsys fs, struct ext2_super_block *sb)
+{
+	int offset = offsetof(struct ext2_super_block, s_checksum);
+
+	return ext2fs_crc32c_le(~0, (unsigned char *)sb, offset);
+}
+
+int ext2fs_superblock_csum_verify(ext2_filsys fs, struct ext2_super_block *sb)
+{
+	__u32 calculated;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 1;
+
+	calculated = ext2fs_superblock_csum(fs, sb);
+
+	return ext2fs_le32_to_cpu(sb->s_checksum) == calculated;
+}
+
+errcode_t ext2fs_superblock_csum_set(ext2_filsys fs,
+				     struct ext2_super_block *sb)
+{
+	__u32 crc;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 0;
+
+	crc = ext2fs_superblock_csum(fs, sb);
+	sb->s_checksum = ext2fs_cpu_to_le32(crc);
+
+	return 0;
+}
+
 static errcode_t ext2fs_ext_attr_block_csum(ext2_filsys fs, ext2_ino_t inum,
 					    blk64_t block,
 					    struct ext2_ext_attr_header *hdr,

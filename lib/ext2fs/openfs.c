@@ -195,6 +195,12 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	if (fs->orig_super)
 		memcpy(fs->orig_super, fs->super, SUPERBLOCK_SIZE);
 
+	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+	    !ext2fs_superblock_csum_verify(fs, fs->super)) {
+		retval = EXT2_ET_SB_CSUM_INVALID;
+		goto cleanup;
+	}
+
 #ifdef WORDS_BIGENDIAN
 	fs->flags |= EXT2_FLAG_SWAP_BYTES;
 	ext2fs_swap_super(fs->super);

@@ -246,15 +246,19 @@ static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 				    blk_t group_block,
 				    struct ext2_super_block *super_shadow)
 {
+	errcode_t retval;
 	dgrp_t	sgrp = group;
 
 	if (sgrp > ((1 << 16) - 1))
 		sgrp = (1 << 16) - 1;
+
+	super_shadow->s_block_group_nr = sgrp;
 #ifdef WORDS_BIGENDIAN
-	super_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
-#else
-	fs->super->s_block_group_nr = sgrp;
+	ext2fs_swap_super(super_shadow);
 #endif
+	retval = ext2fs_superblock_csum_set(fs, super_shadow);
+	if (retval)
+		return retval;
 
 	return io_channel_write_blk64(fs->io, group_block, -SUPERBLOCK_SIZE,
 				    super_shadow);
@@ -314,6 +318,7 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 				  &group_shadow);
 	if (retval)
 		goto errout;
+	memcpy(super_shadow, fs->super, sizeof(struct ext2_super_block));
 	memcpy(group_shadow, fs->group_desc, (size_t) fs->blocksize *
 	       fs->desc_blocks);
 
@@ -334,10 +339,6 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	 */
 	fs->super->s_state &= ~EXT2_VALID_FS;
 	fs->super->s_feature_incompat &= ~EXT3_FEATURE_INCOMPAT_RECOVER;
-#ifdef WORDS_BIGENDIAN
-	*super_shadow = *fs->super;
-	ext2fs_swap_super(super_shadow);
-#endif
 
 	/*
 	 * If this is an external journal device, don't write out the
@@ -414,6 +415,10 @@ write_primary_superblock_only:
 	*super_shadow = *fs->super;
 	ext2fs_swap_super(super_shadow);
 #endif
+
+	retval = ext2fs_superblock_csum_set(fs, super_shadow);
+	if (retval)
+		return retval;
 
 	if (!(flags & EXT2_FLAG_FLUSH_NO_SYNC))
 		retval = io_channel_flush(fs->io);
