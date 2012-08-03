@@ -64,7 +64,7 @@ COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 #
 #MCHECK= -DMCHECK
 
-OBJS= crc32.o dict.o unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o \
+OBJS= dict.o unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o \
 	pass3.o pass4.o pass5.o journal.o badblocks.o util.o dirinfo.o \
 	dx_dirinfo.o ehandler.o problem.o message.o quota.o recovery.o \
 	region.o revoke.o ea_refcount.o rehash.o profile.o prof_err.o \
@@ -78,12 +78,10 @@ PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
 	profiled/message.o profiled/problem.o profiled/quota.o \
 	profiled/recovery.o profiled/region.o profiled/revoke.o \
 	profiled/ea_refcount.o profiled/rehash.o profiled/profile.o \
-	profiled/crc32.o profiled/prof_err.o profiled/logfile.o \
+	profiled/prof_err.o profiled/logfile.o \
 	profiled/sigcatcher.o
 
 SRCS= $(srcdir)/e2fsck.c \
-	$(srcdir)/crc32.c \
-	$(srcdir)/gen_crc32table.c \
 	$(srcdir)/dict.c \
 	$(srcdir)/super.c \
 	$(srcdir)/pass1.c \
@@ -134,15 +132,6 @@ e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
 	$(Q) $(LD) $(ALL_LDFLAGS) -g -pg -o e2fsck.profiled $(PROFILED_OBJS) \
 		$(PROFILED_LIBS) 
 
-gen_crc32table: $(srcdir)/gen_crc32table.c
-	$(E) "	CC $@"
-	$(Q) $(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o gen_crc32table \
-		$(srcdir)/gen_crc32table.c
-
-crc32table.h: gen_crc32table
-	$(E) "	GEN32TABLE $@"
-	$(Q) ./gen_crc32table > crc32table.h
-
 tst_sigcatcher: $(srcdir)/sigcatcher.c
 	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) $(RDYNAMIC) \
 		$(srcdir)/sigcatcher.c -DDEBUG -o tst_sigcatcher
@@ -152,10 +141,6 @@ tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(LIBEXT2FS) \
 	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_problem \
 		$(srcdir)/problem.c -DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR) \
 		$(LIBINTL)
-
-tst_crc32: $(srcdir)/crc32.c $(LIBEXT2FS) $(DEPLIBCOM_ERR)
-	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32 $(srcdir)/crc32.c \
-		-DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
@@ -172,10 +157,9 @@ tst_region: region.c $(DEPLIBCOM_ERR)
 	$(Q) $(CC) -o tst_region $(srcdir)/region.c \
 		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR)
 
-check:: tst_refcount tst_region tst_crc32 tst_problem
+check:: tst_refcount tst_region tst_problem
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_refcount
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_region
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_crc32
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_problem
 
 extend: extend.o
@@ -272,9 +256,8 @@ uninstall:
 clean:
 	$(RM) -f $(PROGS) \#* *\# *.s *.o *.a *~ core e2fsck.static \
 		e2fsck.shared e2fsck.profiled flushb e2fsck.8 \
-		tst_problem tst_crc32 tst_region tst_refcount gen_crc32table \
-		crc32table.h e2fsck.conf.5 prof_err.c prof_err.h \
-		test_profile
+		tst_problem tst_region tst_refcount e2fsck.conf.5 \
+		prof_err.c prof_err.h test_profile
 	$(RM) -rf profiled
 
 mostlyclean: clean
@@ -297,18 +280,6 @@ e2fsck.o: $(srcdir)/e2fsck.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/quota/quotaio.h $(top_srcdir)/lib/quota/dqblk_v2.h \
  $(top_srcdir)/lib/quota/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
  $(srcdir)/problem.h
-crc32.o: $(srcdir)/crc32.c $(top_builddir)/lib/config.h \
- $(top_builddir)/lib/dirpaths.h $(srcdir)/e2fsck.h \
- $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
- $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/profile.h prof_err.h $(top_srcdir)/lib/quota/mkquota.h \
- $(top_srcdir)/lib/quota/quotaio.h $(top_srcdir)/lib/quota/dqblk_v2.h \
- $(top_srcdir)/lib/quota/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
- $(srcdir)/crc32defs.h crc32table.h
-gen_crc32table.o: $(srcdir)/gen_crc32table.c $(srcdir)/crc32defs.h
 dict.o: $(srcdir)/dict.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/dict.h
 super.o: $(srcdir)/super.c $(top_builddir)/lib/config.h \

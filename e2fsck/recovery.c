@@ -354,7 +354,8 @@ static int calc_chksums(journal_t *journal, struct buffer_head *bh,
 
 	num_blks = count_tags(journal, bh);
 	/* Calculate checksum of the descriptor block. */
-	*crc32_sum = crc32_be(*crc32_sum, (void *)bh->b_data, bh->b_size);
+	*crc32_sum = ext2fs_crc32_be(*crc32_sum, (void *)bh->b_data,
+				     bh->b_size);
 
 	for (i = 0; i < num_blks; i++) {
 		io_block = (*next_log_block)++;
@@ -365,8 +366,9 @@ static int calc_chksums(journal_t *journal, struct buffer_head *bh,
 				"%llu in log\n", err, io_block);
 			return 1;
 		} else {
-			*crc32_sum = crc32_be(*crc32_sum, (void *)obh->b_data,
-				     obh->b_size);
+			*crc32_sum = ext2fs_crc32_be(*crc32_sum,
+						     (void *)obh->b_data,
+						     obh->b_size);
 		}
 		brelse(obh);
 	}
