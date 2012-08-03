@@ -470,4 +470,7 @@ ec	EXT2_ET_SB_CSUM_INVALID,
 ec	EXT2_ET_UNKNOWN_CSUM,
 	"Unknown checksum algorithm"
 
+ec	EXT2_ET_MMP_CSUM_INVALID,
+	"MMP block checksum does not match MMP block"
+
 	end

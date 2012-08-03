@@ -30,6 +30,40 @@
 #define STATIC static
 #endif
 
+static __u32 ext2fs_mmp_csum(ext2_filsys fs, struct mmp_struct *mmp)
+{
+	int offset = offsetof(struct mmp_struct, mmp_checksum);
+
+	return ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)mmp, offset);
+}
+
+int ext2fs_mmp_csum_verify(ext2_filsys fs, struct mmp_struct *mmp)
+{
+	__u32 calculated;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 1;
+
+	calculated = ext2fs_mmp_csum(fs, mmp);
+
+	return ext2fs_le32_to_cpu(mmp->mmp_checksum) == calculated;
+}
+
+errcode_t ext2fs_mmp_csum_set(ext2_filsys fs, struct mmp_struct *mmp)
+{
+	__u32 crc;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 0;
+
+	crc = ext2fs_mmp_csum(fs, mmp);
+	mmp->mmp_checksum = ext2fs_cpu_to_le32(crc);
+
+	return 0;
+}
+
 int ext2fs_verify_csum_type(ext2_filsys fs, struct ext2_super_block *sb)
 {
 	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,

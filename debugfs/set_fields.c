@@ -256,6 +256,7 @@ static struct field_set_info mmp_fields[] = {
 	{ "bdevname", &set_mmp.mmp_bdevname, NULL, sizeof(set_mmp.mmp_bdevname),
 		parse_string },
 	{ "check_interval", &set_mmp.mmp_check_interval, NULL, 2, parse_uint },
+	{ "checksum", &set_mmp.mmp_checksum, NULL, 4, parse_uint },
 };
 
 static int check_suffix(const char *field)

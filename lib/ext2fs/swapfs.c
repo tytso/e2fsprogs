@@ -349,6 +349,7 @@ void ext2fs_swap_mmp(struct mmp_struct *mmp)
 	mmp->mmp_seq = ext2fs_swab32(mmp->mmp_seq);
 	mmp->mmp_time = ext2fs_swab64(mmp->mmp_time);
 	mmp->mmp_check_interval = ext2fs_swab16(mmp->mmp_check_interval);
+	mmp->mmp_checksum = ext2fs_swab32(mmp->mmp_checksum);
 }
 
 errcode_t ext2fs_dirent_swab_in(ext2_filsys fs, char *buf, int flags)
