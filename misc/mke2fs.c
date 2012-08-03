@@ -1938,6 +1938,13 @@ profile_error:
 	if (extended_opts)
 		parse_extended_opts(&fs_param, extended_opts);
 
+	/* Don't allow user to set both metadata_csum and uninit_bg bits. */
+	if ((fs_param.s_feature_ro_compat &
+	     EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
+	    (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+		fs_param.s_feature_ro_compat &=
+				~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+
 	/* Since sparse_super is the default, we would only have a problem
 	 * here if it was explicitly disabled.
 	 */
@@ -2050,7 +2057,8 @@ static int should_do_undo(const char *name)
 	int csum_flag, force_undo;
 
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+				EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
+				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
 	force_undo = get_int_from_profile(fs_types, "force_undo", 0);
 	if (!force_undo && (!csum_flag || !lazy_itable_init))
 		return 0;
@@ -2330,6 +2338,7 @@ int main (int argc, char *argv[])
 	    (fs_param.s_feature_ro_compat &
 	     (EXT4_FEATURE_RO_COMPAT_HUGE_FILE|EXT4_FEATURE_RO_COMPAT_GDT_CSUM|
 	      EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
+	      EXT4_FEATURE_RO_COMPAT_METADATA_CSUM|
 	      EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE)))
 		fs->super->s_kbytes_written = 1;
 
@@ -2477,8 +2486,7 @@ int main (int argc, char *argv[])
 		 * inodes as unused; we want e2fsck to consider all
 		 * inodes as potentially containing recoverable data.
 		 */
-		if (fs->super->s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
+		if (ext2fs_has_group_desc_csum(fs)) {
 			for (i = 0; i < fs->group_desc_count; i++)
 				ext2fs_bg_itable_unused_set(fs, i, 0);
 		}
