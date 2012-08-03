@@ -655,7 +655,8 @@ int ext2fs_inode_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 {
 	errcode_t retval;
 	__u32 provided, calculated;
-	int has_hi;
+	int i, has_hi;
+	char *cp;
 
 	if (fs->super->s_creator_os != EXT2_OS_LINUX ||
 	    !EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
@@ -675,7 +676,23 @@ int ext2fs_inode_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 	} else
 		calculated &= 0xFFFF;
 
-	return provided == calculated;
+	if (provided == calculated)
+		return 1;
+
+	/*
+	 * If the checksum didn't match, it's possible it was due to
+	 * the inode being all zero's.  It's unlikely this is the
+	 * case, but it can happen.  So check for it here.  (We only
+	 * check the base inode since that's good enough, and it's not
+	 * worth the bother to figure out how much of the extended
+	 * inode, if any, is present.)
+	 */
+	for (cp = (char *) inode, i = 0;
+	     i < sizeof(struct ext2_inode);
+	     cp++, i++)
+		if (*cp)
+			return 0;
+	return 1;		/* Inode must have been all zero's */
 }
 
 errcode_t ext2fs_inode_csum_set(ext2_filsys fs, ext2_ino_t inum,
