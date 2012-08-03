@@ -40,6 +40,53 @@ static int bh_count = 0;
  */
 #undef USE_INODE_IO
 
+/* Checksumming functions */
+int e2fsck_journal_verify_csum_type(journal_t *j, journal_superblock_t *jsb)
+{
+	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		return 1;
+
+	return jsb->s_checksum_type == JBD2_CRC32C_CHKSUM;
+}
+
+static __u32 e2fsck_journal_sb_csum(journal_t *j, journal_superblock_t *jsb)
+{
+	__u32 crc, old_crc;
+
+	old_crc = jsb->s_checksum;
+	jsb->s_checksum = 0;
+	crc = ext2fs_crc32c_le(~0, (unsigned char *)jsb,
+			       sizeof(journal_superblock_t));
+	jsb->s_checksum = old_crc;
+
+	return crc;
+}
+
+int e2fsck_journal_sb_csum_verify(journal_t *j, journal_superblock_t *jsb)
+{
+	__u32 provided, calculated;
+
+	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		return 1;
+
+	provided = ext2fs_be32_to_cpu(jsb->s_checksum);
+	calculated = e2fsck_journal_sb_csum(j, jsb);
+
+	return provided == calculated;
+}
+
+errcode_t e2fsck_journal_sb_csum_set(journal_t *j, journal_superblock_t *jsb)
+{
+	__u32 crc;
+
+	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		return 0;
+
+	crc = e2fsck_journal_sb_csum(j, jsb);
+	jsb->s_checksum = ext2fs_cpu_to_be32(crc);
+	return 0;
+}
+
 /* Kernel compatibility functions for handling the journal.  These allow us
  * to use the recovery.c file virtually unchanged from the kernel, so we
  * don't have to do much to keep kernel and user recovery in sync.
@@ -561,6 +608,15 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES))
 		return EXT2_ET_RO_UNSUPP_FEATURE;
 
+	/* Checksum v1 and v2 are mutually exclusive features. */
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2) &&
+	    JFS_HAS_COMPAT_FEATURE(journal, JFS_FEATURE_COMPAT_CHECKSUM))
+		return EXT2_ET_CORRUPT_SUPERBLOCK;
+
+	if (!e2fsck_journal_verify_csum_type(journal, jsb) ||
+	    !e2fsck_journal_sb_csum_verify(journal, jsb))
+		return EXT2_ET_CORRUPT_SUPERBLOCK;
+
 	/* We have now checked whether we know enough about the journal
 	 * format to be able to proceed safely, so any other checks that
 	 * fail we should attempt to recover from. */
@@ -628,6 +684,7 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 	for (i = 0; i < 4; i ++)
 		new_seq ^= u.val[i];
 	jsb->s_sequence = htonl(new_seq);
+	e2fsck_journal_sb_csum_set(journal, jsb);
 
 	mark_buffer_dirty(journal->j_sb_buffer);
 	ll_rw_block(WRITE, 1, &journal->j_sb_buffer);
@@ -668,6 +725,7 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
 		jsb->s_sequence = htonl(journal->j_transaction_sequence);
 		if (reset)
 			jsb->s_start = 0; /* this marks the journal as empty */
+		e2fsck_journal_sb_csum_set(journal, jsb);
 		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 	brelse(journal->j_sb_buffer);
@@ -813,6 +871,7 @@ no_has_journal:
 		ctx->fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(ctx->fs);
 		journal->j_superblock->s_errno = 0;
+		e2fsck_journal_sb_csum_set(journal, journal->j_superblock);
 		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 
