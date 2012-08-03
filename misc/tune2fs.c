@@ -611,9 +611,11 @@ static void rewrite_inodes(ext2_filsys fs)
 {
 	int length = EXT2_INODE_SIZE(fs->super);
 	struct ext2_inode *inode;
+	char		*ea_buf;
 	ext2_inode_scan	scan;
 	errcode_t	retval;
 	ext2_ino_t	ino;
+	blk64_t		file_acl_block;
 
 	if (fs->super->s_creator_os != EXT2_OS_LINUX)
 		return;
@@ -625,6 +627,12 @@ static void rewrite_inodes(ext2_filsys fs)
 	}
 
 	retval = ext2fs_get_mem(length, &inode);
+	if (retval) {
+		com_err("set_csum", retval, "while allocating memory");
+		exit(1);
+	}
+
+	retval = ext2fs_get_mem(fs->blocksize, &ea_buf);
 	if (retval) {
 		com_err("set_csum", retval, "while allocating memory");
 		exit(1);
@@ -660,9 +668,27 @@ static void rewrite_inodes(ext2_filsys fs)
 				exit(1);
 			}
 		}
+
+		file_acl_block = ext2fs_file_acl_block(fs, inode);
+		if (!file_acl_block)
+			continue;
+		retval = ext2fs_read_ext_attr3(fs, file_acl_block, ea_buf, ino);
+		if (retval) {
+			com_err("rewrite_eablock", retval,
+				"while rewriting extended attribute");
+			exit(1);
+		}
+		retval = ext2fs_write_ext_attr3(fs, file_acl_block, ea_buf,
+						ino);
+		if (retval) {
+			com_err("rewrite_eablock", retval,
+				"while rewriting extended attribute");
+			exit(1);
+		}
 	} while (ino);
 
 	ext2fs_free_mem(&inode);
+	ext2fs_free_mem(&ea_buf);
 	ext2fs_close_inode_scan(scan);
 }
 
