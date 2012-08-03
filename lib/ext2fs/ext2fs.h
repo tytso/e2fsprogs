@@ -947,7 +947,7 @@ extern int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 extern void ext2fs_update_dynamic_rev(ext2_filsys fs);
 
 /* crc32c.c */
-extern __u32 ext2fs_crc32c_be(__u32 crc, unsigned char const *p, size_t len);
+extern __u32 ext2fs_crc32_be(__u32 crc, unsigned char const *p, size_t len);
 extern __u32 ext2fs_crc32c_le(__u32 crc, unsigned char const *p, size_t len);
 
 /* csum.c */
