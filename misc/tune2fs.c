@@ -694,8 +694,12 @@ static void rewrite_inodes(ext2_filsys fs)
 
 static void rewrite_metadata_checksums(ext2_filsys fs)
 {
+	int i;
+
 	fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	ext2fs_init_csum_seed(fs);
+	for (i = 0; i < fs->group_desc_count; i++)
+		ext2fs_group_desc_csum_set(fs, i);
 	rewrite_inodes(fs);
 	ext2fs_read_bitmaps(fs);
 	ext2fs_mark_ib_dirty(fs);
@@ -708,6 +712,49 @@ static void rewrite_metadata_checksums(ext2_filsys fs)
 	else
 		fs->super->s_checksum_type = 0;
 	ext2fs_mark_super_dirty(fs);
+}
+
+static void enable_uninit_bg(ext2_filsys fs)
+{
+	struct ext2_group_desc *gd;
+	int i;
+
+	for (i = 0; i < fs->group_desc_count; i++) {
+		gd = ext2fs_group_desc(fs, fs->group_desc, i);
+		gd->bg_itable_unused = 0;
+		gd->bg_flags = EXT2_BG_INODE_ZEROED;
+		ext2fs_group_desc_csum_set(fs, i);
+	}
+	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+}
+
+static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
+{
+	struct ext2_group_desc *gd;
+	int i;
+
+	/* Load bitmaps to ensure that the uninit ones get written out */
+	fs->super->s_feature_ro_compat |= csum_feature_flag;
+	ext2fs_read_bitmaps(fs);
+	ext2fs_mark_ib_dirty(fs);
+	ext2fs_mark_bb_dirty(fs);
+	fs->super->s_feature_ro_compat &= ~csum_feature_flag;
+
+	for (i = 0; i < fs->group_desc_count; i++) {
+		gd = ext2fs_group_desc(fs, fs->group_desc, i);
+		if ((gd->bg_flags & EXT2_BG_INODE_ZEROED) == 0) {
+			/*
+			 * XXX what we really should do is zap
+			 * uninitialized inode tables instead.
+			 */
+			request_fsck_afterwards(fs);
+			break;
+		}
+		gd->bg_itable_unused = 0;
+		gd->bg_flags = 0;
+		ext2fs_group_desc_csum_set(fs, i);
+	}
+	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 }
 
 /*
@@ -887,6 +934,21 @@ mmp_error:
 		if (check_fsck_needed(fs))
 			exit(1);
 		rewrite_checksums = 1;
+		/* metadata_csum supersedes uninit_bg */
+		fs->super->s_feature_ro_compat &=
+			~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+
+		/* if uninit_bg was previously off, rewrite group desc */
+		if (!(old_features[E2P_FEATURE_RO_INCOMPAT] &
+		      EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+			enable_uninit_bg(fs);
+
+		/*
+		 * Since metadata_csum supersedes uninit_bg, pretend like
+		 * uninit_bg has been off all along.
+		 */
+		old_features[E2P_FEATURE_RO_INCOMPAT] &=
+			~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
 	}
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
@@ -894,37 +956,40 @@ mmp_error:
 		if (check_fsck_needed(fs))
 			exit(1);
 		rewrite_checksums = 1;
+		/*
+		 * If we're turning off metadata_csum and not turning on
+		 * uninit_bg, rewrite group desc.
+		 */
+		if (!(fs->super->s_feature_ro_compat &
+		      EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+			disable_uninit_bg(fs,
+				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+		else
+			/*
+			 * metadata_csum previously provided uninit_bg, so if
+			 * we're also setting the uninit_bg feature bit,
+			 * pretend like it was previously enabled.  Checksums
+			 * will be rewritten with crc16 later.
+			 */
+			old_features[E2P_FEATURE_RO_INCOMPAT] |=
+				EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
-		for (i = 0; i < fs->group_desc_count; i++) {
-			gd = ext2fs_group_desc(fs, fs->group_desc, i);
-			gd->bg_itable_unused = 0;
-			gd->bg_flags = EXT2_BG_INODE_ZEROED;
-			ext2fs_group_desc_csum_set(fs, i);
-		}
-		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+		/* Do not enable uninit_bg when metadata_csum enabled */
+		if (fs->super->s_feature_ro_compat &
+		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
+			fs->super->s_feature_ro_compat &=
+				~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+		else
+			enable_uninit_bg(fs);
 	}
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
-			EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
-		for (i = 0; i < fs->group_desc_count; i++) {
-			gd = ext2fs_group_desc(fs, fs->group_desc, i);
-			if ((gd->bg_flags & EXT2_BG_INODE_ZEROED) == 0) {
-				/* 
-				 * XXX what we really should do is zap
-				 * uninitialized inode tables instead.
-				 */
-				request_fsck_afterwards(fs);
-				break;
-			}
-			gd->bg_itable_unused = 0;
-			gd->bg_flags = 0;
-			gd->bg_checksum = 0;
-		}
-		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
-	}
+			EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+		disable_uninit_bg(fs,
+				EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 				EXT4_FEATURE_RO_COMPAT_QUOTA)) {
@@ -2498,8 +2563,7 @@ retry_open:
 				exit(1);
 		}
 
-		if (sb->s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
+		if (ext2fs_has_group_desc_csum(fs)) {
 			/*
 			 * Determine if the block group checksums are
 			 * correct so we know whether or not to set
