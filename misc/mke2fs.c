@@ -2314,6 +2314,25 @@ int main (int argc, char *argv[])
 	}
 	fs->progress_ops = &ext2fs_numeric_progress_ops;
 
+	/* Check the user's mkfs options for metadata checksumming */
+	if (!quiet &&
+	    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				EXT3_FEATURE_INCOMPAT_EXTENTS))
+			printf(_("Extents are not enabled.  The file extent "
+				 "tree can be checksummed, whereas block maps "
+				 "cannot.  Not enabling extents reduces the "
+				 "coverage of metadata checksumming.  "
+				 "Pass -O extents to rectify.\n"));
+		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_INCOMPAT_64BIT))
+			printf(_("64-bit filesystem support is not "
+				 "enabled.  The larger fields afforded by "
+				 "this feature enable full-strength "
+				 "checksumming.  Pass -O 64bit to rectify.\n"));
+	}
+
 	/* Can't undo discard ... */
 	if (!noaction && discard && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_device(fs);
