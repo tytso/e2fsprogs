@@ -255,6 +255,9 @@ struct problem_context {
  */
 #define PR_0_META_AND_GDT_CSUM_SET		0x000046
 
+/* Superblock has invalid MMP checksum. */
+#define PR_0_MMP_CSUM_INVALID			0x000047
+
 
 /*
  * Pass 1 errors
