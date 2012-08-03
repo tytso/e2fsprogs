@@ -157,7 +157,8 @@ void ext2fs_swap_ext_attr_header(struct ext2_ext_attr_header *to_header,
 	to_header->h_blocks   = ext2fs_swab32(from_header->h_blocks);
 	to_header->h_refcount = ext2fs_swab32(from_header->h_refcount);
 	to_header->h_hash     = ext2fs_swab32(from_header->h_hash);
-	for (n = 0; n < 4; n++)
+	to_header->h_checksum = ext2fs_swab32(from_header->h_checksum);
+	for (n = 0; n < 3; n++)
 		to_header->h_reserved[n] =
 			ext2fs_swab32(from_header->h_reserved[n]);
 }

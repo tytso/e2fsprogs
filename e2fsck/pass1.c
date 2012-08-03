@@ -1518,7 +1518,8 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 		if ((blk = ea_refcount_intr_next(refcount, &count)) == 0)
 			break;
 		pctx.blk = blk;
-		pctx.errcode = ext2fs_read_ext_attr2(fs, blk, block_buf);
+		pctx.errcode = ext2fs_read_ext_attr3(fs, blk, block_buf,
+						     pctx.ino);
 		if (pctx.errcode) {
 			fix_problem(ctx, PR_1_EXTATTR_READ_ABORT, &pctx);
 			return;
@@ -1529,8 +1530,9 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 		pctx.num = should_be;
 		if (fix_problem(ctx, PR_1_EXTATTR_REFCOUNT, &pctx)) {
 			header->h_refcount = should_be;
-			pctx.errcode = ext2fs_write_ext_attr2(fs, blk,
-							     block_buf);
+			pctx.errcode = ext2fs_write_ext_attr3(fs, blk,
+							     block_buf,
+							     pctx.ino);
 			if (pctx.errcode) {
 				fix_problem(ctx, PR_1_EXTATTR_WRITE_ABORT,
 					    &pctx);
@@ -1628,7 +1630,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	 * validate it
 	 */
 	pctx->blk = blk;
-	pctx->errcode = ext2fs_read_ext_attr2(fs, blk, block_buf);
+	pctx->errcode = ext2fs_read_ext_attr3(fs, blk, block_buf, pctx->ino);
 	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
 		goto clear_extattr;
 	header = (struct ext2_ext_attr_header *) block_buf;

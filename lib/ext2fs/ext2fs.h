@@ -943,6 +943,12 @@ extern __u32 ext2fs_crc32c_be(__u32 crc, unsigned char const *p, size_t len);
 extern __u32 ext2fs_crc32c_le(__u32 crc, unsigned char const *p, size_t len);
 
 /* csum.c */
+extern errcode_t ext2fs_ext_attr_block_csum_set(ext2_filsys fs,
+					ext2_ino_t inum, blk64_t block,
+					struct ext2_ext_attr_header *hdr);
+extern int ext2fs_ext_attr_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+					     blk64_t block,
+					     struct ext2_ext_attr_header *hdr);
 #define EXT2_DIRENT_TAIL(block, blocksize) \
 	((struct ext2_dir_entry_tail *)(((void *)(block)) + \
 	(blocksize) - sizeof(struct ext2_dir_entry_tail)))
@@ -1097,16 +1103,24 @@ extern __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry,
 extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
 extern errcode_t ext2fs_read_ext_attr2(ext2_filsys fs, blk64_t block,
 				       void *buf);
+extern errcode_t ext2fs_read_ext_attr3(ext2_filsys fs, blk64_t block,
+				       void *buf, ext2_ino_t inum);
 extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block,
 				       void *buf);
 extern errcode_t ext2fs_write_ext_attr2(ext2_filsys fs, blk64_t block,
 				       void *buf);
+extern errcode_t ext2fs_write_ext_attr3(ext2_filsys fs, blk64_t block,
+				       void *buf, ext2_ino_t inum);
 extern errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 					   char *block_buf,
 					   int adjust, __u32 *newcount);
 extern errcode_t ext2fs_adjust_ea_refcount2(ext2_filsys fs, blk64_t blk,
 					   char *block_buf,
 					   int adjust, __u32 *newcount);
+extern errcode_t ext2fs_adjust_ea_refcount3(ext2_filsys fs, blk64_t blk,
+					   char *block_buf,
+					   int adjust, __u32 *newcount,
+					   ext2_ino_t inum);
 
 /* extent.c */
 extern errcode_t ext2fs_extent_header_verify(void *ptr, int size);

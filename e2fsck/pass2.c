@@ -1290,9 +1290,9 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 
 	if (ext2fs_file_acl_block(fs, &inode) &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
-		pctx.errcode = ext2fs_adjust_ea_refcount2(fs,
-					ext2fs_file_acl_block(fs, &inode),
-					block_buf, -1, &count);
+		pctx.errcode = ext2fs_adjust_ea_refcount3(fs,
+				ext2fs_file_acl_block(fs, &inode),
+				block_buf, -1, &count, ino);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
 			count = 1;

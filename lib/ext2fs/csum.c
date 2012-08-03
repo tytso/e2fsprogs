@@ -30,6 +30,62 @@
 #define STATIC static
 #endif
 
+static errcode_t ext2fs_ext_attr_block_csum(ext2_filsys fs, ext2_ino_t inum,
+					    blk64_t block,
+					    struct ext2_ext_attr_header *hdr,
+					    __u32 *crc)
+{
+	errcode_t retval;
+	char *buf = (char *)hdr;
+	__u32 gen, old_crc = hdr->h_checksum;
+	struct ext2_inode inode;
+
+	hdr->h_checksum = 0;
+	block = ext2fs_cpu_to_le64(block);
+	*crc = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)&block,
+				sizeof(block));
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)buf, fs->blocksize);
+	hdr->h_checksum = old_crc;
+
+	return 0;
+}
+
+int ext2fs_ext_attr_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+				      blk64_t block,
+				      struct ext2_ext_attr_header *hdr)
+{
+	__u32 calculated;
+	errcode_t retval;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 1;
+
+	retval = ext2fs_ext_attr_block_csum(fs, inum, block, hdr, &calculated);
+	if (retval)
+		return 0;
+
+	return ext2fs_le32_to_cpu(hdr->h_checksum) == calculated;
+}
+
+errcode_t ext2fs_ext_attr_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
+					 blk64_t block,
+					 struct ext2_ext_attr_header *hdr)
+{
+	errcode_t retval;
+	__u32 crc;
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		return 0;
+
+	retval = ext2fs_ext_attr_block_csum(fs, inum, block, hdr, &crc);
+	if (retval)
+		return retval;
+	hdr->h_checksum = ext2fs_cpu_to_le32(crc);
+	return 0;
+}
+
 static __u16 do_nothing16(__u16 x)
 {
 	return x;

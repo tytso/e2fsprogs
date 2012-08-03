@@ -653,9 +653,9 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	if (ext2fs_file_acl_block(fs, &inode) &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
 		count = 1;
-		pctx.errcode = ext2fs_adjust_ea_refcount2(fs,
+		pctx.errcode = ext2fs_adjust_ea_refcount3(fs,
 					ext2fs_file_acl_block(fs, &inode),
-						   block_buf, -1, &count);
+					block_buf, -1, &count, ino);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
 			count = 1;

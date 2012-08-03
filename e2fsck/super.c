@@ -199,9 +199,9 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		ext2fs_iblk_sub_blocks(fs, inode, pb.truncated_blocks);
 
 	if (ext2fs_file_acl_block(fs, inode)) {
-		retval = ext2fs_adjust_ea_refcount2(fs,
-					ext2fs_file_acl_block(fs, inode),
-					block_buf, -1, &count);
+		retval = ext2fs_adjust_ea_refcount3(fs,
+				ext2fs_file_acl_block(fs, inode),
+				block_buf, -1, &count, ino);
 		if (retval == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			retval = 0;
 			count = 1;
