@@ -971,6 +971,21 @@ static struct e2fsck_problem problem_table[] = {
 	     "extent\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
 	  PROMPT_FIX, 0 },
 
+	/* Extended attribute block checksum for inode does not match. */
+	{ PR_1_EA_BLOCK_CSUM_INVALID,
+	  N_("Extended attribute @a @b %b checksum for @i %i does not "
+	     "match.  "),
+	  PROMPT_CLEAR, 0 },
+
+	/*
+	 * Extended attribute block passes checks, but checksum for inode does
+	 * not match.
+	 */
+	{ PR_1_EA_BLOCK_ONLY_CSUM_INVALID,
+	  N_("Extended attribute @a @b %b passes checks, but checksum for "
+	     "@i %i does not match.  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

@@ -1557,6 +1557,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_ext_attr_entry *entry;
 	int		count;
 	region_t	region = 0;
+	int		failed_csum = 0;
 
 	blk = ext2fs_file_acl_block(fs, inode);
 	if (blk == 0)
@@ -1631,6 +1632,11 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	 */
 	pctx->blk = blk;
 	pctx->errcode = ext2fs_read_ext_attr3(fs, blk, block_buf, pctx->ino);
+	if (pctx->errcode == EXT2_ET_EXT_ATTR_CSUM_INVALID) {
+		if (fix_problem(ctx, PR_1_EA_BLOCK_CSUM_INVALID, pctx))
+			goto clear_extattr;
+		failed_csum = 1;
+	}
 	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
 		goto clear_extattr;
 	header = (struct ext2_ext_attr_header *) block_buf;
@@ -1711,6 +1717,18 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			goto clear_extattr;
 	}
 	region_free(region);
+
+	/*
+	 * We only get here if there was no other errors that were fixed.
+	 * If there was a checksum fail, ask to correct it.
+	 */
+	if (failed_csum &&
+	    fix_problem(ctx, PR_1_EA_BLOCK_ONLY_CSUM_INVALID, pctx)) {
+		pctx->errcode = ext2fs_write_ext_attr3(fs, blk, block_buf,
+						       pctx->ino);
+		if (pctx->errcode)
+			return 0;
+	}
 
 	count = header->h_refcount - 1;
 	if (count)

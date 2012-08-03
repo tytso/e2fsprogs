@@ -570,6 +570,12 @@ struct problem_context {
 /* extent block passes checks, but checksum does not match extent block */
 #define PR_1_EXTENT_ONLY_CSUM_INVALID  0x01006A
 
+/* ea block checksum invalid */
+#define PR_1_EA_BLOCK_CSUM_INVALID     0x01006B
+
+/* ea block passes checks, but checksum invalid */
+#define PR_1_EA_BLOCK_ONLY_CSUM_INVALID        0x01006C
+
 /*
  * Pass 1b errors
  */
