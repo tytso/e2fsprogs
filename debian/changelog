@@ -1,3 +1,9 @@
+e2fsprogs (1.43~WIP-2012-08-02-1) unstable; urgency=low
+
+  * Add metadata checksum feature
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 1 Aug 2012 20:55:56 -0400
+
 e2fsprogs (1.42.5-1) unstable; urgency=low
 
   * New upstream version
