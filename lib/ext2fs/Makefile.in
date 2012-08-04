@@ -180,7 +180,7 @@ ELF_SO_VERSION = 2
 ELF_IMAGE = libext2fs
 ELF_MYDIR = ext2fs
 ELF_INSTALL_DIR = $(root_libdir)
-ELF_OTHER_LIBS = -L../.. -lcom_err
+ELF_OTHER_LIBS = -lcom_err
 
 BSDLIB_VERSION = 2.1
 BSDLIB_IMAGE = libext2fs
