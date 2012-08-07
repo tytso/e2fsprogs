@@ -50,6 +50,7 @@ static struct flags_name flags_array[] = {
 	{ EXT4_EXTENTS_FL, "e", "Extents" },
 	{ EXT4_HUGE_FILE_FL, "h", "Huge_file" },
 	{ FS_NOCOW_FL, "C", "No_COW" },
+	{ EXT4_INLINE_DATA_FL, "N", "Inline_Data" },
 	{ 0, NULL, NULL }
 };
 
