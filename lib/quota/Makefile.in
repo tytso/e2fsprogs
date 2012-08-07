@@ -31,7 +31,7 @@ LIBDIR= quota
 #ELF_IMAGE = libquota
 #ELF_MYDIR = quota
 #ELF_INSTALL_DIR = $(root_libdir)
-#ELF_OTHER_LIBS = -L../.. -lext2fs
+#ELF_OTHER_LIBS = -lext2fs
 
 #BSDLIB_VERSION = 1.0
 #BSDLIB_IMAGE = libquota
