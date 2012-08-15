@@ -60,7 +60,7 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 	preenhalt(ctx);
 	if (ask(ctx, _("Ignore error"), 1)) {
 		if (ask(ctx, _("Force rewrite"), 1))
-			io_channel_write_blk64(channel, block, 1, data);
+			io_channel_write_blk64(channel, block, count, data);
 		return 0;
 	}
 
