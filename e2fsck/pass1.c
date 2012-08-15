@@ -1299,6 +1299,12 @@ endit:
 	ext2fs_free_mem(&block_buf);
 	ext2fs_free_mem(&inode);
 
+	/*
+	 * The l+f inode may have been cleared, so zap it now and
+	 * later passes will recalculate it if necessary
+	 */
+	ctx->lost_and_found = 0;
+
 	print_resource_track(ctx, _("Pass 1"), &rtrack, ctx->fs->io);
 }
 
@@ -2248,7 +2254,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	}
 
 	if (ctx->dirs_to_hash && pb.is_dir &&
-	    (ctx->lost_and_found == ino) &&
+	    !(ctx->lost_and_found && ctx->lost_and_found == ino) &&
 	    !(inode->i_flags & EXT2_INDEX_FL) &&
 	    ((inode->i_size / fs->blocksize) >= 3))
 		e2fsck_rehash_dir_later(ctx, ino);
