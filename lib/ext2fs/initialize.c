@@ -101,6 +101,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	unsigned	reserved_inos;
 	char		*buf = 0;
 	char		c;
+	double		reserved_ratio;
 
 	if (!param || !ext2fs_blocks_count(param))
 		return EXT2_ET_INVALID_ARGUMENT;
@@ -391,6 +392,14 @@ ipg_retry:
 	if (rem && (rem < overhead+50)) {
 		ext2fs_blocks_count_set(super, ext2fs_blocks_count(super) -
 					rem);
+		/*
+		 * If blocks count is changed, we need to recalculate
+		 * reserved blocks count not to exceed 50%.
+		 */
+		reserved_ratio = 100.0 * ext2fs_r_blocks_count(param) /
+			ext2fs_blocks_count(param);
+		ext2fs_r_blocks_count_set(super, reserved_ratio *
+			ext2fs_blocks_count(super) / 100.0);
 
 		goto retry;
 	}
