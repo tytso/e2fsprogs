@@ -62,10 +62,6 @@ static errcode_t fix_sb_journal_backup(ext2_filsys fs);
 				 ((blk) < (ext2fs_inode_table_loc((fs), (i)) + \
 					   (fs)->inode_blocks_per_group)))
 
-#define META_OVERHEAD(fs) (2 + (fs)->inode_blocks_per_group)
-#define SUPER_OVERHEAD(fs) (1 + (fs)->desc_blocks +\
-			    (fs)->super->s_reserved_gdt_blocks)
-
 /*
  * This is the top-level routine which does the dirty deed....
  */
@@ -1880,6 +1876,27 @@ static errcode_t fix_sb_journal_backup(ext2_filsys fs)
 	return 0;
 }
 
+static int calc_group_overhead(ext2_filsys fs, blk64_t grp,
+			       int old_desc_blocks)
+{
+	blk64_t	super_blk, old_desc_blk, new_desc_blk;
+	int overhead;
+
+	/* inode table blocks plus allocation bitmaps */
+	overhead = fs->inode_blocks_per_group + 2;
+
+	ext2fs_super_and_bgd_loc2(fs, grp, &super_blk,
+				  &old_desc_blk, &new_desc_blk, 0);
+	if ((grp == 0) || super_blk)
+		overhead++;
+	if (old_desc_blk)
+		overhead += old_desc_blocks;
+	else if (new_desc_blk)
+		overhead++;
+	return overhead;
+}
+
+
 /*
  * calcluate the minimum number of blocks the given fs can be resized to
  */
@@ -1890,6 +1907,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	blk64_t grp, data_needed, last_start;
 	blk64_t overhead = 0;
 	int num_of_superblocks = 0;
+	blk64_t super_overhead = 0;
+	int old_desc_blocks;
 	int extra_groups = 0;
 	int flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 
@@ -1906,28 +1925,29 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 				   EXT2_BLOCKS_PER_GROUP(fs->super));
 
 	/*
-	 * we need to figure out how many backup superblocks we have so we can
-	 * account for that in the metadata
+	 * number of old-style block group descriptor blocks
 	 */
-	for (grp = 0; grp < fs->group_desc_count; grp++) {
-		if (ext2fs_bg_has_super(fs, grp))
-			num_of_superblocks++;
-	}
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks +
+			fs->super->s_reserved_gdt_blocks;
 
 	/* calculate how many blocks are needed for data */
 	data_needed = ext2fs_blocks_count(fs->super) -
 		ext2fs_free_blocks_count(fs->super);
-	data_needed -= SUPER_OVERHEAD(fs) * num_of_superblocks;
-	data_needed -= META_OVERHEAD(fs) * fs->group_desc_count;
 
+	for (grp = 0; grp < fs->group_desc_count; grp++)
+		data_needed -= calc_group_overhead(fs, grp, old_desc_blocks);
+
+	/*
+	 * For ext4 we need to allow for up to a flex_bg worth of
+	 * inode tables of slack space so the resize operation can be
+	 * guaranteed to finish.
+	 */
 	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
-		/*
-		 * For ext4 we need to allow for up to a flex_bg worth
-		 * of inode tables of slack space so the resize
-		 * operation can be guaranteed to finish.
-		 */
 		extra_groups = flexbg_size - (groups & (flexbg_size - 1));
-		data_needed += META_OVERHEAD(fs) * extra_groups;
+		data_needed += fs->inode_blocks_per_group * extra_groups;
 		extra_groups = groups % flexbg_size;
 	}
 
@@ -1938,10 +1958,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	data_blocks = groups * EXT2_BLOCKS_PER_GROUP(fs->super);
 	last_start = 0;
 	for (grp = 0; grp < groups; grp++) {
-		overhead = META_OVERHEAD(fs);
-
-		if (ext2fs_bg_has_super(fs, grp))
-			overhead += SUPER_OVERHEAD(fs);
+		overhead = calc_group_overhead(fs, grp, old_desc_blocks);
 
 		/*
 		 * we want to keep track of how much data we can store in
@@ -1970,15 +1987,12 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 		data_blocks += extra_grps * EXT2_BLOCKS_PER_GROUP(fs->super);
 
 		/* ok we have to account for the last group */
-		overhead = META_OVERHEAD(fs);
-		if (ext2fs_bg_has_super(fs, groups-1))
-			overhead += SUPER_OVERHEAD(fs);
+		overhead = calc_group_overhead(fs, groups-1, old_desc_blocks);
 		last_start += EXT2_BLOCKS_PER_GROUP(fs->super) - overhead;
 
 		for (grp = groups; grp < groups+extra_grps; grp++) {
-			overhead = META_OVERHEAD(fs);
-			if (ext2fs_bg_has_super(fs, grp))
-				overhead += SUPER_OVERHEAD(fs);
+			overhead = calc_group_overhead(fs, grp,
+						       old_desc_blocks);
 
 			/*
 			 * again, we need to see how much data we cram into
@@ -2003,13 +2017,14 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 			 */
 			extra_groups = flexbg_size -
 						(groups & (flexbg_size - 1));
-			data_needed += META_OVERHEAD(fs) * extra_groups;
+			data_needed += (fs->inode_blocks_per_group *
+					extra_groups);
 			extra_groups = groups % flexbg_size;
 		}
 	}
 
 	/* now for the fun voodoo */
-	overhead = META_OVERHEAD(fs);
+	overhead = calc_group_overhead(fs, groups-1, old_desc_blocks);
 
 	/*
 	 * if this is the case then the last group is going to have data in it
@@ -2031,8 +2046,6 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	} else
 		overhead += 50;
 
-	if (ext2fs_bg_has_super(fs, groups-1))
-		overhead += SUPER_OVERHEAD(fs);
 	overhead += fs->super->s_first_data_block;
 
 	/*
