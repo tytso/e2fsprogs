@@ -1,5 +1,6 @@
 FSCK_OPT=-yf
 
+[ -f "$TMPFILE" ] && rm -f $TMPFILE
 TMPFILE=$test_name.tmp
 > $TMPFILE
 

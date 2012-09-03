@@ -2,6 +2,7 @@ DESCRIPTION="enable MMP during mke2fs"
 FS_SIZE=65536
 MKE2FS_DEVICE_SECTSIZE=2048
 export MKE2FS_DEVICE_SECTSIZE
+[ -f "$TMPFILE" ] && rm -f $TMPFILE
 TMPFILE=$test_name.tmp
 > $TMPFILE
 stat -f $TMPFILE | grep -q "Type: tmpfs"

@@ -375,7 +375,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	if (retval && !fix)
 		return 0;
 	if (!retval) {
-		if (ext2fs_test_inode_bitmap2(ctx->inode_dir_map, ino)) {
+		if (ext2fs_check_directory(fs, ino) == 0) {
 			ctx->lost_and_found = ino;
 			return ino;
 		}

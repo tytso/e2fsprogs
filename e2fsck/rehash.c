@@ -694,11 +694,23 @@ static int write_dir_block(ext2_filsys fs,
 {
 	struct write_dir_struct	*wd = (struct write_dir_struct *) priv_data;
 	blk64_t	blk;
-	char	*dir;
+	char	*dir, *buf = 0;
 
 	if (*block_nr == 0)
 		return 0;
-	if (blockcnt >= wd->outdir->num) {
+	if (blockcnt < 0)
+		return 0;
+	if (blockcnt < wd->outdir->num)
+		dir = wd->outdir->buf + (blockcnt * fs->blocksize);
+	else if (wd->ctx->lost_and_found == wd->dir) {
+		/* Don't release any extra directory blocks for lost+found */
+		wd->err = ext2fs_new_dir_block(fs, 0, 0, &buf);
+		if (wd->err)
+			return BLOCK_ABORT;
+		dir = buf;
+		wd->outdir->num++;
+	} else {
+		/* We don't need this block, so release it */
 		e2fsck_read_bitmaps(wd->ctx);
 		blk = *block_nr;
 		ext2fs_unmark_block_bitmap2(wd->ctx->block_found_map, blk);
@@ -707,11 +719,11 @@ static int write_dir_block(ext2_filsys fs,
 		wd->cleared++;
 		return BLOCK_CHANGED;
 	}
-	if (blockcnt < 0)
-		return 0;
 
-	dir = wd->outdir->buf + (blockcnt * fs->blocksize);
 	wd->err = ext2fs_write_dir_block4(fs, *block_nr, dir, 0, wd->dir);
+	if (buf)
+		ext2fs_free_mem(&buf);
+
 	if (wd->err)
 		return BLOCK_ABORT;
 	return 0;
@@ -889,6 +901,8 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 
 	if (!ctx->dirs_to_hash && !all_dirs)
 		return;
+
+	(void) e2fsck_get_lost_and_found(ctx, 0);
 
 	clear_problem_context(&pctx);
 
