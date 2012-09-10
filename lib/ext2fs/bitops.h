@@ -10,20 +10,6 @@
  * %End-Header%
  */
 
-extern int ext2fs_set_bit(unsigned int nr,void * addr);
-extern int ext2fs_clear_bit(unsigned int nr, void * addr);
-extern int ext2fs_test_bit(unsigned int nr, const void * addr);
-extern void ext2fs_fast_set_bit(unsigned int nr,void * addr);
-extern void ext2fs_fast_clear_bit(unsigned int nr, void * addr);
-extern int ext2fs_set_bit64(__u64 nr,void * addr);
-extern int ext2fs_clear_bit64(__u64 nr, void * addr);
-extern int ext2fs_test_bit64(__u64 nr, const void * addr);
-extern void ext2fs_fast_set_bit64(__u64 nr,void * addr);
-extern void ext2fs_fast_clear_bit64(__u64 nr, void * addr);
-extern __u16 ext2fs_swab16(__u16 val);
-extern __u32 ext2fs_swab32(__u32 val);
-extern __u64 ext2fs_swab64(__u64 val);
-
 #ifdef WORDS_BIGENDIAN
 #define ext2fs_cpu_to_le64(x) ext2fs_swab64((x))
 #define ext2fs_le64_to_cpu(x) ext2fs_swab64((x))
@@ -67,6 +53,7 @@ extern void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
 extern void ext2fs_warn_bitmap2(ext2fs_generic_bitmap bitmap,
 				int code, unsigned long arg);
 
+#ifdef NO_INLINE_FUNCS
 extern int ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
 extern int ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
 				       blk_t block);
@@ -95,6 +82,15 @@ extern ext2_ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap);
 extern blk_t ext2fs_get_block_bitmap_end(ext2fs_block_bitmap bitmap);
 extern ext2_ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap);
 
+extern void ext2fs_fast_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+						blk_t block, int num);
+extern void ext2fs_fast_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+						  blk_t block, int num);
+extern int ext2fs_fast_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
+					       blk_t block, int num);
+#endif
+
+/* These functions routines moved to gen_bitmap.c */
 extern void ext2fs_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					   blk_t block, int num);
 extern void ext2fs_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
@@ -103,15 +99,6 @@ extern int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					  blk_t block, int num);
 extern int ext2fs_test_inode_bitmap_range(ext2fs_inode_bitmap bitmap,
 					  ino_t inode, int num);
-extern void ext2fs_fast_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
-						blk_t block, int num);
-extern void ext2fs_fast_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
-						  blk_t block, int num);
-extern int ext2fs_fast_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
-					       blk_t block, int num);
-extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
-
-/* These routines moved to gen_bitmap.c (actually, some of the above, too) */
 extern int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					 __u32 bitno);
 extern int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
@@ -120,11 +107,13 @@ extern int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 				      blk_t bitno);
 extern int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					  blk_t block, int num);
+extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
 extern __u32 ext2fs_get_generic_bitmap_start(ext2fs_generic_bitmap bitmap);
 extern __u32 ext2fs_get_generic_bitmap_end(ext2fs_generic_bitmap bitmap);
 
 /* 64-bit versions */
 
+#ifdef NO_INLINE_FUNCS
 extern int ext2fs_mark_block_bitmap2(ext2fs_block_bitmap bitmap,
 				     blk64_t block);
 extern int ext2fs_unmark_block_bitmap2(ext2fs_block_bitmap bitmap,
@@ -174,6 +163,8 @@ extern void ext2fs_fast_mark_block_bitmap_range2(ext2fs_block_bitmap bitmap,
 extern void ext2fs_fast_unmark_block_bitmap_range2(ext2fs_block_bitmap bitmap,
 						   blk64_t block,
 						   unsigned int num);
+#endif
+
 /* These routines moved to gen_bitmap64.c */
 extern void ext2fs_clear_generic_bmap(ext2fs_generic_bitmap bitmap);
 extern errcode_t ext2fs_compare_generic_bmap(errcode_t neq,
@@ -218,14 +209,22 @@ extern errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitma
 
 #if (defined(INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef INCLUDE_INLINE_FUNCS
-#define _INLINE_ extern
+#if (__STDC_VERSION__ >= 199901L)
+#define _INLINE_ extern inline
 #else
+#define _INLINE_ inline
+#endif
+#else /* !INCLUDE_INLINE FUNCS */
+#if (__STDC_VERSION__ >= 199901L)
+#define _INLINE_ inline
+#else /* not C99 */
 #ifdef __GNUC__
 #define _INLINE_ extern __inline__
 #else				/* For Watcom C */
 #define _INLINE_ extern inline
-#endif
-#endif
+#endif /* __GNUC__ */
+#endif /* __STDC_VERSION__ >= 199901L */
+#endif /* INCLUDE_INLINE_FUNCS */
 
 /*
  * Fast bit set/clear functions that doesn't need to return the
@@ -676,5 +675,25 @@ _INLINE_ void ext2fs_fast_unmark_block_bitmap_range2(ext2fs_block_bitmap bitmap,
 }
 
 #undef _INLINE_
+#endif
+
+#ifndef _EXT2_HAVE_ASM_BITOPS_
+extern int ext2fs_set_bit(unsigned int nr,void * addr);
+extern int ext2fs_clear_bit(unsigned int nr, void * addr);
+extern int ext2fs_test_bit(unsigned int nr, const void * addr);
+#endif
+
+extern int ext2fs_set_bit64(__u64 nr,void * addr);
+extern int ext2fs_clear_bit64(__u64 nr, void * addr);
+extern int ext2fs_test_bit64(__u64 nr, const void * addr);
+
+#ifdef NO_INLINE_FUNCS
+extern void ext2fs_fast_set_bit(unsigned int nr,void * addr);
+extern void ext2fs_fast_clear_bit(unsigned int nr, void * addr);
+extern void ext2fs_fast_set_bit64(__u64 nr,void * addr);
+extern void ext2fs_fast_clear_bit64(__u64 nr, void * addr);
+extern __u16 ext2fs_swab16(__u16 val);
+extern __u32 ext2fs_swab32(__u32 val);
+extern __u64 ext2fs_swab64(__u64 val);
 #endif
 

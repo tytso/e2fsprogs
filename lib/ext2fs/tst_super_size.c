@@ -21,7 +21,10 @@
 
 struct sb_struct sb;
 
+#ifndef offsetof
 #define offsetof(type, member)  __builtin_offsetof (type, member)
+#endif
+
 #define check_field(x, s) cur_offset = do_field(#x, s, sizeof(sb.x),	       \
 						offsetof(struct sb_struct, x), \
 						cur_offset)
