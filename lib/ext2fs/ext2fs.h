@@ -1555,8 +1555,6 @@ extern int ext2fs_fstat(int fd, ext2fs_struct_stat *buf);
 #endif
 #endif
 
-#ifndef EXT2_CUSTOM_MEMORY_ROUTINES
-#include <string.h>
 _INLINE_ void ext2fs_init_csum_seed(ext2_filsys fs)
 {
 	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
@@ -1567,6 +1565,8 @@ _INLINE_ void ext2fs_init_csum_seed(ext2_filsys fs)
 					 sizeof(fs->super->s_uuid));
 }
 
+#ifndef EXT2_CUSTOM_MEMORY_ROUTINES
+#include <string.h>
 /*
  *  Allocate memory
  */
