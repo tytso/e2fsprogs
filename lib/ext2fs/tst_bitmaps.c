@@ -588,13 +588,13 @@ int main(int argc, char **argv)
 			blocks = parse_ulong(optarg, argv[0],
 					     "number of blocks", &err);
 			if (err)
-				return;
+				exit(1);
 			break;
 		case 'i':
 			inodes = parse_ulong(optarg, argv[0],
 					     "number of blocks", &err);
 			if (err)
-				return;
+				exit(1);
 			break;
 		case 'l':	/* Legacy bitmaps */
 			flags = 0;
@@ -603,7 +603,7 @@ int main(int argc, char **argv)
 			type = parse_ulong(optarg, argv[0],
 					   "bitmap backend type", &err);
 			if (err)
-				return;
+				exit(1);
 			break;
 		case 'R':
 			request = optarg;

@@ -825,6 +825,7 @@ with_ldopts
 with_root_prefix
 enable_maintainer_mode
 enable_symlink_install
+enable_relative_symlinks
 enable_symlink_relative_symlinks
 enable_symlink_build
 enable_verbose_makecmds
@@ -1483,6 +1484,7 @@ Optional Features:
   --enable-maintainer-mode enable makefile rules useful for maintainers
   --enable-symlink-install use symlinks when installing instead of hard links
   --enable-relative-symlinks use relative symlinks when installing
+
   --enable-symlink-build  use symlinks while building instead of hard links
   --enable-verbose-makecmds enable verbose make command output
   --enable-compression	  enable EXPERIMENTAL compression support
@@ -4435,23 +4437,43 @@ $as_echo "Disabling symlinks for install by default" >&6; }
 fi
 
 
-# Check whether --enable-symlink-relative-symlinks was given.
-if test "${enable_symlink_relative_symlinks+set}" = set; then :
-  enableval=$enable_symlink_relative_symlinks; if test "$enableval" = "no"
+relative_symlink_defined=
+# Check whether --enable-relative-symlinks was given.
+if test "${enable_relative_symlinks+set}" = set; then :
+  enableval=$enable_relative_symlinks; if test "$enableval" = "no"
 then
 	SYMLINK_RELATIVE=
+	relative_symlink_defined=yes
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling relative symlinks for install" >&5
 $as_echo "Disabling relative symlinks for install" >&6; }
 else
 	SYMLINK_RELATIVE=--relative
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling symlinks for install" >&5
-$as_echo "Enabling symlinks for install" >&6; }
+	relative_symlink_defined=yes
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling relative symlinks for install" >&5
+$as_echo "Enabling relative symlinks for install" >&6; }
+fi
+fi
+
+# Check whether --enable-symlink-relative-symlinks was given.
+if test "${enable_symlink_relative_symlinks+set}" = set; then :
+  enableval=$enable_symlink_relative_symlinks; if test "$enableval" = "no"
+then
+	SYMLINK_RELATIVE=yes
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling relative symlinks for install" >&5
+$as_echo "Disabling relative symlinks for install" >&6; }
+else
+	SYMLINK_RELATIVE=--relative
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling relative symlinks for install" >&5
+$as_echo "Enabling relative symlinks for install" >&6; }
 fi
 
 else
-  SYMLINK_RELATIVE=
+  if test -z "$relative_symlink_defined"
+then
+	SYMLINK_RELATIVE=
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling relative symlinks for install by default" >&5
 $as_echo "Disabling relative symlinks for install by default" >&6; }
+fi
 
 fi
 

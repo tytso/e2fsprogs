@@ -18,7 +18,10 @@
 
 struct ext2_inode_large inode;
 
+#ifndef offsetof
 #define offsetof(type, member)  __builtin_offsetof(type, member)
+#endif
+
 #define check_field(x, s) cur_offset = do_field(#x, s, sizeof(inode.x),	       \
 					offsetof(struct ext2_inode_large, x),  \
 					cur_offset)

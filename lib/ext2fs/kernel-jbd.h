@@ -264,14 +264,22 @@ typedef struct journal_superblock_s
 
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
-#define _INLINE_ extern
+#if (__STDC_VERSION__ >= 199901L)
+#define _INLINE_ extern inline
 #else
+#define _INLINE_ inline
+#endif
+#else /* !E2FSCK_INCLUDE_INLINE FUNCS */
+#if (__STDC_VERSION__ >= 199901L)
+#define _INLINE_ inline
+#else /* not C99 */
 #ifdef __GNUC__
 #define _INLINE_ extern __inline__
 #else				/* For Watcom C */
 #define _INLINE_ extern inline
-#endif
-#endif
+#endif /* __GNUC__ */
+#endif /* __STDC_VERSION__ >= 199901L */
+#endif /* INCLUDE_INLINE_FUNCS */
 
 /*
  * helper functions to deal with 32 or 64bit block numbers.

@@ -75,20 +75,31 @@ typedef __u64 __be64;
  * We use the standard libext2fs portability tricks for inline
  * functions.
  */
+#ifdef NO_INLINE_FUNCS
 extern lkmem_cache_t * do_cache_create(int len);
 extern void do_cache_destroy(lkmem_cache_t *cache);
 extern size_t journal_tag_bytes(journal_t *journal);
+#endif
 
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
-#define _INLINE_ extern
+#if (__STDC_VERSION__ >= 199901L)
+#define _INLINE_ extern inline
 #else
+#define _INLINE_ inline
+#endif
+#else /* !E2FSCK_INCLUDE_INLINE FUNCS */
+#if (__STDC_VERSION__ >= 199901L)
+#define _INLINE_ inline
+#else /* not C99 */
 #ifdef __GNUC__
 #define _INLINE_ extern __inline__
 #else				/* For Watcom C */
 #define _INLINE_ extern inline
-#endif
-#endif
+#endif /* __GNUC__ */
+#endif /* __STDC_VERSION__ >= 199901L */
+#endif /* E2FSCK_INCLUDE_INLINE_FUNCS */
+
 
 _INLINE_ lkmem_cache_t * do_cache_create(int len)
 {

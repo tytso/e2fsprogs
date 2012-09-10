@@ -170,19 +170,34 @@ AC_SUBST(LINK_INSTALL_FLAGS)
 dnl
 dnl handle --enable-relative-symlinks
 dnl
-AC_ARG_ENABLE([symlink-relative-symlinks],
+relative_symlink_defined=
+AC_ARG_ENABLE([relative-symlinks],
 [  --enable-relative-symlinks use relative symlinks when installing],
 if test "$enableval" = "no"
 then
 	SYMLINK_RELATIVE=
+	relative_symlink_defined=yes
 	AC_MSG_RESULT([Disabling relative symlinks for install])
 else
 	SYMLINK_RELATIVE=--relative
-	AC_MSG_RESULT([Enabling symlinks for install])
+	relative_symlink_defined=yes
+	AC_MSG_RESULT([Enabling relative symlinks for install])
+fi)
+AC_ARG_ENABLE([symlink-relative-symlinks],,
+if test "$enableval" = "no"
+then
+	SYMLINK_RELATIVE=yes
+	AC_MSG_RESULT([Disabling relative symlinks for install])
+else
+	SYMLINK_RELATIVE=--relative
+	AC_MSG_RESULT([Enabling relative symlinks for install])
 fi
 ,
+if test -z "$relative_symlink_defined"
+then
 	SYMLINK_RELATIVE=
 AC_MSG_RESULT([Disabling relative symlinks for install by default])
+fi
 )
 AC_SUBST(SYMLINK_RELATIVE)
 dnl

@@ -1320,6 +1320,11 @@ extern errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
 extern ext2_ino_t ext2fs_get_icount_size(ext2_icount_t icount);
 errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *);
 
+/* inline.c */
+
+extern errcode_t ext2fs_get_memalign(unsigned long size,
+				     unsigned long align, void *ptr);
+
 /* inode.c */
 extern errcode_t ext2fs_flush_icache(ext2_filsys fs);
 extern errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan,
@@ -1487,6 +1492,11 @@ extern void ext2fs_swap_inode(ext2_filsys fs,struct ext2_inode *t,
 			      struct ext2_inode *f, int hostorder);
 extern void ext2fs_swap_mmp(struct mmp_struct *mmp);
 
+/* unix_io.c */
+extern int ext2fs_open_file(const char *pathname, int flags, mode_t mode);
+extern int ext2fs_stat(const char *path, ext2fs_struct_stat *buf);
+extern int ext2fs_fstat(int fd, ext2fs_struct_stat *buf);
+
 /* valid_blk.c */
 extern int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode);
 extern int ext2fs_inode_has_valid_blocks2(ext2_filsys fs,
@@ -1504,10 +1514,9 @@ extern errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 
 
 /* inline functions */
+#ifdef NO_INLINE_FUNCS
 extern void ext2fs_init_csum_seed(ext2_filsys fs);
 extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
-extern errcode_t ext2fs_get_memalign(unsigned long size,
-				     unsigned long align, void *ptr);
 extern errcode_t ext2fs_get_memzero(unsigned long size, void *ptr);
 extern errcode_t ext2fs_get_array(unsigned long count,
 				  unsigned long size, void *ptr);
@@ -1534,9 +1543,7 @@ extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
-extern int ext2fs_open_file(const char *pathname, int flags, mode_t mode);
-extern int ext2fs_stat(const char *path, ext2fs_struct_stat *buf);
-extern int ext2fs_fstat(int fd, ext2fs_struct_stat *buf);
+#endif
 
 /*
  * The actual inlined functions definitions themselves...
@@ -1548,11 +1555,15 @@ extern int ext2fs_fstat(int fd, ext2fs_struct_stat *buf);
 #ifdef INCLUDE_INLINE_FUNCS
 #define _INLINE_ extern
 #else
+#if (__STDC_VERSION__ >= 199901L)
+#define _INLINE_ inline
+#else
 #ifdef __GNUC__
 #define _INLINE_ extern __inline__
 #else				/* For Watcom C */
 #define _INLINE_ extern inline
-#endif
+#endif /* __GNUC__ */
+#endif /* __STDC_VERSION__ >= 199901L */
 #endif
 
 _INLINE_ void ext2fs_init_csum_seed(ext2_filsys fs)
