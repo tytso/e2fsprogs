@@ -62,6 +62,8 @@ static errcode_t fix_sb_journal_backup(ext2_filsys fs);
 				 ((blk) < (ext2fs_inode_table_loc((fs), (i)) + \
 					   (fs)->inode_blocks_per_group)))
 
+int lazy_itable_init;
+
 /*
  * This is the top-level routine which does the dirty deed....
  */
@@ -480,6 +482,8 @@ retry:
 
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	if (access("/sys/fs/ext4/features/lazy_itable_init", F_OK) == 0)
+		lazy_itable_init = 1;
 	adj = old_fs->group_desc_count;
 	max_group = fs->group_desc_count - adj;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
@@ -494,8 +498,14 @@ retry:
 		adjblocks = 0;
 
 		ext2fs_bg_flags_zap(fs, i);
-		if (csum_flag)
-			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_UNINIT | EXT2_BG_INODE_ZEROED);
+		if (csum_flag) {
+			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_UNINIT);
+			if (!lazy_itable_init)
+				ext2fs_bg_flags_set(fs, i,
+						    EXT2_BG_INODE_ZEROED);
+			ext2fs_bg_itable_unused_set(fs, i,
+					fs->super->s_inodes_per_group);
+		}
 
 		numblocks = ext2fs_group_blocks_count(fs, i);
 		if ((i < fs->group_desc_count - 1) && csum_flag)
@@ -608,7 +618,19 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 	}
 
 	/*
-	 * Initialize the new block group descriptors
+	 * If we are using uninit_bg (aka GDT_CSUM) and the kernel
+	 * supports lazy inode initialization, we can skip
+	 * initializing the inode table.
+	 */
+	if (lazy_itable_init &&
+	    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		retval = 0;
+		goto errout;
+	}
+
+	/*
+	 * Initialize the inode table
 	 */
 	retval = ext2fs_get_array(fs->blocksize, fs->inode_blocks_per_group,
 				&rfs->itable_buf);
