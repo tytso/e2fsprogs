@@ -94,6 +94,7 @@ int	lazy_itable_init;
 char	*bad_blocks_filename;
 __u32	fs_stride;
 int	quotatype = -1;  /* Initialize both user and group quotas by default */
+int	no_progress;
 
 struct ext2_super_block fs_param;
 char *fs_uuid = NULL;
@@ -319,7 +320,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		now = time(0);
-		if (now != last_update) {
+		if (now != last_update && no_progress) {
 			ext2fs_numeric_progress_update(fs, &progress, i);
 			last_update = now;
 		}
@@ -534,7 +535,8 @@ static void create_journal_dev(ext2_filsys fs)
 		}
 		blk += c;
 		count -= c;
-		ext2fs_numeric_progress_update(fs, &progress, blk);
+		if (!no_progress)
+			ext2fs_numeric_progress_update(fs, &progress, blk);
 	}
 	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
 
@@ -1891,6 +1893,8 @@ profile_error:
 			blocksize, sys_page_size);
 	}
 
+	profile_get_boolean(profile, "options", "no_progress", 0, 0,
+			    &no_progress);
 	lazy_itable_init = 0;
 	if (access("/sys/fs/ext4/features/lazy_itable_init", R_OK) == 0)
 		lazy_itable_init = 1;
@@ -2161,7 +2165,7 @@ static int mke2fs_discard_device(ext2_filsys fs)
 				     blocks);
 	while (cur < blocks) {
 		now = time(0);
-		if (now != last_update) {
+		if (now != last_update && !no_progress) {
 			ext2fs_numeric_progress_update(fs, &progress, cur);
 			last_update = now;
 		}
