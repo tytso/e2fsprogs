@@ -56,12 +56,35 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		EXT2_DESC_PER_BLOCK(fs->super));
 	printf("old_desc_blocks = %lu, new_desc_blocks = %lu\n",
 	       fs->desc_blocks, new_desc_blocks);
-	if (!(fs->super->s_feature_compat &
-	      EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
-	    new_desc_blocks != fs->desc_blocks) {
-		com_err(program_name, 0,
-			_("Filesystem does not support online resizing"));
-		exit(1);
+
+	/*
+	 * Do error checking to make sure the resize will be successful.
+	 */
+	if ((access("/sys/fs/ext4/features/meta_bg_resize", R_OK) != 0) ||
+	    getenv("RESIZE2FS_NO_META_BG_RESIZE")) {
+		if (!EXT2_HAS_COMPAT_FEATURE(fs->super,
+					EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
+		    (new_desc_blocks != fs->desc_blocks)) {
+			com_err(program_name, 0,
+				_("Filesystem does not support online resizing"));
+			exit(1);
+		}
+
+		if (EXT2_HAS_COMPAT_FEATURE(fs->super,
+					EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
+		    new_desc_blocks > (fs->desc_blocks +
+				       fs->super->s_reserved_gdt_blocks)) {
+			com_err(program_name, 0,
+				_("Not enough reserved gdt blocks for resizing"));
+			exit(1);
+		}
+
+		if ((ext2fs_blocks_count(sb) > MAX_32_NUM) ||
+		    (*new_size > MAX_32_NUM)) {
+			com_err(program_name, 0,
+				_("Kernel does not support resizing a file system this large"));
+			exit(1);
+		}
 	}
 
 	fd = open(mtpt, O_RDONLY);
@@ -101,13 +124,6 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		return 0;
 	}
 
-	if ((ext2fs_blocks_count(sb) > MAX_32_NUM) ||
-	    (*new_size > MAX_32_NUM)) {
-		com_err(program_name, 0,
-			_("Kernel does not support resizing a file system "
-			  "this large"));
-		exit(1);
-	}
 	size = ext2fs_blocks_count(sb);
 
 	if (ioctl(fd, EXT2_IOC_GROUP_EXTEND, &size)) {

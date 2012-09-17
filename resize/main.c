@@ -316,25 +316,6 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
-	/*
-	 * XXXX   The combination of flex_bg and !resize_inode causes
-	 * major problems for resize2fs, since when the group descriptors
-	 * grow in size this can potentially require multiple inode
-	 * tables to be moved aside to make room, and resize2fs chokes
-	 * rather badly in this scenario.  It's a rare combination,
-	 * except when a filesystem is expanded more than a certain
-	 * size, so for now, we'll just prohibit that combination.
-	 * This is something we should fix eventually, though.
-	 */
-	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) &&
-	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
-		com_err(program_name, 0, _("%s: The combination of flex_bg "
-					   "and\n\t!resize_inode features "
-					   "is not supported by resize2fs.\n"),
-			device_name);
-		exit(1);
-	}
-
 	min_size = calculate_minimum_resize_size(fs);
 
 	if (print_min_size) {
@@ -385,18 +366,22 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	} else {
-		/* Take down devices exactly 16T to 2^32-1 blocks */
-		if (max_size == (1ULL << 32))
-			max_size--;
-		else if (max_size > (1ULL << 32)) {
-			com_err(program_name, 0, _("New size too large to be "
-				"expressed in 32 bits\n"));
-			exit(1);
-		}
 		new_size = max_size;
 		/* Round down to an even multiple of a pagesize */
 		if (sys_page_size > fs->blocksize)
 			new_size &= ~((sys_page_size / fs->blocksize)-1);
+	}
+	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_INCOMPAT_64BIT)) {
+		/* Take 16T down to 2^32-1 blocks */
+		if (new_size == (1ULL << 32))
+			new_size--;
+		else if (new_size > (1ULL << 32)) {
+			com_err(program_name, 0,
+				_("New size too large to be "
+				  "expressed in 32 bits\n"));
+			exit(1);
+		}
 	}
 
 	if (!force && new_size < min_size) {
@@ -450,6 +435,28 @@ int main (int argc, char ** argv)
 			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
 			fprintf(stderr,
 				_("Please run 'e2fsck -f %s' first.\n\n"),
+				device_name);
+			exit(1);
+		}
+		/*
+		 * XXXX The combination of flex_bg and !resize_inode
+		 * causes major problems for resize2fs, since when the
+		 * group descriptors grow in size this can potentially
+		 * require multiple inode tables to be moved aside to
+		 * make room, and resize2fs chokes rather badly in
+		 * this scenario.  It's a rare combination, except
+		 * when a filesystem is expanded more than a certain
+		 * size, so for now, we'll just prohibit that
+		 * combination.  This is something we should fix
+		 * eventually, though.
+		 */
+		if ((fs->super->s_feature_incompat &
+		     EXT4_FEATURE_INCOMPAT_FLEX_BG) &&
+		    !(fs->super->s_feature_compat &
+		      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
+			com_err(program_name, 0, _("%s: The combination of "
+				"flex_bg and\n\t!resize_inode features "
+				"is not supported by resize2fs.\n"),
 				device_name);
 			exit(1);
 		}

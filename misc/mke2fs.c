@@ -94,6 +94,7 @@ int	lazy_itable_init;
 char	*bad_blocks_filename;
 __u32	fs_stride;
 int	quotatype = -1;  /* Initialize both user and group quotas by default */
+int	no_progress;
 
 struct ext2_super_block fs_param;
 char *fs_uuid = NULL;
@@ -330,6 +331,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 	errcode_t	retval;
 	blk64_t		blk;
 	dgrp_t		i;
+	time_t		now, last_update = 0;
 	int		num;
 	struct ext2fs_numeric_progress_struct progress;
 
@@ -338,7 +340,11 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 				     fs->group_desc_count);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		ext2fs_numeric_progress_update(fs, &progress, i);
+		now = time(0);
+		if (now != last_update && no_progress) {
+			ext2fs_numeric_progress_update(fs, &progress, i);
+			last_update = now;
+		}
 
 		blk = ext2fs_inode_table_loc(fs, i);
 		num = fs->inode_blocks_per_group;
@@ -556,7 +562,8 @@ static void create_journal_dev(ext2_filsys fs)
 		}
 		blk += c;
 		count -= c;
-		ext2fs_numeric_progress_update(fs, &progress, blk);
+		if (!no_progress)
+			ext2fs_numeric_progress_update(fs, &progress, blk);
 	}
 	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
 
@@ -1913,6 +1920,8 @@ profile_error:
 			blocksize, sys_page_size);
 	}
 
+	profile_get_boolean(profile, "options", "no_progress", 0, 0,
+			    &no_progress);
 	lazy_itable_init = 0;
 	if (access("/sys/fs/ext4/features/lazy_itable_init", R_OK) == 0)
 		lazy_itable_init = 1;
@@ -2171,6 +2180,7 @@ static int mke2fs_discard_device(ext2_filsys fs)
 	blk64_t count = DISCARD_STEP_MB;
 	blk64_t cur;
 	int retval = 0;
+	time_t now, last_update = 0;
 
 	/*
 	 * Let's try if discard really works on the device, so
@@ -2189,7 +2199,11 @@ static int mke2fs_discard_device(ext2_filsys fs)
 				     _("Discarding device blocks: "),
 				     blocks);
 	while (cur < blocks) {
-		ext2fs_numeric_progress_update(fs, &progress, cur);
+		now = time(0);
+		if (now != last_update && !no_progress) {
+			ext2fs_numeric_progress_update(fs, &progress, cur);
+			last_update = now;
+		}
 
 		if (cur + count > blocks)
 			count = blocks - cur;
