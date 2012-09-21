@@ -1,8 +1,27 @@
-e2fsprogs (1.43~WIP-2012-08-02-1) unstable; urgency=low
+e2fsprogs (1.43~WIP-2012-09-21-1) unstable; urgency=low
 
   * Add metadata checksum feature
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 1 Aug 2012 20:55:56 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 21 Sep 2012 12:55:16 -0400
+
+e2fsprogs (1.42.6-1) unstable; urgency=low
+
+  * New upstream version
+  * Fix build dependencies to avoid requiring dc, and to allow
+    cross-building to work (Closes: #677497)
+  * Updated/fixed various man pages
+  * Mke2fs will now update its progress indicators at most once a second
+    to avoid overwhelming serial consoles.
+  * Resize2fs will support lazy_itable_init, speeding up off-line growth
+    of uninit_bg file systems.
+  * Resize2fs now supports on-line resizing 64-bit file systems beyond
+    16TB.  A number of bugs in resize2fs which prevented this have been
+    fixed.
+  * Resize2fs now correctly handles resizing 32-bit file systems to 16TB.
+  * Fixed a potential segfault in e2fsck when there is an I/O error
+    while reading the superblock.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 21 Sep 2012 12:14:41 -0400
 
 e2fsprogs (1.42.5-1) unstable; urgency=low
 

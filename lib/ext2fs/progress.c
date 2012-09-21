@@ -14,6 +14,8 @@
 #include "ext2fs.h"
 #include "ext2fsP.h"
 
+#include <time.h>
+
 static char spaces[80], backspaces[80];
 
 struct ext2fs_progress_ops ext2fs_numeric_progress_ops = {
@@ -70,10 +72,16 @@ void ext2fs_numeric_progress_update(ext2_filsys fs,
 				    struct ext2fs_numeric_progress_struct * progress,
 				    __u64 val)
 {
+	static time_t now, last_update = 0;
+
 	if (!(fs->flags & EXT2_FLAG_PRINT_PROGRESS))
 		return;
 	if (progress->skip_progress)
 		return;
+	now = time(0);
+	if (now == last_update)
+		return;
+	last_update = now;
 
 	printf("%*llu/%*llu", progress->log_max, val,
 	       progress->log_max, progress->max);

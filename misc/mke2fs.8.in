@@ -519,11 +519,12 @@ pseudo-filesystem feature "none" will clear all filesystem features.
 .B dir_index
 Use hashed b-trees to speed up lookups in large directories.
 .TP
-.B extent
+.B extents
 Instead of using the indirect block scheme for storing the location of
 data blocks in an inode, use extents instead.  This is a much more
 efficient encoding which speeds up filesystem access, especially for
-large files.
+large files.  (Note: both extent and extents are accepted for
+historical/backwards compatibility reasons.)
 .TP
 .B filetype
 Store file type information in directory entries.
