@@ -656,6 +656,23 @@ static void show_stats(ext2_filsys fs)
 }
 
 /*
+ * Returns true if making a file system for the Hurd, else 0
+ */
+static int for_hurd(const char *os)
+{
+	if (!os) {
+#ifdef __GNU__
+		return 1;
+#else
+		return 0;
+#endif
+	}
+	if (isdigit(*os))
+		return (atoi(os) == EXT2_OS_HURD);
+	return (strcasecmp(os, "GNU") == 0 || strcasecmp(os, "hurd") == 0);
+}
+
+/*
  * Set the S_CREATOR_OS field.  Return true if OS is known,
  * otherwise, 0.
  */
@@ -1027,14 +1044,10 @@ static char **parse_fs_type(const char *fs_type,
 	const char	*size_type;
 	struct str_list	list;
 	unsigned long long meg;
-	int		is_hurd = 0;
+	int		is_hurd = for_hurd(creator_os);
 
 	if (init_list(&list))
 		return 0;
-
-	if (creator_os && (!strcasecmp(creator_os, "GNU") ||
-			   !strcasecmp(creator_os, "hurd")))
-		is_hurd = 1;
 
 	if (fs_type)
 		ext_type = fs_type;
@@ -1705,10 +1718,40 @@ profile_error:
 		tmp = get_string_from_profile(fs_types, "default_features",
 					      "");
 	}
+	/* Mask off features which aren't supported by the Hurd */
+	if (for_hurd(creator_os)) {
+		fs_param.s_feature_incompat &= ~EXT2_FEATURE_INCOMPAT_FILETYPE;
+		fs_param.s_feature_ro_compat &=
+			~(EXT4_FEATURE_RO_COMPAT_HUGE_FILE |
+			  EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+	}
 	edit_feature(fs_features ? fs_features : tmp,
 		     &fs_param.s_feature_compat);
 	if (tmp)
 		free(tmp);
+	/*
+	 * If the user specified features incompatible with the Hurd, complain
+	 */
+	if (for_hurd(creator_os)) {
+		if (fs_param.s_feature_incompat &
+		    EXT2_FEATURE_INCOMPAT_FILETYPE) {
+			fprintf(stderr, _("The HURD does not support the "
+					  "filetype feature.\n"));
+			exit(1);
+		}
+		if (fs_param.s_feature_ro_compat &
+		    EXT4_FEATURE_RO_COMPAT_HUGE_FILE) {
+			fprintf(stderr, _("The HURD does not support the "
+					  "huge_file feature.\n"));
+			exit(1);
+		}
+		if (fs_param.s_feature_ro_compat &
+		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+			fprintf(stderr, _("The HURD does not support the "
+					  "metadata_csum feature.\n"));
+			exit(1);
+		}
+	}
 
 	/*
 	 * We now need to do a sanity check of fs_blocks_count for
