@@ -475,6 +475,8 @@ struct ext2_inode_large {
 
 #define i_dir_acl	i_size_high
 
+#define i_checksum_lo	osd2.linux2.l_i_checksum_lo
+
 #if defined(__KERNEL__) || defined(__linux__)
 #define i_reserved1	osd1.linux1.l_i_reserved1
 #define i_frag		osd2.linux2.l_i_frag
@@ -483,7 +485,6 @@ struct ext2_inode_large {
 #define i_gid_low	i_gid
 #define i_uid_high	osd2.linux2.l_i_uid_high
 #define i_gid_high	osd2.linux2.l_i_gid_high
-#define i_checksum_lo	osd2.linux2.l_i_checksum_lo
 #else
 #if defined(__GNU__)
 
