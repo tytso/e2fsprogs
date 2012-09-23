@@ -17,6 +17,7 @@
 #include <time.h>
 
 static char spaces[80], backspaces[80];
+static time_t last_update;
 
 struct ext2fs_progress_ops ext2fs_numeric_progress_ops = {
 	.init		= ext2fs_numeric_progress_init,
@@ -50,11 +51,11 @@ void ext2fs_numeric_progress_init(ext2_filsys fs,
 	spaces[sizeof(spaces)-1] = 0;
 	memset(backspaces, '\b', sizeof(backspaces)-1);
 	backspaces[sizeof(backspaces)-1] = 0;
-	progress->skip_progress = 0;
+
+	memset(progress, 0, sizeof(*progress));
 	if (getenv("E2FSPROGS_SKIP_PROGRESS"))
 		progress->skip_progress++;
 
-	memset(progress, 0, sizeof(*progress));
 
 	/*
 	 * Figure out how many digits we need
@@ -66,13 +67,14 @@ void ext2fs_numeric_progress_init(ext2_filsys fs,
 		fputs(label, stdout);
 		fflush(stdout);
 	}
+	last_update = 0;
 }
 
 void ext2fs_numeric_progress_update(ext2_filsys fs,
 				    struct ext2fs_numeric_progress_struct * progress,
 				    __u64 val)
 {
-	static time_t now, last_update = 0;
+	time_t now;
 
 	if (!(fs->flags & EXT2_FLAG_PRINT_PROGRESS))
 		return;
