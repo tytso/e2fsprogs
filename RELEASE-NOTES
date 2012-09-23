@@ -1,3 +1,23 @@
+E2fsprogs 1.43-WIP (September 22, 2012)
+=======================================
+
+Add support for the ext4 metadata checksum feature.
+
+Check to make sure file system features which can not be supported by
+HURD are not enabled if the file system is created to be
+HURD-compatible.
+
+
+Programmer's Notes
+------------------
+
+Reduce the use of libc functions in libext2fs that may not be present
+in the boot loader environment, at least for those functions that are
+needed by boot loadsers such as yaboot.
+
+Support for the MMP feature can now be disabled at compile time.
+
+
 E2fsprogs 1.42.6 (September 21, 2012)
 =====================================
 
