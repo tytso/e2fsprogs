@@ -314,8 +314,8 @@ static errcode_t rb_resize_bmap(ext2fs_generic_bitmap bmap,
 inline static int
 rb_test_bit(struct ext2fs_rb_private *bp, __u64 bit)
 {
-	struct bmap_rb_extent *rcursor;
-	struct rb_node *parent = NULL;
+	struct bmap_rb_extent *rcursor, *next_ext;
+	struct rb_node *parent = NULL, *next;
 	struct rb_node **n = &bp->root.rb_node;
 	struct bmap_rb_extent *ext;
 
@@ -328,6 +328,18 @@ rb_test_bit(struct ext2fs_rb_private *bp, __u64 bit)
 		bp->test_hit++;
 #endif
 		return 1;
+	}
+
+	next = ext2fs_rb_next(&rcursor->node);
+	if (next) {
+		next_ext = ext2fs_rb_entry(next, struct bmap_rb_extent, node);
+		if ((bit >= rcursor->start + rcursor->count) &&
+		    (bit < next_ext->start)) {
+#ifdef BMAP_STATS_OPS
+			bp->test_hit++;
+#endif
+			return 0;
+		}
 	}
 
 	rcursor = *bp->wcursor;
