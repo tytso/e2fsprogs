@@ -40,6 +40,7 @@ struct ext2fs_rb_private {
 	struct rb_root root;
 	struct bmap_rb_extent *wcursor;
 	struct bmap_rb_extent *rcursor;
+	struct bmap_rb_extent *rcursor_next;
 #ifdef BMAP_STATS_OPS
 	__u64 mark_hit;
 	__u64 test_hit;
@@ -152,6 +153,8 @@ static void rb_free_extent(struct ext2fs_rb_private *bp,
 		bp->wcursor = NULL;
 	if (bp->rcursor == ext)
 		bp->rcursor = NULL;
+	if (bp->rcursor_next == ext)
+		bp->rcursor_next = NULL;
 	ext2fs_free_mem(&ext);
 }
 
@@ -166,6 +169,7 @@ static errcode_t rb_alloc_private_data (ext2fs_generic_bitmap bitmap)
 
 	bp->root = RB_ROOT;
 	bp->rcursor = NULL;
+	bp->rcursor_next = NULL;
 	bp->wcursor = NULL;
 
 #ifdef BMAP_STATS_OPS
@@ -306,7 +310,7 @@ static errcode_t rb_resize_bmap(ext2fs_generic_bitmap bmap,
 inline static int
 rb_test_bit(struct ext2fs_rb_private *bp, __u64 bit)
 {
-	struct bmap_rb_extent *rcursor, *next_ext;
+	struct bmap_rb_extent *rcursor, *next_ext = NULL;
 	struct rb_node *parent = NULL, *next;
 	struct rb_node **n = &bp->root.rb_node;
 	struct bmap_rb_extent *ext;
@@ -322,9 +326,15 @@ rb_test_bit(struct ext2fs_rb_private *bp, __u64 bit)
 		return 1;
 	}
 
-	next = ext2fs_rb_next(&rcursor->node);
-	if (next) {
-		next_ext = ext2fs_rb_entry(next, struct bmap_rb_extent, node);
+	next_ext = bp->rcursor_next;
+	if (!next_ext) {
+		next = ext2fs_rb_next(&rcursor->node);
+		if (next)
+			next_ext = ext2fs_rb_entry(next, struct bmap_rb_extent,
+						   node);
+		bp->rcursor_next = next_ext;
+	}
+	if (next_ext) {
 		if ((bit >= rcursor->start + rcursor->count) &&
 		    (bit < next_ext->start)) {
 #ifdef BMAP_STATS_OPS
@@ -333,6 +343,8 @@ rb_test_bit(struct ext2fs_rb_private *bp, __u64 bit)
 			return 0;
 		}
 	}
+	bp->rcursor = NULL;
+	bp->rcursor_next = NULL;
 
 	rcursor = bp->wcursor;
 	if (!rcursor)
@@ -352,6 +364,7 @@ search_tree:
 			n = &(*n)->rb_right;
 		else {
 			bp->rcursor = ext;
+			bp->rcursor_next = NULL;
 			return 1;
 		}
 	}
@@ -368,6 +381,7 @@ static int rb_insert_extent(__u64 start, __u64 count,
 	struct bmap_rb_extent *ext;
 	int retval = 0;
 
+	bp->rcursor_next = NULL;
 	ext = bp->wcursor;
 	if (ext) {
 		if (start >= ext->start &&
@@ -738,6 +752,7 @@ static void rb_clear_bmap(ext2fs_generic_bitmap bitmap)
 
 	rb_free_tree(&bp->root);
 	bp->rcursor = NULL;
+	bp->rcursor_next = NULL;
 	bp->wcursor = NULL;
 }
 
