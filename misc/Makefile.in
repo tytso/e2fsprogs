@@ -72,6 +72,7 @@ PROFILED_FSCK_OBJS=	profiled/fsck.o profiled/base_device.o \
 			profiled/ismounted.o
 PROFILED_BLKID_OBJS=	profiled/blkid.o
 PROFILED_FILEFRAG_OBJS=	profiled/filefrag.o
+PROFILED_E2FREEFRAG_OBJS= profiled/e2freefrag.o
 PROFILED_E2UNDO_OBJS=	profiled/e2undo.o
 PROFILED_E4DEFRAG_OBJS=	profiled/e4defrag.o
 
@@ -107,7 +108,7 @@ all:: profiled $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
 @PROFILE_CMT@all:: tune2fs.profiled blkid.profiled e2image.profiled \
 	e2undo.profiled mke2fs.profiled dumpe2fs.profiled fsck.profiled \
 	logsave.profiled filefrag.profiled uuidgen.profiled uuidd.profiled \
-	e2image.profiled e4defrag.profiled
+	e2image.profiled e4defrag.profiled e2freefrag.profiled
 
 profiled:
 @PROFILE_CMT@	$(E) "	MKDIR $@"
@@ -164,7 +165,7 @@ tune2fs.static: $(TUNE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_L
 		$(STATIC_LIBS) $(STATIC_LIBBLKID) $(STATIC_LIBUUID) \
 		$(STATIC_LIBQUOTA) $(STATIC_LIBE2P) $(LIBINTL)
 
-tune2fs.profiled: $(PROFILED_TUNE2FS_OBJS) $(PROFILED_DEPLIBS) \
+tune2fs.profiled: $(TUNE2FS_OBJS) $(PROFILED_DEPLIBS) \
 		$(PROFILED_E2P) $(DEPPROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID) \
 		$(DEPPROFILED_LIBQUOTA)
 	$(E) "	LD $@"
@@ -183,7 +184,7 @@ blkid.static: $(BLKID_OBJS) $(STATIC_DEPLIBS) $(DEPSTATIC_LIBBLKID)
 	$(Q) $(CC) $(ALL_LDFLAGS) -o blkid.static $(BLKID_OBJS) $(STATIC_LIBS) \
 		$(STATIC_LIBBLKID) $(LIBINTL)
 
-blkid.profiled: $(PROFILED_BLKID_OBJS) $(DEPPROFILED_LIBBLKID) \
+blkid.profiled: $(BLKID_OBJS) $(DEPPROFILED_LIBBLKID) \
 		$(PROFILED_LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o blkid.profiled $(PROFILED_BLKID_OBJS) \
@@ -193,7 +194,7 @@ e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) $(LIBINTL)
 
-e2image.profiled: $(PROFILED_E2IMAGE_OBJS) $(PROFILED_DEPLIBS)
+e2image.profiled: $(E2IMAGE_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2image.profiled \
 		$(PROFILED_E2IMAGE_OBJS) $(PROFILED_LIBS) $(LIBINTL)
@@ -202,7 +203,7 @@ e2undo: $(E2UNDO_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2undo $(E2UNDO_OBJS) $(LIBS) $(LIBINTL)
 
-e2undo.profiled: $(PROFILED_E2UNDO_OBJS) $(PROFILED_DEPLIBS)
+e2undo.profiled: $(E2UNDO_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2undo.profiled \
 		$(PROFILED_E2UNDO_OBJS) $(PROFILED_LIBS) $(LIBINTL)
@@ -211,7 +212,7 @@ e4defrag: $(E4DEFRAG_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e4defrag $(E4DEFRAG_OBJS) $(LIBS)
 
-e4defrag.profiled: $(PROFILED_E4DEFRAG_OBJS) $(PROFILED_DEPLIBS)
+e4defrag.profiled: $(E4DEFRAG_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e4defrag.profiled \
 		$(PROFILED_E4DEFRAG_OBJS) $(PROFILED_LIBS)
@@ -242,7 +243,7 @@ mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIB
 		$(STATIC_LIBQUOTA) $(STATIC_LIBS) $(STATIC_LIBE2P) \
 		$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL)
 
-mke2fs.profiled: $(PROFILED_MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
+mke2fs.profiled: $(MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
 	$(PROFILED_LIBE2P) $(PROFILED_DEPLIBBLKID) $(PROFILED_DEPLIBUUID) \
 	$(PROFILED_LIBQUOTA)
 	$(E) "	LD $@"
@@ -263,7 +264,7 @@ uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID) $(LIBINTL)
 
-uuidgen.profiled: $(PROFILED_UUIDGEN_OBJS) $(PROFILED_DEPLIBUUID)
+uuidgen.profiled: $(UUIDGEN_OBJS) $(PROFILED_DEPLIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o uuidgen.profiled \
 		$(PROFILED_UUIDGEN_OBJS) $(PROFILED_LIBUUID) $(LIBINTL)
@@ -272,7 +273,7 @@ uuidd: $(UUIDD_OBJS) $(DEPLIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o uuidd $(UUIDD_OBJS) $(LIBUUID) $(LIBINTL)
 
-uuidd.profiled: $(PROFILED_UUIDD_OBJS) $(PROFILED_DEPLIBUUID)
+uuidd.profiled: $(UUIDD_OBJS) $(PROFILED_DEPLIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o uuidd.profiled $(PROFILED_UUIDD_OBJS) \
 		$(PROFILED_LIBUUID) $(LIBINTL)
@@ -282,7 +283,7 @@ dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 	$(Q) $(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS) \
 		$(LIBS_E2P) $(LIBUUID) $(LIBINTL)
 
-dumpe2fs.profiled: $(PROFILED_DUMPE2FS_OBJS) $(PROFILED_DEPLIBS) \
+dumpe2fs.profiled: $(DUMPE2FS_OBJS) $(PROFILED_DEPLIBS) \
 		$(PROFILED_LIBE2P) $(PROFILED_DEPLIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o dumpe2fs.profiled \
@@ -293,7 +294,7 @@ fsck: $(FSCK_OBJS) $(DEPLIBBLKID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBBLKID) $(LIBINTL)
 
-fsck.profiled: $(PROFILED_FSCK_OBJS) $(PROFILED_DEPLIBBLKID)
+fsck.profiled: $(FSCK_OBJS) $(PROFILED_DEPLIBBLKID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o fsck.profiled $(PROFILED_FSCK_OBJS) \
 		$(PROFILED_LIBBLKID) $(LIBINTL)
@@ -302,7 +303,7 @@ badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS) $(LIBINTL)
 
-badblocks.profiled: $(PROFILED_BADBLOCKS_OBJS) $(PROFILED_DEPLIBS)
+badblocks.profiled: $(BADBLOCKS_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o badblocks.profiled \
 		$(PROFILED_BADBLOCKS_OBJS) $(PROFILED_LIBS) $(LIBINTL)
@@ -311,7 +312,7 @@ logsave: logsave.o
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o logsave logsave.o
 
-logsave.profiled: profiled/logsave.o
+logsave.profiled: logsave.o
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o logsave.profiled profiled/logsave.o
 
@@ -319,11 +320,16 @@ e2freefrag: $(E2FREEFRAG_OBJS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2freefrag $(E2FREEFRAG_OBJS) $(LIBS)
 
+e2freefrag.profiled: $(E2FREEFRAG_OBJS) $(PROFILED_DEPLIBS)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2freefrag.profiled \
+		$(PROFILED_E2FREEFRAG_OBJS) $(PROFILED_LIBS)
+
 filefrag: $(FILEFRAG_OBJS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
 
-filefrag.profiled: $(PROFILED_FILEFRAG_OBJS)
+filefrag.profiled: $(FILEFRAG_OBJS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o filefrag.profiled \
 		$(PROFILED_FILEFRAG_OBJS) 
