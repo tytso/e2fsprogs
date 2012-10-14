@@ -57,7 +57,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		return;
 	}
 
-	printf("Reading directory block %llu, phys %llu\n", blk, pblk);
+	fprintf(pager, "Reading directory block %llu, phys %llu\n", blk, pblk);
 	errcode = ext2fs_read_dir_block4(current_fs, pblk, buf, 0, ino);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
