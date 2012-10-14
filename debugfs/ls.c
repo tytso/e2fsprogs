@@ -30,8 +30,7 @@ extern char *optarg;
  */
 
 #define LONG_OPT	0x0001
-#define DELETED_OPT	0x0002
-#define PARSE_OPT	0x0004
+#define PARSE_OPT	0x0002
 
 struct list_dir_struct {
 	FILE	*f;
@@ -60,6 +59,7 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	char			lbr, rbr;
 	int			thislen;
 	struct list_dir_struct *ls = (struct list_dir_struct *) private;
+	struct ext2_dir_entry_tail *t = (struct ext2_dir_entry_tail *) dirent;
 
 	thislen = dirent->name_len & 0xFF;
 	strncpy(name, dirent->name, thislen);
@@ -99,8 +99,13 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			strcpy(datestr, "                 ");
 			memset(&inode, 0, sizeof(struct ext2_inode));
 		}
-		fprintf(ls->f, "%c%6u%c %6o (%d)  %5d  %5d   ", lbr, ino, rbr,
-			inode.i_mode, dirent->name_len >> 8,
+		fprintf(ls->f, "%c%6u%c %6o ", lbr, ino, rbr, inode.i_mode);
+		if (entry == DIRENT_CHECKSUM) {
+			fprintf(ls->f, "(dirblock checksum: 0x%08x)\n",
+				t->det_checksum);
+			return 0;
+		}
+		fprintf(ls->f, "(%d)  %5d  %5d   ", dirent->name_len >> 8,
 			inode_uid(inode), inode_gid(inode));
 		if (LINUX_S_ISDIR(inode.i_mode))
 			fprintf(ls->f, "%5d", inode.i_size);
@@ -108,8 +113,13 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			fprintf(ls->f, "%5llu", EXT2_I_SIZE(&inode));
 		fprintf (ls->f, " %s %s\n", datestr, name);
 	} else {
-		sprintf(tmp, "%c%u%c (%d) %s   ", lbr, dirent->inode, rbr,
-			dirent->rec_len, name);
+		if (entry == DIRENT_CHECKSUM)
+			sprintf(tmp, "%c%u%c (dirblock checksum: 0x%08x)   ",
+				lbr, dirent->inode, rbr, t->det_checksum);
+		else
+			sprintf(tmp, "%c%u%c (%d) %s   ",
+				lbr, dirent->inode, rbr,
+				dirent->rec_len, name);
 		thislen = strlen(tmp);
 
 		if (ls->col + thislen > 80) {
@@ -127,7 +137,7 @@ void do_list_dir(int argc, char *argv[])
 	ext2_ino_t	inode;
 	int		retval;
 	int		c;
-	int		flags;
+	int		flags = DIRENT_FLAG_INCLUDE_EMPTY;
 	struct list_dir_struct ls;
 
 	ls.options = 0;
@@ -135,13 +145,16 @@ void do_list_dir(int argc, char *argv[])
 		return;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "dlp")) != EOF) {
+	while ((c = getopt (argc, argv, "cdlp")) != EOF) {
 		switch (c) {
+		case 'c':
+			flags |= DIRENT_FLAG_INCLUDE_CSUM;
+			break;
 		case 'l':
 			ls.options |= LONG_OPT;
 			break;
 		case 'd':
-			ls.options |= DELETED_OPT;
+			flags |= DIRENT_FLAG_INCLUDE_REMOVED;
 			break;
 		case 'p':
 			ls.options |= PARSE_OPT;
@@ -166,9 +179,6 @@ void do_list_dir(int argc, char *argv[])
 
 	ls.f = open_pager();
 	ls.col = 0;
-	flags = DIRENT_FLAG_INCLUDE_EMPTY;
-	if (ls.options & DELETED_OPT)
-		flags |= DIRENT_FLAG_INCLUDE_REMOVED;
 
 	retval = ext2fs_dir_iterate2(current_fs, inode, flags,
 				    0, list_dir_proc, &ls);

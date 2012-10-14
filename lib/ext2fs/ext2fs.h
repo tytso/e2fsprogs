@@ -431,11 +431,13 @@ struct ext2_extent_info {
 
 #define DIRENT_FLAG_INCLUDE_EMPTY	1
 #define DIRENT_FLAG_INCLUDE_REMOVED	2
+#define DIRENT_FLAG_INCLUDE_CSUM	4
 
 #define DIRENT_DOT_FILE		1
 #define DIRENT_DOT_DOT_FILE	2
 #define DIRENT_OTHER_FILE	3
 #define DIRENT_DELETED_FILE	4
+#define DIRENT_CHECKSUM		5
 
 /*
  * Inode scan definitions

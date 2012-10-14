@@ -405,12 +405,15 @@ and
 .I \-b
 options.
 .TP
-.I ls [-l] [-d] [-p] filespec
+.I ls [-l] [-c] [-d] [-p] filespec
 Print a listing of the files in the directory
 .IR filespec .
 The 
 .I \-l
 flag will list files using a more verbose format.
+The
+.I \-c
+flag causes directory block checksums (if present) to be displayed.
 The
 .I \-d
 flag will list deleted entries in the directory.

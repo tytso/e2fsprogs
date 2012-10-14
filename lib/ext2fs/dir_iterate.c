@@ -208,7 +208,7 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
-	while (offset < (fs->blocksize - csum_size)) {
+	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (ctx->buf + offset);
 		if (ext2fs_get_rec_len(fs, dirent, &rec_len))
 			return BLOCK_ABORT;
@@ -219,9 +219,16 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 			ctx->errcode = EXT2_ET_DIR_CORRUPTED;
 			return BLOCK_ABORT;
 		}
-		if (!dirent->inode &&
-		    !(ctx->flags & DIRENT_FLAG_INCLUDE_EMPTY))
-			goto next;
+		if (!dirent->inode) {
+			if ((offset == fs->blocksize - csum_size) &&
+			    (dirent->rec_len == csum_size) &&
+			    (dirent->name_len == EXT2_DIR_NAME_LEN_CSUM)) {
+				if (!(ctx->flags & DIRENT_FLAG_INCLUDE_CSUM))
+					goto next;
+				entry = DIRENT_CHECKSUM;
+			} else if (!(ctx->flags & DIRENT_FLAG_INCLUDE_EMPTY))
+				goto next;
+		}
 
 		ret = (ctx->func)(ctx->dir,
 				  (next_real_entry > offset) ?

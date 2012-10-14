@@ -70,7 +70,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	    (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH))
 		hash_alg += 3;
 
-	while (offset < (fs->blocksize - csum_size)) {
+	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (buf + offset);
 		errcode = ext2fs_get_rec_len(fs, dirent, &rec_len);
 		if (errcode) {
@@ -96,8 +96,23 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		if (errcode)
 			com_err("htree_dump_leaf_node", errcode,
 				"while calculating hash");
-		snprintf(tmp, EXT2_NAME_LEN + 64, "%u 0x%08x-%08x (%d) %s   ",
-			dirent->inode, hash, minor_hash, rec_len, name);
+		if ((offset == fs->blocksize - csum_size) &&
+		    (dirent->inode == 0) &&
+		    (dirent->rec_len == csum_size) &&
+		    (dirent->name_len == EXT2_DIR_NAME_LEN_CSUM)) {
+			struct ext2_dir_entry_tail *t;
+
+			t = (struct ext2_dir_entry_tail *) dirent;
+
+			snprintf(tmp, EXT2_NAME_LEN + 64,
+				 "leaf block checksum: 0x%08x  ",
+				 t->det_checksum);
+		} else {
+			snprintf(tmp, EXT2_NAME_LEN + 64,
+				 "%u 0x%08x-%08x (%d) %s   ",
+				 dirent->inode, hash, minor_hash,
+				 rec_len, name);
+		}
 		thislen = strlen(tmp);
 		if (col + thislen > 80) {
 			fprintf(pager, "\n");
