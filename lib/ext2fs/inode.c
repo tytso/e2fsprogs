@@ -582,7 +582,8 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	/* Check to see if it's in the inode cache */
 	for (i = 0; i < fs->icache->cache_size; i++) {
 		if (fs->icache->cache[i].ino == ino) {
-			memcpy(inode, fs->icache->cache[i].inode, bufsize);
+			memcpy(inode, fs->icache->cache[i].inode,
+			       (bufsize > length) ? length : bufsize);
 			return 0;
 		}
 	}
@@ -649,7 +650,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	/* Update the inode cache bookkeeping */
 	fs->icache->cache_last = cache_slot;
 	fs->icache->cache[cache_slot].ino = ino;
-	memcpy(inode, iptr, bufsize);
+	memcpy(inode, iptr, (bufsize > length) ? length : bufsize);
 
 	return 0;
 }
@@ -705,7 +706,7 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 		for (i=0; i < fs->icache->cache_size; i++) {
 			if (fs->icache->cache[i].ino == ino) {
 				memcpy(fs->icache->cache[i].inode, inode,
-				       bufsize);
+				       (bufsize > length) ? length : bufsize);
 				break;
 			}
 		}
