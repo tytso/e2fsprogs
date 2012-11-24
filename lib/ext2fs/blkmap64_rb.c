@@ -741,32 +741,23 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap bitmap,
 			break;
 	}
 
-	pos = start;
+	memset(out, 0, (num + 7) >> 3);
+
 	for (; parent != NULL; parent = next) {
 		next = ext2fs_rb_next(parent);
 		ext = ext2fs_rb_entry(parent, struct bmap_rb_extent, node);
 
-		while (((pos - start) < num) &&
-			(pos < ext->start)) {
-			ext2fs_fast_clear_bit64((pos - start), out);
-			pos++;
-		}
+		pos = ext->start;
+		if (pos < start)
+			pos = start;
 
-		if ((pos - start) >= num)
-			return 0;
-
-		while (((pos - start) < num) &&
-			(pos < (ext->start + ext->count))) {
+		while (pos < (ext->start + ext->count)) {
+			if ((pos - start) >= num)
+				return 0;
 			ext2fs_fast_set_bit64((pos - start), out);
 			pos++;
 		}
 	}
-
-	while ((pos - start) < num) {
-		ext2fs_fast_clear_bit64((pos - start), out);
-		pos++;
-	}
-
 	return 0;
 }
 
