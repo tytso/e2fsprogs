@@ -270,6 +270,7 @@ void dump_bitmap(ext2fs_generic_bitmap bmap, unsigned int start, unsigned num)
 	for (i=0; i < len; i++)
 		printf("%02x", buf[i]);
 	printf("\n");
+	printf("bits set: %u\n", ext2fs_bitcount(buf, len));
 	free(buf);
 }
 

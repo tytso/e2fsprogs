@@ -686,6 +686,7 @@ extern int ext2fs_test_bit(unsigned int nr, const void * addr);
 extern int ext2fs_set_bit64(__u64 nr,void * addr);
 extern int ext2fs_clear_bit64(__u64 nr, void * addr);
 extern int ext2fs_test_bit64(__u64 nr, const void * addr);
+extern unsigned int ext2fs_bitcount(const void *addr, unsigned int nbytes);
 
 #ifdef NO_INLINE_FUNCS
 extern void ext2fs_fast_set_bit(unsigned int nr,void * addr);
