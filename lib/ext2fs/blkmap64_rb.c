@@ -721,6 +721,7 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap bitmap,
 	struct rb_node *parent = NULL, *next, **n;
 	struct ext2fs_rb_private *bp;
 	struct bmap_rb_extent *ext;
+	int count;
 	__u64 pos;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
@@ -748,14 +749,32 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap bitmap,
 		ext = ext2fs_rb_entry(parent, struct bmap_rb_extent, node);
 
 		pos = ext->start;
-		if (pos < start)
+		count = ext->count;
+		if (pos >= start + num)
+			break;
+		if (pos < start) {
+			count -= start - pos;
+			if (count < 0)
+				continue;
 			pos = start;
+		}
+		if (pos + count > start + num)
+			count = start + num - pos;
 
-		while (pos < (ext->start + ext->count)) {
-			if ((pos - start) >= num)
-				return 0;
+		while (count > 0) {
+			if ((count >= 8) &&
+			    ((pos - start) % 8) == 0) {
+				int nbytes = count >> 3;
+				int offset = (pos - start) >> 3;
+
+				memset(out + offset, 0xFF, nbytes);
+				pos += nbytes << 3;
+				count -= nbytes << 3;
+				continue;
+			}
 			ext2fs_fast_set_bit64((pos - start), out);
 			pos++;
+			count--;
 		}
 	}
 	return 0;
