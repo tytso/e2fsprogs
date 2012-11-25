@@ -212,6 +212,12 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	int	cmp_block = 0;
 	int	redo_flag = 0;
 	blk64_t	super_blk, old_desc_blk, new_desc_blk;
+	char *actual_buf, *bitmap_buf;
+
+	actual_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize,
+						     "actual bitmap buffer");
+	bitmap_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize,
+						     "bitmap block buffer");
 
 	clear_problem_context(&pctx);
 	free_array = (unsigned int *) e2fsck_allocate_memory(ctx,
@@ -259,11 +265,53 @@ redo_counts:
 	for (i = B2C(fs->super->s_first_data_block);
 	     i < ext2fs_blocks_count(fs->super);
 	     i += EXT2FS_CLUSTER_RATIO(fs)) {
+		int first_block_in_bg = (B2C(i) -
+					 B2C(fs->super->s_first_data_block)) %
+			fs->super->s_clusters_per_group == 0;
+		int n, nbytes = fs->super->s_clusters_per_group / 8;
+
 		actual = ext2fs_fast_test_block_bitmap2(ctx->block_found_map, i);
 
+		/*
+		 * Try to optimize pass5 by extracting a bitmap block
+		 * as expected from what we have on disk, and then
+		 * comparing the two.  If they are identical, then
+		 * update the free block counts and go on to the next
+		 * block group.  This is much faster than doing the
+		 * individual bit-by-bit comparison.  The one downside
+		 * is that this doesn't work if we are asking e2fsck
+		 * to do a discard operation.
+		 */
+		if (!first_block_in_bg ||
+		    (group == (int)fs->group_desc_count - 1) ||
+		    (ctx->options & E2F_OPT_DISCARD))
+			goto no_optimize;
+
+		retval = ext2fs_get_block_bitmap_range2(ctx->block_found_map,
+				B2C(i), fs->super->s_clusters_per_group,
+				actual_buf);
+		if (retval)
+			goto no_optimize;
+		if (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT))
+			memset(bitmap_buf, 0, nbytes);
+		else {
+			retval = ext2fs_get_block_bitmap_range2(fs->block_map,
+					B2C(i), fs->super->s_clusters_per_group,
+					bitmap_buf);
+			if (retval)
+				goto no_optimize;
+		}
+		if (memcmp(actual_buf, bitmap_buf, nbytes) != 0)
+			goto no_optimize;
+		n = ext2fs_bitcount(actual_buf, nbytes);
+		group_free = fs->super->s_clusters_per_group - n;
+		free_blocks += group_free;
+		i += fs->super->s_clusters_per_group - 1;
+		goto next_group;
+	no_optimize:
+
 		if (skip_group) {
-			if ((B2C(i) - B2C(fs->super->s_first_data_block)) %
-			    fs->super->s_clusters_per_group == 0) {
+			if (first_block_in_bg) {
 				super_blk = 0;
 				old_desc_blk = 0;
 				new_desc_blk = 0;
@@ -401,6 +449,7 @@ redo_counts:
 			if (!bitmap && i >= first_free)
 				e2fsck_discard_blocks(ctx, first_free,
 						      (i - first_free) + 1);
+		next_group:
 			first_free = ext2fs_blocks_count(fs->super);
 
 			free_array[group] = group_free;
@@ -475,6 +524,8 @@ redo_counts:
 	}
 errout:
 	ext2fs_free_mem(&free_array);
+	ext2fs_free_mem(&actual_buf);
+	ext2fs_free_mem(&bitmap_buf);
 }
 
 static void check_inode_bitmaps(e2fsck_t ctx)
