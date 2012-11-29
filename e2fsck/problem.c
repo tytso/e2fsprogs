@@ -1824,7 +1824,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		return 0;
 	}
 	if (!(ptr->flags & PR_CONFIG)) {
-		char	key[9], *new_desc;
+		char	key[9], *new_desc = NULL;
 
 		sprintf(key, "0x%06x", code);
 

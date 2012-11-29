@@ -1163,7 +1163,8 @@ static int probe_hfs(struct blkid_probe *probe __BLKID_ATTR((unused)),
 			 struct blkid_magic *id __BLKID_ATTR((unused)),
 			 unsigned char *buf)
 {
-	struct hfs_mdb *hfs = (struct hfs_mdb *) buf;
+	struct hfs_mdb *hfs = (struct hfs_mdb *)buf;
+	unsigned long long *uuid_ptr;
 	char	uuid_str[17];
 	__u64	uuid;
 
@@ -1171,7 +1172,8 @@ static int probe_hfs(struct blkid_probe *probe __BLKID_ATTR((unused)),
 	    (memcmp(hfs->embed_sig, "HX", 2) == 0))
 		return 1;	/* Not hfs, but an embedded HFS+ */
 
-	uuid = blkid_le64(*((unsigned long long *) hfs->finder_info.id));
+	uuid_ptr = (unsigned long long *)hfs->finder_info.id;
+	uuid = blkid_le64(*uuid_ptr);
 	if (uuid) {
 		sprintf(uuid_str, "%016llX", uuid);
 		blkid_set_tag(probe->dev, "UUID", uuid_str, 0);
@@ -1205,9 +1207,10 @@ static int probe_hfsplus(struct blkid_probe *probe,
 	unsigned int leaf_node_size;
 	unsigned int leaf_block;
 	unsigned int label_len;
-	int ext;
+	unsigned long long *uuid_ptr;
 	__u64 leaf_off, uuid;
 	char	uuid_str[17], label[512];
+	int ext;
 
 	/* Check for a HFS+ volume embedded in a HFS volume */
 	if (memcmp(sbd->signature, "BD", 2) == 0) {
@@ -1235,7 +1238,8 @@ static int probe_hfsplus(struct blkid_probe *probe,
 	    (memcmp(hfsplus->signature, "HX", 2) != 0))
 		return 1;
 
-	uuid = blkid_le64(*((unsigned long long *) hfsplus->finder_info.id));
+	uuid_ptr = (unsigned long long *)hfsplus->finder_info.id;
+	uuid = blkid_le64(*uuid_ptr);
 	if (uuid) {
 		sprintf(uuid_str, "%016llX", uuid);
 		blkid_set_tag(probe->dev, "UUID", uuid_str, 0);

@@ -251,6 +251,7 @@ static struct str_table sigbus_code_table[] = {
 	END_TABLE
 };
 
+#if 0 /* should this be hooked in somewhere? */
 static struct str_table sigstrap_code_table[] = {
 #ifdef TRAP_BRKPT
 	DEFINE_ENTRY(TRAP_BRKPT)
@@ -260,6 +261,7 @@ static struct str_table sigstrap_code_table[] = {
 #endif
 	END_TABLE
 };
+#endif
 
 static struct str_table sigcld_code_table[] = {
 #ifdef CLD_EXITED
@@ -283,6 +285,7 @@ static struct str_table sigcld_code_table[] = {
 	END_TABLE
 };
 
+#if 0 /* should this be hooked in somewhere? */
 static struct str_table sigpoll_code_table[] = {
 #ifdef POLL_IN
 	DEFINE_ENTRY(POLL_IN)
@@ -304,6 +307,7 @@ static struct str_table sigpoll_code_table[] = {
 #endif
 	END_TABLE
 };
+#endif
 
 static const char *lookup_table(int num, struct str_table *table)
 {

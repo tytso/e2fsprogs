@@ -1117,12 +1117,12 @@ static int test_crc32c(void)
 		be = ext2fs_crc32c_be(t->crc, test_buf + t->start, t->length);
 		if (le != t->crc_le) {
 			printf("Test %d LE fails, %x != %x\n",
-			       (t - test), le, t->crc_le);
+			       (int) (t - test), le, t->crc_le);
 			failures++;
 		}
 		if (be != t->crc_be) {
 			printf("Test %d BE fails, %x != %x\n",
-			       (t - test), be, t->crc_be);
+			       (int) (t - test), be, t->crc_be);
 			failures++;
 		}
 		t++;

@@ -193,8 +193,7 @@ errout:
 
 void setup_cmd(int argc, char **argv)
 {
-	errcode_t	retval;
-	int		i, c, err;
+	int		c, err;
 	unsigned int	blocks = 128;
 	unsigned int	inodes = 0;
 	unsigned int	type = EXT2FS_BMAP64_BITARRAY;
@@ -373,7 +372,7 @@ void do_testb(int argc, char *argv[])
 {
 	unsigned int block, num;
 	int err;
-	int test_result, op_result;
+	int test_result;
 
 	if (check_fs_open(argv[0]))
 		return;
@@ -509,7 +508,7 @@ void do_testi(int argc, char *argv[])
 {
 	unsigned int inode;
 	int err;
-	int test_result, op_result;
+	int test_result;
 
 	if (check_fs_open(argv[0]))
 		return;

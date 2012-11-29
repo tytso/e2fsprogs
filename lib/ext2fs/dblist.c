@@ -61,7 +61,7 @@ static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size,
 			     struct ext2_db_entry2 *list,
 			     ext2_dblist *ret_dblist)
 {
-	ext2_dblist	dblist;
+	ext2_dblist	dblist = NULL;
 	errcode_t	retval;
 	ext2_ino_t	num_dirs;
 	size_t		len;

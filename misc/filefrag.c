@@ -242,7 +242,7 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	} while (last == 0);
 
 	*num_extents = tot_extents;
-out:
+
 	return 0;
 }
 

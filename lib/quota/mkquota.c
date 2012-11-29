@@ -25,6 +25,7 @@
 #define UINT_TO_VOIDPTR(val)  ((void *)(intptr_t)(val))
 #define VOIDPTR_TO_UINT(ptr)  ((unsigned int)(intptr_t)(ptr))
 
+#if DEBUG_QUOTA
 static void print_inode(struct ext2_inode *inode)
 {
 	if (!inode)
@@ -44,6 +45,7 @@ static void print_inode(struct ext2_inode *inode)
 
 	return;
 }
+#endif
 
 /*
  * Returns 0 if not able to find the quota file, otherwise returns its
@@ -121,7 +123,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 	int		retval = 0, i;
 	dict_t		*dict;
 	ext2_filsys	fs;
-	struct quota_handle *h;
+	struct quota_handle *h = NULL;
 	int		fmt = QFMT_VFS_V1;
 
 	if (!qctx)
