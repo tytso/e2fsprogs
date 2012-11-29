@@ -160,8 +160,7 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 
 	if (ext2fs_le32_to_cpu(dqh.dqh_magic) != file_magics[type]) {
 		if (ext2fs_be32_to_cpu(dqh.dqh_magic) == file_magics[type])
-			log_err("Your quota file is stored in wrong "
-				"endianity.", "");
+			log_err("Your quota file is stored in wrong endianity");
 		return 0;
 	}
 	if (V2_VERSION != ext2fs_le32_to_cpu(dqh.dqh_version))
@@ -279,6 +278,6 @@ static int v2_scan_dquots(struct quota_handle *h,
  */
 static int v2_report(struct quota_handle *h, int verbose)
 {
-	log_err("Not Implemented.", "");
+	log_err("Not Implemented.");
 	return -1;
 }

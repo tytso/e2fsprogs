@@ -24,7 +24,7 @@ static inline dqbuf_t getdqbuf(void)
 {
 	dqbuf_t buf;
 	if (ext2fs_get_memzero(QT_BLKSIZE, &buf)) {
-		log_err("Failed to allocate dqbuf", "");
+		log_err("Failed to allocate dqbuf");
 		return NULL;
 	}
 
@@ -101,7 +101,7 @@ static int get_free_dqblk(struct quota_handle *h)
 		if (write_blk(h, info->dqi_blocks, buf) < 0) {
 			freedqbuf(buf);
 			log_err("Cannot allocate new quota block "
-				"(out of disk space).", "");
+				"(out of disk space).");
 			return -ENOSPC;
 		}
 		blk = info->dqi_blocks++;
@@ -230,8 +230,7 @@ static uint find_free_dqentry(struct quota_handle *h, struct dquot *dquot,
 		ddquot += info->dqi_entry_size;
 
 	if (i == qtree_dqstr_in_blk(info))
-		log_err("find_free_dqentry(): Data block full but it "
-			"shouldn't.", "");
+		log_err("find_free_dqentry(): Data block full unexpectedly.");
 
 	write_blk(h, blk, buf);
 	dquot->dq_dqb.u.v2_mdqb.dqb_off =

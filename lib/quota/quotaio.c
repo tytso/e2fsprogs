@@ -243,13 +243,13 @@ errcode_t quota_file_open(struct quota_handle *h, ext2_filsys fs,
 
 	if (h->qh_ops->check_file &&
 	    (h->qh_ops->check_file(h, type, fmt) == 0)) {
-		log_err("qh_ops->check_file failed", "");
+		log_err("qh_ops->check_file failed");
 		ext2fs_file_close(e2_file);
 		return -1;
 	}
 
 	if (h->qh_ops->init_io && (h->qh_ops->init_io(h) < 0)) {
-		log_err("qh_ops->init_io failed", "");
+		log_err("qh_ops->init_io failed");
 		ext2fs_file_close(e2_file);
 		return -1;
 	}
@@ -264,7 +264,7 @@ static errcode_t quota_inode_init_new(ext2_filsys fs, ext2_ino_t ino)
 
 	err = ext2fs_read_inode(fs, ino, &inode);
 	if (err) {
-		log_err("ex2fs_read_inode failed", "");
+		log_err("ex2fs_read_inode failed");
 		return err;
 	}
 
@@ -316,7 +316,7 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs, int type, in
 
 	err = quota_inode_init_new(fs, qf_inum);
 	if (err) {
-		log_err("init_new_quota_inode failed", "");
+		log_err("init_new_quota_inode failed");
 		goto out_err;
 	}
 	h->qh_qf.ino = qf_inum;
@@ -339,7 +339,7 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs, int type, in
 	h->qh_ops = &quotafile_ops_2;
 
 	if (h->qh_ops->new_io && (h->qh_ops->new_io(h) < 0)) {
-		log_err("qh_ops->new_io failed", "");
+		log_err("qh_ops->new_io failed");
 		goto out_err1;
 	}
 
@@ -386,7 +386,7 @@ struct dquot *get_empty_dquot(void)
 	struct dquot *dquot;
 
 	if (ext2fs_get_memzero(sizeof(struct dquot), &dquot)) {
-		log_err("Failed to allocate dquot", "");
+		log_err("Failed to allocate dquot");
 		return NULL;
 	}
 
