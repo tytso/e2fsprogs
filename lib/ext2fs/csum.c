@@ -166,7 +166,7 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 {
 	__u16 crc1, crc2, crc3;
 	dgrp_t swabgroup;
- 	struct ext2_group_desc *desc = ext2fs_group_desc(fs, fs->group_desc, group);
+	struct ext2_group_desc *desc;
 	size_t size;
 	struct ext2_super_block *sb = fs->super;
 	int offset = offsetof(struct ext2_group_desc, bg_checksum);
@@ -174,6 +174,7 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 	struct ext4_group_desc swabdesc;
 #endif
 
+	desc = ext2fs_group_desc(fs, fs->group_desc, group);
 	size = fs->super->s_desc_size;
 	if (size < EXT2_MIN_DESC_SIZE)
 		size = EXT2_MIN_DESC_SIZE;
@@ -198,7 +199,7 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 	if (offset < size)
 		crc3 = ext2fs_crc16(crc3, (char *)desc + offset, size - offset);
 
-	printf("%s: UUID %s(%04x), grp %u(%04x): %04x=%04x\n",
+	printf("%s UUID %s=%04x, grp %u=%04x: %04x=%04x\n",
 	       msg, e2p_uuid2str(sb->s_uuid), crc1, group, crc2, crc3,
 	       ext2fs_group_desc_csum(fs, group));
 }
