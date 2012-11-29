@@ -496,7 +496,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 	ext2_ino_t		journal_ino;
 	struct stat		st;
 	char			jfile[1024];
-	int			mount_flags, f;
+	int			mount_flags;
 	int			fd = -1;
 
 	if (flags & EXT2_MKJOURNAL_NO_MNT_CHECK)
@@ -507,6 +507,9 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 		return retval;
 
 	if (mount_flags & EXT2_MF_MOUNTED) {
+#if HAVE_EXT2_IOCTLS
+		int f = 0;
+#endif
 		strcat(jfile, "/.journal");
 
 		/*
@@ -519,7 +522,6 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 #if HAVE_EXT2_IOCTLS
 		fd = open(jfile, O_RDONLY);
 		if (fd >= 0) {
-			f = 0;
 			ioctl(fd, EXT2_IOC_SETFLAGS, &f);
 			close(fd);
 		}

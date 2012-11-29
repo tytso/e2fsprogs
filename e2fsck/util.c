@@ -795,7 +795,6 @@ void e2fsck_set_bitmap_type(ext2_filsys fs, unsigned int default_type,
 			    const char *profile_name, unsigned int *old_type)
 {
 	unsigned type;
-	errcode_t	retval;
 
 	if (old_type)
 		*old_type = fs->default_bitmap_type;

@@ -154,7 +154,6 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	int block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	int inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
 	int csum_flag = 0;
-	int do_image = fs->flags & EXT2_FLAG_IMAGE_FILE;
 	unsigned int	cnt;
 	blk64_t	blk;
 	blk64_t	blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);

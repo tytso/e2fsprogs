@@ -95,7 +95,7 @@ static _BMAP_INLINE_ errcode_t block_dind_bmap(ext2_filsys fs, int flags,
 					       int *blocks_alloc,
 					       blk_t nr, blk_t *ret_blk)
 {
-	blk_t		b;
+	blk_t		b = 0;
 	errcode_t	retval;
 	blk_t		addr_per_block;
 
@@ -115,7 +115,7 @@ static _BMAP_INLINE_ errcode_t block_tind_bmap(ext2_filsys fs, int flags,
 					       int *blocks_alloc,
 					       blk_t nr, blk_t *ret_blk)
 {
-	blk_t		b;
+	blk_t		b = 0;
 	errcode_t	retval;
 	blk_t		addr_per_block;
 

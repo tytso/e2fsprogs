@@ -117,7 +117,6 @@ static int compute_num_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
 			       int ref_offset EXT2FS_ATTR((unused)),
 			       void *private)
 {
-	blk64_t	block;
 	blk64_t *num_blocks = private;
 
 	*num_blocks += 1;
@@ -128,7 +127,6 @@ errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct ext2_inode inode;
 	errcode_t err;
-	int i;
 
 	if ((err = ext2fs_read_inode(fs, ino, &inode)))
 		return err;

@@ -146,6 +146,7 @@ static int int_log10(unsigned long long arg)
 	return l;
 }
 
+#ifdef __linux__
 static int parse_version_number(const char *s)
 {
 	int	major, minor, rev;
@@ -167,6 +168,7 @@ static int parse_version_number(const char *s)
 		return 0;
 	return ((((major * 256) + minor) * 256) + rev);
 }
+#endif
 
 /*
  * Helper function for read_bb_file and test_disk

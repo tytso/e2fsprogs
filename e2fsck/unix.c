@@ -1173,7 +1173,7 @@ int main (int argc, char *argv[])
 	int old_bitmaps;
 	__u32 features[3];
 	char *cp;
-	int qtype;  /* quota type */
+	int qtype = -99;  /* quota type */
 
 	clear_problem_context(&pctx);
 	sigcatcher_setup();

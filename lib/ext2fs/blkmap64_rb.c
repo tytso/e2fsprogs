@@ -70,7 +70,7 @@ static void print_tree(struct rb_root *root)
 	printf("\t\t\t=================================\n");
 }
 
-static int check_tree(struct rb_root *root, const char *msg)
+static void check_tree(struct rb_root *root, const char *msg)
 {
 	struct rb_node *new_node, *node, *next;
 	struct bmap_rb_extent *ext, *old = NULL;
@@ -115,7 +115,7 @@ static int check_tree(struct rb_root *root, const char *msg)
 		}
 		old = ext;
 	}
-	return 0;
+	return;
 
 err_out:
 	printf("%s\n", msg);
@@ -123,8 +123,8 @@ err_out:
 	exit(1);
 }
 #else
-#define check_tree(root, msg) 0
-#define print_tree(root, msg) 0
+#define check_tree(root, msg) do {} while (0)
+#define print_tree(root, msg) do {} while (0)
 #endif
 
 static void rb_get_new_extent(struct bmap_rb_extent **ext, __u64 start,
