@@ -102,7 +102,7 @@ static void determine_fs_stride(ext2_filsys fs)
 {
 	unsigned int	group;
 	unsigned long long sum;
-	unsigned int	has_sb, prev_has_sb, num;
+	unsigned int	has_sb, prev_has_sb = 0, num;
 	int		i_stride, b_stride;
 
 	if (fs->stride)

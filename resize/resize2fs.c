@@ -294,8 +294,8 @@ errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs,
 	blk64_t		rem;
 	blk64_t		blk, group_block;
 	blk64_t		real_end;
-	blk64_t		adj, old_numblocks, numblocks, adjblocks;
-	unsigned long	i, j, old_desc_blocks, max_group;
+	blk64_t		old_numblocks, numblocks, adjblocks;
+	unsigned long	i, j, old_desc_blocks;
 	unsigned int	meta_bg, meta_bg_size;
 	int		has_super, csum_flag;
 	unsigned long long new_inodes;	/* u64 to check for overflow */
@@ -484,8 +484,6 @@ retry:
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 	if (access("/sys/fs/ext4/features/lazy_itable_init", F_OK) == 0)
 		lazy_itable_init = 1;
-	adj = old_fs->group_desc_count;
-	max_group = fs->group_desc_count - adj;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
@@ -698,15 +696,7 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 	blk64_t			b;
 	unsigned int		j;
 	dgrp_t			i;
-	unsigned long		meta_bg_size;
-	unsigned int		old_desc_blocks;
 
-	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
-		old_desc_blocks = fs->super->s_first_meta_bg;
-	else
-		old_desc_blocks = fs->desc_blocks +
-			fs->super->s_reserved_gdt_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		ext2fs_reserve_super_and_bgd(fs, i, bmap);
 
@@ -1726,7 +1716,7 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 {
 	struct ext2_inode	inode;
 	errcode_t		retval;
-	char *			block_buf;
+	char			*block_buf = NULL;
 
 	if (!(fs->super->s_feature_compat &
 	      EXT2_FEATURE_COMPAT_RESIZE_INODE))
@@ -1928,8 +1918,6 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	blk64_t blks_needed, groups, data_blocks;
 	blk64_t grp, data_needed, last_start;
 	blk64_t overhead = 0;
-	int num_of_superblocks = 0;
-	blk64_t super_overhead = 0;
 	int old_desc_blocks;
 	int extra_groups = 0;
 	int flexbg_size = 1 << fs->super->s_log_groups_per_flex;
