@@ -672,16 +672,42 @@ static errcode_t rb_set_bmap_range(ext2fs_generic_bitmap bitmap,
 				     __u64 start, size_t num, void *in)
 {
 	struct ext2fs_rb_private *bp;
+	unsigned char *cp = in;
 	size_t i;
+	int first_set = -1;
 	int ret;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 
 	for (i = 0; i < num; i++) {
-		ret = ext2fs_test_bit(i, in);
-		if (ret)
-			rb_insert_extent(start + i - bitmap->start, 1, bp);
+		if (i & 7 == 0) {
+			unsigned char c = cp[i/8];
+			if (c == 0xFF) {
+				if (first_set == -1)
+					first_set = i;
+				i += 7;
+				continue;
+			}
+			if ((c == 0x00) && (first_set == -1)) {
+				i += 7;
+				continue;
+			}
+		}
+		if (ext2fs_test_bit(i, in)) {
+			if (first_set == -1)
+				first_set = i;
+			continue;
+		}
+		if (first_set == -1)
+			continue;
+
+		rb_insert_extent(start + first_set - bitmap->start,
+				 i - first_set, bp);
+		first_set = -1;
 	}
+	if (first_set != -1)
+		rb_insert_extent(start + first_set - bitmap->start,
+				 num - first_set, bp);
 
 	return 0;
 }
@@ -693,6 +719,7 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap bitmap,
 	struct rb_node *parent = NULL, *next, **n;
 	struct ext2fs_rb_private *bp;
 	struct bmap_rb_extent *ext;
+	int count;
 	__u64 pos;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
@@ -713,32 +740,41 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap bitmap,
 			break;
 	}
 
-	pos = start;
+	memset(out, 0, (num + 7) >> 3);
+
 	for (; parent != NULL; parent = next) {
 		next = ext2fs_rb_next(parent);
 		ext = ext2fs_rb_entry(parent, struct bmap_rb_extent, node);
 
-		while (((pos - start) < num) &&
-			(pos < ext->start)) {
-			ext2fs_fast_clear_bit64((pos - start), out);
-			pos++;
+		pos = ext->start;
+		count = ext->count;
+		if (pos >= start + num)
+			break;
+		if (pos < start) {
+			count -= start - pos;
+			if (count < 0)
+				continue;
+			pos = start;
 		}
+		if (pos + count > start + num)
+			count = start + num - pos;
 
-		if ((pos - start) >= num)
-			return 0;
+		while (count > 0) {
+			if ((count >= 8) &&
+			    ((pos - start) % 8) == 0) {
+				int nbytes = count >> 3;
+				int offset = (pos - start) >> 3;
 
-		while (((pos - start) < num) &&
-			(pos < (ext->start + ext->count))) {
+				memset(out + offset, 0xFF, nbytes);
+				pos += nbytes << 3;
+				count -= nbytes << 3;
+				continue;
+			}
 			ext2fs_fast_set_bit64((pos - start), out);
 			pos++;
+			count--;
 		}
 	}
-
-	while ((pos - start) < num) {
-		ext2fs_fast_clear_bit64((pos - start), out);
-		pos++;
-	}
-
 	return 0;
 }
 

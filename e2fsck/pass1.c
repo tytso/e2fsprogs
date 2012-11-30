@@ -1500,6 +1500,16 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk64_t block)
 	}
 }
 
+static _INLINE_ void mark_blocks_used(e2fsck_t ctx, blk64_t block,
+				      unsigned int num)
+{
+	if (ext2fs_test_block_bitmap_range2(ctx->block_found_map, block, num))
+		ext2fs_mark_block_bitmap_range2(ctx->block_found_map, block, num);
+	else
+		while (num--)
+			mark_block_used(ctx, block++);
+}
+
 /*
  * Adjust the extended attribute block's reference counts at the end
  * of pass 1, either by subtracting out references for EA blocks that
@@ -1985,11 +1995,15 @@ fix_problem_now:
 				goto failed_add_dir_block;
 			}
 		}
+		if (!ctx->fs->cluster_ratio_bits) {
+			mark_blocks_used(ctx, extent.e_pblk, extent.e_len);
+			pb->num_blocks += extent.e_len;
+		}
 		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
 		     i < extent.e_len;
 		     blk++, blockcnt++, i++) {
-			if (!(ctx->fs->cluster_ratio_bits &&
-			      pb->previous_block &&
+			if (ctx->fs->cluster_ratio_bits &&
+			    !(pb->previous_block &&
 			      (EXT2FS_B2C(ctx->fs, blk) ==
 			       EXT2FS_B2C(ctx->fs, pb->previous_block)) &&
 			      (blk & EXT2FS_CLUSTER_MASK(ctx->fs)) ==

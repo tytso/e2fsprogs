@@ -53,5 +53,47 @@ cleari 5
 testi 17
 testi 6
 testi 4
+clearb 7 12
+dump_bb
+setb 1
+dump_bb
+setb 2
+dump_bb
+setb 3
+dump_bb
+setb 4
+dump_bb
+setb 5
+dump_bb
+setb 6
+dump_bb
+setb 7
+dump_bb
+setb 8
+dump_bb
+setb 10
+setb 12
+setb 14
+setb 17
+setb 19
+setb 24
+setb 26
+setb 27
+setb 30
+setb 31
+setb 32
+setb 35
+setb 39
+setb 40
+setb 44
+setb 46
+setb 47
+setb 49
+setb 51
+setb 52
+clearb 2
+clearb 3
+clearb 7
+dump_bb
 quit
 
