@@ -72,6 +72,25 @@ errcode_t ext2fs_flush_icache(ext2_filsys fs)
 	return 0;
 }
 
+/*
+ * Free the inode cache structure
+ */
+void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
+{
+	int i;
+
+	if (--icache->refcount)
+		return;
+	if (icache->buffer)
+		ext2fs_free_mem(&icache->buffer);
+	for (i = 0; i < icache->cache_size; i++)
+		ext2fs_free_mem(&icache->cache[i].inode);
+	if (icache->cache)
+		ext2fs_free_mem(&icache->cache);
+	icache->buffer_blk = 0;
+	ext2fs_free_mem(&icache);
+}
+
 static errcode_t create_icache(ext2_filsys fs)
 {
 	int		i;
@@ -86,31 +105,32 @@ static errcode_t create_icache(ext2_filsys fs)
 
 	memset(fs->icache, 0, sizeof(struct ext2_inode_cache));
 	retval = ext2fs_get_mem(fs->blocksize, &fs->icache->buffer);
-	if (retval) {
-		ext2fs_free_mem(&fs->icache);
-		return retval;
-	}
+	if (retval)
+		goto errout;
+
 	fs->icache->buffer_blk = 0;
 	fs->icache->cache_last = -1;
 	fs->icache->cache_size = 4;
 	fs->icache->refcount = 1;
 	retval = ext2fs_get_array(fs->icache->cache_size,
-				  sizeof(struct ext2_inode_cache_ent) +
-				  EXT2_INODE_SIZE(fs->super),
+				  sizeof(struct ext2_inode_cache_ent),
 				  &fs->icache->cache);
-	if (retval) {
-		ext2fs_free_mem(&fs->icache->buffer);
-		ext2fs_free_mem(&fs->icache);
-		return retval;
-	}
+	if (retval)
+		goto errout;
 
-	for (i = 0, p = (void *)(fs->icache->cache + fs->icache->cache_size);
-	     i < fs->icache->cache_size;
-	     i++, p += EXT2_INODE_SIZE(fs->super))
-		fs->icache->cache[i].inode = p;
+	for (i = 0; i < fs->icache->cache_size; i++) {
+		retval = ext2fs_get_mem(EXT2_INODE_SIZE(fs->super),
+					&fs->icache->cache[i].inode);
+		if (retval)
+			goto errout;
+	}
 
 	ext2fs_flush_icache(fs);
 	return 0;
+errout:
+	ext2fs_free_inode_cache(fs->icache);
+	fs->icache = 0;
+	return retval;
 }
 
 errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
