@@ -13,6 +13,7 @@ Build-Depends: texi2html (>= 1.76), gettext, texinfo, pkg-config, DIETLIBC_DEFIN
 Standards-Version: 3.9.3
 Homepage: http://e2fsprogs.sourceforge.net
 
+ifdef(`E2FSCK_STATIC',``
 Package: e2fsck-static
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -27,6 +28,7 @@ Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
  .
  You may want to install a statically-linked shell as well, to be able
  to run this program if something like your C library gets corrupted.
+'')dnl
 
 Package: libcomerr2
 Section: libs

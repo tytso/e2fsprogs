@@ -214,6 +214,12 @@ M4_ARGS+=-DDIETLIBC
 WITH_DIET_LIBC = --with-diet-libc 
 endif
 
+ifneq ($(BUILD_E2FSCK_STATIC),no)
+M4_ARGS+=-DE2FSCK_STATIC
+else
+M4_ARGS+=-UE2FSCK_STATIC
+endif
+
 FILES_FIXUP= libcomerr2.files comerr-dev.files libss2.files ss-dev.files \
 	libuuid1.files uuid-dev.files libblkid1.files libblkid-dev.files \
 	e2fslibs.files e2fslibs-dev.files
@@ -320,7 +326,9 @@ build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
 	$(MAKE) -C ${stdbuilddir} V=1 all
+ifneq ($(BUILD_E2FSCK_STATIC),no)
 	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
+endif
 	$(MAKE) -C ${stdbuilddir}/po V=1 update-gmo
 
 	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs_abt.html )
@@ -353,7 +361,9 @@ build-static: ${BUILDSTATICSTAMP}
 ${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
 	dh_testdir
 	$(MAKE) -C ${staticbuilddir} V=1 libs
+ifneq ($(BUILD_E2FSCK_STATIC),no)
 	$(MAKE) -C ${staticbuilddir}/e2fsck V=1 all e2fsck.static
+endif
 	touch ${BUILDSTATICSTAMP}
 
 clean:
@@ -388,9 +398,12 @@ install-std: build
   # static libs and .h files
 	$(MAKE) -C ${stdbuilddir} V=1 install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
+ifneq ($(BUILD_E2FSCK_STATIC),no)
   # statically-linked fsck
 	${INSTALL_PROGRAM} $(E2FSCK_STATIC) ${tmpdir}/sbin
 	cp ${mandir}/man8/e2fsck.8 ${mandir}/man8/e2fsck.static.8
+endif
+
   # remove static quota library for now
 	rm ${tmpdir}/usr/include/quota/mkquota.h
 	find ${tmpdir}/usr/lib -name quota.pc -o -name libquota.a | xargs rm
@@ -520,9 +533,12 @@ endif
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs \
 		-plibcomerr${COMERR_SOVERSION} \
 		-plibss${SS_SOVERSION} \
-		-pe2fslibs -pe2fsck-static \
+		-pe2fslibs \
 		-pe2fsprogs-dbg -pe2fslibs-dbg \
 		-plibcomerr2-dbg -plibss2-dbg
+ifneq ($(BUILD_E2FSCK_STATIC),no)
+	DH_OPTIONS= dh_installchangelogs -pe2fsck-static
+endif
 ifneq ($(UTIL_LINUX_NG),yes)
 	DH_OPTIONS= dh_installchangelogs -plibuuid${UUID_SOVERSION} \
 		-puuid-dev -puuid-runtime -puuid-runtime-dbg -plibuuid1-dbg \
@@ -547,9 +563,12 @@ ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 	mkdir -p ${debugdir}/$(USRLIB)
 	mv ${maindir}/usr/lib/debug ${debugdir}/$(USRLIB)
 	rm -rf ${maindir}/usr/lib/debug
+
+ifneq ($(BUILD_E2FSCK_STATIC),no)
 	mv ${e2fsckstaticdir}/usr/lib/debug/sbin/* \
 		${debugdir}/$(USRLIB)/debug
 	rm -rf ${e2fsckstaticdir}/usr/lib
+endif
 
 ifneq ($(UTIL_LINUX_NG),yes)
 	mkdir -p ${uuidruntimedbgdir}/$(USRLIB)
