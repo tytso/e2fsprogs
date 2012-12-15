@@ -1,1 +1,1 @@
-lib/*/libuuid*
+lib/*/libuuid*.so.*

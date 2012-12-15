@@ -1,1 +1,1 @@
-lib/*/libcom_err*
+lib/*/libcom_err*.so.*
