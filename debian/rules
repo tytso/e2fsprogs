@@ -251,11 +251,11 @@ ${CFGSTDSTAMP}:
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 else
 	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
 		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
@@ -281,11 +281,11 @@ ${CFGBFSTAMP}:
 	mkdir -p ${bfbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${bfbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 		CFLAGS="${CFLAGS} ${BF_CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 else
 	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
 		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
@@ -300,18 +300,18 @@ ${CFGSTATICSTAMP}:
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	if type diet > /dev/null  2>&1 ; then \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${STATIC_CONF_FLAGS} \
+		${topdir}/configure ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 		${WITH_DIET_LIBC} CFLAGS="${CFLAGS}" \
 		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	else \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-			${topdir}/configure ${STATIC_CONF_FLAGS} \
+			${topdir}/configure ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 			CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" \
 			LDFLAGS="$(LDFLAGS)"; \
 	fi
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
 		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
