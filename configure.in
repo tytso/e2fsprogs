@@ -1180,9 +1180,11 @@ libdir=$libdir/$withval
 root_libdir=$root_libdir/$withval
 )dnl
 dnl
-dnl See if -static works.
+dnl See if -static works.  This could fail if the linker does not
+dnl support -static, or if required external libraries are not available
+dnl in static form.
 dnl
-AC_MSG_CHECKING([whether linker accepts -static])
+AC_MSG_CHECKING([whether we can link with -static])
 AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
 [SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
