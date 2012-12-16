@@ -306,7 +306,7 @@ redo_counts:
 		n = ext2fs_bitcount(actual_buf, nbytes);
 		group_free = fs->super->s_clusters_per_group - n;
 		free_blocks += group_free;
-		i += fs->super->s_clusters_per_group - 1;
+		i += EXT2FS_C2B(fs, fs->super->s_clusters_per_group - 1);
 		goto next_group;
 	no_optimize:
 
