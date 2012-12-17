@@ -200,7 +200,7 @@ extern errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitma
  */
 #ifdef NO_INLINE_FUNCS
 #if (defined(__GNUC__) && (defined(__i386__) || defined(__i486__) || \
-			   defined(__i586__) || defined(__mc68000__)))
+			   defined(__i586__)))
 	/* This prevents bitops.c from trying to include the C */
 	/* function version of these functions */
 #define _EXT2_HAVE_ASM_BITOPS_
@@ -344,43 +344,6 @@ _INLINE_ __u16 ext2fs_swab16(__u16 val)
 #undef EXT2FS_ADDR
 
 #endif	/* i386 */
-
-#if ((defined __GNUC__) && !defined(_EXT2_USE_C_VERSIONS_) && \
-     (defined(__mc68000__)))
-
-#define _EXT2_HAVE_ASM_BITOPS_
-
-_INLINE_ int ext2fs_set_bit(unsigned int nr,void * addr)
-{
-	char retval;
-
-	__asm__ __volatile__ ("bfset %2@{%1:#1}; sne %0"
-	     : "=d" (retval) : "d" (nr^7), "a" (addr));
-
-	return retval;
-}
-
-_INLINE_ int ext2fs_clear_bit(unsigned int nr, void * addr)
-{
-	char retval;
-
-	__asm__ __volatile__ ("bfclr %2@{%1:#1}; sne %0"
-	     : "=d" (retval) : "d" (nr^7), "a" (addr));
-
-	return retval;
-}
-
-_INLINE_ int ext2fs_test_bit(unsigned int nr, const void * addr)
-{
-	char retval;
-
-	__asm__ __volatile__ ("bftst %2@{%1:#1}; sne %0"
-	     : "=d" (retval) : "d" (nr^7), "a" (addr));
-
-	return retval;
-}
-
-#endif /* __mc68000__ */
 
 
 #if !defined(_EXT2_HAVE_ASM_SWAB_)
