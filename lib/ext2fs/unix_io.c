@@ -505,6 +505,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	memset(data, 0, sizeof(struct unix_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
 	data->io_stats.num_fields = 2;
+	data->dev = -1;
 
 	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
 	if (flags & IO_FLAG_EXCLUSIVE)
@@ -575,7 +576,6 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		/* Is the block device actually writable? */
 		error = ioctl(data->dev, BLKROGET, &readonly);
 		if (!error && readonly) {
-			close(data->dev);
 			retval = EPERM;
 			goto cleanup;
 		}
@@ -621,11 +621,17 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 cleanup:
 	if (data) {
+		if (data->dev >= 0)
+			close(data->dev);
 		free_cache(data);
 		ext2fs_free_mem(&data);
 	}
-	if (io)
+	if (io) {
+		if (io->name) {
+			ext2fs_free_mem(&io->name);
+		}
 		ext2fs_free_mem(&io);
+	}
 	return retval;
 }
 
