@@ -241,6 +241,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		goto cleanup;
 	}
 
+	set_field(s_mmp_update_interval, 0);
+
 	/*
 	 * If we're creating an external journal device, we don't need
 	 * to bother with the rest.
