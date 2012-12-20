@@ -1809,6 +1809,7 @@ report_problem:
 					pctx->str = "ext2fs_extent_delete";
 					return;
 				}
+				ext2fs_extent_fix_parents(ehandle);
 				pctx->errcode = ext2fs_extent_get(ehandle,
 								  EXT2_EXTENT_CURRENT,
 								  &extent);
