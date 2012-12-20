@@ -706,7 +706,7 @@ errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
  * Safe to call for any position in node; if not at the first entry,
  * will  simply return.
  */
-static errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle)
+errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle)
 {
 	int				retval = 0;
 	blk64_t				start;

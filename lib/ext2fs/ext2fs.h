@@ -1082,6 +1082,7 @@ extern errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 					struct ext2_extent_info *info);
 extern errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
 				    blk64_t blk);
+extern errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle);
 
 /* fileio.c */
 extern errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,

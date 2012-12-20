@@ -558,6 +558,9 @@ struct problem_context {
 /* Extent has zero length */
 #define PR_1_EXTENT_LENGTH_ZERO		0x010066
 
+/* Index start doesn't match start of next extent down */
+#define PR_1_EXTENT_INDEX_START_INVALID	0x01006D
+
 /*
  * Pass 1b errors
  */
@@ -585,7 +588,6 @@ struct problem_context {
 
 /* Error adjusting EA refcount */
 #define PR_1B_ADJ_EA_REFCOUNT	0x011007
-
 
 /* Pass 1C: Scan directories for inodes with dup blocks. */
 #define PR_1C_PASS_HEADER	0x012000
