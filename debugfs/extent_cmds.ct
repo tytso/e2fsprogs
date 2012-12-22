@@ -4,9 +4,6 @@
 #
 command_table extent_cmds;
 
-request do_inode, "Open an inode",
-	inode;
-
 request do_current_node, "Current extent node",
 	current_node, current;
 
@@ -72,6 +69,9 @@ request do_goto_block, "Goto extent containing specified block",
 
 request do_info, "Print extent info",
 	info;
+
+request do_extent_close, "Close extent handle",
+	extent_close, ec;
 
 end;
 

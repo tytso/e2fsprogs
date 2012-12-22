@@ -28,8 +28,6 @@ extern char *optarg;
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "et/com_err.h"
-#include "ss/ss.h"
 #include "debugfs.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
@@ -39,9 +37,9 @@ extern char *optarg;
 #include "../version.h"
 #include "jfs_user.h"
 
-extern ss_request_table debug_cmds;
 ss_request_table *extra_cmds;
 const char *debug_prog_name;
+int sci_idx;
 
 ext2_filsys	current_fs = NULL;
 ext2_ino_t	root, cwd;
@@ -2284,7 +2282,6 @@ static int source_file(const char *cmd_file, int sci_idx)
 int main(int argc, char **argv)
 {
 	int		retval;
-	int		sci_idx;
 	const char	*usage = 
 		"Usage: %s [-b blocksize] [-s superblock] [-f cmd_file] "
 		"[-R request] [-V] ["

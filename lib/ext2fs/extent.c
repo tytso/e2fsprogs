@@ -604,8 +604,8 @@ errcode_t ext2fs_extent_free_path(ext2_extent_path_t path)
  * If "blk" has no mapping (hole) then handle is left at last
  * extent before blk.
  */
-static errcode_t extent_goto(ext2_extent_handle_t handle,
-			     int leaf_level, blk64_t blk)
+errcode_t ext2fs_extent_goto2(ext2_extent_handle_t handle,
+			      int leaf_level, blk64_t blk)
 {
 	struct ext2fs_extent	extent;
 	errcode_t		retval;
@@ -694,7 +694,7 @@ static errcode_t extent_goto(ext2_extent_handle_t handle,
 errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
 			     blk64_t blk)
 {
-	return extent_goto(handle, 0, blk);
+	return ext2fs_extent_goto2(handle, 0, blk);
 }
 
 /*
@@ -756,7 +756,7 @@ errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle)
 	}
 
 	/* put handle back to where we started */
-	retval = extent_goto(handle, orig_height, start);
+	retval = ext2fs_extent_goto2(handle, orig_height, start);
 done:
 	return retval;
 }
@@ -819,7 +819,7 @@ errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle,
  *
  * handle will be left pointing at original record.
  */
-static errcode_t extent_node_split(ext2_extent_handle_t handle)
+errcode_t ext2fs_extent_node_split(ext2_extent_handle_t handle)
 {
 	errcode_t			retval = 0;
 	blk64_t				new_node_pblk;
@@ -874,12 +874,12 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 			goto done;
 		goal_blk = extent.e_pblk;
 
-		retval = extent_node_split(handle);
+		retval = ext2fs_extent_node_split(handle);
 		if (retval)
 			goto done;
 
 		/* get handle back to our original split position */
-		retval = extent_goto(handle, orig_height, orig_lblk);
+		retval = ext2fs_extent_goto2(handle, orig_height, orig_lblk);
 		if (retval)
 			goto done;
 	}
@@ -1028,7 +1028,7 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 	}
 
 	/* get handle back to our original position */
-	retval = extent_goto(handle, orig_height, orig_lblk);
+	retval = ext2fs_extent_goto2(handle, orig_height, orig_lblk);
 	if (retval)
 		goto done;
 
@@ -1079,7 +1079,7 @@ errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 			printf("node full (level %d) - splitting\n",
 				   handle->level);
 #endif
-			retval = extent_node_split(handle);
+			retval = ext2fs_extent_node_split(handle);
 			if (retval)
 				return retval;
 			path = handle->path + handle->level;
@@ -1447,7 +1447,7 @@ done:
 	/* get handle back to its position */
 	if (orig_height > handle->max_depth)
 		orig_height = handle->max_depth; /* In case we shortened the tree */
-	extent_goto(handle, orig_height, orig_lblk);
+	ext2fs_extent_goto2(handle, orig_height, orig_lblk);
 	return retval;
 }
 
@@ -1559,477 +1559,10 @@ errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 }
 
 #ifdef DEBUG
-
-#include "ss/ss.h"
-
-#include "debugfs.h"
-
 /*
- * Hook in new commands into debugfs
+ * Override debugfs's prompt
  */
 const char *debug_prog_name = "tst_extents";
-extern ss_request_table extent_cmds;
-ss_request_table *extra_cmds = &extent_cmds;
 
-ext2_ino_t	current_ino = 0;
-ext2_extent_handle_t current_handle;
-
-int common_extent_args_process(int argc, char *argv[], int min_argc,
-			       int max_argc, const char *cmd,
-			       const char *usage, int flags)
-{
-	if (common_args_process(argc, argv, min_argc, max_argc, cmd,
-				usage, flags))
-		return 1;
-
-	if (!current_handle) {
-		com_err(cmd, 0, "Extent handle not open");
-		return 1;
-	}
-	return 0;
-}
-
-void do_inode(int argc, char *argv[])
-{
-	ext2_ino_t	inode;
-	int		i;
-	struct ext3_extent_header *eh;
-	errcode_t retval;
-
-	if (check_fs_open(argv[0]))
-		return;
-
-	if (argc == 1) {
-		if (current_ino)
-			printf("Current inode is %d\n", current_ino);
-		else
-			printf("No current inode\n");
-		return;
-	}
-
-	if (common_inode_args_process(argc, argv, &inode, 0)) {
-		return;
-	}
-
-	current_ino = 0;
-
-	retval = ext2fs_extent_open(current_fs, inode, &current_handle);
-	if (retval) {
-		com_err(argv[1], retval, "while opening extent handle");
-		return;
-	}
-
-	current_ino = inode;
-
-	printf("Loaded inode %d\n", current_ino);
-
-	return;
-}
-
-void generic_goto_node(char *cmd_name, int op)
-{
-	struct ext2fs_extent	extent;
-	errcode_t		retval;
-
-	if (check_fs_open(cmd_name))
-		return;
-
-	if (!current_handle) {
-		com_err(cmd_name, 0, "Extent handle not open");
-		return;
-	}
-
-	retval = ext2fs_extent_get(current_handle, op, &extent);
-	if (retval) {
-		com_err(cmd_name, retval, 0);
-		return;
-	}
-	dbg_print_extent(0, &extent);
-}
-
-void do_current_node(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_CURRENT);
-}
-
-void do_root_node(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_ROOT);
-}
-
-void do_last_leaf(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_LAST_LEAF);
-}
-
-void do_first_sib(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_FIRST_SIB);
-}
-
-void do_last_sib(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_LAST_SIB);
-}
-
-void do_next_sib(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_NEXT_SIB);
-}
-
-void do_prev_sib(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_PREV_SIB);
-}
-
-void do_next_leaf(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_NEXT_LEAF);
-}
-
-void do_prev_leaf(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_PREV_LEAF);
-}
-
-void do_next(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_NEXT);
-}
-
-void do_prev(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_PREV);
-}
-
-void do_up(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_UP);
-}
-
-void do_down(int argc, char *argv[])
-{
-	generic_goto_node(argv[0], EXT2_EXTENT_DOWN);
-}
-
-void do_delete_node(int argc, char *argv[])
-{
-	errcode_t	retval;
-	int		err;
-
-	if (common_extent_args_process(argc, argv, 1, 1, "delete_node",
-				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
-		return;
-
-	retval = ext2fs_extent_delete(current_handle, 0);
-	if (retval) {
-		com_err(argv[0], retval, 0);
-		return;
-	}
-	if (current_handle->path && current_handle->path[0].curr)
-		do_current_node(argc, argv);
-}
-
-void do_replace_node(int argc, char *argv[])
-{
-	const char	*usage = "[--uninit] <lblk> <len> <pblk>";
-	errcode_t	retval;
-	struct ext2fs_extent extent;
-	int err;
-
-	if (common_extent_args_process(argc, argv, 3, 5, "replace_node",
-				       usage, CHECK_FS_RW | CHECK_FS_BITMAPS))
-		return;
-
-	extent.e_flags = 0;
-
-	if (!strcmp(argv[1], "--uninit")) {
-		argc--;
-		argv++;
-		extent.e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
-	}
-
-	if (argc != 4) {
-		fprintf(stderr, "Usage: %s %s\n", argv[0], usage);
-		return;
-	}
-
-	extent.e_lblk = parse_ulong(argv[1], argv[0], "logical block", &err);
-	if (err)
-		return;
-
-	extent.e_len = parse_ulong(argv[2], argv[0], "logical block", &err);
-	if (err)
-		return;
-
-	extent.e_pblk = parse_ulong(argv[3], argv[0], "logical block", &err);
-	if (err)
-		return;
-
-	retval = ext2fs_extent_replace(current_handle, 0, &extent);
-	if (retval) {
-		com_err(argv[0], retval, 0);
-		return;
-	}
-	do_current_node(argc, argv);
-}
-
-void do_split_node(int argc, char *argv[])
-{
-	errcode_t	retval;
-	struct ext2fs_extent extent;
-	int err;
-
-	if (common_extent_args_process(argc, argv, 1, 1, "split_node",
-				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
-		return;
-
-	retval = extent_node_split(current_handle);
-	if (retval) {
-		com_err(argv[0], retval, 0);
-		return;
-	}
-	do_current_node(argc, argv);
-}
-
-void do_insert_node(int argc, char *argv[])
-{
-	const char	*usage = "[--after] [--uninit] <lblk> <len> <pblk>";
-	errcode_t	retval;
-	struct ext2fs_extent extent;
-	char *cmd;
-	int err;
-	int flags = 0;
-
-	if (common_extent_args_process(argc, argv, 3, 6, "insert_node",
-				       usage, CHECK_FS_RW | CHECK_FS_BITMAPS))
-		return;
-
-	cmd = argv[0];
-
-	extent.e_flags = 0;
-
-	while (argc > 2) {
-		if (!strcmp(argv[1], "--after")) {
-			argc--;
-			argv++;
-			flags |= EXT2_EXTENT_INSERT_AFTER;
-			continue;
-		}
-		if (!strcmp(argv[1], "--uninit")) {
-			argc--;
-			argv++;
-			extent.e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
-			continue;
-		}
-		break;
-	}
-
-	if (argc != 4) {
-		fprintf(stderr, "usage: %s %s\n", cmd, usage);
-		return;
-	}
-
-	extent.e_lblk = parse_ulong(argv[1], cmd,
-				    "logical block", &err);
-	if (err)
-		return;
-
-	extent.e_len = parse_ulong(argv[2], cmd,
-				    "length", &err);
-	if (err)
-		return;
-
-	extent.e_pblk = parse_ulong(argv[3], cmd,
-				    "pysical block", &err);
-	if (err)
-		return;
-
-	retval = ext2fs_extent_insert(current_handle, flags, &extent);
-	if (retval) {
-		com_err(cmd, retval, 0);
-		return;
-	}
-	do_current_node(argc, argv);
-}
-
-void do_set_bmap(int argc, char **argv)
-{
-	const char	*usage = "[--uninit] <lblk> <pblk>";
-	errcode_t	retval;
-	blk_t		logical;
-	blk_t		physical;
-	char		*cmd = argv[0];
-	int		flags = 0;
-	int		err;
-
-	if (common_extent_args_process(argc, argv, 3, 5, "set_bmap",
-				       usage, CHECK_FS_RW | CHECK_FS_BITMAPS))
-		return;
-
-	if (argc > 2 && !strcmp(argv[1], "--uninit")) {
-		argc--;
-		argv++;
-		flags |= EXT2_EXTENT_SET_BMAP_UNINIT;
-	}
-
-	if (argc != 3) {
-		fprintf(stderr, "Usage: %s %s\n", cmd, usage);
-		return;
-	}
-
-	logical = parse_ulong(argv[1], cmd,
-				    "logical block", &err);
-	if (err)
-		return;
-
-	physical = parse_ulong(argv[2], cmd,
-				    "physical block", &err);
-	if (err)
-		return;
-
-	retval = ext2fs_extent_set_bmap(current_handle, logical,
-					(blk64_t) physical, flags);
-	if (retval) {
-		com_err(cmd, retval, 0);
-		return;
-	}
-	if (current_handle->path && current_handle->path[0].curr)
-		do_current_node(argc, argv);
-}
-
-void do_print_all(int argc, char **argv)
-{
-	const char	*usage = "[--leaf-only|--reverse|--reverse-leaf]";
-	struct ext2fs_extent	extent;
-	errcode_t		retval;
-	errcode_t		end_err = EXT2_ET_EXTENT_NO_NEXT;
-	int			op = EXT2_EXTENT_NEXT;
-	int			first_op = EXT2_EXTENT_ROOT;
-
-
-	if (common_extent_args_process(argc, argv, 1, 2, "print_all",
-				       usage, 0))
-		return;
-
-	if (argc == 2) {
-		if (!strcmp(argv[1], "--leaf-only"))
-			op = EXT2_EXTENT_NEXT_LEAF;
-		else if (!strcmp(argv[1], "--reverse")) {
-			op = EXT2_EXTENT_PREV;
-			first_op = EXT2_EXTENT_LAST_LEAF;
-			end_err = EXT2_ET_EXTENT_NO_PREV;
-		} else if (!strcmp(argv[1], "--reverse-leaf")) {
-			op = EXT2_EXTENT_PREV_LEAF;
-			first_op = EXT2_EXTENT_LAST_LEAF;
-			end_err = EXT2_ET_EXTENT_NO_PREV;
-		} else {
-			fprintf(stderr, "Usage: %s %s\n", argv[0], usage);
-			return;
-		}
-	}
-
-	retval = ext2fs_extent_get(current_handle, first_op, &extent);
-	if (retval) {
-		com_err(argv[0], retval, 0);
-		return;
-	}
-	dbg_print_extent(0, &extent);
-
-	while (1) {
-		retval = ext2fs_extent_get(current_handle, op, &extent);
-		if (retval == end_err)
-			break;
-
-		if (retval) {
-			com_err(argv[0], retval, 0);
-			return;
-		}
-		dbg_print_extent(0, &extent);
-	}
-}
-
-void do_fix_parents(int argc, char **argv)
-{
-	struct ext2fs_extent	extent;
-	struct ext2_extent_info	info;
-	errcode_t		retval;
-
-	if (common_extent_args_process(argc, argv, 1, 1, "fix_parents", "",
-				       CHECK_FS_RW))
-		return;
-
-	retval = ext2fs_extent_fix_parents(current_handle);
-	if (retval) {
-		com_err(argv[0], retval, 0);
-		return;
-	}
-}
-
-void do_info(int argc, char **argv)
-{
-	struct ext2fs_extent	extent;
-	struct ext2_extent_info	info;
-	errcode_t		retval;
-
-	if (common_extent_args_process(argc, argv, 1, 1, "info", "", 0))
-		return;
-
-	retval = ext2fs_extent_get_info(current_handle, &info);
-	if (retval) {
-		com_err(argv[0], retval, 0);
-		return;
-	}
-
-	retval = ext2fs_extent_get(current_handle,
-				   EXT2_EXTENT_CURRENT, &extent);
-	if (retval) {
-		com_err(argv[0], retval, 0);
-		return;
-	}
-
-	dbg_print_extent(0, &extent);
-
-	printf("Current handle location: %d/%d (max: %d, bytes %d), level %d/%d\n",
-	       info.curr_entry, info.num_entries, info.max_entries,
-	       info.bytes_avail, info.curr_level, info.max_depth);
-	printf("\tmax lblk: %llu, max pblk: %llu\n", info.max_lblk,
-	       info.max_pblk);
-	printf("\tmax_len: %u, max_uninit_len: %u\n", info.max_len,
-	       info.max_uninit_len);
-}
-
-void do_goto_block(int argc, char **argv)
-{
-	struct ext2fs_extent	extent;
-	errcode_t		retval;
-	int			op = EXT2_EXTENT_NEXT_LEAF;
-	blk64_t			blk;
-	int			level = 0, err;
-
-	if (common_extent_args_process(argc, argv, 2, 3, "goto_block",
-				       "block [level]", 0))
-		return;
-
-	if (strtoblk(argv[0], argv[1], &blk))
-		return;
-
-	if (argc == 3) {
-		level = parse_ulong(argv[2], argv[0], "level", &err);
-		if (err)
-			return;
-	}
-
-	retval = extent_goto(current_handle, level, (blk64_t) blk);
-
-	if (retval) {
-		com_err(argv[0], retval,
-			"while trying to go to block %llu, level %d",
-			(unsigned long long) blk, level);
-		return;
-	}
-
-	generic_goto_node(argv[0], EXT2_EXTENT_CURRENT);
-}
 #endif
 
