@@ -34,6 +34,12 @@ LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) \
 DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(DEPLIBSS) $(DEPLIBCOM_ERR) \
 	$(DEPLIBBLKID) $(DEPLIBUUID)
 
+STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBSS) $(STATIC_LIBCOM_ERR) \
+	$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(STATIC_LIBE2P)
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBSS) \
+		$(DEPSTATIC_LIBCOM_ERR) $(DEPSTATIC_LIBUUID) \
+		$(DEPSTATIC_LIBE2P)
+
 .c.o:
 	$(E) "	CC $<"
 	$(Q) $(CC) -c $(ALL_CFLAGS) $< -o $@
@@ -43,6 +49,11 @@ all:: $(PROGS) $(MANPAGES)
 debugfs: $(DEBUG_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o debugfs $(DEBUG_OBJS) $(LIBS)
+
+debugfs.static: $(DEBUG_OBJS) $(STATIC_DEPLIBS)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(LDFLAGS_STATIC) -o debugfs.static $(DEBUG_OBJS) \
+		$(STATIC_LIBS) $(READLINE_LIB)
 
 rdebugfs: $(RO_DEBUG_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
@@ -106,7 +117,7 @@ uninstall:
 
 clean:
 	$(RM) -f $(PROGS) debugfs.8 \#* *.s *.o *.a *~ debug_cmds.c \
-		extent_cmds.c ro_debug_cmds.c core rdebugfs
+		extent_cmds.c ro_debug_cmds.c core rdebugfs debugfs.static
 
 mostlyclean: clean
 distclean: clean
