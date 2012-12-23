@@ -767,7 +767,7 @@ to initialize directory entries for @file{.} and @file{..}, respectively.
 
 @deftypefun errcode_t ext2fs_dir_iterate (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, int @var{flags}, char *@var{block_buf}, int (*@var{func})(struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
 
-This function interates over all of the directory entries in the
+This function iterates over all of the directory entries in the
 directory @var{dir}, calling the callback function @var{func} for each
 directory entry in the directory.  The @var{block_buf} parameter should
 either be NULL, or if the @code{ext2fs_dir_iterate} function is 
