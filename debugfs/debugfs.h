@@ -2,6 +2,7 @@
  * debugfs.h --- header file for the debugfs program
  */
 
+#include "ss/ss.h"
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 
@@ -21,6 +22,8 @@
 
 extern ext2_filsys current_fs;
 extern ext2_ino_t	root, cwd;
+extern int sci_idx;
+extern ss_request_table debug_cmds, extent_cmds;
 
 extern void reset_getopt(void);
 extern FILE *open_pager(void);

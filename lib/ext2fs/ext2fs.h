@@ -1145,6 +1145,7 @@ extern errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
 extern void ext2fs_extent_free(ext2_extent_handle_t handle);
 extern errcode_t ext2fs_extent_get(ext2_extent_handle_t handle,
 				   int flags, struct ext2fs_extent *extent);
+extern errcode_t ext2fs_extent_node_split(ext2_extent_handle_t handle);
 extern errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle, int flags,
 				       struct ext2fs_extent *extent);
 extern errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
@@ -1157,6 +1158,9 @@ extern errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 					struct ext2_extent_info *info);
 extern errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
 				    blk64_t blk);
+extern errcode_t ext2fs_extent_goto2(ext2_extent_handle_t handle,
+				     int leaf_level, blk64_t blk);
+extern errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle);
 
 /* fileio.c */
 extern errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,

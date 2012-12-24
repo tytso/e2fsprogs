@@ -1000,6 +1000,14 @@ static struct e2fsck_problem problem_table[] = {
 	     "@i %i does not match.  "),
 	  PROMPT_FIX, 0 },
 
+	/*
+	 * Interior extent node logical offset doesn't match first node below it
+	 */
+	{ PR_1_EXTENT_INDEX_START_INVALID,
+	  N_("Interior @x node level %N of @i %i:\n"
+	     "Logical start %b does not match logical start %c at next level.  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

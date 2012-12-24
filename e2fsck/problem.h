@@ -586,6 +586,8 @@ struct problem_context {
 /* ea block passes checks, but checksum invalid */
 #define PR_1_EA_BLOCK_ONLY_CSUM_INVALID        0x01006C
 
+/* Index start doesn't match start of next extent down */
+#define PR_1_EXTENT_INDEX_START_INVALID	0x01006D
 
 /*
  * Pass 1b errors
@@ -614,7 +616,6 @@ struct problem_context {
 
 /* Error adjusting EA refcount */
 #define PR_1B_ADJ_EA_REFCOUNT	0x011007
-
 
 /* Pass 1C: Scan directories for inodes with dup blocks. */
 #define PR_1C_PASS_HEADER	0x012000

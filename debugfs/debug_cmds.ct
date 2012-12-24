@@ -178,5 +178,14 @@ request do_dump_mmp, "Dump MMP information",
 request do_set_mmp_value, "Set MMP value",
 	set_mmp_value, smmp;
 
+request do_extent_open, "Open inode for extent manipulation",
+	extent_open, eo;
+
+request do_zap_block, "Zap block",
+	zap_block, zap;
+
+request do_dump_block, "Zap block",
+	block_dump, bp;
+
 end;
 

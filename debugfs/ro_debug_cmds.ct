@@ -87,5 +87,8 @@ request do_supported_features, "Print features supported by this version of e2fs
 request do_dump_mmp, "Dump MMP information",
 	dump_mmp;
 
+request do_extent_open, "Open inode for extent manipulation",
+	extent_open, eo;
+
 end;
 

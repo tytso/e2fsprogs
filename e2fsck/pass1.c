@@ -1911,7 +1911,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		}
 
 		if (problem) {
-		report_problem:
+report_problem:
 			pctx->blk = extent.e_pblk;
 			pctx->blk2 = extent.e_lblk;
 			pctx->num = extent.e_len;
@@ -1924,6 +1924,7 @@ fix_problem_now:
 					pctx->str = "ext2fs_extent_delete";
 					return;
 				}
+				ext2fs_extent_fix_parents(ehandle);
 				pctx->errcode = ext2fs_extent_get(ehandle,
 								  EXT2_EXTENT_CURRENT,
 								  &extent);
@@ -1937,7 +1938,10 @@ fix_problem_now:
 		}
 
 		if (!is_leaf) {
+			blk64_t lblk;
+
 			blk = extent.e_pblk;
+			lblk = extent.e_lblk;
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
 			if (pctx->errcode) {
@@ -1949,6 +1953,18 @@ fix_problem_now:
 					EXT2_ET_EXTENT_CSUM_INVALID)
 					goto report_problem;
 				return;
+			}
+			/* The next extent should match this index's logical start */
+			if (extent.e_lblk != lblk) {
+				struct ext2_extent_info info;
+
+				ext2fs_extent_get_info(ehandle, &info);
+				pctx->blk = lblk;
+				pctx->blk2 = extent.e_lblk;
+				pctx->num = info.curr_level - 1;
+				problem = PR_1_EXTENT_INDEX_START_INVALID;
+				if (fix_problem(ctx, problem, pctx))
+					ext2fs_extent_fix_parents(ehandle);
 			}
 			scan_extent_node(ctx, pctx, pb, extent.e_lblk, ehandle);
 			if (pctx->errcode)
