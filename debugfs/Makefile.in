@@ -18,16 +18,17 @@ MK_CMDS=	_SS_DIR_OVERRIDE=../lib/ss ../lib/ss/mk_cmds
 
 DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o \
 	lsdel.o dump.o set_fields.o logdump.o htree.o unused.o e2freefrag.o \
-	filefrag.o extent_cmds.o extent_inode.o
+	filefrag.o extent_cmds.o extent_inode.o zap.o
 
 RO_DEBUG_OBJS= ro_debug_cmds.o ro_debugfs.o util.o ncheck.o icheck.o ls.o \
-	lsdel.o logdump.o htree.o e2freefrag.o filefrag.o extent_inode.o
+	lsdel.o logdump.o htree.o e2freefrag.o filefrag.o extent_cmds.o \
+	extent_inode.o
 
 SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c $(srcdir)/ls.c \
 	$(srcdir)/ncheck.c $(srcdir)/icheck.c $(srcdir)/lsdel.c \
 	$(srcdir)/dump.c $(srcdir)/set_fields.c ${srcdir}/logdump.c \
 	$(srcdir)/htree.c $(srcdir)/unused.c ${srcdir}/../misc/e2freefrag.c \
-	$(srcdir)/filefrag.c $(srcdir)/extent_inode.c
+	$(srcdir)/filefrag.c $(srcdir)/extent_inode.c $(srcdir)/zap.c
 
 LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) \
 	$(LIBUUID)
