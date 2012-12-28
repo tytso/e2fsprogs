@@ -1873,6 +1873,14 @@ profile_error:
 
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 
+	/*
+	 * Initialize s_desc_size so that the parse_extended_opts()
+	 * can correctly handle "-E resize=NNN" if the 64-bit option
+	 * is set.
+	 */
+	if (fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+		fs_param.s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
+
 	/* This check should happen beyond the last assignment to blocksize */
 	if (blocksize > sys_page_size) {
 		if (!force) {
