@@ -745,14 +745,41 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 	if (IS_BLOCK_BM(fs, group, blk)) {
 		ext2fs_block_bitmap_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
-	} else if (IS_INODE_BM(fs, group, blk)) {
+		return;
+	}
+	if (IS_INODE_BM(fs, group, blk)) {
 		ext2fs_inode_bitmap_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
-	} else if (IS_INODE_TB(fs, group, blk)) {
+		return;
+	}
+	if (IS_INODE_TB(fs, group, blk)) {
 		ext2fs_inode_table_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
-	} else if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
+		return;
+	}
+	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
+		dgrp_t i;
+
+		for (i=0; i < rfs->old_fs->group_desc_count; i++) {
+			if (IS_BLOCK_BM(fs, i, blk)) {
+				ext2fs_block_bitmap_loc_set(fs, i, 0);
+				rfs->needed_blocks++;
+				return;
+			}
+			if (IS_INODE_BM(fs, i, blk)) {
+				ext2fs_inode_bitmap_loc_set(fs, i, 0);
+				rfs->needed_blocks++;
+				return;
+			}
+			if (IS_INODE_TB(fs, i, blk)) {
+				ext2fs_inode_table_loc_set(fs, i, 0);
+				rfs->needed_blocks++;
+				return;
+			}
+		}
+	}
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
 		   (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT))) {
 		/*
 		 * If the block bitmap is uninitialized, which means
