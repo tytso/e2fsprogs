@@ -874,6 +874,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * gets interesting....
 	 */
 	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
+	/* first reserve all of the existing fs meta blocks */
 	for (i = 0; i < max_groups; i++) {
 		has_super = ext2fs_bg_has_super(fs, i);
 		if (has_super)
@@ -899,11 +900,6 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 						  group_blk + has_super);
 		}
 
-		if (ext2fs_inode_table_loc(fs, i) &&
-		    ext2fs_inode_bitmap_loc(fs, i) &&
-		    ext2fs_block_bitmap_loc(fs, i))
-			goto next_group;
-
 		/*
 		 * Reserve the existing meta blocks that we know
 		 * aren't to be moved.
@@ -920,9 +916,17 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 				ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
 							 blk);
 
+		group_blk += rfs->new_fs->super->s_blocks_per_group;
+	}
+
+	/* Allocate the missing data structures */
+	for (i = 0; i < max_groups; i++) {
+		if (ext2fs_inode_table_loc(fs, i) &&
+		    ext2fs_inode_bitmap_loc(fs, i) &&
+		    ext2fs_block_bitmap_loc(fs, i))
+			continue;
+
 		/*
-		 * Allocate the missing data structures
-		 *
 		 * XXX We have a problem with FLEX_BG and off-line
 		 * resizing where we are growing the size of the
 		 * filesystem.  ext2fs_allocate_group_table() will try
@@ -977,7 +981,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		 * block relocation phase.
 		 */
 		if (ext2fs_inode_table_loc(fs, i) == ext2fs_inode_table_loc(old_fs, i))
-			goto next_group; /* inode table not moved */
+			continue;	/* inode table not moved */
 
 		rfs->needed_blocks += fs->inode_blocks_per_group;
 
@@ -1002,9 +1006,6 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		for (blk = ext2fs_inode_table_loc(rfs->old_fs, i), j=0;
 		     j < fs->inode_blocks_per_group ; j++, blk++)
 			ext2fs_mark_block_bitmap2(rfs->reserve_blocks, blk);
-
-	next_group:
-		group_blk += rfs->new_fs->super->s_blocks_per_group;
 	}
 	retval = 0;
 
