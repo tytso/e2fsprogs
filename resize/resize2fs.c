@@ -783,6 +783,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	ext2_filsys 	fs, old_fs;
 	ext2fs_block_bitmap	meta_bmap;
 	__u32		save_incompat_flag;
+	int		flex_bg;
 
 	fs = rfs->new_fs;
 	old_fs = rfs->old_fs;
@@ -874,6 +875,8 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * gets interesting....
 	 */
 	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
+	flex_bg = fs->super->s_feature_incompat &
+		EXT4_FEATURE_INCOMPAT_FLEX_BG;
 	/* first reserve all of the existing fs meta blocks */
 	for (i = 0; i < max_groups; i++) {
 		has_super = ext2fs_bg_has_super(fs, i);
@@ -903,18 +906,37 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		/*
 		 * Reserve the existing meta blocks that we know
 		 * aren't to be moved.
+		 *
+		 * For flex_bg file systems, in order to avoid
+		 * overwriting fs metadata (especially inode table
+		 * blocks) belonging to a different block group when
+		 * we are relocating the inode tables, we need to
+		 * reserve all existing fs metadata blocks.
 		 */
 		if (ext2fs_block_bitmap_loc(fs, i))
 			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
 				 ext2fs_block_bitmap_loc(fs, i));
+		else if (flex_bg && i < old_fs->group_desc_count)
+			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
+				 ext2fs_block_bitmap_loc(old_fs, i));
+
 		if (ext2fs_inode_bitmap_loc(fs, i))
 			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
 				 ext2fs_inode_bitmap_loc(fs, i));
+		else if (flex_bg && i < old_fs->group_desc_count)
+			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
+				 ext2fs_inode_bitmap_loc(old_fs, i));
+
 		if (ext2fs_inode_table_loc(fs, i))
 			for (blk = ext2fs_inode_table_loc(fs, i), j=0;
 			     j < fs->inode_blocks_per_group ; j++, blk++)
 				ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
 							 blk);
+		else if (flex_bg && i < old_fs->group_desc_count)
+			for (blk = ext2fs_inode_table_loc(old_fs, i), j=0;
+			     j < old_fs->inode_blocks_per_group ; j++, blk++)
+				ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
+							  blk);
 
 		group_blk += rfs->new_fs->super->s_blocks_per_group;
 	}
