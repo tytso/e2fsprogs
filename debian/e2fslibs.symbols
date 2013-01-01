@@ -82,6 +82,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_bg_itable_unused_set@Base 1.42
  ext2fs_bg_used_dirs_count@Base 1.42
  ext2fs_bg_used_dirs_count_set@Base 1.42
+ ext2fs_bitcount@Base 1.42.7
  ext2fs_blkmap64_bitarray@Base 1.42
  ext2fs_blkmap64_rbtree@Base 1.42.1
  ext2fs_block_alloc_stats2@Base 1.42
@@ -148,12 +149,15 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_expand_dir@Base 1.37
  ext2fs_ext_attr_hash_entry@Base 1.41.0
  ext2fs_extent_delete@Base 1.41.0
+ ext2fs_extent_fix_parents@Base 1.42.7
  ext2fs_extent_free@Base 1.41.0
  ext2fs_extent_get@Base 1.41.0
  ext2fs_extent_get_info@Base 1.41.0
  ext2fs_extent_goto@Base 1.41.0
+ ext2fs_extent_goto2@Base 1.42.7
  ext2fs_extent_header_verify@Base 1.41.0
  ext2fs_extent_insert@Base 1.41.0
+ ext2fs_extent_node_split@Base 1.42.7
  ext2fs_extent_open2@Base 1.41.6
  ext2fs_extent_open@Base 1.41.0
  ext2fs_extent_replace@Base 1.41.0
