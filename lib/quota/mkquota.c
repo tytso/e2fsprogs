@@ -25,6 +25,7 @@
 #define UINT_TO_VOIDPTR(val)  ((void *)(intptr_t)(val))
 #define VOIDPTR_TO_UINT(ptr)  ((unsigned int)(intptr_t)(ptr))
 
+#if DEBUG_QUOTA
 static void print_inode(struct ext2_inode *inode)
 {
 	if (!inode)
@@ -44,6 +45,7 @@ static void print_inode(struct ext2_inode *inode)
 
 	return;
 }
+#endif
 
 /*
  * Returns 0 if not able to find the quota file, otherwise returns its
@@ -121,7 +123,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 	int		retval = 0, i;
 	dict_t		*dict;
 	ext2_filsys	fs;
-	struct quota_handle *h;
+	struct quota_handle *h = NULL;
 	int		fmt = QFMT_VFS_V1;
 
 	if (!qctx)
@@ -130,7 +132,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 	fs = qctx->fs;
 	retval = ext2fs_get_mem(sizeof(struct quota_handle), &h);
 	if (retval) {
-		log_err("Unable to allocate quota handle", "");
+		log_err("Unable to allocate quota handle");
 		goto out;
 	}
 
@@ -146,7 +148,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 
 		retval = quota_file_create(h, fs, i, fmt);
 		if (retval < 0) {
-			log_err("Cannot initialize io on quotafile", "");
+			log_err("Cannot initialize io on quotafile");
 			continue;
 		}
 
@@ -216,7 +218,7 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 
 	err = ext2fs_get_mem(sizeof(struct quota_ctx), &ctx);
 	if (err) {
-		log_err("Failed to allocate quota context", "");
+		log_err("Failed to allocate quota context");
 		return err;
 	}
 
@@ -226,7 +228,7 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 			continue;
 		err = ext2fs_get_mem(sizeof(dict_t), &dict);
 		if (err) {
-			log_err("Failed to allocate dictionary", "");
+			log_err("Failed to allocate dictionary");
 			return err;
 		}
 		ctx->quota_dict[i] = dict;
@@ -271,7 +273,7 @@ static struct dquot *get_dq(dict_t *dict, __u32 key)
 		dq = dnode_get(n);
 	else {
 		if (ext2fs_get_mem(sizeof(struct dquot), &dq)) {
-			log_err("Unable to allocate dquot", "");
+			log_err("Unable to allocate dquot");
 			return NULL;
 		}
 		memset(dq, 0, sizeof(struct dquot));
@@ -423,9 +425,10 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 		scan_data->usage_is_inconsistent = 1;
 		fprintf(stderr, "[QUOTA WARNING] Usage inconsistent for ID %d:"
 			"actual (%llu, %llu) != expected (%llu, %llu)\n",
-			dq->dq_id, dq->dq_dqb.dqb_curspace,
-			dq->dq_dqb.dqb_curinodes, dquot->dq_dqb.dqb_curspace,
-			dquot->dq_dqb.dqb_curinodes);
+			dq->dq_id, (long long)dq->dq_dqb.dqb_curspace,
+			(long long)dq->dq_dqb.dqb_curinodes,
+			(long long)dquot->dq_dqb.dqb_curspace,
+			(long long)dquot->dq_dqb.dqb_curinodes);
 	}
 
 	if (scan_data->update_limits) {
@@ -461,6 +464,7 @@ static errcode_t quota_read_all_dquots(struct quota_handle *qh,
 /*
  * Write all memory dquots into quota file
  */
+#if 0 /* currently unused, but may be useful in the future? */
 static errcode_t quota_write_all_dquots(struct quota_handle *qh,
                                         quota_ctx_t qctx)
 {
@@ -475,6 +479,7 @@ static errcode_t quota_write_all_dquots(struct quota_handle *qh,
 	ext2fs_write_bitmaps(qctx->fs);
 	return 0;
 }
+#endif
 
 /*
  * Updates the in-memory quota limits from the given quota inode.
@@ -489,13 +494,13 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
 
 	err = ext2fs_get_mem(sizeof(struct quota_handle), &qh);
 	if (err) {
-		log_err("Unable to allocate quota handle", "");
+		log_err("Unable to allocate quota handle");
 		return err;
 	}
 
 	err = quota_file_open(qh, qctx->fs, qf_ino, type, -1, 0);
 	if (err) {
-		log_err("Open quota file failed", "");
+		log_err("Open quota file failed");
 		goto out;
 	}
 
@@ -534,7 +539,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 				     fs->super->s_grp_quota_inum;
 	err = quota_file_open(&qh, fs, qf_ino, qtype, -1, 0);
 	if (err) {
-		log_err("Open quota file failed", "");
+		log_err("Open quota file failed");
 		goto out;
 	}
 
@@ -544,7 +549,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 	scan_data.usage_is_inconsistent = 0;
 	err = qh.qh_ops->scan_dquots(&qh, scan_dquots_callback, &scan_data);
 	if (err) {
-		log_err("Error scanning dquots", "");
+		log_err("Error scanning dquots");
 		goto out;
 	}
 	*usage_inconsistent = scan_data.usage_is_inconsistent;

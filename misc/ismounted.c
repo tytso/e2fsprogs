@@ -40,6 +40,7 @@
 
 #include "et/com_err.h"
 
+#ifdef HAVE_SETMNTENT
 static char *skip_over_blank(char *cp)
 {
 	while (*cp && isspace(*cp))
@@ -69,6 +70,7 @@ static char *parse_word(char **buf)
 	*buf = next;
 	return word;
 }
+#endif
 
 /*
  * Helper function which checks a file in /etc/mtab format to see if a

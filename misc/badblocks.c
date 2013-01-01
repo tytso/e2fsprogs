@@ -68,19 +68,18 @@ extern int optind;
 const char * program_name = "badblocks";
 const char * done_string = N_("done                                                 \n");
 
-static int v_flag = 0;			/* verbose */
-static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
+static int v_flag;			/* verbose */
+static int w_flag;			/* do r/w test: 0=no, 1=yes,
 					 * 2=non-destructive */
-static int s_flag = 0;			/* show progress of test */
-static int force = 0;			/* force check of mounted device */
-static int t_flag = 0;			/* number of test patterns */
-static int t_max = 0;			/* allocated test patterns */
-static unsigned int *t_patts = NULL;	/* test patterns */
-static int current_O_DIRECT = 0;	/* Current status of O_DIRECT flag */
-static int use_buffered_io = 0;
-static int exclusive_ok = 0;
-static unsigned int max_bb = 0;		/* Abort test if more than this number of bad blocks has been encountered */
-static unsigned int d_flag = 0;		/* delay factor between reads */
+static int s_flag;			/* show progress of test */
+static int force;			/* force check of mounted device */
+static int t_flag;			/* number of test patterns */
+static int t_max;			/* allocated test patterns */
+static unsigned int *t_patts;		/* test patterns */
+static int use_buffered_io;
+static int exclusive_ok;
+static unsigned int max_bb;		/* Abort test if more than this number of bad blocks has been encountered */
+static unsigned int d_flag;		/* delay factor between reads */
 static struct timeval time_start;
 
 #define T_INC 32
@@ -286,6 +285,7 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 			 ext2_loff_t offset)
 {
 #ifdef O_DIRECT
+	static int current_O_DIRECT;	/* Current status of O_DIRECT flag */
 	int new_flag = O_DIRECT;
 	int flag;
 

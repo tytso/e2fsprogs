@@ -472,7 +472,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	io_channel	io = NULL;
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
-	int		open_flags, zeroes = 0;
+	int		open_flags;
 	int		f_nocache = 0;
 	ext2fs_struct_stat st;
 #ifdef __linux__
@@ -550,9 +550,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	}
 
 #ifdef BLKDISCARDZEROES
-	ioctl(data->dev, BLKDISCARDZEROES, &zeroes);
-	if (zeroes)
-		io->flags |= CHANNEL_FLAGS_DISCARD_ZEROES;
+	{
+		int zeroes = 0;
+		if (ioctl(data->dev, BLKDISCARDZEROES, &zeroes) == 0 &&
+		    zeroes)
+			io->flags |= CHANNEL_FLAGS_DISCARD_ZEROES;
+	}
 #endif
 
 #if defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -920,7 +923,6 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 			      unsigned long long count)
 {
 	struct unix_private_data *data;
-	__uint64_t	range[2];
 	int		ret;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
@@ -929,6 +931,8 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 
 	if (channel->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
 #ifdef BLKDISCARD
+		__uint64_t range[2];
+
 		range[0] = (__uint64_t)(block) * channel->block_size;
 		range[1] = (__uint64_t)(count) * channel->block_size;
 

@@ -146,6 +146,7 @@ static int int_log10(unsigned long long arg)
 	return l;
 }
 
+#ifdef __linux__
 static int parse_version_number(const char *s)
 {
 	int	major, minor, rev;
@@ -167,6 +168,7 @@ static int parse_version_number(const char *s)
 		return 0;
 	return ((((major * 256) + minor) * 256) + rev);
 }
+#endif
 
 /*
  * Helper function for read_bb_file and test_disk
@@ -1942,6 +1944,14 @@ profile_error:
 #endif
 
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
+
+	/*
+	 * Initialize s_desc_size so that the parse_extended_opts()
+	 * can correctly handle "-E resize=NNN" if the 64-bit option
+	 * is set.
+	 */
+	if (fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+		fs_param.s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
 
 	/* This check should happen beyond the last assignment to blocksize */
 	if (blocksize > sys_page_size) {

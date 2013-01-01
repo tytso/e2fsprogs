@@ -743,14 +743,42 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 	if (IS_BLOCK_BM(fs, group, blk)) {
 		ext2fs_block_bitmap_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
-	} else if (IS_INODE_BM(fs, group, blk)) {
+		return;
+	}
+	if (IS_INODE_BM(fs, group, blk)) {
 		ext2fs_inode_bitmap_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
-	} else if (IS_INODE_TB(fs, group, blk)) {
+		return;
+	}
+	if (IS_INODE_TB(fs, group, blk)) {
 		ext2fs_inode_table_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
-	} else if (ext2fs_has_group_desc_csum(fs) &&
-		   (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT))) {
+		return;
+	}
+	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
+		dgrp_t i;
+
+		for (i=0; i < rfs->old_fs->group_desc_count; i++) {
+			if (IS_BLOCK_BM(fs, i, blk)) {
+				ext2fs_block_bitmap_loc_set(fs, i, 0);
+				rfs->needed_blocks++;
+				return;
+			}
+			if (IS_INODE_BM(fs, i, blk)) {
+				ext2fs_inode_bitmap_loc_set(fs, i, 0);
+				rfs->needed_blocks++;
+				return;
+			}
+			if (IS_INODE_TB(fs, i, blk)) {
+				ext2fs_inode_table_loc_set(fs, i, 0);
+				rfs->needed_blocks++;
+				return;
+			}
+		}
+	}
+
+	if (ext2fs_has_group_desc_csum(fs) &&
+	    (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT))) {
 		/*
 		 * If the block bitmap is uninitialized, which means
 		 * nothing other than standard metadata in use.
@@ -779,7 +807,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	errcode_t	retval;
 	ext2_filsys 	fs, old_fs;
 	ext2fs_block_bitmap	meta_bmap;
-	__u32		save_incompat_flag;
+	int		flex_bg;
 
 	fs = rfs->new_fs;
 	old_fs = rfs->old_fs;
@@ -870,6 +898,9 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * gets interesting....
 	 */
 	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
+	flex_bg = fs->super->s_feature_incompat &
+		EXT4_FEATURE_INCOMPAT_FLEX_BG;
+	/* first reserve all of the existing fs meta blocks */
 	for (i = 0; i < max_groups; i++) {
 		has_super = ext2fs_bg_has_super(fs, i);
 		if (has_super)
@@ -895,52 +926,53 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 						  group_blk + has_super);
 		}
 
-		if (ext2fs_inode_table_loc(fs, i) &&
-		    ext2fs_inode_bitmap_loc(fs, i) &&
-		    ext2fs_block_bitmap_loc(fs, i))
-			goto next_group;
-
 		/*
 		 * Reserve the existing meta blocks that we know
 		 * aren't to be moved.
+		 *
+		 * For flex_bg file systems, in order to avoid
+		 * overwriting fs metadata (especially inode table
+		 * blocks) belonging to a different block group when
+		 * we are relocating the inode tables, we need to
+		 * reserve all existing fs metadata blocks.
 		 */
 		if (ext2fs_block_bitmap_loc(fs, i))
 			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
 				 ext2fs_block_bitmap_loc(fs, i));
+		else if (flex_bg && i < old_fs->group_desc_count)
+			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
+				 ext2fs_block_bitmap_loc(old_fs, i));
+
 		if (ext2fs_inode_bitmap_loc(fs, i))
 			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
 				 ext2fs_inode_bitmap_loc(fs, i));
+		else if (flex_bg && i < old_fs->group_desc_count)
+			ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
+				 ext2fs_inode_bitmap_loc(old_fs, i));
+
 		if (ext2fs_inode_table_loc(fs, i))
 			for (blk = ext2fs_inode_table_loc(fs, i), j=0;
 			     j < fs->inode_blocks_per_group ; j++, blk++)
 				ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
 							 blk);
+		else if (flex_bg && i < old_fs->group_desc_count)
+			for (blk = ext2fs_inode_table_loc(old_fs, i), j=0;
+			     j < old_fs->inode_blocks_per_group ; j++, blk++)
+				ext2fs_mark_block_bitmap2(rfs->reserve_blocks,
+							  blk);
 
-		/*
-		 * Allocate the missing data structures
-		 *
-		 * XXX We have a problem with FLEX_BG and off-line
-		 * resizing where we are growing the size of the
-		 * filesystem.  ext2fs_allocate_group_table() will try
-		 * to reserve the inode table in the desired flex_bg
-		 * location.  However, passing rfs->reserve_blocks
-		 * doesn't work since it only has reserved the blocks
-		 * that will be used in the new block group -- and
-		 * with flex_bg, we can and will allocate the tables
-		 * outside of the block group.  And we can't pass in
-		 * the fs->block_map because it doesn't handle
-		 * overlapping inode table movements right.  So for
-		 * now, we temporarily disable flex_bg to force
-		 * ext2fs_allocate_group_tables() to allocate the bg
-		 * metadata in side the block group, and the restore
-		 * it afterwards.  Ugly, until we can fix this up
-		 * right later.
-		 */
-		save_incompat_flag = fs->super->s_feature_incompat;
-		fs->super->s_feature_incompat &= ~EXT4_FEATURE_INCOMPAT_FLEX_BG;
+		group_blk += rfs->new_fs->super->s_blocks_per_group;
+	}
+
+	/* Allocate the missing data structures */
+	for (i = 0; i < max_groups; i++) {
+		if (ext2fs_inode_table_loc(fs, i) &&
+		    ext2fs_inode_bitmap_loc(fs, i) &&
+		    ext2fs_block_bitmap_loc(fs, i))
+			continue;
+
 		retval = ext2fs_allocate_group_table(fs, i,
 						     rfs->reserve_blocks);
-		fs->super->s_feature_incompat = save_incompat_flag;
 		if (retval)
 			goto errout;
 
@@ -973,7 +1005,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		 * block relocation phase.
 		 */
 		if (ext2fs_inode_table_loc(fs, i) == ext2fs_inode_table_loc(old_fs, i))
-			goto next_group; /* inode table not moved */
+			continue;	/* inode table not moved */
 
 		rfs->needed_blocks += fs->inode_blocks_per_group;
 
@@ -998,9 +1030,6 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		for (blk = ext2fs_inode_table_loc(rfs->old_fs, i), j=0;
 		     j < fs->inode_blocks_per_group ; j++, blk++)
 			ext2fs_mark_block_bitmap2(rfs->reserve_blocks, blk);
-
-	next_group:
-		group_blk += rfs->new_fs->super->s_blocks_per_group;
 	}
 	retval = 0;
 

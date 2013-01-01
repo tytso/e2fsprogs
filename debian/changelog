@@ -1,3 +1,31 @@
+e2fsprogs (1.42.7-1) unstable; urgency=low
+
+  * New uptream version
+  * Added new options to filefrag to be consistent with the version from
+    Lustre
+  * Fixed a bug in resize2fs which could cause severe file system
+    corruption when growing an ext4 file system which was formatted with
+    fewer-than-normal reserved gdt blocks
+  * Fixed resize2fs to be able to handle off-line resizes of file
+    systems with the flex_bg feature and without any reserved gdt
+    blocks or if the file system did not have the resize_inode feature
+  * Fix a crash while mke2fs is parsing "-E resize=NNN" with the 64bit
+    file system feature enabled
+  * Added the "zap_block", "block_dump", and "extent_open" commands to
+    debugfs
+  * Fixed e2fsck so it detects and fixes inconsistencies in the interior
+    nodes of an inode's extent tree
+  * Fixed mke2fs's handling of the mmp_update_interval option
+  * Optimized e2fsck's CPU utilization
+  * Fixed debugfs's htree command so that all its messages are sent
+    through the pager.
+  * Fixed debugfs's dump_file and cat functions so they work correctly
+    on file systems with a block size greater than 8k.
+  * Fixed e2freefrag so it works on 64-bit file systems, and so it uses
+    much less memory.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 1 Jan 2013 10:23:04 -0500
+
 e2fsprogs (1.43~WIP-2012-09-22-1) unstable; urgency=low
 
   * Add metadata checksum feature

@@ -197,7 +197,7 @@ static void safe_print(FILE *f, const char *cp, int len)
 static void print_pathname(FILE *f, ext2_filsys fs, ext2_ino_t dir,
 			   ext2_ino_t ino)
 {
-	errcode_t	retval;
+	errcode_t	retval = 0;
 	char		*path;
 
 	if (!dir && (ino < num_special_inodes)) {

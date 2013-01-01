@@ -13,14 +13,14 @@
 # endif
 #endif
 
-#define log_err(format, ...)	fprintf(stderr, \
-				"[ERROR] %s:%d:%s:: " format "\n", \
-				__FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_err(format, arg ...)					\
+	fprintf(stderr, "[ERROR] %s:%d:%s:: " format "\n",		\
+		__FILE__, __LINE__, __func__, ## arg)
 
 #ifdef DEBUG_QUOTA
-# define log_debug(format, ...)	fprintf(stderr, \
-				"[DEBUG] %s:%d:%s:: " format "\n", \
-				__FILE__, __LINE__, __func__, __VA_ARGS__)
+# define log_debug(format, arg ...)					\
+	fprintf(stderr, "[DEBUG] %s:%d:%s:: " format "\n",		\
+		__FILE__, __LINE__, __func__, ## arg)
 #else
 # define log_debug(format, ...)
 #endif

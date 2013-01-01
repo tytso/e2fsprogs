@@ -618,7 +618,7 @@ int ext2_file_type(unsigned int mode)
 errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 			     blk_t *ret_blk, int *ret_count)
 {
-	int		j, count, next_update, next_update_incr;
+	int		j, count;
 	static char	*buf;
 	errcode_t	retval;
 
@@ -641,10 +641,6 @@ errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 		memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
 	}
 	/* OK, do the write loop */
-	next_update = 0;
-	next_update_incr = num / 100;
-	if (next_update_incr < 1)
-		next_update_incr = 1;
 	for (j = 0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
 		count = num - j;
 		if (count > STRIDE_LENGTH)
@@ -797,7 +793,6 @@ void e2fsck_set_bitmap_type(ext2_filsys fs, unsigned int default_type,
 			    const char *profile_name, unsigned int *old_type)
 {
 	unsigned type;
-	errcode_t	retval;
 
 	if (old_type)
 		*old_type = fs->default_bitmap_type;

@@ -155,7 +155,7 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 	errcode_t ret = 0;
 	unsigned int l1_index, l2_index;
 	ext2_off64_t offset;
-	blk64_t *l1_table, *l2_table;
+	blk64_t *l1_table, *l2_table = NULL;
 	void *copy_buf = NULL;
 	size_t size;
 

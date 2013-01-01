@@ -99,7 +99,7 @@ static errcode_t test_memalign(unsigned long align)
 	if (!retval && !isaligned(ptr, align))
 		retval = EINVAL;
 	free(ptr);
-	printf("tst_memliagn(%lu): %s\n", align, 
+	printf("tst_memalign(%lu) is %s\n", align,
 	       retval ? error_message(retval) : "OK");
 	return retval;
 }
