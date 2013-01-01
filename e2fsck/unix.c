@@ -204,8 +204,7 @@ static void show_stats(e2fsck_t	ctx)
 			ctx->fs_blockdev_count), ctx->fs_blockdev_count);
 	log_out(ctx, P_("%12u fifo\n", "%12u fifos\n", ctx->fs_fifo_count),
 		ctx->fs_fifo_count);
-	log_out(ctx, P_("%12u link\n", "%12u links\n",
-			ctx->fs_links_count - dir_links),
+	log_out(ctx, P_("%12u link\n", "%12u links\n", num_links),
 		ctx->fs_links_count - dir_links);
 	log_out(ctx, P_("%12u symbolic link", "%12u symbolic links",
 			ctx->fs_symlinks_count), ctx->fs_symlinks_count);
@@ -217,9 +216,8 @@ static void show_stats(e2fsck_t	ctx)
 			ctx->fs_sockets_count),
 		ctx->fs_sockets_count);
 	log_out(ctx, "------------\n");
-	log_out(ctx, P_("%12u file\n", "%12u files\n",
-			ctx->fs_total_count - dir_links),
-		ctx->fs_total_count - dir_links);
+	log_out(ctx, P_("%12u file\n", "%12u files\n", num_files),
+		num_files);
 }
 
 static void check_mount(e2fsck_t ctx)

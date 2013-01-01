@@ -336,7 +336,6 @@ static void frag_report(const char *filename)
 	static struct statfs fsinfo;
 	ext2fs_struct_stat st;
 	int		blk_shift;
-	int		bs;
 	long		fd;
 	unsigned long	numblocks;
 	int		data_blocks_per_cyl = 1;

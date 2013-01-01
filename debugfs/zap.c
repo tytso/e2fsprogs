@@ -32,9 +32,7 @@ void do_zap_block(int argc, char *argv[])
 	ext2_ino_t	inode;
 	errcode_t	errcode;
 	blk64_t		block;
-	int		retval;
 	char		*file = NULL;
-	char		*in_file = NULL;
 	int		c, err;
 	int		offset = -1;
 	int		length = -1;
@@ -171,14 +169,11 @@ errout:
 
 void do_dump_block(int argc, char *argv[])
 {
-	unsigned long	pattern = 0;
 	unsigned char	*buf;
 	ext2_ino_t	inode;
 	errcode_t	errcode;
 	blk64_t		block;
-	int		retval;
 	char		*file = NULL;
-	char		*in_file = NULL;
 	int		c, err, i, j;
 	int		suppress = -1;
 

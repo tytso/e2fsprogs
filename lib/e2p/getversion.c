@@ -31,7 +31,7 @@ int getversion (int fd, unsigned long * version)
 
 	r = ioctl (fd, EXT2_IOC_GETVERSION, &ver);
 	*version = ver;
-	return 0;
+	return r;
 #else /* ! HAVE_EXT2_IOCTLS */
 	extern int errno;
 	errno = EOPNOTSUPP;

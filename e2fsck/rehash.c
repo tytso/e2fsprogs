@@ -828,7 +828,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	struct dir_info_iter *	dirinfo_iter = 0;
 	ext2_ino_t		ino;
 	errcode_t		retval;
-	int			cur, max, all_dirs, dir_index, first = 1;
+	int			cur, max, all_dirs, first = 1;
 
 	init_resource_track(&rtrack, ctx->fs->io);
 	all_dirs = ctx->options & E2F_OPT_COMPRESS_DIRS;
@@ -840,7 +840,6 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 
 	clear_problem_context(&pctx);
 
-	dir_index = ctx->fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX;
 	cur = 0;
 	if (all_dirs) {
 		dirinfo_iter = e2fsck_dir_info_iter_begin(ctx);

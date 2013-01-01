@@ -1092,7 +1092,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 		*io_options++ = 0;
 	device_name = blkid_get_devname(NULL, argv[optind], NULL);
 	if (!device_name) {
-		com_err("tune2fs", 0, _("Unable to resolve '%s'"),
+		com_err(program_name, 0, _("Unable to resolve '%s'"),
 			argv[optind]);
 		exit(1);
 	}

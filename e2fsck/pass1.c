@@ -274,7 +274,7 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct ext2_inode_large *inode;
 	struct ext2_ext_attr_entry *entry;
-	char *start, *end;
+	char *start;
 	unsigned int storage_size, remain;
 	int problem = 0;
 
@@ -283,7 +283,6 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 		inode->i_extra_isize;
 	start = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 		inode->i_extra_isize + sizeof(__u32);
-	end = (char *) inode + EXT2_INODE_SIZE(ctx->fs->super);
 	entry = (struct ext2_ext_attr_entry *) start;
 
 	/* scan all entry's headers first */

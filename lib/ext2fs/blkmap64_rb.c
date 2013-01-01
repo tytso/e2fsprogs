@@ -677,12 +677,11 @@ static errcode_t rb_set_bmap_range(ext2fs_generic_bitmap bitmap,
 	unsigned char *cp = in;
 	size_t i;
 	int first_set = -1;
-	int ret;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 
 	for (i = 0; i < num; i++) {
-		if (i & 7 == 0) {
+		if ((i & 7) == 0) {
 			unsigned char c = cp[i/8];
 			if (c == 0xFF) {
 				if (first_set == -1)

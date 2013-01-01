@@ -66,9 +66,8 @@ static char *orig_prompt, *extent_prompt;
 
 void do_extent_open(int argc, char *argv[])
 {
-	struct ext3_extent_header *eh;
 	ext2_ino_t	inode;
-	int		i, ret;
+	int		ret;
 	errcode_t	retval;
 	char		*cp;
 
@@ -220,7 +219,6 @@ void do_delete_node(int argc, char *argv[])
 {
 	struct ext2fs_extent extent;
 	errcode_t	retval;
-	int		err;
 
 	if (common_extent_args_process(argc, argv, 1, 1, "delete_node",
 				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
@@ -286,8 +284,6 @@ void do_replace_node(int argc, char *argv[])
 void do_split_node(int argc, char *argv[])
 {
 	errcode_t	retval;
-	struct ext2fs_extent extent;
-	int err;
 
 	if (common_extent_args_process(argc, argv, 1, 1, "split_node",
 				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
@@ -465,8 +461,6 @@ void do_print_all(int argc, char **argv)
 
 void do_fix_parents(int argc, char **argv)
 {
-	struct ext2fs_extent	extent;
-	struct ext2_extent_info	info;
 	errcode_t		retval;
 
 	if (common_extent_args_process(argc, argv, 1, 1, "fix_parents", "",
@@ -515,9 +509,7 @@ void do_info(int argc, char **argv)
 
 void do_goto_block(int argc, char **argv)
 {
-	struct ext2fs_extent	extent;
 	errcode_t		retval;
-	int			op = EXT2_EXTENT_NEXT_LEAF;
 	blk64_t			blk;
 	int			level = 0, err;
 

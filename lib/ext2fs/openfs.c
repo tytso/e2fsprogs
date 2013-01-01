@@ -99,10 +99,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	errcode_t	retval;
 	unsigned long	i, first_meta_bg;
 	__u32		features;
-	unsigned int	groups_per_block, blocks_per_group, io_flags;
+	unsigned int	blocks_per_group, io_flags;
 	blk64_t		group_block, blk;
 	char		*dest, *cp;
 #ifdef WORDS_BIGENDIAN
+	unsigned int	groups_per_block;
 	struct ext2_group_desc *gdp;
 	int		j;
 #endif
@@ -332,7 +333,9 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	if (group_block == 0 && fs->blocksize == 1024)
 		group_block = 1; /* Deal with 1024 blocksize && bigalloc */
 	dest = (char *) fs->group_desc;
+#ifdef WORDS_BIGENDIAN
 	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
+#endif
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		first_meta_bg = fs->super->s_first_meta_bg;
 	else

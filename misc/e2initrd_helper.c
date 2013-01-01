@@ -39,7 +39,7 @@ extern char *optarg;
 #include "../version.h"
 #include "nls-enable.h"
 
-const char * program_name = "get_fstab";
+const char * program_name = "e2initrd_helper";
 char * device_name;
 static int open_flag;
 static int root_type;
@@ -327,7 +327,7 @@ static void PRS(int argc, char **argv)
 		usage();
 	device_name = blkid_get_devname(NULL, argv[optind], NULL);
 	if (!device_name) {
-		com_err("tune2fs", 0, _("Unable to resolve '%s'"),
+		com_err(program_name, 0, _("Unable to resolve '%s'"),
 			argv[optind]);
 		exit(1);
 	}
@@ -342,6 +342,10 @@ static void get_root_type(ext2_filsys fs)
 	int		ret;
 
 	retval = get_file(fs, "/etc/fstab", &file);
+	if (retval) {
+		com_err(program_name, retval, "couldn't open /etc/fstab");
+		exit(1);
+	}
 
 	while (!mem_file_eof(&file)) {
 		buf = get_line(&file);
