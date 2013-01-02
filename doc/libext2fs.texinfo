@@ -104,14 +104,14 @@ by the Foundation.
 
 This manual documents the EXT2FS Library, version 1.42.7.
 
-@end ifinfo
-
 @menu
 * Introduction to the EXT2FS Library::  
 * EXT2FS Library Functions::    
 * Concept Index::               
 * Function Index::              
 @end menu
+
+@end ifinfo
 
 @c ----------------------------------------------------------------------
 
