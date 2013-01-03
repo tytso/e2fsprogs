@@ -197,8 +197,7 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
 		if (!(ext2fs_bg_flags_test(fs, g, EXT2_BG_BLOCK_UNINIT)))
 			continue;
 
-		blk = (g * fs->super->s_blocks_per_group) +
-			fs->super->s_first_data_block;
+		blk = ext2fs_group_first_block2(fs, g);
 
 		ext2fs_super_and_bgd_loc2(fs, g, &super_blk,
 					  &old_desc_blk, &new_desc_blk, 0);
@@ -846,8 +845,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 			 * The block bitmap is uninitialized, so skip
 			 * to the next block group.
 			 */
-			blk = ((g+1) * fs->super->s_blocks_per_group) +
-				fs->super->s_first_data_block - 1;
+			blk = ext2fs_group_first_block2(fs, g+1) - 1;
 			continue;
 		}
 		if (ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
