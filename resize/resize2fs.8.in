@@ -99,6 +99,8 @@ from the following list:
 	4	\-\ Debug inode relocations
 .br
 	8	\-\ Debug moving the inode table
+.br
+	16	\-\ Print timing information
 .TP 
 .B \-f
 Forces resize2fs to proceed with the filesystem resize operation, overriding

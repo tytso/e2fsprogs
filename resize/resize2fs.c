@@ -74,14 +74,7 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 {
 	ext2_resize_t	rfs;
 	errcode_t	retval;
-
-	retval = ext2fs_read_bitmaps(fs);
-	if (retval)
-		return retval;
-
-	fs->super->s_state |= EXT2_ERROR_FS;
-	ext2fs_mark_super_dirty(fs);
-	ext2fs_flush(fs);
+	struct resource_track	rtrack, overall_track;
 
 	/*
 	 * Create the data structure
@@ -89,32 +82,53 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 	retval = ext2fs_get_mem(sizeof(struct ext2_resize_struct), &rfs);
 	if (retval)
 		return retval;
-	memset(rfs, 0, sizeof(struct ext2_resize_struct));
 
-	fix_uninit_block_bitmaps(fs);
+	memset(rfs, 0, sizeof(struct ext2_resize_struct));
 	fs->priv_data = rfs;
 	rfs->old_fs = fs;
 	rfs->flags = flags;
 	rfs->itable_buf	 = 0;
 	rfs->progress = progress;
+
+	init_resource_track(&overall_track, "overall resize2fs", fs->io);
+	init_resource_track(&rtrack, "read_bitmaps", fs->io);
+	retval = ext2fs_read_bitmaps(fs);
+	if (retval)
+		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
+
+	fs->super->s_state |= EXT2_ERROR_FS;
+	ext2fs_mark_super_dirty(fs);
+	ext2fs_flush(fs);
+
+	init_resource_track(&rtrack, "fix_uninit_block_bitmaps 1", fs->io);
+	fix_uninit_block_bitmaps(fs);
+	print_resource_track(rfs, &rtrack, fs->io);
 	retval = ext2fs_dup_handle(fs, &rfs->new_fs);
 	if (retval)
 		goto errout;
 
+	init_resource_track(&rtrack, "adjust_superblock", fs->io);
 	retval = adjust_superblock(rfs, *new_size);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
+
+	init_resource_track(&rtrack, "fix_uninit_block_bitmaps 2", fs->io);
 	fix_uninit_block_bitmaps(rfs->new_fs);
+	print_resource_track(rfs, &rtrack, fs->io);
 	/* Clear the block bitmap uninit flag for the last block group */
 	ext2fs_bg_flags_clear(rfs->new_fs, rfs->new_fs->group_desc_count - 1,
 			     EXT2_BG_BLOCK_UNINIT);
 
 	*new_size = ext2fs_blocks_count(rfs->new_fs->super);
 
+	init_resource_track(&rtrack, "blocks_to_move", fs->io);
 	retval = blocks_to_move(rfs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_BMOVE)
@@ -124,36 +138,52 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 		       rfs->needed_blocks);
 #endif
 
+	init_resource_track(&rtrack, "block_mover", fs->io);
 	retval = block_mover(rfs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
+	init_resource_track(&rtrack, "inode_scan_and_fix", fs->io);
 	retval = inode_scan_and_fix(rfs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
+	init_resource_track(&rtrack, "inode_ref_fix", fs->io);
 	retval = inode_ref_fix(rfs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
+	init_resource_track(&rtrack, "move_itables", fs->io);
 	retval = move_itables(rfs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
+	init_resource_track(&rtrack, "calculate_summary_stats", fs->io);
 	retval = ext2fs_calculate_summary_stats(rfs->new_fs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
+	init_resource_track(&rtrack, "fix_resize_inode", fs->io);
 	retval = fix_resize_inode(rfs->new_fs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
+	init_resource_track(&rtrack, "fix_sb_journal_backup", fs->io);
 	retval = fix_sb_journal_backup(rfs->new_fs);
 	if (retval)
 		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
 
 	rfs->new_fs->super->s_state &= ~EXT2_ERROR_FS;
 	rfs->new_fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+
+	print_resource_track(rfs, &overall_track, fs->io);
 	retval = ext2fs_close(rfs->new_fs);
 	if (retval)
 		goto errout;
