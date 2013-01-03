@@ -492,9 +492,8 @@ retry:
 	/*
 	 * Initialize the new block group descriptors
 	 */
-	group_block = fs->super->s_first_data_block +
-		old_fs->group_desc_count * fs->super->s_blocks_per_group;
-
+	group_block = ext2fs_group_first_block2(fs,
+						old_fs->group_desc_count);
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 	if (access("/sys/fs/ext4/features/lazy_itable_init", F_OK) == 0)
@@ -651,9 +650,8 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 		goto errout;
 
 	memset(rfs->itable_buf, 0, fs->blocksize * fs->inode_blocks_per_group);
-	group_block = fs->super->s_first_data_block +
-		rfs->old_fs->group_desc_count * fs->super->s_blocks_per_group;
-
+	group_block = ext2fs_group_first_block2(fs,
+						rfs->old_fs->group_desc_count);
 	adj = rfs->old_fs->group_desc_count;
 	max_group = fs->group_desc_count - adj;
 	if (rfs->progress) {

@@ -934,8 +934,7 @@ errcode_t ext2fs_extent_node_split(ext2_extent_handle_t handle)
 
 		if (log_flex)
 			group = group & ~((1 << (log_flex)) - 1);
-		goal_blk = (group * handle->fs->super->s_blocks_per_group) +
-			handle->fs->super->s_first_data_block;
+		goal_blk = ext2fs_group_first_block2(handle->fs, group);
 	}
 	retval = ext2fs_alloc_block2(handle->fs, goal_blk, block_buf,
 				    &new_node_pblk);

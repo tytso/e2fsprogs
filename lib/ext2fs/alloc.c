@@ -41,8 +41,7 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
 		return;
 
-	blk = (group * fs->super->s_blocks_per_group) +
-		fs->super->s_first_data_block;
+	blk = ext2fs_group_first_block2(fs, group);
 
 	ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
 				  &old_desc_blk, &new_desc_blk, 0);
@@ -56,8 +55,7 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++)
 		ext2fs_fast_unmark_block_bitmap2(map, blk);
 
-	blk = (group * fs->super->s_blocks_per_group) +
-		fs->super->s_first_data_block;
+	blk = ext2fs_group_first_block2(fs, group);
 	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++) {
 		if ((blk == super_blk) ||
 		    (old_desc_blk && old_desc_blocks &&

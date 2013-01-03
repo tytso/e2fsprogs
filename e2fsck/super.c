@@ -317,7 +317,8 @@ void check_resize_inode(e2fsck_t ctx)
 	struct problem_context	pctx;
 	int		i, gdt_off, ind_off;
 	dgrp_t		j;
-	blk64_t		blk, pblk, expect;
+	blk64_t		blk, pblk;
+	blk_t		expect;	/* for resize inode, which is 32-bit only */
 	__u32 		*dind_buf = 0, *ind_buf;
 	errcode_t	retval;
 
@@ -914,8 +915,7 @@ int check_backup_super_block(e2fsck_t ctx)
 		if (!ext2fs_bg_has_super(fs, g))
 			continue;
 
-		sb = fs->super->s_first_data_block +
-			(g * fs->super->s_blocks_per_group);
+		sb = ext2fs_group_first_block2(fs, g);
 
 		retval = io_channel_read_blk(fs->io, sb, -SUPERBLOCK_SIZE,
 					     buf);
