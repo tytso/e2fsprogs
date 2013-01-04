@@ -160,6 +160,9 @@ request do_bmap, "Calculate the logical->physical block mapping for an inode",
 request do_punch, "Punch (or truncate) blocks from an inode by deallocating them",
 	punch, truncate;
 
+request do_symlink, "Create a symbolic link",
+	symlink;
+
 request do_imap, "Calculate the location of an inode",
 	imap;
 

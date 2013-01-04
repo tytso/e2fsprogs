@@ -465,6 +465,9 @@ is, all of the blocks starting at
 .I start_blk
 through to the end of the file will be deallocated.
 .TP
+.I symlink filespec target
+Make a symbolic link.
+.TP
 .I pwd
 Print the current working directory.
 .TP

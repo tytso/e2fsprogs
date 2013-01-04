@@ -2190,6 +2190,49 @@ void do_punch(int argc, char *argv[])
 }
 #endif /* READ_ONLY */
 
+void do_symlink(int argc, char *argv[])
+{
+	char		*cp;
+	ext2_ino_t	parent;
+	char		*name, *target;
+	errcode_t	retval;
+
+	if (common_args_process(argc, argv, 3, 3, "symlink",
+				"<filename> <target>", CHECK_FS_RW))
+		return;
+
+	cp = strrchr(argv[1], '/');
+	if (cp) {
+		*cp = 0;
+		parent = string_to_inode(argv[1]);
+		if (!parent) {
+			com_err(argv[1], ENOENT, 0);
+			return;
+		}
+		name = cp+1;
+	} else {
+		parent = cwd;
+		name = argv[1];
+	}
+	target = argv[2];
+
+try_again:
+	retval = ext2fs_symlink(current_fs, parent, 0, name, target);
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, parent);
+		if (retval) {
+			com_err(argv[0], retval, "while expanding directory");
+			return;
+		}
+		goto try_again;
+	}
+	if (retval) {
+		com_err("ext2fs_symlink", retval, 0);
+		return;
+	}
+
+}
+
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
 	struct ext2_super_block *sb;
