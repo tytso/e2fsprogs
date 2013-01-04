@@ -416,6 +416,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_swab16@Base 1.37
  ext2fs_swab32@Base 1.37
  ext2fs_swab64@Base 1.40
+ ext2fs_symlink@Base 1.42.7
  ext2fs_sync_device@Base 1.37
  ext2fs_tdb_append@Base 1.40
  ext2fs_tdb_chainlock@Base 1.40

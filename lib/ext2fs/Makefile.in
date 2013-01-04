@@ -79,6 +79,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	res_gdt.o \
 	rw_bitmaps.o \
 	swapfs.o \
+	symlink.o \
 	tdb.o \
 	undo_io.o \
 	unix_io.o \
@@ -153,6 +154,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/res_gdt.c \
 	$(srcdir)/rw_bitmaps.c \
 	$(srcdir)/swapfs.c \
+	$(srcdir)/symlink.c \
 	$(srcdir)/tdb.c \
 	$(srcdir)/test_io.c \
 	$(srcdir)/tst_badblocks.c \
@@ -879,6 +881,12 @@ rw_bitmaps.o: $(srcdir)/rw_bitmaps.c $(top_builddir)/lib/config.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h $(srcdir)/e2image.h
 swapfs.o: $(srcdir)/swapfs.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h
+symlink.o: $(srcdir)/symlink.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
