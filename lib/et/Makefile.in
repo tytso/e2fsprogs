@@ -59,12 +59,34 @@ compile_et: $(DEP_SUBSTITUTE) $(srcdir)/compile_et.sh.in
 	$(Q) $(SUBSTITUTE) $(srcdir)/compile_et.sh.in compile_et
 	$(Q) $(CHMOD) +x compile_et
 
+DVI=texi2dvi
+DVIPS=dvips -o "$@"
+INFO=@MAKEINFO@
+HTML=texi2html -split_chapter
+PS2PDF=ps2pdf
+
 com_err.ps : com_err.dvi
 com_err.dvi: com_err.texinfo
 
+com_err.info: $(srcdir)/com_err.texinfo
+	$(E) "	MAKEINFO $@"
+	-$(Q) $(INFO) $(srcdir)/com_err.texinfo
+
+com_err.dvi: $(srcdir)/com_err.texinfo
+	$(E) "	TEXI2DVI $@"
+	-$(Q) $(DVI) $(srcdir)/com_err.texinfo
+
+com_err.ps: com_err.dvi
+	$(E) "	DVIPS $@"
+	-$(Q) $(DVIPS) com_err.dvi
+
+com_err.pdf: com_err.ps
+	$(E) "	PS2PDF $@"
+	-$(Q) $(PS2PDF) com_err.ps
+
 com_err_abt.html: $(srcdir)/com_err.texinfo
 	$(E) "	TEXI2HTML $@"
-	-$(Q) texi2html -split_chapter $(srcdir)/com_err.texinfo
+	-$(Q) $(HTML) $(srcdir)/com_err.texinfo
 	-$(Q) if test -d com_err ; then \
 		mv com_err/* . ; rmdir com_err ; \
 		fi
@@ -133,7 +155,9 @@ check:: compile_et
 clean::
 	$(RM) -f compile_et libcom_err.a libcom_err_p.a com_err.info
 	$(RM) -f $(OBJS) profiled/*
-	$(RM) -f *~ \#* *.bak *.otl *.aux *.toc *.PS *.dvi *.ps TAGS *.ln *.html
+	$(RM) -f *~ \#* *.bak *.otl *.aux *.toc *.PS *.dvi *.ps TAGS *.ln \
+		*.html *.cp *.fn *.fns *.ky *.log *.pc *.pg *.toc *.tp *.vr \
+		*.pdf
 	$(RM) -f ../libcom_err.a ../libcom_err_p.a
 
 mostlyclean:: clean

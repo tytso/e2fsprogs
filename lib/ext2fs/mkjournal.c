@@ -358,9 +358,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 		    ext2fs_bg_free_blocks_count(fs, group))
 			group = i;
 
-	es.goal = (fs->super->s_blocks_per_group * group) +
-		fs->super->s_first_data_block;
-
+	es.goal = ext2fs_group_first_block2(fs, group);
 	retval = ext2fs_block_iterate3(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
 	if (es.err) {
