@@ -121,7 +121,8 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 #endif
 	ret = malloc(size);
 	if (!ret) {
-		sprintf(buf, "Can't allocate %s\n", description);
+		sprintf(buf, "Can't allocate %u bytes for %s\n",
+			size, description);
 		fatal_error(ctx, buf);
 	}
 	memset(ret, 0, size);
