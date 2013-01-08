@@ -36,19 +36,25 @@ static void alloc_string(struct string *s, int len)
 
 static void append_string(struct string *s, const char *a, int len)
 {
+	int needlen;
+
 	if (!len)
 		len = strlen(a);
 
-	if (s->end + len >= s->len) {
-		char *n = realloc(s, s->len * 2);
+	needlen = s->end + len + 1;
+	if (needlen > s->len) {
+		char *n;
+
+		if (s->len * 2 > needlen)
+			needlen = s->len * 2;
+	        n = realloc(s->s, needlen);
 
 		if (n) {
 			s->s = n;
-			s->len = s->len * 2;
+			s->len = needlen;
 		} else {
-			len = s->len - s->end - 1;
-			if (len <= 0)
-				return;
+			/* Don't append if we ran out of memory */
+			return;
 		}
 	}
 	memcpy(s->s + s->end, a, len);
