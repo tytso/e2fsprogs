@@ -1998,6 +1998,15 @@ profile_error:
 		fs_param.s_feature_ro_compat &=
 				~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
 
+	/* Can't support bigalloc feature without extents feature */
+	if ((fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
+	    !(fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+		com_err(program_name, 0,
+			_("Can't support bigalloc feature without "
+			  "extents feature"));
+		exit(1);
+	}
+
 	/* Since sparse_super is the default, we would only have a problem
 	 * here if it was explicitly disabled.
 	 */
