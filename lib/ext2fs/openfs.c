@@ -391,9 +391,6 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			ext2fs_mark_super_dirty(fs);
 	}
 
-	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;
-	*ret_fs = fs;
-
 	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
 	    !(flags & EXT2_FLAG_SKIP_MMP) &&
 	    (flags & (EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE))) {
@@ -404,6 +401,9 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			goto cleanup;
 		}
 	}
+
+	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;
+	*ret_fs = fs;
 
 	return 0;
 cleanup:
