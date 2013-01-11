@@ -168,6 +168,10 @@ Print the physical block number corresponding to the logical block number
 in the inode
 .IR filespec .
 .TP
+.I block_dump [-f out_file] block_num
+Dump the contents of a block, optionally to
+.IR out_file .
+.TP
 .I cat filespec
 Dump the contents of the inode 
 .I filespec
@@ -604,6 +608,14 @@ Create a file in the filesystem named
 and copy the contents of
 .I source_file
 into the destination file.
+.TP
+.I zap_block [-f file] [-o offset] [-l length] [-p pattern] block_num
+Zero, or pattern-fill, portions of a block within a file or
+within the filesystem.
+.TP
+.I zap_block [-f file] [-b bit] block_num
+Bit-flip portions of a block within a file or
+within the filesystem.
 .SH ENVIRONMENT VARIABLES
 .TP
 .B DEBUGFS_PAGER, PAGER
