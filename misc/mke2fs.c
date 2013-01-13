@@ -1847,6 +1847,11 @@ profile_error:
 							    blocksize*16);
 		fs_param.s_log_cluster_size =
 			int_log2(cluster_size >> EXT2_MIN_CLUSTER_LOG_SIZE);
+	} else if (cluster_size) {
+		com_err(program_name, 0,
+			_("specifying a cluster size requires the "
+			  "bigalloc feature"));
+		exit(1);
 	} else
 		fs_param.s_log_cluster_size = fs_param.s_log_block_size;
 
