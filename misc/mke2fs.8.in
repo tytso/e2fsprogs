@@ -187,6 +187,13 @@ Check the device for bad blocks before creating the file system.  If
 this option is specified twice, then a slower read-write
 test is used instead of a fast read-only test.
 .TP
+.B \-C " cluster-size"
+Specify the size of cluster in bytes for filesystems using the bigalloc
+feature.  Valid cluster-size values are from 2048 to 256M bytes per
+cluster.  By default (if bigalloc is enabled and no cluster size is
+otherwise specified using this option), the cluster size will be 16
+times the block size.
+.TP
 .B \-D
 Use direct I/O when writing to the disk.  This avoids mke2fs dirtying a
 lot of buffer cache memory, which may impact other applications running
@@ -309,6 +316,10 @@ RAID parameter as part of the
 option rather than manipulating the number of blocks per group.)
 This option is generally used by developers who
 are developing test cases.
+.IP
+If the bigalloc feature is enabled, the
+.B \-g
+option will specify the number of clusters in a block group.
 .TP
 .BI \-G " number-of-groups"
 Specify the number of block groups that will be packed together to
@@ -515,6 +526,21 @@ by commas, that are to be enabled.  To disable a feature, simply
 prefix the feature name with a  caret ('^') character.  The
 pseudo-filesystem feature "none" will clear all filesystem features.
 .RS 1.2i
+.TP
+.B bigalloc
+This feature enables clustered allocation, so that the unit of
+allocation is a power of two number of blocks.  That is, each bit in the
+what had traditionally been known as the block allocation bitmap now
+indicates whether a cluster is in use or not, where a cluster is by
+default composed of 16 blocks.  This feature can decrease the time
+spent on doing block allocation and brings smaller fragmentation, especially
+for large files.  The size can be specified using the
+.B \-C option.
+.IP
+.B Warning:
+The bigalloc feature is still under development, and may not be fully
+supported with your kernel or may have various bugs.  Please see the web
+page http://ext4.wiki.kernel.org/index.php/Bigalloc for details.
 .TP
 .B dir_index
 Use hashed b-trees to speed up lookups in large directories.
