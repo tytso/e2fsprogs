@@ -1346,7 +1346,7 @@ profile_error:
 			break;
 		case 'C':
 			cluster_size = strtoul(optarg, &tmp, 0);
-			if (cluster_size < EXT2_MIN_CLUSTER_SIZE ||
+			if (cluster_size <= EXT2_MIN_CLUSTER_SIZE ||
 			    cluster_size > EXT2_MAX_CLUSTER_SIZE || *tmp) {
 				com_err(program_name, 0,
 					_("invalid cluster size - %s"),
@@ -1847,6 +1847,13 @@ profile_error:
 							    blocksize*16);
 		fs_param.s_log_cluster_size =
 			int_log2(cluster_size >> EXT2_MIN_CLUSTER_LOG_SIZE);
+		if (fs_param.s_log_cluster_size &&
+		    fs_param.s_log_cluster_size < fs_param.s_log_block_size) {
+			com_err(program_name, 0,
+				_("The cluster size may not be "
+				  "smaller than the block size.\n"));
+			exit(1);
+		}
 	} else if (cluster_size) {
 		com_err(program_name, 0,
 			_("specifying a cluster size requires the "
