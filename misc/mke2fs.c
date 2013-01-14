@@ -1962,6 +1962,15 @@ profile_error:
 		}
 	}
 
+	/*
+	 * If the bigalloc feature is enabled, then the -g option will
+	 * specify the number of clusters per group.
+	 */
+	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) {
+		fs_param.s_clusters_per_group = fs_param.s_blocks_per_group;
+		fs_param.s_blocks_per_group = 0;
+	}
+
 	if (inode_size == 0)
 		inode_size = get_int_from_profile(fs_types, "inode_size", 0);
 	if (!flex_bg_size && (fs_param.s_feature_incompat &
