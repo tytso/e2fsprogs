@@ -47,9 +47,9 @@ static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
 
 }
 
-int common_extent_args_process(int argc, char *argv[], int min_argc,
-			       int max_argc, const char *cmd,
-			       const char *usage, int flags)
+static int common_extent_args_process(int argc, char *argv[], int min_argc,
+				      int max_argc, const char *cmd,
+				      const char *usage, int flags)
 {
 	if (common_args_process(argc, argv, min_argc, max_argc, cmd,
 				usage, flags))
@@ -112,7 +112,8 @@ void do_extent_close(int argc, char *argv[])
 {
 	int ret;
 
-	if (check_fs_open(argv[0]))
+	if (common_args_process(argc, argv, 1, 1,
+				"extent_close", "", 0))
 		return;
 
 	if (!current_handle) {
@@ -129,22 +130,24 @@ void do_extent_close(int argc, char *argv[])
 	extent_prompt = NULL;
 }
 
-void generic_goto_node(char *cmd_name, int op)
+static void generic_goto_node(const char *my_name, int argc,
+			      char **argv, int op)
 {
 	struct ext2fs_extent	extent;
 	errcode_t		retval;
 
-	if (check_fs_open(cmd_name))
+	if (my_name && common_args_process(argc, argv, 1, 1,
+					   my_name, "", 0))
 		return;
 
 	if (!current_handle) {
-		com_err(cmd_name, 0, "Extent handle not open");
+		com_err(argv[0], 0, "Extent handle not open");
 		return;
 	}
 
 	retval = ext2fs_extent_get(current_handle, op, &extent);
 	if (retval) {
-		com_err(cmd_name, retval, 0);
+		com_err(argv[0], retval, 0);
 		return;
 	}
 	dbg_print_extent(0, &extent);
@@ -152,67 +155,67 @@ void generic_goto_node(char *cmd_name, int op)
 
 void do_current_node(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_CURRENT);
+	generic_goto_node("current_node", argc, argv, EXT2_EXTENT_CURRENT);
 }
 
 void do_root_node(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_ROOT);
+	generic_goto_node("root_node", argc, argv, EXT2_EXTENT_ROOT);
 }
 
 void do_last_leaf(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_LAST_LEAF);
+	generic_goto_node("last_leaf", argc, argv, EXT2_EXTENT_LAST_LEAF);
 }
 
 void do_first_sib(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_FIRST_SIB);
+	generic_goto_node("first_sib", argc, argv, EXT2_EXTENT_FIRST_SIB);
 }
 
 void do_last_sib(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_LAST_SIB);
+	generic_goto_node("next_sib", argc, argv, EXT2_EXTENT_LAST_SIB);
 }
 
 void do_next_sib(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_NEXT_SIB);
+	generic_goto_node("next_sib", argc, argv, EXT2_EXTENT_NEXT_SIB);
 }
 
 void do_prev_sib(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_PREV_SIB);
+	generic_goto_node("prev_sib", argc, argv, EXT2_EXTENT_PREV_SIB);
 }
 
 void do_next_leaf(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_NEXT_LEAF);
+	generic_goto_node("next_leaf", argc, argv, EXT2_EXTENT_NEXT_LEAF);
 }
 
 void do_prev_leaf(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_PREV_LEAF);
+	generic_goto_node("prev_leaf", argc, argv, EXT2_EXTENT_PREV_LEAF);
 }
 
 void do_next(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_NEXT);
+	generic_goto_node("next", argc, argv, EXT2_EXTENT_NEXT);
 }
 
 void do_prev(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_PREV);
+	generic_goto_node("prev", argc, argv, EXT2_EXTENT_PREV);
 }
 
 void do_up(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_UP);
+	generic_goto_node("up", argc, argv, EXT2_EXTENT_UP);
 }
 
 void do_down(int argc, char *argv[])
 {
-	generic_goto_node(argv[0], EXT2_EXTENT_DOWN);
+	generic_goto_node("down", argc, argv, EXT2_EXTENT_DOWN);
 }
 
 void do_delete_node(int argc, char *argv[])
@@ -535,5 +538,5 @@ void do_goto_block(int argc, char **argv)
 		return;
 	}
 
-	generic_goto_node(argv[0], EXT2_EXTENT_CURRENT);
+	generic_goto_node(NULL, argc, argv, EXT2_EXTENT_CURRENT);
 }

@@ -54,7 +54,7 @@ void do_zap_block(int argc, char *argv[])
 					  "bit", &err);
 			if (err)
 				return;
-			if (bit >= current_fs->blocksize * 8) {
+			if (bit >= (int) current_fs->blocksize * 8) {
 				com_err(argv[0], 0, "The bit to flip "
 					"must be within a %d block\n",
 					current_fs->blocksize);
@@ -77,7 +77,7 @@ void do_zap_block(int argc, char *argv[])
 					     "offset", &err);
 			if (err)
 				return;
-			if (offset >= current_fs->blocksize) {
+			if (offset >= (int) current_fs->blocksize) {
 				com_err(argv[0], 0, "The offset must be "
 					"within a %d block\n",
 					current_fs->blocksize);
@@ -106,7 +106,7 @@ void do_zap_block(int argc, char *argv[])
 		offset = 0;
 	if (length < 0)
 		length = current_fs->blocksize - offset;
-	if ((offset + length) > current_fs->blocksize) {
+	if ((offset + length) > (int) current_fs->blocksize) {
 		com_err(argv[0], 0, "The specified length is too bug\n");
 		return;
 	}
@@ -167,14 +167,15 @@ errout:
 	return;
 }
 
-void do_dump_block(int argc, char *argv[])
+void do_block_dump(int argc, char *argv[])
 {
 	unsigned char	*buf;
 	ext2_ino_t	inode;
 	errcode_t	errcode;
 	blk64_t		block;
 	char		*file = NULL;
-	int		c, err, i, j;
+	unsigned int	i, j;
+	int		c, err;
 	int		suppress = -1;
 
 	if (check_fs_open(argv[0]))

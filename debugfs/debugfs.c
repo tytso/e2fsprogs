@@ -2237,7 +2237,7 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 	fprintf(stdout, "magic: 0x%x\n", mmp_s->mmp_magic);
 }
 
-static int source_file(const char *cmd_file, int sci_idx)
+static int source_file(const char *cmd_file, int ss_idx)
 {
 	FILE		*f;
 	char		buf[256];
@@ -2268,9 +2268,9 @@ static int source_file(const char *cmd_file, int sci_idx)
 		if (cp)
 			*cp = 0;
 		printf("debugfs: %s\n", buf);
-		retval = ss_execute_line(sci_idx, buf);
+		retval = ss_execute_line(ss_idx, buf);
 		if (retval) {
-			ss_perror(sci_idx, retval, buf);
+			ss_perror(ss_idx, retval, buf);
 			exit_status++;
 		}
 	}
