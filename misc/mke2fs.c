@@ -1324,10 +1324,10 @@ profile_error:
 		    "b:cg:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
-			blocksize = strtol(optarg, &tmp, 0);
+			blocksize = parse_num_blocks2(optarg, -1);
 			b = (blocksize > 0) ? blocksize : -blocksize;
 			if (b < EXT2_MIN_BLOCK_SIZE ||
-			    b > EXT2_MAX_BLOCK_SIZE || *tmp) {
+			    b > EXT2_MAX_BLOCK_SIZE) {
 				com_err(program_name, 0,
 					_("invalid block size - %s"), optarg);
 				exit(1);
@@ -1345,9 +1345,9 @@ profile_error:
 			cflag++;
 			break;
 		case 'C':
-			cluster_size = strtoul(optarg, &tmp, 0);
+			cluster_size = parse_num_blocks2(optarg, -1);
 			if (cluster_size <= EXT2_MIN_CLUSTER_SIZE ||
-			    cluster_size > EXT2_MAX_CLUSTER_SIZE || *tmp) {
+			    cluster_size > EXT2_MAX_CLUSTER_SIZE) {
 				com_err(program_name, 0,
 					_("invalid cluster size - %s"),
 					optarg);
