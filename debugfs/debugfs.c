@@ -1747,8 +1747,7 @@ void do_mknod(int argc, char *argv[])
 	}
         if (ext2fs_test_inode_bitmap2(current_fs->inode_map,newfile))
 		com_err(argv[0], 0, "Warning: inode already set");
-	ext2fs_mark_inode_bitmap2(current_fs->inode_map, newfile);
-	ext2fs_mark_ib_dirty(current_fs);
+	ext2fs_inode_alloc_stats2(current_fs, newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = mode;
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
