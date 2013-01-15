@@ -207,6 +207,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		super->s_log_block_size;
 
 	if (bigalloc_flag) {
+		unsigned long long bpg;
+
 		if (param->s_blocks_per_group &&
 		    param->s_clusters_per_group &&
 		    ((param->s_clusters_per_group * EXT2FS_CLUSTER_RATIO(fs)) !=
@@ -220,12 +222,19 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 			super->s_clusters_per_group = 
 				param->s_blocks_per_group /
 				EXT2FS_CLUSTER_RATIO(fs);
-		else
+		else if (super->s_log_cluster_size + 15 < 32)
 			super->s_clusters_per_group = fs->blocksize * 8;
+		else
+			super->s_clusters_per_group = (fs->blocksize - 1) * 8;
 		if (super->s_clusters_per_group > EXT2_MAX_CLUSTERS_PER_GROUP(super))
 			super->s_clusters_per_group = EXT2_MAX_CLUSTERS_PER_GROUP(super);
-		super->s_blocks_per_group = EXT2FS_C2B(fs,
-				       super->s_clusters_per_group);
+		bpg = EXT2FS_C2B(fs,
+			(unsigned long long) super->s_clusters_per_group);
+		if (bpg >= (((unsigned long long) 1) << 32)) {
+			retval = EXT2_ET_INVALID_ARGUMENT;
+			goto cleanup;
+		}
+		super->s_blocks_per_group = bpg;
 	} else {
 		set_field(s_blocks_per_group, fs->blocksize * 8);
 		if (super->s_blocks_per_group > EXT2_MAX_BLOCKS_PER_GROUP(super))
