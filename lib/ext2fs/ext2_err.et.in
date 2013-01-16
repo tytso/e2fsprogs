@@ -443,4 +443,34 @@ ec	EXT2_ET_MMP_CHANGE_ABORT,
 ec	EXT2_ET_MMP_OPEN_DIRECT,
 	"MMP: open with O_DIRECT failed"
 
+ec	EXT2_ET_BAD_DESC_SIZE,
+	"Block group descriptor size incorrect"
+
+ec	EXT2_ET_INODE_CSUM_INVALID,
+	"Inode checksum does not match inode"
+
+ec	EXT2_ET_INODE_BITMAP_CSUM_INVALID,
+	"Inode bitmap checksum does not match bitmap"
+
+ec	EXT2_ET_EXTENT_CSUM_INVALID,
+	"Extent block checksum does not match extent block"
+
+ec	EXT2_ET_DIR_NO_SPACE_FOR_CSUM,
+	"Directory block does not have space for checksum"
+
+ec	EXT2_ET_DIR_CSUM_INVALID,
+	"Directory block checksum does not match directory block"
+
+ec	EXT2_ET_EXT_ATTR_CSUM_INVALID,
+	"Extended attribute block checksum does not match block"
+
+ec	EXT2_ET_SB_CSUM_INVALID,
+	"Superblock checksum does not match superblock"
+
+ec	EXT2_ET_UNKNOWN_CSUM,
+	"Unknown checksum algorithm"
+
+ec	EXT2_ET_MMP_CSUM_INVALID,
+	"MMP block checksum does not match MMP block"
+
 	end
