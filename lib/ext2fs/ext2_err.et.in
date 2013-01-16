@@ -473,4 +473,7 @@ ec	EXT2_ET_UNKNOWN_CSUM,
 ec	EXT2_ET_MMP_CSUM_INVALID,
 	"MMP block checksum does not match MMP block"
 
+ec	EXT2_ET_FILE_EXISTS,
+	"Ext2 file already exists"
+
 	end

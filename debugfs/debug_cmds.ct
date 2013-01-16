@@ -160,6 +160,9 @@ request do_bmap, "Calculate the logical->physical block mapping for an inode",
 request do_punch, "Punch (or truncate) blocks from an inode by deallocating them",
 	punch, truncate;
 
+request do_symlink, "Create a symbolic link",
+	symlink;
+
 request do_imap, "Calculate the location of an inode",
 	imap;
 
@@ -181,11 +184,11 @@ request do_set_mmp_value, "Set MMP value",
 request do_extent_open, "Open inode for extent manipulation",
 	extent_open, eo;
 
-request do_zap_block, "Zap block",
+request do_zap_block, "Zap block: fill with 0, pattern, flip bits etc.",
 	zap_block, zap;
 
-request do_dump_block, "Zap block",
-	block_dump, bp;
+request do_block_dump, "Dump contents of a block",
+	block_dump, bd;
 
 end;
 

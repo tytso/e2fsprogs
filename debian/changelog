@@ -1,30 +1,54 @@
 e2fsprogs (1.42.7-1) unstable; urgency=low
 
-  * New uptream version
+  * New upstream version
   * Added new options to filefrag to be consistent with the version from
     Lustre
+  * Optimized e2fsck's CPU utilization
+  * Fixed e2fsck so it detects and fixes inconsistencies in the interior
+    nodes of an inode's extent tree
+  * Fixed a potential memory corruption failure in e2fsck's error path if
+    the call to ext2fs_open2() fails.
+  * Fixed e2fsck if its logging function is enabled in e2fsck.conf, and
+    the resulting file name for the log file is longer than 100 bytes,
+    that it properly handles this situation instead of crashing.
+  * E2fsck will now report the amount of memory that it attempted to
+    allocate when a memory allocation request fails, to make it easier to
+    track down the problem.
   * Fixed a bug in resize2fs which could cause severe file system
     corruption when growing an ext4 file system which was formatted with
     fewer-than-normal reserved gdt blocks
   * Fixed resize2fs to be able to handle off-line resizes of file
     systems with the flex_bg feature and without any reserved gdt
     blocks or if the file system did not have the resize_inode feature
+  * Further optimize resize2fs so it doesn't use quite as much CPU when
+    resizing very large file systems.
+  * Fixed 32-bit overflow bugs which could cause resize2fs to fail and
+    possibly corrupt the file system while resizing 64-bit file systems.
   * Fix a crash while mke2fs is parsing "-E resize=NNN" with the 64bit
     file system feature enabled
-  * Added the "zap_block", "block_dump", and "extent_open" commands to
-    debugfs
-  * Fixed e2fsck so it detects and fixes inconsistencies in the interior
-    nodes of an inode's extent tree
-  * Fixed mke2fs's handling of the mmp_update_interval option
-  * Optimized e2fsck's CPU utilization
+  * Added better error checking to mke2fs to check for invalid
+    parameters when creating bigalloc file system.
+  * When creating bigalloc filesystems, the -g option to mke2fs will now
+    specify the number of clusters per block group.
+  * Added the "symlink", "zap_block", "block_dump", and "extent_open"
+    commands to debugfs
   * Fixed debugfs's htree command so that all its messages are sent
     through the pager.
   * Fixed debugfs's dump_file and cat functions so they work correctly
     on file systems with a block size greater than 8k.
+  * Fixed mke2fs's handling of the mmp_update_interval option
   * Fixed e2freefrag so it works on 64-bit file systems, and so it uses
     much less memory.
+  * E2image can now include all data blocks in the e2image output
+    file when the user specifies the -a option.
+  * Fixed debugfs's mknod command so that it updates the block group
+    statistics
+  * Document the bigalloc feature in the mke2fs man page.
+    (Closes: #669730)
+  * Update Czech, Dutch, French, German, Polish, Sweedish, and
+    Vietnamese translations
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 1 Jan 2013 10:23:04 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 15 Jan 2013 22:31:25 -0500
 
 e2fsprogs (1.43~WIP-2012-09-22-1) unstable; urgency=low
 

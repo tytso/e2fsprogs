@@ -1759,8 +1759,7 @@ void do_mknod(int argc, char *argv[])
 	}
         if (ext2fs_test_inode_bitmap2(current_fs->inode_map,newfile))
 		com_err(argv[0], 0, "Warning: inode already set");
-	ext2fs_mark_inode_bitmap2(current_fs->inode_map, newfile);
-	ext2fs_mark_ib_dirty(current_fs);
+	ext2fs_inode_alloc_stats2(current_fs, newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = mode;
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
@@ -2202,6 +2201,49 @@ void do_punch(int argc, char *argv[])
 }
 #endif /* READ_ONLY */
 
+void do_symlink(int argc, char *argv[])
+{
+	char		*cp;
+	ext2_ino_t	parent;
+	char		*name, *target;
+	errcode_t	retval;
+
+	if (common_args_process(argc, argv, 3, 3, "symlink",
+				"<filename> <target>", CHECK_FS_RW))
+		return;
+
+	cp = strrchr(argv[1], '/');
+	if (cp) {
+		*cp = 0;
+		parent = string_to_inode(argv[1]);
+		if (!parent) {
+			com_err(argv[1], ENOENT, 0);
+			return;
+		}
+		name = cp+1;
+	} else {
+		parent = cwd;
+		name = argv[1];
+	}
+	target = argv[2];
+
+try_again:
+	retval = ext2fs_symlink(current_fs, parent, 0, name, target);
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, parent);
+		if (retval) {
+			com_err(argv[0], retval, "while expanding directory");
+			return;
+		}
+		goto try_again;
+	}
+	if (retval) {
+		com_err("ext2fs_symlink", retval, 0);
+		return;
+	}
+
+}
+
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
 #if CONFIG_MMP
@@ -2255,7 +2297,7 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 #endif
 }
 
-static int source_file(const char *cmd_file, int sci_idx)
+static int source_file(const char *cmd_file, int ss_idx)
 {
 	FILE		*f;
 	char		buf[256];
@@ -2286,9 +2328,9 @@ static int source_file(const char *cmd_file, int sci_idx)
 		if (cp)
 			*cp = 0;
 		printf("debugfs: %s\n", buf);
-		retval = ss_execute_line(sci_idx, buf);
+		retval = ss_execute_line(ss_idx, buf);
 		if (retval) {
-			ss_perror(sci_idx, retval, buf);
+			ss_perror(ss_idx, retval, buf);
 			exit_status++;
 		}
 	}

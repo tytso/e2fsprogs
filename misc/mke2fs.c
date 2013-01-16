@@ -1364,10 +1364,10 @@ profile_error:
 		    "b:cg:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
-			blocksize = strtol(optarg, &tmp, 0);
+			blocksize = parse_num_blocks2(optarg, -1);
 			b = (blocksize > 0) ? blocksize : -blocksize;
 			if (b < EXT2_MIN_BLOCK_SIZE ||
-			    b > EXT2_MAX_BLOCK_SIZE || *tmp) {
+			    b > EXT2_MAX_BLOCK_SIZE) {
 				com_err(program_name, 0,
 					_("invalid block size - %s"), optarg);
 				exit(1);
@@ -1385,9 +1385,9 @@ profile_error:
 			cflag++;
 			break;
 		case 'C':
-			cluster_size = strtoul(optarg, &tmp, 0);
-			if (cluster_size < EXT2_MIN_CLUSTER_SIZE ||
-			    cluster_size > EXT2_MAX_CLUSTER_SIZE || *tmp) {
+			cluster_size = parse_num_blocks2(optarg, -1);
+			if (cluster_size <= EXT2_MIN_CLUSTER_SIZE ||
+			    cluster_size > EXT2_MAX_CLUSTER_SIZE) {
 				com_err(program_name, 0,
 					_("invalid cluster size - %s"),
 					optarg);
@@ -1917,6 +1917,18 @@ profile_error:
 							    blocksize*16);
 		fs_param.s_log_cluster_size =
 			int_log2(cluster_size >> EXT2_MIN_CLUSTER_LOG_SIZE);
+		if (fs_param.s_log_cluster_size &&
+		    fs_param.s_log_cluster_size < fs_param.s_log_block_size) {
+			com_err(program_name, 0,
+				_("The cluster size may not be "
+				  "smaller than the block size.\n"));
+			exit(1);
+		}
+	} else if (cluster_size) {
+		com_err(program_name, 0,
+			_("specifying a cluster size requires the "
+			  "bigalloc feature"));
+		exit(1);
 	} else
 		fs_param.s_log_cluster_size = fs_param.s_log_block_size;
 
@@ -2025,6 +2037,15 @@ profile_error:
 				_("blocks per group count out of range"));
 			exit(1);
 		}
+	}
+
+	/*
+	 * If the bigalloc feature is enabled, then the -g option will
+	 * specify the number of clusters per group.
+	 */
+	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) {
+		fs_param.s_clusters_per_group = fs_param.s_blocks_per_group;
+		fs_param.s_blocks_per_group = 0;
 	}
 
 	if (inode_size == 0)
