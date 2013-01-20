@@ -624,6 +624,8 @@ void ext2fs_set_generic_bmap_padding(ext2fs_generic_bitmap bmap)
 int ext2fs_test_block_bitmap_range2(ext2fs_block_bitmap bmap,
 				    blk64_t block, unsigned int num)
 {
+	__u64	end = block + num;
+
 	if (!bmap)
 		return EINVAL;
 
@@ -646,12 +648,26 @@ int ext2fs_test_block_bitmap_range2(ext2fs_block_bitmap bmap,
 
 	INC_STAT(bmap, test_ext_count);
 
+	/* convert to clusters if necessary */
+	block >>= bmap->cluster_bits;
+	end += (1 << bmap->cluster_bits) - 1;
+	end >>= bmap->cluster_bits;
+	num = end - block;
+
+	if ((block < bmap->start) || (block+num-1 > bmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_TEST, block,
+				   bmap->description);
+		return;
+	}
+
 	return bmap->bitmap_ops->test_clear_bmap_extent(bmap, block, num);
 }
 
 void ext2fs_mark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 				     blk64_t block, unsigned int num)
 {
+	__u64	end = block + num;
+
 	if (!bmap)
 		return;
 
@@ -670,6 +686,12 @@ void ext2fs_mark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 
 	INC_STAT(bmap, mark_ext_count);
 
+	/* convert to clusters if necessary */
+	block >>= bmap->cluster_bits;
+	end += (1 << bmap->cluster_bits) - 1;
+	end >>= bmap->cluster_bits;
+	num = end - block;
+
 	if ((block < bmap->start) || (block+num-1 > bmap->end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_MARK, block,
 				   bmap->description);
@@ -682,6 +704,8 @@ void ext2fs_mark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 void ext2fs_unmark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 				       blk64_t block, unsigned int num)
 {
+	__u64	end = block + num;
+
 	if (!bmap)
 		return;
 
@@ -699,6 +723,12 @@ void ext2fs_unmark_block_bitmap_range2(ext2fs_block_bitmap bmap,
 		return;
 
 	INC_STAT(bmap, unmark_ext_count);
+
+	/* convert to clusters if necessary */
+	block >>= bmap->cluster_bits;
+	end += (1 << bmap->cluster_bits) - 1;
+	end >>= bmap->cluster_bits;
+	num = end - block;
 
 	if ((block < bmap->start) || (block+num-1 > bmap->end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_UNMARK, block,
