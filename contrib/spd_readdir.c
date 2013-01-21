@@ -186,7 +186,7 @@ static int ino_cmp(const void *a, const void *b)
 	return (i_a - i_b);
 }
 
-struct dir_s *alloc_dirstruct(DIR *dir)
+static struct dir_s *alloc_dirstruct(DIR *dir)
 {
 	struct dir_s	*dirstruct;
 	static pthread_mutexattr_t mutexattr;
@@ -200,7 +200,7 @@ struct dir_s *alloc_dirstruct(DIR *dir)
 	return dirstruct;
 }
 
-void cache_dirstruct(struct dir_s *dirstruct)
+static void cache_dirstruct(struct dir_s *dirstruct)
 {
 	struct dirent_s *ds, *dnew;
 	struct dirent64 *d;
