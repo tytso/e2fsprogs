@@ -1,6 +1,8 @@
 e2fsprogs (1.42.7-1) unstable; urgency=low
 
   * New upstream version
+  * Add warning indicating that the quota and bigalloc features are
+    still under development.
   * Added new options to filefrag to be consistent with the version from
     Lustre
   * Optimized e2fsck's CPU utilization
@@ -24,6 +26,7 @@ e2fsprogs (1.42.7-1) unstable; urgency=low
     resizing very large file systems.
   * Fixed 32-bit overflow bugs which could cause resize2fs to fail and
     possibly corrupt the file system while resizing 64-bit file systems.
+  * Fixed a big which could cause resize2fs to corrupt bigalloc file systems.
   * Fix a crash while mke2fs is parsing "-E resize=NNN" with the 64bit
     file system feature enabled
   * Added better error checking to mke2fs to check for invalid
@@ -48,7 +51,7 @@ e2fsprogs (1.42.7-1) unstable; urgency=low
   * Update Czech, Dutch, French, German, Polish, Sweedish, and
     Vietnamese translations
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 15 Jan 2013 22:31:25 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 21 Jan 2013 21:52:58 -0500
 
 e2fsprogs (1.42.6-1) unstable; urgency=low
 

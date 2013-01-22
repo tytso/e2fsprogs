@@ -1,5 +1,11 @@
-E2fsprogs 1.42.7 (January 15, 2013)
+E2fsprogs 1.42.7 (January 21, 2013)
 ===================================
+
+Add warnings to mke2fs, resize2fs, and tune2fs that the bigalloc and
+quota features are still under development.  For more information
+please see:
+    * https://ext4.wiki.kernel.org/index.php/Bigalloc
+    * https://ext4.wiki.kernel.org/index.php/Quota
 
 Add some new options to filefrag from Lustre's patches to e2fsprogs:
     * add -k option to print extents in kB-sized units (like df -k)
@@ -13,6 +19,9 @@ of reserved gdt blocks).  This also fixes a problem where if the user
 creates a filesystem with a restricted number of reserved gdt blocks,
 an off-line resize which grows the file system could potentially
 result in file system corruption.
+
+Fix a resize2fs bug which could cause it to corrupt bigalloc file
+systems when doing an off-line resize.
 
 Further optimize resize2fs so it doesn't use quite as much CPU when
 resizing very large file systems. 
@@ -81,6 +90,12 @@ on file systems whose block size is greater than 8k.
 Fix e2freefrag so it works on 64-bit file systems, and so it uses much
 less memory.  (Addresses Google Bug: 7269948)
 
+Update the spd_readdir.c file in the contrib directory to include some
+additions which were made in 2008 that didn't get folded into the
+version which we checked into the e2fsprogs source tree.  These
+enhancements include thread safety, support for readdir64_r(), and
+safe_getenv() support in case spd_readdir.so is used for setuid binaries.
+
 Update Czech, Dutch, French, German, Polish, Sweedish, and Vietnamese
 translations
 
@@ -107,8 +122,12 @@ The ext2fs_extents_fix_parents() was fixed so it does not modify the
 location of the extent handle if its current location is at an
 interior node, rather than a leaf node of an inode's extent tree.
 
-Add a regression test to assure that e2fsck can correctl fix an
+Add a regression test to assure that e2fsck can correctly fix an
 inconsistent interior node in an inode's extent tree.
+
+The ext2fs_{mark,unmark,test}_block_bitmap_range2() functions now
+correctly support bigalloc file systems which use store block usage
+information in units of clusters.
 
 Fixed the help text in the configure script for --enable-quota.
 
