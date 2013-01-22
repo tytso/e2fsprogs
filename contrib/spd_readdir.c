@@ -1,20 +1,21 @@
 /*
  * readdir accelerator
  *
- * (C) Copyright 2003, 2004 by Theodore Ts'o.
+ * (C) Copyright 2003, 2004, 2008 by Theodore Ts'o.
+ *
+ * 2008-06-08 Modified by Ross Boylan <RossBoylan stanfordalumni org>
+ *    Added support for readdir_r and readdir64_r calls.  Note
+ *     this has not been tested on anything other than GNU/Linux i386,
+ *     and that the regular readdir wrapper will take slightly more
+ *     space than Ted's original since it now includes a lock.
  *
  * Compile using the command:
  *
- * gcc -o spd_readdir.so -fPIC -shared spd_readdir.c -ldl
+ * gcc -o spd_readdir.so -shared -fpic spd_readdir.c -ldl
  *
  * Use it by setting the LD_PRELOAD environment variable:
  * 
  * export LD_PRELOAD=/usr/local/sbin/spd_readdir.so
- *
- * Note that this preload is not going to work for all programs.  In
- * particular, although it does supply readdir_r(), it is *not* thread
- * safe.  So I can't recommend this as something to be dropped in
- * /etc/ld.so.preload.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -27,6 +28,10 @@
 #define MAX_DIRSIZE	0
 
 #define DEBUG
+/* Util we autoconfiscate spd_readdir... */
+#define HAVE___SECURE_GETENV	1
+#define HAVE_PRCTL		1
+#define HAVE_SYS_PRCTL_H	1
 
 #ifdef DEBUG
 #define DEBUG_DIR(x)	{if (do_debug) { x; }}
@@ -46,6 +51,12 @@
 #include <dirent.h>
 #include <errno.h>
 #include <dlfcn.h>
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#else
+#define PR_GET_DUMPABLE 3
+#endif
+#include <pthread.h>
 
 struct dirent_s {
 	unsigned long long d_ino;
@@ -57,6 +68,7 @@ struct dirent_s {
 
 struct dir_s {
 	DIR	*dir;
+	pthread_mutex_t lock; /* Mutex lock for this structure.  */
 	int	num;
 	int	max;
 	struct dirent_s *dp;
@@ -74,6 +86,8 @@ static struct dirent *(*real_readdir)(DIR *dir) = 0;
 static int (*real_readdir_r)(DIR *dir, struct dirent *entry,
 			     struct dirent **result) = 0;
 static struct dirent64 *(*real_readdir64)(DIR *dir) = 0;
+static int (*real_readdir64_r)(DIR *dir, struct dirent64 *entry,
+			       struct dirent64 **result) = 0;
 static off_t (*real_telldir)(DIR *dir) = 0;
 static void (*real_seekdir)(DIR *dir, off_t offset) = 0;
 static int (*real_dirfd)(DIR *dir) = 0;
@@ -82,6 +96,27 @@ static int num_open = 0;
 #ifdef DEBUG
 static int do_debug = 0;
 #endif
+
+static char *safe_getenv(const char *arg)
+{
+	if ((getuid() != geteuid()) || (getgid() != getegid()))
+		return NULL;
+#if HAVE_PRCTL
+	if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
+		return NULL;
+#else
+#if (defined(linux) && defined(SYS_prctl))
+	if (syscall(SYS_prctl, PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
+		return NULL;
+#endif
+#endif
+
+#if HAVE___SECURE_GETENV
+	return __secure_getenv(arg);
+#else
+	return getenv(arg);
+#endif
+}
 
 static void setup_ptr()
 {
@@ -94,14 +129,15 @@ static void setup_ptr()
 	real_readdir = dlsym(RTLD_NEXT, "readdir");
 	real_readdir_r = dlsym(RTLD_NEXT, "readdir_r");
 	real_readdir64 = dlsym(RTLD_NEXT, "readdir64");
+	real_readdir64_r = dlsym(RTLD_NEXT, "readdir64_r");
 	real_telldir = dlsym(RTLD_NEXT, "telldir");
 	real_seekdir = dlsym(RTLD_NEXT, "seekdir");
 	real_dirfd = dlsym(RTLD_NEXT, "dirfd");
-	if ((cp = getenv("SPD_READDIR_MAX_SIZE")) != NULL) {
+	if ((cp = safe_getenv("SPD_READDIR_MAX_SIZE")) != NULL) {
 		max_dirsize = atol(cp);
 	}
 #ifdef DEBUG
-	if (getenv("SPD_READDIR_DEBUG")) {
+	if (safe_getenv("SPD_READDIR_DEBUG")) {
 		printf("initialized!\n");
 		do_debug++;
 	}
@@ -111,6 +147,8 @@ static void setup_ptr()
 static void free_cached_dir(struct dir_s *dirstruct)
 {
 	int i;
+
+	pthread_mutex_destroy(&(dirstruct->lock));
 
 	if (!dirstruct->dp)
 		return;
@@ -148,18 +186,21 @@ static int ino_cmp(const void *a, const void *b)
 	return (i_a - i_b);
 }
 
-struct dir_s *alloc_dirstruct(DIR *dir)
+static struct dir_s *alloc_dirstruct(DIR *dir)
 {
 	struct dir_s	*dirstruct;
+	static pthread_mutexattr_t mutexattr;
+	mutexattr.__align = PTHREAD_MUTEX_RECURSIVE;
 
 	dirstruct = malloc(sizeof(struct dir_s));
 	if (dirstruct)
 		memset(dirstruct, 0, sizeof(struct dir_s));
 	dirstruct->dir = dir;
+	pthread_mutex_init(&(dirstruct->lock), &mutexattr);
 	return dirstruct;
 }
 
-void cache_dirstruct(struct dir_s *dirstruct)
+static void cache_dirstruct(struct dir_s *dirstruct)
 {
 	struct dirent_s *ds, *dnew;
 	struct dirent64 *d;
@@ -238,7 +279,7 @@ DIR *fdopendir(int fd)
 	if (!real_fdopendir)
 		setup_ptr();
 
-	DEBUG_DIR(printf("fdpendir(%d) (%d open)\n", fd, num_open++));
+	DEBUG_DIR(printf("fdopendir(%d) (%d open)\n", fd, num_open++));
 	dir = (*real_fdopendir)(fd);
 	if (!dir)
 		return NULL;
@@ -306,19 +347,19 @@ int readdir_r(DIR *dir, struct dirent *entry, struct dirent **result)
 	if (dirstruct->direct)
 		return (*real_readdir_r)(dirstruct->dir, entry, result);
 
+	pthread_mutex_lock(&(dirstruct->lock));
 	if (dirstruct->pos >= dirstruct->num) {
 		*result = NULL;
-		return 0;
+	} else {
+		ds = &dirstruct->dp[dirstruct->pos++];
+		entry->d_ino = ds->d_ino;
+		entry->d_off = ds->d_off;
+		entry->d_reclen = ds->d_reclen;
+		entry->d_type = ds->d_type;
+		strncpy(entry->d_name, ds->d_name, sizeof(entry->d_name));
+		*result = entry;
 	}
-
-	ds = &dirstruct->dp[dirstruct->pos++];
-	entry->d_ino = ds->d_ino;
-	entry->d_off = ds->d_off;
-	entry->d_reclen = ds->d_reclen;
-	entry->d_type = ds->d_type;
-	strncpy(entry->d_name, ds->d_name, sizeof(entry->d_name));
-	*result = entry;
-
+	pthread_mutex_unlock(&(dirstruct->lock));
 	return 0;
 }
 
@@ -342,6 +383,32 @@ struct dirent64 *readdir64(DIR *dir)
 		sizeof(dirstruct->ret_dir64.d_name));
 
 	return (&dirstruct->ret_dir64);
+}
+
+int readdir64_r (DIR *__restrict dir,
+		 struct dirent64 *__restrict entry,
+		 struct dirent64 **__restrict result)
+{
+	struct dir_s	*dirstruct = (struct dir_s *) dir;
+	struct dirent_s *ds;
+
+	if (dirstruct->direct)
+		return (*real_readdir64_r)(dir, entry, result);
+	pthread_mutex_lock(&(dirstruct->lock));
+	if (dirstruct->pos >= dirstruct->num) {
+		*result = NULL;
+	} else {
+		ds = &dirstruct->dp[dirstruct->pos++];
+		entry->d_ino = ds->d_ino;
+		entry->d_off = ds->d_off;
+		entry->d_reclen = ds->d_reclen;
+		entry->d_type = ds->d_type;
+		strncpy(entry->d_name, ds->d_name,
+			sizeof(entry->d_name));
+		*result = entry;
+	}
+	pthread_mutex_unlock(&(dirstruct->lock));
+	return 0;
 }
 
 off_t telldir(DIR *dir)
@@ -374,9 +441,11 @@ void rewinddir(DIR *dir)
 	if (dirstruct->direct)
 		return;
 	
+	pthread_mutex_lock(&(dirstruct->lock));
 	dirstruct->pos = 0;
 	free_cached_dir(dirstruct);
 	cache_dirstruct(dirstruct);
+	pthread_mutex_unlock(&(dirstruct->lock));
 }
 
 int dirfd(DIR *dir)

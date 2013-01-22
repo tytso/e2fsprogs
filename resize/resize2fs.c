@@ -62,6 +62,15 @@ static errcode_t fix_sb_journal_backup(ext2_filsys fs);
 				 ((blk) < (ext2fs_inode_table_loc((fs), (i)) + \
 					   (fs)->inode_blocks_per_group)))
 
+/* Some bigalloc helper macros which are more succint... */
+#define B2C(x)	EXT2FS_B2C(fs, (x))
+#define C2B(x)	EXT2FS_C2B(fs, (x))
+#define EQ_CLSTR(x, y) (B2C(x) == B2C(y))
+#define LE_CLSTR(x, y) (B2C(x) <= B2C(y))
+#define LT_CLSTR(x, y) (B2C(x) <  B2C(y))
+#define GE_CLSTR(x, y) (B2C(x) >= B2C(y))
+#define GT_CLSTR(x, y) (B2C(x) >  B2C(y))
+
 int lazy_itable_init;
 
 /*
@@ -1166,8 +1175,9 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	 */
 	to_move = moved = 0;
 	init_block_alloc(rfs);
-	for (blk = old_fs->super->s_first_data_block;
-	     blk < ext2fs_blocks_count(old_fs->super); blk++) {
+	for (blk = B2C(old_fs->super->s_first_data_block);
+	     blk < ext2fs_blocks_count(old_fs->super);
+	     blk += EXT2FS_CLUSTER_RATIO(fs)) {
 		if (!ext2fs_test_block_bitmap2(old_fs->block_map, blk))
 			continue;
 		if (!ext2fs_test_block_bitmap2(rfs->move_blocks, blk))
@@ -1184,7 +1194,7 @@ static errcode_t block_mover(ext2_resize_t rfs)
 			goto errout;
 		}
 		ext2fs_block_alloc_stats2(fs, new_blk, +1);
-		ext2fs_add_extent_entry(rfs->bmap, blk, new_blk);
+		ext2fs_add_extent_entry(rfs->bmap, B2C(blk), B2C(new_blk));
 		to_move++;
 	}
 
@@ -1214,6 +1224,9 @@ static errcode_t block_mover(ext2_resize_t rfs)
 		if (retval) goto errout;
 		if (!size)
 			break;
+		old_blk = C2B(old_blk);
+		new_blk = C2B(new_blk);
+		size = C2B(size);
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_BMOVE)
 			printf("Moving %llu blocks %llu->%llu\n",
@@ -1264,6 +1277,20 @@ errout:
  */
 
 
+/*
+ * The extent translation table is stored in clusters so we need to
+ * take special care when mapping a source block number to its
+ * destination block number.
+ */
+__u64 extent_translate(ext2_filsys fs, ext2_extent extent, __u64 old_loc)
+{
+	__u64 new_block = C2B(ext2fs_extent_translate(extent, B2C(old_loc)));
+
+	if (new_block != 0)
+		new_block += old_loc & (EXT2FS_CLUSTER_RATIO(fs) - 1);
+	return new_block;
+}
+
 struct process_block_struct {
 	ext2_resize_t 		rfs;
 	ext2_ino_t		ino;
@@ -1286,7 +1313,7 @@ static int process_block(ext2_filsys fs, blk64_t	*block_nr,
 	pb = (struct process_block_struct *) priv_data;
 	block = *block_nr;
 	if (pb->rfs->bmap) {
-		new_block = ext2fs_extent_translate(pb->rfs->bmap, block);
+		new_block = extent_translate(fs, pb->rfs->bmap, block);
 		if (new_block) {
 			*block_nr = new_block;
 			ret |= BLOCK_CHANGED;
@@ -1412,7 +1439,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		pb.changed = 0;
 
 		if (ext2fs_file_acl_block(rfs->old_fs, inode) && rfs->bmap) {
-			new_block = ext2fs_extent_translate(rfs->bmap,
+			new_block = extent_translate(rfs->old_fs, rfs->bmap,
 				ext2fs_file_acl_block(rfs->old_fs, inode));
 			if (new_block) {
 				ext2fs_file_acl_block_set(rfs->old_fs, inode,
@@ -1819,26 +1846,27 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 	else
 		old_desc_blocks = fs->desc_blocks +
 			fs->super->s_reserved_gdt_blocks;
-	for (blk = fs->super->s_first_data_block;
-	     blk < ext2fs_blocks_count(fs->super); blk++) {
+	for (blk = B2C(fs->super->s_first_data_block);
+	     blk < ext2fs_blocks_count(fs->super);
+	     blk += EXT2FS_CLUSTER_RATIO(fs)) {
 		if ((uninit &&
-		     !((blk == super_blk) ||
+		     !(EQ_CLSTR(blk, super_blk) ||
 		       ((old_desc_blk && old_desc_blocks &&
-			 (blk >= old_desc_blk) &&
-			 (blk < old_desc_blk + old_desc_blocks))) ||
-		       ((new_desc_blk && (blk == new_desc_blk))) ||
-		       (blk == ext2fs_block_bitmap_loc(fs, group)) ||
-		       (blk == ext2fs_inode_bitmap_loc(fs, group)) ||
-		       ((blk >= ext2fs_inode_table_loc(fs, group) &&
-			 (blk < ext2fs_inode_table_loc(fs, group)
-			  + fs->inode_blocks_per_group))))) ||
+			 GE_CLSTR(blk, old_desc_blk) &&
+			 LT_CLSTR(blk, old_desc_blk + old_desc_blocks))) ||
+		       ((new_desc_blk && EQ_CLSTR(blk, new_desc_blk))) ||
+		       EQ_CLSTR(blk, ext2fs_block_bitmap_loc(fs, group)) ||
+		       EQ_CLSTR(blk, ext2fs_inode_bitmap_loc(fs, group)) ||
+		       ((GE_CLSTR(blk, ext2fs_inode_table_loc(fs, group)) &&
+			 LT_CLSTR(blk, ext2fs_inode_table_loc(fs, group)
+				  + fs->inode_blocks_per_group))))) ||
 		    (!ext2fs_fast_test_block_bitmap2(fs->block_map, blk))) {
 			group_free++;
 			total_blocks_free++;
 		}
 		count++;
-		if ((count == fs->super->s_blocks_per_group) ||
-		    (blk == ext2fs_blocks_count(fs->super)-1)) {
+		if ((count == fs->super->s_clusters_per_group) ||
+		    EQ_CLSTR(blk, ext2fs_blocks_count(fs->super)-1)) {
 			ext2fs_bg_free_blocks_count_set(fs, group, group_free);
 			ext2fs_group_desc_csum_set(fs, group);
 			group++;
@@ -1858,6 +1886,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 					fs->super->s_reserved_gdt_blocks;
 		}
 	}
+	total_blocks_free = C2B(total_blocks_free);
 	ext2fs_free_blocks_count_set(fs->super, total_blocks_free);
 
 	/*

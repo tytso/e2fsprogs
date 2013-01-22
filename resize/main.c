@@ -147,6 +147,18 @@ static void determine_fs_stride(ext2_filsys fs)
 #endif
 }
 
+static bigalloc_check(ext2_filsys fs, int force)
+{
+	if (!force && EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_RO_COMPAT_BIGALLOC)) {
+		fprintf(stderr, _("\nResizing bigalloc file systems has "
+				  "not been fully tested.  Proceed\n"
+				  "at your own risk!  Use the force option "
+				  "if you want to go ahead anyway.\n\n"));
+		exit(1);
+	}
+}
+
 int main (int argc, char ** argv)
 {
 	errcode_t	retval;
@@ -428,6 +440,7 @@ int main (int argc, char ** argv)
 		exit(0);
 	}
 	if (mount_flags & EXT2_MF_MOUNTED) {
+		bigalloc_check(fs, force);
 		retval = online_resize_fs(fs, mtpt, &new_size, flags);
 	} else {
 		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
@@ -438,6 +451,7 @@ int main (int argc, char ** argv)
 				device_name);
 			exit(1);
 		}
+		bigalloc_check(fs, force);
 		printf(_("Resizing the filesystem on "
 			 "%s to %llu (%dk) blocks.\n"),
 		       device_name, new_size, fs->blocksize / 1024);
