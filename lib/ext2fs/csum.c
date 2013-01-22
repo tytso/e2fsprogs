@@ -113,10 +113,8 @@ static errcode_t ext2fs_ext_attr_block_csum(ext2_filsys fs, ext2_ino_t inum,
 					    struct ext2_ext_attr_header *hdr,
 					    __u32 *crc)
 {
-	errcode_t retval;
 	char *buf = (char *)hdr;
-	__u32 gen, old_crc = hdr->h_checksum;
-	struct ext2_inode inode;
+	__u32 old_crc = hdr->h_checksum;
 
 	hdr->h_checksum = 0;
 	block = ext2fs_cpu_to_le64(block);

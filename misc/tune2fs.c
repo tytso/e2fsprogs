@@ -768,9 +768,8 @@ static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 static int update_feature_set(ext2_filsys fs, char *features)
 {
 	struct ext2_super_block *sb = fs->super;
-	struct ext2_group_desc *gd;
 	__u32		old_features[3];
-	int		i, type_err;
+	int		type_err;
 	unsigned int	mask_err;
 
 #define FEATURE_ON(type, mask) (!(old_features[(type)] & (mask)) && \

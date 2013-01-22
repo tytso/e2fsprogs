@@ -95,7 +95,6 @@ static errcode_t create_icache(ext2_filsys fs)
 {
 	int		i;
 	errcode_t	retval;
-	void		*p;
 
 	if (fs->icache)
 		return 0;

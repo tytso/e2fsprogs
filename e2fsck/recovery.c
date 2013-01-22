@@ -595,7 +595,7 @@ static int do_one_pass(journal_t *journal,
 						success = -EIO;
 						printk(KERN_ERR "JBD: Invalid "
 						       "checksum recovering "
-						       "block %ld in log\n",
+						       "block %lld in log\n",
 						       blocknr);
 						continue;
 					}
