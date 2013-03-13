@@ -294,6 +294,8 @@ int journal_skip_recovery(journal_t *journal)
 		++journal->j_transaction_sequence;
 	} else {
 #ifdef CONFIG_JBD_DEBUG
+		journal_superblock_t *sb = journal->j_superblock;
+
 		int dropped = info.end_transaction - be32_to_cpu(sb->s_sequence);
 #endif
 		jbd_debug(1,
