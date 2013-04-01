@@ -13,7 +13,7 @@ INSTALL = @INSTALL@
 
 MK_CMDS=	_SS_DIR_OVERRIDE=../../lib/ss ../../lib/ss/mk_cmds
 
-PROGS=		test_icount
+PROGS=		test_icount crcsum
 
 TEST_REL_OBJS=	test_rel.o test_rel_cmds.o
 
@@ -33,6 +33,10 @@ all:: $(PROGS)
 test_rel: $(TEST_REL_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(LD) $(ALL_LDFLAGS) -o test_rel $(TEST_REL_OBJS) $(LIBS)
+
+crcsum: crcsum.o $(DEPLIBS)
+	$(E) "	LD $@"
+	$(Q) $(LD) $(ALL_LDFLAGS) -o crcsum crcsum.o $(LIBS)
 
 test_rel_cmds.c: test_rel_cmds.ct
 	$(E) "	MK_CMDS $@"
