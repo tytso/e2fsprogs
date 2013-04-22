@@ -1230,7 +1230,6 @@ static void install_image(char *device, char *image_fn, int type)
 	}
 
 	ext2fs_close (fs);
-	exit (0);
 }
 
 static struct ext2_qcow2_hdr *check_qcow2_image(int *fd, char *name)
