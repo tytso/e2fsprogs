@@ -2019,13 +2019,15 @@ profile_error:
 		exit(1);
 	}
 
-	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC)
+	if (!quiet &&
+	    (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC))
 		fprintf(stderr, _("\nWarning: the bigalloc feature is still "
 				  "under development\n"
 				  "See https://ext4.wiki.kernel.org/"
 				  "index.php/Bigalloc for more information\n\n"));
 
-	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA)
+	if (!quiet &&
+	    (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA))
 		fprintf(stderr, _("\nWarning: the quota feature is still "
 				  "under development\n"
 				  "See https://ext4.wiki.kernel.org/"

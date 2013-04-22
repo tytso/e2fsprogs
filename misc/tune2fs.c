@@ -2370,6 +2370,12 @@ retry_open:
 			rc = 1;
 			goto closefs;
 		}
+		if (new_inode_size > fs->blocksize) {
+			fprintf(stderr, _("Invalid inode size %lu (max %d)\n"),
+				new_inode_size, fs->blocksize);
+			rc = 1;
+			goto closefs;
+		}
 
 		/*
 		 * If inode resize is requested use the
