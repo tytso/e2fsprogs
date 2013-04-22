@@ -35,13 +35,11 @@ int main(int argc, char **argv)
 
 	csum_func = ext2fs_crc32c_le;
 
-	while ((c = getopt (argc, argv, "B")) != EOF) {
+	while ((c = getopt (argc, argv, "h")) != EOF) {
 		switch (c) {
-		case 'B':
-			csum_func = ext2fs_crc32c_be;
-			break;
+		case 'h':
 		default:
-			com_err(argv[0], 0, "Usage: crcsum [-b] [file]\n");
+			com_err(argv[0], 0, "Usage: crcsum [file]\n");
 			return 1;
 		}
 	}
