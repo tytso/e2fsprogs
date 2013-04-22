@@ -1295,6 +1295,13 @@ int main (int argc, char ** argv)
 		}
 	if (optind != argc - 2 )
 		usage();
+
+	if (all_data && !img_type) {
+		com_err(program_name, 0, "-a option can only be used "
+					 "with raw or QCOW2 images.");
+		exit(1);
+	}
+
 	device_name = argv[optind];
 	image_fn = argv[optind+1];
 
