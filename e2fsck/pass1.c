@@ -307,7 +307,7 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 		remain -= EXT2_EXT_ATTR_SIZE(entry->e_name_len);
 
 		/* check value size */
-		if (entry->e_value_size == 0 || entry->e_value_size > remain) {
+		if (entry->e_value_size > remain) {
 			pctx->num = entry->e_value_size;
 			problem = PR_1_ATTR_VALUE_SIZE;
 			goto fix;
