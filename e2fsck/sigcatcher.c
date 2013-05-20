@@ -331,7 +331,8 @@ static const char *lookup_table_fallback(int num, struct str_table *table)
 	return buf;
 }
 
-static void die_signal_handler(int signum, siginfo_t *siginfo, void *context)
+static void die_signal_handler(int signum, siginfo_t *siginfo,
+			       void *context EXT2FS_ATTR((unused)))
 {
        void *stack_syms[32];
        int frames;

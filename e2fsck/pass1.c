@@ -1955,12 +1955,12 @@ fix_problem_now:
 			}
 			/* The next extent should match this index's logical start */
 			if (extent.e_lblk != lblk) {
-				struct ext2_extent_info info;
+				struct ext2_extent_info e_info;
 
-				ext2fs_extent_get_info(ehandle, &info);
+				ext2fs_extent_get_info(ehandle, &e_info);
 				pctx->blk = lblk;
 				pctx->blk2 = extent.e_lblk;
-				pctx->num = info.curr_level - 1;
+				pctx->num = e_info.curr_level - 1;
 				problem = PR_1_EXTENT_INDEX_START_INVALID;
 				if (fix_problem(ctx, problem, pctx))
 					ext2fs_extent_fix_parents(ehandle);
@@ -2000,7 +2000,8 @@ fix_problem_now:
 			}
 			pb->fragmented = 1;
 		}
-		while (is_dir && ++pb->last_db_block < extent.e_lblk) {
+		while (is_dir && (++pb->last_db_block <
+				  (e2_blkcnt_t) extent.e_lblk)) {
 			pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist,
 							      pb->ino, 0,
 							      pb->last_db_block);
@@ -2022,7 +2023,7 @@ fix_problem_now:
 			      (EXT2FS_B2C(ctx->fs, blk) ==
 			       EXT2FS_B2C(ctx->fs, pb->previous_block)) &&
 			      (blk & EXT2FS_CLUSTER_MASK(ctx->fs)) ==
-			      (blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
+			      ((unsigned) blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
 				mark_block_used(ctx, blk);
 				pb->num_blocks++;
 			}
@@ -2472,7 +2473,7 @@ static int process_block(ext2_filsys fs,
 		     (EXT2FS_B2C(ctx->fs, blk) ==
 		      EXT2FS_B2C(ctx->fs, p->previous_block)) &&
 		     (blk & EXT2FS_CLUSTER_MASK(ctx->fs)) ==
-		     (blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
+		     ((unsigned) blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
 		mark_block_used(ctx, blk);
 		p->num_blocks++;
 	}
@@ -2803,7 +2804,7 @@ static void mark_table_blocks(e2fsck_t ctx)
 	ext2_filsys fs = ctx->fs;
 	blk64_t	b;
 	dgrp_t	i;
-	int	j;
+	unsigned int	j;
 	struct problem_context pctx;
 
 	clear_problem_context(&pctx);

@@ -698,7 +698,7 @@ static void rewrite_inodes(ext2_filsys fs)
 
 static void rewrite_metadata_checksums(ext2_filsys fs)
 {
-	int i;
+	dgrp_t i;
 
 	fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	ext2fs_init_csum_seed(fs);
@@ -722,7 +722,7 @@ static void rewrite_metadata_checksums(ext2_filsys fs)
 static void enable_uninit_bg(ext2_filsys fs)
 {
 	struct ext2_group_desc *gd;
-	int i;
+	dgrp_t i;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		gd = ext2fs_group_desc(fs, fs->group_desc, i);
@@ -736,7 +736,7 @@ static void enable_uninit_bg(ext2_filsys fs)
 static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 {
 	struct ext2_group_desc *gd;
-	int i;
+	dgrp_t i;
 
 	/* Load bitmaps to ensure that the uninit ones get written out */
 	fs->super->s_feature_ro_compat |= csum_feature_flag;
@@ -1127,7 +1127,7 @@ err:
 	return 1;
 }
 
-void handle_quota_options(ext2_filsys fs)
+static void handle_quota_options(ext2_filsys fs)
 {
 	quota_ctx_t qctx;
 	ext2_ino_t qf_ino;
@@ -1177,7 +1177,7 @@ void handle_quota_options(ext2_filsys fs)
 	return;
 }
 
-void parse_quota_opts(const char *opts)
+static void parse_quota_opts(const char *opts)
 {
 	char	*buf, *token, *next, *p;
 	int	len;
@@ -1579,12 +1579,12 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 		    strcmp(token, "clear_mmp") == 0) {
 			clear_mmp = 1;
 		} else if (strcmp(token, "mmp_update_interval") == 0) {
-			unsigned long interval;
+			unsigned long intv;
 			if (!arg) {
 				r_usage++;
 				continue;
 			}
-			interval = strtoul(arg, &p, 0);
+			intv = strtoul(arg, &p, 0);
 			if (*p) {
 				fprintf(stderr,
 					_("Invalid mmp_update_interval: %s\n"),
@@ -1592,21 +1592,21 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				r_usage++;
 				continue;
 			}
-			if (interval == 0) {
-				interval = EXT4_MMP_UPDATE_INTERVAL;
-			} else if (interval > EXT4_MMP_MAX_UPDATE_INTERVAL) {
+			if (intv == 0) {
+				intv = EXT4_MMP_UPDATE_INTERVAL;
+			} else if (intv > EXT4_MMP_MAX_UPDATE_INTERVAL) {
 				fprintf(stderr,
 					_("mmp_update_interval too big: %lu\n"),
-					interval);
+					intv);
 				r_usage++;
 				continue;
 			}
 			printf(P_("Setting multiple mount protection update "
 				  "interval to %lu second\n",
 				  "Setting multiple mount protection update "
-				  "interval to %lu seconds\n", interval),
-			       interval);
-			fs->super->s_mmp_update_interval = interval;
+				  "interval to %lu seconds\n", intv),
+			       intv);
+			fs->super->s_mmp_update_interval = intv;
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "test_fs")) {
 			fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;

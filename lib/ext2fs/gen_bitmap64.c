@@ -174,7 +174,7 @@ errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 }
 
 #ifdef ENABLE_BMAP_STATS
-void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap bitmap)
+static void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap bitmap)
 {
 	struct ext2_bmap_statistics *stats = &bitmap->stats;
 #ifdef ENABLE_BMAP_STATS_OPS

@@ -453,7 +453,7 @@ static void scramble_dir_block(ext2_filsys fs, blk64_t blk, char *buf)
 #endif
 			continue;
 		}
-		if (dirent->name_len + 8 > rec_len) {
+		if (dirent->name_len + 8U > rec_len) {
 			printf("Corrupt directory block %lu: "
 			       "bad name_len (%d)\n", (unsigned long) blk,
 			       dirent->name_len);

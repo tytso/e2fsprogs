@@ -857,12 +857,16 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 		unsigned long long blocknr;
 		int err;
 
-		if (record_len == 4)
-			blocknr = ext2fs_be32_to_cpu(*((__be32 *)(bh->b_data +
-								  offset)));
-		else
-			blocknr = ext2fs_be64_to_cpu(*((__be64 *)(bh->b_data +
-								  offset)));
+		if (record_len == 4) {
+			__be32 b;
+			memcpy(&b, bh->b_data + offset, sizeof(__be32));
+			blocknr = ext2fs_be32_to_cpu(b);
+		} else {
+			__be64 b;
+			memcpy(&b, bh->b_data + offset, sizeof(__be64));
+			blocknr = ext2fs_be64_to_cpu(b);
+		}
+
 		offset += record_len;
 		err = journal_set_revoke(journal, blocknr, sequence);
 		if (err)
