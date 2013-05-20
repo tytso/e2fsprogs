@@ -183,7 +183,7 @@ static int jbd2_descr_block_csum_verify(journal_t *j,
 	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
 		return 1;
 
-	tail = (struct journal_block_tail *)(buf + j->j_blocksize -
+	tail = (struct journal_block_tail *)((char *)buf + j->j_blocksize -
 			sizeof(struct journal_block_tail));
 	provided = tail->t_checksum;
 	tail->t_checksum = 0;
@@ -821,7 +821,7 @@ static int jbd2_revoke_block_csum_verify(journal_t *j,
 	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
 		return 1;
 
-	tail = (struct journal_revoke_tail *)(buf + j->j_blocksize -
+	tail = (struct journal_revoke_tail *)((char *)buf + j->j_blocksize -
 			sizeof(struct journal_revoke_tail));
 	provided = tail->r_checksum;
 	tail->r_checksum = 0;

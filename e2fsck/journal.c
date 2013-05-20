@@ -41,7 +41,8 @@ static int bh_count = 0;
 #undef USE_INODE_IO
 
 /* Checksumming functions */
-int e2fsck_journal_verify_csum_type(journal_t *j, journal_superblock_t *jsb)
+static int e2fsck_journal_verify_csum_type(journal_t *j,
+					   journal_superblock_t *jsb)
 {
 	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
 		return 1;
@@ -49,7 +50,7 @@ int e2fsck_journal_verify_csum_type(journal_t *j, journal_superblock_t *jsb)
 	return jsb->s_checksum_type == JBD2_CRC32C_CHKSUM;
 }
 
-static __u32 e2fsck_journal_sb_csum(journal_t *j, journal_superblock_t *jsb)
+static __u32 e2fsck_journal_sb_csum(journal_superblock_t *jsb)
 {
 	__u32 crc, old_crc;
 
@@ -62,7 +63,8 @@ static __u32 e2fsck_journal_sb_csum(journal_t *j, journal_superblock_t *jsb)
 	return crc;
 }
 
-int e2fsck_journal_sb_csum_verify(journal_t *j, journal_superblock_t *jsb)
+static int e2fsck_journal_sb_csum_verify(journal_t *j,
+					 journal_superblock_t *jsb)
 {
 	__u32 provided, calculated;
 
@@ -70,19 +72,20 @@ int e2fsck_journal_sb_csum_verify(journal_t *j, journal_superblock_t *jsb)
 		return 1;
 
 	provided = ext2fs_be32_to_cpu(jsb->s_checksum);
-	calculated = e2fsck_journal_sb_csum(j, jsb);
+	calculated = e2fsck_journal_sb_csum(jsb);
 
 	return provided == calculated;
 }
 
-errcode_t e2fsck_journal_sb_csum_set(journal_t *j, journal_superblock_t *jsb)
+static errcode_t e2fsck_journal_sb_csum_set(journal_t *j,
+					    journal_superblock_t *jsb)
 {
 	__u32 crc;
 
 	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
 		return 0;
 
-	crc = e2fsck_journal_sb_csum(j, jsb);
+	crc = e2fsck_journal_sb_csum(jsb);
 	jsb->s_checksum = ext2fs_cpu_to_be32(crc);
 	return 0;
 }

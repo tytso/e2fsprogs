@@ -420,8 +420,7 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 
 static errcode_t copy_dir_entries(e2fsck_t ctx,
 				  struct fill_dir_struct *fd,
-				  struct out_dir *outdir,
-				  ext2_ino_t ino)
+				  struct out_dir *outdir)
 {
 	ext2_filsys 		fs = ctx->fs;
 	errcode_t		retval;
@@ -857,7 +856,7 @@ resort:
 	 * Copy the directory entries.  In a htree directory these
 	 * will become the leaf nodes.
 	 */
-	retval = copy_dir_entries(ctx, &fd, &outdir, ino);
+	retval = copy_dir_entries(ctx, &fd, &outdir);
 	if (retval)
 		goto errout;
 

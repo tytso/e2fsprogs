@@ -82,7 +82,6 @@ void e2fsck_pass5(e2fsck_t ctx)
 static void check_inode_bitmap_checksum(e2fsck_t ctx)
 {
 	struct problem_context	pctx;
-	struct ext4_group_desc	*gdp;
 	char		*buf;
 	dgrp_t		i;
 	int		nbytes;
@@ -112,8 +111,6 @@ static void check_inode_bitmap_checksum(e2fsck_t ctx)
 			continue;
 
 		ino_itr = 1 + (i * (nbytes << 3));
-		gdp = (struct ext4_group_desc *)ext2fs_group_desc(ctx->fs,
-				ctx->fs->group_desc, i);
 		retval = ext2fs_get_inode_bitmap_range2(ctx->fs->inode_map,
 							ino_itr, nbytes << 3,
 							buf);
@@ -141,7 +138,6 @@ static void check_inode_bitmap_checksum(e2fsck_t ctx)
 static void check_block_bitmap_checksum(e2fsck_t ctx)
 {
 	struct problem_context	pctx;
-	struct ext4_group_desc	*gdp;
 	char		*buf;
 	dgrp_t		i;
 	int		nbytes;
@@ -173,8 +169,6 @@ static void check_block_bitmap_checksum(e2fsck_t ctx)
 		blk_itr = EXT2FS_B2C(ctx->fs,
 				     ctx->fs->super->s_first_data_block) +
 			  (i * (nbytes << 3));
-		gdp = (struct ext4_group_desc *)ext2fs_group_desc(ctx->fs,
-				ctx->fs->group_desc, i);
 		retval = ext2fs_get_block_bitmap_range2(ctx->fs->block_map,
 							blk_itr, nbytes << 3,
 							buf);
