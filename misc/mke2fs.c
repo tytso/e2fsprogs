@@ -960,7 +960,7 @@ static void print_str_list(char **list)
 /*
  * Return TRUE if the profile has the given subsection
  */
-static int profile_has_subsection(profile_t profile, const char *section,
+static int profile_has_subsection(profile_t prof, const char *section,
 				  const char *subsection)
 {
 	void			*state;
@@ -972,7 +972,7 @@ static int profile_has_subsection(profile_t profile, const char *section,
 	names[1] = subsection;
 	names[2] = 0;
 
-	if (profile_iterator_create(profile, names,
+	if (profile_iterator_create(prof, names,
 				    PROFILE_ITER_LIST_SECTION |
 				    PROFILE_ITER_RELATIONS_ONLY, &state))
 		return 0;
@@ -988,7 +988,7 @@ static int profile_has_subsection(profile_t profile, const char *section,
 
 static char **parse_fs_type(const char *fs_type,
 			    const char *usage_types,
-			    struct ext2_super_block *fs_param,
+			    struct ext2_super_block *sb,
 			    blk64_t fs_blocks_count,
 			    char *progname)
 {
@@ -1055,7 +1055,7 @@ static char **parse_fs_type(const char *fs_type,
 		}
 	}
 
-	meg = (1024 * 1024) / EXT2_BLOCK_SIZE(fs_param);
+	meg = (1024 * 1024) / EXT2_BLOCK_SIZE(sb);
 	if (fs_blocks_count < 3 * meg)
 		size_type = "floppy";
 	else if (fs_blocks_count < 512 * meg)
@@ -1096,10 +1096,8 @@ static char **parse_fs_type(const char *fs_type,
 		}
 		if (t)
 			cp = t+1;
-		else {
-			cp = "";
+		else
 			break;
-		}
 	}
 	free(parse_str);
 	free(profile_type);
@@ -1108,15 +1106,15 @@ static char **parse_fs_type(const char *fs_type,
 	return (list.list);
 }
 
-static char *get_string_from_profile(char **fs_types, const char *opt,
+static char *get_string_from_profile(char **types, const char *opt,
 				     const char *def_val)
 {
 	char *ret = 0;
 	int i;
 
-	for (i=0; fs_types[i]; i++);
+	for (i=0; types[i]; i++);
 	for (i-=1; i >=0 ; i--) {
-		profile_get_string(profile, "fs_types", fs_types[i],
+		profile_get_string(profile, "fs_types", types[i],
 				   opt, 0, &ret);
 		if (ret)
 			return ret;
@@ -1125,36 +1123,36 @@ static char *get_string_from_profile(char **fs_types, const char *opt,
 	return (ret);
 }
 
-static int get_int_from_profile(char **fs_types, const char *opt, int def_val)
+static int get_int_from_profile(char **types, const char *opt, int def_val)
 {
 	int ret;
 	char **cpp;
 
 	profile_get_integer(profile, "defaults", opt, 0, def_val, &ret);
-	for (cpp = fs_types; *cpp; cpp++)
+	for (cpp = types; *cpp; cpp++)
 		profile_get_integer(profile, "fs_types", *cpp, opt, ret, &ret);
 	return ret;
 }
 
-static double get_double_from_profile(char **fs_types, const char *opt,
+static double get_double_from_profile(char **types, const char *opt,
 				      double def_val)
 {
 	double ret;
 	char **cpp;
 
 	profile_get_double(profile, "defaults", opt, 0, def_val, &ret);
-	for (cpp = fs_types; *cpp; cpp++)
+	for (cpp = types; *cpp; cpp++)
 		profile_get_double(profile, "fs_types", *cpp, opt, ret, &ret);
 	return ret;
 }
 
-static int get_bool_from_profile(char **fs_types, const char *opt, int def_val)
+static int get_bool_from_profile(char **types, const char *opt, int def_val)
 {
 	int ret;
 	char **cpp;
 
 	profile_get_boolean(profile, "defaults", opt, 0, def_val, &ret);
-	for (cpp = fs_types; *cpp; cpp++)
+	for (cpp = types; *cpp; cpp++)
 		profile_get_boolean(profile, "fs_types", *cpp, opt, ret, &ret);
 	return ret;
 }
@@ -2042,7 +2040,7 @@ profile_error:
 	fs_param.s_inodes_count = num_inodes ? num_inodes :
 		(ext2fs_blocks_count(&fs_param) * blocksize) / inode_ratio;
 
-	if ((((long long)fs_param.s_inodes_count) *
+	if ((((unsigned long long)fs_param.s_inodes_count) *
 	     (inode_size ? inode_size : EXT2_GOOD_OLD_INODE_SIZE)) >=
 	    ((ext2fs_blocks_count(&fs_param)) *
 	     EXT2_BLOCK_SIZE(&fs_param))) {
@@ -2122,7 +2120,7 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 {
 	errcode_t retval = ENOMEM;
 	char *tdb_dir = NULL, *tdb_file = NULL;
-	char *device_name, *tmp_name;
+	char *dev_name, *tmp_name;
 	int free_tdb_dir = 0;
 
 	/*
@@ -2144,13 +2142,13 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	tmp_name = strdup(name);
 	if (!tmp_name)
 		goto errout;
-	device_name = basename(tmp_name);
-	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(device_name) + 7 + 1);
+	dev_name = basename(tmp_name);
+	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(dev_name) + 7 + 1);
 	if (!tdb_file) {
 		free(tmp_name);
 		goto errout;
 	}
-	sprintf(tdb_file, "%s/mke2fs-%s.e2undo", tdb_dir, device_name);
+	sprintf(tdb_file, "%s/mke2fs-%s.e2undo", tdb_dir, dev_name);
 	free(tmp_name);
 
 	if (!access(tdb_file, F_OK)) {
@@ -2234,10 +2232,11 @@ static int mke2fs_discard_device(ext2_filsys fs)
 static void fix_cluster_bg_counts(ext2_filsys fs)
 {
 	blk64_t	cluster, num_clusters, tot_free;
-	int	grp_free, num_free, group, num;
+	unsigned num = 0;
+	int	grp_free, num_free, group;
 
 	num_clusters = EXT2FS_B2C(fs, ext2fs_blocks_count(fs->super));
-	tot_free = num_free = num = group = grp_free = 0;
+	tot_free = num_free = group = grp_free = 0;
 	for (cluster = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	     cluster < num_clusters; cluster++) {
 		if (!ext2fs_test_block_bitmap2(fs->block_map,
