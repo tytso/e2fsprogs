@@ -324,7 +324,7 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	ext2fs_badblocks_list_free(bb_list);
 }
 
-static char *journal_checksum_type_str(__u8 type)
+static const char *journal_checksum_type_str(__u8 type)
 {
 	switch (type) {
 	case JBD2_CRC32C_CHKSUM:

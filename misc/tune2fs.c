@@ -448,7 +448,7 @@ struct rewrite_dir_context {
 
 static int rewrite_dir_block(ext2_filsys fs,
 			     blk64_t	*blocknr,
-			     e2_blkcnt_t blockcnt,
+			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
 			     blk64_t	ref_block EXT2FS_ATTR((unused)),
 			     int	ref_offset EXT2FS_ATTR((unused)),
 			     void	*priv_data)
@@ -510,7 +510,7 @@ static int rewrite_dir_block(ext2_filsys fs,
 				ctx->errcode = EXT2_ET_DIR_CORRUPTED;
 			if (ctx->errcode)
 				return BLOCK_ABORT;
-			de = (struct ext2_dir_entry *)(((void *)de) + rec_len);
+			de = (struct ext2_dir_entry *)(((char *)de) + rec_len);
 		}
 		ctx->errcode = ext2fs_get_rec_len(fs, last_de, &rec_len);
 		if (ctx->errcode)
@@ -540,7 +540,7 @@ static int rewrite_dir_block(ext2_filsys fs,
 					penultimate_de);
 			changed = 1;
 		} else {
-			int csum_size = sizeof(struct ext2_dir_entry_tail);
+			unsigned csum_size = sizeof(struct ext2_dir_entry_tail);
 			struct ext2_dir_entry_tail *t;
 
 			/*
@@ -584,8 +584,8 @@ out:
 	return 0;
 }
 
-errcode_t rewrite_directory(ext2_filsys fs, ext2_ino_t dir,
-			    struct ext2_inode *inode)
+static errcode_t rewrite_directory(ext2_filsys fs, ext2_ino_t dir,
+				   struct ext2_inode *inode)
 {
 	errcode_t	retval;
 	struct rewrite_dir_context ctx;
