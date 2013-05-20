@@ -314,7 +314,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 					       BLOCK_FLAG_HOLE, 0,
 					       process_journal_block, &pb);
 		if ((pb.last_block + 1) * ctx->fs->blocksize <
-		    EXT2_I_SIZE(&j_inode->i_ext2)) {
+		    (int) EXT2_I_SIZE(&j_inode->i_ext2)) {
 			retval = EXT2_ET_JOURNAL_TOO_SMALL;
 			goto try_backup_journal;
 		}
