@@ -73,7 +73,8 @@ int ext2fs_verify_csum_type(ext2_filsys fs, struct ext2_super_block *sb)
 	return sb->s_checksum_type == EXT2_CRC32C_CHKSUM;
 }
 
-static __u32 ext2fs_superblock_csum(ext2_filsys fs, struct ext2_super_block *sb)
+static __u32 ext2fs_superblock_csum(ext2_filsys fs EXT2FS_ATTR((unused)),
+				    struct ext2_super_block *sb)
 {
 	int offset = offsetof(struct ext2_super_block, s_checksum);
 
@@ -108,7 +109,8 @@ errcode_t ext2fs_superblock_csum_set(ext2_filsys fs,
 	return 0;
 }
 
-static errcode_t ext2fs_ext_attr_block_csum(ext2_filsys fs, ext2_ino_t inum,
+static errcode_t ext2fs_ext_attr_block_csum(ext2_filsys fs,
+					    ext2_ino_t inum EXT2FS_ATTR((unused)),
 					    blk64_t block,
 					    struct ext2_ext_attr_header *hdr,
 					    __u32 *crc)
@@ -190,11 +192,11 @@ static errcode_t __get_dx_countlimit(ext2_filsys fs,
 	if (rec_len == fs->blocksize && translate(dirent->name_len) == 0)
 		count_offset = 8;
 	else if (rec_len == 12) {
-		dp = (struct ext2_dir_entry *)(((void *)dirent) + rec_len);
+		dp = (struct ext2_dir_entry *)(((char *)dirent) + rec_len);
 		rec_len = translate(dp->rec_len);
 		if (rec_len != fs->blocksize - 12)
 			return EXT2_ET_DB_NOT_FOUND;
-		root = (struct ext2_dx_root_info *)(((void *)dp + 12));
+		root = (struct ext2_dx_root_info *)(((char *)dp + 12));
 		if (root->reserved_zero ||
 		    root->info_length != sizeof(struct ext2_dx_root_info))
 			return EXT2_ET_DB_NOT_FOUND;
@@ -202,7 +204,7 @@ static errcode_t __get_dx_countlimit(ext2_filsys fs,
 	} else
 		return EXT2_ET_DB_NOT_FOUND;
 
-	c = (struct ext2_dx_countlimit *)(((void *)dirent) + count_offset);
+	c = (struct ext2_dx_countlimit *)(((char *)dirent) + count_offset);
 	max_sane_entries = (fs->blocksize - count_offset) /
 			   sizeof(struct ext2_dx_entry);
 	if (ext2fs_le16_to_cpu(c->limit) > max_sane_entries ||
@@ -251,7 +253,7 @@ static errcode_t __get_dirent_tail(ext2_filsys fs,
 
 	rec_len = translate(d->rec_len);
 	while (rec_len && !(rec_len & 0x3)) {
-		d = (struct ext2_dir_entry *)(((void *)d) + rec_len);
+		d = (struct ext2_dir_entry *)(((char *)d) + rec_len);
 		if ((void *)d >= top)
 			break;
 		rec_len = translate(d->rec_len);
@@ -315,7 +317,7 @@ int ext2fs_dirent_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 	 * so the swapfs.c functions won't change the endianness.
 	 */
 	retval = ext2fs_dirent_csum(fs, inum, dirent, &calculated,
-				    (void *)t - (void *)dirent);
+				    (char *)t - (char *)dirent);
 	if (retval)
 		return 0;
 	return ext2fs_le32_to_cpu(t->det_checksum) == calculated;
@@ -334,7 +336,7 @@ static errcode_t ext2fs_dirent_csum_set(ext2_filsys fs, ext2_ino_t inum,
 
 	/* swapfs.c functions don't change the checksum endianness */
 	retval = ext2fs_dirent_csum(fs, inum, dirent, &crc,
-				    (void *)t - (void *)dirent);
+				    (char *)t - (char *)dirent);
 	if (retval)
 		return retval;
 	t->det_checksum = ext2fs_cpu_to_le32(crc);
@@ -464,7 +466,7 @@ errcode_t ext2fs_dir_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
 
 static struct ext3_extent_tail *get_extent_tail(struct ext3_extent_header *h)
 {
-	return (struct ext3_extent_tail *)(((void *)h) +
+	return (struct ext3_extent_tail *)(((char *)h) +
 					   EXT3_EXTENT_TAIL_OFFSET(h));
 }
 
@@ -653,7 +655,7 @@ int ext2fs_inode_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 {
 	errcode_t retval;
 	__u32 provided, calculated;
-	int i, has_hi;
+	unsigned int i, has_hi;
 	char *cp;
 
 	if (fs->super->s_creator_os != EXT2_OS_LINUX ||

@@ -125,7 +125,7 @@ crc32_body(uint32_t crc, unsigned char const *buf, size_t len,
 	len = rem_len;
 	/* And the last few bytes */
 	if (len) {
-		uint8_t *p = (uint8_t *)(b + 1) - 1;
+		const uint8_t *p = (const uint8_t *)(b + 1) - 1;
 		do {
 			DO_CRC(*++p); /* use pre increment for speed */
 		} while (--len);
@@ -146,7 +146,7 @@ crc32_body(uint32_t crc, unsigned char const *buf, size_t len,
  */
 static inline uint32_t crc32_le_generic(uint32_t crc, unsigned char const *p,
 					size_t len, const uint32_t (*tab)[256],
-					uint32_t polynomial)
+					uint32_t polynomial EXT2FS_ATTR((unused)))
 {
 #if CRC_LE_BITS == 1
 	int i;
@@ -197,7 +197,7 @@ uint32_t ext2fs_crc32c_le(uint32_t crc, unsigned char const *p, size_t len)
  */
 static inline uint32_t crc32_be_generic(uint32_t crc, unsigned char const *p,
 					size_t len, const uint32_t (*tab)[256],
-					uint32_t polynomial)
+					uint32_t polynomial EXT2FS_ATTR((unused)))
 {
 #if CRC_BE_BITS == 1
 	int i;

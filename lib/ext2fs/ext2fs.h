@@ -963,13 +963,15 @@ extern int ext2fs_ext_attr_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 					     blk64_t block,
 					     struct ext2_ext_attr_header *hdr);
 #define EXT2_DIRENT_TAIL(block, blocksize) \
-	((struct ext2_dir_entry_tail *)(((void *)(block)) + \
+	((struct ext2_dir_entry_tail *)(((char *)(block)) + \
 	(blocksize) - sizeof(struct ext2_dir_entry_tail)))
 
 extern void ext2fs_initialize_dirent_tail(ext2_filsys fs,
 					  struct ext2_dir_entry_tail *t);
 extern int ext2fs_dirent_has_tail(ext2_filsys fs,
 				  struct ext2_dir_entry *dirent);
+extern int ext2fs_dirent_csum_verify(ext2_filsys fs, ext2_ino_t inum,
+				     struct ext2_dir_entry *dirent);
 extern int ext2fs_dir_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 					struct ext2_dir_entry *dirent);
 extern errcode_t ext2fs_dir_block_csum_set(ext2_filsys fs, ext2_ino_t inum,

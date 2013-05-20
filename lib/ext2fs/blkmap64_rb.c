@@ -862,7 +862,9 @@ static void rb_print_stats(ext2fs_generic_bitmap bitmap)
 		eff);
 }
 #else
-static void rb_print_stats(ext2fs_generic_bitmap bitmap){}
+static void rb_print_stats(ext2fs_generic_bitmap bitmap EXT2FS_ATTR((unused)))
+{
+}
 #endif
 
 struct ext2_bitmap_ops ext2fs_blkmap64_rbtree = {
