@@ -397,7 +397,8 @@ static int jbd2_commit_block_csum_verify(journal_t *j, void *buf)
 static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
 				      void *buf, __u32 sequence)
 {
-	__u32 provided, calculated;
+	__u32 calculated;
+	__u16 provided, crc;
 
 	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
 		return 1;
@@ -408,9 +409,10 @@ static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
 	calculated = ext2fs_crc32c_le(calculated, (__u8 *)&sequence,
 				      sizeof(sequence));
 	calculated = ext2fs_crc32c_le(calculated, buf, j->j_blocksize) & 0xffff;
+	crc = calculated & 0xFFFF;
 	provided = ext2fs_be16_to_cpu(tag->t_checksum);
 
-	return provided == ext2fs_cpu_to_be32(calculated);
+	return provided == crc;
 }
 
 static int do_one_pass(journal_t *journal,
