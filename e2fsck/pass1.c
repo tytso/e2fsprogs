@@ -1848,11 +1848,11 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 
 static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			     struct process_block_struct *pb,
-			     blk64_t start_block,
+			     blk64_t start_block, blk64_t end_block,
 			     ext2_extent_handle_t ehandle)
 {
 	struct ext2fs_extent	extent;
-	blk64_t			blk;
+	blk64_t			blk, last_lblk;
 	e2_blkcnt_t		blockcnt;
 	unsigned int		i;
 	int			is_dir, is_leaf;
@@ -1872,6 +1872,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		failed_csum = 0;
 		is_leaf = extent.e_flags & EXT2_EXTENT_FLAGS_LEAF;
 		is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
+		last_lblk = extent.e_lblk + extent.e_len - 1;
 
 		problem = 0;
 		/* Ask to clear a corrupt extent block */
@@ -1891,6 +1892,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			problem = PR_1_EXTENT_BAD_START_BLK;
 		else if (extent.e_lblk < start_block)
 			problem = PR_1_OUT_OF_ORDER_EXTENTS;
+		else if (end_block && last_lblk > end_block)
+			problem = PR_1_EXTENT_END_OUT_OF_BOUNDS;
 		else if (is_leaf && extent.e_len == 0)
 			problem = PR_1_EXTENT_LENGTH_ZERO;
 		else if (is_leaf &&
@@ -1937,10 +1940,9 @@ fix_problem_now:
 		}
 
 		if (!is_leaf) {
-			blk64_t lblk;
+			blk64_t lblk = extent.e_lblk;
 
 			blk = extent.e_pblk;
-			lblk = extent.e_lblk;
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
 			if (pctx->errcode) {
@@ -1965,7 +1967,8 @@ fix_problem_now:
 				if (fix_problem(ctx, problem, pctx))
 					ext2fs_extent_fix_parents(ehandle);
 			}
-			scan_extent_node(ctx, pctx, pb, extent.e_lblk, ehandle);
+			scan_extent_node(ctx, pctx, pb, extent.e_lblk,
+					 last_lblk, ehandle);
 			if (pctx->errcode)
 				return;
 			pctx->errcode = ext2fs_extent_get(ehandle,
@@ -2046,10 +2049,10 @@ fix_problem_now:
 		if (is_dir && extent.e_len > 0)
 			pb->last_db_block = blockcnt - 1;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
-		start_block = pb->last_block = extent.e_lblk + extent.e_len - 1;
+		start_block = pb->last_block = last_lblk;
 		if (is_leaf && !is_dir &&
 		    !(extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT))
-			pb->last_init_lblock = extent.e_lblk + extent.e_len - 1;
+			pb->last_init_lblock = last_lblk;
 	next:
 		pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_NEXT_SIB,
@@ -2085,7 +2088,7 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->extent_depth_count[info.max_depth]++;
 	}
 
-	scan_extent_node(ctx, pctx, pb, 0, ehandle);
+	scan_extent_node(ctx, pctx, pb, 0, 0, ehandle);
 	if (pctx->errcode &&
 	    fix_problem(ctx, PR_1_EXTENT_ITERATE_FAILURE, pctx)) {
 		pb->num_blocks = 0;
