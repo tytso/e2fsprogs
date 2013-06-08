@@ -183,7 +183,7 @@ static int filefrag_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	if (entry == DIRENT_DELETED_FILE)
 		return 0;
 
-	thislen = dirent->name_len & 0xFF;
+	thislen = ext2fs_dirent_name_len(dirent);
 	strncpy(name, dirent->name, thislen);
 	name[thislen] = '\0';
 	ino = dirent->inode;

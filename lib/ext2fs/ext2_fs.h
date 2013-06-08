@@ -803,6 +803,14 @@ struct ext2_dir_entry {
  * stored in intel byte order, and the name_len field could never be
  * bigger than 255 chars, it's safe to reclaim the extra byte for the
  * file_type field.
+ *
+ * This structure is deprecated due to endianity issues. Please use struct
+ * ext2_dir_entry and accessor functions
+ *   ext2fs_dirent_name_len
+ *   ext2fs_dirent_set_name_len
+ *   ext2fs_dirent_file_type
+ *   ext2fs_dirent_set_file_type
+ * to get and set name_len and file_type fields.
  */
 struct ext2_dir_entry_2 {
 	__u32	inode;			/* Inode number */

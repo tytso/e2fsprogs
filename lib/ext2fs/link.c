@@ -73,7 +73,7 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	 * truncate it and return.
 	 */
 	if (dirent->inode) {
-		min_rec_len = EXT2_DIR_REC_LEN(dirent->name_len & 0xFF);
+		min_rec_len = EXT2_DIR_REC_LEN(ext2fs_dirent_name_len(dirent));
 		if (curr_rec_len < (min_rec_len + rec_len))
 			return ret;
 		rec_len = curr_rec_len - min_rec_len;
@@ -83,7 +83,8 @@ static int link_proc(struct ext2_dir_entry *dirent,
 		next = (struct ext2_dir_entry *) (buf + offset +
 						  dirent->rec_len);
 		next->inode = 0;
-		next->name_len = 0;
+		ext2fs_dirent_set_name_len(next, 0);
+		ext2fs_dirent_set_file_type(next, 0);
 		ls->err = ext2fs_set_rec_len(ls->fs, rec_len, next);
 		if (ls->err)
 			return DIRENT_ABORT;
@@ -97,10 +98,10 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	if (curr_rec_len < rec_len)
 		return ret;
 	dirent->inode = ls->inode;
-	dirent->name_len = ls->namelen;
+	ext2fs_dirent_set_name_len(dirent, ls->namelen);
 	strncpy(dirent->name, ls->name, ls->namelen);
 	if (ls->sb->s_feature_incompat & EXT2_FEATURE_INCOMPAT_FILETYPE)
-		dirent->name_len |= (ls->flags & 0x7) << 8;
+		ext2fs_dirent_set_file_type(dirent, ls->flags & 0x7);
 
 	ls->done++;
 	return DIRENT_ABORT|DIRENT_CHANGED;

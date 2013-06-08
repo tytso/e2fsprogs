@@ -373,7 +373,7 @@ static _INLINE_ void expand_dirent_expression(FILE *f, ext2_filsys fs, char ch,
 		fprintf(f, "%u", dirent->inode);
 		break;
 	case 'n':
-		len = dirent->name_len & 0xFF;
+		len = ext2fs_dirent_name_len(dirent);
 		if ((ext2fs_get_rec_len(fs, dirent, &rec_len) == 0) &&
 		    (len > rec_len))
 			len = rec_len;
@@ -384,10 +384,10 @@ static _INLINE_ void expand_dirent_expression(FILE *f, ext2_filsys fs, char ch,
 		fprintf(f, "%u", rec_len);
 		break;
 	case 'l':
-		fprintf(f, "%u", dirent->name_len & 0xFF);
+		fprintf(f, "%u", ext2fs_dirent_name_len(dirent));
 		break;
 	case 't':
-		fprintf(f, "%u", dirent->name_len >> 8);
+		fprintf(f, "%u", ext2fs_dirent_file_type(dirent));
 		break;
 	default:
 	no_dirent:

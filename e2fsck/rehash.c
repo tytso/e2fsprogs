@@ -109,7 +109,7 @@ static int fill_dir_block(ext2_filsys fs,
 	struct hash_entry 	*new_array, *ent;
 	struct ext2_dir_entry 	*dirent;
 	char			*dir;
-	unsigned int		offset, dir_offset, rec_len;
+	unsigned int		offset, dir_offset, rec_len, name_len;
 	int			hash_alg;
 
 	if (blockcnt < 0)
@@ -142,20 +142,21 @@ static int fill_dir_block(ext2_filsys fs,
 	while (dir_offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (dir + dir_offset);
 		(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
+		name_len = ext2fs_dirent_name_len(dirent);
 		if (((dir_offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8U) > rec_len)) {
+		    (name_len + 8 > rec_len)) {
 			fd->err = EXT2_ET_DIR_CORRUPTED;
 			return BLOCK_ABORT;
 		}
 		dir_offset += rec_len;
 		if (dirent->inode == 0)
 			continue;
-		if (!fd->compress && ((dirent->name_len&0xFF) == 1) &&
+		if (!fd->compress && (name_len == 1) &&
 		    (dirent->name[0] == '.'))
 			continue;
-		if (!fd->compress && ((dirent->name_len&0xFF) == 2) &&
+		if (!fd->compress && (name_len == 2) &&
 		    (dirent->name[0] == '.') && (dirent->name[1] == '.')) {
 			fd->parent = dirent->inode;
 			continue;
@@ -172,13 +173,13 @@ static int fill_dir_block(ext2_filsys fs,
 		}
 		ent = fd->harray + fd->num_array++;
 		ent->dir = dirent;
-		fd->dir_size += EXT2_DIR_REC_LEN(dirent->name_len & 0xFF);
+		fd->dir_size += EXT2_DIR_REC_LEN(name_len);
 		ent->ino = dirent->inode;
 		if (fd->compress)
 			ent->hash = ent->minor_hash = 0;
 		else {
 			fd->err = ext2fs_dirhash(hash_alg, dirent->name,
-						 dirent->name_len & 0xFF,
+						 name_len,
 						 fs->super->s_hash_seed,
 						 &ent->hash, &ent->minor_hash);
 			if (fd->err)
@@ -203,18 +204,21 @@ static EXT2_QSORT_TYPE name_cmp(const void *a, const void *b)
 {
 	const struct hash_entry *he_a = (const struct hash_entry *) a;
 	const struct hash_entry *he_b = (const struct hash_entry *) b;
+	unsigned int he_a_len, he_b_len;
 	int	ret;
 	int	min_len;
 
-	min_len = he_a->dir->name_len;
-	if (min_len > he_b->dir->name_len)
-		min_len = he_b->dir->name_len;
+	he_a_len = ext2fs_dirent_name_len(he_a->dir);
+	he_b_len = ext2fs_dirent_name_len(he_b->dir);
+	min_len = he_a_len;
+	if (min_len > he_b_len)
+		min_len = he_b_len;
 
 	ret = strncmp(he_a->dir->name, he_b->dir->name, min_len);
 	if (ret == 0) {
-		if (he_a->dir->name_len > he_b->dir->name_len)
+		if (he_a_len > he_b_len)
 			ret = 1;
-		else if (he_a->dir->name_len < he_b->dir->name_len)
+		else if (he_a_len < he_b_len)
 			ret = -1;
 		else
 			ret = he_b->dir->inode - he_a->dir->inode;
@@ -297,10 +301,10 @@ static errcode_t get_next_block(ext2_filsys fs, struct out_dir *outdir,
  * expand the length of the filename beyond the padding available in
  * the directory entry.
  */
-static void mutate_name(char *str, __u16 *len)
+static void mutate_name(char *str, unsigned int *len)
 {
 	int	i;
-	__u16	l = *len & 0xFF, h = *len & 0xff00;
+	unsigned int l = *len;
 
 	/*
 	 * First check to see if it looks the name has been mutated
@@ -317,7 +321,7 @@ static void mutate_name(char *str, __u16 *len)
 			l = (l+3) & ~3;
 		str[l-2] = '~';
 		str[l-1] = '0';
-		*len = l | h;
+		*len = l;
 		return;
 	}
 	for (i = l-1; i >= 0; i--) {
@@ -360,7 +364,7 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 	int			i, j;
 	int			fixed = 0;
 	char			new_name[256];
-	__u16			new_len;
+	unsigned int		new_len;
 	int			hash_alg;
 
 	clear_problem_context(&pctx);
@@ -375,10 +379,10 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 		ent = fd->harray + i;
 		prev = ent - 1;
 		if (!ent->dir->inode ||
-		    ((ent->dir->name_len & 0xFF) !=
-		     (prev->dir->name_len & 0xFF)) ||
-		    (strncmp(ent->dir->name, prev->dir->name,
-			     ent->dir->name_len & 0xFF)))
+		    (ext2fs_dirent_name_len(ent->dir) !=
+		     ext2fs_dirent_name_len(prev->dir)) ||
+		    strncmp(ent->dir->name, prev->dir->name,
+			     ext2fs_dirent_name_len(ent->dir)))
 			continue;
 		pctx.dirent = ent->dir;
 		if ((ent->dir->inode == prev->dir->inode) &&
@@ -388,27 +392,25 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 			fixed++;
 			continue;
 		}
-		memcpy(new_name, ent->dir->name, ent->dir->name_len & 0xFF);
-		new_len = ent->dir->name_len;
+		new_len = ext2fs_dirent_name_len(ent->dir);
+		memcpy(new_name, ent->dir->name, new_len);
 		mutate_name(new_name, &new_len);
 		for (j=0; j < fd->num_array; j++) {
 			if ((i==j) ||
-			    ((new_len & 0xFF) !=
-			     (fd->harray[j].dir->name_len & 0xFF)) ||
-			    (strncmp(new_name, fd->harray[j].dir->name,
-				     new_len & 0xFF)))
+			    (new_len !=
+			     ext2fs_dirent_name_len(fd->harray[j].dir)) ||
+			    strncmp(new_name, fd->harray[j].dir->name, new_len))
 				continue;
 			mutate_name(new_name, &new_len);
 
 			j = -1;
 		}
-		new_name[new_len & 0xFF] = 0;
+		new_name[new_len] = 0;
 		pctx.str = new_name;
 		if (fix_problem(ctx, PR_2_NON_UNIQUE_FILE, &pctx)) {
-			memcpy(ent->dir->name, new_name, new_len & 0xFF);
-			ent->dir->name_len = new_len;
-			ext2fs_dirhash(hash_alg, ent->dir->name,
-				       ent->dir->name_len & 0xFF,
+			memcpy(ent->dir->name, new_name, new_len);
+			ext2fs_dirent_set_name_len(ent->dir, new_len);
+			ext2fs_dirhash(hash_alg, ent->dir->name, new_len,
 				       fs->super->s_hash_seed,
 				       &ent->hash, &ent->minor_hash);
 			fixed++;
@@ -469,7 +471,7 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 		ent = fd->harray + i;
 		if (ent->dir->inode == 0)
 			continue;
-		rec_len = EXT2_DIR_REC_LEN(ent->dir->name_len & 0xFF);
+		rec_len = EXT2_DIR_REC_LEN(ext2fs_dirent_name_len(ent->dir));
 		if (rec_len > left) {
 			if (left) {
 				left += prev_rec_len;
@@ -496,12 +498,16 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 				outdir->hashes[outdir->num-1] = ent->hash;
 		}
 		dirent->inode = ent->dir->inode;
-		dirent->name_len = ent->dir->name_len;
+		ext2fs_dirent_set_name_len(dirent,
+					   ext2fs_dirent_name_len(ent->dir));
+		ext2fs_dirent_set_file_type(dirent,
+					    ext2fs_dirent_file_type(ent->dir));
 		retval = ext2fs_set_rec_len(fs, rec_len, dirent);
 		if (retval)
 			return retval;
 		prev_rec_len = rec_len;
-		memcpy(dirent->name, ent->dir->name, dirent->name_len & 0xFF);
+		memcpy(dirent->name, ent->dir->name,
+		       ext2fs_dirent_name_len(dirent));
 		offset += rec_len;
 		left -= rec_len;
 		if (left < slack) {
@@ -535,19 +541,21 @@ static struct ext2_dx_root_info *set_root_node(ext2_filsys fs, char *buf,
 	int				csum_size = 0;
 
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_FILETYPE)
-		filetype = EXT2_FT_DIR << 8;
+		filetype = EXT2_FT_DIR;
 
 	memset(buf, 0, fs->blocksize);
 	dir = (struct ext2_dir_entry *) buf;
 	dir->inode = ino;
 	dir->name[0] = '.';
-	dir->name_len = 1 | filetype;
+	ext2fs_dirent_set_name_len(dir, 1);
+	ext2fs_dirent_set_file_type(dir, filetype);
 	dir->rec_len = 12;
 	dir = (struct ext2_dir_entry *) (buf + 12);
 	dir->inode = parent;
 	dir->name[0] = '.';
 	dir->name[1] = '.';
-	dir->name_len = 2 | filetype;
+	ext2fs_dirent_set_name_len(dir, 2);
+	ext2fs_dirent_set_file_type(dir, filetype);
 	dir->rec_len = fs->blocksize - 12;
 
 	root = (struct ext2_dx_root_info *) (buf+24);

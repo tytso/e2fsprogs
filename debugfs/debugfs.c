@@ -1911,9 +1911,9 @@ static int rmdir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 
 	if (dirent->inode == 0)
 		return 0;
-	if (((dirent->name_len&0xFF) == 1) && (dirent->name[0] == '.'))
+	if ((ext2fs_dirent_name_len(dirent) == 1) && (dirent->name[0] == '.'))
 		return 0;
-	if (((dirent->name_len&0xFF) == 2) && (dirent->name[0] == '.') &&
+	if ((ext2fs_dirent_name_len(dirent) == 2) && (dirent->name[0] == '.') &&
 	    (dirent->name[1] == '.')) {
 		rds->parent = dirent->inode;
 		return 0;

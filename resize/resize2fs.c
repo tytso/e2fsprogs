@@ -1591,7 +1591,7 @@ static int check_and_change_inodes(ext2_ino_t dir,
 #ifdef RESIZE2FS_DEBUG
 	if (is->rfs->flags & RESIZE_DEBUG_INODEMAP)
 		printf("Inode translate (dir=%u, name=%.*s, %u->%u)\n",
-		       dir, dirent->name_len&0xFF, dirent->name,
+		       dir, ext2fs_dirent_name_len(dirent), dirent->name,
 		       dirent->inode, new_inode);
 #endif
 

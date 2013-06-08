@@ -308,7 +308,7 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 	const char *dumproot = private;
 	struct ext2_inode inode;
 
-	thislen = dirent->name_len & 0xFF;
+	thislen = ext2fs_dirent_name_len(dirent);
 	strncpy(name, dirent->name, thislen);
 	name[thislen] = 0;
 

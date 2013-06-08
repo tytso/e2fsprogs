@@ -1805,6 +1805,26 @@ _INLINE_ __u64 ext2fs_div64_ceil(__u64 a, __u64 b)
 	return ((a - 1) / b) + 1;
 }
 
+_INLINE_ int ext2fs_dirent_name_len(const struct ext2_dir_entry *entry)
+{
+	return entry->name_len & 0xff;
+}
+
+_INLINE_ void ext2fs_dirent_set_name_len(struct ext2_dir_entry *entry, int len)
+{
+	entry->name_len = (entry->name_len & 0xff00) | (len & 0xff);
+}
+
+_INLINE_ int ext2fs_dirent_file_type(const struct ext2_dir_entry *entry)
+{
+	return entry->name_len >> 8;
+}
+
+_INLINE_ void ext2fs_dirent_set_file_type(struct ext2_dir_entry *entry, int type)
+{
+	entry->name_len = (entry->name_len & 0xff) | (type << 8);
+}
+
 #undef _INLINE_
 #endif
 

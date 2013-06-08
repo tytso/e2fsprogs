@@ -79,15 +79,15 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 				(unsigned long) blk);
 			return;
 		}
+		thislen = ext2fs_dirent_name_len(dirent);
 		if (((offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
-		    ((((unsigned) dirent->name_len & 0xFF)+8) > rec_len)) {
+		    (thislen + 8 > rec_len)) {
 			fprintf(pager, "Corrupted directory block (%llu)!\n",
 				blk);
 			break;
 		}
-		thislen = dirent->name_len & 0xFF;
 		strncpy(name, dirent->name, thislen);
 		name[thislen] = '\0';
 		errcode = ext2fs_dirhash(hash_alg, name,
@@ -428,7 +428,7 @@ static int search_dir_block(ext2_filsys fs, blk64_t *blocknr,
 			return BLOCK_ABORT;
 		}
 		if (dirent->inode &&
-		    p->len == (dirent->name_len & 0xFF) &&
+		    p->len == ext2fs_dirent_name_len(dirent) &&
 		    strncmp(p->search_name, dirent->name,
 			    p->len) == 0) {
 			printf("Entry found at logical block %lld, "

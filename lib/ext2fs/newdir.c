@@ -56,12 +56,13 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 	if (dir_ino) {
 		if (fs->super->s_feature_incompat &
 		    EXT2_FEATURE_INCOMPAT_FILETYPE)
-			filetype = EXT2_FT_DIR << 8;
+			filetype = EXT2_FT_DIR;
 		/*
 		 * Set up entry for '.'
 		 */
 		dir->inode = dir_ino;
-		dir->name_len = 1 | filetype;
+		ext2fs_dirent_set_name_len(dir, 1);
+		ext2fs_dirent_set_file_type(dir, filetype);
 		dir->name[0] = '.';
 		rec_len = (fs->blocksize - csum_size) - EXT2_DIR_REC_LEN(1);
 		dir->rec_len = EXT2_DIR_REC_LEN(1);
@@ -74,7 +75,8 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 		if (retval)
 			return retval;
 		dir->inode = parent_ino;
-		dir->name_len = 2 | filetype;
+		ext2fs_dirent_set_name_len(dir, 2);
+		ext2fs_dirent_set_file_type(dir, filetype);
 		dir->name[0] = '.';
 		dir->name[1] = '.';
 

@@ -482,7 +482,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	retval = ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (retval)
 		return;
-	if (((dirent->name_len & 0xFF) != 1) ||
+	if ((ext2fs_dirent_name_len(dirent) != 1) ||
 	    (dirent->name[0] != '.') ||
 	    (dirent->inode != pctx->ino) ||
 	    (rec_len < 12) ||
@@ -494,7 +494,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	retval = ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (retval)
 		return;
-	if (((dirent->name_len & 0xFF) != 2) ||
+	if ((ext2fs_dirent_name_len(dirent) != 2) ||
 	    (dirent->name[0] != '.') ||
 	    (dirent->name[1] != '.') ||
 	    (rec_len < 12) ||

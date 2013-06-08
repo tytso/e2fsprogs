@@ -61,7 +61,7 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	struct list_dir_struct *ls = (struct list_dir_struct *) private;
 	struct ext2_dir_entry_tail *t = (struct ext2_dir_entry_tail *) dirent;
 
-	thislen = dirent->name_len & 0xFF;
+	thislen = ext2fs_dirent_name_len(dirent);
 	strncpy(name, dirent->name, thislen);
 	name[thislen] = '\0';
 	ino = dirent->inode;
@@ -105,7 +105,8 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 				t->det_checksum);
 			return 0;
 		}
-		fprintf(ls->f, "(%d)  %5d  %5d   ", dirent->name_len >> 8,
+		fprintf(ls->f, "(%d)  %5d  %5d   ",
+			ext2fs_dirent_file_type(dirent),
 			inode_uid(inode), inode_gid(inode));
 		if (LINUX_S_ISDIR(inode.i_mode))
 			fprintf(ls->f, "%5d", inode.i_size);

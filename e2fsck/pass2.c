@@ -302,9 +302,9 @@ static int dict_de_cmp(const void *a, const void *b)
 	int	a_len, b_len;
 
 	de_a = (const struct ext2_dir_entry *) a;
-	a_len = de_a->name_len & 0xFF;
+	a_len = ext2fs_dirent_name_len(de_a);
 	de_b = (const struct ext2_dir_entry *) b;
-	b_len = de_b->name_len & 0xFF;
+	b_len = ext2fs_dirent_name_len(de_b);
 
 	if (a_len != b_len)
 		return (a_len - b_len);
@@ -357,7 +357,7 @@ static int check_dot(e2fsck_t ctx,
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT;
-	else if (((dirent->name_len & 0xFF) != 1) ||
+	else if ((ext2fs_dirent_name_len(dirent) != 1) ||
 		 (dirent->name[0] != '.'))
 		problem = PR_2_1ST_NOT_DOT;
 	else if (dirent->name[1] != '\0')
@@ -369,7 +369,8 @@ static int check_dot(e2fsck_t ctx,
 			if (rec_len < 12)
 				rec_len = dirent->rec_len = 12;
 			dirent->inode = ino;
-			dirent->name_len = 1;
+			ext2fs_dirent_set_name_len(dirent, 1);
+			ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
 			dirent->name[0] = '.';
 			dirent->name[1] = '\0';
 			status = 1;
@@ -393,7 +394,9 @@ static int check_dot(e2fsck_t ctx,
 				(void) ext2fs_set_rec_len(ctx->fs, new_len,
 							  nextdir);
 				nextdir->inode = 0;
-				nextdir->name_len = 0;
+				ext2fs_dirent_set_name_len(nextdir, 0);
+				ext2fs_dirent_set_file_type(nextdir,
+							    EXT2_FT_UNKNOWN);
 				status = 1;
 			}
 		}
@@ -415,7 +418,7 @@ static int check_dotdot(e2fsck_t ctx,
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;
-	else if (((dirent->name_len & 0xFF) != 2) ||
+	else if ((ext2fs_dirent_name_len(dirent) != 2) ||
 		 (dirent->name[0] != '.') ||
 		 (dirent->name[1] != '.'))
 		problem = PR_2_2ND_NOT_DOT_DOT;
@@ -433,7 +436,8 @@ static int check_dotdot(e2fsck_t ctx,
 			 * inode.  This will get fixed in pass 3.
 			 */
 			dirent->inode = EXT2_ROOT_INO;
-			dirent->name_len = 2;
+			ext2fs_dirent_set_name_len(dirent, 2);
+			ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
 			dirent->name[0] = '.';
 			dirent->name[1] = '.';
 			dirent->name[2] = '\0';
@@ -461,7 +465,7 @@ static int check_name(e2fsck_t ctx,
 	int	fixup = -1;
 	int	ret = 0;
 
-	for ( i = 0; i < (dirent->name_len & 0xFF); i++) {
+	for ( i = 0; i < ext2fs_dirent_name_len(dirent); i++) {
 		if (dirent->name[i] == '/' || dirent->name[i] == '\0') {
 			if (fixup < 0) {
 				fixup = fix_problem(ctx, PR_2_BAD_NAME, pctx);
@@ -483,7 +487,7 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 				   ext2_ino_t dir_ino EXT2FS_ATTR((unused)),
 				   struct problem_context *pctx)
 {
-	int	filetype = dirent->name_len >> 8;
+	int	filetype = ext2fs_dirent_file_type(dirent);
 	int	should_be = EXT2_FT_UNKNOWN;
 	struct ext2_inode	inode;
 
@@ -492,7 +496,7 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 		if (filetype == 0 ||
 		    !fix_problem(ctx, PR_2_CLEAR_FILETYPE, pctx))
 			return 0;
-		dirent->name_len = dirent->name_len & 0xFF;
+		ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
 		return 1;
 	}
 
@@ -518,7 +522,7 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 			pctx) == 0)
 		return 0;
 
-	dirent->name_len = (dirent->name_len & 0xFF) | should_be << 8;
+	ext2fs_dirent_set_file_type(dirent, should_be);
 	return 1;
 }
 
@@ -666,7 +670,7 @@ static void salvage_directory(ext2_filsys fs,
 	char	*cp = (char *) dirent;
 	int left;
 	unsigned int rec_len, prev_rec_len;
-	unsigned int name_len = dirent->name_len & 0xFF;
+	unsigned int name_len = ext2fs_dirent_name_len(dirent);
 
 	(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 	left = fs->blocksize - *offset - rec_len;
@@ -720,7 +724,8 @@ static void salvage_directory(ext2_filsys fs,
 	} else {
 		rec_len = fs->blocksize - *offset;
 		(void) ext2fs_set_rec_len(fs, rec_len, dirent);
-		dirent->name_len = 0;
+		ext2fs_dirent_set_name_len(dirent, 0);
+		ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
 		dirent->inode = 0;
 	}
 }
@@ -868,7 +873,7 @@ static int check_dir_block(ext2_filsys fs,
 			dx_dir->depth = root->indirect_levels + 1;
 		} else if ((dirent->inode == 0) &&
 			   (rec_len == fs->blocksize) &&
-			   (dirent->name_len == 0) &&
+			   (ext2fs_dirent_name_len(dirent) == 0) &&
 			   (ext2fs_le16_to_cpu(limit->limit) ==
 			    ((fs->blocksize - (8 + dx_csum_size)) /
 			     sizeof(struct ext2_dx_entry))))
@@ -915,6 +920,7 @@ skip_checksum:
 	do {
 		int group;
 		ext2_ino_t first_unused_inode;
+		unsigned int name_len;
 
 		problem = 0;
 		dirent = (struct ext2_dir_entry *) (buf + offset);
@@ -924,7 +930,7 @@ skip_checksum:
 		if (((offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 12) ||
 		    ((rec_len % 4) != 0) ||
-		    (((dirent->name_len & (unsigned) 0xFF)+8) > rec_len)) {
+		    ((ext2fs_dirent_name_len(dirent) + 8) > rec_len)) {
 			if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
 				salvage_directory(fs, dirent, prev, &offset);
 				dir_modified++;
@@ -956,6 +962,7 @@ skip_checksum:
 		/*
 		 * Make sure the inode listed is a legal one.
 		 */
+		name_len = ext2fs_dirent_name_len(dirent);
 		if (((dirent->inode != EXT2_ROOT_INO) &&
 		     (dirent->inode < EXT2_FIRST_INODE(fs->super))) ||
 		    (dirent->inode > fs->super->s_inodes_count)) {
@@ -968,8 +975,7 @@ skip_checksum:
 			 * clear it.
 			 */
 			problem = PR_2_BB_INODE;
-		} else if ((dot_state > 1) &&
-			   ((dirent->name_len & 0xFF) == 1) &&
+		} else if ((dot_state > 1) && (name_len == 1) &&
 			   (dirent->name[0] == '.')) {
 			/*
 			 * If there's a '.' entry in anything other
@@ -977,8 +983,7 @@ skip_checksum:
 			 * duplicate entry that should be removed.
 			 */
 			problem = PR_2_DUP_DOT;
-		} else if ((dot_state > 1) &&
-			   ((dirent->name_len & 0xFF) == 2) &&
+		} else if ((dot_state > 1) && (name_len == 2) &&
 			   (dirent->name[0] == '.') &&
 			   (dirent->name[1] == '.')) {
 			/*
@@ -996,8 +1001,7 @@ skip_checksum:
 			 * directory hasn't been created yet.
 			 */
 			problem = PR_2_LINK_ROOT;
-		} else if ((dot_state > 1) &&
-			   (dirent->name_len & 0xFF) == 0) {
+		} else if ((dot_state > 1) && (name_len == 0)) {
 			/*
 			 * Don't allow zero-length directory names.
 			 */
@@ -1110,7 +1114,7 @@ skip_checksum:
 #ifdef ENABLE_HTREE
 		if (dx_db) {
 			ext2fs_dirhash(dx_dir->hashversion, dirent->name,
-				       (dirent->name_len & 0xFF),
+				       ext2fs_dirent_name_len(dirent),
 				       fs->super->s_hash_seed, &hash, 0);
 			if (hash < dx_db->min_hash)
 				dx_db->min_hash = hash;

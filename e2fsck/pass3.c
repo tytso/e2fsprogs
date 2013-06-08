@@ -612,7 +612,7 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	errcode_t	retval;
 	struct problem_context pctx;
 
-	if ((dirent->name_len & 0xFF) != 2)
+	if (ext2fs_dirent_name_len(dirent) != 2)
 		return 0;
 	if (strncmp(dirent->name, "..", 2))
 		return 0;
@@ -632,10 +632,9 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	dirent->inode = fp->parent;
 	if (fp->ctx->fs->super->s_feature_incompat &
 	    EXT2_FEATURE_INCOMPAT_FILETYPE)
-		dirent->name_len = (dirent->name_len & 0xFF) |
-			(EXT2_FT_DIR << 8);
+		ext2fs_dirent_set_file_type(dirent, EXT2_FT_DIR);
 	else
-		dirent->name_len = dirent->name_len & 0xFF;
+		ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
 
 	fp->done++;
 	return DIRENT_ABORT | DIRENT_CHANGED;

@@ -515,7 +515,7 @@ static int rewrite_dir_block(ext2_filsys fs,
 		ctx->errcode = ext2fs_get_rec_len(fs, last_de, &rec_len);
 		if (ctx->errcode)
 			return BLOCK_ABORT;
-		name_size = last_de->name_len & 0xFF;
+		name_size = ext2fs_dirent_name_len(last_de);
 
 		if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
