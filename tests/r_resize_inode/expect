@@ -11,7 +11,6 @@ Pass 5: Checking group summary information
 test_filesys: 11/16384 files (0.0% non-contiguous), 4513/65536 blocks
 Exit status is 0
 dumpe2fs test.img
-
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
@@ -459,7 +458,6 @@ Pass 5: Checking group summary information
 test_filesys: 11/4096 files (0.0% non-contiguous), 2107/16384 blocks
 Exit status is 0
 dumpe2fs test.img
-
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
@@ -614,7 +612,6 @@ Pass 5: Checking group summary information
 test_filesys: 11/41472 files (0.0% non-contiguous), 8361/165536 blocks
 Exit status is 0
 dumpe2fs test.img
-
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
