@@ -373,7 +373,7 @@ static void die_signal_handler(int signum, siginfo_t *siginfo,
 	       fprintf(stderr, "fault addr=%p", siginfo->si_addr);
        fprintf(stderr, "\n");
 
-#ifdef HAVE_BACKTRACE
+#if defined(HAVE_BACKTRACE) && !defined(DISABLE_BACKTRACE)
        frames = backtrace(stack_syms, 32);
        backtrace_symbols_fd(stack_syms, frames, 2);
 #endif

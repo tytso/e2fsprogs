@@ -842,6 +842,7 @@ enable_testio_debug
 enable_libuuid
 enable_libblkid
 enable_quota
+enable_backtrace
 enable_debugfs
 enable_imager
 enable_resizer
@@ -1497,6 +1498,7 @@ Optional Features:
   --disable-libuuid	  do not build private uuid library
   --disable-libblkid	  do not build private blkid library
   --enable-quota	  enable quota support
+  --disable-backtrace	  disable use backtrace
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
@@ -5331,6 +5333,26 @@ DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
 
 
 
+
+
+# Check whether --enable-backtrace was given.
+if test "${enable_backtrace+set}" = set; then :
+  enableval=$enable_backtrace; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling use of backtrace" >&5
+$as_echo "Disabling use of backtrace" >&6; }
+	$as_echo "#define DISABLE_BACKTRACE 1" >>confdefs.h
+
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling use of backtrace" >&5
+$as_echo "Enabling use of backtrace" >&6; }
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling use of backtrace by default" >&5
+$as_echo "Enabling use of backtrace by default" >&6; }
+
+fi
 
 # Check whether --enable-debugfs was given.
 if test "${enable_debugfs+set}" = set; then :

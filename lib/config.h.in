@@ -26,6 +26,9 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* Define to 1 to disable use of backtrace */
+#undef DISABLE_BACKTRACE
+
 /* Define to 1 if ext2 compression enabled */
 #undef ENABLE_COMPRESSION
 
