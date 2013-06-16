@@ -1171,7 +1171,7 @@ static void install_image(char *device, char *image_fn, int type)
 {
 	errcode_t retval;
 	ext2_filsys fs;
-	int open_flag = EXT2_FLAG_IMAGE_FILE;
+	int open_flag = EXT2_FLAG_IMAGE_FILE | EXT2_FLAG_64BITS;
 	int fd = 0;
 	io_manager	io_ptr;
 	io_channel	io;
