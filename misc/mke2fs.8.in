@@ -649,12 +649,12 @@ If this option is not specified,
 will pick a default either via how
 the command was run (for example, using a name of the form mkfs.ext2,
 mkfs.ext3, etc.) or via a default as defined by the
-.BR /etc/mke2fs.conf (5)
+.B /etc/mke2fs.conf
 file.   This option controls which filesystem options are used by
 default, based on the
 .B fstypes
 configuration stanza in
-.BR /etc/mke2fs.conf (5).
+.BR /etc/mke2fs.conf .
 .sp
 If the
 .B \-O
@@ -673,7 +673,7 @@ Specify how the filesystem is going to be used, so that
 .B mke2fs
 can choose optimal filesystem parameters for that use.  The usage
 types that are supported are defined in the configuration file
-.BR /etc/mke2fs.conf (5).
+.BR /etc/mke2fs.conf .
 The user may specify one or more usage types
 using a comma separated list.
 .sp
