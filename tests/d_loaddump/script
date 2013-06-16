@@ -24,19 +24,19 @@ echo "debugfs -R ''write $TEST_DATA test_data'' -w test.img" > $OUT.new
 $DEBUGFS -R "write $TEST_DATA test_data" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -e '2d' $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
 echo e2fsck $VERIFY_FSCK_OPT -N test_filesys > $OUT.new
 $FSCK $VERIFY_FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -e '2d' $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
 echo "debugfs -R ''dump test_data $VERIFY_DATA'' test.img" > $OUT.new
 $DEBUGFS -R "dump test_data $VERIFY_DATA" $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -e '2d' $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
 echo "cmp $TEST_DATA $VERIFY_DATA" >> $OUT
 cmp $TEST_DATA $VERIFY_DATA >>$OUT

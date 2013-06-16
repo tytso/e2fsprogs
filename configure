@@ -842,6 +842,7 @@ enable_testio_debug
 enable_libuuid
 enable_libblkid
 enable_quota
+enable_backtrace
 enable_debugfs
 enable_imager
 enable_resizer
@@ -1500,6 +1501,7 @@ Optional Features:
   --disable-libuuid	  do not build private uuid library
   --disable-libblkid	  do not build private blkid library
   --enable-quota	  enable quota support
+  --disable-backtrace	  disable use backtrace
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
@@ -5337,6 +5339,26 @@ DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
 
 
 
+
+
+# Check whether --enable-backtrace was given.
+if test "${enable_backtrace+set}" = set; then :
+  enableval=$enable_backtrace; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling use of backtrace" >&5
+$as_echo "Disabling use of backtrace" >&6; }
+	$as_echo "#define DISABLE_BACKTRACE 1" >>confdefs.h
+
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling use of backtrace" >&5
+$as_echo "Enabling use of backtrace" >&6; }
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling use of backtrace by default" >&5
+$as_echo "Enabling use of backtrace by default" >&6; }
+
+fi
 
 # Check whether --enable-debugfs was given.
 if test "${enable_debugfs+set}" = set; then :
@@ -11087,7 +11109,7 @@ if test "$ac_res" != no; then :
 fi
 
 fi
-for ac_func in  	__secure_getenv 	backtrace 	blkid_probe_get_topology 	chflags 	fallocate 	fallocate64 	fchown 	fdatasync 	fstat64 	ftruncate64 	getdtablesize 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_memalign 	prctl 	setmntent 	setresgid 	setresuid 	srandom 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	valloc
+for ac_func in  	__secure_getenv 	backtrace 	blkid_probe_get_topology 	chflags 	fallocate 	fallocate64 	fchown 	fdatasync 	fstat64 	ftruncate64 	getdtablesize 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_memalign 	prctl 	secure_getenv 	setmntent 	setresgid 	setresuid 	srandom 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	valloc
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

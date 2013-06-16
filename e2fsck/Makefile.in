@@ -132,7 +132,8 @@ e2fsck.profiled: $(OBJS)  $(PROFILED_DEPLIBS)
 	$(Q) $(LD) $(ALL_LDFLAGS) -g -pg -o e2fsck.profiled $(PROFILED_OBJS) \
 		$(PROFILED_LIBS) 
 
-tst_sigcatcher: $(srcdir)/sigcatcher.c
+tst_sigcatcher: $(srcdir)/sigcatcher.c sigcatcher.o
+	$(E) "	CC $@"
 	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) $(RDYNAMIC) \
 		$(srcdir)/sigcatcher.c -DDEBUG -o tst_sigcatcher
 
