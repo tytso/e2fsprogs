@@ -88,6 +88,8 @@ int	discard = 1;	/* attempt to discard device before fs creation */
 int	direct_io;
 int	force;
 int	noaction;
+uid_t	root_uid;
+gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
 int	lazy_itable_init;
@@ -364,21 +366,19 @@ static void create_root_dir(ext2_filsys fs)
 		com_err("ext2fs_mkdir", retval, _("while creating root dir"));
 		exit(1);
 	}
-	if (geteuid()) {
+	if (root_uid != 0 || root_gid != 0) {
 		retval = ext2fs_read_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_read_inode", retval,
 				_("while reading root inode"));
 			exit(1);
 		}
-		uid = getuid();
-		inode.i_uid = uid;
-		ext2fs_set_i_uid_high(inode, uid >> 16);
-		if (uid) {
-			gid = getgid();
-			inode.i_gid = gid;
-			ext2fs_set_i_gid_high(inode, gid >> 16);
-		}
+
+		inode.i_uid = root_uid;
+		ext2fs_set_i_uid_high(inode, root_uid >> 16);
+		inode.i_gid = root_gid;
+		ext2fs_set_i_gid_high(inode, root_gid >> 16);
+
 		retval = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_write_inode", retval,
@@ -585,6 +585,8 @@ static void show_stats(ext2_filsys fs)
 		ext2fs_r_blocks_count(s),
 	       100.0 *  ext2fs_r_blocks_count(s) / ext2fs_blocks_count(s));
 	printf(_("First data block=%u\n"), s->s_first_data_block);
+	if (root_uid != 0 || root_gid != 0)
+		printf(_("Root directory owner=%u:%u\n"), root_uid, root_gid);
 	if (s->s_reserved_gdt_blocks)
 		printf(_("Maximum filesystem blocks=%lu\n"),
 		       (s->s_reserved_gdt_blocks + fs->desc_blocks) *
@@ -791,6 +793,29 @@ static void parse_extended_opts(struct ext2_super_block *param,
 						EXT2_MKJOURNAL_LAZYINIT : 0;
 			else
 				journal_flags |= EXT2_MKJOURNAL_LAZYINIT;
+		} else if (!strcmp(token, "root_owner")) {
+			if (arg) {
+				root_uid = strtoul(arg, &p, 0);
+				if (*p != ':') {
+					fprintf(stderr,
+						_("Invalid root_owner: '%s'\n"),
+						arg);
+					r_usage++;
+					continue;
+				}
+				p++;
+				root_gid = strtoul(p, &p, 0);
+				if (*p) {
+					fprintf(stderr,
+						_("Invalid root_owner: '%s'\n"),
+						arg);
+					r_usage++;
+					continue;
+				}
+			} else {
+				root_uid = getuid();
+				root_gid = getgid();
+			}
 		} else if (!strcmp(token, "discard")) {
 			discard = 1;
 		} else if (!strcmp(token, "nodiscard")) {
@@ -828,6 +853,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tresize=<resize maximum size in blocks>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
+			"\troot_uid=<uid of root directory>\n"
+			"\troot_gid=<gid of root directory>\n"
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n"

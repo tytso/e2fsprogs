@@ -268,6 +268,15 @@ small risk if the system crashes before the journal has been overwritten
 entirely one time.  If the option value is omitted, it defaults to 1 to
 enable lazy journal inode zeroing.
 .TP
+.BI root_owner [=uid:gid]
+Specify the numeric user and group ID of the root directory.  If no UID:GID
+is specified, use the user and group ID of the user running \fBmke2fs\fR.
+In \fBmke2fs\fR 1.42 and earlier the UID and GID of the root directory were
+set by default to the UID and GID of the user running the mke2fs command.
+The \fBroot_owner=\fR option allows explicitly specifying these values,
+and avoid side-effects for users that do not expect the contents of the
+filesystem to change based on the user running \fBmke2fs\fR.
+.TP
 .B test_fs
 Set a flag in the filesystem superblock indicating that it may be
 mounted using experimental kernel code, such as the ext4dev filesystem.
