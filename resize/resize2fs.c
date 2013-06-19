@@ -856,6 +856,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	dgrp_t		i, max_groups, g;
 	blk64_t		blk, group_blk;
 	blk64_t		old_blocks, new_blocks;
+	blk64_t		new_size;
 	unsigned int	meta_bg, meta_bg_size;
 	errcode_t	retval;
 	ext2_filsys 	fs, old_fs;
@@ -882,6 +883,32 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		return retval;
 
 	fs = rfs->new_fs;
+
+	/*
+	 * If we're shrinking the filesystem, we need to move any group's
+	 * bitmaps which are beyond the end of the new filesystem.
+	 */
+	new_size = ext2fs_blocks_count(fs->super);
+	if (new_size < ext2fs_blocks_count(old_fs->super)) {
+		for (g = 0; g < fs->group_desc_count; g++) {
+			/*
+			 * ext2fs_allocate_group_table re-allocates bitmaps
+			 * which are set to block 0.
+			 */
+			if (ext2fs_block_bitmap_loc(fs, g) >= new_size) {
+				ext2fs_block_bitmap_loc_set(fs, g, 0);
+				retval = ext2fs_allocate_group_table(fs, g, 0);
+				if (retval)
+					return retval;
+			}
+			if (ext2fs_inode_bitmap_loc(fs, g) >= new_size) {
+				ext2fs_inode_bitmap_loc_set(fs, g, 0);
+				retval = ext2fs_allocate_group_table(fs, g, 0);
+				if (retval)
+					return retval;
+			}
+		}
+	}
 
 	/*
 	 * If we're shrinking the filesystem, we need to move all of
