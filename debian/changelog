@@ -9,6 +9,12 @@ e2fsprogs (1.42.8-1) unstable; urgency=low
   * Change mke2fs so that it does not set the root directory to the real
     uid/gid of the mke2fs process.  Add the extended option root_owner to
     override this behavior.
+  * If an invalid journal size is given to mke2fs, it will now complain
+    and exit sooner.
+  * Fix resize2fs when shrinking file systems to make sure that bitmap
+    blocks aren't left outside the bounds of the shrunken file system.
+    This could happen with flex_bg file systems that were grown using
+    the old online resizing algorithm.
   * E2fsck will now detect and repair corrupted extent trees which contain
     invalid extents at the end of the extent tree leaf block.
   * E2fsck will now longer complain about zero length extended attribute values.
@@ -29,7 +35,7 @@ e2fsprogs (1.42.8-1) unstable; urgency=low
   * Updated/fixed various man pages  (Closes: #712429, #712430, #707609)
   * Update German translation
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 16 Jun 2013 18:08:15 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 20 Jun 2013 23:09:25 -0500
 
 e2fsprogs (1.42.7-1) unstable; urgency=low
 
