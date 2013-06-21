@@ -18,8 +18,7 @@ needed by boot loadsers such as yaboot.
 Support for the MMP feature can now be disabled at compile time.
 
 
-E2fsprogs 1.42.8 (June 16, 2013)
-================================
+E2fsprogs 1.42.8 (June 20, 2013)
 
 As a part of mke2fs's option parsing cleanup, the use of the -R option
 will give a warning that it is depreated (it has been so documented
@@ -27,6 +26,9 @@ since 2005) and -E should be used instead.
 
 Mke2fs will not give warnings about the bigalloc and quota options in
 quiet mode.
+
+If an invalid journal size is given to mke2fs, it will now complain
+and exit sooner.
 
 Debugfs was erroneously giving spurious error messages for certain
 extent_inode subcommands which take arguments (split_node,
@@ -38,6 +40,11 @@ other programs is used by mke2fs.
 Change mke2fs so that it does not set the root directory to the real
 uid/gid of the mke2fs process.  Add the extended option root_owner to
 override this behavior.
+
+Fix resize2fs when shrinking file systems to make sure that bitmap
+blocks aren't left outside the bounds of the shrunken file system.
+This could happen with flex_bg file systems that were grown using
+the old online resizing algorithm.
 
 E2fsck will now detect and repair corrupted extent trees which contain
 invalid extents at the end of the extent tree leaf block.

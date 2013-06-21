@@ -2459,6 +2459,12 @@ int main (int argc, char *argv[])
 				 "checksumming.  Pass -O 64bit to rectify.\n"));
 	}
 
+	/* Calculate journal blocks */
+	if (!journal_device && ((journal_size) ||
+		(fs_param.s_feature_compat &
+		 EXT3_FEATURE_COMPAT_HAS_JOURNAL)))
+		journal_blocks = figure_journal_size(journal_size, fs);
+
 	/* Can't undo discard ... */
 	if (!noaction && discard && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_device(fs);
@@ -2714,8 +2720,6 @@ int main (int argc, char *argv[])
 	} else if ((journal_size) ||
 		   (fs_param.s_feature_compat &
 		    EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
-		journal_blocks = figure_journal_size(journal_size, fs);
-
 		if (super_only) {
 			printf(_("Skipping journal creation in super-only mode\n"));
 			fs->super->s_journal_inum = EXT2_JOURNAL_INO;
