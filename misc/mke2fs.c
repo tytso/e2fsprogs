@@ -1913,6 +1913,9 @@ profile_error:
 	 * 32-bit vs 64-bit block number support.
 	 */
 	if ((fs_blocks_count > MAX_32_NUM) &&
+	    (fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT))
+		fs_param.s_feature_compat &= ~EXT2_FEATURE_COMPAT_RESIZE_INODE;
+	if ((fs_blocks_count > MAX_32_NUM) &&
 	    !(fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) &&
 	    get_bool_from_profile(fs_types, "auto_64-bit_support", 0)) {
 		fs_param.s_feature_incompat |= EXT4_FEATURE_INCOMPAT_64BIT;
