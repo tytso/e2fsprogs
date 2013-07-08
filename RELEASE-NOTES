@@ -1,5 +1,5 @@
-E2fsprogs 1.43-WIP (June 16, 2012)
-=======================================
+E2fsprogs 1.43-WIP (July 8, 2013) -- 38cc555a5fc
+=================================
 
 Add support for the ext4 metadata checksum feature.
 
