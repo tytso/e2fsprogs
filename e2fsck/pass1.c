@@ -1797,12 +1797,17 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			 (extent.e_pblk + extent.e_len) >
 			 ext2fs_blocks_count(ctx->fs->super))
 			problem = PR_1_EXTENT_ENDS_BEYOND;
+		else if (is_leaf && is_dir &&
+			 ((extent.e_lblk + extent.e_len) >
+			  (1 << (21 - ctx->fs->super->s_log_block_size))))
+			problem = PR_1_TOOBIG_DIR;
 
 		if (problem) {
 report_problem:
 			pctx->blk = extent.e_pblk;
 			pctx->blk2 = extent.e_lblk;
 			pctx->num = extent.e_len;
+			pctx->blkcount = extent.e_lblk + extent.e_len;
 			if (fix_problem(ctx, problem, pctx)) {
 				e2fsck_read_bitmaps(ctx);
 				pctx->errcode =
