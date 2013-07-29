@@ -1189,7 +1189,6 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	struct del_block	del_block;
 
 	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
-	e2fsck_clear_inode(ctx, ino, &inode, 0, "deallocate_inode");
 	clear_problem_context(&pctx);
 	pctx.ino = ino;
 
@@ -1224,7 +1223,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	}
 
 	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
-		return;
+		goto clear_inode;
 
 	if (LINUX_S_ISREG(inode.i_mode) && EXT2_I_SIZE(&inode) >= 0x80000000UL)
 		ctx->large_files--;
@@ -1239,6 +1238,10 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
+clear_inode:
+	/* Inode may have changed by block_iterate, so reread it */
+	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
+	e2fsck_clear_inode(ctx, ino, &inode, 0, "deallocate_inode");
 }
 
 /*
