@@ -1665,8 +1665,19 @@ void do_write(int argc, char *argv[])
 	inode.i_links_count = 1;
 	inode.i_size = statbuf.st_size;
 	if (current_fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_EXTENTS)
+	    EXT3_FEATURE_INCOMPAT_EXTENTS) {
+		int i;
+		struct ext3_extent_header *eh;
+
+		eh = (struct ext3_extent_header *) &inode.i_block[0];
+		eh->eh_depth = 0;
+		eh->eh_entries = 0;
+		eh->eh_magic = EXT3_EXT_MAGIC;
+		i = (sizeof(inode.i_block) - sizeof(*eh)) /
+			sizeof(struct ext3_extent);
+		eh->eh_max = ext2fs_cpu_to_le16(i);
 		inode.i_flags |= EXT4_EXTENTS_FL;
+	}
 	if (debugfs_write_new_inode(newfile, &inode, argv[0])) {
 		close(fd);
 		return;
