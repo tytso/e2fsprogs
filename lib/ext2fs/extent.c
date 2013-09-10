@@ -1378,6 +1378,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 							       &next_extent);
 				if (retval)
 					goto done;
+				retval = ext2fs_extent_fix_parents(handle);
+				if (retval)
+					goto done;
 			} else
 				retval = ext2fs_extent_insert(handle,
 				      EXT2_EXTENT_INSERT_AFTER, &newextent);
@@ -1428,6 +1431,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		extent.e_lblk++;
 		extent.e_len--;
 		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+		retval = ext2fs_extent_fix_parents(handle);
 		if (retval)
 			goto done;
 	} else {

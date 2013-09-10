@@ -272,34 +272,36 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
  */
 static void free_gdp_blocks(ext2_filsys fs,
 			    ext2fs_block_bitmap reserve_blocks,
-			    struct ext2_group_desc *gdp)
+			    ext2_filsys old_fs,
+			    dgrp_t group)
 {
-	blk_t	blk;
+	blk64_t	blk;
 	int	j;
 
-	if (gdp->bg_block_bitmap &&
-	    (gdp->bg_block_bitmap < ext2fs_blocks_count(fs->super))) {
-		ext2fs_block_alloc_stats(fs, gdp->bg_block_bitmap, -1);
-		ext2fs_mark_block_bitmap2(reserve_blocks,
-					 gdp->bg_block_bitmap);
+	blk = ext2fs_block_bitmap_loc(old_fs, group);
+	if (blk &&
+	    (blk < ext2fs_blocks_count(fs->super))) {
+		ext2fs_block_alloc_stats2(fs, blk, -1);
+		ext2fs_mark_block_bitmap2(reserve_blocks, blk);
 	}
 
-	if (gdp->bg_inode_bitmap &&
-	    (gdp->bg_inode_bitmap < ext2fs_blocks_count(fs->super))) {
-		ext2fs_block_alloc_stats(fs, gdp->bg_inode_bitmap, -1);
-		ext2fs_mark_block_bitmap2(reserve_blocks,
-					 gdp->bg_inode_bitmap);
+	blk = ext2fs_inode_bitmap_loc(old_fs, group);
+	if (blk &&
+	    (blk < ext2fs_blocks_count(fs->super))) {
+		ext2fs_block_alloc_stats2(fs, blk, -1);
+		ext2fs_mark_block_bitmap2(reserve_blocks, blk);
 	}
 
-	if (gdp->bg_inode_table == 0 ||
-	    (gdp->bg_inode_table >= ext2fs_blocks_count(fs->super)))
+	blk = ext2fs_inode_table_loc(old_fs, group);
+	if (blk == 0 ||
+	    (blk >= ext2fs_blocks_count(fs->super)))
 		return;
 
-	for (blk = gdp->bg_inode_table, j = 0;
+	for (j = 0;
 	     j < fs->inode_blocks_per_group; j++, blk++) {
 		if (blk >= ext2fs_blocks_count(fs->super))
 			break;
-		ext2fs_block_alloc_stats(fs, blk, -1);
+		ext2fs_block_alloc_stats2(fs, blk, -1);
 		ext2fs_mark_block_bitmap2(reserve_blocks, blk);
 	}
 }
@@ -466,11 +468,8 @@ retry:
 		 * and free any blocks associated with their metadata
 		 */
 		for (i = fs->group_desc_count;
-		     i < old_fs->group_desc_count; i++) {
-			free_gdp_blocks(fs, reserve_blocks,
-					ext2fs_group_desc(old_fs,
-						old_fs->group_desc, i));
-		}
+		     i < old_fs->group_desc_count; i++)
+			free_gdp_blocks(fs, reserve_blocks, old_fs, i);
 		retval = 0;
 		goto errout;
 	}

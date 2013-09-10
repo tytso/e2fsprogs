@@ -55,7 +55,7 @@ void fatal_error(e2fsck_t ctx, const char *msg)
 		fprintf (stderr, "e2fsck: %s\n", msg);
 	if (!fs)
 		goto out;
-	if (fs->io) {
+	if (fs->io && fs->super) {
 		ext2fs_mmp_stop(ctx->fs);
 		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_CHANNEL)
 			io_channel_flush(ctx->fs->io);
