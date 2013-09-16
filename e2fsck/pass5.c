@@ -168,7 +168,7 @@ static void check_block_bitmap_checksum(e2fsck_t ctx)
 
 		blk_itr = EXT2FS_B2C(ctx->fs,
 				     ctx->fs->super->s_first_data_block) +
-			  (i * (nbytes << 3));
+			  ((blk64_t) i * (nbytes << 3));
 		retval = ext2fs_get_block_bitmap_range2(ctx->fs->block_map,
 							blk_itr, nbytes << 3,
 							buf);
