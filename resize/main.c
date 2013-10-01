@@ -328,7 +328,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
-	min_size = calculate_minimum_resize_size(fs);
+	min_size = calculate_minimum_resize_size(fs, flags);
 
 	if (print_min_size) {
 		if (!force && ((fs->super->s_state & EXT2_ERROR_FS) ||

@@ -2034,10 +2034,11 @@ static int calc_group_overhead(ext2_filsys fs, blk64_t grp,
 /*
  * calcluate the minimum number of blocks the given fs can be resized to
  */
-blk64_t calculate_minimum_resize_size(ext2_filsys fs)
+blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 {
 	ext2_ino_t inode_count;
-	blk64_t blks_needed, groups, data_blocks;
+	dgrp_t groups;
+	blk64_t blks_needed, data_blocks;
 	blk64_t grp, data_needed, last_start;
 	blk64_t overhead = 0;
 	int old_desc_blocks;
@@ -2055,6 +2056,11 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 		EXT2_BLOCKS_PER_GROUP(fs->super);
 	groups = ext2fs_div64_ceil(blks_needed,
 				   EXT2_BLOCKS_PER_GROUP(fs->super));
+#ifdef RESIZE2FS_DEBUG
+	if (flags & RESIZE_DEBUG_MIN_CALC)
+		printf("fs has %d inodes, %d groups required.\n",
+		       inode_count, groups);
+#endif
 
 	/*
 	 * number of old-style block group descriptor blocks
@@ -2071,6 +2077,10 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 
 	for (grp = 0; grp < fs->group_desc_count; grp++)
 		data_needed -= calc_group_overhead(fs, grp, old_desc_blocks);
+#ifdef RESIZE2FS_DEBUG
+	if (flags & RESIZE_DEBUG_MIN_CALC)
+		printf("fs requires %llu data blocks.\n", data_needed);
+#endif
 
 	/*
 	 * For ext4 we need to allow for up to a flex_bg worth of
@@ -2103,6 +2113,11 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 
 		data_blocks -= overhead;
 	}
+#ifdef RESIZE2FS_DEBUG
+	if (flags & RESIZE_DEBUG_MIN_CALC)
+		printf("With %d group(s), we have %llu blocks available.\n",
+		       groups, data_blocks);
+#endif
 
 	/*
 	 * if we need more group descriptors in order to accomodate our data
@@ -2110,7 +2125,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	 */
 	while (data_needed > data_blocks) {
 		blk64_t remainder = data_needed - data_blocks;
-		blk64_t extra_grps;
+		dgrp_t extra_grps;
 
 		/* figure out how many more groups we need for the data */
 		extra_grps = ext2fs_div64_ceil(remainder,
@@ -2153,10 +2168,22 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 					extra_groups);
 			extra_groups = groups % flexbg_size;
 		}
+#ifdef RESIZE2FS_DEBUG
+		if (flags & RESIZE_DEBUG_MIN_CALC)
+			printf("Added %d extra group(s), "
+			       "data_needed %llu, data_blocks %llu, "
+			       "last_start %llu\n",
+			       extra_grps, data_needed, data_blocks,
+			       last_start);
+#endif
 	}
 
 	/* now for the fun voodoo */
 	overhead = calc_group_overhead(fs, groups-1, old_desc_blocks);
+#ifdef RESIZE2FS_DEBUG
+	if (flags & RESIZE_DEBUG_MIN_CALC)
+		printf("Last group's overhead is %llu\n", overhead);
+#endif
 
 	/*
 	 * if this is the case then the last group is going to have data in it
@@ -2165,6 +2192,11 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	if (last_start < data_needed) {
 		blk64_t remainder = data_needed - last_start;
 
+#ifdef RESIZE2FS_DEBUG
+		if (flags & RESIZE_DEBUG_MIN_CALC)
+			printf("Need %llu data blocks in last group\n",
+			       remainder);
+#endif
 		/*
 		 * 50 is a magic number that mkfs/resize uses to see if its
 		 * even worth making/resizing the fs.  basically you need to
@@ -2179,6 +2211,10 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 		overhead += 50;
 
 	overhead += fs->super->s_first_data_block;
+#ifdef RESIZE2FS_DEBUG
+	if (flags & RESIZE_DEBUG_MIN_CALC)
+		printf("Final size of last group is %lld\n", overhead);
+#endif
 
 	/*
 	 * since our last group doesn't have to be BLOCKS_PER_GROUP large, we
@@ -2187,6 +2223,11 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	 */
 	blks_needed = (groups-1) * EXT2_BLOCKS_PER_GROUP(fs->super);
 	blks_needed += overhead;
+
+#ifdef RESIZE2FS_DEBUG
+	if (flags & RESIZE_DEBUG_MIN_CALC)
+		printf("Estimated blocks needed: %llu\n", blks_needed);
+#endif
 
 	/*
 	 * If at this point we've already added up more "needed" than
@@ -2199,9 +2240,15 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs)
 	 * enabled, in case we need to grow the extent tree.  The more
 	 * we shrink the file system, the more space we need.
 	 */
-	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)
-		blks_needed += (ext2fs_blocks_count(fs->super) - 
-				blks_needed)/500;
+	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
+		blk64_t safe_margin = (ext2fs_blocks_count(fs->super) -
+				       blks_needed)/500;
+#ifdef RESIZE2FS_DEBUG
+		if (flags & RESIZE_DEBUG_MIN_CALC)
+			printf("Extents safety margin: %llu\n", safe_margin);
+#endif
+		blks_needed += safe_margin;
+	}
 
 	return blks_needed;
 }
