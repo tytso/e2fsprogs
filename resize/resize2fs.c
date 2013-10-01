@@ -884,24 +884,34 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	fs = rfs->new_fs;
 
 	/*
-	 * If we're shrinking the filesystem, we need to move any group's
-	 * bitmaps which are beyond the end of the new filesystem.
+	 * If we're shrinking the filesystem, we need to move any
+	 * group's metadata blocks (either allocation bitmaps or the
+	 * inode table) which are beyond the end of the new
+	 * filesystem.
 	 */
 	new_size = ext2fs_blocks_count(fs->super);
 	if (new_size < ext2fs_blocks_count(old_fs->super)) {
 		for (g = 0; g < fs->group_desc_count; g++) {
+			int realloc = 0;
 			/*
-			 * ext2fs_allocate_group_table re-allocates bitmaps
-			 * which are set to block 0.
+			 * ext2fs_allocate_group_table will re-allocate any
+			 * metadata blocks whose location is set to zero.
 			 */
 			if (ext2fs_block_bitmap_loc(fs, g) >= new_size) {
 				ext2fs_block_bitmap_loc_set(fs, g, 0);
-				retval = ext2fs_allocate_group_table(fs, g, 0);
-				if (retval)
-					return retval;
+				realloc = 1;
 			}
 			if (ext2fs_inode_bitmap_loc(fs, g) >= new_size) {
 				ext2fs_inode_bitmap_loc_set(fs, g, 0);
+				realloc = 1;
+			}
+			if ((ext2fs_inode_table_loc(fs, g) +
+			     fs->inode_blocks_per_group) > new_size) {
+				ext2fs_inode_table_loc_set(fs, g, 0);
+				realloc = 1;
+			}
+
+			if (realloc) {
 				retval = ext2fs_allocate_group_table(fs, g, 0);
 				if (retval)
 					return retval;
