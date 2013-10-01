@@ -1,0 +1,14 @@
+resize2fs test
+resize2fs -M test.img
+Resizing the filesystem on test.img to 1124 (1k) blocks.
+The filesystem on test.img is now 1124 blocks long.
+
+Exit status is 0
+e2fsck 1.42.8 (20-Jun-2013)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 13/512 files (0.0% non-contiguous), 1120/1124 blocks
+Exit status is 0
