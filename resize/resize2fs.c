@@ -2224,6 +2224,15 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	blks_needed = (groups-1) * EXT2_BLOCKS_PER_GROUP(fs->super);
 	blks_needed += overhead;
 
+	/*
+	 * Make sure blks_needed covers the end of the inode table in
+	 * the last block group.
+	 */
+	overhead = ext2fs_inode_table_loc(fs, groups-1) +
+		fs->inode_blocks_per_group;
+	if (blks_needed < overhead)
+		blks_needed = overhead;
+
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)
 		printf("Estimated blocks needed: %llu\n", blks_needed);
