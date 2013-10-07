@@ -1308,6 +1308,10 @@ extern errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 					  char *mtpt, int mtlen);
 
 /* punch.c */
+/*
+ * NOTE: This function removes from an inode the blocks "start", "end", and
+ * every block in between.
+ */
 extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 			      struct ext2_inode *inode,
 			      char *block_buf, blk64_t start,

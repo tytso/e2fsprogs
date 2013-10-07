@@ -315,9 +315,6 @@ extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 	if (start > end)
 		return EINVAL;
 
-	if (start == end)
-		return 0;
-
 	/* Read inode structure if necessary */
 	if (!inode) {
 		retval = ext2fs_read_inode(fs, ino, &inode_buf);
@@ -332,7 +329,7 @@ extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 
 		if (start > ~0U)
 			return 0;
-		count = ((end - start) < ~0U) ? (end - start) : ~0U;
+		count = ((end - start + 1) < ~0U) ? (end - start + 1) : ~0U;
 		retval = ext2fs_punch_ind(fs, inode, block_buf, 
 					  (blk_t) start, count);
 	}
