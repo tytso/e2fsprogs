@@ -5987,7 +5987,7 @@ msgid "Can't read an inode bitmap"
 msgstr "Ne peut lire un bitmap d'i-noeuds"
 
 #: lib/ext2fs/ext2_err.c:40
-msgid "Can't write an block bitmap"
+msgid "Can't write a block bitmap"
 msgstr "Ne peut écrire un bitmap de blocs"
 
 #: lib/ext2fs/ext2_err.c:41

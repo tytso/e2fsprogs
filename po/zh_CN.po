@@ -5644,7 +5644,7 @@ msgstr "inode 位图"
 
 #: lib/ext2fs/ext2_err.c:40
 #, fuzzy
-msgid "Can't write an block bitmap"
+msgid "Can't write a block bitmap"
 msgstr "块位图"
 
 #: lib/ext2fs/ext2_err.c:41

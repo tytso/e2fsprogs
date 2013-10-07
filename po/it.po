@@ -6088,7 +6088,7 @@ msgstr "scrivendo le mappe di bit di inode"
 
 #: lib/ext2fs/ext2_err.c:40
 #, fuzzy
-msgid "Can't write an block bitmap"
+msgid "Can't write a block bitmap"
 msgstr "lettura delle mappe di bit inode e blocco"
 
 #: lib/ext2fs/ext2_err.c:41

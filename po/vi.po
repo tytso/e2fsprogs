@@ -5929,7 +5929,7 @@ msgid "Can't read an inode bitmap"
 msgstr "Không thể đọc mảng ảnh nút"
 
 #: lib/ext2fs/ext2_err.c:40
-msgid "Can't write an block bitmap"
+msgid "Can't write a block bitmap"
 msgstr "Không thể ghi mảng ảnh khối"
 
 #: lib/ext2fs/ext2_err.c:41
