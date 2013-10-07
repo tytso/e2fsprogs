@@ -60,7 +60,7 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 #endif
 	incr = 1 << ((EXT2_BLOCK_SIZE_BITS(fs->super)-2)*level);
 	for (i=0, offset=0; i < max; i++, p++, offset += incr) {
-		if (offset > count)
+		if (offset >= start + count)
 			break;
 		if (*p == 0 || (offset+incr) <= start)
 			continue;
