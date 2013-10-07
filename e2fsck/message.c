@@ -489,7 +489,7 @@ static _INLINE_ void expand_percent_expression(FILE *f, ext2_filsys fs,
 #endif
 		break;
 	case 'S':
-		fprintf(f, "%u", get_backup_sb(NULL, fs, NULL, NULL));
+		fprintf(f, "%llu", get_backup_sb(NULL, fs, NULL, NULL));
 		break;
 	case 's':
 		fprintf(f, "%*s", width, ctx->str ? ctx->str : "NULL");

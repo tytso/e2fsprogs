@@ -281,7 +281,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 		dbg_printf("Free start %llu, free count = %u\n",
 		       free_start, free_count);
 		while (free_count-- > 0) {
-			ext2fs_block_alloc_stats(fs, free_start++, -1);
+			ext2fs_block_alloc_stats2(fs, free_start++, -1);
 			freed++;
 		}
 	next_extent:

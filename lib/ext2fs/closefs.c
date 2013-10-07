@@ -244,7 +244,7 @@ void ext2fs_update_dynamic_rev(ext2_filsys fs)
 }
 
 static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
-				    blk_t group_block,
+				    blk64_t group_block,
 				    struct ext2_super_block *super_shadow)
 {
 	dgrp_t	sgrp = group;

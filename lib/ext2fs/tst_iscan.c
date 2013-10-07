@@ -26,7 +26,7 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
-blk_t test_vec[] = { 8, 12, 24, 34, 43, 44, 100, 0 };
+blk64_t test_vec[] = { 8, 12, 24, 34, 43, 44, 100, 0 };
 
 ext2_filsys	test_fs;
 ext2fs_block_bitmap bad_block_map, touched_map;

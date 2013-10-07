@@ -66,7 +66,7 @@ struct dir_context {
  */
 struct ext2_inode_cache {
 	void *				buffer;
-	blk_t				buffer_blk;
+	blk64_t				buffer_blk;
 	int				cache_last;
 	int				cache_size;
 	int				refcount;

@@ -495,7 +495,7 @@ static int update_feature_set(ext2_filsys fs, char *features)
 
 		/* We need to force out the group descriptors as well */
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
-		ext2fs_block_alloc_stats(fs, sb->s_mmp_block, -1);
+		ext2fs_block_alloc_stats2(fs, sb->s_mmp_block, -1);
 mmp_error:
 		sb->s_mmp_block = 0;
 		sb->s_mmp_update_interval = 0;
@@ -1327,10 +1327,10 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 	return 0;
 }
 
-static int ext2fs_is_meta_block(ext2_filsys fs, blk_t blk)
+static int ext2fs_is_meta_block(ext2_filsys fs, blk64_t blk)
 {
 	dgrp_t group;
-	group = ext2fs_group_of_blk(fs, blk);
+	group = ext2fs_group_of_blk2(fs, blk);
 	if (ext2fs_block_bitmap_loc(fs, group) == blk)
 		return 1;
 	if (ext2fs_inode_bitmap_loc(fs, group) == blk)
@@ -1338,9 +1338,9 @@ static int ext2fs_is_meta_block(ext2_filsys fs, blk_t blk)
 	return 0;
 }
 
-static int ext2fs_is_block_in_group(ext2_filsys fs, dgrp_t group, blk_t blk)
+static int ext2fs_is_block_in_group(ext2_filsys fs, dgrp_t group, blk64_t blk)
 {
-	blk_t start_blk, end_blk;
+	blk64_t start_blk, end_blk;
 	start_blk = fs->super->s_first_data_block +
 			EXT2_BLOCKS_PER_GROUP(fs->super) * group;
 	/*
@@ -1380,7 +1380,7 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 			 * the respective fs metadata pointers. Otherwise
 			 * fail
 			 */
-			group = ext2fs_group_of_blk(fs, blk);
+			group = ext2fs_group_of_blk2(fs, blk);
 			goal = ext2fs_group_first_block2(fs, group);
 			meta_data = 1;
 
@@ -1541,7 +1541,7 @@ err_out:
 static int group_desc_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 {
 	dgrp_t i;
-	blk_t blk, new_blk;
+	blk64_t blk, new_blk;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		blk = ext2fs_block_bitmap_loc(fs, i);

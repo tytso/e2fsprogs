@@ -144,7 +144,7 @@ static void print_bg_rel_offset(ext2_filsys fs, blk64_t block, int itable,
 		printf(" (+%u)", (unsigned)(block - first_block));
 	} else if (fs->super->s_feature_incompat &
 		   EXT4_FEATURE_INCOMPAT_FLEX_BG) {
-		dgrp_t flex_grp = ext2fs_group_of_blk(fs, block);
+		dgrp_t flex_grp = ext2fs_group_of_blk2(fs, block);
 		printf(" (bg #%u + %u)", flex_grp,
 		       (unsigned)(block-ext2fs_group_first_block(fs,flex_grp)));
 	}

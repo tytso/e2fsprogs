@@ -270,9 +270,9 @@ errcode_t ext2fs_inode_scan_goto_blockgroup(ext2_inode_scan scan,
  * increasing order.
  */
 static errcode_t check_for_inode_bad_blocks(ext2_inode_scan scan,
-					    blk_t *num_blocks)
+					    blk64_t *num_blocks)
 {
-	blk_t	blk = scan->current_block;
+	blk64_t	blk = scan->current_block;
 	badblocks_list	bb = scan->fs->badblocks;
 
 	/*
@@ -329,7 +329,7 @@ static errcode_t check_for_inode_bad_blocks(ext2_inode_scan scan,
  */
 static errcode_t get_next_blocks(ext2_inode_scan scan)
 {
-	blk_t		num_blocks;
+	blk64_t		num_blocks;
 	errcode_t	retval;
 
 	/*

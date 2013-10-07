@@ -158,7 +158,7 @@ errcode_t ext2fs_file_flush(ext2_file_t file)
  */
 static errcode_t sync_buffer_position(ext2_file_t file)
 {
-	blk_t	b;
+	blk64_t	b;
 	errcode_t	retval;
 
 	b = file->pos / file->fs->blocksize;
