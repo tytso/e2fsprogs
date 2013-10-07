@@ -186,6 +186,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	blk64_t			free_start, next;
 	__u32			free_count, newlen;
 	int			freed = 0;
+	int			op;
 
 	retval = ext2fs_extent_open2(fs, ino, inode, &handle);
 	if (retval)
@@ -195,6 +196,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	if (retval)
 		goto errout;
 	while (1) {
+		op = EXT2_EXTENT_NEXT_LEAF;
 		dbg_print_extent("main loop", &extent);
 		next = extent.e_lblk + extent.e_len;
 		dbg_printf("start %llu, end %llu, next %llu\n",
@@ -256,8 +258,23 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			dbg_print_extent("replacing", &extent);
 			retval = ext2fs_extent_replace(handle, 0, &extent);
 		} else {
+			struct ext2fs_extent	newex;
 			dbg_printf("deleting current extent%s\n", "");
 			retval = ext2fs_extent_delete(handle, 0);
+			if (retval)
+				goto errout;
+			/*
+			 * We just moved the next extent into the current
+			 * extent's position, so re-read the extent next time.
+			 */
+			retval = ext2fs_extent_get(handle,
+						   EXT2_EXTENT_PREV_LEAF,
+						   &newex);
+			/* Can't go back? Just reread current. */
+			if (retval == EXT2_ET_EXTENT_NO_PREV) {
+				retval = 0;
+				op = EXT2_EXTENT_CURRENT;
+			}
 		}
 		if (retval)
 			goto errout;
@@ -268,9 +285,10 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			freed++;
 		}
 	next_extent:
-		retval = ext2fs_extent_get(handle, EXT2_EXTENT_NEXT_LEAF,
+		retval = ext2fs_extent_get(handle, op,
 					   &extent);
-		if (retval == EXT2_ET_EXTENT_NO_NEXT)
+		if (retval == EXT2_ET_EXTENT_NO_NEXT ||
+		    retval == EXT2_ET_NO_CURRENT_NODE)
 			break;
 		if (retval)
 			goto errout;
