@@ -8,7 +8,7 @@ e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
 .SH SYNOPSIS
 .B e2image
 [
-.B \-rsIQa
+.B \-rsIQap
 ]
 [
 .B \-o
@@ -207,7 +207,9 @@ only includes fs metadata, not regular file data.  The
 option can be specified to include all data.  This will
 give an image that is suitable to use to clone the entire FS or
 for backup purposes.  Note that this option only works with the
-raw or QCOW2 formats.
+raw or QCOW2 formats.  The
+.B \-p
+switch may be given to show progress.
 .PP
 .SH OFFSETS
 Normally a filesystem starts at the beginning of a partition, and

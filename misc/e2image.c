@@ -57,6 +57,7 @@ static char output_is_blk;
 /* writing to blk device: don't skip zeroed blocks */
 blk64_t source_offset, dest_offset;
 char move_mode;
+char show_progress;
 
 static void lseek_error_and_exit(int errnum)
 {
@@ -89,7 +90,7 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-rsIQaf] [-o source_offset] [-O dest_offset] device image_file\n"),
+	fprintf(stderr, _("Usage: %s [-rsIQafp] [-o src_offset] [-O dest_offset] device image_file\n"),
 		program_name);
 	exit (1);
 }
@@ -496,6 +497,10 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	blk64_t		start = 0;
 	blk64_t		distance = 0;
 	blk64_t		end = ext2fs_blocks_count(fs->super);
+	time_t		last_update;
+	time_t		start_time;
+	blk64_t		total_written = 0;
+	int		bscount;
 
 	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval) {
@@ -506,6 +511,16 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	if (retval) {
 		com_err(program_name, retval, "while allocating buffer");
 		exit(1);
+	}
+	if (show_progress) {
+		printf("Copying ");
+		bscount = printf("%llu / %llu blocks (%llu%%)",
+				 total_written,
+				 meta_blocks_count,
+				 (total_written + 50) / ((meta_blocks_count + 50) / 100));
+		fflush(stdout);
+		last_update = time(NULL);
+		start_time = time(NULL);
 	}
 	/* when doing an in place move to the right, you can't start
 	   at the beginning or you will overwrite data, so instead
@@ -520,6 +535,30 @@ more_blocks:
 	if (distance)
 		ext2fs_llseek (fd, (start * fs->blocksize) + dest_offset, SEEK_SET);
 	for (blk = start; blk < end; blk++) {
+		if (show_progress && last_update != time(NULL)) {
+			last_update = time(NULL);
+			while (bscount--)
+				printf("\b");
+			bscount = printf("%llu / %llu blocks (%llu%%)",
+					 total_written,
+					 meta_blocks_count,
+					 (total_written + 50) /
+					 ((meta_blocks_count + 50) / 100));
+			time_t duration = time(NULL) - start_time;
+			if (duration > 5) {
+				time_t est = (duration *
+					      meta_blocks_count / total_written) -
+					(duration);
+				char buff[30];
+				strftime(buff, 30, "%T", gmtime(&est));
+				bscount += printf(" %s remaining at %.2f MB/s",
+						  buff,
+						  ((float)total_written /
+						   ((1024 * 1024) / fs->blocksize)) /
+						  duration);
+			}
+			fflush (stdout);
+		}
 		if ((blk >= fs->super->s_first_data_block) &&
 		    ext2fs_test_block_bitmap2(meta_block_map, blk)) {
 			retval = io_channel_read_blk64(fs->io, blk, 1, buf);
@@ -527,6 +566,7 @@ more_blocks:
 				com_err(program_name, retval,
 					"error reading block %llu", blk);
 			}
+			total_written++;
 			if (scramble_block_map &&
 			    ext2fs_test_block_bitmap2(scramble_block_map, blk))
 				scramble_dir_block(fs, blk, buf);
@@ -563,6 +603,23 @@ more_blocks:
 		}
 		sparse = 0;
 		goto more_blocks;
+	}
+	if (show_progress) {
+		while (bscount--)
+			printf("\b");
+		time_t duration = time(NULL) - start_time;
+		char buff[30];
+		strftime(buff, 30, "%T", gmtime(&duration));
+		printf("\b\b\b\b\b\b\b\bCopied %llu / %llu blocks (%llu%%) in "
+		       "%s at %.2f MB/s       \n",
+		       total_written,
+		       meta_blocks_count,
+		       (total_written + 50) / ((meta_blocks_count + 50) / 100),
+		       buff,
+		       ((float)total_written /
+			((1024 * 1024) / fs->blocksize)) /
+		       duration);
+
 	}
 #ifdef HAVE_FTRUNCATE64
 	if (sparse) {
@@ -1128,6 +1185,8 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 	}
 
 	mark_table_blocks(fs);
+	if (show_progress)
+		printf("Scanning inodes...\n");
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);
 	if (retval) {
@@ -1317,7 +1376,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt(argc, argv, "rsIQafo:O:")) != EOF)
+	while ((c = getopt(argc, argv, "rsIQafo:O:p")) != EOF)
 		switch (c) {
 		case 'I':
 			flags |= E2IMAGE_INSTALL_FLAG;
@@ -1346,6 +1405,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'O':
 			dest_offset = strtoull(optarg, NULL, 0);
+			break;
+		case 'p':
+			show_progress = 1;
 			break;
 		default:
 			usage();
