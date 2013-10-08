@@ -393,10 +393,10 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 
 	truncate_block = ((size + file->fs->blocksize - 1) >>
-			  EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
+			  EXT2_BLOCK_SIZE_BITS(file->fs->super));
 	old_size = EXT2_I_SIZE(&file->inode);
 	old_truncate = ((old_size + file->fs->blocksize - 1) >>
-		      EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
+		      EXT2_BLOCK_SIZE_BITS(file->fs->super));
 
 	/* If we're writing a large file, set the large_file flag */
 	if (LINUX_S_ISREG(file->inode.i_mode) &&
