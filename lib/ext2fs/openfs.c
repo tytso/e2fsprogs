@@ -253,6 +253,18 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
+
+	/*
+	 * bigalloc requires cluster-aware bitfield operations, which at the
+	 * moment means we need EXT2_FLAG_64BITS.
+	 */
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
+	    !(flags & EXT2_FLAG_64BITS)) {
+		retval = EXT2_ET_CANT_USE_LEGACY_BITMAPS;
+		goto cleanup;
+	}
+
 	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
 	    (fs->super->s_log_block_size != fs->super->s_log_cluster_size)) {
