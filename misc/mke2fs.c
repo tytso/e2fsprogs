@@ -1806,6 +1806,14 @@ profile_error:
 		exit(1);
 	}
 
+	/* Check the user's mkfs options for 64bit */
+	if ((fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    !(fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+		printf(_("Extents MUST be enabled for a 64-bit filesystem.  "
+			 "Pass -O extents to rectify.\n"));
+		exit(1);
+	}
+
 	/* Set first meta blockgroup via an environment variable */
 	/* (this is mostly for debugging purposes) */
 	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
