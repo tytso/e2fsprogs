@@ -30,6 +30,16 @@ recovering catastrophically corrupted filesystems.  In the future,
 e2fsck will be enhanced to be able to use the image file to help
 recover a badly damaged filesystem.
 .PP
+When saving an e2image for debugging purposes, using either the
+.B \-r
+or
+.B \-Q
+options, the filesystem must be unmounted or be mounted read/only, in order
+for the image file to be in a consistent state.  This requirement can be
+overriden using the
+.B -f
+option, but the resulting image file is very likely not going to be useful.
+.PP
 If
 .I image-file
 is \-, then the output of
