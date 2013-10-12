@@ -64,14 +64,20 @@ extern "C" {
 #include <ext2fs/ext3_extents.h>
 #endif /* EXT2_FLAT_INCLUDES */
 
-typedef __u32		ext2_ino_t;
-typedef __u32		blk_t;
-typedef __u64		blk64_t;
-typedef __u32		dgrp_t;
-typedef __u32		ext2_off_t;
-typedef __u64		ext2_off64_t;
-typedef __s64		e2_blkcnt_t;
-typedef __u32		ext2_dirhash_t;
+#ifdef __CHECK_ENDIAN__
+#define __bitwise __attribute__((bitwise))
+#else
+#define __bitwise
+#endif
+
+typedef __u32 __bitwise		ext2_ino_t;
+typedef __u32 __bitwise		blk_t;
+typedef __u64 __bitwise		blk64_t;
+typedef __u32 __bitwise		dgrp_t;
+typedef __u32 __bitwise		ext2_off_t;
+typedef __u64 __bitwise		ext2_off64_t;
+typedef __s64 __bitwise		e2_blkcnt_t;
+typedef __u32 __bitwise		ext2_dirhash_t;
 
 #if EXT2_FLAT_INCLUDES
 #include "com_err.h"
