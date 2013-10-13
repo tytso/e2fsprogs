@@ -820,20 +820,17 @@ static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 	/* The bbitmap is zeroed; we must mark group metadata blocks in use */
 	for (i = 0; i < fs->group_desc_count; i++) {
 		b = ext2fs_block_bitmap_loc(fs, i);
-		ext2fs_mark_block_bitmap2(fs->block_map, EXT2FS_B2C(fs, b));
+		ext2fs_mark_block_bitmap2(fs->block_map, b);
 		b = ext2fs_inode_bitmap_loc(fs, i);
-		ext2fs_mark_block_bitmap2(fs->block_map, EXT2FS_B2C(fs, b));
+		ext2fs_mark_block_bitmap2(fs->block_map, b);
 
 		retval = ext2fs_super_and_bgd_loc2(fs, i, &b, &c, &d, NULL);
 		if (retval == 0 && b)
-			ext2fs_mark_block_bitmap2(fs->block_map,
-						  EXT2FS_B2C(fs, b));
+			ext2fs_mark_block_bitmap2(fs->block_map, b);
 		if (retval == 0 && c)
-			ext2fs_mark_block_bitmap2(fs->block_map,
-						  EXT2FS_B2C(fs, c));
+			ext2fs_mark_block_bitmap2(fs->block_map, c);
 		if (retval == 0 && d)
-			ext2fs_mark_block_bitmap2(fs->block_map,
-						  EXT2FS_B2C(fs, d));
+			ext2fs_mark_block_bitmap2(fs->block_map, d);
 		if (retval) {
 			com_err("disable_uninit_bg", retval,
 				"while initializing block bitmaps");
