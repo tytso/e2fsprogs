@@ -64,14 +64,20 @@ extern "C" {
 #include <ext2fs/ext3_extents.h>
 #endif /* EXT2_FLAT_INCLUDES */
 
-typedef __u32		ext2_ino_t;
-typedef __u32		blk_t;
-typedef __u64		blk64_t;
-typedef __u32		dgrp_t;
-typedef __u32		ext2_off_t;
-typedef __u64		ext2_off64_t;
-typedef __s64		e2_blkcnt_t;
-typedef __u32		ext2_dirhash_t;
+#ifdef __CHECK_ENDIAN__
+#define __bitwise __attribute__((bitwise))
+#else
+#define __bitwise
+#endif
+
+typedef __u32 __bitwise		ext2_ino_t;
+typedef __u32 __bitwise		blk_t;
+typedef __u64 __bitwise		blk64_t;
+typedef __u32 __bitwise		dgrp_t;
+typedef __u32 __bitwise		ext2_off_t;
+typedef __u64 __bitwise		ext2_off64_t;
+typedef __s64 __bitwise		e2_blkcnt_t;
+typedef __u32 __bitwise		ext2_dirhash_t;
 
 #if EXT2_FLAT_INCLUDES
 #include "com_err.h"
@@ -1385,6 +1391,10 @@ extern errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 					  char *mtpt, int mtlen);
 
 /* punch.c */
+/*
+ * NOTE: This function removes from an inode the blocks "start", "end", and
+ * every block in between.
+ */
 extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 			      struct ext2_inode *inode,
 			      char *block_buf, blk64_t start,

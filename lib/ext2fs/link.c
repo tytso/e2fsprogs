@@ -43,6 +43,9 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	int ret = 0;
 	int csum_size = 0;
 
+	if (ls->done)
+		return 0;
+
 	rec_len = EXT2_DIR_REC_LEN(ls->namelen);
 
 	ls->err = ext2fs_get_rec_len(ls->fs, dirent, &curr_rec_len);

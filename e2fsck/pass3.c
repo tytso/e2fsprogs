@@ -764,6 +764,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	errcode_t	retval;
 	struct expand_dir_struct es;
 	struct ext2_inode	inode;
+	blk64_t		sz;
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
@@ -799,7 +800,9 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	if (retval)
 		return retval;
 
-	inode.i_size = (es.last_block + 1) * fs->blocksize;
+	sz = (es.last_block + 1) * fs->blocksize;
+	inode.i_size = sz;
+	inode.i_size_high = sz >> 32;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 	quota_data_add(ctx->qctx, &inode, dir, es.newblocks * fs->blocksize);
 

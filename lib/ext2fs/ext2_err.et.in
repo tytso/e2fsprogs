@@ -96,7 +96,7 @@ ec	EXT2_ET_INODE_BITMAP_READ,
 	"Can't read an inode bitmap"
 
 ec	EXT2_ET_BLOCK_BITMAP_WRITE,
-	"Can't write an block bitmap"
+	"Can't write a block bitmap"
 
 ec	EXT2_ET_BLOCK_BITMAP_READ,
 	"Can't read an block bitmap"

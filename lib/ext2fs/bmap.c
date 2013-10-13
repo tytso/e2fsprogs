@@ -140,7 +140,7 @@ static errcode_t extent_bmap(ext2_filsys fs, ext2_ino_t ino,
 static errcode_t implied_cluster_alloc(ext2_filsys fs, ext2_ino_t ino,
 				       struct ext2_inode *inode,
 				       ext2_extent_handle_t handle,
-				       blk64_t block, blk64_t *phys_blk)
+				       blk64_t lblk, blk64_t *phys_blk)
 {
 	blk64_t	base_block, pblock = 0;
 	int i;
@@ -149,10 +149,19 @@ static errcode_t implied_cluster_alloc(ext2_filsys fs, ext2_ino_t ino,
 					EXT4_FEATURE_RO_COMPAT_BIGALLOC))
 		return 0;
 
-	base_block = block & ~EXT2FS_CLUSTER_MASK(fs);
+	base_block = lblk & ~EXT2FS_CLUSTER_MASK(fs);
+	/*
+	 * Except for the logical block (lblk) that was passed in, search all
+	 * blocks in this logical cluster for a mapping to a physical cluster.
+	 * If any such map exists, calculate the physical block that maps to
+	 * the logical block and return that.
+	 *
+	 * The old code wouldn't even look if (block % cluster_ratio) == 0;
+	 * this is incorrect if we're allocating blocks in reverse order.
+	 */
 	for (i = 0; i < EXT2FS_CLUSTER_RATIO(fs); i++) {
-		if (block == base_block)
-			return 0;
+		if (base_block + i == lblk)
+			continue;
 		extent_bmap(fs, ino, inode, handle, 0, 0,
 			    base_block + i, 0, 0, &pblock);
 		if (pblock)
@@ -160,7 +169,7 @@ static errcode_t implied_cluster_alloc(ext2_filsys fs, ext2_ino_t ino,
 	}
 	if (pblock == 0)
 		return 0;
-	*phys_blk = pblock - i + (block - base_block);
+	*phys_blk = pblock - i + (lblk - base_block);
 	return 0;
 }
 

@@ -16,6 +16,7 @@ SRCS = $(srcdir)/subst.c
 .c.o:
 	$(E) "	CC $<"
 	$(Q) $(BUILD_CC) -c $(BUILD_CFLAGS) $< -o $@
+	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
 
 PROGS=		subst symlinks
 

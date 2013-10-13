@@ -1168,7 +1168,7 @@ int main (int argc, char *argv[])
 	const char	*lib_ver_date;
 	int		my_ver, lib_ver;
 	e2fsck_t	ctx;
-	blk_t		orig_superblock;
+	blk64_t		orig_superblock;
 	struct problem_context pctx;
 	int flags, run_result;
 	int journal_size;

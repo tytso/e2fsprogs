@@ -60,7 +60,7 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 #endif
 	incr = 1 << ((EXT2_BLOCK_SIZE_BITS(fs->super)-2)*level);
 	for (i=0, offset=0; i < max; i++, p++, offset += incr) {
-		if (offset > count)
+		if (offset >= start + count)
 			break;
 		if (*p == 0 || (offset+incr) <= start)
 			continue;
@@ -186,6 +186,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	blk64_t			free_start, next;
 	__u32			free_count, newlen;
 	int			freed = 0;
+	int			op;
 
 	retval = ext2fs_extent_open2(fs, ino, inode, &handle);
 	if (retval)
@@ -195,6 +196,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	if (retval)
 		goto errout;
 	while (1) {
+		op = EXT2_EXTENT_NEXT_LEAF;
 		dbg_print_extent("main loop", &extent);
 		next = extent.e_lblk + extent.e_len;
 		dbg_printf("start %llu, end %llu, next %llu\n",
@@ -256,21 +258,37 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			dbg_print_extent("replacing", &extent);
 			retval = ext2fs_extent_replace(handle, 0, &extent);
 		} else {
+			struct ext2fs_extent	newex;
 			dbg_printf("deleting current extent%s\n", "");
 			retval = ext2fs_extent_delete(handle, 0);
+			if (retval)
+				goto errout;
+			/*
+			 * We just moved the next extent into the current
+			 * extent's position, so re-read the extent next time.
+			 */
+			retval = ext2fs_extent_get(handle,
+						   EXT2_EXTENT_PREV_LEAF,
+						   &newex);
+			/* Can't go back? Just reread current. */
+			if (retval == EXT2_ET_EXTENT_NO_PREV) {
+				retval = 0;
+				op = EXT2_EXTENT_CURRENT;
+			}
 		}
 		if (retval)
 			goto errout;
 		dbg_printf("Free start %llu, free count = %u\n",
 		       free_start, free_count);
 		while (free_count-- > 0) {
-			ext2fs_block_alloc_stats(fs, free_start++, -1);
+			ext2fs_block_alloc_stats2(fs, free_start++, -1);
 			freed++;
 		}
 	next_extent:
-		retval = ext2fs_extent_get(handle, EXT2_EXTENT_NEXT_LEAF,
+		retval = ext2fs_extent_get(handle, op,
 					   &extent);
-		if (retval == EXT2_ET_EXTENT_NO_NEXT)
+		if (retval == EXT2_ET_EXTENT_NO_NEXT ||
+		    retval == EXT2_ET_NO_CURRENT_NODE)
 			break;
 		if (retval)
 			goto errout;
@@ -297,9 +315,6 @@ extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 	if (start > end)
 		return EINVAL;
 
-	if (start == end)
-		return 0;
-
 	/* Read inode structure if necessary */
 	if (!inode) {
 		retval = ext2fs_read_inode(fs, ino, &inode_buf);
@@ -314,7 +329,7 @@ extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 
 		if (start > ~0U)
 			return 0;
-		count = ((end - start) < ~0U) ? (end - start) : ~0U;
+		count = ((end - start + 1) < ~0U) ? (end - start + 1) : ~0U;
 		retval = ext2fs_punch_ind(fs, inode, block_buf, 
 					  (blk_t) start, count);
 	}

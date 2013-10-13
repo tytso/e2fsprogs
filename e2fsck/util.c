@@ -503,14 +503,14 @@ void mtrace_print(char *mesg)
 }
 #endif
 
-blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
-		   io_manager manager)
+blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
+		      io_manager manager)
 {
 	struct ext2_super_block *sb;
 	io_channel		io = NULL;
 	void			*buf = NULL;
 	int			blocksize;
-	blk_t			superblock, ret_sb = 8193;
+	blk64_t			superblock, ret_sb = 8193;
 
 	if (fs && fs->super) {
 		ret_sb = (fs->super->s_blocks_per_group +

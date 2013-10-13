@@ -291,6 +291,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	unsigned long long	start = 0;
 	int			ext_journal = 0;
 	int			tried_backup_jnl = 0;
+	blk64_t			maxlen;
 
 	clear_problem_context(&pctx);
 
@@ -474,7 +475,10 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			goto errout;
 		}
 
-		journal->j_maxlen = ext2fs_blocks_count(&jsuper);
+		maxlen = ext2fs_blocks_count(&jsuper);
+		if (maxlen > 1ULL << 32)
+			maxlen = (1ULL << 32) - 1;
+		journal->j_maxlen = maxlen;
 		start++;
 	}
 

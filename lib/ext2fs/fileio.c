@@ -158,7 +158,7 @@ errcode_t ext2fs_file_flush(ext2_file_t file)
  */
 static errcode_t sync_buffer_position(ext2_file_t file)
 {
-	blk_t	b;
+	blk64_t	b;
 	errcode_t	retval;
 
 	b = file->pos / file->fs->blocksize;
@@ -307,6 +307,15 @@ errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 	}
 
 fail:
+	/* Update inode size */
+	if (count != 0 && EXT2_I_SIZE(&file->inode) < file->pos) {
+		errcode_t	rc;
+
+		rc = ext2fs_file_set_size2(file, file->pos);
+		if (retval == 0)
+			retval = rc;
+	}
+
 	if (written)
 		*written = count;
 	return retval;
@@ -384,10 +393,22 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 
 	truncate_block = ((size + file->fs->blocksize - 1) >>
-			  EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
+			  EXT2_BLOCK_SIZE_BITS(file->fs->super));
 	old_size = EXT2_I_SIZE(&file->inode);
 	old_truncate = ((old_size + file->fs->blocksize - 1) >>
-		      EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
+		      EXT2_BLOCK_SIZE_BITS(file->fs->super));
+
+	/* If we're writing a large file, set the large_file flag */
+	if (LINUX_S_ISREG(file->inode.i_mode) &&
+	    EXT2_I_SIZE(&file->inode) > 0x7FFFFFFULL &&
+	    (!EXT2_HAS_RO_COMPAT_FEATURE(file->fs->super,
+					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE) ||
+	     file->fs->super->s_rev_level == EXT2_GOOD_OLD_REV)) {
+		file->fs->super->s_feature_ro_compat |=
+				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+		ext2fs_update_dynamic_rev(file->fs);
+		ext2fs_mark_super_dirty(file->fs);
+	}
 
 	file->inode.i_size = size & 0xffffffff;
 	file->inode.i_size_high = (size >> 32);

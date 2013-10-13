@@ -6027,7 +6027,7 @@ msgstr "menulis inode bitmap"
 
 #: lib/ext2fs/ext2_err.c:40
 #, fuzzy
-msgid "Can't write an block bitmap"
+msgid "Can't write a block bitmap"
 msgstr "membaca inode dan blok bitmap"
 
 #: lib/ext2fs/ext2_err.c:41

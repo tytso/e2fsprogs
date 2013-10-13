@@ -191,6 +191,7 @@ LTV_AGE=4
 .c.o:
 	$(E) "	CC $<"
 	$(Q) $(COMPILE) $<
+	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
 
 .y.c:
 	$(YACC) $(YFLAGS) --output $@ $<

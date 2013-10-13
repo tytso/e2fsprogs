@@ -37,10 +37,10 @@ extern char *optarg;
 
 enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
-#define ANY_BLOCK ((blk_t) -1)
+#define ANY_BLOCK ((blk64_t) -1)
 
 int		dump_all, dump_contents, dump_descriptors;
-blk_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
+blk64_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
 unsigned int	group_to_dump, inode_offset_to_dump;
 ext2_ino_t	inode_to_dump;
 
@@ -162,7 +162,7 @@ void do_logdump(int argc, char **argv)
 			(group_offset / inodes_per_block);
 		inode_offset_to_dump = ((group_offset % inodes_per_block)
 					* sizeof(struct ext2_inode));
-		printf("Inode %u is at group %u, block %u, offset %u\n",
+		printf("Inode %u is at group %u, block %llu, offset %u\n",
 		       inode_to_dump, inode_group,
 		       inode_block_to_dump, inode_offset_to_dump);
 	}
@@ -624,7 +624,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 		offset = ((block_to_dump - super->s_first_data_block) %
 			  super->s_blocks_per_group);
 
-		fprintf(out_file, "    (block bitmap for block %u: "
+		fprintf(out_file, "    (block bitmap for block %llu: "
 			"block is %s)\n",
 			block_to_dump,
 			ext2fs_test_bit(offset, buf) ? "SET" : "CLEAR");

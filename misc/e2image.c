@@ -87,7 +87,7 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-rsIQa] device image_file\n"),
+	fprintf(stderr, _("Usage: %s [-rsIQaf] device image_file\n"),
 		program_name);
 	exit (1);
 }
@@ -1252,9 +1252,11 @@ int main (int argc, char ** argv)
 	int open_flag = EXT2_FLAG_64BITS;
 	int img_type = 0;
 	int flags = 0;
+	int mount_flags = 0;
 	int qcow2_fd = 0;
 	int fd = 0;
 	int ret = 0;
+	int ignore_rw_mount = 0;
 	struct stat st;
 
 #ifdef ENABLE_NLS
@@ -1269,7 +1271,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt(argc, argv, "rsIQa")) != EOF)
+	while ((c = getopt(argc, argv, "rsIQaf")) != EOF)
 		switch (c) {
 		case 'I':
 			flags |= E2IMAGE_INSTALL_FLAG;
@@ -1290,6 +1292,9 @@ int main (int argc, char ** argv)
 		case 'a':
 			all_data = 1;
 			break;
+		case 'f':
+			ignore_rw_mount = 1;
+			break;
 		default:
 			usage();
 		}
@@ -1304,6 +1309,19 @@ int main (int argc, char ** argv)
 
 	device_name = argv[optind];
 	image_fn = argv[optind+1];
+
+	ext2fs_check_if_mounted(device_name, &mount_flags);
+
+	if (img_type && !ignore_rw_mount &&
+	    (mount_flags & EXT2_MF_MOUNTED) &&
+	   !(mount_flags & EXT2_MF_READONLY)) {
+		fprintf(stderr, "\nRunning e2image on a R/W mounted "
+			"filesystem can result in an\n"
+			"inconsistent image which will not be useful "
+			"for debugging purposes.\n"
+			"Use -f option if you really want to do that.\n");
+		exit(1);
+	}
 
 	if (flags & E2IMAGE_INSTALL_FLAG) {
 		install_image(device_name, image_fn, img_type);

@@ -6010,7 +6010,7 @@ msgstr "escriptura dels mapes de bits de bloc i de node-i"
 
 #: lib/ext2fs/ext2_err.c:40
 #, fuzzy
-msgid "Can't write an block bitmap"
+msgid "Can't write a block bitmap"
 msgstr "en escriure el mapa de bits dels blocs"
 
 #: lib/ext2fs/ext2_err.c:41

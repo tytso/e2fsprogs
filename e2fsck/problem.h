@@ -249,6 +249,9 @@ struct problem_context {
 /* Checking group descriptor failed */
 #define PR_0_CHECK_DESC_FAILED			0x000045
 
+/* 64bit is set but extents are not set. */
+#define PR_0_64BIT_WITHOUT_EXTENTS		0x000048
+
 /*
  * metadata_csum supersedes uninit_bg; both feature bits cannot be set
  * simultaneously.

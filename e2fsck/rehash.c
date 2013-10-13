@@ -684,7 +684,7 @@ struct write_dir_struct {
 	struct out_dir *outdir;
 	errcode_t	err;
 	e2fsck_t	ctx;
-	int		cleared;
+	blk64_t		cleared;
 	ext2_ino_t	dir;
 };
 

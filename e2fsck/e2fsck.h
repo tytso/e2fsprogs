@@ -119,9 +119,9 @@ struct dx_dir_info {
 
 struct dx_dirblock_info {
 	int		type;
-	blk_t		phys;
+	blk64_t		phys;
 	int		flags;
-	blk_t		parent;
+	blk64_t		parent;
 	ext2_dirhash_t	min_hash;
 	ext2_dirhash_t	max_hash;
 	ext2_dirhash_t	node_min_hash;
@@ -547,7 +547,7 @@ extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
 #ifdef MTRACE
 extern void mtrace_print(char *mesg);
 #endif
-extern blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs,
+extern blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs,
 			   const char *name, io_manager manager);
 extern int ext2_file_type(unsigned int mode);
 extern int write_all(int fd, char *buf, size_t count);

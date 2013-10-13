@@ -531,22 +531,20 @@ static errcode_t parse_hashalg(struct field_set_info *info,
 static errcode_t parse_bmap(struct field_set_info *info,
 			    char *field EXT2FS_ATTR((unused)), char *arg)
 {
-	unsigned long	num;
-	blk_t		blk;
+	blk64_t		blk;
 	errcode_t	retval;
 	char		*tmp;
 
-	num = strtoul(arg, &tmp, 0);
+	blk = strtoull(arg, &tmp, 0);
 	if (*tmp) {
 		fprintf(stderr, "Couldn't parse '%s' for field %s.\n",
 			arg, info->name);
 		return EINVAL;
 	}
-	blk = num;
 
-	retval = ext2fs_bmap(current_fs, set_ino,
+	retval = ext2fs_bmap2(current_fs, set_ino,
 			     (struct ext2_inode *) &set_inode,
-			     0, BMAP_SET, array_idx, &blk);
+			     NULL, BMAP_SET, array_idx, NULL, &blk);
 	if (retval) {
 		com_err("set_inode", retval, "while setting block map");
 	}

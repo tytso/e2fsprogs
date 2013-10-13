@@ -595,6 +595,17 @@ void check_super_block(e2fsck_t ctx)
 			ext2fs_group_desc_csum_set(fs, i);
 	}
 
+	/* Is 64bit set and extents unset? */
+	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				      EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				       EXT3_FEATURE_INCOMPAT_EXTENTS) &&
+	    fix_problem(ctx, PR_0_64BIT_WITHOUT_EXTENTS, &pctx)) {
+		fs->super->s_feature_incompat |=
+			EXT3_FEATURE_INCOMPAT_EXTENTS;
+		ext2fs_mark_super_dirty(fs);
+	}
+
 	/*
 	 * Verify the group descriptors....
 	 */
