@@ -275,7 +275,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 				    !ext2fs_block_bitmap_csum_verify(fs, i,
 						block_bitmap, block_nbytes)) {
 					retval =
-					EXT2_ET_BLOCK_BITMAP_READ;
+					EXT2_ET_BLOCK_BITMAP_CSUM_INVALID;
 					goto cleanup;
 				}
 			} else
