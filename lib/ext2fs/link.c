@@ -42,6 +42,7 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	unsigned int rec_len, min_rec_len, curr_rec_len;
 	int ret = 0;
 	int csum_size = 0;
+	struct ext2_dir_entry_tail *t;
 
 	if (ls->done)
 		return 0;
@@ -67,6 +68,40 @@ static int link_proc(struct ext2_dir_entry *dirent,
 		ls->err = ext2fs_set_rec_len(ls->fs, curr_rec_len, dirent);
 		if (ls->err)
 			return DIRENT_ABORT;
+		ret = DIRENT_CHANGED;
+	}
+
+	/*
+	 * Since ext2fs_link blows away htree data, we need to be
+	 * careful -- if metadata_csum is enabled and we're passed in
+	 * a dirent that contains htree data, we need to create the
+	 * fake entry at the end of the block that hides the checksum.
+	 */
+
+	/* De-convert a dx_node block */
+	if (csum_size &&
+	    curr_rec_len == ls->fs->blocksize &&
+	    !dirent->inode) {
+		curr_rec_len -= csum_size;
+		ls->err = ext2fs_set_rec_len(ls->fs, curr_rec_len, dirent);
+		if (ls->err)
+			return DIRENT_ABORT;
+		t = EXT2_DIRENT_TAIL(buf, ls->fs->blocksize);
+		ext2fs_initialize_dirent_tail(ls->fs, t);
+		ret = DIRENT_CHANGED;
+	}
+
+	/* De-convert a dx_root block */
+	if (csum_size &&
+	    curr_rec_len == ls->fs->blocksize - EXT2_DIR_REC_LEN(1) &&
+	    offset == EXT2_DIR_REC_LEN(1) &&
+	    dirent->name[0] == '.' && dirent->name[1] == '.') {
+		curr_rec_len -= csum_size;
+		ls->err = ext2fs_set_rec_len(ls->fs, curr_rec_len, dirent);
+		if (ls->err)
+			return DIRENT_ABORT;
+		t = EXT2_DIRENT_TAIL(buf, ls->fs->blocksize);
+		ext2fs_initialize_dirent_tail(ls->fs, t);
 		ret = DIRENT_CHANGED;
 	}
 
@@ -152,6 +187,11 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 	if ((retval = ext2fs_read_inode(fs, dir, &inode)) != 0)
 		return retval;
 
+	/*
+	 * If this function changes to preserve the htree, remove the
+	 * two hunks in link_proc that shove checksum tails into the
+	 * former dx_root/dx_node blocks.
+	 */
 	if (inode.i_flags & EXT2_INDEX_FL) {
 		inode.i_flags &= ~EXT2_INDEX_FL;
 		if ((retval = ext2fs_write_inode(fs, dir, &inode)) != 0)
