@@ -345,6 +345,13 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 		return ctx.errcode;
 
 	/*
+	 * An inode with inline data has no blocks over which to
+	 * iterate, so return an error code indicating this fact.
+	 */
+	if (inode.i_flags & EXT4_INLINE_DATA_FL)
+		return EXT2_ET_INLINE_DATA_CANT_ITERATE;
+
+	/*
 	 * Check to see if we need to limit large files
 	 */
 	if (flags & BLOCK_FLAG_NO_LARGE) {
