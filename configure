@@ -5187,6 +5187,7 @@ fi
 
 
 QUOTA_MAN_COMMENT='.\"'
+QUOTA_CMT=
 
 
 
@@ -5309,9 +5310,11 @@ fi
 if test "${enable_quota+set}" = set; then :
   enableval=$enable_quota; if test "$enableval" = "no"
 then
+	QUOTA_CMT=#
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support" >&5
 $as_echo "Disabling quota support" >&6; }
 else
+	QUOTA_CMT=
 	$as_echo "#define CONFIG_QUOTA 1" >>confdefs.h
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling quota support" >&5
@@ -5321,7 +5324,8 @@ $as_echo "Enabling quota support" >&6; }
 fi
 
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support by default" >&5
+  QUOTA_CMT=#
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support by default" >&5
 $as_echo "Disabling quota support by default" >&6; }
 
 fi

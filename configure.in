@@ -566,6 +566,7 @@ dnl
 dnl handle --enable-quota
 dnl
 QUOTA_MAN_COMMENT='.\"'
+QUOTA_CMT=
 AC_SUBST(QUOTA_MAN_COMMENT)
 PKG_PROG_PKG_CONFIG
 AH_TEMPLATE([CONFIG_QUOTA], [Define to 1 to enable quota support])
@@ -573,14 +574,17 @@ AC_ARG_ENABLE([quota],
 [  --enable-quota	  enable quota support],
 if test "$enableval" = "no"
 then
+	QUOTA_CMT=#
 	AC_MSG_RESULT([Disabling quota support])
 else
+	QUOTA_CMT=
 	AC_DEFINE(CONFIG_QUOTA, 1)
 	AC_MSG_RESULT([Enabling quota support])
 	QUOTA_MAN_COMMENT=""
 	AC_SUBST(QUOTA_MAN_COMMENT)
 fi
 ,
+QUOTA_CMT=#
 AC_MSG_RESULT([Disabling quota support by default])
 )
 dnl
