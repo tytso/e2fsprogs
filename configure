@@ -715,6 +715,7 @@ DEPSTATIC_LIBQUOTA
 STATIC_LIBQUOTA
 DEPLIBQUOTA
 LIBQUOTA
+QUOTA_MAN_COMMENT
 BLKID_CMT
 DEPPROFILED_LIBBLKID
 PROFILED_LIBBLKID
@@ -5185,6 +5186,8 @@ fi
 
 
 
+QUOTA_MAN_COMMENT='.\"'
+
 
 
 if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
@@ -5313,6 +5316,8 @@ else
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling quota support" >&5
 $as_echo "Enabling quota support" >&6; }
+	QUOTA_MAN_COMMENT=""
+
 fi
 
 else
