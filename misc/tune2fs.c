@@ -121,6 +121,9 @@ static void usage(void)
 		  "\t[-r reserved_blocks_count] [-u user] [-C mount_count] "
 		  "[-L volume_label]\n"
 		  "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
+#ifdef CONFIG_QUOTA
+		  "\t[-Q quota_options]\n"
+#endif
 		  "\t[-E extended-option[,...]] [-T last_check_time] "
 		  "[-U UUID]\n\t[ -I new_inode_size ] device\n"), program_name);
 	exit(1);
@@ -857,11 +860,15 @@ static void parse_tune2fs_options(int argc, char **argv)
 	char *tmp;
 	struct group *gr;
 	struct passwd *pw;
+	char optstring[100] = "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:T:U:";
 
+#ifdef CONFIG_QUOTA
+	strcat(optstring, "Q:");
+#endif
 	open_flag = 0;
 
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:Q:T:U:")) != EOF)
+	while ((c = getopt(argc, argv, optstring)) != EOF)
 		switch (c) {
 		case 'c':
 			max_mount_count = strtol(optarg, &tmp, 0);
@@ -1015,11 +1022,13 @@ static void parse_tune2fs_options(int argc, char **argv)
 			features_cmd = optarg;
 			open_flag = EXT2_FLAG_RW;
 			break;
+#ifdef CONFIG_QUOTA
 		case 'Q':
 			Q_flag = 1;
 			parse_quota_opts(optarg);
 			open_flag = EXT2_FLAG_RW;
 			break;
+#endif
 		case 'r':
 			reserved_blocks = strtoul(optarg, &tmp, 0);
 			if (*tmp) {
