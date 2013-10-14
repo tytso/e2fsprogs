@@ -99,6 +99,7 @@ errcode_t quota_remove_inode(ext2_filsys fs, int qtype)
 		quota_inode_truncate(fs, qf_ino);
 
 	ext2fs_mark_super_dirty(fs);
+	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	ext2fs_write_bitmaps(fs);
 	return 0;
 }
