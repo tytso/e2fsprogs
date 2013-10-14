@@ -37,6 +37,10 @@ extern char *optarg;
 #include "../version.h"
 #include "jfs_user.h"
 
+#ifndef BUFSIZ
+#define BUFSIZ 8192
+#endif
+
 ss_request_table *extra_cmds;
 const char *debug_prog_name;
 int sci_idx;
@@ -2293,7 +2297,7 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 static int source_file(const char *cmd_file, int ss_idx)
 {
 	FILE		*f;
-	char		buf[256];
+	char		buf[BUFSIZ];
 	char		*cp;
 	int		exit_status = 0;
 	int		retval;
