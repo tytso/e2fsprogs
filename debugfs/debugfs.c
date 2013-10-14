@@ -41,6 +41,16 @@ extern char *optarg;
 #define BUFSIZ 8192
 #endif
 
+/* 64KiB is the minimium blksize to best minimize system call overhead. */
+#ifndef IO_BUFSIZE
+#define IO_BUFSIZE 64*1024
+#endif
+
+/* Block size for `st_blocks' */
+#ifndef S_BLKSIZE
+#define S_BLKSIZE 512
+#endif
+
 ss_request_table *extra_cmds;
 const char *debug_prog_name;
 int sci_idx;
@@ -1563,22 +1573,37 @@ void do_find_free_inode(int argc, char *argv[])
 }
 
 #ifndef READ_ONLY
-static errcode_t copy_file(int fd, ext2_ino_t newfile)
+static errcode_t copy_file(int fd, ext2_ino_t newfile, int bufsize, int make_holes)
 {
 	ext2_file_t	e2_file;
 	errcode_t	retval;
 	int		got;
 	unsigned int	written;
-	char		buf[8192];
+	char		*buf;
 	char		*ptr;
+	char		*zero_buf;
+	int		cmp;
 
 	retval = ext2fs_file_open(current_fs, newfile,
 				  EXT2_FILE_WRITE, &e2_file);
 	if (retval)
 		return retval;
 
+	if (!(buf = (char *) malloc(bufsize))){
+		com_err("copy_file", errno, "can't allocate buffer\n");
+		return;
+	}
+
+	/* This is used for checking whether the whole block is zero */
+	retval = ext2fs_get_memzero(bufsize, &zero_buf);
+	if (retval) {
+		com_err("copy_file", retval, "can't allocate buffer\n");
+		free(buf);
+		return retval;
+	}
+
 	while (1) {
-		got = read(fd, buf, sizeof(buf));
+		got = read(fd, buf, bufsize);
 		if (got == 0)
 			break;
 		if (got < 0) {
@@ -1586,6 +1611,21 @@ static errcode_t copy_file(int fd, ext2_ino_t newfile)
 			goto fail;
 		}
 		ptr = buf;
+
+		/* Sparse copy */
+		if (make_holes) {
+			/* Check whether all is zero */
+			cmp = memcmp(ptr, zero_buf, got);
+			if (cmp == 0) {
+				 /* The whole block is zero, make a hole */
+				retval = ext2fs_file_lseek(e2_file, got, EXT2_SEEK_CUR, NULL);
+				if (retval)
+					goto fail;
+				got = 0;
+			}
+		}
+
+		/* Normal copy */
 		while (got > 0) {
 			retval = ext2fs_file_write(e2_file, ptr,
 						   got, &written);
@@ -1596,10 +1636,14 @@ static errcode_t copy_file(int fd, ext2_ino_t newfile)
 			ptr += written;
 		}
 	}
+	free(buf);
+	ext2fs_free_mem(&zero_buf);
 	retval = ext2fs_file_close(e2_file);
 	return retval;
 
 fail:
+	free(buf);
+	ext2fs_free_mem(&zero_buf);
 	(void) ext2fs_file_close(e2_file);
 	return retval;
 }
@@ -1612,6 +1656,8 @@ void do_write(int argc, char *argv[])
 	ext2_ino_t	newfile;
 	errcode_t	retval;
 	struct ext2_inode inode;
+	int		bufsize = IO_BUFSIZE;
+	int		make_holes = 0;
 
 	if (common_args_process(argc, argv, 3, 3, "write",
 				"<native file> <new file>", CHECK_FS_RW))
@@ -1687,7 +1733,15 @@ void do_write(int argc, char *argv[])
 		return;
 	}
 	if (LINUX_S_ISREG(inode.i_mode)) {
-		retval = copy_file(fd, newfile);
+		if (statbuf.st_blocks < statbuf.st_size / S_BLKSIZE) {
+			make_holes = 1;
+			/*
+			 * Use I/O blocksize as buffer size when
+			 * copying sparse files.
+			 */
+			bufsize = statbuf.st_blksize;
+		}
+		retval = copy_file(fd, newfile, bufsize, make_holes);
 		if (retval)
 			com_err("copy_file", retval, 0);
 	}
