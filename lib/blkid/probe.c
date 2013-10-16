@@ -1532,14 +1532,15 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 	unsigned char *buf;
 	const char *type, *value;
 	struct stat st;
-	time_t diff, now;
+	time_t now;
+	double diff;
 	int idx;
 
 	if (!dev)
 		return NULL;
 
 	now = time(0);
-	diff = now - dev->bid_time;
+	diff = difftime(now, dev->bid_time);
 
 	if (stat(dev->bid_name, &st) < 0) {
 		DBG(DEBUG_PROBE,
