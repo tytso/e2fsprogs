@@ -1047,6 +1047,7 @@ int main (int argc, char ** argv)
 				  unsigned int);
 	int open_flag;
 	long sysval;
+	blk64_t inblk;
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -1200,9 +1201,16 @@ int main (int argc, char ** argv)
 		first_block = parse_uint(argv[optind], _("first block"));
 	} else first_block = 0;
 	if (first_block >= last_block) {
-	    com_err (program_name, 0, _("invalid starting block (%lu): must be less than %lu"),
-		     (unsigned long) first_block, (unsigned long) last_block);
+	    com_err (program_name, 0, _("invalid starting block (%llu): must be less than %llu"),
+		     first_block, last_block);
 	    exit (1);
+	}
+	/* ext2 badblocks file can't handle large values */
+	if (last_block >> 32) {
+		com_err(program_name, EOVERFLOW,
+			_("invalid end block (%llu): must be 32-bit value"),
+			last_block);
+		exit(1);
 	}
 	if (w_flag)
 		check_mount(device_name);
@@ -1262,13 +1270,20 @@ int main (int argc, char ** argv)
 
 	if (in) {
 		for(;;) {
-			switch(fscanf (in, "%u\n", &next_bad)) {
+			switch (fscanf(in, "%llu\n", &inblk)) {
 				case 0:
 					com_err (program_name, 0, "input file - bad format");
 					exit (1);
 				case EOF:
 					break;
 				default:
+					if (inblk >> 32) {
+						com_err(program_name,
+							EOVERFLOW,
+							_("while adding to in-memory bad block list"));
+						exit(1);
+					}
+					next_bad = inblk;
 					errcode = ext2fs_badblocks_list_add(bb_list,next_bad);
 					if (errcode) {
 						com_err (program_name, errcode, _("while adding to in-memory bad block list"));
