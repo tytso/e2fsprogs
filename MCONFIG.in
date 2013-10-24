@@ -50,6 +50,20 @@ datadir = @datadir@
 @ifNotGNUmake@ ES = @ES@
 @ifNotGNUmake@ Q = @Q@
 
+@ifGNUmake@ CHECK=sparse
+@ifGNUmake@ CHECK_OPTS=-Wsparse-all -Wno-transparent-union -Wno-return-void -Wno-undef -Wno-non-pointer-null
+@ifGNUmake@ ifeq ("$(C)", "2")
+@ifGNUmake@   CHECK_CMD=$(CHECK) $(CHECK_OPTS) -Wbitwise -D__CHECK_ENDIAN__
+@ifGNUmake@ else
+@ifGNUmake@   ifeq ("$(C)", "1")
+@ifGNUmake@     CHECK_CMD=$(CHECK) $(CHECK_OPTS)
+@ifGNUmake@    else
+@ifGNUmake@     CHECK_CMD=@true
+@ifGNUmake@   endif
+@ifGNUmake@ endif
+
+@ifNotGNUmake@ CHECK_CMD=@true
+
 CC = @CC@
 BUILD_CC = @BUILD_CC@
 CFLAGS = @CFLAGS@
