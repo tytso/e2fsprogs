@@ -1867,15 +1867,6 @@ profile_error:
 		fs_param.s_feature_ro_compat = 0;
  	}
 
-	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
-	    (fs_param.s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
-		fprintf(stderr, _("The resize_inode and meta_bg features "
-				  "are not compatible.\n"
-				  "They can not be both enabled "
-				  "simultaneously.\n"));
-		exit(1);
-	}
-
 	/* Check the user's mkfs options for 64bit */
 	if ((fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) &&
 	    !(fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)) {
@@ -2052,6 +2043,15 @@ profile_error:
 		com_err(program_name, 0,
 			_("Can't support bigalloc feature without "
 			  "extents feature"));
+		exit(1);
+	}
+
+	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
+	    (fs_param.s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
+		fprintf(stderr, _("The resize_inode and meta_bg features "
+				  "are not compatible.\n"
+				  "They can not be both enabled "
+				  "simultaneously.\n"));
 		exit(1);
 	}
 

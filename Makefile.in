@@ -5,19 +5,6 @@ top_builddir = .
 my_dir = .
 INSTALL = @INSTALL@
 
-CHECK=sparse
-CHECK_OPTS=-Wsparse-all -Wno-transparent-union -Wno-return-void -Wno-undef -Wno-non-pointer-null
-ifeq ("$(C)", "2")
-  CHECK_CMD=$(CHECK) $(CHECK_OPTS) -Wbitwise -D__CHECK_ENDIAN__
-else
-  ifeq ("$(C)", "1")
-    CHECK_CMD=$(CHECK) $(CHECK_OPTS)
-   else
-    CHECK_CMD=@true
-  endif
-endif
-export CHECK_CMD
-
 @MCONFIG@
 
 % : %.sh
@@ -26,7 +13,7 @@ export CHECK_CMD
 @DEBUGFS_CMT@DEBUGFS_DIR= debugfs
 @UUID_CMT@UUID_LIB_SUBDIR= lib/uuid
 @BLKID_CMT@BLKID_LIB_SUBDIR= lib/blkid
-@QUOTA_CMT@QUOTA_LIB_SUBDIR= lib/quota
+QUOTA_LIB_SUBDIR= lib/quota
 
 LIB_SUBDIRS=lib/et lib/ss lib/e2p $(UUID_LIB_SUBDIR) lib/ext2fs $(BLKID_LIB_SUBDIR) $(QUOTA_LIB_SUBDIR) intl
 PROG_SUBDIRS=e2fsck $(DEBUGFS_DIR) misc $(RESIZE_DIR) tests/progs po
