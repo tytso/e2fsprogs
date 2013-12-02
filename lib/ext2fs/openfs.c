@@ -451,8 +451,13 @@ errcode_t ext2fs_set_data_io(ext2_filsys fs, io_channel new_io)
 
 errcode_t ext2fs_rewrite_to_io(ext2_filsys fs, io_channel new_io)
 {
+	errcode_t err;
+
 	if ((fs->flags & EXT2_FLAG_IMAGE_FILE) == 0)
 		return EXT2_ET_NOT_IMAGE_FILE;
+	err = io_channel_set_blksize(new_io, fs->blocksize);
+	if (err)
+		return err;
 	fs->io = fs->image_io = new_io;
 	fs->flags |= EXT2_FLAG_DIRTY | EXT2_FLAG_RW |
 		EXT2_FLAG_BB_DIRTY | EXT2_FLAG_IB_DIRTY;
