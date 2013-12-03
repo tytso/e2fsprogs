@@ -25,7 +25,7 @@
  * checked, its bit is set in the block_ea_map bitmap.
  */
 struct ea_refcount_el {
-	blk_t	ea_blk;
+	blk64_t	ea_blk;
 	int	ea_count;
 };
 
@@ -111,7 +111,7 @@ static void refcount_collapse(ext2_refcount_t refcount)
  * 	specified position.
  */
 static struct ea_refcount_el *insert_refcount_el(ext2_refcount_t refcount,
-						 blk_t blk, int pos)
+						 blk64_t blk, int pos)
 {
 	struct ea_refcount_el 	*el;
 	errcode_t		retval;
@@ -153,7 +153,7 @@ static struct ea_refcount_el *insert_refcount_el(ext2_refcount_t refcount,
  * 	and we can't find an entry, create one in the sorted list.
  */
 static struct ea_refcount_el *get_refcount_el(ext2_refcount_t refcount,
-					      blk_t blk, int create)
+					      blk64_t blk, int create)
 {
 	int	low, high, mid;
 
@@ -206,7 +206,7 @@ retry:
 	return 0;
 }
 
-errcode_t ea_refcount_fetch(ext2_refcount_t refcount, blk_t blk,
+errcode_t ea_refcount_fetch(ext2_refcount_t refcount, blk64_t blk,
 				int *ret)
 {
 	struct ea_refcount_el	*el;
@@ -220,7 +220,7 @@ errcode_t ea_refcount_fetch(ext2_refcount_t refcount, blk_t blk,
 	return 0;
 }
 
-errcode_t ea_refcount_increment(ext2_refcount_t refcount, blk_t blk, int *ret)
+errcode_t ea_refcount_increment(ext2_refcount_t refcount, blk64_t blk, int *ret)
 {
 	struct ea_refcount_el	*el;
 
@@ -234,7 +234,7 @@ errcode_t ea_refcount_increment(ext2_refcount_t refcount, blk_t blk, int *ret)
 	return 0;
 }
 
-errcode_t ea_refcount_decrement(ext2_refcount_t refcount, blk_t blk, int *ret)
+errcode_t ea_refcount_decrement(ext2_refcount_t refcount, blk64_t blk, int *ret)
 {
 	struct ea_refcount_el	*el;
 
@@ -249,7 +249,7 @@ errcode_t ea_refcount_decrement(ext2_refcount_t refcount, blk_t blk, int *ret)
 	return 0;
 }
 
-errcode_t ea_refcount_store(ext2_refcount_t refcount, blk_t blk, int count)
+errcode_t ea_refcount_store(ext2_refcount_t refcount, blk64_t blk, int count)
 {
 	struct ea_refcount_el	*el;
 
@@ -277,7 +277,7 @@ void ea_refcount_intr_begin(ext2_refcount_t refcount)
 }
 
 
-blk_t ea_refcount_intr_next(ext2_refcount_t refcount,
+blk64_t ea_refcount_intr_next(ext2_refcount_t refcount,
 				int *ret)
 {
 	struct ea_refcount_el	*list;
@@ -370,7 +370,7 @@ int main(int argc, char **argv)
 	int	i = 0;
 	ext2_refcount_t refcount;
 	int		size, arg;
-	blk_t		blk;
+	blk64_t		blk;
 	errcode_t	retval;
 
 	while (1) {
