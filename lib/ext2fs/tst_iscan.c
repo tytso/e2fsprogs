@@ -182,7 +182,7 @@ static void check_map(void)
 
 	for (i=0; test_vec[i]; i++) {
 		if (ext2fs_test_block_bitmap2(touched_map, test_vec[i])) {
-			printf("Bad block was touched --- %u\n", test_vec[i]);
+			printf("Bad block was touched --- %llu\n", test_vec[i]);
 			failed++;
 			first_no_comma = 1;
 		}

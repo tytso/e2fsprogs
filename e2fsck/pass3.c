@@ -201,7 +201,7 @@ static void check_root(e2fsck_t ctx)
 	pctx.errcode = ext2fs_write_dir_block4(fs, blk, block, 0,
 					       EXT2_ROOT_INO);
 	if (pctx.errcode) {
-		pctx.str = "ext2fs_write_dir_block";
+		pctx.str = "ext2fs_write_dir_block4";
 		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;

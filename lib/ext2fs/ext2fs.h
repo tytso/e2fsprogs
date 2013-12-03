@@ -1764,14 +1764,14 @@ _INLINE_ int ext2fs_test_bb_dirty(ext2_filsys fs)
 /*
  * Return the group # of a block
  */
-_INLINE_ int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk)
+_INLINE_ dgrp_t ext2fs_group_of_blk(ext2_filsys fs, blk_t blk)
 {
 	return ext2fs_group_of_blk2(fs, blk);
 }
 /*
  * Return the group # of an inode number
  */
-_INLINE_ int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino)
+_INLINE_ dgrp_t ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino)
 {
 	return (ino - 1) / fs->super->s_inodes_per_group;
 }
@@ -1781,7 +1781,7 @@ _INLINE_ int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino)
  */
 _INLINE_ blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group)
 {
-	return ext2fs_group_first_block2(fs, group);
+	return (blk_t) ext2fs_group_first_block2(fs, group);
 }
 
 /*
@@ -1789,13 +1789,13 @@ _INLINE_ blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group)
  */
 _INLINE_ blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group)
 {
-	return ext2fs_group_last_block2(fs, group);
+	return (blk_t) ext2fs_group_last_block2(fs, group);
 }
 
 _INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 					struct ext2_inode *inode)
 {
-	return ext2fs_inode_data_blocks2(fs, inode);
+	return (blk_t) ext2fs_inode_data_blocks2(fs, inode);
 }
 
 /*

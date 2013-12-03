@@ -450,7 +450,7 @@ static _INLINE_ void expand_percent_expression(FILE *f, ext2_filsys fs,
 		fprintf(f, "%*u", width, ctx->dir);
 		break;
 	case 'g':
-		fprintf(f, "%*d", width, ctx->group);
+		fprintf(f, "%*u", width, ctx->group);
 		break;
 	case 'i':
 		fprintf(f, "%*u", width, ctx->ino);

@@ -165,7 +165,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 	struct stat		st;
 	errcode_t		retval;
 
-	write_header(fd, NULL, fs->blocksize, fs->blocksize);
+	write_header(fd, NULL, sizeof(struct ext2_image_hdr), fs->blocksize);
 	memset(&hdr, 0, sizeof(struct ext2_image_hdr));
 
 	hdr.offset_super = ext2fs_llseek(fd, 0, SEEK_CUR);
@@ -214,7 +214,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 	memcpy(hdr.fs_uuid, fs->super->s_uuid, sizeof(hdr.fs_uuid));
 
 	hdr.image_time = time(0);
-	write_header(fd, &hdr, fs->blocksize, fs->blocksize);
+	write_header(fd, &hdr, sizeof(struct ext2_image_hdr), fs->blocksize);
 }
 
 /*

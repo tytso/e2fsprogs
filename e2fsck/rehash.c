@@ -74,7 +74,7 @@ int e2fsck_dir_will_be_rehashed(e2fsck_t ctx, ext2_ino_t ino)
 struct fill_dir_struct {
 	char *buf;
 	struct ext2_inode *inode;
-	int err;
+	errcode_t err;
 	e2fsck_t ctx;
 	struct hash_entry *harray;
 	int max_array, num_array;

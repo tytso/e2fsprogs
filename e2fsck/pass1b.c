@@ -88,8 +88,8 @@ static int process_pass1b_block(ext2_filsys fs, blk64_t	*blocknr,
 				int ref_offset, void *priv_data);
 static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 			struct dup_inode *dp, char *block_buf);
-static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
-		      struct dup_inode *dp, char* block_buf);
+static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
+			    struct dup_inode *dp, char* block_buf);
 static int check_if_fs_block(e2fsck_t ctx, blk64_t test_block);
 static int check_if_fs_cluster(e2fsck_t ctx, blk64_t cluster);
 
@@ -779,8 +779,8 @@ static int clone_file_block(ext2_filsys fs,
 	return 0;
 }
 
-static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
-		      struct dup_inode *dp, char* block_buf)
+static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
+			    struct dup_inode *dp, char* block_buf)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;

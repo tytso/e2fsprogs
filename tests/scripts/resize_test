@@ -4,6 +4,21 @@ resize_test () {
 
 rm -f $TMPFILE
 touch $TMPFILE
+
+# Verify that the $TMP filesystem handles $SIZE_2 sparse files.
+# If that fails, try the local filesystem instead.
+if truncate -s $SIZE_2 $TMPFILE 2> /dev/null; then
+        > $TMPFILE
+else
+	rm $TMPFILE
+	export TMPFILE=$(TMPDIR=. mktemp -t $test_name.XXXXXX.tmp)
+	touch $TMPFILE
+	if ! truncate -s $SIZE_2 $TMPFILE 2> /dev/null; then
+		rm $TMPFILE
+		return 111
+	fi
+fi
+
 echo $MKE2FS $FEATURES -qF $TMPFILE $SIZE_1 > $LOG
 $MKE2FS $FEATURES -qF $TMPFILE $SIZE_1 >> $LOG
 

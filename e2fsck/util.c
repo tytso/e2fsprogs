@@ -441,7 +441,7 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,
 			      struct ext2_inode * inode, const char *proc)
 {
-	int retval;
+	errcode_t retval;
 
 	retval = ext2fs_read_inode(ctx->fs, ino, inode);
 	if (retval) {
@@ -455,7 +455,7 @@ void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
 			    struct ext2_inode *inode, int bufsize,
 			    const char *proc)
 {
-	int retval;
+	errcode_t retval;
 
 	retval = ext2fs_read_inode_full(ctx->fs, ino, inode, bufsize);
 	if (retval) {
@@ -469,7 +469,7 @@ extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
 			       struct ext2_inode * inode, int bufsize,
 			       const char *proc)
 {
-	int retval;
+	errcode_t retval;
 
 	retval = ext2fs_write_inode_full(ctx->fs, ino, inode, bufsize);
 	if (retval) {
@@ -482,7 +482,7 @@ extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
 extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 			       struct ext2_inode * inode, const char *proc)
 {
-	int retval;
+	errcode_t retval;
 
 	retval = ext2fs_write_inode(ctx->fs, ino, inode);
 	if (retval) {
