@@ -317,7 +317,7 @@ void check_resize_inode(e2fsck_t ctx)
 	struct problem_context	pctx;
 	int		i, gdt_off, ind_off;
 	dgrp_t		j;
-	blk64_t		blk, pblk;
+	blk_t		blk, pblk;
 	blk_t		expect;	/* for resize inode, which is 32-bit only */
 	__u32 		*dind_buf = 0, *ind_buf;
 	errcode_t	retval;
