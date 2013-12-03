@@ -1071,7 +1071,7 @@ static errcode_t try_open_fs(e2fsck_t ctx, int flags, io_manager io_ptr,
 static const char *my_ver_string = E2FSPROGS_VERSION;
 static const char *my_ver_date = E2FSPROGS_DATE;
 
-static int e2fsck_check_mmp(ext2_filsys fs, e2fsck_t ctx)
+static errcode_t e2fsck_check_mmp(ext2_filsys fs, e2fsck_t ctx)
 {
 	struct mmp_struct *mmp_s;
 	unsigned int mmp_check_interval;

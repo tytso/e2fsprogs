@@ -55,7 +55,7 @@
 struct fill_dir_struct {
 	char *buf;
 	struct ext2_inode *inode;
-	int err;
+	errcode_t err;
 	e2fsck_t ctx;
 	struct hash_entry *harray;
 	int max_array, num_array;

@@ -452,8 +452,8 @@ extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
 
 /* journal.c */
-extern int e2fsck_check_ext3_journal(e2fsck_t ctx);
-extern int e2fsck_run_ext3_journal(e2fsck_t ctx);
+extern errcode_t e2fsck_check_ext3_journal(e2fsck_t ctx);
+extern errcode_t e2fsck_run_ext3_journal(e2fsck_t ctx);
 extern void e2fsck_move_ext3_journal(e2fsck_t ctx);
 extern int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx);
 
