@@ -844,7 +844,7 @@ out_htree:
 	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	prev = 0;
 	do {
-		int group;
+		dgrp_t group;
 		ext2_ino_t first_unused_inode;
 
 		problem = 0;

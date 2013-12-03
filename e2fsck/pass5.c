@@ -196,7 +196,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	ext2_filsys fs = ctx->fs;
 	blk64_t	i;
 	unsigned int	*free_array;
-	int	group = 0;
+	dgrp_t		g, group = 0;
 	unsigned int	blocks = 0;
 	blk64_t	free_blocks = 0;
 	blk64_t first_free = ext2fs_blocks_count(fs->super);
@@ -498,15 +498,15 @@ redo_counts:
 	} else if (fixit == 0)
 		ext2fs_unmark_valid(fs);
 
-	for (i = 0; i < fs->group_desc_count; i++) {
-		if (free_array[i] != ext2fs_bg_free_blocks_count(fs, i)) {
-			pctx.group = i;
-			pctx.blk = ext2fs_bg_free_blocks_count(fs, i);
-			pctx.blk2 = free_array[i];
+	for (g = 0; g < fs->group_desc_count; g++) {
+		if (free_array[g] != ext2fs_bg_free_blocks_count(fs, g)) {
+			pctx.group = g;
+			pctx.blk = ext2fs_bg_free_blocks_count(fs, g);
+			pctx.blk2 = free_array[g];
 
 			if (fix_problem(ctx, PR_5_FREE_BLOCK_COUNT_GROUP,
 					&pctx)) {
-				ext2fs_bg_free_blocks_count_set(fs, i, free_array[i]);
+				ext2fs_bg_free_blocks_count_set(fs, g, free_array[g]);
 				ext2fs_mark_super_dirty(fs);
 			} else
 				ext2fs_unmark_valid(fs);
@@ -536,7 +536,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	unsigned int	free_inodes = 0;
 	int		group_free = 0;
 	int		dirs_count = 0;
-	int		group = 0;
+	dgrp_t		group = 0;
 	unsigned int	inodes = 0;
 	ext2_ino_t	*free_array;
 	ext2_ino_t	*dir_array;

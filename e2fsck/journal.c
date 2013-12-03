@@ -945,7 +945,8 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 	ext2_ino_t		ino;
 	errcode_t		retval;
 	const char * const *	cpp;
-	int			group, mount_flags;
+	dgrp_t			group;
+	int			mount_flags;
 
 	clear_problem_context(&pctx);
 
