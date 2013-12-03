@@ -151,7 +151,7 @@ static void e2fsck_discard_inodes(e2fsck_t ctx, dgrp_t group,
 
 #define NO_BLK ((blk64_t) -1)
 
-static void print_bitmap_problem(e2fsck_t ctx, int problem,
+static void print_bitmap_problem(e2fsck_t ctx, problem_t problem,
 			    struct problem_context *pctx)
 {
 	switch (problem) {
@@ -203,7 +203,8 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	unsigned int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;
-	int	problem, save_problem, fixit, had_problem;
+	problem_t	problem, save_problem;
+	int		fixit, had_problem;
 	errcode_t	retval;
 	int		csum_flag;
 	int		skip_group = 0;
@@ -542,7 +543,8 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int		actual, bitmap;
 	errcode_t	retval;
 	struct problem_context	pctx;
-	int		problem, save_problem, fixit, had_problem;
+	problem_t	problem, save_problem;
+	int		fixit, had_problem;
 	int		csum_flag;
 	int		skip_group = 0;
 	int		redo_flag = 0;

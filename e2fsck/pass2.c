@@ -351,9 +351,9 @@ static int check_dot(e2fsck_t ctx,
 {
 	struct ext2_dir_entry *nextdir;
 	unsigned int	rec_len, new_len;
-	int	status = 0;
-	int	created = 0;
-	int	problem = 0;
+	int		status = 0;
+	int		created = 0;
+	problem_t	problem = 0;
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT;
@@ -410,7 +410,7 @@ static int check_dotdot(e2fsck_t ctx,
 			struct ext2_dir_entry *dirent,
 			ext2_ino_t ino, struct problem_context *pctx)
 {
-	int		problem = 0;
+	problem_t	problem = 0;
 	unsigned int	rec_len;
 
 	if (!dirent->inode)
@@ -727,7 +727,7 @@ static int check_dir_block(ext2_filsys fs,
 	struct check_dir_struct	*cd;
 	char 			*buf;
 	e2fsck_t		ctx;
-	int			problem;
+	problem_t		problem;
 	struct ext2_dx_root_info *root;
 	struct ext2_dx_countlimit *limit;
 	static dict_t de_dict;
@@ -1268,7 +1268,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	int			not_fixed = 0;
 	unsigned char		*frag, *fsize;
 	struct problem_context	pctx;
-	int	problem = 0;
+	problem_t		problem = 0;
 
 	e2fsck_read_inode(ctx, ino, &inode, "process_bad_inode");
 
