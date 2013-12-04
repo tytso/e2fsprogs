@@ -956,6 +956,7 @@ int check_backup_super_block(e2fsck_t ctx)
 		    SUPER_INCOMPAT_DIFFERENT(s_feature_incompat) ||
 		    SUPER_RO_COMPAT_DIFFERENT(s_feature_ro_compat) ||
 		    SUPER_DIFFERENT(s_blocks_count) ||
+		    SUPER_DIFFERENT(s_blocks_count_hi) ||
 		    SUPER_DIFFERENT(s_inodes_count) ||
 		    memcmp(fs->super->s_uuid, backup_sb->s_uuid,
 			   sizeof(fs->super->s_uuid)))

@@ -2312,11 +2312,6 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 		return;
 
 	sb  = current_fs->super;
-	if (sb->s_mmp_block <= sb->s_first_data_block ||
-	    sb->s_mmp_block >= ext2fs_blocks_count(sb)) {
-		com_err(argv[0], EXT2_ET_MMP_BAD_BLOCK, "while dumping it.\n");
-		return;
-	}
 
 	if (current_fs->mmp_buf == NULL) {
 		retval = ext2fs_get_mem(current_fs->blocksize,
