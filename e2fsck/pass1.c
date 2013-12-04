@@ -752,8 +752,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		busted_fs_time = 1;
 
 	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
-	    !(fs->super->s_mmp_block <= fs->super->s_first_data_block ||
-	      fs->super->s_mmp_block >= fs->super->s_blocks_count))
+	    fs->super->s_mmp_block > fs->super->s_first_data_block &&
+	    fs->super->s_mmp_block < ext2fs_blocks_count(fs->super))
 		ext2fs_mark_block_bitmap2(ctx->block_found_map,
 					  fs->super->s_mmp_block);
 
