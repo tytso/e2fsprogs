@@ -1030,7 +1030,7 @@ void do_freei(int argc, char *argv[])
 	    !ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
 		com_err(argv[0], 0, "Warning: inode already clear");
 	while (len-- > 0)
-		ext2fs_unmark_inode_bitmap2(current_fs->inode_map, inode);
+		ext2fs_unmark_inode_bitmap2(current_fs->inode_map, inode++);
 	ext2fs_mark_ib_dirty(current_fs);
 }
 
