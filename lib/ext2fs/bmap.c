@@ -321,6 +321,13 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 	if (ext2fs_file_block_offset_too_big(fs, inode, block))
 		return EXT2_ET_FILE_TOO_BIG;
 
+	/*
+	 * If an inode has inline data, that means that it doesn't have
+	 * any blocks and we shouldn't map any blocks for it.
+	 */
+	if (inode->i_flags & EXT4_INLINE_DATA_FL)
+		return EXT2_ET_INLINE_DATA_NO_BLOCK;
+
 	if (!block_buf) {
 		retval = ext2fs_get_array(2, fs->blocksize, &buf);
 		if (retval)
