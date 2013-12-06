@@ -503,4 +503,7 @@ ec	EXT2_ET_EA_NO_SPACE,
 ec	EXT2_ET_MISSING_EA_FEATURE,
 	"Filesystem is missing ext_attr or inline_data feature"
 
+ec	EXT2_ET_NO_INLINE_DATA,
+	"Inode doesn't have inline data"
+
 	end

@@ -27,6 +27,7 @@ OBJS= 	alloc.obj \
 	icount.obj \
 	initialize.obj \
 	inline.obj \
+	inline_data.obj \
 	inode.obj \
 	ismounted.obj \
 	link.obj \

@@ -209,6 +209,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 {
 	unsigned i, has_data_blocks, extra_isize, attr_magic;
 	int has_extents = 0;
+	int has_inline_data = 0;
 	int islnk = 0;
 	__u32 *eaf, *eat;
 
@@ -235,12 +236,18 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 					   (struct ext2_inode *) t);
 	if (hostorder && (f->i_flags & EXT4_EXTENTS_FL))
 		has_extents = 1;
+	if (hostorder && (f->i_flags & EXT4_INLINE_DATA_FL))
+		has_inline_data = 1;
 	t->i_flags = ext2fs_swab32(f->i_flags);
 	if (!hostorder && (t->i_flags & EXT4_EXTENTS_FL))
 		has_extents = 1;
+	if (!hostorder && (f->i_flags & EXT4_INLINE_DATA_FL))
+		has_inline_data = 1;
 	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
-	/* extent data are swapped on access, not here */
-	if (!has_extents && (!islnk || has_data_blocks)) {
+	/*
+	 * Extent data and inline data are swapped on access, not here
+	 */
+	if (!has_extents && !has_inline_data && (!islnk || has_data_blocks)) {
 		for (i = 0; i < EXT2_N_BLOCKS; i++)
 			t->i_block[i] = ext2fs_swab32(f->i_block[i]);
 	} else if (t != f) {

@@ -127,6 +127,11 @@ errcode_t ext2fs_dir_iterate2(ext2_filsys fs,
 				       ext2fs_process_dir_block, &ctx);
 	if (!block_buf)
 		ext2fs_free_mem(&ctx.buf);
+	if (retval == EXT2_ET_INLINE_DATA_CANT_ITERATE) {
+		ctx.flags |= DIRENT_FLAG_INCLUDE_INLINE_DATA;
+		(void) ext2fs_inline_data_dir_iterate(fs, dir, &ctx);
+		retval = 0;
+	}
 	if (retval)
 		return retval;
 	return ctx.errcode;
@@ -189,30 +194,40 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 	int		ret = 0;
 	int		changed = 0;
 	int		do_abort = 0;
-	unsigned int	rec_len, size;
+	unsigned int	rec_len, size, buflen;
 	int		entry;
 	struct ext2_dir_entry *dirent;
 	int		csum_size = 0;
+	int		inline_data;
+	errcode_t	retval = 0;
 
 	if (blockcnt < 0)
 		return 0;
 
 	entry = blockcnt ? DIRENT_OTHER_FILE : DIRENT_DOT_FILE;
 
-	ctx->errcode = ext2fs_read_dir_block4(fs, *blocknr, ctx->buf, 0,
-					      ctx->dir);
-	if (ctx->errcode)
-		return BLOCK_ABORT;
+	/* If a dir has inline data, we don't need to read block */
+	inline_data = !!(ctx->flags & DIRENT_FLAG_INCLUDE_INLINE_DATA);
+	if (!inline_data) {
+		ctx->errcode = ext2fs_read_dir_block4(fs, *blocknr, ctx->buf, 0,
+						      ctx->dir);
+		if (ctx->errcode)
+			return BLOCK_ABORT;
+		/* If we handle a normal dir, we traverse the entire block */
+		buflen = fs->blocksize;
+	} else {
+		buflen = ctx->buflen;
+	}
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
-	while (offset < fs->blocksize) {
+	while (offset < buflen) {
 		dirent = (struct ext2_dir_entry *) (ctx->buf + offset);
 		if (ext2fs_get_rec_len(fs, dirent, &rec_len))
 			return BLOCK_ABORT;
-		if (((offset + rec_len) > fs->blocksize) ||
+		if (((offset + rec_len) > buflen) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
 		    ((ext2fs_dirent_name_len(dirent)+8) > rec_len)) {
@@ -220,7 +235,13 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 			return BLOCK_ABORT;
 		}
 		if (!dirent->inode) {
-			if ((offset == fs->blocksize - csum_size) &&
+			/*
+			 * We just need to check metadata_csum when this
+			 * dir hasn't inline data.  That means that 'buflen'
+			 * should be blocksize.
+			 */
+			if (!inline_data &&
+			    (offset == buflen - csum_size) &&
 			    (dirent->rec_len == csum_size) &&
 			    (dirent->name_len == EXT2_DIR_NAME_LEN_CSUM)) {
 				if (!(ctx->flags & DIRENT_FLAG_INCLUDE_CSUM))
@@ -234,7 +255,7 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 				  (next_real_entry > offset) ?
 				  DIRENT_DELETED_FILE : entry,
 				  dirent, offset,
-				  fs->blocksize, ctx->buf,
+				  buflen, ctx->buf,
 				  ctx->priv_data);
 		if (entry < DIRENT_OTHER_FILE)
 			entry++;
@@ -272,13 +293,21 @@ next:
 	}
 
 	if (changed) {
-		ctx->errcode = ext2fs_write_dir_block4(fs, *blocknr, ctx->buf,
-						       0, ctx->dir);
-		if (ctx->errcode)
-			return BLOCK_ABORT;
+		if (!inline_data) {
+			ctx->errcode = ext2fs_write_dir_block4(fs, *blocknr,
+							       ctx->buf,
+							       0, ctx->dir);
+			if (ctx->errcode)
+				return BLOCK_ABORT;
+		} else {
+			/*
+			 * return BLOCK_INLINE_DATA_CHANGED to notify caller
+			 * that inline data has been changed.
+			 */
+			retval = BLOCK_INLINE_DATA_CHANGED;
+		}
 	}
 	if (do_abort)
-		return BLOCK_ABORT;
-	return 0;
+		return retval | BLOCK_ABORT;
+	return retval;
 }
-

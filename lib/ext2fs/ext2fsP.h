@@ -50,6 +50,7 @@ struct dir_context {
 	ext2_ino_t		dir;
 	int		flags;
 	char		*buf;
+	unsigned int	buflen;
 	int (*func)(ext2_ino_t	dir,
 		    int	entry,
 		    struct ext2_dir_entry *dirent,
@@ -86,6 +87,10 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    blk64_t		ref_block,
 				    int			ref_offset,
 				    void		*priv_data);
+
+extern int ext2fs_inline_data_dir_iterate(ext2_filsys fs,
+					  ext2_ino_t ino,
+					  void *priv_data);
 
 /* Generic numeric progress meter */
 

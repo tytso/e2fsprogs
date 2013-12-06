@@ -298,9 +298,10 @@ struct struct_ext2_filsys {
 /*
  * Return flags for the block iterator functions
  */
-#define BLOCK_CHANGED	1
-#define BLOCK_ABORT	2
-#define BLOCK_ERROR	4
+#define BLOCK_CHANGED			1
+#define BLOCK_ABORT			2
+#define BLOCK_ERROR			4
+#define BLOCK_INLINE_DATA_CHANGED	8
 
 /*
  * Block interate flags
@@ -438,6 +439,7 @@ struct ext2_extent_info {
 #define DIRENT_FLAG_INCLUDE_EMPTY	1
 #define DIRENT_FLAG_INCLUDE_REMOVED	2
 #define DIRENT_FLAG_INCLUDE_CSUM	4
+#define DIRENT_FLAG_INCLUDE_INLINE_DATA 8
 
 #define DIRENT_DOT_FILE		1
 #define DIRENT_DOT_DOT_FILE	2
