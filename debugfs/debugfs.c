@@ -201,7 +201,8 @@ void do_open_filesys(int argc, char **argv)
 	return;
 
 print_usage:
-	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] [-c] "
+	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] "
+		"[-d image_filename] [-c] [-i] [-f] [-e] [-D] "
 #ifndef READ_ONLY
 		"[-w] "
 #endif
