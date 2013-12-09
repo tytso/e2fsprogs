@@ -1011,6 +1011,13 @@ struct ext2_dir_entry_tail {
 					 ~EXT2_DIR_ROUND)
 
 /*
+ * Constants for ext4's extended time encoding
+ */
+#define EXT4_EPOCH_BITS 2
+#define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
+#define EXT4_NSEC_MASK  (~0UL << EXT4_EPOCH_BITS)
+
+/*
  * This structure is used for multiple mount protection. It is written
  * into the block number saved in the s_mmp_block field in the superblock.
  * Programs that check MMP should assume that if SEQ_FSCK (or any unknown

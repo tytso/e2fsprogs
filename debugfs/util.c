@@ -186,11 +186,19 @@ int check_fs_bitmaps(char *name)
 	return 0;
 }
 
+char *inode_time_to_string(__u32 xtime, __u32 xtime_extra)
+{
+	__s64 t = (__s32) xtime;
+
+	t += (__s64) (xtime_extra & EXT4_EPOCH_MASK) << 32;
+	return time_to_string(t);
+}
+
 /*
- * This function takes a __u32 time value and converts it to a string,
+ * This function takes a __s64 time value and converts it to a string,
  * using ctime
  */
-char *time_to_string(__u32 cl)
+char *time_to_string(__s64 cl)
 {
 	static int	do_gmt = -1;
 	time_t		t = (time_t) cl;
@@ -211,10 +219,10 @@ char *time_to_string(__u32 cl)
  * Parse a string as a time.  Return ((time_t)-1) if the string
  * doesn't appear to be a sane time.
  */
-time_t string_to_time(const char *arg)
+extern __s64 string_to_time(const char *arg)
 {
 	struct	tm	ts;
-	time_t		ret;
+	__s64		ret;
 	char *tmp;
 
 	if (strcmp(arg, "now") == 0) {
@@ -224,14 +232,18 @@ time_t string_to_time(const char *arg)
 		/* interpret it as an integer */
 		arg++;
 	fallback:
-		ret = strtoul(arg, &tmp, 0);
+		ret = strtoll(arg+1, &tmp, 0);
 		if (*tmp)
-			return ((time_t) -1);
+			return -1;
 		return ret;
 	}
 	memset(&ts, 0, sizeof(ts));
 #ifdef HAVE_STRPTIME
 	tmp = strptime(arg, "%Y%m%d%H%M%S", &ts);
+	if (tmp == NULL)
+		tmp = strptime(arg, "%Y%m%d%H%M", &ts);
+	if (tmp == NULL)
+		tmp = strptime(arg, "%Y%m%d", &ts);
 	if (tmp == NULL)
 		goto fallback;
 #else
@@ -240,9 +252,9 @@ time_t string_to_time(const char *arg)
 	ts.tm_year -= 1900;
 	ts.tm_mon -= 1;
 	if (ts.tm_year < 0 || ts.tm_mon < 0 || ts.tm_mon > 11 ||
-	    ts.tm_mday < 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
+	    ts.tm_mday <= 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
 	    ts.tm_min > 59 || ts.tm_sec > 61)
-		ts.tm_mday = 0;
+		goto fallback;
 #endif
 	ts.tm_isdst = -1;
 	/* strptime() may only update the specified fields, which does not
@@ -260,8 +272,10 @@ time_t string_to_time(const char *arg)
 			((ts.tm_mon - (ts.tm_mon > 7)) / 2) -
 			2 * (ts.tm_mon > 1) + ts.tm_mday - 1;
 	ret = ts.tm_sec + ts.tm_min*60 + ts.tm_hour*3600 + ts.tm_yday*86400 +
-		(ts.tm_year-70)*31536000 + ((ts.tm_year-69)/4)*86400 -
-		((ts.tm_year-1)/100)*86400 + ((ts.tm_year+299)/400)*86400;
+		((__s64) ts.tm_year-70)*31536000 +
+		(((__s64) ts.tm_year-69)/4)*86400 -
+		(((__s64) ts.tm_year-1)/100)*86400 +
+		(((__s64) ts.tm_year+299)/400)*86400;
 	return ret;
 }
 

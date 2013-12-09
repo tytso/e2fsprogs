@@ -170,7 +170,7 @@ void do_lsdel(int argc, char **argv)
 			delarray[num_delarray].mode = inode.i_mode;
 			delarray[num_delarray].uid = inode_uid(inode);
 			delarray[num_delarray].size = EXT2_I_SIZE(&inode);
-			delarray[num_delarray].dtime = inode.i_dtime;
+			delarray[num_delarray].dtime = (__s32) inode.i_dtime;
 			delarray[num_delarray].num_blocks = lsd.num_blocks;
 			delarray[num_delarray].free_blocks = lsd.free_blocks;
 			num_delarray++;

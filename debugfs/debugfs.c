@@ -866,27 +866,37 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (is_large_inode && large_inode->i_extra_isize >= 24) {
 		fprintf(out, "%s ctime: 0x%08x:%08x -- %s", prefix,
 			inode->i_ctime, large_inode->i_ctime_extra,
-			time_to_string(inode->i_ctime));
+			inode_time_to_string(inode->i_ctime,
+					     large_inode->i_ctime_extra));
 		fprintf(out, "%s atime: 0x%08x:%08x -- %s", prefix,
 			inode->i_atime, large_inode->i_atime_extra,
-			time_to_string(inode->i_atime));
+			inode_time_to_string(inode->i_atime,
+					     large_inode->i_atime_extra));
 		fprintf(out, "%s mtime: 0x%08x:%08x -- %s", prefix,
 			inode->i_mtime, large_inode->i_mtime_extra,
-			time_to_string(inode->i_mtime));
+			inode_time_to_string(inode->i_mtime,
+					     large_inode->i_mtime_extra));
 		fprintf(out, "%scrtime: 0x%08x:%08x -- %s", prefix,
 			large_inode->i_crtime, large_inode->i_crtime_extra,
-			time_to_string(large_inode->i_crtime));
+			inode_time_to_string(large_inode->i_crtime,
+					     large_inode->i_crtime_extra));
+		if (inode->i_dtime)
+			fprintf(out, "%scrtime: 0x%08x:(%08x) -- %s", prefix,
+				large_inode->i_dtime, large_inode->i_ctime_extra,
+				inode_time_to_string(inode->i_dtime,
+						     large_inode->i_ctime_extra));
 	} else {
 		fprintf(out, "%sctime: 0x%08x -- %s", prefix, inode->i_ctime,
-			time_to_string(inode->i_ctime));
+			time_to_string((__s32) inode->i_ctime));
 		fprintf(out, "%satime: 0x%08x -- %s", prefix, inode->i_atime,
-			time_to_string(inode->i_atime));
+			time_to_string((__s32) inode->i_atime));
 		fprintf(out, "%smtime: 0x%08x -- %s", prefix, inode->i_mtime,
-			time_to_string(inode->i_mtime));
+			time_to_string((__s32) inode->i_mtime));
+		if (inode->i_dtime)
+			fprintf(out, "%sdtime: 0x%08x -- %s", prefix,
+				inode->i_dtime,
+				time_to_string((__s32) inode->i_dtime));
 	}
-	if (inode->i_dtime)
-	  fprintf(out, "%sdtime: 0x%08x -- %s", prefix, inode->i_dtime,
-		  time_to_string(inode->i_dtime));
 	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
 		internal_dump_inode_extra(out, prefix, inode_num,
 					  (struct ext2_inode_large *) inode);
@@ -2074,14 +2084,14 @@ err:
 #ifndef READ_ONLY
 void do_set_current_time(int argc, char *argv[])
 {
-	time_t now;
+	__s64 now;
 
 	if (common_args_process(argc, argv, 2, 2, argv[0],
 				"<time>", 0))
 		return;
 
 	now = string_to_time(argv[1]);
-	if (now == ((time_t) -1)) {
+	if (now == -1) {
 		com_err(argv[0], 0, "Couldn't parse argument as a time: %s\n",
 			argv[1]);
 		return;

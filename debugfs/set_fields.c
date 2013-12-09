@@ -181,10 +181,14 @@ static struct field_set_info inode_fields[] = {
 	{ "uid", &set_inode.i_uid, &set_inode.osd2.linux2.l_i_uid_high,
 		2, parse_uint },
 	{ "size", &set_inode.i_size, &set_inode.i_size_high, 4, parse_uint },
-	{ "atime", &set_inode.i_atime, NULL, 4, parse_time },
-	{ "ctime", &set_inode.i_ctime, NULL, 4, parse_time },
-	{ "mtime", &set_inode.i_mtime, NULL, 4, parse_time },
-	{ "dtime", &set_inode.i_dtime, NULL, 4, parse_time },
+	{ "atime", &set_inode.i_atime, &set_inode.i_atime_extra,
+		4, parse_time },
+	{ "ctime", &set_inode.i_ctime, &set_inode.i_ctime_extra,
+		4, parse_time },
+	{ "mtime", &set_inode.i_mtime, &set_inode.i_mtime_extra,
+		4, parse_time },
+	{ "dtime", &set_inode.i_dtime, NULL,
+		4, parse_time },
 	{ "gid", &set_inode.i_gid, &set_inode.osd2.linux2.l_i_gid_high,
 		2, parse_uint },
 	{ "links_count", &set_inode.i_links_count, NULL, 2, parse_uint },
@@ -216,14 +220,15 @@ static struct field_set_info inode_fields[] = {
 	{ "extra_isize", &set_inode.i_extra_isize, NULL,
 		2, parse_uint },
 	{ "ctime_extra", &set_inode.i_ctime_extra, NULL,
-		4, parse_uint },
+		4, parse_uint, FLAG_ALIAS },
 	{ "mtime_extra", &set_inode.i_mtime_extra, NULL,
-		4, parse_uint },
+		4, parse_uint, FLAG_ALIAS  },
 	{ "atime_extra", &set_inode.i_atime_extra, NULL,
-		4, parse_uint },
-	{ "crtime", &set_inode.i_crtime, NULL, 4, parse_uint },
+		4, parse_uint, FLAG_ALIAS },
+	{ "crtime", &set_inode.i_crtime, &set_inode.i_crtime_extra,
+		4, parse_time },
 	{ "crtime_extra", &set_inode.i_crtime_extra, NULL,
-		4, parse_uint },
+		4, parse_uint, FLAG_ALIAS },
 	{ "bmap", NULL, NULL, 4, parse_bmap, FLAG_ARRAY },
 	{ 0, 0, 0, 0 }
 };
@@ -555,21 +560,31 @@ static errcode_t parse_string(struct field_set_info *info,
 }
 
 static errcode_t parse_time(struct field_set_info *info,
-			    char *field EXT2FS_ATTR((unused)), char *arg)
+			    char *field, char *arg)
 {
-	time_t		t;
-	__u32		*ptr32;
+	__s64		t;
+	__u32		t_low, t_high;
+	__u32		*ptr_low, *ptr_high;
+	int		suffix = check_suffix(field);
 
-	ptr32 = (__u32 *) info->ptr;
+	if (check_suffix(field))
+		return parse_uint(info, field, arg);
+
+	ptr_low  = (__u32 *) info->ptr;
+	ptr_high = (__u32 *) info->ptr2;
 
 	t = string_to_time(arg);
 
-	if (t == ((time_t) -1)) {
+	if (t == -1) {
 		fprintf(stderr, "Couldn't parse '%s' for field %s.\n",
 			arg, info->name);
 		return EINVAL;
 	}
-	*ptr32 = t;
+	t_low = (__u32) t;
+	t_high = ((t - (__s32)t) >> 32) & EXT4_EPOCH_MASK;
+	*ptr_low = t_low;
+	if (ptr_high)
+		*ptr_high = (*ptr_high & ~EXT4_EPOCH_MASK) | t_high;
 	return 0;
 }
 
