@@ -632,6 +632,12 @@ typedef struct stat ext2fs_struct_stat;
  * function prototypes
  */
 
+/* The LARGE_FILE feature should be set if we have stored files 2GB+ in size */
+static inline int ext2fs_needs_large_file_feature(unsigned long long file_size)
+{
+	return file_size >= 0x80000000ULL;
+}
+
 /* alloc.c */
 extern errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, int mode,
 				  ext2fs_inode_bitmap map, ext2_ino_t *ret);

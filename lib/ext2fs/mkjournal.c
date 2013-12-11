@@ -378,7 +378,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	inode_size = (unsigned long long)fs->blocksize * num_blocks;
 	inode.i_size = inode_size & 0xFFFFFFFF;
 	inode.i_size_high = (inode_size >> 32) & 0xFFFFFFFF;
-	if (inode.i_size_high)
+	if (ext2fs_needs_large_file_feature(inode_size))
 		fs->super->s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);

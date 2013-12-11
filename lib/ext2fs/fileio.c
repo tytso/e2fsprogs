@@ -400,7 +400,7 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 
 	/* If we're writing a large file, set the large_file flag */
 	if (LINUX_S_ISREG(file->inode.i_mode) &&
-	    EXT2_I_SIZE(&file->inode) > 0x7FFFFFFULL &&
+	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(&file->inode)) &&
 	    (!EXT2_HAS_RO_COMPAT_FEATURE(file->fs->super,
 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE) ||
 	     file->fs->super->s_rev_level == EXT2_GOOD_OLD_REV)) {
