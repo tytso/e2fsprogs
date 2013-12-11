@@ -312,13 +312,15 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 		return retval;
 
 	if ((retval = ext2fs_read_bitmaps(fs)))
-		return retval;
+		goto out2;
 
 	if ((retval = ext2fs_read_inode(fs, journal_ino, &inode)))
-		return retval;
+		goto out2;
 
-	if (inode.i_blocks > 0)
-		return EEXIST;
+	if (inode.i_blocks > 0) {
+		retval = EEXIST;
+		goto out2;
+	}
 
 	es.num_blocks = num_blocks;
 	es.newblocks = 0;
@@ -330,7 +332,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
 		inode.i_flags |= EXT4_EXTENTS_FL;
 		if ((retval = ext2fs_write_inode(fs, journal_ino, &inode)))
-			return retval;
+			goto out2;
 	}
 
 	/*
@@ -398,6 +400,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 
 errout:
 	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
+out2:
 	ext2fs_free_mem(&buf);
 	return retval;
 }
