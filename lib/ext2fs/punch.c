@@ -198,10 +198,17 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	 * next-lowest extent if 'start' is in a hole, and doesn't set a
 	 * current node if there was a real error reading the extent tree.
 	 * In that case, _get() will error out.
+	 *
+	 * Note: If _get() returns 'no current node', that simply means that
+	 * there aren't any blocks mapped past this point in the file, so we're
+	 * done.
 	 */
 	ext2fs_extent_goto(handle, start);
 	retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
-	if (retval)
+	if (retval == EXT2_ET_NO_CURRENT_NODE) {
+		retval = 0;
+		goto errout;
+	} else if (retval)
 		goto errout;
 	while (1) {
 		op = EXT2_EXTENT_NEXT_LEAF;
