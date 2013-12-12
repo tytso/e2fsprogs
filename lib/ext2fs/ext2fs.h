@@ -1517,7 +1517,7 @@ extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
 #ifndef EXT2_CUSTOM_MEMORY_ROUTINES
 #include <string.h>
 /*
- *  Allocate memory
+ *  Allocate memory.  The 'ptr' arg must point to a pointer.
  */
 _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 {
@@ -1564,7 +1564,7 @@ _INLINE_ errcode_t ext2fs_get_arrayzero(unsigned long count,
 }
 
 /*
- * Free memory
+ * Free memory.  The 'ptr' arg must point to a pointer.
  */
 _INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 {
@@ -1578,7 +1578,7 @@ _INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 }
 
 /*
- *  Resize memory
+ *  Resize memory.  The 'ptr' arg must point to a pointer.
  */
 _INLINE_ errcode_t ext2fs_resize_mem(unsigned long EXT2FS_ATTR((unused)) old_size,
 				     unsigned long size, void *ptr)

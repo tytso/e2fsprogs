@@ -802,7 +802,7 @@ void do_set_mmp_value(int argc, char *argv[])
 		if (retval) {
 			com_err(argv[0], retval, "reading MMP block %llu.\n",
 				(long long)current_fs->super->s_mmp_block);
-			ext2fs_free_mem(mmp_s);
+			ext2fs_free_mem(&mmp_s);
 			return;
 		}
 		current_fs->mmp_buf = mmp_s;
