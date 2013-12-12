@@ -50,15 +50,16 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 			   blk_t start, blk_t count, int max)
 {
 	errcode_t	retval;
-	blk_t		b, offset;
-	int		i, incr;
+	blk_t		b;
+	int		i;
+	blk64_t		offset, incr;
 	int		freed = 0;
 
 #ifdef PUNCH_DEBUG
 	printf("Entering ind_punch, level %d, start %u, count %u, "
 	       "max %d\n", level, start, count, max);
 #endif
-	incr = 1 << ((EXT2_BLOCK_SIZE_BITS(fs->super)-2)*level);
+	incr = 1ULL << ((EXT2_BLOCK_SIZE_BITS(fs->super)-2)*level);
 	for (i=0, offset=0; i < max; i++, p++, offset += incr) {
 		if (offset >= start + count)
 			break;
@@ -87,7 +88,7 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 				continue;
 		}
 #ifdef PUNCH_DEBUG
-		printf("Freeing block %u (offset %d)\n", b, offset);
+		printf("Freeing block %u (offset %llu)\n", b, offset);
 #endif
 		ext2fs_block_alloc_stats(fs, b, -1);
 		*p = 0;
@@ -108,7 +109,7 @@ static errcode_t ext2fs_punch_ind(ext2_filsys fs, struct ext2_inode *inode,
 	int			num = EXT2_NDIR_BLOCKS;
 	blk_t			*bp = inode->i_block;
 	blk_t			addr_per_block;
-	blk_t			max = EXT2_NDIR_BLOCKS;
+	blk64_t			max = EXT2_NDIR_BLOCKS;
 
 	if (!block_buf) {
 		retval = ext2fs_get_array(3, fs->blocksize, &buf);
@@ -119,10 +120,10 @@ static errcode_t ext2fs_punch_ind(ext2_filsys fs, struct ext2_inode *inode,
 
 	addr_per_block = (blk_t) fs->blocksize >> 2;
 
-	for (level=0; level < 4; level++, max *= addr_per_block) {
+	for (level = 0; level < 4; level++, max *= (blk64_t)addr_per_block) {
 #ifdef PUNCH_DEBUG
 		printf("Main loop level %d, start %u count %u "
-		       "max %d num %d\n", level, start, count, max, num);
+		       "max %llu num %d\n", level, start, count, max, num);
 #endif
 		if (start < max) {
 			retval = ind_punch(fs, inode, block_buf, bp, level,
