@@ -1590,16 +1590,17 @@ static errcode_t copy_file(int fd, ext2_ino_t newfile, int bufsize, int make_hol
 	if (retval)
 		return retval;
 
-	if (!(buf = (char *) malloc(bufsize))){
-		com_err("copy_file", errno, "can't allocate buffer\n");
-		return;
+	retval = ext2fs_get_mem(bufsize, &buf);
+	if (retval) {
+		com_err("copy_file", retval, "can't allocate buffer\n");
+		return retval;
 	}
 
 	/* This is used for checking whether the whole block is zero */
 	retval = ext2fs_get_memzero(bufsize, &zero_buf);
 	if (retval) {
 		com_err("copy_file", retval, "can't allocate buffer\n");
-		free(buf);
+		ext2fs_free_mem(&buf);
 		return retval;
 	}
 
@@ -1637,13 +1638,13 @@ static errcode_t copy_file(int fd, ext2_ino_t newfile, int bufsize, int make_hol
 			ptr += written;
 		}
 	}
-	free(buf);
+	ext2fs_free_mem(&buf);
 	ext2fs_free_mem(&zero_buf);
 	retval = ext2fs_file_close(e2_file);
 	return retval;
 
 fail:
-	free(buf);
+	ext2fs_free_mem(&buf);
 	ext2fs_free_mem(&zero_buf);
 	(void) ext2fs_file_close(e2_file);
 	return retval;
@@ -2101,7 +2102,7 @@ void do_bmap(int argc, char *argv[])
 
 	errcode = ext2fs_bmap2(current_fs, ino, 0, 0, 0, blk, 0, &pblk);
 	if (errcode) {
-		com_err("argv[0]", errcode,
+		com_err(argv[0], errcode,
 			"while mapping logical block %llu\n", blk);
 		return;
 	}
