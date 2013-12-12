@@ -267,22 +267,41 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			retval = ext2fs_extent_replace(handle, 0, &extent);
 		} else {
 			struct ext2fs_extent	newex;
+			blk64_t			old_lblk, next_lblk;
 			dbg_printf("deleting current extent%s\n", "");
+
+			/*
+			 * Save the location of the next leaf, then slip
+			 * back to the current extent.
+			 */
+			retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT,
+						   &newex);
+			if (retval)
+				goto errout;
+			old_lblk = newex.e_lblk;
+
+			retval = ext2fs_extent_get(handle,
+						   EXT2_EXTENT_NEXT_LEAF,
+						   &newex);
+			if (retval == EXT2_ET_EXTENT_NO_NEXT)
+				next_lblk = old_lblk;
+			else if (retval)
+				goto errout;
+			else
+				next_lblk = newex.e_lblk;
+
+			retval = ext2fs_extent_goto(handle, old_lblk);
+			if (retval)
+				goto errout;
+
+			/* Now delete the extent. */
 			retval = ext2fs_extent_delete(handle, 0);
 			if (retval)
 				goto errout;
-			/*
-			 * We just moved the next extent into the current
-			 * extent's position, so re-read the extent next time.
-			 */
-			retval = ext2fs_extent_get(handle,
-						   EXT2_EXTENT_PREV_LEAF,
-						   &newex);
-			/* Can't go back? Just reread current. */
-			if (retval == EXT2_ET_EXTENT_NO_PREV) {
-				retval = 0;
-				op = EXT2_EXTENT_CURRENT;
-			}
+
+			/* Jump forward to the next extent. */
+			ext2fs_extent_goto(handle, next_lblk);
+			op = EXT2_EXTENT_CURRENT;
 		}
 		if (retval)
 			goto errout;
