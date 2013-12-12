@@ -53,7 +53,7 @@ static ext2fs_inode_bitmap inode_done_map = 0;
 void e2fsck_pass3(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	struct dir_info_iter *iter;
+	struct dir_info_iter *iter = NULL;
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 #endif
@@ -108,7 +108,6 @@ void e2fsck_pass3(e2fsck_t ctx)
 			if (check_directory(ctx, dir->ino, &pctx))
 				goto abort_exit;
 	}
-	e2fsck_dir_info_iter_end(ctx, iter);
 
 	/*
 	 * Force the creation of /lost+found if not present
@@ -123,6 +122,8 @@ void e2fsck_pass3(e2fsck_t ctx)
 	e2fsck_rehash_directories(ctx);
 
 abort_exit:
+	if (iter)
+		e2fsck_dir_info_iter_end(ctx, iter);
 	e2fsck_free_dir_info(ctx);
 	if (inode_loop_detect) {
 		ext2fs_free_inode_bitmap(inode_loop_detect);
