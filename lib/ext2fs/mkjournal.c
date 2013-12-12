@@ -595,7 +595,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 	ext2fs_mark_super_dirty(fs);
 	return 0;
 errout:
-	if (fd > 0)
+	if (fd >= 0)
 		close(fd);
 	return retval;
 }
