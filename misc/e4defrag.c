@@ -374,7 +374,7 @@ static int is_ext4(const char *file, char *devname)
 	}
 
 	endmntent(fp);
-	if (strcmp(mnt_type, FS_EXT4) == 0) {
+	if (mnt_type && strcmp(mnt_type, FS_EXT4) == 0) {
 		FREE(mnt_type);
 		return 0;
 	} else {
