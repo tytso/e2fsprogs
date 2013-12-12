@@ -392,6 +392,9 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 
+	if (size && ext2fs_file_block_offset_too_big(file->fs, &file->inode,
+					(size - 1) / file->fs->blocksize))
+		return EXT2_ET_FILE_TOO_BIG;
 	truncate_block = ((size + file->fs->blocksize - 1) >>
 			  EXT2_BLOCK_SIZE_BITS(file->fs->super));
 	old_size = EXT2_I_SIZE(&file->inode);

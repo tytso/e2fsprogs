@@ -238,6 +238,27 @@ got_block:
 	return 0;
 }
 
+int ext2fs_file_block_offset_too_big(ext2_filsys fs,
+				     struct ext2_inode *inode,
+				     blk64_t offset)
+{
+	blk64_t addr_per_block, max_map_block;
+
+	/* Kernel seems to cut us off at 4294967294 blocks */
+	if (offset >= (1ULL << 32) - 1)
+		return 1;
+
+	if (inode->i_flags & EXT4_EXTENTS_FL)
+		return 0;
+
+	addr_per_block = fs->blocksize >> 2;
+	max_map_block = addr_per_block;
+	max_map_block += addr_per_block * addr_per_block;
+	max_map_block += addr_per_block * addr_per_block * addr_per_block;
+	max_map_block += 12;
+
+	return offset >= max_map_block;
+}
 
 errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		       char *block_buf, int bmap_flags, blk64_t block,
@@ -265,6 +286,9 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		inode = &inode_buf;
 	}
 	addr_per_block = (blk_t) fs->blocksize >> 2;
+
+	if (ext2fs_file_block_offset_too_big(fs, inode, block))
+		return EXT2_ET_FILE_TOO_BIG;
 
 	if (!block_buf) {
 		retval = ext2fs_get_array(2, fs->blocksize, &buf);
