@@ -193,6 +193,8 @@ errcode_t ext2fs_create_icount_tdb(ext2_filsys fs, char *tdb_dir,
 	uuid_unparse(fs->super->s_uuid, uuid);
 	sprintf(fn, "%s/%s-icount-XXXXXX", tdb_dir, uuid);
 	fd = mkstemp(fn);
+	if (fd < 0)
+		return fd;
 
 	/*
 	 * This is an overestimate of the size that we will need; the

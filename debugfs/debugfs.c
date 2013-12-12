@@ -181,8 +181,7 @@ void do_open_filesys(int argc, char **argv)
 				return;
 			break;
 		case 's':
-			superblock = parse_ulong(optarg, argv[0],
-						 "superblock number", &err);
+			err = strtoblk(argv[0], optarg, &superblock);
 			if (err)
 				return;
 			break;
@@ -278,14 +277,17 @@ void do_init_filesys(int argc, char **argv)
 	struct ext2_super_block param;
 	errcode_t	retval;
 	int		err;
+	blk64_t		blocks;
 
 	if (common_args_process(argc, argv, 3, 3, "initialize",
-				"<device> <blocksize>", CHECK_FS_NOTOPEN))
+				"<device> <blocks>", CHECK_FS_NOTOPEN))
 		return;
 
 	memset(&param, 0, sizeof(struct ext2_super_block));
-	ext2fs_blocks_count_set(&param, parse_ulong(argv[2], argv[0],
-						    "blocks count", &err));
+	err = strtoblk(argv[0], argv[2], &blocks);
+	if (err)
+		return;
+	ext2fs_blocks_count_set(&param, blocks);
 	if (err)
 		return;
 	retval = ext2fs_initialize(argv[1], 0, &param,
@@ -1602,16 +1604,17 @@ static errcode_t copy_file(int fd, ext2_ino_t newfile, int bufsize, int make_hol
 	if (retval)
 		return retval;
 
-	if (!(buf = (char *) malloc(bufsize))){
-		com_err("copy_file", errno, "can't allocate buffer\n");
-		return;
+	retval = ext2fs_get_mem(bufsize, &buf);
+	if (retval) {
+		com_err("copy_file", retval, "can't allocate buffer\n");
+		return retval;
 	}
 
 	/* This is used for checking whether the whole block is zero */
 	retval = ext2fs_get_memzero(bufsize, &zero_buf);
 	if (retval) {
 		com_err("copy_file", retval, "can't allocate buffer\n");
-		free(buf);
+		ext2fs_free_mem(&buf);
 		return retval;
 	}
 
@@ -1649,13 +1652,13 @@ static errcode_t copy_file(int fd, ext2_ino_t newfile, int bufsize, int make_hol
 			ptr += written;
 		}
 	}
-	free(buf);
+	ext2fs_free_mem(&buf);
 	ext2fs_free_mem(&zero_buf);
 	retval = ext2fs_file_close(e2_file);
 	return retval;
 
 fail:
-	free(buf);
+	ext2fs_free_mem(&buf);
 	ext2fs_free_mem(&zero_buf);
 	(void) ext2fs_file_close(e2_file);
 	return retval;
@@ -2109,11 +2112,13 @@ void do_bmap(int argc, char *argv[])
 	ino = string_to_inode(argv[1]);
 	if (!ino)
 		return;
-	blk = parse_ulong(argv[2], argv[0], "logical_block", &err);
+	err = strtoblk(argv[0], argv[2], &blk);
+	if (err)
+		return;
 
 	errcode = ext2fs_bmap2(current_fs, ino, 0, 0, 0, blk, 0, &pblk);
 	if (errcode) {
-		com_err("argv[0]", errcode,
+		com_err(argv[0], errcode,
 			"while mapping logical block %llu\n", blk);
 		return;
 	}
@@ -2254,10 +2259,14 @@ void do_punch(int argc, char *argv[])
 	ino = string_to_inode(argv[1]);
 	if (!ino)
 		return;
-	start = parse_ulong(argv[2], argv[0], "logical_block", &err);
-	if (argc == 4)
-		end = parse_ulong(argv[3], argv[0], "logical_block", &err);
-	else
+	err = strtoblk(argv[0], argv[2], &start);
+	if (err)
+		return;
+	if (argc == 4) {
+		err = strtoblk(argv[0], argv[3], &end);
+		if (err)
+			return;
+	} else
 		end = ~0;
 
 	errcode = ext2fs_punch(current_fs, ino, 0, 0, start, end);
@@ -2469,8 +2478,11 @@ int main(int argc, char **argv)
 						"block size", 0);
 			break;
 		case 's':
-			superblock = parse_ulong(optarg, argv[0],
-						 "superblock number", 0);
+			retval = strtoblk(argv[0], optarg, &superblock);
+			if (retval) {
+				com_err(argv[0], retval, 0, debug_prog_name);
+				return 1;
+			}
 			break;
 		case 'c':
 			catastrophic = 1;

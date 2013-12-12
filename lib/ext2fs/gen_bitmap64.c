@@ -128,6 +128,7 @@ errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
 	if (gettimeofday(&bitmap->stats.created,
 			 (struct timezone *) NULL) == -1) {
 		perror("gettimeofday");
+		ext2fs_free_mem(&bitmap);
 		return 1;
 	}
 	bitmap->stats.type = type;
@@ -300,6 +301,7 @@ errcode_t ext2fs_copy_generic_bmap(ext2fs_generic_bitmap src,
 	if (gettimeofday(&new_bmap->stats.created,
 			 (struct timezone *) NULL) == -1) {
 		perror("gettimeofday");
+		ext2fs_free_mem(&new_bmap);
 		return 1;
 	}
 	new_bmap->stats.type = src->stats.type;

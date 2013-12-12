@@ -50,15 +50,16 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 			   blk_t start, blk_t count, int max)
 {
 	errcode_t	retval;
-	blk_t		b, offset;
-	int		i, incr;
+	blk_t		b;
+	int		i;
+	blk64_t		offset, incr;
 	int		freed = 0;
 
 #ifdef PUNCH_DEBUG
 	printf("Entering ind_punch, level %d, start %u, count %u, "
 	       "max %d\n", level, start, count, max);
 #endif
-	incr = 1 << ((EXT2_BLOCK_SIZE_BITS(fs->super)-2)*level);
+	incr = 1ULL << ((EXT2_BLOCK_SIZE_BITS(fs->super)-2)*level);
 	for (i=0, offset=0; i < max; i++, p++, offset += incr) {
 		if (offset >= start + count)
 			break;
@@ -87,7 +88,7 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 				continue;
 		}
 #ifdef PUNCH_DEBUG
-		printf("Freeing block %u (offset %d)\n", b, offset);
+		printf("Freeing block %u (offset %llu)\n", b, offset);
 #endif
 		ext2fs_block_alloc_stats(fs, b, -1);
 		*p = 0;
@@ -108,7 +109,7 @@ static errcode_t ext2fs_punch_ind(ext2_filsys fs, struct ext2_inode *inode,
 	int			num = EXT2_NDIR_BLOCKS;
 	blk_t			*bp = inode->i_block;
 	blk_t			addr_per_block;
-	blk_t			max = EXT2_NDIR_BLOCKS;
+	blk64_t			max = EXT2_NDIR_BLOCKS;
 
 	if (!block_buf) {
 		retval = ext2fs_get_array(3, fs->blocksize, &buf);
@@ -119,10 +120,10 @@ static errcode_t ext2fs_punch_ind(ext2_filsys fs, struct ext2_inode *inode,
 
 	addr_per_block = (blk_t) fs->blocksize >> 2;
 
-	for (level=0; level < 4; level++, max *= addr_per_block) {
+	for (level = 0; level < 4; level++, max *= (blk64_t)addr_per_block) {
 #ifdef PUNCH_DEBUG
 		printf("Main loop level %d, start %u count %u "
-		       "max %d num %d\n", level, start, count, max, num);
+		       "max %llu num %d\n", level, start, count, max, num);
 #endif
 		if (start < max) {
 			retval = ind_punch(fs, inode, block_buf, bp, level,
@@ -191,9 +192,23 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	retval = ext2fs_extent_open2(fs, ino, inode, &handle);
 	if (retval)
 		return retval;
+	/*
+	 * Find the extent closest to the start of the punch range.  We don't
+	 * check the return value because _goto() sets the current node to the
+	 * next-lowest extent if 'start' is in a hole, and doesn't set a
+	 * current node if there was a real error reading the extent tree.
+	 * In that case, _get() will error out.
+	 *
+	 * Note: If _get() returns 'no current node', that simply means that
+	 * there aren't any blocks mapped past this point in the file, so we're
+	 * done.
+	 */
 	ext2fs_extent_goto(handle, start);
 	retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
-	if (retval)
+	if (retval == EXT2_ET_NO_CURRENT_NODE) {
+		retval = 0;
+		goto errout;
+	} else if (retval)
 		goto errout;
 	while (1) {
 		op = EXT2_EXTENT_NEXT_LEAF;
@@ -259,22 +274,41 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			retval = ext2fs_extent_replace(handle, 0, &extent);
 		} else {
 			struct ext2fs_extent	newex;
+			blk64_t			old_lblk, next_lblk;
 			dbg_printf("deleting current extent%s\n", "");
+
+			/*
+			 * Save the location of the next leaf, then slip
+			 * back to the current extent.
+			 */
+			retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT,
+						   &newex);
+			if (retval)
+				goto errout;
+			old_lblk = newex.e_lblk;
+
+			retval = ext2fs_extent_get(handle,
+						   EXT2_EXTENT_NEXT_LEAF,
+						   &newex);
+			if (retval == EXT2_ET_EXTENT_NO_NEXT)
+				next_lblk = old_lblk;
+			else if (retval)
+				goto errout;
+			else
+				next_lblk = newex.e_lblk;
+
+			retval = ext2fs_extent_goto(handle, old_lblk);
+			if (retval)
+				goto errout;
+
+			/* Now delete the extent. */
 			retval = ext2fs_extent_delete(handle, 0);
 			if (retval)
 				goto errout;
-			/*
-			 * We just moved the next extent into the current
-			 * extent's position, so re-read the extent next time.
-			 */
-			retval = ext2fs_extent_get(handle,
-						   EXT2_EXTENT_PREV_LEAF,
-						   &newex);
-			/* Can't go back? Just reread current. */
-			if (retval == EXT2_ET_EXTENT_NO_PREV) {
-				retval = 0;
-				op = EXT2_EXTENT_CURRENT;
-			}
+
+			/* Jump forward to the next extent. */
+			ext2fs_extent_goto(handle, next_lblk);
+			op = EXT2_EXTENT_CURRENT;
 		}
 		if (retval)
 			goto errout;

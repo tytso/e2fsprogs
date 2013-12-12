@@ -264,7 +264,7 @@ void do_replace_node(int argc, char *argv[])
 		return;
 	}
 
-	extent.e_lblk = parse_ulong(argv[1], argv[0], "logical block", &err);
+	err = strtoblk(argv[0], argv[1], &extent.e_lblk);
 	if (err)
 		return;
 
@@ -272,7 +272,7 @@ void do_replace_node(int argc, char *argv[])
 	if (err)
 		return;
 
-	extent.e_pblk = parse_ulong(argv[3], argv[0], "logical block", &err);
+	err = strtoblk(argv[0], argv[3], &extent.e_pblk);
 	if (err)
 		return;
 
@@ -338,8 +338,7 @@ void do_insert_node(int argc, char *argv[])
 		return;
 	}
 
-	extent.e_lblk = parse_ulong(argv[1], cmd,
-				    "logical block", &err);
+	err = strtoblk(cmd, argv[1], &extent.e_lblk);
 	if (err)
 		return;
 
@@ -348,8 +347,7 @@ void do_insert_node(int argc, char *argv[])
 	if (err)
 		return;
 
-	extent.e_pblk = parse_ulong(argv[3], cmd,
-				    "pysical block", &err);
+	err = strtoblk(cmd, argv[3], &extent.e_pblk);
 	if (err)
 		return;
 
@@ -366,8 +364,8 @@ void do_set_bmap(int argc, char **argv)
 	const char	*usage = "[--uninit] <lblk> <pblk>";
 	struct ext2fs_extent extent;
 	errcode_t	retval;
-	blk_t		logical;
-	blk_t		physical;
+	blk64_t		logical;
+	blk64_t		physical;
 	char		*cmd = argv[0];
 	int		flags = 0;
 	int		err;
@@ -387,18 +385,16 @@ void do_set_bmap(int argc, char **argv)
 		return;
 	}
 
-	logical = parse_ulong(argv[1], cmd,
-				    "logical block", &err);
+	err = strtoblk(cmd, argv[1], &logical);
 	if (err)
 		return;
 
-	physical = parse_ulong(argv[2], cmd,
-				    "physical block", &err);
+	err = strtoblk(cmd, argv[2], &physical);
 	if (err)
 		return;
 
 	retval = ext2fs_extent_set_bmap(current_handle, logical,
-					(blk64_t) physical, flags);
+					physical, flags);
 	if (retval) {
 		com_err(cmd, retval, 0);
 		return;

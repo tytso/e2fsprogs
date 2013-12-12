@@ -869,6 +869,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'L':
 			replace_bad_blocks++;
 		case 'l':
+			if (bad_blocks_file)
+				free(bad_blocks_file);
 			bad_blocks_file = string_copy(ctx, optarg, 0);
 			break;
 		case 'd':

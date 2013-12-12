@@ -374,7 +374,7 @@ static int is_ext4(const char *file, char *devname)
 	}
 
 	endmntent(fp);
-	if (strcmp(mnt_type, FS_EXT4) == 0) {
+	if (mnt_type && strcmp(mnt_type, FS_EXT4) == 0) {
 		FREE(mnt_type);
 		return 0;
 	} else {
@@ -472,6 +472,9 @@ static int defrag_fadvise(int fd, struct move_extent defrag_data,
 			    SYNC_FILE_RANGE_WAIT_AFTER;
 	unsigned int	i;
 	loff_t	offset;
+
+	if (pagesize < 1)
+		return -1;
 
 	offset = (loff_t)defrag_data.orig_start * block_size;
 	offset = (offset / pagesize) * pagesize;

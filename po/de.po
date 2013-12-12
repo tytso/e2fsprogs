@@ -5980,7 +5980,7 @@ msgid "Can't write a block bitmap"
 msgstr "Die Block-Bitmap kann nicht geschrieben werden"
 
 #: lib/ext2fs/ext2_err.c:41
-msgid "Can't read an block bitmap"
+msgid "Can't read a block bitmap"
 msgstr "Die Block-Bitmap kann nicht gelesen werden"
 
 #: lib/ext2fs/ext2_err.c:42

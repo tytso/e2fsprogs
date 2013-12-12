@@ -90,6 +90,10 @@ char **ss_parse (sci_idx, line_ptr, argc_ptr)
 		parse_mode = TOKEN;
 		cp = line_ptr;
 		argv = NEW_ARGV (argv, argc);
+		if (argv == NULL) {
+			*argc_ptr = errno;
+			return argv;
+		}
 		argv[argc++] = line_ptr;
 		argv[argc] = NULL;
 	    }

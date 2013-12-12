@@ -646,6 +646,12 @@ static inline int ext2fs_has_group_desc_csum(ext2_filsys fs)
 			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
 }
 
+/* The LARGE_FILE feature should be set if we have stored files 2GB+ in size */
+static inline int ext2fs_needs_large_file_feature(unsigned long long file_size)
+{
+	return file_size >= 0x80000000ULL;
+}
+
 /* alloc.c */
 extern errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, int mode,
 				  ext2fs_inode_bitmap map, ext2_ino_t *ret);
@@ -1602,7 +1608,7 @@ _INLINE_ void ext2fs_init_csum_seed(ext2_filsys fs)
 #ifndef EXT2_CUSTOM_MEMORY_ROUTINES
 #include <string.h>
 /*
- *  Allocate memory
+ *  Allocate memory.  The 'ptr' arg must point to a pointer.
  */
 _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 {
@@ -1649,7 +1655,7 @@ _INLINE_ errcode_t ext2fs_get_arrayzero(unsigned long count,
 }
 
 /*
- * Free memory
+ * Free memory.  The 'ptr' arg must point to a pointer.
  */
 _INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 {
@@ -1663,7 +1669,7 @@ _INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 }
 
 /*
- *  Resize memory
+ *  Resize memory.  The 'ptr' arg must point to a pointer.
  */
 _INLINE_ errcode_t ext2fs_resize_mem(unsigned long EXT2FS_ATTR((unused)) old_size,
 				     unsigned long size, void *ptr)

@@ -143,8 +143,6 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 
 	if (preserve)
 		fix_perms("dump_file", &inode, fd, outname);
-	else if (fd != 1)
-		close(fd);
 
 	return;
 }
@@ -191,6 +189,11 @@ void do_dump(int argc, char **argv)
 	}
 
 	dump_file(argv[0], inode, fd, preserve, out_fn);
+	if (close(fd) != 0) {
+		com_err(argv[0], errno, "while closing %s for dump_inode",
+			out_fn);
+		return;
+	}
 
 	return;
 }
@@ -273,6 +276,10 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 			goto errout;
 		}
 		dump_file("rdump", ino, fd, 1, fullname);
+		if (close(fd) != 0) {
+			com_err("rdump", errno, "while dumping %s", fullname);
+			goto errout;
+		}
 	}
 	else if (LINUX_S_ISDIR(inode->i_mode) && strcmp(name, ".") && strcmp(name, "..")) {
 		errcode_t retval;

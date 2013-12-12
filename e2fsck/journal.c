@@ -1139,8 +1139,10 @@ int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx)
 	if (!journal_name)
 		return 0;
 
-	if (stat(journal_name, &st) < 0)
+	if (stat(journal_name, &st) < 0) {
+		free(journal_name);
 		return 0;
+	}
 
 	if (st.st_rdev != sb->s_journal_dev) {
 		clear_problem_context(&pctx);

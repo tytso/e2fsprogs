@@ -93,7 +93,7 @@ gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
 int	lazy_itable_init;
-char	*bad_blocks_filename;
+char	*bad_blocks_filename = NULL;
 __u32	fs_stride;
 int	quotatype = -1;  /* Initialize both user and group quotas by default */
 
@@ -1139,6 +1139,7 @@ static char **parse_fs_type(const char *fs_type,
 
 	parse_str = malloc(strlen(usage_types)+1);
 	if (!parse_str) {
+		free(profile_type);
 		free(list.list);
 		return 0;
 	}
@@ -1298,6 +1299,21 @@ static void PRS(int argc, char *argv[])
 	char *		fs_type = 0;
 	char *		usage_types = 0;
 	blk64_t		dev_size;
+	/*
+	 * NOTE: A few words about fs_blocks_count and blocksize:
+	 *
+	 * Initially, blocksize is set to zero, which implies 1024.
+	 * If -b is specified, blocksize is updated to the user's value.
+	 *
+	 * Next, the device size or the user's "blocks" command line argument
+	 * is used to set fs_blocks_count; the units are blocksize.
+	 *
+	 * Later, if blocksize hasn't been set and the profile specifies a
+	 * blocksize, then blocksize is updated and fs_blocks_count is scaled
+	 * appropriately.  Note the change in units!
+	 *
+	 * Finally, we complain about fs_blocks_count > 2^32 on a non-64bit fs.
+	 */
 	blk64_t		fs_blocks_count = 0;
 #ifdef __linux__
 	struct 		utsname ut;
@@ -1494,7 +1510,8 @@ profile_error:
 			discard = 0;
 			break;
 		case 'l':
-			bad_blocks_filename = malloc(strlen(optarg)+1);
+			bad_blocks_filename = realloc(bad_blocks_filename,
+						      strlen(optarg) + 1);
 			if (!bad_blocks_filename) {
 				com_err(program_name, ENOMEM,
 					_("in malloc for bad_blocks_filename"));
@@ -1780,15 +1797,67 @@ profile_error:
 		}
 	}
 
+	/* Get the hardware sector sizes, if available */
+	retval = ext2fs_get_device_sectsize(device_name, &lsector_size);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while trying to determine hardware sector size"));
+		exit(1);
+	}
+	retval = ext2fs_get_device_phys_sectsize(device_name, &psector_size);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while trying to determine physical sector size"));
+		exit(1);
+	}
+
+	tmp = getenv("MKE2FS_DEVICE_SECTSIZE");
+	if (tmp != NULL)
+		lsector_size = atoi(tmp);
+	tmp = getenv("MKE2FS_DEVICE_PHYS_SECTSIZE");
+	if (tmp != NULL)
+		psector_size = atoi(tmp);
+
+	/* Older kernels may not have physical/logical distinction */
+	if (!psector_size)
+		psector_size = lsector_size;
+
+	if (blocksize <= 0) {
+		use_bsize = get_int_from_profile(fs_types, "blocksize", 4096);
+
+		if (use_bsize == -1) {
+			use_bsize = sys_page_size;
+			if ((linux_version_code < (2*65536 + 6*256)) &&
+			    (use_bsize > 4096))
+				use_bsize = 4096;
+		}
+		if (lsector_size && use_bsize < lsector_size)
+			use_bsize = lsector_size;
+		if ((blocksize < 0) && (use_bsize < (-blocksize)))
+			use_bsize = -blocksize;
+		blocksize = use_bsize;
+		fs_blocks_count /= (blocksize / 1024);
+	} else {
+		if (blocksize < lsector_size) {			/* Impossible */
+			com_err(program_name, EINVAL,
+				_("while setting blocksize; too small "
+				  "for device\n"));
+			exit(1);
+		} else if ((blocksize < psector_size) &&
+			   (psector_size <= sys_page_size)) {	/* Suboptimal */
+			fprintf(stderr, _("Warning: specified blocksize %d is "
+				"less than device physical sectorsize %d\n"),
+				blocksize, psector_size);
+		}
+	}
+
+	fs_param.s_log_block_size =
+		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+
 	/*
 	 * We now need to do a sanity check of fs_blocks_count for
 	 * 32-bit vs 64-bit block number support.
 	 */
-	if ((fs_blocks_count > MAX_32_NUM) && (blocksize == 0)) {
-		fs_blocks_count /= 4; /* Try using a 4k blocksize */
-		blocksize = 4096;
-		fs_param.s_log_block_size = 2;
-	}
 	if ((fs_blocks_count > MAX_32_NUM) &&
 	    !(fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) &&
 	    get_bool_from_profile(fs_types, "auto_64-bit_support", 0)) {
@@ -1880,63 +1949,6 @@ profile_error:
 	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
 	    ((tmp = getenv("MKE2FS_FIRST_META_BG"))))
 		fs_param.s_first_meta_bg = atoi(tmp);
-
-	/* Get the hardware sector sizes, if available */
-	retval = ext2fs_get_device_sectsize(device_name, &lsector_size);
-	if (retval) {
-		com_err(program_name, retval,
-			_("while trying to determine hardware sector size"));
-		exit(1);
-	}
-	retval = ext2fs_get_device_phys_sectsize(device_name, &psector_size);
-	if (retval) {
-		com_err(program_name, retval,
-			_("while trying to determine physical sector size"));
-		exit(1);
-	}
-
-	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
-		lsector_size = atoi(tmp);
-	if ((tmp = getenv("MKE2FS_DEVICE_PHYS_SECTSIZE")) != NULL)
-		psector_size = atoi(tmp);
-
-	/* Older kernels may not have physical/logical distinction */
-	if (!psector_size)
-		psector_size = lsector_size;
-
-	if (blocksize <= 0) {
-		use_bsize = get_int_from_profile(fs_types, "blocksize", 4096);
-
-		if (use_bsize == -1) {
-			use_bsize = sys_page_size;
-			if ((linux_version_code < (2*65536 + 6*256)) &&
-			    (use_bsize > 4096))
-				use_bsize = 4096;
-		}
-		if (lsector_size && use_bsize < lsector_size)
-			use_bsize = lsector_size;
-		if ((blocksize < 0) && (use_bsize < (-blocksize)))
-			use_bsize = -blocksize;
-		blocksize = use_bsize;
-		ext2fs_blocks_count_set(&fs_param,
-					ext2fs_blocks_count(&fs_param) /
-					(blocksize / 1024));
-	} else {
-		if (blocksize < lsector_size) {			/* Impossible */
-			com_err(program_name, EINVAL,
-				_("while setting blocksize; too small "
-				  "for device\n"));
-			exit(1);
-		} else if ((blocksize < psector_size) &&
-			   (psector_size <= sys_page_size)) {	/* Suboptimal */
-			fprintf(stderr, _("Warning: specified blocksize %d is "
-				"less than device physical sectorsize %d\n"),
-				blocksize, psector_size);
-		}
-	}
-
-	fs_param.s_log_block_size =
-		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) {
 		if (!cluster_size)
 			cluster_size = get_int_from_profile(fs_types,
@@ -2252,8 +2264,11 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	}
 
 	if (!strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
-	    access(tdb_dir, W_OK))
+	    access(tdb_dir, W_OK)) {
+		if (free_tdb_dir)
+			free(tdb_dir);
 		return 0;
+	}
 
 	tmp_name = strdup(name);
 	if (!tmp_name)

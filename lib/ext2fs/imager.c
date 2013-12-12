@@ -66,6 +66,7 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 	blk64_t		blk;
 	ssize_t		actual;
 	errcode_t	retval;
+	off_t		r;
 
 	buf = malloc(fs->blocksize * BUF_BLOCKS);
 	if (!buf)
@@ -97,7 +98,11 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 					blk++;
 					left--;
 					cp += fs->blocksize;
-					lseek(fd, fs->blocksize, SEEK_CUR);
+					r = lseek(fd, fs->blocksize, SEEK_CUR);
+					if (r < 0) {
+						retval = errno;
+						goto errout;
+					}
 					continue;
 				}
 				/* Find non-zero blocks */

@@ -5956,7 +5956,7 @@ msgid "Can't write a block bitmap"
 msgstr "Kan inte skriva en blockbitkarta"
 
 #: lib/ext2fs/ext2_err.c:41
-msgid "Can't read an block bitmap"
+msgid "Can't read a block bitmap"
 msgstr "Kan inte läsa en blockbitkarta"
 
 #: lib/ext2fs/ext2_err.c:42

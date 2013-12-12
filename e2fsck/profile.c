@@ -318,6 +318,8 @@ profile_init(const char **files, profile_t *ret_profile)
         /* if the filenames list is not specified return an empty profile */
         if ( files ) {
 	    for (fs = files; !PROFILE_LAST_FILESPEC(*fs); fs++) {
+		if (array)
+			free_list(array);
 		retval = get_dirlist(*fs, &array);
 		if (retval == 0) {
 			if (!array)

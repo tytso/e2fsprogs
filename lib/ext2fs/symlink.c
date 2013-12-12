@@ -91,14 +91,12 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 		memset(block_buf, 0, fs->blocksize);
 		strcpy(block_buf, target);
 		if (fs->super->s_feature_incompat &
-		   EXT3_FEATURE_INCOMPAT_EXTENTS) {
+		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
 			/*
 			 * The extent bmap is setup after the inode and block
 			 * have been written out below.
 			 */
 			inode.i_flags |= EXT4_EXTENTS_FL;
-		} else {
-			inode.i_block[0] = blk;
 		}
 	}
 
@@ -112,20 +110,14 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 		goto cleanup;
 
 	if (!fastlink) {
-		retval = io_channel_write_blk(fs->io, blk, 1, block_buf);
+		retval = ext2fs_bmap2(fs, ino, &inode, NULL, BMAP_SET, 0, NULL,
+				      &blk);
 		if (retval)
 			goto cleanup;
 
-		if (fs->super->s_feature_incompat &
-		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
-			retval = ext2fs_extent_open2(fs, ino, &inode, &handle);
-			if (retval)
-				goto cleanup;
-			retval = ext2fs_extent_set_bmap(handle, 0, blk, 0);
-			ext2fs_extent_free(handle);
-			if (retval)
-				goto cleanup;
-		}
+		retval = io_channel_write_blk64(fs->io, blk, 1, block_buf);
+		if (retval)
+			goto cleanup;
 	}
 
 	/*

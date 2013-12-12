@@ -1318,7 +1318,8 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 		goto clear_inode;
 
-	if (LINUX_S_ISREG(inode.i_mode) && EXT2_I_SIZE(&inode) >= 0x80000000UL)
+	if (LINUX_S_ISREG(inode.i_mode) &&
+	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(&inode)))
 		ctx->large_files--;
 
 	del_block.ctx = ctx;

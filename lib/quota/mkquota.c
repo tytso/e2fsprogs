@@ -230,6 +230,7 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 		err = ext2fs_get_mem(sizeof(dict_t), &dict);
 		if (err) {
 			log_err("Failed to allocate dictionary");
+			quota_release_context(&ctx);
 			return err;
 		}
 		ctx->quota_dict[i] = dict;

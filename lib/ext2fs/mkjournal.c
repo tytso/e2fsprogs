@@ -312,13 +312,15 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 		return retval;
 
 	if ((retval = ext2fs_read_bitmaps(fs)))
-		return retval;
+		goto out2;
 
 	if ((retval = ext2fs_read_inode(fs, journal_ino, &inode)))
-		return retval;
+		goto out2;
 
-	if (inode.i_blocks > 0)
-		return EEXIST;
+	if (inode.i_blocks > 0) {
+		retval = EEXIST;
+		goto out2;
+	}
 
 	es.num_blocks = num_blocks;
 	es.newblocks = 0;
@@ -330,7 +332,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
 		inode.i_flags |= EXT4_EXTENTS_FL;
 		if ((retval = ext2fs_write_inode(fs, journal_ino, &inode)))
-			return retval;
+			goto out2;
 	}
 
 	/*
@@ -378,7 +380,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	inode_size = (unsigned long long)fs->blocksize * num_blocks;
 	inode.i_size = inode_size & 0xFFFFFFFF;
 	inode.i_size_high = (inode_size >> 32) & 0xFFFFFFFF;
-	if (inode.i_size_high)
+	if (ext2fs_needs_large_file_feature(inode_size))
 		fs->super->s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
@@ -398,6 +400,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 
 errout:
 	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
+out2:
 	ext2fs_free_mem(&buf);
 	return retval;
 }
@@ -520,8 +523,10 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 #if HAVE_EXT2_IOCTLS
 		fd = open(jfile, O_RDONLY);
 		if (fd >= 0) {
-			ioctl(fd, EXT2_IOC_SETFLAGS, &f);
+			retval = ioctl(fd, EXT2_IOC_SETFLAGS, &f);
 			close(fd);
+			if (retval)
+				return retval;
 		}
 #endif
 #endif
@@ -590,7 +595,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 	ext2fs_mark_super_dirty(fs);
 	return 0;
 errout:
-	if (fd > 0)
+	if (fd >= 0)
 		close(fd);
 	return retval;
 }

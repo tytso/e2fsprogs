@@ -6093,7 +6093,7 @@ msgstr "lettura delle mappe di bit inode e blocco"
 
 #: lib/ext2fs/ext2_err.c:41
 #, fuzzy
-msgid "Can't read an block bitmap"
+msgid "Can't read a block bitmap"
 msgstr "lettura delle mappe di bit inode e blocco"
 
 #: lib/ext2fs/ext2_err.c:42

@@ -1229,6 +1229,7 @@ static void install_image(char *device, char *image_fn, int type)
 		exit(1);
 	}
 
+	close(fd);
 	ext2fs_close (fs);
 }
 
@@ -1310,7 +1311,11 @@ int main (int argc, char ** argv)
 	device_name = argv[optind];
 	image_fn = argv[optind+1];
 
-	ext2fs_check_if_mounted(device_name, &mount_flags);
+	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	if (retval) {
+		com_err(program_name, retval, "checking if mounted");
+		exit(1);
+	}
 
 	if (img_type && !ignore_rw_mount &&
 	    (mount_flags & EXT2_MF_MOUNTED) &&

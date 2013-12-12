@@ -99,7 +99,7 @@ ec	EXT2_ET_BLOCK_BITMAP_WRITE,
 	"Can't write a block bitmap"
 
 ec	EXT2_ET_BLOCK_BITMAP_READ,
-	"Can't read an block bitmap"
+	"Can't read a block bitmap"
 
 ec	EXT2_ET_INODE_TABLE_WRITE,
 	"Can't write an inode table"
