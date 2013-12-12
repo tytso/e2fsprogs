@@ -162,6 +162,7 @@ static void list_desc (ext2_filsys fs)
 	int has_super;
 	blk64_t		blk_itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	ext2_ino_t	ino_itr = 1;
+	errcode_t	retval;
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
@@ -256,21 +257,30 @@ static void list_desc (ext2_filsys fs)
 				ext2fs_bg_itable_unused(fs, i));
 		if (block_bitmap) {
 			fputs(_("  Free blocks: "), stdout);
-			ext2fs_get_block_bitmap_range2(fs->block_map,
+			retval = ext2fs_get_block_bitmap_range2(fs->block_map,
 				 blk_itr, block_nbytes << 3, block_bitmap);
-			print_free(i, block_bitmap,
-				   fs->super->s_clusters_per_group,
-				   fs->super->s_first_data_block,
-				   EXT2FS_CLUSTER_RATIO(fs));
+			if (retval)
+				com_err("list_desc", retval,
+					"while reading block bitmap");
+			else
+				print_free(i, block_bitmap,
+					   fs->super->s_clusters_per_group,
+					   fs->super->s_first_data_block,
+					   EXT2FS_CLUSTER_RATIO(fs));
 			fputc('\n', stdout);
 			blk_itr += fs->super->s_clusters_per_group;
 		}
 		if (inode_bitmap) {
 			fputs(_("  Free inodes: "), stdout);
-			ext2fs_get_inode_bitmap_range2(fs->inode_map,
+			retval = ext2fs_get_inode_bitmap_range2(fs->inode_map,
 				 ino_itr, inode_nbytes << 3, inode_bitmap);
-			print_free(i, inode_bitmap,
-				   fs->super->s_inodes_per_group, 1, 1);
+			if (retval)
+				com_err("list_desc", retval,
+					"while reading inode bitmap");
+			else
+				print_free(i, inode_bitmap,
+					   fs->super->s_inodes_per_group,
+					   1, 1);
 			fputc('\n', stdout);
 			ino_itr += fs->super->s_inodes_per_group;
 		}
