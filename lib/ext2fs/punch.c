@@ -192,6 +192,13 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	retval = ext2fs_extent_open2(fs, ino, inode, &handle);
 	if (retval)
 		return retval;
+	/*
+	 * Find the extent closest to the start of the punch range.  We don't
+	 * check the return value because _goto() sets the current node to the
+	 * next-lowest extent if 'start' is in a hole, and doesn't set a
+	 * current node if there was a real error reading the extent tree.
+	 * In that case, _get() will error out.
+	 */
 	ext2fs_extent_goto(handle, start);
 	retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
 	if (retval)

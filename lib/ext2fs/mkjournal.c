@@ -520,8 +520,10 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 #if HAVE_EXT2_IOCTLS
 		fd = open(jfile, O_RDONLY);
 		if (fd >= 0) {
-			ioctl(fd, EXT2_IOC_SETFLAGS, &f);
+			retval = ioctl(fd, EXT2_IOC_SETFLAGS, &f);
 			close(fd);
+			if (retval)
+				return retval;
 		}
 #endif
 #endif
