@@ -473,6 +473,9 @@ static int defrag_fadvise(int fd, struct move_extent defrag_data,
 	unsigned int	i;
 	loff_t	offset;
 
+	if (pagesize < 1)
+		return -1;
+
 	offset = (loff_t)defrag_data.orig_start * block_size;
 	offset = (offset / pagesize) * pagesize;
 
