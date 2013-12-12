@@ -93,7 +93,7 @@ gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
 int	lazy_itable_init;
-char	*bad_blocks_filename;
+char	*bad_blocks_filename = NULL;
 __u32	fs_stride;
 int	quotatype = -1;  /* Initialize both user and group quotas by default */
 
@@ -1099,6 +1099,7 @@ static char **parse_fs_type(const char *fs_type,
 
 	parse_str = malloc(strlen(usage_types)+1);
 	if (!parse_str) {
+		free(profile_type);
 		free(list.list);
 		return 0;
 	}
@@ -1469,7 +1470,8 @@ profile_error:
 			discard = 0;
 			break;
 		case 'l':
-			bad_blocks_filename = malloc(strlen(optarg)+1);
+			bad_blocks_filename = realloc(bad_blocks_filename,
+						      strlen(optarg) + 1);
 			if (!bad_blocks_filename) {
 				com_err(program_name, ENOMEM,
 					_("in malloc for bad_blocks_filename"));
@@ -2184,8 +2186,11 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	}
 
 	if (!strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
-	    access(tdb_dir, W_OK))
+	    access(tdb_dir, W_OK)) {
+		if (free_tdb_dir)
+			free(tdb_dir);
 		return 0;
+	}
 
 	tmp_name = strdup(name);
 	if (!tmp_name)
