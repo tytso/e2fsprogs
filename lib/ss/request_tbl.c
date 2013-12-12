@@ -35,7 +35,7 @@ void ss_add_request_table(sci_idx, rqtbl_ptr, position, code_ptr)
 		;
 	/* size == C subscript of NULL == #elements */
 	size += 2;		/* new element, and NULL */
-	t = (ssrt **)realloc(info->rqt_tables, (unsigned)size*sizeof(ssrt));
+	t = (ssrt **)realloc(info->rqt_tables, (unsigned)size*sizeof(ssrt *));
 	if (t == (ssrt **)NULL) {
 		*code_ptr = errno;
 		return;
