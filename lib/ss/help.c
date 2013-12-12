@@ -110,6 +110,7 @@ void ss_help (argc, argv, sci_idx, info_ptr)
     switch (child = fork()) {
     case -1:
 	ss_perror(sci_idx, errno, "Can't fork for pager");
+	(void) close(fd);
 	return;
     case 0:
 	(void) dup2(fd, 0); /* put file on stdin */

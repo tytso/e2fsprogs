@@ -45,6 +45,11 @@ void ss_list_requests(int argc __SS_ATTR((unused)),
     sigprocmask(SIG_BLOCK, &igmask, &omask);
     func = signal(SIGINT, SIG_IGN);
     fd = ss_pager_create();
+    if (fd < 0) {
+        perror("ss_pager_create");
+        (void) signal(SIGINT, func);
+        return;
+    }
     output = fdopen(fd, "w");
     sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
 
