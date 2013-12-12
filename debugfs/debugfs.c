@@ -280,7 +280,7 @@ void do_init_filesys(int argc, char **argv)
 	int		err;
 
 	if (common_args_process(argc, argv, 3, 3, "initialize",
-				"<device> <blocksize>", CHECK_FS_NOTOPEN))
+				"<device> <blocks>", CHECK_FS_NOTOPEN))
 		return;
 
 	memset(&param, 0, sizeof(struct ext2_super_block));
