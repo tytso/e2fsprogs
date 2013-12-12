@@ -1069,12 +1069,12 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@n @i number for '.' in @d @i %i.\n"),
 	  PROMPT_FIX, 0 },
 
-	/* Directory entry has bad inode number */
+	/* Entry 'xxxx' in /a/b/c has bad inode number.*/
 	{ PR_2_BAD_INO,
 	  N_("@E has @n @i #: %Di.\n"),
 	  PROMPT_CLEAR, 0 },
 
-	/* Directory entry has deleted or unused inode */
+	/* Entry 'xxxx' in /a/b/c has deleted/unused inode nnnnn.*/
 	{ PR_2_UNUSED_INODE,
 	  N_("@E has @D/unused @i %Di.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK },
