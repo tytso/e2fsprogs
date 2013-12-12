@@ -184,12 +184,16 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		ext2fs_blocks_count(sb);
 
 	retval = ext2fs_read_bitmaps(fs);
-	if (retval)
+	if (retval) {
+		close(fd);
 		return retval;
+	}
 
 	retval = ext2fs_dup_handle(fs, &new_fs);
-	if (retval)
+	if (retval) {
+		close(fd);
 		return retval;
+	}
 
 	/* The current method of adding one block group at a time to a
 	 * mounted filesystem means it is impossible to accomodate the
@@ -203,8 +207,10 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	 */
 	new_fs->super->s_feature_incompat &= ~EXT4_FEATURE_INCOMPAT_FLEX_BG;
 	retval = adjust_fs_info(new_fs, fs, 0, *new_size);
-	if (retval)
+	if (retval) {
+		close(fd);
 		return retval;
+	}
 
 	printf(_("Performing an on-line resize of %s to %llu (%dk) blocks.\n"),
 	       fs->device_name, *new_size, fs->blocksize / 1024);

@@ -360,12 +360,14 @@ static void frag_report(const char *filename)
 #else
 	if (fstat(fd, &st) < 0) {
 #endif
+		close(fd);
 		perror("stat");
 		return;
 	}
 
 	if (last_device != st.st_dev) {
 		if (fstatfs(fd, &fsinfo) < 0) {
+			close(fd);
 			perror("fstatfs");
 			return;
 		}
