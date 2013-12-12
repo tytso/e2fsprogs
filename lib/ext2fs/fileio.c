@@ -142,8 +142,7 @@ errcode_t ext2fs_file_flush(ext2_file_t file)
 			return retval;
 	}
 
-	retval = io_channel_write_blk(fs->io, file->physblock,
-				      1, file->buf);
+	retval = io_channel_write_blk64(fs->io, file->physblock, 1, file->buf);
 	if (retval)
 		return retval;
 
@@ -194,9 +193,9 @@ static errcode_t load_buffer(ext2_file_t file, int dontfill)
 			return retval;
 		if (!dontfill) {
 			if (file->physblock) {
-				retval = io_channel_read_blk(fs->io,
-							     file->physblock,
-							     1, file->buf);
+				retval = io_channel_read_blk64(fs->io,
+							       file->physblock,
+							       1, file->buf);
 				if (retval)
 					return retval;
 			} else
