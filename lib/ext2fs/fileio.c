@@ -297,6 +297,20 @@ errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 		if (retval)
 			goto fail;
 
+		/*
+		 * OK, the physical block hasn't been allocated yet.
+		 * Allocate it.
+		 */
+		if (!file->physblock) {
+			retval = ext2fs_bmap2(fs, file->ino, &file->inode,
+					      BMAP_BUFFER,
+					      file->ino ? BMAP_ALLOC : 0,
+					      file->blockno, 0,
+					      &file->physblock);
+			if (retval)
+				goto fail;
+		}
+
 		file->flags |= EXT2_FILE_BUF_DIRTY;
 		memcpy(file->buf+start, ptr, c);
 		file->pos += c;
