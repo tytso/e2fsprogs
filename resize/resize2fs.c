@@ -668,9 +668,7 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 	 * supports lazy inode initialization, we can skip
 	 * initializing the inode table.
 	 */
-	if (lazy_itable_init &&
-	    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+	if (lazy_itable_init && ext2fs_has_group_desc_csum(fs)) {
 		retval = 0;
 		goto errout;
 	}

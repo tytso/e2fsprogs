@@ -349,9 +349,7 @@ static void mark_table_blocks(ext2_filsys fs)
 		    ext2fs_inode_table_loc(fs, i)) {
 			unsigned int end = (unsigned) fs->inode_blocks_per_group;
 			/* skip unused blocks */
-			if (!output_is_blk &&
-			    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-						       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+			if (!output_is_blk && ext2fs_has_group_desc_csum(fs))
 				end -= (ext2fs_bg_itable_unused(fs, i) /
 					EXT2_INODES_PER_BLOCK(fs->super));
 			for (j = 0, b = ext2fs_inode_table_loc(fs, i);
