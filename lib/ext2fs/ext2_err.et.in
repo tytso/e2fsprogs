@@ -480,6 +480,6 @@ ec	EXT2_ET_BLOCK_BITMAP_CSUM_INVALID,
 	"Block bitmap checksum does not match bitmap"
 
 ec	EXT2_ET_INLINE_DATA_CANT_ITERATE,
-	"Cannot block iterate on an inode containing inline data"
+	"Cannot iterate data blocks of an inode containing inline data"
 
 	end
