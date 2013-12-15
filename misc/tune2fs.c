@@ -2653,8 +2653,7 @@ retry_open:
 		int set_csum = 0;
 		dgrp_t i;
 
-		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		if (ext2fs_has_group_desc_csum(fs)) {
 			/*
 			 * Changing the UUID requires rewriting all metadata,
 			 * which can race with a mounted fs.  Don't allow that.
@@ -2665,12 +2664,9 @@ retry_open:
 					"unmounted.\n"), stderr);
 				exit(1);
 			}
-
 			if (check_fsck_needed(fs))
 				exit(1);
-		}
 
-		if (ext2fs_has_group_desc_csum(fs)) {
 			/*
 			 * Determine if the block group checksums are
 			 * correct so we know whether or not to set

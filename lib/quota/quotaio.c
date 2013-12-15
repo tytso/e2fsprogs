@@ -98,19 +98,6 @@ void update_grace_times(struct dquot *q)
 	}
 }
 
-static int release_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
-			       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-			       blk64_t ref_block EXT2FS_ATTR((unused)),
-			       int ref_offset EXT2FS_ATTR((unused)),
-			       void *private EXT2FS_ATTR((unused)))
-{
-	blk64_t	block;
-
-	block = *blocknr;
-	ext2fs_block_alloc_stats2(fs, block, -1);
-	return 0;
-}
-
 static int compute_num_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
 			       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
 			       blk64_t ref_block EXT2FS_ATTR((unused)),
@@ -135,9 +122,9 @@ errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino)
 		inode.i_dtime = fs->now ? fs->now : time(0);
 		if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 			return 0;
-
-		ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
-				      release_blocks_proc, NULL);
+		err = ext2fs_punch(fs, ino, &inode, NULL, 0, ~0ULL);
+		if (err)
+			return err;
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 		memset(&inode, 0, sizeof(struct ext2_inode));
 	} else {

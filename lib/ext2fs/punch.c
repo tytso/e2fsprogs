@@ -363,6 +363,8 @@ extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 
 		if (start > ~0U)
 			return 0;
+		if (end > ~0U)
+			end = ~0U;
 		count = ((end - start + 1) < ~0U) ? (end - start + 1) : ~0U;
 		retval = ext2fs_punch_ind(fs, inode, block_buf, 
 					  (blk_t) start, count);
