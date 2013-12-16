@@ -76,40 +76,40 @@ extern int optind;
 extern int isatty(int);
 extern FILE *fpopen(const char *cmd, const char *mode);
 
-const char * program_name = "mke2fs";
-const char * device_name /* = NULL */;
+static const char * program_name = "mke2fs";
+static const char * device_name /* = NULL */;
 
 /* Command line options */
-int	cflag;
-int	verbose;
-int	quiet;
-int	super_only;
-int	discard = 1;	/* attempt to discard device before fs creation */
-int	direct_io;
-int	force;
-int	noaction;
-uid_t	root_uid;
-gid_t	root_gid;
+static int	cflag;
+static int	verbose;
+static int	quiet;
+static int	super_only;
+static int	discard = 1;	/* attempt to discard device before fs creation */
+static int	direct_io;
+static int	force;
+static int	noaction;
+static uid_t	root_uid;
+static gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
-int	lazy_itable_init;
-char	*bad_blocks_filename = NULL;
-__u32	fs_stride;
-int	quotatype = -1;  /* Initialize both user and group quotas by default */
+static int	lazy_itable_init;
+static char	*bad_blocks_filename = NULL;
+static __u32	fs_stride;
+static int	quotatype = -1;  /* Initialize both user and group quotas by default */
 
-struct ext2_super_block fs_param;
-char *fs_uuid = NULL;
-char *creator_os;
-char *volume_label;
-char *mount_dir;
+static struct ext2_super_block fs_param;
+static char *fs_uuid = NULL;
+static char *creator_os;
+static char *volume_label;
+static char *mount_dir;
 char *journal_device;
-int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
-char **fs_types;
+static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
+static char **fs_types;
 
-profile_t	profile;
+static profile_t	profile;
 
-int sys_page_size = 4096;
-int linux_version_code = 0;
+static int sys_page_size = 4096;
+static int linux_version_code = 0;
 
 static void usage(void)
 {

@@ -320,7 +320,7 @@ int e2fsck_get_num_dirinfo(e2fsck_t ctx)
 	return ctx->dir_info ? ctx->dir_info->count : 0;
 }
 
-extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
+struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
 {
 	struct dir_info_iter *iter;
 	struct dir_info_db *db = ctx->dir_info;
@@ -334,8 +334,8 @@ extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
 	return iter;
 }
 
-extern void e2fsck_dir_info_iter_end(e2fsck_t ctx EXT2FS_ATTR((unused)),
-				     struct dir_info_iter *iter)
+void e2fsck_dir_info_iter_end(e2fsck_t ctx EXT2FS_ATTR((unused)),
+			      struct dir_info_iter *iter)
 {
 	free(iter->tdb_iter.dptr);
 	ext2fs_free_mem(&iter);

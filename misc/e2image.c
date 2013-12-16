@@ -50,10 +50,10 @@ extern int optind;
 #define QCOW_OFLAG_COPIED     (1LL << 63)
 
 
-const char * program_name = "e2image";
-char * device_name = NULL;
-char all_data;
-char output_is_blk;
+static const char * program_name = "e2image";
+static char * device_name = NULL;
+static char all_data;
+static char output_is_blk;
 /* writing to blk device: don't skip zeroed blocks */
 
 static void lseek_error_and_exit(int errnum)
@@ -224,9 +224,9 @@ static void write_image_file(ext2_filsys fs, int fd)
 /*
  * These set of functions are used to write a RAW image file.
  */
-ext2fs_block_bitmap meta_block_map;
-ext2fs_block_bitmap scramble_block_map;	/* Directory blocks to be scrambled */
-blk64_t meta_blocks_count;
+static ext2fs_block_bitmap meta_block_map;
+static ext2fs_block_bitmap scramble_block_map;	/* Directory blocks to be scrambled */
+static blk64_t meta_blocks_count;
 
 struct process_block_struct {
 	ext2_ino_t	ino;
@@ -419,7 +419,7 @@ static void write_block(int fd, char *buf, int sparse_offset,
 	generic_write(fd, buf, blocksize, block);
 }
 
-int name_id[256];
+static int name_id[256];
 
 #define EXT4_MAX_REC_LEN		((1<<16)-1)
 

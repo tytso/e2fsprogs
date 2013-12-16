@@ -410,10 +410,10 @@ errout:
  * Deallocate all logical blocks starting at start to end, inclusive.
  * If end is ~0, then this is effectively truncate.
  */
-extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
-			      struct ext2_inode *inode,
-			      char *block_buf, blk64_t start,
-			      blk64_t end)
+errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
+		       struct ext2_inode *inode,
+		       char *block_buf, blk64_t start,
+		       blk64_t end)
 {
 	errcode_t		retval;
 	struct ext2_inode	inode_buf;

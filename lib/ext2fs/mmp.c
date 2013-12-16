@@ -127,7 +127,7 @@ errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 #define rand()		random()
 #endif
 
-unsigned ext2fs_mmp_new_seq()
+unsigned ext2fs_mmp_new_seq(void)
 {
 	unsigned new_seq;
 	struct timeval tv;

@@ -25,8 +25,8 @@ extern char *optarg;
 
 #include "debugfs.h"
 
-ext2_ino_t	current_ino;
-ext2_extent_handle_t current_handle;
+static ext2_ino_t	current_ino;
+static ext2_extent_handle_t current_handle;
 
 static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
 {

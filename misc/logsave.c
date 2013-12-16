@@ -32,13 +32,13 @@ extern char *optarg;
 extern int optind;
 #endif
 
-int	outfd = -1;
-int	outbufsize = 0;
-void	*outbuf = 0;
-int	verbose = 0;
-int	do_skip = 0;
-int	skip_mode = 0;
-pid_t	child_pid = -1;
+static int	outfd = -1;
+static int	outbufsize = 0;
+static void	*outbuf = 0;
+static int	verbose = 0;
+static int	do_skip = 0;
+static int	skip_mode = 0;
+static pid_t	child_pid = -1;
 
 static void usage(char *progname)
 {

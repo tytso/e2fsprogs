@@ -30,7 +30,7 @@ struct subst_entry {
 	struct subst_entry *next;
 };
 
-struct subst_entry *subst_table = 0;
+static struct subst_entry *subst_table = 0;
 
 static int add_subst(char *name, char *value)
 {

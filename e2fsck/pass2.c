@@ -1260,8 +1260,8 @@ static void clear_htree(e2fsck_t ctx, ext2_ino_t ino)
 }
 
 
-extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
-				    ext2_ino_t ino, char *buf)
+int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
+			     ext2_ino_t ino, char *buf)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;

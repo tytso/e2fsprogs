@@ -160,7 +160,7 @@ errcode_t ext2fs_extent_header_verify(void *ptr, int size)
 /*
  * Begin functions to handle an inode's extent information
  */
-extern void ext2fs_extent_free(ext2_extent_handle_t handle)
+void ext2fs_extent_free(ext2_extent_handle_t handle)
 {
 	int			i;
 
@@ -177,13 +177,13 @@ extern void ext2fs_extent_free(ext2_extent_handle_t handle)
 	ext2fs_free_mem(&handle);
 }
 
-extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
+errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
 				    ext2_extent_handle_t *ret_handle)
 {
 	return ext2fs_extent_open2(fs, ino, NULL, ret_handle);
 }
 
-extern errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
+errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
 				    struct ext2_inode *inode,
 				    ext2_extent_handle_t *ret_handle)
 {

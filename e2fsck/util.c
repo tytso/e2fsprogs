@@ -463,9 +463,9 @@ void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
 	}
 }
 
-extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
-			       struct ext2_inode * inode, int bufsize,
-			       const char *proc)
+void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
+			     struct ext2_inode * inode, int bufsize,
+			     const char *proc)
 {
 	errcode_t retval;
 
@@ -477,8 +477,8 @@ extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
 	}
 }
 
-extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
-			       struct ext2_inode * inode, const char *proc)
+void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
+			struct ext2_inode * inode, const char *proc)
 {
 	errcode_t retval;
 

@@ -24,11 +24,11 @@
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
 
-unsigned char mtime_key[] = "filesystem MTIME";
-unsigned char uuid_key[] = "filesystem UUID";
-unsigned char blksize_key[] = "filesystem BLKSIZE";
+static unsigned char mtime_key[] = "filesystem MTIME";
+static unsigned char uuid_key[] = "filesystem UUID";
+static unsigned char blksize_key[] = "filesystem BLKSIZE";
 
-char *prg_name;
+static char *prg_name;
 
 static void usage(void)
 {

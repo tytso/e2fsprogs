@@ -211,7 +211,7 @@ char *time_to_string(__u32 cl)
  * Parse a string as a time.  Return ((time_t)-1) if the string
  * doesn't appear to be a sane time.
  */
-extern time_t string_to_time(const char *arg)
+time_t string_to_time(const char *arg)
 {
 	struct	tm	ts;
 	time_t		ret;

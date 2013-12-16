@@ -160,6 +160,9 @@ extern void ext2fs_extent_dump(ext2_extent extent, FILE *out);
 extern errcode_t ext2fs_iterate_extent(ext2_extent extent, __u64 *old_loc,
 				       __u64 *new_loc, __u64 *size);
 
+/* main.c */
+extern char *program_name;
+
 /* online.c */
 extern errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 				  blk64_t *new_size, int flags);

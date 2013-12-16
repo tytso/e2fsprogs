@@ -45,10 +45,10 @@ extern int optind;
 
 #define in_use(m, x)	(ext2fs_test_bit ((x), (m)))
 
-const char * program_name = "dumpe2fs";
-char * device_name = NULL;
-int hex_format = 0;
-int blocks64 = 0;
+static const char * program_name = "dumpe2fs";
+static char * device_name = NULL;
+static int hex_format = 0;
+static int blocks64 = 0;
 
 static void usage(void)
 {
