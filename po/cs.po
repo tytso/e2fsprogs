@@ -6811,11 +6811,11 @@ msgstr "Chybné magické číslo v profile_file_data_t"
 #~ msgid "startkb should be a number, not %s\n"
 #~ msgstr "startkb by mělo být číslo, ne %s\n"
 
-#~ msgid "startkb should be positive, not %Ld\n"
-#~ msgstr "startkb by mělo být kladné, ne %Ld\n"
+#~ msgid "startkb should be positive, not %lld\n"
+#~ msgstr "startkb by mělo být kladné, ne %lld\n"
 
-#~ msgid "starting at %Ld, with %d byte increments\n"
-#~ msgstr "začínám na %Ld s přírůstky %d bajtů\n"
+#~ msgid "starting at %lld, with %d byte increments\n"
+#~ msgstr "začínám na %lld s přírůstky %d bajtů\n"
 
 #~ msgid "       thisoff     block fs_blk_sz  blksz grp last_mount\n"
 #~ msgstr "       tentopos    blok  fs_blk_sz  blksz grp last_mount\n"

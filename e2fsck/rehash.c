@@ -719,10 +719,18 @@ static int write_dir_block(ext2_filsys fs,
 		/* We don't need this block, so release it */
 		e2fsck_read_bitmaps(wd->ctx);
 		blk = *block_nr;
-		ext2fs_unmark_block_bitmap2(wd->ctx->block_found_map, blk);
-		ext2fs_block_alloc_stats2(fs, blk, -1);
+		/*
+		 * In theory, we only release blocks from the end of the
+		 * directory file, so it's fine to clobber a whole cluster at
+		 * once.
+		 */
+		if (blk % EXT2FS_CLUSTER_RATIO(fs) == 0) {
+			ext2fs_unmark_block_bitmap2(wd->ctx->block_found_map,
+						    blk);
+			ext2fs_block_alloc_stats2(fs, blk, -1);
+			wd->cleared++;
+		}
 		*block_nr = 0;
-		wd->cleared++;
 		return BLOCK_CHANGED;
 	}
 

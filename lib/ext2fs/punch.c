@@ -177,6 +177,75 @@ static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
 #define dbg_printf(f, a...)		do { } while (0)
 #endif
 
+/* Free a range of blocks, respecting cluster boundaries */
+static errcode_t punch_extent_blocks(ext2_filsys fs, ext2_ino_t ino,
+				     struct ext2_inode *inode,
+				     blk64_t lfree_start, blk64_t free_start,
+				     __u32 free_count, int *freed)
+{
+	blk64_t		pblk;
+	int		freed_now = 0;
+	__u32		cluster_freed;
+	errcode_t	retval = 0;
+
+	/* No bigalloc?  Just free each block. */
+	if (EXT2FS_CLUSTER_RATIO(fs) == 1) {
+		*freed += free_count;
+		while (free_count-- > 0)
+			ext2fs_block_alloc_stats2(fs, free_start++, -1);
+		return retval;
+	}
+
+	/*
+	 * Try to free up to the next cluster boundary.  We assume that all
+	 * blocks in a logical cluster map to blocks from the same physical
+	 * cluster, and that the offsets within the [pl]clusters match.
+	 */
+	if (free_start & EXT2FS_CLUSTER_MASK(fs)) {
+		retval = ext2fs_map_cluster_block(fs, ino, inode,
+						  lfree_start, &pblk);
+		if (retval)
+			goto errout;
+		if (!pblk) {
+			ext2fs_block_alloc_stats2(fs, free_start, -1);
+			freed_now++;
+		}
+		cluster_freed = EXT2FS_CLUSTER_RATIO(fs) -
+			(free_start & EXT2FS_CLUSTER_MASK(fs));
+		if (cluster_freed > free_count)
+			cluster_freed = free_count;
+		free_count -= cluster_freed;
+		free_start += cluster_freed;
+		lfree_start += cluster_freed;
+	}
+
+	/* Free whole clusters from the middle of the range. */
+	while (free_count > 0 && free_count >= EXT2FS_CLUSTER_RATIO(fs)) {
+		ext2fs_block_alloc_stats2(fs, free_start, -1);
+		freed_now++;
+		cluster_freed = EXT2FS_CLUSTER_RATIO(fs);
+		free_count -= cluster_freed;
+		free_start += cluster_freed;
+		lfree_start += cluster_freed;
+	}
+
+	/* Try to free the last cluster. */
+	if (free_count > 0) {
+		retval = ext2fs_map_cluster_block(fs, ino, inode,
+						  lfree_start, &pblk);
+		if (retval)
+			goto errout;
+		if (!pblk) {
+			ext2fs_block_alloc_stats2(fs, free_start, -1);
+			freed_now++;
+		}
+	}
+
+errout:
+	*freed += freed_now;
+	return retval;
+}
+
 static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 				     struct ext2_inode *inode,
 				     blk64_t start, blk64_t end)
@@ -184,7 +253,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 	ext2_extent_handle_t	handle = 0;
 	struct ext2fs_extent	extent;
 	errcode_t		retval;
-	blk64_t			free_start, next;
+	blk64_t			free_start, next, lfree_start;
 	__u32			free_count, newlen;
 	int			freed = 0;
 	int			op;
@@ -225,6 +294,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			/* Start of deleted region before extent; 
 			   adjust beginning of extent */
 			free_start = extent.e_pblk;
+			lfree_start = extent.e_lblk;
 			if (next > end)
 				free_count = end - extent.e_lblk + 1;
 			else
@@ -240,6 +310,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			dbg_printf("Case #%d\n", 2);
 			newlen = start - extent.e_lblk;
 			free_start = extent.e_pblk + newlen;
+			lfree_start = extent.e_lblk + newlen;
 			free_count = extent.e_len - newlen;
 			extent.e_len = newlen;
 		} else {
@@ -255,6 +326,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 
 			extent.e_len = start - extent.e_lblk;
 			free_start = extent.e_pblk + extent.e_len;
+			lfree_start = extent.e_lblk + extent.e_len;
 			free_count = end - start + 1;
 
 			dbg_print_extent("inserting", &newex);
@@ -314,10 +386,10 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			goto errout;
 		dbg_printf("Free start %llu, free count = %u\n",
 		       free_start, free_count);
-		while (free_count-- > 0) {
-			ext2fs_block_alloc_stats2(fs, free_start++, -1);
-			freed++;
-		}
+		retval = punch_extent_blocks(fs, ino, inode, lfree_start,
+					     free_start, free_count, &freed);
+		if (retval)
+			goto errout;
 	next_extent:
 		retval = ext2fs_extent_get(handle, op,
 					   &extent);

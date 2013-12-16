@@ -369,7 +369,7 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 	/* Seek to the correct loc. */
 	if (ext2fs_llseek (dev, (ext2_loff_t) current_block * block_size,
 			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
-		com_err (program_name, errno, _("during seek"));
+		com_err (program_name, errno, "%s", _("during seek"));
 
 	/* Try the read */
 	if (d_flag)
@@ -442,7 +442,7 @@ static int do_write(int dev, unsigned char * buffer, int try, int block_size,
 	/* Seek to the correct loc. */
 	if (ext2fs_llseek (dev, (ext2_loff_t) current_block * block_size,
 			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
-		com_err (program_name, errno, _("during seek"));
+		com_err (program_name, errno, "%s", _("during seek"));
 
 	/* Try the write */
 	got = write (dev, buffer, try * block_size);
@@ -466,7 +466,8 @@ static void flush_bufs(void)
 #endif
 	retval = ext2fs_sync_device(host_dev, 1);
 	if (retval)
-		com_err(program_name, retval, _("during ext2fs_sync_device"));
+		com_err(program_name, retval, "%s",
+			_("during ext2fs_sync_device"));
 }
 
 static unsigned int test_ro (int dev, blk_t last_block,
@@ -485,8 +486,8 @@ static unsigned int test_ro (int dev, blk_t last_block,
 
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
-		com_err (program_name, errcode,
-			 _("while beginning bad block list iteration"));
+		com_err(program_name, errcode, "%s",
+			_("while beginning bad block list iteration"));
 		exit (1);
 	}
 	do {
@@ -500,13 +501,14 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	}
 	if (!blkbuf)
 	{
-		com_err (program_name, ENOMEM, _("while allocating buffers"));
+		com_err(program_name, ENOMEM, "%s",
+			_("while allocating buffers"));
 		exit (1);
 	}
 	if (v_flag) {
-		fprintf (stderr, _("Checking blocks %lu to %lu\n"),
-			 (unsigned long) first_block,
-			 (unsigned long) last_block - 1);
+		fprintf(stderr, _("Checking blocks %lu to %lu\n"),
+			(unsigned long)first_block,
+			(unsigned long)last_block - 1);
 	}
 	if (t_flag) {
 		fputs(_("Checking for bad blocks in read-only mode\n"), stderr);
@@ -599,7 +601,8 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	read_buffer = buffer + blocks_at_once * block_size;
 
 	if (!buffer) {
-		com_err (program_name, ENOMEM, _("while allocating buffers"));
+		com_err(program_name, ENOMEM, "%s",
+			_("while allocating buffers"));
 		exit (1);
 	}
 
@@ -745,8 +748,8 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	bb_count = 0;
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
-		com_err (program_name, errcode,
-			 _("while beginning bad block list iteration"));
+		com_err(program_name, errcode, "%s",
+			_("while beginning bad block list iteration"));
 		exit (1);
 	}
 	do {
@@ -754,9 +757,10 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	} while (next_bad && next_bad < first_block);
 
 	blkbuf = allocate_buffer(3 * blocks_at_once * block_size);
-	test_record = malloc (blocks_at_once*sizeof(struct saved_blk_record));
+	test_record = malloc(blocks_at_once * sizeof(struct saved_blk_record));
 	if (!blkbuf || !test_record) {
-		com_err(program_name, ENOMEM, _("while allocating buffers"));
+		com_err(program_name, ENOMEM, "%s",
+			_("while allocating buffers"));
 		exit (1);
 	}
 
@@ -1160,15 +1164,15 @@ int main (int argc, char ** argv)
 	}
 	if (!w_flag) {
 		if (t_flag > 1) {
-			com_err(program_name, 0,
-			_("Maximum of one test_pattern may be specified "
-			  "in read-only mode"));
+			com_err(program_name, 0, "%s",
+				_("Maximum of one test_pattern may be "
+				  "specified in read-only mode"));
 			exit(1);
 		}
 		if (t_patts && (t_patts[0] == (unsigned int) ~0)) {
-			com_err(program_name, 0,
-			_("Random test_pattern is not allowed "
-			  "in read-only mode"));
+			com_err(program_name, 0, "%s",
+				_("Random test_pattern is not allowed "
+				  "in read-only mode"));
 			exit(1);
 		}
 	}
@@ -1180,13 +1184,13 @@ int main (int argc, char ** argv)
 						 block_size,
 						 &last_block);
 		if (errcode == EXT2_ET_UNIMPLEMENTED) {
-			com_err(program_name, 0,
+			com_err(program_name, 0, "%s",
 				_("Couldn't determine device size; you "
 				  "must specify\nthe size manually\n"));
 			exit(1);
 		}
 		if (errcode) {
-			com_err(program_name, errcode,
+			com_err(program_name, errcode, "%s",
 				_("while trying to determine device size"));
 			exit(1);
 		}
@@ -1263,8 +1267,8 @@ int main (int argc, char ** argv)
 
 	errcode = ext2fs_badblocks_list_create(&bb_list,0);
 	if (errcode) {
-		com_err (program_name, errcode,
-			 _("while creating in-memory bad blocks list"));
+		com_err(program_name, errcode, "%s",
+			_("while creating in-memory bad blocks list"));
 		exit (1);
 	}
 
@@ -1272,21 +1276,26 @@ int main (int argc, char ** argv)
 		for(;;) {
 			switch (fscanf(in, "%llu\n", &inblk)) {
 				case 0:
-					com_err (program_name, 0, "input file - bad format");
+					com_err(program_name, 0, "%s",
+						_("input file - bad format"));
 					exit (1);
 				case EOF:
 					break;
 				default:
 					if (inblk >> 32) {
 						com_err(program_name,
-							EOVERFLOW,
-							_("while adding to in-memory bad block list"));
+							EOVERFLOW, "%s",
+						_("while adding to in-memory "
+						  "bad block list"));
 						exit(1);
 					}
 					next_bad = inblk;
 					errcode = ext2fs_badblocks_list_add(bb_list,next_bad);
 					if (errcode) {
-						com_err (program_name, errcode, _("while adding to in-memory bad block list"));
+						com_err(program_name, errcode,
+							"%s",
+						_("while adding to in-memory "
+						  "bad block list"));
 						exit (1);
 					}
 					continue;

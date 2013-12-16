@@ -544,7 +544,7 @@ int main(int argc, char **argv)
 				  "%s and subsequent %d UUIDs\n", num),
 			       str, num);
 		} else {
-			printf(_("List of UUID's:\n"));
+			printf("%s", _("List of UUID's:\n"));
 			cp = buf + 4;
 			if (ret != (int) (sizeof(num) + num*sizeof(uu)))
 				goto unexpected_size;

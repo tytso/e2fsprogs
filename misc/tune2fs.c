@@ -26,7 +26,6 @@
  */
 
 #define _XOPEN_SOURCE 600 /* for inclusion of strptime() */
-#define _BSD_SOURCE /* for inclusion of strcasecmp() */
 #include "config.h"
 #include <fcntl.h>
 #include <grp.h>
@@ -40,6 +39,11 @@ extern int optind;
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_STRINGS_H
+#include <strings.h>	/* for strcasecmp() */
+#else
+#define _BSD_SOURCE	/* for inclusion of strcasecmp() via <string.h> */
 #endif
 #include <string.h>
 #include <time.h>
@@ -213,7 +217,7 @@ static int remove_journal_device(ext2_filsys fs)
 			     EXT2_FLAG_JOURNAL_DEV_OK, 0,
 			     fs->blocksize, io_ptr, &jfs);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while trying to open external journal"));
 		goto no_valid_journal;
 	}
@@ -226,7 +230,7 @@ static int remove_journal_device(ext2_filsys fs)
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk64(jfs->io, 1, -1024, buf))) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while reading journal superblock"));
 		goto no_valid_journal;
 	}
@@ -310,14 +314,14 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while reading journal inode"));
 		return retval;
 	}
 	if (ino == EXT2_JOURNAL_INO) {
 		retval = ext2fs_read_bitmaps(fs);
 		if (retval) {
-			com_err(program_name, retval,
+			com_err(program_name, retval, "%s",
 				_("while reading bitmaps"));
 			return retval;
 		}
@@ -325,7 +329,7 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 					       BLOCK_FLAG_READ_ONLY, NULL,
 					       release_blocks_proc, NULL);
 		if (retval) {
-			com_err(program_name, retval,
+			com_err(program_name, retval, "%s",
 				_("while clearing journal inode"));
 			return retval;
 		}
@@ -336,7 +340,7 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 		inode.i_flags &= ~EXT2_IMMUTABLE_FL;
 	retval = ext2fs_write_inode(fs, ino, &inode);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while writing journal inode"));
 		return retval;
 	}
@@ -394,7 +398,7 @@ static void request_fsck_afterwards(ext2_filsys fs)
 	fs->super->s_state &= ~EXT2_VALID_FS;
 	printf("\n%s\n", _(please_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
-		printf(_("(and reboot afterwards!)\n"));
+		printf("%s", _("(and reboot afterwards!)\n"));
 }
 
 /* Rewrite extents */
@@ -968,7 +972,7 @@ static int update_feature_set(ext2_filsys fs, char *features)
 					 "match. expected: %x, actual: %x\n"),
 					 EXT4_MMP_MAGIC, mmp_cmp->mmp_magic);
 			else
-				com_err(program_name, error,
+				com_err(program_name, error, "%s",
 					_("while reading MMP block."));
 			goto mmp_error;
 		}
@@ -1193,7 +1197,7 @@ static int add_journal(ext2_filsys fs)
 						  journal_flags);
 		if (retval) {
 			fprintf(stderr, "\n");
-			com_err(program_name, retval,
+			com_err(program_name, retval, "%s",
 				_("\n\twhile trying to create journal file"));
 			return retval;
 		} else
@@ -1249,7 +1253,7 @@ static void handle_quota_options(ext2_filsys fs)
 	quota_release_context(&qctx);
 
 	if ((usrquota == QOPT_ENABLE) || (grpquota == QOPT_ENABLE)) {
-		fprintf(stderr, _("\nWarning: the quota feature is still "
+		fprintf(stderr, "%s", _("\nWarning: the quota feature is still "
 				  "under development\n"
 				  "See https://ext4.wiki.kernel.org/"
 				  "index.php/Quota for more information\n\n"));
@@ -1264,6 +1268,7 @@ static void handle_quota_options(ext2_filsys fs)
 	return;
 }
 
+#ifdef CONFIG_QUOTA
 static void parse_quota_opts(const char *opts)
 {
 	char	*buf, *token, *next, *p;
@@ -1306,8 +1311,7 @@ static void parse_quota_opts(const char *opts)
 	}
 	free(buf);
 }
-
-
+#endif
 
 static void parse_e2label_options(int argc, char ** argv)
 {
@@ -1515,7 +1519,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 			break;
 		case 'o':
 			if (mntopts_cmd) {
-				com_err(program_name, 0,
+				com_err(program_name, 0, "%s",
 					_("-o may only be specified once"));
 				usage();
 			}
@@ -1524,7 +1528,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 			break;
 		case 'O':
 			if (features_cmd) {
-				com_err(program_name, 0,
+				com_err(program_name, 0, "%s",
 					_("-O may only be specified once"));
 				usage();
 			}
@@ -1651,7 +1655,7 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 	len = strlen(opts);
 	buf = malloc(len+1);
 	if (!buf) {
-		fprintf(stderr,
+		fprintf(stderr, "%s",
 			_("Couldn't allocate memory to parse options!\n"));
 		return 1;
 	}
@@ -1772,7 +1776,7 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 			r_usage++;
 	}
 	if (r_usage) {
-		fprintf(stderr, _("\nBad options specified.\n\n"
+		fprintf(stderr, "%s", _("\nBad options specified.\n\n"
 			"Extended options are separated by commas, "
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
@@ -2332,7 +2336,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	tmp_name = strdup(name);
 	if (!tmp_name) {
 	alloc_fn_fail:
-		com_err(program_name, ENOMEM, 
+		com_err(program_name, ENOMEM, "%s",
 			_("Couldn't allocate memory for tdb filename\n"));
 		return ENOMEM;
 	}
@@ -2437,7 +2441,7 @@ retry_open:
 				_("MMP block magic is bad. Try to fix it by "
 				  "running:\n'e2fsck -f %s'\n"), device_name);
 		else if (retval != EXT2_ET_MMP_FAILED)
-			fprintf(stderr,
+			fprintf(stderr, "%s",
 			     _("Couldn't find valid filesystem superblock.\n"));
 
 		ext2fs_free(fs);
@@ -2458,8 +2462,8 @@ retry_open:
 			goto closefs;
 		}
 		if (new_inode_size < EXT2_INODE_SIZE(fs->super)) {
-			fprintf(stderr, _("Shrinking the inode size is "
-					  "not supported\n"));
+			fprintf(stderr, "%s",
+				_("Shrinking inode size is not supported\n"));
 			rc = 1;
 			goto closefs;
 		}
@@ -2686,7 +2690,8 @@ retry_open:
 		} else if (strcasecmp(new_UUID, "random") == 0) {
 			uuid_generate(sb->s_uuid);
 		} else if (uuid_parse(new_UUID, sb->s_uuid)) {
-			com_err(program_name, 0, _("Invalid UUID format\n"));
+			com_err(program_name, 0, "%s",
+				_("Invalid UUID format\n"));
 			rc = 1;
 			goto closefs;
 		}
@@ -2729,7 +2734,7 @@ retry_open:
 			printf(_("Setting inode size %lu\n"),
 							new_inode_size);
 		} else {
-			printf(_("Failed to change inode size\n"));
+			printf("%s", _("Failed to change inode size\n"));
 			rc = 1;
 			goto closefs;
 		}

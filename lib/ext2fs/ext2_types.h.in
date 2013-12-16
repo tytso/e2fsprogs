@@ -92,11 +92,11 @@ typedef __U64_TYPEDEF __u64;
 #if (@SIZEOF_INT@ == 8)
 typedef unsigned int	__u64;
 #else
-#if (@SIZEOF_LONG@ == 8)
-typedef unsigned long	__u64;
-#else
 #if (@SIZEOF_LONG_LONG@ == 8)
 typedef unsigned long long	__u64;
+#else
+#if (@SIZEOF_LONG@ == 8)
+typedef unsigned long	__u64;
 #endif /* SIZEOF_LONG_LONG == 8 */
 #endif /* SIZEOF_LONG == 8 */
 #endif /* SIZEOF_INT == 8 */
@@ -108,15 +108,15 @@ typedef __S64_TYPEDEF __s64;
 #if (@SIZEOF_INT@ == 8)
 typedef int		__s64;
 #else
-#if (@SIZEOF_LONG@ == 8)
-typedef long		__s64;
-#else
 #if (@SIZEOF_LONG_LONG@ == 8)
 #if defined(__GNUC__)
-typedef __signed__ long long 	__s64;
+typedef __signed__ long long	__s64;
 #else
-typedef signed long long 	__s64;
+typedef signed long long	__s64;
 #endif /* __GNUC__ */
+#else
+#if (@SIZEOF_LONG@ == 8)
+typedef long		__s64;
 #endif /* SIZEOF_LONG_LONG == 8 */
 #endif /* SIZEOF_LONG == 8 */
 #endif /* SIZEOF_INT == 8 */

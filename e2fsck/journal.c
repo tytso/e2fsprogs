@@ -571,7 +571,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 
 	ll_rw_block(READ, 1, &jbh);
 	if (jbh->b_err) {
-		com_err(ctx->device_name, jbh->b_err,
+		com_err(ctx->device_name, jbh->b_err, "%s",
 			_("reading journal superblock\n"));
 		return jbh->b_err;
 	}

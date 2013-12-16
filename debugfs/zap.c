@@ -193,10 +193,9 @@ void do_block_dump(int argc, char *argv[])
 		}
 	}
 
-	if (argc != optind+1) {
+	if (argc != optind + 1) {
 	print_usage:
-		com_err(0, 0, "Usage: dump_block [-f file] "
-			" block_num");
+		com_err(0, 0, "Usage: block_dump [-f inode] block_num");
 		return;
 	}
 
