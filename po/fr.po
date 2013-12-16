@@ -6774,21 +6774,21 @@ msgstr "Valeur magique invalide dans profile_file_data_t"
 #~ msgid "startkb should be a number, not %s\n"
 #~ msgstr "début en Ko doit être un nombre, non pas %s\n"
 
-#~ msgid "startkb should be positive, not %Ld\n"
-#~ msgstr "début en Ko doit être positif, non pas %Ld\n"
+#~ msgid "startkb should be positive, not %lld\n"
+#~ msgstr "début en Ko doit être positif, non pas %lld\n"
 
-#~ msgid "starting at %Ld, with %d byte increments\n"
-#~ msgstr "début à %Ld, avec un incrément de %d octets\n"
+#~ msgid "starting at %lld, with %d byte increments\n"
+#~ msgstr "début à %lld, avec un incrément de %d octets\n"
 
 #~ msgid "       thisoff     block fs_blk_sz  blksz grp last_mount\n"
 #~ msgstr "       thisoff     block fs_blk_sz  blksz grp last_mount\n"
 
 #~ msgid ""
 #~ "\n"
-#~ "%14Ld: finished with errno %d\n"
+#~ "%14lld: finished with errno %d\n"
 #~ msgstr ""
 #~ "\n"
-#~ "%14Ld: terminé avec errno %d\n"
+#~ "%14lld: terminé avec errno %d\n"
 
 #~ msgid ""
 #~ "Usage: %s <dev1> <dev2> <dev3>\n"

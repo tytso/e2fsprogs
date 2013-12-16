@@ -7141,21 +7141,21 @@ msgstr ""
 #~ msgid "startkb should be a number, not %s\n"
 #~ msgstr "başlangıç_kb bir sayı olmalı, %s değil\n"
 
-#~ msgid "startkb should be positive, not %Ld\n"
-#~ msgstr "başlangıç_kb poritif olmalı, %Ld değil\n"
+#~ msgid "startkb should be positive, not %lld\n"
+#~ msgstr "başlangıç_kb poritif olmalı, %lld değil\n"
 
-#~ msgid "starting at %Ld, with %d byte increments\n"
-#~ msgstr "%Ld de başlayıp %d bayt arttırımla\n"
+#~ msgid "starting at %lld, with %d byte increments\n"
+#~ msgstr "%lld de başlayıp %d bayt arttırımla\n"
 
 #~ msgid "       thisoff     block fs_blk_sz  blksz grp last_mount\n"
 #~ msgstr "       thisoff     blok ds_blok_boyu  blokboyu grup son_bağlama\n"
 
 #~ msgid ""
 #~ "\n"
-#~ "%14Ld: finished with errno %d\n"
+#~ "%14lld: finished with errno %d\n"
 #~ msgstr ""
 #~ "\n"
-#~ "%14Ld: %d hatası ile bitti\n"
+#~ "%14lld: %d hatası ile bitti\n"
 
 #~ msgid "%s failed for %s: %s\n"
 #~ msgstr "%s %s için başarısız: %s\n"

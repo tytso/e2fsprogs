@@ -183,6 +183,7 @@ misc/uuidd
 misc/uuidd.8
 misc/uuidgen
 misc/uuidgen.1
+parse-types.log
 po/Makefile.in
 po/POTFILES
 public_config.h

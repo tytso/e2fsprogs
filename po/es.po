@@ -6997,21 +6997,21 @@ msgstr ""
 #~ msgid "startkb should be a number, not %s\n"
 #~ msgstr "principio debe ser un número, no %s\n"
 
-#~ msgid "startkb should be positive, not %Ld\n"
-#~ msgstr "principio debe ser positivo, no %Ld\n"
+#~ msgid "startkb should be positive, not %lld\n"
+#~ msgstr "principio debe ser positivo, no %lld\n"
 
-#~ msgid "starting at %Ld, with %d byte increments\n"
-#~ msgstr "se comienza en %Ld, con incrementos de %d bytes\n"
+#~ msgid "starting at %lld, with %d byte increments\n"
+#~ msgstr "se comienza en %lld, con incrementos de %d bytes\n"
 
 #~ msgid "       thisoff     block fs_blk_sz  blksz grp last_mount\n"
 #~ msgstr "      este        bloque  fs_blk_sz  blksz grp ultimo_montado\n"
 
 #~ msgid ""
 #~ "\n"
-#~ "%14Ld: finished with errno %d\n"
+#~ "%14lld: finished with errno %d\n"
 #~ msgstr ""
 #~ "\n"
-#~ "%14Ld: se finaliza con el error número %d\n"
+#~ "%14lld: se finaliza con el error número %d\n"
 
 #~ msgid "(unknown os)"
 #~ msgstr "(so desconocido)"
