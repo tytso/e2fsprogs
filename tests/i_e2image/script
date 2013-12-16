@@ -20,6 +20,7 @@ for i in $ORIG_IMAGES; do
 	bunzip2 < $SRCDIR/$ORIG_IMG.bz2 > $i
 	md5sum $i >> $MD5_TMP
 
+	rm -f $RAW_IMG
 	echo "e2image -r $ORIG_IMG $RAW_IMG"
 	$E2IMAGE      -r $i $RAW_IMG
 	md5sum $RAW_IMG >> $MD5_TMP
@@ -28,6 +29,7 @@ for i in $ORIG_IMAGES; do
 	$E2IMAGE      -Q $i $QCOW2_IMG
 	md5sum $QCOW2_IMG >> $MD5_TMP
 
+	rm -f $QCOW2_TO_RAW
 	echo "e2image -r $QCOW2_IMG $QCOW2_TO_RAW"
 	$E2IMAGE      -r $i $QCOW2_TO_RAW
 	md5sum $QCOW2_TO_RAW >> $MD5_TMP

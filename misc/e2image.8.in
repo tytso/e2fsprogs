@@ -237,6 +237,9 @@ MiB for a partition table with:
 \	\fBe2image -arO 1048576 /dev/sda1 img\fR
 .br
 .PP
+If you specify at least one offset, and only one file, an in-place
+move will be performed, allowing you to safely move the filesystem
+from one offset to another.
 .SH AUTHOR
 .B e2image
 was written by Theodore Ts'o (tytso@mit.edu).
