@@ -817,7 +817,7 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 		goto errout;
 	}
 	if (cs.errcode) {
-		com_err("clone_file", cs.errcode,
+		com_err("clone_file", cs.errcode, "%s",
 			_("returned from clone_file_block"));
 		retval = cs.errcode;
 		goto errout;

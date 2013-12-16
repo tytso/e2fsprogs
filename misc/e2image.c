@@ -135,8 +135,8 @@ static void write_header(int fd, void *hdr, int hdr_size, int wrt_size)
 
 	/* Sanity check */
 	if (hdr_size > wrt_size) {
-		fprintf(stderr, _("Error: header size is bigger than "
-				  "wrt_size\n"));
+		fprintf(stderr, "%s",
+			_("Error: header size is bigger than wrt_size\n"));
 	}
 
 	ret = ext2fs_get_mem(wrt_size, &header_buf);
@@ -171,7 +171,8 @@ static void write_image_file(ext2_filsys fs, int fd)
 	hdr.offset_super = ext2fs_llseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_super_write(fs, fd, 0);
 	if (retval) {
-		com_err(program_name, retval, _("while writing superblock"));
+		com_err(program_name, retval, "%s",
+			_("while writing superblock"));
 		exit(1);
 	}
 
@@ -179,21 +180,24 @@ static void write_image_file(ext2_filsys fs, int fd)
 	retval = ext2fs_image_inode_write(fs, fd,
 				  (fd != 1) ? IMAGER_FLAG_SPARSEWRITE : 0);
 	if (retval) {
-		com_err(program_name, retval, _("while writing inode table"));
+		com_err(program_name, retval, "%s",
+			_("while writing inode table"));
 		exit(1);
 	}
 
 	hdr.offset_blockmap = ext2fs_llseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_bitmap_write(fs, fd, 0);
 	if (retval) {
-		com_err(program_name, retval, _("while writing block bitmap"));
+		com_err(program_name, retval, "%s",
+			_("while writing block bitmap"));
 		exit(1);
 	}
 
 	hdr.offset_inodemap = ext2fs_llseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_bitmap_write(fs, fd, IMAGER_FLAG_INODEMAP);
 	if (retval) {
-		com_err(program_name, retval, _("while writing inode bitmap"));
+		com_err(program_name, retval, "%s",
+			_("while writing inode bitmap"));
 		exit(1);
 	}
 
@@ -1088,13 +1092,15 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);
 	if (retval) {
-		com_err(program_name, retval, _("while opening inode scan"));
+		com_err(program_name, retval,"%s",
+			_("while opening inode scan"));
 		exit(1);
 	}
 
 	retval = ext2fs_get_mem(fs->blocksize * 3, &block_buf);
 	if (retval) {
-		com_err(program_name, 0, "Can't allocate block buffer");
+		com_err(program_name, 0, "%s",
+			_("Can't allocate block buffer"));
 		exit(1);
 	}
 
@@ -1105,7 +1111,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 		if (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
 			continue;
 		if (retval) {
-			com_err(program_name, retval,
+			com_err(program_name, retval, "%s",
 				_("while getting next inode"));
 			exit(1);
 		}

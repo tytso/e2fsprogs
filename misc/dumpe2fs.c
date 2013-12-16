@@ -215,18 +215,18 @@ static void list_desc (ext2_filsys fs)
 			print_number(super_blk);
 		}
 		if (old_desc_blk) {
-			printf(_(", Group descriptors at "));
+			printf("%s", _(", Group descriptors at "));
 			print_range(old_desc_blk,
 				    old_desc_blk + old_desc_blocks - 1);
 			if (reserved_gdt) {
-				printf(_("\n  Reserved GDT blocks at "));
+				printf("%s", _("\n  Reserved GDT blocks at "));
 				print_range(old_desc_blk + old_desc_blocks,
 					    old_desc_blk + old_desc_blocks +
 					    reserved_gdt - 1);
 			}
 		} else if (new_desc_blk) {
 			fputc(has_super ? ',' : ' ', stdout);
-			printf(_(" Group descriptor at "));
+			printf("%s", _(" Group descriptor at "));
 			print_number(new_desc_blk);
 			has_super++;
 		}
@@ -307,7 +307,7 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
 	if (retval) {
 		com_err("ext2fs_badblocks_list_iterate_begin", retval,
-			_("while printing bad block list"));
+			"%s", _("while printing bad block list"));
 		return;
 	}
 	if (dump) {
@@ -339,30 +339,30 @@ static void print_inline_journal_information(ext2_filsys fs)
 
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while reading journal inode"));
 		exit(1);
 	}
 	retval = ext2fs_file_open2(fs, ino, &inode, 0, &journal_file);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while opening journal inode"));
 		exit(1);
 	}
 	retval = ext2fs_file_read(journal_file, buf, sizeof(buf), 0);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while reading journal super block"));
 		exit(1);
 	}
 	ext2fs_file_close(journal_file);
 	jsb = (journal_superblock_t *) buf;
 	if (be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) {
-		fprintf(stderr,
-			"Journal superblock magic number invalid!\n");
+		fprintf(stderr, "%s",
+			_("Journal superblock magic number invalid!\n"));
 		exit(1);
 	}
-	printf(_("Journal features:        "));
+	printf("%s", _("Journal features:        "));
 	for (i=0, mask_ptr=&jsb->s_feature_compat; i <3; i++,mask_ptr++) {
 		mask = be32_to_cpu(*mask_ptr);
 		for (j=0,m=1; j < 32; j++, m<<=1) {
@@ -406,8 +406,10 @@ static void print_journal_information(ext2_filsys fs)
 	journal_superblock_t	*jsb;
 
 	/* Get the journal superblock */
-	if ((retval = io_channel_read_blk64(fs->io, fs->super->s_first_data_block+1, -1024, buf))) {
-		com_err(program_name, retval,
+	if ((retval = io_channel_read_blk64(fs->io,
+					    fs->super->s_first_data_block + 1,
+					    -1024, buf))) {
+		com_err(program_name, retval, "%s",
 			_("while reading journal superblock"));
 		exit(1);
 	}
@@ -415,7 +417,7 @@ static void print_journal_information(ext2_filsys fs)
 	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
 	    (jsb->s_header.h_blocktype !=
 	     (unsigned) ntohl(JFS_SUPERBLOCK_V2))) {
-		com_err(program_name, 0,
+		com_err(program_name, 0, "%s",
 			_("Couldn't find journal superblock magic numbers"));
 		exit(1);
 	}
@@ -448,7 +450,7 @@ static void parse_extended_opts(const char *opts, blk64_t *superblock,
 	len = strlen(opts);
 	buf = malloc(len+1);
 	if (!buf) {
-		fprintf(stderr,
+		fprintf(stderr, "%s",
 			_("Couldn't allocate memory to parse options!\n"));
 		exit(1);
 	}
@@ -597,7 +599,7 @@ int main (int argc, char ** argv)
 	if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
-		printf (_("Couldn't find valid filesystem superblock.\n"));
+		printf("%s", _("Couldn't find valid filesystem superblock.\n"));
 		exit (1);
 	}
 	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;

@@ -220,7 +220,7 @@ int ask_yn(e2fsck_t ctx, const char * string, int def)
 				log_out(ctx, "\n");
 				longjmp(e2fsck_global_ctx->abort_loc, 1);
 			}
-			log_out(ctx, _("cancelled!\n"));
+			log_out(ctx, "%s", _("cancelled!\n"));
 			return 0;
 		}
 		if (strchr(short_yes, (char) c)) {
@@ -235,9 +235,9 @@ int ask_yn(e2fsck_t ctx, const char * string, int def)
 			break;
 	}
 	if (def)
-		log_out(ctx, _("yes\n"));
+		log_out(ctx, "%s", _("yes\n"));
 	else
-		log_out(ctx, _("no\n"));
+		log_out(ctx, "%s", _("no\n"));
 #ifdef HAVE_TERMIOS_H
 	tcsetattr (0, TCSANOW, &termios);
 #endif
@@ -633,7 +633,7 @@ errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 	if (!buf) {
 		buf = malloc(fs->blocksize * STRIDE_LENGTH);
 		if (!buf) {
-			com_err("malloc", ENOMEM,
+			com_err("malloc", ENOMEM, "%s",
 				_("while allocating zeroizing buffer"));
 			exit(1);
 		}

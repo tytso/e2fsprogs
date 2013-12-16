@@ -151,10 +151,10 @@ static void bigalloc_check(ext2_filsys fs, int force)
 {
 	if (!force && EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				EXT4_FEATURE_RO_COMPAT_BIGALLOC)) {
-		fprintf(stderr, _("\nResizing bigalloc file systems has "
-				  "not been fully tested.  Proceed\n"
-				  "at your own risk!  Use the force option "
-				  "if you want to go ahead anyway.\n\n"));
+		fprintf(stderr, "%s", _("\nResizing bigalloc file systems has "
+					"not been fully tested.  Proceed at\n"
+					"your own risk!  Use the force option "
+					"if you want to go ahead anyway.\n\n"));
 		exit(1);
 	}
 }
@@ -312,9 +312,9 @@ int main (int argc, char ** argv)
 	retval = ext2fs_open2(device_name, io_options, io_flags,
 			      0, 0, io_ptr, &fs);
 	if (retval) {
-		com_err (program_name, retval, _("while trying to open %s"),
-			 device_name);
-		printf (_("Couldn't find valid filesystem superblock.\n"));
+		com_err(program_name, retval, _("while trying to open %s"),
+			device_name);
+		printf("%s", _("Couldn't find valid filesystem superblock.\n"));
 		exit (1);
 	}
 
@@ -363,7 +363,7 @@ int main (int argc, char ** argv)
 	retval = ext2fs_get_device_size2(device_name, fs->blocksize,
 					 &max_size);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(program_name, retval, "%s",
 			_("while trying to determine filesystem size"));
 		exit(1);
 	}
@@ -389,7 +389,7 @@ int main (int argc, char ** argv)
 		if (new_size == (1ULL << 32))
 			new_size--;
 		else if (new_size > (1ULL << 32)) {
-			com_err(program_name, 0,
+			com_err(program_name, 0, "%s",
 				_("New size too large to be "
 				  "expressed in 32 bits\n"));
 			exit(1);
@@ -403,7 +403,7 @@ int main (int argc, char ** argv)
 	}
 	if (use_stride >= 0) {
 		if (use_stride >= (int) fs->super->s_blocks_per_group) {
-			com_err(program_name, 0,
+			com_err(program_name, 0, "%s",
 				_("Invalid stride length"));
 			exit(1);
 		}

@@ -206,8 +206,8 @@ int main(int argc, char **argv)
 		perror(argv[0]);
 
 	bytes = blkid_get_dev_size(fd);
-	printf("Device %s has %Ld 1k blocks.\n", argv[1],
-	       (unsigned long long) bytes >> 10);
+	printf("Device %s has %lld 1k blocks.\n", argv[1],
+	       (unsigned long long)bytes >> 10);
 
 	return 0;
 }

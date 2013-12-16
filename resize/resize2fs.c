@@ -1869,7 +1869,7 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 		 * should never happen anyway since the filesystem
 		 * should be fsck'ed and we assume it is consistent.
 		 */
-		fprintf(stderr,
+		fprintf(stderr, "%s",
 			_("Should never happen: resize inode corrupt!\n"));
 		exit(1);
 	}
