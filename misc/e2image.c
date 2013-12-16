@@ -55,6 +55,7 @@ static char * device_name = NULL;
 static char all_data;
 static char output_is_blk;
 /* writing to blk device: don't skip zeroed blocks */
+blk64_t source_offset, dest_offset;
 
 static void lseek_error_and_exit(int errnum)
 {
@@ -87,7 +88,7 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-rsIQaf] device image_file\n"),
+	fprintf(stderr, _("Usage: %s [-rsIQaf] [-o source_offset] [-O dest_offset] device image_file\n"),
 		program_name);
 	exit (1);
 }
@@ -1278,7 +1279,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt(argc, argv, "rsIQaf")) != EOF)
+	while ((c = getopt(argc, argv, "rsIQafo:O:")) != EOF)
 		switch (c) {
 		case 'I':
 			flags |= E2IMAGE_INSTALL_FLAG;
@@ -1302,6 +1303,12 @@ int main (int argc, char ** argv)
 		case 'f':
 			ignore_rw_mount = 1;
 			break;
+		case 'o':
+			source_offset = strtoull(optarg, NULL, 0);
+			break;
+		case 'O':
+			dest_offset = strtoull(optarg, NULL, 0);
+			break;
 		default:
 			usage();
 		}
@@ -1313,7 +1320,11 @@ int main (int argc, char ** argv)
 					 "with raw or QCOW2 images.");
 		exit(1);
 	}
-
+	if ((source_offset || dest_offset) && img_type != E2IMAGE_RAW) {
+		com_err(program_name, 0,
+			"Offsets are only allowed with raw images.");
+		exit(1);
+	}
 	device_name = argv[optind];
 	image_fn = argv[optind+1];
 
@@ -1346,9 +1357,11 @@ int main (int argc, char ** argv)
 			goto skip_device;
 		}
 	}
-
-	retval = ext2fs_open (device_name, open_flag, 0, 0,
-			      unix_io_manager, &fs);
+	char *options;
+	asprintf (&options, "offset=%llu", source_offset);
+	retval = ext2fs_open2 (device_name, options, open_flag, 0, 0,
+			       unix_io_manager, &fs);
+	free (options);
         if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
@@ -1367,6 +1380,11 @@ skip_device:
 			exit(1);
 		}
 	}
+	if (dest_offset)
+		if (ext2fs_llseek (fd, dest_offset, SEEK_SET) < 0) {
+			perror("ext2fs_llseek");
+			exit(1);
+		}
 
 	if ((img_type & E2IMAGE_QCOW2) && (fd == 1)) {
 		com_err(program_name, 0, "QCOW2 image can not be written to "
