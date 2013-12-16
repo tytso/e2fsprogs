@@ -713,12 +713,23 @@ static int expand_dir_proc(ext2_filsys fs,
 		last_blk = *blocknr;
 		return 0;
 	}
-	retval = ext2fs_new_block2(fs, last_blk, ctx->block_found_map,
-				  &new_blk);
-	if (retval) {
-		es->err = retval;
-		return BLOCK_ABORT;
+
+	if (blockcnt &&
+	    (EXT2FS_B2C(fs, last_blk) == EXT2FS_B2C(fs, last_blk + 1)))
+		new_blk = last_blk + 1;
+	else {
+		last_blk &= ~EXT2FS_CLUSTER_MASK(fs);
+		retval = ext2fs_new_block2(fs, last_blk, ctx->block_found_map,
+					  &new_blk);
+		if (retval) {
+			es->err = retval;
+			return BLOCK_ABORT;
+		}
+		es->newblocks++;
+		ext2fs_block_alloc_stats2(fs, new_blk, +1);
 	}
+	last_blk = new_blk;
+
 	if (blockcnt > 0) {
 		retval = ext2fs_new_dir_block(fs, 0, 0, &block);
 		if (retval) {
@@ -743,8 +754,6 @@ static int expand_dir_proc(ext2_filsys fs,
 	ext2fs_free_mem(&block);
 	*blocknr = new_blk;
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, new_blk);
-	ext2fs_block_alloc_stats2(fs, new_blk, +1);
-	es->newblocks++;
 
 	if (es->num == 0)
 		return (BLOCK_CHANGED | BLOCK_ABORT);
