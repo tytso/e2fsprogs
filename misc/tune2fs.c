@@ -26,7 +26,6 @@
  */
 
 #define _XOPEN_SOURCE 600 /* for inclusion of strptime() */
-#define _BSD_SOURCE /* for inclusion of strcasecmp() */
 #include "config.h"
 #include <fcntl.h>
 #include <grp.h>
@@ -40,6 +39,11 @@ extern int optind;
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_STRINGS_H
+#include <strings.h>	/* for strcasecmp() */
+#else
+#define _BSD_SOURCE	/* for inclusion of strcasecmp() via <string.h> */
 #endif
 #include <string.h>
 #include <time.h>
@@ -765,6 +769,7 @@ static void handle_quota_options(ext2_filsys fs)
 	return;
 }
 
+#ifdef CONFIG_QUOTA
 static void parse_quota_opts(const char *opts)
 {
 	char	*buf, *token, *next, *p;
@@ -807,8 +812,7 @@ static void parse_quota_opts(const char *opts)
 	}
 	free(buf);
 }
-
-
+#endif
 
 static void parse_e2label_options(int argc, char ** argv)
 {

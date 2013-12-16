@@ -142,6 +142,6 @@ extern void ext2fs_warn_bitmap32(ext2fs_generic_bitmap bitmap,const char *func);
 
 extern int ext2fs_mem_is_zero(const char *mem, size_t len);
 
-int ext2fs_file_block_offset_too_big(ext2_filsys fs,
-				     struct ext2_inode *inode,
-				     blk64_t offset);
+extern int ext2fs_file_block_offset_too_big(ext2_filsys fs,
+					    struct ext2_inode *inode,
+					    blk64_t offset);
