@@ -411,8 +411,8 @@ redo_counts:
 			save_problem = problem;
 		} else {
 			if ((problem == save_problem) &&
-			    (pctx.blk2 == i-1))
-				pctx.blk2++;
+			    (pctx.blk2 == i - EXT2FS_CLUSTER_RATIO(fs)))
+				pctx.blk2 += EXT2FS_CLUSTER_RATIO(fs);
 			else {
 				print_bitmap_problem(ctx, save_problem, &pctx);
 				pctx.blk = pctx.blk2 = i;
