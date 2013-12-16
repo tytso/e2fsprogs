@@ -906,6 +906,9 @@ extern errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino,
 			      struct ext2_inode *inode,
 			      char *block_buf, int bmap_flags, blk64_t block,
 			      int *ret_flags, blk64_t *phys_blk);
+errcode_t ext2fs_map_cluster_block(ext2_filsys fs, ext2_ino_t ino,
+				   struct ext2_inode *inode, blk64_t lblk,
+				   blk64_t *pblk);
 
 #if 0
 /* bmove.c */

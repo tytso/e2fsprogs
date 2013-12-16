@@ -173,6 +173,35 @@ static errcode_t implied_cluster_alloc(ext2_filsys fs, ext2_ino_t ino,
 	return 0;
 }
 
+/* Try to map a logical block to an already-allocated physical cluster. */
+errcode_t ext2fs_map_cluster_block(ext2_filsys fs, ext2_ino_t ino,
+				   struct ext2_inode *inode, blk64_t lblk,
+				   blk64_t *pblk)
+{
+	ext2_extent_handle_t handle;
+	errcode_t retval;
+
+	/* Need bigalloc and extents to be enabled */
+	*pblk = 0;
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_BIGALLOC) ||
+	    !(inode->i_flags & EXT4_EXTENTS_FL))
+		return 0;
+
+	retval = ext2fs_extent_open2(fs, ino, inode, &handle);
+	if (retval)
+		goto out;
+
+	retval = implied_cluster_alloc(fs, ino, inode, handle, lblk, pblk);
+	if (retval)
+		goto out2;
+
+out2:
+	ext2fs_extent_free(handle);
+out:
+	return retval;
+}
+
 static errcode_t extent_bmap(ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_inode *inode,
 			     ext2_extent_handle_t handle,
