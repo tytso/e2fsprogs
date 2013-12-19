@@ -112,7 +112,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 	/*
 	 * Force the creation of /lost+found if not present
 	 */
-	if ((ctx->flags & E2F_OPT_READONLY) == 0)
+	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		e2fsck_get_lost_and_found(ctx, 1);
 
 	/*
