@@ -702,11 +702,14 @@ void do_set_block_group_descriptor(int argc, char *argv[])
 	int			size;
 
 	/*
-	 *Determine whether we are editing an ext2 or ext4 block
-	 * group descriptor
+	 * Determine whether we are editing an ext2 or ext4 block group
+	 * descriptor.  Descriptors larger than ext4_group_desc cannot
+	 * have their fields edited yet, because they do not have any
+	 * names assigned.  When that happens, this function needs to
+	 * be updated for the new descriptor struct and fields.
 	 */
-	if (current_fs && current_fs->super->s_feature_incompat &
-	    EXT4_FEATURE_INCOMPAT_64BIT) {
+	if (current_fs &&
+	    EXT2_DESC_SIZE(current_fs->super) >= EXT2_MIN_DESC_SIZE_64BIT) {
 		table = ext4_bg_fields;
 		edit = &set_gd4;
 		size = sizeof(set_gd4);

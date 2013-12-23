@@ -187,11 +187,8 @@ struct ext2_group_desc *ext2fs_group_desc(ext2_filsys fs,
 					  struct opaque_ext2_group_desc *gdp,
 					  dgrp_t group)
 {
-	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT)
-		return (struct ext2_group_desc *)
-			((struct ext4_group_desc *) gdp + group);
-	else
-		return (struct ext2_group_desc *) gdp + group;
+	return (struct ext2_group_desc *)((char *)gdp +
+					  group * EXT2_DESC_SIZE(fs->super));
 }
 
 /* Do the same but as an ext4 group desc for internal use here */

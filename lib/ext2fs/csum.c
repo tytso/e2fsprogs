@@ -32,19 +32,11 @@
 
 __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 {
-	__u16 crc = 0;
-	struct ext2_group_desc *desc;
-	size_t size;
-
-	size = fs->super->s_desc_size;
-	if (size < EXT2_MIN_DESC_SIZE)
-		size = EXT2_MIN_DESC_SIZE;
-	if (size > sizeof(struct ext4_group_desc)) {
-		printf("%s: illegal s_desc_size(%zd)\n", __func__, size);
-		size = sizeof(struct ext4_group_desc);
-	}
-
-	desc = ext2fs_group_desc(fs, fs->group_desc, group);
+	struct ext2_group_desc *desc = ext2fs_group_desc(fs, fs->group_desc,
+							 group);
+	size_t size = EXT2_DESC_SIZE(fs->super);
+	size_t offset;
+	__u16 crc;
 
 	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
 		size_t offset = offsetof(struct ext2_group_desc, bg_checksum);
@@ -175,11 +167,7 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 #endif
 
 	desc = ext2fs_group_desc(fs, fs->group_desc, group);
-	size = fs->super->s_desc_size;
-	if (size < EXT2_MIN_DESC_SIZE)
-		size = EXT2_MIN_DESC_SIZE;
-	if (size > sizeof(struct ext4_group_desc))
-		size = sizeof(struct ext4_group_desc);
+	size = EXT2_DESC_SIZE(fs->super);
 #ifdef WORDS_BIGENDIAN
 	/* Have to swab back to little-endian to do the checksum */
 	memcpy(&swabdesc, desc, size);

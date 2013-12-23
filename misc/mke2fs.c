@@ -679,7 +679,38 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			*arg = 0;
 			arg++;
 		}
-		if (strcmp(token, "mmp_update_interval") == 0) {
+		if (strcmp(token, "desc-size") == 0 ||
+		    strcmp(token, "desc_size") == 0) {
+			int desc_size;
+
+			if (!(fs_param.s_feature_incompat &
+			      EXT4_FEATURE_INCOMPAT_64BIT)) {
+				fprintf(stderr,
+					_("%s requires '-O 64bit'\n"), token);
+				r_usage++;
+				continue;
+			}
+			if (param->s_reserved_gdt_blocks != 0) {
+				fprintf(stderr,
+					_("'%s' must be before 'resize=%u'\n"),
+					token, param->s_reserved_gdt_blocks);
+				r_usage++;
+				continue;
+			}
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			desc_size = strtoul(arg, &p, 0);
+			if (*p || (desc_size & (desc_size - 1))) {
+				fprintf(stderr,
+					_("Invalid desc_size: '%s'\n"), arg);
+				r_usage++;
+				continue;
+			}
+			param->s_desc_size = desc_size;
+		} else if (strcmp(token, "mmp_update_interval") == 0) {
 			if (!arg) {
 				r_usage++;
 				badopt = token;
