@@ -159,7 +159,7 @@ struct ext2_group_desc
 	__u16	bg_block_bitmap_csum_lo;/* crc32c(s_uuid+grp_num+bitmap) LSB */
 	__u16	bg_inode_bitmap_csum_lo;/* crc32c(s_uuid+grp_num+bitmap) LSB */
 	__u16	bg_itable_unused;	/* Unused inodes count */
-	__u16	bg_checksum;		/* crc16(s_uuid+grouo_num+group_desc)*/
+	__u16	bg_checksum;		/* crc16(s_uuid+group_num+group_desc)*/
 };
 
 /*

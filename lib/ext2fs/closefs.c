@@ -302,7 +302,7 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	       fs->desc_blocks);
 
 	/* swap the group descriptors */
-	for (j=0; j < fs->group_desc_count; j++) {
+	for (j = 0; j < fs->group_desc_count; j++) {
 		gdp = ext2fs_group_desc(fs, group_shadow, j);
 		ext2fs_swap_group_desc2(fs, gdp);
 	}

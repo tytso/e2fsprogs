@@ -259,6 +259,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	else
 		fprintf(f, "Fragment size:            %u\n",
 			EXT2_CLUSTER_SIZE(sb));
+	if (sb->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+		fprintf(f, "Group descriptor size:    %u\n", sb->s_desc_size);
 	if (sb->s_reserved_gdt_blocks)
 		fprintf(f, "Reserved GDT blocks:      %u\n",
 			sb->s_reserved_gdt_blocks);
