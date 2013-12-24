@@ -2458,10 +2458,8 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			retval = strtoblk(argv[0], optarg, &superblock);
-			if (retval) {
-				com_err(argv[0], retval, 0, debug_prog_name);
+			if (retval)
 				return 1;
-			}
 			break;
 		case 'c':
 			catastrophic = 1;
