@@ -294,7 +294,7 @@ Do not attempt to discard blocks at mkfs time.
 @QUOTA_MAN_COMMENT@.TP
 @QUOTA_MAN_COMMENT@.BI quotatype
 @QUOTA_MAN_COMMENT@Specify which quota type ('usr' or 'grp') is to be
-@QUOTA_MAN_COMMENT@initialized. This option has effect only if
+@QUOTA_MAN_COMMENT@initialized. This option has effect only if the
 @QUOTA_MAN_COMMENT@.B quota
 @QUOTA_MAN_COMMENT@feature is set. Without this extended option, the default
 @QUOTA_MAN_COMMENT@behavior is to initialize both user and group quotas.
@@ -533,206 +533,12 @@ section of the configuration file.
 The filesystem feature set is comprised of a list of features, separated
 by commas, that are to be enabled.  To disable a feature, simply
 prefix the feature name with a  caret ('^') or a minus ('-') character.
-Features with dependents will not be removed successfully.
+Features with dependencies will not be removed successfully.
 The pseudo-filesystem feature "none" will clear all filesystem features.
-.RS 1.2i
 .TP
-.B 64bit
-.br
-Enables the file system to be larger than 2^32 blocks.  This feature is set
-automatically, as needed, but it can be useful to specify this feature
-explicitly if the file system might need to be resized larger than 2^32
-blocks, even if it was smaller than that threshold when it was
-originally created.  Note that some older kernels and older versions
-of e2fsprogs will not support file systems with this feature enabled.
-.TP
-.B bigalloc
-.br
-This feature enables clustered block allocation, so that the unit of
-allocation is a power of two number of blocks.  That is, each bit in the
-what had traditionally been known as the block allocation bitmap now
-indicates whether a cluster is in use or not, where a cluster is by
-default composed of 16 blocks.  This feature can decrease the time
-spent on doing block allocation and brings smaller fragmentation, especially
-for large files.  The size can be specified using the
-.B \-C option.
-.IP
-.B Warning:
-The bigalloc feature is still under development, and may not be fully
-supported with your kernel or may have various bugs.  Please see the web
-page http://ext4.wiki.kernel.org/index.php/Bigalloc for details.
-May clash with delayed allocation (see
-.BR nodelalloc mount option).
-.IP
-This feature requires that the
-.B extent
-features be enabled.
-.TP
-.B dir_index
-.br
-Use hashed b-trees to speed up name lookups in large directories.
-.TP
-.B dir_nlink
-.br
-Allow more than 65000 subdirectories per directory.
-.TP
-.B extent
-.br
-Instead of using the indirect block scheme for storing the location of
-data blocks in an inode, use extents instead.  This is a much more
-efficient encoding which speeds up filesystem access, especially for
-large files.  (Note: both
-.B extent
-and
-.B extents
-are accepted as valid names for this feature for
-historical/backwards compatibility reasons.)
-.TP
-.B extra_isize
-.br
-This feature reserves a specific amount of space in each inode for
-extended metadata such as nanosecond timestamps and file creation time,
-even if the current kernel does not current need to reserve this much
-space.  Without this feature, the kernel will reserve the amount of
-space for features currently it currently needs, and the rest may be
-consumed by extended attributes.
-
-For this feature to be useful the inode size must be 256 bytes in size
-or larger.
-.TP
-.B ext_attr
-.br
-This feature enables the use of extended attributes.
-.TP
-.B filetype
-.br
-This feature enables the storage file type information in directory
-entries.  It is normally enabled by default for all file system types.
-.TP
-.B flex_bg
-.br
-Allow the per-block group metadata (allocation bitmaps and inode tables)
-to be placed anywhere on the storage media.  In addition,
-.B mke2fs
-will place the per-block group metadata together starting at the first
-block group of each "flex_bg group".   The size of the flex_bg group
-can be specified using the 
-.B \-G
-option.
-.TP
-.B has_journal
-.br
-Create a journal to ensure filesystem consistency even across unclean
-shutdowns.  Setting the filesystem feature is equivalent to using the
-.B \-j
-option.
-.TP
-.B huge_file
-.br
-Allows files larger than 2TiB in size.
-.TP
-.B journal_dev
-.br
-Creates an external ext3 journal on the given device
-instead of a regular ext2 filesystem.
-Note that
-.I external-journal
-must be created with the same
-block size as the filesystems that will be using it.
-.IP
-Once ready, use
-.BR mke2fs (8)
-or
-.BR tune2fs(8)
-with
-.B \-J
-.BR device= <external-device>
-to direct a filesystem to the journaling device (see journal-options).
-.TP
-.B large_file
-.br
-Filesystem can contain files that are greater than 2GiB.  (Modern kernels
-set this feature automatically when a file > 2GiB is created.)
-.\" .TP
-.\" .B metadata_csum
-.\" .br
-.\" Filesystem supports metadata checksumming.  This feature stores
-.\" checksums for all of the filesystem metadata (superblock, group
-.\" descriptor blocks, inode and block bitmaps, directories, and
-.\" extent tree blocks).  The checksum algorithm used for the metadata
-.\" blocks is different than the one used for group descriptors with the
-.\" .B uninit_bg
-.\" feature, these two features are incompatible and
-.\" .B metadata_csum
-.\" will be used preferentially instead of
-.\" .BR uninit_bg .
-.\" .br
-.\" .B Future feature, available in e2fsprogs 1.43-WIP
-.TP
-.B meta_bg
-.br
-This feature allows file systems to be resized on-line without explicitly
-needing to reserve space for growth in the size of the block group
-descriptors.  This scheme is also used to resize file systems which are
-larger than 2^32 blocks.  It is not recommended that this feature be set
-when a file system is created, since this alternate method of storing
-the block group descriptor will slow down the time needed to mount the
-file system, and newer kernels can automatically set this feature as
-necessary when doing an online resize and no more reserved space is
-available in the resize inode.
-.TP
-.B mmp
-.br
-Multiple mount protection (MMP) feature.  MMP helps to
-protect the filesystem from being multiply mounted and is useful in
-shared storage environments.
-@QUOTA_MAN_COMMENT@.TP
-@QUOTA_MAN_COMMENT@.B quota
-@QUOTA_MAN_COMMENT@.br
-@QUOTA_MAN_COMMENT@Create quota inodes (inode #3 for userquota and inode
-@QUOTA_MAN_COMMENT@#4 for group quota) and set them in the superblock.
-@QUOTA_MAN_COMMENT@With this feature, the quotas will be enabled
-@QUOTA_MAN_COMMENT@automatically when the filesystem is mounted.
-@QUOTA_MAN_COMMENT@.IP
-@QUOTA_MAN_COMMENT@Causes the quota files (i.e., user.quota and
-@QUOTA_MAN_COMMENT@group.quota which existed
-@QUOTA_MAN_COMMENT@in the older quota design) to be hidden inodes.
-@QUOTA_MAN_COMMENT@.IP
-@QUOTA_MAN_COMMENT@.B Not defined by default,
-@QUOTA_MAN_COMMENT@see https://ext4.wiki.kernel.org/index.php/Quota
-.TP
-.B resize_inode
-.br
-Reserve space so the block group descriptor table may grow in the future.
-Useful for online resizing using
-.BR resize2fs .
-By default
-.B mke2fs
-will attempt to reserve enough space so that the
-filesystem may grow to 1024 times its initial size.  This can be changed
-using the
-.B resize
-extended option.
-.IP
- This feature requires that the
-.B sparse_super
-feature be enabled.
-.TP
-.B sparse_super
-.br
-Create a filesystem with fewer superblock backup copies
-(saves space on large filesystems).  This feature is normally enabled by
-default for all file systems.
-.TP
-.B uninit_bg
-.br
-Create a filesystem without initializing all of the block groups.  This
-feature allows the kernel to initialize bitmaps and inode tables
-and keep a high watermark for the unused inodes in a filesystem, to reduce
-.BR e2fsck (8)
-time.  The result is that it can speed up filesystem creation time noticeably
-(if lazy_itable_init is enabled).
-.RE
+For more information about the features which can be set, please see
+the manual page
+.BR ext4 (5).
 .TP
 .B \-q
 Quiet execution.  Useful if
@@ -878,4 +684,5 @@ http://e2fsprogs.sourceforge.net.
 .BR badblocks (8),
 .BR dumpe2fs (8),
 .BR e2fsck (8),
-.BR tune2fs (8)
+.BR tune2fs (8),
+.BR ext4 (5)

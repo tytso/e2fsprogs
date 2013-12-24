@@ -703,4 +703,5 @@ was written by Theodore Ts'o <tytso@mit.edu>.
 .BR dumpe2fs (8),
 .BR tune2fs (8),
 .BR e2fsck (8),
-.BR mke2fs (8)
+.BR mke2fs (8),
+.BR ext4 (5)
