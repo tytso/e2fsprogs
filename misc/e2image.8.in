@@ -8,7 +8,7 @@ e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
 .SH SYNOPSIS
 .B e2image
 [
-.B \-rsIQap
+.B \-acfprsIQ
 ]
 [
 .B \-o
@@ -45,7 +45,7 @@ or
 options, the filesystem must be unmounted or be mounted read/only, in order
 for the image file to be in a consistent state.  This requirement can be
 overriden using the
-.B -f
+.B \-f
 option, but the resulting image file is very likely not going to be useful.
 .PP
 If
@@ -209,7 +209,16 @@ give an image that is suitable to use to clone the entire FS or
 for backup purposes.  Note that this option only works with the
 raw or QCOW2 formats.  The
 .B \-p
-switch may be given to show progress.
+switch may be given to show progress.  If the file system is being
+cloned to a flash-based storage device (where reads are very fast and
+where it is desirable to avoid unnecessary writes to reduce write wear
+on the device), the
+.B \-c
+option which cause e2image to try reading a block from the destination
+to see if it is identical to the block which
+.B e2image
+is about to copy.  If the block is already the same, the write can be
+skipped.
 .PP
 .SH OFFSETS
 Normally a filesystem starts at the beginning of a partition, and

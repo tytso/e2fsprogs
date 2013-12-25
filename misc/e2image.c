@@ -68,6 +68,8 @@ static char output_is_blk;
 static blk64_t source_offset, dest_offset;
 static char move_mode;
 static char show_progress;
+static char *check_buf;
+static int skipped_blocks;
 
 static blk64_t align_offset(blk64_t offset, unsigned int n)
 {
@@ -94,7 +96,8 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-rsIQafp] [-o src_offset] [-O dest_offset] device image_file\n"),
+	fprintf(stderr, _("Usage: %s [-acfprsIQ] [-o src_offset] "
+			  "[-O dest_offset] \\\n\tdevice image_file\n"),
 		program_name);
 	exit (1);
 }
@@ -117,6 +120,32 @@ static ext2_loff_t seek_set(int fd, ext2_loff_t offset)
 		exit(1);
 	}
 	return ret;
+}
+
+/*
+ * Returns true if the block we are about to write is identical to
+ * what is already on the disk.
+ */
+static int check_block(int fd, void *buf, void *cbuf, int blocksize)
+{
+	char *cp = cbuf;
+	int count = blocksize, ret;
+
+	if (cbuf == NULL)
+		return 0;
+
+	while (count > 0) {
+		ret = read(fd, cp, count);
+		if (ret < 0) {
+			perror("check_block");
+			exit(1);
+		}
+		count -= ret;
+		cp += ret;
+	}
+	ret = memcmp(buf, cbuf, blocksize);
+	seek_relative(fd, -blocksize);
+	return (ret == 0) ? 1 : 0;
 }
 
 static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
@@ -621,8 +650,12 @@ more_blocks:
 				goto sparse_write;
 			if (sparse)
 				seek_relative(fd, sparse);
-			generic_write(fd, buf, fs->blocksize, blk);
 			sparse = 0;
+			if (check_block(fd, buf, check_buf, fs->blocksize)) {
+				seek_relative(fd, fs->blocksize);
+				skipped_blocks++;
+			} else
+				generic_write(fd, buf, fs->blocksize, blk);
 		} else {
 		sparse_write:
 			if (fd == 1) {
@@ -1398,6 +1431,7 @@ int main (int argc, char ** argv)
 	int fd = 0;
 	int ret = 0;
 	int ignore_rw_mount = 0;
+	int check = 0;
 	struct stat st;
 
 #ifdef ENABLE_NLS
@@ -1412,7 +1446,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt(argc, argv, "rsIQafo:O:p")) != EOF)
+	while ((c = getopt(argc, argv, "rsIQafo:O:pc")) != EOF)
 		switch (c) {
 		case 'I':
 			flags |= E2IMAGE_INSTALL_FLAG;
@@ -1444,6 +1478,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'p':
 			show_progress = 1;
+			break;
+		case 'c':
+			check = 1;
 			break;
 		default:
 			usage();
@@ -1522,7 +1559,7 @@ skip_device:
 	if (strcmp(image_fn, "-") == 0)
 		fd = 1;
 	else {
-		int o_flags = O_CREAT|O_WRONLY;
+		int o_flags = O_CREAT|O_RDWR;
 
 		if (img_type != E2IMAGE_RAW)
 			o_flags |= O_TRUNC;
@@ -1568,6 +1605,24 @@ skip_device:
 		goto out;
 	}
 
+	if (check) {
+		if (img_type != E2IMAGE_RAW) {
+			fprintf(stderr, _("The -c option only supported "
+					  "in raw mode\n"));
+			exit(1);
+		}
+		if (fd == 1) {
+			fprintf(stderr, _("The -c option is not supported "
+					  "when writing to stdout\n"));
+			exit(1);
+		}
+		retval = ext2fs_get_mem(fs->blocksize, &check_buf);
+		if (retval) {
+			com_err(program_name, retval,
+				"while allocating check_buf");
+			exit(1);
+		}
+	}
 
 	if (img_type)
 		write_raw_image_file(fs, fd, img_type, flags);
@@ -1575,6 +1630,10 @@ skip_device:
 		write_image_file(fs, fd);
 
 	ext2fs_close (fs);
+	if (check)
+		printf("%d blocks already contained the data to be copied.\n",
+		       skipped_blocks);
+
 out:
 	if (header)
 		free(header);
