@@ -50,6 +50,15 @@ extern int optind;
 
 #define QCOW_OFLAG_COPIED     (1LL << 63)
 
+/* Image types */
+#define E2IMAGE_RAW	1
+#define E2IMAGE_QCOW2	2
+
+/* Image flags */
+#define E2IMAGE_INSTALL_FLAG	1
+#define E2IMAGE_SCRAMBLE_FLAG	2
+#define E2IMAGE_IS_QCOW2_FLAG	4
+#define E2IMAGE_CHECK_ZERO_FLAG	8
 
 static const char * program_name = "e2image";
 static char * device_name = NULL;
@@ -495,7 +504,7 @@ static void sigint_handler(int unused EXT2FS_ATTR((unused)))
 	signal (SIGINT, SIG_DFL);
 }
 
-static void output_meta_data_blocks(ext2_filsys fs, int fd)
+static void output_meta_data_blocks(ext2_filsys fs, int fd, int flags)
 {
 	errcode_t	retval;
 	blk64_t		blk;
@@ -607,7 +616,8 @@ more_blocks:
 			if (scramble_block_map &&
 			    ext2fs_test_block_bitmap2(scramble_block_map, blk))
 				scramble_dir_block(fs, blk, buf);
-			if ((fd != 1) && check_zero_block(buf, fs->blocksize))
+			if ((flags & E2IMAGE_CHECK_ZERO_FLAG) &&
+			    check_zero_block(buf, fs->blocksize))
 				goto sparse_write;
 			if (sparse)
 				seek_relative(fd, sparse);
@@ -1291,7 +1301,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 	if (type & E2IMAGE_QCOW2)
 		output_qcow2_meta_data_blocks(fs, fd);
 	else
-		output_meta_data_blocks(fs, fd);
+		output_meta_data_blocks(fs, fd, flags);
 
 	ext2fs_free_mem(&block_buf);
 	ext2fs_close_inode_scan(scan);
@@ -1516,6 +1526,8 @@ skip_device:
 
 		if (img_type != E2IMAGE_RAW)
 			o_flags |= O_TRUNC;
+		if (access(image_fn, F_OK) != 0)
+			flags |= E2IMAGE_CHECK_ZERO_FLAG;
 		fd = ext2fs_open_file(image_fn, o_flags, 0600);
 		if (fd < 0) {
 			com_err(program_name, errno,
