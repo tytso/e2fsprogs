@@ -35,6 +35,7 @@ extern int optind;
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
+#include <signal.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
@@ -488,6 +489,14 @@ static void scramble_dir_block(ext2_filsys fs, blk64_t blk, char *buf)
 	}
 }
 
+static char got_sigint;
+
+static void sigint_handler(int unsused)
+{
+	got_sigint = 1;
+	signal (SIGINT, SIG_DFL);
+}
+
 static void output_meta_data_blocks(ext2_filsys fs, int fd)
 {
 	errcode_t	retval;
@@ -531,10 +540,39 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 		if (distance < ext2fs_blocks_count(fs->super))
 			start = ext2fs_blocks_count(fs->super) - distance;
 	}
+	if (move_mode)
+		signal (SIGINT, sigint_handler);
 more_blocks:
 	if (distance)
 		ext2fs_llseek (fd, (start * fs->blocksize) + dest_offset, SEEK_SET);
 	for (blk = start; blk < end; blk++) {
+		if (got_sigint) {
+			if (distance) {
+				/* moving to the right */
+				if (distance >= ext2fs_blocks_count(fs->super) ||
+				    start == ext2fs_blocks_count(fs->super) - distance)
+					kill (getpid(), SIGINT);
+			} else {
+				/* moving to the left */
+				if (blk < (source_offset - dest_offset) / fs->blocksize)
+					kill (getpid(), SIGINT);
+			}
+			if (show_progress)
+				printf ("\r");
+			printf ("Stopping now will destroy the filesystem, "
+				"interrupt again if you are sure\n");
+			if (show_progress) {
+				printf("Copying ");
+				bscount = printf("%llu / %llu blocks (%llu%%)",
+						 total_written,
+						 meta_blocks_count,
+						 (total_written + 50) / ((meta_blocks_count + 50)
+									 / 100));
+				fflush(stdout);
+			}
+
+			got_sigint = 0;
+		}
 		if (show_progress && last_update != time(NULL)) {
 			last_update = time(NULL);
 			while (bscount--)
@@ -604,6 +642,7 @@ more_blocks:
 		sparse = 0;
 		goto more_blocks;
 	}
+	signal (SIGINT, SIG_DFL);
 	if (show_progress) {
 		while (bscount--)
 			printf("\b");
