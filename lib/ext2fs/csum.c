@@ -43,8 +43,13 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 
 #ifdef WORDS_BIGENDIAN
 		struct ext4_group_desc swabdesc;
+		size_t save_size = size;
+		const size_t ext4_bg_size = sizeof(struct ext4_group_desc);
+		struct ext2_group_desc *save_desc = desc;
 
 		/* Have to swab back to little-endian to do the checksum */
+		if (size > ext4_bg_size)
+			size = ext4_bg_size;
 		memcpy(&swabdesc, desc, size);
 		ext2fs_swap_group_desc2(fs,
 					(struct ext2_group_desc *) &swabdesc);
@@ -62,6 +67,17 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 			crc = ext2fs_crc16(crc, (char *)desc + offset,
 					   size - offset);
 		}
+#ifdef WORDS_BIGENDIAN
+		/*
+		 * If the size of the bg descriptor is greater than 64
+		 * bytes, which is the size of the traditional ext4 bg
+		 * descriptor, checksum the rest of the descriptor here
+		 */
+		if (save_size > ext4_bg_size)
+			crc = ext2fs_crc16(crc,
+					   (char *)save_desc + ext4_bg_size,
+					   save_size - ext4_bg_size);
+#endif
 	}
 
 	return crc;
@@ -158,18 +174,22 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 {
 	__u16 crc1, crc2, crc3;
 	dgrp_t swabgroup;
-	struct ext2_group_desc *desc;
-	size_t size;
+	struct ext2_group_desc *desc = ext2fs_group_desc(fs, fs->group_desc,
+							 group);
+	size_t size = EXT2_DESC_SIZE(fs->super);
 	struct ext2_super_block *sb = fs->super;
 	int offset = offsetof(struct ext2_group_desc, bg_checksum);
 #ifdef WORDS_BIGENDIAN
 	struct ext4_group_desc swabdesc;
+	struct ext2_group_desc *save_desc = desc;
+	const size_t ext4_bg_size = sizeof(struct ext4_group_desc);
+	size_t save_size = size;
 #endif
 
-	desc = ext2fs_group_desc(fs, fs->group_desc, group);
-	size = EXT2_DESC_SIZE(fs->super);
 #ifdef WORDS_BIGENDIAN
 	/* Have to swab back to little-endian to do the checksum */
+	if (size > ext4_bg_size)
+		size = ext4_bg_size;
 	memcpy(&swabdesc, desc, size);
 	ext2fs_swap_group_desc2(fs, (struct ext2_group_desc *) &swabdesc);
 	desc = (struct ext2_group_desc *) &swabdesc;
@@ -186,6 +206,11 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 	/* for checksum of struct ext4_group_desc do the rest...*/
 	if (offset < size)
 		crc3 = ext2fs_crc16(crc3, (char *)desc + offset, size - offset);
+#ifdef WORDS_BIGENDIAN
+	if (save_size > ext4_bg_size)
+		crc3 = ext2fs_crc16(crc3, (char *)save_desc + ext4_bg_size,
+				    save_size - ext4_bg_size);
+#endif
 
 	printf("%s UUID %s=%04x, grp %u=%04x: %04x=%04x\n",
 	       msg, e2p_uuid2str(sb->s_uuid), crc1, group, crc2, crc3,
@@ -205,6 +230,11 @@ int main(int argc, char **argv)
 
 	memset(&param, 0, sizeof(param));
 	ext2fs_blocks_count_set(&param, 32768);
+#if 0
+	param.s_feature_incompat |= EXT4_FEATURE_INCOMPAT_64BIT;
+	param.s_desc_size = 128;
+	csum_known = 0x5b6e;
+#endif
 
 	retval = ext2fs_initialize("test fs", EXT2_FLAG_64BITS, &param,
 				   test_io_manager, &fs);
