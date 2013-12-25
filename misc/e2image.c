@@ -56,13 +56,13 @@ static char * device_name = NULL;
 static char all_data;
 static char output_is_blk;
 /* writing to blk device: don't skip zeroed blocks */
-blk64_t source_offset, dest_offset;
-char move_mode;
-char show_progress;
+static blk64_t source_offset, dest_offset;
+static char move_mode;
+static char show_progress;
 
-static blk64_t align_offset(blk64_t offset, int n)
+static blk64_t align_offset(blk64_t offset, unsigned int n)
 {
-	return (offset + n - 1) & ~(n - 1);
+	return (offset + n - 1) & ~((blk64_t) n - 1);
 }
 
 static int get_bits_from_size(size_t size)
@@ -448,8 +448,8 @@ static void scramble_dir_block(ext2_filsys fs, blk64_t blk, char *buf)
 #endif
 		if (rec_len < 8 || (rec_len % 4) ||
 		    (p+rec_len > end)) {
-			printf("Corrupt directory block %lu: "
-			       "bad rec_len (%d)\n", (unsigned long) blk,
+			printf("Corrupt directory block %llu: "
+			       "bad rec_len (%d)\n", (unsigned long long) blk,
 			       rec_len);
 			rec_len = end - p;
 			(void) ext2fs_set_rec_len(fs, rec_len,
@@ -460,8 +460,8 @@ static void scramble_dir_block(ext2_filsys fs, blk64_t blk, char *buf)
 			continue;
 		}
 		if (dirent->name_len + 8U > rec_len) {
-			printf("Corrupt directory block %lu: "
-			       "bad name_len (%d)\n", (unsigned long) blk,
+			printf("Corrupt directory block %llu: "
+			       "bad name_len (%d)\n", (unsigned long long) blk,
 			       dirent->name_len);
 			dirent->name_len = rec_len - 8;
 			continue;
@@ -489,7 +489,7 @@ static void scramble_dir_block(ext2_filsys fs, blk64_t blk, char *buf)
 
 static char got_sigint;
 
-static void sigint_handler(int unsused)
+static void sigint_handler(int unused EXT2FS_ATTR((unused)))
 {
 	got_sigint = 1;
 	signal (SIGINT, SIG_DFL);
@@ -504,10 +504,10 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	blk64_t		start = 0;
 	blk64_t		distance = 0;
 	blk64_t		end = ext2fs_blocks_count(fs->super);
-	time_t		last_update;
-	time_t		start_time;
+	time_t		last_update = 0;
+	time_t		start_time = 0;
 	blk64_t		total_written = 0;
-	int		bscount;
+	int		bscount = 0;
 
 	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval) {
@@ -572,6 +572,7 @@ more_blocks:
 			got_sigint = 0;
 		}
 		if (show_progress && last_update != time(NULL)) {
+			time_t duration;
 			last_update = time(NULL);
 			while (bscount--)
 				printf("\b");
@@ -580,7 +581,7 @@ more_blocks:
 					 meta_blocks_count,
 					 (total_written + 50) /
 					 ((meta_blocks_count + 50) / 100));
-			time_t duration = time(NULL) - start_time;
+			duration = time(NULL) - start_time;
 			if (duration > 5) {
 				time_t est = (duration *
 					      meta_blocks_count / total_written) -
@@ -643,10 +644,10 @@ more_blocks:
 	}
 	signal (SIGINT, SIG_DFL);
 	if (show_progress) {
-		while (bscount--)
-			printf("\b");
 		time_t duration = time(NULL) - start_time;
 		char buff[30];
+		while (bscount--)
+			printf("\b");
 		strftime(buff, 30, "%T", gmtime(&duration));
 		printf("\b\b\b\b\b\b\b\bCopied %llu / %llu blocks (%llu%%) in "
 		       "%s at %.2f MB/s       \n",
@@ -1377,7 +1378,7 @@ int main (int argc, char ** argv)
 	int c;
 	errcode_t retval;
 	ext2_filsys fs;
-	char *image_fn;
+	char *image_fn, offset_opt[64];
 	struct ext2_qcow2_hdr *header = NULL;
 	int open_flag = EXT2_FLAG_64BITS;
 	int img_type = 0;
@@ -1497,11 +1498,9 @@ int main (int argc, char ** argv)
 			goto skip_device;
 		}
 	}
-	char *options;
-	asprintf (&options, "offset=%llu", source_offset);
-	retval = ext2fs_open2 (device_name, options, open_flag, 0, 0,
-			       unix_io_manager, &fs);
-	free (options);
+	sprintf(offset_opt, "offset=%llu", source_offset);
+	retval = ext2fs_open2(device_name, offset_opt, open_flag, 0, 0,
+			      unix_io_manager, &fs);
         if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
