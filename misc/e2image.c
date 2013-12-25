@@ -60,12 +60,6 @@ blk64_t source_offset, dest_offset;
 char move_mode;
 char show_progress;
 
-static void lseek_error_and_exit(int errnum)
-{
-	fprintf(stderr, "seek: %s\n", error_message(errnum));
-	exit(1);
-}
-
 static blk64_t align_offset(blk64_t offset, int n)
 {
 	return (offset + n - 1) & ~(n - 1);
@@ -94,6 +88,26 @@ static void usage(void)
 	fprintf(stderr, _("Usage: %s [-rsIQafp] [-o src_offset] [-O dest_offset] device image_file\n"),
 		program_name);
 	exit (1);
+}
+
+static ext2_loff_t seek_relative(int fd, int offset)
+{
+	ext2_loff_t ret = ext2fs_llseek(fd, offset, SEEK_CUR);
+	if (ret < 0) {
+		perror("seek_relative");
+		exit(1);
+	}
+	return ret;
+}
+
+static ext2_loff_t seek_set(int fd, ext2_loff_t offset)
+{
+	ext2_loff_t ret = ext2fs_llseek(fd, offset, SEEK_SET);
+	if (ret < 0) {
+		perror("seek_set");
+		exit(1);
+	}
+	return ret;
 }
 
 static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
@@ -149,10 +163,7 @@ static void write_header(int fd, void *hdr, int hdr_size, int wrt_size)
 		exit(1);
 	}
 
-	if (ext2fs_llseek(fd, 0, SEEK_SET) < 0) {
-		perror("ext2fs_llseek while writing header");
-		exit(1);
-	}
+	seek_set(fd, 0);
 	memset(header_buf, 0, wrt_size);
 
 	if (hdr)
@@ -172,7 +183,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 	write_header(fd, NULL, sizeof(struct ext2_image_hdr), fs->blocksize);
 	memset(&hdr, 0, sizeof(struct ext2_image_hdr));
 
-	hdr.offset_super = ext2fs_llseek(fd, 0, SEEK_CUR);
+	hdr.offset_super = seek_relative(fd, 0);
 	retval = ext2fs_image_super_write(fs, fd, 0);
 	if (retval) {
 		com_err(program_name, retval, "%s",
@@ -180,7 +191,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 		exit(1);
 	}
 
-	hdr.offset_inode = ext2fs_llseek(fd, 0, SEEK_CUR);
+	hdr.offset_inode = seek_relative(fd, 0);
 	retval = ext2fs_image_inode_write(fs, fd,
 				  (fd != 1) ? IMAGER_FLAG_SPARSEWRITE : 0);
 	if (retval) {
@@ -189,7 +200,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 		exit(1);
 	}
 
-	hdr.offset_blockmap = ext2fs_llseek(fd, 0, SEEK_CUR);
+	hdr.offset_blockmap = seek_relative(fd, 0);
 	retval = ext2fs_image_bitmap_write(fs, fd, 0);
 	if (retval) {
 		com_err(program_name, retval, "%s",
@@ -197,7 +208,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 		exit(1);
 	}
 
-	hdr.offset_inodemap = ext2fs_llseek(fd, 0, SEEK_CUR);
+	hdr.offset_inodemap = seek_relative(fd, 0);
 	retval = ext2fs_image_bitmap_write(fs, fd, IMAGER_FLAG_INODEMAP);
 	if (retval) {
 		com_err(program_name, retval, "%s",
@@ -410,19 +421,6 @@ static int check_zero_block(char *buf, int blocksize)
 	return 1;
 }
 
-static void write_block(int fd, char *buf, int sparse_offset,
-			int blocksize, blk64_t block)
-{
-	ext2_loff_t	ret = 0;
-
-	if (sparse_offset)
-		ret = ext2fs_llseek(fd, sparse_offset, SEEK_CUR);
-
-	if (ret < 0)
-		lseek_error_and_exit(errno);
-	generic_write(fd, buf, blocksize, block);
-}
-
 static int name_id[256];
 
 #define EXT4_MAX_REC_LEN		((1<<16)-1)
@@ -544,7 +542,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 		signal (SIGINT, sigint_handler);
 more_blocks:
 	if (distance)
-		ext2fs_llseek (fd, (start * fs->blocksize) + dest_offset, SEEK_SET);
+		seek_set(fd, (start * fs->blocksize) + dest_offset);
 	for (blk = start; blk < end; blk++) {
 		if (got_sigint) {
 			if (distance) {
@@ -610,18 +608,19 @@ more_blocks:
 				scramble_dir_block(fs, blk, buf);
 			if ((fd != 1) && check_zero_block(buf, fs->blocksize))
 				goto sparse_write;
-			write_block(fd, buf, sparse, fs->blocksize, blk);
+			if (sparse)
+				seek_relative(fd, sparse);
+			generic_write(fd, buf, fs->blocksize, blk);
 			sparse = 0;
 		} else {
 		sparse_write:
 			if (fd == 1) {
-				write_block(fd, zero_buf, 0,
-					    fs->blocksize, blk);
+				generic_write(fd, zero_buf, fs->blocksize, blk);
 				continue;
 			}
 			sparse += fs->blocksize;
 			if (sparse > 1024*1024) {
-				write_block(fd, 0, 1024*1024, 0, 0);
+				seek_relative(fd, 1024*1024);
 				sparse -= 1024*1024;
 			}
 		}
@@ -664,20 +663,21 @@ more_blocks:
 	if (sparse) {
 		ext2_loff_t offset;
 		if (distance)
-			offset = ext2fs_llseek(
-				fd,
-				fs->blocksize * ext2fs_blocks_count(fs->super) + dest_offset,
-				SEEK_SET);
-		else offset = ext2fs_llseek(fd, sparse, SEEK_CUR);
+			offset = seek_set(fd,
+					  fs->blocksize * ext2fs_blocks_count(fs->super) + dest_offset);
+		else
+			offset = seek_relative(fd, sparse);
 
-		if (offset < 0)
-			lseek_error_and_exit(errno);
-		if (ftruncate64(fd, offset) < 0)
-			write_block(fd, zero_buf, -1, 1, -1);
+		if (ftruncate64(fd, offset) < 0) {
+			seek_relative(fd, -1);
+			generic_write(fd, zero_buf, 1, -1);
+		}
 	}
 #else
-	if (sparse && !distance)
-		write_block(fd, zero_buf, sparse-1, 1, -1);
+	if (sparse && !distance) {
+		seek_relative(fd, sparse-1);
+		generic_write(fd, zero_buf, 1, -1);
+	}
 #endif
 	ext2fs_free_mem(&zero_buf);
 	ext2fs_free_mem(&buf);
@@ -932,14 +932,12 @@ static void flush_l2_cache(struct ext2_qcow2_image *image)
 	int fd = image->fd;
 
 	/* Store current position */
-	if ((offset = ext2fs_llseek(fd, 0, SEEK_CUR)) < 0)
-		lseek_error_and_exit(errno);
+	offset = seek_relative(fd, 0);
 
 	assert(table);
 	while (cache->free < cache->count) {
 		if (seek != table->offset) {
-			if (ext2fs_llseek(fd, table->offset, SEEK_SET) < 0)
-				lseek_error_and_exit(errno);
+			seek_set(fd, table->offset);
 			seek = table->offset;
 		}
 
@@ -949,8 +947,7 @@ static void flush_l2_cache(struct ext2_qcow2_image *image)
 	}
 
 	/* Restore previous position */
-	if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
-		lseek_error_and_exit(errno);
+	seek_set(fd, offset);
 }
 
 /**
@@ -1027,8 +1024,7 @@ static int update_refcount(int fd, struct ext2_qcow2_image *img,
 	 */
 	if (table_index != ref->refcount_table_index) {
 
-		if (ext2fs_llseek(fd, ref->refcount_block_offset, SEEK_SET) < 0)
-			lseek_error_and_exit(errno);
+		seek_set(fd, ref->refcount_block_offset);
 
 		generic_write(fd, (char *)ref->refcount_block,
 			      img->cluster_size, 0);
@@ -1060,13 +1056,11 @@ static int sync_refcount(int fd, struct ext2_qcow2_image *img)
 
 	ref->refcount_table[ref->refcount_table_index] =
 		ext2fs_cpu_to_be64(ref->refcount_block_offset);
-	if (ext2fs_llseek(fd, ref->refcount_table_offset, SEEK_SET) < 0)
-		lseek_error_and_exit(errno);
+	seek_set(fd, ref->refcount_table_offset);
 	generic_write(fd, (char *)ref->refcount_table,
 		ref->refcount_table_clusters << img->cluster_bits, 0);
 
-	if (ext2fs_llseek(fd, ref->refcount_block_offset, SEEK_SET) < 0)
-		lseek_error_and_exit(errno);
+	seek_set(fd, ref->refcount_block_offset);
 	generic_write(fd, (char *)ref->refcount_block, img->cluster_size, 0);
 	return 0;
 }
@@ -1099,8 +1093,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 
 	/* Refcount all qcow2 related metadata up to refcount_block_offset */
 	end = img->refcount.refcount_block_offset;
-	if (ext2fs_llseek(fd, end, SEEK_SET) < 0)
-		lseek_error_and_exit(errno);
+	seek_set(fd, end);
 	blk = end + img->cluster_size;
 	for (offset = 0; offset <= end; offset += img->cluster_size) {
 		if (update_refcount(fd, img, offset, blk)) {
@@ -1112,8 +1105,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 			end += img->cluster_size;
 		}
 	}
-	if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
-		lseek_error_and_exit(errno);
+	seek_set(fd, offset);
 
 	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval) {
@@ -1139,8 +1131,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 			if (update_refcount(fd, img, offset, offset)) {
 				/* Make space for another refcount block */
 				offset += img->cluster_size;
-				if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
-					lseek_error_and_exit(errno);
+				seek_set(fd, offset);
 				/*
 				 * We have created the new refcount block, this
 				 * means that we need to refcount it as well.
@@ -1174,8 +1165,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 					}
 				}
 				offset += img->cluster_size;
-				if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
-					lseek_error_and_exit(errno);
+				seek_set(fd, offset);
 				continue;
 			}
 
@@ -1187,8 +1177,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 	sync_refcount(fd, img);
 
 	/* Write l1_table*/
-	if (ext2fs_llseek(fd, img->l1_offset, SEEK_SET) < 0)
-		lseek_error_and_exit(errno);
+	seek_set(fd, img->l1_offset);
 	size = img->l1_size * sizeof(__u64);
 	generic_write(fd, (char *)img->l1_table, size, 0);
 
@@ -1361,10 +1350,7 @@ static void install_image(char *device, char *image_fn, int type)
 
 	ext2fs_rewrite_to_io(fs, io);
 
-	if (ext2fs_llseek(fd, fs->image_header->offset_inode, SEEK_SET) < 0) {
-		perror("ext2fs_llseek");
-		exit(1);
-	}
+	seek_set(fd, fs->image_header->offset_inode);
 
 	retval = ext2fs_image_inode_read(fs, fd, 0);
 	if (retval) {
@@ -1539,10 +1525,7 @@ skip_device:
 		}
 	}
 	if (dest_offset)
-		if (ext2fs_llseek (fd, dest_offset, SEEK_SET) < 0) {
-			perror("ext2fs_llseek");
-			exit(1);
-		}
+		seek_set(fd, dest_offset);
 
 	if ((img_type & E2IMAGE_QCOW2) && (fd == 1)) {
 		com_err(program_name, 0, "QCOW2 image can not be written to "
