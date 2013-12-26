@@ -8,7 +8,7 @@ e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
 .SH SYNOPSIS
 .B e2image
 [
-.B \-acfprsIQ
+.B \-acfnprsIQ
 ]
 [
 .B \-o
@@ -218,7 +218,10 @@ option which cause e2image to try reading a block from the destination
 to see if it is identical to the block which
 .B e2image
 is about to copy.  If the block is already the same, the write can be
-skipped.
+skipped.  The
+.B \-n
+option will cause all of the writes to be no-ops, and print the blocks
+that would have been written.
 .PP
 .SH OFFSETS
 Normally a filesystem starts at the beginning of a partition, and

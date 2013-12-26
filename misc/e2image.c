@@ -49,6 +49,7 @@ extern int optind;
 #include "nls-enable.h"
 
 #define QCOW_OFLAG_COPIED     (1LL << 63)
+#define NO_BLK ((blk64_t) -1)
 
 /* Image types */
 #define E2IMAGE_RAW	1
@@ -64,6 +65,7 @@ static const char * program_name = "e2image";
 static char * device_name = NULL;
 static char all_data;
 static char output_is_blk;
+static char nop_flag;
 /* writing to blk device: don't skip zeroed blocks */
 static blk64_t source_offset, dest_offset;
 static char move_mode;
@@ -96,7 +98,7 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-acfprsIQ] [-o src_offset] "
+	fprintf(stderr, _("Usage: %s [-acfnprsIQ] [-o src_offset] "
 			  "[-O dest_offset] \\\n\tdevice image_file\n"),
 		program_name);
 	exit (1);
@@ -164,7 +166,11 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 			exit(1);
 		}
 	}
-
+	if (nop_flag) {
+		printf("Writing block %llu\n", (unsigned long long) block);
+		seek_relative(fd, blocksize);
+		return;
+	}
 	count = write(fd, buf, blocksize);
 	if (count != blocksize) {
 		if (count == -1)
@@ -207,7 +213,7 @@ static void write_header(int fd, void *hdr, int hdr_size, int wrt_size)
 	if (hdr)
 		memcpy(header_buf, hdr, hdr_size);
 
-	generic_write(fd, header_buf, wrt_size, 0);
+	generic_write(fd, header_buf, wrt_size, NO_BLK);
 
 	ext2fs_free_mem(&header_buf);
 }
@@ -714,13 +720,13 @@ more_blocks:
 
 		if (ftruncate64(fd, offset) < 0) {
 			seek_relative(fd, -1);
-			generic_write(fd, zero_buf, 1, -1);
+			generic_write(fd, zero_buf, 1, NO_BLK);
 		}
 	}
 #else
 	if (sparse && !distance) {
 		seek_relative(fd, sparse-1);
-		generic_write(fd, zero_buf, 1, -1);
+		generic_write(fd, zero_buf, 1, NO_BLK);
 	}
 #endif
 	ext2fs_free_mem(&zero_buf);
@@ -985,7 +991,8 @@ static void flush_l2_cache(struct ext2_qcow2_image *image)
 			seek = table->offset;
 		}
 
-		generic_write(fd, (char *)table->data, image->cluster_size , 0);
+		generic_write(fd, (char *)table->data, image->cluster_size,
+			      NO_BLK);
 		put_used_table(image, &table);
 		seek += image->cluster_size;
 	}
@@ -1071,7 +1078,7 @@ static int update_refcount(int fd, struct ext2_qcow2_image *img,
 		seek_set(fd, ref->refcount_block_offset);
 
 		generic_write(fd, (char *)ref->refcount_block,
-			      img->cluster_size, 0);
+			      img->cluster_size, NO_BLK);
 		memset(ref->refcount_block, 0, img->cluster_size);
 
 		ref->refcount_table[ref->refcount_table_index] =
@@ -1102,10 +1109,11 @@ static int sync_refcount(int fd, struct ext2_qcow2_image *img)
 		ext2fs_cpu_to_be64(ref->refcount_block_offset);
 	seek_set(fd, ref->refcount_table_offset);
 	generic_write(fd, (char *)ref->refcount_table,
-		ref->refcount_table_clusters << img->cluster_bits, 0);
+		ref->refcount_table_clusters << img->cluster_bits, NO_BLK);
 
 	seek_set(fd, ref->refcount_block_offset);
-	generic_write(fd, (char *)ref->refcount_block, img->cluster_size, 0);
+	generic_write(fd, (char *)ref->refcount_block, img->cluster_size,
+		      NO_BLK);
 	return 0;
 }
 
@@ -1192,7 +1200,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 				}
 			}
 
-			generic_write(fd, buf, fs->blocksize, 0);
+			generic_write(fd, buf, fs->blocksize, blk);
 
 			if (add_l2_item(img, blk, offset,
 					offset + img->cluster_size)) {
@@ -1223,7 +1231,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 	/* Write l1_table*/
 	seek_set(fd, img->l1_offset);
 	size = img->l1_size * sizeof(__u64);
-	generic_write(fd, (char *)img->l1_table, size, 0);
+	generic_write(fd, (char *)img->l1_table, size, NO_BLK);
 
 	ext2fs_free_mem(&buf);
 	free_qcow2_image(img);
@@ -1446,7 +1454,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt(argc, argv, "rsIQafo:O:pc")) != EOF)
+	while ((c = getopt(argc, argv, "nrsIQafo:O:pc")) != EOF)
 		switch (c) {
 		case 'I':
 			flags |= E2IMAGE_INSTALL_FLAG;
@@ -1469,6 +1477,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'f':
 			ignore_rw_mount = 1;
+			break;
+		case 'n':
+			nop_flag = 1;
 			break;
 		case 'o':
 			source_offset = strtoull(optarg, NULL, 0);
