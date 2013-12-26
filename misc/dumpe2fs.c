@@ -337,6 +337,8 @@ static void print_inline_journal_information(ext2_filsys fs)
 	__u32			*mask_ptr, mask, m;
 	int			i, j, size, printed = 0;
 
+	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
+		return;
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
 		com_err(program_name, retval, "%s",
