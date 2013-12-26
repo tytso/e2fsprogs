@@ -272,8 +272,9 @@ retry:
 		goto cleanup;
 	}
 
-	if (super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
-		super->s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
+	set_field(s_desc_size,
+		  super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT ?
+		  EXT2_MIN_DESC_SIZE_64BIT : 0);
 
 	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
 					  EXT2_DESC_PER_BLOCK(super));

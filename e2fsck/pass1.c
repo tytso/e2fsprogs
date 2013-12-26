@@ -509,8 +509,8 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	}
 }
 
-extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,
-				    ext2_icount_t *ret)
+void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,
+			     ext2_icount_t *ret)
 {
 	unsigned int		threshold;
 	ext2_ino_t		num_dirs;

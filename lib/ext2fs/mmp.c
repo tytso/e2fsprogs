@@ -144,7 +144,7 @@ errcode_t ext2fs_mmp_write(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 #define rand()		random()
 #endif
 
-unsigned ext2fs_mmp_new_seq()
+unsigned ext2fs_mmp_new_seq(void)
 {
 #ifdef CONFIG_MMP
 	unsigned new_seq;

@@ -22,6 +22,7 @@
 
 #define MIN_CHECK 1
 #define MAX_CHECK 2
+#define LOG2_CHECK 4
 
 static void check_super_value(e2fsck_t ctx, const char *descr,
 			      unsigned long value, int flags,
@@ -30,7 +31,8 @@ static void check_super_value(e2fsck_t ctx, const char *descr,
 	struct		problem_context pctx;
 
 	if (((flags & MIN_CHECK) && (value < min_val)) ||
-	    ((flags & MAX_CHECK) && (value > max_val))) {
+	    ((flags & MAX_CHECK) && (value > max_val)) ||
+	    ((flags & LOG2_CHECK) && (value & (value - 1) != 0))) {
 		clear_problem_context(&pctx);
 		pctx.num = value;
 		pctx.str = descr;
@@ -527,26 +529,22 @@ void check_super_block(e2fsck_t ctx)
 			  MAX_CHECK, 0, ext2fs_blocks_count(sb) / 2);
 	check_super_value(ctx, "reserved_gdt_blocks",
 			  sb->s_reserved_gdt_blocks, MAX_CHECK, 0,
-			  fs->blocksize/4);
+			  fs->blocksize / sizeof(__u32));
+	check_super_value(ctx, "desc_size",
+			  sb->s_desc_size, MAX_CHECK | LOG2_CHECK, 0,
+			  EXT2_MAX_DESC_SIZE);
 	if (sb->s_rev_level > EXT2_GOOD_OLD_REV)
 		check_super_value(ctx, "first_ino", sb->s_first_ino,
 				  MIN_CHECK | MAX_CHECK,
 				  EXT2_GOOD_OLD_FIRST_INO, sb->s_inodes_count);
 	inode_size = EXT2_INODE_SIZE(sb);
 	check_super_value(ctx, "inode_size",
-			  inode_size, MIN_CHECK | MAX_CHECK,
+			  inode_size, MIN_CHECK | MAX_CHECK | LOG2_CHECK,
 			  EXT2_GOOD_OLD_INODE_SIZE, fs->blocksize);
 	if (sb->s_blocks_per_group != (sb->s_clusters_per_group *
 				       EXT2FS_CLUSTER_RATIO(fs))) {
 		pctx.num = sb->s_clusters_per_group * EXT2FS_CLUSTER_RATIO(fs);
 		pctx.str = "block_size";
-		fix_problem(ctx, PR_0_MISC_CORRUPT_SUPER, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT; /* never get here! */
-		return;
-	}
-	if (inode_size & (inode_size - 1)) {
-		pctx.num = inode_size;
-		pctx.str = "inode_size";
 		fix_problem(ctx, PR_0_MISC_CORRUPT_SUPER, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT; /* never get here! */
 		return;

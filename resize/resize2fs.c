@@ -73,7 +73,7 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 #define GE_CLSTR(x, y) (B2C(x) >= B2C(y))
 #define GT_CLSTR(x, y) (B2C(x) >  B2C(y))
 
-int lazy_itable_init;
+static int lazy_itable_init;
 
 /*
  * This is the top-level routine which does the dirty deed....
@@ -1348,7 +1348,7 @@ errout:
  * take special care when mapping a source block number to its
  * destination block number.
  */
-__u64 extent_translate(ext2_filsys fs, ext2_extent extent, __u64 old_loc)
+static __u64 extent_translate(ext2_filsys fs, ext2_extent extent, __u64 old_loc)
 {
 	__u64 new_block = C2B(ext2fs_extent_translate(extent, B2C(old_loc)));
 

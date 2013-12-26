@@ -164,23 +164,23 @@ struct frag_statistic_ino {
 	char msg_buffer[PATH_MAX + 1];	/* pathname of the file */
 };
 
-char	lost_found_dir[PATH_MAX + 1];
-int	block_size;
-int	extents_before_defrag;
-int	extents_after_defrag;
-int	mode_flag;
-unsigned int	current_uid;
-unsigned int	defraged_file_count;
-unsigned int	frag_files_before_defrag;
-unsigned int	frag_files_after_defrag;
-unsigned int	regular_count;
-unsigned int	succeed_cnt;
-unsigned int	total_count;
-__u8 log_groups_per_flex;
-__u32 blocks_per_group;
-__u32 feature_incompat;
-ext4_fsblk_t	files_block_count;
-struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
+static char	lost_found_dir[PATH_MAX + 1];
+static int	block_size;
+static int	extents_before_defrag;
+static int	extents_after_defrag;
+static int	mode_flag;
+static unsigned int	current_uid;
+static unsigned int	defraged_file_count;
+static unsigned int	frag_files_before_defrag;
+static unsigned int	frag_files_after_defrag;
+static unsigned int	regular_count;
+static unsigned int	succeed_cnt;
+static unsigned int	total_count;
+static __u8 log_groups_per_flex;
+static __u32 blocks_per_group;
+static __u32 feature_incompat;
+static ext4_fsblk_t	files_block_count;
+static struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
 
 
 /* Local definitions of some syscalls glibc may not yet have */
@@ -1865,12 +1865,13 @@ int main(int argc, char *argv[])
 		}
 
 		switch (arg_type) {
+			int mount_dir_len = 0;
+
 		case DIRNAME:
 			if (!(mode_flag & STATISTIC))
 				printf("ext4 defragmentation "
 					"for directory(%s)\n", argv[i]);
 
-			int mount_dir_len = 0;
 			mount_dir_len = strnlen(lost_found_dir, PATH_MAX);
 
 			strncat(lost_found_dir, "/lost+found",

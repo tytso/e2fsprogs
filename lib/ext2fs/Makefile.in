@@ -308,7 +308,7 @@ extent_cmds.c extent_cmds.h: $(top_srcdir)/debugfs/extent_cmds.ct
 
 DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o \
 	lsdel.o dump.o set_fields.o logdump.o htree.o unused.o \
-	e2freefrag.o filefrag.o extent_inode.o extent_cmds.o
+	e2freefrag.o filefrag.o extent_inode.o extent_cmds.o zap.o
 
 debugfs.o: $(top_srcdir)/debugfs/debugfs.c
 	$(E) "	CC $<"
@@ -355,6 +355,10 @@ htree.o: $(top_srcdir)/debugfs/htree.c
 	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 unused.o: $(top_srcdir)/debugfs/unused.c
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+
+zap.o: $(top_srcdir)/debugfs/zap.c
 	$(E) "	CC $<"
 	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 

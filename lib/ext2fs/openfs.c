@@ -289,7 +289,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 
 	/* Enforce the block group descriptor size */
 	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) {
-		if (fs->super->s_desc_size != EXT2_MIN_DESC_SIZE_64BIT) {
+		if (fs->super->s_desc_size < EXT2_MIN_DESC_SIZE_64BIT) {
 			retval = EXT2_ET_BAD_DESC_SIZE;
 			goto cleanup;
 		}

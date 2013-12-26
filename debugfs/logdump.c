@@ -39,10 +39,10 @@ enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
 #define ANY_BLOCK ((blk64_t) -1)
 
-int		dump_all, dump_contents, dump_descriptors;
-blk64_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
-unsigned int	group_to_dump, inode_offset_to_dump;
-ext2_ino_t	inode_to_dump;
+static int		dump_all, dump_contents, dump_descriptors;
+static blk64_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
+static unsigned int	group_to_dump, inode_offset_to_dump;
+static ext2_ino_t	inode_to_dump;
 
 struct journal_source
 {

@@ -149,6 +149,7 @@ then
 	return 1
 fi
 
+rm $TMPFILE
 return 0
 
 }

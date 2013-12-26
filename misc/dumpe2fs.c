@@ -45,10 +45,10 @@ extern int optind;
 
 #define in_use(m, x)	(ext2fs_test_bit ((x), (m)))
 
-const char * program_name = "dumpe2fs";
-char * device_name = NULL;
-int hex_format = 0;
-int blocks64 = 0;
+static const char * program_name = "dumpe2fs";
+static char * device_name = NULL;
+static int hex_format = 0;
+static int blocks64 = 0;
 
 static void usage(void)
 {
@@ -355,6 +355,8 @@ static void print_inline_journal_information(ext2_filsys fs)
 	__u32			*mask_ptr, mask, m;
 	int			i, j, size, printed = 0;
 
+	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
+		return;
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
 		com_err(program_name, retval, "%s",

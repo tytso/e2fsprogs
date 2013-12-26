@@ -1738,7 +1738,7 @@ void do_write(int argc, char *argv[])
 		eh = (struct ext3_extent_header *) &inode.i_block[0];
 		eh->eh_depth = 0;
 		eh->eh_entries = 0;
-		eh->eh_magic = EXT3_EXT_MAGIC;
+		eh->eh_magic = ext2fs_cpu_to_le16(EXT3_EXT_MAGIC);
 		i = (sizeof(inode.i_block) - sizeof(*eh)) /
 			sizeof(struct ext3_extent);
 		eh->eh_max = ext2fs_cpu_to_le16(i);
@@ -2479,10 +2479,8 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			retval = strtoblk(argv[0], optarg, &superblock);
-			if (retval) {
-				com_err(argv[0], retval, 0, debug_prog_name);
+			if (retval)
 				return 1;
-			}
 			break;
 		case 'c':
 			catastrophic = 1;

@@ -1,0 +1,257 @@
+.\" -*- nroff -*-
+.\" Copyright 1993, 1994, 1995 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\"
+.TH EXT4 5 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+ext2 \- the second extended file system
+.br
+ext2 \- the third extended file system
+.br
+ext4 \- the fourth extended file system
+.SH DESCRIPTION
+The second, third, and fourth extended file systems, or ext2, ext3, and
+ext4 as they are commonly known, are Linux file systems that have
+historically been the default file system for many Linux distributions.
+They are general purpose file systems that have been designed for
+extensibility and backwards compatibility.  In particular, file systems
+previously intended for use with the ext2 and ext3 file systems can be
+mounted using the ext4 file system driver, and indeed in many modern
+Linux distributions, the ext4 file system driver has been configured
+handle mount requests for ext2 and ext3 file systems.
+.SH FILE SYSTEM FEATURES
+A file system formated for ext2, ext3, or ext4 can be have some
+collection of the follow file system feature flags enabled.  Some of
+these features are not supported by all implementations of the ext2,
+ext3, and ext4 file system drivers, depending on Linux kernel version in
+use.  On other operating systems, such as the GNU/HURD or FreeBSD, only
+a very restrictive set of file system features may be supported in their
+implementations of ext2.
+.RS 1.2i
+.TP
+.B 64bit
+.br
+Enables the file system to be larger than 2^32 blocks.  This feature is set
+automatically, as needed, but it can be useful to specify this feature
+explicitly if the file system might need to be resized larger than 2^32
+blocks, even if it was smaller than that threshold when it was
+originally created.  Note that some older kernels and older versions
+of e2fsprogs will not support file systems with this ext4 feature enabled.
+.TP
+.B bigalloc
+.br
+This ext4 feature enables clustered block allocation, so that the unit of
+allocation is a power of two number of blocks.  That is, each bit in the
+what had traditionally been known as the block allocation bitmap now
+indicates whether a cluster is in use or not, where a cluster is by
+default composed of 16 blocks.  This feature can decrease the time
+spent on doing block allocation and brings smaller fragmentation, especially
+for large files.  The size can be specified using the
+.B \-C option.
+.IP
+.B Warning:
+The bigalloc feature is still under development, and may not be fully
+supported with your kernel or may have various bugs.  Please see the web
+page http://ext4.wiki.kernel.org/index.php/Bigalloc for details.
+May clash with delayed allocation (see
+.BR nodelalloc mount option).
+.IP
+This feature requires that the
+.B extent
+features be enabled.
+.TP
+.B dir_index
+.br
+Use hashed b-trees to speed up name lookups in large directories.  This
+feature is supported by ext3 and ext4 file systems, and is ignored by
+ext2 file systems.
+.TP
+.B dir_nlink
+.br
+This ext4 feature allows more than 65000 subdirectories per directory.
+.TP
+.B extent
+.br
+This ext4 feature allows the mapping of logical block numbers for a
+particular inode to physical blocks on the storage device to be stored
+using an extent tree, which is a more efficient data structure than the
+traditional indirect block scheme used by the ext2 and ext3 file
+systems.  The use of the extent tree decreases metadata block overhead,
+improves file system performance, and decreases the needed to run
+.BR e2fsck (8)
+on the file system.
+(Note: both
+.B extent
+and
+.B extents
+are accepted as valid names for this feature for
+historical/backwards compatibility reasons.)
+.TP
+.B extra_isize
+.br
+This ext4 feature reserves a specific amount of space in each inode for
+extended metadata such as nanosecond timestamps and file creation time,
+even if the current kernel does not current need to reserve this much
+space.  Without this feature, the kernel will reserve the amount of
+space for features currently it currently needs, and the rest may be
+consumed by extended attributes.
+
+For this feature to be useful the inode size must be 256 bytes in size
+or larger.
+.TP
+.B ext_attr
+.br
+This feature enables the use of extended attributes.  This feature is
+supported by ext2, ext3, and ext4.
+.TP
+.B filetype
+.br
+This feature enables the storage file type information in directory
+entries.  This feature is supported by ext2, ext3, and ext4.
+.TP
+.TP
+.B flex_bg
+.br
+This ext4 feature allows the per-block group metadata (allocation
+bitmaps
+and inode tables)
+to be placed anywhere on the storage media.  In addition,
+.B mke2fs
+will place the per-block group metadata together starting at the first
+block group of each "flex_bg group".   The size of the flex_bg group
+can be specified using the
+.B \-G
+option.
+.TP
+.B has_journal
+.br
+Create a journal to ensure filesystem consistency even across unclean
+shutdowns.  Setting the filesystem feature is equivalent to using the
+.B \-j
+option.  This feature is supported by ext3 and ext4, and ignored by the
+ext2 file system driver.
+.TP
+.B huge_file
+.br
+This ext4 feature allows files to be larger than 2 terabytes in size.
+.TP
+.B journal_dev
+.br
+This feature is enabled on the superblock found on an external journal
+device.  The block size for the external journal must be the same as the
+file system which uses it.
+.IP
+The external journal device can be used by a file system by specifying
+the
+.B \-J
+.BR device= <external-device>
+option to
+.BR mke2fs (8)
+or
+.BR tune2fs(8).
+.TP
+.B large_file
+.br
+This feature flag is set automatically by modern kernels when a file
+larger than 2 gigabytes is created.  Very old kernels could not
+handle large files, so this feature flag was used to prohibit those
+kernels from mounting file systems that they could not understand.
+.\" .TP
+.\" .B metadata_csum
+.\" .br
+.\" This ext4 feature enables metadata checksumming.  This feature stores
+.\" checksums for all of the filesystem metadata (superblock, group
+.\" descriptor blocks, inode and block bitmaps, directories, and
+.\" extent tree blocks).  The checksum algorithm used for the metadata
+.\" blocks is different than the one used for group descriptors with the
+.\" .B uninit_bg
+.\" feature, these two features are incompatible and
+.\" .B metadata_csum
+.\" will be used preferentially instead of
+.\" .BR uninit_bg .
+.\" .br
+.\" .B Future feature, available in e2fsprogs 1.43-WIP
+.TP
+.B meta_bg
+.br
+This ext4 feature allows file systems to be resized on-line without explicitly
+needing to reserve space for growth in the size of the block group
+descriptors.  This scheme is also used to resize file systems which are
+larger than 2^32 blocks.  It is not recommended that this feature be set
+when a file system is created, since this alternate method of storing
+the block group descriptor will slow down the time needed to mount the
+file system, and newer kernels can automatically set this feature as
+necessary when doing an online resize and no more reserved space is
+available in the resize inode.
+.TP
+.B mmp
+.br
+This ext4 feature provides multiple mount protection (MMP).  MMP helps to
+protect the filesystem from being multiply mounted and is useful in
+shared storage environments.
+@QUOTA_MAN_COMMENT@.TP
+@QUOTA_MAN_COMMENT@.B quota
+@QUOTA_MAN_COMMENT@.br
+@QUOTA_MAN_COMMENT@Create quota inodes (inode #3 for userquota and inode
+@QUOTA_MAN_COMMENT@#4 for group quota) and set them in the superblock.
+@QUOTA_MAN_COMMENT@With this feature, the quotas will be enabled
+@QUOTA_MAN_COMMENT@automatically when the filesystem is mounted.
+@QUOTA_MAN_COMMENT@.IP
+@QUOTA_MAN_COMMENT@Causes the quota files (i.e., user.quota and
+@QUOTA_MAN_COMMENT@group.quota which existed
+@QUOTA_MAN_COMMENT@in the older quota design) to be hidden inodes.
+@QUOTA_MAN_COMMENT@.IP
+@QUOTA_MAN_COMMENT@.B Warning:
+@QUOTA_MAN_COMMENT@The quota feature is still under development,
+@QUOTA_MAN_COMMENT@and may not be fully supported with your kernel
+@QUOTA_MAN_COMMENT@or may have various bugs.  Please
+@QUOTA_MAN_COMMENT@see https://ext4.wiki.kernel.org/index.php/Quota
+@QUOTA_MAN_COMMENT@for more details.
+.TP
+.B resize_inode
+.br
+This file system feature indicates that space has been reserved so
+the block group descriptor table can be extended by the file system is
+resized while the file system is mounted.  The online resize operation
+is carried out by the kernel, triggered, by
+.BR resize2fs (8).
+By default
+.B mke2fs
+will attempt to reserve enough space so that the
+filesystem may grow to 1024 times its initial size.  This can be changed
+using the
+.B resize
+extended option.
+.IP
+This feature requires that the
+.B sparse_super
+feature be enabled.
+.TP
+.B sparse_super
+.br
+This file system feature is set on all modern ext2, ext3, and ext4 file
+system.  It indicates that backup copies of the superblock and block
+group descriptors be present only on a few block groups, and not all of
+them.
+.TP
+.B uninit_bg
+.br
+This ext4 file system feature indicates that the block group descriptors
+will be protected using checksums, making it safe for
+.BR mke2fs (8)
+to create a file system without initializing all of the block groups.
+The kernel will keep a high watermark of unused inodes, and initialize
+inode tables and block lazily.  This feature speeds up the time to check
+the file system using
+.BR e2fsck (8),
+and it also speeds up the time required for
+.BR mke2fs (8)
+to create the file system.
+.RE
+.SH SEE ALSO
+.BR mke2fs (8),
+.BR mke2fs.conf (5),
+.BR e2fsck (8),
+.BR dumpe2fs (8),
+.BR tune2fs (8),
+.BR debugfs (8)

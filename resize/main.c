@@ -36,7 +36,8 @@ extern int optind;
 
 #include "../version.h"
 
-char *program_name, *device_name, *io_options;
+char *program_name;
+static char *device_name, *io_options;
 
 static void usage (char *prog)
 {

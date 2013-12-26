@@ -464,7 +464,7 @@ struct percent_tbl {
 	int	max_pass;
 	int	table[32];
 };
-struct percent_tbl e2fsck_tbl = {
+static struct percent_tbl e2fsck_tbl = {
 	5, { 0, 70, 90, 92,  95, 100 }
 };
 static char bar[128], spaces[128];
@@ -483,7 +483,7 @@ static float calc_percent(struct percent_tbl *tbl, int pass, int curr,
 		+ tbl->table[pass-1]);
 }
 
-extern void e2fsck_clear_progbar(e2fsck_t ctx)
+void e2fsck_clear_progbar(e2fsck_t ctx)
 {
 	if (!(ctx->flags & E2F_FLAG_PROG_BAR))
 		return;

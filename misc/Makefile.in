@@ -33,7 +33,7 @@ SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 $(FINDFS_MAN) $(BLKID_MAN) $(E2IMAGE_MAN) \
 			logsave.8 filefrag.8 e2freefrag.8 e2undo.8 \
 			$(UUIDD_MAN) $(E4DEFRAG_MAN) @FSCK_MAN@
-FMANPAGES=	mke2fs.conf.5
+FMANPAGES=	mke2fs.conf.5 ext4.5
 
 UPROGS=		chattr lsattr @UUID_CMT@ uuidgen
 UMANPAGES=	chattr.1 lsattr.1 @UUID_CMT@ uuidgen.1
@@ -356,6 +356,10 @@ mke2fs.conf.5: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.conf.5.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/mke2fs.conf.5.in mke2fs.conf.5
 
+ext4.5: $(DEP_SUBSTITUTE) $(srcdir)/ext4.5.in
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/$@.in $@
+
 e2label.8: $(DEP_SUBSTITUTE) $(srcdir)/e2label.8.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2label.8.in e2label.8
@@ -489,6 +493,11 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		$(ES) "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
+	$(Q) for i in ext2 ext3; do \
+		$(ES) "	LINK $$i.5"; \
+		(cd $(DESTDIR)$(man5dir); \
+			$(LN) $(LINK_INSTALL_FLAGS) ext4.5 $$i.5); \
+	done
 	$(Q) if test -f $(DESTDIR)$(root_sysconfdir)/mke2fs.conf; then \
 		if cmp -s $(DESTDIR)$(root_sysconfdir)/mke2fs.conf \
 			mke2fs.conf; then \
@@ -551,7 +560,12 @@ uninstall:
 	$(RM) -f $(DESTDIR)$(man8dir)/mkfs.ext2.8 \
 		$(DESTDIR)$(man8dir)/mkfs.ext3.8 \
 		$(DESTDIR)$(man8dir)/mkfs.ext4.8 \
-		$(DESTDIR)$(man8dir)/mkfs.ext4dev.8
+		$(DESTDIR)$(man8dir)/mkfs.ext4dev.8 \
+		$(DESTDIR)$(man8dir)/fsck.ext2.8 \
+		$(DESTDIR)$(man8dir)/fsck.ext3.8 \
+		$(DESTDIR)$(man8dir)/fsck.ext4.8 \
+		$(DESTDIR)$(man8dir)/fsck.ext4dev.8
+
 	for i in $(UMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man1dir)/$$i; \
 	done
@@ -560,6 +574,10 @@ uninstall:
 	done
 	for i in $(FMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man5dir)/$$i; \
+	done
+	$(Q) for i in ext2 ext3; do \
+		$(ES) "	LINK $$i.5"; \
+		$(RM) -f $(DESTDIR)$(man5dir)/$$i.5; \
 	done
 	if cmp -s mke2fs.conf $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; then \
 		$(RM) $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; \

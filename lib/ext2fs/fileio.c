@@ -395,7 +395,8 @@ ext2_off_t ext2fs_file_get_size(ext2_file_t file)
 }
 
 /* Zero the parts of the last block that are past EOF. */
-errcode_t ext2fs_file_zero_past_offset(ext2_file_t file, ext2_off64_t offset)
+static errcode_t ext2fs_file_zero_past_offset(ext2_file_t file,
+					      ext2_off64_t offset)
 {
 	ext2_filsys fs = file->fs;
 	char *b = NULL;

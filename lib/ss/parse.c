@@ -43,10 +43,7 @@ enum parse_mode { WHITESPACE, TOKEN, QUOTED_STRING };
 #define NEW_ARGV(old,n) (char **)realloc((char *)old,\
 					 (unsigned)(n+2)*sizeof(char*))
 
-char **ss_parse (sci_idx, line_ptr, argc_ptr)
-    int sci_idx;
-    register char *line_ptr;
-    int *argc_ptr;
+char **ss_parse(int sci_idx, register char *line_ptr, int *argc_ptr)
 {
     register char **argv, *cp;
     register int argc;

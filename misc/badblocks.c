@@ -33,10 +33,6 @@
 #define _GNU_SOURCE /* for O_DIRECT */
 #endif
 
-#ifndef O_LARGEFILE
-#define O_LARGEFILE 0
-#endif
-
 #include "config.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -65,8 +61,12 @@ extern int optind;
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
 
-const char * program_name = "badblocks";
-const char * done_string = N_("done                                                 \n");
+#ifndef O_LARGEFILE
+#define O_LARGEFILE 0
+#endif
+
+static const char * program_name = "badblocks";
+static const char * done_string = N_("done                                                 \n");
 
 static int v_flag;			/* verbose */
 static int w_flag;			/* do r/w test: 0=no, 1=yes,
@@ -84,7 +84,7 @@ static struct timeval time_start;
 
 #define T_INC 32
 
-unsigned int sys_page_size = 4096;
+static unsigned int sys_page_size = 4096;
 
 static void usage(void)
 {

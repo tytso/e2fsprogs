@@ -151,16 +151,16 @@ static int xlate_func(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	return (*xl->func)(dirent, offset, blocksize, buf, xl->real_private);
 }
 
-extern errcode_t ext2fs_dir_iterate(ext2_filsys fs,
-			      ext2_ino_t dir,
-			      int flags,
-			      char *block_buf,
-			      int (*func)(struct ext2_dir_entry *dirent,
-					  int	offset,
-					  int	blocksize,
-					  char	*buf,
-					  void	*priv_data),
-			      void *priv_data)
+errcode_t ext2fs_dir_iterate(ext2_filsys fs,
+			     ext2_ino_t dir,
+			     int flags,
+			     char *block_buf,
+			     int (*func)(struct ext2_dir_entry *dirent,
+					 int	offset,
+					 int	blocksize,
+					 char	*buf,
+					 void	*priv_data),
+			     void *priv_data)
 {
 	struct xlate xl;
 
