@@ -540,6 +540,16 @@ static void sigint_handler(int unused EXT2FS_ATTR((unused)))
 	signal (SIGINT, SIG_DFL);
 }
 
+#define calc_percent(a, b) ((int) ((100.0 * (((float) (a)) / \
+					     ((float) (b)))) + 0.5))
+#define calc_rate(t, b, d) (((float)(t) / ((1024 * 1024) / (b))) / (d))
+
+static int print_progress(blk64_t num, blk64_t total)
+{
+	return printf(_("%llu / %llu blocks (%d%%)"), num, total,
+		      calc_percent(num, total));
+}
+
 static void output_meta_data_blocks(ext2_filsys fs, int fd, int flags)
 {
 	errcode_t	retval;
@@ -566,10 +576,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd, int flags)
 	}
 	if (show_progress) {
 		printf(_("Copying "));
-		bscount = printf(_("%llu / %llu blocks (%llu%%)"),
-				 total_written,
-				 meta_blocks_count,
-				 (total_written + 50) / ((meta_blocks_count + 50) / 100));
+		bscount = print_progress(total_written, meta_blocks_count);
 		fflush(stdout);
 		last_update = time(NULL);
 		start_time = time(NULL);
@@ -606,11 +613,8 @@ more_blocks:
 				 "interrupt again if you are sure\n"));
 			if (show_progress) {
 				printf(_("Copying "));
-				bscount = printf(_("%llu / %llu blocks (%llu%%)"),
-						 total_written,
-						 meta_blocks_count,
-						 (total_written + 50) / ((meta_blocks_count + 50)
-									 / 100));
+				bscount = print_progress(total_written,
+							 meta_blocks_count);
 				fflush(stdout);
 			}
 
@@ -621,23 +625,18 @@ more_blocks:
 			last_update = time(NULL);
 			while (bscount--)
 				printf("\b");
-			bscount = printf(_("%llu / %llu blocks (%llu%%)"),
-					 total_written,
-					 meta_blocks_count,
-					 (total_written + 50) /
-					 ((meta_blocks_count + 50) / 100));
+			bscount = print_progress(total_written,
+						 meta_blocks_count);
 			duration = time(NULL) - start_time;
 			if (duration > 5) {
-				time_t est = (duration *
-					      meta_blocks_count / total_written) -
-					(duration);
+				time_t est = (duration * meta_blocks_count /
+					      total_written) - duration;
 				char buff[30];
 				strftime(buff, 30, "%T", gmtime(&est));
 				bscount += printf(_(" %s remaining at %.2f MB/s"),
-						  buff,
-						  ((float)total_written /
-						   ((1024 * 1024) / fs->blocksize)) /
-						  duration);
+						  buff, calc_rate(total_written,
+								  fs->blocksize,
+								  duration));
 			}
 			fflush (stdout);
 		}
@@ -701,14 +700,9 @@ more_blocks:
 		strftime(buff, 30, "%T", gmtime(&duration));
 		printf(_("\b\b\b\b\b\b\b\bCopied %llu / %llu blocks (%llu%%) "
 			 "in %s at %.2f MB/s       \n"),
-		       total_written,
-		       meta_blocks_count,
-		       (total_written + 50) / ((meta_blocks_count + 50) / 100),
-		       buff,
-		       ((float)total_written /
-			((1024 * 1024) / fs->blocksize)) /
-		       duration);
-
+		       total_written, meta_blocks_count,
+		       calc_percent(total_written, meta_blocks_count), buff,
+		       calc_rate(total_written, fs->blocksize, duration));
 	}
 #ifdef HAVE_FTRUNCATE64
 	if (sparse) {
