@@ -333,8 +333,8 @@ ifneq ($(BUILD_E2FSCK_STATIC),no)
 endif
 	$(MAKE) -C ${stdbuilddir}/po V=1 update-gmo
 
-	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs_abt.html )
-	( cd ${stdbuilddir}/lib/et && $(MAKE) V=1 com_err.info com_err_abt.html )
+	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs.html )
+	( cd ${stdbuilddir}/lib/et && $(MAKE) V=1 com_err.info com_err.html )
 
   # specially-built MIPS libs
 ifneq ($(ismips),)

@@ -97,7 +97,6 @@ by the Foundation.
 @end titlepage
 @headings double
 
-@ifinfo
 @node Top, Introduction to the EXT2FS Library, (dir), (dir)
 
 @top The EXT2FS Library
@@ -110,8 +109,6 @@ This manual documents the EXT2FS Library, version 1.42.8.
 * Concept Index::               
 * Function Index::              
 @end menu
-
-@end ifinfo
 
 @c ----------------------------------------------------------------------
 
