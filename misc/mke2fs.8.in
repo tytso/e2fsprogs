@@ -355,20 +355,30 @@ a filesystem changes the numer of inodes to maintain this ratio.
 .TP
 .BI \-I " inode-size"
 Specify the size of each inode in bytes.
-.B mke2fs
-creates 256-byte inodes by default.  In kernels after 2.6.10 and some
-earlier vendor kernels it is possible to utilize inodes larger than
-128 bytes to store
-extended attributes for improved performance.  The
+The
 .I inode-size
 value must be a power of 2 larger or equal to 128.  The larger the
 .I inode-size
 the more space the inode table will consume, and this reduces the usable
 space in the filesystem and can also negatively impact performance.
+It is not
+possible to change this value after the filesystem is created.
+.IP
+In kernels after 2.6.10 and some
+earlier vendor kernels it is possible to utilize inodes larger than
+128 bytes to store
+extended attributes for improved performance.
 Extended attributes
 stored in large inodes are not visible with older kernels, and such
-filesystems will not be mountable with 2.4 kernels at all.  It is not
-possible to change this value after the filesystem is created.
+filesystems will not be mountable with 2.4 kernels at all.  
+.IP
+The default inode size is controlled by the
+.BR mke2fs.conf (5)
+file.  In the
+.B mke2fs.conf
+file shipped with e2fsprogs, the default inode size is 256 bytes for
+most file systems, except for small file systems where the inode size
+will be 128 bytes.
 .TP
 .B \-j
 Create the filesystem with an ext3 journal.  If the
