@@ -8,18 +8,36 @@ e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
 .SH SYNOPSIS
 .B e2image
 [
-.B \-acfnprsIQ
+.B \-r|Q
+]
+[
+.B \-fr
+]
+.I device
+.I image-file
+.br
+.B e2image
+.B \-I
+.I device
+.I image-file
+.br
+.B e2image
+.B \-ra
+[
+.B \-cfnp
 ]
 [
 .B \-o
-.I source_offset
+.I src_offset
 ]
 [
 .B \-O
 .I dest_offset
 ]
-.I device
-.I image-file
+.I src_fs
+[
+.I dest_fs
+]
 .SH DESCRIPTION
 The
 .B e2image

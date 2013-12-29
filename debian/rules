@@ -12,13 +12,6 @@
 # be paranoid
 export LC_ALL ?= C
 
-# Allow distro-specific behaviour
-DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
-SYS_BLKID_VER := $(shell dpkg-query -W libblkid1 | cut -f 2 | cut -b 1)
-ifeq ($(SYS_BLKID_VER),2)
-UTIL_LINUX_NG ?= yes
-endif
-
 # These are used for cross-compiling and for saving the configure script
 # from having to guess our platform (since we know it already)
 DEB_HOST_ARCH		?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
@@ -27,6 +20,13 @@ DEB_HOST_OS		?= $(shell dpkg-architecture -qDEB_HOST_OS)
 DEB_HOST_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null)
+
+# Allow distro-specific behaviour
+DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
+SYS_BLKID_VER := $(shell dpkg-query -W libblkid1:$(DEB_HOST_ARCH) | cut -f 2 | cut -b 1)
+ifeq ($(SYS_BLKID_VER),2)
+UTIL_LINUX_NG ?= yes
+endif
 
 # find the version for the main package, from changelog file
 MAIN_VERSION = $(shell head -n 1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
@@ -333,8 +333,8 @@ ifneq ($(BUILD_E2FSCK_STATIC),no)
 endif
 	$(MAKE) -C ${stdbuilddir}/po V=1 update-gmo
 
-	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs_abt.html )
-	( cd ${stdbuilddir}/lib/et && $(MAKE) V=1 com_err.info com_err_abt.html )
+	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs.html )
+	( cd ${stdbuilddir}/lib/et && $(MAKE) V=1 com_err.info com_err.html )
 
   # specially-built MIPS libs
 ifneq ($(ismips),)

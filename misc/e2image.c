@@ -98,8 +98,11 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-acfnprsIQ] [-o src_offset] "
-			  "[-O dest_offset] \\\n\tdevice image_file\n"),
+	fprintf(stderr, _("Usage: %s [ -r|Q ] [ -fr ] device image-file\n"),
+		program_name);
+	fprintf(stderr, _("       %s -I device image-file\n"), program_name);
+	fprintf(stderr, _("       %s -ra  [  -cfnp  ] [ -o src_offset ] "
+			  "[ -O dest_offset ] src_fs [ dest_fs ]\n"),
 		program_name);
 	exit (1);
 }
@@ -169,7 +172,8 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 	}
 	if (nop_flag) {
 		printf(_("Writing block %llu\n"), (unsigned long long) block);
-		seek_relative(fd, blocksize);
+		if (fd != 1)
+			seek_relative(fd, blocksize);
 		return;
 	}
 	count = write(fd, buf, blocksize);
@@ -538,6 +542,16 @@ static void sigint_handler(int unused EXT2FS_ATTR((unused)))
 	signal (SIGINT, SIG_DFL);
 }
 
+#define calc_percent(a, b) ((int) ((100.0 * (((float) (a)) / \
+					     ((float) (b)))) + 0.5))
+#define calc_rate(t, b, d) (((float)(t) / ((1024 * 1024) / (b))) / (d))
+
+static int print_progress(blk64_t num, blk64_t total)
+{
+	return fprintf(stderr, _("%llu / %llu blocks (%d%%)"), num, total,
+		      calc_percent(num, total));
+}
+
 static void output_meta_data_blocks(ext2_filsys fs, int fd, int flags)
 {
 	errcode_t	retval;
@@ -563,12 +577,9 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd, int flags)
 		exit(1);
 	}
 	if (show_progress) {
-		printf(_("Copying "));
-		bscount = printf(_("%llu / %llu blocks (%llu%%)"),
-				 total_written,
-				 meta_blocks_count,
-				 (total_written + 50) / ((meta_blocks_count + 50) / 100));
-		fflush(stdout);
+		fprintf(stderr, _("Copying "));
+		bscount = print_progress(total_written, meta_blocks_count);
+		fflush(stderr);
 		last_update = time(NULL);
 		start_time = time(NULL);
 	}
@@ -599,17 +610,15 @@ more_blocks:
 					kill (getpid(), SIGINT);
 			}
 			if (show_progress)
-				printf ("\r");
-			printf(_("Stopping now will destroy the filesystem, "
+				fputc('\r', stderr);
+			fprintf(stderr,
+				_("Stopping now will destroy the filesystem, "
 				 "interrupt again if you are sure\n"));
 			if (show_progress) {
-				printf(_("Copying "));
-				bscount = printf(_("%llu / %llu blocks (%llu%%)"),
-						 total_written,
-						 meta_blocks_count,
-						 (total_written + 50) / ((meta_blocks_count + 50)
-									 / 100));
-				fflush(stdout);
+				fprintf(stderr, _("Copying "));
+				bscount = print_progress(total_written,
+							 meta_blocks_count);
+				fflush(stderr);
 			}
 
 			got_sigint = 0;
@@ -618,26 +627,22 @@ more_blocks:
 			time_t duration;
 			last_update = time(NULL);
 			while (bscount--)
-				printf("\b");
-			bscount = printf(_("%llu / %llu blocks (%llu%%)"),
-					 total_written,
-					 meta_blocks_count,
-					 (total_written + 50) /
-					 ((meta_blocks_count + 50) / 100));
+				fputc('\b', stderr);
+			bscount = print_progress(total_written,
+						 meta_blocks_count);
 			duration = time(NULL) - start_time;
 			if (duration > 5) {
-				time_t est = (duration *
-					      meta_blocks_count / total_written) -
-					(duration);
+				time_t est = (duration * meta_blocks_count /
+					      total_written) - duration;
 				char buff[30];
 				strftime(buff, 30, "%T", gmtime(&est));
-				bscount += printf(_(" %s remaining at %.2f MB/s"),
-						  buff,
-						  ((float)total_written /
-						   ((1024 * 1024) / fs->blocksize)) /
-						  duration);
+				bscount += fprintf(stderr,
+						   _(" %s remaining at %.2f MB/s"),
+						   buff, calc_rate(total_written,
+								   fs->blocksize,
+								   duration));
 			}
-			fflush (stdout);
+			fflush (stderr);
 		}
 		if ((blk >= fs->super->s_first_data_block) &&
 		    ext2fs_test_block_bitmap2(meta_block_map, blk)) {
@@ -664,7 +669,9 @@ more_blocks:
 		} else {
 		sparse_write:
 			if (fd == 1) {
-				generic_write(fd, zero_buf, fs->blocksize, blk);
+				if (!nop_flag)
+					generic_write(fd, zero_buf,
+						      fs->blocksize, blk);
 				continue;
 			}
 			sparse += fs->blocksize;
@@ -695,18 +702,13 @@ more_blocks:
 		time_t duration = time(NULL) - start_time;
 		char buff[30];
 		while (bscount--)
-			printf("\b");
+			fputc('\b', stderr);
 		strftime(buff, 30, "%T", gmtime(&duration));
-		printf(_("\b\b\b\b\b\b\b\bCopied %llu / %llu blocks (%llu%%) "
-			 "in %s at %.2f MB/s       \n"),
-		       total_written,
-		       meta_blocks_count,
-		       (total_written + 50) / ((meta_blocks_count + 50) / 100),
-		       buff,
-		       ((float)total_written /
-			((1024 * 1024) / fs->blocksize)) /
-		       duration);
-
+		fprintf(stderr, _("\b\b\b\b\b\b\b\bCopied %llu / %llu "
+			 "blocks (%llu%%) in %s at %.2f MB/s       \n"),
+		       total_written, meta_blocks_count,
+		       calc_percent(total_written, meta_blocks_count), buff,
+		       calc_rate(total_written, fs->blocksize, duration));
 	}
 #ifdef HAVE_FTRUNCATE64
 	if (sparse) {
@@ -1634,7 +1636,11 @@ skip_device:
 			exit(1);
 		}
 	}
-
+	if (show_progress && (img_type != E2IMAGE_RAW)) {
+		fprintf(stderr, _("The -p option only supported "
+				  "in raw mode\n"));
+		exit(1);
+	}
 	if (img_type)
 		write_raw_image_file(fs, fd, img_type, flags);
 	else

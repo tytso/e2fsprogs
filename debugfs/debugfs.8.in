@@ -439,6 +439,17 @@ flag will list the files in a format which is more easily parsable by
 scripts, as well as making it more clear when there are spaces or other
 non-printing characters at the end of filenames.
 .TP
+.BI list_deleted_inodes " [limit]"
+List deleted inodes, optionally limited to those deleted within
+.I limit
+seconds ago.  Also available as
+.BR lsdel .
+.IP
+This command was useful for recovering from accidental file deletions
+for ext2 file systems.  Unfortunately, it is not useful for this purpose
+if the files were deleted using ext3 or ext4, since the inode's
+data blocks are no longer available after the inode is released.
+.TP
 .BI modify_inode " filespec"
 Modify the contents of the inode structure in the inode
 .IR filespec .
@@ -487,7 +498,7 @@ is, all of the blocks starting at
 .I start_blk
 through to the end of the file will be deallocated.
 .TP
-.I symlink filespec target
+.BI symlink " filespec target"
 Make a symbolic link.
 .TP
 .B pwd
