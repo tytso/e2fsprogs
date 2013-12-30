@@ -264,15 +264,15 @@ void do_replace_node(int argc, char *argv[])
 		return;
 	}
 
-	err = strtoblk(argv[0], argv[1], &extent.e_lblk);
+	err = strtoblk(argv[0], argv[1], "logical block", &extent.e_lblk);
 	if (err)
 		return;
 
-	extent.e_len = parse_ulong(argv[2], argv[0], "logical block", &err);
+	extent.e_len = parse_ulong(argv[2], argv[0], "length", &err);
 	if (err)
 		return;
 
-	err = strtoblk(argv[0], argv[3], &extent.e_pblk);
+	err = strtoblk(argv[0], argv[3], "physical block", &extent.e_pblk);
 	if (err)
 		return;
 
@@ -338,16 +338,15 @@ void do_insert_node(int argc, char *argv[])
 		return;
 	}
 
-	err = strtoblk(cmd, argv[1], &extent.e_lblk);
+	err = strtoblk(cmd, argv[1], "logical block", &extent.e_lblk);
 	if (err)
 		return;
 
-	extent.e_len = parse_ulong(argv[2], cmd,
-				    "length", &err);
+	extent.e_len = parse_ulong(argv[2], cmd, "length", &err);
 	if (err)
 		return;
 
-	err = strtoblk(cmd, argv[3], &extent.e_pblk);
+	err = strtoblk(cmd, argv[3], "physical block", &extent.e_pblk);
 	if (err)
 		return;
 
@@ -385,11 +384,11 @@ void do_set_bmap(int argc, char **argv)
 		return;
 	}
 
-	err = strtoblk(cmd, argv[1], &logical);
+	err = strtoblk(cmd, argv[1], "logical block", &logical);
 	if (err)
 		return;
 
-	err = strtoblk(cmd, argv[2], &physical);
+	err = strtoblk(cmd, argv[2], "physical block", &physical);
 	if (err)
 		return;
 
@@ -516,7 +515,7 @@ void do_goto_block(int argc, char **argv)
 				       "block [level]", 0))
 		return;
 
-	if (strtoblk(argv[0], argv[1], &blk))
+	if (strtoblk(argv[0], argv[1], NULL, &blk))
 		return;
 
 	if (argc == 3) {

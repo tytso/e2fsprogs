@@ -181,7 +181,8 @@ void do_open_filesys(int argc, char **argv)
 				return;
 			break;
 		case 's':
-			err = strtoblk(argv[0], optarg, &superblock);
+			err = strtoblk(argv[0], optarg,
+				       "superblock block number", &superblock);
 			if (err)
 				return;
 			break;
@@ -284,7 +285,7 @@ void do_init_filesys(int argc, char **argv)
 		return;
 
 	memset(&param, 0, sizeof(struct ext2_super_block));
-	err = strtoblk(argv[0], argv[2], &blocks);
+	err = strtoblk(argv[0], argv[2], "blocks count", &blocks);
 	if (err)
 		return;
 	ext2fs_blocks_count_set(&param, blocks);
@@ -2100,7 +2101,7 @@ void do_bmap(int argc, char *argv[])
 	ino = string_to_inode(argv[1]);
 	if (!ino)
 		return;
-	err = strtoblk(argv[0], argv[2], &blk);
+	err = strtoblk(argv[0], argv[2], "logical block", &blk);
 	if (err)
 		return;
 
@@ -2247,11 +2248,11 @@ void do_punch(int argc, char *argv[])
 	ino = string_to_inode(argv[1]);
 	if (!ino)
 		return;
-	err = strtoblk(argv[0], argv[2], &start);
+	err = strtoblk(argv[0], argv[2], "logical block", &start);
 	if (err)
 		return;
 	if (argc == 4) {
-		err = strtoblk(argv[0], argv[3], &end);
+		err = strtoblk(argv[0], argv[3], "logical block", &end);
 		if (err)
 			return;
 	} else
@@ -2457,7 +2458,9 @@ int main(int argc, char **argv)
 						"block size", 0);
 			break;
 		case 's':
-			retval = strtoblk(argv[0], optarg, &superblock);
+			retval = strtoblk(argv[0], optarg,
+					  "superblock block number",
+					  &superblock);
 			if (retval)
 				return 1;
 			break;
