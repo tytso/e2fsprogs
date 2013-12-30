@@ -548,58 +548,22 @@ ifneq ($(UTIL_LINUX_NG),yes)
 endif
 
 	dh_fixperms
+	dh_strip -pe2fsprogs --dbg-package=e2fsprogs-dbg
+	dh_strip -pe2fsck-static --dbg-package=e2fsprogs-dbg
 ifneq ($(ismips),)
-	dh_strip -k -Xlib64ext2fs-nopic.a
+	dh_strip -pe2fslibs --dbg-package=e2fslibs-dbg -Xlib64ext2fs-nopic.a
 else
-	dh_strip -k
+	dh_strip -pe2fslibs --dbg-package=e2fslibs-dbg
 endif
-
-	# debug package stuff
-	rm -rf ${udebdir}/usr
+	dh_strip -plibss${SS_SOVERSION} --dbg-package=libss${SS_SOVERSION}-dbg
+	dh_strip -plibcomerr${COMERR_SOVERSION} \
+		--dbg-package=libcomerr${COMERR_SOVERSION}-dbg
 ifneq ($(UTIL_LINUX_NG),yes)
-	rm -rf ${blkidudebdir}/usr
-	rm -rf ${uuidudebdir}/usr
+	dh_strip -plibblkid${BLKID_SOVERSION} \
+		--dbg-package=libblkid${BLKID_SOVERSION}-dbg
+	dh_strip -plibuuid${UUID_SOVERSION} --dbg-package=libuuid${UUID_SOVERSION}-dbg
 endif
-
-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
-	mkdir -p ${debugdir}/$(USRLIB)
-	mv ${maindir}/usr/lib/debug ${debugdir}/$(USRLIB)
-	rm -rf ${maindir}/usr/lib/debug
-
-ifneq ($(BUILD_E2FSCK_STATIC),no)
-	mv ${e2fsckstaticdir}/usr/lib/debug/sbin/* \
-		${debugdir}/$(USRLIB)/debug
-	rm -rf ${e2fsckstaticdir}/usr/lib
-endif
-
-ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${uuidruntimedbgdir}/$(USRLIB)
-	mv ${uuidruntimedir}/usr/lib/debug ${uuidruntimedbgdir}/$(USRLIB)
-	rmdir ${uuidruntimedir}/usr/lib
-endif
-
-	mkdir -p ${libext2dbgdir}/$(USRLIB)
-	mv ${libext2dir}/usr/lib/debug ${libext2dbgdir}/$(USRLIB)
-	rmdir ${libext2dir}/usr/lib
-
-	mkdir -p ${libcomerrdbgdir}/$(USRLIB)
-	mv ${libcomerrdir}/usr/lib/debug ${libcomerrdbgdir}/$(USRLIB)
-	rmdir ${libcomerrdir}/usr/lib
-
-	mkdir -p ${libssdbgdir}/$(USRLIB)
-	mv ${libssdir}/usr/lib/debug ${libssdbgdir}/$(USRLIB)
-	rmdir ${libssdir}/usr/lib
-
-ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${libuuiddbgdir}/$(USRLIB)
-	mv ${libuuiddir}/usr/lib/debug ${libuuiddbgdir}/$(USRLIB)
-	rmdir ${libuuiddir}/usr/lib
-
-	mkdir -p ${libblkiddbgdir}/$(USRLIB)
-	mv ${libblkiddir}/usr/lib/debug ${libblkiddbgdir}/$(USRLIB)
-	rmdir ${libblkiddir}/usr/lib
-endif
-endif
+	dh_strip
 
 	# dpkg symbol handling
 ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
