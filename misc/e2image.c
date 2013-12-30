@@ -707,7 +707,7 @@ more_blocks:
 			fputc('\b', stderr);
 		strftime(buff, 30, "%T", gmtime(&duration));
 		fprintf(stderr, _("\b\b\b\b\b\b\b\bCopied %llu / %llu "
-			 "blocks (%llu%%) in %s at %.2f MB/s       \n"),
+			 "blocks (%d%%) in %s at %.2f MB/s       \n"),
 		       total_written, meta_blocks_count,
 		       calc_percent(total_written, meta_blocks_count), buff,
 		       calc_rate(total_written, fs->blocksize, duration));
