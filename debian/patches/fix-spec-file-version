@@ -1,0 +1,19 @@
+Description: fix version number in e2fsprogs.spec file
+ .
+ Due to a screwup in building the official upsteam source tarball,
+ the version number in the e2fsprogs.spec file wasn't bumped to 1.42.9.
+ Subsequent source extracts will have this fixed.
+ .
+Origin: other
+
+--- e2fsprogs-1.42.9.orig/e2fsprogs.spec
++++ e2fsprogs-1.42.9/e2fsprogs.spec
+@@ -5,7 +5,7 @@
+ 
+ Summary: Utilities for managing ext2/ext3/ext4 filesystems
+ Name: e2fsprogs
+-Version: 1.42.8
++Version: 1.42.9
+ Release: 0
+ License: GPLv2
+ Group: System Environment/Base
