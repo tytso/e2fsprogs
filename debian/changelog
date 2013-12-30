@@ -1,3 +1,17 @@
+e2fsprogs (1.42.9-2) unstable; urgency=low
+
+  * Fix lintian warning: debian-changelog-has-wrong-weekday
+  * Fix lintian warning: non-standard-dir-perm by using dh_strip's
+    --dbg-package option instead of manually managing the debug files
+  * Fix printf type format mismatch in e2image
+  * Improved debugfs's error reporting when parsing block numbers
+  * Use consistent configure options across the multiple e2fsprogs
+    builds; this means that e2fsck.static will now use the blkid library
+    shipped with util-linux, instead of the internal one shipped with
+    the e2fsprogs sources.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 30 Dec 2013 16:56:50 -0500
+
 e2fsprogs (1.42.9-1) unstable; urgency=low
 
   * New upstream version
@@ -49,7 +63,7 @@ e2fsprogs (1.42.9-1) unstable; urgency=low
   * Updated/fixed various man pages.  (Closes: #586218, #669730,
     #698076, #731329)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 28 Dec 2013 23:18:36 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 28 Dec 2013 23:18:36 -0500
 
 e2fsprogs (1.42.8-1) unstable; urgency=low
 
