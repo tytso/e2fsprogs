@@ -1410,7 +1410,7 @@ static void install_image(char *device, char *image_fn, int type)
 
 	retval = ext2fs_image_inode_read(fs, fd, 0);
 	if (retval) {
-		com_err(image_fn, 0, "while restoring the image table");
+		com_err(image_fn, 0, _("while restoring the image table"));
 		exit(1);
 	}
 
@@ -1597,7 +1597,7 @@ skip_device:
 	}
 	if (fd != 1) {
 		if (fstat(fd, &st)) {
-			com_err(program_name, 0, "Can not stat output\n");
+			com_err(program_name, 0, _("Can not stat output\n"));
 			exit(1);
 		}
 		if (S_ISBLK(st.st_mode))
