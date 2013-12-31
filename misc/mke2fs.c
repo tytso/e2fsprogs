@@ -96,6 +96,7 @@ static int	lazy_itable_init;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 static int	quotatype = -1;  /* Initialize both user and group quotas by default */
+static __u64	offset;
 
 static struct ext2_super_block fs_param;
 static char *fs_uuid = NULL;
@@ -710,6 +711,19 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 			param->s_desc_size = desc_size;
+		} else if (strcmp(token, "offset") == 0) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			offset = strtoull(arg, &p, 0);
+			if (*p) {
+				fprintf(stderr, _("Invalid offset: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
 		} else if (strcmp(token, "mmp_update_interval") == 0) {
 			if (!arg) {
 				r_usage++;
@@ -879,8 +893,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
+			"\tmmp_update_interval=<interval>\n"
 			"\tstride=<RAID per-disk data chunk in blocks>\n"
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
+			"\toffset=<offset to create the file system>\n"
 			"\tresize=<resize maximum size in blocks>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
@@ -2368,7 +2384,7 @@ int main (int argc, char *argv[])
 	int		flags;
 	int		old_bitmaps;
 	io_manager	io_ptr;
-	char		tdb_string[40];
+	char		opt_string[40];
 	char		*hash_alg_str;
 	int		itable_zeroed = 0;
 
@@ -2438,9 +2454,13 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	sprintf(tdb_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
+	sprintf(opt_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
 		32768 : fs->blocksize * 8);
-	io_channel_set_options(fs->io, tdb_string);
+	io_channel_set_options(fs->io, opt_string);
+	if (offset) {
+		sprintf(opt_string, "offset=%llu", offset);
+		io_channel_set_options(fs->io, opt_string);
+	}
 
 	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
 		fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
