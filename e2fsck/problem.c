@@ -119,11 +119,13 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Superblock corrupt */
 	{ PR_0_SB_CORRUPT,
-	  N_("\nThe @S could not be read or does not describe a correct ext2\n"
-	  "@f.  If the @v is valid and it really contains an ext2\n"
+	  N_("\nThe @S could not be read or does not describe a valid ext2/ext3/ext4\n"
+	  "@f.  If the @v is valid and it really contains an ext2/ext3/ext4\n"
 	  "@f (and not swap or ufs or something else), then the @S\n"
 	  "is corrupt, and you might try running e2fsck with an alternate @S:\n"
-	  "    e2fsck -b %S <@v>\n\n"),
+	  "    e2fsck -b 8193 <@v>\n"
+	  " or\n"
+	  "    e2fsck -b 32768 <@v>\n\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Filesystem size is wrong */
