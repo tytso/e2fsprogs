@@ -1026,6 +1026,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	backtrace
 	blkid_probe_get_topology
 	chflags
+	fadvise64
 	fallocate
 	fallocate64
 	fchown
@@ -1050,6 +1051,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	open64
 	pathconf
 	posix_fadvise
+	posix_fadvise64
 	posix_memalign
 	prctl
 	secure_getenv

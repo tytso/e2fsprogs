@@ -103,6 +103,9 @@
 /* Define to 1 if Ext2 ioctls present */
 #undef HAVE_EXT2_IOCTLS
 
+/* Define to 1 if you have the `fadvise64' function. */
+#undef HAVE_FADVISE64
+
 /* Define to 1 if you have the `fallocate' function. */
 #undef HAVE_FALLOCATE
 
@@ -286,6 +289,9 @@
 
 /* Define to 1 if you have the `posix_fadvise' function. */
 #undef HAVE_POSIX_FADVISE
+
+/* Define to 1 if you have the `posix_fadvise64' function. */
+#undef HAVE_POSIX_FADVISE64
 
 /* Define to 1 if you have the `posix_memalign' function. */
 #undef HAVE_POSIX_MEMALIGN
