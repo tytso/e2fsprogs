@@ -174,7 +174,7 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 		printf(_("Writing block %llu\n"), (unsigned long long) block);
 		if (fd != 1)
 			seek_relative(fd, blocksize);
-		return;
+		goto free_and_return;
 	}
 	count = write(fd, buf, blocksize);
 	if (count != blocksize) {
@@ -191,6 +191,7 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 
 		exit(1);
 	}
+free_and_return:
 	if (free_buf)
 		ext2fs_free_mem(&buf);
 }
