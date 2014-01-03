@@ -909,6 +909,7 @@ dnl is not decleared.
 AC_CHECK_MEMBER(struct dirent.d_reclen,[AC_DEFINE(HAVE_RECLEN_DIRENT, 1,
 		       [Define to 1 if dirent has d_reclen])],,
 		[#include <dirent.h>])
+AC_CHECK_MEMBERS([struct stat.st_atim])
 dnl Check to see if ssize_t was declared
 AC_CHECK_TYPE(ssize_t,[AC_DEFINE(HAVE_TYPE_SSIZE_T, 1,
 		[Define to 1 if ssize_t declared])],,
@@ -1031,6 +1032,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	fdatasync
 	fstat64
 	ftruncate64
+	futimes
 	getdtablesize
 	getmntinfo
 	getpwuid_r
@@ -1280,7 +1282,7 @@ dnl
 dnl Build CFLAGS
 dnl
 if test $cross_compiling = no; then
-   BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
+   BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
    BUILD_LDFLAGS="$LDFLAGS"
 else
    BUILD_CFLAGS=
