@@ -320,6 +320,7 @@ profile_init(const char **files, profile_t *ret_profile)
 	    for (fs = files; !PROFILE_LAST_FILESPEC(*fs); fs++) {
 		if (array)
 			free_list(array);
+		array = NULL;
 		retval = get_dirlist(*fs, &array);
 		if (retval == 0) {
 			if (!array)
