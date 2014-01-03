@@ -704,14 +704,15 @@ more_blocks:
 	if (show_progress) {
 		time_t duration = time(NULL) - start_time;
 		char buff[30];
-		while (bscount--)
-			fputc('\b', stderr);
+		fputc('\r', stderr);
 		strftime(buff, 30, "%T", gmtime(&duration));
-		fprintf(stderr, _("\b\b\b\b\b\b\b\bCopied %llu / %llu "
-			 "blocks (%d%%) in %s at %.2f MB/s       \n"),
-		       total_written, meta_blocks_count,
-		       calc_percent(total_written, meta_blocks_count), buff,
-		       calc_rate(total_written, fs->blocksize, duration));
+		fprintf(stderr, _("Copied %llu / %llu blocks (%d%%) in %s "),
+			total_written, meta_blocks_count,
+			calc_percent(total_written, meta_blocks_count), buff);
+		if (duration)
+			fprintf(stderr, _("at %.2f MB/s"),
+				calc_rate(total_written, fs->blocksize, duration));
+		fputs("       \n", stderr);
 	}
 #ifdef HAVE_FTRUNCATE64
 	if (sparse) {
