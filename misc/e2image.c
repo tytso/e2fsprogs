@@ -634,7 +634,7 @@ more_blocks:
 			bscount = print_progress(total_written,
 						 meta_blocks_count);
 			duration = time(NULL) - start_time;
-			if (duration > 5) {
+			if (duration > 5 && total_written) {
 				time_t est = (duration * meta_blocks_count /
 					      total_written) - duration;
 				char buff[30];
