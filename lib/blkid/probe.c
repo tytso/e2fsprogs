@@ -1360,7 +1360,7 @@ static int probe_lvm2(struct blkid_probe *probe,
 		return 1;
 	}
 
-	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i <= 32;
+	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i < LVM2_ID_LEN;
 	     i++, b <<= 1) {
 		if (b & 0x4444440)
 			*p++ = '-';
