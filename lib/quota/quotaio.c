@@ -30,8 +30,8 @@ static const char * const basenames[] = {
 
 /* Header in all newer quotafiles */
 struct disk_dqheader {
-	u_int32_t dqh_magic;
-	u_int32_t dqh_version;
+	__u32 dqh_magic;
+	__u32 dqh_version;
 } __attribute__ ((packed));
 
 /**
