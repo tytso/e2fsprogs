@@ -216,7 +216,7 @@ M4_ARGS+=-UDIETLIBC
 WITH_DIET_LIBC = 
 else
 M4_ARGS+=-DDIETLIBC
-WITH_DIET_LIBC = --with-diet-libc 
+WITH_DIET_LIBC = --with-diet-libc --enable-libuuid --enable-libblkid
 endif
 
 ifneq ($(BUILD_E2FSCK_STATIC),no)
