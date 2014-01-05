@@ -28,7 +28,7 @@ int ss_create_invocation(const char *subsystem_name, const char *version_string,
 {
 	register int sci_idx;
 	register ss_data *new_table;
-	register ss_data **table;
+	register ss_data **table, **rt;
 
 	*code_ptr = 0;
 	table = _ss_table;
@@ -42,10 +42,10 @@ int ss_create_invocation(const char *subsystem_name, const char *version_string,
 
 	for (sci_idx = 1; table[sci_idx] != (ss_data *)NULL; sci_idx++)
 		;
-	table = (ss_data **) realloc((char *)table,
-				     ((unsigned)sci_idx+2)*size);
-	if (table == NULL) {
-		*code_ptr = errno;
+	rt = (ss_data **) realloc((char *)table, ((unsigned)sci_idx+2)*size);
+	if (rt == NULL) {
+		*code_ptr = ENOMEM;
+		free(table);
 		return 0;
 	}
 	table[sci_idx+1] = (ss_data *) NULL;
