@@ -64,7 +64,7 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 ]
 [
 .B \-O
-.IR feature [,...]
+[^]\fIfeature\fR[,...]
 ]
 [
 .B \-q
@@ -245,6 +245,10 @@ N is the number of data-bearing disks in the RAID (e.g. for RAID 5 there is one
 parity disk, so N will be the number of disks in the array minus 1).
 This allows the block allocator to prevent read-modify-write of the
 parity in a RAID stripe if possible when the data is written.
+.TP
+.BI offset= offset
+Create the filesystem at an offset from the beginning of the device or
+file.  This can be useful when creating disk images for virtual machines.
 .TP
 .BI resize= max-online-resize
 Reserve enough space so that the block group descriptor table can grow
@@ -508,7 +512,7 @@ filesystem.  The creator field is set by default to the name of the OS the
 .B mke2fs
 executable was compiled for.
 .TP
-.B "\-O \fIfeature\fR[,...]"
+.B "\-O \fR[^]\fIfeature\fR[,...]"
 Create a filesystem with the given features (filesystem options),
 overriding the default filesystem options.  The features that are
 enabled by default are specified by the
@@ -544,7 +548,7 @@ section of the configuration file.
 .sp
 The filesystem feature set is comprised of a list of features, separated
 by commas, that are to be enabled.  To disable a feature, simply
-prefix the feature name with a  caret ('^') or a minus ('-') character.
+prefix the feature name with a caret ('^') character.
 Features with dependencies will not be removed successfully.
 The pseudo-filesystem feature "none" will clear all filesystem features.
 .TP

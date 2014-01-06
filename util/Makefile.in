@@ -22,6 +22,12 @@ PROGS=		subst symlinks
 
 all:: $(PROGS) gen-tarball
 
+dirpaths.h:
+	$(E) "	CREATE dirpaths.h"
+	$(Q) echo "/* fake dirpaths.h for config.h */" > dirpaths.h
+
+subst.o: dirpaths.h
+
 subst: subst.o
 	$(E) "	LD $@"
 	$(Q) $(BUILD_CC) $(BUILD_LDFLAGS) -o subst subst.o
@@ -46,7 +52,7 @@ tarballs: gen-tarball
 
 clean:
 	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core *.tar.gz gen-tarball \
-		copy-sparse
+		copy-sparse dirpaths.h
 
 mostlyclean: clean
 

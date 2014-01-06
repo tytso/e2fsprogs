@@ -2759,6 +2759,21 @@ $as_echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}" >&6; }
 
 
 
+WITH_DIET_LIBC=
+
+# Check whether --with-diet-libc was given.
+if test "${with_diet_libc+set}" = set; then :
+  withval=$with_diet_libc; CC="diet cc -nostdinc"
+WITH_DIET_LIBC=yes
+if test -z "$LIBS"
+then
+	LIBS="-lcompat"
+else
+	LIBS="$LIBS -lcompat"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: CC=$CC" >&5
+$as_echo "CC=$CC" >&6; }
+fi
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
   as_fn_error $? "cannot run $SHELL $ac_aux_dir/config.sub" "$LINENO" 5
@@ -3665,15 +3680,6 @@ $as_echo "#define HAVE_DLOPEN 1" >>confdefs.h
 fi
 
 
-WITH_DIET_LIBC=
-
-# Check whether --with-diet-libc was given.
-if test "${with_diet_libc+set}" = set; then :
-  withval=$with_diet_libc; CC="diet cc -nostdinc"
-WITH_DIET_LIBC=yes
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: CC=$CC" >&5
-$as_echo "CC=$CC" >&6; }
-fi
 
 # Check whether --with-cc was given.
 if test "${with_cc+set}" = set; then :
@@ -5446,9 +5452,16 @@ $as_echo "Enabling e4defrag support" >&6; }
 fi
 
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling e4defrag support by default" >&5
+  if test -z "$WITH_DIET_LIBC"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling e4defrag support by default" >&5
 $as_echo "Enabling e4defrag support by default" >&6; }
-DEFRAG_CMT=
+	DEFRAG_CMT=
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling e4defrag support by default" >&5
+$as_echo "Disabling e4defrag support by default" >&6; }
+	DEFRAG_CMT="#"
+fi
 
 fi
 
@@ -10525,6 +10538,16 @@ $as_echo "#define HAVE_RECLEN_DIRENT 1" >>confdefs.h
 
 fi
 
+ac_fn_c_check_member "$LINENO" "struct stat" "st_atim" "ac_cv_member_struct_stat_st_atim" "$ac_includes_default"
+if test "x$ac_cv_member_struct_stat_st_atim" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_STAT_ST_ATIM 1
+_ACEOF
+
+
+fi
+
 ac_fn_c_check_type "$LINENO" "ssize_t" "ac_cv_type_ssize_t" "#include <sys/types.h>
 "
 if test "x$ac_cv_type_ssize_t" = xyes; then :
@@ -11118,7 +11141,7 @@ if test "$ac_res" != no; then :
 fi
 
 fi
-for ac_func in  	__secure_getenv 	backtrace 	blkid_probe_get_topology 	chflags 	fallocate 	fallocate64 	fchown 	fdatasync 	fstat64 	ftruncate64 	getdtablesize 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_memalign 	prctl 	secure_getenv 	setmntent 	setresgid 	setresuid 	srandom 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	valloc
+for ac_func in  	__secure_getenv 	backtrace 	blkid_probe_get_topology 	chflags 	fadvise64 	fallocate 	fallocate64 	fchown 	fdatasync 	fstat64 	ftruncate64 	futimes 	getcwd 	getdtablesize 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mempcpy 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_fadvise64 	posix_memalign 	prctl 	secure_getenv 	setmntent 	setresgid 	setresuid 	srandom 	stpcpy 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	valloc
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -11502,9 +11525,12 @@ fi
 if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
 	INCLUDES=$INCLUDES' -I$(top_builddir)/intl -I$(top_srcdir)/intl'
 fi
+if test -n "$WITH_DIET_LIBC" ; then
+	INCLUDES="$INCLUDES -D_REENTRANT"
+fi
 
 if test $cross_compiling = no; then
-   BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
+   BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
    BUILD_LDFLAGS="$LDFLAGS"
 else
    BUILD_CFLAGS=

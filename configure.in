@@ -63,15 +63,6 @@ AC_SUBST(E2FSPROGS_MONTH)
 AC_SUBST(E2FSPROGS_DAY)
 AC_SUBST(E2FSPROGS_VERSION)
 AC_SUBST(E2FSPROGS_PKGVER)
-AC_CANONICAL_HOST
-dnl
-dnl Check to see if libdl exists for the sake of dlopen
-dnl
-DLOPEN_LIB=''
-AC_CHECK_LIB(dl, dlopen, 
-[DLOPEN_LIB=-ldl
-AC_DEFINE(HAVE_DLOPEN, 1, [Define to 1 if dlopen/libdl exists])])
-AC_SUBST(DLOPEN_LIB)
 dnl
 dnl Use diet libc
 dnl 
@@ -80,7 +71,23 @@ AC_ARG_WITH([diet-libc],
 [  --with-diet-libc        use diet libc],
 CC="diet cc -nostdinc"
 WITH_DIET_LIBC=yes
+if test -z "$LIBS"
+then
+	LIBS="-lcompat"
+else
+	LIBS="$LIBS -lcompat"
+fi
 AC_MSG_RESULT(CC=$CC))dnl
+dnl
+AC_CANONICAL_HOST
+dnl
+dnl Check to see if libdl exists for the sake of dlopen
+dnl
+DLOPEN_LIB=''
+AC_CHECK_LIB(dl, dlopen,
+[DLOPEN_LIB=-ldl
+AC_DEFINE(HAVE_DLOPEN, 1, [Define to 1 if dlopen/libdl exists])])
+AC_SUBST(DLOPEN_LIB)
 dnl
 AC_ARG_WITH([cc],
 AC_HELP_STRING([--with-cc],[no longer supported, use CC= instead]),
@@ -687,8 +694,14 @@ else
 	AC_MSG_RESULT([Enabling e4defrag support])
 fi
 ,
-AC_MSG_RESULT([Enabling e4defrag support by default])
-DEFRAG_CMT=
+if test -z "$WITH_DIET_LIBC"
+then
+	AC_MSG_RESULT([Enabling e4defrag support by default])
+	DEFRAG_CMT=
+else
+	AC_MSG_RESULT([Disabling e4defrag support by default])
+	DEFRAG_CMT="#"
+fi
 )
 AC_SUBST(DEFRAG_CMT)
 dnl
@@ -963,6 +976,7 @@ dnl is not decleared.
 AC_CHECK_MEMBER(struct dirent.d_reclen,[AC_DEFINE(HAVE_RECLEN_DIRENT, 1,
 		       [Define to 1 if dirent has d_reclen])],,
 		[#include <dirent.h>])
+AC_CHECK_MEMBERS([struct stat.st_atim])
 dnl Check to see if ssize_t was declared
 AC_CHECK_TYPE(ssize_t,[AC_DEFINE(HAVE_TYPE_SSIZE_T, 1,
 		[Define to 1 if ssize_t declared])],,
@@ -1079,12 +1093,15 @@ AC_CHECK_FUNCS(m4_flatten([
 	backtrace
 	blkid_probe_get_topology
 	chflags
+	fadvise64
 	fallocate
 	fallocate64
 	fchown
 	fdatasync
 	fstat64
 	ftruncate64
+	futimes
+	getcwd
 	getdtablesize
 	getmntinfo
 	getpwuid_r
@@ -1096,12 +1113,14 @@ AC_CHECK_FUNCS(m4_flatten([
 	mallinfo
 	mbstowcs
 	memalign
+	mempcpy
 	mmap
 	msync
 	nanosleep
 	open64
 	pathconf
 	posix_fadvise
+	posix_fadvise64
 	posix_memalign
 	prctl
 	secure_getenv
@@ -1109,6 +1128,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	setresgid
 	setresuid
 	srandom
+	stpcpy
 	strcasecmp
 	strdup
 	strnlen
@@ -1329,12 +1349,15 @@ fi
 if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
 	INCLUDES=$INCLUDES' -I$(top_builddir)/intl -I$(top_srcdir)/intl'
 fi
+if test -n "$WITH_DIET_LIBC" ; then
+	INCLUDES="$INCLUDES -D_REENTRANT"
+fi
 AC_SUBST(INCLUDES)
 dnl
 dnl Build CFLAGS
 dnl
 if test $cross_compiling = no; then
-   BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
+   BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
    BUILD_LDFLAGS="$LDFLAGS"
 else
    BUILD_CFLAGS=

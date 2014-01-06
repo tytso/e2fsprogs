@@ -7,6 +7,13 @@
 #ifndef __QUOTA_COMMON_H__
 #define __QUOTA_COMMON_H__
 
+#if EXT2_FLAT_INCLUDES
+#include "e2_types.h"
+#else
+#include <ext2fs/ext2_types.h>
+#endif /* EXT2_FLAT_INCLUDES */
+
+
 #ifndef __attribute__
 # if !defined __GNUC__ || __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8) || __STRICT_ANSI__
 #  define __attribute__(x)

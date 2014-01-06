@@ -174,7 +174,7 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 		printf(_("Writing block %llu\n"), (unsigned long long) block);
 		if (fd != 1)
 			seek_relative(fd, blocksize);
-		return;
+		goto free_and_return;
 	}
 	count = write(fd, buf, blocksize);
 	if (count != blocksize) {
@@ -191,6 +191,7 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 
 		exit(1);
 	}
+free_and_return:
 	if (free_buf)
 		ext2fs_free_mem(&buf);
 }
@@ -631,7 +632,7 @@ more_blocks:
 			bscount = print_progress(total_written,
 						 meta_blocks_count);
 			duration = time(NULL) - start_time;
-			if (duration > 5) {
+			if (duration > 5 && total_written) {
 				time_t est = (duration * meta_blocks_count /
 					      total_written) - duration;
 				char buff[30];
@@ -701,14 +702,15 @@ more_blocks:
 	if (show_progress) {
 		time_t duration = time(NULL) - start_time;
 		char buff[30];
-		while (bscount--)
-			fputc('\b', stderr);
+		fputc('\r', stderr);
 		strftime(buff, 30, "%T", gmtime(&duration));
-		fprintf(stderr, _("\b\b\b\b\b\b\b\bCopied %llu / %llu "
-			 "blocks (%llu%%) in %s at %.2f MB/s       \n"),
-		       total_written, meta_blocks_count,
-		       calc_percent(total_written, meta_blocks_count), buff,
-		       calc_rate(total_written, fs->blocksize, duration));
+		fprintf(stderr, _("Copied %llu / %llu blocks (%d%%) in %s "),
+			total_written, meta_blocks_count,
+			calc_percent(total_written, meta_blocks_count), buff);
+		if (duration)
+			fprintf(stderr, _("at %.2f MB/s"),
+				calc_rate(total_written, fs->blocksize, duration));
+		fputs("       \n", stderr);
 	}
 #ifdef HAVE_FTRUNCATE64
 	if (sparse) {
@@ -1408,7 +1410,7 @@ static void install_image(char *device, char *image_fn, int type)
 
 	retval = ext2fs_image_inode_read(fs, fd, 0);
 	if (retval) {
-		com_err(image_fn, 0, "while restoring the image table");
+		com_err(image_fn, 0, _("while restoring the image table"));
 		exit(1);
 	}
 
@@ -1595,7 +1597,7 @@ skip_device:
 	}
 	if (fd != 1) {
 		if (fstat(fd, &st)) {
-			com_err(program_name, 0, "Can not stat output\n");
+			com_err(program_name, 0, _("Can not stat output\n"));
 			exit(1);
 		}
 		if (S_ISBLK(st.st_mode))

@@ -301,17 +301,20 @@ unsigned long long parse_ulonglong(const char *str, const char *cmd,
 
 /*
  * This function will convert a string to a block number.  It returns
- * 0 on success, 1 on failure.
+ * 0 on success, 1 on failure.  On failure, it outputs either an optionally
+ * specified error message or a default.
  */
-int strtoblk(const char *cmd, const char *str, blk64_t *ret)
+int strtoblk(const char *cmd, const char *str, const char *errmsg,
+	     blk64_t *ret)
 {
 	blk64_t	blk;
 	int	err;
 
-	blk = parse_ulonglong(str, cmd, "block number", &err);
+	if (errmsg == NULL)
+		blk = parse_ulonglong(str, cmd, "block number", &err);
+	else
+		blk = parse_ulonglong(str, cmd, errmsg, &err);
 	*ret = blk;
-	if (err)
-		com_err(cmd, 0, "Invalid block number: %s", str);
 	return err;
 }
 
@@ -369,7 +372,7 @@ int common_block_args_process(int argc, char *argv[],
 				"<block> [count]", CHECK_FS_BITMAPS))
 		return 1;
 
-	if (strtoblk(argv[0], argv[1], block))
+	if (strtoblk(argv[0], argv[1], NULL, block))
 		return 1;
 	if (*block == 0) {
 		com_err(argv[0], 0, "Invalid block number 0");
@@ -377,7 +380,7 @@ int common_block_args_process(int argc, char *argv[],
 	}
 
 	if (argc > 2) {
-		err = strtoblk(argv[0], argv[2], count);
+		err = strtoblk(argv[0], argv[2], "count", count);
 		if (err)
 			return 1;
 	}

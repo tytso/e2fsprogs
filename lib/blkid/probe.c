@@ -1003,7 +1003,7 @@ static int probe_udf(struct blkid_probe *probe,
 	   (block sizes larger than 2K will be null padded) */
 	for (bs = 1; bs < 16; bs++) {
 		isosb = (struct iso_volume_descriptor *)
-			get_buffer(probe, bs*2048+32768, sizeof(isosb));
+			get_buffer(probe, bs*2048+32768, sizeof(*isosb));
 		if (!isosb)
 			return 1;
 		if (isosb->vd_id[0])
@@ -1015,7 +1015,7 @@ static int probe_udf(struct blkid_probe *probe,
 		if (j > 1) {
 			isosb = (struct iso_volume_descriptor *)
 				get_buffer(probe, j*bs*2048+32768,
-					   sizeof(isosb));
+					   sizeof(*isosb));
 			if (!isosb)
 				return 1;
 		}
@@ -1223,7 +1223,7 @@ static int probe_hfsplus(struct blkid_probe *probe,
 		off = (alloc_first_block * 512) +
 			(embed_first_block * alloc_block_size);
 		buf = get_buffer(probe, off + (id->bim_kboff * 1024),
-				 sizeof(sbd));
+				 sizeof(*sbd));
 		if (!buf)
 			return 1;
 
@@ -1360,7 +1360,7 @@ static int probe_lvm2(struct blkid_probe *probe,
 		return 1;
 	}
 
-	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i <= 32;
+	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i < LVM2_ID_LEN;
 	     i++, b <<= 1) {
 		if (b & 0x4444440)
 			*p++ = '-';

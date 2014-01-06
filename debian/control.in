@@ -253,7 +253,8 @@ Description: ext2/ext3/ext4 file system utilities
  hard disks on Debian and other Linux systems.
  .
  This package contains programs for creating, checking, and maintaining
- ext2/3/4-based file systems.
+ ext2/3/4-based file systems.  It also includes the "badbocks" program,
+ which can be used to scan for bad blocks on a disk or other storage device.
 
 Package: e2fsprogs-dbg
 Section: debug

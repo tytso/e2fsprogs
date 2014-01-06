@@ -152,13 +152,12 @@ endif
 
 BF_CFLAGS = -Os -fomit-frame-pointer
 
-COMMON_CONF_FLAGS = --disable-e2initrd-helper --enable-elf-shlibs \
-	--enable-quota --infodir=/usr/share/info
 ifeq ($(UTIL_LINUX_NG),yes)
-COMMON_CONF_FLAGS += --disable-fsck --disable-libblkid \
+UTIL_CONF_FLAGS ?= --disable-fsck --disable-libblkid \
 			--disable-libuuid --disable-uuidd
 else
-COMMON_CONF_FLAGS += --enable-fsck
+UTIL_CONF_FLAGS ?= --enable-fsck --enable-libblkid \
+			--enable-libuuid --enable-uuidd
 endif
 
 ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
@@ -173,10 +172,14 @@ endif
 
 BACKTRACE_CONF_FLAGS ?= $(shell if ${debdir}/scripts/test-backtrace ; then echo --disable-backtrace ; fi)
 
-STD_CONF_FLAGS ?= --enable-symlink-install $(MULTIARCH_CONF) $(BACKTRACE_CONF_FLAGS)
+COMMON_CONF_FLAGS = --disable-e2initrd-helper --enable-quota \
+	--infodir=/usr/share/info  --enable-symlink-install \
+	$(MULTIARCH_CONF) $(BACKTRACE_CONF_FLAGS) $(UTIL_CONF_FLAGS)
 
-BF_CONF_FLAGS ?= --disable-nls --disable-imager --disable-testio-debug \
-	--disable-uuidd --disable-tls --disable-debugfs
+STD_CONF_FLAGS ?= --enable-elf-shlibs
+
+BF_CONF_FLAGS ?= --enable-elf-shlibs --disable-nls --disable-imager \
+	--disable-testio-debug --disable-uuidd --disable-tls --disable-debugfs
 
 STATIC_CONF_FLAGS ?= --disable-nls --disable-imager \
 	--disable-uuidd --disable-tls
@@ -213,7 +216,7 @@ M4_ARGS+=-UDIETLIBC
 WITH_DIET_LIBC = 
 else
 M4_ARGS+=-DDIETLIBC
-WITH_DIET_LIBC = --with-diet-libc 
+WITH_DIET_LIBC = --with-diet-libc --enable-libuuid --enable-libblkid
 endif
 
 ifneq ($(BUILD_E2FSCK_STATIC),no)
@@ -253,24 +256,28 @@ ${CFGSTDSTAMP}:
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
+		${EXTRA_CONF_FLAGS} CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" \
+		LDFLAGS="$(LDFLAGS)"
 else
 	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
+		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
+		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 
   # specially-built MIPS libs
 ifneq ($(ismips),)
 	mkdir -p ${mipsbuilddir} ${mipsbuilddir64}
 	cd ${mipsbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		${topdir}/configure ${COMMON_CONF_FLAGS} \
+		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 	cd ${mipsbuilddir64} && AWK=/usr/bin/awk \
-		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		${topdir}/configure ${COMMON_CONF_FLAGS} \
+		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 
 	mkdir -p ${STAMPSDIR}
@@ -283,13 +290,15 @@ ${CFGBFSTAMP}:
 	mkdir -p ${bfbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${bfbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		CFLAGS="${CFLAGS} ${BF_CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		${EXTRA_CONF_FLAGS} CFLAGS="${CFLAGS} ${BF_CFLAGS}" \
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 else
 	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
+		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGBFSTAMP}
@@ -302,20 +311,22 @@ ${CFGSTATICSTAMP}:
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	if type diet > /dev/null  2>&1 ; then \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		${WITH_DIET_LIBC} CFLAGS="${CFLAGS}" \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
+		${EXTRA_CONF_FLAGS} ${WITH_DIET_LIBC} CFLAGS="${CFLAGS}" \
 		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	else \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-			${topdir}/configure ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
+			${topdir}/configure ${COMMON_CONF_FLAGS} \
+			${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
 			CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" \
 			LDFLAGS="$(LDFLAGS)"; \
 	fi
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
+		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
+		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTATICSTAMP}
@@ -548,58 +559,22 @@ ifneq ($(UTIL_LINUX_NG),yes)
 endif
 
 	dh_fixperms
+	dh_strip -pe2fsprogs --dbg-package=e2fsprogs-dbg
+	dh_strip -pe2fsck-static --dbg-package=e2fsprogs-dbg
 ifneq ($(ismips),)
-	dh_strip -k -Xlib64ext2fs-nopic.a
+	dh_strip -pe2fslibs --dbg-package=e2fslibs-dbg -Xlib64ext2fs-nopic.a
 else
-	dh_strip -k
+	dh_strip -pe2fslibs --dbg-package=e2fslibs-dbg
 endif
-
-	# debug package stuff
-	rm -rf ${udebdir}/usr
+	dh_strip -plibss${SS_SOVERSION} --dbg-package=libss${SS_SOVERSION}-dbg
+	dh_strip -plibcomerr${COMERR_SOVERSION} \
+		--dbg-package=libcomerr${COMERR_SOVERSION}-dbg
 ifneq ($(UTIL_LINUX_NG),yes)
-	rm -rf ${blkidudebdir}/usr
-	rm -rf ${uuidudebdir}/usr
+	dh_strip -plibblkid${BLKID_SOVERSION} \
+		--dbg-package=libblkid${BLKID_SOVERSION}-dbg
+	dh_strip -plibuuid${UUID_SOVERSION} --dbg-package=libuuid${UUID_SOVERSION}-dbg
 endif
-
-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
-	mkdir -p ${debugdir}/$(USRLIB)
-	mv ${maindir}/usr/lib/debug ${debugdir}/$(USRLIB)
-	rm -rf ${maindir}/usr/lib/debug
-
-ifneq ($(BUILD_E2FSCK_STATIC),no)
-	mv ${e2fsckstaticdir}/usr/lib/debug/sbin/* \
-		${debugdir}/$(USRLIB)/debug
-	rm -rf ${e2fsckstaticdir}/usr/lib
-endif
-
-ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${uuidruntimedbgdir}/$(USRLIB)
-	mv ${uuidruntimedir}/usr/lib/debug ${uuidruntimedbgdir}/$(USRLIB)
-	rmdir ${uuidruntimedir}/usr/lib
-endif
-
-	mkdir -p ${libext2dbgdir}/$(USRLIB)
-	mv ${libext2dir}/usr/lib/debug ${libext2dbgdir}/$(USRLIB)
-	rmdir ${libext2dir}/usr/lib
-
-	mkdir -p ${libcomerrdbgdir}/$(USRLIB)
-	mv ${libcomerrdir}/usr/lib/debug ${libcomerrdbgdir}/$(USRLIB)
-	rmdir ${libcomerrdir}/usr/lib
-
-	mkdir -p ${libssdbgdir}/$(USRLIB)
-	mv ${libssdir}/usr/lib/debug ${libssdbgdir}/$(USRLIB)
-	rmdir ${libssdir}/usr/lib
-
-ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${libuuiddbgdir}/$(USRLIB)
-	mv ${libuuiddir}/usr/lib/debug ${libuuiddbgdir}/$(USRLIB)
-	rmdir ${libuuiddir}/usr/lib
-
-	mkdir -p ${libblkiddbgdir}/$(USRLIB)
-	mv ${libblkiddir}/usr/lib/debug ${libblkiddbgdir}/$(USRLIB)
-	rmdir ${libblkiddir}/usr/lib
-endif
-endif
+	dh_strip
 
 	# dpkg symbol handling
 ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))

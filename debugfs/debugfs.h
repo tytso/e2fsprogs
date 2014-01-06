@@ -39,7 +39,8 @@ extern unsigned long parse_ulong(const char *str, const char *cmd,
 				 const char *descr, int *err);
 extern unsigned long long parse_ulonglong(const char *str, const char *cmd,
 					  const char *descr, int *err);
-extern int strtoblk(const char *cmd, const char *str, blk64_t *ret);
+extern int strtoblk(const char *cmd, const char *str, const char *errmsg,
+		    blk64_t *ret);
 extern int common_args_process(int argc, char *argv[], int min_argc,
 			       int max_argc, const char *cmd,
 			       const char *usage, int flags);
