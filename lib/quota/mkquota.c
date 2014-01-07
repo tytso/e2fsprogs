@@ -133,11 +133,16 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 	fs = qctx->fs;
 	retval = ext2fs_get_mem(sizeof(struct quota_handle), &h);
 	if (retval) {
-		log_err("Unable to allocate quota handle");
+		log_err("Unable to allocate quota handle: %s",
+			error_message(retval));
 		goto out;
 	}
 
-	ext2fs_read_bitmaps(fs);
+	retval = ext2fs_read_bitmaps(fs);
+	if (retval) {
+		log_err("Couldn't read bitmaps: %s", error_message(retval));
+		goto out;
+	}
 
 	for (i = 0; i < MAXQUOTAS; i++) {
 		if ((qtype != -1) && (i != qtype))
@@ -171,7 +176,11 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	}
 
-	ext2fs_write_bitmaps(fs);
+	retval = ext2fs_write_bitmaps(fs);
+	if (retval) {
+		log_err("Couldn't write bitmaps: %s", error_message(retval));
+		goto out;
+	}
 out:
 	if (h)
 		ext2fs_free_mem(&h);
