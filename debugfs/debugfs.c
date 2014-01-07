@@ -289,8 +289,6 @@ void do_init_filesys(int argc, char **argv)
 	if (err)
 		return;
 	ext2fs_blocks_count_set(&param, blocks);
-	if (err)
-		return;
 	retval = ext2fs_initialize(argv[1], 0, &param,
 				   unix_io_manager, &current_fs);
 	if (retval) {
