@@ -817,7 +817,6 @@ static void rb_print_stats(ext2fs_generic_bitmap bitmap)
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 
-	node = ext2fs_rb_first(&bp->root);
 	for (node = ext2fs_rb_first(&bp->root); node != NULL;
 	     node = ext2fs_rb_next(node)) {
 		ext = node_to_extent(node);

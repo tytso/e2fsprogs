@@ -300,7 +300,8 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 		flag = fcntl(dev, F_GETFL);
 		if (flag > 0) {
 			flag = (flag & ~O_DIRECT) | new_flag;
-			fcntl(dev, F_SETFL, flag);
+			if (fcntl(dev, F_SETFL, flag) < 0)
+				perror("set_o_direct");
 		}
 		current_O_DIRECT = new_flag;
 	}

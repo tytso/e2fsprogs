@@ -111,6 +111,8 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 
 fatal:
 	ctx->flags |= E2F_FLAG_ABORT;
+	if (bb_list)
+		ext2fs_badblocks_list_free(bb_list);
 	return;
 
 }
