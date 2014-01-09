@@ -64,4 +64,4 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-subst.o: $(srcdir)/subst.c
+subst.o: $(srcdir)/subst.c $(top_builddir)/lib/config.h dirpaths.h
