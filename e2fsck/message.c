@@ -226,7 +226,8 @@ static void print_time(FILE *f, time_t t)
 			time_str = getenv("TZ");
 			if (!time_str)
 				time_str = "";
-			do_gmt = !strcmp(time_str, "GMT0");
+			do_gmt = !strcmp(time_str, "GMT") ||
+				!strcmp(time_str, "GMT0");
 		}
 #endif
 		time_str = asctime((do_gmt > 0) ? gmtime(&t) : localtime(&t));

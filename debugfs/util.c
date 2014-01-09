@@ -201,7 +201,7 @@ char *time_to_string(__u32 cl)
 		tz = ss_safe_getenv("TZ");
 		if (!tz)
 			tz = "";
-		do_gmt = !strcmp(tz, "GMT");
+		do_gmt = !strcmp(tz, "GMT") | !strcmp(tz, "GMT0");
 	}
 
 	return asctime((do_gmt) ? gmtime(&t) : localtime(&t));
@@ -222,14 +222,18 @@ time_t string_to_time(const char *arg)
 	}
 	if (arg[0] == '@') {
 		/* interpret it as an integer */
-		ret = strtoul(arg+1, &tmp, 0);
+		arg++;
+	fallback:
+		ret = strtoul(arg, &tmp, 0);
 		if (*tmp)
 			return ((time_t) -1);
 		return ret;
 	}
 	memset(&ts, 0, sizeof(ts));
 #ifdef HAVE_STRPTIME
-	strptime(arg, "%Y%m%d%H%M%S", &ts);
+	ret = strptime(arg, "%Y%m%d%H%M%S", &ts);
+	if (ret == NULL)
+		goto fallback;
 #else
 	sscanf(arg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
 	       &ts.tm_mday, &ts.tm_hour, &ts.tm_min, &ts.tm_sec);
@@ -241,13 +245,9 @@ time_t string_to_time(const char *arg)
 		ts.tm_mday = 0;
 #endif
 	ts.tm_isdst = -1;
-	ret = mktime(&ts);
-	if (ts.tm_mday == 0 || ret == ((time_t) -1)) {
-		/* Try it as an integer... */
-		ret = strtoul(arg, &tmp, 0);
-		if (*tmp)
-			return ((time_t) -1);
-	}
+	ret = ts.tm_sec + ts.tm_min*60 + ts.tm_hour*3600 + ts.tm_yday*86400 +
+		(ts.tm_year-70)*31536000 + ((ts.tm_year-69)/4)*86400 -
+		((ts.tm_year-1)/100)*86400 + ((ts.tm_year+299)/400)*86400;
 	return ret;
 }
 
