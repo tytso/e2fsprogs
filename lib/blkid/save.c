@@ -94,8 +94,10 @@ int blkid_flush_cache(blkid_cache cache)
 	if (ret == 0 && S_ISREG(st.st_mode)) {
 		tmp = malloc(strlen(filename) + 8);
 		if (tmp) {
+			mode_t save_umask = umask(022);
 			sprintf(tmp, "%s-XXXXXX", filename);
 			fd = mkstemp(tmp);
+			umask(save_umask);
 			if (fd >= 0) {
 				file = fdopen(fd, "w");
 				opened = tmp;
