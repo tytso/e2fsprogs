@@ -231,8 +231,8 @@ time_t string_to_time(const char *arg)
 	}
 	memset(&ts, 0, sizeof(ts));
 #ifdef HAVE_STRPTIME
-	ret = strptime(arg, "%Y%m%d%H%M%S", &ts);
-	if (ret == NULL)
+	tmp = strptime(arg, "%Y%m%d%H%M%S", &ts);
+	if (tmp == NULL)
 		goto fallback;
 #else
 	sscanf(arg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
