@@ -52,23 +52,8 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 	else
 		old_desc_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
 
-	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++)
-		ext2fs_fast_unmark_block_bitmap2(map, blk);
+	/* uninit block bitmaps are now initialized in read_bitmaps() */
 
-	blk = ext2fs_group_first_block2(fs, group);
-	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++) {
-		if ((blk == super_blk) ||
-		    (old_desc_blk && old_desc_blocks &&
-		     (blk >= old_desc_blk) &&
-		     (blk < old_desc_blk + old_desc_blocks)) ||
-		    (new_desc_blk && (blk == new_desc_blk)) ||
-		    (blk == ext2fs_block_bitmap_loc(fs, group)) ||
-		    (blk == ext2fs_inode_bitmap_loc(fs, group)) ||
-		    (blk >= ext2fs_inode_table_loc(fs, group) &&
-		     (blk < ext2fs_inode_table_loc(fs, group)
-		      + fs->inode_blocks_per_group)))
-			ext2fs_fast_mark_block_bitmap2(map, blk);
-	}
 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
 	ext2fs_group_desc_csum_set(fs, group);
 	ext2fs_mark_super_dirty(fs);
