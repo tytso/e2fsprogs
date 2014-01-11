@@ -727,13 +727,19 @@ static void rewrite_inodes(ext2_filsys fs)
 
 static void rewrite_metadata_checksums(ext2_filsys fs)
 {
+	errcode_t retval;
 	dgrp_t i;
 
 	fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	ext2fs_init_csum_seed(fs);
 	for (i = 0; i < fs->group_desc_count; i++)
 		ext2fs_group_desc_csum_set(fs, i);
-	ext2fs_read_bitmaps(fs);
+	retval = ext2fs_read_bitmaps(fs);
+	if (retval) {
+		com_err("rewrite_metadata_checksums", retval,
+			"while reading bitmaps");
+		exit(1);
+	}
 	rewrite_inodes(fs);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
@@ -809,7 +815,12 @@ static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 
 	/* Load bitmaps to ensure that the uninit ones get written out */
 	fs->super->s_feature_ro_compat |= csum_feature_flag;
-	ext2fs_read_bitmaps(fs);
+	retval = ext2fs_read_bitmaps(fs);
+	if (retval) {
+		com_err("disable_uninit_bg", retval,
+			"while reading bitmaps");
+		return;
+	}
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
 	fs->super->s_feature_ro_compat &= ~csum_feature_flag;
