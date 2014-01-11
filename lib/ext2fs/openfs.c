@@ -47,7 +47,7 @@ blk64_t ext2fs_descriptor_block_loc2(ext2_filsys fs, blk64_t group_block,
 	bg = EXT2_DESC_PER_BLOCK(fs->super) * i;
 	if (ext2fs_bg_has_super(fs, bg))
 		has_super = 1;
-	ret_blk = ext2fs_group_first_block2(fs, bg) + has_super;
+	ret_blk = ext2fs_group_first_block2(fs, bg);
 	/*
 	 * If group_block is not the normal value, we're trying to use
 	 * the backup group descriptors and superblock --- so use the
@@ -57,10 +57,21 @@ blk64_t ext2fs_descriptor_block_loc2(ext2_filsys fs, blk64_t group_block,
 	 * have the infrastructure in place to do that.
 	 */
 	if (group_block != fs->super->s_first_data_block &&
-	    ((ret_blk + fs->super->s_blocks_per_group) <
-	     ext2fs_blocks_count(fs->super)))
+	    ((ret_blk + has_super + fs->super->s_blocks_per_group) <
+	     ext2fs_blocks_count(fs->super))) {
 		ret_blk += fs->super->s_blocks_per_group;
-	return ret_blk;
+
+		/*
+		 * If we're going to jump forward a block group, make sure
+		 * that we adjust has_super to account for the next group's
+		 * backup superblock (or lack thereof).
+		 */
+		if (ext2fs_bg_has_super(fs, bg + 1))
+			has_super = 1;
+		else
+			has_super = 0;
+	}
+	return ret_blk + has_super;
 }
 
 blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
