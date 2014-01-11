@@ -2254,11 +2254,9 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	sprintf(tdb_file, "%s/mke2fs-%s.e2undo", tdb_dir, dev_name);
 	free(tmp_name);
 
-	if (!access(tdb_file, F_OK)) {
-		if (unlink(tdb_file) < 0) {
-			retval = errno;
-			goto errout;
-		}
+	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
+		retval = errno;
+		goto errout;
 	}
 
 	set_undo_io_backing_manager(*io_ptr);

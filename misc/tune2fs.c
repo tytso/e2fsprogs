@@ -1856,15 +1856,12 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 		goto alloc_fn_fail;
 	sprintf(tdb_file, "%s/tune2fs-%s.e2undo", tdb_dir, dev_name);
 
-	if (!access(tdb_file, F_OK)) {
-		if (unlink(tdb_file) < 0) {
-			retval = errno;
-			com_err(program_name, retval,
-				_("while trying to delete %s"),
-				tdb_file);
-			free(tdb_file);
-			return retval;
-		}
+	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
+		retval = errno;
+		com_err(program_name, retval,
+			_("while trying to delete %s"), tdb_file);
+		free(tdb_file);
+		return retval;
 	}
 
 	set_undo_io_backing_manager(*io_ptr);
