@@ -585,8 +585,8 @@ static int probe_fat(struct blkid_probe *probe,
 			__u64 next_off, fat_entry_off;
 			int count;
 
-			next_sect_off = (__u64) (next - 2) * vs->vs_cluster_size;
-			next_off = (start_data_sect + next_sect_off) *
+			next_sect_off = (next - 2) * vs->vs_cluster_size;
+			next_off = (__u64) (start_data_sect + next_sect_off) *
 				sector_size;
 
 			dir = (struct vfat_dir_entry *)

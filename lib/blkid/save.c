@@ -136,7 +136,7 @@ int blkid_flush_cache(blkid_cache cache)
 	fclose(file);
 	if (opened != filename) {
 		if (ret < 0) {
-			unlink(opened);
+			(void) unlink(opened);
 			DBG(DEBUG_SAVE,
 			    printf("unlinked temp cache %s\n", opened));
 		} else {
@@ -149,7 +149,8 @@ int blkid_flush_cache(blkid_cache cache)
 				link(filename, backup);
 				free(backup);
 			}
-			rename(opened, filename);
+			if (rename(opened, filename) < 0)
+				(void) unlink(opened);
 			DBG(DEBUG_SAVE,
 			    printf("moved temp cache %s\n", opened));
 		}
