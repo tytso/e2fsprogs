@@ -93,7 +93,7 @@ char **ss_parse(int sci_idx, register char *line_ptr, int *argc_ptr)
 		parse_mode = TOKEN;
 		cp = line_ptr;
 		new_argv = NEW_ARGV (argv, argc);
-		if (argv == NULL) {
+		if (new_argv == NULL) {
 			free(argv);
 			*argc_ptr = 0;
 			return NULL;
