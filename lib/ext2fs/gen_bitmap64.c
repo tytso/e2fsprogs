@@ -848,3 +848,55 @@ errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitmap,
 
 	return ENOENT;
 }
+
+errcode_t ext2fs_find_first_set_generic_bmap(ext2fs_generic_bitmap bitmap,
+					     __u64 start, __u64 end, __u64 *out)
+{
+	int b;
+
+	if (!bitmap)
+		return EINVAL;
+
+	if (EXT2FS_IS_64_BITMAP(bitmap) && bitmap->bitmap_ops->find_first_set)
+		return bitmap->bitmap_ops->find_first_set(bitmap, start,
+							  end, out);
+
+	if (EXT2FS_IS_32_BITMAP(bitmap)) {
+		blk_t blk = 0;
+		errcode_t retval;
+
+		if (((start) & ~0xffffffffULL) ||
+		    ((end) & ~0xffffffffULL)) {
+			ext2fs_warn_bitmap2(bitmap, EXT2FS_TEST_ERROR, start);
+			return EINVAL;
+		}
+
+		retval = ext2fs_find_first_set_generic_bitmap(bitmap, start,
+							      end, &blk);
+		if (retval == 0)
+			*out = blk;
+		return retval;
+	}
+
+	if (!EXT2FS_IS_64_BITMAP(bitmap))
+		return EINVAL;
+
+	start >>= bitmap->cluster_bits;
+	end >>= bitmap->cluster_bits;
+
+	if (start < bitmap->start || end > bitmap->end || start > end) {
+		warn_bitmap(bitmap, EXT2FS_TEST_ERROR, start);
+		return EINVAL;
+	}
+
+	while (start <= end) {
+		b = bitmap->bitmap_ops->test_bmap(bitmap, start);
+		if (b) {
+			*out = start << bitmap->cluster_bits;
+			return 0;
+		}
+		start++;
+	}
+
+	return ENOENT;
+}
