@@ -109,7 +109,6 @@ supported by ext2, ext3, and ext4.
 This feature enables the storage file type information in directory
 entries.  This feature is supported by ext2, ext3, and ext4.
 .TP
-.TP
 .B flex_bg
 .br
 This ext4 feature allows the per-block group metadata (allocation
