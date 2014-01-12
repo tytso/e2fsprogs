@@ -88,6 +88,7 @@ static int	discard = 1;	/* attempt to discard device before fs creation */
 static int	direct_io;
 static int	force;
 static int	noaction;
+static int	num_backups = 2; /* number of backup bg's for sparse_super2 */
 static uid_t	root_uid;
 static gid_t	root_gid;
 int	journal_size;
@@ -739,6 +740,21 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				r_usage++;
 				continue;
 			}
+		} else if (strcmp(token, "num_backup_sb") == 0) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			num_backups = strtoul(arg, &p, 0);
+			if (*p || num_backups > 2) {
+				fprintf(stderr,
+					_("Invalid # of backup "
+					  "superbocks: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
 		} else if (strcmp(token, "stride") == 0) {
 			if (!arg) {
 				r_usage++;
@@ -895,6 +911,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
 			"\tmmp_update_interval=<interval>\n"
+			"\tnum_backup_sb=<0|1|2>\n"
 			"\tstride=<RAID per-disk data chunk in blocks>\n"
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
 			"\toffset=<offset to create the file system>\n"
@@ -925,7 +942,8 @@ static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
-		EXT2_FEATURE_COMPAT_EXT_ATTR,
+		EXT2_FEATURE_COMPAT_EXT_ATTR |
+		EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|
 		EXT3_FEATURE_INCOMPAT_EXTENTS|
@@ -1975,6 +1993,8 @@ profile_error:
 	}
 #endif
 
+	num_backups = get_int_from_profile(fs_types, "num_backup_sb", 2);
+
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 
 	/*
@@ -2170,6 +2190,13 @@ profile_error:
 	 */
 	ext2fs_r_blocks_count_set(&fs_param, reserved_ratio *
 				  ext2fs_blocks_count(&fs_param) / 100.0);
+
+	if (fs_param.s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
+		if (num_backups >= 1)
+			fs_param.s_backup_bgs[0] = 1;
+		if (num_backups >= 2)
+			fs_param.s_backup_bgs[1] = ~0;
+	}
 
 	free(fs_type);
 	free(usage_types);
@@ -2603,8 +2630,8 @@ int main (int argc, char *argv[])
 		read_bb_file(fs, &bb_list, bad_blocks_filename);
 	if (cflag)
 		test_disk(fs, &bb_list);
-
 	handle_bad_blocks(fs, bb_list);
+
 	fs->stride = fs_stride = fs->super->s_raid_stride;
 	if (!quiet)
 		printf("%s", _("Allocating group tables: "));

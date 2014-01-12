@@ -274,6 +274,12 @@ small risk if the system crashes before the journal has been overwritten
 entirely one time.  If the option value is omitted, it defaults to 1 to
 enable lazy journal inode zeroing.
 .TP
+.BI num_backup_sb= <0|1|2>
+If the
+.B sparse_super2
+file system feature is enabled this option controls whether there will
+be 0, 1, or 2 backup superblocks created in the file system.
+.TP
 .BI root_owner [=uid:gid]
 Specify the numeric user and group ID of the root directory.  If no UID:GID
 is specified, use the user and group ID of the user running \fBmke2fs\fR.

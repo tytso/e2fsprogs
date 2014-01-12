@@ -645,7 +645,8 @@ struct ext2_super_block {
 	__u32	s_usr_quota_inum;	/* inode number of user quota file */
 	__u32	s_grp_quota_inum;	/* inode number of group quota file */
 	__u32	s_overhead_blocks;	/* overhead blocks/clusters in fs */
-	__u32   s_reserved[108];        /* Padding to the end of the block */
+	__u32	s_backup_bgs[2];	/* If sparse_super2 enabled */
+	__u32   s_reserved[106];        /* Padding to the end of the block */
 	__u32	s_checksum;		/* crc32c(superblock) */
 };
 
@@ -696,6 +697,7 @@ struct ext2_super_block {
 #define EXT2_FEATURE_COMPAT_LAZY_BG		0x0040
 /* #define EXT2_FEATURE_COMPAT_EXCLUDE_INODE	0x0080 not used, legacy */
 #define EXT2_FEATURE_COMPAT_EXCLUDE_BITMAP	0x0100
+#define EXT4_FEATURE_COMPAT_SPARSE_SUPER2	0x0200
 
 
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001

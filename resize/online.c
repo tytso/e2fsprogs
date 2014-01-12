@@ -76,6 +76,14 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 			no_resize_ioctl = 1;
 	}
 
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super,
+				    EXT4_FEATURE_COMPAT_SPARSE_SUPER2) &&
+	    (access("/sys/fs/ext4/features/sparse_super2", R_OK) != 0)) {
+		com_err(program_name, 0, _("kernel does not support online "
+					   "resize with sparse_super2"));
+		exit(1);
+	}
+
 	printf(_("Filesystem at %s is mounted on %s; "
 		 "on-line resizing required\n"), fs->device_name, mtpt);
 

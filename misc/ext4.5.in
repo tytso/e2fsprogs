@@ -171,6 +171,17 @@ kernels from mounting file systems that they could not understand.
 .\" .br
 .\" .B Future feature, available in e2fsprogs 1.43-WIP
 .TP
+.B sparse_super2
+.br
+This feature indicates that there will only at most two backup
+superblock and block group descriptors.  The block groups used to store
+the backup superblock and blockgroup descriptors are stored in the
+superblock, but typically, one will be located at the beginning of block
+group #1, and one in the last block group in the file system.  This is
+feature is essentially a more extreme version of sparse_super and is
+designed to allow the a much larger percentage of the disk to have
+contiguous blocks available for data files.
+.TP
 .B meta_bg
 .br
 This ext4 feature allows file systems to be resized on-line without explicitly
