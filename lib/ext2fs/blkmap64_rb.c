@@ -135,7 +135,7 @@ err_out:
 }
 #else
 #define check_tree(root, msg) do {} while (0)
-#define print_tree(root, msg) do {} while (0)
+#define print_tree(root) do {} while (0)
 #endif
 
 static void rb_get_new_extent(struct bmap_rb_extent **ext, __u64 start,
@@ -569,11 +569,14 @@ static int rb_remove_extent(__u64 start, __u64 count,
 static int rb_mark_bmap(ext2fs_generic_bitmap bitmap, __u64 arg)
 {
 	struct ext2fs_rb_private *bp;
+	int retval;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	arg -= bitmap->start;
 
-	return rb_insert_extent(arg, 1, bp);
+	retval = rb_insert_extent(arg, 1, bp);
+	check_tree(&bp->root, __func__);
+	return retval;
 }
 
 static int rb_unmark_bmap(ext2fs_generic_bitmap bitmap, __u64 arg)
@@ -610,6 +613,7 @@ static void rb_mark_bmap_extent(ext2fs_generic_bitmap bitmap, __u64 arg,
 	arg -= bitmap->start;
 
 	rb_insert_extent(arg, num, bp);
+	check_tree(&bp->root, __func__);
 }
 
 static void rb_unmark_bmap_extent(ext2fs_generic_bitmap bitmap, __u64 arg,
@@ -714,11 +718,14 @@ static errcode_t rb_set_bmap_range(ext2fs_generic_bitmap bitmap,
 
 		rb_insert_extent(start + first_set - bitmap->start,
 				 i - first_set, bp);
+		check_tree(&bp->root, __func__);
 		first_set = -1;
 	}
-	if (first_set != -1)
+	if (first_set != -1) {
 		rb_insert_extent(start + first_set - bitmap->start,
 				 num - first_set, bp);
+		check_tree(&bp->root, __func__);
+	}
 
 	return 0;
 }
@@ -799,6 +806,7 @@ static void rb_clear_bmap(ext2fs_generic_bitmap bitmap)
 	bp->rcursor = NULL;
 	bp->rcursor_next = NULL;
 	bp->wcursor = NULL;
+	check_tree(&bp->root, __func__);
 }
 
 #ifdef BMAP_STATS
