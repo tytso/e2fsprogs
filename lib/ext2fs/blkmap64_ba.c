@@ -328,12 +328,6 @@ static errcode_t ba_find_first_zero(ext2fs_generic_bitmap bitmap,
 	const unsigned char *pos;
 	unsigned long max_loop_count, i;
 
-	if (start < bitmap->start || end > bitmap->end || start > end)
-		return EINVAL;
-
-	if (bitmap->cluster_bits)
-		return EINVAL;
-
 	/* scan bits until we hit a byte boundary */
 	while ((bitpos & 0x7) != 0 && count > 0) {
 		if (!ext2fs_test_bit64(bitpos, bp->bitarray)) {
