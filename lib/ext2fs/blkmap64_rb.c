@@ -809,6 +809,93 @@ static void rb_clear_bmap(ext2fs_generic_bitmap bitmap)
 	check_tree(&bp->root, __func__);
 }
 
+static errcode_t rb_find_first_zero(ext2fs_generic_bitmap bitmap,
+				   __u64 start, __u64 end, __u64 *out)
+{
+	struct rb_node *parent = NULL, **n;
+	struct rb_node *node, *next;
+	struct ext2fs_rb_private *bp;
+	struct bmap_rb_extent *ext;
+	int retval = 1;
+
+	bp = (struct ext2fs_rb_private *) bitmap->private;
+	n = &bp->root.rb_node;
+	start -= bitmap->start;
+	end -= bitmap->start;
+
+	if (start > end)
+		return EINVAL;
+
+	if (EXT2FS_RB_EMPTY_ROOT(&bp->root))
+		return ENOENT;
+
+	while (*n) {
+		parent = *n;
+		ext = node_to_extent(parent);
+		if (start < ext->start) {
+			n = &(*n)->rb_left;
+		} else if (start >= (ext->start + ext->count)) {
+			n = &(*n)->rb_right;
+		} else if (ext->start + ext->count <= end) {
+			*out = ext->start + ext->count + bitmap->start;
+			return 0;
+		} else
+			return ENOENT;
+	}
+
+	*out = start + bitmap->start;
+	return 0;
+}
+
+static errcode_t rb_find_first_set(ext2fs_generic_bitmap bitmap,
+				   __u64 start, __u64 end, __u64 *out)
+{
+	struct rb_node *parent = NULL, **n;
+	struct rb_node *node, *next;
+	struct ext2fs_rb_private *bp;
+	struct bmap_rb_extent *ext;
+	int retval = 1;
+
+	bp = (struct ext2fs_rb_private *) bitmap->private;
+	n = &bp->root.rb_node;
+	start -= bitmap->start;
+	end -= bitmap->start;
+
+	if (start > end)
+		return EINVAL;
+
+	if (EXT2FS_RB_EMPTY_ROOT(&bp->root))
+		return ENOENT;
+
+	while (*n) {
+		parent = *n;
+		ext = node_to_extent(parent);
+		if (start < ext->start) {
+			n = &(*n)->rb_left;
+		} else if (start >= (ext->start + ext->count)) {
+			n = &(*n)->rb_right;
+		} else {
+			/* The start bit is set */
+			*out = start + bitmap->start;
+			return 0;
+		}
+	}
+
+	node = parent;
+	ext = node_to_extent(node);
+	if (ext->start < start) {
+		node = ext2fs_rb_next(node);
+		if (node == NULL)
+			return ENOENT;
+		ext = node_to_extent(node);
+	}
+	if (ext->start <= end) {
+		*out = ext->start + bitmap->start;
+		return 0;
+	}
+	return ENOENT;
+}
+
 #ifdef BMAP_STATS
 static void rb_print_stats(ext2fs_generic_bitmap bitmap)
 {
@@ -890,4 +977,6 @@ struct ext2_bitmap_ops ext2fs_blkmap64_rbtree = {
 	.get_bmap_range = rb_get_bmap_range,
 	.clear_bmap = rb_clear_bmap,
 	.print_stats = rb_print_stats,
+	.find_first_zero = rb_find_first_zero,
+	.find_first_set = rb_find_first_set,
 };
