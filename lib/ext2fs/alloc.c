@@ -27,30 +27,14 @@
 #include "ext2fs.h"
 
 /*
- * Check for uninit block bitmaps and deal with them appropriately
+ * Clear the uninit block bitmap flag if necessary
  */
-static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
-			       dgrp_t group)
+static void clear_block_uninit(ext2_filsys fs, dgrp_t group)
 {
-	blk_t		i;
-	blk64_t		blk, super_blk, old_desc_blk, new_desc_blk;
-	int		old_desc_blocks;
-
 	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
 		return;
-
-	blk = ext2fs_group_first_block2(fs, group);
-
-	ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
-				  &old_desc_blk, &new_desc_blk, 0);
-
-	if (fs->super->s_feature_incompat &
-	    EXT2_FEATURE_INCOMPAT_META_BG)
-		old_desc_blocks = fs->super->s_first_meta_bg;
-	else
-		old_desc_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
 
 	/* uninit block bitmaps are now initialized in read_bitmaps() */
 
@@ -78,10 +62,11 @@ static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 		ext2fs_fast_unmark_inode_bitmap2(map, ino);
 
 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
+	/* Mimics what the kernel does */
+	ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
 	ext2fs_group_desc_csum_set(fs, group);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_super_dirty(fs);
-	check_block_uninit(fs, fs->block_map, group);
 }
 
 /*
@@ -167,17 +152,9 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 	c_ratio = 1 << ext2fs_get_bitmap_granularity(map);
 	if (c_ratio > 1)
 		goal &= ~EXT2FS_CLUSTER_MASK(fs);
-	check_block_uninit(fs, map,
-			   (i - fs->super->s_first_data_block) /
-			   EXT2_BLOCKS_PER_GROUP(fs->super));
 	do {
-		if (((i - fs->super->s_first_data_block) %
-		     EXT2_BLOCKS_PER_GROUP(fs->super)) == 0)
-			check_block_uninit(fs, map,
-					   (i - fs->super->s_first_data_block) /
-					   EXT2_BLOCKS_PER_GROUP(fs->super));
-
 		if (!ext2fs_fast_test_block_bitmap2(map, i)) {
+			clear_block_uninit(fs, ext2fs_group_of_blk2(fs, i));
 			*ret = i;
 			return 0;
 		}
