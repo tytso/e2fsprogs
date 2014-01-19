@@ -106,3 +106,44 @@ void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs,
 
 	fs->block_alloc_stats = func;
 }
+
+void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
+				    blk_t num, int inuse)
+{
+#ifndef OMIT_COM_ERR
+	if (blk + num > ext2fs_blocks_count(fs->super)) {
+		com_err("ext2fs_block_alloc_stats_range", 0,
+			"Illegal block range: %llu (%u) ",
+			(unsigned long long) blk, num);
+		return;
+	}
+#endif
+	if (inuse == 0)
+		return;
+	if (inuse > 0) {
+		ext2fs_mark_block_bitmap_range2(fs->block_map, blk, num);
+		inuse = 1;
+	} else {
+		ext2fs_unmark_block_bitmap_range2(fs->block_map, blk, num);
+		inuse = -1;
+	}
+	while (num) {
+		int group = ext2fs_group_of_blk2(fs, blk);
+		blk64_t last_blk = ext2fs_group_last_block2(fs, group);
+		blk_t n = num;
+
+		if (blk + num > last_blk)
+			n = last_blk - blk + 1;
+
+		ext2fs_bg_free_blocks_count_set(fs, group,
+			ext2fs_bg_free_blocks_count(fs, group) -
+			inuse*n/EXT2FS_CLUSTER_RATIO(fs));
+		ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+		ext2fs_group_desc_csum_set(fs, group);
+		ext2fs_free_blocks_count_add(fs->super, -inuse * n);
+		blk += n;
+		num -= n;
+	}
+	ext2fs_mark_super_dirty(fs);
+	ext2fs_mark_bb_dirty(fs);
+}
