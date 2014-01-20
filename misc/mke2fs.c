@@ -2332,30 +2332,43 @@ static int mke2fs_discard_device(ext2_filsys fs)
 
 static void fix_cluster_bg_counts(ext2_filsys fs)
 {
-	blk64_t	cluster, num_clusters, tot_free;
-	unsigned num = 0;
-	int	grp_free, num_free, group;
+	blk64_t		block, num_blocks, last_block, next;
+	blk64_t		tot_free = 0;
+	errcode_t	retval;
+	dgrp_t		group = 0;
+	int		grp_free = 0;
 
-	num_clusters = EXT2FS_B2C(fs, ext2fs_blocks_count(fs->super));
-	tot_free = num_free = group = grp_free = 0;
-	for (cluster = EXT2FS_B2C(fs, fs->super->s_first_data_block);
-	     cluster < num_clusters; cluster++) {
-		if (!ext2fs_test_block_bitmap2(fs->block_map,
-					       EXT2FS_C2B(fs, cluster))) {
-			grp_free++;
-			tot_free++;
+	num_blocks = ext2fs_blocks_count(fs->super);
+	last_block = ext2fs_group_last_block2(fs, group);
+	block = fs->super->s_first_data_block;
+	while (block < num_blocks) {
+		retval = ext2fs_find_first_zero_block_bitmap2(fs->block_map,
+						block, last_block, &next);
+		if (retval == 0)
+			block = next;
+		else {
+			block = last_block + 1;
+			goto next_bg;
 		}
-		num++;
-		if ((num == fs->super->s_clusters_per_group) ||
-		    (cluster == num_clusters-1)) {
+
+		retval = ext2fs_find_first_set_block_bitmap2(fs->block_map,
+						block, last_block, &next);
+		if (retval)
+			next = last_block + 1;
+		grp_free += EXT2FS_NUM_B2C(fs, next - block);
+		tot_free += next - block;
+		block = next;
+
+		if (block > last_block) {
+		next_bg:
 			ext2fs_bg_free_blocks_count_set(fs, group, grp_free);
 			ext2fs_group_desc_csum_set(fs, group);
-			num = 0;
 			grp_free = 0;
 			group++;
+			last_block = ext2fs_group_last_block2(fs, group);
 		}
 	}
-	ext2fs_free_blocks_count_set(fs->super, EXT2FS_C2B(fs, tot_free));
+	ext2fs_free_blocks_count_set(fs->super, tot_free);
 }
 
 static int create_quota_inodes(ext2_filsys fs)
