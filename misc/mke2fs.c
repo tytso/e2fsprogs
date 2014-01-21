@@ -62,6 +62,7 @@ extern int optind;
 #include "../version.h"
 #include "nls-enable.h"
 #include "quota/mkquota.h"
+#include "mke2fs.h"
 
 #define STRIDE_LENGTH 8
 
@@ -76,13 +77,13 @@ extern int optind;
 extern int isatty(int);
 extern FILE *fpopen(const char *cmd, const char *mode);
 
-static const char * program_name = "mke2fs";
+const char * program_name = "mke2fs";
 static const char * device_name /* = NULL */;
 
 /* Command line options */
 static int	cflag;
-static int	verbose;
-static int	quiet;
+int	verbose;
+int	quiet;
 static int	super_only;
 static int	discard = 1;	/* attempt to discard device before fs creation */
 static int	direct_io;
@@ -108,7 +109,7 @@ static char *volume_label;
 static char *mount_dir;
 char *journal_device;
 static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
-static char **fs_types;
+char **fs_types;
 
 static profile_t	profile;
 
@@ -143,7 +144,7 @@ static int int_log2(unsigned long long arg)
 	return l;
 }
 
-static int int_log10(unsigned long long arg)
+int int_log10(unsigned long long arg)
 {
 	int	l;
 
@@ -1243,7 +1244,7 @@ static char **parse_fs_type(const char *fs_type,
 	return (list.list);
 }
 
-static char *get_string_from_profile(char **types, const char *opt,
+char *get_string_from_profile(char **types, const char *opt,
 				     const char *def_val)
 {
 	char *ret = 0;
@@ -1260,7 +1261,7 @@ static char *get_string_from_profile(char **types, const char *opt,
 	return (ret);
 }
 
-static int get_int_from_profile(char **types, const char *opt, int def_val)
+int get_int_from_profile(char **types, const char *opt, int def_val)
 {
 	int ret;
 	char **cpp;
@@ -1283,7 +1284,7 @@ static double get_double_from_profile(char **types, const char *opt,
 	return ret;
 }
 
-static int get_bool_from_profile(char **types, const char *opt, int def_val)
+int get_bool_from_profile(char **types, const char *opt, int def_val)
 {
 	int ret;
 	char **cpp;
@@ -2547,6 +2548,7 @@ int main (int argc, char *argv[])
 					 "0s - skipping inode table wipe\n"));
 			lazy_itable_init = 1;
 			itable_zeroed = 1;
+			zero_hugefile = 0;
 		}
 	}
 
@@ -2846,6 +2848,10 @@ no_journal:
 	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
 				       EXT4_FEATURE_RO_COMPAT_QUOTA))
 		create_quota_inodes(fs);
+
+	retval = mk_hugefiles(fs);
+	if (retval)
+		com_err(program_name, retval, "while creating huge files");
 
 	if (!quiet)
 		printf("%s", _("Writing superblocks and "
