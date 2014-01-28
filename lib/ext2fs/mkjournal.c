@@ -295,13 +295,43 @@ static int mkjournal_proc(ext2_filsys	fs,
 }
 
 /*
+ * Calculate the initial goal block to be roughly at the middle of the
+ * filesystem.  Pick a group that has the largest number of free
+ * blocks.
+ */
+static blk64_t get_midpoint_journal_block(ext2_filsys fs)
+{
+	dgrp_t	group, start, end, i, log_flex;
+
+	group = ext2fs_group_of_blk2(fs, (ext2fs_blocks_count(fs->super) -
+					 fs->super->s_first_data_block) / 2);
+	log_flex = 1 << fs->super->s_log_groups_per_flex;
+	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
+		group = group & ~(log_flex - 1);
+		while ((group < fs->group_desc_count) &&
+		       ext2fs_bg_free_blocks_count(fs, group) == 0)
+			group++;
+		if (group == fs->group_desc_count)
+			group = 0;
+		start = group;
+	} else
+		start = (group > 0) ? group-1 : group;
+	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
+	group = start;
+	for (i = start + 1; i <= end; i++)
+		if (ext2fs_bg_free_blocks_count(fs, i) >
+		    ext2fs_bg_free_blocks_count(fs, group))
+			group = i;
+	return ext2fs_group_first_block2(fs, group);
+}
+
+/*
  * This function creates a journal using direct I/O routines.
  */
 static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 				     blk_t num_blocks, int flags)
 {
 	char			*buf;
-	dgrp_t			group, start, end, i, log_flex;
 	errcode_t		retval;
 	struct ext2_inode	inode;
 	unsigned long long	inode_size;
@@ -328,6 +358,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	es.err = 0;
 	es.flags = flags;
 	es.zero_count = 0;
+	es.goal = get_midpoint_journal_block(fs);
 
 	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
 		inode.i_flags |= EXT4_EXTENTS_FL;
@@ -335,32 +366,6 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 			goto out2;
 	}
 
-	/*
-	 * Set the initial goal block to be roughly at the middle of
-	 * the filesystem.  Pick a group that has the largest number
-	 * of free blocks.
-	 */
-	group = ext2fs_group_of_blk2(fs, (ext2fs_blocks_count(fs->super) -
-					 fs->super->s_first_data_block) / 2);
-	log_flex = 1 << fs->super->s_log_groups_per_flex;
-	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
-		group = group & ~(log_flex - 1);
-		while ((group < fs->group_desc_count) &&
-		       ext2fs_bg_free_blocks_count(fs, group) == 0)
-			group++;
-		if (group == fs->group_desc_count)
-			group = 0;
-		start = group;
-	} else
-		start = (group > 0) ? group-1 : group;
-	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
-	group = start;
-	for (i=start+1; i <= end; i++)
-		if (ext2fs_bg_free_blocks_count(fs, i) >
-		    ext2fs_bg_free_blocks_count(fs, group))
-			group = i;
-
-	es.goal = ext2fs_group_first_block2(fs, group);
 	retval = ext2fs_block_iterate3(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
 	if (es.err) {
