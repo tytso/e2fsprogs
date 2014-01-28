@@ -329,7 +329,7 @@ static blk64_t get_midpoint_journal_block(ext2_filsys fs)
  * This function creates a journal using direct I/O routines.
  */
 static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
-				     blk_t num_blocks, int flags)
+				     blk_t num_blocks, blk64_t goal, int flags)
 {
 	char			*buf;
 	errcode_t		retval;
@@ -358,7 +358,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	es.err = 0;
 	es.flags = flags;
 	es.zero_count = 0;
-	es.goal = get_midpoint_journal_block(fs);
+	es.goal = (goal != ~0ULL) ? goal : get_midpoint_journal_block(fs);
 
 	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
 		inode.i_flags |= EXT4_EXTENTS_FL;
@@ -496,7 +496,8 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
  * POSIX routines if the filesystem is mounted, or using direct I/O
  * functions if it is not.
  */
-errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
+errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
+				    blk64_t goal, int flags)
 {
 	errcode_t		retval;
 	ext2_ino_t		journal_ino;
@@ -587,7 +588,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
 		}
 		journal_ino = EXT2_JOURNAL_INO;
 		if ((retval = write_journal_inode(fs, journal_ino,
-						  num_blocks, flags)))
+						  num_blocks, goal, flags)))
 			return retval;
 	}
 
@@ -604,6 +605,12 @@ errout:
 		close(fd);
 	return retval;
 }
+
+errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
+{
+	return ext2fs_add_journal_inode2(fs, num_blocks, ~0ULL, flags);
+}
+
 
 #ifdef DEBUG
 main(int argc, char **argv)
