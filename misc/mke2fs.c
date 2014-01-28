@@ -97,6 +97,7 @@ static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 static int	quotatype = -1;  /* Initialize both user and group quotas by default */
 static __u64	offset;
+static blk64_t journal_location = ~0LL;
 
 static struct ext2_super_block fs_param;
 static char *fs_uuid = NULL;
@@ -2010,6 +2011,15 @@ profile_error:
 					       EXT2_MKJOURNAL_LAZYINIT : 0;
 	journal_flags |= EXT2_MKJOURNAL_NO_MNT_CHECK;
 
+	if (!journal_location_string)
+		journal_location_string = get_string_from_profile(fs_types,
+						"journal_location", "");
+	if ((journal_location == ~0ULL) && journal_location_string &&
+	    *journal_location_string)
+		journal_location = parse_num_blocks2(journal_location_string,
+						fs_param.s_log_block_size);
+	free(journal_location_string);
+
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {
 		tmp = NULL;
@@ -2724,8 +2734,9 @@ int main (int argc, char *argv[])
 			       journal_blocks);
 			fflush(stdout);
 		}
-		retval = ext2fs_add_journal_inode(fs, journal_blocks,
-						  journal_flags);
+		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+						   journal_location,
+						   journal_flags);
 		if (retval) {
 			com_err(program_name, retval, "%s",
 				_("\n\twhile trying to create journal"));

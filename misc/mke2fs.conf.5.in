@@ -357,6 +357,9 @@ initialization noticeably, but it requires the kernel to finish
 initializing the filesystem in the background when the filesystem is
 first mounted.
 .TP
+.I journal_location
+This relation specifies the location of the journal.
+.TP
 .I inode_ratio
 This relation specifies the default inode ratio if the user does not
 specify one on the command line.
