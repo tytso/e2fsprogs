@@ -280,6 +280,16 @@ If the
 file system feature is enabled this option controls whether there will
 be 0, 1, or 2 backup superblocks created in the file system.
 .TP
+.B packed_meta_blocks\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
+Place the allocation bitmaps and the inode table at the beginning of the
+disk.  This option requires that the flex_bg file system feature to be
+enabled in order for it to have effect, and will also create the journal
+at the beginning of the file system.  This option is useful for flash
+devices that use SLC flash at the beginning of the disk.
+It also maximizes the range of contiguous data blocks, which
+can be useful for certain specialized use cases, such as supported
+Shingled Drives.
+.TP
 .BI root_owner [=uid:gid]
 Specify the numeric user and group ID of the root directory.  If no UID:GID
 is specified, use the user and group ID of the user running \fBmke2fs\fR.

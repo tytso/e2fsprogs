@@ -94,6 +94,7 @@ static gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
 static int	lazy_itable_init;
+static int	packed_meta_blocks;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 static int	quotatype = -1;  /* Initialize both user and group quotas by default */
@@ -309,6 +310,40 @@ _("Warning: the backup superblock/group descriptors at block %u contain\n"
 	while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
 		ext2fs_mark_block_bitmap2(fs->block_map, EXT2FS_B2C(fs, blk));
 	ext2fs_badblocks_list_iterate_end(bb_iter);
+}
+
+static errcode_t packed_allocate_tables(ext2_filsys fs)
+{
+	errcode_t	retval;
+	dgrp_t		i;
+	blk64_t		goal = 0;
+
+	for (i = 0; i < fs->group_desc_count; i++) {
+		retval = ext2fs_new_block2(fs, goal, NULL, &goal);
+		if (retval)
+			return retval;
+		ext2fs_block_alloc_stats2(fs, goal, +1);
+		ext2fs_block_bitmap_loc_set(fs, i, goal);
+	}
+	for (i = 0; i < fs->group_desc_count; i++) {
+		retval = ext2fs_new_block2(fs, goal, NULL, &goal);
+		if (retval)
+			return retval;
+		ext2fs_block_alloc_stats2(fs, goal, +1);
+		ext2fs_inode_bitmap_loc_set(fs, i, goal);
+	}
+	for (i = 0; i < fs->group_desc_count; i++) {
+		blk64_t end = ext2fs_blocks_count(fs->super) - 1;
+		retval = ext2fs_get_free_blocks2(fs, goal, end,
+						 fs->inode_blocks_per_group,
+						 fs->block_map, &goal);
+		if (retval)
+			return retval;
+		ext2fs_block_alloc_stats_range(fs, goal,
+					       fs->inode_blocks_per_group, +1);
+		ext2fs_inode_table_loc_set(fs, i, goal);
+	}
+	return 0;
 }
 
 static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
@@ -755,6 +790,13 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				r_usage++;
 				continue;
 			}
+		} else if (strcmp(token, "packed_meta_blocks") == 0) {
+			if (arg)
+				packed_meta_blocks = strtoul(arg, &p, 0);
+			else
+				packed_meta_blocks = 1;
+			if (packed_meta_blocks)
+				journal_location = 0;
 		} else if (strcmp(token, "stride") == 0) {
 			if (!arg) {
 				r_usage++;
@@ -916,6 +958,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
 			"\toffset=<offset to create the file system>\n"
 			"\tresize=<resize maximum size in blocks>\n"
+			"\tpacked_meta_blocks=<0 to disable, 1 to enable>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
 			"\troot_uid=<uid of root directory>\n"
@@ -2040,6 +2083,11 @@ profile_error:
 						fs_param.s_log_block_size);
 	free(journal_location_string);
 
+	packed_meta_blocks = get_bool_from_profile(fs_types,
+						   "packed_meta_blocks", 0);
+	if (packed_meta_blocks)
+		journal_location = 0;
+
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {
 		tmp = NULL;
@@ -2635,7 +2683,11 @@ int main (int argc, char *argv[])
 	fs->stride = fs_stride = fs->super->s_raid_stride;
 	if (!quiet)
 		printf("%s", _("Allocating group tables: "));
-	retval = ext2fs_allocate_tables(fs);
+	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) &&
+	    packed_meta_blocks)
+		retval = packed_allocate_tables(fs);
+	else
+		retval = ext2fs_allocate_tables(fs);
 	if (retval) {
 		com_err(program_name, retval, "%s",
 			_("while trying to allocate filesystem tables"));
