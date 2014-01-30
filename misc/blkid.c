@@ -293,10 +293,7 @@ int main(int argc, char **argv)
 	while ((c = getopt (argc, argv, "c:f:ghlLo:s:t:w:v")) != EOF)
 		switch (c) {
 		case 'c':
-			if (optarg && !*optarg)
-				read = NULL;
-			else
-				read = optarg;
+			read = optarg;
 			if (!write)
 				write = read;
 			break;
@@ -349,10 +346,7 @@ int main(int argc, char **argv)
 			version = 1;
 			break;
 		case 'w':
-			if (optarg && !*optarg)
-				write = NULL;
-			else
-				write = optarg;
+			write = optarg;
 			break;
 		case 'h':
 			err = 0;
