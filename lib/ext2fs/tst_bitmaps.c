@@ -436,6 +436,39 @@ void do_ffzb(int argc, char *argv[])
 	printf("First unmarked block is %llu\n", out);
 }
 
+void do_ffsb(int argc, char *argv[])
+{
+	unsigned int start, end;
+	int err;
+	errcode_t retval;
+	blk64_t out;
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	if (argc != 3 && argc != 3) {
+		com_err(argv[0], 0, "Usage: ffsb <start> <end>");
+		return;
+	}
+
+	start = parse_ulong(argv[1], argv[0], "start", &err);
+	if (err)
+		return;
+
+	end = parse_ulong(argv[2], argv[0], "end", &err);
+	if (err)
+		return;
+
+	retval = ext2fs_find_first_set_block_bitmap2(test_fs->block_map,
+						      start, end, &out);
+	if (retval) {
+		printf("ext2fs_find_first_set_block_bitmap2() returned %s\n",
+		       error_message(retval));
+		return;
+	}
+	printf("First marked block is %llu\n", out);
+}
+
 
 void do_zerob(int argc, char *argv[])
 {
@@ -559,6 +592,38 @@ void do_ffzi(int argc, char *argv[])
 	printf("First unmarked inode is %u\n", out);
 }
 
+void do_ffsi(int argc, char *argv[])
+{
+	unsigned int start, end;
+	int err;
+	errcode_t retval;
+	ext2_ino_t out;
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	if (argc != 3 && argc != 3) {
+		com_err(argv[0], 0, "Usage: ffsi <start> <end>");
+		return;
+	}
+
+	start = parse_ulong(argv[1], argv[0], "start", &err);
+	if (err)
+		return;
+
+	end = parse_ulong(argv[2], argv[0], "end", &err);
+	if (err)
+		return;
+
+	retval = ext2fs_find_first_set_inode_bitmap2(test_fs->inode_map,
+						     start, end, &out);
+	if (retval) {
+		printf("ext2fs_find_first_set_inode_bitmap2() returned %s\n",
+		       error_message(retval));
+		return;
+	}
+	printf("First marked inode is %u\n", out);
+}
 
 void do_zeroi(int argc, char *argv[])
 {

@@ -53,6 +53,9 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs);
 static errcode_t fix_sb_journal_backup(ext2_filsys fs);
 static errcode_t mark_table_blocks(ext2_filsys fs,
 				   ext2fs_block_bitmap bmap);
+static errcode_t clear_sparse_super2_last_group(ext2_resize_t rfs);
+static errcode_t reserve_sparse_super2_last_group(ext2_resize_t rfs,
+						 ext2fs_block_bitmap meta_bmap);
 
 /*
  * Some helper CPP macros
@@ -190,6 +193,10 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 	if (retval)
 		goto errout;
 	print_resource_track(rfs, &rtrack, fs->io);
+
+	retval = clear_sparse_super2_last_group(rfs);
+	if (retval)
+		goto errout;
 
 	rfs->new_fs->super->s_state &= ~EXT2_ERROR_FS;
 	rfs->new_fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
@@ -459,6 +466,33 @@ retry:
 	}
 
 	/*
+	 * Update the location of the backup superblocks if the
+	 * sparse_super2 feature is enabled.
+	 */
+	if (fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
+		dgrp_t last_bg = fs->group_desc_count - 1;
+		dgrp_t old_last_bg = old_fs->group_desc_count - 1;
+
+		if (last_bg > old_last_bg) {
+			if (old_fs->group_desc_count == 1)
+				fs->super->s_backup_bgs[0] = 1;
+			if (old_fs->group_desc_count == 1 &&
+			    fs->super->s_backup_bgs[0])
+				fs->super->s_backup_bgs[0] = last_bg;
+			else if (fs->super->s_backup_bgs[1])
+				fs->super->s_backup_bgs[1] = last_bg;
+		} else if (last_bg < old_last_bg) {
+			if (fs->super->s_backup_bgs[0] > last_bg)
+				fs->super->s_backup_bgs[0] = 0;
+			if (fs->super->s_backup_bgs[1] > last_bg)
+				fs->super->s_backup_bgs[1] = 0;
+			if (last_bg > 1 &&
+			    old_fs->super->s_backup_bgs[1] == old_last_bg)
+				fs->super->s_backup_bgs[1] = last_bg;
+		}
+	}
+
+	/*
 	 * If we are shrinking the number of block groups, we're done
 	 * and can exit now.
 	 */
@@ -613,14 +647,13 @@ errout:
  */
 static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 {
-	ext2_filsys fs;
+	ext2_filsys	fs = rfs->new_fs;
 	int		adj = 0;
 	errcode_t	retval;
 	blk64_t		group_block;
 	unsigned long	i;
 	unsigned long	max_group;
 
-	fs = rfs->new_fs;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
 	ext2fs_mark_ib_dirty(fs);
@@ -946,6 +979,10 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		old_blocks = old_fs->desc_blocks + old_fs->super->s_reserved_gdt_blocks;
 		new_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
 	}
+
+	retval = reserve_sparse_super2_last_group(rfs, meta_bmap);
+	if (retval)
+		goto errout;
 
 	if (old_blocks == new_blocks) {
 		retval = 0;
@@ -1906,6 +1943,147 @@ static errcode_t move_itables(ext2_resize_t rfs)
 
 errout:
 	return retval;
+}
+
+/*
+ * This function is used when expanding a file system.  It frees the
+ * superblock and block group descriptor blocks from the block group
+ * which is no longer the last block group.
+ */
+static errcode_t clear_sparse_super2_last_group(ext2_resize_t rfs)
+{
+	ext2_filsys	fs = rfs->new_fs;
+	ext2_filsys	old_fs = rfs->old_fs;
+	errcode_t	retval;
+	dgrp_t		old_last_bg = rfs->old_fs->group_desc_count - 1;
+	dgrp_t		last_bg = fs->group_desc_count - 1;
+	blk64_t		sb, old_desc;
+	blk_t		num;
+
+	if (!(fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2))
+		return 0;
+
+	if (last_bg <= old_last_bg)
+		return 0;
+
+	if (fs->super->s_backup_bgs[0] == old_fs->super->s_backup_bgs[0] &&
+	    fs->super->s_backup_bgs[1] == old_fs->super->s_backup_bgs[1])
+		return 0;
+
+	if (old_fs->super->s_backup_bgs[0] != old_last_bg &&
+	    old_fs->super->s_backup_bgs[1] != old_last_bg)
+		return 0;
+
+	if (fs->super->s_backup_bgs[0] == old_last_bg ||
+	    fs->super->s_backup_bgs[1] == old_last_bg)
+		return 0;
+
+	retval = ext2fs_super_and_bgd_loc2(rfs->old_fs, old_last_bg,
+					   &sb, &old_desc, NULL, &num);
+	if (retval)
+		return retval;
+
+	if (sb)
+		ext2fs_unmark_block_bitmap2(fs->block_map, sb);
+	if (old_desc)
+		ext2fs_unmark_block_bitmap_range2(fs->block_map, old_desc, num);
+	return 0;
+}
+
+/*
+ * This function is used when shrinking a file system.  We need to
+ * utilize blocks from what will be the new last block group for the
+ * backup superblock and block group descriptor blocks.
+ * Unfortunately, those blocks may be used by other files or fs
+ * metadata blocks.  We need to mark them as being in use.
+ */
+static errcode_t reserve_sparse_super2_last_group(ext2_resize_t rfs,
+						 ext2fs_block_bitmap meta_bmap)
+{
+	ext2_filsys	fs = rfs->new_fs;
+	ext2_filsys	old_fs = rfs->old_fs;
+	errcode_t	retval;
+	dgrp_t		old_last_bg = rfs->old_fs->group_desc_count - 1;
+	dgrp_t		last_bg = fs->group_desc_count - 1;
+	dgrp_t		g;
+	blk64_t		blk, sb, old_desc;
+	blk_t		i, num;
+	int		realloc = 0;
+
+	if (!(fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2))
+		return 0;
+
+	if (last_bg >= old_last_bg)
+		return 0;
+
+	if (fs->super->s_backup_bgs[0] == old_fs->super->s_backup_bgs[0] &&
+	    fs->super->s_backup_bgs[1] == old_fs->super->s_backup_bgs[1])
+		return 0;
+
+	if (fs->super->s_backup_bgs[0] != last_bg &&
+	    fs->super->s_backup_bgs[1] != last_bg)
+		return 0;
+
+	if (old_fs->super->s_backup_bgs[0] == last_bg ||
+	    old_fs->super->s_backup_bgs[1] == last_bg)
+		return 0;
+
+	retval = ext2fs_super_and_bgd_loc2(rfs->new_fs, last_bg,
+					   &sb, &old_desc, NULL, &num);
+	if (retval)
+		return retval;
+
+	if (!sb) {
+		fputs(_("Should never happen!  No sb in last super_sparse bg?\n"),
+		      stderr);
+		exit(1);
+	}
+	if (old_desc != sb+1) {
+		fputs(_("Should never happen!  Unexpected old_desc in "
+			"super_sparse bg?\n"),
+		      stderr);
+		exit(1);
+	}
+	num = (old_desc) ? num : 1;
+
+	/* Reserve the backup blocks */
+	ext2fs_mark_block_bitmap_range2(fs->block_map, sb, num);
+
+	for (g = 0; g < fs->group_desc_count; g++) {
+		blk64_t mb;
+
+		mb = ext2fs_block_bitmap_loc(fs, g);
+		if ((mb >= sb) && (mb < sb + num)) {
+			ext2fs_block_bitmap_loc_set(fs, g, 0);
+			realloc = 1;
+		}
+		mb = ext2fs_inode_bitmap_loc(fs, g);
+		if ((mb >= sb) && (mb < sb + num)) {
+			ext2fs_inode_bitmap_loc_set(fs, g, 0);
+			realloc = 1;
+		}
+		mb = ext2fs_inode_table_loc(fs, g);
+		if ((mb < sb + num) &&
+		    (sb < mb + fs->inode_blocks_per_group)) {
+			ext2fs_inode_table_loc_set(fs, g, 0);
+			realloc = 1;
+		}
+		if (realloc) {
+			retval = ext2fs_allocate_group_table(fs, g, 0);
+			if (retval)
+				return retval;
+		}
+	}
+
+	for (blk = sb, i = 0; i < num; blk++, i++) {
+		if (ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
+		    !ext2fs_test_block_bitmap2(meta_bmap, blk)) {
+			ext2fs_mark_block_bitmap2(rfs->move_blocks, blk);
+			rfs->needed_blocks++;
+		}
+		ext2fs_mark_block_bitmap2(rfs->reserve_blocks, blk);
+	}
+	return 0;
 }
 
 /*

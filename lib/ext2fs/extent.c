@@ -1113,8 +1113,10 @@ errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 			ix++;
 			path->left--;
 		}
-	} else
+	} else {
 		ix = EXT_FIRST_INDEX(eh);
+		path->left = -1;
+	}
 
 	path->curr = ix;
 

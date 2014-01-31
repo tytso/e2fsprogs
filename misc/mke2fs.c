@@ -62,6 +62,7 @@ extern int optind;
 #include "../version.h"
 #include "nls-enable.h"
 #include "quota/mkquota.h"
+#include "mke2fs.h"
 
 #define STRIDE_LENGTH 8
 
@@ -76,27 +77,30 @@ extern int optind;
 extern int isatty(int);
 extern FILE *fpopen(const char *cmd, const char *mode);
 
-static const char * program_name = "mke2fs";
+const char * program_name = "mke2fs";
 static const char * device_name /* = NULL */;
 
 /* Command line options */
 static int	cflag;
-static int	verbose;
-static int	quiet;
+int	verbose;
+int	quiet;
 static int	super_only;
 static int	discard = 1;	/* attempt to discard device before fs creation */
 static int	direct_io;
 static int	force;
 static int	noaction;
+static int	num_backups = 2; /* number of backup bg's for sparse_super2 */
 static uid_t	root_uid;
 static gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
 static int	lazy_itable_init;
+static int	packed_meta_blocks;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 static int	quotatype = -1;  /* Initialize both user and group quotas by default */
 static __u64	offset;
+static blk64_t journal_location = ~0LL;
 
 static struct ext2_super_block fs_param;
 static char *fs_uuid = NULL;
@@ -105,7 +109,7 @@ static char *volume_label;
 static char *mount_dir;
 char *journal_device;
 static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
-static char **fs_types;
+char **fs_types;
 
 static profile_t	profile;
 
@@ -140,7 +144,7 @@ static int int_log2(unsigned long long arg)
 	return l;
 }
 
-static int int_log10(unsigned long long arg)
+int int_log10(unsigned long long arg)
 {
 	int	l;
 
@@ -328,6 +332,40 @@ static void write_reserved_inodes(ext2_filsys fs)
 					EXT2_INODE_SIZE(fs->super));
 
 	ext2fs_free_mem(&inode);
+}
+
+static errcode_t packed_allocate_tables(ext2_filsys fs)
+{
+	errcode_t	retval;
+	dgrp_t		i;
+	blk64_t		goal = 0;
+
+	for (i = 0; i < fs->group_desc_count; i++) {
+		retval = ext2fs_new_block2(fs, goal, NULL, &goal);
+		if (retval)
+			return retval;
+		ext2fs_block_alloc_stats2(fs, goal, +1);
+		ext2fs_block_bitmap_loc_set(fs, i, goal);
+	}
+	for (i = 0; i < fs->group_desc_count; i++) {
+		retval = ext2fs_new_block2(fs, goal, NULL, &goal);
+		if (retval)
+			return retval;
+		ext2fs_block_alloc_stats2(fs, goal, +1);
+		ext2fs_inode_bitmap_loc_set(fs, i, goal);
+	}
+	for (i = 0; i < fs->group_desc_count; i++) {
+		blk64_t end = ext2fs_blocks_count(fs->super) - 1;
+		retval = ext2fs_get_free_blocks2(fs, goal, end,
+						 fs->inode_blocks_per_group,
+						 fs->block_map, &goal);
+		if (retval)
+			return retval;
+		ext2fs_block_alloc_stats_range(fs, goal,
+					       fs->inode_blocks_per_group, +1);
+		ext2fs_inode_table_loc_set(fs, i, goal);
+	}
+	return 0;
 }
 
 static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
@@ -782,6 +820,28 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				r_usage++;
 				continue;
 			}
+		} else if (strcmp(token, "num_backup_sb") == 0) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			num_backups = strtoul(arg, &p, 0);
+			if (*p || num_backups > 2) {
+				fprintf(stderr,
+					_("Invalid # of backup "
+					  "superbocks: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
+		} else if (strcmp(token, "packed_meta_blocks") == 0) {
+			if (arg)
+				packed_meta_blocks = strtoul(arg, &p, 0);
+			else
+				packed_meta_blocks = 1;
+			if (packed_meta_blocks)
+				journal_location = 0;
 		} else if (strcmp(token, "stride") == 0) {
 			if (!arg) {
 				r_usage++;
@@ -938,10 +998,12 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
 			"\tmmp_update_interval=<interval>\n"
+			"\tnum_backup_sb=<0|1|2>\n"
 			"\tstride=<RAID per-disk data chunk in blocks>\n"
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
 			"\toffset=<offset to create the file system>\n"
 			"\tresize=<resize maximum size in blocks>\n"
+			"\tpacked_meta_blocks=<0 to disable, 1 to enable>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
 			"\troot_uid=<uid of root directory>\n"
@@ -968,7 +1030,8 @@ static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
-		EXT2_FEATURE_COMPAT_EXT_ATTR,
+		EXT2_FEATURE_COMPAT_EXT_ATTR |
+		EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|
 		EXT3_FEATURE_INCOMPAT_EXTENTS|
@@ -1221,7 +1284,7 @@ static char **parse_fs_type(const char *fs_type,
 	return (list.list);
 }
 
-static char *get_string_from_profile(char **types, const char *opt,
+char *get_string_from_profile(char **types, const char *opt,
 				     const char *def_val)
 {
 	char *ret = 0;
@@ -1238,7 +1301,7 @@ static char *get_string_from_profile(char **types, const char *opt,
 	return (ret);
 }
 
-static int get_int_from_profile(char **types, const char *opt, int def_val)
+int get_int_from_profile(char **types, const char *opt, int def_val)
 {
 	int ret;
 	char **cpp;
@@ -1261,7 +1324,7 @@ static double get_double_from_profile(char **types, const char *opt,
 	return ret;
 }
 
-static int get_bool_from_profile(char **types, const char *opt, int def_val)
+int get_bool_from_profile(char **types, const char *opt, int def_val)
 {
 	int ret;
 	char **cpp;
@@ -2044,6 +2107,8 @@ profile_error:
 	}
 #endif
 
+	num_backups = get_int_from_profile(fs_types, "num_backup_sb", 2);
+
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 
 	/*
@@ -2079,6 +2144,20 @@ profile_error:
 					       "lazy_journal_init", 0) ?
 					       EXT2_MKJOURNAL_LAZYINIT : 0;
 	journal_flags |= EXT2_MKJOURNAL_NO_MNT_CHECK;
+
+	if (!journal_location_string)
+		journal_location_string = get_string_from_profile(fs_types,
+						"journal_location", "");
+	if ((journal_location == ~0ULL) && journal_location_string &&
+	    *journal_location_string)
+		journal_location = parse_num_blocks2(journal_location_string,
+						fs_param.s_log_block_size);
+	free(journal_location_string);
+
+	packed_meta_blocks = get_bool_from_profile(fs_types,
+						   "packed_meta_blocks", 0);
+	if (packed_meta_blocks)
+		journal_location = 0;
 
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {
@@ -2237,6 +2316,13 @@ profile_error:
 	 */
 	ext2fs_r_blocks_count_set(&fs_param, reserved_ratio *
 				  ext2fs_blocks_count(&fs_param) / 100.0);
+
+	if (fs_param.s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
+		if (num_backups >= 1)
+			fs_param.s_backup_bgs[0] = 1;
+		if (num_backups >= 2)
+			fs_param.s_backup_bgs[1] = ~0;
+	}
 
 	free(fs_type);
 	free(usage_types);
@@ -2410,30 +2496,43 @@ static int mke2fs_discard_device(ext2_filsys fs)
 
 static void fix_cluster_bg_counts(ext2_filsys fs)
 {
-	blk64_t	cluster, num_clusters, tot_free;
-	unsigned num = 0;
-	int	grp_free, num_free, group;
+	blk64_t		block, num_blocks, last_block, next;
+	blk64_t		tot_free = 0;
+	errcode_t	retval;
+	dgrp_t		group = 0;
+	int		grp_free = 0;
 
-	num_clusters = EXT2FS_B2C(fs, ext2fs_blocks_count(fs->super));
-	tot_free = num_free = group = grp_free = 0;
-	for (cluster = EXT2FS_B2C(fs, fs->super->s_first_data_block);
-	     cluster < num_clusters; cluster++) {
-		if (!ext2fs_test_block_bitmap2(fs->block_map,
-					       EXT2FS_C2B(fs, cluster))) {
-			grp_free++;
-			tot_free++;
+	num_blocks = ext2fs_blocks_count(fs->super);
+	last_block = ext2fs_group_last_block2(fs, group);
+	block = fs->super->s_first_data_block;
+	while (block < num_blocks) {
+		retval = ext2fs_find_first_zero_block_bitmap2(fs->block_map,
+						block, last_block, &next);
+		if (retval == 0)
+			block = next;
+		else {
+			block = last_block + 1;
+			goto next_bg;
 		}
-		num++;
-		if ((num == fs->super->s_clusters_per_group) ||
-		    (cluster == num_clusters-1)) {
+
+		retval = ext2fs_find_first_set_block_bitmap2(fs->block_map,
+						block, last_block, &next);
+		if (retval)
+			next = last_block + 1;
+		grp_free += EXT2FS_NUM_B2C(fs, next - block);
+		tot_free += next - block;
+		block = next;
+
+		if (block > last_block) {
+		next_bg:
 			ext2fs_bg_free_blocks_count_set(fs, group, grp_free);
 			ext2fs_group_desc_csum_set(fs, group);
-			num = 0;
 			grp_free = 0;
 			group++;
+			last_block = ext2fs_group_last_block2(fs, group);
 		}
 	}
-	ext2fs_free_blocks_count_set(fs->super, EXT2FS_C2B(fs, tot_free));
+	ext2fs_free_blocks_count_set(fs->super, tot_free);
 }
 
 static int create_quota_inodes(ext2_filsys fs)
@@ -2547,6 +2646,7 @@ int main (int argc, char *argv[])
 					 "0s - skipping inode table wipe\n"));
 			lazy_itable_init = 1;
 			itable_zeroed = 1;
+			zero_hugefile = 0;
 		}
 	}
 
@@ -2684,12 +2784,16 @@ int main (int argc, char *argv[])
 		read_bb_file(fs, &bb_list, bad_blocks_filename);
 	if (cflag)
 		test_disk(fs, &bb_list);
-
 	handle_bad_blocks(fs, bb_list);
+
 	fs->stride = fs_stride = fs->super->s_raid_stride;
 	if (!quiet)
 		printf("%s", _("Allocating group tables: "));
-	retval = ext2fs_allocate_tables(fs);
+	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) &&
+	    packed_meta_blocks)
+		retval = packed_allocate_tables(fs);
+	else
+		retval = ext2fs_allocate_tables(fs);
 	if (retval) {
 		com_err(program_name, retval, "%s",
 			_("while trying to allocate filesystem tables"));
@@ -2814,8 +2918,9 @@ int main (int argc, char *argv[])
 			       journal_blocks);
 			fflush(stdout);
 		}
-		retval = ext2fs_add_journal_inode(fs, journal_blocks,
-						  journal_flags);
+		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+						   journal_location,
+						   journal_flags);
 		if (retval) {
 			com_err(program_name, retval, "%s",
 				_("\n\twhile trying to create journal"));
@@ -2846,6 +2951,10 @@ no_journal:
 	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
 				       EXT4_FEATURE_RO_COMPAT_QUOTA))
 		create_quota_inodes(fs);
+
+	retval = mk_hugefiles(fs);
+	if (retval)
+		com_err(program_name, retval, "while creating huge files");
 
 	if (!quiet)
 		printf("%s", _("Writing superblocks and "

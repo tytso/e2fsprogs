@@ -329,6 +329,7 @@ void qtree_write_dquot(struct dquot *dquot)
 			(unsigned int)dquot->dq_id, strerror(errno));
 		return;
 	}
+	memset(ddquot, 0, info->dqi_entry_size);
 
 	if (!dquot->dq_dqb.u.v2_mdqb.dqb_off)
 		dq_insert_tree(dquot->dq_h, dquot);

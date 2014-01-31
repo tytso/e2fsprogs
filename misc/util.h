@@ -13,6 +13,7 @@
 extern int	 journal_size;
 extern int	 journal_flags;
 extern char	*journal_device;
+extern char	*journal_location_string;
 
 #ifndef HAVE_STRCASECMP
 extern int strcasecmp (char *s1, char *s2);

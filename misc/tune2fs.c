@@ -99,6 +99,7 @@ static int rewrite_checksums;
 
 int journal_size, journal_flags;
 char *journal_device;
+static blk64_t journal_location = ~0LL;
 
 static struct list_head blk_move_list;
 
@@ -1204,8 +1205,13 @@ static int add_journal(ext2_filsys fs)
 		fflush(stdout);
 		journal_blocks = figure_journal_size(journal_size, fs);
 
-		retval = ext2fs_add_journal_inode(fs, journal_blocks,
-						  journal_flags);
+		if (journal_location_string)
+			journal_location =
+				parse_num_blocks2(journal_location_string,
+						  fs->super->s_log_block_size);
+		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+						   journal_location,
+						   journal_flags);
 		if (retval) {
 			fprintf(stderr, "\n");
 			com_err(program_name, retval, "%s",

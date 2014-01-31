@@ -644,4 +644,4 @@
    <inttypes.h> don't define. */
 #undef uintmax_t
 
-#include "dirpaths.h"
+#include <dirpaths.h>

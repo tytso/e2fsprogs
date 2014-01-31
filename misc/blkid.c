@@ -100,19 +100,27 @@ static int get_terminal_width(void)
 	struct winsize	w_win;
 #endif
         const char	*cp;
+	int width = 80;
 
 #ifdef TIOCGSIZE
-	if (ioctl (0, TIOCGSIZE, &t_win) == 0)
-		return (t_win.ts_cols);
+	if (ioctl (0, TIOCGSIZE, &t_win) == 0) {
+		width = t_win.ts_cols;
+		goto got_it;
+	}
 #endif
 #ifdef TIOCGWINSZ
-	if (ioctl (0, TIOCGWINSZ, &w_win) == 0)
-		return (w_win.ws_col);
+	if (ioctl (0, TIOCGWINSZ, &w_win) == 0) {
+		width = w_win.ws_col;
+		goto got_it;
+	}
 #endif
         cp = getenv("COLUMNS");
 	if (cp)
-		return strtol(cp, NULL, 10);
-	return 80;
+		width = atoi(cp);
+got_it:
+	if (width > 4096)
+		return 4096;	/* sanity check */
+	return width;
 }
 
 static int pretty_print_word(const char *str, int max_len,
@@ -285,10 +293,7 @@ int main(int argc, char **argv)
 	while ((c = getopt (argc, argv, "c:f:ghlLo:s:t:w:v")) != EOF)
 		switch (c) {
 		case 'c':
-			if (optarg && !*optarg)
-				read = NULL;
-			else
-				read = optarg;
+			read = optarg;
 			if (!write)
 				write = read;
 			break;
@@ -341,10 +346,7 @@ int main(int argc, char **argv)
 			version = 1;
 			break;
 		case 'w':
-			if (optarg && !*optarg)
-				write = NULL;
-			else
-				write = optarg;
+			write = optarg;
 			break;
 		case 'h':
 			err = 0;
