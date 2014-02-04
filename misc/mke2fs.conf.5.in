@@ -457,7 +457,13 @@ files.
 .TP
 .I hugefiles_size
 This relation specifies the size of the huge files.  If this relation is
-not specified, the default is to fill th efile system.
+not specified, the default is to fill the entire file system.
+.TP
+.I hugefiles_align
+This relation specifies the alignment for the start block of the huge
+files.  It also forces the size of huge files to be a multiple of the
+requested alignment.  If this relation is not specified, no alignment
+requirement will be imposed on the huge files.
 .TP
 .I hugefiles_name
 This relation specifies the base file name for the huge files.
