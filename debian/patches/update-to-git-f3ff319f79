@@ -1,0 +1,6066 @@
+Description: update to e2fsprogs git commit f3ff319f79
+ .
+ e2fsprogs (1.42.9-3) unstable; urgency=medium
+ .
+   * Add the ability for mke2fs to create hugefiles
+   * Add support for the sparse_super2 compat feature
+   * Mke2fs can now force all of the metadata blocks to be at the
+     beginning of the file system
+   * Fix loopback mount detection (Closes: #497984)
+   * Add support to mke2fs to create a file system at an offset
+     (Closes: #417385)
+   * Mention badblocks in the package description (Closes: #718725)
+   * Update/fix various man pages (Closes: #719184, #719189)
+   * Improve e2fsck's "superblock corrupt" message (Closes: #719185)
+   * Miscellaneous Coverity clean ups
+Author: Theodore Y. Ts'o <tytso@mit.edu>
+Origin: upstream<vendor|upstream|other>, <url of original patch>
+Bug-Debian: http://bugs.debian.org/417385
+Bug-Debian: http://bugs.debian.org/497984
+Bug-Debian: http://bugs.debian.org/718725
+Bug-Debian: http://bugs.debian.org/719184
+Bug-Debian: http://bugs.debian.org/719185
+Bug-Debian: http://bugs.debian.org/719189
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- e2fsprogs-1.42.9.orig/MCONFIG.in
++++ e2fsprogs-1.42.9/MCONFIG.in
+@@ -110,6 +110,7 @@ LIBUUID = @LIBUUID@ @SOCKET_LIB@
+ LIBQUOTA = @STATIC_LIBQUOTA@
+ LIBBLKID = @LIBBLKID@ @PRIVATE_LIBS_CMT@ $(LIBUUID)
+ LIBINTL = @LIBINTL@
++SYSLIBS = @LIBS@
+ DEPLIBSS = $(LIB)/libss@LIB_EXT@
+ DEPLIBCOM_ERR = $(LIB)/libcom_err@LIB_EXT@
+ DEPLIBUUID = @DEPLIBUUID@
+--- e2fsprogs-1.42.9.orig/configure
++++ e2fsprogs-1.42.9/configure
+@@ -2753,6 +2753,21 @@ $as_echo "Release date is ${E2FSPROGS_MO
+ 
+ 
+ 
++WITH_DIET_LIBC=
++
++# Check whether --with-diet-libc was given.
++if test "${with_diet_libc+set}" = set; then :
++  withval=$with_diet_libc; CC="diet cc -nostdinc"
++WITH_DIET_LIBC=yes
++if test -z "$LIBS"
++then
++	LIBS="-lcompat"
++else
++	LIBS="$LIBS -lcompat"
++fi
++{ $as_echo "$as_me:${as_lineno-$LINENO}: result: CC=$CC" >&5
++$as_echo "CC=$CC" >&6; }
++fi
+ # Make sure we can run config.sub.
+ $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
+   as_fn_error $? "cannot run $SHELL $ac_aux_dir/config.sub" "$LINENO" 5
+@@ -3659,15 +3674,6 @@ $as_echo "#define HAVE_DLOPEN 1" >>confd
+ fi
+ 
+ 
+-WITH_DIET_LIBC=
+-
+-# Check whether --with-diet-libc was given.
+-if test "${with_diet_libc+set}" = set; then :
+-  withval=$with_diet_libc; CC="diet cc -nostdinc"
+-WITH_DIET_LIBC=yes
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: CC=$CC" >&5
+-$as_echo "CC=$CC" >&6; }
+-fi
+ 
+ # Check whether --with-cc was given.
+ if test "${with_cc+set}" = set; then :
+@@ -5440,9 +5446,16 @@ $as_echo "Enabling e4defrag support" >&6
+ fi
+ 
+ else
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling e4defrag support by default" >&5
++  if test -z "$WITH_DIET_LIBC"
++then
++	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling e4defrag support by default" >&5
+ $as_echo "Enabling e4defrag support by default" >&6; }
+-DEFRAG_CMT=
++	DEFRAG_CMT=
++else
++	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling e4defrag support by default" >&5
++$as_echo "Disabling e4defrag support by default" >&6; }
++	DEFRAG_CMT="#"
++fi
+ 
+ fi
+ 
+@@ -10448,6 +10461,16 @@ $as_echo "#define HAVE_RECLEN_DIRENT 1"
+ 
+ fi
+ 
++ac_fn_c_check_member "$LINENO" "struct stat" "st_atim" "ac_cv_member_struct_stat_st_atim" "$ac_includes_default"
++if test "x$ac_cv_member_struct_stat_st_atim" = xyes; then :
++
++cat >>confdefs.h <<_ACEOF
++#define HAVE_STRUCT_STAT_ST_ATIM 1
++_ACEOF
++
++
++fi
++
+ ac_fn_c_check_type "$LINENO" "ssize_t" "ac_cv_type_ssize_t" "#include <sys/types.h>
+ "
+ if test "x$ac_cv_type_ssize_t" = xyes; then :
+@@ -11041,7 +11064,7 @@ if test "$ac_res" != no; then :
+ fi
+ 
+ fi
+-for ac_func in  	__secure_getenv 	backtrace 	blkid_probe_get_topology 	chflags 	fallocate 	fallocate64 	fchown 	fdatasync 	fstat64 	ftruncate64 	getdtablesize 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_memalign 	prctl 	secure_getenv 	setmntent 	setresgid 	setresuid 	srandom 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	valloc
++for ac_func in  	__secure_getenv 	backtrace 	blkid_probe_get_topology 	chflags 	fadvise64 	fallocate 	fallocate64 	fchown 	fdatasync 	fstat64 	ftruncate64 	futimes 	getcwd 	getdtablesize 	getmntinfo 	getpwuid_r 	getrlimit 	getrusage 	jrand48 	llseek 	lseek64 	mallinfo 	mbstowcs 	memalign 	mempcpy 	mmap 	msync 	nanosleep 	open64 	pathconf 	posix_fadvise 	posix_fadvise64 	posix_memalign 	prctl 	secure_getenv 	setmntent 	setresgid 	setresuid 	srandom 	stpcpy 	strcasecmp 	strdup 	strnlen 	strptime 	strtoull 	sync_file_range 	sysconf 	usleep 	utime 	valloc
+ do :
+   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+@@ -11425,9 +11448,12 @@ fi
+ if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
+ 	INCLUDES=$INCLUDES' -I$(top_builddir)/intl -I$(top_srcdir)/intl'
+ fi
++if test -n "$WITH_DIET_LIBC" ; then
++	INCLUDES="$INCLUDES -D_REENTRANT"
++fi
+ 
+ if test $cross_compiling = no; then
+-   BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
++   BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
+    BUILD_LDFLAGS="$LDFLAGS"
+ else
+    BUILD_CFLAGS=
+--- e2fsprogs-1.42.9.orig/configure.in
++++ e2fsprogs-1.42.9/configure.in
+@@ -2,7 +2,7 @@ AC_INIT(version.h)
+ AC_PREREQ(2.54)
+ AC_CONFIG_AUX_DIR(config)
+ AC_CONFIG_HEADERS([lib/config.h])
+-AH_BOTTOM([#include "dirpaths.h"])
++AH_BOTTOM([#include <dirpaths.h>])
+ MCONFIG=./MCONFIG
+ AC_SUBST_FILE(MCONFIG)
+ BINARY_TYPE=bin
+@@ -63,15 +63,6 @@ AC_SUBST(E2FSPROGS_MONTH)
+ AC_SUBST(E2FSPROGS_DAY)
+ AC_SUBST(E2FSPROGS_VERSION)
+ AC_SUBST(E2FSPROGS_PKGVER)
+-AC_CANONICAL_HOST
+-dnl
+-dnl Check to see if libdl exists for the sake of dlopen
+-dnl
+-DLOPEN_LIB=''
+-AC_CHECK_LIB(dl, dlopen, 
+-[DLOPEN_LIB=-ldl
+-AC_DEFINE(HAVE_DLOPEN, 1, [Define to 1 if dlopen/libdl exists])])
+-AC_SUBST(DLOPEN_LIB)
+ dnl
+ dnl Use diet libc
+ dnl 
+@@ -80,8 +71,24 @@ AC_ARG_WITH([diet-libc],
+ [  --with-diet-libc        use diet libc],
+ CC="diet cc -nostdinc"
+ WITH_DIET_LIBC=yes
++if test -z "$LIBS"
++then
++	LIBS="-lcompat"
++else
++	LIBS="$LIBS -lcompat"
++fi
+ AC_MSG_RESULT(CC=$CC))dnl
+ dnl
++AC_CANONICAL_HOST
++dnl
++dnl Check to see if libdl exists for the sake of dlopen
++dnl
++DLOPEN_LIB=''
++AC_CHECK_LIB(dl, dlopen,
++[DLOPEN_LIB=-ldl
++AC_DEFINE(HAVE_DLOPEN, 1, [Define to 1 if dlopen/libdl exists])])
++AC_SUBST(DLOPEN_LIB)
++dnl
+ AC_ARG_WITH([cc],
+ AC_HELP_STRING([--with-cc],[no longer supported, use CC= instead]),
+ AC_MSG_ERROR([--with-cc no longer supported; use CC= instead]))
+@@ -687,8 +694,14 @@ else
+ 	AC_MSG_RESULT([Enabling e4defrag support])
+ fi
+ ,
+-AC_MSG_RESULT([Enabling e4defrag support by default])
+-DEFRAG_CMT=
++if test -z "$WITH_DIET_LIBC"
++then
++	AC_MSG_RESULT([Enabling e4defrag support by default])
++	DEFRAG_CMT=
++else
++	AC_MSG_RESULT([Disabling e4defrag support by default])
++	DEFRAG_CMT="#"
++fi
+ )
+ AC_SUBST(DEFRAG_CMT)
+ dnl
+@@ -909,6 +922,7 @@ dnl is not decleared.
+ AC_CHECK_MEMBER(struct dirent.d_reclen,[AC_DEFINE(HAVE_RECLEN_DIRENT, 1,
+ 		       [Define to 1 if dirent has d_reclen])],,
+ 		[#include <dirent.h>])
++AC_CHECK_MEMBERS([struct stat.st_atim])
+ dnl Check to see if ssize_t was declared
+ AC_CHECK_TYPE(ssize_t,[AC_DEFINE(HAVE_TYPE_SSIZE_T, 1,
+ 		[Define to 1 if ssize_t declared])],,
+@@ -1025,12 +1039,15 @@ AC_CHECK_FUNCS(m4_flatten([
+ 	backtrace
+ 	blkid_probe_get_topology
+ 	chflags
++	fadvise64
+ 	fallocate
+ 	fallocate64
+ 	fchown
+ 	fdatasync
+ 	fstat64
+ 	ftruncate64
++	futimes
++	getcwd
+ 	getdtablesize
+ 	getmntinfo
+ 	getpwuid_r
+@@ -1042,12 +1059,14 @@ AC_CHECK_FUNCS(m4_flatten([
+ 	mallinfo
+ 	mbstowcs
+ 	memalign
++	mempcpy
+ 	mmap
+ 	msync
+ 	nanosleep
+ 	open64
+ 	pathconf
+ 	posix_fadvise
++	posix_fadvise64
+ 	posix_memalign
+ 	prctl
+ 	secure_getenv
+@@ -1055,6 +1074,7 @@ AC_CHECK_FUNCS(m4_flatten([
+ 	setresgid
+ 	setresuid
+ 	srandom
++	stpcpy
+ 	strcasecmp
+ 	strdup
+ 	strnlen
+@@ -1275,12 +1295,15 @@ fi
+ if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
+ 	INCLUDES=$INCLUDES' -I$(top_builddir)/intl -I$(top_srcdir)/intl'
+ fi
++if test -n "$WITH_DIET_LIBC" ; then
++	INCLUDES="$INCLUDES -D_REENTRANT"
++fi
+ AC_SUBST(INCLUDES)
+ dnl
+ dnl Build CFLAGS
+ dnl
+ if test $cross_compiling = no; then
+-   BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
++   BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
+    BUILD_LDFLAGS="$LDFLAGS"
+ else
+    BUILD_CFLAGS=
+--- e2fsprogs-1.42.9.orig/debugfs/Makefile.in
++++ e2fsprogs-1.42.9/debugfs/Makefile.in
+@@ -31,12 +31,12 @@ SRCS= debug_cmds.c $(srcdir)/debugfs.c $
+ 	$(srcdir)/filefrag.c $(srcdir)/extent_inode.c $(srcdir)/zap.c
+ 
+ LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) \
+-	$(LIBUUID)
++	$(LIBUUID) $(SYSLIBS)
+ DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(DEPLIBSS) $(DEPLIBCOM_ERR) \
+ 	$(DEPLIBBLKID) $(DEPLIBUUID)
+ 
+ STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBSS) $(STATIC_LIBCOM_ERR) \
+-	$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(STATIC_LIBE2P)
++	$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(STATIC_LIBE2P) $(SYSLIBS)
+ STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBSS) \
+ 		$(DEPSTATIC_LIBCOM_ERR) $(DEPSTATIC_LIBUUID) \
+ 		$(DEPSTATIC_LIBE2P)
+--- e2fsprogs-1.42.9.orig/debugfs/debugfs.c
++++ e2fsprogs-1.42.9/debugfs/debugfs.c
+@@ -289,8 +289,6 @@ void do_init_filesys(int argc, char **ar
+ 	if (err)
+ 		return;
+ 	ext2fs_blocks_count_set(&param, blocks);
+-	if (err)
+-		return;
+ 	retval = ext2fs_initialize(argv[1], 0, &param,
+ 				   unix_io_manager, &current_fs);
+ 	if (retval) {
+--- e2fsprogs-1.42.9.orig/debugfs/logdump.c
++++ e2fsprogs-1.42.9/debugfs/logdump.c
+@@ -273,42 +273,43 @@ print_usage:
+ 
+ 
+ static int read_journal_block(const char *cmd, struct journal_source *source,
+-			      off_t offset, char *buf, int size,
+-			      unsigned int *got)
++			      off_t offset, char *buf, unsigned int size)
+ {
+ 	int retval;
++	unsigned int got;
+ 
+ 	if (source->where == JOURNAL_IS_EXTERNAL) {
+ 		if (lseek(source->fd, offset, SEEK_SET) < 0) {
+ 			retval = errno;
+-			com_err(cmd, retval, "while seeking in reading journal");
+-			return retval;
++			goto seek_err;
+ 		}
+ 		retval = read(source->fd, buf, size);
+-		if (retval >= 0) {
+-			*got = retval;
+-			retval = 0;
+-		} else
++		if (retval < 0) {
+ 			retval = errno;
++			goto read_err;
++		}
++		got = retval;
++		retval = 0;
+ 	} else {
+ 		retval = ext2fs_file_lseek(source->file, offset,
+ 					   EXT2_SEEK_SET, NULL);
+ 		if (retval) {
++		seek_err:
+ 			com_err(cmd, retval, "while seeking in reading journal");
+ 			return retval;
+ 		}
+-
+-		retval = ext2fs_file_read(source->file, buf, size, got);
++		retval = ext2fs_file_read(source->file, buf, size, &got);
++		if (retval) {
++		read_err:
++			com_err(cmd, retval, "while reading journal");
++			return retval;
++		}
+ 	}
+-
+-	if (retval)
+-		com_err(cmd, retval, "while reading journal");
+-	else if (*got != (unsigned int) size) {
+-		com_err(cmd, 0, "short read (read %d, expected %d) "
+-			"while reading journal", *got, size);
++	if (got != size) {
++		com_err(cmd, 0, "short read (read %u, expected %u) "
++			"while reading journal", got, size);
+ 		retval = -1;
+ 	}
+-
+ 	return retval;
+ }
+ 
+@@ -338,7 +339,6 @@ static void dump_journal(char *cmdname,
+ 	char			buf[8192];
+ 	journal_superblock_t	*jsb;
+ 	unsigned int		blocksize = 1024;
+-	unsigned int		got;
+ 	int			retval;
+ 	__u32			magic, sequence, blocktype;
+ 	journal_header_t	*header;
+@@ -347,8 +347,7 @@ static void dump_journal(char *cmdname,
+ 	unsigned int		blocknr = 0;
+ 
+ 	/* First, check to see if there's an ext2 superblock header */
+-	retval = read_journal_block(cmdname, source, 0,
+-				    buf, 2048, &got);
++	retval = read_journal_block(cmdname, source, 0, buf, 2048);
+ 	if (retval)
+ 		return;
+ 
+@@ -377,7 +376,7 @@ static void dump_journal(char *cmdname,
+ 	/* Next, read the journal superblock */
+ 
+ 	retval = read_journal_block(cmdname, source, blocknr*blocksize,
+-				    jsb_buffer, 1024, &got);
++				    jsb_buffer, 1024);
+ 	if (retval)
+ 		return;
+ 
+@@ -401,8 +400,8 @@ static void dump_journal(char *cmdname,
+ 	while (1) {
+ 		retval = read_journal_block(cmdname, source,
+ 					    blocknr*blocksize, buf,
+-					    blocksize, &got);
+-		if (retval || got != blocksize)
++					    blocksize);
++		if (retval)
+ 			return;
+ 
+ 		header = (journal_header_t *) buf;
+@@ -576,7 +575,6 @@ static void dump_metadata_block(FILE *ou
+ 				int blocksize,
+ 				tid_t transaction)
+ {
+-	unsigned int 	got;
+ 	int		retval;
+ 	char 		buf[8192];
+ 
+@@ -612,7 +610,7 @@ static void dump_metadata_block(FILE *ou
+ 
+ 	retval = read_journal_block("logdump", source,
+ 				    blocksize * log_blocknr,
+-				    buf, blocksize, &got);
++				    buf, blocksize);
+ 	if (retval)
+ 		return;
+ 
+--- e2fsprogs-1.42.9.orig/debugfs/set_fields.c
++++ e2fsprogs-1.42.9/debugfs/set_fields.c
+@@ -150,6 +150,8 @@ static struct field_set_info super_field
+ 	{ "usr_quota_inum", &set_sb.s_usr_quota_inum, NULL, 4, parse_uint },
+ 	{ "grp_quota_inum", &set_sb.s_grp_quota_inum, NULL, 4, parse_uint },
+ 	{ "overhead_blocks", &set_sb.s_overhead_blocks, NULL, 4, parse_uint },
++	{ "backup_bgs", &set_sb.s_backup_bgs[0], NULL, 4, parse_uint,
++	  FLAG_ARRAY, 2 },
+ 	{ "checksum", &set_sb.s_checksum, NULL, 4, parse_uint },
+ 	{ 0, 0, 0, 0 }
+ };
+--- e2fsprogs-1.42.9.orig/debugfs/util.c
++++ e2fsprogs-1.42.9/debugfs/util.c
+@@ -201,7 +201,7 @@ char *time_to_string(__u32 cl)
+ 		tz = ss_safe_getenv("TZ");
+ 		if (!tz)
+ 			tz = "";
+-		do_gmt = !strcmp(tz, "GMT");
++		do_gmt = !strcmp(tz, "GMT") | !strcmp(tz, "GMT0");
+ 	}
+ 
+ 	return asctime((do_gmt) ? gmtime(&t) : localtime(&t));
+@@ -222,14 +222,18 @@ time_t string_to_time(const char *arg)
+ 	}
+ 	if (arg[0] == '@') {
+ 		/* interpret it as an integer */
+-		ret = strtoul(arg+1, &tmp, 0);
++		arg++;
++	fallback:
++		ret = strtoul(arg, &tmp, 0);
+ 		if (*tmp)
+ 			return ((time_t) -1);
+ 		return ret;
+ 	}
+ 	memset(&ts, 0, sizeof(ts));
+ #ifdef HAVE_STRPTIME
+-	strptime(arg, "%Y%m%d%H%M%S", &ts);
++	tmp = strptime(arg, "%Y%m%d%H%M%S", &ts);
++	if (tmp == NULL)
++		goto fallback;
+ #else
+ 	sscanf(arg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
+ 	       &ts.tm_mday, &ts.tm_hour, &ts.tm_min, &ts.tm_sec);
+@@ -241,13 +245,9 @@ time_t string_to_time(const char *arg)
+ 		ts.tm_mday = 0;
+ #endif
+ 	ts.tm_isdst = -1;
+-	ret = mktime(&ts);
+-	if (ts.tm_mday == 0 || ret == ((time_t) -1)) {
+-		/* Try it as an integer... */
+-		ret = strtoul(arg, &tmp, 0);
+-		if (*tmp)
+-			return ((time_t) -1);
+-	}
++	ret = ts.tm_sec + ts.tm_min*60 + ts.tm_hour*3600 + ts.tm_yday*86400 +
++		(ts.tm_year-70)*31536000 + ((ts.tm_year-69)/4)*86400 -
++		((ts.tm_year-1)/100)*86400 + ((ts.tm_year+299)/400)*86400;
+ 	return ret;
+ }
+ 
+--- e2fsprogs-1.42.9.orig/e2fsck/Makefile.in
++++ e2fsprogs-1.42.9/e2fsck/Makefile.in
+@@ -16,19 +16,20 @@ MANPAGES=	e2fsck.8
+ FMANPAGES=	e2fsck.conf.5
+ 
+ LIBS= $(LIBQUOTA) $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBBLKID) $(LIBUUID) \
+-	$(LIBINTL) $(LIBE2P)
++	$(LIBINTL) $(LIBE2P) $(SYSLIBS)
+ DEPLIBS= $(DEPLIBQUOTA) $(LIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBBLKID) \
+ 	 $(DEPLIBUUID) $(DEPLIBE2P)
+ 
+ STATIC_LIBS= $(STATIC_LIBQUOTA) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
+-	     $(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL) $(STATIC_LIBE2P)
++	     $(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL) $(STATIC_LIBE2P) \
++	     $(SYSLIBS)
+ STATIC_DEPLIBS= $(DEPSTATIC_LIBQUOTA) $(STATIC_LIBEXT2FS) \
+ 		$(DEPSTATIC_LIBCOM_ERR) $(DEPSTATIC_LIBBLKID) \
+ 		$(DEPSTATIC_LIBUUID) $(DEPSTATIC_LIBE2P)
+ 
+ PROFILED_LIBS= $(PROFILED_LIBQUOTA) $(PROFILED_LIBEXT2FS) \
+ 	       $(PROFILED_LIBCOM_ERR) $(PROFILED_LIBBLKID) $(PROFILED_LIBUUID) \
+-	       $(PROFILED_LIBE2P) $(LIBINTL)
++	       $(PROFILED_LIBE2P) $(LIBINTL) $(SYSLIBS)
+ PROFILED_DEPLIBS= $(DEPPROFILED_LIBQUOTA) $(PROFILED_LIBEXT2FS) \
+ 		  $(DEPPROFILED_LIBCOM_ERR) $(DEPPROFILED_LIBBLKID) \
+ 		  $(DEPPROFILED_LIBUUID) $(DEPPROFILED_LIBE2P)
+@@ -153,26 +154,27 @@ tst_problem: $(srcdir)/problem.c $(srcdi
+ 	$(DEPLIBCOM_ERR)
+ 	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_problem \
+ 		$(srcdir)/problem.c -DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR) \
+-		$(LIBINTL)
++		$(LIBINTL) $(SYSLIBS)
+ 
+ tst_crc32: $(srcdir)/crc32.c $(LIBEXT2FS) $(DEPLIBCOM_ERR)
+ 	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32 $(srcdir)/crc32.c \
+-		-DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR)
++		-DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
+-		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR) $(LIBEXT2FS) 
++		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR) $(LIBEXT2FS) \
++		$(SYSLIBS)
+ 
+ tst_logfile: $(srcdir)/logfile.c
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_logfile $(srcdir)/logfile.c $(ALL_CFLAGS) \
+-		-DTEST_PROGRAM
++		-DTEST_PROGRAM $(SYSLIBS)
+ 
+ tst_region: region.c $(DEPLIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_region $(srcdir)/region.c \
+-		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR)
++		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR) $(SYSLIBS)
+ 
+ check:: tst_refcount tst_region tst_crc32 tst_problem
+ 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_refcount
+--- e2fsprogs-1.42.9.orig/e2fsck/badblocks.c
++++ e2fsprogs-1.42.9/e2fsck/badblocks.c
+@@ -111,6 +111,8 @@ void read_bad_blocks_file(e2fsck_t ctx,
+ 
+ fatal:
+ 	ctx->flags |= E2F_FLAG_ABORT;
++	if (bb_list)
++		ext2fs_badblocks_list_free(bb_list);
+ 	return;
+ 
+ }
+--- e2fsprogs-1.42.9.orig/e2fsck/dirinfo.c
++++ e2fsprogs-1.42.9/e2fsck/dirinfo.c
+@@ -42,6 +42,7 @@ static void setup_tdb(e2fsck_t ctx, ext2
+ 	struct dir_info_db	*db = ctx->dir_info;
+ 	unsigned int		threshold;
+ 	errcode_t		retval;
++	mode_t			save_umask;
+ 	char			*tdb_dir, uuid[40];
+ 	int			fd, enable;
+ 
+@@ -62,7 +63,9 @@ static void setup_tdb(e2fsck_t ctx, ext2
+ 
+ 	uuid_unparse(ctx->fs->super->s_uuid, uuid);
+ 	sprintf(db->tdb_fn, "%s/%s-dirinfo-XXXXXX", tdb_dir, uuid);
++	save_umask = umask(077);
+ 	fd = mkstemp(db->tdb_fn);
++	umask(save_umask);
+ 	if (fd < 0) {
+ 		db->tdb = NULL;
+ 		return;
+--- e2fsprogs-1.42.9.orig/e2fsck/e2fsck.conf.5.in
++++ e2fsprogs-1.42.9/e2fsck/e2fsck.conf.5.in
+@@ -97,9 +97,8 @@ incorrectly set at the time when e2fsck
+ Historically this was usually due to some distributions
+ having buggy init scripts and/or installers that didn't
+ correctly detect this case and take appropriate
+-countermeasures.  However, it's still possible, despite the
+-best efforts of init script and installer authors to not be
+-able to detect this misconfiguration, usually due to a
++countermeasures.  Unfortunately, this is occasionally
++true even today, usually due to a
+ buggy or misconfigured virtualization manager or the
+ installer not having access to a network time server
+ during the installation process.  So by default, we allow
+--- e2fsprogs-1.42.9.orig/e2fsck/message.c
++++ e2fsprogs-1.42.9/e2fsck/message.c
+@@ -226,7 +226,8 @@ static void print_time(FILE *f, time_t t
+ 			time_str = getenv("TZ");
+ 			if (!time_str)
+ 				time_str = "";
+-			do_gmt = !strcmp(time_str, "GMT0");
++			do_gmt = !strcmp(time_str, "GMT") ||
++				!strcmp(time_str, "GMT0");
+ 		}
+ #endif
+ 		time_str = asctime((do_gmt > 0) ? gmtime(&t) : localtime(&t));
+--- e2fsprogs-1.42.9.orig/e2fsck/pass1.c
++++ e2fsprogs-1.42.9/e2fsck/pass1.c
+@@ -546,9 +546,9 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 	__u64	max_sizes;
+ 	ext2_filsys fs = ctx->fs;
+ 	ext2_ino_t	ino = 0;
+-	struct ext2_inode *inode;
+-	ext2_inode_scan	scan;
+-	char		*block_buf;
++	struct ext2_inode *inode = NULL;
++	ext2_inode_scan	scan = NULL;
++	char		*block_buf = NULL;
+ #ifdef RESOURCE_TRACK
+ 	struct resource_track	rtrack;
+ #endif
+@@ -662,8 +662,7 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 	if (pctx.errcode) {
+ 		fix_problem(ctx, PR_1_ALLOCATE_DBCOUNT, &pctx);
+ 		ctx->flags |= E2F_FLAG_ABORT;
+-		ext2fs_free_mem(&inode);
+-		return;
++		goto endit;
+ 	}
+ 
+ 	/*
+@@ -686,8 +685,7 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 	if (pctx.errcode) {
+ 		fix_problem(ctx, PR_1_CONVERT_SUBCLUSTER, &pctx);
+ 		ctx->flags |= E2F_FLAG_ABORT;
+-		ext2fs_free_mem(&inode);
+-		return;
++		goto endit;
+ 	}
+ 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
+ 						    "block interate buffer");
+@@ -699,18 +697,16 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 	if (pctx.errcode) {
+ 		fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
+ 		ctx->flags |= E2F_FLAG_ABORT;
+-		ext2fs_free_mem(&block_buf);
+-		ext2fs_free_mem(&inode);
+-		return;
++		goto endit;
+ 	}
+ 	ext2fs_inode_scan_flags(scan, EXT2_SF_SKIP_MISSING_ITABLE, 0);
+ 	ctx->stashed_inode = inode;
+ 	scan_struct.ctx = ctx;
+ 	scan_struct.block_buf = block_buf;
+ 	ext2fs_set_inode_callback(scan, scan_callback, &scan_struct);
+-	if (ctx->progress)
+-		if ((ctx->progress)(ctx, 1, 0, ctx->fs->group_desc_count))
+-			return;
++	if (ctx->progress && ((ctx->progress)(ctx, 1, 0,
++					      ctx->fs->group_desc_count)))
++		goto endit;
+ 	if ((fs->super->s_wtime < fs->super->s_inodes_count) ||
+ 	    (fs->super->s_mtime < fs->super->s_inodes_count))
+ 		busted_fs_time = 1;
+@@ -742,7 +738,7 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 		if (pctx.errcode) {
+ 			fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
+ 			ctx->flags |= E2F_FLAG_ABORT;
+-			return;
++			goto endit;
+ 		}
+ 		if (!ino)
+ 			break;
+@@ -756,7 +752,7 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 				pctx.num = inode->i_links_count;
+ 				fix_problem(ctx, PR_1_ICOUNT_STORE, &pctx);
+ 				ctx->flags |= E2F_FLAG_ABORT;
+-				return;
++				goto endit;
+ 			}
+ 		}
+ 
+@@ -846,7 +842,7 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 				pctx.num = 4;
+ 				fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
+ 				ctx->flags |= E2F_FLAG_ABORT;
+-				return;
++				goto endit;
+ 			}
+ 			pb.ino = EXT2_BAD_INO;
+ 			pb.num_blocks = pb.last_block = 0;
+@@ -863,12 +859,12 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 			if (pctx.errcode) {
+ 				fix_problem(ctx, PR_1_BLOCK_ITERATE, &pctx);
+ 				ctx->flags |= E2F_FLAG_ABORT;
+-				return;
++				goto endit;
+ 			}
+ 			if (pb.bbcheck)
+ 				if (!fix_problem(ctx, PR_1_BBINODE_BAD_METABLOCK_PROMPT, &pctx)) {
+ 				ctx->flags |= E2F_FLAG_ABORT;
+-				return;
++				goto endit;
+ 			}
+ 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
+ 			clear_problem_context(&pctx);
+@@ -1146,17 +1142,18 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 			check_blocks(ctx, &pctx, block_buf);
+ 
+ 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+-			return;
++			goto endit;
+ 
+ 		if (process_inode_count >= ctx->process_inode_size) {
+ 			process_inodes(ctx, block_buf);
+ 
+ 			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+-				return;
++				goto endit;
+ 		}
+ 	}
+ 	process_inodes(ctx, block_buf);
+ 	ext2fs_close_inode_scan(scan);
++	scan = NULL;
+ 
+ 	/*
+ 	 * If any extended attribute blocks' reference counts need to
+@@ -1195,7 +1192,7 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 			if (!fix_problem(ctx, PR_1_RESIZE_INODE_CREATE,
+ 					 &pctx)) {
+ 				ctx->flags |= E2F_FLAG_ABORT;
+-				return;
++				goto endit;
+ 			}
+ 			pctx.errcode = 0;
+ 		}
+@@ -1233,10 +1230,15 @@ void e2fsck_pass1(e2fsck_t ctx)
+ endit:
+ 	e2fsck_use_inode_shortcuts(ctx, 0);
+ 
+-	ext2fs_free_mem(&block_buf);
+-	ext2fs_free_mem(&inode);
++	if (scan)
++		ext2fs_close_inode_scan(scan);
++	if (block_buf)
++		ext2fs_free_mem(&block_buf);
++	if (inode)
++		ext2fs_free_mem(&inode);
+ 
+-	print_resource_track(ctx, _("Pass 1"), &rtrack, ctx->fs->io);
++	if ((ctx->flags & E2F_FLAG_SIGNAL_MASK) == 0)
++		print_resource_track(ctx, _("Pass 1"), &rtrack, ctx->fs->io);
+ }
+ 
+ /*
+--- e2fsprogs-1.42.9.orig/e2fsck/pass5.c
++++ e2fsprogs-1.42.9/e2fsck/pass5.c
+@@ -207,7 +207,6 @@ static void check_block_bitmaps(e2fsck_t
+ 	int		fixit, had_problem;
+ 	errcode_t	retval;
+ 	int		csum_flag;
+-	int		skip_group = 0;
+ 	int	old_desc_blocks = 0;
+ 	int	count = 0;
+ 	int	cmp_block = 0;
+@@ -260,9 +259,6 @@ redo_counts:
+ 	had_problem = 0;
+ 	save_problem = 0;
+ 	pctx.blk = pctx.blk2 = NO_BLK;
+-	if (csum_flag &&
+-	    (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
+-		skip_group++;
+ 	for (i = B2C(fs->super->s_first_data_block);
+ 	     i < ext2fs_blocks_count(fs->super);
+ 	     i += EXT2FS_CLUSTER_RATIO(fs)) {
+@@ -293,15 +289,11 @@ redo_counts:
+ 				actual_buf);
+ 		if (retval)
+ 			goto no_optimize;
+-		if (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT))
+-			memset(bitmap_buf, 0, nbytes);
+-		else {
+-			retval = ext2fs_get_block_bitmap_range2(fs->block_map,
+-					B2C(i), fs->super->s_clusters_per_group,
+-					bitmap_buf);
+-			if (retval)
+-				goto no_optimize;
+-		}
++		retval = ext2fs_get_block_bitmap_range2(fs->block_map,
++				B2C(i), fs->super->s_clusters_per_group,
++				bitmap_buf);
++		if (retval)
++			goto no_optimize;
+ 		if (memcmp(actual_buf, bitmap_buf, nbytes) != 0)
+ 			goto no_optimize;
+ 		n = ext2fs_bitcount(actual_buf, nbytes);
+@@ -311,73 +303,7 @@ redo_counts:
+ 		goto next_group;
+ 	no_optimize:
+ 
+-		if (skip_group) {
+-			if (first_block_in_bg) {
+-				super_blk = 0;
+-				old_desc_blk = 0;
+-				new_desc_blk = 0;
+-				ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
+-					 &old_desc_blk, &new_desc_blk, 0);
+-
+-				if (fs->super->s_feature_incompat &
+-						EXT2_FEATURE_INCOMPAT_META_BG)
+-					old_desc_blocks =
+-						fs->super->s_first_meta_bg;
+-				else
+-					old_desc_blocks = fs->desc_blocks +
+-					fs->super->s_reserved_gdt_blocks;
+-
+-				count = 0;
+-				cmp_block = fs->super->s_clusters_per_group;
+-				if (group == (int)fs->group_desc_count - 1)
+-					cmp_block = EXT2FS_NUM_B2C(fs,
+-						    ext2fs_group_blocks_count(fs, group));
+-			}
+-
+-			bitmap = 0;
+-			if (EQ_CLSTR(i, super_blk) ||
+-			    (old_desc_blk && old_desc_blocks &&
+-			     GE_CLSTR(i, old_desc_blk) &&
+-			     LE_CLSTR(i, old_desc_blk + old_desc_blocks-1)) ||
+-			    (new_desc_blk && EQ_CLSTR(i, new_desc_blk)) ||
+-			    EQ_CLSTR(i, ext2fs_block_bitmap_loc(fs, group)) ||
+-			    EQ_CLSTR(i, ext2fs_inode_bitmap_loc(fs, group)) ||
+-			    (GE_CLSTR(i, ext2fs_inode_table_loc(fs, group)) &&
+-			     LE_CLSTR(i, (ext2fs_inode_table_loc(fs, group) +
+-					  fs->inode_blocks_per_group - 1)))) {
+-				bitmap = 1;
+-				actual = (actual != 0);
+-				count++;
+-				cmp_block--;
+-			} else if ((EXT2FS_B2C(fs, i) - count -
+-				    EXT2FS_B2C(fs, fs->super->s_first_data_block)) %
+-				   fs->super->s_clusters_per_group == 0) {
+-				/*
+-				 * When the compare data blocks in block bitmap
+-				 * are 0, count the free block,
+-				 * skip the current block group.
+-				 */
+-				if (ext2fs_test_block_bitmap_range2(
+-					    ctx->block_found_map,
+-					    EXT2FS_B2C(fs, i),
+-					    cmp_block)) {
+-					/*
+-					 * -1 means to skip the current block
+-					 * group.
+-					 */
+-					blocks = fs->super->s_clusters_per_group - 1;
+-					group_free = cmp_block;
+-					free_blocks += cmp_block;
+-					/*
+-					 * The current block group's last block
+-					 * is set to i.
+-					 */
+-					i += EXT2FS_C2B(fs, cmp_block - 1);
+-					bitmap = 1;
+-					goto do_counts;
+-				}
+-			}
+-		} else if (redo_flag)
++		if (redo_flag)
+ 			bitmap = actual;
+ 		else
+ 			bitmap = ext2fs_fast_test_block_bitmap2(fs->block_map, i);
+@@ -396,14 +322,15 @@ redo_counts:
+ 			 */
+ 			problem = PR_5_BLOCK_USED;
+ 
+-			if (skip_group) {
++			if (ext2fs_bg_flags_test(fs, group,
++						 EXT2_BG_BLOCK_UNINIT)) {
+ 				struct problem_context pctx2;
+ 				pctx2.blk = i;
+ 				pctx2.group = group;
+-				if (fix_problem(ctx, PR_5_BLOCK_UNINIT,&pctx2)){
+-					ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+-					skip_group = 0;
+-				}
++				if (fix_problem(ctx, PR_5_BLOCK_UNINIT,
++						&pctx2))
++					ext2fs_bg_flags_clear(fs, group,
++							EXT2_BG_BLOCK_UNINIT);
+ 			}
+ 		}
+ 		if (pctx.blk == NO_BLK) {
+@@ -457,16 +384,10 @@ redo_counts:
+ 			group ++;
+ 			blocks = 0;
+ 			group_free = 0;
+-			skip_group = 0;
+ 			if (ctx->progress)
+ 				if ((ctx->progress)(ctx, 5, group,
+ 						    fs->group_desc_count*2))
+ 					goto errout;
+-			if (csum_flag &&
+-			    (i != ext2fs_blocks_count(fs->super)-1) &&
+-			    ext2fs_bg_flags_test(fs, group, 
+-						EXT2_BG_BLOCK_UNINIT))
+-				skip_group++;
+ 		}
+ 	}
+ 	if (pctx.blk != NO_BLK)
+--- e2fsprogs-1.42.9.orig/e2fsck/problem.c
++++ e2fsprogs-1.42.9/e2fsck/problem.c
+@@ -119,11 +119,13 @@ static struct e2fsck_problem problem_tab
+ 
+ 	/* Superblock corrupt */
+ 	{ PR_0_SB_CORRUPT,
+-	  N_("\nThe @S could not be read or does not describe a correct ext2\n"
+-	  "@f.  If the @v is valid and it really contains an ext2\n"
++	  N_("\nThe @S could not be read or does not describe a valid ext2/ext3/ext4\n"
++	  "@f.  If the @v is valid and it really contains an ext2/ext3/ext4\n"
+ 	  "@f (and not swap or ufs or something else), then the @S\n"
+ 	  "is corrupt, and you might try running e2fsck with an alternate @S:\n"
+-	  "    e2fsck -b %S <@v>\n\n"),
++	  "    e2fsck -b 8193 <@v>\n"
++	  " or\n"
++	  "    e2fsck -b 32768 <@v>\n\n"),
+ 	  PROMPT_NONE, PR_FATAL },
+ 
+ 	/* Filesystem size is wrong */
+--- e2fsprogs-1.42.9.orig/e2fsck/profile.c
++++ e2fsprogs-1.42.9/e2fsck/profile.c
+@@ -320,6 +320,7 @@ profile_init(const char **files, profile
+ 	    for (fs = files; !PROFILE_LAST_FILESPEC(*fs); fs++) {
+ 		if (array)
+ 			free_list(array);
++		array = NULL;
+ 		retval = get_dirlist(*fs, &array);
+ 		if (retval == 0) {
+ 			if (!array)
+@@ -1544,7 +1545,7 @@ profile_get_integer(profile_t profile, c
+ 	    /* Empty string is no good.  */
+ 	    return PROF_BAD_INTEGER;
+ 	errno = 0;
+-	ret_long = strtol (value, &end_value, 10);
++	ret_long = strtol(value, &end_value, 0);
+ 
+ 	/* Overflow or underflow.  */
+ 	if ((ret_long == LONG_MIN || ret_long == LONG_MAX) && errno != 0)
+@@ -1586,7 +1587,7 @@ profile_get_uint(profile_t profile, cons
+ 	    /* Empty string is no good.  */
+ 	    return PROF_BAD_INTEGER;
+ 	errno = 0;
+-	ret_long = strtoul (value, &end_value, 10);
++	ret_long = strtoul(value, &end_value, 0);
+ 
+ 	/* Overflow or underflow.  */
+ 	if ((ret_long == ULONG_MAX) && errno != 0)
+--- e2fsprogs-1.42.9.orig/e2fsck/quota.c
++++ e2fsprogs-1.42.9/e2fsck/quota.c
+@@ -22,14 +22,18 @@ static void move_quota_inode(ext2_filsys
+ 			     ext2_ino_t to_ino, int qtype)
+ {
+ 	struct ext2_inode	inode;
++	errcode_t		retval;
+ 	char			qf_name[QUOTA_NAME_LEN];
+ 
+ 	/* We need the inode bitmap to be loaded */
+ 	if (ext2fs_read_bitmaps(fs))
+ 		return;
+ 
+-	if (ext2fs_read_inode(fs, from_ino, &inode))
++	retval = ext2fs_read_inode(fs, from_ino, &inode);
++	if (retval) {
++		com_err("ext2fs_read_inode", retval, _("in move_quota_inode"));
+ 		return;
++	}
+ 
+ 	inode.i_links_count = 1;
+ 	inode.i_mode = LINUX_S_IFREG | 0600;
+@@ -38,7 +42,13 @@ static void move_quota_inode(ext2_filsys
+ 			EXT3_FEATURE_INCOMPAT_EXTENTS)
+ 		inode.i_flags |= EXT4_EXTENTS_FL;
+ 
+-	ext2fs_write_new_inode(fs, to_ino, &inode);
++	retval = ext2fs_write_new_inode(fs, to_ino, &inode);
++	if (retval) {
++		com_err("ext2fs_write_new_inode", retval,
++			_("in move_quota_inode"));
++		return;
++	}
++
+ 	/* unlink the old inode */
+ 	quota_get_qf_name(qtype, QFMT_VFS_V1, qf_name);
+ 	ext2fs_unlink(fs, EXT2_ROOT_INO, qf_name, from_ino, 0);
+--- e2fsprogs-1.42.9.orig/intl/Makefile.in
++++ e2fsprogs-1.42.9/intl/Makefile.in
+@@ -59,6 +59,20 @@ mkinstalldirs = $(SHELL) $(MKINSTALLDIRS
+ @ifNotGNUmake@ E = @E@
+ @ifNotGNUmake@ Q = @Q@
+ 
++@ifGNUmake@ CHECK=sparse
++@ifGNUmake@ CHECK_OPTS=-Wsparse-all -Wno-transparent-union -Wno-return-void -Wno-undef -Wno-non-pointer-null
++@ifGNUmake@ ifeq ("$(C)", "2")
++@ifGNUmake@   CHECK_CMD=$(CHECK) $(CHECK_OPTS) -Wbitwise -D__CHECK_ENDIAN__
++@ifGNUmake@ else
++@ifGNUmake@   ifeq ("$(C)", "1")
++@ifGNUmake@     CHECK_CMD=$(CHECK) $(CHECK_OPTS)
++@ifGNUmake@    else
++@ifGNUmake@     CHECK_CMD=@true
++@ifGNUmake@   endif
++@ifGNUmake@ endif
++
++@ifNotGNUmake@ CHECK_CMD=@true
++
+ l = @INTL_LIBTOOL_SUFFIX_PREFIX@
+ 
+ AR = ar
+--- e2fsprogs-1.42.9.orig/lib/blkid/cache.c
++++ e2fsprogs-1.42.9/lib/blkid/cache.c
+@@ -167,8 +167,6 @@ void blkid_gc_cache(blkid_cache cache)
+ 
+ 	list_for_each_safe(p, pnext, &cache->bic_devs) {
+ 		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
+-		if (!p)
+-			break;
+ 		if (stat(dev->bid_name, &st) < 0) {
+ 			DBG(DEBUG_CACHE,
+ 			    printf("freeing %s\n", dev->bid_name));
+--- e2fsprogs-1.42.9.orig/lib/blkid/devname.c
++++ e2fsprogs-1.42.9/lib/blkid/devname.c
+@@ -91,8 +91,6 @@ blkid_dev blkid_get_dev(blkid_cache cach
+ 		 */
+ 		list_for_each_safe(p, pnext, &cache->bic_devs) {
+ 			blkid_dev dev2;
+-			if (!p)
+-				break;
+ 			dev2 = list_entry(p, struct blkid_struct_dev, bid_devs);
+ 			if (dev2->bid_flags & BLKID_BID_FL_VERIFIED)
+ 				continue;
+--- e2fsprogs-1.42.9.orig/lib/blkid/probe.c
++++ e2fsprogs-1.42.9/lib/blkid/probe.c
+@@ -243,7 +243,7 @@ static int check_for_modules(const char
+ 	return (0);
+ }
+ 
+-static int linux_version_code()
++static int linux_version_code(void)
+ {
+ #ifdef __linux__
+ 	struct utsname	ut;
+@@ -586,7 +586,7 @@ static int probe_fat(struct blkid_probe
+ 			int count;
+ 
+ 			next_sect_off = (next - 2) * vs->vs_cluster_size;
+-			next_off = (start_data_sect + next_sect_off) *
++			next_off = (__u64) (start_data_sect + next_sect_off) *
+ 				sector_size;
+ 
+ 			dir = (struct vfat_dir_entry *)
+@@ -601,7 +601,9 @@ static int probe_fat(struct blkid_probe
+ 				break;
+ 
+ 			/* get FAT entry */
+-			fat_entry_off = (reserved * sector_size) +
++			fat_entry_off =
++				((unsigned int) reserved *
++				 (unsigned int) sector_size) +
+ 				(next * sizeof(__u32));
+ 			buf = get_buffer(probe, fat_entry_off, buf_size);
+ 			if (buf == NULL)
+@@ -1003,7 +1005,8 @@ static int probe_udf(struct blkid_probe
+ 	   (block sizes larger than 2K will be null padded) */
+ 	for (bs = 1; bs < 16; bs++) {
+ 		isosb = (struct iso_volume_descriptor *)
+-			get_buffer(probe, bs*2048+32768, sizeof(isosb));
++			get_buffer(probe, (blkid_loff_t) bs*2048+32768,
++				   sizeof(*isosb));
+ 		if (!isosb)
+ 			return 1;
+ 		if (isosb->vd_id[0])
+@@ -1015,7 +1018,7 @@ static int probe_udf(struct blkid_probe
+ 		if (j > 1) {
+ 			isosb = (struct iso_volume_descriptor *)
+ 				get_buffer(probe, j*bs*2048+32768,
+-					   sizeof(isosb));
++					   sizeof(*isosb));
+ 			if (!isosb)
+ 				return 1;
+ 		}
+@@ -1223,7 +1226,7 @@ static int probe_hfsplus(struct blkid_pr
+ 		off = (alloc_first_block * 512) +
+ 			(embed_first_block * alloc_block_size);
+ 		buf = get_buffer(probe, off + (id->bim_kboff * 1024),
+-				 sizeof(sbd));
++				 sizeof(*sbd));
+ 		if (!buf)
+ 			return 1;
+ 
+@@ -1247,7 +1250,7 @@ static int probe_hfsplus(struct blkid_pr
+ 	memcpy(extents, hfsplus->cat_file.extents, sizeof(extents));
+ 	cat_block = blkid_be32(extents[0].start_block);
+ 
+-	buf = get_buffer(probe, off + (cat_block * blocksize), 0x2000);
++	buf = get_buffer(probe, off + ((__u64) cat_block * blocksize), 0x2000);
+ 	if (!buf)
+ 		return 0;
+ 
+@@ -1278,7 +1281,7 @@ static int probe_hfsplus(struct blkid_pr
+ 	if (ext == HFSPLUS_EXTENT_COUNT)
+ 		return 0;
+ 
+-	leaf_off = (ext_block_start + leaf_block) * blocksize;
++	leaf_off = (__u64) (ext_block_start + leaf_block) * blocksize;
+ 
+ 	buf = get_buffer(probe, off + leaf_off, leaf_node_size);
+ 	if (!buf)
+@@ -1360,7 +1363,7 @@ static int probe_lvm2(struct blkid_probe
+ 		return 1;
+ 	}
+ 
+-	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i <= 32;
++	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i < LVM2_ID_LEN;
+ 	     i++, b <<= 1) {
+ 		if (b & 0x4444440)
+ 			*p++ = '-';
+@@ -1580,7 +1583,7 @@ try_again:
+ 			continue;
+ 
+ 		idx = id->bim_kboff + (id->bim_sboff >> 10);
+-		buf = get_buffer(&probe, idx << 10, 1024);
++		buf = get_buffer(&probe, (__u64) idx << 10, 1024);
+ 		if (!buf)
+ 			continue;
+ 
+--- e2fsprogs-1.42.9.orig/lib/blkid/save.c
++++ e2fsprogs-1.42.9/lib/blkid/save.c
+@@ -94,8 +94,10 @@ int blkid_flush_cache(blkid_cache cache)
+ 	if (ret == 0 && S_ISREG(st.st_mode)) {
+ 		tmp = malloc(strlen(filename) + 8);
+ 		if (tmp) {
++			mode_t save_umask = umask(022);
+ 			sprintf(tmp, "%s-XXXXXX", filename);
+ 			fd = mkstemp(tmp);
++			umask(save_umask);
+ 			if (fd >= 0) {
+ 				file = fdopen(fd, "w");
+ 				opened = tmp;
+@@ -134,7 +136,7 @@ int blkid_flush_cache(blkid_cache cache)
+ 	fclose(file);
+ 	if (opened != filename) {
+ 		if (ret < 0) {
+-			unlink(opened);
++			(void) unlink(opened);
+ 			DBG(DEBUG_SAVE,
+ 			    printf("unlinked temp cache %s\n", opened));
+ 		} else {
+@@ -147,7 +149,8 @@ int blkid_flush_cache(blkid_cache cache)
+ 				link(filename, backup);
+ 				free(backup);
+ 			}
+-			rename(opened, filename);
++			if (rename(opened, filename) < 0)
++				(void) unlink(opened);
+ 			DBG(DEBUG_SAVE,
+ 			    printf("moved temp cache %s\n", opened));
+ 		}
+--- e2fsprogs-1.42.9.orig/lib/config.h.in
++++ e2fsprogs-1.42.9/lib/config.h.in
+@@ -103,6 +103,9 @@
+ /* Define to 1 if Ext2 ioctls present */
+ #undef HAVE_EXT2_IOCTLS
+ 
++/* Define to 1 if you have the `fadvise64' function. */
++#undef HAVE_FADVISE64
++
+ /* Define to 1 if you have the `fallocate' function. */
+ #undef HAVE_FALLOCATE
+ 
+@@ -121,6 +124,9 @@
+ /* Define to 1 if you have the `ftruncate64' function. */
+ #undef HAVE_FTRUNCATE64
+ 
++/* Define to 1 if you have the `futimes' function. */
++#undef HAVE_FUTIMES
++
+ /* Define to 1 if you have the `fwprintf' function. */
+ #undef HAVE_FWPRINTF
+ 
+@@ -197,6 +203,9 @@
+ /* Define to 1 if you have the <linux/fd.h> header file. */
+ #undef HAVE_LINUX_FD_H
+ 
++/* Define to 1 if you have the <linux/loop.h> header file. */
++#undef HAVE_LINUX_LOOP_H
++
+ /* Define to 1 if you have the <linux/major.h> header file. */
+ #undef HAVE_LINUX_MAJOR_H
+ 
+@@ -281,6 +290,9 @@
+ /* Define to 1 if you have the `posix_fadvise' function. */
+ #undef HAVE_POSIX_FADVISE
+ 
++/* Define to 1 if you have the `posix_fadvise64' function. */
++#undef HAVE_POSIX_FADVISE64
++
+ /* Define to 1 if you have the `posix_memalign' function. */
+ #undef HAVE_POSIX_MEMALIGN
+ 
+@@ -381,6 +393,9 @@
+ /* Define to 1 if you have the `strtoull' function. */
+ #undef HAVE_STRTOULL
+ 
++/* Define to 1 if `st_atim' is a member of `struct stat'. */
++#undef HAVE_STRUCT_STAT_ST_ATIM
++
+ /* Define to 1 if you have the `sync_file_range' function. */
+ #undef HAVE_SYNC_FILE_RANGE
+ 
+@@ -620,4 +635,4 @@
+    <inttypes.h> don't define. */
+ #undef uintmax_t
+ 
+-#include "dirpaths.h"
++#include <dirpaths.h>
+--- e2fsprogs-1.42.9.orig/lib/e2p/feature.c
++++ e2fsprogs-1.42.9/lib/e2p/feature.c
+@@ -43,6 +43,8 @@ static struct feature feature_list[] = {
+ 			"lazy_bg" },
+ 	{	E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_EXCLUDE_BITMAP,
+ 			"snapshot_bitmap" },
++	{	E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
++			"sparse_super2" },
+ 
+ 	{	E2P_FEATURE_RO_INCOMPAT, EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER,
+ 			"sparse_super" },
+--- e2fsprogs-1.42.9.orig/lib/e2p/ls.c
++++ e2fsprogs-1.42.9/lib/e2p/ls.c
+@@ -368,6 +368,14 @@ void list_super2(struct ext2_super_block
+ 			fprintf(f, "type %u\n", sb->s_jnl_backup_type);
+ 		}
+ 	}
++	if (sb->s_backup_bgs[0] || sb->s_backup_bgs[1]) {
++		fprintf(f, "Backup block groups:      ");
++		if (sb->s_backup_bgs[0])
++			fprintf(f, "%u ", sb->s_backup_bgs[0]);
++		if (sb->s_backup_bgs[1])
++			fprintf(f, "%u ", sb->s_backup_bgs[1]);
++		fputc('\n', f);
++	}
+ 	if (sb->s_snapshot_inum) {
+ 		fprintf(f, "Snapshot inode:           %u\n",
+ 			sb->s_snapshot_inum);
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/Makefile.in
++++ e2fsprogs-1.42.9/lib/ext2fs/Makefile.in
+@@ -225,72 +225,72 @@ ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_
+ tst_badblocks: tst_badblocks.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_badblocks tst_badblocks.o $(STATIC_LIBEXT2FS) \
+-		$(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_icount $(srcdir)/icount.c -DDEBUG $(ALL_CFLAGS) \
+-		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_iscan: tst_iscan.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_iscan tst_iscan.o $(STATIC_LIBEXT2FS) \
+-		$(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_getsize: tst_getsize.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_getsize tst_getsize.o $(STATIC_LIBEXT2FS) \
+-		$(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS) \
+ 		$(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_ismounted $(srcdir)/ismounted.c \
+ 		$(STATIC_LIBEXT2FS) -DDEBUG $(ALL_CFLAGS) \
+-		$(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_byteswap: tst_byteswap.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_byteswap tst_byteswap.o $(STATIC_LIBEXT2FS) \
+-		$(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_bitops: tst_bitops.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_bitops tst_bitops.o $(ALL_CFLAGS) \
+-		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_getsectsize: tst_getsectsize.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_sectgetsize tst_getsectsize.o \
+-		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_types.o: $(srcdir)/tst_types.c ext2_types.h 
+ 
+ tst_types: tst_types.o ext2_types.h 
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_types tst_types.o 
++	$(Q) $(CC) -o tst_types tst_types.o $(SYSLIBS)
+ 
+ tst_super_size.o: $(srcdir)/tst_super_size.c $(srcdir)/ext2_fs.h
+ 
+ tst_super_size: tst_super_size.o
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_super_size tst_super_size.o 
++	$(Q) $(CC) -o tst_super_size tst_super_size.o $(SYSLIBS)
+ 
+ tst_fs_struct.o: $(srcdir)/tst_fs_struct.c $(srcdir)/ext2fs.h
+ 
+ tst_fs_struct: tst_fs_struct.o
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_fs_struct tst_fs_struct.o 
++	$(Q) $(CC) -o tst_fs_struct tst_fs_struct.o $(SYSLIBS)
+ 
+ tst_inode_size.o: $(srcdir)/tst_inode_size.c $(srcdir)/ext2_fs.h
+ 
+ tst_inode_size: tst_inode_size.o
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_inode_size tst_inode_size.o 
++	$(Q) $(CC) -o tst_inode_size tst_inode_size.o $(SYSLIBS)
+ 
+ ext2_tdbtool: tdbtool.o
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o ext2_tdbtool tdbtool.o tdb.o
++	$(Q) $(CC) -o ext2_tdbtool tdbtool.o tdb.o $(SYSLIBS)
+ 
+ extent_dbg.c: $(srcdir)/extent_dbg.ct
+ 	$(E) "	MK_CMDS $<"
+@@ -372,11 +372,13 @@ tst_bitmaps_cmd.c: tst_bitmaps_cmd.ct
+ 	$(E) "	MK_CMDS $@"
+ 	$(Q) DIR=$(srcdir) $(MK_CMDS) $(srcdir)/tst_bitmaps_cmd.ct
+ 
+-tst_bitmaps: tst_bitmaps.o tst_bitmaps_cmd.o $(STATIC_LIBEXT2FS) \
+-		$(DEPSTATIC_LIBSS) $(DEPSTATIC_LIBCOM_ERR)
++tst_bitmaps: tst_bitmaps.o tst_bitmaps_cmd.o $(srcdir)/blkmap64_rb.c \
++		$(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBSS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o $@ tst_bitmaps.o tst_bitmaps_cmd.o $(ALL_CFLAGS) \
+-		$(STATIC_LIBEXT2FS) $(STATIC_LIBSS) $(STATIC_LIBCOM_ERR)
++	$(Q) $(CC) -o $@ tst_bitmaps.o tst_bitmaps_cmd.o \
++		-DDEBUG_RB $(srcdir)/blkmap64_rb.c $(ALL_CFLAGS) \
++		$(STATIC_LIBEXT2FS) $(STATIC_LIBSS) $(STATIC_LIBCOM_ERR) \
++		$(SYSLIBS)
+ 
+ tst_extents: $(srcdir)/extent.c $(DEBUG_OBJS) $(DEPSTATIC_LIBSS) \
+ 	$(STATIC_LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID) $(DEPSTATIC_LIBCOM_ERR)
+@@ -384,27 +386,29 @@ tst_extents: $(srcdir)/extent.c $(DEBUG_
+ 	$(Q) $(CC) -o tst_extents $(srcdir)/extent.c \
+ 		$(ALL_CFLAGS) -DDEBUG $(DEBUG_OBJS) $(STATIC_LIBSS) \
+ 		$(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) \
+-		$(STATIC_LIBCOM_ERR) -I $(top_srcdir)/debugfs
++		$(STATIC_LIBCOM_ERR) $(SYSLIBS) -I $(top_srcdir)/debugfs
+ 
+ tst_inline: $(srcdir)/inline.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_inline $(srcdir)/inline.c $(ALL_CFLAGS) -DDEBUG \
+-		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
++		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_csum: csum.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) $(STATIC_LIBE2P) \
+ 		$(top_srcdir)/lib/e2p/e2p.h
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_csum $(srcdir)/csum.c -DDEBUG \
+ 		$(ALL_CFLAGS) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
+-		$(STATIC_LIBE2P)
++		$(STATIC_LIBE2P) $(SYSLIBS)
+ 
+ tst_crc32c: $(srcdir)/crc32c.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32c $(srcdir)/crc32c.c \
+-		-DUNITTEST $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
++		-DUNITTEST $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
++		$(SYSLIBS)
+ 
+ mkjournal: mkjournal.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
++	$(Q) $(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG \
++		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS) $(SYSLIBS)
+ 
+ check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
+     tst_super_size tst_types tst_inode_size tst_csum tst_crc32c tst_bitmaps \
+@@ -573,10 +577,11 @@ block.o: $(srcdir)/block.c $(top_builddi
+  $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h
+ bmap.o: $(srcdir)/bmap.c $(top_builddir)/lib/config.h \
+  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+- $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+- $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+- $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+- $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h
++ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fsP.h \
++ $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h \
++ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
++ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/ext2_ext_attr.h \
++ $(srcdir)/bitops.h
+ check_desc.o: $(srcdir)/check_desc.c $(top_builddir)/lib/config.h \
+  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+@@ -671,7 +676,7 @@ fileio.o: $(srcdir)/fileio.c $(top_build
+  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+- $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h
++ $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h $(srcdir)/ext2fsP.h
+ finddev.o: $(srcdir)/finddev.c $(top_builddir)/lib/config.h \
+  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/alloc.c
++++ e2fsprogs-1.42.9/lib/ext2fs/alloc.c
+@@ -27,48 +27,17 @@
+ #include "ext2fs.h"
+ 
+ /*
+- * Check for uninit block bitmaps and deal with them appropriately
++ * Clear the uninit block bitmap flag if necessary
+  */
+-static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
+-			       dgrp_t group)
++static void clear_block_uninit(ext2_filsys fs, dgrp_t group)
+ {
+-	blk_t		i;
+-	blk64_t		blk, super_blk, old_desc_blk, new_desc_blk;
+-	int		old_desc_blocks;
+-
+ 	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+ 					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
+ 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
+ 		return;
+ 
+-	blk = ext2fs_group_first_block2(fs, group);
+-
+-	ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
+-				  &old_desc_blk, &new_desc_blk, 0);
++	/* uninit block bitmaps are now initialized in read_bitmaps() */
+ 
+-	if (fs->super->s_feature_incompat &
+-	    EXT2_FEATURE_INCOMPAT_META_BG)
+-		old_desc_blocks = fs->super->s_first_meta_bg;
+-	else
+-		old_desc_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
+-
+-	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++)
+-		ext2fs_fast_unmark_block_bitmap2(map, blk);
+-
+-	blk = ext2fs_group_first_block2(fs, group);
+-	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++) {
+-		if ((blk == super_blk) ||
+-		    (old_desc_blk && old_desc_blocks &&
+-		     (blk >= old_desc_blk) &&
+-		     (blk < old_desc_blk + old_desc_blocks)) ||
+-		    (new_desc_blk && (blk == new_desc_blk)) ||
+-		    (blk == ext2fs_block_bitmap_loc(fs, group)) ||
+-		    (blk == ext2fs_inode_bitmap_loc(fs, group)) ||
+-		    (blk >= ext2fs_inode_table_loc(fs, group) &&
+-		     (blk < ext2fs_inode_table_loc(fs, group)
+-		      + fs->inode_blocks_per_group)))
+-			ext2fs_fast_mark_block_bitmap2(map, blk);
+-	}
+ 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+ 	ext2fs_group_desc_csum_set(fs, group);
+ 	ext2fs_mark_super_dirty(fs);
+@@ -93,10 +62,11 @@ static void check_inode_uninit(ext2_fils
+ 		ext2fs_fast_unmark_inode_bitmap2(map, ino);
+ 
+ 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
++	/* Mimics what the kernel does */
++	ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+ 	ext2fs_group_desc_csum_set(fs, group);
+ 	ext2fs_mark_ib_dirty(fs);
+ 	ext2fs_mark_super_dirty(fs);
+-	check_block_uninit(fs, fs->block_map, group);
+ }
+ 
+ /*
+@@ -167,8 +137,8 @@ errcode_t ext2fs_new_inode(ext2_filsys f
+ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
+ 			   ext2fs_block_bitmap map, blk64_t *ret)
+ {
+-	blk64_t	i;
+-	int	c_ratio;
++	errcode_t retval;
++	blk64_t	b;
+ 
+ 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+ 
+@@ -178,29 +148,21 @@ errcode_t ext2fs_new_block2(ext2_filsys
+ 		return EXT2_ET_NO_BLOCK_BITMAP;
+ 	if (!goal || (goal >= ext2fs_blocks_count(fs->super)))
+ 		goal = fs->super->s_first_data_block;
+-	i = goal;
+-	c_ratio = 1 << ext2fs_get_bitmap_granularity(map);
+-	if (c_ratio > 1)
+-		goal &= ~EXT2FS_CLUSTER_MASK(fs);
+-	check_block_uninit(fs, map,
+-			   (i - fs->super->s_first_data_block) /
+-			   EXT2_BLOCKS_PER_GROUP(fs->super));
+-	do {
+-		if (((i - fs->super->s_first_data_block) %
+-		     EXT2_BLOCKS_PER_GROUP(fs->super)) == 0)
+-			check_block_uninit(fs, map,
+-					   (i - fs->super->s_first_data_block) /
+-					   EXT2_BLOCKS_PER_GROUP(fs->super));
+-
+-		if (!ext2fs_fast_test_block_bitmap2(map, i)) {
+-			*ret = i;
+-			return 0;
+-		}
+-		i = (i + c_ratio) & ~(c_ratio - 1);
+-		if (i >= ext2fs_blocks_count(fs->super))
+-			i = fs->super->s_first_data_block;
+-	} while (i != goal);
+-	return EXT2_ET_BLOCK_ALLOC_FAIL;
++	goal &= ~EXT2FS_CLUSTER_MASK(fs);
++
++	retval = ext2fs_find_first_zero_block_bitmap2(map,
++			goal, ext2fs_blocks_count(fs->super) - 1, &b);
++	if ((retval == ENOENT) && (goal != fs->super->s_first_data_block))
++		retval = ext2fs_find_first_zero_block_bitmap2(map,
++			fs->super->s_first_data_block, goal - 1, &b);
++	if (retval == ENOENT)
++		return EXT2_ET_BLOCK_ALLOC_FAIL;
++	if (retval)
++		return retval;
++
++	clear_block_uninit(fs, ext2fs_group_of_blk2(fs, b));
++	*ret = b;
++	return 0;
+ }
+ 
+ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/alloc_sb.c
++++ e2fsprogs-1.42.9/lib/ext2fs/alloc_sb.c
+@@ -65,8 +65,6 @@ int ext2fs_reserve_super_and_bgd(ext2_fi
+ 		ext2fs_mark_block_bitmap2(bmap, 0);
+ 
+ 	if (old_desc_blk) {
+-		if (fs->super->s_reserved_gdt_blocks && fs->block_map == bmap)
+-			ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+ 		num_blocks = old_desc_blocks;
+ 		if (old_desc_blk + num_blocks >= ext2fs_blocks_count(fs->super))
+ 			num_blocks = ext2fs_blocks_count(fs->super) -
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/alloc_stats.c
++++ e2fsprogs-1.42.9/lib/ext2fs/alloc_stats.c
+@@ -106,3 +106,44 @@ void ext2fs_set_block_alloc_stats_callba
+ 
+ 	fs->block_alloc_stats = func;
+ }
++
++void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
++				    blk_t num, int inuse)
++{
++#ifndef OMIT_COM_ERR
++	if (blk + num > ext2fs_blocks_count(fs->super)) {
++		com_err("ext2fs_block_alloc_stats_range", 0,
++			"Illegal block range: %llu (%u) ",
++			(unsigned long long) blk, num);
++		return;
++	}
++#endif
++	if (inuse == 0)
++		return;
++	if (inuse > 0) {
++		ext2fs_mark_block_bitmap_range2(fs->block_map, blk, num);
++		inuse = 1;
++	} else {
++		ext2fs_unmark_block_bitmap_range2(fs->block_map, blk, num);
++		inuse = -1;
++	}
++	while (num) {
++		int group = ext2fs_group_of_blk2(fs, blk);
++		blk64_t last_blk = ext2fs_group_last_block2(fs, group);
++		blk_t n = num;
++
++		if (blk + num > last_blk)
++			n = last_blk - blk + 1;
++
++		ext2fs_bg_free_blocks_count_set(fs, group,
++			ext2fs_bg_free_blocks_count(fs, group) -
++			inuse*n/EXT2FS_CLUSTER_RATIO(fs));
++		ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
++		ext2fs_group_desc_csum_set(fs, group);
++		ext2fs_free_blocks_count_add(fs->super, -inuse * n);
++		blk += n;
++		num -= n;
++	}
++	ext2fs_mark_super_dirty(fs);
++	ext2fs_mark_bb_dirty(fs);
++}
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/alloc_tables.c
++++ e2fsprogs-1.42.9/lib/ext2fs/alloc_tables.c
+@@ -83,9 +83,8 @@ static blk64_t flexbg_offset(ext2_filsys
+ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
+ 				      ext2fs_block_bitmap bmap)
+ {
+-	unsigned int	j;
+ 	errcode_t	retval;
+-	blk64_t		group_blk, start_blk, last_blk, new_blk, blk;
++	blk64_t		group_blk, start_blk, last_blk, new_blk;
+ 	dgrp_t		last_grp = 0;
+ 	int		rem_grps = 0, flexbg_size = 0;
+ 
+@@ -205,19 +204,12 @@ errcode_t ext2fs_allocate_group_table(ex
+ 						bmap, &new_blk);
+ 		if (retval)
+ 			return retval;
+-		for (j=0, blk = new_blk;
+-		     j < fs->inode_blocks_per_group;
+-		     j++, blk++) {
+-			ext2fs_mark_block_bitmap2(bmap, blk);
+-			if (flexbg_size) {
+-				dgrp_t gr = ext2fs_group_of_blk2(fs, blk);
+-				ext2fs_bg_free_blocks_count_set(fs, gr, ext2fs_bg_free_blocks_count(fs, gr) - 1);
+-				ext2fs_free_blocks_count_add(fs->super, -1);
+-				ext2fs_bg_flags_clear(fs, gr,
+-						     EXT2_BG_BLOCK_UNINIT);
+-				ext2fs_group_desc_csum_set(fs, gr);
+-			}
+-		}
++		if (flexbg_size)
++			ext2fs_block_alloc_stats_range(fs, new_blk,
++				       fs->inode_blocks_per_group, +1);
++		else
++			ext2fs_mark_block_bitmap_range2(fs->block_map,
++					new_blk, fs->inode_blocks_per_group);
+ 		ext2fs_inode_table_loc_set(fs, group, new_blk);
+ 	}
+ 	ext2fs_group_desc_csum_set(fs, group);
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/bitops.h
++++ e2fsprogs-1.42.9/lib/ext2fs/bitops.h
+@@ -157,6 +157,14 @@ extern errcode_t ext2fs_find_first_zero_
+ 						      ext2_ino_t start,
+ 						      ext2_ino_t end,
+ 						      ext2_ino_t *out);
++extern errcode_t ext2fs_find_first_set_block_bitmap2(ext2fs_block_bitmap bitmap,
++						     blk64_t start,
++						     blk64_t end,
++						     blk64_t *out);
++extern errcode_t ext2fs_find_first_set_inode_bitmap2(ext2fs_inode_bitmap bitmap,
++						      ext2_ino_t start,
++						      ext2_ino_t end,
++						      ext2_ino_t *out);
+ extern blk64_t ext2fs_get_block_bitmap_start2(ext2fs_block_bitmap bitmap);
+ extern ext2_ino_t ext2fs_get_inode_bitmap_start2(ext2fs_inode_bitmap bitmap);
+ extern blk64_t ext2fs_get_block_bitmap_end2(ext2fs_block_bitmap bitmap);
+@@ -198,6 +206,9 @@ extern void ext2fs_unmark_block_bitmap_r
+ extern errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitmap,
+ 						     __u64 start, __u64 end,
+ 						     __u64 *out);
++extern errcode_t ext2fs_find_first_set_generic_bmap(ext2fs_generic_bitmap bitmap,
++						    __u64 start, __u64 end,
++						    __u64 *out);
+ 
+ /*
+  * The inline routines themselves...
+@@ -602,6 +613,36 @@ _INLINE_ errcode_t ext2fs_find_first_zer
+ 	if (!rv)
+ 		*out = (ext2_ino_t) o;
+ 	return rv;
++}
++
++_INLINE_ errcode_t ext2fs_find_first_set_block_bitmap2(ext2fs_block_bitmap bitmap,
++						       blk64_t start,
++						       blk64_t end,
++						       blk64_t *out)
++{
++	__u64 o;
++	errcode_t rv;
++
++	rv = ext2fs_find_first_set_generic_bmap((ext2fs_generic_bitmap) bitmap,
++						start, end, &o);
++	if (!rv)
++		*out = o;
++	return rv;
++}
++
++_INLINE_ errcode_t ext2fs_find_first_set_inode_bitmap2(ext2fs_inode_bitmap bitmap,
++						       ext2_ino_t start,
++						       ext2_ino_t end,
++						       ext2_ino_t *out)
++{
++	__u64 o;
++	errcode_t rv;
++
++	rv = ext2fs_find_first_set_generic_bmap((ext2fs_generic_bitmap) bitmap,
++						start, end, &o);
++	if (!rv)
++		*out = (ext2_ino_t) o;
++	return rv;
+ }
+ 
+ _INLINE_ blk64_t ext2fs_get_block_bitmap_start2(ext2fs_block_bitmap bitmap)
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/blkmap64_ba.c
++++ e2fsprogs-1.42.9/lib/ext2fs/blkmap64_ba.c
+@@ -328,12 +328,6 @@ static errcode_t ba_find_first_zero(ext2
+ 	const unsigned char *pos;
+ 	unsigned long max_loop_count, i;
+ 
+-	if (start < bitmap->start || end > bitmap->end || start > end)
+-		return EINVAL;
+-
+-	if (bitmap->cluster_bits)
+-		return EINVAL;
+-
+ 	/* scan bits until we hit a byte boundary */
+ 	while ((bitpos & 0x7) != 0 && count > 0) {
+ 		if (!ext2fs_test_bit64(bitpos, bp->bitarray)) {
+@@ -397,6 +391,80 @@ static errcode_t ba_find_first_zero(ext2
+ 	return ENOENT;
+ }
+ 
++/* Find the first one bit between start and end, inclusive. */
++static errcode_t ba_find_first_set(ext2fs_generic_bitmap bitmap,
++				    __u64 start, __u64 end, __u64 *out)
++{
++	ext2fs_ba_private bp = (ext2fs_ba_private)bitmap->private;
++	unsigned long bitpos = start - bitmap->start;
++	unsigned long count = end - start + 1;
++	int byte_found = 0; /* whether a != 0xff byte has been found */
++	const unsigned char *pos;
++	unsigned long max_loop_count, i;
++
++	/* scan bits until we hit a byte boundary */
++	while ((bitpos & 0x7) != 0 && count > 0) {
++		if (ext2fs_test_bit64(bitpos, bp->bitarray)) {
++			*out = bitpos + bitmap->start;
++			return 0;
++		}
++		bitpos++;
++		count--;
++	}
++
++	if (!count)
++		return ENOENT;
++
++	pos = ((unsigned char *)bp->bitarray) + (bitpos >> 3);
++	/* scan bytes until 8-byte (64-bit) aligned */
++	while (count >= 8 && (((unsigned long)pos) & 0x07)) {
++		if (*pos != 0) {
++			byte_found = 1;
++			break;
++		}
++		pos++;
++		count -= 8;
++		bitpos += 8;
++	}
++
++	if (!byte_found) {
++		max_loop_count = count >> 6; /* 8-byte blocks */
++		i = max_loop_count;
++		while (i) {
++			if (*((const __u64 *)pos) != 0)
++				break;
++			pos += 8;
++			i--;
++		}
++		count -= 64 * (max_loop_count - i);
++		bitpos += 64 * (max_loop_count - i);
++
++		max_loop_count = count >> 3;
++		i = max_loop_count;
++		while (i) {
++			if (*pos != 0) {
++				byte_found = 1;
++				break;
++			}
++			pos++;
++			i--;
++		}
++		count -= 8 * (max_loop_count - i);
++		bitpos += 8 * (max_loop_count - i);
++	}
++
++	/* Here either count < 8 or byte_found == 1. */
++	while (count-- > 0) {
++		if (ext2fs_test_bit64(bitpos, bp->bitarray)) {
++			*out = bitpos + bitmap->start;
++			return 0;
++		}
++		bitpos++;
++	}
++
++	return ENOENT;
++}
++
+ struct ext2_bitmap_ops ext2fs_blkmap64_bitarray = {
+ 	.type = EXT2FS_BMAP64_BITARRAY,
+ 	.new_bmap = ba_new_bmap,
+@@ -413,5 +481,6 @@ struct ext2_bitmap_ops ext2fs_blkmap64_b
+ 	.get_bmap_range = ba_get_bmap_range,
+ 	.clear_bmap = ba_clear_bmap,
+ 	.print_stats = ba_print_stats,
+-	.find_first_zero = ba_find_first_zero
++	.find_first_zero = ba_find_first_zero,
++	.find_first_set = ba_find_first_set
+ };
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/blkmap64_rb.c
++++ e2fsprogs-1.42.9/lib/ext2fs/blkmap64_rb.c
+@@ -135,7 +135,7 @@ err_out:
+ }
+ #else
+ #define check_tree(root, msg) do {} while (0)
+-#define print_tree(root, msg) do {} while (0)
++#define print_tree(root) do {} while (0)
+ #endif
+ 
+ static void rb_get_new_extent(struct bmap_rb_extent **ext, __u64 start,
+@@ -569,11 +569,14 @@ static int rb_remove_extent(__u64 start,
+ static int rb_mark_bmap(ext2fs_generic_bitmap bitmap, __u64 arg)
+ {
+ 	struct ext2fs_rb_private *bp;
++	int retval;
+ 
+ 	bp = (struct ext2fs_rb_private *) bitmap->private;
+ 	arg -= bitmap->start;
+ 
+-	return rb_insert_extent(arg, 1, bp);
++	retval = rb_insert_extent(arg, 1, bp);
++	check_tree(&bp->root, __func__);
++	return retval;
+ }
+ 
+ static int rb_unmark_bmap(ext2fs_generic_bitmap bitmap, __u64 arg)
+@@ -610,6 +613,7 @@ static void rb_mark_bmap_extent(ext2fs_g
+ 	arg -= bitmap->start;
+ 
+ 	rb_insert_extent(arg, num, bp);
++	check_tree(&bp->root, __func__);
+ }
+ 
+ static void rb_unmark_bmap_extent(ext2fs_generic_bitmap bitmap, __u64 arg,
+@@ -714,11 +718,14 @@ static errcode_t rb_set_bmap_range(ext2f
+ 
+ 		rb_insert_extent(start + first_set - bitmap->start,
+ 				 i - first_set, bp);
++		check_tree(&bp->root, __func__);
+ 		first_set = -1;
+ 	}
+-	if (first_set != -1)
++	if (first_set != -1) {
+ 		rb_insert_extent(start + first_set - bitmap->start,
+ 				 num - first_set, bp);
++		check_tree(&bp->root, __func__);
++	}
+ 
+ 	return 0;
+ }
+@@ -799,6 +806,94 @@ static void rb_clear_bmap(ext2fs_generic
+ 	bp->rcursor = NULL;
+ 	bp->rcursor_next = NULL;
+ 	bp->wcursor = NULL;
++	check_tree(&bp->root, __func__);
++}
++
++static errcode_t rb_find_first_zero(ext2fs_generic_bitmap bitmap,
++				   __u64 start, __u64 end, __u64 *out)
++{
++	struct rb_node *parent = NULL, **n;
++	struct rb_node *node, *next;
++	struct ext2fs_rb_private *bp;
++	struct bmap_rb_extent *ext;
++	int retval = 1;
++
++	bp = (struct ext2fs_rb_private *) bitmap->private;
++	n = &bp->root.rb_node;
++	start -= bitmap->start;
++	end -= bitmap->start;
++
++	if (start > end)
++		return EINVAL;
++
++	if (EXT2FS_RB_EMPTY_ROOT(&bp->root))
++		return ENOENT;
++
++	while (*n) {
++		parent = *n;
++		ext = node_to_extent(parent);
++		if (start < ext->start) {
++			n = &(*n)->rb_left;
++		} else if (start >= (ext->start + ext->count)) {
++			n = &(*n)->rb_right;
++		} else if (ext->start + ext->count <= end) {
++			*out = ext->start + ext->count + bitmap->start;
++			return 0;
++		} else
++			return ENOENT;
++	}
++
++	*out = start + bitmap->start;
++	return 0;
++}
++
++static errcode_t rb_find_first_set(ext2fs_generic_bitmap bitmap,
++				   __u64 start, __u64 end, __u64 *out)
++{
++	struct rb_node *parent = NULL, **n;
++	struct rb_node *node, *next;
++	struct ext2fs_rb_private *bp;
++	struct bmap_rb_extent *ext;
++	int retval = 1;
++
++	bp = (struct ext2fs_rb_private *) bitmap->private;
++	n = &bp->root.rb_node;
++	start -= bitmap->start;
++	end -= bitmap->start;
++
++	if (start > end)
++		return EINVAL;
++
++	if (EXT2FS_RB_EMPTY_ROOT(&bp->root))
++		return ENOENT;
++
++	while (*n) {
++		parent = *n;
++		ext = node_to_extent(parent);
++		if (start < ext->start) {
++			n = &(*n)->rb_left;
++		} else if (start >= (ext->start + ext->count)) {
++			n = &(*n)->rb_right;
++		} else {
++			/* The start bit is set */
++			*out = start + bitmap->start;
++			return 0;
++		}
++	}
++
++	node = parent;
++	ext = node_to_extent(node);
++	if (ext->start < start) {
++		node = ext2fs_rb_next(node);
++		if (node == NULL)
++			return ENOENT;
++		ext = node_to_extent(node);
++	}
++	if (ext->start <= end) {
++		*out = ext->start + bitmap->start;
++		return 0;
++	}
++	return ENOENT;
+ }
+ 
+ #ifdef BMAP_STATS
+@@ -819,7 +914,6 @@ static void rb_print_stats(ext2fs_generi
+ 
+ 	bp = (struct ext2fs_rb_private *) bitmap->private;
+ 
+-	node = ext2fs_rb_first(&bp->root);
+ 	for (node = ext2fs_rb_first(&bp->root); node != NULL;
+ 	     node = ext2fs_rb_next(node)) {
+ 		ext = node_to_extent(node);
+@@ -883,4 +977,6 @@ struct ext2_bitmap_ops ext2fs_blkmap64_r
+ 	.get_bmap_range = rb_get_bmap_range,
+ 	.clear_bmap = rb_clear_bmap,
+ 	.print_stats = rb_print_stats,
++	.find_first_zero = rb_find_first_zero,
++	.find_first_set = rb_find_first_set,
+ };
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/bmap64.h
++++ e2fsprogs-1.42.9/lib/ext2fs/bmap64.h
+@@ -94,6 +94,10 @@ struct ext2_bitmap_ops {
+ 	 * May be NULL, in which case a generic function is used. */
+ 	errcode_t (*find_first_zero)(ext2fs_generic_bitmap bitmap,
+ 				     __u64 start, __u64 end, __u64 *out);
++	/* Find the first set bit between start and end, inclusive.
++	 * May be NULL, in which case a generic function is used. */
++	errcode_t (*find_first_set)(ext2fs_generic_bitmap bitmap,
++				    __u64 start, __u64 end, __u64 *out);
+ };
+ 
+ extern struct ext2_bitmap_ops ext2fs_blkmap64_bitarray;
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/closefs.c
++++ e2fsprogs-1.42.9/lib/ext2fs/closefs.c
+@@ -35,8 +35,16 @@ static int test_root(unsigned int a, uns
+ 
+ int ext2fs_bg_has_super(ext2_filsys fs, dgrp_t group)
+ {
+-	if (!(fs->super->s_feature_ro_compat &
+-	      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) || group <= 1)
++	if (group == 0)
++		return 1;
++	if (fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
++		if (group == fs->super->s_backup_bgs[0] ||
++		    group == fs->super->s_backup_bgs[1])
++			return 1;
++		return 0;
++	}
++	if ((group <= 1) || !(fs->super->s_feature_ro_compat &
++			      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
+ 		return 1;
+ 	if (!(group & 1))
+ 		return 0;
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/csum.c
++++ e2fsprogs-1.42.9/lib/ext2fs/csum.c
+@@ -36,7 +36,7 @@ __u16 ext2fs_group_desc_csum(ext2_filsys
+ 							 group);
+ 	size_t size = EXT2_DESC_SIZE(fs->super);
+ 	size_t offset;
+-	__u16 crc;
++	__u16 crc = 0;
+ 
+ 	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
+ 		size_t offset = offsetof(struct ext2_group_desc, bg_checksum);
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/ext2_fs.h
++++ e2fsprogs-1.42.9/lib/ext2fs/ext2_fs.h
+@@ -645,7 +645,8 @@ struct ext2_super_block {
+ 	__u32	s_usr_quota_inum;	/* inode number of user quota file */
+ 	__u32	s_grp_quota_inum;	/* inode number of group quota file */
+ 	__u32	s_overhead_blocks;	/* overhead blocks/clusters in fs */
+-	__u32   s_reserved[108];        /* Padding to the end of the block */
++	__u32	s_backup_bgs[2];	/* If sparse_super2 enabled */
++	__u32   s_reserved[106];        /* Padding to the end of the block */
+ 	__u32	s_checksum;		/* crc32c(superblock) */
+ };
+ 
+@@ -696,6 +697,7 @@ struct ext2_super_block {
+ #define EXT2_FEATURE_COMPAT_LAZY_BG		0x0040
+ /* #define EXT2_FEATURE_COMPAT_EXCLUDE_INODE	0x0080 not used, legacy */
+ #define EXT2_FEATURE_COMPAT_EXCLUDE_BITMAP	0x0100
++#define EXT4_FEATURE_COMPAT_SPARSE_SUPER2	0x0200
+ 
+ 
+ #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/ext2fs.h
++++ e2fsprogs-1.42.9/lib/ext2fs/ext2fs.h
+@@ -550,7 +550,8 @@ typedef struct ext2_icount *ext2_icount_
+ 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL|\
+ 					 EXT2_FEATURE_COMPAT_RESIZE_INODE|\
+ 					 EXT2_FEATURE_COMPAT_DIR_INDEX|\
+-					 EXT2_FEATURE_COMPAT_EXT_ATTR)
++					 EXT2_FEATURE_COMPAT_EXT_ATTR|\
++					 EXT4_FEATURE_COMPAT_SPARSE_SUPER2)
+ 
+ /* This #ifdef is temporary until compression is fully supported */
+ #ifdef ENABLE_COMPRESSION
+@@ -683,6 +684,8 @@ void ext2fs_inode_alloc_stats2(ext2_fils
+ 			       int inuse, int isdir);
+ void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse);
+ void ext2fs_block_alloc_stats2(ext2_filsys fs, blk64_t blk, int inuse);
++void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
++				    blk_t num, int inuse);
+ 
+ /* alloc_tables.c */
+ extern errcode_t ext2fs_allocate_tables(ext2_filsys fs);
+@@ -1177,6 +1180,9 @@ extern errcode_t ext2fs_set_generic_bitm
+ extern errcode_t ext2fs_find_first_zero_generic_bitmap(ext2fs_generic_bitmap bitmap,
+ 						       __u32 start, __u32 end,
+ 						       __u32 *out);
++extern errcode_t ext2fs_find_first_set_generic_bitmap(ext2fs_generic_bitmap bitmap,
++						       __u32 start, __u32 end,
++						       __u32 *out);
+ 
+ /* gen_bitmap64.c */
+ 
+@@ -1365,6 +1371,8 @@ extern errcode_t ext2fs_add_journal_devi
+ 					   ext2_filsys journal_dev);
+ extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks,
+ 					  int flags);
++extern errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
++					   blk64_t goal, int flags);
+ extern int ext2fs_default_journal_size(__u64 num_blocks);
+ 
+ /* openfs.c */
+@@ -1375,6 +1383,11 @@ extern errcode_t ext2fs_open2(const char
+ 			      int flags, int superblock,
+ 			      unsigned int block_size, io_manager manager,
+ 			      ext2_filsys *ret_fs);
++/*
++ * The dgrp_t argument to these two functions is not actually a group number
++ * but a block number offset within a group table!  Convert with the formula
++ * (group_number / groups_per_block).
++ */
+ extern blk64_t ext2fs_descriptor_block_loc2(ext2_filsys fs,
+ 					blk64_t group_block, dgrp_t i);
+ extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block,
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/extent.c
++++ e2fsprogs-1.42.9/lib/ext2fs/extent.c
+@@ -1092,8 +1092,10 @@ errcode_t ext2fs_extent_insert(ext2_exte
+ 			ix++;
+ 			path->left--;
+ 		}
+-	} else
++	} else {
+ 		ix = EXT_FIRST_INDEX(eh);
++		path->left = -1;
++	}
+ 
+ 	path->curr = ix;
+ 
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/gen_bitmap.c
++++ e2fsprogs-1.42.9/lib/ext2fs/gen_bitmap.c
+@@ -527,6 +527,28 @@ errcode_t ext2fs_find_first_zero_generic
+ 	return ENOENT;
+ }
+ 
++errcode_t ext2fs_find_first_set_generic_bitmap(ext2fs_generic_bitmap bitmap,
++					       __u32 start, __u32 end,
++					       __u32 *out)
++{
++	blk_t b;
++
++	if (start < bitmap->start || end > bitmap->end || start > end) {
++		ext2fs_warn_bitmap2(bitmap, EXT2FS_TEST_ERROR, start);
++		return EINVAL;
++	}
++
++	while (start <= end) {
++		b = ext2fs_test_bit(start - bitmap->start, bitmap->bitmap);
++		if (b) {
++			*out = start;
++			return 0;
++		}
++		start++;
++	}
++
++	return ENOENT;
++}
+ 
+ int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
+ 				   blk_t block, int num)
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/gen_bitmap64.c
++++ e2fsprogs-1.42.9/lib/ext2fs/gen_bitmap64.c
+@@ -801,17 +801,14 @@ errcode_t ext2fs_find_first_zero_generic
+ 					      __u64 start, __u64 end, __u64 *out)
+ {
+ 	int b;
++	__u64 cstart, cend, cout;
++	errcode_t retval;
+ 
+ 	if (!bitmap)
+ 		return EINVAL;
+ 
+-	if (EXT2FS_IS_64_BITMAP(bitmap) && bitmap->bitmap_ops->find_first_zero)
+-		return bitmap->bitmap_ops->find_first_zero(bitmap, start,
+-							   end, out);
+-
+ 	if (EXT2FS_IS_32_BITMAP(bitmap)) {
+ 		blk_t blk = 0;
+-		errcode_t retval;
+ 
+ 		if (((start) & ~0xffffffffULL) ||
+ 		    ((end) & ~0xffffffffULL)) {
+@@ -829,22 +826,83 @@ errcode_t ext2fs_find_first_zero_generic
+ 	if (!EXT2FS_IS_64_BITMAP(bitmap))
+ 		return EINVAL;
+ 
+-	start >>= bitmap->cluster_bits;
+-	end >>= bitmap->cluster_bits;
++	cstart = start >> bitmap->cluster_bits;
++	cend = end >> bitmap->cluster_bits;
+ 
+-	if (start < bitmap->start || end > bitmap->end || start > end) {
++	if (cstart < bitmap->start || cend > bitmap->end || start > end) {
+ 		warn_bitmap(bitmap, EXT2FS_TEST_ERROR, start);
+ 		return EINVAL;
+ 	}
+ 
+-	while (start <= end) {
+-		b = bitmap->bitmap_ops->test_bmap(bitmap, start);
+-		if (!b) {
+-			*out = start << bitmap->cluster_bits;
+-			return 0;
++	if (bitmap->bitmap_ops->find_first_zero) {
++		retval = bitmap->bitmap_ops->find_first_zero(bitmap, cstart,
++							     cend, &cout);
++		if (retval)
++			return retval;
++	found:
++		cout <<= bitmap->cluster_bits;
++		*out = (cout >= start) ? cout : start;
++		return 0;
++	}
++
++	for (cout = cstart; cout <= cend; cout++)
++		if (!bitmap->bitmap_ops->test_bmap(bitmap, cout))
++			goto found;
++
++	return ENOENT;
++}
++
++errcode_t ext2fs_find_first_set_generic_bmap(ext2fs_generic_bitmap bitmap,
++					     __u64 start, __u64 end, __u64 *out)
++{
++	int b;
++	__u64 cstart, cend, cout;
++	errcode_t retval;
++
++	if (!bitmap)
++		return EINVAL;
++
++	if (EXT2FS_IS_32_BITMAP(bitmap)) {
++		blk_t blk = 0;
++
++		if (((start) & ~0xffffffffULL) ||
++		    ((end) & ~0xffffffffULL)) {
++			ext2fs_warn_bitmap2(bitmap, EXT2FS_TEST_ERROR, start);
++			return EINVAL;
+ 		}
+-		start++;
++
++		retval = ext2fs_find_first_set_generic_bitmap(bitmap, start,
++							      end, &blk);
++		if (retval == 0)
++			*out = blk;
++		return retval;
+ 	}
+ 
++	if (!EXT2FS_IS_64_BITMAP(bitmap))
++		return EINVAL;
++
++	cstart = start >> bitmap->cluster_bits;
++	cend = end >> bitmap->cluster_bits;
++
++	if (cstart < bitmap->start || cend > bitmap->end || start > end) {
++		warn_bitmap(bitmap, EXT2FS_TEST_ERROR, start);
++		return EINVAL;
++	}
++
++	if (bitmap->bitmap_ops->find_first_set) {
++		retval = bitmap->bitmap_ops->find_first_set(bitmap, cstart,
++							    cend, &cout);
++		if (retval)
++			return retval;
++	found:
++		cout <<= bitmap->cluster_bits;
++		*out = (cout >= start) ? cout : start;
++		return 0;
++	}
++
++	for (cout = cstart; cout <= cend; cout++)
++		if (bitmap->bitmap_ops->test_bmap(bitmap, cout))
++			goto found;
++
+ 	return ENOENT;
+ }
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/icount.c
++++ e2fsprogs-1.42.9/lib/ext2fs/icount.c
+@@ -181,6 +181,7 @@ errcode_t ext2fs_create_icount_tdb(ext2_
+ 	errcode_t	retval;
+ 	char 		*fn, uuid[40];
+ 	ext2_ino_t	num_inodes;
++	mode_t		save_umask;
+ 	int		fd;
+ 
+ 	retval = alloc_icount(fs, flags,  &icount);
+@@ -192,10 +193,14 @@ errcode_t ext2fs_create_icount_tdb(ext2_
+ 		goto errout;
+ 	uuid_unparse(fs->super->s_uuid, uuid);
+ 	sprintf(fn, "%s/%s-icount-XXXXXX", tdb_dir, uuid);
++	icount->tdb_fn = fn;
++	save_umask = umask(077);
+ 	fd = mkstemp(fn);
+-	if (fd < 0)
+-		return fd;
+-
++	if (fd < 0) {
++		retval = errno;
++		goto errout;
++	}
++	umask(save_umask);
+ 	/*
+ 	 * This is an overestimate of the size that we will need; the
+ 	 * ideal value is the number of used inodes with a count
+@@ -206,18 +211,15 @@ errcode_t ext2fs_create_icount_tdb(ext2_
+ 	 */
+ 	num_inodes = fs->super->s_inodes_count - fs->super->s_free_inodes_count;
+ 
+-	icount->tdb_fn = fn;
+ 	icount->tdb = tdb_open(fn, num_inodes, TDB_NOLOCK | TDB_NOSYNC,
+ 			       O_RDWR | O_CREAT | O_TRUNC, 0600);
+-	if (icount->tdb) {
+-		close(fd);
+-		*ret = icount;
+-		return 0;
+-	}
+-
+-	retval = errno;
+ 	close(fd);
+-
++	if (icount->tdb == NULL) {
++		retval = errno;
++		goto errout;
++	}
++	*ret = icount;
++	return 0;
+ errout:
+ 	ext2fs_free_icount(icount);
+ 	return(retval);
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/initialize.c
++++ e2fsprogs-1.42.9/lib/ext2fs/initialize.c
+@@ -173,6 +173,8 @@ errcode_t ext2fs_initialize(const char *
+ 	set_field(s_raid_stripe_width, 0);	/* default stripe width: 0 */
+ 	set_field(s_log_groups_per_flex, 0);
+ 	set_field(s_flags, 0);
++	assign_field(s_backup_bgs[0]);
++	assign_field(s_backup_bgs[1]);
+ 	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
+ 		retval = EXT2_ET_UNSUPP_FEATURE;
+ 		goto cleanup;
+@@ -422,6 +424,21 @@ ipg_retry:
+ 	 * count.
+ 	 */
+ 
++	/* Set up the locations of the backup superblocks */
++	if (super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
++		if (super->s_backup_bgs[0] >= fs->group_desc_count)
++			super->s_backup_bgs[0] = fs->group_desc_count - 1;
++		if (super->s_backup_bgs[1] >= fs->group_desc_count)
++			super->s_backup_bgs[1] = fs->group_desc_count - 1;
++		if (super->s_backup_bgs[0] == super->s_backup_bgs[1])
++			super->s_backup_bgs[1] = 0;
++		if (super->s_backup_bgs[0] > super->s_backup_bgs[1]) {
++			__u32 t = super->s_backup_bgs[0];
++			super->s_backup_bgs[0] = super->s_backup_bgs[1];
++			super->s_backup_bgs[1] = t;
++		}
++	}
++
+ 	retval = ext2fs_get_mem(strlen(fs->device_name) + 80, &buf);
+ 	if (retval)
+ 		goto cleanup;
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/mkjournal.c
++++ e2fsprogs-1.42.9/lib/ext2fs/mkjournal.c
+@@ -295,13 +295,43 @@ static int mkjournal_proc(ext2_filsys	fs
+ }
+ 
+ /*
++ * Calculate the initial goal block to be roughly at the middle of the
++ * filesystem.  Pick a group that has the largest number of free
++ * blocks.
++ */
++static blk64_t get_midpoint_journal_block(ext2_filsys fs)
++{
++	dgrp_t	group, start, end, i, log_flex;
++
++	group = ext2fs_group_of_blk2(fs, (ext2fs_blocks_count(fs->super) -
++					 fs->super->s_first_data_block) / 2);
++	log_flex = 1 << fs->super->s_log_groups_per_flex;
++	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
++		group = group & ~(log_flex - 1);
++		while ((group < fs->group_desc_count) &&
++		       ext2fs_bg_free_blocks_count(fs, group) == 0)
++			group++;
++		if (group == fs->group_desc_count)
++			group = 0;
++		start = group;
++	} else
++		start = (group > 0) ? group-1 : group;
++	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
++	group = start;
++	for (i = start + 1; i <= end; i++)
++		if (ext2fs_bg_free_blocks_count(fs, i) >
++		    ext2fs_bg_free_blocks_count(fs, group))
++			group = i;
++	return ext2fs_group_first_block2(fs, group);
++}
++
++/*
+  * This function creates a journal using direct I/O routines.
+  */
+ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
+-				     blk_t num_blocks, int flags)
++				     blk_t num_blocks, blk64_t goal, int flags)
+ {
+ 	char			*buf;
+-	dgrp_t			group, start, end, i, log_flex;
+ 	errcode_t		retval;
+ 	struct ext2_inode	inode;
+ 	unsigned long long	inode_size;
+@@ -328,6 +358,7 @@ static errcode_t write_journal_inode(ext
+ 	es.err = 0;
+ 	es.flags = flags;
+ 	es.zero_count = 0;
++	es.goal = (goal != ~0ULL) ? goal : get_midpoint_journal_block(fs);
+ 
+ 	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
+ 		inode.i_flags |= EXT4_EXTENTS_FL;
+@@ -335,32 +366,6 @@ static errcode_t write_journal_inode(ext
+ 			goto out2;
+ 	}
+ 
+-	/*
+-	 * Set the initial goal block to be roughly at the middle of
+-	 * the filesystem.  Pick a group that has the largest number
+-	 * of free blocks.
+-	 */
+-	group = ext2fs_group_of_blk2(fs, (ext2fs_blocks_count(fs->super) -
+-					 fs->super->s_first_data_block) / 2);
+-	log_flex = 1 << fs->super->s_log_groups_per_flex;
+-	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
+-		group = group & ~(log_flex - 1);
+-		while ((group < fs->group_desc_count) &&
+-		       ext2fs_bg_free_blocks_count(fs, group) == 0)
+-			group++;
+-		if (group == fs->group_desc_count)
+-			group = 0;
+-		start = group;
+-	} else
+-		start = (group > 0) ? group-1 : group;
+-	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
+-	group = start;
+-	for (i=start+1; i <= end; i++)
+-		if (ext2fs_bg_free_blocks_count(fs, i) >
+-		    ext2fs_bg_free_blocks_count(fs, group))
+-			group = i;
+-
+-	es.goal = ext2fs_group_first_block2(fs, group);
+ 	retval = ext2fs_block_iterate3(fs, journal_ino, BLOCK_FLAG_APPEND,
+ 				       0, mkjournal_proc, &es);
+ 	if (es.err) {
+@@ -491,7 +496,8 @@ errcode_t ext2fs_add_journal_device(ext2
+  * POSIX routines if the filesystem is mounted, or using direct I/O
+  * functions if it is not.
+  */
+-errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
++errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
++				    blk64_t goal, int flags)
+ {
+ 	errcode_t		retval;
+ 	ext2_ino_t		journal_ino;
+@@ -582,7 +588,7 @@ errcode_t ext2fs_add_journal_inode(ext2_
+ 		}
+ 		journal_ino = EXT2_JOURNAL_INO;
+ 		if ((retval = write_journal_inode(fs, journal_ino,
+-						  num_blocks, flags)))
++						  num_blocks, goal, flags)))
+ 			return retval;
+ 	}
+ 
+@@ -600,6 +606,12 @@ errout:
+ 	return retval;
+ }
+ 
++errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks, int flags)
++{
++	return ext2fs_add_journal_inode2(fs, num_blocks, ~0ULL, flags);
++}
++
++
+ #ifdef DEBUG
+ main(int argc, char **argv)
+ {
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/openfs.c
++++ e2fsprogs-1.42.9/lib/ext2fs/openfs.c
+@@ -37,17 +37,24 @@ blk64_t ext2fs_descriptor_block_loc2(ext
+ 				     dgrp_t i)
+ {
+ 	int	bg;
+-	int	has_super = 0;
++	int	has_super = 0, group_zero_adjust = 0;
+ 	blk64_t	ret_blk;
+ 
++	/*
++	 * On a bigalloc FS with 1K blocks, block 0 is reserved for non-ext4
++	 * stuff, so adjust for that if we're being asked for group 0.
++	 */
++	if (i == 0 && fs->blocksize == 1024 && EXT2FS_CLUSTER_RATIO(fs) > 1)
++		group_zero_adjust = 1;
++
+ 	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
+ 	    (i < fs->super->s_first_meta_bg))
+-		return (group_block + i + 1);
++		return group_block + i + 1 + group_zero_adjust;
+ 
+ 	bg = EXT2_DESC_PER_BLOCK(fs->super) * i;
+ 	if (ext2fs_bg_has_super(fs, bg))
+ 		has_super = 1;
+-	ret_blk = ext2fs_group_first_block2(fs, bg) + has_super;
++	ret_blk = ext2fs_group_first_block2(fs, bg);
+ 	/*
+ 	 * If group_block is not the normal value, we're trying to use
+ 	 * the backup group descriptors and superblock --- so use the
+@@ -57,10 +64,21 @@ blk64_t ext2fs_descriptor_block_loc2(ext
+ 	 * have the infrastructure in place to do that.
+ 	 */
+ 	if (group_block != fs->super->s_first_data_block &&
+-	    ((ret_blk + fs->super->s_blocks_per_group) <
+-	     ext2fs_blocks_count(fs->super)))
++	    ((ret_blk + has_super + fs->super->s_blocks_per_group) <
++	     ext2fs_blocks_count(fs->super))) {
+ 		ret_blk += fs->super->s_blocks_per_group;
+-	return ret_blk;
++
++		/*
++		 * If we're going to jump forward a block group, make sure
++		 * that we adjust has_super to account for the next group's
++		 * backup superblock (or lack thereof).
++		 */
++		if (ext2fs_bg_has_super(fs, bg + 1))
++			has_super = 1;
++		else
++			has_super = 0;
++	}
++	return ret_blk + has_super + group_zero_adjust;
+ }
+ 
+ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
+@@ -102,6 +120,7 @@ errcode_t ext2fs_open2(const char *name,
+ 	unsigned int	blocks_per_group, io_flags;
+ 	blk64_t		group_block, blk;
+ 	char		*dest, *cp;
++	int		group_zero_adjust = 0;
+ #ifdef WORDS_BIGENDIAN
+ 	unsigned int	groups_per_block;
+ 	struct ext2_group_desc *gdp;
+@@ -342,8 +361,19 @@ errcode_t ext2fs_open2(const char *name,
+ 		goto cleanup;
+ 	if (!group_block)
+ 		group_block = fs->super->s_first_data_block;
++	/*
++	 * On a FS with a 1K blocksize, block 0 is reserved for bootloaders
++	 * so we must increment block numbers to any group 0 items.
++	 *
++	 * However, we cannot touch group_block directly because in the meta_bg
++	 * case, the ext2fs_descriptor_block_loc2() function will interpret
++	 * group_block != s_first_data_block to mean that we want to access the
++	 * backup group descriptors.  This is not what we want if the caller
++	 * set superblock == 0 (i.e. auto-detect the superblock), which is
++	 * what's going on here.
++	 */
+ 	if (group_block == 0 && fs->blocksize == 1024)
+-		group_block = 1; /* Deal with 1024 blocksize && bigalloc */
++		group_zero_adjust = 1;
+ 	dest = (char *) fs->group_desc;
+ #ifdef WORDS_BIGENDIAN
+ 	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
+@@ -353,7 +383,8 @@ errcode_t ext2fs_open2(const char *name,
+ 	else
+ 		first_meta_bg = fs->desc_blocks;
+ 	if (first_meta_bg) {
+-		retval = io_channel_read_blk(fs->io, group_block+1,
++		retval = io_channel_read_blk(fs->io, group_block +
++					     group_zero_adjust + 1,
+ 					     first_meta_bg, dest);
+ 		if (retval)
+ 			goto cleanup;
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/qcow2.c
++++ e2fsprogs-1.42.9/lib/ext2fs/qcow2.c
+@@ -235,8 +235,10 @@ int qcow2_write_raw_image(int qcow2_fd,
+ 	}
+ 
+ 	/* Resize the output image to the filesystem size */
+-	if (ext2fs_llseek(raw_fd, img.image_size - 1, SEEK_SET) < 0)
+-		return errno;
++	if (ext2fs_llseek(raw_fd, img.image_size - 1, SEEK_SET) < 0) {
++		ret = errno;
++		goto out;
++	}
+ 
+ 	((char *)copy_buf)[0] = 0;
+ 	size = write(raw_fd, copy_buf, 1);
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/res_gdt.c
++++ e2fsprogs-1.42.9/lib/ext2fs/res_gdt.c
+@@ -31,6 +31,19 @@ static unsigned int list_backups(ext2_fi
+ 	int mult = 3;
+ 	unsigned int ret;
+ 
++	if (fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
++		if (*min == 1) {
++			*min += 1;
++			if (fs->super->s_backup_bgs[0])
++				return fs->super->s_backup_bgs[0];
++		}
++		if (*min == 2) {
++			*min += 1;
++			if (fs->super->s_backup_bgs[1])
++				return fs->super->s_backup_bgs[1];
++		}
++		return fs->group_desc_count;
++	}
+ 	if (!(fs->super->s_feature_ro_compat &
+ 	      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)) {
+ 		ret = *min;
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/rw_bitmaps.c
++++ e2fsprogs-1.42.9/lib/ext2fs/rw_bitmaps.c
+@@ -145,6 +145,43 @@ errout:
+ 	return retval;
+ }
+ 
++static errcode_t mark_uninit_bg_group_blocks(ext2_filsys fs)
++{
++	dgrp_t			i;
++	blk64_t			blk;
++	ext2fs_block_bitmap	bmap = fs->block_map;
++
++	for (i = 0; i < fs->group_desc_count; i++) {
++		if (!ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT))
++			continue;
++
++		ext2fs_reserve_super_and_bgd(fs, i, bmap);
++
++		/*
++		 * Mark the blocks used for the inode table
++		 */
++		blk = ext2fs_inode_table_loc(fs, i);
++		if (blk)
++			ext2fs_mark_block_bitmap_range2(bmap, blk,
++						fs->inode_blocks_per_group);
++
++		/*
++		 * Mark block used for the block bitmap
++		 */
++		blk = ext2fs_block_bitmap_loc(fs, i);
++		if (blk)
++			ext2fs_mark_block_bitmap2(bmap, blk);
++
++		/*
++		 * Mark block used for the inode bitmap
++		 */
++		blk = ext2fs_inode_bitmap_loc(fs, i);
++		if (blk)
++			ext2fs_mark_block_bitmap2(bmap, blk);
++	}
++	return 0;
++}
++
+ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
+ {
+ 	dgrp_t i;
+@@ -292,6 +329,14 @@ static errcode_t read_bitmaps(ext2_filsy
+ 			ino_itr += inode_nbytes << 3;
+ 		}
+ 	}
++
++	/* Mark group blocks for any BLOCK_UNINIT groups */
++	if (do_block) {
++		retval = mark_uninit_bg_group_blocks(fs);
++		if (retval)
++			goto cleanup;
++	}
++
+ success_cleanup:
+ 	if (inode_bitmap)
+ 		ext2fs_free_mem(&inode_bitmap);
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/swapfs.c
++++ e2fsprogs-1.42.9/lib/ext2fs/swapfs.c
+@@ -99,6 +99,8 @@ void ext2fs_swap_super(struct ext2_super
+ 	}
+ 	for (; i < 17; i++)
+ 		sb->s_jnl_blocks[i] = ext2fs_swab32(sb->s_jnl_blocks[i]);
++	sb->s_backup_bgs[0] = ext2fs_swab32(sb->s_backup_bgs[0]);
++	sb->s_backup_bgs[1] = ext2fs_swab32(sb->s_backup_bgs[1]);
+ }
+ 
+ void ext2fs_swap_group_desc2(ext2_filsys fs, struct ext2_group_desc *gdp)
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/tst_bitmaps.c
++++ e2fsprogs-1.42.9/lib/ext2fs/tst_bitmaps.c
+@@ -436,6 +436,39 @@ void do_ffzb(int argc, char *argv[])
+ 	printf("First unmarked block is %llu\n", out);
+ }
+ 
++void do_ffsb(int argc, char *argv[])
++{
++	unsigned int start, end;
++	int err;
++	errcode_t retval;
++	blk64_t out;
++
++	if (check_fs_open(argv[0]))
++		return;
++
++	if (argc != 3 && argc != 3) {
++		com_err(argv[0], 0, "Usage: ffsb <start> <end>");
++		return;
++	}
++
++	start = parse_ulong(argv[1], argv[0], "start", &err);
++	if (err)
++		return;
++
++	end = parse_ulong(argv[2], argv[0], "end", &err);
++	if (err)
++		return;
++
++	retval = ext2fs_find_first_set_block_bitmap2(test_fs->block_map,
++						      start, end, &out);
++	if (retval) {
++		printf("ext2fs_find_first_set_block_bitmap2() returned %s\n",
++		       error_message(retval));
++		return;
++	}
++	printf("First marked block is %llu\n", out);
++}
++
+ 
+ void do_zerob(int argc, char *argv[])
+ {
+@@ -559,6 +592,38 @@ void do_ffzi(int argc, char *argv[])
+ 	printf("First unmarked inode is %u\n", out);
+ }
+ 
++void do_ffsi(int argc, char *argv[])
++{
++	unsigned int start, end;
++	int err;
++	errcode_t retval;
++	ext2_ino_t out;
++
++	if (check_fs_open(argv[0]))
++		return;
++
++	if (argc != 3 && argc != 3) {
++		com_err(argv[0], 0, "Usage: ffsi <start> <end>");
++		return;
++	}
++
++	start = parse_ulong(argv[1], argv[0], "start", &err);
++	if (err)
++		return;
++
++	end = parse_ulong(argv[2], argv[0], "end", &err);
++	if (err)
++		return;
++
++	retval = ext2fs_find_first_set_inode_bitmap2(test_fs->inode_map,
++						     start, end, &out);
++	if (retval) {
++		printf("ext2fs_find_first_set_inode_bitmap2() returned %s\n",
++		       error_message(retval));
++		return;
++	}
++	printf("First marked inode is %u\n", out);
++}
+ 
+ void do_zeroi(int argc, char *argv[])
+ {
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/tst_bitmaps_cmd.ct
++++ e2fsprogs-1.42.9/lib/ext2fs/tst_bitmaps_cmd.ct
+@@ -24,6 +24,9 @@ request do_testb, "Test block",
+ request do_ffzb, "Find first zero block",
+ 	find_first_zero_block, ffzb;
+ 
++request do_ffsb, "Find first set block",
++	find_first_set_block, ffsb;
++
+ request do_zerob, "Clear block bitmap",
+ 	clear_block_bitmap, zerob;
+ 
+@@ -39,6 +42,9 @@ request do_testi, "Test inode",
+ request do_ffzi, "Find first zero inode",
+ 	find_first_zero_inode, ffzi;
+ 
++request do_ffsi, "Find first set inode",
++	find_first_set_inode, ffsi;
++
+ request do_zeroi, "Clear inode bitmap",
+ 	clear_inode_bitmap, zeroi;
+ 
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/tst_bitmaps_cmds
++++ e2fsprogs-1.42.9/lib/ext2fs/tst_bitmaps_cmds
+@@ -19,8 +19,17 @@ dump_bb
+ ffzb 11 16
+ ffzb 12 16
+ ffzb 12 20
++ffsb 0 127
++ffsb 1 128
++ffsb 1 127
++ffsb 1 10
++ffsb 1 11
++ffsb 12 12
++ffsb 13 12
++ffsb 12 15
+ clearb 13
+ ffzb 12 20
++ffsb 13 18
+ setb 13
+ clearb 12 7
+ testb 12 7
+@@ -42,8 +51,15 @@ dump_ib
+ ffzi 1 6
+ ffzi 2 5
+ ffzi 2 6
++ffsi 0 31
++ffsi 1 33
++ffsi 1 32
++ffsi 2 32
++ffsi 6 32
+ cleari 4
+ ffzi 2 6
++ffsi 4 32
++ffsi 5 32
+ zeroi
+ testi 5
+ seti 5
+@@ -95,5 +111,38 @@ clearb 2
+ clearb 3
+ clearb 7
+ dump_bb
++ffsb 14 127
++ffsb 15 127
++ffsb 36 127
++ffsb 32 127
++ffsb 52 127
++ffsb 53 127
++ffsb 46 127
++ffsb 45 127
++ffsb 41 127
++ffsb 20 127
++ffsb 1 127
++ffsb 2 127
++ffsb 3 127
++ffsb 4 127
++ffsb 5 127
++ffsb 6 127
++ffsb 7 127
++ffsb 8 127
++ffzb 1 127
++ffzb 2 127
++ffzb 3 127
++ffzb 4 127
++ffzb 5 127
++ffzb 6 127
++ffzb 7 127
++ffzb 8 127
++ffzb 45 127
++ffzb 46 127
++ffzb 47 127
++ffzb 48 127
++ffzb 49 127
++ffzb 50 127
++ffzb 51 127
+ quit
+ 
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/tst_bitmaps_exp
++++ e2fsprogs-1.42.9/lib/ext2fs/tst_bitmaps_exp
+@@ -43,10 +43,28 @@ tst_bitmaps: ffzb 12 16
+ ext2fs_find_first_zero_block_bitmap2() returned No such file or directory
+ tst_bitmaps: ffzb 12 20
+ First unmarked block is 17
++tst_bitmaps: ffsb 0 127
++ext2fs_find_first_set_block_bitmap2() returned Invalid argument
++tst_bitmaps: ffsb 1 128
++ext2fs_find_first_set_block_bitmap2() returned Invalid argument
++tst_bitmaps: ffsb 1 127
++First marked block is 12
++tst_bitmaps: ffsb 1 10
++ext2fs_find_first_set_block_bitmap2() returned No such file or directory
++tst_bitmaps: ffsb 1 11
++ext2fs_find_first_set_block_bitmap2() returned No such file or directory
++tst_bitmaps: ffsb 12 12
++First marked block is 12
++tst_bitmaps: ffsb 13 12
++ext2fs_find_first_set_block_bitmap2() returned Invalid argument
++tst_bitmaps: ffsb 12 15
++First marked block is 12
+ tst_bitmaps: clearb 13
+ Clearing block 13, was set before
+ tst_bitmaps: ffzb 12 20
+ First unmarked block is 13
++tst_bitmaps: ffsb 13 18
++First marked block is 14
+ tst_bitmaps: setb 13
+ Setting block 13, was clear before
+ tst_bitmaps: clearb 12 7
+@@ -91,10 +109,24 @@ tst_bitmaps: ffzi 2 5
+ ext2fs_find_first_zero_inode_bitmap2() returned No such file or directory
+ tst_bitmaps: ffzi 2 6
+ First unmarked inode is 6
++tst_bitmaps: ffsi 0 31
++ext2fs_find_first_set_inode_bitmap2() returned Invalid argument
++tst_bitmaps: ffsi 1 33
++ext2fs_find_first_set_inode_bitmap2() returned Invalid argument
++tst_bitmaps: ffsi 1 32
++First marked inode is 2
++tst_bitmaps: ffsi 2 32
++First marked inode is 2
++tst_bitmaps: ffsi 6 32
++ext2fs_find_first_set_inode_bitmap2() returned No such file or directory
+ tst_bitmaps: cleari 4
+ Clearing inode 4, was set before
+ tst_bitmaps: ffzi 2 6
+ First unmarked inode is 4
++tst_bitmaps: ffsi 4 32
++First marked inode is 5
++tst_bitmaps: ffsi 5 32
++First marked inode is 5
+ tst_bitmaps: zeroi
+ Clearing inode bitmap.
+ tst_bitmaps: testi 5
+@@ -207,5 +239,71 @@ Clearing block 7, was set before
+ tst_bitmaps: dump_bb
+ block bitmap: b92a85e6c4680d000000000000000000
+ bits set: 25
++tst_bitmaps: ffsb 14 127
++First marked block is 14
++tst_bitmaps: ffsb 15 127
++First marked block is 17
++tst_bitmaps: ffsb 36 127
++First marked block is 39
++tst_bitmaps: ffsb 32 127
++First marked block is 32
++tst_bitmaps: ffsb 52 127
++First marked block is 52
++tst_bitmaps: ffsb 53 127
++ext2fs_find_first_set_block_bitmap2() returned No such file or directory
++tst_bitmaps: ffsb 46 127
++First marked block is 46
++tst_bitmaps: ffsb 45 127
++First marked block is 46
++tst_bitmaps: ffsb 41 127
++First marked block is 44
++tst_bitmaps: ffsb 20 127
++First marked block is 24
++tst_bitmaps: ffsb 1 127
++First marked block is 1
++tst_bitmaps: ffsb 2 127
++First marked block is 4
++tst_bitmaps: ffsb 3 127
++First marked block is 4
++tst_bitmaps: ffsb 4 127
++First marked block is 4
++tst_bitmaps: ffsb 5 127
++First marked block is 5
++tst_bitmaps: ffsb 6 127
++First marked block is 6
++tst_bitmaps: ffsb 7 127
++First marked block is 8
++tst_bitmaps: ffsb 8 127
++First marked block is 8
++tst_bitmaps: ffzb 1 127
++First unmarked block is 2
++tst_bitmaps: ffzb 2 127
++First unmarked block is 2
++tst_bitmaps: ffzb 3 127
++First unmarked block is 3
++tst_bitmaps: ffzb 4 127
++First unmarked block is 7
++tst_bitmaps: ffzb 5 127
++First unmarked block is 7
++tst_bitmaps: ffzb 6 127
++First unmarked block is 7
++tst_bitmaps: ffzb 7 127
++First unmarked block is 7
++tst_bitmaps: ffzb 8 127
++First unmarked block is 9
++tst_bitmaps: ffzb 45 127
++First unmarked block is 45
++tst_bitmaps: ffzb 46 127
++First unmarked block is 48
++tst_bitmaps: ffzb 47 127
++First unmarked block is 48
++tst_bitmaps: ffzb 48 127
++First unmarked block is 48
++tst_bitmaps: ffzb 49 127
++First unmarked block is 50
++tst_bitmaps: ffzb 50 127
++First unmarked block is 50
++tst_bitmaps: ffzb 51 127
++First unmarked block is 53
+ tst_bitmaps: quit
+ tst_bitmaps: 
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/tst_super_size.c
++++ e2fsprogs-1.42.9/lib/ext2fs/tst_super_size.c
+@@ -135,7 +135,8 @@ int main(int argc, char **argv)
+ 	check_field(s_usr_quota_inum, 4);
+ 	check_field(s_grp_quota_inum, 4);
+ 	check_field(s_overhead_blocks, 4);
+-	check_field(s_reserved, 108 * 4);
++	check_field(s_backup_bgs, 8);
++	check_field(s_reserved, 106 * 4);
+ 	check_field(s_checksum, 4);
+ 	do_field("Superblock end", 0, 0, cur_offset, 1024);
+ #endif
+--- e2fsprogs-1.42.9.orig/lib/ext2fs/unix_io.c
++++ e2fsprogs-1.42.9/lib/ext2fs/unix_io.c
+@@ -931,10 +931,10 @@ static errcode_t unix_discard(io_channel
+ 
+ 	if (channel->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
+ #ifdef BLKDISCARD
+-		__uint64_t range[2];
++		__u64 range[2];
+ 
+-		range[0] = (__uint64_t)(block) * channel->block_size;
+-		range[1] = (__uint64_t)(count) * channel->block_size;
++		range[0] = (__u64)(block) * channel->block_size;
++		range[1] = (__u64)(count) * channel->block_size;
+ 
+ 		ret = ioctl(data->dev, BLKDISCARD, &range);
+ #else
+--- e2fsprogs-1.42.9.orig/lib/quota/Makefile.in
++++ e2fsprogs-1.42.9/lib/quota/Makefile.in
+@@ -135,27 +135,29 @@ mkquota.o: $(srcdir)/mkquota.c $(top_bui
+  $(srcdir)/quotaio_tree.h $(srcdir)/quotaio_v2.h $(srcdir)/mkquota.h \
+  $(top_srcdir)/lib/../e2fsck/dict.h $(srcdir)/common.h
+ quotaio.o: $(srcdir)/quotaio.c $(top_builddir)/lib/config.h \
+- $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h $(srcdir)/quotaio.h \
+- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+- $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
+- $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+- $(top_builddir)/lib/ext2fs/ext2_err.h \
++ $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
++ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/quotaio.h \
++ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
++ $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
++ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+  $(srcdir)/dqblk_v2.h $(srcdir)/quotaio_tree.h
+ quotaio_tree.o: $(srcdir)/quotaio_tree.c $(top_builddir)/lib/config.h \
+- $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h $(srcdir)/quotaio_tree.h \
++ $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
++ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/quotaio_tree.h \
+  $(srcdir)/quotaio.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+- $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+- $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
++ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
++ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
++ $(top_builddir)/lib/ext2fs/ext2_err.h \
+  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+  $(srcdir)/dqblk_v2.h
+ quotaio_v2.o: $(srcdir)/quotaio_v2.c $(top_builddir)/lib/config.h \
+- $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h $(srcdir)/quotaio_v2.h \
++ $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
++ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/quotaio_v2.h \
+  $(srcdir)/quotaio.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+- $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+- $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
++ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
++ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
++ $(top_builddir)/lib/ext2fs/ext2_err.h \
+  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+  $(srcdir)/dqblk_v2.h $(srcdir)/quotaio_tree.h
+ dict.o: $(srcdir)/../../e2fsck/dict.c $(top_builddir)/lib/config.h \
+--- e2fsprogs-1.42.9.orig/lib/quota/common.h
++++ e2fsprogs-1.42.9/lib/quota/common.h
+@@ -7,6 +7,13 @@
+ #ifndef __QUOTA_COMMON_H__
+ #define __QUOTA_COMMON_H__
+ 
++#if EXT2_FLAT_INCLUDES
++#include "e2_types.h"
++#else
++#include <ext2fs/ext2_types.h>
++#endif /* EXT2_FLAT_INCLUDES */
++
++
+ #ifndef __attribute__
+ # if !defined __GNUC__ || __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8) || __STRICT_ANSI__
+ #  define __attribute__(x)
+--- e2fsprogs-1.42.9.orig/lib/quota/mkquota.c
++++ e2fsprogs-1.42.9/lib/quota/mkquota.c
+@@ -89,8 +89,13 @@ void quota_set_sb_inum(ext2_filsys fs, e
+ errcode_t quota_remove_inode(ext2_filsys fs, int qtype)
+ {
+ 	ext2_ino_t qf_ino;
++	errcode_t	retval;
+ 
+-	ext2fs_read_bitmaps(fs);
++	retval = ext2fs_read_bitmaps(fs);
++	if (retval) {
++		log_err("Couldn't read bitmaps: %s", error_message(retval));
++		return retval;
++	}
+ 	qf_ino = (qtype == USRQUOTA) ? fs->super->s_usr_quota_inum :
+ 		fs->super->s_grp_quota_inum;
+ 	quota_set_sb_inum(fs, 0, qtype);
+@@ -100,7 +105,11 @@ errcode_t quota_remove_inode(ext2_filsys
+ 
+ 	ext2fs_mark_super_dirty(fs);
+ 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+-	ext2fs_write_bitmaps(fs);
++	retval = ext2fs_write_bitmaps(fs);
++	if (retval) {
++		log_err("Couldn't write bitmaps: %s", error_message(retval));
++		return retval;
++	}
+ 	return 0;
+ }
+ 
+@@ -133,11 +142,16 @@ errcode_t quota_write_inode(quota_ctx_t
+ 	fs = qctx->fs;
+ 	retval = ext2fs_get_mem(sizeof(struct quota_handle), &h);
+ 	if (retval) {
+-		log_err("Unable to allocate quota handle");
++		log_err("Unable to allocate quota handle: %s",
++			error_message(retval));
+ 		goto out;
+ 	}
+ 
+-	ext2fs_read_bitmaps(fs);
++	retval = ext2fs_read_bitmaps(fs);
++	if (retval) {
++		log_err("Couldn't read bitmaps: %s", error_message(retval));
++		goto out;
++	}
+ 
+ 	for (i = 0; i < MAXQUOTAS; i++) {
+ 		if ((qtype != -1) && (i != qtype))
+@@ -171,7 +185,11 @@ errcode_t quota_write_inode(quota_ctx_t
+ 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+ 	}
+ 
+-	ext2fs_write_bitmaps(fs);
++	retval = ext2fs_write_bitmaps(fs);
++	if (retval) {
++		log_err("Couldn't write bitmaps: %s", error_message(retval));
++		goto out;
++	}
+ out:
+ 	if (h)
+ 		ext2fs_free_mem(&h);
+--- e2fsprogs-1.42.9.orig/lib/quota/quotaio.c
++++ e2fsprogs-1.42.9/lib/quota/quotaio.c
+@@ -30,8 +30,8 @@ static const char * const basenames[] =
+ 
+ /* Header in all newer quotafiles */
+ struct disk_dqheader {
+-	u_int32_t dqh_magic;
+-	u_int32_t dqh_version;
++	__u32 dqh_magic;
++	__u32 dqh_version;
+ } __attribute__ ((packed));
+ 
+ /**
+--- e2fsprogs-1.42.9.orig/lib/quota/quotaio_tree.c
++++ e2fsprogs-1.42.9/lib/quota/quotaio_tree.c
+@@ -59,7 +59,7 @@ static inline void mark_quotafile_info_d
+ }
+ 
+ /* Read given block */
+-static void read_blk(struct quota_handle *h, uint blk, dqbuf_t buf)
++static void read_blk(struct quota_handle *h, unsigned int blk, dqbuf_t buf)
+ {
+ 	int err;
+ 
+@@ -72,7 +72,7 @@ static void read_blk(struct quota_handle
+ }
+ 
+ /* Write block */
+-static int write_blk(struct quota_handle *h, uint blk, dqbuf_t buf)
++static int write_blk(struct quota_handle *h, unsigned int blk, dqbuf_t buf)
+ {
+ 	int err;
+ 
+@@ -117,7 +117,8 @@ static int get_free_dqblk(struct quota_h
+ }
+ 
+ /* Put given block to free list */
+-static void put_free_dqblk(struct quota_handle *h, dqbuf_t buf, uint blk)
++static void put_free_dqblk(struct quota_handle *h, dqbuf_t buf,
++			   unsigned int blk)
+ {
+ 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
+ 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
+@@ -131,11 +132,12 @@ static void put_free_dqblk(struct quota_
+ }
+ 
+ /* Remove given block from the list of blocks with free entries */
+-static void remove_free_dqentry(struct quota_handle *h, dqbuf_t buf, uint blk)
++static void remove_free_dqentry(struct quota_handle *h, dqbuf_t buf,
++				unsigned int blk)
+ {
+ 	dqbuf_t tmpbuf = getdqbuf();
+ 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
+-	uint nextblk = ext2fs_le32_to_cpu(dh->dqdh_next_free), prevblk =
++	unsigned int nextblk = ext2fs_le32_to_cpu(dh->dqdh_next_free), prevblk =
+ 
+ 		ext2fs_le32_to_cpu(dh->dqdh_prev_free);
+ 
+@@ -164,7 +166,8 @@ static void remove_free_dqentry(struct q
+ }
+ 
+ /* Insert given block to the beginning of list with free entries */
+-static void insert_free_dqentry(struct quota_handle *h, dqbuf_t buf, uint blk)
++static void insert_free_dqentry(struct quota_handle *h, dqbuf_t buf,
++				unsigned int blk)
+ {
+ 	dqbuf_t tmpbuf = getdqbuf();
+ 	struct qt_disk_dqdbheader *dh = (struct qt_disk_dqdbheader *)buf;
+@@ -188,8 +191,8 @@ static void insert_free_dqentry(struct q
+ }
+ 
+ /* Find space for dquot */
+-static uint find_free_dqentry(struct quota_handle *h, struct dquot *dquot,
+-			      int *err)
++static unsigned int find_free_dqentry(struct quota_handle *h,
++				      struct dquot *dquot, int *err)
+ {
+ 	int blk, i;
+ 	struct qt_disk_dqdbheader *dh;
+@@ -247,12 +250,12 @@ static uint find_free_dqentry(struct quo
+ 
+ /* Insert reference to structure into the trie */
+ static int do_insert_tree(struct quota_handle *h, struct dquot *dquot,
+-			  uint * treeblk, int depth)
++			  unsigned int * treeblk, int depth)
+ {
+ 	dqbuf_t buf;
+ 	int newson = 0, newact = 0;
+-	u_int32_t *ref;
+-	uint newblk;
++	__u32 *ref;
++	unsigned int newblk;
+ 	int ret = 0;
+ 
+ 	log_debug("inserting in tree: treeblk=%u, depth=%d", *treeblk, depth);
+@@ -271,7 +274,7 @@ static int do_insert_tree(struct quota_h
+ 		read_blk(h, *treeblk, buf);
+ 	}
+ 
+-	ref = (u_int32_t *) buf;
++	ref = (__u32 *) buf;
+ 	newblk = ext2fs_le32_to_cpu(ref[get_index(dquot->dq_id, depth)]);
+ 	if (!newblk)
+ 		newson = 1;
+@@ -301,11 +304,11 @@ out_buf:
+ /* Wrapper for inserting quota structure into tree */
+ static void dq_insert_tree(struct quota_handle *h, struct dquot *dquot)
+ {
+-	uint tmp = QT_TREEOFF;
++	unsigned int tmp = QT_TREEOFF;
+ 
+ 	if (do_insert_tree(h, dquot, &tmp, 0) < 0)
+ 		log_err("Cannot write quota (id %u): %s",
+-			(uint) dquot->dq_id, strerror(errno));
++			(unsigned int) dquot->dq_id, strerror(errno));
+ }
+ 
+ /* Write dquot to file */
+@@ -323,9 +326,10 @@ void qtree_write_dquot(struct dquot *dqu
+ 	if (ret) {
+ 		errno = ENOMEM;
+ 		log_err("Quota write failed (id %u): %s",
+-			(uint)dquot->dq_id, strerror(errno));
++			(unsigned int)dquot->dq_id, strerror(errno));
+ 		return;
+ 	}
++	memset(ddquot, 0, info->dqi_entry_size);
+ 
+ 	if (!dquot->dq_dqb.u.v2_mdqb.dqb_off)
+ 		dq_insert_tree(dquot->dq_h, dquot);
+@@ -340,13 +344,14 @@ void qtree_write_dquot(struct dquot *dqu
+ 		if (ret > 0)
+ 			errno = ENOSPC;
+ 		log_err("Quota write failed (id %u): %s",
+-			(uint)dquot->dq_id, strerror(errno));
++			(unsigned int)dquot->dq_id, strerror(errno));
+ 	}
+ 	ext2fs_free_mem(&ddquot);
+ }
+ 
+ /* Free dquot entry in data block */
+-static void free_dqentry(struct quota_handle *h, struct dquot *dquot, uint blk)
++static void free_dqentry(struct quota_handle *h, struct dquot *dquot,
++			 unsigned int blk)
+ {
+ 	struct qt_disk_dqdbheader *dh;
+ 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
+@@ -358,7 +363,7 @@ static void free_dqentry(struct quota_ha
+ 	if (dquot->dq_dqb.u.v2_mdqb.dqb_off >> QT_BLKSIZE_BITS != blk)
+ 		log_err("Quota structure has offset to other block (%u) "
+ 			"than it should (%u).", blk,
+-			  (uint) (dquot->dq_dqb.u.v2_mdqb.dqb_off >>
++			  (unsigned int) (dquot->dq_dqb.u.v2_mdqb.dqb_off >>
+ 				  QT_BLKSIZE_BITS));
+ 
+ 	read_blk(h, blk, buf);
+@@ -388,11 +393,11 @@ static void free_dqentry(struct quota_ha
+ 
+ /* Remove reference to dquot from tree */
+ static void remove_tree(struct quota_handle *h, struct dquot *dquot,
+-			uint * blk, int depth)
++			unsigned int * blk, int depth)
+ {
+ 	dqbuf_t buf = getdqbuf();
+-	uint newblk;
+-	u_int32_t *ref = (u_int32_t *) buf;
++	unsigned int newblk;
++	__u32 *ref = (__u32 *) buf;
+ 
+ 	if (!buf)
+ 		return;
+@@ -428,7 +433,7 @@ static void remove_tree(struct quota_han
+ /* Delete dquot from tree */
+ void qtree_delete_dquot(struct dquot *dquot)
+ {
+-	uint tmp = QT_TREEOFF;
++	unsigned int tmp = QT_TREEOFF;
+ 
+ 	if (!dquot->dq_dqb.u.v2_mdqb.dqb_off)	/* Even not allocated? */
+ 		return;
+@@ -437,7 +442,7 @@ void qtree_delete_dquot(struct dquot *dq
+ 
+ /* Find entry in block */
+ static ext2_loff_t find_block_dqentry(struct quota_handle *h,
+-				      struct dquot *dquot, uint blk)
++				      struct dquot *dquot, unsigned int blk)
+ {
+ 	struct qtree_mem_dqinfo *info = &h->qh_info.u.v2_mdqi.dqi_qtree;
+ 	dqbuf_t buf = getdqbuf();
+@@ -464,11 +469,11 @@ static ext2_loff_t find_block_dqentry(st
+ /* Find entry for given id in the tree */
+ static ext2_loff_t find_tree_dqentry(struct quota_handle *h,
+ 				     struct dquot *dquot,
+-				     uint blk, int depth)
++				     unsigned int blk, int depth)
+ {
+ 	dqbuf_t buf = getdqbuf();
+ 	ext2_loff_t ret = 0;
+-	u_int32_t *ref = (u_int32_t *) buf;
++	__u32 *ref = (__u32 *) buf;
+ 
+ 	if (!buf)
+ 		return -ENOMEM;
+@@ -540,7 +545,7 @@ struct dquot *qtree_read_dquot(struct qu
+ #define set_bit(bmp, ind) ((bmp)[(ind) >> 3] |= (1 << ((ind) & 7)))
+ #define get_bit(bmp, ind) ((bmp)[(ind) >> 3] & (1 << ((ind) & 7)))
+ 
+-static int report_block(struct dquot *dquot, uint blk, char *bitmap,
++static int report_block(struct dquot *dquot, unsigned int blk, char *bitmap,
+ 			int (*process_dquot) (struct dquot *, void *),
+ 			void *data)
+ {
+@@ -574,7 +579,7 @@ static int report_block(struct dquot *dq
+ 	return entries;
+ }
+ 
+-static void check_reference(struct quota_handle *h, uint blk)
++static void check_reference(struct quota_handle *h, unsigned int blk)
+ {
+ 	if (blk >= h->qh_info.u.v2_mdqi.dqi_qtree.dqi_blocks)
+ 		log_err("Illegal reference (%u >= %u) in %s quota file. "
+@@ -585,13 +590,14 @@ static void check_reference(struct quota
+ 			type2name(h->qh_type));
+ }
+ 
+-static int report_tree(struct dquot *dquot, uint blk, int depth, char *bitmap,
++static int report_tree(struct dquot *dquot, unsigned int blk, int depth,
++		       char *bitmap,
+ 		       int (*process_dquot) (struct dquot *, void *),
+ 		       void *data)
+ {
+ 	int entries = 0, i;
+ 	dqbuf_t buf = getdqbuf();
+-	u_int32_t *ref = (u_int32_t *) buf;
++	__u32 *ref = (__u32 *) buf;
+ 
+ 	if (!buf)
+ 		return 0;
+@@ -620,9 +626,9 @@ static int report_tree(struct dquot *dqu
+ 	return entries;
+ }
+ 
+-static uint find_set_bits(char *bmp, int blocks)
++static unsigned int find_set_bits(char *bmp, int blocks)
+ {
+-	uint i, used = 0;
++	unsigned int i, used = 0;
+ 
+ 	for (i = 0; i < blocks; i++)
+ 		if (get_bit(bmp, i))
+--- e2fsprogs-1.42.9.orig/lib/quota/quotaio_tree.h
++++ e2fsprogs-1.42.9/lib/quota/quotaio_tree.h
+@@ -7,7 +7,7 @@
+ 
+ #include <sys/types.h>
+ 
+-typedef u_int32_t qid_t;        /* Type in which we store ids in memory */
++typedef __u32 qid_t;        /* Type in which we store ids in memory */
+ 
+ #define QT_TREEOFF	1	/* Offset of tree in file in blocks */
+ #define QT_TREEDEPTH	4	/* Depth of quota tree */
+@@ -20,13 +20,13 @@ typedef u_int32_t qid_t;        /* Type
+  *  so there will be space for exactly 21 quota-entries in a block
+  */
+ struct qt_disk_dqdbheader {
+-	u_int32_t dqdh_next_free;	/* Number of next block with free
++	__u32 dqdh_next_free;	/* Number of next block with free
+ 					 * entry */
+-	u_int32_t dqdh_prev_free; /* Number of previous block with free
++	__u32 dqdh_prev_free; /* Number of previous block with free
+ 				   * entry */
+-	u_int16_t dqdh_entries; /* Number of valid entries in block */
+-	u_int16_t dqdh_pad1;
+-	u_int32_t dqdh_pad2;
++	__u16 dqdh_entries; /* Number of valid entries in block */
++	__u16 dqdh_pad1;
++	__u32 dqdh_pad2;
+ } __attribute__ ((packed));
+ 
+ struct dquot;
+--- e2fsprogs-1.42.9.orig/lib/quota/quotaio_v2.h
++++ e2fsprogs-1.42.9/lib/quota/quotaio_v2.h
+@@ -16,8 +16,8 @@
+ #define V2_VERSION 1
+ 
+ struct v2_disk_dqheader {
+-	u_int32_t dqh_magic;	/* Magic number identifying file */
+-	u_int32_t dqh_version;	/* File version */
++	__u32 dqh_magic;	/* Magic number identifying file */
++	__u32 dqh_version;	/* File version */
+ } __attribute__ ((packed));
+ 
+ /* Flags for version specific files */
+@@ -25,30 +25,30 @@ struct v2_disk_dqheader {
+ 
+ /* Header with type and version specific information */
+ struct v2_disk_dqinfo {
+-	u_int32_t dqi_bgrace;	/* Time before block soft limit becomes
++	__u32 dqi_bgrace;	/* Time before block soft limit becomes
+ 				 * hard limit */
+-	u_int32_t dqi_igrace;	/* Time before inode soft limit becomes
++	__u32 dqi_igrace;	/* Time before inode soft limit becomes
+ 				 * hard limit */
+-	u_int32_t dqi_flags;	/* Flags for quotafile (DQF_*) */
+-	u_int32_t dqi_blocks;	/* Number of blocks in file */
+-	u_int32_t dqi_free_blk;	/* Number of first free block in the list */
+-	u_int32_t dqi_free_entry;	/* Number of block with at least one
++	__u32 dqi_flags;	/* Flags for quotafile (DQF_*) */
++	__u32 dqi_blocks;	/* Number of blocks in file */
++	__u32 dqi_free_blk;	/* Number of first free block in the list */
++	__u32 dqi_free_entry;	/* Number of block with at least one
+ 					 * free entry */
+ } __attribute__ ((packed));
+ 
+ struct v2r1_disk_dqblk {
+-	u_int32_t dqb_id;	/* id this quota applies to */
+-	u_int32_t dqb_pad;
+-	u_int64_t dqb_ihardlimit;	/* absolute limit on allocated inodes */
+-	u_int64_t dqb_isoftlimit;	/* preferred inode limit */
+-	u_int64_t dqb_curinodes;	/* current # allocated inodes */
+-	u_int64_t dqb_bhardlimit;	/* absolute limit on disk space
++	__u32 dqb_id;	/* id this quota applies to */
++	__u32 dqb_pad;
++	__u64 dqb_ihardlimit;	/* absolute limit on allocated inodes */
++	__u64 dqb_isoftlimit;	/* preferred inode limit */
++	__u64 dqb_curinodes;	/* current # allocated inodes */
++	__u64 dqb_bhardlimit;	/* absolute limit on disk space
+ 					 * (in QUOTABLOCK_SIZE) */
+-	u_int64_t dqb_bsoftlimit;	/* preferred limit on disk space
++	__u64 dqb_bsoftlimit;	/* preferred limit on disk space
+ 					 * (in QUOTABLOCK_SIZE) */
+-	u_int64_t dqb_curspace;	/* current space occupied (in bytes) */
+-	u_int64_t dqb_btime;	/* time limit for excessive disk use */
+-	u_int64_t dqb_itime;	/* time limit for excessive inode use */
++	__u64 dqb_curspace;	/* current space occupied (in bytes) */
++	__u64 dqb_btime;	/* time limit for excessive disk use */
++	__u64 dqb_itime;	/* time limit for excessive inode use */
+ } __attribute__ ((packed));
+ 
+ #endif
+--- e2fsprogs-1.42.9.orig/lib/ss/Makefile.in
++++ e2fsprogs-1.42.9/lib/ss/Makefile.in
+@@ -162,7 +162,7 @@ uninstall::
+ test_ss: test_ss.o test_cmd.o $(DEPLIBSS) $(DEPLIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) \
+-		$(LIBSS) $(LIBCOM_ERR)
++		$(LIBSS) $(LIBCOM_ERR) $(SYSLIBS)
+ 
+ check:: all test_ss
+ 	$(E) "	RUN TEST test_ss"
+--- e2fsprogs-1.42.9.orig/lib/ss/invocation.c
++++ e2fsprogs-1.42.9/lib/ss/invocation.c
+@@ -45,7 +45,8 @@ int ss_create_invocation(const char *sub
+ 	table = (ss_data **) realloc((char *)table,
+ 				     ((unsigned)sci_idx+2)*size);
+ 	if (table == NULL) {
+-		*code_ptr = errno;
++		*code_ptr = ENOMEM;
++		free(new_table);
+ 		return 0;
+ 	}
+ 	table[sci_idx+1] = (ss_data *) NULL;
+--- e2fsprogs-1.42.9.orig/lib/ss/list_rqs.c
++++ e2fsprogs-1.42.9/lib/ss/list_rqs.c
+@@ -18,20 +18,15 @@
+ 
+ typedef void sigret_t;
+ 
+-static char const twentyfive_spaces[26] =
+-    "                         ";
+-static char const NL[2] = "\n";
+-
+ void ss_list_requests(int argc __SS_ATTR((unused)),
+ 		      const char * const *argv __SS_ATTR((unused)),
+ 		      int sci_idx, void *infop __SS_ATTR((unused)))
+ {
+     ss_request_entry *entry;
+     char const * const *name;
+-    int spacing;
++    int i, spacing;
+     ss_request_table **table;
+ 
+-    char buffer[BUFSIZ];
+     FILE *output;
+     int fd;
+     sigset_t omask, igmask;
+@@ -60,27 +55,24 @@ void ss_list_requests(int argc __SS_ATTR
+         entry = (*table)->requests;
+         for (; entry->command_names; entry++) {
+             spacing = -2;
+-            buffer[0] = '\0';
+             if (entry->flags & SS_OPT_DONT_LIST)
+                 continue;
+             for (name = entry->command_names; *name; name++) {
+                 int len = strlen(*name);
+-                strncat(buffer, *name, len);
++                fputs(*name, output);
+                 spacing += len + 2;
+                 if (name[1]) {
+-                    strcat(buffer, ", ");
++                    fputs(", ", output);
+                 }
+             }
+             if (spacing > 23) {
+-                strcat(buffer, NL);
+-                fputs(buffer, output);
++                fputc('\n', output);
+                 spacing = 0;
+-                buffer[0] = '\0';
+             }
+-            strncat(buffer, twentyfive_spaces, 25-spacing);
+-            strcat(buffer, entry->info_string);
+-            strcat(buffer, NL);
+-            fputs(buffer, output);
++            for (i = 0; i < 25 - spacing; i++)
++                fputc(' ', output);
++            fputs(entry->info_string, output);
++            fputc('\n', output);
+         }
+     }
+     fclose(output);
+--- e2fsprogs-1.42.9.orig/lib/ss/parse.c
++++ e2fsprogs-1.42.9/lib/ss/parse.c
+@@ -45,7 +45,7 @@ enum parse_mode { WHITESPACE, TOKEN, QUO
+ 
+ char **ss_parse(int sci_idx, register char *line_ptr, int *argc_ptr)
+ {
+-    register char **argv, *cp;
++    register char **argv, **new_argv, *cp;
+     register int argc;
+     register enum parse_mode parse_mode;
+ 
+@@ -78,7 +78,13 @@ char **ss_parse(int sci_idx, register ch
+ 		/* go to quoted-string mode */
+ 		parse_mode = QUOTED_STRING;
+ 		cp = line_ptr++;
+-		argv = NEW_ARGV (argv, argc);
++		new_argv = NEW_ARGV (argv, argc);
++		if (new_argv == NULL) {
++			free(argv);
++			*argc_ptr = 0;
++			return NULL;
++		}
++		argv = new_argv;
+ 		argv[argc++] = cp;
+ 		argv[argc] = NULL;
+ 	    }
+@@ -86,11 +92,13 @@ char **ss_parse(int sci_idx, register ch
+ 		/* random-token mode */
+ 		parse_mode = TOKEN;
+ 		cp = line_ptr;
+-		argv = NEW_ARGV (argv, argc);
+-		if (argv == NULL) {
+-			*argc_ptr = errno;
+-			return argv;
++		new_argv = NEW_ARGV (argv, argc);
++		if (new_argv == NULL) {
++			free(argv);
++			*argc_ptr = 0;
++			return NULL;
+ 		}
++		argv = new_argv;
+ 		argv[argc++] = line_ptr;
+ 		argv[argc] = NULL;
+ 	    }
+--- e2fsprogs-1.42.9.orig/lib/uuid/gen_uuid.c
++++ e2fsprogs-1.42.9/lib/uuid/gen_uuid.c
+@@ -326,10 +326,12 @@ static int get_clock(uint32_t *clock_hig
+ 		state_fd = open("/var/lib/libuuid/clock.txt",
+ 				O_RDWR|O_CREAT, 0660);
+ 		(void) umask(save_umask);
+-		state_f = fdopen(state_fd, "r+");
+-		if (!state_f) {
+-			close(state_fd);
+-			state_fd = -1;
++		if (state_fd >= 0) {
++			state_f = fdopen(state_fd, "r+");
++			if (!state_f) {
++				close(state_fd);
++				state_fd = -1;
++			}
+ 		}
+ 	}
+ 	fl.l_type = F_WRLCK;
+@@ -343,7 +345,6 @@ static int get_clock(uint32_t *clock_hig
+ 			if ((errno == EAGAIN) || (errno == EINTR))
+ 				continue;
+ 			fclose(state_f);
+-			close(state_fd);
+ 			state_fd = -1;
+ 			break;
+ 		}
+@@ -412,7 +413,10 @@ try_again:
+ 		}
+ 		rewind(state_f);
+ 		fl.l_type = F_UNLCK;
+-		fcntl(state_fd, F_SETLK, &fl);
++		if (fcntl(state_fd, F_SETLK, &fl) < 0) {
++			fclose(state_f);
++			state_fd = -1;
++		}
+ 	}
+ 
+ 	*clock_high = clock_reg >> 32;
+--- e2fsprogs-1.42.9.orig/lib/uuid/tst_uuid.c
++++ e2fsprogs-1.42.9/lib/uuid/tst_uuid.c
+@@ -154,7 +154,10 @@ main(int argc ATTR((unused)) , char **ar
+ 		printf("UUID time comparison succeeded.\n");
+ 	}
+ 
+-	uuid_parse(str, tst);
++	if (uuid_parse(str, tst) < 0) {
++		printf("UUID parse failed\n");
++		failed++;
++	}
+ 	if (!uuid_compare(buf, tst)) {
+ 		printf("UUID parse and compare succeeded.\n");
+ 	} else {
+--- e2fsprogs-1.42.9.orig/misc/Makefile.in
++++ e2fsprogs-1.42.9/misc/Makefile.in
+@@ -42,7 +42,8 @@ LPROGS=		@E2INITRD_PROG@
+ 
+ TUNE2FS_OBJS=	tune2fs.o util.o
+ MKLPF_OBJS=	mklost+found.o
+-MKE2FS_OBJS=	mke2fs.o util.o profile.o prof_err.o default_profile.o
++MKE2FS_OBJS=	mke2fs.o util.o profile.o prof_err.o default_profile.o \
++			mk_hugefiles.o
+ CHATTR_OBJS=	chattr.o
+ LSATTR_OBJS=	lsattr.o
+ UUIDGEN_OBJS=	uuidgen.o
+@@ -76,7 +77,7 @@ PROFILED_E2FREEFRAG_OBJS= profiled/e2fre
+ PROFILED_E2UNDO_OBJS=	profiled/e2undo.o
+ PROFILED_E4DEFRAG_OBJS=	profiled/e4defrag.o
+ 
+-SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
++SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c $(srcdir)/mk_hugefiles.c \
+ 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
+ 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
+ 		$(srcdir)/uuidgen.c $(srcdir)/blkid.c $(srcdir)/logsave.c \
+@@ -84,12 +85,12 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklo
+ 		$(srcdir)/ismounted.c $(srcdir)/../e2fsck/profile.c \
+ 		$(srcdir)/e2undo.c $(srcdir)/e2freefrag.c
+ 
+-LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
++LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)
+ DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR)
+ PROFILED_LIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR)
+ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(DEPPROFILED_LIBCOM_ERR)
+ 
+-STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
++STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
+ STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) 
+ 
+ LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR) 
+@@ -142,7 +143,7 @@ profile.o:
+ 
+ findsuper: findsuper.o
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o $(LIBS)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o $(LIBS) $(SYSLIBS)
+ 
+ partinfo: partinfo.o
+ 	$(E) "	LD $@"
+@@ -151,20 +152,20 @@ partinfo: partinfo.o
+ e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBBLKID) $(LIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2initrd_helper e2initrd_helper.o $(LIBS) \
+-		$(LIBBLKID) $(LIBEXT2FS) $(LIBINTL)
++		$(LIBBLKID) $(LIBEXT2FS) $(LIBINTL) $(SYSLIBS)
+ 
+ tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBBLKID) \
+ 		$(DEPLIBUUID) $(DEPLIBQUOTA) $(LIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
+ 		$(LIBBLKID) $(LIBUUID) $(LIBQUOTA) $(LIBEXT2FS) $(LIBS_E2P) \
+-		$(LIBINTL)
++		$(LIBINTL) $(SYSLIBS)
+ 
+ tune2fs.static: $(TUNE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBBLKID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(LDFLAGS_STATIC) -o tune2fs.static $(TUNE2FS_OBJS) \
+ 		$(STATIC_LIBS) $(STATIC_LIBBLKID) $(STATIC_LIBUUID) \
+-		$(STATIC_LIBQUOTA) $(STATIC_LIBE2P) $(LIBINTL)
++		$(STATIC_LIBQUOTA) $(STATIC_LIBE2P) $(LIBINTL) $(SYSLIBS)
+ 
+ tune2fs.profiled: $(TUNE2FS_OBJS) $(PROFILED_DEPLIBS) \
+ 		$(PROFILED_E2P) $(DEPPROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID) \
+@@ -173,55 +174,58 @@ tune2fs.profiled: $(TUNE2FS_OBJS) $(PROF
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o tune2fs.profiled \
+ 		$(PROFILED_TUNE2FS_OBJS) $(PROFILED_LIBBLKID) \
+ 		$(PROFILED_LIBUUID) $(PROFILED_LIBQUOTA) $(PROFILED_LIBE2P) \
+-		$(LIBINTL) $(PROFILED_LIBS)
++		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS)
+ 
+ blkid: $(BLKID_OBJS) $(DEPLIBBLKID) $(LIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBBLKID) $(LIBINTL) \
+-		$(LIBEXT2FS)
++		$(LIBEXT2FS) $(SYSLIBS)
+ 
+ blkid.static: $(BLKID_OBJS) $(STATIC_DEPLIBS) $(DEPSTATIC_LIBBLKID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o blkid.static $(BLKID_OBJS) $(STATIC_LIBS) \
+-		$(STATIC_LIBBLKID) $(LIBINTL)
++		$(STATIC_LIBBLKID) $(LIBINTL) $(SYSLIBS)
+ 
+ blkid.profiled: $(BLKID_OBJS) $(DEPPROFILED_LIBBLKID) \
+ 		$(PROFILED_LIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o blkid.profiled $(PROFILED_BLKID_OBJS) \
+-		$(PROFILED_LIBBLKID) $(LIBINTL) $(PROFILED_LIBEXT2FS)
++		$(PROFILED_LIBBLKID) $(LIBINTL) $(PROFILED_LIBEXT2FS) $(SYSLIBS)
+ 
+ e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ e2image.profiled: $(E2IMAGE_OBJS) $(PROFILED_DEPLIBS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2image.profiled \
+-		$(PROFILED_E2IMAGE_OBJS) $(PROFILED_LIBS) $(LIBINTL)
++		$(PROFILED_E2IMAGE_OBJS) $(PROFILED_LIBS) $(LIBINTL) $(SYSLIBS)
+ 
+ e2undo: $(E2UNDO_OBJS) $(DEPLIBS)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o e2undo $(E2UNDO_OBJS) $(LIBS) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o e2undo $(E2UNDO_OBJS) $(LIBS) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ e2undo.profiled: $(E2UNDO_OBJS) $(PROFILED_DEPLIBS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2undo.profiled \
+-		$(PROFILED_E2UNDO_OBJS) $(PROFILED_LIBS) $(LIBINTL)
++		$(PROFILED_E2UNDO_OBJS) $(PROFILED_LIBS) $(LIBINTL) $(SYSLIBS)
+ 
+ e4defrag: $(E4DEFRAG_OBJS) $(DEPLIBS)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o e4defrag $(E4DEFRAG_OBJS) $(LIBS)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o e4defrag $(E4DEFRAG_OBJS) $(LIBS) \
++		$(SYSLIBS)
+ 
+ e4defrag.profiled: $(E4DEFRAG_OBJS) $(PROFILED_DEPLIBS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e4defrag.profiled \
+-		$(PROFILED_E4DEFRAG_OBJS) $(PROFILED_LIBS)
++		$(PROFILED_E4DEFRAG_OBJS) $(PROFILED_LIBS) $(SYSLIBS)
+ 
+ base_device: base_device.c
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(srcdir)/base_device.c \
+-		-DDEBUG -o base_device
++		-DDEBUG -o base_device $(SYSLIBS)
+ 
+ check:: base_device
+ 	./base_device < $(srcdir)/base_device.tst > base_device.out
+@@ -229,20 +233,22 @@ check:: base_device
+ 
+ mklost+found: $(MKLPF_OBJS)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBBLKID) $(DEPLIBUUID) \
+ 		$(DEPLIBQUOTA) $(LIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBBLKID) \
+-		$(LIBUUID) $(LIBQUOTA) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL)
++		$(LIBUUID) $(LIBQUOTA) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL) \
++		$(SYSLIBS)
+ 
+ mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID) \
+ 		$(DEPSTATIC_LIBQUOTA) $(DEPSTATIC_LIBBLKID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
+ 		$(STATIC_LIBQUOTA) $(STATIC_LIBS) $(STATIC_LIBE2P) \
+-		$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL)
++		$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL) $(SYSLIBS)
+ 
+ mke2fs.profiled: $(MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
+ 	$(PROFILED_LIBE2P) $(PROFILED_DEPLIBBLKID) $(PROFILED_DEPLIBUUID) \
+@@ -250,85 +256,95 @@ mke2fs.profiled: $(MKE2FS_OBJS) $(PROFIL
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o mke2fs.profiled \
+ 		$(PROFILED_MKE2FS_OBJS) $(PROFILED_LIBBLKID) \
+-		$(PROFILED_LIBUUID) $(PROFILED_LIBQUOTA) $(PROFILED_LIBE2P) $(LIBINTL) \
+-		$(PROFILED_LIBS)
++		$(PROFILED_LIBUUID) $(PROFILED_LIBQUOTA) $(PROFILED_LIBE2P) \
++		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS)
+ 
+ chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ uuidgen.profiled: $(UUIDGEN_OBJS) $(PROFILED_DEPLIBUUID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o uuidgen.profiled \
+-		$(PROFILED_UUIDGEN_OBJS) $(PROFILED_LIBUUID) $(LIBINTL)
++		$(PROFILED_UUIDGEN_OBJS) $(PROFILED_LIBUUID) $(LIBINTL) \
++		$(SYSLIBS)
+ 
+ uuidd: $(UUIDD_OBJS) $(DEPLIBUUID)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o uuidd $(UUIDD_OBJS) $(LIBUUID) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o uuidd $(UUIDD_OBJS) $(LIBUUID) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ uuidd.profiled: $(UUIDD_OBJS) $(PROFILED_DEPLIBUUID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o uuidd.profiled $(PROFILED_UUIDD_OBJS) \
+-		$(PROFILED_LIBUUID) $(LIBINTL)
++		$(PROFILED_LIBUUID) $(LIBINTL) $(SYSLIBS)
+ 
+ dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBUUID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS) \
+-		$(LIBS_E2P) $(LIBUUID) $(LIBINTL)
++		$(LIBS_E2P) $(LIBUUID) $(LIBINTL) $(SYSLIBS)
+ 
+ dumpe2fs.profiled: $(DUMPE2FS_OBJS) $(PROFILED_DEPLIBS) \
+ 		$(PROFILED_LIBE2P) $(PROFILED_DEPLIBUUID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o dumpe2fs.profiled \
+ 		$(PROFILED_DUMPE2FS_OBJS) $(PROFILED_LIBS) \
+-		$(PROFILED_LIBE2P) $(PROFILED_LIBUUID) $(LIBINTL)
++		$(PROFILED_LIBE2P) $(PROFILED_LIBUUID) $(LIBINTL) $(SYSLIBS)
+ 
+ fsck: $(FSCK_OBJS) $(DEPLIBBLKID)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBBLKID) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBBLKID) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ fsck.profiled: $(FSCK_OBJS) $(PROFILED_DEPLIBBLKID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o fsck.profiled $(PROFILED_FSCK_OBJS) \
+-		$(PROFILED_LIBBLKID) $(LIBINTL)
++		$(PROFILED_LIBBLKID) $(LIBINTL) $(SYSLIBS)
+ 
+ badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS) $(LIBINTL)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS) \
++		$(LIBINTL) $(SYSLIBS)
+ 
+ badblocks.profiled: $(BADBLOCKS_OBJS) $(PROFILED_DEPLIBS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o badblocks.profiled \
+-		$(PROFILED_BADBLOCKS_OBJS) $(PROFILED_LIBS) $(LIBINTL)
++		$(PROFILED_BADBLOCKS_OBJS) $(PROFILED_LIBS) $(LIBINTL) \
++		$(SYSLIBS)
+ 
+ logsave: logsave.o
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o logsave logsave.o
++	$(Q) $(CC) $(ALL_LDFLAGS) -o logsave logsave.o $(SYSLIBS)
+ 
+ logsave.profiled: logsave.o
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o logsave.profiled profiled/logsave.o
++	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o logsave.profiled \
++		profiled/logsave.o $(SYSLIBS)
+ 
+ e2freefrag: $(E2FREEFRAG_OBJS)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o e2freefrag $(E2FREEFRAG_OBJS) $(LIBS)
++	$(Q) $(CC) $(ALL_LDFLAGS) -o e2freefrag $(E2FREEFRAG_OBJS) \
++		$(LIBS) $(SYSLIBS)
+ 
+ e2freefrag.profiled: $(E2FREEFRAG_OBJS) $(PROFILED_DEPLIBS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2freefrag.profiled \
+-		$(PROFILED_E2FREEFRAG_OBJS) $(PROFILED_LIBS)
++		$(PROFILED_E2FREEFRAG_OBJS) $(PROFILED_LIBS) $(SYSLIBS)
+ 
+ filefrag: $(FILEFRAG_OBJS)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
++	$(Q) $(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) $(SYSLIBS)
+ 
+ filefrag.profiled: $(FILEFRAG_OBJS)
+ 	$(E) "	LD $@"
+@@ -338,7 +354,7 @@ filefrag.profiled: $(FILEFRAG_OBJS)
+ tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) \
+-		$(LIBCOM_ERR)
++		$(LIBCOM_ERR) $(SYSLIBS)
+ 
+ tune2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/tune2fs.8.in
+ 	$(E) "	SUBST $@"
+@@ -632,7 +648,18 @@ mke2fs.o: $(srcdir)/mke2fs.c $(top_build
+  $(srcdir)/util.h profile.h prof_err.h $(top_srcdir)/version.h \
+  $(srcdir)/nls-enable.h $(top_srcdir)/lib/quota/mkquota.h \
+  $(top_srcdir)/lib/quota/quotaio.h $(top_srcdir)/lib/quota/dqblk_v2.h \
+- $(top_srcdir)/lib/quota/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h
++ $(top_srcdir)/lib/quota/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
++ $(srcdir)/mke2fs.h
++mk_hugefiles.o: $(srcdir)/mk_hugefiles.c $(top_builddir)/lib/config.h \
++ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
++ $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fsP.h \
++ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
++ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
++ $(top_builddir)/lib/ext2fs/ext2_err.h \
++ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
++ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
++ $(srcdir)/util.h profile.h prof_err.h $(srcdir)/nls-enable.h \
++ $(srcdir)/mke2fs.h
+ chattr.o: $(srcdir)/chattr.c $(top_builddir)/lib/config.h \
+  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/et/com_err.h \
+--- e2fsprogs-1.42.9.orig/misc/badblocks.c
++++ e2fsprogs-1.42.9/misc/badblocks.c
+@@ -300,7 +300,8 @@ static void set_o_direct(int dev, unsign
+ 		flag = fcntl(dev, F_GETFL);
+ 		if (flag > 0) {
+ 			flag = (flag & ~O_DIRECT) | new_flag;
+-			fcntl(dev, F_SETFL, flag);
++			if (fcntl(dev, F_SETFL, flag) < 0)
++				perror("set_o_direct");
+ 		}
+ 		current_O_DIRECT = new_flag;
+ 	}
+--- e2fsprogs-1.42.9.orig/misc/blkid.c
++++ e2fsprogs-1.42.9/misc/blkid.c
+@@ -38,7 +38,7 @@ extern int optind;
+ #include "ext2fs/ext2fs.h"
+ #include "blkid/blkid.h"
+ 
+-const char *progname = "blkid";
++static const char *progname = "blkid";
+ 
+ static void print_version(FILE *out)
+ {
+@@ -100,19 +100,27 @@ static int get_terminal_width(void)
+ 	struct winsize	w_win;
+ #endif
+         const char	*cp;
++	int width = 80;
+ 
+ #ifdef TIOCGSIZE
+-	if (ioctl (0, TIOCGSIZE, &t_win) == 0)
+-		return (t_win.ts_cols);
++	if (ioctl (0, TIOCGSIZE, &t_win) == 0) {
++		width = t_win.ts_cols;
++		goto got_it;
++	}
+ #endif
+ #ifdef TIOCGWINSZ
+-	if (ioctl (0, TIOCGWINSZ, &w_win) == 0)
+-		return (w_win.ws_col);
++	if (ioctl (0, TIOCGWINSZ, &w_win) == 0) {
++		width = w_win.ws_col;
++		goto got_it;
++	}
+ #endif
+         cp = getenv("COLUMNS");
+ 	if (cp)
+-		return strtol(cp, NULL, 10);
+-	return 80;
++		width = atoi(cp);
++got_it:
++	if (width > 4096)
++		return 4096;	/* sanity check */
++	return width;
+ }
+ 
+ static int pretty_print_word(const char *str, int max_len,
+@@ -127,9 +135,9 @@ static int pretty_print_word(const char
+ 		len = 0;
+ 	} else if (len > max_len)
+ 		ret = len - max_len;
+-	do
++	do {
+ 		fputc(' ', stdout);
+-	while (len++ < max_len);
++	} while (len++ < max_len);
+ 	return ret;
+ }
+ 
+@@ -142,20 +150,21 @@ static void pretty_print_line(const char
+ 	static int term_width = -1;
+ 	int len, w;
+ 
+-	if (term_width < 0)
++	if (term_width < 0) {
+ 		term_width = get_terminal_width();
+ 
+-	if (term_width > 80) {
+-		term_width -= 80;
+-		w = term_width / 10;
+-		if (w > 8)
+-			w = 8;
+-		term_width -= 2*w;
+-		label_len += w;
+-		fs_type_len += w;
+-		w = term_width/2;
+-		device_len += w;
+-		mtpt_len +=w;
++		if (term_width > 80) {
++			term_width -= 80;
++			w = term_width / 10;
++			if (w > 8)
++				w = 8;
++			term_width -= 2*w;
++			label_len += w;
++			fs_type_len += w;
++			w = term_width/2;
++			device_len += w;
++			mtpt_len +=w;
++		}
+ 	}
+ 
+ 	len = pretty_print_word(device, device_len, 0, 1);
+@@ -284,10 +293,7 @@ int main(int argc, char **argv)
+ 	while ((c = getopt (argc, argv, "c:f:ghlLo:s:t:w:v")) != EOF)
+ 		switch (c) {
+ 		case 'c':
+-			if (optarg && !*optarg)
+-				read = NULL;
+-			else
+-				read = optarg;
++			read = optarg;
+ 			if (!write)
+ 				write = read;
+ 			break;
+@@ -340,13 +346,11 @@ int main(int argc, char **argv)
+ 			version = 1;
+ 			break;
+ 		case 'w':
+-			if (optarg && !*optarg)
+-				write = NULL;
+-			else
+-				write = optarg;
++			write = optarg;
+ 			break;
+ 		case 'h':
+ 			err = 0;
++			/* fallthrough */
+ 		default:
+ 			usage(err);
+ 		}
+--- e2fsprogs-1.42.9.orig/misc/e2image.c
++++ e2fsprogs-1.42.9/misc/e2image.c
+@@ -174,7 +174,7 @@ static void generic_write(int fd, void *
+ 		printf(_("Writing block %llu\n"), (unsigned long long) block);
+ 		if (fd != 1)
+ 			seek_relative(fd, blocksize);
+-		return;
++		goto free_and_return;
+ 	}
+ 	count = write(fd, buf, blocksize);
+ 	if (count != blocksize) {
+@@ -191,6 +191,7 @@ static void generic_write(int fd, void *
+ 
+ 		exit(1);
+ 	}
++free_and_return:
+ 	if (free_buf)
+ 		ext2fs_free_mem(&buf);
+ }
+@@ -633,7 +634,7 @@ more_blocks:
+ 			bscount = print_progress(total_written,
+ 						 meta_blocks_count);
+ 			duration = time(NULL) - start_time;
+-			if (duration > 5) {
++			if (duration > 5 && total_written) {
+ 				time_t est = (duration * meta_blocks_count /
+ 					      total_written) - duration;
+ 				char buff[30];
+@@ -703,14 +704,15 @@ more_blocks:
+ 	if (show_progress) {
+ 		time_t duration = time(NULL) - start_time;
+ 		char buff[30];
+-		while (bscount--)
+-			fputc('\b', stderr);
++		fputc('\r', stderr);
+ 		strftime(buff, 30, "%T", gmtime(&duration));
+-		fprintf(stderr, _("\b\b\b\b\b\b\b\bCopied %llu / %llu "
+-			 "blocks (%d%%) in %s at %.2f MB/s       \n"),
+-		       total_written, meta_blocks_count,
+-		       calc_percent(total_written, meta_blocks_count), buff,
+-		       calc_rate(total_written, fs->blocksize, duration));
++		fprintf(stderr, _("Copied %llu / %llu blocks (%d%%) in %s "),
++			total_written, meta_blocks_count,
++			calc_percent(total_written, meta_blocks_count), buff);
++		if (duration)
++			fprintf(stderr, _("at %.2f MB/s"),
++				calc_rate(total_written, fs->blocksize, duration));
++		fputs("       \n", stderr);
+ 	}
+ #ifdef HAVE_FTRUNCATE64
+ 	if (sparse) {
+@@ -1410,7 +1412,7 @@ static void install_image(char *device,
+ 
+ 	retval = ext2fs_image_inode_read(fs, fd, 0);
+ 	if (retval) {
+-		com_err(image_fn, 0, "while restoring the image table");
++		com_err(image_fn, 0, _("while restoring the image table"));
+ 		exit(1);
+ 	}
+ 
+@@ -1597,7 +1599,7 @@ skip_device:
+ 	}
+ 	if (fd != 1) {
+ 		if (fstat(fd, &st)) {
+-			com_err(program_name, 0, "Can not stat output\n");
++			com_err(program_name, 0, _("Can not stat output\n"));
+ 			exit(1);
+ 		}
+ 		if (S_ISBLK(st.st_mode))
+--- e2fsprogs-1.42.9.orig/misc/e4defrag.c
++++ e2fsprogs-1.42.9/misc/e4defrag.c
+@@ -34,7 +34,6 @@
+ #include <unistd.h>
+ #include <ext2fs/ext2_types.h>
+ #include <ext2fs/ext2fs.h>
+-#include <linux/fs.h>
+ #include <sys/ioctl.h>
+ #include <ext2fs/fiemap.h>
+ #include <sys/mman.h>
+@@ -183,29 +182,21 @@ static ext4_fsblk_t	files_block_count;
+ static struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
+ 
+ 
+-/* Local definitions of some syscalls glibc may not yet have */
+-
+-#ifndef HAVE_POSIX_FADVISE
+-#warning Using locally defined posix_fadvise interface.
+-
+-#ifndef __NR_fadvise64_64
+-#error Your kernel headers dont define __NR_fadvise64_64
++/*
++ * We prefer posix_fadvise64 when available, as it allows 64bit offset on
++ * 32bit systems
++ */
++#if defined(HAVE_POSIX_FADVISE64)
++#define posix_fadvise	posix_fadvise64
++#elif defined(HAVE_FADVISE64)
++#define posix_fadvise	fadvise64
++#elif !defined(HAVE_POSIX_FADVISE)
++#error posix_fadvise not available!
+ #endif
+ 
+ /*
+- * fadvise() -		Give advice about file access.
+- *
+- * @fd:			defrag target file's descriptor.
+- * @offset:		file offset.
+- * @len:		area length.
+- * @advise:		process flag.
++ * Local definitions of some syscalls glibc may not yet have
+  */
+-static int posix_fadvise(int fd, loff_t offset, size_t len, int advise)
+-{
+-	return syscall(__NR_fadvise64_64, fd, offset, len, advise);
+-}
+-#endif /* ! HAVE_FADVISE64_64 */
+-
+ #ifndef HAVE_SYNC_FILE_RANGE
+ #warning Using locally defined sync_file_range interface.
+ 
+--- e2fsprogs-1.42.9.orig/misc/ext4.5.in
++++ e2fsprogs-1.42.9/misc/ext4.5.in
+@@ -109,7 +109,6 @@ supported by ext2, ext3, and ext4.
+ This feature enables the storage file type information in directory
+ entries.  This feature is supported by ext2, ext3, and ext4.
+ .TP
+-.TP
+ .B flex_bg
+ .br
+ This ext4 feature allows the per-block group metadata (allocation
+@@ -172,6 +171,17 @@ kernels from mounting file systems that
+ .\" .br
+ .\" .B Future feature, available in e2fsprogs 1.43-WIP
+ .TP
++.B sparse_super2
++.br
++This feature indicates that there will only at most two backup
++superblock and block group descriptors.  The block groups used to store
++the backup superblock and blockgroup descriptors are stored in the
++superblock, but typically, one will be located at the beginning of block
++group #1, and one in the last block group in the file system.  This is
++feature is essentially a more extreme version of sparse_super and is
++designed to allow the a much larger percentage of the disk to have
++contiguous blocks available for data files.
++.TP
+ .B meta_bg
+ .br
+ This ext4 feature allows file systems to be resized on-line without explicitly
+--- /dev/null
++++ e2fsprogs-1.42.9/misc/mk_hugefiles.c
+@@ -0,0 +1,429 @@
++/*
++ * mk_hugefiles.c -- create huge files
++ */
++
++#define _XOPEN_SOURCE 600 /* for inclusion of PATH_MAX in Solaris */
++
++#include "config.h"
++#include <stdio.h>
++#include <string.h>
++#include <strings.h>
++#include <fcntl.h>
++#include <ctype.h>
++#include <time.h>
++#ifdef __linux__
++#include <sys/utsname.h>
++#endif
++#ifdef HAVE_GETOPT_H
++#include <getopt.h>
++#else
++extern char *optarg;
++extern int optind;
++#endif
++#ifdef HAVE_UNISTD_H
++#include <unistd.h>
++#endif
++#ifdef HAVE_STDLIB_H
++#include <stdlib.h>
++#endif
++#ifdef HAVE_ERRNO_H
++#include <errno.h>
++#endif
++#include <sys/ioctl.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <libgen.h>
++#include <limits.h>
++#include <blkid/blkid.h>
++
++#include "ext2fs/ext2_fs.h"
++#include "ext2fs/ext2fsP.h"
++#include "et/com_err.h"
++#include "uuid/uuid.h"
++#include "e2p/e2p.h"
++#include "ext2fs/ext2fs.h"
++#include "util.h"
++#include "profile.h"
++#include "prof_err.h"
++#include "nls-enable.h"
++#include "mke2fs.h"
++
++static int uid;
++static int gid;
++static blk64_t num_blocks;
++static blk64_t num_slack;
++static unsigned long num_files;
++static blk64_t goal;
++static char *fn_prefix;
++static int idx_digits;
++static char *fn_buf;
++static char *fn_numbuf;
++int zero_hugefile = 1;
++
++static errcode_t create_directory(ext2_filsys fs, char *dir,
++				  ext2_ino_t *ret_ino)
++
++{
++	struct ext2_inode	inode;
++	ext2_ino_t		ino = EXT2_ROOT_INO;
++	ext2_ino_t		newdir;
++	errcode_t		retval = 0;
++	char			*fn, *cp, *next;
++
++	fn = malloc(strlen(dir) + 1);
++	if (fn == NULL)
++		return ENOMEM;
++
++	strcpy(fn, dir);
++	cp = fn;
++	while(1) {
++		next = strchr(cp, '/');
++		if (next)
++			*next++ = 0;
++		if (*cp) {
++			retval = ext2fs_new_inode(fs, ino, LINUX_S_IFDIR,
++						  NULL, &newdir);
++			if (retval)
++				goto errout;
++
++			retval = ext2fs_mkdir(fs, ino, newdir, cp);
++			if (retval)
++				goto errout;
++
++			ino = newdir;
++			retval = ext2fs_read_inode(fs, ino, &inode);
++			if (retval)
++				goto errout;
++
++			inode.i_uid = uid & 0xFFFF;
++			ext2fs_set_i_uid_high(inode, (uid >> 16) & 0xffff);
++			inode.i_gid = gid & 0xFFFF;
++			ext2fs_set_i_gid_high(inode, (gid >> 16) & 0xffff);
++			retval = ext2fs_write_inode(fs, ino, &inode);
++			if (retval)
++				goto errout;
++		}
++		if (next == NULL || *next == '\0')
++			break;
++		cp = next;
++	}
++errout:
++	free(fn);
++	if (retval == 0)
++		*ret_ino = ino;
++	return retval;
++}
++
++static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
++			     ext2_ino_t dir, unsigned long idx, ext2_ino_t *ino)
++
++{
++	errcode_t		retval;
++	blk64_t			lblk, bend;
++	__u64			size;
++	blk64_t			left;
++	blk64_t			count = 0;
++	struct ext2_inode	inode;
++	ext2_extent_handle_t	handle;
++
++	retval = ext2fs_new_inode(fs, 0, LINUX_S_IFREG, NULL, ino);
++	if (retval)
++		return retval;
++
++	memset(&inode, 0, sizeof(struct ext2_inode));
++	inode.i_mode = LINUX_S_IFREG | (0666 & ~fs->umask);
++	inode.i_links_count = 1;
++	inode.i_uid = uid & 0xFFFF;
++	ext2fs_set_i_uid_high(inode, (uid >> 16) & 0xffff);
++	inode.i_gid = gid & 0xFFFF;
++	ext2fs_set_i_gid_high(inode, (gid >> 16) & 0xffff);
++
++	retval = ext2fs_write_new_inode(fs, *ino, &inode);
++	if (retval)
++		return retval;
++
++	ext2fs_inode_alloc_stats2(fs, *ino, +1, 0);
++
++	retval = ext2fs_extent_open2(fs, *ino, &inode, &handle);
++	if (retval)
++		return retval;
++
++	lblk = 0;
++	left = num ? num : 1;
++	while (left) {
++		blk64_t pblk, end;
++		blk64_t n = left;
++
++		retval =  ext2fs_find_first_zero_block_bitmap2(fs->block_map,
++			goal, ext2fs_blocks_count(fs->super) - 1, &end);
++		if (retval)
++			goto errout;
++		goal = end;
++
++		retval =  ext2fs_find_first_set_block_bitmap2(fs->block_map, goal,
++			       ext2fs_blocks_count(fs->super) - 1, &bend);
++		if (retval == ENOENT) {
++			bend = ext2fs_blocks_count(fs->super);
++			if (num == 0)
++				left = 0;
++		}
++		if (!num || bend - goal < left)
++			n = bend - goal;
++		pblk = goal;
++		if (num)
++			left -= n;
++		goal += n;
++		count += n;
++		ext2fs_block_alloc_stats_range(fs, pblk, n, +1);
++
++		if (zero_hugefile) {
++			blk64_t ret_blk;
++			retval = ext2fs_zero_blocks2(fs, pblk, n,
++						     &ret_blk, NULL);
++
++			if (retval)
++				com_err(program_name, retval,
++					_("while zeroing block %llu "
++					  "for hugefile"), ret_blk);
++		}
++
++		while (n) {
++			blk64_t l = n;
++			struct ext2fs_extent newextent;
++
++			if (l > EXT_INIT_MAX_LEN)
++				l = EXT_INIT_MAX_LEN;
++
++			newextent.e_len = l;
++			newextent.e_pblk = pblk;
++			newextent.e_lblk = lblk;
++			newextent.e_flags = 0;
++
++			retval = ext2fs_extent_insert(handle,
++					EXT2_EXTENT_INSERT_AFTER, &newextent);
++			if (retval)
++				return retval;
++			pblk += l;
++			lblk += l;
++			n -= l;
++		}
++	}
++
++	retval = ext2fs_read_inode(fs, *ino, &inode);
++	if (retval)
++		goto errout;
++
++	retval = ext2fs_iblk_add_blocks(fs, &inode,
++					count / EXT2FS_CLUSTER_RATIO(fs));
++	if (retval)
++		goto errout;
++	size = (__u64) count * fs->blocksize;
++	inode.i_size = size & 0xffffffff;
++	inode.i_size_high = (size >> 32);
++
++	retval = ext2fs_write_new_inode(fs, *ino, &inode);
++	if (retval)
++		goto errout;
++
++	if (idx_digits)
++		sprintf(fn_numbuf, "%0*lu", idx_digits, idx);
++	else if (num_files > 1)
++		sprintf(fn_numbuf, "%lu", idx);
++
++retry:
++	retval = ext2fs_link(fs, dir, fn_buf, *ino, EXT2_FT_REG_FILE);
++	if (retval == EXT2_ET_DIR_NO_SPACE) {
++		retval = ext2fs_expand_dir(fs, dir);
++		if (retval)
++			goto errout;
++		goto retry;
++	}
++
++	if (retval)
++		goto errout;
++
++errout:
++	if (handle)
++		ext2fs_extent_free(handle);
++
++	return retval;
++}
++
++static blk64_t calc_overhead(ext2_filsys fs, blk64_t num)
++{
++	blk64_t e_blocks, e_blocks2, e_blocks3, e_blocks4;
++	int extents_per_block;
++	int extents = (num + EXT_INIT_MAX_LEN - 1) / EXT_INIT_MAX_LEN;
++
++	if (extents <= 4)
++		return 0;
++
++	/*
++	 * This calculation is due to the fact that we are inefficient
++	 * in how handle extent splits when appending to the end of
++	 * the extent tree.  Sigh.  We should fix this so that we can
++	 * actually store 340 extents per 4k block, instead of only 170.
++	 */
++	extents_per_block = ((fs->blocksize -
++			      sizeof(struct ext3_extent_header)) /
++			     sizeof(struct ext3_extent));
++	extents_per_block = (extents_per_block/ 2) - 1;
++
++	e_blocks = (extents + extents_per_block - 1) / extents_per_block;
++	e_blocks2 = (e_blocks + extents_per_block - 1) / extents_per_block;
++	e_blocks3 = (e_blocks2 + extents_per_block - 1) / extents_per_block;
++	e_blocks4 = (e_blocks3 + extents_per_block - 1) / extents_per_block;
++	return e_blocks + e_blocks2 + e_blocks3 + e_blocks4;
++}
++
++/*
++ * Find the place where we should start allocating blocks for the huge
++ * files.  Leave <slack> free blocks at the beginning of the file
++ * system for things like metadata blocks.
++ */
++static blk64_t get_start_block(ext2_filsys fs, blk64_t slack)
++{
++	errcode_t retval;
++	blk64_t blk = fs->super->s_first_data_block, next;
++	blk64_t last_blk = ext2fs_blocks_count(fs->super) - 1;
++
++	while (slack) {
++		retval = ext2fs_find_first_zero_block_bitmap2(fs->block_map,
++						blk, last_blk, &blk);
++		if (retval)
++			break;
++
++		retval = ext2fs_find_first_set_block_bitmap2(fs->block_map,
++						blk, last_blk, &next);
++		if (retval)
++			next = last_blk;
++		next--;
++
++		if (next - blk > slack) {
++			blk += slack;
++			break;
++		}
++
++		slack -= (next - blk);
++		blk = next;
++	}
++	return blk;
++}
++
++static blk64_t round_up_align(blk64_t b, unsigned long align)
++{
++	unsigned long m;
++
++	if (align == 0)
++		return b;
++	m = b % align;
++	if (m)
++		b += align - m;
++	return b;
++}
++
++errcode_t mk_hugefiles(ext2_filsys fs)
++{
++	unsigned long	i;
++	ext2_ino_t	dir;
++	errcode_t	retval;
++	blk64_t		fs_blocks;
++	unsigned long	align;
++	int		d, dsize;
++	char		*t;
++
++	if (!get_bool_from_profile(fs_types, "make_hugefiles", 0))
++		return 0;
++
++	uid = get_int_from_profile(fs_types, "hugefiles_uid", 0);
++	gid = get_int_from_profile(fs_types, "hugefiles_gid", 0);
++	fs->umask = get_int_from_profile(fs_types, "hugefiles_umask", 077);
++	num_files = get_int_from_profile(fs_types, "num_hugefiles", 0);
++	t = get_string_from_profile(fs_types, "hugefiles_slack", "1M");
++	num_slack = parse_num_blocks2(t, fs->super->s_log_block_size);
++	free(t);
++	t = get_string_from_profile(fs_types, "hugefiles_size", "0");
++	num_blocks = parse_num_blocks2(t, fs->super->s_log_block_size);
++	free(t);
++	t = get_string_from_profile(fs_types, "hugefiles_align", "0");
++	align = parse_num_blocks2(t, fs->super->s_log_block_size);
++	free(t);
++	num_blocks = round_up_align(num_blocks, align);
++	zero_hugefile = get_int_from_profile(fs_types, "zero_hugefiles",
++					     zero_hugefile);
++
++	t = get_string_from_profile(fs_types, "hugefiles_dir", "/");
++	retval = create_directory(fs, t, &dir);
++	free(t);
++	if (retval)
++		return retval;
++
++	fn_prefix = get_string_from_profile(fs_types, "hugefiles_name",
++					    "hugefile");
++	idx_digits = get_int_from_profile(fs_types, "hugefiles_digits", 5);
++	d = int_log10(num_files) + 1;
++	if (idx_digits > d)
++		d = idx_digits;
++	dsize = strlen(fn_prefix) + d + 16;
++	fn_buf = malloc(dsize);
++	if (!fn_buf) {
++		free(fn_prefix);
++		return ENOMEM;
++	}
++	strcpy(fn_buf, fn_prefix);
++	fn_numbuf = fn_buf + strlen(fn_prefix);
++	free(fn_prefix);
++
++	fs_blocks = ext2fs_free_blocks_count(fs->super);
++	if (fs_blocks < num_slack + align)
++		return ENOMEM;
++	fs_blocks -= num_slack + align;
++	if (num_blocks && num_blocks > fs_blocks)
++		return ENOMEM;
++	if (num_blocks == 0 && num_files == 0)
++		num_files = 1;
++
++	if (num_files == 0 && num_blocks) {
++		num_files = fs_blocks / num_blocks;
++		fs_blocks -= (num_files / 16) + 1;
++		fs_blocks -= calc_overhead(fs, num_blocks) * num_files;
++		num_files = fs_blocks / num_blocks;
++	}
++
++	if (num_blocks == 0 && num_files > 1) {
++		num_blocks = fs_blocks / num_files;
++		fs_blocks -= (num_files / 16) + 1;
++		fs_blocks -= calc_overhead(fs, num_blocks) * num_files;
++		num_blocks = fs_blocks / num_files;
++	}
++
++	num_slack += calc_overhead(fs, num_blocks) * num_files;
++	num_slack += (num_files / 16) + 1; /* space for dir entries */
++	goal = get_start_block(fs, num_slack);
++	goal = round_up_align(goal, align);
++
++	if (!quiet) {
++		if (zero_hugefile && verbose)
++			printf(_("Huge files will be zero'ed\n"));
++		printf(_("Creating %lu huge file(s) "), num_files);
++		if (num_blocks)
++			printf(_("with %llu blocks each"), num_blocks);
++		fputs(": ", stdout);
++	}
++	for (i=0; i < num_files; i++) {
++		ext2_ino_t ino;
++
++		retval = mk_hugefile(fs, num_blocks, dir, i, &ino);
++		if (retval) {
++			com_err(program_name, retval,
++				_("while creating huge file %lu"), i);
++			goto errout;
++		}
++	}
++	if (!quiet)
++		fputs(_("done\n"), stdout);
++
++errout:
++	free(fn_buf);
++	return retval;
++}
+--- e2fsprogs-1.42.9.orig/misc/mke2fs.8.in
++++ e2fsprogs-1.42.9/misc/mke2fs.8.in
+@@ -64,7 +64,7 @@ mke2fs \- create an ext2/ext3/ext4 files
+ ]
+ [
+ .B \-O
+-.IR feature [,...]
++[^]\fIfeature\fR[,...]
+ ]
+ [
+ .B \-q
+@@ -246,6 +246,10 @@ parity disk, so N will be the number of
+ This allows the block allocator to prevent read-modify-write of the
+ parity in a RAID stripe if possible when the data is written.
+ .TP
++.BI offset= offset
++Create the filesystem at an offset from the beginning of the device or
++file.  This can be useful when creating disk images for virtual machines.
++.TP
+ .BI resize= max-online-resize
+ Reserve enough space so that the block group descriptor table can grow
+ to support a filesystem that has
+@@ -270,6 +274,22 @@ small risk if the system crashes before
+ entirely one time.  If the option value is omitted, it defaults to 1 to
+ enable lazy journal inode zeroing.
+ .TP
++.BI num_backup_sb= <0|1|2>
++If the
++.B sparse_super2
++file system feature is enabled this option controls whether there will
++be 0, 1, or 2 backup superblocks created in the file system.
++.TP
++.B packed_meta_blocks\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
++Place the allocation bitmaps and the inode table at the beginning of the
++disk.  This option requires that the flex_bg file system feature to be
++enabled in order for it to have effect, and will also create the journal
++at the beginning of the file system.  This option is useful for flash
++devices that use SLC flash at the beginning of the disk.
++It also maximizes the range of contiguous data blocks, which
++can be useful for certain specialized use cases, such as supported
++Shingled Drives.
++.TP
+ .BI root_owner [=uid:gid]
+ Specify the numeric user and group ID of the root directory.  If no UID:GID
+ is specified, use the user and group ID of the user running \fBmke2fs\fR.
+@@ -405,6 +425,13 @@ The size of the journal must be at least
+ (i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.)
+ and may be no more than 10,240,000 filesystem blocks or half the total
+ file system size (whichever is smaller)
++.TP
++.BI location =journal-location
++Specify the location of the journal.  The argument
++.I journal-location
++can either be specified as a block number, or if the number has a units
++suffix (e.g., 'M', 'G', etc.) interpret it as the offset from the
++beginning of the file system.
+ @JDEV@.TP
+ @JDEV@.BI device= external-journal
+ @JDEV@Attach the filesystem to the journal block device located on
+@@ -508,7 +535,7 @@ filesystem.  The creator field is set by
+ .B mke2fs
+ executable was compiled for.
+ .TP
+-.B "\-O \fIfeature\fR[,...]"
++.B "\-O \fR[^]\fIfeature\fR[,...]"
+ Create a filesystem with the given features (filesystem options),
+ overriding the default filesystem options.  The features that are
+ enabled by default are specified by the
+@@ -544,7 +571,7 @@ section of the configuration file.
+ .sp
+ The filesystem feature set is comprised of a list of features, separated
+ by commas, that are to be enabled.  To disable a feature, simply
+-prefix the feature name with a  caret ('^') or a minus ('-') character.
++prefix the feature name with a caret ('^') character.
+ Features with dependencies will not be removed successfully.
+ The pseudo-filesystem feature "none" will clear all filesystem features.
+ .TP
+--- e2fsprogs-1.42.9.orig/misc/mke2fs.c
++++ e2fsprogs-1.42.9/misc/mke2fs.c
+@@ -62,6 +62,7 @@ extern int optind;
+ #include "../version.h"
+ #include "nls-enable.h"
+ #include "quota/mkquota.h"
++#include "mke2fs.h"
+ 
+ #define STRIDE_LENGTH 8
+ 
+@@ -76,26 +77,30 @@ extern int optind;
+ extern int isatty(int);
+ extern FILE *fpopen(const char *cmd, const char *mode);
+ 
+-static const char * program_name = "mke2fs";
++const char * program_name = "mke2fs";
+ static const char * device_name /* = NULL */;
+ 
+ /* Command line options */
+ static int	cflag;
+-static int	verbose;
+-static int	quiet;
++int	verbose;
++int	quiet;
+ static int	super_only;
+ static int	discard = 1;	/* attempt to discard device before fs creation */
+ static int	direct_io;
+ static int	force;
+ static int	noaction;
++static int	num_backups = 2; /* number of backup bg's for sparse_super2 */
+ static uid_t	root_uid;
+ static gid_t	root_gid;
+ int	journal_size;
+ int	journal_flags;
+ static int	lazy_itable_init;
++static int	packed_meta_blocks;
+ static char	*bad_blocks_filename = NULL;
+ static __u32	fs_stride;
+ static int	quotatype = -1;  /* Initialize both user and group quotas by default */
++static __u64	offset;
++static blk64_t journal_location = ~0LL;
+ 
+ static struct ext2_super_block fs_param;
+ static char *fs_uuid = NULL;
+@@ -104,7 +109,7 @@ static char *volume_label;
+ static char *mount_dir;
+ char *journal_device;
+ static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
+-static char **fs_types;
++char **fs_types;
+ 
+ static profile_t	profile;
+ 
+@@ -139,7 +144,7 @@ static int int_log2(unsigned long long a
+ 	return l;
+ }
+ 
+-static int int_log10(unsigned long long arg)
++int int_log10(unsigned long long arg)
+ {
+ 	int	l;
+ 
+@@ -308,6 +313,40 @@ _("Warning: the backup superblock/group
+ 	ext2fs_badblocks_list_iterate_end(bb_iter);
+ }
+ 
++static errcode_t packed_allocate_tables(ext2_filsys fs)
++{
++	errcode_t	retval;
++	dgrp_t		i;
++	blk64_t		goal = 0;
++
++	for (i = 0; i < fs->group_desc_count; i++) {
++		retval = ext2fs_new_block2(fs, goal, NULL, &goal);
++		if (retval)
++			return retval;
++		ext2fs_block_alloc_stats2(fs, goal, +1);
++		ext2fs_block_bitmap_loc_set(fs, i, goal);
++	}
++	for (i = 0; i < fs->group_desc_count; i++) {
++		retval = ext2fs_new_block2(fs, goal, NULL, &goal);
++		if (retval)
++			return retval;
++		ext2fs_block_alloc_stats2(fs, goal, +1);
++		ext2fs_inode_bitmap_loc_set(fs, i, goal);
++	}
++	for (i = 0; i < fs->group_desc_count; i++) {
++		blk64_t end = ext2fs_blocks_count(fs->super) - 1;
++		retval = ext2fs_get_free_blocks2(fs, goal, end,
++						 fs->inode_blocks_per_group,
++						 fs->block_map, &goal);
++		if (retval)
++			return retval;
++		ext2fs_block_alloc_stats_range(fs, goal,
++					       fs->inode_blocks_per_group, +1);
++		ext2fs_inode_table_loc_set(fs, i, goal);
++	}
++	return 0;
++}
++
+ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
+ {
+ 	errcode_t	retval;
+@@ -710,6 +749,19 @@ static void parse_extended_opts(struct e
+ 				continue;
+ 			}
+ 			param->s_desc_size = desc_size;
++		} else if (strcmp(token, "offset") == 0) {
++			if (!arg) {
++				r_usage++;
++				badopt = token;
++				continue;
++			}
++			offset = strtoull(arg, &p, 0);
++			if (*p) {
++				fprintf(stderr, _("Invalid offset: %s\n"),
++					arg);
++				r_usage++;
++				continue;
++			}
+ 		} else if (strcmp(token, "mmp_update_interval") == 0) {
+ 			if (!arg) {
+ 				r_usage++;
+@@ -724,6 +776,28 @@ static void parse_extended_opts(struct e
+ 				r_usage++;
+ 				continue;
+ 			}
++		} else if (strcmp(token, "num_backup_sb") == 0) {
++			if (!arg) {
++				r_usage++;
++				badopt = token;
++				continue;
++			}
++			num_backups = strtoul(arg, &p, 0);
++			if (*p || num_backups > 2) {
++				fprintf(stderr,
++					_("Invalid # of backup "
++					  "superbocks: %s\n"),
++					arg);
++				r_usage++;
++				continue;
++			}
++		} else if (strcmp(token, "packed_meta_blocks") == 0) {
++			if (arg)
++				packed_meta_blocks = strtoul(arg, &p, 0);
++			else
++				packed_meta_blocks = 1;
++			if (packed_meta_blocks)
++				journal_location = 0;
+ 		} else if (strcmp(token, "stride") == 0) {
+ 			if (!arg) {
+ 				r_usage++;
+@@ -879,9 +953,13 @@ static void parse_extended_opts(struct e
+ 			"and may take an argument which\n"
+ 			"\tis set off by an equals ('=') sign.\n\n"
+ 			"Valid extended options are:\n"
++			"\tmmp_update_interval=<interval>\n"
++			"\tnum_backup_sb=<0|1|2>\n"
+ 			"\tstride=<RAID per-disk data chunk in blocks>\n"
+ 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
++			"\toffset=<offset to create the file system>\n"
+ 			"\tresize=<resize maximum size in blocks>\n"
++			"\tpacked_meta_blocks=<0 to disable, 1 to enable>\n"
+ 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
+ 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
+ 			"\troot_uid=<uid of root directory>\n"
+@@ -908,7 +986,8 @@ static __u32 ok_features[3] = {
+ 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+ 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
+ 		EXT2_FEATURE_COMPAT_DIR_INDEX |
+-		EXT2_FEATURE_COMPAT_EXT_ATTR,
++		EXT2_FEATURE_COMPAT_EXT_ATTR |
++		EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
+ 	/* Incompat */
+ 	EXT2_FEATURE_INCOMPAT_FILETYPE|
+ 		EXT3_FEATURE_INCOMPAT_EXTENTS|
+@@ -1165,7 +1244,7 @@ static char **parse_fs_type(const char *
+ 	return (list.list);
+ }
+ 
+-static char *get_string_from_profile(char **types, const char *opt,
++char *get_string_from_profile(char **types, const char *opt,
+ 				     const char *def_val)
+ {
+ 	char *ret = 0;
+@@ -1182,7 +1261,7 @@ static char *get_string_from_profile(cha
+ 	return (ret);
+ }
+ 
+-static int get_int_from_profile(char **types, const char *opt, int def_val)
++int get_int_from_profile(char **types, const char *opt, int def_val)
+ {
+ 	int ret;
+ 	char **cpp;
+@@ -1205,7 +1284,7 @@ static double get_double_from_profile(ch
+ 	return ret;
+ }
+ 
+-static int get_bool_from_profile(char **types, const char *opt, int def_val)
++int get_bool_from_profile(char **types, const char *opt, int def_val)
+ {
+ 	int ret;
+ 	char **cpp;
+@@ -1958,6 +2037,8 @@ profile_error:
+ 	}
+ #endif
+ 
++	num_backups = get_int_from_profile(fs_types, "num_backup_sb", 2);
++
+ 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
+ 
+ 	/*
+@@ -1994,6 +2075,20 @@ profile_error:
+ 					       EXT2_MKJOURNAL_LAZYINIT : 0;
+ 	journal_flags |= EXT2_MKJOURNAL_NO_MNT_CHECK;
+ 
++	if (!journal_location_string)
++		journal_location_string = get_string_from_profile(fs_types,
++						"journal_location", "");
++	if ((journal_location == ~0ULL) && journal_location_string &&
++	    *journal_location_string)
++		journal_location = parse_num_blocks2(journal_location_string,
++						fs_param.s_log_block_size);
++	free(journal_location_string);
++
++	packed_meta_blocks = get_bool_from_profile(fs_types,
++						   "packed_meta_blocks", 0);
++	if (packed_meta_blocks)
++		journal_location = 0;
++
+ 	/* Get options from profile */
+ 	for (cpp = fs_types; *cpp; cpp++) {
+ 		tmp = NULL;
+@@ -2145,6 +2240,13 @@ profile_error:
+ 	ext2fs_r_blocks_count_set(&fs_param, reserved_ratio *
+ 				  ext2fs_blocks_count(&fs_param) / 100.0);
+ 
++	if (fs_param.s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
++		if (num_backups >= 1)
++			fs_param.s_backup_bgs[0] = 1;
++		if (num_backups >= 2)
++			fs_param.s_backup_bgs[1] = ~0;
++	}
++
+ 	free(fs_type);
+ 	free(usage_types);
+ }
+@@ -2238,11 +2340,9 @@ static int mke2fs_setup_tdb(const char *
+ 	sprintf(tdb_file, "%s/mke2fs-%s.e2undo", tdb_dir, dev_name);
+ 	free(tmp_name);
+ 
+-	if (!access(tdb_file, F_OK)) {
+-		if (unlink(tdb_file) < 0) {
+-			retval = errno;
+-			goto errout;
+-		}
++	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
++		retval = errno;
++		goto errout;
+ 	}
+ 
+ 	set_undo_io_backing_manager(*io_ptr);
+@@ -2318,30 +2418,43 @@ static int mke2fs_discard_device(ext2_fi
+ 
+ static void fix_cluster_bg_counts(ext2_filsys fs)
+ {
+-	blk64_t	cluster, num_clusters, tot_free;
+-	unsigned num = 0;
+-	int	grp_free, num_free, group;
+-
+-	num_clusters = EXT2FS_B2C(fs, ext2fs_blocks_count(fs->super));
+-	tot_free = num_free = group = grp_free = 0;
+-	for (cluster = EXT2FS_B2C(fs, fs->super->s_first_data_block);
+-	     cluster < num_clusters; cluster++) {
+-		if (!ext2fs_test_block_bitmap2(fs->block_map,
+-					       EXT2FS_C2B(fs, cluster))) {
+-			grp_free++;
+-			tot_free++;
+-		}
+-		num++;
+-		if ((num == fs->super->s_clusters_per_group) ||
+-		    (cluster == num_clusters-1)) {
++	blk64_t		block, num_blocks, last_block, next;
++	blk64_t		tot_free = 0;
++	errcode_t	retval;
++	dgrp_t		group = 0;
++	int		grp_free = 0;
++
++	num_blocks = ext2fs_blocks_count(fs->super);
++	last_block = ext2fs_group_last_block2(fs, group);
++	block = fs->super->s_first_data_block;
++	while (block < num_blocks) {
++		retval = ext2fs_find_first_zero_block_bitmap2(fs->block_map,
++						block, last_block, &next);
++		if (retval == 0)
++			block = next;
++		else {
++			block = last_block + 1;
++			goto next_bg;
++		}
++
++		retval = ext2fs_find_first_set_block_bitmap2(fs->block_map,
++						block, last_block, &next);
++		if (retval)
++			next = last_block + 1;
++		grp_free += EXT2FS_NUM_B2C(fs, next - block);
++		tot_free += next - block;
++		block = next;
++
++		if (block > last_block) {
++		next_bg:
+ 			ext2fs_bg_free_blocks_count_set(fs, group, grp_free);
+ 			ext2fs_group_desc_csum_set(fs, group);
+-			num = 0;
+ 			grp_free = 0;
+ 			group++;
++			last_block = ext2fs_group_last_block2(fs, group);
+ 		}
+ 	}
+-	ext2fs_free_blocks_count_set(fs->super, EXT2FS_C2B(fs, tot_free));
++	ext2fs_free_blocks_count_set(fs->super, tot_free);
+ }
+ 
+ static int create_quota_inodes(ext2_filsys fs)
+@@ -2368,7 +2481,7 @@ int main (int argc, char *argv[])
+ 	int		flags;
+ 	int		old_bitmaps;
+ 	io_manager	io_ptr;
+-	char		tdb_string[40];
++	char		opt_string[40];
+ 	char		*hash_alg_str;
+ 	int		itable_zeroed = 0;
+ 
+@@ -2435,12 +2548,17 @@ int main (int argc, char *argv[])
+ 					 "0s - skipping inode table wipe\n"));
+ 			lazy_itable_init = 1;
+ 			itable_zeroed = 1;
++			zero_hugefile = 0;
+ 		}
+ 	}
+ 
+-	sprintf(tdb_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
++	sprintf(opt_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
+ 		32768 : fs->blocksize * 8);
+-	io_channel_set_options(fs->io, tdb_string);
++	io_channel_set_options(fs->io, opt_string);
++	if (offset) {
++		sprintf(opt_string, "offset=%llu", offset);
++		io_channel_set_options(fs->io, opt_string);
++	}
+ 
+ 	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
+ 		fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
+@@ -2562,12 +2680,16 @@ int main (int argc, char *argv[])
+ 		read_bb_file(fs, &bb_list, bad_blocks_filename);
+ 	if (cflag)
+ 		test_disk(fs, &bb_list);
+-
+ 	handle_bad_blocks(fs, bb_list);
++
+ 	fs->stride = fs_stride = fs->super->s_raid_stride;
+ 	if (!quiet)
+ 		printf("%s", _("Allocating group tables: "));
+-	retval = ext2fs_allocate_tables(fs);
++	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) &&
++	    packed_meta_blocks)
++		retval = packed_allocate_tables(fs);
++	else
++		retval = ext2fs_allocate_tables(fs);
+ 	if (retval) {
+ 		com_err(program_name, retval, "%s",
+ 			_("while trying to allocate filesystem tables"));
+@@ -2693,8 +2815,9 @@ int main (int argc, char *argv[])
+ 			       journal_blocks);
+ 			fflush(stdout);
+ 		}
+-		retval = ext2fs_add_journal_inode(fs, journal_blocks,
+-						  journal_flags);
++		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
++						   journal_location,
++						   journal_flags);
+ 		if (retval) {
+ 			com_err(program_name, retval, "%s",
+ 				_("\n\twhile trying to create journal"));
+@@ -2726,6 +2849,10 @@ no_journal:
+ 				       EXT4_FEATURE_RO_COMPAT_QUOTA))
+ 		create_quota_inodes(fs);
+ 
++	retval = mk_hugefiles(fs);
++	if (retval)
++		com_err(program_name, retval, "while creating huge files");
++
+ 	if (!quiet)
+ 		printf("%s", _("Writing superblocks and "
+ 		       "filesystem accounting information: "));
+--- e2fsprogs-1.42.9.orig/misc/mke2fs.conf.5.in
++++ e2fsprogs-1.42.9/misc/mke2fs.conf.5.in
+@@ -357,6 +357,18 @@ initialization noticeably, but it requir
+ initializing the filesystem in the background when the filesystem is
+ first mounted.
+ .TP
++.I journal_location
++This relation specifies the location of the journal.
++.TP
++.I num_backup_sb
++This relation indicates whether file systems with the
++.B sparse_super2
++feature enabled should be created with 0, 1, or 2 backup superblocks.
++.TP
++.I packed_meta_blocks
++This boolean relation specifes whether the allocation bitmaps, inode
++table, and journal should be located at the beginning of the file system.
++.TP
+ .I inode_ratio
+ This relation specifies the default inode ratio if the user does not
+ specify one on the command line.
+@@ -408,6 +420,71 @@ system feature is enabled.  It can be ov
+ .B \-C
+ command line option to
+ .BR mke2fs (8)
++.TP
++.I make_hugefiles
++This boolean relation enables the creation of pre-allocated files as
++part of formatting the file system.
++.TP
++.I hugefiles_uid
++This relation controls the user ownership for all of the files and
++directories created by the
++.I make_hugefiles
++feature.
++.TP
++.I hugefiles_gid
++This relation controls the group ownership for all of the files and
++directories created by the
++.I make_hugefiles
++feature.
++.TP
++.I hugefiles_umask
++This relation specifies the umask used when creating the files and
++directories by the
++.I make_hugefiles
++feature.
++.TP
++.I num_hugefiles
++This relation specifies the number of huge files to be created.  If this
++relation is not specified, or is set to zero, and the
++.I hugefiles_size
++relation is non-zero, then
++.I make_hugefiles
++will create as many huge files as can fit to fill the entire file system.
++.TP
++.I hugefiles_slack
++This relation specifies how much space should be reserved for other
++files.
++.TP
++.I hugefiles_size
++This relation specifies the size of the huge files.  If this relation is
++not specified, the default is to fill the entire file system.
++.TP
++.I hugefiles_align
++This relation specifies the alignment for the start block of the huge
++files.  It also forces the size of huge files to be a multiple of the
++requested alignment.  If this relation is not specified, no alignment
++requirement will be imposed on the huge files.
++.TP
++.I hugefiles_name
++This relation specifies the base file name for the huge files.
++.TP
++.I hugefiles_digits
++This relation specifies the (zero-padded) width of the field for the
++huge file number.
++.TP
++.I zero_hugefiles
++This boolean relation specifies whether or not zero blocks will be
++written to the hugefiles while
++.BR mke2fs(8)
++is creating them.  By default, zero blocks will be written to the huge
++files to avoid stale data from being made available to potentially
++untrusted user programs, unless the device supports a discard/trim
++operation which will take care of zeroing the device blocks.  By
++.I zero_hugefiles
++to false, this step will always be skipped, which can be useful if it is
++known that the disk has been previously erased, or if the user programs
++that will have access to the huge files are trusted to not reveal stale
++data.
+ .SH THE [devices] STANZA
+ Each tag in the
+ .I [devices] 
+--- /dev/null
++++ e2fsprogs-1.42.9/misc/mke2fs.h
+@@ -0,0 +1,30 @@
++/*
++ * mke2fs.h
++ *
++ * Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
++ * 	2003, 2004, 2005 by Theodore Ts'o.
++ *
++ * %Begin-Header%
++ * This file may be redistributed under the terms of the GNU Public
++ * License.
++ * %End-Header%
++ */
++
++/* mke2fs.c */
++extern const char * program_name;
++extern int	quiet;
++extern int	verbose;
++extern int	zero_hugefile;
++extern char **fs_types;
++
++extern char *get_string_from_profile(char **types, const char *opt,
++				     const char *def_val);
++extern int get_int_from_profile(char **types, const char *opt, int def_val);
++extern int get_bool_from_profile(char **types, const char *opt, int def_val);
++extern int int_log10(unsigned long long arg);
++
++/* mk_hugefiles.c */
++extern errcode_t mk_hugefiles(ext2_filsys fs);
++
++
++
+--- e2fsprogs-1.42.9.orig/misc/tune2fs.8.in
++++ e2fsprogs-1.42.9/misc/tune2fs.8.in
+@@ -333,6 +333,13 @@ megabytes.   The size of the journal mus
+ and may be no more than 102,400 filesystem blocks.
+ There must be enough free space in the filesystem to create a journal of
+ that size.
++.TP
++.BI location =journal-location
++Specify the location of the journal.  The argument
++.I journal-location
++can either be specified as a block number, or if the number has a units
++suffix (e.g., 'M', 'G', etc.) interpret it as the offset from the
++beginning of the file system.
+ @JDEV@.TP
+ @JDEV@.BI device= external-journal
+ @JDEV@Attach the filesystem to the journal block device located on
+--- e2fsprogs-1.42.9.orig/misc/tune2fs.c
++++ e2fsprogs-1.42.9/misc/tune2fs.c
+@@ -98,6 +98,7 @@ static int usrquota, grpquota;
+ 
+ int journal_size, journal_flags;
+ char *journal_device;
++static blk64_t journal_location = ~0LL;
+ 
+ static struct list_head blk_move_list;
+ 
+@@ -694,8 +695,13 @@ static int add_journal(ext2_filsys fs)
+ 		fflush(stdout);
+ 		journal_blocks = figure_journal_size(journal_size, fs);
+ 
+-		retval = ext2fs_add_journal_inode(fs, journal_blocks,
+-						  journal_flags);
++		if (journal_location_string)
++			journal_location =
++				parse_num_blocks2(journal_location_string,
++						  fs->super->s_log_block_size);
++		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
++						   journal_location,
++						   journal_flags);
+ 		if (retval) {
+ 			fprintf(stderr, "\n");
+ 			com_err(program_name, retval, "%s",
+@@ -1856,15 +1862,12 @@ static int tune2fs_setup_tdb(const char
+ 		goto alloc_fn_fail;
+ 	sprintf(tdb_file, "%s/tune2fs-%s.e2undo", tdb_dir, dev_name);
+ 
+-	if (!access(tdb_file, F_OK)) {
+-		if (unlink(tdb_file) < 0) {
+-			retval = errno;
+-			com_err(program_name, retval,
+-				_("while trying to delete %s"),
+-				tdb_file);
+-			free(tdb_file);
+-			return retval;
+-		}
++	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
++		retval = errno;
++		com_err(program_name, retval,
++			_("while trying to delete %s"), tdb_file);
++		free(tdb_file);
++		return retval;
+ 	}
+ 
+ 	set_undo_io_backing_manager(*io_ptr);
+--- e2fsprogs-1.42.9.orig/misc/util.c
++++ e2fsprogs-1.42.9/misc/util.c
+@@ -34,6 +34,8 @@
+ #include "blkid/blkid.h"
+ #include "util.h"
+ 
++char *journal_location_string = NULL;
++
+ #ifndef HAVE_STRCASECMP
+ int strcasecmp (char *s1, char *s2)
+ {
+@@ -218,6 +220,12 @@ void parse_journal_opts(const char *opts
+ 			journal_size = strtoul(arg, &p, 0);
+ 			if (*p)
+ 				journal_usage++;
++		} else if (!strcmp(token, "location")) {
++			if (!arg) {
++				journal_usage++;
++				continue;
++			}
++			journal_location_string = strdup(arg);
+ 		} else if (strcmp(token, "v1_superblock") == 0) {
+ 			journal_flags |= EXT2_MKJOURNAL_V1_SUPER;
+ 			continue;
+@@ -231,7 +239,8 @@ void parse_journal_opts(const char *opts
+ 			"\tis set off by an equals ('=') sign.\n\n"
+ 			"Valid journal options are:\n"
+ 			"\tsize=<journal size in megabytes>\n"
+-			"\tdevice=<journal device>\n\n"
++			"\tdevice=<journal device>\n"
++			"\tlocation=<journal location>\n\n"
+ 			"The journal size must be between "
+ 			"1024 and 10240000 filesystem blocks.\n\n"), stderr);
+ 		free(buf);
+--- e2fsprogs-1.42.9.orig/misc/util.h
++++ e2fsprogs-1.42.9/misc/util.h
+@@ -13,6 +13,7 @@
+ extern int	 journal_size;
+ extern int	 journal_flags;
+ extern char	*journal_device;
++extern char	*journal_location_string;
+ 
+ #ifndef HAVE_STRCASECMP
+ extern int strcasecmp (char *s1, char *s2);
+--- e2fsprogs-1.42.9.orig/resize/Makefile.in
++++ e2fsprogs-1.42.9/resize/Makefile.in
+@@ -28,11 +28,11 @@ SRCS= $(srcdir)/extent.c \
+ 	$(srcdir)/resource_track.c \
+ 	$(srcdir)/sim_progress.c
+ 
+-LIBS= $(LIBE2P) $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBINTL)
++LIBS= $(LIBE2P) $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBINTL) $(SYSLIBS)
+ DEPLIBS= $(LIBE2P) $(LIBEXT2FS) $(DEPLIBCOM_ERR)
+ 
+ STATIC_LIBS= $(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
+-	$(LIBINTL)
++	$(LIBINTL) $(SYSLIBS)
+ DEPSTATIC_LIBS= $(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) 
+ 
+ .c.o:
+--- e2fsprogs-1.42.9.orig/resize/online.c
++++ e2fsprogs-1.42.9/resize/online.c
+@@ -76,6 +76,14 @@ errcode_t online_resize_fs(ext2_filsys f
+ 			no_resize_ioctl = 1;
+ 	}
+ 
++	if (EXT2_HAS_COMPAT_FEATURE(fs->super,
++				    EXT4_FEATURE_COMPAT_SPARSE_SUPER2) &&
++	    (access("/sys/fs/ext4/features/sparse_super2", R_OK) != 0)) {
++		com_err(program_name, 0, _("kernel does not support online "
++					   "resize with sparse_super2"));
++		exit(1);
++	}
++
+ 	printf(_("Filesystem at %s is mounted on %s; "
+ 		 "on-line resizing required\n"), fs->device_name, mtpt);
+ 
+--- e2fsprogs-1.42.9.orig/resize/resize2fs.c
++++ e2fsprogs-1.42.9/resize/resize2fs.c
+@@ -53,6 +53,9 @@ static errcode_t ext2fs_calculate_summar
+ static errcode_t fix_sb_journal_backup(ext2_filsys fs);
+ static errcode_t mark_table_blocks(ext2_filsys fs,
+ 				   ext2fs_block_bitmap bmap);
++static errcode_t clear_sparse_super2_last_group(ext2_resize_t rfs);
++static errcode_t reserve_sparse_super2_last_group(ext2_resize_t rfs,
++						 ext2fs_block_bitmap meta_bmap);
+ 
+ /*
+  * Some helper CPP macros
+@@ -191,6 +194,10 @@ errcode_t resize_fs(ext2_filsys fs, blk6
+ 		goto errout;
+ 	print_resource_track(rfs, &rtrack, fs->io);
+ 
++	retval = clear_sparse_super2_last_group(rfs);
++	if (retval)
++		goto errout;
++
+ 	rfs->new_fs->super->s_state &= ~EXT2_ERROR_FS;
+ 	rfs->new_fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+ 
+@@ -460,6 +467,33 @@ retry:
+ 	}
+ 
+ 	/*
++	 * Update the location of the backup superblocks if the
++	 * sparse_super2 feature is enabled.
++	 */
++	if (fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
++		dgrp_t last_bg = fs->group_desc_count - 1;
++		dgrp_t old_last_bg = old_fs->group_desc_count - 1;
++
++		if (last_bg > old_last_bg) {
++			if (old_fs->group_desc_count == 1)
++				fs->super->s_backup_bgs[0] = 1;
++			if (old_fs->group_desc_count == 1 &&
++			    fs->super->s_backup_bgs[0])
++				fs->super->s_backup_bgs[0] = last_bg;
++			else if (fs->super->s_backup_bgs[1])
++				fs->super->s_backup_bgs[1] = last_bg;
++		} else if (last_bg < old_last_bg) {
++			if (fs->super->s_backup_bgs[0] > last_bg)
++				fs->super->s_backup_bgs[0] = 0;
++			if (fs->super->s_backup_bgs[1] > last_bg)
++				fs->super->s_backup_bgs[1] = 0;
++			if (last_bg > 1 &&
++			    old_fs->super->s_backup_bgs[1] == old_last_bg)
++				fs->super->s_backup_bgs[1] = last_bg;
++		}
++	}
++
++	/*
+ 	 * If we are shrinking the number of block groups, we're done
+ 	 * and can exit now.
+ 	 */
+@@ -615,14 +649,13 @@ errout:
+  */
+ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
+ {
+-	ext2_filsys fs;
++	ext2_filsys	fs = rfs->new_fs;
+ 	int		adj = 0;
+ 	errcode_t	retval;
+ 	blk64_t		group_block;
+ 	unsigned long	i;
+ 	unsigned long	max_group;
+ 
+-	fs = rfs->new_fs;
+ 	ext2fs_mark_super_dirty(fs);
+ 	ext2fs_mark_bb_dirty(fs);
+ 	ext2fs_mark_ib_dirty(fs);
+@@ -952,6 +985,10 @@ static errcode_t blocks_to_move(ext2_res
+ 		new_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
+ 	}
+ 
++	retval = reserve_sparse_super2_last_group(rfs, meta_bmap);
++	if (retval)
++		goto errout;
++
+ 	if (old_blocks == new_blocks) {
+ 		retval = 0;
+ 		goto errout;
+@@ -1840,6 +1877,147 @@ errout:
+ }
+ 
+ /*
++ * This function is used when expanding a file system.  It frees the
++ * superblock and block group descriptor blocks from the block group
++ * which is no longer the last block group.
++ */
++static errcode_t clear_sparse_super2_last_group(ext2_resize_t rfs)
++{
++	ext2_filsys	fs = rfs->new_fs;
++	ext2_filsys	old_fs = rfs->old_fs;
++	errcode_t	retval;
++	dgrp_t		old_last_bg = rfs->old_fs->group_desc_count - 1;
++	dgrp_t		last_bg = fs->group_desc_count - 1;
++	blk64_t		sb, old_desc;
++	blk_t		num;
++
++	if (!(fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2))
++		return 0;
++
++	if (last_bg <= old_last_bg)
++		return 0;
++
++	if (fs->super->s_backup_bgs[0] == old_fs->super->s_backup_bgs[0] &&
++	    fs->super->s_backup_bgs[1] == old_fs->super->s_backup_bgs[1])
++		return 0;
++
++	if (old_fs->super->s_backup_bgs[0] != old_last_bg &&
++	    old_fs->super->s_backup_bgs[1] != old_last_bg)
++		return 0;
++
++	if (fs->super->s_backup_bgs[0] == old_last_bg ||
++	    fs->super->s_backup_bgs[1] == old_last_bg)
++		return 0;
++
++	retval = ext2fs_super_and_bgd_loc2(rfs->old_fs, old_last_bg,
++					   &sb, &old_desc, NULL, &num);
++	if (retval)
++		return retval;
++
++	if (sb)
++		ext2fs_unmark_block_bitmap2(fs->block_map, sb);
++	if (old_desc)
++		ext2fs_unmark_block_bitmap_range2(fs->block_map, old_desc, num);
++	return 0;
++}
++
++/*
++ * This function is used when shrinking a file system.  We need to
++ * utilize blocks from what will be the new last block group for the
++ * backup superblock and block group descriptor blocks.
++ * Unfortunately, those blocks may be used by other files or fs
++ * metadata blocks.  We need to mark them as being in use.
++ */
++static errcode_t reserve_sparse_super2_last_group(ext2_resize_t rfs,
++						 ext2fs_block_bitmap meta_bmap)
++{
++	ext2_filsys	fs = rfs->new_fs;
++	ext2_filsys	old_fs = rfs->old_fs;
++	errcode_t	retval;
++	dgrp_t		old_last_bg = rfs->old_fs->group_desc_count - 1;
++	dgrp_t		last_bg = fs->group_desc_count - 1;
++	dgrp_t		g;
++	blk64_t		blk, sb, old_desc;
++	blk_t		i, num;
++	int		realloc = 0;
++
++	if (!(fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2))
++		return 0;
++
++	if (last_bg >= old_last_bg)
++		return 0;
++
++	if (fs->super->s_backup_bgs[0] == old_fs->super->s_backup_bgs[0] &&
++	    fs->super->s_backup_bgs[1] == old_fs->super->s_backup_bgs[1])
++		return 0;
++
++	if (fs->super->s_backup_bgs[0] != last_bg &&
++	    fs->super->s_backup_bgs[1] != last_bg)
++		return 0;
++
++	if (old_fs->super->s_backup_bgs[0] == last_bg ||
++	    old_fs->super->s_backup_bgs[1] == last_bg)
++		return 0;
++
++	retval = ext2fs_super_and_bgd_loc2(rfs->new_fs, last_bg,
++					   &sb, &old_desc, NULL, &num);
++	if (retval)
++		return retval;
++
++	if (!sb) {
++		fputs(_("Should never happen!  No sb in last super_sparse bg?\n"),
++		      stderr);
++		exit(1);
++	}
++	if (old_desc != sb+1) {
++		fputs(_("Should never happen!  Unexpected old_desc in "
++			"super_sparse bg?\n"),
++		      stderr);
++		exit(1);
++	}
++	num = (old_desc) ? num : 1;
++
++	/* Reserve the backup blocks */
++	ext2fs_mark_block_bitmap_range2(fs->block_map, sb, num);
++
++	for (g = 0; g < fs->group_desc_count; g++) {
++		blk64_t mb;
++
++		mb = ext2fs_block_bitmap_loc(fs, g);
++		if ((mb >= sb) && (mb < sb + num)) {
++			ext2fs_block_bitmap_loc_set(fs, g, 0);
++			realloc = 1;
++		}
++		mb = ext2fs_inode_bitmap_loc(fs, g);
++		if ((mb >= sb) && (mb < sb + num)) {
++			ext2fs_inode_bitmap_loc_set(fs, g, 0);
++			realloc = 1;
++		}
++		mb = ext2fs_inode_table_loc(fs, g);
++		if ((mb < sb + num) &&
++		    (sb < mb + fs->inode_blocks_per_group)) {
++			ext2fs_inode_table_loc_set(fs, g, 0);
++			realloc = 1;
++		}
++		if (realloc) {
++			retval = ext2fs_allocate_group_table(fs, g, 0);
++			if (retval)
++				return retval;
++		}
++	}
++
++	for (blk = sb, i = 0; i < num; blk++, i++) {
++		if (ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
++		    !ext2fs_test_block_bitmap2(meta_bmap, blk)) {
++			ext2fs_mark_block_bitmap2(rfs->move_blocks, blk);
++			rfs->needed_blocks++;
++		}
++		ext2fs_mark_block_bitmap2(rfs->reserve_blocks, blk);
++	}
++	return 0;
++}
++
++/*
+  * Fix the resize inode
+  */
+ static errcode_t fix_resize_inode(ext2_filsys fs)
+--- e2fsprogs-1.42.9.orig/resize/test_extent.c
++++ e2fsprogs-1.42.9/resize/test_extent.c
+@@ -109,6 +109,8 @@ void do_test(FILE *in, FILE *out)
+ 		} else
+ 			fputs("# Syntax error\n", out);
+ 	}
++	if (extent)
++		ext2fs_free_extent_table(extent);
+ }
+ 
+ #ifdef __GNUC__
+--- e2fsprogs-1.42.9.orig/tests/d_special_files/script
++++ e2fsprogs-1.42.9/tests/d_special_files/script
+@@ -18,7 +18,7 @@ status=$?
+ echo Exit status is $status >> $OUT
+ 
+ $DEBUGFS -w $TMPFILE << EOF > /dev/null 2>&1
+-set_current_time 201301151400
++set_current_time 20130115140000
+ set_super_value lastcheck 0
+ set_super_value hash_seed null
+ set_super_value mkfs_time 0
+--- e2fsprogs-1.42.9.orig/tests/f_crashdisk/expect.1
++++ e2fsprogs-1.42.9/tests/f_crashdisk/expect.1
+@@ -2,10 +2,12 @@ ext2fs_open2: The ext2 superblock is cor
+ ../e2fsck/e2fsck: Superblock invalid, trying backup blocks...
+ ../e2fsck/e2fsck: The ext2 superblock is corrupt while trying to open test.img
+ 
+-The superblock could not be read or does not describe a correct ext2
+-filesystem.  If the device is valid and it really contains an ext2
++The superblock could not be read or does not describe a valid ext2/ext3/ext4
++filesystem.  If the device is valid and it really contains an ext2/ext3/ext4
+ filesystem (and not swap or ufs or something else), then the superblock
+ is corrupt, and you might try running e2fsck with an alternate superblock:
+     e2fsck -b 8193 <device>
++ or
++    e2fsck -b 32768 <device>
+ 
+ Exit status is 8
+--- e2fsprogs-1.42.9.orig/tests/f_dup4/script
++++ e2fsprogs-1.42.9/tests/f_dup4/script
+@@ -8,7 +8,7 @@ echo "/ Murphy Magic.  The SeCrEt of the
+ touch $TMPFILE
+ $MKE2FS -N 32 -F -o Linux -b 1024 $TMPFILE 100 > /dev/null 2>&1 
+ $DEBUGFS -w $TMPFILE << EOF > /dev/null 2>&1
+-set_current_time 200704102100
++set_current_time 20070410210000
+ set_super_value lastcheck 0
+ set_super_value hash_seed null
+ set_super_value mkfs_time 0
+--- e2fsprogs-1.42.9.orig/tests/f_dup_resize/script
++++ e2fsprogs-1.42.9/tests/f_dup_resize/script
+@@ -11,8 +11,8 @@ $DEBUGFS -w $TMPFILE << EOF > /dev/null
+ freeb 4 4
+ freeb 8195 4
+ write $TEST_DATA debugfs
+-set_current_time 200504110000
+-set_inode_field debugfs mtime 200504110000
++set_current_time 20050411000000
++set_inode_field debugfs mtime 2005041100000000
+ q
+ EOF
+ 
+--- e2fsprogs-1.42.9.orig/tests/m_bigjournal/expect.1
++++ e2fsprogs-1.42.9/tests/m_bigjournal/expect.1
+@@ -55,7 +55,7 @@ Group 0: (Blocks 0-32767)
+   31836 free blocks, 5 free inodes, 2 directories, 5 unused inodes
+   Free blocks: 764-1184, 1269-1696, 1781-32767
+   Free inodes: 12-16
+-Group 1: (Blocks 32768-65535) [INODE_UNINIT]
++Group 1: (Blocks 32768-65535) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 32768, Group descriptors at 32769-32769
+   Reserved GDT blocks at 32770-33440
+   Block bitmap at 674 (bg #0 + 674), Inode bitmap at 1186 (bg #0 + 1186)
+@@ -69,7 +69,7 @@ Group 2: (Blocks 65536-98303) [INODE_UNI
+   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+   Free blocks: 65536-98303
+   Free inodes: 33-48
+-Group 3: (Blocks 98304-131071) [INODE_UNINIT]
++Group 3: (Blocks 98304-131071) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 98304, Group descriptors at 98305-98305
+   Reserved GDT blocks at 98306-98976
+   Block bitmap at 676 (bg #0 + 676), Inode bitmap at 1188 (bg #0 + 1188)
+@@ -83,7 +83,7 @@ Group 4: (Blocks 131072-163839) [INODE_U
+   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+   Free blocks: 131072-163839
+   Free inodes: 65-80
+-Group 5: (Blocks 163840-196607) [INODE_UNINIT]
++Group 5: (Blocks 163840-196607) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 163840, Group descriptors at 163841-163841
+   Reserved GDT blocks at 163842-164512
+   Block bitmap at 678 (bg #0 + 678), Inode bitmap at 1190 (bg #0 + 1190)
+@@ -97,7 +97,7 @@ Group 6: (Blocks 196608-229375) [INODE_U
+   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+   Free blocks: 196608-229375
+   Free inodes: 97-112
+-Group 7: (Blocks 229376-262143) [INODE_UNINIT]
++Group 7: (Blocks 229376-262143) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 229376, Group descriptors at 229377-229377
+   Reserved GDT blocks at 229378-230048
+   Block bitmap at 680 (bg #0 + 680), Inode bitmap at 1192 (bg #0 + 1192)
+@@ -111,7 +111,7 @@ Group 8: (Blocks 262144-294911) [INODE_U
+   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+   Free blocks: 262144-294911
+   Free inodes: 129-144
+-Group 9: (Blocks 294912-327679) [INODE_UNINIT]
++Group 9: (Blocks 294912-327679) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 294912, Group descriptors at 294913-294913
+   Reserved GDT blocks at 294914-295584
+   Block bitmap at 682 (bg #0 + 682), Inode bitmap at 1194 (bg #0 + 1194)
+@@ -209,7 +209,7 @@ Group 24: (Blocks 786432-819199) [INODE_
+   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+   Free blocks: 786432-819199
+   Free inodes: 385-400
+-Group 25: (Blocks 819200-851967) [INODE_UNINIT]
++Group 25: (Blocks 819200-851967) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 819200, Group descriptors at 819201-819201
+   Reserved GDT blocks at 819202-819872
+   Block bitmap at 698 (bg #0 + 698), Inode bitmap at 1210 (bg #0 + 1210)
+@@ -223,7 +223,7 @@ Group 26: (Blocks 851968-884735) [INODE_
+   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+   Free blocks: 851968-884735
+   Free inodes: 417-432
+-Group 27: (Blocks 884736-917503) [INODE_UNINIT]
++Group 27: (Blocks 884736-917503) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 884736, Group descriptors at 884737-884737
+   Reserved GDT blocks at 884738-885408
+   Block bitmap at 700 (bg #0 + 700), Inode bitmap at 1212 (bg #0 + 1212)
+@@ -551,7 +551,7 @@ Group 80: (Blocks 2621440-2654207) [INOD
+   32768 free blocks, 16 free inodes, 0 directories, 16 unused inodes
+   Free blocks: 2621440-2654207
+   Free inodes: 1281-1296
+-Group 81: (Blocks 2654208-2686975) [INODE_UNINIT]
++Group 81: (Blocks 2654208-2686975) [INODE_UNINIT, BLOCK_UNINIT]
+   Backup superblock at 2654208, Group descriptors at 2654209-2654209
+   Reserved GDT blocks at 2654210-2654880
+   Block bitmap at 754 (bg #0 + 754), Inode bitmap at 1266 (bg #0 + 1266)
+--- e2fsprogs-1.42.9.orig/tests/m_uninit/expect.1
++++ e2fsprogs-1.42.9/tests/m_uninit/expect.1
+@@ -64,7 +64,7 @@ Group 0: (Blocks 1-8192) [ITABLE_ZEROED]
+   7662 free blocks, 2037 free inodes, 2 directories, 2037 unused inodes
+   Free blocks: 531-8192
+   Free inodes: 12-2048
+-Group 1: (Blocks 8193-16384) [INODE_UNINIT, ITABLE_ZEROED]
++Group 1: (Blocks 8193-16384) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Backup superblock at 8193, Group descriptors at 8194-8194
+   Reserved GDT blocks at 8195-8450
+   Block bitmap at 8451 (+258), Inode bitmap at 8452 (+259)
+@@ -76,9 +76,9 @@ Group 2: (Blocks 16385-24576) [INODE_UNI
+   Block bitmap at 16385 (+0), Inode bitmap at 16386 (+1)
+   Inode table at 16387-16642 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 16385-24576
++  Free blocks: 16643-24576
+   Free inodes: 4097-6144
+-Group 3: (Blocks 24577-32768) [INODE_UNINIT, ITABLE_ZEROED]
++Group 3: (Blocks 24577-32768) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Backup superblock at 24577, Group descriptors at 24578-24578
+   Reserved GDT blocks at 24579-24834
+   Block bitmap at 24835 (+258), Inode bitmap at 24836 (+259)
+@@ -90,9 +90,9 @@ Group 4: (Blocks 32769-40960) [INODE_UNI
+   Block bitmap at 32769 (+0), Inode bitmap at 32770 (+1)
+   Inode table at 32771-33026 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 32769-40960
++  Free blocks: 33027-40960
+   Free inodes: 8193-10240
+-Group 5: (Blocks 40961-49152) [INODE_UNINIT, ITABLE_ZEROED]
++Group 5: (Blocks 40961-49152) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Backup superblock at 40961, Group descriptors at 40962-40962
+   Reserved GDT blocks at 40963-41218
+   Block bitmap at 41219 (+258), Inode bitmap at 41220 (+259)
+@@ -104,9 +104,9 @@ Group 6: (Blocks 49153-57344) [INODE_UNI
+   Block bitmap at 49153 (+0), Inode bitmap at 49154 (+1)
+   Inode table at 49155-49410 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 49153-57344
++  Free blocks: 49411-57344
+   Free inodes: 12289-14336
+-Group 7: (Blocks 57345-65536) [INODE_UNINIT, ITABLE_ZEROED]
++Group 7: (Blocks 57345-65536) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Backup superblock at 57345, Group descriptors at 57346-57346
+   Reserved GDT blocks at 57347-57602
+   Block bitmap at 57603 (+258), Inode bitmap at 57604 (+259)
+@@ -118,9 +118,9 @@ Group 8: (Blocks 65537-73728) [INODE_UNI
+   Block bitmap at 65537 (+0), Inode bitmap at 65538 (+1)
+   Inode table at 65539-65794 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 65537-73728
++  Free blocks: 65795-73728
+   Free inodes: 16385-18432
+-Group 9: (Blocks 73729-81920) [INODE_UNINIT, ITABLE_ZEROED]
++Group 9: (Blocks 73729-81920) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Backup superblock at 73729, Group descriptors at 73730-73730
+   Reserved GDT blocks at 73731-73986
+   Block bitmap at 73987 (+258), Inode bitmap at 73988 (+259)
+@@ -132,31 +132,31 @@ Group 10: (Blocks 81921-90112) [INODE_UN
+   Block bitmap at 81921 (+0), Inode bitmap at 81922 (+1)
+   Inode table at 81923-82178 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 81921-90112
++  Free blocks: 82179-90112
+   Free inodes: 20481-22528
+ Group 11: (Blocks 90113-98304) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Block bitmap at 90113 (+0), Inode bitmap at 90114 (+1)
+   Inode table at 90115-90370 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 90113-98304
++  Free blocks: 90371-98304
+   Free inodes: 22529-24576
+ Group 12: (Blocks 98305-106496) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Block bitmap at 98305 (+0), Inode bitmap at 98306 (+1)
+   Inode table at 98307-98562 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 98305-106496
++  Free blocks: 98563-106496
+   Free inodes: 24577-26624
+ Group 13: (Blocks 106497-114688) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Block bitmap at 106497 (+0), Inode bitmap at 106498 (+1)
+   Inode table at 106499-106754 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 106497-114688
++  Free blocks: 106755-114688
+   Free inodes: 26625-28672
+ Group 14: (Blocks 114689-122880) [INODE_UNINIT, BLOCK_UNINIT, ITABLE_ZEROED]
+   Block bitmap at 114689 (+0), Inode bitmap at 114690 (+1)
+   Inode table at 114691-114946 (+2)
+   7934 free blocks, 2048 free inodes, 0 directories, 2048 unused inodes
+-  Free blocks: 114689-122880
++  Free blocks: 114947-122880
+   Free inodes: 28673-30720
+ Group 15: (Blocks 122881-131071) [INODE_UNINIT, ITABLE_ZEROED]
+   Block bitmap at 122881 (+0), Inode bitmap at 122882 (+1)
+--- e2fsprogs-1.42.9.orig/tests/progs/Makefile.in
++++ e2fsprogs-1.42.9/tests/progs/Makefile.in
+@@ -21,7 +21,7 @@ TEST_ICOUNT_OBJS=	test_icount.o test_ico
+ 
+ SRCS=	$(srcdir)/test_rel.c 
+ 
+-LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)
++LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR) $(SYSLIBS)
+ DEPLIBS= $(LIBEXT2FS) $(DEPLIBSS) $(DEPLIBCOM_ERR)
+ 
+ .c.o:
+--- e2fsprogs-1.42.9.orig/util/Makefile.in
++++ e2fsprogs-1.42.9/util/Makefile.in
+@@ -22,6 +22,12 @@ PROGS=		subst symlinks
+ 
+ all:: $(PROGS) gen-tarball
+ 
++dirpaths.h:
++	$(E) "	CREATE dirpaths.h"
++	$(Q) echo "/* fake dirpaths.h for config.h */" > dirpaths.h
++
++subst.o: dirpaths.h
++
+ subst: subst.o
+ 	$(E) "	LD $@"
+ 	$(Q) $(BUILD_CC) $(BUILD_LDFLAGS) -o subst subst.o
+@@ -46,7 +52,7 @@ tarballs: gen-tarball
+ 
+ clean:
+ 	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core *.tar.gz gen-tarball \
+-		copy-sparse
++		copy-sparse dirpaths.h
+ 
+ mostlyclean: clean
+ 
+@@ -58,4 +64,4 @@ distclean: clean
+ # Makefile dependencies follow.  This must be the last section in
+ # the Makefile.in file
+ #
+-subst.o: $(srcdir)/subst.c
++subst.o: $(srcdir)/subst.c $(top_builddir)/lib/config.h dirpaths.h
+--- e2fsprogs-1.42.9.orig/util/subst.c
++++ e2fsprogs-1.42.9/util/subst.c
+@@ -5,6 +5,7 @@
+  *
+  */
+ 
++#include "config.h"
+ #include <stdio.h>
+ #include <errno.h>
+ #include <stdlib.h>
+@@ -13,6 +14,7 @@
+ #include <ctype.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
++#include <fcntl.h>
+ #include <time.h>
+ #include <utime.h>
+ 
+@@ -264,21 +266,11 @@ static void parse_config_file(FILE *f)
+ /*
+  * Return 0 if the files are different, 1 if the files are the same.
+  */
+-static int compare_file(const char *outfn, const char *newfn)
++static int compare_file(FILE *old_f, FILE *new_f)
+ {
+-	FILE	*old_f, *new_f;
+ 	char	oldbuf[2048], newbuf[2048], *oldcp, *newcp;
+ 	int	retval;
+ 
+-	old_f = fopen(outfn, "r");
+-	if (!old_f)
+-		return 0;
+-	new_f = fopen(newfn, "r");
+-	if (!new_f) {
+-		fclose(old_f);
+-		return 0;
+-	}
+-
+ 	while (1) {
+ 		oldcp = fgets(oldbuf, sizeof(oldbuf), old_f);
+ 		newcp = fgets(newbuf, sizeof(newbuf), new_f);
+@@ -291,8 +283,6 @@ static int compare_file(const char *outf
+ 			break;
+ 		}
+ 	}
+-	fclose(old_f);
+-	fclose(new_f);
+ 	return retval;
+ }
+ 
+@@ -302,12 +292,14 @@ int main(int argc, char **argv)
+ {
+ 	char	line[2048];
+ 	int	c;
+-	FILE	*in, *out;
++	int	fd;
++	FILE	*in, *out, *old = NULL;
+ 	char	*outfn = NULL, *newfn = NULL;
+ 	int	verbose = 0;
+ 	int	adjust_timestamp = 0;
++	int	got_atime = 0;
+ 	struct stat stbuf;
+-	struct utimbuf ut;
++	struct timeval tv[2];
+ 
+ 	while ((c = getopt (argc, argv, "f:tv")) != EOF) {
+ 		switch (c) {
+@@ -351,11 +343,34 @@ int main(int argc, char **argv)
+ 		}
+ 		strcpy(newfn, outfn);
+ 		strcat(newfn, ".new");
+-		out = fopen(newfn, "w");
+-		if (!out) {
++		fd = open(newfn, O_CREAT|O_TRUNC|O_RDWR, 0444);
++		if (fd < 0) {
+ 			perror(newfn);
+ 			exit(1);
+ 		}
++		out = fdopen(fd, "w+");
++		if (!out) {
++			perror("fdopen");
++			exit(1);
++		}
++
++		fd = open(outfn, O_RDONLY);
++		if (fd > 0) {
++			/* save the original atime, if possible */
++			if (fstat(fd, &stbuf) == 0) {
++#if HAVE_STRUCT_STAT_ST_ATIM
++				tv[0].tv_sec = stbuf.st_atim.tv_sec;
++				tv[0].tv_usec = stbuf.st_atim.tv_nsec / 1000;
++#else
++				tv[0].tv_sec = stbuf.st_atime;
++				tv[0].tv_usec = 0;
++#endif
++				got_atime = 1;
++			}
++			old = fdopen(fd, "r");
++			if (!old)
++				close(fd);
++		}
+ 	} else {
+ 		out = stdout;
+ 		outfn = 0;
+@@ -368,32 +383,49 @@ int main(int argc, char **argv)
+ 		fputs(line, out);
+ 	}
+ 	fclose(in);
+-	fclose(out);
+ 	if (outfn) {
+-		struct stat st;
+-		if (compare_file(outfn, newfn)) {
++		fflush(out);
++		rewind(out);
++		if (old && compare_file(old, out)) {
+ 			if (verbose)
+ 				printf("No change, keeping %s.\n", outfn);
+ 			if (adjust_timestamp) {
+-				if (stat(outfn, &stbuf) == 0) {
+-					if (verbose)
+-						printf("Updating modtime for %s\n", outfn);
+-					ut.actime = stbuf.st_atime;
+-					ut.modtime = time(0);
+-					if (utime(outfn, &ut) < 0)
+-						perror("utime");
++				if (verbose)
++					printf("Updating modtime for %s\n", outfn);
++				if (gettimeofday(&tv[1], NULL) < 0) {
++					perror("gettimeofday");
++					exit(1);
+ 				}
++				if (got_atime == 0)
++					tv[0] = tv[1];
++				else if (verbose)
++					printf("Using original atime\n");
++#ifdef HAVE_FUTIMES
++				if (futimes(fileno(old), tv) < 0)
++					perror("futimes");
++#else
++				if (utimes(outfn, tv) < 0)
++					perror("utimes");
++#endif
+ 			}
+-			unlink(newfn);
++			fclose(out);
++			if (unlink(newfn) < 0)
++				perror("unlink");
+ 		} else {
+ 			if (verbose)
+ 				printf("Creating or replacing %s.\n", outfn);
+-			rename(newfn, outfn);
++			fclose(out);
++			if (old)
++				fclose(old);
++			old = NULL;
++			if (rename(newfn, outfn) < 0) {
++				perror("rename");
++				exit(1);
++			}
+ 		}
+-		/* set read-only to alert user it is a generated file */
+-		if (stat(outfn, &st) == 0)
+-			chmod(outfn, st.st_mode & ~0222);
+ 	}
++	if (old)
++		fclose(old);
+ 	return (0);
+ }
+ 
+--- e2fsprogs-1.42.9.orig/version.h
++++ e2fsprogs-1.42.9/version.h
+@@ -8,4 +8,4 @@
+  */
+ 
+ #define E2FSPROGS_VERSION "1.42.9"
+-#define E2FSPROGS_DATE "28-Dec-2013"
++#define E2FSPROGS_DATE "4-Feb-2014"
