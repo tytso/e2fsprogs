@@ -94,8 +94,10 @@ int blkid_flush_cache(blkid_cache cache)
 	if (ret == 0 && S_ISREG(st.st_mode)) {
 		tmp = malloc(strlen(filename) + 8);
 		if (tmp) {
+			mode_t save_umask = umask(022);
 			sprintf(tmp, "%s-XXXXXX", filename);
 			fd = mkstemp(tmp);
+			umask(save_umask);
 			if (fd >= 0) {
 				file = fdopen(fd, "w");
 				opened = tmp;
@@ -134,7 +136,7 @@ int blkid_flush_cache(blkid_cache cache)
 	fclose(file);
 	if (opened != filename) {
 		if (ret < 0) {
-			unlink(opened);
+			(void) unlink(opened);
 			DBG(DEBUG_SAVE,
 			    printf("unlinked temp cache %s\n", opened));
 		} else {
@@ -147,7 +149,8 @@ int blkid_flush_cache(blkid_cache cache)
 				link(filename, backup);
 				free(backup);
 			}
-			rename(opened, filename);
+			if (rename(opened, filename) < 0)
+				(void) unlink(opened);
 			DBG(DEBUG_SAVE,
 			    printf("moved temp cache %s\n", opened));
 		}

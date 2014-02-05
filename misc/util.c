@@ -34,6 +34,8 @@
 #include "blkid/blkid.h"
 #include "util.h"
 
+char *journal_location_string = NULL;
+
 #ifndef HAVE_STRCASECMP
 int strcasecmp (char *s1, char *s2)
 {
@@ -218,6 +220,12 @@ void parse_journal_opts(const char *opts)
 			journal_size = strtoul(arg, &p, 0);
 			if (*p)
 				journal_usage++;
+		} else if (!strcmp(token, "location")) {
+			if (!arg) {
+				journal_usage++;
+				continue;
+			}
+			journal_location_string = strdup(arg);
 		} else if (strcmp(token, "v1_superblock") == 0) {
 			journal_flags |= EXT2_MKJOURNAL_V1_SUPER;
 			continue;
@@ -231,7 +239,8 @@ void parse_journal_opts(const char *opts)
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid journal options are:\n"
 			"\tsize=<journal size in megabytes>\n"
-			"\tdevice=<journal device>\n\n"
+			"\tdevice=<journal device>\n"
+			"\tlocation=<journal location>\n\n"
 			"The journal size must be between "
 			"1024 and 10240000 filesystem blocks.\n\n"), stderr);
 		free(buf);

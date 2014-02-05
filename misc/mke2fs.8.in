@@ -64,7 +64,7 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 ]
 [
 .B \-O
-.IR feature [,...]
+[^]\fIfeature\fR[,...]
 ]
 [
 .B \-q
@@ -246,6 +246,10 @@ parity disk, so N will be the number of disks in the array minus 1).
 This allows the block allocator to prevent read-modify-write of the
 parity in a RAID stripe if possible when the data is written.
 .TP
+.BI offset= offset
+Create the filesystem at an offset from the beginning of the device or
+file.  This can be useful when creating disk images for virtual machines.
+.TP
 .BI resize= max-online-resize
 Reserve enough space so that the block group descriptor table can grow
 to support a filesystem that has
@@ -269,6 +273,22 @@ This speeds up filesystem initialization noticeably, but carries some
 small risk if the system crashes before the journal has been overwritten
 entirely one time.  If the option value is omitted, it defaults to 1 to
 enable lazy journal inode zeroing.
+.TP
+.BI num_backup_sb= <0|1|2>
+If the
+.B sparse_super2
+file system feature is enabled this option controls whether there will
+be 0, 1, or 2 backup superblocks created in the file system.
+.TP
+.B packed_meta_blocks\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
+Place the allocation bitmaps and the inode table at the beginning of the
+disk.  This option requires that the flex_bg file system feature to be
+enabled in order for it to have effect, and will also create the journal
+at the beginning of the file system.  This option is useful for flash
+devices that use SLC flash at the beginning of the disk.
+It also maximizes the range of contiguous data blocks, which
+can be useful for certain specialized use cases, such as supported
+Shingled Drives.
 .TP
 .BI root_owner [=uid:gid]
 Specify the numeric user and group ID of the root directory.  If no UID:GID
@@ -405,6 +425,13 @@ The size of the journal must be at least 1024 filesystem blocks
 (i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.)
 and may be no more than 10,240,000 filesystem blocks or half the total
 file system size (whichever is smaller)
+.TP
+.BI location =journal-location
+Specify the location of the journal.  The argument
+.I journal-location
+can either be specified as a block number, or if the number has a units
+suffix (e.g., 'M', 'G', etc.) interpret it as the offset from the
+beginning of the file system.
 @JDEV@.TP
 @JDEV@.BI device= external-journal
 @JDEV@Attach the filesystem to the journal block device located on
@@ -508,7 +535,7 @@ filesystem.  The creator field is set by default to the name of the OS the
 .B mke2fs
 executable was compiled for.
 .TP
-.B "\-O \fIfeature\fR[,...]"
+.B "\-O \fR[^]\fIfeature\fR[,...]"
 Create a filesystem with the given features (filesystem options),
 overriding the default filesystem options.  The features that are
 enabled by default are specified by the
@@ -544,7 +571,7 @@ section of the configuration file.
 .sp
 The filesystem feature set is comprised of a list of features, separated
 by commas, that are to be enabled.  To disable a feature, simply
-prefix the feature name with a  caret ('^') or a minus ('-') character.
+prefix the feature name with a caret ('^') character.
 Features with dependencies will not be removed successfully.
 The pseudo-filesystem feature "none" will clear all filesystem features.
 .TP

@@ -550,7 +550,8 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL|\
 					 EXT2_FEATURE_COMPAT_RESIZE_INODE|\
 					 EXT2_FEATURE_COMPAT_DIR_INDEX|\
-					 EXT2_FEATURE_COMPAT_EXT_ATTR)
+					 EXT2_FEATURE_COMPAT_EXT_ATTR|\
+					 EXT4_FEATURE_COMPAT_SPARSE_SUPER2)
 
 /* This #ifdef is temporary until compression is fully supported */
 #ifdef ENABLE_COMPRESSION
@@ -683,6 +684,8 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 			       int inuse, int isdir);
 void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse);
 void ext2fs_block_alloc_stats2(ext2_filsys fs, blk64_t blk, int inuse);
+void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
+				    blk_t num, int inuse);
 
 /* alloc_tables.c */
 extern errcode_t ext2fs_allocate_tables(ext2_filsys fs);
@@ -1177,6 +1180,9 @@ extern errcode_t ext2fs_set_generic_bitmap_range(ext2fs_generic_bitmap bmap,
 extern errcode_t ext2fs_find_first_zero_generic_bitmap(ext2fs_generic_bitmap bitmap,
 						       __u32 start, __u32 end,
 						       __u32 *out);
+extern errcode_t ext2fs_find_first_set_generic_bitmap(ext2fs_generic_bitmap bitmap,
+						       __u32 start, __u32 end,
+						       __u32 *out);
 
 /* gen_bitmap64.c */
 
@@ -1365,6 +1371,8 @@ extern errcode_t ext2fs_add_journal_device(ext2_filsys fs,
 					   ext2_filsys journal_dev);
 extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks,
 					  int flags);
+extern errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
+					   blk64_t goal, int flags);
 extern int ext2fs_default_journal_size(__u64 num_blocks);
 
 /* openfs.c */
@@ -1375,6 +1383,11 @@ extern errcode_t ext2fs_open2(const char *name, const char *io_options,
 			      int flags, int superblock,
 			      unsigned int block_size, io_manager manager,
 			      ext2_filsys *ret_fs);
+/*
+ * The dgrp_t argument to these two functions is not actually a group number
+ * but a block number offset within a group table!  Convert with the formula
+ * (group_number / groups_per_block).
+ */
 extern blk64_t ext2fs_descriptor_block_loc2(ext2_filsys fs,
 					blk64_t group_block, dgrp_t i);
 extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block,

@@ -103,6 +103,9 @@
 /* Define to 1 if Ext2 ioctls present */
 #undef HAVE_EXT2_IOCTLS
 
+/* Define to 1 if you have the `fadvise64' function. */
+#undef HAVE_FADVISE64
+
 /* Define to 1 if you have the `fallocate' function. */
 #undef HAVE_FALLOCATE
 
@@ -120,6 +123,9 @@
 
 /* Define to 1 if you have the `ftruncate64' function. */
 #undef HAVE_FTRUNCATE64
+
+/* Define to 1 if you have the `futimes' function. */
+#undef HAVE_FUTIMES
 
 /* Define to 1 if you have the `fwprintf' function. */
 #undef HAVE_FWPRINTF
@@ -196,6 +202,9 @@
 
 /* Define to 1 if you have the <linux/fd.h> header file. */
 #undef HAVE_LINUX_FD_H
+
+/* Define to 1 if you have the <linux/loop.h> header file. */
+#undef HAVE_LINUX_LOOP_H
 
 /* Define to 1 if you have the <linux/major.h> header file. */
 #undef HAVE_LINUX_MAJOR_H
@@ -280,6 +289,9 @@
 
 /* Define to 1 if you have the `posix_fadvise' function. */
 #undef HAVE_POSIX_FADVISE
+
+/* Define to 1 if you have the `posix_fadvise64' function. */
+#undef HAVE_POSIX_FADVISE64
 
 /* Define to 1 if you have the `posix_memalign' function. */
 #undef HAVE_POSIX_MEMALIGN
@@ -380,6 +392,9 @@
 
 /* Define to 1 if you have the `strtoull' function. */
 #undef HAVE_STRTOULL
+
+/* Define to 1 if `st_atim' is a member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_ATIM
 
 /* Define to 1 if you have the `sync_file_range' function. */
 #undef HAVE_SYNC_FILE_RANGE
@@ -620,4 +635,4 @@
    <inttypes.h> don't define. */
 #undef uintmax_t
 
-#include "dirpaths.h"
+#include <dirpaths.h>

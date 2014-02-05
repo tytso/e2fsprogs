@@ -235,8 +235,10 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 	}
 
 	/* Resize the output image to the filesystem size */
-	if (ext2fs_llseek(raw_fd, img.image_size - 1, SEEK_SET) < 0)
-		return errno;
+	if (ext2fs_llseek(raw_fd, img.image_size - 1, SEEK_SET) < 0) {
+		ret = errno;
+		goto out;
+	}
 
 	((char *)copy_buf)[0] = 0;
 	size = write(raw_fd, copy_buf, 1);

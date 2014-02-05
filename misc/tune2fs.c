@@ -98,6 +98,7 @@ static int usrquota, grpquota;
 
 int journal_size, journal_flags;
 char *journal_device;
+static blk64_t journal_location = ~0LL;
 
 static struct list_head blk_move_list;
 
@@ -694,8 +695,13 @@ static int add_journal(ext2_filsys fs)
 		fflush(stdout);
 		journal_blocks = figure_journal_size(journal_size, fs);
 
-		retval = ext2fs_add_journal_inode(fs, journal_blocks,
-						  journal_flags);
+		if (journal_location_string)
+			journal_location =
+				parse_num_blocks2(journal_location_string,
+						  fs->super->s_log_block_size);
+		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+						   journal_location,
+						   journal_flags);
 		if (retval) {
 			fprintf(stderr, "\n");
 			com_err(program_name, retval, "%s",
@@ -1856,15 +1862,12 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 		goto alloc_fn_fail;
 	sprintf(tdb_file, "%s/tune2fs-%s.e2undo", tdb_dir, dev_name);
 
-	if (!access(tdb_file, F_OK)) {
-		if (unlink(tdb_file) < 0) {
-			retval = errno;
-			com_err(program_name, retval,
-				_("while trying to delete %s"),
-				tdb_file);
-			free(tdb_file);
-			return retval;
-		}
+	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
+		retval = errno;
+		com_err(program_name, retval,
+			_("while trying to delete %s"), tdb_file);
+		free(tdb_file);
+		return retval;
 	}
 
 	set_undo_io_backing_manager(*io_ptr);

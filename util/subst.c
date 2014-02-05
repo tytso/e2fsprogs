@@ -5,6 +5,7 @@
  *
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -13,6 +14,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <time.h>
 #include <utime.h>
 
@@ -264,20 +266,10 @@ static void parse_config_file(FILE *f)
 /*
  * Return 0 if the files are different, 1 if the files are the same.
  */
-static int compare_file(const char *outfn, const char *newfn)
+static int compare_file(FILE *old_f, FILE *new_f)
 {
-	FILE	*old_f, *new_f;
 	char	oldbuf[2048], newbuf[2048], *oldcp, *newcp;
 	int	retval;
-
-	old_f = fopen(outfn, "r");
-	if (!old_f)
-		return 0;
-	new_f = fopen(newfn, "r");
-	if (!new_f) {
-		fclose(old_f);
-		return 0;
-	}
 
 	while (1) {
 		oldcp = fgets(oldbuf, sizeof(oldbuf), old_f);
@@ -291,8 +283,6 @@ static int compare_file(const char *outfn, const char *newfn)
 			break;
 		}
 	}
-	fclose(old_f);
-	fclose(new_f);
 	return retval;
 }
 
@@ -302,12 +292,14 @@ int main(int argc, char **argv)
 {
 	char	line[2048];
 	int	c;
-	FILE	*in, *out;
+	int	fd;
+	FILE	*in, *out, *old = NULL;
 	char	*outfn = NULL, *newfn = NULL;
 	int	verbose = 0;
 	int	adjust_timestamp = 0;
+	int	got_atime = 0;
 	struct stat stbuf;
-	struct utimbuf ut;
+	struct timeval tv[2];
 
 	while ((c = getopt (argc, argv, "f:tv")) != EOF) {
 		switch (c) {
@@ -351,10 +343,33 @@ int main(int argc, char **argv)
 		}
 		strcpy(newfn, outfn);
 		strcat(newfn, ".new");
-		out = fopen(newfn, "w");
-		if (!out) {
+		fd = open(newfn, O_CREAT|O_TRUNC|O_RDWR, 0444);
+		if (fd < 0) {
 			perror(newfn);
 			exit(1);
+		}
+		out = fdopen(fd, "w+");
+		if (!out) {
+			perror("fdopen");
+			exit(1);
+		}
+
+		fd = open(outfn, O_RDONLY);
+		if (fd > 0) {
+			/* save the original atime, if possible */
+			if (fstat(fd, &stbuf) == 0) {
+#if HAVE_STRUCT_STAT_ST_ATIM
+				tv[0].tv_sec = stbuf.st_atim.tv_sec;
+				tv[0].tv_usec = stbuf.st_atim.tv_nsec / 1000;
+#else
+				tv[0].tv_sec = stbuf.st_atime;
+				tv[0].tv_usec = 0;
+#endif
+				got_atime = 1;
+			}
+			old = fdopen(fd, "r");
+			if (!old)
+				close(fd);
 		}
 	} else {
 		out = stdout;
@@ -368,32 +383,49 @@ int main(int argc, char **argv)
 		fputs(line, out);
 	}
 	fclose(in);
-	fclose(out);
 	if (outfn) {
-		struct stat st;
-		if (compare_file(outfn, newfn)) {
+		fflush(out);
+		rewind(out);
+		if (old && compare_file(old, out)) {
 			if (verbose)
 				printf("No change, keeping %s.\n", outfn);
 			if (adjust_timestamp) {
-				if (stat(outfn, &stbuf) == 0) {
-					if (verbose)
-						printf("Updating modtime for %s\n", outfn);
-					ut.actime = stbuf.st_atime;
-					ut.modtime = time(0);
-					if (utime(outfn, &ut) < 0)
-						perror("utime");
+				if (verbose)
+					printf("Updating modtime for %s\n", outfn);
+				if (gettimeofday(&tv[1], NULL) < 0) {
+					perror("gettimeofday");
+					exit(1);
 				}
+				if (got_atime == 0)
+					tv[0] = tv[1];
+				else if (verbose)
+					printf("Using original atime\n");
+#ifdef HAVE_FUTIMES
+				if (futimes(fileno(old), tv) < 0)
+					perror("futimes");
+#else
+				if (utimes(outfn, tv) < 0)
+					perror("utimes");
+#endif
 			}
-			unlink(newfn);
+			fclose(out);
+			if (unlink(newfn) < 0)
+				perror("unlink");
 		} else {
 			if (verbose)
 				printf("Creating or replacing %s.\n", outfn);
-			rename(newfn, outfn);
+			fclose(out);
+			if (old)
+				fclose(old);
+			old = NULL;
+			if (rename(newfn, outfn) < 0) {
+				perror("rename");
+				exit(1);
+			}
 		}
-		/* set read-only to alert user it is a generated file */
-		if (stat(outfn, &st) == 0)
-			chmod(outfn, st.st_mode & ~0222);
 	}
+	if (old)
+		fclose(old);
 	return (0);
 }
 

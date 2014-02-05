@@ -23,10 +23,7 @@ DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null
 
 # Allow distro-specific behaviour
 DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
-SYS_BLKID_VER := $(shell dpkg-query -W libblkid1:$(DEB_HOST_ARCH) | cut -f 2 | cut -b 1)
-ifeq ($(SYS_BLKID_VER),2)
 UTIL_LINUX_NG ?= yes
-endif
 
 # find the version for the main package, from changelog file
 MAIN_VERSION = $(shell head -n 1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
@@ -216,7 +213,7 @@ M4_ARGS+=-UDIETLIBC
 WITH_DIET_LIBC = 
 else
 M4_ARGS+=-DDIETLIBC
-WITH_DIET_LIBC = --with-diet-libc 
+WITH_DIET_LIBC = --with-diet-libc --enable-libuuid --enable-libblkid
 endif
 
 ifneq ($(BUILD_E2FSCK_STATIC),no)

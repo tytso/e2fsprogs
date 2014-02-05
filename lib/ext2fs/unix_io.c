@@ -931,10 +931,10 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 
 	if (channel->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
 #ifdef BLKDISCARD
-		__uint64_t range[2];
+		__u64 range[2];
 
-		range[0] = (__uint64_t)(block) * channel->block_size;
-		range[1] = (__uint64_t)(count) * channel->block_size;
+		range[0] = (__u64)(block) * channel->block_size;
+		range[1] = (__u64)(count) * channel->block_size;
 
 		ret = ioctl(data->dev, BLKDISCARD, &range);
 #else

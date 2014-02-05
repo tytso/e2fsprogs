@@ -89,8 +89,13 @@ void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, int qtype)
 errcode_t quota_remove_inode(ext2_filsys fs, int qtype)
 {
 	ext2_ino_t qf_ino;
+	errcode_t	retval;
 
-	ext2fs_read_bitmaps(fs);
+	retval = ext2fs_read_bitmaps(fs);
+	if (retval) {
+		log_err("Couldn't read bitmaps: %s", error_message(retval));
+		return retval;
+	}
 	qf_ino = (qtype == USRQUOTA) ? fs->super->s_usr_quota_inum :
 		fs->super->s_grp_quota_inum;
 	quota_set_sb_inum(fs, 0, qtype);
@@ -100,7 +105,11 @@ errcode_t quota_remove_inode(ext2_filsys fs, int qtype)
 
 	ext2fs_mark_super_dirty(fs);
 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
-	ext2fs_write_bitmaps(fs);
+	retval = ext2fs_write_bitmaps(fs);
+	if (retval) {
+		log_err("Couldn't write bitmaps: %s", error_message(retval));
+		return retval;
+	}
 	return 0;
 }
 
@@ -133,11 +142,16 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 	fs = qctx->fs;
 	retval = ext2fs_get_mem(sizeof(struct quota_handle), &h);
 	if (retval) {
-		log_err("Unable to allocate quota handle");
+		log_err("Unable to allocate quota handle: %s",
+			error_message(retval));
 		goto out;
 	}
 
-	ext2fs_read_bitmaps(fs);
+	retval = ext2fs_read_bitmaps(fs);
+	if (retval) {
+		log_err("Couldn't read bitmaps: %s", error_message(retval));
+		goto out;
+	}
 
 	for (i = 0; i < MAXQUOTAS; i++) {
 		if ((qtype != -1) && (i != qtype))
@@ -171,7 +185,11 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	}
 
-	ext2fs_write_bitmaps(fs);
+	retval = ext2fs_write_bitmaps(fs);
+	if (retval) {
+		log_err("Couldn't write bitmaps: %s", error_message(retval));
+		goto out;
+	}
 out:
 	if (h)
 		ext2fs_free_mem(&h);

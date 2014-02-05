@@ -35,8 +35,16 @@ static int test_root(unsigned int a, unsigned int b)
 
 int ext2fs_bg_has_super(ext2_filsys fs, dgrp_t group)
 {
-	if (!(fs->super->s_feature_ro_compat &
-	      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) || group <= 1)
+	if (group == 0)
+		return 1;
+	if (fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
+		if (group == fs->super->s_backup_bgs[0] ||
+		    group == fs->super->s_backup_bgs[1])
+			return 1;
+		return 0;
+	}
+	if ((group <= 1) || !(fs->super->s_feature_ro_compat &
+			      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
 		return 1;
 	if (!(group & 1))
 		return 0;

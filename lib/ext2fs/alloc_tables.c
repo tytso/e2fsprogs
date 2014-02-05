@@ -83,9 +83,8 @@ static blk64_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 				      ext2fs_block_bitmap bmap)
 {
-	unsigned int	j;
 	errcode_t	retval;
-	blk64_t		group_blk, start_blk, last_blk, new_blk, blk;
+	blk64_t		group_blk, start_blk, last_blk, new_blk;
 	dgrp_t		last_grp = 0;
 	int		rem_grps = 0, flexbg_size = 0;
 
@@ -205,19 +204,12 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 						bmap, &new_blk);
 		if (retval)
 			return retval;
-		for (j=0, blk = new_blk;
-		     j < fs->inode_blocks_per_group;
-		     j++, blk++) {
-			ext2fs_mark_block_bitmap2(bmap, blk);
-			if (flexbg_size) {
-				dgrp_t gr = ext2fs_group_of_blk2(fs, blk);
-				ext2fs_bg_free_blocks_count_set(fs, gr, ext2fs_bg_free_blocks_count(fs, gr) - 1);
-				ext2fs_free_blocks_count_add(fs->super, -1);
-				ext2fs_bg_flags_clear(fs, gr,
-						     EXT2_BG_BLOCK_UNINIT);
-				ext2fs_group_desc_csum_set(fs, gr);
-			}
-		}
+		if (flexbg_size)
+			ext2fs_block_alloc_stats_range(fs, new_blk,
+				       fs->inode_blocks_per_group, +1);
+		else
+			ext2fs_mark_block_bitmap_range2(fs->block_map,
+					new_blk, fs->inode_blocks_per_group);
 		ext2fs_inode_table_loc_set(fs, group, new_blk);
 	}
 	ext2fs_group_desc_csum_set(fs, group);

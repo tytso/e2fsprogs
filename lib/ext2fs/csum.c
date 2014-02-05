@@ -36,7 +36,7 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 							 group);
 	size_t size = EXT2_DESC_SIZE(fs->super);
 	size_t offset;
-	__u16 crc;
+	__u16 crc = 0;
 
 	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
 		size_t offset = offsetof(struct ext2_group_desc, bg_checksum);

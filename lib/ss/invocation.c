@@ -45,7 +45,8 @@ int ss_create_invocation(const char *subsystem_name, const char *version_string,
 	table = (ss_data **) realloc((char *)table,
 				     ((unsigned)sci_idx+2)*size);
 	if (table == NULL) {
-		*code_ptr = errno;
+		*code_ptr = ENOMEM;
+		free(new_table);
 		return 0;
 	}
 	table[sci_idx+1] = (ss_data *) NULL;
