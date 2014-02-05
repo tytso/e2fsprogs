@@ -1225,8 +1225,13 @@ dnl Allow specification of the multiarch arch
 dnl
 AC_ARG_WITH([multiarch],
 [  --with-multiarch=ARCH specify the multiarch triplet],
-libdir=$libdir/$withval
-root_libdir=$root_libdir/$withval
+if test "$withval" = "lib64"; then
+    libdir=/usr/lib64
+    root_libdir=/lib64
+else
+    libdir=$libdir/$withval
+    root_libdir=$root_libdir/$withval
+fi
 )dnl
 dnl
 dnl See if -static works.  This could fail if the linker does not
