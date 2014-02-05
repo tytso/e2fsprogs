@@ -310,12 +310,25 @@ static blk64_t get_start_block(ext2_filsys fs, blk64_t slack)
 	return blk;
 }
 
+static blk64_t round_up_align(blk64_t b, unsigned long align)
+{
+	unsigned long m;
+
+	if (align == 0)
+		return b;
+	m = b % align;
+	if (m)
+		b += align - m;
+	return b;
+}
+
 errcode_t mk_hugefiles(ext2_filsys fs)
 {
 	unsigned long	i;
 	ext2_ino_t	dir;
 	errcode_t	retval;
 	blk64_t		fs_blocks;
+	unsigned long	align;
 	int		d, dsize;
 	char		*t;
 
@@ -332,6 +345,10 @@ errcode_t mk_hugefiles(ext2_filsys fs)
 	t = get_string_from_profile(fs_types, "hugefiles_size", "0");
 	num_blocks = parse_num_blocks2(t, fs->super->s_log_block_size);
 	free(t);
+	t = get_string_from_profile(fs_types, "hugefiles_align", "0");
+	align = parse_num_blocks2(t, fs->super->s_log_block_size);
+	free(t);
+	num_blocks = round_up_align(num_blocks, align);
 	zero_hugefile = get_int_from_profile(fs_types, "zero_hugefiles",
 					     zero_hugefile);
 
@@ -357,7 +374,12 @@ errcode_t mk_hugefiles(ext2_filsys fs)
 	fn_numbuf = fn_buf + strlen(fn_prefix);
 	free(fn_prefix);
 
-	fs_blocks = ext2fs_free_blocks_count(fs->super) -num_slack;
+	fs_blocks = ext2fs_free_blocks_count(fs->super);
+	if (fs_blocks < num_slack + align)
+		return ENOMEM;
+	fs_blocks -= num_slack + align;
+	if (num_blocks && num_blocks > fs_blocks)
+		return ENOMEM;
 	if (num_blocks == 0 && num_files == 0)
 		num_files = 1;
 
@@ -378,6 +400,7 @@ errcode_t mk_hugefiles(ext2_filsys fs)
 	num_slack += calc_overhead(fs, num_blocks) * num_files;
 	num_slack += (num_files / 16) + 1; /* space for dir entries */
 	goal = get_start_block(fs, num_slack);
+	goal = round_up_align(goal, align);
 
 	if (!quiet) {
 		if (zero_hugefile && verbose)
