@@ -27,6 +27,7 @@
 #include <time.h>
 #ifdef __linux__
 #include <sys/utsname.h>
+#include <linux/version.h>
 #endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -173,7 +174,29 @@ static int parse_version_number(const char *s)
 	rev = strtol(cp, &endptr, 10);
 	if (cp == endptr)
 		return 0;
-	return ((((major * 256) + minor) * 256) + rev);
+	return KERNEL_VERSION(major, minor, rev);
+}
+
+static int is_before_linux_ver(unsigned int major, unsigned int minor)
+{
+	struct		utsname ut;
+	static int	linux_version_code = -1;
+
+	if (uname(&ut)) {
+		perror("uname");
+		exit(1);
+	}
+	if (linux_version_code < 0)
+		linux_version_code = parse_version_number(ut.release);
+	if (linux_version_code == 0)
+		return 0;
+
+	return linux_version_code < KERNEL_VERSION(major, minor, 0);
+}
+#else
+static int is_before_linux_ver(unsigned int major, unsigned int minor)
+{
+	return 0;
 }
 #endif
 
@@ -1385,9 +1408,6 @@ static void PRS(int argc, char *argv[])
 	 * Finally, we complain about fs_blocks_count > 2^32 on a non-64bit fs.
 	 */
 	blk64_t		fs_blocks_count = 0;
-#ifdef __linux__
-	struct 		utsname ut;
-#endif
 	long		sysval;
 	int		s_opt = -1, r_opt = -1;
 	char		*fs_features = 0;
@@ -1453,15 +1473,8 @@ profile_error:
 	memset(&fs_param, 0, sizeof(struct ext2_super_block));
 	fs_param.s_rev_level = 1;  /* Create revision 1 filesystems now */
 
-#ifdef __linux__
-	if (uname(&ut)) {
-		perror("uname");
-		exit(1);
-	}
-	linux_version_code = parse_version_number(ut.release);
-	if (linux_version_code && linux_version_code < (2*65536 + 2*256))
+	if (is_before_linux_ver(2, 2))
 		fs_param.s_rev_level = 0;
-#endif
 
 	if (argc && *argv) {
 		program_name = get_progname(*argv);
@@ -1869,8 +1882,7 @@ profile_error:
 
 		if (use_bsize == -1) {
 			use_bsize = sys_page_size;
-			if ((linux_version_code < (2*65536 + 6*256)) &&
-			    (use_bsize > 4096))
+			if (is_before_linux_ver(2, 6) && use_bsize > 4096)
 				use_bsize = 4096;
 		}
 		if (lsector_size && use_bsize < lsector_size)
