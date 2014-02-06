@@ -1419,13 +1419,17 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			goto done;
 	} else {
 		__u32	orig_length;
+		blk64_t	orig_lblk;
+		struct ext2fs_extent orig_extent;
+		errcode_t r2;
 
 #ifdef DEBUG
 		printf("(re/un)mapping in middle of extent\n");
 #endif
 		/* need to split this extent; later */
-
+		orig_lblk = extent.e_lblk;
 		orig_length = extent.e_len;
+		orig_extent = extent;
 
 		/* shorten pre-split extent */
 		extent.e_len = (logical - extent.e_lblk);
@@ -1437,8 +1441,13 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			/* insert new extent after current */
 			retval = ext2fs_extent_insert(handle,
 					EXT2_EXTENT_INSERT_AFTER, &newextent);
-			if (retval)
+			if (retval) {
+				r2 = ext2fs_extent_goto(handle, orig_lblk);
+				if (r2 == 0)
+					ext2fs_extent_replace(handle, 0,
+							      &orig_extent);
 				goto done;
+			}
 		}
 		/* add post-split extent */
 		extent.e_pblk += extent.e_len + 1;
@@ -1446,8 +1455,18 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		extent.e_len = orig_length - extent.e_len - 1;
 		retval = ext2fs_extent_insert(handle,
 				EXT2_EXTENT_INSERT_AFTER, &extent);
-		if (retval)
+		if (retval) {
+			if (physical) {
+				r2 = ext2fs_extent_goto(handle,
+							newextent.e_lblk);
+				if (r2 == 0)
+					ext2fs_extent_delete(handle, 0);
+			}
+			r2 = ext2fs_extent_goto(handle, orig_lblk);
+			if (r2 == 0)
+				ext2fs_extent_replace(handle, 0, &orig_extent);
 			goto done;
+		}
 	}
 
 done:
