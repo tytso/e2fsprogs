@@ -255,8 +255,10 @@ got_block:
 	set_extent:
 		retval = ext2fs_extent_set_bmap(handle, block,
 						blk64, 0);
-		if (retval)
+		if (retval) {
+			ext2fs_block_alloc_stats2(fs, blk64, -1);
 			return retval;
+		}
 		/* Update inode after setting extent */
 		retval = ext2fs_read_inode(fs, ino, inode);
 		if (retval)

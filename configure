@@ -11456,8 +11456,13 @@ fi
 
 # Check whether --with-multiarch was given.
 if test "${with_multiarch+set}" = set; then :
-  withval=$with_multiarch; libdir=$libdir/$withval
-root_libdir=$root_libdir/$withval
+  withval=$with_multiarch; if test "$withval" = "lib64"; then
+    libdir=/usr/lib64
+    root_libdir=/lib64
+else
+    libdir=$libdir/$withval
+    root_libdir=$root_libdir/$withval
+fi
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we can link with -static" >&5

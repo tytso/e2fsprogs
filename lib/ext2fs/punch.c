@@ -288,8 +288,12 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			   (unsigned long long) end,
 			   (unsigned long long) next);
 		if (start <= extent.e_lblk) {
+			/*
+			 * Have we iterated past the end of the punch region?
+			 * If so, we can stop.
+			 */
 			if (end < extent.e_lblk)
-				goto next_extent;
+				break;
 			dbg_printf("Case #%d\n", 1);
 			/* Start of deleted region before extent; 
 			   adjust beginning of extent */
@@ -303,8 +307,13 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			extent.e_lblk += free_count;
 			extent.e_pblk += free_count;
 		} else if (end >= next-1) {
+			/*
+			 * Is the punch region beyond this extent?  This can
+			 * happen if start is already inside a hole.  Try to
+			 * advance to the next extent if this is the case.
+			 */
 			if (start >= next)
-				break;
+				goto next_extent;
 			/* End of deleted region after extent;
 			   adjust end of extent */
 			dbg_printf("Case #%d\n", 2);
@@ -344,6 +353,9 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 		if (extent.e_len) {
 			dbg_print_extent("replacing", &extent);
 			retval = ext2fs_extent_replace(handle, 0, &extent);
+			if (retval)
+				goto errout;
+			retval = ext2fs_extent_fix_parents(handle);
 		} else {
 			struct ext2fs_extent	newex;
 			blk64_t			old_lblk, next_lblk;
@@ -377,6 +389,11 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			retval = ext2fs_extent_delete(handle, 0);
 			if (retval)
 				goto errout;
+
+			retval = ext2fs_extent_fix_parents(handle);
+			if (retval && retval != EXT2_ET_NO_CURRENT_NODE)
+				goto errout;
+			retval = 0;
 
 			/* Jump forward to the next extent. */
 			ext2fs_extent_goto(handle, next_lblk);

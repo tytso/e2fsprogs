@@ -349,8 +349,8 @@ errcode_t mk_hugefiles(ext2_filsys fs)
 	align = parse_num_blocks2(t, fs->super->s_log_block_size);
 	free(t);
 	num_blocks = round_up_align(num_blocks, align);
-	zero_hugefile = get_int_from_profile(fs_types, "zero_hugefiles",
-					     zero_hugefile);
+	zero_hugefile = get_bool_from_profile(fs_types, "zero_hugefiles",
+					      zero_hugefile);
 
 	t = get_string_from_profile(fs_types, "hugefiles_dir", "/");
 	retval = create_directory(fs, t, &dir);
@@ -401,6 +401,11 @@ errcode_t mk_hugefiles(ext2_filsys fs)
 	num_slack += (num_files / 16) + 1; /* space for dir entries */
 	goal = get_start_block(fs, num_slack);
 	goal = round_up_align(goal, align);
+
+	if ((num_blocks ? num_blocks : fs_blocks) >
+	    (0x80000000UL / fs->blocksize))
+		fs->super->s_feature_ro_compat |=
+			EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
 
 	if (!quiet) {
 		if (zero_hugefile && verbose)

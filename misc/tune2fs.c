@@ -931,6 +931,19 @@ static int update_feature_set(ext2_filsys fs, char *features)
 				return 1;
 		}
 	}
+
+	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
+		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)) {
+		if (sb->s_feature_incompat &
+			EXT2_FEATURE_INCOMPAT_META_BG) {
+			fputs(_("Setting filesystem feature 'sparse_super' "
+				"not supported\nfor filesystems with "
+				"the meta_bg feature enabled.\n"),
+				stderr);
+			return 1;
+		}
+	}
+
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_MMP)) {
 		int error;
 
@@ -2582,10 +2595,18 @@ retry_open:
 	}
 	if (s_flag == 1) {
 		if (sb->s_feature_ro_compat &
-		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
+		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) {
 			fputs(_("\nThe filesystem already has sparse "
 				"superblocks.\n"), stderr);
-		else {
+		} else if (sb->s_feature_incompat &
+			EXT2_FEATURE_INCOMPAT_META_BG) {
+			fputs(_("\nSetting the sparse superblock flag not "
+				"supported\nfor filesystems with "
+				"the meta_bg feature enabled.\n"),
+				stderr);
+			rc = 1;
+			goto closefs;
+		} else {
 			sb->s_feature_ro_compat |=
 				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 			sb->s_state &= ~EXT2_VALID_FS;
@@ -2595,7 +2616,7 @@ retry_open:
 		}
 	}
 	if (s_flag == 0) {
-		fputs(_("\nClearing the sparse superflag not supported.\n"),
+		fputs(_("\nClearing the sparse superblock flag not supported.\n"),
 		      stderr);
 		rc = 1;
 		goto closefs;
