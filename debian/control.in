@@ -124,6 +124,7 @@ Description: runtime components for the Universally Unique ID library
  different CPU’s. It is used by libuuid as well as the uuidgen
  program.
 
+ifdef(`UDEV_PKGS',``
 Package: libuuid1-udeb
 XC-Package-Type: udeb
 Section: debian-installer
@@ -135,6 +136,7 @@ Description: stripped down universally unique id library, for debian-installer
  See RFC 4122 for more information.
  .
  This is a minimal package for debian-installer.
+'')dnl
 
 Package: uuid-dev
 Section: libdevel
@@ -159,6 +161,7 @@ Description: block device id library
  filesystems by hard-coded device names, but via a logical naming 
  system instead.
 
+ifdef(`UDEV_PKGS',``
 Package: libblkid1-udeb
 XC-Package-Type: udeb
 Section: debian-installer
@@ -173,6 +176,7 @@ Description: stripped down block device id library, for debian-installer
  system instead.
  .
  This is a minimal package for debian-installer.
+'')dnl
 
 Package: libblkid-dev
 Section: libdevel
@@ -189,6 +193,7 @@ Description: block device id library - headers and static libraries
  This package contains the development environment for the blkid library.
 '')dnl
 
+ifdef(`UDEV_PKGS',``
 Package: e2fsprogs-udeb
 XC-Package-Type: udeb
 Section: debian-installer
@@ -201,6 +206,7 @@ Description: stripped-down versions of e2fsprogs, for debian-installer
  .
  Don't attempt to install this package, it has no support for a couple of
  features you surely want.  Anyway it should refuse to install.
+'')dnl
 
 Package: e2fslibs
 Section: libs

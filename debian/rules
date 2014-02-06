@@ -139,6 +139,10 @@ BUILD_STATIC = build-static
 E2FSCK_STATIC = ${staticbuilddir}/e2fsck/e2fsck.static
 endif
 
+ifneq ($(SKIP_UDEB),)
+SKIP_BF ?= yes
+endif
+
 ifeq ($(SKIP_BF),yes)
 BUILD_BF =
 bfbuilddir	?= ${stdbuilddir}
@@ -220,6 +224,13 @@ ifneq ($(BUILD_E2FSCK_STATIC),no)
 M4_ARGS+=-DE2FSCK_STATIC
 else
 M4_ARGS+=-UE2FSCK_STATIC
+endif
+
+ifeq ($(SKIP_UDEB),)
+INSTALL_UDEB = install-udeb
+M4_ARGS+=-DUDEB_PKGS
+else
+M4_ARGS+=-UUDEB_PKGS
 endif
 
 FILES_FIXUP= libcomerr2.files comerr-dev.files libss2.files ss-dev.files \
@@ -469,7 +480,7 @@ binary-indep:
   # no arch-independant debs.
 
 binary-arch: DH_OPTIONS= -a
-binary-arch: install install-udeb
+binary-arch: install $(INSTALL_UDEB)
 	dh_testdir
 	dh_testroot
 
@@ -557,7 +568,9 @@ endif
 
 	dh_fixperms
 	dh_strip -pe2fsprogs --dbg-package=e2fsprogs-dbg
+ifneq ($(BUILD_E2FSCK_STATIC),no)
 	dh_strip -pe2fsck-static --dbg-package=e2fsprogs-dbg
+endif
 ifneq ($(ismips),)
 	dh_strip -pe2fslibs --dbg-package=e2fslibs-dbg -Xlib64ext2fs-nopic.a
 else
@@ -616,6 +629,7 @@ endif
 	dh_compress
 
 	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+ifeq ($(SKIP_UDEB),)
 	dh_makeshlibs --add-udeb=e2fsprogs-udeb -plibcomerr${COMERR_SOVERSION} \
 		-V 'libcomerr2 (>= 1.33-3)'
 ifneq ($(UTIL_LINUX_NG),yes)
@@ -624,13 +638,16 @@ ifneq ($(UTIL_LINUX_NG),yes)
 		debian/libblkid1/DEBIAN/shlibs
 	echo "udeb: libuuid 1 libuuid1-udeb" >> debian/libuuid1/DEBIAN/shlibs
 endif
+endif
 
 	dh_installdeb
 	dh_shlibdeps -l${stdbuilddir}/lib
 	dh_shlibdeps -pe2fsprogs -l${stdbuilddir}/lib \
 		-u"-Ldebian/e2fsprogs.shlibs.local"
+ifeq ($(SKIP_UDEB),)
 	dh_shlibdeps -pe2fsprogs-udeb -l${stdbuilddir}/lib \
 		-u"-Ldebian/e2fsprogs-udeb.shlibs.local"
+endif
 
 	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
 		-Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
@@ -642,23 +659,29 @@ ifneq ($(UTIL_LINUX_NG),yes)
 	DH_OPTIONS= dh_gencontrol -puuid-dev \
 	  -u '-v${UUID_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 endif
+ifeq ($(SKIP_UDEB),)
 	dh_gencontrol	-pe2fsprogs-udeb -- -fdebian/files~
 ifneq ($(UTIL_LINUX_NG),yes)
 	dh_gencontrol	-plibblkid1-udeb -- -fdebian/files~
 	dh_gencontrol	-plibuuid1-udeb -- -fdebian/files~
 endif
+endif
 
+ifeq ($(SKIP_UDEB),)
 	dpkg-distaddfile $(UDEB_NAME) debian-installer $(UDEB_PRIORITY)
 ifneq ($(UTIL_LINUX_NG),yes)
 	dpkg-distaddfile $(BLKID_UDEB_NAME) debian-installer $(BLKID_UDEB_PRIORITY)
 	dpkg-distaddfile $(UUID_UDEB_NAME) debian-installer $(UUID_UDEB_PRIORITY)
 endif
+endif
 	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+ifeq ($(SKIP_UDEB),)
 	dh_builddeb -pe2fsprogs-udeb --filename=$(UDEB_NAME)
 ifneq ($(UTIL_LINUX_NG),yes)
 	dh_builddeb -plibblkid1-udeb --filename=$(BLKID_UDEB_NAME)
 	dh_builddeb -plibuuid1-udeb --filename=$(UUID_UDEB_NAME)
+endif
 endif
 
 binary: binary-indep binary-arch
