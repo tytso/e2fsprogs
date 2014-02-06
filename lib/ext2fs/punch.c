@@ -353,6 +353,9 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 		if (extent.e_len) {
 			dbg_print_extent("replacing", &extent);
 			retval = ext2fs_extent_replace(handle, 0, &extent);
+			if (retval)
+				goto errout;
+			retval = ext2fs_extent_fix_parents(handle);
 		} else {
 			struct ext2fs_extent	newex;
 			blk64_t			old_lblk, next_lblk;
@@ -386,6 +389,11 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			retval = ext2fs_extent_delete(handle, 0);
 			if (retval)
 				goto errout;
+
+			retval = ext2fs_extent_fix_parents(handle);
+			if (retval && retval != EXT2_ET_NO_CURRENT_NODE)
+				goto errout;
+			retval = 0;
 
 			/* Jump forward to the next extent. */
 			ext2fs_extent_goto(handle, next_lblk);
