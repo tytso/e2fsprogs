@@ -369,7 +369,7 @@ static int check_fsck_needed(ext2_filsys fs)
 		return 0;
 	printf("\n%s\n", _(please_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
-		printf(_("(and reboot afterwards!)\n"));
+		printf("%s", _("(and reboot afterwards!)\n"));
 	return 1;
 }
 

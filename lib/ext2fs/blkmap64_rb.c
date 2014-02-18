@@ -89,15 +89,15 @@ static void check_tree(struct rb_root *root, const char *msg)
 	for (node = ext2fs_rb_first(root); node;
 	     node = ext2fs_rb_next(node)) {
 		ext = node_to_extent(node);
-		if (ext->count <= 0) {
-			printf("Tree Error: count is crazy\n");
-			printf("extent: %llu -> %llu (%u)\n", ext->start,
+		if (ext->count == 0) {
+			printf("Tree Error: count is zero\n");
+			printf("extent: %llu -> %llu (%llu)\n", ext->start,
 				ext->start + ext->count, ext->count);
 			goto err_out;
 		}
-		if (ext->start < 0) {
-			printf("Tree Error: start is crazy\n");
-			printf("extent: %llu -> %llu (%u)\n", ext->start,
+		if (ext->start + ext->count < ext->start) {
+			printf("Tree Error: start or count is crazy\n");
+			printf("extent: %llu -> %llu (%llu)\n", ext->start,
 				ext->start + ext->count, ext->count);
 			goto err_out;
 		}
@@ -105,20 +105,20 @@ static void check_tree(struct rb_root *root, const char *msg)
 		if (old) {
 			if (old->start > ext->start) {
 				printf("Tree Error: start is crazy\n");
-				printf("extent: %llu -> %llu (%u)\n",
+				printf("extent: %llu -> %llu (%llu)\n",
 					old->start, old->start + old->count,
 					old->count);
-				printf("extent next: %llu -> %llu (%u)\n",
+				printf("extent next: %llu -> %llu (%llu)\n",
 					ext->start, ext->start + ext->count,
 					ext->count);
 				goto err_out;
 			}
 			if ((old->start + old->count) >= ext->start) {
 				printf("Tree Error: extent is crazy\n");
-				printf("extent: %llu -> %llu (%u)\n",
+				printf("extent: %llu -> %llu (%llu)\n",
 					old->start, old->start + old->count,
 					old->count);
-				printf("extent next: %llu -> %llu (%u)\n",
+				printf("extent next: %llu -> %llu (%llu)\n",
 					ext->start, ext->start + ext->count,
 					ext->count);
 				goto err_out;

@@ -31,7 +31,8 @@ static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 
 	retval = ext2fs_read_inode(fs, from_ino, &inode);
 	if (retval) {
-		com_err("ext2fs_read_inode", retval, _("in move_quota_inode"));
+		com_err("ext2fs_read_inode", retval, "%s",
+			_("in move_quota_inode"));
 		return;
 	}
 
@@ -44,7 +45,7 @@ static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 
 	retval = ext2fs_write_new_inode(fs, to_ino, &inode);
 	if (retval) {
-		com_err("ext2fs_write_new_inode", retval,
+		com_err("ext2fs_write_new_inode", retval, "%s",
 			_("in move_quota_inode"));
 		return;
 	}
