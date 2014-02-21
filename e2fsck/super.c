@@ -30,9 +30,9 @@ static void check_super_value(e2fsck_t ctx, const char *descr,
 {
 	struct		problem_context pctx;
 
-	if (((flags & MIN_CHECK) && (value < min_val)) ||
-	    ((flags & MAX_CHECK) && (value > max_val)) ||
-	    ((flags & LOG2_CHECK) && (value & (value - 1) != 0))) {
+	if ((flags & MIN_CHECK && value < min_val) ||
+	    (flags & MAX_CHECK && value > max_val) ||
+	    (flags & LOG2_CHECK && (value & (value - 1)) != 0)) {
 		clear_problem_context(&pctx);
 		pctx.num = value;
 		pctx.str = descr;

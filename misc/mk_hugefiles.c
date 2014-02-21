@@ -409,7 +409,7 @@ errcode_t mk_hugefiles(ext2_filsys fs)
 
 	if (!quiet) {
 		if (zero_hugefile && verbose)
-			printf(_("Huge files will be zero'ed\n"));
+			printf("%s", _("Huge files will be zero'ed\n"));
 		printf(_("Creating %lu huge file(s) "), num_files);
 		if (num_blocks)
 			printf(_("with %llu blocks each"), num_blocks);

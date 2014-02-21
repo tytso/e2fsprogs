@@ -1,13 +1,13 @@
 /*
  * unix_io.c --- This is the Unix (well, really POSIX) implementation
- * 	of the I/O manager.
+ *	of the I/O manager.
  *
  * Implements a one-block write-through cache.
  *
  * Includes support for Windows NT support under Cygwin.
  *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
- * 	2002 by Theodore Ts'o.
+ *	2002 by Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Library
@@ -97,51 +97,9 @@ struct unix_private_data {
 #define IS_ALIGNED(n, align) ((((unsigned long) n) & \
 			       ((unsigned long) ((align)-1))) == 0)
 
-static errcode_t unix_open(const char *name, int flags, io_channel *channel);
-static errcode_t unix_close(io_channel channel);
-static errcode_t unix_set_blksize(io_channel channel, int blksize);
-static errcode_t unix_read_blk(io_channel channel, unsigned long block,
-			       int count, void *data);
-static errcode_t unix_write_blk(io_channel channel, unsigned long block,
-				int count, const void *data);
-static errcode_t unix_flush(io_channel channel);
-static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
-				int size, const void *data);
-static errcode_t unix_set_option(io_channel channel, const char *option,
-				 const char *arg);
-static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
-;
-static void reuse_cache(io_channel channel, struct unix_private_data *data,
-		 struct unix_cache *cache, unsigned long long block);
-static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
-			       int count, void *data);
-static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
-				int count, const void *data);
-static errcode_t unix_discard(io_channel channel, unsigned long long block,
-			      unsigned long long count);
-
-static struct struct_io_manager struct_unix_manager = {
-	EXT2_ET_MAGIC_IO_MANAGER,
-	"Unix I/O Manager",
-	unix_open,
-	unix_close,
-	unix_set_blksize,
-	unix_read_blk,
-	unix_write_blk,
-	unix_flush,
-	unix_write_byte,
-	unix_set_option,
-	unix_get_stats,
-	unix_read_blk64,
-	unix_write_blk64,
-	unix_discard,
-};
-
-io_manager unix_io_manager = &struct_unix_manager;
-
 static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 {
-	errcode_t 	retval = 0;
+	errcode_t	retval = 0;
 
 	struct unix_private_data *data;
 
@@ -476,7 +434,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	int		f_nocache = 0;
 	ext2fs_struct_stat st;
 #ifdef __linux__
-	struct 		utsname ut;
+	struct		utsname ut;
 #endif
 
 	if (name == 0)
@@ -963,3 +921,22 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
 }
+
+static struct struct_io_manager struct_unix_manager = {
+	EXT2_ET_MAGIC_IO_MANAGER,
+	"Unix I/O Manager",
+	unix_open,
+	unix_close,
+	unix_set_blksize,
+	unix_read_blk,
+	unix_write_blk,
+	unix_flush,
+	unix_write_byte,
+	unix_set_option,
+	unix_get_stats,
+	unix_read_blk64,
+	unix_write_blk64,
+	unix_discard,
+};
+
+io_manager unix_io_manager = &struct_unix_manager;

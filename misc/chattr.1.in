@@ -112,8 +112,8 @@ to the file.  Only the superuser or a process possessing the
 CAP_LINUX_IMMUTABLE capability can set or clear this attribute.
 .PP
 A file with the `j' attribute has all of its data written to the ext3
-journal before being written to the file itself, if the filesystem is
-mounted with the "data=ordered" or "data=writeback" options.  When the
+or ext4 journal before being written to the file itself, if the filesystem
+is mounted with the "data=ordered" or "data=writeback" options.  When the
 filesystem is mounted with the "data=journal" option all file data
 is already journalled and this attribute has no effect.  Only
 the superuser or a process possessing the CAP_SYS_RESOURCE
@@ -171,7 +171,7 @@ The `c', 's',  and `u' attributes are not honored
 by the ext2, ext3, and ext4 filesystems as implemented in the current
 mainline Linux kernels.
 .PP
-The `j' option is only useful if the filesystem is mounted as ext3.
+The `j' option is only useful if the filesystem is mounted as ext3 or ext4.
 .PP
 The `D' option is only useful on Linux kernel 2.5.19 and later.
 .SH AVAILABILITY

@@ -209,6 +209,7 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 	rfs->flags = flags;
 
 	ext2fs_free(rfs->old_fs);
+	rfs->old_fs = NULL;
 	if (rfs->itable_buf)
 		ext2fs_free_mem(&rfs->itable_buf);
 	if (rfs->reserve_blocks)
@@ -220,8 +221,10 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 	return 0;
 
 errout:
-	if (rfs->new_fs)
+	if (rfs->new_fs) {
 		ext2fs_free(rfs->new_fs);
+		rfs->new_fs = NULL;
+	}
 	if (rfs->itable_buf)
 		ext2fs_free_mem(&rfs->itable_buf);
 	ext2fs_free_mem(&rfs);

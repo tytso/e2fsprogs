@@ -39,7 +39,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
-#include <sys/syscall.h>
 #include <sys/vfs.h>
 
 /* A relatively new ioctl interface ... */
@@ -194,56 +193,13 @@ static struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
 #error posix_fadvise not available!
 #endif
 
-/*
- * Local definitions of some syscalls glibc may not yet have
- */
 #ifndef HAVE_SYNC_FILE_RANGE
-#warning Using locally defined sync_file_range interface.
-
-#ifndef __NR_sync_file_range
-#ifndef __NR_sync_file_range2 /* ppc */
-#error Your kernel headers dont define __NR_sync_file_range
-#endif
-#endif
-
-/*
- * sync_file_range() -	Sync file region.
- *
- * @fd:			defrag target file's descriptor.
- * @offset:		file offset.
- * @length:		area length.
- * @flag:		process flag.
- */
-int sync_file_range(int fd, loff_t offset, loff_t length, unsigned int flag)
-{
-#ifdef __NR_sync_file_range
-	return syscall(__NR_sync_file_range, fd, offset, length, flag);
-#else
-	return syscall(__NR_sync_file_range2, fd, flag, offset, length);
-#endif
-}
+#error sync_file_range not available!
 #endif /* ! HAVE_SYNC_FILE_RANGE */
 
 #ifndef HAVE_FALLOCATE64
-#warning Using locally defined fallocate syscall interface.
-
-#ifndef __NR_fallocate
-#error Your kernel headers dont define __NR_fallocate
-#endif
-
-/*
- * fallocate64() -	Manipulate file space.
- *
- * @fd:			defrag target file's descriptor.
- * @mode:		process flag.
- * @offset:		file offset.
- * @len:		file size.
- */
-static int fallocate64(int fd, int mode, loff_t offset, loff_t len)
-{
-	return syscall(__NR_fallocate, fd, mode, offset, len);
-}
-#endif /* ! HAVE_FALLOCATE */
+#error fallocate64 not available!
+#endif /* ! HAVE_FALLOCATE64 */
 
 /*
  * get_mount_point() -	Get device's mount point.
