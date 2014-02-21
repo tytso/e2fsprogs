@@ -248,7 +248,10 @@ option is useful when removing the
 filesystem feature from a filesystem which has 
 an external journal (or is corrupted
 such that it appears to have an external journal), but that 
-external journal is not available.   
+external journal is not available.   If the filesystem appears to require
+journal replay, the
+.B \-f
+flag must be specified twice to proceed.
 .sp
 .B WARNING:
 Removing an external journal from a filesystem which was not cleanly unmounted

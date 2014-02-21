@@ -437,8 +437,9 @@ static int update_feature_set(ext2_filsys fs, char *features)
 				"read-only.\n"), stderr);
 			return 1;
 		}
-		if (sb->s_feature_incompat &
-		    EXT3_FEATURE_INCOMPAT_RECOVER) {
+		if ((sb->s_feature_incompat &
+		    EXT3_FEATURE_INCOMPAT_RECOVER) &&
+		    f_flag < 2) {
 			fputs(_("The needs_recovery flag is set.  "
 				"Please run e2fsck before clearing\n"
 				"the has_journal flag.\n"), stderr);
@@ -948,7 +949,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 			open_flag |= EXT2_FLAG_RW;
 			break;
 		case 'f': /* Force */
-			f_flag = 1;
+			f_flag++;
 			break;
 		case 'g':
 			resgid = strtoul(optarg, &tmp, 0);
