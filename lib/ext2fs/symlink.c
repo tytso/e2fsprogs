@@ -31,7 +31,6 @@
 errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 			 const char *name, char *target)
 {
-	ext2_extent_handle_t	handle;
 	errcode_t		retval;
 	struct ext2_inode	inode;
 	ext2_ino_t		scratch_ino;
