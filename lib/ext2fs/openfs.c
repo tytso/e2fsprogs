@@ -450,10 +450,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 
 	return 0;
 cleanup:
-	if (flags & EXT2_FLAG_NOFREE_ON_ERROR)
-		*ret_fs = fs;
-	else
+	if (!(flags & EXT2_FLAG_NOFREE_ON_ERROR)) {
 		ext2fs_free(fs);
+		fs = NULL;
+	}
+	*ret_fs = fs;
 	return retval;
 }
 
