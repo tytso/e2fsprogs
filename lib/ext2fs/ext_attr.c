@@ -191,19 +191,19 @@ errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 struct ext2_xattr {
 	char *name;
 	void *value;
-	unsigned int value_len;
+	size_t value_len;
 };
 
 struct ext2_xattr_handle {
 	ext2_filsys fs;
 	struct ext2_xattr *attrs;
-	unsigned int length;
+	size_t length;
 	ext2_ino_t ino;
 	int dirty;
 };
 
-errcode_t ext2fs_xattrs_expand(struct ext2_xattr_handle *h,
-			       unsigned int expandby)
+static errcode_t ext2fs_xattrs_expand(struct ext2_xattr_handle *h,
+				      unsigned int expandby)
 {
 	struct ext2_xattr *new_attrs;
 	errcode_t err;
@@ -756,7 +756,7 @@ out:
 
 errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
 				int (*func)(char *name, char *value,
-					    void *data),
+					    size_t value_len, void *data),
 				void *data)
 {
 	struct ext2_xattr *x;
@@ -767,7 +767,7 @@ errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
 		if (!x->name)
 			continue;
 
-		ret = func(x->name, x->value, data);
+		ret = func(x->name, x->value, x->value_len, data);
 		if (ret & XATTR_CHANGED)
 			h->dirty = 1;
 		if (ret & XATTR_ABORT)
@@ -778,7 +778,7 @@ errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
 }
 
 errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
-			   void **value, unsigned int *value_len)
+			   void **value, size_t *value_len)
 {
 	struct ext2_xattr *x;
 	void *val;
@@ -805,7 +805,7 @@ errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
 errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 			   const char *key,
 			   const void *value,
-			   unsigned int value_len)
+			   size_t value_len)
 {
 	struct ext2_xattr *x, *last_empty;
 	char *new_value;
