@@ -542,34 +542,45 @@ static void internal_dump_inode_extra(FILE *out,
 				inode->i_extra_isize);
 		return;
 	}
-	storage_size = EXT2_INODE_SIZE(current_fs->super) -
-			EXT2_GOOD_OLD_INODE_SIZE -
-			inode->i_extra_isize;
-	magic = (__u32 *)((char *)inode + EXT2_GOOD_OLD_INODE_SIZE +
-			inode->i_extra_isize);
-	if (*magic == EXT2_EXT_ATTR_MAGIC) {
-		fprintf(out, "Extended attributes stored in inode body: \n");
-		end = (char *) inode + EXT2_INODE_SIZE(current_fs->super);
-		start = (char *) magic + sizeof(__u32);
-		entry = (struct ext2_ext_attr_entry *) start;
-		while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
-			struct ext2_ext_attr_entry *next =
-				EXT2_EXT_ATTR_NEXT(entry);
-			if (entry->e_value_size > storage_size ||
-					(char *) next >= end) {
-				fprintf(out, "invalid EA entry in inode\n");
-				return;
-			}
-			fprintf(out, "  ");
-			dump_xattr_string(out, EXT2_EXT_ATTR_NAME(entry),
-					  entry->e_name_len);
-			fprintf(out, " = \"");
-			dump_xattr_string(out, start + entry->e_value_offs,
-						entry->e_value_size);
-			fprintf(out, "\" (%u)\n", entry->e_value_size);
-			entry = next;
-		}
-	}
+}
+
+/* Dump extended attributes */
+static int dump_attr(char *name, char *value, size_t value_len, void *data)
+{
+	FILE *out = data;
+
+	fprintf(out, "  ");
+	dump_xattr_string(out, name, strlen(name));
+	fprintf(out, " = \"");
+	dump_xattr_string(out, value, value_len);
+	fprintf(out, "\" (%zu)\n", value_len);
+
+	return 0;
+}
+
+static void dump_inode_attributes(FILE *out, ext2_ino_t ino)
+{
+	struct ext2_xattr_handle *h;
+	errcode_t err;
+
+	err = ext2fs_xattrs_open(current_fs, ino, &h);
+	if (err)
+		return;
+
+	err = ext2fs_xattrs_read(h);
+	if (err)
+		goto out;
+
+	if (ext2fs_xattrs_count(h) == 0)
+		goto out;
+
+	fprintf(out, "Extended attributes:\n");
+	err = ext2fs_xattrs_iterate(h, dump_attr, out);
+	if (err)
+		goto out;
+
+out:
+	err = ext2fs_xattrs_close(&h);
 }
 
 static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
@@ -817,6 +828,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
 		internal_dump_inode_extra(out, prefix, inode_num,
 					  (struct ext2_inode_large *) inode);
+	dump_inode_attributes(out, inode_num);
 	if (current_fs->super->s_creator_os == EXT2_OS_LINUX &&
 	    current_fs->super->s_feature_ro_compat &
 		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
