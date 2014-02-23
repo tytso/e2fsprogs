@@ -656,6 +656,20 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	return 0;
 }
 
+static void xattrs_free_keys(struct ext2_xattr_handle *h)
+{
+	struct ext2_xattr *a = h->attrs;
+	size_t i;
+
+	for (i = 0; i < h->length; i++) {
+		if (a[i].name)
+			ext2fs_free_mem(&a[i].name);
+		if (a[i].value)
+			ext2fs_free_mem(&a[i].value);
+	}
+	h->count = 0;
+}
+
 errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 {
 	struct ext2_xattr *attrs = NULL, *x;
@@ -680,6 +694,8 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 				     EXT2_INODE_SIZE(handle->fs->super));
 	if (err)
 		goto out;
+
+	xattrs_free_keys(handle);
 
 	/* Does the inode have size for EA? */
 	if (EXT2_INODE_SIZE(handle->fs->super) <= EXT2_GOOD_OLD_INODE_SIZE +
@@ -927,9 +943,7 @@ errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
 
 errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle)
 {
-	unsigned int i;
 	struct ext2_xattr_handle *h = *handle;
-	struct ext2_xattr *a = h->attrs;
 	errcode_t err;
 
 	if (h->dirty) {
@@ -938,13 +952,7 @@ errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle)
 			return err;
 	}
 
-	for (i = 0; i < h->length; i++) {
-		if (a[i].name)
-			ext2fs_free_mem(&a[i].name);
-		if (a[i].value)
-			ext2fs_free_mem(&a[i].value);
-	}
-
+	xattrs_free_keys(h);
 	ext2fs_free_mem(&h->attrs);
 	ext2fs_free_mem(handle);
 	return 0;
