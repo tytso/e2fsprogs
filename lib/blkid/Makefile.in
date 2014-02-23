@@ -118,7 +118,7 @@ tst_tag: $(srcdir)/tag.c $(DEPLIBS_BLKID)
 
 tst_types: tst_types.o blkid_types.h 
 	$(E) "	LD $@"
-	$(Q) $(CC) -o tst_types tst_types.o 
+	$(Q) $(CC) -o tst_types $(ALL_LDFLAGS) tst_types.o
 
 ../../misc/blkid.o: $(top_srcdir)/misc/blkid.c blkid.h
 	$(E) "	CC $@"

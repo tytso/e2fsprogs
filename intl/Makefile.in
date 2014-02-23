@@ -488,13 +488,14 @@ id: ID
 ID: $(HEADERS) $(SOURCES)
 	here=`pwd`; cd $(srcdir) && mkid -f$$here/ID $(HEADERS) $(SOURCES)
 
+coverage.txt::
 
 mostlyclean:
 	rm -f *.a *.la *.o *.obj *.lo core core.*
 	rm -f libgnuintl.h libintl.h charset.alias ref-add.sed ref-del.sed
 	rm -f -r .libs _libs
 
-clean: mostlyclean
+clean:: mostlyclean
 
 distclean: clean
 	rm -f Makefile ID TAGS

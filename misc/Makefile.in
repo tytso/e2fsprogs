@@ -599,7 +599,7 @@ uninstall:
 		$(RM) $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; \
 	fi
 
-clean:
+clean::
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
 		$(FMANPAGES) profile.h \
 		base_device base_device.out mke2fs.static filefrag e2freefrag \

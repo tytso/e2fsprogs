@@ -273,7 +273,7 @@ uninstall:
 			$(DESTDIR)$(root_sbindir)/fsck.ext4 \
 			$(DESTDIR)$(root_sbindir)/fsck.ext4dev
 
-clean:
+clean::
 	$(RM) -f $(PROGS) \#* *\# *.s *.o *.a *~ core e2fsck.static \
 		e2fsck.shared e2fsck.profiled flushb e2fsck.8 \
 		tst_problem tst_crc32 tst_region tst_refcount gen_crc32table \
