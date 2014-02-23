@@ -197,7 +197,7 @@ struct ext2_xattr {
 struct ext2_xattr_handle {
 	ext2_filsys fs;
 	struct ext2_xattr *attrs;
-	size_t length;
+	size_t length, count;
 	ext2_ino_t ino;
 	int dirty;
 };
@@ -575,7 +575,8 @@ out:
 static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 					 struct ext2_ext_attr_entry *entries,
 					 unsigned int storage_size,
-					 void *value_start)
+					 void *value_start,
+					 size_t *nr_read)
 {
 	struct ext2_xattr *x;
 	struct ext2_ext_attr_entry *entry;
@@ -648,6 +649,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 		memcpy(x->value, value_start + entry->e_value_offs,
 		       entry->e_value_size);
 		x++;
+		(*nr_read)++;
 		entry = EXT2_EXT_ATTR_NEXT(entry);
 	}
 
@@ -696,7 +698,7 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 			inode->i_extra_isize + sizeof(__u32);
 
 		err = read_xattrs_from_buffer(handle, start, storage_size,
-					      start);
+					      start, &handle->count);
 		if (err)
 			goto out;
 	}
@@ -736,7 +738,7 @@ read_ea_block:
 			sizeof(struct ext2_ext_attr_header);
 		start = block_buf + sizeof(struct ext2_ext_attr_header);
 		err = read_xattrs_from_buffer(handle, start, storage_size,
-					      block_buf);
+					      block_buf, &handle->count);
 		if (err)
 			goto out3;
 
@@ -845,6 +847,7 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 		memcpy(last_empty->value, value, value_len);
 		last_empty->value_len = value_len;
 		handle->dirty = 1;
+		handle->count++;
 		return 0;
 	}
 
@@ -865,6 +868,7 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 	memcpy(x->value, value, value_len);
 	x->value_len = value_len;
 	handle->dirty = 1;
+	handle->count++;
 	return 0;
 }
 
@@ -883,6 +887,7 @@ errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
 			ext2fs_free_mem(&x->value);
 			x->value_len = 0;
 			handle->dirty = 1;
+			handle->count--;
 			return 0;
 		}
 	}
@@ -913,6 +918,7 @@ errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
 		ext2fs_free_mem(&h);
 		return err;
 	}
+	h->count = 0;
 	h->ino = ino;
 	h->fs = fs;
 	*handle = h;
@@ -942,4 +948,9 @@ errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle)
 	ext2fs_free_mem(&h->attrs);
 	ext2fs_free_mem(handle);
 	return 0;
+}
+
+size_t ext2fs_xattrs_count(struct ext2_xattr_handle *handle)
+{
+	return handle->count;
 }
