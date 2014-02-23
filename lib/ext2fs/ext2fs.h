@@ -638,6 +638,13 @@ typedef struct stat ext2fs_struct_stat;
 #define EXT2_FLAG_FLUSH_NO_SYNC          1
 
 /*
+ * Modify and iterate extended attributes
+ */
+struct ext2_xattr_handle;
+#define XATTR_ABORT	1
+#define XATTR_CHANGED	2
+
+/*
  * function prototypes
  */
 static inline int ext2fs_has_group_desc_csum(ext2_filsys fs)
@@ -1154,6 +1161,27 @@ extern errcode_t ext2fs_adjust_ea_refcount3(ext2_filsys fs, blk64_t blk,
 					   char *block_buf,
 					   int adjust, __u32 *newcount,
 					   ext2_ino_t inum);
+errcode_t ext2fs_xattrs_expand(struct ext2_xattr_handle *h,
+			       unsigned int expandby);
+errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle);
+errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle);
+errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
+				int (*func)(char *name, char *value,
+					    void *data),
+				void *data);
+errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
+			   void **value, unsigned int *value_len);
+errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
+			   const char *key,
+			   const void *value,
+			   unsigned int value_len);
+errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
+			      const char *key);
+errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
+			     struct ext2_xattr_handle **handle);
+errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle);
+errcode_t ext2fs_free_ext_attr(ext2_filsys fs, ext2_ino_t ino,
+			       struct ext2_inode_large *inode);
 
 /* extent.c */
 extern errcode_t ext2fs_extent_header_verify(void *ptr, int size);

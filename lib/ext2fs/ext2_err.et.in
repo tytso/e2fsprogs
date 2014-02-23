@@ -482,4 +482,25 @@ ec	EXT2_ET_BLOCK_BITMAP_CSUM_INVALID,
 ec	EXT2_ET_INLINE_DATA_CANT_ITERATE,
 	"Cannot iterate data blocks of an inode containing inline data"
 
+ec	EXT2_ET_EA_BAD_NAME_LEN,
+	"Extended attribute has an invalid name length"
+
+ec	EXT2_ET_EA_BAD_VALUE_SIZE,
+	"Extended attribute has an invalid value length"
+
+ec	EXT2_ET_BAD_EA_HASH,
+	"Extended attribute has an incorrect hash"
+
+ec	EXT2_ET_BAD_EA_HEADER,
+	"Extended attribute block has a bad header"
+
+ec	EXT2_ET_EA_KEY_NOT_FOUND,
+	"Extended attribute key not found"
+
+ec	EXT2_ET_EA_NO_SPACE,
+	"Insufficient space to store extended attribute data"
+
+ec	EXT2_ET_MISSING_EA_FEATURE,
+	"Filesystem is missing ext_attr or inline_data feature"
+
 	end
