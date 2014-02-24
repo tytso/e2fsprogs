@@ -117,7 +117,7 @@ uninstall:
 		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
 	done
 
-clean:
+clean::
 	$(RM) -f $(PROGS) debugfs.8 \#* *.s *.o *.a *~ debug_cmds.c \
 		extent_cmds.c ro_debug_cmds.c core rdebugfs debugfs.static
 

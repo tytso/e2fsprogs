@@ -836,6 +836,7 @@ enable_htree
 enable_elf_shlibs
 enable_bsd_shlibs
 enable_profile
+enable_gcov
 enable_checker
 enable_jbd_debug
 enable_blkid_debug
@@ -1495,6 +1496,7 @@ Optional Features:
   --enable-elf-shlibs	  select ELF shared libraries
   --enable-bsd-shlibs	  select BSD shared libraries
   --enable-profile	  build profiling libraries
+  --enable-gcov	  	  build for coverage testing using gcov
   --enable-checker	  build checker libraries
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
@@ -4682,6 +4684,18 @@ $as_echo "Disabling profiling libraries by default" >&6; }
 fi
 
 
+
+# Check whether --enable-gcov was given.
+if test "${enable_gcov+set}" = set; then :
+  enableval=$enable_gcov; if test "$enableval" = "yes"
+then
+	CFLAGS="-g -fprofile-arcs -ftest-coverage"
+	LDFLAGS="-fprofile-arcs -ftest-coverage"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling gcov support" >&5
+$as_echo "Enabling gcov support" >&6; }
+fi
+
+fi
 
 # Check whether --enable-checker was given.
 if test "${enable_checker+set}" = set; then :

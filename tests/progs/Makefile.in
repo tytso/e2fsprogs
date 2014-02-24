@@ -51,7 +51,7 @@ test_icount_cmds.c: test_icount_cmds.ct
 	$(E) "	MK_CMDS $@"
 	$(Q) $(MK_CMDS) $(srcdir)/test_icount_cmds.ct
 
-clean:
+clean::
 	$(RM) -f $(PROGS) test_rel_cmds.c test_icount_cmds.c \
 		\#* *.s *.o *.a *~ core
 

@@ -104,7 +104,7 @@ check:: test_extent.out
 		exit 1 ; \
 	fi
 
-clean:
+clean::
 	$(RM) -f $(PROGS) $(TEST_PROGS) $(MANPAGES) \#* *.s *.o *.a *~ core \
 		resize2fs.static test_extent.out
 

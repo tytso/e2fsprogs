@@ -249,6 +249,14 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/MCONFIG \
 @MAINTAINER_CMT@$(top_srcdir)/configure: $(top_srcdir)/configure.in
 @MAINTAINER_CMT@	cd $(top_srcdir) && autoheader && autoconf
 
+coverage.txt: Makefile $(SRCS)
+	if test -n "$(SRCS)"; then \
+		gcov -s $(top_srcdir) -o . $(SRCS) > coverage.txt 2>&1 ; \
+	fi
+
+clean::
+	$(RM) -f *.gcda *.gcov *.gcno coverage.txt
+
 #
 # Make depend magic...
 #

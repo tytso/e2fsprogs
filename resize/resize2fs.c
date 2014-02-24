@@ -280,40 +280,61 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
  * release them in the new filesystem data structure, and mark them as
  * reserved so the old inode table blocks don't get overwritten.
  */
-static void free_gdp_blocks(ext2_filsys fs,
-			    ext2fs_block_bitmap reserve_blocks,
-			    ext2_filsys old_fs,
-			    dgrp_t group)
+static errcode_t free_gdp_blocks(ext2_filsys fs,
+				 ext2fs_block_bitmap reserve_blocks,
+				 ext2_filsys old_fs,
+				 dgrp_t group)
 {
 	blk64_t	blk;
 	int	j;
+	dgrp_t	i;
+	ext2fs_block_bitmap bg_map = NULL;
+	errcode_t retval = 0;
+	dgrp_t count = old_fs->group_desc_count - fs->group_desc_count;
 
-	blk = ext2fs_block_bitmap_loc(old_fs, group);
-	if (blk &&
-	    (blk < ext2fs_blocks_count(fs->super))) {
-		ext2fs_block_alloc_stats2(fs, blk, -1);
-		ext2fs_mark_block_bitmap2(reserve_blocks, blk);
+	/* If bigalloc, don't free metadata living in the same cluster */
+	if (EXT2FS_CLUSTER_RATIO(fs) > 1) {
+		retval = ext2fs_allocate_block_bitmap(fs, "bgdata", &bg_map);
+		if (retval)
+			goto out;
+
+		retval = mark_table_blocks(fs, bg_map);
+		if (retval)
+			goto out;
 	}
 
-	blk = ext2fs_inode_bitmap_loc(old_fs, group);
-	if (blk &&
-	    (blk < ext2fs_blocks_count(fs->super))) {
-		ext2fs_block_alloc_stats2(fs, blk, -1);
-		ext2fs_mark_block_bitmap2(reserve_blocks, blk);
+	for (i = group; i < group + count; i++) {
+		blk = ext2fs_block_bitmap_loc(old_fs, i);
+		if (blk &&
+		    (blk < ext2fs_blocks_count(fs->super)) &&
+		    !(bg_map && ext2fs_test_block_bitmap2(bg_map, blk))) {
+			ext2fs_block_alloc_stats2(fs, blk, -1);
+			ext2fs_mark_block_bitmap2(reserve_blocks, blk);
+		}
+
+		blk = ext2fs_inode_bitmap_loc(old_fs, i);
+		if (blk &&
+		    (blk < ext2fs_blocks_count(fs->super)) &&
+		    !(bg_map && ext2fs_test_block_bitmap2(bg_map, blk))) {
+			ext2fs_block_alloc_stats2(fs, blk, -1);
+			ext2fs_mark_block_bitmap2(reserve_blocks, blk);
+		}
+
+		blk = ext2fs_inode_table_loc(old_fs, i);
+		for (j = 0;
+		     j < fs->inode_blocks_per_group; j++, blk++) {
+			if (blk >= ext2fs_blocks_count(fs->super) ||
+			    (bg_map && ext2fs_test_block_bitmap2(bg_map, blk)))
+				continue;
+			ext2fs_block_alloc_stats2(fs, blk, -1);
+			ext2fs_mark_block_bitmap2(reserve_blocks, blk);
+		}
 	}
 
-	blk = ext2fs_inode_table_loc(old_fs, group);
-	if (blk == 0 ||
-	    (blk >= ext2fs_blocks_count(fs->super)))
-		return;
-
-	for (j = 0;
-	     j < fs->inode_blocks_per_group; j++, blk++) {
-		if (blk >= ext2fs_blocks_count(fs->super))
-			break;
-		ext2fs_block_alloc_stats2(fs, blk, -1);
-		ext2fs_mark_block_bitmap2(reserve_blocks, blk);
-	}
+out:
+	if (bg_map)
+		ext2fs_free_block_bitmap(bg_map);
+	return retval;
 }
 
 /*
@@ -504,10 +525,8 @@ retry:
 		 * Check the block groups that we are chopping off
 		 * and free any blocks associated with their metadata
 		 */
-		for (i = fs->group_desc_count;
-		     i < old_fs->group_desc_count; i++)
-			free_gdp_blocks(fs, reserve_blocks, old_fs, i);
-		retval = 0;
+		retval = free_gdp_blocks(fs, reserve_blocks, old_fs,
+					 fs->group_desc_count);
 		goto errout;
 	}
 
@@ -886,12 +905,12 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	int		j, has_super;
 	dgrp_t		i, max_groups, g;
 	blk64_t		blk, group_blk;
-	blk64_t		old_blocks, new_blocks;
+	blk64_t		old_blocks, new_blocks, group_end, cluster_freed;
 	blk64_t		new_size;
 	unsigned int	meta_bg, meta_bg_size;
 	errcode_t	retval;
 	ext2_filsys 	fs, old_fs;
-	ext2fs_block_bitmap	meta_bmap;
+	ext2fs_block_bitmap	meta_bmap, new_meta_bmap = NULL;
 	int		flex_bg;
 
 	fs = rfs->new_fs;
@@ -1002,15 +1021,42 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * blocks as free.
 	 */
 	if (old_blocks > new_blocks) {
+		if (EXT2FS_CLUSTER_RATIO(fs) > 1) {
+			retval = ext2fs_allocate_block_bitmap(fs,
+							_("new meta blocks"),
+							&new_meta_bmap);
+			if (retval)
+				goto errout;
+
+			retval = mark_table_blocks(fs, new_meta_bmap);
+			if (retval)
+				goto errout;
+		}
+
 		for (i = 0; i < max_groups; i++) {
 			if (!ext2fs_bg_has_super(fs, i)) {
 				group_blk += fs->super->s_blocks_per_group;
 				continue;
 			}
-			for (blk = group_blk+1+new_blocks;
-			     blk < group_blk+1+old_blocks; blk++) {
-				ext2fs_block_alloc_stats2(fs, blk, -1);
+			group_end = group_blk + 1 + old_blocks;
+			for (blk = group_blk + 1 + new_blocks;
+			     blk < group_end;) {
+				if (new_meta_bmap == NULL ||
+				    !ext2fs_test_block_bitmap2(new_meta_bmap,
+							       blk)) {
+					cluster_freed =
+						EXT2FS_CLUSTER_RATIO(fs) -
+						(blk &
+						 EXT2FS_CLUSTER_MASK(fs));
+					if (cluster_freed > group_end - blk)
+						cluster_freed = group_end - blk;
+					ext2fs_block_alloc_stats2(fs, blk, -1);
+					blk += EXT2FS_CLUSTER_RATIO(fs);
+					rfs->needed_blocks -= cluster_freed;
+					continue;
+				}
 				rfs->needed_blocks--;
+				blk++;
 			}
 			group_blk += fs->super->s_blocks_per_group;
 		}
@@ -1156,6 +1202,8 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	retval = 0;
 
 errout:
+	if (new_meta_bmap)
+		ext2fs_free_block_bitmap(new_meta_bmap);
 	if (meta_bmap)
 		ext2fs_free_block_bitmap(meta_bmap);
 
@@ -1829,9 +1877,10 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	dgrp_t		i, max_groups;
 	ext2_filsys	fs = rfs->new_fs;
 	char		*cp;
-	blk64_t		old_blk, new_blk, blk;
+	blk64_t		old_blk, new_blk, blk, cluster_freed;
 	errcode_t	retval;
 	int		j, to_move, moved;
+	ext2fs_block_bitmap	new_bmap = NULL;
 
 	max_groups = fs->group_desc_count;
 	if (max_groups > rfs->old_fs->group_desc_count)
@@ -1842,6 +1891,17 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		retval = ext2fs_get_mem(size, &rfs->itable_buf);
 		if (retval)
 			return retval;
+	}
+
+	if (EXT2FS_CLUSTER_RATIO(fs) > 1) {
+		retval = ext2fs_allocate_block_bitmap(fs, _("new meta blocks"),
+						      &new_bmap);
+		if (retval)
+			return retval;
+
+		retval = mark_table_blocks(fs, new_bmap);
+		if (retval)
+			goto errout;
 	}
 
 	/*
@@ -1921,8 +1981,19 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		}
 
 		for (blk = ext2fs_inode_table_loc(rfs->old_fs, i), j=0;
-		     j < fs->inode_blocks_per_group ; j++, blk++)
-			ext2fs_block_alloc_stats2(fs, blk, -1);
+		     j < fs->inode_blocks_per_group;) {
+			if (new_bmap == NULL ||
+			    !ext2fs_test_block_bitmap2(new_bmap, blk)) {
+				ext2fs_block_alloc_stats2(fs, blk, -1);
+				cluster_freed = EXT2FS_CLUSTER_RATIO(fs) -
+						(blk & EXT2FS_CLUSTER_MASK(fs));
+				blk += cluster_freed;
+				j += cluster_freed;
+				continue;
+			}
+			blk++;
+			j++;
+		}
 
 		ext2fs_inode_table_loc_set(rfs->old_fs, i, new_blk);
 		ext2fs_group_desc_csum_set(rfs->old_fs, i);
@@ -1942,9 +2013,11 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE)
 		printf("Inode table move finished.\n");
 #endif
-	return 0;
+	retval = 0;
 
 errout:
+	if (new_bmap)
+		ext2fs_free_block_bitmap(new_bmap);
 	return retval;
 }
 
