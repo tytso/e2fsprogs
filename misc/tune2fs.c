@@ -693,7 +693,8 @@ static void rewrite_inodes(ext2_filsys fs)
 			exit(1);
 		}
 
-		if (LINUX_S_ISDIR(inode->i_mode)) {
+		if (LINUX_S_ISDIR(inode->i_mode) &&
+		    ext2fs_inode_has_valid_blocks2(fs, inode)) {
 			retval = rewrite_directory(fs, ino, inode);
 			if (retval) {
 				com_err("rewrite_directory", retval,

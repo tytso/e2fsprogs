@@ -154,11 +154,13 @@ static void filefrag(ext2_ino_t ino, struct ext2_inode *inode,
 			fs->name, num_blocks, EXT2_I_SIZE(inode));
 	}
 	print_header(fs);
-	retval = ext2fs_block_iterate3(current_fs, ino,
-				       BLOCK_FLAG_READ_ONLY, NULL,
-				       filefrag_blocks_proc, fs);
-	if (retval)
-		com_err("ext2fs_block_iterate3", retval, 0);
+	if (ext2fs_inode_has_valid_blocks2(current_fs, inode)) {
+		retval = ext2fs_block_iterate3(current_fs, ino,
+					       BLOCK_FLAG_READ_ONLY, NULL,
+					       filefrag_blocks_proc, fs);
+		if (retval)
+			com_err("ext2fs_block_iterate3", retval, 0);
+	}
 
 	report_filefrag(fs);
 	fprintf(fs->f, "%s: %d contiguous extents%s\n", fs->name, fs->ext,

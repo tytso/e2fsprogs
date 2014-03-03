@@ -1924,11 +1924,10 @@ static void kill_file_by_inode(ext2_ino_t inode)
 	inode_buf.i_dtime = current_fs->now ? current_fs->now : time(0);
 	if (debugfs_write_inode(inode, &inode_buf, 0))
 		return;
-	if (!ext2fs_inode_has_valid_blocks2(current_fs, &inode_buf))
-		return;
-
-	ext2fs_block_iterate3(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
-			      release_blocks_proc, NULL);
+	if (ext2fs_inode_has_valid_blocks2(current_fs, &inode_buf)) {
+		ext2fs_block_iterate3(current_fs, inode, BLOCK_FLAG_READ_ONLY,
+				      NULL, release_blocks_proc, NULL);
+	}
 	printf("\n");
 	ext2fs_inode_alloc_stats2(current_fs, inode, -1,
 				  LINUX_S_ISDIR(inode_buf.i_mode));
