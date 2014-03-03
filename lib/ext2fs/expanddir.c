@@ -116,6 +116,8 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir)
 
 	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);
+	if (retval == EXT2_ET_INLINE_DATA_CANT_ITERATE)
+		return ext2fs_inline_data_expand(fs, dir);
 
 	if (es.err)
 		return es.err;
