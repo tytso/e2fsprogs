@@ -91,7 +91,7 @@ void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
 	ext2fs_free_mem(&icache);
 }
 
-static errcode_t create_icache(ext2_filsys fs)
+errcode_t ext2fs_create_inode_cache(ext2_filsys fs, unsigned int cache_size)
 {
 	int		i;
 	errcode_t	retval;
@@ -109,7 +109,7 @@ static errcode_t create_icache(ext2_filsys fs)
 
 	fs->icache->buffer_blk = 0;
 	fs->icache->cache_last = -1;
-	fs->icache->cache_size = 4;
+	fs->icache->cache_size = cache_size;
 	fs->icache->refcount = 1;
 	retval = ext2fs_get_array(fs->icache->cache_size,
 				  sizeof(struct ext2_inode_cache_ent),
@@ -596,7 +596,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 		return EXT2_ET_BAD_INODE_NUM;
 	/* Create inode cache if not present */
 	if (!fs->icache) {
-		retval = create_icache(fs);
+		retval = ext2fs_create_inode_cache(fs, 4);
 		if (retval)
 			return retval;
 	}
@@ -732,7 +732,7 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 			}
 		}
 	} else {
-		retval = create_icache(fs);
+		retval = ext2fs_create_inode_cache(fs, 4);
 		if (retval)
 			goto errout;
 	}

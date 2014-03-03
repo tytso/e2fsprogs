@@ -1387,6 +1387,8 @@ extern errcode_t ext2fs_get_memalign(unsigned long size,
 				     unsigned long align, void *ptr);
 
 /* inode.c */
+extern errcode_t ext2fs_create_inode_cache(ext2_filsys fs,
+					   unsigned int cache_size);
 extern void ext2fs_free_inode_cache(struct ext2_inode_cache *icache);
 extern errcode_t ext2fs_flush_icache(ext2_filsys fs);
 extern errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan,

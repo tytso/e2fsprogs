@@ -69,7 +69,7 @@ struct ext2_inode_cache {
 	void *				buffer;
 	blk64_t				buffer_blk;
 	int				cache_last;
-	int				cache_size;
+	unsigned int			cache_size;
 	int				refcount;
 	struct ext2_inode_cache_ent	*cache;
 };
