@@ -509,4 +509,7 @@ ec	EXT2_ET_NO_INLINE_DATA,
 ec	EXT2_ET_INLINE_DATA_NO_BLOCK,
 	"No block for an inode with inline data"
 
+ec	EXT2_ET_INLINE_DATA_NO_SPACE,
+	"No free space in inline data"
+
 	end

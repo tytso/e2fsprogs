@@ -224,6 +224,38 @@ errcode_t ext2fs_file_close(ext2_file_t file)
 }
 
 
+static errcode_t
+ext2fs_file_read_inline_data(ext2_file_t file, void *buf,
+			     unsigned int wanted, unsigned int *got)
+{
+	ext2_filsys fs;
+	errcode_t retval;
+	unsigned int count = 0;
+	size_t size;
+
+	fs = file->fs;
+	retval = ext2fs_inline_data_get(fs, file->ino, &file->inode,
+					file->buf, &size);
+	if (retval)
+		return retval;
+
+	if (file->pos >= size)
+		goto out;
+
+	count = size - file->pos;
+	if (count > wanted)
+		count = wanted;
+	memcpy(buf, file->buf + file->pos, count);
+	file->pos += count;
+	buf += count;
+
+out:
+	if (got)
+		*got = count;
+	return retval;
+}
+
+
 errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 			   unsigned int wanted, unsigned int *got)
 {
@@ -235,6 +267,10 @@ errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;
+
+	/* If an inode has inline data, things get complicated. */
+	if (file->inode.i_flags & EXT4_INLINE_DATA_FL)
+		return ext2fs_file_read_inline_data(file, buf, wanted, got);
 
 	while ((file->pos < EXT2_I_SIZE(&file->inode)) && (wanted > 0)) {
 		retval = sync_buffer_position(file);
@@ -266,6 +302,66 @@ fail:
 }
 
 
+static errcode_t
+ext2fs_file_write_inline_data(ext2_file_t file, const void *buf,
+			      unsigned int nbytes, unsigned int *written)
+{
+	ext2_filsys fs;
+	errcode_t retval;
+	unsigned int count = 0;
+	size_t size;
+
+	fs = file->fs;
+	retval = ext2fs_inline_data_get(fs, file->ino, &file->inode,
+					file->buf, &size);
+	if (retval)
+		return retval;
+
+	if (file->pos < size) {
+		count = nbytes - file->pos;
+		memcpy(file->buf + file->pos, buf, count);
+
+		retval = ext2fs_inline_data_set(fs, file->ino, &file->inode,
+						file->buf, count);
+		if (retval == EXT2_ET_INLINE_DATA_NO_SPACE)
+			goto expand;
+		if (retval)
+			return retval;
+
+		file->pos += count;
+
+		/* Update inode size */
+		if (count != 0 && EXT2_I_SIZE(&file->inode) < file->pos) {
+			errcode_t	rc;
+
+			rc = ext2fs_file_set_size2(file, file->pos);
+			if (retval == 0)
+				retval = rc;
+		}
+
+		if (written)
+			*written = count;
+		return 0;
+	}
+
+expand:
+	retval = ext2fs_inline_data_expand(fs, file->ino);
+	if (retval)
+		return retval;
+	/*
+	 * reload inode and return no space error
+	 *
+	 * XXX: file->inode could be copied from the outside
+	 * in ext2fs_file_open2().  We have no way to modify
+	 * the outside inode.
+	 */
+	retval = ext2fs_read_inode(fs, file->ino, &file->inode);
+	if (retval)
+		return retval;
+	return EXT2_ET_INLINE_DATA_NO_SPACE;
+}
+
+
 errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 			    unsigned int nbytes, unsigned int *written)
 {
@@ -279,6 +375,16 @@ errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 
 	if (!(file->flags & EXT2_FILE_WRITE))
 		return EXT2_ET_FILE_RO;
+
+	/* If an inode has inline data, things get complicated. */
+	if (file->inode.i_flags & EXT4_INLINE_DATA_FL) {
+		retval = ext2fs_file_write_inline_data(file, buf, nbytes,
+						       written);
+		if (retval != EXT2_ET_INLINE_DATA_NO_SPACE)
+			return retval;
+		/* fall through to read data from the block */
+		retval = 0;
+	}
 
 	while (nbytes > 0) {
 		retval = sync_buffer_position(file);

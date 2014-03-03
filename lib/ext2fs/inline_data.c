@@ -340,64 +340,26 @@ err:
 	return retval;
 }
 
-errcode_t ext2fs_inline_data_expand(ext2_filsys fs, ext2_ino_t ino)
+static errcode_t
+ext2fs_inline_data_dir_expand(ext2_filsys fs, ext2_ino_t ino,
+			      struct ext2_inode *inode, char *buf, size_t size)
 {
-	struct ext2_inode inode;
-	struct ext2_inline_data data;
 	errcode_t retval;
 	blk64_t blk;
-	char *inline_buf = 0;
-	char *blk_buf = 0;
+	char *blk_buf;
 
-	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
-
-	retval = ext2fs_read_inode(fs, ino, &inode);
+	retval = ext2fs_get_memzero(fs->blocksize, &blk_buf);
 	if (retval)
 		return retval;
-
-	if (!(inode.i_flags & EXT4_INLINE_DATA_FL))
-		return EXT2_ET_NO_INLINE_DATA;
-
-	/* Get inline data first */
-	data.fs = fs;
-	data.ino = ino;
-	retval = ext2fs_inline_data_ea_get(&data);
-	if (retval)
-		return retval;
-	retval = ext2fs_get_mem(EXT4_MIN_INLINE_DATA_SIZE + data.ea_size,
-				&inline_buf);
-	if (retval)
-		goto errout;
-
-	memcpy(inline_buf, (void *)inode.i_block, EXT4_MIN_INLINE_DATA_SIZE);
-	if (data.ea_size > 0) {
-		memcpy(inline_buf + EXT4_MIN_INLINE_DATA_SIZE,
-		       data.ea_data, data.ea_size);
-	}
 
 #ifdef WORDS_BIGENDIAN
-	retval = ext2fs_dirent_swab_in2(fs, inline_buf,
-			data.ea_size + EXT4_MIN_INLINE_DATA_SIZE);
+	retval = ext2fs_dirent_swab_in2(fs, buf, size);
 	if (retval)
 		goto errout;
 #endif
 
-	memset((void *)inode.i_block, 0, EXT4_MIN_INLINE_DATA_SIZE);
-	retval = ext2fs_inline_data_ea_remove(fs, ino);
-	if (retval)
-		goto errout;
-
-	retval = ext2fs_get_mem(fs->blocksize, &blk_buf);
-	if (retval)
-		goto errout;
-
 	/* Adjust the rec_len */
-	retval = ext2fs_inline_data_convert_dir(fs, ino, blk_buf, inline_buf,
-						EXT4_MIN_INLINE_DATA_SIZE +
-							data.ea_size);
-	if (retval)
-		goto errout;
-
+	retval = ext2fs_inline_data_convert_dir(fs, ino, blk_buf, buf, size);
 	/* Allocate a new block */
 	retval = ext2fs_new_block2(fs, 0, 0, &blk);
 	if (retval)
@@ -408,23 +370,186 @@ errcode_t ext2fs_inline_data_expand(ext2_filsys fs, ext2_ino_t ino)
 
 	/* Update inode */
 	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super, EXT3_FEATURE_INCOMPAT_EXTENTS))
-		inode.i_flags |= EXT4_EXTENTS_FL;
-	inode.i_flags &= ~EXT4_INLINE_DATA_FL;
-	ext2fs_iblk_set(fs, &inode, 1);
-	inode.i_size = fs->blocksize;
-	retval = ext2fs_bmap2(fs, ino, &inode, 0, BMAP_SET, 0, 0, &blk);
+		inode->i_flags |= EXT4_EXTENTS_FL;
+	inode->i_flags &= ~EXT4_INLINE_DATA_FL;
+	ext2fs_iblk_set(fs, inode, 1);
+	inode->i_size = fs->blocksize;
+	retval = ext2fs_bmap2(fs, ino, inode, 0, BMAP_SET, 0, 0, &blk);
 	if (retval)
 		goto errout;
-	retval = ext2fs_write_inode(fs, ino, &inode);
+	retval = ext2fs_write_inode(fs, ino, inode);
 	if (retval)
 		goto errout;
-	ext2fs_block_alloc_stats2(fs, blk, +1);
+	ext2fs_block_alloc_stats(fs, blk, +1);
 
 errout:
-	if (blk_buf)
-		ext2fs_free_mem(&blk_buf);
+	ext2fs_free_mem(&blk_buf);
+	return retval;
+}
+
+static errcode_t
+ext2fs_inline_data_file_expand(ext2_filsys fs, ext2_ino_t ino,
+			       struct ext2_inode *inode, char *buf, size_t size)
+{
+	ext2_file_t e2_file;
+	errcode_t retval;
+
+	/* Update inode */
+	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				      EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+		int i;
+		struct ext3_extent_header *eh;
+
+		eh = (struct ext3_extent_header *) &inode->i_block[0];
+		eh->eh_depth = 0;
+		eh->eh_entries = 0;
+		eh->eh_magic = EXT3_EXT_MAGIC;
+		i = (sizeof(inode->i_block) - sizeof(*eh)) /
+			sizeof(struct ext3_extent);
+		eh->eh_max = ext2fs_cpu_to_le16(i);
+		inode->i_flags |= EXT4_EXTENTS_FL;
+	}
+	inode->i_flags &= ~EXT4_INLINE_DATA_FL;
+	ext2fs_iblk_set(fs, inode, 0);
+	inode->i_size = 0;
+	retval = ext2fs_write_inode(fs, ino, inode);
+	if (retval)
+		return retval;
+
+	/* Write out the block buffer */
+	retval = ext2fs_file_open(fs, ino, EXT2_FILE_WRITE, &e2_file);
+	if (retval)
+		return retval;
+	retval = ext2fs_file_write(e2_file, buf, size, 0);
+	ext2fs_file_close(e2_file);
+	return retval;
+}
+
+errcode_t ext2fs_inline_data_expand(ext2_filsys fs, ext2_ino_t ino)
+{
+	struct ext2_inode inode;
+	struct ext2_inline_data data;
+	errcode_t retval;
+	size_t inline_size;
+	char *inline_buf = 0;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	retval = ext2fs_read_inode(fs, ino, &inode);
+	if (retval)
+		return retval;
+
+	if (!(inode.i_flags & EXT4_INLINE_DATA_FL))
+		return EXT2_ET_NO_INLINE_DATA;
+
+	data.fs = fs;
+	data.ino = ino;
+	retval = ext2fs_inline_data_ea_get(&data);
+	if (retval)
+		return retval;
+	inline_size = data.ea_size + EXT4_MIN_INLINE_DATA_SIZE;
+	retval = ext2fs_get_mem(inline_size, &inline_buf);
+	if (retval)
+		goto errout;
+
+	memcpy(inline_buf, (void *)inode.i_block, EXT4_MIN_INLINE_DATA_SIZE);
+	if (data.ea_size > 0) {
+		memcpy(inline_buf + EXT4_MIN_INLINE_DATA_SIZE,
+		       data.ea_data, data.ea_size);
+	}
+
+	memset((void *)inode.i_block, 0, EXT4_MIN_INLINE_DATA_SIZE);
+	retval = ext2fs_inline_data_ea_remove(fs, ino);
+	if (retval)
+		goto errout;
+
+	if (LINUX_S_ISDIR(inode.i_mode)) {
+		retval = ext2fs_inline_data_dir_expand(fs, ino, &inode,
+						inline_buf, inline_size);
+	} else {
+		retval = ext2fs_inline_data_file_expand(fs, ino, &inode,
+						inline_buf, inline_size);
+	}
+
+errout:
 	if (inline_buf)
 		ext2fs_free_mem(&inline_buf);
 	ext2fs_free_mem(&data.ea_data);
 	return retval;
+}
+
+/*
+ * When caller uses this function to retrieve the inline data, it must
+ * allocate a buffer which has the size of inline data.  The size of
+ * inline data can be know by ext2fs_inline_data_get_size().
+ */
+errcode_t ext2fs_inline_data_get(ext2_filsys fs, ext2_ino_t ino,
+				 struct ext2_inode *inode,
+				 void *buf, size_t *size)
+{
+	struct ext2_inode inode_buf;
+	struct ext2_inline_data data;
+	errcode_t retval;
+
+	if (!inode) {
+		retval = ext2fs_read_inode(fs, ino, &inode_buf);
+		if (retval)
+			return retval;
+		inode = &inode_buf;
+	}
+
+	data.fs = fs;
+	data.ino = ino;
+	retval = ext2fs_inline_data_ea_get(&data);
+	if (retval)
+		return retval;
+
+	memcpy(buf, (void *)inode->i_block, EXT4_MIN_INLINE_DATA_SIZE);
+	if (data.ea_size > 0)
+		memcpy(buf + EXT4_MIN_INLINE_DATA_SIZE,
+		       data.ea_data, data.ea_size);
+
+	if (size)
+		*size = EXT4_MIN_INLINE_DATA_SIZE + data.ea_size;
+	ext2fs_free_mem(&data.ea_data);
+	return 0;
+}
+
+errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
+				 struct ext2_inode *inode,
+				 void *buf, size_t size)
+{
+	struct ext2_inode inode_buf;
+	struct ext2_inline_data data;
+	errcode_t retval;
+	size_t max_size;
+
+	if (!inode) {
+		retval = ext2fs_read_inode(fs, ino, &inode_buf);
+		if (retval)
+			return retval;
+		inode = &inode_buf;
+	}
+
+	if (size <= EXT4_MIN_INLINE_DATA_SIZE) {
+		memcpy((void *)inode->i_block, buf, size);
+		return ext2fs_write_inode(fs, ino, inode);
+	}
+
+	retval = ext2fs_xattr_inode_max_size(fs, ino, &max_size);
+	if (retval)
+		return retval;
+
+	if (size - EXT4_MIN_INLINE_DATA_SIZE > max_size)
+		return EXT2_ET_INLINE_DATA_NO_SPACE;
+
+	memcpy((void *)inode->i_block, buf, EXT4_MIN_INLINE_DATA_SIZE);
+	retval = ext2fs_write_inode(fs, ino, inode);
+	if (retval)
+		return retval;
+	data.fs = fs;
+	data.ino = ino;
+	data.ea_size = size - EXT4_MIN_INLINE_DATA_SIZE;
+	data.ea_data = buf + EXT4_MIN_INLINE_DATA_SIZE;
+	return ext2fs_inline_data_ea_set(&data);
 }

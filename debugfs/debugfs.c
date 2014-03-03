@@ -1687,7 +1687,6 @@ fail:
 	return retval;
 }
 
-
 void do_write(int argc, char *argv[])
 {
 	int		fd;
@@ -1753,8 +1752,11 @@ void do_write(int argc, char *argv[])
 		current_fs->now ? current_fs->now : time(0);
 	inode.i_links_count = 1;
 	inode.i_size = statbuf.st_size;
-	if (current_fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_EXTENTS) {
+	if (EXT2_HAS_INCOMPAT_FEATURE(current_fs->super,
+				      EXT4_FEATURE_INCOMPAT_INLINE_DATA)) {
+		inode.i_flags |= EXT4_INLINE_DATA_FL;
+	} else if (current_fs->super->s_feature_incompat &
+		   EXT3_FEATURE_INCOMPAT_EXTENTS) {
 		int i;
 		struct ext3_extent_header *eh;
 
@@ -1770,6 +1772,11 @@ void do_write(int argc, char *argv[])
 	if (debugfs_write_new_inode(newfile, &inode, argv[0])) {
 		close(fd);
 		return;
+	}
+	if (inode.i_flags & EXT4_INLINE_DATA_FL) {
+		retval = ext2fs_inline_data_init(current_fs, newfile);
+		if (retval)
+			return;
 	}
 	if (LINUX_S_ISREG(inode.i_mode)) {
 		if (statbuf.st_blocks < statbuf.st_size / S_BLKSIZE) {

@@ -820,6 +820,70 @@ errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
 	return EXT2_ET_EA_KEY_NOT_FOUND;
 }
 
+errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
+				      size_t *size)
+{
+	struct ext2_ext_attr_header *header;
+	struct ext2_ext_attr_entry *entry;
+	struct ext2_inode_large *inode;
+	__u32 ea_inode_magic;
+	unsigned int storage_size, freesize, minoff;
+	void *start;
+	int i;
+	errcode_t err;
+
+	i = EXT2_INODE_SIZE(fs->super);
+	if (i < sizeof(*inode))
+		i = sizeof(*inode);
+	err = ext2fs_get_memzero(i, &inode);
+	if (err)
+		return err;
+
+	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)inode,
+				     EXT2_INODE_SIZE(fs->super));
+	if (err)
+		goto out;
+
+	/* Does the inode have size for EA? */
+	if (EXT2_INODE_SIZE(fs->super) <= EXT2_GOOD_OLD_INODE_SIZE +
+						  inode->i_extra_isize +
+						  sizeof(__u32)) {
+		err = EXT2_ET_INLINE_DATA_NO_SPACE;
+		goto out;
+	}
+
+	minoff = EXT2_INODE_SIZE(fs->super) - sizeof(*inode) - sizeof(__u32);
+	memcpy(&ea_inode_magic, ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
+	       inode->i_extra_isize, sizeof(__u32));
+	if (ea_inode_magic == EXT2_EXT_ATTR_MAGIC) {
+		/* has xattrs.  calculate the size */
+		storage_size = EXT2_INODE_SIZE(fs->super) -
+			EXT2_GOOD_OLD_INODE_SIZE - inode->i_extra_isize -
+			sizeof(__u32);
+		start= ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
+			inode->i_extra_isize + sizeof(__u32);
+		entry = start;
+		while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+			if (!entry->e_value_block && entry->e_value_size) {
+				unsigned int offs = entry->e_value_offs;
+				if (offs < minoff)
+					minoff = offs;
+			}
+			entry = EXT2_EXT_ATTR_NEXT(entry);
+		}
+		*size = minoff - ((char *)entry - (char *)start) - sizeof(__u32);
+	} else {
+		/* no xattr.  return a maximum size */
+		*size = EXT2_EXT_ATTR_SIZE(minoff -
+					   EXT2_EXT_ATTR_LEN(strlen("data")) -
+					   EXT2_EXT_ATTR_ROUND - sizeof(__u32));
+	}
+
+out:
+	ext2fs_free_mem(&inode);
+	return err;
+}
+
 errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 			   const char *key,
 			   const void *value,
