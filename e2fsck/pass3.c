@@ -376,6 +376,17 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	if (retval && !fix)
 		return 0;
 	if (!retval) {
+		/* Lost+found shouldn't have inline data */
+		retval = ext2fs_read_inode(fs, ino, &inode);
+		if (fix && retval)
+			return 0;
+
+		if (fix && (inode.i_flags & EXT4_INLINE_DATA_FL)) {
+			if (!fix_problem(ctx, PR_3_LPF_INLINE_DATA, &pctx))
+				return 0;
+			goto unlink;
+		}
+
 		if (ext2fs_check_directory(fs, ino) == 0) {
 			ctx->lost_and_found = ino;
 			return ino;
@@ -388,6 +399,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		if (!fix_problem(ctx, PR_3_LPF_NOTDIR, &pctx))
 			return 0;
 
+unlink:
 		/* OK, unlink the old /lost+found file. */
 		pctx.errcode = ext2fs_unlink(fs, EXT2_ROOT_INO, name, ino, 0);
 		if (pctx.errcode) {

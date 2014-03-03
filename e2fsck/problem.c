@@ -1599,6 +1599,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("/@l is not a @d (ino=%i)\n"),
 	  PROMPT_UNLINK, 0 },
 
+	/* Lost+found has inline data */
+	{ PR_3_LPF_INLINE_DATA,
+	  N_("/@l has inline data\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3A Directory Optimization	*/
 
 	/* Pass 3A: Optimizing directories */

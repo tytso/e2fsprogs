@@ -955,6 +955,9 @@ struct problem_context {
 /* Lost+found is not a directory */
 #define PR_3_LPF_NOTDIR			0x030017
 
+/* Lost+found has inline data */
+#define PR_3_LPF_INLINE_DATA		0x030018
+
 /*
  * Pass 3a --- rehashing diretories
  */

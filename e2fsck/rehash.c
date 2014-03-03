@@ -822,6 +822,8 @@ retry_nohash:
 	/* Read in the entire directory into memory */
 	retval = ext2fs_block_iterate3(fs, ino, 0, 0,
 				       fill_dir_block, &fd);
+	if (retval == EXT2_ET_INLINE_DATA_CANT_ITERATE)
+		goto errout;
 	if (fd.err) {
 		retval = fd.err;
 		goto errout;
