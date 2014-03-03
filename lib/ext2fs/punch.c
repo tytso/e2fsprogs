@@ -423,6 +423,30 @@ errout:
 	return retval;
 }
 	
+static errcode_t ext2fs_punch_inline_data(ext2_filsys fs, ext2_ino_t ino,
+					  struct ext2_inode *inode,
+					  blk64_t start, blk64_t end)
+{
+	errcode_t retval;
+
+	/*
+	 * In libext2fs ext2fs_punch is based on block unit.  So that
+	 * means that if start > 0 we don't need to do nothing.  Due
+	 * to this we will remove all inline data in ext2fs_punch()
+	 * now.
+	 */
+	if (start > 0)
+		return 0;
+
+	memset((char *)inode->i_block, 0, EXT4_MIN_INLINE_DATA_SIZE);
+	inode->i_size = 0;
+	retval = ext2fs_write_inode(fs, ino, inode);
+	if (retval)
+		return retval;
+
+	return ext2fs_inline_data_ea_remove(fs, ino);
+}
+
 /*
  * Deallocate all logical blocks starting at start to end, inclusive.
  * If end is ~0, then this is effectively truncate.
@@ -445,7 +469,9 @@ errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 			return retval;
 		inode = &inode_buf;
 	}
-	if (inode->i_flags & EXT4_EXTENTS_FL)
+	if (inode->i_flags & EXT4_INLINE_DATA_FL)
+		return ext2fs_punch_inline_data(fs, ino, inode, start, end);
+	else if (inode->i_flags & EXT4_EXTENTS_FL)
 		retval = ext2fs_punch_extent(fs, ino, inode, start, end);
 	else {
 		blk_t	count;

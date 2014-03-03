@@ -242,7 +242,7 @@ out:
 	return ret;
 }
 
-static errcode_t ext2fs_inline_data_ea_remove(ext2_filsys fs, ext2_ino_t ino)
+errcode_t ext2fs_inline_data_ea_remove(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct ext2_xattr_handle *handle;
 	errcode_t retval;
