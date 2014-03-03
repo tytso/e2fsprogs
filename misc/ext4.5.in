@@ -149,6 +149,9 @@ option to
 or
 .BR tune2fs(8).
 .TP
+.B inline_data
+Allow data to be stored in the inode and extended attribute area
+.TP
 .B large_file
 .br
 This feature flag is set automatically by modern kernels when a file

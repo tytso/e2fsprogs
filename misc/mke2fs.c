@@ -1062,7 +1062,8 @@ static __u32 ok_features[3] = {
 		EXT2_FEATURE_INCOMPAT_META_BG|
 		EXT4_FEATURE_INCOMPAT_FLEX_BG|
 		EXT4_FEATURE_INCOMPAT_MMP |
-		EXT4_FEATURE_INCOMPAT_64BIT,
+		EXT4_FEATURE_INCOMPAT_64BIT|
+		EXT4_FEATURE_INCOMPAT_INLINE_DATA,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE|
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -2222,7 +2223,8 @@ profile_error:
 				  "See https://ext4.wiki.kernel.org/"
 				  "index.php/Quota for more information\n\n"));
 
-	/* Since sparse_super is the default, we would only have a problem
+	/*
+	 * Since sparse_super is the default, we would only have a problem
 	 * here if it was explicitly disabled.
 	 */
 	if ((fs_param.s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
@@ -2276,6 +2278,18 @@ profile_error:
 				_("invalid inode size %d (min %d/max %d)"),
 				inode_size, EXT2_GOOD_OLD_INODE_SIZE,
 				blocksize);
+			exit(1);
+		}
+		/*
+		 * If inode size is 128 and inline data is enabled, we need
+		 * to notify users that inline data will never be useful.
+		 */
+		if ((fs_param.s_feature_incompat &
+		     EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
+		    inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+			com_err(program_name, 0,
+				_("inode size is %d, inline data is useless"),
+				inode_size);
 			exit(1);
 		}
 		fs_param.s_inode_size = inode_size;
