@@ -356,13 +356,19 @@ void ext2fs_swap_mmp(struct mmp_struct *mmp)
 
 errcode_t ext2fs_dirent_swab_in(ext2_filsys fs, char *buf, int flags)
 {
+	return ext2fs_dirent_swab_in(fs, buf, fs->blocksize, flags);
+}
+
+errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf,
+				 size_t size, int flags)
+{
 	errcode_t	retval;
 	char		*p, *end;
 	struct ext2_dir_entry *dirent;
 	unsigned int	name_len, rec_len;
 
 	p = (char *) buf;
-	end = (char *) buf + fs->blocksize;
+	end = (char *) buf + size;
 	while (p < end-8) {
 		dirent = (struct ext2_dir_entry *) p;
 		dirent->inode = ext2fs_swab32(dirent->inode);
@@ -387,13 +393,19 @@ errcode_t ext2fs_dirent_swab_in(ext2_filsys fs, char *buf, int flags)
 
 errcode_t ext2fs_dirent_swab_out(ext2_filsys fs, char *buf, int flags)
 {
+	return ext2fs_dirent_swab_out2(fs, buf, fs->blocksize, flags);
+}
+
+errcode_t ext2fs_dirent_swab_out2(ext2_filsys fs, char *buf,
+				  size_t size, int flags)
+{
 	errcode_t	retval;
 	char		*p, *end;
 	unsigned int	rec_len;
 	struct ext2_dir_entry *dirent;
 
 	p = buf;
-	end = buf + fs->blocksize;
+	end = buf + size;
 	while (p < end) {
 		dirent = (struct ext2_dir_entry *) p;
 		retval = ext2fs_get_rec_len(fs, dirent, &rec_len);

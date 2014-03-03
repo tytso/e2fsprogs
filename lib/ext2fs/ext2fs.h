@@ -1546,7 +1546,11 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
 
 /* swapfs.c */
+extern errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf, size_t size,
+					int flags);
 extern errcode_t ext2fs_dirent_swab_in(ext2_filsys fs, char *buf, int flags);
+extern errcode_t ext2fs_dirent_swab_out2(ext2_filsys fs, char *buf, size_t size,
+					 int flags);
 extern errcode_t ext2fs_dirent_swab_out(ext2_filsys fs, char *buf, int flags);
 extern void ext2fs_swap_ext_attr(char *to, char *from, int bufsize,
 				 int has_header);
