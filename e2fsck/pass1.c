@@ -177,7 +177,8 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2fs_extent	extent;
 
 	if ((inode->i_size_high || inode->i_size == 0) ||
-	    (inode->i_flags & EXT2_INDEX_FL))
+	    (inode->i_flags & EXT2_INDEX_FL) ||
+	    (inode->i_flags & EXT4_INLINE_DATA_FL))
 		return 0;
 
 	if (inode->i_flags & EXT4_EXTENTS_FL) {
@@ -407,6 +408,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	blk64_t			blk;
 	unsigned int		i, rec_len, not_device = 0;
 	int			extent_fs;
+	int			inlinedata_fs;
 
 	/*
 	 * If the mode looks OK, we believe it.  If the first block in
@@ -434,11 +436,23 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	 * For extent mapped files, we don't do any sanity checking:
 	 * just try to get the phys block of logical block 0 and run
 	 * with it.
+	 *
+	 * For inline data files, we just try to get the size of inline
+	 * data.  If it's true, we will treat it as a directory.
 	 */
 
 	extent_fs = (ctx->fs->super->s_feature_incompat &
 		     EXT3_FEATURE_INCOMPAT_EXTENTS);
-	if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) {
+	inlinedata_fs = (ctx->fs->super->s_feature_incompat &
+			 EXT4_FEATURE_INCOMPAT_INLINE_DATA);
+	if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL)) {
+		unsigned int size;
+
+		if (ext2fs_inline_data_size(ctx->fs, pctx->ino, &size))
+			return;
+		/* device files never have a "system.data" entry */
+		goto isdir;
+	} else if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) {
 		/* extent mapped */
 		if  (ext2fs_bmap2(ctx->fs, pctx->ino, inode, 0, 0, 0, 0,
 				 &blk))
@@ -501,6 +515,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	    (rec_len % 4))
 		return;
 
+isdir:
 	if (fix_problem(ctx, PR_1_TREAT_AS_DIRECTORY, pctx)) {
 		inode->i_mode = (inode->i_mode & 07777) | LINUX_S_IFDIR;
 		e2fsck_write_inode_full(ctx, pctx->ino, inode,
@@ -1190,7 +1205,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ctx->fs_sockets_count++;
 		} else
 			mark_inode_bad(ctx, ino);
-		if (!(inode->i_flags & EXT4_EXTENTS_FL)) {
+		if (!(inode->i_flags & EXT4_EXTENTS_FL) &&
+		    !(inode->i_flags & EXT4_INLINE_DATA_FL)) {
 			if (inode->i_block[EXT2_IND_BLOCK])
 				ctx->fs_ind_count++;
 			if (inode->i_block[EXT2_DIND_BLOCK])
@@ -1199,6 +1215,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 				ctx->fs_tind_count++;
 		}
 		if (!(inode->i_flags & EXT4_EXTENTS_FL) &&
+		    !(inode->i_flags & EXT4_INLINE_DATA_FL) &&
 		    (inode->i_block[EXT2_IND_BLOCK] ||
 		     inode->i_block[EXT2_DIND_BLOCK] ||
 		     inode->i_block[EXT2_TIND_BLOCK] ||
@@ -2134,6 +2151,26 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 }
 
 /*
+ * In fact we don't need to check blocks for an inode with inline data
+ * because this inode doesn't have any blocks.  In this function all
+ * we need to do is add this inode into dblist when it is a directory.
+ */
+static void check_blocks_inline_data(e2fsck_t ctx, struct problem_context *pctx,
+				     struct process_block_struct *pb)
+{
+	if (!pb->is_dir)
+		return;
+
+	pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist, pb->ino, 0, 0);
+	if (pctx->errcode) {
+		pctx->blk = 0;
+		pctx->num = 0;
+		fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+	}
+}
+
+/*
  * This subroutine is called on each inode to account for all of the
  * blocks used by that inode.
  */
@@ -2147,6 +2184,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	unsigned	bad_size = 0;
 	int		dirty_inode = 0;
 	int		extent_fs;
+	int		inlinedata_fs;
 	__u64		size;
 
 	pb.ino = ino;
@@ -2170,6 +2208,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 
 	extent_fs = (ctx->fs->super->s_feature_incompat &
                      EXT3_FEATURE_INCOMPAT_EXTENTS);
+	inlinedata_fs = (ctx->fs->super->s_feature_incompat &
+			 EXT4_FEATURE_INCOMPAT_INLINE_DATA);
 
 	if (inode->i_flags & EXT2_COMPRBLK_FL) {
 		if (fs->super->s_feature_incompat &
@@ -2203,6 +2243,10 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 */
 			pb.last_init_lblock = pb.last_block;
 		}
+	} else {
+		/* check inline data */
+		if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL))
+			check_blocks_inline_data(ctx, pctx, &pb);
 	}
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	end_problem_latch(ctx, PR_LATCH_TOOBIG);
@@ -2235,7 +2279,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
-	if (!pb.num_blocks && pb.is_dir) {
+	if (!pb.num_blocks && pb.is_dir &&
+	    !(inode->i_flags & EXT4_INLINE_DATA_FL)) {
 		if (fix_problem(ctx, PR_1_ZERO_LENGTH_DIR, pctx)) {
 			e2fsck_clear_inode(ctx, ino, inode, 0, "check_blocks");
 			ctx->fs_directory_count--;
@@ -2261,7 +2306,14 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 #endif
 	if (pb.is_dir) {
 		int nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
-		if (inode->i_size & (fs->blocksize - 1))
+		if (inode->i_flags & EXT4_INLINE_DATA_FL) {
+			size_t size;
+
+			if (ext2fs_inline_data_size(ctx->fs, pctx->ino, &size))
+				bad_size = 5;
+			if (size != inode->i_size)
+				bad_size = 5;
+		} else if (inode->i_size & (fs->blocksize - 1))
 			bad_size = 5;
 		else if (nblock > (pb.last_block + 1))
 			bad_size = 1;
