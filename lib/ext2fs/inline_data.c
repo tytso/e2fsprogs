@@ -77,6 +77,28 @@ err:
 	return retval;
 }
 
+errcode_t ext2fs_inline_data_size(ext2_filsys fs, ext2_ino_t ino, size_t *size)
+{
+	struct ext2_inode inode;
+	struct ext2_inline_data data;
+	errcode_t retval;
+
+	retval = ext2fs_read_inode(fs, ino, &inode);
+	if (retval)
+		return retval;
+
+	if (!(inode.i_flags & EXT4_INLINE_DATA_FL))
+		return EXT2_ET_NO_INLINE_DATA;
+
+	data.fs = fs;
+	data.ino = ino;
+	retval = ext2fs_inline_data_ea_get(&data);
+	if (retval)
+		return retval;
+
+	*size = EXT4_MIN_INLINE_DATA_SIZE + data.ea_size;
+	return ext2fs_free_mem(&data.ea_data);
+}
 
 int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 				   void *priv_data)

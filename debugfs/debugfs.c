@@ -731,6 +731,16 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 		fprintf(f, "\n");
 }
 
+static void dump_inline_data(FILE *out, const char *prefix, ext2_ino_t inode_num)
+{
+	errcode_t retval;
+	size_t size;
+
+	retval = ext2fs_inline_data_size(current_fs, inode_num, &size);
+	if (!retval)
+		fprintf(out, "%sSize of inline data: %d", prefix, size);
+}
+
 void internal_dump_inode(FILE *out, const char *prefix,
 			 ext2_ino_t inode_num, struct ext2_inode *inode,
 			 int do_dump_blocks)
@@ -865,6 +875,8 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		if (inode->i_flags & EXT4_EXTENTS_FL)
 			dump_extents(out, prefix, inode_num,
 				     DUMP_LEAF_EXTENTS|DUMP_NODE_EXTENTS, 0, 0);
+		else if (inode->i_flags & EXT4_INLINE_DATA_FL)
+			dump_inline_data(out, prefix, inode_num);
 		else
 			dump_blocks(out, prefix, inode_num);
 	}

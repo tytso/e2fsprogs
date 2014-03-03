@@ -88,6 +88,8 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    int			ref_offset,
 				    void		*priv_data);
 
+extern errcode_t ext2fs_inline_data_size(ext2_filsys fs, ext2_ino_t ino,
+					 size_t *size);
 extern int ext2fs_inline_data_dir_iterate(ext2_filsys fs,
 					  ext2_ino_t ino,
 					  void *priv_data);
