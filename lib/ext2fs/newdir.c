@@ -93,3 +93,28 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 	*block = buf;
 	return 0;
 }
+
+/*
+ * Create new directory on inline data
+ */
+errcode_t ext2fs_new_dir_inline_data(ext2_filsys fs, ext2_ino_t dir_ino,
+				     ext2_ino_t parent_ino, __u32 *iblock)
+{
+	struct ext2_dir_entry 	*dir = NULL;
+	errcode_t		retval;
+	char			*buf;
+	int			rec_len;
+	int			filetype = 0;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	iblock[0] = ext2fs_cpu_to_le32(parent_ino);
+
+	dir = (struct ext2_dir_entry *)((char *)iblock +
+					EXT4_INLINE_DATA_DOTDOT_SIZE);
+	dir->inode = 0;
+	rec_len = EXT4_MIN_INLINE_DATA_SIZE - EXT4_INLINE_DATA_DOTDOT_SIZE;
+	retval = ext2fs_set_rec_len(fs, rec_len, dir);
+
+	return retval;
+}

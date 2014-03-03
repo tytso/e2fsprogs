@@ -77,6 +77,17 @@ err:
 	return retval;
 }
 
+errcode_t ext2fs_inline_data_init(ext2_filsys fs, ext2_ino_t ino)
+{
+	struct ext2_inline_data data;
+
+	data.fs = fs;
+	data.ino = ino;
+	data.ea_size = 0;
+	data.ea_data = "";
+	return ext2fs_inline_data_ea_set(&data);
+}
+
 errcode_t ext2fs_inline_data_size(ext2_filsys fs, ext2_ino_t ino, size_t *size)
 {
 	struct ext2_inode inode;

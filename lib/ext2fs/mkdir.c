@@ -41,8 +41,18 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	ext2_ino_t		scratch_ino;
 	blk64_t			blk;
 	char			*block = 0;
+	int			inline_data = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	/*
+	 * Create a new dir with inline data iff this feature is enabled
+	 * and ino >= EXT2_FIRST_INO.
+	 */
+	if ((!ino || ino >= EXT2_FIRST_INO(fs->super)) &&
+	    EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				      EXT4_FEATURE_INCOMPAT_INLINE_DATA))
+		inline_data = 1;
 
 	/*
 	 * Allocate an inode, if necessary
@@ -57,14 +67,21 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	/*
 	 * Allocate a data block for the directory
 	 */
-	retval = ext2fs_new_block2(fs, 0, 0, &blk);
-	if (retval)
-		goto cleanup;
+	if (!inline_data) {
+		retval = ext2fs_new_block2(fs, 0, 0, &blk);
+		if (retval)
+			goto cleanup;
+	}
 
 	/*
 	 * Create a scratch template for the directory
 	 */
-	retval = ext2fs_new_dir_block(fs, ino, parent, &block);
+	memset(&inode, 0, sizeof(struct ext2_inode));
+	if (inline_data)
+		retval = ext2fs_new_dir_inline_data(fs, ino, parent,
+						    inode.i_block);
+	else
+		retval = ext2fs_new_dir_block(fs, ino, parent, &block);
 	if (retval)
 		goto cleanup;
 
@@ -81,16 +98,21 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	/*
 	 * Create the inode structure....
 	 */
-	memset(&inode, 0, sizeof(struct ext2_inode));
 	inode.i_mode = LINUX_S_IFDIR | (0777 & ~fs->umask);
 	inode.i_uid = inode.i_gid = 0;
-	ext2fs_iblk_set(fs, &inode, 1);
-	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)
-		inode.i_flags |= EXT4_EXTENTS_FL;
-	else
-		inode.i_block[0] = blk;
+	if (inline_data) {
+		inode.i_flags |= EXT4_INLINE_DATA_FL;
+		inode.i_size = EXT4_MIN_INLINE_DATA_SIZE;
+	} else {
+		if (fs->super->s_feature_incompat &
+		    EXT3_FEATURE_INCOMPAT_EXTENTS)
+			inode.i_flags |= EXT4_EXTENTS_FL;
+		else
+			inode.i_block[0] = blk;
+		inode.i_size = fs->blocksize;
+		ext2fs_iblk_set(fs, &inode, 1);
+	}
 	inode.i_links_count = 2;
-	inode.i_size = fs->blocksize;
 
 	/*
 	 * Write out the inode and inode data block.  The inode generation
@@ -100,18 +122,24 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	retval = ext2fs_write_new_inode(fs, ino, &inode);
 	if (retval)
 		goto cleanup;
-	retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
-	if (retval)
-		goto cleanup;
+	if (inline_data) {
+		/* init "system.data" for new dir */
+		retval = ext2fs_inline_data_init(fs, ino);
+	} else {
+		retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
+		if (retval)
+			goto cleanup;
 
-	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
-		retval = ext2fs_extent_open2(fs, ino, &inode, &handle);
-		if (retval)
-			goto cleanup;
-		retval = ext2fs_extent_set_bmap(handle, 0, blk, 0);
-		ext2fs_extent_free(handle);
-		if (retval)
-			goto cleanup;
+		if (fs->super->s_feature_incompat &
+		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
+			retval = ext2fs_extent_open2(fs, ino, &inode, &handle);
+			if (retval)
+				goto cleanup;
+			retval = ext2fs_extent_set_bmap(handle, 0, blk, 0);
+			ext2fs_extent_free(handle);
+			if (retval)
+				goto cleanup;
+		}
 	}
 
 	/*
@@ -136,6 +164,10 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	 * Update parent inode's counts
 	 */
 	if (parent != ino) {
+		/* reload parent inode due to inline data */
+		retval = ext2fs_read_inode(fs, parent, &parent_inode);
+		if (retval)
+			goto cleanup;
 		parent_inode.i_links_count++;
 		retval = ext2fs_write_inode(fs, parent, &parent_inode);
 		if (retval)
@@ -145,7 +177,8 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	/*
 	 * Update accounting....
 	 */
-	ext2fs_block_alloc_stats2(fs, blk, +1);
+	if (!inline_data)
+		ext2fs_block_alloc_stats2(fs, blk, +1);
 	ext2fs_inode_alloc_stats2(fs, ino, +1, 1);
 
 cleanup:
