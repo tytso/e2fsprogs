@@ -792,13 +792,13 @@ void e2fsck_set_bitmap_type(ext2_filsys fs, unsigned int default_type,
 			    const char *profile_name, unsigned int *old_type)
 {
 	unsigned type;
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
 	if (old_type)
 		*old_type = fs->default_bitmap_type;
-	profile_get_uint(e2fsck_global_ctx->profile, "bitmaps",
-			 profile_name, 0, default_type, &type);
-	profile_get_uint(e2fsck_global_ctx->profile, "bitmaps",
-			 "all", 0, type, &type);
+	profile_get_uint(ctx->profile, "bitmaps", profile_name, 0,
+			 default_type, &type);
+	profile_get_uint(ctx->profile, "bitmaps", "all", 0, type, &type);
 	fs->default_bitmap_type = type ? type : default_type;
 }
 
