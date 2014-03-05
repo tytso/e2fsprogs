@@ -749,6 +749,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		return retval;
 
 	*ret_ctx = ctx;
+	e2fsck_global_ctx = ctx;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 	setvbuf(stderr, NULL, _IONBF, BUFSIZ);
@@ -990,7 +991,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef SA_RESTART
 	sa.sa_flags = SA_RESTART;
 #endif
-	e2fsck_global_ctx = ctx;
 	sa.sa_handler = signal_progress_on;
 	sigaction(SIGUSR1, &sa, 0);
 	sa.sa_handler = signal_progress_off;
