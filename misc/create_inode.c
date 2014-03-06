@@ -135,6 +135,37 @@ try_again:
 /* Make a directory in the fs */
 errcode_t do_mkdir_internal(ext2_ino_t cwd, const char *name, struct stat *st)
 {
+	char			*cp;
+	ext2_ino_t		parent_ino, ino;
+	errcode_t		retval;
+	struct ext2_inode	inode;
+
+
+	cp = strrchr(name, '/');
+	if (cp) {
+		*cp = 0;
+		if ((retval =  ext2fs_namei(current_fs, root, cwd, name, &parent_ino))){
+			com_err(name, retval, 0);
+			return retval;
+		}
+		name = cp+1;
+	} else
+		parent_ino = cwd;
+
+try_again:
+	retval = ext2fs_mkdir(current_fs, parent_ino, 0, name);
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, parent_ino);
+		if (retval) {
+			com_err(__func__, retval, "while expanding directory");
+			return retval;
+		}
+		goto try_again;
+	}
+	if (retval) {
+		com_err("ext2fs_mkdir", retval, 0);
+		return retval;
+	}
 }
 
 static errcode_t copy_file(int fd, ext2_ino_t newfile, int bufsize, int make_holes)
