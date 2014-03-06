@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
-#include <fcntl.h>
 #include <ctype.h>
 #include <time.h>
 #ifdef __linux__
@@ -45,25 +44,20 @@ extern int optind;
 #include <errno.h>
 #endif
 #include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <libgen.h>
 #include <limits.h>
 #include <blkid/blkid.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fsP.h"
-#include "et/com_err.h"
 #include "uuid/uuid.h"
-#include "e2p/e2p.h"
-#include "ext2fs/ext2fs.h"
 #include "util.h"
 #include "profile.h"
 #include "prof_err.h"
 #include "../version.h"
-#include "nls-enable.h"
 #include "quota/mkquota.h"
 #include "mke2fs.h"
+#include "create_inode.h"
 
 #define STRIDE_LENGTH 8
 
@@ -111,6 +105,7 @@ static char *mount_dir;
 char *journal_device;
 static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 char **fs_types;
+const char *root_dir;  /* Copy files from the specified directory */
 
 static profile_t	profile;
 
@@ -122,7 +117,8 @@ static void usage(void)
 	fprintf(stderr, _("Usage: %s [-c|-l filename] [-b block-size] "
 	"[-C cluster-size]\n\t[-i bytes-per-inode] [-I inode-size] "
 	"[-J journal-options]\n"
-	"\t[-G flex-group-size] [-N number-of-inodes]\n"
+	"\t[-G flex-group-size] [-N number-of-inodes] "
+	"[-d root-directory]\n"
 	"\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
@@ -1526,7 +1522,7 @@ profile_error:
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cg:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
+		    "b:cg:i:jl:m:no:qr:s:t:d:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = parse_num_blocks2(optarg, -1);
@@ -1713,6 +1709,9 @@ profile_error:
 			break;
 		case 'U':
 			fs_uuid = optarg;
+			break;
+		case 'd':
+			root_dir = optarg;
 			break;
 		case 'v':
 			verbose = 1;
@@ -2967,6 +2966,20 @@ no_journal:
 	retval = mk_hugefiles(fs);
 	if (retval)
 		com_err(program_name, retval, "while creating huge files");
+	/* Copy files from the specified directory */
+	if (root_dir) {
+		if (!quiet)
+			printf("%s", _("Copying files into the device: "));
+
+		current_fs = fs;
+		root = EXT2_ROOT_INO;
+		retval = populate_fs(root, root_dir);
+		if (retval)
+			fprintf(stderr, "%s",
+				_("\nError while populating file system"));
+		else if (!quiet)
+			printf("%s", _("done\n"));
+	}
 
 	if (!quiet)
 		printf("%s", _("Writing superblocks and "
