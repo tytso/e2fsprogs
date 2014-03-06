@@ -11,6 +11,78 @@
 /* Make a special file which is block, character and fifo */
 errcode_t do_mknod_internal(ext2_ino_t cwd, const char *name, struct stat *st)
 {
+	ext2_ino_t		ino;
+	errcode_t 		retval;
+	struct ext2_inode	inode;
+	unsigned long		major, minor, mode;
+	int			filetype;
+
+	switch(st->st_mode & S_IFMT) {
+		case S_IFCHR:
+			mode = LINUX_S_IFCHR;
+			filetype = EXT2_FT_CHRDEV;
+			break;
+		case S_IFBLK:
+			mode = LINUX_S_IFBLK;
+			filetype =  EXT2_FT_BLKDEV;
+			break;
+		case S_IFIFO:
+			mode = LINUX_S_IFIFO;
+			filetype = EXT2_FT_FIFO;
+			break;
+	}
+
+	if (!(current_fs->flags & EXT2_FLAG_RW)) {
+		com_err(__func__, 0, "Filesystem opened read/only");
+		return -1;
+	}
+	retval = ext2fs_new_inode(current_fs, cwd, 010755, 0, &ino);
+	if (retval) {
+		com_err(__func__, retval, 0);
+		return retval;
+	}
+
+#ifdef DEBUGFS
+	printf("Allocated inode: %u\n", ino);
+#endif
+	retval = ext2fs_link(current_fs, cwd, name, ino, filetype);
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, cwd);
+		if (retval) {
+			com_err(__func__, retval, "while expanding directory");
+			return retval;
+		}
+		retval = ext2fs_link(current_fs, cwd, name, ino, filetype);
+	}
+	if (retval) {
+		com_err(name, retval, 0);
+		return -1;
+	}
+        if (ext2fs_test_inode_bitmap2(current_fs->inode_map, ino))
+		com_err(__func__, 0, "Warning: inode already set");
+	ext2fs_inode_alloc_stats2(current_fs, ino, +1, 0);
+	memset(&inode, 0, sizeof(inode));
+	inode.i_mode = mode;
+	inode.i_atime = inode.i_ctime = inode.i_mtime =
+		current_fs->now ? current_fs->now : time(0);
+
+	major = major(st->st_rdev);
+	minor = minor(st->st_rdev);
+
+	if ((major < 256) && (minor < 256)) {
+		inode.i_block[0] = major * 256 + minor;
+		inode.i_block[1] = 0;
+	} else {
+		inode.i_block[0] = 0;
+		inode.i_block[1] = (minor & 0xff) | (major << 8) | ((minor & ~0xff) << 12);
+	}
+	inode.i_links_count = 1;
+
+	retval = ext2fs_write_new_inode(current_fs, ino, &inode);
+	if (retval)
+		com_err(__func__, retval, "while creating inode %u", ino);
+
+	return retval;
 }
 
 /* Make a symlink name -> target */
