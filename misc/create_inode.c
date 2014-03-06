@@ -18,6 +18,44 @@
 #define S_BLKSIZE 512
 #endif
 
+/* For saving the hard links */
+int hdlink_cnt = HDLINK_CNT;
+
+/* Link an inode number to a directory */
+static errcode_t add_link(ext2_ino_t parent_ino, ext2_ino_t ino, const char *name)
+{
+	struct ext2_inode	inode;
+	errcode_t		retval;
+
+	retval = ext2fs_read_inode(current_fs, ino, &inode);
+        if (retval) {
+		com_err(__func__, retval, "while reading inode %u", ino);
+		return retval;
+	}
+
+	retval = ext2fs_link(current_fs, parent_ino, name, ino, inode.i_flags);
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, parent_ino);
+		if (retval) {
+			com_err(__func__, retval, "while expanding directory");
+			return retval;
+		}
+		retval = ext2fs_link(current_fs, parent_ino, name, ino, inode.i_flags);
+	}
+	if (retval) {
+		com_err(__func__, retval, "while linking %s", name);
+		return retval;
+	}
+
+	inode.i_links_count++;
+
+	retval = ext2fs_write_inode(current_fs, ino, &inode);
+	if (retval)
+		com_err(__func__, retval, "while writing inode %u", ino);
+
+	return retval;
+}
+
 /* Fill the uid, gid, mode and time for the inode */
 static void fill_inode(struct ext2_inode *inode, struct stat *st)
 {
@@ -278,6 +316,17 @@ fail:
 	return retval;
 }
 
+int is_hardlink(ext2_ino_t ino)
+{
+	int i;
+
+	for(i = 0; i < hdlinks.count; i++) {
+		if(hdlinks.hdl[i].src_ino == ino)
+			return i;
+	}
+	return -1;
+}
+
 /* Copy the native file to the fs */
 errcode_t do_write_internal(ext2_ino_t cwd, const char *src, const char *dest)
 {
@@ -388,9 +437,11 @@ errcode_t populate_fs(ext2_ino_t parent_ino, const char *source_dir)
 	struct dirent	*dent;
 	struct stat	st;
 	char		ln_target[PATH_MAX];
+	unsigned int	save_inode;
 	ext2_ino_t	ino;
 	errcode_t	retval;
 	int		read_cnt;
+	int		hdlink;
 
 	root = EXT2_ROOT_INO;
 
@@ -411,6 +462,22 @@ errcode_t populate_fs(ext2_ino_t parent_ino, const char *source_dir)
 			continue;
 		lstat(dent->d_name, &st);
 		name = dent->d_name;
+
+		/* Check for hardlinks */
+		save_inode = 0;
+		if (!S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode) && st.st_nlink > 1) {
+			hdlink = is_hardlink(st.st_ino);
+			if (hdlink >= 0) {
+				retval = add_link(parent_ino,
+						hdlinks.hdl[hdlink].dst_ino, name);
+				if (retval) {
+					com_err(__func__, retval, "while linking %s", name);
+					return retval;
+				}
+				continue;
+			} else
+				save_inode = 1;
+		}
 
 		switch(st.st_mode & S_IFMT) {
 			case S_IFCHR:
@@ -479,6 +546,27 @@ errcode_t populate_fs(ext2_ino_t parent_ino, const char *source_dir)
 			com_err(__func__, retval,
 				_("while setting inode for \"%s\""), name);
 			return retval;
+		}
+
+		/* Save the hardlink ino */
+		if (save_inode) {
+			/*
+			 * Check whether need more memory, and we don't need
+			 * free() since the lifespan will be over after the fs
+			 * populated.
+			 */
+			if (hdlinks.count == hdlink_cnt) {
+				if ((hdlinks.hdl = realloc (hdlinks.hdl,
+						(hdlink_cnt + HDLINK_CNT) *
+						sizeof (struct hdlink_s))) == NULL) {
+					com_err(name, errno, "Not enough memory");
+					return errno;
+				}
+				hdlink_cnt += HDLINK_CNT;
+			}
+			hdlinks.hdl[hdlinks.count].src_ino = st.st_ino;
+			hdlinks.hdl[hdlinks.count].dst_ino = ino;
+			hdlinks.count++;
 		}
 	}
 	closedir(dh);

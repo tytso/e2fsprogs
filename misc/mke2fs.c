@@ -2971,6 +2971,18 @@ no_journal:
 		if (!quiet)
 			printf("%s", _("Copying files into the device: "));
 
+		/*
+		 * Allocate memory for the hardlinks, we don't need free()
+		 * since the lifespan will be over after the fs populated.
+		 */
+		if ((hdlinks.hdl = (struct hdlink_s *)
+				malloc(hdlink_cnt * sizeof(struct hdlink_s))) == NULL) {
+			fprintf(stderr, "%s", _("\nNot enough memory\n"));
+			retval = ext2fs_close(fs);
+			return retval;
+		}
+
+		hdlinks.count = 0;
 		current_fs = fs;
 		root = EXT2_ROOT_INO;
 		retval = populate_fs(root, root_dir);

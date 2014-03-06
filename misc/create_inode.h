@@ -6,8 +6,26 @@
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
 
+struct hdlink_s
+{
+	ext2_ino_t src_ino;
+	ext2_ino_t dst_ino;
+};
+
+struct hdlinks_s
+{
+	int count;
+	struct hdlink_s *hdl;
+};
+
+struct hdlinks_s hdlinks;
+
 ext2_filsys    current_fs;
 ext2_ino_t     root;
+
+/* For saving the hard links */
+#define HDLINK_CNT     4
+extern int hdlink_cnt;
 
 /* For populating the filesystem */
 extern errcode_t populate_fs(ext2_ino_t parent_ino, const char *source_dir);
