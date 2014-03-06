@@ -749,6 +749,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		return retval;
 
 	*ret_ctx = ctx;
+	e2fsck_global_ctx = ctx;
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 	setvbuf(stderr, NULL, _IONBF, BUFSIZ);
@@ -990,7 +991,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef SA_RESTART
 	sa.sa_flags = SA_RESTART;
 #endif
-	e2fsck_global_ctx = ctx;
 	sa.sa_handler = signal_progress_on;
 	sigaction(SIGUSR1, &sa, 0);
 	sa.sa_handler = signal_progress_off;
@@ -1066,9 +1066,11 @@ static errcode_t try_open_fs(e2fsck_t ctx, int flags, io_manager io_ptr,
 		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
 				      flags, 0, 0, io_ptr, ret_fs);
 
-	if (retval == 0)
+	if (retval == 0) {
+		(*ret_fs)->priv_data = ctx;
 		e2fsck_set_bitmap_type(*ret_fs, EXT2FS_BMAP64_RBTREE,
 				       "default", NULL);
+	}
 	return retval;
 }
 
@@ -1423,7 +1425,6 @@ failure:
 	}
 
 	ctx->fs = fs;
-	fs->priv_data = ctx;
 	fs->now = ctx->now;
 	sb = fs->super;
 
