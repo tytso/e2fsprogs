@@ -3000,9 +3000,8 @@ no_journal:
 		}
 
 		hdlinks.count = 0;
-		current_fs = fs;
-		root = EXT2_ROOT_INO;
-		retval = populate_fs(root, root_dir);
+		retval = populate_fs(fs, EXT2_ROOT_INO, root_dir,
+				     EXT2_ROOT_INO);
 		if (retval)
 			fprintf(stderr, "%s",
 				_("\nError while populating file system"));

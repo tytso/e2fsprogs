@@ -43,7 +43,8 @@ ss_request_table *extra_cmds;
 const char *debug_prog_name;
 int sci_idx;
 
-ext2_ino_t	cwd;
+ext2_filsys    current_fs;
+ext2_ino_t     root, cwd;
 
 static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 			    blk64_t blocksize, int catastrophic,
@@ -1606,7 +1607,8 @@ void do_write(int argc, char *argv[])
 				"<native file> <new file>", CHECK_FS_RW))
 		return;
 
-	if ((retval = do_write_internal(cwd, argv[1], argv[2])))
+	retval = do_write_internal(current_fs, cwd, argv[1], argv[2], root);
+	if (retval)
 		com_err(argv[0], retval, 0);
 }
 
@@ -1654,7 +1656,8 @@ void do_mknod(int argc, char *argv[])
 		goto usage;
 
 	st.st_rdev = makedev(major, minor);
-	if ((retval = do_mknod_internal(cwd, argv[1], &st)))
+	retval = do_mknod_internal(current_fs, cwd, argv[1], &st);
+	if (retval)
 		com_err(argv[0], retval, 0);
 }
 
@@ -1666,7 +1669,8 @@ void do_mkdir(int argc, char *argv[])
 				"<filename>", CHECK_FS_RW))
 		return;
 
-	if ((retval = do_mkdir_internal(cwd, argv[1], NULL)))
+	retval = do_mkdir_internal(current_fs, cwd, argv[1], NULL, root);
+	if (retval)
 		com_err(argv[0], retval, 0);
 
 }
@@ -2067,7 +2071,8 @@ void do_symlink(int argc, char *argv[])
 				"<filename> <target>", CHECK_FS_RW))
 		return;
 
-	if ((retval = do_symlink_internal(cwd, argv[1], argv[2])))
+	retval = do_symlink_internal(current_fs, cwd, argv[1], argv[2], root);
+	if (retval)
 		com_err(argv[0], retval, 0);
 
 }
