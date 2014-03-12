@@ -1,3 +1,6 @@
+#ifndef _CREATE_INODE_H
+#define _CREATE_INODE_H
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -33,3 +36,5 @@ extern errcode_t do_mknod_internal(ext2_ino_t cwd, const char *name, struct stat
 extern errcode_t do_symlink_internal(ext2_ino_t cwd, const char *name, char *target);
 extern errcode_t do_mkdir_internal(ext2_ino_t cwd, const char *name, struct stat *st);
 extern errcode_t do_write_internal(ext2_ino_t cwd, const char *src, const char *dest);
+
+#endif /* _CREATE_INODE_H */
