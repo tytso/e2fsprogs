@@ -21,9 +21,6 @@
 #define S_BLKSIZE 512
 #endif
 
-/* For saving the hard links */
-int hdlink_cnt = HDLINK_CNT;
-
 /* Link an inode number to a directory */
 static errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 			  ext2_ino_t ino, const char *name)
@@ -331,12 +328,13 @@ fail:
 	return retval;
 }
 
-static int is_hardlink(ext2_ino_t ino)
+static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ino_t ino)
 {
 	int i;
 
-	for(i = 0; i < hdlinks.count; i++) {
-		if(hdlinks.hdl[i].src_ino == ino)
+	for (i = 0; i < hdlinks->count; i++) {
+		if (hdlinks->hdl[i].src_dev == dev &&
+		    hdlinks->hdl[i].src_ino == ino)
 			return i;
 	}
 	return -1;
@@ -457,8 +455,9 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 }
 
 /* Copy files from source_dir to fs */
-errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
-		      const char *source_dir, ext2_ino_t root)
+static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
+			       const char *source_dir, ext2_ino_t root,
+			       struct hdlinks_s *hdlinks)
 {
 	const char	*name;
 	DIR		*dh;
@@ -495,10 +494,10 @@ errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		save_inode = 0;
 		if (!S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode) &&
 		    st.st_nlink > 1) {
-			hdlink = is_hardlink(st.st_ino);
+			hdlink = is_hardlink(hdlinks, st.st_dev, st.st_ino);
 			if (hdlink >= 0) {
 				retval = add_link(fs, parent_ino,
-						  hdlinks.hdl[hdlink].dst_ino,
+						  hdlinks->hdl[hdlink].dst_ino,
 						  name);
 				if (retval) {
 					com_err(__func__, retval,
@@ -570,7 +569,7 @@ errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 					return retval;
 			}
 			/* Populate the dir recursively*/
-			retval = populate_fs(fs, ino, name, root);
+			retval = __populate_fs(fs, ino, name, root, hdlinks);
 			if (retval) {
 				com_err(__func__, retval,
 					_("while adding dir \"%s\""), name);
@@ -607,20 +606,44 @@ errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			 * free() since the lifespan will be over after the fs
 			 * populated.
 			 */
-			if (hdlinks.count == hdlink_cnt) {
-				if ((hdlinks.hdl = realloc (hdlinks.hdl,
-						(hdlink_cnt + HDLINK_CNT) *
-						sizeof (struct hdlink_s))) == NULL) {
-					com_err(name, errno, "Not enough memory");
+			if (hdlinks->count == hdlinks->size) {
+				void *p = realloc(hdlinks->hdl,
+						(hdlinks->size + HDLINK_CNT) *
+						sizeof(struct hdlink_s));
+				if (p == NULL) {
+					com_err(name, errno,
+						_("Not enough memory"));
 					return errno;
 				}
-				hdlink_cnt += HDLINK_CNT;
+				hdlinks->hdl = p;
+				hdlinks->size += HDLINK_CNT;
 			}
-			hdlinks.hdl[hdlinks.count].src_ino = st.st_ino;
-			hdlinks.hdl[hdlinks.count].dst_ino = ino;
-			hdlinks.count++;
+			hdlinks->hdl[hdlinks->count].src_dev = st.st_dev;
+			hdlinks->hdl[hdlinks->count].src_ino = st.st_ino;
+			hdlinks->hdl[hdlinks->count].dst_ino = ino;
+			hdlinks->count++;
 		}
 	}
 	closedir(dh);
+	return retval;
+}
+
+errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
+		      const char *source_dir, ext2_ino_t root)
+{
+	struct hdlinks_s hdlinks;
+	errcode_t retval;
+
+	hdlinks.count = 0;
+	hdlinks.size = HDLINK_CNT;
+	hdlinks.hdl = realloc(NULL, hdlinks.size * sizeof(struct hdlink_s));
+	if (hdlinks.hdl == NULL) {
+		com_err(__func__, errno, "Not enough memory");
+		return errno;
+	}
+
+	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks);
+
+	free(hdlinks.hdl);
 	return retval;
 }

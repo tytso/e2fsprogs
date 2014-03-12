@@ -11,21 +11,19 @@
 
 struct hdlink_s
 {
-	ext2_ino_t src_ino;
+	dev_t src_dev;
+	ino_t src_ino;
 	ext2_ino_t dst_ino;
 };
 
 struct hdlinks_s
 {
 	int count;
+	int size;
 	struct hdlink_s *hdl;
 };
 
-struct hdlinks_s hdlinks;
-
-/* For saving the hard links */
-#define HDLINK_CNT     4
-extern int hdlink_cnt;
+#define HDLINK_CNT	(4)
 
 /* For populating the filesystem */
 extern errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
