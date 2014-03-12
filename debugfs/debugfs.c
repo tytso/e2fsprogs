@@ -492,27 +492,6 @@ static int list_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return 0;
 }
 
-static void dump_xattr_string(FILE *out, const char *str, int len)
-{
-	int printable = 0;
-	int i;
-
-	/* check: is string "printable enough?" */
-	for (i = 0; i < len; i++)
-		if (isprint(str[i]))
-			printable++;
-
-	if (printable <= len*7/8)
-		printable = 0;
-
-	for (i = 0; i < len; i++)
-		if (printable)
-			fprintf(out, isprint(str[i]) ? "%c" : "\\%03o",
-				(unsigned char)str[i]);
-		else
-			fprintf(out, "%02x ", (unsigned char)str[i]);
-}
-
 static void internal_dump_inode_extra(FILE *out,
 				      const char *prefix EXT2FS_ATTR((unused)),
 				      ext2_ino_t inode_num EXT2FS_ATTR((unused)),
@@ -530,47 +509,6 @@ static void internal_dump_inode_extra(FILE *out,
 				inode->i_extra_isize);
 		return;
 	}
-}
-
-/* Dump extended attributes */
-static int dump_attr(char *name, char *value, size_t value_len, void *data)
-{
-	FILE *out = data;
-
-	fprintf(out, "  ");
-	dump_xattr_string(out, name, strlen(name));
-	fprintf(out, " = \"");
-	dump_xattr_string(out, value, value_len);
-	fprintf(out, "\" (%zu)\n", value_len);
-
-	return 0;
-}
-
-static void dump_inode_attributes(FILE *out, ext2_ino_t ino)
-{
-	struct ext2_xattr_handle *h;
-	size_t sz;
-	errcode_t err;
-
-	err = ext2fs_xattrs_open(current_fs, ino, &h);
-	if (err)
-		return;
-
-	err = ext2fs_xattrs_read(h);
-	if (err)
-		goto out;
-
-	err = ext2fs_xattrs_count(h, &sz);
-	if (err || sz == 0)
-		goto out;
-
-	fprintf(out, "Extended attributes:\n");
-	err = ext2fs_xattrs_iterate(h, dump_attr, out);
-	if (err)
-		goto out;
-
-out:
-	err = ext2fs_xattrs_close(&h);
 }
 
 static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)

@@ -175,6 +175,9 @@ extern void do_filefrag(int argc, char *argv[]);
 /* util.c */
 extern time_t string_to_time(const char *arg);
 
+/* xattrs.c */
+void dump_inode_attributes(FILE *out, ext2_ino_t ino);
+
 /* zap.c */
 extern void do_zap_block(int argc, char **argv);
 extern void do_block_dump(int argc, char **argv);
