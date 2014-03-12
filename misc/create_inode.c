@@ -351,16 +351,15 @@ errcode_t do_write_internal(ext2_ino_t cwd, const char *src, const char *dest)
 
 	retval = ext2fs_namei(current_fs, root, cwd, dest, &newfile);
 	if (retval == 0) {
-		com_err(__func__, 0, "The file '%s' already exists\n", dest);
 		close(fd);
-		return errno;
+		return EXT2_ET_FILE_EXISTS;
 	}
 
 	retval = ext2fs_new_inode(current_fs, cwd, 010755, 0, &newfile);
 	if (retval) {
 		com_err(__func__, retval, 0);
 		close(fd);
-		return errno;
+		return retval;
 	}
 #ifdef DEBUGFS
 	printf("Allocated inode: %u\n", newfile);
@@ -372,7 +371,7 @@ errcode_t do_write_internal(ext2_ino_t cwd, const char *src, const char *dest)
 		if (retval) {
 			com_err(__func__, retval, "while expanding directory");
 			close(fd);
-			return errno;
+			return retval;
 		}
 		retval = ext2fs_link(current_fs, cwd, dest, newfile,
 					EXT2_FT_REG_FILE);
@@ -412,12 +411,15 @@ errcode_t do_write_internal(ext2_ino_t cwd, const char *src, const char *dest)
 	if ((retval = ext2fs_write_new_inode(current_fs, newfile, &inode))) {
 		com_err(__func__, retval, "while creating inode %u", newfile);
 		close(fd);
-		return errno;
+		return retval;
 	}
 	if (inode.i_flags & EXT4_INLINE_DATA_FL) {
 		retval = ext2fs_inline_data_init(current_fs, newfile);
-		if (retval)
-			return;
+		if (retval) {
+			com_err("copy_file", retval, 0);
+			close(fd);
+			return retval;
+		}
 	}
 	if (LINUX_S_ISREG(inode.i_mode)) {
 		if (statbuf.st_blocks < statbuf.st_size / S_BLKSIZE) {
@@ -434,7 +436,7 @@ errcode_t do_write_internal(ext2_ino_t cwd, const char *src, const char *dest)
 	}
 	close(fd);
 
-	return 0;
+	return retval;
 }
 
 /* Copy files from source_dir to fs */
