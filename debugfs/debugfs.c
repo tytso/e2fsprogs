@@ -549,6 +549,7 @@ static int dump_attr(char *name, char *value, size_t value_len, void *data)
 static void dump_inode_attributes(FILE *out, ext2_ino_t ino)
 {
 	struct ext2_xattr_handle *h;
+	size_t sz;
 	errcode_t err;
 
 	err = ext2fs_xattrs_open(current_fs, ino, &h);
@@ -559,7 +560,8 @@ static void dump_inode_attributes(FILE *out, ext2_ino_t ino)
 	if (err)
 		goto out;
 
-	if (ext2fs_xattrs_count(h) == 0)
+	err = ext2fs_xattrs_count(h, &sz);
+	if (err || sz == 0)
 		goto out;
 
 	fprintf(out, "Extended attributes:\n");

@@ -195,6 +195,7 @@ struct ext2_xattr {
 };
 
 struct ext2_xattr_handle {
+	errcode_t magic;
 	ext2_filsys fs;
 	struct ext2_xattr *attrs;
 	size_t length, count;
@@ -237,6 +238,24 @@ static struct ea_name_index ea_names[] = {
 	{1, "user."},
 	{0, NULL},
 };
+
+static void move_inline_data_to_front(struct ext2_xattr_handle *h)
+{
+	struct ext2_xattr *x;
+	struct ext2_xattr tmp;
+
+	for (x = h->attrs + 1; x < h->attrs + h->length; x++) {
+		if (!x->name)
+			continue;
+
+		if (strcmp(x->name, "system.data") == 0) {
+			memcpy(&tmp, x, sizeof(tmp));
+			memcpy(x, h->attrs, sizeof(tmp));
+			memcpy(h->attrs, &tmp, sizeof(tmp));
+			return;
+		}
+	}
+}
 
 static const char *find_ea_prefix(int index)
 {
@@ -412,6 +431,7 @@ static errcode_t write_xattrs_to_buffer(struct ext2_xattr_handle *handle,
 	unsigned int entry_size, value_size;
 	int idx, ret;
 
+	memset(entries_start, 0, storage_size);
 	/* For all remaining x...  */
 	for (; x < handle->attrs + handle->length; x++) {
 		if (!x->name)
@@ -471,6 +491,7 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 	unsigned int i;
 	errcode_t err;
 
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
 	i = EXT2_INODE_SIZE(handle->fs->super);
 	if (i < sizeof(*inode))
 		i = sizeof(*inode);
@@ -483,6 +504,8 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 				     EXT2_INODE_SIZE(handle->fs->super));
 	if (err)
 		goto out;
+
+	move_inline_data_to_front(handle);
 
 	x = handle->attrs;
 	/* Does the inode have size for EA? */
@@ -511,7 +534,7 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 
 write_ea_block:
 	/* Write the EA block */
-	err = ext2fs_get_memzero(handle->fs->blocksize, &block_buf);
+	err = ext2fs_get_mem(handle->fs->blocksize, &block_buf);
 	if (err)
 		goto out;
 
@@ -590,6 +613,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 		x++;
 
 	entry = entries;
+	remain = storage_size;
 	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		__u32 hash;
 
@@ -682,6 +706,7 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 	int i;
 	errcode_t err;
 
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
 	i = EXT2_INODE_SIZE(handle->fs->super);
 	if (i < sizeof(*inode))
 		i = sizeof(*inode);
@@ -781,6 +806,7 @@ errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
 	errcode_t err;
 	int ret;
 
+	EXT2_CHECK_MAGIC(h, EXT2_ET_MAGIC_EA_HANDLE);
 	for (x = h->attrs; x < h->attrs + h->length; x++) {
 		if (!x->name)
 			continue;
@@ -802,6 +828,7 @@ errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
 	void *val;
 	errcode_t err;
 
+	EXT2_CHECK_MAGIC(h, EXT2_ET_MAGIC_EA_HANDLE);
 	for (x = h->attrs; x < h->attrs + h->length; x++) {
 		if (!x->name)
 			continue;
@@ -893,6 +920,7 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 	char *new_value;
 	errcode_t err;
 
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
 	last_empty = NULL;
 	for (x = handle->attrs; x < handle->attrs + handle->length; x++) {
 		if (!x->name) {
@@ -958,6 +986,7 @@ errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
 	struct ext2_xattr *x;
 	errcode_t err;
 
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
 	for (x = handle->attrs; x < handle->attrs + handle->length; x++) {
 		if (!x->name)
 			continue;
@@ -991,6 +1020,7 @@ errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
 	if (err)
 		return err;
 
+	h->magic = EXT2_ET_MAGIC_EA_HANDLE;
 	h->length = 4;
 	err = ext2fs_get_arrayzero(h->length, sizeof(struct ext2_xattr),
 				   &h->attrs);
@@ -1010,6 +1040,7 @@ errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle)
 	struct ext2_xattr_handle *h = *handle;
 	errcode_t err;
 
+	EXT2_CHECK_MAGIC(h, EXT2_ET_MAGIC_EA_HANDLE);
 	if (h->dirty) {
 		err = ext2fs_xattrs_write(h);
 		if (err)
@@ -1022,7 +1053,9 @@ errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle)
 	return 0;
 }
 
-size_t ext2fs_xattrs_count(struct ext2_xattr_handle *handle)
+errcode_t ext2fs_xattrs_count(struct ext2_xattr_handle *handle, size_t *count)
 {
-	return handle->count;
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
+	*count = handle->count;
+	return 0;
 }

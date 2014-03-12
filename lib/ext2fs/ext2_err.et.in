@@ -512,4 +512,7 @@ ec	EXT2_ET_INLINE_DATA_NO_BLOCK,
 ec	EXT2_ET_INLINE_DATA_NO_SPACE,
 	"No free space in inline data"
 
+ec	EXT2_ET_MAGIC_EA_HANDLE,
+	"Wrong magic number for extended attribute structure"
+
 	end

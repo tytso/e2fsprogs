@@ -1183,7 +1183,7 @@ errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
 errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle);
 errcode_t ext2fs_free_ext_attr(ext2_filsys fs, ext2_ino_t ino,
 			       struct ext2_inode_large *inode);
-size_t ext2fs_xattrs_count(struct ext2_xattr_handle *handle);
+errcode_t ext2fs_xattrs_count(struct ext2_xattr_handle *handle, size_t *count);
 errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 				      size_t *size);
 
