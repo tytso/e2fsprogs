@@ -86,10 +86,9 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t cwd,
 	fill_inode(&inode, st);
 
 	retval = ext2fs_write_inode(fs, ino, &inode);
-	if (retval) {
+	if (retval)
 		com_err(__func__, retval, "while writing inode %u", ino);
-		return retval;
-	}
+	return retval;
 }
 
 /* Make a special file which is block, character and fifo */
@@ -115,6 +114,9 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 		mode = LINUX_S_IFIFO;
 		filetype = EXT2_FT_FIFO;
 		break;
+	default:
+		abort();
+		/* NOTREACHED */
 	}
 
 	if (!(fs->flags & EXT2_FLAG_RW)) {
@@ -204,11 +206,9 @@ try_again:
 		}
 		goto try_again;
 	}
-	if (retval) {
+	if (retval)
 		com_err("ext2fs_symlink", retval, 0);
-		return retval;
-	}
-
+	return retval;
 }
 
 /* Make a directory in the fs */
@@ -243,10 +243,9 @@ try_again:
 		}
 		goto try_again;
 	}
-	if (retval) {
+	if (retval)
 		com_err("ext2fs_mkdir", retval, 0);
-		return retval;
-	}
+	return retval;
 }
 
 static errcode_t copy_file(ext2_filsys fs, int fd, ext2_ino_t newfile,
