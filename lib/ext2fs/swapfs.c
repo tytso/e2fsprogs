@@ -363,7 +363,7 @@ void ext2fs_swap_mmp(struct mmp_struct *mmp)
 
 errcode_t ext2fs_dirent_swab_in(ext2_filsys fs, char *buf, int flags)
 {
-	return ext2fs_dirent_swab_in(fs, buf, fs->blocksize, flags);
+	return ext2fs_dirent_swab_in2(fs, buf, fs->blocksize, flags);
 }
 
 errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf,
