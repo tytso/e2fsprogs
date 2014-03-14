@@ -446,7 +446,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	inlinedata_fs = (ctx->fs->super->s_feature_incompat &
 			 EXT4_FEATURE_INCOMPAT_INLINE_DATA);
 	if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL)) {
-		unsigned int size;
+		size_t size;
 
 		if (ext2fs_inline_data_size(ctx->fs, pctx->ino, &size))
 			return;

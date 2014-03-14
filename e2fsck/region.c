@@ -203,6 +203,8 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
+	if (r)
+		region_free(r);
 }
 
 #endif /* TEST_PROGRAM */

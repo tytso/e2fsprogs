@@ -1386,6 +1386,17 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *);
 extern errcode_t ext2fs_get_memalign(unsigned long size,
 				     unsigned long align, void *ptr);
 
+/* inline_data.c */
+extern errcode_t ext2fs_inline_data_init(ext2_filsys fs, ext2_ino_t ino);
+extern errcode_t ext2fs_inline_data_size(ext2_filsys fs, ext2_ino_t ino,
+					 size_t *size);
+extern errcode_t ext2fs_inline_data_get(ext2_filsys fs, ext2_ino_t ino,
+					struct ext2_inode *inode,
+					void *buf, size_t *size);
+extern errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
+					struct ext2_inode *inode,
+					void *buf, size_t size);
+
 /* inode.c */
 extern errcode_t ext2fs_create_inode_cache(ext2_filsys fs,
 					   unsigned int cache_size);

@@ -88,20 +88,11 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    int			ref_offset,
 				    void		*priv_data);
 
-extern errcode_t ext2fs_inline_data_init(ext2_filsys fs, ext2_ino_t ino);
-extern errcode_t ext2fs_inline_data_size(ext2_filsys fs, ext2_ino_t ino,
-					 size_t *size);
 extern errcode_t ext2fs_inline_data_ea_remove(ext2_filsys fs, ext2_ino_t ino);
 extern errcode_t ext2fs_inline_data_expand(ext2_filsys fs, ext2_ino_t ino);
 extern int ext2fs_inline_data_dir_iterate(ext2_filsys fs,
 					  ext2_ino_t ino,
 					  void *priv_data);
-extern errcode_t ext2fs_inline_data_get(ext2_filsys fs, ext2_ino_t ino,
-					struct ext2_inode *inode,
-					void *buf, size_t *size);
-extern errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
-					struct ext2_inode *inode,
-					void *buf, size_t size);
 
 /* Generic numeric progress meter */
 

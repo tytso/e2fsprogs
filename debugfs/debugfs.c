@@ -666,7 +666,7 @@ static void dump_inline_data(FILE *out, const char *prefix, ext2_ino_t inode_num
 
 	retval = ext2fs_inline_data_size(current_fs, inode_num, &size);
 	if (!retval)
-		fprintf(out, "%sSize of inline data: %d", prefix, size);
+		fprintf(out, "%sSize of inline data: %zu", prefix, size);
 }
 
 void internal_dump_inode(FILE *out, const char *prefix,

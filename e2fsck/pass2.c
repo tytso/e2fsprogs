@@ -770,7 +770,7 @@ static int check_dir_block(ext2_filsys fs,
 	int	dx_csum_size = 0, de_csum_size = 0;
 	int	failed_csum = 0;
 	int	is_leaf = 1;
-	int	inline_data_size = 0;
+	size_t	inline_data_size = 0;
 	int	filetype = 0;
 
 	cd = (struct check_dir_struct *) priv_data;

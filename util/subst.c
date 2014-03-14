@@ -426,6 +426,8 @@ int main(int argc, char **argv)
 	}
 	if (old)
 		fclose(old);
+	if (newfn)
+		free(newfn);
 	return (0);
 }
 
