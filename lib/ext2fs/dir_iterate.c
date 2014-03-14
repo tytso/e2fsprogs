@@ -128,7 +128,6 @@ errcode_t ext2fs_dir_iterate2(ext2_filsys fs,
 	if (!block_buf)
 		ext2fs_free_mem(&ctx.buf);
 	if (retval == EXT2_ET_INLINE_DATA_CANT_ITERATE) {
-		ctx.flags |= DIRENT_FLAG_INCLUDE_INLINE_DATA;
 		(void) ext2fs_inline_data_dir_iterate(fs, dir, &ctx);
 		retval = 0;
 	}

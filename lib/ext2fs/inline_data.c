@@ -120,8 +120,15 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_inline_data data;
 	int ret = BLOCK_ABORT;
 	e2_blkcnt_t blockcnt = 0;
+	char *old_buf;
+	unsigned int old_buflen;
+	int old_flags;
 
 	ctx = (struct dir_context *)priv_data;
+	old_buf = ctx->buf;
+	old_buflen = ctx->buflen;
+	old_flags = ctx->flags;
+	ctx->flags |= DIRENT_FLAG_INCLUDE_INLINE_DATA;
 
 	ctx->errcode = ext2fs_read_inode(fs, ino, &inode);
 	if (ctx->errcode)
@@ -235,9 +242,10 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 
 out1:
 	ext2fs_free_mem(&data.ea_data);
-	ctx->buf = 0;
-
 out:
+	ctx->buf = old_buf;
+	ctx->buflen = old_buflen;
+	ctx->flags = old_flags;
 	ret &= ~(BLOCK_ABORT | BLOCK_INLINE_DATA_CHANGED);
 	return ret;
 }
