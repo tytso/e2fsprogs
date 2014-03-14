@@ -58,6 +58,7 @@ struct ext2_extent_handle {
 	int			type;
 	int			level;
 	int			max_depth;
+	int			max_paths;
 	struct extent_path	*path;
 };
 
@@ -168,7 +169,7 @@ void ext2fs_extent_free(ext2_extent_handle_t handle)
 		return;
 
 	if (handle->path) {
-		for (i=1; i <= handle->max_depth; i++) {
+		for (i = 1; i < handle->max_paths; i++) {
 			if (handle->path[i].buf)
 				ext2fs_free_mem(&handle->path[i].buf);
 		}
@@ -242,11 +243,10 @@ errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
 	handle->max_depth = ext2fs_le16_to_cpu(eh->eh_depth);
 	handle->type = ext2fs_le16_to_cpu(eh->eh_magic);
 
-	retval = ext2fs_get_mem(((handle->max_depth+1) *
-				 sizeof(struct extent_path)),
-				&handle->path);
-	memset(handle->path, 0,
-	       (handle->max_depth+1) * sizeof(struct extent_path));
+	handle->max_paths = handle->max_depth + 1;
+	retval = ext2fs_get_memzero(handle->max_paths *
+				    sizeof(struct extent_path),
+				    &handle->path);
 	handle->path[0].buf = (char *) handle->inode->i_block;
 
 	handle->path[0].left = handle->path[0].entries =
@@ -912,13 +912,11 @@ errcode_t ext2fs_extent_node_split(ext2_extent_handle_t handle)
 	if (handle->level == 0) {
 		new_root = 1;
 		tocopy = ext2fs_le16_to_cpu(eh->eh_entries);
-		retval = ext2fs_get_mem(((handle->max_depth+2) *
-					 sizeof(struct extent_path)),
-					&newpath);
+		retval = ext2fs_get_memzero((handle->max_paths + 1) *
+					    sizeof(struct extent_path),
+					    &newpath);
 		if (retval)
 			goto done;
-		memset(newpath, 0,
-		       ((handle->max_depth+2) * sizeof(struct extent_path)));
 	} else {
 		tocopy = ext2fs_le16_to_cpu(eh->eh_entries) / 2;
 	}
@@ -996,13 +994,14 @@ errcode_t ext2fs_extent_node_split(ext2_extent_handle_t handle)
 	/* current path now has fewer active entries, we copied some out */
 	if (handle->level == 0) {
 		memcpy(newpath, path,
-		       sizeof(struct extent_path) * (handle->max_depth+1));
+		       sizeof(struct extent_path) * handle->max_paths);
 		handle->path = newpath;
 		newpath = path;
 		path = handle->path;
 		path->entries = 1;
 		path->left = path->max_entries - 1;
 		handle->max_depth++;
+		handle->max_paths++;
 		eh->eh_depth = ext2fs_cpu_to_le16(handle->max_depth);
 	} else {
 		path->entries -= tocopy;
