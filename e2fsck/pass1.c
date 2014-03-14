@@ -2158,8 +2158,10 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 static void check_blocks_inline_data(e2fsck_t ctx, struct problem_context *pctx,
 				     struct process_block_struct *pb)
 {
-	if (!pb->is_dir)
+	if (!pb->is_dir) {
+		pctx->errcode = 0;
 		return;
+	}
 
 	pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist, pb->ino, 0, 0);
 	if (pctx->errcode) {
