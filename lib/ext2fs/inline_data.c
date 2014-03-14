@@ -460,7 +460,20 @@ errcode_t ext2fs_inline_data_expand(ext2_filsys fs, ext2_ino_t ino)
 	}
 
 	memset((void *)inode.i_block, 0, EXT4_MIN_INLINE_DATA_SIZE);
+	/*
+	 * NOTE: We must do this write -> ea_remove -> read cycle here because
+	 * removing the inline data EA can free the EA block, which is a change
+	 * that our stack copy of the inode will never see.  If that happens,
+	 * we can end up with the EA block and lblk 0 pointing to the same
+	 * pblk, which is bad news.
+	 */
+	retval = ext2fs_write_inode(fs, ino, &inode);
+	if (retval)
+		goto errout;
 	retval = ext2fs_inline_data_ea_remove(fs, ino);
+	if (retval)
+		goto errout;
+	retval = ext2fs_read_inode(fs, ino, &inode);
 	if (retval)
 		goto errout;
 
