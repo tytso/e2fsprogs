@@ -794,6 +794,11 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 	outdir.hashes = 0;
 	e2fsck_read_inode(ctx, ino, &inode, "rehash_dir");
 
+	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				      EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
+	   (inode.i_flags & EXT4_INLINE_DATA_FL))
+		return 0;
+
 	retval = ENOMEM;
 	fd.harray = 0;
 	dir_buf = malloc(inode.i_size);
@@ -822,8 +827,6 @@ retry_nohash:
 	/* Read in the entire directory into memory */
 	retval = ext2fs_block_iterate3(fs, ino, 0, 0,
 				       fill_dir_block, &fd);
-	if (retval == EXT2_ET_INLINE_DATA_CANT_ITERATE)
-		goto errout;
 	if (fd.err) {
 		retval = fd.err;
 		goto errout;
