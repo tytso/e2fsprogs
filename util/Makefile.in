@@ -17,6 +17,7 @@ SRCS = $(srcdir)/subst.c
 	$(E) "	CC $<"
 	$(Q) $(BUILD_CC) -c $(BUILD_CFLAGS) $< -o $@
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+	$(Q) $(CPPCHECK_CMD) $<
 
 PROGS=		subst symlinks
 
