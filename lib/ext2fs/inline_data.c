@@ -522,7 +522,7 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_inode inode_buf;
 	struct ext2_inline_data data;
 	errcode_t retval;
-	size_t max_size;
+	size_t free_ea_size, existing_size, free_inode_size;
 
 	if (!inode) {
 		retval = ext2fs_read_inode(fs, ino, &inode_buf);
@@ -536,11 +536,20 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 		return ext2fs_write_inode(fs, ino, inode);
 	}
 
-	retval = ext2fs_xattr_inode_max_size(fs, ino, &max_size);
+	retval = ext2fs_xattr_inode_max_size(fs, ino, &free_ea_size);
 	if (retval)
 		return retval;
 
-	if (size - EXT4_MIN_INLINE_DATA_SIZE > max_size)
+	retval = ext2fs_inline_data_size(fs, ino, &existing_size);
+	if (retval)
+		return retval;
+
+	if (existing_size < EXT4_MIN_INLINE_DATA_SIZE)
+		free_inode_size = EXT4_MIN_INLINE_DATA_SIZE - existing_size;
+	else
+		free_inode_size = 0;
+
+	if (size > existing_size + free_ea_size + free_inode_size)
 		return EXT2_ET_INLINE_DATA_NO_SPACE;
 
 	memcpy((void *)inode->i_block, buf, EXT4_MIN_INLINE_DATA_SIZE);
