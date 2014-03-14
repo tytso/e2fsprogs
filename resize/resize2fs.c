@@ -1712,6 +1712,13 @@ remap_blocks:
 				retval = pb.error;
 				goto errout;
 			}
+		} else if ((inode->i_flags & EXT4_INLINE_DATA_FL) &&
+			   (rfs->bmap || pb.is_dir)) {
+			/* inline data dir; update it too */
+			retval = ext2fs_add_dir_block2(rfs->old_fs->dblist,
+						       new_inode, 0, 0);
+			if (retval)
+				goto errout;
 		}
 	}
 	io_channel_flush(rfs->old_fs->io);
