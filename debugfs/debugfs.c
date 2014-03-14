@@ -657,6 +657,7 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 	}
 	if (printed)
 		fprintf(f, "\n");
+	ext2fs_extent_free(handle);
 }
 
 static void dump_inline_data(FILE *out, const char *prefix, ext2_ino_t inode_num)

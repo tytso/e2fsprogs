@@ -201,7 +201,7 @@ char *time_to_string(__u32 cl)
 		tz = ss_safe_getenv("TZ");
 		if (!tz)
 			tz = "";
-		do_gmt = !strcmp(tz, "GMT") | !strcmp(tz, "GMT0");
+		do_gmt = !strcmp(tz, "GMT") || !strcmp(tz, "GMT0");
 	}
 
 	return asctime((do_gmt) ? gmtime(&t) : localtime(&t));

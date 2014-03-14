@@ -17,6 +17,9 @@
 #include <fcntl.h>
 #include <time.h>
 #include <utime.h>
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
