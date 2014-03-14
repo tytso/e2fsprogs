@@ -372,7 +372,9 @@ ext2fs_inline_data_dir_expand(ext2_filsys fs, ext2_ino_t ino,
 	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super, EXT3_FEATURE_INCOMPAT_EXTENTS))
 		inode->i_flags |= EXT4_EXTENTS_FL;
 	inode->i_flags &= ~EXT4_INLINE_DATA_FL;
-	ext2fs_iblk_set(fs, inode, 1);
+	retval = ext2fs_iblk_add_blocks(fs, inode, 1);
+	if (retval)
+		goto errout;
 	inode->i_size = fs->blocksize;
 	retval = ext2fs_bmap2(fs, ino, inode, 0, BMAP_SET, 0, 0, &blk);
 	if (retval)
@@ -410,7 +412,6 @@ ext2fs_inline_data_file_expand(ext2_filsys fs, ext2_ino_t ino,
 		inode->i_flags |= EXT4_EXTENTS_FL;
 	}
 	inode->i_flags &= ~EXT4_INLINE_DATA_FL;
-	ext2fs_iblk_set(fs, inode, 0);
 	inode->i_size = 0;
 	retval = ext2fs_write_inode(fs, ino, inode);
 	if (retval)
