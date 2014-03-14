@@ -129,7 +129,7 @@ void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
 	while (num) {
 		int group = ext2fs_group_of_blk2(fs, blk);
 		blk64_t last_blk = ext2fs_group_last_block2(fs, group);
-		blk_t n = num;
+		blk64_t n = num;
 
 		if (blk + num > last_blk)
 			n = last_blk - blk + 1;
