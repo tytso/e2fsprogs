@@ -343,10 +343,16 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 					EXT2_EXTENT_INSERT_AFTER, &newex);
 			if (retval)
 				goto errout;
-			/* Now pointing at inserted extent; so go back */
-			retval = ext2fs_extent_get(handle,
-						   EXT2_EXTENT_PREV_LEAF,
-						   &newex);
+			retval = ext2fs_extent_fix_parents(handle);
+			if (retval)
+				goto errout;
+			/*
+			 * Now pointing at inserted extent; so go back.
+			 *
+			 * We cannot use EXT2_EXTENT_PREV to go back; note the
+			 * subtlety in the comment for fix_parents().
+			 */
+			retval = ext2fs_extent_goto(handle, extent.e_lblk);
 			if (retval)
 				goto errout;
 		} 

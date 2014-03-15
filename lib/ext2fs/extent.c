@@ -734,7 +734,14 @@ errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
  * and so on.
  *
  * Safe to call for any position in node; if not at the first entry,
- * will  simply return.
+ * it will simply return.
+ *
+ * Note a subtlety of this function -- if there happen to be two extents
+ * mapping the same lblk and someone calls fix_parents on the second of the two
+ * extents, the position of the extent handle after the call will be the second
+ * extent if nothing happened, or the first extent if something did.  A caller
+ * in this situation must use ext2fs_extent_goto() after calling this function.
+ * Or simply don't map the same lblk with two extents, ever.
  */
 errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle)
 {
@@ -1424,17 +1431,25 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 							       &next_extent);
 				if (retval)
 					goto done;
-				retval = ext2fs_extent_fix_parents(handle);
-				if (retval)
-					goto done;
 			} else
 				retval = ext2fs_extent_insert(handle,
 				      EXT2_EXTENT_INSERT_AFTER, &newextent);
 			if (retval)
 				goto done;
-			/* Now pointing at inserted extent; move back to prev */
+			retval = ext2fs_extent_fix_parents(handle);
+			if (retval)
+				goto done;
+			/*
+			 * Now pointing at inserted extent; move back to prev.
+			 *
+			 * We cannot use EXT2_EXTENT_PREV to go back; note the
+			 * subtlety in the comment for fix_parents().
+			 */
+			retval = ext2fs_extent_goto(handle, logical);
+			if (retval)
+				goto done;
 			retval = ext2fs_extent_get(handle,
-						   EXT2_EXTENT_PREV_LEAF,
+						   EXT2_EXTENT_CURRENT,
 						   &extent);
 			if (retval)
 				goto done;
@@ -1465,6 +1480,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			} else
 				retval = ext2fs_extent_insert(handle,
 							      0, &newextent);
+			if (retval)
+				goto done;
+			retval = ext2fs_extent_fix_parents(handle);
 			if (retval)
 				goto done;
 			retval = ext2fs_extent_get(handle,
