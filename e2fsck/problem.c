@@ -1073,6 +1073,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Error adjusting refcount for @a @b %b (@i %i): %m\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Duplicate/bad block range in inode */
+	{ PR_1B_DUP_RANGE,
+	  " %b--%c",
+	  PROMPT_NONE, PR_LATCH_DBLOCK | PR_PREEN_NOHDR },
+
 	/* Pass 1C: Scan directories for inodes with multiply-claimed blocks. */
 	{ PR_1C_PASS_HEADER,
 	  N_("Pass 1C: Scanning directories for @is with @m @bs\n"),

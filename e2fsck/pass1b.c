@@ -262,6 +262,7 @@ struct process_block_struct {
 	ext2_ino_t	ino;
 	int		dup_blocks;
 	blk64_t		cur_cluster;
+	blk64_t		last_blk;
 	struct ext2_inode *inode;
 	struct problem_context *pctx;
 };
@@ -274,6 +275,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	ext2_inode_scan	scan;
 	struct process_block_struct pb;
 	struct problem_context pctx;
+	problem_t op;
 
 	clear_problem_context(&pctx);
 
@@ -314,6 +316,8 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		pb.dup_blocks = 0;
 		pb.inode = &inode;
 		pb.cur_cluster = ~0;
+		pb.last_blk = 0;
+		pb.pctx->blk = pb.pctx->blk2 = 0;
 
 		if (ext2fs_inode_has_valid_blocks2(fs, &inode) ||
 		    (ino == EXT2_BAD_INO))
@@ -329,6 +333,11 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 			ext2fs_file_acl_block_set(fs, &inode, blk);
 		}
 		if (pb.dup_blocks) {
+			if (ino != EXT2_BAD_INO) {
+				op = pctx.blk == pctx.blk2 ?
+					PR_1B_DUP_BLOCK : PR_1B_DUP_RANGE;
+				fix_problem(ctx, op, pb.pctx);
+			}
 			end_problem_latch(ctx, PR_LATCH_DBLOCK);
 			if (ino >= EXT2_FIRST_INODE(fs->super) ||
 			    ino == EXT2_ROOT_INO)
@@ -351,6 +360,7 @@ static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 	struct process_block_struct *p;
 	e2fsck_t ctx;
 	blk64_t	lc;
+	problem_t op;
 
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
@@ -363,8 +373,17 @@ static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 
 	/* OK, this is a duplicate block */
 	if (p->ino != EXT2_BAD_INO) {
-		p->pctx->blk = *block_nr;
-		fix_problem(ctx, PR_1B_DUP_BLOCK, p->pctx);
+		if (p->last_blk + 1 != *block_nr) {
+			if (p->last_blk) {
+				op = p->pctx->blk == p->pctx->blk2 ?
+						PR_1B_DUP_BLOCK :
+						PR_1B_DUP_RANGE;
+				fix_problem(ctx, op, p->pctx);
+			}
+			p->pctx->blk = *block_nr;
+		}
+		p->pctx->blk2 = *block_nr;
+		p->last_blk = *block_nr;
 	}
 	p->dup_blocks++;
 	ext2fs_mark_inode_bitmap2(inode_dup_map, p->ino);

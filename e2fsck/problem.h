@@ -628,6 +628,9 @@ struct problem_context {
 /* Error adjusting EA refcount */
 #define PR_1B_ADJ_EA_REFCOUNT	0x011007
 
+/* Duplicate/bad block range in inode */
+#define PR_1B_DUP_RANGE		0x011008
+
 /* Pass 1C: Scan directories for inodes with dup blocks. */
 #define PR_1C_PASS_HEADER	0x012000
 
