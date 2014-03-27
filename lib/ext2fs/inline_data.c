@@ -218,8 +218,8 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 	ctx->buf = data.ea_data;
 	ctx->buflen = data.ea_size;
 #ifdef WORDS_BIGENDIAN
-	ctx.errcode = ext2fs_dirent_swab_in2(fs, ctx->buf, ctx->buflen, 0);
-	if (ctx.errcode) {
+	ctx->errcode = ext2fs_dirent_swab_in2(fs, ctx->buf, ctx->buflen, 0);
+	if (ctx->errcode) {
 		ret |= BLOCK_ABORT;
 		goto out;
 	}
@@ -361,7 +361,7 @@ ext2fs_inline_data_dir_expand(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 
 #ifdef WORDS_BIGENDIAN
-	retval = ext2fs_dirent_swab_in2(fs, buf, size);
+	retval = ext2fs_dirent_swab_in2(fs, buf, size, 0);
 	if (retval)
 		goto errout;
 #endif
