@@ -210,7 +210,7 @@ static int run_program(char **argv)
 		rc = WEXITSTATUS(status);
 		if (rc) {
 			send_output(argv[0], 0, SEND_BOTH);
-			sprintf(buffer, " died with exit status %d\n", rc);
+			sprintf(buffer, " exited with status code %d\n", rc);
 			send_output(buffer, 0, SEND_BOTH);
 		}
 	} else {
