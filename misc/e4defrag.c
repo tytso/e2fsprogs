@@ -1797,10 +1797,10 @@ int main(int argc, char *argv[])
 			ret = ext2fs_open(dev_name, EXT2_FLAG_64BITS, 0,
 					  block_size, unix_io_manager, &fs);
 			if (ret) {
-				if (mode_flag & DETAIL) {
-					perror("Can't get super block info");
-					PRINT_FILE_NAME(argv[i]);
-				}
+				if (mode_flag & DETAIL)
+					com_err(argv[1], ret,
+						"while trying to open file system: %s",
+						dev_name);
 				continue;
 			}
 
