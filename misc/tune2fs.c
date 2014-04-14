@@ -2052,7 +2052,7 @@ retry_open:
 		printf(_("Setting reserved blocks gid to %lu\n"), resgid);
 	}
 	if (i_flag) {
-		if (interval >= (1ULL << 32)) {
+		if ((unsigned long long)interval >= (1ULL << 32)) {
 			com_err(program_name, 0,
 				_("interval between checks is too big (%lu)"),
 				interval);

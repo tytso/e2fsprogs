@@ -8,9 +8,11 @@ FILES
 patches
 Makefile
 *.bak
+*.diff
 *.dSYM
 *.o
 *.orig
+*.patch
 *.pc
 *.rej
 *.swp
@@ -22,6 +24,7 @@ config.status
 debugfs/debug_cmds.c
 debugfs/debugfs
 debugfs/debugfs.8
+debugfs/extent_cmds.c
 doc/libext2fs.aux
 doc/libext2fs.cp
 doc/libext2fs.dvi
@@ -159,9 +162,11 @@ misc/e2undo
 misc/e2undo.8
 misc/e4defrag
 misc/e4defrag.8
+misc/ext4.5
 misc/filefrag
 misc/filefrag.8
 misc/findfs.8
+misc/findsuper
 misc/fsck
 misc/fsck.8
 misc/logsave
@@ -195,6 +200,7 @@ tags
 TAGS
 tests/progs/test_icount
 tests/progs/test_icount_cmds.c
+tests/progs/crcsum
 tests/*.ok
 tests/*.failed
 tests/*.log
@@ -202,7 +208,9 @@ tests/*.tmp
 tests/mke2fs.conf
 tests/test_script
 tests/test_one
+util/dirpaths.h
 util/gen-tarball
+util/install-symlink
 util/subst
 util/subst.conf
 Meta

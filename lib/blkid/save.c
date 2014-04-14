@@ -146,7 +146,7 @@ int blkid_flush_cache(blkid_cache cache)
 			if (backup) {
 				sprintf(backup, "%s.old", filename);
 				unlink(backup);
-				link(filename, backup);
+				(void) link(filename, backup);
 				free(backup);
 			}
 			if (rename(opened, filename) < 0)

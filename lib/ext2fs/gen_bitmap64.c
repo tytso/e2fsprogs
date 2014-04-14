@@ -800,7 +800,6 @@ errcode_t ext2fs_convert_subcluster_bitmap(ext2_filsys fs,
 errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitmap,
 					      __u64 start, __u64 end, __u64 *out)
 {
-	int b;
 	__u64 cstart, cend, cout;
 	errcode_t retval;
 
@@ -855,7 +854,6 @@ errcode_t ext2fs_find_first_zero_generic_bmap(ext2fs_generic_bitmap bitmap,
 errcode_t ext2fs_find_first_set_generic_bmap(ext2fs_generic_bitmap bitmap,
 					     __u64 start, __u64 end, __u64 *out)
 {
-	int b;
 	__u64 cstart, cend, cout;
 	errcode_t retval;
 

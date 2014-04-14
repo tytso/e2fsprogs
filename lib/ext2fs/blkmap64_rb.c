@@ -813,10 +813,8 @@ static errcode_t rb_find_first_zero(ext2fs_generic_bitmap bitmap,
 				   __u64 start, __u64 end, __u64 *out)
 {
 	struct rb_node *parent = NULL, **n;
-	struct rb_node *node, *next;
 	struct ext2fs_rb_private *bp;
 	struct bmap_rb_extent *ext;
-	int retval = 1;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	n = &bp->root.rb_node;
@@ -851,10 +849,9 @@ static errcode_t rb_find_first_set(ext2fs_generic_bitmap bitmap,
 				   __u64 start, __u64 end, __u64 *out)
 {
 	struct rb_node *parent = NULL, **n;
-	struct rb_node *node, *next;
+	struct rb_node *node;
 	struct ext2fs_rb_private *bp;
 	struct bmap_rb_extent *ext;
-	int retval = 1;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	n = &bp->root.rb_node;
