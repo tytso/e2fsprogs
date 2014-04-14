@@ -119,7 +119,7 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 
 {
 	errcode_t		retval;
-	blk64_t			lblk, bend;
+	blk64_t			lblk, bend = 0;
 	__u64			size;
 	blk64_t			left;
 	blk64_t			count = 0;

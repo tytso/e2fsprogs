@@ -723,8 +723,7 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 {
 	struct ext2_group_desc *desc = ext2fs_group_desc(fs, fs->group_desc,
 							 group);
-	size_t size = EXT2_DESC_SIZE(fs->super);
-	size_t offset;
+	size_t offset, size = EXT2_DESC_SIZE(fs->super);
 	__u16 crc = 0;
 #ifdef WORDS_BIGENDIAN
 	struct ext4_group_desc swabdesc;

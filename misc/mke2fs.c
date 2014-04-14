@@ -110,7 +110,6 @@ const char *root_dir;  /* Copy files from the specified directory */
 static profile_t	profile;
 
 static int sys_page_size = 4096;
-static int linux_version_code = 0;
 
 static void usage(void)
 {
@@ -2580,7 +2579,7 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
-	unsigned int	journal_blocks;
+	unsigned int	journal_blocks = 0;
 	unsigned int	i, checkinterval;
 	int		max_mnt_count;
 	int		val, hash_alg;

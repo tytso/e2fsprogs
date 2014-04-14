@@ -136,7 +136,7 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 			   ext2fs_block_bitmap map, blk64_t *ret)
 {
 	errcode_t retval;
-	blk64_t	b;
+	blk64_t	b = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
