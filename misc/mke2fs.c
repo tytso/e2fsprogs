@@ -2990,10 +2990,11 @@ no_journal:
 
 		retval = populate_fs(fs, EXT2_ROOT_INO, root_dir,
 				     EXT2_ROOT_INO);
-		if (retval)
-			fprintf(stderr, "%s",
-				_("\nError while populating file system"));
-		else if (!quiet)
+		if (retval) {
+			com_err(program_name, retval, "%s",
+				_("\nError while populating file system\n"));
+			exit(1);
+		} else if (!quiet)
 			printf("%s", _("done\n"));
 	}
 
