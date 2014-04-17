@@ -39,14 +39,12 @@ LIBDIR= quota
 #MAKEFILE_ELF#
 #MAKEFILE_BSDLIB#
 @MAKEFILE_PROFILE@
-@MAKEFILE_CHECKER@
 
 .c.o:
 	$(E) "	CC $<"
 	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
 #ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
 #BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
@@ -55,8 +53,6 @@ dict.o:
 	$(Q) $(CC) -c $(ALL_CFLAGS) $(top_srcdir)/e2fsck/dict.c -o $@
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/dict.o -c \
 @PROFILE_CMT@	$(top_srcdir)/e2fsck/dict.c
-@CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c \
-@CHECKER_CMT@	$(top_srcdir)/e2fsck/dict.c
 #ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c \
 #ELF_CMT#	$(top_srcdir)/e2fsck/dict.c
 #BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c \
@@ -69,7 +65,7 @@ install:: all
 uninstall::
 
 clean::
-	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*
+	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/*
 	$(RM) -f ../libquota.a ../libquota_p.a $(SMANPAGES)
 
 #check:: tst_uuid

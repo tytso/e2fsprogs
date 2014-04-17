@@ -763,7 +763,6 @@ LDFLAG_DYNAMIC
 PROFILED_LIB_EXT
 STATIC_LIB_EXT
 LIB_EXT
-CHECKER_CMT
 PROFILE_CMT
 BSDLIB_CMT
 ELF_CMT
@@ -842,7 +841,6 @@ ac_subst_files='MCONFIG
 MAKEFILE_ELF
 MAKEFILE_BSDLIB
 MAKEFILE_PROFILE
-MAKEFILE_CHECKER
 MAKEFILE_LIBRARY
 ASM_TYPES_HEADER
 PUBLIC_CONFIG_HEADER'
@@ -865,7 +863,6 @@ enable_elf_shlibs
 enable_bsd_shlibs
 enable_profile
 enable_gcov
-enable_checker
 enable_jbd_debug
 enable_blkid_debug
 enable_testio_debug
@@ -1526,7 +1523,6 @@ Optional Features:
   --enable-bsd-shlibs	  select BSD shared libraries
   --enable-profile	  build profiling libraries
   --enable-gcov	  	  build for coverage testing using gcov
-  --enable-checker	  build checker libraries
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --disable-testio-debug  disable the use of the test I/O manager for debugging
@@ -5054,30 +5050,6 @@ $as_echo "Enabling gcov support" >&6; }
 fi
 
 fi
-
-# Check whether --enable-checker was given.
-if test "${enable_checker+set}" = set; then :
-  enableval=$enable_checker; if test "$enableval" = "no"
-then
-	CHECKER_CMT=#
-	MAKEFILE_CHECKER=/dev/null
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling checker libraries" >&5
-$as_echo "Disabling checker libraries" >&6; }
-else
-	CHECKER_CMT=
-	MAKEFILE_CHECKER=$srcdir/lib/Makefile.checker
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Building checker libraries" >&5
-$as_echo "Building checker libraries" >&6; }
-fi
-
-else
-  CHECKER_CMT=#
-MAKEFILE_CHECKER=/dev/null
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling checker libraries by default" >&5
-$as_echo "Disabling checker libraries by default" >&6; }
-
-fi
-
 
 
 
