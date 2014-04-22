@@ -559,7 +559,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	const char	*old_op;
 	unsigned int	save_type;
 	int		imagic_fs, extent_fs;
-	int		busted_fs_time = 0;
+	int		low_dtime_check = 1;
 	int		inode_size;
 
 	init_resource_track(&rtrack, ctx->fs->io);
@@ -708,8 +708,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 					      ctx->fs->group_desc_count)))
 		goto endit;
 	if ((fs->super->s_wtime < fs->super->s_inodes_count) ||
-	    (fs->super->s_mtime < fs->super->s_inodes_count))
-		busted_fs_time = 1;
+	    (fs->super->s_mtime < fs->super->s_inodes_count) ||
+	    (fs->super->s_mkfs_time &&
+	     fs->super->s_mkfs_time < fs->super->s_inodes_count))
+		low_dtime_check = 0;
 
 	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
 	    fs->super->s_mmp_block > fs->super->s_first_data_block &&
@@ -988,7 +990,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		 * than nothing.  The right answer is that there
 		 * shouldn't be any bugs in the orphan list handling.  :-)
 		 */
-		if (inode->i_dtime && !busted_fs_time &&
+		if (inode->i_dtime && low_dtime_check &&
 		    inode->i_dtime < ctx->fs->super->s_inodes_count) {
 			if (fix_problem(ctx, PR_1_LOW_DTIME, &pctx)) {
 				inode->i_dtime = inode->i_links_count ?
