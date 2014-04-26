@@ -618,6 +618,14 @@ static void show_stats(ext2_filsys fs)
 	dgrp_t			i;
 	int			need, col_left;
 
+	if (!verbose) {
+		printf(_("Creating filesystem with %llu %dk blocks and "
+			 "%u inodes\n"),
+		       ext2fs_blocks_count(s), fs->blocksize >> 10,
+		       s->s_inodes_count);
+		goto skip_details;
+	}
+
 	if (ext2fs_blocks_count(&fs_param) != ext2fs_blocks_count(s))
 		fprintf(stderr, _("warning: %llu blocks unused.\n\n"),
 		       ext2fs_blocks_count(&fs_param) - ext2fs_blocks_count(s));
@@ -666,11 +674,14 @@ static void show_stats(ext2_filsys fs)
 		       s->s_blocks_per_group, s->s_clusters_per_group);
 	printf(_("%u inodes per group\n"), s->s_inodes_per_group);
 
+skip_details:
 	if (fs->group_desc_count == 1) {
 		printf("\n");
 		return;
 	}
 
+	if (!e2p_is_null_uuid(s->s_uuid))
+		printf(_("Filesystem UUID: %s\n"), e2p_uuid2str(s->s_uuid));
 	printf("%s", _("Superblock backups stored on blocks: "));
 	group_block = s->s_first_data_block;
 	col_left = 0;
