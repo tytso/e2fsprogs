@@ -25,7 +25,7 @@ extern char	*journal_location_string;
 extern int strcasecmp (char *s1, char *s2);
 #endif
 extern char *get_progname(char *argv_zero);
-extern void proceed_question(void);
+extern void proceed_question(int delay);
 extern int check_plausibility(const char *device, int flags,
 			      int *ret_is_dev);
 extern void parse_journal_opts(const char *opts);

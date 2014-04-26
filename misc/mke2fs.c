@@ -102,6 +102,7 @@ static __u32	fs_stride;
 static int	quotatype = -1;  /* Initialize both user and group quotas by default */
 static __u64	offset;
 static blk64_t journal_location = ~0LL;
+static int	proceed_delay = -1;
 
 static struct ext2_super_block fs_param;
 static char *fs_uuid = NULL;
@@ -1749,9 +1750,12 @@ profile_error:
 	if (optind < argc)
 		usage();
 
+	profile_get_integer(profile, "options", "proceed_delay", 0, 0,
+			    &proceed_delay);
+
 	if (!check_plausibility(device_name, CREATE_FILE,
 				&is_device) && !force)
-		proceed_question();
+		proceed_question(proceed_delay);
 
 	check_mount(device_name, force, _("filesystem"));
 
@@ -1797,7 +1801,7 @@ profile_error:
 	} else if (!force && is_device && (fs_blocks_count > dev_size)) {
 		com_err(program_name, 0, "%s",
 			_("Filesystem larger than apparent device size."));
-		proceed_question();
+		proceed_question(proceed_delay);
 	}
 
 	if (!fs_type)
@@ -2071,7 +2075,7 @@ profile_error:
 			com_err(program_name, 0,
 				_("%d-byte blocks too big for system (max %d)"),
 				blocksize, sys_page_size);
-			proceed_question();
+			proceed_question(proceed_delay);
 		}
 		fprintf(stderr, _("Warning: %d-byte blocks too big for system "
 				  "(max %d), forced to continue\n"),
@@ -2785,7 +2789,7 @@ int main (int argc, char *argv[])
 
 		if (!check_plausibility(journal_device, CHECK_BLOCK_DEV,
 					NULL) && !force)
-			proceed_question();
+			proceed_question(proceed_delay);
 		check_mount(journal_device, force, _("journal"));
 
 		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|

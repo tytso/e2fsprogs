@@ -14,6 +14,8 @@
 
 #include "config.h"
 #include <fcntl.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #ifdef HAVE_ERRNO_H
@@ -68,18 +70,39 @@ char *get_progname(char *argv_zero)
 		return cp+1;
 }
 
-void proceed_question(void)
+static jmp_buf alarm_env;
+
+static void alarm_signal(int signal)
+{
+	longjmp(alarm_env, 1);
+}
+
+void proceed_question(int delay)
 {
 	char buf[256];
 	const char *short_yes = _("yY");
 
 	fflush(stdout);
 	fflush(stderr);
-	fputs(_("Proceed anyway? (y,n) "), stdout);
+	if (delay > 0) {
+		if (setjmp(alarm_env)) {
+			signal(SIGALRM, SIG_IGN);
+			printf(_("<proceeding>\n"));
+			return;
+		}
+		signal(SIGALRM, alarm_signal);
+		printf(_("Proceed anyway (or wait %d seconds) ? (y,n) "),
+		       delay);
+		alarm(delay);
+	} else
+		fputs(_("Proceed anyway? (y,n) "), stdout);
 	buf[0] = 0;
 	if (!fgets(buf, sizeof(buf), stdin) ||
-	    strchr(short_yes, buf[0]) == 0)
+	    strchr(short_yes, buf[0]) == 0) {
+		putc('\n', stdout);
 		exit(1);
+	}
+	signal(SIGALRM, SIG_IGN);
 }
 
 /*
