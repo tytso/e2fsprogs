@@ -1749,7 +1749,8 @@ profile_error:
 	if (optind < argc)
 		usage();
 
-	if (!check_plausibility(device_name, 0, &is_device) && !force)
+	if (!check_plausibility(device_name, CREATE_FILE,
+				&is_device) && !force)
 		proceed_question();
 
 	check_mount(device_name, force, _("filesystem"));

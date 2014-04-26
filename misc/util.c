@@ -13,6 +13,7 @@
 #define _LARGEFILE64_SOURCE
 
 #include "config.h"
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #ifdef HAVE_ERRNO_H
@@ -21,6 +22,7 @@
 #ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
 #endif
+#include <sys/types.h>
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -85,19 +87,29 @@ void proceed_question(void)
  */
 int check_plausibility(const char *device, int flags, int *ret_is_dev)
 {
-	int val, is_dev = 0;
+	int fd, is_dev = 0;
 	ext2fs_struct_stat s;
+	int fl = O_RDONLY;
 
-	val = ext2fs_stat(device, &s);
+	if (flags & CREATE_FILE)
+		fl |= O_CREAT;
 
-	if(val == -1) {
-		fprintf(stderr, _("Could not stat %s --- %s\n"),
+	fd = open(device, fl, 0666);
+	if (fd < 0) {
+		fprintf(stderr, _("Could not open %s: %s\n"),
 			device, error_message(errno));
 		if (errno == ENOENT)
 			fputs(_("\nThe device apparently does not exist; "
 				"did you specify it correctly?\n"), stderr);
 		exit(1);
 	}
+
+	if (ext2fs_fstat(fd, &s) < 0) {
+		perror("stat");
+		exit(1);
+	}
+	close(fd);
+
 	if (S_ISBLK(s.st_mode))
 		is_dev = 1;
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
