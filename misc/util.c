@@ -80,7 +80,10 @@ void proceed_question(void)
 		exit(1);
 }
 
-void check_plausibility(const char *device, int flags, int *ret_is_dev)
+/*
+ * return 1 if the device looks plausible
+ */
+int check_plausibility(const char *device, int flags, int *ret_is_dev)
 {
 	int val, is_dev = 0;
 	ext2fs_struct_stat s;
@@ -107,8 +110,7 @@ void check_plausibility(const char *device, int flags, int *ret_is_dev)
 
 	if ((flags & CHECK_BLOCK_DEV) && !is_dev) {
 		printf(_("%s is not a block special device.\n"), device);
-		proceed_question();
-		return;
+		return 0;
 	}
 
 #ifdef HAVE_LINUX_MAJOR_H
@@ -137,9 +139,10 @@ void check_plausibility(const char *device, int flags, int *ret_is_dev)
 	      MINOR(s.st_rdev)%16 == 0))) {
 		printf(_("%s is entire device, not just one partition!\n"),
 		       device);
-		proceed_question();
+		return 0;
 	}
 #endif
+	return 1;
 }
 
 void check_mount(const char *device, int force, const char *type)

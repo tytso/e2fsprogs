@@ -1749,8 +1749,9 @@ profile_error:
 	if (optind < argc)
 		usage();
 
-	if (!force)
-		check_plausibility(device_name, 0, NULL);
+	if (!check_plausibility(device_name, 0, NULL) && !force)
+		proceed_question();
+
 	check_mount(device_name, force, _("filesystem"));
 
 	/* Determine the size of the device (if possible) */
@@ -2781,9 +2782,9 @@ int main (int argc, char *argv[])
 	if (journal_device) {
 		ext2_filsys	jfs;
 
-		if (!force)
-			check_plausibility(journal_device, CHECK_BLOCK_DEV,
-					   NULL);
+		if (!check_plausibility(journal_device, CHECK_BLOCK_DEV,
+					NULL) && !force)
+			proceed_question();
 		check_mount(journal_device, force, _("journal"));
 
 		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
