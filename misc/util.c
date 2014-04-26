@@ -80,9 +80,9 @@ void proceed_question(void)
 		exit(1);
 }
 
-void check_plausibility(const char *device)
+void check_plausibility(const char *device, int flags, int *ret_is_dev)
 {
-	int val;
+	int val, is_dev = 0;
 	ext2fs_struct_stat s;
 
 	val = ext2fs_stat(device, &s);
@@ -95,13 +95,17 @@ void check_plausibility(const char *device)
 				"did you specify it correctly?\n"), stderr);
 		exit(1);
 	}
+	if (S_ISBLK(s.st_mode))
+		is_dev = 1;
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	/* On FreeBSD, all disk devices are character specials */
-	if (!S_ISBLK(s.st_mode) && !S_ISCHR(s.st_mode))
-#else
-	if (!S_ISBLK(s.st_mode))
+	if (S_ISCHR(s.st_mode))
+		is_dev = 1;
 #endif
-	{
+	if (ret_is_dev)
+		*ret_is_dev = is_dev;
+
+	if ((flags & CHECK_BLOCK_DEV) && !is_dev) {
 		printf(_("%s is not a block special device.\n"), device);
 		proceed_question();
 		return;
