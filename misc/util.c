@@ -113,6 +113,9 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 	int fd, is_dev = 0;
 	ext2fs_struct_stat s;
 	int fl = O_RDONLY;
+	blkid_cache cache = NULL;
+	char *fs_type = NULL;
+	char *fs_label = NULL;
 
 	if (flags & CREATE_FILE)
 		fl |= O_CREAT;
@@ -147,6 +150,32 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		printf(_("%s is not a block special device.\n"), device);
 		return 0;
 	}
+
+	if ((flags & CHECK_FS_EXIST) && blkid_get_cache(&cache, NULL) >= 0) {
+		fs_type = blkid_get_tag_value(cache, "TYPE", device);
+		if (fs_type)
+			fs_label = blkid_get_tag_value(cache, "LABEL", device);
+		blkid_put_cache(cache);
+	}
+
+	if (fs_type) {
+		if (fs_label)
+			printf(_("%s contains a %s file system "
+				 "labelled '%s'\n"), device, fs_type, fs_label);
+		else
+			printf(_("%s contains a %s file system\n"), device,
+			       fs_type);
+		free(fs_type);
+		free(fs_label);
+		return 0;
+	}
+
+	/*
+	 * We should eventually replace this with a test for the
+	 * presence of a partition table.  Unfortunately the blkid
+	 * library doesn't test for partition tabels, and checking for
+	 * valid GPT and MBR and possibly others isn't quite trivial.
+	 */
 
 #ifdef HAVE_LINUX_MAJOR_H
 #ifndef MAJOR

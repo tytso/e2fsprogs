@@ -1375,7 +1375,7 @@ out:
 
 static void PRS(int argc, char *argv[])
 {
-	int		b, c;
+	int		b, c, flags;
 	int		cluster_size = 0;
 	char 		*tmp, **cpp;
 	int		blocksize = 0;
@@ -1753,8 +1753,11 @@ profile_error:
 	profile_get_integer(profile, "options", "proceed_delay", 0, 0,
 			    &proceed_delay);
 
-	if (!check_plausibility(device_name, CREATE_FILE,
-				&is_device) && !force)
+	/* The isatty() test is so we don't break existing scripts */
+	flags = CREATE_FILE;
+	if (isatty(0) && isatty(1))
+		flags |= CHECK_FS_EXIST;
+	if (!check_plausibility(device_name, flags, &is_device) && !force)
 		proceed_question(proceed_delay);
 
 	check_mount(device_name, force, _("filesystem"));
