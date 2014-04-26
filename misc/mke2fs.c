@@ -1383,7 +1383,7 @@ static void PRS(int argc, char *argv[])
 	unsigned long	flex_bg_size = 0;
 	double		reserved_ratio = -1.0;
 	int		lsector_size = 0, psector_size = 0;
-	int		show_version_only = 0;
+	int		show_version_only = 0, is_device = 0;
 	unsigned long long num_inodes = 0; /* unsigned long long to catch too-large input */
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
@@ -1749,7 +1749,7 @@ profile_error:
 	if (optind < argc)
 		usage();
 
-	if (!check_plausibility(device_name, 0, NULL) && !force)
+	if (!check_plausibility(device_name, 0, &is_device) && !force)
 		proceed_question();
 
 	check_mount(device_name, force, _("filesystem"));
@@ -1793,7 +1793,7 @@ profile_error:
 				fs_blocks_count &= ~((blk64_t) ((sys_page_size /
 					     EXT2_BLOCK_SIZE(&fs_param))-1));
 		}
-	} else if (!force && (fs_blocks_count > dev_size)) {
+	} else if (!force && is_device && (fs_blocks_count > dev_size)) {
 		com_err(program_name, 0, "%s",
 			_("Filesystem larger than apparent device size."));
 		proceed_question();
