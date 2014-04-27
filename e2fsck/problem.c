@@ -1972,6 +1972,9 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	if (ptr->flags & PR_AFTER_CODE)
 		answer = fix_problem(ctx, ptr->second_code, pctx);
 
+	if (answer && (ptr->prompt != PROMPT_NONE))
+		ctx->flags |= E2F_FLAG_PROBLEMS_FIXED;
+
 	return answer;
 }
 

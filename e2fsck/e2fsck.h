@@ -189,8 +189,9 @@ struct resource_track {
 #define E2F_FLAG_GOT_DEVSIZE	0x0800 /* Device size has been fetched */
 #define E2F_FLAG_EXITING	0x1000 /* E2fsck exiting due to errors */
 #define E2F_FLAG_TIME_INSANE	0x2000 /* Time is insane */
+#define E2F_FLAG_PROBLEMS_FIXED	0x4000 /* At least one problem was fixed */
 
-#define E2F_RESET_FLAGS (E2F_FLAG_TIME_INSANE)
+#define E2F_RESET_FLAGS (E2F_FLAG_TIME_INSANE | E2F_FLAG_PROBLEMS_FIXED)
 
 /*
  * Defines for indicating the e2fsck pass number
