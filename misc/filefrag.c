@@ -165,6 +165,8 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 		strcat(flags, "unwritten,");
 	if (fm_extent->fe_flags & FIEMAP_EXTENT_MERGED)
 		strcat(flags, "merged,");
+	if (fm_extent->fe_flags & FIEMAP_EXTENT_SHARED)
+		strcat(flags, "shared,");
 
 	if (fm_extent->fe_logical + fm_extent->fe_length >= (__u64) st->st_size)
 		strcat(flags, "eof,");
