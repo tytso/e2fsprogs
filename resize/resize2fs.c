@@ -2351,9 +2351,10 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	 * inode tables of slack space so the resize operation can be
 	 * guaranteed to finish.
 	 */
+	blks_needed = data_needed;
 	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
 		extra_groups = flexbg_size - (groups & (flexbg_size - 1));
-		data_needed += fs->inode_blocks_per_group * extra_groups;
+		blks_needed += fs->inode_blocks_per_group * extra_groups;
 		extra_groups = groups % flexbg_size;
 	}
 
@@ -2387,8 +2388,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	 * if we need more group descriptors in order to accomodate our data
 	 * then we need to add them here
 	 */
-	while (data_needed > data_blocks) {
-		blk64_t remainder = data_needed - data_blocks;
+	while (blks_needed > data_blocks) {
+		blk64_t remainder = blks_needed - data_blocks;
 		dgrp_t extra_grps;
 
 		/* figure out how many more groups we need for the data */
@@ -2428,17 +2429,16 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 			 */
 			extra_groups = flexbg_size -
 						(groups & (flexbg_size - 1));
-			data_needed += (fs->inode_blocks_per_group *
+			blks_needed += (fs->inode_blocks_per_group *
 					extra_groups);
 			extra_groups = groups % flexbg_size;
 		}
 #ifdef RESIZE2FS_DEBUG
 		if (flags & RESIZE_DEBUG_MIN_CALC)
 			printf("Added %d extra group(s), "
-			       "data_needed %llu, data_blocks %llu, "
-			       "last_start %llu\n",
-			       extra_grps, data_needed, data_blocks,
-			       last_start);
+			       "blks_needed %llu, data_blocks %llu, "
+			       "last_start %llu\n", extra_grps, blks_needed,
+			       data_blocks, last_start);
 #endif
 	}
 
@@ -2453,8 +2453,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	 * if this is the case then the last group is going to have data in it
 	 * so we need to adjust the size of the last group accordingly
 	 */
-	if (last_start < data_needed) {
-		blk64_t remainder = data_needed - last_start;
+	if (last_start < blks_needed) {
+		blk64_t remainder = blks_needed - last_start;
 
 #ifdef RESIZE2FS_DEBUG
 		if (flags & RESIZE_DEBUG_MIN_CALC)
@@ -2512,10 +2512,26 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	 * We need to reserve a few extra blocks if extents are
 	 * enabled, in case we need to grow the extent tree.  The more
 	 * we shrink the file system, the more space we need.
+	 *
+	 * The absolute worst case is every single data block is in
+	 * the part of the file system that needs to be evacuated,
+	 * with each data block needs to be in its own extent, and
+	 * with each inode needing at least one extent block.
 	 */
 	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
 		blk64_t safe_margin = (ext2fs_blocks_count(fs->super) -
 				       blks_needed)/500;
+		unsigned int exts_per_blk = (fs->blocksize /
+					     sizeof(struct ext3_extent)) - 1;
+		blk64_t worst_case = ((data_needed + exts_per_blk - 1) /
+				      exts_per_blk);
+
+		if (worst_case < inode_count)
+			worst_case = inode_count;
+
+		if (safe_margin > worst_case)
+			safe_margin = worst_case;
+
 #ifdef RESIZE2FS_DEBUG
 		if (flags & RESIZE_DEBUG_MIN_CALC)
 			printf("Extents safety margin: %llu\n", safe_margin);
