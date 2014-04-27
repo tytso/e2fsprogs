@@ -9,6 +9,7 @@ truncate()
 }
 
 resize_test () {
+DBG_FLAGS=63
 
 echo $test_description starting > $LOG
 rm -f $TMPFILE
@@ -57,8 +58,8 @@ rm -f $OUT_TMP
 echo $FSCK -fy $TMPFILE >> $LOG 2>&1 
 $FSCK -fy $TMPFILE >> $LOG 2>&1 
 
-echo $RESIZE2FS $RESIZE2FS_OPTS -d 31 $TMPFILE $SIZE_2 >> $LOG 2>&1
-if ! $RESIZE2FS $RESIZE2FS_OPTS -d 31 $TMPFILE $SIZE_2 >> $LOG 2>&1
+echo $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS $TMPFILE $SIZE_2 >> $LOG 2>&1
+if ! $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS $TMPFILE $SIZE_2 >> $LOG 2>&1
 then
 	return 1
 fi
@@ -82,8 +83,13 @@ then
 	return 1
 fi
 
-echo $RESIZE2FS $RESIZE2FS_OPTS -d 31 -M $TMPFILE $SIZE_2 >> $LOG 2>&1
-if ! $RESIZE2FS $RESIZE2FS_OPTS -d 31 -M $TMPFILE $SIZE_2 >> $LOG 2>&1
+# Uncomment to grab extra debugging image
+#
+#mv $TMPFILE /tmp/foo.img
+#return 0
+
+echo $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS -M $TMPFILE $SIZE_2 >> $LOG 2>&1
+if ! $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS -M $TMPFILE $SIZE_2 >> $LOG 2>&1
 then
 	return 1
 fi
@@ -107,8 +113,8 @@ then
 	return 1
 fi
 
-echo $RESIZE2FS $RESIZE2FS_OPTS -d 31 -M $TMPFILE $SIZE_2 >> $LOG 2>&1
-if ! $RESIZE2FS $RESIZE2FS_OPTS -d 31 -M $TMPFILE $SIZE_2 >> $LOG 2>&1
+echo $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS -M $TMPFILE $SIZE_2 >> $LOG 2>&1
+if ! $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS -M $TMPFILE $SIZE_2 >> $LOG 2>&1
 then
 	return 1
 fi
@@ -132,8 +138,8 @@ then
 	return 1
 fi
 
-echo $RESIZE2FS $RESIZE2FS_OPTS -d 31 -M $TMPFILE $SIZE_2 >> $LOG 2>&1
-if ! $RESIZE2FS $RESIZE2FS_OPTS -d 31 -M $TMPFILE $SIZE_2 >> $LOG 2>&1
+echo $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS -M $TMPFILE $SIZE_2 >> $LOG 2>&1
+if ! $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS -M $TMPFILE $SIZE_2 >> $LOG 2>&1
 then
 	return 1
 fi
