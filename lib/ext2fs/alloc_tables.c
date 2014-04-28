@@ -54,8 +54,8 @@ static blk64_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 	 * Don't do a long search if the previous block
 	 * search is still valid.
 	 */
-	if (start_blk && ext2fs_test_block_bitmap_range2(bmap, start_blk,
-							 elem_size))
+	if (start_blk && start_blk < ext2fs_blocks_count(fs->super) &&
+	    ext2fs_test_block_bitmap_range2(bmap, start_blk, elem_size))
 		return start_blk;
 
 	start_blk = ext2fs_group_first_block2(fs, flexbg_size * flexbg);
