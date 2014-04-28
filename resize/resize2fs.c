@@ -1869,6 +1869,8 @@ static errcode_t move_itables(ext2_resize_t rfs)
 
 		if (!diff)
 			continue;
+		if (diff < 0)
+			diff = 0;
 
 		retval = io_channel_read_blk64(fs->io, old_blk,
 					       fs->inode_blocks_per_group,
