@@ -39,7 +39,7 @@ enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
 #define ANY_BLOCK ((blk64_t) -1)
 
-static int		dump_all, dump_contents, dump_descriptors;
+static int		dump_all, dump_old, dump_contents, dump_descriptors;
 static blk64_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
 static unsigned int	group_to_dump, inode_offset_to_dump;
 static ext2_ino_t	inode_to_dump;
@@ -94,6 +94,7 @@ void do_logdump(int argc, char **argv)
 	journal_source.fd = 0;
 	journal_source.file = 0;
 	dump_all = 0;
+	dump_old = 0;
 	dump_contents = 0;
 	dump_descriptors = 1;
 	block_to_dump = ANY_BLOCK;
@@ -102,7 +103,7 @@ void do_logdump(int argc, char **argv)
 	inode_to_dump = -1;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "ab:ci:f:s")) != EOF) {
+	while ((c = getopt (argc, argv, "ab:ci:f:Os")) != EOF) {
 		switch (c) {
 		case 'a':
 			dump_all++;
@@ -125,6 +126,9 @@ void do_logdump(int argc, char **argv)
 		case 'i':
 			inode_spec = optarg;
 			dump_descriptors = 0;
+			break;
+		case 'O':
+			dump_old++;
 			break;
 		case 's':
 			use_sb++;
@@ -267,7 +271,7 @@ errout:
 	return;
 
 print_usage:
-	fprintf(stderr, "%s: Usage: logdump [-acs] [-b<block>] [-i<filespec>]\n\t"
+	fprintf(stderr, "%s: Usage: logdump [-acsO] [-b<block>] [-i<filespec>]\n\t"
 		"[-f<journal_file>] [output_file]\n", argv[0]);
 }
 
@@ -393,9 +397,13 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	fprintf(out_file, "Journal starts at block %u, transaction %u\n",
 		blocknr, transaction);
 
-	if (!blocknr)
+	if (!blocknr) {
 		/* Empty journal, nothing to do. */
-		return;
+		if (!dump_old)
+			return;
+		else
+			blocknr = 1;
+	}
 
 	while (1) {
 		retval = read_journal_block(cmdname, source,
@@ -420,7 +428,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			fprintf (out_file, "Found sequence %u (not %u) at "
 				 "block %u: end of journal.\n",
 				 sequence, transaction, blocknr);
-			return;
+			if (!dump_old)
+				return;
 		}
 
 		if (dump_descriptors) {
