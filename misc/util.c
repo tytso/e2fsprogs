@@ -105,6 +105,42 @@ void proceed_question(int delay)
 	signal(SIGALRM, SIG_IGN);
 }
 
+static void print_ext2_info(const char *device)
+
+{
+	struct ext2_super_block	*sb;
+	ext2_filsys		fs;
+	errcode_t		retval;
+	time_t 			tm;
+	char			buf[80];
+
+	retval = ext2fs_open2(device, 0, EXT2_FLAG_64BITS, 0, 0,
+			      unix_io_manager, &fs);
+	if (retval)
+		return;
+	sb = fs->super;
+
+	if (sb->s_mtime) {
+		tm = sb->s_mtime;
+		if (sb->s_last_mounted[0]) {
+			memset(buf, 0, sizeof(buf));
+			strncpy(buf, sb->s_last_mounted,
+				sizeof(sb->s_last_mounted));
+			printf(_("\tlast mounted on %s on %s"), buf,
+			       ctime(&tm));
+		} else
+			printf(_("\tlast mounted on %s"), ctime(&tm));
+	} else if (sb->s_mkfs_time) {
+		tm = sb->s_mkfs_time;
+		printf(_("\tcreated on %s"), ctime(&tm));
+	} else if (sb->s_wtime) {
+		tm = sb->s_wtime;
+		printf(_("\tlast modified on %s"), ctime(&tm));
+	}
+	ext2fs_close(fs);
+}
+
+
 /*
  * return 1 if the device looks plausible, creating the file if necessary
  */
@@ -168,6 +204,8 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		else
 			printf(_("%s contains a %s file system\n"), device,
 			       fs_type);
+		if (strncmp(fs_type, "ext", 3) == 0)
+			print_ext2_info(device);
 		free(fs_type);
 		free(fs_label);
 		return 0;
