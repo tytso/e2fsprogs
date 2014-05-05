@@ -106,7 +106,7 @@ void proceed_question(int delay)
 }
 
 /*
- * return 1 if the device looks plausible
+ * return 1 if the device looks plausible, creating the file if necessary
  */
 int check_plausibility(const char *device, int flags, int *ret_is_dev)
 {
@@ -117,10 +117,13 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 	char *fs_type = NULL;
 	char *fs_label = NULL;
 
-	if (flags & CREATE_FILE)
-		fl |= O_CREAT;
-
 	fd = open(device, fl, 0666);
+	if ((fd < 0) && (errno == ENOENT) && (flags & CREATE_FILE)) {
+		fl |= O_CREAT;
+		fd = open(device, fl, 0666);
+		if (fd >= 0 && (flags & VERBOSE_CREATE))
+			printf(_("Creating regular file %s\n"), device);
+	}
 	if (fd < 0) {
 		fprintf(stderr, _("Could not open %s: %s\n"),
 			device, error_message(errno));

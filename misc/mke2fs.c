@@ -103,6 +103,7 @@ static int	quotatype = -1;  /* Initialize both user and group quotas by default 
 static __u64	offset;
 static blk64_t journal_location = ~0LL;
 static int	proceed_delay = -1;
+static blk64_t	dev_size;
 
 static struct ext2_super_block fs_param;
 static char *fs_uuid = NULL;
@@ -1402,7 +1403,6 @@ static void PRS(int argc, char *argv[])
 	char *		extended_opts = 0;
 	char *		fs_type = 0;
 	char *		usage_types = 0;
-	blk64_t		dev_size;
 	/*
 	 * NOTE: A few words about fs_blocks_count and blocksize:
 	 *
@@ -1768,6 +1768,8 @@ profile_error:
 	flags = CREATE_FILE;
 	if (isatty(0) && isatty(1))
 		flags |= CHECK_FS_EXIST;
+	if (!quiet)
+		flags |= VERBOSE_CREATE;
 	if (!check_plausibility(device_name, flags, &is_device) && !force)
 		proceed_question(proceed_delay);
 
@@ -2573,7 +2575,7 @@ int main (int argc, char *argv[])
 		journal_blocks = figure_journal_size(journal_size, fs);
 
 	/* Can't undo discard ... */
-	if (!noaction && discard && (io_ptr != undo_io_manager)) {
+	if (!noaction && discard && dev_size && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_device(fs);
 		if (!retval && io_channel_discard_zeroes_data(fs->io)) {
 			if (verbose)
