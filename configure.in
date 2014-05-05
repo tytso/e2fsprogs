@@ -1050,6 +1050,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	__secure_getenv
 	backtrace
 	blkid_probe_get_topology
+	blkid_probe_enable_partitions
 	chflags
 	fadvise64
 	fallocate

@@ -140,13 +140,54 @@ static void print_ext2_info(const char *device)
 	ext2fs_close(fs);
 }
 
+/*
+ * return 1 if there is no partition table, 0 if a partition table is
+ * detected, and -1 on an error.
+ */
+static int check_partition_table(const char *device)
+{
+#ifdef HAVE_BLKID_PROBE_ENABLE_PARTITIONS
+	blkid_probe pr;
+	const char *value;
+	int ret;
+
+	pr = blkid_new_probe_from_filename(device);
+	if (!pr)
+		return -1;
+
+        ret = blkid_probe_enable_partitions(pr, 1);
+        if (ret < 0)
+		goto errout;
+
+	ret = blkid_probe_enable_superblocks(pr, 0);
+	if (ret < 0)
+		goto errout;
+
+	ret = blkid_do_fullprobe(pr);
+	if (ret < 0)
+		goto errout;
+
+	ret = blkid_probe_lookup_value(pr, "PTTYPE", &value, NULL);
+	if (ret == 0)
+		fprintf(stderr, _("Found a %s partition table in %s\n"),
+			value, device);
+	else
+		ret = 1;
+
+errout:
+	blkid_free_probe(pr);
+	return ret;
+#else
+	return -1;
+#endif
+}
 
 /*
  * return 1 if the device looks plausible, creating the file if necessary
  */
 int check_plausibility(const char *device, int flags, int *ret_is_dev)
 {
-	int fd, is_dev = 0;
+	int fd, ret, is_dev = 0;
 	ext2fs_struct_stat s;
 	int fl = O_RDONLY;
 	blkid_cache cache = NULL;
@@ -190,6 +231,15 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		return 0;
 	}
 
+	/*
+	 * Note: we use the older-style blkid API's here because we
+	 * want as much functionality to be available when using the
+	 * internal blkid library, when e2fsprogs is compiled for
+	 * non-Linux systems that will probably not have the libraries
+	 * from util-linux available.  We only use the newer
+	 * blkid-probe interfaces to access functionality not
+	 * available in the original blkid library.
+	 */
 	if ((flags & CHECK_FS_EXIST) && blkid_get_cache(&cache, NULL) >= 0) {
 		fs_type = blkid_get_tag_value(cache, "TYPE", device);
 		if (fs_type)
@@ -211,12 +261,9 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		return 0;
 	}
 
-	/*
-	 * We should eventually replace this with a test for the
-	 * presence of a partition table.  Unfortunately the blkid
-	 * library doesn't test for partition tabels, and checking for
-	 * valid GPT and MBR and possibly others isn't quite trivial.
-	 */
+	ret = check_partition_table(device);
+	if (ret >= 0)
+		return ret;
 
 #ifdef HAVE_LINUX_MAJOR_H
 #ifndef MAJOR
