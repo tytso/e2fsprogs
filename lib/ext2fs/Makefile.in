@@ -439,7 +439,7 @@ check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
 installdirs::
 	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
 	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
-		$(DESTDIR)$(includedir)/ext2fs $(DESTDIR)$(libdir)/pkgconfig
+		$(DESTDIR)$(includedir)/ext2fs $(DESTDIR)$(pkgconfigdir)
 
 install:: all $(HFILES) $(HFILES_IN) installdirs ext2fs.pc
 	$(E) "	INSTALL_DATA $(libdir)/libext2fs.a"
@@ -454,12 +454,12 @@ install:: all $(HFILES) $(HFILES_IN) installdirs ext2fs.pc
 		echo "	INSTALL_DATA $(includedir)/ext2fs/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
-	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/ext2fs.pc"
-	$(Q) $(INSTALL_DATA) ext2fs.pc $(DESTDIR)$(libdir)/pkgconfig/ext2fs.pc
+	$(E) "	INSTALL_DATA $(pkgconfigdir)/ext2fs.pc"
+	$(Q) $(INSTALL_DATA) ext2fs.pc $(DESTDIR)$(pkgconfigdir)/ext2fs.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libext2fs.a \
-		$(DESTDIR)$(libdir)/pkgconfig/ext2fs.pc
+		$(DESTDIR)$(pkgconfigdir)/ext2fs.pc
 	$(RM) -rf $(DESTDIR)$(includedir)/ext2fs 
 
 clean::

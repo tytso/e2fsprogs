@@ -134,7 +134,7 @@ installdirs::
 	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/uuid $(man3dir)"
 	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir)  \
 		$(DESTDIR)$(includedir)/uuid $(DESTDIR)$(man3dir) \
-		$(DESTDIR)$(libdir)/pkgconfig
+		$(DESTDIR)$(pkgconfigdir)
 
 install:: all installdirs 
 	$(E) "	INSTALL_DATA $(libdir)/libuuid.a"
@@ -156,12 +156,12 @@ install:: all installdirs
 	$(E) "	LINK $(man3dir)/uuid_generate_time.3"
 	$(Q) (cd $(DESTDIR)$(man3dir); \
 	    $(LN) $(LINK_INSTALL_FLAGS) uuid_generate.3 uuid_generate_time.3)
-	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/uuid.pc"
-	$(Q) $(INSTALL_DATA) uuid.pc $(DESTDIR)$(libdir)/pkgconfig/uuid.pc
+	$(E) "	INSTALL_DATA $(pkgconfigdir)/uuid.pc"
+	$(Q) $(INSTALL_DATA) uuid.pc $(DESTDIR)$(pkgconfigdir)/uuid.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libuuid.a \
-		$(DESTDIR)$(libdir)/pkgconfig/uuid.pc
+		$(DESTDIR)$(pkgconfigdir)/uuid.pc
 	for i in $(SMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man3dir)/$$i; \
 	done

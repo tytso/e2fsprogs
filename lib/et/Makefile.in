@@ -105,7 +105,7 @@ installdirs::
 	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(man1dir) \
-		$(DESTDIR)$(man3dir) $(DESTDIR)$(libdir)/pkgconfig
+		$(DESTDIR)$(man3dir) $(DESTDIR)$(pkgconfigdir)
 
 install:: compile_et libcom_err.a $(HFILES) installdirs com_err.pc
 	$(E) "	INSTALL_DATA $(libdir)/libcom_err.a"
@@ -129,13 +129,13 @@ install:: compile_et libcom_err.a $(HFILES) installdirs com_err.pc
 	$(E) "	INSTALL_DATA $(man1dir)/compile_et.1"
 	$(Q) $(INSTALL_DATA) $(srcdir)/compile_et.1 \
 			$(DESTDIR)$(man1dir)/compile_et.1
-	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/com_err.pc"
-	$(Q) $(INSTALL_DATA) com_err.pc $(DESTDIR)$(libdir)/pkgconfig/com_err.pc
+	$(E) "	INSTALL_DATA $(pkgconfigdir)/com_err.pc"
+	$(Q) $(INSTALL_DATA) com_err.pc $(DESTDIR)$(pkgconfigdir)/com_err.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libcom_err.a \
 		$(DESTDIR)$(bindir)/compile_et \
-		$(DESTDIR)$(libdir)/pkgconfig/com_err.pc
+		$(DESTDIR)$(pkgconfigdir)/com_err.pc
 	$(RM) -rf $(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et
 
 check:: compile_et

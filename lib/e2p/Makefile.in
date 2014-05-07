@@ -82,7 +82,7 @@ check::	tst_ostype tst_feature
 installdirs::
 	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
 	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
-		$(DESTDIR)$(includedir)/e2p $(DESTDIR)$(libdir)/pkgconfig
+		$(DESTDIR)$(includedir)/e2p $(DESTDIR)$(pkgconfigdir)
 
 install:: all installdirs 
 	$(E) "	INSTALL_DATA $(libdir)/libe2p.a"
@@ -93,12 +93,12 @@ install:: all installdirs
 	  echo "	INSTALL_DATA $(includedir)/e2p/$$i"; \
 	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/e2p/$$i; \
 	done
-	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/e2p.pc"
-	$(Q) $(INSTALL_DATA) e2p.pc $(DESTDIR)$(libdir)/pkgconfig/e2p.pc
+	$(E) "	INSTALL_DATA $(pkgconfigdir)/e2p.pc"
+	$(Q) $(INSTALL_DATA) e2p.pc $(DESTDIR)$(pkgconfigdir)/e2p.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libe2p.a \
-		$(DESTDIR)$(libdir)/pkgconfig/e2p.pc
+		$(DESTDIR)$(pkgconfigdir)/e2p.pc
 	$(RM) -rf $(DESTDIR)$(includedir)/e2p
 
 clean::

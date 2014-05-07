@@ -29,6 +29,7 @@ man5dir = $(mandir)/man5
 man8dir = $(mandir)/man8
 infodir = @infodir@
 datadir = @datadir@
+pkgconfigdir = $(libdir)/pkgconfig
 
 @SET_MAKE@
 
