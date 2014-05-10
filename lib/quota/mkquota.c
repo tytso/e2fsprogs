@@ -458,6 +458,7 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 
 	dq = get_dq(quota_dict, dquot->dq_id);
 	dq->dq_id = dquot->dq_id;
+	dq->dq_flags |= DQF_SEEN;
 
 	print_dquot("mem", dq);
 	print_dquot("dsk", dquot);
@@ -572,10 +573,13 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 	ext2_filsys fs = qctx->fs;
 	struct quota_handle qh;
 	struct scan_dquots_data scan_data;
+	struct dquot *dq;
+	dnode_t *n;
+	dict_t *dict = qctx->quota_dict[qtype];
 	ext2_ino_t qf_ino;
 	errcode_t err = 0;
 
-	if (!qctx->quota_dict[qtype])
+	if (!dict)
 		goto out;
 
 	qf_ino = qtype == USRQUOTA ? fs->super->s_usr_quota_inum :
@@ -594,6 +598,17 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 	if (err) {
 		log_err("Error scanning dquots");
 		goto out;
+	}
+
+	for (n = dict_first(dict); n; n = dict_next(dict, n)) {
+		dq = dnode_get(n);
+		if (!dq)
+			continue;
+		if ((dq->dq_flags & DQF_SEEN) == 0) {
+			fprintf(stderr, "[QUOTA WARNING] "
+				"Missing quota entry ID %d\n", dq->dq_id);
+			scan_data.usage_is_inconsistent = 1;
+		}
 	}
 	*usage_inconsistent = scan_data.usage_is_inconsistent;
 

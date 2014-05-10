@@ -104,6 +104,8 @@ struct dquot {
 	struct util_dqblk dq_dqb;	/* Parsed data of dquot */
 };
 
+#define DQF_SEEN	0x0001
+
 /* Structure of quotafile operations */
 struct quotafile_ops {
 	/* Check whether quotafile is in our format */
