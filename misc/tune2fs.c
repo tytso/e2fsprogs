@@ -60,7 +60,7 @@ extern int optind;
 #include "jfs_user.h"
 #include "util.h"
 #include "blkid/blkid.h"
-#include "quota/mkquota.h"
+#include "quota/quotaio.h"
 
 #include "../version.h"
 #include "nls-enable.h"

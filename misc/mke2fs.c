@@ -62,7 +62,7 @@ extern int optind;
 #include "prof_err.h"
 #include "../version.h"
 #include "nls-enable.h"
-#include "quota/mkquota.h"
+#include "quota/quotaio.h"
 #include "mke2fs.h"
 
 #define STRIDE_LENGTH 8

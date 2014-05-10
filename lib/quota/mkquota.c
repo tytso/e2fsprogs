@@ -18,7 +18,6 @@
 #include "quotaio.h"
 #include "quotaio_v2.h"
 #include "quotaio_tree.h"
-#include "mkquota.h"
 #include "common.h"
 
 /* Needed for architectures where sizeof(int) != sizeof(void *) */
