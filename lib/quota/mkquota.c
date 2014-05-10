@@ -597,7 +597,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 	err = qh.qh_ops->scan_dquots(&qh, scan_dquots_callback, &scan_data);
 	if (err) {
 		log_err("Error scanning dquots");
-		goto out;
+		goto out_close_qh;
 	}
 
 	for (n = dict_first(dict); n; n = dict_next(dict, n)) {
@@ -612,6 +612,13 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 	}
 	*usage_inconsistent = scan_data.usage_is_inconsistent;
 
+out_close_qh:
+	err = quota_file_close(&qh);
+	if (err) {
+		log_err("Cannot close quotafile: %s", error_message(errno));
+		if (qh.qh_qf.e2_file)
+			ext2fs_file_close(qh.qh_qf.e2_file);
+	}
 out:
 	return err;
 }

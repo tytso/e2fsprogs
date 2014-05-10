@@ -356,9 +356,14 @@ errcode_t quota_file_close(struct quota_handle *h)
 	if (h->qh_ops->end_io && h->qh_ops->end_io(h) < 0)
 		return -1;
 	if (h->qh_qf.e2_file) {
+		__u64 new_size, size;
+
+		new_size = compute_inode_size(h->qh_qf.fs, h->qh_qf.ino);
 		ext2fs_file_flush(h->qh_qf.e2_file);
-		ext2fs_file_set_size2(h->qh_qf.e2_file,
-			compute_inode_size(h->qh_qf.fs, h->qh_qf.ino));
+		if (ext2fs_file_get_lsize(h->qh_qf.e2_file, &size))
+			new_size = 0;
+		if (size != new_size)
+			ext2fs_file_set_size2(h->qh_qf.e2_file, new_size);
 		ext2fs_file_close(h->qh_qf.e2_file);
 	}
 
