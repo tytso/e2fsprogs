@@ -458,7 +458,6 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 
 	dq = get_dq(quota_dict, dquot->dq_id);
 	dq->dq_id = dquot->dq_id;
-	dq->dq_dqb.u.v2_mdqb.dqb_off = dquot->dq_dqb.u.v2_mdqb.dqb_off;
 
 	print_dquot("mem", dq);
 	print_dquot("dsk", dquot);
