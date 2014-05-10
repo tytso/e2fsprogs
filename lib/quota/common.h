@@ -13,6 +13,7 @@
 #include <ext2fs/ext2_types.h>
 #endif /* EXT2_FLAT_INCLUDES */
 
+/* #define DEBUG_QUOTA 1 */
 
 #ifndef __attribute__
 # if !defined __GNUC__ || __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8) || __STRICT_ANSI__

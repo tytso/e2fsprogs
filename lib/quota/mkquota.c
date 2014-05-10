@@ -45,6 +45,21 @@ static void print_inode(struct ext2_inode *inode)
 
 	return;
 }
+
+static void print_dquot(const char *desc, struct dquot *dq)
+{
+	if (desc)
+		fprintf(stderr, "%s: ", desc);
+	fprintf(stderr, "%u %lld:%lld:%lld %lld:%lld:%lld\n",
+		dq->dq_id, dq->dq_dqb.dqb_curspace,
+		dq->dq_dqb.dqb_bsoftlimit, dq->dq_dqb.dqb_bhardlimit,
+		dq->dq_dqb.dqb_curinodes,
+		dq->dq_dqb.dqb_isoftlimit, dq->dq_dqb.dqb_ihardlimit);
+}
+#else
+static void print_dquot(const char *desc, struct dquot *dq)
+{
+}
 #endif
 
 /*
@@ -121,6 +136,7 @@ static void write_dquots(dict_t *dict, struct quota_handle *qh)
 	for (n = dict_first(dict); n; n = dict_next(dict, n)) {
 		dq = dnode_get(n);
 		if (dq) {
+			print_dquot("write", dq);
 			dq->dq_h = qh;
 			update_grace_times(dq);
 			qh->qh_ops->commit_dquot(dq);
@@ -443,6 +459,9 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 	dq = get_dq(quota_dict, dquot->dq_id);
 	dq->dq_id = dquot->dq_id;
 	dq->dq_dqb.u.v2_mdqb.dqb_off = dquot->dq_dqb.u.v2_mdqb.dqb_off;
+
+	print_dquot("mem", dq);
+	print_dquot("dsk", dquot);
 
 	/* Check if there is inconsistancy. */
 	if (dq->dq_dqb.dqb_curspace != dquot->dq_dqb.dqb_curspace ||
