@@ -53,6 +53,7 @@ typedef struct quota_ctx *quota_ctx_t;
 struct quota_ctx {
 	ext2_filsys	fs;
 	dict_t		*quota_dict[MAXQUOTAS];
+	struct quota_handle *quota_file[MAXQUOTAS];
 };
 
 /*
@@ -105,6 +106,7 @@ struct quota_file {
 struct quota_handle {
 	int qh_type;		/* Type of quotafile */
 	int qh_fmt;		/* Quotafile format */
+	int qh_file_flags;
 	int qh_io_flags;	/* IO flags for file */
 	struct quota_file qh_qf;
 	unsigned int (*e2fs_read)(struct quota_file *qf, ext2_loff_t offset,
@@ -171,7 +173,7 @@ extern struct quotafile_ops quotafile_ops_meta;
 
 /* Open existing quotafile of given type (and verify its format) on given
  * filesystem. */
-errcode_t quota_file_open(struct quota_handle *h, ext2_filsys fs,
+errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 			  ext2_ino_t qf_ino, int type, int fmt, int flags);
 
 
@@ -180,7 +182,7 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,
 			    int type, int fmt);
 
 /* Close quotafile */
-errcode_t quota_file_close(struct quota_handle *h);
+errcode_t quota_file_close(quota_ctx_t qctx, struct quota_handle *h);
 
 /* Get empty quota structure */
 struct dquot *get_empty_dquot(void);

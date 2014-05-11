@@ -183,7 +183,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, int qtype)
 		}
 
 		write_dquots(dict, h);
-		retval = quota_file_close(h);
+		retval = quota_file_close(qctx, h);
 		if (retval < 0) {
 			log_err("Cannot finish IO on new quotafile: %s",
 				strerror(errno));
@@ -251,9 +251,10 @@ static void quota_dnode_free(dnode_t *node,
  */
 errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 {
-	int	i, err = 0;
+	errcode_t err;
 	dict_t	*dict;
 	quota_ctx_t ctx;
+	int	i;
 
 	err = ext2fs_get_mem(sizeof(struct quota_ctx), &ctx);
 	if (err) {
@@ -263,6 +264,7 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 
 	memset(ctx, 0, sizeof(struct quota_ctx));
 	for (i = 0; i < MAXQUOTAS; i++) {
+		ctx->quota_file[i] = NULL;
 		if ((qtype != -1) && (i != qtype))
 			continue;
 		err = ext2fs_get_mem(sizeof(dict_t), &dict);
@@ -283,6 +285,7 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype)
 
 void quota_release_context(quota_ctx_t *qctx)
 {
+	errcode_t err;
 	dict_t	*dict;
 	int	i;
 	quota_ctx_t ctx;
@@ -297,6 +300,14 @@ void quota_release_context(quota_ctx_t *qctx)
 		if (dict) {
 			dict_free_nodes(dict);
 			free(dict);
+		}
+		if (ctx->quota_file[i]) {
+			err = quota_file_close(ctx, ctx->quota_file[i]);
+			if (err) {
+				log_err("Cannot close quotafile: %s",
+					strerror(errno));
+				ext2fs_free_mem(&ctx->quota_file[i]);
+			}
 		}
 	}
 	*qctx = NULL;
@@ -541,7 +552,7 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
 		return err;
 	}
 
-	err = quota_file_open(qh, qctx->fs, qf_ino, type, -1, 0);
+	err = quota_file_open(qctx, qh, qf_ino, type, -1, 0);
 	if (err) {
 		log_err("Open quota file failed");
 		goto out;
@@ -549,7 +560,7 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino, int type)
 
 	quota_read_all_dquots(qh, qctx, 1);
 
-	err = quota_file_close(qh);
+	err = quota_file_close(qctx, qh);
 	if (err) {
 		log_err("Cannot finish IO on new quotafile: %s",
 			strerror(errno));
@@ -575,15 +586,12 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 	struct dquot *dq;
 	dnode_t *n;
 	dict_t *dict = qctx->quota_dict[qtype];
-	ext2_ino_t qf_ino;
 	errcode_t err = 0;
 
 	if (!dict)
 		goto out;
 
-	qf_ino = qtype == USRQUOTA ? fs->super->s_usr_quota_inum :
-				     fs->super->s_grp_quota_inum;
-	err = quota_file_open(&qh, fs, qf_ino, qtype, -1, 0);
+	err = quota_file_open(qctx, &qh, 0, qtype, -1, 0);
 	if (err) {
 		log_err("Open quota file failed");
 		goto out;
@@ -612,7 +620,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 	*usage_inconsistent = scan_data.usage_is_inconsistent;
 
 out_close_qh:
-	err = quota_file_close(&qh);
+	err = quota_file_close(qctx, &qh);
 	if (err) {
 		log_err("Cannot close quotafile: %s", error_message(errno));
 		if (qh.qh_qf.e2_file)
