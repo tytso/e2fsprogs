@@ -91,7 +91,7 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t cwd,
 	return retval;
 }
 
-/* Make a special file which is block, character and fifo */
+/* Make a special files (block and character devices), fifo's, and sockets  */
 errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 			    struct stat *st)
 {
@@ -114,6 +114,9 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 		mode = LINUX_S_IFIFO;
 		filetype = EXT2_FT_FIFO;
 		break;
+	case S_IFSOCK:
+		mode = LINUX_S_IFSOCK;
+		filetype = EXT2_FT_SOCK;
 	default:
 		abort();
 		/* NOTREACHED */
@@ -121,7 +124,7 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 
 	if (!(fs->flags & EXT2_FLAG_RW)) {
 		com_err(__func__, 0, "Filesystem opened read/only");
-		return -1;
+		return EROFS;
 	}
 	retval = ext2fs_new_inode(fs, cwd, 010755, 0, &ino);
 	if (retval) {
@@ -516,6 +519,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		case S_IFCHR:
 		case S_IFBLK:
 		case S_IFIFO:
+		case S_IFSOCK:
 			retval = do_mknod_internal(fs, parent_ino, name, &st);
 			if (retval) {
 				com_err(__func__, retval,
@@ -524,11 +528,6 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				goto out;
 			}
 			break;
-		case S_IFSOCK:
-			/* FIXME: there is no make socket function atm. */
-			com_err(__func__, 0,
-				_("ignoring socket file \"%s\""), name);
-			continue;
 		case S_IFLNK:
 			read_cnt = readlink(name, ln_target,
 					    sizeof(ln_target) - 1);
