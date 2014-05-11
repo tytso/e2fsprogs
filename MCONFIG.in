@@ -54,7 +54,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 @ifGNUmake@ CHECK=sparse
 @ifGNUmake@ CHECK_OPTS=-Wsparse-all -Wno-transparent-union -Wno-return-void -Wno-undef -Wno-non-pointer-null
 @ifGNUmake@ CPPCHECK=cppcheck
-@ifGNUmake@ CPPCHECK_OPTS=--force --enable=all
+@ifGNUmake@ CPPCHECK_OPTS=--force --enable=all --quiet
 @ifGNUmake@ ifeq ("$(C)", "2")
 @ifGNUmake@   CHECK_CMD=$(CHECK) $(CHECK_OPTS) -Wbitwise -D__CHECK_ENDIAN__
 @ifGNUmake@   CPPCHECK_CMD=$(CPPCHECK) $(CPPCHECK_OPTS)
@@ -184,7 +184,7 @@ DEP_INSTALL_SYMLINK = $(top_builddir)/util/install-symlink \
 # Run make gcc-wall to do a build with warning messages.
 #
 #
-WFLAGS=		-std=c99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE \
+WFLAGS=		-std=gnu99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE \
 			-pedantic $(WFLAGS_EXTRA) \
 			-Wall -W -Wwrite-strings -Wpointer-arith \
 			-Wcast-qual -Wcast-align -Wno-variadic-macros \
@@ -195,11 +195,18 @@ WFLAGS=		-std=c99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE \
 			-UENABLE_NLS
 
 gcc-wall-new:
-	(make CFLAGS="@CFLAGS@ $(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup 
+	($(MAKE) CFLAGS="@CFLAGS@ $(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup
 
 gcc-wall:
-	make clean > /dev/null
-	make gcc-wall-new
+	$(MAKE) clean > /dev/null
+	$(MAKE) gcc-wall-new
+
+static-check:
+	($(MAKE) C=1 V=1 CFLAGS="@CFLAGS@ $(WFLAGS)") 2>&1 | sed -f $(top_srcdir)/util/static-analysis-cleanup
+
+static-check-all:
+	$(MAKE) clean > /dev/null
+	$(MAKE) static-check
 
 #
 # Installation user and groups

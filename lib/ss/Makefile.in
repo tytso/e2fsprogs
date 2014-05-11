@@ -35,7 +35,7 @@ MK_CMDS=_SS_DIR_OVERRIDE=. ./mk_cmds
 	$(E) "	CC $<"
 	$(Q) $(CC) $(ALL_CFLAGS) -c $<
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
-	$(Q) $(CPPCHECK_CMD) $<
+	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 @CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
 @ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
