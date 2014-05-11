@@ -1482,7 +1482,7 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			if (retval) {
 				r2 = ext2fs_extent_goto(handle, orig_lblk);
 				if (r2 == 0)
-					ext2fs_extent_replace(handle, 0,
+					(void)ext2fs_extent_replace(handle, 0,
 							      &orig_extent);
 				goto done;
 			}
@@ -1498,11 +1498,12 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 				r2 = ext2fs_extent_goto(handle,
 							newextent.e_lblk);
 				if (r2 == 0)
-					ext2fs_extent_delete(handle, 0);
+					(void)ext2fs_extent_delete(handle, 0);
 			}
 			r2 = ext2fs_extent_goto(handle, orig_lblk);
 			if (r2 == 0)
-				ext2fs_extent_replace(handle, 0, &orig_extent);
+				(void)ext2fs_extent_replace(handle, 0,
+							    &orig_extent);
 			goto done;
 		}
 	}

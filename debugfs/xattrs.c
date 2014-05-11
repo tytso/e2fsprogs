@@ -122,26 +122,26 @@ void do_get_xattr(int argc, char **argv)
 		default:
 			printf("%s: Usage: %s <file> <attr> [-f outfile]\n",
 			       argv[0], argv[0]);
-			return;
+			goto out2;
 		}
 	}
 
 	if (optind != argc - 2) {
 		printf("%s: Usage: %s <file> <attr> [-f outfile]\n", argv[0],
 		       argv[0]);
-		return;
+		goto out2;
 	}
 
 	if (check_fs_open(argv[0]))
-		return;
+		goto out2;
 
 	ino = string_to_inode(argv[optind]);
 	if (!ino)
-		return;
+		goto out2;
 
 	err = ext2fs_xattrs_open(current_fs, ino, &h);
 	if (err)
-		return;
+		goto out2;
 
 	err = ext2fs_xattrs_read(h);
 	if (err)
@@ -153,18 +153,19 @@ void do_get_xattr(int argc, char **argv)
 
 	if (fp) {
 		fwrite(buf, buflen, 1, fp);
-		fclose(fp);
 	} else {
 		dump_xattr_string(stdout, buf, buflen);
 		printf("\n");
 	}
 
-	if (buf)
-		ext2fs_free_mem(&buf);
+	ext2fs_free_mem(&buf);
 out:
 	ext2fs_xattrs_close(&h);
 	if (err)
 		com_err(argv[0], err, "while getting extended attribute");
+out2:
+	if (fp)
+		fclose(fp);
 }
 
 void do_set_xattr(int argc, char **argv)
@@ -190,30 +191,30 @@ void do_set_xattr(int argc, char **argv)
 		default:
 			printf("%s: Usage: %s <file> <attr> [-f infile | "
 			       "value]\n", argv[0], argv[0]);
-			return;
+			goto out2;
 		}
 	}
 
 	if (optind != argc - 2 && optind != argc - 3) {
 		printf("%s: Usage: %s <file> <attr> [-f infile | value>]\n",
 		       argv[0], argv[0]);
-		return;
+		goto out2;
 	}
 
 	if (check_fs_open(argv[0]))
-		return;
+		goto out2;
 	if (check_fs_read_write(argv[0]))
-		return;
+		goto out2;
 	if (check_fs_bitmaps(argv[0]))
-		return;
+		goto out2;
 
 	ino = string_to_inode(argv[optind]);
 	if (!ino)
-		return;
+		goto out2;
 
 	err = ext2fs_xattrs_open(current_fs, ino, &h);
 	if (err)
-		return;
+		goto out2;
 
 	err = ext2fs_xattrs_read(h);
 	if (err)
@@ -238,13 +239,14 @@ void do_set_xattr(int argc, char **argv)
 		goto out;
 
 out:
+	ext2fs_xattrs_close(&h);
+	if (err)
+		com_err(argv[0], err, "while setting extended attribute");
+out2:
 	if (fp) {
 		fclose(fp);
 		ext2fs_free_mem(&buf);
 	}
-	ext2fs_xattrs_close(&h);
-	if (err)
-		com_err(argv[0], err, "while setting extended attribute");
 }
 
 void do_rm_xattr(int argc, char **argv)

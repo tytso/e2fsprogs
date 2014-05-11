@@ -403,7 +403,7 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 			retval = 0;
 
 			/* Jump forward to the next extent. */
-			ext2fs_extent_goto(handle, next_lblk);
+			(void) ext2fs_extent_goto(handle, next_lblk);
 			op = EXT2_EXTENT_CURRENT;
 		}
 		if (retval)

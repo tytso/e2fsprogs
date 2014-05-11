@@ -465,7 +465,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 	char		ln_target[PATH_MAX];
 	unsigned int	save_inode;
 	ext2_ino_t	ino;
-	errcode_t	retval;
+	errcode_t	retval = 0;
 	int		read_cnt;
 	int		hdlink;
 
@@ -486,7 +486,11 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		if ((!strcmp(dent->d_name, ".")) ||
 		    (!strcmp(dent->d_name, "..")))
 			continue;
-		lstat(dent->d_name, &st);
+		if (lstat(dent->d_name, &st)) {
+			com_err(__func__, errno, _("while lstat \"%s\""),
+				dent->d_name);
+			goto out;
+		}
 		name = dent->d_name;
 
 		/* Check for hardlinks */
@@ -501,7 +505,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				if (retval) {
 					com_err(__func__, retval,
 						"while linking %s", name);
-					return retval;
+					goto out;
 				}
 				continue;
 			} else
@@ -517,7 +521,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				com_err(__func__, retval,
 					_("while creating special file "
 					  "\"%s\""), name);
-				return retval;
+				goto out;
 			}
 			break;
 		case S_IFSOCK:
@@ -527,7 +531,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			continue;
 		case S_IFLNK:
 			read_cnt = readlink(name, ln_target,
-					    sizeof(ln_target));
+					    sizeof(ln_target) - 1);
 			if (read_cnt == -1) {
 				com_err(__func__, errno,
 					_("while trying to readlink \"%s\""),
@@ -541,7 +545,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				com_err(__func__, retval,
 					_("while writing symlink\"%s\""),
 					name);
-				return retval;
+				goto out;
 			}
 			break;
 		case S_IFREG:
@@ -550,7 +554,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			if (retval) {
 				com_err(__func__, retval,
 					_("while writing file \"%s\""), name);
-				return retval;
+				goto out;
 			}
 			break;
 		case S_IFDIR:
@@ -559,25 +563,25 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			if (retval) {
 				com_err(__func__, retval,
 					_("while making dir \"%s\""), name);
-				return retval;
+				goto out;
 			}
 			retval = ext2fs_namei(fs, root, parent_ino,
 					      name, &ino);
 			if (retval) {
 				com_err(name, retval, 0);
-					return retval;
+					goto out;
 			}
 			/* Populate the dir recursively*/
 			retval = __populate_fs(fs, ino, name, root, hdlinks);
 			if (retval) {
 				com_err(__func__, retval,
 					_("while adding dir \"%s\""), name);
-				return retval;
+				goto out;
 			}
 			if (chdir("..")) {
-				com_err(__func__, errno,
-					_("during cd .."));
-				return errno;
+				com_err(__func__, errno, _("during cd .."));
+				retval = errno;
+				goto out;
 			}
 			break;
 		default:
@@ -588,14 +592,14 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		retval =  ext2fs_namei(fs, root, parent_ino, name, &ino);
 		if (retval) {
 			com_err(name, retval, 0);
-			return retval;
+			goto out;
 		}
 
 		retval = set_inode_extra(fs, parent_ino, ino, &st);
 		if (retval) {
 			com_err(__func__, retval,
 				_("while setting inode for \"%s\""), name);
-			return retval;
+			goto out;
 		}
 
 		/* Save the hardlink ino */
@@ -612,7 +616,8 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				if (p == NULL) {
 					com_err(name, errno,
 						_("Not enough memory"));
-					return errno;
+					retval = EXT2_ET_NO_MEMORY;
+					goto out;
 				}
 				hdlinks->hdl = p;
 				hdlinks->size += HDLINK_CNT;
@@ -623,6 +628,8 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			hdlinks->count++;
 		}
 	}
+
+out:
 	closedir(dh);
 	return retval;
 }
