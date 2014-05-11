@@ -190,5 +190,11 @@ request do_zap_block, "Zap block: fill with 0, pattern, flip bits etc.",
 request do_block_dump, "Dump contents of a block",
 	block_dump, bd;
 
+request do_list_quota, "List quota",
+	list_quota, lq;
+
+request do_get_quota, "Get quota",
+	get_quota, gq;
+
 end;
 

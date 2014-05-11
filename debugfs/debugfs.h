@@ -5,6 +5,7 @@
 #include "ss/ss.h"
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
+#include "quota/quotaio.h"
 
 #ifdef __STDC__
 #define NOARGS void
@@ -21,6 +22,7 @@
 #define CHECK_FS_NOTOPEN	0x0004
 
 extern ext2_filsys current_fs;
+extern quota_ctx_t current_qctx;
 extern ext2_ino_t	root, cwd;
 extern int sci_idx;
 extern ss_request_table debug_cmds, extent_cmds;
@@ -170,6 +172,10 @@ extern void do_set_mmp_value(int argc, char **argv);
 
 extern void do_freefrag(int argc, char **argv);
 extern void do_filefrag(int argc, char *argv[]);
+
+/* quota.c */
+extern void do_list_quota(int argc, char *argv[]);
+extern void do_get_quota(int argc, char *argv[]);
 
 /* util.c */
 extern time_t string_to_time(const char *arg);
