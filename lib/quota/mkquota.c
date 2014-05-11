@@ -207,7 +207,12 @@ static int dict_uint_cmp(const void *a, const void *b)
 	c = VOIDPTR_TO_UINT(a);
 	d = VOIDPTR_TO_UINT(b);
 
-	return c - d;
+	if (c == d)
+		return 0;
+	else if (c > d)
+		return 1;
+	else
+		return -1;
 }
 
 static inline qid_t get_qid(struct ext2_inode *inode, int qtype)

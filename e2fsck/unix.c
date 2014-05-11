@@ -337,6 +337,9 @@ static void check_if_skip(e2fsck_t ctx)
 	int broken_system_clock;
 	time_t lastcheck;
 
+	if (ctx->flags & E2F_FLAG_PROBLEMS_FIXED)
+		return;
+
 	profile_get_boolean(ctx->profile, "options", "broken_system_clock",
 			    0, 0, &broken_system_clock);
 	if (ctx->flags & E2F_FLAG_TIME_INSANE)

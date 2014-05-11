@@ -129,7 +129,7 @@ installdirs::
 	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/ss $(datadir)/ss $(bindir)"
 	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss \
-		$(DESTDIR)$(bindir) $(DESTDIR)$(libdir)/pkgconfig
+		$(DESTDIR)$(bindir) $(DESTDIR)$(pkgconfigdir)
 
 install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds ss.pc
 	$(E) "	INSTALL_DATA $(DESTDIR)$(libdir)/libss.a"
@@ -151,12 +151,12 @@ install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds ss.pc
 	$(Q) $(INSTALL) mk_cmds $(DESTDIR)$(bindir)/mk_cmds
 	$(E) "	INSTALL_DATA $(man1dir)/mk_cmds.1"
 	$(Q) $(INSTALL_DATA) $(srcdir)/mk_cmds.1 $(DESTDIR)$(man1dir)/mk_cmds.1
-	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/ss.pc"
-	$(Q) $(INSTALL_DATA) ss.pc $(DESTDIR)$(libdir)/pkgconfig/ss.pc
+	$(E) "	INSTALL_DATA $(pkgconfigdir)/ss.pc"
+	$(Q) $(INSTALL_DATA) ss.pc $(DESTDIR)$(pkgconfigdir)/ss.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libss.a $(DESTDIR)$(bindir)/mk_cmds \
-		$(DESTDIR)$(libdir)/pkgconfig/ss.pc \
+		$(DESTDIR)$(pkgconfigdir)/ss.pc \
 		$(DESTDIR)$(man1dir)/mk_cmds.1 
 	$(RM) -rf $(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss
 

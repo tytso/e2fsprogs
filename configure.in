@@ -1033,7 +1033,11 @@ AC_SUBST(SIZEOF_LONG)
 AC_SUBST(SIZEOF_LONG_LONG)
 AC_SUBST(SIZEOF_OFF_T)
 AC_C_BIGENDIAN
-BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
+if test $cross_compiling = no; then
+  BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
+else
+  CROSS_COMPILE="1" BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
+fi
 ASM_TYPES_HEADER=./asm_types.h
 AC_SUBST_FILE(ASM_TYPES_HEADER)
 dnl
@@ -1104,6 +1108,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	__secure_getenv
 	backtrace
 	blkid_probe_get_topology
+	blkid_probe_enable_partitions
 	chflags
 	fadvise64
 	fallocate

@@ -68,7 +68,10 @@ The following stanzas are used in the
 .I mke2fs.conf
 file.  They will be described in more detail in future sections of this
 document.
-.TP 
+.TP
+.I [options]
+Contains relations which influence how mke2fs behaves.
+.TP
 .I [defaults]
 Contains relations which define the default parameters
 used by
@@ -84,6 +87,18 @@ the
 .B -T
 option to
 .BR mke2fs (8).
+.SH THE [options] STANZA
+The following relations are defined in the
+.I [options]
+stanza.
+.TP
+.I proceed_delay
+If this relation is set to a positive integer, then if mke2fs will
+proceed after waiting
+.I proceed_delay
+seconds, after asking the user for permission to proceed, even if the
+user has not answered the question.  Defaults to 0, which means to wait
+until the user answers the question one way or another.
 .SH THE [defaults] STANZA
 The following relations are defined in the 
 .I [defaults]

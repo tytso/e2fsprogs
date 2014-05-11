@@ -1184,7 +1184,9 @@ static int add_journal(ext2_filsys fs)
 		goto err;
 	}
 	if (journal_device) {
-		check_plausibility(journal_device);
+		if (!check_plausibility(journal_device, CHECK_BLOCK_DEV,
+					NULL))
+			proceed_question(-1);
 		check_mount(journal_device, 0, _("journal"));
 #ifdef CONFIG_TESTIO_DEBUG
 		if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {

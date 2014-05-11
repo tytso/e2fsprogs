@@ -96,6 +96,8 @@ static __u32	fs_stride;
 static int	quotatype = -1;  /* Initialize both user and group quotas by default */
 static __u64	offset;
 static blk64_t journal_location = ~0LL;
+static int	proceed_delay = -1;
+static blk64_t	dev_size;
 
 static struct ext2_super_block fs_param;
 static char *fs_uuid = NULL;
@@ -640,6 +642,14 @@ static void show_stats(ext2_filsys fs)
 	dgrp_t			i;
 	int			need, col_left;
 
+	if (!verbose) {
+		printf(_("Creating filesystem with %llu %dk blocks and "
+			 "%u inodes\n"),
+		       ext2fs_blocks_count(s), fs->blocksize >> 10,
+		       s->s_inodes_count);
+		goto skip_details;
+	}
+
 	if (ext2fs_blocks_count(&fs_param) != ext2fs_blocks_count(s))
 		fprintf(stderr, _("warning: %llu blocks unused.\n\n"),
 		       ext2fs_blocks_count(&fs_param) - ext2fs_blocks_count(s));
@@ -688,11 +698,14 @@ static void show_stats(ext2_filsys fs)
 		       s->s_blocks_per_group, s->s_clusters_per_group);
 	printf(_("%u inodes per group\n"), s->s_inodes_per_group);
 
+skip_details:
 	if (fs->group_desc_count == 1) {
 		printf("\n");
 		return;
 	}
 
+	if (!e2p_is_null_uuid(s->s_uuid))
+		printf(_("Filesystem UUID: %s\n"), e2p_uuid2str(s->s_uuid));
 	printf("%s", _("Superblock backups stored on blocks: "));
 	group_block = s->s_first_data_block;
 	col_left = 0;
@@ -1411,7 +1424,7 @@ out:
 
 static void PRS(int argc, char *argv[])
 {
-	int		b, c;
+	int		b, c, flags;
 	int		cluster_size = 0;
 	char 		*tmp, **cpp;
 	int		blocksize = 0;
@@ -1420,14 +1433,13 @@ static void PRS(int argc, char *argv[])
 	unsigned long	flex_bg_size = 0;
 	double		reserved_ratio = -1.0;
 	int		lsector_size = 0, psector_size = 0;
-	int		show_version_only = 0;
+	int		show_version_only = 0, is_device = 0;
 	unsigned long long num_inodes = 0; /* unsigned long long to catch too-large input */
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
 	char *		extended_opts = 0;
 	char *		fs_type = 0;
 	char *		usage_types = 0;
-	blk64_t		dev_size;
 	/*
 	 * NOTE: A few words about fs_blocks_count and blocksize:
 	 *
@@ -1789,8 +1801,18 @@ profile_error:
 	if (optind < argc)
 		usage();
 
-	if (!force)
-		check_plausibility(device_name);
+	profile_get_integer(profile, "options", "proceed_delay", 0, 0,
+			    &proceed_delay);
+
+	/* The isatty() test is so we don't break existing scripts */
+	flags = CREATE_FILE;
+	if (isatty(0) && isatty(1))
+		flags |= CHECK_FS_EXIST;
+	if (!quiet)
+		flags |= VERBOSE_CREATE;
+	if (!check_plausibility(device_name, flags, &is_device) && !force)
+		proceed_question(proceed_delay);
+
 	check_mount(device_name, force, _("filesystem"));
 
 	/* Determine the size of the device (if possible) */
@@ -1832,10 +1854,10 @@ profile_error:
 				fs_blocks_count &= ~((blk64_t) ((sys_page_size /
 					     EXT2_BLOCK_SIZE(&fs_param))-1));
 		}
-	} else if (!force && (fs_blocks_count > dev_size)) {
+	} else if (!force && is_device && (fs_blocks_count > dev_size)) {
 		com_err(program_name, 0, "%s",
 			_("Filesystem larger than apparent device size."));
-		proceed_question();
+		proceed_question(proceed_delay);
 	}
 
 	if (!fs_type)
@@ -2139,7 +2161,7 @@ profile_error:
 			com_err(program_name, 0,
 				_("%d-byte blocks too big for system (max %d)"),
 				blocksize, sys_page_size);
-			proceed_question();
+			proceed_question(proceed_delay);
 		}
 		fprintf(stderr, _("Warning: %d-byte blocks too big for system "
 				  "(max %d), forced to continue\n"),
@@ -2664,7 +2686,7 @@ int main (int argc, char *argv[])
 		journal_blocks = figure_journal_size(journal_size, fs);
 
 	/* Can't undo discard ... */
-	if (!noaction && discard && (io_ptr != undo_io_manager)) {
+	if (!noaction && discard && dev_size && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_device(fs);
 		if (!retval && io_channel_discard_zeroes_data(fs->io)) {
 			if (verbose)
@@ -2897,8 +2919,9 @@ int main (int argc, char *argv[])
 	if (journal_device) {
 		ext2_filsys	jfs;
 
-		if (!force)
-			check_plausibility(journal_device);
+		if (!check_plausibility(journal_device, CHECK_BLOCK_DEV,
+					NULL) && !force)
+			proceed_question(proceed_delay);
 		check_mount(journal_device, force, _("journal"));
 
 		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
