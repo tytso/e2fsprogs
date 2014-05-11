@@ -2162,13 +2162,6 @@ profile_error:
 				  "See https://ext4.wiki.kernel.org/"
 				  "index.php/Bigalloc for more information\n\n"));
 
-	if (!quiet &&
-	    (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA))
-		fprintf(stderr, "%s", _("\nWarning: the quota feature is "
-				  "still under development\n"
-				  "See https://ext4.wiki.kernel.org/"
-				  "index.php/Quota for more information\n\n"));
-
 	/* Since sparse_super is the default, we would only have a problem
 	 * here if it was explicitly disabled.
 	 */
