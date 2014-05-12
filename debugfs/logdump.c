@@ -526,28 +526,37 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 {
 	int			offset, max;
 	journal_revoke_header_t *header;
-	unsigned int		*entry, rblock;
+	unsigned long long	rblock;
+	int			tag_size = sizeof(__u32);
 
 	if (dump_all)
 		fprintf(out_file, "Dumping revoke block, sequence %u, at "
 			"block %u:\n", transaction, blocknr);
+
+	if (be32_to_cpu(jsb->s_feature_incompat) & JFS_FEATURE_INCOMPAT_64BIT)
+		tag_size = sizeof(__u64);
 
 	header = (journal_revoke_header_t *) buf;
 	offset = sizeof(journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
 
 	while (offset < max) {
-		entry = (unsigned int *) (buf + offset);
-		rblock = be32_to_cpu(*entry);
+		if (tag_size == sizeof(__u32)) {
+			__u32 *entry = (__u32 *) (buf + offset);
+			rblock = be32_to_cpu(*entry);
+		} else {
+			__u64 *entry = (__u64 *) (buf + offset);
+			rblock = ext2fs_be64_to_cpu(*entry);
+		}
 		if (dump_all || rblock == block_to_dump) {
-			fprintf(out_file, "  Revoke FS block %u", rblock);
+			fprintf(out_file, "  Revoke FS block %llu", rblock);
 			if (dump_all)
 				fprintf(out_file, "\n");
 			else
 				fprintf(out_file," at block %u, sequence %u\n",
 					blocknr, transaction);
 		}
-		offset += 4;
+		offset += tag_size;
 	}
 }
 
