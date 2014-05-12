@@ -2303,19 +2303,20 @@ profile_error:
 				blocksize);
 			exit(1);
 		}
-		/*
-		 * If inode size is 128 and inline data is enabled, we need
-		 * to notify users that inline data will never be useful.
-		 */
-		if ((fs_param.s_feature_incompat &
-		     EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
-		    inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
-			com_err(program_name, 0,
-				_("inode size is %d, inline data is useless"),
-				inode_size);
-			exit(1);
-		}
 		fs_param.s_inode_size = inode_size;
+	}
+
+	/*
+	 * If inode size is 128 and inline data is enabled, we need
+	 * to notify users that inline data will never be useful.
+	 */
+	if ((fs_param.s_feature_incompat &
+	     EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
+	    fs_param.s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+		com_err(program_name, 0,
+			_("inode size is %d, inline data is useless"),
+			fs_param.s_inode_size);
+		exit(1);
 	}
 
 	/* Make sure number of inodes specified will fit in 32 bits */
