@@ -367,6 +367,7 @@ static errcode_t packed_allocate_tables(ext2_filsys fs)
 		ext2fs_block_alloc_stats_range(fs, goal,
 					       fs->inode_blocks_per_group, +1);
 		ext2fs_inode_table_loc_set(fs, i, goal);
+		ext2fs_group_desc_csum_set(fs, i);
 	}
 	return 0;
 }
