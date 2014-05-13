@@ -213,13 +213,6 @@ shared storage environments.
 @QUOTA_MAN_COMMENT@Causes the quota files (i.e., user.quota and
 @QUOTA_MAN_COMMENT@group.quota which existed
 @QUOTA_MAN_COMMENT@in the older quota design) to be hidden inodes.
-@QUOTA_MAN_COMMENT@.IP
-@QUOTA_MAN_COMMENT@.B Warning:
-@QUOTA_MAN_COMMENT@The quota feature is still under development,
-@QUOTA_MAN_COMMENT@and may not be fully supported with your kernel
-@QUOTA_MAN_COMMENT@or may have various bugs.  Please
-@QUOTA_MAN_COMMENT@see https://ext4.wiki.kernel.org/index.php/Quota
-@QUOTA_MAN_COMMENT@for more details.
 .TP
 .B resize_inode
 .br

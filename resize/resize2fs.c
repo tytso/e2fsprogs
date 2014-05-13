@@ -2123,7 +2123,7 @@ static errcode_t reserve_sparse_super2_last_group(ext2_resize_t rfs,
 		      stderr);
 		exit(1);
 	}
-	if (old_desc != sb+1) {
+	if (old_desc && old_desc != sb+1) {
 		fputs(_("Should never happen!  Unexpected old_desc in "
 			"super_sparse bg?\n"),
 		      stderr);

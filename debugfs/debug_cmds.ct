@@ -202,5 +202,11 @@ request do_set_xattr, "Set an extended attribute of an inode",
 request do_rm_xattr, "Remove an extended attribute of an inode",
 	ea_rm;
 
+request do_list_quota, "List quota",
+	list_quota, lq;
+
+request do_get_quota, "Get quota",
+	get_quota, gq;
+
 end;
 

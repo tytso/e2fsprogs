@@ -60,7 +60,7 @@ extern int optind;
 #include "jfs_user.h"
 #include "util.h"
 #include "blkid/blkid.h"
-#include "quota/mkquota.h"
+#include "quota/quotaio.h"
 
 #include "../version.h"
 #include "nls-enable.h"
@@ -1287,10 +1287,6 @@ static void handle_quota_options(ext2_filsys fs)
 	quota_release_context(&qctx);
 
 	if ((usrquota == QOPT_ENABLE) || (grpquota == QOPT_ENABLE)) {
-		fprintf(stderr, "%s", _("\nWarning: the quota feature is still "
-				  "under development\n"
-				  "See https://ext4.wiki.kernel.org/"
-				  "index.php/Quota for more information\n\n"));
 		fs->super->s_feature_ro_compat |= EXT4_FEATURE_RO_COMPAT_QUOTA;
 		ext2fs_mark_super_dirty(fs);
 	} else if (!fs->super->s_usr_quota_inum &&

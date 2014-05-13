@@ -43,8 +43,9 @@ ss_request_table *extra_cmds;
 const char *debug_prog_name;
 int sci_idx;
 
-ext2_filsys    current_fs;
-ext2_ino_t     root, cwd;
+ext2_filsys	current_fs;
+quota_ctx_t	current_qctx;
+ext2_ino_t	root, cwd;
 
 static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 			    blk64_t blocksize, int catastrophic,
@@ -226,6 +227,8 @@ static void close_filesystem(NOARGS)
 		if (retval)
 			com_err("ext2fs_write_block_bitmap", retval, 0);
 	}
+	if (current_qctx)
+		quota_release_context(&current_qctx);
 	retval = ext2fs_close(current_fs);
 	if (retval)
 		com_err("ext2fs_close", retval, 0);

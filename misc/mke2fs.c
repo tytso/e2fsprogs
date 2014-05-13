@@ -55,7 +55,7 @@ extern int optind;
 #include "profile.h"
 #include "prof_err.h"
 #include "../version.h"
-#include "quota/mkquota.h"
+#include "quota/quotaio.h"
 #include "mke2fs.h"
 #include "create_inode.h"
 
@@ -384,6 +384,7 @@ static errcode_t packed_allocate_tables(ext2_filsys fs)
 		ext2fs_block_alloc_stats_range(fs, goal,
 					       fs->inode_blocks_per_group, +1);
 		ext2fs_inode_table_loc_set(fs, i, goal);
+		ext2fs_group_desc_csum_set(fs, i);
 	}
 	return 0;
 }
@@ -2238,13 +2239,6 @@ profile_error:
 				  "still under development\n"
 				  "See https://ext4.wiki.kernel.org/"
 				  "index.php/Bigalloc for more information\n\n"));
-
-	if (!quiet &&
-	    (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA))
-		fprintf(stderr, "%s", _("\nWarning: the quota feature is "
-				  "still under development\n"
-				  "See https://ext4.wiki.kernel.org/"
-				  "index.php/Quota for more information\n\n"));
 
 	/*
 	 * Since sparse_super is the default, we would only have a problem
