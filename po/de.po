@@ -645,7 +645,7 @@ msgstr "Fortsetzen"
 
 #: e2fsck/problem.c:65
 msgid "Clone multiply-claimed blocks"
-msgstr "mehrfach referenzierte BLöcke werden geklont"
+msgstr "mehrfach referenzierte Blöcke werden geklont"
 
 #: e2fsck/problem.c:66
 msgid "Delete file"
@@ -1840,7 +1840,7 @@ msgid ""
 "  has %r @m @b(s), shared with %N file(s):\n"
 msgstr ""
 "Datei %Q (@i #%i, Änderungszeit %IM) \n"
-"  hat %r mehrfach belegte(n) Block/Böcke, gemeinsam genutzt mit %N Datei(en):\n"
+"  hat %r mehrfach belegte(n) Block/Blöcke, gemeinsam genutzt mit %N Datei(en):\n"
 
 #. @-expanded: \t%Q (inode #%i, mod time %IM)\n
 #: e2fsck/problem.c:1011
