@@ -111,6 +111,13 @@ INSTALL_PROGRAM ?= $(INSTALL) -p -o root -g root -m 0755
 #INSTALL_PROGRAM += -s
 #endif
 
+ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
+SYMBOL_LIBS := e2fslibs libcomerr2 libss2
+ifneq ($(UTIL_LINUX_NG),yes)
+SYMBOL_LIBS += libblkid1 libuuid1
+endif
+endif
+
 DEFAULT_CFLAGS ?= -g -O2
 DEFAULT_LDFLAGS ?= -Wl,-Bsymbolic-functions
 
@@ -583,11 +590,6 @@ endif
 	dh_strip
 
 	# dpkg symbol handling
-ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
-SYMBOL_LIBS := e2fslibs libcomerr2 libss2
-ifneq ($(UTIL_LINUX_NG),yes)
-SYMBOL_LIBS += libblkid1 libuuid1
-endif
 	for i in $(SYMBOL_LIBS); \
 	do \
 		echo "Generating symbols for $$i..."; \
@@ -596,7 +598,6 @@ endif
 		patch debian/$$i.symbols < debian/$$i.tmp-patch; \
 		/bin/rm debian/$$i.tmp-patch; \
 	done
-endif
 
 	for i in e2fsprogs e2fsprogs-dbg e2fslibs e2fslibs-dbg; do \
 	   $(INSTALL) -p -m 0644 debian/copyright \
