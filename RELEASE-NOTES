@@ -1,3 +1,163 @@
+E2fsprogs 1.42.10 (May 18, 2014)
+================================
+
+Mke2fs now creates file systems in regular files (which is very often
+used when maintaining virtual machine images) without requiring the
+user to use the force option.  In addition, the mke2fs output has been
+made much less verbose and only displays information that users will
+be more likely to find useful by default.
+
+Mke2fs now will ask the user to confirm that they want to continue
+before wiping out a pre-existing file system, partition table, or LVM
+physical volume.
+
+Mke2fs now has the ability to create file systems where all the
+metadata is located at the very beginning of the device.  This can be
+useful for flash devices which have SLC flash at the beginning of the
+disk, for FAT compatibility, for example.  As part of this, mke2fs and
+tune2fs can control the location of the data blocks used by the
+journal inode.  In addition, the new sparse_super2 feature allows for
+even fewer (anywhere from zero to two) backup superblocks.
+
+Mke2fs now uses much less CPU when allocating the blocks used for very
+large file systems.
+
+Mke2fs can now support creating a file system at an offset.  This can
+be useful when creating a disk image for virtual machines (Addresses
+Debian Bug: #497984)
+
+Previously, e2fsck had a number of very serious bugs when checking a
+file system wich used the new the quota file system option (where the
+quota inodes were stored in hidden inodes) and the quota inode was
+inconsistent with the actual usage data.  This problem was documented
+in https://ext4.wiki.kernel.org/index.php/Quota.  These problems have
+been fixed in 1.42.10, so the quota should be safe to use with
+e2fsprogs 1.42.10.
+
+Fixed in a bug in resize2fs which could cause shrink operation fail in
+the unlikely situation when the inode table needs to be moved to a
+location before the current location.
+
+Resize2fs now has a much more accurate (and less conservative)
+estimation of how far the file system can be shrunk.  This allows a
+mostly empty filesystem which is a few terabytes, to be shrunk to a
+few megabytes in a single resize2fs -M operation.
+
+E2fsck will now force a full file system check if there are any file
+system inconsistencies detected in the super block.
+
+The filefrag program will now display hte shared extent flag, which is
+used by file systems such as btrfs.
+
+If the number of inodes in the file systems is larger than the time
+that file sytem was created (as measured by the number of seconds
+since January 1, 1970) e2fsck would print a scary (but otherwise
+harmless) warning of file system corruption for each inode in the
+orphan list.  This false positive has been fixed.
+
+The e4defrag program has been fixed so it will no longer refuse with
+filesystem with the 64-bit or the bigalloc feature enabled.
+
+The logsave progam will print a much less scary message which could
+lead users to believe something has gone very wrong with e2fsck exits
+with a non-zero exit status (since this is normal after e2fsck has
+automatically fixed a file system corruption during a preen
+operation).   (Addresses Debian Bug: #468821)
+
+When creating a file system which is larger than 16TB, the
+resize_inode option must be disabled -- since the resize_inode simply
+doesn't support reserving metadata block numbers which is larger than
+32 bits.  The mke2fs program does this automatically if the file
+system size is determined automatically.  It will now also do this if
+the file size is specified explicitly.
+
+Fixed bugs associated with resize2fs and shrinking bigalloc file
+systems.
+
+The e2fsck program will no longer try to add a UUID on a mounted file
+system with checksums enabled, since this could leave the file system
+checksums broken.
+
+Tune2fs will allow the removal of an external journal from file system
+which is marked as needing the journal replayed when the force ("-f")
+option is given twice.  (Addresses Debian Bug: #559301)
+
+Tune2fs will no longer support enabling sparse_super if the meta_bg
+file system feature is enabled, since it could result in data loss.
+In practice, all modern file systems have sparse_super is enabled, so
+it's not worth trying to change how tune2fs handles enabling the
+sparse_super feature.
+
+Fixed support for 1k block file systems with the meta_bg feature.
+
+When the superblock is corrupt, e2fsck can't figure out the location
+of the alternate superblock.  Unfortunately, the routine that
+calculates the location of the alternate superblock uses 8193 if it
+can't figure this out, so the message printed by e2fsck always
+suggests using "e2fsck -b 8193".  This message has been fixed to
+suggest both the superblock location of 8193 and and 32768.
+(Addresses Debian Bug: #719185)
+
+The lookback mount detection code that was introduced in 1.42.9 wasn't
+actually compiled in due to an autoconf oops, so it's fixed now in
+1.42.10.  (Addresses Debian Bug: #497984)
+    
+A bug introduced in 1.42.9 would cause debugfs to print two error
+messages if it found an error while parsing a user-supplied block
+number.  This has been fixed in 1.42.10.
+
+Update Czech, Dutch, French, German, Polish, Spanish, Sweedish, and
+Vietnamese translations.  (Addresses Debian Bug: #703048)
+
+Updated/fixed various man pages.  (Addresses Debian Bugs: #719189,
+#719184)
+
+Fixed various Debian Packaging Issues.  (Addresses Debian Bug: #718725)
+
+
+Programmer's Notes
+------------------
+
+Fixed a lot of coverity, sparce gcc -Wall, and clang warnings/nits.
+
+Allow the location of pkg-config files to be specified independent of
+the libdir location via a makefile variable.
+
+Fixed parse-types.sh not to complain when cross-compiling and the
+sizes of types are different between the target architecture and the
+architecture of the build system
+
+Allow the regression test suite to work correctly on systems which do
+not have the "truncate" or "mksawp" programs.
+
+Allow e2fsck to build correctly on systems (such as Android) that do
+not have the signal.h file.
+
+E2fsprogs now has code coverage testing which can be enbled using
+"configure --enable-gcov".
+
+The libe2p.h header file can now be used included by C++ programs.
+
+The profile/config file used by e2fsck and mke2fs will interpret
+numbers with a leading 0 character to mean that they should be
+interpreted as an octal integer.
+
+The extent handling functions in libext2fs have been improved so they
+have proper rollback when there is an error splitting an extent.  Also
+fix a number of bugs when punching holes in files, and fix an
+off-by-one bug when inserting an extent into an empty inode.
+
+The libext2fs library now handles the support of BLOCK_UNINIT by
+clearing the portion of block bitmap when it is loaded, instead of
+when it is used.  This reduces the chances of bugs, and and simplifies
+the code.  It also means that debugfs will properly show that blocks
+in uninitialized block groups as being unused when using the testb
+command.
+
+The e4defrag program will try to use fadvise64 or posix_fadvise64() if
+it is present, which allows 64-bit offsets on 32-bit systems.
+
+
 E2fsprogs 1.42.9 (December 28, 2013)
 ====================================
 

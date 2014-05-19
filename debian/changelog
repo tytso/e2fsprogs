@@ -1,3 +1,48 @@
+e2fsprogs (1.42.10-1) unstable; urgency=medium
+
+  * New upstream version
+  * The mke2fs program no longer requires a force (-F) option when
+    when creating a file system in a regular file, since this is a very
+    common use case when managing virtual machine images
+  * The mke2fs program will now ask for confirmation before wiping out a
+    pre-existing file system, partition label, or physical volume
+  * Fix e2fsck so that it properly handles an inconsistent quota inode.
+    Previously the quota inode could be completely corrupted, and
+    missing quota records could be not noticed
+  * Fix mke2fs so if packed metadata blocks are enabled that the block
+    group checksum are set correctly
+  * Debugfs has new commands to allow the quota inode to be queried directly
+  * Tune2fs will allow removal of dirty journal with two "-f" options
+    (Closes: #559301)
+  * Fixed some off-line resize2fs bugs when relocating metadata blocks
+    when growing or shrinking bigalloc file systems
+  * Fixed resize2fs's calculation of the minimum required file system
+    size.  This allows resize2fs -M to shrink the file system more
+    aggressively
+  * Fixed resize2fs to properly handle shrinking a very large and empty
+    file system to a very very small size
+  * Fixed e4defrag to work with 64-bit and bigalloc file systems
+  * Fixed e2fsck to not issue a large number of very scary (but
+    harmless) corruption messages when checking very large file systems
+    when the file system has more inodes than the number of seconds
+    since January 1, 1970.
+  * E2fsck will now check the whole file system if file system problems
+    are detected durings its initial "pass 0" sanity check
+  * Filefrag now prints the "shared extent" flag which is used by some
+    file systems such as btrfs
+  * The mke2fs program would previously correctly omit the resize_inode
+    feature when creating a file system > 16TB when the fs size was
+    determined automatically.  It will now also do the right thing when
+    the user explicitly specifies the file system size.
+  * The message printed by logsave is now much less scary (Closes: #468821)
+  * Fix spelling typo in the package descriptions
+  * Update Czech, Dutch, French, German, Polish, Spanish, Sweedish, and
+    Vietnamese translations (Closes: #703048)
+  * Update/fix various man pages
+  * Fix debian/rules compatibility problem with GNU make 4.0
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 18 May 2014 22:54:38 -0400
+
 e2fsprogs (1.42.9-3) unstable; urgency=medium
 
   * Add the ability for mke2fs to create hugefiles
