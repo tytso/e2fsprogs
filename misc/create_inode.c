@@ -96,9 +96,9 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 			    struct stat *st)
 {
 	ext2_ino_t		ino;
-	errcode_t 		retval;
+	errcode_t		retval;
 	struct ext2_inode	inode;
-	unsigned long		major, minor, mode;
+	unsigned long		devmajor, devminor, mode;
 	int			filetype;
 
 	switch(st->st_mode & S_IFMT) {
@@ -156,16 +156,18 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
 		fs->now ? fs->now : time(0);
 
-	major = major(st->st_rdev);
-	minor = minor(st->st_rdev);
+	if (filetype != S_IFIFO) {
+		devmajor = major(st->st_rdev);
+		devminor = minor(st->st_rdev);
 
-	if ((major < 256) && (minor < 256)) {
-		inode.i_block[0] = major * 256 + minor;
-		inode.i_block[1] = 0;
-	} else {
-		inode.i_block[0] = 0;
-		inode.i_block[1] = (minor & 0xff) | (major << 8) |
-				   ((minor & ~0xff) << 12);
+		if ((devmajor < 256) && (devminor < 256)) {
+			inode.i_block[0] = devmajor * 256 + devminor;
+			inode.i_block[1] = 0;
+		} else {
+			inode.i_block[0] = 0;
+			inode.i_block[1] = (devminor & 0xff) | (devmajor << 8) |
+					   ((devminor & ~0xff) << 12);
+		}
 	}
 	inode.i_links_count = 1;
 
