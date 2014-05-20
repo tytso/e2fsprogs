@@ -245,6 +245,20 @@ time_t string_to_time(const char *arg)
 		ts.tm_mday = 0;
 #endif
 	ts.tm_isdst = -1;
+	/* strptime() may only update the specified fields, which does not
+	 * necessarily include ts.tm_yday (%j).  Calculate this if unset:
+	 *
+	 * Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+	 * 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+	 *
+	 * Start with 31 days per month.  Even months have only 30 days, but
+	 * reverse in August, subtract one day for those months. February has
+	 * only 28 days, not 30, subtract two days. Add day of month, minus
+	 * one, since day is not finished yet.  Leap years handled afterward. */
+	if (ts.tm_yday == 0)
+		ts.tm_yday = (ts.tm_mon * 31) -
+			((ts.tm_mon - (ts.tm_mon > 7)) / 2) -
+			2 * (ts.tm_mon > 1) + ts.tm_mday - 1;
 	ret = ts.tm_sec + ts.tm_min*60 + ts.tm_hour*3600 + ts.tm_yday*86400 +
 		(ts.tm_year-70)*31536000 + ((ts.tm_year-69)/4)*86400 -
 		((ts.tm_year-1)/100)*86400 + ((ts.tm_year+299)/400)*86400;

@@ -12,7 +12,7 @@ freeb 4 4
 freeb 8195 4
 write $TEST_DATA debugfs
 set_current_time 20050411000000
-set_inode_field debugfs mtime 2005041100000000
+set_inode_field debugfs mtime 20050411000000
 q
 EOF
 
