@@ -194,10 +194,10 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 	char *fs_type = NULL;
 	char *fs_label = NULL;
 
-	fd = open(device, fl, 0666);
+	fd = ext2fs_open_file(device, fl, 0666);
 	if ((fd < 0) && (errno == ENOENT) && (flags & CREATE_FILE)) {
 		fl |= O_CREAT;
-		fd = open(device, fl, 0666);
+		fd = ext2fs_open_file(device, fl, 0666);
 		if (fd >= 0 && (flags & VERBOSE_CREATE))
 			printf(_("Creating regular file %s\n"), device);
 	}
