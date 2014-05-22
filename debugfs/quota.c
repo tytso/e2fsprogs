@@ -93,18 +93,19 @@ static int parse_quota_type(const char *cmdname, const char *str)
 static int list_quota_callback(struct dquot *dq, void *cb_data)
 {
 	printf("%8u   %8lld %8lld %8lld    %8lld %8lld %8lld\n",
-	       dq->dq_id, dq->dq_dqb.dqb_curspace,
-	       dq->dq_dqb.dqb_bsoftlimit, dq->dq_dqb.dqb_bhardlimit,
-	       dq->dq_dqb.dqb_curinodes,
-	       dq->dq_dqb.dqb_isoftlimit, dq->dq_dqb.dqb_ihardlimit);
+	       dq->dq_id, (long long)dq->dq_dqb.dqb_curspace,
+	       (long long)dq->dq_dqb.dqb_bsoftlimit,
+	       (long long)dq->dq_dqb.dqb_bhardlimit,
+	       (long long)dq->dq_dqb.dqb_curinodes,
+	       (long long)dq->dq_dqb.dqb_isoftlimit,
+	       (long long)dq->dq_dqb.dqb_ihardlimit);
 	return 0;
 }
 
 void do_list_quota(int argc, char *argv[])
 {
 	errcode_t	retval;
-	int		i, type;
-	int		flags = 0;
+	int		type;
 	struct quota_handle *qh;
 
 	if (load_quota_ctx(argv[0]))
@@ -132,9 +133,7 @@ void do_list_quota(int argc, char *argv[])
 
 void do_get_quota(int argc, char *argv[])
 {
-	errcode_t	retval;
-	int		i, err, type;
-	int		flags = 0;
+	int		err, type;
 	struct quota_handle *qh;
 	struct dquot	*dq;
 	qid_t		id;
@@ -165,7 +164,7 @@ void do_get_quota(int argc, char *argv[])
 	if (dq) {
 		list_quota_callback(dq, NULL);
 		ext2fs_free_mem(&dq);
-	} else
+	} else {
 		com_err(argv[0], 0, "couldn't read quota record");
-
+	}
 }
