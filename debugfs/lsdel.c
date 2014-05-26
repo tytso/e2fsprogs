@@ -152,7 +152,7 @@ void do_lsdel(int argc, char **argv)
 				goto next;
 			}
 		}
-		if (lsd.free_blocks && !lsd.bad_blocks ||
+		if ((lsd.free_blocks && !lsd.bad_blocks) ||
 		    inode.i_flags & EXT4_INLINE_DATA_FL) {
 			if (num_delarray >= max_delarray) {
 				max_delarray += 50;

@@ -281,10 +281,9 @@ static errcode_t ext2fs_inline_data_convert_dir(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_dir_entry *dir, *dir2;
 	struct ext2_dir_entry_tail *t;
 	errcode_t retval;
-	unsigned int offset;
+	unsigned int offset, rec_len;
 	int csum_size = 0;
 	int filetype = 0;
-	unsigned rec_len;
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
