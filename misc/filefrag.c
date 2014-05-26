@@ -339,7 +339,7 @@ static void frag_report(const char *filename)
 	ext2fs_struct_stat st;
 	int		blk_shift;
 	long		fd;
-	unsigned long	numblocks;
+	unsigned long long	numblocks;
 	int		data_blocks_per_cyl = 1;
 	int		num_extents = 1, expected = ~0;
 	int		is_ext2 = 0;
@@ -411,7 +411,7 @@ static void frag_report(const char *filename)
 	if (width > logical_width)
 		logical_width = width;
 	if (verbose)
-		printf("File size of %s is %llu (%lu block%s of %d bytes)\n",
+		printf("File size of %s is %llu (%llu block%s of %d bytes)\n",
 		       filename, (unsigned long long)st.st_size,
 		       numblocks * fsinfo.f_bsize >> blk_shift,
 		       numblocks == 1 ? "" : "s", 1 << blk_shift);
