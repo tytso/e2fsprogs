@@ -512,7 +512,8 @@ clean::
 		tst_inline_data tst_inode_size tst_bitmaps_cmd.c \
 		ext2_tdbtool mkjournal debug_cmds.c tst_cmds.c extent_cmds.c \
 		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a \
-		crc32c_table.h gen_crc32ctable tst_crc32c tst_libext2fs
+		crc32c_table.h gen_crc32ctable tst_crc32c tst_libext2fs \
+		ext2fs.pc ext2_types.h
 
 mostlyclean:: clean
 distclean:: clean
@@ -533,6 +534,10 @@ gen_crc32ctable: $(srcdir)/gen_crc32ctable.c
 crc32c_table.h: gen_crc32ctable
 	$(E) "	GEN32CTABLE $@"
 	$(Q) ./gen_crc32ctable > crc32c_table.h
+
+$(top_builddir)/$(my_dir)/ext2_types.h: $(srcdir)/ext2_types.h.in \
+		$(top_builddir)/config.status
+	cd $(top_builddir); CONFIG_FILES=$(my_dir)/ext2_types.h ./config.status
 
 # +++ Dependency line eater +++
 # 
