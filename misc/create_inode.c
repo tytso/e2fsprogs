@@ -255,7 +255,7 @@ static errcode_t copy_file(ext2_filsys fs, int fd, ext2_ino_t newfile,
 			   int bufsize, int make_holes)
 {
 	ext2_file_t	e2_file;
-	errcode_t	retval;
+	errcode_t	retval, close_ret;
 	int		got;
 	unsigned int	written;
 	char		*buf;
@@ -271,15 +271,14 @@ static errcode_t copy_file(ext2_filsys fs, int fd, ext2_ino_t newfile,
 	retval = ext2fs_get_mem(bufsize, &buf);
 	if (retval) {
 		com_err("copy_file", retval, "can't allocate buffer\n");
-		return retval;
+		goto out_close;
 	}
 
 	/* This is used for checking whether the whole block is zero */
 	retval = ext2fs_get_memzero(bufsize, &zero_buf);
 	if (retval) {
-		com_err("copy_file", retval, "can't allocate buffer\n");
-		ext2fs_free_mem(&buf);
-		return retval;
+		com_err("copy_file", retval, "can't allocate zero buffer\n");
+		goto out_free_buf;
 	}
 
 	while (1) {
@@ -318,15 +317,15 @@ static errcode_t copy_file(ext2_filsys fs, int fd, ext2_ino_t newfile,
 			ptr += written;
 		}
 	}
-	ext2fs_free_mem(&buf);
-	ext2fs_free_mem(&zero_buf);
-	retval = ext2fs_file_close(e2_file);
-	return retval;
 
 fail:
-	ext2fs_free_mem(&buf);
 	ext2fs_free_mem(&zero_buf);
-	(void) ext2fs_file_close(e2_file);
+out_free_buf:
+	ext2fs_free_mem(&buf);
+out_close:
+	close_ret = ext2fs_file_close(e2_file);
+	if (retval == 0)
+		retval = close_ret;
 	return retval;
 }
 

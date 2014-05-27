@@ -277,7 +277,7 @@ clean::
 
 .depend: Makefile $(SRCS) $(top_srcdir)/depfix.sed $(top_srcdir)/wordwrap.pl
 	if test -n "$(SRCS)" ; then \
-		$(CC) -M $(ALL_CFLAGS) $(SRCS) | \
+		$(CC) -M $(ALL_CFLAGS) $(DEPEND_CFLAGS) $(SRCS) | \
 			$(SED) -f $(top_srcdir)/depfix.sed \
 			    -e 's; $(srcdir)/; $$(srcdir)/;g' \
 			    -e 's; $(top_srcdir)/; $$(top_srcdir)/;g' \
