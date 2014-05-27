@@ -12,6 +12,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <time.h>
+#include <limits.h> /* for PATH_MAX */
 
 #include "ext2_fs.h"
 #include "ext2_ext_attr.h"
@@ -283,7 +284,7 @@ static errcode_t ext2fs_inline_data_convert_dir(ext2_filsys fs, ext2_ino_t ino,
 	unsigned int offset;
 	int csum_size = 0;
 	int filetype = 0;
-	int rec_len;
+	unsigned rec_len;
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
@@ -657,7 +658,7 @@ static errcode_t file_test(ext2_filsys fs)
 
 	if (size != BUFF_SIZE) {
 		fprintf(stderr,
-			"tst_inline_data: size %lu != buflen %lu\n",
+			"tst_inline_data: size %lu != buflen %u\n",
 			size, BUFF_SIZE);
 		retval = 1;
 		goto err;
@@ -730,14 +731,14 @@ static errcode_t dir_test(ext2_filsys fs)
 	}
 
 	if (parent != tmp) {
-		fprintf(stderr, "tst_inline_data: parent (%lu) != tmp (%lu)\n",
+		fprintf(stderr, "tst_inline_data: parent (%u) != tmp (%u)\n",
 			parent, tmp);
 		return 1;
 	}
 
 	for (i = 0, dir = 13; i < 4; i++, dir++) {
 		tmp = 0;
-		snprintf(dirname, PATH_MAX, "%d", i);
+		snprintf(dirname, sizeof(dirname), "%d", i);
 		retval = ext2fs_mkdir(fs, parent, 0, dirname);
 		if (retval) {
 			com_err("dir_test", retval,
@@ -754,13 +755,14 @@ static errcode_t dir_test(ext2_filsys fs)
 		}
 
 		if (dir != tmp) {
-			fprintf(stderr, "tst_inline_data: dir (%lu) != tmp (%lu)\n",
+			fprintf(stderr,
+				"tst_inline_data: dir (%u) != tmp (%u)\n",
 				dir, tmp);
 			return 1;
 		}
 	}
 
-	snprintf(dirname, PATH_MAX, "%d", i);
+	snprintf(dirname, sizeof(dirname), "%d", i);
 	retval = ext2fs_mkdir(fs, parent, 0, dirname);
 	if (retval && retval != EXT2_ET_DIR_NO_SPACE) {
 		com_err("dir_test", retval, "while creating %s dir", dirname);

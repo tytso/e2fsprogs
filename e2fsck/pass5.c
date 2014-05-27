@@ -100,7 +100,7 @@ static void check_inode_bitmap_checksum(e2fsck_t ctx)
 	retval = ext2fs_get_memalign(ctx->fs->blocksize, ctx->fs->blocksize,
 				     &buf);
 	if (retval) {
-		com_err(ctx->program_name, 0,
+		com_err(ctx->program_name, 0, "%s",
 		    _("check_inode_bitmap_checksum: Memory allocation error"));
 		fatal_error(ctx, 0);
 	}
@@ -156,7 +156,7 @@ static void check_block_bitmap_checksum(e2fsck_t ctx)
 	retval = ext2fs_get_memalign(ctx->fs->blocksize, ctx->fs->blocksize,
 				     &buf);
 	if (retval) {
-		com_err(ctx->program_name, 0,
+		com_err(ctx->program_name, 0, "%s",
 		    _("check_block_bitmap_checksum: Memory allocation error"));
 		fatal_error(ctx, 0);
 	}

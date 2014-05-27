@@ -387,7 +387,7 @@ static void request_dir_fsck_afterwards(ext2_filsys fs)
 	fs->super->s_state &= ~EXT2_VALID_FS;
 	printf("\n%s\n", _(please_dir_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
-		printf(_("(and reboot afterwards!)\n"));
+		printf("%s", _("(and reboot afterwards!)\n"));
 }
 
 static void request_fsck_afterwards(ext2_filsys fs)

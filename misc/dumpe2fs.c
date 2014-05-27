@@ -414,7 +414,7 @@ static void print_inline_journal_information(ext2_filsys fs)
 	       (unsigned int)ntohl(jsb->s_start));
 	if (jsb->s_feature_compat &
 	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
-		printf(_("Journal checksum type:    crc32\n"));
+		printf("%s", _("Journal checksum type:    crc32\n"));
 	if (jsb->s_feature_incompat &
 	    ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2))
 		printf(_("Journal checksum type:    %s\n"
@@ -453,7 +453,7 @@ static void print_journal_information(ext2_filsys fs)
 
 	if (jsb->s_feature_compat &
 	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
-		printf(_("Journal checksum type:    crc32\n"));
+		printf("%s", _("Journal checksum type:    crc32\n"));
 	if (jsb->s_feature_incompat &
 	    ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2))
 		printf(_("Journal checksum type:    %s\n"

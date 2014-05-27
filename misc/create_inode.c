@@ -1,5 +1,17 @@
+/*
+ * create_inode.c --- create an inode
+ *
+ * Copyright (C) 2014 Robert Yang <liezhi.yang@windriver.com>
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU library
+ * General Public License, version 2.
+ * %End-Header%
+ */
+
 #include <time.h>
 #include <unistd.h>
+#include <limits.h> /* for PATH_MAX */
 
 #include "create_inode.h"
 
