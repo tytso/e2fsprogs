@@ -117,9 +117,9 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 	case S_IFSOCK:
 		mode = LINUX_S_IFSOCK;
 		filetype = EXT2_FT_SOCK;
+		break;
 	default:
-		abort();
-		/* NOTREACHED */
+		return EXT2_ET_INVALID_ARGUMENT;
 	}
 
 	if (!(fs->flags & EXT2_FLAG_RW)) {
@@ -146,7 +146,7 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 	}
 	if (retval) {
 		com_err(name, retval, 0);
-		return -1;
+		return retval;
 	}
 	if (ext2fs_test_inode_bitmap2(fs->inode_map, ino))
 		com_err(__func__, 0, "Warning: inode already set");
@@ -355,7 +355,7 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 	int		bufsize = IO_BUFSIZE;
 	int		make_holes = 0;
 
-	fd = open(src, O_RDONLY);
+	fd = ext2fs_open_file(src, O_RDONLY, 0);
 	if (fd < 0) {
 		com_err(src, errno, 0);
 		return errno;
@@ -536,7 +536,8 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				com_err(__func__, errno,
 					_("while trying to readlink \"%s\""),
 					name);
-				return errno;
+				retval = errno;
+				goto out;
 			}
 			ln_target[read_cnt] = '\0';
 			retval = do_symlink_internal(fs, parent_ino, name,

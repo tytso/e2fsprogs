@@ -402,8 +402,12 @@ static errcode_t ext2fs_punch_extent(ext2_filsys fs, ext2_ino_t ino,
 				goto errout;
 			retval = 0;
 
-			/* Jump forward to the next extent. */
-			(void) ext2fs_extent_goto(handle, next_lblk);
+			/*
+			 * Jump forward to the next extent.  If there are
+			 * errors, the ext2fs_extent_get down below will
+			 * capture them for us.
+			 */
+			(void)ext2fs_extent_goto(handle, next_lblk);
 			op = EXT2_EXTENT_CURRENT;
 		}
 		if (retval)

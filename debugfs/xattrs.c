@@ -113,6 +113,8 @@ void do_get_xattr(int argc, char **argv)
 	while ((i = getopt(argc, argv, "f:")) != -1) {
 		switch (i) {
 		case 'f':
+			if (fp)
+				fclose(fp);
 			fp = fopen(optarg, "w");
 			if (fp == NULL) {
 				perror(optarg);
@@ -182,6 +184,8 @@ void do_set_xattr(int argc, char **argv)
 	while ((i = getopt(argc, argv, "f:")) != -1) {
 		switch (i) {
 		case 'f':
+			if (fp)
+				fclose(fp);
 			fp = fopen(optarg, "r");
 			if (fp == NULL) {
 				perror(optarg);

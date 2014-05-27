@@ -570,7 +570,9 @@ void check_super_block(e2fsck_t ctx)
 		return;
 	}
 
-	should_be = sb->s_inodes_per_group * fs->group_desc_count;
+	should_be = (blk64_t)sb->s_inodes_per_group * fs->group_desc_count;
+	if (should_be > UINT_MAX)
+		should_be = UINT_MAX;
 	if (sb->s_inodes_count != should_be) {
 		pctx.ino = sb->s_inodes_count;
 		pctx.ino2 = should_be;

@@ -2013,8 +2013,12 @@ fix_problem_now:
 				pctx->blk2 = extent.e_lblk;
 				pctx->num = e_info.curr_level - 1;
 				problem = PR_1_EXTENT_INDEX_START_INVALID;
-				if (fix_problem(ctx, problem, pctx))
-					ext2fs_extent_fix_parents(ehandle);
+				if (fix_problem(ctx, problem, pctx)) {
+					pctx->errcode =
+						ext2fs_extent_fix_parents(ehandle);
+					if (pctx->errcode)
+						return;
+				}
 			}
 			scan_extent_node(ctx, pctx, pb, extent.e_lblk,
 					 last_lblk, eof_block, ehandle);
