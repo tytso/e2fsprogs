@@ -650,7 +650,7 @@ msgstr "Fortsetzen"
 
 #: e2fsck/problem.c:65
 msgid "Clone multiply-claimed blocks"
-msgstr "mehrfach referenzierte BLöcke werden geklont"
+msgstr "mehrfach referenzierte Blöcke werden geklont"
 
 #: e2fsck/problem.c:66
 msgid "Delete file"
