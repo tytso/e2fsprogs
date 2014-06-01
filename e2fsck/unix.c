@@ -249,15 +249,19 @@ static void check_mount(e2fsck_t ctx)
 	     ((ctx->options & E2F_OPT_FORCE) &&
 	      (ctx->mount_flags & EXT2_MF_READONLY))) &&
 	    !(ctx->options & E2F_OPT_WRITECHECK)) {
-		log_out(ctx, _("Warning!  %s is %s.\n"),
-			ctx->filesystem_name,
-			ctx->mount_flags & EXT2_MF_MOUNTED ?
-				"mounted" : "in use");
+		if (ctx->mount_flags & EXT2_MF_MOUNTED)
+			log_out(ctx, _("Warning!  %s is mounted.\n"),
+					ctx->filesystem_name);
+		else
+			log_out(ctx, _("Warning!  %s is in use.\n"),
+					ctx->filesystem_name);
 		return;
 	}
 
-	log_out(ctx, _("%s is %s.\n"), ctx->filesystem_name,
-		ctx->mount_flags & EXT2_MF_MOUNTED ? "mounted" : "in use");
+	if (ctx->mount_flags & EXT2_MF_MOUNTED)
+		log_out(ctx, _("%s is mounted.\n"), ctx->filesystem_name);
+	else
+		log_out(ctx, _("%s is in use.\n"), ctx->filesystem_name);
 	if (!ctx->interactive || ctx->mount_flags & EXT2_MF_BUSY)
 		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
 	puts("\007\007\007\007");
