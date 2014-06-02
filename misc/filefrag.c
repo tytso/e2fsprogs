@@ -175,7 +175,7 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 	for (mask = 1; fe_flags != 0 && mask != 0; mask <<= 1) {
 		char hex[6];
 
-		if (fe_flags & mask == 0)
+		if ((fe_flags & mask) == 0)
 			continue;
 		sprintf(hex, "%#04x,", mask);
 		print_flag(&fe_flags, mask, flags, hex);
@@ -378,17 +378,18 @@ static int frag_report(const char *filename)
 #else
 	if (fstat(fd, &st) < 0) {
 #endif
-		close(fd);
 		rc = -errno;
 		perror("stat");
+		close(fd);
 		return rc;
 	}
 
 	if (last_device != st.st_dev) {
 		if (fstatfs(fd, &fsinfo) < 0) {
-			close(fd);
+			rc = -errno;
 			perror("fstatfs");
-			return;
+			close(fd);
+			return rc;
 		}
 		if (verbose)
 			printf("Filesystem type is: %lx\n",
@@ -556,7 +557,7 @@ int main(int argc, char**argv)
 		int rc2 = frag_report(*cpp);
 
 		if (rc2 < 0 && rc == 0)
-			rc == rc2;
+			rc = rc2;
 	}
 
 	return rc;

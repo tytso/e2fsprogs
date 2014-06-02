@@ -45,6 +45,7 @@ my @translator_help = (
  "#.	%Id	<inode> -> i_dir_acl\n",
  "#.	%Iu	<inode> -> i_uid\n",
  "#.	%Ig	<inode> -> i_gid\n",
+ "#.	%It	<str>			file type\n",
  "#.	%j	<ino2>			inode number\n",
  "#.	%m	<com_err error message>\n",
  "#.	%N	<num>\n",
