@@ -177,8 +177,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2fs_extent	extent;
 
 	if ((inode->i_size_high || inode->i_size == 0) ||
-	    (inode->i_flags & EXT2_INDEX_FL) ||
-	    (inode->i_flags & EXT4_INLINE_DATA_FL))
+	    (inode->i_flags & EXT2_INDEX_FL))
 		return 0;
 
 	if (inode->i_flags & EXT4_EXTENTS_FL) {
@@ -201,6 +200,17 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 	exit_extent:
 		ext2fs_extent_free(handle);
 		return i;
+	}
+
+	if (inode->i_flags & EXT4_INLINE_DATA_FL) {
+		size_t inline_size;
+
+		if (ext2fs_inline_data_size(fs, ino, &inline_size))
+			return 0;
+		if (inode->i_size != inline_size)
+			return 0;
+
+		return 1;
 	}
 
 	blocks = ext2fs_inode_data_blocks2(fs, inode);
@@ -1189,7 +1199,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 						      block_buf)) {
 			check_immutable(ctx, &pctx);
 			ctx->fs_symlinks_count++;
-			if (ext2fs_inode_data_blocks(fs, inode) == 0) {
+			if (inode->i_flags & EXT4_INLINE_DATA_FL) {
+				continue;
+			} else if (ext2fs_inode_data_blocks(fs, inode) == 0) {
 				ctx->fs_fast_symlinks_count++;
 				check_blocks(ctx, &pctx, block_buf);
 				continue;
