@@ -341,7 +341,7 @@ static void write_reserved_inodes(ext2_filsys fs)
 
 	retval = ext2fs_get_memzero(EXT2_INODE_SIZE(fs->super), &inode);
 	if (retval) {
-		com_err("inode_init", retval, "while allocating memory");
+		com_err("inode_init", retval, _("while allocating memory"));
 		exit(1);
 	}
 
