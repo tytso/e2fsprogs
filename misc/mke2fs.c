@@ -822,7 +822,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			if (*p || num_backups > 2) {
 				fprintf(stderr,
 					_("Invalid # of backup "
-					  "superbocks: %s\n"),
+					  "superblocks: %s\n"),
 					arg);
 				r_usage++;
 				continue;
