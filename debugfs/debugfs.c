@@ -784,7 +784,9 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		fprintf(out, "Inode checksum: 0x%08x\n", crc);
 	}
 
-	if (LINUX_S_ISLNK(inode->i_mode) && ext2fs_inode_data_blocks(current_fs,inode) == 0)
+	if (LINUX_S_ISLNK(inode->i_mode) &&
+	    ext2fs_inode_data_blocks(current_fs,inode) == 0 &&
+	    !(inode->i_flags & EXT4_INLINE_DATA_FL))
 		fprintf(out, "%sFast_link_dest: %.*s\n", prefix,
 			(int) inode->i_size, (char *)inode->i_block);
 	else if (LINUX_S_ISBLK(inode->i_mode) || LINUX_S_ISCHR(inode->i_mode)) {
