@@ -447,11 +447,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Pass 1: Checking @is, @bs, and sizes\n"),
 	  PROMPT_NONE, 0 },
 
-	/* Root directory is not an inode */
+	/* Root inode is not a directory */
 	{ PR_1_ROOT_NO_DIR, N_("@r is not a @d.  "),
 	  PROMPT_CLEAR, 0 },
 
-	/* Root directory has dtime set */
+	/* Root inode has dtime set */
 	{ PR_1_ROOT_DTIME,
 	  N_("@r has dtime set (probably due to old mke2fs).  "),
 	  PROMPT_FIX, PR_PREEN_OK },
