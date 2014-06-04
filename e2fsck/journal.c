@@ -759,7 +759,6 @@ errcode_t e2fsck_check_ext3_journal(e2fsck_t ctx)
 no_has_journal:
 	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		recover = sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER;
-		pctx.str = "inode";
 		if (fix_problem(ctx, PR_0_JOURNAL_HAS_JOURNAL, &pctx)) {
 			if (recover &&
 			    !fix_problem(ctx, PR_0_JOURNAL_RECOVER_SET, &pctx))

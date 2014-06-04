@@ -225,7 +225,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Superblock has_journal flag is clear but has a journal */
 	{ PR_0_JOURNAL_HAS_JOURNAL,
-	  N_("@S has_@j flag is clear, but a @j %s is present.\n"),
+	  N_("@S has_@j flag is clear, but a @j is present.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock needs_recovery flag is set but not journal is present */
