@@ -21,7 +21,7 @@ if truncate -s $SIZE_2 $TMPFILE 2> /dev/null; then
 	echo "using $TMPFILE" >> $LOG
 else
 	rm $TMPFILE
-	export TMPFILE=$(TMPDIR=. mktemp -t $test_name.XXXXXX.tmp)
+	export TMPFILE=$(TMPDIR=. mktemp -t $test_name.tmp.XXXXXX)
 	touch $TMPFILE
 	echo "using $TMPFILE" >> $LOG
 	if ! truncate -s $SIZE_2 $TMPFILE >> $LOG 2>&1; then
