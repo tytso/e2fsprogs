@@ -28,6 +28,9 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <time.h>
 
 #include "et/com_err.h"
@@ -87,7 +90,7 @@ void proceed_question(int delay)
 	if (delay > 0) {
 		if (setjmp(alarm_env)) {
 			signal(SIGALRM, SIG_IGN);
-			printf(_("<proceeding>\n"));
+			printf("%s", _("<proceeding>\n"));
 			return;
 		}
 		signal(SIGALRM, alarm_signal);
