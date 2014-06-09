@@ -319,6 +319,17 @@ int main (int argc, char ** argv)
 		exit (1);
 	}
 
+	if (!(mount_flags & EXT2_MF_MOUNTED)) {
+		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
+			       (fs->super->s_state & EXT2_ERROR_FS) ||
+			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
+			fprintf(stderr,
+				_("Please run 'e2fsck -f %s' first.\n\n"),
+				device_name);
+			exit(1);
+		}
+	}
+
 	/*
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
@@ -332,13 +343,6 @@ int main (int argc, char ** argv)
 	min_size = calculate_minimum_resize_size(fs, flags);
 
 	if (print_min_size) {
-		if (!force && ((fs->super->s_state & EXT2_ERROR_FS) ||
-			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
-			fprintf(stderr,
-				_("Please run 'e2fsck -f %s' first.\n\n"),
-				device_name);
-			exit(1);
-		}
 		printf(_("Estimated minimum size of the filesystem: %llu\n"),
 		       min_size);
 		exit(0);
@@ -444,14 +448,6 @@ int main (int argc, char ** argv)
 		bigalloc_check(fs, force);
 		retval = online_resize_fs(fs, mtpt, &new_size, flags);
 	} else {
-		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
-			       (fs->super->s_state & EXT2_ERROR_FS) ||
-			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
-			fprintf(stderr,
-				_("Please run 'e2fsck -f %s' first.\n\n"),
-				device_name);
-			exit(1);
-		}
 		bigalloc_check(fs, force);
 		printf(_("Resizing the filesystem on "
 			 "%s to %llu (%dk) blocks.\n"),
