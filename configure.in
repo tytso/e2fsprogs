@@ -875,12 +875,13 @@ AC_CHECK_HEADERS(m4_flatten([
 	net/if_dl.h
 	netinet/in.h
 	sys/disklabel.h
+	sys/disk.h
 	sys/file.h
 	sys/ioctl.h
 	sys/mkdev.h
 	sys/mman.h
+	sys/mount.h
 	sys/prctl.h
-	sys/queue.h
 	sys/resource.h
 	sys/select.h
 	sys/socket.h
@@ -893,12 +894,6 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/un.h
 	sys/wait.h
 ]))
-AC_CHECK_HEADERS(sys/disk.h sys/mount.h,,,
-[[
-#if HAVE_SYS_QUEUE_H
-#include <sys/queue.h>
-#endif
-]])
 AC_CHECK_HEADERS(net/if.h,,,
 [[
 #if HAVE_SYS_TYPES_H
