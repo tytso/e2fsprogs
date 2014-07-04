@@ -30,7 +30,7 @@ fi
 
 test_name=`echo $test_dir | sed -e 's;.*/;;'`
 
-TMPFILE=$(mktemp -t e2fsprogs-tmp-$test_name.XXXXXX)
+TMPFILE=$(mktemp ${TMPDIR:-/tmp}/e2fsprogs-tmp-$test_name.XXXXXX)
 trap 'rm -f $TMPFILE ; exit' 1 2 15
 
 if [ -f $test_dir ] ; then
