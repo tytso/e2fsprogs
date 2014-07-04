@@ -1659,6 +1659,11 @@ profile_error:
 					_("bad revision level - %s"), optarg);
 				exit(1);
 			}
+			if (r_opt > EXT2_MAX_SUPP_REV) {
+				com_err(program_name, EXT2_ET_REV_TOO_HIGH,
+					_("while trying to create revision %d"), r_opt);
+				exit(1);
+			}
 			fs_param.s_rev_level = r_opt;
 			break;
 		case 's':	/* deprecated */
