@@ -124,6 +124,7 @@ then
 else
     AC_MSG_RESULT([[(none)]])
 fi
+AC_USE_SYSTEM_EXTENSIONS
 dnl
 dnl Set default values for library extentions.  Will be dealt with after
 dnl parsing configuration opions, which may modify these

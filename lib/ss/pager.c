@@ -15,9 +15,6 @@
  */
 
 #include "config.h"
-#if HAVE_SECURE_GETENV
-#define _GNU_SOURCE
-#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
