@@ -69,7 +69,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs-1.42.10\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2014-05-18 21:45-0400\n"
-"PO-Revision-Date: 2014-05-28 20:48+0200\n"
+"PO-Revision-Date: 2014-06-03 16:28+0200\n"
 "Last-Translator: Philipp Thomas <pth@suse.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -650,11 +650,11 @@ msgstr "Fortsetzen"
 
 #: e2fsck/problem.c:65
 msgid "Clone multiply-claimed blocks"
-msgstr "mehrfach referenzierte Blöcke werden geklont"
+msgstr "Mehrfach referenzierte Blöcke werden geklont"
 
 #: e2fsck/problem.c:66
 msgid "Delete file"
-msgstr "Lösche Datei"
+msgstr "Datei wird gelöscht"
 
 #: e2fsck/problem.c:67
 msgid "Suppress messages"
@@ -666,7 +666,7 @@ msgstr "Trennen"
 
 #: e2fsck/problem.c:69
 msgid "Clear HTree index"
-msgstr "Bereinige HTree-Index"
+msgstr "Der HTree-Index wird bereinigt"
 
 #: e2fsck/problem.c:70
 msgid "Recreate"
@@ -726,15 +726,15 @@ msgstr "ABGESPALTEn"
 
 #: e2fsck/problem.c:92
 msgid "CONTINUING"
-msgstr "SETZE FORT"
+msgstr "ES WIRD FORTGEFAHREN"
 
 #: e2fsck/problem.c:93
 msgid "MULTIPLY-CLAIMED BLOCKS CLONED"
-msgstr "MEHRFACH REFERENZIERTE BLÖCKE GEKLONT"
+msgstr "MEHRFACH REFERENZIERTE BLÖCKE WURDEN GEKLONT"
 
 #: e2fsck/problem.c:94
 msgid "FILE DELETED"
-msgstr "DATEI GELÖSCHT"
+msgstr "DATEI WURDE GELÖSCHT"
 
 #: e2fsck/problem.c:95
 msgid "SUPPRESSED"
@@ -6292,7 +6292,7 @@ msgstr "Falsche magische Zahl für eine io_channel-Struktur"
 
 #: lib/ext2fs/ext2_err.c:17
 msgid "Wrong magic number for unix io_channel structure"
-msgstr ""
+msgstr "Falsche magische Zahl für eine Unix io_channel-Struktur"
 
 #: lib/ext2fs/ext2_err.c:18
 msgid "Wrong magic number for io_manager structure"
@@ -6504,39 +6504,39 @@ msgstr "Die Inodebitmaps sind nicht identisch"
 
 #: lib/ext2fs/ext2_err.c:69
 msgid "Illegal or malformed device name"
-msgstr ""
+msgstr "Ungültiger oder misgestalteter Gerätename"
 
 #: lib/ext2fs/ext2_err.c:70
 msgid "A block group is missing an inode table"
-msgstr ""
+msgstr "Einer Blockgruppe fehlt eine Inodetabelle"
 
 #: lib/ext2fs/ext2_err.c:71
 msgid "The ext2 superblock is corrupt"
-msgstr ""
+msgstr "Der Ext2-Superblock ist defekt"
 
 #: lib/ext2fs/ext2_err.c:72
 msgid "Illegal generic bit number passed to ext2fs_mark_generic_bitmap"
-msgstr ""
+msgstr "Eine unzulässige generische Bitnummer wurde an ext2fs_mark_generic_bitmap übergeben"
 
 #: lib/ext2fs/ext2_err.c:73
 msgid "Illegal generic bit number passed to ext2fs_unmark_generic_bitmap"
-msgstr ""
+msgstr "Eine unzulässige generische Bitnummer wurde an ext2fs_unmark_generic_bitmap übergeben"
 
 #: lib/ext2fs/ext2_err.c:74
 msgid "Illegal generic bit number passed to ext2fs_test_generic_bitmap"
-msgstr ""
+msgstr "Eine unzulässige generische Bitnummer wurde an ext2fs_test_generic_bitmap übergeben"
 
 #: lib/ext2fs/ext2_err.c:75
 msgid "Too many symbolic links encountered."
-msgstr ""
+msgstr "Es wurden zuviele symbolische Verknüpfungen gefunden."
 
 #: lib/ext2fs/ext2_err.c:76
 msgid "The callback function will not handle this case"
-msgstr ""
+msgstr "Die Callback-Funktion kann diesen Fall nicht handhaben"
 
 #: lib/ext2fs/ext2_err.c:77
 msgid "The inode is from a bad block in the inode table"
-msgstr ""
+msgstr "Die Indoe kommt von einem beschädigten Block in der Inadetabelle"
 
 #: lib/ext2fs/ext2_err.c:78
 msgid "Filesystem has unsupported feature(s)"
@@ -6548,7 +6548,7 @@ msgstr "Das Dateisystem besitzt nicht unterstützte nur-lesen Eigenschaft(en):"
 
 #: lib/ext2fs/ext2_err.c:80
 msgid "IO Channel failed to seek on read or write"
-msgstr ""
+msgstr "Der EA-Kanal hat nicht positioniert beim Lesen oder Schreiben"
 
 #: lib/ext2fs/ext2_err.c:81
 msgid "Memory allocation failed"
@@ -6556,7 +6556,7 @@ msgstr "Die Reservierung von Speicher schlug fehl"
 
 #: lib/ext2fs/ext2_err.c:82
 msgid "Invalid argument passed to ext2 library"
-msgstr ""
+msgstr "Ein ungültiges Argument wurde an die Ext2-Bibliothek übergeben"
 
 #: lib/ext2fs/ext2_err.c:83
 msgid "Could not allocate block in ext2 filesystem"
@@ -6568,19 +6568,19 @@ msgstr "Konnte keine Inode im ext2-Dateisystem angefordert werden"
 
 #: lib/ext2fs/ext2_err.c:85
 msgid "Ext2 inode is not a directory"
-msgstr ""
+msgstr "Die Ext2-Inode weist nicht auf ein Verzeichnis"
 
 #: lib/ext2fs/ext2_err.c:86
 msgid "Too many references in table"
-msgstr ""
+msgstr "Zu viele Referenzen in der TAbelle"
 
 #: lib/ext2fs/ext2_err.c:87
 msgid "File not found by ext2_lookup"
-msgstr ""
+msgstr "Die Datei wurde von ext2_lookup nicht gefunden"
 
 #: lib/ext2fs/ext2_err.c:88
 msgid "File open read-only"
-msgstr ""
+msgstr "Die Datei wurde nur-lesend geöffnet"
 
 #: lib/ext2fs/ext2_err.c:89
 msgid "Ext2 directory block not found"
@@ -6588,23 +6588,23 @@ msgstr "Der Verzeichnisblock des ext2-Dateisystems wurde nicht gefunden"
 
 #: lib/ext2fs/ext2_err.c:90
 msgid "Ext2 directory already exists"
-msgstr ""
+msgstr "Das Ext2-Verzeichnis existiert bereits"
 
 #: lib/ext2fs/ext2_err.c:91
 msgid "Unimplemented ext2 library function"
-msgstr ""
+msgstr "Nicht implementierte Ext2-Bibliotheksfunktion"
 
 #: lib/ext2fs/ext2_err.c:92
 msgid "User cancel requested"
-msgstr ""
+msgstr "Der Benutzer hat abgebrochen"
 
 #: lib/ext2fs/ext2_err.c:93
 msgid "Ext2 file too big"
-msgstr ""
+msgstr "Die Ext2-Datei ist zu groß"
 
 #: lib/ext2fs/ext2_err.c:94
 msgid "Supplied journal device not a block device"
-msgstr ""
+msgstr "Das angegebene Journalgerät ist kein blockorientiertes Gerät"
 
 #: lib/ext2fs/ext2_err.c:95
 msgid "Journal superblock not found"
@@ -6612,15 +6612,15 @@ msgstr "Der Journal-Superblock wurde nicht gefunden"
 
 #: lib/ext2fs/ext2_err.c:96
 msgid "Journal must be at least 1024 blocks"
-msgstr ""
+msgstr "Das Journal muß mindestens 1024 Blöcke groß sein"
 
 #: lib/ext2fs/ext2_err.c:97
 msgid "Unsupported journal version"
-msgstr ""
+msgstr "Nicht unterstützte Journalversion"
 
 #: lib/ext2fs/ext2_err.c:98
 msgid "Error loading external journal"
-msgstr ""
+msgstr "Fehler beim Laden des externen Journals"
 
 #: lib/ext2fs/ext2_err.c:99
 msgid "Journal not found"
@@ -6628,7 +6628,7 @@ msgstr "Das Journal wurde nicht gefunden.  "
 
 #: lib/ext2fs/ext2_err.c:100
 msgid "Directory hash unsupported"
-msgstr ""
+msgstr "Verzeichnishashes werden nicht unterstützt"
 
 #: lib/ext2fs/ext2_err.c:101
 msgid "Illegal extended attribute block number"
@@ -6636,11 +6636,11 @@ msgstr "Die Nummer des Blocks für erweiterte Attribute ist unzulässig"
 
 #: lib/ext2fs/ext2_err.c:102
 msgid "Cannot create filesystem with requested number of inodes"
-msgstr ""
+msgstr "Ein Dateisystem mit der gewünschten Anzahl Inodes kann nicht erzeugt werden"
 
 #: lib/ext2fs/ext2_err.c:103
 msgid "E2image snapshot not in use"
-msgstr ""
+msgstr "Der E2image-Schnappschuss ist nicht in Gebrauch"
 
 #: lib/ext2fs/ext2_err.c:104
 msgid "Too many reserved group descriptor blocks"
@@ -6648,39 +6648,39 @@ msgstr "Zu viele reservierte Blöcke für Gruppen-Descriptoren"
 
 #: lib/ext2fs/ext2_err.c:105
 msgid "Resize inode is corrupt"
-msgstr ""
+msgstr "Die Größenänderungs-Inode ist defekt"
 
 #: lib/ext2fs/ext2_err.c:106
 msgid "Tried to set block bmap with missing indirect block"
-msgstr ""
+msgstr "Es wurde versucht, eine Blockbmap mit fehlendem indirektem Block zu schreiben"
 
 #: lib/ext2fs/ext2_err.c:107
 msgid "TDB: Success"
-msgstr ""
+msgstr "TDB: Erfolg"
 
 #: lib/ext2fs/ext2_err.c:108
 msgid "TDB: Corrupt database"
-msgstr ""
+msgstr "TDB: Korrupte Datenbank"
 
 #: lib/ext2fs/ext2_err.c:109
 msgid "TDB: IO Error"
-msgstr ""
+msgstr "TDB: EA-Fehler"
 
 #: lib/ext2fs/ext2_err.c:110
 msgid "TDB: Locking error"
-msgstr ""
+msgstr "TDB: Fehler beim Sperren"
 
 #: lib/ext2fs/ext2_err.c:111
 msgid "TDB: Out of memory"
-msgstr ""
+msgstr "TDB: Hauptspeicher erschöpft"
 
 #: lib/ext2fs/ext2_err.c:112
 msgid "TDB: Record exists"
-msgstr ""
+msgstr "TDB: Datensatz existiert bereits"
 
 #: lib/ext2fs/ext2_err.c:113
 msgid "TDB: Lock exists on other keys"
-msgstr ""
+msgstr "TDB: Die Sperre existiert schon auf anderen Schlüsseln"
 
 #: lib/ext2fs/ext2_err.c:114
 msgid "TDB: Invalid parameter"
@@ -6688,83 +6688,85 @@ msgstr "TDB: Ungültiger Parameter"
 
 #: lib/ext2fs/ext2_err.c:115
 msgid "TDB: Record does not exist"
-msgstr ""
+msgstr "TDB: Der DAtensatz existiert nicht"
 
 #: lib/ext2fs/ext2_err.c:116
 msgid "TDB: Write not permitted"
-msgstr ""
+msgstr "TDB: Schreiben ist nicht zulässig"
 
 #: lib/ext2fs/ext2_err.c:117
 msgid "Ext2fs directory block list is empty"
-msgstr ""
+msgstr "Die Liste der Ext2fs-Verzeichnisblöcke ist leer"
 
 #: lib/ext2fs/ext2_err.c:118
 msgid "Attempt to modify a block mapping via a read-only block iterator"
 msgstr ""
+"Es wird versucht, eine Block-Kartierung über einen nur-lesen Blockiterator zu\n"
+"ändern"
 
 #: lib/ext2fs/ext2_err.c:119
 msgid "Wrong magic number for ext4 extent saved path"
-msgstr ""
+msgstr "Falsche magische Zahl für einen gespeicherten Pfad zu ext4-Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:120
 msgid "Wrong magic number for 64-bit generic bitmap"
-msgstr ""
+msgstr "Falsche magische Zahl für eine 64-Bit generische Bitmap"
 
 #: lib/ext2fs/ext2_err.c:121
 msgid "Wrong magic number for 64-bit block bitmap"
-msgstr ""
+msgstr "Falsche magische Zahl für eine 64-Bit Block-Bitmap"
 
 #: lib/ext2fs/ext2_err.c:122
 msgid "Wrong magic number for 64-bit inode bitmap"
-msgstr ""
+msgstr "Falsche magische Zahl für eine 64-Bit Inode-Bitmap"
 
 #: lib/ext2fs/ext2_err.c:123
 msgid "Wrong magic number --- RESERVED_13"
-msgstr ""
+msgstr "Falsche magische Zahl --- RESERVED_13"
 
 #: lib/ext2fs/ext2_err.c:124
 msgid "Wrong magic number --- RESERVED_14"
-msgstr ""
+msgstr "Falsche magische Zahl --- RESERVED_14"
 
 #: lib/ext2fs/ext2_err.c:125
 msgid "Wrong magic number --- RESERVED_15"
-msgstr ""
+msgstr "Falsche magische Zahl --- RESERVED_15"
 
 #: lib/ext2fs/ext2_err.c:126
 msgid "Wrong magic number --- RESERVED_16"
-msgstr ""
+msgstr "Falsche magische Zahl --- RESERVED_16"
 
 #: lib/ext2fs/ext2_err.c:127
 msgid "Wrong magic number --- RESERVED_17"
-msgstr ""
+msgstr "Falsche magische Zahl --- RESERVED_17"
 
 #: lib/ext2fs/ext2_err.c:128
 msgid "Wrong magic number --- RESERVED_18"
-msgstr ""
+msgstr "Falsche magische Zahl --- RESERVED_18"
 
 #: lib/ext2fs/ext2_err.c:129
 msgid "Wrong magic number --- RESERVED_19"
-msgstr ""
+msgstr "Falsche magische Zahl --- RESERVED_19"
 
 #: lib/ext2fs/ext2_err.c:130
 msgid "Corrupt extent header"
-msgstr ""
+msgstr "Defekter Kopf einer Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:131
 msgid "Corrupt extent index"
-msgstr ""
+msgstr "Beschädigter Erweiterungsindex"
 
 #: lib/ext2fs/ext2_err.c:132
 msgid "Corrupt extent"
-msgstr ""
+msgstr "Beschädigte Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:133
 msgid "No free space in extent map"
-msgstr ""
+msgstr "Es ist kein freier Platz in der Karte der Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:134
 msgid "Inode does not use extents"
-msgstr ""
+msgstr "Die INode verwendet keine Erweiterungen"
 
 #: lib/ext2fs/ext2_err.c:135
 msgid "No 'next' extent"
@@ -6772,83 +6774,85 @@ msgstr "Keine „nächste“ Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:136
 msgid "No 'previous' extent"
-msgstr ""
+msgstr "Keine „vorherige“ Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:137
 msgid "No 'up' extent"
-msgstr ""
+msgstr "Keine „oben“ Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:138
 msgid "No 'down' extent"
-msgstr ""
+msgstr "Keine „unten“ Erweiterung"
 
 #: lib/ext2fs/ext2_err.c:139
 msgid "No current node"
-msgstr ""
+msgstr "Kein aktueller Knoten"
 
 #: lib/ext2fs/ext2_err.c:140
 msgid "Ext2fs operation not supported"
-msgstr ""
+msgstr "Diese Ext2fs-Operation wird nicht unterstẗzt"
 
 #: lib/ext2fs/ext2_err.c:141
 msgid "No room to insert extent in node"
-msgstr ""
+msgstr "Es gibt keinen Platz, um die Erweiterung in den Knoten einzufügen"
 
 #: lib/ext2fs/ext2_err.c:142
 msgid "Splitting would result in empty node"
-msgstr ""
+msgstr "Die Aufteilung würde zu einem leeren Knoten führen"
 
 #: lib/ext2fs/ext2_err.c:143
 msgid "Extent not found"
-msgstr "Die erweiterung wurde nicht gefunden"
+msgstr "Die Erweiterung wurde nicht gefunden"
 
 #: lib/ext2fs/ext2_err.c:144
 msgid "Operation not supported for inodes containing extents"
-msgstr ""
+msgstr "Die Operation wird für Inodes mit Erweiterungen nicht unterstẗzt"
 
 #: lib/ext2fs/ext2_err.c:145
 msgid "Extent length is invalid"
-msgstr ""
+msgstr "Die Länge der Erweiterung in ungültig"
 
 #: lib/ext2fs/ext2_err.c:146
 msgid "I/O Channel does not support 64-bit block numbers"
-msgstr ""
+msgstr "Der EA-Kanal unterstützt keine 64-bittigen Blocknummern"
 
 #: lib/ext2fs/ext2_err.c:147
 msgid "Can't check if filesystem is mounted due to missing mtab file"
 msgstr ""
+"Wegen des Fehlens von /etc/mtab kann nicht geprüft werden, ob das Dateisystem\n"
+"eingehängt ist"
 
 #: lib/ext2fs/ext2_err.c:148
 msgid "Filesystem too large to use legacy bitmaps"
-msgstr ""
+msgstr "Das Dateisystem ist zu groß um die veralteten Bitmaps zu verwenden"
 
 #: lib/ext2fs/ext2_err.c:149
 msgid "MMP: invalid magic number"
-msgstr ""
+msgstr "MMP: fehlende magische Zahl"
 
 #: lib/ext2fs/ext2_err.c:150
 msgid "MMP: device currently active"
-msgstr ""
+msgstr "MMP: das Gerät ist derzeit aktiv"
 
 #: lib/ext2fs/ext2_err.c:151
 msgid "MMP: fsck being run"
-msgstr ""
+msgstr "MMP: fsck läuft derzeit"
 
 #: lib/ext2fs/ext2_err.c:152
 msgid "MMP: block number beyond filesystem range"
-msgstr ""
+msgstr "MMP: die Blocknummer ist jenseits der Dateisystemgrenzen"
 
 #: lib/ext2fs/ext2_err.c:153
 msgid "MMP: undergoing an unknown operation"
-msgstr ""
+msgstr "MMP: ein unbekannte Operation wird durchdeführt"
 
 #: lib/ext2fs/ext2_err.c:154
 msgid "MMP: filesystem still in use"
-msgstr ""
+msgstr "MMP: das Dateisystem wird immer noch verwendet"
 
 #: lib/ext2fs/ext2_err.c:155
 msgid "MMP: open with O_DIRECT failed"
-msgstr ""
+msgstr "MMP: öffnen mit O_DIRECT ist gescheitert"
 
 #: lib/ext2fs/ext2_err.c:156
 msgid "Block group descriptor size incorrect"
@@ -6856,55 +6860,55 @@ msgstr "Die Größe des „Blockgruppen-Descriptors“ ist unzuässig"
 
 #: lib/ext2fs/ext2_err.c:157
 msgid "Inode checksum does not match inode"
-msgstr ""
+msgstr "Die Prüfsumme der Inode passt nicht zu ihr"
 
 #: lib/ext2fs/ext2_err.c:158
 msgid "Inode bitmap checksum does not match bitmap"
-msgstr ""
+msgstr "Die Prüfsumme der Inodebitmap passt nicht zur Bitmap"
 
 #: lib/ext2fs/ext2_err.c:159
 msgid "Extent block checksum does not match extent block"
-msgstr ""
+msgstr "Die Prüfsumme des Erweiterungsbloacks passt nicht zu ihm"
 
 #: lib/ext2fs/ext2_err.c:160
 msgid "Directory block does not have space for checksum"
-msgstr ""
+msgstr "Der Verzeichnisblock hat keinen Platz für eine Prüfsumme"
 
 #: lib/ext2fs/ext2_err.c:161
 msgid "Directory block checksum does not match directory block"
-msgstr ""
+msgstr "Die Prüfsumme des Verzeichnisblocks passt nicht zu ihm"
 
 #: lib/ext2fs/ext2_err.c:162
 msgid "Extended attribute block checksum does not match block"
-msgstr ""
+msgstr "Die Prüfsumme des Blocks für erweiterte Attribute passt nicht zu ihm"
 
 #: lib/ext2fs/ext2_err.c:163
 msgid "Superblock checksum does not match superblock"
-msgstr "Die Superblock-Prüfsumme passt nicht zum Superblock"
+msgstr "Die Prüfsumme des Superblocks passt nicht zu ihm"
 
 #: lib/ext2fs/ext2_err.c:164
 msgid "Unknown checksum algorithm"
-msgstr ""
+msgstr "Unbekannter Prüfsummenalgorithmus"
 
 #: lib/ext2fs/ext2_err.c:165
 msgid "MMP block checksum does not match MMP block"
-msgstr ""
+msgstr "Die Prüfsumme des des MMP-Blocks passt nicht zu ihm"
 
 #: lib/ext2fs/ext2_err.c:166
 msgid "Ext2 file already exists"
-msgstr ""
+msgstr "Die Ext2-Datei existiert bereits"
 
 #: e2fsck/prof_err.c:11
 msgid "Profile version 0.0"
-msgstr ""
+msgstr "Profilversion 0.0"
 
 #: e2fsck/prof_err.c:12
 msgid "Bad magic value in profile_node"
-msgstr ""
+msgstr "Ungültige magische Zahl im profile_node"
 
 #: e2fsck/prof_err.c:13
 msgid "Profile section not found"
-msgstr "die Profilsektion wurde niucht gefunden"
+msgstr "die Profilsektion wurde nicht gefunden"
 
 #: e2fsck/prof_err.c:14
 msgid "Profile relation not found"
@@ -6913,90 +6917,92 @@ msgstr "Zusammenhang des Profils wurde nicht gefunden"
 #: e2fsck/prof_err.c:15
 msgid "Attempt to add a relation to node which is not a section"
 msgstr ""
+"Dies ist ein Versuch, einen Bezug zu einem Knoten hinzu zu fügen, der keine\n"
+"Sektion ist"
 
 #: e2fsck/prof_err.c:16
 msgid "A profile section header has a non-zero value"
-msgstr ""
+msgstr "Der Vorspann der Profilsektion hat einen von Null verschiedenen Wert"
 
 #: e2fsck/prof_err.c:17
 msgid "Bad linked list in profile structures"
-msgstr ""
+msgstr "Ungültige verkettete Liste in den Profilstrukturen"
 
 #: e2fsck/prof_err.c:18
 msgid "Bad group level in profile structures"
-msgstr ""
+msgstr "Ungültige Gruppenebene in den Profilstrukturen"
 
 #: e2fsck/prof_err.c:19
 msgid "Bad parent pointer in profile structures"
-msgstr ""
+msgstr "Ungültiger Zeiger auf die Eltern in den Profilstrukturen"
 
 #: e2fsck/prof_err.c:20
 msgid "Bad magic value in profile iterator"
-msgstr ""
+msgstr "Ungültige magische Zahl im Profiliterator"
 
 #: e2fsck/prof_err.c:21
 msgid "Can't set value on section node"
-msgstr ""
+msgstr "In dem Sektionsknoten kann der Wert nicht gesetzt werden"
 
 #: e2fsck/prof_err.c:22
 msgid "Invalid argument passed to profile library"
-msgstr ""
+msgstr "Es wurde ein unzulässiges Argument an die Profilbibliothek übergeben"
 
 #: e2fsck/prof_err.c:23
 msgid "Attempt to modify read-only profile"
-msgstr ""
+msgstr "Es wird versucht, ein nur lesbares Profil zu ändern"
 
 #: e2fsck/prof_err.c:24
 msgid "Profile section header not at top level"
-msgstr ""
+msgstr "Der Profilsektionsvorspann ist nicht auf der obersten Ebene"
 
 #: e2fsck/prof_err.c:25
 msgid "Syntax error in profile section header"
-msgstr ""
+msgstr "Syntaxfehler im Profilsektionsvorspann"
 
 #: e2fsck/prof_err.c:26
 msgid "Syntax error in profile relation"
-msgstr ""
+msgstr "Syntaxfehler in den Profilbeziehungen"
 
 #: e2fsck/prof_err.c:27
 msgid "Extra closing brace in profile"
-msgstr ""
+msgstr "Überzählige schließende Klammer im Profil"
 
 #: e2fsck/prof_err.c:28
 msgid "Missing open brace in profile"
-msgstr ""
+msgstr "Fehlende öffnende Klammer im Profil"
 
 #: e2fsck/prof_err.c:29
 msgid "Bad magic value in profile_t"
-msgstr ""
+msgstr "Ungültige magische Zahl im profile_t"
 
 #: e2fsck/prof_err.c:30
 msgid "Bad magic value in profile_section_t"
-msgstr ""
+msgstr "Unbekannte magische Zahl im section_t des Profils"
 
 #: e2fsck/prof_err.c:31
 msgid "Iteration through all top level section not supported"
-msgstr ""
+msgstr "Iteration durch alle Toplevel-Sektionen wird nicht unterstützt"
 
 #: e2fsck/prof_err.c:32
 msgid "Invalid profile_section object"
-msgstr ""
+msgstr "Ungültiges profile_section-Objekt"
 
 #: e2fsck/prof_err.c:33
 msgid "No more sections"
-msgstr ""
+msgstr "Keine weiteren Sektionen"
 
 #: e2fsck/prof_err.c:34
 msgid "Bad nameset passed to query routine"
-msgstr ""
+msgstr "Ungültige Namen an die Abfrageroutine übergeben"
 
 #: e2fsck/prof_err.c:35
 msgid "No profile file open"
-msgstr ""
+msgstr "Es ist keine Profildatei offen"
 
 #: e2fsck/prof_err.c:36
 msgid "Bad magic value in profile_file_t"
-msgstr ""
+msgstr "UNgültige magische Zahl im profile_file_t"
 
 #: e2fsck/prof_err.c:37
 msgid "Couldn't open profile file"
@@ -7004,11 +7010,11 @@ msgstr "Die Profildatei konnte nicht geöffnet werden"
 
 #: e2fsck/prof_err.c:38
 msgid "Section already exists"
-msgstr ""
+msgstr "Die Sektion existiert bereits"
 
 #: e2fsck/prof_err.c:39
 msgid "Invalid boolean value"
-msgstr ""
+msgstr "Ungültiger boolscher Wert"
 
 #: e2fsck/prof_err.c:40
 msgid "Invalid integer value"
@@ -7016,7 +7022,7 @@ msgstr "Ungültiger ganzzahliger Wert"
 
 #: e2fsck/prof_err.c:41
 msgid "Bad magic value in profile_file_data_t"
-msgstr ""
+msgstr "Ungültige magische Zahl im profile_file_data_t"
 
 #~ msgid "Clearing extent flag not supported on %s"
 #~ msgstr ""
