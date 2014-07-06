@@ -903,7 +903,7 @@ errcode_t e2fsck_run_ext3_journal(e2fsck_t ctx)
 
 	ext2fs_mmp_stop(ctx->fs);
 	ext2fs_free(ctx->fs);
-	retval = ext2fs_open(ctx->filesystem_name, EXT2_FLAG_RW,
+	retval = ext2fs_open(ctx->filesystem_name, ctx->openfs_flags,
 			     ctx->superblock, blocksize, io_ptr,
 			     &ctx->fs);
 	if (retval) {
