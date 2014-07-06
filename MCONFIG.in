@@ -67,7 +67,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 
 CC = @CC@
 BUILD_CC = @BUILD_CC@
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ @DEFS@
 CPPFLAGS = @INCLUDES@
 ALL_CFLAGS = $(CPPFLAGS) $(CFLAGS)
 LDFLAGS = @LDFLAGS@
