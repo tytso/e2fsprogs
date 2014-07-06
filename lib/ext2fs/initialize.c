@@ -91,8 +91,10 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	unsigned int	rem;
 	unsigned int	overhead = 0;
 	unsigned int	ipg;
+	unsigned int	flexbg_size;
 	dgrp_t		i;
 	blk64_t		free_blocks;
+	blk64_t		flexbg_overhead;
 	blk_t		numblocks;
 	int		rsv_gdt;
 	int		csum_flag;
@@ -416,6 +418,28 @@ ipg_retry:
 			ext2fs_blocks_count(super) / 100.0);
 
 		goto retry;
+	}
+
+	/*
+	 * Calculate the flex_bg related metadata blocks count.
+	 * It includes the boot block, the super block,
+	 * the block group descriptors, the reserved gdt blocks,
+	 * the block bitmaps, the inode bitmaps and the inode tables.
+	 * This is a simple check, so that the backup superblock and
+	 * other feature related blocks are not considered.
+	 */
+	flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+	flexbg_overhead = super->s_first_data_block + 1 +
+		fs->desc_blocks + super->s_reserved_gdt_blocks +
+		(__u64)flexbg_size * (2 + fs->inode_blocks_per_group);
+
+	/*
+	 * Disallow creating ext4 which breaks flex_bg metadata layout
+	 * obviously.
+	 */
+	if (flexbg_overhead > ext2fs_blocks_count(fs->super)) {
+		retval = EXT2_ET_INVALID_ARGUMENT;
+		goto cleanup;
 	}
 
 	/*
