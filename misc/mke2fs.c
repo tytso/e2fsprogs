@@ -178,7 +178,8 @@ static int parse_version_number(const char *s)
 	return KERNEL_VERSION(major, minor, rev);
 }
 
-static int is_before_linux_ver(unsigned int major, unsigned int minor)
+static int is_before_linux_ver(unsigned int major, unsigned int minor,
+			       unsigned int rev)
 {
 	struct		utsname ut;
 	static int	linux_version_code = -1;
@@ -192,10 +193,11 @@ static int is_before_linux_ver(unsigned int major, unsigned int minor)
 	if (linux_version_code == 0)
 		return 0;
 
-	return linux_version_code < KERNEL_VERSION(major, minor, 0);
+	return linux_version_code < KERNEL_VERSION(major, minor, rev);
 }
 #else
-static int is_before_linux_ver(unsigned int major, unsigned int minor)
+static int is_before_linux_ver(unsigned int major, unsigned int minor,
+			       unsigned int rev)
 {
 	return 0;
 }
@@ -1485,7 +1487,7 @@ profile_error:
 	memset(&fs_param, 0, sizeof(struct ext2_super_block));
 	fs_param.s_rev_level = 1;  /* Create revision 1 filesystems now */
 
-	if (is_before_linux_ver(2, 2))
+	if (is_before_linux_ver(2, 2, 0))
 		fs_param.s_rev_level = 0;
 
 	if (argc && *argv) {
@@ -1909,7 +1911,7 @@ profile_error:
 
 		if (use_bsize == -1) {
 			use_bsize = sys_page_size;
-			if (is_before_linux_ver(2, 6) && use_bsize > 4096)
+			if (is_before_linux_ver(2, 6, 0) && use_bsize > 4096)
 				use_bsize = 4096;
 		}
 		if (lsector_size && use_bsize < lsector_size)
