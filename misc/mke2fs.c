@@ -1310,6 +1310,18 @@ int get_int_from_profile(char **types, const char *opt, int def_val)
 	return ret;
 }
 
+static unsigned int get_uint_from_profile(char **types, const char *opt,
+					unsigned int def_val)
+{
+	unsigned int ret;
+	char **cpp;
+
+	profile_get_uint(profile, "defaults", opt, 0, def_val, &ret);
+	for (cpp = types; *cpp; cpp++)
+		profile_get_uint(profile, "fs_types", *cpp, opt, ret, &ret);
+	return ret;
+}
+
 static double get_double_from_profile(char **types, const char *opt,
 				      double def_val)
 {
@@ -2217,8 +2229,8 @@ profile_error:
 		inode_size = get_int_from_profile(fs_types, "inode_size", 0);
 	if (!flex_bg_size && (fs_param.s_feature_incompat &
 			      EXT4_FEATURE_INCOMPAT_FLEX_BG))
-		flex_bg_size = get_int_from_profile(fs_types,
-						    "flex_bg_size", 16);
+		flex_bg_size = get_uint_from_profile(fs_types,
+						     "flex_bg_size", 16);
 	if (flex_bg_size) {
 		if (!(fs_param.s_feature_incompat &
 		      EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
