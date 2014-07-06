@@ -44,15 +44,6 @@ COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 
 #
-# Flags for using Checker
-#	Note: The optimization flags must include -g
-#
-#MCHECK=	-checker
-#LIBS= $(LIBCOM_ERR) $(LIB_EXT2FS) $(CHECKLIB)
-#DEPLIBS= $(LIBCOM_ERR) $(LIB_EXT2FS) 
-#CHECKLIB= /usr/lib/libchecker.o
-
-#
 # Flags for doing mtrace --- uncomment to produce mtracing e2fsck
 # 	Note:  The optimization flags must include -g
 #

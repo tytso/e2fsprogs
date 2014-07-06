@@ -225,7 +225,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Superblock has_journal flag is clear but has a journal */
 	{ PR_0_JOURNAL_HAS_JOURNAL,
-	  N_("@S has_@j flag is clear, but a @j %s is present.\n"),
+	  N_("@S has_@j flag is clear, but a @j is present.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock needs_recovery flag is set but not journal is present */
@@ -338,12 +338,12 @@ static struct e2fsck_problem problem_table[] = {
 	/* Last mount time is in the future */
 	{ PR_0_FUTURE_SB_LAST_MOUNT,
 	  N_("@S last mount time (%t,\n\tnow = %T) is in the future.\n"),
-	  PROMPT_FIX, PR_NO_OK },
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Last write time is in the future */
 	{ PR_0_FUTURE_SB_LAST_WRITE,
 	  N_("@S last write time (%t,\n\tnow = %T) is in the future.\n"),
-	  PROMPT_FIX, PR_NO_OK },
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	{ PR_0_EXTERNAL_JOURNAL_HINT,
 	  N_("@S hint for external superblock @s %X.  "),
@@ -461,11 +461,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Pass 1: Checking @is, @bs, and sizes\n"),
 	  PROMPT_NONE, 0 },
 
-	/* Root directory is not an inode */
+	/* Root inode is not a directory */
 	{ PR_1_ROOT_NO_DIR, N_("@r is not a @d.  "),
 	  PROMPT_CLEAR, 0 },
 
-	/* Root directory has dtime set */
+	/* Root inode has dtime set */
 	{ PR_1_ROOT_DTIME,
 	  N_("@r has dtime set (probably due to old mke2fs).  "),
 	  PROMPT_FIX, PR_PREEN_OK },

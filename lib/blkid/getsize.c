@@ -12,7 +12,6 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
-/* include this before sys/queues.h! */
 #include "config.h"
 #include "blkidP.h"
 
@@ -34,9 +33,6 @@
 #include <sys/disklabel.h>
 #endif
 #ifdef HAVE_SYS_DISK_H
-#ifdef HAVE_SYS_QUEUE_H
-#include <sys/queue.h> /* for LIST_HEAD */
-#endif
 #include <sys/disk.h>
 #endif
 #ifdef __linux__

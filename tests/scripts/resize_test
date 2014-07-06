@@ -21,7 +21,7 @@ if truncate -s $SIZE_2 $TMPFILE 2> /dev/null; then
 	echo "using $TMPFILE" >> $LOG
 else
 	rm $TMPFILE
-	export TMPFILE=$(TMPDIR=. mktemp -t $test_name.XXXXXX.tmp)
+	export TMPFILE=$(mktemp ./$test_name.tmp.XXXXXX)
 	touch $TMPFILE
 	echo "using $TMPFILE" >> $LOG
 	if ! truncate -s $SIZE_2 $TMPFILE >> $LOG 2>&1; then
@@ -34,7 +34,7 @@ fi
 echo $MKE2FS $FEATURES -qF $TMPFILE $SIZE_1 >> $LOG
 $MKE2FS $FEATURES -qF $TMPFILE $SIZE_1 >> $LOG
 
-OUT_TMP=$(mktemp -t csum-tmp.XXXXXX)
+OUT_TMP=$(mktemp ${TMPDIR:-/tmp}/csum-tmp.XXXXXX)
 
 date > $OUT_TMP
 cat $E2FSCK >> $OUT_TMP

@@ -232,6 +232,7 @@ struct e2fsck_struct {
 	blk64_t free_blocks;
 	ino_t	free_inodes;
 	int	mount_flags;
+	int	openfs_flags;
 	blkid_cache blkid;	/* blkid cache */
 
 #ifdef HAVE_SETJMP_H

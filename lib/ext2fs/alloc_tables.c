@@ -47,16 +47,17 @@ static blk64_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 	flexbg = group / flexbg_size;
 	size = rem_grp * elem_size;
 
-	if (size > (int) (fs->super->s_blocks_per_group / 8))
-		size = (int) fs->super->s_blocks_per_group / 8;
+	if (size > (int) (fs->super->s_blocks_per_group / 4))
+		size = (int) fs->super->s_blocks_per_group / 4;
 
 	/*
-	 * Don't do a long search if the previous block
-	 * search is still valid.
+	 * Don't do a long search if the previous block search is still valid,
+	 * but skip minor obstructions such as group descriptor backups.
 	 */
 	if (start_blk && start_blk < ext2fs_blocks_count(fs->super) &&
-	    ext2fs_test_block_bitmap_range2(bmap, start_blk, elem_size))
-		return start_blk;
+	    ext2fs_get_free_blocks2(fs, start_blk, start_blk + size, elem_size,
+				    bmap, &first_free) == 0)
+		return first_free;
 
 	start_blk = ext2fs_group_first_block2(fs, flexbg_size * flexbg);
 	last_grp = group | (flexbg_size - 1);
@@ -125,6 +126,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 
 		if (group % flexbg_size)
 			prev_block = ext2fs_block_bitmap_loc(fs, group - 1) + 1;
+		/* FIXME: Take backup group descriptor blocks into account
+		 * if the flexbg allocations will grow to overlap them... */
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
 					  rem_grps, 1);
 		last_blk = ext2fs_group_last_block2(fs, last_grp);
@@ -156,6 +159,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		else
 			prev_block = ext2fs_block_bitmap_loc(fs, group) +
 				flexbg_size;
+		/* FIXME: Take backup group descriptor blocks into account
+		 * if the flexbg allocations will grow to overlap them... */
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
 					  rem_grps, 1);
 		last_blk = ext2fs_group_last_block2(fs, last_grp);
@@ -193,6 +198,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			prev_block = ext2fs_inode_bitmap_loc(fs, group) +
 				flexbg_size;
 
+		/* FIXME: Take backup group descriptor blocks into account
+		 * if the flexbg allocations will grow to overlap them... */
 		group_blk = flexbg_offset(fs, group, prev_block, bmap,
 					  rem_grps, fs->inode_blocks_per_group);
 		last_blk = ext2fs_group_last_block2(fs, last_grp);

@@ -202,7 +202,7 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 	rfs->new_fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 
 	print_resource_track(rfs, &overall_track, fs->io);
-	retval = ext2fs_close(rfs->new_fs);
+	retval = ext2fs_close_free(&rfs->new_fs);
 	if (retval)
 		goto errout;
 

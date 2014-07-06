@@ -124,6 +124,7 @@ then
 else
     AC_MSG_RESULT([[(none)]])
 fi
+AC_USE_SYSTEM_EXTENSIONS
 dnl
 dnl Set default values for library extentions.  Will be dealt with after
 dnl parsing configuration opions, which may modify these
@@ -392,28 +393,7 @@ then
 	AC_MSG_RESULT([Enabling gcov support])
 fi
 )
-dnl
-dnl handle --enable-checker
-dnl
-AC_ARG_ENABLE([checker],
-[  --enable-checker	  build checker libraries],
-if test "$enableval" = "no"
-then
-	CHECKER_CMT=#
-	MAKEFILE_CHECKER=/dev/null
-	AC_MSG_RESULT([Disabling checker libraries])
-else
-	CHECKER_CMT=
-	MAKEFILE_CHECKER=$srcdir/lib/Makefile.checker
-	AC_MSG_RESULT([Building checker libraries])
-fi
-,
-CHECKER_CMT=#
-MAKEFILE_CHECKER=/dev/null
-AC_MSG_RESULT([Disabling checker libraries by default])
-)
-AC_SUBST(CHECKER_CMT)
-AC_SUBST_FILE(MAKEFILE_CHECKER)
+
 dnl
 dnl Substitute library extensions
 dnl
@@ -498,8 +478,7 @@ then
 	AC_CHECK_LIB(uuid, uuid_generate,
 		[LIBUUID=`$PKG_CONFIG --libs uuid`;
 		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`],
-		[AC_MSG_ERROR([external uuid library not found])],
-		[$LIBUUID])
+		[AC_MSG_ERROR([external uuid library not found])])
 	UUID_CMT=#
 	AC_MSG_RESULT([Disabling private uuid library])
 else
@@ -550,8 +529,7 @@ then
 	AC_CHECK_LIB(blkid, blkid_get_cache,
 		[LIBBLKID=`$PKG_CONFIG --libs blkid`;
 		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`],
-		[AC_MSG_ERROR([external blkid library not found])],
-		[$LIBBLKID])
+		[AC_MSG_ERROR([external blkid library not found])], -luuid)
 	BLKID_CMT=#
 	AC_MSG_RESULT([Disabling private blkid library])
 else
@@ -949,12 +927,13 @@ AC_CHECK_HEADERS(m4_flatten([
 	net/if_dl.h
 	netinet/in.h
 	sys/disklabel.h
+	sys/disk.h
 	sys/file.h
 	sys/ioctl.h
 	sys/mkdev.h
 	sys/mman.h
+	sys/mount.h
 	sys/prctl.h
-	sys/queue.h
 	sys/resource.h
 	sys/select.h
 	sys/socket.h
@@ -967,12 +946,6 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/un.h
 	sys/wait.h
 ]))
-AC_CHECK_HEADERS(sys/disk.h sys/mount.h,,,
-[[
-#if HAVE_SYS_QUEUE_H
-#include <sys/queue.h>
-#endif
-]])
 AC_CHECK_HEADERS(net/if.h,,,
 [[
 #if HAVE_SYS_TYPES_H

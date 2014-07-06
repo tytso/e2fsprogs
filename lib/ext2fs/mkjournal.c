@@ -642,7 +642,7 @@ main(int argc, char **argv)
 	if (retval) {
 		printf("Warning, had trouble writing out superblocks.\n");
 	}
-	ext2fs_close(fs);
+	ext2fs_close_free(&fs);
 	exit(0);
 
 }

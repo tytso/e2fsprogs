@@ -37,8 +37,8 @@ static int print_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 			     blk64_t ref_block, int ref_offset,
 			     void *private EXT2FS_ATTR((unused)))
 {
-	printf("%6d %8llu (%d %llu)\n", blockcnt, *blocknr,
-	       ref_offset, ref_block);
+	printf("%6lld %8llu (%d %llu)\n", (long long) blockcnt,
+	       (unsigned long long)*blocknr, ref_offset, ref_block);
 	return 0;
 }
 

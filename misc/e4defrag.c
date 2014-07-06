@@ -1808,7 +1808,7 @@ int main(int argc, char *argv[])
 			feature_incompat = fs->super->s_feature_incompat;
 			log_groups_per_flex = fs->super->s_log_groups_per_flex;
 
-			ext2fs_close(fs);
+			ext2fs_close_free(&fs);
 		}
 
 		switch (arg_type) {

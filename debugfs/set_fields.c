@@ -154,6 +154,17 @@ static struct field_set_info super_fields[] = {
 	  FLAG_ARRAY, 2 },
 	{ "checksum", &set_sb.s_checksum, NULL, 4, parse_uint },
 	{ "checksum_type", &set_sb.s_checksum_type, NULL, 1, parse_uint },
+	{ "error_count", &set_sb.s_error_count, NULL, 4, parse_uint },
+	{ "first_error_time", &set_sb.s_first_error_time, NULL, 4, parse_time },
+	{ "first_error_ino", &set_sb.s_first_error_ino, NULL, 4, parse_uint },
+	{ "first_error_block", &set_sb.s_first_error_block, NULL, 8, parse_uint },
+	{ "first_error_func", &set_sb.s_first_error_func, NULL, 32, parse_string },
+	{ "first_error_line", &set_sb.s_first_error_ino, NULL, 4, parse_uint },
+	{ "last_error_time", &set_sb.s_last_error_time, NULL, 4, parse_time },
+	{ "last_error_ino", &set_sb.s_last_error_ino, NULL, 4, parse_uint },
+	{ "last_error_block", &set_sb.s_last_error_block, NULL, 8, parse_uint },
+	{ "last_error_func", &set_sb.s_last_error_func, NULL, 32, parse_string },
+	{ "last_error_line", &set_sb.s_last_error_ino, NULL, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 
