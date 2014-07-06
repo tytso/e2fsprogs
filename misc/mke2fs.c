@@ -2106,7 +2106,15 @@ profile_error:
 			blocksize, sys_page_size);
 	}
 
-	lazy_itable_init = 0;
+	/*
+	 * On newer kernels we do have lazy_itable_init support. So pick the
+	 * right default in case ext4 module is not loaded.
+	 */
+	if (is_before_linux_ver(2, 6, 37))
+		lazy_itable_init = 0;
+	else
+		lazy_itable_init = 1;
+
 	if (access("/sys/fs/ext4/features/lazy_itable_init", R_OK) == 0)
 		lazy_itable_init = 1;
 
