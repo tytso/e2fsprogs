@@ -1572,6 +1572,12 @@ profile_error:
 					_("flex_bg size must be a power of 2"));
 				exit(1);
 			}
+			if (flex_bg_size > MAX_32_NUM) {
+				com_err(program_name, 0,
+				_("flex_bg size (%lu) must be less than"
+				" or equal to 2^31"), flex_bg_size);
+				exit(1);
+			}
 			break;
 		case 'i':
 			inode_ratio = strtoul(optarg, &tmp, 0);
