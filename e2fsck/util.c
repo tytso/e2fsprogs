@@ -319,7 +319,7 @@ void preenhalt(e2fsck_t ctx)
 	if (fs != NULL) {
 		fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(fs);
-		ext2fs_close(fs);
+		ext2fs_close_free(&fs);
 	}
 	exit(FSCK_UNCORRECTED);
 }

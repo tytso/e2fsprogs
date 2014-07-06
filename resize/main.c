@@ -464,7 +464,7 @@ int main (int argc, char ** argv)
 			_("Please run 'e2fsck -fy %s' to fix the filesystem\n"
 			  "after the aborted resize operation.\n"),
 			device_name);
-		ext2fs_close(fs);
+		ext2fs_close_free(&fs);
 		exit(1);
 	}
 	printf(_("The filesystem on %s is now %llu blocks long.\n\n"),

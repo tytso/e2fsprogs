@@ -458,8 +458,7 @@ static void check_if_skip(e2fsck_t ctx)
 	}
 	log_out(ctx, "\n");
 skip:
-	ext2fs_close(fs);
-	ctx->fs = NULL;
+	ext2fs_close_free(&fs);
 	e2fsck_free_context(ctx);
 	exit(FSCK_OK);
 }
@@ -1307,12 +1306,12 @@ restart:
 			orig_superblock = ctx->superblock;
 			get_backup_sb(ctx, fs, ctx->filesystem_name, io_ptr);
 			if (fs)
-				ext2fs_close(fs);
+				ext2fs_close_free(&fs);
 			orig_retval = retval;
 			retval = try_open_fs(ctx, flags, io_ptr, &fs);
 			if ((orig_retval == 0) && retval != 0) {
 				if (fs)
-					ext2fs_close(fs);
+					ext2fs_close_free(&fs);
 				log_out(ctx, _("%s: %s while using the "
 					       "backup blocks"),
 					ctx->program_name,
@@ -1406,7 +1405,7 @@ failure:
 		 * reopen the filesystem after we get the device size.
 		 */
 		if (pctx.errcode == EBUSY) {
-			ext2fs_close(fs);
+			ext2fs_close_free(&fs);
 			need_restart++;
 			pctx.errcode =
 				ext2fs_get_device_size2(ctx->filesystem_name,
@@ -1462,8 +1461,7 @@ failure:
 		/*
 		 * Restart in order to reopen fs but this time start mmp.
 		 */
-		ext2fs_close(fs);
-		ctx->fs = NULL;
+		ext2fs_close_free(&fs);
 		flags &= ~EXT2_FLAG_SKIP_MMP;
 		goto restart;
 	}
@@ -1513,8 +1511,7 @@ failure:
 					ctx->device_name);
 				fatal_error(ctx, 0);
 			}
-			ext2fs_close(ctx->fs);
-			ctx->fs = 0;
+			ext2fs_close_free(&ctx->fs);
 			ctx->flags |= E2F_FLAG_RESTARTED;
 			goto restart;
 		}
@@ -1693,7 +1690,7 @@ no_journal:
 				_("while resetting context"));
 			fatal_error(ctx, 0);
 		}
-		ext2fs_close(fs);
+		ext2fs_close_free(&fs);
 		goto restart;
 	}
 	if (run_result & E2F_FLAG_CANCEL) {
@@ -1775,8 +1772,7 @@ no_journal:
 	io_channel_flush(ctx->fs->io);
 	print_resource_track(ctx, NULL, &ctx->global_rtrack, ctx->fs->io);
 
-	ext2fs_close(fs);
-	ctx->fs = NULL;
+	ext2fs_close_free(&fs);
 	free(ctx->journal_name);
 
 	e2fsck_free_context(ctx);

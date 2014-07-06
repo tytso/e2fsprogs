@@ -215,7 +215,7 @@ static errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info,
 
 static void close_device(char *device_name, ext2_filsys fs)
 {
-	int retval = ext2fs_close(fs);
+	int retval = ext2fs_close_free(&fs);
 
 	if (retval)
 		com_err(device_name, retval, "while closing the filesystem.\n");

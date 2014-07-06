@@ -614,7 +614,7 @@ int main (int argc, char ** argv)
 		if (fs->super->s_feature_incompat &
 		      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 			print_journal_information(fs);
-			ext2fs_close(fs);
+			ext2fs_close_free(&fs);
 			exit(0);
 		}
 		if ((fs->super->s_feature_compat &
@@ -623,7 +623,7 @@ int main (int argc, char ** argv)
 			print_inline_journal_information(fs);
 		list_bad_blocks(fs, 0);
 		if (header_only) {
-			ext2fs_close (fs);
+			ext2fs_close_free(&fs);
 			exit (0);
 		}
 		retval = ext2fs_read_bitmaps (fs);
@@ -634,7 +634,7 @@ int main (int argc, char ** argv)
 			       error_message(retval));
 		}
 	}
-	ext2fs_close (fs);
+	ext2fs_close_free(&fs);
 	remove_error_table(&et_ext2_error_table);
 	exit (0);
 }

@@ -111,6 +111,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_clear_inode_bitmap@Base 1.37
  ext2fs_close2@Base 1.42
  ext2fs_close@Base 1.37
+ ext2fs_close_free@Base 1.42.11
  ext2fs_close_inode_scan@Base 1.37
  ext2fs_compare_block_bitmap@Base 1.37
  ext2fs_compare_generic_bitmap@Base 1.41.0

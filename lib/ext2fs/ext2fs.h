@@ -927,6 +927,7 @@ extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 /* closefs.c */
 extern errcode_t ext2fs_close(ext2_filsys fs);
 extern errcode_t ext2fs_close2(ext2_filsys fs, int flags);
+extern errcode_t ext2fs_close_free(ext2_filsys *fs);
 extern errcode_t ext2fs_flush(ext2_filsys fs);
 extern errcode_t ext2fs_flush2(ext2_filsys fs, int flags);
 extern int ext2fs_bg_has_super(ext2_filsys fs, dgrp_t group_block);

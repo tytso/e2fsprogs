@@ -187,8 +187,7 @@ static void setup_filesystem(const char *name,
 	return;
 
 errout:
-	ext2fs_close(test_fs);
-	test_fs = 0;
+	ext2fs_close_free(&test_fs);
 }
 
 void setup_cmd(int argc, char **argv)
@@ -199,10 +198,8 @@ void setup_cmd(int argc, char **argv)
 	unsigned int	type = EXT2FS_BMAP64_BITARRAY;
 	int		flags = EXT2_FLAG_64BITS;
 
-	if (test_fs) {
-		ext2fs_close(test_fs);
-		test_fs = 0;
-	}
+	if (test_fs)
+		ext2fs_close_free(&test_fs);
 
 	reset_getopt();
 	while ((c = getopt(argc, argv, "b:i:lt:")) != EOF) {
@@ -242,8 +239,7 @@ void close_cmd(int argc, char **argv)
 	if (check_fs_open(argv[0]))
 		return;
 
-	ext2fs_close(test_fs);
-	test_fs = 0;
+	ext2fs_close_free(&test_fs);
 }
 
 

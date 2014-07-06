@@ -698,7 +698,7 @@ static int add_journal(ext2_filsys fs)
 		fflush(stdout);
 
 		retval = ext2fs_add_journal_device(fs, jfs);
-		ext2fs_close(jfs);
+		ext2fs_close_free(&jfs);
 		if (retval) {
 			com_err(program_name, retval,
 				_("while adding filesystem to journal on %s"),
@@ -2001,7 +2001,7 @@ retry_open:
 			goto closefs;
 		}
 		if (io_ptr != io_ptr_orig) {
-			ext2fs_close(fs);
+			ext2fs_close_free(&fs);
 			goto retry_open;
 		}
 	}
@@ -2289,5 +2289,5 @@ closefs:
 		exit(1);
 	}
 
-	return (ext2fs_close(fs) ? 1 : 0);
+	return (ext2fs_close_free(&fs) ? 1 : 0);
 }

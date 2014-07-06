@@ -132,10 +132,9 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 	return;
 
 errout:
-	retval = ext2fs_close(current_fs);
+	retval = ext2fs_close_free(&current_fs);
 	if (retval)
 		com_err(device, retval, "while trying to close filesystem");
-	current_fs = NULL;
 }
 
 void do_open_filesys(int argc, char **argv)
@@ -241,10 +240,9 @@ static void close_filesystem(NOARGS)
 	}
 	if (current_qctx)
 		quota_release_context(&current_qctx);
-	retval = ext2fs_close(current_fs);
+	retval = ext2fs_close_free(&current_fs);
 	if (retval)
 		com_err("ext2fs_close", retval, 0);
-	current_fs = NULL;
 	return;
 }
 

@@ -1428,7 +1428,7 @@ static void install_image(char *device, char *image_fn, int type)
 	}
 
 	close(fd);
-	ext2fs_close (fs);
+	ext2fs_close_free(&fs);
 }
 
 static struct ext2_qcow2_hdr *check_qcow2_image(int *fd, char *name)
@@ -1662,7 +1662,7 @@ skip_device:
 	else
 		write_image_file(fs, fd);
 
-	ext2fs_close (fs);
+	ext2fs_close_free(&fs);
 	if (check)
 		printf(_("%d blocks already contained the data to be copied\n"),
 		       skipped_blocks);

@@ -1751,7 +1751,7 @@ profile_error:
 		printf(_("Using journal device's blocksize: %d\n"), blocksize);
 		fs_param.s_log_block_size =
 			int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
-		ext2fs_close(jfs);
+		ext2fs_close_free(&jfs);
 	}
 
 	if (optind < argc) {
@@ -2708,7 +2708,7 @@ int main (int argc, char *argv[])
 	if (fs->super->s_feature_incompat &
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		create_journal_dev(fs);
-		exit(ext2fs_close(fs) ? 1 : 0);
+		exit(ext2fs_close_free(&fs) ? 1 : 0);
 	}
 
 	if (bad_blocks_filename)
@@ -2830,7 +2830,7 @@ int main (int argc, char *argv[])
 		}
 		if (!quiet)
 			printf("%s", _("done\n"));
-		ext2fs_close(jfs);
+		ext2fs_close_free(&jfs);
 		free(journal_device);
 	} else if ((journal_size) ||
 		   (fs_param.s_feature_compat &
@@ -2894,7 +2894,7 @@ no_journal:
 		       "filesystem accounting information: "));
 	checkinterval = fs->super->s_checkinterval;
 	max_mnt_count = fs->super->s_max_mnt_count;
-	retval = ext2fs_close(fs);
+	retval = ext2fs_close_free(&fs);
 	if (retval) {
 		fprintf(stderr, "%s",
 			_("\nWarning, had trouble writing out superblocks."));
