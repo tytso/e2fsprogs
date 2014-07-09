@@ -1063,6 +1063,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	setmntent
 	setresgid
 	setresuid
+	snprintf
 	srandom
 	stpcpy
 	strcasecmp
