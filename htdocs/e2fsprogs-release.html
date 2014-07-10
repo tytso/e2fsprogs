@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.42.11">E2fsprogs 1.42.11 (July 9, 2014)</A>
 <LI><A HREF="#1.42.10">E2fsprogs 1.42.10 (May 18, 2014)</A>
 <LI><A HREF="#1.42.9">E2fsprogs 1.42.9 (December 28, 2013)</A>
 <LI><A HREF="#1.42.8">E2fsprogs 1.42.8 (June 20, 2013)</A>
@@ -108,6 +109,124 @@
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
 
+<H2><A NAME="1.42.11">E2fsprogs 1.42.11 (July 9, 2014)</A></H2>
+
+<P>Add support so that mke2fs can create hugefiles so that they are
+aligned relative to the beginning of the disk, instead of relative to
+the beginning of the partition, using the mke2fs.conf configuration
+parameter "hugefiles_align_disk".</P>
+
+<P>Fix a bug which causes e2fsck to abort a journal replay on a file
+system with bigalloc enabled.  (Addresses Debian
+  Bug: <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=744953"
+	  TARGET="_blank">#744953</A>)</P>
+
+<P>Add sanity checks so that mke2fs will refuse insanely large flex_bg
+counts specified by the -G option.  Insanely large flex_bg sizes can
+result in a file system which can't be unmounted, or with extremely
+pessimal metadata layouts.</P>
+
+<P>The mke2fs program will provide a better metadata layout for
+moderately large (but believable) flex_bg counts, such as 133,072.</P>
+
+<P>The mke2fs progam will also check the kernel version number to
+determine whether the lazy_itable_init option is supported, so that
+lazy inode table initialization can be used even if the ext4 is
+compiled as a module which isn't loaded at the time that mke2fs is
+run.</P>
+
+<P>Add description of ext4's mount options to the ext4 section 5 man
+page.</P>
+
+<P>Improve the chattr man page and clean up the chattr usage message.</P>
+
+<P>E2fsck will now automatically fix a last mount time or last write time
+which is in the future in preen mode, instead of aborting the fsck
+check.</P>
+
+<P>Mke2fs will now check the file system revision number requested by the
+command line, and reject it if it is too large.  A file system with an
+unsupported revision number will not be accepted by any of the other
+file system tools, and this command line option is rarely used, so
+let's try to help the user not shoot their own foot off.</P>
+
+<P>The debugfs progam can now set the error count and associated
+first_error and last_error fields in the superblock using the
+set_super_value command.</P>
+
+<P>Resize2fs will not try to calculate the minimum size of a file system
+if it contains errors.  Otherwise a very badly corrupted file system
+image can cause the minimum size calculation to loop forwever.  Since
+resize2fs will not allow a file system marked as containing errors to
+be resized.  It's pointless to calculate the minimum size, so just
+skip it.</P>
+
+<P>Fixed a typo in one of mke2fs's error message.</P>
+
+<P>If filefrag runs into an error, it will continue processing the rest
+of the files specified on thec ommand line, but then exit with an
+error code.</P>
+
+<P>Filefrag now prints some additional new flags (such as
+FIEMAP_EXTENT_ENCODED), and print unknown flags as hex values.</P>
+
+<P>Fixed support in filefrag for files with > 2**32 blocks on 32-bit
+platforms.</P>
+
+<P>Fixed a file descriptor leak in debugfs when copying files.</P>
+
+<P>Fixed a regression introduced in 1.42.10 which caused mke2fs to fail
+to create file systems larger than 2GB on 32-bit platforms.
+(Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=1099892" TARGET="_blank">#1099892</A>, Debian
+  Bug: <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=752107"
+	  TARGET="_blank">#752107</A>)</P>
+
+<P>Add Esparanto and Ukrainian translations, and update Czech, Dutch,
+French, German, Italian, Polish, Sweedish, and Vietnamese
+translations.</P>
+
+<P>Fixed various compiler warnings.</P>
+
+
+<H3>Programmer's Notes</H3>
+
+<P>The gcc "-checker" option has been long deprecated, so remove support
+from e2fsprogs.  It was causing a few people to be confused when they
+tried enabling the configure option.</P>
+
+<P>Update to the latest version of the config.status and config.rpath
+files, as well as newer versions of the autoconf files in aclocal.m4.
+Also, move the e2fsprogs-specific macros to acinclude.m4, which allows
+people who want to use autoreconf to do so.</P>
+
+<P>Make the use of strptime() function in debugfs to be more portable to
+fix regression test failures for FreeBSD and MacOS.</P>
+
+<P>A few miscellaneous changes designed to make life easier for
+translators.</P>
+
+<P>Fix the f_quota test and some Makefile dependencies if quota support
+is not enabled.</P>
+
+<P>Fix cross-compilation support, which got broken in 1.42.10.
+(Addresses Debian
+  Bug: <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=753375"
+	  TARGET="_blank">#753375</A>)</P>
+
+<P>Delete lib/ext2_types.h on a make clean, and build it as necessary.</P>
+
+<P>Add a debug program used for libext2fs unit tests.</P>
+
+<P>Clean up the tests so that it avoids using GNU-specific behaviour in
+mktemp.  Make sure the temporary files are cleaned up if the tests are
+interrupted.</P>
+
+<P>Add a new ext2fs_close_free() helper function which automatically
+takes care of freeing the ext2_filsys structure even if ext2fs_close()
+returns an error.</P>
+
+
 <H2><A NAME="1.42.10">E2fsprogs 1.42.10 (May 18, 2014)</A></H2>
 
 <P>Mke2fs now creates file systems in regular files (which is very often
@@ -133,7 +252,9 @@ large file systems.</P>
 
 <P>Mke2fs can now support creating a file system at an offset.  This can
 be useful when creating a disk image for virtual machines (Addresses
-Debian Bug: #497984)</P>
+Debian
+  Bug: <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=497984"
+	  TARGET="_blank">#497984</A>)</P>
 
 <P>Previously, e2fsck had a number of very serious bugs when checking a
 file system wich used the new the quota file system option (where the
@@ -171,7 +292,9 @@ filesystem with the 64-bit or the bigalloc feature enabled.</P>
 lead users to believe something has gone very wrong with e2fsck exits
 with a non-zero exit status (since this is normal after e2fsck has
 automatically fixed a file system corruption during a preen
-operation).   (Addresses Debian Bug: #468821)</P>
+operation).   (Addresses Debian
+  Bug: <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=468821"
+	  TARGET="_blank">#468821</A>)</P>
 
 <P>When creating a file system which is larger than 16TB, the
 resize_inode option must be disabled -- since the resize_inode simply
@@ -189,7 +312,9 @@ checksums broken.</P>
 
 <P>Tune2fs will allow the removal of an external journal from file system
 which is marked as needing the journal replayed when the force ("-f")
-option is given twice.  (Addresses Debian Bug: #559301)</P>
+option is given twice.  (Addresses Debian
+  Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=559301"
+	  TARGET="_blank">#559301</A>)</P>
 
 <P>Tune2fs will no longer support enabling sparse_super if the meta_bg
 file system feature is enabled, since it could result in data loss.
@@ -205,23 +330,33 @@ calculates the location of the alternate superblock uses 8193 if it
 can't figure this out, so the message printed by e2fsck always
 suggests using "e2fsck -b 8193".  This message has been fixed to
 suggest both the superblock location of 8193 and and 32768.
-(Addresses Debian Bug: #719185)</P>
+(Addresses Debian
+  Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=719185"
+	  TARGET="_blank">#719185</A>)</P>
 
 <P>The lookback mount detection code that was introduced in 1.42.9 wasn't
 actually compiled in due to an autoconf oops, so it's fixed now in
-1.42.10.  (Addresses Debian Bug: #497984)</P>
+1.42.10.  (Addresses Debian
+  Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=497984"
+	  TARGET="_blank">#497984</A>)</P>
     
 <P>A bug introduced in 1.42.9 would cause debugfs to print two error
 messages if it found an error while parsing a user-supplied block
 number.  This has been fixed in 1.42.10.</P>
 
 <P>Update Czech, Dutch, French, German, Polish, Spanish, Sweedish, and
-Vietnamese translations.  (Addresses Debian Bug: #703048)</P>
+Vietnamese translations.  (Addresses Debian
+  Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=703048"
+	  TARGET="_blank">#703048</A>)</P>
 
-<P>Updated/fixed various man pages.  (Addresses Debian Bugs: #719189,
-#719184)</P>
+<P>Updated/fixed various man pages.  (Addresses Debian
+  Bugs: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=719189"
+	   TARGET="_blank">#719189</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=719184" TARGET="_blank">#719184</A>)</P>
 
-<P>Fixed various Debian Packaging Issues.  (Addresses Debian Bug: #718725)</P>
+<P>Fixed various Debian Packaging Issues.  (Addresses Debian
+  Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718725"
+	  TARGET="_blank">#718725</A>)</P>
 
 
 <h3>Programmer's Notes</h3>
@@ -321,7 +456,8 @@ when trying to print the journal information (which is not present in
 an e2image created image file).</P>
 
 <P>Fixed a potential integer overflow in e2reefrag.
-(Addresses-Debian-Bug: #718205)</P>
+(Addresses-Debian-Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=718205"
+			  TARGET="_blank">#718205</A>)</P>
 
 <P>Enhance debugfs so that when copying a sparse file from a native file
 system into the file system image using the "write" command, it will
@@ -352,7 +488,9 @@ extent tree, it will not corrupt an interior node in the extent tree.</P>
 
 <P>Fixed resize2fs which would sometimes corrupt a file system when
 shrinking a file system to a minimum size using resize2fs -M.
-(Addresses Debian Bug: #660793)</P>
+(Addresses Debian
+  Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=660793"
+	  TARGET="_blank">#660793</A>)</P>
 
 <P>Fixed resize2fs so that it will relocate inode table blocks if this
 becomes necessary when shrinking the file system.</P>
@@ -372,10 +510,16 @@ larger than 2GB (which is not allowed in valid file systems).</P>
 <P>Fixed debugfs's help texts to fully document all options and otherwise
 be more helpful.</P>
 
-<P>Updated/fixed various man pages.  (Addresses Debian Bugs: #586218,
-#669730, #698076)</P>
+<P>Updated/fixed various man pages.  (Addresses Debian
+  Bugs: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=586218"
+	   TARGET="_blank">#586218</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=669730" TARGET="_blank">#669730</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=698076" TARGET="_blank">#698076</A>)</P>
 
-<P>Fixed various Debian Packaging Issues (#698879, #721365)
+<P>Fixed various Debian Packaging Issues
+  (<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=698879"
+  TARGET="_blank">#698879</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=721365" TARGET="_blank">#721365</A>)
 
 
 <H3>Programmer's Notes</H3>
@@ -428,7 +572,8 @@ inserted more than once in the directory.</P>
 <P>If quota support is disabled (which is the default), make sure that
 all traces of the quota support is removed from usage messages, man
 pages, and tune2fs must not be able to enable the quota file system
-feature.  (Addresses Red Hat Bugzilla: #1010709)</P>
+feature.  (Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=1010709" TARGET="_blank">#1010709</A>)</P>
 
 <P>The ext2fs_file_write() now updates i_size on a successful write,
 instead of only updating i_size wen the file is closed via
@@ -490,23 +635,29 @@ to crash.</P>
 be larger than the block size.</P>
 
 <P>Fix e2fsck so it can check a read-only root file system with an
-external journal.  (Addresses Debian Bug: #707030</P>
+external journal.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=707030" TARGET="_blank">#707030</A></P>
 
 <P>Fix off-line resizing of file systems with flex_bg && !resize_inode
-(Addresses Debian Bug: #696746)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=696746" TARGET="_blank">#696746</A>)</P>
 
 <P>Fix e2image with large (> 32-bit) file systems (Addresses Debian Bug:
-#703067)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=703067" TARGET="_blank">#703067</A>)</P>
 
 <P>Enhance chattr to allow clearing the extent flag if the kernel allows
 migrating extent based files to use indirect blocks.</P>
 
 <P>Update German translation.</P>
 
-<P>Updated/fixed various man pages.  (Addresses Debian Bugs: #712429,
-#712430, #707609)</P>
+<P>Updated/fixed various man pages.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=712429" TARGET="_blank">#712429</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=712430"
+   TARGET="_blank">#712430</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=707609" TARGET="_blank">#707609</A>)</P>
 
-<P>Fixed various Debian Packaging Issues (Addresses Debian Bug #708307)</P>
+<P>Fixed various Debian Packaging Issues (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=708307" TARGET="_blank">#708307</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -535,8 +686,8 @@ common sed script.</P>
 quota features are still under development.  For more information
 please see:
 <UL>
-<LI> <A HREF="https://ext4.wiki.kernel.org/index.php/Bigalloc">https://ext4.wiki.kernel.org/index.php/Bigalloc</A>
-<LI> <A HREF="https://ext4.wiki.kernel.org/index.php/Quota">https://ext4.wiki.kernel.org/index.php/Quota</A>
+<LI> <A HREF="https://ext4.wiki.kernel.org/index.php/Bigalloc" TARGET="_blank">https://ext4.wiki.kernel.org/index.php/Bigalloc</A>
+<LI> <A HREF="https://ext4.wiki.kernel.org/index.php/Quota" TARGET="_blank">https://ext4.wiki.kernel.org/index.php/Quota</A>
 </UL>
 </P>
 
@@ -639,7 +790,8 @@ translations</P>
 <P>Add a command to debugfs to create symlinks.</P>
 
 <P>Document the bigalloc feature in the mke2fs man page.  (Addresses
-Debian Bug: #669730)</P>
+Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=669730" TARGET="_blank">#669730</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -727,7 +879,8 @@ blocks to support the metadata blocks in the last block group.</P>
 <P>Fixed a potential seg fault in e2fsck when there is an I/O error while
 reading the superblock.</P>
 
-<P>Fixed various Debian Packaging Issues (Addresses Debian Bug #677497)</P>
+<P>Fixed various Debian Packaging Issues (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=677497" TARGET="_blank">#677497</A>)</P>
 
 <P>Updated/fixed various man pages.  (Addresses Sourceforge Bug:
 #3559210)</P>
@@ -778,17 +931,19 @@ to check the file system after every single boot.</P>
 <P>The e4defrag program can now handle device symlinks, such as
 /dev/mapper/testvg-testlv, instead of insisting on a less
 human-friendly name such as /dev/dm-2.  (Addresses Red Hat Bugzilla:
-#707209)</P>
+<A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=707209" TARGET="_blank">#707209</A>)</P>
 
 <P>Fixed filefrag so it will not crash with a segfault on files from a
 virtual file system such as /proc.  (e.g., "filefrag
 /proc/partitions")</P>
 
 <P>Fixed filefrag so that it correctly reports the number of extents.
-(Addresses Red Hat Bugzilla: #840848)</P>
+(Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=840848" TARGET="_blank">#840848</A>)</P>
 
 <P>Fixed a file descriptor leak in logsave which could cause it to hang.
-(Addresses Debian Bug: #682592)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=682592" TARGET="_blank">#682592</A>)</P>
 
 <P>Fixed e2fsck so that the file system is marked as containing an error
 if the user chooses not to fix the quota usage information.</P>
@@ -808,9 +963,11 @@ e2fsck doesn't complain.</P>
 <P>Improved e2fsck's verbose reporting statistics, and allow the more
 verbose reporting to be enabled via /etc/e2fsck.conf.</P>
 
-<P>Fixed various Debian Packaging Issues (Addresses Debian Bug #678395)</P>
+<P>Fixed various Debian Packaging Issues (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=678395" TARGET="_blank">#678395</A>)</P>
 
-<P>Updated/fixed various man pages.  (Addresses Debian Bugs: #680114)</P>
+<P>Updated/fixed various man pages.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=680114" TARGET="_blank">#680114</A>)</P>
 
 
 <H3>Programmer's Notes</H3>
@@ -881,8 +1038,9 @@ quota feature flag is not set.  Fortunately, in practice that
 superblock field should be zero for non-built-in quota file systems,
 so it's unlikely this bug would have caused problems.</P>
 
-<P>Updated/fixed various man pages.  (Addresses Debian Bugs: #674453,
-#674694)</P>
+<P>Updated/fixed various man pages.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=674453" TARGET="_blank">#674453</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=674694" TARGET="_blank">#674694</A>)</P>
 
 <h3>Programmer's Notes</h3>
 
@@ -928,7 +1086,7 @@ outside of e2fsprogs which did not pass the EXT2_FLAG_64BIT (and so
 would were still using the legacy 32-bit bitmaps) to crash.  This was
 due to missing 32-bit compat code in side the function
 ext2fs_find_first_zero_generic_bmap().  (Addresses Red Hat Bugzilla:
-#808421)</P>
+<A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=808421" TARGET="_blank">#808421</A>)</P>
     
 <P>Fix a bug which would cause mke2fs to fail creating the journal if
 /etc/mtab and /proc/mounts are missing.  (Addresses Sourceforge Bug:
@@ -1000,7 +1158,8 @@ be built in 32-bit mode on Mac OS X Lion (Addresses Sourceforge Bug:
 <H2><A NAME="1.42.2">E2fsprogs 1.42.2 (March 27, 2012)</A></H2>
 
 <P>The resize2fs program uses much less CPU and is much faster for very
-large file systems.  (Addresses Debian Bug: #663237)</P>
+large file systems.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=663237" TARGET="_blank">#663237</A>)</P>
 
 <P>The seti and freei commands in debugfs can now take an optional length
 argument to set and clear a contiguous range of inodes.</P>
@@ -1073,9 +1232,11 @@ information.</P>
 <P>E2fsck will now check the new sysfs interface to determine if we are
 using the battery or AC mains.  (Addresses SourceForge Bug: #3439277)</P>
 
-<P>Updated/fixed various man pages.  (Addresses Debian Bug: #665427)</P>
+<P>Updated/fixed various man pages.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=665427" TARGET="_blank">#665427</A>)</P>
 
-<P>Fixed various Debian Packaging issues.  (Addresses Debian Bug: #665885)</P>
+<P>Fixed various Debian Packaging issues.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=665885" TARGET="_blank">#665885</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -1170,14 +1331,16 @@ s_first_data_block is non-zero, this wasn't taken into account when
 calculate the minimum file system size for use with the -M option.</P>
 
 <P>Fixed the badblocks program to honor the -s flag when in read-only -t
-mode.  (Addresses Debian Bug #646629)</P>
+mode.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=646629" TARGET="_blank">#646629</A>)</P>
 
 <P>Update Czech, Dutch, French, Polish, and Sweedish translation from the
 Translation Project.</P>
 
 <P>Fixed various Debian Packaging issues so that dpkg-buildflags is used
 if present, which allows e2fsprogs to be built with security hardening
-flags.  (Addresses Debian Bugs: #654457)</P>
+flags.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=654457" TARGET="_blank">#654457</A>)</P>
 
 <h3>Programmer's Notes</h3>
 
@@ -1244,7 +1407,8 @@ attributes.</P>
 
 <P>E2fsck will be more careful accidentally asking the user to continue
 if the file system is mounted, so that an escape sequence won't cause
-a false positive.  (Addresses Debian Bug: #619859)</P>
+a false positive.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=619859" TARGET="_blank">#619859</A>)</P>
 
 <P>E2fsck now uses less cpu time in pass 5 when large portions of the
 bitmaps are uninitialized.</P>
@@ -1337,7 +1501,8 @@ system's page size.</P>
 is the default), mke2fs will now set the s_max_mnt_count superblock
 field to -1, instead of 0.  Kernels older then 3.0 will print a
 spurious message on each mount then they see a s_max_mnt_count set to
-0, which will annoy users.  (Addresses Debian Bug: #632637)</P>
+0, which will annoy users.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=632637" TARGET="_blank">#632637</A>)</P>
     
 <P>The default mke2fs.conf now has entries for "big" and "huge", which
 are needed for very big file systems.</P>
@@ -1348,7 +1513,8 @@ that can support file systems > 16TB, once it arrives in v3.x kernels.</P>
 <P>Fixed bug which caused resize2fs to fail when shrinking an empty file
 system down to its minimal size.  (Addresses Sourceforge Bug #3404051)</P>
 
-<P>Fixed tune2fs's mount options parsing.  (Addresses Debian Bug: #641667)</P>
+<P>Fixed tune2fs's mount options parsing.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=641667" TARGET="_blank">#641667</A>)</P>
 
 <P>Allow tune2fs to remove external journals if the device can not be
 found.</P>
@@ -1416,7 +1582,8 @@ compile against the latest version of ext2_fs.h (Addresses Debian Bug:
 #636418)</P>
 
 <P>Fixed parsing of MNTOPT_ options for tune2fs and debugfs (Addresses
-Debian Bug: #641667)</P>
+Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=641667" TARGET="_blank">#641667</A>)</P>
 
 <P>Added internationalization support for libcom_err error table strings.</P>
 
@@ -1424,14 +1591,26 @@ Debian Bug: #641667)</P>
 by I18N translators.</P>
 
 <P>Update translations: French, Chinese, Germany, Indonesian, Swedish,
-Vietnamese, Polish, Dutch, Czech.  (Addresses Debian Bugs: #520985,
-#620659)</P>
+Vietnamese, Polish, Dutch, Czech.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=520985" TARGET="_blank">#520985</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=620659" TARGET="_blank">#620659</A>)</P>
 
 <P>Fixed various Debian Packaging issues.  (Addresses Debian Bugs:
-#614662, #632169, #641838, #627535, #629355)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=614662"
+   TARGET="_blank">#614662</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=632169"
+   TARGET="_blank">#632169</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=641838"
+   TARGET="_blank">#641838</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=627535"
+   TARGET="_blank">#627535</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=629355" TARGET="_blank">#629355</A>)</P>
 
-<P>Updated/clarified man pages.  (Addresses Debian Bugs: #639411,
-#642193, #634883)</P>
+<P>Updated/clarified man pages.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=639411" TARGET="_blank">#639411</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642193"
+   TARGET="_blank">#642193</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=634883" TARGET="_blank">#634883</A>)</P>
 
 <h3>Programming notes</h3>
 
@@ -1539,7 +1718,8 @@ contains errors.</P>
 
 <P>E2fsck will now support UUID= and LABEL= specifiers for the -j option
 (which specifies where to find the external journal).  (Addresses
-Debian Bug #559315)</P>
+Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=559315" TARGET="_blank">#559315</A>)</P>
 
 <P>E2fsck now has support for the problems/<problem code>/force_no
 configuration option in e2fsck.conf, which forces a problem to not be
@@ -1553,18 +1733,22 @@ flex_bg file systems.</P>
 option) to make sure it is defined in the mke2fs.conf file; if it is
 not, it will print an error and abort.  If the usage type (specified
 with the -T option) is not defined in mke2fs.conf, mke2fs will print a
-warning but will continue.  (Addresses Debian Bug #594609)</P>
+warning but will continue.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594609" TARGET="_blank">#594609</A>)</P>
 
 <P>Clarified error message from resize2fs clarifying that on-line
-shrinking is not supported at all.  (Addresses Debian Bug #599786)</P>
+shrinking is not supported at all.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=599786" TARGET="_blank">#599786</A>)</P>
     
 <P>Fix an e2fsck bug that could cause a PROGRAMMING BUG error to be
-displayed.  (Addresses Debian Bug #555456)</P>
+displayed.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=555456" TARGET="_blank">#555456</A>)</P>
 
 <P>E2fsck will open the external journal in exclusive mode, to prevent
 the journal from getting truncated while it is in use due to a user
 accidentally trying to run e2fsck on a snapshotted file system volume.
-(Addresses Debian Bug #587531)</P>
+(Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=587531" TARGET="_blank">#587531</A>)</P>
 
 <P>Fix a bug in e2fsck so it has the correct test for the EOFBLOCKS_FL
 flag.</P>
@@ -1593,7 +1777,10 @@ discard and the discard operation will result in zero'ed blocks.</P>
 
 <P>Badblocks will now correctly backspace over UTF-8 characters when
 displaying its progress bar.  (Addresses Gentoo Bug #309909; Addresses
-Debian Bugs #583782 and #587834)</P>
+Debian Bugs
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=583782"
+  TARGET="_blank">#583782</A> and
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=587834" TARGET="_blank">#587834</A>)</P>
 
 <P>E2freefrag will now display the total number of free extents.</P>
 
@@ -1612,7 +1799,7 @@ the exclusive open prevented the file system from being reopened.</P>
 architectures with unsigned chars.  (Addresses Gentoo Bug: #299386)</P>
 
 <P>Clarified an mke2fs error message so a missed common in an -E option
-(i.e., mke2fs -t ext4 -E stride=128 stripe-width=512 /dev/sda1")
+(i.e., "mke2fs -t ext4 -E stride=128 stripe-width=512 /dev/sda1")
 results in a more understandable explanation to the user.</P>
 
 <P>Mke2fs now displays the correct valid inode ratio range when
@@ -1640,8 +1827,13 @@ alternate superblocks.</P>
 
 <P>Fixed various Debian Packaging Issues</P>
 
-<P>Updated/clarified man pages (Addresses Debian Bugs: #580236, #594004,
-#589345, #591083; Addresses Launchpad Bug: #505719)</P>
+<P>Updated/clarified man pages (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=580236"
+     TARGET="_blank">#580236</A>,
+     <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594004" TARGET="_blank">#594004</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=589345"
+   TARGET="_blank">#589345</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=591083" TARGET="_blank">#591083</A>; Addresses Launchpad Bug: #505719)</P>
 
 <P>Update the Chinese, Chzech, Dutch, French, Germany, Indonesian,
 Polish, Swedish, and Vietnamese translations.</P>
@@ -1650,7 +1842,8 @@ Polish, Swedish, and Vietnamese translations.</P>
 
 <P>Fix a dependency definition for the static and profiled blkid
 libraries which could cause compile failures in some configurations.
-(Addresses Debian Bug: #604629)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=604629" TARGET="_blank">#604629</A>)</P>
     
 <P>Add support for Direct I/O in the Unix I/O access layer.</P>
 
@@ -1676,7 +1869,8 @@ EXT4_INCOMPAT_EA_INODE.</P>
 <H2><A NAME="1.41.12">E2fsprogs 1.41.12 (May 17, 2010)</A></H2>
 
 <P>Mke2fs now gives a correct error message if the external journal
-device is not found.  (Addresses Red Hat Bug #572935)</P>
+device is not found.  (Addresses Red Hat Bug
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=572935" TARGET="_blank">#572935</A>)</P>
 
 <P>Resize2fs -P will now refuse to print a minimum size if the file
 system is not clean.  Previously it would go ahead and print a minimum
@@ -1749,7 +1943,10 @@ tty is in raw mode.</P>
 and Vietnamese translations.</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #571247, #563487)</P>
+details.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=571247"
+  TARGET="_blank">#571247</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=563487" TARGET="_blank">#563487</A>)</P>
 
 
 <H3>Programmer's Notes</H3>
@@ -1801,7 +1998,8 @@ smarter than they really are.  So "-n -c", "-n -l", "-n -L", and "-n
 <P>In e2fsprogs 1.41.10, mke2fs would ask for confirmation to proceed if
 it detected a badly aligned partition.  Unfortunately, this broke some
 distribution installation scripts, so it now just prints the warning
-message and proceeds.  (Addresses Red Hat Bug: #569021. Addresses
+message and proceeds.  (Addresses Red Hat Bug:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=569021" TARGET="_blank">#569021</A>. Addresses
 Launchpad Bug: #530071)</P>
     
 <P>Mke2fs would take a long time to create very large journal files for
@@ -1817,7 +2015,8 @@ e2fsck -fD can corrupt non-indexed directories when are exists one or
 more file names which alphabetically sort before ".".  This can happen
 with ext2 filesystems or for small directories (take less than a lock)
 which contain filenames that begin with a space or some other
-punctuation mark.  (Addresses Debian Bug: #573923, Addresses Launchpad
+punctuation mark.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=573923" TARGET="_blank">#573923</A>, Addresses Launchpad
 Bug: #525114)</P>
 
 
@@ -1844,7 +2043,10 @@ type.</P>
 to support systems with broken CMOS hardware clocks.  Also, since too
 many distributions seem to have broken virtualization scripts now,
 e2fsck will by default accept dates which are off by up to 24 hours by
-default.  (Addresses Debian Bugs: #559776, #557636)</P>
+default.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=559776"
+  TARGET="_blank">#559776</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=557636" TARGET="_blank">#557636</A>)</P>
 
 <P>Fix a bug where mke2fs may not use the best placement of the inode
 table when there is only room for a single block group in the last
@@ -1931,10 +2133,12 @@ journal.</P>
     
 <P>Avoid printing scary error messages when e2fsck starts running
 problems on low-memory systems, as it tends to panic and mislead the
-user.  (Addresses Debian Bug: #509529)</P>
+user.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=509529" TARGET="_blank">#509529</A>)</P>
 
 <P>Fix blkid's modules.dep parser so it handles compressed (.ko.gz)
-modules files.  (Address Red Hat Bug: #518572)</P>
+modules files.  (Address Red Hat Bug:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=518572" TARGET="_blank">#518572</A>)</P>
     
 <P>Fix tune2fs so it can add a journal when an extent-enabled file system
 is mounted.  (Addresses Launchpad bug: #416648)</P>
@@ -1945,7 +2149,8 @@ Translation Project).</P>
 <P>Update/clarify man pages.  (Addresses Sourceforge Bug: #2822186)</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #540111)</P>
+details.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=540111" TARGET="_blank">#540111</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -1983,7 +2188,8 @@ checksums, instead of once for each corrupted block group's checksum.</P>
 not present, and it needs to fall back to using the FIBMAP ioctl.</P>
 
 <P>Fix filefrag to correctly print the number of extents for zero-length
-files.  (Addresses Debian Bug: #540376)</P>
+files.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=540376" TARGET="_blank">#540376</A>)</P>
 
 <P>Filefrag now has a -B option which forces the use of the FIBMAP ioctl
 to more easily debug the FIBMAP code.</P>
@@ -1999,7 +2205,8 @@ formatted using the "mke2fs -E stride=N" option for RAID arrays.</P>
 
 <P>Fix regression in ext2fs_extent_set_bmap() caused e2fsck -fD to fail
 and corrupt large directories if the directory needs to shrink by more
-than one block.  (Addresses Debian Bug: #537510)</P>
+than one block.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=537510" TARGET="_blank">#537510</A>)</P>
     
 <P>Fix e2fsck's buggy_init_scritps=1 so that the if the last write and/or
 last mount times are in the future, they are corrected even if
@@ -2044,11 +2251,12 @@ get inserted into the extent tree when they are not needed.</P>
 <H2><A NAME="1.41.8">E2fsprogs 1.41.8 (July 11, 2009)</A></H2>
 
 <P>Fix resize2fs's online resizing, fixing a regression which in
-e2fpsrogs 1.41.7.   (Addresses Debian Bug: #535452)</P>
+e2fpsrogs 1.41.7.   (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535452" TARGET="_blank">#535452</A>)</P>
 
 <P>Fix potential filesystem corruptions caused by using resize2fs to
 shrinking ext4 filesystems with extents enabled.  (Addresses Red Hat
-Bug: #510379)</P>
+Bug: <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=510379" TARGET="_blank">#510379</A>)</P>
 
 <P>Optimize uuid_generate() to avoid running uuidd if it is not setuid or
 setgid and the currently running program doesn't have write access to
@@ -2073,7 +2281,8 @@ contrib directory.</P>
 the Translation Project.</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bug #535530)</P>
+details.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535530" TARGET="_blank">#535530</A>)</P>
 
 <P>Update/clarify man pages.</P>
 
@@ -2140,7 +2349,10 @@ journal and resize inodes.</P>
 
 <P>Update Chinese and Czech translation from the Translation Project.</P>
 
-<P>Clean up various man pages.  (Addresses Debian Bug #531385 and #523063)</P>
+<P>Clean up various man pages.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=531385"
+  TARGET="_blank">#531385</A> and
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=523063" TARGET="_blank">#523063</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -2179,13 +2391,15 @@ Bug: #527859)</P>
 <P>Fix e2fsck so that if the primary group descriptors are corrupted, but
 the backup superblock is entirely invalid, to go back to using (and
 fixing) the priary group descriptors instead of completely giving up
-on the filesystem.  (Addresses Debian Bug: #516820)</P>
+on the filesystem.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=516820" TARGET="_blank">#516820</A>)</P>
     
 <P>Change e2fsck to not abort a preen pass if an inode is found to have
 i_file_acl_hi non-zero.  Ext3 filesystems don't care, and newer
 kernels (post 2.6.29) will ignore this field.  So let's fix it
 automatically during the preen pass instead of forcing the user to fix
-this up manually.  (Addresses Debian Bug: #526524)</P>
+this up manually.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=526524" TARGET="_blank">#526524</A>)</P>
     
 <P>Add resource tracking for e2fsck passes 1b through 1d.</P>
 
@@ -2222,11 +2436,13 @@ backup superblock locations.</P>
 
 <P>Update Chinese translation from the Translation Project.</P>
 
-<P>Clean up various man pages.  (Addresses Red Hat Bugzilla: #502971 and
+<P>Clean up various man pages.  (Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=502971" TARGET="_blank">#502971</A> and
 Launchpad Bug: #381854)</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bug #506064)</P>
+details.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=506064" TARGET="_blank">#506064</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -2247,7 +2463,8 @@ ext2fs_group_desc_csum().  (Addresses Sourceforge Bug #2484331)</P>
 
 <P>Update the config.guess and config.sub file to the latest from the
 FSF, to allow e2fsprogs to build on the avr32 platform.  (Addresses
-Debian Bug: #528330)</P>
+Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=528330" TARGET="_blank">#528330</A>)</P>
 
 <P>Add a new function, ext2fs_extent_open2(), which behaves like
 pext2fs_extent_open(), but uses the user-supplied inode structure
@@ -2278,7 +2495,8 @@ daeomn.  (Addresses Launchpad bug: #305057)</P>
 
 <P>In order to avoid unnecessary full filesystem checks by e2fsck after
 an on-line resize, e2fsck will ignore the NEEDS_RECOVERY flag set on
-the backup superblocks.  (Addresses Red Hat Bugzilla: #471925)</P>
+the backup superblocks.  (Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=471925" TARGET="_blank">#471925</A>)</P>
 
 <P>Mke2fs will avoid trying to create the journal when run in
 superblock-only mode (mke2fs -S), since the left-over journal in the
@@ -2311,7 +2529,8 @@ to using a partition table.</P>
 
 <P>Add a check to mke2fs and tune2fs that the argument to the -m option
 (which specifies the reserved ratio) must be greater than zero.
-(Addresses Debian Bug: #517015)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=517015" TARGET="_blank">#517015</A>)</P>
 
 <P>Add support for tracking the number kilobytes written to the
 filesystem via the superblock field s_kbytes_written.  It will be
@@ -2320,12 +2539,17 @@ the filesystem.  This is useful for tracking the wear to filesystems
 on Solid Sstate Drives.</P>
 
 <P>Fix compatibility issue in the libext2fs info file and makeinfo
-version 4.12.  (Addresses Red Hat Bugzilla: #481620)</P>
+version 4.12.  (Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=481620" TARGET="_blank">#481620</A>)</P>
 
-<P>Update/clarify man pages.  (Addresses Debian Bug: #515693, #365619)</P>
+<P>Update/clarify man pages.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=515693"
+  TARGET="_blank">#515693</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=365619" TARGET="_blank">#365619</A>)</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details. (Addresses Debian Bug: #506279)</P>
+details. (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=506279" TARGET="_blank">#506279</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -2333,7 +2557,8 @@ details. (Addresses Debian Bug: #506279)</P>
 Bug: #521602)</P>
 
 <P>Fix various gcc compilation warnings and other programming cleanups.
-(Addresses Red Hat Bugzilla: #486997)</P>
+(Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=486997" TARGET="_blank">#486997</A>)</P>
 
 <P>Add support for building the blkid command statically.</P>
 
@@ -2345,7 +2570,8 @@ system-installed blkid implementation via the configure option
 <H2><A NAME="1.41.4">E2fsprogs 1.41.4 (January 27, 2009)</A></H2>
 
 <P>Fixed a bug which could sometimes cause blkid to return an exit value
-of zero for a non-existent device (Addresses Debian Bug: #502541)</P>
+of zero for a non-existent device (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=502541" TARGET="_blank">#502541</A>)</P>
 
 <P>Blkid will now recognize ext3 filesystems that have the test_fs flag
 set as ext3 filesystems.</P>
@@ -2423,7 +2649,12 @@ replying journals for filesystems with block sizes greater than 8k.</P>
 <P>Update Catalan translation from the Translation Project.</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details. (Addresses Debian Bugs: #503057, #502323, #511207)</P>
+details. (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=503057"
+  TARGET="_blank">#503057</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=502323"
+  TARGET="_blank">#502323</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=511207" TARGET="_blank">#511207</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -2485,11 +2716,13 @@ or ext4dev module exists.</P>
 
 <P>Fix a bug in e2fsck where in preen mode, if there are disk I/O errors
 while trying to close a filesystem can lead to infinite loops.
-(Addresses Red Hat Bugzilla #465679)</P>
+(Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=465679" TARGET="_blank">#465679</A>)</P>
     
 <P>Fix a bug in resize2fs where passing in a bogus new size of 0 blocks
 will cause resize2fs to drop into an infinite loop.  (Addresses Red
-Hat Bugzilla: #465984)</P>
+Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=465984" TARGET="_blank">#465984</A>)</P>
     
 <P>Add a check in the Unix I/O functions in libext2fs so that when a
 device is opened read/write, return an error if the device is
@@ -2557,19 +2790,28 @@ with its man manpage.</P>
 and Sweedish translation from the Translation Project.</P>
 
 <P>Add documentation for the file I/O functions to the libext2fs.texinfo
-file.  (Addresses Debian Bug: #484877)</P>
+file.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484877" TARGET="_blank">#484877</A>)</P>
     
 <P>Update and clarified various man pages.  (Addresses Launchpad Bug
-#275272; Addresses Debian Bugs: #498100, #498101, #498102, #498103)</P>
+#275272; Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=498100"
+  TARGET="_blank">#498100</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=498101"
+  TARGET="_blank">#498101</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=498102"
+  TARGET="_blank">#498102</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=498103" TARGET="_blank">#498103</A>)</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details. (Addresses Debian Bug: #497619)</P>
+details. (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=497619" TARGET="_blank">#497619</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
 <P>Fix a potential file descriptor leack in libcom_err by setting the
 close-on-exec flag for a fd used for debugging.  (Addresses Red Hat
-Bugzilla #464689)</P>
+Bugzilla <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=464689" TARGET="_blank">#464689</A>)</P>
 
 <P>Fix a potential race in libcom_err by using sem_post/sem_init.  SuSE
 has been carrying a patch for a long time to prevent a largely
@@ -2596,7 +2838,8 @@ to use #include <ext2fs/ext2fs.h>, but can use #include <ext2fs.h>
 instead.  (Addresses Sourceforge Bug: #2089537)</P>
     
 <P>Make sure ext2fs_swab64() is compiled for all platforms, and not just
-for x86.  (Addresses Debian Bug: #497515)</P>
+for x86.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=497515" TARGET="_blank">#497515</A>)</P>
     
 <P>Remove the unused ext2fs_find_{first,ext}_bit_set() functions for all
 non-x86 platforms.  (They had been removed for x86 earlier.)</P>
@@ -2647,7 +2890,8 @@ to Benno Schulenberg for noticing this problem.)</P>
 placed inode tables; this bug has been fixed.</P>
 
 <P>The mke2fs and tune2fs programs now print the correct usage message
-describing the maximum journal size.  (Addresses Debian Bug: #491620)</P>
+describing the maximum journal size.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=491620" TARGET="_blank">#491620</A>)</P>
 
 <P>Add support for setting the default hash algorithm used in b-tree
 directories in tune2fs (from a command-line option) or mke2fs (via
@@ -2667,7 +2911,8 @@ speed up access for systems with a large number of device mapper
 devices.</P>
 
 <P>Blkid had a number of cache validation bugs in libblkid that have been
-fixed.   (Addresses Debian Bug: #493216)</P>
+fixed.   (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=493216" TARGET="_blank">#493216</A>)</P>
 
 <P>Resize2fs will now properly close out the "updating inode references"
 progress bar so there is a newline printed before printing the final
@@ -2693,7 +2938,8 @@ a better job will require kernel support.</P>
 <P>E2fsprogs 1.41.0 intrduced a bug in libext2fs which casued e2image and
 debugfs programs to not be able to read e2image files; the signed
 vs. unsigned bug in the code which read bitmaps from the e2image has
-been fixed.   (Addresses Debian Bug: #495830)</P>
+been fixed.   (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=495830" TARGET="_blank">#495830</A>)</P>
 
 <P>Resize2fs is now correctly managing the directory in-use counts when
 shrinking filesystems and directory inodes needed to be moved from one
@@ -2704,7 +2950,8 @@ which will be flagged by e2fsck after the filesystem has been shrunk.</P>
 <P>E2fsck will no longer issue spurious complaints about the inode size
 caused by very large extent-based files, and by blocks reallocated
 using fallocate() with the FALLOC_FL_KEEP_SIZE option.  (Addresses
-Kernel Bugzilla: #11341)</P>
+Kernel Bugzilla:
+  <A HREF="https://bugzilla.kernel.org/show_bug.cgi?id=11341" TARGET="_blank">#11341</A>)</P>
 
 <P>Mke2fs will now set the creation timestamp on the lost+found directory
 and the root directory.  (More generally, all new inodes created using
@@ -2747,10 +2994,12 @@ entirely if the feature flag is not set.  (Addresses Debian Bug:
 
 <P>The blkid program will now print out a user-friendly listing of all of
 the block devices in the system and what they contain when given the
--L option.  (Addresses Debian Bug: #490527)</P>
+-L option.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=490527" TARGET="_blank">#490527</A>)</P>
 
 <P>The filefrag program now has a more accurate calculation for the
-number of ideal extents.  (Addresses Debian Bug: #458306)</P>
+number of ideal extents.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=458306" TARGET="_blank">#458306</A>)</P>
 
 <P>The test I/O manager is now enabled by default, but its overhead is
 only incurred when it would be enabled via the TEST_IO_FLAGS or
@@ -2767,8 +3016,9 @@ errors in the libext2fs texinfo file.</P>
 details.</P>
 
 <P>Add Indonesian and update French, Polish, Dutch, German, Sweedish,
-Czech, and Vietnamese Translations.  (Addresses Debian Bugs: #313697,
-#401092)</P>
+Czech, and Vietnamese Translations.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=313697" TARGET="_blank">#313697</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=401092" TARGET="_blank">#401092</A>)</P>
 
 <h3>Programmer's Notes</H3>
 
@@ -2906,7 +3156,10 @@ superblock and inode fields that were defined for ext4.  For example,
 the nanosecond and i_version fields of an inode, and the
 s_min_extra_isize and s_wanted_extra_isize fields from the superblock.
 Note: Resize2fs doesn't currently support the combination of flex_bg
-and !resize_inode.  (Addresses Debian Bug: #388452, #425477)</P>
+and !resize_inode.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=388452"
+  TARGET="_blank">#388452</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=425477" TARGET="_blank">#425477</A>)</P>
 
 <P>Tune2fs can support migrating a filesystem from using 128 byte inodes
 to 256 byte inodes, so it can take advantage of the full features of
@@ -2939,7 +3192,8 @@ ext2fs_get_device_size() returns EFBIG.  (Addresses Debian Bug:
 external journal device.  This is done by using a fixed filesystem
 type list that consists only of the single filesystem type "journal"
 when looking up configuration keys in /etc/mke2fs.conf.  (Addresses
-Debian Bug: #488663)</P>
+Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=488663" TARGET="_blank">#488663</A>)</P>
 
 <P>Speed up how mke2fs writes the journal data blocks by writing the disk
 blocks in larger chunks.</P>
@@ -2949,7 +3203,10 @@ core dump while garbage collecting the blkid cache, and assure that
 blkid_find_dev_with_tag() never returns a non-existent device.  Also,
 if a filesystem is found at a new /dev location, eliminate any
 duplicate stale entries which can not be verified.
-(Addresses-Debian-Bugs: #487758, #487783)</P>
+(Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=487758"
+  TARGET="_blank">#487758</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=487783" TARGET="_blank">#487783</A>)</P>
     
 <P>Add more paranoid checks for LVM volumes and swap partitions in
 blkid's probe function, to reduce the chances of false positives.</P>
@@ -2970,7 +3227,8 @@ blocks.</P>
 <P>When creating a filesystem for the GNU Hurd use a fs-type of Hurd and
 adjust the mke2fs.conf file so filesystems for the Hurd are created
 with a blocksize of 4096 and inode size of 128, which is all it knows
-how to handle.  (Addresses Debian Bug: #471977)</P>
+how to handle.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=471977" TARGET="_blank">#471977</A>)</P>
     
 <P>Mke2fs will always make sure that lost+found always has at least 2
 blocks, even for filesystems with very large blocksizes (i.e., 64kb).</P>
@@ -2984,7 +3242,8 @@ blocks are consumed during an off-line resize.</P>
 
 <P>The "ls" command in debugfs now supports the -p option, which causes
 it to quote the filenames so that spaces or tabs in directory entries
-are easily visible.  (Addresses Red Hat Bugzilla: #149480; Addresses
+are easily visible.  (Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=149480" TARGET="_blank">#149480</A>; Addresses
 Sourceforge Feature Request: #1201667)</P>
 
 <P>Fix a potential off-by-one buffer oveflow in the fs_device_name in an
@@ -2992,11 +3251,13 @@ e2image file.</P>
 
 <P>The chattr program will return a non-zero exit code in case of
 failures, and error messages can be suppressed with the -f option.
-(Addresses Red Hat Bugzilla: #180596)</P>
+(Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=180596" TARGET="_blank">#180596</A>)</P>
 
 <P>Fix a bug in badblocks which caused it to overrun an array and likely
 crash if more than 8 test patterns are specified using the -t option.
-(Addresses Debian Bug: #487298)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=487298" TARGET="_blank">#487298</A>)</P>
     
 <P>Add support to badblocks to limit how quickly it reads from the disk
 drive (so it can be used for background scrubbing), and so it will
@@ -3013,10 +3274,22 @@ existed on extremely long-dead PowerPC kernels almost a decade ago.</P>
 Czech translations.</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #487443, #487675, #490003)</P>
+details.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=487443"
+  TARGET="_blank">#487443</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=487675"
+  TARGET="_blank">#487675</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=490003" TARGET="_blank">#490003</A>)</P>
 
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bugs: #393313, #487849, #440983, #440981)</P>
+(Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=393313"
+  TARGET="_blank">#393313</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=487849"
+  TARGET="_blank">#487849</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=440983"
+  TARGET="_blank">#440983</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=440981" TARGET="_blank">#440981</A>)</P>
 
 <H3>Programmer's Notes</H3>
 
@@ -3062,17 +3335,22 @@ uninit_bg.  This also simplifies the code.</P>
 <H2><A NAME="1.40.11">E2fsprogs 1.40.11 (June 17, 2008)</A></H2>
 
 <P>Mke2fs, tune2fs, and resize2fs now use floating point to calculate the
-percentage of reserved blocks.  (Addresses Debian Bug: #452639)</P>
+percentage of reserved blocks.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=452639" TARGET="_blank">#452639</A>)</P>
 
 <P>Updated Spanish and Catalan translations.</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #483962, #483023)</P>
+details.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=483962"
+  TARGET="_blank">#483962</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=483023" TARGET="_blank">#483023</A>)</P>
 
 <P>Add detection for ZFS volumes to the libblkid library.</P>
 
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bug: #486463)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=486463" TARGET="_blank">#486463</A>)</P>
 
 <H3>Programmer's notes</H3>
 
@@ -3082,7 +3360,8 @@ portable for older compilers.</P>
 <P>Fix build problems on MacOS X.  (Addresses Sourceforge Bug: #1972473)</P>
 
 <P>Fix ext2fs_swap{16,32,64} functions so they can be used by external
-applications on big-endian machines.  (Addresses Debian Bug: #484879)</P>
+applications on big-endian machines.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484879" TARGET="_blank">#484879</A>)</P>
 
 
 <H2><A NAME="1.40.10">E2fsprogs 1.40.10 (May 21, 2008)</A></H2>
@@ -3131,7 +3410,8 @@ parsing a time string.</P>
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages.</P>
 
 <P>Fix fsck completion bars when multiple filesystems were being checked
-in parallel.  (Addresses Debian Bug: #432865, Addresses Launchpad Bug:
+in parallel.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=432865" TARGET="_blank">#432865</A>, Addresses Launchpad Bug:
 #203323, Addresses Sourceforge Bug: #1926023)</P>
 
 <P>Fix fsck so that progress information is sent back correctly when
@@ -3251,10 +3531,11 @@ Previously we just let the kernel and e2fsck do this automatically,
 but e2fsck will no longer automatically clear the large_file feature.
 It still isn't really necessary to worry about this feature flag
 explicitly, but some users seem to care.  (Addresses Red Hat Bugzilla:
-#258381)</P>
+<A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=258381" TARGET="_blank">#258381</A>)</P>
     
 <P>Suppress message about an old-style fstab if the fstab file is empty.
-(Addresses Debian Bug: #468176)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=468176" TARGET="_blank">#468176</A>)</P>
     
 <P>Fix (really minor) bug in debugfs's find_free_block so it avoids
 reporting a free block more than once if there are too few free blocks
@@ -3281,10 +3562,11 @@ supported and which is consistent with the format for extended options
 in mke2fs and tune2fs.  (Addresses Sourceforge Bug: #1830994)</P>
     
 <P>Add support to tune2fs to clear the resize_inode feature.  This
-requires an fsck afterwards.  (Addresses Red Hat Bugzilla: #167816)</P>
+requires an fsck afterwards.  (Addresses Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=167816" TARGET="_blank">#167816</A>)</P>
 
 <P>Teach blkid to detect LVM2 physical volumes.  (Addresses Red Hat
-Bugzilla: #409321)</P>
+Bugzilla: <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=409321" TARGET="_blank">#409321</A>)</P>
 
 <P>Add support for setting RAID stride and stripe-width via mke2fs and
 tune2fs.  Teach dumpe2fs to print the RAID parameters.</P>
@@ -3311,7 +3593,8 @@ mounted filesystem.</P>
 <H3>Programmer's notes</H3>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bug: #466929)</P>
+details.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=466929" TARGET="_blank">#466929</A>)</P>
 
 <P>Add new flag EXT2_FLAG_NONFREE_ON_ERROR ext2fs_open2() which returns a
 partially filled-in filesystem object on an error, so that e2fsck can
@@ -3351,7 +3634,8 @@ library.</P>
 
 <P>Fix bug in the blkid library where cached filesystems was not being
 flushed when opening USB devices returned the error ENOMEDIUM.
-(Addresses Debian Bug: #463787)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=463787" TARGET="_blank">#463787</A>)</P>
 
 <P>Added logic to the blkid library to automatically choose whether a
 filesystem should be mounted as ext4 or ext4dev, as appropriate.</P>
@@ -3368,7 +3652,8 @@ configured with --enable-jbd-debug.</P>
 <P>Update e2fsprogs translation template and Vietnamese and Czech translations</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #436058)</P>
+details.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=436058" TARGET="_blank">#436058</A>)</P>
 
 <P>Don't try to create $DESTDIR/etc/init.d as part of make install as we
 don't install the init.d script (and it's not the recommended way to
@@ -3455,7 +3740,12 @@ especially on MacOS X systems.  (Addresses Sourceforge Bugs: #1861633,
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages.</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #459403, #459475, #459614)</P>
+details.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=459403"
+  TARGET="_blank">#459403</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=459475"
+  TARGET="_blank">#459475</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=459614" TARGET="_blank">#459614</A>)</P>
 
 <P>Remove the --enable-dynamic-static configure option, and build e2fsck
 dynamically by default.  If the user wants e2fsck.static, he/she will
@@ -3471,12 +3761,13 @@ automatically by libuuid if necessary.  This daemon is setuid to allow
 updates to /var/lib/libuuid, so the clock sequence number can be
 stored and so if the clock is set backwards, it can be detected.
 (Addresses Sourceforge Bug: #1529672, Addresses Red Hat Bugzilla:
-#233471)</P>
+<A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=233471" TARGET="_blank">#233471</A>)</P>
 
 <P>Filter out the NEEDS_RECOVERY feature flag when writing out the backup
 superblocks.  This avoids e2fsck from concluding that a full
 filesystem check is required before backing up the superblock due to
-changes in the feature flags.  (Addresses Debian Bug: #454926)</P>
+changes in the feature flags.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=454926" TARGET="_blank">#454926</A>)</P>
 
 <P>Fix fsck to only treat the '#' character as a comment at the beginning
 of the line in /etc/fstab.  Otherwise fstabs for the fuse filesystem
@@ -3506,15 +3797,24 @@ current directory is not in the user's path or if the libss shared
 library is not installed.  (Addresses Sourceforge Bug: #1848974)</P>
 
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bugs: #444883, #441872)</P>
+(Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=444883"
+  TARGET="_blank">#444883</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=441872" TARGET="_blank">#441872</A>)</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #437720, #451172, #458017)</P>
+details.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=437720"
+  TARGET="_blank">#437720</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=451172"
+  TARGET="_blank">#451172</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=458017" TARGET="_blank">#458017</A>)</P>
 
 <P>Fix build failure on non-Linux/non-Hurd/non-Masix systems.
 (Addresses Sourceforge Bug: #1859778)</P>
 
-<P>Fix Hurd portability issues.  (Addresses Debian Bug: #437720)</P>
+<P>Fix Hurd portability issues.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=437720" TARGET="_blank">#437720</A>)</P>
 
 
 <H2><A NAME="1.40.3">E2fsprogs 1.40.3 (December 5, 2007)</A></H2>
@@ -3532,7 +3832,8 @@ Research group for reporting this issue.  (Addresses CVE-2007-5497.)</P>
 
 <P>Fix hueristics in blkid which could cause a disk without partitions to
 be incorrectly skipped when a loopback device is present.  (Addresses
-Red Hat Bugzilla #400321.)</P>
+Red Hat Bugzilla
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=400321" TARGET="_blank">#400321</A>.)</P>
 
 <P>Fix e2image so that in raw mode it does not create an image file which
 is one byte too large.</P>
@@ -3541,7 +3842,8 @@ is one byte too large.</P>
 instead of the deprecated -R option.</P>
 
 <P>Enhance the blkid library so it will recognize squashfs filesystems.
-(Addresses Red Hat Bugzilla #305151.)</P>
+(Addresses Red Hat Bugzilla
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=305151" TARGET="_blank">#305151</A>.)</P>
 
 <P>Enhance e2fsck so it will force the backup superblocks to be backed up
 if the filesystem is consistent and key constants have been changed
@@ -3559,7 +3861,8 @@ future) and the user refuses to fix the problem.</P>
 from hardware clock if the hardware clock is configured to tick local
 time instead of GMT time.  Work around this as best as we can by
 providing an option, buggy_init_scripts, in /etc/e2fsck.conf which can
-be set on Ubuntu systems.  (Addresses Debian Bug #441093, and Ubuntu
+be set on Ubuntu systems.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=441093" TARGET="_blank">#441093</A>, and Ubuntu
 Bug #131201.)</P>
 
 <P>Fix fsck to ignore /etc/fstab entries for bind mounts.  (Addresses Red
@@ -3575,18 +3878,21 @@ when opening a corrupt filesystem where s_inode_size is zero.</P>
 
 <P>Change e2fsck so it uses sscanf() instead of atoi() so it non-numeric
 arguments are detected as such and the parse error is reported to the
-user.   (Addresses Debian Bug #435381.)</P>
+user.   (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=435381" TARGET="_blank">#435381</A>.)</P>
 
 <P>Change e2fsck so it will not complain if a file has blocks reallocated
 up to the next multiple of a system's page size.</P>
 
 <P>Fix bug in ext2fs_check_desc() which will cause e2fsck to complain
 about (valid) filesystems where the inode table extends to the last
-block of the block group.  (Addresses Red Hat Bugzilla #214765.)</P>
+block of the block group.  (Addresses Red Hat Bugzilla
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=214765" TARGET="_blank">#214765</A>.)</P>
 
 <P>Fix a bug in ext2fs_initialize() which causes mke2fs to fail while
 allocating inode tables for some relatively rare odd disk sizes.
-(Addresses Red Hat Bugzilla #241767.)</P>
+(Addresses Red Hat Bugzilla
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=241767" TARGET="_blank">#241767</A>.)</P>
 
 <P>Add Catalan translation and update Dutch and Swedish translations
 from the Translation Project.</P>
@@ -3605,7 +3911,7 @@ byte-swap fast symlinks that contained extended attributes.</P>
 
 <P>Add "make check" to the RPM spec file</P>
 
-<P>Fix "make install" and 'make unstall" in misc/Makefile.in so that it
+<P>Fix "make install" and "make unstall" in misc/Makefile.in so that it
 works correctly when the prefix is not the root directory.</P>
 
 <P>Fix the resize2fs tests, r_move_itable and r_resize_inode, so they
@@ -3657,7 +3963,8 @@ Translation Project</P>
 <P>Fix bug which could cause libblkid to loop forever.  When revalidating
 a partition where there is obsolete information in /etc/blkid.tab, we
 end up freeing a the type tag without clearing dev->bid_type, causing
-blkid_verify() to loop forever.  (Addresses Debian Bug: #432052)</P>
+blkid_verify() to loop forever.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=432052" TARGET="_blank">#432052</A>)</P>
     
 <P>The Turkish translation has a bug in it where it has the translation
 of "E@e '%Dn' in %p (%i)" to "E@E".  This causes @E to be expanded at
@@ -3737,10 +4044,12 @@ backup superblock.</P>
 driver.  The Linux floppy driver is a bit different from the other
 block device drivers, in that if the device has been opened with
 O_EXCL, it disallows another open(), even if the second open() does
-not have the O_EXCL flag.  (Addresses Debian Bug: #410569)</P>
+not have the O_EXCL flag.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=410569" TARGET="_blank">#410569</A>)</P>
 
 <P>Fix error checking of badblock's last-block and start-block arguments.
-(Addresses Debian Bug: #416477)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=416477" TARGET="_blank">#416477</A>)</P>
 
 <P>Fix e2fsck so that it doesn't overwrite the backup superblocks when
 recovering a journal until the master superblock has been confirmed as
@@ -3777,7 +4086,8 @@ size is zero but the offset is very large.</P>
 and ext2fs_get_next_inode_full().</P>
 
 <P>Clarify the copyright licenses used by the various libraries in
-the top-level COPYING  file (Red Hat Bugzilla: 166058)</P>
+the top-level COPYING  file (Red Hat Bugzilla:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=166058" TARGET="_blank">#166058</A>)</P>
 
 <P>Make mke2fs's defaults when /etc/mke2fs.conf doesn't exist more sane.</P>
 
@@ -3809,7 +4119,7 @@ trying to do when an error happens</P>
 
 <P>Fix a bug in in how e2fsprogs byte swaps inodes containing fast
 symlinks that have extended attributes.  (Addresses Red Hat Bugzilla:
-#232663 and LTC Bugzilla: #27634)</P>
+<A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=232663" TARGET="_blank">#232663</A> and LTC Bugzilla: #27634)</P>
 
 <P>Fix potential file descriptor leak in ext2fs_get_device_size() in an
 error case.</P>
@@ -3820,7 +4130,8 @@ error case.</P>
 
 <P>Fix dump_unused segfault in debugfs when a filesystem is not open</P>
 
-<P>Fix memory leak in blkid library.  (Addresses Debian Bug: #413661)</P>
+<P>Fix memory leak in blkid library.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=413661" TARGET="_blank">#413661</A>)</P>
 
 <P>Allow the debugfs lcd command to work w/o a filesystem being open.
 (Addresses LTC Bugzilla #27513)</P>
@@ -3843,11 +4154,13 @@ in directory" idea for ext4.</P>
 actually a bug in libe2p's parse_num_blocks() function.  When handling
 the 's' suffix, it was ignoring the blocksize information passed in
 from the caller and always interpreting the number in terms of a 1k
-blocksize.  (Addresses Debian Bug: #408298)</P>
+blocksize.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=408298" TARGET="_blank">#408298</A>)</P>
 
 <P>There was a floating point precision error which could cause e2fsck to
 loop forever on really big filesystems with a large inode count.
-(Addresses Debian Bug: #411838)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=411838" TARGET="_blank">#411838</A>)</P>
 
 <P>Fix memory leak in ext2fs_write_new_inode()</P>
 
@@ -3857,10 +4170,12 @@ library.  See the [scratch_files] section of the e2fsck.conf man page
 for more details.</P>
 
 <P>Fixed type-punning bug which caused dumpe2fs to crash on the Arm
-platform (Addresses Debian Bug: #397044)</P>
+platform (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=397044" TARGET="_blank">#397044</A>)</P>
 
 <P>Add explanatory message to badblocks that -n and -w are mutually exclusive
-(Addresses Debian Bug: #371869)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=371869" TARGET="_blank">#371869</A>)</P>
 
 <P>Allow debugfs and dumpe2fs to support fs features under development.</P>
 
@@ -3877,11 +4192,14 @@ blocks or inodes exceeding 2**31 or being close to 2**32-1.</P>
 <P>Add support for unsigned directory hash calculations with hints in the
 superblock to fix cross-architectural portability for htree
 directories with filenames where the high 8th bit is set.  (Addresses
-Debian: #389772)</P>
+Debian: <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=389772"
+	   TARGET="_blank">#389772</A>)</P>
 
 <P>Fix resize2fs so that it gives user-intelligible error messages if the
 filesystem or the kernel does not support on-line resizing.
-(Addresses Debian Bug: #380548)</P>
+(Addresses Debian
+  Bug: <A HREF="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=380548"
+	  TARGET="_blank">#380548</A>)</P>
 
 <P>Require mke2fs -F -F for really dangerous operations, since -F is
 needed for less dangerous operations such as creating filesystems
@@ -3899,7 +4217,8 @@ resizing should always work.</P>
 #1531372)</P>
 
 <P>Fix debugfs coredump when lsdel is run without an open filesystem
-(Addresses Debian Bug: #378335)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=378335" TARGET="_blank">#378335</A>)</P>
 
 <P>Fix debugfs display bug us that bytes that have the high bit set are
 displayed as "ec" instead of "ffffffec".</P>
@@ -3922,7 +4241,8 @@ SIGBUS error.</P>
 
 <P>The latest devmapper libraries requires pthreads, add -lpthreads to
 the static link libraries for e2fsck.static if devmapper is enabled.
-(Addresses Debian bug: #388718)</P>
+(Addresses Debian bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=388718" TARGET="_blank">#388718</A>)</P>
 
 <P>Improve the (non-installed, for experts only) findsuper program by
 printing the uuid and label from the superblocks, as well as the
@@ -3942,20 +4262,39 @@ awkward to deal with debian-legal's insanities.  So I'm caving in the
 "more-lunatic-than-RMS" wing of Debian by removing RFC-4122 so we
 don't have do the dfsg tarball.  Also remove the rule that only tried
 to install RFC-4122 on Ubuntu, since Ubuntu seems to want to fetch
-e2fsprogs exclusively from Debian.  (Addresses Debian Bug: #407107)</P>
+e2fsprogs exclusively from Debian.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=407107" TARGET="_blank">#407107</A>)</P>
 
 <P>Fix the info-dir line so that the menu name does not contain a .info
 prefix.  First of all, it's ugly, secondly, it causes the install-info
 command to fail to remove the com_err info file from the
 /usr/share/info/dir file when the comerr-dev package is removed and
-purged.  (Addresses Debian Bug: #401711)</P>
+purged.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=401711" TARGET="_blank">#401711</A>)</P>
 
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bug: #369761, #373004, #379695)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=369761"
+  TARGET="_blank">#369761</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=373004"
+  TARGET="_blank">#373004</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=379695" TARGET="_blank">#379695</A>)</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs #389554, #390664, #413208, #419605,
-#408352, #415560, #399155)</P>
+details.  (Addresses Debian Bugs
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=389554"
+     TARGET="_blank">#389554</A>,
+     <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=390664"
+	TARGET="_blank">#390664</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=413208"
+	TARGET="_blank">#413208</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=419605"
+	TARGET="_blank">#419605</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=408352"
+   TARGET="_blank">#408352</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=415560"
+   TARGET="_blank">#415560</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=399155" TARGET="_blank">#399155</A>)</P>
 
 
 <H3>Programmer's notes:</H3>
@@ -4087,7 +4426,8 @@ system administrators.  In the case of resize2fs and mke2fs, it will
 only use exclusive mode if the filesystem is not mounted.</P>
 
 <P>Fixed a bug in mke2fs which caused it to to fail when creating the
-resize inode for large filesystems.  (Addresses Debian Bug #346580)</P>
+resize inode for large filesystems.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=346580" TARGET="_blank">#346580</A>)</P>
 
 <P>When allocating space for the RAID filesystems with the stride
 parameter, mke2fs will now place each portion of the group's inode
@@ -4104,7 +4444,8 @@ reducing the number of disk seeks required.</P>
 cached information in /etc/blkid.tab needs to be verified or not
 doesn't get confused by a system clock which is insane (for example,
 if the battery is dead on a Macintosh running PPC Linux.  (Addresses
-Red Hat Bug: #182188)</P>
+Red Hat Bug:
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=182188" TARGET="_blank">#182188</A>)</P>
 
 <P>The blkid library will now store the UUID of the external journal used
 by ext3 filesystems, so that in the future, the userspace mount binary
@@ -4113,26 +4454,34 @@ this information to the kernel.</P>
 
 <P>E2fsck will now consult a configuration file, /etc/e2fsck.conf to
 control how various options should be handled.  See the e2fsck.conf
-man page for more details.   (Addresses Debian Bug: #150295)</P>
+man page for more details.   (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=150295" TARGET="_blank">#150295</A>)</P>
 
 <P>E2fsck now prints an explanatory message when delaying a filesystem
 check when the system is running on battery.  (Addresses Debian Bug:
-#350306)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=350306" TARGET="_blank">#350306</A>)</P>
 
 <P>E2fsck will detect if the superblock's last mount field or last write
 field is in the future, and offer to fix if so.  (Addresses Debian Bug
-#327580) These problems will be fixed automatically in preen mode
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=327580" TARGET="_blank">#327580</A>) These problems will be fixed automatically in preen mode
 since Debian's boot sequence bogusly doesn't set the time correctly
 until potentially very late in the bootup process, and this can cause
 false positives which will cause users' systems to fail to boot.
-(Addresses Debian Bugs #343662 and #343645)</P>
+(Addresses Debian Bugs
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=343662"
+   TARGET="_blank">#343662</A> and
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=343645" TARGET="_blank">#343645</A>)</P>
 
 <P>E2fsck now checks to see if the superblock hint for the location of
 the external journal is incorrect, and if so, offer to update it.
-(Addresses Debian Bug: #355644)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=355644" TARGET="_blank">#355644</A>)</P>
 
 <P>Fix e2fsck from segfaulting on disconnected inodes that contain one or
-more extended attributes.  (Addresses Debian Bug: #316736, #318463)</P>
+more extended attributes.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=316736"
+  TARGET="_blank">#316736</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=318463" TARGET="_blank">#318463</A>)</P>
 
 <P>E2fsck will stop and print a warning if the user tries running a
 read/write badblocks test on a read-only mounted root filesystem.</P>
@@ -4142,7 +4491,8 @@ C. Thompson for pointing these out; they were originally found using
 Coverity.)</P>
 
 <P>When resizing a file containing a filesystem, resize2fs will expand or
-truncate a file as necessary.  (Addresses Debian Bug: #271607)</P>
+truncate a file as necessary.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=271607" TARGET="_blank">#271607</A>)</P>
 
 <P>Resize2fs will now automatically determine the RAID stride parameter that
 had been used to create the filesystem, and use that for newly created
@@ -4174,7 +4524,8 @@ of an extended attribute block.</P>
 print a usage message when an illegal option character is given.</P>
 
 <P>Fix debugfs's dump_unsued command on filesystems with a 64k blocksize
-so it won't core dump.  (Addresses SourceForge bug #1424311)</P>
+so it won't core dump.  (Addresses SourceForge bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1424311" TARGET="_blank">#1424311</A>)</P>
 
 <P>Fix mklost+found so that it creates a full-sized directory on
 filesystems with larger block sizes.</P>
@@ -4183,10 +4534,11 @@ filesystems with larger block sizes.</P>
 
 <P>Fix a display bug in "badblocks -sv" so that the done message properly
 clears the block number at the end of the test.  (Addresses Debian Bug
-#322231)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=322231" TARGET="_blank">#322231</A>)</P>
 
 <P>Allow fractional percentages to the -m option in mke2fs and tune2fs
-(Addresses Debian Bug: #80205)</P>
+(Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=80205" TARGET="_blank">#80205</A>)</P>
 
 <P>Use fstat/fstat64 in getsize.c if the the target is a regular file,
 instead of attempting to do a binary search.  Fix some fd leaks in
@@ -4203,7 +4555,8 @@ labels stored in the root directory, and is more paranoid about
 checking the FAT superblock values.</P>
 
 <P>Fixed a fd leak in the uuid library which was causing problems for the
-LVM tools.  (Addresses Debian Bug: #345832)</P>
+LVM tools.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=345832" TARGET="_blank">#345832</A>)</P>
 
 <P>Add support for the reiser4 and software suspend partitions to the
 blkid library.  Also add support for extract the label from iso9660
@@ -4215,23 +4568,79 @@ continuations are used in the .et file.</P>
 <P>Add extra sanity checks to protect users from unusual cirucmstances
 where /etc/mtab may not be sane, by checking to see if the device is
 reported busy (works on Linux 2.6) kernels.  (Addresses Debian Bug
-#319002)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=319002" TARGET="_blank">#319002</A>)</P>
 
 <P>Updated French, Dutch, Polish, and Swedish translations.  (Addresses Debian
-Bug: #343149, #341911, #300871, #316604, #316782, #330789)</P>
+Bug: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=343149"
+	TARGET="_blank">#343149</A>w,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=341911"
+  TARGET="_blank">#341911</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=300871"
+  TARGET="_blank">#300871</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=316604"
+  TARGET="_blank">#316604</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=316782"
+  TARGET="_blank">#316782</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=330789" TARGET="_blank">#330789</A>)</P>
 
 <P>Fix use-after-free bug in e2fsck when finishing up the use of the
 e2fsck context structure.</P>
 
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages and
-documentation.  (Addresses Debian Bugs: #329859, #322188, #316811,
-#312515, #351268, #357951, #347295, #316040, #368392, #368393, #368394,
-#368179)</P>
+documentation.  (Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=329859"
+     TARGET="_blank">#329859</A>,
+     <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=322188"
+	TARGET="_blank">#322188</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=316811"
+	TARGET="_blank">#316811</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=312515"
+   TARGET="_blank">#312515</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=351268"
+      TARGET="_blank">#351268</A>,
+      <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=357951"
+	 TARGET="_blank">#357951</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=347295"
+	 TARGET="_blank">#347295</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=316040"
+	 TARGET="_blank">#316040</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=368392"
+	 TARGET="_blank">#368392</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=368393"
+	 TARGET="_blank">#368393</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=368394"
+	 TARGET="_blank">#368394</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=368179" TARGET="_blank">#368179</A>)</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs #317862, #320389, #290429, #310950,
-#310428, #330737, #330736, #329074, #356293, #360046, #366017, #364516,
-#362544, #362970)</P>
+details.  (Addresses Debian Bugs
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=317862"
+     TARGET="_blank">#317862</A>,
+     <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=320389"
+	TARGET="_blank">#320389</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=290429"
+	TARGET="_blank">#290429</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=310950"
+	TARGET="_blank">#310950</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=310428"
+   TARGET="_blank">#310428</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=330737"
+      TARGET="_blank">#330737</A>,
+      <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=330736"
+	 TARGET="_blank">#330736</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=329074"
+	 TARGET="_blank">#329074</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=356293"
+	 TARGET="_blank">#356293</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=360046"
+	 TARGET="_blank">#360046</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=366017"
+	 TARGET="_blank">#366017</A>,
+	 <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=364516"
+	 TARGET="_blank">#364516</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=362544"
+   TARGET="_blank">#362544</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=362970" TARGET="_blank">#362970</A>)</P>
 
 
 <h3>Programmer's notes:</h3>
@@ -4240,7 +4649,9 @@ details.  (Addresses Debian Bugs #317862, #320389, #290429, #310950,
 FSF.</P>
 
 <P>Fix asm_types.h type conflicts on AMD 64 platforms.  (Addresses Debian
-Bugs: #360661, #360317)</P>
+Bugs: <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=360661"
+	 TARGET="_blank">#360661</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=360317" TARGET="_blank">#360317</A>)</P>
 
 <P>Fixed the Makefile so that they work correctly on newer versions of
 GNU make (i.e., 3.81).</P>
@@ -4322,7 +4733,7 @@ even without "configure --enable-blkid-debug".</P>
 
 <P>Fix ia64 core dump bug caused by e2fsprogs running afoul of C99 strict
 type aliasing rules on newer gcc compilers.  (Addresses Red Hat
-Bugzilla ##161183.)</P>
+Bugzilla <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=161183" TARGET="_blank">#161183</A>.)</P>
 
 <P>Fix com_err library to make it more compatible with recent changes
 made to the com_err library in MIT Kerberos V5 version 1.4.
@@ -4336,11 +4747,13 @@ make life easier for translators.</P>
 
 <P>Mke2fs and badblocks will take advantage of a feature in Linux 2.6 to
 test to see if a device appears to be in use instead of just relying
-on /proc/mounts and /etc/mtab.  (Addresses Debian Bug #308594).</P>
+on /proc/mounts and /etc/mtab.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=308594" TARGET="_blank">#308594</A>).</P>
 
 <P>Fix portability problem in the filefrag program affecting platforms
 where the size of an integer is smaller than the size of a long.
-(Addresses Debian Bug #309655)</P>
+(Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=309655" TARGET="_blank">#309655</A>)</P>
 
 <P>Mke2fs will now use a larger journal by default for filesystems
 greater than 4GB.  (128 MB instead of 32MB).</P>
@@ -4357,7 +4770,8 @@ UUID.</P>
 <P>Debian's e2fsprogs-specific initrd fragment will avoid including
 unnecessary libraries into the initrd ramdisk by unsetting LD_PRELOAD
 and LD_LIBRARY_PATH, and filtering out libraries found in
-/etc/ld.so.preload.  (Addresses Debian Bug: #304003)</P>
+/etc/ld.so.preload.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=304003" TARGET="_blank">#304003</A>)</P>
 
 <P>Fixed a potential portability issue in the blkid programs for
 architectures where the char type is unsigned.  (Addresses Sourceforge
@@ -4365,7 +4779,8 @@ Bug: #1180585)</P>
 
 <P>Fix a bug in filefrag so that it doesn't falsely count an extra
 discontinuity when the first block found is an indirect block.
-(Addresses Debian Bug #307607).</P>
+(Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=307607" TARGET="_blank">#307607</A>).</P>
 
 <P>Fix blkid's recognition of cramfs filesystems, and enhance it to be
 able to handle cramfs labels.</P>
@@ -4379,7 +4794,8 @@ corruption which was commonly caused by a bug in Fedora Core 3's
 resize2fs program.</P>
 
 <P>Fixed bug in filefrag which caused it to fail on non-ext2/3
-filesystems.  (Addresses Debian Bug: #303509)</P>
+filesystems.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=303509" TARGET="_blank">#303509</A>)</P>
 
 <P>If the superblock last mount time indicates that the system clock may
 not be accurate, then e2fsck will omit checking inodes' deletion time
@@ -4388,13 +4804,23 @@ field for indications of a potential corrupted orphaned inode list.
 superblock's last write time looked insane.)</P>
 
 <P>Fixed a IA64 core dump bug in the e2p library which affected dumpe2fs.
-(Addresses Debian bug #302200)</P>
+(Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=302200" TARGET="_blank">#302200</A>)</P>
 
 <P>Make the blkid library more paranoid about being run from setgid
 programs, and to use __secure_getenv() from libc if it is available.</P>
 
 <P>Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bugs: #304591, #304592, #304594, #304597, #304593
+(Addresses Debian Bugs:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=304591"
+     TARGET="_blank">#304591</A>,
+     <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=304592"
+	TARGET="_blank">#304592</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=304594"
+	TARGET="_blank">#304594</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=304597"
+	TARGET="_blank">#304597</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=304593" TARGET="_blank">#304593</A>
 and Sourceforge Bug: #1189803)</P>
 
 <P>Updated and fixed translations.</P>
@@ -4493,7 +4919,10 @@ I18N tools installed), but the gen_tarball.in script was still
 removing the .gmo files from the official source distribution.</P>
 
 <P>Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs ##296769, #299341)</P>
+details.  (Addresses Debian Bugs
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=296769"
+  TARGET="_blank">#296769</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=299341" TARGET="_blank">#299341</A>)</P>
 
 <H3>Programmer's notes:</H3>
 
@@ -4523,7 +4952,7 @@ have been corrected.</p>
 <p>E2fsck can also also fix filesystems trashed by Fedora's resize2fs
 program.  In order to do this, the user must run the commands:
 <blockquote>
-	debugfs -w /dev/hdXXX -R "features ^resize_inode</br>
+	debugfs -w /dev/hdXXX -R "features ^resize_inode"</br>
         e2fsck -f /dev/hdXXX
 </blockquote>
 Optionally, the ext2prepare command can be used to re-enable online
@@ -4539,14 +4968,15 @@ large inodes.</p>
 
 <p>Make sure resize2fs releases the blocks belonging to the old inode
 table blocks when moving the inode table.  (Addresses Debian Bug:
-#290894)</p>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=290894" TARGET="_blank">#290894</A>)</p>
 
 <p>Skip the r_resize_inode test if resize2fs is not compiled (due to
 configure --disable-resizer)</p>
 
 <p>E2fsck now checks the summary filesystem accounting information, and
 if any of the information is obviously wrong, it will force a full
-filesystem check.  (Addresses Debian Bug #291571)</p>
+filesystem check.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=291571" TARGET="_blank">#291571</A>)</p>
 
 <p>Fix e2fsck to not complain when the resize_inode feature is enabled,
 s_reserved_gdt_blocks is zero, and there is no DIND block allocated in
@@ -4554,7 +4984,7 @@ the resize inode.</p>
 
 <p>Fix e2fsck to note delete symlinks that contain an extended attribute
 after the ext_attr feature flag has been cleared.  (Addresses Red Hat
-Bugzilla #146284).</p>
+Bugzilla <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=146284" TARGET="_blank">#146284</A>).</p>
 
 <p>Add new utility program, copy_sparse.c, which is very useful
 for dealing with large sparse files (such as e2image files).</p>
@@ -4576,7 +5006,7 @@ bug #1106631)</p>
 <p>Change blkid to test for NTFS first because Windows sometimes doesn't
 clear enough of the parition to confuse the probing routines into
 thinking the old filesystem type is still valid.  (Addresses Debian
-Bug #291990)</p>
+Bug <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=291990" TARGET="_blank">#291990</A>)</p>
 
 <p>Add support for swap partition label and uuid's in the blkid library.</p>
 
@@ -4585,7 +5015,9 @@ Bug #291990)</p>
 <p>Make blkid -t display all devices that match the specified criteria,
 not just the first one, and work more consistently when the blkid
 cache file is not available or set to /dev/null.  (Addresses Debian
-Bug #290530 and #292425)</p>
+Bug <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=290530"
+       TARGET="_blank">#290530</A> and
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=292425" TARGET="_blank">#292425</A>)</p>
 
 <p>Badblocks will now correctly display block numbers greater than
 999,999,999 in its progress display.</p>
@@ -4598,11 +5030,13 @@ the filesystem.</p>
 
 <p>The blkid library will return vfat in preference to msdos, and ext3 in
 preference to ext2 (if the journalling flag is set) so that mount will
-do the right thing.  (Addresses Debian bug #287455)</p>
+do the right thing.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=287455" TARGET="_blank">#287455</A>)</p>
  <p> 
 Mke2fs will now use the -E option for extended options; the old -R
 (raid options) option is still accepted for backwards compatibility.
-Fix a double-free problem in resize2fs.  (Red Hat Bugzilla #132707)</p>
+Fix a double-free problem in resize2fs.  (Red Hat Bugzilla
+<A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=132707" TARGET="_blank">#132707</A>)</p>
 
 <p>Mke2fs will now accept a size in megabytes, gigabytes, and other units
 (via "32m" or "4g" on the command line) if the user finds this more
@@ -4661,7 +5095,8 @@ Thinkpads.</p>
 of the filesystem.</p>
 
 <p>Debugfs will check the DEBUGFS_PAGER enviroment variable in preference
-to the PAGER environment variable.  (Addresses Debian Bug #239547)</p>
+to the PAGER environment variable.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=239547" TARGET="_blank">#239547</A>)</p>
 
 <p>Tune2fs will not mark rewrite the superblock if the feature bitmasks 
 are not modified.</p>
@@ -4677,7 +5112,8 @@ installed into a filesystem.</p>
 
 <p>Fixed bug in the badblocks program which caused "done" to always
 appear in english even when a translation was available.  (Addresses
-Debian Bug #252836)</p>
+Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=252836" TARGET="_blank">#252836</A>)</p>
 
 <p>The blkid program has a new option -o which controls the output format
 of the blkid program; this is makes blkid more convenient to use in
@@ -4709,21 +5145,53 @@ file by the BLKID_FILE environment variable, if it is available.</p>
 
 <p>Add various portability fixes for lame new versions of glibc, Darwin
 and GNU/KFreeBSD, as well as removing XSI:ism's.  (Addresses Debian
-Bugs #239934, #264630, #269044, #255589, #289133)</p>
+Bugs <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=239934"
+	TARGET="_blank">#239934</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=264630"
+  TARGET="_blank">#264630</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=269044"
+  TARGET="_blank">#269044</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=255589"
+  TARGET="_blank">#255589</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=289133" TARGET="_blank">#289133</A>)</p>
 
 <p>Add support for Windows 9x/NT under Cygwin.</p>
 
-<p>Updated and clarified various man pages.  (Addresses Debian Bugs #236383,
-	#241940, #238741, #242995, #256669, #268148, #256760, #273679)</p>
+<p>Updated and clarified various man pages.  (Addresses Debian Bugs
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=236383"
+	TARGET="_blank">#236383</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=241940"
+	TARGET="_blank">#241940</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=238741"
+	TARGET="_blank">#238741</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=242995"
+	TARGET="_blank">#242995</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=256669"
+	TARGET="_blank">#256669</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=268148"
+	TARGET="_blank">#268148</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=256760"
+	TARGET="_blank">#256760</A>,
+	<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=273679"
+	TARGET="_blank">#273679</A>)</p>
 
-<p>Updated and fixed translations.   (Addresses Debian bugs #244105, #262836)</p>
+<p>Updated and fixed translations.   (Addresses Debian bugs
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=244105"
+  TARGET="_blank">#244105</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=262836" TARGET="_blank">#262836</A>)</p>
 
 <p>Update the rpm spec files so that it works better with Fedora core 2
 and RH9.</p>
 
 <p>Fixed various Debian packaging issues (see debian/changelog).  In
 particular, fixed the Debian initrd scripts.  (Addresses Debian bugs
-#241183, #248050, #253595, #247775)</p>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=241183"
+   TARGET="_blank">#241183</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=248050"
+   TARGET="_blank">#248050</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=253595"
+   TARGET="_blank">#253595</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=247775" TARGET="_blank">#247775</A>)</p>
 
 
 <h3>Programmer's notes: </h3>
@@ -4803,7 +5271,8 @@ to reubuild the .gmo files in po directory.</p>
 <p>Drop the sparc assembly bitwise operations; it's less efficient
 than the GCC 3.4 compile code and triggers compiler warnings on
 sparc64.  Thanks to Matthias Andree for his analysis and suggestions.
-(Addresses Debian Bug #232326)</p>
+(Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=232326" TARGET="_blank">#232326</A>)</p>
 
 
 <H2><A NAME="1.35">E2fsprogs 1.35 (February 28, 2004)</A></H2>
@@ -4815,7 +5284,8 @@ preserves the existing badblocks list.</P>
 
 <P>E2fsprogs will now deal correctly with symlinks that contain
 extended attribute information, which can be created using SE Linux.
-(Addresses Debian Bug #232328)</P>
+(Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=232328" TARGET="_blank">#232328</A>)</P>
                                                                                
 <P>Remove a double longjump into an invalid stack frame bug in e2fsck.
 (This was during an abort sequence, which normally worked on Linux and
@@ -4825,11 +5295,13 @@ caused a core dump on other operating systems.)</P>
 (the NLS library will replace "" with the .po header information).</P>
  
 <P>Fix a bug in mke2fs which caused -T largefile or -T largefile4 to core
-dump due to a division by zero error.  (Addresses Debian bug #207082)</P>
+dump due to a division by zero error.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=207082" TARGET="_blank">#207082</A>)</P>
 
 <P>Fixed a bug in e2fsck which caused it to incorrectly fix a filesystem
 when reconnecting a directory requires creating a lost+found
-directory.  (Addresses Debian bug #219640).</P>
+directory.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=219640" TARGET="_blank">#219640</A>).</P>
 
 <P>Fixed a bug where e2fsck would bomb out if a journal needed to be
 replayed when using an alternate superblock.</P>
@@ -4837,10 +5309,12 @@ replayed when using an alternate superblock.</P>
 <P>E2fsck will give an extra grace period before actually forcing a check
 if the laptop is running on battery.  The next time fsck runs while
 the system is on the AC mains, or after the grace period is exceeded,
-the filesystem will be checked.  (Addresses Debian bug #205177)</P>
+the filesystem will be checked.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=205177" TARGET="_blank">#205177</A>)</P>
 
 <P>E2fsck will inform the user when there are 5 or fewer mounts before a
-filesystem check will be forced.  (Addresses Debian bug #157194)</P>
+filesystem check will be forced.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=157194" TARGET="_blank">#157194</A>)</P>
 
 <P>Fix e2fsck's handling of corrupted indirect blocks in the bad block.
 We now correctly handle the case where there is an overlap between a
@@ -4850,7 +5324,8 @@ In the case where the indirect block is corrupted, we now suggest
 
 <P>Fix byte swap bugs in e2fsck that caused the journal backup location 
 in the superblock and symlinks created by SE Linux to be cleared
-by e2fsck on big-endian machines.  (Addresses Debian bug #228723)</P>
+by e2fsck on big-endian machines.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=228723" TARGET="_blank">#228723</A>)</P>
 
 <P>E2fsck -c now replaces the current list of bad blocks with the ones
 found by badblocks.</P>
@@ -4881,24 +5356,29 @@ variables to the BSS segment.</P>
 
 <P>E2fsck will avoid printing the ^A and ^B characters which bracket the
 progress bar when stdout and stdin are a tty device instead of a pipe
-to another program.  (Addresses Debian bug #204137)</P>
+to another program.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=204137" TARGET="_blank">#204137</A>)</P>
 
 <P>Debugfs's mkdir command will automatically expand the directory if
-necessary.  (Addresses Debian Bug: #217892)</P>
+necessary.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=217892" TARGET="_blank">#217892</A>)</P>
  
 <P>Fixed a bug in debugfs so that copying a file from /dev/null uses the
-correct mode bits.  (Addresses Debian Bug: #217456)</P>
+correct mode bits.  (Addresses Debian Bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=217456" TARGET="_blank">#217456</A>)</P>
  
 <P>If the environment variables DEBUFS_PAGER and PAGER are not set,
 debugfs now searches for the appropriate pager to use, beginning with
 /usr/bin/pager, and then falling back to 'more' and 'less'.
-(Addresses Debian bug #221977)</P>
+(Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=221977" TARGET="_blank">#221977</A>)</P>
 
 <P>Debugfs will now support 2.6 device numbers where the major or minor
 number may be larger than 255.  (Addresses Sourceforge bug #865289)</P>
  
 <P>Chattr now stops processing options when it sees '--'.  (Addresses
-Debian bug #225188)</P>
+Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225188" TARGET="_blank">#225188</A>)</P>
 
 <P>Fix regression tests so they work correctly when e2fsprogs is compiled
 with configure --disable-htree.</P>
@@ -4914,13 +5394,20 @@ around.</P>
 we're reading from an offset which is page aligned.  For read-only and
 read-write tests, we try to recover after an error so that we can
 continue reading on page-aligned boundaries.  (Addresses Debian Bug
-#203713)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=203713" TARGET="_blank">#203713</A>)</P>
   
 <P>Badblocks now checks 64 blocks at a time instead of 16.  (Addresses
-Debian bug #232240)</P>
+Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=232240" TARGET="_blank">#232240</A>)</P>
  
 <P>Updated and clarified various man pages.  (Addresses Debian Bug
-#206845, #222606, #214920, #232406)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=206845"
+   TARGET="_blank">#206845</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=222606"
+   TARGET="_blank">#222606</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=214920"
+   TARGET="_blank">#214920</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=232406" TARGET="_blank">#232406</A>)</P>
 
 <P>Updated and fixed translations.   (Addresses Debian bugs #200086, #214633)</P>
 
@@ -4933,7 +5420,8 @@ Debian bug #232240)</P>
 bug #811408)</P>
  
 <P>Fixed C++ problems with the ext2fs.h header.  (Addresses Red Hat
-Bugzilla Bug #112448)</P>
+Bugzilla Bug
+  <A HREF="https://bugzilla.redhat.com/show_bug.cgi?id=112448" TARGET="_blank">#112448</A>)</P>
                                                                                
 <P>Centralize code which calculates the location of the superblock
 and block group descriptors so that it is in a single library routine.</P>
@@ -4943,7 +5431,7 @@ ext2fs_inode_io_intern2() which take a pointer to an inode structure.</P>
 
 <P>Fix compile_et to output the correct prototype for
 initialize_xxx_err_table_r() in the header file.  (Addresses Debian
-bug #204332)</P>
+bug <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=204332" TARGET="_blank">#204332</A>)</P>
 
 <P>In the lib/et makefile, make sure com_err.info is deleted on "make clean".</P>
   
@@ -4985,7 +5473,8 @@ kernel bug introduced when the storage of the buffer cache was moved
 into the page cache.</P>
 
 <P>Mke2fs will warn the user when creating a filesystem with journaling
-and a blocksize greater than 4096.  (Addresses Debian bug #193773)</P>
+and a blocksize greater than 4096.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=193773" TARGET="_blank">#193773</A>)</P>
 
 <P>Fixed a bug in resize2fs which caused it to fail on filesystems with a
 non-empty bad block list.  Resize2fs now discards any blocks on the
@@ -4999,7 +5488,8 @@ be chopped off will be lost.)</P>
 the new filesystem size (sectors, kilobytes, megabytes, or gigabytes),
 and to make the error and informational messages explicitly display
 the blocksize used by the filesystem, in order to avoid confusion.
-(Addresses Debian bug: #189814)</P>
+(Addresses Debian bug:
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=189814" TARGET="_blank">#189814</A>)</P>
 
 <P>Added a new debugfs command, dump_unused, which dumps the contents of
 all unused blocks to stdout.  (Useful as an emergency try-to-find
@@ -5048,7 +5538,8 @@ script.</P>
 
 <P>Fixed various Debian packaging issues (see debian/changelog). </P>
 
-<P>Updated and clarified man pages.  (Addresses Debian Bug #195616)</P>
+<P>Updated and clarified man pages.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=195616" TARGET="_blank">#195616</A>)</P>
 
 <H3>Programmer's notes:</H3>
 
@@ -5059,7 +5550,8 @@ NLS support by default.  (Added partial workaround for gettext/Darwin
 incompatibility problems.)</P>
 
 <P>Added full MIT KRB5 and Himdall compaibility support to the com_err
-library and the compile_et program.  (Addresses Debian bug #191900)</P>
+library and the compile_et program.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=191900" TARGET="_blank">#191900</A>)</P>
 
 <P>Added the blkid_known_fstype() function to the blkid library, which
 returns true if it is passed a filesystem type which is recognized by
@@ -5072,7 +5564,7 @@ returns the hardware sector size of a device, if it is available.</P>
 
 <P>Added a dependency in the blkid library's .so file to the uuid
 library, since the former uses the latter.  (Addresses Debian bug
-#194094)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=194094" TARGET="_blank">#194094</A>)</P>
 
 <P>Added --with-diet-libc and --disable-evms to the configure script.</P>
 
@@ -5116,7 +5608,7 @@ block size.</P>
 
 <P>Fixed a bug in mke2fs which was incorrectly checking the argument to
 the -g option if the default block size was used.  (Addresses Debian
-bug #188319)</P>
+bug <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=188319" TARGET="_blank">#188319</A>)</P>
 
 <P>Fsck now explicitly ignores tmpfs and devpts, and it will complain if
 it can not find filesystem checkers for jfs, reseirfs, and xfs.</P>
@@ -5166,14 +5658,16 @@ readline-compatible library.</P>
 
 <P>E2fsck now finds most duplicate filenames (all when rebuilding all
 directories via the -D option) and offers to delete or rename
-duplicate filenames/directory entries.  (Addresses Debian Bug #176814).</P>
+duplicate filenames/directory entries.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=176814" TARGET="_blank">#176814</A>).</P>
 
 <P>Fix bug in e2image.  When writing out a raw image file, include data
 blocks from symlinks that do not store the symlink within the inode.</P>
 
 <P>Fix bug in resize2fs which incorrectly moved the block and inode
 bitmaps for sparse superblock filesystems and incorrectly marked
-blocks as in use.  (Addresses Debian bug #174766)</P>
+blocks as in use.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=174766" TARGET="_blank">#174766</A>)</P>
  
 <P>Added a new shared library, the blkid library, which efficiently
 allows fsck, mke2fs, e2fsck, and tune2fs to be able to look up LABEL
@@ -5183,7 +5677,9 @@ file, and then verified to make sure the blkid cache is correct.</P>
 
 <P>Tune2fs and e2label will accept LABEL=xxx and UID=yyy specifiers for
 the device name, using the blkid library.  (Addresses Debian bugs
-#166048, #179671)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=166048"
+   TARGET="_blank">#166048</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=179671" TARGET="_blank">#179671</A>)</P>
 
 <P>Fsck now supports backslash escapes in /etc/fstab so that \040 can be
 used for spaces in device labels.</P>
@@ -5211,7 +5707,17 @@ accidentally had the INDEX_FL backwards compatibility code removed.</P>
 default; the user has to specifically request it.</P>
 
 <P>Update and clarified various man pages. (Addresses Debian bugs
-#173612, #175233, #175113, and #170497, #185945, #188318)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=173612"
+   TARGET="_blank">#173612</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=175233"
+   TARGET="_blank">#175233</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=175113"
+   TARGET="_blank">#175113</A>, and
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=170497"
+   TARGET="_blank">#170497</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=185945"
+   TARGET="_blank">#185945</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=188318" TARGET="_blank">#188318</A>)</P>
 
 <P>Created man page for the mk_cmds program (from the libss library).</P>
 
@@ -5412,7 +5918,8 @@ specifiers.  (Sourceforge patch #613447)</P>
 <P>Badblocks will now work correctly on read-only devices such as
 CD-ROM's.  (Sourceforge patch #600451)</P>
 
-<P>Updated and clarified man pages.  (Addresses Debian bug #167108)</P>
+<P>Updated and clarified man pages.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=167108" TARGET="_blank">#167108</A>)</P>
 
 <H2><A NAME="1.29">E2fsprogs 1.29 (September 24, 2002)</A></H2>
 
@@ -5432,7 +5939,8 @@ fields in the superblock.</P>
 
 <P>If the bone-headed user enters the root filesystem twice in
 /etc/fstab, the -R option which skips the root filesystem will skip
-all of them.  (Addresses Debian bug #159423).  Note!  This is not a
+all of them.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=159423" TARGET="_blank">#159423</A>).  Note!  This is not a
 precedent for dealing intelligently with any other kind of doubled
 entry in /etc/fstab!</P>
 
@@ -5465,22 +5973,33 @@ filesystem specifications such as LABEL=xxx or UUID=xxx.</P>
 filesystem specifications such as LABEL=xxx or UUID=xxx, and prints
 the device name.</P>
 
-<P>Update and clarified various man pages. (addresses Debian Bug #145044,
-#146437, #131350, #151990, #144621, #141938)</P>
+<P>Update and clarified various man pages. (addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=145044" TARGET="_blank">#145044</A>,
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=146437"
+   TARGET="_blank">#146437</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=131350"
+   TARGET="_blank">#131350</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=151990"
+   TARGET="_blank">#151990</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=144621"
+   TARGET="_blank">#144621</A>,
+   <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=141938" TARGET="_blank">#141938</A>)</P>
 
 <P>If there are no filesystems specified on fsck's command line, fsck now
 treat that as if the -As options were given.  Previously it would
-simply do nothing.  (Addresses Debian Bug #153102)</P>
+simply do nothing.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=153102" TARGET="_blank">#153102</A>)</P>
 
 <P>Mke2fs no longer treats a failure to be able to clear the MD signature
 at the end of the filesystem as a fatal error.  (Addresses Debian Bug
-#155007)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=155007" TARGET="_blank">#155007</A>)</P>
 
 <P>The e2p library functions (which are used by lsattr and chattr) now
 double check to make sure the file is a regular file or directory
 before attempting to use the ext2 ioctls.  Some device drivers
 unfortunately respond to the ext2 ioctl's with unknown behaviour.
-(Addresses Debian Bug #152029).</P>
+(Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=152029" TARGET="_blank">#152029</A>).</P>
 
 <P>The extended attribute handling has been updated to correspond with
 the latest V2 bestbits ACL code.</P>
@@ -5510,14 +6029,15 @@ exited before it exits.</P>
 
 <P>The uuid parsing code in the uuid library now properly complains when
 an illegally formated uuid is presented to it.  (Addresses Debian bug
-#152891)</P>
+<A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=152891" TARGET="_blank">#152891</A>)</P>
 
 <P>Restrict use of the 2.4 setrlimit ABI f*ckup to kernels between 2.4.10
 and 2.4.17, since the workaround can cause problems when using a 2.4
 kernel with an old version of glibc built with the 2.2 headers.</P>
 
 <P>Fixed a bug in mke2fs where it wasn't properly clearing the initial
-superblock used by other filesystems.  (Addresses Debian bug #147256.)</P>
+superblock used by other filesystems.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=147256" TARGET="_blank">#147256</A>.)</P>
 
 <P>Added support for the synchronous directory feature written by Andrew
 Morton.</P>
@@ -5674,7 +6194,8 @@ limits to be infinite on startup.</P>
 
 <P>Fixed a bug in e2fsck where it wasn't allocating a new block or inode
 bitmap if it wasn't present and the blocksize was 2k or 4k.
-(Addresses Debian Bug #116975)</P>
+(Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=116975" TARGET="_blank">#116975</A>)</P>
 
 <P>E2fsck will check and fix botched ext3 V1 to V2 superblock updates by
 clearing the new V2 fields if they do not make sense or if the ext3
@@ -5719,7 +6240,8 @@ operation failed.</P>
 <P>Mke2fs now creates the lost+found directory with permissions of 0700,
 so that files that had previously lived in protected directory are
 safe if they get dropped in lost+found and the system administrator
-doesn't deal with immediately.  (Addresses Debian #bug 118443)</P>
+doesn't deal with immediately.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=118443" TARGET="_blank">#118443</A>)</P>
 
 <P>Mke2fs and e2fsck (and all programs that use the
 ext2fs_check_if_mounted function) will now properly identify that a
@@ -5727,7 +6249,8 @@ device is mounted, even in cases where devfs has confused things with
 multiple devices names with the same identity, or if a dim-witted
 system administrator has done something stupid like creating device
 file aliases in their home directory.  Also now checks for swap devices
-by using /proc/swaps.  (Addresses Debian bug #106622)</P>
+by using /proc/swaps.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=106622" TARGET="_blank">#106622</A>)</P>
 
 <P>Added a new option (-T) to tune2fs which sets the time a filesystem
 was last checked.</P>
@@ -5771,7 +6294,10 @@ for wizards only.  :-)</P>
 
 <P>Debugfs was fixed to compile with "configure --disable-swapfs".</P>
 
-<P>Cleaned up various manual pages.   (Addresses Debian bug #119624, #120171)</P>
+<P>Cleaned up various manual pages.   (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=119624"
+  TARGET="_blank">#119624</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=120171" TARGET="_blank">#120171</A>)</P>
 
 <P>Added new translation file for Turkish.</P>
 
@@ -5819,7 +6345,8 @@ zapping disk sectors.  (This bug could cause mke2fs to core dump for
 some kernels, I suspect with security enhancement patches.)</P>
 
 <P>Remove unneeded #include of &lt;linux/config.h&gt; which was breaking
-building e2fsprogs on the Hurd.  (Addresses Debian bug #112414.)</P>
+building e2fsprogs on the Hurd.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=112414" TARGET="_blank">#112414</A>.)</P>
 
 <P>Updated tune2fs man page to reflect the fact that adding or removing a
 journal doesn't require running e2fsck.</P>
@@ -5881,7 +6408,8 @@ its mode bits).
 </P>
 
 <P>Fixed some minor texinfo, man pages nits for spelling errors,
-texinfo warnings, etc.  (Addresses Debian bug #110621.)
+texinfo warnings, etc.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=110621" TARGET="_blank">#110621</A>.)
 </P>
 
 <P>E2fsprogs program no longer print the filesystem version number
@@ -5947,26 +6475,31 @@ the filesystem has a lot blocks already allocated.
 </P>
 
 <P>Tune2fs has been fixed to make sure that only error messages go to
-stderr, and normal message go to stdout. (Addresses Debian bug #108555)
+stderr, and normal message go to stdout. (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=108555" TARGET="_blank">#108555</A>)
 </P>
 
 <P>Fixed a minor bug in mke2fs; if -O none is passed to mke2fs, it will
-now not set the sparse_super feature.  (Addresses Debian bug #108165)
+now not set the sparse_super feature.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=108165" TARGET="_blank">#108165</A>)
 </P>
 
 <P>Add support in fsck for the filesystem type "auto".
 </P>
 
 <P>Fsck -A will not try to interpret device names for filesystems which
-have a pass number is 0.  (Addresses Debian bug #106696).
+have a pass number is 0.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=106696" TARGET="_blank">#106696</A>).
 </P>
 
 <P>Fsck prints a warning message if now valid filesystems are passed to
-it.  (Addresses Debian Bug #107458.)
+it.  (Addresses Debian Bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=107458" TARGET="_blank">#107458</A>.)
 </P>
 
 <P>E2fsck now gives an explicit warning if there filesystem still has
-errors at the end of the run. (Addresses Debian bug #104502)
+errors at the end of the run. (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=104502" TARGET="_blank">#104502</A>)
 </P>
 
 <P>E2fsck will set the EXT2_ERROR_FS flag if the journal superblock
@@ -5980,7 +6513,10 @@ filesystem contains errors, since the orphan list might be corrupted.
 <P>Fixed minor memory leaks in e2fsck.
 </P>
 
-<P>Some minor man pages updates. (Addresses Debian bug #30833, #108174)
+<P>Some minor man pages updates. (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=30833"
+  TARGET="_blank">#30833</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=108174" TARGET="_blank">#108174</A>)
 </P>
 
 <H2><A NAME="1.22">E2fsprogs 1.22 (June 22, 2001)</A></H2>
@@ -6000,10 +6536,13 @@ tune2fs to fail at adding a journal to a mounted filesystem.
 		some directories as corrupted when they weren't.
 <LI> If e2fsprogs is compiled --disable-swapfs, the C language 
 		  equivalents weren't being included for big-endian platforms.
-		  (Fixes Debian bug #101686).
+		  (Fixes Debian bug
+		  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=101686"
+		  TARGET="_blank">#101686</A>).
 </UL>
 
-<P>Fixed a Hurd compilation problem.  (Addresses Debian bug #101361)
+<P>Fixed a Hurd compilation problem.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=101361" TARGET="_blank">#101361</A>)
 </P>
 
 <H3>Programmer's notes:</H3>
@@ -6066,11 +6605,13 @@ and offers to clear i_size_high.</P>
 
 <P>Fix e2fsck's handling of incompatible journal flags so that the user
 has chance to abort, and then has the option to clear out the journal
-entirely.  (Addresses Debian bug #98527.)</P>
+entirely.  (Addresses Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=98527" TARGET="_blank">#98527</A>.)</P>
 
 <P>Fixed a bug in fsck which could cause it to core dump if a mix of
 standard and non-standard device names are used in /etc/fstab.
-(Debian bug #100559)</P>
+(Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=100559" TARGET="_blank">#100559</A>)</P>
 
 <P>Fixed a bug in debugfs which caused read errors when copying a file to
 not be noticed.</P>
@@ -6160,7 +6701,8 @@ rest of the filesystem check (but after the journal playback).</P>
 <P>E2fsck now validates the file descriptor passed to the -C option,
 which saves against the completion bar getting written to an
 unexpected location, such as the disk being checked.  (Debian
-bug/wishlist #55220)</P>
+bug/wishlist
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=55220" TARGET="_blank">#55220</A>)</P>
 
 <P>E2fsck will now bump the filesystem revision number from zero to one
 if any of the compatibility bits are set.</P>
@@ -6189,7 +6731,8 @@ no longer cause e2fsck to bomb out.  Also treat files > 2GB as being
 large file when deciding whether or not the filesystem has large files.</P>
 
 <P>Fixed lsattr and chattr so that they work correctly on large files.
-(Fixes Debian bug #72690.)</P>
+(Fixes Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=72690" TARGET="_blank">#72690</A>.)</P>
 
 <P>Removed limitation in get_device_size() which imposed a one terrabyte
 filesystem limitation.  (Most 2.2 kernels still have a signed int
@@ -6211,7 +6754,8 @@ operations.</P>
 to core dump on an illegal filesystem.</P>
 
 <P>Fixed bug in fsck which could allow more than one instance of e2fsck
-to be printing a progress bar.  (Debian bug #65267)</P>
+to be printing a progress bar.  (Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=65267" TARGET="_blank">#65267</A>)</P>
 
 <P>Fsck using a UUID or a LABEL specifier will work even if devfs is
 compiled into the kernel and not mounted.  If the pathnames in
@@ -6219,7 +6763,8 @@ compiled into the kernel and not mounted.  If the pathnames in
 device (using the new ext2fs_find_block_device library function).
 Fsck now also checks the RAID devices first so that they are properly
 found when they are in use.  Support has also been added to support
-additional IDE disks and the DAC 960 device names.  (Debian bug #94159)</P>
+additional IDE disks and the DAC 960 device names.  (Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=94159" TARGET="_blank">#94159</A>)</P>
 
 <P>Fixed a bug in fsck which caused it not deal properly with 16
 byte long filesystem labels.</P>
@@ -6228,7 +6773,7 @@ byte long filesystem labels.</P>
 what happens if a comma-separated list to fsck has been regularized,
 and it is now possible to filter what filesystems will get checked
 based what is in the filesystem's fstab entry's option field.  (Debian
-bug #89483.)</P>
+bug <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=89483" TARGET="_blank">#89483</A>.)</P>
 
 <P>The dumpe2fs program can now print out the group description
 information in hex, and also prints the location of the superblock and
@@ -6258,7 +6803,8 @@ debugfs.</P>
 
 <P>Debugfs's dump command now stops immediately upon reporting a disk
 read error.  (Fixed a bug in ext2fs_file_read library routine which
-caused debugfs not to stop.)  (Debian bug #79163)</P>
+caused debugfs not to stop.)  (Debian bug
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=79163" TARGET="_blank">#79163</A>)</P>
 
 <P>On systems with /proc/mounts (mainly Linux systems), /proc/mounts is
 checked before /etc/mtab is used, since /proc/mounts is more likely to
@@ -6267,7 +6813,11 @@ be accurate.</P>
 <P>Added portability fixes for Solaris and Linux/ia64.</P>
 
 <P>Various manual pages were clarified and cleaned up.  (Fixed debian
-bugs #63442, #67446, and #87216)</P>
+bugs <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=63442"
+	TARGET="_blank">#63442</A>,
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=67446"
+  TARGET="_blank">#67446</A>, and
+  <A HREF="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=87216" TARGET="_blank">#87216</A>)</P>
 
 
 <H3>Programmer's notes:</H3>
