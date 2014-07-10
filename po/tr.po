@@ -70,7 +70,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.8\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2014-07-05 23:41-0400\n"
+"POT-Creation-Date: 2014-07-09 23:26-0400\n"
 "PO-Revision-Date: 2013-11-01 22:49+0100\n"
 "Last-Translator: Volkan Gezer <vlkngzr@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -6628,7 +6628,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Bu olmamalıydı: boyutlandırırken düğümü kaybettik!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12

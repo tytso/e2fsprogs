@@ -71,10 +71,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs-1.42.10\n"
+"Project-Id-Version: e2fsprogs-1.42.11-rc0\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2014-07-05 23:41-0400\n"
-"PO-Revision-Date: 2014-06-08 23:04+0200\n"
+"POT-Creation-Date: 2014-07-09 23:26-0400\n"
+"PO-Revision-Date: 2014-07-06 14:28+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -929,10 +929,8 @@ msgstr "Kaŝprotokola ĉefbloko estas difekta.\n"
 
 #. @-expanded: superblock has_journal flag is clear, but a journal is present.\n
 #: e2fsck/problem.c:228
-#, fuzzy
 msgid "@S has_@j flag is clear, but a @j is present.\n"
-msgstr ""
-"Maljesas ĉefbloka flago 'has_journal', sed ekzistas kaŝprotokola '%s'.\n"
+msgstr "Maljesas ĉefbloka flago 'has_journal', sed ekzistas kaŝprotokolo.\n"
 
 #. @-expanded: superblock needs_recovery flag is set, but no journal is present.\n
 #: e2fsck/problem.c:233
@@ -2791,24 +2789,24 @@ msgid "while determining whether %s is mounted."
 msgstr "dum eltrovo se %s estas surmetata."
 
 #: e2fsck/unix.c:253
-#, fuzzy, c-format
+#, c-format
 msgid "Warning!  %s is mounted.\n"
-msgstr "Averto!  %s estas %s.\n"
+msgstr "Averto!  %s estas surmetata.\n"
 
 #: e2fsck/unix.c:256
-#, fuzzy, c-format
+#, c-format
 msgid "Warning!  %s is in use.\n"
-msgstr "Averto!  %s estas %s.\n"
+msgstr "Averto!  %s uziĝas.\n"
 
 #: e2fsck/unix.c:262
-#, fuzzy, c-format
+#, c-format
 msgid "%s is mounted.\n"
-msgstr "%s estas surmetata; "
+msgstr "%s estas surmetata.\n"
 
 #: e2fsck/unix.c:264
-#, fuzzy, c-format
+#, c-format
 msgid "%s is in use.\n"
-msgstr "%s estas %s.\n"
+msgstr "%s uziĝas.\n"
 
 #: e2fsck/unix.c:266
 msgid ""
@@ -3489,9 +3487,9 @@ msgid "Pass completed, %u bad blocks found. (%d/%d/%d errors)\n"
 msgstr ""
 
 #: misc/chattr.c:86
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [-RVf] [-+=aAcCdDeijsStTu] [-v version] files...\n"
-msgstr "Uzmaniero:  %s [-RVf] [-+=AaCcDdeijsSu] [-v VERSIO] DOSIERO...\n"
+msgstr "Uzmaniero:  %s [-RVf] [-+=AaCcDdeijSsTtu] [-v VERSIO] DOSIERO...\n"
 
 #: misc/chattr.c:155
 #, c-format
@@ -3767,12 +3765,12 @@ msgstr ""
 #: misc/e2image.c:101
 #, c-format
 msgid "Usage: %s [ -r|Q ] [ -fr ] device image-file\n"
-msgstr ""
+msgstr "Uzmaniero:  %s [-r|Q] [-fr] APARATO BILDODOSIERO\n"
 
 #: misc/e2image.c:103
 #, c-format
 msgid "       %s -I device image-file\n"
-msgstr ""
+msgstr "            %s -I APARATO BILDODOSIERO\n"
 
 #: misc/e2image.c:104
 #, c-format
@@ -3780,6 +3778,8 @@ msgid ""
 "       %s -ra  [  -cfnp  ] [ -o src_offset ] [ -O dest_offset ] src_fs "
 "[ dest_fs ]\n"
 msgstr ""
+"            %s -ra  [-cfnp] [-o fontpozicio] [-O celpozicio] font-ds [cel-"
+"ds]\n"
 
 #: misc/e2image.c:169 misc/e2image.c:576 misc/e2image.c:582
 #: misc/e2image.c:1178
@@ -3846,7 +3846,7 @@ msgstr "Kopiado "
 #: misc/e2image.c:623
 msgid ""
 "Stopping now will destroy the filesystem, interrupt again if you are sure\n"
-msgstr ""
+msgstr "Halti nun detruos la dosiersistemon; interrompu denove se vi certas.\n"
 
 #: misc/e2image.c:649
 #, c-format
@@ -3881,6 +3881,8 @@ msgid ""
 "Warning: There are still tables in the cache while putting the cache, data "
 "will be lost so the image may not be valid.\n"
 msgstr ""
+"Averto: ankoraŭ ekzistas tabeloj en la kaŝmemoro dum sia konservado, tial "
+"datumoj perdiĝos kaj la bildo eble malvalidas.\n"
 
 #: misc/e2image.c:1145
 msgid "while allocating ext2_qcow2_image"
@@ -3905,7 +3907,7 @@ msgstr "dum asigno de kirlita bloka bitmapo"
 
 #: misc/e2image.c:1285
 msgid "Scanning inodes...\n"
-msgstr ""
+msgstr "Skanado de i-nodoj...\n"
 
 #: misc/e2image.c:1297
 msgid "Can't allocate block buffer"
@@ -3914,11 +3916,11 @@ msgstr "Mankas sufiĉa memoro por asigni bufron por bloko"
 #: misc/e2image.c:1336 misc/e2image.c:1350
 #, c-format
 msgid "while iterating over inode %u"
-msgstr ""
+msgstr "dum iteracio je i-nodo %u"
 
 #: misc/e2image.c:1381
 msgid "Raw and qcow2 images cannot be installed"
-msgstr ""
+msgstr "Krudajn kaj QCOW2-bildojn ne eblas instali"
 
 #: misc/e2image.c:1403
 msgid "error reading bitmaps"
@@ -3929,29 +3931,28 @@ msgid "while opening device file"
 msgstr "dum malfermo de aparatdosiero"
 
 #: misc/e2image.c:1426
-#, fuzzy
 msgid "while restoring the image table"
-msgstr "dum skribado de i-noda tabelo"
+msgstr "dum restaŭro de bilda tabelo"
 
 #: misc/e2image.c:1523
 msgid "-a option can only be used with raw or QCOW2 images."
-msgstr ""
+msgstr "Opcio '-a' uzeblas nur kun krudaj aŭ QCOW2-bildoj."
 
 #: misc/e2image.c:1529
 msgid "Offsets are only allowed with raw images."
-msgstr ""
+msgstr "Pozicioj uzeblas nur kun krudaj bildoj."
 
 #: misc/e2image.c:1534
 msgid "Move mode is only allowed with raw images."
-msgstr ""
+msgstr "Movmoduso uzeblas nur kun krudaj bildoj."
 
 #: misc/e2image.c:1539
 msgid "Move mode requires all data mode."
-msgstr ""
+msgstr "Movmoduso postulas 'all-data' moduson"
 
 #: misc/e2image.c:1549
 msgid "checking if mounted"
-msgstr ""
+msgstr "kontrolo je surmeto"
 
 #: misc/e2image.c:1556
 msgid ""
@@ -3960,29 +3961,33 @@ msgid ""
 "inconsistent image which will not be useful for debugging purposes.\n"
 "Use -f option if you really want to do that.\n"
 msgstr ""
+"\n"
+"Ruli 'e2image' je skribeble surmetata dosiersistemo povas rezulti\n"
+"en malkohera bildo kiu ne utilos por serĉo de programmisoj.\n"
+"Uzu opcio '-f' se vi vere volas fari tion.\n"
 
 #: misc/e2image.c:1608
 msgid "QCOW2 image can not be written to the stdout!\n"
-msgstr ""
+msgstr "Ne eblas skribi QCOW2-bildon al ĉefeligujo!\n"
 
 #: misc/e2image.c:1614
 msgid "Can not stat output\n"
-msgstr ""
+msgstr "Malsukcesis eltrovi statinformon pri eligujo\n"
 
 #: misc/e2image.c:1624
 #, c-format
 msgid "Image (%s) is compressed\n"
-msgstr ""
+msgstr "Bildo (%s) estas densigita\n"
 
 #: misc/e2image.c:1627
 #, c-format
 msgid "Image (%s) is encrypted\n"
-msgstr ""
+msgstr "Bildo (%s) estas ĉifrita\n"
 
 #: misc/e2image.c:1630
 #, c-format
 msgid "while trying to convert qcow2 image (%s) into raw image (%s)"
-msgstr ""
+msgstr "dum konverto de QCOW2-bildo (%s) al kruda bildo (%s)"
 
 #: misc/e2image.c:1639
 msgid "The -c option only supported in raw mode\n"
@@ -4105,7 +4110,7 @@ msgstr "AVERTO: malsukcesis malfermi %s: %s\n"
 #: misc/fsck.c:353
 #, c-format
 msgid "WARNING: bad format on line %d of %s\n"
-msgstr ""
+msgstr "AVERTO: malvalida sintakso en linio %d de %s\n"
 
 #: misc/fsck.c:370
 msgid ""
@@ -4114,6 +4119,10 @@ msgid ""
 "\tshould fix your /etc/fstab file as soon as you can.\n"
 "\n"
 msgstr ""
+"WARNING: /etc/fstab ne enhavas le sesan kampon (vicnumeron por 'fsck')\n"
+"    Ĉi tiu problemo nun ĉirkaŭiriĝos kaj evitiĝos, sed vi devus\n"
+"    korekti vian dosieron /etc/fstab la plej frue ke vi povas.\n"
+"\n"
 
 #: misc/fsck.c:478
 #, c-format
@@ -4123,37 +4132,39 @@ msgstr "fsck: %s ne troviĝis\n"
 #: misc/fsck.c:594
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
-msgstr ""
+msgstr "%s: wait: Ne plu ekzistas ida procezo!!\n"
 
 #: misc/fsck.c:616
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
-msgstr ""
+msgstr "Averto... %s por aparato %s finis kun signalo %d.\n"
 
 #: misc/fsck.c:622
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
-msgstr ""
+msgstr "%s %s: elirstato estas %x -- tio devus neniam okazi.\n"
 
 #: misc/fsck.c:661
 #, c-format
 msgid "Finished with %s (exit status %d)\n"
-msgstr ""
+msgstr "Finkontrolis aparaton %s (elirstato estas %d)\n"
 
 #: misc/fsck.c:721
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
-msgstr ""
+msgstr "%s: Eraro %d dum rulado de 'fsck.%s' por %s\n"
 
 #: misc/fsck.c:742
 msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
 msgstr ""
+"Aŭ ĉiuj aŭ neniuj de la dosiersistemaj tipoj je opcio '-t'\n"
+"devus esti prefiksitaj kun 'no' aŭ '!'.\n"
 
 #: misc/fsck.c:761
 msgid "Couldn't allocate memory for filesystem types\n"
-msgstr ""
+msgstr "Mankas sufiĉa memoro por dosiersistemaj tipoj\n"
 
 #: misc/fsck.c:884
 #, c-format
@@ -4161,11 +4172,13 @@ msgid ""
 "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
 "number\n"
 msgstr ""
+"%s: transsaltiĝas malbona linio en /etc/fstab: 'bind'-surmeto havas nenulan "
+"sesan kampon (vicnumeron por 'fsck')\n"
 
 #: misc/fsck.c:911
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
-msgstr "fsck: ne eblas kontroli %s: fsck.%s ne troviĝas\n"
+msgstr "fsck: ne eblas kontroli %s: 'fsck.%s' ne troviĝas\n"
 
 #: misc/fsck.c:967
 msgid "Checking all file systems.\n"
@@ -4466,9 +4479,8 @@ msgstr "Nevalida pozicio: %s\n"
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr "Nevalida 'mmp_update_interval': %s\n"
 
-# FIXME -- typo
 #: misc/mke2fs.c:826
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid # of backup superblocks: %s\n"
 msgstr "Malvalida nombro de savkopiaj ĉefblokoj: %s\n"
 
@@ -4668,11 +4680,9 @@ msgid "bad revision level - %s"
 msgstr "nevalida revizia nivelo: %s"
 
 #: misc/mke2fs.c:1684
-#, fuzzy, c-format
+#, c-format
 msgid "while trying to create revision %d"
 msgstr ""
-"\n"
-"    dum provo de krei kaŝprotokolon"
 
 #: misc/mke2fs.c:1698
 msgid "The -t option may only be used once"
@@ -6049,7 +6059,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12
@@ -6254,11 +6264,11 @@ msgstr "Nevalida i-nodnumero doniĝis al 'ext2fs_test_inode_bitmap()'"
 
 #: lib/ext2fs/ext2_err.c:62
 msgid "Attempt to fudge end of block bitmap past the real end"
-msgstr ""
+msgstr "Provo de smurfi la finon de bloka bitmapo trans la vera fino"
 
 #: lib/ext2fs/ext2_err.c:63
 msgid "Attempt to fudge end of inode bitmap past the real end"
-msgstr ""
+msgstr "Provo de smurfi la finon de i-noda bitmapo trans la vera fino"
 
 #: lib/ext2fs/ext2_err.c:64
 msgid "Illegal indirect block found"
@@ -6310,7 +6320,7 @@ msgstr "Troviĝis tro multaj da simbolaj ligoj."
 
 #: lib/ext2fs/ext2_err.c:76
 msgid "The callback function will not handle this case"
-msgstr ""
+msgstr "La referencvoka funkcio ne kapablas trakti ĉi tiun kazon"
 
 #: lib/ext2fs/ext2_err.c:77
 msgid "The inode is from a bad block in the inode table"
@@ -6406,11 +6416,11 @@ msgstr "Kaŝprotokolo ne troviĝis"
 
 #: lib/ext2fs/ext2_err.c:100
 msgid "Directory hash unsupported"
-msgstr ""
+msgstr "Uja haketo ne subtenatas"
 
 #: lib/ext2fs/ext2_err.c:101
 msgid "Illegal extended attribute block number"
-msgstr ""
+msgstr "Nevalida numero de bloko de etenditaj atributoj"
 
 #: lib/ext2fs/ext2_err.c:102
 msgid "Cannot create filesystem with requested number of inodes"
@@ -6418,7 +6428,7 @@ msgstr "Ne eblas krei dosiersistemon kun la petata nombro de i-nodoj"
 
 #: lib/ext2fs/ext2_err.c:103
 msgid "E2image snapshot not in use"
-msgstr ""
+msgstr "Snapŝoto de 'e2image' ne uziĝas"
 
 #: lib/ext2fs/ext2_err.c:104
 msgid "Too many reserved group descriptor blocks"
@@ -6430,7 +6440,7 @@ msgstr "Regrandiga i-nodo estas difekta"
 
 #: lib/ext2fs/ext2_err.c:106
 msgid "Tried to set block bmap with missing indirect block"
-msgstr ""
+msgstr "Provo de agordi blokan bitmapon kun mankanta nerekta bloko"
 
 #: lib/ext2fs/ext2_err.c:107
 msgid "TDB: Success"
@@ -6478,87 +6488,87 @@ msgstr "Ext2-dosieruja bloka listo vakas"
 
 #: lib/ext2fs/ext2_err.c:118
 msgid "Attempt to modify a block mapping via a read-only block iterator"
-msgstr ""
+msgstr "Provo de ŝanĝi blokasignon per nurlega blokiterilo"
 
 #: lib/ext2fs/ext2_err.c:119
 msgid "Wrong magic number for ext4 extent saved path"
-msgstr ""
+msgstr "Malĝustas maginumero por 'ext4 extent saved path'"
 
 #: lib/ext2fs/ext2_err.c:120
 msgid "Wrong magic number for 64-bit generic bitmap"
-msgstr ""
+msgstr "Malĝustas maginumero por 64-bita komuna bitmapo"
 
 #: lib/ext2fs/ext2_err.c:121
 msgid "Wrong magic number for 64-bit block bitmap"
-msgstr ""
+msgstr "Malĝustas maginumero por 64-bita bloka bitmapo"
 
 #: lib/ext2fs/ext2_err.c:122
 msgid "Wrong magic number for 64-bit inode bitmap"
-msgstr ""
+msgstr "Malĝustas maginumero por 64-bita i-noda bitmapo"
 
 #: lib/ext2fs/ext2_err.c:123
 msgid "Wrong magic number --- RESERVED_13"
-msgstr ""
+msgstr "Malĝustas maginumero -- RESERVED_13"
 
 #: lib/ext2fs/ext2_err.c:124
 msgid "Wrong magic number --- RESERVED_14"
-msgstr ""
+msgstr "Malĝustas maginumero -- RESERVED_14"
 
 #: lib/ext2fs/ext2_err.c:125
 msgid "Wrong magic number --- RESERVED_15"
-msgstr ""
+msgstr "Malĝustas maginumero -- RESERVED_15"
 
 #: lib/ext2fs/ext2_err.c:126
 msgid "Wrong magic number --- RESERVED_16"
-msgstr ""
+msgstr "Malĝustas maginumero -- RESERVED_16"
 
 #: lib/ext2fs/ext2_err.c:127
 msgid "Wrong magic number --- RESERVED_17"
-msgstr ""
+msgstr "Malĝustas maginumero -- RESERVED_17"
 
 #: lib/ext2fs/ext2_err.c:128
 msgid "Wrong magic number --- RESERVED_18"
-msgstr ""
+msgstr "Malĝustas maginumero -- RESERVED_18"
 
 #: lib/ext2fs/ext2_err.c:129
 msgid "Wrong magic number --- RESERVED_19"
-msgstr ""
+msgstr "Malĝustas maginumero -- RESERVED_19"
 
 #: lib/ext2fs/ext2_err.c:130
 msgid "Corrupt extent header"
-msgstr ""
+msgstr "Difekta ampleksa ĉapo"
 
 #: lib/ext2fs/ext2_err.c:131
 msgid "Corrupt extent index"
-msgstr ""
+msgstr "Difekta ampleksa indekso"
 
 #: lib/ext2fs/ext2_err.c:132
 msgid "Corrupt extent"
-msgstr ""
+msgstr "Difekta amplekso"
 
 #: lib/ext2fs/ext2_err.c:133
 msgid "No free space in extent map"
-msgstr ""
+msgstr "Ampleksmapo ne havas liberan spacon"
 
 #: lib/ext2fs/ext2_err.c:134
 msgid "Inode does not use extents"
-msgstr ""
+msgstr "I-nodo ne uzas ampleksojn"
 
 #: lib/ext2fs/ext2_err.c:135
 msgid "No 'next' extent"
-msgstr ""
+msgstr "Malestas 'next'-amplekso"
 
 #: lib/ext2fs/ext2_err.c:136
 msgid "No 'previous' extent"
-msgstr ""
+msgstr "Malestas 'previous'-amplekso"
 
 #: lib/ext2fs/ext2_err.c:137
 msgid "No 'up' extent"
-msgstr ""
+msgstr "Malestas 'up'-amplekso"
 
 #: lib/ext2fs/ext2_err.c:138
 msgid "No 'down' extent"
-msgstr ""
+msgstr "Malestas 'down'-amplekso"
 
 #: lib/ext2fs/ext2_err.c:139
 msgid "No current node"
@@ -6570,7 +6580,7 @@ msgstr "tiu Ext2fs-operacio ne subtenatas"
 
 #: lib/ext2fs/ext2_err.c:141
 msgid "No room to insert extent in node"
-msgstr ""
+msgstr "Mankas spaco por enmeti amplekson en nodo"
 
 #: lib/ext2fs/ext2_err.c:142
 msgid "Splitting would result in empty node"
@@ -6578,15 +6588,15 @@ msgstr "Fendo rezultus en vaka nodo"
 
 #: lib/ext2fs/ext2_err.c:143
 msgid "Extent not found"
-msgstr ""
+msgstr "Amplekso ne troviĝis"
 
 #: lib/ext2fs/ext2_err.c:144
 msgid "Operation not supported for inodes containing extents"
-msgstr ""
+msgstr "Operacio ne subtenatas por i-nodoj kiuj enhavas ampleksojn"
 
 #: lib/ext2fs/ext2_err.c:145
 msgid "Extent length is invalid"
-msgstr ""
+msgstr "Ampleksa longo malvalidas"
 
 #: lib/ext2fs/ext2_err.c:146
 msgid "I/O Channel does not support 64-bit block numbers"

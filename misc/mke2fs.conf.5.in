@@ -480,6 +480,13 @@ files.  It also forces the size of huge files to be a multiple of the
 requested alignment.  If this relation is not specified, no alignment
 requirement will be imposed on the huge files.
 .TP
+.I hugefiles_align_disk
+Thie relations specifies whether the alignment should be relative to the
+beginning of the hard drive (assuming that the starting offset of the
+partition is available to mke2fs).  The default value is false, which
+if will cause hugefile alignment to be relative to the beginning of the
+file system.
+.TP
 .I hugefiles_name
 This relation specifies the base file name for the huge files.
 .TP

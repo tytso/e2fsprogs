@@ -71,7 +71,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.10\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2014-07-05 23:41-0400\n"
+"POT-Creation-Date: 2014-07-09 23:26-0400\n"
 "PO-Revision-Date: 2014-06-23 22:17+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -6385,7 +6385,8 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Skulle aldrig inträffa: storleksändringsinoden trasig!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
+#, fuzzy
+msgid "EXT2FS Library version 1.42.11"
 msgstr "EXT2FS-bibliotek version 1.42.10"
 
 #: lib/ext2fs/ext2_err.c:12
