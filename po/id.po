@@ -73,7 +73,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.41.12\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2014-07-05 23:41-0400\n"
+"POT-Creation-Date: 2014-07-09 23:26-0400\n"
 "PO-Revision-Date: 2010-05-24 12:30+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -6352,7 +6352,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Seharusnya tidak pernah terjadi: resize inode corrupt!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12

@@ -78,7 +78,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.42.11-rc0\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2014-07-05 23:41-0400\n"
+"POT-Creation-Date: 2014-07-09 23:26-0400\n"
 "PO-Revision-Date: 2014-07-06 22:49+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -804,15 +804,15 @@ msgstr "SE RECREARÁ"
 #: e2fsck/problem.c:107
 msgid "@b @B for @g %g is not in @g.  (@b %b)\n"
 msgstr ""
-"El mapa de bits de bloques para el grupo %g no está en el grupo.  (bloque %"
-"b)\n"
+"El mapa de bits de bloques para el grupo %g no está en el grupo.  (bloque "
+"%b)\n"
 
 #. @-expanded: inode bitmap for group %g is not in group.  (block %b)\n
 #: e2fsck/problem.c:111
 msgid "@i @B for @g %g is not in @g.  (@b %b)\n"
 msgstr ""
-"El mapa de bits de nodos-i para el grupo %g no está en el grupo.  (bloque %"
-"b)\n"
+"El mapa de bits de nodos-i para el grupo %g no está en el grupo.  (bloque "
+"%b)\n"
 
 #. @-expanded: inode table for group %g is not in group.  (block %b)\n
 #. @-expanded: WARNING: SEVERE DATA LOSS POSSIBLE.\n
@@ -4490,8 +4490,8 @@ msgid ""
 "\tbad blocks.\n"
 "\n"
 msgstr ""
-"Atención: los descriptores de respaldo del superbloque/grupo en el bloque %"
-"u\n"
+"Atención: los descriptores de respaldo del superbloque/grupo en el bloque "
+"%u\n"
 "\tcontienen bloques dañados.\n"
 "\n"
 
@@ -4510,8 +4510,8 @@ msgid ""
 "Could not write %d blocks in inode table starting at %llu: %s\n"
 msgstr ""
 "\n"
-"No se pueden escribir %d bloques en la tabla de nodos-i al principio de %u: %"
-"s\n"
+"No se pueden escribir %d bloques en la tabla de nodos-i al principio de %u: "
+"%s\n"
 
 #: misc/mke2fs.c:421 misc/mke2fs.c:2477 misc/mke2fs.c:2762
 msgid "done                            \n"
@@ -6482,7 +6482,7 @@ msgstr ""
 "Esto nunca debería suceder: ¡Se cambia el tamaño del nodo-i corrupto!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12

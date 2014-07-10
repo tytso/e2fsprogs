@@ -6322,8 +6322,8 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Dies sollte nie geschehen: Der Größenänderungs-Inode ist defekt!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
-msgstr "EXT2FS-Bibliothek, Version 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
+msgstr "EXT2FS-Bibliothek, Version 1.42.11"
 
 #: lib/ext2fs/ext2_err.c:12
 msgid "Wrong magic number for ext2_filsys structure"

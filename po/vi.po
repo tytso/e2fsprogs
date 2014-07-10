@@ -6236,8 +6236,8 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Không bao giờ nên xảy ra: nút thông tin thay đổi kích cỡ bị hỏng !\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
-msgstr "Thư viện EXT2FS phiên bản 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
+msgstr "Thư viện EXT2FS phiên bản 1.42.11"
 
 #: lib/ext2fs/ext2_err.c:12
 msgid "Wrong magic number for ext2_filsys structure"

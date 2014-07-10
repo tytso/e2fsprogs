@@ -6257,8 +6257,8 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Такого не повинно було статися: inode зміни розмірів пошкоджено!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
-msgstr "Бібліотека EXT2FS версії 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
+msgstr "Бібліотека EXT2FS версії 1.42.11"
 
 #: lib/ext2fs/ext2_err.c:12
 msgid "Wrong magic number for ext2_filsys structure"

@@ -73,7 +73,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.42.11-rc0\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2014-07-05 23:41-0400\n"
+"POT-Creation-Date: 2014-07-09 23:26-0400\n"
 "PO-Revision-Date: 2014-07-06 14:28+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -188,7 +188,8 @@ msgstr "Uzmaniero:  %s DISKO\n"
 #: e2fsck/flushb.c:64
 #, c-format
 msgid "BLKFLSBUF ioctl not supported!  Can't flush buffers.\n"
-msgstr "La 'ioctl(BLKFLSBUF)' ne subtenatas!  Ne eblas peli bufrajn enhavojn.\n"
+msgstr ""
+"La 'ioctl(BLKFLSBUF)' ne subtenatas!  Ne eblas peli bufrajn enhavojn.\n"
 
 #: e2fsck/iscan.c:44
 #, c-format
@@ -890,7 +891,9 @@ msgstr "Ĉefbloko havas malvalidan kaŝprotokolon (@i %i).\n"
 #. @-expanded: External journal has multiple filesystem users (unsupported).\n
 #: e2fsck/problem.c:195
 msgid "External @j has multiple @f users (unsupported).\n"
-msgstr "Ekstera kaŝprotokolo havas plurajn dosiersistemajn uzantojn (ne subtenatas).\n"
+msgstr ""
+"Ekstera kaŝprotokolo havas plurajn dosiersistemajn uzantojn (ne "
+"subtenatas).\n"
 
 #. @-expanded: Can't find external journal\n
 #: e2fsck/problem.c:200
@@ -914,7 +917,8 @@ msgstr "Ekstera kaŝprotokolo ne subtenas ĉi tiun dosiersistemon.\n"
 #: e2fsck/problem.c:215
 msgid ""
 "@f @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
+"format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
 
@@ -1134,10 +1138,12 @@ msgstr ""
 #: e2fsck/problem.c:388
 msgid ""
 "@S last mount time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set)  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set)  "
 msgstr ""
 "En @S la tempo de lasta surmeto estas en la estonteco.\n"
-"    (je malpli ol unu tago, probable kaŭze de malbona alĝustigo de fizika horloĝo)  "
+"    (je malpli ol unu tago, probable kaŭze de malbona alĝustigo de fizika "
+"horloĝo)  "
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
@@ -1145,10 +1151,12 @@ msgstr ""
 #: e2fsck/problem.c:394
 msgid ""
 "@S last write time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly set).  "
+"\t(by less than a day, probably due to the hardware clock being incorrectly "
+"set).  "
 msgstr ""
 "En @S la tempo de lasta skribo estas en la estonteco.\n"
-"    (je malpli ol unu tago, probable kaŭze de malbona alĝustigo de fizika horloĝo)  "
+"    (je malpli ol unu tago, probable kaŭze de malbona alĝustigo de fizika "
+"horloĝo)  "
 
 #. @-expanded: One or more block group descriptor checksums are invalid.  
 #: e2fsck/problem.c:400
@@ -1194,7 +1202,9 @@ msgstr "ext2fs_check_desc(): %m\n"
 #. @-expanded: superblock 64bit filesystems needs extents to access the whole disk.  
 #: e2fsck/problem.c:440
 msgid "@S 64bit filesystems needs extents to access the whole disk.  "
-msgstr "@S de 64-bitaj dosiersistemoj bezonas ampleksojn por atingi la tutan diskon.  "
+msgstr ""
+"@S de 64-bitaj dosiersistemoj bezonas ampleksojn por atingi la tutan "
+"diskon.  "
 
 #. @-expanded: Pass 1: Checking inodes, blocks, and sizes\n
 #: e2fsck/problem.c:447
@@ -1368,12 +1378,14 @@ msgstr "Averto: ĉefbloko %b de grupo %g malbonas.\n"
 #. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
 #: e2fsck/problem.c:590
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr "Averto: en grupo %g la kopio de la gruppriaĵoj havas malbonan blokon (%b).\n"
+msgstr ""
+"Averto: en grupo %g la kopio de la gruppriaĵoj havas malbonan blokon (%b).\n"
 
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
 #: e2fsck/problem.c:596
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
-msgstr "**Programmiso?**  Bloko %b senrezone pretendiĝis en process_bad_block().\n"
+msgstr ""
+"**Programmiso?**  Bloko %b senrezone pretendiĝis en process_bad_block().\n"
 
 #. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
 #: e2fsck/problem.c:602
@@ -1444,12 +1456,14 @@ msgstr "Eraro dum iteracio je blokoj en @i %i: %m\n"
 #. @-expanded: Error storing inode count information (inode=%i, count=%N): %m\n
 #: e2fsck/problem.c:662
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
-msgstr "Eraro dum skribado de informo pri i-noda nombro (@i=%i, nombro=%N): %m\n"
+msgstr ""
+"Eraro dum skribado de informo pri i-noda nombro (@i=%i, nombro=%N): %m\n"
 
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
 #: e2fsck/problem.c:667
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr "Eraro dum skribado de informo pri uja bloko (@i=%i, @b=%b, numero=%N): %m\n"
+msgstr ""
+"Eraro dum skribado de informo pri uja bloko (@i=%i, @b=%b, numero=%N): %m\n"
 
 #. @-expanded: Error reading inode %i: %m\n
 #: e2fsck/problem.c:673
@@ -1478,7 +1492,8 @@ msgstr ""
 #: e2fsck/problem.c:692
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
-msgstr "@i %i havas jesan densigan flagon en dosiersistemo sen subteno por densigo.  "
+msgstr ""
+"@i %i havas jesan densigan flagon en dosiersistemo sen subteno por densigo.  "
 
 #. @-expanded: Special (device/socket/fifo) inode %i has non-zero size.  
 #: e2fsck/problem.c:697
@@ -1585,7 +1600,9 @@ msgstr "%B (%b) estigas simbolan ligon tro granda.  "
 #: e2fsck/problem.c:802
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
-msgstr "@i %i havas jesan flagon 'INDEX_FL' en dosiersistemo sen subteno por 'HTREE'.\n"
+msgstr ""
+"@i %i havas jesan flagon 'INDEX_FL' en dosiersistemo sen subteno por "
+"'HTREE'.\n"
 
 #. @-expanded: inode %i has INDEX_FL flag set but is not a directory.\n
 #: e2fsck/problem.c:807
@@ -1707,7 +1724,9 @@ msgstr ""
 #: e2fsck/problem.c:899
 #, c-format
 msgid "@i %i has EXTENTS_FL flag set on @f without extents support.\n"
-msgstr "@i %i havas jesan flagon 'EXTENTS_FL' en dosiersistemo sen subteno por ampleksoj.\n"
+msgstr ""
+"@i %i havas jesan flagon 'EXTENTS_FL' en dosiersistemo sen subteno por "
+"ampleksoj.\n"
 
 #. @-expanded: inode %i is in extent format, but superblock is missing EXTENTS feature\n
 #: e2fsck/problem.c:904
@@ -1836,12 +1855,15 @@ msgstr "Eraro dum iteracio je blokoj en @i %i (%s): %m\n"
 #. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
 #: e2fsck/problem.c:1010 e2fsck/problem.c:1325
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr "Eraro dum alĝustigo de referencnombro por @b %b de etenditaj atributoj (@i %i): %m\n"
+msgstr ""
+"Eraro dum alĝustigo de referencnombro por @b %b de etenditaj atributoj (@i "
+"%i): %m\n"
 
 #. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
 #: e2fsck/problem.c:1015
 msgid "Pass 1C: Scanning directories for @is with @m @bs\n"
-msgstr "Paŝo 1C: Skanado de dosierujoj por i-nodoj kun pluroble posedataj blokoj...\n"
+msgstr ""
+"Paŝo 1C: Skanado de dosierujoj por i-nodoj kun pluroble posedataj blokoj...\n"
 
 #. @-expanded: Pass 1D: Reconciling multiply-claimed blocks\n
 #: e2fsck/problem.c:1021
@@ -2131,7 +2153,8 @@ msgstr "@b de etenditaj atributoj @F malvalida (%If).\n"
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
 #: e2fsck/problem.c:1291
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
-msgstr "@f enhavas grandajn dosierojn, sed maljesas flago 'LARGE_FILE' en @S.\n"
+msgstr ""
+"@f enhavas grandajn dosierojn, sed maljesas flago 'LARGE_FILE' en @S.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B not referenced\n
 #: e2fsck/problem.c:1296
@@ -2450,12 +2473,14 @@ msgstr "Malsamoj en i-noda bitmapo: "
 #. @-expanded: Free inodes count wrong for group #%g (%i, counted=%j).\n
 #: e2fsck/problem.c:1634
 msgid "Free @is count wrong for @g #%g (%i, counted=%j).\n"
-msgstr "Nombro de liberaj i-nodoj malĝustas por grupo %g (estas %i, nombriĝis %j).\n"
+msgstr ""
+"Nombro de liberaj i-nodoj malĝustas por grupo %g (estas %i, nombriĝis %j).\n"
 
 #. @-expanded: Directories count wrong for group #%g (%i, counted=%j).\n
 #: e2fsck/problem.c:1639
 msgid "Directories count wrong for @g #%g (%i, counted=%j).\n"
-msgstr "Nombro de dosierujoj malĝustas por grupo %g (estas %i, nombriĝis %j).\n"
+msgstr ""
+"Nombro de dosierujoj malĝustas por grupo %g (estas %i, nombriĝis %j).\n"
 
 #. @-expanded: Free inodes count wrong (%i, counted=%j).\n
 #: e2fsck/problem.c:1644
@@ -2465,7 +2490,8 @@ msgstr "Nombro de liberaj i-nodoj malĝustas (estas %i, nombriĝis %j).\n"
 #. @-expanded: Free blocks count wrong for group #%g (%b, counted=%c).\n
 #: e2fsck/problem.c:1649
 msgid "Free @bs count wrong for @g #%g (%b, counted=%c).\n"
-msgstr "Nombro de liberaj blokoj malĝustas por grupo %g (estas %b, nombriĝis %c)\n"
+msgstr ""
+"Nombro de liberaj blokoj malĝustas por grupo %g (estas %b, nombriĝis %c)\n"
 
 #. @-expanded: Free blocks count wrong (%b, counted=%c).\n
 #: e2fsck/problem.c:1654
@@ -2475,7 +2501,9 @@ msgstr "Nombro de liberaj blokoj malĝustas (estas %b, nombriĝis %c)\n"
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:1659
-msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
+msgid ""
+"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
+"endpoints (%i, %j)\n"
 msgstr ""
 
 #: e2fsck/problem.c:1665
@@ -2498,13 +2526,15 @@ msgstr "Eraro dum kopiado de anstataŭa bloka @B: %m\n"
 #: e2fsck/problem.c:1700
 #, c-format
 msgid "@g %g @b(s) in use but @g is marked BLOCK_UNINIT\n"
-msgstr "@g %g havas blokojn uzatajn, sed la @g estas markita kiel 'BLOCK_UNINIT'\n"
+msgstr ""
+"@g %g havas blokojn uzatajn, sed la @g estas markita kiel 'BLOCK_UNINIT'\n"
 
 #. @-expanded: group %g inode(s) in use but group is marked INODE_UNINIT\n
 #: e2fsck/problem.c:1705
 #, c-format
 msgid "@g %g @i(s) in use but @g is marked INODE_UNINIT\n"
-msgstr "@g %g havas i-nodojn uzatajn, sed la @g estas markita kiel 'INODE_UNINIT'\n"
+msgstr ""
+"@g %g havas i-nodojn uzatajn, sed la @g estas markita kiel 'INODE_UNINIT'\n"
 
 #. @-expanded: Recreate journal
 #: e2fsck/problem.c:1712
@@ -2580,7 +2610,8 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock list\n"
+" -c                   Check for bad blocks and add them to the badblock "
+"list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -2644,7 +2675,9 @@ msgstr[1] "%12u nekontinuaj dosierujoj (%0d.%d%%)\n"
 #: e2fsck/unix.c:171
 #, c-format
 msgid "             # of inodes with ind/dind/tind blocks: %u/%u/%u\n"
-msgstr "             nombro de i-nodoj kun nerektaj blokoj: %u simple, %u duoble, %u trioble\n"
+msgstr ""
+"             nombro de i-nodoj kun nerektaj blokoj: %u simple, %u duoble, %u "
+"trioble\n"
 
 #: e2fsck/unix.c:179
 msgid "             Extent depth histogram: "
@@ -2926,7 +2959,9 @@ msgstr ""
 
 #: e2fsck/unix.c:1132
 #, c-format
-msgid "MMP interval is %u seconds and total wait time is %u seconds. Please wait...\n"
+msgid ""
+"MMP interval is %u seconds and total wait time is %u seconds. Please "
+"wait...\n"
 msgstr ""
 
 #: e2fsck/unix.c:1149 e2fsck/unix.c:1154
@@ -3023,8 +3058,12 @@ msgid "while checking ext3 journal for %s"
 msgstr "dum kontrolado de Ext3-kaŝprotokolo por %s"
 
 #: e2fsck/unix.c:1492
-msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
-msgstr "Averto: transsaltiĝas kaŝprotokola restaŭro, ĉar fariĝas nurlega kontrolo de dosiersistemo.\n"
+msgid ""
+"Warning: skipping journal recovery because doing a read-only filesystem "
+"check.\n"
+msgstr ""
+"Averto: transsaltiĝas kaŝprotokola restaŭro, ĉar fariĝas nurlega kontrolo de "
+"dosiersistemo.\n"
 
 #: e2fsck/unix.c:1504
 #, c-format
@@ -3250,7 +3289,9 @@ msgid "while allocating zeroizing buffer"
 msgstr ""
 
 #: e2fsck/util.c:785
-msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is running.\n"
+msgid ""
+"UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is "
+"running.\n"
 msgstr ""
 
 #: misc/badblocks.c:69
@@ -3261,7 +3302,8 @@ msgstr ""
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e max_bad_blocks]\n"
+"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e "
+"max_bad_blocks]\n"
 "       [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 "       device [last_block [first_block]]\n"
 msgstr ""
@@ -3732,8 +3774,12 @@ msgstr "            %s -I APARATO BILDODOSIERO\n"
 
 #: misc/e2image.c:104
 #, c-format
-msgid "       %s -ra  [  -cfnp  ] [ -o src_offset ] [ -O dest_offset ] src_fs [ dest_fs ]\n"
-msgstr "            %s -ra  [-cfnp] [-o fontpozicio] [-O celpozicio] font-ds [cel-ds]\n"
+msgid ""
+"       %s -ra  [  -cfnp  ] [ -o src_offset ] [ -O dest_offset ] src_fs "
+"[ dest_fs ]\n"
+msgstr ""
+"            %s -ra  [-cfnp] [-o fontpozicio] [-O celpozicio] font-ds [cel-"
+"ds]\n"
 
 #: misc/e2image.c:169 misc/e2image.c:576 misc/e2image.c:582
 #: misc/e2image.c:1178
@@ -3798,7 +3844,8 @@ msgid "Copying "
 msgstr "Kopiado "
 
 #: misc/e2image.c:623
-msgid "Stopping now will destroy the filesystem, interrupt again if you are sure\n"
+msgid ""
+"Stopping now will destroy the filesystem, interrupt again if you are sure\n"
 msgstr "Halti nun detruos la dosiersistemon; interrompu denove se vi certas.\n"
 
 #: misc/e2image.c:649
@@ -3830,8 +3877,12 @@ msgid "while allocating l2 cache"
 msgstr "dum asigno de l2-kaŝmemoro"
 
 #: misc/e2image.c:823
-msgid "Warning: There are still tables in the cache while putting the cache, data will be lost so the image may not be valid.\n"
-msgstr "Averto: ankoraŭ ekzistas tabeloj en la kaŝmemoro dum sia konservado, tial datumoj perdiĝos kaj la bildo eble malvalidas.\n"
+msgid ""
+"Warning: There are still tables in the cache while putting the cache, data "
+"will be lost so the image may not be valid.\n"
+msgstr ""
+"Averto: ankoraŭ ekzistas tabeloj en la kaŝmemoro dum sia konservado, tial "
+"datumoj perdiĝos kaj la bildo eble malvalidas.\n"
 
 #: misc/e2image.c:1145
 msgid "while allocating ext2_qcow2_image"
@@ -4117,8 +4168,12 @@ msgstr "Mankas sufiĉa memoro por dosiersistemaj tipoj\n"
 
 #: misc/fsck.c:884
 #, c-format
-msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
-msgstr "%s: transsaltiĝas malbona linio en /etc/fstab: 'bind'-surmeto havas nenulan sesan kampon (vicnumeron por 'fsck')\n"
+msgid ""
+"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
+"number\n"
+msgstr ""
+"%s: transsaltiĝas malbona linio en /etc/fstab: 'bind'-surmeto havas nenulan "
+"sesan kampon (vicnumeron por 'fsck')\n"
 
 #: misc/fsck.c:911
 #, c-format
@@ -4135,7 +4190,8 @@ msgid "--waiting-- (pass %d)\n"
 msgstr "--atendado-- (paŝo %d)\n"
 
 #: misc/fsck.c:1078
-msgid "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
+msgid ""
+"Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
 msgstr ""
 "Uzmaniero:  fsck [-AMNPRTV] [-C [dosierpriaĵo]] [-t dosiersistemtipo]\n"
 "                 [dosiersistemopcioj] [dosiersistemo...]\n"
@@ -4174,7 +4230,8 @@ msgid ""
 "\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 "\t[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]\n"
 "\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]\n"
-"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-count]\n"
+"\t[-t fs-type] [-T usage-type ] [-U UUID] [-jnqvDFKSV] device [blocks-"
+"count]\n"
 msgstr ""
 
 #: misc/mke2fs.c:252
@@ -4598,7 +4655,9 @@ msgid "invalid inode size - %s"
 msgstr "nevalida i-noda grando: %s"
 
 #: misc/mke2fs.c:1623
-msgid "Warning: -K option is deprecated and should not be used anymore. Use '-E nodiscard' extended option instead!\n"
+msgid ""
+"Warning: -K option is deprecated and should not be used anymore. Use '-E "
+"nodiscard' extended option instead!\n"
 msgstr ""
 
 #: misc/mke2fs.c:1634
@@ -4641,7 +4700,9 @@ msgstr "dum provo de malfermi kaŝprotokolan aparaton %s\n"
 #: misc/mke2fs.c:1765
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
-msgstr "Blokgrando %d de kaŝprotokola aparato estas pli malgranda ol minimuma blokgrando %d\n"
+msgstr ""
+"Blokgrando %d de kaŝprotokola aparato estas pli malgranda ol minimuma "
+"blokgrando %d\n"
 
 #: misc/mke2fs.c:1771
 #, c-format
@@ -4699,7 +4760,8 @@ msgstr "dum agordo de blokgrando; ĝi tro malgrandas por aparato\n"
 
 #: misc/mke2fs.c:1949
 #, c-format
-msgid "Warning: specified blocksize %d is less than device physical sectorsize %d\n"
+msgid ""
+"Warning: specified blocksize %d is less than device physical sectorsize %d\n"
 msgstr ""
 
 #: misc/mke2fs.c:1973
@@ -4731,7 +4793,9 @@ msgid "invalid reserved blocks percent - %lf"
 msgstr "nevalida elcento de rezervitaj blokoj: %lf"
 
 #: misc/mke2fs.c:2047
-msgid "Extents MUST be enabled for a 64-bit filesystem.  Pass -O extents to rectify.\n"
+msgid ""
+"Extents MUST be enabled for a 64-bit filesystem.  Pass -O extents to "
+"rectify.\n"
 msgstr ""
 
 #: misc/mke2fs.c:2067
@@ -4754,7 +4818,8 @@ msgstr ""
 
 #: misc/mke2fs.c:2097
 #, c-format
-msgid "This may result in very poor performance, (re)-partitioning suggested.\n"
+msgid ""
+"This may result in very poor performance, (re)-partitioning suggested.\n"
 msgstr ""
 
 #: misc/mke2fs.c:2118
@@ -4764,7 +4829,8 @@ msgstr ""
 
 #: misc/mke2fs.c:2122
 #, c-format
-msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgid ""
+"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
 msgstr ""
 
 #: misc/mke2fs.c:2178
@@ -4989,7 +5055,8 @@ msgstr ""
 msgid ""
 "Usage: %s [-c max_mounts_count] [-e errors_behavior] [-g group]\n"
 "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
-"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p mmp_update_interval]\n"
+"\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]] [-p "
+"mmp_update_interval]\n"
 "\t[-r reserved_blocks_count] [-u user] [-C mount_count] [-L volume_label]\n"
 "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
 "\t[-Q quota_options]\n"
@@ -5161,7 +5228,8 @@ msgid ""
 "\n"
 "Bad quota options specified.\n"
 "\n"
-"Following valid quota options are available (pass by separating with comma):\n"
+"Following valid quota options are available (pass by separating with "
+"comma):\n"
 "\t[^]usrquota\n"
 "\t[^]grpquota\n"
 "\n"
@@ -5234,7 +5302,8 @@ msgstr ""
 #: misc/tune2fs.c:1220
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
-msgid_plural "Setting multiple mount protection update interval to %lu seconds\n"
+msgid_plural ""
+"Setting multiple mount protection update interval to %lu seconds\n"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5430,7 +5499,8 @@ msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr ""
 
 #: misc/tune2fs.c:2172
-msgid "The quota feature may only be changed when the filesystem is unmounted.\n"
+msgid ""
+"The quota feature may only be changed when the filesystem is unmounted.\n"
 msgstr ""
 
 #: misc/tune2fs.c:2191
@@ -5954,7 +6024,9 @@ msgstr ""
 
 #: resize/online.c:298
 #, c-format
-msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
+msgid ""
+"Filesystem at %s is mounted on %s, and on-line resizing is not supported on "
+"this system.\n"
 msgstr ""
 
 #: resize/resize2fs.c:402
@@ -5987,7 +6059,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12
@@ -6532,7 +6604,8 @@ msgstr "En-eliga kanalo ne subtenas 64-bitajn bloknumerojn"
 
 #: lib/ext2fs/ext2_err.c:147
 msgid "Can't check if filesystem is mounted due to missing mtab file"
-msgstr "Ne eblas kontroli se dosiersistemo estas muntita, ĉar mankas dosiero 'mtab'"
+msgstr ""
+"Ne eblas kontroli se dosiersistemo estas muntita, ĉar mankas dosiero 'mtab'"
 
 #: lib/ext2fs/ext2_err.c:148
 msgid "Filesystem too large to use legacy bitmaps"

@@ -6501,8 +6501,8 @@ msgstr ""
 "Ne devrait jamais se produire : i-noeud de redimensionnement corrompu !\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.10"
-msgstr "Librairie EXT2FS version 1.42.10"
+msgid "EXT2FS Library version 1.42.11"
+msgstr "Librairie EXT2FS version 1.42.11"
 
 #: lib/ext2fs/ext2_err.c:12
 msgid "Wrong magic number for ext2_filsys structure"
