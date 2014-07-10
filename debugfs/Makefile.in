@@ -117,8 +117,8 @@ debugfs.8: $(DEP_SUBSTITUTE) $(srcdir)/debugfs.8.in
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/debugfs.8.in debugfs.8
 
 installdirs:
-	$(E) "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	$(E) "	MKDIR_P $(root_sbindir) $(man8dir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs

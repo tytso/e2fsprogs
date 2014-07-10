@@ -187,8 +187,8 @@ e2fsck.conf.5: $(DEP_SUBSTITUTE) $(srcdir)/e2fsck.conf.5.in
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2fsck.conf.5.in e2fsck.conf.5
 
 installdirs:
-	$(E) "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	$(E) "	MKDIR_P $(root_sbindir) $(man8dir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir) $(DESTDIR)$(man5dir)
 
 install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
