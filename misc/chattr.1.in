@@ -22,8 +22,8 @@ changes the file attributes on a Linux file system.
 The format of a symbolic mode is +-=[aAcCdDeijsStTu].
 .PP
 The operator '+' causes the selected attributes to be added to the
-existing attributes of the files; '-' causes them to be removed; and
-'=' causes them to be the only attributes that the files have.
+existing attributes of the files; '-' causes them to be removed; and '='
+causes them to be the only attributes that the files have.
 .PP
 The letters 'aAcCdDeijsStTu' select the new attributes for the files:
 append only (a),
