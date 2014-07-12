@@ -21,6 +21,7 @@ MCONFIG
 asm_types.h
 config.log
 config.status
+debugfs/extent_cmds.c
 debugfs/debug_cmds.c
 debugfs/debugfs
 debugfs/debugfs.8
@@ -51,6 +52,8 @@ e2fsck/tst_problem
 e2fsck/tst_refcount
 e2fsck/tst_region
 e2fsprogs.spec
+ext2ed/ext2ed.conf
+ext2ed/ext2ed.8
 intl/charset.alias
 intl/libgnuintl.h
 intl/libintl.a
