@@ -1,3 +1,13 @@
+e2fsprogs (1.42.11-2) unstable; urgency=low
+
+  * Don't try to build lib/ext2fs/tst_ext2fs unless running "make
+    check"; this fixes a MIPS FTBFS problem because mips has a special
+    no-pics build needed for bootloaders where we only build libext2fs
+    but not libss or other libraries (Closes: #754605)
+  * Update French translation
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 13 Jul 2014 16:18:27 -0500
+
 e2fsprogs (1.42.11-1) unstable; urgency=medium
 
   * New upstream version
