@@ -1816,6 +1816,26 @@ report_problem:
 			pctx->num = extent.e_len;
 			pctx->blkcount = extent.e_lblk + extent.e_len;
 			if (fix_problem(ctx, problem, pctx)) {
+				if (ctx->invalid_bitmaps) {
+					/*
+					 * If fsck knows the bitmaps are bad,
+					 * skip to the next extent and
+					 * try to clear this extent again
+					 * after fixing the bitmaps, by
+					 * restarting fsck.
+					 */
+					pctx->errcode = ext2fs_extent_get(
+							  ehandle,
+							  EXT2_EXTENT_NEXT_SIB,
+							  &extent);
+					ctx->flags |= E2F_FLAG_RESTART_LATER;
+					if (pctx->errcode ==
+						    EXT2_ET_NO_CURRENT_NODE) {
+						pctx->errcode = 0;
+						break;
+					}
+					continue;
+				}
 				e2fsck_read_bitmaps(ctx);
 				pctx->errcode =
 					ext2fs_extent_delete(ehandle, 0);
