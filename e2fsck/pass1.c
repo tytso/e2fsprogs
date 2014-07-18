@@ -80,7 +80,8 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 struct process_block_struct {
 	ext2_ino_t	ino;
 	unsigned	is_dir:1, is_reg:1, clear:1, suppress:1,
-				fragmented:1, compressed:1, bbcheck:1;
+				fragmented:1, compressed:1, bbcheck:1,
+				inode_modified:1;
 	blk64_t		num_blocks;
 	blk64_t		max_blocks;
 	e2_blkcnt_t	last_block;
@@ -1837,6 +1838,7 @@ report_problem:
 					continue;
 				}
 				e2fsck_read_bitmaps(ctx);
+				pb->inode_modified = 1;
 				pctx->errcode =
 					ext2fs_extent_delete(ehandle, 0);
 				if (pctx->errcode) {
@@ -1884,6 +1886,7 @@ report_problem:
 				pctx->num = e_info.curr_level - 1;
 				problem = PR_1_EXTENT_INDEX_START_INVALID;
 				if (fix_problem(ctx, problem, pctx)) {
+					pb->inode_modified = 1;
 					pctx->errcode =
 						ext2fs_extent_fix_parents(ehandle);
 					if (pctx->errcode) {
@@ -2060,6 +2063,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.inode = inode;
 	pb.pctx = pctx;
 	pb.ctx = ctx;
+	pb.inode_modified = 0;
 	pctx->ino = ino;
 	pctx->errcode = 0;
 
@@ -2089,6 +2093,15 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
 		else {
+			/*
+			 * If we've modified the inode, write it out before
+			 * iterate() tries to use it.
+			 */
+			if (dirty_inode) {
+				e2fsck_write_inode(ctx, ino, inode,
+						   "check_blocks");
+				dirty_inode = 0;
+			}
 			pctx->errcode = ext2fs_block_iterate3(fs, ino,
 						pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 						block_buf, process_block, &pb);
@@ -2097,6 +2110,15 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 * files.
 			 */
 			pb.last_init_lblock = pb.last_block;
+			/*
+			 * If iterate() changed a block mapping, we have to
+			 * re-read the inode.  If we decide to clear the
+			 * inode after clearing some stuff, we'll re-write the
+			 * bad mappings into the inode!
+			 */
+			if (pb.inode_modified)
+				e2fsck_read_inode(ctx, ino, inode,
+						  "check_blocks");
 		}
 	}
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
@@ -2383,6 +2405,7 @@ static int process_block(ext2_filsys fs,
 		if (fix_problem(ctx, problem, pctx)) {
 			blk = *block_nr = 0;
 			ret_code = BLOCK_CHANGED;
+			p->inode_modified = 1;
 			goto mark_dir;
 		} else
 			return 0;
