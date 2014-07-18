@@ -691,6 +691,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
 						    "block interate buffer");
 	e2fsck_use_inode_shortcuts(ctx, 1);
+	e2fsck_intercept_block_allocations(ctx);
 	old_op = ehandler_operation(_("opening inode scan"));
 	pctx.errcode = ext2fs_open_inode_scan(fs, ctx->inode_buffer_blocks,
 					      &scan);
@@ -1185,10 +1186,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 
 	if (ctx->flags & E2F_FLAG_RESIZE_INODE) {
-		ext2fs_block_bitmap save_bmap;
-
-		save_bmap = fs->block_map;
-		fs->block_map = ctx->block_found_map;
 		clear_problem_context(&pctx);
 		pctx.errcode = ext2fs_create_resize_inode(fs);
 		if (pctx.errcode) {
@@ -1206,7 +1203,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
 					   "recreate inode");
 		}
-		fs->block_map = save_bmap;
 		ctx->flags &= ~E2F_FLAG_RESIZE_INODE;
 	}
 
@@ -2937,15 +2933,17 @@ void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int use_shortcuts)
 		fs->read_inode = pass1_read_inode;
 		fs->write_inode = pass1_write_inode;
 		ctx->stashed_ino = 0;
-		ext2fs_set_alloc_block_callback(fs, e2fsck_get_alloc_block,
-						0);
-		ext2fs_set_block_alloc_stats_callback(fs,
-						      e2fsck_block_alloc_stats,
-						      0);
 	} else {
 		fs->get_blocks = 0;
 		fs->check_directory = 0;
 		fs->read_inode = 0;
 		fs->write_inode = 0;
 	}
+}
+
+void e2fsck_intercept_block_allocations(e2fsck_t ctx)
+{
+	ext2fs_set_alloc_block_callback(ctx->fs, e2fsck_get_alloc_block, 0);
+	ext2fs_set_block_alloc_stats_callback(ctx->fs,
+						e2fsck_block_alloc_stats, 0);
 }

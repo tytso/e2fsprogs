@@ -654,8 +654,6 @@ static int write_dir_block(ext2_filsys fs,
 		 * once.
 		 */
 		if (blk % EXT2FS_CLUSTER_RATIO(fs) == 0) {
-			ext2fs_unmark_block_bitmap2(wd->ctx->block_found_map,
-						    blk);
 			ext2fs_block_alloc_stats2(fs, blk, -1);
 			wd->cleared++;
 		}
