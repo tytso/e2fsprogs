@@ -565,6 +565,22 @@ struct problem_context {
 #define PR_1_EXTENT_INDEX_START_INVALID	0x01006D
 
 #define PR_1_EXTENT_END_OUT_OF_BOUNDS	0x01006E
+
+/* Inode has inline data, but superblock is missing INLINE_DATA feature. */
+#define PR_1_INLINE_DATA_FEATURE       0x01006F
+
+/* INLINE_DATA feature is set in a non-inline-data filesystem */
+#define PR_1_INLINE_DATA_SET	       0x010070
+
+/* file metadata collides with critical metadata */
+#define PR_1_CRITICAL_METADATA_COLLISION	0x010071
+
+/* Directory inode has a missing block (hole) */
+#define PR_1_COLLAPSE_DBLOCK		0x010072
+
+/* uninit directory block */
+#define PR_1_UNINIT_DBLOCK		0x010073
+
 /*
  * Pass 1b errors
  */
@@ -623,9 +639,6 @@ struct problem_context {
 
 /* Couldn't clone file (error) */
 #define PR_1D_CLONE_ERROR	0x013008
-
-/* Directory inode has a missing block (hole) */
-#define PR_1_COLLAPSE_DBLOCK		0x010072
 
 /*
  * Pass 2 errors

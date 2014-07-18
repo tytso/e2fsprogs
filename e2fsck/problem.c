@@ -972,6 +972,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@d @i %i @b %b should be at @b %c.  "),
 	  PROMPT_FIX, 0 },
 
+	/* Extents/inlinedata flag set on a device or socket inode */
+	{ PR_1_UNINIT_DBLOCK,
+	  N_("@d @i %i has @x marked uninitialized at @b %c.  "),
+	  PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

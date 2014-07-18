@@ -1806,6 +1806,21 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			  (1 << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
 
+		/*
+		 * Uninitialized blocks in a directory?  Clear the flag and
+		 * we'll interpret the blocks later.
+		 */
+		if (is_dir && problem == 0 &&
+		    (extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
+		    fix_problem(ctx, PR_1_UNINIT_DBLOCK, pctx)) {
+			extent.e_flags &= ~EXT2_EXTENT_FLAGS_UNINIT;
+			pb->inode_modified = 1;
+			pctx->errcode = ext2fs_extent_replace(ehandle, 0,
+							      &extent);
+			if (pctx->errcode)
+				return;
+		}
+
 		if (problem) {
 report_problem:
 			pctx->blk = extent.e_pblk;
