@@ -770,7 +770,7 @@ retry_nohash:
 
 	/* Sort the list */
 resort:
-	if (fd.compress)
+	if (fd.compress && fd.num_array > 1)
 		qsort(fd.harray+2, fd.num_array-2, sizeof(struct hash_entry),
 		      hash_cmp);
 	else
@@ -789,7 +789,7 @@ resort:
 	}
 
 	/* Sort non-hashed directories by inode number */
-	if (fd.compress)
+	if (fd.compress && fd.num_array > 1)
 		qsort(fd.harray+2, fd.num_array-2,
 		      sizeof(struct hash_entry), ino_cmp);
 
