@@ -1927,6 +1927,45 @@ report_problem:
 			}
 			pb->fragmented = 1;
 		}
+		/*
+		 * If we notice a gap in the logical block mappings of an
+		 * extent-mapped directory, offer to close the hole by
+		 * moving the logical block down, otherwise we'll go mad in
+		 * pass 3 allocating empty directory blocks to fill the hole.
+		 */
+		if (is_dir &&
+		    pb->last_block + 1 < (e2_blkcnt_t)extent.e_lblk) {
+			blk64_t new_lblk;
+
+			new_lblk = pb->last_block + 1;
+			if (EXT2FS_CLUSTER_RATIO(ctx->fs) > 1)
+				new_lblk = ((new_lblk +
+					     EXT2FS_CLUSTER_RATIO(ctx->fs)) &
+					    EXT2FS_CLUSTER_MASK(ctx->fs)) |
+					   (extent.e_lblk &
+					    EXT2FS_CLUSTER_MASK(ctx->fs));
+			pctx->blk = extent.e_lblk;
+			pctx->blk2 = new_lblk;
+			if (fix_problem(ctx, PR_1_COLLAPSE_DBLOCK, pctx)) {
+				extent.e_lblk = new_lblk;
+				pb->inode_modified = 1;
+				pctx->errcode = ext2fs_extent_replace(ehandle,
+								0, &extent);
+				if (pctx->errcode) {
+					pctx->errcode = 0;
+					goto alloc_later;
+				}
+				pctx->errcode = ext2fs_extent_fix_parents(ehandle);
+				if (pctx->errcode)
+					goto failed_add_dir_block;
+				pctx->errcode = ext2fs_extent_goto(ehandle,
+								extent.e_lblk);
+				if (pctx->errcode)
+					goto failed_add_dir_block;
+				last_lblk = extent.e_lblk + extent.e_len - 1;
+			}
+		}
+alloc_later:
 		while (is_dir && (++pb->last_db_block <
 				  (e2_blkcnt_t) extent.e_lblk)) {
 			pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist,

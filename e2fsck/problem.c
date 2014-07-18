@@ -967,6 +967,11 @@ static struct e2fsck_problem problem_table[] = {
 	  PROMPT_CLEAR, 0 },
 
 
+	/* Directory inode block <block> should be at block <otherblock> */
+	{ PR_1_COLLAPSE_DBLOCK,
+	  N_("@d @i %i @b %b should be at @b %c.  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
