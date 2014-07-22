@@ -668,7 +668,46 @@ static void dump_inline_data(FILE *out, const char *prefix, ext2_ino_t inode_num
 
 	retval = ext2fs_inline_data_size(current_fs, inode_num, &size);
 	if (!retval)
-		fprintf(out, "%sSize of inline data: %zu", prefix, size);
+		fprintf(out, "%sSize of inline data: %zu\n", prefix, size);
+}
+
+static void dump_fast_link(FILE *out, ext2_ino_t inode_num,
+			   struct ext2_inode *inode, const char *prefix)
+{
+	errcode_t retval = 0;
+	char *buf;
+	size_t size;
+
+	if (inode->i_flags & EXT4_INLINE_DATA_FL) {
+		retval = ext2fs_inline_data_size(current_fs, inode_num, &size);
+		if (retval)
+			goto out;
+
+		retval = ext2fs_get_memzero(size + 1, &buf);
+		if (retval)
+			goto out;
+
+		retval = ext2fs_inline_data_get(current_fs, inode_num,
+						inode, buf, &size);
+		if (retval)
+			goto out;
+		fprintf(out, "%sFast link dest: \"%.*s\"\n", prefix,
+			(int)size, buf);
+
+		retval = ext2fs_free_mem(&buf);
+		if (retval)
+			goto out;
+	} else {
+		int sz = EXT2_I_SIZE(inode);
+
+		if (sz > sizeof(inode->i_block))
+			sz = sizeof(inode->i_block);
+		fprintf(out, "%sFast link dest: \"%.*s\"\n", prefix, sz,
+			(char *)inode->i_block);
+	}
+out:
+	if (retval)
+		com_err(__func__, retval, "while dumping link destination");
 }
 
 void internal_dump_inode(FILE *out, const char *prefix,
@@ -783,10 +822,8 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	}
 
 	if (LINUX_S_ISLNK(inode->i_mode) &&
-	    ext2fs_inode_data_blocks(current_fs,inode) == 0 &&
-	    !(inode->i_flags & EXT4_INLINE_DATA_FL))
-		fprintf(out, "%sFast_link_dest: %.*s\n", prefix,
-			(int) inode->i_size, (char *)inode->i_block);
+	    ext2fs_inode_data_blocks(current_fs, inode) == 0)
+		dump_fast_link(out, inode_num, inode, prefix);
 	else if (LINUX_S_ISBLK(inode->i_mode) || LINUX_S_ISCHR(inode->i_mode)) {
 		int major, minor;
 		const char *devnote;

@@ -45,9 +45,12 @@ static int dump_attr(char *name, char *value, size_t value_len, void *data)
 
 	fprintf(out, "  ");
 	dump_xattr_string(out, name, strlen(name));
-	fprintf(out, " = \"");
-	dump_xattr_string(out, value, value_len);
-	fprintf(out, "\" (%zu)\n", value_len);
+	if (strcmp(name, "system.data") != 0) {
+		fprintf(out, " = \"");
+		dump_xattr_string(out, value, value_len);
+		fprintf(out, "\"");
+	}
+	fprintf(out, " (%zu)\n", value_len);
 
 	return 0;
 }
