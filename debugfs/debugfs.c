@@ -2145,6 +2145,39 @@ void do_imap(int argc, char *argv[])
 
 }
 
+void do_idump(int argc, char *argv[])
+{
+	ext2_ino_t	ino;
+	char		*buf;
+	errcode_t	err;
+	int		isize;
+
+	if (common_args_process(argc, argv, 2, 2, argv[0],
+				"<file>", 0))
+		return;
+	ino = string_to_inode(argv[1]);
+	if (!ino)
+		return;
+
+	isize = EXT2_INODE_SIZE(current_fs->super);
+	err = ext2fs_get_mem(isize, &buf);
+	if (err) {
+		com_err(argv[0], err, "while allocating memory");
+		return;
+	}
+
+	err = ext2fs_read_inode_full(current_fs, ino,
+				     (struct ext2_inode *)buf, isize);
+	if (err) {
+		com_err(argv[0], err, "while reading inode %d", ino);
+		goto err;
+	}
+
+	do_byte_hexdump(stdout, buf, isize);
+err:
+	ext2fs_free_mem(&buf);
+}
+
 #ifndef READ_ONLY
 void do_set_current_time(int argc, char *argv[])
 {
