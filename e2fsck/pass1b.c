@@ -301,6 +301,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
 			continue;
 		if (pctx.errcode) {
+			pctx.ino = ino;
 			fix_problem(ctx, PR_1B_ISCAN_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;

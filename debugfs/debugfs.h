@@ -191,3 +191,4 @@ void do_list_xattr(int argc, char **argv);
 /* zap.c */
 extern void do_zap_block(int argc, char **argv);
 extern void do_block_dump(int argc, char **argv);
+extern void do_byte_hexdump(FILE *fp, unsigned char *buf, size_t bufsize);

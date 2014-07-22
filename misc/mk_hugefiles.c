@@ -188,7 +188,7 @@ static blk64_t get_partition_start(const char *device_name)
 	cp = search_sysfs_block(st.st_rdev, path);
 	if (!cp)
 		return 0;
-	strncat(path, "/start", SYSFS_PATH_LEN);
+	strncat(path, "/start", SYSFS_PATH_LEN-1);
 	f = fopen(path, "r");
 	if (!f)
 		return 0;

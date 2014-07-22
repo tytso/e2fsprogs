@@ -80,7 +80,8 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 struct process_block_struct {
 	ext2_ino_t	ino;
 	unsigned	is_dir:1, is_reg:1, clear:1, suppress:1,
-				fragmented:1, compressed:1, bbcheck:1;
+				fragmented:1, compressed:1, bbcheck:1,
+				inode_modified:1;
 	blk64_t		num_blocks;
 	blk64_t		max_blocks;
 	e2_blkcnt_t	last_block;
@@ -1968,8 +1969,10 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pctx->num = extent.e_len;
 			problem = 0;
 			if (fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID,
-					pctx))
+					pctx)) {
+				pb->inode_modified = 1;
 				ext2fs_extent_replace(ehandle, 0, &extent);
+			}
 		}
 
 		if (problem) {
@@ -1980,14 +1983,40 @@ report_problem:
 			pctx->blkcount = extent.e_lblk + extent.e_len;
 			if (fix_problem(ctx, problem, pctx)) {
 fix_problem_now:
+				if (ctx->invalid_bitmaps) {
+					/*
+					 * If fsck knows the bitmaps are bad,
+					 * skip to the next extent and
+					 * try to clear this extent again
+					 * after fixing the bitmaps, by
+					 * restarting fsck.
+					 */
+					pctx->errcode = ext2fs_extent_get(
+							  ehandle,
+							  EXT2_EXTENT_NEXT_SIB,
+							  &extent);
+					ctx->flags |= E2F_FLAG_RESTART_LATER;
+					if (pctx->errcode ==
+						    EXT2_ET_NO_CURRENT_NODE) {
+						pctx->errcode = 0;
+						break;
+					}
+					continue;
+				}
 				e2fsck_read_bitmaps(ctx);
+				pb->inode_modified = 1;
 				pctx->errcode =
 					ext2fs_extent_delete(ehandle, 0);
 				if (pctx->errcode) {
 					pctx->str = "ext2fs_extent_delete";
 					return;
 				}
-				ext2fs_extent_fix_parents(ehandle);
+				pctx->errcode = ext2fs_extent_fix_parents(ehandle);
+				if (pctx->errcode &&
+				    pctx->errcode != EXT2_ET_NO_CURRENT_NODE) {
+					pctx->str = "ext2fs_extent_fix_parents";
+					return;
+				}
 				pctx->errcode = ext2fs_extent_get(ehandle,
 								  EXT2_EXTENT_CURRENT,
 								  &extent);
@@ -2026,10 +2055,13 @@ fix_problem_now:
 				pctx->num = e_info.curr_level - 1;
 				problem = PR_1_EXTENT_INDEX_START_INVALID;
 				if (fix_problem(ctx, problem, pctx)) {
+					pb->inode_modified = 1;
 					pctx->errcode =
 						ext2fs_extent_fix_parents(ehandle);
-					if (pctx->errcode)
+					if (pctx->errcode) {
+						pctx->str = "ext2fs_extent_fix_parents";
 						return;
+					}
 				}
 			}
 			scan_extent_node(ctx, pctx, pb, extent.e_lblk,
@@ -2223,6 +2255,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.inode = inode;
 	pb.pctx = pctx;
 	pb.ctx = ctx;
+	pb.inode_modified = 0;
 	pctx->ino = ino;
 	pctx->errcode = 0;
 
@@ -2254,6 +2287,16 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
 		else {
+			/*
+			 * If we've modified the inode, write it out before
+			 * iterate() tries to use it.
+			 */
+			if (dirty_inode) {
+				e2fsck_write_inode(ctx, ino, inode,
+						   "check_blocks");
+				dirty_inode = 0;
+			}
+			fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 			pctx->errcode = ext2fs_block_iterate3(fs, ino,
 						pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 						block_buf, process_block, &pb);
@@ -2262,6 +2305,16 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 * files.
 			 */
 			pb.last_init_lblock = pb.last_block;
+			/*
+			 * If iterate() changed a block mapping, we have to
+			 * re-read the inode.  If we decide to clear the
+			 * inode after clearing some stuff, we'll re-write the
+			 * bad mappings into the inode!
+			 */
+			if (pb.inode_modified)
+				e2fsck_read_inode(ctx, ino, inode,
+						  "check_blocks");
+			fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		}
 	} else {
 		/* check inline data */
@@ -2561,6 +2614,7 @@ static int process_block(ext2_filsys fs,
 		if (fix_problem(ctx, problem, pctx)) {
 			blk = *block_nr = 0;
 			ret_code = BLOCK_CHANGED;
+			p->inode_modified = 1;
 			goto mark_dir;
 		} else
 			return 0;

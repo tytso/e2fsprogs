@@ -888,7 +888,9 @@ static int get_physical_count(struct fiemap_extent_list *physical_list_head)
 
 	do {
 		if ((ext_list_tmp->data.physical + ext_list_tmp->data.len)
-				!= ext_list_tmp->next->data.physical) {
+				!= ext_list_tmp->next->data.physical ||
+		    (ext_list_tmp->data.logical + ext_list_tmp->data.len)
+				!= ext_list_tmp->next->data.logical) {
 			/* This extent and next extent are not continuous. */
 			ret++;
 		}

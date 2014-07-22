@@ -11,6 +11,7 @@ Makefile
 *.diff
 *.dSYM
 *.o
+*.a
 *.orig
 *.patch
 *.pc
@@ -21,6 +22,7 @@ MCONFIG
 asm_types.h
 config.log
 config.status
+debugfs/extent_cmds.c
 debugfs/debug_cmds.c
 debugfs/debugfs
 debugfs/debugfs.8
@@ -51,6 +53,8 @@ e2fsck/tst_problem
 e2fsck/tst_refcount
 e2fsck/tst_region
 e2fsprogs.spec
+ext2ed/ext2ed.conf
+ext2ed/ext2ed.8
 intl/charset.alias
 intl/libgnuintl.h
 intl/libintl.a
@@ -61,7 +65,6 @@ lib/blkid/blkid.h
 lib/blkid/blkid.pc
 lib/blkid/blkid_types.h
 lib/blkid/libblkid.3
-lib/blkid/libblkid.a
 lib/blkid/subdirs
 lib/blkid/test_probe
 lib/blkid/tests/*.ok
@@ -81,13 +84,11 @@ lib/blkid/tst_types
 lib/config.h
 lib/dirpaths.h
 lib/e2p/e2p.pc
-lib/e2p/libe2p.a
 lib/e2p/subdirs
 lib/e2p/tst_feature
 lib/e2p/tst_ostype
 lib/et/com_err.pc
 lib/et/compile_et
-lib/et/libcom_err.a
 lib/et/subdirs
 lib/ext2fs/crc32c_table.h
 lib/ext2fs/debug_cmds.c
@@ -98,7 +99,6 @@ lib/ext2fs/ext2_types.h
 lib/ext2fs/ext2fs.pc
 lib/ext2fs/extent_cmds.c
 lib/ext2fs/gen_crc32ctable
-lib/ext2fs/libext2fs.a
 lib/ext2fs/subdirs
 lib/ext2fs/tst_badblocks
 lib/ext2fs/tst_bitmaps
@@ -115,16 +115,7 @@ lib/ext2fs/tst_iscan
 lib/ext2fs/tst_libext2fs
 lib/ext2fs/tst_super_size
 lib/ext2fs/tst_types
-lib/libblkid.a
-lib/libcom_err.a
-lib/libe2p.a
-lib/libext2fs.a
-lib/libquota.a
-lib/libss.a
-lib/libuuid.a
-lib/quota/libquota.a
 lib/quota/subdirs
-lib/ss/libss.a
 lib/ss/mk_cmds
 lib/ss/ss.pc
 lib/ss/ss_err.c
@@ -135,7 +126,6 @@ lib/ss/test.diff
 lib/ss/test_cmd.c
 lib/ss/test_out
 lib/ss/test_ss
-lib/uuid/libuuid.a
 lib/uuid/subdirs
 lib/uuid/tst_uuid
 lib/uuid/uuid.3

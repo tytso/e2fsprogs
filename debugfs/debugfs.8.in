@@ -351,6 +351,9 @@ showing its tree structure.
 Print a listing of the inodes which use the one or more blocks specified
 on the command line.
 .TP
+.BI inode_dump " filespec"
+Print the contents of the inode data structure in hex and ASCII format.
+.TP
 .BI imap " filespec"
 Print the location of the inode data structure (in the inode table)
 of the inode

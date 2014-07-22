@@ -1642,7 +1642,8 @@ print_unsupp_features:
 	run_result = e2fsck_run(ctx);
 	e2fsck_clear_progbar(ctx);
 
-	if (ctx->flags & E2F_FLAG_JOURNAL_INODE) {
+	if (!ctx->invalid_bitmaps &&
+	    (ctx->flags & E2F_FLAG_JOURNAL_INODE)) {
 		if (fix_problem(ctx, PR_6_RECREATE_JOURNAL, &pctx)) {
 			if (journal_size < 1024)
 				journal_size = ext2fs_default_journal_size(ext2fs_blocks_count(fs->super));
