@@ -1843,7 +1843,12 @@ report_problem:
 					pctx->str = "ext2fs_extent_delete";
 					return;
 				}
-				ext2fs_extent_fix_parents(ehandle);
+				pctx->errcode = ext2fs_extent_fix_parents(ehandle);
+				if (pctx->errcode &&
+				    pctx->errcode != EXT2_ET_NO_CURRENT_NODE) {
+					pctx->str = "ext2fs_extent_fix_parents";
+					return;
+				}
 				pctx->errcode = ext2fs_extent_get(ehandle,
 								  EXT2_EXTENT_CURRENT,
 								  &extent);
@@ -1878,8 +1883,14 @@ report_problem:
 				pctx->blk2 = extent.e_lblk;
 				pctx->num = e_info.curr_level - 1;
 				problem = PR_1_EXTENT_INDEX_START_INVALID;
-				if (fix_problem(ctx, problem, pctx))
-					ext2fs_extent_fix_parents(ehandle);
+				if (fix_problem(ctx, problem, pctx)) {
+					pctx->errcode =
+						ext2fs_extent_fix_parents(ehandle);
+					if (pctx->errcode) {
+						pctx->str = "ext2fs_extent_fix_parents";
+						return;
+					}
+				}
 			}
 			scan_extent_node(ctx, pctx, pb, extent.e_lblk,
 					 last_lblk, eof_block, ehandle);
