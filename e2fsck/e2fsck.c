@@ -108,6 +108,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_free_block_bitmap(ctx->block_ea_map);
 		ctx->block_ea_map = 0;
 	}
+	if (ctx->block_metadata_map) {
+		ext2fs_free_block_bitmap(ctx->block_metadata_map);
+		ctx->block_metadata_map = 0;
+	}
 	if (ctx->inode_bb_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_bb_map);
 		ctx->inode_bb_map = 0;

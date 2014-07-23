@@ -600,6 +600,9 @@ struct problem_context {
 /* INLINE_DATA feature is set in a non-inline-data filesystem */
 #define PR_1_INLINE_DATA_SET	       0x010070
 
+/* file metadata collides with critical metadata */
+#define PR_1_CRITICAL_METADATA_COLLISION	0x010071
+
 /*
  * Pass 1b errors
  */

@@ -389,7 +389,7 @@ static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 	p->dup_blocks++;
 	ext2fs_mark_inode_bitmap2(inode_dup_map, p->ino);
 
-	if (lc != p->cur_cluster)
+	if (blockcnt < 0 || lc != p->cur_cluster)
 		add_dupe(ctx, p->ino, EXT2FS_B2C(fs, *block_nr), p->inode);
 
 finish:

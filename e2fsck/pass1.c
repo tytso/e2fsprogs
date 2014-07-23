@@ -93,6 +93,7 @@ struct process_block_struct {
 	struct problem_context *pctx;
 	ext2fs_block_bitmap fs_meta_blocks;
 	e2fsck_t	ctx;
+	blk64_t		bad_ref;
 };
 
 struct process_inode_block {
@@ -690,6 +691,15 @@ void e2fsck_pass1(e2fsck_t ctx)
 	pctx.errcode = e2fsck_allocate_subcluster_bitmap(fs,
 			_("in-use block map"), EXT2FS_BMAP64_RBTREE,
 			"block_found_map", &ctx->block_found_map);
+	if (pctx.errcode) {
+		pctx.num = 1;
+		fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+	pctx.errcode = e2fsck_allocate_block_bitmap(fs,
+			_("metadata block map"), EXT2FS_BMAP64_RBTREE,
+			"block_metadata_map", &ctx->block_metadata_map);
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
@@ -1904,7 +1914,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			     struct process_block_struct *pb,
 			     blk64_t start_block, blk64_t end_block,
 			     blk64_t eof_block,
-			     ext2_extent_handle_t ehandle)
+			     ext2_extent_handle_t ehandle,
+			     int try_repairs)
 {
 	struct ext2fs_extent	extent;
 	blk64_t			blk, last_lblk;
@@ -1931,7 +1942,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 
 		problem = 0;
 		/* Ask to clear a corrupt extent block */
-		if (pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) {
+		if (try_repairs &&
+		    pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) {
 			pctx->blk = extent.e_pblk;
 			pctx->blk2 = extent.e_lblk;
 			pctx->num = extent.e_len;
@@ -1963,7 +1975,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			problem = PR_1_TOOBIG_DIR;
 
 		/* Corrupt but passes checks?  Ask to fix checksum. */
-		if (failed_csum) {
+		if (try_repairs && failed_csum) {
 			pctx->blk = extent.e_pblk;
 			pctx->blk2 = extent.e_lblk;
 			pctx->num = extent.e_len;
@@ -1975,7 +1987,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			}
 		}
 
-		if (problem) {
+		if (try_repairs && problem) {
 report_problem:
 			pctx->blk = extent.e_pblk;
 			pctx->blk2 = extent.e_lblk;
@@ -2031,13 +2043,32 @@ fix_problem_now:
 
 		if (!is_leaf) {
 			blk64_t lblk = extent.e_lblk;
+			int next_try_repairs = 1;
 
 			blk = extent.e_pblk;
+
+			/*
+			 * If this lower extent block collides with critical
+			 * metadata, don't try to repair the damage.  Pass 1b
+			 * will reallocate the block; then we can try again.
+			 */
+			if (pb->ino != EXT2_RESIZE_INO &&
+			    ext2fs_test_block_bitmap2(ctx->block_metadata_map,
+						      extent.e_pblk)) {
+				next_try_repairs = 0;
+				pctx->blk = blk;
+				fix_problem(ctx,
+					    PR_1_CRITICAL_METADATA_COLLISION,
+					    pctx);
+				ctx->flags |= E2F_FLAG_RESTART_LATER;
+			}
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
 			if (pctx->errcode) {
 				pctx->str = "EXT2_EXTENT_DOWN";
 				problem = PR_1_EXTENT_HEADER_INVALID;
+				if (!next_try_repairs)
+					return;
 				if (pctx->errcode ==
 					EXT2_ET_EXTENT_HEADER_BAD ||
 				    pctx->errcode ==
@@ -2065,7 +2096,8 @@ fix_problem_now:
 				}
 			}
 			scan_extent_node(ctx, pctx, pb, extent.e_lblk,
-					 last_lblk, eof_block, ehandle);
+					 last_lblk, eof_block, ehandle,
+					 next_try_repairs);
 			if (pctx->errcode)
 				return;
 			pctx->errcode = ext2fs_extent_get(ehandle,
@@ -2188,7 +2220,7 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 
 	eof_lblk = ((EXT2_I_SIZE(inode) + fs->blocksize - 1) >>
 		EXT2_BLOCK_SIZE_BITS(fs->super)) - 1;
-	scan_extent_node(ctx, pctx, pb, 0, 0, eof_lblk, ehandle);
+	scan_extent_node(ctx, pctx, pb, 0, 0, eof_lblk, ehandle, 1);
 	if (pctx->errcode &&
 	    fix_problem(ctx, PR_1_EXTENT_ITERATE_FAILURE, pctx)) {
 		pb->num_blocks = 0;
@@ -2256,6 +2288,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.pctx = pctx;
 	pb.ctx = ctx;
 	pb.inode_modified = 0;
+	pb.bad_ref = 0;
 	pctx->ino = ino;
 	pctx->errcode = 0;
 
@@ -2596,8 +2629,35 @@ static int process_block(ext2_filsys fs,
 	    blk >= ext2fs_blocks_count(fs->super))
 		problem = PR_1_ILLEGAL_BLOCK_NUM;
 
+	/*
+	 * If this IND/DIND/TIND block is squatting atop some critical metadata
+	 * (group descriptors, superblock, bitmap, inode table), any write to
+	 * "fix" mapping problems will destroy the metadata.  We'll let pass 1b
+	 * fix that and restart fsck.
+	 */
+	if (blockcnt < 0 &&
+	    p->ino != EXT2_RESIZE_INO &&
+	    ext2fs_test_block_bitmap2(ctx->block_metadata_map, blk)) {
+		p->bad_ref = blk;
+		pctx->blk = blk;
+		fix_problem(ctx, PR_1_CRITICAL_METADATA_COLLISION, pctx);
+		ctx->flags |= E2F_FLAG_RESTART_LATER;
+	}
+
 	if (problem) {
 		p->num_illegal_blocks++;
+		/*
+		 * A bit of subterfuge here -- we're trying to fix a block
+		 * mapping, but know that the IND/DIND/TIND block has collided
+		 * with some critical metadata.  So, fix the in-core mapping so
+		 * iterate won't go insane, but return 0 instead of
+		 * BLOCK_CHANGED so that it won't write the remapping out to
+		 * our multiply linked block.
+		 */
+		if (p->bad_ref && ref_block == p->bad_ref) {
+			*block_nr = 0;
+			return 0;
+		}
 		if (!p->suppress && (p->num_illegal_blocks % 12) == 0) {
 			if (fix_problem(ctx, PR_1_TOO_MANY_BAD_BLOCKS, pctx)) {
 				p->clear = 1;
@@ -2978,6 +3038,7 @@ static void mark_table_blocks(e2fsck_t ctx)
 		pctx.group = i;
 
 		ext2fs_reserve_super_and_bgd(fs, i, ctx->block_found_map);
+		ext2fs_reserve_super_and_bgd(fs, i, ctx->block_metadata_map);
 
 		/*
 		 * Mark the blocks used for the inode table
@@ -2996,8 +3057,10 @@ static void mark_table_blocks(e2fsck_t ctx)
 						ctx->invalid_bitmaps++;
 					}
 				} else {
-				    ext2fs_mark_block_bitmap2(ctx->block_found_map,
-							     b);
+				    ext2fs_mark_block_bitmap2(
+						ctx->block_found_map, b);
+				    ext2fs_mark_block_bitmap2(
+						ctx->block_metadata_map, b);
 			    	}
 			}
 		}
@@ -3016,8 +3079,9 @@ static void mark_table_blocks(e2fsck_t ctx)
 			} else {
 			    ext2fs_mark_block_bitmap2(ctx->block_found_map,
 				     ext2fs_block_bitmap_loc(fs, i));
-		    }
-
+			    ext2fs_mark_block_bitmap2(ctx->block_metadata_map,
+				     ext2fs_block_bitmap_loc(fs, i));
+			}
 		}
 		/*
 		 * Mark block used for the inode bitmap
@@ -3031,6 +3095,8 @@ static void mark_table_blocks(e2fsck_t ctx)
 					ctx->invalid_bitmaps++;
 				}
 			} else {
+			    ext2fs_mark_block_bitmap2(ctx->block_metadata_map,
+				     ext2fs_inode_bitmap_loc(fs, i));
 			    ext2fs_mark_block_bitmap2(ctx->block_found_map,
 				     ext2fs_inode_bitmap_loc(fs, i));
 			}

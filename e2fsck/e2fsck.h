@@ -374,6 +374,7 @@ struct e2fsck_struct {
 	 * e2fsck functions themselves.
 	 */
 	void *priv_data;
+	ext2fs_block_bitmap block_metadata_map; /* Metadata blocks */
 };
 
 /* Used by the region allocation code */

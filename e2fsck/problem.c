@@ -1030,6 +1030,14 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has INLINE_DATA_FL flag on @f without inline data support.\n"),
 	  PROMPT_CLEAR, 0 },
 
+	/*
+	 * Inode block conflicts with critical metadata, skipping
+	 * block checks
+	 */
+	{ PR_1_CRITICAL_METADATA_COLLISION,
+	  N_("@i %i block %b conflicts with critical metadata, skipping block checks.\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
