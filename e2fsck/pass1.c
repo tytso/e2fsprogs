@@ -2377,6 +2377,21 @@ static int process_block(ext2_filsys fs,
 		return 0;
 	}
 
+	/*
+	 * For a directory, add logical block zero for processing even if it's
+	 * not mapped or we'll be perennially stuck with broken "." and ".."
+	 * entries.
+	 */
+	if (p->is_dir && blockcnt == 0 && blk == 0) {
+		pctx->errcode = ext2fs_add_dir_block2(fs->dblist, p->ino, 0, 0);
+		if (pctx->errcode) {
+			pctx->blk = blk;
+			pctx->num = blockcnt;
+			goto failed_add_dir_block;
+		}
+		p->last_db_block++;
+	}
+
 	if (blk == 0)
 		return 0;
 
