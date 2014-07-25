@@ -1983,6 +1983,22 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			}
 		}
 
+		/*
+		 * Uninitialized blocks in a directory?  Clear the flag and
+		 * we'll interpret the blocks later.
+		 */
+		if (try_repairs && is_dir && problem == 0 &&
+		    (extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
+		    fix_problem(ctx, PR_1_UNINIT_DBLOCK, pctx)) {
+			extent.e_flags &= ~EXT2_EXTENT_FLAGS_UNINIT;
+			pb->inode_modified = 1;
+			pctx->errcode = ext2fs_extent_replace(ehandle, 0,
+							      &extent);
+			if (pctx->errcode)
+				return;
+			failed_csum = 0;
+		}
+
 		if (try_repairs && problem) {
 report_problem:
 			pctx->blk = extent.e_pblk;
@@ -2619,6 +2635,21 @@ static int process_block(ext2_filsys fs,
 		return 0;
 	}
 
+	/*
+	 * For a directory, add logical block zero for processing even if it's
+	 * not mapped or we'll be perennially stuck with broken "." and ".."
+	 * entries.
+	 */
+	if (p->is_dir && blockcnt == 0 && blk == 0) {
+		pctx->errcode = ext2fs_add_dir_block2(fs->dblist, p->ino, 0, 0);
+		if (pctx->errcode) {
+			pctx->blk = blk;
+			pctx->num = blockcnt;
+			goto failed_add_dir_block;
+		}
+		p->last_db_block++;
+	}
+
 	if (blk == 0)
 		return 0;
 
@@ -2710,6 +2741,17 @@ static int process_block(ext2_filsys fs,
 			blk = *block_nr = 0;
 			ret_code = BLOCK_CHANGED;
 			p->inode_modified = 1;
+			/*
+			 * If the directory block is too big and is beyond the
+			 * end of the FS, don't bother trying to add it for
+			 * processing -- the kernel would never have created a
+			 * directory this large, and we risk an ENOMEM abort.
+			 * In any case, the toobig handler for extent-based
+			 * directories also doesn't feed toobig blocks to
+			 * pass 2.
+			 */
+			if (problem == PR_1_TOOBIG_DIR)
+				return ret_code;
 			goto mark_dir;
 		} else
 			return 0;

@@ -603,6 +603,12 @@ struct problem_context {
 /* file metadata collides with critical metadata */
 #define PR_1_CRITICAL_METADATA_COLLISION	0x010071
 
+/* Directory inode has a missing block (hole) */
+#define PR_1_COLLAPSE_DBLOCK		0x010072
+
+/* uninit directory block */
+#define PR_1_UNINIT_DBLOCK		0x010073
+
 /*
  * Pass 1b errors
  */
@@ -664,9 +670,6 @@ struct problem_context {
 
 /* Couldn't clone file (error) */
 #define PR_1D_CLONE_ERROR	0x013008
-
-/* Directory inode has a missing block (hole) */
-#define PR_1_COLLAPSE_DBLOCK		0x010072
 
 /*
  * Pass 2 errors
