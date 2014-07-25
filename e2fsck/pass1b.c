@@ -630,7 +630,6 @@ static int delete_file_block(ext2_filsys fs,
 			    _("internal error: can't find dup_blk for %llu\n"),
 				*block_nr);
 	} else {
-		ext2fs_unmark_block_bitmap2(ctx->block_found_map, *block_nr);
 		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 		pb->dup_blocks++;
 	}

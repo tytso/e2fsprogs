@@ -1336,7 +1336,6 @@ static int deallocate_inode_block(ext2_filsys fs,
 	if ((*block_nr < fs->super->s_first_data_block) ||
 	    (*block_nr >= ext2fs_blocks_count(fs->super)))
 		return 0;
-	ext2fs_unmark_block_bitmap2(p->ctx->block_found_map, *block_nr);
 	ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 	p->num++;
 	return 0;
@@ -1379,8 +1378,6 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 			return;
 		}
 		if (count == 0) {
-			ext2fs_unmark_block_bitmap2(ctx->block_found_map,
-					ext2fs_file_acl_block(fs, &inode));
 			ext2fs_block_alloc_stats2(fs,
 				  ext2fs_file_acl_block(fs, &inode), -1);
 		}

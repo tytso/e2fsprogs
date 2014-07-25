@@ -725,8 +725,6 @@ static int write_dir_block(ext2_filsys fs,
 		 * once.
 		 */
 		if (blk % EXT2FS_CLUSTER_RATIO(fs) == 0) {
-			ext2fs_unmark_block_bitmap2(wd->ctx->block_found_map,
-						    blk);
 			ext2fs_block_alloc_stats2(fs, blk, -1);
 			wd->cleared++;
 		}
@@ -850,7 +848,7 @@ retry_nohash:
 
 	/* Sort the list */
 resort:
-	if (fd.compress)
+	if (fd.compress && fd.num_array > 1)
 		qsort(fd.harray+2, fd.num_array-2, sizeof(struct hash_entry),
 		      hash_cmp);
 	else
@@ -869,7 +867,7 @@ resort:
 	}
 
 	/* Sort non-hashed directories by inode number */
-	if (fd.compress)
+	if (fd.compress && fd.num_array > 1)
 		qsort(fd.harray+2, fd.num_array-2,
 		      sizeof(struct hash_entry), ino_cmp);
 

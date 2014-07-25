@@ -779,27 +779,6 @@ static int expand_dir_proc(ext2_filsys fs,
 		return BLOCK_CHANGED;
 }
 
-/*
- * Ensure that all blocks are marked in the block_found_map, since it's
- * possible that the library allocated an extent node block or a block map
- * block during the directory rebuilding; these new allocations are not
- * captured in block_found_map.  This is bad since we could later use
- * block_found_map to allocate more blocks.
- */
-static int find_new_blocks_proc(ext2_filsys fs,
-				blk64_t	*blocknr,
-				e2_blkcnt_t	blockcnt,
-				blk64_t ref_block EXT2FS_ATTR((unused)),
-				int ref_offset EXT2FS_ATTR((unused)),
-				void	*priv_data)
-{
-	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
-	e2fsck_t	ctx = es->ctx;
-
-	ext2fs_mark_block_bitmap2(ctx->block_found_map, *blocknr);
-	return 0;
-}
-
 errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 				  int num, int guaranteed_size)
 {
@@ -830,27 +809,11 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	es.ctx = ctx;
 	es.dir = dir;
 
-	before = ext2fs_free_blocks_count(fs->super);
 	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);
 
 	if (es.err)
 		return es.err;
-	after = ext2fs_free_blocks_count(fs->super);
-
-	/*
-	 * If the free block count has dropped by more than the blocks we
-	 * allocated ourselves, then we must've allocated some extent/map
-	 * blocks.  Therefore, we must iterate this dir's blocks again to
-	 * ensure that all newly allocated blocks are captured in
-	 * block_found_map.
-	 */
-	if ((before - after) > es.newblocks) {
-		retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_READ_ONLY,
-					       0, find_new_blocks_proc, &es);
-		if (es.err)
-			return es.err;
-	}
 
 	/*
 	 * Update the size and block count fields in the inode.

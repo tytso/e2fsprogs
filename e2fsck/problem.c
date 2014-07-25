@@ -1038,6 +1038,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i block %b conflicts with critical metadata, skipping block checks.\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Directory inode block <block> should be at block <otherblock> */
+	{ PR_1_COLLAPSE_DBLOCK,
+	  N_("@d @i %i @b %b should be at @b %c.  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

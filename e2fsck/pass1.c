@@ -764,6 +764,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 						    "block interate buffer");
 	if (EXT2_INODE_SIZE(fs->super) == EXT2_GOOD_OLD_INODE_SIZE)
 		e2fsck_use_inode_shortcuts(ctx, 1);
+	e2fsck_intercept_block_allocations(ctx);
 	old_op = ehandler_operation(_("opening inode scan"));
 	pctx.errcode = ext2fs_open_inode_scan(fs, ctx->inode_buffer_blocks,
 					      &scan);
@@ -1306,10 +1307,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 
 	if (ctx->flags & E2F_FLAG_RESIZE_INODE) {
-		ext2fs_block_bitmap save_bmap;
-
-		save_bmap = fs->block_map;
-		fs->block_map = ctx->block_found_map;
 		clear_problem_context(&pctx);
 		pctx.errcode = ext2fs_create_resize_inode(fs);
 		if (pctx.errcode) {
@@ -1327,7 +1324,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
 					   "recreate inode");
 		}
-		fs->block_map = save_bmap;
 		ctx->flags &= ~E2F_FLAG_RESIZE_INODE;
 	}
 
@@ -2132,6 +2128,45 @@ fix_problem_now:
 			}
 			pb->fragmented = 1;
 		}
+		/*
+		 * If we notice a gap in the logical block mappings of an
+		 * extent-mapped directory, offer to close the hole by
+		 * moving the logical block down, otherwise we'll go mad in
+		 * pass 3 allocating empty directory blocks to fill the hole.
+		 */
+		if (try_repairs && is_dir &&
+		    pb->last_block + 1 < (e2_blkcnt_t)extent.e_lblk) {
+			blk64_t new_lblk;
+
+			new_lblk = pb->last_block + 1;
+			if (EXT2FS_CLUSTER_RATIO(ctx->fs) > 1)
+				new_lblk = ((new_lblk +
+					     EXT2FS_CLUSTER_RATIO(ctx->fs)) &
+					    EXT2FS_CLUSTER_MASK(ctx->fs)) |
+					   (extent.e_lblk &
+					    EXT2FS_CLUSTER_MASK(ctx->fs));
+			pctx->blk = extent.e_lblk;
+			pctx->blk2 = new_lblk;
+			if (fix_problem(ctx, PR_1_COLLAPSE_DBLOCK, pctx)) {
+				extent.e_lblk = new_lblk;
+				pb->inode_modified = 1;
+				pctx->errcode = ext2fs_extent_replace(ehandle,
+								0, &extent);
+				if (pctx->errcode) {
+					pctx->errcode = 0;
+					goto alloc_later;
+				}
+				pctx->errcode = ext2fs_extent_fix_parents(ehandle);
+				if (pctx->errcode)
+					goto failed_add_dir_block;
+				pctx->errcode = ext2fs_extent_goto(ehandle,
+								extent.e_lblk);
+				if (pctx->errcode)
+					goto failed_add_dir_block;
+				last_lblk = extent.e_lblk + extent.e_len - 1;
+			}
+		}
+alloc_later:
 		while (is_dir && (++pb->last_db_block <
 				  (e2_blkcnt_t) extent.e_lblk)) {
 			pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist,
@@ -2926,8 +2961,8 @@ static void new_table_block(e2fsck_t ctx, blk64_t first_block, dgrp_t group,
 		first_block = ext2fs_group_first_block2(fs,
 							flexbg_size * flexbg);
 		last_grp = group | (flexbg_size - 1);
-		if (last_grp > fs->group_desc_count)
-			last_grp = fs->group_desc_count;
+		if (last_grp >= fs->group_desc_count)
+			last_grp = fs->group_desc_count - 1;
 		last_block = ext2fs_group_last_block2(fs, last_grp);
 	} else
 		last_block = ext2fs_group_last_block2(fs, group);
@@ -3212,15 +3247,17 @@ void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int use_shortcuts)
 		fs->read_inode = pass1_read_inode;
 		fs->write_inode = pass1_write_inode;
 		ctx->stashed_ino = 0;
-		ext2fs_set_alloc_block_callback(fs, e2fsck_get_alloc_block,
-						0);
-		ext2fs_set_block_alloc_stats_callback(fs,
-						      e2fsck_block_alloc_stats,
-						      0);
 	} else {
 		fs->get_blocks = 0;
 		fs->check_directory = 0;
 		fs->read_inode = 0;
 		fs->write_inode = 0;
 	}
+}
+
+void e2fsck_intercept_block_allocations(e2fsck_t ctx)
+{
+	ext2fs_set_alloc_block_callback(ctx->fs, e2fsck_get_alloc_block, 0);
+	ext2fs_set_block_alloc_stats_callback(ctx->fs,
+						e2fsck_block_alloc_stats, 0);
 }

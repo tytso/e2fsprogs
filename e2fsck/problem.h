@@ -665,6 +665,9 @@ struct problem_context {
 /* Couldn't clone file (error) */
 #define PR_1D_CLONE_ERROR	0x013008
 
+/* Directory inode has a missing block (hole) */
+#define PR_1_COLLAPSE_DBLOCK		0x010072
+
 /*
  * Pass 2 errors
  */
