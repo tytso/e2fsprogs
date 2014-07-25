@@ -318,6 +318,7 @@ int main (int argc, char ** argv)
 		printf("%s", _("Couldn't find valid filesystem superblock.\n"));
 		exit (1);
 	}
+	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
 
 	if (!(mount_flags & EXT2_MF_MOUNTED)) {
 		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
