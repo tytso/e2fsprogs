@@ -257,8 +257,11 @@ errcode_t ext2fs_get_free_blocks2(ext2_filsys fs, blk64_t start, blk64_t finish,
 	b &= ~(c_ratio - 1);
 	finish &= ~(c_ratio -1);
 	do {
-		if (b+num-1 > ext2fs_blocks_count(fs->super))
+		if (b + num - 1 >= ext2fs_blocks_count(fs->super)) {
+			if (finish > start)
+				return EXT2_ET_BLOCK_ALLOC_FAIL;
 			b = fs->super->s_first_data_block;
+		}
 		if (ext2fs_fast_test_block_bitmap_range2(map, b, num)) {
 			*ret = b;
 			return 0;
