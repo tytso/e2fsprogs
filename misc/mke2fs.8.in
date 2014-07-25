@@ -113,6 +113,10 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 [
 .B \-V
 ]
+[
+.B \-e
+.I errors-behavior
+]
 .I device
 [
 .I blocks-count
@@ -205,6 +209,25 @@ Use direct I/O when writing to the disk.  This avoids mke2fs dirtying a
 lot of buffer cache memory, which may impact other applications running
 on a busy server.  This option will cause mke2fs to run much more
 slowly, however, so there is a tradeoff to using direct I/O.
+.TP
+.BI \-e " error-behavior"
+Change the behavior of the kernel code when errors are detected.
+In all cases, a filesystem error will cause
+.BR e2fsck (8)
+to check the filesystem on the next boot.
+.I error-behavior
+can be one of the following:
+.RS 1.2i
+.TP 1.2i
+.B continue
+Continue normal execution.
+.TP
+.B remount-ro
+Remount filesystem read-only.
+.TP
+.B panic
+Cause a kernel panic.
+.RE
 .TP
 .BI \-E " extended-options"
 Set extended options for the filesystem.  Extended options are comma

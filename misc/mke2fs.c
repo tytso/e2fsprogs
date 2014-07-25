@@ -113,6 +113,8 @@ static profile_t	profile;
 
 static int sys_page_size = 4096;
 
+static int errors_behavior = 0;
+
 static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s [-c|-l filename] [-b block-size] "
@@ -124,7 +126,7 @@ static void usage(void)
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
-	"\t[-t fs-type] [-T usage-type ] [-U UUID] "
+	"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior]"
 	"[-jnqvDFKSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
@@ -1547,7 +1549,7 @@ profile_error:
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cg:i:jl:m:no:qr:s:t:d:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
+		    "b:ce:g:i:jl:m:no:qr:s:t:d:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = parse_num_blocks2(optarg, -1);
@@ -1589,6 +1591,20 @@ profile_error:
 			/* fallthrough */
 		case 'E':
 			extended_opts = optarg;
+			break;
+		case 'e':
+			if (strcmp(optarg, "continue") == 0)
+				errors_behavior = EXT2_ERRORS_CONTINUE;
+			else if (strcmp(optarg, "remount-ro") == 0)
+				errors_behavior = EXT2_ERRORS_RO;
+			else if (strcmp(optarg, "panic") == 0)
+				errors_behavior = EXT2_ERRORS_PANIC;
+			else {
+				com_err(program_name, 0,
+					_("bad error behavior - %s"),
+					optarg);
+				usage();
+			}
 			break;
 		case 'F':
 			force++;
@@ -2622,6 +2638,38 @@ static int create_quota_inodes(ext2_filsys fs)
 	return 0;
 }
 
+static errcode_t set_error_behavior(ext2_filsys fs)
+{
+	char	*arg = NULL;
+	short	errors = fs->super->s_errors;
+
+	arg = get_string_from_profile(fs_types, "errors", NULL);
+	if (arg == NULL)
+		goto try_user;
+
+	if (strcmp(arg, "continue") == 0)
+		errors = EXT2_ERRORS_CONTINUE;
+	else if (strcmp(arg, "remount-ro") == 0)
+		errors = EXT2_ERRORS_RO;
+	else if (strcmp(arg, "panic") == 0)
+		errors = EXT2_ERRORS_PANIC;
+	else {
+		com_err(program_name, 0,
+			_("bad error behavior in profile - %s"),
+			arg);
+		free(arg);
+		return EXT2_ET_INVALID_ARGUMENT;
+	}
+	free(arg);
+
+try_user:
+	if (errors_behavior)
+		errors = errors_behavior;
+
+	fs->super->s_errors = errors;
+	return 0;
+}
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -2685,6 +2733,11 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 	fs->progress_ops = &ext2fs_numeric_progress_ops;
+
+	/* Set the error behavior */
+	retval = set_error_behavior(fs);
+	if (retval)
+		usage();
 
 	/* Check the user's mkfs options for metadata checksumming */
 	if (!quiet &&

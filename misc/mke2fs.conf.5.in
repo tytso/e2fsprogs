@@ -317,6 +317,25 @@ whose subsections define the
 relation, only the last will be used by
 .BR mke2fs (8).
 .TP
+.I errors
+Change the behavior of the kernel code when errors are detected.
+In all cases, a filesystem error will cause
+.BR e2fsck (8)
+to check the filesystem on the next boot.
+.I errors
+can be one of the following:
+.RS 1.2i
+.TP 1.2i
+.B continue
+Continue normal execution.
+.TP
+.B remount-ro
+Remount filesystem read-only.
+.TP
+.B panic
+Cause a kernel panic.
+.RE
+.TP
 .I features
 This relation specifies a comma-separated list of features edit
 requests which modify the feature set
