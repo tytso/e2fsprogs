@@ -2456,6 +2456,17 @@ static int process_block(ext2_filsys fs,
 			blk = *block_nr = 0;
 			ret_code = BLOCK_CHANGED;
 			p->inode_modified = 1;
+			/*
+			 * If the directory block is too big and is beyond the
+			 * end of the FS, don't bother trying to add it for
+			 * processing -- the kernel would never have created a
+			 * directory this large, and we risk an ENOMEM abort.
+			 * In any case, the toobig handler for extent-based
+			 * directories also doesn't feed toobig blocks to
+			 * pass 2.
+			 */
+			if (problem == PR_1_TOOBIG_DIR)
+				return ret_code;
 			goto mark_dir;
 		} else
 			return 0;
