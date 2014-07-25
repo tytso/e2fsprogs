@@ -1774,7 +1774,7 @@ no_journal:
 	io_channel_flush(ctx->fs->io);
 	print_resource_track(ctx, NULL, &ctx->global_rtrack, ctx->fs->io);
 
-	ext2fs_close_free(&fs);
+	ext2fs_close_free(&ctx->fs);
 	free(ctx->journal_name);
 
 	e2fsck_free_context(ctx);
