@@ -2653,8 +2653,8 @@ static void new_table_block(e2fsck_t ctx, blk64_t first_block, dgrp_t group,
 		first_block = ext2fs_group_first_block2(fs,
 							flexbg_size * flexbg);
 		last_grp = group | (flexbg_size - 1);
-		if (last_grp > fs->group_desc_count)
-			last_grp = fs->group_desc_count;
+		if (last_grp >= fs->group_desc_count)
+			last_grp = fs->group_desc_count - 1;
 		last_block = ext2fs_group_last_block2(fs, last_grp);
 	} else
 		last_block = ext2fs_group_last_block2(fs, group);
