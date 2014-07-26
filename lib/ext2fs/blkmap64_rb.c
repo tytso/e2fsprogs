@@ -299,21 +299,19 @@ static errcode_t rb_resize_bmap(ext2fs_generic_bitmap bmap,
 {
 	struct ext2fs_rb_private *bp;
 
-	if (new_real_end >= bmap->real_end) {
-		bmap->end = new_end;
-		bmap->real_end = new_real_end;
-		return 0;
-	}
-
 	bp = (struct ext2fs_rb_private *) bmap->private;
 	bp->rcursor = NULL;
 	bp->wcursor = NULL;
 
-	/* truncate tree to new_real_end size */
-	rb_truncate(new_real_end, &bp->root);
+	rb_truncate(((new_end < bmap->end) ? new_end : bmap->end) - bmap->start,
+		    &bp->root);
 
 	bmap->end = new_end;
 	bmap->real_end = new_real_end;
+
+	if (bmap->end < bmap->real_end)
+		rb_insert_extent(bmap->end + 1 - bmap->start,
+				 bmap->real_end - bmap->end, bp);
 	return 0;
 
 }
