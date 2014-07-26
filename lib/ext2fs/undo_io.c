@@ -588,19 +588,19 @@ static errcode_t undo_get_stats(io_channel channel, io_stats *stats)
 }
 
 static struct struct_io_manager struct_undo_manager = {
-	EXT2_ET_MAGIC_IO_MANAGER,
-	"Undo I/O Manager",
-	undo_open,
-	undo_close,
-	undo_set_blksize,
-	undo_read_blk,
-	undo_write_blk,
-	undo_flush,
-	undo_write_byte,
-	undo_set_option,
-	undo_get_stats,
-	undo_read_blk64,
-	undo_write_blk64,
+	.magic		= EXT2_ET_MAGIC_IO_MANAGER,
+	.name		= "Undo I/O Manager",
+	.open		= undo_open,
+	.close		= undo_close,
+	.set_blksize	= undo_set_blksize,
+	.read_blk	= undo_read_blk,
+	.write_blk	= undo_write_blk,
+	.flush		= undo_flush,
+	.write_byte	= undo_write_byte,
+	.set_option	= undo_set_option,
+	.get_stats	= undo_get_stats,
+	.read_blk64	= undo_read_blk64,
+	.write_blk64	= undo_write_blk64,
 };
 
 io_manager undo_io_manager = &struct_undo_manager;
