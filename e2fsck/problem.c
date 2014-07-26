@@ -992,19 +992,17 @@ static struct e2fsck_problem problem_table[] = {
 	     "extent\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
 	  PROMPT_FIX, 0 },
 
-	/* Extended attribute block checksum for inode does not match. */
+	/* Inode extended attribute block checksum does not match block. */
 	{ PR_1_EA_BLOCK_CSUM_INVALID,
-	  N_("Extended attribute @a @b %b checksum for @i %i does not "
-	     "match.  "),
+	  N_("@i %i @a @b %b checksum does not match block.  "),
 	  PROMPT_CLEAR, 0 },
 
 	/*
-	 * Extended attribute block passes checks, but checksum for inode does
-	 * not match.
+	 * Inode extended attribute block passes checks, but checksum does not
+	 * match block.
 	 */
 	{ PR_1_EA_BLOCK_ONLY_CSUM_INVALID,
-	  N_("Extended attribute @a @b %b passes checks, but checksum for "
-	     "@i %i does not match.  "),
+	  N_("@i %i @a @b %b passes checks, but checksum does not match @b.  "),
 	  PROMPT_FIX, 0 },
 
 	/*
@@ -1482,27 +1480,27 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* htree root node fails checksum */
 	{ PR_2_HTREE_ROOT_CSUM_INVALID,
-	  N_("@p @h %d: root node fails checksum\n"),
+	  N_("@p @h %d: root node fails checksum.\n"),
 	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* htree internal node fails checksum */
 	{ PR_2_HTREE_NODE_CSUM_INVALID,
-	  N_("@p @h %d: internal node fails checksum\n"),
+	  N_("@p @h %d: internal node fails checksum.\n"),
 	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* leaf node fails checksum */
 	{ PR_2_LEAF_NODE_CSUM_INVALID,
-	  N_("@d @i %i, %B, offset %N: @d fails checksum\n"),
+	  N_("@d @i %i, %B, offset %N: @d fails checksum.\n"),
 	  PROMPT_SALVAGE, PR_PREEN_OK },
 
 	/* leaf node has no checksum */
 	{ PR_2_LEAF_NODE_MISSING_CSUM,
-	  N_("@d @i %i, %B, offset %N: @d has no checksum\n"),
+	  N_("@d @i %i, %B, offset %N: @d has no checksum.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* leaf node passes checks but fails checksum */
 	{ PR_2_LEAF_NODE_ONLY_CSUM_INVALID,
-	  N_("@d @i %i, %B, offset %N: @d passes checks but fails checksum\n"),
+	  N_("@d @i %i, %B, offset %N: @d passes checks but fails checksum.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* Pass 3 errors */
@@ -1828,12 +1826,12 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Group N inode bitmap does not match checksum */
 	{ PR_5_INODE_BITMAP_CSUM_INVALID,
-	  N_("@g %g @i bitmap does not match checksum\n"),
+	  N_("@g %g @i @B does not match checksum.\n"),
 	  PROMPT_FIX, PR_LATCH_IBITMAP | PR_PREEN_OK },
 
 	/* Group N block bitmap does not match checksum */
 	{ PR_5_BLOCK_BITMAP_CSUM_INVALID,
-	  N_("@g %g @b bitmap does not match checksum\n"),
+	  N_("@g %g @b @B does not match checksum.\n"),
 	  PROMPT_FIX, PR_LATCH_BBITMAP | PR_PREEN_OK },
 
 	/* Post-Pass 5 errors */
