@@ -29,7 +29,7 @@ dgrp_t ext2fs_group_of_blk2(ext2_filsys fs, blk64_t blk)
 blk64_t ext2fs_group_first_block2(ext2_filsys fs, dgrp_t group)
 {
 	return fs->super->s_first_data_block +
-		((blk64_t)group * fs->super->s_blocks_per_group);
+		EXT2_GROUPS_TO_BLOCKS(fs->super, group);
 }
 
 /*

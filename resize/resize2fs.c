@@ -436,8 +436,7 @@ retry:
 					    fs->inode_map);
 	if (retval) goto errout;
 
-	real_end = (((blk64_t) EXT2_BLOCKS_PER_GROUP(fs->super) *
-		     fs->group_desc_count)) - 1 +
+	real_end = EXT2_GROUPS_TO_BLOCKS(fs->super, fs->group_desc_count) - 1 +
 		fs->super->s_first_data_block;
 	retval = ext2fs_resize_block_bitmap2(new_size - 1,
 					     real_end, fs->block_map);
@@ -2318,7 +2317,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 		fs->super->s_free_inodes_count;
 	blks_needed = ext2fs_div_ceil(inode_count,
 				      fs->super->s_inodes_per_group) *
-		EXT2_BLOCKS_PER_GROUP(fs->super);
+		(blk64_t) EXT2_BLOCKS_PER_GROUP(fs->super);
 	groups = ext2fs_div64_ceil(blks_needed,
 				   EXT2_BLOCKS_PER_GROUP(fs->super));
 #ifdef RESIZE2FS_DEBUG
@@ -2365,7 +2364,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	 * figure out how many data blocks we have given the number of groups
 	 * we need for our inodes
 	 */
-	data_blocks = groups * EXT2_BLOCKS_PER_GROUP(fs->super);
+	data_blocks = EXT2_GROUPS_TO_BLOCKS(fs->super, groups);
 	last_start = 0;
 	for (grp = 0; grp < flex_groups; grp++) {
 		overhead = calc_group_overhead(fs, grp, old_desc_blocks);
@@ -2403,7 +2402,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 		extra_grps = ext2fs_div64_ceil(remainder,
 					       EXT2_BLOCKS_PER_GROUP(fs->super));
 
-		data_blocks += extra_grps * EXT2_BLOCKS_PER_GROUP(fs->super);
+		data_blocks += EXT2_GROUPS_TO_BLOCKS(fs->super, extra_grps);
 
 		/* ok we have to account for the last group */
 		overhead = calc_group_overhead(fs, groups-1, old_desc_blocks);
@@ -2501,7 +2500,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	 * blocks needed to handle the group descriptor metadata+data
 	 * that we need
 	 */
-	blks_needed = (groups-1) * EXT2_BLOCKS_PER_GROUP(fs->super);
+	blks_needed = EXT2_GROUPS_TO_BLOCKS(fs->super, groups - 1);
 	blks_needed += overhead;
 
 	/*
