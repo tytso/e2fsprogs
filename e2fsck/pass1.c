@@ -1944,6 +1944,40 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 	e2fsck_write_inode(ctx, ino, inode, source);
 }
 
+/*
+ * Use the multiple-blocks reclamation code to fix alignment problems in
+ * a bigalloc filesystem.  We want a logical cluster to map to *only* one
+ * physical cluster, and we want the block offsets within that cluster to
+ * line up.
+ */
+static int has_unaligned_cluster_map(e2fsck_t ctx,
+				     blk64_t last_pblk, e2_blkcnt_t last_lblk,
+				     blk64_t pblk, blk64_t lblk)
+{
+	blk64_t cluster_mask;
+
+	if (!ctx->fs->cluster_ratio_bits)
+		return 0;
+	cluster_mask = EXT2FS_CLUSTER_MASK(ctx->fs);
+
+	/*
+	 * If the block in the logical cluster doesn't align with the block in
+	 * the physical cluster...
+	 */
+	if ((lblk & cluster_mask) != (pblk & cluster_mask))
+		return 1;
+
+	/*
+	 * If we cross a physical cluster boundary within a logical cluster...
+	 */
+	if (last_pblk && (lblk & cluster_mask) != 0 &&
+	    EXT2FS_B2C(ctx->fs, lblk) == EXT2FS_B2C(ctx->fs, last_lblk) &&
+	    EXT2FS_B2C(ctx->fs, pblk) != EXT2FS_B2C(ctx->fs, last_pblk))
+		return 1;
+
+	return 0;
+}
+
 static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			     struct process_block_struct *pb,
 			     blk64_t start_block, blk64_t end_block,
@@ -2248,7 +2282,16 @@ alloc_later:
 				mark_block_used(ctx, blk);
 				pb->num_blocks++;
 			}
-
+			if (has_unaligned_cluster_map(ctx, pb->previous_block,
+						      pb->last_block, blk,
+						      blockcnt)) {
+				pctx->blk = blockcnt;
+				pctx->blk2 = blk;
+				fix_problem(ctx, PR_1_MISALIGNED_CLUSTER, pctx);
+				mark_block_used(ctx, blk);
+				mark_block_used(ctx, blk);
+			}
+			pb->last_block = blockcnt;
 			pb->previous_block = blk;
 
 			if (is_dir) {
@@ -2814,6 +2857,13 @@ static int process_block(ext2_filsys fs,
 		     ((unsigned) blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
 		mark_block_used(ctx, blk);
 		p->num_blocks++;
+	} else if (has_unaligned_cluster_map(ctx, p->previous_block,
+					     p->last_block, blk, blockcnt)) {
+		pctx->blk = blockcnt;
+		pctx->blk2 = blk;
+		fix_problem(ctx, PR_1_MISALIGNED_CLUSTER, pctx);
+		mark_block_used(ctx, blk);
+		mark_block_used(ctx, blk);
 	}
 	if (blockcnt >= 0)
 		p->last_block = blockcnt;
