@@ -625,7 +625,8 @@ static int delete_file_block(ext2_filsys fs,
 			    _("internal error: can't find dup_blk for %llu\n"),
 				*block_nr);
 	} else {
-		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
+		if ((*block_nr % EXT2FS_CLUSTER_RATIO(ctx->fs)) == 0)
+			ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 		pb->dup_blocks++;
 	}
 	pb->cur_cluster = lc;

@@ -1171,7 +1171,8 @@ static int deallocate_inode_block(ext2_filsys fs,
 	if ((*block_nr < fs->super->s_first_data_block) ||
 	    (*block_nr >= ext2fs_blocks_count(fs->super)))
 		return 0;
-	ext2fs_block_alloc_stats2(fs, *block_nr, -1);
+	if ((*block_nr % EXT2FS_CLUSTER_RATIO(fs)) == 0)
+		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 	p->num++;
 	return 0;
 }
