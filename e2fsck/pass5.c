@@ -327,7 +327,6 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	problem_t	problem, save_problem;
 	int		fixit, had_problem;
 	errcode_t	retval;
-	int		csum_flag;
 	int	old_desc_blocks = 0;
 	int	count = 0;
 	int	cmp_block = 0;
@@ -374,7 +373,6 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		goto errout;
 	}
 
-	csum_flag = ext2fs_has_group_desc_csum(fs);
 redo_counts:
 	had_problem = 0;
 	save_problem = 0;
@@ -898,7 +896,7 @@ static void check_block_end(e2fsck_t ctx)
 	clear_problem_context(&pctx);
 
 	end = ext2fs_get_block_bitmap_start2(fs->block_map) +
-		((blk64_t)EXT2_CLUSTERS_PER_GROUP(fs->super) * fs->group_desc_count) - 1;
+		EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count) - 1;
 	pctx.errcode = ext2fs_fudge_block_bitmap_end2(fs->block_map, end,
 						     &save_blocks_count);
 	if (pctx.errcode) {

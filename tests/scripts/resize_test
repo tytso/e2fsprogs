@@ -64,8 +64,8 @@ then
 	return 1
 fi
 
-echo $FSCK -fp $TMPFILE >> $LOG 2>&1 
-if ! $FSCK -fp $TMPFILE >> $LOG 2>&1
+echo $FSCK -fy $TMPFILE >> $LOG 2>&1
+if ! $FSCK -fy $TMPFILE >> $LOG 2>&1
 then
 	dumpe2fs $TMPFILE >> $LOG
 	return 1
@@ -94,8 +94,8 @@ then
 	return 1
 fi
 
-echo $FSCK -fp $TMPFILE >> $LOG 2>&1 
-if ! $FSCK -fp $TMPFILE >> $LOG 2>&1
+echo $FSCK -fy $TMPFILE >> $LOG 2>&1
+if ! $FSCK -fy $TMPFILE >> $LOG 2>&1
 then
 	dumpe2fs $TMPFILE >> $LOG
 	return 1
@@ -119,8 +119,8 @@ then
 	return 1
 fi
 
-echo $FSCK -fp $TMPFILE >> $LOG 2>&1 
-if ! $FSCK -fp $TMPFILE >> $LOG 2>&1
+echo $FSCK -fy $TMPFILE >> $LOG 2>&1
+if ! $FSCK -fy $TMPFILE >> $LOG 2>&1
 then
 	dumpe2fs $TMPFILE >> $LOG
 	return 1
@@ -144,8 +144,8 @@ then
 	return 1
 fi
 
-echo $FSCK -fp $TMPFILE >> $LOG 2>&1 
-if ! $FSCK -fp $TMPFILE >> $LOG 2>&1
+echo $FSCK -fy $TMPFILE >> $LOG 2>&1
+if ! $FSCK -fy $TMPFILE >> $LOG 2>&1
 then
 	dumpe2fs $TMPFILE >> $LOG
 	return 1

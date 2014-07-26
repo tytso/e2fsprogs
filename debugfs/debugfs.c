@@ -2094,15 +2094,12 @@ void do_symlink(int argc, char *argv[])
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
 #if CONFIG_MMP
-	struct ext2_super_block *sb;
 	struct mmp_struct *mmp_s;
 	time_t t;
 	errcode_t retval = 0;
 
 	if (check_fs_open(argv[0]))
 		return;
-
-	sb  = current_fs->super;
 
 	if (current_fs->mmp_buf == NULL) {
 		retval = ext2fs_get_mem(current_fs->blocksize,

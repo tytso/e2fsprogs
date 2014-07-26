@@ -468,7 +468,7 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 	unsigned long	i;
 	ext2_ino_t	dir;
 	errcode_t	retval;
-	blk64_t		fs_blocks, part_offset;
+	blk64_t		fs_blocks, part_offset = 0;
 	unsigned long	align;
 	int		d, dsize;
 	char		*t;

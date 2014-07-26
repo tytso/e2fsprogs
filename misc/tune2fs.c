@@ -1894,7 +1894,7 @@ static int ext2fs_is_block_in_group(ext2_filsys fs, dgrp_t group, blk64_t blk)
 {
 	blk64_t start_blk, end_blk;
 	start_blk = fs->super->s_first_data_block +
-			EXT2_BLOCKS_PER_GROUP(fs->super) * group;
+			EXT2_GROUPS_TO_BLOCKS(fs->super, group);
 	/*
 	 * We cannot get new block beyond end_blk for for the last block group
 	 * so we can check with EXT2_BLOCKS_PER_GROUP even for last block group
