@@ -2008,19 +2008,6 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			  (1 << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
 
-		/* Corrupt but passes checks?  Ask to fix checksum. */
-		if (try_repairs && failed_csum) {
-			pctx->blk = extent.e_pblk;
-			pctx->blk2 = extent.e_lblk;
-			pctx->num = extent.e_len;
-			problem = 0;
-			if (fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID,
-					pctx)) {
-				pb->inode_modified = 1;
-				ext2fs_extent_replace(ehandle, 0, &extent);
-			}
-		}
-
 		/*
 		 * Uninitialized blocks in a directory?  Clear the flag and
 		 * we'll interpret the blocks later.
@@ -2035,6 +2022,19 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			if (pctx->errcode)
 				return;
 			failed_csum = 0;
+		}
+
+		/* Corrupt but passes checks?  Ask to fix checksum. */
+		if (try_repairs && failed_csum) {
+			pctx->blk = extent.e_pblk;
+			pctx->blk2 = extent.e_lblk;
+			pctx->num = extent.e_len;
+			problem = 0;
+			if (fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID,
+					pctx)) {
+				pb->inode_modified = 1;
+				ext2fs_extent_replace(ehandle, 0, &extent);
+			}
 		}
 
 		if (try_repairs && problem) {
