@@ -977,6 +977,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@d @i %i has @x marked uninitialized at @b %c.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* Inode logical block (physical block ) is misaligned. */
+	{ PR_1_MISALIGNED_CLUSTER,
+	  N_("@i %i logical @b %b (physical @b %c) violates cluster allocation rules.\nWill fix in pass 1B.\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
