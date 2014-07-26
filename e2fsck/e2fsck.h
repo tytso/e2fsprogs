@@ -369,6 +369,9 @@ struct e2fsck_struct {
 	profile_t	profile;
 	int blocks_per_page;
 
+	/* Reserve blocks for root and l+f re-creation */
+	blk64_t root_repair_block, lnf_repair_block;
+
 	/*
 	 * For the use of callers of the e2fsck functions; not used by
 	 * e2fsck functions themselves.
