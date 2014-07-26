@@ -134,6 +134,17 @@ abort_exit:
 		inode_done_map = 0;
 	}
 
+	if (ctx->lnf_repair_block) {
+		ext2fs_unmark_block_bitmap2(ctx->block_found_map,
+					    ctx->lnf_repair_block);
+		ctx->lnf_repair_block = 0;
+	}
+	if (ctx->root_repair_block) {
+		ext2fs_unmark_block_bitmap2(ctx->block_found_map,
+					    ctx->root_repair_block);
+		ctx->root_repair_block = 0;
+	}
+
 	print_resource_track(ctx, _("Pass 3"), &rtrack, ctx->fs->io);
 }
 
@@ -176,6 +187,11 @@ static void check_root(e2fsck_t ctx)
 	/*
 	 * First, find a free block
 	 */
+	if (ctx->root_repair_block) {
+		blk = ctx->root_repair_block;
+		ctx->root_repair_block = 0;
+		goto skip_new_block;
+	}
 	pctx.errcode = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_new_block";
@@ -184,6 +200,7 @@ static void check_root(e2fsck_t ctx)
 		return;
 	}
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+skip_new_block:
 	ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	ext2fs_mark_bb_dirty(fs);
 
@@ -425,6 +442,11 @@ unlink:
 	/*
 	 * First, find a free block
 	 */
+	if (ctx->lnf_repair_block) {
+		blk = ctx->lnf_repair_block;
+		ctx->lnf_repair_block = 0;
+		goto skip_new_block;
+	}
 	retval = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (retval) {
 		pctx.errcode = retval;
@@ -432,6 +454,7 @@ unlink:
 		return 0;
 	}
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+skip_new_block:
 	ext2fs_block_alloc_stats2(fs, blk, +1);
 
 	/*
@@ -823,8 +846,9 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 		return retval;
 
 	sz = (es.last_block + 1) * fs->blocksize;
-	inode.i_size = sz;
-	inode.i_size_high = sz >> 32;
+	retval = ext2fs_inode_size_set(fs, &inode, sz);
+	if (retval)
+		return retval;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 	quota_data_add(ctx->qctx, &inode, dir, es.newblocks * fs->blocksize);
 

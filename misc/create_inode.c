@@ -418,7 +418,12 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
 		fs->now ? fs->now : time(0);
 	inode.i_links_count = 1;
-	inode.i_size = statbuf.st_size;
+	retval = ext2fs_inode_size_set(fs, &inode, statbuf.st_size);
+	if (retval) {
+		com_err(dest, retval, 0);
+		close(fd);
+		return retval;
+	}
 	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
 				      EXT4_FEATURE_INCOMPAT_INLINE_DATA)) {
 		inode.i_flags |= EXT4_INLINE_DATA_FL;

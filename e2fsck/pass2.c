@@ -1631,8 +1631,15 @@ static int allocate_dir_block(e2fsck_t ctx,
 	 */
 	e2fsck_read_inode(ctx, db->ino, &inode, "allocate_dir_block");
 	ext2fs_iblk_add_blocks(fs, &inode, 1);
-	if (inode.i_size < (db->blockcnt+1) * fs->blocksize)
-		inode.i_size = (db->blockcnt+1) * fs->blocksize;
+	if (EXT2_I_SIZE(&inode) < (db->blockcnt+1) * fs->blocksize) {
+		pctx->errcode = ext2fs_inode_size_set(fs, &inode,
+					(db->blockcnt+1) * fs->blocksize);
+		if (pctx->errcode) {
+			pctx->str = "ext2fs_inode_size_set";
+			fix_problem(ctx, PR_2_ALLOC_DIRBOCK, pctx);
+			return 1;
+		}
+	}
 	e2fsck_write_inode(ctx, db->ino, &inode, "allocate_dir_block");
 
 	/*

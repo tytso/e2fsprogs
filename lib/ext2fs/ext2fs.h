@@ -894,6 +894,8 @@ extern blk64_t ext2fs_file_acl_block(ext2_filsys fs,
 				     const struct ext2_inode *inode);
 extern void ext2fs_file_acl_block_set(ext2_filsys fs,
 				      struct ext2_inode *inode, blk64_t blk);
+extern errcode_t ext2fs_inode_size_set(ext2_filsys fs, struct ext2_inode *inode,
+				       ext2_off64_t size);
 
 /* block.c */
 extern errcode_t ext2fs_block_iterate(ext2_filsys fs,

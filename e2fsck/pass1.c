@@ -277,8 +277,7 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 	if (!fix_problem(ctx, PR_1_SET_NONZSIZE, pctx))
 		return;
 
-	inode->i_size = 0;
-	inode->i_size_high = 0;
+	ext2fs_inode_size_set(ctx->fs, inode, 0);
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 
@@ -599,6 +598,42 @@ static errcode_t recheck_bad_inode_checksum(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 
 	return 0;
+}
+
+static void reserve_block_for_root_repair(e2fsck_t ctx)
+{
+	blk64_t		blk = 0;
+	errcode_t	err;
+	ext2_filsys	fs = ctx->fs;
+
+	ctx->root_repair_block = 0;
+	if (ext2fs_test_inode_bitmap2(ctx->inode_used_map, EXT2_ROOT_INO))
+		return;
+
+	err = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
+	if (err)
+		return;
+	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+	ctx->root_repair_block = blk;
+}
+
+static void reserve_block_for_lnf_repair(e2fsck_t ctx)
+{
+	blk64_t		blk = 0;
+	errcode_t	err;
+	ext2_filsys	fs = ctx->fs;
+	static const char name[] = "lost+found";
+	ext2_ino_t	ino;
+
+	ctx->lnf_repair_block = 0;
+	if (!ext2fs_lookup(fs, EXT2_ROOT_INO, name, sizeof(name)-1, 0, &ino))
+		return;
+
+	err = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
+	if (err)
+		return;
+	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+	ctx->lnf_repair_block = blk;
 }
 
 void e2fsck_pass1(e2fsck_t ctx)
@@ -1279,6 +1314,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 	process_inodes(ctx, block_buf);
 	ext2fs_close_inode_scan(scan);
 	scan = NULL;
+
+	reserve_block_for_root_repair(ctx);
+	reserve_block_for_lnf_repair(ctx);
 
 	/*
 	 * If any extended attribute blocks' reference counts need to
@@ -2505,9 +2543,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = (pb.last_block+1) * fs->blocksize;
 		pctx->group = bad_size;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
-			inode->i_size = pctx->num;
-			if (!LINUX_S_ISDIR(inode->i_mode))
-				inode->i_size_high = pctx->num >> 32;
+			if (LINUX_S_ISDIR(inode->i_mode))
+				pctx->num &= 0xFFFFFFFFULL;
+			ext2fs_inode_size_set(fs, inode, pctx->num);
 			dirty_inode++;
 		}
 		pctx->num = 0;
