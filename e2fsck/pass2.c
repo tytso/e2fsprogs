@@ -739,6 +739,41 @@ static int is_last_entry(ext2_filsys fs, int inline_data_size,
 		return (offset < fs->blocksize - csum_size);
 }
 
+static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
+{
+	struct ext2_dir_entry *d;
+	void *top;
+	struct ext2_dir_entry_tail *t;
+	unsigned int rec_len;
+
+	d = dirbuf;
+	top = EXT2_DIRENT_TAIL(dirbuf, fs->blocksize);
+
+	rec_len = d->rec_len;
+	while (rec_len && !(rec_len & 0x3)) {
+		d = (struct ext2_dir_entry *)(((char *)d) + rec_len);
+		if (((void *)d) + d->rec_len >= top)
+			break;
+		rec_len = d->rec_len;
+	}
+
+	if (d != top) {
+		size_t min_size = EXT2_DIR_REC_LEN(
+				ext2fs_dirent_name_len(dirbuf));
+		if (min_size > d->rec_len - sizeof(struct ext2_dir_entry_tail))
+			return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
+		d->rec_len -= sizeof(struct ext2_dir_entry_tail);
+	}
+
+	t = (struct ext2_dir_entry_tail *)top;
+	if (t->det_reserved_zero1 ||
+	    t->det_rec_len != sizeof(struct ext2_dir_entry_tail) ||
+	    t->det_reserved_name_len != EXT2_DIR_NAME_LEN_CSUM)
+		ext2fs_initialize_dirent_tail(fs, t);
+
+	return 0;
+}
+
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
 			   void *priv_data)
@@ -1275,8 +1310,12 @@ skip_checksum:
 		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
 		    is_leaf &&
-		    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf))
+		    !inline_data_size &&
+		    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf)) {
+			if (insert_dirent_tail(fs, buf) == 0)
+				goto write_and_fix;
 			e2fsck_rehash_dir_later(ctx, ino);
+		}
 
 write_and_fix:
 		if (e2fsck_dir_will_be_rehashed(ctx, ino))
