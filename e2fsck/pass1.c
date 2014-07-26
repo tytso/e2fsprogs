@@ -970,8 +970,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (ino == EXT2_BAD_INO) {
 			struct process_block_struct pb;
 
-			if ((inode->i_mode || inode->i_uid || inode->i_gid ||
-			     inode->i_links_count || inode->i_file_acl) &&
+			if ((failed_csum || inode->i_mode || inode->i_uid ||
+			     inode->i_gid || inode->i_links_count ||
+			     (inode->i_flags & EXT4_INLINE_DATA_FL) ||
+			     inode->i_file_acl) &&
 			    fix_problem(ctx, PR_1_INVALID_BAD_INODE, &pctx)) {
 				memset(inode, 0, sizeof(struct ext2_inode));
 				e2fsck_write_inode(ctx, ino, inode,
