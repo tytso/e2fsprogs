@@ -804,8 +804,9 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 		return retval;
 
 	sz = (es.last_block + 1) * fs->blocksize;
-	inode.i_size = sz;
-	inode.i_size_high = sz >> 32;
+	retval = ext2fs_inode_size_set(fs, &inode, sz);
+	if (retval)
+		return retval;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 	quota_data_add(ctx->qctx, &inode, dir, es.newblocks * fs->blocksize);
 

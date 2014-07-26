@@ -462,20 +462,10 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 	old_truncate = ((old_size + file->fs->blocksize - 1) >>
 		      EXT2_BLOCK_SIZE_BITS(file->fs->super));
 
-	/* If we're writing a large file, set the large_file flag */
-	if (LINUX_S_ISREG(file->inode.i_mode) &&
-	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(&file->inode)) &&
-	    (!EXT2_HAS_RO_COMPAT_FEATURE(file->fs->super,
-					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE) ||
-	     file->fs->super->s_rev_level == EXT2_GOOD_OLD_REV)) {
-		file->fs->super->s_feature_ro_compat |=
-				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
-		ext2fs_update_dynamic_rev(file->fs);
-		ext2fs_mark_super_dirty(file->fs);
-	}
+	retval = ext2fs_inode_size_set(file->fs, &file->inode, size);
+	if (retval)
+		return retval;
 
-	file->inode.i_size = size & 0xffffffff;
-	file->inode.i_size_high = (size >> 32);
 	if (file->ino) {
 		retval = ext2fs_write_inode(file->fs, file->ino, &file->inode);
 		if (retval)

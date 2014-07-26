@@ -383,15 +383,13 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 		goto errout;
 
 	inode_size = (unsigned long long)fs->blocksize * num_blocks;
-	inode.i_size = inode_size & 0xFFFFFFFF;
-	inode.i_size_high = (inode_size >> 32) & 0xFFFFFFFF;
-	if (ext2fs_needs_large_file_feature(inode_size))
-		fs->super->s_feature_ro_compat |=
-			EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 	inode.i_mtime = inode.i_ctime = fs->now ? fs->now : time(0);
 	inode.i_links_count = 1;
 	inode.i_mode = LINUX_S_IFREG | 0600;
+	retval = ext2fs_inode_size_set(fs, &inode, inode_size);
+	if (retval)
+		goto errout;
 
 	if ((retval = ext2fs_write_new_inode(fs, journal_ino, &inode)))
 		goto errout;

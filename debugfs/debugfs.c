@@ -1718,7 +1718,12 @@ void do_write(int argc, char *argv[])
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
 		current_fs->now ? current_fs->now : time(0);
 	inode.i_links_count = 1;
-	inode.i_size = statbuf.st_size;
+	retval = ext2fs_inode_size_set(current_fs, &inode, statbuf.st_size);
+	if (retval) {
+		com_err(argv[2], retval, 0);
+		close(fd);
+		return;
+	}
 	if (current_fs->super->s_feature_incompat &
 	    EXT3_FEATURE_INCOMPAT_EXTENTS) {
 		int i;
