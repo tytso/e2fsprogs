@@ -83,7 +83,7 @@ static void print_tree(struct rb_root *root)
 
 static void check_tree(struct rb_root *root, const char *msg)
 {
-	struct rb_node *new_node, *node, *next;
+	struct rb_node *node;
 	struct bmap_rb_extent *ext, *old = NULL;
 
 	for (node = ext2fs_rb_first(root); node;
