@@ -205,28 +205,6 @@ skip_new_block:
 	ext2fs_mark_bb_dirty(fs);
 
 	/*
-	 * Now let's create the actual data block for the inode
-	 */
-	pctx.errcode = ext2fs_new_dir_block(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
-					    &block);
-	if (pctx.errcode) {
-		pctx.str = "ext2fs_new_dir_block";
-		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
-
-	pctx.errcode = ext2fs_write_dir_block4(fs, blk, block, 0,
-					       EXT2_ROOT_INO);
-	if (pctx.errcode) {
-		pctx.str = "ext2fs_write_dir_block4";
-		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
-	ext2fs_free_mem(&block);
-
-	/*
 	 * Set up the inode structure
 	 */
 	memset(&inode, 0, sizeof(inode));
@@ -243,6 +221,30 @@ skip_new_block:
 	pctx.errcode = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_write_inode";
+		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+
+	/*
+	 * Now let's create the actual data block for the inode.
+	 * Due to metadata_csum, we must write the dir blocks AFTER
+	 * the inode has been written to disk!
+	 */
+	pctx.errcode = ext2fs_new_dir_block(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+					    &block);
+	if (pctx.errcode) {
+		pctx.str = "ext2fs_new_dir_block";
+		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+
+	pctx.errcode = ext2fs_write_dir_block4(fs, blk, block, 0,
+					       EXT2_ROOT_INO);
+	ext2fs_free_mem(&block);
+	if (pctx.errcode) {
+		pctx.str = "ext2fs_write_dir_block4";
 		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
@@ -472,24 +474,6 @@ skip_new_block:
 	ext2fs_inode_alloc_stats2(fs, ino, +1, 1);
 
 	/*
-	 * Now let's create the actual data block for the inode
-	 */
-	retval = ext2fs_new_dir_block(fs, ino, EXT2_ROOT_INO, &block);
-	if (retval) {
-		pctx.errcode = retval;
-		fix_problem(ctx, PR_3_ERR_LPF_NEW_DIR_BLOCK, &pctx);
-		return 0;
-	}
-
-	retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
-	ext2fs_free_mem(&block);
-	if (retval) {
-		pctx.errcode = retval;
-		fix_problem(ctx, PR_3_ERR_LPF_WRITE_BLOCK, &pctx);
-		return 0;
-	}
-
-	/*
 	 * Set up the inode structure
 	 */
 	memset(&inode, 0, sizeof(inode));
@@ -509,6 +493,27 @@ skip_new_block:
 		fix_problem(ctx, PR_3_CREATE_LPF_ERROR, &pctx);
 		return 0;
 	}
+
+	/*
+	 * Now let's create the actual data block for the inode.
+	 * Due to metadata_csum, the directory block MUST be written
+	 * after the inode is written to disk!
+	 */
+	retval = ext2fs_new_dir_block(fs, ino, EXT2_ROOT_INO, &block);
+	if (retval) {
+		pctx.errcode = retval;
+		fix_problem(ctx, PR_3_ERR_LPF_NEW_DIR_BLOCK, &pctx);
+		return 0;
+	}
+
+	retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
+	ext2fs_free_mem(&block);
+	if (retval) {
+		pctx.errcode = retval;
+		fix_problem(ctx, PR_3_ERR_LPF_WRITE_BLOCK, &pctx);
+		return 0;
+	}
+
 	/*
 	 * Finally, create the directory link
 	 */
