@@ -2011,12 +2011,14 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		last_lblk = extent.e_lblk + extent.e_len - 1;
 
 		problem = 0;
+		pctx->blk = extent.e_pblk;
+		pctx->blk2 = extent.e_lblk;
+		pctx->num = extent.e_len;
+		pctx->blkcount = extent.e_lblk + extent.e_len;
+
 		/* Ask to clear a corrupt extent block */
 		if (try_repairs &&
 		    pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) {
-			pctx->blk = extent.e_pblk;
-			pctx->blk2 = extent.e_lblk;
-			pctx->num = extent.e_len;
 			problem = PR_1_EXTENT_CSUM_INVALID;
 			if (fix_problem(ctx, problem, pctx))
 				goto fix_problem_now;
@@ -2060,25 +2062,18 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			failed_csum = 0;
 		}
 
-		/* Corrupt but passes checks?  Ask to fix checksum. */
-		if (try_repairs && failed_csum) {
-			pctx->blk = extent.e_pblk;
-			pctx->blk2 = extent.e_lblk;
-			pctx->num = extent.e_len;
-			problem = 0;
-			if (fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID,
-					pctx)) {
-				pb->inode_modified = 1;
-				ext2fs_extent_replace(ehandle, 0, &extent);
-			}
+		/* Failed csum but passes checks?  Ask to fix checksum. */
+		if (try_repairs && failed_csum && problem == 0 &&
+		    fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID, pctx)) {
+			pb->inode_modified = 1;
+			pctx->errcode = ext2fs_extent_replace(ehandle,
+							0, &extent);
+			if (pctx->errcode)
+				return;
 		}
 
 		if (try_repairs && problem) {
 report_problem:
-			pctx->blk = extent.e_pblk;
-			pctx->blk2 = extent.e_lblk;
-			pctx->num = extent.e_len;
-			pctx->blkcount = extent.e_lblk + extent.e_len;
 			if (fix_problem(ctx, problem, pctx)) {
 fix_problem_now:
 				if (ctx->invalid_bitmaps) {
