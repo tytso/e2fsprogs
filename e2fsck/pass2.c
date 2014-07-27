@@ -740,6 +740,7 @@ static int is_last_entry(ext2_filsys fs, int inline_data_size,
 		return (offset < fs->blocksize - csum_size);
 }
 
+#define NEXT_DIRENT(d)	((void *)((char *)(d) + (d)->rec_len))
 static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
 {
 	struct ext2_dir_entry *d;
@@ -750,20 +751,15 @@ static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
 	d = dirbuf;
 	top = EXT2_DIRENT_TAIL(dirbuf, fs->blocksize);
 
-	rec_len = d->rec_len;
-	while (rec_len && !(rec_len & 0x3)) {
-		d = (struct ext2_dir_entry *)(((char *)d) + rec_len);
-		if (((void *)d) + d->rec_len >= top)
-			break;
-		rec_len = d->rec_len;
-	}
+	while (d->rec_len && !(d->rec_len & 0x3) && NEXT_DIRENT(d) <= top)
+		d = NEXT_DIRENT(d);
 
 	if (d != top) {
 		size_t min_size = EXT2_DIR_REC_LEN(
 				ext2fs_dirent_name_len(dirbuf));
-		if (min_size > d->rec_len - sizeof(struct ext2_dir_entry_tail))
+		if (min_size > top - (void *)d)
 			return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
-		d->rec_len -= sizeof(struct ext2_dir_entry_tail);
+		d->rec_len = top - (void *)d;
 	}
 
 	t = (struct ext2_dir_entry_tail *)top;
@@ -774,6 +770,7 @@ static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
 
 	return 0;
 }
+#undef NEXT_DIRENT
 
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
