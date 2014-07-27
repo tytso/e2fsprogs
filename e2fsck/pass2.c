@@ -665,7 +665,8 @@ clear_and_exit:
 static void salvage_directory(ext2_filsys fs,
 			      struct ext2_dir_entry *dirent,
 			      struct ext2_dir_entry *prev,
-			      unsigned int *offset)
+			      unsigned int *offset,
+			      unsigned int block_len)
 {
 	char	*cp = (char *) dirent;
 	int left;
@@ -673,7 +674,7 @@ static void salvage_directory(ext2_filsys fs,
 	unsigned int name_len = ext2fs_dirent_name_len(dirent);
 
 	(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
-	left = fs->blocksize - *offset - rec_len;
+	left = block_len - *offset - rec_len;
 
 	/*
 	 * Special case of directory entry of size 8: copy what's left
@@ -703,7 +704,7 @@ static void salvage_directory(ext2_filsys fs,
 	 * previous directory entry absorb the invalid one.
 	 */
 	if (prev && rec_len && (rec_len % 4) == 0 &&
-	    (*offset + rec_len <= fs->blocksize)) {
+	    (*offset + rec_len <= block_len)) {
 		(void) ext2fs_get_rec_len(fs, prev, &prev_rec_len);
 		prev_rec_len += rec_len;
 		(void) ext2fs_set_rec_len(fs, prev_rec_len, prev);
@@ -718,11 +719,11 @@ static void salvage_directory(ext2_filsys fs,
 	 */
 	if (prev) {
 		(void) ext2fs_get_rec_len(fs, prev, &prev_rec_len);
-		prev_rec_len += fs->blocksize - *offset;
+		prev_rec_len += block_len - *offset;
 		(void) ext2fs_set_rec_len(fs, prev_rec_len, prev);
 		*offset = fs->blocksize;
 	} else {
-		rec_len = fs->blocksize - *offset;
+		rec_len = block_len - *offset;
 		(void) ext2fs_set_rec_len(fs, rec_len, dirent);
 		ext2fs_dirent_set_name_len(dirent, 0);
 		ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
@@ -995,8 +996,12 @@ skip_checksum:
 			    (rec_len < 12) ||
 			    ((rec_len % 4) != 0) ||
 			    ((ext2fs_dirent_name_len(dirent) + 8) > rec_len)) {
-				if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
-					salvage_directory(fs, dirent, prev, &offset);
+				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
+						&cd->pctx)) {
+					salvage_directory(fs, dirent, prev,
+							  &offset,
+							  fs->blocksize -
+							  de_csum_size);
 					dir_modified++;
 					continue;
 				} else
