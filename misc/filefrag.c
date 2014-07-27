@@ -331,9 +331,10 @@ static int filefrag_fibmap(int fd, int blk_shift, int *num_extents,
 			fm_ext.fe_physical = block * st->st_blksize;
 			fm_ext.fe_length = 0;
 			(*num_extents)++;
-		} else if (verbose && last_block && (block != last_block + 1)) {
-			printf("Discontinuity: Block %ld is at %lu (was %lu)\n",
-			       i, block, last_block + 1);
+		} else if (last_block && (block != last_block + 1)) {
+			if (verbose)
+				printf("Discontinuity: Block %ld is at %lu (was "
+				       "%lu)\n", i, block, last_block + 1);
 			(*num_extents)++;
 		}
 		fm_ext.fe_length += st->st_blksize;
@@ -439,7 +440,7 @@ static int frag_report(const char *filename)
 		expected = 0;
 	}
 
-	if (rc < 0) {
+	if (force_bmap || rc < 0) {
 		expected = filefrag_fibmap(fd, blk_shift, &num_extents,
 					   &st, numblocks, is_ext2);
 		if (expected < 0) {
