@@ -207,6 +207,18 @@ static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 	return 0;
 }
 
+static void *
+journal_user(char uuid[UUID_SIZE], char s_users[JFS_USERS_SIZE], int nr_users)
+{
+	int i;
+	for (i = 0; i < nr_users; i++) {
+		if (memcmp(uuid, &s_users[i * UUID_SIZE], UUID_SIZE) == 0)
+			return &s_users[i * UUID_SIZE];
+	}
+
+	return NULL;
+}
+
 /*
  * Remove an external journal from the filesystem
  */
@@ -261,11 +273,8 @@ static int remove_journal_device(ext2_filsys fs)
 	jsb = (journal_superblock_t *) buf;
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
-	for (i = 0; i < nr_users; i++) {
-		if (memcmp(fs->super->s_uuid, &jsb->s_users[i * 16], 16) == 0)
-			break;
-	}
-	if (i >= nr_users) {
+
+	if (!journal_user(fs->super->s_uuid, jsb->s_users, nr_users)) {
 		fputs(_("Filesystem's UUID not found on journal device.\n"),
 		      stderr);
 		commit_remove_journal = 1;
@@ -1915,6 +1924,68 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	return retval;
 }
 
+int
+fs_update_journal_user(struct ext2_super_block *sb, char old_uuid[UUID_SIZE])
+{
+	int retval, nr_users, start;
+	journal_superblock_t *jsb;
+	ext2_filsys jfs;
+	char *j_uuid, *journal_path;
+	char uuid[UUID_STR_SIZE];
+	char buf[SUPERBLOCK_SIZE];
+
+	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) ||
+		uuid_is_null(sb->s_journal_uuid))
+		return 0;
+
+	uuid_unparse(sb->s_journal_uuid, uuid);
+	journal_path = blkid_get_devname(NULL, "UUID", uuid);
+	if (!journal_path)
+		return 0;
+
+	retval = ext2fs_open2(journal_path, io_options,
+			      EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_RW,
+			      0, 0, unix_io_manager, &jfs);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while trying to open %s"),
+			journal_path);
+		return retval;
+	}
+
+	if ((retval = get_journal_sb(jfs, buf))) {
+		if (retval == EXT2_ET_UNSUPP_FEATURE)
+			fprintf(stderr, _("%s is not a journal device.\n"),
+				journal_path);
+		return retval;
+	}
+
+	jsb = (journal_superblock_t *) buf;
+	/* Find the filesystem UUID */
+	nr_users = ntohl(jsb->s_nr_users);
+
+	if (!(j_uuid = journal_user(old_uuid, jsb->s_users, nr_users))) {
+		fputs(_("Filesystem's UUID not found on journal device.\n"),
+		      stderr);
+		return EXT2_ET_LOAD_EXT_JOURNAL;
+	}
+
+	memcpy(j_uuid, sb->s_uuid, UUID_SIZE);
+
+	start = ext2fs_journal_sb_start(jfs->blocksize);
+	/* Write back the journal superblock */
+	if ((retval = io_channel_write_blk64(jfs->io, start,
+	    -SUPERBLOCK_SIZE, buf))) {
+		com_err(program_name, retval,
+			"while writing journal superblock.");
+		return retval;
+	}
+
+	ext2fs_close(jfs);
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	errcode_t retval;
@@ -2203,6 +2274,7 @@ retry_open:
 		int set_csum = 0;
 		dgrp_t i;
 		char buf[SUPERBLOCK_SIZE];
+		char old_uuid[UUID_SIZE];
 
 		if (sb->s_feature_ro_compat &
 		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
@@ -2230,6 +2302,8 @@ retry_open:
 			if (i >= fs->group_desc_count)
 				set_csum = 1;
 		}
+
+		memcpy(old_uuid, sb->s_uuid, UUID_SIZE);
 		if ((strcasecmp(new_UUID, "null") == 0) ||
 		    (strcasecmp(new_UUID, "clear") == 0)) {
 			uuid_clear(sb->s_uuid);
@@ -2264,8 +2338,12 @@ retry_open:
 				goto closefs;
 		} else if (rc != EXT2_ET_UNSUPP_FEATURE)
 			goto closefs;
-		else
+		else {
 			rc = 0; /** Reset rc to avoid ext2fs_mmp_stop() */
+
+			if ((rc = fs_update_journal_user(sb, old_uuid)))
+				goto closefs;
+		}
 
 		ext2fs_mark_super_dirty(fs);
 	}
