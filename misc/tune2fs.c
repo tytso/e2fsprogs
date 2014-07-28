@@ -175,6 +175,38 @@ static __u32 clear_ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM
 };
 
+/**
+ * Try to get journal super block if any
+ */
+static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
+{
+	int retval;
+	int start;
+	journal_superblock_t *jsb;
+
+	if (!(jfs->super->s_feature_incompat &
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+
+	/* Get the journal superblock */
+	if ((retval = io_channel_read_blk64(jfs->io,
+	    ext2fs_journal_sb_start(jfs->blocksize), -SUPERBLOCK_SIZE, buf))) {
+		com_err(program_name, retval, "%s",
+		_("while reading journal superblock"));
+		return retval;
+	}
+
+	jsb = (journal_superblock_t *) buf;
+	if ((jsb->s_header.h_magic != (unsigned)ntohl(JFS_MAGIC_NUMBER)) ||
+	    (jsb->s_header.h_blocktype != (unsigned)ntohl(JFS_SUPERBLOCK_V2))) {
+		fputs(_("Journal superblock not found!\n"), stderr);
+		return EXT2_ET_BAD_MAGIC;
+	}
+
+	return 0;
+}
+
 /*
  * Remove an external journal from the filesystem
  */
@@ -218,29 +250,15 @@ static int remove_journal_device(ext2_filsys fs)
 			_("while trying to open external journal"));
 		goto no_valid_journal;
 	}
-	if (!(jfs->super->s_feature_incompat &
-	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
-		fprintf(stderr, _("%s is not a journal device.\n"),
-			journal_path);
-		goto no_valid_journal;
-	}
 
-	start = ext2fs_journal_sb_start(fs->blocksize);
-	/* Get the journal superblock */
-	if ((retval = io_channel_read_blk64(jfs->io, start,
-	    -SUPERBLOCK_SIZE, buf))) {
-		com_err(program_name, retval, "%s",
-			_("while reading journal superblock"));
+	if ((retval = get_journal_sb(jfs, buf))) {
+		if (retval == EXT2_ET_UNSUPP_FEATURE)
+			fprintf(stderr, _("%s is not a journal device.\n"),
+				journal_path);
 		goto no_valid_journal;
 	}
 
 	jsb = (journal_superblock_t *) buf;
-	if ((jsb->s_header.h_magic != (unsigned)ntohl(JFS_MAGIC_NUMBER)) ||
-	    (jsb->s_header.h_blocktype != (unsigned)ntohl(JFS_SUPERBLOCK_V2))) {
-		fputs(_("Journal superblock not found!\n"), stderr);
-		goto no_valid_journal;
-	}
-
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
 	for (i = 0; i < nr_users; i++) {
@@ -2184,6 +2202,7 @@ retry_open:
 	if (U_flag) {
 		int set_csum = 0;
 		dgrp_t i;
+		char buf[SUPERBLOCK_SIZE];
 
 		if (sb->s_feature_ro_compat &
 		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
@@ -2229,6 +2248,25 @@ retry_open:
 				ext2fs_group_desc_csum_set(fs, i);
 			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 		}
+
+		/* If this is a journal dev, we need to copy UUID into jsb */
+		if (!(rc = get_journal_sb(fs, buf))) {
+			journal_superblock_t *jsb;
+
+			jsb = (journal_superblock_t *) buf;
+			fputs(_("Need to update journal superblock.\n"), stdout);
+			memcpy(jsb->s_uuid, sb->s_uuid, sizeof(sb->s_uuid));
+
+			/* Writeback the journal superblock */
+			if ((rc = io_channel_write_blk64(fs->io,
+				ext2fs_journal_sb_start(fs->blocksize),
+					-SUPERBLOCK_SIZE, buf)))
+				goto closefs;
+		} else if (rc != EXT2_ET_UNSUPP_FEATURE)
+			goto closefs;
+		else
+			rc = 0; /** Reset rc to avoid ext2fs_mmp_stop() */
+
 		ext2fs_mark_super_dirty(fs);
 	}
 	if (I_flag) {
