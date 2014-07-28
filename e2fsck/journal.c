@@ -393,8 +393,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	if (ext_journal) {
 		blk64_t maxlen;
 
-		if (ctx->fs->blocksize == 1024)
-			start = 1;
+		start = ext2fs_journal_sb_start(ctx->fs->blocksize) - 1;
 		bh = getblk(dev_journal, start, ctx->fs->blocksize);
 		if (!bh) {
 			retval = EXT2_ET_NO_MEMORY;
@@ -405,7 +404,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			brelse(bh);
 			goto errout;
 		}
-		memcpy(&jsuper, start ? bh->b_data :  bh->b_data + 1024,
+		memcpy(&jsuper, start ? bh->b_data :  bh->b_data + SUPERBLOCK_OFFSET,
 		       sizeof(jsuper));
 		brelse(bh);
 #ifdef WORDS_BIGENDIAN

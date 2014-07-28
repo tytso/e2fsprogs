@@ -182,7 +182,7 @@ static int remove_journal_device(ext2_filsys fs)
 {
 	char		*journal_path;
 	ext2_filsys	jfs;
-	char		buf[1024];
+	char		buf[SUPERBLOCK_SIZE];
 	journal_superblock_t	*jsb;
 	int		i, nr_users;
 	errcode_t	retval;
@@ -225,7 +225,7 @@ static int remove_journal_device(ext2_filsys fs)
 	}
 
 	/* Get the journal superblock */
-	if ((retval = io_channel_read_blk64(jfs->io, 1, -1024, buf))) {
+	if ((retval = io_channel_read_blk64(jfs->io, 1, -SUPERBLOCK_SIZE, buf))) {
 		com_err(program_name, retval, "%s",
 			_("while reading journal superblock"));
 		goto no_valid_journal;
@@ -256,7 +256,7 @@ static int remove_journal_device(ext2_filsys fs)
 	jsb->s_nr_users = htonl(nr_users);
 
 	/* Write back the journal superblock */
-	if ((retval = io_channel_write_blk64(jfs->io, 1, -1024, buf))) {
+	if ((retval = io_channel_write_blk64(jfs->io, 1, -SUPERBLOCK_SIZE, buf))) {
 		com_err(program_name, retval,
 			"while writing journal superblock.");
 		goto no_valid_journal;
