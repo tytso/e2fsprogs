@@ -351,6 +351,7 @@ static int filefrag_fibmap(int fd, int blk_shift, int *num_extents,
 static int frag_report(const char *filename)
 {
 	static struct statfs fsinfo;
+	static unsigned int blksize;
 	ext2fs_struct_stat st;
 	int		blk_shift;
 	long		fd;
@@ -381,22 +382,22 @@ static int frag_report(const char *filename)
 #endif
 		rc = -errno;
 		perror("stat");
-		close(fd);
-		return rc;
+		goto out_close;
 	}
 
 	if (last_device != st.st_dev) {
 		if (fstatfs(fd, &fsinfo) < 0) {
 			rc = -errno;
 			perror("fstatfs");
-			close(fd);
-			return rc;
+			goto out_close;
 		}
+		if (ioctl(fd, FIGETBSZ, &blksize) < 0)
+			blksize = fsinfo.f_bsize;
 		if (verbose)
 			printf("Filesystem type is: %lx\n",
 			       (unsigned long)fsinfo.f_type);
 	}
-	st.st_blksize = fsinfo.f_bsize;
+	st.st_blksize = blksize;
 	if (ioctl(fd, EXT3_IOC_GETFLAGS, &flags) < 0)
 		flags = 0;
 	if (!(flags & EXT4_EXTENTS_FL) &&
@@ -405,13 +406,13 @@ static int frag_report(const char *filename)
 		is_ext2++;
 
 	if (is_ext2) {
-		long cylgroups = div_ceil(fsinfo.f_blocks, fsinfo.f_bsize * 8);
+		long cylgroups = div_ceil(fsinfo.f_blocks, blksize * 8);
 
 		if (verbose && last_device != st.st_dev)
 			printf("Filesystem cylinder groups approximately %ld\n",
 			       cylgroups);
 
-		data_blocks_per_cyl = fsinfo.f_bsize * 8 -
+		data_blocks_per_cyl = blksize * 8 -
 					(fsinfo.f_files / 8 / cylgroups) - 3;
 	}
 	last_device = st.st_dev;
@@ -420,11 +421,11 @@ static int frag_report(const char *filename)
 	if (width > physical_width)
 		physical_width = width;
 
-	numblocks = (st.st_size + fsinfo.f_bsize - 1) / fsinfo.f_bsize;
+	numblocks = (st.st_size + blksize - 1) / blksize;
 	if (blocksize != 0)
 		blk_shift = int_log2(blocksize);
 	else
-		blk_shift = int_log2(fsinfo.f_bsize);
+		blk_shift = int_log2(blksize);
 
 	width = int_log10(numblocks);
 	if (width > logical_width)
@@ -432,7 +433,7 @@ static int frag_report(const char *filename)
 	if (verbose)
 		printf("File size of %s is %llu (%llu block%s of %d bytes)\n",
 		       filename, (unsigned long long)st.st_size,
-		       numblocks * fsinfo.f_bsize >> blk_shift,
+		       numblocks * blksize >> blk_shift,
 		       numblocks == 1 ? "" : "s", 1 << blk_shift);
 
 	if (!force_bmap) {
