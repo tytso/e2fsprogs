@@ -357,8 +357,9 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 	if (retval)
 		goto errout;
 	size = (__u64) count * fs->blocksize;
-	inode.i_size = size & 0xffffffff;
-	inode.i_size_high = (size >> 32);
+	retval = ext2fs_inode_size_set(fs, &inode, size);
+	if (retval)
+		goto errout;
 
 	retval = ext2fs_write_new_inode(fs, *ino, &inode);
 	if (retval)
@@ -468,7 +469,7 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 	unsigned long	i;
 	ext2_ino_t	dir;
 	errcode_t	retval;
-	blk64_t		fs_blocks, part_offset;
+	blk64_t		fs_blocks, part_offset = 0;
 	unsigned long	align;
 	int		d, dsize;
 	char		*t;

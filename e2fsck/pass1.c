@@ -277,8 +277,7 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 	if (!fix_problem(ctx, PR_1_SET_NONZSIZE, pctx))
 		return;
 
-	inode->i_size = 0;
-	inode->i_size_high = 0;
+	ext2fs_inode_size_set(ctx->fs, inode, 0);
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 
@@ -599,6 +598,42 @@ static errcode_t recheck_bad_inode_checksum(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 
 	return 0;
+}
+
+static void reserve_block_for_root_repair(e2fsck_t ctx)
+{
+	blk64_t		blk = 0;
+	errcode_t	err;
+	ext2_filsys	fs = ctx->fs;
+
+	ctx->root_repair_block = 0;
+	if (ext2fs_test_inode_bitmap2(ctx->inode_used_map, EXT2_ROOT_INO))
+		return;
+
+	err = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
+	if (err)
+		return;
+	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+	ctx->root_repair_block = blk;
+}
+
+static void reserve_block_for_lnf_repair(e2fsck_t ctx)
+{
+	blk64_t		blk = 0;
+	errcode_t	err;
+	ext2_filsys	fs = ctx->fs;
+	static const char name[] = "lost+found";
+	ext2_ino_t	ino;
+
+	ctx->lnf_repair_block = 0;
+	if (!ext2fs_lookup(fs, EXT2_ROOT_INO, name, sizeof(name)-1, 0, &ino))
+		return;
+
+	err = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
+	if (err)
+		return;
+	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+	ctx->lnf_repair_block = blk;
 }
 
 void e2fsck_pass1(e2fsck_t ctx)
@@ -935,8 +970,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (ino == EXT2_BAD_INO) {
 			struct process_block_struct pb;
 
-			if ((inode->i_mode || inode->i_uid || inode->i_gid ||
-			     inode->i_links_count || inode->i_file_acl) &&
+			if ((failed_csum || inode->i_mode || inode->i_uid ||
+			     inode->i_gid || inode->i_links_count ||
+			     (inode->i_flags & EXT4_INLINE_DATA_FL) ||
+			     inode->i_file_acl) &&
 			    fix_problem(ctx, PR_1_INVALID_BAD_INODE, &pctx)) {
 				memset(inode, 0, sizeof(struct ext2_inode));
 				e2fsck_write_inode(ctx, ino, inode,
@@ -1279,6 +1316,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 	process_inodes(ctx, block_buf);
 	ext2fs_close_inode_scan(scan);
 	scan = NULL;
+
+	reserve_block_for_root_repair(ctx);
+	reserve_block_for_lnf_repair(ctx);
 
 	/*
 	 * If any extended attribute blocks' reference counts need to
@@ -1906,6 +1946,40 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 	e2fsck_write_inode(ctx, ino, inode, source);
 }
 
+/*
+ * Use the multiple-blocks reclamation code to fix alignment problems in
+ * a bigalloc filesystem.  We want a logical cluster to map to *only* one
+ * physical cluster, and we want the block offsets within that cluster to
+ * line up.
+ */
+static int has_unaligned_cluster_map(e2fsck_t ctx,
+				     blk64_t last_pblk, e2_blkcnt_t last_lblk,
+				     blk64_t pblk, blk64_t lblk)
+{
+	blk64_t cluster_mask;
+
+	if (!ctx->fs->cluster_ratio_bits)
+		return 0;
+	cluster_mask = EXT2FS_CLUSTER_MASK(ctx->fs);
+
+	/*
+	 * If the block in the logical cluster doesn't align with the block in
+	 * the physical cluster...
+	 */
+	if ((lblk & cluster_mask) != (pblk & cluster_mask))
+		return 1;
+
+	/*
+	 * If we cross a physical cluster boundary within a logical cluster...
+	 */
+	if (last_pblk && (lblk & cluster_mask) != 0 &&
+	    EXT2FS_B2C(ctx->fs, lblk) == EXT2FS_B2C(ctx->fs, last_lblk) &&
+	    EXT2FS_B2C(ctx->fs, pblk) != EXT2FS_B2C(ctx->fs, last_pblk))
+		return 1;
+
+	return 0;
+}
+
 static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			     struct process_block_struct *pb,
 			     blk64_t start_block, blk64_t end_block,
@@ -1937,12 +2011,14 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		last_lblk = extent.e_lblk + extent.e_len - 1;
 
 		problem = 0;
+		pctx->blk = extent.e_pblk;
+		pctx->blk2 = extent.e_lblk;
+		pctx->num = extent.e_len;
+		pctx->blkcount = extent.e_lblk + extent.e_len;
+
 		/* Ask to clear a corrupt extent block */
 		if (try_repairs &&
 		    pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) {
-			pctx->blk = extent.e_pblk;
-			pctx->blk2 = extent.e_lblk;
-			pctx->num = extent.e_len;
 			problem = PR_1_EXTENT_CSUM_INVALID;
 			if (fix_problem(ctx, problem, pctx))
 				goto fix_problem_now;
@@ -1970,19 +2046,6 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			  (1 << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
 
-		/* Corrupt but passes checks?  Ask to fix checksum. */
-		if (try_repairs && failed_csum) {
-			pctx->blk = extent.e_pblk;
-			pctx->blk2 = extent.e_lblk;
-			pctx->num = extent.e_len;
-			problem = 0;
-			if (fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID,
-					pctx)) {
-				pb->inode_modified = 1;
-				ext2fs_extent_replace(ehandle, 0, &extent);
-			}
-		}
-
 		/*
 		 * Uninitialized blocks in a directory?  Clear the flag and
 		 * we'll interpret the blocks later.
@@ -1999,12 +2062,18 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			failed_csum = 0;
 		}
 
+		/* Failed csum but passes checks?  Ask to fix checksum. */
+		if (try_repairs && failed_csum && problem == 0 &&
+		    fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID, pctx)) {
+			pb->inode_modified = 1;
+			pctx->errcode = ext2fs_extent_replace(ehandle,
+							0, &extent);
+			if (pctx->errcode)
+				return;
+		}
+
 		if (try_repairs && problem) {
 report_problem:
-			pctx->blk = extent.e_pblk;
-			pctx->blk2 = extent.e_lblk;
-			pctx->num = extent.e_len;
-			pctx->blkcount = extent.e_lblk + extent.e_len;
 			if (fix_problem(ctx, problem, pctx)) {
 fix_problem_now:
 				if (ctx->invalid_bitmaps) {
@@ -2210,7 +2279,16 @@ alloc_later:
 				mark_block_used(ctx, blk);
 				pb->num_blocks++;
 			}
-
+			if (has_unaligned_cluster_map(ctx, pb->previous_block,
+						      pb->last_block, blk,
+						      blockcnt)) {
+				pctx->blk = blockcnt;
+				pctx->blk2 = blk;
+				fix_problem(ctx, PR_1_MISALIGNED_CLUSTER, pctx);
+				mark_block_used(ctx, blk);
+				mark_block_used(ctx, blk);
+			}
+			pb->last_block = blockcnt;
 			pb->previous_block = blk;
 
 			if (is_dir) {
@@ -2505,9 +2583,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = (pb.last_block+1) * fs->blocksize;
 		pctx->group = bad_size;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
-			inode->i_size = pctx->num;
-			if (!LINUX_S_ISDIR(inode->i_mode))
-				inode->i_size_high = pctx->num >> 32;
+			if (LINUX_S_ISDIR(inode->i_mode))
+				pctx->num &= 0xFFFFFFFFULL;
+			ext2fs_inode_size_set(fs, inode, pctx->num);
 			dirty_inode++;
 		}
 		pctx->num = 0;
@@ -2776,6 +2854,13 @@ static int process_block(ext2_filsys fs,
 		     ((unsigned) blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
 		mark_block_used(ctx, blk);
 		p->num_blocks++;
+	} else if (has_unaligned_cluster_map(ctx, p->previous_block,
+					     p->last_block, blk, blockcnt)) {
+		pctx->blk = blockcnt;
+		pctx->blk2 = blk;
+		fix_problem(ctx, PR_1_MISALIGNED_CLUSTER, pctx);
+		mark_block_used(ctx, blk);
+		mark_block_used(ctx, blk);
 	}
 	if (blockcnt >= 0)
 		p->last_block = blockcnt;

@@ -134,6 +134,17 @@ abort_exit:
 		inode_done_map = 0;
 	}
 
+	if (ctx->lnf_repair_block) {
+		ext2fs_unmark_block_bitmap2(ctx->block_found_map,
+					    ctx->lnf_repair_block);
+		ctx->lnf_repair_block = 0;
+	}
+	if (ctx->root_repair_block) {
+		ext2fs_unmark_block_bitmap2(ctx->block_found_map,
+					    ctx->root_repair_block);
+		ctx->root_repair_block = 0;
+	}
+
 	print_resource_track(ctx, _("Pass 3"), &rtrack, ctx->fs->io);
 }
 
@@ -176,6 +187,11 @@ static void check_root(e2fsck_t ctx)
 	/*
 	 * First, find a free block
 	 */
+	if (ctx->root_repair_block) {
+		blk = ctx->root_repair_block;
+		ctx->root_repair_block = 0;
+		goto skip_new_block;
+	}
 	pctx.errcode = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_new_block";
@@ -184,30 +200,9 @@ static void check_root(e2fsck_t ctx)
 		return;
 	}
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+skip_new_block:
 	ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	ext2fs_mark_bb_dirty(fs);
-
-	/*
-	 * Now let's create the actual data block for the inode
-	 */
-	pctx.errcode = ext2fs_new_dir_block(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
-					    &block);
-	if (pctx.errcode) {
-		pctx.str = "ext2fs_new_dir_block";
-		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
-
-	pctx.errcode = ext2fs_write_dir_block4(fs, blk, block, 0,
-					       EXT2_ROOT_INO);
-	if (pctx.errcode) {
-		pctx.str = "ext2fs_write_dir_block4";
-		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
-	ext2fs_free_mem(&block);
 
 	/*
 	 * Set up the inode structure
@@ -226,6 +221,30 @@ static void check_root(e2fsck_t ctx)
 	pctx.errcode = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_write_inode";
+		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+
+	/*
+	 * Now let's create the actual data block for the inode.
+	 * Due to metadata_csum, we must write the dir blocks AFTER
+	 * the inode has been written to disk!
+	 */
+	pctx.errcode = ext2fs_new_dir_block(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+					    &block);
+	if (pctx.errcode) {
+		pctx.str = "ext2fs_new_dir_block";
+		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+
+	pctx.errcode = ext2fs_write_dir_block4(fs, blk, block, 0,
+					       EXT2_ROOT_INO);
+	ext2fs_free_mem(&block);
+	if (pctx.errcode) {
+		pctx.str = "ext2fs_write_dir_block4";
 		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
@@ -425,6 +444,11 @@ unlink:
 	/*
 	 * First, find a free block
 	 */
+	if (ctx->lnf_repair_block) {
+		blk = ctx->lnf_repair_block;
+		ctx->lnf_repair_block = 0;
+		goto skip_new_block;
+	}
 	retval = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (retval) {
 		pctx.errcode = retval;
@@ -432,6 +456,7 @@ unlink:
 		return 0;
 	}
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+skip_new_block:
 	ext2fs_block_alloc_stats2(fs, blk, +1);
 
 	/*
@@ -447,24 +472,6 @@ unlink:
 	ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
 	ext2fs_mark_inode_bitmap2(ctx->inode_dir_map, ino);
 	ext2fs_inode_alloc_stats2(fs, ino, +1, 1);
-
-	/*
-	 * Now let's create the actual data block for the inode
-	 */
-	retval = ext2fs_new_dir_block(fs, ino, EXT2_ROOT_INO, &block);
-	if (retval) {
-		pctx.errcode = retval;
-		fix_problem(ctx, PR_3_ERR_LPF_NEW_DIR_BLOCK, &pctx);
-		return 0;
-	}
-
-	retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
-	ext2fs_free_mem(&block);
-	if (retval) {
-		pctx.errcode = retval;
-		fix_problem(ctx, PR_3_ERR_LPF_WRITE_BLOCK, &pctx);
-		return 0;
-	}
 
 	/*
 	 * Set up the inode structure
@@ -486,6 +493,27 @@ unlink:
 		fix_problem(ctx, PR_3_CREATE_LPF_ERROR, &pctx);
 		return 0;
 	}
+
+	/*
+	 * Now let's create the actual data block for the inode.
+	 * Due to metadata_csum, the directory block MUST be written
+	 * after the inode is written to disk!
+	 */
+	retval = ext2fs_new_dir_block(fs, ino, EXT2_ROOT_INO, &block);
+	if (retval) {
+		pctx.errcode = retval;
+		fix_problem(ctx, PR_3_ERR_LPF_NEW_DIR_BLOCK, &pctx);
+		return 0;
+	}
+
+	retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
+	ext2fs_free_mem(&block);
+	if (retval) {
+		pctx.errcode = retval;
+		fix_problem(ctx, PR_3_ERR_LPF_WRITE_BLOCK, &pctx);
+		return 0;
+	}
+
 	/*
 	 * Finally, create the directory link
 	 */
@@ -823,8 +851,9 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 		return retval;
 
 	sz = (es.last_block + 1) * fs->blocksize;
-	inode.i_size = sz;
-	inode.i_size_high = sz >> 32;
+	retval = ext2fs_inode_size_set(fs, &inode, sz);
+	if (retval)
+		return retval;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 	quota_data_add(ctx->qctx, &inode, dir, es.newblocks * fs->blocksize);
 

@@ -609,6 +609,9 @@ struct problem_context {
 /* uninit directory block */
 #define PR_1_UNINIT_DBLOCK		0x010073
 
+/* Inode logical block is misaligned */
+#define PR_1_MISALIGNED_CLUSTER		0x010074
+
 /*
  * Pass 1b errors
  */

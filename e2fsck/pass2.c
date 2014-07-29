@@ -665,7 +665,8 @@ clear_and_exit:
 static void salvage_directory(ext2_filsys fs,
 			      struct ext2_dir_entry *dirent,
 			      struct ext2_dir_entry *prev,
-			      unsigned int *offset)
+			      unsigned int *offset,
+			      unsigned int block_len)
 {
 	char	*cp = (char *) dirent;
 	int left;
@@ -673,7 +674,7 @@ static void salvage_directory(ext2_filsys fs,
 	unsigned int name_len = ext2fs_dirent_name_len(dirent);
 
 	(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
-	left = fs->blocksize - *offset - rec_len;
+	left = block_len - *offset - rec_len;
 
 	/*
 	 * Special case of directory entry of size 8: copy what's left
@@ -703,7 +704,7 @@ static void salvage_directory(ext2_filsys fs,
 	 * previous directory entry absorb the invalid one.
 	 */
 	if (prev && rec_len && (rec_len % 4) == 0 &&
-	    (*offset + rec_len <= fs->blocksize)) {
+	    (*offset + rec_len <= block_len)) {
 		(void) ext2fs_get_rec_len(fs, prev, &prev_rec_len);
 		prev_rec_len += rec_len;
 		(void) ext2fs_set_rec_len(fs, prev_rec_len, prev);
@@ -718,11 +719,11 @@ static void salvage_directory(ext2_filsys fs,
 	 */
 	if (prev) {
 		(void) ext2fs_get_rec_len(fs, prev, &prev_rec_len);
-		prev_rec_len += fs->blocksize - *offset;
+		prev_rec_len += block_len - *offset;
 		(void) ext2fs_set_rec_len(fs, prev_rec_len, prev);
 		*offset = fs->blocksize;
 	} else {
-		rec_len = fs->blocksize - *offset;
+		rec_len = block_len - *offset;
 		(void) ext2fs_set_rec_len(fs, rec_len, dirent);
 		ext2fs_dirent_set_name_len(dirent, 0);
 		ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
@@ -738,6 +739,38 @@ static int is_last_entry(ext2_filsys fs, int inline_data_size,
 	else
 		return (offset < fs->blocksize - csum_size);
 }
+
+#define NEXT_DIRENT(d)	((void *)((char *)(d) + (d)->rec_len))
+static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
+{
+	struct ext2_dir_entry *d;
+	void *top;
+	struct ext2_dir_entry_tail *t;
+	unsigned int rec_len;
+
+	d = dirbuf;
+	top = EXT2_DIRENT_TAIL(dirbuf, fs->blocksize);
+
+	while (d->rec_len && !(d->rec_len & 0x3) && NEXT_DIRENT(d) <= top)
+		d = NEXT_DIRENT(d);
+
+	if (d != top) {
+		size_t min_size = EXT2_DIR_REC_LEN(
+				ext2fs_dirent_name_len(dirbuf));
+		if (min_size > top - (void *)d)
+			return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
+		d->rec_len = top - (void *)d;
+	}
+
+	t = (struct ext2_dir_entry_tail *)top;
+	if (t->det_reserved_zero1 ||
+	    t->det_rec_len != sizeof(struct ext2_dir_entry_tail) ||
+	    t->det_reserved_name_len != EXT2_DIR_NAME_LEN_CSUM)
+		ext2fs_initialize_dirent_tail(fs, t);
+
+	return 0;
+}
+#undef NEXT_DIRENT
 
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
@@ -960,8 +993,12 @@ skip_checksum:
 			    (rec_len < 12) ||
 			    ((rec_len % 4) != 0) ||
 			    ((ext2fs_dirent_name_len(dirent) + 8) > rec_len)) {
-				if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
-					salvage_directory(fs, dirent, prev, &offset);
+				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
+						&cd->pctx)) {
+					salvage_directory(fs, dirent, prev,
+							  &offset,
+							  fs->blocksize -
+							  de_csum_size);
 					dir_modified++;
 					continue;
 				} else
@@ -1275,8 +1312,12 @@ skip_checksum:
 		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
 		    is_leaf &&
-		    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf))
+		    !inline_data_size &&
+		    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf)) {
+			if (insert_dirent_tail(fs, buf) == 0)
+				goto write_and_fix;
 			e2fsck_rehash_dir_later(ctx, ino);
+		}
 
 write_and_fix:
 		if (e2fsck_dir_will_be_rehashed(ctx, ino))
@@ -1336,7 +1377,8 @@ static int deallocate_inode_block(ext2_filsys fs,
 	if ((*block_nr < fs->super->s_first_data_block) ||
 	    (*block_nr >= ext2fs_blocks_count(fs->super)))
 		return 0;
-	ext2fs_block_alloc_stats2(fs, *block_nr, -1);
+	if ((*block_nr % EXT2FS_CLUSTER_RATIO(fs)) == 0)
+		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 	p->num++;
 	return 0;
 }
@@ -1577,7 +1619,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 			      struct problem_context *pctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk64_t			blk;
+	blk64_t			blk = 0;
 	char			*block;
 	struct ext2_inode	inode;
 
@@ -1593,11 +1635,17 @@ static int allocate_dir_block(e2fsck_t ctx,
 	/*
 	 * First, find a free block
 	 */
-	pctx->errcode = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
-	if (pctx->errcode) {
-		pctx->str = "ext2fs_new_block";
-		fix_problem(ctx, PR_2_ALLOC_DIRBOCK, pctx);
-		return 1;
+	e2fsck_read_inode(ctx, db->ino, &inode, "allocate_dir_block");
+	pctx->errcode = ext2fs_map_cluster_block(fs, db->ino, &inode,
+						 db->blockcnt, &blk);
+	if (pctx->errcode || blk == 0) {
+		pctx->errcode = ext2fs_new_block2(fs, 0,
+						  ctx->block_found_map, &blk);
+		if (pctx->errcode) {
+			pctx->str = "ext2fs_new_block";
+			fix_problem(ctx, PR_2_ALLOC_DIRBOCK, pctx);
+			return 1;
+		}
 	}
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
 	ext2fs_mark_block_bitmap2(fs->block_map, blk);
@@ -1629,10 +1677,16 @@ static int allocate_dir_block(e2fsck_t ctx,
 	/*
 	 * Update the inode block count
 	 */
-	e2fsck_read_inode(ctx, db->ino, &inode, "allocate_dir_block");
 	ext2fs_iblk_add_blocks(fs, &inode, 1);
-	if (inode.i_size < (db->blockcnt+1) * fs->blocksize)
-		inode.i_size = (db->blockcnt+1) * fs->blocksize;
+	if (EXT2_I_SIZE(&inode) < (db->blockcnt+1) * fs->blocksize) {
+		pctx->errcode = ext2fs_inode_size_set(fs, &inode,
+					(db->blockcnt+1) * fs->blocksize);
+		if (pctx->errcode) {
+			pctx->str = "ext2fs_inode_size_set";
+			fix_problem(ctx, PR_2_ALLOC_DIRBOCK, pctx);
+			return 1;
+		}
+	}
 	e2fsck_write_inode(ctx, db->ino, &inode, "allocate_dir_block");
 
 	/*

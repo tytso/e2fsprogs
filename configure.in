@@ -920,6 +920,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	termio.h
 	unistd.h
 	utime.h
+	attr/xattr.h
 	linux/falloc.h
 	linux/fd.h
 	linux/major.h
@@ -1098,6 +1099,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	getrlimit
 	getrusage
 	jrand48
+	llistxattr
 	llseek
 	lseek64
 	mallinfo

@@ -36,6 +36,7 @@ extern int optind;
 #include "uuid/uuid.h"
 #include "uuid/uuidd.h"
 #include "nls-enable.h"
+#include "ext2fs/ext2fs.h"
 
 #ifdef __GNUC__
 #define CODE_ATTR(x) __attribute__(x)
@@ -236,7 +237,7 @@ static void server_loop(const char *socket_path, const char *pidfile_path,
 	uuid_t			uu;
 	mode_t			save_umask;
 	char			reply_buf[1024], *cp;
-	char			op, str[37];
+	char			op, str[UUID_STR_SIZE];
 	int			i, s, ns, len, num;
 	int			fd_pidfile, ret;
 

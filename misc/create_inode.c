@@ -12,6 +12,9 @@
 #include <time.h>
 #include <unistd.h>
 #include <limits.h> /* for PATH_MAX */
+#ifdef HAVE_ATTR_XATTR_H
+#include <attr/xattr.h>
+#endif
 
 #include "create_inode.h"
 
@@ -101,6 +104,94 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t cwd,
 	if (retval)
 		com_err(__func__, retval, "while writing inode %u", ino);
 	return retval;
+}
+
+static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino, const char *filename)
+{
+#ifdef HAVE_LLISTXATTR
+	errcode_t			retval, close_retval;
+	struct ext2_inode		inode;
+	struct ext2_xattr_handle	*handle;
+	ssize_t				size, value_size;
+	char				*list;
+	int				i;
+
+	size = llistxattr(filename, NULL, 0);
+	if (size == -1) {
+		com_err(__func__, errno, "llistxattr failed on %s", filename);
+		return errno;
+	} else if (size == 0) {
+		return 0;
+	}
+
+	retval = ext2fs_xattrs_open(fs, ino, &handle);
+	if (retval) {
+		if (retval == EXT2_ET_MISSING_EA_FEATURE)
+			return 0;
+		com_err(__func__, retval, "while opening inode %u", ino);
+		return retval;
+	}
+
+	retval = ext2fs_get_mem(size, &list);
+	if (retval) {
+		com_err(__func__, retval, "whilst allocating memory");
+		goto out;
+	}
+
+	size = llistxattr(filename, list, size);
+	if (size == -1) {
+		com_err(__func__, errno, "llistxattr failed on %s", filename);
+		retval = errno;
+		goto out;
+        }
+
+	for (i = 0; i < size; i += strlen(&list[i]) + 1) {
+		const char *name = &list[i];
+		char *value;
+
+		value_size = getxattr(filename, name, NULL, 0);
+		if (value_size == -1) {
+			com_err(__func__, errno, "getxattr failed on %s",
+				filename);
+			retval = errno;
+			break;
+		}
+
+		retval = ext2fs_get_mem(value_size, &value);
+		if (retval) {
+			com_err(__func__, retval, "whilst allocating memory");
+			break;
+		}
+
+		value_size = getxattr(filename, name, value, value_size);
+		if (value_size == -1) {
+			ext2fs_free_mem(&value);
+			com_err(__func__, errno, "getxattr failed on %s",
+				filename);
+			retval = errno;
+			break;
+		}
+
+		retval = ext2fs_xattr_set(handle, name, value, value_size);
+		ext2fs_free_mem(&value);
+		if (retval) {
+			com_err(__func__, retval,
+				"while writing xattr %u", ino);
+			break;
+		}
+
+	}
+ out:
+	ext2fs_free_mem(&list);
+	close_retval = ext2fs_xattrs_close(&handle);
+	if (close_retval) {
+		com_err(__func__, retval, "while closing inode %u", ino);
+		retval = retval ? retval : close_retval;
+	}
+	return retval;
+#else /* HAVE_LLISTXATTR */
+	return 0;
+#endif  /* HAVE_LLISTXATTR */
 }
 
 /* Make a special files (block and character devices), fifo's, and sockets  */
@@ -418,7 +509,12 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
 		fs->now ? fs->now : time(0);
 	inode.i_links_count = 1;
-	inode.i_size = statbuf.st_size;
+	retval = ext2fs_inode_size_set(fs, &inode, statbuf.st_size);
+	if (retval) {
+		com_err(dest, retval, 0);
+		close(fd);
+		return retval;
+	}
 	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
 				      EXT4_FEATURE_INCOMPAT_INLINE_DATA)) {
 		inode.i_flags |= EXT4_INLINE_DATA_FL;
@@ -612,6 +708,13 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		if (retval) {
 			com_err(__func__, retval,
 				_("while setting inode for \"%s\""), name);
+			goto out;
+		}
+
+		retval = set_inode_xattr(fs, ino, name);
+		if (retval) {
+			com_err(__func__, retval,
+				_("while setting xattrs for \"%s\""), name);
 			goto out;
 		}
 

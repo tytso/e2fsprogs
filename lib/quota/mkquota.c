@@ -580,7 +580,6 @@ out:
 errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
 				   int *usage_inconsistent)
 {
-	ext2_filsys fs = qctx->fs;
 	struct quota_handle qh;
 	struct scan_dquots_data scan_data;
 	struct dquot *dq;
