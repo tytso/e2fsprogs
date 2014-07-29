@@ -109,7 +109,7 @@ Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
 test_fs: 18/128 files (5.6% non-contiguous), 1248/2048 blocks
-debugfs:  stat /a
+debugfs: stat /a
 Inode: 12   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152157    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
@@ -121,7 +121,7 @@ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 EXTENTS:
 (0-1):1136-1137, (2):1138
-debugfs:  stat /b
+debugfs: stat /b
 Inode: 13   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152158    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
@@ -133,7 +133,7 @@ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 EXTENTS:
 (0-2):1152-1154
-debugfs:  stat /c
+debugfs: stat /c
 Inode: 14   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152159    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
@@ -145,7 +145,7 @@ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 EXTENTS:
 (0-1):1216-1217, (2):1218
-debugfs:  stat /d
+debugfs: stat /d
 Inode: 15   Type: regular    Mode:  0644   Flags: 0x0
 Generation: 1117152160    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
@@ -159,7 +159,7 @@ BLOCKS:
 (TIND):1650
 TOTAL: 1
 
-debugfs:  stat /e
+debugfs: stat /e
 Inode: 16   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152161    Version: 0x00000001
 User:     0   Group:     0   Size: 6144
@@ -171,7 +171,7 @@ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 EXTENTS:
 (0-2):1664-1666, (5):1669
-debugfs:  stat /f
+debugfs: stat /f
 Inode: 17   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152162    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
@@ -183,7 +183,7 @@ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 EXTENTS:
 (0):1232, (1):1233, (2):1234
-debugfs:  stat /g
+debugfs: stat /g
 Inode: 18   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152163    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
@@ -195,4 +195,4 @@ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
 EXTENTS:
 (0-2):1680-1682, (3):1683
-debugfs:  
+debugfs: quit
