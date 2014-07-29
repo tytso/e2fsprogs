@@ -39,6 +39,8 @@ extern "C" {
 #define SUPERBLOCK_OFFSET	1024
 #define SUPERBLOCK_SIZE		1024
 
+#define UUID_STR_SIZE 37
+
 /*
  * The last ext2fs revision level that this version of the library is
  * able to support.
@@ -1501,6 +1503,7 @@ extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks,
 extern errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
 					   blk64_t goal, int flags);
 extern int ext2fs_default_journal_size(__u64 num_blocks);
+extern int ext2fs_journal_sb_start(int blocksize);
 
 /* openfs.c */
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,

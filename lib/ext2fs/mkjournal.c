@@ -49,7 +49,7 @@ errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 	errcode_t		retval;
 	journal_superblock_t	*jsb;
 
-	if (num_blocks < 1024)
+	if (num_blocks < JFS_MIN_JOURNAL_BLOCKS)
 		return EXT2_ET_JOURNAL_TOO_SMALL;
 
 	if ((retval = ext2fs_get_mem(fs->blocksize, &jsb)))
@@ -75,10 +75,7 @@ errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 	if (fs->super->s_feature_incompat &
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		jsb->s_nr_users = 0;
-		if (fs->blocksize == 1024)
-			jsb->s_first = htonl(3);
-		else
-			jsb->s_first = htonl(2);
+		jsb->s_first = htonl(ext2fs_journal_sb_start(fs->blocksize) + 1);
 	}
 
 	*ret_jsb = (char *) jsb;
@@ -428,6 +425,13 @@ int ext2fs_default_journal_size(__u64 num_blocks)
 	return 32768;
 }
 
+int ext2fs_journal_sb_start(int blocksize)
+{
+	if (blocksize == EXT2_MIN_BLOCK_SIZE)
+		return 2;
+	return 1;
+}
+
 /*
  * This function adds a journal device to a filesystem
  */
@@ -435,7 +439,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 {
 	struct stat	st;
 	errcode_t	retval;
-	char		buf[1024];
+	char		buf[SUPERBLOCK_SIZE];
 	journal_superblock_t	*jsb;
 	int		start;
 	__u32		i, nr_users;
@@ -448,10 +452,9 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 		return EXT2_ET_JOURNAL_NOT_BLOCK; /* Must be a block device */
 
 	/* Get the journal superblock */
-	start = 1;
-	if (journal_dev->blocksize == 1024)
-		start++;
-	if ((retval = io_channel_read_blk64(journal_dev->io, start, -1024,
+	start = ext2fs_journal_sb_start(journal_dev->blocksize);
+	if ((retval = io_channel_read_blk64(journal_dev->io, start,
+					    -SUPERBLOCK_SIZE,
 					    buf)))
 		return retval;
 
@@ -477,7 +480,8 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	}
 
 	/* Writeback the journal superblock */
-	if ((retval = io_channel_write_blk64(journal_dev->io, start, -1024, buf)))
+	if ((retval = io_channel_write_blk64(journal_dev->io, start,
+					    -SUPERBLOCK_SIZE, buf)))
 		return retval;
 
 	fs->super->s_journal_inum = 0;
@@ -630,7 +634,7 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	retval = ext2fs_add_journal_inode(fs, 1024, 0);
+	retval = ext2fs_add_journal_inode(fs, JFS_MIN_JOURNAL_BLOCKS, 0);
 	if (retval) {
 		com_err(argv[0], retval, "while adding journal to %s",
 			device_name);
