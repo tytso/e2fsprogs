@@ -232,7 +232,6 @@ static int remove_journal_device(ext2_filsys fs)
 	errcode_t	retval;
 	int		commit_remove_journal = 0;
 	io_manager	io_ptr;
-	int start;
 
 	if (f_flag)
 		commit_remove_journal = 1; /* force removal even if error */
@@ -286,8 +285,9 @@ static int remove_journal_device(ext2_filsys fs)
 	jsb->s_nr_users = htonl(nr_users);
 
 	/* Write back the journal superblock */
-	if ((retval = io_channel_write_blk64(jfs->io, start,
-	    -SUPERBLOCK_SIZE, buf))) {
+	if ((retval = io_channel_write_blk64(jfs->io,
+				ext2fs_journal_sb_start(fs->blocksize),
+				-SUPERBLOCK_SIZE, buf))) {
 		com_err(program_name, retval,
 			"while writing journal superblock.");
 		goto no_valid_journal;
