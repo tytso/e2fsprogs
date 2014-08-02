@@ -1059,6 +1059,8 @@ AC_CHECK_FUNCS(m4_flatten([
 	posix_fadvise64
 	posix_memalign
 	prctl
+	pread
+	pwrite
 	secure_getenv
 	setmntent
 	setresgid

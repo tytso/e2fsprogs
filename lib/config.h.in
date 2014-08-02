@@ -325,6 +325,9 @@
 /* Define to 1 if you have the `prctl' function. */
 #undef HAVE_PRCTL
 
+/* Define to 1 if you have the `pread' function. */
+#undef HAVE_PREAD
+
 /* Define if the <pthread.h> defines PTHREAD_MUTEX_RECURSIVE. */
 #undef HAVE_PTHREAD_MUTEX_RECURSIVE
 
@@ -333,6 +336,9 @@
 
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
+
+/* Define to 1 if you have the `pwrite' function. */
+#undef HAVE_PWRITE
 
 /* Define to 1 if dirent has d_reclen */
 #undef HAVE_RECLEN_DIRENT
