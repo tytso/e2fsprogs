@@ -61,7 +61,8 @@ E2FREEFRAG_OBJS= e2freefrag.o
 PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o
 PROFILED_MKLPF_OBJS=	profiled/mklost+found.o
 PROFILED_MKE2FS_OBJS=	profiled/mke2fs.o profiled/util.o profiled/profile.o \
-			profiled/prof_err.o profiled/default_profile.o
+			profiled/prof_err.o profiled/default_profile.o \
+			profiled/mk_hugefiles.o
 PROFILED_CHATTR_OBJS=	profiled/chattr.o
 PROFILED_LSATTR_OBJS=	profiled/lsattr.o
 PROFILED_UUIDGEN_OBJS=	profiled/uuidgen.o
