@@ -277,6 +277,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUGFS
 	if (check_fs_open(argv[0]))
 		return;
+	reset_getopt();
 #else
 	char *device_name;
 
