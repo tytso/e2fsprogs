@@ -515,4 +515,7 @@ ec	EXT2_ET_INLINE_DATA_NO_SPACE,
 ec	EXT2_ET_MAGIC_EA_HANDLE,
 	"Wrong magic number for extended attribute structure"
 
+ec	EXT2_ET_INODE_IS_GARBAGE,
+	"Inode seems to contain garbage"
+
 	end

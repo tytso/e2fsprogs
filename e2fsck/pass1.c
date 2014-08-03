@@ -809,7 +809,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		goto endit;
 	}
-	ext2fs_inode_scan_flags(scan, EXT2_SF_SKIP_MISSING_ITABLE, 0);
+	ext2fs_inode_scan_flags(scan, EXT2_SF_SKIP_MISSING_ITABLE |
+				      EXT2_SF_WARN_GARBAGE_INODES, 0);
 	ctx->stashed_inode = inode;
 	scan_struct.ctx = ctx;
 	scan_struct.block_buf = block_buf;
@@ -851,7 +852,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			continue;
 		}
 		if (pctx.errcode &&
-		    pctx.errcode != EXT2_ET_INODE_CSUM_INVALID) {
+		    pctx.errcode != EXT2_ET_INODE_CSUM_INVALID &&
+		    pctx.errcode != EXT2_ET_INODE_IS_GARBAGE) {
 			fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			goto endit;
@@ -862,12 +864,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 		pctx.inode = inode;
 		ctx->stashed_ino = ino;
 
-		/* Clear corrupt inode? */
-		if (pctx.errcode == EXT2_ET_INODE_CSUM_INVALID) {
-			if (fix_problem(ctx, PR_1_INODE_CSUM_INVALID, &pctx))
-				goto clear_inode;
-			failed_csum = 1;
+		/* Clear trashed inode? */
+		if (pctx.errcode == EXT2_ET_INODE_IS_GARBAGE &&
+		    inode->i_links_count > 0 &&
+		    fix_problem(ctx, PR_1_INODE_IS_GARBAGE, &pctx)) {
+			pctx.errcode = 0;
+			e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
 		}
+		failed_csum = pctx.errcode != 0;
 
 		if (inode->i_links_count) {
 			pctx.errcode = ext2fs_icount_store(ctx->inode_link_info,

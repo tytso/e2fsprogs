@@ -967,10 +967,10 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has zero length extent\n\t(@n logical @b %c, physical @b %b)\n"),
 	  PROMPT_CLEAR, 0 },
 
-	/* inode checksum does not match inode */
-	{ PR_1_INODE_CSUM_INVALID,
-	  N_("@i %i checksum does not match @i.  "),
-	  PROMPT_CLEAR, PR_PREEN_OK },
+	/* inode seems to contain garbage */
+	{ PR_1_INODE_IS_GARBAGE,
+	  N_("@i %i seems to contain garbage.  "),
+	  PROMPT_CLEAR, 0 },
 
 	/* inode passes checks, but checksum does not match inode */
 	{ PR_1_INODE_ONLY_CSUM_INVALID,

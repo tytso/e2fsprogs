@@ -30,6 +30,10 @@
 #include "ext2fsP.h"
 #include "e2image.h"
 
+#define IBLOCK_STATUS_CSUMS_OK	1
+#define IBLOCK_STATUS_INSANE	2
+#define SCAN_BLOCK_STATUS(scan)	((scan)->temp_buffer + (scan)->inode_size)
+
 struct ext2_struct_inode_scan {
 	errcode_t		magic;
 	ext2_filsys		fs;
@@ -193,12 +197,14 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 		ext2fs_free_mem(&scan);
 		return retval;
 	}
-	retval = ext2fs_get_mem(scan->inode_size, &scan->temp_buffer);
+	retval = ext2fs_get_mem(scan->inode_size + scan->inode_buffer_blocks,
+				&scan->temp_buffer);
 	if (retval) {
 		ext2fs_free_mem(&scan->inode_buffer);
 		ext2fs_free_mem(&scan);
 		return retval;
 	}
+	memset(SCAN_BLOCK_STATUS(scan), 0, scan->inode_buffer_blocks);
 	if (scan->fs->badblocks && scan->fs->badblocks->num)
 		scan->scan_flags |= EXT2_SF_CHK_BADBLOCKS;
 	if (ext2fs_has_group_desc_csum(fs))
@@ -348,6 +354,114 @@ static errcode_t check_for_inode_bad_blocks(ext2_inode_scan scan,
 	return 0;
 }
 
+static int block_map_looks_insane(ext2_filsys fs,
+				  struct ext2_inode_large *inode)
+{
+	unsigned int i, bad;
+
+	/* We're only interested in block mapped files, dirs, and symlinks */
+	if ((inode->i_flags & EXT4_INLINE_DATA_FL) ||
+	    (inode->i_flags & EXT4_EXTENTS_FL))
+		return 0;
+	if (!LINUX_S_ISREG(inode->i_mode) &&
+	    !LINUX_S_ISLNK(inode->i_mode) &&
+	    !LINUX_S_ISDIR(inode->i_mode))
+		return 0;
+	if (LINUX_S_ISLNK(inode->i_mode) &&
+	    EXT2_I_SIZE(inode) <= sizeof(inode->i_block))
+		return 0;
+
+	/* Unused inodes probably aren't insane */
+	if (inode->i_links_count == 0)
+		return 0;
+
+	/* See if more than half the block maps are insane */
+	for (i = 0, bad = 0; i < EXT2_N_BLOCKS; i++)
+		if (inode->i_block[i] != 0 &&
+		    (inode->i_block[i] < fs->super->s_first_data_block ||
+		     inode->i_block[i] >= ext2fs_blocks_count(fs->super)))
+			bad++;
+	return bad > EXT2_N_BLOCKS / 2;
+}
+
+static int extent_head_looks_insane(struct ext2_inode_large *inode)
+{
+	if (!(inode->i_flags & EXT4_EXTENTS_FL) ||
+	    ext2fs_extent_header_verify(inode->i_block,
+					sizeof(inode->i_block)) == 0)
+		return 0;
+	return 1;
+}
+
+/*
+ * Check all the inodes that we just read into the buffer.  Record what we
+ * find here -- currently, we can observe that all checksums are ok; more
+ * than half the inodes are insane; or no conclusions at all.
+ */
+static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
+{
+	ext2_ino_t	ino, inodes_to_scan;
+	unsigned int	badness, checksum_failures;
+	unsigned int	inodes_in_buf, inodes_per_block;
+	void		*p;
+	struct ext2_inode_large *inode;
+	char		*block_status;
+	unsigned int	blk;
+
+	if (!(scan->scan_flags & EXT2_SF_WARN_GARBAGE_INODES))
+		return;
+
+	inodes_to_scan = scan->inodes_left;
+	inodes_in_buf = num_blocks * scan->fs->blocksize / scan->inode_size;
+	if (inodes_to_scan > inodes_in_buf)
+		inodes_to_scan = inodes_in_buf;
+
+	p = scan->inode_buffer;
+	ino = scan->current_inode + 1;
+	checksum_failures = badness = 0;
+	block_status = SCAN_BLOCK_STATUS(scan);
+	memset(block_status, 0, scan->inode_buffer_blocks);
+	inodes_per_block = EXT2_INODES_PER_BLOCK(scan->fs->super);
+
+	while (inodes_to_scan > 0) {
+		blk = (p - (void *)scan->inode_buffer) / scan->fs->blocksize;
+		inode = p;
+
+		/* Is this inode insane? */
+		if (!ext2fs_inode_csum_verify(scan->fs, ino, inode)) {
+			checksum_failures++;
+			badness++;
+		} else if (extent_head_looks_insane(inode) ||
+			   block_map_looks_insane(scan->fs, inode))
+			badness++;
+
+		/* If more than half are insane, declare the whole block bad */
+		if (badness > inodes_per_block / 2) {
+			unsigned int ino_adj;
+
+			block_status[blk] |= IBLOCK_STATUS_INSANE;
+			ino_adj = inodes_per_block -
+						((ino - 1) % inodes_per_block);
+			if (ino_adj > inodes_to_scan)
+				ino_adj = inodes_to_scan;
+			inodes_to_scan -= ino_adj;
+			p += scan->inode_size * ino_adj;
+			ino += ino_adj;
+			checksum_failures = badness = 0;
+			continue;
+		}
+
+		if ((ino % inodes_per_block) == 0) {
+			if (checksum_failures == 0)
+				block_status[blk] |= IBLOCK_STATUS_CSUMS_OK;
+			checksum_failures = badness = 0;
+		}
+		inodes_to_scan--;
+		p += scan->inode_size;
+		ino++;
+	};
+}
+
 /*
  * This function is called by ext2fs_get_next_inode when it needs to
  * read in more blocks from the current blockgroup's inode table.
@@ -397,12 +511,15 @@ static errcode_t get_next_blocks(ext2_inode_scan scan)
 		if (retval)
 			return EXT2_ET_NEXT_INODE_READ;
 	}
+	check_inode_block_sanity(scan, num_blocks);
+
 	scan->ptr = scan->inode_buffer;
 	scan->bytes_left = num_blocks * scan->fs->blocksize;
 
 	scan->blocks_left -= num_blocks;
 	if (scan->current_block)
 		scan->current_block += num_blocks;
+
 	return 0;
 }
 
@@ -432,10 +549,14 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 {
 	errcode_t	retval;
 	int		extra_bytes = 0;
-	const int	length = EXT2_INODE_SIZE(scan->fs->super);
+	int		length;
 	struct ext2_inode_large	*iptr = (struct ext2_inode_large *)inode;
+	char		*iblock_status;
+	unsigned int	iblk;
 
 	EXT2_CHECK_MAGIC(scan, EXT2_ET_MAGIC_INODE_SCAN);
+	length = EXT2_INODE_SIZE(scan->fs->super);
+	iblock_status = SCAN_BLOCK_STATUS(scan);
 
 	/*
 	 * Do we need to start reading a new block group?
@@ -503,6 +624,9 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 	}
 
 	retval = 0;
+	iblk = scan->current_inode % EXT2_INODES_PER_GROUP(scan->fs->super) /
+				EXT2_INODES_PER_BLOCK(scan->fs->super) %
+				scan->inode_buffer_blocks;
 	if (extra_bytes) {
 		memcpy(scan->temp_buffer+extra_bytes, scan->ptr,
 		       scan->inode_size - extra_bytes);
@@ -510,7 +634,8 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 		scan->bytes_left -= scan->inode_size - extra_bytes;
 
 		/* Verify the inode checksum. */
-		if (!(scan->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+		if (!(iblock_status[iblk] & IBLOCK_STATUS_CSUMS_OK) &&
+		    !(scan->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
 		    !ext2fs_inode_csum_verify(scan->fs, scan->current_inode + 1,
 				(struct ext2_inode_large *)scan->temp_buffer))
 			retval = EXT2_ET_INODE_CSUM_INVALID;
@@ -529,7 +654,8 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 		scan->scan_flags &= ~EXT2_SF_BAD_EXTRA_BYTES;
 	} else {
 		/* Verify the inode checksum. */
-		if (!(scan->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+		if (!(iblock_status[iblk] & IBLOCK_STATUS_CSUMS_OK) &&
+		    !(scan->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
 		    !ext2fs_inode_csum_verify(scan->fs, scan->current_inode + 1,
 				(struct ext2_inode_large *)scan->ptr))
 			retval = EXT2_ET_INODE_CSUM_INVALID;
@@ -548,6 +674,9 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 		if (scan->scan_flags & EXT2_SF_BAD_INODE_BLK)
 			retval = EXT2_ET_BAD_BLOCK_IN_INODE_TABLE;
 	}
+	if ((iblock_status[iblk] & IBLOCK_STATUS_INSANE) &&
+	    (retval == 0 || retval == EXT2_ET_INODE_CSUM_INVALID))
+		retval = EXT2_ET_INODE_IS_GARBAGE;
 
 	scan->inodes_left--;
 	scan->current_inode++;
