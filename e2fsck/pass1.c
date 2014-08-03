@@ -2001,7 +2001,10 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	int			is_dir, is_leaf;
 	problem_t		problem;
 	struct ext2_extent_info	info;
-	int			failed_csum;
+	int			failed_csum = 0;
+
+	if (pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID)
+		failed_csum = 1;
 
 	pctx->errcode = ext2fs_extent_get_info(ehandle, &info);
 	if (pctx->errcode)
@@ -2012,7 +2015,6 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	while ((pctx->errcode == 0 ||
 		pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) &&
 	       info.num_entries-- > 0) {
-		failed_csum = 0;
 		is_leaf = extent.e_flags & EXT2_EXTENT_FLAGS_LEAF;
 		is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
 		last_lblk = extent.e_lblk + extent.e_len - 1;
@@ -2022,15 +2024,6 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->blk2 = extent.e_lblk;
 		pctx->num = extent.e_len;
 		pctx->blkcount = extent.e_lblk + extent.e_len;
-
-		/* Ask to clear a corrupt extent block */
-		if (try_repairs &&
-		    pctx->errcode == EXT2_ET_EXTENT_CSUM_INVALID) {
-			problem = PR_1_EXTENT_CSUM_INVALID;
-			if (fix_problem(ctx, problem, pctx))
-				goto fix_problem_now;
-			failed_csum = 1;
-		}
 
 		if (extent.e_pblk == 0 ||
 		    extent.e_pblk < ctx->fs->super->s_first_data_block ||
@@ -2067,16 +2060,6 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			if (pctx->errcode)
 				return;
 			failed_csum = 0;
-		}
-
-		/* Failed csum but passes checks?  Ask to fix checksum. */
-		if (try_repairs && failed_csum && problem == 0 &&
-		    fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID, pctx)) {
-			pb->inode_modified = 1;
-			pctx->errcode = ext2fs_extent_replace(ehandle,
-							0, &extent);
-			if (pctx->errcode)
-				return;
 		}
 
 		if (try_repairs && problem) {
@@ -2124,6 +2107,7 @@ fix_problem_now:
 					pctx->errcode = 0;
 					break;
 				}
+				failed_csum = 0;
 				continue;
 			}
 			goto next;
@@ -2152,15 +2136,13 @@ fix_problem_now:
 			}
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
-			if (pctx->errcode) {
+			if (pctx->errcode &&
+			    pctx->errcode != EXT2_ET_EXTENT_CSUM_INVALID) {
 				pctx->str = "EXT2_EXTENT_DOWN";
 				problem = PR_1_EXTENT_HEADER_INVALID;
 				if (!next_try_repairs)
 					return;
-				if (pctx->errcode ==
-					EXT2_ET_EXTENT_HEADER_BAD ||
-				    pctx->errcode ==
-					EXT2_ET_EXTENT_CSUM_INVALID)
+				if (pctx->errcode == EXT2_ET_EXTENT_HEADER_BAD)
 					goto report_problem;
 				return;
 			}
@@ -2256,6 +2238,7 @@ fix_problem_now:
 				if (pctx->errcode)
 					goto failed_add_dir_block;
 				last_lblk = extent.e_lblk + extent.e_len - 1;
+				failed_csum = 0;
 			}
 		}
 alloc_later:
@@ -2323,6 +2306,16 @@ alloc_later:
 						  EXT2_EXTENT_NEXT_SIB,
 						  &extent);
 	}
+
+	/* Failed csum but passes checks?  Ask to fix checksum. */
+	if (failed_csum &&
+	    fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID, pctx)) {
+		pb->inode_modified = 1;
+		pctx->errcode = ext2fs_extent_replace(ehandle, 0, &extent);
+		if (pctx->errcode)
+			return;
+	}
+
 	if (pctx->errcode == EXT2_ET_EXTENT_NO_NEXT)
 		pctx->errcode = 0;
 }

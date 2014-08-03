@@ -313,6 +313,7 @@ errcode_t ext2fs_extent_get(ext2_extent_handle_t handle,
 	blk64_t				blk;
 	blk64_t				end_blk;
 	int				orig_op, op;
+	int				failed_csum = 0;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
 
@@ -487,10 +488,8 @@ retry:
 
 		if (!(handle->fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
 		    !ext2fs_extent_block_csum_verify(handle->fs, handle->ino,
-						     eh)) {
-			handle->level--;
-			return EXT2_ET_EXTENT_CSUM_INVALID;
-		}
+						     eh))
+			failed_csum = 1;
 
 		newpath->left = newpath->entries =
 			ext2fs_le16_to_cpu(eh->eh_entries);
@@ -569,6 +568,9 @@ retry:
 	    ((handle->level != handle->max_depth) ||
 	     (path->left != 0)))
 		goto retry;
+
+	if (failed_csum)
+		return EXT2_ET_EXTENT_CSUM_INVALID;
 
 	return 0;
 }
