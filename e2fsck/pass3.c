@@ -450,6 +450,12 @@ unlink:
 		goto skip_new_block;
 	}
 	retval = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
+	if (retval == EXT2_ET_BLOCK_ALLOC_FAIL &&
+	    fix_problem(ctx, PR_3_LPF_NO_SPACE, &pctx)) {
+		printf("Delete some files and re-run e2fsck.\n\n");
+		ctx->lost_and_found = EXT2_ROOT_INO;
+		return 0;
+	}
 	if (retval) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_LPF_NEW_BLOCK, &pctx);
@@ -464,6 +470,12 @@ skip_new_block:
 	 */
 	retval = ext2fs_new_inode(fs, EXT2_ROOT_INO, 040700,
 				  ctx->inode_used_map, &ino);
+	if (retval == EXT2_ET_INODE_ALLOC_FAIL &&
+	    fix_problem(ctx, PR_3_LPF_NO_SPACE, &pctx)) {
+		printf("Delete some files and re-run e2fsck.\n\n");
+		ctx->lost_and_found = EXT2_ROOT_INO;
+		return 0;
+	}
 	if (retval) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_LPF_NEW_INODE, &pctx);

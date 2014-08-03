@@ -973,6 +973,9 @@ struct problem_context {
 /* Lost+found has inline data */
 #define PR_3_LPF_INLINE_DATA		0x030018
 
+/* Cannot allocate lost+found */
+#define PR_3_LPF_NO_SPACE		0x030019
+
 /*
  * Pass 3a --- rehashing diretories
  */

@@ -1630,6 +1630,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("/@l has inline data\n"),
 	  PROMPT_CLEAR, 0 },
 
+	/* Cannot allocate /lost+found. */
+	{ PR_3_LPF_NO_SPACE,
+	  N_("Cannot allocate space for /@l.\nPlace lost files in root directory instead"),
+	  PROMPT_NULL, 0 },
+
 	/* Pass 3A Directory Optimization	*/
 
 	/* Pass 3A: Optimizing directories */
