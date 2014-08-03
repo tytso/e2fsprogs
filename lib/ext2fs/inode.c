@@ -709,7 +709,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	io_channel	io;
 	int		length = EXT2_INODE_SIZE(fs->super);
 	struct ext2_inode_large	*iptr;
-	int		cache_slot;
+	int		cache_slot, fail_csum;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -787,9 +787,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	length = EXT2_INODE_SIZE(fs->super);
 
 	/* Verify the inode checksum. */
-	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
-	    !ext2fs_inode_csum_verify(fs, ino, iptr))
-		return EXT2_ET_INODE_CSUM_INVALID;
+	fail_csum = !ext2fs_inode_csum_verify(fs, ino, iptr);
 
 #ifdef WORDS_BIGENDIAN
 	ext2fs_swap_inode_full(fs, (struct ext2_inode_large *) iptr,
@@ -798,9 +796,14 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 #endif
 
 	/* Update the inode cache bookkeeping */
-	fs->icache->cache_last = cache_slot;
-	fs->icache->cache[cache_slot].ino = ino;
+	if (!fail_csum) {
+		fs->icache->cache_last = cache_slot;
+		fs->icache->cache[cache_slot].ino = ino;
+	}
 	memcpy(inode, iptr, (bufsize > length) ? length : bufsize);
+
+	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) && fail_csum)
+		return EXT2_ET_INODE_CSUM_INVALID;
 
 	return 0;
 }
