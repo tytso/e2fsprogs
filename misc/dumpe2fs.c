@@ -620,7 +620,7 @@ int main (int argc, char ** argv)
 		flags |= EXT2_FLAG_FORCE;
 	if (image_dump)
 		flags |= EXT2_FLAG_IMAGE_FILE;
-
+try_open_again:
 	if (use_superblock && !use_blocksize) {
 		for (use_blocksize = EXT2_MIN_BLOCK_SIZE;
 		     use_blocksize <= EXT2_MAX_BLOCK_SIZE;
@@ -635,6 +635,13 @@ int main (int argc, char ** argv)
 	} else
 		retval = ext2fs_open (device_name, flags, use_superblock,
 				      use_blocksize, unix_io_manager, &fs);
+	if (retval && !(flags & EXT2_FLAG_IGNORE_CSUM_ERRORS)) {
+		flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		goto try_open_again;
+	}
+	if (!retval && (fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS))
+		printf("%s", _("\n*** Checksum errors detected in filesystem!  Run e2fsck now!\n\n"));
+	flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
@@ -663,7 +670,15 @@ int main (int argc, char ** argv)
 			ext2fs_close_free(&fs);
 			exit (0);
 		}
+		fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
+try_bitmaps_again:
 		retval = ext2fs_read_bitmaps (fs);
+		if (retval && !(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS)) {
+			fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+			goto try_bitmaps_again;
+		}
+		if (!retval && (fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS))
+			printf("%s", _("\n*** Checksum errors detected in bitmaps!  Run e2fsck now!\n\n"));
 		list_desc (fs);
 		if (retval) {
 			printf(_("\n%s: %s: error reading bitmaps: %s\n"),
