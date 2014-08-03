@@ -2452,6 +2452,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
 		else {
+			int flags;
 			/*
 			 * If we've modified the inode, write it out before
 			 * iterate() tries to use it.
@@ -2461,6 +2462,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 						   "check_blocks");
 				dirty_inode = 0;
 			}
+			flags = fs->flags;
 			fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 			pctx->errcode = ext2fs_block_iterate3(fs, ino,
 						pb.is_dir ? BLOCK_FLAG_HOLE : 0,
@@ -2479,7 +2481,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			if (pb.inode_modified)
 				e2fsck_read_inode(ctx, ino, inode,
 						  "check_blocks");
-			fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
+			fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+				    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 		}
 	} else {
 		/* check inline data */
@@ -2545,10 +2548,17 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (pb.is_dir) {
 		int nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
 		if (inode->i_flags & EXT4_INLINE_DATA_FL) {
+			int flags;
 			size_t size;
 
+			flags = ctx->fs->flags;
+			ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 			if (ext2fs_inline_data_size(ctx->fs, pctx->ino, &size))
 				bad_size = 5;
+			ctx->fs->flags = (flags &
+					  EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+					 (ctx->fs->flags &
+					  ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 			if (size != inode->i_size)
 				bad_size = 5;
 		} else if (inode->i_size & (fs->blocksize - 1))
