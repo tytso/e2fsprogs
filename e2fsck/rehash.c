@@ -126,10 +126,12 @@ static int fill_dir_block(ext2_filsys fs,
 		dirent = (struct ext2_dir_entry *) dir;
 		(void) ext2fs_set_rec_len(fs, fs->blocksize, dirent);
 	} else {
+		int flags = fs->flags;
 		fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		fd->err = ext2fs_read_dir_block4(fs, *block_nr, dir, 0,
 						 fd->dir);
-		fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+			    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 		if (fd->err)
 			return BLOCK_ABORT;
 	}

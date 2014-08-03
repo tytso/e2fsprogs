@@ -846,7 +846,8 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 		retval = ext2fs_read_inode_full(fs, ino,
 						(struct ext2_inode *)w_inode,
 						length);
-		fs->flags = old_flags;
+		fs->flags = (old_flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+			    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 		if (retval)
 			goto errout;
 	}

@@ -1292,6 +1292,7 @@ skip_checksum:
 		}
 	}
 	if (dir_modified) {
+		int	flags, will_rehash;
 		/* leaf block with no tail?  Rehash dirs later. */
 		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
@@ -1304,8 +1305,11 @@ skip_checksum:
 		}
 
 write_and_fix:
-		if (e2fsck_dir_will_be_rehashed(ctx, ino))
+		will_rehash = e2fsck_dir_will_be_rehashed(ctx, ino);
+		if (will_rehash) {
+			flags = ctx->fs->flags;
 			ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		}
 		if (inline_data_size) {
 			cd->pctx.errcode =
 				ext2fs_inline_data_set(fs, ino, 0, buf,
@@ -1313,8 +1317,11 @@ write_and_fix:
 		} else
 			cd->pctx.errcode = ext2fs_write_dir_block4(fs, block_nr,
 								   buf, 0, ino);
-		if (e2fsck_dir_will_be_rehashed(ctx, ino))
-			ctx->fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		if (will_rehash)
+			ctx->fs->flags = (flags &
+					  EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+					 (ctx->fs->flags &
+					  ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 		if (cd->pctx.errcode) {
 			if (!fix_problem(ctx, PR_2_WRITE_DIRBLOCK,
 					 &cd->pctx))
@@ -1589,7 +1596,6 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		ext2fs_unmark_inode_bitmap2(ctx->inode_bad_map, ino);
 	return 0;
 }
-
 
 /*
  * allocate_dir_block --- this function allocates a new directory
