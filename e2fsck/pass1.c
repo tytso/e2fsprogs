@@ -594,10 +594,7 @@ static errcode_t recheck_bad_inode_checksum(ext2_filsys fs, ext2_ino_t ino,
 
 	retval = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
 					 sizeof(inode));
-	if (retval)
-		return retval;
-
-	return 0;
+	return retval;
 }
 
 static void reserve_block_for_root_repair(e2fsck_t ctx)
@@ -635,6 +632,29 @@ static void reserve_block_for_lnf_repair(e2fsck_t ctx)
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
 	ctx->lnf_repair_block = blk;
 }
+
+static void finish_processing_inode(e2fsck_t ctx, ext2_ino_t ino,
+				    struct problem_context *pctx,
+				    int failed_csum)
+{
+	if (!failed_csum)
+		return;
+
+	/*
+	 * If the inode failed the checksum and the user didn't
+	 * clear the inode, test the checksum again -- if it still
+	 * fails, ask the user if the checksum should be corrected.
+	 */
+	pctx->errcode = recheck_bad_inode_checksum(ctx->fs, ino, ctx, pctx);
+	if (pctx->errcode)
+		ctx->flags |= E2F_FLAG_ABORT;
+}
+#define FINISH_INODE_LOOP(ctx, ino, pctx, failed_csum) \
+	do { \
+		finish_processing_inode((ctx), (ino), (pctx), (failed_csum)); \
+		if ((ctx)->flags & E2F_FLAG_ABORT) \
+			return; \
+	} while (0)
 
 void e2fsck_pass1(e2fsck_t ctx)
 {
@@ -898,6 +918,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 				inlinedata_fs = 1;
 			} else if (!fix_problem(ctx, PR_1_INLINE_DATA_SET, &pctx)) {
 				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
+				/* skip FINISH_INODE_LOOP */
 				continue;
 			}
 		}
@@ -932,6 +953,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 				if (ino == EXT2_BAD_INO)
 					ext2fs_mark_inode_bitmap2(ctx->inode_used_map,
 								 ino);
+				/* skip FINISH_INODE_LOOP */
 				continue;
 			}
 		}
@@ -968,6 +990,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 				       sizeof(inode->i_block));
 #endif
 				e2fsck_write_inode(ctx, ino, inode, "pass1");
+				failed_csum = 0;
 			}
 		}
 
@@ -982,6 +1005,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 				memset(inode, 0, sizeof(struct ext2_inode));
 				e2fsck_write_inode(ctx, ino, inode,
 						   "clear bad inode");
+				failed_csum = 0;
 			}
 
 			pctx.errcode = ext2fs_copy_bitmap(ctx->block_found_map,
@@ -1016,6 +1040,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			}
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
 			clear_problem_context(&pctx);
+			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 			continue;
 		} else if (ino == EXT2_ROOT_INO) {
 			/*
@@ -1041,6 +1066,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 					inode->i_dtime = 0;
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
+					failed_csum = 0;
 				}
 			}
 		} else if (ino == EXT2_JOURNAL_INO) {
@@ -1052,8 +1078,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 					inode->i_mode = LINUX_S_IFREG;
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
+					failed_csum = 0;
 				}
 				check_blocks(ctx, &pctx, block_buf);
+				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
 			}
 			if ((inode->i_links_count ||
@@ -1065,6 +1093,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 						    ino, 0);
 				e2fsck_write_inode_full(ctx, ino, inode,
 							inode_size, "pass1");
+				failed_csum = 0;
 			}
 		} else if ((ino == EXT4_USR_QUOTA_INO) ||
 			   (ino == EXT4_GRP_QUOTA_INO)) {
@@ -1079,8 +1108,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 					inode->i_mode = LINUX_S_IFREG;
 					e2fsck_write_inode(ctx, ino, inode,
 							"pass1");
+					failed_csum = 0;
 				}
 				check_blocks(ctx, &pctx, block_buf);
+				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
 			}
 			if ((inode->i_links_count ||
@@ -1092,6 +1123,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 						    ino, 0);
 				e2fsck_write_inode_full(ctx, ino, inode,
 							inode_size, "pass1");
+				failed_csum = 0;
 			}
 		} else if (ino < EXT2_FIRST_INODE(fs->super)) {
 			problem_t problem = 0;
@@ -1113,9 +1145,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 					inode->i_mode = 0;
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
+					failed_csum = 0;
 				}
 			}
 			check_blocks(ctx, &pctx, block_buf);
+			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 			continue;
 		}
 
@@ -1143,6 +1177,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 					0 : ctx->now;
 				e2fsck_write_inode(ctx, ino, inode,
 						   "pass1");
+				failed_csum = 0;
 			}
 		}
 
@@ -1157,8 +1192,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 					inode->i_dtime = ctx->now;
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
+					failed_csum = 0;
 				}
 			}
+			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 			continue;
 		}
 		/*
@@ -1175,6 +1212,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (fix_problem(ctx, PR_1_SET_DTIME, &pctx)) {
 				inode->i_dtime = 0;
 				e2fsck_write_inode(ctx, ino, inode, "pass1");
+				failed_csum = 0;
 			}
 		}
 
@@ -1211,6 +1249,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 					inode->i_flags &= ~EXT2_IMAGIC_FL;
 					e2fsck_write_inode(ctx, ino,
 							   inode, "pass1");
+					failed_csum = 0;
 				}
 			}
 		}
@@ -1228,6 +1267,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    fix_problem(ctx, PR_1_FAST_SYMLINK_EXTENT_FL, &pctx)) {
 			inode->i_flags &= ~EXT4_EXTENTS_FL;
 			e2fsck_write_inode(ctx, ino, inode, "pass1");
+			failed_csum = 0;
 		}
 
 		if (LINUX_S_ISDIR(inode->i_mode)) {
@@ -1253,10 +1293,12 @@ void e2fsck_pass1(e2fsck_t ctx)
 			check_immutable(ctx, &pctx);
 			ctx->fs_symlinks_count++;
 			if (inode->i_flags & EXT4_INLINE_DATA_FL) {
+				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
 			} else if (ext2fs_inode_data_blocks(fs, inode) == 0) {
 				ctx->fs_fast_symlinks_count++;
 				check_blocks(ctx, &pctx, block_buf);
+				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
 			}
 		}
@@ -1293,19 +1335,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		} else
 			check_blocks(ctx, &pctx, block_buf);
 
-		/*
-		 * If the inode failed the checksum and the user didn't
-		 * clear the inode, test the checksum again -- if it still
-		 * fails, ask the user if the checksum should be corrected.
-		 */
-		if (failed_csum) {
-			pctx.errcode = recheck_bad_inode_checksum(fs, ino, ctx,
-								  &pctx);
-			if (pctx.errcode) {
-				ctx->flags |= E2F_FLAG_ABORT;
-				return;
-			}
-		}
+		FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			goto endit;
@@ -1410,6 +1440,7 @@ endit:
 	if ((ctx->flags & E2F_FLAG_SIGNAL_MASK) == 0)
 		print_resource_track(ctx, _("Pass 1"), &rtrack, ctx->fs->io);
 }
+#undef FINISH_INODE_LOOP
 
 /*
  * When the inode_scan routines call this callback at the end of the
