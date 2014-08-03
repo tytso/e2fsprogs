@@ -1166,7 +1166,9 @@ check_error:
 			ext2fs_mmp_clear(fs);
 			retval = 0;
 		}
-	}
+	} else
+		com_err(ctx->program_name, retval, "%s",
+			_("while reading MMP block"));
 	return retval;
 }
 
