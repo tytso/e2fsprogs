@@ -3356,6 +3356,13 @@ static void e2fsck_block_alloc_stats(ext2_filsys fs, blk64_t blk, int inuse)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
+	/* Never free a critical metadata block */
+	if (ctx->block_found_map &&
+	    ctx->block_metadata_map &&
+	    inuse < 0 &&
+	    ext2fs_test_block_bitmap2(ctx->block_metadata_map, blk))
+		return;
+
 	if (ctx->block_found_map) {
 		if (inuse > 0)
 			ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
