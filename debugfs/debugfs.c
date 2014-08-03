@@ -1923,7 +1923,7 @@ void do_imap(int argc, char *argv[])
 void do_idump(int argc, char *argv[])
 {
 	ext2_ino_t	ino;
-	char		*buf;
+	unsigned char	*buf;
 	errcode_t	err;
 	int		isize;
 

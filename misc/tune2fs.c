@@ -212,8 +212,8 @@ static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 	return 0;
 }
 
-static void *
-journal_user(char uuid[UUID_SIZE], char s_users[JFS_USERS_SIZE], int nr_users)
+static __u8 *journal_user(__u8 uuid[UUID_SIZE], __u8 s_users[JFS_USERS_SIZE],
+			  int nr_users)
 {
 	int i;
 	for (i = 0; i < nr_users; i++) {
@@ -237,7 +237,6 @@ static int remove_journal_device(ext2_filsys fs)
 	errcode_t	retval;
 	int		commit_remove_journal = 0;
 	io_manager	io_ptr;
-	int start;
 
 	if (f_flag)
 		commit_remove_journal = 1; /* force removal even if error */
@@ -291,8 +290,10 @@ static int remove_journal_device(ext2_filsys fs)
 	jsb->s_nr_users = htonl(nr_users);
 
 	/* Write back the journal superblock */
-	if ((retval = io_channel_write_blk64(jfs->io, start,
-	    -SUPERBLOCK_SIZE, buf))) {
+	retval = io_channel_write_blk64(jfs->io,
+					ext2fs_journal_sb_start(fs->blocksize),
+					-SUPERBLOCK_SIZE, buf);
+	if (retval) {
 		com_err(program_name, retval,
 			"while writing journal superblock.");
 		goto no_valid_journal;
@@ -2436,12 +2437,13 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 }
 
 int
-fs_update_journal_user(struct ext2_super_block *sb, char old_uuid[UUID_SIZE])
+fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 {
 	int retval, nr_users, start;
 	journal_superblock_t *jsb;
 	ext2_filsys jfs;
-	char *j_uuid, *journal_path;
+	__u8 *j_uuid;
+	char *journal_path;
 	char uuid[UUID_STR_SIZE];
 	char buf[SUPERBLOCK_SIZE];
 
@@ -2464,7 +2466,8 @@ fs_update_journal_user(struct ext2_super_block *sb, char old_uuid[UUID_SIZE])
 		return retval;
 	}
 
-	if ((retval = get_journal_sb(jfs, buf))) {
+	retval = get_journal_sb(jfs, buf);
+	if (retval != 0) {
 		if (retval == EXT2_ET_UNSUPP_FEATURE)
 			fprintf(stderr, _("%s is not a journal device.\n"),
 				journal_path);
@@ -2475,7 +2478,8 @@ fs_update_journal_user(struct ext2_super_block *sb, char old_uuid[UUID_SIZE])
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
 
-	if (!(j_uuid = journal_user(old_uuid, jsb->s_users, nr_users))) {
+	j_uuid = journal_user(old_uuid, jsb->s_users, nr_users);
+	if (j_uuid == NULL) {
 		fputs(_("Filesystem's UUID not found on journal device.\n"),
 		      stderr);
 		return EXT2_ET_LOAD_EXT_JOURNAL;
@@ -2485,8 +2489,8 @@ fs_update_journal_user(struct ext2_super_block *sb, char old_uuid[UUID_SIZE])
 
 	start = ext2fs_journal_sb_start(jfs->blocksize);
 	/* Write back the journal superblock */
-	if ((retval = io_channel_write_blk64(jfs->io, start,
-	    -SUPERBLOCK_SIZE, buf))) {
+	retval = io_channel_write_blk64(jfs->io, start, -SUPERBLOCK_SIZE, buf);
+	if (retval != 0) {
 		com_err(program_name, retval,
 			"while writing journal superblock.");
 		return retval;
@@ -2785,7 +2789,7 @@ retry_open:
 		int set_csum = 0;
 		dgrp_t i;
 		char buf[SUPERBLOCK_SIZE];
-		char old_uuid[UUID_SIZE];
+		__u8 old_uuid[UUID_SIZE];
 
 		if (ext2fs_has_group_desc_csum(fs)) {
 			/*

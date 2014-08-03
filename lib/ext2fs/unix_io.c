@@ -130,6 +130,18 @@ static errcode_t raw_read_blk(io_channel channel,
 	size = (count < 0) ? -count : count * channel->block_size;
 	data->io_stats.bytes_read += size;
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
+
+#ifdef HAVE_PREAD
+	/* Try an aligned pread */
+	if ((channel->align == 0) ||
+	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(size, channel->align))) {
+		actual = pread(data->dev, buf, size, location);
+		if (actual == size)
+			return 0;
+	}
+#endif /* HAVE_PREAD */
+
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 		goto error_out;
@@ -200,6 +212,18 @@ static errcode_t raw_write_blk(io_channel channel,
 	data->io_stats.bytes_written += size;
 
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
+
+#ifdef HAVE_PWRITE
+	/* Try an aligned pwrite */
+	if ((channel->align == 0) ||
+	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(size, channel->align))) {
+		actual = pwrite(data->dev, buf, size, location);
+		if (actual == size)
+			return 0;
+	}
+#endif /* HAVE_PWRITE */
+
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 		goto error_out;
