@@ -58,12 +58,23 @@ __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry, void *data)
 	return hash;
 }
 
+static errcode_t check_ext_attr_header(struct ext2_ext_attr_header *header)
+{
+	if ((header->h_magic != EXT2_EXT_ATTR_MAGIC_v1 &&
+	     header->h_magic != EXT2_EXT_ATTR_MAGIC) ||
+	    header->h_blocks != 1)
+		return EXT2_ET_BAD_EA_HEADER;
+
+	return 0;
+}
+
 #undef NAME_HASH_SHIFT
 #undef VALUE_HASH_SHIFT
 
 errcode_t ext2fs_read_ext_attr3(ext2_filsys fs, blk64_t block, void *buf,
 				ext2_ino_t inum)
 {
+	int		csum_failed = 0;
 	errcode_t	retval;
 
 	retval = io_channel_read_blk64(fs->io, block, 1, buf);
@@ -72,11 +83,15 @@ errcode_t ext2fs_read_ext_attr3(ext2_filsys fs, blk64_t block, void *buf,
 
 	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
 	    !ext2fs_ext_attr_block_csum_verify(fs, inum, block, buf))
-		retval = EXT2_ET_EXT_ATTR_CSUM_INVALID;
+		csum_failed = 1;
 
 #ifdef WORDS_BIGENDIAN
 	ext2fs_swap_ext_attr(buf, buf, fs->blocksize, 1);
 #endif
+
+	retval = check_ext_attr_header(buf);
+	if (retval == 0 && csum_failed)
+		retval = EXT2_ET_EXT_ATTR_CSUM_INVALID;
 
 	return retval;
 }
@@ -321,6 +336,7 @@ errcode_t ext2fs_free_ext_attr(ext2_filsys fs, ext2_ino_t ino,
 	if (err)
 		goto out2;
 
+	/* We only know how to deal with v2 EA blocks */
 	header = (struct ext2_ext_attr_header *) block_buf;
 	if (header->h_magic != EXT2_EXT_ATTR_MAGIC) {
 		err = EXT2_ET_BAD_EA_HEADER;
@@ -380,6 +396,7 @@ static errcode_t prep_ea_block_for_write(ext2_filsys fs, ext2_ino_t ino,
 		if (err)
 			goto out2;
 
+		/* We only know how to deal with v2 EA blocks */
 		header = (struct ext2_ext_attr_header *) block_buf;
 		if (header->h_magic != EXT2_EXT_ATTR_MAGIC) {
 			err = EXT2_ET_BAD_EA_HEADER;
@@ -763,13 +780,9 @@ read_ea_block:
 		if (err)
 			goto out3;
 
+		/* We only know how to deal with v2 EA blocks */
 		header = (struct ext2_ext_attr_header *) block_buf;
 		if (header->h_magic != EXT2_EXT_ATTR_MAGIC) {
-			err = EXT2_ET_BAD_EA_HEADER;
-			goto out3;
-		}
-
-		if (header->h_blocks != 1) {
 			err = EXT2_ET_BAD_EA_HEADER;
 			goto out3;
 		}

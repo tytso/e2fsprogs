@@ -1748,12 +1748,16 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->blk = blk;
 	pctx->errcode = ext2fs_read_ext_attr3(fs, blk, block_buf, pctx->ino);
 	if (pctx->errcode == EXT2_ET_EXT_ATTR_CSUM_INVALID) {
-		if (fix_problem(ctx, PR_1_EA_BLOCK_CSUM_INVALID, pctx))
-			goto clear_extattr;
+		pctx->errcode = 0;
 		failed_csum = 1;
-	}
-	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
+	} else if (pctx->errcode == EXT2_ET_BAD_EA_HEADER)
+		pctx->errcode = 0;
+
+	if (pctx->errcode &&
+	    fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx)) {
+		pctx->errcode = 0;
 		goto clear_extattr;
+	}
 	header = (struct ext2_ext_attr_header *) block_buf;
 	pctx->blk = ext2fs_file_acl_block(fs, inode);
 	if (((ctx->ext_attr_ver == 1) &&
@@ -1768,6 +1772,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		if (fix_problem(ctx, PR_1_EA_MULTI_BLOCK, pctx))
 			goto clear_extattr;
 	}
+
+	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
+		goto clear_extattr;
 
 	region = region_create(0, fs->blocksize);
 	if (!region) {
@@ -2438,8 +2445,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
-	if (ext2fs_file_acl_block(fs, inode) &&
-	    check_ext_attr(ctx, pctx, block_buf)) {
+	if (check_ext_attr(ctx, pctx, block_buf)) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			goto out;
 		pb.num_blocks++;
