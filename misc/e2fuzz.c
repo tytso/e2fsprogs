@@ -279,23 +279,20 @@ int process_fs(const char *fsname)
 	close(fd);
 
 	/* Clean up */
-	ret = ext2fs_close(fs);
+	ret = ext2fs_close_free(&fs);
 	if (ret) {
-		fs = NULL;
 		fprintf(stderr, "%s: error while closing filesystem\n",
 			fsname);
-		goto fail2;
+		return 1;
 	}
 
 	return 0;
 fail3:
 	close(fd);
-fail2:
 	if (corrupt_map != fs->block_map)
 		ext2fs_free_block_bitmap(corrupt_map);
 fail:
-	if (fs)
-		ext2fs_close(fs);
+	ext2fs_close_free(&fs);
 	return 1;
 }
 
