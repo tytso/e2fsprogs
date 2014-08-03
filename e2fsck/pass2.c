@@ -944,32 +944,16 @@ static int check_dir_block(ext2_filsys fs,
 out_htree:
 #endif /* ENABLE_HTREE */
 
-	/* Verify checksum. */
-	if (is_leaf && de_csum_size && !inline_data_size) {
-		/* No space for csum?  Rebuild dirs in pass 3A. */
-		if (!ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf)) {
-			de_csum_size = 0;
-			if (e2fsck_dir_will_be_rehashed(ctx, ino))
-				goto skip_checksum;
-			if (!fix_problem(cd->ctx, PR_2_LEAF_NODE_MISSING_CSUM,
-					 &cd->pctx))
-				goto skip_checksum;
-			e2fsck_rehash_dir_later(ctx, ino);
+	/* Leaf node with no space for csum?  Rebuild dirs in pass 3A. */
+	if (is_leaf && !inline_data_size && failed_csum &&
+	    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf)) {
+		de_csum_size = 0;
+		if (e2fsck_dir_will_be_rehashed(ctx, ino) ||
+		    !fix_problem(cd->ctx, PR_2_LEAF_NODE_MISSING_CSUM,
+				 &cd->pctx))
 			goto skip_checksum;
-		}
-		if (failed_csum) {
-			char *buf2;
-			if (!fix_problem(cd->ctx, PR_2_LEAF_NODE_CSUM_INVALID,
-					 &cd->pctx))
-				goto skip_checksum;
-			ext2fs_new_dir_block(fs,
-					     db->blockcnt == 0 ? ino : 0,
-					     EXT2_ROOT_INO, &buf2);
-			memcpy(buf, buf2, fs->blocksize);
-			ext2fs_free_mem(&buf2);
-			dir_modified++;
-			failed_csum = 0;
-		}
+		e2fsck_rehash_dir_later(ctx, ino);
+		goto skip_checksum;
 	}
 	/* htree nodes don't use fake dirents to store checksums */
 	if (!is_leaf)

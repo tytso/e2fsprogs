@@ -1477,11 +1477,6 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@p @h %d: internal node fails checksum.\n"),
 	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
-	/* leaf node fails checksum */
-	{ PR_2_LEAF_NODE_CSUM_INVALID,
-	  N_("@d @i %i, %B, offset %N: @d fails checksum.\n"),
-	  PROMPT_SALVAGE, PR_PREEN_OK },
-
 	/* leaf node has no checksum */
 	{ PR_2_LEAF_NODE_MISSING_CSUM,
 	  N_("@d @i %i, %B, offset %N: @d has no checksum.\n"),
