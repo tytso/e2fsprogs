@@ -91,9 +91,6 @@ static void fix_perms(const char *cmd, const struct ext2_inode *inode,
 	if (i == -1)
 		com_err(cmd, errno, "while changing ownership of %s", name);
 
-	if (fd != -1)
-		close(fd);
-
 	ut.actime = inode->i_atime;
 	ut.modtime = inode->i_mtime;
 	if (utime(name, &ut) == -1)
