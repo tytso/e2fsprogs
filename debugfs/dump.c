@@ -326,18 +326,12 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 
 void do_rdump(int argc, char **argv)
 {
-	ext2_ino_t ino;
-	struct ext2_inode inode;
 	struct stat st;
-	char *arg, *dest_dir, *basename;
+	char *dest_dir;
+	int i;
 
-	if (common_args_process(argc, argv, 3, 3, "rdump",
-				"<directory> <native directory>", 0))
-		return;
-
-	arg = argv[1];
-	ino = string_to_inode(arg);
-	if (!ino)
+	if (common_args_process(argc, argv, 3, INT_MAX, "rdump",
+				"<directory>... <native directory>", 0))
 		return;
 
 	/* Pull out last argument */
@@ -354,16 +348,24 @@ void do_rdump(int argc, char **argv)
 		return;
 	}
 
-	if (debugfs_read_inode(ino, &inode, arg))
-		return;
+	for (i = 1; i < argc; i++) {
+		char *arg = argv[i], *basename;
+		struct ext2_inode inode;
+		ext2_ino_t ino = string_to_inode(arg);
+		if (!ino)
+			continue;
 
-	basename = strrchr(arg, '/');
-	if (basename)
-		basename++;
-	else
-		basename = arg;
+		if (debugfs_read_inode(ino, &inode, arg))
+			continue;
 
-	rdump_inode(ino, &inode, basename, dest_dir);
+		basename = strrchr(arg, '/');
+		if (basename)
+			basename++;
+		else
+			basename = arg;
+
+		rdump_inode(ino, &inode, basename, dest_dir);
+	}
 }
 
 void do_cat(int argc, char **argv)
