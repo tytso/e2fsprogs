@@ -329,38 +329,41 @@ void do_rdump(int argc, char **argv)
 	ext2_ino_t ino;
 	struct ext2_inode inode;
 	struct stat st;
-	int i;
-	char *p;
+	char *arg, *dest_dir, *basename;
 
 	if (common_args_process(argc, argv, 3, 3, "rdump",
 				"<directory> <native directory>", 0))
 		return;
 
-	ino = string_to_inode(argv[1]);
+	arg = argv[1];
+	ino = string_to_inode(arg);
 	if (!ino)
 		return;
 
-	/* Ensure ARGV[2] is a directory. */
-	i = stat(argv[2], &st);
-	if (i == -1) {
-		com_err("rdump", errno, "while statting %s", argv[2]);
+	/* Pull out last argument */
+	dest_dir = argv[argc - 1];
+	argc--;
+
+	/* Ensure last arg is a directory. */
+	if (stat(dest_dir, &st) == -1) {
+		com_err("rdump", errno, "while statting %s", dest_dir);
 		return;
 	}
 	if (!S_ISDIR(st.st_mode)) {
-		com_err("rdump", 0, "%s is not a directory", argv[2]);
+		com_err("rdump", 0, "%s is not a directory", dest_dir);
 		return;
 	}
 
-	if (debugfs_read_inode(ino, &inode, argv[1]))
+	if (debugfs_read_inode(ino, &inode, arg))
 		return;
 
-	p = strrchr(argv[1], '/');
-	if (p)
-		p++;
+	basename = strrchr(arg, '/');
+	if (basename)
+		basename++;
 	else
-		p = argv[1];
+		basename = arg;
 
-	rdump_inode(ino, &inode, p, argv[2]);
+	rdump_inode(ino, &inode, basename, dest_dir);
 }
 
 void do_cat(int argc, char **argv)
