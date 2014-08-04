@@ -272,12 +272,12 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 		int fd;
 		fd = open(fullname, O_WRONLY | O_CREAT | O_TRUNC | O_LARGEFILE, S_IRWXU);
 		if (fd == -1) {
-			com_err("rdump", errno, "while dumping %s", fullname);
+			com_err("rdump", errno, "while opening %s", fullname);
 			goto errout;
 		}
 		dump_file("rdump", ino, fd, 1, fullname);
 		if (close(fd) != 0) {
-			com_err("rdump", errno, "while dumping %s", fullname);
+			com_err("rdump", errno, "while closing %s", fullname);
 			goto errout;
 		}
 	}
