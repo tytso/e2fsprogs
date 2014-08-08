@@ -517,12 +517,14 @@ Print the current working directory.
 Quit
 .B debugfs
 .TP
-.BI rdump " directory destination"
+.BI rdump " directory[...] destination"
 Recursively dump
-.I directory
+.IR directory ,
+or multiple
+.IR directories ,
 and all its contents (including regular files, symbolic links, and other
 directories) into the named
-.I destination
+.IR destination ,
 which should be an existing directory on the native filesystem.
 .TP
 .BI rm " pathname"

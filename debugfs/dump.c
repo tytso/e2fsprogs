@@ -91,9 +91,6 @@ static void fix_perms(const char *cmd, const struct ext2_inode *inode,
 	if (i == -1)
 		com_err(cmd, errno, "while changing ownership of %s", name);
 
-	if (fd != -1)
-		close(fd);
-
 	ut.actime = inode->i_atime;
 	ut.modtime = inode->i_mtime;
 	if (utime(name, &ut) == -1)
@@ -272,12 +269,12 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 		int fd;
 		fd = open(fullname, O_WRONLY | O_CREAT | O_TRUNC | O_LARGEFILE, S_IRWXU);
 		if (fd == -1) {
-			com_err("rdump", errno, "while dumping %s", fullname);
+			com_err("rdump", errno, "while opening %s", fullname);
 			goto errout;
 		}
 		dump_file("rdump", ino, fd, 1, fullname);
 		if (close(fd) != 0) {
-			com_err("rdump", errno, "while dumping %s", fullname);
+			com_err("rdump", errno, "while closing %s", fullname);
 			goto errout;
 		}
 	}
@@ -329,41 +326,46 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 
 void do_rdump(int argc, char **argv)
 {
-	ext2_ino_t ino;
-	struct ext2_inode inode;
 	struct stat st;
+	char *dest_dir;
 	int i;
-	char *p;
 
-	if (common_args_process(argc, argv, 3, 3, "rdump",
-				"<directory> <native directory>", 0))
+	if (common_args_process(argc, argv, 3, INT_MAX, "rdump",
+				"<directory>... <native directory>", 0))
 		return;
 
-	ino = string_to_inode(argv[1]);
-	if (!ino)
-		return;
+	/* Pull out last argument */
+	dest_dir = argv[argc - 1];
+	argc--;
 
-	/* Ensure ARGV[2] is a directory. */
-	i = stat(argv[2], &st);
-	if (i == -1) {
-		com_err("rdump", errno, "while statting %s", argv[2]);
+	/* Ensure last arg is a directory. */
+	if (stat(dest_dir, &st) == -1) {
+		com_err("rdump", errno, "while statting %s", dest_dir);
 		return;
 	}
 	if (!S_ISDIR(st.st_mode)) {
-		com_err("rdump", 0, "%s is not a directory", argv[2]);
+		com_err("rdump", 0, "%s is not a directory", dest_dir);
 		return;
 	}
 
-	if (debugfs_read_inode(ino, &inode, argv[1]))
-		return;
+	for (i = 1; i < argc; i++) {
+		char *arg = argv[i], *basename;
+		struct ext2_inode inode;
+		ext2_ino_t ino = string_to_inode(arg);
+		if (!ino)
+			continue;
 
-	p = strrchr(argv[1], '/');
-	if (p)
-		p++;
-	else
-		p = argv[1];
+		if (debugfs_read_inode(ino, &inode, arg))
+			continue;
 
-	rdump_inode(ino, &inode, p, argv[2]);
+		basename = strrchr(arg, '/');
+		if (basename)
+			basename++;
+		else
+			basename = arg;
+
+		rdump_inode(ino, &inode, basename, dest_dir);
+	}
 }
 
 void do_cat(int argc, char **argv)

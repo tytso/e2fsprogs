@@ -1117,6 +1117,8 @@ AC_CHECK_FUNCS(m4_flatten([
 	prctl
 	pread
 	pwrite
+	pread64
+	pwrite64
 	secure_getenv
 	setmntent
 	setresgid

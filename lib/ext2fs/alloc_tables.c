@@ -87,7 +87,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	errcode_t	retval;
 	blk64_t		group_blk, start_blk, last_blk, new_blk;
 	dgrp_t		last_grp = 0;
-	int		rem_grps = 0, flexbg_size = 0;
+	int		rem_grps = 0, flexbg_size = 0, table_offset = 0;
 
 	group_blk = ext2fs_group_first_block2(fs, group);
 	last_blk = ext2fs_group_last_block2(fs, group);
@@ -124,8 +124,20 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	if (flexbg_size) {
 		blk64_t prev_block = 0;
 
+		table_offset = flexbg_size;
 		if (group % flexbg_size)
 			prev_block = ext2fs_block_bitmap_loc(fs, group - 1) + 1;
+		else if (last_grp == fs->group_desc_count-1) {
+			/*
+			 * If we are allocating for the last flex_bg
+			 * keep the metadata tables contiguous
+			 */
+			table_offset = last_grp & (flexbg_size - 1);
+			if (table_offset == 0)
+				table_offset = flexbg_size;
+			else
+				table_offset++;
+		}
 		/* FIXME: Take backup group descriptor blocks into account
 		 * if the flexbg allocations will grow to overlap them... */
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
@@ -158,7 +170,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			prev_block = ext2fs_inode_bitmap_loc(fs, group - 1) + 1;
 		else
 			prev_block = ext2fs_block_bitmap_loc(fs, group) +
-				flexbg_size;
+				table_offset;
 		/* FIXME: Take backup group descriptor blocks into account
 		 * if the flexbg allocations will grow to overlap them... */
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
@@ -196,7 +208,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 				fs->inode_blocks_per_group;
 		else
 			prev_block = ext2fs_inode_bitmap_loc(fs, group) +
-				flexbg_size;
+				table_offset;
 
 		/* FIXME: Take backup group descriptor blocks into account
 		 * if the flexbg allocations will grow to overlap them... */
