@@ -131,11 +131,21 @@ static errcode_t raw_read_blk(io_channel channel,
 	data->io_stats.bytes_read += size;
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 
-#ifdef HAVE_PREAD
+#ifdef HAVE_PREAD64
 	/* Try an aligned pread */
 	if ((channel->align == 0) ||
 	    (IS_ALIGNED(buf, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
+		actual = pread64(data->dev, buf, size, location);
+		if (actual == size)
+			return 0;
+	}
+#elif HAVE_PREAD
+	/* Try an aligned pread */
+	if ((sizeof(off_t) >= sizeof(ext2_loff_t)) &&
+	    ((channel->align == 0) ||
+	     (IS_ALIGNED(buf, channel->align) &&
+	      IS_ALIGNED(size, channel->align)))) {
 		actual = pread(data->dev, buf, size, location);
 		if (actual == size)
 			return 0;
@@ -213,11 +223,21 @@ static errcode_t raw_write_blk(io_channel channel,
 
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 
-#ifdef HAVE_PWRITE
+#ifdef HAVE_PWRITE64
 	/* Try an aligned pwrite */
 	if ((channel->align == 0) ||
 	    (IS_ALIGNED(buf, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
+		actual = pwrite64(data->dev, buf, size, location);
+		if (actual == size)
+			return 0;
+	}
+#elif HAVE_PWRITE
+	/* Try an aligned pwrite */
+	if ((sizeof(off_t) >= sizeof(ext2_loff_t)) &&
+	    ((channel->align == 0) ||
+	     (IS_ALIGNED(buf, channel->align) &&
+	      IS_ALIGNED(size, channel->align)))) {
 		actual = pwrite(data->dev, buf, size, location);
 		if (actual == size)
 			return 0;
