@@ -440,6 +440,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@S 64bit filesystems needs extents to access the whole disk.  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
 
+	/* The first_meta_bg is too big */
+	{ PR_0_FIRST_META_BG_TOO_BIG,
+	  N_("First_meta_bg is too big.  (%N, max value %g).  "),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */

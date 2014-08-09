@@ -252,6 +252,9 @@ struct problem_context {
 /* 64bit is set but extents are not set. */
 #define PR_0_64BIT_WITHOUT_EXTENTS		0x000048
 
+/* The first_meta_bg is too big */
+#define PR_0_FIRST_META_BG_TOO_BIG		0x000049
+
 /*
  * Pass 1 errors
  */
