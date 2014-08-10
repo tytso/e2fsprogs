@@ -577,6 +577,9 @@ struct problem_context {
 /* inode passes checks, but checksum does not match inode */
 #define PR_1_INODE_ONLY_CSUM_INVALID   0x010068
 
+/* Inode EA allocation collision */
+#define PR_1_INODE_EA_ALLOC_COLLISION	0x010069
+
 /* extent block passes checks, but checksum does not match extent block */
 #define PR_1_EXTENT_ONLY_CSUM_INVALID  0x01006A
 

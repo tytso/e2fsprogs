@@ -977,6 +977,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i passes checks, but checksum does not match @i.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* Inode extended attribute is corrupt (allocation collision) */
+	{ PR_1_INODE_EA_ALLOC_COLLISION,
+	  N_("@i %i @a is corrupt (allocation collision).  "),
+	  PROMPT_CLEAR, 0},
+
 	/*
 	 * Inode extent block passes checks, but checksum does not match
 	 * extent

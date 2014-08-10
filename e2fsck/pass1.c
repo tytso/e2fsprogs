@@ -286,15 +286,17 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct ext2_inode_large *inode;
 	struct ext2_ext_attr_entry *entry;
-	char *start;
+	char *start, *header;
 	unsigned int storage_size, remain;
 	problem_t problem = 0;
+	region_t region = 0;
 
 	inode = (struct ext2_inode_large *) pctx->inode;
 	storage_size = EXT2_INODE_SIZE(ctx->fs->super) - EXT2_GOOD_OLD_INODE_SIZE -
 		inode->i_extra_isize;
-	start = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
-		inode->i_extra_isize + sizeof(__u32);
+	header = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
+		 inode->i_extra_isize;
+	start = header + sizeof(__u32);
 	entry = (struct ext2_ext_attr_entry *) start;
 
 	/* scan all entry's headers first */
@@ -302,9 +304,27 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	/* take finish entry 0UL into account */
 	remain = storage_size - sizeof(__u32);
 
+	region = region_create(0, storage_size);
+	if (!region) {
+		fix_problem(ctx, PR_1_EA_ALLOC_REGION_ABORT, pctx);
+		problem = 0;
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+	if (region_allocate(region, 0, sizeof(__u32))) {
+		problem = PR_1_INODE_EA_ALLOC_COLLISION;
+		goto fix;
+	}
+
 	while (remain >= sizeof(struct ext2_ext_attr_entry) &&
 	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		__u32 hash;
+
+		if (region_allocate(region, (char *)entry - (char *)header,
+				    EXT2_EXT_ATTR_LEN(entry->e_name_len))) {
+			problem = PR_1_INODE_EA_ALLOC_COLLISION;
+			goto fix;
+		}
 
 		/* header eats this space */
 		remain -= sizeof(struct ext2_ext_attr_entry);
@@ -333,6 +353,13 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 			goto fix;
 		}
 
+		if (entry->e_value_size &&
+		    region_allocate(region, sizeof(__u32) + entry->e_value_offs,
+				    EXT2_EXT_ATTR_SIZE(entry->e_value_size))) {
+			problem = PR_1_INODE_EA_ALLOC_COLLISION;
+			goto fix;
+		}
+
 		hash = ext2fs_ext_attr_hash_entry(entry,
 						  start + entry->e_value_offs);
 
@@ -347,7 +374,15 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 
 		entry = EXT2_EXT_ATTR_NEXT(entry);
 	}
+
+	if (region_allocate(region, (char *)entry - (char *)header,
+			    sizeof(__u32))) {
+		problem = PR_1_INODE_EA_ALLOC_COLLISION;
+		goto fix;
+	}
 fix:
+	if (region)
+		region_free(region);
 	/*
 	 * it seems like a corruption. it's very unlikely we could repair
 	 * EA(s) in automatic fashion -bzzz
@@ -356,7 +391,7 @@ fix:
 		return;
 
 	/* simply remove all possible EA(s) */
-	*((__u32 *)start) = 0UL;
+	*((__u32 *)header) = 0UL;
 	e2fsck_write_inode_full(ctx, pctx->ino, pctx->inode,
 				EXT2_INODE_SIZE(sb), "pass1");
 }
