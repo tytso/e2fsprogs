@@ -1619,6 +1619,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Cannot allocate space for /@l.\nPlace lost files in root directory instead"),
 	  PROMPT_NULL, 0 },
 
+	/* Delete some files and re-run e2fsck. */
+	{ PR_3_NO_SPACE_TO_RECOVER,
+	  N_("Insufficient space to recover lost files!\nMove data off the @f and re-run e2fsck.\n\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 3A Directory Optimization	*/
 
 	/* Pass 3A: Optimizing directories */

@@ -967,6 +967,9 @@ struct problem_context {
 /* Cannot allocate lost+found */
 #define PR_3_LPF_NO_SPACE		0x030019
 
+/* Insufficient space to recover lost files */
+#define PR_3_NO_SPACE_TO_RECOVER	0x03001A
+
 /*
  * Pass 3a --- rehashing diretories
  */
