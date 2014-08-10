@@ -540,6 +540,12 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 
 		if (ext2fs_inline_data_size(ctx->fs, pctx->ino, &size))
 			return;
+		/*
+		 * If the size isn't a multiple of 4, it's probably not a
+		 * directory??
+		 */
+		if (size & 3)
+			return;
 		/* device files never have a "system.data" entry */
 		goto isdir;
 	} else if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) {
