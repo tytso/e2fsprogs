@@ -218,7 +218,7 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 		goto out;
 	}
 	if (data.ea_size <= 0)
-		goto out;
+		goto out1;
 
 	ctx->buf = data.ea_data;
 	ctx->buflen = data.ea_size;
@@ -226,7 +226,7 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 	ctx->errcode = ext2fs_dirent_swab_in2(fs, ctx->buf, ctx->buflen, 0);
 	if (ctx->errcode) {
 		ret |= BLOCK_ABORT;
-		goto out;
+		goto out1;
 	}
 #endif
 
