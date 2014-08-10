@@ -1,0 +1,75 @@
+Pass 1: Checking inodes, blocks, and sizes
+Inode 12 has INLINE_DATA_FL flag but extended attribute not found.  Truncate? yes
+
+Inode 16, i_size is 56, should be 60.  Fix? yes
+
+Inode 24, i_size is 59, should be 60.  Fix? yes
+
+Inode 28 is a unknown file type with mode 00 but it looks like it is really a directory.
+Fix? yes
+
+Inode 36 is a unknown file type with mode 00 but it looks like it is really a directory.
+Fix? yes
+
+Inode 36, i_size is 5, should be 60.  Fix? yes
+
+Pass 2: Checking directory structure
+Directory inode 20, block #0, offset 4: directory corrupted
+Salvage? yes
+
+Directory inode 28, block #0, offset 4: directory corrupted
+Salvage? yes
+
+Directory inode 32, block #0, offset 4: directory corrupted
+Salvage? yes
+
+Directory inode 32, block #0, offset 4: directory corrupted
+Salvage? yes
+
+Entry '..' in ??? (36) has invalid inode #: 1633774699.
+Clear? yes
+
+Directory inode 36, block #0, offset 4: directory corrupted
+Salvage? yes
+
+Symlink /3 (inode #14) is invalid.
+Clear? yes
+
+Inode 38 (/B) has invalid mode (00).
+Clear? yes
+
+Entry 'A' in / (2) has an incorrect filetype (was 1, should be 2).
+Fix? yes
+
+Pass 3: Checking directory connectivity
+'..' in /A (36) is ??? (1633774699), should be / (2).
+Fix? yes
+
+Error while adjusting inode count on inode 0
+Pass 4: Checking reference counts
+Unattached zero-length inode 22.  Clear? yes
+
+Unattached zero-length inode 23.  Clear? yes
+
+Unattached zero-length inode 29.  Clear? yes
+
+Unattached zero-length inode 30.  Clear? yes
+
+Unattached zero-length inode 31.  Clear? yes
+
+Unattached zero-length inode 33.  Clear? yes
+
+Unattached zero-length inode 34.  Clear? yes
+
+Unattached zero-length inode 35.  Clear? yes
+
+Inode 36 ref count is 1, should be 2.  Fix? yes
+
+Pass 5: Checking group summary information
+Directories count wrong for group #0 (7, counted=8).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 28/128 files (0.0% non-contiguous), 18/512 blocks
+Exit status is 1
