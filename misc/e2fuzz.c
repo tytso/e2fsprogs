@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdint.h>
+#include <unistd.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
@@ -30,6 +31,16 @@ static int verbose = 0;
 static int metadata_only = 1;
 static unsigned long long user_corrupt_bytes = 0;
 static double user_corrupt_pct = 0.0;
+
+#ifndef HAVE_PWRITE
+ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset)
+{
+	if (lseek(fd, offset, SEEK_SET) < 0)
+		return 0;
+
+	return write(fd, buf, count);
+}
+#endif /* HAVE_PWRITE */
 
 int getseed(void)
 {
@@ -70,7 +81,7 @@ errcode_t find_metadata_blocks(ext2_filsys fs, ext2fs_block_bitmap bmap,
 			       off_t *corrupt_bytes)
 {
 	dgrp_t i;
-	blk64_t b, c, d, j, old_desc_blocks;
+	blk64_t b, c;
 	ext2_inode_scan scan;
 	ext2_ino_t ino;
 	struct ext2_inode inode;
@@ -79,12 +90,6 @@ errcode_t find_metadata_blocks(ext2_filsys fs, ext2fs_block_bitmap bmap,
 
 	*corrupt_bytes = 0;
 	fb.corrupt_blocks = 0;
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT2_FEATURE_INCOMPAT_META_BG))
-		old_desc_blocks = fs->super->s_first_meta_bg;
-	else
-		old_desc_blocks = fs->desc_blocks +
-				  fs->super->s_reserved_gdt_blocks;
 
 	/* Construct bitmaps of super/descriptor blocks */
 	for (i = 0; i < fs->group_desc_count; i++) {
@@ -271,7 +276,7 @@ int process_fs(const char *fsname)
 			       off % fs->blocksize, off / fs->blocksize, c);
 		if (dryrun)
 			continue;
-		if (pwrite64(fd, &c, sizeof(c), off) != sizeof(c)) {
+		if (pwrite(fd, &c, sizeof(c), off) != sizeof(c)) {
 			perror(fsname);
 			goto fail3;
 		}
