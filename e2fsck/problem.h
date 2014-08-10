@@ -1059,6 +1059,15 @@ struct problem_context {
 /* Update quota information if it is inconsistent */
 #define PR_6_UPDATE_QUOTAS		0x060002
 
+/* Error setting block group checksum info */
+#define PR_6_SET_BG_CHECKSUM		0x060003
+
+/* Error writing file system info */
+#define PR_6_FLUSH_FILESYSTEM		0x060004
+
+/* Error flushing writes to storage device */
+#define PR_6_IO_FLUSH			0x060005
+
 /*
  * Function declarations
  */
