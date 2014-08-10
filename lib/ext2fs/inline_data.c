@@ -361,13 +361,16 @@ ext2fs_inline_data_dir_expand(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 
 #ifdef WORDS_BIGENDIAN
-	retval = ext2fs_dirent_swab_in2(fs, buf, size, 0);
+	retval = ext2fs_dirent_swab_in2(fs, buf + EXT4_INLINE_DATA_DOTDOT_SIZE,
+					size, 0);
 	if (retval)
 		goto errout;
 #endif
 
 	/* Adjust the rec_len */
 	retval = ext2fs_inline_data_convert_dir(fs, ino, blk_buf, buf, size);
+	if (retval)
+		goto errout;
 	/* Allocate a new block */
 	retval = ext2fs_new_block2(fs, 0, 0, &blk);
 	if (retval)

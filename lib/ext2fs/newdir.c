@@ -115,6 +115,15 @@ errcode_t ext2fs_new_dir_inline_data(ext2_filsys fs, ext2_ino_t dir_ino,
 	dir->inode = 0;
 	rec_len = EXT4_MIN_INLINE_DATA_SIZE - EXT4_INLINE_DATA_DOTDOT_SIZE;
 	retval = ext2fs_set_rec_len(fs, rec_len, dir);
+	if (retval)
+		goto errout;
 
+#ifdef WORDS_BIGENDIAN
+	retval = ext2fs_dirent_swab_out2(fs, (char *)dir, rec_len, 0);
+	if (retval)
+		goto errout;
+#endif
+
+errout:
 	return retval;
 }

@@ -870,11 +870,21 @@ static int check_dir_block(ext2_filsys fs,
 #endif
 
 	ehandler_operation(_("reading directory block"));
-	if (inline_data_size)
+	if (inline_data_size) {
 		cd->pctx.errcode = ext2fs_inline_data_get(fs, ino, 0, buf, 0);
-	else
+		if (cd->pctx.errcode)
+			goto inline_read_fail;
+#ifdef WORDS_BIGENDIAN
+		*((__u32 *)buf) = ext2fs_le32_to_cpu(*((__u32 *)buf));
+		cd->pctx.errcode = ext2fs_dirent_swab_in2(fs,
+				buf + EXT4_INLINE_DATA_DOTDOT_SIZE,
+				inline_data_size - EXT4_INLINE_DATA_DOTDOT_SIZE,
+				0);
+#endif
+	} else
 		cd->pctx.errcode = ext2fs_read_dir_block4(fs, block_nr,
 							  buf, 0, ino);
+inline_read_fail:
 	ehandler_operation(0);
 	if (cd->pctx.errcode == EXT2_ET_DIR_CORRUPTED)
 		cd->pctx.errcode = 0; /* We'll handle this ourselves */
@@ -1311,6 +1321,17 @@ write_and_fix:
 			ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		}
 		if (inline_data_size) {
+#ifdef WORDS_BIGENDIAN
+			*((__u32 *)buf) = ext2fs_le32_to_cpu(*((__u32 *)buf));
+			cd->pctx.errcode = ext2fs_dirent_swab_out2(fs,
+					buf + EXT4_INLINE_DATA_DOTDOT_SIZE,
+					inline_data_size -
+					EXT4_INLINE_DATA_DOTDOT_SIZE,
+					0);
+			if (cd->pctx.errcode &&
+			    !fix_problem(ctx, PR_2_WRITE_DIRBLOCK, &cd->pctx))
+				goto abort_free_dict;
+#endif
 			cd->pctx.errcode =
 				ext2fs_inline_data_set(fs, ino, 0, buf,
 						       inline_data_size);
