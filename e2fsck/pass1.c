@@ -759,6 +759,108 @@ static void finish_processing_inode(e2fsck_t ctx, ext2_ino_t ino,
 			return; \
 	} while (0)
 
+static int could_be_block_map(ext2_filsys fs, struct ext2_inode *inode)
+{
+	__u32 x;
+	int i;
+
+	for (i = 0; i < EXT2_N_BLOCKS; i++) {
+		x = inode->i_block[i];
+#ifdef WORDS_BIGENDIAN
+		x = ext2fs_swab32(x);
+#endif
+		if (x >= ext2fs_blocks_count(fs->super))
+			return 0;
+	}
+
+	return 1;
+}
+
+/*
+ * Figure out what to do with an inode that has both extents and inline data
+ * inode flags set.  Returns -1 if we decide to erase the inode, 0 otherwise.
+ */
+static int fix_inline_data_extents_file(e2fsck_t ctx,
+					ext2_ino_t ino,
+					struct ext2_inode *inode,
+					int inode_size,
+					struct problem_context *pctx)
+{
+	size_t max_inline_ea_size;
+	ext2_filsys fs = ctx->fs;
+	int dirty = 0;
+
+	/* Both feature flags not set?  Just run the regular checks */
+	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				       EXT3_FEATURE_INCOMPAT_EXTENTS) &&
+	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_INCOMPAT_INLINE_DATA))
+		return 0;
+
+	/* Clear both flags if it's a special file */
+	if (LINUX_S_ISCHR(inode->i_mode) ||
+	    LINUX_S_ISBLK(inode->i_mode) ||
+	    LINUX_S_ISFIFO(inode->i_mode) ||
+	    LINUX_S_ISSOCK(inode->i_mode)) {
+		check_extents_inlinedata(ctx, pctx);
+		return 0;
+	}
+
+	/* If it looks like an extent tree, try to clear inlinedata */
+	if (ext2fs_extent_header_verify(inode->i_block,
+				 sizeof(inode->i_block)) == 0 &&
+	    fix_problem(ctx, PR_1_CLEAR_INLINE_DATA_FOR_EXTENT, pctx)) {
+		inode->i_flags &= ~EXT4_INLINE_DATA_FL;
+		dirty = 1;
+		goto out;
+	}
+
+	/* If it looks short enough to be inline data, try to clear extents */
+	if (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
+		max_inline_ea_size = EXT2_INODE_SIZE(fs->super) -
+				     (EXT2_GOOD_OLD_INODE_SIZE +
+				      ((struct ext2_inode_large *)inode)->i_extra_isize);
+	else
+		max_inline_ea_size = 0;
+	if (EXT2_I_SIZE(inode) <
+	    EXT4_MIN_INLINE_DATA_SIZE + max_inline_ea_size &&
+	    fix_problem(ctx, PR_1_CLEAR_EXTENT_FOR_INLINE_DATA, pctx)) {
+		inode->i_flags &= ~EXT4_EXTENTS_FL;
+		dirty = 1;
+		goto out;
+	}
+
+	/*
+	 * Too big for inline data, but no evidence of extent tree -
+	 * maybe it's a block map file?  If the mappings all look valid?
+	 */
+	if (could_be_block_map(fs, inode) &&
+	    fix_problem(ctx, PR_1_CLEAR_EXTENT_INLINE_DATA_FLAGS, pctx)) {
+#ifdef WORDS_BIGENDIAN
+		int i;
+
+		for (i = 0; i < EXT2_N_BLOCKS; i++)
+			inode->i_block[i] = ext2fs_swab32(inode->i_block[i]);
+#endif
+
+		inode->i_flags &= ~(EXT4_EXTENTS_FL | EXT4_INLINE_DATA_FL);
+		dirty = 1;
+		goto out;
+	}
+
+	/* Oh well, just clear the busted inode. */
+	if (fix_problem(ctx, PR_1_CLEAR_EXTENT_INLINE_DATA_INODE, pctx)) {
+		e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
+		return -1;
+	}
+
+out:
+	if (dirty)
+		e2fsck_write_inode(ctx, ino, inode, "pass1");
+
+	return 0;
+}
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
@@ -1004,6 +1106,18 @@ void e2fsck_pass1(e2fsck_t ctx)
 				fix_problem(ctx, PR_1_ICOUNT_STORE, &pctx);
 				ctx->flags |= E2F_FLAG_ABORT;
 				goto endit;
+			}
+		}
+
+		/* Conflicting inlinedata/extents inode flags? */
+		if ((inode->i_flags & EXT4_INLINE_DATA_FL) &&
+		    (inode->i_flags & EXT4_EXTENTS_FL)) {
+			int res = fix_inline_data_extents_file(ctx, ino, inode,
+							       inode_size,
+							       &pctx);
+			if (res < 0) {
+				/* skip FINISH_INODE_LOOP */
+				continue;
 			}
 		}
 

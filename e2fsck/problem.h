@@ -615,6 +615,18 @@ struct problem_context {
 /* extents/inlinedata set on fifo/socket/device */
 #define PR_1_SPECIAL_EXTENTS_IDATA	0x010076
 
+/* idata/extent flag set and extent header found, clear idata flag */
+#define PR_1_CLEAR_INLINE_DATA_FOR_EXTENT	0x010077
+
+/* inlinedata/extent set and no extent header found, clear extent flag */
+#define PR_1_CLEAR_EXTENT_FOR_INLINE_DATA	0x010078
+
+/* inlinedata/extent set, clear both flags */
+#define PR_1_CLEAR_EXTENT_INLINE_DATA_FLAGS	0x010079
+
+/* inlinedata/extent set, clear inode */
+#define PR_1_CLEAR_EXTENT_INLINE_DATA_INODE	0x01007A
+
 /*
  * Pass 1b errors
  */

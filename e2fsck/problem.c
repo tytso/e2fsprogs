@@ -1056,6 +1056,26 @@ static struct e2fsck_problem problem_table[] = {
 	     "or inline-data flag set.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK | PR_PREEN_NO | PR_NO_OK },
 
+	/* Inode has extent header but inline data flag is set */
+	{ PR_1_CLEAR_INLINE_DATA_FOR_EXTENT,
+	  N_("@i %i has @x header but inline data flag is set.\n"),
+	  PROMPT_FIX, 0 },
+
+	/* Inode seems to have inline data but extent flag is set */
+	{ PR_1_CLEAR_EXTENT_FOR_INLINE_DATA,
+	  N_("@i %i seems to have inline data but @x flag is set.\n"),
+	  PROMPT_FIX, 0 },
+
+	/* Inode seems to have block map but inline data and extent flags set */
+	{ PR_1_CLEAR_EXTENT_INLINE_DATA_FLAGS,
+	  N_("@i %i seems to have @b map but inline data and @x flags set.\n"),
+	  PROMPT_FIX, 0 },
+
+	/* Inode has inline data and extent flags but i_block contains junk */
+	{ PR_1_CLEAR_EXTENT_INLINE_DATA_INODE,
+	  N_("@i %i has inline data and @x flags set but i_block contains junk.\n"),
+	  PROMPT_CLEAR_INODE, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
