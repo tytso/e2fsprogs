@@ -669,6 +669,30 @@ static void reserve_block_for_lnf_repair(e2fsck_t ctx)
 	ctx->lnf_repair_block = blk;
 }
 
+static errcode_t get_inline_data_ea_size(ext2_filsys fs, ext2_ino_t ino,
+					 size_t *sz)
+{
+	void *p;
+	struct ext2_xattr_handle *handle;
+	errcode_t retval;
+
+	retval = ext2fs_xattrs_open(fs, ino, &handle);
+	if (retval)
+		return retval;
+
+	retval = ext2fs_xattrs_read(handle);
+	if (retval)
+		goto err;
+
+	retval = ext2fs_xattr_get(handle, "system.data", &p, sz);
+	if (retval)
+		goto err;
+	ext2fs_free_mem(&p);
+err:
+	(void) ext2fs_xattrs_close(&handle);
+	return retval;
+}
+
 static void finish_processing_inode(e2fsck_t ctx, ext2_ino_t ino,
 				    struct problem_context *pctx,
 				    int failed_csum)
@@ -956,6 +980,62 @@ void e2fsck_pass1(e2fsck_t ctx)
 				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
 				/* skip FINISH_INODE_LOOP */
 				continue;
+			}
+		}
+
+		/* Test for inline data flag but no attr */
+		if ((inode->i_flags & EXT4_INLINE_DATA_FL) && inlinedata_fs &&
+		    EXT2_I_SIZE(inode) > EXT4_MIN_INLINE_DATA_SIZE &&
+		    (ino >= EXT2_FIRST_INODE(fs->super))) {
+			size_t size = 0;
+			errcode_t err;
+			int flags;
+
+			flags = fs->flags;
+			if (failed_csum)
+				fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+			err = get_inline_data_ea_size(fs, ino, &size);
+			fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+				    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
+
+			switch (err) {
+			case 0:
+				/* Everything is awesome... */
+				break;
+			case EXT2_ET_BAD_EA_BLOCK_NUM:
+			case EXT2_ET_BAD_EA_HASH:
+			case EXT2_ET_BAD_EA_HEADER:
+			case EXT2_ET_EA_BAD_NAME_LEN:
+			case EXT2_ET_EA_BAD_VALUE_SIZE:
+			case EXT2_ET_EA_KEY_NOT_FOUND:
+			case EXT2_ET_EA_NO_SPACE:
+			case EXT2_ET_MISSING_EA_FEATURE:
+			case EXT2_ET_INLINE_DATA_CANT_ITERATE:
+			case EXT2_ET_INLINE_DATA_NO_BLOCK:
+			case EXT2_ET_INLINE_DATA_NO_SPACE:
+			case EXT2_ET_NO_INLINE_DATA:
+			case EXT2_ET_EXT_ATTR_CSUM_INVALID:
+			case EXT2_ET_EA_BAD_VALUE_OFFSET:
+				/* broken EA or no system.data EA; truncate */
+				if (fix_problem(ctx, PR_1_INLINE_DATA_NO_ATTR,
+						&pctx)) {
+					err = ext2fs_inode_size_set(fs, inode,
+							sizeof(inode->i_block));
+					if (err) {
+						pctx.errcode = err;
+						ctx->flags |= E2F_FLAG_ABORT;
+						goto endit;
+					}
+					e2fsck_write_inode(ctx, ino, inode,
+							   "pass1");
+					failed_csum = 0;
+				}
+				break;
+			default:
+				/* Some other kind of non-xattr error? */
+				pctx.errcode = err;
+				ctx->flags |= E2F_FLAG_ABORT;
+				goto endit;
 			}
 		}
 

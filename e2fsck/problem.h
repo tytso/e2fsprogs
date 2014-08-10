@@ -609,6 +609,9 @@ struct problem_context {
 /* Inode logical block is misaligned */
 #define PR_1_MISALIGNED_CLUSTER		0x010074
 
+/* Inode has INLINE_DATA_FL flag but extended attribute not found */
+#define PR_1_INLINE_DATA_NO_ATTR	0x010075
+
 /*
  * Pass 1b errors
  */

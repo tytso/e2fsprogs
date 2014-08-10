@@ -1045,6 +1045,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i logical @b %b (physical @b %c) violates cluster allocation rules.\nWill fix in pass 1B.\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Inode has INLINE_DATA_FL flag but extended attribute not found */
+	{ PR_1_INLINE_DATA_NO_ATTR,
+	  N_("@i %i has INLINE_DATA_FL flag but @a not found.  "),
+	  PROMPT_TRUNCATE, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
