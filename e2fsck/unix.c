@@ -1184,7 +1184,7 @@ int main (int argc, char *argv[])
 	e2fsck_t	ctx;
 	blk64_t		orig_superblock;
 	struct problem_context pctx;
-	int flags, run_result;
+	int flags, run_result, was_changed;
 	int journal_size;
 	int sysval, sys_page_size = 4096;
 	int old_bitmaps;
@@ -1703,22 +1703,45 @@ no_journal:
 		ext2fs_close_free(&fs);
 		goto restart;
 	}
-	if (run_result & E2F_FLAG_CANCEL) {
-		log_out(ctx, _("%s: e2fsck canceled.\n"), ctx->device_name ?
-			ctx->device_name : ctx->filesystem_name);
-		exit_value |= FSCK_CANCELED;
-	}
 	if (run_result & E2F_FLAG_ABORT)
 		fatal_error(ctx, _("aborted"));
-	if (check_backup_super_block(ctx)) {
-		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-		ext2fs_mark_super_dirty(fs);
-	}
 
 #ifdef MTRACE
 	mtrace_print("Cleanup");
 #endif
-	if (ext2fs_test_changed(fs)) {
+	was_changed = ext2fs_test_changed(fs);
+	if (run_result & E2F_FLAG_CANCEL) {
+		log_out(ctx, _("%s: e2fsck canceled.\n"), ctx->device_name ?
+			ctx->device_name : ctx->filesystem_name);
+		exit_value |= FSCK_CANCELED;
+	} else if (!(ctx->options & E2F_OPT_READONLY)) {
+		if (ext2fs_test_valid(fs)) {
+			if (!(sb->s_state & EXT2_VALID_FS))
+				exit_value |= FSCK_NONDESTRUCT;
+			sb->s_state = EXT2_VALID_FS;
+			if (check_backup_super_block(ctx))
+				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+		} else
+			sb->s_state &= ~EXT2_VALID_FS;
+		if (!(ctx->flags & E2F_FLAG_TIME_INSANE))
+			sb->s_lastcheck = ctx->now;
+		sb->s_mnt_count = 0;
+		memset(((char *) sb) + EXT4_S_ERR_START, 0, EXT4_S_ERR_LEN);
+		pctx.errcode = ext2fs_set_gdt_csum(ctx->fs);
+		if (pctx.errcode)
+			fix_problem(ctx, PR_6_SET_BG_CHECKSUM, &pctx);
+		ext2fs_mark_super_dirty(fs);
+	}
+
+	e2fsck_write_bitmaps(ctx);
+	pctx.errcode = ext2fs_flush(ctx->fs);
+	if (pctx.errcode)
+		fix_problem(ctx, PR_6_FLUSH_FILESYSTEM, &pctx);
+	pctx.errcode = io_channel_flush(ctx->fs->io);
+	if (pctx.errcode)
+		fix_problem(ctx, PR_6_IO_FLUSH, &pctx);
+
+	if (was_changed) {
 		exit_value |= FSCK_NONDESTRUCT;
 		if (!(ctx->options & E2F_OPT_PREEN))
 			log_out(ctx, _("\n%s: ***** FILE SYSTEM WAS "
@@ -1749,37 +1772,9 @@ no_journal:
 		    (sb->s_state & EXT2_VALID_FS) &&
 		    !(sb->s_state & EXT2_ERROR_FS))
 			exit_value = 0;
-	} else {
+	} else
 		show_stats(ctx);
-		if (!(ctx->options & E2F_OPT_READONLY)) {
-			if (ext2fs_test_valid(fs)) {
-				if (!(sb->s_state & EXT2_VALID_FS))
-					exit_value |= FSCK_NONDESTRUCT;
-				sb->s_state = EXT2_VALID_FS;
-			} else
-				sb->s_state &= ~EXT2_VALID_FS;
-			sb->s_mnt_count = 0;
-			if (!(ctx->flags & E2F_FLAG_TIME_INSANE))
-				sb->s_lastcheck = ctx->now;
-			memset(((char *) sb) + EXT4_S_ERR_START, 0,
-			       EXT4_S_ERR_LEN);
-			ext2fs_mark_super_dirty(fs);
-		}
-	}
 
-	if ((run_result & E2F_FLAG_CANCEL) == 0 &&
-	    ext2fs_has_group_desc_csum(ctx->fs) &&
-	    !(ctx->options & E2F_OPT_READONLY)) {
-		retval = ext2fs_set_gdt_csum(ctx->fs);
-		if (retval) {
-			com_err(ctx->program_name, retval, "%s",
-				_("while setting block group checksum info"));
-			fatal_error(ctx, 0);
-		}
-	}
-
-	e2fsck_write_bitmaps(ctx);
-	io_channel_flush(ctx->fs->io);
 	print_resource_track(ctx, NULL, &ctx->global_rtrack, ctx->fs->io);
 
 	ext2fs_close_free(&ctx->fs);

@@ -488,6 +488,13 @@ retry:
 		fs->super->s_reserved_gdt_blocks = new;
 	}
 
+	if ((fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
+	    (fs->super->s_first_meta_bg > fs->desc_blocks)) {
+		fs->super->s_feature_incompat &=
+			~EXT2_FEATURE_INCOMPAT_META_BG;
+		fs->super->s_first_meta_bg = 0;
+	}
+
 	/*
 	 * Update the location of the backup superblocks if the
 	 * sparse_super2 feature is enabled.
@@ -993,13 +1000,15 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		ext2fs_mark_block_bitmap2(rfs->reserve_blocks, blk);
 	}
 
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) {
+	if (old_fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_blocks = old_fs->super->s_first_meta_bg;
+	else
+		old_blocks = old_fs->desc_blocks +
+			old_fs->super->s_reserved_gdt_blocks;
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		new_blocks = fs->super->s_first_meta_bg;
-	} else {
-		old_blocks = old_fs->desc_blocks + old_fs->super->s_reserved_gdt_blocks;
+	else
 		new_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
-	}
 
 	retval = reserve_sparse_super2_last_group(rfs, meta_bmap);
 	if (retval)

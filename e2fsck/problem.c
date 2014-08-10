@@ -454,6 +454,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@S 64bit filesystems needs extents to access the whole disk.  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
 
+	/* The first_meta_bg is too big */
+	{ PR_0_FIRST_META_BG_TOO_BIG,
+	  N_("First_meta_bg is too big.  (%N, max value %g).  "),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
@@ -1885,6 +1890,21 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_6_UPDATE_QUOTAS,
 	  N_("Update quota info for quota type %N"),
 	  PROMPT_NULL, PR_PREEN_OK },
+
+	/* Error setting block group checksum info */
+	{ PR_6_SET_BG_CHECKSUM,
+	  N_("Error setting @b @g checksum info: %m\n"),
+	  PROMPT_NULL, PR_FATAL },
+
+	/* Error writing file system info */
+	{ PR_6_FLUSH_FILESYSTEM,
+	  N_("Error writing file system info: %m\n"),
+	  PROMPT_NULL, PR_FATAL },
+
+	/* Error flushing writes to storage device */
+	{ PR_6_IO_FLUSH,
+	  N_("Error flushing writes to strage device: %m\n"),
+	  PROMPT_NULL, PR_FATAL },
 
 	{ 0 }
 };

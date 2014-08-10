@@ -249,9 +249,6 @@ struct problem_context {
 /* Checking group descriptor failed */
 #define PR_0_CHECK_DESC_FAILED			0x000045
 
-/* 64bit is set but extents are not set. */
-#define PR_0_64BIT_WITHOUT_EXTENTS		0x000048
-
 /*
  * metadata_csum supersedes uninit_bg; both feature bits cannot be set
  * simultaneously.
@@ -261,6 +258,11 @@ struct problem_context {
 /* Superblock has invalid MMP checksum. */
 #define PR_0_MMP_CSUM_INVALID			0x000047
 
+/* 64bit is set but extents are not set. */
+#define PR_0_64BIT_WITHOUT_EXTENTS		0x000048
+
+/* The first_meta_bg is too big */
+#define PR_0_FIRST_META_BG_TOO_BIG		0x000049
 
 /*
  * Pass 1 errors
@@ -1134,6 +1136,15 @@ struct problem_context {
 
 /* Update quota information if it is inconsistent */
 #define PR_6_UPDATE_QUOTAS		0x060002
+
+/* Error setting block group checksum info */
+#define PR_6_SET_BG_CHECKSUM		0x060003
+
+/* Error writing file system info */
+#define PR_6_FLUSH_FILESYSTEM		0x060004
+
+/* Error flushing writes to storage device */
+#define PR_6_IO_FLUSH			0x060005
 
 /*
  * Function declarations
