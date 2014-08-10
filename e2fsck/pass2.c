@@ -979,11 +979,17 @@ skip_checksum:
 
 		problem = 0;
 		if (!inline_data_size || dot_state > 1) {
+			size_t max_block_size = fs->blocksize - de_csum_size;
+
+			if (inline_data_size)
+				max_block_size = inline_data_size;
 			dirent = (struct ext2_dir_entry *) (buf + offset);
 			(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 			cd->pctx.dirent = dirent;
 			cd->pctx.num = offset;
 			if (((offset + rec_len) > fs->blocksize) ||
+			    (inline_data_size > 0 &&
+			     (offset + rec_len) > inline_data_size) ||
 			    (rec_len < 12) ||
 			    ((rec_len % 4) != 0) ||
 			    ((ext2fs_dirent_name_len(dirent) + 8) > rec_len)) {
@@ -991,8 +997,7 @@ skip_checksum:
 						&cd->pctx)) {
 					salvage_directory(fs, dirent, prev,
 							  &offset,
-							  fs->blocksize -
-							  de_csum_size);
+							  max_block_size);
 					dir_modified++;
 					continue;
 				} else
