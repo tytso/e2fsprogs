@@ -906,6 +906,12 @@ struct problem_context {
 /* dir leaf node passes checks, but fails checksum */
 #define PR_2_LEAF_NODE_ONLY_CSUM_INVALID	0x02004D
 
+/* bad inline directory size */
+#define PR_2_BAD_INLINE_DIR_SIZE	0x02004E
+
+/* fixing inline dir size failed */
+#define PR_2_FIX_INLINE_DIR_FAILED	0x02004F
+
 /*
  * Pass 3 errors
  */

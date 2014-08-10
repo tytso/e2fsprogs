@@ -1523,6 +1523,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@d @i %i, %B, offset %N: @d passes checks but fails checksum.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* inline directory inode size must be a multiple of 4 */
+	{ PR_2_BAD_INLINE_DIR_SIZE,
+	  N_("Inline @d @i %i size (%N) must be a multiple of 4.\n"),
+	  PROMPT_FIX, 0 },
+
+	/* fixing size of inline directory inode failed */
+	{ PR_2_FIX_INLINE_DIR_FAILED,
+	  N_("Fixing size of inline @d @i %i failed.\n"),
+	  PROMPT_TRUNCATE, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */
