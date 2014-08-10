@@ -1050,6 +1050,12 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has INLINE_DATA_FL flag but @a not found.  "),
 	  PROMPT_TRUNCATE, 0 },
 
+	/* Extents/inlinedata flag set on a device or socket inode */
+	{ PR_1_SPECIAL_EXTENTS_IDATA,
+	  N_("Special (@v/socket/fifo) file (@i %i) has extents\n"
+	     "or inline-data flag set.  "),
+	  PROMPT_CLEAR, PR_PREEN_OK | PR_PREEN_NO | PR_NO_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

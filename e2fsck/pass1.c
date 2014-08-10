@@ -272,6 +272,24 @@ exit_inline:
 }
 
 /*
+ * If the extents or inlinedata flags are set on the inode, offer to clear 'em.
+ */
+#define BAD_SPECIAL_FLAGS (EXT4_EXTENTS_FL | EXT4_INLINE_DATA_FL)
+static void check_extents_inlinedata(e2fsck_t ctx,
+				     struct problem_context *pctx)
+{
+	if (!(pctx->inode->i_flags & BAD_SPECIAL_FLAGS))
+		return;
+
+	if (!fix_problem(ctx, PR_1_SPECIAL_EXTENTS_IDATA, pctx))
+		return;
+
+	pctx->inode->i_flags &= ~BAD_SPECIAL_FLAGS;
+	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
+}
+#undef BAD_SPECIAL_FLAGS
+
+/*
  * If the immutable (or append-only) flag is set on the inode, offer
  * to clear it.
  */
@@ -1420,11 +1438,13 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ctx->fs_regular_count++;
 		} else if (LINUX_S_ISCHR (inode->i_mode) &&
 			   e2fsck_pass1_check_device_inode(fs, inode)) {
+			check_extents_inlinedata(ctx, &pctx);
 			check_immutable(ctx, &pctx);
 			check_size(ctx, &pctx);
 			ctx->fs_chardev_count++;
 		} else if (LINUX_S_ISBLK (inode->i_mode) &&
 			   e2fsck_pass1_check_device_inode(fs, inode)) {
+			check_extents_inlinedata(ctx, &pctx);
 			check_immutable(ctx, &pctx);
 			check_size(ctx, &pctx);
 			ctx->fs_blockdev_count++;
@@ -1445,11 +1465,13 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 		else if (LINUX_S_ISFIFO (inode->i_mode) &&
 			 e2fsck_pass1_check_device_inode(fs, inode)) {
+			check_extents_inlinedata(ctx, &pctx);
 			check_immutable(ctx, &pctx);
 			check_size(ctx, &pctx);
 			ctx->fs_fifo_count++;
 		} else if ((LINUX_S_ISSOCK (inode->i_mode)) &&
 			   e2fsck_pass1_check_device_inode(fs, inode)) {
+			check_extents_inlinedata(ctx, &pctx);
 			check_immutable(ctx, &pctx);
 			check_size(ctx, &pctx);
 			ctx->fs_sockets_count++;

@@ -612,6 +612,9 @@ struct problem_context {
 /* Inode has INLINE_DATA_FL flag but extended attribute not found */
 #define PR_1_INLINE_DATA_NO_ATTR	0x010075
 
+/* extents/inlinedata set on fifo/socket/device */
+#define PR_1_SPECIAL_EXTENTS_IDATA	0x010076
+
 /*
  * Pass 1b errors
  */
