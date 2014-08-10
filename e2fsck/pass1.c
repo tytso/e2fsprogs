@@ -183,6 +183,8 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		return 0;
 
 	if (inode->i_flags & EXT4_EXTENTS_FL) {
+		if (inode->i_flags & EXT4_INLINE_DATA_FL)
+			return 0;
 		if (inode->i_size > fs->blocksize)
 			return 0;
 		if (ext2fs_extent_open2(fs, ino, inode, &handle))
@@ -217,6 +219,8 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 
 	blocks = ext2fs_inode_data_blocks2(fs, inode);
 	if (blocks) {
+		if (inode->i_flags & EXT4_INLINE_DATA_FL)
+			return 0;
 		if ((inode->i_size >= fs->blocksize) ||
 		    (blocks != fs->blocksize >> 9) ||
 		    (inode->i_block[0] < fs->super->s_first_data_block) ||
@@ -233,6 +237,27 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		len = strnlen(buf, fs->blocksize);
 		if (len == fs->blocksize)
 			return 0;
+	} else if (inode->i_flags & EXT4_INLINE_DATA_FL) {
+		char *inline_buf = NULL;
+		size_t inline_sz = 0;
+
+		if (ext2fs_inline_data_size(fs, ino, &inline_sz))
+			return 0;
+		if (inode->i_size != inline_sz)
+			return 0;
+		if (ext2fs_get_mem(inline_sz + 1, &inline_buf))
+			return 0;
+		i = 0;
+		if (ext2fs_inline_data_get(fs, ino, inode, inline_buf, NULL))
+			goto exit_inline;
+		inline_buf[inline_sz] = 0;
+		len = strnlen(inline_buf, inline_sz);
+		if (len != inline_sz)
+			goto exit_inline;
+		i = 1;
+exit_inline:
+		ext2fs_free_mem(&inline_buf);
+		return i;
 	} else {
 		if (inode->i_size >= sizeof(inode->i_block))
 			return 0;
