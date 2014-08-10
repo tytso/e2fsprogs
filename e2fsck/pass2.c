@@ -1330,8 +1330,19 @@ skip_checksum:
 		if (!inline_data_size || dot_state > 1) {
 			offset += rec_len;
 		} else {
-			if (dot_state == 1)
+			if (dot_state == 1) {
 				offset = 4;
+				/*
+				 * If we get here, we're checking an inline
+				 * directory and we've just checked a (fake)
+				 * dotdot entry that we created on the stack.
+				 * Therefore set 'prev' to NULL so that if we
+				 * call salvage_directory on the next entry,
+				 * it won't try to absorb the next entry into
+				 * the on-stack dotdot entry.
+				 */
+				prev = NULL;
+			}
 		}
 		dot_state++;
 	} while (is_last_entry(fs, inline_data_size, offset, de_csum_size));
