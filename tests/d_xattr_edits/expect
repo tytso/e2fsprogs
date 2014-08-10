@@ -19,7 +19,6 @@ Exit status is 0
 ea_rm / user.moo
 Exit status is 0
 ea_rm / nosuchea
-ea_rm: Extended attribute key not found while removing extended attribute
 Exit status is 0
 ea_list /
 Extended attributes:

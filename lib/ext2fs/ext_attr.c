@@ -1020,7 +1020,8 @@ errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
 		}
 	}
 
-	return EXT2_ET_EA_KEY_NOT_FOUND;
+	/* no key found, success! */
+	return 0;
 }
 
 errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,

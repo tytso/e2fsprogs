@@ -70,7 +70,11 @@ static errcode_t ext2fs_inline_data_ea_get(struct ext2_inline_data *data)
 
 	retval = ext2fs_xattr_get(handle, "system.data",
 				  (void **)&data->ea_data, &data->ea_size);
-	if (retval)
+	if (retval == EXT2_ET_EA_KEY_NOT_FOUND) {
+		data->ea_size = 0;
+		data->ea_data = NULL;
+		retval = 0;
+	} else if (retval)
 		goto err;
 
 err:
@@ -557,6 +561,9 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	if (size <= EXT4_MIN_INLINE_DATA_SIZE) {
+		retval = ext2fs_inline_data_ea_remove(fs, ino);
+		if (retval)
+			return retval;
 		memcpy((void *)inode->i_block, buf, size);
 		return ext2fs_write_inode(fs, ino, inode);
 	}
