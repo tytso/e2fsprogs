@@ -2620,7 +2620,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pb.num_blocks++;
 	}
 
-	if (ext2fs_inode_has_valid_blocks2(fs, inode)) {
+	if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL))
+		check_blocks_inline_data(ctx, pctx, &pb);
+	else if (ext2fs_inode_has_valid_blocks2(fs, inode)) {
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
 		else {
@@ -2656,10 +2658,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
 				    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 		}
-	} else {
-		/* check inline data */
-		if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL))
-			check_blocks_inline_data(ctx, pctx, &pb);
 	}
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	end_problem_latch(ctx, PR_LATCH_TOOBIG);
