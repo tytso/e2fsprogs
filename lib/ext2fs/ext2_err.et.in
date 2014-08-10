@@ -518,4 +518,7 @@ ec	EXT2_ET_MAGIC_EA_HANDLE,
 ec	EXT2_ET_INODE_IS_GARBAGE,
 	"Inode seems to contain garbage"
 
+ec	EXT2_ET_EA_BAD_VALUE_OFFSET,
+	"Extended attribute has an invalid value offset"
+
 	end

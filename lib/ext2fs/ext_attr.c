@@ -624,6 +624,8 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	void *ptr;
 	unsigned int remain, prefix_len;
 	errcode_t err;
+	unsigned int values_size = storage_size +
+			((char *)entries - (char *)value_start);
 
 	x = handle->attrs;
 	while (x->name)
@@ -647,6 +649,9 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 		/* check value size */
 		if (entry->e_value_size > remain)
 			return EXT2_ET_EA_BAD_VALUE_SIZE;
+
+		if (entry->e_value_offs + entry->e_value_size > values_size)
+			return EXT2_ET_EA_BAD_VALUE_OFFSET;
 
 		/* e_value_block must be 0 in inode's ea */
 		if (entry->e_value_block != 0)
