@@ -196,7 +196,9 @@ void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, int has_header)
 		to_entry   = (struct ext2_ext_attr_entry *)to_header;
 	}
 
-	while ((char *)from_entry < from_end && *(__u32 *)from_entry) {
+	while ((char *)from_entry < from_end &&
+	       (char *)EXT2_EXT_ATTR_NEXT(from_entry) <= from_end &&
+	       *(__u32 *)from_entry) {
 		ext2fs_swap_ext_attr_entry(to_entry, from_entry);
 		from_entry = EXT2_EXT_ATTR_NEXT(from_entry);
 		to_entry   = EXT2_EXT_ATTR_NEXT(to_entry);

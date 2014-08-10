@@ -633,7 +633,8 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 
 	entry = entries;
 	remain = storage_size;
-	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+	while (remain >= sizeof(struct ext2_ext_attr_entry) &&
+	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		__u32 hash;
 
 		/* header eats this space */

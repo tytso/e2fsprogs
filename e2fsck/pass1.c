@@ -302,7 +302,8 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	/* take finish entry 0UL into account */
 	remain = storage_size - sizeof(__u32);
 
-	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+	while (remain >= sizeof(struct ext2_ext_attr_entry) &&
+	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		__u32 hash;
 
 		/* header eats this space */
