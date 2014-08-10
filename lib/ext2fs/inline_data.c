@@ -574,7 +574,8 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 	else
 		free_inode_size = 0;
 
-	if (size > existing_size + free_ea_size + free_inode_size)
+	if (size != existing_size &&
+	    size > existing_size + free_ea_size + free_inode_size)
 		return EXT2_ET_INLINE_DATA_NO_SPACE;
 
 	memcpy((void *)inode->i_block, buf, EXT4_MIN_INLINE_DATA_SIZE);
