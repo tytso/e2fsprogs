@@ -1734,9 +1734,11 @@ no_journal:
 	}
 
 	e2fsck_write_bitmaps(ctx);
-	pctx.errcode = ext2fs_flush(ctx->fs);
-	if (pctx.errcode)
-		fix_problem(ctx, PR_6_FLUSH_FILESYSTEM, &pctx);
+	if (fs->flags & EXT2_FLAG_DIRTY) {
+		pctx.errcode = ext2fs_flush(ctx->fs);
+		if (pctx.errcode)
+			fix_problem(ctx, PR_6_FLUSH_FILESYSTEM, &pctx);
+	}
 	pctx.errcode = io_channel_flush(ctx->fs->io);
 	if (pctx.errcode)
 		fix_problem(ctx, PR_6_IO_FLUSH, &pctx);

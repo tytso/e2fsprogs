@@ -329,16 +329,17 @@ static int filefrag_fibmap(int fd, int blk_shift, int *num_extents,
 			print_extent_info(&fm_ext, *num_extents - 1,
 					  (last_block + 1) * st->st_blksize,
 					  blk_shift, st);
-			fm_ext.fe_logical = logical;
-			fm_ext.fe_physical = block * st->st_blksize;
 			fm_ext.fe_length = 0;
 			(*num_extents)++;
 		} else if (last_block && (block != last_block + 1)) {
 			if (verbose)
 				printf("Discontinuity: Block %ld is at %lu (was "
 				       "%lu)\n", i, block, last_block + 1);
+			fm_ext.fe_length = 0;
 			(*num_extents)++;
 		}
+		fm_ext.fe_logical = logical;
+		fm_ext.fe_physical = block * st->st_blksize;
 		fm_ext.fe_length += st->st_blksize;
 		last_block = block;
 	}
