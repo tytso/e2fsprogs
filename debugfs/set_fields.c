@@ -321,8 +321,11 @@ static struct field_set_info *find_field(struct field_set_info *fields,
 	 */
 	if (idx) {
 		array_idx = strtol(idx, &tmp, 0);
-		if (*tmp)
+		if (*tmp) {
+			*(--idx) = '[';
+			*delim = ']';
 			idx = 0;
+		}
 	}
 
 	/*
