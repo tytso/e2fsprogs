@@ -498,11 +498,6 @@ static void internal_dump_inode_extra(FILE *out,
 				      ext2_ino_t inode_num EXT2FS_ATTR((unused)),
 				      struct ext2_inode_large *inode)
 {
-	struct ext2_ext_attr_entry *entry;
-	__u32 *magic;
-	char *start, *end;
-	unsigned int storage_size;
-
 	fprintf(out, "Size of extra inode fields: %u\n", inode->i_extra_isize);
 	if (inode->i_extra_isize > EXT2_INODE_SIZE(current_fs->super) -
 			EXT2_GOOD_OLD_INODE_SIZE) {
@@ -1595,9 +1590,9 @@ void do_write(int argc, char *argv[])
 
 void do_mknod(int argc, char *argv[])
 {
-	unsigned long	mode, major, minor;
+	unsigned long	major, minor;
 	errcode_t 	retval;
-	int		filetype, nr;
+	int		nr;
 	struct stat	st;
 
 	if (check_fs_open(argv[0]))
@@ -1608,7 +1603,7 @@ void do_mknod(int argc, char *argv[])
 		return;
 	}
 
-	mode = minor = major = 0;
+	minor = major = 0;
 	switch (argv[2][0]) {
 		case 'p':
 			st.st_mode = S_IFIFO;

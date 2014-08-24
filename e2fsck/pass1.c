@@ -2383,7 +2383,6 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		if (try_repairs && problem) {
 report_problem:
 			if (fix_problem(ctx, problem, pctx)) {
-fix_problem_now:
 				if (ctx->invalid_bitmaps) {
 					/*
 					 * If fsck knows the bitmaps are bad,

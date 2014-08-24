@@ -746,7 +746,6 @@ static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
 	struct ext2_dir_entry *d;
 	void *top;
 	struct ext2_dir_entry_tail *t;
-	unsigned int rec_len;
 
 	d = dirbuf;
 	top = EXT2_DIRENT_TAIL(dirbuf, fs->blocksize);

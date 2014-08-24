@@ -288,8 +288,6 @@ errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 	char			*cp;
 	ext2_ino_t		parent_ino;
 	errcode_t		retval;
-	struct ext2_inode	inode;
-	struct stat		st;
 
 	cp = strrchr(name, '/');
 	if (cp) {
@@ -324,9 +322,8 @@ errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 			    struct stat *st, ext2_ino_t root)
 {
 	char			*cp;
-	ext2_ino_t		parent_ino, ino;
+	ext2_ino_t		parent_ino;
 	errcode_t		retval;
-	struct ext2_inode	inode;
 
 
 	cp = strrchr(name, '/');

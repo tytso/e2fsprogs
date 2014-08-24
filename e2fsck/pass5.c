@@ -327,11 +327,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	problem_t	problem, save_problem;
 	int		fixit, had_problem;
 	errcode_t	retval;
-	int	old_desc_blocks = 0;
-	int	count = 0;
-	int	cmp_block = 0;
 	int	redo_flag = 0;
-	blk64_t	super_blk, old_desc_blk, new_desc_blk;
 	char *actual_buf, *bitmap_buf;
 
 	actual_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize,

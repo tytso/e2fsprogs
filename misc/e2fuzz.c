@@ -52,7 +52,8 @@ int getseed(void)
 		perror("open");
 		exit(0);
 	}
-	read(fd, &r, sizeof(r));
+	if (read(fd, &r, sizeof(r)) != sizeof(r))
+		printf("Unable to read random seed!\n");
 	close(fd);
 	return r;
 }

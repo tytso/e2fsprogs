@@ -302,8 +302,7 @@ errcode_t ext2fs_free_ext_attr(ext2_filsys fs, ext2_ino_t ino,
 {
 	struct ext2_ext_attr_header *header;
 	void *block_buf = NULL;
-	dgrp_t grp;
-	blk64_t blk, goal;
+	blk64_t blk;
 	errcode_t err;
 	struct ext2_inode_large i;
 
@@ -621,7 +620,6 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	struct ext2_xattr *x;
 	struct ext2_ext_attr_entry *entry;
 	const char *prefix;
-	void *ptr;
 	unsigned int remain, prefix_len;
 	errcode_t err;
 	unsigned int values_size = storage_size +
@@ -719,7 +717,6 @@ static void xattrs_free_keys(struct ext2_xattr_handle *h)
 
 errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 {
-	struct ext2_xattr *attrs = NULL, *x;
 	struct ext2_inode_large *inode;
 	struct ext2_ext_attr_header *header;
 	__u32 ea_inode_magic;
@@ -822,7 +819,6 @@ errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
 				void *data)
 {
 	struct ext2_xattr *x;
-	errcode_t err;
 	int ret;
 
 	EXT2_CHECK_MAGIC(h, EXT2_ET_MAGIC_EA_HANDLE);
@@ -869,11 +865,10 @@ errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
 errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 				      size_t *size)
 {
-	struct ext2_ext_attr_header *header;
 	struct ext2_ext_attr_entry *entry;
 	struct ext2_inode_large *inode;
 	__u32 ea_inode_magic;
-	unsigned int storage_size, freesize, minoff;
+	unsigned int minoff;
 	void *start;
 	int i;
 	errcode_t err;
@@ -903,9 +898,6 @@ errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 	       inode->i_extra_isize, sizeof(__u32));
 	if (ea_inode_magic == EXT2_EXT_ATTR_MAGIC) {
 		/* has xattrs.  calculate the size */
-		storage_size = EXT2_INODE_SIZE(fs->super) -
-			EXT2_GOOD_OLD_INODE_SIZE - inode->i_extra_isize -
-			sizeof(__u32);
 		start= ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 			inode->i_extra_isize + sizeof(__u32);
 		entry = start;
@@ -1003,7 +995,6 @@ errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
 			      const char *key)
 {
 	struct ext2_xattr *x;
-	errcode_t err;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
 	for (x = handle->attrs; x < handle->attrs + handle->length; x++) {

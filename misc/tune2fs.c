@@ -186,7 +186,6 @@ static __u32 clear_ok_features[3] = {
 static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 {
 	int retval;
-	int start;
 	journal_superblock_t *jsb;
 
 	if (!(jfs->super->s_feature_incompat &
@@ -805,7 +804,7 @@ static void enable_uninit_bg(ext2_filsys fs)
 static errcode_t zero_empty_inodes(ext2_filsys fs)
 {
 	int length = EXT2_INODE_SIZE(fs->super);
-	struct ext2_inode *inode;
+	struct ext2_inode *inode = NULL;
 	ext2_inode_scan	scan;
 	errcode_t	retval;
 	ext2_ino_t	ino;
@@ -845,7 +844,6 @@ static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 	dgrp_t i;
 	errcode_t retval;
 	blk64_t b, c, d;
-	int has_super;
 
 	/* Load bitmaps to ensure that the uninit ones get written out */
 	fs->super->s_feature_ro_compat |= csum_feature_flag;

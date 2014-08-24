@@ -102,9 +102,7 @@ errcode_t ext2fs_new_dir_inline_data(ext2_filsys fs, ext2_ino_t dir_ino,
 {
 	struct ext2_dir_entry 	*dir = NULL;
 	errcode_t		retval;
-	char			*buf;
 	int			rec_len;
-	int			filetype = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 

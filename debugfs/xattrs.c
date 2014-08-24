@@ -288,9 +288,6 @@ void do_rm_xattr(int argc, char **argv)
 		goto out;
 
 	for (i = 2; i < argc; i++) {
-		size_t buflen;
-		char *buf;
-
 		err = ext2fs_xattr_remove(h, argv[i]);
 		if (err)
 			goto out;
