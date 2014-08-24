@@ -32,15 +32,15 @@ static int metadata_only = 1;
 static unsigned long long user_corrupt_bytes = 0;
 static double user_corrupt_pct = 0.0;
 
-#ifndef HAVE_PWRITE
-ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset)
+#if !defined HAVE_PWRITE64 && !defined HAVE_PWRITE
+static ssize_t my_pwrite(int fd, const void *buf, size_t count, off_t offset)
 {
 	if (lseek(fd, offset, SEEK_SET) < 0)
 		return 0;
 
 	return write(fd, buf, count);
 }
-#endif /* HAVE_PWRITE */
+#endif /* !defined HAVE_PWRITE64 && !defined HAVE_PWRITE */
 
 int getseed(void)
 {
@@ -277,10 +277,22 @@ int process_fs(const char *fsname)
 			       off % fs->blocksize, off / fs->blocksize, c);
 		if (dryrun)
 			continue;
+#ifdef HAVE_PWRITE64
+		if (pwrite64(fd, &c, sizeof(c), off) != sizeof(c)) {
+			perror(fsname);
+			goto fail3;
+		}
+#elif HAVE_PWRITE
 		if (pwrite(fd, &c, sizeof(c), off) != sizeof(c)) {
 			perror(fsname);
 			goto fail3;
 		}
+#else
+		if (my_pwrite(fd, &c, sizeof(c), off) != sizeof(c)) {
+			perror(fsname);
+			goto fail3;
+		}
+#endif
 	}
 	close(fd);
 
