@@ -35,7 +35,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	struct ext2_inode	inode;
 	ext2_ino_t		scratch_ino;
 	blk64_t			blk;
-	int			fastlink;
+	int			fastlink, inlinelink;
 	unsigned int		target_len;
 	char			*block_buf = 0;
 
@@ -77,15 +77,36 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	memset(&inode, 0, sizeof(struct ext2_inode));
 	inode.i_mode = LINUX_S_IFLNK | 0777;
 	inode.i_uid = inode.i_gid = 0;
-	ext2fs_iblk_set(fs, &inode, fastlink ? 0 : 1);
 	inode.i_links_count = 1;
 	ext2fs_inode_size_set(fs, &inode, target_len);
 	/* The time fields are set by ext2fs_write_new_inode() */
 
+	inlinelink = !fastlink &&
+		     (fs->super->s_feature_incompat &
+					EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
+		     (target_len < fs->blocksize);
 	if (fastlink) {
 		/* Fast symlinks, target stored in inode */
 		strcpy((char *)&inode.i_block, target);
+	} else if (inlinelink) {
+		/* Try inserting an inline data symlink */
+		inode.i_flags |= EXT4_INLINE_DATA_FL;
+		retval = ext2fs_write_new_inode(fs, ino, &inode);
+		if (retval)
+			goto cleanup;
+		retval = ext2fs_inline_data_set(fs, ino, &inode, target,
+						target_len);
+		if (retval) {
+			inode.i_flags &= ~EXT4_INLINE_DATA_FL;
+			inlinelink = 0;
+			goto need_block;
+		}
+		retval = ext2fs_read_inode(fs, ino, &inode);
+		if (retval)
+			goto cleanup;
 	} else {
+need_block:
+		ext2fs_iblk_set(fs, &inode, 1);
 		/* Slow symlinks, target stored in the first block */
 		memset(block_buf, 0, fs->blocksize);
 		strcpy(block_buf, target);
@@ -104,11 +125,14 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	 * number is assigned by write_new_inode, which means that the
 	 * operations using ino must come after it.
 	 */
-	retval = ext2fs_write_new_inode(fs, ino, &inode);
+	if (inlinelink)
+		retval = ext2fs_write_inode(fs, ino, &inode);
+	else
+		retval = ext2fs_write_new_inode(fs, ino, &inode);
 	if (retval)
 		goto cleanup;
 
-	if (!fastlink) {
+	if (!fastlink && !inlinelink) {
 		retval = ext2fs_bmap2(fs, ino, &inode, NULL, BMAP_SET, 0, NULL,
 				      &blk);
 		if (retval)
@@ -139,7 +163,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	/*
 	 * Update accounting....
 	 */
-	if (!fastlink)
+	if (!fastlink && !inlinelink)
 		ext2fs_block_alloc_stats2(fs, blk, +1);
 	ext2fs_inode_alloc_stats2(fs, ino, +1, 0);
 
