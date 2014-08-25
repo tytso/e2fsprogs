@@ -198,6 +198,11 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 	char *fs_label = NULL;
 
 	fd = ext2fs_open_file(device, fl, 0666);
+	if ((fd < 0) && (errno == ENOENT) && (flags & NO_SIZE)) {
+		fprintf(stderr, _("The file %s does not exist and no "
+				  "size was specified.\n"), device);
+		exit(1);
+	}
 	if ((fd < 0) && (errno == ENOENT) && (flags & CREATE_FILE)) {
 		fl |= O_CREAT;
 		fd = ext2fs_open_file(device, fl, 0666);

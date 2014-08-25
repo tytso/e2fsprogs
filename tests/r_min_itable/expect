@@ -1,7 +1,7 @@
 resize2fs test
 resize2fs -M test.img
 Resizing the filesystem on test.img to 1124 (1k) blocks.
-The filesystem on test.img is now 1124 blocks long.
+The filesystem on test.img is now 1124 (1k) blocks long.
 
 Exit status is 0
  

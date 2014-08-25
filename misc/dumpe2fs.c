@@ -612,8 +612,10 @@ int main (int argc, char ** argv)
 			usage();
 		}
 	}
-	if (optind > argc - 1)
+	if (argc - 1 > optind) {
 		usage();
+		exit(1);
+	}
 	device_name = argv[optind++];
 	flags = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS;
 	if (force)
