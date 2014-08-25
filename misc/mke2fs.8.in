@@ -111,7 +111,7 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 ]
 .I device
 [
-.I blocks-count
+.I fs-size
 ]
 @JDEV@.sp
 @JDEV@.B "mke2fs \-O journal_dev"
@@ -139,23 +139,52 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 @JDEV@]
 @JDEV@.I external-journal
 @JDEV@[
-@JDEV@.I blocks-count
+@JDEV@.I fs-size
 @JDEV@]
 .SH DESCRIPTION
 .B mke2fs
 is used to create an ext2, ext3, or ext4 filesystem, usually in a disk
-partition.
-.I device
-is the special file corresponding to the device (e.g
-.IR /dev/hdXX ).
-.I blocks-count
-is the number of blocks on the device.  If omitted,
+partition (or file) named by
+.IR device .
+.PP
+The file system size is specified by
+.IR fs-size .
+If
+.I fs-size
+does not have a suffix, it is interpreted as power-of-two kilobytes,
+unless the
+.B \-b
+.I blocksize
+option is specified, in which case
+.I fs-size
+is interpreted as the number of
+.I blocksize
+blocks.   If the fs-size is suffixed by 'k', 'm', 'g', 't'
+(either upper-case or lower-case), then it is interpreted in
+power-of-two kilobytes, megabytes, gigabytes, terabytes, etc.
+If
+.I fs-size
+is omitted,
 .B mke2fs
-automagically figures the file system size.  If called as
+will create the file system based on the device size.
+.PP
+If
+.B mke2fs
+is run as
+.B mkfs.XXX
+(i.e.,
+.BR mkfs.ext2 ,
+.BR mkfs.ext3 ,
+or
+.BR mkfs.ext4 )
+the option
+.B \-t
+.I XXX
+is implied; so
 .B mkfs.ext3
-a journal is created as if the
-.B \-j
-option was specified.
+will create a file system for use with ext3,
+.B mkfs.ext4
+will create a file system for use with ext4, and so on.
 .PP
 The defaults of the parameters for the newly created filesystem, if not
 overridden by the options listed below, are controlled by the
