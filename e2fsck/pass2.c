@@ -1058,9 +1058,47 @@ skip_checksum:
 			    ((ext2fs_dirent_name_len(dirent) + 8) > rec_len)) {
 				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
 						&cd->pctx)) {
+#ifdef WORDS_BIGENDIAN
+					/*
+					 * On big-endian systems, if the dirent
+					 * swap routine finds a rec_len that it
+					 * doesn't like, it continues
+					 * processing the block as if rec_len
+					 * == 8.  This means that the name
+					 * field gets byte swapped, which means
+					 * that salvage will not detect the
+					 * correct name length (unless the name
+					 * has a length that's an exact
+					 * multiple of four bytes), and it'll
+					 * discard the entry (unnecessarily)
+					 * and the rest of the dirent block.
+					 * Therefore, swap the rest of the
+					 * block back to disk order, run
+					 * salvage, and re-swap anything after
+					 * the salvaged dirent.
+					 */
+					int need_reswab = 0;
+					if (rec_len < 8 || rec_len % 4) {
+						need_reswab = 1;
+						ext2fs_dirent_swab_in2(fs,
+							((char *)dirent) + 8,
+							max_block_size - offset - 8,
+							0);
+					}
+#endif
 					salvage_directory(fs, dirent, prev,
 							  &offset,
 							  max_block_size);
+#ifdef WORDS_BIGENDIAN
+					if (need_reswab) {
+						(void) ext2fs_get_rec_len(fs,
+							dirent, &rec_len);
+						ext2fs_dirent_swab_in2(fs,
+							((char *)dirent) + offset + rec_len,
+							max_block_size - offset - rec_len,
+							0);
+					}
+#endif
 					dir_modified++;
 					continue;
 				} else
