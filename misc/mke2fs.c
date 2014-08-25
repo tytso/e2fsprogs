@@ -1796,6 +1796,8 @@ profile_error:
 		flags |= CHECK_FS_EXIST;
 	if (!quiet)
 		flags |= VERBOSE_CREATE;
+	if (fs_blocks_count == 0)
+		flags |= NO_SIZE;
 	if (!check_plausibility(device_name, flags, &is_device) && !force)
 		proceed_question(proceed_delay);
 
