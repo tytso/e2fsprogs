@@ -406,7 +406,7 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 	void		*p;
 	struct ext2_inode_large *inode;
 	char		*block_status;
-	unsigned int	blk;
+	unsigned int	blk, bad_csum;
 
 	if (!(scan->scan_flags & EXT2_SF_WARN_GARBAGE_INODES))
 		return;
@@ -423,12 +423,26 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 	memset(block_status, 0, scan->inode_buffer_blocks);
 	inodes_per_block = EXT2_INODES_PER_BLOCK(scan->fs->super);
 
+#ifdef WORDS_BIGENDIAN
+	if (ext2fs_get_mem(EXT2_INODE_SIZE(scan->fs->super), &inode))
+		return;
+#endif
+
 	while (inodes_to_scan > 0) {
 		blk = (p - (void *)scan->inode_buffer) / scan->fs->blocksize;
+		bad_csum = ext2fs_inode_csum_verify(scan->fs, ino, p) == 0;
+
+#ifdef WORDS_BIGENDIAN
+		ext2fs_swap_inode_full(scan->fs,
+			       (struct ext2_inode_large *) inode,
+			       (struct ext2_inode_large *) p,
+			       0, EXT2_INODE_SIZE(scan->fs->super));
+#else
 		inode = p;
+#endif
 
 		/* Is this inode insane? */
-		if (!ext2fs_inode_csum_verify(scan->fs, ino, inode)) {
+		if (bad_csum) {
 			checksum_failures++;
 			badness++;
 		} else if (extent_head_looks_insane(inode) ||
@@ -460,6 +474,10 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 		p += scan->inode_size;
 		ino++;
 	};
+
+#ifdef WORDS_BIGENDIAN
+	ext2fs_free_mem(&inode);
+#endif
 }
 
 /*
