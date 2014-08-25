@@ -11,21 +11,21 @@ ZIMAGE=$test_dir/image.gz
 gzip -d < $ZIMAGE > $TMPFILE
 
 echo "*** long file" > $OUT
-$DEBUGFS -R 'stat /file' $TMPFILE >> $OUT 2>&1
+$DEBUGFS -R 'stat /file' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
 echo "*** short file" >> $OUT
-$DEBUGFS -R 'stat /shortfile' $TMPFILE >> $OUT 2>&1
+$DEBUGFS -R 'stat /shortfile' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
 echo >> $OUT
 
 echo "*** long dir" >> $OUT
-$DEBUGFS -R 'stat /dir' $TMPFILE >> $OUT 2>&1
+$DEBUGFS -R 'stat /dir' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
 echo "*** short dir" >> $OUT
-$DEBUGFS -R 'stat /shortdir' $TMPFILE >> $OUT 2>&1
+$DEBUGFS -R 'stat /shortdir' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
 echo >> $OUT
 
 echo "*** long link" >> $OUT
-$DEBUGFS -R 'stat /link' $TMPFILE >> $OUT 2>&1
+$DEBUGFS -R 'stat /link' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
 echo "*** short link" >> $OUT
-$DEBUGFS -R 'stat /shortlink' $TMPFILE >> $OUT 2>&1
+$DEBUGFS -R 'stat /shortlink' $TMPFILE 2>&1 | $CLEAN_OUTPUT >> $OUT 2>&1
 
 echo "*** end test" >> $OUT
 

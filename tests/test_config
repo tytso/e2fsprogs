@@ -20,6 +20,7 @@ E2UNDO_EXE="../misc/e2undo"
 TEST_REL=../tests/progs/test_rel
 TEST_ICOUNT=../tests/progs/test_icount
 CRCSUM=../tests/progs/crcsum
+CLEAN_OUTPUT="sed -f $cmd_dir/filter.sed"
 LD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
 DYLD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
 export LD_LIBRARY_PATH
