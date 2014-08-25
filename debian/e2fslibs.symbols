@@ -316,8 +316,10 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_inode_io_intern@Base 1.37
  ext2fs_inode_scan_flags@Base 1.37
  ext2fs_inode_scan_goto_blockgroup@Base 1.37
+ ext2fs_inode_size_set@Base 1.42.12
  ext2fs_inode_table_loc@Base 1.42
  ext2fs_inode_table_loc_set@Base 1.42
+ ext2fs_journal_sb_start@Base 1.42.12
  ext2fs_link@Base 1.37
  ext2fs_llseek@Base 1.37
  ext2fs_lookup@Base 1.37
