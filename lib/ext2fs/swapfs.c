@@ -243,7 +243,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	t->i_flags = ext2fs_swab32(f->i_flags);
 	if (!hostorder && (t->i_flags & EXT4_EXTENTS_FL))
 		has_extents = 1;
-	if (!hostorder && (f->i_flags & EXT4_INLINE_DATA_FL))
+	if (!hostorder && (t->i_flags & EXT4_INLINE_DATA_FL))
 		has_inline_data = 1;
 	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
 	/*

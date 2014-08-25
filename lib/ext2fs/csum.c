@@ -81,12 +81,17 @@ static __u32 ext2fs_superblock_csum(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return ext2fs_crc32c_le(~0, (unsigned char *)sb, offset);
 }
 
+/* NOTE: The input to this function MUST be in LE order */
 int ext2fs_superblock_csum_verify(ext2_filsys fs, struct ext2_super_block *sb)
 {
-	__u32 calculated;
+	__u32 flag, calculated;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES)
+		flag = EXT4_FEATURE_RO_COMPAT_METADATA_CSUM;
+	else
+		flag = ext2fs_cpu_to_le32(EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super, flag))
 		return 1;
 
 	calculated = ext2fs_superblock_csum(fs, sb);
@@ -94,13 +99,18 @@ int ext2fs_superblock_csum_verify(ext2_filsys fs, struct ext2_super_block *sb)
 	return ext2fs_le32_to_cpu(sb->s_checksum) == calculated;
 }
 
+/* NOTE: The input to this function MUST be in LE order */
 errcode_t ext2fs_superblock_csum_set(ext2_filsys fs,
 				     struct ext2_super_block *sb)
 {
-	__u32 crc;
+	__u32 flag, crc;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES)
+		flag = EXT4_FEATURE_RO_COMPAT_METADATA_CSUM;
+	else
+		flag = ext2fs_cpu_to_le32(EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super, flag))
 		return 0;
 
 	crc = ext2fs_superblock_csum(fs, sb);
@@ -756,8 +766,8 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 #ifdef WORDS_BIGENDIAN
 		if (save_size > ext4_bg_size)
 			crc32 = ext2fs_crc32c_le(crc32,
-					   (char *)save_desc + ext4_bg_size,
-					   save_size - ext4_bg_size);
+				     (unsigned char *)save_desc + ext4_bg_size,
+	                             save_size - ext4_bg_size);
 #endif
 		crc = crc32 & 0xFFFF;
 		goto out;
