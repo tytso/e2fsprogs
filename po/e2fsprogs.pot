@@ -2477,7 +2477,7 @@ msgstr ""
 
 #: e2fsck/problem.c:1752
 #, c-format
-msgid "Error flushing writes to strage device: %m\n"
+msgid "Error flushing writes to storage device: %m\n"
 msgstr ""
 
 #: e2fsck/problem.c:1871
