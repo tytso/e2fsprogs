@@ -144,7 +144,7 @@ struct buffer_head *getblk(kdev_t kdev, blk64_t blocknr, int blocksize)
 	return bh;
 }
 
-void sync_blockdev(kdev_t kdev)
+int sync_blockdev(kdev_t kdev)
 {
 	io_channel	io;
 
@@ -153,7 +153,7 @@ void sync_blockdev(kdev_t kdev)
 	else
 		io = kdev->k_ctx->journal_io;
 
-	io_channel_flush(io);
+	return io_channel_flush(io) ? EIO : 0;
 }
 
 void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
@@ -631,6 +631,10 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	if (!e2fsck_journal_verify_csum_type(journal, jsb) ||
 	    !e2fsck_journal_sb_csum_verify(journal, jsb))
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
+
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		journal->j_csum_seed = jbd2_chksum(journal, ~0, jsb->s_uuid,
+						   sizeof(jsb->s_uuid));
 
 	/* We have now checked whether we know enough about the journal
 	 * format to be able to proceed safely, so any other checks that

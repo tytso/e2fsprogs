@@ -7,6 +7,7 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
+#include <arpa/inet.h>
 
 #define printk printf
 #define KERN_ERR ""
@@ -25,6 +26,22 @@ typedef struct journal_s journal_t;
 
 struct buffer_head;
 struct inode;
+
+#define GFP_KERNEL	0
+#define JFS_TAG_SIZE32	JBD_TAG_SIZE32
+#define JFS_BARRIER	0
+typedef __u64 u64;
+#define JFS_CRC32_CHKSUM	JBD2_CRC32_CHKSUM
+#define JFS_CRC32_CHKSUM_SIZE	JBD2_CRC32_CHKSUM_SIZE
+#define put_bh(x)	brelse(x)
+#define be64_to_cpu(x)	ext2fs_be64_to_cpu(x)
+
+static inline __u32 jbd2_chksum(journal_t *j, __u32 crc, const void *address,
+			unsigned int length)
+{
+	return ext2fs_crc32c_le(crc, address, length);
+}
+#define crc32_be(x, y, z)	ext2fs_crc32_be((x), (y), (z))
 
 struct journal_s
 {
@@ -48,6 +65,7 @@ struct journal_s
 	__u8			j_uuid[16];
 	struct jbd_revoke_table_s *j_revoke;
 	tid_t			j_failed_commit;
+	__u32			j_csum_seed;
 };
 
 #define J_ASSERT(assert)						\
