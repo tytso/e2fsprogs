@@ -325,7 +325,7 @@ int journal_skip_recovery(journal_t *journal)
 		++journal->j_transaction_sequence;
 	} else {
 #ifdef CONFIG_JFS_DEBUG
-		int dropped = info.end_transaction - 
+		int dropped = info.end_transaction -
 			ext2fs_be32_to_cpu(journal->j_superblock->s_sequence);
 		jbd_debug(1,
 			  "JBD2: ignoring %d transaction%s from the journal.\n",

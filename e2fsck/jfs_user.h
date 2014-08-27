@@ -54,7 +54,7 @@ typedef struct {
 
 #define kmem_cache_alloc(cache,flags) malloc((cache)->object_length)
 #define kmem_cache_free(cache,obj) free(obj)
-#define kmem_cache_create(name,len,a,b,c,d) do_cache_create(len)
+#define kmem_cache_create(name,len,a,b,c) do_cache_create(len)
 #define kmem_cache_destroy(cache) do_cache_destroy(cache)
 #define kmalloc(len,flags) malloc(len)
 #define kfree(p) free(p)

@@ -42,6 +42,18 @@ static inline __u32 jbd2_chksum(journal_t *j, __u32 crc, const void *address,
 	return ext2fs_crc32c_le(crc, address, length);
 }
 #define crc32_be(x, y, z)	ext2fs_crc32_be((x), (y), (z))
+#define spin_lock_init(x)
+#define spin_lock(x)
+#define spin_unlock(x)
+#define yield()
+#define SLAB_HWCACHE_ALIGN	0
+#define SLAB_TEMPORARY		0
+#define KMEM_CACHE(__struct, __flags) kmem_cache_create(#__struct,\
+                sizeof(struct __struct), __alignof__(struct __struct),\
+                (__flags), NULL)
+
+#define blkdev_issue_flush(kdev, a, b)	sync_blockdev(kdev)
+#define is_power_of_2(x)	((x) != 0 && (((x) & ((x) - 1)) == 0))
 
 struct journal_s
 {
@@ -63,7 +75,8 @@ struct journal_s
 	tid_t			j_tail_sequence;
 	tid_t			j_transaction_sequence;
 	__u8			j_uuid[16];
-	struct jbd_revoke_table_s *j_revoke;
+	struct jbd2_revoke_table_s *j_revoke;
+	struct jbd2_revoke_table_s *j_revoke_table[2];
 	tid_t			j_failed_commit;
 	__u32			j_csum_seed;
 };

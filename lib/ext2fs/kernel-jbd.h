@@ -365,6 +365,7 @@ static inline struct journal_head *bh2jh(struct buffer_head *bh)
 }
 
 struct jbd_revoke_table_s;
+struct jbd2_revoke_table_s;
 
 /* The handle_t type represents a single atomic update being performed
  * by some process.  All filesystem modifications made by the process go
@@ -892,8 +893,8 @@ extern void	   journal_destroy_revoke_caches(void);
 extern int	   journal_init_revoke_caches(void);
 
 /* Recovery revoke support */
-extern int	   journal_set_revoke(journal_t *, unsigned long, tid_t);
-extern int	   journal_test_revoke(journal_t *, unsigned long, tid_t);
+extern int	   journal_set_revoke(journal_t *, unsigned long long, tid_t);
+extern int	   journal_test_revoke(journal_t *, unsigned long long, tid_t);
 extern void	   journal_clear_revoke(journal_t *);
 extern void	   journal_brelse_array(struct buffer_head *b[], int n);
 
