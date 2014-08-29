@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.42.12">E2fsprogs 1.42.12 (August 29, 2014)</A>
 <LI><A HREF="#1.42.11">E2fsprogs 1.42.11 (July 9, 2014)</A>
 <LI><A HREF="#1.42.10">E2fsprogs 1.42.10 (May 18, 2014)</A>
 <LI><A HREF="#1.42.9">E2fsprogs 1.42.9 (December 28, 2013)</A>
@@ -108,6 +109,102 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.42.12">E2fsprogs 1.42.12 (August 29, 2014)</A></H2>
+
+<P>Fix various e2fsck bugs when trying to repair bigalloc file systems.</P>
+
+<P>E2fsck can now repair a file system with an overly large
+s_first_meta_bg field, which had previously caused all e2fsprogs
+programs to crash when trying to open such a file system.</P>
+
+<P>Fix e2fsck so that it can correctly fix a number of rare file system
+corruptions that were discovered when using a file system fuzzer.</P>
+
+<P>Fix e2fsck so it does not try to write back block group descriptors if
+they have not been modified.</P>
+
+<P>Mke2fs program will now place metadata blocks in the last flex_bg so
+they are contiguous.  This reduces free space fragmentation in a
+freshly created file system, as well as allowing mke2fs commands which
+request extremely large flex_bg size to succeed.</P>
+
+<P>Mke2fs now creates hugefiles more efficiently (with fewer extent tree
+blocks).</P>
+
+<P>Fix a 32/64-bit overflow bug that could cause resize2fs to loop
+forever. (Addresses-Launchpad-Bug: #1321958)</P>
+
+<P>The resize2fs program will now use much less memory when resizing very
+large file systems.</P>
+
+<P>Fix a bug which could cause resize2fs to get confused and produce a
+corrupted file system when shrinking a file system that had been
+previously expanded and converted to use the meta_bg file system
+format, but which no longer needs to use the meta_bg file system
+format any longer.  This typically happened with large (> 16TB) file
+systems.  (Addresses Debian Bug: #756922)</P>
+
+<P>The e4defrag program will now defrag backwards-allocated files.</P>
+
+<P>Fix tune2fs updating UUID's when manipulating file systems with
+external journals (both the file system and journal UUID).</P>
+
+<P>Fix tune2fs so it can remove an external journal for file systems with
+a 1k block size.</P>
+
+<P>Add a new debugfs command, "inode_dump", which prints the inode in hex
+and ASCII format.</P>
+
+<P>The debugfs's "set_inode_field" will now automatically allocate blocks
+for indirect blocks and extent tree blocks.</P>
+
+<P>Fix debugfs's "set_inode_field" so can properly handle
+"block[IND|DIND|TIND]".</P>
+
+<P>The debugfs "rdump" command will now take multiple source arguments.</P>
+
+<P>Fixed a double close(2) bug in "rdump" and "rdump -p".</P>
+
+<P>Fix debugfs's argument parsing for the freefrag command.</P>
+
+<P>Fix filefrag to properly handle using the FIBMAP ioctl (with -B).
+(Addresses Launchpad Bug: #1356496)</P>
+
+<P>Clarified messages that were confusing users in debugfs, e2fsck,
+mke2fs, and resize2fs (Addresses Debian Bugs: #758029, #757543,
+#757544)</P>
+
+<P>Dumpe2fs will now complain if extra arguments are given to it.
+(Addresses Debian Bug: #758074)</P>
+
+<P>Updated/fixed various man pages.  (Addresses-Debian-Bug: #726760)</P>
+
+<P>Update Czech, Dutch, French, Polish, Spanish, Sweedish, Ukrainian, and
+Vietnamese translations.</P>
+
+<H3>Programmer's Notes</H3>
+
+<P>The Unix I/O layer will now use pread[64]/pwrite[64] to reduce the
+number of system calls issued.</P>
+
+<P>Fixed profiled build.</P>
+
+<P>The libext2fs library will now more efficiently split an extent tree
+index block when appending to an end of a file.</P>
+
+<P>Fixed free block accounting for 64-bit file systems.</P>
+
+<P>Add a new function ext2s_inode_size_set() which takes care of all of
+the required feature flag modifications.</P>
+
+<P>The regression tests no longer require the presence of the md5sum
+program.</P>
+
+<P>Fix build failure on MIPS platforms on Debian (Addresses Debian Bug:
+#754605)</P>
+
+<P>Fix various Coverity warnings (#1225003, #1229243, #1252003)</P>
 
 <H2><A NAME="1.42.11">E2fsprogs 1.42.11 (July 9, 2014)</A></H2>
 
