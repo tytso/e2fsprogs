@@ -1903,7 +1903,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Error flushing writes to storage device */
 	{ PR_6_IO_FLUSH,
-	  N_("Error flushing writes to strage device: %m\n"),
+	  N_("Error flushing writes to storage device: %m\n"),
 	  PROMPT_NULL, PR_FATAL },
 
 	{ 0 }

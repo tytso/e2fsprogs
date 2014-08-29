@@ -48,9 +48,10 @@ e2fsprogs (1.42.12-1) unstable; urgency=low
   * Dumpe2fs will now complain if extra arguments are given to it.
     (Closes: #758074)
   * Update/clarify various man pages (Closes: #726760)
-  * Update Czech, French, Spanish, and Sweedish translations
+  * Update Czech, Dutch, French, Polish, Spanish, Sweedish, Ukrainian,
+    and Vietnamese translations
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 25 Aug 2014 08:23:24 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 29 Aug 2014 08:50:48 -0400
 
 e2fsprogs (1.42.11-2) unstable; urgency=low
 

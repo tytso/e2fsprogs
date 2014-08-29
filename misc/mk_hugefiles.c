@@ -490,9 +490,18 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 	t = get_string_from_profile(fs_types, "hugefiles_align", "0");
 	align = parse_num_blocks2(t, fs->super->s_log_block_size);
 	free(t);
-	if (get_bool_from_profile(fs_types, "hugefiles_align_disk", 0))
+	if (get_bool_from_profile(fs_types, "hugefiles_align_disk", 0)) {
 		part_offset = get_partition_start(device_name) /
 			(fs->blocksize / 512);
+		if (part_offset % EXT2FS_CLUSTER_RATIO(fs)) {
+			fprintf(stderr,
+				_("Partition offset of %llu (%uk) blocks "
+				  "not compatible with cluster size %u.\n"),
+				part_offset, fs->blocksize,
+				EXT2_CLUSTER_SIZE(fs->super));
+			exit(1);
+		}
+	}
 	num_blocks = round_up_align(num_blocks, align, 0);
 	zero_hugefile = get_bool_from_profile(fs_types, "zero_hugefiles",
 					      zero_hugefile);

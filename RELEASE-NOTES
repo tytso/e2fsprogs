@@ -88,7 +88,8 @@ Dumpe2fs will now complain if extra arguments are given to it.
 
 Updated/fixed various man pages.  (Addresses-Debian-Bug: #726760)
 
-Update Czech, French, Spanish, and Sweedish translations.
+Update Czech, Dutch, French, Polish, Spanish, Sweedish, Ukrainian, and
+Vietnamese translations.
 
 Programmer's Notes
 ------------------

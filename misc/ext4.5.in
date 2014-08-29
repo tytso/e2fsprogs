@@ -611,6 +611,37 @@ seriously cramp the system's style.)
 .B i_version
 Enable 64-bit inode version support. This option is off by default.
 
+.SH FILE ATTRIBUTES
+The ext2, ext3, and ext4 filesystems support setting the following file
+attributes on Linux systems using the
+.BR chattr (1)
+utility:
+.sp
+.BR a " - append only"
+.sp
+.BR A " - no atime updates"
+.sp
+.BR d " - no dump"
+.sp
+.BR D " - synchronous directory updates"
+.sp
+.BR i " - immutable"
+.sp
+.BR S " - synchronous updates"
+.sp
+.BR u " - undeletable"
+.sp
+In addition, the ext3 and ext4 filesystems support the following flag:
+.sp
+.BR j " - data journaling"
+.sp
+Finally, the ext4 filesystem also supports the following flag:
+.sp
+.BR e " - extents format"
+.sp
+For descriptions of these attribute flags, please refer to the
+.BR chattr (1)
+man page.
 .SH SEE ALSO
 .BR mke2fs (8),
 .BR mke2fs.conf (5),
@@ -618,4 +649,5 @@ Enable 64-bit inode version support. This option is off by default.
 .BR dumpe2fs (8),
 .BR tune2fs (8),
 .BR debugfs (8),
-.BR mount (8)
+.BR mount (8),
+.BR chattr (1)
