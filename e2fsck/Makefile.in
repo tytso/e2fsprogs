@@ -168,10 +168,10 @@ tst_region: region.c $(DEPLIBCOM_ERR)
 		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR) $(SYSLIBS)
 
 check:: tst_refcount tst_region tst_crc32 tst_problem
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_refcount
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_region
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_crc32
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_problem
+	$(TESTENV) ./tst_refcount
+	$(TESTENV) ./tst_region
+	$(TESTENV) ./tst_crc32
+	$(TESTENV) ./tst_problem
 
 extend: extend.o
 	$(E) "	LD $@"
