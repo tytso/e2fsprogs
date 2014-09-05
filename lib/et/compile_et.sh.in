@@ -5,7 +5,7 @@
 datarootdir=@datarootdir@
 AWK=@AWK@
 DIR="${DIR-@datadir@/et}"
-ET_DIR="@ET_DIR@"
+ET_DIR="${ET_DIR-@ET_DIR@}"
 
 if test "$1" = "--build-tree" ; then
     shift;
