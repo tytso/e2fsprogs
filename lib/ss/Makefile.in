@@ -159,7 +159,7 @@ uninstall::
 
 test_ss: test_ss.o test_cmd.o $(DEPLIBSS) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
-	$(Q) $(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) \
+	$(Q) $(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) $(ALL_LDFLAGS) \
 		$(LIBSS) $(LIBCOM_ERR) $(SYSLIBS)
 
 check:: all test_ss
