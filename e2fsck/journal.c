@@ -549,6 +549,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 				       "filesystem is now ext2 only ***\n\n");
 			sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			sb->s_journal_inum = 0;
+			memset(sb->s_jnl_blocks, 0, sizeof(sb->s_jnl_blocks));
 			ctx->flags |= E2F_FLAG_JOURNAL_INODE;
 			ctx->fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 			e2fsck_clear_recover(ctx, 1);

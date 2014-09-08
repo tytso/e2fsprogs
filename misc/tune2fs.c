@@ -377,6 +377,7 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 		return retval;
 	}
 	fs->super->s_journal_inum = 0;
+	memset(fs->super->s_jnl_blocks, 0, sizeof(fs->super->s_jnl_blocks));
 	ext2fs_mark_super_dirty(fs);
 
 	return 0;

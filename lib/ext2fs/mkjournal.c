@@ -490,6 +490,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	fs->super->s_journal_dev = st.st_rdev;
 	memcpy(fs->super->s_journal_uuid, jsb->s_uuid,
 	       sizeof(fs->super->s_journal_uuid));
+	memset(fs->super->s_jnl_blocks, 0, sizeof(fs->super->s_jnl_blocks));
 	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 	ext2fs_mark_super_dirty(fs);
 	return 0;
