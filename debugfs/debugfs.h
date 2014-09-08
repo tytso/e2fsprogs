@@ -180,6 +180,7 @@ extern void do_get_quota(int argc, char *argv[]);
 
 /* util.c */
 extern time_t string_to_time(const char *arg);
+errcode_t read_list(const char *str, blk64_t **list, size_t *len);
 
 /* xattrs.c */
 void dump_inode_attributes(FILE *out, ext2_ino_t ino);

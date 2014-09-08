@@ -211,6 +211,17 @@ request do_get_quota, "Get quota",
 request do_idump, "Dump the inode structure in hex",
 	inode_dump, idump, id;
 
+request do_journal_open, "Open the journal",
+	journal_open, jo;
+
+request do_journal_close, "Close the journal",
+	journal_close, jc;
+
+request do_journal_write, "Write a transaction to the journal",
+	journal_write, jw;
+
+request do_journal_run, "Recover the journal",
+	journal_run, jr;
 
 end;
 

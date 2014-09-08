@@ -497,3 +497,40 @@ int ext2_file_type(unsigned int mode)
 
 	return 0;
 }
+
+errcode_t read_list(const char *str, blk64_t **list, size_t *len)
+{
+	blk64_t *lst = *list;
+	size_t ln = *len;
+	char *tok, *p = optarg;
+
+	while ((tok = strtok(p, ","))) {
+		blk64_t *l;
+		blk64_t x, y;
+		char *e;
+
+		errno = 0;
+		y = x = strtoull(tok, &e, 0);
+		if (errno)
+			return errno;
+		if (*e == '-') {
+			y = strtoull(e + 1, NULL, 0);
+			if (errno)
+				return errno;
+		} else if (*e != 0)
+			return EINVAL;
+		if (y < x)
+			return EINVAL;
+		l = realloc(lst, sizeof(blk64_t) * (ln + y - x + 1));
+		if (l == NULL)
+			return ENOMEM;
+		lst = l;
+		for (; x <= y; x++)
+			lst[ln++] = x;
+		p = NULL;
+	}
+
+	*list = lst;
+	*len = ln;
+	return 0;
+}
