@@ -2539,7 +2539,7 @@ retry_open:
 	if ((open_flag & EXT2_FLAG_RW) == 0 || f_flag)
 		open_flag |= EXT2_FLAG_SKIP_MMP;
 
-	open_flag |= EXT2_FLAG_64BITS;
+	open_flag |= EXT2_FLAG_64BITS | EXT2_FLAG_JOURNAL_DEV_OK;
 
 	/* keep the filesystem struct around to dump MMP data */
 	open_flag |= EXT2_FLAG_NOFREE_ON_ERROR;
@@ -2566,6 +2566,12 @@ retry_open:
 			fprintf(stderr, "%s",
 			     _("Couldn't find valid filesystem superblock.\n"));
 
+		ext2fs_free(fs);
+		exit(1);
+	}
+	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		fprintf(stderr, "%s", _("Cannot modify a journal device.\n"));
 		ext2fs_free(fs);
 		exit(1);
 	}
