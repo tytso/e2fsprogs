@@ -456,7 +456,6 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 		}
 		memcpy(&jsuper, start ? bh->b_data :  bh->b_data + SUPERBLOCK_OFFSET,
 		       sizeof(jsuper));
-		brelse(bh);
 #ifdef WORDS_BIGENDIAN
 		if (jsuper.s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC))
 			ext2fs_swap_super(&jsuper);
@@ -465,6 +464,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 		    !(jsuper.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
 			fix_problem(ctx, PR_0_EXT_JOURNAL_BAD_SUPER, &pctx);
 			retval = EXT2_ET_LOAD_EXT_JOURNAL;
+			brelse(bh);
 			goto errout;
 		}
 		/* Make sure the journal UUID is correct */
@@ -472,8 +472,31 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			   sizeof(jsuper.s_uuid))) {
 			fix_problem(ctx, PR_0_JOURNAL_BAD_UUID, &pctx);
 			retval = EXT2_ET_LOAD_EXT_JOURNAL;
+			brelse(bh);
 			goto errout;
 		}
+
+		/* Check the superblock checksum */
+		if (jsuper.s_feature_ro_compat &
+		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+			struct struct_ext2_filsys fsx;
+			struct ext2_super_block	superx;
+			void *p;
+
+			p = start ? bh->b_data : bh->b_data + SUPERBLOCK_OFFSET;
+			memcpy(&fsx, ctx->fs, sizeof(fsx));
+			memcpy(&superx, ctx->fs->super, sizeof(superx));
+			fsx.super = &superx;
+			fsx.super->s_feature_ro_compat |=
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM;
+			if (!ext2fs_superblock_csum_verify(&fsx, p) &&
+			    fix_problem(ctx, PR_0_EXT_JOURNAL_SUPER_CSUM_INVALID,
+					&pctx)) {
+				ext2fs_superblock_csum_set(&fsx, p);
+				mark_buffer_dirty(bh);
+			}
+		}
+		brelse(bh);
 
 		maxlen = ext2fs_blocks_count(&jsuper);
 		journal->j_maxlen = (maxlen < 1ULL << 32) ? maxlen : (1ULL << 32) - 1;

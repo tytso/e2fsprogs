@@ -264,6 +264,9 @@ struct problem_context {
 /* The first_meta_bg is too big */
 #define PR_0_FIRST_META_BG_TOO_BIG		0x000049
 
+/* External journal has corrupt superblock */
+#define PR_0_EXT_JOURNAL_SUPER_CSUM_INVALID	0x00004A
+
 /*
  * Pass 1 errors
  */

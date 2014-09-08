@@ -459,6 +459,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("First_meta_bg is too big.  (%N, max value %g).  "),
 	  PROMPT_CLEAR, 0 },
 
+	/* External journal has corrupt superblock */
+	{ PR_0_EXT_JOURNAL_SUPER_CSUM_INVALID,
+	  N_("External @j @S checksum does not match @S.  "),
+	  PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
