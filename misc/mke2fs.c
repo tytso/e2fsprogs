@@ -2124,7 +2124,8 @@ profile_error:
 		reserved_ratio = 0;
 		fs_param.s_feature_incompat = EXT3_FEATURE_INCOMPAT_JOURNAL_DEV;
 		fs_param.s_feature_compat = 0;
-		fs_param.s_feature_ro_compat = 0;
+		fs_param.s_feature_ro_compat &=
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM;
  	}
 
 	/* Check the user's mkfs options for 64bit */
@@ -2743,6 +2744,8 @@ int main (int argc, char *argv[])
 
 	/* Check the user's mkfs options for metadata checksumming */
 	if (!quiet &&
+	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				       EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) &&
 	    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
 		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
@@ -2909,6 +2912,7 @@ int main (int argc, char *argv[])
 	if (fs->super->s_feature_incompat &
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		create_journal_dev(fs);
+		printf("\n");
 		exit(ext2fs_close_free(&fs) ? 1 : 0);
 	}
 
