@@ -769,7 +769,7 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
 		mark_buffer_clean(journal->j_sb_buffer);
 	else if (!(ctx->options & E2F_OPT_READONLY)) {
 		jsb = journal->j_superblock;
-		jsb->s_sequence = htonl(journal->j_transaction_sequence);
+		jsb->s_sequence = htonl(journal->j_tail_sequence);
 		if (reset)
 			jsb->s_start = 0; /* this marks the journal as empty */
 		e2fsck_journal_sb_csum_set(journal, jsb);
