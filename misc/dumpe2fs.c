@@ -415,8 +415,10 @@ static void print_inline_journal_information(ext2_filsys fs)
 	if (jsb->s_feature_compat &
 	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
 		printf("%s", _("Journal checksum type:    crc32\n"));
-	if (jsb->s_feature_incompat &
-	    ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if ((jsb->s_feature_incompat &
+	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V3)) ||
+	    (jsb->s_feature_incompat &
+	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2)))
 		printf(_("Journal checksum type:    %s\n"
 			 "Journal checksum:         0x%08x\n"),
 		       journal_checksum_type_str(jsb->s_checksum_type),
@@ -454,8 +456,10 @@ static void print_journal_information(ext2_filsys fs)
 	if (jsb->s_feature_compat &
 	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
 		printf("%s", _("Journal checksum type:    crc32\n"));
-	if (jsb->s_feature_incompat &
-	    ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if ((jsb->s_feature_incompat &
+	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V3)) ||
+	    (jsb->s_feature_incompat &
+	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2)))
 		printf(_("Journal checksum type:    %s\n"
 			 "Journal checksum:         0x%08x\n"),
 		       journal_checksum_type_str(jsb->s_checksum_type),

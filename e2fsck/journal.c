@@ -44,7 +44,7 @@ static int bh_count = 0;
 static int e2fsck_journal_verify_csum_type(journal_t *j,
 					   journal_superblock_t *jsb)
 {
-	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (!journal_has_csum_v2or3(j))
 		return 1;
 
 	return jsb->s_checksum_type == JBD2_CRC32C_CHKSUM;
@@ -68,7 +68,7 @@ static int e2fsck_journal_sb_csum_verify(journal_t *j,
 {
 	__u32 provided, calculated;
 
-	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (!journal_has_csum_v2or3(j))
 		return 1;
 
 	provided = ext2fs_be32_to_cpu(jsb->s_checksum);
@@ -82,7 +82,7 @@ static errcode_t e2fsck_journal_sb_csum_set(journal_t *j,
 {
 	__u32 crc;
 
-	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (!journal_has_csum_v2or3(j))
 		return 0;
 
 	crc = e2fsck_journal_sb_csum(jsb);
@@ -623,8 +623,12 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES))
 		return EXT2_ET_RO_UNSUPP_FEATURE;
 
-	/* Checksum v1 and v2 are mutually exclusive features. */
+	/* Checksum v1-3 are mutually exclusive features. */
 	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2) &&
+	    JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V3))
+		return EXT2_ET_CORRUPT_SUPERBLOCK;
+
+	if (journal_has_csum_v2or3(journal) &&
 	    JFS_HAS_COMPAT_FEATURE(journal, JFS_FEATURE_COMPAT_CHECKSUM))
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 
@@ -632,7 +636,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	    !e2fsck_journal_sb_csum_verify(journal, jsb))
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (journal_has_csum_v2or3(journal))
 		journal->j_csum_seed = jbd2_chksum(journal, ~0, jsb->s_uuid,
 						   sizeof(jsb->s_uuid));
 

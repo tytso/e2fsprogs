@@ -112,6 +112,8 @@ static struct feature jrnl_feature_list[] = {
                        "journal_async_commit" },
        {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_CSUM_V2,
                        "journal_checksum_v2" },
+       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_CSUM_V3,
+                       "journal_checksum_v3" },
        {       0, 0, 0 },
 };
 

@@ -131,7 +131,11 @@ typedef struct journal_header_s
  * journal_block_tag (in the descriptor).  The other h_chksum* fields are
  * not used.
  *
- * Checksum v1 and v2 are mutually exclusive features.
+ * If FEATURE_INCOMPAT_CSUM_V3 is set, the descriptor block uses
+ * journal_block_tag3_t to store a full 32-bit checksum.  Everything else
+ * is the same as v2.
+ *
+ * Checksum v1, v2, and v3 are mutually exclusive features.
  */
 struct commit_header {
 	__u32		h_magic;
@@ -148,6 +152,14 @@ struct commit_header {
 /*
  * The block tag: used to describe a single buffer in the journal
  */
+typedef struct journal_block_tag3_s
+{
+	__u32		t_blocknr;	/* The on-disk block number */
+	__u32		t_flags;	/* See below */
+	__u32		t_blocknr_high; /* most-significant high 32bits. */
+	__u32		t_checksum;	/* crc32c(uuid+seq+block) */
+} journal_block_tag3_t;
+
 typedef struct journal_block_tag_s
 {
 	__u32		t_blocknr;	/* The on-disk block number */
@@ -155,9 +167,6 @@ typedef struct journal_block_tag_s
 	__u16		t_flags;	/* See below */
 	__u32		t_blocknr_high; /* most-significant high 32bits. */
 } journal_block_tag_t;
-
-#define JBD_TAG_SIZE64 (sizeof(journal_block_tag_t))
-#define JBD_TAG_SIZE32 (8)
 
 /* Tail of descriptor block, for checksumming */
 struct journal_block_tail {
@@ -257,6 +266,7 @@ typedef struct journal_superblock_s
 #define JFS_FEATURE_INCOMPAT_64BIT		0x00000002
 #define JFS_FEATURE_INCOMPAT_ASYNC_COMMIT	0x00000004
 #define JFS_FEATURE_INCOMPAT_CSUM_V2		0x00000008
+#define JFS_FEATURE_INCOMPAT_CSUM_V3		0x00000010
 
 /* Features known to this kernel version: */
 #define JFS_KNOWN_COMPAT_FEATURES	0
@@ -264,7 +274,8 @@ typedef struct journal_superblock_s
 #define JFS_KNOWN_INCOMPAT_FEATURES	(JFS_FEATURE_INCOMPAT_REVOKE|\
 					 JFS_FEATURE_INCOMPAT_ASYNC_COMMIT|\
 					 JFS_FEATURE_INCOMPAT_64BIT|\
-					 JFS_FEATURE_INCOMPAT_CSUM_V2)
+					 JFS_FEATURE_INCOMPAT_CSUM_V2|\
+					 JFS_FEATURE_INCOMPAT_CSUM_V3)
 
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
@@ -290,16 +301,29 @@ typedef struct journal_superblock_s
  */
 _INLINE_ size_t journal_tag_bytes(journal_t *journal)
 {
-	journal_block_tag_t tag;
-	size_t x = 0;
+	size_t sz;
+
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V3))
+		return sizeof(journal_block_tag3_t);
+
+	sz = sizeof(journal_block_tag_t);
 
 	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2))
-		x += sizeof(tag.t_checksum);
+		sz += sizeof(__u16);
 
 	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
-		return x + JBD_TAG_SIZE64;
-	else
-		return x + JBD_TAG_SIZE32;
+		return sz;
+
+	return sz - sizeof(__u32);
+}
+
+_INLINE_ int journal_has_csum_v2or3(journal_t *journal)
+{
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2) ||
+	    JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V3))
+		return 1;
+
+	return 0;
 }
 #undef _INLINE_
 #endif

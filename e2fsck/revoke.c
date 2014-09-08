@@ -597,7 +597,7 @@ static void write_one_revoke_record(journal_t *journal,
 	offset = *offsetp;
 
 	/* Do we need to leave space at the end for a checksum? */
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (journal_has_csum_v2or3(journal))
 		csum_size = sizeof(struct journal_revoke_tail);
 
 	/* Make sure we have a descriptor with space left for the record */
@@ -644,7 +644,7 @@ static void jbd2_revoke_csum_set(journal_t *j, struct buffer_head *bh)
 	struct journal_revoke_tail *tail;
 	__u32 csum;
 
-	if (!JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (!journal_has_csum_v2or3(j))
 		return;
 
 	tail = (struct journal_revoke_tail *)(bh->b_data + j->j_blocksize -

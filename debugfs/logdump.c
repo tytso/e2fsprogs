@@ -476,18 +476,20 @@ static void dump_descriptor_block(FILE *out_file,
 				  unsigned int *blockp, int blocksize,
 				  tid_t transaction)
 {
-	int			offset, tag_size = JBD_TAG_SIZE32;
+	int			offset, tag_size, csum_size = 0;
 	char			*tagp;
 	journal_block_tag_t	*tag;
 	unsigned int		blocknr;
 	__u32			tag_block;
 	__u32			tag_flags;
 
-	if (be32_to_cpu(jsb->s_feature_incompat) & JFS_FEATURE_INCOMPAT_64BIT)
-		tag_size = JBD_TAG_SIZE64;
-
+	tag_size = journal_super_tag_bytes(jsb);
 	offset = sizeof(journal_header_t);
 	blocknr = *blockp;
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V3) ||
+	    JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		csum_size = sizeof(struct journal_block_tail);
 
 	if (dump_all)
 		fprintf(out_file, "Dumping descriptor block, sequence %u, at "
@@ -505,7 +507,7 @@ static void dump_descriptor_block(FILE *out_file,
 
 		/* ... and if we have gone too far, then we've reached the
 		   end of this block. */
-		if (offset > blocksize)
+		if (offset > blocksize - csum_size)
 			break;
 
 		tag_block = be32_to_cpu(tag->t_blocknr);
