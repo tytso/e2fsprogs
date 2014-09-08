@@ -365,6 +365,8 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 
 	retval = ext2fs_block_iterate3(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
+	if (retval)
+		goto errout;
 	if (es.err) {
 		retval = es.err;
 		goto errout;
