@@ -530,10 +530,10 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 
 	fs_blocks = ext2fs_free_blocks_count(fs->super);
 	if (fs_blocks < num_slack + align)
-		return ENOMEM;
+		return ENOSPC;
 	fs_blocks -= num_slack + align;
 	if (num_blocks && num_blocks > fs_blocks)
-		return ENOMEM;
+		return ENOSPC;
 	if (num_blocks == 0 && num_files == 0)
 		num_files = 1;
 
