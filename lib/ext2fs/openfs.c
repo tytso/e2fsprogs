@@ -221,8 +221,6 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			retval = EXT2_ET_UNKNOWN_CSUM;
 		if (!ext2fs_superblock_csum_verify(fs, fs->super))
 			retval = EXT2_ET_SB_CSUM_INVALID;
-		if (retval)
-			goto cleanup;
 	}
 
 #ifdef WORDS_BIGENDIAN
@@ -235,10 +233,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	}
 #endif
 
-	if (fs->super->s_magic != EXT2_SUPER_MAGIC) {
+	if (fs->super->s_magic != EXT2_SUPER_MAGIC)
 		retval = EXT2_ET_BAD_MAGIC;
+	if (retval)
 		goto cleanup;
-	}
+
 	if (fs->super->s_rev_level > EXT2_LIB_CURRENT_REV) {
 		retval = EXT2_ET_REV_TOO_HIGH;
 		goto cleanup;
