@@ -433,8 +433,9 @@ static void print_journal_information(ext2_filsys fs)
 	errcode_t	retval;
 	char		buf[1024];
 	char		str[80];
-	unsigned int	i;
+	unsigned int	i, j, printed = 0;
 	journal_superblock_t	*jsb;
+	__u32			*mask_ptr, mask, m;
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk64(fs->io,
@@ -464,6 +465,17 @@ static void print_journal_information(ext2_filsys fs)
 			 "Journal checksum:         0x%08x\n"),
 		       journal_checksum_type_str(jsb->s_checksum_type),
 		       ext2fs_be32_to_cpu(jsb->s_checksum));
+
+	printf("%s", _("Journal features:        "));
+	for (i = 0, mask_ptr = &jsb->s_feature_compat; i < 3; i++, mask_ptr++) {
+		mask = be32_to_cpu(*mask_ptr);
+		for (j = 0, m = 1; j < 32; j++, m <<= 1) {
+			if (mask & m) {
+				printf(" %s", e2p_jrnl_feature2string(i, m));
+				printed++;
+			}
+		}
+	}
 
 	printf(_("\nJournal block size:       %u\n"
 		 "Journal length:           %u\n"
