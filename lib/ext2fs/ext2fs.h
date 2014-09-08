@@ -282,6 +282,9 @@ struct struct_ext2_filsys {
 
 	/* Precomputed FS UUID checksum for seeding other checksums */
 	__u32 csum_seed;
+
+	io_channel			journal_io;
+	char				*journal_name;
 };
 
 #if EXT2_FLAT_INCLUDES

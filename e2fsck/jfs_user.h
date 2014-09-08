@@ -8,31 +8,57 @@
  * GNU General Public License version 2 or at your discretion
  * any later version.
  */
+#ifndef _JFS_USER_H
+#define _JFS_USER_H
 
+#ifdef DEBUGFS
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#include "ext2fs.h"
+#include "blkid.h"
+#else
+#include "ext2fs/ext2_fs.h"
+#include "ext2fs/ext2fs.h"
+#include "blkid/blkid.h"
+#endif
+#else
 /*
  * Pull in the definition of the e2fsck context structure
  */
 #include "e2fsck.h"
+#endif
 
 struct buffer_head {
+#ifdef DEBUGFS
+	ext2_filsys	b_fs;
+#else
 	e2fsck_t	b_ctx;
-	io_channel 	b_io;
-	int	 	b_size;
+#endif
+	io_channel	b_io;
+	int		b_size;
 	unsigned long long b_blocknr;
-	int	 	b_dirty;
-	int	 	b_uptodate;
-	int	 	b_err;
+	int		b_dirty;
+	int		b_uptodate;
+	int		b_err;
 	char		b_data[1024];
 };
 
 struct inode {
+#ifdef DEBUGFS
+	ext2_filsys	i_fs;
+#else
 	e2fsck_t	i_ctx;
+#endif
 	ext2_ino_t	i_ino;
 	struct ext2_inode i_ext2;
 };
 
 struct kdev_s {
+#ifdef DEBUGFS
+	ext2_filsys	k_fs;
+#else
 	e2fsck_t	k_ctx;
+#endif
 	int		k_dev;
 };
 
@@ -41,22 +67,20 @@ struct kdev_s {
 
 typedef struct kdev_s *kdev_t;
 
-#define lock_buffer(bh) do {} while(0)
-#define unlock_buffer(bh) do {} while(0)
+#define lock_buffer(bh) do {} while (0)
+#define unlock_buffer(bh) do {} while (0)
 #define buffer_req(bh) 1
-#define do_readahead(journal, start) do {} while(0)
-
-extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
+#define do_readahead(journal, start) do {} while (0)
 
 typedef struct {
 	int	object_length;
 } lkmem_cache_t;
 
-#define kmem_cache_alloc(cache,flags) malloc((cache)->object_length)
-#define kmem_cache_free(cache,obj) free(obj)
-#define kmem_cache_create(name,len,a,b,c) do_cache_create(len)
+#define kmem_cache_alloc(cache, flags) malloc((cache)->object_length)
+#define kmem_cache_free(cache, obj) free(obj)
+#define kmem_cache_create(name, len, a, b, c) do_cache_create(len)
 #define kmem_cache_destroy(cache) do_cache_destroy(cache)
-#define kmalloc(len,flags) malloc(len)
+#define kmalloc(len, flags) malloc(len)
 #define kfree(p) free(p)
 
 #define cond_resched()	do { } while (0)
@@ -76,7 +100,7 @@ typedef __u64 __be64;
  * functions.
  */
 #ifdef NO_INLINE_FUNCS
-extern lkmem_cache_t * do_cache_create(int len);
+extern lkmem_cache_t *do_cache_create(int len);
 extern void do_cache_destroy(lkmem_cache_t *cache);
 extern size_t journal_tag_bytes(journal_t *journal);
 #endif
@@ -101,9 +125,10 @@ extern size_t journal_tag_bytes(journal_t *journal);
 #endif /* E2FSCK_INCLUDE_INLINE_FUNCS */
 
 
-_INLINE_ lkmem_cache_t * do_cache_create(int len)
+_INLINE_ lkmem_cache_t *do_cache_create(int len)
 {
 	lkmem_cache_t *new_cache;
+
 	new_cache = malloc(sizeof(*new_cache));
 	if (new_cache)
 		new_cache->object_length = len;
@@ -136,3 +161,44 @@ void wait_on_buffer(struct buffer_head *bh);
  */
 #define __getblk(dev, blocknr, blocksize) getblk(dev, blocknr, blocksize)
 #define set_buffer_uptodate(bh) mark_buffer_uptodate(bh, 1)
+
+#ifdef DEBUGFS
+#include <assert.h>
+#undef J_ASSERT
+#define J_ASSERT(x)	assert(x)
+
+#define JSB_HAS_INCOMPAT_FEATURE(jsb, mask)				\
+	((jsb)->s_header.h_blocktype == ext2fs_cpu_to_be32(JFS_SUPERBLOCK_V2) &&	\
+	 ((jsb)->s_feature_incompat & ext2fs_cpu_to_be32((mask))))
+static inline size_t journal_super_tag_bytes(journal_superblock_t *jsb)
+{
+	size_t sz;
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V3))
+		return sizeof(journal_block_tag3_t);
+
+	sz = sizeof(journal_block_tag_t);
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V2))
+		sz += sizeof(__u16);
+
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_64BIT))
+		return sz;
+
+	return sz - sizeof(__u32);
+}
+#else  /* !DEBUGFS */
+
+extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
+
+#define J_ASSERT(assert)						\
+	do { if (!(assert)) {						\
+		printf ("Assertion failure in %s() at %s line %d: "	\
+			"\"%s\"\n",					\
+			__FUNCTION__, __FILE__, __LINE__, # assert);	\
+		fatal_error(e2fsck_global_ctx, 0);			\
+	} } while (0)
+
+#endif /* DEBUGFS */
+
+#endif /* _JFS_USER_H */
