@@ -618,7 +618,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 					 size_t *nr_read)
 {
 	struct ext2_xattr *x;
-	struct ext2_ext_attr_entry *entry;
+	struct ext2_ext_attr_entry *entry, *end;
 	const char *prefix;
 	unsigned int remain, prefix_len;
 	errcode_t err;
@@ -629,6 +629,24 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	while (x->name)
 		x++;
 
+	/* find the end */
+	end = entries;
+	remain = storage_size;
+	while (remain >= sizeof(struct ext2_ext_attr_entry) &&
+	       !EXT2_EXT_IS_LAST_ENTRY(end)) {
+
+		/* header eats this space */
+		remain -= sizeof(struct ext2_ext_attr_entry);
+
+		/* is attribute name valid? */
+		if (EXT2_EXT_ATTR_SIZE(end->e_name_len) > remain)
+			return EXT2_ET_EA_BAD_NAME_LEN;
+
+		/* attribute len eats this space */
+		remain -= EXT2_EXT_ATTR_SIZE(end->e_name_len);
+		end = EXT2_EXT_ATTR_NEXT(end);
+	}
+
 	entry = entries;
 	remain = storage_size;
 	while (remain >= sizeof(struct ext2_ext_attr_entry) &&
@@ -638,10 +656,6 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 		/* header eats this space */
 		remain -= sizeof(struct ext2_ext_attr_entry);
 
-		/* is attribute name valid? */
-		if (EXT2_EXT_ATTR_SIZE(entry->e_name_len) > remain)
-			return EXT2_ET_EA_BAD_NAME_LEN;
-
 		/* attribute len eats this space */
 		remain -= EXT2_EXT_ATTR_SIZE(entry->e_name_len);
 
@@ -650,6 +664,11 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			return EXT2_ET_EA_BAD_VALUE_SIZE;
 
 		if (entry->e_value_offs + entry->e_value_size > values_size)
+			return EXT2_ET_EA_BAD_VALUE_OFFSET;
+
+		if (entry->e_value_size > 0 &&
+		    value_start + entry->e_value_offs <
+		    (void *)end + sizeof(__u32))
 			return EXT2_ET_EA_BAD_VALUE_OFFSET;
 
 		/* e_value_block must be 0 in inode's ea */
