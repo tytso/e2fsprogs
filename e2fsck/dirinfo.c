@@ -140,6 +140,10 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 					   sizeof(struct dir_info),
 					   &ctx->dir_info->array);
 		if (retval) {
+			fprintf(stderr, "Couldn't reallocate dir_info "
+				"structure to %d entries\n",
+				ctx->dir_info->size);
+			fatal_error(ctx, 0);
 			ctx->dir_info->size -= 10;
 			return;
 		}
