@@ -632,6 +632,9 @@ struct problem_context {
 /* inlinedata/extent set, clear inode */
 #define PR_1_CLEAR_EXTENT_INLINE_DATA_INODE	0x01007A
 
+/* badblocks is in badblocks */
+#define PR_1_BADBLOCKS_IN_BADBLOCKS		0x01007B
+
 /*
  * Pass 1b errors
  */

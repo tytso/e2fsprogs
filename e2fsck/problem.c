@@ -1086,6 +1086,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has inline data and @x flags set but i_block contains junk.\n"),
 	  PROMPT_CLEAR_INODE, 0 },
 
+	/* Bad block list says the bad block list inode is bad */
+	{ PR_1_BADBLOCKS_IN_BADBLOCKS,
+	  N_("Bad block list says the bad block list @i is bad.  "),
+	  PROMPT_CLEAR_INODE, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

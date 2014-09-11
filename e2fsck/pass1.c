@@ -1076,6 +1076,37 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
+			/*
+			 * If badblocks says badblocks is bad, offer to clear
+			 * the list, update the in-core bb list, and restart
+			 * the inode scan.
+			 */
+			if (ino == EXT2_BAD_INO &&
+			    fix_problem(ctx, PR_1_BADBLOCKS_IN_BADBLOCKS,
+					&pctx)) {
+				errcode_t err;
+
+				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
+				ext2fs_badblocks_list_free(ctx->fs->badblocks);
+				ctx->fs->badblocks = NULL;
+				err = ext2fs_read_bb_inode(ctx->fs,
+							&ctx->fs->badblocks);
+				if (err) {
+					fix_problem(ctx, PR_1_ISCAN_ERROR,
+						    &pctx);
+					ctx->flags |= E2F_FLAG_ABORT;
+					goto endit;
+				}
+				err = ext2fs_inode_scan_goto_blockgroup(scan,
+									0);
+				if (err) {
+					fix_problem(ctx, PR_1_ISCAN_ERROR,
+						    &pctx);
+					ctx->flags |= E2F_FLAG_ABORT;
+					goto endit;
+				}
+				continue;
+			}
 			if (!ctx->inode_bb_map)
 				alloc_bb_map(ctx);
 			ext2fs_mark_inode_bitmap2(ctx->inode_bb_map, ino);
