@@ -839,7 +839,7 @@ out:
 	return retval;
 }
 
-static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
+static errcode_t disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 {
 	struct ext2_group_desc *gd;
 	dgrp_t i;
@@ -849,14 +849,15 @@ static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 	/* Load bitmaps to ensure that the uninit ones get written out */
 	fs->super->s_feature_ro_compat |= csum_feature_flag;
 	retval = ext2fs_read_bitmaps(fs);
+	fs->super->s_feature_ro_compat &= ~csum_feature_flag;
 	if (retval) {
 		com_err("disable_uninit_bg", retval,
 			"while reading bitmaps");
-		return;
+		request_fsck_afterwards(fs);
+		return retval;
 	}
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
-	fs->super->s_feature_ro_compat &= ~csum_feature_flag;
 
 	/* If we're only turning off uninit_bg, zero the inodes */
 	if (csum_feature_flag == EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
@@ -865,6 +866,7 @@ static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 			com_err("disable_uninit_bg", retval,
 				"while zeroing unused inodes");
 			request_fsck_afterwards(fs);
+			return retval;
 		}
 	}
 
@@ -895,6 +897,8 @@ static void disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 	}
 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	ext2fs_mark_super_dirty(fs);
+
+	return 0;
 }
 
 /*
@@ -906,6 +910,7 @@ static int update_feature_set(ext2_filsys fs, char *features)
 	__u32		old_features[3];
 	int		type_err;
 	unsigned int	mask_err;
+	errcode_t	err;
 
 #define FEATURE_ON(type, mask) (!(old_features[(type)] & (mask)) && \
 				((&sb->s_feature_compat)[(type)] & (mask)))
@@ -1114,10 +1119,12 @@ mmp_error:
 		 * uninit_bg, rewrite group desc.
 		 */
 		if (!(fs->super->s_feature_ro_compat &
-		      EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-			disable_uninit_bg(fs,
-				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
-		else
+		      EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+			err = disable_uninit_bg(fs,
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+			if (err)
+				return 1;
+		} else
 			/*
 			 * metadata_csum previously provided uninit_bg, so if
 			 * we're also setting the uninit_bg feature bit,
@@ -1140,9 +1147,12 @@ mmp_error:
 	}
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
-			EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		disable_uninit_bg(fs,
+			EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		err = disable_uninit_bg(fs,
 				EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+		if (err)
+			return 1;
+	}
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 				EXT4_FEATURE_RO_COMPAT_QUOTA)) {
