@@ -138,40 +138,41 @@ crc32table.h: gen_crc32table
 
 tst_sigcatcher: $(srcdir)/sigcatcher.c sigcatcher.o
 	$(E) "	CC $@"
-	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) $(RDYNAMIC) \
+	$(Q) $(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(RDYNAMIC) \
 		$(srcdir)/sigcatcher.c -DDEBUG -o tst_sigcatcher
 
 tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(LIBEXT2FS) \
 	$(DEPLIBCOM_ERR)
-	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_problem \
+	$(Q) $(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o tst_problem \
 		$(srcdir)/problem.c -DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR) \
 		$(LIBINTL) $(SYSLIBS)
 
 tst_crc32: $(srcdir)/crc32.c $(LIBEXT2FS) $(DEPLIBCOM_ERR)
-	$(Q) $(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32 $(srcdir)/crc32.c \
+	$(Q) $(CC) $(ALL_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32 $(srcdir)/crc32.c \
 		-DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR) $(SYSLIBS)
 
 tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
-		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR) $(LIBEXT2FS) \
-		$(SYSLIBS)
+		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM \
+		$(LIBCOM_ERR) $(LIBEXT2FS) $(SYSLIBS)
 
 tst_logfile: $(srcdir)/logfile.c
 	$(E) "	LD $@"
-	$(Q) $(CC) -o tst_logfile $(srcdir)/logfile.c $(ALL_CFLAGS) \
-		-DTEST_PROGRAM $(SYSLIBS)
+	$(Q) $(CC) -o tst_logfile $(srcdir)/logfile.c \
+		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM $(SYSLIBS)
 
 tst_region: region.c $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_region $(srcdir)/region.c \
-		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR) $(SYSLIBS)
+		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM \
+		$(LIBCOM_ERR) $(SYSLIBS)
 
 check:: tst_refcount tst_region tst_crc32 tst_problem
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_refcount
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_region
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_crc32
-	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_problem
+	$(TESTENV) ./tst_refcount
+	$(TESTENV) ./tst_region
+	$(TESTENV) ./tst_crc32
+	$(TESTENV) ./tst_problem
 
 extend: extend.o
 	$(E) "	LD $@"
