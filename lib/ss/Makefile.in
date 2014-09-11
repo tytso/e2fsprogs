@@ -160,12 +160,12 @@ uninstall::
 
 test_ss: test_ss.o test_cmd.o $(DEPLIBSS) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
-	$(Q) $(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) \
+	$(Q) $(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) $(ALL_LDFLAGS) \
 		$(LIBSS) $(LIBCOM_ERR) $(SYSLIBS)
 
 check:: all test_ss
 	$(E) "	RUN TEST test_ss"
-	-@(LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./test_ss -f $(srcdir)/test_script > test_out 2>&1; exit 0)
+	-@($(TESTENV) ./test_ss -f $(srcdir)/test_script > test_out 2>&1; exit 0)
 	$(Q) if diff test_out $(srcdir)/test_script_expected > test.diff; then \
 		true ; else echo "Regression test for ss library failed!"; exit 1 ; fi
 
