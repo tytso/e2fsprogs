@@ -52,6 +52,7 @@ extern int optind;
 #include "e2fsck.h"
 #include "problem.h"
 #include "../version.h"
+#include "../misc/plausible.h"
 
 /* Command line options */
 static int cflag;		/* check disk */
@@ -1382,8 +1383,12 @@ failure:
 					     "-n option to do a read-only\n"
 					     "check of the device.\n"));
 #endif
-		else
+		else {
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
+			if (retval == EXT2_ET_BAD_MAGIC)
+				check_plausibility(ctx->filesystem_name,
+						   CHECK_FS_EXIST, NULL);
+		}
 		fatal_error(ctx, 0);
 	}
 	/*

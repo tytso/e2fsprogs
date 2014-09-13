@@ -2575,6 +2575,8 @@ retry_open:
 			fprintf(stderr,
 				_("MMP block magic is bad. Try to fix it by "
 				  "running:\n'e2fsck -f %s'\n"), device_name);
+		else if (retval == EXT2_ET_BAD_MAGIC)
+			check_plausibility(device_name, CHECK_FS_EXIST, NULL);
 		else if (retval != EXT2_ET_MMP_FAILED)
 			fprintf(stderr, "%s",
 			     _("Couldn't find valid filesystem superblock.\n"));

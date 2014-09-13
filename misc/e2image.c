@@ -47,6 +47,7 @@ extern int optind;
 
 #include "../version.h"
 #include "nls-enable.h"
+#include "plausible.h"
 
 #define QCOW_OFLAG_COPIED     (1LL << 63)
 #define NO_BLK ((blk64_t) -1)
@@ -1578,6 +1579,8 @@ int main (int argc, char ** argv)
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
 		fputs(_("Couldn't find valid filesystem superblock.\n"), stdout);
+		if (retval == EXT2_ET_BAD_MAGIC)
+			check_plausibility(device_name, CHECK_FS_EXIST, NULL);
 		exit(1);
 	}
 

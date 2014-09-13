@@ -42,6 +42,7 @@ extern int optind;
 
 #include "../version.h"
 #include "nls-enable.h"
+#include "plausible.h"
 
 #define in_use(m, x)	(ext2fs_test_bit ((x), (m)))
 
@@ -691,6 +692,8 @@ try_open_again:
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
 		printf("%s", _("Couldn't find valid filesystem superblock.\n"));
+		if (retval == EXT2_ET_BAD_MAGIC)
+			check_plausibility(device_name, CHECK_FS_EXIST, NULL);
 		exit (1);
 	}
 	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;

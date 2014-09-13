@@ -126,7 +126,7 @@ static struct e2fsck_problem problem_table[] = {
 	  "    e2fsck -b 8193 <@v>\n"
 	  " or\n"
 	  "    e2fsck -b 32768 <@v>\n\n"),
-	  PROMPT_NONE, PR_FATAL },
+	  PROMPT_NONE, 0 },
 
 	/* Filesystem size is wrong */
 	{ PR_0_FS_SIZE_WRONG,

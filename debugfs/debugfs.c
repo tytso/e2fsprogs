@@ -34,6 +34,7 @@ extern char *optarg;
 
 #include "../version.h"
 #include "jfs_user.h"
+#include "../misc/plausible.h"
 
 #ifndef BUFSIZ
 #define BUFSIZ 8192
@@ -87,6 +88,8 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 			     unix_io_manager, &current_fs);
 	if (retval) {
 		com_err(device, retval, "while opening filesystem");
+		if (retval == EXT2_ET_BAD_MAGIC)
+			check_plausibility(device, CHECK_FS_EXIST, NULL);
 		current_fs = NULL;
 		return;
 	}
