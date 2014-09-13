@@ -28,6 +28,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_MAGIC_H
+#include <magic.h>
+#endif
 #include "plausible.h"
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
@@ -193,6 +196,25 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		free(fs_label);
 		return 0;
 	}
+
+#ifdef HAVE_MAGIC_H
+	if (flags & CHECK_FS_EXIST) {
+		const char *msg;
+		magic_t mag;
+
+		mag = magic_open(MAGIC_RAW | MAGIC_SYMLINK | MAGIC_DEVICES |
+				 MAGIC_ERROR | MAGIC_NO_CHECK_ELF |
+				 MAGIC_NO_CHECK_COMPRESS);
+		magic_load(mag, NULL);
+
+		msg = magic_file(mag, device);
+		if (msg && strcmp(msg, "data") && strcmp(msg, "empty"))
+			printf(_("%s contains a `%s'\n"), device, msg);
+
+		magic_close(mag);
+		return 0;
+	}
+#endif
 
 	ret = check_partition_table(device);
 	if (ret >= 0)

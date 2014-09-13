@@ -265,6 +265,9 @@
 /* Define to 1 if lseek64 declared in unistd.h */
 #undef HAVE_LSEEK64_PROTOTYPE
 
+/* Define to 1 if you have the <magic.h> header file. */
+#undef HAVE_MAGIC_H
+
 /* Define to 1 if you have the `mallinfo' function. */
 #undef HAVE_MALLINFO
 

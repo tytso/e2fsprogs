@@ -643,6 +643,7 @@ CYGWIN_CMT
 LINUX_CMT
 UNI_DIFF_OPTS
 SEM_INIT_LIB
+MAGIC_LIB
 SOCKET_LIB
 SIZEOF_OFF_T
 SIZEOF_LONG_LONG
@@ -13131,6 +13132,59 @@ fi
 $as_echo "$ac_cv_lib_socket_socket" >&6; }
 if test "x$ac_cv_lib_socket_socket" = xyes; then :
   SOCKET_LIB=-lsocket
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for magic_file in -lmagic" >&5
+$as_echo_n "checking for magic_file in -lmagic... " >&6; }
+if ${ac_cv_lib_magic_magic_file+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lmagic  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char magic_file ();
+int
+main ()
+{
+return magic_file ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_magic_magic_file=yes
+else
+  ac_cv_lib_magic_magic_file=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_magic_magic_file" >&5
+$as_echo "$ac_cv_lib_magic_magic_file" >&6; }
+if test "x$ac_cv_lib_magic_magic_file" = xyes; then :
+  MAGIC_LIB=-lmagic
+for ac_header in magic.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+if test "x$ac_cv_header_magic_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MAGIC_H 1
+_ACEOF
+
+fi
+
+done
+
 fi
 
 
