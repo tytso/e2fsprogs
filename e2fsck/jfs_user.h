@@ -12,6 +12,8 @@
 #define _JFS_USER_H
 
 #ifdef DEBUGFS
+#include <stdio.h>
+#include <stdlib.h>
 #if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
 #include "ext2fs.h"
