@@ -52,9 +52,9 @@ static int blocks64 = 0;
 
 static void usage(void)
 {
-	fprintf (stderr, _("Usage: %s [-bfhixV] [-o superblock=<num>] "
+	fprintf(stderr, _("Usage: %s [-bfghixV] [-o superblock=<num>] "
 		 "[-o blocksize=<num>] device\n"), program_name);
-	exit (1);
+	exit(1);
 }
 
 static void print_number(unsigned long long num)
@@ -150,7 +150,7 @@ static void print_bg_rel_offset(ext2_filsys fs, blk64_t block, int itable,
 	}
 }
 
-static void list_desc (ext2_filsys fs)
+static void list_desc(ext2_filsys fs, int grp_only)
 {
 	unsigned long i;
 	blk64_t	first_block, last_block;
@@ -187,12 +187,35 @@ static void list_desc (ext2_filsys fs)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
 		old_desc_blocks = fs->desc_blocks;
+	if (grp_only)
+		printf("group:block:super:gdt:bbitmap:ibitmap:itable\n");
 	for (i = 0; i < fs->group_desc_count; i++) {
 		first_block = ext2fs_group_first_block2(fs, i);
 		last_block = ext2fs_group_last_block2(fs, i);
 
 		ext2fs_super_and_bgd_loc2(fs, i, &super_blk,
 					  &old_desc_blk, &new_desc_blk, 0);
+
+		if (grp_only) {
+			printf("%lu:%llu:", i, first_block);
+			if (i == 0 || super_blk)
+				printf("%llu:", super_blk);
+			else
+				printf("-1:");
+			if (old_desc_blk) {
+				print_range(old_desc_blk,
+					    old_desc_blk + old_desc_blocks - 1);
+				printf(":");
+			} else if (new_desc_blk)
+				printf("%llu:", new_desc_blk);
+			else
+				printf("-1:");
+			printf("%llu:%llu:%llu\n",
+			       ext2fs_block_bitmap_loc(fs, i),
+			       ext2fs_inode_bitmap_loc(fs, i),
+			       ext2fs_inode_table_loc(fs, i));
+			continue;
+		}
 
 		printf (_("Group %lu: (Blocks "), i);
 		print_range(first_block, last_block);
@@ -584,6 +607,7 @@ int main (int argc, char ** argv)
 	int		flags;
 	int		header_only = 0;
 	int		c;
+	int		grp_only = 0;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -598,13 +622,16 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 
-	while ((c = getopt (argc, argv, "bfhixVo:")) != EOF) {
+	while ((c = getopt(argc, argv, "bfghixVo:")) != EOF) {
 		switch (c) {
 		case 'b':
 			print_badblocks++;
 			break;
 		case 'f':
 			force++;
+			break;
+		case 'g':
+			grp_only++;
 			break;
 		case 'h':
 			header_only++;
@@ -672,6 +699,8 @@ try_open_again:
 	if (print_badblocks) {
 		list_bad_blocks(fs, 1);
 	} else {
+		if (grp_only)
+			goto just_descriptors;
 		list_super (fs->super);
 		if (fs->super->s_feature_incompat &
 		      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
@@ -697,7 +726,8 @@ try_bitmaps_again:
 		}
 		if (!retval && (fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS))
 			printf("%s", _("\n*** Checksum errors detected in bitmaps!  Run e2fsck now!\n\n"));
-		list_desc (fs);
+just_descriptors:
+		list_desc(fs, grp_only);
 		if (retval) {
 			printf(_("\n%s: %s: error reading bitmaps: %s\n"),
 			       program_name, device_name,

@@ -8,7 +8,7 @@ dumpe2fs \- dump ext2/ext3/ext4 filesystem information
 .SH SYNOPSIS
 .B dumpe2fs
 [
-.B \-bfhixV
+.B \-bfghixV
 ]
 [
 .B \-o superblock=\fIsuperblock
@@ -49,6 +49,14 @@ is examining the remains of a very badly corrupted filesystem.
 force dumpe2fs to display a filesystem even though it may have some 
 filesystem feature flags which dumpe2fs may not understand (and which
 can cause some of dumpe2fs's display to be suspect).
+.TP
+.B \-g
+display the group descriptor information in a machine readable colon-separated
+value format.  The fields displayed are the group number; the number of the
+first block in the group; the superblock location (or -1 if not present); the
+range of blocks used by the group descriptors (or -1 if not present); the block
+bitmap location; the inode bitmap location; and the range of blocks used by the
+inode table.
 .TP 
 .B \-h
 only display the superblock information and not any of the block
