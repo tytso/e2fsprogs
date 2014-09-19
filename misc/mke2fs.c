@@ -52,6 +52,7 @@ extern int optind;
 #include "ext2fs/ext2fsP.h"
 #include "uuid/uuid.h"
 #include "util.h"
+#include "plausible.h"
 #include "profile.h"
 #include "prof_err.h"
 #include "../version.h"

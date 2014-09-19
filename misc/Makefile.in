@@ -41,10 +41,10 @@ UMANPAGES=	chattr.1 lsattr.1 @UUID_CMT@ uuidgen.1
 
 LPROGS=		@E2INITRD_PROG@
 
-TUNE2FS_OBJS=	tune2fs.o util.o
+TUNE2FS_OBJS=	tune2fs.o util.o plausible.o
 MKLPF_OBJS=	mklost+found.o
 MKE2FS_OBJS=	mke2fs.o util.o profile.o prof_err.o default_profile.o \
-			mk_hugefiles.o create_inode.o
+			mk_hugefiles.o create_inode.o plausible.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
@@ -60,11 +60,12 @@ E4DEFRAG_OBJS=	e4defrag.o
 E2FREEFRAG_OBJS= e2freefrag.o
 E2FUZZ_OBJS=	e2fuzz.o
 
-PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o
+PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o profiled/plausible.o
 PROFILED_MKLPF_OBJS=	profiled/mklost+found.o
 PROFILED_MKE2FS_OBJS=	profiled/mke2fs.o profiled/util.o profiled/profile.o \
 			profiled/prof_err.o profiled/default_profile.o \
-			profiled/mk_hugefiles.o profiled/create_inode.o
+			profiled/mk_hugefiles.o profiled/create_inode.o \
+			profiled/plausible.o
 
 PROFILED_CHATTR_OBJS=	profiled/chattr.o
 PROFILED_LSATTR_OBJS=	profiled/lsattr.o
@@ -87,7 +88,8 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c $(srcdir)/
 		$(srcdir)/uuidgen.c $(srcdir)/blkid.c $(srcdir)/logsave.c \
 		$(srcdir)/filefrag.c $(srcdir)/base_device.c \
 		$(srcdir)/ismounted.c $(srcdir)/../e2fsck/profile.c \
-		$(srcdir)/e2undo.c $(srcdir)/e2freefrag.c $(srcdir)/create_inode.c
+		$(srcdir)/e2undo.c $(srcdir)/e2freefrag.c $(srcdir)/create_inode.c \
+		$(srcdir)/plausible.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)
 DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR)
@@ -699,6 +701,14 @@ badblocks.o: $(srcdir)/badblocks.c $(top_builddir)/lib/config.h \
 fsck.o: $(srcdir)/fsck.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/version.h \
  $(srcdir)/nls-enable.h $(srcdir)/fsck.h
+plausible.o: $(srcdir)/plausible.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/nls-enable.h $(srcdir)/plausible.h
 util.o: $(srcdir)/util.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \

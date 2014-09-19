@@ -59,6 +59,7 @@ extern int optind;
 #include "e2p/e2p.h"
 #include "jfs_user.h"
 #include "util.h"
+#include "plausible.h"
 #include "blkid/blkid.h"
 #include "quota/quotaio.h"
 

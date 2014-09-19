@@ -23,7 +23,7 @@ DEBUG_OBJS= debug_cmds.o extent_cmds.o tst_cmds.o debugfs.o util.o \
 	ncheck.o icheck.o ls.o lsdel.o dump.o set_fields.o logdump.o \
 	htree.o unused.o e2freefrag.o filefrag.o extent_inode.o zap.o \
 	xattrs.o quota.o tst_libext2fs.o create_inode.o journal.o \
-	revoke.o recovery.o do_journal.o
+	revoke.o recovery.o do_journal.o plausible.o
 
 DEBUG_SRCS= debug_cmds.c extent_cmds.c tst_cmds.c \
 	$(top_srcdir)/debugfs/debugfs.c \
@@ -47,7 +47,8 @@ DEBUG_SRCS= debug_cmds.c extent_cmds.c tst_cmds.c \
 	$(top_srcdir)/debugfs/journal.c \
 	$(top_srcdir)/e2fsck/revoke.c \
 	$(top_srcdir)/e2fsck/recovery.c \
-	$(top_srcdir)/debugfs/do_journal.c
+	$(top_srcdir)/debugfs/do_journal.c \
+	$(top_srcdir)/misc/plausible.c
 
 OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	$(TEST_IO_LIB_OBJS) \
@@ -412,6 +413,10 @@ recovery.o: $(top_srcdir)/e2fsck/recovery.c
 	$(E) "	CC $<"
 	$(Q) $(CC) $(DEBUGFS_CFLAGS) -c $< -o $@
 
+plausible.o: $(top_srcdir)/misc/plausible.c
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+
 do_journal.o: $(top_srcdir)/debugfs/do_journal.c
 	$(E) "	CC $<"
 	$(Q) $(CC) $(DEBUGFS_CFLAGS) -c $< -o $@
@@ -464,7 +469,7 @@ tst_libext2fs: $(DEBUG_OBJS) \
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_libext2fs $(ALL_LDFLAGS) -DDEBUG $(DEBUG_OBJS) \
 		$(STATIC_LIBSS) $(STATIC_LIBE2P) $(LIBQUOTA) \
-		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) \
+		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) $(LIBMAGIC) \
 		$(STATIC_LIBCOM_ERR) $(SYSLIBS) -I $(top_srcdir)/debugfs
 
 tst_inline: $(srcdir)/inline.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
