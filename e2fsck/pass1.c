@@ -2568,9 +2568,9 @@ report_problem:
 			new_lblk = pb->last_block + 1;
 			if (EXT2FS_CLUSTER_RATIO(ctx->fs) > 1)
 				new_lblk = ((new_lblk +
-					     EXT2FS_CLUSTER_RATIO(ctx->fs)) &
-					    EXT2FS_CLUSTER_MASK(ctx->fs)) |
-					   (extent.e_lblk &
+					     EXT2FS_CLUSTER_RATIO(ctx->fs) - 1) &
+					    ~EXT2FS_CLUSTER_MASK(ctx->fs)) |
+					   (extent.e_pblk &
 					    EXT2FS_CLUSTER_MASK(ctx->fs));
 			pctx->blk = extent.e_lblk;
 			pctx->blk2 = new_lblk;
