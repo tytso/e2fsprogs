@@ -26,7 +26,7 @@
 #include <time.h>
 #ifdef __linux__
 #include <sys/utsname.h>
-#include <linux/version.h>
+#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 #endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>

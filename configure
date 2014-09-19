@@ -5983,9 +5983,16 @@ fi
 else
   $as_echo "#define USE_UUIDD 1" >>confdefs.h
 
-UUIDD_CMT=""
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Building uuidd by default" >&5
+if test -z "$UUID_CMT"
+then
+	UUIDD_CMT=""
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Building uuidd by default" >&5
 $as_echo "Building uuidd by default" >&6; }
+else
+	UUIDD_CMT="#"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling uuidd by default" >&5
+$as_echo "Disabling uuidd by default" >&6; }
+fi
 
 fi
 
