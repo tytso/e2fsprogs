@@ -5308,6 +5308,7 @@ else
   as_fn_error $? "external uuid library not found" "$LINENO" 5
 fi
 
+	PROFILED_LIBUUID=$LIBUUID
 	UUID_CMT=#
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling private uuid library" >&5
 $as_echo "Disabling private uuid library" >&6; }
@@ -5521,6 +5522,7 @@ else
 fi
 
 	BLKID_CMT=#
+	PROFILED_LIBBLKID=$LIBBLKID
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling private blkid library" >&5
 $as_echo "Disabling private blkid library" >&6; }
 else
@@ -13480,9 +13482,6 @@ fi
 if test $cross_compiling = no; then
    BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
    BUILD_LDFLAGS="$LDFLAGS"
-else
-   BUILD_CFLAGS=
-   BUILD_LDFLAGS=
 fi
 
 
