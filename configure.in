@@ -785,8 +785,14 @@ else
 fi]
 ,
 AC_DEFINE(USE_UUIDD, 1)
-UUIDD_CMT=""
-AC_MSG_RESULT([Building uuidd by default])
+if test -z "$UUID_CMT"
+then
+	UUIDD_CMT=""
+	AC_MSG_RESULT([Building uuidd by default])
+else
+	UUIDD_CMT="#"
+	AC_MSG_RESULT([Disabling uuidd by default])
+fi
 )
 AC_SUBST(UUIDD_CMT)
 dnl
