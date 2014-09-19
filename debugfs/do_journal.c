@@ -158,6 +158,8 @@ static errcode_t journal_commit_trans(journal_transaction_t *trans)
 	trans->flags &= ~J_TRANS_OPEN;
 	trans->block++;
 
+	trans->fs->super->s_feature_incompat |= EXT3_FEATURE_INCOMPAT_RECOVER;
+	ext2fs_mark_super_dirty(trans->fs);
 error:
 	if (cbh)
 		brelse(cbh);
@@ -979,4 +981,9 @@ void do_journal_run(int argc, char *argv[])
 	err = ext2fs_run_ext3_journal(&current_fs);
 	if (err)
 		com_err("journal_run", err, "while recovering journal");
+	else {
+		current_fs->super->s_feature_incompat &=
+				~EXT3_FEATURE_INCOMPAT_RECOVER;
+		ext2fs_mark_super_dirty(current_fs);
+	}
 }
