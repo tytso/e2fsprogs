@@ -582,6 +582,8 @@ errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
 			goto errout;
 		}
 		journal_ino = st.st_ino;
+		memset(fs->super->s_jnl_blocks, 0,
+		       sizeof(fs->super->s_jnl_blocks));
 	} else {
 		if ((mount_flags & EXT2_MF_BUSY) &&
 		    !(fs->flags & EXT2_FLAG_EXCLUSIVE)) {

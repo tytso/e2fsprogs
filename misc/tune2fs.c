@@ -304,6 +304,7 @@ no_valid_journal:
 		return 1;
 	}
 	fs->super->s_journal_dev = 0;
+	memset(fs->super->s_jnl_blocks, 0, sizeof(fs->super->s_jnl_blocks));
 	uuid_clear(fs->super->s_journal_uuid);
 	ext2fs_mark_super_dirty(fs);
 	fputs(_("Journal removed\n"), stdout);
