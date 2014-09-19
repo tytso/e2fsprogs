@@ -128,3 +128,12 @@ errcode_t io_channel_alloc_buf(io_channel io, int count, void *ptr)
 	else
 		return ext2fs_get_mem(size, ptr);
 }
+
+errcode_t io_channel_cache_readahead(io_channel io, unsigned long long block,
+				     unsigned long long count)
+{
+	if (!io->manager->cache_readahead)
+		return EXT2_ET_OP_NOT_SUPPORTED;
+
+	return io->manager->cache_readahead(io, block, count);
+}
