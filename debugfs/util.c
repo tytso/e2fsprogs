@@ -503,6 +503,7 @@ errcode_t read_list(const char *str, blk64_t **list, size_t *len)
 	blk64_t *lst = *list;
 	size_t ln = *len;
 	char *tok, *p = optarg;
+	errcode_t retval;
 
 	while ((tok = strtok(p, ","))) {
 		blk64_t *l;
@@ -517,13 +518,19 @@ errcode_t read_list(const char *str, blk64_t **list, size_t *len)
 			y = strtoull(e + 1, NULL, 0);
 			if (errno)
 				return errno;
-		} else if (*e != 0)
-			return EINVAL;
-		if (y < x)
-			return EINVAL;
+		} else if (*e != 0) {
+			retval = EINVAL;
+			goto err;
+		}
+		if (y < x) {
+			retval = EINVAL;
+			goto err;
+		}
 		l = realloc(lst, sizeof(blk64_t) * (ln + y - x + 1));
-		if (l == NULL)
-			return ENOMEM;
+		if (l == NULL) {
+			retval = ENOMEM;
+			goto err;
+		}
 		lst = l;
 		for (; x <= y; x++)
 			lst[ln++] = x;
@@ -533,4 +540,7 @@ errcode_t read_list(const char *str, blk64_t **list, size_t *len)
 	*list = lst;
 	*len = ln;
 	return 0;
+err:
+	free(lst);
+	return retval;
 }

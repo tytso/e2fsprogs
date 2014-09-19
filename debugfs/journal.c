@@ -657,10 +657,10 @@ void ext2fs_journal_release(ext2_filsys fs, journal_t *journal,
 	}
 	brelse(journal->j_sb_buffer);
 
-	if (fs->journal_io) {
-		if (fs && fs->io != fs->journal_io)
+	if (fs && fs->journal_io) {
+		if (fs->io != fs->journal_io)
 			io_channel_close(fs->journal_io);
-		fs->journal_io = 0;
+		fs->journal_io = NULL;
 	}
 
 #ifndef USE_INODE_IO
@@ -682,7 +682,6 @@ errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 	journal_t *journal;
 	int recover = fs->super->s_feature_incompat &
 		EXT3_FEATURE_INCOMPAT_RECOVER;
-	int reset = 0;
 	errcode_t retval;
 
 	/* If we don't have any journal features, don't do anything more */
@@ -696,23 +695,25 @@ errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 		return retval;
 
 	retval = ext2fs_journal_load(journal);
-	if (retval) {
-		ext2fs_journal_release(fs, journal, 0, 1);
-		return retval;
-	}
+	if (retval)
+		goto err;
 
 	/*
 	 * We want to make the flags consistent here.  We will not leave with
 	 * needs_recovery set but has_journal clear.  We can't get in a loop
 	 * with -y, -n, or -p, only if a user isn't making up their mind.
 	 */
-	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
-		return EXT2_ET_JOURNAL_FLAGS_WRONG;
+	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
+		retval = EXT2_ET_JOURNAL_FLAGS_WRONG;
+		goto err;
+	}
 
 	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL &&
 	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
-	    journal->j_superblock->s_start != 0)
-		return EXT2_ET_JOURNAL_FLAGS_WRONG;
+	    journal->j_superblock->s_start != 0) {
+		retval = EXT2_ET_JOURNAL_FLAGS_WRONG;
+		goto err;
+	}
 
 	/*
 	 * If we don't need to do replay the journal, check to see if
@@ -728,7 +729,8 @@ errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 
-	ext2fs_journal_release(fs, journal, reset, 0);
+err:
+	ext2fs_journal_release(fs, journal, 0, retval ? 1 : 0);
 	return retval;
 }
 
