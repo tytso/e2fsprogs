@@ -635,6 +635,12 @@ struct problem_context {
 /* badblocks is in badblocks */
 #define PR_1_BADBLOCKS_IN_BADBLOCKS		0x01007B
 
+/* can't allocate extent region */
+#define PR_1_EXTENT_ALLOC_REGION_ABORT		0x01007C
+
+/* leaf extent collision */
+#define PR_1_EXTENT_COLLISION			0x01007D
+
 /*
  * Pass 1b errors
  */

@@ -784,7 +784,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Error allocating EA region allocation structure */
 	{ PR_1_EA_ALLOC_REGION_ABORT,
-	  N_("@A @a @b %b.  "),
+	  N_("@A @a region allocation structure.  "),
 	  PROMPT_NONE, PR_FATAL},
 
 	/* Error EA allocation collision */
@@ -1090,6 +1090,16 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1_BADBLOCKS_IN_BADBLOCKS,
 	  N_("Bad block list says the bad block list @i is bad.  "),
 	  PROMPT_CLEAR_INODE, 0 },
+
+	/* Error allocating extent region allocation structure */
+	{ PR_1_EXTENT_ALLOC_REGION_ABORT,
+	  N_("@A @x region allocation structure.  "),
+	  PROMPT_NONE, PR_FATAL},
+
+	/* Inode has a duplicate extent mapping */
+	{ PR_1_EXTENT_COLLISION,
+	  N_("@i %i has a duplicate @x mapping\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
+	  PROMPT_CLEAR, 0 },
 
 	/* Pass 1b errors */
 

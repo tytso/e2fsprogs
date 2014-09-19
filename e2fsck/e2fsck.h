@@ -381,7 +381,7 @@ struct e2fsck_struct {
 };
 
 /* Used by the region allocation code */
-typedef __u32 region_addr_t;
+typedef __u64 region_addr_t;
 typedef struct region_struct *region_t;
 
 #ifndef HAVE_STRNLEN

@@ -94,6 +94,7 @@ struct process_block_struct {
 	ext2fs_block_bitmap fs_meta_blocks;
 	e2fsck_t	ctx;
 	blk64_t		bad_ref;
+	region_t	region;
 };
 
 struct process_inode_block {
@@ -2395,6 +2396,10 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			  (1 << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
 
+		if (is_leaf && problem == 0 && extent.e_len > 0 &&
+		    region_allocate(pb->region, extent.e_lblk, extent.e_len))
+			problem = PR_1_EXTENT_COLLISION;
+
 		/*
 		 * Uninitialized blocks in a directory?  Clear the flag and
 		 * we'll interpret the blocks later.
@@ -2695,6 +2700,14 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->extent_depth_count[info.max_depth]++;
 	}
 
+	pb->region = region_create(0, info.max_lblk);
+	if (!pb->region) {
+		ext2fs_extent_free(ehandle);
+		fix_problem(ctx, PR_1_EXTENT_ALLOC_REGION_ABORT, pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+
 	eof_lblk = ((EXT2_I_SIZE(inode) + fs->blocksize - 1) >>
 		EXT2_BLOCK_SIZE_BITS(fs->super)) - 1;
 	scan_extent_node(ctx, pctx, pb, 0, 0, eof_lblk, ehandle, 1);
@@ -2706,6 +2719,8 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 				   "check_blocks_extents");
 		pctx->errcode = 0;
 	}
+	region_free(pb->region);
+	pb->region = NULL;
 	ext2fs_extent_free(ehandle);
 }
 
