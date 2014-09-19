@@ -479,6 +479,7 @@ then
 		[LIBUUID=`$PKG_CONFIG --libs uuid`;
 		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`],
 		[AC_MSG_ERROR([external uuid library not found])])
+	PROFILED_LIBUUID=$LIBUUID
 	UUID_CMT=#
 	AC_MSG_RESULT([Disabling private uuid library])
 else
@@ -531,6 +532,7 @@ then
 		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`],
 		[AC_MSG_ERROR([external blkid library not found])], -luuid)
 	BLKID_CMT=#
+	PROFILED_LIBBLKID=$LIBBLKID
 	AC_MSG_RESULT([Disabling private blkid library])
 else
 	LIBBLKID='$(LIB)/libblkid'$LIB_EXT
