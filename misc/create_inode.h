@@ -7,7 +7,6 @@
 #include "et/com_err.h"
 #include "e2p/e2p.h"
 #include "ext2fs/ext2fs.h"
-#include "nls-enable.h"
 
 struct hdlink_s
 {

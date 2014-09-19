@@ -58,6 +58,7 @@ extern int optind;
 #include "quota/quotaio.h"
 #include "mke2fs.h"
 #include "create_inode.h"
+#include "nls-enable.h"
 
 #define STRIDE_LENGTH 8
 

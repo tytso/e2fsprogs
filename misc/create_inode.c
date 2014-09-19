@@ -17,6 +17,7 @@
 #endif
 
 #include "create_inode.h"
+#include "nls-enable.h"
 
 #if __STDC_VERSION__ < 199901L
 # if __GNUC__ >= 2
