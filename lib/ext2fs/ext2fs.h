@@ -1712,7 +1712,7 @@ _INLINE_ errcode_t ext2fs_get_memzero(unsigned long size, void *ptr)
 
 _INLINE_ errcode_t ext2fs_get_array(unsigned long count, unsigned long size, void *ptr)
 {
-	if (count && (-1UL)/count<size)
+	if (count && (~0UL)/count < size)
 		return EXT2_ET_NO_MEMORY;
 	return ext2fs_get_mem(count*size, ptr);
 }
@@ -1722,7 +1722,7 @@ _INLINE_ errcode_t ext2fs_get_arrayzero(unsigned long count,
 {
 	void *pp;
 
-	if (count && (-1UL)/count<size)
+	if (count && (~0UL)/count < size)
 		return EXT2_ET_NO_MEMORY;
 	pp = calloc(count, size);
 	if (!pp)
