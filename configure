@@ -13187,6 +13187,9 @@ done
 
 fi
 
+if test "$ac_cv_lib_dl_dlopen" = yes ; then
+   MAGIC_LIB=$DLOPEN_LIB
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for optreset" >&5
 $as_echo_n "checking for optreset... " >&6; }

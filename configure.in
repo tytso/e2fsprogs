@@ -1157,6 +1157,9 @@ dnl See if libmagic exists
 dnl
 AC_CHECK_LIB(magic, magic_file, [MAGIC_LIB=-lmagic
 AC_CHECK_HEADERS([magic.h])])
+if test "$ac_cv_lib_dl_dlopen" = yes ; then
+   MAGIC_LIB=$DLOPEN_LIB
+fi
 AC_SUBST(MAGIC_LIB)
 dnl
 dnl See if optreset exists

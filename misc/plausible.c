@@ -36,6 +36,48 @@
 #include "nls-enable.h"
 #include "blkid/blkid.h"
 
+static magic_t (*dl_magic_open)(int);
+static const char *(*dl_magic_file)(magic_t, const char *);
+static int (*dl_magic_load)(magic_t, const char *);
+static void (*dl_magic_close)(magic_t);
+
+#ifdef HAVE_MAGIC_H
+#ifdef HAVE_DLOPEN
+#include <dlfcn.h>
+
+static void *magic_handle;
+
+static int magic_library_available(void)
+{
+	if (!magic_handle) {
+		magic_handle = dlopen("libmagic.so.1", RTLD_NOW);
+		if (!magic_handle)
+			return 0;
+
+		dl_magic_open = dlsym(magic_handle, "magic_open");
+		dl_magic_file = dlsym(magic_handle, "magic_file");
+		dl_magic_load = dlsym(magic_handle, "magic_load");
+		dl_magic_close = dlsym(magic_handle, "magic_close");
+	}
+
+	if (!dl_magic_open || !dl_magic_file ||
+	    !dl_magic_load || !dl_magic_close)
+		return 0;
+	return 1;
+}
+#else
+static int magic_library_available(void)
+{
+	dl_magic_open = magic_open;
+	dl_magic_file = magic_file;
+	dl_magic_load = magic_load;
+	dl_magic_close = magic_close;
+
+	return 1;
+}
+#endif
+#endif
+
 static void print_ext2_info(const char *device)
 
 {
@@ -198,20 +240,20 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 	}
 
 #ifdef HAVE_MAGIC_H
-	if (flags & CHECK_FS_EXIST) {
+	if ((flags & CHECK_FS_EXIST) && magic_library_available()) {
 		const char *msg;
 		magic_t mag;
 
-		mag = magic_open(MAGIC_RAW | MAGIC_SYMLINK | MAGIC_DEVICES |
-				 MAGIC_ERROR | MAGIC_NO_CHECK_ELF |
-				 MAGIC_NO_CHECK_COMPRESS);
-		magic_load(mag, NULL);
+		mag = dl_magic_open(MAGIC_RAW | MAGIC_SYMLINK | MAGIC_DEVICES |
+				    MAGIC_ERROR | MAGIC_NO_CHECK_ELF |
+				    MAGIC_NO_CHECK_COMPRESS);
+		dl_magic_load(mag, NULL);
 
-		msg = magic_file(mag, device);
+		msg = dl_magic_file(mag, device);
 		if (msg && strcmp(msg, "data") && strcmp(msg, "empty"))
 			printf(_("%s contains a `%s'\n"), device, msg);
 
-		magic_close(mag);
+		dl_magic_close(mag);
 		return 0;
 	}
 #endif
