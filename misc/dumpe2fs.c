@@ -598,18 +598,29 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 
+	if (argv[1] == NULL)
+            usage();
+
 	while ((c = getopt (argc, argv, "bfhixVo:")) != EOF) {
 		switch (c) {
 		case 'b':
+			if (argv[2] == NULL)
+                                usage();
 			print_badblocks++;
 			break;
 		case 'f':
+			if (argv[2] == NULL)
+                                usage();
 			force++;
 			break;
 		case 'h':
+			if (argv[2] == NULL)
+				usage();
 			header_only++;
 			break;
 		case 'i':
+			if (argv[2] == NULL)
+                                usage();
 			image_dump++;
 			break;
 		case 'o':
@@ -622,6 +633,8 @@ int main (int argc, char ** argv)
 				error_message(EXT2_ET_BASE));
 			exit(0);
 		case 'x':
+			if (argv[2] == NULL)
+                                usage();
 			hex_format++;
 			break;
 		default:
