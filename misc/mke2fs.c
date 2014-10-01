@@ -1929,7 +1929,7 @@ profile_error:
 	tmp = NULL;
 	if (fs_param.s_rev_level != EXT2_GOOD_OLD_REV) {
 		tmp = get_string_from_profile(fs_types, "base_features",
-		      "sparse_super,filetype,resize_inode,dir_index");
+		      "sparse_super,large_file,filetype,resize_inode,dir_index");
 		edit_feature(tmp, &fs_param.s_feature_compat);
 		free(tmp);
 
