@@ -2360,7 +2360,8 @@ profile_error:
 	     EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
 	    fs_param.s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
 		com_err(program_name, 0,
-			_("inode size is %d, inline data is useless"),
+			_("%d byte inodes are too small for inline data; "
+			  "specify larger size"),
 			fs_param.s_inode_size);
 		exit(1);
 	}
