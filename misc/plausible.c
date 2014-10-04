@@ -36,12 +36,12 @@
 #include "nls-enable.h"
 #include "blkid/blkid.h"
 
+#ifdef HAVE_MAGIC_H
 static magic_t (*dl_magic_open)(int);
 static const char *(*dl_magic_file)(magic_t, const char *);
 static int (*dl_magic_load)(magic_t, const char *);
 static void (*dl_magic_close)(magic_t);
 
-#ifdef HAVE_MAGIC_H
 #ifdef HAVE_DLOPEN
 #include <dlfcn.h>
 
