@@ -458,7 +458,7 @@ static void check_if_skip(e2fsck_t ctx)
 	}
 	log_out(ctx, "\n");
 skip:
-	ext2fs_close_free(&fs);
+	ext2fs_close_free(&ctx->fs);
 	e2fsck_free_context(ctx);
 	exit(FSCK_OK);
 }
@@ -1462,7 +1462,7 @@ failure:
 		/*
 		 * Restart in order to reopen fs but this time start mmp.
 		 */
-		ext2fs_close_free(&fs);
+		ext2fs_close_free(&ctx->fs);
 		flags &= ~EXT2_FLAG_SKIP_MMP;
 		goto restart;
 	}
@@ -1692,7 +1692,7 @@ no_journal:
 				_("while resetting context"));
 			fatal_error(ctx, 0);
 		}
-		ext2fs_close_free(&fs);
+		ext2fs_close_free(&ctx->fs);
 		goto restart;
 	}
 	if (run_result & E2F_FLAG_ABORT)
