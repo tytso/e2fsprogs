@@ -1863,28 +1863,64 @@ void do_features(int argc, char *argv[])
 void do_bmap(int argc, char *argv[])
 {
 	ext2_ino_t	ino;
-	blk64_t		blk, pblk;
-	int		err;
+	blk64_t		blk, pblk = 0;
+	int		c, err, flags = 0, ret_flags = 0;
 	errcode_t	errcode;
 
-	if (common_args_process(argc, argv, 3, 3, argv[0],
-				"<file> logical_blk", 0))
+	if (check_fs_open(argv[0]))
 		return;
 
-	ino = string_to_inode(argv[1]);
+	reset_getopt();
+	while ((c = getopt (argc, argv, "a")) != EOF) {
+		switch (c) {
+		case 'a':
+			flags |= BMAP_ALLOC;
+			break;
+		default:
+			goto print_usage;
+		}
+	}
+
+	if (argc <= optind+1) {
+	print_usage:
+		com_err(0, 0,
+			"Usage: bmap [-a] <file> logical_blk [physical_blk]");
+		return;
+	}
+
+	ino = string_to_inode(argv[optind++]);
 	if (!ino)
 		return;
-	err = strtoblk(argv[0], argv[2], "logical block", &blk);
+	err = strtoblk(argv[0], argv[optind++], "logical block", &blk);
 	if (err)
 		return;
 
-	errcode = ext2fs_bmap2(current_fs, ino, 0, 0, 0, blk, 0, &pblk);
+	if (argc > optind+1)
+		goto print_usage;
+
+	if (argc == optind+1) {
+		err = strtoblk(argv[0], argv[optind++],
+			       "physical block", &pblk);
+		if (err)
+			return;
+		if (flags & BMAP_ALLOC) {
+			com_err(0, 0, "Can't set and allocate a block");
+			return;
+		}
+		flags |= BMAP_SET;
+	}
+
+	errcode = ext2fs_bmap2(current_fs, ino, 0, 0, flags, blk,
+			       &ret_flags, &pblk);
 	if (errcode) {
 		com_err(argv[0], errcode,
 			"while mapping logical block %llu\n", blk);
 		return;
 	}
-	printf("%llu\n", pblk);
+	printf("%llu", pblk);
+	if (ret_flags & BMAP_RET_UNINIT)
+		fputs(" (uninit)", stdout);
+	fputc('\n', stdout);
 }
 
 void do_imap(int argc, char *argv[])

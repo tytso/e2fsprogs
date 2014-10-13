@@ -167,11 +167,14 @@ Print the blocks used by the inode
 .I filespec
 to stdout.
 .TP
-.BI bmap " filespec logical_block"
-Print the physical block number corresponding to the logical block number
+.BI bmap " [ -a ] filespec logical_block [physical_block]"
+Print or set the physical block number corresponding to the logical block number
 .I logical_block
 in the inode
 .IR filespec .
+If the
+.I -a
+flag is specified, try to allocate a block if necessary.
 .TP
 .BI block_dump " [-f filespec] block_num"
 Dump the filesystem block given by
