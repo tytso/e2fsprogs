@@ -524,8 +524,6 @@ extern void e2fsck_read_bitmaps(e2fsck_t ctx);
 extern void e2fsck_write_bitmaps(e2fsck_t ctx);
 extern void preenhalt(e2fsck_t ctx);
 extern char *string_copy(e2fsck_t ctx, const char *str, int len);
-extern errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
-				    blk_t *ret_blk, int *ret_count);
 extern int fs_proc_check(const char *fs_name);
 extern int check_for_modules(const char *fs_name);
 #ifdef RESOURCE_TRACK

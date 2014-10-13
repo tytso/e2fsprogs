@@ -809,20 +809,13 @@ static int expand_dir_proc(ext2_filsys fs,
 		es->num--;
 		retval = ext2fs_write_dir_block4(fs, new_blk, block, 0,
 						 es->dir);
-	} else {
-		retval = ext2fs_get_mem(fs->blocksize, &block);
-		if (retval) {
-			es->err = retval;
-			return BLOCK_ABORT;
-		}
-		memset(block, 0, fs->blocksize);
-		retval = io_channel_write_blk64(fs->io, new_blk, 1, block);
-	}
+		ext2fs_free_mem(&block);
+	} else
+		retval = ext2fs_zero_blocks2(fs, new_blk, 1, NULL, NULL);
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;
 	}
-	ext2fs_free_mem(&block);
 	*blocknr = new_blk;
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, new_blk);
 

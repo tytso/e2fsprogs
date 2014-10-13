@@ -3511,12 +3511,15 @@ static void new_table_block(e2fsck_t ctx, blk64_t first_block, dgrp_t group,
 				   old_block + i, 1, buf);
 			if (pctx.errcode)
 				fix_problem(ctx, PR_1_RELOC_READ_ERR, &pctx);
-		} else
-			memset(buf, 0, fs->blocksize);
+			pctx.blk = (*new_block) + i;
+			pctx.errcode = io_channel_write_blk64(fs->io, pctx.blk,
+							      1, buf);
+		} else {
+			pctx.blk = (*new_block) + i;
+			pctx.errcode = ext2fs_zero_blocks2(fs, pctx.blk, 1,
+							   NULL, NULL);
+		}
 
-		pctx.blk = (*new_block) + i;
-		pctx.errcode = io_channel_write_blk64(fs->io, pctx.blk,
-					      1, buf);
 		if (pctx.errcode)
 			fix_problem(ctx, PR_1_RELOC_WRITE_ERR, &pctx);
 	}

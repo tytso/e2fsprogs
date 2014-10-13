@@ -148,7 +148,7 @@ errfree:
  * attempt to free the static zeroizing buffer.  (This is to keep
  * programs that check for memory leaks happy.)
  */
-#define STRIDE_LENGTH 8
+#define STRIDE_LENGTH (4194304 / fs->blocksize)
 errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 			      blk64_t *ret_blk, int *ret_count)
 {
@@ -366,20 +366,20 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	retval = ext2fs_block_iterate3(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
 	if (retval)
-		goto errout;
+		goto out2;
 	if (es.err) {
 		retval = es.err;
-		goto errout;
+		goto out2;
 	}
 	if (es.zero_count) {
 		retval = ext2fs_zero_blocks2(fs, es.blk_to_zero,
 					    es.zero_count, 0, 0);
 		if (retval)
-			goto errout;
+			goto out2;
 	}
 
 	if ((retval = ext2fs_read_inode(fs, journal_ino, &inode)))
-		goto errout;
+		goto out2;
 
 	inode_size = (unsigned long long)fs->blocksize * num_blocks;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
@@ -388,10 +388,10 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	inode.i_mode = LINUX_S_IFREG | 0600;
 	retval = ext2fs_inode_size_set(fs, &inode, inode_size);
 	if (retval)
-		goto errout;
+		goto out2;
 
 	if ((retval = ext2fs_write_new_inode(fs, journal_ino, &inode)))
-		goto errout;
+		goto out2;
 	retval = 0;
 
 	memcpy(fs->super->s_jnl_blocks, inode.i_block, EXT2_N_BLOCKS*4);
@@ -400,8 +400,6 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	fs->super->s_jnl_backup_type = EXT3_JNL_BACKUP_BLOCKS;
 	ext2fs_mark_super_dirty(fs);
 
-errout:
-	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
 out2:
 	ext2fs_free_mem(&buf);
 	return retval;

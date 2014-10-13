@@ -435,7 +435,6 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 				sync();
 		}
 	}
-	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
 	ext2fs_numeric_progress_close(fs, &progress,
 				      _("done                            \n"));
 
@@ -624,7 +623,6 @@ static void create_journal_dev(ext2_filsys fs)
 		count -= c;
 		ext2fs_numeric_progress_update(fs, &progress, blk);
 	}
-	ext2fs_zero_blocks2(0, 0, 0, 0, 0);
 
 	ext2fs_numeric_progress_close(fs, &progress, NULL);
 write_superblock:

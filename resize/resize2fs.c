@@ -758,11 +758,11 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 		/*
 		 * Write out the new inode table
 		 */
-		retval = io_channel_write_blk64(fs->io,
-						ext2fs_inode_table_loc(fs, i),
-						fs->inode_blocks_per_group,
-						rfs->itable_buf);
-		if (retval) goto errout;
+		retval = ext2fs_zero_blocks2(fs, ext2fs_inode_table_loc(fs, i),
+					     fs->inode_blocks_per_group, NULL,
+					     NULL);
+		if (retval)
+			goto errout;
 
 		io_channel_flush(fs->io);
 		if (rfs->progress) {
@@ -2186,14 +2186,10 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 {
 	struct ext2_inode	inode;
 	errcode_t		retval;
-	char			*block_buf = NULL;
 
 	if (!(fs->super->s_feature_compat &
 	      EXT2_FEATURE_COMPAT_RESIZE_INODE))
 		return 0;
-
-	retval = ext2fs_get_mem(fs->blocksize, &block_buf);
-	if (retval) goto errout;
 
 	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
 	if (retval) goto errout;
@@ -2214,19 +2210,16 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 		exit(1);
 	}
 
-	memset(block_buf, 0, fs->blocksize);
-
-	retval = io_channel_write_blk64(fs->io, inode.i_block[EXT2_DIND_BLOCK],
-					1, block_buf);
-	if (retval) goto errout;
+	retval = ext2fs_zero_blocks2(fs, inode.i_block[EXT2_DIND_BLOCK], 1,
+				     NULL, NULL);
+	if (retval)
+		goto errout;
 
 	retval = ext2fs_create_resize_inode(fs);
 	if (retval)
 		goto errout;
 
 errout:
-	if (block_buf)
-		ext2fs_free_mem(&block_buf);
 	return retval;
 }
 

@@ -608,59 +608,6 @@ int ext2_file_type(unsigned int mode)
 	return 0;
 }
 
-#define STRIDE_LENGTH 8
-/*
- * Helper function which zeros out _num_ blocks starting at _blk_.  In
- * case of an error, the details of the error is returned via _ret_blk_
- * and _ret_count_ if they are non-NULL pointers.  Returns 0 on
- * success, and an error code on an error.
- *
- * As a special case, if the first argument is NULL, then it will
- * attempt to free the static zeroizing buffer.  (This is to keep
- * programs that check for memory leaks happy.)
- */
-errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
-			     blk_t *ret_blk, int *ret_count)
-{
-	int		j, count;
-	static char	*buf;
-	errcode_t	retval;
-
-	/* If fs is null, clean up the static buffer and return */
-	if (!fs) {
-		if (buf) {
-			free(buf);
-			buf = 0;
-		}
-		return 0;
-	}
-	/* Allocate the zeroizing buffer if necessary */
-	if (!buf) {
-		buf = malloc(fs->blocksize * STRIDE_LENGTH);
-		if (!buf) {
-			com_err("malloc", ENOMEM, "%s",
-				_("while allocating zeroizing buffer"));
-			exit(1);
-		}
-		memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
-	}
-	/* OK, do the write loop */
-	for (j = 0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
-		count = num - j;
-		if (count > STRIDE_LENGTH)
-			count = STRIDE_LENGTH;
-		retval = io_channel_write_blk64(fs->io, blk, count, buf);
-		if (retval) {
-			if (ret_count)
-				*ret_count = count;
-			if (ret_blk)
-				*ret_blk = blk;
-			return retval;
-		}
-	}
-	return 0;
-}
-
 /*
  * Check to see if a filesystem is in /proc/filesystems.
  * Returns 1 if found, 0 if not
