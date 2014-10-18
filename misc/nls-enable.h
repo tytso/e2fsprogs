@@ -1,4 +1,4 @@
-#ifdef ENABLE_NLS
+#if defined(ENABLE_NLS) && !defined(DEBUGFS)
 #include <libintl.h>
 #include <locale.h>
 #define _(a) (gettext (a))
