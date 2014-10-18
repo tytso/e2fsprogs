@@ -36,6 +36,8 @@
 // #include <linux/falloc.h>
 #define FALLOC_FL_KEEP_SIZE	0x01
 #define FALLOC_FL_PUNCH_HOLE	0x02 /* de-allocates range */
+#define FALLOC_FL_COLLAPSE_RANGE	0x08
+#define FALLOC_FL_ZERO_RANGE		0x10
 
 void usage(void)
 {
@@ -95,7 +97,7 @@ int main(int argc, char **argv)
 	int	error;
 	int	tflag = 0;
 
-	while ((opt = getopt(argc, argv, "npl:o:t")) != -1) {
+	while ((opt = getopt(argc, argv, "npl:o:tzc")) != -1) {
 		switch(opt) {
 		case 'n':
 			/* do not change filesize */
@@ -104,6 +106,16 @@ int main(int argc, char **argv)
 		case 'p':
 			/* punch mode */
 			falloc_mode = (FALLOC_FL_PUNCH_HOLE |
+				       FALLOC_FL_KEEP_SIZE);
+			break;
+		case 'c':
+			/* collapse range mode */
+			falloc_mode = (FALLOC_FL_COLLAPSE_RANGE |
+				       FALLOC_FL_KEEP_SIZE);
+			break;
+		case 'z':
+			/* zero range mode */
+			falloc_mode = (FALLOC_FL_ZERO_RANGE |
 				       FALLOC_FL_KEEP_SIZE);
 			break;
 		case 'l':
