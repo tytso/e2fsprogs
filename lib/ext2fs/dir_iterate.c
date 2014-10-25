@@ -202,7 +202,7 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 	if (ctx->errcode)
 		return BLOCK_ABORT;
 
-	while (offset < fs->blocksize) {
+	while (offset < fs->blocksize - 8) {
 		dirent = (struct ext2_dir_entry *) (ctx->buf + offset);
 		if (ext2fs_get_rec_len(fs, dirent, &rec_len))
 			return BLOCK_ABORT;
