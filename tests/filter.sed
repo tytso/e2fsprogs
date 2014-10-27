@@ -18,6 +18,7 @@ s/\\015//g
 /^Lifetime writes:/d
 /^Maximum mount count:/d
 /^Next check after:/d
+/^Suggestion:/d
 /Reserved blocks uid:/s/ (user .*)//
 /Reserved blocks gid:/s/ (group .*)//
 /whichever comes first/d

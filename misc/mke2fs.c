@@ -2211,6 +2211,14 @@ profile_error:
 			blocksize, sys_page_size);
 	}
 
+	/* Metadata checksumming wasn't totally stable before 3.18. */
+	if (is_before_linux_ver(3, 18, 0) &&
+	    (fs_param.s_feature_ro_compat &
+					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		fprintf(stderr, _("Suggestion: Use Linux kernel >= 3.18 for "
+			"improved stability of the metadata and journal "
+			"checksum features.\n"));
+
 	/*
 	 * On newer kernels we do have lazy_itable_init support. So pick the
 	 * right default in case ext4 module is not loaded.
