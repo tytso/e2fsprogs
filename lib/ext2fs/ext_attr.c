@@ -550,7 +550,7 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 
 write_ea_block:
 	/* Write the EA block */
-	err = ext2fs_get_mem(handle->fs->blocksize, &block_buf);
+	err = ext2fs_get_memzero(handle->fs->blocksize, &block_buf);
 	if (err)
 		goto out;
 
