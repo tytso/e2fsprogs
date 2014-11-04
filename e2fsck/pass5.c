@@ -84,7 +84,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 static void check_inode_bitmap_checksum(e2fsck_t ctx)
 {
 	struct problem_context	pctx;
-	char		*buf;
+	char		*buf = NULL;
 	dgrp_t		i;
 	int		nbytes;
 	ext2_ino_t	ino_itr;
@@ -139,7 +139,7 @@ static void check_inode_bitmap_checksum(e2fsck_t ctx)
 static void check_block_bitmap_checksum(e2fsck_t ctx)
 {
 	struct problem_context	pctx;
-	char		*buf;
+	char		*buf = NULL;
 	dgrp_t		i;
 	int		nbytes;
 	blk64_t		blk_itr;
