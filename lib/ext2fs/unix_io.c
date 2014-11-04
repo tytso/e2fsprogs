@@ -820,7 +820,8 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 			cache = reuse;
 			reuse_cache(channel, data, cache, block);
 		}
-		memcpy(cache->buf, cp, channel->block_size);
+		if (cache->buf != cp)
+			memcpy(cache->buf, cp, channel->block_size);
 		cache->dirty = !writethrough;
 		count--;
 		block++;
