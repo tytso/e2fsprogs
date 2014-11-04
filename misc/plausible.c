@@ -243,6 +243,7 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 	if ((flags & CHECK_FS_EXIST) && magic_library_available()) {
 		const char *msg;
 		magic_t mag;
+		int has_magic = 0;
 
 		mag = dl_magic_open(MAGIC_RAW | MAGIC_SYMLINK | MAGIC_DEVICES |
 				    MAGIC_ERROR | MAGIC_NO_CHECK_ELF |
@@ -250,11 +251,13 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		dl_magic_load(mag, NULL);
 
 		msg = dl_magic_file(mag, device);
-		if (msg && strcmp(msg, "data") && strcmp(msg, "empty"))
-			printf(_("%s contains a `%s'\n"), device, msg);
+		if (msg && strcmp(msg, "data") && strcmp(msg, "empty")) {
+			printf(_("%s contains `%s' data\n"), device, msg);
+			has_magic = 1;
+		}
 
 		dl_magic_close(mag);
-		return 0;
+		return !has_magic;
 	}
 #endif
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$(grep -c 'define HAVE_MAGIC_H' $test_dir/../../lib/config.h)" -gt 0 ]; then
+if [ "$(grep -c 'define HAVE_MAGIC_H' ../lib/config.h)" -gt 0 ]; then
 
 FSCK_OPT=-fn
 IMAGE=$test_dir/image.bz2
