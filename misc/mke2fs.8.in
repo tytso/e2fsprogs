@@ -705,11 +705,11 @@ using a comma separated list.
 If this option is is not specified,
 .B mke2fs
 will pick a single default usage type based on the size of the filesystem to
-be created.  If the filesystem size is less than or equal to 3 megabytes,
+be created.  If the filesystem size is less than 3 megabytes,
 .B mke2fs
 will use the filesystem type
 .IR floppy .
-If the filesystem size is greater than 3 but less than or equal to
+If the filesystem size is greater than or equal to 3 but less than
 512 megabytes,
 .BR mke2fs (8)
 will use the filesystem type

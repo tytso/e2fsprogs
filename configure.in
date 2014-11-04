@@ -1143,6 +1143,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	sysconf
 	usleep
 	utime
+	utimes
 	valloc
 ]))
 dnl
