@@ -151,6 +151,7 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 {
 	struct v2_disk_dqheader dqh;
 	int file_magics[] = INITQMAGICS;
+	int be_magic;
 
 	if (fmt != QFMT_VFS_V1)
 		return 0;
@@ -158,9 +159,9 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 	if (!v2_read_header(h, &dqh))
 		return 0;
 
-	if (ext2fs_le32_to_cpu(dqh.dqh_magic) != file_magics[type]) {
-		if (ext2fs_be32_to_cpu(dqh.dqh_magic) == file_magics[type])
-			log_err("Your quota file is stored in wrong endianity");
+	be_magic = ext2fs_be32_to_cpu((__force __be32)dqh.dqh_magic);
+	if (be_magic == file_magics[type]) {
+		log_err("Your quota file is stored in wrong endianity");
 		return 0;
 	}
 	if (V2_VERSION != ext2fs_le32_to_cpu(dqh.dqh_version))
