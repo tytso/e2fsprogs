@@ -222,7 +222,7 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
-	while (offset < buflen) {
+	while (offset < buflen - 8) {
 		dirent = (struct ext2_dir_entry *) (ctx->buf + offset);
 		if (ext2fs_get_rec_len(fs, dirent, &rec_len))
 			return BLOCK_ABORT;
