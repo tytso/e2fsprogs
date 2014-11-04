@@ -66,12 +66,6 @@ extern "C" {
 #include <ext2fs/ext3_extents.h>
 #endif /* EXT2_FLAT_INCLUDES */
 
-#ifdef __CHECK_ENDIAN__
-#define __bitwise __attribute__((bitwise))
-#else
-#define __bitwise
-#endif
-
 typedef __u32 __bitwise		ext2_ino_t;
 typedef __u32 __bitwise		blk_t;
 typedef __u64 __bitwise		blk64_t;

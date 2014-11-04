@@ -164,6 +164,21 @@ typedef long		__s64;
 #undef __S64_TYPEDEF
 #undef __U64_TYPEDEF
 
+#ifdef __CHECKER__
+#define __bitwise		__attribute__((bitwise))
+#define __force			__attribute__((force))
+#else
+#define __bitwise
+#define __force
+#endif
+
+typedef __u16	__bitwise	__le16;
+typedef __u32	__bitwise	__le32;
+typedef __u64	__bitwise	__le64;
+typedef __u16	__bitwise	__be16;
+typedef __u32	__bitwise	__be32;
+typedef __u64	__bitwise	__be64;
+
 #endif /* _*_TYPES_H */
 
 @PUBLIC_CONFIG_HEADER@
