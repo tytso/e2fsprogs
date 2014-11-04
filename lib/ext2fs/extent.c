@@ -1651,8 +1651,10 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 	} else {
 		eh = (struct ext3_extent_header *) path->buf;
 		eh->eh_entries = ext2fs_cpu_to_le16(path->entries);
-		if ((path->entries == 0) && (handle->level == 0))
-			eh->eh_depth = handle->max_depth = 0;
+		if ((path->entries == 0) && (handle->level == 0)) {
+			eh->eh_depth = 0;
+			handle->max_depth = 0;
+		}
 		retval = update_path(handle);
 	}
 	return retval;
