@@ -1110,6 +1110,9 @@ mmp_error:
 		       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
 		if (check_fsck_needed(fs))
 			exit(1);
+		if (mount_flags & EXT2_MF_MOUNTED)
+			fputs(_("Cannot enable metadata_csum on a mounted "
+				"filesystem!\n"), stderr);
 		rewrite_checksums = 1;
 		/* metadata_csum supersedes uninit_bg */
 		fs->super->s_feature_ro_compat &=
@@ -1132,6 +1135,9 @@ mmp_error:
 			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
 		if (check_fsck_needed(fs))
 			exit(1);
+		if (mount_flags & EXT2_MF_MOUNTED)
+			fputs(_("Cannot disable metadata_csum on a mounted "
+				"filesystem!\n"), stderr);
 		rewrite_checksums = 1;
 		/*
 		 * If we're turning off metadata_csum and not turning on
