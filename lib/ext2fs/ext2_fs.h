@@ -233,21 +233,21 @@ struct ext2_dx_root_info {
 #define EXT2_HASH_FLAG_INCOMPAT	0x1
 
 struct ext2_dx_entry {
-	__u32 hash;
-	__u32 block;
+	__le32 hash;
+	__le32 block;
 };
 
 struct ext2_dx_countlimit {
-	__u16 limit;
-	__u16 count;
+	__le16 limit;
+	__le16 count;
 };
 
 /*
  * This goes at the end of each htree block.
  */
 struct ext2_dx_tail {
-	__u32 dt_reserved;
-	__u32 dt_checksum;	/* crc32c(uuid+inum+dxblock) */
+	__le32 dt_reserved;
+	__le32 dt_checksum;	/* crc32c(uuid+inum+dxblock) */
 };
 
 /*
@@ -894,6 +894,7 @@ struct ext2_dir_entry_tail {
 #define EXT4_MMP_SEQ_FSCK  0xE24D4D50U /* mmp_seq value when being fscked */
 #define EXT4_MMP_SEQ_MAX   0xE24D4D4FU /* maximum valid mmp_seq value */
 
+/* Not endian-annotated; it's swapped at read/write time */
 struct mmp_struct {
 	__u32	mmp_magic;		/* Magic number for MMP */
 	__u32	mmp_seq;		/* Sequence no. updated periodically */

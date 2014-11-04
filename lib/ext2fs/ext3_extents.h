@@ -26,7 +26,7 @@
  * crammed into the end of the block without having to rebalance the tree.
  */
 struct ext3_extent_tail {
-	__u32	et_checksum;	/* crc32c(uuid+inum+extent_block) */
+	__le32	et_checksum;	/* crc32c(uuid+inum+extent_block) */
 };
 
 /*
@@ -34,10 +34,10 @@ struct ext3_extent_tail {
  * it's used at the bottom of the tree
  */
 struct ext3_extent {
-	__u32	ee_block;	/* first logical block extent covers */
-	__u16	ee_len;		/* number of blocks covered by extent */
-	__u16	ee_start_hi;	/* high 16 bits of physical block */
-	__u32	ee_start;	/* low 32 bigs of physical block */
+	__le32	ee_block;	/* first logical block extent covers */
+	__le16	ee_len;		/* number of blocks covered by extent */
+	__le16	ee_start_hi;	/* high 16 bits of physical block */
+	__le32	ee_start;	/* low 32 bigs of physical block */
 };
 
 /*
@@ -45,22 +45,22 @@ struct ext3_extent {
  * it's used at all the levels, but the bottom
  */
 struct ext3_extent_idx {
-	__u32	ei_block;	/* index covers logical blocks from 'block' */
-	__u32	ei_leaf;	/* pointer to the physical block of the next *
+	__le32	ei_block;	/* index covers logical blocks from 'block' */
+	__le32	ei_leaf;	/* pointer to the physical block of the next *
 				 * level. leaf or next index could bet here */
-	__u16	ei_leaf_hi;	/* high 16 bits of physical block */
-	__u16	ei_unused;
+	__le16	ei_leaf_hi;	/* high 16 bits of physical block */
+	__le16	ei_unused;
 };
 
 /*
  * each block (leaves and indexes), even inode-stored has header
  */
 struct ext3_extent_header {
-	__u16	eh_magic;	/* probably will support different formats */
-	__u16	eh_entries;	/* number of valid entries */
-	__u16	eh_max;		/* capacity of store in entries */
-	__u16	eh_depth;	/* has tree real underlaying blocks? */
-	__u32	eh_generation;	/* generation of the tree */
+	__le16	eh_magic;	/* probably will support different formats */
+	__le16	eh_entries;	/* number of valid entries */
+	__le16	eh_max;		/* capacity of store in entries */
+	__le16	eh_depth;	/* has tree real underlaying blocks? */
+	__le32	eh_generation;	/* generation of the tree */
 };
 
 #define EXT3_EXT_MAGIC		0xf30a

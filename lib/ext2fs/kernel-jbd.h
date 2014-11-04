@@ -170,7 +170,7 @@ typedef struct journal_block_tag_s
 
 /* Tail of descriptor block, for checksumming */
 struct journal_block_tail {
-	__u32		t_checksum;
+	__be32		t_checksum;
 };
 
 /*
@@ -185,7 +185,7 @@ typedef struct journal_revoke_header_s
 
 /* Tail of revoke block, for checksumming */
 struct journal_revoke_tail {
-	__u32		r_checksum;
+	__be32		r_checksum;
 };
 
 /* Definitions for the journal tag flags word: */
