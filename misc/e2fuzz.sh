@@ -34,7 +34,7 @@ print_help() {
 	echo "-p:	Use system's mke2fs/e2fsck/tune2fs tools."
 	echo "-s:	Create FS images of this size. (${SZ})"
 	echo "-S:	Copy files from this dir. (${SRCDIR})"
-	echo "-x:	Run e2fck at most this many times. (${MAX_FSCK})"
+	echo "-x:	Run e2fsck at most this many times. (${MAX_FSCK})"
 	test "${HAS_FUSE2FS}" -gt 0 && echo "-u:	Use fuse2fs instead of the kernel."
 	exit 0
 }
@@ -192,12 +192,12 @@ seq 1 "${PASSES}" | while read pass; do
 		find "${TESTMNT}/test.1/" -type f -size -1048576k -print0 | xargs -0 cat > /dev/null 2>> "${OPS_LOG}"
 
 		echo "+++ expand"
-		find "${TESTMNT}/test.1/" -type f 2> /dev/null | while read f; do
+		find "${TESTMNT}/" -type f 2> /dev/null | head -n 50000 | while read f; do
 			attr -l "$f" > /dev/null 2>> "${OPS_LOG}"
-			mv "$f" "$f.longer" > /dev/null 2>> "${OPS_LOG}"
 			if [ -f "$f" -a -w "$f" ]; then
 				dd if=/dev/zero bs="${BLK_SZ}" count=1 >> "$f" 2>> "${OPS_LOG}"
 			fi
+			mv "$f" "$f.longer" > /dev/null 2>> "${OPS_LOG}"
 		done
 		sync
 
