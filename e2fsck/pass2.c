@@ -970,6 +970,7 @@ inline_read_fail:
 	dx_dir = e2fsck_get_dx_dir_info(ctx, ino);
 	if (dx_dir && dx_dir->numblocks) {
 		if (db->blockcnt >= dx_dir->numblocks) {
+			pctx.dir = ino;
 			if (fix_problem(ctx, PR_2_UNEXPECTED_HTREE_BLOCK,
 					&pctx)) {
 				clear_htree(ctx, ino);
