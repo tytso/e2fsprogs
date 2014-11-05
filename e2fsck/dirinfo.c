@@ -121,7 +121,7 @@ static void setup_db(e2fsck_t ctx)
 void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 {
 	struct dir_info_db 	*db;
-	struct dir_info 	*dir, ent;
+	struct dir_info		*dir, ent, *old_array;
 	int			i, j;
 	errcode_t		retval;
 	unsigned long		old_size;
@@ -136,6 +136,7 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 	if (ctx->dir_info->count >= ctx->dir_info->size) {
 		old_size = ctx->dir_info->size * sizeof(struct dir_info);
 		ctx->dir_info->size += 10;
+		old_array = ctx->dir_info->array;
 		retval = ext2fs_resize_mem(old_size, ctx->dir_info->size *
 					   sizeof(struct dir_info),
 					   &ctx->dir_info->array);
@@ -147,6 +148,8 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 			ctx->dir_info->size -= 10;
 			return;
 		}
+		if (old_array != ctx->dir_info->array)
+			ctx->dir_info->last_lookup = NULL;
 	}
 
 	ent.ino = ino;
