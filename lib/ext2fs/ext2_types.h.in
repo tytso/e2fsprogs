@@ -164,6 +164,12 @@ typedef long		__s64;
 #undef __S64_TYPEDEF
 #undef __U64_TYPEDEF
 
+#endif /* _*_TYPES_H */
+
+/* endian checking stuff */
+#ifndef EXT2_ENDIAN_H_
+#define EXT2_ENDIAN_H_
+
 #ifdef __CHECKER__
 #define __bitwise		__attribute__((bitwise))
 #define __force			__attribute__((force))
@@ -179,6 +185,6 @@ typedef __u16	__bitwise	__be16;
 typedef __u32	__bitwise	__be32;
 typedef __u64	__bitwise	__be64;
 
-#endif /* _*_TYPES_H */
+#endif /* EXT2_ENDIAN_H_ */
 
 @PUBLIC_CONFIG_HEADER@
