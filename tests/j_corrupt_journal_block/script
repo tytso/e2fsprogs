@@ -27,6 +27,7 @@ sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
 rm -f $OUT.new
 
 echo "cat /a" > $TMPFILE.cmd
+echo >> $TMPFILE.cmd
 $DEBUGFS_EXE -f $TMPFILE.cmd $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
 echo >> $OUT
 rm -f $TMPFILE.cmd

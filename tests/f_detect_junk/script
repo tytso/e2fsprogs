@@ -26,7 +26,8 @@ $TUNE2FS -i 0 $TMPFILE >> $OUT 2>&1
 echo "*** mke2fs" >> $OUT
 $MKE2FS -n $TMPFILE >> $OUT 2>&1
 
-sed -f $cmd_dir/filter.sed -e "s|$TMPFILE|test.img|g" -i $OUT
+sed -f $cmd_dir/filter.sed -e "s|$TMPFILE|test.img|g" < $OUT > $OUT.new
+mv $OUT.new $OUT
 
 # Figure out what happened
 if cmp -s $EXP $OUT; then

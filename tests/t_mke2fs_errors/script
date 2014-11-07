@@ -77,23 +77,23 @@ $DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
 # Test errors= in a fs type
 echo "error fs_types profile continue" >> $OUT
 write_section_conf continue
-MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE -T test_suite > /dev/null 2>&1
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -F $TMPFILE > /dev/null 2>&1
 $DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
 
 echo "error fs_types profile panic" >> $OUT
 write_section_conf panic
-MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE -T test_suite > /dev/null 2>&1
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -F $TMPFILE > /dev/null 2>&1
 $DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
 
 echo "error fs_types profile remount-ro" >> $OUT
 write_section_conf remount-ro
-MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE -T test_suite > /dev/null 2>&1
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -F $TMPFILE > /dev/null 2>&1
 $DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
 
 # Test command line override
 echo "error fs_types profile remount-ro" >> $OUT
 write_section_conf remount-ro
-MKE2FS_CONFIG=$conf $MKE2FS -F $TMPFILE -T test_suite -e panic > /dev/null 2>&1
+MKE2FS_CONFIG=$conf $MKE2FS -T test_suite -e panic -F $TMPFILE > /dev/null 2>&1
 $DUMPE2FS $TMPFILE 2>&1 | grep 'Errors behavior' >> $OUT
 
 cmp -s $OUT $EXP

@@ -30,7 +30,7 @@ echo "jc" >> $TMPFILE.cmd
 echo "jo" >> $TMPFILE.cmd
 echo "jw -r $bitmaps" >> $TMPFILE.cmd
 echo "jc" >> $TMPFILE.cmd
-$DEBUGFS_EXE -w $TMPFILE -f $TMPFILE.cmd 2>> $OUT.new > /dev/null
+$DEBUGFS_EXE -w -f $TMPFILE.cmd $TMPFILE 2>> $OUT.new > /dev/null
 sed -f $cmd_dir/filter.sed < $OUT.new >> $OUT
 rm -rf $OUT.new
 
@@ -38,7 +38,7 @@ $DUMPE2FS $TMPFILE 2>&1 | grep '^Journal features:' >> $OUT
 
 test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp "$TMPFILE" "$JOURNAL_DUMP_DIR/$test_name.img"
 echo "logdump -c" > $TMPFILE.cmd
-$DEBUGFS_EXE $TMPFILE -f $TMPFILE.cmd 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
+$DEBUGFS_EXE -f $TMPFILE.cmd $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
 rm -rf $TMPFILE.cmd
 
 $FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1

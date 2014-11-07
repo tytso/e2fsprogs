@@ -10,7 +10,7 @@ if [ $? = 0 ]; then
 fi
 gzip -dc < $test_dir/image.gz > $TMPFILE
 
-OUT=$test_dir.log
+OUT=$test_name.log
 EXP=$test_dir/expect
 $FSCK -fy $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed > $OUT
 echo Exit status is $? >> $OUT

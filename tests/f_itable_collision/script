@@ -10,21 +10,20 @@ E2FSCK_TIME=4294967294
 export E2FSCK_TIME
 
 gzip -d < $IMAGE > $TMPFILE
-e2label $TMPFILE test_filesys
 
 # Run fsck to fix things?
 EXP1=$test_dir/expect.1
 OUT1=$test_name.1.log
 rm -rf $test_name.failed $test_name.ok
 
-$FSCK $FSCK_OPT $TMPFILE 2>&1 | tail -n +2 > $OUT1
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE 2>&1 | tail -n +2 > $OUT1
 echo "Exit status is $?" >> $OUT1
 
 # Run a second time
 EXP2=$test_dir/expect.2
 OUT2=$test_name.2.log
 
-$FSCK $FSCK_OPT $TMPFILE 2>&1 | tail -n +2 > $OUT2
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE 2>&1 | tail -n +2 > $OUT2
 echo "Exit status is $?" >> $OUT2
 
 # Figure out what happened
