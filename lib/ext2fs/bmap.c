@@ -67,7 +67,7 @@ static _BMAP_INLINE_ errcode_t block_ind_bmap(ext2_filsys fs, int flags,
 #endif
 
 	if (!b && (flags & BMAP_ALLOC)) {
-		b = nr ? ((blk_t *) block_buf)[nr-1] : 0;
+		b = nr ? ext2fs_le32_to_cpu(((blk_t *)block_buf)[nr - 1]) : ind;
 		retval = ext2fs_alloc_block(fs, b,
 					    block_buf + fs->blocksize, &b);
 		if (retval)
