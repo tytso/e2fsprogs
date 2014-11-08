@@ -575,7 +575,7 @@ int main (int argc, char ** argv)
 			usage();
 		}
 	}
-	if (argc - 1 > optind) {
+	if (optind != argc - 1) {
 		usage();
 		exit(1);
 	}
