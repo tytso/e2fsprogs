@@ -613,7 +613,6 @@ static errcode_t file_test(ext2_filsys fs)
 	errcode_t retval;
 	size_t size;
 	char *buf = 0, *cmpbuf = 0;
-	int i;
 
 	/* create a new file */
 	retval = ext2fs_new_inode(fs, 2, 010755, 0, &newfile);
@@ -793,7 +792,6 @@ int main(int argc, char *argv[])
 	ext2_filsys		fs;
 	struct ext2_super_block param;
 	errcode_t		retval;
-	int			i;
 
 	/* setup */
 	initialize_ext2_error_table();
@@ -823,7 +821,6 @@ int main(int argc, char *argv[])
 
 	/* initialize inode cache */
 	if (!fs->icache) {
-		struct ext2_inode inode;
 		ext2_ino_t first_ino = EXT2_FIRST_INO(fs->super);
 		int i;
 

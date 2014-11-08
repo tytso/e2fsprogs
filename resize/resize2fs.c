@@ -1544,7 +1544,7 @@ static errcode_t progress_callback(ext2_filsys fs,
 static errcode_t migrate_ea_block(ext2_resize_t rfs, ext2_ino_t ino,
 				  struct ext2_inode *inode, int *changed)
 {
-	char *buf;
+	char *buf = NULL;
 	blk64_t new_block;
 	errcode_t err = 0;
 

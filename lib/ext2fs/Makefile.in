@@ -415,7 +415,7 @@ recovery.o: $(top_srcdir)/e2fsck/recovery.c
 
 plausible.o: $(top_srcdir)/misc/plausible.c
 	$(E) "	CC $<"
-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(Q) $(CC) $(DEBUGFS_CFLAGS) -c $< -o $@
 
 do_journal.o: $(top_srcdir)/debugfs/do_journal.c
 	$(E) "	CC $<"
