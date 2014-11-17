@@ -20,13 +20,13 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 {
 	int	group = ext2fs_group_of_ino(fs, ino);
 
-#ifndef OMIT_COM_ERR
 	if (ino > fs->super->s_inodes_count) {
+#ifndef OMIT_COM_ERR
 		com_err("ext2fs_inode_alloc_stats2", 0,
 			"Illegal inode number: %lu", (unsigned long) ino);
+#endif
 		return;
 	}
-#endif
 	if (inuse > 0)
 		ext2fs_mark_inode_bitmap2(fs->inode_map, ino);
 	else
@@ -63,13 +63,13 @@ void ext2fs_block_alloc_stats2(ext2_filsys fs, blk64_t blk, int inuse)
 {
 	int	group = ext2fs_group_of_blk2(fs, blk);
 
-#ifndef OMIT_COM_ERR
 	if (blk >= ext2fs_blocks_count(fs->super)) {
+#ifndef OMIT_COM_ERR
 		com_err("ext2fs_block_alloc_stats", 0,
 			"Illegal block number: %lu", (unsigned long) blk);
+#endif
 		return;
 	}
-#endif
 	if (inuse > 0)
 		ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	else
