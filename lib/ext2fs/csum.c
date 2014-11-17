@@ -854,6 +854,11 @@ errcode_t ext2fs_set_gdt_csum(ext2_filsys fs)
 		__u32 old_unused = ext2fs_bg_itable_unused(fs, i);
 		__u32 old_flags = ext2fs_bg_flags(fs, i);
 		__u32 old_free_inodes_count = ext2fs_bg_free_inodes_count(fs, i);
+		__u32 old_free_blocks_count = ext2fs_bg_free_blocks_count(fs, i);
+
+		if (old_free_blocks_count == sb->s_blocks_per_group &&
+		    i != fs->group_desc_count - 1)
+			ext2fs_bg_flags_set(fs, i, EXT2_BG_BLOCK_UNINIT);
 
 		if (old_free_inodes_count == sb->s_inodes_per_group) {
 			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_UNINIT);
