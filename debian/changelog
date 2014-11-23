@@ -1,8 +1,10 @@
-e2fsprogs (1.43~WIP-2014-02-04-1) unstable; urgency=low
+e2fsprogs (1.43~WIP-2014-11-23-1) unstable; urgency=low
 
-  * Merge in updates from the maint branch (changes from 1.42.10-1)
+  * Merge in updates from the maint branch (changes from 1.42.12-1)
+  * Add support for inline directories
+  * Add support for the jbd2 checksum v3 format
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 04 Feb 2014 23:31:56 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 23 Nov 2014 16:49:41 -0500
 
 e2fsprogs (1.42.12-1) unstable; urgency=low
 
@@ -103,6 +105,12 @@ e2fsprogs (1.42.10-1.1) unstable; urgency=medium
     larger than 2GB on 32 bit architectures (Closes: #752107)
 
  -- Hilko Bengen <bengen@debian.org>  Sat, 21 Jun 2014 12:57:25 +0200
+
+e2fsprogs (1.43~WIP-2014-02-04-1) unstable; urgency=low
+
+  * Merge in updates from the maint branch (changes from 1.42.10-1)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 04 Feb 2014 23:31:56 -0500
 
 e2fsprogs (1.42.10-1) unstable; urgency=medium
 
