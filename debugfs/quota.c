@@ -36,7 +36,7 @@ static int load_quota_ctx(char *progname)
 
 	if (!EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
 					EXT4_FEATURE_RO_COMPAT_QUOTA)) {
-		com_err(progname, 0, "quota feature not eanbled");
+		com_err(progname, 0, "quota feature not enabled");
 		return 1;
 	}
 
