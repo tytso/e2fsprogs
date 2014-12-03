@@ -2244,6 +2244,8 @@ static int expand_inode_table(ext2_filsys fs, unsigned long new_ino_size)
 
 	/* Update the meta data */
 	fs->inode_blocks_per_group = new_ino_blks_per_grp;
+	ext2fs_free_inode_cache(fs->icache);
+	fs->icache = 0;
 	fs->super->s_inode_size = new_ino_size;
 
 err_out:
