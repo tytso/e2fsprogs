@@ -518,17 +518,13 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 		inode.i_flags |= EXT4_INLINE_DATA_FL;
 	} else if (fs->super->s_feature_incompat &
 		   EXT3_FEATURE_INCOMPAT_EXTENTS) {
-		int i;
-		struct ext3_extent_header *eh;
+		ext2_extent_handle_t handle;
 
-		eh = (struct ext3_extent_header *) &inode.i_block[0];
-		eh->eh_depth = 0;
-		eh->eh_entries = 0;
-		eh->eh_magic = ext2fs_cpu_to_le16(EXT3_EXT_MAGIC);
-		i = (sizeof(inode.i_block) - sizeof(*eh)) /
-			sizeof(struct ext3_extent);
-		eh->eh_max = ext2fs_cpu_to_le16(i);
-		inode.i_flags |= EXT4_EXTENTS_FL;
+		inode.i_flags &= ~EXT4_EXTENTS_FL;
+		retval = ext2fs_extent_open2(fs, newfile, &inode, &handle);
+		if (retval)
+			return retval;
+		ext2fs_extent_free(handle);
 	}
 
 	retval = ext2fs_write_new_inode(fs, newfile, &inode);
