@@ -998,7 +998,7 @@ static struct e2fsck_problem problem_table[] = {
 	 */
 	{ PR_1_EXTENT_ONLY_CSUM_INVALID,
 	  N_("@i %i extent block passes checks, but checksum does not match "
-	     "extent\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
+	     "extent\n\t(logical @b %c, physical @b %b, len %N)\n"),
 	  PROMPT_FIX, 0 },
 
 	/*
