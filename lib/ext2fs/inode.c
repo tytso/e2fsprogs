@@ -423,6 +423,9 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 	memset(block_status, 0, scan->inode_buffer_blocks);
 	inodes_per_block = EXT2_INODES_PER_BLOCK(scan->fs->super);
 
+	if (inodes_per_block < 2)
+		return;
+
 #ifdef WORDS_BIGENDIAN
 	if (ext2fs_get_mem(EXT2_INODE_SIZE(scan->fs->super), &inode))
 		return;
