@@ -2147,6 +2147,7 @@ static int inode_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 
 err_out:
 	ext2fs_free_mem(&block_buf);
+	ext2fs_close_inode_scan(scan);
 
 	return retval;
 }

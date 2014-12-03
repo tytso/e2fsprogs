@@ -437,7 +437,6 @@ static blk64_t get_start_block(ext2_filsys fs, blk64_t slack)
 						blk, last_blk, &next);
 		if (retval)
 			next = last_blk;
-		next--;
 
 		if (next - blk > slack) {
 			blk += slack;
