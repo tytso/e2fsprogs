@@ -123,6 +123,8 @@ errcode_t ext2fs_file_flush(ext2_file_t file)
 {
 	errcode_t	retval;
 	ext2_filsys fs;
+	int		ret_flags;
+	blk64_t		dontcare;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;
@@ -130,6 +132,22 @@ errcode_t ext2fs_file_flush(ext2_file_t file)
 	if (!(file->flags & EXT2_FILE_BUF_VALID) ||
 	    !(file->flags & EXT2_FILE_BUF_DIRTY))
 		return 0;
+
+	/* Is this an uninit block? */
+	if (file->physblock && file->inode.i_flags & EXT4_EXTENTS_FL) {
+		retval = ext2fs_bmap2(fs, file->ino, &file->inode, BMAP_BUFFER,
+				      0, file->blockno, &ret_flags, &dontcare);
+		if (retval)
+			return retval;
+		if (ret_flags & BMAP_RET_UNINIT) {
+			retval = ext2fs_bmap2(fs, file->ino, &file->inode,
+					      BMAP_BUFFER, BMAP_SET,
+					      file->blockno, 0,
+					      &file->physblock);
+			if (retval)
+				return retval;
+		}
+	}
 
 	/*
 	 * OK, the physical block hasn't been allocated yet.
@@ -185,15 +203,17 @@ static errcode_t load_buffer(ext2_file_t file, int dontfill)
 {
 	ext2_filsys	fs = file->fs;
 	errcode_t	retval;
+	int		ret_flags;
 
 	if (!(file->flags & EXT2_FILE_BUF_VALID)) {
 		retval = ext2fs_bmap2(fs, file->ino, &file->inode,
-				     BMAP_BUFFER, 0, file->blockno, 0,
+				     BMAP_BUFFER, 0, file->blockno, &ret_flags,
 				     &file->physblock);
 		if (retval)
 			return retval;
 		if (!dontfill) {
-			if (file->physblock) {
+			if (file->physblock &&
+			    !(ret_flags & BMAP_RET_UNINIT)) {
 				retval = io_channel_read_blk64(fs->io,
 							       file->physblock,
 							       1, file->buf);
