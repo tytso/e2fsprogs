@@ -2908,8 +2908,7 @@ retry_open:
 				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
 			rewrite_checksums = 1;
 	}
-	if (rewrite_checksums)
-		rewrite_metadata_checksums(fs);
+
 	if (I_flag) {
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("The inode size may only be "
@@ -2935,12 +2934,16 @@ retry_open:
 		if (resize_inode(fs, new_inode_size) == 0) {
 			printf(_("Setting inode size %lu\n"),
 							new_inode_size);
+			rewrite_checksums = 1;
 		} else {
 			printf("%s", _("Failed to change inode size\n"));
 			rc = 1;
 			goto closefs;
 		}
 	}
+
+	if (rewrite_checksums)
+		rewrite_metadata_checksums(fs);
 
 	if (l_flag)
 		list_super(sb);
