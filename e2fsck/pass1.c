@@ -663,6 +663,7 @@ static errcode_t recheck_bad_inode_checksum(ext2_filsys fs, ext2_ino_t ino,
 	 * Reread inode.  If we don't see checksum error, then this inode
 	 * has been fixed elsewhere.
 	 */
+	ctx->stashed_ino = 0;
 	retval = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
 					sizeof(inode));
 	if (retval && retval != EXT2_ET_INODE_CSUM_INVALID)
