@@ -148,12 +148,13 @@ errfree:
  * attempt to free the static zeroizing buffer.  (This is to keep
  * programs that check for memory leaks happy.)
  */
-#define STRIDE_LENGTH (4194304 / fs->blocksize)
+#define MAX_STRIDE_LENGTH (4194304 / (int) fs->blocksize)
 errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 			      blk64_t *ret_blk, int *ret_count)
 {
 	int		j, count;
-	static char	*buf;
+	static void	*buf;
+	static int	stride_length;
 	errcode_t	retval;
 
 	/* If fs is null, clean up the static buffer and return */
@@ -164,24 +165,36 @@ errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 		}
 		return 0;
 	}
+
+	/* Deal with zeroing less than 1 block */
+	if (num <= 0)
+		return 0;
+
 	/* Allocate the zeroizing buffer if necessary */
-	if (!buf) {
-		buf = malloc(fs->blocksize * STRIDE_LENGTH);
-		if (!buf)
-			return ENOMEM;
-		memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
+	if (num > stride_length && stride_length < MAX_STRIDE_LENGTH) {
+		void *p;
+		int new_stride = num;
+
+		if (new_stride > MAX_STRIDE_LENGTH)
+			new_stride = MAX_STRIDE_LENGTH;
+		p = realloc(buf, fs->blocksize * new_stride);
+		if (!p)
+			return EXT2_ET_NO_MEMORY;
+		buf = p;
+		stride_length = new_stride;
+		memset(buf, 0, fs->blocksize * stride_length);
 	}
 	/* OK, do the write loop */
 	j=0;
 	while (j < num) {
-		if (blk % STRIDE_LENGTH) {
-			count = STRIDE_LENGTH - (blk % STRIDE_LENGTH);
+		if (blk % stride_length) {
+			count = stride_length - (blk % stride_length);
 			if (count > (num - j))
 				count = num - j;
 		} else {
 			count = num - j;
-			if (count > STRIDE_LENGTH)
-				count = STRIDE_LENGTH;
+			if (count > stride_length)
+				count = stride_length;
 		}
 		retval = io_channel_write_blk64(fs->io, blk, count, buf);
 		if (retval) {
