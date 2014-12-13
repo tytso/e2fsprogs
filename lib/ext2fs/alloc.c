@@ -184,9 +184,6 @@ errcode_t ext2fs_alloc_block2(ext2_filsys fs, blk64_t goal,
 	errcode_t	retval;
 	blk64_t		block;
 
-	if (block_buf)
-		memset(block_buf, 0, fs->blocksize);
-
 	if (fs->get_alloc_block) {
 		retval = (fs->get_alloc_block)(fs, goal, &block);
 		if (retval)
@@ -203,7 +200,11 @@ errcode_t ext2fs_alloc_block2(ext2_filsys fs, blk64_t goal,
 			goto fail;
 	}
 
-	retval = ext2fs_zero_blocks2(fs, block, 1, NULL, NULL);
+	if (block_buf) {
+		memset(block_buf, 0, fs->blocksize);
+		retval = io_channel_write_blk64(fs->io, block, 1, block_buf);
+	} else
+		retval = ext2fs_zero_blocks2(fs, block, 1, NULL, NULL);
 	if (retval)
 		goto fail;
 
