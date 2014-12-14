@@ -934,6 +934,25 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle,
 	orig_height = info.max_depth - info.curr_level;
 	orig_lblk = extent.e_lblk;
 
+	/* Try to put the index block before the first extent */
+	path = handle->path + handle->level;
+	eh = (struct ext3_extent_header *) path->buf;
+	if (handle->level == handle->max_depth) {
+		struct ext3_extent	*ex;
+
+		ex = EXT_FIRST_EXTENT(eh);
+		goal_blk = ext2fs_le32_to_cpu(ex->ee_start) +
+			((__u64) ext2fs_le16_to_cpu(ex->ee_start_hi) << 32);
+	} else {
+		struct ext3_extent_idx	*ix;
+
+		ix = EXT_FIRST_INDEX(eh);
+		goal_blk = ext2fs_le32_to_cpu(ix->ei_leaf) +
+			((__u64) ext2fs_le16_to_cpu(ix->ei_leaf_hi) << 32);
+	}
+	goal_blk -= EXT2FS_CLUSTER_RATIO(handle->fs);
+	goal_blk &= ~EXT2FS_CLUSTER_MASK(handle->fs);
+
 	/* Is there room in the parent for a new entry? */
 	if (handle->level &&
 			(handle->path[handle->level - 1].entries >=
@@ -947,7 +966,6 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle,
 		retval = ext2fs_extent_get(handle, EXT2_EXTENT_UP, &extent);
 		if (retval)
 			goto done;
-		goal_blk = extent.e_pblk;
 
 		retval = extent_node_split(handle, expand_allowed);
 		if (retval)
