@@ -421,12 +421,14 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_ZEROED);
 			ext2fs_group_desc_csum_set(fs, i);
 		}
-		retval = ext2fs_zero_blocks2(fs, blk, num, &blk, &num);
-		if (retval) {
-			fprintf(stderr, _("\nCould not write %d "
-				  "blocks in inode table starting at %llu: %s\n"),
-				num, blk, error_message(retval));
-			exit(1);
+		if (!itable_zeroed) {
+			retval = ext2fs_zero_blocks2(fs, blk, num, &blk, &num);
+			if (retval) {
+				fprintf(stderr, _("\nCould not write %d "
+					  "blocks in inode table starting at %llu: %s\n"),
+					num, blk, error_message(retval));
+				exit(1);
+			}
 		}
 		if (sync_kludge) {
 			if (sync_kludge == 1)
