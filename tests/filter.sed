@@ -23,3 +23,5 @@ s/\\015//g
 /Reserved blocks gid:/s/ (group .*)//
 /whichever comes first/d
 /^  Checksum /d
+s/, csum 0x\([0-9a-f]*\)//g
+s/ csum 0x\([0-9a-f]*\)//g
