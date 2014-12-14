@@ -1697,12 +1697,37 @@ errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 
 	info->curr_level = handle->level;
 	info->max_depth = handle->max_depth;
-	info->max_lblk = ((__u64) 1 << 32) - 1;
-	info->max_pblk = ((__u64) 1 << 48) - 1;
-	info->max_len = (1UL << 15);
-	info->max_uninit_len = (1UL << 15) - 1;
+	info->max_lblk = EXT_MAX_EXTENT_LBLK;
+	info->max_pblk = EXT_MAX_EXTENT_PBLK;
+	info->max_len = EXT_INIT_MAX_LEN;
+	info->max_uninit_len = EXT_UNINIT_MAX_LEN;
 
 	return 0;
+}
+
+static int ul_log2(unsigned long arg)
+{
+	int	l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
+size_t ext2fs_max_extent_depth(ext2_extent_handle_t handle)
+{
+	size_t iblock_sz = sizeof(((struct ext2_inode *)NULL)->i_block);
+	size_t iblock_extents = (iblock_sz - sizeof(struct ext3_extent_header)) /
+				sizeof(struct ext3_extent);
+	size_t extents_per_block = (handle->fs->blocksize -
+				    sizeof(struct ext3_extent_header)) /
+				   sizeof(struct ext3_extent);
+
+	return 1 + ((ul_log2(EXT_MAX_EXTENT_LBLK) - ul_log2(iblock_extents)) /
+		    ul_log2(extents_per_block));
 }
 
 #ifdef DEBUG

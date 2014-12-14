@@ -98,6 +98,8 @@ struct ext3_ext_path {
  */
 #define EXT_INIT_MAX_LEN	(1UL << 15)
 #define EXT_UNINIT_MAX_LEN	(EXT_INIT_MAX_LEN - 1)
+#define EXT_MAX_EXTENT_LBLK	(((__u64) 1 << 32) - 1)
+#define EXT_MAX_EXTENT_PBLK	(((__u64) 1 << 48) - 1)
 
 #define EXT_FIRST_EXTENT(__hdr__) \
 	((struct ext3_extent *) (((char *) (__hdr__)) +		\
