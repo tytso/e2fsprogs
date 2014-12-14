@@ -25,3 +25,4 @@ s/\\015//g
 /^  Checksum /d
 s/, csum 0x\([0-9a-f]*\)//g
 s/ csum 0x\([0-9a-f]*\)//g
+/^Checksum:/d
