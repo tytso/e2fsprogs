@@ -1141,12 +1141,26 @@ mmp_error:
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
 			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		__u32	test_features[3];
+
 		if (check_fsck_needed(fs))
 			exit(1);
 		if (mount_flags & EXT2_MF_MOUNTED)
 			fputs(_("Cannot disable metadata_csum on a mounted "
 				"filesystem!\n"), stderr);
 		rewrite_checksums = 1;
+
+		/* Enable uninit_bg unless the user expressly turned it off */
+		memcpy(test_features, old_features, sizeof(test_features));
+		test_features[E2P_FEATURE_RO_INCOMPAT] |=
+						EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+		e2p_edit_feature2(features, test_features, ok_features,
+				  clear_ok_features, NULL, NULL);
+		if (test_features[E2P_FEATURE_RO_INCOMPAT] &
+						EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
+			fs->super->s_feature_ro_compat |=
+						EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+
 		/*
 		 * If we're turning off metadata_csum and not turning on
 		 * uninit_bg, rewrite group desc.
