@@ -1492,16 +1492,6 @@ static int process_block(ext2_filsys fs, blk64_t	*block_nr,
 		}
 	}
 
-	/*
-	 * If we moved inodes and metadata_csum is enabled, we must force the
-	 * extent block to be rewritten with new checksum.
-	 */
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
-	    pb->has_extents &&
-	    pb->old_ino != pb->ino)
-		ret |= BLOCK_CHANGED;
-
 	if (pb->is_dir) {
 		retval = ext2fs_add_dir_block2(fs->dblist, pb->ino,
 					       block, (int) blockcnt);
@@ -1579,6 +1569,59 @@ static errcode_t migrate_ea_block(ext2_resize_t rfs, ext2_ino_t ino,
 out:
 	ext2fs_free_mem(&buf);
 	return err;
+}
+
+/* Rewrite extents */
+static errcode_t rewrite_extents(ext2_filsys fs, ext2_ino_t ino)
+{
+	ext2_extent_handle_t	handle;
+	struct ext2fs_extent	extent;
+	errcode_t		errcode;
+	struct ext2_extent_info	info;
+
+	errcode = ext2fs_extent_open(fs, ino, &handle);
+	if (errcode)
+		return errcode;
+
+	errcode = ext2fs_extent_get(handle, EXT2_EXTENT_ROOT, &extent);
+	if (errcode)
+		goto out;
+
+	do {
+		errcode = ext2fs_extent_get_info(handle, &info);
+		if (errcode)
+			break;
+
+		/*
+		 * If this is the first extent in an extent block that we
+		 * haven't visited, rewrite the extent to force the ETB
+		 * checksum to be rewritten.
+		 */
+		if (info.curr_entry == 1 && info.curr_level != 0 &&
+		    !(extent.e_flags & EXT2_EXTENT_FLAGS_SECOND_VISIT)) {
+			errcode = ext2fs_extent_replace(handle, 0, &extent);
+			if (errcode)
+				break;
+		}
+
+		/* Skip to the end of a block of leaf nodes */
+		if (extent.e_flags & EXT2_EXTENT_FLAGS_LEAF) {
+			errcode = ext2fs_extent_get(handle,
+						    EXT2_EXTENT_LAST_SIB,
+						    &extent);
+			if (errcode)
+				break;
+		}
+
+		errcode = ext2fs_extent_get(handle, EXT2_EXTENT_NEXT, &extent);
+	} while (errcode == 0);
+
+out:
+	/* Ok if we run off the end */
+	if (errcode == EXT2_ET_EXTENT_NO_NEXT)
+		errcode = 0;
+	ext2fs_extent_free(handle);
+	return errcode;
 }
 
 static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
@@ -1698,6 +1741,17 @@ remap_blocks:
 							 inode, inode_size);
 		if (retval)
 			goto errout;
+
+		/* Rewrite extent block checksums with new inode number */
+		if (EXT2_HAS_RO_COMPAT_FEATURE(rfs->old_fs->super,
+				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
+		    (inode->i_flags & EXT4_EXTENTS_FL)) {
+			rfs->old_fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+			retval = rewrite_extents(rfs->old_fs, new_inode);
+			rfs->old_fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
+			if (retval)
+				goto errout;
+		}
 
 		/*
 		 * Update inodes to point to new blocks; schedule directory
