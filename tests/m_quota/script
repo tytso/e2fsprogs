@@ -5,4 +5,7 @@ if [ "$QUOTA" != "y" ]; then
 	echo "$test_name: $DESCRIPTION: skipped"
 	return 0
 fi
+DUMPE2FS_IGNORE_80COL=1
+export DUMPE2FS_IGNORE_80COL
 . $cmd_dir/run_mke2fs
+unset DUMPE2FS_IGNORE_80COL

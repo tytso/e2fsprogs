@@ -264,7 +264,11 @@ static void list_desc(ext2_filsys fs, int grp_only)
 		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
 			printf(_(", csum 0x%08x"),
 			       ext2fs_block_bitmap_checksum(fs, i));
-		fputs(_(", Inode bitmap at "), stdout);
+		if (getenv("DUMPE2FS_IGNORE_80COL"))
+			fputs(_(","), stdout);
+		else
+			fputs(_("\n "), stdout);
+		fputs(_(" Inode bitmap at "), stdout);
 		print_number(ext2fs_inode_bitmap_loc(fs, i));
 		print_bg_rel_offset(fs, ext2fs_inode_bitmap_loc(fs, i), 0,
 				    first_block, last_block);
