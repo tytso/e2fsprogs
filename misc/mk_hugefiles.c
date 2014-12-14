@@ -476,6 +476,10 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 	if (!get_bool_from_profile(fs_types, "make_hugefiles", 0))
 		return 0;
 
+	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				       EXT3_FEATURE_INCOMPAT_EXTENTS))
+		return EXT2_ET_EXTENT_NOT_SUPPORTED;
+
 	uid = get_int_from_profile(fs_types, "hugefiles_uid", 0);
 	gid = get_int_from_profile(fs_types, "hugefiles_gid", 0);
 	fs->umask = get_int_from_profile(fs_types, "hugefiles_umask", 077);
