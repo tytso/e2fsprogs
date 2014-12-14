@@ -2126,7 +2126,7 @@ static errcode_t reserve_sparse_super2_last_group(ext2_resize_t rfs,
 	if (retval)
 		return retval;
 
-	if (!sb) {
+	if (last_bg && !sb) {
 		fputs(_("Should never happen!  No sb in last super_sparse bg?\n"),
 		      stderr);
 		exit(1);
