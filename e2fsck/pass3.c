@@ -384,14 +384,23 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	char *			block;
 	static const char	name[] = "lost+found";
 	struct 	problem_context	pctx;
+	int			will_rehash, flags;
 
 	if (ctx->lost_and_found)
 		return ctx->lost_and_found;
 
 	clear_problem_context(&pctx);
 
+	will_rehash = e2fsck_dir_will_be_rehashed(ctx, EXT2_ROOT_INO);
+	if (will_rehash) {
+		flags = ctx->fs->flags;
+		ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+	}
 	retval = ext2fs_lookup(fs, EXT2_ROOT_INO, name,
 			       sizeof(name)-1, 0, &ino);
+	if (will_rehash)
+		ctx->fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+			(ctx->fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 	if (retval && !fix)
 		return 0;
 	if (!retval) {
