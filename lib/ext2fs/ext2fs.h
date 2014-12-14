@@ -689,6 +689,8 @@ extern void ext2fs_set_alloc_block_callback(ext2_filsys fs,
 					    errcode_t (**old)(ext2_filsys fs,
 							      blk64_t goal,
 							      blk64_t *ret));
+blk64_t ext2fs_find_inode_goal(ext2_filsys fs, ext2_ino_t ino,
+			       struct ext2_inode *inode, blk64_t lblk);
 
 /* alloc_sb.c */
 extern int ext2fs_reserve_super_and_bgd(ext2_filsys fs,

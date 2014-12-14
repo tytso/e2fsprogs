@@ -51,9 +51,13 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	/*
 	 * Allocate a data block for slow links
 	 */
+	memset(&inode, 0, sizeof(struct ext2_inode));
 	fastlink = (target_len < sizeof(inode.i_block));
 	if (!fastlink) {
-		retval = ext2fs_new_block2(fs, 0, 0, &blk);
+		retval = ext2fs_new_block2(fs, ext2fs_find_inode_goal(fs, ino,
+								      &inode,
+								      0),
+					   NULL, &blk);
 		if (retval)
 			goto cleanup;
 		retval = ext2fs_get_mem(fs->blocksize, &block_buf);
@@ -74,7 +78,6 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	/*
 	 * Create the inode structure....
 	 */
-	memset(&inode, 0, sizeof(struct ext2_inode));
 	inode.i_mode = LINUX_S_IFLNK | 0777;
 	inode.i_uid = inode.i_gid = 0;
 	inode.i_links_count = 1;

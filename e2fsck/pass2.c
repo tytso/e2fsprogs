@@ -1772,7 +1772,8 @@ static int allocate_dir_block(e2fsck_t ctx,
 	pctx->errcode = ext2fs_map_cluster_block(fs, db->ino, &inode,
 						 db->blockcnt, &blk);
 	if (pctx->errcode || blk == 0) {
-		pctx->errcode = ext2fs_new_block2(fs, 0,
+		blk = ext2fs_find_inode_goal(fs, db->ino, &inode, db->blockcnt);
+		pctx->errcode = ext2fs_new_block2(fs, blk,
 						  ctx->block_found_map, &blk);
 		if (pctx->errcode) {
 			pctx->str = "ext2fs_new_block";

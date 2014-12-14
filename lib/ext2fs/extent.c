@@ -1012,14 +1012,9 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle,
 		goto done;
 	}
 
-	if (!goal_blk) {
-		dgrp_t	group = ext2fs_group_of_ino(handle->fs, handle->ino);
-		__u8	log_flex = handle->fs->super->s_log_groups_per_flex;
-
-		if (log_flex)
-			group = group & ~((1 << (log_flex)) - 1);
-		goal_blk = ext2fs_group_first_block2(handle->fs, group);
-	}
+	if (!goal_blk)
+		goal_blk = ext2fs_find_inode_goal(handle->fs, handle->ino,
+						  handle->inode, 0);
 	retval = ext2fs_alloc_block2(handle->fs, goal_blk, block_buf,
 				    &new_node_pblk);
 	if (retval)

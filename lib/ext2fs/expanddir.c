@@ -102,9 +102,13 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir)
 	if (retval)
 		return retval;
 
+	retval = ext2fs_read_inode(fs, dir, &inode);
+	if (retval)
+		return retval;
+
 	es.done = 0;
 	es.err = 0;
-	es.goal = 0;
+	es.goal = ext2fs_find_inode_goal(fs, dir, &inode, 0);
 	es.newblocks = 0;
 	es.dir = dir;
 

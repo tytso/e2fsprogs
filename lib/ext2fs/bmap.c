@@ -244,7 +244,7 @@ got_block:
 		retval = extent_bmap(fs, ino, inode, handle, block_buf,
 				     0, block-1, 0, blocks_alloc, &blk64);
 		if (retval)
-			blk64 = 0;
+			blk64 = ext2fs_find_inode_goal(fs, ino, inode, block);
 		retval = ext2fs_alloc_block2(fs, blk64, block_buf,
 					     &blk64);
 		if (retval)
@@ -354,7 +354,8 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		}
 
 		*phys_blk = inode_bmap(inode, block);
-		b = block ? inode_bmap(inode, block-1) : 0;
+		b = block ? inode_bmap(inode, block - 1) :
+			    ext2fs_find_inode_goal(fs, ino, inode, block);
 
 		if ((*phys_blk == 0) && (bmap_flags & BMAP_ALLOC)) {
 			retval = ext2fs_alloc_block(fs, b, block_buf, &b);

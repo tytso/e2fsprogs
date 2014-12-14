@@ -68,8 +68,12 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	/*
 	 * Allocate a data block for the directory
 	 */
+	memset(&inode, 0, sizeof(struct ext2_inode));
 	if (!inline_data) {
-		retval = ext2fs_new_block2(fs, 0, 0, &blk);
+		retval = ext2fs_new_block2(fs, ext2fs_find_inode_goal(fs, ino,
+								      &inode,
+								      0),
+					   NULL, &blk);
 		if (retval)
 			goto cleanup;
 	}
@@ -77,7 +81,6 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	/*
 	 * Create a scratch template for the directory
 	 */
-	memset(&inode, 0, sizeof(struct ext2_inode));
 	if (inline_data)
 		retval = ext2fs_new_dir_inline_data(fs, ino, parent,
 						    inode.i_block);

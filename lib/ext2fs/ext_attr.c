@@ -374,7 +374,6 @@ static errcode_t prep_ea_block_for_write(ext2_filsys fs, ext2_ino_t ino,
 {
 	struct ext2_ext_attr_header *header;
 	void *block_buf = NULL;
-	dgrp_t grp;
 	blk64_t blk, goal;
 	errcode_t err;
 
@@ -420,8 +419,7 @@ static errcode_t prep_ea_block_for_write(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	/* Allocate a block */
-	grp = ext2fs_group_of_ino(fs, ino);
-	goal = ext2fs_inode_table_loc(fs, grp);
+	goal = ext2fs_find_inode_goal(fs, ino, (struct ext2_inode *)inode, 0);
 	err = ext2fs_alloc_block2(fs, goal, NULL, &blk);
 	if (err)
 		goto out2;

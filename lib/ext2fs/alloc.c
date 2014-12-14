@@ -289,3 +289,45 @@ void ext2fs_set_alloc_block_callback(ext2_filsys fs,
 
 	fs->get_alloc_block = func;
 }
+
+blk64_t ext2fs_find_inode_goal(ext2_filsys fs, ext2_ino_t ino,
+			       struct ext2_inode *inode, blk64_t lblk)
+{
+	dgrp_t			group;
+	__u8			log_flex;
+	struct ext2fs_extent	extent;
+	ext2_extent_handle_t	handle = NULL;
+	errcode_t		err;
+
+	if (inode == NULL || ext2fs_inode_data_blocks2(fs, inode) == 0)
+		goto no_blocks;
+
+	if (inode->i_flags & EXT4_INLINE_DATA_FL)
+		goto no_blocks;
+
+	if (inode->i_flags & EXT4_EXTENTS_FL) {
+		err = ext2fs_extent_open2(fs, ino, inode, &handle);
+		if (err)
+			goto no_blocks;
+		err = ext2fs_extent_goto2(handle, 0, lblk);
+		if (err)
+			goto no_blocks;
+		err = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
+		if (err)
+			goto no_blocks;
+		ext2fs_extent_free(handle);
+		return extent.e_pblk + (lblk - extent.e_lblk);
+	}
+
+	/* block mapped file; see if block zero is mapped? */
+	if (inode->i_block[0])
+		return inode->i_block[0];
+
+no_blocks:
+	ext2fs_extent_free(handle);
+	log_flex = fs->super->s_log_groups_per_flex;
+	group = ext2fs_group_of_ino(fs, ino);
+	if (log_flex)
+		group = group & ~((1 << (log_flex)) - 1);
+	return ext2fs_group_first_block2(fs, group);
+}
