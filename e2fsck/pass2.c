@@ -166,7 +166,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 	for (i=0; (dx_dir = e2fsck_dx_dir_info_iter(ctx, &i)) != 0;) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
-		if (dx_dir->numblocks == 0)
+		if (e2fsck_dir_will_be_rehashed(ctx, dx_dir->ino) ||
+		    dx_dir->numblocks == 0)
 			continue;
 		clear_problem_context(&pctx);
 		bad_dir = 0;
@@ -1022,11 +1023,15 @@ out_htree:
 	if (is_leaf && !inline_data_size && failed_csum &&
 	    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf)) {
 		de_csum_size = 0;
-		if (e2fsck_dir_will_be_rehashed(ctx, ino) ||
-		    !fix_problem(cd->ctx, PR_2_LEAF_NODE_MISSING_CSUM,
+		if (e2fsck_dir_will_be_rehashed(ctx, ino)) {
+			failed_csum = 0;
+			goto skip_checksum;
+		}
+		if (!fix_problem(cd->ctx, PR_2_LEAF_NODE_MISSING_CSUM,
 				 &cd->pctx))
 			goto skip_checksum;
 		e2fsck_rehash_dir_later(ctx, ino);
+		failed_csum = 0;
 		goto skip_checksum;
 	}
 	/* htree nodes don't use fake dirents to store checksums */
