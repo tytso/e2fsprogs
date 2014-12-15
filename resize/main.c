@@ -42,7 +42,7 @@ static char *device_name, *io_options;
 static void usage (char *prog)
 {
 	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] "
-			   "[-p] device [new_size]\n\n"), prog);
+			   "[-p] device [-b|-s|new_size]\n\n"), prog);
 
 	exit (1);
 }
@@ -203,7 +203,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 
-	while ((c = getopt (argc, argv, "d:fFhMPpS:")) != EOF) {
+	while ((c = getopt(argc, argv, "d:fFhMPpS:bs")) != EOF) {
 		switch (c) {
 		case 'h':
 			usage(program_name);
@@ -228,6 +228,12 @@ int main (int argc, char ** argv)
 			break;
 		case 'S':
 			use_stride = atoi(optarg);
+			break;
+		case 'b':
+			flags |= RESIZE_ENABLE_64BIT;
+			break;
+		case 's':
+			flags |= RESIZE_DISABLE_64BIT;
 			break;
 		default:
 			usage(program_name);
@@ -413,6 +419,10 @@ int main (int argc, char ** argv)
 		if (sys_page_size > blocksize)
 			new_size &= ~((sys_page_size / blocksize)-1);
 	}
+	/* If changing 64bit, don't change the filesystem size. */
+	if (flags & (RESIZE_DISABLE_64BIT | RESIZE_ENABLE_64BIT)) {
+		new_size = ext2fs_blocks_count(fs->super);
+	}
 	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_INCOMPAT_64BIT)) {
 		/* Take 16T down to 2^32-1 blocks */
@@ -464,10 +474,43 @@ int main (int argc, char ** argv)
 			blocksize / 1024, new_size);
 		exit(1);
 	}
-	if (new_size == ext2fs_blocks_count(fs->super)) {
+	if ((flags & RESIZE_DISABLE_64BIT) && (flags & RESIZE_ENABLE_64BIT)) {
+		fprintf(stderr, _("Cannot set and unset 64bit feature.\n"));
+		exit(1);
+	} else if (flags & (RESIZE_DISABLE_64BIT | RESIZE_ENABLE_64BIT)) {
+		if (new_size >= (1ULL << 32)) {
+			fprintf(stderr, _("Cannot change the 64bit feature "
+				"on a filesystem that is larger than "
+				"2^32 blocks.\n"));
+			exit(1);
+		}
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fprintf(stderr, _("Cannot change the 64bit feature "
+				"while the filesystem is mounted.\n"));
+			exit(1);
+		}
+		if (flags & RESIZE_ENABLE_64BIT &&
+		    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+			fprintf(stderr, _("Please enable the extents feature "
+				"with tune2fs before enabling the 64bit "
+				"feature.\n"));
+			exit(1);
+		}
+	} else if (new_size == ext2fs_blocks_count(fs->super)) {
 		fprintf(stderr, _("The filesystem is already %llu (%dk) "
 			"blocks long.  Nothing to do!\n\n"), new_size,
 			blocksize / 1024);
+		exit(0);
+	}
+	if ((flags & RESIZE_ENABLE_64BIT) &&
+	    EXT2_HAS_INCOMPAT_FEATURE(fs->super, EXT4_FEATURE_INCOMPAT_64BIT)) {
+		fprintf(stderr, _("The filesystem is already 64-bit.\n"));
+		exit(0);
+	}
+	if ((flags & RESIZE_DISABLE_64BIT) &&
+	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super, EXT4_FEATURE_INCOMPAT_64BIT)) {
+		fprintf(stderr, _("The filesystem is already 32-bit.\n"));
 		exit(0);
 	}
 	if (mount_flags & EXT2_MF_MOUNTED) {
@@ -475,9 +518,14 @@ int main (int argc, char ** argv)
 		retval = online_resize_fs(fs, mtpt, &new_size, flags);
 	} else {
 		bigalloc_check(fs, force);
-		printf(_("Resizing the filesystem on "
-			 "%s to %llu (%dk) blocks.\n"),
-		       device_name, new_size, blocksize / 1024);
+		if (flags & RESIZE_ENABLE_64BIT)
+			printf(_("Converting the filesystem to 64-bit.\n"));
+		else if (flags & RESIZE_DISABLE_64BIT)
+			printf(_("Converting the filesystem to 32-bit.\n"));
+		else
+			printf(_("Resizing the filesystem on "
+				 "%s to %llu (%dk) blocks.\n"),
+			       device_name, new_size, blocksize / 1024);
 		retval = resize_fs(fs, &new_size, flags,
 				   ((flags & RESIZE_PERCENT_COMPLETE) ?
 				    resize_progress_func : 0));

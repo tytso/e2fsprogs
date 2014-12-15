@@ -1121,6 +1121,13 @@ mmp_error:
 				 "cannot.  Not enabling extents reduces the "
 				 "coverage of metadata checksumming.  "
 				 "Re-run with -O extent to rectify.\n"));
+		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				EXT4_FEATURE_INCOMPAT_64BIT))
+			printf("%s",
+			       _("64-bit filesystem support is not enabled.  "
+				 "The larger fields afforded by this feature "
+				 "enable full-strength checksumming.  "
+				 "Run resize2fs -b to rectify.\n"));
 		rewrite_checksums = 1;
 		/* metadata_csum supersedes uninit_bg */
 		fs->super->s_feature_ro_compat &=

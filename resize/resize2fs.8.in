@@ -8,7 +8,7 @@ resize2fs \- ext2/ext3/ext4 file system resizer
 .SH SYNOPSIS
 .B resize2fs
 [
-.B \-fFpPM
+.B \-fFpPMbs
 ]
 [
 .B \-d
@@ -86,7 +86,20 @@ to shrink the size of filesystem.  Then you may use
 to shrink the size of the partition.  When shrinking the size of
 the partition, make sure you do not make it smaller than the new size
 of the ext2 filesystem!
+.PP
+The
+.B \-b
+and
+.B \-s
+options enable and disable the 64bit feature, respectively.  The resize2fs
+program will, of course, take care of resizing the block group descriptors
+and moving other data blocks out of the way, as needed.  It is not possible
+to resize the filesystem concurrent with changing the 64bit status.
 .SH OPTIONS
+.TP
+.B \-b
+Turns on the 64bit feature, resizes the group descriptors as necessary, and
+moves other metadata out of the way.
 .TP
 .B \-d \fIdebug-flags
 Turns on various resize2fs debugging features, if they have been compiled
@@ -126,6 +139,9 @@ of what the program is doing.
 .TP
 .B \-P
 Print the minimum size of the filesystem and exit.
+.TP
+.B \-s
+Turns off the 64bit feature and frees blocks that are no longer in use.
 .TP
 .B \-S \fIRAID-stride
 The
