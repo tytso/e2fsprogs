@@ -1042,7 +1042,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		}
 
 		for (i = 0; i < max_groups; i++) {
-			if (!ext2fs_bg_has_super(fs, i)) {
+			if (!ext2fs_bg_has_super(old_fs, i)) {
 				group_blk += fs->super->s_blocks_per_group;
 				continue;
 			}
