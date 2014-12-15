@@ -1725,9 +1725,16 @@ size_t ext2fs_max_extent_depth(ext2_extent_handle_t handle)
 	size_t extents_per_block = (handle->fs->blocksize -
 				    sizeof(struct ext3_extent_header)) /
 				   sizeof(struct ext3_extent);
+	static unsigned int last_blocksize = 0;
+	static size_t last_result = 0;
 
-	return 1 + ((ul_log2(EXT_MAX_EXTENT_LBLK) - ul_log2(iblock_extents)) /
+	if (last_blocksize && last_blocksize == handle->fs->blocksize)
+		return last_result;
+
+	last_result = 1 + ((ul_log2(EXT_MAX_EXTENT_LBLK) - ul_log2(iblock_extents)) /
 		    ul_log2(extents_per_block));
+	last_blocksize = handle->fs->blocksize;
+	return last_result;
 }
 
 #ifdef DEBUG
