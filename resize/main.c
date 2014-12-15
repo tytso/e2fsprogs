@@ -105,6 +105,7 @@ static void determine_fs_stride(ext2_filsys fs)
 	unsigned long long sum;
 	unsigned int	has_sb, prev_has_sb = 0, num;
 	int		i_stride, b_stride;
+	int		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 
 	if (fs->stride)
 		return;
@@ -120,7 +121,8 @@ static void determine_fs_stride(ext2_filsys fs)
 			ext2fs_inode_bitmap_loc(fs, group - 1) -
 			fs->super->s_blocks_per_group;
 		if (b_stride != i_stride ||
-		    b_stride < 0)
+		    b_stride < 0 ||
+		    (flexbg_size > 1 && (group % flexbg_size == 0)))
 			goto next;
 
 		/* printf("group %d has stride %d\n", group, b_stride); */
