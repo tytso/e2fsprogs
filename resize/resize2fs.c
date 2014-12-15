@@ -1628,6 +1628,11 @@ out:
 	return errcode;
 }
 
+static void quiet_com_err_proc(const char *whoami, errcode_t code,
+			       const char *fmt, va_list args)
+{
+}
+
 static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 {
 	struct process_block_struct	pb;
@@ -1637,7 +1642,6 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	errcode_t		retval;
 	char			*block_buf = 0;
 	ext2_ino_t		start_to_move;
-	blk64_t			orig_size;
 	int			inode_size;
 
 	if ((rfs->old_fs->group_desc_count <=
@@ -1645,16 +1649,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	    !rfs->bmap)
 		return 0;
 
-	/*
-	 * Save the original size of the old filesystem, and
-	 * temporarily set the size to be the new size if the new size
-	 * is larger.  We need to do this to avoid catching an error
-	 * by the block iterator routines
-	 */
-	orig_size = ext2fs_blocks_count(rfs->old_fs->super);
-	if (orig_size < ext2fs_blocks_count(rfs->new_fs->super))
-		ext2fs_blocks_count_set(rfs->old_fs->super,
-				ext2fs_blocks_count(rfs->new_fs->super));
+	set_com_err_hook(quiet_com_err_proc);
 
 	retval = ext2fs_open_inode_scan(rfs->old_fs, 0, &scan);
 	if (retval) goto errout;
@@ -1790,7 +1785,7 @@ remap_blocks:
 	io_channel_flush(rfs->old_fs->io);
 
 errout:
-	ext2fs_blocks_count_set(rfs->old_fs->super, orig_size);
+	reset_com_err_hook();
 	if (rfs->bmap) {
 		ext2fs_free_extent_table(rfs->bmap);
 		rfs->bmap = 0;
