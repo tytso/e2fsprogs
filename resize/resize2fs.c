@@ -198,6 +198,10 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 	if (retval)
 		goto errout;
 
+	retval = ext2fs_set_gdt_csum(rfs->new_fs);
+	if (retval)
+		goto errout;
+
 	rfs->new_fs->super->s_state &= ~EXT2_ERROR_FS;
 	rfs->new_fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 
