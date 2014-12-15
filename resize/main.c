@@ -321,10 +321,30 @@ int main (int argc, char ** argv)
 	}
 	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
 
-	if (!(mount_flags & EXT2_MF_MOUNTED)) {
-		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
-			       (fs->super->s_state & EXT2_ERROR_FS) ||
-			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
+	/*
+	 * Before acting on an unmounted filesystem, make sure it's ok,
+	 * unless the user is forcing it.
+	 *
+	 * We do ERROR and VALID checks even if we're only printing the
+	 * minimimum size, because traversal of a badly damaged filesystem
+	 * can cause issues as well.  We don't require it to be fscked after
+	 * the last mount time in this case, though, as this is a bit less
+	 * risky.
+	 */
+	if (!force && !(mount_flags & EXT2_MF_MOUNTED)) {
+		int checkit = 0;
+
+		if (fs->super->s_state & EXT2_ERROR_FS)
+			checkit = 1;
+
+		if ((fs->super->s_state & EXT2_VALID_FS) == 0)
+			checkit = 1;
+
+		if ((fs->super->s_lastcheck < fs->super->s_mtime) &&
+		    !print_min_size)
+			checkit = 1;
+
+		if (checkit) {
 			fprintf(stderr,
 				_("Please run 'e2fsck -f %s' first.\n\n"),
 				device_name);
