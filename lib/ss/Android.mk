@@ -45,7 +45,6 @@ LOCAL_CFLAGS := $(libext2_ss_cflags)
 LOCAL_STATIC_LIBRARIES := libc
 LOCAL_MODULE := libext2_ss
 LOCAL_MODULE_TAGS := optional
-LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_STATIC_LIBRARY)
 
