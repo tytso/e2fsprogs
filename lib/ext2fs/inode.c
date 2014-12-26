@@ -181,8 +181,11 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	scan->inodes_left = EXT2_INODES_PER_GROUP(scan->fs->super);
 	scan->blocks_left = scan->fs->inode_blocks_per_group;
 	if (ext2fs_has_group_desc_csum(fs)) {
-		scan->inodes_left -=
-			ext2fs_bg_itable_unused(fs, scan->current_group);
+		__u32 unused = ext2fs_bg_itable_unused(fs, scan->current_group);
+		if (scan->inodes_left > unused)
+			scan->inodes_left -= unused;
+		else
+			scan->inodes_left = 0;
 		scan->blocks_left =
 			(scan->inodes_left +
 			 (fs->blocksize / scan->inode_size - 1)) *
@@ -274,8 +277,11 @@ static errcode_t get_next_blockgroup(ext2_inode_scan scan)
 	scan->inodes_left = EXT2_INODES_PER_GROUP(fs->super);
 	scan->blocks_left = fs->inode_blocks_per_group;
 	if (ext2fs_has_group_desc_csum(fs)) {
-		scan->inodes_left -=
-			ext2fs_bg_itable_unused(fs, scan->current_group);
+		__u32 unused = ext2fs_bg_itable_unused(fs, scan->current_group);
+		if (scan->inodes_left > unused)
+			scan->inodes_left -= unused;
+		else
+			scan->inodes_left = 0;
 		scan->blocks_left =
 			(scan->inodes_left +
 			 (fs->blocksize / scan->inode_size - 1)) *
