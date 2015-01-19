@@ -88,7 +88,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	} else {
 		/* Slow symlinks, target stored in the first block */
 		memset(block_buf, 0, fs->blocksize);
-		strcpy(block_buf, target);
+		strncpy(block_buf, target, fs->blocksize);
 		if (fs->super->s_feature_incompat &
 		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
 			/*

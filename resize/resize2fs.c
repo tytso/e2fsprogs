@@ -1852,8 +1852,10 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		    ext2fs_inode_table_loc(fs, i))
 			to_move++;
 
-	if (to_move == 0)
-		return 0;
+	if (to_move == 0) {
+		retval = 0;
+		goto errout;
+	}
 
 	if (rfs->progress) {
 		retval = rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS,
