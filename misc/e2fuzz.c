@@ -273,7 +273,7 @@ int process_fs(const char *fsname)
 		if ((rand() % 2) && c < 128)
 			c |= 0x80;
 		if (verbose)
-			printf("Corrupting byte %jd in block %jd to 0x%x\n",
+			printf("Corrupting byte %zu in block %zu to 0x%x\n",
 			       off % fs->blocksize, off / fs->blocksize, c);
 		if (dryrun)
 			continue;
