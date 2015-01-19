@@ -112,7 +112,7 @@ need_block:
 		ext2fs_iblk_set(fs, &inode, 1);
 		/* Slow symlinks, target stored in the first block */
 		memset(block_buf, 0, fs->blocksize);
-		strcpy(block_buf, target);
+		strncpy(block_buf, target, fs->blocksize);
 		if (fs->super->s_feature_incompat &
 		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
 			/*
