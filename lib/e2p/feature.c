@@ -97,6 +97,8 @@ static struct feature feature_list[] = {
 			"large_dir"},
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_INLINE_DATA,
 			"inline_data"},
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT,
+			"encrypt"},
 	{	0, 0, 0 },
 };
 

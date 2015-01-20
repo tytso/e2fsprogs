@@ -41,8 +41,8 @@ static struct flags_name flags_array[] = {
 	{ EXT2_COMPRBLK_FL, "B", "Compressed_File" },
 	{ EXT2_DIRTY_FL, "Z", "Compressed_Dirty_File" },
 	{ EXT2_NOCOMPR_FL, "X", "Compression_Raw_Access" },
-	{ EXT2_ECOMPR_FL, "E", "Compression_Error" },
 #endif
+	{ EXT4_ENCRYPT_FL, "E", "Encrypted" },
 	{ EXT3_JOURNAL_DATA_FL, "j", "Journaled_Data" },
 	{ EXT2_INDEX_FL, "I", "Indexed_directory" },
 	{ EXT2_NOTAIL_FL, "t", "No_Tailmerging" },

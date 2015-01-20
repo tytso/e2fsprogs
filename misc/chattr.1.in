@@ -107,8 +107,8 @@ The 'e' attribute indicates that the file is using extents for mapping
 the blocks on disk.  It may not be removed using
 .BR chattr (1).
 .PP
-The 'E' attribute is used by the experimental compression patches to
-indicate that a compressed file has a compression error.  It may not be
+The 'E' attribute is used by the experimental encryption patches to
+indicate that the file has been encrypted.  It may not be
 set or reset using
 .BR chattr (1),
 although it can be displayed by

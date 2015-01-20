@@ -307,7 +307,8 @@ struct ext2_dx_tail {
 #define EXT2_DIRTY_FL			0x00000100
 #define EXT2_COMPRBLK_FL		0x00000200 /* One or more compressed clusters */
 #define EXT2_NOCOMPR_FL			0x00000400 /* Access raw compressed data */
-#define EXT2_ECOMPR_FL			0x00000800 /* Compression error */
+	/* nb: was previously EXT2_ECOMPR_FL */
+#define EXT4_ENCRYPT_FL			0x00000800 /* encrypted inode */
 /* End compression flags --- maybe not all used */
 #define EXT2_BTREE_FL			0x00001000 /* btree format dir */
 #define EXT2_INDEX_FL			0x00001000 /* hash-indexed directory */
@@ -564,6 +565,12 @@ struct ext2_inode_large {
 /* Metadata checksum algorithms */
 #define EXT2_CRC32C_CHKSUM		1
 
+/* Encryption algorithms */
+#define EXT4_ENCRYPTION_MODE_INVALID		0
+#define EXT4_ENCRYPTION_MODE_AES_256_XTS	1
+#define EXT4_ENCRYPTION_MODE_AES_256_GCM	2
+#define EXT4_ENCRYPTION_MODE_AES_256_CBC	3
+
 /*
  * Structure of the super block
  */
@@ -675,7 +682,8 @@ struct ext2_super_block {
 	__u32	s_grp_quota_inum;	/* inode number of group quota file */
 	__u32	s_overhead_blocks;	/* overhead blocks/clusters in fs */
 	__u32	s_backup_bgs[2];	/* If sparse_super2 enabled */
-	__u32   s_reserved[106];        /* Padding to the end of the block */
+	__u8	s_encrypt_algos[4];	/* Encryption algorithms in use  */
+	__u32   s_reserved[105];        /* Padding to the end of the block */
 	__u32	s_checksum;		/* crc32c(superblock) */
 };
 
@@ -761,6 +769,7 @@ struct ext2_super_block {
 /* 0x2000 was EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM but this was never used */
 #define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
 #define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
+#define EXT4_FEATURE_INCOMPAT_ENCRYPT		0x10000
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
 #define EXT2_FEATURE_INCOMPAT_SUPP    (EXT2_FEATURE_INCOMPAT_FILETYPE| \

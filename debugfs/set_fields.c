@@ -165,6 +165,8 @@ static struct field_set_info super_fields[] = {
 	{ "last_error_block", &set_sb.s_last_error_block, NULL, 8, parse_uint },
 	{ "last_error_func", &set_sb.s_last_error_func, NULL, 32, parse_string },
 	{ "last_error_line", &set_sb.s_last_error_ino, NULL, 4, parse_uint },
+	{ "encrypt_algos", &set_sb.s_encrypt_algos, NULL, 1, parse_uint,
+	  FLAG_ARRAY, 4 },
 	{ 0, 0, 0, 0 }
 };
 
