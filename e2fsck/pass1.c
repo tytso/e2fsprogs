@@ -2285,6 +2285,16 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 	ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 	inode->i_dtime = ctx->now;
 
+	/*
+	 * If a special inode has such rotten block mappings that we
+	 * want to clear the whole inode, be sure to actually zap
+	 * the block maps because i_links_count isn't checked for
+	 * special inodes, and we'll end up right back here the next
+	 * time we run fsck.
+	 */
+	if (ino < EXT2_FIRST_INODE(ctx->fs->super))
+		memset(inode->i_block, 0, sizeof(inode->i_block));
+
 	ext2fs_unmark_inode_bitmap2(ctx->inode_dir_map, ino);
 	ext2fs_unmark_inode_bitmap2(ctx->inode_used_map, ino);
 	if (ctx->inode_reg_map)
