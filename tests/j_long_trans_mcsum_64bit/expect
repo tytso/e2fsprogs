@@ -92,7 +92,7 @@ test_filesys: recovering journal
 Superblock has an invalid journal (inode 8).
 Clear? yes
 
-*** ext3 journal has been deleted - filesystem is now ext2 only ***
+*** journal has been deleted ***
 
 Resize inode not valid.  Recreate? yes
 
@@ -138,7 +138,7 @@ Recreate journal? yes
 
 Creating journal (16384 blocks):  Done.
 
-*** journal has been re-created - filesystem is now ext3 again ***
+*** journal has been regenerated ***
 
 test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
 test_filesys: 11/32768 files (0.0% non-contiguous), 27057/524288 blocks

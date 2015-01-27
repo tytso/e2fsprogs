@@ -1674,8 +1674,7 @@ print_unsupp_features:
 			}
 			log_out(ctx, "%s", _(" Done.\n"));
 			log_out(ctx, "%s",
-				_("\n*** journal has been re-created - "
-				  "filesystem is now ext3 again ***\n"));
+				_("\n*** journal has been regenerated ***\n"));
 		}
 	}
 no_journal:

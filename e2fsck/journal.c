@@ -545,8 +545,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 		pctx->ino = sb->s_journal_inum;
 		if (fix_problem(ctx, PR_0_JOURNAL_BAD_INODE, pctx)) {
 			if (has_journal && sb->s_journal_inum)
-				printf("*** ext3 journal has been deleted - "
-				       "filesystem is now ext2 only ***\n\n");
+				printf("*** journal has been deleted ***\n\n");
 			sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			sb->s_journal_inum = 0;
 			memset(sb->s_jnl_blocks, 0, sizeof(sb->s_jnl_blocks));
