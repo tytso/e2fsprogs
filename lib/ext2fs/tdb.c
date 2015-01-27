@@ -246,6 +246,7 @@ struct tdb_context {
 	int page_size;
 	int max_dead_records;
 	bool have_transaction_lock;
+	tdb_len_t real_map_size; /* how much space has been mapped */
 };
 
 
@@ -970,9 +971,10 @@ int tdb_munmap(struct tdb_context *tdb)
 
 #ifdef HAVE_MMAP
 	if (tdb->map_ptr) {
-		int ret = munmap(tdb->map_ptr, tdb->map_size);
+		int ret = munmap(tdb->map_ptr, tdb->real_map_size);
 		if (ret != 0)
 			return ret;
+		tdb->real_map_size = 0;
 	}
 #endif
 	tdb->map_ptr = NULL;
@@ -995,10 +997,12 @@ void tdb_mmap(struct tdb_context *tdb)
 		 */
 
 		if (tdb->map_ptr == MAP_FAILED) {
+			tdb->real_map_size = 0;
 			tdb->map_ptr = NULL;
 			TDB_LOG((tdb, TDB_DEBUG_WARNING, "tdb_mmap failed for size %d (%s)\n",
 				 tdb->map_size, strerror(errno)));
 		}
+		tdb->real_map_size = tdb->map_size;
 	} else {
 		tdb->map_ptr = NULL;
 	}
