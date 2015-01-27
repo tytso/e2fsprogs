@@ -262,6 +262,32 @@ not stored in filesystem data structures.   Hence, the values displayed
 may not necessarily by accurate and does not indicate a problem or
 corruption in the file system.)
 .TP
+.BI ea_get " [-f outfile] filespec attr_name"
+Retrieve the value of the extended attribute
+.I attr_name
+in the file
+.I filespec
+and write it either to stdout or to \fIoutfile\fR.
+.TP
+.BI ea_list " filespec
+List the extended attributes associated with the file
+.I filespec
+to standard output.
+.TP
+.BI ea_set " [-f infile] filespec attr_name attr_value
+Set the value of the extended attribute
+.I attr_name
+in the file
+.I filespec
+to the string value
+.I attr_value
+or read it from \fIinfile\fR.
+.TP
+.BI ea_rm " filespec attr_names...
+Remove the extended attribute
+.I attr_name
+from the file \fIfilespec\fR.
+.TP
 .BI expand_dir " filespec"
 Expand the directory
 .IR filespec .
@@ -372,6 +398,26 @@ to do this, use the
 .BR mke2fs (8)
 program.  This is just a call to the low-level library, which sets up
 the superblock and block descriptors.
+.TP
+.BI journal_close
+Close the open journal.
+.TP
+.BI journal_open " [-c] [-v ver] [-j ext_jnl]
+Opens the journal for reading and writing.  Journal checksumming can
+be enabled by supplying \fI-c\fR; checksum formats 2 and 3 can be
+selected with the \fI-v\fR option.  An external journal can be loaded
+from \fIext_jnl\fR.
+.TP
+.BI journal_run
+Replay all transactions in the open journal.
+.TP
+.BI journal_write " [-b blocks] [-r revoke] [-c] file
+Write a transaction to the open journal.  The list of blocks to write
+should be supplied as a comma-separated list in \fIblocks\fR; the
+blocks themselves should be readable from \fIfile\fR.  A list of
+blocks to revoke can be supplied as a comma-separated list in
+\fIrevoke\fR.  By default, a commit record is written at the end; the
+\fI-c\fR switch writes an uncommitted transaction.
 .TP
 .BI kill_file " filespec"
 Deallocate the inode
@@ -667,7 +713,6 @@ into a newly-created file in the filesystem named
 .IR out_file .
 .TP
 .BI zap_block " [-f filespec] [-o offset] [-l length] [-p pattern] block_num"
-.TP
 Overwrite the block specified by
 .I block_num
 with zero (NUL) bytes, or if

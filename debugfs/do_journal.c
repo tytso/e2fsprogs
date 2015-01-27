@@ -925,9 +925,10 @@ void do_journal_open(int argc, char *argv[])
 			}
 			break;
 		default:
-			printf("%s: [-c] [-v ver]\n", argv[0]);
+			printf("%s: [-c] [-v ver] [-f ext_jnl]\n", argv[0]);
 			printf("-c: Enable journal checksumming.\n");
 			printf("-v: Use this version checksum format.\n");
+			printf("-j: Load this external journal.\n");
 		}
 	}
 
