@@ -13,7 +13,7 @@ $DEBUGFS -R "set_bg 2 flags 0" -w $TMPFILE > /dev/null 2>&1
 $DEBUGFS -R "set_bg 2 checksum 0xd318" -w $TMPFILE > /dev/null 2>&1
 $DUMPE2FS $TMPFILE 2>&1 | grep -A10 '^Group 2:' >> $OUT
 dd if=/dev/zero of=$TMPFILE bs=1 count=1 seek=$((1024 * 40000)) conv=notrunc >> $OUT 2> /dev/null
-$RESIZE2FS_EXE -f -p $TMPFILE >> $OUT 2>&1
+RESIZE2FS_FORCE_ITABLE_INIT=1 $RESIZE2FS_EXE -f -p $TMPFILE >> $OUT 2>&1
 $DUMPE2FS $TMPFILE 2>&1 | grep -A10 '^Group 2:' >> $OUT
 $E2FSCK -fy $TMPFILE >> $OUT 2>&1
 

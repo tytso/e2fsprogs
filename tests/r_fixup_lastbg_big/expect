@@ -22,6 +22,8 @@ Group 2: (Blocks 16385-19999)
   Free blocks: 16385-19999
   Free inodes: 833-1248
 Resizing the filesystem on test.img to 40000 (1k) blocks.
+Begin pass 1 (max = 2)
+Extending the inode table     ----------------------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 The filesystem on test.img is now 40000 (1k) blocks long.
 
 Group 2: (Blocks 16385-24576) [INODE_UNINIT, BLOCK_UNINIT]
@@ -31,7 +33,7 @@ Group 2: (Blocks 16385-24576) [INODE_UNINIT, BLOCK_UNINIT]
   8192 free blocks, 416 free inodes, 0 directories, 416 unused inodes
   Free blocks: 16385-24576
   Free inodes: 833-1248
-Group 3: (Blocks 24577-32768) [INODE_UNINIT]
+Group 3: (Blocks 24577-32768) [INODE_UNINIT, ITABLE_ZEROED]
   Backup superblock at 24577, Group descriptors at 24578-24578
   Reserved GDT blocks at 24579-24656
   Block bitmap at 413 (bg #0 + 412)
