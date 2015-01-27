@@ -519,6 +519,18 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 	if (err)
 		goto out;
 
+	/* If extra_isize isn't set, we need to set it now */
+	if (inode->i_extra_isize == 0 &&
+	    EXT2_INODE_SIZE(handle->fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
+		char *p = (char *)inode;
+		size_t extra = handle->fs->super->s_want_extra_isize;
+
+		if (extra == 0)
+			extra = sizeof(__u32);
+		memset(p + EXT2_GOOD_OLD_INODE_SIZE, 0, extra);
+		inode->i_extra_isize = extra;
+	}
+
 	move_inline_data_to_front(handle);
 
 	x = handle->attrs;
