@@ -97,6 +97,8 @@ static unsigned long new_inode_size;
 static char *ext_mount_opts;
 static int usrquota, grpquota;
 static int rewrite_checksums;
+static int feature_64bit;
+static int fsck_requested;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -146,7 +148,8 @@ static __u32 ok_features[3] = {
 	EXT2_FEATURE_INCOMPAT_FILETYPE |
 		EXT3_FEATURE_INCOMPAT_EXTENTS |
 		EXT4_FEATURE_INCOMPAT_FLEX_BG |
-		EXT4_FEATURE_INCOMPAT_MMP,
+		EXT4_FEATURE_INCOMPAT_MMP |
+		EXT4_FEATURE_INCOMPAT_64BIT,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -168,7 +171,8 @@ static __u32 clear_ok_features[3] = {
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE |
 		EXT4_FEATURE_INCOMPAT_FLEX_BG |
-		EXT4_FEATURE_INCOMPAT_MMP,
+		EXT4_FEATURE_INCOMPAT_MMP |
+		EXT4_FEATURE_INCOMPAT_64BIT,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -418,6 +422,7 @@ static void request_dir_fsck_afterwards(ext2_filsys fs)
 
 	if (requested++)
 		return;
+	fsck_requested++;
 	fs->super->s_state &= ~EXT2_VALID_FS;
 	printf("\n%s\n", _(please_dir_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
@@ -430,10 +435,38 @@ static void request_fsck_afterwards(ext2_filsys fs)
 
 	if (requested++)
 		return;
+	fsck_requested++;
 	fs->super->s_state &= ~EXT2_VALID_FS;
 	printf("\n%s\n", _(please_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
 		printf("%s", _("(and reboot afterwards!)\n"));
+}
+
+static void convert_64bit(ext2_filsys fs, int direction)
+{
+	if (!direction)
+		return;
+
+	/*
+	 * Is resize2fs going to demand a fsck run? Might as well tell the
+	 * user now.
+	 */
+	if (!fsck_requested &&
+	    ((fs->super->s_state & EXT2_ERROR_FS) ||
+	     !(fs->super->s_state & EXT2_VALID_FS) ||
+	     fs->super->s_lastcheck < fs->super->s_mtime))
+		request_fsck_afterwards(fs);
+	if (fsck_requested)
+		fprintf(stderr, _("After running e2fsck, please run `resize2fs %s %s"),
+			direction > 0 ? "-b" : "-s", fs->device_name);
+	else
+		fprintf(stderr, _("Please run `resize2fs %s %s"),
+			direction > 0 ? "-b" : "-s", fs->device_name);
+
+	if (direction > 0)
+		fprintf(stderr, _("' to enable 64-bit mode.\n"));
+	else
+		fprintf(stderr, _("' to disable 64-bit mode.\n"));
 }
 
 /* Rewrite extents */
@@ -1210,6 +1243,32 @@ mmp_error:
 				EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 		if (err)
 			return 1;
+	}
+
+	/*
+	 * We don't actually toggle 64bit; resize2fs does that.  But this
+	 * must come after the metadata_csum feature_on so that it won't
+	 * complain about the lack of 64bit.
+	 */
+	if (FEATURE_ON(E2P_FEATURE_INCOMPAT,
+		       EXT4_FEATURE_INCOMPAT_64BIT)) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fprintf(stderr, _("Cannot enable 64-bit mode "
+					  "while mounted!\n"));
+			exit(1);
+		}
+		sb->s_feature_incompat &= ~EXT4_FEATURE_INCOMPAT_64BIT;
+		feature_64bit = 1;
+	}
+	if (FEATURE_OFF(E2P_FEATURE_INCOMPAT,
+			EXT4_FEATURE_INCOMPAT_64BIT)) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fprintf(stderr, _("Cannot disable 64-bit mode "
+					  "while mounted!\n"));
+			exit(1);
+		}
+		sb->s_feature_incompat |= EXT4_FEATURE_INCOMPAT_64BIT;
+		feature_64bit = -1;
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
@@ -3015,5 +3074,6 @@ closefs:
 		exit(1);
 	}
 
+	convert_64bit(fs, feature_64bit);
 	return (ext2fs_close_free(&fs) ? 1 : 0);
 }
