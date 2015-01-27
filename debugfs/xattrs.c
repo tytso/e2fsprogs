@@ -202,7 +202,7 @@ void do_set_xattr(int argc, char **argv)
 		}
 	}
 
-	if (optind != argc - 2 && optind != argc - 3) {
+	if (!(fp && optind == argc - 2) && !(!fp && optind == argc - 3)) {
 		printf("%s: Usage: %s <file> <attr> [-f infile | value>]\n",
 		       argv[0], argv[0]);
 		goto out2;
