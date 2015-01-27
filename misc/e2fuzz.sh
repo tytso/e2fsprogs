@@ -219,6 +219,7 @@ seq 1 "${PASSES}" | while read pass; do
 	fi
 	if [ "${RUN_FSCK}" -gt 0 ]; then
 		cp "${PASS_IMG}" "${FSCK_IMG}"
+		pass_img_sz="$(stat -c '%s' "${PASS_IMG}")"
 
 		seq 1 "${MAX_FSCK}" | while read fsck_pass; do
 			echo "++ fsck pass ${fsck_pass}: $(which e2fsck) -fy ${FSCK_IMG} ${EXTENDED_FSCK_OPTS}"
@@ -249,6 +250,12 @@ seq 1 "${PASSES}" | while read pass; do
 					echo "++ fsck makes no progress"
 					exit 2
 				fi
+			fi
+
+			fsck_img_sz="$(stat -c '%s' "${FSCK_IMG}")"
+			if [ "${fsck_img_sz}" -ne "${pass_img_sz}" ]; then
+				echo "++ fsck image size changed"
+				exit 3
 			fi
 		done
 		fsck_loop_ret=$?
