@@ -536,8 +536,9 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 	x = handle->attrs;
 	qsort(x, handle->length, sizeof(struct ext2_xattr), attr_compare);
 
-	/* Does the inode have size for EA? */
-	if (EXT2_INODE_SIZE(handle->fs->super) <= EXT2_GOOD_OLD_INODE_SIZE +
+	/* Does the inode have space for EA? */
+	if (inode->i_extra_isize < sizeof(inode->i_extra_isize) ||
+	    EXT2_INODE_SIZE(handle->fs->super) <= EXT2_GOOD_OLD_INODE_SIZE +
 						  inode->i_extra_isize +
 						  sizeof(__u32))
 		goto write_ea_block;
@@ -773,8 +774,9 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 
 	xattrs_free_keys(handle);
 
-	/* Does the inode have size for EA? */
-	if (EXT2_INODE_SIZE(handle->fs->super) <= EXT2_GOOD_OLD_INODE_SIZE +
+	/* Does the inode have space for EA? */
+	if (inode->i_extra_isize < sizeof(inode->i_extra_isize) ||
+	    EXT2_INODE_SIZE(handle->fs->super) <= EXT2_GOOD_OLD_INODE_SIZE +
 						  inode->i_extra_isize +
 						  sizeof(__u32))
 		goto read_ea_block;
