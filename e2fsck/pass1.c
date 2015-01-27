@@ -93,7 +93,6 @@ struct process_block_struct {
 	struct problem_context *pctx;
 	ext2fs_block_bitmap fs_meta_blocks;
 	e2fsck_t	ctx;
-	blk64_t		bad_ref;
 	region_t	region;
 };
 
@@ -2791,7 +2790,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.pctx = pctx;
 	pb.ctx = ctx;
 	pb.inode_modified = 0;
-	pb.bad_ref = 0;
 	pctx->ino = ino;
 	pctx->errcode = 0;
 
@@ -3175,7 +3173,6 @@ static int process_block(ext2_filsys fs,
 	if (blockcnt < 0 &&
 	    p->ino != EXT2_RESIZE_INO &&
 	    ext2fs_test_block_bitmap2(ctx->block_metadata_map, blk)) {
-		p->bad_ref = blk;
 		pctx->blk = blk;
 		fix_problem(ctx, PR_1_CRITICAL_METADATA_COLLISION, pctx);
 		ctx->flags |= E2F_FLAG_RESTART_LATER;
@@ -3185,13 +3182,23 @@ static int process_block(ext2_filsys fs,
 		p->num_illegal_blocks++;
 		/*
 		 * A bit of subterfuge here -- we're trying to fix a block
-		 * mapping, but know that the IND/DIND/TIND block has collided
+		 * mapping, but the IND/DIND/TIND block could have collided
 		 * with some critical metadata.  So, fix the in-core mapping so
 		 * iterate won't go insane, but return 0 instead of
 		 * BLOCK_CHANGED so that it won't write the remapping out to
 		 * our multiply linked block.
+		 *
+		 * Even if we previously determined that an *IND block
+		 * conflicts with critical metadata, we must still try to
+		 * iterate the *IND block as if it is an *IND block to find and
+		 * mark the blocks it points to.  Better to be overly cautious
+		 * with the used_blocks map so that we don't move the *IND
+		 * block to a block that's really in use!
 		 */
-		if (p->bad_ref && ref_block == p->bad_ref) {
+		if (p->ino != EXT2_RESIZE_INO &&
+		    ref_block != 0 &&
+		    ext2fs_test_block_bitmap2(ctx->block_metadata_map,
+					      ref_block)) {
 			*block_nr = 0;
 			return 0;
 		}
