@@ -254,22 +254,20 @@ static struct ea_name_index ea_names[] = {
 	{0, NULL},
 };
 
-static void move_inline_data_to_front(struct ext2_xattr_handle *h)
+/* Push empty attributes to the end and inlinedata to the front. */
+static int attr_compare(const void *a, const void *b)
 {
-	struct ext2_xattr *x;
-	struct ext2_xattr tmp;
+	const struct ext2_xattr *xa = a, *xb = b;
 
-	for (x = h->attrs + 1; x < h->attrs + h->length; x++) {
-		if (!x->name)
-			continue;
-
-		if (strcmp(x->name, "system.data") == 0) {
-			memcpy(&tmp, x, sizeof(tmp));
-			memcpy(x, h->attrs, sizeof(tmp));
-			memcpy(h->attrs, &tmp, sizeof(tmp));
-			return;
-		}
-	}
+	if (xa->name == NULL)
+		return +1;
+	else if (xb->name == NULL)
+		return -1;
+	else if (!strcmp(xa->name, "system.data"))
+		return -1;
+	else if (!strcmp(xb->name, "system.data"))
+		return +1;
+	return 0;
 }
 
 static const char *find_ea_prefix(int index)
@@ -531,9 +529,13 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 		inode->i_extra_isize = extra;
 	}
 
-	move_inline_data_to_front(handle);
-
+	/*
+	 * Force the inlinedata attr to the front and the empty entries
+	 * to the end.
+	 */
 	x = handle->attrs;
+	qsort(x, handle->length, sizeof(struct ext2_xattr), attr_compare);
+
 	/* Does the inode have size for EA? */
 	if (EXT2_INODE_SIZE(handle->fs->super) <= EXT2_GOOD_OLD_INODE_SIZE +
 						  inode->i_extra_isize +
@@ -554,11 +556,11 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 	if (err)
 		goto out;
 
+write_ea_block:
 	/* Are we done? */
-	if (x == handle->attrs + handle->length)
+	if (x >= handle->attrs + handle->count)
 		goto skip_ea_block;
 
-write_ea_block:
 	/* Write the EA block */
 	err = ext2fs_get_memzero(handle->fs->blocksize, &block_buf);
 	if (err)
