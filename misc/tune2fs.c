@@ -2961,8 +2961,13 @@ retry_open:
 		 * We want to update group descriptor also
 		 * with the new free inode count
 		 */
+		if (rewrite_checksums)
+			fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
-		if (resize_inode(fs, new_inode_size) == 0) {
+		retval = resize_inode(fs, new_inode_size);
+		if (rewrite_checksums)
+			fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		if (retval == 0) {
 			printf(_("Setting inode size %lu\n"),
 							new_inode_size);
 			rewrite_checksums = 1;
