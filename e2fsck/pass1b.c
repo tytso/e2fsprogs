@@ -725,7 +725,29 @@ struct clone_struct {
 	char	*buf;
 	e2fsck_t ctx;
 	struct ext2_inode	*inode;
+
+	struct dup_cluster *save_dup_cluster;
+	blk64_t save_blocknr;
 };
+
+/*
+ * Decrement the bad count *after* we've shown that (a) we can allocate a
+ * replacement block and (b) remap the file blocks.  Unfortunately, there's no
+ * way to find out if the remap succeeded until either the next
+ * clone_file_block() call (an error when remapping the block after returning
+ * BLOCK_CHANGED will halt the iteration) or after block_iterate() returns.
+ * Otherwise, it's possible that we decrease the badcount once in preparation
+ * to remap, then the remap fails (either we can't find a replacement block or
+ * we have to split the extent tree and can't find a new extent block), so we
+ * delete the file, which decreases the badcount again.
+ */
+static void deferred_dec_badcount(struct clone_struct *cs)
+{
+	if (!cs->save_dup_cluster)
+		return;
+	decrement_badcount(cs->ctx, cs->save_blocknr, cs->save_dup_cluster);
+	cs->save_dup_cluster = NULL;
+}
 
 static int clone_file_block(ext2_filsys fs,
 			    blk64_t	*block_nr,
@@ -734,7 +756,7 @@ static int clone_file_block(ext2_filsys fs,
 			    int ref_offset EXT2FS_ATTR((unused)),
 			    void *priv_data)
 {
-	struct dup_cluster *p;
+	struct dup_cluster *p = NULL;
 	blk64_t	new_block;
 	errcode_t	retval;
 	struct clone_struct *cs = (struct clone_struct *) priv_data;
@@ -744,6 +766,7 @@ static int clone_file_block(ext2_filsys fs,
 	int is_meta = 0;
 
 	ctx = cs->ctx;
+	deferred_dec_badcount(cs);
 
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
@@ -768,8 +791,6 @@ static int clone_file_block(ext2_filsys fs,
 		}
 
 		p = (struct dup_cluster *) dnode_get(n);
-		if (!is_meta)
-			decrement_badcount(ctx, *block_nr, p);
 
 		cs->dup_cluster = c;
 		/*
@@ -819,6 +840,8 @@ cluster_alloc_ok:
 			cs->errcode = retval;
 			return BLOCK_ABORT;
 		}
+		cs->save_dup_cluster = (is_meta ? NULL : p);
+		cs->save_blocknr = *block_nr;
 		*block_nr = new_block;
 		ext2fs_mark_block_bitmap2(ctx->block_found_map, new_block);
 		ext2fs_mark_block_bitmap2(fs->block_map, new_block);
@@ -848,6 +871,8 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	cs.ctx = ctx;
 	cs.ino = ino;
 	cs.inode = &dp->inode;
+	cs.save_dup_cluster = NULL;
+	cs.save_blocknr = 0;
 	retval = ext2fs_get_mem(fs->blocksize, &cs.buf);
 	if (retval)
 		return retval;
@@ -860,6 +885,7 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	if (ext2fs_inode_has_valid_blocks2(fs, &dp->inode))
 		pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
 						     clone_file_block, &cs);
+	deferred_dec_badcount(&cs);
 	ext2fs_mark_bb_dirty(fs);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
