@@ -537,6 +537,9 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 			 EXT4_FEATURE_INCOMPAT_INLINE_DATA);
 	if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL)) {
 		size_t size;
+		__u32 dotdot;
+		unsigned int rec_len;
+		struct ext2_dir_entry de;
 
 		if (ext2fs_inline_data_size(ctx->fs, pctx->ino, &size))
 			return;
@@ -545,6 +548,26 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 		 * directory??
 		 */
 		if (size & 3)
+			return;
+		/*
+		 * If the first 10 bytes don't look like a directory entry,
+		 * it's probably not a directory.
+		 */
+		memcpy(&dotdot, inode->i_block, sizeof(dotdot));
+		memcpy(&de, ((char *)inode->i_block) + EXT4_INLINE_DATA_DOTDOT_SIZE,
+		       EXT2_DIR_REC_LEN(0));
+		dotdot = ext2fs_le32_to_cpu(dotdot);
+		de.inode = ext2fs_le32_to_cpu(de.inode);
+		de.rec_len = ext2fs_le16_to_cpu(de.rec_len);
+		ext2fs_get_rec_len(ctx->fs, &de, &rec_len);
+		if (dotdot >= ctx->fs->super->s_inodes_count ||
+		    (dotdot < EXT2_FIRST_INO(ctx->fs->super) &&
+		     dotdot != EXT2_ROOT_INO) ||
+		    de.inode >= ctx->fs->super->s_inodes_count ||
+		    (de.inode < EXT2_FIRST_INO(ctx->fs->super) &&
+		     de.inode != 0) ||
+		    rec_len > EXT4_MIN_INLINE_DATA_SIZE -
+			      EXT4_INLINE_DATA_DOTDOT_SIZE)
 			return;
 		/* device files never have a "system.data" entry */
 		goto isdir;
