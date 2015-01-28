@@ -2742,18 +2742,44 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 static void check_blocks_inline_data(e2fsck_t ctx, struct problem_context *pctx,
 				     struct process_block_struct *pb)
 {
+	int	flags;
+	size_t	inline_data_size = 0;
+
 	if (!pb->is_dir) {
 		pctx->errcode = 0;
 		return;
 	}
 
+	/* Process the dirents in i_block[] as the "first" block. */
 	pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist, pb->ino, 0, 0);
+	if (pctx->errcode)
+		goto err;
+
+	/* Process the dirents in the EA as a "second" block. */
+	flags = ctx->fs->flags;
+	ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+	pctx->errcode = ext2fs_inline_data_size(ctx->fs, pb->ino,
+						&inline_data_size);
+	ctx->fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
+			 (ctx->fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 	if (pctx->errcode) {
-		pctx->blk = 0;
-		pctx->num = 0;
-		fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
+		pctx->errcode = 0;
+		return;
 	}
+
+	if (inline_data_size <= EXT4_MIN_INLINE_DATA_SIZE)
+		return;
+
+	pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist, pb->ino, 0, 1);
+	if (pctx->errcode)
+		goto err;
+
+	return;
+err:
+	pctx->blk = 0;
+	pctx->num = 0;
+	fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
+	ctx->flags |= E2F_FLAG_ABORT;
 }
 
 /*

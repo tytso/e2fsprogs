@@ -732,15 +732,6 @@ static void salvage_directory(ext2_filsys fs,
 	}
 }
 
-static int is_last_entry(ext2_filsys fs, int inline_data_size,
-			 unsigned int offset, int csum_size)
-{
-	if (inline_data_size)
-		return (offset < inline_data_size);
-	else
-		return (offset < fs->blocksize - csum_size);
-}
-
 #define NEXT_DIRENT(d)	((void *)((char *)(d) + (d)->rec_len))
 static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
 {
@@ -783,10 +774,22 @@ static errcode_t fix_inline_dir_size(e2fsck_t ctx, ext2_ino_t ino,
 	errcode_t retval;
 
 	old_size = *inline_data_size;
-	new_size = old_size + (4 - (old_size & 3));
+	/*
+	 * If there's not enough bytes to start the "second" dir block
+	 * (in the EA space) then truncate everything to the first block.
+	 */
+	if (old_size > EXT4_MIN_INLINE_DATA_SIZE &&
+	    old_size < EXT4_MIN_INLINE_DATA_SIZE +
+		       EXT2_DIR_REC_LEN(1)) {
+		old_size = EXT4_MIN_INLINE_DATA_SIZE;
+		new_size = old_size;
+	} else
+		/* Increase to the next four-byte boundary for salvaging */
+		new_size = old_size + (4 - (old_size & 3));
 	memset(buf + old_size, 0, new_size - old_size);
 	retval = ext2fs_inline_data_set(fs, ino, 0, buf, new_size);
 	if (retval == EXT2_ET_INLINE_DATA_NO_SPACE) {
+		/* Or we can't, so truncate. */
 		new_size -= 4;
 		retval = ext2fs_inline_data_set(fs, ino, 0, buf, new_size);
 		if (retval) {
@@ -844,7 +847,7 @@ static int check_dir_block(ext2_filsys fs,
 	ext2_ino_t 		subdir_parent;
 	__u16			links;
 	struct check_dir_struct	*cd;
-	char 			*buf;
+	char			*buf, *ibuf;
 	e2fsck_t		ctx;
 	problem_t		problem;
 	struct ext2_dx_root_info *root;
@@ -858,9 +861,10 @@ static int check_dir_block(ext2_filsys fs,
 	int	is_leaf = 1;
 	size_t	inline_data_size = 0;
 	int	filetype = 0;
+	size_t	max_block_size;
 
 	cd = (struct check_dir_struct *) priv_data;
-	buf = cd->buf;
+	ibuf = buf = cd->buf;
 	ctx = cd->ctx;
 
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
@@ -928,10 +932,22 @@ static int check_dir_block(ext2_filsys fs,
 		if (cd->pctx.errcode)
 			goto inline_read_fail;
 #ifdef WORDS_BIGENDIAN
+		if (db->blockcnt)
+			goto skip_first_read_swab;
 		*((__u32 *)buf) = ext2fs_le32_to_cpu(*((__u32 *)buf));
 		cd->pctx.errcode = ext2fs_dirent_swab_in2(fs,
 				buf + EXT4_INLINE_DATA_DOTDOT_SIZE,
-				inline_data_size - EXT4_INLINE_DATA_DOTDOT_SIZE,
+				EXT4_MIN_INLINE_DATA_SIZE - EXT4_INLINE_DATA_DOTDOT_SIZE,
+				0);
+		if (cd->pctx.errcode)
+			goto inline_read_fail;
+skip_first_read_swab:
+		if (inline_data_size <= EXT4_MIN_INLINE_DATA_SIZE ||
+		    !db->blockcnt)
+			goto inline_read_fail;
+		cd->pctx.errcode = ext2fs_dirent_swab_in2(fs,
+				buf + EXT4_MIN_INLINE_DATA_SIZE,
+				inline_data_size - EXT4_MIN_INLINE_DATA_SIZE,
 				0);
 #endif
 	} else
@@ -940,7 +956,10 @@ static int check_dir_block(ext2_filsys fs,
 inline_read_fail:
 	pctx.ino = ino;
 	pctx.num = inline_data_size;
-	if ((inline_data_size & 3) &&
+	if (((inline_data_size & 3) ||
+	     (inline_data_size > EXT4_MIN_INLINE_DATA_SIZE &&
+	      inline_data_size < EXT4_MIN_INLINE_DATA_SIZE +
+				 EXT2_DIR_REC_LEN(1))) &&
 	    fix_problem(ctx, PR_2_BAD_INLINE_DIR_SIZE, &pctx)) {
 		errcode_t err = fix_inline_dir_size(ctx, ino,
 						    &inline_data_size, &pctx,
@@ -1039,6 +1058,19 @@ out_htree:
 		de_csum_size = 0;
 
 skip_checksum:
+	if (inline_data_size) {
+		if (db->blockcnt) {
+			buf += EXT4_MIN_INLINE_DATA_SIZE;
+			max_block_size = inline_data_size - EXT4_MIN_INLINE_DATA_SIZE;
+			/* Zero-length second block, just exit */
+			if (max_block_size == 0)
+				return 0;
+		} else {
+			max_block_size = EXT4_MIN_INLINE_DATA_SIZE;
+		}
+	} else
+		max_block_size = fs->blocksize - de_csum_size;
+
 	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	prev = 0;
 	do {
@@ -1048,10 +1080,6 @@ skip_checksum:
 
 		problem = 0;
 		if (!inline_data_size || dot_state > 1) {
-			size_t max_block_size = fs->blocksize - de_csum_size;
-
-			if (inline_data_size)
-				max_block_size = inline_data_size;
 			dirent = (struct ext2_dir_entry *) (buf + offset);
 			(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 			cd->pctx.dirent = dirent;
@@ -1388,7 +1416,7 @@ skip_checksum:
 			}
 		}
 		dot_state++;
-	} while (is_last_entry(fs, inline_data_size, offset, de_csum_size));
+	} while (offset < max_block_size);
 #if 0
 	printf("\n");
 #endif
@@ -1406,22 +1434,11 @@ skip_checksum:
 	}
 #endif /* ENABLE_HTREE */
 
-	if (inline_data_size) {
-		if (offset != inline_data_size) {
-			cd->pctx.num = rec_len + offset - inline_data_size;
-			if (fix_problem(ctx, PR_2_FINAL_RECLEN, &cd->pctx)) {
-				dirent->rec_len = cd->pctx.num;
-				dir_modified++;
-			}
-		}
-	} else {
-		if (offset != fs->blocksize - de_csum_size) {
-			cd->pctx.num = rec_len - (fs->blocksize - de_csum_size) +
-				       offset;
-			if (fix_problem(ctx, PR_2_FINAL_RECLEN, &cd->pctx)) {
-				dirent->rec_len = cd->pctx.num;
-				dir_modified++;
-			}
+	if (offset != max_block_size) {
+		cd->pctx.num = rec_len + offset - max_block_size;
+		if (fix_problem(ctx, PR_2_FINAL_RECLEN, &cd->pctx)) {
+			dirent->rec_len = cd->pctx.num;
+			dir_modified++;
 		}
 	}
 	if (dir_modified) {
@@ -1444,13 +1461,28 @@ write_and_fix:
 			ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		}
 		if (inline_data_size) {
+			buf = ibuf;
 #ifdef WORDS_BIGENDIAN
+			if (db->blockcnt)
+				goto skip_first_write_swab;
 			*((__u32 *)buf) = ext2fs_le32_to_cpu(*((__u32 *)buf));
 			cd->pctx.errcode = ext2fs_dirent_swab_out2(fs,
 					buf + EXT4_INLINE_DATA_DOTDOT_SIZE,
-					inline_data_size -
+					EXT4_MIN_INLINE_DATA_SIZE -
 					EXT4_INLINE_DATA_DOTDOT_SIZE,
 					0);
+			if (cd->pctx.errcode)
+				goto skip_second_write_swab;
+skip_first_write_swab:
+			if (inline_data_size <= EXT4_MIN_INLINE_DATA_SIZE ||
+			    !db->blockcnt)
+				goto skip_second_write_swab;
+			cd->pctx.errcode = ext2fs_dirent_swab_out2(fs,
+					buf + EXT4_MIN_INLINE_DATA_SIZE,
+					inline_data_size -
+					EXT4_MIN_INLINE_DATA_SIZE,
+					0);
+skip_second_write_swab:
 			if (cd->pctx.errcode &&
 			    !fix_problem(ctx, PR_2_WRITE_DIRBLOCK, &cd->pctx))
 				goto abort_free_dict;
