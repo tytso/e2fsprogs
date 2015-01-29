@@ -875,9 +875,12 @@ struct ext2_dir_entry_tail {
  *
  * NOTE: It must be a multiple of 4
  */
+#define EXT2_DIR_ENTRY_HEADER_LEN	8
 #define EXT2_DIR_PAD			4
 #define EXT2_DIR_ROUND			(EXT2_DIR_PAD - 1)
-#define EXT2_DIR_REC_LEN(name_len)	(((name_len) + 8 + EXT2_DIR_ROUND) & \
+#define EXT2_DIR_REC_LEN(name_len)	(((name_len) + \
+					  EXT2_DIR_ENTRY_HEADER_LEN + \
+					  EXT2_DIR_ROUND) & \
 					 ~EXT2_DIR_ROUND)
 
 /*

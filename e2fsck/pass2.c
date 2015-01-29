@@ -672,18 +672,29 @@ static void salvage_directory(ext2_filsys fs,
 	char	*cp = (char *) dirent;
 	int left;
 	unsigned int rec_len, prev_rec_len;
-	unsigned int name_len = ext2fs_dirent_name_len(dirent);
+	unsigned int name_len;
 
-	(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
+	/*
+	 * If the space left for the entry is too small to be an entry,
+	 * we can't access dirent's fields, so plumb in the values needed
+	 * so that the previous entry absorbs this one.
+	 */
+	if (block_len - *offset < EXT2_DIR_ENTRY_HEADER_LEN) {
+		name_len = 0;
+		rec_len = block_len - *offset;
+	} else {
+		name_len = ext2fs_dirent_name_len(dirent);
+		(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
+	}
 	left = block_len - *offset - rec_len;
 
 	/*
 	 * Special case of directory entry of size 8: copy what's left
 	 * of the directory block up to cover up the invalid hole.
 	 */
-	if ((left >= 12) && (rec_len == 8)) {
-		memmove(cp, cp+8, left);
-		memset(cp + left, 0, 8);
+	if ((left >= 12) && (rec_len == EXT2_DIR_ENTRY_HEADER_LEN)) {
+		memmove(cp, cp+EXT2_DIR_ENTRY_HEADER_LEN, left);
+		memset(cp + left, 0, EXT2_DIR_ENTRY_HEADER_LEN);
 		return;
 	}
 	/*
@@ -692,8 +703,8 @@ static void salvage_directory(ext2_filsys fs,
 	 * record length.
 	 */
 	if ((left < 0) &&
-	    ((int) rec_len + left > 8) &&
-	    ((int) name_len + 8 <= (int) rec_len + left) &&
+	    ((int) rec_len + left > EXT2_DIR_ENTRY_HEADER_LEN) &&
+	    ((int) name_len + EXT2_DIR_ENTRY_HEADER_LEN <= (int) rec_len + left) &&
 	    dirent->inode <= fs->super->s_inodes_count &&
 	    strnlen(dirent->name, name_len) == name_len) {
 		(void) ext2fs_set_rec_len(fs, (int) rec_len + left, dirent);
@@ -928,6 +939,7 @@ static int check_dir_block(ext2_filsys fs,
 
 	ehandler_operation(_("reading directory block"));
 	if (inline_data_size) {
+		memset(buf, 0, fs->blocksize - inline_data_size);
 		cd->pctx.errcode = ext2fs_inline_data_get(fs, ino, 0, buf, 0);
 		if (cd->pctx.errcode)
 			goto inline_read_fail;
@@ -1081,15 +1093,20 @@ skip_checksum:
 		problem = 0;
 		if (!inline_data_size || dot_state > 1) {
 			dirent = (struct ext2_dir_entry *) (buf + offset);
-			(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
+			/*
+			 * If there's not even space for the entry header,
+			 * force salvaging this dir.
+			 */
+			if (max_block_size - offset < EXT2_DIR_ENTRY_HEADER_LEN)
+				rec_len = EXT2_DIR_REC_LEN(1);
+			else
+				(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 			cd->pctx.dirent = dirent;
 			cd->pctx.num = offset;
-			if (((offset + rec_len) > fs->blocksize) ||
-			    (inline_data_size > 0 &&
-			     (offset + rec_len) > inline_data_size) ||
+			if ((offset + rec_len > max_block_size) ||
 			    (rec_len < 12) ||
 			    ((rec_len % 4) != 0) ||
-			    ((ext2fs_dirent_name_len(dirent) + 8) > rec_len)) {
+			    ((ext2fs_dirent_name_len(dirent) + EXT2_DIR_ENTRY_HEADER_LEN) > rec_len)) {
 				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
 						&cd->pctx)) {
 #ifdef WORDS_BIGENDIAN
@@ -1098,7 +1115,7 @@ skip_checksum:
 					 * swap routine finds a rec_len that it
 					 * doesn't like, it continues
 					 * processing the block as if rec_len
-					 * == 8.  This means that the name
+					 * == EXT2_DIR_ENTRY_HEADER_LEN.  This means that the name
 					 * field gets byte swapped, which means
 					 * that salvage will not detect the
 					 * correct name length (unless the name
@@ -1112,11 +1129,11 @@ skip_checksum:
 					 * the salvaged dirent.
 					 */
 					int need_reswab = 0;
-					if (rec_len < 8 || rec_len % 4) {
+					if (rec_len < EXT2_DIR_ENTRY_HEADER_LEN || rec_len % 4) {
 						need_reswab = 1;
 						ext2fs_dirent_swab_in2(fs,
-							((char *)dirent) + 8,
-							max_block_size - offset - 8,
+							((char *)dirent) + EXT2_DIR_ENTRY_HEADER_LEN,
+							max_block_size - offset - EXT2_DIR_ENTRY_HEADER_LEN,
 							0);
 					}
 #endif
