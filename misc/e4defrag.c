@@ -85,6 +85,7 @@
 /* The mode of defrag */
 #define DETAIL			0x01
 #define STATISTIC		0x02
+#define MINIMAL			0x04
 
 #define DEVNAME			0
 #define DIRNAME			1
@@ -112,7 +113,7 @@
 
 /* The following macros are error message */
 #define MSG_USAGE		\
-"Usage	: e4defrag [-v] file...| directory...| device...\n\
+"Usage	: e4defrag [-v] [-m] file...| directory...| device...\n\
 	: e4defrag  -c  file...| directory...| device...\n"
 
 #define NGMSG_EXT4		"Filesystem is not ext4 filesystem"
@@ -1509,7 +1510,9 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 	if (current_uid == ROOT_UID)
 		best = get_best_count(blk_count);
 	else
-		best = 1;
+		best = 1 + (buf->st_size >> 27); /* guess 128mb extents */
+
+	if(mode_flag & MINIMAL) best += best>>2; /* require more significant improvement minimal mode */
 
 	if (file_frags_start <= best)
 		goto check_improvement;
@@ -1602,13 +1605,15 @@ check_improvement:
 
 	if (file_frags_start <= best ||
 			orig_physical_cnt <= donor_physical_cnt) {
-		printf("\033[79;0H\033[K[%u/%u]%s:\t%3d%%",
-			defraged_file_count, total_count, file, 100);
-		if (mode_flag & DETAIL)
-			printf("  extents: %d -> %d",
-				file_frags_start, file_frags_start);
+		if ((mode_flag & DETAIL)||!(mode_flag & MINIMAL)||donor_physical_cnt>0) {
+			printf("\033[79;0H\033[K[%u/%u]%s:\t%3d%%",
+				defraged_file_count, total_count, file, 100);
+			if (mode_flag & DETAIL)
+				printf("  extents: %d -> %d",
+					file_frags_start, file_frags_start);
 
-		printf("\t[ OK ]\n");
+			printf("\t[ OK ]\n");
+		}
 		succeed_cnt++;
 
 		if (file_frags_start != 1)
@@ -1683,13 +1688,16 @@ int main(int argc, char *argv[])
 	if (argc == 1)
 		goto out;
 
-	while ((opt = getopt(argc, argv, "vc")) != EOF) {
+	while ((opt = getopt(argc, argv, "vcm")) != EOF) {
 		switch (opt) {
 		case 'v':
 			mode_flag |= DETAIL;
 			break;
 		case 'c':
 			mode_flag |= STATISTIC;
+			break;
+		case 'm':
+			mode_flag |= MINIMAL;
 			break;
 		default:
 			goto out;
@@ -1855,8 +1863,10 @@ int main(int argc, char *argv[])
 					PATH_MAX - strnlen(lost_found_dir,
 							   PATH_MAX));
 			}
-
-			nftw64(dir_name, calc_entry_counts, FTW_OPEN_FD, flags);
+			
+			if(!(mode_flag & MINIMAL)) {
+				nftw64(dir_name, calc_entry_counts, FTW_OPEN_FD, flags);
+			}
 
 			if (mode_flag & STATISTIC) {
 				if (mode_flag & DETAIL)
@@ -1911,8 +1921,10 @@ int main(int argc, char *argv[])
 			nftw64(dir_name, file_defrag, FTW_OPEN_FD, flags);
 			printf("\n\tSuccess:\t\t\t[ %u/%u ]\n", succeed_cnt,
 				total_count);
-			printf("\tFailure:\t\t\t[ %u/%u ]\n",
-				total_count - succeed_cnt, total_count);
+			if(!(mode_flag & MINIMAL)) {
+				printf("\tFailure:\t\t\t[ %u/%u ]\n",
+					total_count - succeed_cnt, total_count);
+			}
 			if (mode_flag & DETAIL) {
 				printf("\tTotal extents:\t\t\t%4d->%d\n",
 					extents_before_defrag,
