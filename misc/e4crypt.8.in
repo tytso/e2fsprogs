@@ -1,0 +1,59 @@
+.TH E4CRYPT 8 "Mar 2015" "e4crypt version 1"
+.SH NAME
+e4crypt \- ext4 filesystem encryption utility
+.SH SYNOPSIS
+.B e4crypt \-a \-n
+.I salt
+[
+.B \-k
+.I keyring
+]
+[
+.I path\fR ...
+]
+.br
+.B e4crypt \-s
+.I policy
+.I path\fR ...
+.SH DESCRIPTION
+.B e4crypt
+performs encryption management for ext4 file systems.
+.SH OPTIONS
+.TP
+.B \-a
+Prompts the user for a passphrase and transforms it into an ecryption
+key for use by ext4.   The encryption key will be added to the specified
+keyring, with a type "logon" (which makes the key accessible to the
+user, but which does not allow the key to be returned to userspace), and
+with the descrpiptor of the key set to "ext4:" followed the encryption
+key identifer, which is composed of 16 hexadecimal characters calculated
+by taking a cryptographic hash of the key.
+.TP
+.B \-k
+.I keyring
+This option specifies the keyring to which the key will be added.  See
+the keyctl man page for more details, but the only keyring which only
+makes sence is @u, @s, and @us, which specifies the user, session, and
+user session keyrings, respectively.   By default,
+.B e4crypt
+will add the key to the session keyring if it has been establishd for
+the current process, or the user session keyring if it has not.
+.TP
+.B \-n
+.I salt
+The salt must be specified, and it should be unique for each
+passphrase.  The salt consists of up to 256 hexadecimal bytes.
+.TP
+.B \-s
+Sets a policy for the directories specified on the command line.
+All directories must be empty to set the policy; if the directory
+already has a policy established,
+.B e4crypt
+will validate that the policy is what was specified.  A policy is an
+encryption key identifier of length 16 hexadecimal characters.
+.SH AUTHOR
+Written by Michael Halcrow <mhalcrow@google.com> and Ildar Muslukhov
+<muslukhovi@gmail.com>.
+.SH SEE ALSO
+.BR mke2fs (8),
+.BR mount (8).

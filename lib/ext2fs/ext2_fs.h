@@ -565,11 +565,40 @@ struct ext2_inode_large {
 /* Metadata checksum algorithms */
 #define EXT2_CRC32C_CHKSUM		1
 
-/* Encryption algorithms */
+/* Encryption algorithms, key size and key reference len */
 #define EXT4_ENCRYPTION_MODE_INVALID		0
 #define EXT4_ENCRYPTION_MODE_AES_256_XTS	1
 #define EXT4_ENCRYPTION_MODE_AES_256_GCM	2
 #define EXT4_ENCRYPTION_MODE_AES_256_CBC	3
+
+#define EXT4_AES_256_XTS_KEY_SIZE		64
+#define EXT4_AES_256_GCM_KEY_SIZE		32
+#define EXT4_AES_256_CBC_KEY_SIZE		32
+#define EXT4_MAX_KEY_SIZE			64
+
+#define EXT4_KEY_DESCRIPTOR_SIZE		8
+
+/* Password derivation constants */
+#define EXT4_MAX_PASSPHRASE_SIZE		1024
+#define EXT4_MAX_SALT_SIZE			256
+#define EXT4_PBKDF2_ITERATIONS			0xFFFF
+
+/*
+ * Policy provided via an ioctl on the topmost directory. This
+ * structure is also in the kernel.
+ */
+struct ext4_encryption_policy {
+  char version;
+  char contents_encryption_mode;
+  char filenames_encryption_mode;
+  char master_key_descriptor[EXT4_KEY_DESCRIPTOR_SIZE];
+} __attribute__((__packed__));
+
+struct ext4_encryption_key {
+        __u32 mode;
+        char raw[EXT4_MAX_KEY_SIZE];
+        __u32 size;
+} __attribute__((__packed__));
 
 /*
  * Structure of the super block
