@@ -1758,7 +1758,8 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		}
 	}
 
-	if (!(fs->super->s_feature_incompat & 
+	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+	    !(fs->super->s_feature_incompat &
 	     EXT4_FEATURE_INCOMPAT_64BIT) &&
 	    inode.osd2.linux2.l_i_file_acl_high != 0) {
 		pctx.num = inode.osd2.linux2.l_i_file_acl_high;

@@ -1563,7 +1563,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (inode->i_faddr || frag || fsize ||
 		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_dir_acl))
 			mark_inode_bad(ctx, ino);
-		if (!(fs->super->s_feature_incompat & 
+		if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+		    !(fs->super->s_feature_incompat &
 		      EXT4_FEATURE_INCOMPAT_64BIT) &&
 		    inode->osd2.linux2.l_i_file_acl_high != 0)
 			mark_inode_bad(ctx, ino);
@@ -3033,11 +3034,12 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (LINUX_S_ISREG(inode->i_mode) &&
 	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(inode)))
 		ctx->large_files++;
-	if ((pb.num_blocks != ext2fs_inode_i_blocks(fs, inode)) ||
-	    ((fs->super->s_feature_ro_compat &
-	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
-	     (inode->i_flags & EXT4_HUGE_FILE_FL) &&
-	     (inode->osd2.linux2.l_i_blocks_hi != 0))) {
+	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+	    ((pb.num_blocks != ext2fs_inode_i_blocks(fs, inode)) ||
+	     ((fs->super->s_feature_ro_compat &
+	       EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+	      (inode->i_flags & EXT4_HUGE_FILE_FL) &&
+	      (inode->osd2.linux2.l_i_blocks_hi != 0)))) {
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
 			inode->i_blocks = pb.num_blocks;
