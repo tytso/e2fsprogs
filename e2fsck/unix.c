@@ -760,7 +760,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 	setvbuf(stderr, NULL, _IONBF, BUFSIZ);
-	if (isatty(0) && isatty(1)) {
+	if (getenv("E2FSCK_FORCE_INTERACTIVE") || (isatty(0) && isatty(1))) {
 		ctx->interactive = 1;
 	} else {
 		ctx->start_meta[0] = '\001';

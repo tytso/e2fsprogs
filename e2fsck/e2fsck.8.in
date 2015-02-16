@@ -68,6 +68,19 @@ are not valid if the filesystem is mounted.   If
 asks whether or not you should check a filesystem which is mounted, 
 the only correct answer is ``no''.  Only experts who really know what
 they are doing should consider answering this question in any other way.
+.PP
+If
+.B e2fsck
+is run in interactive mode (meaning that none of
+.BR \-y ,
+.BR \-n ,
+or
+.BR \-p
+are specified), the program will ask the user to fix each problem found in the
+filesystem.  A response of 'y' will fix the error; 'n' will leave the error
+unfixed; and 'a' will fix the problem and all subsequent problems; pressing
+Enter will proceed with the default response, which is printed before the
+question mark.  Pressing Control-C terminates e2fsck immediately.
 .SH OPTIONS
 .TP
 .B \-a 

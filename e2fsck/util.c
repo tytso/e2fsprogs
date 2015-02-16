@@ -189,6 +189,10 @@ int ask_yn(e2fsck_t ctx, const char * string, int def)
 	const char	*defstr;
 	const char	*short_yes = _("yY");
 	const char	*short_no = _("nN");
+	const char	*short_yesall = _("aA");
+	const char	*yesall_prompt = _(" ('a' enables 'yes' to all) ");
+	const char	*extra_prompt = "";
+	static int	yes_answers;
 
 #ifdef HAVE_TERMIOS_H
 	struct termios	termios, tmp;
@@ -207,7 +211,16 @@ int ask_yn(e2fsck_t ctx, const char * string, int def)
 		defstr = _(_("<n>"));
 	else
 		defstr = _(" (y/n)");
-	log_out(ctx, "%s%s? ", string, defstr);
+	/*
+	 * If the user presses 'y' more than 8 (but less than 12) times in
+	 * succession without pressing anything else, display a hint about
+	 * yes-to-all mode.
+	 */
+	if (yes_answers > 12)
+		yes_answers = -1;
+	else if (yes_answers > 8)
+		extra_prompt = yesall_prompt;
+	log_out(ctx, "%s%s%s? ", string, extra_prompt, defstr);
 	while (1) {
 		fflush (stdout);
 		if ((c = read_a_char()) == EOF)
@@ -221,20 +234,31 @@ int ask_yn(e2fsck_t ctx, const char * string, int def)
 				longjmp(e2fsck_global_ctx->abort_loc, 1);
 			}
 			log_out(ctx, "%s", _("cancelled!\n"));
+			yes_answers = 0;
 			return 0;
 		}
 		if (strchr(short_yes, (char) c)) {
 			def = 1;
+			if (yes_answers >= 0)
+				yes_answers++;
 			break;
-		}
-		else if (strchr(short_no, (char) c)) {
+		} else if (strchr(short_no, (char) c)) {
 			def = 0;
+			yes_answers = -1;
+			break;
+		} else if (strchr(short_yesall, (char)c)) {
+			def = 2;
+			yes_answers = -1;
+			ctx->options |= E2F_OPT_YES;
+			break;
+		} else if ((c == 27 || c == ' ' || c == '\n') && (def != -1)) {
+			yes_answers = -1;
 			break;
 		}
-		else if ((c == 27 || c == ' ' || c == '\n') && (def != -1))
-			break;
 	}
-	if (def)
+	if (def == 2)
+		log_out(ctx, "%s", _("yes to all\n"));
+	else if (def)
 		log_out(ctx, "%s", _("yes\n"));
 	else
 		log_out(ctx, "%s", _("no\n"));
