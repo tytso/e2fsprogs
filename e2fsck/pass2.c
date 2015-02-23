@@ -263,6 +263,10 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
 		ctx->inode_reg_map = 0;
 	}
+	if (ctx->encrypted_dirs) {
+		ext2fs_u32_list_free(ctx->encrypted_dirs);
+		ctx->encrypted_dirs = 0;
+	}
 
 	clear_problem_context(&pctx);
 	if (ctx->large_files) {
@@ -459,23 +463,30 @@ static int check_dotdot(e2fsck_t ctx,
  */
 static int check_name(e2fsck_t ctx,
 		      struct ext2_dir_entry *dirent,
-		      ext2_ino_t dir_ino EXT2FS_ATTR((unused)),
+		      ext2_ino_t dir_ino,
+		      int *encrypted,
 		      struct problem_context *pctx)
 {
 	int	i;
 	int	fixup = -1;
 	int	ret = 0;
 
+	if (*encrypted > 0)
+		return 0;
 	for ( i = 0; i < ext2fs_dirent_name_len(dirent); i++) {
-		if (dirent->name[i] == '/' || dirent->name[i] == '\0') {
-			if (fixup < 0) {
-				fixup = fix_problem(ctx, PR_2_BAD_NAME, pctx);
-			}
-			if (fixup) {
-				dirent->name[i] = '.';
-				ret = 1;
-			}
-		}
+		if (dirent->name[i] != '/' && dirent->name[i] != '\0')
+			continue;
+		if (*encrypted < 0 && ctx->encrypted_dirs)
+			*encrypted = ext2fs_u32_list_test(ctx->encrypted_dirs,
+							  dir_ino);
+		if (*encrypted > 0)
+			return 0;
+		if (fixup < 0)
+			fixup = fix_problem(ctx, PR_2_BAD_NAME, pctx);
+		if (fixup == 0)
+			return 0;
+		dirent->name[i] = '.';
+		ret = 1;
 	}
 	return ret;
 }
@@ -872,6 +883,7 @@ static int check_dir_block(ext2_filsys fs,
 	int	is_leaf = 1;
 	size_t	inline_data_size = 0;
 	int	filetype = 0;
+	int	encrypted = -1;
 	size_t	max_block_size;
 
 	cd = (struct check_dir_struct *) priv_data;
@@ -1345,7 +1357,7 @@ skip_checksum:
 			}
 		}
 
-		if (check_name(ctx, dirent, ino, &cd->pctx))
+		if (check_name(ctx, dirent, ino, &encrypted, &cd->pctx))
 			dir_modified++;
 
 		if (check_filetype(ctx, dirent, ino, &cd->pctx))

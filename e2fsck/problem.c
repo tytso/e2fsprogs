@@ -1101,6 +1101,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has a duplicate @x mapping\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
 	  PROMPT_CLEAR, 0 },
 
+	/* Error allocating memory for encrypted directory list */
+	{ PR_1_ALLOCATE_ENCRYPTED_DIRLIST,
+	  N_("@A memory for encrypted @d list\n"),
+	  PROMPT_NONE, PR_FATAL },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
