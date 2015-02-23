@@ -567,6 +567,9 @@ Enable or disable multiple mount protection (MMP) feature.
 @QUOTA_MAN_COMMENT@.B quota
 @QUOTA_MAN_COMMENT@Enable internal file system quota inodes.
 .TP
+.B read-only
+Force the kernel to mount the file system read-only.
+.TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.
 .TP
