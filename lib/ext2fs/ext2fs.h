@@ -1655,6 +1655,11 @@ extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
+extern int ext2fs_dirent_name_len(const struct ext2_dir_entry *entry);
+extern void ext2fs_dirent_set_name_len(struct ext2_dir_entry *entry, int len);
+extern int ext2fs_dirent_file_type(const struct ext2_dir_entry *entry);
+extern void ext2fs_dirent_set_file_type(struct ext2_dir_entry *entry, int type);
+
 #endif
 
 /*
