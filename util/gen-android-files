@@ -1,0 +1,39 @@
+#!/bin/sh
+
+ANDROID_GENERATED_FILES="lib/ext2fs/ext2_err.c lib/ext2fs/ext2_err.h \
+	lib/ss/ss_err.c lib/ss/ss_err.h e2fsck/prof_err.c \
+	e2fsck/prof_err.h misc/prof_err.c misc/prof_err.h \
+	e2fsck/nls-enable.h e2fsck/plausible.c e2fsck/plausible.h \
+	lib/blkid/blkid_types.h lib/uuid/uuid_types.h \
+	lib/ext2fs/ext2_types.h lib/config.h lib/blkid/blkid.h \
+	lib/uuid/uuid.h lib/ext2fs/crc32c_table.h misc/default_profile.c"
+
+sed -e "s/@E2FSPROGS_VERSION@/$(git describe)/" < lib/ext2fs/ext2_err.et.in > lib/ext2fs/ext2_err.et
+
+for i in lib/ss/ss_err e2fsck/prof_err lib/ext2fs/ext2_err
+do
+   rm -f $i.c $i.h
+   awk -f lib/et/et_c.awk outfile=$i.c outfn=$(basename $i.c) $i.et
+   awk -f lib/et/et_h.awk outfile=$i.h outfn=$(basename $i.h) $i.et
+done
+rm -f misc/prof_err.[ch]
+cp e2fsck/prof_err.[ch] misc/
+
+cp lib/blkid/blkid.h.in lib/blkid/blkid.h
+cp lib/uuid/uuid.h.in lib/uuid/uuid.h
+cp util/android_types.h lib/ext2fs/ext2_types.h
+cp util/android_types.h lib/blkid/blkid_types.h
+cp util/android_types.h lib/uuid/uuid_types.h
+cp util/android_config.h lib/config.h
+cp misc/plausible.? e2fsck/
+cp misc/nls-enable.h e2fsck/
+
+gcc -o gen_crc32ctable lib/ext2fs/gen_crc32ctable.c
+./gen_crc32ctable > lib/ext2fs/crc32c_table.h
+
+awk -f misc/profile-to-c.awk < misc/mke2fs.conf.in > misc/default_profile.c
+
+rm -f ./gen_crc32table ./gen_crc32ctable lib/ext2fs/ext2_err.et
+
+git add -f $ANDROID_GENERATED_FILES
+git commit -m "Update generated files for Android"
