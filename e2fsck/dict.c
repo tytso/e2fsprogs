@@ -18,7 +18,7 @@
  * $Name: kazlib_1_20 $
  */
 
-#define NDEBUG
+#define DICT_NODEBUG
 
 #ifdef __GNUC__
 #define EXT2FS_ATTR(x) __attribute__(x)
@@ -29,7 +29,12 @@
 #include "config.h"
 #include <stdlib.h>
 #include <stddef.h>
+#ifdef DICT_NODEBUG
+#define dict_assert(x)
+#else
 #include <assert.h>
+#define dict_assert(x) assert(x)
+#endif
 #define DICT_IMPLEMENTATION
 #include "dict.h"
 
@@ -97,7 +102,7 @@ static void rotate_left(dnode_t *upper)
     if (upper == upparent->left) {
 	upparent->left = lower;
     } else {
-	assert (upper == upparent->right);
+	dict_assert (upper == upparent->right);
 	upparent->right = lower;
     }
 
@@ -123,7 +128,7 @@ static void rotate_right(dnode_t *upper)
     if (upper == upparent->right) {
 	upparent->right = lower;
     } else {
-	assert (upper == upparent->left);
+	dict_assert (upper == upparent->left);
 	upparent->left = lower;
     }
 
@@ -153,7 +158,7 @@ static void free_nodes(dict_t *dict, dnode_t *node, dnode_t *nil)
  * or lower or equal if duplicates are allowed.  This function is used for
  * debugging purposes.
  */
-#ifndef NDEBUG
+#ifndef DICT_NODEBUG
 static int verify_bintree(dict_t *dict)
 {
     dnode_t *first, *next;
@@ -281,8 +286,8 @@ dict_t *dict_create(dictcount_t maxcount, dict_comp_t comp)
 void dict_set_allocator(dict_t *dict, dnode_alloc_t al,
 	dnode_free_t fr, void *context)
 {
-    assert (dict_count(dict) == 0);
-    assert ((al == NULL && fr == NULL) || (al != NULL && fr != NULL));
+    dict_assert (dict_count(dict) == 0);
+    dict_assert ((al == NULL && fr == NULL) || (al != NULL && fr != NULL));
 
     dict->allocnode = al ? al : dnode_alloc;
     dict->freenode = fr ? fr : dnode_free;
@@ -297,7 +302,7 @@ void dict_set_allocator(dict_t *dict, dnode_alloc_t al,
 
 void dict_destroy(dict_t *dict)
 {
-    assert (dict_isempty(dict));
+    dict_assert (dict_isempty(dict));
     free(dict);
 }
 #endif
@@ -323,7 +328,7 @@ void dict_free_nodes(dict_t *dict)
 void dict_free(dict_t *dict)
 {
 #ifdef KAZLIB_OBSOLESCENT_DEBUG
-    assert ("call to obsolescent function dict_free()" && 0);
+    dict_assert ("call to obsolescent function dict_free()" && 0);
 #endif
     dict_free_nodes(dict);
 }
@@ -368,7 +373,7 @@ void dict_init_like(dict_t *dict, const dict_t *template)
     dict->nilnode.color = dnode_black;
     dict->dupes = template->dupes;
 
-    assert (dict_similar(dict, template));
+    dict_assert (dict_similar(dict, template));
 }
 
 /*
@@ -381,8 +386,9 @@ static void dict_clear(dict_t *dict)
     dict->nilnode.left = &dict->nilnode;
     dict->nilnode.right = &dict->nilnode;
     dict->nilnode.parent = &dict->nilnode;
-    assert (dict->nilnode.color == dnode_black);
+    dict_assert (dict->nilnode.color == dnode_black);
 }
+#endif /* E2FSCK_NOTUSED */
 
 
 /*
@@ -391,10 +397,9 @@ static void dict_clear(dict_t *dict)
  * this function succeeds doesn't mean that the tree is not corrupt. Certain
  * corruptions in the tree may simply cause undefined behavior.
  */
-
+#ifndef DICT_NODEBUG
 int dict_verify(dict_t *dict)
 {
-#ifndef NDEBUG
     dnode_t *nil = dict_nil(dict), *root = dict_root(dict);
 
     /* check that the sentinel node and root node are black */
@@ -415,15 +420,15 @@ int dict_verify(dict_t *dict)
 	return 0;
     if (verify_node_count(nil, root) != dict_count(dict))
 	return 0;
-#endif
     return 1;
 }
+#endif /* DICT_NODEBUG */
 
+#ifdef E2FSCK_NOTUSED
 /*
  * Determine whether two dictionaries are similar: have the same comparison and
  * allocator functions, and same status as to whether duplicates are allowed.
  */
-
 int dict_similar(const dict_t *left, const dict_t *right)
 {
     if (left->compare != right->compare)
@@ -567,9 +572,9 @@ void dict_insert(dict_t *dict, dnode_t *node, const void *key)
 
     node->key = key;
 
-    assert (!dict_isfull(dict));
-    assert (!dict_contains(dict, node));
-    assert (!dnode_is_in_a_dict(node));
+    dict_assert (!dict_isfull(dict));
+    dict_assert (!dict_contains(dict, node));
+    dict_assert (!dnode_is_in_a_dict(node));
 
     /* basic binary tree insert */
 
@@ -577,14 +582,14 @@ void dict_insert(dict_t *dict, dnode_t *node, const void *key)
 	parent = where;
 	result = dict->compare(key, where->key);
 	/* trap attempts at duplicate key insertion unless it's explicitly allowed */
-	assert (dict->dupes || result != 0);
+	dict_assert (dict->dupes || result != 0);
 	if (result < 0)
 	    where = where->left;
 	else
 	    where = where->right;
     }
 
-    assert (where == nil);
+    dict_assert (where == nil);
 
     if (result < 0)
 	parent->left = node;
@@ -615,7 +620,7 @@ void dict_insert(dict_t *dict, dnode_t *node, const void *key)
 	    	if (node == parent->right) {
 		    rotate_left(parent);
 		    parent = node;
-		    assert (grandpa == parent->parent);
+		    dict_assert (grandpa == parent->parent);
 		    /* rotation between parent and child preserves grandpa */
 		}
 		parent->color = dnode_black;
@@ -635,7 +640,7 @@ void dict_insert(dict_t *dict, dnode_t *node, const void *key)
 	    	if (node == parent->left) {
 		    rotate_right(parent);
 		    parent = node;
-		    assert (grandpa == parent->parent);
+		    dict_assert (grandpa == parent->parent);
 		}
 		parent->color = dnode_black;
 		grandpa->color = dnode_red;
@@ -647,7 +652,7 @@ void dict_insert(dict_t *dict, dnode_t *node, const void *key)
 
     dict_root(dict)->color = dnode_black;
 
-    assert (dict_verify(dict));
+    dict_assert (dict_verify(dict));
 }
 
 #ifdef E2FSCK_NOTUSED
@@ -663,8 +668,8 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 
     /* basic deletion */
 
-    assert (!dict_isempty(dict));
-    assert (dict_contains(dict, delete));
+    dict_assert (!dict_isempty(dict));
+    dict_assert (dict_contains(dict, delete));
 
     /*
      * If the node being deleted has two children, then we replace it with its
@@ -683,9 +688,9 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 	dnode_t *nextparent = next->parent;
 	dnode_color_t nextcolor = next->color;
 
-	assert (next != nil);
-	assert (next->parent != nil);
-	assert (next->left == nil);
+	dict_assert (next != nil);
+	dict_assert (next->parent != nil);
+	dict_assert (next->left == nil);
 
 	/*
 	 * First, splice out the successor from the tree completely, by
@@ -698,7 +703,7 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 	if (nextparent->left == next) {
 	    nextparent->left = child;
 	} else {
-	    assert (nextparent->right == next);
+	    dict_assert (nextparent->right == next);
 	    nextparent->right = child;
 	}
 
@@ -718,13 +723,13 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 	if (delparent->left == delete) {
 	    delparent->left = next;
 	} else {
-	    assert (delparent->right == delete);
+	    dict_assert (delparent->right == delete);
 	    delparent->right = next;
 	}
 
     } else {
-	assert (delete != nil);
-	assert (delete->left == nil || delete->right == nil);
+	dict_assert (delete != nil);
+	dict_assert (delete->left == nil || delete->right == nil);
 
 	child = (delete->left != nil) ? delete->left : delete->right;
 
@@ -733,7 +738,7 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 	if (delete == delparent->left) {
 	    delparent->left = child;
 	} else {
-	    assert (delete == delparent->right);
+	    dict_assert (delete == delparent->right);
 	    delparent->right = child;
 	}
     }
@@ -744,7 +749,7 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 
     dict->nodecount--;
 
-    assert (verify_bintree(dict));
+    dict_assert (verify_bintree(dict));
 
     /* red-black adjustments */
 
@@ -757,13 +762,13 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 	    parent = child->parent;
 	    if (child == parent->left) {
 		sister = parent->right;
-		assert (sister != nil);
+		dict_assert (sister != nil);
 		if (sister->color == dnode_red) {
 		    sister->color = dnode_black;
 		    parent->color = dnode_red;
 		    rotate_left(parent);
 		    sister = parent->right;
-		    assert (sister != nil);
+		    dict_assert (sister != nil);
 		}
 		if (sister->left->color == dnode_black
 			&& sister->right->color == dnode_black) {
@@ -771,12 +776,12 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 		    child = parent;
 		} else {
 		    if (sister->right->color == dnode_black) {
-			assert (sister->left->color == dnode_red);
+			dict_assert (sister->left->color == dnode_red);
 			sister->left->color = dnode_black;
 			sister->color = dnode_red;
 			rotate_right(sister);
 			sister = parent->right;
-			assert (sister != nil);
+			dict_assert (sister != nil);
 		    }
 		    sister->color = parent->color;
 		    sister->right->color = dnode_black;
@@ -785,15 +790,15 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 		    break;
 		}
 	    } else {	/* symmetric case: child == child->parent->right */
-		assert (child == parent->right);
+		dict_assert (child == parent->right);
 		sister = parent->left;
-		assert (sister != nil);
+		dict_assert (sister != nil);
 		if (sister->color == dnode_red) {
 		    sister->color = dnode_black;
 		    parent->color = dnode_red;
 		    rotate_right(parent);
 		    sister = parent->left;
-		    assert (sister != nil);
+		    dict_assert (sister != nil);
 		}
 		if (sister->right->color == dnode_black
 			&& sister->left->color == dnode_black) {
@@ -801,12 +806,12 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 		    child = parent;
 		} else {
 		    if (sister->left->color == dnode_black) {
-			assert (sister->right->color == dnode_red);
+			dict_assert (sister->right->color == dnode_red);
 			sister->right->color = dnode_black;
 			sister->color = dnode_red;
 			rotate_left(sister);
 			sister = parent->left;
-			assert (sister != nil);
+			dict_assert (sister != nil);
 		    }
 		    sister->color = parent->color;
 		    sister->left->color = dnode_black;
@@ -821,7 +826,7 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *delete)
 	dict_root(dict)->color = dnode_black;
     }
 
-    assert (dict_verify(dict));
+    dict_assert (dict_verify(dict));
 
     return delete;
 }
@@ -1003,7 +1008,7 @@ dnode_t *dnode_init(dnode_t *dnode, void *data)
 
 void dnode_destroy(dnode_t *dnode)
 {
-    assert (!dnode_is_in_a_dict(dnode));
+    dict_assert (!dnode_is_in_a_dict(dnode));
     free(dnode);
 }
 
@@ -1022,12 +1027,16 @@ void dnode_put(dnode_t *dnode, void *data)
 {
     dnode->data = data;
 }
+#endif
 
+#ifndef DICT_NODEBUG
 int dnode_is_in_a_dict(dnode_t *dnode)
 {
     return (dnode->parent && dnode->left && dnode->right);
 }
+#endif
 
+#ifdef E2FSCK_NOTUSED
 void dict_process(dict_t *dict, void *context, dnode_process_t function)
 {
     dnode_t *node = dict_first(dict), *next;
@@ -1035,7 +1044,7 @@ void dict_process(dict_t *dict, void *context, dnode_process_t function)
     while (node != NULL) {
 	/* check for callback function deleting	*/
 	/* the next node from under us		*/
-	assert (dict_contains(dict, node));
+	dict_assert (dict_contains(dict, node));
 	next = dict_next(dict, node);
 	function(dict, node, context);
 	node = next;
@@ -1051,7 +1060,7 @@ static void load_begin_internal(dict_load_t *load, dict_t *dict)
 
 void dict_load_begin(dict_load_t *load, dict_t *dict)
 {
-    assert (dict_isempty(dict));
+    dict_assert (dict_isempty(dict));
     load_begin_internal(load, dict);
 }
 
@@ -1060,15 +1069,15 @@ void dict_load_next(dict_load_t *load, dnode_t *newnode, const void *key)
     dict_t *dict = load->dictptr;
     dnode_t *nil = &load->nilnode;
 
-    assert (!dnode_is_in_a_dict(newnode));
-    assert (dict->nodecount < dict->maxcount);
+    dict_assert (!dnode_is_in_a_dict(newnode));
+    dict_assert (dict->nodecount < dict->maxcount);
 
-#ifndef NDEBUG
+#ifndef DICT_NODEBUG
     if (dict->nodecount > 0) {
 	if (dict->dupes)
-	    assert (dict->compare(nil->left->key, key) <= 0);
+	    dict_assert (dict->compare(nil->left->key, key) <= 0);
 	else
-	    assert (dict->compare(nil->left->key, key) < 0);
+	    dict_assert (dict->compare(nil->left->key, key) < 0);
     }
 #endif
 
@@ -1089,7 +1098,7 @@ void dict_load_end(dict_load_t *load)
     dictcount_t botrowcount;
     unsigned baselevel = 0, level = 0, i;
 
-    assert (dnode_red == 0 && dnode_black == 1);
+    dict_assert (dnode_red == 0 && dnode_black == 1);
 
     while (fullcount >= nodecount && fullcount)
 	fullcount >>= 1;
@@ -1100,8 +1109,8 @@ void dict_load_end(dict_load_t *load)
 	next = curr->left;
 
 	if (complete == NULL && botrowcount-- == 0) {
-	    assert (baselevel == 0);
-	    assert (level == 0);
+	    dict_assert (baselevel == 0);
+	    dict_assert (level == 0);
 	    baselevel = level = 1;
 	    complete = tree[0];
 
@@ -1123,7 +1132,7 @@ void dict_load_end(dict_load_t *load)
 	    curr->color = level % 2;
 	    complete = curr;
 
-	    assert (level == baselevel);
+	    dict_assert (level == baselevel);
 	    while (tree[level] != 0) {
 		tree[level]->right = complete;
 		complete->parent = tree[level];
@@ -1157,7 +1166,7 @@ void dict_load_end(dict_load_t *load)
     complete->color = dnode_black;
     dict_root(dict) = complete;
 
-    assert (dict_verify(dict));
+    dict_assert (dict_verify(dict));
 }
 
 void dict_merge(dict_t *dest, dict_t *source)
@@ -1165,7 +1174,7 @@ void dict_merge(dict_t *dest, dict_t *source)
     dict_load_t load;
     dnode_t *leftnode = dict_first(dest), *rightnode = dict_first(source);
 
-    assert (dict_similar(dest, source));
+    dict_assert (dict_similar(dest, source));
 
     if (source == dest)
 	return;
@@ -1184,14 +1193,14 @@ void dict_merge(dict_t *dest, dict_t *source)
 	} else if (rightnode != NULL) {
 	    goto copyright;
 	} else {
-	    assert (leftnode == NULL && rightnode == NULL);
+	    dict_assert (leftnode == NULL && rightnode == NULL);
 	    break;
 	}
 
     copyleft:
 	{
 	    dnode_t *next = dict_next(dest, leftnode);
-#ifndef NDEBUG
+#ifndef DICT_NODEBUG
 	    leftnode->left = NULL;	/* suppress assertion in dict_load_next */
 #endif
 	    dict_load_next(&load, leftnode, leftnode->key);
@@ -1202,7 +1211,7 @@ void dict_merge(dict_t *dest, dict_t *source)
     copyright:
 	{
 	    dnode_t *next = dict_next(source, rightnode);
-#ifndef NDEBUG
+#ifndef DICT_NODEBUG
 	    rightnode->left = NULL;
 #endif
 	    dict_load_next(&load, rightnode, rightnode->key);
