@@ -1076,7 +1076,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_FLEX_BG|
 		EXT4_FEATURE_INCOMPAT_MMP |
 		EXT4_FEATURE_INCOMPAT_64BIT|
-		EXT4_FEATURE_INCOMPAT_INLINE_DATA,
+		EXT4_FEATURE_INCOMPAT_INLINE_DATA|
+		EXT4_FEATURE_INCOMPAT_ENCRYPT,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE|
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -2908,6 +2909,15 @@ int main (int argc, char *argv[])
 		       sizeof(fs->super->s_last_mounted));
 		strncpy(fs->super->s_last_mounted, mount_dir,
 			sizeof(fs->super->s_last_mounted));
+	}
+
+	/* Set current default encryption algorithms for data and
+	 * filename encryption */
+	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_ENCRYPT) {
+		fs->super->s_encrypt_algos[0] =
+			EXT4_ENCRYPTION_MODE_AES_256_XTS;
+		fs->super->s_encrypt_algos[1] =
+			EXT4_ENCRYPTION_MODE_AES_256_CBC;
 	}
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
