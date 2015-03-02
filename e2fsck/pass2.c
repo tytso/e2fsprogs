@@ -314,7 +314,7 @@ static int dict_de_cmp(const void *a, const void *b)
 	if (a_len != b_len)
 		return (a_len - b_len);
 
-	return strncmp(de_a->name, de_b->name, a_len);
+	return memcmp(de_a->name, de_b->name, a_len);
 }
 
 /*
