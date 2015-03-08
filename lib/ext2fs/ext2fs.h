@@ -1085,6 +1085,10 @@ extern errcode_t
 					      void	*priv_data),
 				  void *priv_data);
 
+/* digest_encode.c */
+#define EXT2FS_DIGEST_SIZE EXT2FS_SHA256_LENGTH
+extern int ext2fs_digest_encode(const char *src, unsigned long len, char *dst);
+
 /* dirblock.c */
 extern errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 				       void *buf);

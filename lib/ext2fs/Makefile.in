@@ -73,6 +73,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	csum.o \
 	dblist.o \
 	dblist_dir.o \
+	digest_encode.o \
 	dirblock.o \
 	dirhash.o \
 	dir_iterate.o \
@@ -149,6 +150,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/csum.c \
 	$(srcdir)/dblist.c \
 	$(srcdir)/dblist_dir.c \
+	$(srcdir)/digest_encode.c \
 	$(srcdir)/dirblock.c \
 	$(srcdir)/dirhash.c \
 	$(srcdir)/dir_iterate.c \
@@ -270,6 +272,11 @@ tst_badblocks: tst_badblocks.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_badblocks tst_badblocks.o $(ALL_LDFLAGS) \
 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+
+tst_digest_encode: $(srcdir)/digest_encode.c $(srcdir)/ext2_fs.h
+	$(E) "	CC $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) $(ALL_CFLAGS) -o tst_digest_encode \
+		$(srcdir)/sha256.c -DUNITTEST $(SYSLIBS)
 
 tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 	$(E) "	LD $@"
@@ -572,6 +579,7 @@ clean::
 		tst_bitops tst_types tst_icount tst_super_size tst_csum \
 		tst_bitmaps tst_bitmaps_out tst_extents tst_inline \
 		tst_inline_data tst_inode_size tst_bitmaps_cmd.c \
+		tst_digest_encode \
 		ext2_tdbtool mkjournal debug_cmds.c tst_cmds.c extent_cmds.c \
 		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a \
 		crc32c_table.h gen_crc32ctable tst_crc32c tst_libext2fs \
@@ -731,6 +739,12 @@ dblist_dir.o: $(srcdir)/dblist_dir.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fsP.h \
  $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/ext2_ext_attr.h \
+ $(srcdir)/bitops.h
+digest_encode.o: $(srcdir)/digest_encode.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2_fs.h \
+ $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/ext2_ext_attr.h \
  $(srcdir)/bitops.h
 dirblock.o: $(srcdir)/dirblock.c $(top_builddir)/lib/config.h \
