@@ -31,15 +31,55 @@ extern char *optarg;
 
 #define LONG_OPT	0x0001
 #define PARSE_OPT	0x0002
+#define RAW_OPT		0x0004
+#define ENCRYPT_OPT	0x8000
 
 struct list_dir_struct {
 	FILE	*f;
 	int	col;
 	int	options;
+	int	state;
 };
 
 static const char *monstr[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+static int print_filename(FILE *f, struct ext2_dir_entry *dirent, int options)
+{
+	unsigned char	ch;
+	const char *cp = dirent->name;
+	int len = ext2fs_dirent_name_len(dirent);
+	int retlen = 0;
+
+	if ((options & ENCRYPT_OPT) && !(options & RAW_OPT)) {
+		if (f)
+			return fprintf(f, "<encrypted (%d)>", len);
+		else {
+			char tmp[1];
+			return snprintf(tmp, sizeof(tmp),
+					"<encrypted (%d)>", len);
+		}
+	}
+	while (len--) {
+		ch = *cp++;
+		if (ch > 128) {
+			if (f)
+				fputs("M-", f);
+			ch -= 128;
+			retlen += 2;
+		}
+		if ((ch < 32) || (ch == 0x7f)) {
+			if (f)
+				fputc('^', f);
+			ch ^= 0x40; /* ^@, ^A, ^B; ^? for DEL */
+			retlen++;
+		}
+		if (f)
+			fputc(ch, f);
+		retlen++;
+	}
+	return retlen;
+}
 
 static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			 int	entry,
@@ -53,18 +93,21 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	ext2_ino_t		ino;
 	struct tm		*tm_p;
 	time_t			modtime;
-	char			name[EXT2_NAME_LEN + 1];
 	char			tmp[EXT2_NAME_LEN + 16];
 	char			datestr[80];
 	char			lbr, rbr;
 	int			thislen;
+	int			options;
 	struct list_dir_struct *ls = (struct list_dir_struct *) private;
 	struct ext2_dir_entry_tail *t = (struct ext2_dir_entry_tail *) dirent;
 
 	thislen = ext2fs_dirent_name_len(dirent);
-	strncpy(name, dirent->name, thislen);
-	name[thislen] = '\0';
 	ino = dirent->inode;
+	options = ls->options;
+	if (ls->state < 2) {
+		ls->state++;
+		options |= RAW_OPT;
+	}
 
 	if (entry == DIRENT_DELETED_FILE) {
 		lbr = '<';
@@ -73,21 +116,22 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	} else {
 		lbr = rbr = ' ';
 	}
-	if (ls->options & PARSE_OPT) {
+	if (options & PARSE_OPT) {
 		if (ino) {
-			if (debugfs_read_inode(ino, &inode, name))
+			if (debugfs_read_inode(ino, &inode, "ls"))
 				return 0;
 		} else
 			memset(&inode, 0, sizeof(struct ext2_inode));
-		fprintf(ls->f,"/%u/%06o/%d/%d/%s/",ino,inode.i_mode,inode.i_uid, inode.i_gid,name);
+		fprintf(ls->f,"/%u/%06o/%d/%d/%*s/", ino, inode.i_mode,
+			inode.i_uid, inode.i_gid, thislen, dirent->name);
 		if (LINUX_S_ISDIR(inode.i_mode))
 			fprintf(ls->f, "/");
 		else
 			fprintf(ls->f, "%lld/", EXT2_I_SIZE(&inode));
 		fprintf(ls->f, "\n");
-	} else if (ls->options & LONG_OPT) {
+	} else if (options & LONG_OPT) {
 		if (ino) {
-			if (debugfs_read_inode(ino, &inode, name))
+			if (debugfs_read_inode(ino, &inode, "ls"))
 				return 0;
 			modtime = inode.i_mtime;
 			tm_p = localtime(&modtime);
@@ -112,22 +156,35 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			fprintf(ls->f, "%5d", inode.i_size);
 		else
 			fprintf(ls->f, "%5llu", EXT2_I_SIZE(&inode));
-		fprintf (ls->f, " %s %s\n", datestr, name);
+		fputs(datestr, ls->f);
+		fputc(' ', ls->f);
+		print_filename(ls->f, dirent, options);
+		fputc('\n', ls->f);
 	} else {
-		if (entry == DIRENT_CHECKSUM)
+		if (entry == DIRENT_CHECKSUM) {
 			sprintf(tmp, "%c%u%c (dirblock checksum: 0x%08x)   ",
 				lbr, dirent->inode, rbr, t->det_checksum);
-		else
-			sprintf(tmp, "%c%u%c (%d) %s   ",
-				lbr, dirent->inode, rbr,
-				dirent->rec_len, name);
-		thislen = strlen(tmp);
+			thislen = strlen(tmp);
+			if (ls->col + thislen > 80) {
+				fputc('\n', ls->f);
+				ls->col = 0;
+			}
+			fprintf(ls->f, "%s", tmp);
+			ls->col += thislen;
+			return 0;
+		}
+		sprintf(tmp, "%c%u%c (%d) ", lbr, dirent->inode, rbr,
+			dirent->rec_len);
+		thislen = strlen(tmp) + 3;
+		thislen += print_filename(NULL, dirent, options);
 
 		if (ls->col + thislen > 80) {
-			fprintf(ls->f, "\n");
+			fputc('\n', ls->f);
 			ls->col = 0;
 		}
 		fprintf(ls->f, "%s", tmp);
+		print_filename(ls->f, dirent, options);
+		fputs("   ", ls->f);
 		ls->col += thislen;
 	}
 	return 0;
@@ -135,18 +192,20 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 
 void do_list_dir(int argc, char *argv[])
 {
-	ext2_ino_t	inode;
+	struct ext2_inode inode;
+	ext2_ino_t	ino;
 	int		retval;
 	int		c;
 	int		flags = DIRENT_FLAG_INCLUDE_EMPTY;
 	struct list_dir_struct ls;
 
 	ls.options = 0;
+	ls.state = 0;
 	if (check_fs_open(argv[0]))
 		return;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "cdlp")) != EOF) {
+	while ((c = getopt (argc, argv, "cdlpr")) != EOF) {
 		switch (c) {
 		case 'c':
 			flags |= DIRENT_FLAG_INCLUDE_CSUM;
@@ -160,6 +219,9 @@ void do_list_dir(int argc, char *argv[])
 		case 'p':
 			ls.options |= PARSE_OPT;
 			break;
+		case 'r':
+			ls.options |= RAW_OPT;
+			break;
 		default:
 			goto print_usage;
 		}
@@ -172,16 +234,22 @@ void do_list_dir(int argc, char *argv[])
 	}
 
 	if (argc == optind)
-		inode = cwd;
+		ino = cwd;
 	else
-		inode = string_to_inode(argv[optind]);
-	if (!inode)
+		ino = string_to_inode(argv[optind]);
+	if (!ino)
 		return;
 
 	ls.f = open_pager();
 	ls.col = 0;
 
-	retval = ext2fs_dir_iterate2(current_fs, inode, flags,
+	if (debugfs_read_inode(ino, &inode, argv[0]))
+		return;
+
+	if (inode.i_flags & EXT4_ENCRYPT_FL)
+		ls.options |= ENCRYPT_OPT;
+
+	retval = ext2fs_dir_iterate2(current_fs, ino, flags,
 				    0, list_dir_proc, &ls);
 	fprintf(ls.f, "\n");
 	close_pager(ls.f);

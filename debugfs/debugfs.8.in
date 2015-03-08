@@ -479,7 +479,7 @@ option causes logdump to display old (checkpointed) journal entries.
 This can be used to try to track down journal problems even after the
 journal has been replayed.
 .TP
-.BI ls " [-l] [-c] [-d] [-p] filespec"
+.BI ls " [-l] [-c] [-d] [-p] [-r] filespec"
 Print a listing of the files in the directory
 .IR filespec .
 The
@@ -496,6 +496,9 @@ The
 flag will list the files in a format which is more easily parsable by
 scripts, as well as making it more clear when there are spaces or other
 non-printing characters at the end of filenames.
+The
+.I \-r
+flag will force the printing of the filename, even if it is encrypted.
 .TP
 .BI list_deleted_inodes " [limit]"
 List deleted inodes, optionally limited to those deleted within
