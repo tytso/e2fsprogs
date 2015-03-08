@@ -195,7 +195,7 @@ static void sha256_done(struct hash_state * md, unsigned char *out)
     }
 }
 
-void ext2fs_sha256(unsigned char *in, unsigned long in_size,
+void ext2fs_sha256(const unsigned char *in, unsigned long in_size,
 		   unsigned char out[EXT2FS_SHA256_LENGTH])
 {
 	struct hash_state md;

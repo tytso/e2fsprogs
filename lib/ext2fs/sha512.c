@@ -204,7 +204,7 @@ static void sha512_done(struct hash_state * md, unsigned char *out)
 #define MIN(x, y) ( ((x)<(y))?(x):(y) )
 #define SHA512_BLOCKSIZE 512
 static void sha512_process(struct hash_state * md,
-			   unsigned char *in,
+			   const unsigned char *in,
 			   unsigned long inlen)
 {
 	unsigned long n;
@@ -231,7 +231,7 @@ static void sha512_process(struct hash_state * md,
 	}
 }
 
-void ext2fs_sha512(unsigned char *in, unsigned long in_size,
+void ext2fs_sha512(const unsigned char *in, unsigned long in_size,
 		   unsigned char out[EXT2FS_SHA512_LENGTH])
 {
 	struct hash_state md;

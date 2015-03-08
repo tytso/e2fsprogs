@@ -1577,13 +1577,15 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 /* res_gdt.c */
 extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
 
+/*sha256.c */
+#define EXT2FS_SHA256_LENGTH 32
+extern void ext2fs_sha256(const unsigned char *in, unsigned long in_size,
+		   unsigned char out[EXT2FS_SHA256_LENGTH]);
+
 /* sha512.c */
 #define EXT2FS_SHA512_LENGTH 64
-extern void ext2fs_sha512(unsigned char *in, unsigned long in_size,
+extern void ext2fs_sha512(const unsigned char *in, unsigned long in_size,
 			  unsigned char out[EXT2FS_SHA512_LENGTH]);
-#define EXT2FS_SHA256_LENGTH 32
-void ext2fs_sha256(unsigned char *in, unsigned long in_size,
-		   unsigned char out[EXT2FS_SHA256_LENGTH]);
 
 /* swapfs.c */
 extern errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf, size_t size,
