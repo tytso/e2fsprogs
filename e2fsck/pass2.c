@@ -464,23 +464,15 @@ static int check_dotdot(e2fsck_t ctx,
 static int check_name(e2fsck_t ctx,
 		      struct ext2_dir_entry *dirent,
 		      ext2_ino_t dir_ino,
-		      int *encrypted,
 		      struct problem_context *pctx)
 {
 	int	i;
 	int	fixup = -1;
 	int	ret = 0;
 
-	if (*encrypted > 0)
-		return 0;
 	for ( i = 0; i < ext2fs_dirent_name_len(dirent); i++) {
 		if (dirent->name[i] != '/' && dirent->name[i] != '\0')
 			continue;
-		if (*encrypted < 0 && ctx->encrypted_dirs)
-			*encrypted = ext2fs_u32_list_test(ctx->encrypted_dirs,
-							  dir_ino);
-		if (*encrypted > 0)
-			return 0;
 		if (fixup < 0)
 			fixup = fix_problem(ctx, PR_2_BAD_NAME, pctx);
 		if (fixup == 0)
@@ -850,6 +842,32 @@ err:
 	return retval;
 }
 
+int get_filename_hash(ext2_filsys fs, int encrypted, int version,
+		      const char *name, int len, ext2_dirhash_t *ret_hash,
+		      ext2_dirhash_t *ret_minor_hash)
+{
+	char	buf[2*EXT2FS_DIGEST_SIZE];
+	int	buf_len;
+
+	if (!encrypted)
+		return ext2fs_dirhash(version, name, len,
+				      fs->super->s_hash_seed,
+				      ret_hash, ret_minor_hash);
+
+	if (len <= EXT2FS_DIGEST_SIZE)
+		buf_len = ext2fs_digest_encode(name, len, buf);
+	else {
+		ext2fs_sha256(name, len, buf + EXT2FS_DIGEST_SIZE);
+		buf[0] = 'I';
+		buf_len = ext2fs_digest_encode(buf + EXT2FS_DIGEST_SIZE,
+					       EXT2FS_DIGEST_SIZE, buf + 1);
+		buf_len++;
+	}
+	return ext2fs_dirhash(version, buf, buf_len,
+			      fs->super->s_hash_seed,
+			      ret_hash, ret_minor_hash);
+}
+
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
 			   void *priv_data)
@@ -883,7 +901,7 @@ static int check_dir_block(ext2_filsys fs,
 	int	is_leaf = 1;
 	size_t	inline_data_size = 0;
 	int	filetype = 0;
-	int	encrypted = -1;
+	int	encrypted = 0;
 	size_t	max_block_size;
 
 	cd = (struct check_dir_struct *) priv_data;
@@ -1094,6 +1112,9 @@ skip_checksum:
 		}
 	} else
 		max_block_size = fs->blocksize - de_csum_size;
+
+	if (ctx->encrypted_dirs)
+		encrypted = ext2fs_u32_list_test(ctx->encrypted_dirs, ino);
 
 	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	prev = 0;
@@ -1357,7 +1378,7 @@ skip_checksum:
 			}
 		}
 
-		if (check_name(ctx, dirent, ino, &encrypted, &cd->pctx))
+		if (!encrypted && check_name(ctx, dirent, ino, &cd->pctx))
 			dir_modified++;
 
 		if (check_filetype(ctx, dirent, ino, &cd->pctx))
@@ -1365,9 +1386,10 @@ skip_checksum:
 
 #ifdef ENABLE_HTREE
 		if (dx_db) {
-			ext2fs_dirhash(dx_dir->hashversion, dirent->name,
-				       ext2fs_dirent_name_len(dirent),
-				       fs->super->s_hash_seed, &hash, 0);
+			get_filename_hash(fs, encrypted, dx_dir->hashversion,
+					  dirent->name,
+					  ext2fs_dirent_name_len(dirent),
+					  &hash, 0);
 			if (hash < dx_db->min_hash)
 				dx_db->min_hash = hash;
 			if (hash > dx_db->max_hash)

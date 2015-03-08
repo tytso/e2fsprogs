@@ -178,6 +178,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 	ext2_extent_handle_t	handle;
 	struct ext2_extent_info	info;
 	struct ext2fs_extent	extent;
+	int encrypted = 0;
 
 	if ((inode->i_size_high || inode->i_size == 0) ||
 	    (inode->i_flags & EXT2_INDEX_FL))
@@ -235,7 +236,11 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		if (io_channel_read_blk64(fs->io, inode->i_block[0], 1, buf))
 			return 0;
 
-		len = strnlen(buf, fs->blocksize);
+		if (inode->i_flags & EXT4_ENCRYPT_FL) {
+			len = ext2fs_le32_to_cpu(*((__u32 *)buf)) + 4;
+		} else {
+			len = strnlen(buf, fs->blocksize);
+		}
 		if (len == fs->blocksize)
 			return 0;
 	} else if (inode->i_flags & EXT4_INLINE_DATA_FL) {
@@ -268,7 +273,8 @@ exit_inline:
 			return 0;
 	}
 	if (len != inode->i_size)
-		return 0;
+		if ((inode->i_flags & EXT4_ENCRYPT_FL) == 0)
+			return 0;
 	return 1;
 }
 
