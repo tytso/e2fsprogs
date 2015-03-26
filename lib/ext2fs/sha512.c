@@ -202,7 +202,7 @@ static void sha512_done(struct hash_state * md, unsigned char *out)
 }
 
 #define MIN(x, y) ( ((x)<(y))?(x):(y) )
-#define SHA512_BLOCKSIZE 512
+#define SHA512_BLOCKSIZE 128
 static void sha512_process(struct hash_state * md,
 			   const unsigned char *in,
 			   unsigned long inlen)
