@@ -1196,12 +1196,12 @@ void e2fsck_pass1(e2fsck_t ctx)
 
 			pctx.errcode = ext2fs_inline_data_size(fs, ino, &size);
 			if (!pctx.errcode && size &&
-			    !fix_problem(ctx, PR_1_INLINE_DATA_FEATURE, &pctx)) {
+			    fix_problem(ctx, PR_1_INLINE_DATA_FEATURE, &pctx)) {
 				sb->s_feature_incompat |=
 					EXT4_FEATURE_INCOMPAT_INLINE_DATA;
 				ext2fs_mark_super_dirty(fs);
 				inlinedata_fs = 1;
-			} else if (!fix_problem(ctx, PR_1_INLINE_DATA_SET, &pctx)) {
+			} else if (fix_problem(ctx, PR_1_INLINE_DATA_SET, &pctx)) {
 				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
 				/* skip FINISH_INODE_LOOP */
 				continue;
