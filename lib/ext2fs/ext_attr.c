@@ -434,7 +434,8 @@ static errcode_t write_xattrs_to_buffer(struct ext2_xattr_handle *handle,
 					struct ext2_xattr **pos,
 					void *entries_start,
 					unsigned int storage_size,
-					unsigned int value_offset_correction)
+					unsigned int value_offset_correction,
+					int write_hash)
 {
 	struct ext2_xattr *x = *pos;
 	struct ext2_ext_attr_entry *e = entries_start;
@@ -481,7 +482,10 @@ static errcode_t write_xattrs_to_buffer(struct ext2_xattr_handle *handle,
 		memcpy((void *)e + sizeof(*e), shortname, e->e_name_len);
 		memcpy(end, x->value, e->e_value_size);
 
-		e->e_hash = ext2fs_ext_attr_hash_entry(e, end);
+		if (write_hash)
+			e->e_hash = ext2fs_ext_attr_hash_entry(e, end);
+		else
+			e->e_hash = 0;
 
 		e = EXT2_EXT_ATTR_NEXT(e);
 		*(__u32 *)e = 0;
@@ -553,7 +557,7 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 	start = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 		inode->i_extra_isize + sizeof(__u32);
 
-	err = write_xattrs_to_buffer(handle, &x, start, storage_size, 0);
+	err = write_xattrs_to_buffer(handle, &x, start, storage_size, 0, 0);
 	if (err)
 		goto out;
 
@@ -572,7 +576,7 @@ write_ea_block:
 	start = block_buf + sizeof(struct ext2_ext_attr_header);
 
 	err = write_xattrs_to_buffer(handle, &x, start, storage_size,
-				     (void *)start - block_buf);
+				     (void *)start - block_buf, 1);
 	if (err)
 		goto out2;
 
