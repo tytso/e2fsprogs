@@ -167,6 +167,7 @@ static struct field_set_info super_fields[] = {
 	{ "last_error_line", &set_sb.s_last_error_ino, NULL, 4, parse_uint },
 	{ "encrypt_algos", &set_sb.s_encrypt_algos, NULL, 1, parse_uint,
 	  FLAG_ARRAY, 4 },
+	{ "encrypt_pw_salt", &set_sb.s_encrypt_pw_salt, NULL, 16, parse_uuid },
 	{ 0, 0, 0, 0 }
 };
 

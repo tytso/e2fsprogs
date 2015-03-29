@@ -30,15 +30,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mntent.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
+#include <signal.h>
 #include <asm/unistd.h>
 
 #include "ext2fs/ext2_fs.h"
+#include "uuid/uuid.h"
 
 /* special process keyring shortcut IDs */
 #define KEY_SPEC_THREAD_KEYRING		-1
@@ -55,6 +58,15 @@
 typedef __s32 key_serial_t;
 
 #define EXT4_KEY_REF_STR_BUF_SIZE ((EXT4_KEY_DESCRIPTOR_SIZE * 2) + 1)
+
+#ifndef EXT4_IOC_GET_ENCRYPTION_PWSALT
+#define EXT4_IOC_GET_ENCRYPTION_PWSALT	_IOW('f', 20, __u8[16])
+#endif
+
+#define OPT_VERBOSE	0x0001
+#define OPT_QUIET	0x0002
+
+int options;
 
 static long keyctl(int cmd, ...)
 {
@@ -79,30 +91,35 @@ static const size_t hexchars_size = 16;
 #define EXT2FS_KEY_DESC_PREFIX_SIZE 5
 
 #define MSG_USAGE \
-"Usage:\te4crypt -a -n salt [ -k keyring ] [ path ...  ]\n" \
+"Usage:\te4crypt -a -S salt [ -k keyring ] [ path ...  ]\n" \
 "\te4crypt -s policy path ...\n"
 
 #define EXT4_IOC_ENCRYPTION_POLICY      _IOW('f', 19, struct ext4_encryption_policy)
 
-static int is_path_valid(int argc, char *argv[], int path_start_index)
+static void validate_paths(int argc, char *argv[], int path_start_index)
 {
 	int x;
 	int valid = 1;
-
-	if (path_start_index == argc) {
-		printf("At least one path option must be provided.\n");
-		return 0;
-	}
+	struct stat st;
 
 	for (x = path_start_index; x < argc; x++) {
 		int ret = access(argv[x], W_OK);
 		if (ret) {
-			  printf("%s: %s\n", strerror(errno), argv[x]);
-			  valid = 0;
+		invalid:
+			perror(argv[x]);
+			valid = 0;
+			continue;
+		}
+		ret = stat(argv[x], &st);
+		if (ret < 0)
+			goto invalid;
+		if (!S_ISDIR(st.st_mode)) {
+			fprintf(stderr, "%s is not a directory\n", argv[x]);
+			goto invalid;
 		}
 	}
-
-	return valid;
+	if (!valid)
+		exit(1);
 }
 
 static int hex2byte(const char *hex, size_t hex_size, char *bytes,
@@ -128,72 +145,229 @@ static int hex2byte(const char *hex, size_t hex_size, char *bytes,
 	return 0;
 }
 
-static void set_policy(const char key_descriptor[EXT4_KEY_REF_STR_BUF_SIZE],
+/*
+ * Salt handling
+ */
+struct salt {
+	unsigned char *salt;
+	char key_ref_str[EXT4_KEY_REF_STR_BUF_SIZE];
+	unsigned char key_desc[EXT4_KEY_DESCRIPTOR_SIZE];
+	unsigned char key[EXT4_MAX_KEY_SIZE];
+	size_t salt_len;
+};
+struct salt *salt_list;
+unsigned num_salt;
+unsigned max_salt;
+char passphrase[EXT4_MAX_PASSPHRASE_SIZE];
+
+static struct salt *find_by_salt(unsigned char *salt, size_t salt_len)
+{
+	int i;
+	struct salt *p;
+
+	for (i = 0, p = salt_list; i < num_salt; i++, p++)
+		if ((p->salt_len == salt_len) &&
+		    !memcmp(p->salt, salt, salt_len))
+			return p;
+	return NULL;
+}
+
+static void add_salt(unsigned char *salt, size_t salt_len)
+{
+	if (find_by_salt(salt, salt_len))
+		return;
+	if (num_salt >= max_salt) {
+		max_salt = num_salt + 10;
+		salt_list = realloc(salt_list, max_salt * sizeof(struct salt));
+		if (!salt_list) {
+			fprintf(stderr, "Couldn't allocate salt list\n");
+			exit(1);
+		}
+	}
+	salt_list[num_salt].salt = salt;
+	salt_list[num_salt].salt_len = salt_len;
+	num_salt++;
+}
+
+static void clear_secrets(void)
+{
+	if (salt_list) {
+		memset(salt_list, 0, sizeof(struct salt) * max_salt);
+		free(salt_list);
+		salt_list = NULL;
+	}
+	memset(passphrase, 0, sizeof(passphrase));
+}
+
+static void die_signal_handler(int signum, siginfo_t *siginfo,
+			       void *context)
+{
+	clear_secrets();
+	exit(-1);
+}
+
+void sigcatcher_setup(void)
+{
+	struct sigaction	sa;
+
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_sigaction = die_signal_handler;
+	sa.sa_flags = SA_SIGINFO;
+
+	sigaction(SIGHUP, &sa, 0);
+	sigaction(SIGINT, &sa, 0);
+	sigaction(SIGQUIT, &sa, 0);
+	sigaction(SIGFPE, &sa, 0);
+	sigaction(SIGILL, &sa, 0);
+	sigaction(SIGBUS, &sa, 0);
+	sigaction(SIGSEGV, &sa, 0);
+	sigaction(SIGABRT, &sa, 0);
+	sigaction(SIGPIPE, &sa, 0);
+	sigaction(SIGALRM, &sa, 0);
+	sigaction(SIGTERM, &sa, 0);
+	sigaction(SIGUSR1, &sa, 0);
+	sigaction(SIGUSR2, &sa, 0);
+	sigaction(SIGPOLL, &sa, 0);
+	sigaction(SIGPROF, &sa, 0);
+	sigaction(SIGSYS, &sa, 0);
+	sigaction(SIGTRAP, &sa, 0);
+	sigaction(SIGVTALRM, &sa, 0);
+	sigaction(SIGXCPU, &sa, 0);
+	sigaction(SIGXFSZ, &sa, 0);
+}
+
+
+#define PARSE_FLAGS_NOTSUPP_OK	0x0001
+#define PARSE_FLAGS_FORCE_FN	0x0002
+
+static void parse_salt(char *salt_str, int flags)
+{
+	unsigned char buf[EXT4_MAX_SALT_SIZE];
+	unsigned char *salt_buf, *cp = salt_str;
+	char tmp[80];
+	int i, fd, ret, salt_len = 0;
+
+	if (flags & PARSE_FLAGS_FORCE_FN)
+		goto salt_from_filename;
+	if (strncmp(cp, "s:", 2) == 0) {
+		cp += 2;
+		salt_len = strlen(cp);
+		if (salt_len >= EXT4_MAX_SALT_SIZE)
+			goto invalid_salt;
+		strncpy(buf, cp, sizeof(buf));
+	} else if (cp[0] == '/') {
+	salt_from_filename:
+		fd = open(cp, O_RDONLY | O_DIRECTORY);
+		if (fd == -1 && errno == ENOTDIR)
+			fd = open(cp, O_RDONLY);
+		if (fd == -1) {
+			perror(cp);
+			exit(1);
+		}
+		ret = ioctl(fd, EXT4_IOC_GET_ENCRYPTION_PWSALT, &buf);
+		close(fd);
+		if (ret < 0) {
+			if (flags & PARSE_FLAGS_NOTSUPP_OK)
+				return;
+			perror("EXT4_IOC_GET_ENCRYPTION_PWSALT");
+			exit(1);
+		}
+		if (options & OPT_VERBOSE) {
+			char tmp[80];
+			uuid_unparse(buf, tmp);
+			printf("%s has pw salt %s\n", cp, tmp);
+		}
+		salt_len = 16;
+	} else if (strncmp(cp, "f:", 2) == 0) {
+		cp += 2;
+		goto salt_from_filename;
+	} else if (strncmp(cp, "0x", 2) == 0) {
+		char *h, *l;
+
+		cp += 2;
+		if (strlen(cp) & 1)
+			goto invalid_salt;
+		while (*cp) {
+			if (salt_len >= EXT4_MAX_SALT_SIZE)
+				goto invalid_salt;
+			h = memchr(hexchars, *cp++, sizeof(hexchars));
+			l = memchr(hexchars, *cp++, hexchars_size);
+			if (!h || !l)
+				goto invalid_salt;
+			buf[salt_len++] =
+				(((unsigned char)(h - hexchars) << 4) +
+				 (unsigned char)(l - hexchars));
+		}
+	} else if (uuid_parse(cp, buf) == 0) {
+		salt_len = 16;
+	} else {
+	invalid_salt:
+		fprintf(stderr, "Invalid salt: %s\n", salt_str);
+		exit(1);
+	}
+	salt_buf = malloc(salt_len);
+	if (!salt_buf) {
+		fprintf(stderr, "Couldn't allocate salt\n");
+		exit(1);
+	}
+	memcpy(salt_buf, buf, salt_len);
+	add_salt(salt_buf, salt_len);
+}
+
+static void set_policy(struct salt *set_salt,
 		       int argc, char *argv[], int path_start_index)
 {
-	struct stat st;
+	struct salt *salt;
 	struct ext4_encryption_policy policy;
+	uuid_t	uu;
 	int fd;
 	int x;
 	int rc;
 
-	if (!is_path_valid(argc, argv, path_start_index)) {
-		printf("Invalid path.\n");
-		exit(1);
-	}
-
-	if (!key_descriptor || 
-	    (strlen(key_descriptor) != (EXT4_KEY_DESCRIPTOR_SIZE * 2))) {
-		printf("Invalid key descriptor [%s]. Valid characters are "
-		       "0-9 and a-f, lower case. Length must be %d.\n",
-		       key_descriptor, (EXT4_KEY_DESCRIPTOR_SIZE * 2));
-		exit(1);
-	}
-
 	for (x = path_start_index; x < argc; x++) {
-		stat(argv[x], &st);
-		if (!S_ISDIR(st.st_mode)) {
-			printf("You may only set policy on directories.\n");
+		fd = open(argv[x], O_DIRECTORY);
+		if (fd == -1) {
+			perror(argv[x]);
 			exit(1);
+		}
+		if (set_salt)
+			salt = set_salt;
+		else {
+			if (ioctl(fd, EXT4_IOC_GET_ENCRYPTION_PWSALT,
+				  &uu) < 0) {
+				perror("EXT4_IOC_GET_ENCRYPTION_PWSALT");
+				exit(1);
+			}
+			salt = find_by_salt(uu, sizeof(uu));
+			if (!salt) {
+				fprintf(stderr, "Couldn't find salt!?!\n");
+				exit(1);
+			}
 		}
 		policy.version = 0;
 		policy.contents_encryption_mode =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		policy.filenames_encryption_mode =
 			EXT4_ENCRYPTION_MODE_AES_256_CBC;
-		if (hex2byte(key_descriptor, (EXT4_KEY_DESCRIPTOR_SIZE * 2),
-			     policy.master_key_descriptor,
-			     EXT4_KEY_DESCRIPTOR_SIZE)) {
-			printf("Invalid key descriptor [%s]. Valid characters "
-			       "are 0-9 and a-f, lower case.\n",
-			       key_descriptor);
-			exit(1);
-		}
-		fd = open(argv[x], O_DIRECTORY);
-		if (fd == -1) {
-			printf("Cannot open directory [%s]: [%s].\n", argv[x],
-			       strerror(errno));
-			exit(1);
-		}
+		memcpy(policy.master_key_descriptor, salt->key_desc,
+		       EXT4_KEY_DESCRIPTOR_SIZE);
 		rc = ioctl(fd, EXT4_IOC_ENCRYPTION_POLICY, &policy);
 		close(fd);
 		if (rc) {
 			printf("Error [%s] setting policy.\nThe key descriptor "
 			       "[%s] may not match the existing encryption "
 			       "context for directory [%s].\n",
-			       strerror(errno), key_descriptor, argv[x]);
-			exit(1);
+			       strerror(errno), salt->key_ref_str, argv[x]);
+			continue;
 		}
-		printf("Key with descriptor [%s%s] successfully applied "
-		       "to directory [%s].\n", EXT2FS_KEY_DESC_PREFIX,
-		       key_descriptor, argv[x]);
+		printf("Key with descriptor [%s] applied to %s.\n",
+		       salt->key_ref_str, argv[x]);
 	}
 }
 
-static void pbkdf2_sha512(const char *passphrase, const char *salt, int count,
+static void pbkdf2_sha512(const char *passphrase, struct salt *salt, int count,
 			  char derived_key[EXT4_MAX_KEY_SIZE])
 {
-	size_t salt_size = strlen(salt);
 	size_t passphrase_size = strlen(passphrase);
 	char buf[SHA512_LENGTH + EXT4_MAX_PASSPHRASE_SIZE] = {0};
 	char tempbuf[SHA512_LENGTH] = {0};
@@ -206,22 +380,18 @@ static void pbkdf2_sha512(const char *passphrase, const char *salt, int count,
 	__u32 *temp_u32 = (__u32 *)tempbuf;
 
 	if (passphrase_size > EXT4_MAX_PASSPHRASE_SIZE) {
-		printf("Salt size is %d; max is %d.\n", passphrase_size,
+		printf("Passphrase size is %d; max is %d.\n", passphrase_size,
 		       EXT4_MAX_PASSPHRASE_SIZE);
 		exit(1);
 	}
-	if (salt_size > EXT4_MAX_SALT_SIZE) {
-		printf("Salt size is %d; max is %d.\n", salt_size,
+	if (salt->salt_len > EXT4_MAX_SALT_SIZE) {
+		printf("Salt size is %d; max is %d.\n", salt->salt_len,
 		       EXT4_MAX_SALT_SIZE);
 		exit(1);
 	}
 	assert(EXT4_MAX_KEY_SIZE <= SHA512_LENGTH);
 
-	if (hex2byte(salt, strlen(salt), saltbuf, sizeof(saltbuf))) {
-		printf("Invalid salt hex value: [%s]. Valid characters are "
-		       "0-9 and a-f, lower case.\n", salt);
-		exit(1);
-	}
+	memcpy(saltbuf, salt->salt, salt->salt_len);
 	memcpy(&saltbuf[EXT4_MAX_SALT_SIZE], passphrase, passphrase_size);
 
 	memcpy(&buf[SHA512_LENGTH], passphrase, passphrase_size);
@@ -255,6 +425,26 @@ static int disable_echo(struct termios *saved_settings)
 	rc = tcsetattr(0, TCSANOW, &current_settings);
 
 	return rc;
+}
+
+void get_passphrase(char *passphrase, int len)
+{
+	char *p;
+	struct termios current_settings;
+
+	assert(len > 0);
+	disable_echo(&current_settings);
+	p = fgets(passphrase, len, stdin);
+	tcsetattr(0, TCSANOW, &current_settings);
+	printf("\n");
+	if (!p) {
+		printf("Aborting.\n");
+		exit(1);
+	}
+	p = strrchr(passphrase, '\n');
+	if (!p)
+		p = passphrase + len - 1;
+	*p = '\0';
 }
 
 struct keyring_map {
@@ -311,9 +501,23 @@ static int get_keyring_id(const char *keyring)
 	return 0;
 }
 
-static void insert_key_into_keyring(
-	const char *keyring, const char raw_key[EXT4_MAX_KEY_SIZE],
-	const char key_ref_str[EXT4_KEY_REF_STR_BUF_SIZE])
+static void generate_key_ref_str(struct salt *salt)
+{
+	char key_ref1[SHA512_LENGTH];
+	char key_ref2[SHA512_LENGTH];
+	int x;
+
+	ext2fs_sha512(salt->key, EXT4_MAX_KEY_SIZE, key_ref1);
+	ext2fs_sha512(key_ref1, SHA512_LENGTH, key_ref2);
+	memcpy(salt->key_desc, key_ref2, EXT4_KEY_DESCRIPTOR_SIZE);
+	for (x = 0; x < EXT4_KEY_DESCRIPTOR_SIZE; ++x) {
+		sprintf(&salt->key_ref_str[x * 2], "%02x",
+			salt->key_desc[x]);
+	}
+	salt->key_ref_str[EXT4_KEY_REF_STR_BUF_SIZE - 1] = '\0';
+}
+
+static void insert_key_into_keyring(const char *keyring, struct salt *salt)
 {
 	int keyring_id = get_keyring_id(keyring);
 	struct ext4_encryption_key key;
@@ -325,14 +529,15 @@ static void insert_key_into_keyring(
 		printf("Invalid keyring [%s].\n", keyring);
 		exit(1);
 	}
-	strcpy(key_ref_full, EXT2FS_KEY_DESC_PREFIX);
-	strcpy(&key_ref_full[EXT2FS_KEY_DESC_PREFIX_SIZE], key_ref_str);
+	sprintf(key_ref_full, "%s%s", EXT2FS_KEY_DESC_PREFIX,
+		salt->key_ref_str);
 	rc = keyctl(KEYCTL_SEARCH, keyring_id, EXT2FS_KEY_TYPE_LOGON,
 		    key_ref_full, 0);
 	if (rc != -1) {
-		printf("Key with descriptor [%s] already exists\n",
-		       key_ref_str);
-		exit(1);
+		if ((options & OPT_QUIET) == 0)
+			printf("Key with descriptor [%s] already exists\n",
+			       salt->key_ref_str);
+		return;
 	} else if ((rc == -1) && (errno != ENOKEY)) {
 		printf("keyctl_search failed: %s\n", strerror(errno));
 		if (errno == -EINVAL)
@@ -340,7 +545,7 @@ static void insert_key_into_keyring(
 		exit(1);
 	}
 	key.mode = EXT4_ENCRYPTION_MODE_AES_256_XTS;
-	memcpy(key.raw, raw_key, EXT4_MAX_KEY_SIZE);
+	memcpy(key.raw, salt->key, EXT4_MAX_KEY_SIZE);
 	key.size = EXT4_MAX_KEY_SIZE;
 	rc = syscall(__NR_add_key, EXT2FS_KEY_TYPE_LOGON, key_ref_full,
 		      (void *)&key, sizeof(key), keyring_id);
@@ -349,62 +554,14 @@ static void insert_key_into_keyring(
 			printf("Error adding key to keyring; quota exceeded\n");
 		} else {
 			printf("Error adding key with key descriptor [%s]: "
-			       "%s\n", key_ref_str, strerror(errno));
+			       "%s\n", salt->key_ref_str, strerror(errno));
 		}
 		exit(1);
 	} else {
-		printf("Key with descriptor [%s] successfully inserted into "
-		       "keyring\n", key_ref_str);
+		if ((options & OPT_QUIET) == 0)
+			printf("Added key with descriptor [%s]\n",
+			       salt->key_ref_str);
 	}
-}
-
-static void generate_key_ref_str_from_raw_key(
-	const char raw_key[EXT4_MAX_KEY_SIZE],
-	char key_ref_str[EXT4_KEY_REF_STR_BUF_SIZE])
-{
-	char key_ref1[SHA512_LENGTH];
-	char key_ref2[SHA512_LENGTH];
-	int x;
-
-	ext2fs_sha512(raw_key, EXT4_MAX_KEY_SIZE, key_ref1);
-	ext2fs_sha512(key_ref1, SHA512_LENGTH, key_ref2);
-        for (x = 0; x < EXT4_KEY_DESCRIPTOR_SIZE; ++x) {
-                sprintf(&key_ref_str[x * 2], "%.2x",
-			(unsigned char)key_ref2[x]);
-	}
-	key_ref_str[EXT4_KEY_REF_STR_BUF_SIZE - 1] = '\0';
-}
-
-static void insert_passphrase_into_keyring(
-	const char *keyring, const char *salt,
-	char key_ref_str[EXT4_KEY_REF_STR_BUF_SIZE])
-{
-	char *p;
-	char raw_key[EXT4_MAX_KEY_SIZE];
-	char passphrase[EXT4_MAX_PASSPHRASE_SIZE];
-        struct termios current_settings;
-
-	if (!salt) {
-		printf("Please provide a salt.\n");
-		exit(1);
-	}
-	printf("Enter passphrase (echo disabled): ");
-	disable_echo(&current_settings);
-	p = fgets(passphrase, sizeof(passphrase), stdin);
-	tcsetattr(0, TCSANOW, &current_settings);
-	printf("\n");
-	if (!p) {
-		printf("Aborting.\n");
-		exit(1);
-	}
-	p = strrchr(passphrase, '\n');
-	if (p)
-		*p = '\0';
-	pbkdf2_sha512(passphrase, salt, EXT4_PBKDF2_ITERATIONS, raw_key);
-	generate_key_ref_str_from_raw_key(raw_key, key_ref_str);
-	insert_key_into_keyring(keyring, raw_key, key_ref_str);
-	memset(passphrase, 0, sizeof(passphrase));
-	memset(raw_key, 0, sizeof(raw_key));
 }
 
 static int is_keyring_valid(const char *keyring)
@@ -412,32 +569,32 @@ static int is_keyring_valid(const char *keyring)
 	return (get_keyring_id(keyring) != 0);
 }
 
-static void process_passphrase(const char *keyring, const char *salt,
-			       int argc, char *argv[], int path_start_index)
+void get_default_salts(void)
 {
-	char key_ref_str[EXT4_KEY_REF_STR_BUF_SIZE];
+	FILE	*f = setmntent("/etc/mtab", "r");
+	struct mntent *mnt;
 
-	if (!is_keyring_valid(keyring)) {
-		printf("Invalid keyring name [%s]. Consult keyctl "
-		       "documentation for valid names.\n", keyring);
-		exit(1);
+	while (f && ((mnt = getmntent(f)) != NULL)) {
+		if (strcmp(mnt->mnt_type, "ext4") ||
+		    access(mnt->mnt_dir, R_OK))
+			continue;
+		parse_salt(mnt->mnt_dir, PARSE_FLAGS_NOTSUPP_OK);
 	}
-	insert_passphrase_into_keyring(keyring, salt, key_ref_str);
-	if (path_start_index != argc)
-		set_policy(key_ref_str, argc, argv, path_start_index);
+	endmntent(f);
 }
 
 int main(int argc, char *argv[])
 {
+	struct salt *salt, saltbuf;
 	char *key_ref_str = NULL;
 	char *keyring = NULL;
-	char *salt = NULL;
 	int add_passphrase = 0;
-	int opt;
+	int i, opt;
 
+	atexit(clear_secrets);
 	if (argc == 1)
 		goto fail;
-	while ((opt = getopt(argc, argv, "ak:s:n:")) != -1) {
+	while ((opt = getopt(argc, argv, "ak:s:S:t:vq")) != -1) {
 		switch (opt) {
 		case 'k':
 			/* Specify a keyring. */
@@ -451,9 +608,33 @@ int main(int argc, char *argv[])
 			/* Set policy on a directory. */
 			key_ref_str = optarg;
 			break;
-		case 'n':
+		case 'S':
 			/* Salt value for passphrase. */
-			salt = optarg;
+			parse_salt(optarg, 0);
+			break;
+		case 't': {
+			uuid_t	uu;
+			char str[40];
+			int fd;
+
+			fd = open(optarg, O_RDONLY | O_DIRECTORY);
+			if (fd < 0) {
+				perror(optarg);
+				exit(1);
+			}
+			if (ioctl(fd, EXT4_IOC_GET_ENCRYPTION_PWSALT, &uu) < 0) {
+				perror("EXT4_IOC_GET_ENCRYPTION_PWSALT");
+				exit(1);
+			}
+			uuid_unparse(uu, str);
+			printf("Encryption PW Salt: %s\n", str);
+			exit(0);
+		}
+		case 'v':
+			options |= OPT_VERBOSE;
+			break;
+		case 'q':
+			options |= OPT_QUIET;
 			break;
 		default:
 			printf("Unrecognized option: %c\n", opt);
@@ -469,23 +650,49 @@ int main(int argc, char *argv[])
 			printf("-s option invalid with -k\n");
 			goto fail;
 		}
-		if (salt) {
+		if (num_salt) {
 			printf("-s option invalid with -n\n");
 			goto fail;
 		}
-		set_policy(key_ref_str, argc, argv, optind);
+		strcpy(saltbuf.key_ref_str, key_ref_str);
+		if ((strlen(key_ref_str) != (EXT4_KEY_DESCRIPTOR_SIZE * 2)) ||
+		     hex2byte(key_ref_str, (EXT4_KEY_DESCRIPTOR_SIZE * 2),
+			      saltbuf.key_desc, EXT4_KEY_DESCRIPTOR_SIZE)) {
+			printf("Invalid key descriptor [%s]. Valid characters "
+			       "are 0-9 and a-f, lower case.  "
+			       "Length must be %d.\n",
+			       key_ref_str, (EXT4_KEY_DESCRIPTOR_SIZE * 2));
+			exit(1);
+		}
+		if (optind == argc) {
+			printf("At least one path option must be provided.\n");
+			exit(1);
+		}
+		validate_paths(argc, argv, optind);
+		set_policy(&saltbuf, argc, argv, optind);
 		exit(0);
 	}
 	if (add_passphrase) {
-		if (!salt) {
-			printf("-a option requires -n\n");
-			goto fail;
+		if (num_salt == 0)
+			get_default_salts();
+		if (num_salt == 0) {
+			fprintf(stderr, "No salt values available\n");
+			exit(1);
 		}
-		if (key_ref_str) {
-			printf("-a option invalid with -s\n");
-			goto fail;
+		validate_paths(argc, argv, optind);
+		for (i = optind; i < argc; i++)
+			parse_salt(argv[i], PARSE_FLAGS_FORCE_FN);
+		printf("Enter passphrase (echo disabled): ");
+		get_passphrase(passphrase, sizeof(passphrase));
+		for (i = 0, salt = salt_list; i < num_salt; i++, salt++) {
+			pbkdf2_sha512(passphrase, salt,
+				      EXT4_PBKDF2_ITERATIONS, salt->key);
+			generate_key_ref_str(salt);
+			insert_key_into_keyring(keyring, salt);
 		}
-		process_passphrase(keyring, salt, argc, argv, optind);
+		if (optind != argc)
+			set_policy(NULL, argc, argv, optind);
+		clear_secrets();
 		exit(0);
 	}
 fail:

@@ -712,7 +712,8 @@ struct ext2_super_block {
 	__u32	s_overhead_blocks;	/* overhead blocks/clusters in fs */
 	__u32	s_backup_bgs[2];	/* If sparse_super2 enabled */
 	__u8	s_encrypt_algos[4];	/* Encryption algorithms in use  */
-	__u32   s_reserved[105];        /* Padding to the end of the block */
+	__u8	s_encrypt_pw_salt[16];	/* Salt used for string2key algorithm */
+	__u32   s_reserved[101];        /* Padding to the end of the block */
 	__u32	s_checksum;		/* crc32c(superblock) */
 };
 

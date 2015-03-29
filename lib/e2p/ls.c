@@ -447,6 +447,9 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Checksum:                 0x%08x\n",
 			sb->s_checksum);
 	}
+	if (!e2p_is_null_uuid(sb->s_encrypt_pw_salt))
+		fprintf(f, "Encryption PW Salt:       %s\n",
+			e2p_uuid2str(sb->s_encrypt_pw_salt));
 }
 
 void list_super (struct ext2_super_block * s)

@@ -234,19 +234,21 @@ e4defrag: $(E4DEFRAG_OBJS) $(DEPLIBS)
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e4defrag $(E4DEFRAG_OBJS) $(LIBS) \
 		$(SYSLIBS)
 
-e4crypt: $(E4CRYPT_OBJS) $(DEPLIBS)
+e4crypt: $(E4CRYPT_OBJS) $(DEPLIBS) $(DEPSTATIC_LIBUUID)
 	$(E) "	LD $@"
-	$(Q) $(CC) $(ALL_LDFLAGS) -o e4crypt $(E4CRYPT_OBJS) $(STATIC_LIBS)
+	$(Q) $(CC) $(ALL_LDFLAGS) -o e4crypt $(E4CRYPT_OBJS) \
+		$(STATIC_LIBUUID) $(STATIC_LIBS)
 
 e4defrag.profiled: $(E4DEFRAG_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e4defrag.profiled \
 		$(PROFILED_E4DEFRAG_OBJS) $(PROFILED_LIBS) $(SYSLIBS)
 
-e4crypt.profiled: $(E4CRYPT_OBJS) $(PROFILED_DEPLIBS)
+e4crypt.profiled: $(E4CRYPT_OBJS) $(DEPPROFILED_LIBUUID) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e4crypt.profiled \
-		$(PROFILED_E4CRYPT_OBJS) $(PROFILED_LIBS) $(SYSLIBS)
+		$(PROFILED_E4CRYPT_OBJS) $(PROFILED_LIBUUID) $(PROFILED_LIBS) \
+		$(SYSLIBS)
 
 base_device: base_device.c
 	$(E) "	LD $@"

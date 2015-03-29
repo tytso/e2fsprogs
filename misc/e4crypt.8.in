@@ -2,7 +2,7 @@
 .SH NAME
 e4crypt \- ext4 filesystem encryption utility
 .SH SYNOPSIS
-.B e4crypt \-a \-n
+.B e4crypt \-a \-S
 .I salt
 [
 .B \-k
@@ -29,18 +29,16 @@ with the descrpiptor of the key set to "ext4:" followed the encryption
 key identifer, which is composed of 16 hexadecimal characters calculated
 by taking a cryptographic hash of the key.
 .TP
-.B \-k
-.I keyring
+.BI \-k " keyring"
 This option specifies the keyring to which the key will be added.  See
 the keyctl man page for more details, but the only keyring which only
-makes sence is @u, @s, and @us, which specifies the user, session, and
+makes sense is @u, @s, and @us, which specifies the user, session, and
 user session keyrings, respectively.   By default,
 .B e4crypt
 will add the key to the session keyring if it has been establishd for
 the current process, or the user session keyring if it has not.
 .TP
-.B \-n
-.I salt
+.BI \-S " salt"
 The salt must be specified, and it should be unique for each
 passphrase.  The salt consists of up to 256 hexadecimal bytes.
 .TP
