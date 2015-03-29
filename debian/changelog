@@ -1,9 +1,10 @@
-e2fsprogs (1.43~WIP-2014-12-14-1) unstable; urgency=low
+e2fsprogs (1.43~WIP-2015-03-29-1) unstable; urgency=low
 
   * Merge in updates from the maint branch (changes from 1.42.12-1)
   * Add support for inline directories
   * Add support for the jbd2 checksum v3 format
   * New dumpe2fs format
+  * Add support for file encryption feature
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 14 Dec 2014 22:49:03 -0500
 
