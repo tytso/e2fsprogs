@@ -3823,7 +3823,7 @@ static errcode_t e2fsck_get_alloc_block(ext2_filsys fs, blk64_t goal,
 				return retval;
 		}
 
-		retval = ext2fs_new_block2(fs, goal, 0, &new_block);
+		retval = ext2fs_new_block2(fs, goal, fs->block_map, &new_block);
 		if (retval)
 			return retval;
 	}

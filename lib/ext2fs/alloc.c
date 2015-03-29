@@ -137,9 +137,23 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 {
 	errcode_t retval;
 	blk64_t	b = 0;
+	errcode_t (*gab)(ext2_filsys fs, blk64_t goal, blk64_t *ret);
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	if (!map && fs->get_alloc_block) {
+		/*
+		 * In case there are clients out there whose get_alloc_block
+		 * handlers call ext2fs_new_block2 with a NULL block map,
+		 * temporarily swap out the function pointer so that we don't
+		 * end up in an infinite loop.
+		 */
+		gab = fs->get_alloc_block;
+		fs->get_alloc_block = NULL;
+		retval = gab(fs, goal, &b);
+		fs->get_alloc_block = gab;
+		goto allocated;
+	}
 	if (!map)
 		map = fs->block_map;
 	if (!map)
@@ -153,6 +167,7 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 	if ((retval == ENOENT) && (goal != fs->super->s_first_data_block))
 		retval = ext2fs_find_first_zero_block_bitmap2(map,
 			fs->super->s_first_data_block, goal - 1, &b);
+allocated:
 	if (retval == ENOENT)
 		return EXT2_ET_BLOCK_ALLOC_FAIL;
 	if (retval)
