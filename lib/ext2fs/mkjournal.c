@@ -170,6 +170,11 @@ errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 	if (num <= 0)
 		return 0;
 
+	/* Try a zero out command, if supported */
+	retval = io_channel_zeroout(fs->io, blk, num);
+	if (retval == 0)
+		return 0;
+
 	/* Allocate the zeroizing buffer if necessary */
 	if (num > stride_length && stride_length < MAX_STRIDE_LENGTH) {
 		void *p;

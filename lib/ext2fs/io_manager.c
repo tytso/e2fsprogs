@@ -112,6 +112,17 @@ errcode_t io_channel_discard(io_channel channel, unsigned long long block,
 	return EXT2_ET_UNIMPLEMENTED;
 }
 
+errcode_t io_channel_zeroout(io_channel channel, unsigned long long block,
+			     unsigned long long count)
+{
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+
+	if (channel->manager->zeroout)
+		return (channel->manager->zeroout)(channel, block, count);
+
+	return EXT2_ET_UNIMPLEMENTED;
+}
+
 errcode_t io_channel_alloc_buf(io_channel io, int count, void *ptr)
 {
 	size_t	size;

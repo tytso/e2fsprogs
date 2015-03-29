@@ -86,6 +86,7 @@ void (*test_io_cb_write_byte)
 #define TEST_FLAG_SET_OPTION		0x20
 #define TEST_FLAG_DISCARD		0x40
 #define TEST_FLAG_READAHEAD		0x80
+#define TEST_FLAG_ZEROOUT		0x100
 
 static void test_dump_block(io_channel channel,
 			    struct test_private_data *data,
@@ -507,6 +508,25 @@ static errcode_t test_cache_readahead(io_channel channel,
 	return retval;
 }
 
+static errcode_t test_zeroout(io_channel channel, unsigned long long block,
+			      unsigned long long count)
+{
+	struct test_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct test_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
+
+	if (data->real)
+		retval = io_channel_zeroout(data->real, block, count);
+	if (data->flags & TEST_FLAG_ZEROOUT)
+		fprintf(data->outfile,
+			"Test_io: zeroout(%llu, %llu) returned %s\n",
+			block, count, retval ? error_message(retval) : "OK");
+	return retval;
+}
+
 static struct struct_io_manager struct_test_manager = {
 	.magic		= EXT2_ET_MAGIC_IO_MANAGER,
 	.name		= "Test I/O Manager",
@@ -523,6 +543,7 @@ static struct struct_io_manager struct_test_manager = {
 	.write_blk64	= test_write_blk64,
 	.discard	= test_discard,
 	.cache_readahead	= test_cache_readahead,
+	.zeroout	= test_zeroout,
 };
 
 io_manager test_io_manager = &struct_test_manager;

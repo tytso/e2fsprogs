@@ -93,7 +93,9 @@ struct struct_io_manager {
 	errcode_t (*cache_readahead)(io_channel channel,
 				     unsigned long long block,
 				     unsigned long long count);
-	long	reserved[15];
+	errcode_t (*zeroout)(io_channel channel, unsigned long long block,
+			     unsigned long long count);
+	long	reserved[14];
 };
 
 #define IO_FLAG_RW		0x0001
@@ -123,6 +125,9 @@ extern errcode_t io_channel_write_blk64(io_channel channel,
 					unsigned long long block,
 					int count, const void *data);
 extern errcode_t io_channel_discard(io_channel channel,
+				    unsigned long long block,
+				    unsigned long long count);
+extern errcode_t io_channel_zeroout(io_channel channel,
 				    unsigned long long block,
 				    unsigned long long count);
 extern errcode_t io_channel_alloc_buf(io_channel channel,

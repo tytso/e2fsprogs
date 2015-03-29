@@ -987,6 +987,72 @@ unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
 }
 
+static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
+			      unsigned long long count)
+{
+	struct unix_private_data *data;
+	int		ret;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (getenv("UNIX_IO_NOZEROOUT"))
+		goto unimplemented;
+
+	if (channel->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
+		/* Not implemented until the BLKZEROOUT mess is fixed */
+		goto unimplemented;
+	} else {
+		/* Regular file, try to use truncate/punch/zero. */
+#if defined(HAVE_FALLOCATE) && (defined(FALLOC_FL_ZERO_RANGE) || \
+	(defined(FALLOC_FL_PUNCH_HOLE) && defined(FALLOC_FL_KEEP_SIZE)))
+		struct stat statbuf;
+
+		if (count == 0)
+			return 0;
+		/*
+		 * If we're trying to zero a range past the end of the file,
+		 * extend the file size, then punch (or zero_range) everything.
+		 */
+		ret = fstat(data->dev, &statbuf);
+		if (ret)
+			goto err;
+		if (statbuf.st_size < (block + count) * channel->block_size) {
+			ret = ftruncate(data->dev,
+					(block + count) * channel->block_size);
+			if (ret)
+				goto err;
+		}
+#if defined(FALLOC_FL_PUNCH_HOLE) && defined(FALLOC_FL_KEEP_SIZE)
+		ret = fallocate(data->dev,
+				FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
+				(off_t)(block) * channel->block_size,
+				(off_t)(count) * channel->block_size);
+		if (ret == 0)
+			goto err;
+#endif
+#ifdef FALLOC_FL_ZERO_RANGE
+		ret = fallocate(data->dev,
+				FALLOC_FL_ZERO_RANGE,
+				(off_t)(block) * channel->block_size,
+				(off_t)(count) * channel->block_size);
+#endif
+#else
+		goto unimplemented;
+#endif /* HAVE_FALLOCATE && (ZERO_RANGE || (PUNCH_HOLE && KEEP_SIZE)) */
+	}
+err:
+	if (ret < 0) {
+		if (errno == EOPNOTSUPP)
+			goto unimplemented;
+		return errno;
+	}
+	return 0;
+unimplemented:
+	return EXT2_ET_UNIMPLEMENTED;
+}
+
 static struct struct_io_manager struct_unix_manager = {
 	.magic		= EXT2_ET_MAGIC_IO_MANAGER,
 	.name		= "Unix I/O Manager",
@@ -1003,6 +1069,7 @@ static struct struct_io_manager struct_unix_manager = {
 	.write_blk64	= unix_write_blk64,
 	.discard	= unix_discard,
 	.cache_readahead	= unix_cache_readahead,
+	.zeroout	= unix_zeroout,
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
