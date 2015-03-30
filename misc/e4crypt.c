@@ -52,8 +52,10 @@
 #define KEY_SPEC_GROUP_KEYRING		-6
 
 #define KEYCTL_GET_KEYRING_ID		0
+#define KEYCTL_JOIN_SESSION_KEYRING	1
 #define KEYCTL_DESCRIBE			6
 #define KEYCTL_SEARCH			10
+#define KEYCTL_SESSION_TO_PARENT	18
 
 typedef __s32 key_serial_t;
 
@@ -89,10 +91,6 @@ static const size_t hexchars_size = 16;
 #define EXT2FS_KEY_TYPE_LOGON "logon"
 #define EXT2FS_KEY_DESC_PREFIX "ext4:"
 #define EXT2FS_KEY_DESC_PREFIX_SIZE 5
-
-#define MSG_USAGE \
-"Usage:\te4crypt -a -S salt [ -k keyring ] [ path ...  ]\n" \
-"\te4crypt -s policy path ...\n"
 
 #define EXT4_IOC_ENCRYPTION_POLICY      _IOW('f', 19, struct ext4_encryption_policy)
 
@@ -583,53 +581,46 @@ void get_default_salts(void)
 	endmntent(f);
 }
 
-int main(int argc, char *argv[])
+/* Functions which implement user commands */
+
+struct cmd_desc {
+	const char *cmd_name;
+	void (*cmd_func)(int, char **, const struct cmd_desc *);
+	const char *cmd_desc;
+	const char *cmd_help;
+	int cmd_flags;
+};
+
+#define CMD_HIDDEN 	0x0001
+
+void do_help(int argc, char **argv, const struct cmd_desc *cmd);
+
+#define add_key_desc "adds a key to the user's keyring"
+#define add_key_help \
+"e4crypt add_key -S salt [ -k keyring ] [-v] [-q] [ path ... ]\n\n" \
+"Prompts the user for a passphrase and inserts it into the specified\n" \
+"keyring.  If no keyring is specified, e4crypt will use the session\n" \
+"keyring if it exists or the user session keyring if it does not.\n\n" \
+"If one or more directory paths are specified, e4crypt will try to\n" \
+"set the policy of those directories to use the key just entered by\n" \
+"the user.\n"
+
+void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 {
-	struct salt *salt, saltbuf;
-	char *key_ref_str = NULL;
+	struct salt *salt;
 	char *keyring = NULL;
-	int add_passphrase = 0;
 	int i, opt;
 
-	atexit(clear_secrets);
-	if (argc == 1)
-		goto fail;
-	while ((opt = getopt(argc, argv, "ak:s:S:t:vq")) != -1) {
+	while ((opt = getopt(argc, argv, "k:S:vq")) != -1) {
 		switch (opt) {
 		case 'k':
 			/* Specify a keyring. */
 			keyring = optarg;
 			break;
-		case 'a':
-			/* Add passphrase-based key to keyring. */
-			add_passphrase = 1;
-			break;
-		case 's':
-			/* Set policy on a directory. */
-			key_ref_str = optarg;
-			break;
 		case 'S':
 			/* Salt value for passphrase. */
 			parse_salt(optarg, 0);
 			break;
-		case 't': {
-			uuid_t	uu;
-			char str[40];
-			int fd;
-
-			fd = open(optarg, O_RDONLY | O_DIRECTORY);
-			if (fd < 0) {
-				perror(optarg);
-				exit(1);
-			}
-			if (ioctl(fd, EXT4_IOC_GET_ENCRYPTION_PWSALT, &uu) < 0) {
-				perror("EXT4_IOC_GET_ENCRYPTION_PWSALT");
-				exit(1);
-			}
-			uuid_unparse(uu, str);
-			printf("Encryption PW Salt: %s\n", str);
-			exit(0);
-		}
 		case 'v':
 			options |= OPT_VERBOSE;
 			break;
@@ -637,65 +628,158 @@ int main(int argc, char *argv[])
 			options |= OPT_QUIET;
 			break;
 		default:
-			printf("Unrecognized option: %c\n", opt);
-			goto fail;
-		}
-	}
-	if (key_ref_str) {
-		if (add_passphrase) {
-			printf("-s option invalid with -a\n");
-			goto fail;
-		}
-		if (keyring) {
-			printf("-s option invalid with -k\n");
-			goto fail;
-		}
-		if (num_salt) {
-			printf("-s option invalid with -n\n");
-			goto fail;
-		}
-		strcpy(saltbuf.key_ref_str, key_ref_str);
-		if ((strlen(key_ref_str) != (EXT4_KEY_DESCRIPTOR_SIZE * 2)) ||
-		     hex2byte(key_ref_str, (EXT4_KEY_DESCRIPTOR_SIZE * 2),
-			      saltbuf.key_desc, EXT4_KEY_DESCRIPTOR_SIZE)) {
-			printf("Invalid key descriptor [%s]. Valid characters "
-			       "are 0-9 and a-f, lower case.  "
-			       "Length must be %d.\n",
-			       key_ref_str, (EXT4_KEY_DESCRIPTOR_SIZE * 2));
+			fprintf(stderr, "Unrecognized option: %c\n", opt);
+		case '?':
+			fputs("USAGE:\n  ", stderr);
+			fputs(cmd->cmd_help, stderr);
 			exit(1);
 		}
-		if (optind == argc) {
-			printf("At least one path option must be provided.\n");
-			exit(1);
-		}
-		validate_paths(argc, argv, optind);
-		set_policy(&saltbuf, argc, argv, optind);
-		exit(0);
 	}
-	if (add_passphrase) {
-		if (num_salt == 0)
-			get_default_salts();
-		if (num_salt == 0) {
-			fprintf(stderr, "No salt values available\n");
-			exit(1);
-		}
-		validate_paths(argc, argv, optind);
-		for (i = optind; i < argc; i++)
-			parse_salt(argv[i], PARSE_FLAGS_FORCE_FN);
-		printf("Enter passphrase (echo disabled): ");
-		get_passphrase(passphrase, sizeof(passphrase));
-		for (i = 0, salt = salt_list; i < num_salt; i++, salt++) {
-			pbkdf2_sha512(passphrase, salt,
-				      EXT4_PBKDF2_ITERATIONS, salt->key);
-			generate_key_ref_str(salt);
-			insert_key_into_keyring(keyring, salt);
-		}
-		if (optind != argc)
-			set_policy(NULL, argc, argv, optind);
-		clear_secrets();
-		exit(0);
+	if (num_salt == 0)
+		get_default_salts();
+	if (num_salt == 0) {
+		fprintf(stderr, "No salt values available\n");
+		exit(1);
 	}
-fail:
-	printf(MSG_USAGE);
-	return 1;
+	validate_paths(argc, argv, optind);
+	for (i = optind; i < argc; i++)
+		parse_salt(argv[i], PARSE_FLAGS_FORCE_FN);
+	printf("Enter passphrase (echo disabled): ");
+	get_passphrase(passphrase, sizeof(passphrase));
+	for (i = 0, salt = salt_list; i < num_salt; i++, salt++) {
+		pbkdf2_sha512(passphrase, salt,
+			      EXT4_PBKDF2_ITERATIONS, salt->key);
+		generate_key_ref_str(salt);
+		insert_key_into_keyring(keyring, salt);
+	}
+	if (optind != argc)
+		set_policy(NULL, argc, argv, optind);
+	clear_secrets();
+	exit(0);
+}
+
+#define set_policy_desc "sets a policy for directories"
+#define set_policy_help \
+"e4crypt set_policy policy path ... \n\n" \
+"Sets the policy for the directories specified on the command line.\n" \
+"All directories must be empty to set the policy; if the directory\n" \
+"already has a policy established, e4crypt will validate that it the\n" \
+"policy matches what was specified.  A policy is an encryption key\n" \
+"identifier consisting of 16 hexadecimal characters.\n"
+
+void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
+{
+	struct salt *salt, saltbuf;
+	char *key_ref_str = NULL;
+	char *keyring = NULL;
+	int add_passphrase = 0;
+	int i, opt;
+
+	if (argc < 3) {
+		fprintf(stderr, "Missing required argument(s).\n\n");
+		fputs("USAGE:\n  ", stderr);
+		fputs(cmd->cmd_help, stderr);
+		exit(1);
+	}
+
+	strcpy(saltbuf.key_ref_str, argv[1]);
+	if ((strlen(argv[1]) != (EXT4_KEY_DESCRIPTOR_SIZE * 2)) ||
+	    hex2byte(argv[1], (EXT4_KEY_DESCRIPTOR_SIZE * 2),
+		     saltbuf.key_desc, EXT4_KEY_DESCRIPTOR_SIZE)) {
+		printf("Invalid key descriptor [%s]. Valid characters "
+		       "are 0-9 and a-f, lower case.  "
+		       "Length must be %d.\n",
+		       argv[1], (EXT4_KEY_DESCRIPTOR_SIZE * 2));
+			exit(1);
+	}
+	validate_paths(argc, argv, 2);
+	set_policy(&saltbuf, argc, argv, 2);
+	exit(0);
+}
+
+#define new_session_desc "given the invoking process a new session keyring"
+#define new_session_help \
+"e4crypt new_sessoin\n\n" \
+"Give the invoking process (typically a shell) a new session keyring,\n" \
+"discarding its old session keyring.\n"
+
+void do_new_session(int argc, char **argv, const struct cmd_desc *cmd)
+{
+	long keyid, ret;
+
+	if (argc > 1) {
+		fputs("Excess arguments\n\n", stderr);
+		fputs(cmd->cmd_help, stderr);
+		exit(1);
+	}
+	keyid = keyctl(KEYCTL_JOIN_SESSION_KEYRING, NULL);
+	if (keyid < 0) {
+		perror("KEYCTL_JOIN_SESSION_KEYRING");
+		exit(1);
+	}
+	ret = keyctl(KEYCTL_SESSION_TO_PARENT, NULL);
+	if (ret < 0) {
+		perror("KEYCTL_SESSION_TO_PARENT");
+		exit(1);
+	}
+	printf("Switched invoking process to new session keyring %ld\n", keyid);
+	exit(0);
+}
+
+#define CMD(name) { #name, do_##name, name##_desc, name##_help, 0 }
+#define _CMD(name) { #name, do_##name, NULL, NULL, CMD_HIDDEN }
+
+const struct cmd_desc cmd_list[] = {
+	_CMD(help),
+	CMD(add_key),
+	CMD(new_session),
+	CMD(set_policy),
+	{ NULL, NULL, NULL, NULL }
+};
+
+void do_help(int argc, char **argv, const struct cmd_desc *cmd)
+{
+	const struct cmd_desc *p;
+
+	if (argc > 1) {
+		for (p = cmd_list; p->cmd_name; p++) {
+			if (p->cmd_flags & CMD_HIDDEN)
+				continue;
+			if (strcmp(p->cmd_name, argv[1]) == 0) {
+				putc('\n', stdout);
+				fputs("USAGE:\n  ", stdout);
+				fputs(p->cmd_help, stdout);
+				exit(0);
+			}
+		}
+		printf("Unknown command: %s\n\n", argv[1]);
+	}
+
+	fputs("Available commands:\n", stdout);
+	for (p = cmd_list; p->cmd_name; p++) {
+		if (p->cmd_flags & CMD_HIDDEN)
+			continue;
+		printf("  %-20s %s\n", p->cmd_name, p->cmd_desc);
+	}
+	printf("\nTo get more information on a commnd, "
+	       "type 'e4crypt help cmd'\n");
+	exit(0);
+}
+
+int main(int argc, char *argv[])
+{
+	const struct cmd_desc *cmd;
+
+	if (argc < 2)
+		do_help(argc, argv, cmd_list);
+
+	for (cmd = cmd_list; cmd->cmd_name; cmd++) {
+		if (strcmp(cmd->cmd_name, argv[1]) == 0) {
+			cmd->cmd_func(argc-1, argv+1, cmd);
+			exit(0);
+		}
+	}
+	printf("Unknown command: %s\n\n", argv[1]);
+	do_help(1, argv, cmd_list);
+	return 0;
 }

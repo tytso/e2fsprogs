@@ -1,4 +1,4 @@
-.TH E4CRYPT 8 "Mar 2015" "e4crypt version 1"
+.TH E4CRYPT 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 e4crypt \- ext4 filesystem encryption utility
 .SH SYNOPSIS
@@ -18,40 +18,31 @@ e4crypt \- ext4 filesystem encryption utility
 .SH DESCRIPTION
 .B e4crypt
 performs encryption management for ext4 file systems.
-.SH OPTIONS
+.SH COMMANDS
 .TP
-.B \-a
-Prompts the user for a passphrase and transforms it into an ecryption
-key for use by ext4.   The encryption key will be added to the specified
-keyring, with a type "logon" (which makes the key accessible to the
-user, but which does not allow the key to be returned to userspace), and
-with the descrpiptor of the key set to "ext4:" followed the encryption
-key identifer, which is composed of 16 hexadecimal characters calculated
-by taking a cryptographic hash of the key.
+.B e4crypt add_key -S \fR[\fB -k \fIkeyring\fR ] [\fB-v\fR] [\fB-q\fR] [ \fI path\fR ... ]
+Prompts the user for a passphrase and inserts it into the specified
+keyring.  If no keyring is specified, e4crypt will use the session
+keyring if it exists or the user session keyring if it does not.
+.IP
+If one or more directory paths are specified, e4crypt will try to
+set the policy of those directories to use the key just entered by
+the user.
 .TP
-.BI \-k " keyring"
-This option specifies the keyring to which the key will be added.  See
-the keyctl man page for more details, but the only keyring which only
-makes sense is @u, @s, and @us, which specifies the user, session, and
-user session keyrings, respectively.   By default,
-.B e4crypt
-will add the key to the session keyring if it has been establishd for
-the current process, or the user session keyring if it has not.
+.B e4crypt new_session
+Give the invoking process (typically a shell) a new session keyring,
+discarding its old session keyring.
 .TP
-.BI \-S " salt"
-The salt must be specified, and it should be unique for each
-passphrase.  The salt consists of up to 256 hexadecimal bytes.
-.TP
-.B \-s
-Sets a policy for the directories specified on the command line.
+.B set_policy -s \fIpolicy path\fR ...
+Sets the policy for the directories specified on the command line.
 All directories must be empty to set the policy; if the directory
-already has a policy established,
-.B e4crypt
-will validate that the policy is what was specified.  A policy is an
-encryption key identifier of length 16 hexadecimal characters.
+already has a policy established, e4crypt will validate that it the
+policy matches what was specified.  A policy is an encryption key
+identifier consisting of 16 hexadecimal characters.
 .SH AUTHOR
-Written by Michael Halcrow <mhalcrow@google.com> and Ildar Muslukhov
-<muslukhovi@gmail.com>.
+Written by Michael Halcrow <mhalcrow@google.com>, Ildar Muslukhov
+<muslukhovi@gmail.com>, and Theodore Ts'o <tytso@mit.edu>
 .SH SEE ALSO
+.BR keyctl (1),
 .BR mke2fs (8),
 .BR mount (8).
