@@ -22,6 +22,7 @@ libext2fs_src_files := \
 	closefs.c \
 	dblist.c \
 	dblist_dir.c \
+	digest_encode.c \
 	dirblock.c \
 	dirhash.c \
 	dir_iterate.c \
@@ -65,6 +66,8 @@ libext2fs_src_files := \
 	read_bb_file.c \
 	res_gdt.c \
 	rw_bitmaps.c \
+	sha256.c \
+	sha512.c \
 	swapfs.c \
 	symlink.c \
 	tdb.c \
@@ -87,34 +90,7 @@ libext2fs_system_shared_libraries := libc
 
 libext2fs_c_includes := external/e2fsprogs/lib
 
-libext2fs_cflags := -O2 -g -W -Wall \
-	-DHAVE_UNISTD_H \
-	-DHAVE_ERRNO_H \
-	-DHAVE_NETINET_IN_H \
-	-DHAVE_SYS_IOCTL_H \
-	-DHAVE_SYS_MMAN_H \
-	-DHAVE_SYS_MOUNT_H \
-	-DHAVE_SYS_RESOURCE_H \
-	-DHAVE_SYS_SELECT_H \
-	-DHAVE_SYS_STAT_H \
-	-DHAVE_SYS_TYPES_H \
-	-DHAVE_STDLIB_H \
-	-DHAVE_STRDUP \
-	-DHAVE_MMAP \
-	-DHAVE_UTIME_H \
-	-DHAVE_GETPAGESIZE \
-	-DHAVE_EXT2_IOCTLS \
-	-DHAVE_TYPE_SSIZE_T \
-	-DHAVE_SYS_TIME_H \
-        -DHAVE_SYS_PARAM_H \
-	-DHAVE_SYSCONF
-
-libext2fs_cflags_linux := \
-	-DHAVE_MALLOC_H=1 \
-	-DHAVE_LINUX_FD_H=1 \
-	-DHAVE_SYS_PRCTL_H=1 \
-	-DHAVE_LSEEK64=1 \
-	-DHAVE_LSEEK64_PROTOTYPE=1
+libext2fs_cflags := -O2 -g -W -Wall
 
 include $(CLEAR_VARS)
 
@@ -122,7 +98,7 @@ LOCAL_SRC_FILES := $(libext2fs_src_files)
 LOCAL_SYSTEM_SHARED_LIBRARIES := $(libext2fs_system_shared_libraries)
 LOCAL_SHARED_LIBRARIES := $(libext2fs_shared_libraries)
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
-LOCAL_CFLAGS := $(libext2fs_cflags) $(libext2fs_cflags_linux)
+LOCAL_CFLAGS := $(libext2fs_cflags)
 LOCAL_MODULE := libext2fs
 LOCAL_MODULE_TAGS := optional
 
@@ -133,11 +109,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(libext2fs_src_files)
 LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(libext2fs_shared_libraries))
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
-ifeq ($(HOST_OS),linux)
-LOCAL_CFLAGS := $(libext2fs_cflags) $(libext2fs_cflags_linux)
-else
 LOCAL_CFLAGS := $(libext2fs_cflags)
-endif
 LOCAL_MODULE := libext2fs_host
 LOCAL_MODULE_TAGS := optional
 

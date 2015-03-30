@@ -14,37 +14,7 @@ mke2fs_c_includes := \
 	external/e2fsprogs/lib \
 	external/e2fsprogs/e2fsck
 
-mke2fs_cflags := -O2 -g -W -Wall \
-	-DHAVE_UNISTD_H \
-	-DHAVE_ERRNO_H \
-	-DHAVE_NETINET_IN_H \
-	-DHAVE_SYS_IOCTL_H \
-	-DHAVE_SYS_MMAN_H \
-	-DHAVE_SYS_MOUNT_H \
-	-DHAVE_SYS_RESOURCE_H \
-	-DHAVE_SYS_SELECT_H \
-	-DHAVE_SYS_STAT_H \
-	-DHAVE_SYS_TYPES_H \
-	-DHAVE_STDLIB_H \
-	-DHAVE_STRCASECMP \
-	-DHAVE_STRDUP \
-	-DHAVE_MMAP \
-	-DHAVE_UTIME_H \
-	-DHAVE_GETPAGESIZE \
-	-DHAVE_EXT2_IOCTLS \
-	-DHAVE_TYPE_SSIZE_T \
-	-DHAVE_GETOPT_H \
-	-DHAVE_SYS_TIME_H \
-        -DHAVE_SYS_PARAM_H \
-	-DHAVE_SYSCONF
-
-mke2fs_cflags_linux := \
-	-DHAVE_LINUX_FD_H \
-	-DHAVE_SYS_PRCTL_H \
-	-DHAVE_LSEEK64 \
-	-DHAVE_LSEEK64_PROTOTYPE
-
-mke2fs_cflags += -DNO_CHECK_BB
+mke2fs_cflags := -O2 -g -W -Wall
 
 mke2fs_shared_libraries := \
 	libext2fs \
@@ -61,7 +31,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(mke2fs_src_files)
 LOCAL_C_INCLUDES := $(mke2fs_c_includes)
-LOCAL_CFLAGS := $(mke2fs_cflags) $(mke2fs_cflags_linux)
+LOCAL_CFLAGS := $(mke2fs_cflags)
 LOCAL_SYSTEM_SHARED_LIBRARIES := $(mke2fs_system_shared_libraries)
 LOCAL_SHARED_LIBRARIES := $(mke2fs_shared_libraries)
 LOCAL_MODULE := mke2fs
@@ -72,11 +42,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(mke2fs_src_files)
 LOCAL_C_INCLUDES := $(mke2fs_c_includes)
-ifeq ($(HOST_OS),linux)
-LOCAL_CFLAGS := $(mke2fs_cflags) $(mke2fs_cflags_linux)
-else
 LOCAL_CFLAGS := $(mke2fs_cflags)
-endif
 LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(mke2fs_shared_libraries))
 LOCAL_MODULE := mke2fs_host
 LOCAL_MODULE_STEM := mke2fs
@@ -96,35 +62,7 @@ tune2fs_c_includes := \
 	external/e2fsprogs/lib \
 	external/e2fsprogs/e2fsck
 
-tune2fs_cflags := -O2 -g -W -Wall \
-	-DHAVE_UNISTD_H \
-	-DHAVE_ERRNO_H \
-	-DHAVE_NETINET_IN_H \
-	-DHAVE_SYS_IOCTL_H \
-	-DHAVE_SYS_MMAN_H \
-	-DHAVE_SYS_MOUNT_H \
-	-DHAVE_SYS_PRCTL_H \
-	-DHAVE_SYS_RESOURCE_H \
-	-DHAVE_SYS_SELECT_H \
-	-DHAVE_SYS_STAT_H \
-	-DHAVE_SYS_TYPES_H \
-	-DHAVE_STDLIB_H \
-	-DHAVE_STRCASECMP \
-	-DHAVE_STRDUP \
-	-DHAVE_MMAP \
-	-DHAVE_UTIME_H \
-	-DHAVE_GETPAGESIZE \
-	-DHAVE_LSEEK64 \
-	-DHAVE_LSEEK64_PROTOTYPE \
-	-DHAVE_EXT2_IOCTLS \
-	-DHAVE_LINUX_FD_H \
-	-DHAVE_TYPE_SSIZE_T \
-	-DHAVE_GETOPT_H \
-	-DHAVE_SYS_TIME_H \
-        -DHAVE_SYS_PARAM_H \
-	-DHAVE_SYSCONF
-
-tune2fs_cflags += -DNO_CHECK_BB
+tune2fs_cflags := -O2 -g -W -Wall
 
 tune2fs_shared_libraries := \
 	libext2fs \
@@ -171,33 +109,7 @@ badblocks_src_files := \
 badblocks_c_includes := \
 	external/e2fsprogs/lib
 
-badblocks_cflags := -O2 -g -W -Wall \
-	-DHAVE_UNISTD_H \
-	-DHAVE_ERRNO_H \
-	-DHAVE_NETINET_IN_H \
-	-DHAVE_SYS_IOCTL_H \
-	-DHAVE_SYS_MMAN_H \
-	-DHAVE_SYS_MOUNT_H \
-	-DHAVE_SYS_PRCTL_H \
-	-DHAVE_SYS_RESOURCE_H \
-	-DHAVE_SYS_SELECT_H \
-	-DHAVE_SYS_STAT_H \
-	-DHAVE_SYS_TYPES_H \
-	-DHAVE_STDLIB_H \
-	-DHAVE_STRCASECMP \
-	-DHAVE_STRDUP \
-	-DHAVE_MMAP \
-	-DHAVE_UTIME_H \
-	-DHAVE_GETPAGESIZE \
-	-DHAVE_LSEEK64 \
-	-DHAVE_LSEEK64_PROTOTYPE \
-	-DHAVE_EXT2_IOCTLS \
-	-DHAVE_LINUX_FD_H \
-	-DHAVE_TYPE_SSIZE_T \
-	-DHAVE_GETOPT_H \
-	-DHAVE_SYS_TIME_H \
-        -DHAVE_SYS_PARAM_H \
-	-DHAVE_SYSCONF
+badblocks_cflags := -O2 -g -W -Wall
 
 badblocks_shared_libraries := \
 	libext2fs \
@@ -243,33 +155,7 @@ chattr_src_files := \
 chattr_c_includes := \
 	external/e2fsprogs/lib
 
-chattr_cflags := -O2 -g -W -Wall \
-	-DHAVE_UNISTD_H \
-	-DHAVE_ERRNO_H \
-	-DHAVE_NETINET_IN_H \
-	-DHAVE_SYS_IOCTL_H \
-	-DHAVE_SYS_MMAN_H \
-	-DHAVE_SYS_MOUNT_H \
-	-DHAVE_SYS_PRCTL_H \
-	-DHAVE_SYS_RESOURCE_H \
-	-DHAVE_SYS_SELECT_H \
-	-DHAVE_SYS_STAT_H \
-	-DHAVE_SYS_TYPES_H \
-	-DHAVE_STDLIB_H \
-	-DHAVE_STRCASECMP \
-	-DHAVE_STRDUP \
-	-DHAVE_MMAP \
-	-DHAVE_UTIME_H \
-	-DHAVE_GETPAGESIZE \
-	-DHAVE_LSEEK64 \
-	-DHAVE_LSEEK64_PROTOTYPE \
-	-DHAVE_EXT2_IOCTLS \
-	-DHAVE_LINUX_FD_H \
-	-DHAVE_TYPE_SSIZE_T \
-	-DHAVE_GETOPT_H \
-	-DHAVE_SYS_TIME_H \
-        -DHAVE_SYS_PARAM_H \
-	-DHAVE_SYSCONF
+chattr_cflags := -O2 -g -W -Wall
 
 chattr_shared_libraries := \
 	libext2_com_err \
@@ -312,33 +198,7 @@ lsattr_src_files := \
 lsattr_c_includes := \
 	external/e2fsprogs/lib
 
-lsattr_cflags := -O2 -g -W -Wall \
-	-DHAVE_UNISTD_H \
-	-DHAVE_ERRNO_H \
-	-DHAVE_NETINET_IN_H \
-	-DHAVE_SYS_IOCTL_H \
-	-DHAVE_SYS_MMAN_H \
-	-DHAVE_SYS_MOUNT_H \
-	-DHAVE_SYS_PRCTL_H \
-	-DHAVE_SYS_RESOURCE_H \
-	-DHAVE_SYS_SELECT_H \
-	-DHAVE_SYS_STAT_H \
-	-DHAVE_SYS_TYPES_H \
-	-DHAVE_STDLIB_H \
-	-DHAVE_STRCASECMP \
-	-DHAVE_STRDUP \
-	-DHAVE_MMAP \
-	-DHAVE_UTIME_H \
-	-DHAVE_GETPAGESIZE \
-	-DHAVE_LSEEK64 \
-	-DHAVE_LSEEK64_PROTOTYPE \
-	-DHAVE_EXT2_IOCTLS \
-	-DHAVE_LINUX_FD_H \
-	-DHAVE_TYPE_SSIZE_T \
-	-DHAVE_GETOPT_H \
-	-DHAVE_SYS_TIME_H \
-        -DHAVE_SYS_PARAM_H \
-	-DHAVE_SYSCONF
+lsattr_cflags := -O2 -g -W -Wall
 
 lsattr_shared_libraries := \
 	libext2_com_err \
@@ -381,34 +241,7 @@ blkid_src_files := \
 blkid_c_includes := \
     external/e2fsprogs/lib
 
-blkid_cflags := -O2 -g -W -Wall \
-    -DHAVE_UNISTD_H \
-    -DHAVE_ERRNO_H \
-    -DHAVE_NETINET_IN_H \
-    -DHAVE_SYS_IOCTL_H \
-    -DHAVE_SYS_MMAN_H \
-    -DHAVE_SYS_MOUNT_H \
-    -DHAVE_SYS_PRCTL_H \
-    -DHAVE_SYS_RESOURCE_H \
-    -DHAVE_SYS_SELECT_H \
-    -DHAVE_SYS_STAT_H \
-    -DHAVE_SYS_TYPES_H \
-    -DHAVE_STDLIB_H \
-    -DHAVE_STRCASECMP \
-    -DHAVE_STRDUP \
-    -DHAVE_MMAP \
-    -DHAVE_UTIME_H \
-    -DHAVE_GETPAGESIZE \
-    -DHAVE_LSEEK64 \
-    -DHAVE_LSEEK64_PROTOTYPE \
-    -DHAVE_EXT2_IOCTLS \
-    -DHAVE_LINUX_FD_H \
-    -DHAVE_TYPE_SSIZE_T \
-    -DHAVE_GETOPT_H \
-    -DHAVE_SYS_TIME_H \
-    -DHAVE_SYS_PARAM_H \
-    -DHAVE_SYSCONF \
-    -DHAVE_TERMIO_H
+blkid_cflags := -O2 -g -W -Wall
 
 blkid_shared_libraries := \
     libext2fs \
@@ -429,3 +262,40 @@ LOCAL_MODULE := blkid
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_EXECUTABLE)
+
+#########################################################################
+# Build e4crypt
+e4crypt_src_files := e4crypt.c
+
+e4crypt_c_includes := \
+	external/e2fsprogs/lib
+
+e4crypt_cflags := -O2 -g -W -Wall
+
+e4crypt_shared_libraries := libext2fs libext2_uuid
+
+e4crypt_system_shared_libraries := libc
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(e4crypt_src_files)
+LOCAL_C_INCLUDES := $(e4crypt_c_includes)
+LOCAL_CFLAGS := $(e4crypt_cflags)
+LOCAL_SYSTEM_SHARED_LIBRARIES := $(e4crypt_system_shared_libraries)
+LOCAL_SHARED_LIBRARIES := $(e4crypt_shared_libraries)
+LOCAL_MODULE := e4crypt
+LOCAL_MODULE_TAGS := optional
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(e4crypt_src_files)
+LOCAL_C_INCLUDES := $(e4crypt_c_includes)
+LOCAL_CFLAGS := $(e4crypt_cflags)
+LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(e4crypt_shared_libraries))
+LOCAL_MODULE := e4crypt_host
+LOCAL_MODULE_STEM := e4crypt
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_HOST_EXECUTABLE)
+
