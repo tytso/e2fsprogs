@@ -762,11 +762,11 @@ static int write_dir_block(ext2_filsys fs,
 
 static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 				 struct out_dir *outdir,
-				 ext2_ino_t ino, int compress)
+				 ext2_ino_t ino, struct ext2_inode *inode,
+				 int compress)
 {
 	struct write_dir_struct wd;
 	errcode_t	retval;
-	struct ext2_inode 	inode;
 
 	retval = e2fsck_expand_directory(ctx, ino, -1, outdir->num);
 	if (retval)
@@ -785,22 +785,23 @@ static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 	if (wd.err)
 		return wd.err;
 
-	e2fsck_read_inode(ctx, ino, &inode, "rehash_dir");
+	e2fsck_read_inode(ctx, ino, inode, "rehash_dir");
 	if (compress)
-		inode.i_flags &= ~EXT2_INDEX_FL;
+		inode->i_flags &= ~EXT2_INDEX_FL;
 	else
-		inode.i_flags |= EXT2_INDEX_FL;
-	retval = ext2fs_inode_size_set(fs, &inode,
+		inode->i_flags |= EXT2_INDEX_FL;
+	retval = ext2fs_inode_size_set(fs, inode,
 				       outdir->num * fs->blocksize);
 	if (retval)
 		return retval;
-	ext2fs_iblk_sub_blocks(fs, &inode, wd.cleared);
-	e2fsck_write_inode(ctx, ino, &inode, "rehash_dir");
+	ext2fs_iblk_sub_blocks(fs, inode, wd.cleared);
+	e2fsck_write_inode(ctx, ino, inode, "rehash_dir");
 
 	return 0;
 }
 
-errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
+errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
+			    struct problem_context *pctx)
 {
 	ext2_filsys 		fs = ctx->fs;
 	errcode_t		retval;
@@ -911,10 +912,14 @@ resort:
 			goto errout;
 	}
 
-	retval = write_directory(ctx, fs, &outdir, ino, fd.compress);
+	retval = write_directory(ctx, fs, &outdir, ino, &inode, fd.compress);
 	if (retval)
 		goto errout;
 
+	if (ctx->options & E2F_OPT_CONVERT_BMAP)
+		retval = e2fsck_rebuild_extents_later(ctx, ino);
+	else
+		retval = e2fsck_check_rebuild_extents(ctx, ino, &inode, pctx);
 errout:
 	free(dir_buf);
 	free(fd.harray);
@@ -979,7 +984,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 #if 0
 		fix_problem(ctx, PR_3A_OPTIMIZE_DIR, &pctx);
 #endif
-		pctx.errcode = e2fsck_rehash_dir(ctx, ino);
+		pctx.errcode = e2fsck_rehash_dir(ctx, ino, &pctx);
 		if (pctx.errcode) {
 			end_problem_latch(ctx, PR_LATCH_OPTIMIZE_DIR);
 			fix_problem(ctx, PR_3A_OPTIMIZE_DIR_ERR, &pctx);

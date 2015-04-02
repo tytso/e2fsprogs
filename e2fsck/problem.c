@@ -1101,6 +1101,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@A memory for encrypted @d list\n"),
 	  PROMPT_NONE, PR_FATAL },
 
+	/* Inode extent tree could be more shallow */
+	{ PR_1_EXTENT_BAD_MAX_DEPTH,
+	  N_("@i %i @x tree could be more shallow (%b; could be <= %c)\n"),
+	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -1197,6 +1202,48 @@ static struct e2fsck_problem problem_table[] = {
 	/* Couldn't clone file (error) */
 	{ PR_1D_CLONE_ERROR,
 	  N_("Couldn't clone file: %m\n"), PROMPT_NONE, 0 },
+
+	/* Pass 1E Extent tree optimization	*/
+
+	/* Pass 1E: Optimizing extent trees */
+	{ PR_1E_PASS_HEADER,
+	  N_("Pass 1E: Optimizing @x trees\n"),
+	  PROMPT_NONE, PR_PREEN_NOMSG },
+
+	/* Failed to optimize extent tree */
+	{ PR_1E_OPTIMIZE_EXT_ERR,
+	  N_("Failed to optimize @x tree %p (%i): %m\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Optimizing extent trees */
+	{ PR_1E_OPTIMIZE_EXT_HEADER,
+	  N_("Optimizing @x trees: "),
+	  PROMPT_NONE, PR_MSG_ONLY },
+
+	/* Rebuilding extent tree %d */
+	{ PR_1E_OPTIMIZE_EXT,
+	  " %i",
+	  PROMPT_NONE, PR_LATCH_OPTIMIZE_EXT | PR_PREEN_NOHDR},
+
+	/* Rebuilding extent tree end */
+	{ PR_1E_OPTIMIZE_EXT_END,
+	  "\n",
+	  PROMPT_NONE, PR_PREEN_NOHDR },
+
+	/* Internal error: extent tree depth too large */
+	{ PR_1E_MAX_EXTENT_TREE_DEPTH,
+	  N_("Internal error: max extent tree depth too large (%b; expected=%c).\n"),
+	  PROMPT_NONE, PR_FATAL },
+
+	/* Inode extent tree could be shorter */
+	{ PR_1E_CAN_COLLAPSE_EXTENT_TREE,
+	  N_("@i %i @x tree (at level %b) could be shorter.  "),
+	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK },
+
+	/* Inode extent tree could be narrower */
+	{ PR_1E_CAN_NARROW_EXTENT_TREE,
+	  N_("@i %i @x tree (at (level %b) could be narrower.  "),
+	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK },
 
 	/* Pass 2 errors */
 
@@ -1946,6 +1993,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ PR_LATCH_TOOBIG, PR_1_INODE_TOOBIG, 0 },
 	{ PR_LATCH_OPTIMIZE_DIR, PR_3A_OPTIMIZE_DIR_HEADER, PR_3A_OPTIMIZE_DIR_END },
 	{ PR_LATCH_BG_CHECKSUM, PR_0_GDT_CSUM_LATCH, 0 },
+	{ PR_LATCH_OPTIMIZE_EXT, PR_1E_OPTIMIZE_EXT_HEADER, PR_1E_OPTIMIZE_EXT_END },
 	{ -1, 0, 0 },
 };
 

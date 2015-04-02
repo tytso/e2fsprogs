@@ -227,6 +227,14 @@ e2fsck runtime.  By default, this is set to the size of two block groups' inode
 tables (typically 4MiB on a regular ext4 filesystem); if this amount is more
 than 1/50th of total physical memory, readahead is disabled.  Set this to zero
 to disable readahead entirely.
+.TP
+.BI bmap2extent
+Convert block-mapped files to extent-mapped files.
+.TP
+.BI fixes_only
+Only fix damaged metadata; do not optimize htree directories or compress
+extent trees.  This option is incompatible with the -D and -E bmap2extent
+options.
 .RE
 .TP
 .B \-f

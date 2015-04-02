@@ -606,6 +606,13 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+	/* Did user ask us to convert files to extents? */
+	if (ctx->options & E2F_OPT_CONVERT_BMAP) {
+		fs->super->s_feature_incompat |=
+			EXT3_FEATURE_INCOMPAT_EXTENTS;
+		ext2fs_mark_super_dirty(fs);
+	}
+
 	if ((fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
 	    (fs->super->s_first_meta_bg > fs->desc_blocks)) {
 		pctx.group = fs->desc_blocks;

@@ -709,6 +709,12 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 			else
 				ctx->log_fn = string_copy(ctx, arg, 0);
 			continue;
+		} else if (strcmp(token, "bmap2extent") == 0) {
+			ctx->options |= E2F_OPT_CONVERT_BMAP;
+			continue;
+		} else if (strcmp(token, "fixes_only") == 0) {
+			ctx->options |= E2F_OPT_FIXES_ONLY;
+			continue;
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
 				token);
@@ -728,6 +734,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		fputs(("\tdiscard\n"), stderr);
 		fputs(("\tnodiscard\n"), stderr);
 		fputs(("\treadahead_kb=<buffer size>\n"), stderr);
+		fputs(("\tbmap2extent\n"), stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}
@@ -960,6 +967,22 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	}
 	if (extended_opts)
 		parse_extended_opts(ctx, extended_opts);
+
+	/* Complain about mutually exclusive rebuilding activities */
+	if (getenv("E2FSCK_FIXES_ONLY"))
+		ctx->options |= E2F_OPT_FIXES_ONLY;
+	if ((ctx->options & E2F_OPT_COMPRESS_DIRS) &&
+	    (ctx->options & E2F_OPT_FIXES_ONLY)) {
+		com_err(ctx->program_name, 0, "%s",
+			_("The -D and -E fixes_only options are incompatible."));
+		fatal_error(ctx, 0);
+	}
+	if ((ctx->options & E2F_OPT_CONVERT_BMAP) &&
+	    (ctx->options & E2F_OPT_FIXES_ONLY)) {
+		com_err(ctx->program_name, 0, "%s",
+			_("The -E bmap2extent and fixes_only options are incompatible."));
+		fatal_error(ctx, 0);
+	}
 
 	if ((cp = getenv("E2FSCK_CONFIG")) != NULL)
 		config_fn[0] = cp;

@@ -167,6 +167,8 @@ struct resource_track {
 #define E2F_OPT_FRAGCHECK	0x0800
 #define E2F_OPT_JOURNAL_ONLY	0x1000 /* only replay the journal */
 #define E2F_OPT_DISCARD		0x2000
+#define E2F_OPT_CONVERT_BMAP	0x4000 /* convert blockmap to extent */
+#define E2F_OPT_FIXES_ONLY	0x8000 /* skip all optimizations */
 
 /*
  * E2fsck flags
@@ -190,6 +192,7 @@ struct resource_track {
 #define E2F_FLAG_EXITING	0x1000 /* E2fsck exiting due to errors */
 #define E2F_FLAG_TIME_INSANE	0x2000 /* Time is insane */
 #define E2F_FLAG_PROBLEMS_FIXED	0x4000 /* At least one problem was fixed */
+#define E2F_FLAG_ALLOC_OK	0x8000 /* Can we allocate blocks? */
 
 #define E2F_RESET_FLAGS (E2F_FLAG_TIME_INSANE | E2F_FLAG_PROBLEMS_FIXED)
 
@@ -382,6 +385,23 @@ struct e2fsck_struct {
 
 	/* How much are we allowed to readahead? */
 	unsigned long long readahead_kb;
+
+	/*
+	 * Inodes to rebuild extent trees
+	 */
+	ext2fs_inode_bitmap inodes_to_rebuild;
+};
+
+/* Data structures to evaluate whether an extent tree needs rebuilding. */
+struct extent_tree_level {
+	unsigned int	num_extents;
+	unsigned int	max_extents;
+};
+
+struct extent_tree_info {
+	ext2_ino_t ino;
+	int force_rebuild;
+	struct extent_tree_level	ext_info[MAX_EXTENT_DEPTH_COUNT];
 };
 
 /* Used by the region allocation code */
@@ -457,6 +477,19 @@ extern blk64_t ea_refcount_intr_next(ext2_refcount_t refcount, int *ret);
 extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
 
+/* extents.c */
+struct problem_context;
+errcode_t e2fsck_rebuild_extents_later(e2fsck_t ctx, ext2_ino_t ino);
+int e2fsck_ino_will_be_rebuilt(e2fsck_t ctx, ext2_ino_t ino);
+void e2fsck_pass1e(e2fsck_t ctx);
+errcode_t e2fsck_check_rebuild_extents(e2fsck_t ctx, ext2_ino_t ino,
+				       struct ext2_inode *inode,
+				       struct problem_context *pctx);
+errcode_t e2fsck_should_rebuild_extents(e2fsck_t ctx,
+					struct problem_context *pctx,
+					struct extent_tree_info *eti,
+					struct ext2_extent_info *info);
+
 /* journal.c */
 extern errcode_t e2fsck_check_ext3_journal(e2fsck_t ctx);
 extern errcode_t e2fsck_run_ext3_journal(e2fsck_t ctx);
@@ -524,7 +557,8 @@ extern int region_allocate(region_t region, region_addr_t start, int n);
 /* rehash.c */
 void e2fsck_rehash_dir_later(e2fsck_t ctx, ext2_ino_t ino);
 int e2fsck_dir_will_be_rehashed(e2fsck_t ctx, ext2_ino_t ino);
-errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino);
+errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
+			    struct problem_context *pctx);
 void e2fsck_rehash_directories(e2fsck_t ctx);
 
 /* sigcatcher.c */

@@ -40,6 +40,7 @@ struct problem_context {
 #define PR_LATCH_TOOBIG	0x0080	/* Latch for file to big errors */
 #define PR_LATCH_OPTIMIZE_DIR 0x0090 /* Latch for optimize directories */
 #define PR_LATCH_BG_CHECKSUM 0x00A0  /* Latch for block group checksums */
+#define PR_LATCH_OPTIMIZE_EXT 0x00B0  /* Latch for rebuild extents */
 
 #define PR_LATCH(x)	((((x) & PR_LATCH_MASK) >> 4) - 1)
 
@@ -644,6 +645,9 @@ struct problem_context {
 /* Error allocating memory for encrypted directory list */
 #define PR_1_ALLOCATE_ENCRYPTED_DIRLIST		0x01007E
 
+/* extent tree max depth too big */
+#define PR_1_EXTENT_BAD_MAX_DEPTH		0x01007F
+
 /*
  * Pass 1b errors
  */
@@ -705,6 +709,33 @@ struct problem_context {
 
 /* Couldn't clone file (error) */
 #define PR_1D_CLONE_ERROR	0x013008
+
+/*
+ * Pass 1e --- rebuilding extent trees
+ */
+/* Pass 1e: Rebuilding extent trees */
+#define PR_1E_PASS_HEADER		0x014000
+
+/* Error rehash directory */
+#define PR_1E_OPTIMIZE_EXT_ERR		0x014001
+
+/* Rebuilding extent trees */
+#define PR_1E_OPTIMIZE_EXT_HEADER	0x014002
+
+/* Rebuilding extent %d */
+#define PR_1E_OPTIMIZE_EXT		0x014003
+
+/* Rebuilding extent tree end */
+#define PR_1E_OPTIMIZE_EXT_END		0x014004
+
+/* Internal error: extent tree depth too large */
+#define PR_1E_MAX_EXTENT_TREE_DEPTH	0x014005
+
+/* Inode extent tree could be shorter */
+#define PR_1E_CAN_COLLAPSE_EXTENT_TREE	0x014006
+
+/* Inode extent tree could be narrower */
+#define PR_1E_CAN_NARROW_EXTENT_TREE	0x014007
 
 /*
  * Pass 2 errors
@@ -1034,6 +1065,8 @@ struct problem_context {
 
 /* Rehashing dir end */
 #define PR_3A_OPTIMIZE_DIR_END		0x031005
+
+/* Pass 3B is really just 1E */
 
 /*
  * Pass 4 errors

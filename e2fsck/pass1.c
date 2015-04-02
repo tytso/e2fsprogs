@@ -56,6 +56,8 @@
 #define _INLINE_ inline
 #endif
 
+#undef DEBUG
+
 static int process_block(ext2_filsys fs, blk64_t	*blocknr,
 			 e2_blkcnt_t blockcnt, blk64_t ref_blk,
 			 int ref_offset, void *priv_data);
@@ -95,6 +97,7 @@ struct process_block_struct {
 	ext2fs_block_bitmap fs_meta_blocks;
 	e2fsck_t	ctx;
 	region_t	region;
+	struct extent_tree_info	eti;
 };
 
 struct process_inode_block {
@@ -1835,6 +1838,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 		e2fsck_pass1_dupblocks(ctx, block_buf);
 	}
+	ctx->flags |= E2F_FLAG_ALLOC_OK;
 	ext2fs_free_mem(&inodes_to_process);
 endit:
 	e2fsck_use_inode_shortcuts(ctx, 0);
@@ -2486,6 +2490,23 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->errcode = ext2fs_extent_get_info(ehandle, &info);
 	if (pctx->errcode)
 		return;
+	if (!(ctx->options & E2F_OPT_FIXES_ONLY) &&
+	    !pb->eti.force_rebuild) {
+		struct extent_tree_level *etl;
+
+		etl = pb->eti.ext_info + info.curr_level;
+		etl->num_extents += info.num_entries;
+		etl->max_extents += info.max_entries;
+		/*
+		 * Implementation wart: Splitting extent blocks when appending
+		 * will leave the old block with one free entry.  Therefore
+		 * unless the node is totally full, pretend that a non-root
+		 * extent block can hold one fewer entry than it actually does,
+		 * so that we don't repeatedly rebuild the extent tree.
+		 */
+		if (info.curr_level && info.num_entries < info.max_entries)
+			etl->max_extents--;
+	}
 
 	pctx->errcode = ext2fs_extent_get(ehandle, EXT2_EXTENT_FIRST_SIB,
 					  &extent);
@@ -2822,10 +2843,26 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 
 	retval = ext2fs_extent_get_info(ehandle, &info);
 	if (retval == 0) {
-		if (info.max_depth >= MAX_EXTENT_DEPTH_COUNT)
-			info.max_depth = MAX_EXTENT_DEPTH_COUNT-1;
-		ctx->extent_depth_count[info.max_depth]++;
+		int max_depth = info.max_depth;
+
+		if (max_depth >= MAX_EXTENT_DEPTH_COUNT)
+			max_depth = MAX_EXTENT_DEPTH_COUNT-1;
+		ctx->extent_depth_count[max_depth]++;
 	}
+
+	/* Check maximum extent depth */
+	pctx->blk = info.max_depth;
+	pctx->blk2 = ext2fs_max_extent_depth(ehandle);
+	if (pctx->blk2 < pctx->blk &&
+	    fix_problem(ctx, PR_1_EXTENT_BAD_MAX_DEPTH, pctx))
+		pb->eti.force_rebuild = 1;
+
+	/* Can we collect extent tree level stats? */
+	pctx->blk = MAX_EXTENT_DEPTH_COUNT;
+	if (pctx->blk2 > pctx->blk)
+		fix_problem(ctx, PR_1E_MAX_EXTENT_TREE_DEPTH, pctx);
+	memset(pb->eti.ext_info, 0, sizeof(pb->eti.ext_info));
+	pb->eti.ino = pb->ino;
 
 	pb->region = region_create(0, info.max_lblk);
 	if (!pb->region) {
@@ -2849,6 +2886,16 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 	region_free(pb->region);
 	pb->region = NULL;
 	ext2fs_extent_free(ehandle);
+
+	/* Rebuild unless it's a dir and we're rehashing it */
+	if (LINUX_S_ISDIR(inode->i_mode) &&
+	    e2fsck_dir_will_be_rehashed(ctx, ino))
+		return;
+
+	if (ctx->options & E2F_OPT_CONVERT_BMAP)
+		e2fsck_rebuild_extents_later(ctx, ino);
+	else
+		e2fsck_should_rebuild_extents(ctx, pctx, &pb->eti, &info);
 }
 
 /*
@@ -2933,6 +2980,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.pctx = pctx;
 	pb.ctx = ctx;
 	pb.inode_modified = 0;
+	pb.eti.force_rebuild = 0;
 	pctx->ino = ino;
 	pctx->errcode = 0;
 
@@ -2984,6 +3032,15 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 						  "check_blocks");
 			fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
 				    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
+
+			if (ctx->options & E2F_OPT_CONVERT_BMAP) {
+#ifdef DEBUG
+				printf("bmap rebuild ino=%d\n", ino);
+#endif
+				if (!LINUX_S_ISDIR(inode->i_mode) ||
+				    !e2fsck_dir_will_be_rehashed(ctx, ino))
+					e2fsck_rebuild_extents_later(ctx, ino);
+			}
 		}
 	}
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
