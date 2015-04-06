@@ -93,6 +93,7 @@ static const size_t hexchars_size = 16;
 #define EXT2FS_KEY_DESC_PREFIX_SIZE 5
 
 #define EXT4_IOC_SET_ENCRYPTION_POLICY      _IOR('f', 19, struct ext4_encryption_policy)
+#define EXT4_IOC_GET_ENCRYPTION_POLICY      _IOW('f', 21, struct ext4_encryption_policy)
 
 static void validate_paths(int argc, char *argv[], int path_start_index)
 {
@@ -697,6 +698,51 @@ void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 	exit(0);
 }
 
+#define get_policy_desc "get the encryption for directories"
+#define get_policy_help \
+"e4crypt get_policy path ... \n\n" \
+"Gets the policy for the directories specified on the command line.\n"
+
+void do_get_policy(int argc, char **argv, const struct cmd_desc *cmd)
+{
+	struct ext4_encryption_policy policy;
+	struct stat st;
+	int i, j, fd, rc;
+
+	if (argc < 2) {
+		fprintf(stderr, "Missing required argument(s).\n\n");
+		fputs("USAGE:\n  ", stderr);
+		fputs(cmd->cmd_help, stderr);
+		exit(1);
+	}
+
+	for (i = 1; i < argc; i++) {
+		if (stat(argv[i], &st) < 0) {
+			perror(argv[i]);
+			continue;
+		}
+		fd = open(argv[i],
+			  S_ISDIR(st.st_mode) ? O_DIRECTORY : O_RDONLY);
+		if (fd == -1) {
+			perror(argv[i]);
+			exit(1);
+		}
+		rc = ioctl(fd, EXT4_IOC_GET_ENCRYPTION_POLICY, &policy);
+		close(fd);
+		if (rc) {
+			printf("Error getting policy for %s: %s\n",
+			       argv[i], strerror(errno));
+			continue;
+		}
+		printf("%s: ", argv[i]);
+		for (j = 0; j < EXT4_KEY_DESCRIPTOR_SIZE; j++) {
+			printf("%02x", (unsigned char) policy.master_key_descriptor[j]);
+		}
+		fputc('\n', stdout);
+	}
+	exit(0);
+}
+
 #define new_session_desc "given the invoking process a new session keyring"
 #define new_session_help \
 "e4crypt new_sessoin\n\n" \
@@ -732,6 +778,7 @@ void do_new_session(int argc, char **argv, const struct cmd_desc *cmd)
 const struct cmd_desc cmd_list[] = {
 	_CMD(help),
 	CMD(add_key),
+	CMD(get_policy),
 	CMD(new_session),
 	CMD(set_policy),
 	{ NULL, NULL, NULL, NULL }
