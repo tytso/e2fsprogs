@@ -92,7 +92,7 @@ static const size_t hexchars_size = 16;
 #define EXT2FS_KEY_DESC_PREFIX "ext4:"
 #define EXT2FS_KEY_DESC_PREFIX_SIZE 5
 
-#define EXT4_IOC_ENCRYPTION_POLICY      _IOW('f', 19, struct ext4_encryption_policy)
+#define EXT4_IOC_SET_ENCRYPTION_POLICY      _IOR('f', 19, struct ext4_encryption_policy)
 
 static void validate_paths(int argc, char *argv[], int path_start_index)
 {
@@ -346,10 +346,10 @@ static void set_policy(struct salt *set_salt,
 		policy.contents_encryption_mode =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		policy.filenames_encryption_mode =
-			EXT4_ENCRYPTION_MODE_AES_256_CBC;
+			EXT4_ENCRYPTION_MODE_AES_256_CTS;
 		memcpy(policy.master_key_descriptor, salt->key_desc,
 		       EXT4_KEY_DESCRIPTOR_SIZE);
-		rc = ioctl(fd, EXT4_IOC_ENCRYPTION_POLICY, &policy);
+		rc = ioctl(fd, EXT4_IOC_SET_ENCRYPTION_POLICY, &policy);
 		close(fd);
 		if (rc) {
 			printf("Error [%s] setting policy.\nThe key descriptor "

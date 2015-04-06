@@ -2917,7 +2917,7 @@ int main (int argc, char *argv[])
 		fs->super->s_encrypt_algos[0] =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		fs->super->s_encrypt_algos[1] =
-			EXT4_ENCRYPTION_MODE_AES_256_CBC;
+			EXT4_ENCRYPTION_MODE_AES_256_CTS;
 	}
 
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
