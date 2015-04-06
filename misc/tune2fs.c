@@ -149,7 +149,8 @@ static __u32 ok_features[3] = {
 		EXT3_FEATURE_INCOMPAT_EXTENTS |
 		EXT4_FEATURE_INCOMPAT_FLEX_BG |
 		EXT4_FEATURE_INCOMPAT_MMP |
-		EXT4_FEATURE_INCOMPAT_64BIT,
+		EXT4_FEATURE_INCOMPAT_64BIT |
+		EXT4_FEATURE_INCOMPAT_ENCRYPT,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -1301,6 +1302,13 @@ mmp_error:
 		/* Disable both user quota and group quota by default */
 		usrquota = QOPT_DISABLE;
 		grpquota = QOPT_DISABLE;
+	}
+
+	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT)) {
+		fs->super->s_encrypt_algos[0] =
+			EXT4_ENCRYPTION_MODE_AES_256_XTS;
+		fs->super->s_encrypt_algos[1] =
+			EXT4_ENCRYPTION_MODE_AES_256_CTS;
 	}
 
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
