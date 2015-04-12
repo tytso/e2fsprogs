@@ -688,7 +688,8 @@ struct ext2_super_block {
 	__u32   s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
 	__u8	s_log_groups_per_flex;	/* FLEX_BG group size */
 	__u8    s_checksum_type;	/* metadata checksum algorithm */
-	__u16	s_reserved_pad;		/* Padding to next 32bits */
+	__u8	s_encryption_level;	/* versioning level for encryption */
+	__u8	s_reserved_pad;		/* Padding to next 32bits */
 	__u64	s_kbytes_written;	/* nr of lifetime kilobytes written */
 	__u32	s_snapshot_inum;	/* Inode number of active snapshot */
 	__u32	s_snapshot_id;		/* sequential ID of active snapshot */
@@ -715,7 +716,8 @@ struct ext2_super_block {
 	__u32	s_backup_bgs[2];	/* If sparse_super2 enabled */
 	__u8	s_encrypt_algos[4];	/* Encryption algorithms in use  */
 	__u8	s_encrypt_pw_salt[16];	/* Salt used for string2key algorithm */
-	__u32   s_reserved[101];        /* Padding to the end of the block */
+	__le32	s_lpf_ino;		/* Location of the lost+found inode */
+	__le32	s_reserved[100];	/* Padding to the end of the block */
 	__u32	s_checksum;		/* crc32c(superblock) */
 };
 

@@ -154,6 +154,7 @@ static struct field_set_info super_fields[] = {
 	  FLAG_ARRAY, 2 },
 	{ "checksum", &set_sb.s_checksum, NULL, 4, parse_uint },
 	{ "checksum_type", &set_sb.s_checksum_type, NULL, 1, parse_uint },
+	{ "encryption_level", &set_sb.s_encryption_level, NULL, 1, parse_uint },
 	{ "error_count", &set_sb.s_error_count, NULL, 4, parse_uint },
 	{ "first_error_time", &set_sb.s_first_error_time, NULL, 4, parse_time },
 	{ "first_error_ino", &set_sb.s_first_error_ino, NULL, 4, parse_uint },
@@ -168,6 +169,7 @@ static struct field_set_info super_fields[] = {
 	{ "encrypt_algos", &set_sb.s_encrypt_algos, NULL, 1, parse_uint,
 	  FLAG_ARRAY, 4 },
 	{ "encrypt_pw_salt", &set_sb.s_encrypt_pw_salt, NULL, 16, parse_uuid },
+	{ "lpf_ino", &set_sb.s_lpf_ino, NULL, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 
