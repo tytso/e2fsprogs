@@ -76,7 +76,7 @@ static int release_inode_block(ext2_filsys fs,
 	pctx->blk = blk;
 	pctx->blkcount = blockcnt;
 
-	if (HOLE_BLKADDR(blk))
+	if (blk == 0)
 		return 0;
 
 	if ((blk < fs->super->s_first_data_block) ||

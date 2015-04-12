@@ -859,7 +859,6 @@ enable_relative_symlinks
 enable_symlink_relative_symlinks
 enable_symlink_build
 enable_verbose_makecmds
-enable_compression
 enable_htree
 enable_elf_shlibs
 enable_bsd_shlibs
@@ -1522,7 +1521,6 @@ Optional Features:
 
   --enable-symlink-build  use symlinks while building instead of hard links
   --enable-verbose-makecmds enable verbose make command output
-  --enable-compression	  enable EXPERIMENTAL compression support
   --enable-htree      	  enable EXPERIMENTAL htree directory support
   --enable-elf-shlibs	  select ELF shared libraries
   --enable-bsd-shlibs	  select BSD shared libraries
@@ -4901,28 +4899,6 @@ fi
 
 
 
-
-# Check whether --enable-compression was given.
-if test "${enable_compression+set}" = set; then :
-  enableval=$enable_compression; if test "$enableval" = "no"
-then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling compression support" >&5
-$as_echo "Disabling compression support" >&6; }
-else
-
-$as_echo "#define ENABLE_COMPRESSION 1" >>confdefs.h
-
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling compression support" >&5
-$as_echo "Enabling compression support" >&6; }
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Compression support is experimental" >&5
-$as_echo "$as_me: WARNING: Compression support is experimental" >&2;}
-fi
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling compression support by default" >&5
-$as_echo "Disabling compression support by default" >&6; }
-
-fi
 
 
 # Check whether --enable-htree was given.

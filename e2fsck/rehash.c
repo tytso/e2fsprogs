@@ -131,7 +131,7 @@ static int fill_dir_block(ext2_filsys fs,
 						fd->ino);
 
 	dir = (fd->buf+offset);
-	if (HOLE_BLKADDR(*block_nr)) {
+	if (*block_nr == 0) {
 		memset(dir, 0, fs->blocksize);
 		dirent = (struct ext2_dir_entry *) dir;
 		(void) ext2fs_set_rec_len(fs, fs->blocksize, dirent);

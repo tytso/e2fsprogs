@@ -546,13 +546,6 @@ typedef struct ext2_icount *ext2_icount_t;
 #define EXT2_CHECK_MAGIC(struct, code) \
 	  if ((struct)->magic != (code)) return (code)
 
-
-/*
- * For ext2 compression support
- */
-#define EXT2FS_COMPRESSED_BLKADDR ((blk_t) -1)
-#define HOLE_BLKADDR(_b) ((_b) == 0 || (_b) == EXT2FS_COMPRESSED_BLKADDR)
-
 /*
  * Features supported by this version of the library
  */
@@ -563,19 +556,6 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT2_FEATURE_COMPAT_DIR_INDEX|\
 					 EXT2_FEATURE_COMPAT_EXT_ATTR|\
 					 EXT4_FEATURE_COMPAT_SPARSE_SUPER2)
-
-/* This #ifdef is temporary until compression is fully supported */
-#ifdef ENABLE_COMPRESSION
-#ifndef I_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL
-/* If the below warning bugs you, then have
-   `CPPFLAGS=-DI_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL' in your
-   environment at configure time. */
- #warning "Compression support is experimental"
-#endif
-#define EXT2_LIB_INCOMPAT_COMPRESSION	EXT2_FEATURE_INCOMPAT_COMPRESSION
-#else
-#define EXT2_LIB_INCOMPAT_COMPRESSION	(0)
-#endif
 
 #ifdef CONFIG_MMP
 #define EXT4_LIB_INCOMPAT_MMP		EXT4_FEATURE_INCOMPAT_MMP
@@ -590,7 +570,6 @@ typedef struct ext2_icount *ext2_icount_t;
 #endif
 
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
-					 EXT2_LIB_INCOMPAT_COMPRESSION|\
 					 EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|\
 					 EXT2_FEATURE_INCOMPAT_META_BG|\
 					 EXT3_FEATURE_INCOMPAT_RECOVER|\

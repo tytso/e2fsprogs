@@ -38,9 +38,6 @@
 /* Define to 1 to enable bitmap stats. */
 #undef ENABLE_BMAP_STATS_OPS
 
-/* Define to 1 if ext2 compression enabled */
-#undef ENABLE_COMPRESSION
-
 /* Define to 1 if ext3/4 htree support enabled */
 #undef ENABLE_HTREE
 

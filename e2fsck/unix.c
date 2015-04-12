@@ -1557,12 +1557,6 @@ print_unsupp_features:
 		log_err(ctx, "\n");
 		goto get_newer;
 	}
-#ifdef ENABLE_COMPRESSION
-	if (sb->s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
-		log_err(ctx, _("%s: warning: compression support "
-			       "is experimental.\n"),
-			ctx->program_name);
-#endif
 #ifndef ENABLE_HTREE
 	if (sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
 		log_err(ctx, _("%s: e2fsck not compiled with HTREE support,\n\t"

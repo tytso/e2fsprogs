@@ -253,23 +253,6 @@ AC_SUBST(E)
 AC_SUBST(ES)
 AC_SUBST(Q)
 dnl
-dnl handle --enable-compression
-dnl
-AC_ARG_ENABLE([compression],
-[  --enable-compression	  enable EXPERIMENTAL compression support],
-if test "$enableval" = "no"
-then
-	AC_MSG_RESULT([Disabling compression support])
-else
-	AC_DEFINE(ENABLE_COMPRESSION, 1,
-		[Define to 1 if ext2 compression enabled])
-	AC_MSG_RESULT([Enabling compression support])
-	AC_MSG_WARN([Compression support is experimental])
-fi
-,
-AC_MSG_RESULT([Disabling compression support by default])
-)
-dnl
 dnl handle --enable-htree
 dnl
 AH_TEMPLATE([ENABLE_HTREE], [Define to 1 if ext3/4 htree support enabled])

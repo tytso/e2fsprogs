@@ -711,11 +711,6 @@ static struct e2fsck_problem problem_table[] = {
 	     "or append-only flag set.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK | PR_PREEN_NO | PR_NO_OK },
 
-	/* Compression flag set on an inode when filesystem doesn't support it */
-	{ PR_1_COMPR_SET,
-	  N_("@i %i has @cion flag set on @f without @cion support.  "),
-	  PROMPT_CLEAR, 0 },
-
 	/* Non-zero size for device, fifo or socket inode */
 	{ PR_1_SET_NONZSIZE,
 	  N_("Special (@v/socket/fifo) @i %i has non-zero size.  "),

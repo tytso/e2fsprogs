@@ -415,8 +415,8 @@ struct problem_context {
 /* Immutable flag set on a device or socket inode */
 #define PR_1_SET_IMMUTABLE		0x010030
 
-/* Compression flag set on a non-compressed filesystem */
-#define PR_1_COMPR_SET			0x010031
+/* Compression flag set on a non-compressed filesystem -- no longer used*/
+/* #define PR_1_COMPR_SET			0x010031 */
 
 /* Non-zero size on on device, fifo or socket inode */
 #define PR_1_SET_NONZSIZE		0x010032

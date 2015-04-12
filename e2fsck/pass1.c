@@ -2874,18 +2874,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	inlinedata_fs = (ctx->fs->super->s_feature_incompat &
 			 EXT4_FEATURE_INCOMPAT_INLINE_DATA);
 
-	if (inode->i_flags & EXT2_COMPRBLK_FL) {
-		if (fs->super->s_feature_incompat &
-		    EXT2_FEATURE_INCOMPAT_COMPRESSION)
-			pb.compressed = 1;
-		else {
-			if (fix_problem(ctx, PR_1_COMPR_SET, pctx)) {
-				inode->i_flags &= ~EXT2_COMPRBLK_FL;
-				dirty_inode++;
-			}
-		}
-	}
-
 	if (check_ext_attr(ctx, pctx, block_buf)) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			goto out;
@@ -3159,28 +3147,6 @@ static int process_block(ext2_filsys fs,
 	pctx = p->pctx;
 	ctx = p->ctx;
 
-	if (p->compressed && (blk == EXT2FS_COMPRESSED_BLKADDR)) {
-		/* todo: Check that the comprblk_fl is high, that the
-		   blkaddr pattern looks right (all non-holes up to
-		   first EXT2FS_COMPRESSED_BLKADDR, then all
-		   EXT2FS_COMPRESSED_BLKADDR up to end of cluster),
-		   that the feature_incompat bit is high, and that the
-		   inode is a regular file.  If we're doing a "full
-		   check" (a concept introduced to e2fsck by e2compr,
-		   meaning that we look at data blocks as well as
-		   metadata) then call some library routine that
-		   checks the compressed data.  I'll have to think
-		   about this, because one particularly important
-		   problem to be able to fix is to recalculate the
-		   cluster size if necessary.  I think that perhaps
-		   we'd better do most/all e2compr-specific checks
-		   separately, after the non-e2compr checks.  If not
-		   doing a full check, it may be useful to test that
-		   the personality is linux; e.g. if it isn't then
-		   perhaps this really is just an illegal block. */
-		return 0;
-	}
-
 	/*
 	 * For a directory, add logical block zero for processing even if it's
 	 * not mapped or we'll be perennially stuck with broken "." and ".."
@@ -3209,7 +3175,7 @@ static int process_block(ext2_filsys fs,
 	 * file be contiguous.  (Which can never be true for really
 	 * big files that are greater than a block group.)
 	 */
-	if (!HOLE_BLKADDR(p->previous_block) && p->ino != EXT2_RESIZE_INO) {
+	if (p->previous_block && p->ino != EXT2_RESIZE_INO) {
 		if (p->previous_block+1 != blk) {
 			if (ctx->options & E2F_OPT_FRAGCHECK) {
 				char type = '?';
@@ -3382,11 +3348,6 @@ static int process_bad_block(ext2_filsys fs,
 	dgrp_t		i;
 	struct problem_context *pctx;
 	e2fsck_t	ctx;
-
-	/*
-	 * Note: This function processes blocks for the bad blocks
-	 * inode, which is never compressed.  So we don't use HOLE_BLKADDR().
-	 */
 
 	if (!blk)
 		return 0;

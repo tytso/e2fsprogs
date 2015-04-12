@@ -1590,7 +1590,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 {
 	struct del_block *p = priv_data;
 
-	if (HOLE_BLKADDR(*block_nr))
+	if (*block_nr == 0)
 		return 0;
 	if ((*block_nr < fs->super->s_first_data_block) ||
 	    (*block_nr >= ext2fs_blocks_count(fs->super)))

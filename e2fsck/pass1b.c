@@ -364,7 +364,7 @@ static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 	blk64_t	lc, pc;
 	problem_t op;
 
-	if (HOLE_BLKADDR(*block_nr))
+	if (*block_nr == 0)
 		return 0;
 	p = (struct process_block_struct *) priv_data;
 	ctx = p->ctx;
@@ -628,7 +628,7 @@ static int delete_file_block(ext2_filsys fs,
 	pb = (struct process_block_struct *) priv_data;
 	ctx = pb->ctx;
 
-	if (HOLE_BLKADDR(*block_nr))
+	if (*block_nr == 0)
 		return 0;
 
 	c = EXT2FS_B2C(fs, *block_nr);
@@ -768,7 +768,7 @@ static int clone_file_block(ext2_filsys fs,
 	ctx = cs->ctx;
 	deferred_dec_badcount(cs);
 
-	if (HOLE_BLKADDR(*block_nr))
+	if (*block_nr == 0)
 		return 0;
 
 	c = EXT2FS_B2C(fs, blockcnt);
