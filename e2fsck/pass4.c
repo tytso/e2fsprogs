@@ -106,6 +106,15 @@ void e2fsck_pass4(e2fsck_t ctx)
 #ifdef MTRACE
 	mtrace_print("Pass 4");
 #endif
+	/*
+	 * Since pass4 is mostly CPU bound, start readahead of bitmaps
+	 * ahead of pass 5 if we haven't already loaded them.
+	 */
+	if (ctx->readahead_kb &&
+	    (fs->block_map == NULL || fs->inode_map == NULL))
+		e2fsck_readahead(fs, E2FSCK_READA_BBITMAP |
+				     E2FSCK_READA_IBITMAP,
+				 0, fs->group_desc_count);
 
 	clear_problem_context(&pctx);
 

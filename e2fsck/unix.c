@@ -650,6 +650,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 	char	*buf, *token, *next, *p, *arg;
 	int	ea_ver;
 	int	extended_usage = 0;
+	unsigned long long reada_kb;
 
 	buf = string_copy(ctx, opts, 0);
 	for (token = buf; token && *token; token = next) {
@@ -678,6 +679,15 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 				continue;
 			}
 			ctx->ext_attr_ver = ea_ver;
+		} else if (strcmp(token, "readahead_kb") == 0) {
+			reada_kb = strtoull(arg, &p, 0);
+			if (*p) {
+				fprintf(stderr, "%s",
+					_("Invalid readahead buffer size.\n"));
+				extended_usage++;
+				continue;
+			}
+			ctx->readahead_kb = reada_kb;
 		} else if (strcmp(token, "fragcheck") == 0) {
 			ctx->options |= E2F_OPT_FRAGCHECK;
 			continue;
@@ -717,6 +727,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		fputs(("\tjournal_only\n"), stderr);
 		fputs(("\tdiscard\n"), stderr);
 		fputs(("\tnodiscard\n"), stderr);
+		fputs(("\treadahead_kb=<buffer size>\n"), stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}
@@ -750,6 +761,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef CONFIG_JBD_DEBUG
 	char 		*jbd_debug;
 #endif
+	unsigned long long phys_mem_kb;
 
 	retval = e2fsck_allocate_context(&ctx);
 	if (retval)
@@ -777,6 +789,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	else
 		ctx->program_name = "e2fsck";
 
+	phys_mem_kb = get_memory_size() / 1024;
+	ctx->readahead_kb = ~0ULL;
 	while ((c = getopt (argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDk")) != EOF)
 		switch (c) {
 		case 'C':
@@ -960,6 +974,20 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			    &c);
 	if (c)
 		verbose = 1;
+
+	if (ctx->readahead_kb == ~0ULL) {
+		profile_get_integer(ctx->profile, "options",
+				    "readahead_mem_pct", 0, -1, &c);
+		if (c >= 0 && c <= 100)
+			ctx->readahead_kb = phys_mem_kb * c / 100;
+		profile_get_integer(ctx->profile, "options",
+				    "readahead_kb", 0, -1, &c);
+		if (c >= 0)
+			ctx->readahead_kb = c;
+		if (ctx->readahead_kb != ~0ULL &&
+		    ctx->readahead_kb > phys_mem_kb)
+			ctx->readahead_kb = phys_mem_kb;
+	}
 
 	/* Turn off discard in read-only mode */
 	if ((ctx->options & E2F_OPT_NO) &&

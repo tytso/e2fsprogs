@@ -205,6 +205,21 @@ of that type are squelched.  This can be useful if the console is slow
 (i.e., connected to a serial port) and so a large amount of output could
 end up delaying the boot process for a long time (potentially hours).
 .TP
+.I readahead_mem_pct
+Use this percentage of memory to try to read in metadata blocks ahead of the
+main e2fsck thread.  This should reduce run times, depending on the speed of
+the underlying storage and the amount of free memory.  There is no default, but
+see
+.B readahead_mem_pct
+for more details.
+.TP
+.I readahead_kb
+Use this amount of memory to read in metadata blocks ahead of the main checking
+thread.  Setting this value to zero disables readahead entirely.  By default,
+this is set the size of two block groups' inode tables (typically 4MiB on a
+regular ext4 filesystem); if this amount is more than 1/50th of total physical
+memory, readahead is disabled.
+.TP
 .I report_features
 If this boolean relation is true, e2fsck will print the file system
 features as part of its verbose reporting (i.e., if the

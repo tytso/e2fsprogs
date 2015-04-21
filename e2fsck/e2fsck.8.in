@@ -220,6 +220,13 @@ option may prevent you from further manual data recovery.
 .BI nodiscard
 Do not attempt to discard free blocks and unused inode blocks. This option is
 exactly the opposite of discard option. This is set as default.
+.TP
+.BI readahead_kb
+Use this many KiB of memory to pre-fetch metadata in the hopes of reducing
+e2fsck runtime.  By default, this is set to the size of two block groups' inode
+tables (typically 4MiB on a regular ext4 filesystem); if this amount is more
+than 1/50th of total physical memory, readahead is disabled.  Set this to zero
+to disable readahead entirely.
 .RE
 .TP
 .B \-f

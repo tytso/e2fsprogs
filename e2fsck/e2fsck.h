@@ -379,6 +379,9 @@ struct e2fsck_struct {
 	 */
 	void *priv_data;
 	ext2fs_block_bitmap block_metadata_map; /* Metadata blocks */
+
+	/* How much are we allowed to readahead? */
+	unsigned long long readahead_kb;
 };
 
 /* Used by the region allocation code */

@@ -61,6 +61,9 @@
  * Keeps track of how many times an inode is referenced.
  */
 static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf);
+static int check_dir_block2(ext2_filsys fs,
+			   struct ext2_db_entry2 *dir_blocks_info,
+			   void *priv_data);
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry2 *dir_blocks_info,
 			   void *priv_data);
@@ -77,6 +80,9 @@ struct check_dir_struct {
 	struct problem_context	pctx;
 	int	count, max;
 	e2fsck_t ctx;
+	unsigned long long list_offset;
+	unsigned long long ra_entries;
+	unsigned long long next_ra_off;
 };
 
 void e2fsck_pass2(e2fsck_t ctx)
@@ -96,6 +102,9 @@ void e2fsck_pass2(e2fsck_t ctx)
 	int			i, depth;
 	problem_t		code;
 	int			bad_dir;
+	int (*check_dir_func)(ext2_filsys fs,
+			      struct ext2_db_entry2 *dir_blocks_info,
+			      void *priv_data);
 
 	init_resource_track(&rtrack, ctx->fs->io);
 	clear_problem_context(&cd.pctx);
@@ -139,6 +148,9 @@ void e2fsck_pass2(e2fsck_t ctx)
 	cd.ctx = ctx;
 	cd.count = 1;
 	cd.max = ext2fs_dblist_count2(fs->dblist);
+	cd.list_offset = 0;
+	cd.ra_entries = ctx->readahead_kb * 1024 / ctx->fs->blocksize;
+	cd.next_ra_off = 0;
 
 	if (ctx->progress)
 		(void) (ctx->progress)(ctx, 2, 0, cd.max);
@@ -146,7 +158,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX)
 		ext2fs_dblist_sort2(fs->dblist, special_dir_block_cmp);
 
-	cd.pctx.errcode = ext2fs_dblist_iterate2(fs->dblist, check_dir_block,
+	check_dir_func = cd.ra_entries ? check_dir_block2 : check_dir_block;
+	cd.pctx.errcode = ext2fs_dblist_iterate2(fs->dblist, check_dir_func,
 						 &cd);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
 		return;
@@ -866,6 +879,29 @@ int get_filename_hash(ext2_filsys fs, int encrypted, int version,
 	return ext2fs_dirhash(version, buf, buf_len,
 			      fs->super->s_hash_seed,
 			      ret_hash, ret_minor_hash);
+}
+
+static int check_dir_block2(ext2_filsys fs,
+			   struct ext2_db_entry2 *db,
+			   void *priv_data)
+{
+	int err;
+	struct check_dir_struct *cd = priv_data;
+
+	if (cd->ra_entries && cd->list_offset >= cd->next_ra_off) {
+		err = e2fsck_readahead_dblist(fs,
+					E2FSCK_RA_DBLIST_IGNORE_BLOCKCNT,
+					fs->dblist,
+					cd->list_offset + cd->ra_entries / 8,
+					cd->ra_entries);
+		if (err)
+			cd->ra_entries = 0;
+		cd->next_ra_off = cd->list_offset + (cd->ra_entries * 7 / 8);
+	}
+
+	err = check_dir_block(fs, db, priv_data);
+	cd->list_offset++;
+	return err;
 }
 
 static int check_dir_block(ext2_filsys fs,

@@ -1403,6 +1403,7 @@ extern errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan,
 					    ext2_ino_t *ino,
 					    struct ext2_inode *inode,
 					    int bufsize);
+#define EXT2_INODE_SCAN_DEFAULT_BUFFER_BLOCKS	8
 extern errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 				  ext2_inode_scan *ret_scan);
 extern void ext2fs_close_inode_scan(ext2_inode_scan scan);

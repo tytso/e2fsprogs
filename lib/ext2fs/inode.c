@@ -175,7 +175,8 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	scan->bytes_left = 0;
 	scan->current_group = 0;
 	scan->groups_left = fs->group_desc_count - 1;
-	scan->inode_buffer_blocks = buffer_blocks ? buffer_blocks : 8;
+	scan->inode_buffer_blocks = buffer_blocks ? buffer_blocks :
+				    EXT2_INODE_SCAN_DEFAULT_BUFFER_BLOCKS;
 	scan->current_block = ext2fs_inode_table_loc(scan->fs,
 						     scan->current_group);
 	scan->inodes_left = EXT2_INODES_PER_GROUP(scan->fs->super);

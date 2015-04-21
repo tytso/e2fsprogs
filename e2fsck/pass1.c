@@ -898,6 +898,60 @@ out:
 	return 0;
 }
 
+static void pass1_readahead(e2fsck_t ctx, dgrp_t *group, ext2_ino_t *next_ino)
+{
+	ext2_ino_t inodes_in_group = 0, inodes_per_block, inodes_per_buffer;
+	dgrp_t start = *group, grp;
+	blk64_t blocks_to_read = 0;
+	errcode_t err = EXT2_ET_INVALID_ARGUMENT;
+
+	if (ctx->readahead_kb == 0)
+		goto out;
+
+	/* Keep iterating groups until we have enough to readahead */
+	inodes_per_block = EXT2_INODES_PER_BLOCK(ctx->fs->super);
+	for (grp = start; grp < ctx->fs->group_desc_count; grp++) {
+		if (ext2fs_bg_flags_test(ctx->fs, grp, EXT2_BG_INODE_UNINIT))
+			continue;
+		inodes_in_group = ctx->fs->super->s_inodes_per_group -
+					ext2fs_bg_itable_unused(ctx->fs, grp);
+		blocks_to_read += (inodes_in_group + inodes_per_block - 1) /
+					inodes_per_block;
+		if (blocks_to_read * ctx->fs->blocksize >
+		    ctx->readahead_kb * 1024)
+			break;
+	}
+
+	err = e2fsck_readahead(ctx->fs, E2FSCK_READA_ITABLE, start,
+			       grp - start + 1);
+	if (err == EAGAIN) {
+		ctx->readahead_kb /= 2;
+		err = 0;
+	}
+
+out:
+	if (err) {
+		/* Error; disable itable readahead */
+		*group = ctx->fs->group_desc_count;
+		*next_ino = ctx->fs->super->s_inodes_count;
+	} else {
+		/*
+		 * Don't do more readahead until we've reached the first inode
+		 * of the last inode scan buffer block for the last group.
+		 */
+		*group = grp + 1;
+		inodes_per_buffer = (ctx->inode_buffer_blocks ?
+				     ctx->inode_buffer_blocks :
+				     EXT2_INODE_SCAN_DEFAULT_BUFFER_BLOCKS) *
+				    ctx->fs->blocksize /
+				    EXT2_INODE_SIZE(ctx->fs->super);
+		inodes_in_group--;
+		*next_ino = inodes_in_group -
+			    (inodes_in_group % inodes_per_buffer) + 1 +
+			    (grp * ctx->fs->super->s_inodes_per_group);
+	}
+}
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
@@ -920,9 +974,18 @@ void e2fsck_pass1(e2fsck_t ctx)
 	int		low_dtime_check = 1;
 	int		inode_size;
 	int		failed_csum = 0;
+	ext2_ino_t	ino_threshold = 0;
+	dgrp_t		ra_group = 0;
 
 	init_resource_track(&rtrack, ctx->fs->io);
 	clear_problem_context(&pctx);
+
+	/* If we can do readahead, figure out how many groups to pull in. */
+	if (!e2fsck_can_readahead(ctx->fs))
+		ctx->readahead_kb = 0;
+	else if (ctx->readahead_kb == ~0ULL)
+		ctx->readahead_kb = e2fsck_guess_readahead(ctx->fs);
+	pass1_readahead(ctx, &ra_group, &ino_threshold);
 
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_1_PASS_HEADER, &pctx);
@@ -1103,6 +1166,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		old_op = ehandler_operation(_("getting next inode from scan"));
 		pctx.errcode = ext2fs_get_next_inode_full(scan, &ino,
 							  inode, inode_size);
+		if (ino > ino_threshold)
+			pass1_readahead(ctx, &ra_group, &ino_threshold);
 		ehandler_operation(old_op);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
