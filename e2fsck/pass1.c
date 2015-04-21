@@ -1251,6 +1251,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 						ctx->flags |= E2F_FLAG_ABORT;
 						goto endit;
 					}
+					if (LINUX_S_ISLNK(inode->i_mode))
+						inode->i_flags &= ~EXT4_INLINE_DATA_FL;
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
 					failed_csum = 0;
