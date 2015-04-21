@@ -495,6 +495,23 @@ extern ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix);
 extern errcode_t e2fsck_adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino,
 					   int adj);
 
+/* readahead.c */
+#define E2FSCK_READA_SUPER	(0x01)
+#define E2FSCK_READA_GDT	(0x02)
+#define E2FSCK_READA_BBITMAP	(0x04)
+#define E2FSCK_READA_IBITMAP	(0x08)
+#define E2FSCK_READA_ITABLE	(0x10)
+#define E2FSCK_READA_ALL_FLAGS	(0x1F)
+errcode_t e2fsck_readahead(ext2_filsys fs, int flags, dgrp_t start,
+			   dgrp_t ngroups);
+#define E2FSCK_RA_DBLIST_IGNORE_BLOCKCNT	(0x01)
+#define E2FSCK_RA_DBLIST_ALL_FLAGS		(0x01)
+errcode_t e2fsck_readahead_dblist(ext2_filsys fs, int flags,
+				  ext2_dblist dblist,
+				  unsigned long long start,
+				  unsigned long long count);
+int e2fsck_can_readahead(ext2_filsys fs);
+unsigned long long e2fsck_guess_readahead(ext2_filsys fs);
 
 /* region.c */
 extern region_t region_create(region_addr_t min, region_addr_t max);
@@ -582,6 +599,7 @@ extern errcode_t e2fsck_allocate_subcluster_bitmap(ext2_filsys fs,
 						   int default_type,
 						   const char *profile_name,
 						   ext2fs_block_bitmap *ret);
+unsigned long long get_memory_size(void);
 
 /* unix.c */
 extern void e2fsck_clear_progbar(e2fsck_t ctx);

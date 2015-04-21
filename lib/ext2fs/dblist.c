@@ -194,25 +194,40 @@ void ext2fs_dblist_sort2(ext2_dblist dblist,
 /*
  * This function iterates over the directory block list
  */
+errcode_t ext2fs_dblist_iterate3(ext2_dblist dblist,
+				 int (*func)(ext2_filsys fs,
+					     struct ext2_db_entry2 *db_info,
+					     void	*priv_data),
+				 unsigned long long start,
+				 unsigned long long count,
+				 void *priv_data)
+{
+	unsigned long long	i, end;
+	int		ret;
+
+	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
+
+	end = start + count;
+	if (!dblist->sorted)
+		ext2fs_dblist_sort2(dblist, 0);
+	if (end > dblist->count)
+		end = dblist->count;
+	for (i = start; i < end; i++) {
+		ret = (*func)(dblist->fs, &dblist->list[i], priv_data);
+		if (ret & DBLIST_ABORT)
+			return 0;
+	}
+	return 0;
+}
+
 errcode_t ext2fs_dblist_iterate2(ext2_dblist dblist,
 				 int (*func)(ext2_filsys fs,
 					     struct ext2_db_entry2 *db_info,
 					     void	*priv_data),
 				 void *priv_data)
 {
-	unsigned long long	i;
-	int		ret;
-
-	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
-
-	if (!dblist->sorted)
-		ext2fs_dblist_sort2(dblist, 0);
-	for (i=0; i < dblist->count; i++) {
-		ret = (*func)(dblist->fs, &dblist->list[i], priv_data);
-		if (ret & DBLIST_ABORT)
-			return 0;
-	}
-	return 0;
+	return ext2fs_dblist_iterate3(dblist, func, 0, dblist->count,
+				      priv_data);
 }
 
 static EXT2_QSORT_TYPE dir_block_cmp2(const void *a, const void *b)

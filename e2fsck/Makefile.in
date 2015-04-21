@@ -62,7 +62,7 @@ OBJS= dict.o unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o \
 	pass3.o pass4.o pass5.o journal.o badblocks.o util.o dirinfo.o \
 	dx_dirinfo.o ehandler.o problem.o message.o quota.o recovery.o \
 	region.o revoke.o ea_refcount.o rehash.o profile.o prof_err.o \
-	logfile.o sigcatcher.o $(MTRACE_OBJ) plausible.o
+	logfile.o sigcatcher.o $(MTRACE_OBJ) plausible.o readahead.o
 
 PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
 	profiled/super.o profiled/pass1.o profiled/pass1b.o \
@@ -72,8 +72,8 @@ PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
 	profiled/message.o profiled/problem.o profiled/quota.o \
 	profiled/recovery.o profiled/region.o profiled/revoke.o \
 	profiled/ea_refcount.o profiled/rehash.o profiled/profile.o \
-	profiled/prof_err.o profiled/logfile.o \
-	profiled/sigcatcher.o profiled/plausible.o
+	profiled/prof_err.o profiled/logfile.o profiled/sigcatcher.o \
+	profiled/plausible.o profiled/readahead.o
 
 SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/dict.c \
@@ -97,6 +97,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/message.c \
 	$(srcdir)/ea_refcount.c \
 	$(srcdir)/rehash.c \
+	$(srcdir)/readahead.c \
 	$(srcdir)/region.c \
 	$(srcdir)/profile.c \
 	$(srcdir)/sigcatcher.c \
@@ -541,3 +542,6 @@ plausible.o: $(srcdir)/../misc/plausible.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(srcdir)/../misc/nls-enable.h $(srcdir)/../misc/plausible.h
+readahead.o: $(srcdir)/readahead.c $(top_builddir)/lib/config.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/e2fsck.h prof_err.h

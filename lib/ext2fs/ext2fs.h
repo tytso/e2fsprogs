@@ -1032,11 +1032,17 @@ extern void ext2fs_dblist_sort2(ext2_dblist dblist,
 extern errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 	int (*func)(ext2_filsys fs, struct ext2_db_entry *db_info,
 		    void	*priv_data),
-       void *priv_data);
+	void *priv_data);
 extern errcode_t ext2fs_dblist_iterate2(ext2_dblist dblist,
 	int (*func)(ext2_filsys fs, struct ext2_db_entry2 *db_info,
 		    void	*priv_data),
-       void *priv_data);
+	void *priv_data);
+extern errcode_t ext2fs_dblist_iterate3(ext2_dblist dblist,
+	int (*func)(ext2_filsys fs, struct ext2_db_entry2 *db_info,
+		    void	*priv_data),
+	unsigned long long start,
+	unsigned long long count,
+	void *priv_data);
 extern errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ext2_ino_t ino,
 				      blk_t blk, int blockcnt);
 extern errcode_t ext2fs_set_dir_block2(ext2_dblist dblist, ext2_ino_t ino,

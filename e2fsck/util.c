@@ -37,6 +37,10 @@
 #include <errno.h>
 #endif
 
+#ifdef HAVE_SYS_SYSCTL_H
+#include <sys/sysctl.h>
+#endif
+
 #include "e2fsck.h"
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
@@ -818,4 +822,51 @@ errcode_t e2fsck_allocate_subcluster_bitmap(ext2_filsys fs, const char *descr,
 	retval = ext2fs_allocate_subcluster_bitmap(fs, descr, ret);
 	fs->default_bitmap_type = save_type;
 	return retval;
+}
+
+/* Return memory size in bytes */
+unsigned long long get_memory_size(void)
+{
+#if defined(_SC_PHYS_PAGES)
+# if defined(_SC_PAGESIZE)
+	return (unsigned long long)sysconf(_SC_PHYS_PAGES) *
+	       (unsigned long long)sysconf(_SC_PAGESIZE);
+# elif defined(_SC_PAGE_SIZE)
+	return (unsigned long long)sysconf(_SC_PHYS_PAGES) *
+	       (unsigned long long)sysconf(_SC_PAGE_SIZE);
+# endif
+#elif defined(CTL_HW)
+# if (defined(HW_MEMSIZE) || defined(HW_PHYSMEM64))
+#  define CTL_HW_INT64
+# elif (defined(HW_PHYSMEM) || defined(HW_REALMEM))
+#  define CTL_HW_UINT
+# endif
+	int mib[2];
+
+	mib[0] = CTL_HW;
+# if defined(HW_MEMSIZE)
+	mib[1] = HW_MEMSIZE;
+# elif defined(HW_PHYSMEM64)
+	mib[1] = HW_PHYSMEM64;
+# elif defined(HW_REALMEM)
+	mib[1] = HW_REALMEM;
+# elif defined(HW_PYSMEM)
+	mib[1] = HW_PHYSMEM;
+# endif
+# if defined(CTL_HW_INT64)
+	unsigned long long size = 0;
+# elif defined(CTL_HW_UINT)
+	unsigned int size = 0;
+# endif
+# if defined(CTL_HW_INT64) || defined(CTL_HW_UINT)
+	size_t len = sizeof(size);
+
+	if (sysctl(mib, 2, &size, &len, NULL, 0) == 0)
+		return (unsigned long long)size;
+# endif
+	return 0;
+#else
+# warning "Don't know how to detect memory on your platform?"
+	return 0;
+#endif
 }
