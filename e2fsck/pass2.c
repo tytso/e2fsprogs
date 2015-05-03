@@ -855,32 +855,6 @@ err:
 	return retval;
 }
 
-int get_filename_hash(ext2_filsys fs, int encrypted, int version,
-		      const char *name, int len, ext2_dirhash_t *ret_hash,
-		      ext2_dirhash_t *ret_minor_hash)
-{
-	char	buf[2*EXT2FS_DIGEST_SIZE];
-	int	buf_len;
-
-	if (!encrypted)
-		return ext2fs_dirhash(version, name, len,
-				      fs->super->s_hash_seed,
-				      ret_hash, ret_minor_hash);
-
-	if (len <= EXT2FS_DIGEST_SIZE)
-		buf_len = ext2fs_digest_encode(name, len, buf);
-	else {
-		ext2fs_sha256(name, len, buf + EXT2FS_DIGEST_SIZE);
-		buf[0] = 'I';
-		buf_len = ext2fs_digest_encode(buf + EXT2FS_DIGEST_SIZE,
-					       EXT2FS_DIGEST_SIZE, buf + 1);
-		buf_len++;
-	}
-	return ext2fs_dirhash(version, buf, buf_len,
-			      fs->super->s_hash_seed,
-			      ret_hash, ret_minor_hash);
-}
-
 static int check_dir_block2(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
 			   void *priv_data)
@@ -1422,10 +1396,9 @@ skip_checksum:
 
 #ifdef ENABLE_HTREE
 		if (dx_db) {
-			get_filename_hash(fs, encrypted, dx_dir->hashversion,
-					  dirent->name,
-					  ext2fs_dirent_name_len(dirent),
-					  &hash, 0);
+			ext2fs_dirhash(dx_dir->hashversion, dirent->name,
+				       ext2fs_dirent_name_len(dirent),
+				       fs->super->s_hash_seed, &hash, 0);
 			if (hash < dx_db->min_hash)
 				dx_db->min_hash = hash;
 			if (hash > dx_db->max_hash)

@@ -73,7 +73,6 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	csum.o \
 	dblist.o \
 	dblist_dir.o \
-	digest_encode.o \
 	dirblock.o \
 	dirhash.o \
 	dir_iterate.o \
@@ -116,7 +115,6 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	read_bb_file.o \
 	res_gdt.o \
 	rw_bitmaps.o \
-	sha256.o \
 	sha512.o \
 	swapfs.o \
 	symlink.o \

@@ -112,9 +112,6 @@ static int fill_dir_block(ext2_filsys fs,
 	char			*dir;
 	unsigned int		offset, dir_offset, rec_len, name_len;
 	int			hash_alg;
-	int			encrypted = 0;
-	char			processed_filename[2*EXT2FS_DIGEST_SIZE];
-	int			processed_filename_len;
 
 	if (blockcnt < 0)
 		return 0;
@@ -124,11 +121,6 @@ static int fill_dir_block(ext2_filsys fs,
 		fd->err = EXT2_ET_DIR_CORRUPTED;
 		return BLOCK_ABORT;
 	}
-
-	/* Determine if the directory is encrypted */
-	if (fd->ctx->encrypted_dirs)
-		encrypted = ext2fs_u32_list_test(fd->ctx->encrypted_dirs,
-						fd->ino);
 
 	dir = (fd->buf+offset);
 	if (*block_nr == 0) {
@@ -190,10 +182,10 @@ static int fill_dir_block(ext2_filsys fs,
 		if (fd->compress)
 			ent->hash = ent->minor_hash = 0;
 		else {
-			fd->err = get_filename_hash(fs, encrypted,
-					hash_alg, dirent->name,
-					ext2fs_dirent_name_len(dirent),
-					&ent->hash, &ent->minor_hash);
+			fd->err = ext2fs_dirhash(hash_alg, dirent->name,
+						 name_len,
+						 fs->super->s_hash_seed,
+						 &ent->hash, &ent->minor_hash);
 			if (fd->err)
 				return BLOCK_ABORT;
 		}
@@ -378,9 +370,6 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 	char			new_name[256];
 	unsigned int		new_len;
 	int			hash_alg;
-	int			encrypted = 0;
-	char			processed_filename[2*EXT2FS_DIGEST_SIZE];
-	int			processed_filename_len;
 
 	clear_problem_context(&pctx);
 	pctx.ino = ino;
@@ -390,10 +379,6 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 	    (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH))
 		hash_alg += 3;
 
-	/* Determine if the directory is encrypted */
-	if (fd->ctx->encrypted_dirs)
-		encrypted = ext2fs_u32_list_test(fd->ctx->encrypted_dirs,
-						fd->ino);
 	for (i=1; i < fd->num_array; i++) {
 		ent = fd->harray + i;
 		prev = ent - 1;
@@ -429,9 +414,9 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 		if (fix_problem(ctx, PR_2_NON_UNIQUE_FILE, &pctx)) {
 			memcpy(ent->dir->name, new_name, new_len);
 			ext2fs_dirent_set_name_len(ent->dir, new_len);
-			get_filename_hash(fs, encrypted,
-					  hash_alg, new_name, new_len,
-					  &ent->hash, &ent->minor_hash);
+			ext2fs_dirhash(hash_alg, new_name, new_len,
+				       fs->super->s_hash_seed,
+				       &ent->hash, &ent->minor_hash);
 			fixed++;
 		}
 	}

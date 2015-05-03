@@ -20,46 +20,59 @@
 #endif
 #include "ext2fs.h"
 
+static const char *lookup_table =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,";
+
 /**
  * ext2fs_digest_encode() -
  *
  * Encodes the input digest using characters from the set [a-zA-Z0-9_+].
  * The encoded string is roughly 4/3 times the size of the input string.
  */
-int ext2fs_digest_encode(const char *src, unsigned long len, char *dst)
+int ext2fs_digest_encode(const char *src, int len, char *dst)
 {
-	static const char *lookup_table =
-		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+";
-	unsigned num_chunks, i;
-	char tmp_buf[3];
-	unsigned c0, c1, c2, c3;
+	int i = 0, bits = 0, ac = 0;
+	char *cp = dst;
 
-	num_chunks = len/3;
-	for (i = 0; i < num_chunks; i++) {
-		c0 = src[3*i] & 0x3f;
-		c1 = (((src[3*i]>>6)&0x3) | ((src[3*i+1] & 0xf)<<2)) & 0x3f;
-		c2 = (((src[3*i+1]>>4)&0xf) | ((src[3*i+2] & 0x3)<<4)) & 0x3f;
-		c3 = (src[3*i+2]>>2) & 0x3f;
-		dst[4*i] = lookup_table[c0];
-		dst[4*i+1] = lookup_table[c1];
-		dst[4*i+2] = lookup_table[c2];
-		dst[4*i+3] = lookup_table[c3];
-	}
-	if (i*3 < len) {
-		memset(tmp_buf, 0, 3);
-		memcpy(tmp_buf, &src[3*i], len-3*i);
-		c0 = tmp_buf[0] & 0x3f;
-		c1 = (((tmp_buf[0]>>6)&0x3) | ((tmp_buf[1] & 0xf)<<2)) & 0x3f;
-		c2 = (((tmp_buf[1]>>4)&0xf) | ((tmp_buf[2] & 0x3)<<4)) & 0x3f;
-		c3 = (tmp_buf[2]>>2) & 0x3f;
-		dst[4*i] = lookup_table[c0];
-		dst[4*i+1] = lookup_table[c1];
-		dst[4*i+2] = lookup_table[c2];
-		dst[4*i+3] = lookup_table[c3];
+	while (i < len) {
+		ac += (((unsigned char) src[i]) << bits);
+		bits += 8;
+		do {
+			*cp++ = lookup_table[ac & 0x3f];
+			ac >>= 6;
+			bits -= 6;
+		} while (bits >= 6);
 		i++;
 	}
-	return (i * 4);
+	if (bits)
+		*cp++ = lookup_table[ac & 0x3f];
+	return cp - dst;
 }
+
+int ext2fs_digest_decode(const char *src, int len, char *dst)
+{
+	int i = 0, bits = 0, ac = 0;
+	const char *p;
+	char *cp = dst;
+
+	while (i < len) {
+		p = strchr(lookup_table, src[i]);
+		if (p == NULL || src[i] == 0)
+			return -1;
+		ac += (p - lookup_table) << bits;
+		bits += 6;
+		if (bits >= 8) {
+			*cp++ = ac & 0xff;
+			ac >>= 8;
+			bits -= 8;
+		}
+		i++;
+	}
+	if (ac)
+		return -1;
+	return cp - dst;
+}
+
 
 #ifdef UNITTEST
 static const struct {
@@ -71,52 +84,65 @@ static const struct {
 	    0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
 	    0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c,
 	    0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55 }, 32,
-	"JdlXcHj+CqHM7tpYz_wUKCIRbrozBojtKwzMBGNu4wfa"
+	"jDLxChJ,cQhm7TPyZ+WukcirBROZbOJTkWZmbgnU4WF"
 	},
 	{ { 0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea,
 	    0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
 	    0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
 	    0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad }, 32,
-	"6INf+_yapREqbbK3D5QiJa7aHnQLxOhN0cX+Hjpav0ka"
+	"6inF,+YAPreQBBk3d5qIjA7AhNqlXoHn0Cx,hJPAV0K"
 	},
 	{ { 0x24, 0x8d, 0x6a, 0x61, 0xd2, 0x06, 0x38, 0xb8,
 	    0xe5, 0xc0, 0x26, 0x93, 0x0c, 0x3e, 0x60, 0x39,
 	    0xa3, 0x3c, 0xe4, 0x59, 0x64, 0xff, 0x21, 0x67,
 	    0xf6, 0xec, 0xed, 0xd4, 0x19, 0xdb, 0x06, 0xc1 }, 32,
-	"K0OAHjTb4GB5aBYKm4dy5mkpKNfz+hYz2ZE7uNX2gema"
+	"k0oahJtB4gb5AbykM4DY5MKPknFZ,HyZ2ze7Unx2GEM"
 	},
 	{ { 0x00, }, 1,
-	"aaaa"
+	"AA"
 	},
 	{ { 0x01, }, 1,
-	"baaa"
+	"BA"
 	},
 	{ { 0x01, 0x02 }, 2,
-	"biaa"
+	"BIA"
 	},
 	{ { 0x01, 0x02, 0x03 }, 3,
-	"biWa"
+	"BIwA"
 	},
 	{ { 0x01, 0x02, 0x03, 0x04 }, 4,
-	"biWaeaaa"
+	"BIwAEA"
 	},
 	{ { 0x01, 0x02, 0x03, 0x04, 0xff }, 5,
-	"biWae8pa"
+	"BIwAE8P"
 	},
 	{ { 0x01, 0x02, 0x03, 0x04, 0xff, 0xfe }, 6,
-	"biWae8V+"
+	"BIwAE8v,"
 	},
 	{ { 0x01, 0x02, 0x03, 0x04, 0xff, 0xfe, 0xfd }, 7,
-	"biWae8V+9daa"
+	"BIwAE8v,9D"
 	},
 };
 
 int main(int argc, char **argv)
 {
-	int i, ret, len;
+	int i, ret, len, len2;
 	int errors = 0;
-	unsigned char tmp[1024];
+	unsigned char tmp[1024], tmp2[1024];
 
+	if (argc == 3 && !strcmp(argv[1], "encode")) {
+		memset(tmp, 0, sizeof(tmp));
+		ext2fs_digest_encode(argv[2], strlen(argv[2]), tmp);
+		puts(tmp);
+		exit(0);
+	}
+	if (argc == 3 && !strcmp(argv[1], "decode")) {
+		memset(tmp, 0, sizeof(tmp));
+		ret = ext2fs_digest_decode(argv[2], strlen(argv[2]), tmp);
+		puts(tmp);
+		fprintf(stderr, "returned %d\n", ret);
+		exit(0);
+	}
 	for (i = 0; i < (int)(sizeof(tests) / sizeof(tests[0])); i++) {
 		memset(tmp, 0, sizeof(tmp));
 		ret = ext2fs_digest_encode(tests[i].d, tests[i].len, tmp);
@@ -126,12 +152,26 @@ int main(int argc, char **argv)
 			printf("FAILED returned %d, string length was %d\n",
 			       ret, len);
 			errors++;
-		} else if (memcmp(tmp, tests[i].ed, ret) != 0) {
+			continue;
+		} else if (strcmp(tmp, tests[i].ed) != 0) {
 			printf("FAILED: got %s, expected %s\n", tmp,
 			       tests[i].ed);
 			errors++;
-		} else
-			printf("OK\n");
+			continue;
+		}
+		ret = ext2fs_digest_decode(tmp, len, tmp2);
+		if (ret != tests[i].len) {
+			printf("FAILED decode returned %d, expected %d\n",
+			       ret, tests[i].len);
+			errors++;
+			continue;
+		}
+		if (memcmp(tmp2, tests[i].d, ret) != 0) {
+			puts("FAILED: decode mismatched");
+			errors++;
+			continue;
+		}
+		printf("OK\n");
 	}
 	for (i = 1; i < argc; i++) {
 		memset(tmp, 0, sizeof(tmp));

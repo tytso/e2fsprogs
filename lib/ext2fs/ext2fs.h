@@ -1071,9 +1071,12 @@ extern errcode_t
 					      void	*priv_data),
 				  void *priv_data);
 
+#if 0
 /* digest_encode.c */
 #define EXT2FS_DIGEST_SIZE EXT2FS_SHA256_LENGTH
-extern int ext2fs_digest_encode(const char *src, unsigned long len, char *dst);
+extern int ext2fs_digest_encode(const char *src, int len, char *dst);
+extern int ext2fs_digest_decode(const char *src, int len, char *dst);
+#endif
 
 /* dirblock.c */
 extern errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
@@ -1564,10 +1567,12 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 /* res_gdt.c */
 extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
 
+#if 0
 /*sha256.c */
 #define EXT2FS_SHA256_LENGTH 32
 extern void ext2fs_sha256(const unsigned char *in, unsigned long in_size,
 		   unsigned char out[EXT2FS_SHA256_LENGTH]);
+#endif
 
 /* sha512.c */
 #define EXT2FS_SHA512_LENGTH 64

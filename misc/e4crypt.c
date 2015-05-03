@@ -95,6 +95,18 @@ static const size_t hexchars_size = 16;
 #define EXT4_IOC_SET_ENCRYPTION_POLICY      _IOR('f', 19, struct ext4_encryption_policy)
 #define EXT4_IOC_GET_ENCRYPTION_POLICY      _IOW('f', 21, struct ext4_encryption_policy)
 
+static int int_log2(int arg)
+{
+	int     l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
 static void validate_paths(int argc, char *argv[], int path_start_index)
 {
 	int x;
@@ -313,7 +325,7 @@ static void parse_salt(char *salt_str, int flags)
 	add_salt(salt_buf, salt_len);
 }
 
-static void set_policy(struct salt *set_salt,
+static void set_policy(struct salt *set_salt, int pad,
 		       int argc, char *argv[], int path_start_index)
 {
 	struct salt *salt;
@@ -322,6 +334,12 @@ static void set_policy(struct salt *set_salt,
 	int fd;
 	int x;
 	int rc;
+
+	if ((pad != 4) && (pad != 8) &&
+		 (pad != 16) && (pad != 32)) {
+		fprintf(stderr, "Invalid padding %d\n", pad);
+		exit(1);
+	}
 
 	for (x = path_start_index; x < argc; x++) {
 		fd = open(argv[x], O_DIRECTORY);
@@ -348,6 +366,7 @@ static void set_policy(struct salt *set_salt,
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		policy.filenames_encryption_mode =
 			EXT4_ENCRYPTION_MODE_AES_256_CTS;
+		policy.flags = int_log2(pad >> 2);
 		memcpy(policy.master_key_descriptor, salt->key_desc,
 		       EXT4_KEY_DESCRIPTOR_SIZE);
 		rc = ioctl(fd, EXT4_IOC_SET_ENCRYPTION_POLICY, &policy);
@@ -610,13 +629,16 @@ void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 {
 	struct salt *salt;
 	char *keyring = NULL;
-	int i, opt;
+	int i, opt, pad = 4;
 
-	while ((opt = getopt(argc, argv, "k:S:vq")) != -1) {
+	while ((opt = getopt(argc, argv, "k:S:p:vq")) != -1) {
 		switch (opt) {
 		case 'k':
 			/* Specify a keyring. */
 			keyring = optarg;
+			break;
+		case 'p':
+			pad = atoi(optarg);
 			break;
 		case 'S':
 			/* Salt value for passphrase. */
@@ -654,7 +676,7 @@ void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 		insert_key_into_keyring(keyring, salt);
 	}
 	if (optind != argc)
-		set_policy(NULL, argc, argv, optind);
+		set_policy(NULL, pad, argc, argv, optind);
 	clear_secrets();
 	exit(0);
 }
@@ -674,27 +696,38 @@ void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 	char *key_ref_str = NULL;
 	char *keyring = NULL;
 	int add_passphrase = 0;
-	int i, opt;
+	int i, c, opt, pad = 4;
 
-	if (argc < 3) {
+	while ((c = getopt (argc, argv, "p:")) != EOF) {
+		switch (c) {
+		case 'p':
+			pad = atoi(optarg);
+			break;
+		}
+	}
+
+	if (argc < optind + 2) {
 		fprintf(stderr, "Missing required argument(s).\n\n");
 		fputs("USAGE:\n  ", stderr);
 		fputs(cmd->cmd_help, stderr);
 		exit(1);
 	}
 
-	strcpy(saltbuf.key_ref_str, argv[1]);
-	if ((strlen(argv[1]) != (EXT4_KEY_DESCRIPTOR_SIZE * 2)) ||
-	    hex2byte(argv[1], (EXT4_KEY_DESCRIPTOR_SIZE * 2),
+	printf("arg %s\n", argv[optind]);
+	exit(0);
+
+	strcpy(saltbuf.key_ref_str, argv[optind]);
+	if ((strlen(argv[optind]) != (EXT4_KEY_DESCRIPTOR_SIZE * 2)) ||
+	    hex2byte(argv[optind], (EXT4_KEY_DESCRIPTOR_SIZE * 2),
 		     saltbuf.key_desc, EXT4_KEY_DESCRIPTOR_SIZE)) {
 		printf("Invalid key descriptor [%s]. Valid characters "
 		       "are 0-9 and a-f, lower case.  "
 		       "Length must be %d.\n",
-		       argv[1], (EXT4_KEY_DESCRIPTOR_SIZE * 2));
+		       argv[optind], (EXT4_KEY_DESCRIPTOR_SIZE * 2));
 			exit(1);
 	}
-	validate_paths(argc, argv, 2);
-	set_policy(&saltbuf, argc, argv, 2);
+	validate_paths(argc, argv, optind+1);
+	set_policy(&saltbuf, pad, argc, argv, optind+1);
 	exit(0);
 }
 

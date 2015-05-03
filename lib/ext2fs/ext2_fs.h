@@ -593,6 +593,7 @@ struct ext4_encryption_policy {
   char version;
   char contents_encryption_mode;
   char filenames_encryption_mode;
+  char flags;
   char master_key_descriptor[EXT4_KEY_DESCRIPTOR_SIZE];
 } __attribute__((__packed__));
 
