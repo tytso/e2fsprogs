@@ -99,6 +99,7 @@ static int usrquota, grpquota;
 static int rewrite_checksums;
 static int feature_64bit;
 static int fsck_requested;
+static char *undo_file;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -136,7 +137,8 @@ static void usage(void)
 		  "\t[-Q quota_options]\n"
 #endif
 		  "\t[-E extended-option[,...]] [-T last_check_time] "
-		  "[-U UUID]\n\t[ -I new_inode_size ] device\n"), program_name);
+		  "[-U UUID]\n\t[-I new_inode_size] [-z undo_file] device\n"),
+		program_name);
 	exit(1);
 }
 
@@ -466,6 +468,8 @@ static void convert_64bit(ext2_filsys fs, int direction)
 		fprintf(stderr, _("Please run `resize2fs %s %s"),
 			direction > 0 ? "-b" : "-s", fs->device_name);
 
+	if (undo_file)
+		fprintf(stderr, _(" -z \"%s\""), undo_file);
 	if (direction > 0)
 		fprintf(stderr, _("' to enable 64-bit mode.\n"));
 	else
@@ -1571,7 +1575,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	char *tmp;
 	struct group *gr;
 	struct passwd *pw;
-	char optstring[100] = "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:T:U:";
+	char optstring[100] = "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:T:U:z:";
 
 #ifdef CONFIG_QUOTA
 	strcat(optstring, "Q:");
@@ -1804,6 +1808,9 @@ static void parse_tune2fs_options(int argc, char **argv)
 			}
 			open_flag = EXT2_FLAG_RW;
 			I_flag = 1;
+			break;
+		case 'z':
+			undo_file = optarg;
 			break;
 		default:
 			usage();
@@ -2525,6 +2532,17 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	char *tdb_file;
 	char *dev_name, *tmp_name;
 
+	/* (re)open a specific undo file */
+	if (undo_file && undo_file[0] != 0) {
+		set_undo_io_backing_manager(*io_ptr);
+		*io_ptr = undo_io_manager;
+		set_undo_io_backup_file(undo_file);
+		printf(_("To undo the tune2fs operation please run "
+			 "the command\n    e2undo %s %s\n\n"),
+			 undo_file, name);
+		return retval;
+	}
+
 #if 0 /* FIXME!! */
 	/*
 	 * Configuration via a conf file would be
@@ -2720,7 +2738,7 @@ retry_open:
 	}
 	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
 
-	if (I_flag && !io_ptr_orig) {
+	if (I_flag) {
 		/*
 		 * Check the inode size is right so we can issue an
 		 * error message and bail before setting up the tdb
@@ -2744,11 +2762,15 @@ retry_open:
 			rc = 1;
 			goto closefs;
 		}
-
 		/*
 		 * If inode resize is requested use the
 		 * Undo I/O manager
 		 */
+		undo_file = "";
+	}
+
+	/* Set up an undo file */
+	if (undo_file && io_ptr_orig == NULL) {
 		io_ptr_orig = io_ptr;
 		retval = tune2fs_setup_tdb(device_name, &io_ptr);
 		if (retval) {

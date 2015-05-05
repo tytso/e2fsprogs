@@ -88,6 +88,10 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .B \-U
 .I UUID
 ]
+[
+.B \-z
+.I undo_file
+]
 device
 .SH DESCRIPTION
 .BI tune2fs
@@ -687,6 +691,16 @@ or
 .IR /dev/urandom ,
 .B tune2fs
 will automatically use a time-based UUID instead of a randomly-generated UUID.
+.TP
+.BI \-z " undo_file"
+Before overwriting a file system block, write the old contents of the block to
+an undo file.  This undo file can be used with e2undo(8) to restore the old
+contents of the file system should something go wrong.  If the empty string is
+passed as the undo_file argument, the undo file will be written to a file named
+tune2fs-\fIdevice\fR.e2undo in the directory specified via the
+\fIE2FSPROGS_UNDO_DIR\fR environment variable.
+
+WARNING: The undo file cannot be used to recover from a power or system crash.
 .SH BUGS
 We haven't found any bugs yet.  That doesn't mean there aren't any...
 .SH AUTHOR
