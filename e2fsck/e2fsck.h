@@ -390,6 +390,9 @@ struct e2fsck_struct {
 	 * Inodes to rebuild extent trees
 	 */
 	ext2fs_inode_bitmap inodes_to_rebuild;
+
+	/* Undo file */
+	char *undo_file;
 };
 
 /* Data structures to evaluate whether an extent tree needs rebuilding. */

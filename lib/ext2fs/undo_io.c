@@ -790,6 +790,7 @@ static errcode_t undo_close(io_channel channel)
 	if (!getenv("UNDO_IO_SIMULATE_UNFINISHED"))
 		data->hdr.state = ext2fs_cpu_to_le32(E2UNDO_STATE_FINISHED);
 	err = write_undo_indexes(data);
+	ext2fs_remove_exit_fn(undo_atexit, data);
 	if (data->real)
 		retval = io_channel_close(data->real);
 	if (data->tdb_file)
@@ -799,7 +800,6 @@ static errcode_t undo_close(io_channel channel)
 	ext2fs_free_mem(&data->keyb);
 	if (data->written_block_map)
 		ext2fs_free_generic_bitmap(data->written_block_map);
-	ext2fs_remove_exit_fn(undo_atexit, data);
 	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
 		ext2fs_free_mem(&channel->name);
