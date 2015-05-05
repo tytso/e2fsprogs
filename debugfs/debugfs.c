@@ -15,6 +15,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include <libgen.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -48,12 +49,88 @@ ext2_filsys	current_fs;
 quota_ctx_t	current_qctx;
 ext2_ino_t	root, cwd;
 
+static int debugfs_setup_tdb(const char *device_name, char *undo_file,
+			     io_manager *io_ptr)
+{
+	errcode_t retval = ENOMEM;
+	char *tdb_dir = NULL, *tdb_file = NULL;
+	char *dev_name, *tmp_name;
+	int free_tdb_dir = 0;
+
+	/* (re)open a specific undo file */
+	if (undo_file && undo_file[0] != 0) {
+		set_undo_io_backing_manager(*io_ptr);
+		*io_ptr = undo_io_manager;
+		retval = set_undo_io_backup_file(undo_file);
+		if (retval)
+			goto err;
+		printf("Overwriting existing filesystem; this can be undone "
+			"using the command:\n"
+			"    e2undo %s %s\n\n",
+			undo_file, device_name);
+		return 0;
+	}
+
+	/*
+	 * Configuration via a conf file would be
+	 * nice
+	 */
+	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
+
+	if (tdb_dir == NULL || !strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
+	    access(tdb_dir, W_OK)) {
+		if (free_tdb_dir)
+			free(tdb_dir);
+		return 0;
+	}
+
+	tmp_name = strdup(device_name);
+	if (!tmp_name)
+		goto errout;
+	dev_name = basename(tmp_name);
+	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(dev_name) + 7 + 1);
+	if (!tdb_file) {
+		free(tmp_name);
+		goto errout;
+	}
+	sprintf(tdb_file, "%s/debugfs-%s.e2undo", tdb_dir, dev_name);
+	free(tmp_name);
+
+	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
+		retval = errno;
+		goto errout;
+	}
+
+	set_undo_io_backing_manager(*io_ptr);
+	*io_ptr = undo_io_manager;
+	retval = set_undo_io_backup_file(tdb_file);
+	if (retval)
+		goto errout;
+	printf("Overwriting existing filesystem; this can be undone "
+		"using the command:\n"
+		"    e2undo %s %s\n\n", tdb_file, device_name);
+
+	if (free_tdb_dir)
+		free(tdb_dir);
+	free(tdb_file);
+	return 0;
+
+errout:
+	if (free_tdb_dir)
+		free(tdb_dir);
+	free(tdb_file);
+err:
+	com_err("debugfs", retval, "while trying to setup undo file\n");
+	return retval;
+}
+
 static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 			    blk64_t blocksize, int catastrophic,
-			    char *data_filename)
+			    char *data_filename, char *undo_file)
 {
 	int	retval;
 	io_channel data_io = 0;
+	io_manager io_ptr = unix_io_manager;
 
 	if (superblock != 0 && blocksize == 0) {
 		com_err(device, 0, "if you specify the superblock, you must also specify the block size");
@@ -84,8 +161,14 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 	if (catastrophic)
 		open_flags |= EXT2_FLAG_SKIP_MMP;
 
+	if (undo_file) {
+		retval = debugfs_setup_tdb(device, undo_file, &io_ptr);
+		if (retval)
+			exit(1);
+	}
+
 	retval = ext2fs_open(device, open_flags, superblock, blocksize,
-			     unix_io_manager, &current_fs);
+			     io_ptr, &current_fs);
 	if (retval) {
 		com_err(device, retval, "while opening filesystem");
 		if (retval == EXT2_ET_BAD_MAGIC)
@@ -136,9 +219,10 @@ void do_open_filesys(int argc, char **argv)
 	blk64_t	blocksize = 0;
 	int	open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS; 
 	char	*data_filename = 0;
+	char	*undo_file = NULL;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "iwfecb:s:d:D")) != EOF) {
+	while ((c = getopt(argc, argv, "iwfecb:s:d:Dz:")) != EOF) {
 		switch (c) {
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
@@ -177,6 +261,9 @@ void do_open_filesys(int argc, char **argv)
 			if (err)
 				return;
 			break;
+		case 'z':
+			undo_file = optarg;
+			break;
 		default:
 			goto print_usage;
 		}
@@ -188,7 +275,7 @@ void do_open_filesys(int argc, char **argv)
 		return;
 	open_filesystem(argv[optind], open_flags,
 			superblock, blocksize, catastrophic,
-			data_filename);
+			data_filename, undo_file);
 	return;
 
 print_usage:
@@ -2219,7 +2306,7 @@ int main(int argc, char **argv)
 		"Usage: %s [-b blocksize] [-s superblock] [-f cmd_file] "
 		"[-R request] [-V] ["
 #ifndef READ_ONLY
-		"[-w] "
+		"[-w] [-z undo_file] "
 #endif
 		"[-c] device]";
 	int		c;
@@ -2234,7 +2321,8 @@ int main(int argc, char **argv)
 #ifdef READ_ONLY
 	const char	*opt_string = "nicR:f:b:s:Vd:D";
 #else
-	const char	*opt_string = "niwcR:f:b:s:Vd:D";
+	const char	*opt_string = "niwcR:f:b:s:Vd:Dz:";
+	char		*undo_file = NULL;
 #endif
 
 	if (debug_prog_name == 0)
@@ -2291,6 +2379,9 @@ int main(int argc, char **argv)
 			fprintf(stderr, "\tUsing %s\n",
 				error_message(EXT2_ET_BASE));
 			exit(0);
+		case 'z':
+			undo_file = optarg;
+			break;
 		default:
 			com_err(argv[0], 0, usage, debug_prog_name);
 			return 1;
@@ -2299,7 +2390,7 @@ int main(int argc, char **argv)
 	if (optind < argc)
 		open_filesystem(argv[optind], open_flags,
 				superblock, blocksize, catastrophic,
-				data_filename);
+				data_filename, undo_file);
 
 	sci_idx = ss_create_invocation(debug_prog_name, "0.0", (char *) NULL,
 				       &debug_cmds, &retval);

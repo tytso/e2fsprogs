@@ -31,6 +31,10 @@ request
 data_source_device
 ]
 [
+.B \-z
+.I undo_file
+]
+[
 device
 ]
 .SH DESCRIPTION
@@ -130,6 +134,16 @@ and then exit.
 print the version number of
 .B debugfs
 and exit.
+.TP
+.BI \-z " undo_file"
+Before overwriting a file system block, write the old contents of the block to
+an undo file.  This undo file can be used with e2undo(8) to restore the old
+contents of the file system should something go wrong.  If the empty string is
+passed as the undo_file argument, the undo file will be written to a file named
+resize2fs-\fIdevice\fR.e2undo in the directory specified via the
+\fIE2FSPROGS_UNDO_DIR\fR environment variable.
+
+WARNING: The undo file cannot be used to recover from a power or system crash.
 .SH SPECIFYING FILES
 Many
 .B debugfs
@@ -535,7 +549,7 @@ to those inodes.  The
 flag will enable checking the file type information in the directory
 entry to make sure it matches the inode's type.
 .TP
-.BI open " [-weficD] [-b blocksize] [-s superblock] device"
+.BI open " [-weficD] [-b blocksize] [-s superblock] [-z undo_file] device"
 Open a filesystem for editing.  The
 .I -f
 flag forces the filesystem to be opened even if there are some unknown
