@@ -110,6 +110,7 @@ char *journal_device;
 static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 char **fs_types;
 const char *root_dir;  /* Copy files from the specified directory */
+static char *undo_file;
 
 static profile_t	profile;
 
@@ -129,7 +130,8 @@ static void usage(void)
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
 	"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior]"
-	"[-jnqvDFKSV] device [blocks-count]\n"),
+	"[-z undo_file]\n"
+	"\t[-jnqvDFKSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -1552,7 +1554,7 @@ profile_error:
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:ce:g:i:jl:m:no:qr:s:t:d:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:V")) != EOF) {
+		    "b:ce:g:i:jl:m:no:qr:s:t:d:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = parse_num_blocks2(optarg, -1);
@@ -1774,6 +1776,9 @@ profile_error:
 		case 'V':
 			/* Print version number and exit */
 			show_version_only++;
+			break;
+		case 'z':
+			undo_file = optarg;
 			break;
 		default:
 			usage();
@@ -2493,6 +2498,19 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	char *dev_name, *tmp_name;
 	int free_tdb_dir = 0;
 
+	/* (re)open a specific undo file */
+	if (undo_file && undo_file[0] != 0) {
+		set_undo_io_backing_manager(*io_ptr);
+		*io_ptr = undo_io_manager;
+		retval = set_undo_io_backup_file(undo_file);
+		if (retval)
+			goto err;
+		printf(_("Overwriting existing filesystem; this can be undone "
+			 "using the command:\n"
+			 "    e2undo %s %s\n\n"), undo_file, name);
+		return 0;
+	}
+
 	/*
 	 * Configuration via a conf file would be
 	 * nice
@@ -2547,6 +2565,7 @@ errout:
 	if (free_tdb_dir)
 		free(tdb_dir);
 	free(tdb_file);
+err:
 	com_err(program_name, retval, "%s",
 		_("while trying to setup undo file\n"));
 	return retval;
@@ -2718,7 +2737,7 @@ int main (int argc, char *argv[])
 #endif
 		io_ptr = unix_io_manager;
 
-	if (should_do_undo(device_name)) {
+	if (undo_file != NULL || should_do_undo(device_name)) {
 		retval = mke2fs_setup_tdb(device_name, &io_ptr);
 		if (retval)
 			exit(1);

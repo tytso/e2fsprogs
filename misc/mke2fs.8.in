@@ -117,6 +117,10 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 .B \-e
 .I errors-behavior
 ]
+[
+.B \-z
+.I undo_file
+]
 .I device
 [
 .I fs-size
@@ -738,6 +742,17 @@ Verbose execution.
 Print the version number of
 .B mke2fs
 and exit.
+.TP
+.BI \-z " undo_file"
+Before overwriting a file system block, write the old contents of the block to
+an undo file.  This undo file can be used with e2undo(8) to restore the old
+contents of the file system should something go wrong.  If the empty string is
+passed as the undo_file argument, the undo file will be written to a file named
+mke2fs-\fIdevice\fR.e2undo in the directory specified via the
+\fIE2FSPROGS_UNDO_DIR\fR environment variable or the \fIundo_dir\fR directive
+in the configuration file.
+
+WARNING: The undo file cannot be used to recover from a power or system crash.
 .SH ENVIRONMENT
 .TP
 .BI MKE2FS_SYNC
