@@ -524,4 +524,10 @@ ec	EXT2_ET_EA_BAD_VALUE_OFFSET,
 ec	EXT2_ET_JOURNAL_FLAGS_WRONG,
 	"Journal flags inconsistent"
 
+ec	EXT2_ET_UNDO_FILE_CORRUPT,
+	"Undo file corrupt"
+
+ec	EXT2_ET_UNDO_FILE_WRONG,
+	"Wrong undo file for this filesystem"
+
 	end
