@@ -4142,3 +4142,13 @@ int tdb_reopen_all(int parent_longlived)
 
 	return 0;
 }
+
+/**
+ * Flush a database file from the page cache.
+ **/
+int tdb_flush(struct tdb_context *tdb)
+{
+	if (tdb->fd != -1)
+		return fsync(tdb->fd);
+	return 0;
+}

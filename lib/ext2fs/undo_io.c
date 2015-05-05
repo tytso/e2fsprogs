@@ -37,6 +37,7 @@
 #if HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
+#include <limits.h>
 
 #include "tdb.h"
 
@@ -354,8 +355,12 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 		data->real = 0;
 	}
 
+	if (data->real)
+		io->flags = (io->flags & ~CHANNEL_FLAGS_DISCARD_ZEROES) |
+			    (data->real->flags & CHANNEL_FLAGS_DISCARD_ZEROES);
+
 	/* setup the tdb file */
-	data->tdb = tdb_open(tdb_file, 0, TDB_CLEAR_IF_FIRST,
+	data->tdb = tdb_open(tdb_file, 0, TDB_CLEAR_IF_FIRST | TDB_NOLOCK | TDB_NOSYNC,
 			     O_RDWR | O_CREAT | O_TRUNC | O_EXCL, 0600);
 	if (!data->tdb) {
 		retval = errno;
@@ -399,8 +404,10 @@ static errcode_t undo_close(io_channel channel)
 		return retval;
 	if (data->real)
 		retval = io_channel_close(data->real);
-	if (data->tdb)
+	if (data->tdb) {
+		tdb_flush(data->tdb);
 		tdb_close(data->tdb);
+	}
 	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
 		ext2fs_free_mem(&channel->name);
@@ -510,6 +517,77 @@ static errcode_t undo_write_byte(io_channel channel, unsigned long offset,
 	return retval;
 }
 
+static errcode_t undo_discard(io_channel channel, unsigned long long block,
+			      unsigned long long count)
+{
+	struct undo_private_data *data;
+	errcode_t	retval = 0;
+	int icount;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct undo_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (count > INT_MAX)
+		return EXT2_ET_UNIMPLEMENTED;
+	icount = count;
+
+	/*
+	 * First write the existing content into database
+	 */
+	retval = undo_write_tdb(channel, block, icount);
+	if (retval)
+		return retval;
+	if (data->real)
+		retval = io_channel_discard(data->real, block, count);
+
+	return retval;
+}
+
+static errcode_t undo_zeroout(io_channel channel, unsigned long long block,
+			      unsigned long long count)
+{
+	struct undo_private_data *data;
+	errcode_t	retval = 0;
+	int icount;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct undo_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (count > INT_MAX)
+		return EXT2_ET_UNIMPLEMENTED;
+	icount = count;
+
+	/*
+	 * First write the existing content into database
+	 */
+	retval = undo_write_tdb(channel, block, icount);
+	if (retval)
+		return retval;
+	if (data->real)
+		retval = io_channel_zeroout(data->real, block, count);
+
+	return retval;
+}
+
+static errcode_t undo_cache_readahead(io_channel channel,
+				      unsigned long long block,
+				      unsigned long long count)
+{
+	struct undo_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct undo_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (data->real)
+		retval = io_channel_cache_readahead(data->real, block, count);
+
+	return retval;
+}
+
 /*
  * Flush data buffers to disk.
  */
@@ -522,6 +600,8 @@ static errcode_t undo_flush(io_channel channel)
 	data = (struct undo_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
+	if (data->tdb)
+		tdb_flush(data->tdb);
 	if (data->real)
 		retval = io_channel_flush(data->real);
 
@@ -601,6 +681,9 @@ static struct struct_io_manager struct_undo_manager = {
 	.get_stats	= undo_get_stats,
 	.read_blk64	= undo_read_blk64,
 	.write_blk64	= undo_write_blk64,
+	.discard	= undo_discard,
+	.zeroout	= undo_zeroout,
+	.cache_readahead	= undo_cache_readahead,
 };
 
 io_manager undo_io_manager = &struct_undo_manager;
