@@ -265,7 +265,7 @@ static errcode_t undo_write_tdb(io_channel channel,
 		       tdb_data.dptr,
 		       tdb_data.dsize);
 #endif
-		if (!data->tdb_written) {
+		if (data->tdb_written != 1) {
 			data->tdb_written = 1;
 			/* Write the blocksize to tdb file */
 			retval = write_block_size(data->tdb,
@@ -430,9 +430,8 @@ static errcode_t undo_set_blksize(io_channel channel, int blksize)
 	/*
 	 * Set the block size used for tdb
 	 */
-	if (!data->tdb_data_size) {
+	if (!data->tdb_data_size || !data->tdb_written)
 		data->tdb_data_size = blksize;
-	}
 	channel->block_size = blksize;
 	return retval;
 }
@@ -628,6 +627,7 @@ static errcode_t undo_set_option(io_channel channel, const char *option,
 		if (*end)
 			return EXT2_ET_INVALID_ARGUMENT;
 		if (!data->tdb_data_size || !data->tdb_written) {
+			data->tdb_written = -1;
 			data->tdb_data_size = tmp;
 		}
 		return 0;
