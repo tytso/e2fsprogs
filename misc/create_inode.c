@@ -37,6 +37,32 @@
 #define S_BLKSIZE 512
 #endif
 
+static int ext2_file_type(unsigned int mode)
+{
+	if (LINUX_S_ISREG(mode))
+		return EXT2_FT_REG_FILE;
+
+	if (LINUX_S_ISDIR(mode))
+		return EXT2_FT_DIR;
+
+	if (LINUX_S_ISCHR(mode))
+		return EXT2_FT_CHRDEV;
+
+	if (LINUX_S_ISBLK(mode))
+		return EXT2_FT_BLKDEV;
+
+	if (LINUX_S_ISLNK(mode))
+		return EXT2_FT_SYMLINK;
+
+	if (LINUX_S_ISFIFO(mode))
+		return EXT2_FT_FIFO;
+
+	if (LINUX_S_ISSOCK(mode))
+		return EXT2_FT_SOCK;
+
+	return 0;
+}
+
 /* Link an inode number to a directory */
 static errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 			  ext2_ino_t ino, const char *name)
@@ -50,14 +76,16 @@ static errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 		return retval;
 	}
 
-	retval = ext2fs_link(fs, parent_ino, name, ino, inode.i_flags);
+	retval = ext2fs_link(fs, parent_ino, name, ino,
+			     ext2_file_type(inode.i_mode));
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		retval = ext2fs_expand_dir(fs, parent_ino);
 		if (retval) {
 			com_err(__func__, retval, "while expanding directory");
 			return retval;
 		}
-		retval = ext2fs_link(fs, parent_ino, name, ino, inode.i_flags);
+		retval = ext2fs_link(fs, parent_ino, name, ino,
+				     ext2_file_type(inode.i_mode));
 	}
 	if (retval) {
 		com_err(__func__, retval, "while linking %s", name);
