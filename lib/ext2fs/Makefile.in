@@ -57,6 +57,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	alloc_sb.o \
 	alloc_stats.o \
 	alloc_tables.o \
+	atexit.o \
 	badblocks.o \
 	bb_inode.o \
 	bitmaps.o \
@@ -131,6 +132,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/alloc_sb.c \
 	$(srcdir)/alloc_stats.c \
 	$(srcdir)/alloc_tables.c \
+	$(srcdir)/atexit.c \
 	$(srcdir)/badblocks.c \
 	$(srcdir)/bb_compat.c \
 	$(srcdir)/bb_inode.c \
@@ -634,6 +636,12 @@ alloc_stats.o: $(srcdir)/alloc_stats.c $(top_builddir)/lib/config.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h
 alloc_tables.o: $(srcdir)/alloc_tables.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h $(srcdir)/ext2fsP.h
+atexit.o: $(srcdir)/atexit.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \

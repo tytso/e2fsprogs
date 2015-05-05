@@ -169,3 +169,8 @@ extern int ext2fs_mem_is_zero(const char *mem, size_t len);
 extern int ext2fs_file_block_offset_too_big(ext2_filsys fs,
 					    struct ext2_inode *inode,
 					    blk64_t offset);
+
+/* atexit support */
+typedef void (*ext2_exit_fn)(void *);
+errcode_t ext2fs_add_exit_fn(ext2_exit_fn fn, void *data);
+errcode_t ext2fs_remove_exit_fn(ext2_exit_fn fn, void *data);

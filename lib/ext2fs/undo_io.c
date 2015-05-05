@@ -41,6 +41,7 @@
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "ext2fsP.h"
 
 #ifdef __GNUC__
 #define ATTR(x) __attribute__(x)
@@ -135,7 +136,7 @@ struct undo_private_data {
 
 	ext2fs_block_bitmap written_block_map;
 	struct struct_ext2_filsys fake_fs;
-
+	char *tdb_file;
 	struct undo_header hdr;
 };
 #define KEYS_PER_BLOCK(d) (((d)->tdb_data_size / sizeof(struct undo_key)) - 1)
@@ -662,6 +663,17 @@ out:
 	return retval;
 }
 
+static void undo_atexit(void *p)
+{
+	struct undo_private_data *data = p;
+	errcode_t err;
+
+	err = write_undo_indexes(data);
+	io_channel_close(data->undo_file);
+
+	com_err(data->tdb_file, err, "while force-closing undo file");
+}
+
 static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 {
 	io_channel	io = NULL;
@@ -703,11 +715,16 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 		if (retval)
 			goto cleanup;
 
-		undo_fd = ext2fs_open_file(tdb_file, O_RDWR | O_CREAT, 0600);
+		data->tdb_file = strdup(tdb_file);
+		if (data->tdb_file == NULL)
+			goto cleanup;
+		undo_fd = ext2fs_open_file(data->tdb_file, O_RDWR | O_CREAT,
+					   0600);
 		if (undo_fd < 0)
 			goto cleanup;
 
-		retval = undo_io_backing_manager->open(tdb_file, IO_FLAG_RW,
+		retval = undo_io_backing_manager->open(data->tdb_file,
+						       IO_FLAG_RW,
 						       &data->undo_file);
 		if (retval)
 			goto cleanup;
@@ -732,6 +749,9 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 		if (retval)
 			goto cleanup;
 	}
+	retval = ext2fs_add_exit_fn(undo_atexit, data);
+	if (retval)
+		goto cleanup;
 
 	*channel = io;
 	if (undo_fd >= 0)
@@ -739,10 +759,13 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 	return retval;
 
 cleanup:
+	ext2fs_remove_exit_fn(undo_atexit, data);
 	if (undo_fd >= 0)
 		close(undo_fd);
 	if (data && data->undo_file)
 		io_channel_close(data->undo_file);
+	if (data && data->tdb_file)
+		free(data->tdb_file);
 	if (data && data->real)
 		io_channel_close(data->real);
 	if (data)
@@ -769,11 +792,14 @@ static errcode_t undo_close(io_channel channel)
 	err = write_undo_indexes(data);
 	if (data->real)
 		retval = io_channel_close(data->real);
+	if (data->tdb_file)
+		free(data->tdb_file);
 	if (data->undo_file)
 		io_channel_close(data->undo_file);
 	ext2fs_free_mem(&data->keyb);
 	if (data->written_block_map)
 		ext2fs_free_generic_bitmap(data->written_block_map);
+	ext2fs_remove_exit_fn(undo_atexit, data);
 	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
 		ext2fs_free_mem(&channel->name);
