@@ -3141,7 +3141,7 @@ no_journal:
 				     EXT2_ROOT_INO);
 		if (retval) {
 			com_err(program_name, retval, "%s",
-				_("\nError while populating file system\n"));
+				_("while populating file system"));
 			exit(1);
 		} else if (!quiet)
 			printf("%s", _("done\n"));
