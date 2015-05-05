@@ -29,6 +29,7 @@ extern int optind;
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <libgen.h>
 
 #include "e2p/e2p.h"
 
@@ -42,7 +43,8 @@ static char *device_name, *io_options;
 static void usage (char *prog)
 {
 	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] "
-			   "[-p] device [-b|-s|new_size]\n\n"), prog);
+			   "[-p] device [-b|-s|new_size] [-z undo_file]\n\n"),
+		 prog);
 
 	exit (1);
 }
@@ -162,6 +164,82 @@ static void bigalloc_check(ext2_filsys fs, int force)
 	}
 }
 
+static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
+			       io_manager *io_ptr)
+{
+	errcode_t retval = ENOMEM;
+	char *tdb_dir = NULL, *tdb_file = NULL;
+	char *dev_name, *tmp_name;
+	int free_tdb_dir = 0;
+
+	/* (re)open a specific undo file */
+	if (undo_file && undo_file[0] != 0) {
+		set_undo_io_backing_manager(*io_ptr);
+		*io_ptr = undo_io_manager;
+		retval = set_undo_io_backup_file(undo_file);
+		if (retval)
+			goto err;
+		printf(_("Overwriting existing filesystem; this can be undone "
+			 "using the command:\n"
+			 "    e2undo %s %s\n\n"),
+			undo_file, device_name);
+		return 0;
+	}
+
+	/*
+	 * Configuration via a conf file would be
+	 * nice
+	 */
+	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
+
+	if (tdb_dir == NULL || !strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
+	    access(tdb_dir, W_OK)) {
+		if (free_tdb_dir)
+			free(tdb_dir);
+		return 0;
+	}
+
+	tmp_name = strdup(device_name);
+	if (!tmp_name)
+		goto errout;
+	dev_name = basename(tmp_name);
+	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(dev_name) + 7 + 1);
+	if (!tdb_file) {
+		free(tmp_name);
+		goto errout;
+	}
+	sprintf(tdb_file, "%s/resize2fs-%s.e2undo", tdb_dir, dev_name);
+	free(tmp_name);
+
+	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
+		retval = errno;
+		goto errout;
+	}
+
+	set_undo_io_backing_manager(*io_ptr);
+	*io_ptr = undo_io_manager;
+	retval = set_undo_io_backup_file(tdb_file);
+	if (retval)
+		goto errout;
+	printf(_("Overwriting existing filesystem; this can be undone "
+		 "using the command:\n"
+		 "    e2undo %s %s\n\n"), tdb_file, device_name);
+
+	if (free_tdb_dir)
+		free(tdb_dir);
+	free(tdb_file);
+	return 0;
+
+errout:
+	if (free_tdb_dir)
+		free(tdb_dir);
+	free(tdb_file);
+err:
+	com_err(program_name, retval, "%s",
+		_("while trying to setup undo file\n"));
+	return retval;
+}
+
 int main (int argc, char ** argv)
 {
 	errcode_t	retval;
@@ -186,7 +264,7 @@ int main (int argc, char ** argv)
 	unsigned int	blocksize;
 	long		sysval;
 	int		len, mount_flags;
-	char		*mtpt;
+	char		*mtpt, *undo_file = NULL;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -203,7 +281,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 
-	while ((c = getopt(argc, argv, "d:fFhMPpS:bs")) != EOF) {
+	while ((c = getopt(argc, argv, "d:fFhMPpS:bsz:")) != EOF) {
 		switch (c) {
 		case 'h':
 			usage(program_name);
@@ -234,6 +312,9 @@ int main (int argc, char ** argv)
 			break;
 		case 's':
 			flags |= RESIZE_DISABLE_64BIT;
+			break;
+		case 'z':
+			undo_file = optarg;
 			break;
 		default:
 			usage(program_name);
@@ -318,7 +399,11 @@ int main (int argc, char ** argv)
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
 
 	io_flags |= EXT2_FLAG_64BITS;
-
+	if (undo_file) {
+		retval = resize2fs_setup_tdb(device_name, undo_file, &io_ptr);
+		if (retval)
+			exit(1);
+	}
 	retval = ext2fs_open2(device_name, io_options, io_flags,
 			      0, 0, io_ptr, &fs);
 	if (retval) {

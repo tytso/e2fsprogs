@@ -18,6 +18,10 @@ resize2fs \- ext2/ext3/ext4 file system resizer
 .B \-S
 .I RAID-stride
 ]
+[
+.B \-z
+.I undo_file
+]
 .I device
 [
 .I size
@@ -149,6 +153,16 @@ The
 program will heuristically determine the RAID stride that was specified
 when the filesystem was created.  This option allows the user to
 explicitly specify a RAID stride setting to be used by resize2fs instead.
+.TP
+.BI \-z " undo_file"
+Before overwriting a file system block, write the old contents of the block to
+an undo file.  This undo file can be used with e2undo(8) to restore the old
+contents of the file system should something go wrong.  If the empty string is
+passed as the undo_file argument, the undo file will be written to a file named
+resize2fs-\fIdevice\fR.e2undo in the directory specified via the
+\fIE2FSPROGS_UNDO_DIR\fR environment variable.
+
+WARNING: The undo file cannot be used to recover from a power or system crash.
 .SH KNOWN BUGS
 The minimum size of the filesystem as estimated by resize2fs may be
 incorrect, especially for filesystems with 1k and 2k blocksizes.
