@@ -643,6 +643,8 @@ CYGWIN_CMT
 LINUX_CMT
 UNI_DIFF_OPTS
 SEM_INIT_LIB
+FUSE_CMT
+FUSE_LIB
 MAGIC_LIB
 SOCKET_LIB
 SIZEOF_OFF_T
@@ -890,6 +892,7 @@ with_libpth_prefix
 with_libiconv_prefix
 with_included_gettext
 with_libintl_prefix
+enable_fuse2fs
 with_multiarch
 '
       ac_precious_vars='build_alias
@@ -1549,6 +1552,7 @@ Optional Features:
                           specify multithreading API
   --disable-threads       build without multithread safety
   --disable-rpath         do not hardcode runtime library paths
+  --disable-fuse2fs	do not build fuse2fs
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -12390,7 +12394,7 @@ fi
 done
 
 fi
-for ac_header in  	dirent.h 	errno.h 	execinfo.h 	getopt.h 	malloc.h 	mntent.h 	paths.h 	semaphore.h 	setjmp.h 	signal.h 	stdarg.h 	stdint.h 	stdlib.h 	termios.h 	termio.h 	unistd.h 	utime.h 	attr/xattr.h 	linux/falloc.h 	linux/fd.h 	linux/major.h 	linux/loop.h 	net/if_dl.h 	netinet/in.h 	sys/disklabel.h 	sys/disk.h 	sys/file.h 	sys/ioctl.h 	sys/mkdev.h 	sys/mman.h 	sys/mount.h 	sys/prctl.h 	sys/resource.h 	sys/select.h 	sys/socket.h 	sys/sockio.h 	sys/stat.h 	sys/syscall.h 	sys/sysctl.h 	sys/sysmacros.h 	sys/time.h 	sys/types.h 	sys/un.h 	sys/wait.h
+for ac_header in  	dirent.h 	errno.h 	execinfo.h 	getopt.h 	malloc.h 	mntent.h 	paths.h 	semaphore.h 	setjmp.h 	signal.h 	stdarg.h 	stdint.h 	stdlib.h 	termios.h 	termio.h 	unistd.h 	utime.h 	attr/xattr.h 	linux/falloc.h 	linux/fd.h 	linux/major.h 	linux/loop.h 	net/if_dl.h 	netinet/in.h 	sys/acl.h 	sys/disklabel.h 	sys/disk.h 	sys/file.h 	sys/ioctl.h 	sys/mkdev.h 	sys/mman.h 	sys/mount.h 	sys/prctl.h 	sys/resource.h 	sys/select.h 	sys/socket.h 	sys/sockio.h 	sys/stat.h 	sys/syscall.h 	sys/sysctl.h 	sys/sysmacros.h 	sys/time.h 	sys/types.h 	sys/un.h 	sys/wait.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -13166,6 +13170,273 @@ fi
 if test "$ac_cv_lib_dl_dlopen" = yes ; then
    MAGIC_LIB=$DLOPEN_LIB
 fi
+
+FUSE_CMT=
+FUSE_LIB=
+# Check whether --enable-fuse2fs was given.
+if test "${enable_fuse2fs+set}" = set; then :
+  enableval=$enable_fuse2fs; if test "$enableval" = "no"
+then
+	FUSE_CMT="#"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling fuse2fs" >&5
+$as_echo "Disabling fuse2fs" >&6; }
+else
+	for ac_header in pthread.h fuse.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29
+"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot find fuse2fs headers.
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+done
+
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#define FUSE_USE_VERSION 29
+#ifdef __linux__
+#include <linux/fs.h>
+#include <linux/falloc.h>
+#include <linux/xattr.h>
+#endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot find fuse2fs Linux headers.
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -losxfuse" >&5
+$as_echo_n "checking for fuse_main in -losxfuse... " >&6; }
+if ${ac_cv_lib_osxfuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-losxfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_osxfuse_fuse_main=yes
+else
+  ac_cv_lib_osxfuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_osxfuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_osxfuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_osxfuse_fuse_main" = xyes; then :
+  FUSE_LIB=-losxfuse
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -lfuse" >&5
+$as_echo_n "checking for fuse_main in -lfuse... " >&6; }
+if ${ac_cv_lib_fuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fuse_fuse_main=yes
+else
+  ac_cv_lib_fuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_fuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_fuse_fuse_main" = xyes; then :
+  FUSE_LIB=-lfuse
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Cannot find fuse library.
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+
+fi
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling fuse2fs" >&5
+$as_echo "Enabling fuse2fs" >&6; }
+fi
+
+else
+  for ac_header in pthread.h fuse.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29
+#ifdef __linux__
+# include <linux/fs.h>
+# include <linux/falloc.h>
+# include <linux/xattr.h>
+#endif
+"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+  FUSE_CMT="#"
+fi
+
+done
+
+if test -z "$FUSE_CMT"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -losxfuse" >&5
+$as_echo_n "checking for fuse_main in -losxfuse... " >&6; }
+if ${ac_cv_lib_osxfuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-losxfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_osxfuse_fuse_main=yes
+else
+  ac_cv_lib_osxfuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_osxfuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_osxfuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_osxfuse_fuse_main" = xyes; then :
+  FUSE_LIB=-losxfuse
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fuse_main in -lfuse" >&5
+$as_echo_n "checking for fuse_main in -lfuse... " >&6; }
+if ${ac_cv_lib_fuse_fuse_main+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lfuse  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fuse_main ();
+int
+main ()
+{
+return fuse_main ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_fuse_fuse_main=yes
+else
+  ac_cv_lib_fuse_fuse_main=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_fuse_fuse_main" >&5
+$as_echo "$ac_cv_lib_fuse_fuse_main" >&6; }
+if test "x$ac_cv_lib_fuse_fuse_main" = xyes; then :
+  FUSE_LIB=-lfuse
+else
+  FUSE_CMT="#"
+fi
+
+fi
+
+fi
+if test -z "$FUSE_CMT"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling fuse2fs by default." >&5
+$as_echo "Enabling fuse2fs by default." >&6; }
+fi
+
+fi
+
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for optreset" >&5
 $as_echo_n "checking for optreset... " >&6; }

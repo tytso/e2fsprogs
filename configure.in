@@ -918,6 +918,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	linux/loop.h
 	net/if_dl.h
 	netinet/in.h
+	sys/acl.h
 	sys/disklabel.h
 	sys/disk.h
 	sys/file.h
@@ -1146,6 +1147,59 @@ if test "$ac_cv_lib_dl_dlopen" = yes ; then
    MAGIC_LIB=$DLOPEN_LIB
 fi
 AC_SUBST(MAGIC_LIB)
+dnl
+dnl Check to see if the FUSE library is -lfuse or -losxfuse
+dnl
+FUSE_CMT=
+FUSE_LIB=
+dnl osxfuse.dylib supersedes fuselib.dylib
+AC_ARG_ENABLE([fuse2fs],
+[  --disable-fuse2fs	do not build fuse2fs],
+if test "$enableval" = "no"
+then
+	FUSE_CMT="#"
+	AC_MSG_RESULT([Disabling fuse2fs])
+else
+	AC_CHECK_HEADERS([pthread.h fuse.h], [],
+[AC_MSG_FAILURE([Cannot find fuse2fs headers.])],
+[#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29])
+
+	AC_PREPROC_IFELSE(
+[AC_LANG_PROGRAM([[#define FUSE_USE_VERSION 29
+#ifdef __linux__
+#include <linux/fs.h>
+#include <linux/falloc.h>
+#include <linux/xattr.h>
+#endif
+]], [])], [], [AC_MSG_FAILURE([Cannot find fuse2fs Linux headers.])])
+
+	AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
+		[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse],
+			      [AC_MSG_FAILURE([Cannot find fuse library.])])])
+	AC_MSG_RESULT([Enabling fuse2fs])
+fi
+,
+AC_CHECK_HEADERS([pthread.h fuse.h], [], [FUSE_CMT="#"],
+[#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29
+#ifdef __linux__
+# include <linux/fs.h>
+# include <linux/falloc.h>
+# include <linux/xattr.h>
+#endif])
+if test -z "$FUSE_CMT"
+then
+	AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
+[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse], [FUSE_CMT="#"])])
+fi
+if test -z "$FUSE_CMT"
+then
+	AC_MSG_RESULT([Enabling fuse2fs by default.])
+fi
+)
+AC_SUBST(FUSE_LIB)
+AC_SUBST(FUSE_CMT)
 dnl
 dnl See if optreset exists
 dnl
