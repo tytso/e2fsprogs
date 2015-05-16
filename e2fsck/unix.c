@@ -682,6 +682,10 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 			}
 			ctx->ext_attr_ver = ea_ver;
 		} else if (strcmp(token, "readahead_kb") == 0) {
+			if (!arg) {
+				extended_usage++;
+				continue;
+			}
 			reada_kb = strtoull(arg, &p, 0);
 			if (*p) {
 				fprintf(stderr, "%s",

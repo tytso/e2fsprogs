@@ -27,6 +27,8 @@ static errcode_t e2fsck_rebuild_extents(e2fsck_t ctx, ext2_ino_t ino);
 /* Schedule an inode to have its extent tree rebuilt during pass 1E. */
 errcode_t e2fsck_rebuild_extents_later(e2fsck_t ctx, ext2_ino_t ino)
 {
+	errcode_t retval = 0;
+
 	if (!EXT2_HAS_INCOMPAT_FEATURE(ctx->fs->super,
 				       EXT3_FEATURE_INCOMPAT_EXTENTS) ||
 	    (ctx->options & E2F_OPT_NO) ||
@@ -37,13 +39,15 @@ errcode_t e2fsck_rebuild_extents_later(e2fsck_t ctx, ext2_ino_t ino)
 		return e2fsck_rebuild_extents(ctx, ino);
 
 	if (!ctx->inodes_to_rebuild)
-		e2fsck_allocate_inode_bitmap(ctx->fs,
+		retval = e2fsck_allocate_inode_bitmap(ctx->fs,
 					     _("extent rebuild inode map"),
 					     EXT2FS_BMAP64_RBTREE,
 					     "inodes_to_rebuild",
 					     &ctx->inodes_to_rebuild);
-	if (ctx->inodes_to_rebuild)
-		ext2fs_mark_inode_bitmap2(ctx->inodes_to_rebuild, ino);
+	if (retval)
+		return retval;
+
+	ext2fs_mark_inode_bitmap2(ctx->inodes_to_rebuild, ino);
 	return 0;
 }
 
@@ -225,6 +229,8 @@ static errcode_t rebuild_extent_tree(e2fsck_t ctx, struct extent_list *list,
 	/* Collect lblk->pblk mappings */
 	if (inode.i_flags & EXT4_EXTENTS_FL) {
 		retval = load_extents(ctx, list);
+		if (retval)
+			goto err;
 		goto extents_loaded;
 	}
 

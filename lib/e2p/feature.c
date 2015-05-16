@@ -187,7 +187,7 @@ int e2p_string2feature(char *string, int *compat_type, unsigned int *mask)
 	if (string[9] == 0)
 		return 1;
 	num = strtol(string+9, &eptr, 10);
-	if (num > 32 || num < 0)
+	if (num > 31 || num < 0)
 		return 1;
 	if (*eptr)
 		return 1;
@@ -261,7 +261,7 @@ int e2p_jrnl_string2feature(char *string, int *compat_type, unsigned int *mask)
 	if (string[9] == 0)
 		return 1;
 	num = strtol(string+9, &eptr, 10);
-	if (num > 32 || num < 0)
+	if (num > 31 || num < 0)
 		return 1;
 	if (*eptr)
 		return 1;

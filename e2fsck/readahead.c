@@ -242,7 +242,7 @@ unsigned long long e2fsck_guess_readahead(ext2_filsys fs)
 	 * worth of inode table blocks seems to yield the largest reductions
 	 * in e2fsck runtime.
 	 */
-	guess = 2 * fs->blocksize * fs->inode_blocks_per_group;
+	guess = 2ULL * fs->blocksize * fs->inode_blocks_per_group;
 
 	/* Disable RA if it'd use more 1/50th of RAM. */
 	if (get_memory_size() > (guess * 50))

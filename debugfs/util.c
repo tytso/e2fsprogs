@@ -390,7 +390,7 @@ int common_block_args_process(int argc, char *argv[],
 		return 1;
 	if (*block == 0) {
 		com_err(argv[0], 0, "Invalid block number 0");
-		err = 1;
+		return 1;
 	}
 
 	if (argc > 2) {
