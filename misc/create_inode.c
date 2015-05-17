@@ -177,7 +177,7 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 		const char *name = &list[i];
 		char *value;
 
-		value_size = getxattr(filename, name, NULL, 0);
+		value_size = lgetxattr(filename, name, NULL, 0);
 		if (value_size == -1) {
 			retval = errno;
 			com_err(__func__, retval,
@@ -192,7 +192,7 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 			break;
 		}
 
-		value_size = getxattr(filename, name, value, value_size);
+		value_size = lgetxattr(filename, name, value, value_size);
 		if (value_size == -1) {
 			ext2fs_free_mem(&value);
 			retval = errno;
