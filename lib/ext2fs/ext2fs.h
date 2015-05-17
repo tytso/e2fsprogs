@@ -674,6 +674,17 @@ extern void ext2fs_set_alloc_block_callback(ext2_filsys fs,
 							      blk64_t *ret));
 blk64_t ext2fs_find_inode_goal(ext2_filsys fs, ext2_ino_t ino,
 			       struct ext2_inode *inode, blk64_t lblk);
+#define EXT2_NEWRANGE_FIXED_GOAL	(0x1)
+#define EXT2_NEWRANGE_MIN_LENGTH	(0x2)
+#define EXT2_NEWRANGE_ALL_FLAGS		(0x3)
+errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
+			   blk64_t len, ext2fs_block_bitmap map, blk64_t *pblk,
+			   blk64_t *plen);
+#define EXT2_ALLOCRANGE_FIXED_GOAL	(0x1)
+#define EXT2_ALLOCRANGE_ZERO_BLOCKS	(0x2)
+#define EXT2_ALLOCRANGE_ALL_FLAGS	(0x3)
+errcode_t ext2fs_alloc_range(ext2_filsys fs, int flags, blk64_t goal,
+			     blk_t len, blk64_t *ret);
 
 /* alloc_sb.c */
 extern int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
