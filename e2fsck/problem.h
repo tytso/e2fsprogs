@@ -648,6 +648,9 @@ struct problem_context {
 /* extent tree max depth too big */
 #define PR_1_EXTENT_BAD_MAX_DEPTH		0x01007F
 
+/* bigalloc fs cannot have blockmap files */
+#define PR_1_NO_BIGALLOC_BLOCKMAP_FILES		0x010080
+
 /*
  * Pass 1b errors
  */

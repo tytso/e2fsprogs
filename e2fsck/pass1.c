@@ -3187,6 +3187,23 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = 0;
 	}
 
+	/*
+	 * The kernel gets mad if we ask it to allocate bigalloc clusters to
+	 * a block mapped file, so rebuild it as an extent file.  We can skip
+	 * symlinks because they're never rewritten.
+	 */
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+			EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
+	    (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode)) &&
+	    ext2fs_inode_data_blocks2(fs, inode) > 0 &&
+	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INO(fs->super)) &&
+	    !(inode->i_flags & (EXT4_EXTENTS_FL | EXT4_INLINE_DATA_FL)) &&
+	    fix_problem(ctx, PR_1_NO_BIGALLOC_BLOCKMAP_FILES, pctx)) {
+		pctx->errcode = e2fsck_rebuild_extents_later(ctx, ino);
+		if (pctx->errcode)
+			goto out;
+	}
+
 	if (ctx->dirs_to_hash && pb.is_dir &&
 	    !(ctx->lost_and_found && ctx->lost_and_found == ino) &&
 	    !(inode->i_flags & EXT2_INDEX_FL) &&

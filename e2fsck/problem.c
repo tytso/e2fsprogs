@@ -1106,6 +1106,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i @x tree could be more shallow (%b; could be <= %c)\n"),
 	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK },
 
+	/* Inode extent tree could be more shallow */
+	{ PR_1_NO_BIGALLOC_BLOCKMAP_FILES,
+	  N_("@i %i on bigalloc @f cannot be @b mapped.  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
