@@ -170,11 +170,12 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 	errcode_t retval = ENOMEM;
 	char *tdb_dir = NULL, *tdb_file = NULL;
 	char *dev_name, *tmp_name;
-	int free_tdb_dir = 0;
 
 	/* (re)open a specific undo file */
 	if (undo_file && undo_file[0] != 0) {
-		set_undo_io_backing_manager(*io_ptr);
+		retval = set_undo_io_backing_manager(*io_ptr);
+		if (retval)
+			goto err;
 		*io_ptr = undo_io_manager;
 		retval = set_undo_io_backup_file(undo_file);
 		if (retval)
@@ -183,7 +184,7 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 			 "using the command:\n"
 			 "    e2undo %s %s\n\n"),
 			undo_file, device_name);
-		return 0;
+		return retval;
 	}
 
 	/*
@@ -191,19 +192,18 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 	 * nice
 	 */
 	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
+	if (!tdb_dir)
+		tdb_dir = "/var/lib/e2fsprogs";
 
-	if (tdb_dir == NULL || !strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
-	    access(tdb_dir, W_OK)) {
-		if (free_tdb_dir)
-			free(tdb_dir);
+	if (!strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
+	    access(tdb_dir, W_OK))
 		return 0;
-	}
 
 	tmp_name = strdup(device_name);
 	if (!tmp_name)
 		goto errout;
 	dev_name = basename(tmp_name);
-	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(dev_name) + 7 + 1);
+	tdb_file = malloc(strlen(tdb_dir) + 11 + strlen(dev_name) + 7 + 1);
 	if (!tdb_file) {
 		free(tmp_name);
 		goto errout;
@@ -213,10 +213,14 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 
 	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
 		retval = errno;
+		com_err(program_name, retval,
+			_("while trying to delete %s"), tdb_file);
 		goto errout;
 	}
 
-	set_undo_io_backing_manager(*io_ptr);
+	retval = set_undo_io_backing_manager(*io_ptr);
+	if (retval)
+		goto errout;
 	*io_ptr = undo_io_manager;
 	retval = set_undo_io_backup_file(tdb_file);
 	if (retval)
@@ -225,14 +229,9 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 		 "using the command:\n"
 		 "    e2undo %s %s\n\n"), tdb_file, device_name);
 
-	if (free_tdb_dir)
-		free(tdb_dir);
 	free(tdb_file);
 	return 0;
-
 errout:
-	if (free_tdb_dir)
-		free(tdb_dir);
 	free(tdb_file);
 err:
 	com_err(program_name, retval, "%s",

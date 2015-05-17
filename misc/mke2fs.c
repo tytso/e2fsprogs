@@ -2500,7 +2500,9 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 
 	/* (re)open a specific undo file */
 	if (undo_file && undo_file[0] != 0) {
-		set_undo_io_backing_manager(*io_ptr);
+		retval = set_undo_io_backing_manager(*io_ptr);
+		if (retval)
+			goto err;
 		*io_ptr = undo_io_manager;
 		retval = set_undo_io_backup_file(undo_file);
 		if (retval)
@@ -2508,7 +2510,7 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 		printf(_("Overwriting existing filesystem; this can be undone "
 			 "using the command:\n"
 			 "    e2undo %s %s\n\n"), undo_file, name);
-		return 0;
+		return retval;
 	}
 
 	/*
@@ -2544,10 +2546,14 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 
 	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
 		retval = errno;
+		com_err(program_name, retval,
+			_("while trying to delete %s"), tdb_file);
 		goto errout;
 	}
 
-	set_undo_io_backing_manager(*io_ptr);
+	retval = set_undo_io_backing_manager(*io_ptr);
+	if (retval)
+		goto errout;
 	*io_ptr = undo_io_manager;
 	retval = set_undo_io_backup_file(tdb_file);
 	if (retval)

@@ -204,29 +204,29 @@ static int e2undo_setup_tdb(const char *name, io_manager *io_ptr)
 {
 	errcode_t retval = 0;
 	const char *tdb_dir;
-	char *tdb_file;
+	char *tdb_file = NULL;
 	char *dev_name, *tmp_name;
 
 	/* (re)open a specific undo file */
 	if (undo_file && undo_file[0] != 0) {
-		set_undo_io_backing_manager(*io_ptr);
+		retval = set_undo_io_backing_manager(*io_ptr);
+		if (retval)
+			goto err;
 		*io_ptr = undo_io_manager;
-		set_undo_io_backup_file(undo_file);
-		printf(_("To undo the e2undo operation please run "
-			 "the command\n    e2undo %s %s\n\n"),
+		retval = set_undo_io_backup_file(undo_file);
+		if (retval)
+			goto err;
+		printf(_("Overwriting existing filesystem; this can be undone "
+			 "using the command:\n"
+			 "    e2undo %s %s\n\n"),
 			 undo_file, name);
 		return retval;
 	}
 
-	tmp_name = strdup(name);
-	if (!tmp_name) {
-	alloc_fn_fail:
-		com_err(prg_name, ENOMEM, "%s",
-			_("Couldn't allocate memory for tdb filename\n"));
-		return ENOMEM;
-	}
-	dev_name = basename(tmp_name);
-
+	/*
+	 * Configuration via a conf file would be
+	 * nice
+	 */
 	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
 	if (!tdb_dir)
 		tdb_dir = "/var/lib/e2fsprogs";
@@ -235,27 +235,43 @@ static int e2undo_setup_tdb(const char *name, io_manager *io_ptr)
 	    access(tdb_dir, W_OK))
 		return 0;
 
-	tdb_file = malloc(strlen(tdb_dir) + 9 + strlen(dev_name) + 7 + 1);
-	if (!tdb_file)
-		goto alloc_fn_fail;
+	tmp_name = strdup(name);
+	if (!tmp_name)
+		goto errout;
+	dev_name = basename(tmp_name);
+	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(dev_name) + 7 + 1);
+	if (!tdb_file) {
+		free(tmp_name);
+		goto errout;
+	}
 	sprintf(tdb_file, "%s/e2undo-%s.e2undo", tdb_dir, dev_name);
+	free(tmp_name);
 
 	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
 		retval = errno;
 		com_err(prg_name, retval,
 			_("while trying to delete %s"), tdb_file);
-		free(tdb_file);
-		return retval;
+		goto errout;
 	}
 
-	set_undo_io_backing_manager(*io_ptr);
+	retval = set_undo_io_backing_manager(*io_ptr);
+	if (retval)
+		goto errout;
 	*io_ptr = undo_io_manager;
-	set_undo_io_backup_file(tdb_file);
-	printf(_("To undo the e2undo operation please run "
-		 "the command\n    e2undo %s %s\n\n"),
+	retval = set_undo_io_backup_file(tdb_file);
+	if (retval)
+		goto errout;
+	printf(_("Overwriting existing filesystem; this can be undone "
+		 "using the command:\n"
+		 "    e2undo %s %s\n\n"),
 		 tdb_file, name);
+
 	free(tdb_file);
-	free(tmp_name);
+	return 0;
+errout:
+	free(tdb_file);
+err:
+	com_err(prg_name, retval, "while trying to setup undo file\n");
 	return retval;
 }
 

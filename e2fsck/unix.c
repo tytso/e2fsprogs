@@ -1242,7 +1242,9 @@ static int e2fsck_setup_tdb(e2fsck_t ctx, io_manager *io_ptr)
 
 	/* (re)open a specific undo file */
 	if (ctx->undo_file && ctx->undo_file[0] != 0) {
-		set_undo_io_backing_manager(*io_ptr);
+		retval = set_undo_io_backing_manager(*io_ptr);
+		if (retval)
+			goto err;
 		*io_ptr = undo_io_manager;
 		retval = set_undo_io_backup_file(ctx->undo_file);
 		if (retval)
@@ -1251,7 +1253,7 @@ static int e2fsck_setup_tdb(e2fsck_t ctx, io_manager *io_ptr)
 			 "using the command:\n"
 			 "    e2undo %s %s\n\n"),
 			ctx->undo_file, ctx->filesystem_name);
-		return 0;
+		return retval;
 	}
 
 	/*
@@ -1287,10 +1289,14 @@ static int e2fsck_setup_tdb(e2fsck_t ctx, io_manager *io_ptr)
 
 	if ((unlink(tdb_file) < 0) && (errno != ENOENT)) {
 		retval = errno;
+		com_err(ctx->program_name, retval,
+			_("while trying to delete %s"), tdb_file);
 		goto errout;
 	}
 
-	set_undo_io_backing_manager(*io_ptr);
+	retval = set_undo_io_backing_manager(*io_ptr);
+	if (retval)
+		goto errout;
 	*io_ptr = undo_io_manager;
 	retval = set_undo_io_backup_file(tdb_file);
 	if (retval)
