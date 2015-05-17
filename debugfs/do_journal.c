@@ -175,7 +175,7 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 	void *buf;
 	size_t i, offset;
 	blk64_t curr_blk;
-	int csum_size = 0;
+	int sz, csum_size = 0;
 	struct buffer_head *bh;
 	errcode_t err;
 
@@ -204,9 +204,15 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 	jrb->r_header.h_sequence = ext2fs_cpu_to_be32(trans->tid);
 	offset = sizeof(*jrb);
 
+	if (JFS_HAS_INCOMPAT_FEATURE(trans->journal,
+				     JFS_FEATURE_INCOMPAT_64BIT))
+		sz = 8;
+	else
+		sz = 4;
+
 	for (i = 0; i < revoke_len; i++) {
 		/* Block full, write to journal */
-		if (offset > trans->journal->j_blocksize - csum_size) {
+		if (offset + sz > trans->journal->j_blocksize - csum_size) {
 			jrb->r_count = ext2fs_cpu_to_be32(offset);
 			jbd2_revoke_csum_set(trans->journal, bh);
 
@@ -233,16 +239,13 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 		}
 
 		if (JFS_HAS_INCOMPAT_FEATURE(trans->journal,
-					     JFS_FEATURE_INCOMPAT_64BIT)) {
+					     JFS_FEATURE_INCOMPAT_64BIT))
 			*((__u64 *)(&((char *)buf)[offset])) =
 				ext2fs_cpu_to_be64(revoke_list[i]);
-			offset += 8;
-
-		} else {
+		else
 			*((__u32 *)(&((char *)buf)[offset])) =
 				ext2fs_cpu_to_be32(revoke_list[i]);
-			offset += 4;
-		}
+		offset += sz;
 	}
 
 	if (offset > 0) {
