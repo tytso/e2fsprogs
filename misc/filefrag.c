@@ -287,8 +287,8 @@ static int filefrag_fibmap(int fd, int blk_shift, int *num_extents,
 	const long		bpib = st->st_blksize / 4;
 	int			count;
 
+	memset(&fm_ext, 0, sizeof(fm_ext));
 	if (force_extent) {
-		memset(&fm_ext, 0, sizeof(fm_ext));
 		fm_ext.fe_flags = FIEMAP_EXTENT_MERGED;
 	}
 
@@ -331,15 +331,17 @@ static int filefrag_fibmap(int fd, int blk_shift, int *num_extents,
 					  blk_shift, st);
 			fm_ext.fe_length = 0;
 			(*num_extents)++;
+			fm_ext.fe_logical = logical;
+			fm_ext.fe_physical = block * st->st_blksize;
 		} else if (last_block && (block != last_block + 1)) {
 			if (verbose)
 				printf("Discontinuity: Block %ld is at %lu (was "
 				       "%lu)\n", i, block, last_block + 1);
 			fm_ext.fe_length = 0;
 			(*num_extents)++;
+			fm_ext.fe_logical = logical;
+			fm_ext.fe_physical = block * st->st_blksize;
 		}
-		fm_ext.fe_logical = logical;
-		fm_ext.fe_physical = block * st->st_blksize;
 		fm_ext.fe_length += st->st_blksize;
 		last_block = block;
 	}
