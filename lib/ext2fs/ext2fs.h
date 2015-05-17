@@ -527,6 +527,8 @@ typedef struct ext2_icount *ext2_icount_t;
  */
 #define BMAP_ALLOC	0x0001
 #define BMAP_SET	0x0002
+#define BMAP_UNINIT	0x0004
+#define BMAP_ZERO	0x0008
 
 /*
  * Returned flags from ext2fs_bmap
