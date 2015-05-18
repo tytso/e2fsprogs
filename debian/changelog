@@ -1,3 +1,36 @@
+e2fsprogs (1.42.13-1) unstable; urgency=low
+
+  * New upstream version
+  * NMU acknowledge (Closes: #778948)
+  * Fixed a bug which could cause e2fsck to corrupt Hurd file systems.
+    (Closes: #760275)
+  * Fixed a deadlock which occurs when using systemd and e2fsck.conf's
+    logging feature.  (Closes: #775234)
+  * Fixed a bug which could cause programs using libext2's inode table
+    scanning functions from crashing on certain corrupted file systems.
+    (Closes: #773795)
+  * Fixed dumpe2fs so it won't crash if the user doesn't specify a block
+    device (file system).  (Closes: #764293)
+  * Fixed e2fsck so if it notices unexpected HTREE blocks in pass 2, it
+    will report the correct directory inode containing the inconsistency.
+  * If e2fsck fails to grow the dir_info structure due realloc(3) not
+    having enough memory, it will now fail with explanatory message
+    instead of staggering on failing with a confusing internal error
+    messages.
+  * The tune2fs program will zero out the superblock journal backup
+    information when removing a journal from a file system.
+  * The mke2fs program now enables the large_file feature by default.
+  * Fixed a bug which could cause badblocks to crash if there are millions
+    and millions of bad blocks.
+  * Fixed some use-after-free bug in resize2fs and e2fsck.
+  * Fixed some bigendian bugs that had crept into both indirect and extent
+    handling inside libext2fs.
+  * Updated/fixed various man pages.
+  * Update Esperanto, German, and Spanish translations.  Added Danish
+    translation.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 17 May 2015 20:38:27 -0400
+
 e2fsprogs (1.43~WIP-2015-03-29-1) unstable; urgency=low
 
   * Merge in updates from the maint branch (changes from 1.42.12-1)
@@ -7,6 +40,13 @@ e2fsprogs (1.43~WIP-2015-03-29-1) unstable; urgency=low
   * Add support for file encryption feature
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 14 Dec 2014 22:49:03 -0500
+
+e2fsprogs (1.42.12-1.1) unstable; urgency=high
+
+  * Non-maintainer upload by the Security Team.
+  * Fix CVE-2015-1572: incomplete fix for CVE-2015-0247 (closes: #778948).
+
+ -- Michael Gilbert <mgilbert@debian.org>  Sun, 22 Feb 2015 01:50:57 +0000
 
 e2fsprogs (1.42.12-1) unstable; urgency=low
 
