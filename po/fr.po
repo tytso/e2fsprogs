@@ -71,7 +71,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU e2fsprogs 1.42.12-pre2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2015-05-17 20:31-0400\n"
+"POT-Creation-Date: 2015-05-17 21:26-0400\n"
 "PO-Revision-Date: 2014-08-26 21:26+0200\n"
 "Last-Translator: Samuel Thibault <samuel.thibault@ens-lyon.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -1173,12 +1173,13 @@ msgstr "Le drapeau test_fs est positionné (et ext4 est disponible). "
 
 #. @-expanded: superblock last mount time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set)  
+#. @-expanded: set)\n
 #: e2fsck/problem.c:388
+#, fuzzy
 msgid ""
 "@S last mount time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set)  "
+"set)\n"
 msgstr ""
 "La date de dernier montage du @S est dans le futur.\n"
 "\t(de moins d'un jour, probablement à cause d'une horloge matérielle mal "
@@ -1186,12 +1187,13 @@ msgstr ""
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set).  
+#. @-expanded: set)\n
 #: e2fsck/problem.c:394
+#, fuzzy
 msgid ""
 "@S last write time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set).  "
+"set)\n"
 msgstr ""
 "La date de dernière écriture du @S est dans le futur.\n"
 "\t(de moins d'un jour, probablement à cause d'une horloge matérielle mal "
@@ -6552,7 +6554,8 @@ msgstr ""
 "Ne devrait jamais se produire : i-noeud de redimensionnement corrompu !\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.12"
+#, fuzzy
+msgid "EXT2FS Library version 1.42.13"
 msgstr "Librairie EXT2FS version 1.42.12"
 
 #: lib/ext2fs/ext2_err.c:12

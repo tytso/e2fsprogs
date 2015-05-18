@@ -72,7 +72,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.13\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2015-05-17 20:31-0400\n"
+"POT-Creation-Date: 2015-05-17 21:26-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1102,21 +1102,21 @@ msgstr ""
 #: e2fsck/problem.c:388
 #. @-expanded: superblock last mount time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set)  
+#. @-expanded: set)\n
 msgid ""
 "@S last mount time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set)  "
+"set)\n"
 msgstr ""
 
 #: e2fsck/problem.c:394
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set).  
+#. @-expanded: set)\n
 msgid ""
 "@S last write time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set).  "
+"set)\n"
 msgstr ""
 
 #: e2fsck/problem.c:400
@@ -5903,7 +5903,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.12"
+msgid "EXT2FS Library version 1.42.13"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12

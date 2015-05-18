@@ -80,7 +80,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.42.12-pre2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2015-05-17 20:31-0400\n"
+"POT-Creation-Date: 2015-05-17 21:26-0400\n"
 "PO-Revision-Date: 2014-08-27 10:06+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -1179,12 +1179,13 @@ msgstr "De functievlag 'test_fs' is gezet (en ext4 is beschikbaar).  "
 
 #. @-expanded: superblock last mount time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set)  
+#. @-expanded: set)\n
 #: e2fsck/problem.c:388
+#, fuzzy
 msgid ""
 "@S last mount time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set)  "
+"set)\n"
 msgstr ""
 "Laatste aankoppelingstijd ligt volgens het superblok in de toekomst.\n"
 "    (Maar minder dan een dag; vermoedelijk is de hardwareklok onjuist "
@@ -1192,12 +1193,13 @@ msgstr ""
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set).  
+#. @-expanded: set)\n
 #: e2fsck/problem.c:394
+#, fuzzy
 msgid ""
 "@S last write time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set).  "
+"set)\n"
 msgstr ""
 "Laatste schrijftijd ligt volgens het superblok in de toekomst.\n"
 "    (Maar minder dan een dag; vermoedelijk is de hardwareklok onjuist "
@@ -6549,7 +6551,8 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Zou nooit mogen gebeuren: de 'resize'-inode is beschadigd!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.12"
+#, fuzzy
+msgid "EXT2FS Library version 1.42.13"
 msgstr "EXT2FS-bibliotheek  versie 1.42.12"
 
 #: lib/ext2fs/ext2_err.c:12

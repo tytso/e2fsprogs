@@ -91,7 +91,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.42.12-pre2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2015-05-17 20:31-0400\n"
+"POT-Creation-Date: 2015-05-17 21:26-0400\n"
 "PO-Revision-Date: 2015-02-03 23:29+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -1223,12 +1223,13 @@ msgstr "La bandera test_fs está puesta (y ext4 está disponible).  "
 
 #. @-expanded: superblock last mount time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set)  
+#. @-expanded: set)\n
 #: e2fsck/problem.c:388
+#, fuzzy
 msgid ""
 "@S last mount time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set)  "
+"set)\n"
 msgstr ""
 "La última hora de montaje del @S está en el futuro.\n"
 "\t(por menos de un día, probablemente debido a que el reloj del hardware "
@@ -1236,12 +1237,13 @@ msgstr ""
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
-#. @-expanded: set).  
+#. @-expanded: set)\n
 #: e2fsck/problem.c:394
+#, fuzzy
 msgid ""
 "@S last write time is in the future.\n"
 "\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set).  "
+"set)\n"
 msgstr ""
 "La última hora de escritura del @S está en el futuro.\n"
 "\t(por menos de un día, probablemente debido a que el reloj del hardware "
@@ -6650,7 +6652,8 @@ msgstr ""
 "Esto nunca debería suceder: ¡Se cambia el tamaño del nodo-i corrupto!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.42.12"
+#, fuzzy
+msgid "EXT2FS Library version 1.42.13"
 msgstr "Biblioteca EXT2FS versión 1.42.12"
 
 #: lib/ext2fs/ext2_err.c:12
