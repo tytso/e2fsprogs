@@ -1,3 +1,18 @@
+e2fsprogs (1.43~WIP-2015-05-18-1) unstable; urgency=low
+
+  * Merge in updates from the maint branch (changes from 1.42.13)
+  * Add support for file encryption feature
+  * Mke2fs will now create file systems with metadata_csum and 64bit
+    enabled by default.
+  * The resize2fs command can now convert file systems between 64-bit
+    and 32-bit mode.
+  * The new undo file format is much faster/efficent than before
+  * E2fsck now has readahead support to speed up its behavior on RAID
+    arrays.
+  * E2fsck can now rebuild/optimize inode extent trees
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 18 May 2015 01:47:43 -0400
+
 e2fsprogs (1.42.13-1) unstable; urgency=low
 
   * New upstream version
