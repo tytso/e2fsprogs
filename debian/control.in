@@ -66,7 +66,7 @@ Description: command-line interface parsing library
  libss provides a simple command-line interface parser which will
  accept input from the user, parse the command into an argv argument
  vector, and then dispatch it to a handler function.
- . 
+ .
  It was originally inspired by the Multics SubSystem library.
 
 Package: ss-dev
@@ -78,7 +78,7 @@ Description: command-line interface parsing library - headers and static librari
  This package includes a tool that parses a command table to generate
  a simple command-line interface parser, the include files needed to
  compile and use it, and the static libs.
- . 
+ .
  It was originally inspired by the Multics SubSystem library.
  .
  This package contains the development environment for the ss library.
