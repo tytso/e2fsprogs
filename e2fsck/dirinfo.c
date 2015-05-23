@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include "uuid/uuid.h"
 
+#include "ext2fs/ext2fs.h"
 #include <ext2fs/tdb.h>
 
 struct dir_info_db {

@@ -41,6 +41,7 @@
 #include <asm/unistd.h>
 
 #include "ext2fs/ext2_fs.h"
+#include "ext2fs/ext2fs.h"
 #include "uuid/uuid.h"
 
 /* special process keyring shortcut IDs */
