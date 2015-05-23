@@ -35,6 +35,7 @@
 #define HAVE_SYS_STAT_H 1
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TYPES_H 1
+#define HAVE_SYS_WAIT_H 1
 #define HAVE_TERMIO_H 1
 #define HAVE_TYPE_SSIZE_T 1
 #define HAVE_UNISTD_H 1

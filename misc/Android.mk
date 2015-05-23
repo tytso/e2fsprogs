@@ -299,3 +299,46 @@ LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_HOST_EXECUTABLE)
 
+###########################################################################
+# Build e2image
+#
+e2image_src_files := \
+	e2image.c \
+	plausible.c
+
+e2image_c_includes := \
+	external/e2fsprogs/lib
+
+e2image_cflags := -O2 -g -W -Wall
+
+e2image_shared_libraries := \
+	libext2fs \
+	libext2_blkid \
+	libext2_com_err
+
+e2image_system_shared_libraries := libc
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(e2image_src_files)
+LOCAL_C_INCLUDES := $(e2image_c_includes)
+mke2fs_c_includesLOCAL_CFLAGS := $(e2image_cflags)
+LOCAL_SHARED_LIBRARIES := $(e2image_shared_libraries)
+LOCAL_SYSTEM_SHARED_LIBRARIES := $(e2image_system_shared_libraries)
+LOCAL_MODULE := e2image
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(e2image_src_files)
+LOCAL_C_INCLUDES := $(e2image_c_includes)
+LOCAL_CFLAGS := $(e2image_cflags)
+LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(e2image_shared_libraries))
+LOCAL_MODULE := e2image_host
+LOCAL_MODULE_STEM := e2image
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_HOST_EXECUTABLE)
+

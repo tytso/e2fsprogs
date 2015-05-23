@@ -13,9 +13,12 @@ libext2_quota_cflags := -O2 -g -W -Wall
 
 libext2_quota_shared_libraries := libext2fs libext2_com_err
 
+libext2_quota_system_shared_libraries := libc
+
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(libext2_quota_src_files)
+LOCAL_SYSTEM_SHARED_LIBRARIES := $(libext2_quota_system_shared_libraries)
 LOCAL_C_INCLUDES := $(libext2_quota_c_includes)
 LOCAL_CFLAGS := $(libext2_quota_cflags)
 LOCAL_SYSTEM_SHARED_LIBRARIES := libc $(libext2_quota_shared_libraries)

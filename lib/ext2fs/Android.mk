@@ -6,6 +6,7 @@ libext2fs_src_files := \
 	alloc_sb.c \
 	alloc_stats.c \
 	alloc_tables.c \
+	atexit.c \
 	badblocks.c \
 	bb_inode.c \
 	bitmaps.c \
@@ -42,6 +43,7 @@ libext2fs_src_files := \
 	getsectsize.c \
 	i_block.c \
 	icount.c \
+	imager.c \
 	ind_block.c \
 	initialize.c \
 	inline.c \
@@ -61,6 +63,7 @@ libext2fs_src_files := \
 	openfs.c \
 	progress.c \
 	punch.c \
+	qcow2.c \
 	rbtree.c \
 	read_bb.c \
 	read_bb_file.c \

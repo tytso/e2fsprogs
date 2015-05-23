@@ -69,7 +69,9 @@ e2fsck_src_files :=  \
 	rehash.c \
 	region.c \
 	sigcatcher.c \
-	plausible.c
+	plausible.c \
+	readahead.c \
+	extents.c
 
 e2fsck_shared_libraries := \
 	libext2fs \
