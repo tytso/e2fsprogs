@@ -37,7 +37,7 @@ extern int optind;
 
 #include "ext2fs/ext2fs.h"
 #include "e2p/e2p.h"
-#include "jfs_user.h"
+#include "ext2fs/kernel-jbd.h"
 #include <uuid/uuid.h>
 
 #include "../version.h"

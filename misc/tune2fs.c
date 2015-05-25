@@ -54,10 +54,10 @@ extern int optind;
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
+#include "ext2fs/kernel-jbd.h"
 #include "et/com_err.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
-#include "jfs_user.h"
 #include "util.h"
 #include "plausible.h"
 #include "blkid/blkid.h"

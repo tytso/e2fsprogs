@@ -67,8 +67,6 @@ struct kdev_s {
 #define K_DEV_FS	1
 #define K_DEV_JOURNAL	2
 
-typedef struct kdev_s *kdev_t;
-
 #define lock_buffer(bh) do {} while (0)
 #define unlock_buffer(bh) do {} while (0)
 #define buffer_req(bh) 1
@@ -199,5 +197,19 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 	} } while (0)
 
 #endif /* DEBUGFS */
+
+/* recovery.c */
+extern int	journal_recover    (journal_t *journal);
+extern int	journal_skip_recovery (journal_t *);
+
+/* revoke.c */
+extern int	journal_init_revoke(journal_t *, int);
+extern void	journal_destroy_revoke(journal_t *);
+extern void	journal_destroy_revoke_caches(void);
+extern int	journal_init_revoke_caches(void);
+
+extern int	journal_set_revoke(journal_t *, unsigned long long, tid_t);
+extern int	journal_test_revoke(journal_t *, unsigned long long, tid_t);
+extern void	journal_clear_revoke(journal_t *);
 
 #endif /* _JFS_USER_H */

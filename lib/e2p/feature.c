@@ -18,7 +18,7 @@
 
 #include "e2p.h"
 #include <ext2fs/ext2fs.h>
-#include <ext2fs/jfs_user.h>
+#include <ext2fs/kernel-jbd.h>
 
 struct feature {
 	int		compat;

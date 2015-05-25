@@ -23,6 +23,7 @@
 
 typedef unsigned int tid_t;
 typedef struct journal_s journal_t;
+typedef struct kdev_s *kdev_t;
 
 struct buffer_head;
 struct inode;

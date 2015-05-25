@@ -36,7 +36,8 @@
 #include "ext2_fs.h"
 #include "e2p/e2p.h"
 #include "ext2fs.h"
-#include "jfs_user.h"
+
+#include "kernel-jbd.h"
 
 /*
  * This function automatically sets up the journal superblock and
