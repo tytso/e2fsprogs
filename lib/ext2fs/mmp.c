@@ -398,6 +398,10 @@ mmp_error:
 
 	return retval;
 #else
+	if (!(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) ||
+	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
+		return 0;
+
 	return EXT2_ET_OP_NOT_SUPPORTED;
 #endif
 }
@@ -440,6 +444,10 @@ errcode_t ext2fs_mmp_update2(ext2_filsys fs, int immediately)
 mmp_error:
 	return retval;
 #else
+	if (!(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) ||
+	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
+		return 0;
+
 	return EXT2_ET_OP_NOT_SUPPORTED;
 #endif
 }
