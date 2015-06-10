@@ -258,12 +258,7 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 
 {
 	errcode_t		retval;
-	blk64_t			lblk, bend = 0;
-	__u64			size;
-	blk64_t			left;
-	blk64_t			count = 0;
 	struct ext2_inode	inode;
-	ext2_extent_handle_t	handle;
 
 	retval = ext2fs_new_inode(fs, 0, LINUX_S_IFREG, NULL, ino);
 	if (retval)
@@ -283,85 +278,20 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 
 	ext2fs_inode_alloc_stats2(fs, *ino, +1, 0);
 
-	retval = ext2fs_extent_open2(fs, *ino, &inode, &handle);
+	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				      EXT3_FEATURE_INCOMPAT_EXTENTS))
+		inode.i_flags |= EXT4_EXTENTS_FL;
+	retval = ext2fs_fallocate(fs,
+				  EXT2_FALLOCATE_FORCE_INIT |
+				  EXT2_FALLOCATE_ZERO_BLOCKS,
+				  *ino, &inode, goal, 0, num);
+	if (retval)
+		return retval;
+	retval = ext2fs_inode_size_set(fs, &inode, num * fs->blocksize);
 	if (retval)
 		return retval;
 
-	lblk = 0;
-	left = num ? num : 1;
-	while (left) {
-		blk64_t pblk, end;
-		blk64_t n = left;
-
-		retval =  ext2fs_find_first_zero_block_bitmap2(fs->block_map,
-			goal, ext2fs_blocks_count(fs->super) - 1, &end);
-		if (retval)
-			goto errout;
-		goal = end;
-
-		retval =  ext2fs_find_first_set_block_bitmap2(fs->block_map, goal,
-			       ext2fs_blocks_count(fs->super) - 1, &bend);
-		if (retval == ENOENT) {
-			bend = ext2fs_blocks_count(fs->super);
-			if (num == 0)
-				left = 0;
-		}
-		if (!num || bend - goal < left)
-			n = bend - goal;
-		pblk = goal;
-		if (num)
-			left -= n;
-		goal += n;
-		count += n;
-		ext2fs_block_alloc_stats_range(fs, pblk, n, +1);
-
-		if (zero_hugefile) {
-			blk64_t ret_blk;
-			retval = ext2fs_zero_blocks2(fs, pblk, n,
-						     &ret_blk, NULL);
-
-			if (retval)
-				com_err(program_name, retval,
-					_("while zeroing block %llu "
-					  "for hugefile"), ret_blk);
-		}
-
-		while (n) {
-			blk64_t l = n;
-			struct ext2fs_extent newextent;
-
-			if (l > EXT_INIT_MAX_LEN)
-				l = EXT_INIT_MAX_LEN;
-
-			newextent.e_len = l;
-			newextent.e_pblk = pblk;
-			newextent.e_lblk = lblk;
-			newextent.e_flags = 0;
-
-			retval = ext2fs_extent_insert(handle,
-					EXT2_EXTENT_INSERT_AFTER, &newextent);
-			if (retval)
-				return retval;
-			pblk += l;
-			lblk += l;
-			n -= l;
-		}
-	}
-
-	retval = ext2fs_read_inode(fs, *ino, &inode);
-	if (retval)
-		goto errout;
-
-	retval = ext2fs_iblk_add_blocks(fs, &inode,
-					count / EXT2FS_CLUSTER_RATIO(fs));
-	if (retval)
-		goto errout;
-	size = (__u64) count * fs->blocksize;
-	retval = ext2fs_inode_size_set(fs, &inode, size);
-	if (retval)
-		goto errout;
-
-	retval = ext2fs_write_new_inode(fs, *ino, &inode);
+	retval = ext2fs_write_inode(fs, *ino, &inode);
 	if (retval)
 		goto errout;
 
@@ -379,13 +309,7 @@ retry:
 		goto retry;
 	}
 
-	if (retval)
-		goto errout;
-
 errout:
-	if (handle)
-		ext2fs_extent_free(handle);
-
 	return retval;
 }
 
@@ -572,6 +496,8 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 			printf(_("with %llu blocks each"), num_blocks);
 		fputs(": ", stdout);
 	}
+	if (num_blocks == 0)
+		num_blocks = ext2fs_blocks_count(fs->super) - goal;
 	for (i=0; i < num_files; i++) {
 		ext2_ino_t ino;
 

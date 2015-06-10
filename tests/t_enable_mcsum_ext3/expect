@@ -49,8 +49,8 @@ Change in FS metadata:
    Reserved GDT blocks at 4-259
    Block bitmap at 260 (+259)
 @@ -45,7 +46,7 @@
-   7789 free blocks, 1013 free inodes, 2 directories
-   Free blocks: 404-8192
+   0 free blocks, 1013 free inodes, 2 directories
+   Free blocks: 
    Free inodes: 12-1024
 -Group 1: (Blocks 8193-16384)
 +Group 1: (Blocks 8193-16384) [ITABLE_ZEROED]
@@ -58,8 +58,8 @@ Change in FS metadata:
    Reserved GDT blocks at 8196-8451
    Block bitmap at 8452 (+259)
 @@ -54,6 +55,6 @@
-   7803 free blocks, 1024 free inodes, 0 directories
-   Free blocks: 8582-16384
+   0 free blocks, 1024 free inodes, 0 directories
+   Free blocks: 
    Free inodes: 1025-2048
 -Group 2: (Blocks 16385-24576)
 +Group 2: (Blocks 16385-24576) [ITABLE_ZEROED]
