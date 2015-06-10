@@ -3934,6 +3934,26 @@ static errcode_t e2fsck_get_alloc_block(ext2_filsys fs, blk64_t goal,
 	return (0);
 }
 
+static errcode_t e2fsck_new_range(ext2_filsys fs, int flags, blk64_t goal,
+				  blk64_t len, blk64_t *pblk, blk64_t *plen)
+{
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
+	errcode_t	retval;
+
+	if (ctx->block_found_map)
+		return ext2fs_new_range(fs, flags, goal, len,
+					ctx->block_found_map, pblk, plen);
+
+	if (!fs->block_map) {
+		retval = ext2fs_read_block_bitmap(fs);
+		if (retval)
+			return retval;
+	}
+
+	return ext2fs_new_range(fs, flags, goal, len, fs->block_map,
+				pblk, plen);
+}
+
 static void e2fsck_block_alloc_stats(ext2_filsys fs, blk64_t blk, int inuse)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
@@ -3950,6 +3970,28 @@ static void e2fsck_block_alloc_stats(ext2_filsys fs, blk64_t blk, int inuse)
 			ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
 		else
 			ext2fs_unmark_block_bitmap2(ctx->block_found_map, blk);
+	}
+}
+
+static void e2fsck_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
+					   blk_t num, int inuse)
+{
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
+
+	/* Never free a critical metadata block */
+	if (ctx->block_found_map &&
+	    ctx->block_metadata_map &&
+	    inuse < 0 &&
+	    ext2fs_test_block_bitmap_range2(ctx->block_metadata_map, blk, num))
+		return;
+
+	if (ctx->block_found_map) {
+		if (inuse > 0)
+			ext2fs_mark_block_bitmap_range2(ctx->block_found_map,
+							blk, num);
+		else
+			ext2fs_unmark_block_bitmap_range2(ctx->block_found_map,
+							blk, num);
 	}
 }
 
@@ -3976,4 +4018,7 @@ void e2fsck_intercept_block_allocations(e2fsck_t ctx)
 	ext2fs_set_alloc_block_callback(ctx->fs, e2fsck_get_alloc_block, 0);
 	ext2fs_set_block_alloc_stats_callback(ctx->fs,
 						e2fsck_block_alloc_stats, 0);
+	ext2fs_set_new_range_callback(ctx->fs, e2fsck_new_range, NULL);
+	ext2fs_set_block_alloc_stats_range_callback(ctx->fs,
+					e2fsck_block_alloc_stats_range, NULL);
 }

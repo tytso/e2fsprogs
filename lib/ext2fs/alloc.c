@@ -379,12 +379,32 @@ errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
 	blk64_t start, end, b;
 	int looped = 0;
 	blk64_t max_blocks = ext2fs_blocks_count(fs->super);
+	errcode_t (*nrf)(ext2_filsys fs, int flags, blk64_t goal,
+			 blk64_t len, blk64_t *pblk, blk64_t *plen);
 
 	dbg_printf("%s: flags=0x%x goal=%llu len=%llu\n", __func__, flags,
 		   goal, len);
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 	if (len == 0 || (flags & ~EXT2_NEWRANGE_ALL_FLAGS))
 		return EXT2_ET_INVALID_ARGUMENT;
+
+	if (!map && fs->new_range) {
+		/*
+		 * In case there are clients out there whose new_range
+		 * handlers call ext2fs_new_range with a NULL block map,
+		 * temporarily swap out the function pointer so that we don't
+		 * end up in an infinite loop.
+		 */
+		nrf = fs->new_range;
+		fs->new_range = NULL;
+		retval = nrf(fs, flags, goal, len, pblk, plen);
+		fs->new_range = nrf;
+		if (retval)
+			return retval;
+		start = *pblk;
+		end = *pblk + *plen;
+		goto allocated;
+	}
 	if (!map)
 		map = fs->block_map;
 	if (!map)
@@ -432,7 +452,7 @@ errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
 				   "blk=%llu--%llu %llu\n",
 				   __func__, goal, goal + len - 1,
 				   *pblk, *pblk + *plen - 1, *plen);
-
+allocated:
 			for (b = start; b < end;
 			     b += fs->super->s_blocks_per_group)
 				clear_block_uninit(fs,
@@ -455,6 +475,21 @@ fail:
 	retval = EXT2_ET_BLOCK_ALLOC_FAIL;
 errout:
 	return retval;
+}
+
+void ext2fs_set_new_range_callback(ext2_filsys fs,
+	errcode_t (*func)(ext2_filsys fs, int flags, blk64_t goal,
+			       blk64_t len, blk64_t *pblk, blk64_t *plen),
+	errcode_t (**old)(ext2_filsys fs, int flags, blk64_t goal,
+			       blk64_t len, blk64_t *pblk, blk64_t *plen))
+{
+	if (!fs || fs->magic != EXT2_ET_MAGIC_EXT2FS_FILSYS)
+		return;
+
+	if (old)
+		*old = fs->new_range;
+
+	fs->new_range = func;
 }
 
 errcode_t ext2fs_alloc_range(ext2_filsys fs, int flags, blk64_t goal,

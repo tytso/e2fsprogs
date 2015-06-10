@@ -279,6 +279,12 @@ struct struct_ext2_filsys {
 
 	io_channel			journal_io;
 	char				*journal_name;
+
+	/* New block range allocation hooks */
+	errcode_t (*new_range)(ext2_filsys fs, int flags, blk64_t goal,
+			       blk64_t len, blk64_t *pblk, blk64_t *plen);
+	void (*block_alloc_stats_range)(ext2_filsys fs, blk64_t blk, blk_t num,
+					int inuse);
 };
 
 #if EXT2_FLAT_INCLUDES
@@ -674,6 +680,16 @@ extern void ext2fs_set_alloc_block_callback(ext2_filsys fs,
 							      blk64_t *ret));
 blk64_t ext2fs_find_inode_goal(ext2_filsys fs, ext2_ino_t ino,
 			       struct ext2_inode *inode, blk64_t lblk);
+extern void ext2fs_set_new_range_callback(ext2_filsys fs,
+	errcode_t (*func)(ext2_filsys fs, int flags, blk64_t goal,
+			       blk64_t len, blk64_t *pblk, blk64_t *plen),
+	errcode_t (**old)(ext2_filsys fs, int flags, blk64_t goal,
+			       blk64_t len, blk64_t *pblk, blk64_t *plen));
+extern void ext2fs_set_block_alloc_stats_range_callback(ext2_filsys fs,
+	void (*func)(ext2_filsys fs, blk64_t blk,
+				    blk_t num, int inuse),
+	void (**old)(ext2_filsys fs, blk64_t blk,
+				    blk_t num, int inuse));
 #define EXT2_NEWRANGE_FIXED_GOAL	(0x1)
 #define EXT2_NEWRANGE_MIN_LENGTH	(0x2)
 #define EXT2_NEWRANGE_ALL_FLAGS		(0x3)
