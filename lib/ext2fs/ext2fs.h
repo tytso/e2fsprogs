@@ -1243,6 +1243,16 @@ extern errcode_t ext2fs_extent_goto2(ext2_extent_handle_t handle,
 extern errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle);
 size_t ext2fs_max_extent_depth(ext2_extent_handle_t handle);
 
+/* fallocate.c */
+#define EXT2_FALLOCATE_ZERO_BLOCKS	(0x1)
+#define EXT2_FALLOCATE_FORCE_INIT	(0x2)
+#define EXT2_FALLOCATE_FORCE_UNINIT	(0x4)
+#define EXT2_FALLOCATE_INIT_BEYOND_EOF	(0x8)
+#define EXT2_FALLOCATE_ALL_FLAGS	(0xF)
+errcode_t ext2fs_fallocate(ext2_filsys fs, int flags, ext2_ino_t ino,
+			   struct ext2_inode *inode, blk64_t goal,
+			   blk64_t start, blk64_t len);
+
 /* fileio.c */
 extern errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,
 				   struct ext2_inode *inode,
