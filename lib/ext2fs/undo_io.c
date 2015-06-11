@@ -193,7 +193,6 @@ static errcode_t write_undo_indexes(struct undo_private_data *data, int flush)
 			data->keys_in_block = 0;
 			data->key_blk_num = data->undo_blk_num;
 			data->undo_blk_num++;
-			flush = 1;
 		}
 	}
 
