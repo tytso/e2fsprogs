@@ -302,7 +302,7 @@ static void parse_salt(char *salt_str, int flags)
 		while (*cp) {
 			if (salt_len >= EXT4_MAX_SALT_SIZE)
 				goto invalid_salt;
-			h = memchr(hexchars, *cp++, sizeof(hexchars));
+			h = memchr(hexchars, *cp++, hexchars_size);
 			l = memchr(hexchars, *cp++, hexchars_size);
 			if (!h || !l)
 				goto invalid_salt;
