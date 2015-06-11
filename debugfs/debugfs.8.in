@@ -306,6 +306,13 @@ from the file \fIfilespec\fR.
 Expand the directory
 .IR filespec .
 .TP
+.BI fallocate " filespec start_block [end_block]
+Allocate and map uninitialized blocks into \fIfilespec\fR between
+logical block \fIstart_block\fR and \fIend_block\fR, inclusive.  If
+\fIend_block\fR is not supplied, this function maps until it runs out
+of free disk blocks or the maximum file size is reached.  Existing
+mappings are left alone.
+.TP
 .BI feature " [fs_feature] [-fs_feature] ..."
 Set or clear various filesystem features in the superblock.  After setting
 or clearing any filesystem features that were requested, print the current

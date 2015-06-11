@@ -2195,6 +2195,42 @@ void do_punch(int argc, char *argv[])
 		return;
 	}
 }
+
+void do_fallocate(int argc, char *argv[])
+{
+	ext2_ino_t	ino;
+	blk64_t		start, end;
+	int		err;
+	errcode_t	errcode;
+
+	if (common_args_process(argc, argv, 3, 4, argv[0],
+				"<file> start_blk [end_blk]",
+				CHECK_FS_RW | CHECK_FS_BITMAPS))
+		return;
+
+	ino = string_to_inode(argv[1]);
+	if (!ino)
+		return;
+	err = strtoblk(argv[0], argv[2], "logical block", &start);
+	if (err)
+		return;
+	if (argc == 4) {
+		err = strtoblk(argv[0], argv[3], "logical block", &end);
+		if (err)
+			return;
+	} else
+		end = ~0;
+
+	errcode = ext2fs_fallocate(current_fs, EXT2_FALLOCATE_INIT_BEYOND_EOF,
+				   ino, NULL, ~0ULL, start, end - start + 1);
+
+	if (errcode) {
+		com_err(argv[0], errcode,
+			"while fallocating inode %u from %llu to %llu\n", ino,
+			(unsigned long long) start, (unsigned long long) end);
+		return;
+	}
+}
 #endif /* READ_ONLY */
 
 void do_symlink(int argc, char *argv[])
