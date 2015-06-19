@@ -1640,12 +1640,14 @@ failure:
 	/*
 	 * Make sure the ext3 superblock fields are consistent.
 	 */
-	retval = e2fsck_check_ext3_journal(ctx);
-	if (retval) {
-		com_err(ctx->program_name, retval,
-			_("while checking ext3 journal for %s"),
-			ctx->device_name);
-		fatal_error(ctx, 0);
+	if ((ctx->mount_flags & (EXT2_MF_MOUNTED | EXT2_MF_BUSY)) == 0) {
+		retval = e2fsck_check_ext3_journal(ctx);
+		if (retval) {
+			com_err(ctx->program_name, retval,
+				_("while checking ext3 journal for %s"),
+				ctx->device_name);
+			fatal_error(ctx, 0);
+		}
 	}
 
 	/*
