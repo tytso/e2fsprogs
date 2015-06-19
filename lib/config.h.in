@@ -45,6 +45,9 @@
    language is requested. */
 #undef ENABLE_NLS
 
+/* Define to 1 if you have the `add_key' function. */
+#undef HAVE_ADD_KEY
+
 /* Define to 1 if you have `alloca', as a function or macro. */
 #undef HAVE_ALLOCA
 
@@ -226,6 +229,9 @@
 /* Define to 1 if you have the `jrand48' function. */
 #undef HAVE_JRAND48
 
+/* Define to 1 if you have the `keyctl' function. */
+#undef HAVE_KEYCTL
+
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
 
@@ -348,6 +354,9 @@
 
 /* Define to 1 if you have the `pread64' function. */
 #undef HAVE_PREAD64
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
 
 /* Define if the <pthread.h> defines PTHREAD_MUTEX_RECURSIVE. */
 #undef HAVE_PTHREAD_MUTEX_RECURSIVE
@@ -478,6 +487,9 @@
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/key.h> header file. */
+#undef HAVE_SYS_KEY_H
 
 /* Define to 1 if you have the <sys/mkdev.h> header file. */
 #undef HAVE_SYS_MKDEV_H

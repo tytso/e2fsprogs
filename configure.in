@@ -923,6 +923,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/disk.h
 	sys/file.h
 	sys/ioctl.h
+	sys/key.h
 	sys/mkdev.h
 	sys/mman.h
 	sys/mount.h
@@ -1073,6 +1074,7 @@ fi
 dnl
 AC_CHECK_FUNCS(m4_flatten([
 	__secure_getenv
+	add_key
 	backtrace
 	blkid_probe_get_topology
 	blkid_probe_enable_partitions
@@ -1092,6 +1094,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	getrlimit
 	getrusage
 	jrand48
+	keyctl
 	llistxattr
 	llseek
 	lseek64

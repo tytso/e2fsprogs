@@ -38,7 +38,12 @@
 #include <termios.h>
 #include <unistd.h>
 #include <signal.h>
-#include <asm/unistd.h>
+#if !defined(HAVE_ADD_KEY) || !defined(HAVE_KEYCTL)
+#include <sys/syscall.h>
+#endif
+#ifdef HAVE_SYS_KEY_H
+#include <sys/key.h>
+#endif
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
@@ -71,6 +76,7 @@ typedef __s32 key_serial_t;
 
 int options;
 
+#ifndef HAVE_KEYCTL
 static long keyctl(int cmd, ...)
 {
 	va_list va;
@@ -84,6 +90,17 @@ static long keyctl(int cmd, ...)
 	va_end(va);
 	return syscall(__NR_keyctl, cmd, arg2, arg3, arg4, arg5);
 }
+#endif
+
+#ifndef HAVE_ADD_KEY
+key_serial_t add_key(const char *type, const char *description,
+		     const void *payload, size_t plen,
+		     key_serial_t keyring)
+{
+	return syscall(__NR_add_key, type, description, payload,
+		       plen, keyring);
+}
+#endif
 
 static const char *hexchars = "0123456789abcdef";
 static const size_t hexchars_size = 16;
@@ -566,8 +583,8 @@ static void insert_key_into_keyring(const char *keyring, struct salt *salt)
 	key.mode = EXT4_ENCRYPTION_MODE_AES_256_XTS;
 	memcpy(key.raw, salt->key, EXT4_MAX_KEY_SIZE);
 	key.size = EXT4_MAX_KEY_SIZE;
-	rc = syscall(__NR_add_key, EXT2FS_KEY_TYPE_LOGON, key_ref_full,
-		      (void *)&key, sizeof(key), keyring_id);
+	rc = add_key(EXT2FS_KEY_TYPE_LOGON, key_ref_full, (void *)&key,
+		     sizeof(key), keyring_id);
 	if (rc == -1) {
 		if (errno == EDQUOT) {
 			printf("Error adding key to keyring; quota exceeded\n");

@@ -11,6 +11,10 @@
 
 #include "config.h"
 
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
 #include "ext2_fs.h"
 #include "ext2fs.h"
 #define min(a, b) ((a) < (b) ? (a) : (b))
