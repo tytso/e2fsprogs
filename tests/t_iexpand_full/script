@@ -1,5 +1,11 @@
 if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
 
+if [ $(uname -s) = "Darwin" ]; then
+	# creates a 3GB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for HFS+ (no sparse files)"
+	return 0
+fi
+
 FSCK_OPT=-fn
 OUT=$test_name.log
 EXP=$test_dir/expect

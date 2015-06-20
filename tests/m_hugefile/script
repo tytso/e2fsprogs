@@ -3,6 +3,12 @@ OUT=$test_name.log
 EXP=$test_dir/expect
 CONF=$TMPFILE.conf
 
+if [ $(uname -s) = "Darwin" ]; then
+	# creates a 4TB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for HFS+ (no sparse files)"
+	return 0
+fi
+
 #gzip -d < $EXP.gz > $EXP
 
 cat > $CONF << ENDL
