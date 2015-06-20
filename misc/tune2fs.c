@@ -240,7 +240,7 @@ static int remove_journal_device(ext2_filsys fs)
 {
 	char		*journal_path;
 	ext2_filsys	jfs;
-	char		buf[SUPERBLOCK_SIZE];
+	char		buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 	journal_superblock_t	*jsb;
 	int		i, nr_users;
 	errcode_t	retval;
@@ -2609,7 +2609,7 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 	__u8 *j_uuid;
 	char *journal_path;
 	char uuid[UUID_STR_SIZE];
-	char buf[SUPERBLOCK_SIZE];
+	char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 
 	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) ||
 		uuid_is_null(sb->s_journal_uuid))
@@ -2964,7 +2964,7 @@ retry_open:
 	if (U_flag) {
 		int set_csum = 0;
 		dgrp_t i;
-		char buf[SUPERBLOCK_SIZE];
+		char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 		__u8 old_uuid[UUID_SIZE];
 
 		if (ext2fs_has_group_desc_csum(fs)) {

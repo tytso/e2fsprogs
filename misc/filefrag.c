@@ -198,7 +198,7 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 static int filefrag_fiemap(int fd, int blk_shift, int *num_extents,
 			   ext2fs_struct_stat *st)
 {
-	char buf[16384];
+	__u64 buf[2048];	/* __u64 for proper field alignment */
 	struct fiemap *fiemap = (struct fiemap *)buf;
 	struct fiemap_extent *fm_ext = &fiemap->fm_extents[0];
 	int count = (sizeof(buf) - sizeof(*fiemap)) /

@@ -2992,9 +2992,14 @@ int main (int argc, char *argv[])
 	}
 
 	if (super_only) {
+		check_plausibility(device_name, CHECK_FS_EXIST, NULL);
+		printf(_("%s may be further corrupted by superblock rewrite\n"),
+		       device_name);
+		if (!force)
+			proceed_question(proceed_delay);
 		fs->super->s_state |= EXT2_ERROR_FS;
 		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);
-		/* 
+		/*
 		 * The command "mke2fs -S" is used to recover
 		 * corrupted file systems, so do not mark any of the
 		 * inodes as unused; we want e2fsck to consider all

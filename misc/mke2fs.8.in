@@ -654,18 +654,26 @@ kernels only support revision 0 filesystems.  The default is to
 create revision 1 filesystems.
 .TP
 .B \-S
-Write superblock and group descriptors only.  This is useful if all of
+Write superblock and group descriptors only.  This is an extreme
+measure to be taken only in the very unlikely case that all of
 the superblock and backup superblocks are corrupted, and a last-ditch
-recovery method is desired.  It causes
+recovery method is desired by experienced users.  It causes
 .B mke2fs
-to reinitialize the
-superblock and group descriptors, while not touching the inode table
-and the block and inode bitmaps.  The
+to reinitialize the superblock and group descriptors, while not
+touching the inode table and the block and inode bitmaps.  The
 .B e2fsck
 program should be run immediately after this option is used, and there
-is no guarantee that any data will be salvageable.  It is critical to
-specify the correct filesystem blocksize when using this option,
-or there is no chance of recovery.
+is no guarantee that any data will be salvageable.  Due to the wide
+variety of possible options to
+.BR mke2fs
+that affect the on-disk layout, is critical to specify exactly the same
+the same format options, such as blocksize, fs-type, feature flags, and
+other tunables when using this option, or the filesystem will be further
+corrupted.  In some cases, such as filesystems that have been resized,
+or have had features enabled after format time, it is impossible to
+overwrite all of the superblocks corretly, and at least some filesystem
+corruption will occur.  It is best to run this on a full copy of the
+filesystem so other options can be tried if this doesn't work.
 .\" .TP
 .\" .BI \-t " test"
 .\" Check the device for bad blocks before creating the file system
