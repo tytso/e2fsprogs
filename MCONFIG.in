@@ -264,7 +264,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/MCONFIG \
 		$(DEP_MAKEFILE) $(top_builddir)/config.status
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/Makefile ./config.status
 
-@MAINTAINER_CMT@$(top_srcdir)/configure: $(top_srcdir)/configure.in
+@MAINTAINER_CMT@$(top_srcdir)/configure: $(top_srcdir)/configure.ac
 @MAINTAINER_CMT@	cd $(top_srcdir) && autoheader && autoconf
 
 coverage.txt: Makefile $(SRCS)
