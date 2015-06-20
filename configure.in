@@ -257,7 +257,7 @@ dnl handle --enable-htree
 dnl
 AH_TEMPLATE([ENABLE_HTREE], [Define to 1 if ext3/4 htree support enabled])
 AC_ARG_ENABLE([htree],
-[  --enable-htree      	  enable EXPERIMENTAL htree directory support],
+[  --disable-htree      	  disable htree directory support],
 if test "$enableval" = "no"
 then
 	HTREE_CMT=#
@@ -451,7 +451,7 @@ PROFILED_LIBUUID=
 DEPPROFILED_LIBUUID=
 UUID_CMT=
 AC_ARG_ENABLE([libuuid],
-[  --disable-libuuid	  do not build private uuid library],
+[  --enable-libuuid	  build and use private uuid library],
 if test "$enableval" = "no"
 then
 	if test -z "$PKG_CONFIG"; then
@@ -475,13 +475,24 @@ else
 	AC_MSG_RESULT([Enabling private uuid library])
 fi
 ,
-LIBUUID='$(LIB)/libuuid'$LIB_EXT
-DEPLIBUUID=$LIBUUID
-STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
-DEPSTATIC_LIBUUID=$STATIC_LIBUUID
-PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
-DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
-AC_MSG_RESULT([Enabling private uuid library by default])
+if test -n "$PKG_CONFIG"; then
+	AC_CHECK_LIB(uuid, uuid_generate,
+		[LIBUUID=`$PKG_CONFIG --libs uuid`;
+		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`])
+fi
+if test -n "$LIBUUID"; then
+	PROFILED_LIBUUID=$LIBUUID
+	UUID_CMT=#
+	AC_MSG_RESULT([Using system uuid by default])
+else
+	LIBUUID='$(LIB)/libuuid'$LIB_EXT
+	DEPLIBUUID=$LIBUUID
+	STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBUUID=$STATIC_LIBUUID
+	PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
+	AC_MSG_RESULT([Enabling private uuid library by default])
+fi
 )
 AC_SUBST(LIBUUID)
 AC_SUBST(DEPLIBUUID)
@@ -503,7 +514,7 @@ DEPPROFILED_LIBBLKID=
 BLKID_CMT=
 AH_TEMPLATE([CONFIG_BUILD_FINDFS], [Define to 1 to compile findfs])
 AC_ARG_ENABLE([libblkid],
-[  --disable-libblkid	  do not build private blkid library],
+[  --enable-libblkid	  build and use private blkid library],
 if test "$enableval" = "no"
 then
 	if test -z "$PKG_CONFIG"; then
@@ -528,14 +539,25 @@ else
 	AC_MSG_RESULT([Enabling private blkid library])
 fi
 ,
-LIBBLKID='$(LIB)/libblkid'$LIB_EXT
-DEPLIBBLKID=$LIBBLKID
-STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
-DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
-PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
-DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
-AC_DEFINE(CONFIG_BUILD_FINDFS, 1)
-AC_MSG_RESULT([Enabling private blkid library by default])
+if test -n "$PKG_CONFIG"; then
+	AC_CHECK_LIB(blkid, blkid_get_cache,
+		[LIBBLKID=`$PKG_CONFIG --libs blkid`;
+		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`])
+fi
+if test -n "$LIBBLKID"; then
+	BLKID_CMT=#
+	PROFILED_LIBBLKID=$LIBBLKID
+	AC_MSG_RESULT([Using system blkid library by default])
+else
+	LIBBLKID='$(LIB)/libblkid'$LIB_EXT
+	DEPLIBBLKID=$LIBBLKID
+	STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
+	PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
+	AC_DEFINE(CONFIG_BUILD_FINDFS, 1)
+	AC_MSG_RESULT([Enabling private blkid library by default])
+fi
 )
 AC_SUBST(LIBBLKID)
 AC_SUBST(DEPLIBBLKID)
@@ -553,7 +575,7 @@ AC_SUBST(QUOTA_MAN_COMMENT)
 PKG_PROG_PKG_CONFIG
 AH_TEMPLATE([CONFIG_QUOTA], [Define to 1 to enable quota support])
 AC_ARG_ENABLE([quota],
-[  --enable-quota	  enable quota support],
+[  --disable-quota	  disable quota support],
 if test "$enableval" = "no"
 then
 	QUOTA_CMT=#
@@ -563,11 +585,12 @@ else
 	AC_DEFINE(CONFIG_QUOTA, 1)
 	AC_MSG_RESULT([Enabling quota support])
 	QUOTA_MAN_COMMENT=""
-	AC_SUBST(QUOTA_MAN_COMMENT)
 fi
 ,
-QUOTA_CMT=#
-AC_MSG_RESULT([Disabling quota support by default])
+QUOTA_CMT=
+QUOTA_MAN_COMMENT=""
+AC_DEFINE(CONFIG_QUOTA, 1)
+AC_MSG_RESULT([Enabling quota support by default])
 )
 dnl
 dnl Define stuff expected for quota library
@@ -1157,7 +1180,7 @@ FUSE_CMT=
 FUSE_LIB=
 dnl osxfuse.dylib supersedes fuselib.dylib
 AC_ARG_ENABLE([fuse2fs],
-[  --disable-fuse2fs	do not build fuse2fs],
+[  --disable-fuse2fs	  do not build fuse2fs],
 if test "$enableval" = "no"
 then
 	FUSE_CMT="#"

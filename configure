@@ -1524,7 +1524,7 @@ Optional Features:
 
   --enable-symlink-build  use symlinks while building instead of hard links
   --enable-verbose-makecmds enable verbose make command output
-  --enable-htree      	  enable EXPERIMENTAL htree directory support
+  --disable-htree      	  disable htree directory support
   --enable-elf-shlibs	  select ELF shared libraries
   --enable-bsd-shlibs	  select BSD shared libraries
   --enable-profile	  build profiling libraries
@@ -1532,9 +1532,9 @@ Optional Features:
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --disable-testio-debug  disable the use of the test I/O manager for debugging
-  --disable-libuuid	  do not build private uuid library
-  --disable-libblkid	  do not build private blkid library
-  --enable-quota	  enable quota support
+  --enable-libuuid	  build and use private uuid library
+  --enable-libblkid	  build and use private blkid library
+  --disable-quota	  disable quota support
   --disable-backtrace	  disable use backtrace
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
@@ -1552,7 +1552,7 @@ Optional Features:
                           specify multithreading API
   --disable-threads       build without multithread safety
   --disable-rpath         do not hardcode runtime library paths
-  --disable-fuse2fs	do not build fuse2fs
+  --disable-fuse2fs	  do not build fuse2fs
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -5305,14 +5305,64 @@ $as_echo "Enabling private uuid library" >&6; }
 fi
 
 else
-  LIBUUID='$(LIB)/libuuid'$LIB_EXT
-DEPLIBUUID=$LIBUUID
-STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
-DEPSTATIC_LIBUUID=$STATIC_LIBUUID
-PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
-DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private uuid library by default" >&5
+  if test -n "$PKG_CONFIG"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate in -luuid" >&5
+$as_echo_n "checking for uuid_generate in -luuid... " >&6; }
+if ${ac_cv_lib_uuid_uuid_generate+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-luuid  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char uuid_generate ();
+int
+main ()
+{
+return uuid_generate ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_uuid_uuid_generate=yes
+else
+  ac_cv_lib_uuid_uuid_generate=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_uuid_uuid_generate" >&5
+$as_echo "$ac_cv_lib_uuid_uuid_generate" >&6; }
+if test "x$ac_cv_lib_uuid_uuid_generate" = xyes; then :
+  LIBUUID=`$PKG_CONFIG --libs uuid`;
+		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`
+fi
+
+fi
+if test -n "$LIBUUID"; then
+	PROFILED_LIBUUID=$LIBUUID
+	UUID_CMT=#
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Using system uuid by default" >&5
+$as_echo "Using system uuid by default" >&6; }
+else
+	LIBUUID='$(LIB)/libuuid'$LIB_EXT
+	DEPLIBUUID=$LIBUUID
+	STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBUUID=$STATIC_LIBUUID
+	PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private uuid library by default" >&5
 $as_echo "Enabling private uuid library by default" >&6; }
+fi
 
 fi
 
@@ -5520,16 +5570,66 @@ $as_echo "Enabling private blkid library" >&6; }
 fi
 
 else
-  LIBBLKID='$(LIB)/libblkid'$LIB_EXT
-DEPLIBBLKID=$LIBBLKID
-STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
-DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
-PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
-DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
-$as_echo "#define CONFIG_BUILD_FINDFS 1" >>confdefs.h
+  if test -n "$PKG_CONFIG"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for blkid_get_cache in -lblkid" >&5
+$as_echo_n "checking for blkid_get_cache in -lblkid... " >&6; }
+if ${ac_cv_lib_blkid_blkid_get_cache+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lblkid  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private blkid library by default" >&5
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char blkid_get_cache ();
+int
+main ()
+{
+return blkid_get_cache ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_blkid_blkid_get_cache=yes
+else
+  ac_cv_lib_blkid_blkid_get_cache=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_blkid_blkid_get_cache" >&5
+$as_echo "$ac_cv_lib_blkid_blkid_get_cache" >&6; }
+if test "x$ac_cv_lib_blkid_blkid_get_cache" = xyes; then :
+  LIBBLKID=`$PKG_CONFIG --libs blkid`;
+		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`
+fi
+
+fi
+if test -n "$LIBBLKID"; then
+	BLKID_CMT=#
+	PROFILED_LIBBLKID=$LIBBLKID
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Using system blkid library by default" >&5
+$as_echo "Using system blkid library by default" >&6; }
+else
+	LIBBLKID='$(LIB)/libblkid'$LIB_EXT
+	DEPLIBBLKID=$LIBBLKID
+	STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
+	PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
+	$as_echo "#define CONFIG_BUILD_FINDFS 1" >>confdefs.h
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling private blkid library by default" >&5
 $as_echo "Enabling private blkid library by default" >&6; }
+fi
 
 fi
 
@@ -5678,13 +5778,15 @@ else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling quota support" >&5
 $as_echo "Enabling quota support" >&6; }
 	QUOTA_MAN_COMMENT=""
-
 fi
 
 else
-  QUOTA_CMT=#
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling quota support by default" >&5
-$as_echo "Disabling quota support by default" >&6; }
+  QUOTA_CMT=
+QUOTA_MAN_COMMENT=""
+$as_echo "#define CONFIG_QUOTA 1" >>confdefs.h
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling quota support by default" >&5
+$as_echo "Enabling quota support by default" >&6; }
 
 fi
 
