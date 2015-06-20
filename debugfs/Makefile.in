@@ -121,12 +121,21 @@ uninstall:
 
 clean::
 	$(RM) -f $(PROGS) debugfs.8 \#* *.s *.o *.a *~ debug_cmds.c \
-		extent_cmds.c ro_debug_cmds.c core rdebugfs debugfs.static
+		extent_cmds.c ro_debug_cmds.c core rdebugfs debugfs.static \
+		tst_set_fields
 
 mostlyclean: clean
 distclean: clean
 	$(RM) -f debug_cmds.c .depend Makefile $(srcdir)/TAGS \
 		$(srcdir)/Makefile.in.old
+
+tst_set_fields: set_fields.c util.c
+	$(E) "  LD $@"
+	$(Q) $(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(SYSLIBS) -DUNITTEST \
+		-o tst_set_fields $(srcdir)/set_fields.c $(srcdir)/util.c $(LIBS)
+
+check:: tst_set_fields
+	$(TESTENV) ./tst_set_fields
 
 # +++ Dependency line eater +++
 # 
