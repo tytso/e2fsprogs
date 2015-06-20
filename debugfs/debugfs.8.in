@@ -392,6 +392,11 @@ is specified, also clear num-1 inodes after the specified inode.
 Print a list of commands understood by
 .BR debugfs .
 .TP
+.BI hexdump_block " block"
+Dump the contents of
+.I block
+in hex and ASCII.
+.TP
 .BI htree_dump " filespec"
 Dump the hash-indexed directory
 .IR filespec ,

@@ -103,6 +103,7 @@ extern void do_dirsearch(int argc, char **argv);
 
 /* logdump.c */
 extern void do_logdump(int argc, char **argv);
+extern void do_hexdump_block(int argc, char **argv);
 
 /* lsdel.c */
 extern void do_lsdel(int argc, char **argv);
