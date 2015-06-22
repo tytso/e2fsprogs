@@ -85,11 +85,12 @@ err:
 errcode_t ext2fs_inline_data_init(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct ext2_inline_data data;
+	char empty[1] = { '\0' };
 
 	data.fs = fs;
 	data.ino = ino;
 	data.ea_size = 0;
-	data.ea_data = "";
+	data.ea_data = empty;
 	return ext2fs_inline_data_ea_set(&data);
 }
 
@@ -285,7 +286,8 @@ static errcode_t ext2fs_inline_data_convert_dir(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_dir_entry *dir, *dir2;
 	struct ext2_dir_entry_tail *t;
 	errcode_t retval;
-	unsigned int offset, rec_len;
+	int offset;
+	unsigned int rec_len;
 	int csum_size = 0;
 	int filetype = 0;
 
@@ -532,7 +534,7 @@ errcode_t ext2fs_inline_data_get(ext2_filsys fs, ext2_ino_t ino,
 
 	memcpy(buf, (void *)inode->i_block, EXT4_MIN_INLINE_DATA_SIZE);
 	if (data.ea_size > 0)
-		memcpy(buf + EXT4_MIN_INLINE_DATA_SIZE,
+		memcpy((char *) buf + EXT4_MIN_INLINE_DATA_SIZE,
 		       data.ea_data, data.ea_size);
 
 	if (size)
@@ -589,7 +591,7 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 	data.fs = fs;
 	data.ino = ino;
 	data.ea_size = size - EXT4_MIN_INLINE_DATA_SIZE;
-	data.ea_data = buf + EXT4_MIN_INLINE_DATA_SIZE;
+	data.ea_data = (char *) buf + EXT4_MIN_INLINE_DATA_SIZE;
 	return ext2fs_inline_data_ea_set(&data);
 }
 

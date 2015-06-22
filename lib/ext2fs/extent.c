@@ -1536,18 +1536,18 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		if (retval)
 			goto done;
 	} else {
-		__u32	orig_length;
-		blk64_t	orig_lblk;
-		struct ext2fs_extent orig_extent;
+		__u32	save_length;
+		blk64_t	save_lblk;
+		struct ext2fs_extent save_extent;
 		errcode_t r2;
 
 #ifdef DEBUG
 		printf("(re/un)mapping in middle of extent\n");
 #endif
 		/* need to split this extent; later */
-		orig_lblk = extent.e_lblk;
-		orig_length = extent.e_len;
-		orig_extent = extent;
+		save_lblk = extent.e_lblk;
+		save_length = extent.e_len;
+		save_extent = extent;
 
 		/* shorten pre-split extent */
 		extent.e_len = (logical - extent.e_lblk);
@@ -1560,17 +1560,17 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			retval = ext2fs_extent_insert(handle,
 					EXT2_EXTENT_INSERT_AFTER, &newextent);
 			if (retval) {
-				r2 = ext2fs_extent_goto(handle, orig_lblk);
+				r2 = ext2fs_extent_goto(handle, save_lblk);
 				if (r2 == 0)
 					(void)ext2fs_extent_replace(handle, 0,
-							      &orig_extent);
+							      &save_extent);
 				goto done;
 			}
 		}
 		/* add post-split extent */
 		extent.e_pblk += extent.e_len + 1;
 		extent.e_lblk += extent.e_len + 1;
-		extent.e_len = orig_length - extent.e_len - 1;
+		extent.e_len = save_length - extent.e_len - 1;
 		retval = ext2fs_extent_insert(handle,
 				EXT2_EXTENT_INSERT_AFTER, &extent);
 		if (retval) {
@@ -1580,10 +1580,10 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 				if (r2 == 0)
 					(void)ext2fs_extent_delete(handle, 0);
 			}
-			r2 = ext2fs_extent_goto(handle, orig_lblk);
+			r2 = ext2fs_extent_goto(handle, save_lblk);
 			if (r2 == 0)
 				(void)ext2fs_extent_replace(handle, 0,
-							    &orig_extent);
+							    &save_extent);
 			goto done;
 		}
 	}

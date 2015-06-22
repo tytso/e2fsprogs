@@ -267,7 +267,7 @@ ext2fs_file_read_inline_data(ext2_file_t file, void *buf,
 		count = wanted;
 	memcpy(buf, file->buf + file->pos, count);
 	file->pos += count;
-	buf += count;
+	buf = (char *) buf + count;
 
 out:
 	if (got)
@@ -484,7 +484,7 @@ errcode_t ext2fs_file_llseek(ext2_file_t file, __u64 offset,
 errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 			    int whence, ext2_off_t *ret_pos)
 {
-	__u64		loffset, ret_loffset;
+	__u64		loffset, ret_loffset = 0;
 	errcode_t	retval;
 
 	loffset = offset;

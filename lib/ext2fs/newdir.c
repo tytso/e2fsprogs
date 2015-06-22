@@ -97,7 +97,8 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 /*
  * Create new directory on inline data
  */
-errcode_t ext2fs_new_dir_inline_data(ext2_filsys fs, ext2_ino_t dir_ino,
+errcode_t ext2fs_new_dir_inline_data(ext2_filsys fs,
+				     ext2_ino_t dir_ino EXT2FS_ATTR((unused)),
 				     ext2_ino_t parent_ino, __u32 *iblock)
 {
 	struct ext2_dir_entry 	*dir = NULL;

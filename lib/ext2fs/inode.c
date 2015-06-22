@@ -64,7 +64,7 @@ struct ext2_struct_inode_scan {
  */
 errcode_t ext2fs_flush_icache(ext2_filsys fs)
 {
-	int	i;
+	unsigned	i;
 
 	if (!fs->icache)
 		return 0;
@@ -81,7 +81,7 @@ errcode_t ext2fs_flush_icache(ext2_filsys fs)
  */
 void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
 {
-	int i;
+	unsigned i;
 
 	if (--icache->refcount)
 		return;
@@ -97,7 +97,7 @@ void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
 
 errcode_t ext2fs_create_inode_cache(ext2_filsys fs, unsigned int cache_size)
 {
-	int		i;
+	unsigned	i;
 	errcode_t	retval;
 
 	if (fs->icache)
@@ -410,7 +410,7 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 	ext2_ino_t	ino, inodes_to_scan;
 	unsigned int	badness, checksum_failures;
 	unsigned int	inodes_in_buf, inodes_per_block;
-	void		*p;
+	char		*p;
 	struct ext2_inode_large *inode;
 	char		*block_status;
 	unsigned int	blk, bad_csum;
@@ -423,7 +423,7 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 	if (inodes_to_scan > inodes_in_buf)
 		inodes_to_scan = inodes_in_buf;
 
-	p = scan->inode_buffer;
+	p = (char *) scan->inode_buffer;
 	ino = scan->current_inode + 1;
 	checksum_failures = badness = 0;
 	block_status = SCAN_BLOCK_STATUS(scan);
@@ -439,8 +439,9 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 #endif
 
 	while (inodes_to_scan > 0) {
-		blk = (p - (void *)scan->inode_buffer) / scan->fs->blocksize;
-		bad_csum = ext2fs_inode_csum_verify(scan->fs, ino, p) == 0;
+		blk = (p - (char *)scan->inode_buffer) / scan->fs->blocksize;
+		bad_csum = ext2fs_inode_csum_verify(scan->fs, ino,
+				(struct ext2_inode_large *) p) == 0;
 
 #ifdef WORDS_BIGENDIAN
 		ext2fs_swap_inode_full(scan->fs,
@@ -448,7 +449,7 @@ static void check_inode_block_sanity(ext2_inode_scan scan, blk64_t num_blocks)
 			       (struct ext2_inode_large *) p,
 			       0, EXT2_INODE_SIZE(scan->fs->super));
 #else
-		inode = p;
+		inode = (struct ext2_inode_large *) p;
 #endif
 
 		/* Is this inode insane? */
@@ -733,7 +734,8 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	unsigned long 	group, block, offset;
 	char 		*ptr;
 	errcode_t	retval;
-	int		clen, i, inodes_per_block;
+	unsigned	i;
+	int		clen, inodes_per_block;
 	io_channel	io;
 	int		length = EXT2_INODE_SIZE(fs->super);
 	struct ext2_inode_large	*iptr;
@@ -851,7 +853,8 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	errcode_t retval = 0;
 	struct ext2_inode_large *w_inode;
 	char *ptr;
-	int clen, i;
+	unsigned i;
+	int clen;
 	int length = EXT2_INODE_SIZE(fs->super);
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);

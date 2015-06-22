@@ -281,7 +281,7 @@ static const char *find_ea_prefix(int index)
 	return NULL;
 }
 
-static int find_ea_index(const char *fullname, char **name, int *index)
+static int find_ea_index(char *fullname, char **name, int *index)
 {
 	struct ea_name_index *e;
 
@@ -439,7 +439,7 @@ static errcode_t write_xattrs_to_buffer(struct ext2_xattr_handle *handle,
 {
 	struct ext2_xattr *x = *pos;
 	struct ext2_ext_attr_entry *e = entries_start;
-	void *end = entries_start + storage_size;
+	char *end = (char *) entries_start + storage_size;
 	char *shortname;
 	unsigned int entry_size, value_size;
 	int idx, ret;
@@ -466,20 +466,20 @@ static errcode_t write_xattrs_to_buffer(struct ext2_xattr_handle *handle,
 		 * Note that we must leave sufficient room for a (u32)0 to
 		 * mark the end of the entries.
 		 */
-		if ((void *)e + entry_size + sizeof(__u32) > end - value_size)
+		if ((char *)e + entry_size + sizeof(__u32) > end - value_size)
 			break;
 
 		/* Fill out e appropriately */
 		e->e_name_len = strlen(shortname);
 		e->e_name_index = (ret ? idx : 0);
-		e->e_value_offs = end - value_size - (void *)entries_start +
+		e->e_value_offs = end - value_size - (char *)entries_start +
 				value_offset_correction;
 		e->e_value_block = 0;
 		e->e_value_size = x->value_len;
 
 		/* Store name and value */
 		end -= value_size;
-		memcpy((void *)e + sizeof(*e), shortname, e->e_name_len);
+		memcpy((char *)e + sizeof(*e), shortname, e->e_name_len);
 		memcpy(end, x->value, e->e_value_size);
 
 		if (write_hash)
@@ -499,7 +499,7 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 {
 	struct ext2_xattr *x;
 	struct ext2_inode_large *inode;
-	void *start, *block_buf = NULL;
+	char *start, *block_buf = NULL;
 	struct ext2_ext_attr_header *header;
 	__u32 ea_inode_magic;
 	blk64_t blk;
@@ -576,7 +576,7 @@ write_ea_block:
 	start = block_buf + sizeof(struct ext2_ext_attr_header);
 
 	err = write_xattrs_to_buffer(handle, &x, start, storage_size,
-				     (void *)start - block_buf, 1);
+				     start - block_buf, 1);
 	if (err)
 		goto out2;
 
@@ -586,7 +586,7 @@ write_ea_block:
 	}
 
 	/* Write a header on the EA block */
-	header = block_buf;
+	header = (struct ext2_ext_attr_header *) block_buf;
 	header->h_magic = EXT2_EXT_ATTR_MAGIC;
 	header->h_refcount = 1;
 	header->h_blocks = 1;
@@ -631,7 +631,7 @@ out:
 static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 					 struct ext2_ext_attr_entry *entries,
 					 unsigned int storage_size,
-					 void *value_start,
+					 char *value_start,
 					 size_t *nr_read)
 {
 	struct ext2_xattr *x;
@@ -640,7 +640,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	unsigned int remain, prefix_len;
 	errcode_t err;
 	unsigned int values_size = storage_size +
-			((char *)entries - (char *)value_start);
+			((char *)entries - value_start);
 
 	x = handle->attrs;
 	while (x->name)
@@ -685,7 +685,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 
 		if (entry->e_value_size > 0 &&
 		    value_start + entry->e_value_offs <
-		    (void *)end + sizeof(__u32))
+		    (char *)end + sizeof(__u32))
 			return EXT2_ET_EA_BAD_VALUE_OFFSET;
 
 		/* e_value_block must be 0 in inode's ea */
@@ -720,7 +720,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			memcpy(x->name, prefix, prefix_len);
 		if (entry->e_name_len)
 			memcpy(x->name + prefix_len,
-			       (void *)entry + sizeof(*entry),
+			       (char *)entry + sizeof(*entry),
 			       entry->e_name_len);
 
 		err = ext2fs_get_mem(entry->e_value_size, &x->value);
@@ -757,9 +757,9 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 	struct ext2_ext_attr_header *header;
 	__u32 ea_inode_magic;
 	unsigned int storage_size;
-	void *start, *block_buf = NULL;
+	char *start, *block_buf = NULL;
 	blk64_t blk;
-	int i;
+	size_t i;
 	errcode_t err;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
@@ -795,7 +795,8 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 		start = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 			inode->i_extra_isize + sizeof(__u32);
 
-		err = read_xattrs_from_buffer(handle, start, storage_size,
+		err = read_xattrs_from_buffer(handle,
+			(struct ext2_ext_attr_entry *) start, storage_size,
 					      start, &handle->count);
 		if (err)
 			goto out;
@@ -831,7 +832,8 @@ read_ea_block:
 		storage_size = handle->fs->blocksize -
 			sizeof(struct ext2_ext_attr_header);
 		start = block_buf + sizeof(struct ext2_ext_attr_header);
-		err = read_xattrs_from_buffer(handle, start, storage_size,
+		err = read_xattrs_from_buffer(handle,
+			(struct ext2_ext_attr_entry *) start, storage_size,
 					      block_buf, &handle->count);
 		if (err)
 			goto out3;
@@ -877,7 +879,7 @@ errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
 			   void **value, size_t *value_len)
 {
 	struct ext2_xattr *x;
-	void *val;
+	char *val;
 	errcode_t err;
 
 	EXT2_CHECK_MAGIC(h, EXT2_ET_MAGIC_EA_HANDLE);
@@ -906,8 +908,8 @@ errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_inode_large *inode;
 	__u32 ea_inode_magic;
 	unsigned int minoff;
-	void *start;
-	int i;
+	char *start;
+	size_t i;
 	errcode_t err;
 
 	i = EXT2_INODE_SIZE(fs->super);
@@ -937,7 +939,7 @@ errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 		/* has xattrs.  calculate the size */
 		start= ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 			inode->i_extra_isize + sizeof(__u32);
-		entry = start;
+		entry = (struct ext2_ext_attr_entry *) start;
 		while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
 			if (!entry->e_value_block && entry->e_value_size) {
 				unsigned int offs = entry->e_value_offs;

@@ -58,7 +58,8 @@
  * At the end, update i_blocks and i_size appropriately.
  */
 
-static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
+static void dbg_print_extent(const char *desc EXT2FS_ATTR((unused)),
+		const struct ext2fs_extent *extent EXT2FS_ATTR((unused)))
 {
 #ifdef DEBUG
 	if (desc)
