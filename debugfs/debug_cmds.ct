@@ -145,9 +145,6 @@ request do_set_block_group_descriptor, "Set block group descriptor field",
 request do_logdump, "Dump the contents of the journal",
 	logdump;
 
-request do_hexdump_block, "Dump the contents of a block",
-	hexdump_block, hexdump;
-
 request do_htree_dump, "Dump a hash-indexed directory",
 	htree_dump, htree;
 

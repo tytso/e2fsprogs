@@ -714,38 +714,3 @@ static void do_hexdump (FILE *out_file, char *buf, int blocksize)
 	}
 }
 
-void do_hexdump_block(int argc, char **argv)
-{
-	blk64_t block;
-	char *buf;
-	errcode_t errcode;
-	FILE *out;
-
-	if (common_args_process(argc, argv, 2, 2, argv[0],
-				"<block>", 0))
-		return;
-
-	if (strtoblk(argv[0], argv[1], "block number", &block))
-		return;
-
-	buf = malloc(current_fs->blocksize);
-	if (!buf) {
-		fprintf(stderr, "Couldn't allocate block buffer.\n");
-		return;
-	}
-	out = open_pager();
-
-	errcode = io_channel_read_blk64(current_fs->io, block, 1, buf);
-	if (errcode) {
-		com_err("hexdump_block", errcode,
-			"while reading block %llu\n", block);
-		goto errout;
-	}
-
-	do_hexdump(out, buf, current_fs->blocksize);
-
-errout:
-	free(buf);
-	close_pager(out);
-}
-
