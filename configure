@@ -13902,14 +13902,20 @@ test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
 test -d include/asm || mkdir include/asm
+if test -z "$UUID_CMT" ; then
+	uuid_out_list="lib/uuid/Makefile lib/uuid/uuid.pc \
+		lib/uuid/uuid_types.h"
+fi
+if test -z "$BLKID_CMT" ; then
+	blkid_out_list="lib/blkid/Makefile lib/blkid/blkid.pc \
+		lib/blkid/blkid_types.h"
+fi
 for i in MCONFIG Makefile e2fsprogs.spec \
 	util/Makefile util/subst.conf util/gen-tarball util/install-symlink \
 	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
 	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
-	lib/uuid/Makefile lib/uuid/uuid_types.h \
-	lib/blkid/Makefile lib/blkid/blkid_types.h lib/quota/Makefile \
-	lib/ss/ss.pc lib/uuid/uuid.pc lib/et/com_err.pc \
-	lib/e2p/e2p.pc lib/blkid/blkid.pc lib/ext2fs/ext2fs.pc \
+	$uuid_out_list $blkid_out_list lib/quota/Makefile \
+	lib/ss/ss.pc lib/et/com_err.pc lib/e2p/e2p.pc lib/ext2fs/ext2fs.pc \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
 	resize/Makefile doc/Makefile intl/Makefile \
