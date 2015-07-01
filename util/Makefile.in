@@ -53,7 +53,7 @@ tarballs: gen-tarball
 
 clean::
 	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core *.tar.gz gen-tarball \
-		copy-sparse dirpaths.h
+		copy-sparse dirpaths.h install-symlink
 
 mostlyclean: clean
 

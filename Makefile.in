@@ -115,7 +115,8 @@ clean:: clean-recursive clean-local clean-doc
 	$(RM) -f $(SUBS) 
 
 distclean: distclean-doc distclean-recursive
-	$(RM) -rf autom4te.cache e2fsprogs.spec ext2ed/Makefile po/stamp-po
+	$(RM) -rf autom4te.cache e2fsprogs.spec ext2ed/Makefile po/stamp-po \
+		asm_types.h config.log public_config.h parse-types.log
 	$(MAKE) distclean-local 
 
 realclean: realclean-recursive realclean-local

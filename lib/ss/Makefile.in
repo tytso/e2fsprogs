@@ -172,7 +172,7 @@ check:: all test_ss
 clean::
 	$(RM) -f ../libss.a libss.a mk_cmds ss_err.h ss_err.c std_rqs.c \
 		tst_cmds.c test_ss test_out test.diff *.o *~ \#* *.bak core \
-		test_cmd.c
+		test_cmd.c ss.pc
 
 mostlyclean:: clean
 distclean:: clean

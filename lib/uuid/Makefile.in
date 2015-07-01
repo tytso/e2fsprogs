@@ -167,8 +167,9 @@ uninstall::
 	$(RM) -f $(DESTDIR)$(man3dir)/uuid_generate_random.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
 
 clean::
-	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* uuid.h
-	$(RM) -f ../libuuid.a ../libuuid_p.a tst_uuid uuid_time $(SMANPAGES)
+	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* uuid.h \
+		../libuuid.a ../libuuid_p.a tst_uuid uuid_time \
+		uuid.pc uuid_types.h $(SMANPAGES)
 
 check:: tst_uuid
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_uuid

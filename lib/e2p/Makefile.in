@@ -102,7 +102,7 @@ uninstall::
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/*
-	$(RM) -f ../libe2p.a ../libe2p_p.a tst_ostype tst_feature
+	$(RM) -f ../libe2p.a ../libe2p_p.a tst_ostype tst_feature e2p.pc
 
 mostlyclean:: clean
 distclean:: clean

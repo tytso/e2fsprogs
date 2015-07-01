@@ -179,7 +179,7 @@ clean::
 		tst_tag tst_types tests/*.out tests/*.ok \
 		tests/*.img results test_probe core profiled/* \
 		blkid.h blkid_types.h ../libblkid.a ../libblkid_p.a \
-		$(SMANPAGES) blkid
+		$(SMANPAGES) blkid blkid.pc
 	@echo rmdir tests/tmp tests
 	@(rmdir tests/tmp tests 2> /dev/null ; exit 0)
 

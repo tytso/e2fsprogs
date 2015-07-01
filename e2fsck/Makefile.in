@@ -264,7 +264,8 @@ uninstall:
 clean::
 	$(RM) -f $(PROGS) \#* *\# *.s *.o *.a *~ core e2fsck.static \
 		e2fsck.shared e2fsck.profiled flushb e2fsck.8 \
-		tst_problem tst_region tst_refcount e2fsck.conf.5 \
+		tst_problem tst_region tst_refcount tst_crc32 \
+		gen_crc32table e2fsck.conf.5 \
 		prof_err.c prof_err.h test_profile
 	$(RM) -rf profiled
 
