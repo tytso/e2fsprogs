@@ -175,7 +175,6 @@ void e2fsck_pass2(e2fsck_t ctx)
 		return;
 	}
 
-#ifdef ENABLE_HTREE
 	for (i=0; (dx_dir = e2fsck_dx_dir_info_iter(ctx, &i)) != 0;) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
@@ -264,7 +263,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 		}
 	}
 	e2fsck_free_dx_dir_info(ctx);
-#endif
+
 	ext2fs_free_mem(&buf);
 	ext2fs_free_dblist(fs->dblist);
 
@@ -543,7 +542,6 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 	return 1;
 }
 
-#ifdef ENABLE_HTREE
 static void parse_int_node(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
 			   struct check_dir_struct *cd,
@@ -673,7 +671,6 @@ clear_and_exit:
 	dx_dir->numblocks = 0;
 	e2fsck_rehash_dir_later(cd->ctx, cd->pctx.ino);
 }
-#endif /* ENABLE_HTREE */
 
 /*
  * Given a busted directory, try to salvage it somehow.
@@ -883,9 +880,7 @@ static int check_dir_block(ext2_filsys fs,
 			   void *priv_data)
 {
  	struct dx_dir_info	*dx_dir;
-#ifdef ENABLE_HTREE
 	struct dx_dirblock_info	*dx_db = 0;
-#endif /* ENABLE_HTREE */
 	struct ext2_dir_entry 	*dirent, *prev, dot, dotdot;
 	ext2_dirhash_t		hash;
 	unsigned int		offset = 0;
@@ -1038,7 +1033,6 @@ inline_read_fail:
 		memcpy(buf, buf2, fs->blocksize);
 		ext2fs_free_mem(&buf2);
 	}
-#ifdef ENABLE_HTREE
 	dx_dir = e2fsck_get_dx_dir_info(ctx, ino);
 	if (dx_dir && dx_dir->numblocks) {
 		if (db->blockcnt >= dx_dir->numblocks) {
@@ -1088,7 +1082,6 @@ inline_read_fail:
 		is_leaf = 0;
 	}
 out_htree:
-#endif /* ENABLE_HTREE */
 
 	/* Leaf node with no space for csum?  Rebuild dirs in pass 3A. */
 	if (is_leaf && !inline_data_size && failed_csum &&
@@ -1394,7 +1387,6 @@ skip_checksum:
 		if (check_filetype(ctx, dirent, ino, &cd->pctx))
 			dir_modified++;
 
-#ifdef ENABLE_HTREE
 		if (dx_db) {
 			ext2fs_dirhash(dx_dir->hashversion, dirent->name,
 				       ext2fs_dirent_name_len(dirent),
@@ -1404,7 +1396,6 @@ skip_checksum:
 			if (hash > dx_db->max_hash)
 				dx_db->max_hash = hash;
 		}
-#endif
 
 		/*
 		 * If this is a directory, then mark its parent in its
@@ -1480,7 +1471,6 @@ skip_checksum:
 #if 0
 	printf("\n");
 #endif
-#ifdef ENABLE_HTREE
 	if (dx_db) {
 #ifdef DX_DEBUG
 		printf("db_block %d, type %d, min_hash 0x%0x, max_hash 0x%0x\n",
@@ -1492,7 +1482,6 @@ skip_checksum:
 		    (dx_db->type == DX_DIRBLOCK_NODE))
 			parse_int_node(fs, db, cd, dx_dir, buf, failed_csum);
 	}
-#endif /* ENABLE_HTREE */
 
 	if (offset != max_block_size) {
 		cd->pctx.num = rec_len + offset - max_block_size;

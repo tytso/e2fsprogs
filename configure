@@ -770,7 +770,6 @@ LIB_EXT
 PROFILE_CMT
 BSDLIB_CMT
 ELF_CMT
-HTREE_CMT
 Q
 ES
 E
@@ -861,7 +860,6 @@ enable_relative_symlinks
 enable_symlink_relative_symlinks
 enable_symlink_build
 enable_verbose_makecmds
-enable_htree
 enable_elf_shlibs
 enable_bsd_shlibs
 enable_profile
@@ -1524,7 +1522,6 @@ Optional Features:
 
   --enable-symlink-build  use symlinks while building instead of hard links
   --enable-verbose-makecmds enable verbose make command output
-  --disable-htree      	  disable htree directory support
   --enable-elf-shlibs	  select ELF shared libraries
   --enable-bsd-shlibs	  select BSD shared libraries
   --enable-profile	  build profiling libraries
@@ -4902,32 +4899,6 @@ Q=@
 fi
 
 
-
-
-
-# Check whether --enable-htree was given.
-if test "${enable_htree+set}" = set; then :
-  enableval=$enable_htree; if test "$enableval" = "no"
-then
-	HTREE_CMT=#
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling htree directory support" >&5
-$as_echo "Disabling htree directory support" >&6; }
-else
-	HTREE_CMT=
-	$as_echo "#define ENABLE_HTREE 1" >>confdefs.h
-
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling htree directory support" >&5
-$as_echo "Enabling htree directory support" >&6; }
-fi
-
-else
-  HTREE_CMT=
-$as_echo "#define ENABLE_HTREE 1" >>confdefs.h
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling htree directory support by default" >&5
-$as_echo "Enabling htree directory support by default" >&6; }
-
-fi
 
 
 E2_PKG_CONFIG_STATIC=--static

@@ -89,9 +89,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ctx->fs->dblist = 0;
 	}
 	e2fsck_free_dir_info(ctx);
-#ifdef ENABLE_HTREE
 	e2fsck_free_dx_dir_info(ctx);
-#endif
 	if (ctx->refcount) {
 		ea_refcount_free(ctx->refcount);
 		ctx->refcount = 0;

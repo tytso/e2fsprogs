@@ -253,27 +253,6 @@ AC_SUBST(E)
 AC_SUBST(ES)
 AC_SUBST(Q)
 dnl
-dnl handle --enable-htree
-dnl
-AH_TEMPLATE([ENABLE_HTREE], [Define to 1 if ext3/4 htree support enabled])
-AC_ARG_ENABLE([htree],
-[  --disable-htree      	  disable htree directory support],
-if test "$enableval" = "no"
-then
-	HTREE_CMT=#
-	AC_MSG_RESULT([Disabling htree directory support])
-else
-	HTREE_CMT=
-	AC_DEFINE(ENABLE_HTREE, 1)
-	AC_MSG_RESULT([Enabling htree directory support])
-fi
-,
-HTREE_CMT=
-AC_DEFINE(ENABLE_HTREE, 1)
-AC_MSG_RESULT([Enabling htree directory support by default])
-)
-AC_SUBST(HTREE_CMT)
-dnl
 dnl This needs to be before all of the --enable-*-shlibs options
 dnl
 E2_PKG_CONFIG_STATIC=--static

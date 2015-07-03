@@ -1712,14 +1712,6 @@ print_unsupp_features:
 		log_err(ctx, "\n");
 		goto get_newer;
 	}
-#ifndef ENABLE_HTREE
-	if (sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
-		log_err(ctx, _("%s: e2fsck not compiled with HTREE support,\n\t"
-			  "but filesystem %s has HTREE directories.\n"),
-			ctx->program_name, ctx->device_name);
-		goto get_newer;
-	}
-#endif
 
 	/*
 	 * If the user specified a specific superblock, presumably the

@@ -3068,9 +3068,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			inode->i_flags &= ~EXT2_INDEX_FL;
 			dirty_inode++;
 		} else {
-#ifdef ENABLE_HTREE
 			e2fsck_add_dx_dir(ctx, ino, pb.last_block+1);
-#endif
 		}
 	}
 

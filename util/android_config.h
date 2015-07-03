@@ -7,7 +7,6 @@
 #define ROOT_SYSCONFDIR "/etc"
 
 #define DISABLE_BACKTRACE 1
-#define ENABLE_HTREE 1
 #define HAVE_DIRENT_H 1
 #define HAVE_ERRNO_H 1
 #define HAVE_EXT2_IOCTLS 1
