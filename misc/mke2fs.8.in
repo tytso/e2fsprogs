@@ -377,13 +377,13 @@ as default.
 .TP
 .BI nodiscard
 Do not attempt to discard blocks at mkfs time.
-@QUOTA_MAN_COMMENT@.TP
-@QUOTA_MAN_COMMENT@.BI quotatype
-@QUOTA_MAN_COMMENT@Specify which quota type ('usr' or 'grp') is to be
-@QUOTA_MAN_COMMENT@initialized. This option has effect only if the
-@QUOTA_MAN_COMMENT@.B quota
-@QUOTA_MAN_COMMENT@feature is set. Without this extended option, the default
-@QUOTA_MAN_COMMENT@behavior is to initialize both user and group quotas.
+.TP
+.BI quotatype
+Specify which quota type ('usr' or 'grp') is to be
+initialized. This option has effect only if the
+.B quota
+feature is set. Without this extended option, the default
+behavior is to initialize both user and group quotas.
 .RE
 .TP
 .BI \-f " fragment-size"

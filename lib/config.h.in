@@ -15,9 +15,6 @@
 /* Define to 1 to enable mmp support */
 #undef CONFIG_MMP
 
-/* Define to 1 to enable quota support */
-#undef CONFIG_QUOTA
-
 /* Define to 1 if the testio I/O manager should be enabled */
 #undef CONFIG_TESTIO_DEBUG
 

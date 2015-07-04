@@ -567,9 +567,9 @@ only supports clearing this filesystem feature.
 .TP
 .B mmp
 Enable or disable multiple mount protection (MMP) feature.
-@QUOTA_MAN_COMMENT@.TP
-@QUOTA_MAN_COMMENT@.B quota
-@QUOTA_MAN_COMMENT@Enable internal file system quota inodes.
+.TP
+.B quota
+Enable internal file system quota inodes.
 .TP
 .B read-only
 Force the kernel to mount the file system read-only.

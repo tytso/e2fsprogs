@@ -202,17 +202,17 @@ available in the resize inode.
 This ext4 feature provides multiple mount protection (MMP).  MMP helps to
 protect the filesystem from being multiply mounted and is useful in
 shared storage environments.
-@QUOTA_MAN_COMMENT@.TP
-@QUOTA_MAN_COMMENT@.B quota
-@QUOTA_MAN_COMMENT@.br
-@QUOTA_MAN_COMMENT@Create quota inodes (inode #3 for userquota and inode
-@QUOTA_MAN_COMMENT@#4 for group quota) and set them in the superblock.
-@QUOTA_MAN_COMMENT@With this feature, the quotas will be enabled
-@QUOTA_MAN_COMMENT@automatically when the filesystem is mounted.
-@QUOTA_MAN_COMMENT@.IP
-@QUOTA_MAN_COMMENT@Causes the quota files (i.e., user.quota and
-@QUOTA_MAN_COMMENT@group.quota which existed
-@QUOTA_MAN_COMMENT@in the older quota design) to be hidden inodes.
+.TP
+.B quota
+.br
+Create quota inodes (inode #3 for userquota and inode
+#4 for group quota) and set them in the superblock.
+With this feature, the quotas will be enabled
+automatically when the filesystem is mounted.
+.IP
+Causes the quota files (i.e., user.quota and
+group.quota which existed
+in the older quota design) to be hidden inodes.
 .TP
 .B resize_inode
 .br

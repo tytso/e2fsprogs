@@ -546,48 +546,6 @@ AC_SUBST(PROFILED_LIBBLKID)
 AC_SUBST(DEPPROFILED_LIBBLKID)
 AC_SUBST(BLKID_CMT)
 dnl
-dnl handle --enable-quota
-dnl
-QUOTA_MAN_COMMENT='.\"'
-QUOTA_CMT=
-AC_SUBST(QUOTA_MAN_COMMENT)
-PKG_PROG_PKG_CONFIG
-AH_TEMPLATE([CONFIG_QUOTA], [Define to 1 to enable quota support])
-AC_ARG_ENABLE([quota],
-[  --disable-quota	  disable quota support],
-if test "$enableval" = "no"
-then
-	QUOTA_CMT=#
-	AC_MSG_RESULT([Disabling quota support])
-else
-	QUOTA_CMT=
-	AC_DEFINE(CONFIG_QUOTA, 1)
-	AC_MSG_RESULT([Enabling quota support])
-	QUOTA_MAN_COMMENT=""
-fi
-,
-QUOTA_CMT=
-QUOTA_MAN_COMMENT=""
-AC_DEFINE(CONFIG_QUOTA, 1)
-AC_MSG_RESULT([Enabling quota support by default])
-)
-dnl
-dnl Define stuff expected for quota library
-dnl
-LIBQUOTA='$(LIB)/libquota'$LIB_EXT
-DEPLIBQUOTA=$LIBQUOTA
-STATIC_LIBQUOTA='$(LIB)/libquota'$STATIC_LIB_EXT
-DEPSTATIC_LIBQUOTA=$STATIC_LIBQUOTA
-PROFILED_LIBQUOTA='$(LIB)/libquota'$PROFILED_LIB_EXT
-DEPPROFILED_LIBQUOTA=$PROFILED_LIBQUOTA
-AC_SUBST(LIBQUOTA)
-AC_SUBST(DEPLIBQUOTA)
-AC_SUBST(STATIC_LIBQUOTA)
-AC_SUBST(DEPSTATIC_LIBQUOTA)
-AC_SUBST(PROFILED_LIBQUOTA)
-AC_SUBST(DEPPROFILED_LIBQUOTA)
-AC_SUBST(QUOTA_CMT)
-dnl
 dnl handle --disable-backtrace
 dnl
 AH_TEMPLATE([DISABLE_BACKTRACE], [Define to 1 to disable use of backtrace])

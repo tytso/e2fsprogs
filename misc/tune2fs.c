@@ -128,14 +128,11 @@ static void usage(void)
 		_("Usage: %s [-c max_mounts_count] [-e errors_behavior] "
 		  "[-g group]\n"
 		  "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
-		  "\t[-m reserved_blocks_percent] "
-		  "[-o [^]mount_options[,...]] [-p mmp_update_interval]\n"
-		  "\t[-r reserved_blocks_count] [-u user] [-C mount_count] "
-		  "[-L volume_label]\n"
-		  "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
-#ifdef CONFIG_QUOTA
-		  "\t[-Q quota_options]\n"
-#endif
+		  "\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]]\n"
+		  "\t[-p mmp_update_interval] [-r reserved_blocks_count] "
+		  "[-u user]\n"
+		  "\t[-C mount_count] [-L volume_label] [-M last_mounted_dir]\n"
+		  "\t[-O [^]feature[,...]] [-Q quota_options]\n"
 		  "\t[-E extended-option[,...]] [-T last_check_time] "
 		  "[-U UUID]\n\t[-I new_inode_size] [-z undo_file] device\n"),
 		program_name);
@@ -160,9 +157,7 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER |
-#ifdef CONFIG_QUOTA
 		EXT4_FEATURE_RO_COMPAT_QUOTA |
-#endif
 		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM |
 		EXT4_FEATURE_RO_COMPAT_READONLY
 };
@@ -183,9 +178,7 @@ static __u32 clear_ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
-#ifdef CONFIG_QUOTA
 		EXT4_FEATURE_RO_COMPAT_QUOTA |
-#endif
 		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM |
 		EXT4_FEATURE_RO_COMPAT_READONLY
 };
@@ -1470,7 +1463,6 @@ static void handle_quota_options(ext2_filsys fs)
 	return;
 }
 
-#ifdef CONFIG_QUOTA
 static void parse_quota_opts(const char *opts)
 {
 	char	*buf, *token, *next, *p;
@@ -1513,7 +1505,6 @@ static void parse_quota_opts(const char *opts)
 	}
 	free(buf);
 }
-#endif
 
 static void parse_e2label_options(int argc, char ** argv)
 {
@@ -1575,13 +1566,9 @@ static void parse_tune2fs_options(int argc, char **argv)
 	char *tmp;
 	struct group *gr;
 	struct passwd *pw;
-	char optstring[100] = "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:T:U:z:";
+	char optstring[100] = "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:T:U:z:Q:";
 
-#ifdef CONFIG_QUOTA
-	strcat(optstring, "Q:");
-#endif
 	open_flag = 0;
-
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	while ((c = getopt(argc, argv, optstring)) != EOF)
 		switch (c) {
@@ -1737,13 +1724,11 @@ static void parse_tune2fs_options(int argc, char **argv)
 			features_cmd = optarg;
 			open_flag = EXT2_FLAG_RW;
 			break;
-#ifdef CONFIG_QUOTA
 		case 'Q':
 			Q_flag = 1;
 			parse_quota_opts(optarg);
 			open_flag = EXT2_FLAG_RW;
 			break;
-#endif
 		case 'r':
 			reserved_blocks = strtoul(optarg, &tmp, 0);
 			if (*tmp) {
