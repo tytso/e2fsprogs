@@ -2,6 +2,9 @@ LOCAL_PATH := $(call my-dir)
 
 libext2_quota_src_files := \
 	mkquota.c \
+	profile.c \
+	profile_helpers.c \
+	prof_err.c \
 	quotaio.c \
 	quotaio_tree.c \
 	quotaio_v2.c \

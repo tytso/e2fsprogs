@@ -45,8 +45,8 @@ extern int optind;
 #include "e2p/e2p.h"
 #include "ext2fs/ext2fs.h"
 #include "util.h"
-#include "profile.h"
-#include "prof_err.h"
+#include "support/profile.h"
+#include "support/prof_err.h"
 #include "nls-enable.h"
 #include "mke2fs.h"
 

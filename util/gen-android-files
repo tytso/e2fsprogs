@@ -1,8 +1,8 @@
 #!/bin/sh
 
 ANDROID_GENERATED_FILES="lib/ext2fs/ext2_err.c lib/ext2fs/ext2_err.h \
-	lib/ss/ss_err.c lib/ss/ss_err.h e2fsck/prof_err.c \
-	e2fsck/prof_err.h misc/prof_err.c misc/prof_err.h \
+	lib/ss/ss_err.c lib/ss/ss_err.h lib/support/prof_err.c \
+	lib/support/prof_err.h \
 	e2fsck/nls-enable.h e2fsck/plausible.c e2fsck/plausible.h \
 	lib/blkid/blkid_types.h lib/uuid/uuid_types.h \
 	lib/ext2fs/ext2_types.h lib/config.h lib/blkid/blkid.h \
@@ -20,7 +20,7 @@ sed -e "s;@SS_DIR@;$SS_DIR;" < $SS_DIR/mk_cmds.sh.in \
 
 sed -e "s/@E2FSPROGS_VERSION@/$(git describe)/" < lib/ext2fs/ext2_err.et.in > lib/ext2fs/ext2_err.et
 
-for i in lib/ss/ss_err e2fsck/prof_err lib/ext2fs/ext2_err
+for i in lib/ss/ss_err lib/support/prof_err lib/ext2fs/ext2_err
 do
    rm -f $i.c $i.h
    awk -f lib/et/et_c.awk outfile=$i.c outfn=$(basename $i.c) $i.et
@@ -35,9 +35,6 @@ do
 done
 
 rm -f $MK_CMDS
-
-rm -f misc/prof_err.[ch]
-cp e2fsck/prof_err.[ch] misc/
 
 cp lib/blkid/blkid.h.in lib/blkid/blkid.h
 cp lib/uuid/uuid.h.in lib/uuid/uuid.h

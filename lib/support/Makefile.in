@@ -12,9 +12,20 @@ INSTALL = @INSTALL@
 
 all::
 
-OBJS=		mkquota.o quotaio.o quotaio_v2.o quotaio_tree.o dict.o
+OBJS=		mkquota.o \
+		profile.o \
+		profile_helpers.o \
+		prof_err.o \
+		quotaio.o \
+		quotaio_v2.o \
+		quotaio_tree.o \
+		dict.o
 
-SRCS=		$(srcdir)/mkquota.c \
+SRCS=		$(srcdir)/argv_parse.c \
+		$(srcdir)/mkquota.c \
+		$(srcdir)/profile.c \
+		$(srcdir)/profile_helpers.c \
+		prof_err.c \
 		$(srcdir)/quotaio.c \
 		$(srcdir)/quotaio_tree.c \
 		$(srcdir)/quotaio_v2.c \
@@ -25,6 +36,8 @@ LIBDIR= support
 
 @MAKEFILE_LIBRARY@
 @MAKEFILE_PROFILE@
+
+COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 
 .c.o:
 	$(E) "	CC $<"
@@ -45,9 +58,21 @@ install:: all
 
 uninstall::
 
+prof_err.c prof_err.h: prof_err.et
+	$(E) "	COMPILE_ET prof_err.et"
+	$(Q) $(COMPILE_ET) $(srcdir)/prof_err.et
+
+test_profile: $(srcdir)/profile.c profile_helpers.o argv_parse.o \
+		prof_err.o profile.h $(DEPSTATIC_LIBCOM_ERR)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o test_profile -DDEBUG_PROGRAM $(srcdir)/profile.c prof_err.o \
+		profile_helpers.o argv_parse.o $(STATIC_LIBCOM_ERR) \
+		$(ALL_CFLAGS)
+
 clean::
-	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/*
-	$(RM) -f ../libsupport.a ../libsupport_p.a $(SMANPAGES)
+	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* \
+		../libsupport.a ../libsupport_p.a $(SMANPAGES) \
+		prof_err.c prof_err.h test_profile
 
 #check:: tst_uuid
 #	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_uuid
@@ -71,6 +96,8 @@ $(OBJS):
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
+argv_parse.o: $(srcdir)/argv_parse.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/argv_parse.h
 mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
@@ -80,6 +107,13 @@ mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/quotaio.h $(srcdir)/dqblk_v2.h \
  $(srcdir)/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
  $(srcdir)/quotaio_v2.h $(srcdir)/common.h
+profile.o: $(srcdir)/profile.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/profile.h prof_err.h
+profile_helpers.o: $(srcdir)/profile_helpers.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/profile.h prof_err.h
+prof_err.o: prof_err.c
 quotaio.o: $(srcdir)/quotaio.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/quotaio.h \

@@ -49,8 +49,8 @@ LPROGS=		@E2INITRD_PROG@
 
 TUNE2FS_OBJS=	tune2fs.o util.o plausible.o
 MKLPF_OBJS=	mklost+found.o
-MKE2FS_OBJS=	mke2fs.o util.o profile.o prof_err.o default_profile.o \
-			mk_hugefiles.o create_inode.o plausible.o
+MKE2FS_OBJS=	mke2fs.o util.o default_profile.o mk_hugefiles.o \
+			create_inode.o plausible.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
@@ -98,8 +98,8 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c $(srcdir)/
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
 		$(srcdir)/uuidgen.c $(srcdir)/blkid.c $(srcdir)/logsave.c \
 		$(srcdir)/filefrag.c $(srcdir)/base_device.c \
-		$(srcdir)/ismounted.c $(srcdir)/../e2fsck/profile.c \
-		$(srcdir)/e2undo.c $(srcdir)/e2freefrag.c $(srcdir)/create_inode.c \
+		$(srcdir)/ismounted.c $(srcdir)/e2undo.c \
+		$(srcdir)/e2freefrag.c $(srcdir)/create_inode.c \
 		$(srcdir)/plausible.c $(srcdir)/fuse2fs.c \
 		$(srcdir)/../debugfs/journal.c $(srcdir)/../e2fsck/revoke.c \
 		$(srcdir)/../e2fsck/recovery.c
@@ -142,14 +142,6 @@ profiled:
 @PROFILE_CMT@	$(E) "	MKDIR $@"
 @PROFILE_CMT@	$(Q) mkdir profiled
 
-prof_err.c prof_err.h: $(srcdir)/../e2fsck/prof_err.et
-	$(E) "	COMPILE_ET prof_err.et"
-	$(Q) $(COMPILE_ET) $(srcdir)/../e2fsck/prof_err.et
-
-profile.h: $(top_srcdir)/e2fsck/profile.h
-	$(E) "	CP $<"
-	$(Q) cp $< $@
-
 mke2fs.conf: $(srcdir)/mke2fs.conf.in
 	if test -f $(srcdir)/mke2fs.conf.custom.in ; then \
 		cp $(srcdir)/mke2fs.conf.custom.in mke2fs.conf; \
@@ -161,12 +153,6 @@ default_profile.c: mke2fs.conf $(srcdir)/profile-to-c.awk
 	$(E) "	PROFILE_TO_C mke2fs.conf"
 	$(Q) $(AWK) -f $(srcdir)/profile-to-c.awk < mke2fs.conf \
 		>  default_profile.c
-profile.o:
-	$(E) "	CC $<"
-	$(Q) $(CC) -c $(ALL_CFLAGS) $(srcdir)/../e2fsck/profile.c -o $@
-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/profile.o -c \
-@PROFILE_CMT@	$(srcdir)/../e2fsck/profile.c
-
 findsuper: findsuper.o
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o $(LIBS) $(SYSLIBS)
@@ -717,9 +703,10 @@ mke2fs.o: $(srcdir)/mke2fs.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/util.h $(srcdir)/plausible.h profile.h prof_err.h \
- $(top_srcdir)/version.h $(top_srcdir)/lib/support/quotaio.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(srcdir)/util.h $(srcdir)/plausible.h $(top_srcdir)/lib/support/profile.h \
+ $(top_builddir)/lib/support/prof_err.h $(top_srcdir)/version.h \
+ $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/support/dqblk_v2.h \
  $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
  $(srcdir)/mke2fs.h $(srcdir)/create_inode.h $(top_srcdir)/lib/e2p/e2p.h \
  $(srcdir)/nls-enable.h
@@ -731,7 +718,8 @@ mk_hugefiles.o: $(srcdir)/mk_hugefiles.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(srcdir)/util.h profile.h prof_err.h $(srcdir)/nls-enable.h \
+ $(srcdir)/util.h $(top_srcdir)/lib/support/profile.h \
+ $(top_builddir)/lib/support/prof_err.h $(srcdir)/nls-enable.h \
  $(srcdir)/mke2fs.h
 chattr.o: $(srcdir)/chattr.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
@@ -791,9 +779,6 @@ base_device.o: $(srcdir)/base_device.c $(top_builddir)/lib/config.h \
 ismounted.o: $(srcdir)/ismounted.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/fsck.h \
  $(top_srcdir)/lib/et/com_err.h
-profile.o: $(srcdir)/../e2fsck/profile.c $(top_builddir)/lib/config.h \
- $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/../e2fsck/profile.h prof_err.h
 e2undo.o: $(srcdir)/e2undo.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
@@ -837,7 +822,7 @@ journal.o: $(srcdir)/../debugfs/journal.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/e2fsck/profile.h prof_err.h \
+ $(top_srcdir)/lib/support/profile.h $(top_builddir)/lib/support/prof_err.h \
  $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/support/dqblk_v2.h \
  $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
  $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
@@ -848,8 +833,8 @@ revoke.o: $(srcdir)/../e2fsck/revoke.c $(srcdir)/../e2fsck/jfs_user.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/../e2fsck/profile.h prof_err.h $(top_srcdir)/lib/support/quotaio.h \
- $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/profile.h $(top_builddir)/lib/support/prof_err.h \
+ $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/support/dqblk_v2.h \
  $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
  $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
  $(top_srcdir)/lib/ext2fs/kernel-list.h
@@ -859,8 +844,8 @@ recovery.o: $(srcdir)/../e2fsck/recovery.c $(srcdir)/../e2fsck/jfs_user.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/../e2fsck/profile.h prof_err.h $(top_srcdir)/lib/support/quotaio.h \
- $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/profile.h $(top_builddir)/lib/support/prof_err.h \
+ $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/support/dqblk_v2.h \
  $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
  $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
  $(top_srcdir)/lib/ext2fs/kernel-list.h

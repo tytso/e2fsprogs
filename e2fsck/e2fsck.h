@@ -36,8 +36,8 @@
 #include "blkid/blkid.h"
 #endif
 
-#include "profile.h"
-#include "prof_err.h"
+#include "support/profile.h"
+#include "support/prof_err.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
