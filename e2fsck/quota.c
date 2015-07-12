@@ -15,7 +15,6 @@
 
 #include "e2fsck.h"
 #include "problem.h"
-#include "quota/quotaio.h"
 
 static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 			     ext2_ino_t to_ino, int qtype)

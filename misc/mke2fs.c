@@ -56,7 +56,7 @@ extern int optind;
 #include "profile.h"
 #include "prof_err.h"
 #include "../version.h"
-#include "quota/quotaio.h"
+#include "support/quotaio.h"
 #include "mke2fs.h"
 #include "create_inode.h"
 #include "nls-enable.h"

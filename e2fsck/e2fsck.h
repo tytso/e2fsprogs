@@ -67,7 +67,7 @@
 #define E2FSCK_ATTR(x)
 #endif
 
-#include "quota/quotaio.h"
+#include "support/quotaio.h"
 
 /*
  * Exit codes used by fsck-type programs

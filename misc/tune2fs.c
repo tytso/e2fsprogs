@@ -61,7 +61,7 @@ extern int optind;
 #include "util.h"
 #include "plausible.h"
 #include "blkid/blkid.h"
-#include "quota/quotaio.h"
+#include "support/quotaio.h"
 
 #include "../version.h"
 #include "nls-enable.h"

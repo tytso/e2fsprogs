@@ -181,26 +181,26 @@ e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBBLKID) $(LIBEXT2FS)
 		$(LIBBLKID) $(LIBEXT2FS) $(LIBINTL) $(SYSLIBS)
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBBLKID) \
-		$(DEPLIBUUID) $(DEPLIBQUOTA) $(LIBEXT2FS)
+		$(DEPLIBUUID) $(DEPLIBSUPPORT) $(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
-		$(LIBBLKID) $(LIBUUID) $(LIBQUOTA) $(LIBEXT2FS) $(LIBS_E2P) \
+		$(LIBBLKID) $(LIBUUID) $(LIBSUPPORT) $(LIBEXT2FS) $(LIBS_E2P) \
 		$(LIBINTL) $(SYSLIBS) $(LIBBLKID) $(LIBMAGIC)
 
 tune2fs.static: $(TUNE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBBLKID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(LDFLAGS_STATIC) -o tune2fs.static $(TUNE2FS_OBJS) \
 		$(STATIC_LIBS) $(STATIC_LIBBLKID) $(STATIC_LIBUUID) \
-		$(STATIC_LIBQUOTA) $(STATIC_LIBE2P) $(LIBINTL) $(SYSLIBS) \
+		$(STATIC_LIBSUPPORT) $(STATIC_LIBE2P) $(LIBINTL) $(SYSLIBS) \
 		$(STATIC_LIBBLKID) $(LIBMAGIC)
 
 tune2fs.profiled: $(TUNE2FS_OBJS) $(PROFILED_DEPLIBS) \
 		$(PROFILED_E2P) $(DEPPROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID) \
-		$(DEPPROFILED_LIBQUOTA)
+		$(DEPPROFILED_LIBSUPPORT)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o tune2fs.profiled \
 		$(PROFILED_TUNE2FS_OBJS) $(PROFILED_LIBBLKID) \
-		$(PROFILED_LIBUUID) $(PROFILED_LIBQUOTA) $(PROFILED_LIBE2P) \
+		$(PROFILED_LIBUUID) $(PROFILED_LIBSUPPORT) $(PROFILED_LIBE2P) \
 		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS) $(PROFILED_LIBBLKID) \
 		$(LIBMAGIC)
 
@@ -277,27 +277,27 @@ mklost+found: $(MKLPF_OBJS)
 		$(LIBINTL) $(SYSLIBS)
 
 mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBBLKID) $(DEPLIBUUID) \
-		$(DEPLIBQUOTA) $(LIBEXT2FS)
+		$(DEPLIBSUPPORT) $(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBBLKID) \
-		$(LIBUUID) $(LIBQUOTA) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL) \
+		$(LIBUUID) $(LIBSUPPORT) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL) \
 		$(SYSLIBS) $(LIBMAGIC)
 
 mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID) \
-		$(DEPSTATIC_LIBQUOTA) $(DEPSTATIC_LIBBLKID)
+		$(DEPSTATIC_LIBSUPPORT) $(DEPSTATIC_LIBBLKID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
-		$(STATIC_LIBQUOTA) $(STATIC_LIBS) $(STATIC_LIBE2P) \
+		$(STATIC_LIBSUPPORT) $(STATIC_LIBS) $(STATIC_LIBE2P) \
 		$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL) $(SYSLIBS) \
 		$(LIBMAGIC)
 
 mke2fs.profiled: $(MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
 	$(PROFILED_LIBE2P) $(PROFILED_DEPLIBBLKID) $(PROFILED_DEPLIBUUID) \
-	$(PROFILED_LIBQUOTA)
+	$(PROFILED_LIBSUPPORT)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o mke2fs.profiled \
 		$(PROFILED_MKE2FS_OBJS) $(PROFILED_LIBBLKID) \
-		$(PROFILED_LIBUUID) $(PROFILED_LIBQUOTA) $(PROFILED_LIBE2P) \
+		$(PROFILED_LIBUUID) $(PROFILED_LIBSUPPORT) $(PROFILED_LIBE2P) \
 		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS) $(LIBMAGIC)
 
 chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
@@ -386,7 +386,7 @@ e2freefrag.profiled: $(E2FREEFRAG_OBJS) $(PROFILED_DEPLIBS)
 		$(PROFILED_E2FREEFRAG_OBJS) $(PROFILED_LIBS) $(SYSLIBS)
 
 e2fuzz: $(E2FUZZ_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
-		$(DEPLIBQUOTA) $(LIBEXT2FS)
+		$(DEPLIBSUPPORT) $(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2fuzz $(E2FUZZ_OBJS) $(LIBS) \
 		$(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(SYSLIBS)
@@ -401,7 +401,7 @@ filefrag.profiled: $(FILEFRAG_OBJS)
 		$(PROFILED_FILEFRAG_OBJS) 
 
 fuse2fs: $(FUSE2FS_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
-		$(DEPLIBQUOTA) $(LIBEXT2FS)
+		$(DEPLIBSUPPORT) $(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o fuse2fs $(FUSE2FS_OBJS) $(LIBS) \
 		$(LIBFUSE) $(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(LIBINTL)
@@ -702,10 +702,10 @@ tune2fs.o: $(srcdir)/tune2fs.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
  $(top_srcdir)/lib/ext2fs/kernel-list.h $(top_srcdir)/lib/e2p/e2p.h \
- $(srcdir)/util.h $(srcdir)/plausible.h $(top_srcdir)/lib/quota/quotaio.h \
- $(top_srcdir)/lib/quota/dqblk_v2.h $(top_srcdir)/lib/quota/quotaio_tree.h \
- $(top_srcdir)/lib/../e2fsck/dict.h $(top_srcdir)/version.h \
- $(srcdir)/nls-enable.h
+ $(srcdir)/util.h $(srcdir)/plausible.h $(top_srcdir)/lib/support/quotaio.h \
+ $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
+ $(top_srcdir)/version.h $(srcdir)/nls-enable.h
 mklost+found.o: $(srcdir)/mklost+found.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/version.h \
@@ -718,9 +718,9 @@ mke2fs.o: $(srcdir)/mke2fs.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(srcdir)/util.h $(srcdir)/plausible.h profile.h prof_err.h \
- $(top_srcdir)/version.h $(top_srcdir)/lib/quota/quotaio.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/quota/dqblk_v2.h \
- $(top_srcdir)/lib/quota/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
+ $(top_srcdir)/version.h $(top_srcdir)/lib/support/quotaio.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
  $(srcdir)/mke2fs.h $(srcdir)/create_inode.h $(top_srcdir)/lib/e2p/e2p.h \
  $(srcdir)/nls-enable.h
 mk_hugefiles.o: $(srcdir)/mk_hugefiles.c $(top_builddir)/lib/config.h \
@@ -837,27 +837,30 @@ journal.o: $(srcdir)/../debugfs/journal.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/e2fsck/profile.h prof_err.h $(top_srcdir)/lib/quota/quotaio.h \
- $(top_srcdir)/lib/quota/dqblk_v2.h $(top_srcdir)/lib/quota/quotaio_tree.h \
- $(top_srcdir)/lib/../e2fsck/dict.h $(top_srcdir)/lib/ext2fs/kernel-jbd.h \
- $(top_srcdir)/lib/ext2fs/jfs_compat.h $(top_srcdir)/lib/ext2fs/kernel-list.h
+ $(top_srcdir)/e2fsck/profile.h prof_err.h \
+ $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
+ $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
+ $(top_srcdir)/lib/ext2fs/kernel-list.h
 revoke.o: $(srcdir)/../e2fsck/revoke.c $(srcdir)/../e2fsck/jfs_user.h \
  $(srcdir)/../e2fsck/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/../e2fsck/profile.h prof_err.h $(top_srcdir)/lib/quota/quotaio.h \
- $(top_srcdir)/lib/quota/dqblk_v2.h $(top_srcdir)/lib/quota/quotaio_tree.h \
- $(top_srcdir)/lib/../e2fsck/dict.h $(top_srcdir)/lib/ext2fs/kernel-jbd.h \
- $(top_srcdir)/lib/ext2fs/jfs_compat.h $(top_srcdir)/lib/ext2fs/kernel-list.h
+ $(srcdir)/../e2fsck/profile.h prof_err.h $(top_srcdir)/lib/support/quotaio.h \
+ $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
+ $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
+ $(top_srcdir)/lib/ext2fs/kernel-list.h
 recovery.o: $(srcdir)/../e2fsck/recovery.c $(srcdir)/../e2fsck/jfs_user.h \
  $(srcdir)/../e2fsck/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/../e2fsck/profile.h prof_err.h $(top_srcdir)/lib/quota/quotaio.h \
- $(top_srcdir)/lib/quota/dqblk_v2.h $(top_srcdir)/lib/quota/quotaio_tree.h \
- $(top_srcdir)/lib/../e2fsck/dict.h $(top_srcdir)/lib/ext2fs/kernel-jbd.h \
- $(top_srcdir)/lib/ext2fs/jfs_compat.h $(top_srcdir)/lib/ext2fs/kernel-list.h
+ $(srcdir)/../e2fsck/profile.h prof_err.h $(top_srcdir)/lib/support/quotaio.h \
+ $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
+ $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
+ $(top_srcdir)/lib/ext2fs/kernel-list.h

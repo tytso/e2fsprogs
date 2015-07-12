@@ -1,11 +1,11 @@
-# Makefile for the QUOTA library
+# Makefile for e2fsprog's internal support
 #
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
 top_builddir = ../..
-my_dir = lib/quota
+my_dir = lib/support
 INSTALL = @INSTALL@
 
 @MCONFIG@
@@ -20,24 +20,10 @@ SRCS=		$(srcdir)/mkquota.c \
 		$(srcdir)/quotaio_v2.c \
 		$(srcdir)/../../e2fsck/dict.c
 
-LIBRARY= libquota
-LIBDIR= quota
-
-#ELF_VERSION = 1.0
-#ELF_SO_VERSION = 1
-#ELF_IMAGE = libquota
-#ELF_MYDIR = quota
-#ELF_INSTALL_DIR = $(root_libdir)
-#ELF_OTHER_LIBS = -lext2fs
-
-#BSDLIB_VERSION = 1.0
-#BSDLIB_IMAGE = libquota
-#BSDLIB_MYDIR = quota
-#BSDLIB_INSTALL_DIR = $(root_libdir)
+LIBRARY= libsupport
+LIBDIR= support
 
 @MAKEFILE_LIBRARY@
-#MAKEFILE_ELF#
-#MAKEFILE_BSDLIB#
 @MAKEFILE_PROFILE@
 
 .c.o:
@@ -46,18 +32,12 @@ LIBDIR= quota
 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
 	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-#ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-#BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 dict.o:
 	$(E) "	CC $<"
 	$(Q) $(CC) -c $(ALL_CFLAGS) $(top_srcdir)/e2fsck/dict.c -o $@
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/dict.o -c \
 @PROFILE_CMT@	$(top_srcdir)/e2fsck/dict.c
-#ELF_CMT#	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c \
-#ELF_CMT#	$(top_srcdir)/e2fsck/dict.c
-#BSDLIB_CMT#	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c \
-#BSDLIB_CMT#	$(top_srcdir)/e2fsck/dict.c
 
 installdirs::
 
@@ -67,7 +47,7 @@ uninstall::
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/*
-	$(RM) -f ../libquota.a ../libquota_p.a $(SMANPAGES)
+	$(RM) -f ../libsupport.a ../libsupport_p.a $(SMANPAGES)
 
 #check:: tst_uuid
 #	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_uuid
@@ -80,9 +60,9 @@ distclean:: clean
 #
 # Hack to parallel makes recognize dependencies correctly.
 #
-../../lib/libquota.a: libquota.a
-../../lib/libquota.so: image
-../../lib/libquota.dylib: image
+../../lib/libsupport.a: libsupport.a
+../../lib/libsupport.so: image
+../../lib/libsupport.dylib: image
 
 $(OBJS):
 
