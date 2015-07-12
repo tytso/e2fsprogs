@@ -9,7 +9,8 @@ ANDROID_GENERATED_FILES="lib/ext2fs/ext2_err.c lib/ext2fs/ext2_err.h \
 	lib/uuid/uuid.h lib/ext2fs/crc32c_table.h misc/default_profile.c \
 	lib/ss/std_rqs.c debugfs/debug_cmds.c debugfs/ro_debug_cmds.c \
 	debugfs/extent_cmds.c debugfs/e2freefrag.c debugfs/create_inode.c \
-	debugfs/plausible.c debugfs/recovery.c debugfs/revoke.c"
+	debugfs/plausible.c debugfs/recovery.c debugfs/revoke.c \
+	MODULE_LICENSE_GPL"
 
 SS_DIR=$(pwd)/lib/ss
 MK_CMDS=/tmp/mk_cmds$$.sh
@@ -56,5 +57,11 @@ awk -f misc/profile-to-c.awk < misc/mke2fs.conf.in > misc/default_profile.c
 
 rm -f ./gen_crc32table ./gen_crc32ctable lib/ext2fs/ext2_err.et
 
+touch MODULE_LICENSE_GPL
+
 git add -f $ANDROID_GENERATED_FILES
+if test -f COPYING
+then
+   git mv COPYING NOTICE
+fi
 git commit -m "Update generated files for Android"
