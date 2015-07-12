@@ -31,6 +31,7 @@ libext2fs_src_files := \
 	expanddir.c \
 	ext_attr.c \
 	extent.c \
+	fallocate.c \
 	fileio.c \
 	finddev.c \
 	flushb.c \
