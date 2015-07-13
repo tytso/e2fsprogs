@@ -181,7 +181,6 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 	ext2_extent_handle_t	handle;
 	struct ext2_extent_info	info;
 	struct ext2fs_extent	extent;
-	int encrypted = 0;
 
 	if ((inode->i_size_high || inode->i_size == 0) ||
 	    (inode->i_flags & EXT2_INDEX_FL))

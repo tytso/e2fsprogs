@@ -274,8 +274,7 @@ static void parse_salt(char *salt_str, int flags)
 {
 	unsigned char buf[EXT4_MAX_SALT_SIZE];
 	unsigned char *salt_buf, *cp = salt_str;
-	char tmp[80];
-	int i, fd, ret, salt_len = 0;
+	int fd, ret, salt_len = 0;
 
 	if (flags & PARSE_FLAGS_FORCE_FN)
 		goto salt_from_filename;
@@ -706,11 +705,8 @@ void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 
 void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 {
-	struct salt *salt, saltbuf;
-	char *key_ref_str = NULL;
-	char *keyring = NULL;
-	int add_passphrase = 0;
-	int i, c, opt, pad = 4;
+	struct salt saltbuf;
+	int c, pad = 4;
 
 	while ((c = getopt (argc, argv, "p:")) != EOF) {
 		switch (c) {

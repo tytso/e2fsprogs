@@ -10,8 +10,10 @@
 #define HAVE_DIRENT_H 1
 #define HAVE_ERRNO_H 1
 #define HAVE_EXT2_IOCTLS 1
+#define HAVE_FALLOCATE 1
 #define HAVE_GETOPT_H 1
 #define HAVE_GETPAGESIZE 1
+#define HAVE_GETPWUID_R 1
 #define HAVE_INTPTR_T 1
 #define HAVE_INTTYPES_H 1
 #define HAVE_LINUX_FD_H 1
@@ -20,11 +22,14 @@
 #define HAVE_MMAP 1
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NET_IF_H 1
+#define HAVE_POSIX_MEMALIGN 1
 #define HAVE_SETJMP_H 1
 #define HAVE_SNPRINTF 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRCASECMP 1
 #define HAVE_STRDUP 1
+#define HAVE_STRINGS_H 1
+#define HAVE_STRPTIME 1
 #define HAVE_SYSCONF 1
 #define HAVE_SYS_IOCTL_H 1
 #define HAVE_SYS_MMAN_H 1

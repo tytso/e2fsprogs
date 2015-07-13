@@ -1012,15 +1012,13 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 		goto unimplemented;
 	} else {
 		/* Regular file, try to use truncate/punch/zero. */
-#if defined(HAVE_FALLOCATE) && (defined(FALLOC_FL_ZERO_RANGE) || \
-	(defined(FALLOC_FL_PUNCH_HOLE) && defined(FALLOC_FL_KEEP_SIZE)))
 		struct stat statbuf;
 
 		if (count == 0)
 			return 0;
 		/*
 		 * If we're trying to zero a range past the end of the file,
-		 * extend the file size, then punch (or zero_range) everything.
+		 * extend the file size, then truncate everything.
 		 */
 		ret = fstat(data->dev, &statbuf);
 		if (ret)
@@ -1031,6 +1029,8 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 			if (ret)
 				goto err;
 		}
+#if defined(HAVE_FALLOCATE) && (defined(FALLOC_FL_ZERO_RANGE) || \
+	(defined(FALLOC_FL_PUNCH_HOLE) && defined(FALLOC_FL_KEEP_SIZE)))
 #if defined(FALLOC_FL_PUNCH_HOLE) && defined(FALLOC_FL_KEEP_SIZE)
 		ret = fallocate(data->dev,
 				FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
