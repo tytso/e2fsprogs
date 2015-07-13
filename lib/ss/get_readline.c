@@ -21,9 +21,9 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef HAVE_DLOPEN
 static void ss_release_readline(ss_data *info)
 {
-#ifdef HAVE_DLOPEN
 	if (!info->readline_handle)
 		return;
 
@@ -33,8 +33,8 @@ static void ss_release_readline(ss_data *info)
 	info->rl_completion_matches = 0;
 	dlclose(info->readline_handle);
 	info->readline_handle = 0;
-#endif
 }
+#endif
 
 /* Libraries we will try to use for readline/editline functionality */
 #define DEFAULT_LIBPATH "libreadline.so.6:libreadline.so.5:libreadline.so.4:libreadline.so:libedit.so.2:libedit.so:libeditline.so.0:libeditline.so"

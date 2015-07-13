@@ -168,6 +168,7 @@ unsigned ext2fs_mmp_new_seq(void)
 #endif
 }
 
+#ifdef CONFIG_MMP
 static errcode_t ext2fs_mmp_reset(ext2_filsys fs)
 {
 	struct mmp_struct *mmp_s = NULL;
@@ -201,6 +202,7 @@ static errcode_t ext2fs_mmp_reset(ext2_filsys fs)
 out:
 	return retval;
 }
+#endif
 
 errcode_t ext2fs_mmp_update(ext2_filsys fs)
 {

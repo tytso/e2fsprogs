@@ -425,6 +425,7 @@ try_again:
 	return 0;
 }
 
+#if defined(USE_UUIDD) && defined(HAVE_SYS_UN_H)
 static ssize_t read_all(int fd, char *buf, size_t count)
 {
 	ssize_t ret;
@@ -475,7 +476,7 @@ static void close_all_fds(void)
 			open("/dev/null", O_RDWR);
 	}
 }
-
+#endif /* defined(USE_UUIDD) && defined(HAVE_SYS_UN_H) */
 
 /*
  * Try using the uuidd daemon to generate the UUID

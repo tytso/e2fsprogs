@@ -600,11 +600,6 @@ static void insert_key_into_keyring(const char *keyring, struct salt *salt)
 	}
 }
 
-static int is_keyring_valid(const char *keyring)
-{
-	return (get_keyring_id(keyring) != 0);
-}
-
 void get_default_salts(void)
 {
 	FILE	*f = setmntent("/etc/mtab", "r");
