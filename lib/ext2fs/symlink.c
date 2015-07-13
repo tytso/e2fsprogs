@@ -29,7 +29,7 @@
 #include "ext2fs.h"
 
 errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
-			 const char *name, char *target)
+			 const char *name, const char *target)
 {
 	errcode_t		retval;
 	struct ext2_inode	inode;
@@ -42,7 +42,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	/* The Linux kernel doesn't allow for links longer than a block */
-	target_len = strlen(target);
+	target_len = strnlen(target, fs->blocksize + 1);
 	if (target_len > fs->blocksize) {
 		retval = EXT2_ET_INVALID_ARGUMENT;
 		goto cleanup;
@@ -51,6 +51,12 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	/*
 	 * Allocate a data block for slow links
 	 */
+	retval = ext2fs_get_mem(fs->blocksize+1, &block_buf);
+	if (retval)
+		goto cleanup;
+	memset(block_buf, 0, fs->blocksize+1);
+	strncpy(block_buf, target, fs->blocksize);
+
 	memset(&inode, 0, sizeof(struct ext2_inode));
 	fastlink = (target_len < sizeof(inode.i_block));
 	if (!fastlink) {
@@ -58,9 +64,6 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 								      &inode,
 								      0),
 					   NULL, &blk);
-		if (retval)
-			goto cleanup;
-		retval = ext2fs_get_mem(fs->blocksize, &block_buf);
 		if (retval)
 			goto cleanup;
 	}
@@ -97,7 +100,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 		retval = ext2fs_write_new_inode(fs, ino, &inode);
 		if (retval)
 			goto cleanup;
-		retval = ext2fs_inline_data_set(fs, ino, &inode, target,
+		retval = ext2fs_inline_data_set(fs, ino, &inode, block_buf,
 						target_len);
 		if (retval) {
 			inode.i_flags &= ~EXT4_INLINE_DATA_FL;
@@ -109,10 +112,8 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 			goto cleanup;
 	} else {
 need_block:
-		ext2fs_iblk_set(fs, &inode, 1);
 		/* Slow symlinks, target stored in the first block */
-		memset(block_buf, 0, fs->blocksize);
-		strncpy(block_buf, target, fs->blocksize);
+		ext2fs_iblk_set(fs, &inode, 1);
 		if (fs->super->s_feature_incompat &
 		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
 			/*

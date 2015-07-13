@@ -93,16 +93,16 @@ static long keyctl(int cmd, ...)
 #endif
 
 #ifndef HAVE_ADD_KEY
-key_serial_t add_key(const char *type, const char *description,
-		     const void *payload, size_t plen,
-		     key_serial_t keyring)
+static key_serial_t add_key(const char *type, const char *description,
+			    const void *payload, size_t plen,
+			    key_serial_t keyring)
 {
 	return syscall(__NR_add_key, type, description, payload,
 		       plen, keyring);
 }
 #endif
 
-static const char *hexchars = "0123456789abcdef";
+static const unsigned char *hexchars = (const unsigned char *) "0123456789abcdef";
 static const size_t hexchars_size = 16;
 
 #define SHA512_LENGTH 64
@@ -151,11 +151,11 @@ static void validate_paths(int argc, char *argv[], int path_start_index)
 		exit(1);
 }
 
-static int hex2byte(const char *hex, size_t hex_size, char *bytes,
+static int hex2byte(const char *hex, size_t hex_size, unsigned char *bytes,
 		    size_t bytes_size)
 {
-	int x;
-	char *h, *l;
+	size_t x;
+	unsigned char *h, *l;
 
 	if (hex_size % 2)
 		return -EINVAL;
@@ -187,11 +187,11 @@ struct salt {
 struct salt *salt_list;
 unsigned num_salt;
 unsigned max_salt;
-char passphrase[EXT4_MAX_PASSPHRASE_SIZE];
+char in_passphrase[EXT4_MAX_PASSPHRASE_SIZE];
 
 static struct salt *find_by_salt(unsigned char *salt, size_t salt_len)
 {
-	int i;
+	unsigned int i;
 	struct salt *p;
 
 	for (i = 0, p = salt_list; i < num_salt; i++, p++)
@@ -225,7 +225,7 @@ static void clear_secrets(void)
 		free(salt_list);
 		salt_list = NULL;
 	}
-	memset(passphrase, 0, sizeof(passphrase));
+	memset(in_passphrase, 0, sizeof(in_passphrase));
 }
 
 static void die_signal_handler(int signum EXT2FS_ATTR((unused)),
@@ -236,7 +236,7 @@ static void die_signal_handler(int signum EXT2FS_ATTR((unused)),
 	exit(-1);
 }
 
-void sigcatcher_setup(void)
+static void sigcatcher_setup(void)
 {
 	struct sigaction	sa;
 
@@ -273,7 +273,8 @@ void sigcatcher_setup(void)
 static void parse_salt(char *salt_str, int flags)
 {
 	unsigned char buf[EXT4_MAX_SALT_SIZE];
-	unsigned char *salt_buf, *cp = salt_str;
+	char *cp = salt_str;
+	unsigned char *salt_buf;
 	int fd, ret, salt_len = 0;
 
 	if (flags & PARSE_FLAGS_FORCE_FN)
@@ -283,7 +284,7 @@ static void parse_salt(char *salt_str, int flags)
 		salt_len = strlen(cp);
 		if (salt_len >= EXT4_MAX_SALT_SIZE)
 			goto invalid_salt;
-		strncpy(buf, cp, sizeof(buf));
+		strncpy((char *) buf, cp, sizeof(buf));
 	} else if (cp[0] == '/') {
 	salt_from_filename:
 		fd = open(cp, O_RDONLY | O_DIRECTORY);
@@ -311,7 +312,7 @@ static void parse_salt(char *salt_str, int flags)
 		cp += 2;
 		goto salt_from_filename;
 	} else if (strncmp(cp, "0x", 2) == 0) {
-		char *h, *l;
+		unsigned char *h, *l;
 
 		cp += 2;
 		if (strlen(cp) & 1)
@@ -401,27 +402,28 @@ static void set_policy(struct salt *set_salt, int pad,
 	}
 }
 
-static void pbkdf2_sha512(const char *passphrase, struct salt *salt, int count,
-			  char derived_key[EXT4_MAX_KEY_SIZE])
+static void pbkdf2_sha512(const char *passphrase, struct salt *salt,
+			  unsigned int count,
+			  unsigned char derived_key[EXT4_MAX_KEY_SIZE])
 {
 	size_t passphrase_size = strlen(passphrase);
-	char buf[SHA512_LENGTH + EXT4_MAX_PASSPHRASE_SIZE] = {0};
-	char tempbuf[SHA512_LENGTH] = {0};
+	unsigned char buf[SHA512_LENGTH + EXT4_MAX_PASSPHRASE_SIZE] = {0};
+	unsigned char tempbuf[SHA512_LENGTH] = {0};
 	char final[SHA512_LENGTH] = {0};
-	char saltbuf[EXT4_MAX_SALT_SIZE + EXT4_MAX_PASSPHRASE_SIZE] = {0};
+	unsigned char saltbuf[EXT4_MAX_SALT_SIZE + EXT4_MAX_PASSPHRASE_SIZE] = {0};
 	int actual_buf_len = SHA512_LENGTH + passphrase_size;
 	int actual_saltbuf_len = EXT4_MAX_SALT_SIZE + passphrase_size;
-	int x, y;
+	unsigned int x, y;
 	__u32 *final_u32 = (__u32 *)final;
 	__u32 *temp_u32 = (__u32 *)tempbuf;
 
 	if (passphrase_size > EXT4_MAX_PASSPHRASE_SIZE) {
-		printf("Passphrase size is %d; max is %d.\n", passphrase_size,
+		printf("Passphrase size is %zd; max is %d.\n", passphrase_size,
 		       EXT4_MAX_PASSPHRASE_SIZE);
 		exit(1);
 	}
 	if (salt->salt_len > EXT4_MAX_SALT_SIZE) {
-		printf("Salt size is %d; max is %d.\n", salt->salt_len,
+		printf("Salt size is %zd; max is %d.\n", salt->salt_len,
 		       EXT4_MAX_SALT_SIZE);
 		exit(1);
 	}
@@ -463,7 +465,7 @@ static int disable_echo(struct termios *saved_settings)
 	return rc;
 }
 
-void get_passphrase(char *passphrase, int len)
+static void get_passphrase(char *passphrase, int len)
 {
 	char *p;
 	struct termios current_settings;
@@ -500,7 +502,7 @@ static const struct keyring_map keyrings[] = {
 
 static int get_keyring_id(const char *keyring)
 {
-	int x;
+	unsigned int x;
 	char *end;
 
 	/*
@@ -528,7 +530,7 @@ static int get_keyring_id(const char *keyring)
 			return keyrings[x].code;
 		}
 	}
-	x = strtol(keyring, &end, 10);
+	x = strtoul(keyring, &end, 10);
 	if (*end == '\0') {
 		if (keyctl(KEYCTL_DESCRIBE, x, NULL, 0) < 0)
 			return 0;
@@ -539,8 +541,8 @@ static int get_keyring_id(const char *keyring)
 
 static void generate_key_ref_str(struct salt *salt)
 {
-	char key_ref1[SHA512_LENGTH];
-	char key_ref2[SHA512_LENGTH];
+	unsigned char key_ref1[SHA512_LENGTH];
+	unsigned char key_ref2[SHA512_LENGTH];
 	int x;
 
 	ext2fs_sha512(salt->key, EXT4_MAX_KEY_SIZE, key_ref1);
@@ -600,7 +602,7 @@ static void insert_key_into_keyring(const char *keyring, struct salt *salt)
 	}
 }
 
-void get_default_salts(void)
+static void get_default_salts(void)
 {
 	FILE	*f = setmntent("/etc/mtab", "r");
 	struct mntent *mnt;
@@ -626,7 +628,7 @@ struct cmd_desc {
 
 #define CMD_HIDDEN 	0x0001
 
-void do_help(int argc, char **argv, const struct cmd_desc *cmd);
+static void do_help(int argc, char **argv, const struct cmd_desc *cmd);
 
 #define add_key_desc "adds a key to the user's keyring"
 #define add_key_help \
@@ -638,11 +640,12 @@ void do_help(int argc, char **argv, const struct cmd_desc *cmd);
 "set the policy of those directories to use the key just entered by\n" \
 "the user.\n"
 
-void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
+static void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 {
 	struct salt *salt;
 	char *keyring = NULL;
 	int i, opt, pad = 4;
+	unsigned j;
 
 	while ((opt = getopt(argc, argv, "k:S:p:vq")) != -1) {
 		switch (opt) {
@@ -681,9 +684,9 @@ void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 	for (i = optind; i < argc; i++)
 		parse_salt(argv[i], PARSE_FLAGS_FORCE_FN);
 	printf("Enter passphrase (echo disabled): ");
-	get_passphrase(passphrase, sizeof(passphrase));
-	for (i = 0, salt = salt_list; i < num_salt; i++, salt++) {
-		pbkdf2_sha512(passphrase, salt,
+	get_passphrase(in_passphrase, sizeof(in_passphrase));
+	for (j = 0, salt = salt_list; j < num_salt; j++, salt++) {
+		pbkdf2_sha512(in_passphrase, salt,
 			      EXT4_PBKDF2_ITERATIONS, salt->key);
 		generate_key_ref_str(salt);
 		insert_key_into_keyring(keyring, salt);
@@ -703,7 +706,7 @@ void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 "policy matches what was specified.  A policy is an encryption key\n" \
 "identifier consisting of 16 hexadecimal characters.\n"
 
-void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
+static void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 {
 	struct salt saltbuf;
 	int c, pad = 4;
@@ -746,7 +749,7 @@ void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 "e4crypt get_policy path ... \n\n" \
 "Gets the policy for the directories specified on the command line.\n"
 
-void do_get_policy(int argc, char **argv, const struct cmd_desc *cmd)
+static void do_get_policy(int argc, char **argv, const struct cmd_desc *cmd)
 {
 	struct ext4_encryption_policy policy;
 	struct stat st;
@@ -792,8 +795,8 @@ void do_get_policy(int argc, char **argv, const struct cmd_desc *cmd)
 "Give the invoking process (typically a shell) a new session keyring,\n" \
 "discarding its old session keyring.\n"
 
-void do_new_session(int argc, char **argv EXT2FS_ATTR((unused)),
-		    const struct cmd_desc *cmd)
+static void do_new_session(int argc, char **argv EXT2FS_ATTR((unused)),
+			   const struct cmd_desc *cmd)
 {
 	long keyid, ret;
 
@@ -828,8 +831,8 @@ const struct cmd_desc cmd_list[] = {
 	{ NULL, NULL, NULL, NULL, 0 }
 };
 
-void do_help(int argc, char **argv,
-	     const struct cmd_desc *cmd EXT2FS_ATTR((unused)))
+static void do_help(int argc, char **argv,
+		    const struct cmd_desc *cmd EXT2FS_ATTR((unused)))
 {
 	const struct cmd_desc *p;
 
@@ -865,6 +868,7 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		do_help(argc, argv, cmd_list);
 
+	sigcatcher_setup();
 	for (cmd = cmd_list; cmd->cmd_name; cmd++) {
 		if (strcmp(cmd->cmd_name, argv[1]) == 0) {
 			cmd->cmd_func(argc-1, argv+1, cmd);

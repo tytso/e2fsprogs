@@ -2583,7 +2583,7 @@ err:
 	return retval;
 }
 
-int
+static int
 fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 {
 	int retval, nr_users, start;
@@ -2659,6 +2659,7 @@ int tune2fs_main(int argc, char **argv)
 	struct ext2_super_block *sb;
 	io_manager io_ptr, io_ptr_orig = NULL;
 	int rc = 0;
+	char default_undo_file[1] = { 0 };
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -2760,7 +2761,7 @@ retry_open:
 		 * If inode resize is requested use the
 		 * Undo I/O manager
 		 */
-		undo_file = "";
+		undo_file = default_undo_file;
 	}
 
 	/* Set up an undo file */

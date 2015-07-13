@@ -42,7 +42,7 @@ static ssize_t my_pwrite(int fd, const void *buf, size_t count, off_t offset)
 }
 #endif /* !defined HAVE_PWRITE64 && !defined HAVE_PWRITE */
 
-int getseed(void)
+static int getseed(void)
 {
 	int r;
 	int fd;
@@ -65,8 +65,11 @@ struct find_block {
 	blk64_t corrupt_blocks;
 };
 
-int find_block_helper(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
-		      blk64_t ref_blk, int ref_offset, void *priv_data)
+static int find_block_helper(ext2_filsys fs EXT2FS_ATTR((unused)),
+			     blk64_t *blocknr, e2_blkcnt_t blockcnt,
+			     blk64_t ref_blk EXT2FS_ATTR((unused)),
+			     int ref_offset EXT2FS_ATTR((unused)),
+			     void *priv_data)
 {
 	struct find_block *fb = (struct find_block *)priv_data;
 
@@ -78,8 +81,8 @@ int find_block_helper(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
 	return 0;
 }
 
-errcode_t find_metadata_blocks(ext2_filsys fs, ext2fs_block_bitmap bmap,
-			       off_t *corrupt_bytes)
+static errcode_t find_metadata_blocks(ext2_filsys fs, ext2fs_block_bitmap bmap,
+				      off_t *corrupt_bytes)
 {
 	dgrp_t i;
 	blk64_t b, c;
@@ -160,10 +163,10 @@ out:
 	return retval;
 }
 
-uint64_t rand_num(uint64_t min, uint64_t max)
+static uint64_t rand_num(uint64_t min, uint64_t max)
 {
 	uint64_t x;
-	int i;
+	unsigned int i;
 	uint8_t *px = (uint8_t *)&x;
 
 	for (i = 0; i < sizeof(x); i++)
@@ -172,7 +175,7 @@ uint64_t rand_num(uint64_t min, uint64_t max)
 	return min + (uint64_t)((double)(max - min) * (x / (UINT64_MAX + 1.0)));
 }
 
-int process_fs(const char *fsname)
+static int process_fs(const char *fsname)
 {
 	errcode_t ret;
 	int flags, fd;
@@ -180,7 +183,7 @@ int process_fs(const char *fsname)
 	ext2fs_block_bitmap corrupt_map;
 	off_t hsize, count, off, offset, corrupt_bytes;
 	unsigned char c;
-	unsigned long i;
+	off_t i;
 
 	/* If mounted rw, force dryrun mode */
 	ret = ext2fs_check_if_mounted(fsname, &flags);
@@ -314,7 +317,7 @@ fail:
 	return 1;
 }
 
-void print_help(const char *progname)
+static void print_help(const char *progname)
 {
 	printf("Usage: %s OPTIONS device\n", progname);
 	printf("-b:	Corrupt this many bytes.\n");

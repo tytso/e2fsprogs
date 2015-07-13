@@ -20,7 +20,13 @@ int main(void) {
 	exit(EXIT_FAILURE);
 }
 #else
+#ifndef _LARGEFILE_SOURCE
+#define _LARGEFILE_SOURCE
+#endif
+#ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
+#endif
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -181,7 +187,8 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 		print_flag(&fe_flags, mask, flags, hex);
 	}
 
-	if (fm_extent->fe_logical + fm_extent->fe_length >= st->st_size)
+	if (fm_extent->fe_logical + fm_extent->fe_length >=
+	    (unsigned long long) st->st_size)
 		strcat(flags, "eof,");
 
 	/* Remove trailing comma, if any */

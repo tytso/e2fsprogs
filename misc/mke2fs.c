@@ -195,7 +195,7 @@ static int is_before_linux_ver(unsigned int major, unsigned int minor,
 	if (linux_version_code == 0)
 		return 0;
 
-	return linux_version_code < KERNEL_VERSION(major, minor, rev);
+	return linux_version_code < (int) KERNEL_VERSION(major, minor, rev);
 }
 #else
 static int is_before_linux_ver(unsigned int major, unsigned int minor,
@@ -1394,11 +1394,11 @@ static const char *default_files[] = { "<default>", 0 };
  * device's alignment offset, if any, or a negative error.
  */
 static int get_device_geometry(const char *file,
-			       struct ext2_super_block *fs_param,
-			       int psector_size)
+			       struct ext2_super_block *param,
+			       unsigned int psector_size)
 {
 	int rc = -1;
-	int blocksize;
+	unsigned int blocksize;
 	blkid_probe pr;
 	blkid_topology tp;
 	unsigned long min_io;
@@ -1419,7 +1419,7 @@ static int get_device_geometry(const char *file,
 
 	min_io = blkid_topology_get_minimum_io_size(tp);
 	opt_io = blkid_topology_get_optimal_io_size(tp);
-	blocksize = EXT2_BLOCK_SIZE(fs_param);
+	blocksize = EXT2_BLOCK_SIZE(param);
 	if ((min_io == 0) && (psector_size > blocksize))
 		min_io = psector_size;
 	if ((opt_io == 0) && min_io)
@@ -1429,9 +1429,9 @@ static int get_device_geometry(const char *file,
 
 	/* setting stripe/stride to blocksize is pointless */
 	if (min_io > blocksize)
-		fs_param->s_raid_stride = min_io / blocksize;
+		param->s_raid_stride = min_io / blocksize;
 	if (opt_io > blocksize)
-		fs_param->s_raid_stripe_width = opt_io / blocksize;
+		param->s_raid_stripe_width = opt_io / blocksize;
 
 	rc = blkid_topology_get_alignment_offset(tp);
 out:
@@ -2179,7 +2179,8 @@ profile_error:
 	}
 
 #ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
-	retval = get_device_geometry(device_name, &fs_param, psector_size);
+	retval = get_device_geometry(device_name, &fs_param,
+				     (unsigned int) psector_size);
 	if (retval < 0) {
 		fprintf(stderr,
 			_("warning: Unable to get device geometry for %s\n"),
