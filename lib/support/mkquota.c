@@ -19,6 +19,7 @@
 #include "quotaio_v2.h"
 #include "quotaio_tree.h"
 #include "common.h"
+#include "dict.h"
 
 /* Needed for architectures where sizeof(int) != sizeof(void *) */
 #define UINT_TO_VOIDPTR(val)  ((void *)(intptr_t)(val))

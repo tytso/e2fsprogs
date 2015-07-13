@@ -1,6 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 
 libext2_quota_src_files := \
+	dict.c \
 	mkquota.c \
 	plausible.c \
 	profile.c \
@@ -8,8 +9,7 @@ libext2_quota_src_files := \
 	prof_err.c \
 	quotaio.c \
 	quotaio_tree.c \
-	quotaio_v2.c \
-	../../e2fsck/dict.c
+	quotaio_v2.c
 
 libext2_quota_c_includes := external/e2fsprogs/lib
 

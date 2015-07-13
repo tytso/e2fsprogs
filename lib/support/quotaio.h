@@ -40,7 +40,6 @@
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "dqblk_v2.h"
-#include "../e2fsck/dict.h"
 
 typedef int64_t qsize_t;	/* Type in which we store size limitations */
 
@@ -49,10 +48,11 @@ typedef int64_t qsize_t;	/* Type in which we store size limitations */
 #define GRPQUOTA 1
 
 typedef struct quota_ctx *quota_ctx_t;
+struct dict_t;
 
 struct quota_ctx {
 	ext2_filsys	fs;
-	dict_t		*quota_dict[MAXQUOTAS];
+	struct dict_t	*quota_dict[MAXQUOTAS];
 	struct quota_handle *quota_file[MAXQUOTAS];
 };
 

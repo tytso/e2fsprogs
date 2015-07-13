@@ -47,7 +47,7 @@
 
 #include "e2fsck.h"
 #include "problem.h"
-#include "dict.h"
+#include "support/dict.h"
 
 #ifdef NO_INLINE_FUNCS
 #define _INLINE_

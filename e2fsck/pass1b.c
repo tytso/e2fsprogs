@@ -49,7 +49,7 @@ typedef long intptr_t;
 #include "e2fsck.h"
 
 #include "problem.h"
-#include "dict.h"
+#include "support/dict.h"
 
 /* Define an extension to the ext2 library's block count information */
 #define BLOCK_COUNT_EXTATTR	(-5)

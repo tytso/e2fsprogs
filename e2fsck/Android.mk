@@ -5,7 +5,6 @@ LOCAL_PATH := $(call my-dir)
 
 e2fsck_src_files :=  \
 	e2fsck.c \
-	dict.c \
 	super.c \
 	pass1.c \
 	pass1b.c \
