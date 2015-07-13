@@ -20,18 +20,8 @@ extern char *optarg;
 #endif
 
 #include "debugfs.h"
-#include "jfs_user.h"
 #include "ext2fs/kernel-jbd.h"
-
-/* journal.c */
-errcode_t ext2fs_open_journal(ext2_filsys fs, journal_t **j);
-errcode_t ext2fs_close_journal(ext2_filsys fs, journal_t **j);
-errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
-void jbd2_commit_block_csum_set(journal_t *j, struct buffer_head *bh);
-void jbd2_revoke_csum_set(journal_t *j, struct buffer_head *bh);
-void jbd2_descr_block_csum_set(journal_t *j, struct buffer_head *bh);
-void jbd2_block_tag_csum_set(journal_t *j, journal_block_tag_t *tag,
-			     struct buffer_head *bh, __u32 sequence);
+#include "journal.h"
 
 #undef DEBUG
 
@@ -660,7 +650,7 @@ static int count_tags(journal_t *journal, char *buf)
 	return nr;
 }
 
-errcode_t journal_find_head(journal_t *journal)
+static errcode_t journal_find_head(journal_t *journal)
 {
 	unsigned int		next_commit_ID;
 	blk64_t			next_log_block, head_block;

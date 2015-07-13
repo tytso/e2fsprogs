@@ -83,7 +83,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		if (((offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
-		    (thislen + 8 > rec_len)) {
+		    ((unsigned) thislen + 8 > rec_len)) {
 			fprintf(pager, "Corrupted directory block (%llu)!\n",
 				blk);
 			break;
@@ -174,12 +174,12 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 	fprintf(pager, "\n");
 
 	for (i=0; i < count; i++) {
-		int hash, block;
+		unsigned int hashval, block;
 
-		hash = ext2fs_le32_to_cpu(ent[i].hash);
+		hashval = ext2fs_le32_to_cpu(ent[i].hash);
 		block = ext2fs_le32_to_cpu(ent[i].block);
 		fprintf(pager, "Entry #%d: Hash 0x%08x, block %u\n", i,
-		       i ? hash : 0, block);
+		       i ? hashval : 0, block);
 		if (level)
 			htree_dump_int_block(fs, ino, inode, rootnode,
 					     block, buf, level-1);

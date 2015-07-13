@@ -782,11 +782,11 @@ static void dump_fast_link(FILE *out, ext2_ino_t inode_num,
 		if (retval)
 			goto out;
 	} else {
-		int sz = EXT2_I_SIZE(inode);
+		size_t sz = EXT2_I_SIZE(inode);
 
 		if (sz > sizeof(inode->i_block))
 			sz = sizeof(inode->i_block);
-		fprintf(out, "%sFast link dest: \"%.*s\"\n", prefix, sz,
+		fprintf(out, "%sFast link dest: \"%.*s\"\n", prefix, (int) sz,
 			(char *)inode->i_block);
 	}
 out:

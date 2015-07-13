@@ -23,8 +23,8 @@
 #endif
 
 #define E2FSCK_INCLUDE_INLINE_FUNCS
-#include "jfs_user.h"
 #include "uuid/uuid.h"
+#include "journal.h"
 
 #ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jfs-debug */
 static int bh_count = 0;
@@ -640,7 +640,7 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 	return 0;
 }
 
-void ext2fs_journal_release(ext2_filsys fs, journal_t *journal,
+static void ext2fs_journal_release(ext2_filsys fs, journal_t *journal,
 				   int reset, int drop)
 {
 	journal_superblock_t *jsb;
@@ -676,7 +676,7 @@ void ext2fs_journal_release(ext2_filsys fs, journal_t *journal,
  * This function makes sure that the superblock fields regarding the
  * journal are consistent.
  */
-errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
+static errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 	journal_t *journal;
