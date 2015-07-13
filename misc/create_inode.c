@@ -29,14 +29,6 @@
 #include "create_inode.h"
 #include "support/nls-enable.h"
 
-#if __STDC_VERSION__ < 199901L
-# if __GNUC__ >= 2
-#  define __func__ __FUNCTION__
-# else
-#  define __func__ "<unknown>"
-# endif
-#endif
-
 /* 64KiB is the minimium blksize to best minimize system call overhead. */
 #define COPY_FILE_BUFLEN	65536
 
