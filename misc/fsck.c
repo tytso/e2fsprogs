@@ -59,7 +59,7 @@
 #endif
 
 #include "../version.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 #include "fsck.h"
 #include "blkid/blkid.h"
 

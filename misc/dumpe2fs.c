@@ -40,9 +40,9 @@ extern int optind;
 #include "ext2fs/kernel-jbd.h"
 #include <uuid/uuid.h>
 
+#include "support/nls-enable.h"
+#include "support/plausible.h"
 #include "../version.h"
-#include "nls-enable.h"
-#include "plausible.h"
 
 #define in_use(m, x)	(ext2fs_test_bit ((x), (m)))
 

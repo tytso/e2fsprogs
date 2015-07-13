@@ -43,8 +43,8 @@ extern char *optarg;
 #include "et/com_err.h"
 #include "e2p/e2p.h"
 
+#include "support/nls-enable.h"
 #include "../version.h"
-#include "nls-enable.h"
 
 #ifdef __GNUC__
 #define EXT2FS_ATTR(x) __attribute__(x)

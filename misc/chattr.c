@@ -51,9 +51,9 @@
 
 #include "et/com_err.h"
 #include "e2p/e2p.h"
+#include "support/nls-enable.h"
 
 #include "../version.h"
-#include "nls-enable.h"
 
 static const char * program_name = "chattr";
 

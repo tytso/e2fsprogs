@@ -52,14 +52,14 @@ extern int optind;
 #include "ext2fs/ext2fsP.h"
 #include "uuid/uuid.h"
 #include "util.h"
-#include "plausible.h"
+#include "support/nls-enable.h"
+#include "support/plausible.h"
 #include "support/profile.h"
 #include "support/prof_err.h"
 #include "../version.h"
 #include "support/quotaio.h"
 #include "mke2fs.h"
 #include "create_inode.h"
-#include "nls-enable.h"
 
 #define STRIDE_LENGTH 8
 

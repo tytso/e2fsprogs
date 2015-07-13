@@ -50,10 +50,10 @@ extern int optind;
 #include "e2p/e2p.h"
 #include "et/com_err.h"
 #include "e2p/e2p.h"
+#include "support/plausible.h"
 #include "e2fsck.h"
 #include "problem.h"
 #include "../version.h"
-#include "../misc/plausible.h"
 
 /* Command line options */
 static int cflag;		/* check disk */

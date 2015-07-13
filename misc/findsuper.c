@@ -94,7 +94,7 @@
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 
 #undef DEBUG
 

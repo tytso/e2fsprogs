@@ -35,7 +35,7 @@ extern char *optarg;
 
 #include "../version.h"
 #include "jfs_user.h"
-#include "../misc/plausible.h"
+#include "support/plausible.h"
 
 #ifndef BUFSIZ
 #define BUFSIZ 8192

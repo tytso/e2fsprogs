@@ -27,8 +27,7 @@ debugfs_src_files :=  \
 	journal.c \
 	revoke.c \
 	recovery.c \
-	do_journal.c \
-	plausible.c
+	do_journal.c
 
 debugfs_shared_libraries := \
 	libext2fs \

@@ -47,7 +47,7 @@ extern int optind;
 #include "util.h"
 #include "support/profile.h"
 #include "support/prof_err.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 #include "mke2fs.h"
 
 static int uid;

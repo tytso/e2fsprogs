@@ -59,7 +59,7 @@ extern int optind;
 #include "ext2fs/ext2_io.h"
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 
 #ifndef O_LARGEFILE
 #define O_LARGEFILE 0

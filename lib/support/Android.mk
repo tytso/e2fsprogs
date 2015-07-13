@@ -2,6 +2,7 @@ LOCAL_PATH := $(call my-dir)
 
 libext2_quota_src_files := \
 	mkquota.c \
+	plausible.c \
 	profile.c \
 	profile_helpers.c \
 	prof_err.c \
@@ -14,7 +15,7 @@ libext2_quota_c_includes := external/e2fsprogs/lib
 
 libext2_quota_cflags := -O2 -g -W -Wall
 
-libext2_quota_shared_libraries := libext2fs libext2_com_err
+libext2_quota_shared_libraries := libext2fs libext2_com_err libext2_blkid
 
 libext2_quota_system_shared_libraries := libc
 

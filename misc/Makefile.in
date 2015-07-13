@@ -47,17 +47,17 @@ UMANPAGES=	chattr.1 lsattr.1 @UUID_CMT@ uuidgen.1
 
 LPROGS=		@E2INITRD_PROG@
 
-TUNE2FS_OBJS=	tune2fs.o util.o plausible.o
+TUNE2FS_OBJS=	tune2fs.o util.o
 MKLPF_OBJS=	mklost+found.o
 MKE2FS_OBJS=	mke2fs.o util.o default_profile.o mk_hugefiles.o \
-			create_inode.o plausible.o
+			create_inode.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
 UUIDD_OBJS=	uuidd.o
-DUMPE2FS_OBJS=	dumpe2fs.o plausible.o
+DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
-E2IMAGE_OBJS=	e2image.o plausible.o
+E2IMAGE_OBJS=	e2image.o
 FSCK_OBJS=	fsck.o base_device.o ismounted.o
 BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
@@ -68,20 +68,19 @@ E2FREEFRAG_OBJS= e2freefrag.o
 E2FUZZ_OBJS=	e2fuzz.o
 FUSE2FS_OBJS=	fuse2fs.o journal.o recovery.o revoke.o
 
-PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o profiled/plausible.o
+PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o
 PROFILED_MKLPF_OBJS=	profiled/mklost+found.o
 PROFILED_MKE2FS_OBJS=	profiled/mke2fs.o profiled/util.o profiled/profile.o \
 			profiled/prof_err.o profiled/default_profile.o \
-			profiled/mk_hugefiles.o profiled/create_inode.o \
-			profiled/plausible.o
+			profiled/mk_hugefiles.o profiled/create_inode.o
 
 PROFILED_CHATTR_OBJS=	profiled/chattr.o
 PROFILED_LSATTR_OBJS=	profiled/lsattr.o
 PROFILED_UUIDGEN_OBJS=	profiled/uuidgen.o
 PROFILED_UUIDD_OBJS=	profiled/uuidd.o
-PROFILED_DUMPE2FS_OBJS=	profiled/dumpe2fs.o profiled/plausible.o
+PROFILED_DUMPE2FS_OBJS=	profiled/dumpe2fs.o
 PROFILED_BADBLOCKS_OBJS=	profiled/badblocks.o
-PROFILED_E2IMAGE_OBJS=	profiled/e2image.o profiled/plausible.o
+PROFILED_E2IMAGE_OBJS=	profiled/e2image.o
 PROFILED_FSCK_OBJS=	profiled/fsck.o profiled/base_device.o \
 			profiled/ismounted.o
 PROFILED_BLKID_OBJS=	profiled/blkid.o
@@ -100,20 +99,20 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c $(srcdir)/
 		$(srcdir)/filefrag.c $(srcdir)/base_device.c \
 		$(srcdir)/ismounted.c $(srcdir)/e2undo.c \
 		$(srcdir)/e2freefrag.c $(srcdir)/create_inode.c \
-		$(srcdir)/plausible.c $(srcdir)/fuse2fs.c \
+		$(srcdir)/fuse2fs.c \
 		$(srcdir)/../debugfs/journal.c $(srcdir)/../e2fsck/revoke.c \
 		$(srcdir)/../e2fsck/recovery.c
 
-LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)
-DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR)
-PROFILED_LIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR)
-PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(DEPPROFILED_LIBCOM_ERR)
+LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBSUPPORT)
+DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBSUPPORT)
+PROFILED_LIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) $(LIBSUPPORT)
+PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(DEPPROFILED_LIBCOM_ERR) $(DEPLIBSUPPORT)
 
-STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
-STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) 
+STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(LIBSUPPORT)
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) $(DEPLIBSUPPORT)
 
-LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR) 
-DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR) 
+LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
+DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR)
 
 COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 
@@ -167,26 +166,25 @@ e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBBLKID) $(LIBEXT2FS)
 		$(LIBBLKID) $(LIBEXT2FS) $(LIBINTL) $(SYSLIBS)
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBBLKID) \
-		$(DEPLIBUUID) $(DEPLIBSUPPORT) $(LIBEXT2FS)
+		$(DEPLIBUUID) $(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
-		$(LIBBLKID) $(LIBUUID) $(LIBSUPPORT) $(LIBEXT2FS) $(LIBS_E2P) \
+		$(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(LIBS_E2P) \
 		$(LIBINTL) $(SYSLIBS) $(LIBBLKID) $(LIBMAGIC)
 
 tune2fs.static: $(TUNE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBBLKID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(LDFLAGS_STATIC) -o tune2fs.static $(TUNE2FS_OBJS) \
 		$(STATIC_LIBS) $(STATIC_LIBBLKID) $(STATIC_LIBUUID) \
-		$(STATIC_LIBSUPPORT) $(STATIC_LIBE2P) $(LIBINTL) $(SYSLIBS) \
+		$(STATIC_LIBE2P) $(LIBINTL) $(SYSLIBS) \
 		$(STATIC_LIBBLKID) $(LIBMAGIC)
 
 tune2fs.profiled: $(TUNE2FS_OBJS) $(PROFILED_DEPLIBS) \
-		$(PROFILED_E2P) $(DEPPROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID) \
-		$(DEPPROFILED_LIBSUPPORT)
+		$(PROFILED_E2P) $(DEPPROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o tune2fs.profiled \
 		$(PROFILED_TUNE2FS_OBJS) $(PROFILED_LIBBLKID) \
-		$(PROFILED_LIBUUID) $(PROFILED_LIBSUPPORT) $(PROFILED_LIBE2P) \
+		$(PROFILED_LIBUUID) $(PROFILED_LIBE2P) \
 		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS) $(PROFILED_LIBBLKID) \
 		$(LIBMAGIC)
 
@@ -263,27 +261,26 @@ mklost+found: $(MKLPF_OBJS)
 		$(LIBINTL) $(SYSLIBS)
 
 mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBBLKID) $(DEPLIBUUID) \
-		$(DEPLIBSUPPORT) $(LIBEXT2FS)
+		$(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBBLKID) \
-		$(LIBUUID) $(LIBSUPPORT) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL) \
+		$(LIBUUID) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL) \
 		$(SYSLIBS) $(LIBMAGIC)
 
 mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID) \
-		$(DEPSTATIC_LIBSUPPORT) $(DEPSTATIC_LIBBLKID)
+		$(DEPSTATIC_LIBBLKID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
-		$(STATIC_LIBSUPPORT) $(STATIC_LIBS) $(STATIC_LIBE2P) \
+		$(STATIC_LIBS) $(STATIC_LIBE2P) \
 		$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL) $(SYSLIBS) \
 		$(LIBMAGIC)
 
 mke2fs.profiled: $(MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
-	$(PROFILED_LIBE2P) $(PROFILED_DEPLIBBLKID) $(PROFILED_DEPLIBUUID) \
-	$(PROFILED_LIBSUPPORT)
+	$(PROFILED_LIBE2P) $(PROFILED_DEPLIBBLKID) $(PROFILED_DEPLIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o mke2fs.profiled \
 		$(PROFILED_MKE2FS_OBJS) $(PROFILED_LIBBLKID) \
-		$(PROFILED_LIBUUID) $(PROFILED_LIBSUPPORT) $(PROFILED_LIBE2P) \
+		$(PROFILED_LIBUUID) $(PROFILED_LIBE2P) \
 		$(LIBINTL) $(PROFILED_LIBS) $(SYSLIBS) $(LIBMAGIC)
 
 chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
@@ -372,7 +369,7 @@ e2freefrag.profiled: $(E2FREEFRAG_OBJS) $(PROFILED_DEPLIBS)
 		$(PROFILED_E2FREEFRAG_OBJS) $(PROFILED_LIBS) $(SYSLIBS)
 
 e2fuzz: $(E2FUZZ_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
-		$(DEPLIBSUPPORT) $(LIBEXT2FS)
+		$(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2fuzz $(E2FUZZ_OBJS) $(LIBS) \
 		$(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(SYSLIBS)
@@ -387,7 +384,7 @@ filefrag.profiled: $(FILEFRAG_OBJS)
 		$(PROFILED_FILEFRAG_OBJS) 
 
 fuse2fs: $(FUSE2FS_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
-		$(DEPLIBSUPPORT) $(LIBEXT2FS)
+		$(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o fuse2fs $(FUSE2FS_OBJS) $(LIBS) \
 		$(LIBFUSE) $(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(LIBINTL)
@@ -687,15 +684,15 @@ tune2fs.o: $(srcdir)/tune2fs.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
- $(top_srcdir)/lib/ext2fs/kernel-list.h $(top_srcdir)/lib/e2p/e2p.h \
- $(srcdir)/util.h $(srcdir)/plausible.h $(top_srcdir)/lib/support/quotaio.h \
- $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/ext2fs/kernel-list.h $(top_srcdir)/lib/support/plausible.h \
+ $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/support/dqblk_v2.h \
  $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
- $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+ $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/util.h $(top_srcdir)/version.h \
+ $(top_srcdir)/lib/support/nls-enable.h
 mklost+found.o: $(srcdir)/mklost+found.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/version.h \
- $(srcdir)/nls-enable.h
+ $(top_srcdir)/lib/support/nls-enable.h
 mke2fs.o: $(srcdir)/mke2fs.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fsP.h \
@@ -703,13 +700,13 @@ mke2fs.o: $(srcdir)/mke2fs.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/util.h $(srcdir)/plausible.h $(top_srcdir)/lib/support/profile.h \
+ $(srcdir)/util.h $(top_srcdir)/lib/support/nls-enable.h \
+ $(top_srcdir)/lib/support/plausible.h $(top_srcdir)/lib/support/profile.h \
  $(top_builddir)/lib/support/prof_err.h $(top_srcdir)/version.h \
  $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/support/dqblk_v2.h \
  $(top_srcdir)/lib/support/quotaio_tree.h $(top_srcdir)/lib/../e2fsck/dict.h \
- $(srcdir)/mke2fs.h $(srcdir)/create_inode.h $(top_srcdir)/lib/e2p/e2p.h \
- $(srcdir)/nls-enable.h
+ $(srcdir)/mke2fs.h $(srcdir)/create_inode.h $(top_srcdir)/lib/e2p/e2p.h
 mk_hugefiles.o: $(srcdir)/mk_hugefiles.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fsP.h \
@@ -719,16 +716,18 @@ mk_hugefiles.o: $(srcdir)/mk_hugefiles.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(srcdir)/util.h $(top_srcdir)/lib/support/profile.h \
- $(top_builddir)/lib/support/prof_err.h $(srcdir)/nls-enable.h \
- $(srcdir)/mke2fs.h
+ $(top_builddir)/lib/support/prof_err.h \
+ $(top_srcdir)/lib/support/nls-enable.h $(srcdir)/mke2fs.h
 chattr.o: $(srcdir)/chattr.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/support/nls-enable.h \
+ $(top_srcdir)/version.h
 lsattr.o: $(srcdir)/lsattr.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/support/nls-enable.h \
+ $(top_srcdir)/version.h
 dumpe2fs.o: $(srcdir)/dumpe2fs.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
@@ -737,7 +736,8 @@ dumpe2fs.o: $(srcdir)/dumpe2fs.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/kernel-jbd.h \
  $(top_srcdir)/lib/ext2fs/jfs_compat.h $(top_srcdir)/lib/ext2fs/kernel-list.h \
- $(top_srcdir)/version.h $(srcdir)/nls-enable.h $(srcdir)/plausible.h
+ $(top_srcdir)/lib/support/nls-enable.h $(top_srcdir)/lib/support/plausible.h \
+ $(top_srcdir)/version.h
 badblocks.o: $(srcdir)/badblocks.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
@@ -745,10 +745,10 @@ badblocks.o: $(srcdir)/badblocks.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/nls-enable.h
+ $(top_srcdir)/lib/support/nls-enable.h
 fsck.o: $(srcdir)/fsck.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/version.h \
- $(srcdir)/nls-enable.h $(srcdir)/fsck.h
+ $(top_srcdir)/lib/support/nls-enable.h $(srcdir)/fsck.h
 util.o: $(srcdir)/util.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
@@ -756,9 +756,9 @@ util.o: $(srcdir)/util.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/nls-enable.h $(srcdir)/util.h
+ $(top_srcdir)/lib/support/nls-enable.h $(srcdir)/util.h
 uuidgen.o: $(srcdir)/uuidgen.c $(top_builddir)/lib/config.h \
- $(top_builddir)/lib/dirpaths.h $(srcdir)/nls-enable.h
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/support/nls-enable.h
 blkid.o: $(srcdir)/blkid.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
@@ -785,7 +785,7 @@ e2undo.o: $(srcdir)/e2undo.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/nls-enable.h
+ $(top_srcdir)/lib/support/nls-enable.h
 e2freefrag.o: $(srcdir)/e2freefrag.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
@@ -800,15 +800,7 @@ create_inode.o: $(srcdir)/create_inode.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/ext2fs/fiemap.h $(srcdir)/create_inode.h \
- $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/nls-enable.h
-plausible.o: $(srcdir)/plausible.c $(top_builddir)/lib/config.h \
- $(top_builddir)/lib/dirpaths.h $(srcdir)/plausible.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
- $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext3_extents.h \
- $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/nls-enable.h
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/support/nls-enable.h
 fuse2fs.o: $(srcdir)/fuse2fs.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \

@@ -30,7 +30,6 @@ e2fsck_src_files :=  \
 	rehash.c \
 	region.c \
 	sigcatcher.c \
-	plausible.c \
 	readahead.c \
 	extents.c
 

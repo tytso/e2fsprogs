@@ -45,9 +45,9 @@ extern int optind;
 #include "ext2fs/e2image.h"
 #include "ext2fs/qcow2.h"
 
+#include "support/nls-enable.h"
+#include "support/plausible.h"
 #include "../version.h"
-#include "nls-enable.h"
-#include "plausible.h"
 
 #define QCOW_OFLAG_COPIED     (1LL << 63)
 #define NO_BLK ((blk64_t) -1)

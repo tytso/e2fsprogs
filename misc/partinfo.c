@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
-#include "nls-enable.h"
+#include "support/nls-enable.h"
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
