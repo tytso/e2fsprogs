@@ -383,7 +383,7 @@ errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 }
 
 #if !defined HAVE_PREAD64 && !defined HAVE_PREAD
-static ssize_t my_pread(int fd, const void *buf, size_t count, off_t offset)
+static ssize_t my_pread(int fd, void *buf, size_t count, off_t offset)
 {
 	if (lseek(fd, offset, SEEK_SET) < 0)
 		return 0;

@@ -23,6 +23,10 @@
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NET_IF_H 1
 #define HAVE_POSIX_MEMALIGN 1
+#define HAVE_PREAD 1
+#define HAVE_PREAD64 1
+#define HAVE_PWRITE 1
+#define HAVE_PWRITE64 1
 #define HAVE_SETJMP_H 1
 #define HAVE_SNPRINTF 1
 #define HAVE_STDLIB_H 1
