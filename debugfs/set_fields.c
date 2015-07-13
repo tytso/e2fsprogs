@@ -74,6 +74,9 @@ static errcode_t parse_gd_csum(struct field_set_info *info, char *field, char *a
 static errcode_t parse_mmp_clear(struct field_set_info *info, char *field,
 				 char *arg);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
 static struct field_set_info super_fields[] = {
 	{ "inodes_count", &set_sb.s_inodes_count, NULL, 4, parse_uint },
 	{ "blocks_count", &set_sb.s_blocks_count, &set_sb.s_blocks_count_hi,
@@ -278,8 +281,10 @@ static struct field_set_info mmp_fields[] = {
 	{ "checksum", &set_mmp.mmp_checksum, NULL, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
+#pragma GCC diagnostic pop
 
 #ifdef UNITTEST
+
 
 static void do_verify_field_set_info(struct field_set_info *fields,
 		const void *data, size_t size)

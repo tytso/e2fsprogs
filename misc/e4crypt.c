@@ -832,7 +832,7 @@ const struct cmd_desc cmd_list[] = {
 	CMD(get_policy),
 	CMD(new_session),
 	CMD(set_policy),
-	{ NULL, NULL, NULL, NULL }
+	{ NULL, NULL, NULL, NULL, 0 }
 };
 
 void do_help(int argc, char **argv, const struct cmd_desc *cmd)
