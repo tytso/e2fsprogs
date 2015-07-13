@@ -31,6 +31,11 @@
 #define O_DIRECT 0
 #endif
 
+#pragma GCC diagnostic push
+#ifndef CONFIG_MMP
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 {
 #ifdef CONFIG_MMP
@@ -453,3 +458,4 @@ mmp_error:
 	return EXT2_ET_OP_NOT_SUPPORTED;
 #endif
 }
+#pragma GCC diagnostic pop

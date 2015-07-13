@@ -874,8 +874,9 @@ static int probe_jfs(struct blkid_probe *probe,
 	return 0;
 }
 
-static int probe_zfs(struct blkid_probe *probe, struct blkid_magic *id,
-		     unsigned char *buf)
+static int probe_zfs(struct blkid_probe *probe __BLKID_ATTR((unused)),
+		     struct blkid_magic *id __BLKID_ATTR((unused)),
+		     unsigned char *buf __BLKID_ATTR((unused)))
 {
 #if 0
 	char *vdev_label;
@@ -1376,7 +1377,7 @@ static int probe_lvm2(struct blkid_probe *probe,
 }
 
 static int probe_btrfs(struct blkid_probe *probe,
-			struct blkid_magic *id,
+			struct blkid_magic *id __BLKID_ATTR((unused)),
 			unsigned char *buf)
 {
 	struct btrfs_super_block *bs;

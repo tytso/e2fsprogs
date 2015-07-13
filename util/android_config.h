@@ -19,7 +19,9 @@
 #define HAVE_LSEEK64_PROTOTYPE 1
 #define HAVE_MMAP 1
 #define HAVE_NETINET_IN_H 1
+#define HAVE_NET_IF_H 1
 #define HAVE_SETJMP_H 1
+#define HAVE_SNPRINTF 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRCASECMP 1
 #define HAVE_STRDUP 1

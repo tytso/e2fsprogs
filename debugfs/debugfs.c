@@ -1734,7 +1734,7 @@ void do_mkdir(int argc, char *argv[])
 				"<filename>", CHECK_FS_RW))
 		return;
 
-	retval = do_mkdir_internal(current_fs, cwd, argv[1], NULL, root);
+	retval = do_mkdir_internal(current_fs, cwd, argv[1], root);
 	if (retval)
 		com_err(argv[0], retval, 0);
 
@@ -2247,9 +2247,9 @@ void do_symlink(int argc, char *argv[])
 
 }
 
+#if CONFIG_MMP
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
-#if CONFIG_MMP
 	struct mmp_struct *mmp_s;
 	time_t t;
 	errcode_t retval = 0;
@@ -2286,11 +2286,17 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 	fprintf(stdout, "device_name: %s\n", mmp_s->mmp_bdevname);
 	fprintf(stdout, "magic: 0x%x\n", mmp_s->mmp_magic);
 	fprintf(stdout, "checksum: 0x%08x\n", mmp_s->mmp_checksum);
-#else
 	fprintf(stdout, "MMP is unsupported, please recompile with "
 	                "--enable-mmp\n");
-#endif
 }
+#else
+void do_dump_mmp(int argc EXT2FS_ATTR((unused)),
+		 char *argv[] EXT2FS_ATTR((unused)))
+{
+	fprintf(stdout, "MMP is unsupported, please recompile with "
+	                "--enable-mmp\n");
+}
+#endif
 
 static int source_file(const char *cmd_file, int ss_idx)
 {

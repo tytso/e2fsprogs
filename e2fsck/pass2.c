@@ -475,7 +475,6 @@ static int check_dotdot(e2fsck_t ctx,
  */
 static int check_name(e2fsck_t ctx,
 		      struct ext2_dir_entry *dirent,
-		      ext2_ino_t dir_ino,
 		      struct problem_context *pctx)
 {
 	int	i;
@@ -1381,7 +1380,7 @@ skip_checksum:
 			}
 		}
 
-		if (!encrypted && check_name(ctx, dirent, ino, &cd->pctx))
+		if (!encrypted && check_name(ctx, dirent, &cd->pctx))
 			dir_modified++;
 
 		if (check_filetype(ctx, dirent, ino, &cd->pctx))

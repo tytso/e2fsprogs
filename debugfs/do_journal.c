@@ -66,7 +66,8 @@ typedef struct journal_transaction_s journal_transaction_t;
 
 static journal_t *current_journal = NULL;
 
-static void journal_dump_trans(journal_transaction_t *trans, const char *tag)
+static void journal_dump_trans(journal_transaction_t *trans EXT2FS_ATTR((unused)),
+			       const char *tag EXT2FS_ATTR((unused)))
 {
 	dbg_printf("TRANS %p(%s): tid=%d start=%llu block=%llu end=%llu "
 		   "flags=0x%x\n", trans, tag, trans->tid, trans->start,
@@ -957,7 +958,8 @@ void do_journal_open(int argc, char *argv[])
 		com_err(argv[0], err, "while examining journal");
 }
 
-void do_journal_close(int argc, char *argv[])
+void do_journal_close(int argc EXT2FS_ATTR((unused)),
+		      char *argv[] EXT2FS_ATTR((unused)))
 {
 	if (current_journal == NULL) {
 		printf("Journal not open.\n");
@@ -967,7 +969,7 @@ void do_journal_close(int argc, char *argv[])
 	ext2fs_close_journal(current_fs, &current_journal);
 }
 
-void do_journal_run(int argc, char *argv[])
+void do_journal_run(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
 	errcode_t err;
 

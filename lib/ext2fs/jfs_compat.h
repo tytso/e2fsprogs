@@ -37,8 +37,9 @@ typedef __u64 u64;
 #define put_bh(x)	brelse(x)
 #define be64_to_cpu(x)	ext2fs_be64_to_cpu(x)
 
-static inline __u32 jbd2_chksum(journal_t *j, __u32 crc, const void *address,
-			unsigned int length)
+static inline __u32 jbd2_chksum(journal_t *j EXT2FS_ATTR((unused)),
+				__u32 crc, const void *address,
+				unsigned int length)
 {
 	return ext2fs_crc32c_le(crc, address, length);
 }

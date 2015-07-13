@@ -39,9 +39,9 @@ static void ss_release_readline(ss_data *info)
 /* Libraries we will try to use for readline/editline functionality */
 #define DEFAULT_LIBPATH "libreadline.so.6:libreadline.so.5:libreadline.so.4:libreadline.so:libedit.so.2:libedit.so:libeditline.so.0:libeditline.so"
 
+#ifdef HAVE_DLOPEN
 void ss_get_readline(int sci_idx)
 {
-#ifdef HAVE_DLOPEN
 	void	*handle = NULL;
 	ss_data *info = ss_info(sci_idx);
 	const char **t, *libpath = 0;
@@ -92,7 +92,9 @@ void ss_get_readline(int sci_idx)
 	     dlsym(handle, "rl_attempted_completion_function")) != NULL)
 		*completion_func = ss_rl_completion;
 	info->readline_shutdown = ss_release_readline;
-#endif
 }
-
-
+#else
+void ss_get_readline(int sci_idx __SS_ATTR((unused)))
+{
+}
+#endif

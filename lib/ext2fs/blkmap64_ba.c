@@ -318,7 +318,9 @@ static void ba_print_stats(ext2fs_generic_bitmap bitmap)
 		sizeof(struct ext2fs_ba_private_struct));
 }
 #else
-static void ba_print_stats(ext2fs_generic_bitmap bitmap) {}
+static void ba_print_stats(ext2fs_generic_bitmap bitmap EXT2FS_ATTR((unused)))
+{
+}
 #endif
 
 /* Find the first zero bit between start and end, inclusive. */

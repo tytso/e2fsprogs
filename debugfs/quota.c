@@ -90,7 +90,8 @@ static int parse_quota_type(const char *cmdname, const char *str)
 }
 
 
-static int list_quota_callback(struct dquot *dq, void *cb_data)
+static int list_quota_callback(struct dquot *dq,
+			       void *cb_data EXT2FS_ATTR((unused)))
 {
 	printf("%8u   %8lld %8lld %8lld    %8lld %8lld %8lld\n",
 	       dq->dq_id, (long long)dq->dq_dqb.dqb_curspace,

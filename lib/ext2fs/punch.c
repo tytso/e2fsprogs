@@ -436,7 +436,8 @@ errout:
 	
 static errcode_t ext2fs_punch_inline_data(ext2_filsys fs, ext2_ino_t ino,
 					  struct ext2_inode *inode,
-					  blk64_t start, blk64_t end)
+					  blk64_t start,
+					  blk64_t end EXT2FS_ATTR((unused)))
 {
 	errcode_t retval;
 

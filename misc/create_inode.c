@@ -106,8 +106,8 @@ static errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 }
 
 /* Set the uid, gid, mode and time for the inode */
-static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t cwd,
-				 ext2_ino_t ino, struct stat *st)
+static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
+				 struct stat *st)
 {
 	errcode_t		retval;
 	struct ext2_inode	inode;
@@ -131,10 +131,10 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t cwd,
 	return retval;
 }
 
+#ifdef HAVE_LLISTXATTR
 static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 				 const char *filename)
 {
-#ifdef HAVE_LLISTXATTR
 	errcode_t			retval, close_retval;
 	struct ext2_xattr_handle	*handle;
 	ssize_t				size, value_size;
@@ -220,10 +220,16 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 		retval = retval ? retval : close_retval;
 	}
 	return retval;
-#else /* HAVE_LLISTXATTR */
 	return 0;
-#endif  /* HAVE_LLISTXATTR */
 }
+#else /* HAVE_LLISTXATTR */
+static errcode_t set_inode_xattr(ext2_filsys fs EXT2FS_ATTR((unused)),
+				 ext2_ino_t ino EXT2FS_ATTR((unused)),
+				 const char *filename EXT2FS_ATTR((unused)))
+{
+	return 0;
+}
+#endif  /* HAVE_LLISTXATTR */
 
 /* Make a special files (block and character devices), fifo's, and sockets  */
 errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
@@ -348,7 +354,7 @@ errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 
 /* Make a directory in the fs */
 errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
-			    struct stat *st, ext2_ino_t root)
+			    ext2_ino_t root)
 {
 	char			*cp;
 	ext2_ino_t		parent_ino;
@@ -791,7 +797,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			if (parent_ino == EXT2_ROOT_INO &&
 			    strcmp(name, "lost+found") == 0)
 				goto find_lnf;
-			retval = do_mkdir_internal(fs, parent_ino, name, &st,
+			retval = do_mkdir_internal(fs, parent_ino, name,
 						   root);
 			if (retval) {
 				com_err(__func__, retval,
@@ -828,7 +834,7 @@ find_lnf:
 			goto out;
 		}
 
-		retval = set_inode_extra(fs, parent_ino, ino, &st);
+		retval = set_inode_extra(fs, ino, &st);
 		if (retval) {
 			com_err(__func__, retval,
 				_("while setting inode for \"%s\""), name);

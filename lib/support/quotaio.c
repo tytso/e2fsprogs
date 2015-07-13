@@ -55,22 +55,6 @@ const char *quota_get_qf_name(int type, int fmt, char *buf)
 	return buf;
 }
 
-const char *quota_get_qf_path(const char *mntpt, int qtype, int fmt,
-			      char *path_buf, size_t path_buf_size)
-{
-	char qf_name[QUOTA_NAME_LEN];
-
-	if (!mntpt || !path_buf || !path_buf_size)
-		return NULL;
-
-	strncpy(path_buf, mntpt, path_buf_size);
-	strncat(path_buf, "/", 1);
-	strncat(path_buf, quota_get_qf_name(qtype, fmt, qf_name),
-		path_buf_size - strlen(path_buf));
-
-	return path_buf;
-}
-
 /*
  * Set grace time if needed
  */
@@ -98,11 +82,12 @@ void update_grace_times(struct dquot *q)
 	}
 }
 
-static int compute_num_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
-			       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-			       blk64_t ref_block EXT2FS_ATTR((unused)),
-			       int ref_offset EXT2FS_ATTR((unused)),
-			       void *private)
+static int compute_num_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
+				   blk64_t *blocknr EXT2FS_ATTR((unused)),
+				   e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+				   blk64_t ref_block EXT2FS_ATTR((unused)),
+				   int ref_offset EXT2FS_ATTR((unused)),
+				   void *private)
 {
 	blk64_t *num_blocks = private;
 

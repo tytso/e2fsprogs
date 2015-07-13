@@ -118,9 +118,9 @@ static void print_ext2_info(const char *device)
  * return 1 if there is no partition table, 0 if a partition table is
  * detected, and -1 on an error.
  */
+#ifdef HAVE_BLKID_PROBE_ENABLE_PARTITIONS
 static int check_partition_table(const char *device)
 {
-#ifdef HAVE_BLKID_PROBE_ENABLE_PARTITIONS
 	blkid_probe pr;
 	const char *value;
 	int ret;
@@ -151,10 +151,13 @@ static int check_partition_table(const char *device)
 errout:
 	blkid_free_probe(pr);
 	return ret;
-#else
-	return -1;
-#endif
 }
+#else
+static int check_partition_table(const char *device EXT2FS_ATTR((unused)))
+{
+	return -1;
+}
+#endif
 
 /*
  * return 1 if the device looks plausible, creating the file if necessary

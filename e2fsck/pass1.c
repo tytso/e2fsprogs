@@ -856,8 +856,8 @@ static int fix_inline_data_extents_file(e2fsck_t ctx,
 	}
 
 	/* If it looks short enough to be inline data, try to clear extents */
-	if (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
-		max_inline_ea_size = EXT2_INODE_SIZE(fs->super) -
+	if (inode_size > EXT2_GOOD_OLD_INODE_SIZE)
+		max_inline_ea_size = inode_size -
 				     (EXT2_GOOD_OLD_INODE_SIZE +
 				      ((struct ext2_inode_large *)inode)->i_extra_isize);
 	else
@@ -975,7 +975,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	unsigned int	save_type;
 	int		imagic_fs, extent_fs, inlinedata_fs;
 	int		low_dtime_check = 1;
-	int		inode_size;
+	int		inode_size = EXT2_INODE_SIZE(fs->super);
 	int		failed_csum = 0;
 	ext2_ino_t	ino_threshold = 0;
 	dgrp_t		ra_group = 0;
@@ -1083,7 +1083,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	inode_size = EXT2_INODE_SIZE(fs->super);
 	inode = (struct ext2_inode *)
 		e2fsck_allocate_memory(ctx, inode_size, "scratch inode");
 

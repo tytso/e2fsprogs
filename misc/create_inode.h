@@ -33,8 +33,7 @@ extern errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd,
 				     const char *name, char *target,
 				     ext2_ino_t root);
 extern errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd,
-				   const char *name, struct stat *st,
-				   ext2_ino_t root);
+				   const char *name, ext2_ino_t root);
 extern errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd,
 				   const char *src, const char *dest,
 				   ext2_ino_t root);

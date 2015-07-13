@@ -57,7 +57,8 @@ static void print_dquot(const char *desc, struct dquot *dq)
 		dq->dq_dqb.dqb_isoftlimit, dq->dq_dqb.dqb_ihardlimit);
 }
 #else
-static void print_dquot(const char *desc, struct dquot *dq)
+static void print_dquot(const char *desc EXT2FS_ATTR((unused)),
+			struct dquot *dq EXT2FS_ATTR((unused)))
 {
 }
 #endif
@@ -66,7 +67,7 @@ static void print_dquot(const char *desc, struct dquot *dq)
  * Returns 0 if not able to find the quota file, otherwise returns its
  * inode number.
  */
-int quota_file_exists(ext2_filsys fs, int qtype, int fmt)
+int quota_file_exists(ext2_filsys fs, int qtype)
 {
 	char qf_name[256];
 	errcode_t ret;
@@ -339,7 +340,8 @@ static struct dquot *get_dq(dict_t *dict, __u32 key)
 /*
  * Called to update the blocks used by a particular inode
  */
-void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
+void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode,
+		    ext2_ino_t ino EXT2FS_ATTR((unused)),
 		    qsize_t space)
 {
 	struct dquot	*dq;
@@ -365,7 +367,8 @@ void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
 /*
  * Called to remove some blocks used by a particular inode
  */
-void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
+void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode,
+		    ext2_ino_t ino EXT2FS_ATTR((unused)),
 		    qsize_t space)
 {
 	struct dquot	*dq;
@@ -391,7 +394,7 @@ void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
  * Called to count the files used by an inode's user/group
  */
 void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode,
-		       ext2_ino_t ino, int adjust)
+		       ext2_ino_t ino EXT2FS_ATTR((unused)), int adjust)
 {
 	struct dquot	*dq;
 	dict_t		*dict;

@@ -79,7 +79,7 @@ char *get_progname(char *argv_zero)
 
 static jmp_buf alarm_env;
 
-static void alarm_signal(int signal)
+static void alarm_signal(int signal EXT2FS_ATTR((unused)))
 {
 	longjmp(alarm_env, 1);
 }

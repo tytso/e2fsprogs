@@ -1614,7 +1614,8 @@ static blk64_t get_new_block(ext2_resize_t rfs)
 	}
 }
 
-static errcode_t resize2fs_get_alloc_block(ext2_filsys fs, blk64_t goal,
+static errcode_t resize2fs_get_alloc_block(ext2_filsys fs,
+					   blk64_t goal EXT2FS_ATTR((unused)),
 					   blk64_t *ret)
 {
 	ext2_resize_t rfs = (ext2_resize_t) fs->priv_data;
@@ -1959,8 +1960,10 @@ out:
 	return errcode;
 }
 
-static void quiet_com_err_proc(const char *whoami, errcode_t code,
-			       const char *fmt, va_list args)
+static void quiet_com_err_proc(const char *whoami EXT2FS_ATTR((unused)),
+			       errcode_t code EXT2FS_ATTR((unused)),
+			       const char *fmt EXT2FS_ATTR((unused)),
+			       va_list args EXT2FS_ATTR((unused)))
 {
 }
 

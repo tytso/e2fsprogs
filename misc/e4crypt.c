@@ -228,8 +228,9 @@ static void clear_secrets(void)
 	memset(passphrase, 0, sizeof(passphrase));
 }
 
-static void die_signal_handler(int signum, siginfo_t *siginfo,
-			       void *context)
+static void die_signal_handler(int signum EXT2FS_ATTR((unused)),
+			       siginfo_t *siginfo EXT2FS_ATTR((unused)),
+			       void *context EXT2FS_ATTR((unused)))
 {
 	clear_secrets();
 	exit(-1);
@@ -795,7 +796,8 @@ void do_get_policy(int argc, char **argv, const struct cmd_desc *cmd)
 "Give the invoking process (typically a shell) a new session keyring,\n" \
 "discarding its old session keyring.\n"
 
-void do_new_session(int argc, char **argv, const struct cmd_desc *cmd)
+void do_new_session(int argc, char **argv EXT2FS_ATTR((unused)),
+		    const struct cmd_desc *cmd)
 {
 	long keyid, ret;
 
@@ -830,7 +832,8 @@ const struct cmd_desc cmd_list[] = {
 	{ NULL, NULL, NULL, NULL, 0 }
 };
 
-void do_help(int argc, char **argv, const struct cmd_desc *cmd)
+void do_help(int argc, char **argv,
+	     const struct cmd_desc *cmd EXT2FS_ATTR((unused)))
 {
 	const struct cmd_desc *p;
 

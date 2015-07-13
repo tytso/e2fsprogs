@@ -498,11 +498,11 @@ int ext2_file_type(unsigned int mode)
 	return 0;
 }
 
-errcode_t read_list(const char *str, blk64_t **list, size_t *len)
+errcode_t read_list(char *str, blk64_t **list, size_t *len)
 {
 	blk64_t *lst = *list;
 	size_t ln = *len;
-	char *tok, *p = optarg;
+	char *tok, *p = str;
 	errcode_t retval;
 
 	while ((tok = strtok(p, ","))) {

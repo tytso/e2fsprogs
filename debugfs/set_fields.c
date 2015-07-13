@@ -849,9 +849,9 @@ static errcode_t parse_mmp_clear(struct field_set_info *info,
 	return 1; /* we don't need the MMP block written again */
 }
 
+#ifdef CONFIG_MMP
 void do_set_mmp_value(int argc, char *argv[])
 {
-#ifdef CONFIG_MMP
 	const char *usage = "<field> <value>\n"
 		"\t\"set_mmp_value -l\" will list the names of "
 		"MMP fields\n\twhich can be set.";
@@ -906,9 +906,13 @@ void do_set_mmp_value(int argc, char *argv[])
 				 &set_mmp);
 		*mmp_s = set_mmp;
 	}
+}
 #else
+void do_set_mmp_value(int argc EXT2FS_ATTR((unused)),
+		      char *argv[] EXT2FS_ATTR((unused)))
+{
 	fprintf(stdout, "MMP is unsupported, please recompile with "
 	                "--enable-mmp\n");
-#endif
 }
+#endif
 

@@ -277,7 +277,8 @@ static int v2_scan_dquots(struct quota_handle *h,
  * TODO: Not used right now, but we should be able to use this when we add
  * support to debugfs to read quota files.
  */
-static int v2_report(struct quota_handle *h, int verbose)
+static int v2_report(struct quota_handle *h EXT2FS_ATTR((unused)),
+		     int verbose EXT2FS_ATTR((unused)))
 {
 	log_err("Not Implemented.");
 	return -1;
