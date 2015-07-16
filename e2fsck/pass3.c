@@ -100,7 +100,8 @@ void e2fsck_pass3(e2fsck_t ctx)
 
 	iter = e2fsck_dir_info_iter_begin(ctx);
 	while ((dir = e2fsck_dir_info_iter(ctx, iter)) != 0) {
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK ||
+		    ctx->flags & E2F_FLAG_RESTART)
 			goto abort_exit;
 		if (ctx->progress && (ctx->progress)(ctx, 3, count++, maxdirs))
 			goto abort_exit;
@@ -415,6 +416,12 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 			goto unlink;
 		}
 
+		if (fix && (inode.i_flags & EXT4_ENCRYPT_FL)) {
+			if (!fix_problem(ctx, PR_3_LPF_ENCRYPTED, &pctx))
+				return 0;
+			goto unlink;
+		}
+
 		if (ext2fs_check_directory(fs, ino) == 0) {
 			ctx->lost_and_found = ino;
 			return ino;
@@ -437,6 +444,15 @@ unlink:
 		}
 		(void) e2fsck_dir_info_set_parent(ctx, ino, 0);
 		e2fsck_adjust_inode_count(ctx, ino, -1);
+		/*
+		 * If the old lost+found was a directory, we've just
+		 * disconnected it from the directory tree, which
+		 * means we need to restart the directory tree scan.
+		 * The simplest way to do this is restart the whole
+		 * e2fsck operation.
+		 */
+		if (LINUX_S_ISDIR(inode.i_mode))
+			ctx->flags |= E2F_FLAG_RESTART;
 	} else if (retval != EXT2_ET_FILE_NOT_FOUND) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_FIND_LPF, &pctx);

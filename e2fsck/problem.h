@@ -1048,6 +1048,9 @@ struct problem_context {
 /* Insufficient space to recover lost files */
 #define PR_3_NO_SPACE_TO_RECOVER	0x03001A
 
+/* Lost+found is encrypted */
+#define PR_3_LPF_ENCRYPTED		0x03001B
+
 /*
  * Pass 3a --- rehashing diretories
  */

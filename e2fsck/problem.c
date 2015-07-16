@@ -1750,6 +1750,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Insufficient space to recover lost files!\nMove data off the @f and re-run e2fsck.\n\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Lost+found is encrypted */
+	{ PR_3_LPF_ENCRYPTED,
+	  N_("/@l is encrypted\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3A Directory Optimization	*/
 
 	/* Pass 3A: Optimizing directories */
