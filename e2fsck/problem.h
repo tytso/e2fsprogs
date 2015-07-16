@@ -963,6 +963,9 @@ struct problem_context {
 /* fixing inline dir size failed */
 #define PR_2_FIX_INLINE_DIR_FAILED	0x02004F
 
+/* Encrypted directory entry is too short */
+#define PR_2_BAD_ENCRYPTED_NAME		0x020050
+
 /*
  * Pass 3 errors
  */

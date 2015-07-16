@@ -579,6 +579,7 @@ struct ext2_inode_large {
 #define EXT4_MAX_KEY_SIZE			64
 
 #define EXT4_KEY_DESCRIPTOR_SIZE		8
+#define EXT4_CRYPTO_BLOCK_SIZE			16
 
 /* Password derivation constants */
 #define EXT4_MAX_PASSPHRASE_SIZE		1024

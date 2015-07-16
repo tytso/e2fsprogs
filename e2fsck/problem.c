@@ -1613,6 +1613,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Fixing size of inline @d @i %i failed.\n"),
 	  PROMPT_TRUNCATE, 0 },
 
+	/* Encrypted directory entry is too short */
+	{ PR_2_BAD_ENCRYPTED_NAME,
+	  N_("Encrypted @E is too short.\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */
