@@ -166,7 +166,7 @@ static void fix_symlink (char *path, dev_t my_dev)
 	struct stat stbuf, lstbuf;
 	int c, fix_abs = 0, fix_messy = 0, fix_long = 0;
 
-	if ((c = readlink(path, lpath, sizeof(lpath))) == -1) {
+	if ((c = readlink(path, lpath, sizeof(lpath) - 1)) == -1) {
 		perror(path);
 		return;
 	}
