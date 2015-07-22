@@ -1092,7 +1092,7 @@ inline_read_fail:
 			    ((fs->blocksize - (8 + dx_csum_size)) /
 			     sizeof(struct ext2_dx_entry))))
 			dx_db->type = DX_DIRBLOCK_NODE;
-		is_leaf = 0;
+		is_leaf = (dx_db->type == DX_DIRBLOCK_LEAF);
 	}
 out_htree:
 

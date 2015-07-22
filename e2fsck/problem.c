@@ -1600,7 +1600,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* leaf node passes checks but fails checksum */
 	{ PR_2_LEAF_NODE_ONLY_CSUM_INVALID,
-	  N_("@d @i %i, %B, offset %N: @d passes checks but fails checksum.\n"),
+	  N_("@d @i %i, %B: @d passes checks but fails checksum.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* inline directory inode size must be a multiple of 4 */
