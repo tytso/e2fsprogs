@@ -237,6 +237,12 @@ lsattr_shared_libraries := \
 
 lsattr_system_shared_libraries := libc
 
+lsattr_static_libraries := \
+	libext2_com_err \
+	libext2_e2p
+
+lsattr_system_static_libraries := libc
+
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(lsattr_src_files)
@@ -245,6 +251,18 @@ LOCAL_CFLAGS := $(lsattr_cflags)
 LOCAL_SHARED_LIBRARIES := $(lsattr_shared_libraries)
 LOCAL_SYSTEM_SHARED_LIBRARIES := $(lsattr_system_shared_libraries)
 LOCAL_MODULE := lsattr
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(lsattr_src_files)
+LOCAL_C_INCLUDES := $(lsattr_c_includes)
+LOCAL_CFLAGS := $(lsattr_cflags)
+LOCAL_STATIC_LIBRARIES := $(lsattr_static_libraries) $(lsattr_system_static_libraries)
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_MODULE := lsattr_static
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_EXECUTABLE)
