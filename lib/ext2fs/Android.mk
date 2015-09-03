@@ -110,6 +110,7 @@ LOCAL_SRC_FILES := $(libext2fs_src_files)
 LOCAL_SYSTEM_SHARED_LIBRARIES := $(libext2fs_system_shared_libraries)
 LOCAL_SHARED_LIBRARIES := $(libext2fs_shared_libraries)
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags)
 LOCAL_MODULE := libext2fs
 LOCAL_MODULE_TAGS := optional
@@ -121,6 +122,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(libext2fs_src_files)
 LOCAL_STATIC_LIBRARIES := $(libext2fs_static_libraries) $(libext2fs_system_static_libraries)
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags) $(libext2fs_cflags_linux)
 LOCAL_MODULE := libext2fs
 LOCAL_MODULE_TAGS := optional
@@ -132,6 +134,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(libext2fs_src_files)
 LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(libext2fs_shared_libraries))
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags)
 LOCAL_MODULE := libext2fs_host
 LOCAL_MODULE_TAGS := optional

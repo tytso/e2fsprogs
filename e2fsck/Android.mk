@@ -52,7 +52,7 @@ e2fsck_static_libraries := \
 
 e2fsck_system_static_libraries := libc
 
-e2fsck_c_includes := external/e2fsprogs/lib
+e2fsck_c_includes :=
 
 e2fsck_cflags := -O2 -g -W -Wall -fno-strict-aliasing
 
