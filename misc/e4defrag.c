@@ -193,10 +193,6 @@ static struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
 #error posix_fadvise not available!
 #endif
 
-#ifndef HAVE_SYNC_FILE_RANGE
-#error sync_file_range not available!
-#endif /* ! HAVE_SYNC_FILE_RANGE */
-
 #ifndef HAVE_FALLOCATE64
 #error fallocate64 not available!
 #endif /* ! HAVE_FALLOCATE64 */
@@ -428,10 +424,12 @@ static int defrag_fadvise(int fd, struct move_extent defrag_data,
 	offset = (loff_t)defrag_data.orig_start * block_size;
 	offset = (offset / pagesize) * pagesize;
 
+#ifdef HAVE_SYNC_FILE_RANGE
 	/* Sync file for fadvise process */
 	if (sync_file_range(fd, offset,
 		(loff_t)pagesize * page_num, sync_flag) < 0)
 		return -1;
+#endif
 
 	/* Try to release buffer cache which this process used,
 	 * then other process can use the released buffer
