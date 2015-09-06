@@ -2960,7 +2960,7 @@ retry_open:
 			 * Changing the UUID requires rewriting all metadata,
 			 * which can race with a mounted fs.  Don't allow that.
 			 */
-			if (mount_flags & EXT2_MF_MOUNTED) {
+			if ((mount_flags & EXT2_MF_MOUNTED) && !f_flag) {
 				fputs(_("The UUID may only be "
 					"changed when the filesystem is "
 					"unmounted.\n"), stderr);
