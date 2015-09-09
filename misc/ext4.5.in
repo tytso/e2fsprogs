@@ -6,7 +6,7 @@
 .SH NAME
 ext2 \- the second extended file system
 .br
-ext2 \- the third extended file system
+ext3 \- the third extended file system
 .br
 ext4 \- the fourth extended file system
 .SH DESCRIPTION
