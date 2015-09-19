@@ -319,7 +319,7 @@ int main(int argc, char **argv)
 {
 	char	line[2048];
 	int	c;
-	int	fd;
+	int	fd, ofd = -1;
 	FILE	*in, *out, *old = NULL;
 	char	*outfn = NULL, *newfn = NULL;
 	int	verbose = 0;
@@ -370,12 +370,12 @@ int main(int argc, char **argv)
 		}
 		strcpy(newfn, outfn);
 		strcat(newfn, ".new");
-		fd = open(newfn, O_CREAT|O_TRUNC|O_RDWR, 0444);
-		if (fd < 0) {
+		ofd = open(newfn, O_CREAT|O_TRUNC|O_RDWR, 0644);
+		if (ofd < 0) {
 			perror(newfn);
 			exit(1);
 		}
-		out = fdopen(fd, "w+");
+		out = fdopen(ofd, "w+");
 		if (!out) {
 			perror("fdopen");
 			exit(1);
@@ -429,12 +429,16 @@ int main(int argc, char **argv)
 					printf("Using original atime\n");
 				set_utimes(outfn, fileno(old), tv);
 			}
+			if (ofd >= 0)
+				(void) fchmod(ofd, 0444);
 			fclose(out);
 			if (unlink(newfn) < 0)
 				perror("unlink");
 		} else {
 			if (verbose)
 				printf("Creating or replacing %s.\n", outfn);
+			if (ofd >= 0)
+				(void) fchmod(ofd, 0444);
 			fclose(out);
 			if (old)
 				fclose(old);
