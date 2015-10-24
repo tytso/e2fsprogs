@@ -364,7 +364,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 
 	if ((be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) &&
 	    (sb->s_magic == EXT2_SUPER_MAGIC) &&
-	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+	    ext2fs_has_feature_journal_dev(sb)) {
 		blocksize = EXT2_BLOCK_SIZE(sb);
 		blocknr = (blocksize == 1024) ? 2 : 1;
 		uuid_unparse(sb->s_uuid, jsb_buffer);

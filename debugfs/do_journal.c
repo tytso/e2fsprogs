@@ -88,8 +88,7 @@ static errcode_t journal_commit_trans(journal_transaction_t *trans)
 	commit->h_magic = ext2fs_cpu_to_be32(JFS_MAGIC_NUMBER);
 	commit->h_blocktype = ext2fs_cpu_to_be32(JFS_COMMIT_BLOCK);
 	commit->h_sequence = ext2fs_cpu_to_be32(trans->tid);
-	if (JFS_HAS_COMPAT_FEATURE(trans->journal,
-				   JFS_FEATURE_COMPAT_CHECKSUM)) {
+	if (jfs_has_feature_checksum(trans->journal)) {
 		__u32 csum_v1 = ~0;
 		blk64_t cblk;
 
@@ -149,7 +148,7 @@ static errcode_t journal_commit_trans(journal_transaction_t *trans)
 	trans->flags &= ~J_TRANS_OPEN;
 	trans->block++;
 
-	trans->fs->super->s_feature_incompat |= EXT3_FEATURE_INCOMPAT_RECOVER;
+	ext2fs_set_feature_journal_needs_recovery(trans->fs->super);
 	ext2fs_mark_super_dirty(trans->fs);
 error:
 	if (cbh)
@@ -195,8 +194,7 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 	jrb->r_header.h_sequence = ext2fs_cpu_to_be32(trans->tid);
 	offset = sizeof(*jrb);
 
-	if (JFS_HAS_INCOMPAT_FEATURE(trans->journal,
-				     JFS_FEATURE_INCOMPAT_64BIT))
+	if (jfs_has_feature_64bit(trans->journal))
 		sz = 8;
 	else
 		sz = 4;
@@ -229,8 +227,7 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 			goto error;
 		}
 
-		if (JFS_HAS_INCOMPAT_FEATURE(trans->journal,
-					     JFS_FEATURE_INCOMPAT_64BIT))
+		if (jfs_has_feature_64bit(trans->journal))
 			*((__u64 *)(&((char *)buf)[offset])) =
 				ext2fs_cpu_to_be64(revoke_list[i]);
 		else
@@ -364,8 +361,7 @@ static errcode_t journal_add_blocks_to_trans(journal_transaction_t *trans,
 			*((__u32 *)buf) = 0;
 			jdbt->t_flags |= ext2fs_cpu_to_be16(JFS_FLAG_ESCAPE);
 		}
-		if (JFS_HAS_INCOMPAT_FEATURE(trans->journal,
-					     JFS_FEATURE_INCOMPAT_64BIT))
+		if (jfs_has_feature_64bit(trans->journal))
 			jdbt->t_blocknr_high = ext2fs_cpu_to_be32(block_list[i] >> 32);
 		jbd2_block_tag_csum_set(trans->journal, jdbt, data_bh,
 					trans->tid);
@@ -421,8 +417,7 @@ static blk64_t journal_guess_blocks(journal_t *journal, blk64_t data_blocks,
 	bs = journal->j_blocksize;
 	if (journal_has_csum_v2or3(journal))
 		bs -= sizeof(struct journal_revoke_tail);
-	sz = JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT) ?
-				sizeof(__u64) : sizeof(__u32);
+	sz = jfs_has_feature_64bit(journal) ? sizeof(__u64) : sizeof(__u32);
 	ret += revoke_blocks * sz / bs;
 
 	/* Estimate # of data blocks */
@@ -489,10 +484,8 @@ static errcode_t journal_close_trans(journal_transaction_t *trans)
 	trans->magic = 0;
 
 	/* Mark ourselves as needing recovery */
-	if (!(EXT2_HAS_INCOMPAT_FEATURE(trans->fs->super,
-					EXT3_FEATURE_INCOMPAT_RECOVER))) {
-		trans->fs->super->s_feature_incompat |=
-					EXT3_FEATURE_INCOMPAT_RECOVER;
+	if (!ext2fs_has_feature_journal_needs_recovery(trans->fs->super)) {
+		ext2fs_set_feature_journal_needs_recovery(trans->fs->super);
 		ext2fs_mark_super_dirty(trans->fs);
 	}
 
@@ -510,8 +503,7 @@ static errcode_t journal_write(journal_t *journal,
 	errcode_t err;
 
 	if (revoke_len > 0) {
-		journal->j_superblock->s_feature_incompat |=
-				ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_REVOKE);
+		jfs_set_feature_revoke(journal);
 		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 
@@ -774,33 +766,26 @@ static void update_journal_csum(journal_t *journal, int ver)
 		return;
 
 	if (journal->j_tail != 0 ||
-	    EXT2_HAS_INCOMPAT_FEATURE(journal->j_fs_dev->k_fs->super,
-				      EXT3_FEATURE_INCOMPAT_RECOVER)) {
+	    ext2fs_has_feature_journal_needs_recovery(
+					journal->j_fs_dev->k_fs->super)) {
 		printf("Journal needs recovery, will not add csums.\n");
 		return;
 	}
 
 	/* metadata_csum implies journal csum v3 */
 	jsb = journal->j_superblock;
-	if (EXT2_HAS_RO_COMPAT_FEATURE(journal->j_fs_dev->k_fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+	if (ext2fs_has_feature_metadata_csum(journal->j_fs_dev->k_fs->super)) {
 		printf("Setting csum v%d\n", ver);
 		switch (ver) {
 		case 2:
-			journal->j_superblock->s_feature_incompat &=
-				ext2fs_cpu_to_be32(~JFS_FEATURE_INCOMPAT_CSUM_V3);
-			journal->j_superblock->s_feature_incompat |=
-				ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2);
-			journal->j_superblock->s_feature_compat &=
-				ext2fs_cpu_to_be32(~JFS_FEATURE_COMPAT_CHECKSUM);
+			jfs_clear_feature_csum3(journal);
+			jfs_set_feature_csum2(journal);
+			jfs_clear_feature_checksum(journal);
 			break;
 		case 3:
-			journal->j_superblock->s_feature_incompat &=
-				ext2fs_cpu_to_be32(~JFS_FEATURE_INCOMPAT_CSUM_V2);
-			journal->j_superblock->s_feature_incompat |=
-				ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V3);
-			journal->j_superblock->s_feature_compat &=
-				ext2fs_cpu_to_be32(~JFS_FEATURE_COMPAT_CHECKSUM);
+			jfs_set_feature_csum3(journal);
+			jfs_clear_feature_csum2(journal);
+			jfs_clear_feature_checksum(journal);
 			break;
 		default:
 			printf("Unknown checksum v%d\n", ver);
@@ -810,11 +795,9 @@ static void update_journal_csum(journal_t *journal, int ver)
 		journal->j_csum_seed = jbd2_chksum(journal, ~0, jsb->s_uuid,
 						   sizeof(jsb->s_uuid));
 	} else {
-		journal->j_superblock->s_feature_compat |=
-			ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM);
-		journal->j_superblock->s_feature_incompat &=
-			ext2fs_cpu_to_be32(~(JFS_FEATURE_INCOMPAT_CSUM_V2 |
-					     JFS_FEATURE_INCOMPAT_CSUM_V3));
+		jfs_clear_feature_csum3(journal);
+		jfs_clear_feature_csum2(journal);
+		jfs_set_feature_checksum(journal);
 	}
 }
 
@@ -833,18 +816,15 @@ static void update_uuid(journal_t *journal)
 		return;
 
 	fs = journal->j_fs_dev->k_fs;
-	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_INCOMPAT_64BIT))
+	if (!ext2fs_has_feature_64bit(fs->super))
 		return;
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT) &&
-	    EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT4_FEATURE_INCOMPAT_64BIT))
+	if (jfs_has_feature_64bit(journal) &&
+	    ext2fs_has_feature_64bit(fs->super))
 		return;
 
 	if (journal->j_tail != 0 ||
-	    EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT3_FEATURE_INCOMPAT_RECOVER)) {
+	    ext2fs_has_feature_journal_needs_recovery(fs->super)) {
 		printf("Journal needs recovery, will not set 64bit.\n");
 		return;
 	}
@@ -858,24 +838,21 @@ static void update_64bit_flag(journal_t *journal)
 	if (journal->j_format_version < 2)
 		return;
 
-	if (!EXT2_HAS_INCOMPAT_FEATURE(journal->j_fs_dev->k_fs->super,
-				       EXT4_FEATURE_INCOMPAT_64BIT))
+	if (!ext2fs_has_feature_64bit(journal->j_fs_dev->k_fs->super))
 		return;
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT) &&
-	    EXT2_HAS_INCOMPAT_FEATURE(journal->j_fs_dev->k_fs->super,
-				      EXT4_FEATURE_INCOMPAT_64BIT))
+	if (jfs_has_feature_64bit(journal) &&
+	    ext2fs_has_feature_64bit(journal->j_fs_dev->k_fs->super))
 		return;
 
 	if (journal->j_tail != 0 ||
-	    EXT2_HAS_INCOMPAT_FEATURE(journal->j_fs_dev->k_fs->super,
-				      EXT3_FEATURE_INCOMPAT_RECOVER)) {
+	    ext2fs_has_feature_journal_needs_recovery(
+				journal->j_fs_dev->k_fs->super)) {
 		printf("Journal needs recovery, will not set 64bit.\n");
 		return;
 	}
 
-	journal->j_superblock->s_feature_incompat |=
-				ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_64BIT);
+	jfs_set_feature_64bit(journal);
 }
 
 void do_journal_open(int argc, char *argv[])
@@ -894,8 +871,7 @@ void do_journal_open(int argc, char *argv[])
 		printf("Journal is already open.\n");
 		return;
 	}
-	if (!EXT2_HAS_COMPAT_FEATURE(current_fs->super,
-				     EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
+	if (!ext2fs_has_feature_journal(current_fs->super)) {
 		printf("Journalling is not enabled on this filesystem.\n");
 		return;
 	}
@@ -978,8 +954,7 @@ void do_journal_run(int argc EXT2FS_ATTR((unused)), char *argv[])
 	if (err)
 		com_err("journal_run", err, "while recovering journal");
 	else {
-		current_fs->super->s_feature_incompat &=
-				~EXT3_FEATURE_INCOMPAT_RECOVER;
+		ext2fs_clear_feature_journal_needs_recovery(current_fs->super);
 		ext2fs_mark_super_dirty(current_fs);
 	}
 }

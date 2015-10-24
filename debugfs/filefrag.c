@@ -145,8 +145,7 @@ static void filefrag(ext2_ino_t ino, struct ext2_inode *inode,
 	if (fs->options & VERBOSE_OPT) {
 		blk64_t num_blocks = ext2fs_inode_i_blocks(current_fs, inode);
 
-		if (!(current_fs->super->s_feature_ro_compat &
-		     EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ||
+		if (!ext2fs_has_feature_huge_file(current_fs->super) ||
 		    !(inode->i_flags & EXT4_HUGE_FILE_FL))
 			num_blocks /= current_fs->blocksize / 512;
 

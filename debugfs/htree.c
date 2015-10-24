@@ -46,8 +46,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	int		hash_alg;
 	int		csum_size = 0;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	errcode = ext2fs_bmap2(fs, ino, inode, buf, 0, blk, 0, &pblk);
@@ -156,8 +155,7 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 		remainder -= sizeof(struct ext2_dx_root_info) + 24;
 	else
 		remainder -= 8;
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
+	if (ext2fs_has_feature_metadata_csum(fs->super) &&
 	    remainder == sizeof(struct ext2_dx_tail)) {
 		tail = (struct ext2_dx_tail *)(ent + limit);
 		fprintf(pager, "Checksum: 0x%08x\n",

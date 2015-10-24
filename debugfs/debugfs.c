@@ -436,8 +436,7 @@ void do_show_super_stats(int argc, char *argv[])
 		return;
 	out = open_pager();
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
-				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+	if (ext2fs_has_feature_bigalloc(current_fs->super))
 		units = "cluster";
 
 	list_super2(current_fs->super, out);
@@ -893,8 +892,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 					  (struct ext2_inode_large *) inode);
 	dump_inode_attributes(out, inode_num);
 	if (current_fs->super->s_creator_os == EXT2_OS_LINUX &&
-	    current_fs->super->s_feature_ro_compat &
-		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+	    ext2fs_has_feature_metadata_csum(current_fs->super)) {
 		__u32 crc = inode->i_checksum_lo;
 		if (is_large_inode &&
 		    large_inode->i_extra_isize >=

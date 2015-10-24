@@ -42,9 +42,8 @@ int main (int argc, char *argv[])
 			argv[1]);
 		exit(1);
 	}
-	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_INCOMPAT_ENCRYPT)) {
-		fs->super->s_feature_incompat |= EXT4_FEATURE_INCOMPAT_ENCRYPT;
+	if (!ext2fs_has_feature_encrypt(fs->super)) {
+		ext2fs_set_feature_encrypt(fs->super);
 		fs->super->s_encrypt_algos[0] =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		fs->super->s_encrypt_algos[1] =

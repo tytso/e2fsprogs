@@ -245,7 +245,7 @@ void wait_on_buffer(struct buffer_head *bh)
 
 static void ext2fs_clear_recover(ext2_filsys fs, int error)
 {
-	fs->super->s_feature_incompat &= ~EXT3_FEATURE_INCOMPAT_RECOVER;
+	ext2fs_clear_feature_journal_needs_recovery(fs->super);
 
 	/* if we had an error doing journal recovery, we need a full fsck */
 	if (error)
@@ -451,8 +451,7 @@ try_backup_journal:
 			ext2fs_swap_super(&jsuper);
 #endif
 		if (jsuper.s_magic != EXT2_SUPER_MAGIC ||
-		    !(jsuper.s_feature_incompat &
-		      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		    !ext2fs_has_feature_journal_dev(&jsuper)) {
 			retval = EXT2_ET_LOAD_EXT_JOURNAL;
 			brelse(bh);
 			goto errout;
@@ -466,8 +465,7 @@ try_backup_journal:
 		}
 
 		/* Check the superblock checksum */
-		if (jsuper.s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+		if (ext2fs_has_feature_metadata_csum(&jsuper)) {
 			struct struct_ext2_filsys fsx;
 			struct ext2_super_block	superx;
 			void *p;
@@ -476,8 +474,7 @@ try_backup_journal:
 			memcpy(&fsx, fs, sizeof(fsx));
 			memcpy(&superx, fs->super, sizeof(superx));
 			fsx.super = &superx;
-			fsx.super->s_feature_ro_compat |=
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM;
+			ext2fs_set_feature_metadata_csum(fsx.super);
 			if (!ext2fs_superblock_csum_verify(&fsx, p)) {
 				retval = EXT2_ET_LOAD_EXT_JOURNAL;
 				brelse(bh);
@@ -522,10 +519,8 @@ errout:
 static errcode_t ext2fs_journal_fix_bad_inode(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
-	int recover = fs->super->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_RECOVER;
-	int has_journal = fs->super->s_feature_compat &
-		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	int recover = ext2fs_has_feature_journal_needs_recovery(fs->super);
+	int has_journal = ext2fs_has_feature_journal(fs->super);
 
 	if (has_journal || sb->s_journal_inum) {
 		/* The journal inode is bogus, remove and force full fsck */
@@ -604,12 +599,11 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 		return EXT2_ET_RO_UNSUPP_FEATURE;
 
 	/* Checksum v1-3 are mutually exclusive features. */
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2) &&
-	    JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V3))
+	if (jfs_has_feature_csum2(journal) && jfs_has_feature_csum3(journal))
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 
 	if (journal_has_csum_v2or3(journal) &&
-	    JFS_HAS_COMPAT_FEATURE(journal, JFS_FEATURE_COMPAT_CHECKSUM))
+	    jfs_has_feature_checksum(journal))
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 
 	if (!ext2fs_journal_verify_csum_type(journal, jsb) ||
@@ -680,12 +674,11 @@ static errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 	journal_t *journal;
-	int recover = fs->super->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_RECOVER;
+	int recover = ext2fs_has_feature_journal_needs_recovery(fs->super);
 	errcode_t retval;
 
 	/* If we don't have any journal features, don't do anything more */
-	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	if (!ext2fs_has_feature_journal(sb) &&
 	    !recover && sb->s_journal_inum == 0 && sb->s_journal_dev == 0 &&
 	    uuid_is_null(sb->s_journal_uuid))
 		return 0;
@@ -703,13 +696,13 @@ static errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 	 * needs_recovery set but has_journal clear.  We can't get in a loop
 	 * with -y, -n, or -p, only if a user isn't making up their mind.
 	 */
-	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
+	if (!ext2fs_has_feature_journal(sb)) {
 		retval = EXT2_ET_JOURNAL_FLAGS_WRONG;
 		goto err;
 	}
 
-	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL &&
-	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
+	if (ext2fs_has_feature_journal(sb) &&
+	    !ext2fs_has_feature_journal_needs_recovery(sb) &&
 	    journal->j_superblock->s_start != 0) {
 		retval = EXT2_ET_JOURNAL_FLAGS_WRONG;
 		goto err;
@@ -720,7 +713,7 @@ static errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 	 * the journal's errno is set; if so, we need to mark the file
 	 * system as being corrupt and clear the journal's s_errno.
 	 */
-	if (!(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
+	if (!ext2fs_has_feature_journal_needs_recovery(sb) &&
 	    journal->j_superblock->s_errno) {
 		fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(fs);
@@ -929,7 +922,7 @@ void jbd2_block_tag_csum_set(journal_t *j, journal_block_tag_t *tag,
 	csum32 = jbd2_chksum(j, j->j_csum_seed, (__u8 *)&seq, sizeof(seq));
 	csum32 = jbd2_chksum(j, csum32, bh->b_data, bh->b_size);
 
-	if (JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V3))
+	if (jfs_has_feature_csum3(j))
 		tag3->t_checksum = ext2fs_cpu_to_be32(csum32);
 	else
 		tag->t_checksum = ext2fs_cpu_to_be16(csum32);
