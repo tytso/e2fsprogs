@@ -147,8 +147,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	super->s_magic = EXT2_SUPER_MAGIC;
 	super->s_state = EXT2_VALID_FS;
 
-	bigalloc_flag = EXT2_HAS_RO_COMPAT_FEATURE(param,
-				   EXT4_FEATURE_RO_COMPAT_BIGALLOC);
+	bigalloc_flag = ext2fs_has_feature_bigalloc(param);
 
 	assign_field(s_log_block_size);
 
@@ -258,7 +257,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	 * If we're creating an external journal device, we don't need
 	 * to bother with the rest.
 	 */
-	if (super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	if (ext2fs_has_feature_journal_dev(super)) {
 		fs->group_desc_count = 0;
 		ext2fs_mark_super_dirty(fs);
 		*ret_fs = fs;
@@ -275,7 +274,7 @@ retry:
 	}
 
 	set_field(s_desc_size,
-		  super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT ?
+		  ext2fs_has_feature_64bit(super) ?
 		  EXT2_MIN_DESC_SIZE_64BIT : 0);
 
 	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
@@ -283,7 +282,7 @@ retry:
 
 	i = fs->blocksize >= 4096 ? 1 : 4096 / fs->blocksize;
 
-	if (super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT &&
+	if (ext2fs_has_feature_64bit(super) &&
 	    (ext2fs_blocks_count(super) / i) > (1ULL << 32))
 		set_field(s_inodes_count, ~0U);
 	else
@@ -362,7 +361,7 @@ ipg_retry:
 	/*
 	 * check the number of reserved group descriptor table blocks
 	 */
-	if (super->s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE)
+	if (ext2fs_has_feature_resize_inode(super))
 		rsv_gdt = calc_reserved_gdt_blocks(fs);
 	else
 		rsv_gdt = 0;
@@ -384,9 +383,9 @@ ipg_retry:
 	/* Enable meta_bg if we'd lose more than 3/4 of a BG to GDT blocks. */
 	if (super->s_reserved_gdt_blocks + fs->desc_blocks >
 	    super->s_blocks_per_group * 3 / 4)
-		fs->super->s_feature_incompat |= EXT2_FEATURE_INCOMPAT_META_BG;
+		ext2fs_set_feature_meta_bg(fs->super);
 
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+	if (ext2fs_has_feature_meta_bg(fs->super))
 		overhead++;
 	else
 		overhead += fs->desc_blocks;
@@ -435,7 +434,7 @@ ipg_retry:
 	 */
 
 	/* Set up the locations of the backup superblocks */
-	if (super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
+	if (ext2fs_has_feature_sparse_super2(super)) {
 		if (super->s_backup_bgs[0] >= fs->group_desc_count)
 			super->s_backup_bgs[0] = fs->group_desc_count - 1;
 		if (super->s_backup_bgs[1] >= fs->group_desc_count)

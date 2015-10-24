@@ -73,8 +73,7 @@ errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 	 * If we're creating an external journal device, we need to
 	 * adjust these fields.
 	 */
-	if (fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	if (ext2fs_has_feature_journal_dev(fs->super)) {
 		jsb->s_nr_users = 0;
 		jsb->s_first = htonl(ext2fs_journal_sb_start(fs->blocksize) + 1);
 	}
@@ -289,7 +288,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	if (goal == ~0ULL)
 		goal = get_midpoint_journal_block(fs);
 
-	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)
+	if (ext2fs_has_feature_extents(fs->super))
 		inode.i_flags |= EXT4_EXTENTS_FL;
 
 	if (!(flags & EXT2_MKJOURNAL_LAZYINIT))
@@ -414,7 +413,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	memcpy(fs->super->s_journal_uuid, jsb->s_uuid,
 	       sizeof(fs->super->s_journal_uuid));
 	memset(fs->super->s_jnl_blocks, 0, sizeof(fs->super->s_jnl_blocks));
-	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	ext2fs_set_feature_journal(fs->super);
 	ext2fs_mark_super_dirty(fs);
 	return 0;
 }
@@ -526,7 +525,7 @@ errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
 	fs->super->s_journal_dev = 0;
 	memset(fs->super->s_journal_uuid, 0,
 	       sizeof(fs->super->s_journal_uuid));
-	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	ext2fs_set_feature_journal(fs->super);
 
 	ext2fs_mark_super_dirty(fs);
 	return 0;

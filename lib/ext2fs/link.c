@@ -53,8 +53,7 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	if (ls->err)
 		return DIRENT_ABORT;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(ls->fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(ls->fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 	/*
 	 * See if the following directory entry (if any) is unused;
@@ -138,7 +137,7 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	dirent->inode = ls->inode;
 	ext2fs_dirent_set_name_len(dirent, ls->namelen);
 	strncpy(dirent->name, ls->name, ls->namelen);
-	if (ls->sb->s_feature_incompat & EXT2_FEATURE_INCOMPAT_FILETYPE)
+	if (ext2fs_has_feature_filetype(ls->sb))
 		ext2fs_dirent_set_file_type(dirent, ls->flags & 0x7);
 
 	ls->done++;

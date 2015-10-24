@@ -291,13 +291,11 @@ static errcode_t ext2fs_inline_data_convert_dir(ext2_filsys fs, ext2_ino_t ino,
 	int csum_size = 0;
 	int filetype = 0;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	/* Create '.' and '..' */
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT2_FEATURE_INCOMPAT_FILETYPE))
+	if (ext2fs_has_feature_filetype(fs->super))
 		filetype = EXT2_FT_DIR;
 
 	/*
@@ -386,7 +384,7 @@ ext2fs_inline_data_dir_expand(ext2_filsys fs, ext2_ino_t ino,
 		goto errout;
 
 	/* Update inode */
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super, EXT3_FEATURE_INCOMPAT_EXTENTS))
+	if (ext2fs_has_feature_extents(fs->super))
 		inode->i_flags |= EXT4_EXTENTS_FL;
 	inode->i_flags &= ~EXT4_INLINE_DATA_FL;
 	retval = ext2fs_iblk_add_blocks(fs, inode, 1);
@@ -415,8 +413,7 @@ ext2fs_inline_data_file_expand(ext2_filsys fs, ext2_ino_t ino,
 
 	/* Update inode */
 	memset(inode->i_block, 0, sizeof(inode->i_block));
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+	if (ext2fs_has_feature_extents(fs->super)) {
 		ext2_extent_handle_t handle;
 
 		inode->i_flags &= ~EXT4_EXTENTS_FL;

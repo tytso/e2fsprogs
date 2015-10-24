@@ -95,8 +95,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	if (!bmap)
 		bmap = fs->block_map;
 
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT4_FEATURE_INCOMPAT_FLEX_BG) &&
+	if (ext2fs_has_feature_flex_bg(fs->super) &&
 	    fs->super->s_log_groups_per_flex) {
 		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 		last_grp = group | (flexbg_size - 1);

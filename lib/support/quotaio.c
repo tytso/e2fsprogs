@@ -284,8 +284,7 @@ static errcode_t quota_inode_init_new(ext2_filsys fs, ext2_ino_t ino)
 	inode.i_links_count = 1;
 	inode.i_mode = LINUX_S_IFREG | 0600;
 	inode.i_flags |= EXT2_IMMUTABLE_FL;
-	if (fs->super->s_feature_incompat &
-			EXT3_FEATURE_INCOMPAT_EXTENTS)
+	if (ext2fs_has_feature_extents(fs->super))
 		inode.i_flags |= EXT4_EXTENTS_FL;
 
 	err = ext2fs_write_new_inode(fs, ino, &inode);

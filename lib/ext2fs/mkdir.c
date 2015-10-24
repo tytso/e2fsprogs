@@ -51,8 +51,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	 * and ino >= EXT2_FIRST_INO.
 	 */
 	if ((!ino || ino >= EXT2_FIRST_INO(fs->super)) &&
-	    EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT4_FEATURE_INCOMPAT_INLINE_DATA))
+	    ext2fs_has_feature_inline_data(fs->super))
 		inline_data = 1;
 
 	/*
@@ -108,8 +107,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 		inode.i_flags |= EXT4_INLINE_DATA_FL;
 		inode.i_size = EXT4_MIN_INLINE_DATA_SIZE;
 	} else {
-		if (fs->super->s_feature_incompat &
-		    EXT3_FEATURE_INCOMPAT_EXTENTS)
+		if (ext2fs_has_feature_extents(fs->super))
 			inode.i_flags |= EXT4_EXTENTS_FL;
 		else
 			inode.i_block[0] = blk;
@@ -134,8 +132,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 		if (retval)
 			goto cleanup;
 
-		if (fs->super->s_feature_incompat &
-		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
+		if (ext2fs_has_feature_extents(fs->super)) {
 			retval = ext2fs_extent_open2(fs, ino, &inode, &handle);
 			if (retval)
 				goto cleanup;

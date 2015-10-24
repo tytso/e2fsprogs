@@ -245,13 +245,76 @@ typedef struct journal_superblock_s
 	((j)->j_format_version >= 2 &&					\
 	 ((j)->j_superblock->s_feature_incompat & ext2fs_cpu_to_be32((mask))))
 
-#define JFS_FEATURE_COMPAT_CHECKSUM	0x00000001
+#define JFS_FEATURE_COMPAT_CHECKSUM		0x00000001
 
 #define JFS_FEATURE_INCOMPAT_REVOKE		0x00000001
 #define JFS_FEATURE_INCOMPAT_64BIT		0x00000002
 #define JFS_FEATURE_INCOMPAT_ASYNC_COMMIT	0x00000004
 #define JFS_FEATURE_INCOMPAT_CSUM_V2		0x00000008
 #define JFS_FEATURE_INCOMPAT_CSUM_V3		0x00000010
+
+/* journal feature predicate functions */
+#define JFS_FEATURE_COMPAT_FUNCS(name, flagname) \
+static inline int jfs_has_feature_##name(journal_t *j) \
+{ \
+	return ((j)->j_format_version >= 2 && \
+		((j)->j_superblock->s_feature_compat & \
+		 ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname)) != 0); \
+} \
+static inline void jfs_set_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_compat |= \
+		ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname); \
+} \
+static inline void jfs_clear_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_compat &= \
+		~ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname); \
+}
+
+#define JFS_FEATURE_RO_COMPAT_FUNCS(name, flagname) \
+static inline int jfs_has_feature_##name(journal_t *j) \
+{ \
+	return ((j)->j_format_version >= 2 && \
+		((j)->j_superblock->s_feature_ro_compat & \
+		 ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname)) != 0); \
+} \
+static inline void jfs_set_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_ro_compat |= \
+		ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname); \
+} \
+static inline void jfs_clear_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_ro_compat &= \
+		~ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname); \
+}
+
+#define JFS_FEATURE_INCOMPAT_FUNCS(name, flagname) \
+static inline int jfs_has_feature_##name(journal_t *j) \
+{ \
+	return ((j)->j_format_version >= 2 && \
+		((j)->j_superblock->s_feature_incompat & \
+		 ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname)) != 0); \
+} \
+static inline void jfs_set_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_incompat |= \
+		ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname); \
+} \
+static inline void jfs_clear_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_incompat &= \
+		~ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname); \
+}
+
+JFS_FEATURE_COMPAT_FUNCS(checksum,		CHECKSUM)
+
+JFS_FEATURE_INCOMPAT_FUNCS(revoke,		REVOKE)
+JFS_FEATURE_INCOMPAT_FUNCS(64bit,		64BIT)
+JFS_FEATURE_INCOMPAT_FUNCS(async_commit,	ASYNC_COMMIT)
+JFS_FEATURE_INCOMPAT_FUNCS(csum2,		CSUM_V2)
+JFS_FEATURE_INCOMPAT_FUNCS(csum3,		CSUM_V3)
 
 /* Features known to this kernel version: */
 #define JFS_KNOWN_COMPAT_FEATURES	0
@@ -284,28 +347,27 @@ typedef struct journal_superblock_s
 /*
  * helper functions to deal with 32 or 64bit block numbers.
  */
-_INLINE_ size_t journal_tag_bytes(journal_t *journal)
+static inline size_t journal_tag_bytes(journal_t *journal)
 {
 	size_t sz;
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V3))
+	if (jfs_has_feature_csum3(journal))
 		return sizeof(journal_block_tag3_t);
 
 	sz = sizeof(journal_block_tag_t);
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (jfs_has_feature_csum2(journal))
 		sz += sizeof(__u16);
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
+	if (jfs_has_feature_64bit(journal))
 		return sz;
 
 	return sz - sizeof(__u32);
 }
 
-_INLINE_ int journal_has_csum_v2or3(journal_t *journal)
+static inline int journal_has_csum_v2or3(journal_t *journal)
 {
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2) ||
-	    JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V3))
+	if (jfs_has_feature_csum2(journal) || jfs_has_feature_csum3(journal))
 		return 1;
 
 	return 0;

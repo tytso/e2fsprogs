@@ -218,8 +218,7 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 		buflen = ctx->buflen;
 	}
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	while (offset < buflen - 8) {

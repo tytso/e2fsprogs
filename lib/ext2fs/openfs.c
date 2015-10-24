@@ -47,7 +47,7 @@ blk64_t ext2fs_descriptor_block_loc2(ext2_filsys fs, blk64_t group_block,
 	if (i == 0 && fs->blocksize == 1024 && EXT2FS_CLUSTER_RATIO(fs) > 1)
 		group_zero_adjust = 1;
 
-	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
+	if (!ext2fs_has_feature_meta_bg(fs->super) ||
 	    (i < fs->super->s_first_meta_bg))
 		return group_block + i + 1 + group_zero_adjust;
 
@@ -269,8 +269,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		}
 
 		if (!(flags & EXT2_FLAG_JOURNAL_DEV_OK) &&
-		    (fs->super->s_feature_incompat &
-		     EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		    ext2fs_has_feature_journal_dev(fs->super)) {
 			retval = EXT2_ET_UNSUPP_FEATURE;
 			goto cleanup;
 		}
@@ -286,15 +285,13 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	 * bigalloc requires cluster-aware bitfield operations, which at the
 	 * moment means we need EXT2_FLAG_64BITS.
 	 */
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
+	if (ext2fs_has_feature_bigalloc(fs->super) &&
 	    !(flags & EXT2_FLAG_64BITS)) {
 		retval = EXT2_ET_CANT_USE_LEGACY_BITMAPS;
 		goto cleanup;
 	}
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
+	if (!ext2fs_has_feature_bigalloc(fs->super) &&
 	    (fs->super->s_log_block_size != fs->super->s_log_cluster_size)) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
@@ -306,7 +303,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	}
 
 	/* Enforce the block group descriptor size */
-	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) {
+	if (ext2fs_has_feature_64bit(fs->super)) {
 		if (fs->super->s_desc_size < EXT2_MIN_DESC_SIZE_64BIT) {
 			retval = EXT2_ET_BAD_DESC_SIZE;
 			goto cleanup;
@@ -345,8 +342,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	 * If this is an external journal device, don't try to read
 	 * the group descriptors, because they're not there.
 	 */
-	if (fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	if (ext2fs_has_feature_journal_dev(fs->super)) {
 		fs->group_desc_count = 0;
 		*ret_fs = fs;
 		return 0;
@@ -404,7 +400,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 #ifdef WORDS_BIGENDIAN
 	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
 #endif
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) {
+	if (ext2fs_has_feature_meta_bg(fs->super)) {
 		first_meta_bg = fs->super->s_first_meta_bg;
 		if (first_meta_bg > fs->desc_blocks)
 			first_meta_bg = fs->desc_blocks;
@@ -461,7 +457,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			ext2fs_mark_super_dirty(fs);
 	}
 
-	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
+	if (ext2fs_has_feature_mmp(fs->super) &&
 	    !(flags & EXT2_FLAG_SKIP_MMP) &&
 	    (flags & (EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE))) {
 		retval = ext2fs_mmp_start(fs);

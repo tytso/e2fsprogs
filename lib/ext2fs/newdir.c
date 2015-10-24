@@ -45,8 +45,7 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 	memset(buf, 0, fs->blocksize);
 	dir = (struct ext2_dir_entry *) buf;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	retval = ext2fs_set_rec_len(fs, fs->blocksize - csum_size, dir);
@@ -56,8 +55,7 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 	}
 
 	if (dir_ino) {
-		if (fs->super->s_feature_incompat &
-		    EXT2_FEATURE_INCOMPAT_FILETYPE)
+		if (ext2fs_has_feature_filetype(fs->super))
 			filetype = EXT2_FT_DIR;
 		/*
 		 * Set up entry for '.'

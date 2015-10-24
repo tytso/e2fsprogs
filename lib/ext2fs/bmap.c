@@ -145,8 +145,7 @@ static errcode_t implied_cluster_alloc(ext2_filsys fs, ext2_ino_t ino,
 	blk64_t	base_block, pblock = 0;
 	int i;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+	if (!ext2fs_has_feature_bigalloc(fs->super))
 		return 0;
 
 	base_block = lblk & ~EXT2FS_CLUSTER_MASK(fs);
@@ -183,8 +182,7 @@ errcode_t ext2fs_map_cluster_block(ext2_filsys fs, ext2_ino_t ino,
 
 	/* Need bigalloc and extents to be enabled */
 	*pblk = 0;
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_BIGALLOC) ||
+	if (!ext2fs_has_feature_bigalloc(fs->super) ||
 	    !(inode->i_flags & EXT4_EXTENTS_FL))
 		return 0;
 

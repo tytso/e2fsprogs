@@ -37,14 +37,13 @@ int ext2fs_bg_has_super(ext2_filsys fs, dgrp_t group)
 {
 	if (group == 0)
 		return 1;
-	if (fs->super->s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
+	if (ext2fs_has_feature_sparse_super2(fs->super)) {
 		if (group == fs->super->s_backup_bgs[0] ||
 		    group == fs->super->s_backup_bgs[1])
 			return 1;
 		return 0;
 	}
-	if ((group <= 1) || !(fs->super->s_feature_ro_compat &
-			      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
+	if ((group <= 1) || !ext2fs_has_feature_sparse_super(fs->super))
 		return 1;
 	if (!(group & 1))
 		return 0;
@@ -86,7 +85,7 @@ errcode_t ext2fs_super_and_bgd_loc2(ext2_filsys fs,
 	if (group_block == 0 && fs->blocksize == 1024)
 		group_block = 1; /* Deal with 1024 blocksize && bigalloc */
 
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+	if (ext2fs_has_feature_meta_bg(fs->super))
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
 		old_desc_blocks =
@@ -101,7 +100,7 @@ errcode_t ext2fs_super_and_bgd_loc2(ext2_filsys fs,
 	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
 	meta_bg = group / meta_bg_size;
 
-	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
+	if (!ext2fs_has_feature_meta_bg(fs->super) ||
 	    (meta_bg < fs->super->s_first_meta_bg)) {
 		if (has_super) {
 			old_desc_blk = group_block + 1;
@@ -347,14 +346,13 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	 * we write out the backup superblocks.)
 	 */
 	fs->super->s_state &= ~EXT2_VALID_FS;
-	fs->super->s_feature_incompat &= ~EXT3_FEATURE_INCOMPAT_RECOVER;
+	ext2fs_clear_feature_journal_needs_recovery(fs->super);
 
 	/*
 	 * If this is an external journal device, don't write out the
 	 * block group descriptors or any of the backup superblocks
 	 */
-	if (fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
+	if (ext2fs_has_feature_journal_dev(fs->super))
 		goto write_primary_superblock_only;
 
 	/*
@@ -362,7 +360,7 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	 * superblocks and group descriptors.
 	 */
 	group_ptr = (char *) group_shadow;
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) {
+	if (ext2fs_has_feature_meta_bg(fs->super)) {
 		old_desc_blocks = fs->super->s_first_meta_bg;
 		if (old_desc_blocks > fs->desc_blocks)
 			old_desc_blocks = fs->desc_blocks;

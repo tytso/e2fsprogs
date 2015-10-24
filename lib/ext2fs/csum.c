@@ -41,8 +41,7 @@ int ext2fs_mmp_csum_verify(ext2_filsys fs, struct mmp_struct *mmp)
 {
 	__u32 calculated;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 
 	calculated = ext2fs_mmp_csum(fs, mmp);
@@ -54,8 +53,7 @@ errcode_t ext2fs_mmp_csum_set(ext2_filsys fs, struct mmp_struct *mmp)
 {
 	__u32 crc;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	crc = ext2fs_mmp_csum(fs, mmp);
@@ -66,8 +64,7 @@ errcode_t ext2fs_mmp_csum_set(ext2_filsys fs, struct mmp_struct *mmp)
 
 int ext2fs_verify_csum_type(ext2_filsys fs, struct ext2_super_block *sb)
 {
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 
 	return sb->s_checksum_type == EXT2_CRC32C_CHKSUM;
@@ -145,8 +142,7 @@ int ext2fs_ext_attr_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 	__u32 calculated;
 	errcode_t retval;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 
 	retval = ext2fs_ext_attr_block_csum(fs, inum, block, hdr, &calculated);
@@ -163,8 +159,7 @@ errcode_t ext2fs_ext_attr_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
 	errcode_t retval;
 	__u32 crc;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	retval = ext2fs_ext_attr_block_csum(fs, inum, block, hdr, &crc);
@@ -442,8 +437,7 @@ static errcode_t ext2fs_dx_csum_set(ext2_filsys fs, ext2_ino_t inum,
 int ext2fs_dir_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 				 struct ext2_dir_entry *dirent)
 {
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 
 	if (__get_dirent_tail(fs, dirent, NULL, 1) == 0)
@@ -457,8 +451,7 @@ int ext2fs_dir_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 errcode_t ext2fs_dir_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
 				    struct ext2_dir_entry *dirent)
 {
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	if (__get_dirent_tail(fs, dirent, NULL, 1) == 0)
@@ -516,8 +509,7 @@ int ext2fs_extent_block_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 	 * The extent tree structures are accessed in LE order, so we must
 	 * swap the checksum bytes here.
 	 */
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 
 	provided = ext2fs_le32_to_cpu(t->et_checksum);
@@ -535,8 +527,7 @@ errcode_t ext2fs_extent_block_csum_set(ext2_filsys fs, ext2_ino_t inum,
 	__u32 crc;
 	struct ext3_extent_tail *t = get_extent_tail(eh);
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	/*
@@ -557,8 +548,7 @@ int ext2fs_inode_bitmap_csum_verify(ext2_filsys fs, dgrp_t group,
 			ext2fs_group_desc(fs, fs->group_desc, group);
 	__u32 provided, calculated;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 	provided = gdp->bg_inode_bitmap_csum_lo;
 	calculated = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)bitmap,
@@ -578,8 +568,7 @@ errcode_t ext2fs_inode_bitmap_csum_set(ext2_filsys fs, dgrp_t group,
 	struct ext4_group_desc *gdp = (struct ext4_group_desc *)
 			ext2fs_group_desc(fs, fs->group_desc, group);
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	crc = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)bitmap, size);
@@ -597,8 +586,7 @@ int ext2fs_block_bitmap_csum_verify(ext2_filsys fs, dgrp_t group,
 			ext2fs_group_desc(fs, fs->group_desc, group);
 	__u32 provided, calculated;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 	provided = gdp->bg_block_bitmap_csum_lo;
 	calculated = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)bitmap,
@@ -618,8 +606,7 @@ errcode_t ext2fs_block_bitmap_csum_set(ext2_filsys fs, dgrp_t group,
 	struct ext4_group_desc *gdp = (struct ext4_group_desc *)
 			ext2fs_group_desc(fs, fs->group_desc, group);
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	crc = ext2fs_crc32c_le(fs->csum_seed, (unsigned char *)bitmap, size);
@@ -669,8 +656,7 @@ int ext2fs_inode_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 	char *cp;
 
 	if (fs->super->s_creator_os != EXT2_OS_LINUX ||
-	    !EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	    !ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 
 	has_hi = (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE &&
@@ -713,8 +699,7 @@ errcode_t ext2fs_inode_csum_set(ext2_filsys fs, ext2_ino_t inum,
 	int has_hi;
 
 	if (fs->super->s_creator_os != EXT2_OS_LINUX ||
-	    !EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	    !ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	has_hi = (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE &&
@@ -750,8 +735,7 @@ __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 	group = ext2fs_swab32(group);
 #endif
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+	if (ext2fs_has_feature_metadata_csum(fs->super)) {
 		/* new metadata csum code */
 		__u16 old_crc;
 		__u32 crc32;

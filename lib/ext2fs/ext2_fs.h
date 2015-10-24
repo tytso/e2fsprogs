@@ -809,6 +809,95 @@ struct ext2_super_block {
 #define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
 #define EXT4_FEATURE_INCOMPAT_ENCRYPT		0x10000
 
+#define EXT4_FEATURE_COMPAT_FUNCS(name, ver, flagname) \
+static inline int ext2fs_has_feature_##name(struct ext2_super_block *sb) \
+{ \
+	return ((EXT2_SB(sb)->s_feature_compat & \
+		 EXT##ver##_FEATURE_COMPAT_##flagname) != 0); \
+} \
+static inline void ext2fs_set_feature_##name(struct ext2_super_block *sb) \
+{ \
+	EXT2_SB(sb)->s_feature_compat |= \
+		EXT##ver##_FEATURE_COMPAT_##flagname; \
+} \
+static inline void ext2fs_clear_feature_##name(struct ext2_super_block *sb) \
+{ \
+	EXT2_SB(sb)->s_feature_compat &= \
+		~EXT##ver##_FEATURE_COMPAT_##flagname; \
+}
+
+#define EXT4_FEATURE_RO_COMPAT_FUNCS(name, ver, flagname) \
+static inline int ext2fs_has_feature_##name(struct ext2_super_block *sb) \
+{ \
+	return ((EXT2_SB(sb)->s_feature_ro_compat & \
+		 EXT##ver##_FEATURE_RO_COMPAT_##flagname) != 0); \
+} \
+static inline void ext2fs_set_feature_##name(struct ext2_super_block *sb) \
+{ \
+	EXT2_SB(sb)->s_feature_ro_compat |= \
+		EXT##ver##_FEATURE_RO_COMPAT_##flagname; \
+} \
+static inline void ext2fs_clear_feature_##name(struct ext2_super_block *sb) \
+{ \
+	EXT2_SB(sb)->s_feature_ro_compat &= \
+		~EXT##ver##_FEATURE_RO_COMPAT_##flagname; \
+}
+
+#define EXT4_FEATURE_INCOMPAT_FUNCS(name, ver, flagname) \
+static inline int ext2fs_has_feature_##name(struct ext2_super_block *sb) \
+{ \
+	return ((EXT2_SB(sb)->s_feature_incompat & \
+		 EXT##ver##_FEATURE_INCOMPAT_##flagname) != 0); \
+} \
+static inline void ext2fs_set_feature_##name(struct ext2_super_block *sb) \
+{ \
+	EXT2_SB(sb)->s_feature_incompat |= \
+		EXT##ver##_FEATURE_INCOMPAT_##flagname; \
+} \
+static inline void ext2fs_clear_feature_##name(struct ext2_super_block *sb) \
+{ \
+	EXT2_SB(sb)->s_feature_incompat &= \
+		~EXT##ver##_FEATURE_INCOMPAT_##flagname; \
+}
+
+EXT4_FEATURE_COMPAT_FUNCS(dir_prealloc,		2, DIR_PREALLOC)
+EXT4_FEATURE_COMPAT_FUNCS(imagic_inodes,	2, IMAGIC_INODES)
+EXT4_FEATURE_COMPAT_FUNCS(journal,		3, HAS_JOURNAL)
+EXT4_FEATURE_COMPAT_FUNCS(xattr,		2, EXT_ATTR)
+EXT4_FEATURE_COMPAT_FUNCS(resize_inode,		2, RESIZE_INODE)
+EXT4_FEATURE_COMPAT_FUNCS(dir_index,		2, DIR_INDEX)
+EXT4_FEATURE_COMPAT_FUNCS(lazy_bg,		2, LAZY_BG)
+EXT4_FEATURE_COMPAT_FUNCS(exclude_bitmap,	2, EXCLUDE_BITMAP)
+EXT4_FEATURE_COMPAT_FUNCS(sparse_super2,	4, SPARSE_SUPER2)
+
+EXT4_FEATURE_RO_COMPAT_FUNCS(sparse_super,	2, SPARSE_SUPER)
+EXT4_FEATURE_RO_COMPAT_FUNCS(large_file,	2, LARGE_FILE)
+EXT4_FEATURE_RO_COMPAT_FUNCS(huge_file,		4, HUGE_FILE)
+EXT4_FEATURE_RO_COMPAT_FUNCS(gdt_csum,		4, GDT_CSUM)
+EXT4_FEATURE_RO_COMPAT_FUNCS(dir_nlink,		4, DIR_NLINK)
+EXT4_FEATURE_RO_COMPAT_FUNCS(extra_isize,	4, EXTRA_ISIZE)
+EXT4_FEATURE_RO_COMPAT_FUNCS(has_snapshot,	4, HAS_SNAPSHOT)
+EXT4_FEATURE_RO_COMPAT_FUNCS(quota,		4, QUOTA)
+EXT4_FEATURE_RO_COMPAT_FUNCS(bigalloc,		4, BIGALLOC)
+EXT4_FEATURE_RO_COMPAT_FUNCS(metadata_csum,	4, METADATA_CSUM)
+EXT4_FEATURE_RO_COMPAT_FUNCS(replica,		4, REPLICA)
+EXT4_FEATURE_RO_COMPAT_FUNCS(readonly,		4, READONLY)
+
+EXT4_FEATURE_INCOMPAT_FUNCS(compression,	2, COMPRESSION)
+EXT4_FEATURE_INCOMPAT_FUNCS(filetype,		2, FILETYPE)
+EXT4_FEATURE_INCOMPAT_FUNCS(journal_needs_recovery,	3, RECOVER)
+EXT4_FEATURE_INCOMPAT_FUNCS(journal_dev,	3, JOURNAL_DEV)
+EXT4_FEATURE_INCOMPAT_FUNCS(meta_bg,		2, META_BG)
+EXT4_FEATURE_INCOMPAT_FUNCS(extents,		3, EXTENTS)
+EXT4_FEATURE_INCOMPAT_FUNCS(64bit,		4, 64BIT)
+EXT4_FEATURE_INCOMPAT_FUNCS(mmp,		4, MMP)
+EXT4_FEATURE_INCOMPAT_FUNCS(flex_bg,		4, FLEX_BG)
+EXT4_FEATURE_INCOMPAT_FUNCS(ea_inode,		4, EA_INODE)
+EXT4_FEATURE_INCOMPAT_FUNCS(dirdata,		4, DIRDATA)
+EXT4_FEATURE_INCOMPAT_FUNCS(largedir,		4, LARGEDIR)
+EXT4_FEATURE_INCOMPAT_FUNCS(inline_data,	4, INLINE_DATA)
+EXT4_FEATURE_INCOMPAT_FUNCS(encrypt,		4, ENCRYPT)
+
 #define EXT2_FEATURE_COMPAT_SUPP	0
 #define EXT2_FEATURE_INCOMPAT_SUPP    (EXT2_FEATURE_INCOMPAT_FILETYPE| \
 				       EXT4_FEATURE_INCOMPAT_MMP)

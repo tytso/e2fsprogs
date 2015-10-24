@@ -88,8 +88,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	/* The time fields are set by ext2fs_write_new_inode() */
 
 	inlinelink = !fastlink &&
-		     (fs->super->s_feature_incompat &
-					EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
+		     ext2fs_has_feature_inline_data(fs->super) &&
 		     (target_len < fs->blocksize);
 	if (fastlink) {
 		/* Fast symlinks, target stored in inode */
@@ -114,8 +113,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 need_block:
 		/* Slow symlinks, target stored in the first block */
 		ext2fs_iblk_set(fs, &inode, 1);
-		if (fs->super->s_feature_incompat &
-		    EXT3_FEATURE_INCOMPAT_EXTENTS) {
+		if (ext2fs_has_feature_extents(fs->super)) {
 			/*
 			 * The extent bmap is setup after the inode and block
 			 * have been written out below.

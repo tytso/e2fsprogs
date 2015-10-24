@@ -378,7 +378,7 @@ errcode_t ext2fs_mmp_stop(ext2_filsys fs)
 	struct mmp_struct *mmp, *mmp_cmp;
 	errcode_t retval = 0;
 
-	if (!(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) ||
+	if (!ext2fs_has_feature_mmp(fs->super) ||
 	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
 		goto mmp_error;
 
@@ -405,7 +405,7 @@ mmp_error:
 
 	return retval;
 #else
-	if (!(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) ||
+	if (!ext2fs_has_feature_mmp(fs->super) ||
 	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
 		return 0;
 
@@ -425,7 +425,7 @@ errcode_t ext2fs_mmp_update2(ext2_filsys fs, int immediately)
 	struct timeval tv;
 	errcode_t retval = 0;
 
-	if (!(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) ||
+	if (!ext2fs_has_feature_mmp(fs->super) ||
 	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
 		return 0;
 
@@ -451,7 +451,7 @@ errcode_t ext2fs_mmp_update2(ext2_filsys fs, int immediately)
 mmp_error:
 	return retval;
 #else
-	if (!(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) ||
+	if (!ext2fs_has_feature_mmp(fs->super) ||
 	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
 		return 0;
 

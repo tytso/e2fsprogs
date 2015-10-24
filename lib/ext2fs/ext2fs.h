@@ -635,9 +635,8 @@ struct ext2_xattr_handle;
  */
 static inline int ext2fs_has_group_desc_csum(ext2_filsys fs)
 {
-	return EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-			EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
-			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+	return ext2fs_has_feature_metadata_csum(fs->super) ||
+	       ext2fs_has_feature_gdt_csum(fs->super);
 }
 
 /* The LARGE_FILE feature should be set if we have stored files 2GB+ in size */
@@ -1658,7 +1657,6 @@ extern errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 
 /* inline functions */
 #ifdef NO_INLINE_FUNCS
-extern void ext2fs_init_csum_seed(ext2_filsys fs);
 extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
 extern errcode_t ext2fs_get_memzero(unsigned long size, void *ptr);
 extern errcode_t ext2fs_get_array(unsigned long count,
@@ -1714,10 +1712,9 @@ extern void ext2fs_dirent_set_file_type(struct ext2_dir_entry *entry, int type);
 #endif /* __STDC_VERSION__ >= 199901L */
 #endif
 
-_INLINE_ void ext2fs_init_csum_seed(ext2_filsys fs)
+static inline void ext2fs_init_csum_seed(ext2_filsys fs)
 {
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return;
 
 	fs->csum_seed = ext2fs_crc32c_le(~0, fs->super->s_uuid,

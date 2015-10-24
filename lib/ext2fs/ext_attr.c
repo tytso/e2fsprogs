@@ -1060,10 +1060,8 @@ errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_xattr_handle *h;
 	errcode_t err;
 
-	if (!EXT2_HAS_COMPAT_FEATURE(fs->super,
-				     EXT2_FEATURE_COMPAT_EXT_ATTR) &&
-	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				     EXT4_FEATURE_INCOMPAT_INLINE_DATA))
+	if (!ext2fs_has_feature_xattr(fs->super) &&
+	    !ext2fs_has_feature_inline_data(fs->super))
 		return EXT2_ET_MISSING_EA_FEATURE;
 
 	err = ext2fs_get_memzero(sizeof(*h), &h);
