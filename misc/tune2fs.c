@@ -191,8 +191,7 @@ static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 	int retval;
 	journal_superblock_t *jsb;
 
-	if (!(jfs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+	if (!ext2fs_has_feature_journal_dev(jfs->super)) {
 		return EXT2_ET_UNSUPP_FEATURE;
 	}
 
@@ -479,8 +478,7 @@ static errcode_t rewrite_extents(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_extent_info	info;
 
 	if (!(inode->i_flags & EXT4_EXTENTS_FL) ||
-	    !EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	    !ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	errcode = ext2fs_extent_open(fs, ino, &handle);
@@ -559,8 +557,7 @@ static int rewrite_dir_block(ext2_filsys fs,
 		ext2fs_get_dx_countlimit(fs, (struct ext2_dir_entry *)ctx->buf,
 					 &dcl, &dcl_offset);
 	if (dcl) {
-		if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		if (!ext2fs_has_feature_metadata_csum(fs->super)) {
 			/* Ensure limit is the max size */
 			int max_entries = (fs->blocksize - dcl_offset) /
 					  sizeof(struct ext2_dx_entry);
@@ -609,8 +606,7 @@ static int rewrite_dir_block(ext2_filsys fs,
 			return BLOCK_ABORT;
 		name_size = ext2fs_dirent_name_len(last_de);
 
-		if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+		if (!ext2fs_has_feature_metadata_csum(fs->super)) {
 			if (!penultimate_de)
 				return 0;
 			if (last_de->inode ||
@@ -832,8 +828,7 @@ static void rewrite_metadata_checksums(ext2_filsys fs)
 	ext2fs_mmp_update2(fs, 1);
 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		fs->super->s_checksum_type = EXT2_CRC32C_CHKSUM;
 	else
 		fs->super->s_checksum_type = 0;
@@ -1004,8 +999,7 @@ static int update_feature_set(ext2_filsys fs, char *features)
 				"read-only.\n"), stderr);
 			return 1;
 		}
-		if ((sb->s_feature_incompat &
-		    EXT3_FEATURE_INCOMPAT_RECOVER) &&
+		if (ext2fs_has_feature_journal_needs_recovery(sb) &&
 		    f_flag < 2) {
 			fputs(_("The needs_recovery flag is set.  "
 				"Please run e2fsck before clearing\n"
@@ -1024,8 +1018,7 @@ static int update_feature_set(ext2_filsys fs, char *features)
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)) {
-		if (sb->s_feature_incompat &
-			EXT2_FEATURE_INCOMPAT_META_BG) {
+		if (ext2fs_has_feature_meta_bg(sb)) {
 			fputs(_("Setting filesystem feature 'sparse_super' "
 				"not supported\nfor filesystems with "
 				"the meta_bg feature enabled.\n"),
@@ -1108,7 +1101,7 @@ mmp_error:
 		 */
 		if (!journal_size)
 			journal_size = -1;
-		sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+		ext2fs_clear_feature_journal(sb);
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_DIR_INDEX)) {
@@ -1148,16 +1141,14 @@ mmp_error:
 				"filesystem!\n"), stderr);
 			exit(1);
 		}
-		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				EXT3_FEATURE_INCOMPAT_EXTENTS))
+		if (!ext2fs_has_feature_extents(fs->super))
 			printf("%s",
 			       _("Extents are not enabled.  The file extent "
 				 "tree can be checksummed, whereas block maps "
 				 "cannot.  Not enabling extents reduces the "
 				 "coverage of metadata checksumming.  "
 				 "Re-run with -O extent to rectify.\n"));
-		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_INCOMPAT_64BIT))
+		if (!ext2fs_has_feature_64bit(fs->super))
 			printf("%s",
 			       _("64-bit filesystem support is not enabled.  "
 				 "The larger fields afforded by this feature "
@@ -1165,8 +1156,7 @@ mmp_error:
 				 "Run resize2fs -b to rectify.\n"));
 		rewrite_checksums = 1;
 		/* metadata_csum supersedes uninit_bg */
-		fs->super->s_feature_ro_compat &=
-			~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+		ext2fs_clear_feature_gdt_csum(fs->super);
 
 		/* if uninit_bg was previously off, rewrite group desc */
 		if (!(old_features[E2P_FEATURE_RO_INCOMPAT] &
@@ -1202,15 +1192,13 @@ mmp_error:
 				  clear_ok_features, NULL, NULL);
 		if (test_features[E2P_FEATURE_RO_INCOMPAT] &
 						EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
-			fs->super->s_feature_ro_compat |=
-						EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+			ext2fs_set_feature_gdt_csum(fs->super);
 
 		/*
 		 * If we're turning off metadata_csum and not turning on
 		 * uninit_bg, rewrite group desc.
 		 */
-		if (!(fs->super->s_feature_ro_compat &
-		      EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		if (!ext2fs_has_feature_gdt_csum(fs->super)) {
 			err = disable_uninit_bg(fs,
 					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
 			if (err)
@@ -1229,10 +1217,8 @@ mmp_error:
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
 		/* Do not enable uninit_bg when metadata_csum enabled */
-		if (fs->super->s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
-			fs->super->s_feature_ro_compat &=
-				~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+		if (ext2fs_has_feature_metadata_csum(fs->super))
+			ext2fs_clear_feature_gdt_csum(fs->super);
 		else
 			enable_uninit_bg(fs);
 	}
@@ -1257,7 +1243,7 @@ mmp_error:
 					  "while mounted!\n"));
 			exit(1);
 		}
-		sb->s_feature_incompat &= ~EXT4_FEATURE_INCOMPAT_64BIT;
+		ext2fs_clear_feature_64bit(sb);
 		feature_64bit = 1;
 	}
 	if (FEATURE_OFF(E2P_FEATURE_INCOMPAT,
@@ -1267,7 +1253,7 @@ mmp_error:
 					  "while mounted!\n"));
 			exit(1);
 		}
-		sb->s_feature_incompat |= EXT4_FEATURE_INCOMPAT_64BIT;
+		ext2fs_set_feature_64bit(sb);
 		feature_64bit = -1;
 	}
 
@@ -1283,7 +1269,7 @@ mmp_error:
 			usrquota = QOPT_ENABLE;
 			grpquota = QOPT_ENABLE;
 		}
-		sb->s_feature_ro_compat &= ~EXT4_FEATURE_RO_COMPAT_QUOTA;
+		ext2fs_clear_feature_quota(sb);
 	}
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
@@ -1343,8 +1329,7 @@ static int add_journal(ext2_filsys fs)
 	ext2_filsys	jfs;
 	io_manager	io_ptr;
 
-	if (fs->super->s_feature_compat &
-	    EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
+	if (ext2fs_has_feature_journal(fs->super)) {
 		fputs(_("The filesystem already has a journal.\n"), stderr);
 		goto err;
 	}
@@ -1450,11 +1435,11 @@ static void handle_quota_options(ext2_filsys fs)
 	quota_release_context(&qctx);
 
 	if ((usrquota == QOPT_ENABLE) || (grpquota == QOPT_ENABLE)) {
-		fs->super->s_feature_ro_compat |= EXT4_FEATURE_RO_COMPAT_QUOTA;
+		ext2fs_set_feature_quota(fs->super);
 		ext2fs_mark_super_dirty(fs);
 	} else if (!fs->super->s_usr_quota_inum &&
 		   !fs->super->s_grp_quota_inum) {
-		fs->super->s_feature_ro_compat &= ~EXT4_FEATURE_RO_COMPAT_QUOTA;
+		ext2fs_clear_feature_quota(fs->super);
 		ext2fs_mark_super_dirty(fs);
 	}
 
@@ -2594,8 +2579,7 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 	char uuid[UUID_STR_SIZE];
 	char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 
-	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) ||
-		uuid_is_null(sb->s_journal_uuid))
+	if (!ext2fs_has_feature_journal(sb) || uuid_is_null(sb->s_journal_uuid))
 		return 0;
 
 	uuid_unparse(sb->s_journal_uuid, uuid);
@@ -2725,8 +2709,7 @@ retry_open:
 		ext2fs_free(fs);
 		exit(1);
 	}
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+	if (ext2fs_has_feature_journal_dev(fs->super)) {
 		fprintf(stderr, "%s", _("Cannot modify a journal device.\n"));
 		ext2fs_free(fs);
 		exit(1);
@@ -2855,12 +2838,10 @@ retry_open:
 		       reserved_blocks);
 	}
 	if (s_flag == 1) {
-		if (sb->s_feature_ro_compat &
-		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) {
+		if (ext2fs_has_feature_sparse_super(sb)) {
 			fputs(_("\nThe filesystem already has sparse "
 				"superblocks.\n"), stderr);
-		} else if (sb->s_feature_incompat &
-			EXT2_FEATURE_INCOMPAT_META_BG) {
+		} else if (ext2fs_has_feature_meta_bg(sb)) {
 			fputs(_("\nSetting the sparse superblock flag not "
 				"supported\nfor filesystems with "
 				"the meta_bg feature enabled.\n"),
@@ -2868,8 +2849,7 @@ retry_open:
 			rc = 1;
 			goto closefs;
 		} else {
-			sb->s_feature_ro_compat |=
-				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+			ext2fs_set_feature_sparse_super(sb);
 			sb->s_state &= ~EXT2_VALID_FS;
 			ext2fs_mark_super_dirty(fs);
 			printf(_("\nSparse superblock flag set.  %s"),
@@ -3025,8 +3005,7 @@ retry_open:
 		}
 
 		ext2fs_mark_super_dirty(fs);
-		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+		if (ext2fs_has_feature_metadata_csum(fs->super))
 			rewrite_checksums = 1;
 	}
 
@@ -3038,8 +3017,7 @@ retry_open:
 			rc = 1;
 			goto closefs;
 		}
-		if (fs->super->s_feature_incompat &
-		    EXT4_FEATURE_INCOMPAT_FLEX_BG) {
+		if (ext2fs_has_feature_flex_bg(fs->super)) {
 			fputs(_("Changing the inode size not supported for "
 				"filesystems with the flex_bg\n"
 				"feature enabled.\n"),

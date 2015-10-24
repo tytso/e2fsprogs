@@ -648,11 +648,9 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 	retval = ext2fs_inode_size_set(fs, &inode, statbuf.st_size);
 	if (retval)
 		goto out;
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT4_FEATURE_INCOMPAT_INLINE_DATA)) {
+	if (ext2fs_has_feature_inline_data(fs->super)) {
 		inode.i_flags |= EXT4_INLINE_DATA_FL;
-	} else if (fs->super->s_feature_incompat &
-		   EXT3_FEATURE_INCOMPAT_EXTENTS) {
+	} else if (ext2fs_has_feature_extents(fs->super)) {
 		ext2_extent_handle_t handle;
 
 		inode.i_flags &= ~EXT4_EXTENTS_FL;

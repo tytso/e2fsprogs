@@ -143,8 +143,7 @@ static void print_bg_rel_offset(ext2_filsys fs, blk64_t block, int itable,
 		if (itable && block == first_block)
 			return;
 		printf(" (+%u)", (unsigned)(block - first_block));
-	} else if (fs->super->s_feature_incompat &
-		   EXT4_FEATURE_INCOMPAT_FLEX_BG) {
+	} else if (ext2fs_has_feature_flex_bg(fs->super)) {
 		dgrp_t flex_grp = ext2fs_group_of_blk2(fs, block);
 		printf(" (bg #%u + %u)", flex_grp,
 		       (unsigned)(block-ext2fs_group_first_block2(fs,flex_grp)));
@@ -165,8 +164,7 @@ static void list_desc(ext2_filsys fs, int grp_only)
 	ext2_ino_t	ino_itr = 1;
 	errcode_t	retval;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+	if (ext2fs_has_feature_bigalloc(fs->super))
 		units = _("clusters");
 
 	block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
@@ -184,7 +182,7 @@ static void list_desc(ext2_filsys fs, int grp_only)
 	reserved_gdt = fs->super->s_reserved_gdt_blocks;
 	fputc('\n', stdout);
 	first_block = fs->super->s_first_data_block;
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+	if (ext2fs_has_feature_meta_bg(fs->super))
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
 		old_desc_blocks = fs->desc_blocks;
@@ -258,8 +256,7 @@ static void list_desc(ext2_filsys fs, int grp_only)
 		print_number(ext2fs_block_bitmap_loc(fs, i));
 		print_bg_rel_offset(fs, ext2fs_block_bitmap_loc(fs, i), 0,
 				    first_block, last_block);
-		if (fs->super->s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
+		if (ext2fs_has_feature_metadata_csum(fs->super))
 			printf(_(", csum 0x%08x"),
 			       ext2fs_block_bitmap_checksum(fs, i));
 		if (getenv("DUMPE2FS_IGNORE_80COL"))
@@ -270,8 +267,7 @@ static void list_desc(ext2_filsys fs, int grp_only)
 		print_number(ext2fs_inode_bitmap_loc(fs, i));
 		print_bg_rel_offset(fs, ext2fs_inode_bitmap_loc(fs, i), 0,
 				    first_block, last_block);
-		if (fs->super->s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
+		if (ext2fs_has_feature_metadata_csum(fs->super))
 			printf(_(", csum 0x%08x"),
 			       ext2fs_inode_bitmap_checksum(fs, i));
 		fputs(_("\n  Inode table at "), stdout);
@@ -422,8 +418,7 @@ static void print_inline_journal_information(ext2_filsys fs)
 		printf(" (none)");
 	printf("\n");
 	fputs(_("Journal size:             "), stdout);
-	if ((fs->super->s_feature_ro_compat &
-	     EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+	if (ext2fs_has_feature_huge_file(fs->super) &&
 	    (inode.i_flags & EXT4_HUGE_FILE_FL))
 		size = inode.i_blocks / (fs->blocksize / 1024);
 	else
@@ -699,7 +694,7 @@ try_open_again:
 		exit (1);
 	}
 	fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
-	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+	if (ext2fs_has_feature_64bit(fs->super))
 		blocks64 = 1;
 	if (print_badblocks) {
 		list_bad_blocks(fs, 1);
@@ -707,14 +702,12 @@ try_open_again:
 		if (grp_only)
 			goto just_descriptors;
 		list_super (fs->super);
-		if (fs->super->s_feature_incompat &
-		      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		if (ext2fs_has_feature_journal_dev(fs->super)) {
 			print_journal_information(fs);
 			ext2fs_close_free(&fs);
 			exit(0);
 		}
-		if ((fs->super->s_feature_compat &
-		     EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+		if (ext2fs_has_feature_journal(fs->super) &&
 		    (fs->super->s_journal_inum != 0))
 			print_inline_journal_information(fs);
 		list_bad_blocks(fs, 0);

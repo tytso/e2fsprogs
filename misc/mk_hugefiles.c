@@ -278,8 +278,7 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 
 	ext2fs_inode_alloc_stats2(fs, *ino, +1, 0);
 
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT3_FEATURE_INCOMPAT_EXTENTS))
+	if (ext2fs_has_feature_extents(fs->super))
 		inode.i_flags |= EXT4_EXTENTS_FL;
 	retval = ext2fs_fallocate(fs,
 				  EXT2_FALLOCATE_FORCE_INIT |
@@ -400,8 +399,7 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 	if (!get_bool_from_profile(fs_types, "make_hugefiles", 0))
 		return 0;
 
-	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				       EXT3_FEATURE_INCOMPAT_EXTENTS))
+	if (!ext2fs_has_feature_extents(fs->super))
 		return EXT2_ET_EXTENT_NOT_SUPPORTED;
 
 	uid = get_int_from_profile(fs_types, "hugefiles_uid", 0);
@@ -485,8 +483,7 @@ errcode_t mk_hugefiles(ext2_filsys fs, const char *device_name)
 
 	if ((num_blocks ? num_blocks : fs_blocks) >
 	    (0x80000000UL / fs->blocksize))
-		fs->super->s_feature_ro_compat |=
-			EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+		ext2fs_set_feature_large_file(fs->super);
 
 	if (!quiet) {
 		if (zero_hugefile && verbose)

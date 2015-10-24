@@ -741,11 +741,10 @@ static blkcnt_t blocks_from_inode(ext2_filsys fs,
 	blkcnt_t b;
 
 	b = inode->i_blocks;
-	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_HUGE_FILE)
+	if (ext2fs_has_feature_huge_file(fs->super))
 		b += ((long long) inode->osd2.linux2.l_i_blocks_hi) << 32;
 
-	if (!(fs->super->s_feature_ro_compat &
-	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ||
+	if (!ext2fs_has_feature_huge_file(fs->super) ||
 	    !(inode->i_flags & EXT4_HUGE_FILE_FL))
 		b *= fs->blocksize / 512;
 	b *= EXT2FS_CLUSTER_RATIO(fs);
@@ -1131,8 +1130,7 @@ static int op_mkdir(const char *path, mode_t mode)
 
 	/* Rewrite the directory block checksum, having set i_generation */
 	if ((inode.i_flags & EXT4_INLINE_DATA_FL) ||
-	    !EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	    !ext2fs_has_feature_metadata_csum(fs->super))
 		goto out2;
 	err = ext2fs_new_dir_block(fs, child, parent, &block);
 	if (err) {
@@ -2408,8 +2406,7 @@ static int op_getxattr(const char *path, const char *key, char *value,
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	if (!EXT2_HAS_COMPAT_FEATURE(fs->super,
-				     EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+	if (!ext2fs_has_feature_xattr(fs->super)) {
 		ret = -ENOTSUP;
 		goto out;
 	}
@@ -2510,8 +2507,7 @@ static int op_listxattr(const char *path, char *names, size_t len)
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	if (!EXT2_HAS_COMPAT_FEATURE(fs->super,
-				     EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+	if (!ext2fs_has_feature_xattr(fs->super)) {
 		ret = -ENOTSUP;
 		goto out;
 	}
@@ -2591,8 +2587,7 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	if (!EXT2_HAS_COMPAT_FEATURE(fs->super,
-				     EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+	if (!ext2fs_has_feature_xattr(fs->super)) {
 		ret = -ENOTSUP;
 		goto out;
 	}
@@ -2672,8 +2667,7 @@ static int op_removexattr(const char *path, const char *key)
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	if (!EXT2_HAS_COMPAT_FEATURE(fs->super,
-				     EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+	if (!ext2fs_has_feature_xattr(fs->super)) {
 		ret = -ENOTSUP;
 		goto out;
 	}
@@ -2901,7 +2895,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	inode.i_links_count = 1;
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
-	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
+	if (ext2fs_has_feature_extents(fs->super)) {
 		ext2_extent_handle_t handle;
 
 		inode.i_flags &= ~EXT4_EXTENTS_FL;
@@ -3722,8 +3716,7 @@ int main(int argc, char *argv[])
 	global_fs->priv_data = ff;
 
 	ret = 3;
-	if (EXT2_HAS_INCOMPAT_FEATURE(global_fs->super,
-				      EXT3_FEATURE_INCOMPAT_RECOVER)) {
+	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (readwrite) {
 			printf(_("%s: recovering journal\n"), argv[1]);
 			err = ext2fs_run_ext3_journal(&global_fs);
@@ -3734,8 +3727,7 @@ int main(int argc, char *argv[])
 				       argv[1]);
 				goto out;
 			}
-			global_fs->super->s_feature_incompat &=
-						~EXT3_FEATURE_INCOMPAT_RECOVER;
+			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
 			ext2fs_mark_super_dirty(global_fs);
 		} else {
 			printf("%s", _("Journal needs recovery; running "
@@ -3745,8 +3737,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (readwrite) {
-		if (EXT2_HAS_COMPAT_FEATURE(global_fs->super,
-					    EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		if (ext2fs_has_feature_journal(global_fs->super))
 			printf(_("%s: Writing to the journal is not supported.\n"),
 			       argv[1]);
 		err = ext2fs_read_inode_bitmap(global_fs);

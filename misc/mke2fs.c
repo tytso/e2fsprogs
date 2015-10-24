@@ -444,8 +444,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 
 	/* Reserved inodes must always have correct checksums */
 	if (fs->super->s_creator_os == EXT2_OS_LINUX &&
-	    fs->super->s_feature_ro_compat &
-	    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)
+	    ext2fs_has_feature_metadata_csum(fs->super))
 		write_reserved_inodes(fs);
 }
 
@@ -670,8 +669,7 @@ static void show_stats(ext2_filsys fs)
 	free(os);
 	printf(_("Block size=%u (log=%u)\n"), fs->blocksize,
 		s->s_log_block_size);
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+	if (ext2fs_has_feature_bigalloc(fs->super))
 		printf(_("Cluster size=%u (log=%u)\n"),
 		       fs->blocksize << fs->cluster_ratio_bits,
 		       s->s_log_cluster_size);
@@ -696,8 +694,7 @@ static void show_stats(ext2_filsys fs)
 		printf(_("%u block groups\n"), fs->group_desc_count);
 	else
 		printf(_("%u block group\n"), fs->group_desc_count);
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+	if (ext2fs_has_feature_bigalloc(fs->super))
 		printf(_("%u blocks per group, %u clusters per group\n"),
 		       s->s_blocks_per_group, s->s_clusters_per_group);
 	else
@@ -804,8 +801,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 		    strcmp(token, "desc_size") == 0) {
 			int desc_size;
 
-			if (!(fs_param.s_feature_incompat &
-			      EXT4_FEATURE_INCOMPAT_64BIT)) {
+			if (!ext2fs_has_feature_64bit(&fs_param)) {
 				fprintf(stderr,
 					_("%s requires '-O 64bit'\n"), token);
 				r_usage++;
@@ -962,8 +958,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 					free(buf);
 					exit(1);
 				}
-				param->s_feature_compat |=
-					EXT2_FEATURE_COMPAT_RESIZE_INODE;
+				ext2fs_set_feature_resize_inode(param);
 
 				param->s_reserved_gdt_blocks = rsv_gdb;
 			}
@@ -1958,10 +1953,9 @@ profile_error:
 	}
 	/* Mask off features which aren't supported by the Hurd */
 	if (for_hurd(creator_os)) {
-		fs_param.s_feature_incompat &= ~EXT2_FEATURE_INCOMPAT_FILETYPE;
-		fs_param.s_feature_ro_compat &=
-			~(EXT4_FEATURE_RO_COMPAT_HUGE_FILE |
-			  EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+		ext2fs_clear_feature_filetype(&fs_param);
+		ext2fs_clear_feature_huge_file(&fs_param);
+		ext2fs_clear_feature_metadata_csum(&fs_param);
 	}
 	edit_feature(fs_features ? fs_features : tmp,
 		     &fs_param.s_feature_compat);
@@ -1971,20 +1965,17 @@ profile_error:
 	 * If the user specified features incompatible with the Hurd, complain
 	 */
 	if (for_hurd(creator_os)) {
-		if (fs_param.s_feature_incompat &
-		    EXT2_FEATURE_INCOMPAT_FILETYPE) {
+		if (ext2fs_has_feature_filetype(&fs_param)) {
 			fprintf(stderr, "%s", _("The HURD does not support the "
 						"filetype feature.\n"));
 			exit(1);
 		}
-		if (fs_param.s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_HUGE_FILE) {
+		if (ext2fs_has_feature_huge_file(&fs_param)) {
 			fprintf(stderr, "%s", _("The HURD does not support the "
 						"huge_file feature.\n"));
 			exit(1);
 		}
-		if (fs_param.s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+		if (ext2fs_has_feature_metadata_csum(&fs_param)) {
 			fprintf(stderr, "%s", _("The HURD does not support the "
 						"metadata_csum feature.\n"));
 			exit(1);
@@ -2052,16 +2043,16 @@ profile_error:
 	 * 32-bit vs 64-bit block number support.
 	 */
 	if ((fs_blocks_count > MAX_32_NUM) &&
-	    (fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT))
-		fs_param.s_feature_compat &= ~EXT2_FEATURE_COMPAT_RESIZE_INODE;
+	    ext2fs_has_feature_64bit(&fs_param))
+		ext2fs_clear_feature_resize_inode(&fs_param);
 	if ((fs_blocks_count > MAX_32_NUM) &&
-	    !(fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    !ext2fs_has_feature_64bit(&fs_param) &&
 	    get_bool_from_profile(fs_types, "auto_64-bit_support", 0)) {
-		fs_param.s_feature_incompat |= EXT4_FEATURE_INCOMPAT_64BIT;
-		fs_param.s_feature_compat &= ~EXT2_FEATURE_COMPAT_RESIZE_INODE;
+		ext2fs_set_feature_64bit(&fs_param);
+		ext2fs_clear_feature_resize_inode(&fs_param);
 	}
 	if ((fs_blocks_count > MAX_32_NUM) &&
-	    !(fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)) {
+	    !ext2fs_has_feature_64bit(&fs_param)) {
 		fprintf(stderr, _("%s: Size of device (0x%llx blocks) %s "
 				  "too big to be expressed\n\t"
 				  "in 32 bits using a blocksize of %d.\n"),
@@ -2072,7 +2063,7 @@ profile_error:
 
 	ext2fs_blocks_count_set(&fs_param, fs_blocks_count);
 
-	if (fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	if (ext2fs_has_feature_journal_dev(&fs_param)) {
 		fs_types[0] = strdup("journal");
 		fs_types[1] = 0;
 	}
@@ -2097,11 +2088,9 @@ profile_error:
 				  "with revision 0 filesystems\n"));
 			exit(1);
 		}
-		fs_param.s_feature_ro_compat |=
-			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+		ext2fs_set_feature_sparse_super(&fs_param);
 	} else if (s_opt == 0)
-		fs_param.s_feature_ro_compat &=
-			~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+		ext2fs_clear_feature_sparse_super(&fs_param);
 
 	if (journal_size != 0) {
 		if (r_opt == EXT2_GOOD_OLD_REV) {
@@ -2109,8 +2098,7 @@ profile_error:
 						"revision 0 filesystems\n"));
 			exit(1);
 		}
-		fs_param.s_feature_compat |=
-			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+		ext2fs_set_feature_journal(&fs_param);
 	}
 
 	/* Get reserved_ratio from profile if not specified on cmd line. */
@@ -2125,8 +2113,7 @@ profile_error:
 		}
 	}
 
-	if (fs_param.s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	if (ext2fs_has_feature_journal_dev(&fs_param)) {
 		reserved_ratio = 0;
 		fs_param.s_feature_incompat = EXT3_FEATURE_INCOMPAT_JOURNAL_DEV;
 		fs_param.s_feature_compat = 0;
@@ -2135,8 +2122,8 @@ profile_error:
  	}
 
 	/* Check the user's mkfs options for 64bit */
-	if ((fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) &&
-	    !(fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+	if (ext2fs_has_feature_64bit(&fs_param) &&
+	    !ext2fs_has_feature_extents(&fs_param)) {
 		printf("%s", _("Extents MUST be enabled for a 64-bit "
 			       "filesystem.  Pass -O extents to rectify.\n"));
 		exit(1);
@@ -2144,10 +2131,10 @@ profile_error:
 
 	/* Set first meta blockgroup via an environment variable */
 	/* (this is mostly for debugging purposes) */
-	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
-	    ((tmp = getenv("MKE2FS_FIRST_META_BG"))))
+	if (ext2fs_has_feature_meta_bg(&fs_param) &&
+	    (tmp = getenv("MKE2FS_FIRST_META_BG")))
 		fs_param.s_first_meta_bg = atoi(tmp);
-	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) {
+	if (ext2fs_has_feature_bigalloc(&fs_param)) {
 		if (!cluster_size)
 			cluster_size = get_int_from_profile(fs_types,
 							    "cluster_size",
@@ -2202,7 +2189,7 @@ profile_error:
 	 * can correctly handle "-E resize=NNN" if the 64-bit option
 	 * is set.
 	 */
-	if (fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+	if (ext2fs_has_feature_64bit(&fs_param))
 		fs_param.s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
 
 	/* This check should happen beyond the last assignment to blocksize */
@@ -2220,8 +2207,7 @@ profile_error:
 
 	/* Metadata checksumming wasn't totally stable before 3.18. */
 	if (is_before_linux_ver(3, 18, 0) &&
-	    (fs_param.s_feature_ro_compat &
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	    ext2fs_has_feature_metadata_csum(&fs_param))
 		fprintf(stderr, _("Suggestion: Use Linux kernel >= 3.18 for "
 			"improved stability of the metadata and journal "
 			"checksum features.\n"));
@@ -2274,23 +2260,21 @@ profile_error:
 		parse_extended_opts(&fs_param, extended_opts);
 
 	/* Don't allow user to set both metadata_csum and uninit_bg bits. */
-	if ((fs_param.s_feature_ro_compat &
-	     EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
-	    (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		fs_param.s_feature_ro_compat &=
-				~EXT4_FEATURE_RO_COMPAT_GDT_CSUM;
+	if (ext2fs_has_feature_metadata_csum(&fs_param) &&
+	    ext2fs_has_feature_gdt_csum(&fs_param))
+		ext2fs_clear_feature_gdt_csum(&fs_param);
 
 	/* Can't support bigalloc feature without extents feature */
-	if ((fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
-	    !(fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+	if (ext2fs_has_feature_bigalloc(&fs_param) &&
+	    !ext2fs_has_feature_extents(&fs_param)) {
 		com_err(program_name, 0, "%s",
 			_("Can't support bigalloc feature without "
 			  "extents feature"));
 		exit(1);
 	}
 
-	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
-	    (fs_param.s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
+	if (ext2fs_has_feature_meta_bg(&fs_param) &&
+	    ext2fs_has_feature_resize_inode(&fs_param)) {
 		fprintf(stderr, "%s", _("The resize_inode and meta_bg "
 					"features are not compatible.\n"
 					"They can not be both enabled "
@@ -2298,8 +2282,7 @@ profile_error:
 		exit(1);
 	}
 
-	if (!quiet &&
-	    (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+	if (!quiet && ext2fs_has_feature_bigalloc(&fs_param))
 		fprintf(stderr, "%s", _("\nWarning: the bigalloc feature is "
 				  "still under development\n"
 				  "See https://ext4.wiki.kernel.org/"
@@ -2309,8 +2292,8 @@ profile_error:
 	 * Since sparse_super is the default, we would only have a problem
 	 * here if it was explicitly disabled.
 	 */
-	if ((fs_param.s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
-	    !(fs_param.s_feature_ro_compat&EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)) {
+	if (ext2fs_has_feature_resize_inode(&fs_param) &&
+	    !ext2fs_has_feature_sparse_super(&fs_param)) {
 		com_err(program_name, 0, "%s",
 			_("reserved online resize blocks not supported "
 			  "on non-sparse filesystem"));
@@ -2330,20 +2313,18 @@ profile_error:
 	 * If the bigalloc feature is enabled, then the -g option will
 	 * specify the number of clusters per group.
 	 */
-	if (fs_param.s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC) {
+	if (ext2fs_has_feature_bigalloc(&fs_param)) {
 		fs_param.s_clusters_per_group = fs_param.s_blocks_per_group;
 		fs_param.s_blocks_per_group = 0;
 	}
 
 	if (inode_size == 0)
 		inode_size = get_int_from_profile(fs_types, "inode_size", 0);
-	if (!flex_bg_size && (fs_param.s_feature_incompat &
-			      EXT4_FEATURE_INCOMPAT_FLEX_BG))
+	if (!flex_bg_size && ext2fs_has_feature_flex_bg(&fs_param))
 		flex_bg_size = get_uint_from_profile(fs_types,
 						     "flex_bg_size", 16);
 	if (flex_bg_size) {
-		if (!(fs_param.s_feature_incompat &
-		      EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
+		if (!ext2fs_has_feature_flex_bg(&fs_param)) {
 			com_err(program_name, 0, "%s",
 				_("Flex_bg feature not enabled, so "
 				  "flex_bg size may not be specified"));
@@ -2369,8 +2350,7 @@ profile_error:
 	 * If inode size is 128 and inline data is enabled, we need
 	 * to notify users that inline data will never be useful.
 	 */
-	if ((fs_param.s_feature_incompat &
-	     EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
+	if (ext2fs_has_feature_inline_data(&fs_param) &&
 	    fs_param.s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
 		com_err(program_name, 0,
 			_("%d byte inodes are too small for inline data; "
@@ -2384,8 +2364,7 @@ profile_error:
 		unsigned long long n;
 		n = ext2fs_blocks_count(&fs_param) * blocksize / inode_ratio;
 		if (n > MAX_32_NUM) {
-			if (fs_param.s_feature_incompat &
-			    EXT4_FEATURE_INCOMPAT_64BIT)
+			if (ext2fs_has_feature_64bit(&fs_param))
 				num_inodes = MAX_32_NUM;
 			else {
 				com_err(program_name, 0,
@@ -2427,7 +2406,7 @@ profile_error:
 	ext2fs_r_blocks_count_set(&fs_param, reserved_ratio *
 				  ext2fs_blocks_count(&fs_param) / 100.0);
 
-	if (fs_param.s_feature_compat & EXT4_FEATURE_COMPAT_SPARSE_SUPER2) {
+	if (ext2fs_has_feature_sparse_super2(&fs_param)) {
 		if (num_backups >= 1)
 			fs_param.s_backup_bgs[0] = 1;
 		if (num_backups >= 2)
@@ -2447,9 +2426,8 @@ static int should_do_undo(const char *name)
 	io_manager manager = unix_io_manager;
 	int csum_flag, force_undo;
 
-	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
-				EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
-				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+	csum_flag = ext2fs_has_feature_metadata_csum(&fs_param) ||
+		    ext2fs_has_feature_gdt_csum(&fs_param);
 	force_undo = get_int_from_profile(fs_types, "force_undo", 0);
 	if (!force_undo && (!csum_flag || !lazy_itable_init))
 		return 0;
@@ -2780,20 +2758,16 @@ int main (int argc, char *argv[])
 
 	/* Check the user's mkfs options for metadata checksumming */
 	if (!quiet &&
-	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				       EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) &&
-	    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
-		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				EXT3_FEATURE_INCOMPAT_EXTENTS))
+	    !ext2fs_has_feature_journal_dev(fs->super) &&
+	    ext2fs_has_feature_metadata_csum(fs->super)) {
+		if (!ext2fs_has_feature_extents(fs->super))
 			printf("%s",
 			       _("Extents are not enabled.  The file extent "
 				 "tree can be checksummed, whereas block maps "
 				 "cannot.  Not enabling extents reduces the "
 				 "coverage of metadata checksumming.  "
 				 "Pass -O extents to rectify.\n"));
-		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_INCOMPAT_64BIT))
+		if (!ext2fs_has_feature_64bit(fs->super))
 			printf("%s",
 			       _("64-bit filesystem support is not enabled.  "
 				 "The larger fields afforded by this feature "
@@ -2803,8 +2777,7 @@ int main (int argc, char *argv[])
 
 	/* Calculate journal blocks */
 	if (!journal_device && ((journal_size) ||
-		(fs_param.s_feature_compat &
-		 EXT3_FEATURE_COMPAT_HAS_JOURNAL)))
+	    ext2fs_has_feature_journal(&fs_param)))
 		journal_blocks = figure_journal_size(journal_size, fs);
 
 	/* Can't undo discard ... */
@@ -2832,13 +2805,12 @@ int main (int argc, char *argv[])
 	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
 		fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 
-	if ((fs_param.s_feature_incompat &
-	     (EXT3_FEATURE_INCOMPAT_EXTENTS|EXT4_FEATURE_INCOMPAT_FLEX_BG)) ||
-	    (fs_param.s_feature_ro_compat &
-	     (EXT4_FEATURE_RO_COMPAT_HUGE_FILE|EXT4_FEATURE_RO_COMPAT_GDT_CSUM|
-	      EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
-	      EXT4_FEATURE_RO_COMPAT_METADATA_CSUM|
-	      EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE)))
+	if (ext2fs_has_feature_flex_bg(&fs_param) ||
+	    ext2fs_has_feature_huge_file(&fs_param) ||
+	    ext2fs_has_feature_gdt_csum(&fs_param) ||
+	    ext2fs_has_feature_dir_nlink(&fs_param) ||
+	    ext2fs_has_feature_metadata_csum(&fs_param) ||
+	    ext2fs_has_feature_extra_isize(&fs_param))
 		fs->super->s_kbytes_written = 1;
 
 	/*
@@ -2912,8 +2884,7 @@ int main (int argc, char *argv[])
 	 * support it.
 	 */
 	if (fs->super->s_creator_os == EXT2_OS_HURD)
-		fs->super->s_feature_incompat &=
-			~EXT2_FEATURE_INCOMPAT_FILETYPE;
+		ext2fs_clear_feature_filetype(fs->super);
 
 	/*
 	 * Set the volume label...
@@ -2937,15 +2908,14 @@ int main (int argc, char *argv[])
 
 	/* Set current default encryption algorithms for data and
 	 * filename encryption */
-	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_ENCRYPT) {
+	if (ext2fs_has_feature_encrypt(fs->super)) {
 		fs->super->s_encrypt_algos[0] =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		fs->super->s_encrypt_algos[1] =
 			EXT4_ENCRYPTION_MODE_AES_256_CTS;
 	}
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		fs->super->s_checksum_type = EXT2_CRC32C_CHKSUM;
 
 	if (!quiet || noaction)
@@ -2954,8 +2924,7 @@ int main (int argc, char *argv[])
 	if (noaction)
 		exit(0);
 
-	if (fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	if (ext2fs_has_feature_journal_dev(fs->super)) {
 		create_journal_dev(fs);
 		printf("\n");
 		exit(ext2fs_close_free(&fs) ? 1 : 0);
@@ -2970,7 +2939,7 @@ int main (int argc, char *argv[])
 	fs->stride = fs_stride = fs->super->s_raid_stride;
 	if (!quiet)
 		printf("%s", _("Allocating group tables: "));
-	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) &&
+	if (ext2fs_has_feature_flex_bg(fs->super) &&
 	    packed_meta_blocks)
 		retval = packed_allocate_tables(fs);
 	else
@@ -3041,8 +3010,7 @@ int main (int argc, char *argv[])
 		create_lost_and_found(fs);
 		reserve_inodes(fs);
 		create_bad_block_inode(fs, bb_list);
-		if (fs->super->s_feature_compat &
-		    EXT2_FEATURE_COMPAT_RESIZE_INODE) {
+		if (ext2fs_has_feature_resize_inode(fs->super)) {
 			retval = ext2fs_create_resize_inode(fs);
 			if (retval) {
 				com_err("ext2fs_create_resize_inode", retval,
@@ -3087,8 +3055,7 @@ int main (int argc, char *argv[])
 		ext2fs_close_free(&jfs);
 		free(journal_device);
 	} else if ((journal_size) ||
-		   (fs_param.s_feature_compat &
-		    EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
+		   ext2fs_has_feature_journal(&fs_param)) {
 		if (super_only) {
 			printf("%s", _("Skipping journal creation in super-only mode\n"));
 			fs->super->s_journal_inum = EXT2_JOURNAL_INO;
@@ -3096,8 +3063,7 @@ int main (int argc, char *argv[])
 		}
 
 		if (!journal_blocks) {
-			fs->super->s_feature_compat &=
-				~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+			ext2fs_clear_feature_journal(fs->super);
 			goto no_journal;
 		}
 		if (!quiet) {
@@ -3118,7 +3084,7 @@ int main (int argc, char *argv[])
 	}
 no_journal:
 	if (!super_only &&
-	    fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) {
+	    ext2fs_has_feature_mmp(fs->super)) {
 		retval = ext2fs_mmp_init(fs);
 		if (retval) {
 			fprintf(stderr, "%s",
@@ -3132,11 +3098,9 @@ no_journal:
 			       fs->super->s_mmp_update_interval);
 	}
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
-				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+	if (ext2fs_has_feature_bigalloc(&fs_param))
 		fix_cluster_bg_counts(fs);
-	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
-				       EXT4_FEATURE_RO_COMPAT_QUOTA))
+	if (ext2fs_has_feature_quota(&fs_param))
 		create_quota_inodes(fs);
 
 	retval = mk_hugefiles(fs, device_name);
