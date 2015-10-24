@@ -379,7 +379,12 @@ ipg_retry:
 	 * table, and the reserved gdt blocks.
 	 */
 	overhead = (int) (3 + fs->inode_blocks_per_group +
-			  fs->desc_blocks + super->s_reserved_gdt_blocks);
+			  super->s_reserved_gdt_blocks);
+
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		overhead++;
+	else
+		overhead += fs->desc_blocks;
 
 	/* This can only happen if the user requested too many inodes */
 	if (overhead > super->s_blocks_per_group) {
