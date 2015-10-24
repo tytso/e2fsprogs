@@ -381,6 +381,11 @@ ipg_retry:
 	overhead = (int) (3 + fs->inode_blocks_per_group +
 			  super->s_reserved_gdt_blocks);
 
+	/* Enable meta_bg if we'd lose more than 3/4 of a BG to GDT blocks. */
+	if (super->s_reserved_gdt_blocks + fs->desc_blocks >
+	    super->s_blocks_per_group * 3 / 4)
+		fs->super->s_feature_incompat |= EXT2_FEATURE_INCOMPAT_META_BG;
+
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		overhead++;
 	else
