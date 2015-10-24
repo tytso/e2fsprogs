@@ -158,8 +158,7 @@ static void determine_fs_stride(ext2_filsys fs)
 
 static void bigalloc_check(ext2_filsys fs, int force)
 {
-	if (!force && EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_RO_COMPAT_BIGALLOC)) {
+	if (!force && ext2fs_has_feature_bigalloc(fs->super)) {
 		fprintf(stderr, "%s", _("\nResizing bigalloc file systems has "
 					"not been fully tested.  Proceed at\n"
 					"your own risk!  Use the force option "
@@ -511,8 +510,7 @@ int main (int argc, char ** argv)
 	if (flags & (RESIZE_DISABLE_64BIT | RESIZE_ENABLE_64BIT)) {
 		new_size = ext2fs_blocks_count(fs->super);
 	}
-	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_INCOMPAT_64BIT)) {
+	if (!ext2fs_has_feature_64bit(fs->super)) {
 		/* Take 16T down to 2^32-1 blocks */
 		if (new_size == (1ULL << 32))
 			new_size--;
@@ -578,8 +576,7 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 		if (flags & RESIZE_ENABLE_64BIT &&
-		    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				EXT3_FEATURE_INCOMPAT_EXTENTS)) {
+		    !ext2fs_has_feature_extents(fs->super)) {
 			fprintf(stderr, _("Please enable the extents feature "
 				"with tune2fs before enabling the 64bit "
 				"feature.\n"));
@@ -592,12 +589,12 @@ int main (int argc, char ** argv)
 		exit(0);
 	}
 	if ((flags & RESIZE_ENABLE_64BIT) &&
-	    EXT2_HAS_INCOMPAT_FEATURE(fs->super, EXT4_FEATURE_INCOMPAT_64BIT)) {
+	    ext2fs_has_feature_64bit(fs->super)) {
 		fprintf(stderr, _("The filesystem is already 64-bit.\n"));
 		exit(0);
 	}
 	if ((flags & RESIZE_DISABLE_64BIT) &&
-	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super, EXT4_FEATURE_INCOMPAT_64BIT)) {
+	    !ext2fs_has_feature_64bit(fs->super)) {
 		fprintf(stderr, _("The filesystem is already 32-bit.\n"));
 		exit(0);
 	}
