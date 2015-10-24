@@ -448,8 +448,7 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 			ctx->htree_slack_percentage = 20;
 	}
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	outdir->max = 0;
@@ -544,7 +543,7 @@ static struct ext2_dx_root_info *set_root_node(ext2_filsys fs, char *buf,
 	int				filetype = 0;
 	int				csum_size = 0;
 
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_FILETYPE)
+	if (ext2fs_has_feature_filetype(fs->super))
 		filetype = EXT2_FT_DIR;
 
 	memset(buf, 0, fs->blocksize);
@@ -569,8 +568,7 @@ static struct ext2_dx_root_info *set_root_node(ext2_filsys fs, char *buf,
 	root->indirect_levels = 0;
 	root->unused_flags = 0;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dx_tail);
 
 	limits = (struct ext2_dx_countlimit *) (buf+32);
@@ -593,8 +591,7 @@ static struct ext2_dx_entry *set_int_node(ext2_filsys fs, char *buf)
 	dir->inode = 0;
 	(void) ext2fs_set_rec_len(fs, fs->blocksize, dir);
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dx_tail);
 
 	limits = (struct ext2_dx_countlimit *) (buf+8);
@@ -800,8 +797,7 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
 	outdir.hashes = 0;
 	e2fsck_read_inode(ctx, ino, &inode, "rehash_dir");
 
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT4_FEATURE_INCOMPAT_INLINE_DATA) &&
+	if (ext2fs_has_feature_inline_data(fs->super) &&
 	   (inode.i_flags & EXT4_INLINE_DATA_FL))
 		return 0;
 
@@ -825,7 +821,7 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
 	fd.dir_size = 0;
 	fd.compress = 0;
 	fd.dir = ino;
-	if (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) ||
+	if (!ext2fs_has_feature_dir_index(fs->super) ||
 	    (inode.i_size / fs->blocksize) < 2)
 		fd.compress = 1;
 	fd.parent = 0;

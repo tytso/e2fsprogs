@@ -90,8 +90,7 @@ static void check_inode_bitmap_checksum(e2fsck_t ctx)
 	ext2_ino_t	ino_itr;
 	errcode_t	retval;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(ctx->fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(ctx->fs->super))
 		return;
 
 	/* If bitmap is dirty from being fixed, checksum will be corrected */
@@ -145,8 +144,7 @@ static void check_block_bitmap_checksum(e2fsck_t ctx)
 	blk64_t		blk_itr;
 	errcode_t	retval;
 
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(ctx->fs->super,
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (!ext2fs_has_feature_metadata_csum(ctx->fs->super))
 		return;
 
 	/* If bitmap is dirty from being fixed, checksum will be corrected */

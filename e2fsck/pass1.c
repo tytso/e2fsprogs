@@ -540,10 +540,8 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	 * data.  If it's true, we will treat it as a directory.
 	 */
 
-	extent_fs = (ctx->fs->super->s_feature_incompat &
-		     EXT3_FEATURE_INCOMPAT_EXTENTS);
-	inlinedata_fs = (ctx->fs->super->s_feature_incompat &
-			 EXT4_FEATURE_INCOMPAT_INLINE_DATA);
+	extent_fs = ext2fs_has_feature_extents(ctx->fs->super);
+	inlinedata_fs = ext2fs_has_feature_inline_data(ctx->fs->super);
 	if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL)) {
 		size_t size;
 		__u32 dotdot;
@@ -830,10 +828,8 @@ static int fix_inline_data_extents_file(e2fsck_t ctx,
 	int dirty = 0;
 
 	/* Both feature flags not set?  Just run the regular checks */
-	if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				       EXT3_FEATURE_INCOMPAT_EXTENTS) &&
-	    !EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_INCOMPAT_INLINE_DATA))
+	if (!ext2fs_has_feature_extents(fs->super) &&
+	    !ext2fs_has_feature_inline_data(fs->super))
 		return 0;
 
 	/* Clear both flags if it's a special file */
@@ -992,7 +988,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_1_PASS_HEADER, &pctx);
 
-	if ((fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) &&
+	if (ext2fs_has_feature_dir_index(fs->super) &&
 	    !(ctx->options & E2F_OPT_NO)) {
 		if (ext2fs_u32_list_create(&ctx->dirs_to_hash, 50))
 			ctx->dirs_to_hash = 0;
@@ -1013,10 +1009,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 #undef EXT2_BPP
 
-	imagic_fs = (sb->s_feature_compat & EXT2_FEATURE_COMPAT_IMAGIC_INODES);
-	extent_fs = (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS);
-	inlinedata_fs = (sb->s_feature_incompat &
-			EXT4_FEATURE_INCOMPAT_INLINE_DATA);
+	imagic_fs = ext2fs_has_feature_imagic_inodes(sb);
+	extent_fs = ext2fs_has_feature_extents(sb);
+	inlinedata_fs = ext2fs_has_feature_inline_data(sb);
 
 	/*
 	 * Allocate bitmaps structures
@@ -1150,7 +1145,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	     fs->super->s_mkfs_time < fs->super->s_inodes_count))
 		low_dtime_check = 0;
 
-	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
+	if (ext2fs_has_feature_mmp(fs->super) &&
 	    fs->super->s_mmp_block > fs->super->s_first_data_block &&
 	    fs->super->s_mmp_block < ext2fs_blocks_count(fs->super))
 		ext2fs_mark_block_bitmap2(ctx->block_found_map,
@@ -1263,8 +1258,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			pctx.errcode = ext2fs_inline_data_size(fs, ino, &size);
 			if (!pctx.errcode && size &&
 			    fix_problem(ctx, PR_1_INLINE_DATA_FEATURE, &pctx)) {
-				sb->s_feature_incompat |=
-					EXT4_FEATURE_INCOMPAT_INLINE_DATA;
+				ext2fs_set_feature_inline_data(sb);
 				ext2fs_mark_super_dirty(fs);
 				inlinedata_fs = 1;
 			} else if (fix_problem(ctx, PR_1_INLINE_DATA_SET, &pctx)) {
@@ -1353,7 +1347,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if ((ext2fs_extent_header_verify(inode->i_block,
 						 sizeof(inode->i_block)) == 0) &&
 			    fix_problem(ctx, PR_1_EXTENT_FEATURE, &pctx)) {
-				sb->s_feature_incompat |= EXT3_FEATURE_INCOMPAT_EXTENTS;
+				ext2fs_set_feature_extents(sb);
 				ext2fs_mark_super_dirty(fs);
 				extent_fs = 1;
 			} else if (fix_problem(ctx, PR_1_EXTENTS_SET, &pctx)) {
@@ -1507,8 +1501,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		} else if ((ino == EXT4_USR_QUOTA_INO) ||
 			   (ino == EXT4_GRP_QUOTA_INO)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
-			if ((fs->super->s_feature_ro_compat &
-					EXT4_FEATURE_RO_COMPAT_QUOTA) &&
+			if (ext2fs_has_feature_quota(fs->super) &&
 			    ((fs->super->s_usr_quota_inum == ino) ||
 			     (fs->super->s_grp_quota_inum == ino))) {
 				if (!LINUX_S_ISREG(inode->i_mode) &&
@@ -1639,13 +1632,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_dir_acl))
 			mark_inode_bad(ctx, ino);
 		if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
-		    !(fs->super->s_feature_incompat &
-		      EXT4_FEATURE_INCOMPAT_64BIT) &&
+		    !ext2fs_has_feature_64bit(fs->super) &&
 		    inode->osd2.linux2.l_i_file_acl_high != 0)
 			mark_inode_bad(ctx, ino);
 		if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
-		    !(fs->super->s_feature_ro_compat &
-		      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+		    !ext2fs_has_feature_huge_file(fs->super) &&
 		    (inode->osd2.linux2.l_i_blocks_hi != 0))
 			mark_inode_bad(ctx, ino);
 		if (inode->i_flags & EXT2_IMAGIC_FL) {
@@ -2154,7 +2145,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	 * Or if the extended attribute block is an invalid block,
 	 * then the inode is also corrupted.
 	 */
-	if (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) ||
+	if (!ext2fs_has_feature_xattr(fs->super) ||
 	    (blk < fs->super->s_first_data_block) ||
 	    (blk >= ext2fs_blocks_count(fs->super))) {
 		mark_inode_bad(ctx, ino);
@@ -2348,7 +2339,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 
 	if ((!LINUX_S_ISDIR(inode->i_mode) &&
 	     fix_problem(ctx, PR_1_HTREE_NODIR, pctx)) ||
-	    (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) &&
+	    (!ext2fs_has_feature_dir_index(fs->super) &&
 	     fix_problem(ctx, PR_1_HTREE_SET, pctx)))
 		return 1;
 
@@ -2982,10 +2973,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->ino = ino;
 	pctx->errcode = 0;
 
-	extent_fs = (ctx->fs->super->s_feature_incompat &
-                     EXT3_FEATURE_INCOMPAT_EXTENTS);
-	inlinedata_fs = (ctx->fs->super->s_feature_incompat &
-			 EXT4_FEATURE_INCOMPAT_INLINE_DATA);
+	extent_fs = ext2fs_has_feature_extents(ctx->fs->super);
+	inlinedata_fs = ext2fs_has_feature_inline_data(ctx->fs->super);
 
 	if (check_ext_attr(ctx, pctx, block_buf)) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
@@ -3085,8 +3074,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		quota_data_inodes(ctx->qctx, inode, ino, +1);
 	}
 
-	if (!(fs->super->s_feature_ro_compat &
-	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ||
+	if (!ext2fs_has_feature_huge_file(fs->super) ||
 	    !(inode->i_flags & EXT4_HUGE_FILE_FL))
 		pb.num_blocks *= (fs->blocksize / 512);
 	pb.num_blocks *= EXT2FS_CLUSTER_RATIO(fs);
@@ -3170,8 +3158,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->large_files++;
 	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
 	    ((pb.num_blocks != ext2fs_inode_i_blocks(fs, inode)) ||
-	     ((fs->super->s_feature_ro_compat &
-	       EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+	     (ext2fs_has_feature_huge_file(fs->super) &&
 	      (inode->i_flags & EXT4_HUGE_FILE_FL) &&
 	      (inode->osd2.linux2.l_i_blocks_hi != 0)))) {
 		pctx->num = pb.num_blocks;
@@ -3188,8 +3175,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	 * a block mapped file, so rebuild it as an extent file.  We can skip
 	 * symlinks because they're never rewritten.
 	 */
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-			EXT4_FEATURE_RO_COMPAT_BIGALLOC) &&
+	if (ext2fs_has_feature_bigalloc(fs->super) &&
 	    (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode)) &&
 	    ext2fs_inode_data_blocks2(fs, inode) > 0 &&
 	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INO(fs->super)) &&
@@ -3655,8 +3641,7 @@ static void new_table_block(e2fsck_t ctx, blk64_t first_block, dgrp_t group,
 	 * within the flex_bg, and if that fails then try finding the
 	 * space anywhere in the filesystem.
 	 */
-	is_flexbg = EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-					      EXT4_FEATURE_INCOMPAT_FLEX_BG);
+	is_flexbg = ext2fs_has_feature_flex_bg(fs->super);
 	if (is_flexbg) {
 		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 		flexbg = group / flexbg_size;

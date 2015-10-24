@@ -239,7 +239,7 @@ void wait_on_buffer(struct buffer_head *bh)
 
 static void e2fsck_clear_recover(e2fsck_t ctx, int error)
 {
-	ctx->fs->super->s_feature_incompat &= ~EXT3_FEATURE_INCOMPAT_RECOVER;
+	ext2fs_clear_feature_journal_needs_recovery(ctx->fs->super);
 
 	/* if we had an error doing journal recovery, we need a full fsck */
 	if (error)
@@ -461,7 +461,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			ext2fs_swap_super(&jsuper);
 #endif
 		if (jsuper.s_magic != EXT2_SUPER_MAGIC ||
-		    !(jsuper.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		    !ext2fs_has_feature_journal_dev(&jsuper)) {
 			fix_problem(ctx, PR_0_EXT_JOURNAL_BAD_SUPER, &pctx);
 			retval = EXT2_ET_LOAD_EXT_JOURNAL;
 			brelse(bh);
@@ -477,8 +477,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 		}
 
 		/* Check the superblock checksum */
-		if (jsuper.s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) {
+		if (ext2fs_has_feature_metadata_csum(&jsuper)) {
 			struct struct_ext2_filsys fsx;
 			struct ext2_super_block	superx;
 			void *p;
@@ -487,8 +486,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			memcpy(&fsx, ctx->fs, sizeof(fsx));
 			memcpy(&superx, ctx->fs->super, sizeof(superx));
 			fsx.super = &superx;
-			fsx.super->s_feature_ro_compat |=
-					EXT4_FEATURE_RO_COMPAT_METADATA_CSUM;
+			ext2fs_set_feature_metadata_csum(fsx.super);
 			if (!ext2fs_superblock_csum_verify(&fsx, p) &&
 			    fix_problem(ctx, PR_0_EXT_JOURNAL_SUPER_CSUM_INVALID,
 					&pctx)) {
@@ -535,10 +533,8 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 					      struct problem_context *pctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
-	int recover = ctx->fs->super->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_RECOVER;
-	int has_journal = ctx->fs->super->s_feature_compat &
-		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	int recover = ext2fs_has_feature_journal_needs_recovery(ctx->fs->super);
+	int has_journal = ext2fs_has_feature_journal(ctx->fs->super);
 
 	if (has_journal || sb->s_journal_inum) {
 		/* The journal inode is bogus, remove and force full fsck */
@@ -546,7 +542,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 		if (fix_problem(ctx, PR_0_JOURNAL_BAD_INODE, pctx)) {
 			if (has_journal && sb->s_journal_inum)
 				printf("*** journal has been deleted ***\n\n");
-			sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+			ext2fs_clear_feature_journal(sb);
 			sb->s_journal_inum = 0;
 			memset(sb->s_jnl_blocks, 0, sizeof(sb->s_jnl_blocks));
 			ctx->flags |= E2F_FLAG_JOURNAL_INODE;
@@ -647,12 +643,11 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 		return EXT2_ET_RO_UNSUPP_FEATURE;
 
 	/* Checksum v1-3 are mutually exclusive features. */
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V2) &&
-	    JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_CSUM_V3))
+	if (jfs_has_feature_csum2(journal) && jfs_has_feature_csum3(journal))
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 
 	if (journal_has_csum_v2or3(journal) &&
-	    JFS_HAS_COMPAT_FEATURE(journal, JFS_FEATURE_COMPAT_CHECKSUM))
+	    jfs_has_feature_checksum(journal))
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 
 	if (!e2fsck_journal_verify_csum_type(journal, jsb) ||
@@ -741,10 +736,9 @@ static errcode_t e2fsck_journal_fix_corrupt_super(e2fsck_t ctx,
 						  struct problem_context *pctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
-	int recover = ctx->fs->super->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_RECOVER;
+	int recover = ext2fs_has_feature_journal_needs_recovery(ctx->fs->super);
 
-	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
+	if (ext2fs_has_feature_journal(sb)) {
 		if (fix_problem(ctx, PR_0_JOURNAL_BAD_SUPER, pctx)) {
 			e2fsck_journal_reset_super(ctx, journal->j_superblock,
 						   journal);
@@ -799,15 +793,14 @@ errcode_t e2fsck_check_ext3_journal(e2fsck_t ctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 	journal_t *journal;
-	int recover = ctx->fs->super->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_RECOVER;
+	int recover = ext2fs_has_feature_journal_needs_recovery(ctx->fs->super);
 	struct problem_context pctx;
 	problem_t problem;
 	int reset = 0, force_fsck = 0;
 	errcode_t retval;
 
 	/* If we don't have any journal features, don't do anything more */
-	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	if (!ext2fs_has_feature_journal(sb) &&
 	    !recover && sb->s_journal_inum == 0 && sb->s_journal_dev == 0 &&
 	    uuid_is_null(sb->s_journal_uuid))
  		return 0;
@@ -848,8 +841,8 @@ errcode_t e2fsck_check_ext3_journal(e2fsck_t ctx)
 	 * with -y, -n, or -p, only if a user isn't making up their mind.
 	 */
 no_has_journal:
-	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
-		recover = sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER;
+	if (!ext2fs_has_feature_journal(sb)) {
+		recover = ext2fs_has_feature_journal_needs_recovery(sb);
 		if (fix_problem(ctx, PR_0_JOURNAL_HAS_JOURNAL, &pctx)) {
 			if (recover &&
 			    !fix_problem(ctx, PR_0_JOURNAL_RECOVER_SET, &pctx))
@@ -867,14 +860,14 @@ no_has_journal:
 			       sizeof(sb->s_journal_uuid));
 			e2fsck_clear_recover(ctx, force_fsck);
 		} else if (!(ctx->options & E2F_OPT_READONLY)) {
-			sb->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+			ext2fs_set_feature_journal(sb);
 			ctx->fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(ctx->fs);
 		}
 	}
 
-	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL &&
-	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
+	if (ext2fs_has_feature_journal(sb) &&
+	    !ext2fs_has_feature_journal_needs_recovery(sb) &&
 	    journal->j_superblock->s_start != 0) {
 		/* Print status information */
 		fix_problem(ctx, PR_0_JOURNAL_RECOVERY_CLEAR, &pctx);
@@ -884,8 +877,7 @@ no_has_journal:
 			problem = PR_0_JOURNAL_RUN;
 		if (fix_problem(ctx, problem, &pctx)) {
 			ctx->options |= E2F_OPT_FORCE;
-			sb->s_feature_incompat |=
-				EXT3_FEATURE_INCOMPAT_RECOVER;
+			ext2fs_set_feature_journal_needs_recovery(sb);
 			ext2fs_mark_super_dirty(ctx->fs);
 		} else if (fix_problem(ctx,
 				       PR_0_JOURNAL_RESET_JOURNAL, &pctx)) {
@@ -911,7 +903,7 @@ no_has_journal:
 	 * the journal's errno is set; if so, we need to mark the file
 	 * system as being corrupt and clear the journal's s_errno.
 	 */
-	if (!(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
+	if (!ext2fs_has_feature_journal_needs_recovery(sb) &&
 	    journal->j_superblock->s_errno) {
 		ctx->fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(ctx->fs);
@@ -1047,7 +1039,7 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 	 */
 	if ((ctx->options & E2F_OPT_READONLY) ||
 	    (sb->s_journal_inum == 0) ||
-	    !(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+	    !ext2fs_has_feature_journal(sb))
 		return;
 
 	/*
@@ -1159,7 +1151,7 @@ int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx)
 	char uuid[37], *journal_name;
 	struct stat st;
 
-	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) ||
+	if (!ext2fs_has_feature_journal(sb) ||
 	    uuid_is_null(sb->s_journal_uuid))
  		return 0;
 

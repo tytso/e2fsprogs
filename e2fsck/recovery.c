@@ -342,7 +342,7 @@ static inline unsigned long long read_tag_block(journal_t *journal,
 						journal_block_tag_t *tag)
 {
 	unsigned long long block = ext2fs_be32_to_cpu(tag->t_blocknr);
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
+	if (jfs_has_feature_64bit(journal))
 		block |= (u64)ext2fs_be32_to_cpu(tag->t_blocknr_high) << 32;
 	return block;
 }
@@ -411,7 +411,7 @@ static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
 	csum32 = jbd2_chksum(j, j->j_csum_seed, (__u8 *)&seq, sizeof(seq));
 	csum32 = jbd2_chksum(j, csum32, buf, j->j_blocksize);
 
-	if (JFS_HAS_INCOMPAT_FEATURE(j, JFS_FEATURE_INCOMPAT_CSUM_V3))
+	if (jfs_has_feature_csum3(j))
 		return tag3->t_checksum == ext2fs_cpu_to_be32(csum32);
 
 	return tag->t_checksum == ext2fs_cpu_to_be16(csum32);
@@ -535,8 +535,7 @@ static int do_one_pass(journal_t *journal,
 			 * just skip over the blocks it describes. */
 			if (pass != PASS_REPLAY) {
 				if (pass == PASS_SCAN &&
-				    JFS_HAS_COMPAT_FEATURE(journal,
-					    JFS_FEATURE_COMPAT_CHECKSUM) &&
+				    jfs_has_feature_checksum(journal) &&
 				    !info->end_transaction) {
 					if (calc_chksums(journal, bh,
 							&next_log_block,
@@ -691,8 +690,7 @@ static int do_one_pass(journal_t *journal,
 			 * much to do other than move on to the next sequence
 			 * number. */
 			if (pass == PASS_SCAN &&
-			    JFS_HAS_COMPAT_FEATURE(journal,
-				    JFS_FEATURE_COMPAT_CHECKSUM)) {
+			    jfs_has_feature_checksum(journal)) {
 				int chksum_err, chksum_seen;
 				struct commit_header *cbh =
 					(struct commit_header *)bh->b_data;
@@ -732,8 +730,7 @@ static int do_one_pass(journal_t *journal,
 				if (chksum_err) {
 					info->end_transaction = next_commit_ID;
 
-					if (!JFS_HAS_INCOMPAT_FEATURE(journal,
-					   JFS_FEATURE_INCOMPAT_ASYNC_COMMIT)){
+					if (!jfs_has_feature_async_commit(journal)){
 						journal->j_failed_commit =
 							next_commit_ID;
 						brelse(bh);
@@ -747,8 +744,7 @@ static int do_one_pass(journal_t *journal,
 							   bh->b_data)) {
 				info->end_transaction = next_commit_ID;
 
-				if (!JFS_HAS_INCOMPAT_FEATURE(journal,
-				     JFS_FEATURE_INCOMPAT_ASYNC_COMMIT)) {
+				if (!jfs_has_feature_async_commit(journal)) {
 					journal->j_failed_commit =
 						next_commit_ID;
 					brelse(bh);
@@ -856,7 +852,7 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 		return -EINVAL;
 	max = rcount;
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
+	if (jfs_has_feature_64bit(journal))
 		record_len = 8;
 
 	while (offset + record_len <= max) {

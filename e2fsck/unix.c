@@ -1620,7 +1620,7 @@ failure:
 
 	ehandler_init(fs->io);
 
-	if ((fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) &&
+	if (ext2fs_has_feature_mmp(fs->super) &&
 	    (flags & EXT2_FLAG_SKIP_MMP)) {
 		if (e2fsck_check_mmp(fs, ctx))
 			fatal_error(ctx, 0);
@@ -1654,7 +1654,7 @@ failure:
 	 * Check to see if we need to do ext3-style recovery.  If so,
 	 * do it, and then restart the fsck.
 	 */
-	if (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
+	if (ext2fs_has_feature_journal_needs_recovery(sb)) {
 		if (ctx->options & E2F_OPT_READONLY) {
 			log_out(ctx, "%s",
 				_("Warning: skipping journal recovery because "
@@ -1776,7 +1776,7 @@ print_unsupp_features:
 	else
 		journal_size = -1;
 
-	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA) {
+	if (ext2fs_has_feature_quota(sb)) {
 		/* Quotas were enabled. Do quota accounting during fsck. */
 		if ((sb->s_usr_quota_inum && sb->s_grp_quota_inum) ||
 		    (!sb->s_usr_quota_inum && !sb->s_grp_quota_inum))
@@ -1796,8 +1796,7 @@ print_unsupp_features:
 			if (journal_size < 1024)
 				journal_size = ext2fs_default_journal_size(ext2fs_blocks_count(fs->super));
 			if (journal_size < 0) {
-				fs->super->s_feature_compat &=
-					~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+				ext2fs_clear_feature_journal(fs->super);
 				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 				log_out(ctx, "%s: Couldn't determine "
 					"journal size\n", ctx->program_name);

@@ -327,7 +327,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 					     BLOCK_FLAG_READ_ONLY, block_buf,
 					     process_pass1b_block, &pb);
 		/* If the feature is not set, attrs will be cleared later anyway */
-		if ((fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) &&
+		if (ext2fs_has_feature_xattr(fs->super) &&
 		    ext2fs_file_acl_block(fs, &inode)) {
 			blk64_t blk = ext2fs_file_acl_block(fs, &inode);
 			process_pass1b_block(fs, &blk,
@@ -686,7 +686,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	e2fsck_read_inode(ctx, ino, &dp->inode, "delete_file");
 	e2fsck_clear_inode(ctx, ino, &dp->inode, 0, "delete_file");
 	if (ext2fs_file_acl_block(fs, &dp->inode) &&
-	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+	    ext2fs_has_feature_xattr(fs->super)) {
 		count = 1;
 		pctx.errcode = ext2fs_adjust_ea_refcount3(fs,
 					ext2fs_file_acl_block(fs, &dp->inode),

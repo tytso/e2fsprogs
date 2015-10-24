@@ -155,7 +155,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	if (ctx->progress)
 		(void) (ctx->progress)(ctx, 2, 0, cd.max);
 
-	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX)
+	if (ext2fs_has_feature_dir_index(fs->super))
 		ext2fs_dblist_sort2(fs->dblist, special_dir_block_cmp);
 
 	check_dir_func = cd.ra_entries ? check_dir_block2 : check_dir_block;
@@ -282,11 +282,9 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 	clear_problem_context(&pctx);
 	if (ctx->large_files) {
-		if (!(sb->s_feature_ro_compat &
-		      EXT2_FEATURE_RO_COMPAT_LARGE_FILE) &&
+		if (!ext2fs_has_feature_large_file(sb) &&
 		    fix_problem(ctx, PR_2_FEATURE_LARGE_FILES, &pctx)) {
-			sb->s_feature_ro_compat |=
-				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			ext2fs_set_feature_large_file(sb);
 			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(fs);
 		}
@@ -520,8 +518,7 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 	int	should_be = EXT2_FT_UNKNOWN;
 	struct ext2_inode	inode;
 
-	if (!(ctx->fs->super->s_feature_incompat &
-	      EXT2_FEATURE_INCOMPAT_FILETYPE)) {
+	if (!ext2fs_has_feature_filetype(ctx->fs->super)) {
 		if (filetype == 0 ||
 		    !fix_problem(ctx, PR_2_CLEAR_FILETYPE, pctx))
 			return 0;
@@ -611,8 +608,7 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 
 	count = ext2fs_le16_to_cpu(limit->count);
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dx_tail);
 	expect_limit = (fs->blocksize -
 			(csum_size + ((char *) ent - block_buf))) /
@@ -932,14 +928,12 @@ static int check_dir_block(ext2_filsys fs,
 	if (ctx->progress && (ctx->progress)(ctx, 2, cd->count++, cd->max))
 		return DIRENT_ABORT;
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
+	if (ext2fs_has_feature_metadata_csum(fs->super)) {
 		dx_csum_size = sizeof(struct ext2_dx_tail);
 		de_csum_size = sizeof(struct ext2_dir_entry_tail);
 	}
 
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT2_FEATURE_INCOMPAT_FILETYPE))
+	if (ext2fs_has_feature_filetype(fs->super))
 		filetype = EXT2_FT_DIR << 8;
 
 	/*
@@ -956,8 +950,7 @@ static int check_dir_block(ext2_filsys fs,
 	cd->pctx.dirent = 0;
 	cd->pctx.num = 0;
 
-	if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT4_FEATURE_INCOMPAT_INLINE_DATA)) {
+	if (ext2fs_has_feature_inline_data(fs->super)) {
 		errcode_t ec;
 
 		ec = ext2fs_inline_data_size(fs, ino, &inline_data_size);
@@ -1512,8 +1505,7 @@ skip_checksum:
 	if (dir_modified) {
 		int	flags, will_rehash;
 		/* leaf block with no tail?  Rehash dirs later. */
-		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-				EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) &&
+		if (ext2fs_has_feature_metadata_csum(fs->super) &&
 		    is_leaf &&
 		    !inline_data_size &&
 		    !ext2fs_dirent_has_tail(fs, (struct ext2_dir_entry *)buf)) {
@@ -1640,7 +1632,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
 
 	if (ext2fs_file_acl_block(fs, &inode) &&
-	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+	    ext2fs_has_feature_xattr(fs->super)) {
 		pctx.errcode = ext2fs_adjust_ea_refcount3(fs,
 				ext2fs_file_acl_block(fs, &inode),
 				block_buf, -1, &count, ino);
@@ -1722,7 +1714,7 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	pctx.inode = &inode;
 
 	if (ext2fs_file_acl_block(fs, &inode) &&
-	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+	    !ext2fs_has_feature_xattr(fs->super)) {
 		if (fix_problem(ctx, PR_2_FILE_ACL_ZERO, &pctx)) {
 			ext2fs_file_acl_block_set(fs, &inode, 0);
 			inode_modified++;
@@ -1799,8 +1791,7 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	}
 
 	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
-	    !(fs->super->s_feature_ro_compat &
-	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+	    !ext2fs_has_feature_huge_file(fs->super) &&
 	    (inode.osd2.linux2.l_i_blocks_hi != 0)) {
 		pctx.num = inode.osd2.linux2.l_i_blocks_hi;
 		if (fix_problem(ctx, PR_2_BLOCKS_HI_ZERO, &pctx)) {
@@ -1810,8 +1801,7 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	}
 
 	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
-	    !(fs->super->s_feature_incompat &
-	     EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    !ext2fs_has_feature_64bit(fs->super) &&
 	    inode.osd2.linux2.l_i_file_acl_high != 0) {
 		pctx.num = inode.osd2.linux2.l_i_file_acl_high;
 		if (fix_problem(ctx, PR_2_I_FILE_ACL_HI_ZERO, &pctx)) {

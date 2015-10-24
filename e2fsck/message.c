@@ -296,8 +296,7 @@ static _INLINE_ void expand_inode_expression(FILE *f, ext2_filsys fs, char ch,
 		fprintf(f, "%u", large_inode->i_extra_isize);
 		break;
 	case 'b':
-		if (fs->super->s_feature_ro_compat &
-		    EXT4_FEATURE_RO_COMPAT_HUGE_FILE) 
+		if (ext2fs_has_feature_huge_file(fs->super))
 			fprintf(f, "%llu", inode->i_blocks +
 				(((long long) inode->osd2.linux2.l_i_blocks_hi)
 				 << 32));

@@ -29,8 +29,7 @@ errcode_t e2fsck_rebuild_extents_later(e2fsck_t ctx, ext2_ino_t ino)
 {
 	errcode_t retval = 0;
 
-	if (!EXT2_HAS_INCOMPAT_FEATURE(ctx->fs->super,
-				       EXT3_FEATURE_INCOMPAT_EXTENTS) ||
+	if (!ext2fs_has_feature_extents(ctx->fs->super) ||
 	    (ctx->options & E2F_OPT_NO) ||
 	    (ino != EXT2_ROOT_INO && ino < ctx->fs->super->s_first_ino))
 		return 0;
@@ -314,8 +313,7 @@ static errcode_t e2fsck_rebuild_extents(e2fsck_t ctx, ext2_ino_t ino)
 	struct extent_list	list;
 	errcode_t err;
 
-	if (!EXT2_HAS_INCOMPAT_FEATURE(ctx->fs->super,
-				       EXT3_FEATURE_INCOMPAT_EXTENTS) ||
+	if (!ext2fs_has_feature_extents(ctx->fs->super) ||
 	    (ctx->options & E2F_OPT_NO) ||
 	    (ino != EXT2_ROOT_INO && ino < ctx->fs->super->s_first_ino))
 		return 0;
@@ -344,8 +342,7 @@ static void rebuild_extents(e2fsck_t ctx, const char *pass_name, int pr_header)
 	ext2_ino_t		ino = 0;
 	errcode_t		retval;
 
-	if (!EXT2_HAS_INCOMPAT_FEATURE(ctx->fs->super,
-				       EXT3_FEATURE_INCOMPAT_EXTENTS) ||
+	if (!ext2fs_has_feature_extents(ctx->fs->super) ||
 	    !ext2fs_test_valid(ctx->fs) ||
 	    ctx->invalid_bitmaps) {
 		if (ctx->inodes_to_rebuild)

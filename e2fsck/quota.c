@@ -37,8 +37,7 @@ static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
 	inode.i_links_count = 1;
 	inode.i_mode = LINUX_S_IFREG | 0600;
 	inode.i_flags = EXT2_IMMUTABLE_FL;
-	if (fs->super->s_feature_incompat &
-			EXT3_FEATURE_INCOMPAT_EXTENTS)
+	if (ext2fs_has_feature_extents(fs->super))
 		inode.i_flags |= EXT4_EXTENTS_FL;
 
 	retval = ext2fs_write_new_inode(fs, to_ino, &inode);
@@ -66,7 +65,7 @@ void e2fsck_hide_quota(e2fsck_t ctx)
 	clear_problem_context(&pctx);
 
 	if ((ctx->options & E2F_OPT_READONLY) ||
-	    !(sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_QUOTA))
+	    !ext2fs_has_feature_quota(sb))
 		return;
 
 	pctx.ino = sb->s_usr_quota_inum;
