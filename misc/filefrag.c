@@ -299,8 +299,11 @@ static int filefrag_fibmap(int fd, int blk_shift, int *num_extents,
 		fm_ext.fe_flags = FIEMAP_EXTENT_MERGED;
 	}
 
-	if (sync_file)
-		fsync(fd);
+	if (sync_file) {
+		int rc = fsync(fd);
+		if (rc < 0)
+			return rc;
+	}
 
 	for (i = 0, logical = 0, *num_extents = 0, count = last_block = 0;
 	     i < numblocks;

@@ -912,7 +912,9 @@ static errcode_t unix_flush(io_channel channel)
 #ifndef NO_IO_CACHE
 	retval = flush_cached_blocks(channel, data, 0);
 #endif
-	fsync(data->dev);
+	if (fsync(data->dev) == -1)
+		return errno;
+
 	return retval;
 }
 
