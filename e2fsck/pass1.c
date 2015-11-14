@@ -766,7 +766,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 							  inode, inode_size);
 		ehandler_operation(old_op);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			return;
+			goto endit;
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
 			if (!ctx->inode_bb_map)
 				alloc_bb_map(ctx);
@@ -1277,6 +1277,8 @@ endit:
 
 	if ((ctx->flags & E2F_FLAG_SIGNAL_MASK) == 0)
 		print_resource_track(ctx, _("Pass 1"), &rtrack, ctx->fs->io);
+	else
+		ctx->invalid_bitmaps++;
 }
 
 /*

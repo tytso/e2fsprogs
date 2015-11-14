@@ -148,13 +148,13 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 	cd.pctx.errcode = ext2fs_dblist_iterate2(fs->dblist, check_dir_block,
 						 &cd);
-	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
-		return;
-
 	if (ctx->flags & E2F_FLAG_RESTART_LATER) {
 		ctx->flags |= E2F_FLAG_RESTART;
-		return;
+		ctx->flags &= ~E2F_FLAG_RESTART_LATER;
 	}
+
+	if (ctx->flags & E2F_FLAG_RUN_RETURN)
+		return;
 
 	if (cd.pctx.errcode) {
 		fix_problem(ctx, PR_2_DBLIST_ITERATE, &cd.pctx);
@@ -739,7 +739,7 @@ static int check_dir_block(ext2_filsys fs,
 	buf = cd->buf;
 	ctx = cd->ctx;
 
-	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
+	if (ctx->flags & E2F_FLAG_RUN_RETURN)
 		return DIRENT_ABORT;
 
 	if (ctx->progress && (ctx->progress)(ctx, 2, cd->count++, cd->max))

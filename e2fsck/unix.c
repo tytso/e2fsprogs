@@ -1667,8 +1667,15 @@ print_unsupp_features:
 	}
 no_journal:
 
-	if (ctx->qctx) {
+	if (run_result & E2F_FLAG_ABORT) {
+		fatal_error(ctx, _("aborted"));
+	} else if (run_result & E2F_FLAG_CANCEL) {
+		log_out(ctx, _("%s: e2fsck canceled.\n"), ctx->device_name ?
+			ctx->device_name : ctx->filesystem_name);
+		exit_value |= FSCK_CANCELED;
+	} else if (ctx->qctx && !ctx->invalid_bitmaps) {
 		int i, needs_writeout;
+
 		for (i = 0; i < MAXQUOTAS; i++) {
 			if (qtype != -1 && qtype != i)
 				continue;
@@ -1695,18 +1702,13 @@ no_journal:
 		ext2fs_close_free(&ctx->fs);
 		goto restart;
 	}
-	if (run_result & E2F_FLAG_ABORT)
-		fatal_error(ctx, _("aborted"));
 
 #ifdef MTRACE
 	mtrace_print("Cleanup");
 #endif
 	was_changed = ext2fs_test_changed(fs);
-	if (run_result & E2F_FLAG_CANCEL) {
-		log_out(ctx, _("%s: e2fsck canceled.\n"), ctx->device_name ?
-			ctx->device_name : ctx->filesystem_name);
-		exit_value |= FSCK_CANCELED;
-	} else if (!(ctx->options & E2F_OPT_READONLY)) {
+	if (!(ctx->flags & E2F_FLAG_RUN_RETURN) &&
+	    !(ctx->options & E2F_OPT_READONLY)) {
 		if (ext2fs_test_valid(fs)) {
 			if (!(sb->s_state & EXT2_VALID_FS))
 				exit_value |= FSCK_NONDESTRUCT;

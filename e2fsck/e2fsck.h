@@ -173,10 +173,10 @@ struct resource_track {
  */
 #define E2F_FLAG_ABORT		0x0001 /* Abort signaled */
 #define E2F_FLAG_CANCEL		0x0002 /* Cancel signaled */
-#define E2F_FLAG_SIGNAL_MASK	0x0003
+#define E2F_FLAG_SIGNAL_MASK	(E2F_FLAG_ABORT | E2F_FLAG_CANCEL)
 #define E2F_FLAG_RESTART	0x0004 /* Restart signaled */
+#define E2F_FLAG_RUN_RETURN	(E2F_FLAG_SIGNAL_MASK | E2F_FLAG_RESTART)
 #define E2F_FLAG_RESTART_LATER	0x0008 /* Restart after all iterations done */
-
 #define E2F_FLAG_SETJMP_OK	0x0010 /* Setjmp valid for abort */
 
 #define E2F_FLAG_PROG_BAR	0x0020 /* Progress bar on screen */
