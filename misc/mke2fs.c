@@ -1641,10 +1641,9 @@ profile_error:
 			}
 			break;
 		case 'i':
-			inode_ratio = strtoul(optarg, &tmp, 0);
+			inode_ratio = parse_num_blocks(optarg, -1);
 			if (inode_ratio < EXT2_MIN_BLOCK_SIZE ||
-			    inode_ratio > EXT2_MAX_BLOCK_SIZE * 1024 ||
-			    *tmp) {
+			    inode_ratio > EXT2_MAX_BLOCK_SIZE * 1024) {
 				com_err(program_name, 0,
 					_("invalid inode ratio %s (min %d/max %d)"),
 					optarg, EXT2_MIN_BLOCK_SIZE,
