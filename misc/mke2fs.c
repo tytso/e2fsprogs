@@ -109,7 +109,7 @@ static char *mount_dir;
 char *journal_device;
 static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 char **fs_types;
-const char *root_dir;  /* Copy files from the specified directory */
+const char *src_root_dir;  /* Copy files from the specified directory */
 static char *undo_file;
 
 static profile_t	profile;
@@ -1547,7 +1547,7 @@ profile_error:
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:ce:g:i:jl:m:no:qr:s:t:d:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
+		    "b:cd:e:g:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = parse_num_blocks2(optarg, -1);
@@ -1579,6 +1579,9 @@ profile_error:
 					optarg);
 				exit(1);
 			}
+			break;
+		case 'd':
+			src_root_dir = optarg;
 			break;
 		case 'D':
 			direct_io = 1;
@@ -1758,9 +1761,6 @@ profile_error:
 			break;
 		case 'U':
 			fs_uuid = optarg;
-			break;
-		case 'd':
-			root_dir = optarg;
 			break;
 		case 'v':
 			verbose = 1;
@@ -3106,11 +3106,11 @@ no_journal:
 	if (retval)
 		com_err(program_name, retval, "while creating huge files");
 	/* Copy files from the specified directory */
-	if (root_dir) {
+	if (src_root_dir) {
 		if (!quiet)
 			printf("%s", _("Copying files into the device: "));
 
-		retval = populate_fs(fs, EXT2_ROOT_INO, root_dir,
+		retval = populate_fs(fs, EXT2_ROOT_INO, src_root_dir,
 				     EXT2_ROOT_INO);
 		if (retval) {
 			com_err(program_name, retval, "%s",
