@@ -93,7 +93,7 @@ set on new or empty files.  If it is set on a file which already has
 data blocks, it is undefined when the blocks assigned to the file will
 be fully stable.  If the 'C' flag is set on a directory, it will have no
 effect on the directory, but new files created in that directory will
-the No_COW attribute.)
+have the No_COW attribute set.)
 .PP
 A file with the 'd' attribute set is not candidate for backup when the
 .BR dump (8)
