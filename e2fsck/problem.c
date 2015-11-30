@@ -1114,6 +1114,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i on bigalloc @f cannot be @b mapped.  "),
 	  PROMPT_FIX, 0 },
 
+	/* Inode has corrupt extent header */
+	{ PR_1_MISSING_EXTENT_HEADER,
+	  N_("@i %i has corrupt @x header.  "),
+	  PROMPT_CLEAR_INODE, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

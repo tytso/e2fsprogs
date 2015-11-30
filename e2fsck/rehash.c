@@ -71,6 +71,8 @@ int e2fsck_dir_will_be_rehashed(e2fsck_t ctx, ext2_ino_t ino)
 	return ext2fs_u32_list_test(ctx->dirs_to_hash, ino);
 }
 
+#undef REHASH_DEBUG
+
 struct fill_dir_struct {
 	char *buf;
 	struct ext2_inode *inode;
@@ -684,8 +686,8 @@ static errcode_t calculate_tree(ext2_filsys fs,
 struct write_dir_struct {
 	struct out_dir *outdir;
 	errcode_t	err;
+	ext2_ino_t	ino;
 	e2fsck_t	ctx;
-	blk64_t		cleared;
 	ext2_ino_t	dir;
 };
 
@@ -703,10 +705,15 @@ static int write_dir_block(ext2_filsys fs,
 	blk64_t	blk;
 	char	*dir, *buf = 0;
 
-	if (*block_nr == 0)
+#ifdef REHASH_DEBUG
+	printf("%u: write_dir_block %lld:%lld", wd->ino, blockcnt, *block_nr);
+#endif
+	if ((*block_nr == 0) || (blockcnt < 0)) {
+#ifdef REHASH_DEBUG
+		printf(" - skip\n");
+#endif
 		return 0;
-	if (blockcnt < 0)
-		return 0;
+	}
 	if (blockcnt < wd->outdir->num)
 		dir = wd->outdir->buf + (blockcnt * fs->blocksize);
 	else if (wd->ctx->lost_and_found == wd->dir) {
@@ -717,26 +724,20 @@ static int write_dir_block(ext2_filsys fs,
 		dir = buf;
 		wd->outdir->num++;
 	} else {
-		/* We don't need this block, so release it */
-		e2fsck_read_bitmaps(wd->ctx);
-		blk = *block_nr;
-		/*
-		 * In theory, we only release blocks from the end of the
-		 * directory file, so it's fine to clobber a whole cluster at
-		 * once.
-		 */
-		if (blk % EXT2FS_CLUSTER_RATIO(fs) == 0) {
-			ext2fs_block_alloc_stats2(fs, blk, -1);
-			wd->cleared++;
-		}
-		*block_nr = 0;
-		return BLOCK_CHANGED;
+		/* Don't free blocks at the end of the directory, they
+		 * will be truncated by the caller. */
+#ifdef REHASH_DEBUG
+		printf(" - not freed\n");
+#endif
+		return 0;
 	}
-
 	wd->err = ext2fs_write_dir_block4(fs, *block_nr, dir, 0, wd->dir);
 	if (buf)
 		ext2fs_free_mem(&buf);
 
+#ifdef REHASH_DEBUG
+	printf(" - write (%d)\n", wd->err);
+#endif
 	if (wd->err)
 		return BLOCK_ABORT;
 	return 0;
@@ -756,11 +757,11 @@ static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 
 	wd.outdir = outdir;
 	wd.err = 0;
+	wd.ino = ino;
 	wd.ctx = ctx;
-	wd.cleared = 0;
 	wd.dir = ino;
 
-	retval = ext2fs_block_iterate3(fs, ino, 0, 0,
+	retval = ext2fs_block_iterate3(fs, ino, 0, NULL,
 				       write_dir_block, &wd);
 	if (retval)
 		return retval;
@@ -772,14 +773,17 @@ static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 		inode->i_flags &= ~EXT2_INDEX_FL;
 	else
 		inode->i_flags |= EXT2_INDEX_FL;
-	retval = ext2fs_inode_size_set(fs, inode,
-				       outdir->num * fs->blocksize);
+#ifdef REHASH_DEBUG
+	printf("%u: set inode size to %u blocks = %u bytes\n",
+	       ino, outdir->num, outdir->num * fs->blocksize);
+#endif
+	retval = ext2fs_inode_size_set(fs, inode, (ext2_off64_t)outdir->num *
+						   fs->blocksize);
 	if (retval)
 		return retval;
-	ext2fs_iblk_sub_blocks(fs, inode, wd.cleared);
-	e2fsck_write_inode(ctx, ino, inode, "rehash_dir");
 
-	return 0;
+	/* ext2fs_punch() calls ext2fs_write_inode() which writes the size */
+	return ext2fs_punch(fs, ino, inode, NULL, outdir->num, ~0ULL);
 }
 
 errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
@@ -789,12 +793,9 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
 	errcode_t		retval;
 	struct ext2_inode 	inode;
 	char			*dir_buf = 0;
-	struct fill_dir_struct	fd;
-	struct out_dir		outdir;
+	struct fill_dir_struct	fd = { NULL };
+	struct out_dir		outdir = { 0 };
 
-	outdir.max = outdir.num = 0;
-	outdir.buf = 0;
-	outdir.hashes = 0;
 	e2fsck_read_inode(ctx, ino, &inode, "rehash_dir");
 
 	if (ext2fs_has_feature_inline_data(fs->super) &&
@@ -802,24 +803,19 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
 		return 0;
 
 	retval = ENOMEM;
-	fd.harray = 0;
 	dir_buf = malloc(inode.i_size);
 	if (!dir_buf)
 		goto errout;
 
 	fd.max_array = inode.i_size / 32;
-	fd.num_array = 0;
 	fd.harray = malloc(fd.max_array * sizeof(struct hash_entry));
 	if (!fd.harray)
 		goto errout;
 
+	fd.ino = ino;
 	fd.ctx = ctx;
 	fd.buf = dir_buf;
 	fd.inode = &inode;
-	fd.ino = ino;
-	fd.err = 0;
-	fd.dir_size = 0;
-	fd.compress = 0;
 	fd.dir = ino;
 	if (!ext2fs_has_feature_dir_index(fs->super) ||
 	    (inode.i_size / fs->blocksize) < 2)

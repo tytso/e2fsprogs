@@ -651,6 +651,9 @@ struct problem_context {
 /* bigalloc fs cannot have blockmap files */
 #define PR_1_NO_BIGALLOC_BLOCKMAP_FILES		0x010080
 
+/* Missing extent header */
+#define PR_1_MISSING_EXTENT_HEADER		0x010081
+
 /*
  * Pass 1b errors
  */

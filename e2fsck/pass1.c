@@ -482,6 +482,10 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 		return;
 	}
 
+	/* check if there is no place for an EA header */
+	if (inode->i_extra_isize >= max - sizeof(__u32))
+		return;
+
 	eamagic = (__u32 *) (((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 			inode->i_extra_isize);
 	if (*eamagic == EXT2_EXT_ATTR_MAGIC) {
@@ -1166,7 +1170,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			pass1_readahead(ctx, &ra_group, &ino_threshold);
 		ehandler_operation(old_op);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			return;
+			goto endit;
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
 			/*
 			 * If badblocks says badblocks is bad, offer to clear
@@ -1847,6 +1851,8 @@ endit:
 
 	if ((ctx->flags & E2F_FLAG_SIGNAL_MASK) == 0)
 		print_resource_track(ctx, _("Pass 1"), &rtrack, ctx->fs->io);
+	else
+		ctx->invalid_bitmaps++;
 }
 #undef FINISH_INODE_LOOP
 
@@ -2820,7 +2826,20 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 	ext2_ino_t		ino = pctx->ino;
 	errcode_t		retval;
 	blk64_t                 eof_lblk;
+	struct ext3_extent_header	*eh;
 
+	/* Check for a proper extent header... */
+	eh = (struct ext3_extent_header *) &inode->i_block[0];
+	retval = ext2fs_extent_header_verify(eh, sizeof(inode->i_block));
+	if (retval) {
+		if (fix_problem(ctx, PR_1_MISSING_EXTENT_HEADER, pctx))
+			e2fsck_clear_inode(ctx, ino, inode, 0,
+					   "check_blocks_extents");
+		pctx->errcode = 0;
+		return;
+	}
+
+	/* ...since this function doesn't fail if i_block is zeroed. */
 	pctx->errcode = ext2fs_extent_open2(fs, ino, inode, &ehandle);
 	if (pctx->errcode) {
 		if (fix_problem(ctx, PR_1_READ_EXTENT, pctx))
