@@ -994,6 +994,8 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 	inode.i_links_count = 1;
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
+	inode.i_uid = ctxt->uid;
+	inode.i_gid = ctxt->gid;
 
 	err = ext2fs_write_new_inode(fs, child, (struct ext2_inode *)&inode);
 	if (err) {
@@ -2895,6 +2897,8 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	inode.i_links_count = 1;
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
+	inode.i_uid = ctxt->uid;
+	inode.i_gid = ctxt->gid;
 	if (ext2fs_has_feature_extents(fs->super)) {
 		ext2_extent_handle_t handle;
 
