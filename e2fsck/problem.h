@@ -587,6 +587,45 @@ struct problem_context {
 /* Inode logical block is misaligned */
 #define PR_1_MISALIGNED_CLUSTER		0x010074
 
+/* Inode has INLINE_DATA_FL flag but extended attribute not found */
+#define PR_1_INLINE_DATA_NO_ATTR	0x010075
+
+/* extents/inlinedata set on fifo/socket/device */
+#define PR_1_SPECIAL_EXTENTS_IDATA	0x010076
+
+/* idata/extent flag set and extent header found, clear idata flag */
+#define PR_1_CLEAR_INLINE_DATA_FOR_EXTENT	0x010077
+
+/* inlinedata/extent set and no extent header found, clear extent flag */
+#define PR_1_CLEAR_EXTENT_FOR_INLINE_DATA	0x010078
+
+/* inlinedata/extent set, clear both flags */
+#define PR_1_CLEAR_EXTENT_INLINE_DATA_FLAGS	0x010079
+
+/* inlinedata/extent set, clear inode */
+#define PR_1_CLEAR_EXTENT_INLINE_DATA_INODE	0x01007A
+
+/* badblocks is in badblocks */
+#define PR_1_BADBLOCKS_IN_BADBLOCKS		0x01007B
+
+/* can't allocate extent region */
+#define PR_1_EXTENT_ALLOC_REGION_ABORT		0x01007C
+
+/* leaf extent collision */
+#define PR_1_EXTENT_COLLISION			0x01007D
+
+/* Error allocating memory for encrypted directory list */
+#define PR_1_ALLOCATE_ENCRYPTED_DIRLIST		0x01007E
+
+/* extent tree max depth too big */
+#define PR_1_EXTENT_BAD_MAX_DEPTH		0x01007F
+
+/* bigalloc fs cannot have blockmap files */
+#define PR_1_NO_BIGALLOC_BLOCKMAP_FILES		0x010080
+
+/* Missing extent header */
+#define PR_1_MISSING_EXTENT_HEADER		0x010081
+
 /*
  * Pass 1b errors
  */
