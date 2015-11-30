@@ -382,6 +382,10 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 		return;
 	}
 
+	/* check if there is no place for an EA header */
+	if (inode->i_extra_isize >= max - sizeof(__u32))
+		return;
+
 	eamagic = (__u32 *) (((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 			inode->i_extra_isize);
 	if (*eamagic == EXT2_EXT_ATTR_MAGIC) {
