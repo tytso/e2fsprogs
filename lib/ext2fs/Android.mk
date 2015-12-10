@@ -132,7 +132,7 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(libext2fs_src_files)
-LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(libext2fs_shared_libraries))
+LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(libext2fs_shared_libraries))
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags)

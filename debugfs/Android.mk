@@ -85,7 +85,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(debugfs_src_files)
 LOCAL_C_INCLUDES := $(debugfs_c_includes)
 LOCAL_CFLAGS := $(debugfs_cflags)
-LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(debugfs_shared_libraries))
+LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(debugfs_shared_libraries))
 LOCAL_MODULE := debugfs_host
 LOCAL_MODULE_STEM := debugfs
 LOCAL_MODULE_TAGS := optional

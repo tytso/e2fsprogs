@@ -84,7 +84,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(e2fsck_src_files)
 LOCAL_C_INCLUDES := $(e2fsck_c_includes)
 LOCAL_CFLAGS := $(e2fsck_cflags)
-LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(e2fsck_shared_libraries))
+LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(e2fsck_shared_libraries))
 LOCAL_MODULE := e2fsck_host
 LOCAL_MODULE_STEM := e2fsck
 LOCAL_MODULE_TAGS := optional

@@ -70,7 +70,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(add_ext4_encrypt_src_files)
 LOCAL_C_INCLUDES := $(add_ext4_encrypt_c_includes)
 LOCAL_CFLAGS := $(add_ext4_encrypt_cflags)
-LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(add_ext4_encrypt_shared_libraries))
+LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(add_ext4_encrypt_shared_libraries))
 LOCAL_MODULE := add_ext4_encrypt_host
 LOCAL_MODULE_STEM := add_ext4_encrypt
 LOCAL_MODULE_TAGS := optional

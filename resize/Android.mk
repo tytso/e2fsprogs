@@ -37,7 +37,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(resize2fs_src_files)
 LOCAL_C_INCLUDES := $(resize2fs_c_includes)
 LOCAL_CFLAGS := $(resize2fs_cflags)
-LOCAL_SHARED_LIBRARIES := $(addsuffix _host, $(resize2fs_shared_libraries))
+LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(resize2fs_shared_libraries))
 LOCAL_MODULE := resize2fs_host
 LOCAL_MODULE_STEM := resize2fs
 LOCAL_MODULE_TAGS := optional
