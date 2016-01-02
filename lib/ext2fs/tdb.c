@@ -36,7 +36,9 @@ Last Changed Date: 2007-06-22 13:36:10 -0400 (Fri, 22 Jun 2007)
 #define HAVE_UTIME_H
 #define HAVE_UTIME
 #endif
+#ifndef __FreeBSD__
 #define _XOPEN_SOURCE 600
+#endif
 
 #include "config.h"
 #include <unistd.h>
