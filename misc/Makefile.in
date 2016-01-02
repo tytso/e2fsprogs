@@ -123,8 +123,8 @@ prof_err.c prof_err.h: $(srcdir)/../e2fsck/prof_err.et
 	$(Q) $(COMPILE_ET) $(srcdir)/../e2fsck/prof_err.et
 
 profile.h: $(top_srcdir)/e2fsck/profile.h
-	$(E) "	CP $<"
-	$(Q) cp $< $@
+	$(E) "	CP $@"
+	$(Q) cp $(top_srcdir)/e2fsck/profile.h $@
 
 mke2fs.conf: $(srcdir)/mke2fs.conf.in
 	if test -f $(srcdir)/mke2fs.conf.custom.in ; then \

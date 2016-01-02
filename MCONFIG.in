@@ -59,11 +59,11 @@ pkgconfigdir = $(libdir)/pkgconfig
 @ifGNUmake@   ifeq ("$(C)", "1")
 @ifGNUmake@     CHECK_CMD=$(CHECK) $(CHECK_OPTS)
 @ifGNUmake@    else
-@ifGNUmake@     CHECK_CMD=@true
+@ifGNUmake@     CHECK_CMD=true
 @ifGNUmake@   endif
 @ifGNUmake@ endif
 
-@ifNotGNUmake@ CHECK_CMD=@true
+@ifNotGNUmake@ CHECK_CMD=true
 
 CC = @CC@
 BUILD_CC = @BUILD_CC@

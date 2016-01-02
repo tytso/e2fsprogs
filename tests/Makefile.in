@@ -35,9 +35,15 @@ mke2fs.conf: $(srcdir)/mke2fs.conf.in
 
 .PHONY : test_pre test_post check always_run
 
-TESTS=$(wildcard $(srcdir)/[a-z]_*)
+always_run:
+
+TESTS != echo $(srcdir)/[a-z]_*
+
 $(TESTS):: test_one always_run
 	@./test_one $@
+
+foo:
+	echo $(TESTS)
 
 test_pre:
 	@$(RM) -f *.failed
