@@ -954,6 +954,41 @@ out:
 	}
 }
 
+/*
+ * Check if the passed ino is one of the used superblock quota inodes.
+ *
+ * Before the quota inodes were journaled, older superblock quota inodes
+ * were just regular files in the filesystem and not reserved inodes.  This
+ * checks if the passed ino is one of the s_*_quota_inum superblock fields,
+ * which may not always be the same as the EXT4_*_QUOTA_INO fields.
+ */
+static int quota_inum_is_super(struct ext2_super_block *sb, ext2_ino_t ino)
+{
+	enum quota_type qtype;
+
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++)
+		if (*quota_sb_inump(sb, qtype) == ino)
+			return 1;
+
+	return 0;
+}
+
+/*
+ * Check if the passed ino is one of the reserved quota inodes.
+ * This checks if the inode number is one of the reserved EXT4_*_QUOTA_INO
+ * inodes.  These inodes may or may not be in use by the quota feature.
+ */
+static int quota_inum_is_reserved(ext2_filsys fs, ext2_ino_t ino)
+{
+	enum quota_type qtype;
+
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++)
+		if (quota_type2inum(qtype, fs->super) == ino)
+			return 1;
+
+	return 0;
+}
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
@@ -1502,12 +1537,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 							inode_size, "pass1");
 				failed_csum = 0;
 			}
-		} else if ((ino == EXT4_USR_QUOTA_INO) ||
-			   (ino == EXT4_GRP_QUOTA_INO)) {
+		} else if (quota_inum_is_reserved(fs, ino)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
 			if (ext2fs_has_feature_quota(fs->super) &&
-			    ((fs->super->s_usr_quota_inum == ino) ||
-			     (fs->super->s_grp_quota_inum == ino))) {
+			    quota_inum_is_super(fs->super, ino)) {
 				if (!LINUX_S_ISREG(inode->i_mode) &&
 				    fix_problem(ctx, PR_1_QUOTA_BAD_MODE,
 							&pctx)) {

@@ -23,6 +23,7 @@
 #include <time.h>
 
 #include "e2p.h"
+#include "support/quotaio.h"
 
 static void print_user (unsigned short uid, FILE *f)
 {
@@ -206,11 +207,25 @@ static const char *checksum_type(__u8 type)
 	}
 }
 
+static const char *quota_prefix[MAXQUOTAS] = {
+	[USRQUOTA] = "User quota inode:",
+	[GRPQUOTA] = "Group quota inode:",
+};
+
+/**
+ * Convert type of quota to written representation
+ */
+static const char *quota_type2prefix(enum quota_type qtype)
+{
+	return quota_prefix[qtype];
+}
+
 void list_super2(struct ext2_super_block * sb, FILE *f)
 {
 	int inode_blocks_per_group;
 	char buf[80], *str;
 	time_t	tm;
+	enum quota_type qtype;
 
 	inode_blocks_per_group = (((sb->s_inodes_per_group *
 				    EXT2_INODE_SIZE(sb)) +
@@ -434,12 +449,12 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "MMP update interval:      %u\n",
 			sb->s_mmp_update_interval);
 	}
-	if (sb->s_usr_quota_inum)
-		fprintf(f, "User quota inode:         %u\n",
-			sb->s_usr_quota_inum);
-	if (sb->s_grp_quota_inum)
-		fprintf(f, "Group quota inode:        %u\n",
-			sb->s_grp_quota_inum);
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		if (*quota_sb_inump(sb, qtype) != 0)
+			fprintf(f, "%-26s%u\n",
+				quota_type2prefix(qtype),
+				*quota_sb_inump(sb, qtype));
+	}
 
 	if (ext2fs_has_feature_metadata_csum(sb)) {
 		fprintf(f, "Checksum type:            %s\n",

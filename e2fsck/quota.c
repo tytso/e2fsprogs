@@ -17,7 +17,7 @@
 #include "problem.h"
 
 static void move_quota_inode(ext2_filsys fs, ext2_ino_t from_ino,
-			     ext2_ino_t to_ino, int qtype)
+			     ext2_ino_t to_ino, enum quota_type qtype)
 {
 	struct ext2_inode	inode;
 	errcode_t		retval;
@@ -61,6 +61,8 @@ void e2fsck_hide_quota(e2fsck_t ctx)
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct problem_context	pctx;
 	ext2_filsys		fs = ctx->fs;
+	enum quota_type qtype;
+	ext2_ino_t quota_ino;
 
 	clear_problem_context(&pctx);
 
@@ -68,22 +70,14 @@ void e2fsck_hide_quota(e2fsck_t ctx)
 	    !ext2fs_has_feature_quota(sb))
 		return;
 
-	pctx.ino = sb->s_usr_quota_inum;
-	if (sb->s_usr_quota_inum &&
-	    (sb->s_usr_quota_inum != EXT4_USR_QUOTA_INO) &&
-	    fix_problem(ctx, PR_0_HIDE_QUOTA, &pctx)) {
-		move_quota_inode(fs, sb->s_usr_quota_inum, EXT4_USR_QUOTA_INO,
-				 USRQUOTA);
-		sb->s_usr_quota_inum = EXT4_USR_QUOTA_INO;
-	}
-
-	pctx.ino = sb->s_grp_quota_inum;
-	if (sb->s_grp_quota_inum &&
-	    (sb->s_grp_quota_inum != EXT4_GRP_QUOTA_INO) &&
-	    fix_problem(ctx, PR_0_HIDE_QUOTA, &pctx)) {
-		move_quota_inode(fs, sb->s_grp_quota_inum, EXT4_GRP_QUOTA_INO,
-				 GRPQUOTA);
-		sb->s_grp_quota_inum = EXT4_GRP_QUOTA_INO;
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		pctx.ino = *quota_sb_inump(sb, qtype);
+		quota_ino = quota_type2inum(qtype, fs->super);
+		if (pctx.ino && (pctx.ino != quota_ino) &&
+		    fix_problem(ctx, PR_0_HIDE_QUOTA, &pctx)) {
+			move_quota_inode(fs, pctx.ino, quota_ino, qtype);
+			*quota_sb_inump(sb, qtype) = quota_ino;
+		}
 	}
 
 	return;

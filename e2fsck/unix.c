@@ -1338,7 +1338,8 @@ int main (int argc, char *argv[])
 	int old_bitmaps;
 	__u32 features[3];
 	char *cp;
-	int qtype = -99;  /* quota type */
+	unsigned int qtype_bits = 0;
+	enum quota_type qtype;
 
 	clear_problem_context(&pctx);
 	sigcatcher_setup();
@@ -1778,13 +1779,12 @@ print_unsupp_features:
 
 	if (ext2fs_has_feature_quota(sb)) {
 		/* Quotas were enabled. Do quota accounting during fsck. */
-		if ((sb->s_usr_quota_inum && sb->s_grp_quota_inum) ||
-		    (!sb->s_usr_quota_inum && !sb->s_grp_quota_inum))
-			qtype = -1;
-		else
-			qtype = sb->s_usr_quota_inum ? USRQUOTA : GRPQUOTA;
+		for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+			if (*quota_sb_inump(sb, qtype) != 0)
+				qtype_bits |= 1 << qtype;
+		}
 
-		quota_init_context(&ctx->qctx, ctx->fs, qtype);
+		quota_init_context(&ctx->qctx, ctx->fs, qtype_bits);
 	}
 
 	run_result = e2fsck_run(ctx);
@@ -1826,18 +1826,18 @@ no_journal:
 			ctx->device_name : ctx->filesystem_name);
 		exit_value |= FSCK_CANCELED;
 	} else if (ctx->qctx && !ctx->invalid_bitmaps) {
-		int i, needs_writeout;
+		int needs_writeout;
 
-		for (i = 0; i < MAXQUOTAS; i++) {
-			if (qtype != -1 && qtype != i)
+		for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+			if (((1 << qtype) & qtype_bits) == 0)
 				continue;
 			needs_writeout = 0;
-			pctx.num = i;
-			retval = quota_compare_and_update(ctx->qctx, i,
+			pctx.num = qtype;
+			retval = quota_compare_and_update(ctx->qctx, qtype,
 							  &needs_writeout);
 			if ((retval || needs_writeout) &&
 			    fix_problem(ctx, PR_6_UPDATE_QUOTAS, &pctx))
-				quota_write_inode(ctx->qctx, i);
+				quota_write_inode(ctx->qctx, 1 << qtype);
 		}
 		quota_release_context(&ctx->qctx);
 	}

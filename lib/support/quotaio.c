@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <assert.h>
 
 #include "common.h"
 #include "quotaio.h"
@@ -37,15 +38,31 @@ struct disk_dqheader {
 /**
  * Convert type of quota to written representation
  */
-const char *type2name(int type)
+const char *quota_type2name(enum quota_type qtype)
 {
-	return extensions[type];
+	if (qtype < 0 || qtype >= MAXQUOTAS)
+		return "unknown";
+	return extensions[qtype];
+}
+
+ext2_ino_t quota_type2inum(enum quota_type qtype,
+                           struct ext2_super_block *sb)
+{
+	switch (qtype) {
+	case USRQUOTA:
+		return EXT4_USR_QUOTA_INO;
+	case GRPQUOTA:
+		return EXT4_GRP_QUOTA_INO;
+	default:
+		return 0;
+	}
+	return 0;
 }
 
 /**
  * Creates a quota file name for given type and format.
  */
-const char *quota_get_qf_name(int type, int fmt, char *buf)
+const char *quota_get_qf_name(enum quota_type type, int fmt, char *buf)
 {
 	if (!buf)
 		return NULL;
@@ -99,11 +116,16 @@ errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct ext2_inode inode;
 	errcode_t err;
+	enum quota_type qtype;
 
 	if ((err = ext2fs_read_inode(fs, ino, &inode)))
 		return err;
 
-	if ((ino == EXT4_USR_QUOTA_INO) || (ino == EXT4_GRP_QUOTA_INO)) {
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++)
+		if (ino == quota_type2inum(qtype, fs->super))
+			break;
+
+	if (qtype != MAXQUOTAS) {
 		inode.i_dtime = fs->now ? fs->now : time(0);
 		if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 			return 0;
@@ -183,14 +205,15 @@ static unsigned int quota_read_nomount(struct quota_file *qf,
  * Detect quota format and initialize quota IO
  */
 errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
-			  ext2_ino_t qf_ino, int type, int fmt, int flags)
+			  ext2_ino_t qf_ino, enum quota_type qtype,
+			  int fmt, int flags)
 {
 	ext2_filsys fs = qctx->fs;
 	ext2_file_t e2_file;
 	errcode_t err;
 	int allocated_handle = 0;
 
-	if (type >= MAXQUOTAS)
+	if (qtype >= MAXQUOTAS)
 		return EINVAL;
 
 	if (fmt == -1)
@@ -200,14 +223,10 @@ errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 	if (err)
 		return err;
 
-	if (qf_ino == 0) {
-		if (type == USRQUOTA)
-			qf_ino = fs->super->s_usr_quota_inum;
-		else
-			qf_ino = fs->super->s_grp_quota_inum;
-	}
+	if (qf_ino == 0)
+		qf_ino = *quota_sb_inump(fs->super, qtype)
 
-	log_debug("Opening quota ino=%lu, type=%d", qf_ino, type);
+	log_debug("Opening quota ino=%lu, type=%d", qf_ino, qtype);
 	err = ext2fs_file_open(fs, qf_ino, flags, &e2_file);
 	if (err) {
 		log_err("ext2fs_file_open failed: %s", error_message(err));
@@ -215,8 +234,8 @@ errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 	}
 
 	if (!h) {
-		if (qctx->quota_file[type]) {
-			h = qctx->quota_file[type];
+		if (qctx->quota_file[qtype]) {
+			h = qctx->quota_file[qtype];
 			if (((flags & EXT2_FILE_WRITE) == 0) ||
 			    (h->qh_file_flags & EXT2_FILE_WRITE))
 				return 0;
@@ -237,13 +256,13 @@ errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 	h->e2fs_read = quota_read_nomount;
 	h->qh_file_flags = flags;
 	h->qh_io_flags = 0;
-	h->qh_type = type;
+	h->qh_type = qtype;
 	h->qh_fmt = fmt;
 	memset(&h->qh_info, 0, sizeof(h->qh_info));
 	h->qh_ops = &quotafile_ops_2;
 
 	if (h->qh_ops->check_file &&
-	    (h->qh_ops->check_file(h, type, fmt) == 0)) {
+	    (h->qh_ops->check_file(h, qtype, fmt) == 0)) {
 		log_err("qh_ops->check_file failed");
 		goto errout;
 	}
@@ -253,7 +272,7 @@ errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 		goto errout;
 	}
 	if (allocated_handle)
-		qctx->quota_file[type] = h;
+		qctx->quota_file[qtype] = h;
 
 	return 0;
 errout:
@@ -298,7 +317,8 @@ static errcode_t quota_inode_init_new(ext2_filsys fs, ext2_ino_t ino)
 /*
  * Create new quotafile of specified format on given filesystem
  */
-errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs, int type, int fmt)
+errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,
+			    enum quota_type qtype, int fmt)
 {
 	ext2_file_t e2_file;
 	int err;
@@ -308,11 +328,8 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs, int type, in
 		fmt = QFMT_VFS_V1;
 
 	h->qh_qf.fs = fs;
-	if (type == USRQUOTA)
-		qf_inum = EXT4_USR_QUOTA_INO;
-	else if (type == GRPQUOTA)
-		qf_inum = EXT4_GRP_QUOTA_INO;
-	else
+	qf_inum = quota_type2inum(qtype, fs->super);
+	if (qf_inum == 0)
 		return -1;
 
 	err = ext2fs_read_bitmaps(fs);
@@ -338,7 +355,7 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs, int type, in
 	h->qh_qf.e2_file = e2_file;
 
 	h->qh_io_flags = 0;
-	h->qh_type = type;
+	h->qh_type = qtype;
 	h->qh_fmt = fmt;
 	memset(&h->qh_info, 0, sizeof(h->qh_info));
 	h->qh_ops = &quotafile_ops_2;

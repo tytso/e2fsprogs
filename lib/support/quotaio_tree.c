@@ -587,7 +587,7 @@ static void check_reference(struct quota_handle *h, unsigned int blk)
 			"Please run e2fsck (8) to fix it.",
 			blk,
 			h->qh_info.u.v2_mdqi.dqi_qtree.dqi_blocks,
-			type2name(h->qh_type));
+			quota_type2name(h->qh_type));
 }
 
 static int report_tree(struct dquot *dquot, unsigned int blk, int depth,

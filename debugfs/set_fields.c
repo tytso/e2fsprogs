@@ -40,6 +40,7 @@
 #include "debugfs.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
+#include "support/quotaio.h"
 
 static struct ext2_super_block set_sb;
 static struct ext2_inode_large set_inode;

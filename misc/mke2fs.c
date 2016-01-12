@@ -95,7 +95,8 @@ static int	lazy_itable_init;
 static int	packed_meta_blocks;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
-static int	quotatype = -1;  /* Initialize both user and group quotas by default */
+/* Initialize usr/grp quotas by default */
+static unsigned int quotatype_bits = (QUOTA_USR_BIT | QUOTA_GRP_BIT);
 static __u64	offset;
 static blk64_t journal_location = ~0LL;
 static int	proceed_delay = -1;
@@ -770,12 +771,28 @@ static int set_os(struct ext2_super_block *sb, char *os)
 
 #define PATH_SET "PATH=/sbin"
 
+static int option_handle_function(char *token, void *data)
+{
+	if (!strncmp(token, "usr", 3)) {
+		quotatype_bits |= QUOTA_USR_BIT;
+	} else if (!strncmp(token, "grp", 3)) {
+		quotatype_bits |= QUOTA_GRP_BIT;
+	} else {
+		fprintf(stderr, _("Invalid quotatype parameter: %s\n"),
+				token);
+		return 1;
+	}
+	return 0;
+
+}
+
 static void parse_extended_opts(struct ext2_super_block *param,
 				const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg, *badopt = 0;
 	int	len;
 	int	r_usage = 0;
+	int	ret;
 
 	len = strlen(opts);
 	buf = malloc(len+1);
@@ -1008,14 +1025,9 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				badopt = token;
 				continue;
 			}
-			if (!strncmp(arg, "usr", 3)) {
-				quotatype = 0;
-			} else if (!strncmp(arg, "grp", 3)) {
-				quotatype = 1;
-			} else {
-				fprintf(stderr,
-					_("Invalid quotatype parameter: %s\n"),
-					arg);
+			ret = parse_quota_opts(arg, option_handle_function,
+					       NULL);
+			if (ret) {
 				r_usage++;
 				continue;
 			}
@@ -2646,9 +2658,9 @@ static int create_quota_inodes(ext2_filsys fs)
 {
 	quota_ctx_t qctx;
 
-	quota_init_context(&qctx, fs, -1);
+	quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
 	quota_compute_usage(qctx);
-	quota_write_inode(qctx, quotatype);
+	quota_write_inode(qctx, quotatype_bits);
 	quota_release_context(&qctx);
 
 	return 0;

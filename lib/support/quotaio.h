@@ -10,9 +10,9 @@
  * {
  *	quota_ctx_t qctx;
  *
- *	quota_init_context(&qctx, fs, -1);
+ *	quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
  *	{
- *		quota_compute_usage(qctx, -1);
+ *		quota_compute_usage(qctx, QUOTA_ALL_BIT);
  *		AND/OR
  *		quota_data_add/quota_data_sub/quota_data_inodes();
  *	}
@@ -43,9 +43,19 @@
 
 typedef int64_t qsize_t;	/* Type in which we store size limitations */
 
-#define MAXQUOTAS 2
-#define USRQUOTA 0
-#define GRPQUOTA 1
+enum quota_type {
+	USRQUOTA = 0,
+	GRPQUOTA = 1,
+	MAXQUOTAS = 2,
+};
+
+#if MAXQUOTAS > 32
+#error "cannot have more than 32 quota types to fit in qtype_bits"
+#endif
+
+#define QUOTA_USR_BIT (1 << USRQUOTA)
+#define QUOTA_GRP_BIT (1 << GRPQUOTA)
+#define QUOTA_ALL_BIT (QUOTA_USR_BIT | QUOTA_GRP_BIT)
 
 typedef struct quota_ctx *quota_ctx_t;
 struct dict_t;
@@ -104,7 +114,7 @@ struct quota_file {
 
 /* Structure for one opened quota file */
 struct quota_handle {
-	int qh_type;		/* Type of quotafile */
+	enum quota_type qh_type;	/* Type of quotafile */
 	int qh_fmt;		/* Quotafile format */
 	int qh_file_flags;
 	int qh_io_flags;	/* IO flags for file */
@@ -174,12 +184,13 @@ extern struct quotafile_ops quotafile_ops_meta;
 /* Open existing quotafile of given type (and verify its format) on given
  * filesystem. */
 errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
-			  ext2_ino_t qf_ino, int type, int fmt, int flags);
+			  ext2_ino_t qf_ino, enum quota_type type,
+			  int fmt, int flags);
 
 
 /* Create new quotafile of specified format on given filesystem */
 errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,
-			    int type, int fmt);
+			    enum quota_type qtype, int fmt);
 
 /* Close quotafile */
 errcode_t quota_file_close(quota_ctx_t qctx, struct quota_handle *h);
@@ -189,7 +200,8 @@ struct dquot *get_empty_dquot(void);
 
 errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino);
 
-const char *type2name(int type);
+const char *quota_type2name(enum quota_type qtype);
+ext2_ino_t quota_type2inum(enum quota_type qtype, struct ext2_super_block *);
 
 void update_grace_times(struct dquot *q);
 
@@ -197,27 +209,48 @@ void update_grace_times(struct dquot *q);
    than maxlen of extensions[] and fmtnames[] (plus 2) found in quotaio.c */
 #define QUOTA_NAME_LEN 16
 
-const char *quota_get_qf_name(int type, int fmt, char *buf);
+const char *quota_get_qf_name(enum quota_type, int fmt, char *buf);
 
 /* In mkquota.c */
-errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs, int qtype);
+errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs,
+			     unsigned int qtype_bits);
 void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
 		int adjust);
 void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
 		qsize_t space);
 void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
 		qsize_t space);
-errcode_t quota_write_inode(quota_ctx_t qctx, int qtype);
-errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino, int type);
+errcode_t quota_write_inode(quota_ctx_t qctx, enum quota_type qtype);
+errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
+			      enum quota_type type);
 errcode_t quota_compute_usage(quota_ctx_t qctx);
 void quota_release_context(quota_ctx_t *qctx);
-
-errcode_t quota_remove_inode(ext2_filsys fs, int qtype);
-int quota_file_exists(ext2_filsys fs, int qtype);
-void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, int qtype);
-errcode_t quota_compare_and_update(quota_ctx_t qctx, int qtype,
+errcode_t quota_remove_inode(ext2_filsys fs, enum quota_type qtype);
+int quota_file_exists(ext2_filsys fs, enum quota_type qtype);
+void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, enum quota_type qtype);
+errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 				   int *usage_inconsistent);
+int parse_quota_opts(const char *opts, int (*func)(), void *data);
 
+/*
+ * Return pointer to reserved inode field in superblock for given quota type.
+ *
+ * This allows the caller to get or set the quota inode by type without the
+ * need for the quota array to be contiguous in the superbock.
+ */
+static inline ext2_ino_t *quota_sb_inump(struct ext2_super_block *sb,
+					 enum quota_type qtype)
+{
+	switch (qtype) {
+	case USRQUOTA:
+		return &sb->s_usr_quota_inum;
+	case GRPQUOTA:
+		return &sb->s_grp_quota_inum;
+	default:
+		return NULL;
+	}
 
+	return NULL;
+}
 
 #endif /* GUARD_QUOTAIO_H */
