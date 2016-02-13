@@ -406,14 +406,24 @@ static int update_mntopts(ext2_filsys fs, char *mntopts)
 	return 0;
 }
 
-static int check_fsck_needed(ext2_filsys fs)
+static void check_fsck_needed(ext2_filsys fs, const char *prompt)
 {
-	if (fs->super->s_state & EXT2_VALID_FS)
-		return 0;
-	printf("\n%s\n", _(please_fsck));
-	if (mount_flags & EXT2_MF_READONLY)
-		printf("%s", _("(and reboot afterwards!)\n"));
-	return 1;
+	/* Refuse to modify anything but a freshly checked valid filesystem. */
+	if (!(fs->super->s_state & EXT2_VALID_FS) ||
+	    (fs->super->s_state & EXT2_ERROR_FS) ||
+	    (fs->super->s_lastcheck < fs->super->s_mtime)) {
+		printf("\n%s\n", _(please_fsck));
+		if (mount_flags & EXT2_MF_READONLY)
+			printf("%s", _("(and reboot afterwards!)\n"));
+		exit(1);
+	}
+
+	/* Give the admin a few seconds to bail out of a dangerous op. */
+	if (!getenv("TUNE2FS_FORCE_PROMPT") && (!isatty(0) || !isatty(1)))
+		return;
+
+	puts(prompt);
+	proceed_question(5);
 }
 
 static void request_dir_fsck_afterwards(ext2_filsys fs)
@@ -1147,8 +1157,8 @@ mmp_error:
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
-		if (check_fsck_needed(fs))
-			exit(1);
+		check_fsck_needed(fs,
+			_("Enabling checksums could take some time."));
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("Cannot enable metadata_csum on a mounted "
 				"filesystem!\n"), stderr);
@@ -1188,8 +1198,8 @@ mmp_error:
 			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
 		__u32	test_features[3];
 
-		if (check_fsck_needed(fs))
-			exit(1);
+		check_fsck_needed(fs,
+			_("Disabling checksums could take some time."));
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("Cannot disable metadata_csum on a mounted "
 				"filesystem!\n"), stderr);
@@ -2797,6 +2807,8 @@ retry_open:
 			rc = 1;
 			goto closefs;
 		}
+		check_fsck_needed(fs,
+			_("Resizing inodes could take some time."));
 		/*
 		 * If inode resize is requested use the
 		 * Undo I/O manager
@@ -3012,8 +3024,10 @@ retry_open:
 				try_confirm_csum_seed_support();
 				exit(1);
 			}
-			if (check_fsck_needed(fs))
-				exit(1);
+			if (!ext2fs_has_feature_csum_seed(fs->super))
+				check_fsck_needed(fs,
+					_("Setting UUID on a checksummed "
+					  "filesystem could take some time."));
 
 			/*
 			 * Determine if the block group checksums are
