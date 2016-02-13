@@ -101,6 +101,7 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 		sb->s_jnl_blocks[i] = ext2fs_swab32(sb->s_jnl_blocks[i]);
 	sb->s_backup_bgs[0] = ext2fs_swab32(sb->s_backup_bgs[0]);
 	sb->s_backup_bgs[1] = ext2fs_swab32(sb->s_backup_bgs[1]);
+	sb->s_checksum_seed = ext2fs_swab32(sb->s_checksum_seed);
 }
 
 void ext2fs_swap_group_desc2(ext2_filsys fs, struct ext2_group_desc *gdp)

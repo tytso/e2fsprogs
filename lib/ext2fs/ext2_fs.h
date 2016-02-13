@@ -727,7 +727,8 @@ struct ext2_super_block {
 	__u8	s_encrypt_pw_salt[16];	/* Salt used for string2key algorithm */
 	__le32	s_lpf_ino;		/* Location of the lost+found inode */
 	__le32  s_prj_quota_inum;	/* inode for tracking project quota */
-	__le32	s_reserved[99];		/* Padding to the end of the block */
+	__le32	s_checksum_seed;	/* crc32c(orig_uuid) if csum_seed set */
+	__le32	s_reserved[98];		/* Padding to the end of the block */
 	__u32	s_checksum;		/* crc32c(superblock) */
 };
 
@@ -813,7 +814,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
 #define EXT4_FEATURE_INCOMPAT_EA_INODE		0x0400
 #define EXT4_FEATURE_INCOMPAT_DIRDATA		0x1000
-/* 0x2000 was EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM but this was never used */
+#define EXT4_FEATURE_INCOMPAT_CSUM_SEED		0x2000
 #define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
 #define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
 #define EXT4_FEATURE_INCOMPAT_ENCRYPT		0x10000
@@ -904,6 +905,7 @@ EXT4_FEATURE_INCOMPAT_FUNCS(mmp,		4, MMP)
 EXT4_FEATURE_INCOMPAT_FUNCS(flex_bg,		4, FLEX_BG)
 EXT4_FEATURE_INCOMPAT_FUNCS(ea_inode,		4, EA_INODE)
 EXT4_FEATURE_INCOMPAT_FUNCS(dirdata,		4, DIRDATA)
+EXT4_FEATURE_INCOMPAT_FUNCS(csum_seed,		4, CSUM_SEED)
 EXT4_FEATURE_INCOMPAT_FUNCS(largedir,		4, LARGEDIR)
 EXT4_FEATURE_INCOMPAT_FUNCS(inline_data,	4, INLINE_DATA)
 EXT4_FEATURE_INCOMPAT_FUNCS(encrypt,		4, ENCRYPT)

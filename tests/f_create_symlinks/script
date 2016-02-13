@@ -35,8 +35,6 @@ for i in 30 70 500 1023 1024 1500; do
 		 sed -f $cmd_dir/filter.sed | grep -v "time: " >> $OUT
 done
 
-/bin/cp $TMPFILE /tmp/foo.img
-
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new

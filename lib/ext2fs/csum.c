@@ -30,6 +30,15 @@
 #define STATIC static
 #endif
 
+void ext2fs_init_csum_seed(ext2_filsys fs)
+{
+	if (ext2fs_has_feature_csum_seed(fs->super))
+		fs->csum_seed = fs->super->s_checksum_seed;
+	else if (ext2fs_has_feature_metadata_csum(fs->super))
+		fs->csum_seed = ext2fs_crc32c_le(~0, fs->super->s_uuid,
+						 sizeof(fs->super->s_uuid));
+}
+
 static __u32 ext2fs_mmp_csum(ext2_filsys fs, struct mmp_struct *mmp)
 {
 	int offset = offsetof(struct mmp_struct, mmp_checksum);

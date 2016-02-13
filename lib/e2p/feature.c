@@ -97,6 +97,8 @@ static struct feature feature_list[] = {
 			"ea_inode"},
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_DIRDATA,
 			"dirdata"},
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CSUM_SEED,
+			"metadata_csum_seed"},
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_LARGEDIR,
 			"large_dir"},
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_INLINE_DATA,

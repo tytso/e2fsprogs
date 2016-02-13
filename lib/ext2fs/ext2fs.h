@@ -580,7 +580,8 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT4_LIB_INCOMPAT_MMP|\
 					 EXT4_FEATURE_INCOMPAT_64BIT|\
 					 EXT4_FEATURE_INCOMPAT_INLINE_DATA|\
-					 EXT4_FEATURE_INCOMPAT_ENCRYPT)
+					 EXT4_FEATURE_INCOMPAT_ENCRYPT|\
+					 EXT4_FEATURE_INCOMPAT_CSUM_SEED)
 
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
 					 EXT4_FEATURE_RO_COMPAT_HUGE_FILE|\
@@ -986,6 +987,7 @@ extern __u32 ext2fs_crc32_be(__u32 crc, unsigned char const *p, size_t len);
 extern __u32 ext2fs_crc32c_le(__u32 crc, unsigned char const *p, size_t len);
 
 /* csum.c */
+extern void ext2fs_init_csum_seed(ext2_filsys fs);
 extern errcode_t ext2fs_mmp_csum_set(ext2_filsys fs, struct mmp_struct *mmp);
 extern int ext2fs_mmp_csum_verify(ext2_filsys, struct mmp_struct *mmp);
 extern int ext2fs_verify_csum_type(ext2_filsys fs, struct ext2_super_block *sb);
@@ -1712,15 +1714,6 @@ extern void ext2fs_dirent_set_file_type(struct ext2_dir_entry *entry, int type);
 #endif /* __GNUC__ */
 #endif /* __STDC_VERSION__ >= 199901L */
 #endif
-
-static inline void ext2fs_init_csum_seed(ext2_filsys fs)
-{
-	if (!ext2fs_has_feature_metadata_csum(fs->super))
-		return;
-
-	fs->csum_seed = ext2fs_crc32c_le(~0, fs->super->s_uuid,
-					 sizeof(fs->super->s_uuid));
-}
 
 #ifndef EXT2_CUSTOM_MEMORY_ROUTINES
 #include <string.h>

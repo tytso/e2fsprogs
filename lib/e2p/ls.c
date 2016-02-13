@@ -466,6 +466,10 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (!e2p_is_null_uuid(sb->s_encrypt_pw_salt))
 		fprintf(f, "Encryption PW Salt:       %s\n",
 			e2p_uuid2str(sb->s_encrypt_pw_salt));
+
+	if (ext2fs_has_feature_csum_seed(sb))
+		fprintf(f, "Checksum seed:            0x%08x\n",
+			sb->s_checksum_seed);
 }
 
 void list_super (struct ext2_super_block * s)
