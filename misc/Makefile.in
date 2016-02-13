@@ -47,7 +47,7 @@ UMANPAGES=	chattr.1 lsattr.1 @UUID_CMT@ uuidgen.1
 
 LPROGS=		@E2INITRD_PROG@
 
-TUNE2FS_OBJS=	tune2fs.o util.o
+TUNE2FS_OBJS=	tune2fs.o util.o journal.o recovery.o revoke.o
 MKLPF_OBJS=	mklost+found.o
 MKE2FS_OBJS=	mke2fs.o util.o default_profile.o mk_hugefiles.o \
 			create_inode.o

@@ -113,6 +113,7 @@ struct blk_move {
 	blk64_t new_loc;
 };
 
+errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
 static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
 static const char *please_dir_fsck =
@@ -3152,15 +3153,20 @@ retry_open:
 		free(ext_mount_opts);
 	}
 
-	/* Warn if file system needs recovery and it is opened for writing. */
+	/* Recover the journal if possible. */
 	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & EXT2_MF_MOUNTED) &&
-	    (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
-	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER)) {
-		fprintf(stderr,
-_("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
-  "\te2fsck -E journal_only %s\n\n"
-  "then rerun this command.  Otherwise, any changes made may be overwritten\n"
-  "by journal recovery.\n"), device_name);
+	    ext2fs_has_feature_journal_needs_recovery(fs->super)) {
+		errcode_t err;
+
+		printf(_("Recovering journal.\n"));
+		err = ext2fs_run_ext3_journal(&fs);
+		if (err) {
+			com_err("tune2fs", err, "while recovering journal.\n");
+			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
+			goto closefs;
+		}
+		ext2fs_clear_feature_journal_needs_recovery(fs->super);
+		ext2fs_mark_super_dirty(fs);
 	}
 
 	free(device_name);
