@@ -15,7 +15,9 @@ libext2_uuid_src_files := \
 
 libext2_uuid_c_includes := external/e2fsprogs/lib
 
-libext2_uuid_cflags := -O2 -g -W -Wall
+libext2_uuid_cflags := -O2 -g -W -Wall \
+	-Wno-unused-function \
+	-Wno-unused-parameter
 
 libext2_uuid_system_shared_libraries := libc
 
