@@ -112,10 +112,22 @@ errcode_t quota_remove_inode(ext2_filsys fs, enum quota_type qtype)
 		return retval;
 	}
 	qf_ino = *quota_sb_inump(fs->super, qtype);
-	quota_set_sb_inum(fs, 0, qtype);
-	/* Truncate the inode only if its a reserved one. */
-	if (qf_ino < EXT2_FIRST_INODE(fs->super))
+	if (qf_ino < EXT2_FIRST_INODE(fs->super)) {
 		quota_inode_truncate(fs, qf_ino);
+	} else {
+		struct ext2_inode inode;
+
+		quota_inode_truncate(fs, qf_ino);
+		retval = ext2fs_read_inode(fs, qf_ino, &inode);
+		if (!retval) {
+			memset(&inode, 0, sizeof(struct ext2_inode));
+			ext2fs_write_inode(fs, qf_ino, &inode);
+		}
+		ext2fs_inode_alloc_stats2(fs, qf_ino, -1, 0);
+		ext2fs_mark_ib_dirty(fs);
+
+	}
+	quota_set_sb_inum(fs, 0, qtype);
 
 	ext2fs_mark_super_dirty(fs);
 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
@@ -233,11 +245,20 @@ static int dict_uint_cmp(const void *a, const void *b)
 
 static inline qid_t get_qid(struct ext2_inode *inode, enum quota_type qtype)
 {
+	struct ext2_inode_large *large_inode;
+	int inode_size;
+
 	switch (qtype) {
 	case USRQUOTA:
 		return inode_uid(*inode);
 	case GRPQUOTA:
 		return inode_gid(*inode);
+	case PRJQUOTA:
+		large_inode = (struct ext2_inode_large *)inode;
+		inode_size = EXT2_GOOD_OLD_INODE_SIZE +
+			     large_inode->i_extra_isize;
+		if (inode_includes(inode_size, i_projid))
+			return inode_projid(*large_inode);
 	default:
 		return 0;
 	}

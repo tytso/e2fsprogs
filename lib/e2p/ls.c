@@ -210,6 +210,7 @@ static const char *checksum_type(__u8 type)
 static const char *quota_prefix[MAXQUOTAS] = {
 	[USRQUOTA] = "User quota inode:",
 	[GRPQUOTA] = "Group quota inode:",
+	[PRJQUOTA] = "Project quota inode:",
 };
 
 /**

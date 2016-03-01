@@ -306,20 +306,23 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		return;
 	}
 
-	if (extra_isize >= 4)
+	inode_size = EXT2_GOOD_OLD_INODE_SIZE + extra_isize;
+	if (inode_includes(inode_size, i_checksum_hi))
 		t->i_checksum_hi = ext2fs_swab16(f->i_checksum_hi);
-	if (extra_isize >= 8)
+	if (inode_includes(inode_size, i_ctime_extra))
 		t->i_ctime_extra = ext2fs_swab32(f->i_ctime_extra);
-	if (extra_isize >= 12)
+	if (inode_includes(inode_size, i_mtime_extra))
 		t->i_mtime_extra = ext2fs_swab32(f->i_mtime_extra);
-	if (extra_isize >= 16)
+	if (inode_includes(inode_size, i_atime_extra))
 		t->i_atime_extra = ext2fs_swab32(f->i_atime_extra);
-	if (extra_isize >= 20)
+	if (inode_includes(inode_size, i_crtime))
 		t->i_crtime = ext2fs_swab32(f->i_crtime);
-	if (extra_isize >= 24)
+	if (inode_includes(inode_size, i_crtime_extra))
 		t->i_crtime_extra = ext2fs_swab32(f->i_crtime_extra);
-	if (extra_isize >= 28)
+	if (inode_includes(inode_size, i_version_hi))
 		t->i_version_hi = ext2fs_swab32(f->i_version_hi);
+	if (inode_includes(inode_size, i_projid))
+                t->i_projid = ext2fs_swab16(f->i_projid);
 
 	i = sizeof(struct ext2_inode) + extra_isize + sizeof(__u32);
 	if (bufsize < (int) i)

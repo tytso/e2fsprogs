@@ -23,7 +23,7 @@ User:     0   Group:     0   Size: 31
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
-Size of extra inode fields: 28
+Size of extra inode fields: 32
 Fast link dest: "/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 debugfs -R "stat /l_70" test.img
 Inode: 13   Type: symlink    Mode:  0777   Flags: 0x10000000
@@ -32,7 +32,7 @@ User:     0   Group:     0   Size: 71
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
-Size of extra inode fields: 28
+Size of extra inode fields: 32
 Extended attributes:
   system.data (11)
 Fast link dest: "/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -43,7 +43,7 @@ User:     0   Group:     0   Size: 501
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 2
 Fragment:  Address: 0    Number: 0    Size: 0
-Size of extra inode fields: 28
+Size of extra inode fields: 32
 EXTENTS:
 (0):153
 debugfs -R "stat /l_1023" test.img
@@ -53,7 +53,7 @@ User:     0   Group:     0   Size: 1024
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 2
 Fragment:  Address: 0    Number: 0    Size: 0
-Size of extra inode fields: 28
+Size of extra inode fields: 32
 EXTENTS:
 (0):154
 debugfs -R "stat /l_1024" test.img

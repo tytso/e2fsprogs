@@ -473,6 +473,7 @@ struct ext2_inode_large {
 	__u32	i_crtime;	/* File creation time */
 	__u32	i_crtime_extra;	/* extra File creation time (nsec << 2 | epoch)*/
 	__u32	i_version_hi;	/* high 32 bits for 64-bit version */
+	__u32   i_projid;       /* Project ID */
 };
 
 #define EXT4_INODE_CSUM_HI_EXTRA_END	\
@@ -482,6 +483,10 @@ struct ext2_inode_large {
 #define i_dir_acl	i_size_high
 
 #define i_checksum_lo	osd2.linux2.l_i_checksum_lo
+
+#define inode_includes(size, field)			\
+       (size >= (sizeof(((struct ext2_inode_large *)0)->field) + \
+                 offsetof(struct ext2_inode_large, field)))
 
 #if defined(__KERNEL__) || defined(__linux__)
 #define i_reserved1	osd1.linux1.l_i_reserved1
@@ -506,6 +511,7 @@ struct ext2_inode_large {
 
 #define inode_uid(inode)	((inode).i_uid | (inode).osd2.linux2.l_i_uid_high << 16)
 #define inode_gid(inode)	((inode).i_gid | (inode).osd2.linux2.l_i_gid_high << 16)
+#define inode_projid(inode)	((inode).i_projid)
 #define ext2fs_set_i_uid_high(inode,x) ((inode).osd2.linux2.l_i_uid_high = (x))
 #define ext2fs_set_i_gid_high(inode,x) ((inode).osd2.linux2.l_i_gid_high = (x))
 
@@ -719,7 +725,8 @@ struct ext2_super_block {
 	__u8	s_encrypt_algos[4];	/* Encryption algorithms in use  */
 	__u8	s_encrypt_pw_salt[16];	/* Salt used for string2key algorithm */
 	__le32	s_lpf_ino;		/* Location of the lost+found inode */
-	__le32	s_reserved[100];	/* Padding to the end of the block */
+	__le32  s_prj_quota_inum;	/* inode for tracking project quota */
+	__le32	s_reserved[99];		/* Padding to the end of the block */
 	__u32	s_checksum;		/* crc32c(superblock) */
 };
 

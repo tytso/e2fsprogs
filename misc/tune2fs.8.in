@@ -626,6 +626,9 @@ Sets/clears user quota inode in the superblock.
 .TP
 .BR [^]grpquota
 Sets/clears group quota inode in the superblock.
+.TP
+.BR [^]prjquota
+Sets/clears project quota inode in the superblock.
 .RE
 .TP
 .BI \-T " time-last-checked"

@@ -20,7 +20,11 @@
 #include "common.h"
 #include "quotaio.h"
 
-static const char * const extensions[MAXQUOTAS] = {"user", "group"};
+static const char * const extensions[MAXQUOTAS] = {
+	[USRQUOTA] = "user",
+	[GRPQUOTA] = "group",
+	[PRJQUOTA] = "project",
+};
 static const char * const basenames[] = {
 	"",		/* undefined */
 	"quota",	/* QFMT_VFS_OLD */
@@ -53,6 +57,8 @@ ext2_ino_t quota_type2inum(enum quota_type qtype,
 		return EXT4_USR_QUOTA_INO;
 	case GRPQUOTA:
 		return EXT4_GRP_QUOTA_INO;
+	case PRJQUOTA:
+		return sb->s_prj_quota_inum;
 	default:
 		return 0;
 	}
@@ -322,15 +328,23 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,
 {
 	ext2_file_t e2_file;
 	int err;
-	unsigned long qf_inum;
+	unsigned long qf_inum = 0;
 
 	if (fmt == -1)
 		fmt = QFMT_VFS_V1;
 
 	h->qh_qf.fs = fs;
 	qf_inum = quota_type2inum(qtype, fs->super);
-	if (qf_inum == 0)
+	if (qf_inum == 0 && qtype == PRJQUOTA) {
+		err = ext2fs_new_inode(fs, EXT2_ROOT_INO, LINUX_S_IFREG | 0600,
+				       0, &qf_inum);
+		if (err)
+			return -1;
+		ext2fs_inode_alloc_stats2(fs, qf_inum, +1, 0);
+		ext2fs_mark_ib_dirty(fs);
+	} else if (qf_inum == 0) {
 		return -1;
+	}
 
 	err = ext2fs_read_bitmaps(fs);
 	if (err)

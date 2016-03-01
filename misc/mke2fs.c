@@ -777,6 +777,8 @@ static int option_handle_function(char *token, void *data)
 		quotatype_bits |= QUOTA_USR_BIT;
 	} else if (!strncmp(token, "grp", 3)) {
 		quotatype_bits |= QUOTA_GRP_BIT;
+	} else if (!strncmp(token, "prj", 3)) {
+		quotatype_bits |= QUOTA_PRJ_BIT;
 	} else {
 		fprintf(stderr, _("Invalid quotatype parameter: %s\n"),
 				token);
@@ -2371,6 +2373,19 @@ profile_error:
 		exit(1);
 	}
 
+	/*
+	 * If inode size is 128 and project quota is enabled, we need
+	 * to notify users that project ID will never be useful.
+	 */
+	if (ext2fs_has_feature_project(&fs_param) &&
+	    fs_param.s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+		com_err(program_name, 0,
+			_("%d byte inodes are too small for project quota; "
+			  "specify larger size"),
+			fs_param.s_inode_size);
+		exit(1);
+	}
+
 	/* Make sure number of inodes specified will fit in 32 bits */
 	if (num_inodes == 0) {
 		unsigned long long n;
@@ -3112,6 +3127,8 @@ no_journal:
 
 	if (ext2fs_has_feature_bigalloc(&fs_param))
 		fix_cluster_bg_counts(fs);
+	if (ext2fs_has_feature_project(&fs_param))
+		quotatype_bits |= QUOTA_PRJ_BIT;
 	if (ext2fs_has_feature_quota(&fs_param))
 		create_quota_inodes(fs);
 

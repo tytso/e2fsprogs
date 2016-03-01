@@ -102,7 +102,7 @@ struct process_block_struct {
 
 struct process_inode_block {
 	ext2_ino_t ino;
-	struct ext2_inode inode;
+	struct ext2_inode_large inode;
 };
 
 struct scan_callback_struct {
@@ -1774,7 +1774,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		     inode->i_block[EXT2_TIND_BLOCK] ||
 		     ext2fs_file_acl_block(fs, inode))) {
 			inodes_to_process[process_inode_count].ino = ino;
-			inodes_to_process[process_inode_count].inode = *inode;
+			inodes_to_process[process_inode_count].inode =
+				       *(struct ext2_inode_large *)inode;
 			process_inode_count++;
 		} else
 			check_blocks(ctx, &pctx, block_buf);
@@ -3120,7 +3121,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
-	if (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super)) {
+	if (ino != quota_type2inum(PRJQUOTA, fs->super) &&
+	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super))) {
 		quota_data_add(ctx->qctx, inode, ino,
 			       pb.num_blocks * fs->blocksize);
 		quota_data_inodes(ctx->qctx, inode, ino, +1);

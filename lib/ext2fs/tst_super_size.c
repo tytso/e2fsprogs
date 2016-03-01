@@ -140,7 +140,8 @@ int main(int argc, char **argv)
 	check_field(s_encrypt_algos, 4);
 	check_field(s_encrypt_pw_salt, 16);
 	check_field(s_lpf_ino, 4);
-	check_field(s_reserved, 100 * 4);
+	check_field(s_prj_quota_inum, 4);
+	check_field(s_reserved, 99 * 4);
 	check_field(s_checksum, 4);
 	do_field("Superblock end", 0, 0, cur_offset, 1024);
 #endif
