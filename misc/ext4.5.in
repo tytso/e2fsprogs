@@ -214,6 +214,11 @@ Causes the quota files (i.e., user.quota and
 group.quota which existed
 in the older quota design) to be hidden inodes.
 .TP
+.B project
+.br
+This ext4 feature provides project quota support. With this feature,
+the project ID of inode will be managed when the filesystem is mounted.
+.TP
 .B resize_inode
 .br
 This file system feature indicates that space has been reserved so
