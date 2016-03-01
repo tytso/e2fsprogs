@@ -12,6 +12,10 @@ chattr \- change file attributes on a Linux file system
 .I version
 ]
 [
+.B \-p
+.I project
+]
+[
 .I mode
 ]
 .I files...
@@ -71,6 +75,9 @@ Suppress most error messages.
 .TP
 .BI \-v " version"
 Set the file's version/generation number.
+.TP
+.BI \-p " project"
+Set the file's project number.
 .SH ATTRIBUTES
 A file with the 'a' attribute set can only be open in append mode for writing.
 Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE

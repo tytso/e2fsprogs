@@ -32,6 +32,8 @@ int fgetflags (const char * name, unsigned long * flags);
 int fgetversion (const char * name, unsigned long * version);
 int fsetflags (const char * name, unsigned long flags);
 int fsetversion (const char * name, unsigned long version);
+int fgetproject(const char *name, unsigned long *project);
+int fsetproject(const char *name, unsigned long project);
 int getflags (int fd, unsigned long * flags);
 int getversion (int fd, unsigned long * version);
 int iterate_on_dir (const char * dir_name,

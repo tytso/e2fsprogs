@@ -64,6 +64,9 @@ static int set_version;
 
 static unsigned long version;
 
+static int set_project;
+static unsigned long project;
+
 static int recursive;
 static int verbose;
 static int silent;
@@ -83,7 +86,7 @@ static unsigned long sf;
 static void usage(void)
 {
 	fprintf(stderr,
-		_("Usage: %s [-RVf] [-+=aAcCdDeijPsStTu] [-v version] files...\n"),
+		_("Usage: %s [-pRVf] [-+=aAcCdDeijPsStTu] [-v version] files...\n"),
 		program_name);
 	exit(1);
 }
@@ -144,6 +147,20 @@ static int decode_arg (int * i, int argc, char ** argv)
 			}
 			if (*p == 'f') {
 				silent = 1;
+				continue;
+			}
+			if (*p == 'p') {
+				(*i)++;
+				if (*i >= argc)
+					usage ();
+				project = strtol (argv[*i], &tmp, 0);
+				if (*tmp) {
+					com_err (program_name, 0,
+						 _("bad project - %s\n"),
+						 argv[*i]);
+					usage ();
+				}
+				set_project = 1;
 				continue;
 			}
 			if (*p == 'v') {
@@ -249,6 +266,18 @@ static int change_attributes(const char * name)
 			return -1;
 		}
 	}
+	if (set_project) {
+		if (verbose)
+			printf (_("Project of %s set as %lu\n"), name, version);
+		if (fsetproject (name, project) == -1) {
+			if (!silent)
+				com_err (program_name, errno,
+					 _("while setting project on %s"),
+					 name);
+			return -1;
+		}
+
+	}
 	if (S_ISDIR(st.st_mode) && recursive)
 		return iterate_on_dir (name, chattr_dir_proc, NULL);
 	return 0;
@@ -312,7 +341,7 @@ int main (int argc, char ** argv)
 		fputs("Can't both set and unset same flag.\n", stderr);
 		exit (1);
 	}
-	if (!(add || rem || set || set_version)) {
+	if (!(add || rem || set || set_version || set_project )) {
 		fputs(_("Must use '-v', =, - or +\n"), stderr);
 		exit (1);
 	}

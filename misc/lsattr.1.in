@@ -5,7 +5,7 @@ lsattr \- list file attributes on a Linux second extended file system
 .SH SYNOPSIS
 .B lsattr
 [
-.B \-RVadv
+.B \-RVadpv
 ]
 [
 .I files...
@@ -31,6 +31,9 @@ List directories like other files, rather than listing their contents.
 .TP
 .B \-v
 List the file's version/generation number.
+.TP
+.B \-p
+List the file's project number.
 .SH AUTHOR
 .B lsattr
 was written by Remy Card <Remy.Card@linux.org>.  It is currently being
