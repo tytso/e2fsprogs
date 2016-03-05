@@ -467,6 +467,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("External @j @S checksum does not match @S.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* metadata_csum_seed means nothing without metadata_csum */
+	{ PR_0_CSUM_SEED_WITHOUT_META_CSUM,
+	  N_("@S metadata_csum_seed is not necessary without metadata_csum."),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */

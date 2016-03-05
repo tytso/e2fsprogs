@@ -268,6 +268,9 @@ struct problem_context {
 /* External journal has corrupt superblock */
 #define PR_0_EXT_JOURNAL_SUPER_CSUM_INVALID	0x00004A
 
+/* metadata_csum_seed means nothing without metadata_csum */
+#define PR_0_CSUM_SEED_WITHOUT_META_CSUM	0x00004B
+
 /*
  * Pass 1 errors
  */
