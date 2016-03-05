@@ -90,6 +90,20 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	int		fd;
 
 	*mount_flags = 0;
+
+	if (getenv("EXT2FS_PRETEND_RO_MOUNT")) {
+		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_READONLY;
+		if (getenv("EXT2FS_PRETEND_ROOTFS"))
+			*mount_flags = EXT2_MF_ISROOT;
+		return 0;
+	}
+	if (getenv("EXT2FS_PRETEND_RW_MOUNT")) {
+		*mount_flags = EXT2_MF_MOUNTED;
+		if (getenv("EXT2FS_PRETEND_ROOTFS"))
+			*mount_flags = EXT2_MF_ISROOT;
+		return 0;
+	}
+
 	if ((f = setmntent (mtab_file, "r")) == NULL) {
 		if (errno == ENOENT) {
 			if (getenv("EXT2FS_NO_MTAB_OK"))
