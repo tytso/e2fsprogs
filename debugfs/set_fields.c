@@ -231,7 +231,7 @@ static struct field_set_info inode_fields[] = {
 		4, parse_time },
 	{ "crtime_extra", &set_inode.i_crtime_extra, NULL,
 		4, parse_uint, FLAG_ALIAS },
-	{ "i_projid", &set_inode.i_projid, NULL, 4, parse_uint },
+	{ "projid", &set_inode.i_projid, NULL, 4, parse_uint },
 	{ "bmap", NULL, NULL, 4, parse_bmap, FLAG_ARRAY },
 	{ 0, 0, 0, 0 }
 };

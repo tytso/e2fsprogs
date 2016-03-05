@@ -826,8 +826,11 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		fprintf(out, "%sGeneration: %u    Version: 0x%08x\n", prefix,
 			inode->i_generation, inode->osd1.linux1.l_i_version);
 	}
-	fprintf(out, "%sUser: %5d   Group: %5d   Size: ",
+	fprintf(out, "%sUser: %5d   Group: %5d",
 		prefix, inode_uid(*inode), inode_gid(*inode));
+	if (is_large_inode && large_inode->i_extra_isize >= 32)
+		fprintf(out, "   Project: %5d", large_inode->i_projid);
+	fputs("   Size: ", out);
 	if (LINUX_S_ISREG(inode->i_mode))
 		fprintf(out, "%llu\n", EXT2_I_SIZE(inode));
 	else
