@@ -1088,7 +1088,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_MMP |
 		EXT4_FEATURE_INCOMPAT_64BIT|
 		EXT4_FEATURE_INCOMPAT_INLINE_DATA|
-		EXT4_FEATURE_INCOMPAT_ENCRYPT,
+		EXT4_FEATURE_INCOMPAT_ENCRYPT |
+		EXT4_FEATURE_INCOMPAT_CSUM_SEED,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE|
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -2802,6 +2803,13 @@ int main (int argc, char *argv[])
 				 "Pass -O 64bit to rectify.\n"));
 	}
 
+	if (ext2fs_has_feature_csum_seed(fs->super) &&
+	    !ext2fs_has_feature_metadata_csum(fs->super)) {
+		printf("%s", _("The metadata_csum_seed feature "
+			       "requres the metadata_csum feature.\n"));
+		exit(1);
+	}
+
 	/* Calculate journal blocks */
 	if (!journal_device && ((journal_size) ||
 	    ext2fs_has_feature_journal(&fs_param)))
@@ -2857,6 +2865,11 @@ int main (int argc, char *argv[])
 		}
 	} else
 		uuid_generate(fs->super->s_uuid);
+
+	if (ext2fs_has_feature_csum_seed(fs->super))
+		fs->super->s_checksum_seed = ext2fs_crc32c_le(~0,
+				fs->super->s_uuid, sizeof(fs->super->s_uuid));
+
 	ext2fs_init_csum_seed(fs);
 
 	/*
