@@ -254,10 +254,15 @@ static struct ea_name_index ea_names[] = {
 	{0, NULL},
 };
 
+static int find_ea_index(char *fullname, char **name, int *index);
+
 /* Push empty attributes to the end and inlinedata to the front. */
 static int attr_compare(const void *a, const void *b)
 {
 	const struct ext2_xattr *xa = a, *xb = b;
+	char *xa_suffix, *xb_suffix;
+	int xa_idx, xb_idx;
+	int cmp;
 
 	if (xa->name == NULL)
 		return +1;
@@ -267,7 +272,24 @@ static int attr_compare(const void *a, const void *b)
 		return -1;
 	else if (!strcmp(xb->name, "system.data"))
 		return +1;
-	return 0;
+
+	/*
+	 * Duplicate the kernel's sorting algorithm because xattr blocks
+	 * require sorted keys.
+	 */
+	xa_suffix = xa->name;
+	xb_suffix = xb->name;
+	xa_idx = xb_idx = 0;
+	find_ea_index(xa->name, &xa_suffix, &xa_idx);
+	find_ea_index(xb->name, &xb_suffix, &xb_idx);
+	cmp = xa_idx - xb_idx;
+	if (cmp)
+		return cmp;
+	cmp = strlen(xa_suffix) - strlen(xb_suffix);
+	if (cmp)
+		return cmp;
+	cmp = strcmp(xa_suffix, xb_suffix);
+	return cmp;
 }
 
 static const char *find_ea_prefix(int index)
