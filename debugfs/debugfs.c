@@ -2262,11 +2262,30 @@ void do_symlink(int argc, char *argv[])
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 {
 	struct mmp_struct *mmp_s;
+	unsigned long long mmp_block;
 	time_t t;
 	errcode_t retval = 0;
 
 	if (check_fs_open(argv[0]))
 		return;
+
+	if (argc > 1) {
+		char *end = NULL;
+		mmp_block = strtoull(argv[1], &end, 0);
+		if (end == argv[0] || mmp_block == 0) {
+			fprintf(stderr, "%s: invalid MMP block '%s' given\n",
+				argv[0], argv[1]);
+			return;
+		}
+	} else {
+		mmp_block = current_fs->super->s_mmp_block;
+	}
+
+	if (mmp_block == 0) {
+		fprintf(stderr, "%s: MMP: not active on this filesystem.\n",
+			argv[0]);
+		return;
+	}
 
 	if (current_fs->mmp_buf == NULL) {
 		retval = ext2fs_get_mem(current_fs->blocksize,
@@ -2279,10 +2298,10 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 
 	mmp_s = current_fs->mmp_buf;
 
-	retval = ext2fs_mmp_read(current_fs, current_fs->super->s_mmp_block,
-				 current_fs->mmp_buf);
+	retval = ext2fs_mmp_read(current_fs, mmp_block, current_fs->mmp_buf);
 	if (retval) {
-		com_err(argv[0], retval, "reading MMP block.\n");
+		com_err(argv[0], retval, "reading MMP block %llu.\n",
+			mmp_block);
 		return;
 	}
 

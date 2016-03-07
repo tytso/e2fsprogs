@@ -25,6 +25,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
 #endif

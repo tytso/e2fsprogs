@@ -103,7 +103,7 @@ static int list_attributes (const char * name)
 				 name);
 			return -1;
 		}
-		printf ("%5lu ", generation);
+		printf ("%-10lu ", generation);
 	}
 	if (pf_options & PFOPT_LONG) {
 		printf("%-28s ", name);

@@ -243,8 +243,13 @@ option is given set the owner, group and permissions information on
 to match
 .IR filespec .
 .TP
-.B dump_mmp
-Display the multiple-mount protection (mmp) field values.
+.BI dump_mmp " [mmp_block]"
+Display the multiple-mount protection (mmp) field values.  If
+.I mmp_block
+is specified then verify and dump the MMP values from the given block
+number, otherwise use the
+.B s_mmp_block
+field in the superblock to locate and use the existing MMP block.
 .TP
 .BI dx_hash " [-h hash_alg] [-s hash_seed] filename"
 Calculate the directory hash of
