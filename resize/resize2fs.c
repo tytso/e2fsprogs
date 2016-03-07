@@ -1622,6 +1622,7 @@ static errcode_t resize2fs_get_alloc_block(ext2_filsys fs,
 {
 	ext2_resize_t rfs = (ext2_resize_t) fs->priv_data;
 	blk64_t blk;
+	int group;
 
 	blk = get_new_block(rfs);
 	if (!blk)
@@ -1634,6 +1635,12 @@ static errcode_t resize2fs_get_alloc_block(ext2_filsys fs,
 
 	ext2fs_mark_block_bitmap2(rfs->old_fs->block_map, blk);
 	ext2fs_mark_block_bitmap2(rfs->new_fs->block_map, blk);
+
+	group = ext2fs_group_of_blk2(rfs->old_fs, blk);
+	ext2fs_clear_block_uninit(rfs->old_fs, group);
+	group = ext2fs_group_of_blk2(rfs->new_fs, blk);
+	ext2fs_clear_block_uninit(rfs->new_fs, group);
+
 	*ret = (blk64_t) blk;
 	return 0;
 }

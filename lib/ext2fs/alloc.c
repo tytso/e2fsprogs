@@ -39,7 +39,7 @@
 /*
  * Clear the uninit block bitmap flag if necessary
  */
-static void clear_block_uninit(ext2_filsys fs, dgrp_t group)
+void ext2fs_clear_block_uninit(ext2_filsys fs, dgrp_t group)
 {
 	if (!ext2fs_has_group_desc_csum(fs) ||
 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
@@ -183,7 +183,7 @@ allocated:
 	if (retval)
 		return retval;
 
-	clear_block_uninit(fs, ext2fs_group_of_blk2(fs, b));
+	ext2fs_clear_block_uninit(fs, ext2fs_group_of_blk2(fs, b));
 	*ret = b;
 	return 0;
 }
@@ -455,7 +455,7 @@ errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
 allocated:
 			for (b = start; b < end;
 			     b += fs->super->s_blocks_per_group)
-				clear_block_uninit(fs,
+				ext2fs_clear_block_uninit(fs,
 						ext2fs_group_of_blk2(fs, b));
 			return 0;
 		}

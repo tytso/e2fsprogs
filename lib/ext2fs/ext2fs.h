@@ -648,6 +648,7 @@ static inline int ext2fs_needs_large_file_feature(unsigned long long file_size)
 }
 
 /* alloc.c */
+extern void ext2fs_clear_block_uninit(ext2_filsys fs, dgrp_t group);
 extern errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, int mode,
 				  ext2fs_inode_bitmap map, ext2_ino_t *ret);
 extern errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
