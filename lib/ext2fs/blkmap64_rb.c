@@ -488,7 +488,7 @@ static int rb_remove_extent(__u64 start, __u64 count,
 	__u64 new_start, new_count;
 	int retval = 0;
 
-	if (EXT2FS_RB_EMPTY_ROOT(root))
+	if (ext2fs_rb_empty_root(root))
 		return 0;
 
 	while (*n) {
@@ -637,7 +637,7 @@ static int rb_test_clear_bmap_extent(ext2fs_generic_bitmap bitmap,
 	n = &bp->root.rb_node;
 	start -= bitmap->start;
 
-	if ((len == 0) || EXT2FS_RB_EMPTY_ROOT(&bp->root))
+	if (len == 0 || ext2fs_rb_empty_root(&bp->root))
 		return 1;
 
 	/*
@@ -739,7 +739,7 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap bitmap,
 	n = &bp->root.rb_node;
 	start -= bitmap->start;
 
-	if (EXT2FS_RB_EMPTY_ROOT(&bp->root))
+	if (ext2fs_rb_empty_root(&bp->root))
 		return 0;
 
 	while (*n) {
@@ -819,7 +819,7 @@ static errcode_t rb_find_first_zero(ext2fs_generic_bitmap bitmap,
 	if (start > end)
 		return EINVAL;
 
-	if (EXT2FS_RB_EMPTY_ROOT(&bp->root))
+	if (ext2fs_rb_empty_root(&bp->root))
 		return ENOENT;
 
 	while (*n) {
@@ -856,7 +856,7 @@ static errcode_t rb_find_first_set(ext2fs_generic_bitmap bitmap,
 	if (start > end)
 		return EINVAL;
 
-	if (EXT2FS_RB_EMPTY_ROOT(&bp->root))
+	if (ext2fs_rb_empty_root(&bp->root))
 		return ENOENT;
 
 	while (*n) {

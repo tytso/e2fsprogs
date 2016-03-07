@@ -2,8 +2,9 @@
 
 FSCK_OPT="-fyvD"
 . $cmd_dir/run_e2fsck
+rm -f $TMPFILE
 
-exit $?
+exit 0
 # This script depends on "mke2fs -d", which is only in master and not maint,
 # to populate the file directory tree poorly (namely that there are no
 # contiguous blocks in the directory leaf and the extent tree is large).
