@@ -1260,7 +1260,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Inode extent tree could be narrower */
 	{ PR_1E_CAN_NARROW_EXTENT_TREE,
-	  N_("@i %i @x tree (at (level %b) could be narrower.  "),
+	  N_("@i %i @x tree (at level %b) could be narrower.  "),
 	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK },
 
 	/* Pass 2 errors */
