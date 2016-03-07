@@ -39,7 +39,7 @@ echo Exit status is $status >> $OUT.new
 sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
 rm -f $OUT.new
 
-rm -f $TMPFILE
+rm -f $TMPFILE $TMPFILE.cmd
 
 cmp -s $OUT $EXP
 status=$?

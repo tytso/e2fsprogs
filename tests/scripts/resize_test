@@ -161,12 +161,13 @@ echo Checksum is $CSUM_2 >> $LOG
 rm $OUT_TMP
 unset OUT_TMP
 
+rm -f $TMPFILE
+
 if test "$CSUM_1" != "$CSUM_2"
 then
 	return 1
 fi
 
-rm $TMPFILE
 return 0
 
 }

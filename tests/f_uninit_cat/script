@@ -21,7 +21,7 @@ echo "cat /a" >> $TMPFILE.cmd
 $DEBUGFS_EXE -w -f $TMPFILE.cmd $TMPFILE >> $OUT.new 2>&1
 echo >> $OUT.new
 sed -f $cmd_dir/filter.sed < $OUT.new >> $OUT
-rm -rf $OUT.new $TMPFILE
+rm -rf $OUT.new $TMPFILE $TMPFILE.cmd
 
 # Figure out what happened
 if cmp -s $EXP $OUT; then
