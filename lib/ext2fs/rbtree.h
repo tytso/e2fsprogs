@@ -142,9 +142,20 @@ static inline void ext2fs_rb_set_color(struct rb_node *rb, int color)
 #define RB_ROOT	(struct rb_root) { NULL, }
 #define	ext2fs_rb_entry(ptr, type, member) container_of(ptr, type, member)
 
-#define EXT2FS_RB_EMPTY_ROOT(root)	((root)->rb_node == NULL)
-#define EXT2FS_RB_EMPTY_NODE(node)	(ext2fs_rb_parent(node) == node)
-#define EXT2FS_RB_CLEAR_NODE(node)	(ext2fs_rb_set_parent(node, node))
+static inline int ext2fs_rb_empty_root(struct rb_root *root)
+{
+	return root->rb_node == NULL;
+}
+
+static inline int ext2fs_rb_empty_node(struct rb_node *node)
+{
+	return ext2fs_rb_parent(node) == node;
+}
+
+static inline void ext2fs_rb_clear_node(struct rb_node *node)
+{
+	ext2fs_rb_set_parent(node, node);
+}
 
 extern void ext2fs_rb_insert_color(struct rb_node *, struct rb_root *);
 extern void ext2fs_rb_erase(struct rb_node *, struct rb_root *);

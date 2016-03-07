@@ -58,14 +58,24 @@ static errcode_t reserve_sparse_super2_last_group(ext2_resize_t rfs,
 						 ext2fs_block_bitmap meta_bmap);
 
 /*
- * Some helper CPP macros
+ * Some helper functions to check if a block is in a metadata area
  */
-#define IS_BLOCK_BM(fs, i, blk) ((blk) == ext2fs_block_bitmap_loc((fs),(i)))
-#define IS_INODE_BM(fs, i, blk) ((blk) == ext2fs_inode_bitmap_loc((fs),(i)))
+static inline int is_block_bm(ext2_filsys fs, unsigned int grp, blk64_t blk)
+{
+	return blk == ext2fs_block_bitmap_loc(fs, grp);
+}
 
-#define IS_INODE_TB(fs, i, blk) (((blk) >= ext2fs_inode_table_loc((fs), (i))) && \
-				 ((blk) < (ext2fs_inode_table_loc((fs), (i)) + \
-					   (fs)->inode_blocks_per_group)))
+static inline int is_inode_bm(ext2_filsys fs, unsigned int grp, blk64_t blk)
+{
+	return blk == ext2fs_inode_bitmap_loc(fs, grp);
+}
+
+static inline int is_inode_tb(ext2_filsys fs, unsigned int grp, blk64_t blk)
+{
+	return blk >= ext2fs_inode_table_loc(fs, grp) &&
+	       blk < (ext2fs_inode_table_loc(fs, grp) +
+		      fs->inode_blocks_per_group);
+}
 
 /* Some bigalloc helper macros which are more succint... */
 #define B2C(x)	EXT2FS_B2C(fs, (x))
@@ -843,7 +853,7 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 			      ext2fs_block_bitmap meta_bmap,
 			      int group, blk64_t blk)
 {
-	ext2_filsys 	fs = rfs->new_fs;
+	ext2_filsys fs = rfs->new_fs;
 
 	ext2fs_mark_block_bitmap2(rfs->reserve_blocks, blk);
 	ext2fs_block_alloc_stats2(fs, blk, +1);
@@ -853,17 +863,17 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 	 * or the inode tables.  If not, and the block is in use, then
 	 * mark it as a block to be moved.
 	 */
-	if (IS_BLOCK_BM(fs, group, blk)) {
+	if (is_block_bm(fs, group, blk)) {
 		ext2fs_block_bitmap_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
 		return;
 	}
-	if (IS_INODE_BM(fs, group, blk)) {
+	if (is_inode_bm(fs, group, blk)) {
 		ext2fs_inode_bitmap_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
 		return;
 	}
-	if (IS_INODE_TB(fs, group, blk)) {
+	if (is_inode_tb(fs, group, blk)) {
 		ext2fs_inode_table_loc_set(fs, group, 0);
 		rfs->needed_blocks++;
 		return;
@@ -871,18 +881,18 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
 		dgrp_t i;
 
-		for (i=0; i < rfs->old_fs->group_desc_count; i++) {
-			if (IS_BLOCK_BM(fs, i, blk)) {
+		for (i = 0; i < rfs->old_fs->group_desc_count; i++) {
+			if (is_block_bm(fs, i, blk)) {
 				ext2fs_block_bitmap_loc_set(fs, i, 0);
 				rfs->needed_blocks++;
 				return;
 			}
-			if (IS_INODE_BM(fs, i, blk)) {
+			if (is_inode_bm(fs, i, blk)) {
 				ext2fs_inode_bitmap_loc_set(fs, i, 0);
 				rfs->needed_blocks++;
 				return;
 			}
-			if (IS_INODE_TB(fs, i, blk)) {
+			if (is_inode_tb(fs, i, blk)) {
 				ext2fs_inode_table_loc_set(fs, i, 0);
 				rfs->needed_blocks++;
 				return;
