@@ -232,7 +232,7 @@ extern __s64 string_to_time(const char *arg)
 		/* interpret it as an integer */
 		arg++;
 	fallback:
-		ret = strtoll(arg+1, &tmp, 0);
+		ret = strtoll(arg, &tmp, 0);
 		if (*tmp)
 			return -1;
 		return ret;
