@@ -1391,6 +1391,18 @@ static int probe_btrfs(struct blkid_probe *probe,
 	set_uuid(probe->dev, bs->fsid, 0);
 	return 0;
 }
+
+static int probe_f2fs(struct blkid_probe *probe,
+            struct blkid_magic *id,
+            unsigned char *buf)
+{
+    struct f2fs_super_block *bs;
+
+    bs = (struct f2fs_super_block *)buf;
+    set_uuid(probe->dev, bs->uuid, 0);
+    return 0;
+}
+
 /*
  * Various filesystem magics that we can check for.  Note that kboff and
  * sboff are in kilobytes and bytes respectively.  All magics are in
@@ -1499,6 +1511,7 @@ static struct blkid_magic type_array[] = {
   { "lvm2pv",	 1,  0x018,  8, "LVM2 001",		probe_lvm2 },
   { "lvm2pv",	 1,  0x218,  8, "LVM2 001",		probe_lvm2 },
   { "btrfs",	 64,  0x40,  8, "_BHRfS_M",		probe_btrfs },
+  { "f2fs",	 1,      0,  4, "\x10\x20\xf5\xf2",	probe_f2fs },
   {   NULL,	 0,	 0,  0, NULL,			NULL }
 };
 
