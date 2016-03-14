@@ -1,16 +1,26 @@
-E2fsprogs 1.43-WIP (May 18, 2015) -- cd27af3ecb83
+E2fsprogs 1.43-WIP (March 6, 2016) -- 69df84967f1
 =================================================
 
-Add support for the ext4 metadata checksum, inline data, encryption,
-and read-only features.
-
-Mke2fs will now create file systems with the metadata_csum and 64bit
-features enabled by default.
+Add support for the ext4 metadata checksum, checksum seed, inline
+data, encryption, project quota, and read-only features.
 
 Support for the very old, experimental, and never-added-to-mainline
 compression feature has been removed.
 
+Mke2fs will now create file systems with the metadata_csum and 64bit
+features enabled by default.
+
+The tune2fs program will ask the user for confirmation before starting
+dangerous operations if the terminal is available, and it will replay
+the journal if necessary.
+
+Add an ext2/3/4 FUSE server
+
 Debugfs can now modify extended attributes and journal transactions.
+
+Debugfs now can properly display and set extended timestamps.
+
+Fix miscellaneous MMP bugs in debugfs.
 
 The resize2fs command can now convert file systems between 64-bit and
 32-bit mode.
@@ -23,6 +33,23 @@ creating an undo file.
 The mke2fs command can now set the error behavior when initializing
 the file system (so the administrator doesn't have to issue a separate
 tune2fs -e command).
+
+Teach mke2fs to parse a human-readable argument for -i option.
+
+Teach mke2fs to automatically handle creating file systems > 500T by
+automatically enable the meta_bg feature.
+
+Mke2fs will now prompt for user verification before rewriting a file
+system's superblock using the -S option.
+
+Mke2fs no longer complains if the user tries to create a file system
+using the entire block device (e.g., without using a partition).  The
+minor number convention is not used by all block devices, and it's
+quite normal in some circumstances to create a file system on /dev/sdc
+instead of /dev/sdc1.
+
+Fix an "mke2fs -d" bug which could create inodes with invalid
+extended attribute blocks
 
 E2fsck is now much more paranoid about not freeing or corrupting
 critical metadata blocks, such as inode table blocks, even if
@@ -55,6 +82,12 @@ badblocks inode is bad.  (We must go deeper...)
 E2fsck can now correctly fix directory with holes on bigalloc file
 systems.
 
+E2fsck will now check for extent mapped inodes with no extent header
+and clear them if found.
+
+E2fsck now checks to make sure the extended attribute header doesn't
+result in the xattr extending beyond the bounds of the inode
+
 Fixed a bug in e2fsck to avoid overrunning a buffer containing jbd2
 revoke records if the journal is corrupted.
 
@@ -68,6 +101,12 @@ in the file system.
 E2fsck will no longer try to force rewrite blocks located beyond the
 file system.
 
+The e2fsck program will no longer update the quota inodes when it is
+interrupted.
+
+Fix a bug which in rare cases would cause e2fsck -fD to corrupt an
+extent-mapped directory.
+
 Fixed a bug in resize2fs which could lead to resize2fs crashing or a
 corrupted file system if the file system is almost completely full
 when trying grow a file system and we need to allocate blocks to grow
@@ -75,6 +114,9 @@ the block group descriptors.
 
 Fixed a bug in resize2fs which could cause it to get fooled trying to
 determinthe the RAID array's stride when flex_bg is enabled.
+
+Fix resize2fs bug that could leave block allocation bitmaps
+uninitialized.
 
 The dumpe2fs output has been improved so it is cleaner and always fits
 within 80 columns.  Also added a more easily machine-parsable output
@@ -103,11 +145,17 @@ block.
 Fixed a bug so "filefrag -B -e -v" does not return a separate entry
 for each block.
 
+The filefrag program now accounts for holes in sparse files created by
+the file punch operation as an expected/optimal mapping.
+
 The file I/O functions now correctly handle inodes containing
 uninitialized blocks.
 
 Fix a bug in tune2fs so that removing uninit_bg feature on a bigalloc
 file system won't result in corrupted block bitmaps.
+
+Updated/fixed various man pages.  (Addresses Debian Bug: #798425)
+
 
 Programmer's Notes
 ------------------
@@ -123,6 +171,8 @@ needed by boot loadsers such as yaboot.
 
 Developers can now overide the debugging and optimization flags by
 redefining the CFLAGS makefile macro.
+
+The libext2fs library now has support for fallocate.
 
 The mke2fs command will now ask the user for confirmation if block
 device or image file contains an existing file system image, and

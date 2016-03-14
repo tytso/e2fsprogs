@@ -1,4 +1,46 @@
-e2fsprogs (1.43~WIP-2015-05-18-1) unstable; urgency=low
+e2fsprogs (1.43~WIP.2016.03-06-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix resize2fs bug that could leave block allocation bitmaps
+    uninitialized
+  * The tune2fs program will ask the user for confirmation before
+    starting dangerous operations if the terminal is available, and it
+    will replay the journal if necessary
+  * Fix a bug which in rare cases would cause e2fsck -fD to corrupt an
+    extent-mapped directory.
+  * E2fsck will now check for extent mapped inodes with no extent header
+    and clear them if found
+  * E2fsck now checks to make sure the extended attribute header doesn't
+    result in the xattr extending beyond the bounds of the inode
+  * Teach mke2fs to parse a human-readable argument for -i option
+  * Teach mke2fs to automatically handle creating file systems > 500T by
+    automatically enable the meta_bg feature
+  * Mke2fs will now prompt for user verification before rewriting a file
+    system's superblock using the -S option
+  * Mke2fs no longer complains if the user tries to create a file system
+    using the entire block device (e.g., without using a partition).
+    The minor number convention is not used by all block devices, and
+    it's quite normal in some circumstances to create a file system
+    on /dev/sdc instead of /dev/sdc1
+  * Debugfs now can properly display and set extended timestamps
+  * Add an ext2/3/4 FUSE server
+  * Fix an "mke2fs -d" bug which could create inodes with invalid
+    extended attribute blocks
+  * Fix miscellaneous file encryption bugs
+  * Fix miscellaneous MMP bugs in debugfs
+  * The e2fsck program will no longer update the quota inodes when it is
+    interrupted
+  * The filefrag program now accounts for holes in sparse files created
+    by the file punch operation as an expected/optimal mapping
+  * Clean up gcc/clang warnings
+  * Add support for the checksum seed feature
+  * Add support for the project quota feature
+  * Add fallocate support to libext2fs and to debugfs
+  * Clean up various man pages (Closes: #798425)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 6 Mar 2016 22:55:19 -0500
+
+e2fsprogs (1.43~WIP.2015.05.18-1) unstable; urgency=low
 
   * Merge in updates from the maint branch (changes from 1.42.13)
   * Add support for file encryption feature
