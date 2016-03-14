@@ -481,6 +481,9 @@ struct ext2_inode_large {
 	(offsetof(struct ext2_inode_large, i_checksum_hi) + sizeof(__u16) - \
 	 EXT2_GOOD_OLD_INODE_SIZE)
 
+#define EXT4_EPOCH_BITS 2
+#define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
+
 #define i_dir_acl	i_size_high
 
 #define i_checksum_lo	osd2.linux2.l_i_checksum_lo

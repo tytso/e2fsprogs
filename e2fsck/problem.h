@@ -657,6 +657,9 @@ struct problem_context {
 /* Missing extent header */
 #define PR_1_MISSING_EXTENT_HEADER		0x010081
 
+/* Timestamp(s) on inode beyond 2310-04-04 are likely pre-1970. */
+#define PR_1_EA_TIME_OUT_OF_RANGE		0x010082
+
 /*
  * Pass 1b errors
  */

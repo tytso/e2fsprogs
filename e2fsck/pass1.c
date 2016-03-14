@@ -448,6 +448,21 @@ fix:
 				EXT2_INODE_SIZE(sb), "pass1");
 }
 
+static int check_inode_extra_negative_epoch(__u32 xtime, __u32 extra) {
+	return (xtime & (1 << 31)) != 0 &&
+		(extra & EXT4_EPOCH_MASK) == EXT4_EPOCH_MASK;
+}
+
+#define CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, xtime) \
+	check_inode_extra_negative_epoch(inode->i_##xtime, \
+					 inode->i_##xtime##_extra)
+
+/* When today's date is earlier than 2242, we assume that atimes,
+ * ctimes, crtimes, and mtimes with years in the range 2310..2378 are
+ * actually pre-1970 dates mis-encoded.
+ */
+#define EXT4_EXTRA_NEGATIVE_DATE_CUTOFF 2 * (1LL << 32)
+
 static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
@@ -492,6 +507,32 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 		/* it seems inode has an extended attribute(s) in body */
 		check_ea_in_inode(ctx, pctx);
 	}
+
+	/*
+	 * If the inode's extended atime (ctime, crtime, mtime) is stored in
+	 * the old, invalid format, repair it.
+	 */
+	if (sizeof(time_t) > 4 && ctx->now < EXT4_EXTRA_NEGATIVE_DATE_CUTOFF &&
+	    (CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, atime) ||
+	     CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, ctime) ||
+	     CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, crtime) ||
+	     CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, mtime))) {
+
+		if (!fix_problem(ctx, PR_1_EA_TIME_OUT_OF_RANGE, pctx))
+			return;
+
+		if (CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, atime))
+			inode->i_atime_extra &= ~EXT4_EPOCH_MASK;
+		if (CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, ctime))
+			inode->i_ctime_extra &= ~EXT4_EPOCH_MASK;
+		if (CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, crtime))
+			inode->i_crtime_extra &= ~EXT4_EPOCH_MASK;
+		if (CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, mtime))
+			inode->i_mtime_extra &= ~EXT4_EPOCH_MASK;
+		e2fsck_write_inode_full(ctx, pctx->ino, pctx->inode,
+					EXT2_INODE_SIZE(sb), "pass1");
+	}
+
 }
 
 /*

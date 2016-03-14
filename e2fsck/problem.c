@@ -1124,6 +1124,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has corrupt @x header.  "),
 	  PROMPT_CLEAR_INODE, 0 },
 
+	/* Timestamp(s) on inode beyond 2310-04-04 are likely pre-1970. */
+	{ PR_1_EA_TIME_OUT_OF_RANGE,
+	  N_("Timestamp(s) on @i %i beyond 2310-04-04 are likely pre-1970.\n"),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
