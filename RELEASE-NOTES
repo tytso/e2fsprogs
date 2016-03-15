@@ -1,4 +1,4 @@
-E2fsprogs 1.43-WIP (March 6, 2016) -- 69df84967f1
+E2fsprogs 1.43-WIP (March 14, 2016) -- f8fd2fdc1e
 =================================================
 
 Add support for the ext4 metadata checksum, checksum seed, inline
@@ -19,6 +19,9 @@ Add an ext2/3/4 FUSE server
 Debugfs can now modify extended attributes and journal transactions.
 
 Debugfs now can properly display and set extended timestamps.
+
+E2fsck will offer to fix extended timestamps that were incorrectly
+encoded by older kernels.
 
 Fix miscellaneous MMP bugs in debugfs.
 

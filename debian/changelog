@@ -1,4 +1,4 @@
-e2fsprogs (1.43~WIP.2016.03.06-1) unstable; urgency=low
+e2fsprogs (1.43~WIP.2016.03.15-1) unstable; urgency=low
 
   * New upstream release
   * Fix resize2fs bug that could leave block allocation bitmaps
@@ -37,8 +37,9 @@ e2fsprogs (1.43~WIP.2016.03.06-1) unstable; urgency=low
   * Add support for the project quota feature
   * Add fallocate support to libext2fs and to debugfs
   * Clean up various man pages (Closes: #798425)
+  * Update debian policy compliance to 3.9.7
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 6 Mar 2016 22:55:19 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 15 Mar 2016 01:34:14 -0400
 
 e2fsprogs (1.43~WIP.2015.05.18-1) unstable; urgency=low
 
