@@ -13,7 +13,7 @@ E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
 	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
 DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
 	| tr \" " "`
-E2FSPROGS_DAY=`echo $DATE | awk -F- '{print $1}'`
+E2FSPROGS_DAY=$(echo $DATE | awk -F- '{print $1}' | sed -e '/^[[1-9]]$/s/^/0/')
 MONTH=`echo $DATE | awk -F- '{print $2}'`
 YEAR=`echo $DATE | awk -F- '{print $3}'`
 
@@ -48,7 +48,7 @@ date_spec=${E2FSPROGS_YEAR}.${MONTH_NUM}.${E2FSPROGS_DAY}
 
 case $E2FSPROGS_VERSION in
 *-WIP|pre-*)
-	E2FSPROGS_PKGVER="$base_ver~WIP-$E2FSPROGS_YEAR-$MONTH_NUM-$E2FSPROGS_DAY"
+	E2FSPROGS_PKGVER="$base_ver~WIP.$date_spec"
 	;;
 *)
 	E2FSPROGS_PKGVER="$base_ver"

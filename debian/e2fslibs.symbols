@@ -19,10 +19,10 @@ libe2p.so.2 e2fslibs #MINVER#
  e2p_uuid2str@Base 1.37
  e2p_uuid_to_str@Base 1.37
  fgetflags@Base 1.37
- fgetproject@Base 1.43~WIP.2016.03-06
+ fgetproject@Base 1.43~WIP.2016.03.06
  fgetversion@Base 1.37
  fsetflags@Base 1.37
- fsetproject@Base 1.43~WIP.2016.03-06
+ fsetproject@Base 1.43~WIP.2016.03.06
  fsetversion@Base 1.37
  getflags@Base 1.37
  getversion@Base 1.37
@@ -116,7 +116,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_clear_bit64@Base 1.42
  ext2fs_clear_bit@Base 1.37
  ext2fs_clear_block_bitmap@Base 1.37
- ext2fs_clear_block_uninit@Base 1.43~WIP.2016.03-06
+ ext2fs_clear_block_uninit@Base 1.43~WIP.2016.03.06
  ext2fs_clear_generic_bitmap@Base 1.41.0
  ext2fs_clear_generic_bmap@Base 1.42
  ext2fs_clear_inode_bitmap@Base 1.37
@@ -190,7 +190,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_extent_open@Base 1.41.0
  ext2fs_extent_replace@Base 1.41.0
  ext2fs_extent_set_bmap@Base 1.41.0
- ext2fs_fallocate@Base 1.43~WIP.2016.03-06
+ ext2fs_fallocate@Base 1.43~WIP.2016.03.06
  ext2fs_fast_clear_bit64@Base 1.42
  ext2fs_fast_clear_bit@Base 1.39
  ext2fs_fast_mark_block_bitmap2@Base 1.42
@@ -460,7 +460,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_set_bit@Base 1.37
  ext2fs_set_bitmap_padding@Base 1.37
  ext2fs_set_block_alloc_stats_callback@Base 1.41.0
- ext2fs_set_block_alloc_stats_range_callback@Base 1.43~WIP.2016.03-06
+ ext2fs_set_block_alloc_stats_range_callback@Base 1.43~WIP.2016.03.06
  ext2fs_set_block_bitmap_range2@Base 1.42
  ext2fs_set_block_bitmap_range@Base 1.41.0
  ext2fs_set_data_io@Base 1.37
@@ -474,7 +474,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_set_inode_bitmap_range2@Base 1.42
  ext2fs_set_inode_bitmap_range@Base 1.41.0
  ext2fs_set_inode_callback@Base 1.37
- ext2fs_set_new_range_callback@Base 1.43~WIP.2016.03-06
+ ext2fs_set_new_range_callback@Base 1.43~WIP.2016.03.06
  ext2fs_set_rec_len@Base 1.41.7
  ext2fs_sha512@Base 1.43~WIP.2015.05.18
  ext2fs_stat@Base 1.42

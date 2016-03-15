@@ -1,4 +1,4 @@
-e2fsprogs (1.43~WIP.2016.03-06-1) unstable; urgency=low
+e2fsprogs (1.43~WIP.2016.03.06-1) unstable; urgency=low
 
   * New upstream release
   * Fix resize2fs bug that could leave block allocation bitmaps
