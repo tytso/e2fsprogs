@@ -214,6 +214,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	int has_extents = 0;
 	int has_inline_data = 0;
 	int islnk = 0;
+	int inode_size;
 	__u32 *eaf, *eat;
 
 	if (hostorder && LINUX_S_ISLNK(f->i_mode))
