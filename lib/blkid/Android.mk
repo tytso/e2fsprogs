@@ -56,7 +56,7 @@ LOCAL_SRC_FILES := $(libext2_blkid_src_files)
 LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(libext2_blkid_shared_libraries))
 LOCAL_C_INCLUDES := $(libext2_blkid_c_includes)
 LOCAL_CFLAGS := $(libext2_blkid_cflags)
-LOCAL_MODULE := libext2_blkid_host
+LOCAL_MODULE := libext2_blkid-host
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_HOST_SHARED_LIBRARY)

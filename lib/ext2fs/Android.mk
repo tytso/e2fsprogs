@@ -136,7 +136,7 @@ LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(libext2fs_shared_libraries))
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags)
-LOCAL_MODULE := libext2fs_host
+LOCAL_MODULE := libext2fs-host
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_HOST_SHARED_LIBRARY)
