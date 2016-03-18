@@ -44,7 +44,7 @@ struct disk_dqheader {
  */
 const char *quota_type2name(enum quota_type qtype)
 {
-	if (qtype < 0 || qtype >= MAXQUOTAS)
+	if (qtype >= MAXQUOTAS)
 		return "unknown";
 	return extensions[qtype];
 }
@@ -328,7 +328,7 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,
 {
 	ext2_file_t e2_file;
 	int err;
-	unsigned long qf_inum = 0;
+	ext2_ino_t qf_inum = 0;
 
 	if (fmt == -1)
 		fmt = QFMT_VFS_V1;

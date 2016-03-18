@@ -37,6 +37,7 @@
  * gcc-wall wall mode
  */
 #define _SVID_SOURCE
+#define _DEFAULT_SOURCE	  /* since glibc 2.20 _SVID_SOURCE is deprecated */
 
 #include "config.h"
 

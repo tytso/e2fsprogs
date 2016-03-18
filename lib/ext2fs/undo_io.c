@@ -114,7 +114,11 @@ struct undo_key_block {
 	__le32 crc;		/* block checksum */
 	__le64 reserved;	/* zero */
 
+#if __STDC_VERSION__ >= 199901L
+	struct undo_key keys[];		/* keys, which come immediately after */
+#else
 	struct undo_key keys[0];	/* keys, which come immediately after */
+#endif
 };
 
 struct undo_private_data {

@@ -1023,7 +1023,7 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 		ret = fstat(data->dev, &statbuf);
 		if (ret)
 			goto err;
-		if (statbuf.st_size < (block + count) * channel->block_size) {
+		if ((unsigned long long) statbuf.st_size < (block + count) * channel->block_size) {
 			ret = ftruncate(data->dev,
 					(block + count) * channel->block_size);
 			if (ret)

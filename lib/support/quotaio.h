@@ -233,7 +233,7 @@ int quota_file_exists(ext2_filsys fs, enum quota_type qtype);
 void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, enum quota_type qtype);
 errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 				   int *usage_inconsistent);
-int parse_quota_opts(const char *opts, int (*func)(), void *data);
+int parse_quota_opts(const char *opts, int (*func)(void), void *data);
 
 /*
  * Return pointer to reserved inode field in superblock for given quota type.

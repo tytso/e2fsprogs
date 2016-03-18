@@ -253,69 +253,6 @@ typedef struct journal_superblock_s
 #define JFS_FEATURE_INCOMPAT_CSUM_V2		0x00000008
 #define JFS_FEATURE_INCOMPAT_CSUM_V3		0x00000010
 
-/* journal feature predicate functions */
-#define JFS_FEATURE_COMPAT_FUNCS(name, flagname) \
-static inline int jfs_has_feature_##name(journal_t *j) \
-{ \
-	return ((j)->j_format_version >= 2 && \
-		((j)->j_superblock->s_feature_compat & \
-		 ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname)) != 0); \
-} \
-static inline void jfs_set_feature_##name(journal_t *j) \
-{ \
-	(j)->j_superblock->s_feature_compat |= \
-		ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname); \
-} \
-static inline void jfs_clear_feature_##name(journal_t *j) \
-{ \
-	(j)->j_superblock->s_feature_compat &= \
-		~ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname); \
-}
-
-#define JFS_FEATURE_RO_COMPAT_FUNCS(name, flagname) \
-static inline int jfs_has_feature_##name(journal_t *j) \
-{ \
-	return ((j)->j_format_version >= 2 && \
-		((j)->j_superblock->s_feature_ro_compat & \
-		 ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname)) != 0); \
-} \
-static inline void jfs_set_feature_##name(journal_t *j) \
-{ \
-	(j)->j_superblock->s_feature_ro_compat |= \
-		ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname); \
-} \
-static inline void jfs_clear_feature_##name(journal_t *j) \
-{ \
-	(j)->j_superblock->s_feature_ro_compat &= \
-		~ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname); \
-}
-
-#define JFS_FEATURE_INCOMPAT_FUNCS(name, flagname) \
-static inline int jfs_has_feature_##name(journal_t *j) \
-{ \
-	return ((j)->j_format_version >= 2 && \
-		((j)->j_superblock->s_feature_incompat & \
-		 ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname)) != 0); \
-} \
-static inline void jfs_set_feature_##name(journal_t *j) \
-{ \
-	(j)->j_superblock->s_feature_incompat |= \
-		ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname); \
-} \
-static inline void jfs_clear_feature_##name(journal_t *j) \
-{ \
-	(j)->j_superblock->s_feature_incompat &= \
-		~ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname); \
-}
-
-JFS_FEATURE_COMPAT_FUNCS(checksum,		CHECKSUM)
-
-JFS_FEATURE_INCOMPAT_FUNCS(revoke,		REVOKE)
-JFS_FEATURE_INCOMPAT_FUNCS(64bit,		64BIT)
-JFS_FEATURE_INCOMPAT_FUNCS(async_commit,	ASYNC_COMMIT)
-JFS_FEATURE_INCOMPAT_FUNCS(csum2,		CSUM_V2)
-JFS_FEATURE_INCOMPAT_FUNCS(csum3,		CSUM_V3)
-
 /* Features known to this kernel version: */
 #define JFS_KNOWN_COMPAT_FEATURES	0
 #define JFS_KNOWN_ROCOMPAT_FEATURES	0
@@ -324,6 +261,8 @@ JFS_FEATURE_INCOMPAT_FUNCS(csum3,		CSUM_V3)
 					 JFS_FEATURE_INCOMPAT_64BIT|\
 					 JFS_FEATURE_INCOMPAT_CSUM_V2|\
 					 JFS_FEATURE_INCOMPAT_CSUM_V3)
+
+
 
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
@@ -344,10 +283,73 @@ JFS_FEATURE_INCOMPAT_FUNCS(csum3,		CSUM_V3)
 #endif /* __STDC_VERSION__ >= 199901L */
 #endif /* INCLUDE_INLINE_FUNCS */
 
+/* journal feature predicate functions */
+#define JFS_FEATURE_COMPAT_FUNCS(name, flagname) \
+_INLINE_ int jfs_has_feature_##name(journal_t *j) \
+{ \
+	return ((j)->j_format_version >= 2 && \
+		((j)->j_superblock->s_feature_compat & \
+		 ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname)) != 0); \
+} \
+_INLINE_ void jfs_set_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_compat |= \
+		ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname); \
+} \
+_INLINE_ void jfs_clear_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_compat &= \
+		~ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_##flagname); \
+}
+
+#define JFS_FEATURE_RO_COMPAT_FUNCS(name, flagname) \
+ _INLINE_ int jfs_has_feature_##name(journal_t *j) \
+{ \
+	return ((j)->j_format_version >= 2 && \
+		((j)->j_superblock->s_feature_ro_compat & \
+		 ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname)) != 0); \
+} \
+_INLINE_ void jfs_set_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_ro_compat |= \
+		ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname); \
+} \
+_INLINE_ void jfs_clear_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_ro_compat &= \
+		~ext2fs_cpu_to_be32(JFS_FEATURE_RO_COMPAT_##flagname); \
+}
+
+#define JFS_FEATURE_INCOMPAT_FUNCS(name, flagname) \
+_INLINE_ int jfs_has_feature_##name(journal_t *j) \
+{ \
+	return ((j)->j_format_version >= 2 && \
+		((j)->j_superblock->s_feature_incompat & \
+		 ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname)) != 0); \
+} \
+_INLINE_ void jfs_set_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_incompat |= \
+		ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname); \
+} \
+_INLINE_ void jfs_clear_feature_##name(journal_t *j) \
+{ \
+	(j)->j_superblock->s_feature_incompat &= \
+		~ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_##flagname); \
+}
+
+JFS_FEATURE_COMPAT_FUNCS(checksum,		CHECKSUM)
+
+JFS_FEATURE_INCOMPAT_FUNCS(revoke,		REVOKE)
+JFS_FEATURE_INCOMPAT_FUNCS(64bit,		64BIT)
+JFS_FEATURE_INCOMPAT_FUNCS(async_commit,	ASYNC_COMMIT)
+JFS_FEATURE_INCOMPAT_FUNCS(csum2,		CSUM_V2)
+JFS_FEATURE_INCOMPAT_FUNCS(csum3,		CSUM_V3)
+
 /*
  * helper functions to deal with 32 or 64bit block numbers.
  */
-static inline size_t journal_tag_bytes(journal_t *journal)
+_INLINE_ size_t journal_tag_bytes(journal_t *journal)
 {
 	size_t sz;
 
@@ -365,33 +367,34 @@ static inline size_t journal_tag_bytes(journal_t *journal)
 	return sz - sizeof(__u32);
 }
 
-static inline int journal_has_csum_v2or3(journal_t *journal)
+_INLINE_ int journal_has_csum_v2or3(journal_t *journal)
 {
 	if (jfs_has_feature_csum2(journal) || jfs_has_feature_csum3(journal))
 		return 1;
 
 	return 0;
 }
-#undef _INLINE_
-#endif
 
-static inline int tid_gt(tid_t x, tid_t y) EXT2FS_ATTR((unused));
-static inline int tid_geq(tid_t x, tid_t y) EXT2FS_ATTR((unused));
+_INLINE_ int tid_gt(tid_t x, tid_t y) EXT2FS_ATTR((unused));
+_INLINE_ int tid_geq(tid_t x, tid_t y) EXT2FS_ATTR((unused));
 
 /* Comparison functions for transaction IDs: perform comparisons using
  * modulo arithmetic so that they work over sequence number wraps. */
 
-static inline int tid_gt(tid_t x, tid_t y)
+_INLINE_ int tid_gt(tid_t x, tid_t y)
 {
 	int difference = (x - y);
 	return (difference > 0);
 }
 
-static inline int tid_geq(tid_t x, tid_t y)
+_INLINE_ int tid_geq(tid_t x, tid_t y)
 {
 	int difference = (x - y);
 	return (difference >= 0);
 }
+
+#undef _INLINE_
+#endif
 
 extern int journal_blocks_per_page(struct inode *inode);
 

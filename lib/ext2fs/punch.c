@@ -232,7 +232,7 @@ static errcode_t punch_extent_blocks(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	/* Free whole clusters from the middle of the range. */
-	while (free_count > 0 && free_count >= EXT2FS_CLUSTER_RATIO(fs)) {
+	while (free_count > 0 && free_count >= (unsigned) EXT2FS_CLUSTER_RATIO(fs)) {
 		ext2fs_block_alloc_stats2(fs, free_start, -1);
 		freed_now++;
 		cluster_freed = EXT2FS_CLUSTER_RATIO(fs);

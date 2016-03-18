@@ -1692,6 +1692,8 @@ extern int ext2fs_dirent_name_len(const struct ext2_dir_entry *entry);
 extern void ext2fs_dirent_set_name_len(struct ext2_dir_entry *entry, int len);
 extern int ext2fs_dirent_file_type(const struct ext2_dir_entry *entry);
 extern void ext2fs_dirent_set_file_type(struct ext2_dir_entry *entry, int type);
+extern struct ext2_inode *ext2fs_inode(struct ext2_inode_large * large_inode);
+extern const struct ext2_inode *ext2fs_const_inode(const struct ext2_inode_large * large_inode);
 
 #endif
 
@@ -1950,6 +1952,19 @@ _INLINE_ int ext2fs_dirent_file_type(const struct ext2_dir_entry *entry)
 _INLINE_ void ext2fs_dirent_set_file_type(struct ext2_dir_entry *entry, int type)
 {
 	entry->name_len = (entry->name_len & 0xff) | (type << 8);
+}
+
+_INLINE_ struct ext2_inode *ext2fs_inode(struct ext2_inode_large * large_inode)
+{
+	/* It is always safe to convert large inode to a small inode */
+	return (struct ext2_inode *) large_inode;
+}
+
+_INLINE_ const struct ext2_inode *
+ext2fs_const_inode(const struct ext2_inode_large * large_inode)
+{
+	/* It is always safe to convert large inode to a small inode */
+	return (const struct ext2_inode *) large_inode;
 }
 
 #undef _INLINE_

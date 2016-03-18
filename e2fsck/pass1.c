@@ -590,7 +590,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL)) {
 		size_t size;
 		__u32 dotdot;
-		unsigned int rec_len;
+		unsigned int rec_len2;
 		struct ext2_dir_entry de;
 
 		if (ext2fs_inline_data_size(ctx->fs, pctx->ino, &size))
@@ -611,14 +611,14 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 		dotdot = ext2fs_le32_to_cpu(dotdot);
 		de.inode = ext2fs_le32_to_cpu(de.inode);
 		de.rec_len = ext2fs_le16_to_cpu(de.rec_len);
-		ext2fs_get_rec_len(ctx->fs, &de, &rec_len);
+		ext2fs_get_rec_len(ctx->fs, &de, &rec_len2);
 		if (dotdot >= ctx->fs->super->s_inodes_count ||
 		    (dotdot < EXT2_FIRST_INO(ctx->fs->super) &&
 		     dotdot != EXT2_ROOT_INO) ||
 		    de.inode >= ctx->fs->super->s_inodes_count ||
 		    (de.inode < EXT2_FIRST_INO(ctx->fs->super) &&
 		     de.inode != 0) ||
-		    rec_len > EXT4_MIN_INLINE_DATA_SIZE -
+		    rec_len2 > EXT4_MIN_INLINE_DATA_SIZE -
 			      EXT4_INLINE_DATA_DOTDOT_SIZE)
 			return;
 		/* device files never have a "system.data" entry */
@@ -1979,7 +1979,8 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 		      sizeof(struct process_inode_block), process_inode_cmp);
 	clear_problem_context(&pctx);
 	for (i=0; i < process_inode_count; i++) {
-		pctx.inode = ctx->stashed_inode = &inodes_to_process[i].inode;
+		pctx.inode = ctx->stashed_inode =
+			(struct ext2_inode *) &inodes_to_process[i].inode;
 		pctx.ino = ctx->stashed_ino = inodes_to_process[i].ino;
 
 #if 0
@@ -2017,8 +2018,8 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 		 * inodes, so it's OK to pass NULL to
 		 * ext2fs_file_acl_block() here.
 		 */
-		ret = ext2fs_file_acl_block(0, &(ib_a->inode)) -
-			ext2fs_file_acl_block(0, &(ib_b->inode));
+		ret = ext2fs_file_acl_block(0, ext2fs_const_inode(&ib_a->inode)) -
+			ext2fs_file_acl_block(0, ext2fs_const_inode(&ib_b->inode));
 	if (ret == 0)
 		ret = ib_a->ino - ib_b->ino;
 	return ret;

@@ -133,7 +133,7 @@ void do_lsdel(int argc, char **argv)
 
 	while (ino) {
 		if ((inode.i_dtime == 0) ||
-		    (secs && ((unsigned) abs(now - secs) > inode.i_dtime)))
+		    (secs && (labs(now - secs) > (long) inode.i_dtime)))
 			goto next;
 
 		lsd.inode = ino;
