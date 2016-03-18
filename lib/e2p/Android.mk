@@ -4,6 +4,8 @@ libext2_e2p_src_files := \
 	feature.c \
 	fgetflags.c \
 	fsetflags.c \
+	fgetproject.c \
+	fsetproject.c \
 	fgetversion.c \
 	fsetversion.c \
 	getflags.c \
