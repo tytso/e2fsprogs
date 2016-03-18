@@ -57,7 +57,7 @@ tune2fs_src_files := \
 tune2fs_c_includes := \
 	external/e2fsprogs/e2fsck
 
-tune2fs_cflags := -O2 -g -W -Wall
+tune2fs_cflags := -O2 -g -W -Wall -DNO_RECOVERY
 
 tune2fs_shared_libraries := \
 	libext2fs \

@@ -3154,6 +3154,18 @@ retry_open:
 		free(ext_mount_opts);
 	}
 
+#ifdef NO_RECOVERY
+	/* Warn if file system needs recovery and it is opened for writing. */
+	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & EXT2_MF_MOUNTED) &&
+	    (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER)) {
+		fprintf(stderr,
+_("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
+  "\te2fsck -E journal_only %s\n\n"
+  "then rerun this command.  Otherwise, any changes made may be overwritten\n"
+  "by journal recovery.\n"), device_name);
+	}
+#else
 	/* Recover the journal if possible. */
 	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & EXT2_MF_MOUNTED) &&
 	    ext2fs_has_feature_journal_needs_recovery(fs->super)) {
@@ -3169,6 +3181,7 @@ retry_open:
 		ext2fs_clear_feature_journal_needs_recovery(fs->super);
 		ext2fs_mark_super_dirty(fs);
 	}
+#endif
 
 	free(device_name);
 	remove_error_table(&et_ext2_error_table);
