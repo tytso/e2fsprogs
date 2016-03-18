@@ -268,7 +268,7 @@ static int change_attributes(const char * name)
 	}
 	if (set_project) {
 		if (verbose)
-			printf (_("Project of %s set as %lu\n"), name, version);
+			printf (_("Project of %s set as %lu\n"), name, project);
 		if (fsetproject (name, project) == -1) {
 			if (!silent)
 				com_err (program_name, errno,
