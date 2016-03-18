@@ -153,7 +153,7 @@ profile_get_values(profile_t profile, const char *const *names,
 		return retval;
 
 	if ((retval = init_list(&values)))
-		return retval;
+		goto cleanup_iterator;
 
 	do {
 		if ((retval = profile_iterator(&state, 0, &value)))
@@ -172,6 +172,8 @@ profile_get_values(profile_t profile, const char *const *names,
 
 cleanup:
 	end_list(&values, 0);
+cleanup_iterator:
+	profile_iterator_free(&state);
 	return retval;
 }
 
@@ -194,7 +196,7 @@ profile_get_subsection_names(profile_t profile, const char **names,
 		return retval;
 
 	if ((retval = init_list(&values)))
-		return retval;
+		goto cleanup_iterator;
 
 	do {
 		if ((retval = profile_iterator(&state, &name, 0)))
@@ -208,6 +210,8 @@ profile_get_subsection_names(profile_t profile, const char **names,
 
 cleanup:
 	end_list(&values, 0);
+cleanup_iterator:
+	profile_iterator_free(&state);
 	return retval;
 }
 
@@ -230,7 +234,7 @@ profile_get_relation_names(profile_t profile, const char **names,
 		return retval;
 
 	if ((retval = init_list(&values)))
-		return retval;
+		goto cleanup_iterator;
 
 	do {
 		if ((retval = profile_iterator(&state, &name, 0)))
@@ -248,6 +252,8 @@ profile_get_relation_names(profile_t profile, const char **names,
 
 cleanup:
 	end_list(&values, 0);
+cleanup_iterator:
+	profile_iterator_free(&state);
 	return retval;
 }
 
