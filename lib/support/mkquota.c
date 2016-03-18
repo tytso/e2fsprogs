@@ -662,7 +662,7 @@ out:
 	return err;
 }
 
-int parse_quota_opts(const char *opts, int (*func)(), void *data)
+int parse_quota_opts(const char *opts, int (*func)(char *, void *), void *data)
 {
 	char	*buf, *token, *next, *p;
 	int	len;
