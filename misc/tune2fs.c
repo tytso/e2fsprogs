@@ -44,6 +44,7 @@ extern int optind;
 #include <strings.h>	/* for strcasecmp() */
 #else
 #define _BSD_SOURCE	/* for inclusion of strcasecmp() via <string.h> */
+#define _DEFAULT_SOURCE	  /* since glibc 2.20 _BSD_SOURCE is deprecated */
 #endif
 #include <string.h>
 #include <time.h>

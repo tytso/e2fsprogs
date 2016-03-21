@@ -4,6 +4,7 @@
 
 #define _XOPEN_SOURCE 600 /* for inclusion of PATH_MAX in Solaris */
 #define _BSD_SOURCE	  /* for makedev() and major() */
+#define _DEFAULT_SOURCE	  /* since glibc 2.20 _BSD_SOURCE is deprecated */
 
 #include "config.h"
 #include <stdio.h>
