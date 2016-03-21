@@ -12,6 +12,9 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE	/* since glibc 2.20 _SVID_SOURCE is deprecated */
+#endif
 
 #include "config.h"
 

@@ -9,6 +9,14 @@
  * %End-Header%
  */
 
+/* define BSD_SOURCE to make sure we get the major() macro */
+#ifndef _BSD_SOURCE
+#define _BSD_SOURCE
+#endif
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE	/* since glibc 2.20 _SVID_SOURCE is deprecated */
+#endif
+
 #include "config.h"
 #include <stdio.h>
 #if HAVE_UNISTD_H
@@ -38,6 +46,9 @@
 #endif /* HAVE_GETMNTINFO */
 #include <string.h>
 #include <sys/stat.h>
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
