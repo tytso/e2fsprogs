@@ -37,7 +37,8 @@ mke2fs.conf: $(srcdir)/mke2fs.conf.in
 
 always_run:
 
-TESTS != echo $(srcdir)/[a-z]_*
+@ifGNUmake@TESTS=$(wildcard $(srcdir)/[a-z]_*)
+@ifNotGNUmake@TESTS != echo $(srcdir)/[a-z]_*
 
 $(TESTS):: test_one always_run
 	@./test_one $@
