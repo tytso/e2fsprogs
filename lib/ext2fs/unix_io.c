@@ -848,8 +848,9 @@ static errcode_t unix_cache_readahead(io_channel channel,
 	struct unix_private_data *data;
 
 	data = (struct unix_private_data *)channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 	return posix_fadvise(data->dev,
-			     (ext2_loff_t)block * channel->block_size,
+			     (ext2_loff_t)block * channel->block_size + data->offset,
 			     (ext2_loff_t)count * channel->block_size,
 			     POSIX_FADV_WILLNEED);
 #else
@@ -962,7 +963,7 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 #ifdef BLKDISCARD
 		__u64 range[2];
 
-		range[0] = (__u64)(block) * channel->block_size;
+		range[0] = (__u64)(block) * channel->block_size + data->offset;
 		range[1] = (__u64)(count) * channel->block_size;
 
 		ret = ioctl(data->dev, BLKDISCARD, &range);
@@ -977,7 +978,7 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 		 */
 		ret = fallocate(data->dev,
 				FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
-				(off_t)(block) * channel->block_size,
+				(off_t)(block) * channel->block_size + data->offset,
 				(off_t)(count) * channel->block_size);
 #else
 		goto unimplemented;
@@ -1025,9 +1026,10 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 		ret = fstat(data->dev, &statbuf);
 		if (ret)
 			goto err;
-		if ((unsigned long long) statbuf.st_size < (block + count) * channel->block_size) {
+		if ((unsigned long long) statbuf.st_size <
+			(block + count) * channel->block_size + data->offset) {
 			ret = ftruncate(data->dev,
-					(block + count) * channel->block_size);
+					(block + count) * channel->block_size + data->offset);
 			if (ret)
 				goto err;
 		}
@@ -1036,7 +1038,7 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 #if defined(FALLOC_FL_PUNCH_HOLE) && defined(FALLOC_FL_KEEP_SIZE)
 		ret = fallocate(data->dev,
 				FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
-				(off_t)(block) * channel->block_size,
+				(off_t)(block) * channel->block_size + data->offset,
 				(off_t)(count) * channel->block_size);
 		if (ret == 0)
 			goto err;
@@ -1044,7 +1046,7 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 #ifdef FALLOC_FL_ZERO_RANGE
 		ret = fallocate(data->dev,
 				FALLOC_FL_ZERO_RANGE,
-				(off_t)(block) * channel->block_size,
+				(off_t)(block) * channel->block_size + data->offset,
 				(off_t)(count) * channel->block_size);
 #endif
 #else
