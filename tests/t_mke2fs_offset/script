@@ -1,0 +1,20 @@
+test_description="mke2fs with offset option (-E offset=N)"
+OUT="$test_name.log"
+
+echo "testing mke2fs with -E offset=524288 option" > "$OUT"
+yes a | dd of="$TMPFILE" bs=1k count=2048 2>/dev/null
+$MKE2FS -F -b 1024 -E offset=524288 "$TMPFILE" 1024 >> "$OUT" 2>&1
+# compute crc of the first and last 512 1k blocks
+crc_first=`dd if="$TMPFILE" bs=1k count=512 2>/dev/null | $CRCSUM`
+crc_last=`dd if="$TMPFILE" bs=1k count=512 skip=1536 2>/dev/null | $CRCSUM`
+crc_exp=`yes a | dd bs=1k count=512 2>/dev/null | $CRCSUM`
+
+if [ "$crc_first" = "$crc_last" -a "$crc_first" = "$crc_exp" ]; then
+	echo "$test_name: $test_description: ok"
+	touch "$test_name.ok"
+else
+	echo "$test_name: $test_description: failed"
+	echo "crc_first: $crc_first" > "$test_name.failed"
+	echo "crc_last: $crc_last" >> "$test_name.failed"
+	echo "crc_exp: $crc_exp" >> "$test_name.failed"
+fi
