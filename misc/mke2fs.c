@@ -2815,6 +2815,14 @@ int main (int argc, char *argv[])
 	    ext2fs_has_feature_journal(&fs_param)))
 		journal_blocks = figure_journal_size(journal_size, fs);
 
+	sprintf(opt_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
+		32768 : fs->blocksize * 8);
+	io_channel_set_options(fs->io, opt_string);
+	if (offset) {
+		sprintf(opt_string, "offset=%llu", offset);
+		io_channel_set_options(fs->io, opt_string);
+	}
+
 	/* Can't undo discard ... */
 	if (!noaction && discard && dev_size && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_device(fs);
@@ -2827,14 +2835,6 @@ int main (int argc, char *argv[])
 			itable_zeroed = 1;
 			zero_hugefile = 0;
 		}
-	}
-
-	sprintf(opt_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
-		32768 : fs->blocksize * 8);
-	io_channel_set_options(fs->io, opt_string);
-	if (offset) {
-		sprintf(opt_string, "offset=%llu", offset);
-		io_channel_set_options(fs->io, opt_string);
 	}
 
 	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
