@@ -58,6 +58,7 @@
 #endif
 #include <time.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
 #include <ctype.h>
 #include <limits.h>

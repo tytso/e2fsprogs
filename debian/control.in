@@ -9,7 +9,7 @@ Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkg-config, DIETLIBC_DEFINES gcc-multilib [mips mipsel], libfuse-dev, debhelper (>= 7.0), UTIL_LINUX_NG_DEFINES m4
+Build-Depends: gettext, texinfo, pkg-config, DIETLIBC_DEFINES gcc-multilib [mips mipsel], libfuse-dev, libattr1-dev, debhelper (>= 7.0), UTIL_LINUX_NG_DEFINES m4
 Standards-Version: 3.9.7
 Homepage: http://e2fsprogs.sourceforge.net
 
