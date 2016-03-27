@@ -1896,7 +1896,7 @@ no_journal:
 				       "MODIFIED *****\n"),
 				ctx->device_name);
 		if (ctx->mount_flags & EXT2_MF_ISROOT) {
-			log_out(ctx, _("%s: ***** REBOOT LINUX *****\n"),
+			log_out(ctx, _("%s: ***** REBOOT SYSTEM *****\n"),
 				ctx->device_name);
 			exit_value |= FSCK_REBOOT;
 		}
