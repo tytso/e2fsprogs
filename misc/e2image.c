@@ -1282,7 +1282,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags)
 
 	mark_table_blocks(fs);
 	if (show_progress)
-		printf("%s", _("Scanning inodes...\n"));
+		fprintf(stderr, "%s", _("Scanning inodes...\n"));
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);
 	if (retval) {
