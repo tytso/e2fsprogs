@@ -181,6 +181,13 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 
 #endif /* DEBUGFS */
 
+#ifndef EFSBADCRC
+#define EFSBADCRC	EBADMSG		/* Bad CRC detected */
+#endif
+#ifndef EFSCORRUPTED
+#define EFSCORRUPTED	EUCLEAN		/* Filesystem is corrupted */
+#endif
+
 /* recovery.c */
 extern int	journal_recover    (journal_t *journal);
 extern int	journal_skip_recovery (journal_t *);
