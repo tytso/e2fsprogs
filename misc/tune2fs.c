@@ -124,6 +124,10 @@ static const char *please_dir_fsck =
 void do_findfs(int argc, char **argv);
 #endif
 
+#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
+int journal_enable_debug = -1;
+#endif
+
 static void usage(void)
 {
 	fprintf(stderr,

@@ -66,7 +66,7 @@ static char *bad_blocks_file;
 
 e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
 
-#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jfs-debug */
+#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
 int journal_enable_debug = -1;
 #endif
 

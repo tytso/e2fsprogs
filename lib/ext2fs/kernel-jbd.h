@@ -46,7 +46,19 @@ extern int journal_enable_debug;
 	} while (0)
 #else
 #ifdef __GNUC__
+#ifdef __KERNEL__
 #define jbd_debug(f, a...)	/**/
+#else
+extern int journal_enable_debug;
+#define jbd_debug(n, f, a...)						\
+	do {								\
+		if ((n) <= journal_enable_debug) {			\
+			printf("(%s, %d): %s: ",			\
+				__FILE__, __LINE__, __func__);		\
+			printf(f, ## a);				\
+		}							\
+	} while (0)
+#endif /*__KERNEL__ */
 #else
 #define jbd_debug(f, ...)	/**/
 #endif

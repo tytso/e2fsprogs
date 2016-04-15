@@ -95,6 +95,10 @@ static ext2_filsys global_fs; /* Try not to use this directly */
 
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
+#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
+int journal_enable_debug = -1;
+#endif
+
 /* ACL translation stuff */
 #ifdef TRANSLATE_LINUX_ACLS
 /*

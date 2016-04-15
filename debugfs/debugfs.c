@@ -41,6 +41,10 @@ extern char *optarg;
 #define BUFSIZ 8192
 #endif
 
+#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
+int journal_enable_debug = -1;
+#endif
+
 ss_request_table *extra_cmds;
 const char *debug_prog_name;
 int sci_idx;
@@ -76,7 +80,7 @@ static int debugfs_setup_tdb(const char *device_name, char *undo_file,
 	 * Configuration via a conf file would be
 	 * nice
 	 */
-	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
+	tdb_dir = ss_safe_getenv("E2FSPROGS_UNDO_DIR");
 	if (!tdb_dir)
 		tdb_dir = "/var/lib/e2fsprogs";
 
@@ -2395,6 +2399,9 @@ int main(int argc, char **argv)
 	const char	*opt_string = "niwcR:f:b:s:Vd:Dz:";
 	char		*undo_file = NULL;
 #endif
+#ifdef CONFIG_JBD_DEBUG
+	char		*jbd_debug;
+#endif
 
 	if (debug_prog_name == 0)
 #ifdef READ_ONLY
@@ -2406,6 +2413,19 @@ int main(int argc, char **argv)
 	fprintf (stderr, "%s %s (%s)\n", debug_prog_name,
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
+#ifdef CONFIG_JBD_DEBUG
+	jbd_debug = ss_safe_getenv("DEBUGFS_JBD_DEBUG");
+	if (jbd_debug) {
+		int res = sscanf(jbd_debug, "%d", &journal_enable_debug);
+
+		if (res != 1) {
+			fprintf(stderr,
+				"DEBUGFS_JBD_DEBUG \"%s\" not an integer\n\n",
+				jbd_debug);
+			exit(1);
+		}
+	}
+#endif
 	while ((c = getopt (argc, argv, opt_string)) != EOF) {
 		switch (c) {
 		case 'R':
