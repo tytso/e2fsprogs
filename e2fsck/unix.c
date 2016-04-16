@@ -53,6 +53,7 @@ extern int optind;
 #include "support/plausible.h"
 #include "e2fsck.h"
 #include "problem.h"
+#include "jfs_user.h"
 #include "../version.h"
 
 /* Command line options */
@@ -1645,7 +1646,7 @@ failure:
 		retval = e2fsck_check_ext3_journal(ctx);
 		if (retval) {
 			com_err(ctx->program_name, retval,
-				_("while checking ext3 journal for %s"),
+				_("while checking journal for %s"),
 				ctx->device_name);
 			fatal_error(ctx, 0);
 		}
@@ -1677,9 +1678,10 @@ failure:
 			retval = e2fsck_run_ext3_journal(ctx);
 			if (retval) {
 				com_err(ctx->program_name, retval,
-				_("while recovering ext3 journal of %s"),
+				_("while recovering journal of %s"),
 					ctx->device_name);
-				fatal_error(ctx, 0);
+				if ((retval != EFSBADCRC) && (retval != EFSCORRUPTED))
+					fatal_error(ctx, 0);
 			}
 			ext2fs_close_free(&ctx->fs);
 			ctx->flags |= E2F_FLAG_RESTARTED;
