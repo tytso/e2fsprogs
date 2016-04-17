@@ -1676,12 +1676,17 @@ failure:
 				fatal_error(ctx, 0);
 			}
 			retval = e2fsck_run_ext3_journal(ctx);
-			if (retval) {
+			if (retval == EFSBADCRC) {
+				log_out(ctx, _("Journal checksum error "
+					       "found in %s\n"),
+					ctx->device_name);
+			} else if (retval == EFSCORRUPTED) {
+				log_out(ctx, _("Journal corrupted in %s\n"),
+					ctx->device_name);
+			} else if (retval) {
 				com_err(ctx->program_name, retval,
 				_("while recovering journal of %s"),
 					ctx->device_name);
-				if ((retval != EFSBADCRC) && (retval != EFSCORRUPTED))
-					fatal_error(ctx, 0);
 			}
 			ext2fs_close_free(&ctx->fs);
 			ctx->flags |= E2F_FLAG_RESTARTED;
