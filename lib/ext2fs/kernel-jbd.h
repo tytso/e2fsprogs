@@ -46,7 +46,7 @@ extern int journal_enable_debug;
 	} while (0)
 #else
 #ifdef __GNUC__
-#ifdef __KERNEL__
+#if defined(__KERNEL__) || !defined(CONFIG_JBD_DEBUG)
 #define jbd_debug(f, a...)	/**/
 #else
 extern int journal_enable_debug;
