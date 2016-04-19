@@ -3712,8 +3712,7 @@ int main(int argc, char *argv[])
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	struct fuse2fs fctx;
 	errcode_t err;
-	char *tok, *arg, *logfile;
-	int i;
+	char *logfile;
 	char extra_args[BUFSIZ];
 	int ret = 0, flags = EXT2_FLAG_64BITS | EXT2_FLAG_EXCLUSIVE;
 
