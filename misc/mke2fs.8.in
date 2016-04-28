@@ -666,12 +666,12 @@ program should be run immediately after this option is used, and there
 is no guarantee that any data will be salvageable.  Due to the wide
 variety of possible options to
 .BR mke2fs
-that affect the on-disk layout, is critical to specify exactly the same
+that affect the on-disk layout, it is critical to specify exactly
 the same format options, such as blocksize, fs-type, feature flags, and
 other tunables when using this option, or the filesystem will be further
 corrupted.  In some cases, such as filesystems that have been resized,
 or have had features enabled after format time, it is impossible to
-overwrite all of the superblocks corretly, and at least some filesystem
+overwrite all of the superblocks correctly, and at least some filesystem
 corruption will occur.  It is best to run this on a full copy of the
 filesystem so other options can be tried if this doesn't work.
 .\" .TP

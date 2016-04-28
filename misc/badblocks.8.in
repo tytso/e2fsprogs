@@ -9,19 +9,19 @@ badblocks \- search a device for bad blocks
 ]
 [
 .B \-b
-.I block-size
+.I block_size
 ]
 [
 .B \-c
 .I blocks_at_once
 ]
 [
-.B \-e
-.I max_bad_blocks
-]
-[
 .B \-d
 .I read_delay_factor
+]
+[
+.B \-e
+.I max_bad_blocks
 ]
 [
 .B \-i
@@ -41,9 +41,9 @@ badblocks \- search a device for bad blocks
 ]
 .I device
 [
-.I last-block
+.I last_block
 ] [
-.I first-block 
+.I first_block
 ]
 .SH DESCRIPTION
 .B badblocks
@@ -51,10 +51,10 @@ is used to search for bad blocks on a device (usually a disk partition).
 .I device
 is the special file corresponding to the device (e.g
 .IR /dev/hdc1 ).
-.I last-block
+.I last_block
 is the last block to be checked; if it is not specified, the last block
 on the device is used as a default.
-.I first-block
+.I first_block
 is an optional parameter specifying the starting block number
 for the test, which allows the testing to start in the middle of the
 disk.  If it is not specified the first block on the disk is used as a default.
@@ -83,16 +83,11 @@ and
 programs.
 .SH OPTIONS
 .TP
-.BI \-b " block-size"
+.BI \-b " block_size"
 Specify the size of blocks in bytes.  The default is 1024.
 .TP
 .BI \-c " number of blocks"
 is the number of blocks which are tested at a time.  The default is 64.
-.TP
-.BI \-e " max bad block count"
-Specify a maximum number of bad blocks before aborting the test.  The
-default is 0, meaning the test will continue until the end of the test
-range is reached.
 .TP
 .BI \-d " read delay factor"
 This parameter, if passed and non-zero, will cause bad blocks to sleep
@@ -101,6 +96,11 @@ operation; the delay will be calculated as a percentage of the time it
 took for the read operation to be performed. In other words, a value of 
 100 will cause each read to be delayed by the amount the previous read
 took, and a value of 200 by twice the amount.
+.TP
+.BI \-e " max bad block count"
+Specify a maximum number of bad blocks before aborting the test.  The
+default is 0, meaning the test will continue until the end of the test
+range is reached.
 .TP
 .B \-f
 Normally, badblocks will refuse to do a read/write or a non-destructive
