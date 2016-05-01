@@ -1456,6 +1456,7 @@ static void PRS(int argc, char *argv[])
 	int		b, c, flags;
 	int		cluster_size = 0;
 	char 		*tmp, **cpp;
+	int		explicit_fssize = 0;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		inode_size = 0;
@@ -1862,7 +1863,7 @@ profile_error:
 
 	/* The isatty() test is so we don't break existing scripts */
 	flags = CREATE_FILE;
-	if (isatty(0) && isatty(1))
+	if (isatty(0) && isatty(1) && !offset)
 		flags |= CHECK_FS_EXIST;
 	if (!quiet)
 		flags |= VERBOSE_CREATE;
@@ -1875,6 +1876,7 @@ profile_error:
 
 	/* Determine the size of the device (if possible) */
 	if (noaction && fs_blocks_count) {
+		explicit_fssize = 1;
 		dev_size = fs_blocks_count;
 		retval = 0;
 	} else
@@ -2273,6 +2275,17 @@ profile_error:
 
 	if (extended_opts)
 		parse_extended_opts(&fs_param, extended_opts);
+
+	if (explicit_fssize == 0 && offset > 0) {
+		fs_blocks_count -= offset / EXT2_BLOCK_SIZE(&fs_param);
+		ext2fs_blocks_count_set(&fs_param, fs_blocks_count);
+		fprintf(stderr,
+			_("\nWarning: offset specified without an "
+			  "explicit file system size.\n"
+			  "Creating a file system with %d blocks "
+			  "but this might\n"
+			  "not be what you want.\n\n"), fs_blocks_count);
+	}
 
 	/* Don't allow user to set both metadata_csum and uninit_bg bits. */
 	if (ext2fs_has_feature_metadata_csum(&fs_param) &&
