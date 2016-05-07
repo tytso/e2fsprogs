@@ -726,9 +726,6 @@ static void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 		exit(1);
 	}
 
-	printf("arg %s\n", argv[optind]);
-	exit(0);
-
 	strcpy(saltbuf.key_ref_str, argv[optind]);
 	if ((strlen(argv[optind]) != (EXT4_KEY_DESCRIPTOR_SIZE * 2)) ||
 	    hex2byte(argv[optind], (EXT4_KEY_DESCRIPTOR_SIZE * 2),
@@ -789,9 +786,9 @@ static void do_get_policy(int argc, char **argv, const struct cmd_desc *cmd)
 	exit(0);
 }
 
-#define new_session_desc "given the invoking process a new session keyring"
+#define new_session_desc "give the invoking process a new session keyring"
 #define new_session_help \
-"e4crypt new_sessoin\n\n" \
+"e4crypt new_session\n\n" \
 "Give the invoking process (typically a shell) a new session keyring,\n" \
 "discarding its old session keyring.\n"
 
@@ -856,7 +853,7 @@ static void do_help(int argc, char **argv,
 			continue;
 		printf("  %-20s %s\n", p->cmd_name, p->cmd_desc);
 	}
-	printf("\nTo get more information on a commnd, "
+	printf("\nTo get more information on a command, "
 	       "type 'e4crypt help cmd'\n");
 	exit(0);
 }
