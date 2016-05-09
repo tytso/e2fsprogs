@@ -132,7 +132,7 @@ static void usage(void)
 	"[-r fs-revision] [-E extended-option[,...]]\n"
 	"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior]"
 	"[-z undo_file]\n"
-	"\t[-jnqvDFKSV] device [blocks-count]\n"),
+	"\t[-jnqvDFSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -771,23 +771,6 @@ static int set_os(struct ext2_super_block *sb, char *os)
 
 #define PATH_SET "PATH=/sbin"
 
-static int option_handle_function(char *token, void *data)
-{
-	if (!strncmp(token, "usr", 3)) {
-		quotatype_bits |= QUOTA_USR_BIT;
-	} else if (!strncmp(token, "grp", 3)) {
-		quotatype_bits |= QUOTA_GRP_BIT;
-	} else if (!strncmp(token, "prj", 3)) {
-		quotatype_bits |= QUOTA_PRJ_BIT;
-	} else {
-		fprintf(stderr, _("Invalid quotatype parameter: %s\n"),
-				token);
-		return 1;
-	}
-	return 0;
-
-}
-
 static void parse_extended_opts(struct ext2_super_block *param,
 				const char *opts)
 {
@@ -1022,15 +1005,24 @@ static void parse_extended_opts(struct ext2_super_block *param,
 		} else if (!strcmp(token, "nodiscard")) {
 			discard = 0;
 		} else if (!strcmp(token, "quotatype")) {
+			char *errtok = NULL;
+
 			if (!arg) {
 				r_usage++;
 				badopt = token;
 				continue;
 			}
-			ret = parse_quota_opts(arg, option_handle_function,
-					       NULL);
+			quotatype_bits = 0;
+			ret = parse_quota_types(arg, &quotatype_bits, &errtok);
 			if (ret) {
+				if (errtok)
+					fprintf(stderr,
+				"Failed to parse quota type at %s", errtok);
+				else
+					com_err(program_name, ret,
+						"while parsing quota type");
 				r_usage++;
+				badopt = token;
 				continue;
 			}
 		} else {
@@ -1053,12 +1045,11 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tpacked_meta_blocks=<0 to disable, 1 to enable>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
-			"\troot_uid=<uid of root directory>\n"
-			"\troot_gid=<gid of root directory>\n"
+			"\troot_owner=<uid of root dir>:<gid of root dir>\n"
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n"
-			"\tquotatype=<usr OR grp>\n\n"),
+			"\tquotatype=<quota type(s) to be enabled>\n\n"),
 			badopt ? badopt : "");
 		free(buf);
 		exit(1);
@@ -2282,9 +2273,10 @@ profile_error:
 		fprintf(stderr,
 			_("\nWarning: offset specified without an "
 			  "explicit file system size.\n"
-			  "Creating a file system with %d blocks "
+			  "Creating a file system with %llu blocks "
 			  "but this might\n"
-			  "not be what you want.\n\n"), fs_blocks_count);
+			  "not be what you want.\n\n"),
+			(unsigned long long) fs_blocks_count);
 	}
 
 	/* Don't allow user to set both metadata_csum and uninit_bg bits. */
