@@ -39,6 +39,7 @@ synchronous directory updates (D),
 extent format (e),
 immutable (i),
 data journalling (j),
+project hierarchy (P),
 secure deletion (s),
 synchronous updates (S),
 no tail-merging (t),
@@ -152,6 +153,14 @@ stored inline, within the inode itself. It may not be set or reset using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
+.PP
+A directory with the 'P' attribute set will enforce a hierarchical
+structure for project id's.  This means that files and directory created
+in the directory will inhert the project id of the directory, rename
+operations are constrained so when a file or directory is moved into
+another directory, that the project id's much match.  In addition, a
+hard link to file can only be created when the project id for the file
+and the destination directory match.
 .PP
 When a file with the 's' attribute set is deleted, its blocks are zeroed
 and written back to the disk.  Note: please make sure to read the bugs

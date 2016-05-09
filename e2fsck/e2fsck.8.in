@@ -34,6 +34,10 @@ e2fsck \- check a Linux ext2/ext3/ext4 file system
 .B \-E
 .I extended_options
 ]
+[
+.B \-z
+.I undo_file
+]
 .I device
 .SH DESCRIPTION
 .B e2fsck

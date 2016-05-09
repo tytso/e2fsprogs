@@ -26,6 +26,10 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .I interval-between-checks
 ]
 [
+.B \-I
+.I new_inode_size
+]
+[
 .B \-j
 ]
 [
@@ -39,6 +43,10 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 [
 .B \-o
 .RI [^]mount-options [,...]
+]
+[
+.B \-p
+.I mmp_update_interval
 ]
 [
 .B \-r
@@ -290,6 +298,15 @@ It is strongly recommended that either
 checking of the filesystem.  Failure to do so may lead to filesystem
 corruption (due to bad disks, cables, memory, or kernel bugs) going
 unnoticed, ultimately resulting in data loss or corruption.
+.TP
+.B \-I
+Change the inode size used by the file system.   This requires rewriting
+the inode table, so it requires that the file system is checked for
+consistency first using
+.BR e2fsck (8).
+This operation can also take a while and the file system can be
+corrupted and data lost if it is interrupted while in the middle of
+converting the file system.
 .TP
 .B \-j
 Add an ext3 journal to the filesystem.  If the 

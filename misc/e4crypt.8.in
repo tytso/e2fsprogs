@@ -2,19 +2,13 @@
 .SH NAME
 e4crypt \- ext4 filesystem encryption utility
 .SH SYNOPSIS
-.B e4crypt \-a \-S
-.I salt
-[
-.B \-k
-.I keyring
-]
-[
-.I path\fR ...
-]
+.B e4crypt add_key -S \fR[\fB -k \fIkeyring\fR ] [\fB-v\fR] [\fB-q\fR] [ \fI path\fR ... ]
 .br
-.B e4crypt \-s
-.I policy
-.I path\fR ...
+.B e4crypt new_session
+.br
+.B e4crypt get_policy \fIpath\fR ...
+.br
+.B e4crypt set_policy \fIpolicy path\fR ...
 .SH DESCRIPTION
 .B e4crypt
 performs encryption management for ext4 file systems.
@@ -29,14 +23,17 @@ If one or more directory paths are specified, e4crypt will try to
 set the policy of those directories to use the key just entered by
 the user.
 .TP
+.B e4crypt get_policy \fIpath\fR ...
+Print the policy for the directories specified on the command line.
+.TP
 .B e4crypt new_session
 Give the invoking process (typically a shell) a new session keyring,
 discarding its old session keyring.
 .TP
-.B set_policy -s \fIpolicy path\fR ...
+.B e4crypt set_policy \fIpolicy path\fR ...
 Sets the policy for the directories specified on the command line.
 All directories must be empty to set the policy; if the directory
-already has a policy established, e4crypt will validate that it the
+already has a policy established, e4crypt will validate that the
 policy matches what was specified.  A policy is an encryption key
 identifier consisting of 16 hexadecimal characters.
 .SH AUTHOR

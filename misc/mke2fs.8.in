@@ -379,11 +379,14 @@ as default.
 Do not attempt to discard blocks at mkfs time.
 .TP
 .BI quotatype
-Specify which quota type ('usr' or 'grp') is to be
-initialized. This option has effect only if the
+Specify the which  quota types (usrquota, grpquota, prjquota) which
+should be enabled in the created file system.  The argument of this
+extended option should be a colon separated list.  This option has
+effect only if the
 .B quota
-feature is set. Without this extended option, the default
-behavior is to initialize both user and group quotas.
+feature is set.   The default quota types to be initialized if this
+option is not specified is both user and group quotas.  If the project
+feature is enabled that project quotas will be initialized as well.
 .RE
 .TP
 .BI \-f " fragment-size"

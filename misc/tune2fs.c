@@ -131,7 +131,7 @@ int journal_enable_debug = -1;
 static void usage(void)
 {
 	fprintf(stderr,
-		_("Usage: %s [-c max_mounts_count] [-e errors_behavior] "
+		_("Usage: %s [-c max_mounts_count] [-e errors_behavior] [-f] "
 		  "[-g group]\n"
 		  "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
 		  "\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]]\n"
