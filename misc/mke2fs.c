@@ -1480,6 +1480,7 @@ static void PRS(int argc, char *argv[])
 	long		sysval;
 	int		s_opt = -1, r_opt = -1;
 	char		*fs_features = 0;
+	int		fs_features_size = 0;
 	int		use_bsize;
 	char		*newpath;
 	int		pathlen = sizeof(PATH_SET) + 1;
@@ -1726,7 +1727,20 @@ profile_error:
 			creator_os = optarg;
 			break;
 		case 'O':
-			fs_features = optarg;
+			retval = ext2fs_resize_mem(fs_features_size,
+				   fs_features_size + 1 + strlen(optarg),
+						   &fs_features);
+			if (retval) {
+				com_err(program_name, retval,
+				     _("while allocating fs_feature string"));
+				exit(1);
+			}
+			if (fs_features_size)
+				strcat(fs_features, ",");
+			else
+				fs_features[0] = 0;
+			strcat(fs_features, optarg);
+			fs_features_size += 1 + strlen(optarg);
 			break;
 		case 'q':
 			quiet = 1;
@@ -1969,6 +1983,7 @@ profile_error:
 		     &fs_param.s_feature_compat);
 	if (tmp)
 		free(tmp);
+	(void) ext2fs_free_mem(&fs_features);
 	/*
 	 * If the user specified features incompatible with the Hurd, complain
 	 */
