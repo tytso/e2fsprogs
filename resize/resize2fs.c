@@ -206,6 +206,10 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 		goto errout;
 	print_resource_track(rfs, &rtrack, fs->io);
 
+	retval = clear_sparse_super2_last_group(rfs);
+	if (retval)
+		goto errout;
+
 	init_resource_track(&rtrack, "calculate_summary_stats", fs->io);
 	retval = ext2fs_calculate_summary_stats(rfs->new_fs);
 	if (retval)
@@ -223,10 +227,6 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 	if (retval)
 		goto errout;
 	print_resource_track(rfs, &rtrack, fs->io);
-
-	retval = clear_sparse_super2_last_group(rfs);
-	if (retval)
-		goto errout;
 
 	retval = ext2fs_set_gdt_csum(rfs->new_fs);
 	if (retval)
@@ -698,7 +698,7 @@ errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs,
 	blk64_t		old_numblocks, numblocks, adjblocks;
 	unsigned long	i, j, old_desc_blocks;
 	unsigned int	meta_bg, meta_bg_size;
-	int		has_super, csum_flag;
+	int		has_super, csum_flag, has_bg;
 	unsigned long long new_inodes;	/* u64 to check for overflow */
 	double		percent;
 
@@ -721,7 +721,19 @@ retry:
 	 */
 	overhead = (int) (2 + fs->inode_blocks_per_group);
 
-	if (ext2fs_bg_has_super(fs, fs->group_desc_count - 1))
+	has_bg = 0;
+	if (ext2fs_has_feature_sparse_super2(fs->super)) {
+		/*
+		 * We have to do this manually since
+		 * super->s_backup_bgs hasn't been set up yet.
+		 */
+		if (fs->group_desc_count == 2)
+			has_bg = fs->super->s_backup_bgs[0] != 0;
+		else
+			has_bg = fs->super->s_backup_bgs[1] != 0;
+	} else
+		has_bg = ext2fs_bg_has_super(fs, fs->group_desc_count - 1);
+	if (has_bg)
 		overhead += 1 + fs->desc_blocks +
 			fs->super->s_reserved_gdt_blocks;
 
@@ -843,10 +855,9 @@ retry:
 		if (last_bg > old_last_bg) {
 			if (old_fs->group_desc_count == 1)
 				fs->super->s_backup_bgs[0] = 1;
-			if (old_fs->group_desc_count == 1 &&
-			    fs->super->s_backup_bgs[0])
-				fs->super->s_backup_bgs[0] = last_bg;
-			else if (fs->super->s_backup_bgs[1])
+			if ((old_fs->group_desc_count < 3 &&
+			     fs->group_desc_count > 2) ||
+			    fs->super->s_backup_bgs[1])
 				fs->super->s_backup_bgs[1] = last_bg;
 		} else if (last_bg < old_last_bg) {
 			if (fs->super->s_backup_bgs[0] > last_bg)
@@ -2464,6 +2475,9 @@ static errcode_t clear_sparse_super2_last_group(ext2_resize_t rfs)
 
 	if (fs->super->s_backup_bgs[0] == old_last_bg ||
 	    fs->super->s_backup_bgs[1] == old_last_bg)
+		return 0;
+
+	if (old_last_bg == 0)
 		return 0;
 
 	retval = ext2fs_super_and_bgd_loc2(rfs->old_fs, old_last_bg,

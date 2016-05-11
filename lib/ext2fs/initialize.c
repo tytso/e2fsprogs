@@ -98,6 +98,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		csum_flag;
 	int		bigalloc_flag;
 	int		io_flags;
+	int		has_bg;
 	unsigned	reserved_inos;
 	char		*buf = 0;
 	char		c;
@@ -404,7 +405,19 @@ ipg_retry:
 	 * backup.
 	 */
 	overhead = (int) (2 + fs->inode_blocks_per_group);
-	if (ext2fs_bg_has_super(fs, fs->group_desc_count - 1))
+	has_bg = 0;
+	if (ext2fs_has_feature_sparse_super2(super)) {
+		/*
+		 * We have to do this manually since
+		 * super->s_backup_bgs hasn't been set up yet.
+		 */
+		if (fs->group_desc_count == 2)
+			has_bg = param->s_backup_bgs[0] != 0;
+		else
+			has_bg = param->s_backup_bgs[1] != 0;
+	} else
+		has_bg = ext2fs_bg_has_super(fs, fs->group_desc_count - 1);
+	if (has_bg)
 		overhead += 1 + fs->desc_blocks + super->s_reserved_gdt_blocks;
 	rem = ((ext2fs_blocks_count(super) - super->s_first_data_block) %
 	       super->s_blocks_per_group);
