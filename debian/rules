@@ -168,6 +168,10 @@ UTIL_CONF_FLAGS ?= --enable-fsck --enable-libblkid \
 			--enable-libuuid --enable-uuidd
 endif
 
+ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu) 
+UTIL_CONF_FLAGS +=  --disable-fuse2fs
+endif
+
 ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
 MULTIARCH_CONF ?= --with-multiarch=$(DEB_HOST_MULTIARCH)
 # This doesn't work yet because gdb and lintian don't expect and/or
