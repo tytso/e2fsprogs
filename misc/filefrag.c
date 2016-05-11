@@ -514,7 +514,7 @@ out_close:
 
 static void usage(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [-b{blocksize}] [-BeklsvxX] file ...\n",
+	fprintf(stderr, "Usage: %s [-b{blocksize}] [-BeksvxX] file ...\n",
 		progname);
 	exit(1);
 }

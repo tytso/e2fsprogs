@@ -210,7 +210,7 @@ Use this percentage of memory to try to read in metadata blocks ahead of the
 main e2fsck thread.  This should reduce run times, depending on the speed of
 the underlying storage and the amount of free memory.  There is no default, but
 see
-.B readahead_mem_pct
+.B readahead_kb
 for more details.
 .TP
 .I readahead_kb
