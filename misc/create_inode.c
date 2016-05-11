@@ -687,7 +687,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 	DIR		*dh;
 	struct dirent	*dent;
 	struct stat	st;
-	char		ln_target[PATH_MAX];
+	char		*ln_target = NULL;
 	unsigned int	save_inode;
 	ext2_ino_t	ino;
 	errcode_t	retval = 0;
@@ -754,8 +754,14 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			}
 			break;
 		case S_IFLNK:
+			ln_target = malloc(st.st_size + 1);
+			if (ln_target == NULL) {
+				com_err(__func__, retval,
+					_("malloc failed"));
+				goto out;
+			}
 			read_cnt = readlink(name, ln_target,
-					    sizeof(ln_target) - 1);
+					    st.st_size + 1);
 			if (read_cnt == -1) {
 				retval = errno;
 				com_err(__func__, retval,
@@ -763,9 +769,17 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 					name);
 				goto out;
 			}
+			if (read_cnt > st.st_size) {
+				com_err(__func__, retval,
+					_("symlink increased in size "
+					  "between lstat() and readlink()"));
+				free(ln_target);
+				goto out;
+			}
 			ln_target[read_cnt] = '\0';
 			retval = do_symlink_internal(fs, parent_ino, name,
 						     ln_target, root);
+			free(ln_target);
 			if (retval) {
 				com_err(__func__, retval,
 					_("while writing symlink\"%s\""),
