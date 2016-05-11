@@ -1,0 +1,7 @@
+#!/bin/sh
+
+upgrade-initramfs -u
+
+#DEBHELPER#
+
+exit 0
