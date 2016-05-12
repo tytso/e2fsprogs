@@ -41,7 +41,8 @@
  */
 void ext2fs_clear_block_uninit(ext2_filsys fs, dgrp_t group)
 {
-	if (!ext2fs_has_group_desc_csum(fs) ||
+	if (group >= fs->group_desc_count ||
+	    !ext2fs_has_group_desc_csum(fs) ||
 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
 		return;
 
@@ -61,7 +62,8 @@ static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 {
 	ext2_ino_t	i, ino;
 
-	if (!ext2fs_has_group_desc_csum(fs) ||
+	if (group >= fs->group_desc_count ||
+	    !ext2fs_has_group_desc_csum(fs) ||
 	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT)))
 		return;
 
