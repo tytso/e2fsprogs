@@ -62,7 +62,9 @@ struct undo_header {
 	__le32 f_compat;	/* compatible features (none so far) */
 	__le32 f_incompat;	/* incompatible features (none so far) */
 	__le32 f_rocompat;	/* ro compatible features (none so far) */
-	__u8 padding[448];	/* padding */
+	__le32 pad32;		/* padding for fs_offset */
+	__le64 fs_offset;	/* filesystem offset */
+	__u8 padding[436];	/* padding */
 	__le32 header_crc;	/* crc32c of the header (but not this field) */
 };
 
@@ -99,6 +101,13 @@ struct undo_context {
 };
 #define KEYS_PER_BLOCK(d) (((d)->blocksize / sizeof(struct undo_key)) - 1)
 
+#define E2UNDO_FEATURE_COMPAT_FS_OFFSET 0x1	/* the filesystem offset */
+
+static inline int e2undo_has_feature_fs_offset(struct undo_header *header) {
+	return ext2fs_le32_to_cpu(header->f_compat) &
+		E2UNDO_FEATURE_COMPAT_FS_OFFSET;
+}
+
 static char *prg_name;
 static char *undo_file;
 
@@ -121,6 +130,8 @@ static void dump_header(struct undo_header *hdr)
 	printf("compat:\t\t0x%x\n", ext2fs_le32_to_cpu(hdr->f_compat));
 	printf("incompat:\t0x%x\n", ext2fs_le32_to_cpu(hdr->f_incompat));
 	printf("rocompat:\t0x%x\n", ext2fs_le32_to_cpu(hdr->f_rocompat));
+	if (e2undo_has_feature_fs_offset(hdr))
+		printf("fs offset:\t%llu\n", ext2fs_le64_to_cpu(hdr->fs_offset));
 	printf("header crc:\t0x%x\n", ext2fs_le32_to_cpu(hdr->header_crc));
 }
 
@@ -399,8 +410,12 @@ int main(int argc, char *argv[])
 	undo_ctx.super_block = ext2fs_le64_to_cpu(undo_ctx.hdr.super_offset);
 	undo_ctx.num_keys = ext2fs_le64_to_cpu(undo_ctx.hdr.num_keys);
 	io_channel_set_blksize(undo_ctx.undo_file, undo_ctx.blocksize);
-	if (!force && (undo_ctx.hdr.f_compat || undo_ctx.hdr.f_incompat ||
-		       undo_ctx.hdr.f_rocompat)) {
+	/*
+	 * Do not compare undo_ctx.hdr.f_compat with the available compatible
+	 * features set, because a "missing" compatible feature should
+	 * not cause any problems.
+	 */
+	if (!force && (undo_ctx.hdr.f_incompat || undo_ctx.hdr.f_rocompat)) {
 		fprintf(stderr, _("%s: Unknown undo file feature set.\n"),
 			tdb_file);
 		exit(1);
@@ -435,7 +450,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (*opt_offset_string) {
+	if (*opt_offset_string || e2undo_has_feature_fs_offset(&undo_ctx.hdr)) {
+		if (!*opt_offset_string)
+			offset = ext2fs_le64_to_cpu(undo_ctx.hdr.fs_offset);
 		retval = snprintf(opt_offset_string, sizeof(opt_offset_string),
 						  "offset=%llu", offset);
 		if (retval >= sizeof(opt_offset_string)) {
