@@ -312,7 +312,6 @@ static errcode_t undo_write_tdb(io_channel channel,
 	unsigned char *read_ptr;
 	unsigned long long end_block;
 	unsigned long long data_size;
-	void *data_ptr;
 	struct undo_key *key;
 	__u32 blk_crc;
 
@@ -368,22 +367,21 @@ static errcode_t undo_write_tdb(io_channel channel,
 		 * Also we need to recalcuate the block number with respect
 		 * to the backing I/O manager.
 		 */
-		offset = block_num * data->tdb_data_size;
+		offset = block_num * data->tdb_data_size +
+				(data->offset % data->tdb_data_size);
 		backing_blk_num = (offset - data->offset) / channel->block_size;
 
-		count = data->tdb_data_size +
-				((offset - data->offset) % channel->block_size);
-		retval = ext2fs_get_mem(count, &read_ptr);
+		retval = ext2fs_get_mem(data->tdb_data_size, &read_ptr);
 		if (retval) {
 			return retval;
 		}
 
-		memset(read_ptr, 0, count);
+		memset(read_ptr, 0, data->tdb_data_size);
 		actual_size = 0;
-		if ((count % channel->block_size) == 0)
-			sz = count / channel->block_size;
+		if ((data->tdb_data_size % channel->block_size) == 0)
+			sz = data->tdb_data_size / channel->block_size;
 		else
-			sz = -count;
+			sz = -data->tdb_data_size;
 		retval = io_channel_read_blk64(data->real, backing_blk_num,
 					     sz, read_ptr);
 		if (retval) {
@@ -405,13 +403,11 @@ static errcode_t undo_write_tdb(io_channel channel,
 			continue;
 		}
 		dbg_printf("Read %llu bytes from FS block %llu (blk=%llu cnt=%u)\n",
-		       data_size, backing_blk_num, block, count);
+		       data_size, backing_blk_num, block, data->tdb_data_size);
 		if ((data_size % data->undo_file->block_size) == 0)
 			sz = data_size / data->undo_file->block_size;
 		else
-			sz = -actual_size;
-		data_ptr = read_ptr + ((offset - data->offset) %
-				       data->undo_file->block_size);
+			sz = -data_size;;
 		/* extend this key? */
 		if (data->keys_in_block) {
 			key = data->keyb->keys + data->keys_in_block - 1;
@@ -427,9 +423,7 @@ static errcode_t undo_write_tdb(io_channel channel,
 		    E2UNDO_MAX_EXTENT_BLOCKS * data->tdb_data_size >
 		    keysz + sz) {
 			blk_crc = ext2fs_le32_to_cpu(key->blk_crc);
-			blk_crc = ext2fs_crc32c_le(blk_crc,
-						   (unsigned char *)data_ptr,
-						   data_size);
+			blk_crc = ext2fs_crc32c_le(blk_crc, read_ptr, data_size);
 			key->blk_crc = ext2fs_cpu_to_le32(blk_crc);
 			key->size = ext2fs_cpu_to_le32(keysz + data_size);
 		} else {
@@ -437,9 +431,7 @@ static errcode_t undo_write_tdb(io_channel channel,
 			key = data->keyb->keys + data->keys_in_block;
 			data->keys_in_block++;
 			key->fsblk = ext2fs_cpu_to_le64(backing_blk_num);
-			blk_crc = ext2fs_crc32c_le(~0,
-						   (unsigned char *)data_ptr,
-						   data_size);
+			blk_crc = ext2fs_crc32c_le(~0, read_ptr, data_size);
 			key->blk_crc = ext2fs_cpu_to_le32(blk_crc);
 			key->size = ext2fs_cpu_to_le32(data_size);
 		}
@@ -448,7 +440,7 @@ static errcode_t undo_write_tdb(io_channel channel,
 		       data->undo_blk_num,
 		       sz, data->num_keys - 1);
 		retval = io_channel_write_blk64(data->undo_file,
-					data->undo_blk_num, sz, data_ptr);
+					data->undo_blk_num, sz, read_ptr);
 		if (retval) {
 			free(read_ptr);
 			return retval;
