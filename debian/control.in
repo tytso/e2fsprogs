@@ -3,13 +3,11 @@ Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},REMOVE_ME))dnl
 define(UTIL_LINUX_NG_DEFINES,
 ifdef(`UTIL_LINUX_NG', ``libblkid-dev (>= 2.16), uuid-dev (>= 2.16),''))dnl
-define(DIETLIBC_DEFINES,
-ifdef(`DIETLIBC', ``dietlibc-dev (>> 0.30) [alpha amd64 arm hppa i386 ia64 powerpc ppc64 s390 sparc],''))dnl
 Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkg-config, DIETLIBC_DEFINES gcc-multilib [mips mipsel], libfuse-dev, libattr1-dev, debhelper (>= 7.0), UTIL_LINUX_NG_DEFINES m4
+Build-Depends: gettext, texinfo, pkg-config, gcc-multilib [mips mipsel], libfuse-dev, libattr1-dev, debhelper (>= 7.0), UTIL_LINUX_NG_DEFINES m4
 Standards-Version: 3.9.7
 Homepage: http://e2fsprogs.sourceforge.net
 

@@ -223,14 +223,6 @@ else
 M4_ARGS+=-UDO_MULTIARCH
 endif
 
-ifneq ($(SKIP_DIETLIBC),)
-M4_ARGS+=-UDIETLIBC
-WITH_DIET_LIBC = 
-else
-M4_ARGS+=-DDIETLIBC
-WITH_DIET_LIBC = --with-diet-libc --enable-libuuid --enable-libblkid
-endif
-
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 M4_ARGS+=-DE2FSCK_STATIC
 else
@@ -328,18 +320,9 @@ ${CFGSTATICSTAMP}:
 
 	mkdir -p ${staticbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	if type diet > /dev/null  2>&1 ; then \
-		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
-		${EXTRA_CONF_FLAGS} ${WITH_DIET_LIBC} CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"; \
-	else \
-		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-			${topdir}/configure ${COMMON_CONF_FLAGS} \
-			${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-			CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" \
-			LDFLAGS="$(LDFLAGS)"; \
-	fi
+	cd ${staticbuilddir} && AWK=/usr/bin/awk ${topdir}/configure \
+		${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
