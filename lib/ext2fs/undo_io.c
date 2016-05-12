@@ -417,11 +417,11 @@ static errcode_t undo_write_tdb(io_channel channel,
 			keysz = 0;
 		}
 		if (key != NULL &&
-		    ext2fs_le64_to_cpu(key->fsblk) +
-		    ((keysz + data->tdb_data_size - 1) /
-		     data->tdb_data_size) == backing_blk_num &&
+		    (ext2fs_le64_to_cpu(key->fsblk) * channel->block_size +
+		     channel->block_size - 1 +
+		     keysz) / channel->block_size == backing_blk_num &&
 		    E2UNDO_MAX_EXTENT_BLOCKS * data->tdb_data_size >
-		    keysz + sz) {
+		    keysz + data_size) {
 			blk_crc = ext2fs_le32_to_cpu(key->blk_crc);
 			blk_crc = ext2fs_crc32c_le(blk_crc, read_ptr, data_size);
 			key->blk_crc = ext2fs_cpu_to_le32(blk_crc);
