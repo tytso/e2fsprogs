@@ -292,6 +292,8 @@ int main(int argc, char *argv[])
 	__u32 key_crc, blk_crc, hdr_crc;
 	blk64_t lblk;
 	ext2_filsys fs;
+	__u64 offset;
+	char opt_offset_string[40] = { 0 };
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -303,7 +305,7 @@ int main(int argc, char *argv[])
 	add_error_table(&et_ext2_error_table);
 
 	prg_name = argv[0];
-	while ((c = getopt(argc, argv, "fhnvz:")) != EOF) {
+	while ((c = getopt(argc, argv, "fhno:vz:")) != EOF) {
 		switch (c) {
 		case 'f':
 			force = 1;
@@ -313,6 +315,16 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			dry_run = 1;
+			break;
+		case 'o':
+			offset = strtoull(optarg, &buf, 0);
+			if (*buf) {
+				com_err(prg_name, 0,
+						_("illegal offset - %s"), optarg);
+				exit(1);
+			}
+			/* used to indicate that an offset was specified */
+			opt_offset_string[0] = 1;
 			break;
 		case 'v':
 			verbose = 1;
@@ -421,6 +433,17 @@ int main(int argc, char *argv[])
 		com_err(prg_name, retval,
 				_("while opening `%s'"), device_name);
 		exit(1);
+	}
+
+	if (*opt_offset_string) {
+		retval = snprintf(opt_offset_string, sizeof(opt_offset_string),
+						  "offset=%llu", offset);
+		if (retval >= sizeof(opt_offset_string)) {
+			/* should not happen... */
+			com_err(prg_name, 0, _("specified offset is too large"));
+			exit(1);
+		}
+		io_channel_set_options(channel, opt_offset_string);
 	}
 
 	if (!force && check_filesystem(&undo_ctx, channel))

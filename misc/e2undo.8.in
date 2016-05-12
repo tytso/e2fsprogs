@@ -46,6 +46,11 @@ Display a usage message.
 .B \-n
 Dry-run; do not actually write blocks back to the filesystem.
 .TP
+.BI \-o " offset"
+Specify the filesystem's
+.I offset
+(in bytes) from the beginning of the device or file.
+.TP
 .B \-v
 Report which block we're currently replaying.
 .SH AUTHOR
