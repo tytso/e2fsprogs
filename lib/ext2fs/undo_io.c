@@ -94,10 +94,12 @@ struct undo_header {
 	__le32 fs_block_size;	/* block size of the target device */
 	__le32 sb_crc;		/* crc32c of the superblock */
 	__le32 state;		/* e2undo state flags */
-	__le32 f_compat;	/* compatible features (none so far) */
+	__le32 f_compat;	/* compatible features */
 	__le32 f_incompat;	/* incompatible features (none so far) */
 	__le32 f_rocompat;	/* ro compatible features (none so far) */
-	__u8 padding[448];	/* padding */
+	__le32 pad32;		/* padding for fs_offset */
+	__le64 fs_offset;	/* filesystem offset */
+	__u8 padding[436];	/* padding */
 	__le32 header_crc;	/* crc32c of this header (but not this field) */
 };
 
@@ -148,6 +150,16 @@ struct undo_private_data {
 	struct undo_header hdr;
 };
 #define KEYS_PER_BLOCK(d) (((d)->tdb_data_size / sizeof(struct undo_key)) - 1)
+
+#define E2UNDO_FEATURE_COMPAT_FS_OFFSET 0x1	/* the filesystem offset */
+
+static inline void e2undo_set_feature_fs_offset(struct undo_header *header) {
+	header->f_compat |= E2UNDO_FEATURE_COMPAT_FS_OFFSET;
+}
+
+static inline void e2undo_clear_feature_fs_offset(struct undo_header *header) {
+	header->f_compat &= ~E2UNDO_FEATURE_COMPAT_FS_OFFSET;
+}
 
 static io_manager undo_io_backing_manager;
 static char *tdb_file;
@@ -222,6 +234,11 @@ static errcode_t write_undo_indexes(struct undo_private_data *data, int flush)
 	data->hdr.key_offset = ext2fs_cpu_to_le64(data->first_key_blk);
 	data->hdr.fs_block_size = ext2fs_cpu_to_le32(block_size);
 	data->hdr.sb_crc = ext2fs_cpu_to_le32(sb_crc);
+	data->hdr.fs_offset = ext2fs_cpu_to_le64(data->offset);
+	if (data->offset)
+		e2undo_set_feature_fs_offset(&data->hdr);
+	else
+		e2undo_clear_feature_fs_offset(&data->hdr);
 	hdr_crc = ext2fs_crc32c_le(~0, (unsigned char *)&data->hdr,
 				   sizeof(data->hdr) -
 				   sizeof(data->hdr.header_crc));
@@ -567,7 +584,12 @@ static errcode_t try_reopen_undo_file(int undo_fd,
 	super_block = ext2fs_le64_to_cpu(hdr.super_offset);
 	num_keys = ext2fs_le64_to_cpu(hdr.num_keys);
 	io_channel_set_blksize(data->undo_file, blocksize);
-	if (hdr.f_compat || hdr.f_incompat || hdr.f_rocompat)
+	/*
+	 * Do not compare hdr.f_compat with the available compatible
+	 * features set, because a "missing" compatible feature should
+	 * not cause any problems.
+	 */
+	if (hdr.f_incompat || hdr.f_rocompat)
 		goto bad_file;
 
 	/* Superblock matches this FS? */
