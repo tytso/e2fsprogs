@@ -1874,6 +1874,8 @@ profile_error:
 		flags |= VERBOSE_CREATE;
 	if (fs_blocks_count == 0)
 		flags |= NO_SIZE;
+	else
+		explicit_fssize = 1;
 	if (!check_plausibility(device_name, flags, &is_device) && !force)
 		proceed_question(proceed_delay);
 
@@ -1881,7 +1883,6 @@ profile_error:
 
 	/* Determine the size of the device (if possible) */
 	if (noaction && fs_blocks_count) {
-		explicit_fssize = 1;
 		dev_size = fs_blocks_count;
 		retval = 0;
 	} else
