@@ -1,3 +1,29 @@
+e2fsprogs (1.43~WIP.2016.05.12-1) unstable; urgency=medium
+
+  * New upstream version
+  * Clean up various man pages and usage messages
+  * Fix up gcc and Coverity warnings
+  * Stop building static binaries using dietlibc
+  * Fix potential out-of-boundary memory access in resize2fs
+  * Fix sparse_super2 bugs in mke2fs and resize2fs
+  * The mke2fs program will now support multiple -O options
+  * The e2image program now ignores checksum error so that debugging
+    snapshots of a file system can be taken of a broken file system
+  * E2fsck now more cleanly handles checksum errors while replaying the
+    journal
+  * Fix e2fsck to not try to set a UUID if the metadata_csum feature is
+    enabled since this will break the checksums
+  * Fix e2image so progress information won't get leaked to stdout
+  * Fix bugs in "mke2fs -E offset=NNNN" (Closes: #803629)
+  * Fix Hurd portability issues (Closes: #822576)
+  * Update initramfs in e2fsprogs's postinst script so the initial
+    ramdisk gets the updated e2fsprogs binaries (Closes: #804237)
+  * Work around texi2dvi bug which can cause build failures (Closes: #822227)
+  * E2fsck now prints "REBOOT SYSTEM" instead of "REBOOT LINUX" to
+    assuage the sensibilities of Hurd users (Closes: #769838)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 12 May 2016 00:18:45 -0400
+
 e2fsprogs (1.43~WIP.2016.03.15-1) unstable; urgency=low
 
   * New upstream release

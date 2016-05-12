@@ -1,5 +1,5 @@
-E2fsprogs 1.43-WIP (March 14, 2016) -- f8fd2fdc1e
-=================================================
+E2fsprogs 1.43-WIP (May 12, 2016) -- 4baef0a235
+===============================================
 
 Add support for the ext4 metadata checksum, checksum seed, inline
 data, encryption, project quota, and read-only features.
@@ -9,6 +9,13 @@ compression feature has been removed.
 
 Mke2fs will now create file systems with the metadata_csum and 64bit
 features enabled by default.
+
+The mke2fs program will now support multiple -O options (instead of
+just ignoring all but the last -O option).
+
+Mke2fs will now correctly determine the size of a file system and
+handle the discard operation correctly when the "-E offset=NNN" is
+used.  (Addresses Debian Bug: #803629)
 
 The tune2fs program will ask the user for confirmation before starting
 dangerous operations if the terminal is available, and it will replay
@@ -25,8 +32,13 @@ encoded by older kernels.
 
 Fix miscellaneous MMP bugs in debugfs.
 
+Fix sparse_super2 bugs in mke2fs and resize2fs.
+
 The resize2fs command can now convert file systems between 64-bit and
 32-bit mode.
+
+Fix potential out-of-bounds memory access in resize2fs when doing a
+large off-line file system grow operation.
 
 We now use a new e2undo file format which is much more efficient and
 faster than the old tdb-based scheme.  Since it so much faster,
@@ -693,6 +705,9 @@ is invalid if it is exactly 2**32 blocks.
 
 Fixed e2fsck so it won't try checking for, and adding, a missing
 lost+found directory when running in read-only mode.
+
+Fixed e2image so that progress information won't get leaked to stdout.
+(Addresses Red Hat Bugzilla: #1327329)
 
 Fixed e2image to avoid some buffer overruns which would cause it to when
 creating a "standard (non-raw, non-qcow2) image file.  Standard

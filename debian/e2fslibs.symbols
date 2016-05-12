@@ -128,6 +128,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_compare_generic_bitmap@Base 1.41.0
  ext2fs_compare_generic_bmap@Base 1.42
  ext2fs_compare_inode_bitmap@Base 1.37
+ ext2fs_const_inode@Base 1.43~WIP.2016.05.12
  ext2fs_convert_subcluster_bitmap@Base 1.42
  ext2fs_copy_bitmap@Base 1.37
  ext2fs_copy_dblist@Base 1.37
@@ -342,6 +343,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_inline_data_init@Base 1.43~WIP.2015.05.18
  ext2fs_inline_data_set@Base 1.43~WIP.2015.05.18
  ext2fs_inline_data_size@Base 1.43~WIP.2015.05.18
+ ext2fs_inode@Base 1.43~WIP.2016.05.12
  ext2fs_inode_alloc_stats2@Base 1.37
  ext2fs_inode_alloc_stats@Base 1.37
  ext2fs_inode_bitmap_checksum@Base 1.43~WIP.2015.05.18
