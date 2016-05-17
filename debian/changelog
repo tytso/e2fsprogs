@@ -1,3 +1,11 @@
+e2fsprogs (1.43-1) unstable; urgency=medium
+
+  * New upstream version
+  * Fix or improve offset support in mke2fs, e2undo, and libext2fs
+  * Update debian policy version to 3.9.8
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 17 May 2016 01:04:28 -0400
+
 e2fsprogs (1.43~WIP.2016.05.12-1) unstable; urgency=medium
 
   * New upstream version

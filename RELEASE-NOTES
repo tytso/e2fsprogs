@@ -1,5 +1,5 @@
-E2fsprogs 1.43-WIP (May 12, 2016) -- 4baef0a235
-===============================================
+E2fsprogs 1.43 (May 17, 2016)
+=============================
 
 Add support for the ext4 metadata checksum, checksum seed, inline
 data, encryption, project quota, and read-only features.
@@ -33,6 +33,8 @@ encoded by older kernels.
 Fix miscellaneous MMP bugs in debugfs.
 
 Fix sparse_super2 bugs in mke2fs and resize2fs.
+
+Fix or improve offset support in mke2fs, e2undo, and libext2fs.
 
 The resize2fs command can now convert file systems between 64-bit and
 32-bit mode.
