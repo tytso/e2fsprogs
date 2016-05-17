@@ -726,7 +726,6 @@ static void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 		exit(1);
 	}
 
-	strcpy(saltbuf.key_ref_str, argv[optind]);
 	if ((strlen(argv[optind]) != (EXT4_KEY_DESCRIPTOR_SIZE * 2)) ||
 	    hex2byte(argv[optind], (EXT4_KEY_DESCRIPTOR_SIZE * 2),
 		     saltbuf.key_desc, EXT4_KEY_DESCRIPTOR_SIZE)) {
@@ -737,6 +736,7 @@ static void do_set_policy(int argc, char **argv, const struct cmd_desc *cmd)
 			exit(1);
 	}
 	validate_paths(argc, argv, optind+1);
+	strcpy(saltbuf.key_ref_str, argv[optind]);
 	set_policy(&saltbuf, pad, argc, argv, optind+1);
 	exit(0);
 }

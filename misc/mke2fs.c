@@ -1015,10 +1015,11 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			quotatype_bits = 0;
 			ret = parse_quota_types(arg, &quotatype_bits, &errtok);
 			if (ret) {
-				if (errtok)
+				if (errtok) {
 					fprintf(stderr,
 				"Failed to parse quota type at %s", errtok);
-				else
+					free(errtok);
+				} else
 					com_err(program_name, ret,
 						"while parsing quota type");
 				r_usage++;

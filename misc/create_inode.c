@@ -767,6 +767,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				com_err(__func__, retval,
 					_("while trying to read link \"%s\""),
 					name);
+				free(ln_target);
 				goto out;
 			}
 			if (read_cnt > st.st_size) {
