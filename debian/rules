@@ -340,6 +340,9 @@ build: build-std $(BUILD_BF) $(BUILD_STATIC)
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
+	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
+		dh_update_autotools_config ;\
+	fi
 	$(MAKE) -C ${stdbuilddir} V=1 all
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
