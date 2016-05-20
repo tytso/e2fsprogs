@@ -7,7 +7,7 @@ Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkg-config, gcc-multilib [mips mipsel], libfuse-dev, libattr1-dev, debhelper (>= 7.0), UTIL_LINUX_NG_DEFINES m4
+Build-Depends: gettext, texinfo, pkg-config, gcc-multilib [mips mipsel], libfuse-dev, libattr1-dev, debhelper (>= 9.0), UTIL_LINUX_NG_DEFINES m4
 Standards-Version: 3.9.8
 Homepage: http://e2fsprogs.sourceforge.net
 
@@ -259,7 +259,7 @@ Description: ext2/ext3/ext4 file system utilities
  This package contains programs for creating, checking, and maintaining
  ext2/3/4-based file systems.  It also includes the "badblocks" program,
  which can be used to scan for bad blocks on a disk or other storage device.
-
+ifdef(`USE_DBGSYM',,``
 Package: e2fsprogs-dbg
 Section: debug
 Priority: extra
@@ -269,8 +269,9 @@ Description: debugging information for e2fsprogs
  This package includes the debug information useful for debugging e2fsprogs
  and its libraries, contained in the e2fsprogs and e2fsck-static packages.
  The debug information is used for execution tracing and core
- dump analysis. 
-ifdef(`UTIL_LINUX_NG',,``
+ dump analysis.
+'')
+ifdef(`USE_DBGSYM',,ifdef(`UTIL_LINUX_NG',,``
 Package: uuid-runtime-dbg
 Section: debug
 Priority: extra
@@ -281,8 +282,8 @@ Description: debugging information for uuid-runtime
  uuid runtime programs, contained in the uuid-runtime package.
  The debugging information is used for execution tracing and core
  dump analysis.
-'')dnl
-
+''))dnl
+ifdef(`USE_DBGSYM',,``
 Package: e2fslibs-dbg
 Section: debug
 Priority: extra
@@ -312,7 +313,8 @@ Description: debugging information for libss2
  This package includes the debug information useful for debugging the
  ss library, contained in the libss2 package.  The debug information
  is used for execution tracing and core dump analysis.
-ifdef(`UTIL_LINUX_NG',,``
+'')dnl
+ifdef(`USE_DBGSYM',,ifdef(`UTIL_LINUX_NG',,``
 Package: libblkid1-dbg
 Section: debug
 Priority: extra
@@ -332,4 +334,4 @@ Description: debugging information for libuuid1
  This package includes the debug information useful for debugging the
  UUID library, contained in the libuuid1 package.  The debug
  information is used for execution tracing and core dump analysis.
-'')dnl
+''))dnl
