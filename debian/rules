@@ -25,6 +25,18 @@ DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null
 DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
 UTIL_LINUX_NG ?= yes
 
+DH_VERSION := $(shell dpkg-query -W -f '$${Version}' debhelper)
+
+# USE_DBGSYM :=
+USE_DBGSYM ?= $(shell if dpkg --compare-versions $(DH_VERSION) ">=" 9.20160114 ; then echo yes ; fi)
+
+ifeq ($(USE_DBGSYM),yes)
+dh_strip_args = -p$(1) --dbgsym-migration='$(1)-dbg (<= 1.43-1)'
+dh_strip_args2 = -p$(1) --dbgsym-migration='$(2)-dbg (<= 1.43-1)'
+else
+dh_strip_args = -p$(1) --dbg-package=$(1)-dbg
+dh_strip_args2 = -p$(1) --dbg-package=$(2)-dbg
+endif
 # find the version for the main package, from changelog file
 MAIN_VERSION = $(shell head -n 1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
 # find versions for libraries going into their own packages, from their Makefile.in's,
@@ -211,9 +223,19 @@ endif
 endif
 
 M4_ARGS=
+DBG_PACKAGES=
+
+ifeq ($(USE_DBGSYM),yes)
+M4_ARGS+=-DUSE_DBGSYM
+else
+DBG_PACKAGES += -pe2fsprogs-dbg -pe2fslibs-dbg -plibcomerr2-dbg -plibss2-dbg
+M4_ARGS+=-UUSE_DBGSYM
+endif
+
 ifeq ($(UTIL_LINUX_NG),yes)
 M4_ARGS+=-DUTIL_LINUX_NG
 else
+DBG_PACKAGES += -puuid-runtime-dbg -plibuuid1-dbg -plibblkid1-dbg
 M4_ARGS+=-UUTIL_LINUX_NG
 endif
 
@@ -340,6 +362,9 @@ build: build-std $(BUILD_BF) $(BUILD_STATIC)
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
+	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
+		dh_update_autotools_config ;\
+	fi
 	$(MAKE) -C ${stdbuilddir} V=1 all
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
@@ -544,35 +569,30 @@ endif
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs \
 		-plibcomerr${COMERR_SOVERSION} \
 		-plibss${SS_SOVERSION} \
-		-pe2fslibs \
-		-pe2fsprogs-dbg -pe2fslibs-dbg \
-		-plibcomerr2-dbg -plibss2-dbg
+		-pe2fslibs $(DBG_PACKAGES)
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 	DH_OPTIONS= dh_installchangelogs -pe2fsck-static
 endif
 ifneq ($(UTIL_LINUX_NG),yes)
 	DH_OPTIONS= dh_installchangelogs -plibuuid${UUID_SOVERSION} \
-		-puuid-dev -puuid-runtime -puuid-runtime-dbg -plibuuid1-dbg \
-		-plibblkid${BLKID_SOVERSION} -plibblkid1-dbg
+		-puuid-dev -puuid-runtime -plibblkid${BLKID_SOVERSION}
 endif
 
 	dh_fixperms
-	dh_strip -pe2fsprogs --dbg-package=e2fsprogs-dbg
+	dh_strip $(call dh_strip_args,e2fsprogs)
 ifneq ($(BUILD_E2FSCK_STATIC),no)
-	dh_strip -pe2fsck-static --dbg-package=e2fsprogs-dbg
+	dh_strip $(call dh_strip_args2,e2fsck-static,e2fsprogs)
 endif
 ifneq ($(ismips),)
-	dh_strip -pe2fslibs --dbg-package=e2fslibs-dbg -Xlib64ext2fs-nopic.a
+	dh_strip $(call dh_strip_args,e2fslibs) -Xlib64ext2fs-nopic.a
 else
-	dh_strip -pe2fslibs --dbg-package=e2fslibs-dbg
+	dh_strip $(call dh_strip_args,e2fslibs)
 endif
-	dh_strip -plibss${SS_SOVERSION} --dbg-package=libss${SS_SOVERSION}-dbg
-	dh_strip -plibcomerr${COMERR_SOVERSION} \
-		--dbg-package=libcomerr${COMERR_SOVERSION}-dbg
+	dh_strip $(call dh_strip_args,libss${SS_SOVERSION})
+	dh_strip $(call dh_strip_args,libcomerr${COMERR_SOVERSION})
 ifneq ($(UTIL_LINUX_NG),yes)
-	dh_strip -plibblkid${BLKID_SOVERSION} \
-		--dbg-package=libblkid${BLKID_SOVERSION}-dbg
-	dh_strip -plibuuid${UUID_SOVERSION} --dbg-package=libuuid${UUID_SOVERSION}-dbg
+	dh_strip $(call dh_strip_args,libblkid${BLKID_SOVERSION})
+	dh_strip $(call dh_strip_args,libuuid${UUID_SOVERSION})
 endif
 	dh_strip
 
@@ -586,11 +606,14 @@ endif
 		/bin/rm debian/$$i.tmp-patch; \
 	done
 
-	for i in e2fsprogs e2fsprogs-dbg e2fslibs e2fslibs-dbg; do \
+	for i in e2fsprogs e2fslibs \
+	    $(if $(filter $(USE_DBGSYM),yes),,e2fsprogs-dbg e2fslibs-dbg) ; \
+	do \
 	   $(INSTALL) -p -m 0644 debian/copyright \
 		${debdir}/$$i/usr/share/doc/$$i/copyright; \
 	done
 
+ifneq ($(USE_DBGSYM),yes)
 ifneq ($(UTIL_LINUX_NG),yes)
 	$(INSTALL) -p -m 0644 debian/uuid-runtime.copyright \
 		${uuidruntimedbgdir}/usr/share/doc/uuid-runtime-dbg/copyright
@@ -609,7 +632,7 @@ ifneq ($(UTIL_LINUX_NG),yes)
 	$(INSTALL) -p -m 0644 debian/libuuid1.copyright \
 		${libuuiddbgdir}/usr/share/doc/libuuid1-dbg/copyright
 endif
-
+endif
 	dh_compress
 
 	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
@@ -677,3 +700,11 @@ debug_flags:
 	@echo CFLAGS is $(CFLAGS)
 	@echo LDFLAGS is $(LDFLAGS)
 	@echo CPPFLAGS is $(CPPFLAGS)
+
+debug:
+	echo $(DH_VERSION)
+	echo $(USE_DBGSYM)
+	echo $(call dh_strip_args,e2fsprogs)
+	echo $(call dh_strip_args2,e2fsck-static,e2fsprogs)
+	echo $(DBG_PACKAGES)
+	echo $(if $(filter $(USE_DBGSYM),yes),,e2fsprogs-dbg e2fslibs-dbg)
