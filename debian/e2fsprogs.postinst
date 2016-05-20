@@ -3,7 +3,10 @@
 # Abort on error.
 set -e
 
-update-initramfs -u
+if [ -x /usr/sbin/update-initramfs -a \
+	-e /etc/initramfs-tools/initramfs.conf ]; then
+    update-initramfs -u
+fi
 
 #DEBHELPER#
 
