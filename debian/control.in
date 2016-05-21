@@ -124,7 +124,7 @@ Description: runtime components for the Universally Unique ID library
 
 ifdef(`UDEB_PKGS',``
 Package: libuuid1-udeb
-XC-Package-Type: udeb
+Package-Type: udeb
 Section: debian-installer
 Priority: optional
 Depends: ${shlibs:Depends}
@@ -161,7 +161,7 @@ Description: block device id library
 
 ifdef(`UDEB_PKGS',``
 Package: libblkid1-udeb
-XC-Package-Type: udeb
+Package-Type: udeb
 Section: debian-installer
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -193,7 +193,7 @@ Description: block device id library - headers and static libraries
 
 ifdef(`UDEB_PKGS',``
 Package: e2fsprogs-udeb
-XC-Package-Type: udeb
+Package-Type: udeb
 Section: debian-installer
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
