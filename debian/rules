@@ -369,6 +369,11 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
 endif
+	if ! test -d debian/orig-gmo ; then \
+		mkdir debian/orig-gmo ; \
+		mv po/*.gmo po/*.po debian/orig-gmo ; \
+		cp debian/orig-gmo/*.po po ; \
+	fi
 	$(MAKE) -C ${stdbuilddir}/po V=1 update-gmo
 
 	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs.html )
@@ -408,6 +413,11 @@ endif
 
 clean:
 	dh_testdir
+	if test -d debian/orig-gmo ; then \
+		rm -f po/*.gmo po/*.po ; \
+		mv debian/orig-gmo/* po ; \
+		rmdir debian/orig-gmo ; \
+	fi
 	rm -rf ${STAMPSDIR}
 	[ ! -f ${stdbuilddir}/Makefile ] || $(MAKE) -C ${stdbuilddir} V=1 distclean
 	[ ! -f ${bfbuilddir}/Makefile ] || $(MAKE) -C ${bfbuilddir} V=1 distclean
