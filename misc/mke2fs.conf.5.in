@@ -484,7 +484,7 @@ requested alignment.  If this relation is not specified, no alignment
 requirement will be imposed on the huge files.
 .TP
 .I hugefiles_align_disk
-Thie relations specifies whether the alignment should be relative to the
+This relations specifies whether the alignment should be relative to the
 beginning of the hard drive (assuming that the starting offset of the
 partition is available to mke2fs).  The default value is false, which
 will cause hugefile alignment to be relative to the beginning of the
