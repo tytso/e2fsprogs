@@ -20,7 +20,7 @@ mounted using the ext4 file system driver, and indeed in many modern
 Linux distributions, the ext4 file system driver has been configured
 handle mount requests for ext2 and ext3 file systems.
 .SH FILE SYSTEM FEATURES
-A file system formated for ext2, ext3, or ext4 can be have some
+A file system formatted for ext2, ext3, or ext4 can be have some
 collection of the follow file system feature flags enabled.  Some of
 these features are not supported by all implementations of the ext2,
 ext3, and ext4 file system drivers, depending on Linux kernel version in
@@ -271,7 +271,9 @@ is determined by the filesystem superblock. Set them with
 .BR tune2fs (8).
 .TP
 .BR acl | noacl
-Support POSIX Access Control Lists (or not).
+Support POSIX Access Control Lists (or not).  See the
+.BR acl (5)
+manual page.
 .TP
 .BR bsddf | minixdf
 Set the behavior for the
@@ -382,16 +384,6 @@ The ext3 filesystem is a version of the ext2 filesystem which has been
 enhanced with journaling.  It supports the same options as ext2 as
 well as the following additions:
 .TP
-.B journal=update
-Update the ext3 filesystem's journal to the current format.
-.TP
-.B journal=inum
-When a journal already exists, this option is ignored. Otherwise, it
-specifies the number of the inode which will represent the ext3 filesystem's
-journal file; ext3 will create a new journal, overwriting the old contents
-of the file whose inode number is
-.IR inum .
-.TP
 .BR journal_dev=devnum / journal_path=path
 When the external journal device's major/minor numbers
 have changed, these options allow the user to specify
@@ -456,11 +448,6 @@ Enable Extended User Attributes. See the
 .BR attr (5)
 manual page.
 .TP
-.B acl
-Enable POSIX Access Control Lists. See the
-.BR acl (5)
-manual page.
-.TP
 .BR usrjquota=aquota.user | grpjquota=aquota.group | jqfmt=vfsv0
 Apart from the old quota system (as in ext2, jqfmt=vfsold aka version 1 quota)
 ext3 also supports journaled quotas (version 2 quota). jqfmt=vfsv0
@@ -477,7 +464,7 @@ filesystem.
 The options
 .B journal_dev, norecovery, noload, data, commit, orlov, oldalloc, [no]user_xattr
 .B [no]acl, bsddf, minixdf, debug, errors, data_err, grpid, bsdgroups, nogrpid
-.B sysvgroups, resgid, resuid, sb, quota, noquota, grpquota, usrquota
+.B sysvgroups, resgid, resuid, sb, quota, noquota, nouid32, grpquota, usrquota
 .B usrjquota, grpjquota and jqfmt
 are backwardly compatible with ext3 or ext2.
 .TP
@@ -582,13 +569,8 @@ block device when blocks are freed.  This is useful for SSD devices and
 sparse/thinly-provisioned LUNs, but it is off by default until sufficient
 testing has been done.
 .TP
-.B nouid32
-Disables 32-bit UIDs and GIDs.  This is for
-interoperability  with  older kernels which only
-store and expect 16-bit values.
-.TP
 .BR block_validity / noblock_validity
-This options allows to enables/disables the in-kernel facility for tracking
+This options enables/disables the in-kernel facility for tracking
 filesystem metadata blocks within internal data structures. This allows multi-\c
 block allocator and other routines to quickly locate extents which might
 overlap with filesystem metadata blocks. This option is intended for debugging
