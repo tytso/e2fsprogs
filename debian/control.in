@@ -14,7 +14,7 @@ Homepage: http://e2fsprogs.sourceforge.net
 ifdef(`E2FSCK_STATIC',``
 Package: e2fsck-static
 Priority: optional
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}
 Recommends: sash | bash-static | zsh-static | busybox-static | zsh30-static
 Architecture: any
 Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
