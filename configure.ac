@@ -355,7 +355,28 @@ then
 	AC_MSG_RESULT([Enabling gcov support])
 fi
 )
-
+dnl
+dnl handle --enable-hardening
+dnl
+CFLAGS_SHLIB="${CFLAGS_SHLIB:-$CFLAGS}"
+CFLAGS_STLIB="${CFLAGS_STLIB:-$CFLAGS}"
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+LDFLAGS_STATIC=${LDFLAGS_STATIC:-$LDFLAGS}
+AC_ARG_ENABLE([hardening],
+[  --enable-hardening	  	  build for coverage testing using gcov],
+if test "$enableval" = "yes"
+then
+	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+	HARDEN_LDFLAGS=["-Wl,-z,relro -Wl,-z,now"]
+	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
+	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"
+	CFLAGS_STLIB="$CFLAGS_STLIB $HARDEN_CFLAGS -fPIE"
+	LDFLAGS="$LDFLAGS $HARDEN_LDFLAGS -fPIE -pie"
+	LDFLAGS_STATIC="$LDFLAGS_STATIC $HARDEN_LDFLAGS"
+	LDFLAGS_SHLIB="$LDFLAGS_SHLIB $HARDEN_LDFLAGS"
+	AC_MSG_RESULT([Enabling hardening support])
+fi
+)
 dnl
 dnl Substitute library extensions
 dnl
@@ -1310,7 +1331,7 @@ dnl in static form.
 dnl
 AC_MSG_CHECKING([whether we can link with -static])
 AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
-[SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
+[SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
 AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
  ac_cv_e2fsprogs_use_static=yes, ac_cv_e2fsprogs_use_static=no)
 LDFLAGS=$SAVE_LDFLAGS])
@@ -1327,11 +1348,10 @@ solaris2.*)
 ;;
 esac
 AC_MSG_RESULT($ac_cv_e2fsprogs_use_static)
-LDFLAG_STATIC=
 if test $ac_cv_e2fsprogs_use_static = yes; then
-	LDFLAG_STATIC=-static
+	LDFLAGS_STATIC="$LDFLAGS_STATIC -static"
 fi
-AC_SUBST(LDFLAG_STATIC)
+AC_SUBST(LDFLAGS_STATIC)
 dnl
 dnl Work around mysterious Darwin / GNU libintl problem
 dnl (__asm__ redirection doesn't work for some mysterious reason.  Looks like
@@ -1384,6 +1404,15 @@ if test $cross_compiling = no; then
 fi
 AC_SUBST(BUILD_CFLAGS)
 AC_SUBST(BUILD_LDFLAGS)
+dnl
+dnl Define CFLAGS and LDFLAGS for shared libraries
+dnl
+CFLAGS_SHLIB=${CFLAGS_SHLIB:-$CFLAGS}
+CFLAGS_STLIB=${CFLAGS_STLIB:-$CFLAGS}
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+AC_SUBST(CFLAGS_SHLIB)
+AC_SUBST(CFLAGS_STLIB)
+AC_SUBST(LDFLAGS_SHLIB)
 dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
