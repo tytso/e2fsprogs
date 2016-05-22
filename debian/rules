@@ -9,6 +9,8 @@
 
 -include debian/rules.custom
 
+export DEB_BUILD_MAINT_OPTIONS ?= hardening=+all
+
 # be paranoid
 export LC_ALL ?= C
 
@@ -134,10 +136,13 @@ DEFAULT_CFLAGS ?= -g -O2
 DEFAULT_LDFLAGS ?= -Wl,-Bsymbolic-functions
 
 CFLAGS ?= $(shell if dpkg-buildflags > /dev/null 2>&1 ; then \
+	DEB_BUILD_MAINT_OPTIONS=$(DEB_BUILD_MAINT_OPTIONS) \
 	dpkg-buildflags --get CFLAGS; else echo $(DEFAULT_CFLAGS) ; fi)
 LDFLAGS ?= $(shell if dpkg-buildflags > /dev/null 2>&1 ; then \
+	DEB_BUILD_MAINT_OPTIONS=$(DEB_BUILD_MAINT_OPTIONS) \
 	dpkg-buildflags --get LDFLAGS; else echo $(DEFAULT_LDFLAGS) ; fi)
 CPPFLAGS ?= $(shell if dpkg-buildflags > /dev/null 2>&1 ; then \
+	DEB_BUILD_MAINT_OPTIONS=$(DEB_BUILD_MAINT_OPTIONS) \
 	dpkg-buildflags --get CPPFLAGS; fi)
 
 ifeq (${DEB_HOST_ARCH},alpha)
@@ -157,6 +162,11 @@ else
 BUILD_STATIC = build-static
 E2FSCK_STATIC = ${staticbuilddir}/e2fsck/e2fsck.static
 endif
+
+CFLAGS_SHLIB = $(filter-out -fPIE -fpie -pie,$(CFLAGS))
+CFLAGS_STLIB = $(filter-out -fPIE -fpie -pie,$(CFLAGS))
+LDFLAGS_SHLIB = $(filter-out -fPIE -fpie -pie,$(LDFLAGS))
+LDFLAGS_STATIC = $(filter-out -fPIE -fpie -pie,$(LDFLAGS))
 
 ifneq ($(SKIP_UDEB),)
 SKIP_BF ?= yes
@@ -291,13 +301,20 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" \
-		LDFLAGS="$(LDFLAGS)"
+		LDFLAGS="$(LDFLAGS)" CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 else
 	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		CPPFLAGS="$(CPPFLAGS)" CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS="$(LDFLAGS)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 endif
 
   # specially-built MIPS libs
@@ -306,11 +323,19 @@ ifneq ($(ismips),)
 	cd ${mipsbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} \
 		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 	cd ${mipsbuilddir64} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} \
 		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 endif
 
 	mkdir -p ${STAMPSDIR}
@@ -325,13 +350,21 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${bfbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} CFLAGS="${CFLAGS} ${BF_CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 else
 	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGBFSTAMP}
@@ -344,13 +377,21 @@ ${CFGSTATICSTAMP}:
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${staticbuilddir} && AWK=/usr/bin/awk ${topdir}/configure \
 		${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)"
+		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
+		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
+		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
+		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTATICSTAMP}
@@ -407,7 +448,7 @@ ${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
 	dh_testdir
 	$(MAKE) -C ${staticbuilddir} V=1 libs
 ifneq ($(BUILD_E2FSCK_STATIC),no)
-	$(MAKE) -C ${staticbuilddir}/e2fsck V=1 all e2fsck.static
+	$(MAKE) -C ${staticbuilddir}/e2fsck V=1 e2fsck.static
 endif
 	touch ${BUILDSTATICSTAMP}
 
@@ -710,11 +751,3 @@ debug_flags:
 	@echo CFLAGS is $(CFLAGS)
 	@echo LDFLAGS is $(LDFLAGS)
 	@echo CPPFLAGS is $(CPPFLAGS)
-
-debug:
-	echo $(DH_VERSION)
-	echo $(USE_DBGSYM)
-	echo $(call dh_strip_args,e2fsprogs)
-	echo $(call dh_strip_args2,e2fsck-static,e2fsprogs)
-	echo $(DBG_PACKAGES)
-	echo $(if $(filter $(USE_DBGSYM),yes),,e2fsprogs-dbg e2fslibs-dbg)
