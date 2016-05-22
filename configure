@@ -625,6 +625,9 @@ gl_use_threads_default=
 ac_func_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+LDFLAGS_SHLIB
+CFLAGS_STLIB
+CFLAGS_SHLIB
 BUILD_LDFLAGS
 BUILD_CFLAGS
 MKINSTALLDIRS
@@ -632,7 +635,7 @@ INCLUDES
 DO_TEST_SUITE
 ET_DIR
 SS_DIR
-LDFLAG_STATIC
+LDFLAGS_STATIC
 root_sysconfdir
 root_libdir
 root_sbindir
@@ -857,6 +860,7 @@ enable_elf_shlibs
 enable_bsd_shlibs
 enable_profile
 enable_gcov
+enable_hardening
 enable_jbd_debug
 enable_blkid_debug
 enable_testio_debug
@@ -1529,6 +1533,7 @@ Optional Features:
   --enable-bsd-shlibs	  select BSD shared libraries
   --enable-profile	  build profiling libraries
   --enable-gcov	  	  build for coverage testing using gcov
+  --enable-hardening	  	  build for coverage testing using gcov
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --disable-testio-debug  disable the use of the test I/O manager for debugging
@@ -5012,6 +5017,27 @@ fi
 
 fi
 
+CFLAGS_SHLIB="${CFLAGS_SHLIB:-$CFLAGS}"
+CFLAGS_STLIB="${CFLAGS_STLIB:-$CFLAGS}"
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+LDFLAGS_STATIC=${LDFLAGS_STATIC:-$LDFLAGS}
+# Check whether --enable-hardening was given.
+if test "${enable_hardening+set}" = set; then :
+  enableval=$enable_hardening; if test "$enableval" = "yes"
+then
+	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+	HARDEN_LDFLAGS="-Wl,-z,relro -Wl,-z,now"
+	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
+	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"
+	CFLAGS_STLIB="$CFLAGS_STLIB $HARDEN_CFLAGS -fPIE"
+	LDFLAGS="$LDFLAGS $HARDEN_LDFLAGS -fPIE -pie"
+	LDFLAGS_STATIC="$LDFLAGS_STATIC $HARDEN_LDFLAGS"
+	LDFLAGS_SHLIB="$LDFLAGS_SHLIB $HARDEN_LDFLAGS"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling hardening support" >&5
+$as_echo "Enabling hardening support" >&6; }
+fi
+
+fi
 
 
 
@@ -13625,7 +13651,7 @@ $as_echo_n "checking whether we can link with -static... " >&6; }
 if ${ac_cv_e2fsprogs_use_static+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
+  SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdio.h>
@@ -13654,9 +13680,8 @@ solaris2.*)
 esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_e2fsprogs_use_static" >&5
 $as_echo "$ac_cv_e2fsprogs_use_static" >&6; }
-LDFLAG_STATIC=
 if test $ac_cv_e2fsprogs_use_static = yes; then
-	LDFLAG_STATIC=-static
+	LDFLAGS_STATIC="$LDFLAGS_STATIC -static"
 fi
 
 case "$host_os" in
@@ -13706,6 +13731,12 @@ if test $cross_compiling = no; then
    BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
    BUILD_LDFLAGS="$LDFLAGS"
 fi
+
+
+CFLAGS_SHLIB=${CFLAGS_SHLIB:-$CFLAGS}
+CFLAGS_STLIB=${CFLAGS_STLIB:-$CFLAGS}
+LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
+
 
 
 test -d lib || mkdir lib
