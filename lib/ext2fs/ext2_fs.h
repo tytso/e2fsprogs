@@ -519,6 +519,12 @@ struct ext2_inode_large {
 #define ext2fs_set_i_uid_high(inode,x) ((inode).osd2.linux2.l_i_uid_high = (x))
 #define ext2fs_set_i_gid_high(inode,x) ((inode).osd2.linux2.l_i_gid_high = (x))
 
+static inline
+struct ext2_inode *EXT2_INODE(struct ext2_inode_large *large_inode)
+{
+	return (struct ext2_inode *) large_inode;
+}
+
 /*
  * File system states
  */

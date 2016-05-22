@@ -79,7 +79,7 @@ struct dup_cluster {
 struct dup_inode {
 	ext2_ino_t		dir;
 	int			num_dupblocks;
-	struct ext2_inode	inode;
+	struct ext2_inode_large	inode;
 	struct cluster_el	*cluster_list;
 };
 
@@ -118,7 +118,7 @@ static int dict_int_cmp(const void *a, const void *b)
  * Add a duplicate block record
  */
 static void add_dupe(e2fsck_t ctx, ext2_ino_t ino, blk64_t cluster,
-		     struct ext2_inode *inode)
+		     struct ext2_inode_large *inode)
 {
 	dnode_t	*n;
 	struct dup_cluster	*db;
@@ -263,7 +263,7 @@ struct process_block_struct {
 	int		dup_blocks;
 	blk64_t		cur_cluster, phys_cluster;
 	blk64_t		last_blk;
-	struct ext2_inode *inode;
+	struct ext2_inode_large *inode;
 	struct problem_context *pctx;
 };
 
@@ -271,7 +271,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 {
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t ino = 0;
-	struct ext2_inode inode;
+	struct ext2_inode_large inode;
 	ext2_inode_scan	scan;
 	struct process_block_struct pb;
 	struct problem_context pctx;
@@ -288,7 +288,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	ctx->stashed_inode = &inode;
+	ctx->stashed_inode = EXT2_INODE(&inode);
 	pb.ctx = ctx;
 	pb.pctx = &pctx;
 	pctx.str = "pass1b";
@@ -297,7 +297,8 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 			if (e2fsck_mmp_update(fs))
 				fatal_error(ctx, 0);
 		}
-		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
+		pctx.errcode = ext2fs_get_next_inode_full(scan, &ino,
+				EXT2_INODE(&inode), sizeof(inode));
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
 			continue;
 		if (pctx.errcode) {
@@ -321,18 +322,18 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		pb.last_blk = 0;
 		pb.pctx->blk = pb.pctx->blk2 = 0;
 
-		if (ext2fs_inode_has_valid_blocks2(fs, &inode) ||
+		if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&inode)) ||
 		    (ino == EXT2_BAD_INO))
 			pctx.errcode = ext2fs_block_iterate3(fs, ino,
 					     BLOCK_FLAG_READ_ONLY, block_buf,
 					     process_pass1b_block, &pb);
 		/* If the feature is not set, attrs will be cleared later anyway */
 		if (ext2fs_has_feature_xattr(fs->super) &&
-		    ext2fs_file_acl_block(fs, &inode)) {
-			blk64_t blk = ext2fs_file_acl_block(fs, &inode);
+		    ext2fs_file_acl_block(fs, EXT2_INODE(&inode))) {
+			blk64_t blk = ext2fs_file_acl_block(fs, EXT2_INODE(&inode));
 			process_pass1b_block(fs, &blk,
 					     BLOCK_COUNT_EXTATTR, 0, 0, &pb);
-			ext2fs_file_acl_block_set(fs, &inode, blk);
+			ext2fs_file_acl_block_set(fs, EXT2_INODE(&inode), blk);
 		}
 		if (pb.dup_blocks) {
 			if (ino != EXT2_BAD_INO) {
@@ -548,7 +549,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 		/*
 		 * Report the inode that we are working on
 		 */
-		pctx.inode = &p->inode;
+		pctx.inode = EXT2_INODE(&p->inode);
 		pctx.ino = ino;
 		pctx.dir = p->dir;
 		pctx.blkcount = p->num_dupblocks;
@@ -568,7 +569,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 			/*
 			 * Report the inode that we are sharing with
 			 */
-			pctx.inode = &t->inode;
+			pctx.inode = EXT2_INODE(&t->inode);
 			pctx.ino = shared[i];
 			pctx.dir = t->dir;
 			fix_problem(ctx, PR_1D_DUP_FILE_LIST, &pctx);
@@ -668,7 +669,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	pctx.str = "delete_file";
 	pb.cur_cluster = ~0;
 
-	if (ext2fs_inode_has_valid_blocks2(fs, &dp->inode))
+	if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&dp->inode)))
 		pctx.errcode = ext2fs_block_iterate3(fs, ino,
 						     BLOCK_FLAG_READ_ONLY,
 						     block_buf,
@@ -683,20 +684,23 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	quota_data_inodes(ctx->qctx, &dp->inode, ino, -1);
 
 	/* Inode may have changed by block_iterate, so reread it */
-	e2fsck_read_inode(ctx, ino, &dp->inode, "delete_file");
-	e2fsck_clear_inode(ctx, ino, &dp->inode, 0, "delete_file");
-	if (ext2fs_file_acl_block(fs, &dp->inode) &&
+	e2fsck_read_inode_full(ctx, ino, EXT2_INODE(&dp->inode),
+			       sizeof(dp->inode), "delete_file");
+	e2fsck_clear_inode(ctx, ino, EXT2_INODE(&dp->inode), 0, "delete_file");
+	if (ext2fs_file_acl_block(fs, EXT2_INODE(&dp->inode)) &&
 	    ext2fs_has_feature_xattr(fs->super)) {
+		blk64_t file_acl_block = ext2fs_file_acl_block(fs,
+						EXT2_INODE(&dp->inode));
+
 		count = 1;
-		pctx.errcode = ext2fs_adjust_ea_refcount3(fs,
-					ext2fs_file_acl_block(fs, &dp->inode),
+		pctx.errcode = ext2fs_adjust_ea_refcount3(fs, file_acl_block,
 					block_buf, -1, &count, ino);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
 			count = 1;
 		}
 		if (pctx.errcode) {
-			pctx.blk = ext2fs_file_acl_block(fs, &dp->inode);
+			pctx.blk = file_acl_block;
 			fix_problem(ctx, PR_1B_ADJ_EA_REFCOUNT, &pctx);
 		}
 		/*
@@ -707,12 +711,13 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 		 */
 		if ((count == 0) ||
 		    ext2fs_test_block_bitmap2(ctx->block_dup_map,
-					ext2fs_file_acl_block(fs, &dp->inode))) {
-			blk64_t blk = ext2fs_file_acl_block(fs, &dp->inode);
-			delete_file_block(fs, &blk,
+					      file_acl_block)) {
+			delete_file_block(fs, &file_acl_block,
 					  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
-			ext2fs_file_acl_block_set(fs, &dp->inode, blk);
-			quota_data_sub(ctx->qctx, &dp->inode, ino, fs->blocksize);
+			ext2fs_file_acl_block_set(fs, EXT2_INODE(&dp->inode),
+						  file_acl_block);
+			quota_data_sub(ctx->qctx, &dp->inode, ino,
+				       fs->blocksize);
 		}
 	}
 }
@@ -724,7 +729,7 @@ struct clone_struct {
 	ext2_ino_t	dir, ino;
 	char	*buf;
 	e2fsck_t ctx;
-	struct ext2_inode	*inode;
+	struct ext2_inode_large	*inode;
 
 	struct dup_cluster *save_dup_cluster;
 	blk64_t save_blocknr;
@@ -800,7 +805,8 @@ static int clone_file_block(ext2_filsys fs,
 		 * mapped to multiple physical clusters.
 		 */
 		new_block = 0;
-		retval = ext2fs_map_cluster_block(fs, cs->ino, cs->inode,
+		retval = ext2fs_map_cluster_block(fs, cs->ino,
+						  EXT2_INODE(cs->inode),
 						  blockcnt, &new_block);
 		if (retval == 0 && new_block != 0 &&
 		    EXT2FS_B2C(ctx->fs, new_block) !=
@@ -882,7 +888,7 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 
 	pctx.ino = ino;
 	pctx.str = "clone_file";
-	if (ext2fs_inode_has_valid_blocks2(fs, &dp->inode))
+	if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&dp->inode)))
 		pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
 						     clone_file_block, &cs);
 	deferred_dec_badcount(&cs);
@@ -899,14 +905,16 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 		goto errout;
 	}
 	/* The inode may have changed on disk, so we have to re-read it */
-	e2fsck_read_inode(ctx, ino, &dp->inode, "clone file EA");
-	blk = ext2fs_file_acl_block(fs, &dp->inode);
+	e2fsck_read_inode_full(ctx, ino, EXT2_INODE(&dp->inode),
+			       sizeof(dp->inode), "clone file EA");
+	blk = ext2fs_file_acl_block(fs, EXT2_INODE(&dp->inode));
 	new_blk = blk;
 	if (blk && (clone_file_block(fs, &new_blk,
 				     BLOCK_COUNT_EXTATTR, 0, 0, &cs) ==
 		    BLOCK_CHANGED)) {
-		ext2fs_file_acl_block_set(fs, &dp->inode, new_blk);
-		e2fsck_write_inode(ctx, ino, &dp->inode, "clone file EA");
+		ext2fs_file_acl_block_set(fs, EXT2_INODE(&dp->inode), new_blk);
+		e2fsck_write_inode_full(ctx, ino, EXT2_INODE(&dp->inode),
+					sizeof(dp->inode), "clone file EA");
 		/*
 		 * If we cloned the EA block, find all other inodes
 		 * which refered to that EA block, and modify
@@ -935,11 +943,14 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 				goto errout;
 			}
 			di = (struct dup_inode *) dnode_get(n);
-			if (ext2fs_file_acl_block(fs, &di->inode) == blk) {
-				ext2fs_file_acl_block_set(fs, &di->inode,
-					ext2fs_file_acl_block(fs, &dp->inode));
-				e2fsck_write_inode(ctx, ino_el->inode,
-					   &di->inode, "clone file EA");
+			if (ext2fs_file_acl_block(fs,
+					EXT2_INODE(&di->inode)) == blk) {
+				ext2fs_file_acl_block_set(fs,
+					EXT2_INODE(&di->inode),
+					ext2fs_file_acl_block(fs, EXT2_INODE(&dp->inode)));
+				e2fsck_write_inode_full(ctx, ino_el->inode,
+					EXT2_INODE(&di->inode),
+					sizeof(di->inode), "clone file EA");
 				decrement_badcount(ctx, blk, dc);
 			}
 		}

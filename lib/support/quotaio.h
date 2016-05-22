@@ -217,12 +217,12 @@ const char *quota_get_qf_name(enum quota_type, int fmt, char *buf);
 /* In mkquota.c */
 errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs,
 			     unsigned int qtype_bits);
-void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
-		int adjust);
-void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
-		qsize_t space);
-void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
-		qsize_t space);
+void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode_large *inode,
+		       ext2_ino_t ino, int adjust);
+void quota_data_add(quota_ctx_t qctx, struct ext2_inode_large *inode,
+		    ext2_ino_t ino, qsize_t space);
+void quota_data_sub(quota_ctx_t qctx, struct ext2_inode_large *inode,
+		    ext2_ino_t ino, qsize_t space);
 errcode_t quota_write_inode(quota_ctx_t qctx, enum quota_type qtype);
 errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
 			      enum quota_type type);
