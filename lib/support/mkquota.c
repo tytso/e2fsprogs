@@ -448,7 +448,8 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 	ext2_filsys fs;
 	ext2_ino_t ino;
 	errcode_t ret;
-	struct ext2_inode inode;
+	struct ext2_inode *inode;
+	int inode_size;
 	qsize_t space;
 	ext2_inode_scan scan;
 
@@ -461,27 +462,31 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 		log_err("while opening inode scan. ret=%ld", ret);
 		return ret;
 	}
-
+	inode_size = fs->super->s_inode_size;
+	inode = malloc(inode_size);
+	if (!inode)
+		return ENOMEM;
 	while (1) {
-		ret = ext2fs_get_next_inode(scan, &ino, &inode);
+		ret = ext2fs_get_next_inode_full(scan, &ino, inode, inode_size);
 		if (ret) {
 			log_err("while getting next inode. ret=%ld", ret);
 			ext2fs_close_inode_scan(scan);
+			free(inode);
 			return ret;
 		}
 		if (ino == 0)
 			break;
-		if (inode.i_links_count &&
+		if (inode->i_links_count &&
 		    (ino == EXT2_ROOT_INO ||
 		     ino >= EXT2_FIRST_INODE(fs->super))) {
-			space = ext2fs_inode_i_blocks(fs, &inode) << 9;
-			quota_data_add(qctx, &inode, ino, space);
-			quota_data_inodes(qctx, &inode, ino, +1);
+			space = ext2fs_inode_i_blocks(fs, inode) << 9;
+			quota_data_add(qctx, inode, ino, space);
+			quota_data_inodes(qctx, inode, ino, +1);
 		}
 	}
 
 	ext2fs_close_inode_scan(scan);
-
+	free(inode);
 	return 0;
 }
 
