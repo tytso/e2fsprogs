@@ -1,3 +1,13 @@
+e2fsprogs (1.43-3) UNRELEASED; urgency=medium
+
+  * Fix various debian packaging nits
+  * Fix spelling mistakes in the copyright files
+  * Fix various spelling mistakes in man pages
+  * Fix project quota bugs in e2fsck and mke2fs
+  * Build binaries with hardening support
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 22 May 2016 20:51:29 -0400
+
 e2fsprogs (1.43-2) unstable; urgency=medium
 
   * Update watch file to check for the GPG signatures
