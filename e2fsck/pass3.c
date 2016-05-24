@@ -381,7 +381,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	ext2_ino_t			ino;
 	blk64_t			blk;
 	errcode_t		retval;
-	struct ext2_inode	inode;
+	struct ext2_inode_large	inode;
 	char *			block;
 	static const char	name[] = "lost+found";
 	struct 	problem_context	pctx;
@@ -406,7 +406,8 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		return 0;
 	if (!retval) {
 		/* Lost+found shouldn't have inline data */
-		retval = ext2fs_read_inode(fs, ino, &inode);
+		retval = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
+						sizeof(inode));
 		if (fix && retval)
 			return 0;
 
@@ -518,13 +519,13 @@ skip_new_block:
 	inode.i_size = fs->blocksize;
 	inode.i_atime = inode.i_ctime = inode.i_mtime = ctx->now;
 	inode.i_links_count = 2;
-	ext2fs_iblk_set(fs, &inode, 1);
+	ext2fs_iblk_set(fs, EXT2_INODE(&inode), 1);
 	inode.i_block[0] = blk;
 
 	/*
 	 * Next, write out the inode.
 	 */
-	pctx.errcode = ext2fs_write_new_inode(fs, ino, &inode);
+	pctx.errcode = ext2fs_write_new_inode(fs, ino, EXT2_INODE(&inode));
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_write_inode";
 		fix_problem(ctx, PR_3_CREATE_LPF_ERROR, &pctx);
@@ -855,7 +856,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
 	struct expand_dir_struct es;
-	struct ext2_inode	inode;
+	struct ext2_inode_large	inode;
 	blk64_t		sz;
 
 	if (!(fs->flags & EXT2_FLAG_RW))
@@ -888,18 +889,20 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	/*
 	 * Update the size and block count fields in the inode.
 	 */
-	retval = ext2fs_read_inode(fs, dir, &inode);
+	retval = ext2fs_read_inode_full(fs, dir,
+					EXT2_INODE(&inode), sizeof(inode));
 	if (retval)
 		return retval;
 
 	sz = (es.last_block + 1) * fs->blocksize;
-	retval = ext2fs_inode_size_set(fs, &inode, sz);
+	retval = ext2fs_inode_size_set(fs, EXT2_INODE(&inode), sz);
 	if (retval)
 		return retval;
-	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
+	ext2fs_iblk_add_blocks(fs, EXT2_INODE(&inode), es.newblocks);
 	quota_data_add(ctx->qctx, &inode, dir, es.newblocks * fs->blocksize);
 
-	e2fsck_write_inode(ctx, dir, &inode, "expand_directory");
+	e2fsck_write_inode_full(ctx, dir, EXT2_INODE(&inode),
+				sizeof(inode), "expand_directory");
 
 	return 0;
 }

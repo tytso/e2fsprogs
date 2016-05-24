@@ -530,4 +530,10 @@ ec	EXT2_ET_UNDO_FILE_CORRUPT,
 ec	EXT2_ET_UNDO_FILE_WRONG,
 	"Wrong undo file for this filesystem"
 
+ec	EXT2_ET_FILESYSTEM_CORRUPTED,
+	"File system is corrupted"
+
+ec	EXT2_ET_BAD_CRC,
+	"Bad CRC detected in file system"
+
 	end

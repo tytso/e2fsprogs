@@ -182,10 +182,10 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 #endif /* DEBUGFS */
 
 #ifndef EFSBADCRC
-#define EFSBADCRC	EBADMSG		/* Bad CRC detected */
+#define EFSBADCRC	EXT2_ET_BAD_CRC
 #endif
 #ifndef EFSCORRUPTED
-#define EFSCORRUPTED	EUCLEAN		/* Filesystem is corrupted */
+#define EFSCORRUPTED	EXT2_ET_FILESYSTEM_CORRUPTED
 #endif
 
 /* recovery.c */

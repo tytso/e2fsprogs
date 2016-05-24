@@ -243,9 +243,8 @@ static int dict_uint_cmp(const void *a, const void *b)
 		return -1;
 }
 
-static inline qid_t get_qid(struct ext2_inode *inode, enum quota_type qtype)
+static inline qid_t get_qid(struct ext2_inode_large *inode, enum quota_type qtype)
 {
-	struct ext2_inode_large *large_inode;
 	int inode_size;
 
 	switch (qtype) {
@@ -254,11 +253,10 @@ static inline qid_t get_qid(struct ext2_inode *inode, enum quota_type qtype)
 	case GRPQUOTA:
 		return inode_gid(*inode);
 	case PRJQUOTA:
-		large_inode = (struct ext2_inode_large *)inode;
 		inode_size = EXT2_GOOD_OLD_INODE_SIZE +
-			     large_inode->i_extra_isize;
+			inode->i_extra_isize;
 		if (inode_includes(inode_size, i_projid))
-			return inode_projid(*large_inode);
+			return inode_projid(*inode);
 	default:
 		return 0;
 	}
@@ -368,7 +366,7 @@ static struct dquot *get_dq(dict_t *dict, __u32 key)
 /*
  * Called to update the blocks used by a particular inode
  */
-void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode,
+void quota_data_add(quota_ctx_t qctx, struct ext2_inode_large *inode,
 		    ext2_ino_t ino EXT2FS_ATTR((unused)),
 		    qsize_t space)
 {
@@ -395,7 +393,7 @@ void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode,
 /*
  * Called to remove some blocks used by a particular inode
  */
-void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode,
+void quota_data_sub(quota_ctx_t qctx, struct ext2_inode_large *inode,
 		    ext2_ino_t ino EXT2FS_ATTR((unused)),
 		    qsize_t space)
 {
@@ -421,7 +419,7 @@ void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode,
 /*
  * Called to count the files used by an inode's user/group
  */
-void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode,
+void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode_large *inode,
 		       ext2_ino_t ino EXT2FS_ATTR((unused)), int adjust)
 {
 	struct dquot	*dq;
@@ -448,7 +446,8 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 	ext2_filsys fs;
 	ext2_ino_t ino;
 	errcode_t ret;
-	struct ext2_inode inode;
+	struct ext2_inode_large *inode;
+	int inode_size;
 	qsize_t space;
 	ext2_inode_scan scan;
 
@@ -461,27 +460,33 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 		log_err("while opening inode scan. ret=%ld", ret);
 		return ret;
 	}
-
+	inode_size = fs->super->s_inode_size;
+	inode = malloc(inode_size);
+	if (!inode)
+		return ENOMEM;
 	while (1) {
-		ret = ext2fs_get_next_inode(scan, &ino, &inode);
+		ret = ext2fs_get_next_inode_full(scan, &ino,
+						 EXT2_INODE(inode), inode_size);
 		if (ret) {
 			log_err("while getting next inode. ret=%ld", ret);
 			ext2fs_close_inode_scan(scan);
+			free(inode);
 			return ret;
 		}
 		if (ino == 0)
 			break;
-		if (inode.i_links_count &&
+		if (inode->i_links_count &&
 		    (ino == EXT2_ROOT_INO ||
 		     ino >= EXT2_FIRST_INODE(fs->super))) {
-			space = ext2fs_inode_i_blocks(fs, &inode) << 9;
-			quota_data_add(qctx, &inode, ino, space);
-			quota_data_inodes(qctx, &inode, ino, +1);
+			space = ext2fs_inode_i_blocks(fs,
+						      EXT2_INODE(inode)) << 9;
+			quota_data_add(qctx, inode, ino, space);
+			quota_data_inodes(qctx, inode, ino, +1);
 		}
 	}
 
 	ext2fs_close_inode_scan(scan);
-
+	free(inode);
 	return 0;
 }
 
