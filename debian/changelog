@@ -1,3 +1,13 @@
+e2fsprogs (1.43-3) UNRELEASED; urgency=medium
+
+  * Fix various debian packaging nits
+  * Fix spelling mistakes in the copyright files
+  * Fix various spelling mistakes in man pages
+  * Fix project quota bugs in e2fsck and mke2fs
+  * Build binaries with hardening support
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 22 May 2016 20:51:29 -0400
+
 e2fsprogs (1.43-2) unstable; urgency=medium
 
   * Update watch file to check for the GPG signatures
@@ -15,6 +25,12 @@ e2fsprogs (1.43-1) unstable; urgency=medium
   * Update debian policy version to 3.9.8
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 17 May 2016 01:04:28 -0400
+
+e2fsprogs (1.43~WIP.2016.03.15-2) sid; urgency=low
+
+  * Fix FTBFS on big-endian systems
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 17 Mar 2016 22:55:52 -0400
 
 e2fsprogs (1.43~WIP.2016.05.12-1) unstable; urgency=medium
 
@@ -240,7 +256,7 @@ e2fsprogs (1.42.11-1) unstable; urgency=medium
   * Fixed cross-compilation support.  (Closes: #753375)
   * Update/fix various man pages
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 9 July 2014 23:43:27 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 9 Jul 2014 23:43:27 -0400
 
 e2fsprogs (1.42.10-1.1) unstable; urgency=medium
 
