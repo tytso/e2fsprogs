@@ -1,0 +1,45 @@
+Description: use com_err error codes instead of EBADMSG and EUCLEAN
+ Some operating systems may not define EBADMSG and EUCLEAN, so for
+ better portability use our own private error code numbers.
+
+Author: Theodore Ts'o <tytso@mit.edu>
+---
+ e2fsck/jfs_user.h         | 4 ++--
+ lib/ext2fs/ext2_err.et.in | 6 ++++++
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/e2fsck/jfs_user.h b/e2fsck/jfs_user.h
+index f46bb1e..16185a5 100644
+--- a/e2fsck/jfs_user.h
++++ b/e2fsck/jfs_user.h
+@@ -182,10 +182,10 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
+ #endif /* DEBUGFS */
+ 
+ #ifndef EFSBADCRC
+-#define EFSBADCRC	EBADMSG		/* Bad CRC detected */
++#define EFSBADCRC	EXT2_ET_BAD_CRC
+ #endif
+ #ifndef EFSCORRUPTED
+-#define EFSCORRUPTED	EUCLEAN		/* Filesystem is corrupted */
++#define EFSCORRUPTED	EXT2_ET_FILESYSTEM_CORRUPTED
+ #endif
+ 
+ /* recovery.c */
+diff --git a/lib/ext2fs/ext2_err.et.in b/lib/ext2fs/ext2_err.et.in
+index 894789e..464c01f 100644
+--- a/lib/ext2fs/ext2_err.et.in
++++ b/lib/ext2fs/ext2_err.et.in
+@@ -530,4 +530,10 @@ ec	EXT2_ET_UNDO_FILE_CORRUPT,
+ ec	EXT2_ET_UNDO_FILE_WRONG,
+ 	"Wrong undo file for this filesystem"
+ 
++ec	EXT2_ET_FILESYSTEM_CORRUPTED,
++	"File system is corrupted"
++
++ec	EXT2_ET_BAD_CRC,
++	"Bad CRC detected in file system"
++
+ 	end
+-- 
+2.5.0
+

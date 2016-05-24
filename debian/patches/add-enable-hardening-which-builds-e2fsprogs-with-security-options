@@ -1,0 +1,564 @@
+Description: Add --enable-hardening which builds e2fsprogs with security hardening
+ Enable the following security features: stack protection, fortify,
+ read-only relocation tables, immediate dynamic symbol binding, and
+ text segment ASLR by enabling position independent executable
+ (PIE).
+ .
+ Special handling is provided for shared library and statically linked
+ executables.  For all the gory details please see:
+ .
+   https://lists.debian.org/debian-devel/2016/05/msg00302.html
+ .
+ Distributions who want to do their own special thing can set CFLAGS,
+ CFLAGS_SHLIB, CLFAGS_STLIB, LDFLAGS, LDFLAGS_SHLIB and LDFLAGS_STATIC
+ as appropriate.
+
+Author: Theodore Ts'o <tytso@mit.edu>
+---
+ MCONFIG.in               |  7 ++++++-
+ configure                | 39 +++++++++++++++++++++++++++++++++++----
+ configure.ac             | 39 ++++++++++++++++++++++++++++++++++-----
+ lib/Makefile.bsd-lib     |  2 +-
+ lib/Makefile.elf-lib     |  2 +-
+ lib/Makefile.solaris-lib |  2 +-
+ lib/blkid/Makefile.in    |  8 ++++----
+ lib/e2p/Makefile.in      |  8 ++++----
+ lib/et/Makefile.in       |  8 ++++----
+ lib/ext2fs/Makefile.in   | 38 +++++++++++++++++++-------------------
+ lib/ss/Makefile.in       |  8 ++++----
+ lib/uuid/Makefile.in     |  8 ++++----
+ misc/Makefile.in         |  8 ++++----
+ resize/Makefile.in       |  3 +--
+ 14 files changed, 122 insertions(+), 58 deletions(-)
+
+diff --git a/MCONFIG.in b/MCONFIG.in
+index e15b855..db4b4de 100644
+--- a/MCONFIG.in
++++ b/MCONFIG.in
+@@ -74,11 +74,16 @@ pkgconfigdir = $(libdir)/pkgconfig
+ CC = @CC@
+ BUILD_CC = @BUILD_CC@
+ CFLAGS = @CFLAGS@
++CFLAGS_SHLIB = @CFLAGS_SHLIB@
++CFLAGS_STLIB = @CFLAGS_STLIB@
+ CPPFLAGS = @INCLUDES@
+ ALL_CFLAGS = $(CPPFLAGS) $(CFLAGS) @DEFS@ $(LOCAL_CFLAGS)
++ALL_CFLAGS_SHLIB = $(CPPFLAGS) $(CFLAGS_SHLIB) @DEFS@ $(LOCAL_CFLAGS)
++ALL_CFLAGS_STLIB = $(CPPFLAGS) $(CFLAGS_STLIB) @DEFS@ $(LOCAL_CFLAGS)
+ LDFLAGS = @LDFLAGS@
++LDFLAGS_SHLIB = @LDFLAGS_SHLIB@
+ ALL_LDFLAGS = $(LDFLAGS) @LDFLAG_DYNAMIC@
+-LDFLAGS_STATIC = $(LDFLAGS) @LDFLAG_STATIC@
++LDFLAGS_STATIC = @LDFLAGS_STATIC@
+ BUILD_CFLAGS = @BUILD_CFLAGS@
+ BUILD_LDFLAGS = @BUILD_LDFLAGS@
+ RDYNAMIC = @RDYNAMIC@
+diff --git a/configure b/configure
+index 5a08392..3759c9c 100755
+--- a/configure
++++ b/configure
+@@ -625,6 +625,9 @@ gl_use_threads_default=
+ ac_func_list=
+ ac_subst_vars='LTLIBOBJS
+ LIBOBJS
++LDFLAGS_SHLIB
++CFLAGS_STLIB
++CFLAGS_SHLIB
+ BUILD_LDFLAGS
+ BUILD_CFLAGS
+ MKINSTALLDIRS
+@@ -632,7 +635,7 @@ INCLUDES
+ DO_TEST_SUITE
+ ET_DIR
+ SS_DIR
+-LDFLAG_STATIC
++LDFLAGS_STATIC
+ root_sysconfdir
+ root_libdir
+ root_sbindir
+@@ -857,6 +860,7 @@ enable_elf_shlibs
+ enable_bsd_shlibs
+ enable_profile
+ enable_gcov
++enable_hardening
+ enable_jbd_debug
+ enable_blkid_debug
+ enable_testio_debug
+@@ -1529,6 +1533,7 @@ Optional Features:
+   --enable-bsd-shlibs	  select BSD shared libraries
+   --enable-profile	  build profiling libraries
+   --enable-gcov	  	  build for coverage testing using gcov
++  --enable-hardening	  	  build for coverage testing using gcov
+   --enable-jbd-debug  	  enable journal debugging
+   --enable-blkid-debug    enable blkid debugging
+   --disable-testio-debug  disable the use of the test I/O manager for debugging
+@@ -5012,6 +5017,27 @@ fi
+ 
+ fi
+ 
++CFLAGS_SHLIB="${CFLAGS_SHLIB:-$CFLAGS}"
++CFLAGS_STLIB="${CFLAGS_STLIB:-$CFLAGS}"
++LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
++LDFLAGS_STATIC=${LDFLAGS_STATIC:-$LDFLAGS}
++# Check whether --enable-hardening was given.
++if test "${enable_hardening+set}" = set; then :
++  enableval=$enable_hardening; if test "$enableval" = "yes"
++then
++	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
++	HARDEN_LDFLAGS="-Wl,-z,relro -Wl,-z,now"
++	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
++	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"
++	CFLAGS_STLIB="$CFLAGS_STLIB $HARDEN_CFLAGS -fPIE"
++	LDFLAGS="$LDFLAGS $HARDEN_LDFLAGS -fPIE -pie"
++	LDFLAGS_STATIC="$LDFLAGS_STATIC $HARDEN_LDFLAGS"
++	LDFLAGS_SHLIB="$LDFLAGS_SHLIB $HARDEN_LDFLAGS"
++	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling hardening support" >&5
++$as_echo "Enabling hardening support" >&6; }
++fi
++
++fi
+ 
+ 
+ 
+@@ -13625,7 +13651,7 @@ $as_echo_n "checking whether we can link with -static... " >&6; }
+ if ${ac_cv_e2fsprogs_use_static+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+-  SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
++  SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ #include <stdio.h>
+@@ -13654,9 +13680,8 @@ solaris2.*)
+ esac
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_e2fsprogs_use_static" >&5
+ $as_echo "$ac_cv_e2fsprogs_use_static" >&6; }
+-LDFLAG_STATIC=
+ if test $ac_cv_e2fsprogs_use_static = yes; then
+-	LDFLAG_STATIC=-static
++	LDFLAGS_STATIC="$LDFLAGS_STATIC -static"
+ fi
+ 
+ case "$host_os" in
+@@ -13708,6 +13733,12 @@ if test $cross_compiling = no; then
+ fi
+ 
+ 
++CFLAGS_SHLIB=${CFLAGS_SHLIB:-$CFLAGS}
++CFLAGS_STLIB=${CFLAGS_STLIB:-$CFLAGS}
++LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
++
++
++
+ test -d lib || mkdir lib
+ test -d include || mkdir include
+ test -d include/linux || mkdir include/linux
+diff --git a/configure.ac b/configure.ac
+index ceceeb6..e8e0d68 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -355,7 +355,28 @@ then
+ 	AC_MSG_RESULT([Enabling gcov support])
+ fi
+ )
+-
++dnl
++dnl handle --enable-hardening
++dnl
++CFLAGS_SHLIB="${CFLAGS_SHLIB:-$CFLAGS}"
++CFLAGS_STLIB="${CFLAGS_STLIB:-$CFLAGS}"
++LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
++LDFLAGS_STATIC=${LDFLAGS_STATIC:-$LDFLAGS}
++AC_ARG_ENABLE([hardening],
++[  --enable-hardening	  	  build for coverage testing using gcov],
++if test "$enableval" = "yes"
++then
++	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
++	HARDEN_LDFLAGS=["-Wl,-z,relro -Wl,-z,now"]
++	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
++	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"
++	CFLAGS_STLIB="$CFLAGS_STLIB $HARDEN_CFLAGS -fPIE"
++	LDFLAGS="$LDFLAGS $HARDEN_LDFLAGS -fPIE -pie"
++	LDFLAGS_STATIC="$LDFLAGS_STATIC $HARDEN_LDFLAGS"
++	LDFLAGS_SHLIB="$LDFLAGS_SHLIB $HARDEN_LDFLAGS"
++	AC_MSG_RESULT([Enabling hardening support])
++fi
++)
+ dnl
+ dnl Substitute library extensions
+ dnl
+@@ -1310,7 +1331,7 @@ dnl in static form.
+ dnl
+ AC_MSG_CHECKING([whether we can link with -static])
+ AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
+-[SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
++[SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
+ AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
+  ac_cv_e2fsprogs_use_static=yes, ac_cv_e2fsprogs_use_static=no)
+ LDFLAGS=$SAVE_LDFLAGS])
+@@ -1327,11 +1348,10 @@ solaris2.*)
+ ;;
+ esac
+ AC_MSG_RESULT($ac_cv_e2fsprogs_use_static)
+-LDFLAG_STATIC=
+ if test $ac_cv_e2fsprogs_use_static = yes; then
+-	LDFLAG_STATIC=-static
++	LDFLAGS_STATIC="$LDFLAGS_STATIC -static"
+ fi
+-AC_SUBST(LDFLAG_STATIC)
++AC_SUBST(LDFLAGS_STATIC)
+ dnl
+ dnl Work around mysterious Darwin / GNU libintl problem
+ dnl (__asm__ redirection doesn't work for some mysterious reason.  Looks like
+@@ -1385,6 +1405,15 @@ fi
+ AC_SUBST(BUILD_CFLAGS)
+ AC_SUBST(BUILD_LDFLAGS)
+ dnl
++dnl Define CFLAGS and LDFLAGS for shared libraries
++dnl
++CFLAGS_SHLIB=${CFLAGS_SHLIB:-$CFLAGS}
++CFLAGS_STLIB=${CFLAGS_STLIB:-$CFLAGS}
++LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
++AC_SUBST(CFLAGS_SHLIB)
++AC_SUBST(CFLAGS_STLIB)
++AC_SUBST(LDFLAGS_SHLIB)
++dnl
+ dnl Make our output files, being sure that we create the some miscellaneous 
+ dnl directories
+ dnl
+diff --git a/lib/Makefile.bsd-lib b/lib/Makefile.bsd-lib
+index 0ca09f8..db0947f 100644
+--- a/lib/Makefile.bsd-lib
++++ b/lib/Makefile.bsd-lib
+@@ -22,7 +22,7 @@ BSDLIB_PIC_FLAG = -fpic
+ image:		$(BSD_LIB)
+ 
+ $(BSD_LIB): $(OBJS)
+-	(cd pic; ld -Bshareable -o $(BSD_LIB) $(LDFLAGS) $(OBJS))
++	(cd pic; ld -Bshareable -o $(BSD_LIB) $(LDFLAGS_SHLIB) $(OBJS))
+ 	$(MV) pic/$(BSD_LIB) .
+ 	$(RM) -f ../$(BSD_LIB)
+ 	(cd ..; $(LN) $(LINK_BUILD_FLAGS) \
+diff --git a/lib/Makefile.elf-lib b/lib/Makefile.elf-lib
+index 78479d3..272175f 100644
+--- a/lib/Makefile.elf-lib
++++ b/lib/Makefile.elf-lib
+@@ -25,7 +25,7 @@ image:		$(ELF_LIB)
+ $(ELF_LIB): $(OBJS)
+ 	$(E) "	GEN_ELF_SOLIB $(ELF_LIB)"
+ 	$(Q) (cd elfshared; $(CC) --shared -o $(ELF_LIB) \
+-		-L$(top_builddir)/../lib $(LDFLAGS) \
++		-L$(top_builddir)/../lib $(LDFLAGS_SHLIB) \
+ 		-Wl,-soname,$(ELF_SONAME) $(OBJS) $(ELF_OTHER_LIBS))
+ 	$(Q) $(MV) elfshared/$(ELF_LIB) .
+ 	$(Q) $(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)
+diff --git a/lib/Makefile.solaris-lib b/lib/Makefile.solaris-lib
+index 5990be8..a3d395e 100644
+--- a/lib/Makefile.solaris-lib
++++ b/lib/Makefile.solaris-lib
+@@ -25,7 +25,7 @@ image:		$(ELF_LIB)
+ $(ELF_LIB): $(OBJS)
+ 	$(E) "	GEN_ELF_SOLIB $(ELF_LIB)"
+ 	$(Q) (cd elfshared; $(CC) --shared -o $(ELF_LIB) \
+-		-L$(top_builddir)/../lib $(LDFLAGS) \
++		-L$(top_builddir)/../lib $(LDFLAGS_SHLIB) \
+ 		-Wl,-h,$(ELF_SONAME) $(OBJS) $(ELF_OTHER_LIBS))
+ 	$(Q) $(MV) elfshared/$(ELF_LIB) .
+ 	$(Q) $(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)
+diff --git a/lib/blkid/Makefile.in b/lib/blkid/Makefile.in
+index 275ba84..789d2a1 100644
+--- a/lib/blkid/Makefile.in
++++ b/lib/blkid/Makefile.in
+@@ -53,12 +53,12 @@ DEPLIBS_BLKID=	$(DEPSTATIC_LIBBLKID) $(DEPSTATIC_LIBUUID)
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
++	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $< -o $@
+ 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+ 	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
++@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
++@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -o elfshared/$*.o -c $<
++@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+ all:: $(SMANPAGES) blkid.pc
+ 
+diff --git a/lib/e2p/Makefile.in b/lib/e2p/Makefile.in
+index 83f04ff..9931c77 100644
+--- a/lib/e2p/Makefile.in
++++ b/lib/e2p/Makefile.in
+@@ -54,12 +54,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
++	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $< -o $@
+ 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+ 	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
++@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
++@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -o elfshared/$*.o -c $<
++@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+ e2p.pc: $(srcdir)/e2p.pc.in $(top_builddir)/config.status
+ 	$(E) "	CONFIG.STATUS $@"
+diff --git a/lib/et/Makefile.in b/lib/et/Makefile.in
+index dbf7c1a..7547f07 100644
+--- a/lib/et/Makefile.in
++++ b/lib/et/Makefile.in
+@@ -42,12 +42,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
+ #
+ .c.o:
+ 	$(E) "	CC $<"
+-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
++	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $< -o $@
+ 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+ 	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
++@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
++@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -o elfshared/$*.o -c $<
++@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+ @MAKEFILE_LIBRARY@
+ @MAKEFILE_ELF@
+diff --git a/lib/ext2fs/Makefile.in b/lib/ext2fs/Makefile.in
+index d42334e..cd83dcb 100644
+--- a/lib/ext2fs/Makefile.in
++++ b/lib/ext2fs/Makefile.in
+@@ -245,12 +245,12 @@ all:: ext2fs.pc
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
++	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $< -o $@
+ 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+ 	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
++@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
++@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -o elfshared/$*.o -c $<
++@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+ COMPILE_ET=../et/compile_et --build-tree
+ 
+@@ -270,7 +270,7 @@ ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_builddir)/config.status
+ 
+ tst_badblocks: tst_badblocks.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_badblocks tst_badblocks.o $(ALL_LDFLAGS) \
++	$(Q) $(CC) -o tst_badblocks tst_badblocks.o $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_digest_encode: $(srcdir)/digest_encode.c $(srcdir)/ext2_fs.h
+@@ -281,46 +281,46 @@ tst_digest_encode: $(srcdir)/digest_encode.c $(srcdir)/ext2_fs.h
+ tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_icount $(srcdir)/icount.c -DDEBUG \
+-		$(ALL_CFLAGS) $(ALL_LDFLAGS) \
++		$(ALL_CFLAGS) $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_iscan: tst_iscan.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_iscan tst_iscan.o $(ALL_LDFLAGS) \
++	$(Q) $(CC) -o tst_iscan tst_iscan.o $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_getsize: tst_getsize.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_getsize tst_getsize.o $(ALL_LDFLAGS) \
++	$(Q) $(CC) -o tst_getsize tst_getsize.o $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS) \
+ 		$(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_ismounted $(srcdir)/ismounted.c \
+-		$(STATIC_LIBEXT2FS) -DDEBUG $(ALL_CFLAGS) $(ALL_LDFLAGS) \
++		$(STATIC_LIBEXT2FS) -DDEBUG $(ALL_CFLAGS) $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_byteswap: tst_byteswap.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_byteswap tst_byteswap.o $(ALL_LDFLAGS) \
++	$(Q) $(CC) -o tst_byteswap tst_byteswap.o $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_bitops: tst_bitops.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_bitops tst_bitops.o $(ALL_CFLAGS) $(ALL_LDFLAGS) \
++	$(Q) $(CC) -o tst_bitops tst_bitops.o $(ALL_CFLAGS) $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_getsectsize: tst_getsectsize.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_sectgetsize tst_getsectsize.o $(ALL_LDFLAGS) \
++	$(Q) $(CC) -o tst_sectgetsize tst_getsectsize.o $(LDFLAGS_STATIC) \
+ 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_types.o: $(srcdir)/tst_types.c ext2_types.h 
+ 
+ tst_types: tst_types.o ext2_types.h 
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_types tst_types.o $(ALL_LDFLAGS) $(SYSLIBS)
++	$(Q) $(CC) -o tst_types tst_types.o $(LDFLAGS_STATIC) $(SYSLIBS)
+ 
+ tst_super_size.o: $(srcdir)/tst_super_size.c $(srcdir)/ext2_fs.h
+ 
+@@ -467,7 +467,7 @@ tst_bitmaps: tst_bitmaps.o tst_bitmaps_cmd.o $(srcdir)/blkmap64_rb.c \
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o $@ tst_bitmaps.o tst_bitmaps_cmd.o \
+ 		-DDEBUG_RB $(srcdir)/blkmap64_rb.c $(ALL_CFLAGS) \
+-		$(ALL_LDFLAGS) $(STATIC_LIBEXT2FS) $(STATIC_LIBSS) \
++		$(LDFLAGS_STATIC) $(STATIC_LIBEXT2FS) $(STATIC_LIBSS) \
+ 		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_extents: $(srcdir)/extent.c $(DEBUG_OBJS) $(DEPSTATIC_LIBSS) libext2fs.a \
+@@ -475,7 +475,7 @@ tst_extents: $(srcdir)/extent.c $(DEBUG_OBJS) $(DEPSTATIC_LIBSS) libext2fs.a \
+ 	$(DEPLIBSUPPORT)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_extents $(srcdir)/extent.c \
+-		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DDEBUG $(DEBUG_OBJS) \
++		$(ALL_CFLAGS) $(LDFLAGS_STATIC) -DDEBUG $(DEBUG_OBJS) \
+ 		$(STATIC_LIBSS) $(STATIC_LIBE2P) $(LIBSUPPORT) \
+ 		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) \
+ 		$(STATIC_LIBCOM_ERR) $(SYSLIBS) -I $(top_srcdir)/debugfs
+@@ -484,7 +484,7 @@ tst_libext2fs: $(DEBUG_OBJS) \
+ 	$(DEPSTATIC_LIBSS) $(STATIC_LIBE2P) $(DEPLIBUUID) libext2fs.a \
+ 	$(DEPLIBBLKID) $(DEPSTATIC_LIBCOM_ERR) $(DEPLIBSUPPORT)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) -o tst_libext2fs $(ALL_LDFLAGS) -DDEBUG $(DEBUG_OBJS) \
++	$(Q) $(CC) -o tst_libext2fs $(LDFLAGS_STATIC) -DDEBUG $(DEBUG_OBJS) \
+ 		$(STATIC_LIBSS) $(STATIC_LIBE2P) $(LIBSUPPORT) \
+ 		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) $(LIBMAGIC) \
+ 		$(STATIC_LIBCOM_ERR) $(SYSLIBS) -I $(top_srcdir)/debugfs
+@@ -492,7 +492,7 @@ tst_libext2fs: $(DEBUG_OBJS) \
+ tst_inline: $(srcdir)/inline.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_inline $(srcdir)/inline.c $(ALL_CFLAGS) \
+-		$(ALL_LDFLAGS) -DDEBUG $(STATIC_LIBEXT2FS) \
++		$(LDFLAGS_STATIC) -DDEBUG $(STATIC_LIBEXT2FS) \
+ 		$(STATIC_LIBCOM_ERR) $(SYSLIBS)
+ 
+ tst_inline_data: inline_data.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+@@ -504,11 +504,11 @@ tst_csum: csum.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) $(STATIC_LIBE2P) \
+ 		$(top_srcdir)/lib/e2p/e2p.h
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_csum $(srcdir)/csum.c -DDEBUG \
+-		$(ALL_CFLAGS) $(ALL_LDFLAGS) $(STATIC_LIBEXT2FS) \
++		$(ALL_CFLAGS) $(LDFLAGS_STATIC) $(STATIC_LIBEXT2FS) \
+ 		$(STATIC_LIBCOM_ERR) $(STATIC_LIBE2P) $(SYSLIBS)
+ 
+ tst_crc32c: $(srcdir)/crc32c.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+-	$(Q) $(CC) $(ALL_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32c $(srcdir)/crc32c.c \
++	$(Q) $(CC) $(LDFLAGS_STATIC) $(ALL_CFLAGS) -o tst_crc32c $(srcdir)/crc32c.c \
+ 		-DUNITTEST $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
+ 		$(SYSLIBS)
+ 
+diff --git a/lib/ss/Makefile.in b/lib/ss/Makefile.in
+index cfe0f38..36528d8 100644
+--- a/lib/ss/Makefile.in
++++ b/lib/ss/Makefile.in
+@@ -33,12 +33,12 @@ MK_CMDS=_SS_DIR_OVERRIDE=. ./mk_cmds
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+-	$(Q) $(CC) $(ALL_CFLAGS) -c $<
++	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $<
+ 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+ 	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
+-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
++@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
++@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
++@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+ # for the library
+ 
+diff --git a/lib/uuid/Makefile.in b/lib/uuid/Makefile.in
+index acdcea6..c62c739 100644
+--- a/lib/uuid/Makefile.in
++++ b/lib/uuid/Makefile.in
+@@ -60,12 +60,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+-	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
++	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -c $< -o $@
+ 	$(Q) $(CHECK_CMD) $(ALL_CFLAGS) $<
+ 	$(Q) $(CPPCHECK_CMD) $(CPPFLAGS) $<
+-@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+-@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+-@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
++@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
++@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -o elfshared/$*.o -c $<
++@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+ all:: tst_uuid uuid_time $(SMANPAGES) uuid.pc
+ 
+diff --git a/misc/Makefile.in b/misc/Makefile.in
+index 57c81a2..43e3c7e 100644
+--- a/misc/Makefile.in
++++ b/misc/Makefile.in
+@@ -108,8 +108,8 @@ DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBSUPPORT)
+ PROFILED_LIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) $(LIBSUPPORT)
+ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(DEPPROFILED_LIBCOM_ERR) $(DEPLIBSUPPORT)
+ 
+-STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(LIBSUPPORT)
+-STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) $(DEPLIBSUPPORT)
++STATIC_LIBS= $(LIBSUPPORT) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
++STATIC_DEPLIBS= $(DEPLIBSUPPORT) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 
+ LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
+ DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR)
+@@ -233,7 +233,7 @@ e4defrag: $(E4DEFRAG_OBJS) $(DEPLIBS)
+ e4crypt: $(E4CRYPT_OBJS) $(DEPLIBS) $(DEPSTATIC_LIBUUID)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o e4crypt $(E4CRYPT_OBJS) \
+-		$(STATIC_LIBUUID) $(STATIC_LIBS)
++		$(LIBUUID) $(LIBS)
+ 
+ e4defrag.profiled: $(E4DEFRAG_OBJS) $(PROFILED_DEPLIBS)
+ 	$(E) "	LD $@"
+@@ -270,7 +270,7 @@ mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBBLKID) $(DEPLIBUUID) \
+ mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID) \
+ 		$(DEPSTATIC_LIBBLKID)
+ 	$(E) "	LD $@"
+-	$(Q) $(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
++	$(Q) $(CC) $(LDFLAGS_STATIC) -o mke2fs.static $(MKE2FS_OBJS) \
+ 		$(STATIC_LIBS) $(STATIC_LIBE2P) \
+ 		$(STATIC_LIBBLKID) $(STATIC_LIBUUID) $(LIBINTL) $(SYSLIBS) \
+ 		$(LIBMAGIC)
+diff --git a/resize/Makefile.in b/resize/Makefile.in
+index ecd8619..6014bdd 100644
+--- a/resize/Makefile.in
++++ b/resize/Makefile.in
+@@ -8,7 +8,6 @@ VPATH = @srcdir@
+ top_builddir = ..
+ my_dir = resize
+ INSTALL = @INSTALL@
+-LDFLAG_STATIC = @LDFLAG_STATIC@
+ 
+ @MCONFIG@
+ 
+@@ -49,7 +48,7 @@ resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
+ 
+ resize2fs.static: $(RESIZE_OBJS) $(DEPSTATIC_LIBS)
+ 	$(E) "	LD $@"
+-	$(Q) $(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
++	$(Q) $(LD) $(LDFLAGS_STATIC) -o resize2fs.static \
+ 		$(RESIZE_OBJS) $(STATIC_LIBS) 
+ 
+ resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
+-- 
+2.5.0
+

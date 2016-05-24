@@ -1,1 +1,7 @@
 enable-metadata_csum-by-default
+tests-fix-filter.sed-to-filter-out-version-numbers-out
+clean-up-spelling-errors-and-other-nits-in-man-pages
+e2fsck-use-com_err-error-codes-instead-of-EBADMSG-et-al
+mke2fs-fix-project-quota-creation
+e2fsck-fix-project-quota-support
+add-enable-hardening-which-builds-e2fsprogs-with-security-options

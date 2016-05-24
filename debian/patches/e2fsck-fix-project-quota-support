@@ -1,0 +1,550 @@
+Description: fix project quota support
+ Use a large_inode so that when e2fsck is fixing a file system with
+ project quota enabled, the correct project id's quota is adjusted when
+ a corrupted inode is deleted.
+
+Author: Theodore Ts'o <tytso@mit.edu>
+---
+ e2fsck/pass1.c        |  7 +++--
+ e2fsck/pass1b.c       | 83 +++++++++++++++++++++++++++++----------------------
+ e2fsck/pass3.c        | 21 +++++++------
+ e2fsck/pass4.c        | 33 ++++++++++----------
+ lib/ext2fs/ext2_fs.h  |  6 ++++
+ lib/support/mkquota.c | 22 +++++++-------
+ lib/support/quotaio.h | 12 ++++----
+ 7 files changed, 103 insertions(+), 81 deletions(-)
+
+diff --git a/e2fsck/pass1.c b/e2fsck/pass1.c
+index e097c39..799158e 100644
+--- a/e2fsck/pass1.c
++++ b/e2fsck/pass1.c
+@@ -3165,9 +3165,10 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
+ 
+ 	if (ino != quota_type2inum(PRJQUOTA, fs->super) &&
+ 	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super))) {
+-		quota_data_add(ctx->qctx, inode, ino,
+-			       pb.num_blocks * fs->blocksize);
+-		quota_data_inodes(ctx->qctx, inode, ino, +1);
++		quota_data_add(ctx->qctx, (struct ext2_inode_large *) inode,
++			       ino, pb.num_blocks * fs->blocksize);
++		quota_data_inodes(ctx->qctx, (struct ext2_inode_large *) inode,
++				  ino, +1);
+ 	}
+ 
+ 	if (!ext2fs_has_feature_huge_file(fs->super) ||
+diff --git a/e2fsck/pass1b.c b/e2fsck/pass1b.c
+index 2cbf82a..b40f026 100644
+--- a/e2fsck/pass1b.c
++++ b/e2fsck/pass1b.c
+@@ -79,7 +79,7 @@ struct dup_cluster {
+ struct dup_inode {
+ 	ext2_ino_t		dir;
+ 	int			num_dupblocks;
+-	struct ext2_inode	inode;
++	struct ext2_inode_large	inode;
+ 	struct cluster_el	*cluster_list;
+ };
+ 
+@@ -118,7 +118,7 @@ static int dict_int_cmp(const void *a, const void *b)
+  * Add a duplicate block record
+  */
+ static void add_dupe(e2fsck_t ctx, ext2_ino_t ino, blk64_t cluster,
+-		     struct ext2_inode *inode)
++		     struct ext2_inode_large *inode)
+ {
+ 	dnode_t	*n;
+ 	struct dup_cluster	*db;
+@@ -263,7 +263,7 @@ struct process_block_struct {
+ 	int		dup_blocks;
+ 	blk64_t		cur_cluster, phys_cluster;
+ 	blk64_t		last_blk;
+-	struct ext2_inode *inode;
++	struct ext2_inode_large *inode;
+ 	struct problem_context *pctx;
+ };
+ 
+@@ -271,7 +271,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
+ {
+ 	ext2_filsys fs = ctx->fs;
+ 	ext2_ino_t ino = 0;
+-	struct ext2_inode inode;
++	struct ext2_inode_large inode;
+ 	ext2_inode_scan	scan;
+ 	struct process_block_struct pb;
+ 	struct problem_context pctx;
+@@ -288,7 +288,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
+ 		ctx->flags |= E2F_FLAG_ABORT;
+ 		return;
+ 	}
+-	ctx->stashed_inode = &inode;
++	ctx->stashed_inode = EXT2_INODE(&inode);
+ 	pb.ctx = ctx;
+ 	pb.pctx = &pctx;
+ 	pctx.str = "pass1b";
+@@ -297,7 +297,8 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
+ 			if (e2fsck_mmp_update(fs))
+ 				fatal_error(ctx, 0);
+ 		}
+-		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
++		pctx.errcode = ext2fs_get_next_inode_full(scan, &ino,
++				EXT2_INODE(&inode), sizeof(inode));
+ 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
+ 			continue;
+ 		if (pctx.errcode) {
+@@ -321,18 +322,18 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
+ 		pb.last_blk = 0;
+ 		pb.pctx->blk = pb.pctx->blk2 = 0;
+ 
+-		if (ext2fs_inode_has_valid_blocks2(fs, &inode) ||
++		if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&inode)) ||
+ 		    (ino == EXT2_BAD_INO))
+ 			pctx.errcode = ext2fs_block_iterate3(fs, ino,
+ 					     BLOCK_FLAG_READ_ONLY, block_buf,
+ 					     process_pass1b_block, &pb);
+ 		/* If the feature is not set, attrs will be cleared later anyway */
+ 		if (ext2fs_has_feature_xattr(fs->super) &&
+-		    ext2fs_file_acl_block(fs, &inode)) {
+-			blk64_t blk = ext2fs_file_acl_block(fs, &inode);
++		    ext2fs_file_acl_block(fs, EXT2_INODE(&inode))) {
++			blk64_t blk = ext2fs_file_acl_block(fs, EXT2_INODE(&inode));
+ 			process_pass1b_block(fs, &blk,
+ 					     BLOCK_COUNT_EXTATTR, 0, 0, &pb);
+-			ext2fs_file_acl_block_set(fs, &inode, blk);
++			ext2fs_file_acl_block_set(fs, EXT2_INODE(&inode), blk);
+ 		}
+ 		if (pb.dup_blocks) {
+ 			if (ino != EXT2_BAD_INO) {
+@@ -548,7 +549,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
+ 		/*
+ 		 * Report the inode that we are working on
+ 		 */
+-		pctx.inode = &p->inode;
++		pctx.inode = EXT2_INODE(&p->inode);
+ 		pctx.ino = ino;
+ 		pctx.dir = p->dir;
+ 		pctx.blkcount = p->num_dupblocks;
+@@ -568,7 +569,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
+ 			/*
+ 			 * Report the inode that we are sharing with
+ 			 */
+-			pctx.inode = &t->inode;
++			pctx.inode = EXT2_INODE(&t->inode);
+ 			pctx.ino = shared[i];
+ 			pctx.dir = t->dir;
+ 			fix_problem(ctx, PR_1D_DUP_FILE_LIST, &pctx);
+@@ -668,7 +669,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
+ 	pctx.str = "delete_file";
+ 	pb.cur_cluster = ~0;
+ 
+-	if (ext2fs_inode_has_valid_blocks2(fs, &dp->inode))
++	if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&dp->inode)))
+ 		pctx.errcode = ext2fs_block_iterate3(fs, ino,
+ 						     BLOCK_FLAG_READ_ONLY,
+ 						     block_buf,
+@@ -683,20 +684,23 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
+ 	quota_data_inodes(ctx->qctx, &dp->inode, ino, -1);
+ 
+ 	/* Inode may have changed by block_iterate, so reread it */
+-	e2fsck_read_inode(ctx, ino, &dp->inode, "delete_file");
+-	e2fsck_clear_inode(ctx, ino, &dp->inode, 0, "delete_file");
+-	if (ext2fs_file_acl_block(fs, &dp->inode) &&
++	e2fsck_read_inode_full(ctx, ino, EXT2_INODE(&dp->inode),
++			       sizeof(dp->inode), "delete_file");
++	e2fsck_clear_inode(ctx, ino, EXT2_INODE(&dp->inode), 0, "delete_file");
++	if (ext2fs_file_acl_block(fs, EXT2_INODE(&dp->inode)) &&
+ 	    ext2fs_has_feature_xattr(fs->super)) {
++		blk64_t file_acl_block = ext2fs_file_acl_block(fs,
++						EXT2_INODE(&dp->inode));
++
+ 		count = 1;
+-		pctx.errcode = ext2fs_adjust_ea_refcount3(fs,
+-					ext2fs_file_acl_block(fs, &dp->inode),
++		pctx.errcode = ext2fs_adjust_ea_refcount3(fs, file_acl_block,
+ 					block_buf, -1, &count, ino);
+ 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
+ 			pctx.errcode = 0;
+ 			count = 1;
+ 		}
+ 		if (pctx.errcode) {
+-			pctx.blk = ext2fs_file_acl_block(fs, &dp->inode);
++			pctx.blk = file_acl_block;
+ 			fix_problem(ctx, PR_1B_ADJ_EA_REFCOUNT, &pctx);
+ 		}
+ 		/*
+@@ -707,12 +711,13 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
+ 		 */
+ 		if ((count == 0) ||
+ 		    ext2fs_test_block_bitmap2(ctx->block_dup_map,
+-					ext2fs_file_acl_block(fs, &dp->inode))) {
+-			blk64_t blk = ext2fs_file_acl_block(fs, &dp->inode);
+-			delete_file_block(fs, &blk,
++					      file_acl_block)) {
++			delete_file_block(fs, &file_acl_block,
+ 					  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
+-			ext2fs_file_acl_block_set(fs, &dp->inode, blk);
+-			quota_data_sub(ctx->qctx, &dp->inode, ino, fs->blocksize);
++			ext2fs_file_acl_block_set(fs, EXT2_INODE(&dp->inode),
++						  file_acl_block);
++			quota_data_sub(ctx->qctx, &dp->inode, ino,
++				       fs->blocksize);
+ 		}
+ 	}
+ }
+@@ -724,7 +729,7 @@ struct clone_struct {
+ 	ext2_ino_t	dir, ino;
+ 	char	*buf;
+ 	e2fsck_t ctx;
+-	struct ext2_inode	*inode;
++	struct ext2_inode_large	*inode;
+ 
+ 	struct dup_cluster *save_dup_cluster;
+ 	blk64_t save_blocknr;
+@@ -800,7 +805,8 @@ static int clone_file_block(ext2_filsys fs,
+ 		 * mapped to multiple physical clusters.
+ 		 */
+ 		new_block = 0;
+-		retval = ext2fs_map_cluster_block(fs, cs->ino, cs->inode,
++		retval = ext2fs_map_cluster_block(fs, cs->ino,
++						  EXT2_INODE(cs->inode),
+ 						  blockcnt, &new_block);
+ 		if (retval == 0 && new_block != 0 &&
+ 		    EXT2FS_B2C(ctx->fs, new_block) !=
+@@ -882,7 +888,7 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
+ 
+ 	pctx.ino = ino;
+ 	pctx.str = "clone_file";
+-	if (ext2fs_inode_has_valid_blocks2(fs, &dp->inode))
++	if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&dp->inode)))
+ 		pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
+ 						     clone_file_block, &cs);
+ 	deferred_dec_badcount(&cs);
+@@ -899,14 +905,16 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
+ 		goto errout;
+ 	}
+ 	/* The inode may have changed on disk, so we have to re-read it */
+-	e2fsck_read_inode(ctx, ino, &dp->inode, "clone file EA");
+-	blk = ext2fs_file_acl_block(fs, &dp->inode);
++	e2fsck_read_inode_full(ctx, ino, EXT2_INODE(&dp->inode),
++			       sizeof(dp->inode), "clone file EA");
++	blk = ext2fs_file_acl_block(fs, EXT2_INODE(&dp->inode));
+ 	new_blk = blk;
+ 	if (blk && (clone_file_block(fs, &new_blk,
+ 				     BLOCK_COUNT_EXTATTR, 0, 0, &cs) ==
+ 		    BLOCK_CHANGED)) {
+-		ext2fs_file_acl_block_set(fs, &dp->inode, new_blk);
+-		e2fsck_write_inode(ctx, ino, &dp->inode, "clone file EA");
++		ext2fs_file_acl_block_set(fs, EXT2_INODE(&dp->inode), new_blk);
++		e2fsck_write_inode_full(ctx, ino, EXT2_INODE(&dp->inode),
++					sizeof(dp->inode), "clone file EA");
+ 		/*
+ 		 * If we cloned the EA block, find all other inodes
+ 		 * which refered to that EA block, and modify
+@@ -935,11 +943,14 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
+ 				goto errout;
+ 			}
+ 			di = (struct dup_inode *) dnode_get(n);
+-			if (ext2fs_file_acl_block(fs, &di->inode) == blk) {
+-				ext2fs_file_acl_block_set(fs, &di->inode,
+-					ext2fs_file_acl_block(fs, &dp->inode));
+-				e2fsck_write_inode(ctx, ino_el->inode,
+-					   &di->inode, "clone file EA");
++			if (ext2fs_file_acl_block(fs,
++					EXT2_INODE(&di->inode)) == blk) {
++				ext2fs_file_acl_block_set(fs,
++					EXT2_INODE(&di->inode),
++					ext2fs_file_acl_block(fs, EXT2_INODE(&dp->inode)));
++				e2fsck_write_inode_full(ctx, ino_el->inode,
++					EXT2_INODE(&di->inode),
++					sizeof(di->inode), "clone file EA");
+ 				decrement_badcount(ctx, blk, dc);
+ 			}
+ 		}
+diff --git a/e2fsck/pass3.c b/e2fsck/pass3.c
+index 3b076c4..44203ca 100644
+--- a/e2fsck/pass3.c
++++ b/e2fsck/pass3.c
+@@ -381,7 +381,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
+ 	ext2_ino_t			ino;
+ 	blk64_t			blk;
+ 	errcode_t		retval;
+-	struct ext2_inode	inode;
++	struct ext2_inode_large	inode;
+ 	char *			block;
+ 	static const char	name[] = "lost+found";
+ 	struct 	problem_context	pctx;
+@@ -406,7 +406,8 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
+ 		return 0;
+ 	if (!retval) {
+ 		/* Lost+found shouldn't have inline data */
+-		retval = ext2fs_read_inode(fs, ino, &inode);
++		retval = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
++						sizeof(inode));
+ 		if (fix && retval)
+ 			return 0;
+ 
+@@ -518,13 +519,13 @@ skip_new_block:
+ 	inode.i_size = fs->blocksize;
+ 	inode.i_atime = inode.i_ctime = inode.i_mtime = ctx->now;
+ 	inode.i_links_count = 2;
+-	ext2fs_iblk_set(fs, &inode, 1);
++	ext2fs_iblk_set(fs, EXT2_INODE(&inode), 1);
+ 	inode.i_block[0] = blk;
+ 
+ 	/*
+ 	 * Next, write out the inode.
+ 	 */
+-	pctx.errcode = ext2fs_write_new_inode(fs, ino, &inode);
++	pctx.errcode = ext2fs_write_new_inode(fs, ino, EXT2_INODE(&inode));
+ 	if (pctx.errcode) {
+ 		pctx.str = "ext2fs_write_inode";
+ 		fix_problem(ctx, PR_3_CREATE_LPF_ERROR, &pctx);
+@@ -855,7 +856,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
+ 	ext2_filsys fs = ctx->fs;
+ 	errcode_t	retval;
+ 	struct expand_dir_struct es;
+-	struct ext2_inode	inode;
++	struct ext2_inode_large	inode;
+ 	blk64_t		sz;
+ 
+ 	if (!(fs->flags & EXT2_FLAG_RW))
+@@ -888,18 +889,20 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
+ 	/*
+ 	 * Update the size and block count fields in the inode.
+ 	 */
+-	retval = ext2fs_read_inode(fs, dir, &inode);
++	retval = ext2fs_read_inode_full(fs, dir,
++					EXT2_INODE(&inode), sizeof(inode));
+ 	if (retval)
+ 		return retval;
+ 
+ 	sz = (es.last_block + 1) * fs->blocksize;
+-	retval = ext2fs_inode_size_set(fs, &inode, sz);
++	retval = ext2fs_inode_size_set(fs, EXT2_INODE(&inode), sz);
+ 	if (retval)
+ 		return retval;
+-	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
++	ext2fs_iblk_add_blocks(fs, EXT2_INODE(&inode), es.newblocks);
+ 	quota_data_add(ctx->qctx, &inode, dir, es.newblocks * fs->blocksize);
+ 
+-	e2fsck_write_inode(ctx, dir, &inode, "expand_directory");
++	e2fsck_write_inode_full(ctx, dir, EXT2_INODE(&inode),
++				sizeof(inode), "expand_directory");
+ 
+ 	return 0;
+ }
+diff --git a/e2fsck/pass4.c b/e2fsck/pass4.c
+index c490438..8c101fd 100644
+--- a/e2fsck/pass4.c
++++ b/e2fsck/pass4.c
+@@ -26,23 +26,21 @@
+  * rest of the pass 4 tests.
+  */
+ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i,
+-			    struct ext2_inode *inode)
++			    struct ext2_inode_large *inode)
+ {
+ 	ext2_filsys fs = ctx->fs;
+ 	struct problem_context	pctx;
+ 	__u32 eamagic = 0;
+ 	int extra_size = 0;
+ 
+-	if (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
+-		e2fsck_read_inode_full(ctx, i, inode,EXT2_INODE_SIZE(fs->super),
+-				       "pass4: disconnect_inode");
+-		extra_size = ((struct ext2_inode_large *)inode)->i_extra_isize;
+-	} else {
+-		e2fsck_read_inode(ctx, i, inode, "pass4: disconnect_inode");
+-	}
++	e2fsck_read_inode_full(ctx, i, EXT2_INODE(inode),
++			       EXT2_INODE_SIZE(fs->super),
++			       "pass4: disconnect_inode");
++	if (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
++		extra_size = inode->i_extra_isize;
+ 	clear_problem_context(&pctx);
+ 	pctx.ino = i;
+-	pctx.inode = inode;
++	pctx.inode = EXT2_INODE(inode);
+ 
+ 	if (EXT2_INODE_SIZE(fs->super) -EXT2_GOOD_OLD_INODE_SIZE -extra_size >0)
+ 		eamagic = *(__u32 *)(((char *)inode) +EXT2_GOOD_OLD_INODE_SIZE +
+@@ -56,7 +54,7 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i,
+ 	if (!inode->i_blocks && eamagic != EXT2_EXT_ATTR_MAGIC &&
+ 	    (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode))) {
+ 		if (fix_problem(ctx, PR_4_ZERO_LEN_INODE, &pctx)) {
+-			e2fsck_clear_inode(ctx, i, inode, 0,
++			e2fsck_clear_inode(ctx, i, EXT2_INODE(inode), 0,
+ 					   "disconnect_inode");
+ 			/*
+ 			 * Fix up the bitmaps...
+@@ -92,7 +90,8 @@ void e2fsck_pass4(e2fsck_t ctx)
+ {
+ 	ext2_filsys fs = ctx->fs;
+ 	ext2_ino_t	i;
+-	struct ext2_inode	*inode;
++	struct ext2_inode_large	*inode;
++	int inode_size = EXT2_INODE_SIZE(fs->super);
+ #ifdef RESOURCE_TRACK
+ 	struct resource_track	rtrack;
+ #endif
+@@ -127,8 +126,7 @@ void e2fsck_pass4(e2fsck_t ctx)
+ 		if ((ctx->progress)(ctx, 4, 0, maxgroup))
+ 			return;
+ 
+-	inode = e2fsck_allocate_memory(ctx, EXT2_INODE_SIZE(fs->super),
+-				       "scratch inode");
++	inode = e2fsck_allocate_memory(ctx, inode_size, "scratch inode");
+ 
+ 	/* Protect loop from wrap-around if s_inodes_count maxed */
+ 	for (i=1; i <= fs->super->s_inodes_count && i > 0; i++) {
+@@ -171,9 +169,10 @@ void e2fsck_pass4(e2fsck_t ctx)
+ 		if (isdir && (link_counted > EXT2_LINK_MAX))
+ 			link_counted = 1;
+ 		if (link_counted != link_count) {
+-			e2fsck_read_inode(ctx, i, inode, "pass4");
++			e2fsck_read_inode_full(ctx, i, EXT2_INODE(inode),
++					       inode_size, "pass4");
+ 			pctx.ino = i;
+-			pctx.inode = inode;
++			pctx.inode = EXT2_INODE(inode);
+ 			if ((link_count != inode->i_links_count) && !isdir &&
+ 			    (inode->i_links_count <= EXT2_LINK_MAX)) {
+ 				pctx.num = link_count;
+@@ -188,7 +187,9 @@ void e2fsck_pass4(e2fsck_t ctx)
+ 			     link_count == 1 && !(ctx->options & E2F_OPT_NO)) ||
+ 			    fix_problem(ctx, PR_4_BAD_REF_COUNT, &pctx)) {
+ 				inode->i_links_count = link_counted;
+-				e2fsck_write_inode(ctx, i, inode, "pass4");
++				e2fsck_write_inode_full(ctx, i,
++							EXT2_INODE(inode),
++							inode_size, "pass4");
+ 			}
+ 		}
+ 	}
+diff --git a/lib/ext2fs/ext2_fs.h b/lib/ext2fs/ext2_fs.h
+index 9918356..ee9a5f2 100644
+--- a/lib/ext2fs/ext2_fs.h
++++ b/lib/ext2fs/ext2_fs.h
+@@ -519,6 +519,12 @@ struct ext2_inode_large {
+ #define ext2fs_set_i_uid_high(inode,x) ((inode).osd2.linux2.l_i_uid_high = (x))
+ #define ext2fs_set_i_gid_high(inode,x) ((inode).osd2.linux2.l_i_gid_high = (x))
+ 
++static inline
++struct ext2_inode *EXT2_INODE(struct ext2_inode_large *large_inode)
++{
++	return (struct ext2_inode *) large_inode;
++}
++
+ /*
+  * File system states
+  */
+diff --git a/lib/support/mkquota.c b/lib/support/mkquota.c
+index a432d4e..add60ca 100644
+--- a/lib/support/mkquota.c
++++ b/lib/support/mkquota.c
+@@ -243,9 +243,8 @@ static int dict_uint_cmp(const void *a, const void *b)
+ 		return -1;
+ }
+ 
+-static inline qid_t get_qid(struct ext2_inode *inode, enum quota_type qtype)
++static inline qid_t get_qid(struct ext2_inode_large *inode, enum quota_type qtype)
+ {
+-	struct ext2_inode_large *large_inode;
+ 	int inode_size;
+ 
+ 	switch (qtype) {
+@@ -254,11 +253,10 @@ static inline qid_t get_qid(struct ext2_inode *inode, enum quota_type qtype)
+ 	case GRPQUOTA:
+ 		return inode_gid(*inode);
+ 	case PRJQUOTA:
+-		large_inode = (struct ext2_inode_large *)inode;
+ 		inode_size = EXT2_GOOD_OLD_INODE_SIZE +
+-			     large_inode->i_extra_isize;
++			inode->i_extra_isize;
+ 		if (inode_includes(inode_size, i_projid))
+-			return inode_projid(*large_inode);
++			return inode_projid(*inode);
+ 	default:
+ 		return 0;
+ 	}
+@@ -368,7 +366,7 @@ static struct dquot *get_dq(dict_t *dict, __u32 key)
+ /*
+  * Called to update the blocks used by a particular inode
+  */
+-void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode,
++void quota_data_add(quota_ctx_t qctx, struct ext2_inode_large *inode,
+ 		    ext2_ino_t ino EXT2FS_ATTR((unused)),
+ 		    qsize_t space)
+ {
+@@ -395,7 +393,7 @@ void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode,
+ /*
+  * Called to remove some blocks used by a particular inode
+  */
+-void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode,
++void quota_data_sub(quota_ctx_t qctx, struct ext2_inode_large *inode,
+ 		    ext2_ino_t ino EXT2FS_ATTR((unused)),
+ 		    qsize_t space)
+ {
+@@ -421,7 +419,7 @@ void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode,
+ /*
+  * Called to count the files used by an inode's user/group
+  */
+-void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode,
++void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode_large *inode,
+ 		       ext2_ino_t ino EXT2FS_ATTR((unused)), int adjust)
+ {
+ 	struct dquot	*dq;
+@@ -448,7 +446,7 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
+ 	ext2_filsys fs;
+ 	ext2_ino_t ino;
+ 	errcode_t ret;
+-	struct ext2_inode *inode;
++	struct ext2_inode_large *inode;
+ 	int inode_size;
+ 	qsize_t space;
+ 	ext2_inode_scan scan;
+@@ -467,7 +465,8 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
+ 	if (!inode)
+ 		return ENOMEM;
+ 	while (1) {
+-		ret = ext2fs_get_next_inode_full(scan, &ino, inode, inode_size);
++		ret = ext2fs_get_next_inode_full(scan, &ino,
++						 EXT2_INODE(inode), inode_size);
+ 		if (ret) {
+ 			log_err("while getting next inode. ret=%ld", ret);
+ 			ext2fs_close_inode_scan(scan);
+@@ -479,7 +478,8 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
+ 		if (inode->i_links_count &&
+ 		    (ino == EXT2_ROOT_INO ||
+ 		     ino >= EXT2_FIRST_INODE(fs->super))) {
+-			space = ext2fs_inode_i_blocks(fs, inode) << 9;
++			space = ext2fs_inode_i_blocks(fs,
++						      EXT2_INODE(inode)) << 9;
+ 			quota_data_add(qctx, inode, ino, space);
+ 			quota_data_inodes(qctx, inode, ino, +1);
+ 		}
+diff --git a/lib/support/quotaio.h b/lib/support/quotaio.h
+index 5f1073f..8f7ddcb 100644
+--- a/lib/support/quotaio.h
++++ b/lib/support/quotaio.h
+@@ -217,12 +217,12 @@ const char *quota_get_qf_name(enum quota_type, int fmt, char *buf);
+ /* In mkquota.c */
+ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs,
+ 			     unsigned int qtype_bits);
+-void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
+-		int adjust);
+-void quota_data_add(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
+-		qsize_t space);
+-void quota_data_sub(quota_ctx_t qctx, struct ext2_inode *inode, ext2_ino_t ino,
+-		qsize_t space);
++void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode_large *inode,
++		       ext2_ino_t ino, int adjust);
++void quota_data_add(quota_ctx_t qctx, struct ext2_inode_large *inode,
++		    ext2_ino_t ino, qsize_t space);
++void quota_data_sub(quota_ctx_t qctx, struct ext2_inode_large *inode,
++		    ext2_ino_t ino, qsize_t space);
+ errcode_t quota_write_inode(quota_ctx_t qctx, enum quota_type qtype);
+ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
+ 			      enum quota_type type);
+-- 
+2.5.0
+

@@ -1,0 +1,34 @@
+Description: fix filter.sed to address regression test failures
+ The regular expression worked for version numbers such as 1.42.12, but
+ not if there isn't a third component in the version number.
+
+Author: Theodore Ts'o <tytso@mit.edu>
+---
+ tests/filter.sed | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/tests/filter.sed b/tests/filter.sed
+index bec899c..628309d 100644
+--- a/tests/filter.sed
++++ b/tests/filter.sed
+@@ -1,10 +1,10 @@
+-/^debugfs [1-9]\.[0-9]*[.-][^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
+-/^dumpe2fs [1-9]\.[0-9]*[.-][^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
+-/^e2fsck [1-9]\.[0-9]*[.-][^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
+-/^mke2fs [1-9]\.[0-9]*[.-][^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
+-/^resize2fs [1-9]\.[0-9]*[.-][^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
+-/^tune2fs [1-9]\.[0-9]*[.-][^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
+-/^e2image [1-9]\.[0-9]*[.-][^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
++/^debugfs [1-9]\.[0-9]*[^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
++/^dumpe2fs [1-9]\.[0-9]*[^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
++/^e2fsck [1-9]\.[0-9]*[^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
++/^mke2fs [1-9]\.[0-9]*[^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
++/^resize2fs [1-9]\.[0-9]*[^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
++/^tune2fs [1-9]\.[0-9]*[^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
++/^e2image [1-9]\.[0-9]*[^ ]* ([0-9]*-[A-Za-z]*-[0-9]*)/d
+ s/\\015//g
+ /automatically checked/d
+ /^Directory Hash Seed:/d
+-- 
+2.5.0
+
