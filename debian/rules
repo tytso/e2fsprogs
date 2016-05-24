@@ -550,13 +550,7 @@ binary-arch: install $(INSTALL_UDEB)
 	dh_testdir
 	dh_testroot
 
-  # lintian overrides
-	for i in $$(cd debian && echo *.lintian-overrides); do \
-		pkg=$${i%.lintian-overrides} ;\
-		if test "$${pkg}" != source ; then \
-			$(INSTALL) -m 0644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
-		fi ;\
-	done
+	dh_lintian
 
   # symlinks to prepare dh_installdocs run
 
@@ -648,12 +642,9 @@ endif
 
 	dh_compress
 
-	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+	dh_makeshlibs --add-udeb=e2fsprogs-udeb
 ifeq ($(SKIP_UDEB),)
-	dh_makeshlibs --add-udeb=e2fsprogs-udeb -plibcomerr${COMERR_SOVERSION} \
-		-V 'libcomerr2 (>= 1.33-3)'
 ifneq ($(UTIL_LINUX_NG),yes)
-	dh_makeshlibs -plibblkid${BLKID_SOVERSION} -V 'libblkid1 (>= 1.39-1)'
 	echo "udeb: libblkid 1 libblkid1-udeb" >> \
 		debian/libblkid1/DEBIAN/shlibs
 	echo "udeb: libuuid 1 libuuid1-udeb" >> debian/libuuid1/DEBIAN/shlibs
@@ -696,15 +687,8 @@ ifneq ($(UTIL_LINUX_NG),yes)
 	dpkg-distaddfile $(UUID_UDEB_NAME) debian-installer $(UUID_UDEB_PRIORITY)
 endif
 endif
-	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
-	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
-ifeq ($(SKIP_UDEB),)
-	dh_builddeb -pe2fsprogs-udeb --filename=$(UDEB_NAME)
-ifneq ($(UTIL_LINUX_NG),yes)
-	dh_builddeb -plibblkid1-udeb --filename=$(BLKID_UDEB_NAME)
-	dh_builddeb -plibuuid1-udeb --filename=$(UUID_UDEB_NAME)
-endif
-endif
+	dh_md5sums
+	dh_builddeb
 
 binary: binary-indep binary-arch
 
