@@ -617,18 +617,7 @@ endif
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
 
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs \
-		-plibcomerr${COMERR_SOVERSION} \
-		-plibss${SS_SOVERSION} \
-		-pe2fslibs $(DBG_PACKAGES)
-ifneq ($(BUILD_E2FSCK_STATIC),no)
-	DH_OPTIONS= dh_installchangelogs -pe2fsck-static
-endif
-ifneq ($(UTIL_LINUX_NG),yes)
-	DH_OPTIONS= dh_installchangelogs -plibuuid${UUID_SOVERSION} \
-		-puuid-dev -puuid-runtime -plibblkid${BLKID_SOVERSION}
-endif
-
+	dh_installchangelogs
 	dh_fixperms
 	dh_strip $(call dh_strip_args,e2fsprogs)
 ifneq ($(BUILD_E2FSCK_STATIC),no)
@@ -657,33 +646,6 @@ endif
 		/bin/rm debian/$$i.tmp-patch; \
 	done
 
-	for i in e2fsprogs e2fslibs \
-	    $(if $(filter $(USE_DBGSYM),yes),,e2fsprogs-dbg e2fslibs-dbg) ; \
-	do \
-	   $(INSTALL) -p -m 0644 debian/copyright \
-		${debdir}/$$i/usr/share/doc/$$i/copyright; \
-	done
-
-ifneq ($(USE_DBGSYM),yes)
-ifneq ($(UTIL_LINUX_NG),yes)
-	$(INSTALL) -p -m 0644 debian/uuid-runtime.copyright \
-		${uuidruntimedbgdir}/usr/share/doc/uuid-runtime-dbg/copyright
-endif
-
-	$(INSTALL) -p -m 0644 debian/libcomerr2.copyright \
-		${libcomerrdbgdir}/usr/share/doc/libcomerr2-dbg/copyright
-
-	$(INSTALL) -p -m 0644 debian/libss2.copyright \
-		${libssdbgdir}/usr/share/doc/libss2-dbg/copyright
-
-ifneq ($(UTIL_LINUX_NG),yes)
-	$(INSTALL) -p -m 0644 debian/libblkid.copyright \
-		${libblkiddbgdir}/usr/share/doc/libblkid1-dbg/copyright
-
-	$(INSTALL) -p -m 0644 debian/libuuid1.copyright \
-		${libuuiddbgdir}/usr/share/doc/libuuid1-dbg/copyright
-endif
-endif
 	dh_compress
 
 	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
@@ -706,6 +668,8 @@ ifeq ($(SKIP_UDEB),)
 	dh_shlibdeps -pe2fsprogs-udeb -l${stdbuilddir}/lib \
 		-u"-Ldebian/e2fsprogs-udeb.shlibs.local"
 endif
+	dh_shlibdeps -pfuse2fs -l${stdbuilddir}/lib \
+		-u"-Ldebian/e2fsprogs.shlibs.local"
 
 	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
 		-Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
