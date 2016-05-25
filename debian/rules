@@ -92,7 +92,6 @@ maindir		?= ${debdir}/e2fsprogs
 e2fsckstaticdir	?= ${debdir}/e2fsck-static
 debugdir	?= ${debdir}/e2fsprogs-dbg
 stdbuilddir	?= ${debdir}/BUILD-STD
-staticbuilddir	?= ${debdir}/BUILD-STATIC
 mipsbuilddir	?= ${debdir}/BUILD-MIPS
 mipsbuilddir64	?= ${debdir}/BUILD-MIPS-64
 # docdir	?= ${maindir}/usr/share/doc/${package}
@@ -113,10 +112,8 @@ endif
 STAMPSDIR	?= debian/stampdir
 CFGSTDSTAMP	?= ${STAMPSDIR}/configure-std-stamp
 CFGBFSTAMP	?= ${STAMPSDIR}/configure-bf-stamp
-CFGSTATICSTAMP	?= ${STAMPSDIR}/configure-static-stamp
 BUILDSTDSTAMP	?= ${STAMPSDIR}/build-std-stamp
 BUILDBFSTAMP	?= ${STAMPSDIR}/build-bf-stamp
-BUILDSTATICSTAMP ?=${STAMPSDIR}/build-static-stamp
 
 INSTALL ?= install
 INSTALL_PROGRAM ?= $(INSTALL) -p -o root -g root -m 0755
@@ -151,17 +148,7 @@ else
 CFLAGS += -D__NO_STRING_INLINES
 endif
 
-ifneq (${DEB_HOST_ARCH_OS},linux)
-SKIP_STATIC = yes
-endif
-
-ifeq ($(SKIP_STATIC),yes)
-BUILD_STATIC =
 E2FSCK_STATIC = ${stdbuilddir}/e2fsck/e2fsck.static
-else
-BUILD_STATIC = build-static
-E2FSCK_STATIC = ${staticbuilddir}/e2fsck/e2fsck.static
-endif
 
 CFLAGS_SHLIB = $(filter-out -fPIE -fpie -pie,$(CFLAGS))
 CFLAGS_STLIB = $(filter-out -fPIE -fpie -pie,$(CFLAGS))
@@ -214,9 +201,6 @@ STD_CONF_FLAGS ?= --enable-elf-shlibs
 
 BF_CONF_FLAGS ?= --enable-elf-shlibs --disable-nls --disable-imager \
 	--disable-testio-debug --disable-uuidd --disable-tls --disable-debugfs
-
-STATIC_CONF_FLAGS ?= --disable-nls --disable-imager \
-	--disable-uuidd --disable-tls
 
 MIPS_NOPIC_CONF_FLAGS ?= --disable-nls --disable-imager \
 	--disable-uuidd --disable-tls \
@@ -369,36 +353,9 @@ endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGBFSTAMP}
 
-${CFGSTATICSTAMP}:
-	dh_testdir
-	rm -f config.cache
-
-	mkdir -p ${staticbuilddir}
-ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	cd ${staticbuilddir} && AWK=/usr/bin/awk ${topdir}/configure \
-		${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} ${EXTRA_CONF_FLAGS} \
-		CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
-		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
-		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
-		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
-else
-	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
-		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
-		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
-		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
-		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
-		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
-endif
-	mkdir -p ${STAMPSDIR}
-	touch ${CFGSTATICSTAMP}
-
 build-arch: build
 build-indep: build
-build: build-std $(BUILD_BF) $(BUILD_STATIC)
+build: build-std $(BUILD_BF)
 
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
@@ -442,15 +399,6 @@ ${BUILDBFSTAMP}: ${CFGBFSTAMP}
 	$(MAKE) -C ${bfbuilddir}/misc V=1 all
 	$(MAKE) -C ${bfbuilddir}/resize V=1 all
 	touch ${BUILDBFSTAMP}
-
-build-static: ${BUILDSTATICSTAMP}
-${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
-	dh_testdir
-	$(MAKE) -C ${staticbuilddir} V=1 libs
-ifneq ($(BUILD_E2FSCK_STATIC),no)
-	$(MAKE) -C ${staticbuilddir}/e2fsck V=1 e2fsck.static
-endif
-	touch ${BUILDSTATICSTAMP}
 
 clean:
 	dh_testdir
