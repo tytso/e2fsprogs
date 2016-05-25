@@ -1647,7 +1647,8 @@ failure:
 			com_err(ctx->program_name, retval,
 				_("while checking journal for %s"),
 				ctx->device_name);
-			fatal_error(ctx, 0);
+			fatal_error(ctx,
+				_("Cannot proceed with file system check"));
 		}
 	}
 
