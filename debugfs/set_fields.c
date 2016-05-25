@@ -653,18 +653,13 @@ static errcode_t parse_bmap(struct field_set_info *info,
 static errcode_t parse_gd_csum(struct field_set_info *info, char *field,
 			       char *arg)
 {
+	__u16 *checksum = info->ptr;
 
 	if (strcmp(arg, "calc") == 0) {
-		ext2fs_group_desc_csum_set(current_fs, set_bg);
-		memcpy(&set_gd, ext2fs_group_desc(current_fs,
-					current_fs->group_desc,
-					set_bg),
-			sizeof(set_gd));
-		printf("Checksum set to 0x%04x\n",
-		       ext2fs_bg_checksum(current_fs, set_bg));
+		*checksum = ext2fs_group_desc_csum(current_fs, set_bg);
+		printf("Checksum set to 0x%04x\n", *checksum);
 		return 0;
 	}
-
 	return parse_uint(info, field, arg);
 }
 

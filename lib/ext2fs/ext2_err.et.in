@@ -536,4 +536,7 @@ ec	EXT2_ET_FILESYSTEM_CORRUPTED,
 ec	EXT2_ET_BAD_CRC,
 	"Bad CRC detected in file system"
 
+ec	EXT2_ET_CORRUPT_JOURNAL_SB,
+	"The journal superblock is corrupt"
+
 	end

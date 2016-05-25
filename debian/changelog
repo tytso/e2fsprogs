@@ -5,6 +5,11 @@ e2fsprogs (1.43-3) UNRELEASED; urgency=medium
   * Fix various spelling mistakes in man pages
   * Fix project quota bugs in e2fsck and mke2fs
   * Build binaries with hardening support
+  * Improve e2fsck messages when the journal superblock is corrupt and
+    the user declines to fix the journal.  (Closes: #768162)
+  * Fix debugfs's handling of "set_bg <bg> checksum calc" on 64-bit file
+    systems.
+  * Simplify the debian rules file
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 22 May 2016 20:51:29 -0400
 
