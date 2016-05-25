@@ -550,7 +550,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 			e2fsck_clear_recover(ctx, 1);
 			return 0;
 		}
-		return EXT2_ET_BAD_INODE_NUM;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 	} else if (recover) {
 		if (fix_problem(ctx, PR_0_JOURNAL_RECOVER_SET, pctx)) {
 			e2fsck_clear_recover(ctx, 1);
@@ -627,7 +627,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	case JFS_DESCRIPTOR_BLOCK:
 	case JFS_COMMIT_BLOCK:
 	case JFS_REVOKE_BLOCK:
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	/* If we don't understand the superblock major type, but there
 	 * is a magic number, then it is likely to be a new format we
@@ -644,15 +644,15 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 
 	/* Checksum v1-3 are mutually exclusive features. */
 	if (jfs_has_feature_csum2(journal) && jfs_has_feature_csum3(journal))
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	if (journal_has_csum_v2or3(journal) &&
 	    jfs_has_feature_checksum(journal))
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	if (!e2fsck_journal_verify_csum_type(journal, jsb) ||
 	    !e2fsck_journal_sb_csum_verify(journal, jsb))
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	if (journal_has_csum_v2or3(journal))
 		journal->j_csum_seed = jbd2_chksum(journal, ~0, jsb->s_uuid,
@@ -662,19 +662,19 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	 * format to be able to proceed safely, so any other checks that
 	 * fail we should attempt to recover from. */
 	if (jsb->s_blocksize != htonl(journal->j_blocksize)) {
-		com_err(ctx->program_name, EXT2_ET_CORRUPT_SUPERBLOCK,
+		com_err(ctx->program_name, EXT2_ET_CORRUPT_JOURNAL_SB,
 			_("%s: no valid journal superblock found\n"),
 			ctx->device_name);
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 	}
 
 	if (ntohl(jsb->s_maxlen) < journal->j_maxlen)
 		journal->j_maxlen = ntohl(jsb->s_maxlen);
 	else if (ntohl(jsb->s_maxlen) > journal->j_maxlen) {
-		com_err(ctx->program_name, EXT2_ET_CORRUPT_SUPERBLOCK,
+		com_err(ctx->program_name, EXT2_ET_CORRUPT_JOURNAL_SB,
 			_("%s: journal too short\n"),
 			ctx->device_name);
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 	}
 
 	journal->j_tail_sequence = ntohl(jsb->s_sequence);
@@ -746,9 +746,9 @@ static errcode_t e2fsck_journal_fix_corrupt_super(e2fsck_t ctx,
 			e2fsck_clear_recover(ctx, recover);
 			return 0;
 		}
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 	} else if (e2fsck_journal_fix_bad_inode(ctx, pctx))
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	return 0;
 }
@@ -820,7 +820,7 @@ errcode_t e2fsck_check_ext3_journal(e2fsck_t ctx)
 
 	retval = e2fsck_journal_load(journal);
 	if (retval) {
-		if ((retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
+		if ((retval == EXT2_ET_CORRUPT_JOURNAL_SB) ||
 		    ((retval == EXT2_ET_UNSUPP_FEATURE) &&
 		    (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_INCOMPAT,
 				  &pctx))) ||
