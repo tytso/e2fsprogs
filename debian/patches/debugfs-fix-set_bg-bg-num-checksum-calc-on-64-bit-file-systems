@@ -1,0 +1,36 @@
+Description: debugfs: fix "set_bg <bg num> checksum calc" on 64-bit file systems
+
+Author: Theodore Ts'o <tytso@mit.edu>
+---
+ debugfs/set_fields.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/debugfs/set_fields.c b/debugfs/set_fields.c
+index 458bc47..8a4c6a8 100644
+--- a/debugfs/set_fields.c
++++ b/debugfs/set_fields.c
+@@ -653,18 +653,13 @@ static errcode_t parse_bmap(struct field_set_info *info,
+ static errcode_t parse_gd_csum(struct field_set_info *info, char *field,
+ 			       char *arg)
+ {
++	__u16 *checksum = info->ptr;
+ 
+ 	if (strcmp(arg, "calc") == 0) {
+-		ext2fs_group_desc_csum_set(current_fs, set_bg);
+-		memcpy(&set_gd, ext2fs_group_desc(current_fs,
+-					current_fs->group_desc,
+-					set_bg),
+-			sizeof(set_gd));
+-		printf("Checksum set to 0x%04x\n",
+-		       ext2fs_bg_checksum(current_fs, set_bg));
++		*checksum = ext2fs_group_desc_csum(current_fs, set_bg);
++		printf("Checksum set to 0x%04x\n", *checksum);
+ 		return 0;
+ 	}
+-
+ 	return parse_uint(info, field, arg);
+ }
+ 
+-- 
+2.5.0
+

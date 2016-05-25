@@ -5,3 +5,5 @@ e2fsck-use-com_err-error-codes-instead-of-EBADMSG-et-al
 mke2fs-fix-project-quota-creation
 e2fsck-fix-project-quota-support
 add-enable-hardening-which-builds-e2fsprogs-with-security-options
+e2fsck-improve-error-messages-when-the-journal-sb-is-corrupt
+debugfs-fix-set_bg-bg-num-checksum-calc-on-64-bit-file-systems

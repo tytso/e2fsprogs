@@ -1,4 +1,4 @@
-e2fsprogs (1.43-3) UNRELEASED; urgency=medium
+e2fsprogs (1.43-3) unstable; urgency=medium
 
   * Fix various debian packaging nits
   * Fix spelling mistakes in the copyright files
@@ -11,7 +11,7 @@ e2fsprogs (1.43-3) UNRELEASED; urgency=medium
     systems.
   * Simplify the debian rules file
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 22 May 2016 20:51:29 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 25 May 2016 00:51:33 -0400
 
 e2fsprogs (1.43-2) unstable; urgency=medium
 
