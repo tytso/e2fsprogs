@@ -68,12 +68,12 @@ e2p.pc: $(srcdir)/e2p.pc.in $(top_builddir)/config.status
 tst_ostype: $(srcdir)/ostype.c
 	$(E) "	LD $@"
 	$(Q) $(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_ostype \
-		$(srcdir)/ostype.c $(ALL_CFLAGS)
+		$(srcdir)/ostype.c $(ALL_CFLAGS) $(ALL_LDFLAGS)
 
 tst_feature: $(srcdir)/feature.c
 	$(E) "	LD $@"
 	$(Q) $(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_feature \
-		$(srcdir)/feature.c $(ALL_CFLAGS)
+		$(srcdir)/feature.c $(ALL_CFLAGS) $(ALL_LDFLAGS)
 
 check::	tst_ostype tst_feature
 	./tst_ostype
