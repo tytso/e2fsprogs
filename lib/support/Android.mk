@@ -3,6 +3,7 @@ LOCAL_PATH := $(call my-dir)
 libext2_quota_src_files := \
 	dict.c \
 	mkquota.c \
+	parse_qtype.c \
 	plausible.c \
 	profile.c \
 	profile_helpers.c \
