@@ -779,11 +779,11 @@ static errcode_t insert_dirent_tail(ext2_filsys fs, void *dirbuf)
 		d = NEXT_DIRENT(d);
 
 	if (d != top) {
-		size_t min_size = EXT2_DIR_REC_LEN(
+		unsigned int min_size = EXT2_DIR_REC_LEN(
 				ext2fs_dirent_name_len(dirbuf));
-		if (min_size > top - (void *)d)
+		if (min_size > (char *)top - (char *)d)
 			return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
-		d->rec_len = top - (void *)d;
+		d->rec_len = (char *)top - (char *)d;
 	}
 
 	t = (struct ext2_dir_entry_tail *)top;
@@ -1148,7 +1148,7 @@ skip_checksum:
 			if ((offset + rec_len > max_block_size) ||
 			    (rec_len < 12) ||
 			    ((rec_len % 4) != 0) ||
-			    ((ext2fs_dirent_name_len(dirent) + EXT2_DIR_ENTRY_HEADER_LEN) > rec_len)) {
+			    (((unsigned) ext2fs_dirent_name_len(dirent) + EXT2_DIR_ENTRY_HEADER_LEN) > rec_len)) {
 				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
 						&cd->pctx)) {
 #ifdef WORDS_BIGENDIAN
@@ -1908,7 +1908,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 	 * Update the inode block count
 	 */
 	ext2fs_iblk_add_blocks(fs, &inode, 1);
-	if (EXT2_I_SIZE(&inode) < (db->blockcnt+1) * fs->blocksize) {
+	if (EXT2_I_SIZE(&inode) < ((__u64) db->blockcnt+1) * fs->blocksize) {
 		pctx->errcode = ext2fs_inode_size_set(fs, &inode,
 					(db->blockcnt+1) * fs->blocksize);
 		if (pctx->errcode) {

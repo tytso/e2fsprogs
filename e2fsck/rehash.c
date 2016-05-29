@@ -210,9 +210,8 @@ static EXT2_QSORT_TYPE name_cmp(const void *a, const void *b)
 {
 	const struct hash_entry *he_a = (const struct hash_entry *) a;
 	const struct hash_entry *he_b = (const struct hash_entry *) b;
-	unsigned int he_a_len, he_b_len;
+	unsigned int he_a_len, he_b_len, min_len;
 	int	ret;
-	int	min_len;
 
 	he_a_len = ext2fs_dirent_name_len(he_a->dir);
 	he_b_len = ext2fs_dirent_name_len(he_b->dir);
@@ -309,7 +308,7 @@ static errcode_t get_next_block(ext2_filsys fs, struct out_dir *outdir,
  */
 static void mutate_name(char *str, unsigned int *len)
 {
-	int	i;
+	int i;
 	unsigned int l = *len;
 
 	/*
@@ -320,7 +319,7 @@ static void mutate_name(char *str, unsigned int *len)
 		if (!isdigit(str[i]))
 			break;
 	}
-	if ((i == l-1) || (str[i] != '~')) {
+	if ((i == (int)l - 1) || (str[i] != '~')) {
 		if (((l-1) & 3) < 2)
 			l += 2;
 		else
@@ -404,7 +403,7 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 		for (j=0; j < fd->num_array; j++) {
 			if ((i==j) ||
 			    (new_len !=
-			     ext2fs_dirent_name_len(fd->harray[j].dir)) ||
+			     (unsigned) ext2fs_dirent_name_len(fd->harray[j].dir)) ||
 			    strncmp(new_name, fd->harray[j].dir->name, new_len))
 				continue;
 			mutate_name(new_name, &new_len);
@@ -702,7 +701,6 @@ static int write_dir_block(ext2_filsys fs,
 			   void *priv_data)
 {
 	struct write_dir_struct	*wd = (struct write_dir_struct *) priv_data;
-	blk64_t	blk;
 	char	*dir, *buf = 0;
 
 #ifdef REHASH_DEBUG

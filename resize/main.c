@@ -167,11 +167,12 @@ static void bigalloc_check(ext2_filsys fs, int force)
 	}
 }
 
-static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
+static int resize2fs_setup_tdb(const char *device, char *undo_file,
 			       io_manager *io_ptr)
 {
 	errcode_t retval = ENOMEM;
-	char *tdb_dir = NULL, *tdb_file = NULL;
+	const char *tdb_dir = NULL;
+	char *tdb_file = NULL;
 	char *dev_name, *tmp_name;
 
 	/* (re)open a specific undo file */
@@ -186,7 +187,7 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 		printf(_("Overwriting existing filesystem; this can be undone "
 			 "using the command:\n"
 			 "    e2undo %s %s\n\n"),
-			undo_file, device_name);
+			undo_file, device);
 		return retval;
 	}
 
@@ -202,7 +203,7 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 	    access(tdb_dir, W_OK))
 		return 0;
 
-	tmp_name = strdup(device_name);
+	tmp_name = strdup(device);
 	if (!tmp_name)
 		goto errout;
 	dev_name = basename(tmp_name);
@@ -230,7 +231,7 @@ static int resize2fs_setup_tdb(const char *device_name, char *undo_file,
 		goto errout;
 	printf(_("Overwriting existing filesystem; this can be undone "
 		 "using the command:\n"
-		 "    e2undo %s %s\n\n"), tdb_file, device_name);
+		 "    e2undo %s %s\n\n"), tdb_file, device);
 
 	free(tdb_file);
 	return 0;

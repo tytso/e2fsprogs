@@ -390,7 +390,7 @@ redo_counts:
 		 * to do a discard operation.
 		 */
 		if (!first_block_in_bg ||
-		    (group == (int)fs->group_desc_count - 1) ||
+		    (group == fs->group_desc_count - 1) ||
 		    (ctx->options & E2F_OPT_DISCARD))
 			goto no_optimize;
 

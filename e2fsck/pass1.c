@@ -87,7 +87,7 @@ struct process_block_struct {
 				inode_modified:1;
 	blk64_t		num_blocks;
 	blk64_t		max_blocks;
-	e2_blkcnt_t	last_block;
+	blk64_t		last_block;
 	e2_blkcnt_t	last_init_lblock;
 	e2_blkcnt_t	last_db_block;
 	int		num_illegal_blocks;
@@ -2514,7 +2514,7 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
  * line up.
  */
 static int has_unaligned_cluster_map(e2fsck_t ctx,
-				     blk64_t last_pblk, e2_blkcnt_t last_lblk,
+				     blk64_t last_pblk, blk64_t last_lblk,
 				     blk64_t pblk, blk64_t lblk)
 {
 	blk64_t cluster_mask;
@@ -2614,7 +2614,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			problem = PR_1_EXTENT_ENDS_BEYOND;
 		else if (is_leaf && is_dir &&
 			 ((extent.e_lblk + extent.e_len) >
-			  (1 << (21 - ctx->fs->super->s_log_block_size))))
+			  (1U << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
 
 		if (is_leaf && problem == 0 && extent.e_len > 0 &&
@@ -2783,7 +2783,7 @@ report_problem:
 		 * pass 3 allocating empty directory blocks to fill the hole.
 		 */
 		if (try_repairs && is_dir &&
-		    pb->last_block + 1 < (e2_blkcnt_t)extent.e_lblk) {
+		    pb->last_block + 1 < extent.e_lblk) {
 			blk64_t new_lblk;
 
 			new_lblk = pb->last_block + 1;
@@ -3051,7 +3051,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 
 	pb.ino = ino;
 	pb.num_blocks = 0;
-	pb.last_block = -1;
+	pb.last_block = ~0;
 	pb.last_init_lblock = -1;
 	pb.last_db_block = -1;
 	pb.num_illegal_blocks = 0;
@@ -3178,29 +3178,28 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pb.num_blocks *= (fs->blocksize / 512);
 	pb.num_blocks *= EXT2FS_CLUSTER_RATIO(fs);
 #if 0
-	printf("inode %u, i_size = %u, last_block = %lld, i_blocks=%llu, num_blocks = %llu\n",
+	printf("inode %u, i_size = %u, last_block = %llu, i_blocks=%llu, num_blocks = %llu\n",
 	       ino, inode->i_size, pb.last_block, ext2fs_inode_i_blocks(fs, inode),
 	       pb.num_blocks);
 #endif
 	if (pb.is_dir) {
-		int nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
+		unsigned nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
 		if (inode->i_flags & EXT4_INLINE_DATA_FL) {
 			int flags;
-			size_t size;
+			size_t sz = 0;
 			errcode_t err;
 
-			size = 0;
 			flags = ctx->fs->flags;
 			ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 			err = ext2fs_inline_data_size(ctx->fs, pctx->ino,
-						      &size);
+						      &sz);
 			ctx->fs->flags = (flags &
 					  EXT2_FLAG_IGNORE_CSUM_ERRORS) |
 					 (ctx->fs->flags &
 					  ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
-			if (err || size != inode->i_size) {
+			if (err || sz != inode->i_size) {
 				bad_size = 7;
-				pctx->num = size;
+				pctx->num = sz;
 			}
 		} else if (inode->i_size & (fs->blocksize - 1))
 			bad_size = 5;

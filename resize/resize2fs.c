@@ -73,7 +73,7 @@ static inline int is_inode_bm(ext2_filsys fs, unsigned int grp, blk64_t blk)
 	return blk == ext2fs_inode_bitmap_loc(fs, grp);
 }
 
-static inline int is_inode_tb(ext2_filsys fs, unsigned int grp, blk64_t blk)
+static int is_inode_tb(ext2_filsys fs, unsigned int grp, blk64_t blk)
 {
 	return blk >= ext2fs_inode_table_loc(fs, grp) &&
 	       blk < (ext2fs_inode_table_loc(fs, grp) +
@@ -329,8 +329,8 @@ static errcode_t resize_group_descriptors(ext2_resize_t rfs, blk64_t new_size)
 		copy_size = EXT2_DESC_SIZE(rfs->new_fs->super);
 	for (i = 0; i < rfs->old_fs->group_desc_count; i++) {
 		memcpy(n, o, copy_size);
-		n += EXT2_DESC_SIZE(rfs->new_fs->super);
-		o += EXT2_DESC_SIZE(rfs->old_fs->super);
+		n = (char *)n + EXT2_DESC_SIZE(rfs->new_fs->super);
+		o = (char *)o + EXT2_DESC_SIZE(rfs->old_fs->super);
 	}
 
 	ext2fs_free_mem(&rfs->new_fs->group_desc);
@@ -584,7 +584,7 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
 {
 	blk64_t		blk, lblk;
 	dgrp_t		g;
-	int		i;
+	unsigned int	i;
 
 	if (!ext2fs_has_group_desc_csum(fs))
 		return;
@@ -604,7 +604,7 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
 		ext2fs_mark_block_bitmap2(fs->block_map,
 					  ext2fs_inode_bitmap_loc(fs, g));
 		for (i = 0, blk = ext2fs_inode_table_loc(fs, g);
-		     i < (unsigned int) fs->inode_blocks_per_group;
+		     i < fs->inode_blocks_per_group;
 		     i++, blk++)
 			ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	}
@@ -631,12 +631,12 @@ static errcode_t free_gdp_blocks(ext2_filsys fs,
 				 ext2_filsys old_fs,
 				 dgrp_t group)
 {
-	blk64_t	blk;
-	int	j;
-	dgrp_t	i;
+	blk64_t		blk;
+	unsigned int	j;
+	dgrp_t		i;
 	ext2fs_block_bitmap bg_map = NULL;
-	errcode_t retval = 0;
-	dgrp_t count = old_fs->group_desc_count - fs->group_desc_count;
+	errcode_t	retval = 0;
+	dgrp_t		count = old_fs->group_desc_count - fs->group_desc_count;
 
 	/* If bigalloc, don't free metadata living in the same cluster */
 	if (EXT2FS_CLUSTER_RATIO(fs) > 1) {
@@ -1256,7 +1256,8 @@ static void mark_fs_metablock(ext2_resize_t rfs,
  */
 static errcode_t blocks_to_move(ext2_resize_t rfs)
 {
-	int		j, has_super;
+	unsigned int	j;
+	int		has_super;
 	dgrp_t		i, max_groups, g;
 	blk64_t		blk, group_blk;
 	blk64_t		old_blocks, new_blocks, group_end, cluster_freed;
@@ -1662,8 +1663,7 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	ext2_filsys		fs = rfs->new_fs;
 	ext2_filsys		old_fs = rfs->old_fs;
 	errcode_t		retval;
-	__u64			size;
-	int			c;
+	__u64			c, size;
 	int			to_move, moved;
 	ext2_badblocks_list	badblock_list = 0;
 	int			bb_modified = 0;
@@ -2298,7 +2298,8 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	char		*cp;
 	blk64_t		old_blk, new_blk, blk, cluster_freed;
 	errcode_t	retval;
-	int		j, to_move, moved;
+	int		to_move, moved;
+	unsigned int	j;
 	ext2fs_block_bitmap	new_bmap = NULL;
 
 	max_groups = fs->group_desc_count;
