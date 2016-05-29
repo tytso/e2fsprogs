@@ -68,17 +68,29 @@ get_file_xtime_and_extra year-1979
 get_file_xtime_and_extra year-2039
 get_file_xtime_and_extra year-2139
 
-# now we need to check that after the year 2242, e2fsck does not
-# modify dates with extra_xtime=3
+if test $SIZEOF_TIME_T -gt 4
+then
+  # now we need to check that after the year 2242, e2fsck does not
+  # modify dates with extra_xtime=3
 
-# restore the unrepaired filesystem
-mv $TMPFILE.sav $TMPFILE
+  # restore the unrepaired filesystem
+  mv $TMPFILE.sav $TMPFILE
 
-#retry the repair
-E2FSCK_TIME=9270393539 $FSCK $FSCK_OPT $TMPFILE >> $OUT 2>&1
+  #retry the repair
+  E2FSCK_TIME=9270393539 $FSCK $FSCK_OPT $TMPFILE >> $OUT 2>&1
 
-# check that the 1909 file is unaltered (i.e. it has a post-2378 date)
-get_file_xtime_and_extra year-1909
+  # check that the 1909 file is unaltered (i.e. it has a post-2378 date)
+  get_file_xtime_and_extra year-1909
+else
+  rm -f TMPFILE.sav
+cat << EOF >> $TIMESTAMPS
+times for year-1909 =
+ ctime: 0x8e475440:00000003
+ atime: 0x8e475440:00000003
+ mtime: 0x8e475440:00000003
+crtime: 0x8e475440:00000003
+EOF
+fi
 
 cmp -s $TIMESTAMPS $EXP
 status=$?
