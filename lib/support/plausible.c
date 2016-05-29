@@ -55,10 +55,14 @@ static int magic_library_available(void)
 		if (!magic_handle)
 			return 0;
 
-		dl_magic_open = dlsym(magic_handle, "magic_open");
-		dl_magic_file = dlsym(magic_handle, "magic_file");
-		dl_magic_load = dlsym(magic_handle, "magic_load");
-		dl_magic_close = dlsym(magic_handle, "magic_close");
+		dl_magic_open = (magic_t (*)(int))
+			dlsym(magic_handle, "magic_open");
+		dl_magic_file = (const char *(*)(magic_t, const char *))
+			dlsym(magic_handle, "magic_file");
+		dl_magic_load = (int (*)(magic_t, const char *))
+			dlsym(magic_handle, "magic_load");
+		dl_magic_close = (void (*)(magic_t))
+			dlsym(magic_handle, "magic_close");
 	}
 
 	if (!dl_magic_open || !dl_magic_file ||

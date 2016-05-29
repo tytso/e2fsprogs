@@ -1479,6 +1479,7 @@ err:
 
 static void handle_quota_options(ext2_filsys fs)
 {
+	errcode_t retval;
 	quota_ctx_t qctx;
 	ext2_ino_t qf_ino;
 	enum quota_type qtype;
@@ -1491,7 +1492,12 @@ static void handle_quota_options(ext2_filsys fs)
 		/* Nothing to do. */
 		return;
 
-	quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
+	retval = quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while initializing quota context in support library"));
+		exit(1);
+	}
 	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++) {
 		if (quota_enable[qtype] == QOPT_ENABLE) {
 			enable = 1;
@@ -1504,11 +1510,31 @@ static void handle_quota_options(ext2_filsys fs)
 	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++) {
 		if (quota_enable[qtype] == QOPT_ENABLE &&
 		    *quota_sb_inump(fs->super, qtype) == 0) {
-			if ((qf_ino = quota_file_exists(fs, qtype)) > 0)
-				quota_update_limits(qctx, qf_ino, qtype);
-			quota_write_inode(qctx, 1 << qtype);
+			if ((qf_ino = quota_file_exists(fs, qtype)) > 0) {
+				retval = quota_update_limits(qctx, qf_ino,
+							     qtype);
+				if (retval) {
+					com_err(program_name, retval,
+						_("while updating quota limits (%d)"),
+						qtype);
+					exit(1);
+				}
+			}
+			retval = quota_write_inode(qctx, 1 << qtype);
+			if (retval) {
+				com_err(program_name, retval,
+					_("while writing quota file (%d)"),
+					qtype);
+				exit(1);
+			}
 		} else if (quota_enable[qtype] == QOPT_DISABLE) {
-			quota_remove_inode(fs, qtype);
+			retval = quota_remove_inode(fs, qtype);
+			if (retval) {
+				com_err(program_name, retval,
+					_("while removing quota file (%d)"),
+					qtype);
+				exit(1);
+			}
 		}
 	}
 

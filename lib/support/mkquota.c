@@ -108,16 +108,19 @@ errcode_t quota_remove_inode(ext2_filsys fs, enum quota_type qtype)
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval) {
-		log_err("Couldn't read bitmaps: %s", error_message(retval));
+		log_debug("Couldn't read bitmaps: %s", error_message(retval));
 		return retval;
 	}
+
 	qf_ino = *quota_sb_inump(fs->super, qtype);
-	if (qf_ino < EXT2_FIRST_INODE(fs->super)) {
-		quota_inode_truncate(fs, qf_ino);
-	} else {
+	if (qf_ino == 0)
+		return 0;
+	retval = quota_inode_truncate(fs, qf_ino);
+	if (retval)
+		return retval;
+	if (qf_ino >= EXT2_FIRST_INODE(fs->super)) {
 		struct ext2_inode inode;
 
-		quota_inode_truncate(fs, qf_ino);
 		retval = ext2fs_read_inode(fs, qf_ino, &inode);
 		if (!retval) {
 			memset(&inode, 0, sizeof(struct ext2_inode));
@@ -133,7 +136,7 @@ errcode_t quota_remove_inode(ext2_filsys fs, enum quota_type qtype)
 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	retval = ext2fs_write_bitmaps(fs);
 	if (retval) {
-		log_err("Couldn't write bitmaps: %s", error_message(retval));
+		log_debug("Couldn't write bitmaps: %s", error_message(retval));
 		return retval;
 	}
 	return 0;
@@ -170,14 +173,14 @@ errcode_t quota_write_inode(quota_ctx_t qctx, unsigned int qtype_bits)
 	fs = qctx->fs;
 	retval = ext2fs_get_mem(sizeof(struct quota_handle), &h);
 	if (retval) {
-		log_err("Unable to allocate quota handle: %s",
+		log_debug("Unable to allocate quota handle: %s",
 			error_message(retval));
 		goto out;
 	}
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval) {
-		log_err("Couldn't read bitmaps: %s", error_message(retval));
+		log_debug("Couldn't read bitmaps: %s", error_message(retval));
 		goto out;
 	}
 
@@ -191,7 +194,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, unsigned int qtype_bits)
 
 		retval = quota_file_create(h, fs, qtype, fmt);
 		if (retval < 0) {
-			log_err("Cannot initialize io on quotafile");
+			log_debug("Cannot initialize io on quotafile");
 			continue;
 		}
 
@@ -202,7 +205,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, unsigned int qtype_bits)
 				strerror(errno));
 			if (h->qh_qf.e2_file)
 				ext2fs_file_close(h->qh_qf.e2_file);
-			quota_inode_truncate(fs, h->qh_qf.ino);
+			(void) quota_inode_truncate(fs, h->qh_qf.ino);
 			continue;
 		}
 
@@ -215,7 +218,7 @@ errcode_t quota_write_inode(quota_ctx_t qctx, unsigned int qtype_bits)
 
 	retval = ext2fs_write_bitmaps(fs);
 	if (retval) {
-		log_err("Couldn't write bitmaps: %s", error_message(retval));
+		log_debug("Couldn't write bitmaps: %s", error_message(retval));
 		goto out;
 	}
 out:
@@ -245,7 +248,7 @@ static int dict_uint_cmp(const void *a, const void *b)
 
 static inline qid_t get_qid(struct ext2_inode_large *inode, enum quota_type qtype)
 {
-	int inode_size;
+	unsigned int inode_size;
 
 	switch (qtype) {
 	case USRQUOTA:
@@ -286,7 +289,7 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs,
 
 	err = ext2fs_get_mem(sizeof(struct quota_ctx), &ctx);
 	if (err) {
-		log_err("Failed to allocate quota context");
+		log_debug("Failed to allocate quota context");
 		return err;
 	}
 
@@ -297,7 +300,7 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs,
 			continue;
 		err = ext2fs_get_mem(sizeof(dict_t), &dict);
 		if (err) {
-			log_err("Failed to allocate dictionary");
+			log_debug("Failed to allocate dictionary");
 			quota_release_context(&ctx);
 			return err;
 		}
@@ -586,13 +589,13 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
 
 	err = ext2fs_get_mem(sizeof(struct quota_handle), &qh);
 	if (err) {
-		log_err("Unable to allocate quota handle");
+		log_debug("Unable to allocate quota handle");
 		return err;
 	}
 
 	err = quota_file_open(qctx, qh, qf_ino, qtype, -1, 0);
 	if (err) {
-		log_err("Open quota file failed");
+		log_debug("Open quota file failed");
 		goto out;
 	}
 
@@ -600,7 +603,7 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
 
 	err = quota_file_close(qctx, qh);
 	if (err) {
-		log_err("Cannot finish IO on new quotafile: %s",
+		log_debug("Cannot finish IO on new quotafile: %s",
 			strerror(errno));
 		if (qh->qh_qf.e2_file)
 			ext2fs_file_close(qh->qh_qf.e2_file);
@@ -630,7 +633,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 
 	err = quota_file_open(qctx, &qh, 0, qtype, -1, 0);
 	if (err) {
-		log_err("Open quota file failed");
+		log_debug("Open quota file failed");
 		goto out;
 	}
 
@@ -640,7 +643,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 	scan_data.usage_is_inconsistent = 0;
 	err = qh.qh_ops->scan_dquots(&qh, scan_dquots_callback, &scan_data);
 	if (err) {
-		log_err("Error scanning dquots");
+		log_debug("Error scanning dquots");
 		goto out_close_qh;
 	}
 
@@ -659,7 +662,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 out_close_qh:
 	err = quota_file_close(qctx, &qh);
 	if (err) {
-		log_err("Cannot close quotafile: %s", error_message(errno));
+		log_debug("Cannot close quotafile: %s", error_message(errno));
 		if (qh.qh_qf.e2_file)
 			ext2fs_file_close(qh.qh_qf.e2_file);
 	}

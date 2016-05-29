@@ -56,7 +56,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 long profile_init
-	(const char * *files, profile_t *ret_profile);
+	(const char * const *files, profile_t *ret_profile);
 
 void profile_release
 	(profile_t profile);

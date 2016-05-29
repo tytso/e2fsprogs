@@ -271,6 +271,10 @@ struct problem_context {
 /* metadata_csum_seed means nothing without metadata_csum */
 #define PR_0_CSUM_SEED_WITHOUT_META_CSUM	0x00004B
 
+/* Error initializing quota context */
+#define PR_0_QUOTA_INIT_CTX			0x00004C
+
+
 /*
  * Pass 1 errors
  */
@@ -1211,6 +1215,10 @@ struct problem_context {
 
 /* Error flushing writes to storage device */
 #define PR_6_IO_FLUSH			0x060005
+
+/* Error updating quota information */
+#define PR_6_WRITE_QUOTAS		0x060006
+
 
 /*
  * Function declarations

@@ -25,6 +25,7 @@
 
 #include <et/com_err.h>
 #include "profile.h"
+#include "profile_helpers.h"
 #include "prof_err.h"
 
 /*
@@ -305,7 +306,7 @@ profile_init_path(const char * filepath,
 	/* cap the array */
 	filenames[i] = 0;
 
-	retval = profile_init((const char **) filenames,
+	retval = profile_init((const char * const *) filenames,
 			      ret_profile);
 
 	/* count back down and free the entries */

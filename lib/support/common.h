@@ -30,7 +30,7 @@
 	fprintf(stderr, "[DEBUG] %s:%d:%s:: " format "\n",		\
 		__FILE__, __LINE__, __func__, ## arg)
 #else
-# define log_debug(format, ...)
+# define log_debug(...)
 #endif
 
 #endif /* __QUOTA_COMMON_H__ */

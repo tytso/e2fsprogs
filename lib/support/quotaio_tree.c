@@ -34,7 +34,7 @@ static inline dqbuf_t getdqbuf(void)
 /* Is given dquot empty? */
 int qtree_entry_unused(struct qtree_mem_dqinfo *info, char *disk)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < info->dqi_entry_size; i++)
 		if (disk[i])
@@ -628,7 +628,8 @@ static int report_tree(struct dquot *dquot, unsigned int blk, int depth,
 
 static unsigned int find_set_bits(char *bmp, int blocks)
 {
-	unsigned int i, used = 0;
+	unsigned int	used = 0;
+	int		i;
 
 	for (i = 0; i < blocks; i++)
 		if (get_bit(bmp, i))

@@ -301,9 +301,9 @@ errout:
 }
 
 errcode_t
-profile_init(const char **files, profile_t *ret_profile)
+profile_init(const char * const *files, profile_t *ret_profile)
 {
-	const char **fs;
+	const char * const *fs;
 	profile_t profile;
 	prf_file_t  new_file, *last;
 	errcode_t retval = 0;

@@ -2696,10 +2696,21 @@ static void fix_cluster_bg_counts(ext2_filsys fs)
 static int create_quota_inodes(ext2_filsys fs)
 {
 	quota_ctx_t qctx;
+	errcode_t retval;
 
-	quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
+	retval = quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while initializing quota context"));
+		exit(1);
+	}
 	quota_compute_usage(qctx);
-	quota_write_inode(qctx, quotatype_bits);
+	retval = quota_write_inode(qctx, quotatype_bits);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while writing quota inodes"));
+		exit(1);
+	}
 	quota_release_context(&qctx);
 
 	return 0;

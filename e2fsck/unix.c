@@ -1791,7 +1791,13 @@ print_unsupp_features:
 				qtype_bits |= 1 << qtype;
 		}
 
-		quota_init_context(&ctx->qctx, ctx->fs, qtype_bits);
+		clear_problem_context(&pctx);
+		pctx.errcode = quota_init_context(&ctx->qctx, ctx->fs,
+						  qtype_bits);
+		if (pctx.errcode) {
+			fix_problem(ctx, PR_0_QUOTA_INIT_CTX, &pctx);
+			fatal_error(ctx, 0);
+		}
 	}
 
 	run_result = e2fsck_run(ctx);
@@ -1843,8 +1849,13 @@ no_journal:
 			retval = quota_compare_and_update(ctx->qctx, qtype,
 							  &needs_writeout);
 			if ((retval || needs_writeout) &&
-			    fix_problem(ctx, PR_6_UPDATE_QUOTAS, &pctx))
-				quota_write_inode(ctx->qctx, 1 << qtype);
+			    fix_problem(ctx, PR_6_UPDATE_QUOTAS, &pctx)) {
+				pctx.errcode = quota_write_inode(ctx->qctx,
+								 1 << qtype);
+				if (pctx.errcode)
+					(void) fix_problem(ctx,
+						PR_6_WRITE_QUOTAS, &pctx);
+			}
 		}
 		quota_release_context(&ctx->qctx);
 	}

@@ -472,6 +472,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@S metadata_csum_seed is not necessary without metadata_csum."),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
 
+	/* Error initializing quota context */
+	{ PR_0_QUOTA_INIT_CTX,
+	  N_("Error initializing quota context in support library: %m\n"),
+	  PROMPT_NULL, PR_FATAL },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
@@ -2005,6 +2010,11 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_6_IO_FLUSH,
 	  N_("Error flushing writes to storage device: %m\n"),
 	  PROMPT_NULL, PR_FATAL },
+
+	/* Error writing quota information */
+	{ PR_6_WRITE_QUOTAS,
+	  N_("Error writing quota info for quota type %N: %m\n"),
+	  PROMPT_NULL, 0 },
 
 	{ 0 }
 };
