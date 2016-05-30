@@ -49,6 +49,8 @@ DEBUG_SRCS= debug_cmds.c extent_cmds.c tst_cmds.c \
 	$(top_srcdir)/e2fsck/recovery.c \
 	$(top_srcdir)/debugfs/do_journal.c
 
+@TDB_CMT@TDB_OBJ= tdb.o
+
 OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	$(TEST_IO_LIB_OBJS) \
 	ext2_err.o \
@@ -119,7 +121,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	sha512.o \
 	swapfs.o \
 	symlink.o \
-	tdb.o \
+	$(TDB_OBJ) \
 	undo_io.o \
 	unix_io.o \
 	unlink.o \

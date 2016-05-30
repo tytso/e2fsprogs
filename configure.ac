@@ -777,6 +777,31 @@ AC_MSG_RESULT([Enabling mmp support by default])
 AC_DEFINE(CONFIG_MMP, 1)
 )
 dnl
+dnl handle --disable-tdb
+dnl
+AH_TEMPLATE([CONFIG_TDB], [Define to 1 to enable tdb support])
+AC_ARG_ENABLE([tdb],
+[  --disable-tdb           disable tdb support],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling tdb support])
+	TDB_CMT="#"
+	TDB_MAN_COMMENT='.\"'
+else
+	AC_MSG_RESULT([Enabling tdb support])
+	AC_DEFINE(CONFIG_TDB, 1)
+	TDB_CMT=""
+	TDB_MAN_COMMENT=""
+fi
+,
+AC_MSG_RESULT([Enabling mmp support by default])
+AC_DEFINE(CONFIG_TDB, 1)
+TDB_CMT=""
+TDB_MAN_COMMENT=""
+)
+AC_SUBST(TDB_CMT)
+AC_SUBST(TDB_MAN_COMMENT)
+dnl
 dnl handle --disable-bmap-stats
 dnl
 AH_TEMPLATE([ENABLE_BMAP_STATS], [Define to 1 to enable bitmap stats.])

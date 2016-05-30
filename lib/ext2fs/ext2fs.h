@@ -18,6 +18,12 @@
 #define EXT2FS_ATTR(x)
 #endif
 
+#ifdef CONFIG_TDB
+#define EXT2FS_NO_TDB_UNUSED
+#else
+#define EXT2FS_NO_TDB_UNUSED	EXT2FS_ATTR((unused))
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -74,7 +74,6 @@ libext2fs_src_files := \
 	sha512.c \
 	swapfs.c \
 	symlink.c \
-	tdb.c \
 	undo_io.c \
 	unix_io.c \
 	unlink.c \

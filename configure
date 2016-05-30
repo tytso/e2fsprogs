@@ -731,6 +731,8 @@ SET_MAKE
 VERSION
 PACKAGE
 GETTEXT_PACKAGE
+TDB_MAN_COMMENT
+TDB_CMT
 UUIDD_CMT
 E2INITRD_MAN
 E2INITRD_PROG
@@ -877,6 +879,7 @@ enable_e2initrd_helper
 enable_tls
 enable_uuidd
 enable_mmp
+enable_tdb
 enable_bmap_stats
 enable_bmap_stats_ops
 enable_nls
@@ -1550,6 +1553,7 @@ Optional Features:
   --disable-tls           disable use of thread local support
   --disable-uuidd         disable building the uuid daemon
   --disable-mmp           disable support mmp, Multi Mount Protection
+  --disable-tdb           disable tdb support
   --disable-bmap-stats    disable collection of bitmap stats.
   --enable-bmap-stats-ops enable collection of additional bitmap stats
   --disable-nls           do not use Native Language Support
@@ -5938,6 +5942,36 @@ $as_echo "#define CONFIG_MMP 1" >>confdefs.h
 
 
 fi
+
+
+# Check whether --enable-tdb was given.
+if test "${enable_tdb+set}" = set; then :
+  enableval=$enable_tdb; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling tdb support" >&5
+$as_echo "Disabling tdb support" >&6; }
+	TDB_CMT="#"
+	TDB_MAN_COMMENT='.\"'
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling tdb support" >&5
+$as_echo "Enabling tdb support" >&6; }
+	$as_echo "#define CONFIG_TDB 1" >>confdefs.h
+
+	TDB_CMT=""
+	TDB_MAN_COMMENT=""
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling mmp support by default" >&5
+$as_echo "Enabling mmp support by default" >&6; }
+$as_echo "#define CONFIG_TDB 1" >>confdefs.h
+
+TDB_CMT=""
+TDB_MAN_COMMENT=""
+
+fi
+
+
 
 
 # Check whether --enable-bmap-stats was given.

@@ -697,10 +697,12 @@ isdir:
 	}
 }
 
-void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,
-			     ext2_icount_t *ret)
+extern errcode_t e2fsck_setup_icount(e2fsck_t ctx, const char *icount_name,
+				     int flags, ext2_icount_t hint,
+				     ext2_icount_t *ret)
 {
 	unsigned int		threshold;
+	unsigned int		save_type;
 	ext2_ino_t		num_dirs;
 	errcode_t		retval;
 	char			*tdb_dir;
@@ -719,13 +721,18 @@ void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,
 	if (retval)
 		num_dirs = 1024;	/* Guess */
 
-	if (!enable || !tdb_dir || access(tdb_dir, W_OK) ||
-	    (threshold && num_dirs <= threshold))
-		return;
-
-	retval = ext2fs_create_icount_tdb(ctx->fs, tdb_dir, flags, ret);
-	if (retval)
-		*ret = 0;
+	if (enable && tdb_dir && !access(tdb_dir, W_OK) &&
+	    (!threshold || num_dirs > threshold)) {
+		retval = ext2fs_create_icount_tdb(ctx->fs, tdb_dir,
+						  flags, ret);
+		if (retval == 0)
+			return 0;
+	}
+	e2fsck_set_bitmap_type(ctx->fs, EXT2FS_BMAP64_RBTREE, icount_name,
+			       &save_type);
+	retval = ext2fs_create_icount2(ctx->fs, flags, 0, hint, ret);
+	ctx->fs->default_bitmap_type = save_type;
+	return retval;
 }
 
 static errcode_t recheck_bad_inode_checksum(ext2_filsys fs, ext2_ino_t ino,
@@ -1049,7 +1056,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		scan_callback_struct scan_struct;
 	struct ext2_super_block *sb = ctx->fs->super;
 	const char	*old_op;
-	unsigned int	save_type;
 	int		imagic_fs, extent_fs, inlinedata_fs;
 	int		low_dtime_check = 1;
 	int		inode_size = EXT2_INODE_SIZE(fs->super);
@@ -1145,15 +1151,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	e2fsck_setup_tdb_icount(ctx, 0, &ctx->inode_link_info);
-	if (!ctx->inode_link_info) {
-		e2fsck_set_bitmap_type(fs, EXT2FS_BMAP64_RBTREE,
-				       "inode_link_info", &save_type);
-		pctx.errcode = ext2fs_create_icount2(fs, 0, 0, 0,
-						     &ctx->inode_link_info);
-		fs->default_bitmap_type = save_type;
-	}
-
+	pctx.errcode = e2fsck_setup_icount(ctx, "inode_link_info", 0, NULL,
+					   &ctx->inode_link_info);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ALLOCATE_ICOUNT, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;

@@ -72,10 +72,10 @@ behavior.
 .I [problems]
 This stanza allows the administrator to reconfigure how e2fsck handles
 various filesystem inconsistencies.
-.TP
-.I [scratch_files]
-This stanza controls when e2fsck will attempt to use scratch files to
-reduce the need for memory.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I [scratch_files]
+@TDB_MAN_COMMENT@This stanza controls when e2fsck will attempt to use
+@TDB_MAN_COMMENT@scratch files to reduce the need for memory.
 .SH THE [options] STANZA
 The following relations are defined in the 
 .I [options]
@@ -303,29 +303,33 @@ of 'should this problem be fixed?'.  The
 option even overrides the
 .B -y
 option given on the command-line (just for the specific problem, of course).
-.SH THE [scratch_files] STANZA
-The following relations are defined in the 
-.I [scratch_files]
-stanza.
-.TP
-.I directory
-If the directory named by this relation exists and is writeable, then
-e2fsck will attempt to use this directory to store scratch files instead
-of using in-memory data structures.
-.TP
-.I numdirs_threshold
-If this relation is set, then in-memory data structures be used if the
-number of directories in the filesystem are fewer than amount specified.
-.TP
-.I dirinfo
-This relation controls whether or not the scratch file directory is used
-instead of an in-memory data structure for directory information.  It
-defaults to true.
-.TP
-.I icount
-This relation controls whether or not the scratch file directory is used
-instead of an in-memory data structure when tracking inode counts.  It
-defaults to true.
+@TDB_MAN_COMMENT@.SH THE [scratch_files] STANZA
+@TDB_MAN_COMMENT@The following relations are defined in the
+@TDB_MAN_COMMENT@.I [scratch_files]
+@TDB_MAN_COMMENT@stanza.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I directory
+@TDB_MAN_COMMENT@If the directory named by this relation exists and is
+@TDB_MAN_COMMENT@writeable, then e2fsck will attempt to use this
+@TDB_MAN_COMMENT@directory to store scratch files instead of using
+@TDB_MAN_COMMENT@in-memory data structures.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I numdirs_threshold
+@TDB_MAN_COMMENT@If this relation is set, then in-memory data structures
+@TDB_MAN_COMMENT@be used if the number of directories in the filesystem
+@TDB_MAN_COMMENT@are fewer than amount specified.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I dirinfo
+@TDB_MAN_COMMENT@This relation controls whether or not the scratch file
+@TDB_MAN_COMMENT@directory is used instead of an in-memory data
+@TDB_MAN_COMMENT@structure for directory information.  It defaults to
+@TDB_MAN_COMMENT@true.
+@TDB_MAN_COMMENT@.TP
+@TDB_MAN_COMMENT@.I icount
+@TDB_MAN_COMMENT@This relation controls whether or not the scratch file
+@TDB_MAN_COMMENT@directory is used instead of an in-memory data
+@TDB_MAN_COMMENT@structure when tracking inode counts.  It defaults to
+@TDB_MAN_COMMENT@true.
 .SH LOGGING
 E2fsck has the facility to save the information from an e2fsck run in a
 directory so that a system administrator can review its output at their
