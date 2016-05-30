@@ -184,7 +184,7 @@ static int jbd2_descr_block_csum_verify(journal_t *j,
 	if (!journal_has_csum_v2or3(j))
 		return 1;
 
-	tail = (struct journal_block_tail *)(buf + j->j_blocksize -
+	tail = (struct journal_block_tail *)((char *)buf + j->j_blocksize -
 			sizeof(struct journal_block_tail));
 	provided = tail->t_checksum;
 	tail->t_checksum = 0;
@@ -626,8 +626,9 @@ static int do_one_pass(journal_t *journal,
 					memcpy(nbh->b_data, obh->b_data,
 							journal->j_blocksize);
 					if (flags & JFS_FLAG_ESCAPE) {
-						*((__u32 *)nbh->b_data) =
-						ext2fs_cpu_to_be32(JFS_MAGIC_NUMBER);
+						__u32 magic = ext2fs_cpu_to_be32(JFS_MAGIC_NUMBER);
+						memcpy(nbh->b_data, &magic,
+						       sizeof(magic));
 					}
 
 					BUFFER_TRACE(nbh, "marking dirty");
@@ -818,7 +819,7 @@ static int jbd2_revoke_block_csum_verify(journal_t *j,
 	if (!journal_has_csum_v2or3(j))
 		return 1;
 
-	tail = (struct journal_revoke_tail *)(buf + j->j_blocksize -
+	tail = (struct journal_revoke_tail *)((char *)buf + j->j_blocksize -
 			sizeof(struct journal_revoke_tail));
 	provided = tail->r_checksum;
 	tail->r_checksum = 0;
@@ -835,7 +836,7 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 {
 	journal_revoke_header_t *header;
 	int offset, max;
-	int csum_size = 0;
+	unsigned csum_size = 0;
 	__u32 rcount;
 	int record_len = 4;
 

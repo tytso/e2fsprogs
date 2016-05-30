@@ -857,10 +857,10 @@ static int probe_jfs(struct blkid_probe *probe,
 
 	js = (struct jfs_super_block *)buf;
 
-	if (blkid_le32(js->js_bsize) != (1 << blkid_le16(js->js_l2bsize)))
+	if (blkid_le32(js->js_bsize) != (1U << blkid_le16(js->js_l2bsize)))
 		return 1;
 
-	if (blkid_le32(js->js_pbsize) != (1 << blkid_le16(js->js_l2pbsize)))
+	if (blkid_le32(js->js_pbsize) != (1U << blkid_le16(js->js_l2pbsize)))
 		return 1;
 
 	if ((blkid_le16(js->js_l2bsize) - blkid_le16(js->js_l2pbsize)) !=
@@ -1393,7 +1393,7 @@ static int probe_btrfs(struct blkid_probe *probe,
 }
 
 static int probe_f2fs(struct blkid_probe *probe,
-            struct blkid_magic *id,
+            struct blkid_magic *id __BLKID_ATTR((unused)),
             unsigned char *buf)
 {
     struct f2fs_super_block *bs;

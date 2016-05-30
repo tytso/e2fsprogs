@@ -670,7 +670,7 @@ out:
 	return err;
 }
 
-int parse_quota_opts(const char *opts, int (*func)(char *, void *), void *data)
+int parse_quota_opts(const char *opts, int (*func)(char *))
 {
 	char	*buf, *token, *next, *p;
 	int	len;
@@ -691,7 +691,7 @@ int parse_quota_opts(const char *opts, int (*func)(char *, void *), void *data)
 			*p = 0;
 			next = p + 1;
 		}
-		ret = func(token, data);
+		ret = func(token);
 		if (ret)
 			break;
 	}

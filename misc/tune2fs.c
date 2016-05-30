@@ -1557,7 +1557,7 @@ static void handle_quota_options(ext2_filsys fs)
 	return;
 }
 
-static int option_handle_function(char *token, void *data)
+static int option_handle_function(char *token)
 {
 	if (strncmp(token, "usr", 3) == 0) {
 		quota_enable[USRQUOTA] = QOPT_ENABLE;
@@ -1805,8 +1805,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 			break;
 		case 'Q':
 			Q_flag = 1;
-			ret = parse_quota_opts(optarg, option_handle_function,
-					       NULL);
+			ret = parse_quota_opts(optarg, option_handle_function);
 			if (ret)
 				exit(1);
 			open_flag = EXT2_FLAG_RW;

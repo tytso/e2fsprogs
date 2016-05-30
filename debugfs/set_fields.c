@@ -569,7 +569,6 @@ static errcode_t parse_time(struct field_set_info *info,
 	__s64		t;
 	__u32		t_low, t_high;
 	__u32		*ptr_low, *ptr_high;
-	int		suffix = check_suffix(field);
 
 	if (check_suffix(field))
 		return parse_uint(info, field, arg);

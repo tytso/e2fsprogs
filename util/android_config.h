@@ -33,6 +33,7 @@
 #define HAVE_STRCASECMP 1
 #define HAVE_STRDUP 1
 #define HAVE_STRINGS_H 1
+#define HAVE_STRNLEN 1
 #define HAVE_STRPTIME 1
 #define HAVE_SYSCONF 1
 #define HAVE_SYS_IOCTL_H 1

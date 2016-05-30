@@ -165,7 +165,8 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 	void *buf;
 	size_t i, offset;
 	blk64_t curr_blk;
-	int sz, csum_size = 0;
+	unsigned int sz;
+	unsigned csum_size = 0;
 	struct buffer_head *bh;
 	errcode_t err;
 

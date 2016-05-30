@@ -444,10 +444,10 @@ fail:
 	return err;
 }
 
+#if defined(SEEK_DATA) && defined(SEEK_HOLE)
 static errcode_t try_lseek_copy(ext2_filsys fs, int fd, struct stat *statbuf,
 				ext2_file_t e2_file, char *buf, char *zerobuf)
 {
-#if defined(SEEK_DATA) && defined(SEEK_HOLE)
 	off_t data = 0, hole;
 	off_t data_blk, hole_blk;
 	errcode_t err;
@@ -475,15 +475,13 @@ static errcode_t try_lseek_copy(ext2_filsys fs, int fd, struct stat *statbuf,
 	}
 
 	return err;
-#else
-	return EXT2_ET_UNIMPLEMENTED;
-#endif /* SEEK_DATA and SEEK_HOLE */
 }
+#endif /* SEEK_DATA and SEEK_HOLE */
 
+#if defined(FS_IOC_FIEMAP)
 static errcode_t try_fiemap_copy(ext2_filsys fs, int fd, ext2_file_t e2_file,
 				 char *buf, char *zerobuf)
 {
-#if defined(FS_IOC_FIEMAP)
 #define EXTENT_MAX_COUNT 512
 	struct fiemap *fiemap_buf;
 	struct fiemap_extent *ext_buf, *ext;
@@ -537,10 +535,8 @@ static errcode_t try_fiemap_copy(ext2_filsys fs, int fd, ext2_file_t e2_file,
 out:
 	ext2fs_free_mem(&fiemap_buf);
 	return err;
-#else
-	return EXT2_ET_UNIMPLEMENTED;
-#endif /* FS_IOC_FIEMAP */
 }
+#endif /* FS_IOC_FIEMAP */
 
 static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 			   ext2_ino_t ino)
@@ -561,13 +557,17 @@ static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 	if (err)
 		goto out;
 
+#if defined(SEEK_DATA) && defined(SEEK_HOLE)
 	err = try_lseek_copy(fs, fd, statbuf, e2_file, buf, zerobuf);
 	if (err != EXT2_ET_UNIMPLEMENTED)
 		goto out;
+#endif
 
+#if defined(FS_IOC_FIEMAP)
 	err = try_fiemap_copy(fs, fd, e2_file, buf, zerobuf);
 	if (err != EXT2_ET_UNIMPLEMENTED)
 		goto out;
+#endif
 
 	err = copy_file_range(fs, fd, e2_file, 0, statbuf->st_size, buf,
 			      zerobuf);

@@ -233,7 +233,7 @@ int quota_file_exists(ext2_filsys fs, enum quota_type qtype);
 void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, enum quota_type qtype);
 errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 				   int *usage_inconsistent);
-int parse_quota_opts(const char *opts, int (*func)(char *, void *), void *data);
+int parse_quota_opts(const char *opts, int (*func)(char *));
 
 /* parse_qtype.c */
 int parse_quota_types(const char *in_str, unsigned int *qtype_bits,

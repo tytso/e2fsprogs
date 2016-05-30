@@ -791,8 +791,9 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
 	errcode_t		retval;
 	struct ext2_inode 	inode;
 	char			*dir_buf = 0;
-	struct fill_dir_struct	fd = { NULL };
-	struct out_dir		outdir = { 0 };
+	struct fill_dir_struct	fd = { NULL, NULL, 0, 0, 0, NULL,
+				       0, 0, 0, 0, 0, 0 };
+	struct out_dir		outdir = { 0, 0, 0, 0 };
 
 	e2fsck_read_inode(ctx, ino, &inode, "rehash_dir");
 
