@@ -150,9 +150,9 @@ endif
 
 E2FSCK_STATIC = ${stdbuilddir}/e2fsck/e2fsck.static
 
-CFLAGS_SHLIB = $(filter-out -fPIE -fpie -pie,$(CFLAGS))
-CFLAGS_STLIB = $(filter-out -fPIE -fpie -pie,$(CFLAGS))
-LDFLAGS_SHLIB = $(filter-out -fPIE -fpie -pie,$(LDFLAGS))
+CFLAGS_SHLIB = $(CFLAGS)
+CFLAGS_STLIB = $(CFLAGS)
+LDFLAGS_SHLIB = $(LDFLAGS)
 LDFLAGS_STATIC = $(filter-out -fPIE -fpie -pie,$(LDFLAGS))
 
 ifneq ($(SKIP_UDEB),)
@@ -365,7 +365,7 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	fi
 	$(MAKE) -C ${stdbuilddir} V=1 all
 ifneq ($(BUILD_E2FSCK_STATIC),no)
-	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
+	$(MAKE) -C ${stdbuilddir}/e2fsck e2fsck.static
 endif
 	if ! test -d debian/orig-gmo ; then \
 		mkdir debian/orig-gmo ; \
