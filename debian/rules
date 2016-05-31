@@ -27,6 +27,10 @@ DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null
 DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
 UTIL_LINUX_NG ?= yes
 
+ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu)
+SKIP_FUSE2FS=yes
+endif
+
 DH_VERSION := $(shell dpkg-query -W -f '$${Version}' debhelper)
 
 # USE_DBGSYM :=
@@ -177,7 +181,7 @@ UTIL_CONF_FLAGS ?= --enable-fsck --enable-libblkid \
 			--enable-libuuid --enable-uuidd
 endif
 
-ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu) 
+ifneq ($(SKIP_FUSE2FS),)
 UTIL_CONF_FLAGS +=  --disable-fuse2fs
 endif
 
@@ -250,6 +254,12 @@ INSTALL_UDEB = install-udeb
 M4_ARGS+=-DUDEB_PKGS
 else
 M4_ARGS+=-UUDEB_PKGS
+endif
+
+ifeq ($(SKIP_FUSE2FS),)
+M4_ARGS+=-DFUSE2FS
+else
+M4_ARGS+=-UFUSE2FS
 endif
 
 FILES_FIXUP= libcomerr2.files comerr-dev.files libss2.files ss-dev.files \
@@ -607,8 +617,10 @@ ifeq ($(SKIP_UDEB),)
 	dh_shlibdeps -pe2fsprogs-udeb -l${stdbuilddir}/lib \
 		-u"-Ldebian/e2fsprogs-udeb.shlibs.local"
 endif
+ifeq ($(SKIP_FUSE2FS),)
 	dh_shlibdeps -pfuse2fs -l${stdbuilddir}/lib \
 		-u"-Ldebian/e2fsprogs.shlibs.local"
+endif
 
 	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
 		-Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
