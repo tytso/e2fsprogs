@@ -204,7 +204,8 @@ COMMON_CONF_FLAGS = --disable-e2initrd-helper --enable-quota \
 STD_CONF_FLAGS ?= --enable-elf-shlibs
 
 BF_CONF_FLAGS ?= --enable-elf-shlibs --disable-nls --disable-imager \
-	--disable-testio-debug --disable-uuidd --disable-tls --disable-debugfs
+	--disable-testio-debug --disable-uuidd --disable-tls \
+	--disable-tdb --disable-debugfs
 
 MIPS_NOPIC_CONF_FLAGS ?= --disable-nls --disable-imager \
 	--disable-uuidd --disable-tls \
