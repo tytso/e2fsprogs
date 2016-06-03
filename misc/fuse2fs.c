@@ -2125,7 +2125,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 		} else
 			goto out;
 	}
-	fp->fh = (uint64_t)file;
+	fp->fh = (uintptr_t)file;
 
 out:
 	if (ret)
@@ -2152,7 +2152,8 @@ static int op_read(const char *path EXT2FS_ATTR((unused)), char *buf,
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	ext2_file_t efp;
 	errcode_t err;
@@ -2208,7 +2209,8 @@ static int op_write(const char *path EXT2FS_ATTR((unused)),
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	ext2_file_t efp;
 	errcode_t err;
@@ -2279,7 +2281,8 @@ static int op_release(const char *path EXT2FS_ATTR((unused)),
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	errcode_t err;
 	int ret = 0;
@@ -2308,7 +2311,8 @@ static int op_fsync(const char *path EXT2FS_ATTR((unused)),
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	errcode_t err;
 	int ret = 0;
@@ -2767,7 +2771,8 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	errcode_t err;
 	struct readdir_iter i;
@@ -2952,7 +2957,8 @@ static int op_ftruncate(const char *path EXT2FS_ATTR((unused)),
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	ext2_file_t efp;
 	errcode_t err;
@@ -3005,7 +3011,8 @@ static int op_fgetattr(const char *path EXT2FS_ATTR((unused)),
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
@@ -3258,7 +3265,8 @@ static int op_ioctl(const char *path EXT2FS_ATTR((unused)), int cmd,
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	int ret = 0;
 
@@ -3333,7 +3341,8 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	struct ext2_inode_large inode;
 	blk64_t start, end;
@@ -3468,7 +3477,8 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh = (struct fuse2fs_file_handle *)fp->fh;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	ext2_filsys fs;
 	struct ext2_inode_large inode;
 	blk64_t start, end;
@@ -3815,8 +3825,8 @@ int main(int argc, char *argv[])
 		printf("%s", _("Warning: Maximal mount count reached, running "
 		       "e2fsck is recommended.\n"));
 	if (global_fs->super->s_checkinterval > 0 &&
-	    global_fs->super->s_lastcheck +
-	    global_fs->super->s_checkinterval <= time(0))
+	    (time_t) (global_fs->super->s_lastcheck +
+		      global_fs->super->s_checkinterval) <= time(0))
 		printf("%s", _("Warning: Check time reached; running e2fsck "
 		       "is recommended.\n"));
 	if (global_fs->super->s_last_orphan)

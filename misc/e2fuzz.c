@@ -276,8 +276,9 @@ static int process_fs(const char *fsname)
 		if ((rand() % 2) && c < 128)
 			c |= 0x80;
 		if (verbose)
-			printf("Corrupting byte %zu in block %zu to 0x%x\n",
-			       off % fs->blocksize, off / fs->blocksize, c);
+			printf("Corrupting byte %lld in block %lld to 0x%x\n",
+			       (long long) off % fs->blocksize,
+			       (long long) off / fs->blocksize, c);
 		if (dryrun)
 			continue;
 #ifdef HAVE_PWRITE64
