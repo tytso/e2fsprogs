@@ -18,10 +18,10 @@ extensibility and backwards compatibility.  In particular, file systems
 previously intended for use with the ext2 and ext3 file systems can be
 mounted using the ext4 file system driver, and indeed in many modern
 Linux distributions, the ext4 file system driver has been configured
-handle mount requests for ext2 and ext3 file systems.
+to handle mount requests for ext2 and ext3 file systems.
 .SH FILE SYSTEM FEATURES
-A file system formatted for ext2, ext3, or ext4 can be have some
-collection of the follow file system feature flags enabled.  Some of
+A file system formatted for ext2, ext3, or ext4 can have some
+collection of the following file system feature flags enabled.  Some of
 these features are not supported by all implementations of the ext2,
 ext3, and ext4 file system drivers, depending on Linux kernel version in
 use.  On other operating systems, such as the GNU/HURD or FreeBSD, only
@@ -47,18 +47,20 @@ indicates whether a cluster is in use or not, where a cluster is by
 default composed of 16 blocks.  This feature can decrease the time
 spent on doing block allocation and brings smaller fragmentation, especially
 for large files.  The size can be specified using the
-.B \-C option.
+.B mke2fs \-C
+option.
 .IP
 .B Warning:
 The bigalloc feature is still under development, and may not be fully
 supported with your kernel or may have various bugs.  Please see the web
 page http://ext4.wiki.kernel.org/index.php/Bigalloc for details.
 May clash with delayed allocation (see
-.BR nodelalloc mount option).
+.B nodelalloc
+mount option).
 .IP
 This feature requires that the
 .B extent
-features be enabled.
+feature be enabled.
 .TP
 .B dir_index
 .br
@@ -69,6 +71,11 @@ ext2 file systems.
 .B dir_nlink
 .br
 This ext4 feature allows more than 65000 subdirectories per directory.
+.TP
+.B ext_attr
+.br
+This feature enables the use of extended attributes.  This feature is
+supported by ext2, ext3, and ext4.
 .TP
 .B extent
 .br
@@ -91,22 +98,17 @@ historical/backwards compatibility reasons.)
 .br
 This ext4 feature reserves a specific amount of space in each inode for
 extended metadata such as nanosecond timestamps and file creation time,
-even if the current kernel does not current need to reserve this much
+even if the current kernel does not currently need to reserve this much
 space.  Without this feature, the kernel will reserve the amount of
-space for features currently it currently needs, and the rest may be
+space for features it currently needs, and the rest may be
 consumed by extended attributes.
 
 For this feature to be useful the inode size must be 256 bytes in size
 or larger.
 .TP
-.B ext_attr
-.br
-This feature enables the use of extended attributes.  This feature is
-supported by ext2, ext3, and ext4.
-.TP
 .B filetype
 .br
-This feature enables the storage file type information in directory
+This feature enables the storage of file type information in directory
 entries.  This feature is supported by ext2, ext3, and ext4.
 .TP
 .B flex_bg
@@ -127,12 +129,17 @@ option.
 Create a journal to ensure filesystem consistency even across unclean
 shutdowns.  Setting the filesystem feature is equivalent to using the
 .B \-j
-option.  This feature is supported by ext3 and ext4, and ignored by the
+option with
+.BR mke2fs " or " tune2fs.
+This feature is supported by ext3 and ext4, and ignored by the
 ext2 file system driver.
 .TP
 .B huge_file
 .br
 This ext4 feature allows files to be larger than 2 terabytes in size.
+.TP
+.B inline_data
+Allow data to be stored in the inode and extended attribute area.
 .TP
 .B journal_dev
 .br
@@ -148,9 +155,6 @@ option to
 .BR mke2fs (8)
 or
 .BR tune2fs(8).
-.TP
-.B inline_data
-Allow data to be stored in the inode and extended attribute area
 .TP
 .B large_file
 .br
@@ -174,17 +178,6 @@ kernels from mounting file systems that they could not understand.
 .\" .br
 .\" .B Future feature, available in e2fsprogs 1.43-WIP
 .TP
-.B sparse_super2
-.br
-This feature indicates that there will only at most two backup
-superblock and block group descriptors.  The block groups used to store
-the backup superblock and blockgroup descriptors are stored in the
-superblock, but typically, one will be located at the beginning of block
-group #1, and one in the last block group in the file system.  This is
-feature is essentially a more extreme version of sparse_super and is
-designed to allow the a much larger percentage of the disk to have
-contiguous blocks available for data files.
-.TP
 .B meta_bg
 .br
 This ext4 feature allows file systems to be resized on-line without explicitly
@@ -192,7 +185,7 @@ needing to reserve space for growth in the size of the block group
 descriptors.  This scheme is also used to resize file systems which are
 larger than 2^32 blocks.  It is not recommended that this feature be set
 when a file system is created, since this alternate method of storing
-the block group descriptor will slow down the time needed to mount the
+the block group descriptors will slow down the time needed to mount the
 file system, and newer kernels can automatically set this feature as
 necessary when doing an online resize and no more reserved space is
 available in the resize inode.
@@ -202,13 +195,6 @@ available in the resize inode.
 This ext4 feature provides multiple mount protection (MMP).  MMP helps to
 protect the filesystem from being multiply mounted and is useful in
 shared storage environments.
-.TP
-.B quota
-.br
-Create quota inodes (inode #3 for userquota and inode
-#4 for group quota) and set them in the superblock.
-With this feature, the quotas will be enabled
-automatically when the filesystem is mounted.
 .IP
 Causes the quota files (i.e., user.quota and
 group.quota which existed
@@ -219,12 +205,19 @@ in the older quota design) to be hidden inodes.
 This ext4 feature provides project quota support. With this feature,
 the project ID of inode will be managed when the filesystem is mounted.
 .TP
+.B quota
+.br
+Create quota inodes (inode #3 for userquota and inode
+#4 for group quota) and set them in the superblock.
+With this feature, the quotas will be enabled
+automatically when the filesystem is mounted.
+.TP
 .B resize_inode
 .br
-This file system feature indicates that space has been reserved so
-the block group descriptor table can be extended by the file system is
-resized while the file system is mounted.  The online resize operation
-is carried out by the kernel, triggered, by
+This file system feature indicates that space has been reserved so that
+the block group descriptor table can be extended while resizing a mounted
+file system.  The online resize operation
+is carried out by the kernel, triggered by
 .BR resize2fs (8).
 By default
 .B mke2fs
@@ -241,9 +234,20 @@ feature be enabled.
 .B sparse_super
 .br
 This file system feature is set on all modern ext2, ext3, and ext4 file
-system.  It indicates that backup copies of the superblock and block
-group descriptors be present only on a few block groups, and not all of
+systems.  It indicates that backup copies of the superblock and block
+group descriptors are present only in a few block groups, not all of
 them.
+.TP
+.B sparse_super2
+.br
+This feature indicates that there will only be at most two backup
+superblocks and block group descriptors.  The block groups used to store
+the backup superblock(s) and blockgroup descriptor(s) are stored in the
+superblock, but typically, one will be located at the beginning of block
+group #1, and one in the last block group in the file system.  This
+feature is essentially a more extreme version of sparse_super and is
+designed to allow a much larger percentage of the disk to have
+contiguous blocks available for data files.
 .TP
 .B uninit_bg
 .br
@@ -252,7 +256,7 @@ will be protected using checksums, making it safe for
 .BR mke2fs (8)
 to create a file system without initializing all of the block groups.
 The kernel will keep a high watermark of unused inodes, and initialize
-inode tables and block lazily.  This feature speeds up the time to check
+inode tables and blocks lazily.  This feature speeds up the time to check
 the file system using
 .BR e2fsck (8),
 and it also speeds up the time required for
