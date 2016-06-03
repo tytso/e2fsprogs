@@ -51,8 +51,9 @@ will normally replay the journal and exit, unless its superblock
 indicates that further checking is required.
 .PP
 .I device
-is the device file where the filesystem is stored (e.g.
-.IR /dev/hdc1 ).
+is a block device (e.g., 
+.IR /dev/sdc1 )
+or file containing the file system.
 .PP
 Note that in general it is not safe to run
 .B e2fsck

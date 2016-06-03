@@ -42,10 +42,9 @@ The
 .B debugfs
 program is an interactive file system debugger. It can be used to
 examine and change the state of an ext2, ext3, or ext4 file system.
-.br
+.PP
 .I device
-is the special file corresponding to the device containing the
-file system (e.g /dev/hdXX).
+is a block device (e.g., /dev/sdXX) or a file containing the file system.
 .SH OPTIONS
 .TP
 .I \-w
