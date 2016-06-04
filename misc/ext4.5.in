@@ -27,7 +27,6 @@ ext3, and ext4 file system drivers, depending on Linux kernel version in
 use.  On other operating systems, such as the GNU/HURD or FreeBSD, only
 a very restrictive set of file system features may be supported in their
 implementations of ext2.
-.RS 1.2i
 .TP
 .B 64bit
 .br
@@ -71,6 +70,19 @@ ext2 file systems.
 .B dir_nlink
 .br
 This ext4 feature allows more than 65000 subdirectories per directory.
+.TP
+.B encrypt
+.br
+This ext4 feature provides file-system level encryption of data blocks
+and file names.  The inode metadata (timestamps, file size, user/group
+ownership, etc.) is
+.I not
+encrypted.
+.IP
+This feature is most useful on file systems with multiple users, or
+where not all files should be encrypted.  In many use cases, especially
+on single-user systems, encryption at the block device layer using
+dm-crypt may provide much better security.
 .TP
 .B ext_attr
 .br
@@ -262,7 +274,6 @@ the file system using
 and it also speeds up the time required for
 .BR mke2fs (8)
 to create the file system.
-.RE
 .SH MOUNT OPTIONS
 This section describes mount options which are specific to ext2, ext3,
 and ext4.  Other generic mount options may be used as well; see
@@ -633,6 +644,61 @@ Finally, the ext4 filesystem also supports the following flag:
 For descriptions of these attribute flags, please refer to the
 .BR chattr (1)
 man page.
+.SH KERNEL SUPPORT
+This section lists the file system driver (e.g., ext2, ext3, ext4) and
+upstream kernel version where a particular file system feature was
+supported.  Note that in some cases the feature was present in earlier
+kernel versions, but there were known, serious bugs.  In other cases the
+feature may still be considered in an experimental state.  Finally, note
+that some distributions may have backported features into older kernels;
+in particular the kernel versions in certain "enterprise distributions"
+can be extremely misleading.
+.IP "\fBfiletype\fR" 2in
+ext2, 2.2.0
+.IP "\fBsparse_super\fR" 2in
+ext2, 2.2.0
+.IP "\fBlarge_file\fR" 2in
+ext2, 2.2.0
+.IP "\fBhas_journal\fR" 2in
+ext3, 2.4.15
+.IP "\fBext_attr\fR" 2in
+ext2/ext3, 2.6.0
+.IP "\fBdir_index\fR" 2in
+ext3, 2.6.0
+.IP "\fBresize_inode\fR" 2in
+ext3, 2.6.10 (online resizing)
+.IP "\fB64bit\fR" 2in
+ext4, 2.6.28
+.IP "\fBdir_nlink\fR" 2in
+ext4, 2.6.28
+.IP "\fBextent\fR" 2in
+ext4, 2.6.28
+.IP "\fBextra_isize\fR" 2in
+ext4, 2.6.28
+.IP "\fBflex_bg\fR" 2in
+ext4, 2.6.28
+.IP "\fBhuge_file\fR" 2in
+ext4, 2.6.28
+.IP "\fBmeta_bg\fR" 2in
+ext4, 2.6.28
+.IP "\fBuninit_bg\fR" 2in
+ext4, 2.6.28
+.IP "\fBmmp\fR" 2in
+ext4, 3.0
+.IP "\fBbigalloc\fR" 2in
+ext4, 3.2
+.IP "\fBquota\fR" 2in
+ext4, 3.6
+.IP "\fBinline_data\fR" 2in
+ext4, 3.8
+.IP "\fBsparse_super2\fR" 2in
+ext4, 3.16
+.IP "\fBmetdata_csum\fR" 2in
+ext4, 3.18
+.IP "\fBencrypt\fR" 2in
+ext4, 4.1
+.IP "\fBproject\fR" 2in
+ext4, 4.5
 .SH SEE ALSO
 .BR mke2fs (8),
 .BR mke2fs.conf (5),
