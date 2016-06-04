@@ -94,8 +94,10 @@ should be used when reading blocks not found in the ext2 image file.
 This includes data, directory, and indirect blocks.
 .TP
 .I -b blocksize
-Forces the use of the given block size for the file system, rather than
-detecting the correct block size as normal.
+Forces the use of the given block size (in bytes) for the file system,
+rather than detecting the correct block size automatically.  (This
+option is rarely needed; it is used primarily when the file system is
+extremely badly damaged/corrupted.)
 .TP
 .I -s superblock
 Causes the file system superblock to be read from the given block
@@ -104,7 +106,9 @@ number, instead of using the primary superblock (located at an offset of
 .I -s
 option, you must also provide the blocksize of the filesystem via the
 .I -b
-option.
+option.   (This
+option is rarely needed; it is used primarily when the file system is
+extremely badly damaged/corrupted.)
 .TP
 .I -f cmd_file
 Causes
