@@ -9,7 +9,7 @@ fi
 
 cp /dev/null $OUT
 
-bzip2 -dc < $test_dir/image.tar.bz2 | tar x
+bzip2 -dc < $test_dir/image.tar.bz2 | tar xf -
 test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp $test_name.img "$JOURNAL_DUMP_DIR/$test_name.img"
 test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp $test_name.img.jnl "$JOURNAL_DUMP_DIR/$test_name.img.jnl"
 
