@@ -21,6 +21,7 @@
 #include <errno.h>
 #endif
 #include <unistd.h>
+#include <libgen.h>
 #include "ext2fs/ext2fs.h"
 #include "support/nls-enable.h"
 
