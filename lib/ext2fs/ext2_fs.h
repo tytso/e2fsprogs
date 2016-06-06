@@ -602,6 +602,8 @@ struct ext2_inode *EXT2_INODE(struct ext2_inode_large *large_inode)
 #define EXT4_MAX_SALT_SIZE			256
 #define EXT4_PBKDF2_ITERATIONS			0xFFFF
 
+#define EXT2_LABEL_LEN				16
+
 /*
  * Policy provided via an ioctl on the topmost directory. This
  * structure is also in the kernel.
@@ -669,7 +671,7 @@ struct ext2_super_block {
 	__u32	s_feature_incompat;	/* incompatible feature set */
 	__u32	s_feature_ro_compat;	/* readonly-compatible feature set */
 	__u8	s_uuid[16];		/* 128-bit uuid for volume */
-	char	s_volume_name[16];	/* volume name */
+	char	s_volume_name[EXT2_LABEL_LEN];	/* volume name */
 	char	s_last_mounted[64];	/* directory where last mounted */
 	__u32	s_algorithm_usage_bitmap; /* For compression */
 	/*

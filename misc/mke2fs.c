@@ -1699,6 +1699,11 @@ profile_error:
 			break;
 		case 'L':
 			volume_label = optarg;
+			if (strlen(volume_label) > EXT2_LABEL_LEN) {
+				volume_label[EXT2_LABEL_LEN] = '\0';
+				fprintf(stderr, _("Warning: label too long; will be truncated to '%s'\n\n"),
+					volume_label);
+			}
 			break;
 		case 'm':
 			reserved_ratio = strtod(optarg, &tmp);
