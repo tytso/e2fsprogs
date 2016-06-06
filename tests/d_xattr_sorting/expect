@@ -1,9 +1,9 @@
 debugfs sort extended attributes
 mke2fs -Fq -b 1024 test.img 512
 Exit status is 0
-ea_set / security.SMEG64 -f /tmp/b
+ea_set -f /tmp/b / security.SMEG64
 Exit status is 0
-ea_set / security.imb -f /tmp/b
+ea_set -f /tmp/b / security.imb
 Exit status is 0
 ea_set / user.moo cow
 Exit status is 0

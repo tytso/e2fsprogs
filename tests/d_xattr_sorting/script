@@ -21,14 +21,14 @@ B=$(mktemp ${TMPDIR:-/tmp}/b.XXXXXX)
 
 perl -e 'print "x" x 256;' > $B
 
-echo "ea_set / security.SMEG64 -f /tmp/b" > $OUT.new
-$DEBUGFS -w -R "ea_set / security.SMEG64 -f $B" $TMPFILE >> $OUT.new 2>&1
+echo "ea_set -f /tmp/b / security.SMEG64" > $OUT.new
+$DEBUGFS -w -R "ea_set -f $B / security.SMEG64" $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
 sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
-echo "ea_set / security.imb -f /tmp/b" > $OUT.new
-$DEBUGFS -w -R "ea_set / security.imb -f $B" $TMPFILE >> $OUT.new 2>&1
+echo "ea_set -f /tmp/b / security.imb" > $OUT.new
+$DEBUGFS -w -R "ea_set -f $B / security.imb" $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
 sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
