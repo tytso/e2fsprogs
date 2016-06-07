@@ -120,7 +120,7 @@
 /* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
 
-/* Define to 1 if dlopen/libdl exists */
+/* Define to 1 if you have the `dlopen' function. */
 #undef HAVE_DLOPEN
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */

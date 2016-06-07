@@ -84,9 +84,7 @@ dnl
 dnl Check to see if libdl exists for the sake of dlopen
 dnl
 DLOPEN_LIB=''
-AC_CHECK_LIB(dl, dlopen,
-[DLOPEN_LIB=-ldl
-AC_DEFINE(HAVE_DLOPEN, 1, [Define to 1 if dlopen/libdl exists])])
+AC_CHECK_LIB(dl, dlopen,DLOPEN_LIB=-ldl)
 AC_SUBST(DLOPEN_LIB)
 dnl
 AC_ARG_WITH([cc],
@@ -1081,6 +1079,9 @@ if test -n "$BLKID_CMT"; then
   AC_SEARCH_LIBS([blkid_probe_all], [blkid])
 fi
 dnl
+if test -n "$DLOPEN_LIB" ; then
+   ac_cv_func_dlopen=yes
+fi
 AC_CHECK_FUNCS(m4_flatten([
 	__secure_getenv
 	add_key
@@ -1088,6 +1089,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	blkid_probe_get_topology
 	blkid_probe_enable_partitions
 	chflags
+	dlopen
 	fadvise64
 	fallocate
 	fallocate64
@@ -1155,7 +1157,7 @@ dnl See if libmagic exists
 dnl
 AC_CHECK_LIB(magic, magic_file, [MAGIC_LIB=-lmagic
 AC_CHECK_HEADERS([magic.h])])
-if test "$ac_cv_lib_dl_dlopen" = yes ; then
+if test "$ac_cv_func_dlopen" = yes ; then
    MAGIC_LIB=$DLOPEN_LIB
 fi
 AC_SUBST(MAGIC_LIB)
