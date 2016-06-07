@@ -102,19 +102,6 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 
 	*mount_flags = 0;
 
-	if (getenv("EXT2FS_PRETEND_RO_MOUNT")) {
-		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_READONLY;
-		if (getenv("EXT2FS_PRETEND_ROOTFS"))
-			*mount_flags = EXT2_MF_ISROOT;
-		return 0;
-	}
-	if (getenv("EXT2FS_PRETEND_RW_MOUNT")) {
-		*mount_flags = EXT2_MF_MOUNTED;
-		if (getenv("EXT2FS_PRETEND_ROOTFS"))
-			*mount_flags = EXT2_MF_ISROOT;
-		return 0;
-	}
-
 	if ((f = setmntent (mtab_file, "r")) == NULL) {
 		if (errno == ENOENT) {
 			if (getenv("EXT2FS_NO_MTAB_OK"))
@@ -376,6 +363,19 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 				  char *mtpt, int mtlen)
 {
 	errcode_t	retval = 0;
+
+	if (getenv("EXT2FS_PRETEND_RO_MOUNT")) {
+		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_READONLY;
+		if (getenv("EXT2FS_PRETEND_ROOTFS"))
+			*mount_flags = EXT2_MF_ISROOT;
+		return 0;
+	}
+	if (getenv("EXT2FS_PRETEND_RW_MOUNT")) {
+		*mount_flags = EXT2_MF_MOUNTED;
+		if (getenv("EXT2FS_PRETEND_ROOTFS"))
+			*mount_flags = EXT2_MF_ISROOT;
+		return 0;
+	}
 
 	if (is_swap_device(device)) {
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
