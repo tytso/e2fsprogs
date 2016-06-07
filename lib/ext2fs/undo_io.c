@@ -419,7 +419,7 @@ static errcode_t undo_write_tdb(io_channel channel,
 			block_num++;
 			continue;
 		}
-		dbg_printf("Read %llu bytes from FS block %llu (blk=%llu cnt=%u)\n",
+		dbg_printf("Read %llu bytes from FS block %llu (blk=%llu cnt=%llu)\n",
 		       data_size, backing_blk_num, block, data->tdb_data_size);
 		if ((data_size % data->undo_file->block_size) == 0)
 			sz = data_size / data->undo_file->block_size;
