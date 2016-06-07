@@ -9,7 +9,11 @@ if [ $(uname -s) = "Darwin" ]; then
 	return 0
 fi
 
-#gzip -d < $EXP.gz > $EXP
+if [ $(uname -s) = "FreeBSD" ]; then
+	# creates a 4TB filesystem
+	echo "$test_name: $DESCRIPTION: skipped for FreeBSD (no sparse files)"
+	return 0
+fi
 
 cat > $CONF << ENDL
 [fs_types]
