@@ -291,6 +291,10 @@ static errcode_t raw_write_blk(io_channel channel,
 		if (size > channel->block_size)
 			actual = channel->block_size;
 		memcpy(data->bounce, buf, actual);
+		if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+			goto error_out;
+		}
 		actual = write(data->dev, data->bounce, channel->block_size);
 		if (actual != channel->block_size)
 			goto short_write;
