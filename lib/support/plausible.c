@@ -248,7 +248,9 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 	}
 
 #ifdef HAVE_MAGIC_H
-	if ((flags & CHECK_FS_EXIST) && magic_library_available()) {
+	if ((flags & CHECK_FS_EXIST) &&
+	    !getenv("E2FSPROGS_LIBMAGIC_SUPPRESS") &&
+	    magic_library_available()) {
 		const char *msg;
 		magic_t mag;
 		int has_magic = 0;
