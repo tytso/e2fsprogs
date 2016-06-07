@@ -1710,11 +1710,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (inode->i_faddr || frag || fsize ||
 		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_dir_acl))
 			mark_inode_bad(ctx, ino);
-		if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+		if ((fs->super->s_creator_os != EXT2_OS_HURD) &&
 		    !ext2fs_has_feature_64bit(fs->super) &&
 		    inode->osd2.linux2.l_i_file_acl_high != 0)
 			mark_inode_bad(ctx, ino);
-		if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+		if ((fs->super->s_creator_os != EXT2_OS_HURD) &&
 		    !ext2fs_has_feature_huge_file(fs->super) &&
 		    (inode->osd2.linux2.l_i_blocks_hi != 0))
 			mark_inode_bad(ctx, ino);
@@ -3253,7 +3253,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (LINUX_S_ISREG(inode->i_mode) &&
 	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(inode)))
 		ctx->large_files++;
-	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+	if ((fs->super->s_creator_os != EXT2_OS_HURD) &&
 	    ((pb.num_blocks != ext2fs_inode_i_blocks(fs, inode)) ||
 	     (ext2fs_has_feature_huge_file(fs->super) &&
 	      (inode->i_flags & EXT4_HUGE_FILE_FL) &&

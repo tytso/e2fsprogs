@@ -444,8 +444,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 				      _("done                            \n"));
 
 	/* Reserved inodes must always have correct checksums */
-	if (fs->super->s_creator_os == EXT2_OS_LINUX &&
-	    ext2fs_has_feature_metadata_csum(fs->super))
+	if (ext2fs_has_feature_metadata_csum(fs->super))
 		write_reserved_inodes(fs);
 }
 

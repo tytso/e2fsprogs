@@ -664,8 +664,7 @@ int ext2fs_inode_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 	unsigned int i, has_hi;
 	char *cp;
 
-	if (fs->super->s_creator_os != EXT2_OS_LINUX ||
-	    !ext2fs_has_feature_metadata_csum(fs->super))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 1;
 
 	has_hi = (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE &&
@@ -707,8 +706,7 @@ errcode_t ext2fs_inode_csum_set(ext2_filsys fs, ext2_ino_t inum,
 	__u32 crc;
 	int has_hi;
 
-	if (fs->super->s_creator_os != EXT2_OS_LINUX ||
-	    !ext2fs_has_feature_metadata_csum(fs->super))
+	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	has_hi = (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE &&
