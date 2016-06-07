@@ -729,7 +729,7 @@ static void rewrite_inodes(ext2_filsys fs)
 	blk64_t		file_acl_block;
 	int		inode_dirty;
 
-	if (fs->super->s_creator_os != EXT2_OS_LINUX)
+	if (fs->super->s_creator_os == EXT2_OS_HURD)
 		return;
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);

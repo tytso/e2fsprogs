@@ -521,7 +521,7 @@ static errcode_t zero_high_bits_in_inodes(ext2_resize_t rfs)
 	if (!(rfs->flags & (RESIZE_DISABLE_64BIT | RESIZE_ENABLE_64BIT)))
 		return 0;
 
-	if (fs->super->s_creator_os != EXT2_OS_LINUX)
+	if (fs->super->s_creator_os == EXT2_OS_HURD)
 		return 0;
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);
