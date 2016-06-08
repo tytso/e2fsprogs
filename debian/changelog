@@ -1,4 +1,20 @@
-e2fsprogs (1.43-3) UNRELEASED; urgency=medium
+e2fsprogs (1.43.1-1) unstable; urgency=medium
+
+  * New upstream version
+  * Fix the Direct I/O fallback code in the Unix I/O manager so it
+    implements read-modify-write correctly.
+  * The mke2fs program will now warn if the user specifies a label which
+    is too long.  (Closes: #791630)
+  * Clean up various man pages (Closes: #766379, #761144, #770750,
+    #428361, #766127)
+  * Fix bug so that debugfs's rdump command works on the root directory
+    (Closes: #766125)
+  * Fix various Debian packaging issues (Closes: #825868)
+  * Build fully security hardened binaries
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 07 Jun 2016 23:09:55 -0400
+
+e2fsprogs (1.43-3) unstable; urgency=medium
 
   * Fix various debian packaging nits
   * Fix spelling mistakes in the copyright files
@@ -11,7 +27,7 @@ e2fsprogs (1.43-3) UNRELEASED; urgency=medium
     systems.
   * Simplify the debian rules file
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 22 May 2016 20:51:29 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 25 May 2016 00:51:33 -0400
 
 e2fsprogs (1.43-2) unstable; urgency=medium
 
