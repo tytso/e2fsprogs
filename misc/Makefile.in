@@ -43,7 +43,8 @@ SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 FMANPAGES=	mke2fs.conf.5 ext4.5
 
 UPROGS=		chattr lsattr @UUID_CMT@ uuidgen
-UMANPAGES=	chattr.1 fuse2fs.1 lsattr.1 @UUID_CMT@ uuidgen.1
+UMANPAGES=	chattr.1 lsattr.1 @UUID_CMT@ uuidgen.1
+UMANPAGES+=	@FUSE_CMT@ fuse2fs.1
 
 LPROGS=		@E2INITRD_PROG@
 
