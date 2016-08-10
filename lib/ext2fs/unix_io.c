@@ -103,8 +103,8 @@ struct unix_private_data {
 	struct struct_io_stats io_stats;
 };
 
-#define IS_ALIGNED(n, align) ((((unsigned long) n) & \
-			       ((unsigned long) ((align)-1))) == 0)
+#define IS_ALIGNED(n, align) ((((uintptr_t) n) & \
+			       ((uintptr_t) ((align)-1))) == 0)
 
 static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 {

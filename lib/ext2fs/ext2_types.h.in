@@ -166,6 +166,8 @@ typedef long		__s64;
 
 #endif /* _*_TYPES_H */
 
+#include <stdint.h>
+
 /* endian checking stuff */
 #ifndef EXT2_ENDIAN_H_
 #define EXT2_ENDIAN_H_

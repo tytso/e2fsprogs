@@ -17,6 +17,8 @@ typedef unsigned long long __u64;
 typedef __signed__ long long __s64;
 #endif
 
+#include <stdint.h> //uintptr_t
+
 /* endian checking stuff */
 #ifndef EXT2_ENDIAN_H_
 #define EXT2_ENDIAN_H_

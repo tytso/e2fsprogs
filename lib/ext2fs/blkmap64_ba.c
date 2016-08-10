@@ -349,7 +349,7 @@ static errcode_t ba_find_first_zero(ext2fs_generic_bitmap bitmap,
 
 	pos = ((unsigned char *)bp->bitarray) + (bitpos >> 3);
 	/* scan bytes until 8-byte (64-bit) aligned */
-	while (count >= 8 && (((unsigned long)pos) & 0x07)) {
+	while (count >= 8 && (((uintptr_t)pos) & 0x07)) {
 		if (*pos != 0xff) {
 			byte_found = 1;
 			break;
@@ -423,7 +423,7 @@ static errcode_t ba_find_first_set(ext2fs_generic_bitmap bitmap,
 
 	pos = ((unsigned char *)bp->bitarray) + (bitpos >> 3);
 	/* scan bytes until 8-byte (64-bit) aligned */
-	while (count >= 8 && (((unsigned long)pos) & 0x07)) {
+	while (count >= 8 && (((uintptr_t)pos) & 0x07)) {
 		if (*pos != 0) {
 			byte_found = 1;
 			break;
