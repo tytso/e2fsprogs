@@ -162,6 +162,7 @@ errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 		if (buf) {
 			free(buf);
 			buf = 0;
+			stride_length = 0;
 		}
 		return 0;
 	}
