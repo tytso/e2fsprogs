@@ -1584,6 +1584,35 @@ void do_unlink(int argc, char *argv[])
 
 	unlink_file_by_name(argv[1]);
 }
+
+void do_copy_inode(int argc, char *argv[])
+{
+	ext2_ino_t	src_ino, dest_ino;
+	struct ext2_inode inode;
+	unsigned char	buf[4096];
+	int		retval;
+
+	if (common_args_process(argc, argv, 3, 3, "copy_inode",
+				"<source file> <dest_name>", CHECK_FS_RW))
+		return;
+
+	src_ino = string_to_inode(argv[1]);
+	if (!src_ino)
+		return;
+
+	dest_ino = string_to_inode(argv[2]);
+	if (!dest_ino)
+		return;
+
+	if (debugfs_read_inode_full(src_ino, (struct ext2_inode *) buf,
+				    argv[0], sizeof(buf)))
+		return;
+
+	if (debugfs_write_inode_full(dest_ino, (struct ext2_inode *) buf,
+				     argv[0], sizeof(buf)))
+		return;
+}
+
 #endif /* READ_ONLY */
 
 void do_find_free_block(int argc, char *argv[])
