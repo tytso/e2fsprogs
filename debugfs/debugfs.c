@@ -888,7 +888,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 			inode_time_to_string(large_inode->i_crtime,
 					     large_inode->i_crtime_extra));
 		if (inode->i_dtime)
-			fprintf(out, "%scrtime: 0x%08x:(%08x) -- %s", prefix,
+			fprintf(out, "%s dtime: 0x%08x:(%08x) -- %s", prefix,
 				large_inode->i_dtime, large_inode->i_ctime_extra,
 				inode_time_to_string(inode->i_dtime,
 						     large_inode->i_ctime_extra));
