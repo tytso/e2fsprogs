@@ -1,3 +1,36 @@
+e2fsprogs (1.43.2-1) unstable; urgency=medium
+
+  * Change the default journal size to be larger for file systems larger
+    than 128 GB to improve performance on metadata-heavy workloads
+  * Clarify tune2fs's message when the user needs to run e2fsck
+    (Closes: #828022)
+  * Fix an alignment bug in e2fsck which caused sparc64 architectures to
+    crash when replaying the journal on file systems with a 64-bit block
+    number
+  * Fix a typo in debugfs when printing out the dtime field on file
+    systems with an extended timestamp
+  * Fix the logic in e2fsck which decides when to repair legacy negative
+    timestamp encodings.
+  * Add a command to debugfs to copy the inode structure from one inode
+    to another
+  * Fix resize2fs so it will not crash if there is an extended
+    attribute block but it doesn't need to migate any blocks during
+    an off-line resize
+  * Fix a crash when mke2fs or debugfs tries to copy in a directory
+    hierarchy containing an empty directory
+  * Fix a bug in e2fsck caused by a power failure during e2fsck's journal
+    replay could leave the file system in a state where if the file
+    system is mounted without doing a full e2fsck scan, the file system
+    could get corrupted
+  * Fix big endian bugs in the e2undo program
+  * Fix debugfs's logdump so command so it can correctly handle journals
+    which are larger than 2GB
+  * Add new translations: Hugarian and Serbian
+  * Update the Catalan, Chinese, Danish, Dutch, French, German, Polish,
+    Swedish, Ukrainian translations
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 01 Sep 2016 00:55:13 -0400
+
 e2fsprogs (1.43.1-1) unstable; urgency=medium
 
   * New upstream version
