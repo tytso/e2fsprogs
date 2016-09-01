@@ -116,9 +116,9 @@ struct blk_move {
 
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
-static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
+static const char *please_fsck = N_("Please run e2fsck -f on the filesystem.\n");
 static const char *please_dir_fsck =
-		N_("Please run e2fsck -D on the filesystem.\n");
+		N_("Please run e2fsck -fD on the filesystem.\n");
 
 #ifdef CONFIG_BUILD_FINDFS
 void do_findfs(int argc, char **argv);
