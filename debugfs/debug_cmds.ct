@@ -73,6 +73,9 @@ request do_rm, "Remove a file (unlink and kill_file, if appropriate)",
 request do_kill_file, "Deallocate an inode and its blocks",
 	kill_file;
 
+request do_copy_inode, "Copy the inode structure",
+	copy_inode;
+
 request do_clri, "Clear an inode's contents",
 	clri;
 

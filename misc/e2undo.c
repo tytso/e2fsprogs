@@ -208,8 +208,7 @@ static int key_compare(const void *a, const void *b)
 
 	ka = a;
 	kb = b;
-	return ext2fs_le64_to_cpu(ka->fsblk) -
-	       ext2fs_le64_to_cpu(kb->fsblk);
+	return ka->fsblk - kb->fsblk;
 }
 
 static int e2undo_setup_tdb(const char *name, io_manager *io_ptr)

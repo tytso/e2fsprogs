@@ -38,10 +38,10 @@ struct buffer_head {
 #endif
 	io_channel	b_io;
 	int		b_size;
-	unsigned long long b_blocknr;
-	int		b_dirty;
-	int		b_uptodate;
 	int		b_err;
+	unsigned int	b_dirty:1;
+	unsigned int	b_uptodate:1;
+	unsigned long long b_blocknr;
 	char		b_data[1024];
 };
 

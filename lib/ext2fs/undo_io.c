@@ -154,11 +154,11 @@ struct undo_private_data {
 #define E2UNDO_FEATURE_COMPAT_FS_OFFSET 0x1	/* the filesystem offset */
 
 static inline void e2undo_set_feature_fs_offset(struct undo_header *header) {
-	header->f_compat |= E2UNDO_FEATURE_COMPAT_FS_OFFSET;
+	header->f_compat |= ext2fs_le32_to_cpu(E2UNDO_FEATURE_COMPAT_FS_OFFSET);
 }
 
 static inline void e2undo_clear_feature_fs_offset(struct undo_header *header) {
-	header->f_compat &= ~E2UNDO_FEATURE_COMPAT_FS_OFFSET;
+	header->f_compat &= ~ext2fs_le32_to_cpu(E2UNDO_FEATURE_COMPAT_FS_OFFSET);
 }
 
 static io_manager undo_io_backing_manager;

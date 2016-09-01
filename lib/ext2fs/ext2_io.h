@@ -138,6 +138,7 @@ extern errcode_t io_channel_cache_readahead(io_channel io,
 
 /* unix_io.c */
 extern io_manager unix_io_manager;
+extern io_manager unixfd_io_manager;
 
 /* undo_io.c */
 extern io_manager undo_io_manager;

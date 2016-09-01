@@ -1895,7 +1895,7 @@ static errcode_t migrate_ea_block(ext2_resize_t rfs, ext2_ino_t ino,
 	errcode_t err = 0;
 
 	/* No EA block or no remapping?  Quit early. */
-	if (ext2fs_file_acl_block(rfs->old_fs, inode) == 0 && !rfs->bmap)
+	if (ext2fs_file_acl_block(rfs->old_fs, inode) == 0 || !rfs->bmap)
 		return 0;
 	new_block = extent_translate(rfs->old_fs, rfs->bmap,
 		ext2fs_file_acl_block(rfs->old_fs, inode));

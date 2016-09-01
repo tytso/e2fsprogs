@@ -948,6 +948,8 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 
+	journal->j_tail_sequence = journal->j_transaction_sequence;
+
 errout:
 	journal_destroy_revoke(journal);
 	journal_destroy_revoke_caches();

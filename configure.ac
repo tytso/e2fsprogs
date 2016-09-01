@@ -1162,6 +1162,11 @@ if test "$ac_cv_func_dlopen" = yes ; then
 fi
 AC_SUBST(MAGIC_LIB)
 dnl
+dnl Check to see if librt is required for clock_gettime() (glibc < 2.17)
+dnl
+AC_CHECK_LIB(rt, clock_gettime, [CLOCK_GETTIME_LIB=-lrt])
+AC_SUBST(CLOCK_GETTIME_LIB)
+dnl
 dnl Check to see if the FUSE library is -lfuse or -losxfuse
 dnl
 FUSE_CMT=

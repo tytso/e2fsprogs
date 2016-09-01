@@ -126,7 +126,7 @@ profile.o: $(srcdir)/profile.c $(top_builddir)/lib/config.h \
  $(srcdir)/profile.h prof_err.h
 profile_helpers.o: $(srcdir)/profile_helpers.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/profile.h prof_err.h
+ $(srcdir)/profile.h $(srcdir)/profile_helpers.h prof_err.h
 prof_err.o: prof_err.c
 quotaio.o: $(srcdir)/quotaio.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/common.h \
