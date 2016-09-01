@@ -103,8 +103,8 @@ struct unix_private_data {
 	struct struct_io_stats io_stats;
 };
 
-#define IS_ALIGNED(n, align) ((((unsigned long) n) & \
-			       ((unsigned long) ((align)-1))) == 0)
+#define IS_ALIGNED(n, align) ((((uintptr_t) n) & \
+			       ((uintptr_t) ((align)-1))) == 0)
 
 static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 {
@@ -482,20 +482,19 @@ int ext2fs_fstat(int fd, ext2fs_struct_stat *buf)
 #endif
 }
 
-static errcode_t unix_open(const char *name, int flags, io_channel *channel)
+
+static errcode_t unix_open_channel(const char *name, int fd,
+				   int flags, io_channel *channel,
+				   io_manager io_mgr)
 {
 	io_channel	io = NULL;
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
-	int		open_flags;
-	int		f_nocache = 0;
 	ext2fs_struct_stat st;
 #ifdef __linux__
 	struct		utsname ut;
 #endif
 
-	if (name == 0)
-		return EXT2_ET_BAD_DEVICE_NAME;
 	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)
 		goto cleanup;
@@ -505,7 +504,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	if (retval)
 		goto cleanup;
 
-	io->manager = unix_io_manager;
+	io->manager = io_mgr;
 	retval = ext2fs_get_mem(strlen(name)+1, &io->name);
 	if (retval)
 		goto cleanup;
@@ -520,35 +519,16 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	memset(data, 0, sizeof(struct unix_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
 	data->io_stats.num_fields = 2;
-	data->dev = -1;
-
-	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
-	if (flags & IO_FLAG_EXCLUSIVE)
-		open_flags |= O_EXCL;
-#if defined(O_DIRECT)
-	if (flags & IO_FLAG_DIRECT_IO) {
-		open_flags |= O_DIRECT;
-		io->align = ext2fs_get_dio_alignment(data->dev);
-	}
-#elif defined(F_NOCACHE)
-	if (flags & IO_FLAG_DIRECT_IO) {
-		f_nocache = F_NOCACHE;
-		io->align = 4096;
-	}
-#endif
 	data->flags = flags;
+	data->dev = fd;
 
-	data->dev = ext2fs_open_file(io->name, open_flags, 0);
-	if (data->dev < 0) {
-		retval = errno;
-		goto cleanup;
-	}
-	if (f_nocache) {
-		if (fcntl(data->dev, f_nocache, 1) < 0) {
-			retval = errno;
-			goto cleanup;
-		}
-	}
+#if defined(O_DIRECT)
+	if (flags & IO_FLAG_DIRECT_IO)
+		io->align = ext2fs_get_dio_alignment(data->dev);
+#elif defined(F_NOCACHE)
+	if (flags & IO_FLAG_DIRECT_IO)
+		io->align = 4096;
+#endif
 
 	/*
 	 * If the device is really a block device, then set the
@@ -557,7 +537,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	 * and if it succeed, subsequent read from sparse area returns
 	 * zero.
 	 */
-	if (ext2fs_stat(io->name, &st) == 0) {
+	if (ext2fs_fstat(data->dev, &st) == 0) {
 		if (S_ISBLK(st.st_mode))
 			io->flags |= CHANNEL_FLAGS_BLOCK_DEVICE;
 		else
@@ -620,7 +600,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	     (ut.release[2] == '4') && (ut.release[3] == '.') &&
 	     (ut.release[4] == '1') && (ut.release[5] >= '0') &&
 	     (ut.release[5] < '8')) &&
-	    (ext2fs_stat(io->name, &st) == 0) &&
+	    (ext2fs_fstat(data->dev, &st) == 0) &&
 	    (S_ISBLK(st.st_mode))) {
 		struct rlimit	rlim;
 
@@ -651,6 +631,58 @@ cleanup:
 		ext2fs_free_mem(&io);
 	}
 	return retval;
+}
+
+static errcode_t unixfd_open(const char *str_fd, int flags,
+			     io_channel *channel)
+{
+	int fd;
+	int fd_flags;
+
+	fd = atoi(str_fd);
+	fd_flags = fcntl(fd, F_GETFD);
+	if (fd_flags == -1)
+		return -EBADF;
+
+	flags = 0;
+	if (fd_flags & O_RDWR)
+		flags |= IO_FLAG_RW;
+	if (fd_flags & O_EXCL)
+		flags |= IO_FLAG_EXCLUSIVE;
+#if defined(O_DIRECT)
+	if (fd_flags & O_DIRECT)
+		flags |= IO_FLAG_DIRECT_IO;
+#endif
+
+	return unix_open_channel(str_fd, fd, flags, channel, unixfd_io_manager);
+}
+
+static errcode_t unix_open(const char *name, int flags,
+			   io_channel *channel)
+{
+	int fd = -1;
+	int open_flags;
+
+	if (name == 0)
+		return EXT2_ET_BAD_DEVICE_NAME;
+
+	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
+	if (flags & IO_FLAG_EXCLUSIVE)
+		open_flags |= O_EXCL;
+#if defined(O_DIRECT)
+	if (flags & IO_FLAG_DIRECT_IO)
+		open_flags |= O_DIRECT;
+#endif
+	fd = ext2fs_open_file(name, open_flags, 0);
+	if (fd < 0)
+		return errno;
+#if defined(F_NOCACHE) && !defined(IO_DIRECT)
+	if (flags & IO_FLAG_DIRECT_IO) {
+		if (fcntl(fd, F_NOCACHE, 1) < 0)
+			return errno;
+	}
+#endif
+	return unix_open_channel(name, fd, flags, channel, unix_io_manager);
 }
 
 static errcode_t unix_close(io_channel channel)
@@ -702,7 +734,6 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 	}
 	return 0;
 }
-
 
 static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 			       int count, void *buf)
@@ -1089,3 +1120,24 @@ static struct struct_io_manager struct_unix_manager = {
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
+
+static struct struct_io_manager struct_unixfd_manager = {
+	.magic		= EXT2_ET_MAGIC_IO_MANAGER,
+	.name		= "Unix fd I/O Manager",
+	.open		= unixfd_open,
+	.close		= unix_close,
+	.set_blksize	= unix_set_blksize,
+	.read_blk	= unix_read_blk,
+	.write_blk	= unix_write_blk,
+	.flush		= unix_flush,
+	.write_byte	= unix_write_byte,
+	.set_option	= unix_set_option,
+	.get_stats	= unix_get_stats,
+	.read_blk64	= unix_read_blk64,
+	.write_blk64	= unix_write_blk64,
+	.discard	= unix_discard,
+	.cache_readahead	= unix_cache_readahead,
+	.zeroout	= unix_zeroout,
+};
+
+io_manager unixfd_io_manager = &struct_unixfd_manager;

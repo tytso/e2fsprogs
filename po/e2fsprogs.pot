@@ -2,8 +2,7 @@
 # Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
 #     2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
 #      2013, 2014, 2015, 2016 by Theodore Ts'o
-# This file is distributed under the same license as the PACKAGE package.
-# Theodore Ts'o <tytso@mit.edu>, 2016.
+# This file is distributed under the same license as the e2fsprogs package.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -70,9 +69,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.43.1\n"
+"Project-Id-Version: e2fsprogs 1.43.2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2016-06-08 14:19-0400\n"
+"POT-Creation-Date: 2016-09-01 11:47-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -239,17 +238,17 @@ msgstr ""
 msgid "%s: journal too short\n"
 msgstr ""
 
-#: e2fsck/journal.c:966 misc/fuse2fs.c:3786
+#: e2fsck/journal.c:968 misc/fuse2fs.c:3786
 #, c-format
 msgid "%s: recovering journal\n"
 msgstr ""
 
-#: e2fsck/journal.c:968
+#: e2fsck/journal.c:970
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
 msgstr ""
 
-#: e2fsck/journal.c:995
+#: e2fsck/journal.c:997
 #, c-format
 msgid "while trying to re-open %s"
 msgstr ""
@@ -3184,7 +3183,7 @@ msgstr ""
 msgid "while reading MMP block"
 msgstr ""
 
-#: e2fsck/unix.c:1252 e2fsck/unix.c:1304 misc/e2undo.c:231 misc/e2undo.c:276
+#: e2fsck/unix.c:1252 e2fsck/unix.c:1304 misc/e2undo.c:230 misc/e2undo.c:275
 #: misc/mke2fs.c:2541 misc/mke2fs.c:2592 misc/tune2fs.c:2610
 #: misc/tune2fs.c:2655 resize/main.c:187 resize/main.c:232
 #, c-format
@@ -3194,7 +3193,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:1293 misc/e2undo.c:265 misc/mke2fs.c:2581 misc/tune2fs.c:2644
+#: e2fsck/unix.c:1293 misc/e2undo.c:264 misc/mke2fs.c:2581 misc/tune2fs.c:2644
 #: resize/main.c:221
 #, c-format
 msgid "while trying to delete %s"
@@ -3810,7 +3809,7 @@ msgid "while opening inode %u"
 msgstr ""
 
 #: misc/create_inode.c:156 misc/create_inode.c:183 misc/create_inode.c:904
-#: misc/e2undo.c:176 misc/e2undo.c:474 misc/e2undo.c:480 misc/e2undo.c:486
+#: misc/e2undo.c:176 misc/e2undo.c:473 misc/e2undo.c:479 misc/e2undo.c:485
 #: misc/mke2fs.c:353
 msgid "while allocating memory"
 msgstr ""
@@ -4498,118 +4497,118 @@ msgstr ""
 msgid "Undo file superblock checksum doesn't match.\n"
 msgstr ""
 
-#: misc/e2undo.c:335
+#: misc/e2undo.c:334
 #, c-format
 msgid "illegal offset - %s"
 msgstr ""
 
-#: misc/e2undo.c:359
+#: misc/e2undo.c:358
 #, c-format
 msgid "Will not write to an undo file while replaying it.\n"
 msgstr ""
 
-#: misc/e2undo.c:368
+#: misc/e2undo.c:367
 #, c-format
 msgid "while opening undo file `%s'\n"
 msgstr ""
 
-#: misc/e2undo.c:375
+#: misc/e2undo.c:374
 msgid "while reading undo file"
 msgstr ""
 
-#: misc/e2undo.c:380
+#: misc/e2undo.c:379
 #, c-format
 msgid "%s: Not an undo file.\n"
 msgstr ""
 
-#: misc/e2undo.c:391
+#: misc/e2undo.c:390
 #, c-format
 msgid "%s: Header checksum doesn't match.\n"
 msgstr ""
 
-#: misc/e2undo.c:398
+#: misc/e2undo.c:397
 #, c-format
 msgid "%s: Corrupt undo file header.\n"
 msgstr ""
 
-#: misc/e2undo.c:402
+#: misc/e2undo.c:401
 #, c-format
 msgid "%s: Undo block size too large.\n"
 msgstr ""
 
-#: misc/e2undo.c:407
+#: misc/e2undo.c:406
 #, c-format
 msgid "%s: Undo block size too small.\n"
 msgstr ""
 
-#: misc/e2undo.c:420
+#: misc/e2undo.c:419
 #, c-format
 msgid "%s: Unknown undo file feature set.\n"
 msgstr ""
 
-#: misc/e2undo.c:428
+#: misc/e2undo.c:427
 #, c-format
 msgid "Error while determining whether %s is mounted."
 msgstr ""
 
-#: misc/e2undo.c:434
+#: misc/e2undo.c:433
 msgid "e2undo should only be run on unmounted filesystems"
 msgstr ""
 
-#: misc/e2undo.c:450
+#: misc/e2undo.c:449
 #, c-format
 msgid "while opening `%s'"
 msgstr ""
 
-#: misc/e2undo.c:461
+#: misc/e2undo.c:460
 msgid "specified offset is too large"
 msgstr ""
 
-#: misc/e2undo.c:502
+#: misc/e2undo.c:501
 msgid "while reading keys"
 msgstr ""
 
-#: misc/e2undo.c:514
+#: misc/e2undo.c:513
 #, c-format
 msgid "%s: wrong key magic at %llu\n"
 msgstr ""
 
-#: misc/e2undo.c:524
+#: misc/e2undo.c:523
 #, c-format
 msgid "%s: key block checksum error at %llu.\n"
 msgstr ""
 
-#: misc/e2undo.c:547
+#: misc/e2undo.c:546
 #, c-format
 msgid "%s: block %llu is too long."
 msgstr ""
 
-#: misc/e2undo.c:559 misc/e2undo.c:595
+#: misc/e2undo.c:558 misc/e2undo.c:594
 #, c-format
 msgid "while fetching block %llu."
 msgstr ""
 
-#: misc/e2undo.c:571
+#: misc/e2undo.c:570
 #, c-format
 msgid "checksum error in filesystem block %llu (undo blk %llu)\n"
 msgstr ""
 
-#: misc/e2undo.c:610
+#: misc/e2undo.c:609
 #, c-format
 msgid "while writing block %llu."
 msgstr ""
 
-#: misc/e2undo.c:616
+#: misc/e2undo.c:615
 #, c-format
 msgid "Undo file corruption; run e2fsck NOW!\n"
 msgstr ""
 
-#: misc/e2undo.c:618
+#: misc/e2undo.c:617
 #, c-format
 msgid "IO error during replay; run e2fsck NOW!\n"
 msgstr ""
 
-#: misc/e2undo.c:621
+#: misc/e2undo.c:620
 #, c-format
 msgid "Incomplete undo record; run e2fsck.\n"
 msgstr ""
@@ -5744,11 +5743,11 @@ msgid "%s: h=%3d s=%3d c=%4d   start=%8d size=%8lu end=%8d\n"
 msgstr ""
 
 #: misc/tune2fs.c:119
-msgid "Please run e2fsck on the filesystem.\n"
+msgid "Please run e2fsck -f on the filesystem.\n"
 msgstr ""
 
 #: misc/tune2fs.c:121
-msgid "Please run e2fsck -D on the filesystem.\n"
+msgid "Please run e2fsck -fD on the filesystem.\n"
 msgstr ""
 
 #: misc/tune2fs.c:134
@@ -6857,7 +6856,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.43"
+msgid "EXT2FS Library version 1.43.2"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12

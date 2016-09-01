@@ -637,3 +637,4 @@ libext2fs.so.2 e2fslibs #MINVER#
  test_io_manager@Base 1.37
  undo_io_manager@Base 1.41.0
  unix_io_manager@Base 1.37
+ unixfd_io_manager@Base 1.43.2

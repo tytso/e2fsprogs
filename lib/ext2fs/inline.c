@@ -70,7 +70,7 @@ errcode_t ext2fs_get_memalign(unsigned long size,
 	else
 #endif
 		*p = malloc(size);
-	if ((unsigned long) *p & (align - 1)) {
+	if ((uintptr_t) *p & (align - 1)) {
 		free(*p);
 		*p = 0;
 	}

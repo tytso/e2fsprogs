@@ -277,7 +277,7 @@ print_usage:
 
 
 static int read_journal_block(const char *cmd, struct journal_source *source,
-			      off_t offset, char *buf, unsigned int size)
+			      ext2_loff_t offset, char *buf, unsigned int size)
 {
 	int retval;
 	unsigned int got;
@@ -295,8 +295,8 @@ static int read_journal_block(const char *cmd, struct journal_source *source,
 		got = retval;
 		retval = 0;
 	} else {
-		retval = ext2fs_file_lseek(source->file, offset,
-					   EXT2_SEEK_SET, NULL);
+		retval = ext2fs_file_llseek(source->file, offset,
+					    EXT2_SEEK_SET, NULL);
 		if (retval) {
 		seek_err:
 			com_err(cmd, retval, "while seeking in reading journal");
@@ -346,7 +346,6 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	int			retval;
 	__u32			magic, sequence, blocktype;
 	journal_header_t	*header;
-
 	tid_t			transaction;
 	unsigned int		blocknr = 0;
 
@@ -378,8 +377,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	}
 
 	/* Next, read the journal superblock */
-
-	retval = read_journal_block(cmdname, source, blocknr*blocksize,
+	retval = read_journal_block(cmdname, source,
+				    ((ext2_loff_t) blocknr) * blocksize,
 				    jsb_buffer, 1024);
 	if (retval)
 		return;
@@ -407,8 +406,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 
 	while (1) {
 		retval = read_journal_block(cmdname, source,
-					    blocknr*blocksize, buf,
-					    blocksize);
+				((ext2_loff_t) blocknr) * blocksize,
+				buf, blocksize);
 		if (retval)
 			return;
 
@@ -646,7 +645,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 		return;
 
 	retval = read_journal_block("logdump", source,
-				    blocksize * log_blocknr,
+				    ((ext2_loff_t) log_blocknr) * blocksize,
 				    buf, blocksize);
 	if (retval)
 		return;

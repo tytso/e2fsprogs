@@ -888,7 +888,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 			inode_time_to_string(large_inode->i_crtime,
 					     large_inode->i_crtime_extra));
 		if (inode->i_dtime)
-			fprintf(out, "%scrtime: 0x%08x:(%08x) -- %s", prefix,
+			fprintf(out, "%s dtime: 0x%08x:(%08x) -- %s", prefix,
 				large_inode->i_dtime, large_inode->i_ctime_extra,
 				inode_time_to_string(inode->i_dtime,
 						     large_inode->i_ctime_extra));
@@ -1584,6 +1584,35 @@ void do_unlink(int argc, char *argv[])
 
 	unlink_file_by_name(argv[1]);
 }
+
+void do_copy_inode(int argc, char *argv[])
+{
+	ext2_ino_t	src_ino, dest_ino;
+	struct ext2_inode inode;
+	unsigned char	buf[4096];
+	int		retval;
+
+	if (common_args_process(argc, argv, 3, 3, "copy_inode",
+				"<source file> <dest_name>", CHECK_FS_RW))
+		return;
+
+	src_ino = string_to_inode(argv[1]);
+	if (!src_ino)
+		return;
+
+	dest_ino = string_to_inode(argv[2]);
+	if (!dest_ino)
+		return;
+
+	if (debugfs_read_inode_full(src_ino, (struct ext2_inode *) buf,
+				    argv[0], sizeof(buf)))
+		return;
+
+	if (debugfs_write_inode_full(dest_ino, (struct ext2_inode *) buf,
+				     argv[0], sizeof(buf)))
+		return;
+}
+
 #endif /* READ_ONLY */
 
 void do_find_free_block(int argc, char *argv[])
