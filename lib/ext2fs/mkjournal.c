@@ -334,20 +334,28 @@ out2:
  * Find a reasonable journal file size (in blocks) given the number of blocks
  * in the filesystem.  For very small filesystems, it is not reasonable to
  * have a journal that fills more than half of the filesystem.
+ *
+ * n.b. comments assume 4k blocks
  */
 int ext2fs_default_journal_size(__u64 num_blocks)
 {
 	if (num_blocks < 2048)
 		return -1;
-	if (num_blocks < 32768)
-		return (1024);
-	if (num_blocks < 256*1024)
-		return (4096);
-	if (num_blocks < 512*1024)
-		return (8192);
-	if (num_blocks < 1024*1024)
-		return (16384);
-	return 32768;
+	if (num_blocks < 32768)		/* 128 MB */
+		return (1024);			/* 4 MB */
+	if (num_blocks < 256*1024)	/* 1 GB */
+		return (4096);			/* 16 MB */
+	if (num_blocks < 512*1024)	/* 2 GB */
+		return (8192);			/* 32 MB */
+	if (num_blocks < 4096*1024)	/* 16 GB */
+		return (16384);			/* 64 MB */
+	if (num_blocks < 8192*1024)	/* 32 GB */
+		return (32768);			/* 128 MB */
+	if (num_blocks < 16384*1024)	/* 64 GB */
+		return (65536);			/* 256 MB */
+	if (num_blocks < 32768*1024)	/* 128 GB */
+		return (131072);		/* 512 MB */
+	return 262144;				/* 1 GB */
 }
 
 int ext2fs_journal_sb_start(int blocksize)
