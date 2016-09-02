@@ -1,3 +1,10 @@
+e2fsprogs (1.43.2-2) unstable; urgency=medium
+
+  * Fix build reproducibility problems
+  * Don't hide the linker flags for e2fsck.static
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 01 Sep 2016 23:30:55 -0400
+
 e2fsprogs (1.43.2-1) unstable; urgency=medium
 
   * Change the default journal size to be larger for file systems larger
