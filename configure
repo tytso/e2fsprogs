@@ -633,8 +633,6 @@ BUILD_CFLAGS
 MKINSTALLDIRS
 INCLUDES
 DO_TEST_SUITE
-ET_DIR
-SS_DIR
 LDFLAGS_STATIC
 root_sysconfdir
 root_libdir
@@ -13805,10 +13803,6 @@ $as_echo "#define _INTL_REDIRECT_MACROS 1" >>confdefs.h
 
 	;;
 esac
-SS_DIR=`cd ${srcdir}/lib/ss; pwd`
-ET_DIR=`cd ${srcdir}/lib/et; pwd`
-
-
 if test "$cross_compiling" = yes ; then
   DO_TEST_SUITE=
 else
