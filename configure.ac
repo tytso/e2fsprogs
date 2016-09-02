@@ -1400,13 +1400,6 @@ darwin*)
 	;;
 esac
 dnl
-dnl Make the ss and et directories work correctly.
-dnl
-SS_DIR=`cd ${srcdir}/lib/ss; pwd`
-ET_DIR=`cd ${srcdir}/lib/et; pwd`
-AC_SUBST(SS_DIR)
-AC_SUBST(ET_DIR)
-dnl
 dnl Only try to run the test suite if we're not cross compiling.
 dnl
 if test "$cross_compiling" = yes ; then

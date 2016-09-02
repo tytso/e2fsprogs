@@ -14,7 +14,7 @@ INSTALL = @INSTALL@
 PROGS=		debugfs
 MANPAGES=	debugfs.8
 
-MK_CMDS=	_SS_DIR_OVERRIDE=../lib/ss ../lib/ss/mk_cmds
+MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir)/../lib/ss ../lib/ss/mk_cmds
 
 DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o \
 	lsdel.o dump.o set_fields.o logdump.o htree.o unused.o e2freefrag.o \
