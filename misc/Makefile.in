@@ -115,7 +115,7 @@ STATIC_DEPLIBS= $(DEPLIBSUPPORT) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
 DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR)
 
-COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
+COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../lib/et/et ../lib/et/compile_et
 
 # This nastyness is needed because of jfs_user.h hackery; when we finally
 # clean up this mess, we should be able to drop it

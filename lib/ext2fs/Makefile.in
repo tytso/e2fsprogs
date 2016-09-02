@@ -13,7 +13,8 @@ DEBUGFS_CFLAGS = -I$(srcdir)/../../e2fsck $(ALL_CFLAGS) -DDEBUGFS
 
 @DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o inode_io.o write_bb_file.o
 
-MK_CMDS=	_SS_DIR_OVERRIDE=../ss ../ss/mk_cmds
+MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir)/../ss ../ss/mk_cmds
+COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../et ../et/compile_et
 
 @RESIZER_CMT@RESIZE_LIB_OBJS = dupfs.o
 @TEST_IO_CMT@TEST_IO_LIB_OBJS = test_io.o
@@ -253,8 +254,6 @@ all:: ext2fs.pc
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS_STLIB) -g -pg -o profiled/$*.o -c $<
 @ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -shared -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
-
-COMPILE_ET=../et/compile_et --build-tree
 
 DISTFILES= Makefile *.c *.h image
 

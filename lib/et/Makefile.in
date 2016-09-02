@@ -140,7 +140,7 @@ uninstall::
 check:: compile_et
 	for i in $(srcdir)/test_cases/*.et ; do \
 		t=`basename $$i | sed -e 's/.et//'`; \
-		./compile_et --build-tree $$i ; \
+		_ET_DIR_OVERRIDE=$(srcdir) ./compile_et $$i ; \
 		diff -c $(srcdir)/test_cases/$$t.c $$t.c > $$t.failed; \
 		if [ $$? -ne 0 ]; then echo Test case $$t failed; exit 1 ; fi ; \
 		diff -c $(srcdir)/test_cases/$$t.h $$t.h >> $$t.failed; \

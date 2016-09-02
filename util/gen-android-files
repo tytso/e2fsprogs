@@ -14,8 +14,8 @@ ANDROID_GENERATED_FILES="lib/ext2fs/ext2_err.c lib/ext2fs/ext2_err.h \
 SS_DIR=$(pwd)/lib/ss
 MK_CMDS=/tmp/mk_cmds$$.sh
 
-sed -e "s;@SS_DIR@;$SS_DIR;" < $SS_DIR/mk_cmds.sh.in \
-    | sed -e "s/@AWK@/awk/" | sed -e "s/@SED@/sed/" > $MK_CMDS
+sed -e "s/@AWK@/awk/" < $SS_DIR/mk_cmds.sh.in \
+    | sed -e "s/@SED@/sed/" > $MK_CMDS
 
 sed -e "s/@E2FSPROGS_VERSION@/$(git describe)/" < lib/ext2fs/ext2_err.et.in > lib/ext2fs/ext2_err.et
 
@@ -29,7 +29,7 @@ done
 for i in lib/ss/std_rqs debugfs/debug_cmds debugfs/ro_debug_cmds \
 			debugfs/extent_cmds
 do
-    /bin/sh $MK_CMDS $i.ct
+    _SS_DIR_OVERRIDE=lib/ss /bin/sh $MK_CMDS $i.ct
     mv -f $(basename $i).c $i.c
 done
 
