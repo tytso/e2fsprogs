@@ -294,7 +294,7 @@ ${CFGSTDSTAMP}:
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
+		../../configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} CFLAGS="${CFLAGS}" CPPFLAGS="$(CPPFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
 		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
@@ -302,7 +302,7 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 else
 	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
+		../../configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
 		CPPFLAGS="$(CPPFLAGS)" CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
@@ -316,7 +316,7 @@ endif
 ifneq ($(ismips),)
 	mkdir -p ${mipsbuilddir} ${mipsbuilddir64}
 	cd ${mipsbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} \
+		../../configure ${COMMON_CONF_FLAGS} \
 		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
 		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
@@ -324,7 +324,7 @@ ifneq ($(ismips),)
 		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
 		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 	cd ${mipsbuilddir64} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} \
+		../../configure ${COMMON_CONF_FLAGS} \
 		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
 		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
@@ -343,7 +343,7 @@ ${CFGBFSTAMP}:
 	mkdir -p ${bfbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${bfbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		../../configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} CFLAGS="${CFLAGS} ${BF_CFLAGS}" \
 		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
@@ -352,7 +352,7 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 else
 	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		../../configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
 		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
