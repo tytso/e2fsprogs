@@ -1,0 +1,262 @@
+Description: Fix build reproducibility for mk_cmds and compile_et
+ The mk_cmds and compile_et scripts include the build directory, which
+ breaks the build reproducibility goal of Debian.
+From: Theodore Ts'o <tytso@mit.edu>
+
+diff --git a/configure b/configure
+index 03e24d1..0ac5dcb 100755
+--- a/configure
++++ b/configure
+@@ -633,8 +633,6 @@ BUILD_CFLAGS
+ MKINSTALLDIRS
+ INCLUDES
+ DO_TEST_SUITE
+-ET_DIR
+-SS_DIR
+ LDFLAGS_STATIC
+ root_sysconfdir
+ root_libdir
+@@ -13805,10 +13803,6 @@ $as_echo "#define _INTL_REDIRECT_MACROS 1" >>confdefs.h
+ 
+ 	;;
+ esac
+-SS_DIR=`cd ${srcdir}/lib/ss; pwd`
+-ET_DIR=`cd ${srcdir}/lib/et; pwd`
+-
+-
+ if test "$cross_compiling" = yes ; then
+   DO_TEST_SUITE=
+ else
+diff --git a/configure.ac b/configure.ac
+index a387dfd..1c73301 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1400,13 +1400,6 @@ darwin*)
+ 	;;
+ esac
+ dnl
+-dnl Make the ss and et directories work correctly.
+-dnl
+-SS_DIR=`cd ${srcdir}/lib/ss; pwd`
+-ET_DIR=`cd ${srcdir}/lib/et; pwd`
+-AC_SUBST(SS_DIR)
+-AC_SUBST(ET_DIR)
+-dnl
+ dnl Only try to run the test suite if we're not cross compiling.
+ dnl
+ if test "$cross_compiling" = yes ; then
+diff --git a/debugfs/Makefile.in b/debugfs/Makefile.in
+index c22b8c0..a3fe13e 100644
+--- a/debugfs/Makefile.in
++++ b/debugfs/Makefile.in
+@@ -14,7 +14,7 @@ INSTALL = @INSTALL@
+ PROGS=		debugfs
+ MANPAGES=	debugfs.8
+ 
+-MK_CMDS=	_SS_DIR_OVERRIDE=../lib/ss ../lib/ss/mk_cmds
++MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir)/../lib/ss ../lib/ss/mk_cmds
+ 
+ DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o \
+ 	lsdel.o dump.o set_fields.o logdump.o htree.o unused.o e2freefrag.o \
+diff --git a/e2fsck/Makefile.in b/e2fsck/Makefile.in
+index 06d9f55..6f626f4 100644
+--- a/e2fsck/Makefile.in
++++ b/e2fsck/Makefile.in
+@@ -34,7 +34,7 @@ PROFILED_DEPLIBS= $(DEPPROFILED_LIBSUPPORT) $(PROFILED_LIBEXT2FS) \
+ 		  $(DEPPROFILED_LIBCOM_ERR) $(DEPPROFILED_LIBBLKID) \
+ 		  $(DEPPROFILED_LIBUUID) $(DEPPROFILED_LIBE2P)
+ 
+-COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
++COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../lib/et/et ../lib/et/compile_et
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+diff --git a/lib/et/Makefile.in b/lib/et/Makefile.in
+index cb75ab8..476f189 100644
+--- a/lib/et/Makefile.in
++++ b/lib/et/Makefile.in
+@@ -140,7 +140,7 @@ uninstall::
+ check:: compile_et
+ 	for i in $(srcdir)/test_cases/*.et ; do \
+ 		t=`basename $$i | sed -e 's/.et//'`; \
+-		./compile_et --build-tree $$i ; \
++		_ET_DIR_OVERRIDE=$(srcdir) ./compile_et $$i ; \
+ 		diff -c $(srcdir)/test_cases/$$t.c $$t.c > $$t.failed; \
+ 		if [ $$? -ne 0 ]; then echo Test case $$t failed; exit 1 ; fi ; \
+ 		diff -c $(srcdir)/test_cases/$$t.h $$t.h >> $$t.failed; \
+diff --git a/lib/et/compile_et.sh.in b/lib/et/compile_et.sh.in
+index c2861f4..4c4ba17 100644
+--- a/lib/et/compile_et.sh.in
++++ b/lib/et/compile_et.sh.in
+@@ -4,8 +4,7 @@
+ 
+ datarootdir=@datarootdir@
+ AWK=@AWK@
+-DIR="${DIR-@datadir@/et}"
+-ET_DIR="${ET_DIR-@ET_DIR@}"
++DIR=@datadir@/et
+ 
+ if test "$1" = "--build-tree" ; then
+     shift;
+@@ -29,13 +28,13 @@ do
+   fi
+ done
+ 
++if test -n "$_ET_DIR_OVERRIDE" ; then
++    DIR="$_ET_DIR_OVERRIDE";
++fi
++
+ if test ! -f "$DIR/et_h.awk" || test ! -f "$DIR/et_c.awk" ; then
+-    DIR="$ET_DIR"
+-#    echo "Falling back to $DIR..."
+-    if test ! -f "$DIR/et_h.awk" || test ! -f "$DIR/et_c.awk" ; then
+-	echo "compile_et: Couldn't find compile_et's template files."
+-	exit 1
+-    fi
++    echo "compile_et: Couldn't find compile_et's template files."
++    exit 1
+ fi
+ 
+ ROOT=`echo $1 | sed -e s/.et$//`
+diff --git a/lib/ext2fs/Makefile.in b/lib/ext2fs/Makefile.in
+index 461920c..6a3656d 100644
+--- a/lib/ext2fs/Makefile.in
++++ b/lib/ext2fs/Makefile.in
+@@ -13,7 +13,8 @@ DEBUGFS_CFLAGS = -I$(srcdir)/../../e2fsck $(ALL_CFLAGS) -DDEBUGFS
+ 
+ @DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o inode_io.o write_bb_file.o
+ 
+-MK_CMDS=	_SS_DIR_OVERRIDE=../ss ../ss/mk_cmds
++MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir)/../ss ../ss/mk_cmds
++COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../et ../et/compile_et
+ 
+ @RESIZER_CMT@RESIZE_LIB_OBJS = dupfs.o
+ @TEST_IO_CMT@TEST_IO_LIB_OBJS = test_io.o
+@@ -254,8 +255,6 @@ all:: ext2fs.pc
+ @ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) -fPIC -shared -o elfshared/$*.o -c $<
+ @BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS_SHLIB) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+ 
+-COMPILE_ET=../et/compile_et --build-tree
+-
+ DISTFILES= Makefile *.c *.h image
+ 
+ ext2_err.et: $(DEP_SUBSTITUTE) $(srcdir)/ext2_err.et.in
+diff --git a/lib/ss/Makefile.in b/lib/ss/Makefile.in
+index 255b58b..f4953f0 100644
+--- a/lib/ss/Makefile.in
++++ b/lib/ss/Makefile.in
+@@ -28,8 +28,8 @@ BSDLIB_MYDIR = ss
+ BSDLIB_INSTALL_DIR = $(root_libdir)
+ 
+ TAGS=etags
+-COMPILE_ET=../et/compile_et --build-tree
+-MK_CMDS=_SS_DIR_OVERRIDE=. ./mk_cmds
++MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir) ./mk_cmds
++COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../et ../et/compile_et
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+diff --git a/lib/ss/mk_cmds.sh.in b/lib/ss/mk_cmds.sh.in
+index a8976a4..0abc19d 100644
+--- a/lib/ss/mk_cmds.sh.in
++++ b/lib/ss/mk_cmds.sh.in
+@@ -3,8 +3,7 @@
+ #
+ 
+ datarootdir=@datarootdir@
+-DIR="${DIR-@datadir@/ss}"
+-SS_DIR="@SS_DIR@"
++DIR=@datadir@/ss
+ AWK=@AWK@
+ SED=@SED@
+ 
+@@ -30,12 +29,8 @@ if test -n "$_SS_DIR_OVERRIDE" ; then
+ fi
+ 
+ if test ! -f $DIR/ct_c.sed || test ! -f $DIR/ct_c.awk ; then
+-    DIR="$SS_DIR"
+-#    echo "Falling back to $DIR..."
+-    if test ! -f "$DIR/ct_c.sed" || test ! -f "$DIR/ct_c.awk" ; then
+-	echo "mk_cmds: Couldn't find mk_cmds's template files."
+-	exit 1
+-    fi
++    echo "mk_cmds: Couldn't find mk_cmds's template files."
++    exit 1
+ fi
+ 
+ FILE="$1"
+diff --git a/lib/support/Makefile.in b/lib/support/Makefile.in
+index 5beaaac..112ba24 100644
+--- a/lib/support/Makefile.in
++++ b/lib/support/Makefile.in
+@@ -41,7 +41,7 @@ LIBDIR= support
+ @MAKEFILE_LIBRARY@
+ @MAKEFILE_PROFILE@
+ 
+-COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
++COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../et ../et/compile_et
+ 
+ .c.o:
+ 	$(E) "	CC $<"
+diff --git a/misc/Makefile.in b/misc/Makefile.in
+index e487692..d6436c2 100644
+--- a/misc/Makefile.in
++++ b/misc/Makefile.in
+@@ -115,7 +115,7 @@ STATIC_DEPLIBS= $(DEPLIBSUPPORT) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
+ DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR)
+ 
+-COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
++COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../lib/et/et ../lib/et/compile_et
+ 
+ # This nastyness is needed because of jfs_user.h hackery; when we finally
+ # clean up this mess, we should be able to drop it
+diff --git a/tests/progs/Makefile.in b/tests/progs/Makefile.in
+index 22d9417..f6a31b9 100644
+--- a/tests/progs/Makefile.in
++++ b/tests/progs/Makefile.in
+@@ -11,7 +11,7 @@ INSTALL = @INSTALL@
+ 
+ @MCONFIG@
+ 
+-MK_CMDS=	_SS_DIR_OVERRIDE=../../lib/ss ../../lib/ss/mk_cmds
++MK_CMDS=	_SS_DIR_OVERRIDE=$(srcdir)/../../lib/ss ../../lib/ss/mk_cmds
+ 
+ PROGS=		test_icount crcsum
+ 
+diff --git a/util/gen-android-files b/util/gen-android-files
+index 994337b..ebd8778 100755
+--- a/util/gen-android-files
++++ b/util/gen-android-files
+@@ -14,8 +14,8 @@ ANDROID_GENERATED_FILES="lib/ext2fs/ext2_err.c lib/ext2fs/ext2_err.h \
+ SS_DIR=$(pwd)/lib/ss
+ MK_CMDS=/tmp/mk_cmds$$.sh
+ 
+-sed -e "s;@SS_DIR@;$SS_DIR;" < $SS_DIR/mk_cmds.sh.in \
+-    | sed -e "s/@AWK@/awk/" | sed -e "s/@SED@/sed/" > $MK_CMDS
++sed -e "s/@AWK@/awk/" < $SS_DIR/mk_cmds.sh.in \
++    | sed -e "s/@SED@/sed/" > $MK_CMDS
+ 
+ sed -e "s/@E2FSPROGS_VERSION@/$(git describe)/" < lib/ext2fs/ext2_err.et.in > lib/ext2fs/ext2_err.et
+ 
+@@ -29,7 +29,7 @@ done
+ for i in lib/ss/std_rqs debugfs/debug_cmds debugfs/ro_debug_cmds \
+ 			debugfs/extent_cmds
+ do
+-    /bin/sh $MK_CMDS $i.ct
++    _SS_DIR_OVERRIDE=lib/ss /bin/sh $MK_CMDS $i.ct
+     mv -f $(basename $i).c $i.c
+ done
+ 
+diff --git a/util/subst.conf.in b/util/subst.conf.in
+index ada11e7..fbc044d 100644
+--- a/util/subst.conf.in
++++ b/util/subst.conf.in
+@@ -1,7 +1,5 @@
+ AWK			@AWK@
+ SED			@SED@
+-ET_DIR			@ET_DIR@
+-SS_DIR			@SS_DIR@
+ E2FSPROGS_MONTH		@E2FSPROGS_MONTH@
+ E2FSPROGS_YEAR		@E2FSPROGS_YEAR@
+ E2FSPROGS_VERSION	@E2FSPROGS_VERSION@
