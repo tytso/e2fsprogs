@@ -274,6 +274,12 @@ struct problem_context {
 /* Error initializing quota context */
 #define PR_0_QUOTA_INIT_CTX			0x00004C
 
+/* Bad s_min_extra_isize in superblock */
+#define PR_0_BAD_MIN_EXTRA_ISIZE		0x00004D
+
+/* Bad s_want_extra_isize in superblock */
+#define PR_0_BAD_WANT_EXTRA_ISIZE		0x00004E
+
 
 /*
  * Pass 1 errors
