@@ -554,6 +554,10 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 		memset(p + EXT2_GOOD_OLD_INODE_SIZE, 0, extra);
 		inode->i_extra_isize = extra;
 	}
+	if (inode->i_extra_isize & 3) {
+		err = EXT2_ET_INODE_CORRUPTED;
+		goto out;
+	}
 
 	/*
 	 * Force the inlinedata attr to the front and the empty entries
@@ -806,6 +810,10 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 						  inode->i_extra_isize +
 						  sizeof(__u32))
 		goto read_ea_block;
+	if (inode->i_extra_isize & 3) {
+		err = EXT2_ET_INODE_CORRUPTED;
+		goto out;
+	}
 
 	/* Look for EA in the inode */
 	memcpy(&ea_inode_magic, ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +

@@ -488,10 +488,14 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 	 * implementations should never allow i_extra_isize to be 0
 	 */
 	if (inode->i_extra_isize &&
-	    (inode->i_extra_isize < min || inode->i_extra_isize > max)) {
+	    (inode->i_extra_isize < min || inode->i_extra_isize > max ||
+	     inode->i_extra_isize & 3)) {
 		if (!fix_problem(ctx, PR_1_EXTRA_ISIZE, pctx))
 			return;
-		inode->i_extra_isize = min;
+		if (inode->i_extra_isize < min || inode->i_extra_isize > max)
+			inode->i_extra_isize = sb->s_want_extra_isize;
+		else
+			inode->i_extra_isize = (inode->i_extra_isize + 3) & ~3;
 		e2fsck_write_inode_full(ctx, pctx->ino, pctx->inode,
 					EXT2_INODE_SIZE(sb), "pass1");
 		return;
