@@ -512,9 +512,9 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 	 * If the inode's extended atime (ctime, crtime, mtime) is stored in
 	 * the old, invalid format, repair it.
 	 */
-	if ((sizeof(time_t) <= 4) ||
-	    (((sizeof(time_t) > 4) &&
-	      ctx->now < EXT4_EXTRA_NEGATIVE_DATE_CUTOFF)) &&
+	if (((sizeof(time_t) <= 4) ||
+	     (((sizeof(time_t) > 4) &&
+	       ctx->now < EXT4_EXTRA_NEGATIVE_DATE_CUTOFF))) &&
 	    (CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, atime) ||
 	     CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, ctime) ||
 	     CHECK_INODE_EXTRA_NEGATIVE_EPOCH(inode, crtime) ||
