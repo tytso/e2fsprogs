@@ -307,6 +307,8 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		/* this is error case: i_extra_size is too large */
 		return;
 	}
+	if (extra_isize & 3)
+		return;		/* Illegal inode extra_isize */
 
 	inode_size = EXT2_GOOD_OLD_INODE_SIZE + extra_isize;
 	if (inode_includes(inode_size, i_checksum_hi))
