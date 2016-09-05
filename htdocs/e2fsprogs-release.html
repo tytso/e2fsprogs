@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.43.3">E2fsprogs 1.43.3 (September 4, 2016)</A>
 <LI><A HREF="#1.43.2">E2fsprogs 1.43.2 (September 1, 2016)</A>
 <LI><A HREF="#1.43.1">E2fsprogs 1.43.1 (June 8, 2016)</A>
 <LI><A HREF="#1.43">E2fsprogs 1.43 (May 17, 2016)</A>
@@ -113,6 +114,32 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.43.3">E2fsprogs 1.43.3 (September 4, 2016)</A></H2>
+
+<P>Fix e2fsck's handling of timestamps on 32-bit systems.</P>
+
+<P>E2fsck will now check, and if necessary repair the extra isize fields
+in the inode and superblock.</P>
+
+<P>Fix crashes on architectures such as sparc64 that are sensitive to
+unaligned pointer derferences in the journal recovery code when
+journal checksums are enabled.</P>
+
+<H3>Programming notes</H3>
+
+<P>Support reproducible builds by not capturing the build directory into
+the mk_cmds and compile_et scripts.  Also fix debian build rules to
+ensure build reproducibility.</P>
+
+<P>Fix debian build rules to ensure build reproducibility and to avoid
+hiding the linker flags for e2fsck.static so the build hardening log
+scanner can properly audit the build.</P>
+
+<P>Fix compatibility with FreeBSD's pmake and teach the configure script
+to force the creation of pmake-compatible Makefiles if the
+FORCE_NATIVE_MAKE environment variable is set to a non-empty value.</P>
+
 
 <H2><A NAME="1.43.2">E2fsprogs 1.43.2 (September 1, 2016)</A></H2>
 
