@@ -1,3 +1,13 @@
+e2fsprogs (1.43.3-1) unstable; urgency=medium
+
+  * Fix e2fsck's handling of timestamps on 32-bit system (Closes: #836559)
+  * E2fsck will sanity check and repair the extra isize fields in inodes
+    and the superblock.
+  * Fix sparc64 crashes when dereferencing unaligned integers in journal
+    blocks when metdata checksums are enabled.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 04 Sep 2016 20:41:21 -0400
+
 e2fsprogs (1.43.2-2) unstable; urgency=medium
 
   * Fix build reproducibility problems
