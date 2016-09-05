@@ -338,12 +338,24 @@ int journal_skip_recovery(journal_t *journal)
 	return err;
 }
 
+static inline __u32 get_be32(__be32 *p)
+{
+	unsigned char *cp = (unsigned char *) p;
+	__u32 ret;
+
+	ret = *cp++;
+	ret = (ret << 8) + *cp++;
+	ret = (ret << 8) + *cp++;
+	ret = (ret << 8) + *cp++;
+	return ret;
+}
+
 static inline unsigned long long read_tag_block(journal_t *journal,
 						journal_block_tag_t *tag)
 {
-	unsigned long long block = ext2fs_be32_to_cpu(tag->t_blocknr);
+	unsigned long long block = get_be32(&tag->t_blocknr);
 	if (jfs_has_feature_64bit(journal))
-		block |= (u64)ext2fs_be32_to_cpu(tag->t_blocknr_high) << 32;
+		block |= (u64)get_be32(&tag->t_blocknr_high) << 32;
 	return block;
 }
 

@@ -68,8 +68,8 @@ pkgconfigdir = $(libdir)/pkgconfig
 @ifGNUmake@   endif
 @ifGNUmake@ endif
 
-@ifNotGNUmake@ CHECK_CMD=@true
-@ifNotGNUmake@ CPPHECK_CMD=@true
+@ifNotGNUmake@ CHECK_CMD=true
+@ifNotGNUmake@ CPPCHECK_CMD=true
 
 CC = @CC@
 BUILD_CC = @BUILD_CC@

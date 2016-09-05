@@ -185,8 +185,9 @@ struct ext2_group_desc *ext2fs_group_desc(ext2_filsys fs,
 					  struct opaque_ext2_group_desc *gdp,
 					  dgrp_t group)
 {
-	return (struct ext2_group_desc *)((char *)gdp +
-					  group * EXT2_DESC_SIZE(fs->super));
+	int desc_size = EXT2_DESC_SIZE(fs->super) & ~7;
+
+	return (struct ext2_group_desc *)((char *)gdp + group * desc_size);
 }
 
 /* Do the same but as an ext4 group desc for internal use here */
