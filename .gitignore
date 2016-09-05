@@ -5,6 +5,7 @@ build.static
 FILES
 ^core
 *~
+patches
 Makefile
 *.bak
 *.diff
