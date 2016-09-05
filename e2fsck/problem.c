@@ -477,6 +477,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Error initializing quota context in support library: %m\n"),
 	  PROMPT_NULL, PR_FATAL },
 
+	/* Bad s_min_extra_isize in superblock */
+	{ PR_0_BAD_MIN_EXTRA_ISIZE,
+	  N_("Bad required extra isize in @S (%N).  "),
+	  PROMPT_FIX, 0 },
+
+	/* Bad s_min_extra_isize in superblock */
+	{ PR_0_BAD_WANT_EXTRA_ISIZE,
+	  N_("Bad desired extra isize in @S (%N).  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */

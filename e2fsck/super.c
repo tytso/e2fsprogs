@@ -578,7 +578,35 @@ void check_super_block(e2fsck_t ctx)
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-
+	if (EXT2_INODE_SIZE(sb) > EXT2_GOOD_OLD_INODE_SIZE) {
+		unsigned min =
+			sizeof(((struct ext2_inode_large *) 0)->i_extra_isize) +
+			sizeof(((struct ext2_inode_large *) 0)->i_checksum_hi);
+		unsigned max = EXT2_INODE_SIZE(sb) - EXT2_GOOD_OLD_INODE_SIZE;
+		pctx.num = sb->s_min_extra_isize;
+		if (sb->s_min_extra_isize &&
+		    (sb->s_min_extra_isize < min ||
+		     sb->s_min_extra_isize > max ||
+		     sb->s_min_extra_isize & 3) &&
+		    fix_problem(ctx, PR_0_BAD_MIN_EXTRA_ISIZE, &pctx)) {
+			sb->s_min_extra_isize =
+				(sizeof(struct ext2_inode_large) -
+				 EXT2_GOOD_OLD_INODE_SIZE);
+			ext2fs_mark_super_dirty(fs);
+		}
+		pctx.num = sb->s_want_extra_isize;
+		if (sb->s_want_extra_isize &&
+		    (sb->s_want_extra_isize < min ||
+		     sb->s_want_extra_isize > max ||
+		     sb->s_want_extra_isize & 3) &&
+		    fix_problem(ctx, PR_0_BAD_WANT_EXTRA_ISIZE, &pctx)) {
+			sb->s_want_extra_isize =
+				(sizeof(struct ext2_inode_large) -
+				 EXT2_GOOD_OLD_INODE_SIZE);
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+		    
 	/* Are metadata_csum and uninit_bg both set? */
 	if (ext2fs_has_feature_metadata_csum(fs->super) &&
 	    ext2fs_has_feature_gdt_csum(fs->super) &&
