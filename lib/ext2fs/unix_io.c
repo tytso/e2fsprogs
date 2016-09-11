@@ -300,6 +300,7 @@ static errcode_t raw_write_blk(io_channel channel,
 			goto short_write;
 		size -= actual;
 		buf += actual;
+		location += actual;
 	}
 	return 0;
 
