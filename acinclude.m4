@@ -108,7 +108,7 @@ AC_DEFUN(
         [CHECK_GNU_MAKE], [ AC_CACHE_CHECK( for GNU make,_cv_gnu_make_command,
                 _cv_gnu_make_command='' ;
 dnl Search all the common names for GNU make
-                if test -z "$FORCE_NATIVE_MAKE" ; then
+                if test -n "$FORCE_NATIVE_MAKE" ; then
                    MAKES="make"
                 else
                    MAKES="make gmake gnumake"
