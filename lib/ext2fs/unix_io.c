@@ -163,6 +163,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	ext2_loff_t	location;
 	int		actual = 0;
 	unsigned char	*buf = bufv;
+	ssize_t		really_read = 0;
 
 	size = (count < 0) ? -count : count * channel->block_size;
 	data->io_stats.bytes_read += size;
@@ -227,12 +228,17 @@ static errcode_t raw_read_blk(io_channel channel,
 bounce_read:
 	while (size > 0) {
 		actual = read(data->dev, data->bounce, channel->block_size);
-		if (actual != channel->block_size)
+		if (actual != channel->block_size) {
+			actual = really_read;
+			buf -= really_read;
+			size += really_read;
 			goto short_read;
+		}
 		actual = size;
 		if (size > channel->block_size)
 			actual = channel->block_size;
 		memcpy(buf, data->bounce, actual);
+		really_read += actual;
 		size -= actual;
 		buf += actual;
 	}
@@ -329,8 +335,12 @@ bounce_write:
 			actual = read(data->dev, data->bounce,
 				      channel->block_size);
 			if (actual != channel->block_size) {
-				retval = EXT2_ET_SHORT_READ;
-				goto error_out;
+				if (actual < 0) {
+					retval = EXT2_ET_SHORT_READ;
+					goto error_out;
+				}
+				memset(data->bounce + actual, 0,
+				       channel->block_size - actual);
 			}
 		}
 		actual = size;
