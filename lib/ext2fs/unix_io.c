@@ -53,6 +53,11 @@
 #ifdef HAVE_SYS_MOUNT_H
 #include <sys/mount.h>
 #endif
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#else
+#define PR_GET_DUMPABLE 3
+#endif
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -122,6 +127,29 @@ static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 	return retval;
 }
 
+static char *safe_getenv(const char *arg)
+{
+	if ((getuid() != geteuid()) || (getgid() != getegid()))
+		return NULL;
+#ifdef HAVE_PRCTL
+	if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
+		return NULL;
+#else
+#if (defined(linux) && defined(SYS_prctl))
+	if (syscall(SYS_prctl, PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
+		return NULL;
+#endif
+#endif
+
+#if defined(HAVE_SECURE_GETENV)
+	return secure_getenv(arg);
+#elif defined(HAVE___SECURE_GETENV)
+	return __secure_getenv(arg);
+#else
+	return getenv(arg);
+#endif
+}
+
 /*
  * Here are the raw I/O functions
  */
@@ -139,6 +167,14 @@ static errcode_t raw_read_blk(io_channel channel,
 	size = (count < 0) ? -count : count * channel->block_size;
 	data->io_stats.bytes_read += size;
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
+
+	if (data->flags & IO_FLAG_FORCE_BOUNCE) {
+		if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+			goto error_out;
+		}
+		goto bounce_read;
+	}
 
 #ifdef HAVE_PREAD64
 	/* Try an aligned pread */
@@ -188,6 +224,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	 * The buffer or size which we're trying to read isn't aligned
 	 * to the O_DIRECT rules, so we need to do this the hard way...
 	 */
+bounce_read:
 	while (size > 0) {
 		actual = read(data->dev, data->bounce, channel->block_size);
 		if (actual != channel->block_size)
@@ -231,6 +268,14 @@ static errcode_t raw_write_blk(io_channel channel,
 	data->io_stats.bytes_written += size;
 
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
+
+	if (data->flags & IO_FLAG_FORCE_BOUNCE) {
+		if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+			goto error_out;
+		}
+		goto bounce_write;
+	}
 
 #ifdef HAVE_PWRITE64
 	/* Try an aligned pwrite */
@@ -278,6 +323,7 @@ static errcode_t raw_write_blk(io_channel channel,
 	 * The buffer or size which we're trying to write isn't aligned
 	 * to the O_DIRECT rules, so we need to do this the hard way...
 	 */
+bounce_write:
 	while (size > 0) {
 		if (size < channel->block_size) {
 			actual = read(data->dev, data->bounce,
@@ -336,7 +382,7 @@ static errcode_t alloc_cache(io_channel channel,
 		if (retval)
 			return retval;
 	}
-	if (channel->align) {
+	if (channel->align || data->flags & IO_FLAG_FORCE_BOUNCE) {
 		if (data->bounce)
 			ext2fs_free_mem(&data->bounce);
 		retval = io_channel_alloc_buf(channel, 0, &data->bounce);
@@ -495,6 +541,9 @@ static errcode_t unix_open_channel(const char *name, int fd,
 #ifdef __linux__
 	struct		utsname ut;
 #endif
+
+	if (safe_getenv("UNIX_IO_FORCE_BOUNCE"))
+		flags |= IO_FLAG_FORCE_BOUNCE;
 
 	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)
@@ -1043,7 +1092,7 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
-	if (getenv("UNIX_IO_NOZEROOUT"))
+	if (safe_getenv("UNIX_IO_NOZEROOUT"))
 		goto unimplemented;
 
 	if (channel->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
