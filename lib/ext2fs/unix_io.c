@@ -613,7 +613,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 	}
 #endif
 
-#if defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#if defined(__CYGWIN__)
 	/*
 	 * Some operating systems require that the buffers be aligned,
 	 * regardless of O_DIRECT
@@ -622,6 +622,14 @@ static errcode_t unix_open_channel(const char *name, int fd,
 		io->align = 512;
 #endif
 
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+	if (io->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
+		int dio_align = ext2fs_get_dio_alignment(fd);
+
+		if (io->align < dio_align)
+			io->align = dio_align;
+	}
+#endif
 
 	if ((retval = alloc_cache(io, data)))
 		goto cleanup;
