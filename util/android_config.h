@@ -16,17 +16,23 @@
 #define HAVE_GETPWUID_R 1
 #define HAVE_INTPTR_T 1
 #define HAVE_INTTYPES_H 1
+#ifdef __linux__
 #define HAVE_LINUX_FD_H 1
 #define HAVE_LSEEK64 1
 #define HAVE_LSEEK64_PROTOTYPE 1
+#endif
 #define HAVE_MMAP 1
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NET_IF_H 1
 #define HAVE_POSIX_MEMALIGN 1
 #define HAVE_PREAD 1
+#ifdef __linux__
 #define HAVE_PREAD64 1
+#endif
 #define HAVE_PWRITE 1
+#ifdef __linux__
 #define HAVE_PWRITE64 1
+#endif
 #define HAVE_SETJMP_H 1
 #define HAVE_SNPRINTF 1
 #define HAVE_STDLIB_H 1
@@ -40,7 +46,9 @@
 #define HAVE_SYS_MMAN_H 1
 #define HAVE_SYS_MOUNT_H 1
 #define HAVE_SYS_PARAM_H 1
+#ifdef __linux__
 #define HAVE_SYS_PRCTL_H 1
+#endif
 #define HAVE_SYS_RESOURCE_H 1
 #define HAVE_SYS_SELECT_H 1
 #define HAVE_SYS_STAT_H 1
