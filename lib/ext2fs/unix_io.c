@@ -208,9 +208,11 @@ static errcode_t raw_read_blk(io_channel channel,
 		actual = read(data->dev, buf, size);
 		if (actual != size) {
 		short_read:
-			if (actual < 0)
+			if (actual < 0) {
+				retval = errno;
 				actual = 0;
-			retval = EXT2_ET_SHORT_READ;
+			} else
+				retval = EXT2_ET_SHORT_READ;
 			goto error_out;
 		}
 		return 0;
@@ -313,6 +315,10 @@ static errcode_t raw_write_blk(io_channel channel,
 	    (IS_ALIGNED(buf, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
 		actual = write(data->dev, buf, size);
+		if (actual < 0) {
+			retval = errno;
+			goto error_out;
+		}
 		if (actual != size) {
 		short_write:
 			retval = EXT2_ET_SHORT_WRITE;
@@ -336,7 +342,7 @@ bounce_write:
 				      channel->block_size);
 			if (actual != channel->block_size) {
 				if (actual < 0) {
-					retval = EXT2_ET_SHORT_READ;
+					retval = errno;
 					goto error_out;
 				}
 				memset(data->bounce + actual, 0,
@@ -352,6 +358,10 @@ bounce_write:
 			goto error_out;
 		}
 		actual = write(data->dev, data->bounce, channel->block_size);
+		if (actual < 0) {
+			retval = errno;
+			goto error_out;
+		}
 		if (actual != channel->block_size)
 			goto short_write;
 		size -= actual;
@@ -997,6 +1007,8 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 		return errno;
 
 	actual = write(data->dev, buf, size);
+	if (actual < 0)
+		return errno;
 	if (actual != size)
 		return EXT2_ET_SHORT_WRITE;
 
