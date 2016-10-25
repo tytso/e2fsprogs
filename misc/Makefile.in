@@ -157,9 +157,9 @@ findsuper: findsuper.o
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o $(LIBS) $(SYSLIBS)
 
-partinfo: partinfo.o
+partinfo: partinfo.o $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
-	$(Q) $(CC) $(ALL_LDFLAGS) -o partinfo partinfo.o
+	$(Q) $(CC) $(ALL_LDFLAGS) -o partinfo partinfo.o $(LIBCOM_ERR)
 
 e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBBLKID) $(LIBEXT2FS)
 	$(E) "	LD $@"
