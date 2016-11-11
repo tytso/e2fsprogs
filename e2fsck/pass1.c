@@ -1063,6 +1063,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	int		imagic_fs, extent_fs, inlinedata_fs;
 	int		low_dtime_check = 1;
 	int		inode_size = EXT2_INODE_SIZE(fs->super);
+	int		bufsize;
 	int		failed_csum = 0;
 	ext2_ino_t	ino_threshold = 0;
 	dgrp_t		ra_group = 0;
@@ -1162,8 +1163,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
+	bufsize = inode_size;
+	if (bufsize < sizeof(struct ext2_inode_large))
+		bufsize = sizeof(struct ext2_inode_large);
 	inode = (struct ext2_inode *)
-		e2fsck_allocate_memory(ctx, inode_size, "scratch inode");
+		e2fsck_allocate_memory(ctx, bufsize, "scratch inode");
 
 	inodes_to_process = (struct process_inode_block *)
 		e2fsck_allocate_memory(ctx,
