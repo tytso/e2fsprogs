@@ -76,6 +76,7 @@ libext2fs_src_files := \
 	symlink.c \
 	undo_io.c \
 	unix_io.c \
+	sparse_io.c \
 	unlink.c \
 	valid_blk.c \
 	version.c
@@ -107,7 +108,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(libext2fs_src_files)
 LOCAL_SYSTEM_SHARED_LIBRARIES := $(libext2fs_system_shared_libraries)
-LOCAL_SHARED_LIBRARIES := $(libext2fs_shared_libraries)
+LOCAL_SHARED_LIBRARIES := $(libext2fs_shared_libraries) libsparse libz
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags)
@@ -119,7 +120,7 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(libext2fs_src_files)
-LOCAL_STATIC_LIBRARIES := $(libext2fs_static_libraries) $(libext2fs_system_static_libraries)
+LOCAL_STATIC_LIBRARIES := $(libext2fs_static_libraries) $(libext2fs_system_static_libraries) libsparse_static libz
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags) $(libext2fs_cflags_linux)
@@ -132,6 +133,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(libext2fs_src_files)
 LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(libext2fs_shared_libraries))
+LOCAL_STATIC_LIBRARIES := libsparse_host libz
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags)

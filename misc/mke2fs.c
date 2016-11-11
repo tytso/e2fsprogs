@@ -113,6 +113,9 @@ char **fs_types;
 const char *src_root_dir;  /* Copy files from the specified directory */
 static char *undo_file;
 
+static int android_sparse_file; /* -E android_sparse */
+static char *android_sparse_params;
+
 static profile_t	profile;
 
 static int sys_page_size = 4096;
@@ -553,7 +556,7 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 	int retval;
 	unsigned int *magic;
 
-	buf = malloc(512*nsect);
+	buf = calloc(512, nsect);
 	if (!buf) {
 		printf(_("Out of memory erasing sectors %d-%d\n"),
 		       sect, sect + nsect - 1);
@@ -1026,6 +1029,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				badopt = token;
 				continue;
 			}
+		} else if (!strcmp(token, "android_sparse")) {
+			android_sparse_file = 1;
 		} else {
 			r_usage++;
 			badopt = token;
@@ -2828,7 +2833,21 @@ int main (int argc, char *argv[])
 	 */
 	if (!quiet)
 		flags |= EXT2_FLAG_PRINT_PROGRESS;
-	retval = ext2fs_initialize(device_name, flags, &fs_param, io_ptr, &fs);
+	if (android_sparse_file) {
+		android_sparse_params = malloc(PATH_MAX + 32);
+		if (!android_sparse_params) {
+			com_err(program_name, ENOMEM, "%s",
+				_("in malloc for android_sparse_params"));
+			exit(1);
+		}
+		snprintf(android_sparse_params, PATH_MAX + 32, "%s:%u:%u",
+			 device_name, fs_param.s_blocks_count,
+			 1024 << fs_param.s_log_block_size);
+		retval = ext2fs_initialize(android_sparse_params, flags,
+					   &fs_param, sparse_io_manager, &fs);
+	} else
+		retval = ext2fs_initialize(device_name, flags, &fs_param,
+					   io_ptr, &fs);
 	if (retval) {
 		com_err(device_name, retval, "%s",
 			_("while setting up superblock"));

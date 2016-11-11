@@ -6,6 +6,8 @@
 
 #define ROOT_SYSCONFDIR "/etc"
 
+#define ENABLE_LIBSPARSE 1
+
 #define DISABLE_BACKTRACE 1
 #define HAVE_DIRENT_H 1
 #define HAVE_ERRNO_H 1
