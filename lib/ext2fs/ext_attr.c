@@ -308,7 +308,7 @@ static int find_ea_index(char *fullname, char **name, int *index)
 	struct ea_name_index *e;
 
 	for (e = ea_names; e->name; e++) {
-		if (memcmp(fullname, e->name, strlen(e->name)) == 0) {
+		if (strncmp(fullname, e->name, strlen(e->name)) == 0) {
 			*name = (char *)fullname + strlen(e->name);
 			*index = e->index;
 			return 1;
