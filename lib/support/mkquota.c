@@ -296,8 +296,13 @@ errcode_t quota_init_context(quota_ctx_t *qctx, ext2_filsys fs,
 	memset(ctx, 0, sizeof(struct quota_ctx));
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
 		ctx->quota_file[qtype] = NULL;
-		if (((1 << qtype) & qtype_bits) == 0)
-			continue;
+		if (qtype_bits) {
+			if (((1 << qtype) & qtype_bits) == 0)
+				continue;
+		} else {
+			if (*quota_sb_inump(fs->super, qtype) == 0)
+				continue;
+		}
 		err = ext2fs_get_mem(sizeof(dict_t), &dict);
 		if (err) {
 			log_debug("Failed to allocate dictionary");

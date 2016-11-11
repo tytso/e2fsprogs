@@ -42,7 +42,7 @@ static int load_quota_ctx(char *progname)
 	if (current_qctx)
 		return 0;
 
-	retval = quota_init_context(&current_qctx, current_fs, QUOTA_ALL_BIT);
+	retval = quota_init_context(&current_qctx, current_fs, 0);
 	if (retval) {
 		com_err(current_fs->device_name, retval,
 			"while trying to load quota information");

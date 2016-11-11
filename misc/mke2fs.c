@@ -2714,7 +2714,7 @@ static int create_quota_inodes(ext2_filsys fs)
 	quota_ctx_t qctx;
 	errcode_t retval;
 
-	retval = quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
+	retval = quota_init_context(&qctx, fs, quotatype_bits);
 	if (retval) {
 		com_err(program_name, retval,
 			_("while initializing quota context"));

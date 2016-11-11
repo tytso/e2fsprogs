@@ -1338,7 +1338,6 @@ int main (int argc, char *argv[])
 	int old_bitmaps;
 	__u32 features[3];
 	char *cp;
-	unsigned int qtype_bits = 0;
 	enum quota_type qtype;
 
 	clear_problem_context(&pctx);
@@ -1786,14 +1785,8 @@ print_unsupp_features:
 
 	if (ext2fs_has_feature_quota(sb)) {
 		/* Quotas were enabled. Do quota accounting during fsck. */
-		for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
-			if (*quota_sb_inump(sb, qtype) != 0)
-				qtype_bits |= 1 << qtype;
-		}
-
 		clear_problem_context(&pctx);
-		pctx.errcode = quota_init_context(&ctx->qctx, ctx->fs,
-						  qtype_bits);
+		pctx.errcode = quota_init_context(&ctx->qctx, ctx->fs, 0);
 		if (pctx.errcode) {
 			fix_problem(ctx, PR_0_QUOTA_INIT_CTX, &pctx);
 			fatal_error(ctx, 0);
@@ -1842,7 +1835,7 @@ no_journal:
 		int needs_writeout;
 
 		for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
-			if (((1 << qtype) & qtype_bits) == 0)
+			if (*quota_sb_inump(sb, qtype) == 0)
 				continue;
 			needs_writeout = 0;
 			pctx.num = qtype;
