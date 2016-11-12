@@ -1012,6 +1012,7 @@ int main(int argc, char **argv)
 		printf("checksums for different data shouldn't match\n");
 		exit(1);
 	}
+	ext2fs_free(fs);
 
 	return 0;
 }

@@ -66,6 +66,7 @@ int main(int argc, char **argv)
 		s = e2p_os2string(i);
 		os = e2p_string2os(s);
 		printf("%d: %s (%d)\n", i, s, os);
+		free(s);
 		if (i != os) {
 			fprintf(stderr, "Failure!\n");
 			exit(1);
