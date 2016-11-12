@@ -655,6 +655,8 @@ static void ext2fs_journal_release(ext2_filsys fs, journal_t *journal,
 		if (fs->io != fs->journal_io)
 			io_channel_close(fs->journal_io);
 		fs->journal_io = NULL;
+		free(fs->journal_name);
+		fs->journal_name = NULL;
 	}
 
 #ifndef USE_INODE_IO

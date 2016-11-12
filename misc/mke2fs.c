@@ -632,6 +632,7 @@ write_superblock:
 	retval = io_channel_write_blk64(fs->io,
 					fs->super->s_first_data_block+1,
 					1, buf);
+	(void) ext2fs_free_mem(&buf);
 	if (retval) {
 		com_err("create_journal_dev", retval, "%s",
 			_("while writing journal superblock"));
@@ -1138,7 +1139,7 @@ struct str_list {
 static errcode_t init_list(struct str_list *sl)
 {
 	sl->num = 0;
-	sl->max = 0;
+	sl->max = 1;
 	sl->list = malloc((sl->max+1) * sizeof(char *));
 	if (!sl->list)
 		return ENOMEM;
@@ -2105,6 +2106,12 @@ profile_error:
 	ext2fs_blocks_count_set(&fs_param, fs_blocks_count);
 
 	if (ext2fs_has_feature_journal_dev(&fs_param)) {
+		int i;
+
+		for (i=0; fs_types[i]; i++) {
+			free(fs_types[i]);
+			fs_types[i] = 0;
+		}
 		fs_types[0] = strdup("journal");
 		fs_types[1] = 0;
 	}
