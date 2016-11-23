@@ -58,3 +58,12 @@ LOCAL_MODULE := libext2_ss-host
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_HOST_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := $(libext2_ss_src_files)
+LOCAL_C_INCLUDES := $(libext2_ss_c_includes)
+LOCAL_CFLAGS := $(libext2_ss_cflags)
+LOCAL_MODULE := libext2_ss-host
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_HOST_STATIC_LIBRARY)

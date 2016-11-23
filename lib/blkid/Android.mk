@@ -60,3 +60,13 @@ LOCAL_MODULE := libext2_blkid-host
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_HOST_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := $(libext2_blkid_src_files)
+LOCAL_SHARED_LIBRARIES := libext2_uuid-host
+LOCAL_C_INCLUDES := $(libext2_blkid_c_includes)
+LOCAL_CFLAGS := $(libext2_blkid_cflags)
+LOCAL_MODULE := libext2_blkid-host
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_HOST_STATIC_LIBRARY)

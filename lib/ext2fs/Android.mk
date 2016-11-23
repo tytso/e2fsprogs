@@ -141,3 +141,16 @@ LOCAL_MODULE := libext2fs-host
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_HOST_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := $(libext2fs_src_files)
+LOCAL_STATIC_LIBRARIES := $(addsuffix -host, $(libext2fs_shared_libraries))
+LOCAL_STATIC_LIBRARIES := libsparse_host libz
+LOCAL_C_INCLUDES := $(libext2fs_c_includes)
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
+LOCAL_CFLAGS := $(libext2fs_cflags) $(libext2fs_cflags_linux)
+LOCAL_MODULE := libext2fs-host
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_HOST_STATIC_LIBRARY)
