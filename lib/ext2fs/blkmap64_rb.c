@@ -9,6 +9,7 @@
  * %End-Header%
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #if HAVE_UNISTD_H
@@ -21,6 +22,9 @@
 #endif
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+#if HAVE_LINUX_TYPES_H
+#include <linux/types.h>
 #endif
 
 #include "ext2_fs.h"

@@ -86,17 +86,13 @@ libext2fs_src_files += test_io.c
 
 libext2fs_shared_libraries := \
 	libext2_com_err \
-	libext2_uuid \
-	libext2_blkid \
-	libext2_e2p
+	libext2_uuid
 
 libext2fs_system_shared_libraries := libc
 
 libext2fs_static_libraries := \
 	libext2_com_err \
-	libext2_uuid_static \
-	libext2_blkid \
-	libext2_e2p
+	libext2_uuid_static
 
 libext2fs_system_static_libraries := libc
 
@@ -132,25 +128,31 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(libext2fs_src_files)
-LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(libext2fs_shared_libraries))
+LOCAL_WHOLE_STATIC_LIBRARIES := libext2_com_err-host
 LOCAL_STATIC_LIBRARIES := libsparse_host libz
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags)
 LOCAL_MODULE := libext2fs-host
 LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_HOST_OS := darwin linux windows
+LOCAL_CFLAGS_windows := -isystem external/e2fsprogs/include/nonunix -Wno-format
+LOCAL_LDLIBS_windows := -lws2_32
 
 include $(BUILD_HOST_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := $(libext2fs_src_files)
-LOCAL_STATIC_LIBRARIES := $(addsuffix -host, $(libext2fs_shared_libraries))
+LOCAL_WHOLE_STATIC_LIBRARIES := libext2_com_err-host
 LOCAL_STATIC_LIBRARIES := libsparse_host libz
 LOCAL_C_INCLUDES := $(libext2fs_c_includes)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(libext2fs_c_includes)
 LOCAL_CFLAGS := $(libext2fs_cflags) $(libext2fs_cflags_linux)
 LOCAL_MODULE := libext2fs-host
 LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_HOST_OS := darwin linux windows
+LOCAL_CFLAGS_windows := -isystem external/e2fsprogs/include/nonunix -Wno-format
+LOCAL_LDLIBS_windows := -lws2_32
 
 include $(BUILD_HOST_STATIC_LIBRARY)
