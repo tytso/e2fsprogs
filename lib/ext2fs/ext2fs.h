@@ -209,6 +209,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_MKJOURNAL_LAZYINIT	0x0000002 /* don't zero journal inode before use*/
 #define EXT2_MKJOURNAL_NO_MNT_CHECK 0x0000004 /* don't check mount status */
 
+struct blk_alloc_ctx;
 struct opaque_ext2_group_desc;
 
 struct struct_ext2_filsys {
@@ -264,6 +265,8 @@ struct struct_ext2_filsys {
 	 */
 	errcode_t (*get_alloc_block)(ext2_filsys fs, blk64_t goal,
 				     blk64_t *ret);
+	errcode_t (*get_alloc_block2)(ext2_filsys fs, blk64_t goal,
+				      blk64_t *ret, struct blk_alloc_ctx *ctx);
 	void (*block_alloc_stats)(ext2_filsys fs, blk64_t blk, int inuse);
 
 	/*
@@ -354,6 +357,17 @@ struct struct_ext2_filsys {
 #define BLOCK_COUNT_DIND	(-2)
 #define BLOCK_COUNT_TIND	(-3)
 #define BLOCK_COUNT_TRANSLATOR	(-4)
+
+#define BLOCK_ALLOC_UNKNOWN	0
+#define BLOCK_ALLOC_DATA	1
+#define BLOCK_ALLOC_METADATA	2
+
+struct blk_alloc_ctx {
+	ext2_ino_t		ino;
+	struct ext2_inode	*inode;
+	blk64_t			lblk;
+	int			flags;
+};
 
 #if 0
 /*
@@ -663,6 +677,9 @@ extern errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 				  ext2fs_block_bitmap map, blk_t *ret);
 extern errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 				   ext2fs_block_bitmap map, blk64_t *ret);
+extern errcode_t ext2fs_new_block3(ext2_filsys fs, blk64_t goal,
+				   ext2fs_block_bitmap map, blk64_t *ret,
+				   struct blk_alloc_ctx *ctx);
 extern errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start,
 					blk_t finish, int num,
 					ext2fs_block_bitmap map,
@@ -675,6 +692,10 @@ extern errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 				    char *block_buf, blk_t *ret);
 extern errcode_t ext2fs_alloc_block2(ext2_filsys fs, blk64_t goal,
 				     char *block_buf, blk64_t *ret);
+extern errcode_t ext2fs_alloc_block3(ext2_filsys fs, blk64_t goal,
+				     char *block_buf, blk64_t *ret,
+				     struct blk_alloc_ctx *ctx);
+
 extern void ext2fs_set_alloc_block_callback(ext2_filsys fs,
 					    errcode_t (*func)(ext2_filsys fs,
 							      blk64_t goal,
