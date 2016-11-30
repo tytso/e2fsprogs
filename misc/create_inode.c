@@ -683,10 +683,31 @@ out:
 	return retval;
 }
 
+struct file_info {
+	char *path;
+	size_t path_len;
+	size_t path_max_len;
+};
+
+static errcode_t path_append(struct file_info *target, const char *file)
+{
+	if (strlen(file) + target->path_len + 1 > target->path_max_len) {
+		target->path_max_len *= 2;
+		target->path = realloc(target->path, target->path_max_len);
+		if (!target->path)
+			return EXT2_ET_NO_MEMORY;
+	}
+	target->path_len += sprintf(target->path + target->path_len, "/%s",
+				    file);
+	return 0;
+}
+
 /* Copy files from source_dir to fs */
 static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			       const char *source_dir, ext2_ino_t root,
-			       struct hdlinks_s *hdlinks)
+			       struct hdlinks_s *hdlinks,
+			       struct file_info *target,
+			       struct fs_ops_callbacks *fs_callbacks)
 {
 	const char	*name;
 	DIR		*dh;
@@ -698,6 +719,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 	errcode_t	retval = 0;
 	int		read_cnt;
 	int		hdlink;
+	size_t		cur_dir_path_len;
 
 	if (chdir(source_dir) < 0) {
 		retval = errno;
@@ -743,6 +765,19 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				continue;
 			} else
 				save_inode = 1;
+		}
+
+		cur_dir_path_len = target->path_len;
+		retval = path_append(target, name);
+		if (retval)
+			return retval;
+
+		if (fs_callbacks && fs_callbacks->create_new_inode) {
+			retval = fs_callbacks->create_new_inode(fs,
+				target->path, name, parent_ino, root,
+				st.st_mode & S_IFMT);
+			if (retval)
+				goto out;
 		}
 
 		switch(st.st_mode & S_IFMT) {
@@ -822,7 +857,8 @@ find_lnf:
 					goto out;
 			}
 			/* Populate the dir recursively*/
-			retval = __populate_fs(fs, ino, name, root, hdlinks);
+			retval = __populate_fs(fs, ino, name, root, hdlinks,
+					       target, fs_callbacks);
 			if (retval)
 				goto out;
 			if (chdir("..")) {
@@ -858,6 +894,14 @@ find_lnf:
 			goto out;
 		}
 
+		if (fs_callbacks && fs_callbacks->end_create_new_inode) {
+			retval = fs_callbacks->end_create_new_inode(fs,
+				target->path, name, parent_ino, root,
+				st.st_mode & S_IFMT);
+			if (retval)
+				goto out;
+		}
+
 		/* Save the hardlink ino */
 		if (save_inode) {
 			/*
@@ -883,6 +927,8 @@ find_lnf:
 			hdlinks->hdl[hdlinks->count].dst_ino = ino;
 			hdlinks->count++;
 		}
+		target->path_len = cur_dir_path_len;
+		target->path[target->path_len] = 0;
 	}
 
 out:
@@ -890,9 +936,11 @@ out:
 	return retval;
 }
 
-errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
-		      const char *source_dir, ext2_ino_t root)
+errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
+		       const char *source_dir, ext2_ino_t root,
+		       struct fs_ops_callbacks *fs_callbacks)
 {
+	struct file_info file_info;
 	struct hdlinks_s hdlinks;
 	errcode_t retval;
 
@@ -910,8 +958,20 @@ errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		return retval;
 	}
 
-	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks);
+	file_info.path_len = 0;
+	file_info.path_max_len = 255;
+	file_info.path = calloc(file_info.path_max_len, 1);
 
+	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks,
+			       &file_info, fs_callbacks);
+
+	free(file_info.path);
 	free(hdlinks.hdl);
 	return retval;
+}
+
+errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
+		      const char *source_dir, ext2_ino_t root)
+{
+	return populate_fs2(fs, parent_ino, source_dir, root, NULL);
 }
