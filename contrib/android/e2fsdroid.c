@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <ext2fs/ext2fs.h>
 
+#include "perms.h"
 #include "base_fs.h"
 #include "block_list.h"
 
@@ -13,11 +14,18 @@ const char *in_file;
 const char *block_list;
 const char *basefs_out;
 const char *mountpoint = "";
+static time_t fixed_time;
+static char *fs_config_file;
+static char *file_contexts;
+static char *product_out;
+static int android_configure;
 int android_sparse_file = 1;
 
 static void usage(int ret)
 {
-	fprintf(stderr, "%s [-B block_list] [-D basefs_out] [-e] image\n",
+	fprintf(stderr, "%s [-B block_list] [-D basefs_out] [-T timestamp]\n"
+			"\t[-C fs_config] [-S file_contexts] [-p product_out]\n"
+			"\t[-a mountpoint] [-e] image\n",
                 prog_name);
 	exit(ret);
 }
@@ -40,6 +48,7 @@ static char *absolute_path(const char *file)
 int main(int argc, char *argv[])
 {
 	int c;
+        char *p;
 	int flags = EXT2_FLAG_RW;
 	errcode_t retval;
 	io_manager io_mgr;
@@ -47,8 +56,26 @@ int main(int argc, char *argv[])
 
 	add_error_table(&et_ext2_error_table);
 
-	while ((c = getopt (argc, argv, "D:B:e")) != EOF) {
+	while ((c = getopt (argc, argv, "T:C:S:p:a:D:B:e")) != EOF) {
 		switch (c) {
+		case 'T':
+			fixed_time = strtoul(optarg, &p, 0);
+			android_configure = 1;
+			break;
+		case 'C':
+			fs_config_file = absolute_path(optarg);
+			android_configure = 1;
+			break;
+		case 'S':
+			file_contexts = absolute_path(optarg);
+			android_configure = 1;
+			break;
+		case 'p':
+			product_out = strdup(optarg);
+			break;
+		case 'a':
+			mountpoint = strdup(optarg);
+			break;
 		case 'D':
 			basefs_out = absolute_path(optarg);
 			break;
@@ -73,6 +100,16 @@ int main(int argc, char *argv[])
 	if (retval) {
 		com_err(prog_name, retval, "while opening file %s\n", in_file);
 		return retval;
+	}
+
+	if (android_configure) {
+		retval = android_configure_fs(fs, product_out, mountpoint,
+			file_contexts, fs_config_file, fixed_time);
+		if (retval) {
+			com_err(prog_name, retval, "%s",
+				"while configuring the file system");
+			exit(1);
+		}
 	}
 
 	if (block_list) {
