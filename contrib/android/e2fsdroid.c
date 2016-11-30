@@ -5,17 +5,20 @@
 #include <limits.h>
 #include <ext2fs/ext2fs.h>
 
+#include "base_fs.h"
 #include "block_list.h"
 
 const char *prog_name = "e2fsdroid";
 const char *in_file;
 const char *block_list;
+const char *basefs_out;
 const char *mountpoint = "";
 int android_sparse_file = 1;
 
 static void usage(int ret)
 {
-	fprintf(stderr, "%s [-B block_list] [-e] image\n", prog_name);
+	fprintf(stderr, "%s [-B block_list] [-D basefs_out] [-e] image\n",
+                prog_name);
 	exit(ret);
 }
 
@@ -44,8 +47,11 @@ int main(int argc, char *argv[])
 
 	add_error_table(&et_ext2_error_table);
 
-	while ((c = getopt (argc, argv, "B:e")) != EOF) {
+	while ((c = getopt (argc, argv, "D:B:e")) != EOF) {
 		switch (c) {
+		case 'D':
+			basefs_out = absolute_path(optarg);
+			break;
 		case 'B':
 			block_list = absolute_path(optarg);
 			break;
@@ -74,7 +80,17 @@ int main(int argc, char *argv[])
 					   mountpoint);
 		if (retval) {
 			com_err(prog_name, retval, "%s",
-				"while creating block_list");
+				"while creating the block_list");
+			exit(1);
+		}
+	}
+
+	if (basefs_out) {
+		retval = fsmap_iter_filsys(fs, &base_fs_format,
+					   basefs_out, mountpoint);
+		if (retval) {
+			com_err(prog_name, retval, "%s",
+				"while creating the basefs file");
 			exit(1);
 		}
 	}

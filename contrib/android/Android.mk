@@ -3,7 +3,8 @@ LOCAL_PATH:= $(call my-dir)
 e2fsdroid_src := e2fsdroid.c \
     block_range.c \
     fsmap.c \
-    block_list.c
+    block_list.c \
+    base_fs.c
 
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(e2fsdroid_src)
