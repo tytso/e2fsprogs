@@ -8,24 +8,28 @@
 #include "perms.h"
 #include "base_fs.h"
 #include "block_list.h"
+#include "basefs_allocator.h"
+#include "create_inode.h"
 
-const char *prog_name = "e2fsdroid";
-const char *in_file;
-const char *block_list;
-const char *basefs_out;
-const char *mountpoint = "";
+static char *prog_name = "e2fsdroid";
+static char *in_file;
+static char *block_list;
+static char *basefs_out;
+static char *basefs_in;
+static char *mountpoint = "";
 static time_t fixed_time;
 static char *fs_config_file;
 static char *file_contexts;
 static char *product_out;
+static char *src_dir;
 static int android_configure;
-int android_sparse_file = 1;
+static int android_sparse_file = 1;
 
 static void usage(int ret)
 {
 	fprintf(stderr, "%s [-B block_list] [-D basefs_out] [-T timestamp]\n"
 			"\t[-C fs_config] [-S file_contexts] [-p product_out]\n"
-			"\t[-a mountpoint] [-e] image\n",
+			"\t[-a mountpoint] [-d basefs_in] [-f src_dir] [-e] image\n",
                 prog_name);
 	exit(ret);
 }
@@ -53,10 +57,11 @@ int main(int argc, char *argv[])
 	errcode_t retval;
 	io_manager io_mgr;
 	ext2_filsys fs = NULL;
+        struct fs_ops_callbacks fs_callbacks = { NULL, NULL };
 
 	add_error_table(&et_ext2_error_table);
 
-	while ((c = getopt (argc, argv, "T:C:S:p:a:D:B:e")) != EOF) {
+	while ((c = getopt (argc, argv, "T:C:S:p:a:D:d:B:f:e")) != EOF) {
 		switch (c) {
 		case 'T':
 			fixed_time = strtoul(optarg, &p, 0);
@@ -79,8 +84,14 @@ int main(int argc, char *argv[])
 		case 'D':
 			basefs_out = absolute_path(optarg);
 			break;
+		case 'd':
+			basefs_in = absolute_path(optarg);
+			break;
 		case 'B':
 			block_list = absolute_path(optarg);
+			break;
+		case 'f':
+			src_dir = absolute_path(optarg);
 			break;
 		case 'e':
 			android_sparse_file = 0;
@@ -100,6 +111,31 @@ int main(int argc, char *argv[])
 	if (retval) {
 		com_err(prog_name, retval, "while opening file %s\n", in_file);
 		return retval;
+	}
+
+	if (src_dir) {
+		ext2fs_read_bitmaps(fs);
+		if (basefs_in) {
+			retval = base_fs_alloc_load(fs, basefs_in, mountpoint);
+			if (retval) {
+				com_err(prog_name, retval, "%s",
+				"while reading base_fs file");
+			    exit(1);
+			}
+			fs_callbacks.create_new_inode =
+				base_fs_alloc_set_target;
+			fs_callbacks.end_create_new_inode =
+				base_fs_alloc_unset_target;
+		}
+		retval = populate_fs2(fs, EXT2_ROOT_INO, src_dir,
+				      EXT2_ROOT_INO, &fs_callbacks);
+		if (retval) {
+			com_err(prog_name, retval, "%s",
+			"while populating file system");
+		    exit(1);
+		}
+		if (basefs_in)
+			base_fs_alloc_cleanup(fs);
 	}
 
 	if (android_configure) {
