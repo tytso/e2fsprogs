@@ -34,3 +34,26 @@ LOCAL_SHARED_LIBRARIES := libext2fs \
     libselinux \
     libcrypto
 include $(BUILD_EXECUTABLE)
+
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := ext2simg.c
+LOCAL_MODULE := ext2simg
+LOCAL_SHARED_LIBRARIES += \
+    libext2fs \
+    libext2_com_err \
+    libsparse \
+    libz
+include $(BUILD_EXECUTABLE)
+
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := ext2simg.c
+LOCAL_MODULE := ext2simg
+LOCAL_SHARED_LIBRARIES += \
+    libext2fs-host \
+    libext2_com_err-host
+LOCAL_STATIC_LIBRARIES += \
+    libsparse_host \
+    libz
+include $(BUILD_HOST_EXECUTABLE)
