@@ -1,7 +1,6 @@
+#define _GNU_SOURCE
+
 #include "block_range.h"
-#ifndef _GNU_SOURCE
-# define _GNU_SOURCE
-#endif
 #include <stdio.h>
 
 struct block_range *new_block_range(blk64_t start, blk64_t end)
