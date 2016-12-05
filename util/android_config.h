@@ -1,8 +1,4 @@
-/* work around bug in AndroidConfig.h */
-#ifdef HAVE_MALLOC_H
-#undef HAVE_MALLOC_H
 #define HAVE_MALLOC_H 1
-#endif
 
 #define ROOT_SYSCONFDIR "/etc"
 
@@ -24,6 +20,7 @@
 #define HAVE_LSEEK64_PROTOTYPE 1
 #endif
 #define HAVE_MMAP 1
+#define HAVE_MNTENT_H 1
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NET_IF_H 1
 #define HAVE_POSIX_MEMALIGN 1
@@ -36,6 +33,7 @@
 #define HAVE_PWRITE64 1
 #endif
 #define HAVE_SETJMP_H 1
+#define HAVE_SETMNTENT 1
 #define HAVE_SNPRINTF 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRCASECMP 1

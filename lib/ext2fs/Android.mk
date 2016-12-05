@@ -102,7 +102,7 @@ libext2fs_system_static_libraries := libc
 
 libext2fs_c_includes := external/e2fsprogs/lib
 
-libext2fs_cflags := -O2 -g -W -Wall
+libext2fs_cflags := -O2 -g -W -Wall -Wno-unused-parameter
 
 include $(CLEAR_VARS)
 
