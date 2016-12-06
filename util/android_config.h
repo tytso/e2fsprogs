@@ -1,4 +1,6 @@
+#ifndef __APPLE__
 #define HAVE_MALLOC_H 1
+#endif
 
 #define ROOT_SYSCONFDIR "/etc"
 
@@ -20,7 +22,9 @@
 #define HAVE_LSEEK64_PROTOTYPE 1
 #endif
 #define HAVE_MMAP 1
+#ifdef __linux__
 #define HAVE_MNTENT_H 1
+#endif
 #define HAVE_NETINET_IN_H 1
 #define HAVE_NET_IF_H 1
 #define HAVE_POSIX_MEMALIGN 1
@@ -33,7 +37,9 @@
 #define HAVE_PWRITE64 1
 #endif
 #define HAVE_SETJMP_H 1
+#ifdef __linux__
 #define HAVE_SETMNTENT 1
+#endif
 #define HAVE_SNPRINTF 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRCASECMP 1
