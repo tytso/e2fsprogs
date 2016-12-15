@@ -245,8 +245,12 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *target_out,
 		.sehnd = sehnd,
 		.fixed_time = fixed_time,
 		.path = mountpoint,
-                .filename = mountpoint,
+		.filename = mountpoint,
 	};
+
+	/* walk_dir will add the "/". Don't add it twice. */
+	if (strlen(mountpoint) == 1 && mountpoint[0] == '/')
+		params.path = "";
 
 	retval = set_selinux_xattr(fs, EXT2_ROOT_INO, &params);
 	if (retval)
