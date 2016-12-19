@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 			android_configure = 1;
 			break;
 		case 'p':
-			product_out = strdup(optarg);
+			product_out = absolute_path(optarg);
 			break;
 		case 'a':
 			mountpoint = strdup(optarg);
