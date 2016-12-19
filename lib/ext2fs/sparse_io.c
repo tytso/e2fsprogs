@@ -251,6 +251,35 @@ static errcode_t sparsefd_open(const char *name, int flags, io_channel *channel)
 	return retval;
 }
 
+static errcode_t sparse_merge_blocks(struct sparse_map *sm, uint64_t start,
+					uint64_t num)
+{
+	char *buf;
+	uint64_t i;
+	unsigned int block_size = sm->block_size;
+	errcode_t retval = 0;
+
+	buf = calloc(num, block_size);
+	if (!buf) {
+		fprintf(stderr, "failed to alloc %lu\n", num * block_size);
+		return EXT2_ET_NO_MEMORY;
+	}
+
+	for (i = 0; i < num; i++) {
+		memcpy(buf + i * block_size, sm->blocks[start + i] , block_size);
+		free(sm->blocks[start + i]);
+		sm->blocks[start + i] = NULL;
+	}
+
+	/* free_sparse_blocks will release this buf. */
+	sm->blocks[start] = buf;
+
+	retval = sparse_file_add_data(sm->sparse_file, sm->blocks[start],
+					block_size * num, start);
+
+	return retval;
+}
+
 static errcode_t sparse_close_channel(io_channel channel)
 {
 	uint64_t i;
@@ -258,12 +287,20 @@ static errcode_t sparse_close_channel(io_channel channel)
 	struct sparse_map *sm = channel->private_data;
 
 	if (sm->sparse_file) {
+		int64_t chunk_start = (sm->blocks[0] == NULL) ? -1 : 0;
 		for (i = 0; i < sm->blocks_count; ++i) {
-			if (!sm->blocks[i])
-				continue;
-			retval = sparse_file_add_data(sm->sparse_file,
-						      sm->blocks[i],
-						      sm->block_size, i);
+			if (!sm->blocks[i] && chunk_start != -1) {
+				retval = sparse_merge_blocks(sm, chunk_start, i - chunk_start);
+				chunk_start = -1;
+			} else if (sm->blocks[i] && chunk_start == -1) {
+				chunk_start = i;
+			}
+			if (retval)
+				goto ret;
+		}
+		if (chunk_start != -1) {
+			retval = sparse_merge_blocks(sm, chunk_start,
+							sm->blocks_count - chunk_start);
 			if (retval)
 				goto ret;
 		}
