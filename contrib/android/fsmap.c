@@ -87,31 +87,33 @@ static int walk_ext_dir(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		return retval;
 	format->end_new_file(format->private);
 
+	retval = 0;
 	if (is_dir(pdata->fs, de->inode)) {
 		cur_path = pdata->path;
 		pdata->path = filename;
-		ext2fs_dir_iterate2(pdata->fs, de->inode, 0, NULL,
+		retval = ext2fs_dir_iterate2(pdata->fs, de->inode, 0, NULL,
 				    walk_ext_dir, pdata);
 		pdata->path = cur_path;
 	}
 
 end:
 	free(filename);
-	return 0;
+	return retval;
 }
 
 errcode_t fsmap_iter_filsys(ext2_filsys fs, struct fsmap_format *format,
 			    const char *file, const char *mountpoint)
 {
 	struct walk_ext_priv_data pdata;
+	errcode_t retval;
 
 	format->private = format->init(file, mountpoint);
 	pdata.fs = fs;
 	pdata.path = "";
 	pdata.format = format;
 
-	ext2fs_dir_iterate2(fs, EXT2_ROOT_INO, 0, NULL, walk_ext_dir, &pdata);
+	retval = ext2fs_dir_iterate2(fs, EXT2_ROOT_INO, 0, NULL, walk_ext_dir, &pdata);
 
 	format->cleanup(format->private);
-	return 0;
+	return retval;
 }
