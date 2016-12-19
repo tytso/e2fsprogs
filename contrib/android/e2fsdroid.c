@@ -17,7 +17,7 @@ static char *block_list;
 static char *basefs_out;
 static char *basefs_in;
 static char *mountpoint = "";
-static time_t fixed_time;
+static time_t fixed_time = -1;
 static char *fs_config_file;
 static char *file_contexts;
 static char *product_out;
@@ -52,12 +52,12 @@ static char *absolute_path(const char *file)
 int main(int argc, char *argv[])
 {
 	int c;
-        char *p;
+	char *p;
 	int flags = EXT2_FLAG_RW;
 	errcode_t retval;
 	io_manager io_mgr;
 	ext2_filsys fs = NULL;
-        struct fs_ops_callbacks fs_callbacks = { NULL, NULL };
+	struct fs_ops_callbacks fs_callbacks = { NULL, NULL };
 
 	add_error_table(&et_ext2_error_table);
 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (android_configure) {
-		retval = android_configure_fs(fs, product_out, mountpoint,
+		retval = android_configure_fs(fs, src_dir, product_out, mountpoint,
 			file_contexts, fs_config_file, fixed_time);
 		if (retval) {
 			com_err(prog_name, retval, "%s",

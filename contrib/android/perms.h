@@ -12,6 +12,7 @@ typedef void (*fs_config_f)(const char *path, int dir,
 # ifdef _WIN32
 struct selabel_handle;
 static inline errcode_t android_configure_fs(ext2_filsys fs,
+					     char *src_dir,
 					     char *target_out,
 					     char *mountpoint,
 					     char *file_contexts,
@@ -29,7 +30,8 @@ static inline errcode_t android_configure_fs(ext2_filsys fs,
 #  include <private/android_filesystem_config.h>
 #  include <private/canned_fs_config.h>
 
-errcode_t android_configure_fs(ext2_filsys fs, char *target_out,
+errcode_t android_configure_fs(ext2_filsys fs, char *src_dir,
+			       char *target_out,
 			       char *mountpoint,
 			       char *file_contexts,
 			       char *fs_config_file, time_t fixed_time);

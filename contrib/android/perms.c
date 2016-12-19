@@ -17,7 +17,9 @@ struct inode_params {
 	ext2_filsys fs;
 	char *path;
 	char *filename;
+	char *src_dir;
 	char *target_out;
+	char *mountpoint;
 	fs_config_f fs_config_func;
 	struct selabel_handle *sehnd;
 	time_t fixed_time;
@@ -141,25 +143,42 @@ static errcode_t set_timestamp(ext2_filsys fs, ext2_ino_t ino,
 {
 	errcode_t retval;
 	struct ext2_inode inode;
+	struct stat stat;
+	char *src_filename = NULL;
 
-	if (params->fixed_time != -1) {
-		retval = ext2fs_read_inode(fs, ino, &inode);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while reading inode %u"), ino);
-			return retval;
-		}
-		inode.i_atime = 0;
-		inode.i_mtime = inode.i_ctime = params->fixed_time;
-		retval = ext2fs_write_inode(fs, ino, &inode);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while writting inode %u"), ino);
-			return retval;
-		}
+	retval = ext2fs_read_inode(fs, ino, &inode);
+	if (retval) {
+		com_err(__func__, retval,
+			_("while reading inode %u"), ino);
+		return retval;
 	}
 
-	return 0;
+	if (params->fixed_time == -1) {
+		/* replace mountpoint from filename with src_dir */
+		if (asprintf(&src_filename, "%s/%s", params->src_dir,
+					params->filename + strlen(params->mountpoint)) < 0)
+			return -ENOMEM;
+		retval = lstat(src_filename, &stat);
+		if (retval < 0) {
+			com_err(__func__, retval,
+				_("while lstat file %s"), src_filename);
+			goto end;
+		}
+		inode.i_atime = inode.i_ctime = inode.i_mtime = stat.st_mtime;
+	} else {
+		inode.i_atime = inode.i_ctime = inode.i_mtime = params->fixed_time;
+	}
+
+	retval = ext2fs_write_inode(fs, ino, &inode);
+	if (retval) {
+		com_err(__func__, retval,
+			_("while writting inode %u"), ino);
+		goto end;
+	}
+
+end:
+	free(src_filename);
+	return retval;
 }
 
 static int is_dir(ext2_filsys fs, ext2_ino_t ino)
@@ -231,7 +250,8 @@ end:
 	return retval;
 }
 
-errcode_t __android_configure_fs(ext2_filsys fs, char *target_out,
+errcode_t __android_configure_fs(ext2_filsys fs, char *src_dir,
+				 char *target_out,
 				 char *mountpoint,
 				 fs_config_f fs_config_func,
 				 struct selabel_handle *sehnd,
@@ -240,12 +260,14 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *target_out,
 	errcode_t retval;
 	struct inode_params params = {
 		.fs = fs,
+		.src_dir = src_dir,
 		.target_out = target_out,
 		.fs_config_func = fs_config_func,
 		.sehnd = sehnd,
 		.fixed_time = fixed_time,
 		.path = mountpoint,
 		.filename = mountpoint,
+		.mountpoint = mountpoint,
 	};
 
 	/* walk_dir will add the "/". Don't add it twice. */
@@ -263,7 +285,7 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *target_out,
 				   &params);
 }
 
-errcode_t android_configure_fs(ext2_filsys fs, char *target_out,
+errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 			       char *mountpoint,
 			       char *file_contexts,
 			       char *fs_config_file, time_t fixed_time)
@@ -298,6 +320,6 @@ errcode_t android_configure_fs(ext2_filsys fs, char *target_out,
 	} else if (mountpoint)
 		fs_config_func = fs_config;
 
-	return __android_configure_fs(fs, target_out, mountpoint,
+	return __android_configure_fs(fs, src_dir, target_out, mountpoint,
 				      fs_config_func, sehnd, fixed_time);
 }
