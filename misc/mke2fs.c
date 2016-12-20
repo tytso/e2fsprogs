@@ -3227,7 +3227,7 @@ no_journal:
 	retval = ext2fs_close_free(&fs);
 	if (retval) {
 		fprintf(stderr, "%s",
-			_("\nWarning, had trouble writing out superblocks."));
+			_("\nWarning, had trouble writing out superblocks.\n"));
 	} else if (!quiet) {
 		printf("%s", _("done\n\n"));
 		if (!getenv("MKE2FS_SKIP_CHECK_MSG"))

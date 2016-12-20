@@ -1030,7 +1030,8 @@ static errcode_t unix_flush(io_channel channel)
 #ifndef NO_IO_CACHE
 	retval = flush_cached_blocks(channel, data, 0);
 #endif
-	fsync(data->dev);
+	if (!retval && fsync(data->dev) != 0)
+		return errno;
 	return retval;
 }
 

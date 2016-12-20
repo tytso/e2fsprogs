@@ -429,16 +429,22 @@ write_primary_superblock_only:
 	if (retval)
 		return retval;
 
-	if (!(flags & EXT2_FLAG_FLUSH_NO_SYNC))
+	if (!(flags & EXT2_FLAG_FLUSH_NO_SYNC)) {
 		retval = io_channel_flush(fs->io);
+		if (retval)
+			goto errout;
+	}
 	retval = write_primary_superblock(fs, super_shadow);
 	if (retval)
 		goto errout;
 
 	fs->flags &= ~EXT2_FLAG_DIRTY;
 
-	if (!(flags & EXT2_FLAG_FLUSH_NO_SYNC))
+	if (!(flags & EXT2_FLAG_FLUSH_NO_SYNC)) {
 		retval = io_channel_flush(fs->io);
+		if (retval)
+			goto errout;
+	}
 errout:
 	fs->super->s_state = fs_state;
 #ifdef WORDS_BIGENDIAN
