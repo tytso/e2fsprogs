@@ -196,16 +196,21 @@ static errcode_t read_sparse_argv(const char *name, bool is_fd,
 {
 	int ret;
 	sparse_params->fd = -1;
-	sparse_params->file = NULL;
 	sparse_params->block_size = 0;
 	sparse_params->blocks_count = 0;
+
+	sparse_params->file = malloc(strlen(name) + 1);
+	if (!sparse_params->file) {
+		fprintf(stderr, "failed to alloc %zu\n", strlen(name) + 1);
+		return EXT2_ET_NO_MEMORY;
+	}
 
 	if (is_fd) {
 		ret = sscanf(name, "%d:%llu:%u", &sparse_params->fd,
 			     (unsigned long long *)&sparse_params->blocks_count,
 			     &sparse_params->block_size);
 	} else {
-		ret = sscanf(name, "%m[^:]:%llu%*[:]%u", &sparse_params->file,
+		ret = sscanf(name, "%[^:]%*[:]%llu%*[:]%u", sparse_params->file,
 			     (unsigned long long *)&sparse_params->blocks_count,
 			     &sparse_params->block_size);
 	}
