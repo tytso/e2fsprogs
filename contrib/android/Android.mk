@@ -54,6 +54,6 @@ LOCAL_SHARED_LIBRARIES += \
     libext2fs-host \
     libext2_com_err-host
 LOCAL_STATIC_LIBRARIES += \
-    libsparse_host \
+    libsparse \
     libz
 include $(BUILD_HOST_EXECUTABLE)
