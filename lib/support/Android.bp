@@ -1,0 +1,53 @@
+// Copyright 2017 The Android Open Source Project
+
+cc_library {
+    name: "libext2_quota",
+    host_supported: true,
+    unique_host_soname: true,
+    srcs: [
+        "dict.c",
+        "mkquota.c",
+        "parse_qtype.c",
+        "plausible.c",
+        "profile.c",
+        "profile_helpers.c",
+        "prof_err.c",
+        "quotaio.c",
+        "quotaio_tree.c",
+        "quotaio_v2.c",
+    ],
+    shared_libs: [
+        "libext2fs",
+        "libext2_com_err",
+        "libext2_blkid",
+    ],
+
+    cflags: [
+        "-W",
+        "-Wall",
+    ],
+
+    header_libs: ["libext2-headers"],
+    export_include_dirs: ["."],
+    export_header_lib_headers: ["libext2-headers"],
+}
+
+cc_library_shared {
+    name: "libext2_profile",
+    host_supported: true,
+    unique_host_soname: true,
+
+    srcs: [
+        "prof_err.c",
+        "profile.c",
+    ],
+    cflags = [
+        "-W",
+        "-Wall",
+    ],
+    shared_libs: ["libext2_com_err"],
+
+    header_libs: ["libext2-headers"],
+    export_include_dirs: ["."],
+    export_header_lib_headers: ["libext2-headers"],
+}

@@ -1,0 +1,55 @@
+// Copyright 2017 The Android Open Source Project
+
+//##########################################################################
+// Build e2fsdroid
+
+cc_binary {
+    name: "e2fsdroid",
+    host_supported: true,
+
+    srcs: [
+        "e2fsdroid.c",
+        "block_range.c",
+        "fsmap.c",
+        "block_list.c",
+        "base_fs.c",
+        "perms.c",
+        "basefs_allocator.c",
+        "hashmap.c",
+    ],
+    cflags: ["-W", "-Wall"],
+    shared_libs: [
+        "libext2fs",
+        "libext2_com_err",
+        "libext2_misc",
+        "libcutils",
+        "libbase",
+        "libselinux",
+        "libcrypto",
+    ],
+}
+
+//##########################################################################
+// Build ext2simg
+
+cc_binary {
+    name: "ext2simg",
+    host_supported: true,
+
+    srcs: ["ext2simg.c"],
+    cflags: ["-W", "-Wall"],
+    shared_libs: [
+        "libext2fs",
+        "libext2_com_err",
+        "libsparse",
+    ],
+
+    target: {
+        host: {
+            shared_libs: ["libz-host"],
+        },
+        android: {
+            shared_libs: ["libz"],
+        },
+    },
+}
