@@ -86,7 +86,7 @@ static errcode_t set_selinux_xattr(ext2_filsys fs, ext2_ino_t ino,
 	if (retval < 0) {
 		com_err(__func__, retval,
 			_("searching for label \"%s\""), params->filename);
-		return retval;
+		exit(1);
 	}
 
 	retval = ino_add_xattr(fs, ino,  "security." XATTR_SELINUX_SUFFIX,
