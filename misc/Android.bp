@@ -85,7 +85,7 @@ cc_binary {
     static_executable: true,
     defaults: ["tune2fs-defaults"],
 
-    static_libs: tune2fs_libs,
+    static_libs: tune2fs_libs + ["libc"],
 }
 
 cc_library_static {
@@ -159,7 +159,7 @@ cc_binary {
     static_executable: true,
     defaults: ["lsattr-defaults"],
 
-    static_libs: lsattr_libs,
+    static_libs: lsattr_libs + ["libc"],
 }
 
 //########################################################################
