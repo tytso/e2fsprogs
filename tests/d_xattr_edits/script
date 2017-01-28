@@ -96,6 +96,12 @@ status=$?
 echo Exit status is $status >> $OUT.new
 sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 
+echo "ea_get / user.file_based_xattr" > $OUT.new
+$DEBUGFS -w -R "ea_get / user.file_based_xattr" $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
+
 echo "ea_get -f $VERIFY_DATA / user.file_based_xattr" > $OUT.new
 $DEBUGFS -w -R "ea_get -f $VERIFY_DATA / user.file_based_xattr" $TMPFILE >> $OUT.new 2>&1
 status=$?

@@ -7,11 +7,12 @@ ea_set / user.moo FEE_FIE_FOE_FUMMMMMM
 Exit status is 0
 ea_list /
 Extended attributes:
-  user.joe = "smith" (5)
-  user.moo = "FEE_FIE_FOE_FUMMMMMM" (20)
+  user.joe (5) = "smith"
+  user.moo (20) = "FEE_FIE_FOE_FUMMMMMM"
 Exit status is 0
 ea_get / user.moo
-FEE_FIE_FOE_FUMMMMMM
+user.moo (20) = "FEE_FIE_FOE_FUMMMMMM"
+
 Exit status is 0
 ea_get / nosuchea
 ea_get: Extended attribute key not found while getting extended attribute
@@ -22,7 +23,7 @@ ea_rm / nosuchea
 Exit status is 0
 ea_list /
 Extended attributes:
-  user.joe = "smith" (5)
+  user.joe (5) = "smith"
 Exit status is 0
 ea_get / user.moo
 ea_get: Extended attribute key not found while getting extended attribute
@@ -35,7 +36,11 @@ ea_set -f d_xattr_edits.tmp / user.file_based_xattr
 Exit status is 0
 ea_list /
 Extended attributes:
-  user.file_based_xattr = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567\012" (108)
+  user.file_based_xattr (108)
+Exit status is 0
+ea_get / user.file_based_xattr
+user.file_based_xattr (108) = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567\n"
+
 Exit status is 0
 ea_get -f d_xattr_edits.ver.tmp / user.file_based_xattr
 Exit status is 0
