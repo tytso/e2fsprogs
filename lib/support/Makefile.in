@@ -12,7 +12,8 @@ INSTALL = @INSTALL@
 
 all::
 
-OBJS=		mkquota.o \
+OBJS=		cstring.o \
+		mkquota.o \
 		plausible.o \
 		profile.o \
 		parse_qtype.o \
@@ -24,6 +25,7 @@ OBJS=		mkquota.o \
 		dict.o
 
 SRCS=		$(srcdir)/argv_parse.c \
+		$(srcdir)/cstring.c \
 		$(srcdir)/mkquota.c \
 		$(srcdir)/parse_qtype.c \
 		$(srcdir)/plausible.c \
@@ -67,10 +69,15 @@ test_profile: $(srcdir)/profile.c profile_helpers.o argv_parse.o \
 		profile_helpers.o argv_parse.o $(STATIC_LIBCOM_ERR) \
 		$(ALL_CFLAGS)
 
+test_cstring: $(srcdir)/cstring.c
+	$(E) " CC $@"
+	$(Q) $(CC) -o test_cstring -DDEBUG_PROGRAM $(srcdir)/cstring.c \
+		$(ALL_CFLAGS)
+
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* \
 		../libsupport.a ../libsupport_p.a $(SMANPAGES) \
-		prof_err.c prof_err.h test_profile
+		prof_err.c prof_err.h test_profile test_cstring
 
 #check:: tst_uuid
 #	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_uuid
@@ -96,6 +103,8 @@ $(OBJS):
 #
 argv_parse.o: $(srcdir)/argv_parse.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/argv_parse.h
+cstring.o: $(srcdir)/cstring.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h
 mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
