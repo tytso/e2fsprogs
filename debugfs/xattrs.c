@@ -146,10 +146,11 @@ void do_get_xattr(int argc, char **argv)
 	size_t buflen;
 	int i;
 	int print_flags = 0;
+	int handle_flags = 0;
 	errcode_t err;
 
 	reset_getopt();
-	while ((i = getopt(argc, argv, "Cf:xV")) != -1) {
+	while ((i = getopt(argc, argv, "Cf:rxV")) != -1) {
 		switch (i) {
 		case 'f':
 			if (fp)
@@ -159,6 +160,9 @@ void do_get_xattr(int argc, char **argv)
 				perror(optarg);
 				return;
 			}
+			break;
+		case 'r':
+			handle_flags |= XATTR_HANDLE_FLAG_RAW;
 			break;
 		case 'x':
 			print_flags |= PRINT_XATTR_HEX;
@@ -176,8 +180,9 @@ void do_get_xattr(int argc, char **argv)
 
 	if (optind != argc - 2) {
 	usage:
-		printf("%s: Usage: %s <file> <attr> [-f outfile]|[-xVC]\n",
+		printf("%s: Usage: %s [-f outfile]|[-xVC] [-r] <file> <attr>\n",
 			       argv[0], argv[0]);
+
 		goto out2;
 	}
 
@@ -191,6 +196,10 @@ void do_get_xattr(int argc, char **argv)
 	err = ext2fs_xattrs_open(current_fs, ino, &h);
 	if (err)
 		goto out2;
+
+	err = ext2fs_xattrs_flags(h, &handle_flags, NULL);
+	if (err)
+		goto out;
 
 	err = ext2fs_xattrs_read(h);
 	if (err)
@@ -231,11 +240,13 @@ void do_set_xattr(int argc, char **argv)
 	FILE *fp = NULL;
 	char *buf = NULL;
 	size_t buflen;
+	int print_flags = 0;
+	int handle_flags = 0;
 	int i;
 	errcode_t err;
 
 	reset_getopt();
-	while ((i = getopt(argc, argv, "f:")) != -1) {
+	while ((i = getopt(argc, argv, "f:r")) != -1) {
 		switch (i) {
 		case 'f':
 			if (fp)
@@ -246,6 +257,9 @@ void do_set_xattr(int argc, char **argv)
 				return;
 			}
 			break;
+		case 'r':
+			handle_flags |= XATTR_HANDLE_FLAG_RAW;
+			break;
 		default:
 			goto print_usage;
 		}
@@ -254,7 +268,7 @@ void do_set_xattr(int argc, char **argv)
 	if (!(fp && optind == argc - 2) && !(!fp && optind == argc - 3)) {
 	print_usage:
 		printf("Usage:\t%s <file> <attr> <value>\n", argv[0]);
-		printf("\t%s -f <value_file> <file> <attr>\n", argv[0]);
+		printf("\t%s -f <value_file> [-r] <file> <attr>\n", argv[0]);
 		goto out2;
 	}
 
@@ -272,6 +286,10 @@ void do_set_xattr(int argc, char **argv)
 	err = ext2fs_xattrs_open(current_fs, ino, &h);
 	if (err)
 		goto out2;
+
+	err = ext2fs_xattrs_flags(h, &handle_flags, NULL);
+	if (err)
+		goto out;
 
 	err = ext2fs_xattrs_read(h);
 	if (err)
