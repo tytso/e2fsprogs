@@ -1186,17 +1186,17 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 	/* Expand array, append slot */
 	err = ext2fs_xattrs_expand(handle, 4);
 	if (err)
-		return err;
+		goto errout;
 
 	x = handle->attrs + handle->length - 4;
 	err = ext2fs_get_mem(strlen(key) + 1, &x->name);
 	if (err)
-		return err;
+		goto errout;
 	strcpy(x->name, key);
 
 	err = ext2fs_get_mem(value_len, &x->value);
 	if (err)
-		return err;
+		goto errout;
 	memcpy(x->value, value, value_len);
 	x->value_len = value_len;
 	handle->dirty = 1;
