@@ -9,33 +9,33 @@ e2label \- Change the label on an ext2/ext3/ext4 filesystem
 .B e2label
 .I device
 [
-.I new-label
+.I volume-label
 ]
 .SH DESCRIPTION
 .B e2label
-will display or change the filesystem label on the ext2, ext3, or ext4 
+will display or change the volume label on the ext2, ext3, or ext4
 filesystem located on
 .I device.  
 .PP
 If the optional argument 
-.I new-label
+.I volume-label
 is not present, 
 .B e2label
-will simply display the current filesystem label.
+will simply display the current volume label.
 .PP
 If the optional argument
-.I new-label
+.I volume-label
 is present, then 
 .B e2label
-will set the filesystem label to be
-.IR new-label .
-Ext2 filesystem labels can be at most 16 characters long; if
-.I new-label 
+will set the volume label to be
+.IR volume-label .
+Ext2 volume labels can be at most 16 characters long; if
+.I volume-label
 is longer than 16 characters, 
 .B e2label
 will truncate it and print a warning message.  
 .PP
-It is also possible to set the filesystem label using the
+It is also possible to set the volume label using the
 .B \-L
 option of 
 .BR tune2fs (8).
