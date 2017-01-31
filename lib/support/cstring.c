@@ -52,7 +52,7 @@ int parse_c_string(char *str)
 				else if (ch >= 'A' && ch <= 'F')
 					v = ch + 10 - 'A';
 				else {
-					ch = *from;
+					*to = 'x';
 					break;
 				}
 				from++;
@@ -64,7 +64,8 @@ int parse_c_string(char *str)
 				else if (ch >= 'A' && ch <= 'F')
 					v = (v * 16) + (ch + 10 - 'A');
 				else {
-					ch = *from;
+					*to = 'x';
+					from--;
 					break;
 				}
 				from++;
