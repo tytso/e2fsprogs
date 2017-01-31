@@ -510,10 +510,11 @@ static errcode_t try_fiemap_copy(ext2_filsys fs, int fd, ext2_file_t e2_file,
 		if (err < 0 && (errno == EOPNOTSUPP || errno == ENOTTY)) {
 			err = EXT2_ET_UNIMPLEMENTED;
 			goto out;
-		} else if (err < 0 || fiemap_buf->fm_mapped_extents == 0) {
+		} else if (err < 0) {
 			err = errno;
 			goto out;
-		}
+		} else if (fiemap_buf->fm_mapped_extents == 0)
+			goto out;
 		for (i = 0, ext = ext_buf; i < fiemap_buf->fm_mapped_extents;
 		     i++, ext++) {
 			err = copy_file_range(fs, fd, e2_file, ext->fe_logical,
