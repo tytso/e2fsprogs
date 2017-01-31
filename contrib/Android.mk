@@ -31,6 +31,7 @@ LOCAL_CFLAGS := $(fsstress_cflags)
 LOCAL_MODULE := fsstress_host
 LOCAL_MODULE_STEM := fsstress
 LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_HOST_OS := linux
 
 include $(BUILD_HOST_EXECUTABLE)
 

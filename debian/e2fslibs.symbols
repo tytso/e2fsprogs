@@ -606,6 +606,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_xattr_set@Base 1.43
  ext2fs_xattrs_close@Base 1.43
  ext2fs_xattrs_count@Base 1.43
+ ext2fs_xattrs_flags@Base 1.43.4~WIP.2017.01.30
  ext2fs_xattrs_iterate@Base 1.43
  ext2fs_xattrs_open@Base 1.43
  ext2fs_xattrs_read@Base 1.43

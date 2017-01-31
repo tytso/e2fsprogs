@@ -1492,7 +1492,7 @@ static void handle_quota_options(ext2_filsys fs)
 		/* Nothing to do. */
 		return;
 
-	retval = quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
+	retval = quota_init_context(&qctx, fs, 0);
 	if (retval) {
 		com_err(program_name, retval,
 			_("while initializing quota context in support library"));

@@ -60,6 +60,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 
 #if EXT2_FLAT_INCLUDES
@@ -1217,6 +1218,9 @@ errcode_t ext2fs_free_ext_attr(ext2_filsys fs, ext2_ino_t ino,
 errcode_t ext2fs_xattrs_count(struct ext2_xattr_handle *handle, size_t *count);
 errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 				      size_t *size);
+#define XATTR_HANDLE_FLAG_RAW	0x0001
+errcode_t ext2fs_xattrs_flags(struct ext2_xattr_handle *handle,
+			      unsigned int *new_flags, unsigned int *old_flags);
 
 /* extent.c */
 extern errcode_t ext2fs_extent_header_verify(void *ptr, int size);

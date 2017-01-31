@@ -11515,7 +11515,7 @@ if ${_cv_gnu_make_command+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   _cv_gnu_make_command='' ;
-                if test -z "$FORCE_NATIVE_MAKE" ; then
+                if test -n "$FORCE_NATIVE_MAKE" ; then
                    MAKES="make"
                 else
                    MAKES="make gmake gnumake"
@@ -12305,7 +12305,7 @@ fi
 
 
 if test "_$MAKEINFO" = "_"; then
-    MAKEINFO="@echo Makeinfo is missing. Info documentation will not be built.;true"
+    MAKEINFO="echo Makeinfo is missing. Info documentation will not be built."
 else
     case "$MAKEINFO" in
       */missing.*)

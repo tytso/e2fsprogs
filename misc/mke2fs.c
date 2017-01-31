@@ -632,6 +632,7 @@ write_superblock:
 	retval = io_channel_write_blk64(fs->io,
 					fs->super->s_first_data_block+1,
 					1, buf);
+	(void) ext2fs_free_mem(&buf);
 	if (retval) {
 		com_err("create_journal_dev", retval, "%s",
 			_("while writing journal superblock"));
@@ -1138,7 +1139,7 @@ struct str_list {
 static errcode_t init_list(struct str_list *sl)
 {
 	sl->num = 0;
-	sl->max = 0;
+	sl->max = 1;
 	sl->list = malloc((sl->max+1) * sizeof(char *));
 	if (!sl->list)
 		return ENOMEM;
@@ -2089,10 +2090,28 @@ profile_error:
 			EXT2_BLOCK_SIZE(&fs_param));
 		exit(1);
 	}
+	/*
+	 * Guard against group descriptor count overflowing... Mostly to avoid
+	 * strange results for absurdly large devices.
+	 */
+	if (fs_blocks_count > ((1ULL << (fs_param.s_log_block_size + 3 + 32)) - 1)) {
+		fprintf(stderr, _("%s: Size of device (0x%llx blocks) %s "
+				  "too big to create\n\t"
+				  "a filesystem using a blocksize of %d.\n"),
+			program_name, fs_blocks_count, device_name,
+			EXT2_BLOCK_SIZE(&fs_param));
+		exit(1);
+	}
 
 	ext2fs_blocks_count_set(&fs_param, fs_blocks_count);
 
 	if (ext2fs_has_feature_journal_dev(&fs_param)) {
+		int i;
+
+		for (i=0; fs_types[i]; i++) {
+			free(fs_types[i]);
+			fs_types[i] = 0;
+		}
 		fs_types[0] = strdup("journal");
 		fs_types[1] = 0;
 	}
@@ -2702,7 +2721,7 @@ static int create_quota_inodes(ext2_filsys fs)
 	quota_ctx_t qctx;
 	errcode_t retval;
 
-	retval = quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
+	retval = quota_init_context(&qctx, fs, quotatype_bits);
 	if (retval) {
 		com_err(program_name, retval,
 			_("while initializing quota context"));
@@ -3208,7 +3227,7 @@ no_journal:
 	retval = ext2fs_close_free(&fs);
 	if (retval) {
 		fprintf(stderr, "%s",
-			_("\nWarning, had trouble writing out superblocks."));
+			_("\nWarning, had trouble writing out superblocks.\n"));
 	} else if (!quiet) {
 		printf("%s", _("done\n\n"));
 		if (!getenv("MKE2FS_SKIP_CHECK_MSG"))

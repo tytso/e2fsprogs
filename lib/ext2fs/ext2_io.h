@@ -101,6 +101,7 @@ struct struct_io_manager {
 #define IO_FLAG_RW		0x0001
 #define IO_FLAG_EXCLUSIVE	0x0002
 #define IO_FLAG_DIRECT_IO	0x0004
+#define IO_FLAG_FORCE_BOUNCE	0x0008
 
 /*
  * Convenience functions....

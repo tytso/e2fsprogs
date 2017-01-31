@@ -201,6 +201,7 @@ int file_test(badblocks_list bb)
 		printf("Block bitmap NOT matched.\n");
 		test_fail++;
 	}
+	ext2fs_badblocks_list_free(new_bb);
 	return 0;
 }
 
@@ -215,7 +216,7 @@ static void invalid_proc(ext2_filsys fs, blk_t blk)
 	}
 }
 
-int file_test_invalid(badblocks_list bb)
+void file_test_invalid(badblocks_list bb)
 {
 	badblocks_list new_bb = 0;
 	errcode_t	retval;
@@ -234,12 +235,14 @@ int file_test_invalid(badblocks_list bb)
 	if (!f) {
 		fprintf(stderr, "Error opening temp file: %s\n",
 			error_message(errno));
-		return 1;
+		test_fail++;
+		goto out;
 	}
 	retval = ext2fs_write_bb_FILE(bb, 0, f);
 	if (retval) {
 		com_err("file_test", retval, "while writing bad blocks");
-		return 1;
+		test_fail++;
+		goto out;
 	}
 	fprintf(f, "34500\n");
 
@@ -248,7 +251,8 @@ int file_test_invalid(badblocks_list bb)
 	retval = ext2fs_read_bb_FILE(fs, f, &new_bb, invalid_proc);
 	if (retval) {
 		com_err("file_test", retval, "while reading bad blocks");
-		return 1;
+		test_fail++;
+		goto out;
 	}
 	fclose(f);
 	if (!test_expected_fail) {
@@ -263,7 +267,10 @@ int file_test_invalid(badblocks_list bb)
 		printf("Block bitmap NOT matched.\n");
 		test_fail++;
 	}
-	return 0;
+	ext2fs_badblocks_list_free(new_bb);
+out:
+	free(fs->super);
+	free(fs);
 }
 
 int main(int argc, char **argv)
@@ -354,6 +361,8 @@ int main(int argc, char **argv)
 		ext2fs_badblocks_list_free(bb3);
 	if (bb4)
 		ext2fs_badblocks_list_free(bb4);
+	if (bb5)
+		ext2fs_badblocks_list_free(bb5);
 
 	return test_fail;
 

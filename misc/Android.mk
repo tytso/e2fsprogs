@@ -341,6 +341,7 @@ LOCAL_SHARED_LIBRARIES := $(addsuffix -host, $(e4crypt_shared_libraries))
 LOCAL_MODULE := e4crypt_host
 LOCAL_MODULE_STEM := e4crypt
 LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_HOST_OS := linux
 
 include $(BUILD_HOST_EXECUTABLE)
 
