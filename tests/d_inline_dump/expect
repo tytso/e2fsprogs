@@ -12,7 +12,7 @@ crtime: 0x53cec3c8:4a3fd000 -- Tue Jul 22 20:04:24 2014
 Size of extra inode fields: 28
 Extended attributes:
   system.data (20)
-  user.a = "b" (1)
+  user.a (1) = "b"
 Size of inline data: 80
 *** short file
 Inode: 18   Type: regular    Mode:  0644   Flags: 0x10000000
@@ -28,7 +28,7 @@ crtime: 0x53cec443:bda4d400 -- Tue Jul 22 20:06:27 2014
 Size of extra inode fields: 28
 Extended attributes:
   system.data (0)
-  user.a = "b" (1)
+  user.a (1) = "b"
 Size of inline data: 60
 
 *** long dir
@@ -45,7 +45,7 @@ crtime: 0x53cec3fe:c8226000 -- Tue Jul 22 20:05:18 2014
 Size of extra inode fields: 28
 Extended attributes:
   system.data (72)
-  user.a = "b" (1)
+  user.a (1) = "b"
 Size of inline data: 132
 *** short dir
 Inode: 20   Type: directory    Mode:  0755   Flags: 0x10000000
@@ -61,7 +61,7 @@ crtime: 0x53cec477:9a5ba000 -- Tue Jul 22 20:07:19 2014
 Size of extra inode fields: 28
 Extended attributes:
   system.data (0)
-  user.a = "b" (1)
+  user.a (1) = "b"
 Size of inline data: 60
 
 *** long link

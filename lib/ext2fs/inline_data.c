@@ -845,6 +845,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	printf("tst_inline_data(DIR): OK\n");
+	ext2fs_free(fs);
 
 	return 0;
 }

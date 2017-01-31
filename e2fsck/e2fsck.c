@@ -146,6 +146,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_u32_list_free(ctx->encrypted_dirs);
 		ctx->encrypted_dirs = 0;
 	}
+	if (ctx->inode_count) {
+		ext2fs_free_icount(ctx->inode_count);
+		ctx->inode_count = 0;
+	}
 
 	/* Clear statistic counters */
 	ctx->fs_directory_count = 0;

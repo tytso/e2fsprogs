@@ -1,3 +1,58 @@
+E2fsprogs 1.43.4-WIP (January 17, 2017) -- 75a790455c43abf
+=======================================
+
+Fix a bug which was causing mke2fs -d and fuse2fs to improperly handle
+Posix ACL's.
+
+Fix a bug which could cause mke2fs -d to fail if there is an
+zero-length file in source directory tree.
+
+Debugfs will now display project quota information.
+
+Debugfs's do_set_xattr now uses C strings to parse extended attribute
+values, and will print the extended attributes using either C strings
+or hex bytes when using debugfs's do_get_xattr command.  It will now
+allow developers to see the contents of the system.data extended
+attribute.
+
+Fix a bug in mke2fs where I/O errors weren't getting properly reported
+to the user.
+
+Fix multiblock writes in the unaligned Direct I/O fallback code.
+(Which is rarely needed on Linux systems, but which is required on
+Freebsd systems.)
+
+Make sure the default mke2fs.conf file includes the uninit_bg feature
+flag.  (Which was accidentally dropped in v1.43).
+
+Fix a bug in resize2fs when operating on very large file systems which
+have a block size different from the VM page size.
+
+If the reported device size is absurdly large, mke2fs will now report
+an error instead looping forever or crashing.
+
+Replace a test file but which had a "non-commercial use-only"
+copyright permission file with a newer version from the Cyrus imapd
+package which now has a 4-clause BSD license, which was making some
+lawyers nervous, even though the test file in question was only used
+in lib/et's regression testing and was never included in any compiled
+binary.  (Addresses Debian Bug: #840733)
+
+Programming notes
+-----------------
+
+Fix more FreeBSD-11 compatibility bugs, including some unmasked by
+FreeBSD 11-rc2.
+
+Fix the Mac build.
+
+Fix build failure on RHEL 5.x systems caused by an old version of
+libmagic.
+
+Fix a number of bugs reported by ASAN that can cause some (mostly
+harmless) memory dereferences beyond allocated memory.
+
+
 E2fsprogs 1.43.3 (September 4, 2016)
 ====================================
 

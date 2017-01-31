@@ -243,13 +243,16 @@ errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 		if (qctx->quota_file[qtype]) {
 			h = qctx->quota_file[qtype];
 			if (((flags & EXT2_FILE_WRITE) == 0) ||
-			    (h->qh_file_flags & EXT2_FILE_WRITE))
+			    (h->qh_file_flags & EXT2_FILE_WRITE)) {
+				ext2fs_file_close(e2_file);
 				return 0;
+			}
 			(void) quota_file_close(qctx, h);
 		}
 		err = ext2fs_get_mem(sizeof(struct quota_handle), &h);
 		if (err) {
 			log_err("Unable to allocate quota handle");
+			ext2fs_file_close(e2_file);
 			return err;
 		}
 		allocated_handle = 1;

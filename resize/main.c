@@ -505,7 +505,7 @@ int main (int argc, char ** argv)
 		new_size = max_size;
 		/* Round down to an even multiple of a pagesize */
 		if (sys_page_size > blocksize)
-			new_size &= ~((sys_page_size / blocksize)-1);
+			new_size &= ~((blk64_t)((sys_page_size / blocksize)-1));
 	}
 	/* If changing 64bit, don't change the filesystem size. */
 	if (flags & (RESIZE_DISABLE_64BIT | RESIZE_ENABLE_64BIT)) {

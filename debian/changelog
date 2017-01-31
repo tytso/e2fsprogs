@@ -1,3 +1,25 @@
+e2fsprogs (1.43.4~WIP.2017.01.30-1) unstable; urgency=medium
+
+  * Fix a bug which was causing mke2fs -d and fuse2fs to improperly
+    handle Posix ACL's.
+  * Fix a bug which could cause mke2fs -d to fail if there is an
+    zero-length file in source directory tree.
+  * Debugfs will now display project quota information.
+  * Debugfs has a more friendly and powerful to print and set extended
+    attributes.
+  * Fix a bug in mke2fs where I/O errors weren't getting properly
+    reported to the user.
+  * Fix a bug in resize2fs when operating on very large file systems
+    which have a block size different from the VM page size.
+  * If the reported device size is absurdly large, mke2fs will now
+    report an error instead looping forever or crashing.
+  * Replace a test file in the sources with an updated version which has
+    a DFSG-compliant copyright license.  This was making lawyers
+    nervous, even though the file was only used in regression tests and
+    was never used when building any binaries.   (Closes: #840733)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 30 Jan 2017 22:14:07 -0400
+
 e2fsprogs (1.43.3-1) unstable; urgency=medium
 
   * Fix e2fsck's handling of timestamps on 32-bit system (Closes: #836559)

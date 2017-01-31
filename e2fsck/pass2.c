@@ -121,7 +121,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	if (cd.pctx.errcode) {
 		fix_problem(ctx, PR_2_ALLOCATE_ICOUNT, &cd.pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
-		return;
+		goto cleanup;
 	}
 	buf = (char *) e2fsck_allocate_memory(ctx, 2*fs->blocksize,
 					      "directory scan buffer");
@@ -156,17 +156,17 @@ void e2fsck_pass2(e2fsck_t ctx)
 	}
 
 	if (ctx->flags & E2F_FLAG_RUN_RETURN)
-		return;
+		goto cleanup;
 
 	if (cd.pctx.errcode) {
 		fix_problem(ctx, PR_2_DBLIST_ITERATE, &cd.pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
-		return;
+		goto cleanup;
 	}
 
 	for (i=0; (dx_dir = e2fsck_dx_dir_info_iter(ctx, &i)) != 0;) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			return;
+			goto cleanup;
 		if (e2fsck_dir_will_be_rehashed(ctx, dx_dir->ino) ||
 		    dx_dir->numblocks == 0)
 			continue;
@@ -285,6 +285,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 	}
 
 	print_resource_track(ctx, _("Pass 2"), &rtrack, fs->io);
+cleanup:
+	ext2fs_free_mem(&buf);
 }
 
 #define MAX_DEPTH 32000
