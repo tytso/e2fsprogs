@@ -1,3 +1,10 @@
+e2fsprogs (1.43.4-2) unstable; urgency=medium
+
+  * Re-enable metadata_csum for Debian (which was accidentally disabled
+    for 1.43.4-1)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 31 Jan 2017 19:54:55 -0500
+
 e2fsprogs (1.43.4-1) unstable; urgency=medium
 
   * New upstream version
