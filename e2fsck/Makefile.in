@@ -196,7 +196,7 @@ install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
 		$(ES) "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
+	$(Q) for i in ext2 ext3 ext4; do \
 		$(ES) "	LINK $(root_sbindir)/fsck.$$i"; \
 		(cd $(DESTDIR)$(root_sbindir); \
 			$(LN) $(LINK_INSTALL_FLAGS) e2fsck fsck.$$i); \
@@ -215,7 +215,7 @@ install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
 		$(ES) "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
-	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
+	$(Q) for i in ext2 ext3 ext4; do \
 		$(ES) "	LINK $(man8dir)/fsck.$$i.8"; \
 		(cd $(DESTDIR)$(man8dir); \
 			$(LN) $(LINK_INSTALL_FLAGS) e2fsck.8 fsck.$$i.8); \
@@ -233,8 +233,7 @@ uninstall:
 	done
 	$(RM) -f $(DESTDIR)$(root_sbindir)/fsck.ext2 \
 		$(DESTDIR)$(root_sbindir)/fsck.ext3 \
-		$(DESTDIR)$(root_sbindir)/fsck.ext4 \
-		$(DESTDIR)$(root_sbindir)/fsck.ext4dev
+		$(DESTDIR)$(root_sbindir)/fsck.ext4
 	for i in $(MANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
 	done
@@ -243,8 +242,7 @@ uninstall:
 	done
 	$(RM) -f $(DESTDIR)$(root_sbindir)/fsck.ext2 \
 			$(DESTDIR)$(root_sbindir)/fsck.ext3 \
-			$(DESTDIR)$(root_sbindir)/fsck.ext4 \
-			$(DESTDIR)$(root_sbindir)/fsck.ext4dev
+			$(DESTDIR)$(root_sbindir)/fsck.ext4
 
 clean::
 	$(RM) -f $(PROGS) \#* *\# *.s *.o *.a *~ core e2fsck.static \

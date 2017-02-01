@@ -74,7 +74,7 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 ]
 [
 .B \-L
-.I volume-name
+.I volume-label
 ]
 [
 .B \-M
@@ -116,7 +116,7 @@ program.
 The
 .I device
 specifier can either be a filename (i.e., /dev/sda1), or a LABEL or UUID
-specifier: "\fBLABEL=\fIvolume-name\fR" or "\fBUUID=\fIuuid\fR".  (i.e.,
+specifier: "\fBLABEL=\fIvolume-label\fR" or "\fBUUID=\fIuuid\fR".  (i.e.,
 LABEL=home or UUID=e40486c6-84d5-4f2f-b99c-032281799c9d).
 .SH OPTIONS
 .TP
@@ -420,7 +420,7 @@ by
 and
 .BR /etc/fstab (5)
 (and possibly others) by specifying
-.BI LABEL= volume_label
+.BI LABEL= volume-label
 instead of a block special device name like
 .BR /dev/hda5 .
 .TP

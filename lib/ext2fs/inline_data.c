@@ -557,9 +557,6 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	if (size <= EXT4_MIN_INLINE_DATA_SIZE) {
-		retval = ext2fs_inline_data_ea_remove(fs, ino);
-		if (retval)
-			return retval;
 		memcpy((void *)inode->i_block, buf, size);
 		return ext2fs_write_inode(fs, ino, inode);
 	}
@@ -587,7 +584,10 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 	data.fs = fs;
 	data.ino = ino;
-	data.ea_size = size - EXT4_MIN_INLINE_DATA_SIZE;
+	if (size > EXT4_MIN_INLINE_DATA_SIZE)
+		data.ea_size = size - EXT4_MIN_INLINE_DATA_SIZE;
+	else
+		data.ea_size = 0;
 	data.ea_data = (char *) buf + EXT4_MIN_INLINE_DATA_SIZE;
 	return ext2fs_inline_data_ea_set(&data);
 }
