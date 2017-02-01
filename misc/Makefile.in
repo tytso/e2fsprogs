@@ -524,7 +524,7 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		$(ES) "	INSTALL $(sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(sbindir)/$$i; \
 	done
-	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
+	$(Q) for i in ext2 ext3 ext4; do \
 		$(ES) "	LINK $(root_sbindir)/mkfs.$$i"; \
 		(cd $(DESTDIR)$(root_sbindir); \
 			$(LN) $(LINK_INSTALL_FLAGS) mke2fs mkfs.$$i); \
@@ -553,7 +553,7 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	done
 	$(Q) $(RM) -f $(DESTDIR)$(man8dir)/mkfs.ext2.8.gz \
 		$(DESTDIR)$(man8dir)/mkfs.ext3.8.gz
-	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
+	$(Q) for i in ext2 ext3 ext4; do \
 		$(ES) "	LINK mkfs.$$i.8"; \
 		(cd $(DESTDIR)$(man8dir); \
 			$(LN) $(LINK_INSTALL_FLAGS) mke2fs.8 mkfs.$$i.8); \
@@ -628,8 +628,7 @@ uninstall:
 	done
 	$(RM) -f $(DESTDIR)$(root_sbindir)/mkfs.ext2 \
 			$(DESTDIR)$(root_sbindir)/mkfs.ext3 \
-			$(DESTDIR)$(root_sbindir)/mkfs.ext4 \
-			$(DESTDIR)$(root_sbindir)/mkfs.ext4dev
+			$(DESTDIR)$(root_sbindir)/mkfs.ext4
 	for i in $(UPROGS); do \
 		$(RM) -f $(DESTDIR)$(bindir)/$$i; \
 	done
@@ -639,11 +638,9 @@ uninstall:
 	$(RM) -f $(DESTDIR)$(man8dir)/mkfs.ext2.8 \
 		$(DESTDIR)$(man8dir)/mkfs.ext3.8 \
 		$(DESTDIR)$(man8dir)/mkfs.ext4.8 \
-		$(DESTDIR)$(man8dir)/mkfs.ext4dev.8 \
 		$(DESTDIR)$(man8dir)/fsck.ext2.8 \
 		$(DESTDIR)$(man8dir)/fsck.ext3.8 \
-		$(DESTDIR)$(man8dir)/fsck.ext4.8 \
-		$(DESTDIR)$(man8dir)/fsck.ext4dev.8
+		$(DESTDIR)$(man8dir)/fsck.ext4.8
 
 	for i in $(UMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man1dir)/$$i; \

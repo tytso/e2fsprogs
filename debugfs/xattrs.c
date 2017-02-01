@@ -168,7 +168,8 @@ void do_get_xattr(int argc, char **argv)
 			print_flags |= PRINT_XATTR_HEX;
 			break;
 		case 'V':
-			print_flags |= PRINT_XATTR_RAW;
+			print_flags |= PRINT_XATTR_RAW|
+				PRINT_XATTR_NOQUOTES;
 			break;
 		case 'C':
 			print_flags |= PRINT_XATTR_C;
@@ -213,7 +214,7 @@ void do_get_xattr(int argc, char **argv)
 		fwrite(buf, buflen, 1, fp);
 	} else {
 		if (print_flags & PRINT_XATTR_RAW) {
-			if (print_flags & PRINT_XATTR_HEX|PRINT_XATTR_C)
+			if (print_flags & (PRINT_XATTR_HEX|PRINT_XATTR_C))
 				print_flags &= ~PRINT_XATTR_RAW;
 			print_xattr_string(stdout, buf, buflen, print_flags);
 		} else {

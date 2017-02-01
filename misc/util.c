@@ -101,11 +101,11 @@ void proceed_question(int delay)
 			return;
 		}
 		signal(SIGALRM, alarm_signal);
-		printf(_("Proceed anyway (or wait %d seconds) ? (y,n) "),
+		printf(_("Proceed anyway (or wait %d seconds) ? (y,N) "),
 		       delay);
 		alarm(delay);
 	} else
-		fputs(_("Proceed anyway? (y,n) "), stdout);
+		fputs(_("Proceed anyway? (y,N) "), stdout);
 	buf[0] = 0;
 	if (!fgets(buf, sizeof(buf), stdin) ||
 	    strchr(short_yes, buf[0]) == 0) {

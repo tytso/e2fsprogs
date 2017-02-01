@@ -1,3 +1,28 @@
+e2fsprogs (1.43.4-2) unstable; urgency=medium
+
+  * Re-enable metadata_csum for Debian (which was accidentally disabled
+    for 1.43.4-1)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 31 Jan 2017 19:54:55 -0500
+
+e2fsprogs (1.43.4-1) unstable; urgency=medium
+
+  * New upstream version
+  * Fix e2fsck to require that the system.data extended attribute is
+    always present even for files smaller than 60 bytes, to be
+    consistent with the kernel
+  * Drop the hard links for mkfs.ext4dev and fsck.ext4dev
+  * Clarify/update various man pages (Closes: #852726)
+  * Clarify the default for the "proceed?" question printed by mke2fs
+    and tune2fs.  (Closes: #852727)
+  * Fix various Coverity warnings and other memory leaks in fuse2fs and
+    extended attribute manipulation functions.
+  * Add Finnish and Malay translations
+  * Update Chinese, Czech, Polish, Serbian, and Spanish translations
+    (Closes: #774379)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 31 Jan 2017 17:31:52 -0500
+
 e2fsprogs (1.43.4~WIP.2017.01.30-1) unstable; urgency=medium
 
   * Fix a bug which was causing mke2fs -d and fuse2fs to improperly
@@ -18,7 +43,7 @@ e2fsprogs (1.43.4~WIP.2017.01.30-1) unstable; urgency=medium
     nervous, even though the file was only used in regression tests and
     was never used when building any binaries.   (Closes: #840733)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 30 Jan 2017 22:14:07 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 30 Jan 2017 22:14:07 -0500
 
 e2fsprogs (1.43.3-1) unstable; urgency=medium
 

@@ -1359,7 +1359,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 
 		/* Test for inline data flag but no attr */
 		if ((inode->i_flags & EXT4_INLINE_DATA_FL) && inlinedata_fs &&
-		    EXT2_I_SIZE(inode) > EXT4_MIN_INLINE_DATA_SIZE &&
 		    (ino >= EXT2_FIRST_INODE(fs->super))) {
 			size_t size = 0;
 			errcode_t err;
@@ -1393,15 +1392,15 @@ void e2fsck_pass1(e2fsck_t ctx)
 				/* broken EA or no system.data EA; truncate */
 				if (fix_problem(ctx, PR_1_INLINE_DATA_NO_ATTR,
 						&pctx)) {
-					err = ext2fs_inode_size_set(fs, inode,
-							sizeof(inode->i_block));
+					err = ext2fs_inode_size_set(fs, inode, 0);
 					if (err) {
 						pctx.errcode = err;
 						ctx->flags |= E2F_FLAG_ABORT;
 						goto endit;
 					}
-					if (LINUX_S_ISLNK(inode->i_mode))
-						inode->i_flags &= ~EXT4_INLINE_DATA_FL;
+					inode->i_flags &= ~EXT4_INLINE_DATA_FL;
+					memset(&inode->i_block, 0,
+					       sizeof(inode->i_block));
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
 					failed_csum = 0;
