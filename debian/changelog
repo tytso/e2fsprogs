@@ -1,3 +1,10 @@
+e2fsprogs (1.43.4-3) UNRELEASED; urgency=medium
+
+  * Fix tune2fs regression introduced in 1.43.4 --- enabling additional
+    quota types has become a no-op.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 05 Feb 2017 20:46:55 -0500
+
 e2fsprogs (1.43.4-2) unstable; urgency=medium
 
   * Re-enable metadata_csum for Debian (which was accidentally disabled

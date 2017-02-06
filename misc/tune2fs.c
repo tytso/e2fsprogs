@@ -1483,7 +1483,7 @@ static void handle_quota_options(ext2_filsys fs)
 	quota_ctx_t qctx;
 	ext2_ino_t qf_ino;
 	enum quota_type qtype;
-	int enable = 0;
+	unsigned int qtype_bits = 0;
 
 	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++)
 		if (quota_enable[qtype] != 0)
@@ -1492,19 +1492,19 @@ static void handle_quota_options(ext2_filsys fs)
 		/* Nothing to do. */
 		return;
 
-	retval = quota_init_context(&qctx, fs, 0);
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		if (quota_enable[qtype] == QOPT_ENABLE)
+			qtype_bits |= 1 << qtype;
+	}
+
+	retval = quota_init_context(&qctx, fs, qtype_bits);
 	if (retval) {
 		com_err(program_name, retval,
 			_("while initializing quota context in support library"));
 		exit(1);
 	}
-	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++) {
-		if (quota_enable[qtype] == QOPT_ENABLE) {
-			enable = 1;
-			break;
-		}
-	}
-	if (enable)
+
+	if (qtype_bits)
 		quota_compute_usage(qctx);
 
 	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++) {
@@ -1540,7 +1540,7 @@ static void handle_quota_options(ext2_filsys fs)
 
 	quota_release_context(&qctx);
 
-	if (enable) {
+	if (qtype_bits) {
 		ext2fs_set_feature_quota(fs->super);
 		ext2fs_mark_super_dirty(fs);
 	} else {
