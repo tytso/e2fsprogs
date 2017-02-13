@@ -116,7 +116,7 @@ debugfs: stat /a
 Inode: 12   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152157    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 32
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
@@ -128,7 +128,7 @@ debugfs: stat /b
 Inode: 13   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152158    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 32
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
@@ -140,7 +140,7 @@ debugfs: stat /c
 Inode: 14   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152159    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 32
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
@@ -152,7 +152,7 @@ debugfs: stat /d
 Inode: 15   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152160    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
@@ -163,7 +163,7 @@ debugfs: stat /e
 Inode: 16   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152161    Version: 0x00000001
 User:     0   Group:     0   Size: 6144
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 32
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
@@ -175,7 +175,7 @@ debugfs: stat /f
 Inode: 17   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152162    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 32
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
@@ -187,7 +187,7 @@ debugfs: stat /g
 Inode: 18   Type: regular    Mode:  0644   Flags: 0x80000
 Generation: 1117152163    Version: 0x00000001
 User:     0   Group:     0   Size: 3072
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 32
 Fragment:  Address: 0    Number: 0    Size: 0
 ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014

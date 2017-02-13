@@ -1715,7 +1715,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 
 		if (inode->i_faddr || frag || fsize ||
-		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_dir_acl))
+		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_size_high))
 			mark_inode_bad(ctx, ino);
 		if ((fs->super->s_creator_os != EXT2_OS_HURD) &&
 		    !ext2fs_has_feature_64bit(fs->super) &&

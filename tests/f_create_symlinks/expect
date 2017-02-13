@@ -20,7 +20,7 @@ debugfs -R "stat /l_30" test.img
 Inode: 12   Type: symlink    Mode:  0777   Flags: 0x0
 Generation: 0    Version: 0x00000000:00000000
 User:     0   Group:     0   Project:     0   Size: 31
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
 Size of extra inode fields: 32
@@ -29,7 +29,7 @@ debugfs -R "stat /l_70" test.img
 Inode: 13   Type: symlink    Mode:  0777   Flags: 0x10000000
 Generation: 0    Version: 0x00000000:00000000
 User:     0   Group:     0   Project:     0   Size: 71
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 0
 Fragment:  Address: 0    Number: 0    Size: 0
 Size of extra inode fields: 32
@@ -40,7 +40,7 @@ debugfs -R "stat /l_500" test.img
 Inode: 14   Type: symlink    Mode:  0777   Flags: 0x80000
 Generation: 0    Version: 0x00000000:00000000
 User:     0   Group:     0   Project:     0   Size: 501
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 2
 Fragment:  Address: 0    Number: 0    Size: 0
 Size of extra inode fields: 32
@@ -50,7 +50,7 @@ debugfs -R "stat /l_1023" test.img
 Inode: 15   Type: symlink    Mode:  0777   Flags: 0x80000
 Generation: 0    Version: 0x00000000:00000000
 User:     0   Group:     0   Project:     0   Size: 1024
-File ACL: 0    Directory ACL: 0
+File ACL: 0
 Links: 1   Blockcount: 2
 Fragment:  Address: 0    Number: 0    Size: 0
 Size of extra inode fields: 32

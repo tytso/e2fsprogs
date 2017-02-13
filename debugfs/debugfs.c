@@ -858,16 +858,15 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		fprintf(out, "%d\n", inode->i_size);
 	if (os == EXT2_OS_HURD)
 		fprintf(out,
-			"%sFile ACL: %d    Directory ACL: %d Translator: %d\n",
+			"%sFile ACL: %d Translator: %d\n",
 			prefix,
-			inode->i_file_acl, LINUX_S_ISDIR(inode->i_mode) ? inode->i_dir_acl : 0,
+			inode->i_file_acl,
 			inode->osd1.hurd1.h_i_translator);
 	else
-		fprintf(out, "%sFile ACL: %llu    Directory ACL: %d\n",
+		fprintf(out, "%sFile ACL: %llu\n",
 			prefix,
 			inode->i_file_acl | ((long long)
-				(inode->osd2.linux2.l_i_file_acl_high) << 32),
-			LINUX_S_ISDIR(inode->i_mode) ? inode->i_dir_acl : 0);
+				(inode->osd2.linux2.l_i_file_acl_high) << 32));
 	if (os != EXT2_OS_HURD)
 		fprintf(out, "%sLinks: %d   Blockcount: %llu\n",
 			prefix, inode->i_links_count,
@@ -1364,10 +1363,9 @@ void do_modify_inode(int argc, char *argv[])
 	modify_u32(argv[0], "Reserved1", decimal_format, &inode.i_reserved1);
 #endif
 	modify_u32(argv[0], "File acl", decimal_format, &inode.i_file_acl);
-	if (LINUX_S_ISDIR(inode.i_mode))
-		modify_u32(argv[0], "Directory acl", decimal_format, &inode.i_dir_acl);
-	else
-		modify_u32(argv[0], "High 32bits of size", decimal_format, &inode.i_size_high);
+
+	modify_u32(argv[0], "High 32bits of size", decimal_format,
+		   &inode.i_size_high);
 
 	if (os == EXT2_OS_HURD)
 		modify_u32(argv[0], "Translator Block",

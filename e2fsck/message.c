@@ -32,7 +32,7 @@
  * 	%IM	<inode> -> i_mtime
  * 	%IF	<inode> -> i_faddr
  * 	%If	<inode> -> i_file_acl
- * 	%Id	<inode> -> i_dir_acl
+ * 	%Id	<inode> -> i_size_high
  * 	%Iu	<inode> -> i_uid
  * 	%Ig	<inode> -> i_gid
  *	%It	<inode type>
@@ -320,7 +320,7 @@ static _INLINE_ void expand_inode_expression(FILE *f, ext2_filsys fs, char ch,
 		break;
 	case 'd':
 		fprintf(f, "%u", (LINUX_S_ISDIR(inode->i_mode) ?
-				  inode->i_dir_acl : 0));
+			inode->i_size_high : 0));
 		break;
 	case 'u':
 		fprintf(f, "%d", inode_uid(*inode));

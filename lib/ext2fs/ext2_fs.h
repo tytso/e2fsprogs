@@ -398,7 +398,7 @@ struct ext2_inode {
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
 	__u32	i_file_acl;	/* File ACL */
-	__u32	i_size_high;	/* Formerly i_dir_acl, directory ACL */
+	__u32	i_size_high;
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
@@ -446,7 +446,7 @@ struct ext2_inode_large {
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
 	__u32	i_file_acl;	/* File ACL */
-	__u32	i_size_high;	/* Formerly i_dir_acl, directory ACL */
+	__u32	i_size_high;
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
@@ -483,8 +483,6 @@ struct ext2_inode_large {
 
 #define EXT4_EPOCH_BITS 2
 #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
-
-#define i_dir_acl	i_size_high
 
 #define i_checksum_lo	osd2.linux2.l_i_checksum_lo
 

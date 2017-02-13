@@ -813,8 +813,8 @@ struct problem_context {
 /* i_file_acl should be zero */
 #define PR_2_FILE_ACL_ZERO	0x02000E
 
-/* i_dir_acl should be zero */
-#define PR_2_DIR_ACL_ZERO	0x02000F
+/* i_size_high should be zero */
+#define PR_2_DIR_SIZE_HIGH_ZERO	0x02000F
 
 /* i_frag should be zero */
 #define PR_2_FRAG_ZERO		0x020010

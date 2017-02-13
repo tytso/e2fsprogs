@@ -1361,9 +1361,9 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("i_file_acl @F %If, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
 
-	/* i_dir_acl should be zero */
-	{ PR_2_DIR_ACL_ZERO,
-	  N_("i_dir_acl @F %Id, @s zero.\n"),
+	/* i_size_high should be zero */
+	{ PR_2_DIR_SIZE_HIGH_ZERO,
+	  N_("i_size_high @F %Id, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* i_frag should be zero */

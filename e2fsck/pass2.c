@@ -1811,10 +1811,10 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		} else
 			not_fixed++;
 	}
-	if (inode.i_dir_acl &&
+	if (inode.i_size_high &&
 	    LINUX_S_ISDIR(inode.i_mode)) {
-		if (fix_problem(ctx, PR_2_DIR_ACL_ZERO, &pctx)) {
-			inode.i_dir_acl = 0;
+		if (fix_problem(ctx, PR_2_DIR_SIZE_HIGH_ZERO, &pctx)) {
+			inode.i_size_high = 0;
 			inode_modified++;
 		} else
 			not_fixed++;
