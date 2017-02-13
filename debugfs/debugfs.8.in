@@ -179,7 +179,7 @@ This is a list of the commands which
 .B debugfs
 supports.
 .TP
-.BI blocks " filespace"
+.BI blocks " filespec"
 Print the blocks used by the inode
 .I filespec
 to stdout.
