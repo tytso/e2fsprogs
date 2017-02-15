@@ -588,7 +588,8 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT4_FEATURE_INCOMPAT_64BIT|\
 					 EXT4_FEATURE_INCOMPAT_INLINE_DATA|\
 					 EXT4_FEATURE_INCOMPAT_ENCRYPT|\
-					 EXT4_FEATURE_INCOMPAT_CSUM_SEED)
+					 EXT4_FEATURE_INCOMPAT_CSUM_SEED|\
+					 EXT4_FEATURE_INCOMPAT_LARGEDIR)
 
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
 					 EXT4_FEATURE_RO_COMPAT_HUGE_FILE|\
@@ -1925,6 +1926,18 @@ _INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 					struct ext2_inode *inode)
 {
 	return (blk_t) ext2fs_inode_data_blocks2(fs, inode);
+}
+
+/* htree levels for ext4 */
+#define EXT4_HTREE_LEVEL_COMPAT 2
+#define EXT4_HTREE_LEVEL	3
+
+static inline unsigned int ext2_dir_htree_level(ext2_filsys fs)
+{
+	if (ext2fs_has_feature_largedir(fs->super))
+		return EXT4_HTREE_LEVEL;
+
+	return EXT4_HTREE_LEVEL_COMPAT;
 }
 
 /*

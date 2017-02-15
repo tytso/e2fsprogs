@@ -1058,7 +1058,8 @@ inline_read_fail:
 			dx_db->flags |= DX_FLAG_FIRST | DX_FLAG_LAST;
 			if ((root->reserved_zero ||
 			     root->info_length < 8 ||
-			     root->indirect_levels > 1) &&
+			     root->indirect_levels >=
+			     ext2_dir_htree_level(fs)) &&
 			    fix_problem(ctx, PR_2_HTREE_BAD_ROOT, &cd->pctx)) {
 				clear_htree(ctx, ino);
 				dx_dir->numblocks = 0;
@@ -1811,7 +1812,7 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		} else
 			not_fixed++;
 	}
-	if (inode.i_size_high &&
+	if (inode.i_size_high && !ext2fs_has_feature_largedir(fs->super) &&
 	    LINUX_S_ISDIR(inode.i_mode)) {
 		if (fix_problem(ctx, PR_2_DIR_SIZE_HIGH_ZERO, &pctx)) {
 			inode.i_size_high = 0;

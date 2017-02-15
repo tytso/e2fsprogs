@@ -1715,7 +1715,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 
 		if (inode->i_faddr || frag || fsize ||
-		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_size_high))
+		    (!ext2fs_has_feature_largedir(fs->super) &&
+		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_size_high)))
 			mark_inode_bad(ctx, ino);
 		if ((fs->super->s_creator_os != EXT2_OS_HURD) &&
 		    !ext2fs_has_feature_64bit(fs->super) &&
@@ -2468,7 +2469,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 		return 1;
 
 	pctx->num = root->indirect_levels;
-	if ((root->indirect_levels > 1) &&
+	if ((root->indirect_levels > ext2_dir_htree_level(fs)) &&
 	    fix_problem(ctx, PR_1_HTREE_DEPTH, pctx))
 		return 1;
 
