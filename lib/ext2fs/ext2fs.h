@@ -1940,6 +1940,11 @@ static inline unsigned int ext2_dir_htree_level(ext2_filsys fs)
 	return EXT4_HTREE_LEVEL_COMPAT;
 }
 
+_INLINE_ int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks)
+{
+	return blocks * ((fs->blocksize - 8) / sizeof(struct ext2_dx_entry));
+}
+
 /*
  * This is an efficient, overflow safe way of calculating ceil((1.0 * a) / b)
  */

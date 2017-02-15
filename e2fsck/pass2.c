@@ -85,6 +85,39 @@ struct check_dir_struct {
 	unsigned long long next_ra_off;
 };
 
+static void update_parents(struct dx_dir_info *dx_dir, int type)
+{
+	struct dx_dirblock_info *dx_db, *dx_parent, *dx_previous;
+	int b;
+
+	for (b = 0, dx_db = dx_dir->dx_block;
+	     b < dx_dir->numblocks;
+	     b++, dx_db++) {
+		dx_parent = &dx_dir->dx_block[dx_db->parent];
+		if (dx_db->type != type)
+			continue;
+
+		/*
+		 * XXX Make sure dx_parent->min_hash > dx_db->min_hash
+		*/
+		if (dx_db->flags & DX_FLAG_FIRST) {
+			dx_parent->min_hash = dx_db->min_hash;
+			if (dx_parent->previous) {
+				dx_previous =
+					&dx_dir->dx_block[dx_parent->previous];
+				dx_previous->node_max_hash =
+					dx_parent->min_hash;
+			}
+		}
+		/*
+		 * XXX Make sure dx_parent->max_hash < dx_db->max_hash
+		 */
+		if (dx_db->flags & DX_FLAG_LAST) {
+			dx_parent->max_hash = dx_db->max_hash;
+		}
+	}
+}
+
 void e2fsck_pass2(e2fsck_t ctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
@@ -182,24 +215,11 @@ void e2fsck_pass2(e2fsck_t ctx)
 		 * Find all of the first and last leaf blocks, and
 		 * update their parent's min and max hash values
 		 */
-		for (b=0, dx_db = dx_dir->dx_block;
-		     b < dx_dir->numblocks;
-		     b++, dx_db++) {
-			if ((dx_db->type != DX_DIRBLOCK_LEAF) ||
-			    !(dx_db->flags & (DX_FLAG_FIRST | DX_FLAG_LAST)))
-				continue;
-			dx_parent = &dx_dir->dx_block[dx_db->parent];
-			/*
-			 * XXX Make sure dx_parent->min_hash > dx_db->min_hash
-			 */
-			if (dx_db->flags & DX_FLAG_FIRST)
-				dx_parent->min_hash = dx_db->min_hash;
-			/*
-			 * XXX Make sure dx_parent->max_hash < dx_db->max_hash
-			 */
-			if (dx_db->flags & DX_FLAG_LAST)
-				dx_parent->max_hash = dx_db->max_hash;
-		}
+		update_parents(dx_dir, DX_DIRBLOCK_LEAF);
+
+		/* for 3 level htree: update 2 level parent's min
+		 * and max hash values */
+		update_parents(dx_dir, DX_DIRBLOCK_NODE);
 
 		for (b=0, dx_db = dx_dir->dx_block;
 		     b < dx_dir->numblocks;
@@ -642,6 +662,10 @@ static void parse_int_node(ext2_filsys fs,
 			dx_db->flags |= DX_FLAG_REFERENCED;
 			dx_db->parent = db->blockcnt;
 		}
+
+		dx_db->previous =
+			i ? ext2fs_le32_to_cpu(ent[i-1].block & 0x0ffffff) : 0;
+
 		if (hash < min_hash)
 			min_hash = hash;
 		if (hash > max_hash)
@@ -948,6 +972,14 @@ static int check_dir_block(ext2_filsys fs,
 		if (ec && ec != EXT2_ET_NO_INLINE_DATA)
 			return DIRENT_ABORT;
 	}
+
+	/* This will allow (at some point in the future) to punch out empty
+	 * directory blocks and reduce the space used by a directory that grows
+	 * very large and then the files are deleted. For now, all that is
+	 * needed is to avoid e2fsck filling in these holes as part of
+	 * feature flag. */
+	if (db->blk == 0 && ext2fs_has_feature_largedir(fs))
+		return 0;
 
 	if (db->blk == 0 && !inline_data_size) {
 		if (allocate_dir_block(ctx, db, buf, &cd->pctx))

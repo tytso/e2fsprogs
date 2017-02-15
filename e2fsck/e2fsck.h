@@ -122,6 +122,7 @@ struct dx_dirblock_info {
 	blk64_t		phys;
 	int		flags;
 	blk64_t		parent;
+	blk64_t		previous;
 	ext2_dirhash_t	min_hash;
 	ext2_dirhash_t	max_hash;
 	ext2_dirhash_t	node_min_hash;
