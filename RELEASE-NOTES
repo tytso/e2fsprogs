@@ -1,3 +1,45 @@
+E2fsprogs 1.43.5-WIP (February 17, 2017) -- dea731316a249
+========================================
+
+Fix a regression introduced in e2fsprogs 1.43.4 where tune2fs was not
+able to correctly enable the quota feature.  (Addresses Debian Bug:
+#855417)
+
+E2fsck will only return an exit status code of 1 if it has fixed a
+file system corruption.  If it only performed an optimal optimization
+of internal file system metadata, it will now return 0.
+
+Fix e2fsck so it won't check inode fields of deleted inodes.  This was
+mostly harmless, but the addition of a check in 1.43.4 to enforce the
+requirement that inline data inodes have a system.data attribute
+caused a regression in xfstests generic/079.  Fix this and a number of
+other checks which could lead to false positive reports of file system
+corruption.
+
+Removed a debugging printf in libsupport which could result to some
+extraneous and confusing output if the user specifies a quota type.
+
+The debugfs logdump command now accepts a new -S option which will
+cause it to print information about the journal superblock.
+
+Added a missing space in debugfs's ls -l output to separate the size
+and date fields.
+
+Update various man pages.
+
+Programming notes
+-----------------
+
+Fix portability assumption in tests; don't depend on the existence of
+/dev/stdin.
+
+Clean up the comments in problem.c match the message that will
+actually be printed.
+
+Removed an unused an obsolete header file.
+
+
+
 E2fsprogs 1.43.4 (January 31, 2017)
 ===================================
 
