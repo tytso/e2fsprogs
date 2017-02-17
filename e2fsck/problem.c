@@ -1276,12 +1276,12 @@ static struct e2fsck_problem problem_table[] = {
 	/* Inode extent tree could be shorter */
 	{ PR_1E_CAN_COLLAPSE_EXTENT_TREE,
 	  N_("@i %i @x tree (at level %b) could be shorter.  "),
-	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK },
+	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK | PR_NOT_A_FIX },
 
 	/* Inode extent tree could be narrower */
 	{ PR_1E_CAN_NARROW_EXTENT_TREE,
 	  N_("@i %i @x tree (at level %b) could be narrower.  "),
-	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK },
+	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK | PR_NOT_A_FIX },
 
 	/* Pass 2 errors */
 
@@ -2166,6 +2166,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		reconfigure_bool(ctx, ptr, key, PR_NO_NOMSG, "no_nomsg");
 		reconfigure_bool(ctx, ptr, key, PR_PREEN_NOHDR, "preen_noheader");
 		reconfigure_bool(ctx, ptr, key, PR_FORCE_NO, "force_no");
+		reconfigure_bool(ctx, ptr, key, PR_NOT_A_FIX, "not_a_fix");
 		profile_get_integer(ctx->profile, "options",
 				    "max_count_problems", 0, 0,
 				    &ptr->max_count);
@@ -2283,7 +2284,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	if (ptr->flags & PR_AFTER_CODE)
 		answer = fix_problem(ctx, ptr->second_code, pctx);
 
-	if (answer && (ptr->prompt != PROMPT_NONE))
+	if (answer && (ptr->prompt != PROMPT_NONE) &&
+	    !(ptr->flags & PR_NOT_A_FIX))
 		ctx->flags |= E2F_FLAG_PROBLEMS_FIXED;
 
 	return answer;

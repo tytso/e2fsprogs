@@ -1901,11 +1901,23 @@ no_journal:
 		fix_problem(ctx, PR_6_IO_FLUSH, &pctx);
 
 	if (was_changed) {
-		exit_value |= FSCK_NONDESTRUCT;
-		if (!(ctx->options & E2F_OPT_PREEN))
-			log_out(ctx, _("\n%s: ***** FILE SYSTEM WAS "
-				       "MODIFIED *****\n"),
+		int fs_fixed = (ctx->flags & E2F_FLAG_PROBLEMS_FIXED);
+
+		if (fs_fixed)
+			exit_value |= FSCK_NONDESTRUCT;
+		if (!(ctx->options & E2F_OPT_PREEN)) {
+#if 0	/* Do this later; it breaks too many tests' golden outputs */
+			log_out(ctx, fs_fixed ?
+				_("\n%s: ***** FILE SYSTEM ERRORS "
+				  "CORRECTED *****\n") :
+				_("%s: File system was modified.\n"),
 				ctx->device_name);
+#else
+			log_out(ctx,
+				_("\n%s: ***** FILE SYSTEM WAS MODIFIED *****\n"),
+				ctx->device_name);
+#endif
+		}
 		if (ctx->mount_flags & EXT2_MF_ISROOT) {
 			log_out(ctx, _("%s: ***** REBOOT SYSTEM *****\n"),
 				ctx->device_name);

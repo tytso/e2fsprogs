@@ -303,6 +303,13 @@ of 'should this problem be fixed?'.  The
 option even overrides the
 .B -y
 option given on the command-line (just for the specific problem, of course).
+.TP
+.I not_a_fix
+This boolean option, it set to true, marks the problem as
+one where if the user gives permission to make the requested change,
+it does not mean that the file system had a problem which has since
+been fixed.  This is used for requests to optimize the file system's
+data structure, such as pruning an extent tree.
 @TDB_MAN_COMMENT@.SH THE [scratch_files] STANZA
 @TDB_MAN_COMMENT@The following relations are defined in the
 @TDB_MAN_COMMENT@.I [scratch_files]
