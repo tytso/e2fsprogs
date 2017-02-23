@@ -34,7 +34,7 @@ cc_defaults {
         "readahead.c",
         "extents.c",
     ],
-    cflags: ["-W", "-Wall", "-fno-strict-aliasing"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined", "-fno-strict-aliasing"],
 }
 
 e2fsck_libs = [

@@ -9,7 +9,7 @@ cc_library {
     srcs: [
         "create_inode.c",
     ],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2_quota",
         "libext2fs",
@@ -32,7 +32,7 @@ cc_binary {
         "default_profile.c",
         "create_inode.c",
     ],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_blkid",
@@ -58,6 +58,7 @@ cc_defaults {
         "-W",
         "-Wall",
         "-DNO_RECOVERY",
+        "-Wno-macro-redefined",
     ],
     include_dirs: ["external/e2fsprogs/e2fsck"],
 }
@@ -104,7 +105,7 @@ cc_binary {
     host_supported: true,
 
     srcs: ["badblocks.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",
@@ -123,7 +124,7 @@ cc_binary {
     host_supported: true,
 
     srcs: ["chattr.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2_com_err",
         "libext2_e2p",
@@ -137,7 +138,7 @@ cc_binary {
 cc_defaults {
     name: "lsattr-defaults",
     srcs: ["lsattr.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
 }
 
 lsattr_libs = [
@@ -169,7 +170,7 @@ cc_binary {
     name: "blkid",
 
     srcs: ["blkid.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_blkid",
@@ -187,7 +188,7 @@ cc_binary {
     host_supported: true,
 
     srcs: ["e4crypt.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_uuid",
@@ -209,7 +210,7 @@ cc_binary {
     host_supported: true,
 
     srcs: ["e2image.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_blkid",

@@ -10,7 +10,7 @@ cc_binary {
     host_supported: true,
 
     srcs: ["fsstress.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     system_shared_libs: ["libc"],
 
     target: {
@@ -28,7 +28,7 @@ cc_binary {
     host_supported: true,
 
     srcs: ["add_ext4_encrypt.c"],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",

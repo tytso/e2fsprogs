@@ -24,6 +24,7 @@ cc_library {
         "-W",
         "-Wall",
         "-fno-strict-aliasing",
+        "-Wno-macro-redefined",
     ],
 
     header_libs: ["libext2-headers"],

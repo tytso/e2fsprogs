@@ -25,6 +25,7 @@ cc_library {
     cflags: [
         "-W",
         "-Wall",
+        "-Wno-macro-redefined",
     ],
 
     header_libs: ["libext2-headers"],

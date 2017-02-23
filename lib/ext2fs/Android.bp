@@ -97,6 +97,7 @@ cc_library {
         "-W",
         "-Wall",
         "-Wno-unused-parameter",
+        "-Wno-macro-redefined",
     ],
     target: {
         host: {

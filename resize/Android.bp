@@ -12,7 +12,7 @@ cc_binary {
         "sim_progress.c",
         "resource_track.c",
     ],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",
