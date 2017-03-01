@@ -421,6 +421,12 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 #endif
 		dest += fs->blocksize*first_meta_bg;
 	}
+
+	for (i = first_meta_bg ; i < fs->desc_blocks; i++) {
+		blk = ext2fs_descriptor_block_loc2(fs, group_block, i);
+		io_channel_cache_readahead(fs->io, blk, 1);
+	}
+
 	for (i=first_meta_bg ; i < fs->desc_blocks; i++) {
 		blk = ext2fs_descriptor_block_loc2(fs, group_block, i);
 		retval = io_channel_read_blk64(fs->io, blk, 1, dest);
