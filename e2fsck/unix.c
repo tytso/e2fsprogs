@@ -1951,6 +1951,8 @@ no_journal:
 	ext2fs_close_free(&ctx->fs);
 	free(ctx->journal_name);
 
+	if (ctx->logf)
+		fprintf(ctx->logf, "Exit status: %d\n", exit_value);
 	e2fsck_free_context(ctx);
 	remove_error_table(&et_ext2_error_table);
 	remove_error_table(&et_prof_error_table);
