@@ -39,7 +39,7 @@ enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
 #define ANY_BLOCK ((blk64_t) -1)
 
-static int		dump_all, dump_old, dump_contents, dump_descriptors;
+static int		dump_all, dump_super, dump_old, dump_contents, dump_descriptors;
 static blk64_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
 static unsigned int	group_to_dump, inode_offset_to_dump;
 static ext2_ino_t	inode_to_dump;
@@ -96,6 +96,7 @@ void do_logdump(int argc, char **argv)
 	dump_all = 0;
 	dump_old = 0;
 	dump_contents = 0;
+	dump_super = 0;
 	dump_descriptors = 1;
 	block_to_dump = ANY_BLOCK;
 	bitmap_to_dump = -1;
@@ -103,7 +104,7 @@ void do_logdump(int argc, char **argv)
 	inode_to_dump = -1;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "ab:ci:f:Os")) != EOF) {
+	while ((c = getopt (argc, argv, "ab:ci:f:OsS")) != EOF) {
 		switch (c) {
 		case 'a':
 			dump_all++;
@@ -132,6 +133,9 @@ void do_logdump(int argc, char **argv)
 			break;
 		case 's':
 			use_sb++;
+			break;
+		case 'S':
+			dump_super++;
 			break;
 		default:
 			goto print_usage;
@@ -382,6 +386,12 @@ static void dump_journal(char *cmdname, FILE *out_file,
 				    jsb_buffer, 1024);
 	if (retval)
 		return;
+
+	if (dump_super) {
+		e2p_list_journal_super(out_file, jsb_buffer,
+				       current_fs->blocksize, 0);
+		fputc('\n', out_file);
+	}
 
 	jsb = (journal_superblock_t *) jsb_buffer;
 	if (be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) {

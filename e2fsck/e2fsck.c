@@ -200,6 +200,9 @@ void e2fsck_free_context(e2fsck_t ctx)
 	if (ctx->log_fn)
 		free(ctx->log_fn);
 
+	if (ctx->logf)
+		fclose(ctx->logf);
+
 	ext2fs_free_mem(&ctx);
 }
 

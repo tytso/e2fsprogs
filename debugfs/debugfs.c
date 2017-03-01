@@ -170,8 +170,14 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 			exit(1);
 	}
 
+try_open_again:
 	retval = ext2fs_open(device, open_flags, superblock, blocksize,
 			     io_ptr, &current_fs);
+	if (retval && !(open_flags & EXT2_FLAG_IGNORE_CSUM_ERRORS)) {
+		open_flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		printf("Checksum errors in superblock!  Retrying...\n");
+		goto try_open_again;
+	}
 	if (retval) {
 		com_err(device, retval, "while opening filesystem");
 		if (retval == EXT2_ET_BAD_MAGIC)
@@ -444,6 +450,17 @@ void do_show_super_stats(int argc, char *argv[])
 		units = "cluster";
 
 	list_super2(current_fs->super, out);
+	if (ext2fs_has_feature_metadata_csum(current_fs->super) &&
+	    !ext2fs_superblock_csum_verify(current_fs,
+					   current_fs->super)) {
+		__u32 orig_csum = current_fs->super->s_checksum;
+
+		ext2fs_superblock_csum_set(current_fs,
+					   current_fs->super);
+		fprintf(out, "Expected Checksum:        0x%08x\n",
+			current_fs->super->s_checksum);
+		current_fs->super->s_checksum = orig_csum;
+	}
 	for (i=0; i < current_fs->group_desc_count; i++)
 		numdirs += ext2fs_bg_used_dirs_count(current_fs, i);
 	fprintf(out, "Directories:              %d\n", numdirs);

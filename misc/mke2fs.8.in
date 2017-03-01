@@ -25,10 +25,6 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 .B \-D
 ]
 [
-.B \-f
-.I fragment-size
-]
-[
 .B \-g
 .I blocks-per-group
 ]
@@ -388,9 +384,6 @@ feature is set.   The default quota types to be initialized if this
 option is not specified is both user and group quotas.  If the project
 feature is enabled that project quotas will be initialized as well.
 .RE
-.TP
-.BI \-f " fragment-size"
-Specify the size of fragments in bytes.
 .TP
 .B \-F
 Force
@@ -792,14 +785,6 @@ mount count or check interval.
 This version of
 .B mke2fs
 has been written by Theodore Ts'o <tytso@mit.edu>.
-.SH BUGS
-.B mke2fs
-accepts the
-.B \-f
-option but currently ignores it because the second
-extended file system does not support fragments yet.
-.br
-There may be other ones.  Please, report them to the author.
 .SH AVAILABILITY
 .B mke2fs
 is part of the e2fsprogs package and is available from

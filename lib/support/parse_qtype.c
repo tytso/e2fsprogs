@@ -63,7 +63,9 @@ int parse_quota_types(const char *in_str, unsigned int *qtype_bits,
 			ret = EINVAL;
 			goto errout;
 		}
+#ifdef DEBUG_PROGRAM
 		printf("word: %s\n", token);
+#endif
 		next = strtok_r(NULL, PARSE_DELIM, &tmp);
 	}
 	*qtype_bits = qtype;
@@ -72,7 +74,7 @@ errout:
 	return ret;
 }
 
-#if 0
+#ifdef DEBUG_PROGRAM
 int main(int argc, char **argv)
 {
 	unsigned int qtype_bits = 0;
