@@ -15,12 +15,12 @@
 
 int parse_c_string(char *str)
 {
-	unsigned char *to, *from, ch;
+	char *to, *from, ch;
 	int v;
 
 	to = from = str;
 
-	for (to = from = (unsigned char *) str;
+	for (to = from = (char *) str;
 	     *from && *from != '"'; to++, from++) {
 		if (*from == '\\') {
 			ch = *(++from);
@@ -93,7 +93,7 @@ int parse_c_string(char *str)
 		*to = *from;
 	}
 	*to = '\0';
-	return to - (unsigned char *) str;
+	return to - (char *) str;
 }
 
 void print_c_string(FILE *f, const char *cp, int len)

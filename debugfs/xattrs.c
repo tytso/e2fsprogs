@@ -146,7 +146,7 @@ void do_get_xattr(int argc, char **argv)
 	size_t buflen;
 	int i;
 	int print_flags = 0;
-	int handle_flags = 0;
+	unsigned int handle_flags = 0;
 	errcode_t err;
 
 	reset_getopt();
@@ -241,8 +241,7 @@ void do_set_xattr(int argc, char **argv)
 	FILE *fp = NULL;
 	char *buf = NULL;
 	size_t buflen;
-	int print_flags = 0;
-	int handle_flags = 0;
+	unsigned int handle_flags = 0;
 	int i;
 	errcode_t err;
 

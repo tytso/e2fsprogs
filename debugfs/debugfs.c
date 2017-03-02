@@ -1605,9 +1605,7 @@ void do_unlink(int argc, char *argv[])
 void do_copy_inode(int argc, char *argv[])
 {
 	ext2_ino_t	src_ino, dest_ino;
-	struct ext2_inode inode;
 	unsigned char	buf[4096];
-	int		retval;
 
 	if (common_args_process(argc, argv, 3, 3, "copy_inode",
 				"<source file> <dest_name>", CHECK_FS_RW))

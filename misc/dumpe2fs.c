@@ -356,16 +356,6 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	ext2fs_badblocks_list_free(bb_list);
 }
 
-static const char *journal_checksum_type_str(__u8 type)
-{
-	switch (type) {
-	case JBD2_CRC32C_CHKSUM:
-		return "crc32c";
-	default:
-		return "unknown";
-	}
-}
-
 static void print_inline_journal_information(ext2_filsys fs)
 {
 	journal_superblock_t	*jsb;
@@ -374,8 +364,6 @@ static void print_inline_journal_information(ext2_filsys fs)
 	errcode_t		retval;
 	ino_t			ino = fs->super->s_journal_inum;
 	char			buf[1024];
-	__u32			*mask_ptr, mask, m;
-	int			i, j, size, printed = 0;
 
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
 		return;
@@ -411,10 +399,7 @@ static void print_journal_information(ext2_filsys fs)
 {
 	errcode_t	retval;
 	char		buf[1024];
-	char		str[80];
-	unsigned int	i, j, printed = 0;
 	journal_superblock_t	*jsb;
-	__u32			*mask_ptr, mask, m;
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk64(fs->io,

@@ -478,7 +478,6 @@ static errcode_t convert_posix_acl_to_disk_buffer(const void *value, size_t size
 	ext4_acl_header *ext_acl;
 	size_t s;
 	void *e;
-	int err;
 
 	int count;
 
@@ -532,7 +531,6 @@ static errcode_t convert_disk_buffer_to_posix_acl(const void *value, size_t size
 	errcode_t err;
 	const char *cp;
 	char *out;
-	int count;
 
 	if ((!value) ||
 	    (size < sizeof(ext4_acl_header)) ||
