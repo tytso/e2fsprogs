@@ -63,7 +63,7 @@ static int end_new_file(void *data)
 {
 	struct block_list *params = data;
 
-	if (!params->entry.filename)
+	if (!params->entry.filename || !params->entry.head)
 		return 0;
 	if (fprintf(params->f, "%s%s ", params->mountpoint,
 		    params->entry.filename) < 0
