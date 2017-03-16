@@ -60,5 +60,5 @@ cc_binary {
     static_executable: true,
     defaults: ["e2fsck-defaults"],
 
-    static_libs: e2fsck_libs + ["libc"],
+    static_libs: e2fsck_libs,
 }
