@@ -693,7 +693,7 @@ ext4, 3.6
 ext4, 3.8
 .IP "\fBsparse_super2\fR" 2in
 ext4, 3.16
-.IP "\fBmetdata_csum\fR" 2in
+.IP "\fBmetadata_csum\fR" 2in
 ext4, 3.18
 .IP "\fBencrypt\fR" 2in
 ext4, 4.1
