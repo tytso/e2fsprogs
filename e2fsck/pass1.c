@@ -3174,7 +3174,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (ino != quota_type2inum(PRJQUOTA, fs->super) &&
 	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super))) {
 		quota_data_add(ctx->qctx, (struct ext2_inode_large *) inode,
-			       ino, pb.num_blocks * fs->blocksize);
+			       ino,
+			       pb.num_blocks * EXT2_CLUSTER_SIZE(fs->super));
 		quota_data_inodes(ctx->qctx, (struct ext2_inode_large *) inode,
 				  ino, +1);
 	}
