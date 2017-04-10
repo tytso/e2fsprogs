@@ -1473,6 +1473,7 @@ static int probe_exfat(struct blkid_probe *probe, struct blkid_magic *id,
     struct exfat_super_block *sb;
     struct exfat_entry_label *label;
     uuid_t uuid;
+
     sb = (struct exfat_super_block *)buf;
     if (!sb || !CLUSTER_SIZE(sb)) {
         DBG(DEBUG_PROBE, printf("bad exfat superblock.\n"));
@@ -1486,11 +1487,11 @@ static int probe_exfat(struct blkid_probe *probe, struct blkid_magic *id,
         blkid_set_tag(probe->dev, "LABEL", "disk", 4);
     }
 
+    memset(uuid, 0, sizeof (uuid));
     snprintf(uuid, sizeof (uuid), "%02hhX%02hhX-%02hhX%02hhX",
              sb->volume_serial[3], sb->volume_serial[2],
              sb->volume_serial[1], sb->volume_serial[0]);
-
-    set_uuid(probe->dev, uuid, 0);
+    blkid_set_tag(probe->dev, "UUID", uuid, strlen(uuid));
 
     return 0;
 }
