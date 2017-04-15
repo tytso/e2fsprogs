@@ -1822,9 +1822,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 		     inode->i_block[EXT2_DIND_BLOCK] ||
 		     inode->i_block[EXT2_TIND_BLOCK] ||
 		     ext2fs_file_acl_block(fs, inode))) {
+			struct ext2_inode_large *ip;
+
 			inodes_to_process[process_inode_count].ino = ino;
-			inodes_to_process[process_inode_count].inode =
-				       *(struct ext2_inode_large *)inode;
+			ip = &inodes_to_process[process_inode_count].inode;
+			if (inode_size < sizeof(struct ext2_inode_large))
+				memcpy(ip, inode, inode_size);
+			else
+				memcpy(ip, inode, sizeof(*ip));
 			process_inode_count++;
 		} else
 			check_blocks(ctx, &pctx, block_buf);
