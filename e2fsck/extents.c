@@ -208,17 +208,19 @@ static int find_blocks(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
 static errcode_t rebuild_extent_tree(e2fsck_t ctx, struct extent_list *list,
 				     ext2_ino_t ino)
 {
-	struct ext2_inode	inode;
+	struct ext2_inode_large	inode;
 	errcode_t		retval;
 	ext2_extent_handle_t	handle;
 	unsigned int		i, ext_written;
 	struct ext2fs_extent	*ex, extent;
+	blk64_t			start_val, delta;
 
 	list->count = 0;
 	list->blocks_freed = 0;
 	list->ino = ino;
 	list->ext_read = 0;
-	e2fsck_read_inode(ctx, ino, &inode, "rebuild_extents");
+	e2fsck_read_inode_full(ctx, ino, EXT2_INODE(&inode), sizeof(inode),
+			       "rebuild_extents");
 
 	/* Skip deleted inodes and inline data files */
 	if (inode.i_links_count == 0 ||
@@ -248,16 +250,20 @@ extents_loaded:
 	memset(inode.i_block, 0, sizeof(inode.i_block));
 
 	/* Make a note of freed blocks */
-	retval = ext2fs_iblk_sub_blocks(ctx->fs, &inode, list->blocks_freed);
+	quota_data_sub(ctx->qctx, &inode, ino,
+		       list->blocks_freed * ctx->fs->blocksize);
+	retval = ext2fs_iblk_sub_blocks(ctx->fs, EXT2_INODE(&inode),
+					list->blocks_freed);
 	if (retval)
 		goto err;
 
 	/* Now stuff extents into the file */
-	retval = ext2fs_extent_open2(ctx->fs, ino, &inode, &handle);
+	retval = ext2fs_extent_open2(ctx->fs, ino, EXT2_INODE(&inode), &handle);
 	if (retval)
 		goto err;
 
 	ext_written = 0;
+	start_val = ext2fs_inode_i_blocks(ctx->fs, EXT2_INODE(&inode));
 	for (i = 0, ex = list->extents; i < list->count; i++, ex++) {
 		memcpy(&extent, ex, sizeof(struct ext2fs_extent));
 		extent.e_flags &= EXT2_EXTENT_FLAGS_UNINIT;
@@ -295,11 +301,21 @@ extents_loaded:
 		ext_written++;
 	}
 
+	delta = ext2fs_inode_i_blocks(ctx->fs, EXT2_INODE(&inode)) - start_val;
+	if (delta) {
+		if (!ext2fs_has_feature_huge_file(ctx->fs->super) ||
+		    !(inode.i_flags & EXT4_HUGE_FILE_FL))
+			delta <<= 9;
+		else
+			delta *= ctx->fs->blocksize;
+		quota_data_add(ctx->qctx, &inode, ino, delta);
+	}
+
 #if defined(DEBUG) || defined(DEBUG_SUMMARY)
 	printf("rebuild: ino=%d extents=%d->%d\n", ino, list->ext_read,
 	       ext_written);
 #endif
-	e2fsck_write_inode(ctx, ino, &inode, "rebuild_extents");
+	e2fsck_write_inode(ctx, ino, EXT2_INODE(&inode), "rebuild_extents");
 
 err2:
 	ext2fs_extent_free(handle);
