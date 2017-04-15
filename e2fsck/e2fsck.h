@@ -169,6 +169,7 @@ struct resource_track {
 #define E2F_OPT_DISCARD		0x2000
 #define E2F_OPT_CONVERT_BMAP	0x4000 /* convert blockmap to extent */
 #define E2F_OPT_FIXES_ONLY	0x8000 /* skip all optimizations */
+#define E2F_OPT_NOOPT_EXTENTS	0x10000 /* don't optimize extents */
 
 /*
  * E2fsck flags

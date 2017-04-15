@@ -709,6 +709,9 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		} else if (strcmp(token, "nodiscard") == 0) {
 			ctx->options &= ~E2F_OPT_DISCARD;
 			continue;
+		} else if (strcmp(token, "no_optimize_extents") == 0) {
+			ctx->options |= E2F_OPT_NOOPT_EXTENTS;
+			continue;
 		} else if (strcmp(token, "log_filename") == 0) {
 			if (!arg)
 				extended_usage++;
@@ -1006,6 +1009,11 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			    &c);
 	if (c)
 		verbose = 1;
+
+	profile_get_boolean(ctx->profile, "options", "no_optimize_extents",
+			    0, 0, &c);
+	if (c)
+		ctx->options |= E2F_OPT_NOOPT_EXTENTS;
 
 	if (ctx->readahead_kb == ~0ULL) {
 		profile_get_integer(ctx->profile, "options",

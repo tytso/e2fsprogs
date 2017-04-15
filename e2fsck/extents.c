@@ -521,6 +521,9 @@ errcode_t e2fsck_should_rebuild_extents(e2fsck_t ctx,
 	if (eti->force_rebuild)
 		goto rebuild;
 
+	if (ctx->options & E2F_OPT_NOOPT_EXTENTS)
+		return 0;
+
 	extents_per_block = (ctx->fs->blocksize -
 			     sizeof(struct ext3_extent_header)) /
 			    sizeof(struct ext3_extent);
