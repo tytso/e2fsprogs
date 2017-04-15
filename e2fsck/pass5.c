@@ -21,8 +21,6 @@
 #include "e2fsck.h"
 #include "problem.h"
 
-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-
 static void check_block_bitmaps(e2fsck_t ctx);
 static void check_inode_bitmaps(e2fsck_t ctx);
 static void check_inode_end(e2fsck_t ctx);

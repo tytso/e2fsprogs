@@ -648,4 +648,7 @@ unsigned long long get_memory_size(void);
 extern void e2fsck_clear_progbar(e2fsck_t ctx);
 extern int e2fsck_simple_progress(e2fsck_t ctx, const char *label,
 				  float percent, unsigned int dpynum);
+
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+
 #endif /* _E2FSCK_H */

@@ -2155,14 +2155,20 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk64_t block)
 	}
 }
 
+/*
+ * When cluster size is greater than one block, it is caller's responsibility
+ * to make sure block parameter starts at a cluster boundary.
+ */
 static _INLINE_ void mark_blocks_used(e2fsck_t ctx, blk64_t block,
 				      unsigned int num)
 {
 	if (ext2fs_test_block_bitmap_range2(ctx->block_found_map, block, num))
 		ext2fs_mark_block_bitmap_range2(ctx->block_found_map, block, num);
-	else
-		while (num--)
-			mark_block_used(ctx, block++);
+	else {
+		int i;
+		for (i = 0; i < num; i += EXT2FS_CLUSTER_RATIO(ctx->fs))
+			mark_block_used(ctx, block + i);
+	}
 }
 
 /*
@@ -2562,8 +2568,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 {
 	struct ext2fs_extent	extent;
 	blk64_t			blk, last_lblk;
-	e2_blkcnt_t		blockcnt;
-	unsigned int		i;
+	unsigned int		i, n;
 	int			is_dir, is_leaf;
 	problem_t		problem;
 	struct ext2_extent_info	info;
@@ -2828,50 +2833,29 @@ report_problem:
 			}
 		}
 alloc_later:
-		while (is_dir && (++pb->last_db_block <
-				  (e2_blkcnt_t) extent.e_lblk)) {
-			pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist,
-							      pb->ino, 0,
-							      pb->last_db_block);
-			if (pctx->errcode) {
-				pctx->blk = 0;
-				pctx->num = pb->last_db_block;
-				goto failed_add_dir_block;
-			}
-		}
-		if (!ctx->fs->cluster_ratio_bits) {
-			mark_blocks_used(ctx, extent.e_pblk, extent.e_len);
-			pb->num_blocks += extent.e_len;
-		}
-		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
-		     i < extent.e_len;
-		     blk++, blockcnt++, i++) {
-			if (ctx->fs->cluster_ratio_bits &&
-			    !(pb->previous_block &&
-			      (EXT2FS_B2C(ctx->fs, blk) ==
-			       EXT2FS_B2C(ctx->fs, pb->previous_block)) &&
-			      (blk & EXT2FS_CLUSTER_MASK(ctx->fs)) ==
-			      ((unsigned) blockcnt & EXT2FS_CLUSTER_MASK(ctx->fs)))) {
-				mark_block_used(ctx, blk);
-				pb->num_blocks++;
-			}
-			if (has_unaligned_cluster_map(ctx, pb->previous_block,
-						      pb->last_block, blk,
-						      blockcnt)) {
-				pctx->blk = blockcnt;
-				pctx->blk2 = blk;
-				fix_problem(ctx, PR_1_MISALIGNED_CLUSTER, pctx);
-				mark_block_used(ctx, blk);
-				mark_block_used(ctx, blk);
-			}
-			pb->last_block = blockcnt;
-			pb->previous_block = blk;
-
-			if (is_dir) {
-				pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist, pctx->ino, blk, blockcnt);
+		if (is_dir) {
+			while (++pb->last_db_block <
+			       (e2_blkcnt_t) extent.e_lblk) {
+				pctx->errcode = ext2fs_add_dir_block2(
+							ctx->fs->dblist,
+							pb->ino, 0,
+							pb->last_db_block);
 				if (pctx->errcode) {
-					pctx->blk = blk;
-					pctx->num = blockcnt;
+					pctx->blk = 0;
+					pctx->num = pb->last_db_block;
+					goto failed_add_dir_block;
+				}
+			}
+
+			for (i = 0; i < extent.e_len; i++) {
+				pctx->errcode = ext2fs_add_dir_block2(
+							ctx->fs->dblist,
+							pctx->ino,
+							extent.e_pblk + i,
+							extent.e_lblk + i);
+				if (pctx->errcode) {
+					pctx->blk = extent.e_pblk + i;
+					pctx->num = extent.e_lblk + i;
 				failed_add_dir_block:
 					fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
 					/* Should never get here */
@@ -2879,9 +2863,46 @@ alloc_later:
 					return;
 				}
 			}
+			if (extent.e_len > 0)
+				pb->last_db_block = extent.e_lblk + extent.e_len - 1;
 		}
-		if (is_dir && extent.e_len > 0)
-			pb->last_db_block = blockcnt - 1;
+		if (has_unaligned_cluster_map(ctx, pb->previous_block,
+					      pb->last_block,
+					      extent.e_pblk,
+					      extent.e_lblk)) {
+			for (i = 0; i < extent.e_len; i++) {
+				pctx->blk = extent.e_lblk + i;
+				pctx->blk2 = extent.e_pblk + i;
+				fix_problem(ctx, PR_1_MISALIGNED_CLUSTER, pctx);
+				mark_block_used(ctx, extent.e_pblk + i);
+				mark_block_used(ctx, extent.e_pblk + i);
+			}
+		}
+
+		/*
+		 * Check whether first cluster got marked in previous iteration.
+		 */
+		if (ctx->fs->cluster_ratio_bits &&
+		    pb->previous_block &&
+		    (EXT2FS_B2C(ctx->fs, extent.e_pblk) ==
+		     EXT2FS_B2C(ctx->fs, pb->previous_block)))
+			/* Set blk to the beginning of next cluster. */
+			blk = EXT2FS_C2B(
+				ctx->fs,
+				EXT2FS_B2C(ctx->fs, extent.e_pblk) + 1);
+		else
+			/* Set blk to the beginning of current cluster. */
+			blk = EXT2FS_C2B(ctx->fs,
+					 EXT2FS_B2C(ctx->fs, extent.e_pblk));
+
+		if (blk < extent.e_pblk + extent.e_len) {
+			mark_blocks_used(ctx, blk,
+					 extent.e_pblk + extent.e_len - blk);
+			n = DIV_ROUND_UP(extent.e_pblk + extent.e_len - blk,
+					 EXT2FS_CLUSTER_RATIO(ctx->fs));
+			pb->num_blocks += n;
+		}
+		pb->last_block = extent.e_lblk + extent.e_len - 1;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
 		start_block = pb->last_block = last_lblk;
 		if (is_leaf && !is_dir &&
