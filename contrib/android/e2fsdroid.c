@@ -19,7 +19,8 @@ static char *basefs_in;
 static char *mountpoint = "";
 static time_t fixed_time = -1;
 static char *fs_config_file;
-static char *file_contexts;
+static struct selinux_opt seopt_file[8];
+static int max_nr_opt = (int)sizeof(seopt_file) / sizeof(seopt_file[0]);
 static char *product_out;
 static char *src_dir;
 static int android_configure;
@@ -58,6 +59,8 @@ int main(int argc, char *argv[])
 	io_manager io_mgr;
 	ext2_filsys fs = NULL;
 	struct fs_ops_callbacks fs_callbacks = { NULL, NULL };
+	char *token;
+	int nr_opt = 0;
 
 	add_error_table(&et_ext2_error_table);
 
@@ -72,7 +75,18 @@ int main(int argc, char *argv[])
 			android_configure = 1;
 			break;
 		case 'S':
-			file_contexts = absolute_path(optarg);
+			token = strtok(optarg, ",");
+			while (token) {
+				if (nr_opt == max_nr_opt) {
+					fprintf(stderr, "Expected at most %d selinux opts\n",
+						max_nr_opt);
+					exit(EXIT_FAILURE);
+				}
+				seopt_file[nr_opt].type = SELABEL_OPT_PATH;
+				seopt_file[nr_opt].value = absolute_path(token);
+				nr_opt++;
+				token = strtok(NULL, ",");
+			}
 			android_configure = 1;
 			break;
 		case 'p':
@@ -140,7 +154,7 @@ int main(int argc, char *argv[])
 
 	if (android_configure) {
 		retval = android_configure_fs(fs, src_dir, product_out, mountpoint,
-			file_contexts, fs_config_file, fixed_time);
+			seopt_file, nr_opt, fs_config_file, fixed_time);
 		if (retval) {
 			com_err(prog_name, retval, "%s",
 				"while configuring the file system");

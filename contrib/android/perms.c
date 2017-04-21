@@ -287,7 +287,8 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *src_dir,
 
 errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 			       char *mountpoint,
-			       char *file_contexts,
+			       struct selinux_opt *seopts,
+			       unsigned int nopt,
 			       char *fs_config_file, time_t fixed_time)
 {
 	errcode_t retval;
@@ -295,10 +296,8 @@ errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 	struct selabel_handle *sehnd = NULL;
 
 	/* Retrieve file contexts */
-	if (file_contexts) {
-		struct selinux_opt seopts[] = { { SELABEL_OPT_PATH, "" } };
-		seopts[0].value = file_contexts;
-		sehnd = selabel_open(SELABEL_CTX_FILE, seopts, 1);
+	if (nopt > 0) {
+		sehnd = selabel_open(SELABEL_CTX_FILE, seopts, nopt);
 		if (!sehnd) {
 			com_err(__func__, -EINVAL,
 				_("while opening file contexts \"%s\""),
