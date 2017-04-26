@@ -164,7 +164,7 @@ tst_set_fields: set_fields.c util.c
 	$(Q) $(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(SYSLIBS) -DUNITTEST \
 		-o tst_set_fields $(srcdir)/set_fields.c $(srcdir)/util.c $(LIBS)
 
-check:: tst_set_fields
+fullcheck check:: tst_set_fields
 	$(TESTENV) ./tst_set_fields
 
 # +++ Dependency line eater +++

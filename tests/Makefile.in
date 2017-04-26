@@ -41,8 +41,10 @@ always_run:
 @ifGNUmake@TESTS=$(wildcard $(srcdir)/[a-z]_*)
 @ifNotGNUmake@TESTS != echo $(srcdir)/[a-z]_*
 
+SKIP_SLOW_TESTS=--skip-slow-tests
+
 $(TESTS):: test_one always_run
-	@./test_one $@
+	@./test_one $(SKIP_SLOW_TESTS) $@
 
 foo:
 	echo $(TESTS)
@@ -56,6 +58,9 @@ test_post: test_pre $(TESTS)
 	@$(srcdir)/test_post
 
 check:: test_pre test_post test_script
+
+fullcheck::
+	$(MAKE) SKIP_SLOW_TESTS= check
 
 check-failed: $(basename $(wildcard *.failed))
 	@$(srcdir)/test_post

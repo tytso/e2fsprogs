@@ -13,6 +13,10 @@ case "$1" in
     	export USE_VALGRIND="valgrind --sim-hints=lax-ioctls --leak-check=full --show-reachable=yes --log-file=/tmp/valgrind-%p.log"
 	shift;
 	;;
+    --skip-slow-tests)
+	SKIP_SLOW_TESTS=yes
+	shift;
+	;;
 esac
 
 case "$1" in
@@ -47,6 +51,11 @@ if [ -f $test_dir/name ]; then
 	test_description=`cat $test_dir/name`
 else
 	test_description=
+fi
+
+if [ -n "$SKIP_SLOW_TESTS" -a -f $test_dir/is_slow_test ]; then
+    echo "$test_name: $test_description: skipped (slow test)"
+    exit 0
 fi
 
 rm -f $test_name.ok $test_name.failed

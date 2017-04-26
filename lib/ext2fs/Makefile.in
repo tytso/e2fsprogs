@@ -521,7 +521,7 @@ mkjournal: mkjournal.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	$(Q) $(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS) $(SYSLIBS)
 
-check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
+fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
     tst_super_size tst_types tst_inode_size tst_csum tst_crc32c tst_bitmaps \
     tst_inline tst_inline_data tst_libext2fs tst_sha256 tst_sha512 \
     tst_digest_encode tst_getsize tst_getsectsize
