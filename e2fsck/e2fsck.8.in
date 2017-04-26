@@ -226,6 +226,10 @@ option may prevent you from further manual data recovery.
 Do not attempt to discard free blocks and unused inode blocks. This option is
 exactly the opposite of discard option. This is set as default.
 .TP
+.BI no_optimize_extents
+Do not offer to optimize the extent tree by eliminating unnecessary
+width or depth.
+.TP
 .BI readahead_kb
 Use this many KiB of memory to pre-fetch metadata in the hopes of reducing
 e2fsck runtime.  By default, this is set to the size of two block groups' inode
