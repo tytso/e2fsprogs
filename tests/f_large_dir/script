@@ -13,19 +13,26 @@ INDEX_L2=$(((BLOCKSZ - DIRENT_SZ) / INDEX_SZ))
 ENTRIES=$((INDEX_L1 * INDEX_L2 * DIRENT_PER_LEAF))
 
 cp /dev/null $OUT
-$MKE2FS -b 1024 -O large_dir,uninit_bg,dir_nlink -F $TMPFILE 460800 > /dev/null
+$MKE2FS -b 1024 -O large_dir,uninit_bg,dir_nlink -F $TMPFILE 460800 \
+	> /dev/null 2>&1
 {
 	echo "feature large_dir"
 	echo "mkdir /foo"
 	echo "cd /foo"
 	touch foofile
 	echo "write foofile foofile"
-	for ((i = 0; i < $ENTRIES; i++)); do
-		[[ $(( i % DIRENT_PER_LEAF )) -eq 0 ]] && echo "expand ./" 
-		[[ $(( i % 5000 )) -eq 0 ]] && >&2 echo "$i processed"
-		printf "ln foofile %0255X\n" $i
+	i=0
+	while test $i  -lt $ENTRIES ; do
+	    if test $(( i % DIRENT_PER_LEAF )) -eq 0 ; then
+		echo "expand ./"
+	    fi
+	    if test $(( i % 5000 )) -eq 0 -a $i -gt 0 ; then
+		>&2 echo "$test_name: $i processed"
+	    fi
+	    printf "ln foofile %0255X\n" $i
+	    i=$(($i + 1))
 	done
-} | $DEBUGFS -w -f /dev/stdin $TMPFILE > /dev/null
+} | $DEBUGFS -w -f /dev/stdin $TMPFILE > /dev/null 2>&1
 
 $E2FSCK -yfD $TMPFILE > $OUT.new 2>&1
 status=$?
@@ -42,6 +49,3 @@ else
 	echo "$test_name: $test_description: failed"
 	diff -u $EXP $OUT > $test_name.failed
 fi
-
-
-
