@@ -153,11 +153,12 @@ static errcode_t set_timestamp(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 	}
 
-	if (params->fixed_time == -1) {
+	if (params->fixed_time == -1 && params->src_dir) {
 		/* replace mountpoint from filename with src_dir */
 		if (asprintf(&src_filename, "%s/%s", params->src_dir,
-					params->filename + strlen(params->mountpoint)) < 0)
+			params->filename + strlen(params->mountpoint)) < 0) {
 			return -ENOMEM;
+		}
 		retval = lstat(src_filename, &stat);
 		if (retval < 0) {
 			com_err(__func__, retval,
