@@ -244,6 +244,9 @@
 /* Define to 1 if you have the <linux/fd.h> header file. */
 #undef HAVE_LINUX_FD_H
 
+/* Define to 1 if you have the <linux/fsmap.h> header file. */
+#undef HAVE_LINUX_FSMAP_H
+
 /* Define to 1 if you have the <linux/loop.h> header file. */
 #undef HAVE_LINUX_LOOP_H
 
