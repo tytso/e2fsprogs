@@ -23,7 +23,6 @@ cc_defaults {
         "extent_cmds.c",
         "extent_inode.c",
         "zap.c",
-        "create_inode.c",
         "quota.c",
         "xattrs.c",
         "journal.c",
@@ -45,6 +44,7 @@ cc_defaults {
 }
 
 debugfs_libs = [
+    "libext2_misc",
     "libext2fs",
     "libext2_blkid",
     "libext2_uuid",

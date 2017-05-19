@@ -30,12 +30,12 @@ cc_binary {
         "util.c",
         "mk_hugefiles.c",
         "default_profile.c",
-        "create_inode.c",
     ],
     cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_blkid",
+        "libext2_misc",
         "libext2_uuid",
         "libext2_quota",
         "libext2_com_err",
