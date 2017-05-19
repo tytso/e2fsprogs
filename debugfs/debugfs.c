@@ -26,6 +26,9 @@ extern char *optarg;
 #include <errno.h>
 #endif
 #include <fcntl.h>
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 
 #include "debugfs.h"
 #include "uuid/uuid.h"

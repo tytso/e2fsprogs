@@ -35,6 +35,9 @@ extern int optind;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 #include <libgen.h>
 #include <limits.h>
 #include <blkid/blkid.h>
@@ -260,6 +263,7 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 {
 	errcode_t		retval;
 	struct ext2_inode	inode;
+	int			falloc_flags;
 
 	retval = ext2fs_new_inode(fs, 0, LINUX_S_IFREG, NULL, ino);
 	if (retval)
@@ -281,10 +285,11 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 
 	if (ext2fs_has_feature_extents(fs->super))
 		inode.i_flags |= EXT4_EXTENTS_FL;
-	retval = ext2fs_fallocate(fs,
-				  EXT2_FALLOCATE_FORCE_INIT |
-				  EXT2_FALLOCATE_ZERO_BLOCKS,
-				  *ino, &inode, goal, 0, num);
+
+	falloc_flags = EXT2_FALLOCATE_FORCE_INIT;
+	if (zero_hugefile)
+		falloc_flags |= EXT2_FALLOCATE_ZERO_BLOCKS;
+	retval = ext2fs_fallocate(fs, falloc_flags, *ino, &inode, goal, 0, num);
 	if (retval)
 		return retval;
 	retval = ext2fs_inode_size_set(fs, &inode, num * fs->blocksize);
