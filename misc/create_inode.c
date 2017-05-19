@@ -22,6 +22,10 @@
 #include <attr/xattr.h>
 #endif
 #include <sys/ioctl.h>
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
+
 #include <ext2fs/ext2fs.h>
 #include <ext2fs/ext2_types.h>
 #include <ext2fs/fiemap.h>
