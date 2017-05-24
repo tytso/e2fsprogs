@@ -23,13 +23,13 @@ chattr \- change file attributes on a Linux file system
 .B chattr
 changes the file attributes on a Linux file system.
 .PP
-The format of a symbolic mode is +-=[aAcCdDeijsStTu].
+The format of a symbolic mode is +-=[aAcCdDeijmPsStTu].
 .PP
 The operator '+' causes the selected attributes to be added to the
 existing attributes of the files; '-' causes them to be removed; and '='
 causes them to be the only attributes that the files have.
 .PP
-The letters 'aAcCdDeijsStTu' select the new attributes for the files:
+The letters 'aAcCdDeijmPsStTu' select the new attributes for the files:
 append only (a),
 no atime updates (A),
 compressed (c),
@@ -39,6 +39,7 @@ synchronous directory updates (D),
 extent format (e),
 immutable (i),
 data journalling (j),
+don't compress (m),
 project hierarchy (P),
 secure deletion (s),
 synchronous updates (S),
@@ -147,6 +148,9 @@ filesystem is mounted with the "data=journal" option all file data
 is already journalled and this attribute has no effect.  Only
 the superuser or a process possessing the CAP_SYS_RESOURCE
 capability can set or clear this attribute.
+.PP
+A file with the 'm' attribute is excluded from compression on file
+systems that support per-file compression.
 .PP
 A file with the 'N' attribute set indicates that the file has data
 stored inline, within the inode itself. It may not be set or reset using

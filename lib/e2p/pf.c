@@ -47,6 +47,7 @@ static struct flags_name flags_array[] = {
 	{ FS_NOCOW_FL, "C", "No_COW" },
 	{ EXT4_INLINE_DATA_FL, "N", "Inline_Data" },
 	{ EXT4_PROJINHERIT_FL, "P", "Project_Hierarchy" },
+	{ EXT2_NOCOMPR_FL, "m", "Dont_Compress" },
 	{ 0, NULL, NULL }
 };
 
@@ -74,4 +75,3 @@ void print_flags (FILE * f, unsigned long flags, unsigned options)
 	if (long_opt && first)
 		fputs("---", f);
 }
-
