@@ -71,7 +71,7 @@ blk64_t ext2fs_inode_data_blocks2(ext2_filsys fs,
 	return (inode->i_blocks |
 		(ext2fs_has_feature_huge_file(fs->super) ?
 		 (__u64) inode->osd2.linux2.l_i_blocks_hi << 32 : 0)) -
-		(inode->i_file_acl ? fs->blocksize >> 9 : 0);
+		(inode->i_file_acl ? EXT2_CLUSTER_SIZE(fs->super) >> 9 : 0);
 }
 
 /*
