@@ -1898,15 +1898,17 @@ no_journal:
 		ext2fs_mark_super_dirty(fs);
 	}
 
-	e2fsck_write_bitmaps(ctx);
-	if (fs->flags & EXT2_FLAG_DIRTY) {
-		pctx.errcode = ext2fs_flush(ctx->fs);
+	if (!(ctx->options & E2F_OPT_READONLY)) {
+		e2fsck_write_bitmaps(ctx);
+		if (fs->flags & EXT2_FLAG_DIRTY) {
+			pctx.errcode = ext2fs_flush(ctx->fs);
+			if (pctx.errcode)
+				fix_problem(ctx, PR_6_FLUSH_FILESYSTEM, &pctx);
+		}
+		pctx.errcode = io_channel_flush(ctx->fs->io);
 		if (pctx.errcode)
-			fix_problem(ctx, PR_6_FLUSH_FILESYSTEM, &pctx);
+			fix_problem(ctx, PR_6_IO_FLUSH, &pctx);
 	}
-	pctx.errcode = io_channel_flush(ctx->fs->io);
-	if (pctx.errcode)
-		fix_problem(ctx, PR_6_IO_FLUSH, &pctx);
 
 	if (was_changed) {
 		int fs_fixed = (ctx->flags & E2F_FLAG_PROBLEMS_FIXED);
