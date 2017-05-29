@@ -2934,7 +2934,14 @@ int main (int argc, char *argv[])
 	 * Parse or generate a UUID for the filesystem
 	 */
 	if (fs_uuid) {
-		if (uuid_parse(fs_uuid, fs->super->s_uuid) !=0) {
+		if ((strcasecmp(fs_uuid, "null") == 0) ||
+		    (strcasecmp(fs_uuid, "clear") == 0)) {
+			uuid_clear(fs->super->s_uuid);
+		} else if (strcasecmp(fs_uuid, "time") == 0) {
+			uuid_generate_time(fs->super->s_uuid);
+		} else if (strcasecmp(fs_uuid, "random") == 0) {
+			uuid_generate(fs->super->s_uuid);
+		} else if (uuid_parse(fs_uuid, fs->super->s_uuid) !=0) {
 			com_err(device_name, 0, "could not parse UUID: %s\n",
 				fs_uuid);
 			exit(1);
