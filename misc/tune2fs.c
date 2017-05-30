@@ -189,6 +189,7 @@ static __u32 clear_ok_features[3] = {
 		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
 		EXT4_FEATURE_RO_COMPAT_QUOTA |
+		EXT4_FEATURE_RO_COMPAT_PROJECT |
 		EXT4_FEATURE_RO_COMPAT_METADATA_CSUM |
 		EXT4_FEATURE_RO_COMPAT_READONLY
 };
@@ -1309,12 +1310,15 @@ mmp_error:
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
-				EXT4_FEATURE_RO_COMPAT_PROJECT)) {
-		if (!Q_flag && !ext2fs_has_feature_quota(sb))
-			fputs(_("\nWarning: enabled project without quota together\n"),
-				stderr);
+		       EXT4_FEATURE_RO_COMPAT_PROJECT)) {
 		Q_flag = 1;
 		quota_enable[PRJQUOTA] = QOPT_ENABLE;
+	}
+
+	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
+			EXT4_FEATURE_RO_COMPAT_PROJECT)) {
+		Q_flag = 1;
+		quota_enable[PRJQUOTA] = QOPT_DISABLE;
 	}
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
@@ -1485,6 +1489,7 @@ static void handle_quota_options(ext2_filsys fs)
 	ext2_ino_t qf_ino;
 	enum quota_type qtype;
 	unsigned int qtype_bits = 0;
+	int need_dirty = 0;
 
 	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++)
 		if (quota_enable[qtype] != 0)
@@ -1528,6 +1533,16 @@ static void handle_quota_options(ext2_filsys fs)
 					qtype);
 				exit(1);
 			}
+			/* Enable Quota feature if one of quota enabled */
+			if (!ext2fs_has_feature_quota(fs->super)) {
+				ext2fs_set_feature_quota(fs->super);
+				need_dirty = 1;
+			}
+			if (qtype == PRJQUOTA &&
+			    !ext2fs_has_feature_project(fs->super)) {
+				ext2fs_set_feature_project(fs->super);
+				need_dirty = 1;
+			}
 		} else if (quota_enable[qtype] == QOPT_DISABLE) {
 			retval = quota_remove_inode(fs, qtype);
 			if (retval) {
@@ -1536,25 +1551,27 @@ static void handle_quota_options(ext2_filsys fs)
 					qtype);
 				exit(1);
 			}
+			if (qtype == PRJQUOTA) {
+				ext2fs_clear_feature_project(fs->super);
+				need_dirty = 1;
+			}
 		}
 	}
 
 	quota_release_context(&qctx);
-
-	if (qtype_bits) {
-		ext2fs_set_feature_quota(fs->super);
-		ext2fs_mark_super_dirty(fs);
-	} else {
+	/* Clear Quota feature if all quota types disabled. */
+	if (!qtype_bits) {
 		for (qtype = 0 ; qtype < MAXQUOTAS; qtype++)
-			if (*quota_sb_inump(fs->super, qtype) != 0)
+			if (*quota_sb_inump(fs->super, qtype))
 				break;
 		if (qtype == MAXQUOTAS) {
-			fs->super->s_feature_ro_compat &=
-					~EXT4_FEATURE_RO_COMPAT_QUOTA;
-			ext2fs_mark_super_dirty(fs);
+			ext2fs_clear_feature_quota(fs->super);
+			need_dirty = 1;
 		}
-	}
 
+	}
+	if (need_dirty)
+		ext2fs_mark_super_dirty(fs);
 	return;
 }
 

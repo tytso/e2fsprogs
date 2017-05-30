@@ -738,7 +738,25 @@ will use the default filesystem type
 .IR default .
 .TP
 .BI \-U " UUID"
-Create the filesystem with the specified UUID.
+Set the universally unique identifier (UUID) of the filesystem to
+.IR UUID .
+The format of the UUID is a series of hex digits separated by hyphens,
+like this:
+"c1b9d5a2-f162-11cf-9ece-0020afc76f16".
+The
+.I UUID
+parameter may also be one of the following:
+.RS 1.2i
+.TP
+.I clear
+clear the filesystem UUID
+.TP
+.I random
+generate a new randomly-generated UUID
+.TP
+.I time
+generate a new time-based UUID
+.RE
 .TP
 .B \-v
 Verbose execution.
