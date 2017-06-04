@@ -282,7 +282,7 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	unsigned long	fs_state;
 	__u32		feature_incompat;
 	struct ext2_super_block *super_shadow = 0;
-	struct ext2_group_desc *group_shadow = 0;
+	struct opaque_ext2_group_desc *group_shadow = 0;
 #ifdef WORDS_BIGENDIAN
 	struct ext2_group_desc *gdp;
 	dgrp_t		j;
@@ -343,7 +343,7 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	}
 #else
 	super_shadow = fs->super;
-	group_shadow = ext2fs_group_desc(fs, fs->group_desc, 0);
+	group_shadow = fs->group_desc;
 #endif
 
 	/*
