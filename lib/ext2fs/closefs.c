@@ -260,10 +260,8 @@ static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 	if (sgrp > ((1 << 16) - 1))
 		sgrp = (1 << 16) - 1;
 
-	super_shadow->s_block_group_nr = sgrp;
-#ifdef WORDS_BIGENDIAN
-	ext2fs_swap_super(super_shadow);
-#endif
+	super_shadow->s_block_group_nr = ext2fs_cpu_to_le16(sgrp);
+
 	retval = ext2fs_superblock_csum_set(fs, super_shadow);
 	if (retval)
 		return retval;
@@ -316,7 +314,15 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 			goto errout;
 	}
 
-	/* Prepare the group descriptors for writing */
+	/*
+	 * Set the state of the FS to be non-valid.  (The state has
+	 * already been backed up earlier, and will be restored after
+	 * we write out the backup superblocks.)
+	 */
+	fs->super->s_state &= ~EXT2_VALID_FS;
+	ext2fs_clear_feature_journal_needs_recovery(fs->super);
+
+	/* Byte swap the superblock and the group descriptors if necessary */
 #ifdef WORDS_BIGENDIAN
 	retval = EXT2_ET_NO_MEMORY;
 	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &super_shadow);
@@ -330,7 +336,7 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	memcpy(group_shadow, fs->group_desc, (size_t) fs->blocksize *
 	       fs->desc_blocks);
 
-	/* swap the group descriptors */
+	ext2fs_swap_super(super_shadow);
 	for (j = 0; j < fs->group_desc_count; j++) {
 		gdp = ext2fs_group_desc(fs, group_shadow, j);
 		ext2fs_swap_group_desc2(fs, gdp);
@@ -339,14 +345,6 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 	super_shadow = fs->super;
 	group_shadow = ext2fs_group_desc(fs, fs->group_desc, 0);
 #endif
-
-	/*
-	 * Set the state of the FS to be non-valid.  (The state has
-	 * already been backed up earlier, and will be restored after
-	 * we write out the backup superblocks.)
-	 */
-	fs->super->s_state &= ~EXT2_VALID_FS;
-	ext2fs_clear_feature_journal_needs_recovery(fs->super);
 
 	/*
 	 * If this is an external journal device, don't write out the
