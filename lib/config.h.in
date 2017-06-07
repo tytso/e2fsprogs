@@ -470,6 +470,9 @@
 /* Define to 1 if you have the `sync_file_range' function. */
 #undef HAVE_SYNC_FILE_RANGE
 
+/* Define to 1 if you have the 'fsync' function. */
+#undef HAVE_FSYNC
+
 /* Define to 1 if you have the `sysconf' function. */
 #undef HAVE_SYSCONF
 
