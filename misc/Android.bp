@@ -31,6 +31,9 @@ cc_binary {
         "mk_hugefiles.c",
         "default_profile.c",
     ],
+    required: [
+        "mke2fs.conf",
+    ],
     cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
