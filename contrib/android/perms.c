@@ -291,6 +291,7 @@ errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 	struct selabel_handle *sehnd = NULL;
 
 	/* Retrieve file contexts */
+#if !defined(__ANDROID__)
 	if (nopt > 0) {
 		sehnd = selabel_open(SELABEL_CTX_FILE, seopts, nopt);
 		if (!sehnd) {
@@ -300,6 +301,14 @@ errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 			return -EINVAL;
 		}
 	}
+#else
+	sehnd = selinux_android_file_context_handle();
+	if (!sehnd) {
+		com_err(__func__, -EINVAL,
+			_("while opening android file_contexts"));
+		return -EINVAL;
+	}
+#endif
 
 	/* Load the FS config */
 	if (fs_config_file) {

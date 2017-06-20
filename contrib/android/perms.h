@@ -25,7 +25,7 @@ static inline errcode_t android_configure_fs(ext2_filsys fs,
 # else
 #  include <selinux/selinux.h>
 #  include <selinux/label.h>
-#  if !defined(HOST)
+#  if defined(__ANDROID__)
 #   include <selinux/android.h>
 #  endif
 #  include <private/android_filesystem_config.h>
