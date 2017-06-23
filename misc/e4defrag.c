@@ -41,6 +41,8 @@
 #include <sys/statfs.h>
 #include <sys/vfs.h>
 
+#include "../version.h"
+
 /* A relatively new ioctl interface ... */
 #ifndef EXT4_IOC_MOVE_EXT
 #define EXT4_IOC_MOVE_EXT      _IOWR('f', 15, struct move_extent)
@@ -1678,6 +1680,8 @@ int main(int argc, char *argv[])
 	char	dev_name[PATH_MAX + 1];
 	struct stat64	buf;
 	ext2_filsys fs = NULL;
+
+	printf("e4defrag %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
 	/* Parse arguments */
 	if (argc == 1)
