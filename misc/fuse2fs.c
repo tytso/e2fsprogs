@@ -863,8 +863,9 @@ static int op_readlink(const char *path, char *buf, size_t len)
 	len--;
 	if (inode.i_size < len)
 		len = inode.i_size;
-	if (ext2fs_inode_data_blocks2(fs, &inode) ||
-	    (inode.i_flags & EXT4_INLINE_DATA_FL)) {
+	if (ext2fs_is_fast_symlink(&inode))
+		memcpy(buf, (char *)inode.i_block, len);
+	else {
 		/* big/inline symlink */
 
 		err = ext2fs_file_open(fs, ino, 0, &file);
@@ -888,9 +889,7 @@ out2:
 			ret = translate_error(fs, ino, err);
 			goto out;
 		}
-	} else
-		/* inline symlink */
-		memcpy(buf, (char *)inode.i_block, len);
+	}
 	buf[len] = 0;
 
 	if (fs_writeable(fs)) {

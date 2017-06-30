@@ -353,10 +353,11 @@ blk64_t ext2fs_find_inode_goal(ext2_filsys fs, ext2_ino_t ino,
 	ext2_extent_handle_t	handle = NULL;
 	errcode_t		err;
 
-	if (inode == NULL || ext2fs_inode_data_blocks2(fs, inode) == 0)
-		goto no_blocks;
-
-	if (inode->i_flags & EXT4_INLINE_DATA_FL)
+	/* Make sure data stored in inode->i_block is neither fast symlink nor
+	 * inline data.
+	 */
+	if (inode == NULL || ext2fs_is_fast_symlink(inode) ||
+	    inode->i_flags & EXT4_INLINE_DATA_FL)
 		goto no_blocks;
 
 	if (inode->i_flags & EXT4_EXTENTS_FL) {

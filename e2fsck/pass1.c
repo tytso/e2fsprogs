@@ -179,7 +179,6 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 {
 	unsigned int len;
 	int i;
-	blk64_t	blocks;
 	ext2_extent_handle_t	handle;
 	struct ext2_extent_info	info;
 	struct ext2fs_extent	extent;
@@ -223,12 +222,15 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		return 1;
 	}
 
-	blocks = ext2fs_inode_data_blocks2(fs, inode);
-	if (blocks) {
-		if (inode->i_flags & EXT4_INLINE_DATA_FL)
+	if (ext2fs_is_fast_symlink(inode)) {
+		if (inode->i_size >= sizeof(inode->i_block))
 			return 0;
+
+		len = strnlen((char *)inode->i_block, sizeof(inode->i_block));
+		if (len == sizeof(inode->i_block))
+			return 0;
+	} else {
 		if ((inode->i_size >= fs->blocksize) ||
-		    (blocks != fs->blocksize >> 9) ||
 		    (inode->i_block[0] < fs->super->s_first_data_block) ||
 		    (inode->i_block[0] >= ext2fs_blocks_count(fs->super)))
 			return 0;
@@ -246,34 +248,6 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 			len = strnlen(buf, fs->blocksize);
 		}
 		if (len == fs->blocksize)
-			return 0;
-	} else if (inode->i_flags & EXT4_INLINE_DATA_FL) {
-		char *inline_buf = NULL;
-		size_t inline_sz = 0;
-
-		if (ext2fs_inline_data_size(fs, ino, &inline_sz))
-			return 0;
-		if (inode->i_size != inline_sz)
-			return 0;
-		if (ext2fs_get_mem(inline_sz + 1, &inline_buf))
-			return 0;
-		i = 0;
-		if (ext2fs_inline_data_get(fs, ino, inode, inline_buf, NULL))
-			goto exit_inline;
-		inline_buf[inline_sz] = 0;
-		len = strnlen(inline_buf, inline_sz);
-		if (len != inline_sz)
-			goto exit_inline;
-		i = 1;
-exit_inline:
-		ext2fs_free_mem(&inline_buf);
-		return i;
-	} else {
-		if (inode->i_size >= sizeof(inode->i_block))
-			return 0;
-
-		len = strnlen((char *)inode->i_block, sizeof(inode->i_block));
-		if (len == sizeof(inode->i_block))
 			return 0;
 	}
 	if (len != inode->i_size)
@@ -1911,7 +1885,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (inode->i_flags & EXT4_INLINE_DATA_FL) {
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
-			} else if (ext2fs_inode_data_blocks(fs, inode) == 0) {
+			} else if (ext2fs_is_fast_symlink(inode)) {
 				ctx->fs_fast_symlinks_count++;
 				check_blocks(ctx, &pctx, block_buf,
 					     ea_ibody_quota_blocks);

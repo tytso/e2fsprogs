@@ -174,3 +174,14 @@ cleanup:
 		ext2fs_free_mem(&block_buf);
 	return retval;
 }
+
+/*
+ * Test whether an inode is a fast symlink.
+ *
+ * A fast symlink has its symlink data stored in inode->i_block.
+ */
+int ext2fs_is_fast_symlink(struct ext2_inode *inode)
+{
+	return LINUX_S_ISLNK(inode->i_mode) && EXT2_I_SIZE(inode) &&
+	       EXT2_I_SIZE(inode) < sizeof(inode->i_block);
+}
