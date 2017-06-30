@@ -50,7 +50,7 @@ static void print_dquot(const char *desc, struct dquot *dq)
 {
 	if (desc)
 		fprintf(stderr, "%s: ", desc);
-	fprintf(stderr, "%u %lld:%lld:%lld %lld:%lld:%lld\n",
+	fprintf(stderr, "%u %ld:%ld:%ld %ld:%ld:%ld\n",
 		dq->dq_id, dq->dq_dqb.dqb_curspace,
 		dq->dq_dqb.dqb_bsoftlimit, dq->dq_dqb.dqb_bhardlimit,
 		dq->dq_dqb.dqb_curinodes,
@@ -523,7 +523,7 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 	    dq->dq_dqb.dqb_curinodes != dquot->dq_dqb.dqb_curinodes) {
 		scan_data->usage_is_inconsistent = 1;
 		fprintf(stderr, "[QUOTA WARNING] Usage inconsistent for ID %u:"
-			"actual (%lld, %lld) != expected (%lld, %lld)\n",
+			"actual (%ld, %ld) != expected (%ld, %ld)\n",
 			dq->dq_id, dq->dq_dqb.dqb_curspace,
 			dq->dq_dqb.dqb_curinodes,
 			dquot->dq_dqb.dqb_curspace,
