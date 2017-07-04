@@ -449,7 +449,7 @@ fix:
 }
 
 static int check_inode_extra_negative_epoch(__u32 xtime, __u32 extra) {
-	return (xtime & (1 << 31)) != 0 &&
+	return (xtime & (1U << 31)) != 0 &&
 		(extra & EXT4_EPOCH_MASK) == EXT4_EPOCH_MASK;
 }
 
@@ -3072,7 +3072,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.previous_block = 0;
 	pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
 	pb.is_reg = LINUX_S_ISREG(inode->i_mode);
-	pb.max_blocks = 1 << (31 - fs->super->s_log_block_size);
+	pb.max_blocks = 1U << (31 - fs->super->s_log_block_size);
 	pb.inode = inode;
 	pb.pctx = pctx;
 	pb.ctx = ctx;

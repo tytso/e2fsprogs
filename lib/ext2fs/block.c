@@ -251,7 +251,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	}
 	check_for_ro_violation_return(ctx, ret);
 	if (!*tind_block || (ret & BLOCK_ABORT)) {
-		ctx->bcount += limit*limit*limit;
+		ctx->bcount += ((unsigned long long) limit)*limit*limit;
 		return ret;
 	}
 	if (*tind_block >= ext2fs_blocks_count(ctx->fs->super) ||
