@@ -719,114 +719,223 @@ static errcode_t rewrite_directory(ext2_filsys fs, ext2_ino_t dir,
 }
 
 /*
+ * Context information that does not change across rewrite_one_inode()
+ * invocations.
+ */
+struct rewrite_context {
+	ext2_filsys fs;
+	struct ext2_inode *zero_inode;
+	char *ea_buf;
+	int inode_size;
+};
+
+#define fatal_err(code, args...)		\
+	do {					\
+		com_err(__func__, code, args);	\
+		exit(1);			\
+	} while (0);
+
+static void update_ea_inode_hash(struct rewrite_context *ctx, ext2_ino_t ino,
+				 struct ext2_inode *inode)
+{
+	errcode_t retval;
+	ext2_file_t file;
+	__u32 hash;
+
+	retval = ext2fs_file_open(ctx->fs, ino, 0, &file);
+	if (retval)
+		fatal_err(retval, "open ea_inode");
+	retval = ext2fs_file_read(file, ctx->ea_buf, inode->i_size,
+				  NULL);
+	if (retval)
+		fatal_err(retval, "read ea_inode");
+	retval = ext2fs_file_close(file);
+	if (retval)
+		fatal_err(retval, "close ea_inode");
+
+	hash = ext2fs_crc32c_le(ctx->fs->csum_seed, ctx->ea_buf, inode->i_size);
+	ext2fs_set_ea_inode_hash(inode, hash);
+}
+
+static int update_xattr_entry_hashes(ext2_filsys fs,
+				     struct ext2_ext_attr_entry *entry,
+				     struct ext2_ext_attr_entry *end)
+{
+	int modified = 0;
+	errcode_t retval;
+
+	while (entry < end && !EXT2_EXT_IS_LAST_ENTRY(entry)) {
+		if (entry->e_value_inum) {
+			retval = ext2fs_ext_attr_hash_entry2(fs, entry, NULL,
+							     &entry->e_hash);
+			if (retval)
+				fatal_err(retval, "hash ea_inode entry");
+			modified = 1;
+		}
+		entry = EXT2_EXT_ATTR_NEXT(entry);
+	}
+	return modified;
+}
+
+static void update_inline_xattr_hashes(struct rewrite_context *ctx,
+				       struct ext2_inode_large *inode)
+{
+	struct ext2_ext_attr_entry *start, *end;
+	__u32 *ea_magic;
+
+	if (inode->i_extra_isize == 0)
+		return;
+
+	if (inode->i_extra_isize & 3 ||
+	    inode->i_extra_isize > ctx->inode_size - EXT2_GOOD_OLD_INODE_SIZE)
+		fatal_err(EXT2_ET_INODE_CORRUPTED, "bad i_extra_isize")
+
+	ea_magic = (__u32 *)((char *)inode + EXT2_GOOD_OLD_INODE_SIZE +
+				inode->i_extra_isize);
+	if (*ea_magic != EXT2_EXT_ATTR_MAGIC)
+		return;
+
+	start = (struct ext2_ext_attr_entry *)(ea_magic + 1);
+	end = (struct ext2_ext_attr_entry *)((char *)inode + ctx->inode_size);
+
+	update_xattr_entry_hashes(ctx->fs, start, end);
+}
+
+static void update_block_xattr_hashes(struct rewrite_context *ctx,
+				      void *block_buf)
+{
+	struct ext2_ext_attr_header *header;
+	struct ext2_ext_attr_entry *start, *end;
+
+	header = (struct ext2_ext_attr_header *)block_buf;
+	if (header->h_magic != EXT2_EXT_ATTR_MAGIC)
+		return;
+
+	start = (struct ext2_ext_attr_entry *)(header+1);
+	end = (struct ext2_ext_attr_entry *)(block_buf + ctx->fs->blocksize);
+
+	if (update_xattr_entry_hashes(ctx->fs, start, end))
+		ext2fs_ext_attr_block_rehash(header, end);
+}
+
+static void rewrite_one_inode(struct rewrite_context *ctx, ext2_ino_t ino,
+			      struct ext2_inode *inode)
+{
+	blk64_t file_acl_block;
+	errcode_t retval;
+
+	if (!ext2fs_test_inode_bitmap2(ctx->fs->inode_map, ino)) {
+		if (!memcmp(inode, ctx->zero_inode, ctx->inode_size))
+			return;
+		memset(inode, 0, ctx->inode_size);
+	}
+
+	if (inode->i_flags & EXT4_EA_INODE_FL)
+		update_ea_inode_hash(ctx, ino, inode);
+
+	if (ctx->inode_size != EXT2_GOOD_OLD_INODE_SIZE)
+		update_inline_xattr_hashes(ctx,
+					   (struct ext2_inode_large *)inode);
+
+	retval = ext2fs_write_inode_full(ctx->fs, ino, inode, ctx->inode_size);
+	if (retval)
+		fatal_err(retval, "while writing inode");
+
+	retval = rewrite_extents(ctx->fs, ino, inode);
+	if (retval)
+		fatal_err(retval, "while rewriting extents");
+
+	if (LINUX_S_ISDIR(inode->i_mode) &&
+	    ext2fs_inode_has_valid_blocks2(ctx->fs, inode)) {
+		retval = rewrite_directory(ctx->fs, ino, inode);
+		if (retval)
+			fatal_err(retval, "while rewriting directories");
+	}
+
+	file_acl_block = ext2fs_file_acl_block(ctx->fs, inode);
+	if (!file_acl_block)
+		return;
+
+	retval = ext2fs_read_ext_attr3(ctx->fs, file_acl_block, ctx->ea_buf,
+				       ino);
+	if (retval)
+		fatal_err(retval, "while rewriting extended attribute");
+
+	update_block_xattr_hashes(ctx, ctx->ea_buf);
+	retval = ext2fs_write_ext_attr3(ctx->fs, file_acl_block, ctx->ea_buf,
+					ino);
+	if (retval)
+		fatal_err(retval, "while rewriting extended attribute");
+}
+
+/*
  * Forcibly set checksums in all inodes.
  */
 static void rewrite_inodes(ext2_filsys fs)
 {
-	int length = EXT2_INODE_SIZE(fs->super);
-	struct ext2_inode *inode, *zero;
-	char		*ea_buf;
 	ext2_inode_scan	scan;
 	errcode_t	retval;
 	ext2_ino_t	ino;
-	blk64_t		file_acl_block;
-	int		inode_dirty;
+	struct ext2_inode *inode;
+	int pass;
+	struct rewrite_context ctx = {
+		.fs = fs,
+		.inode_size = EXT2_INODE_SIZE(fs->super),
+	};
 
 	if (fs->super->s_creator_os == EXT2_OS_HURD)
 		return;
 
-	retval = ext2fs_open_inode_scan(fs, 0, &scan);
-	if (retval) {
-		com_err("set_csum", retval, "while opening inode scan");
-		exit(1);
+	retval = ext2fs_get_mem(ctx.inode_size, &inode);
+	if (retval)
+		fatal_err(retval, "while allocating memory");
+
+	retval = ext2fs_get_memzero(ctx.inode_size, &ctx.zero_inode);
+	if (retval)
+		fatal_err(retval, "while allocating memory");
+
+	retval = ext2fs_get_mem(64 * 1024, &ctx.ea_buf);
+	if (retval)
+		fatal_err(retval, "while allocating memory");
+
+	/*
+	 * Extended attribute inodes have a lookup hash that needs to be
+	 * recalculated with the new csum_seed. Other inodes referencing xattr
+	 * inodes need this value to be up to date. That's why we do two passes:
+	 *
+	 * pass 1: update xattr inodes to update their lookup hash as well as
+	 *         other checksums.
+	 *
+	 * pass 2: go over other inodes to update their checksums.
+	 */
+	if (ext2fs_has_feature_ea_inode(fs->super))
+		pass = 1;
+	else
+		pass = 2;
+	for (;pass <= 2; pass++) {
+		retval = ext2fs_open_inode_scan(fs, 0, &scan);
+		if (retval)
+			fatal_err(retval, "while opening inode scan");
+
+		do {
+			retval = ext2fs_get_next_inode_full(scan, &ino, inode,
+							    ctx.inode_size);
+			if (retval)
+				fatal_err(retval, "while getting next inode");
+			if (!ino)
+				break;
+
+			if (pass == 1 && (inode->i_flags & EXT4_EA_INODE_FL) ||
+			    pass == 2 && !(inode->i_flags & EXT4_EA_INODE_FL))
+				rewrite_one_inode(&ctx, ino, inode);
+		} while (ino);
+
+		ext2fs_close_inode_scan(scan);
 	}
 
-	retval = ext2fs_get_mem(length, &inode);
-	if (retval) {
-		com_err("set_csum", retval, "while allocating memory");
-		exit(1);
-	}
-
-	retval = ext2fs_get_memzero(length, &zero);
-	if (retval) {
-		com_err("set_csum", retval, "while allocating memory");
-		exit(1);
-	}
-
-	retval = ext2fs_get_mem(fs->blocksize, &ea_buf);
-	if (retval) {
-		com_err("set_csum", retval, "while allocating memory");
-		exit(1);
-	}
-
-	do {
-		retval = ext2fs_get_next_inode_full(scan, &ino, inode, length);
-		if (retval) {
-			com_err("set_csum", retval, "while getting next inode");
-			exit(1);
-		}
-		if (!ino)
-			break;
-		if (ext2fs_test_inode_bitmap2(fs->inode_map, ino)) {
-			inode_dirty = 1;
-		} else {
-			if (memcmp(inode, zero, length) != 0) {
-				memset(inode, 0, length);
-				inode_dirty = 1;
-			} else {
-				inode_dirty = 0;
-			}
-		}
-
-		if (inode_dirty) {
-			retval = ext2fs_write_inode_full(fs, ino, inode,
-							 length);
-			if (retval) {
-				com_err("set_csum", retval, "while writing "
-					"inode");
-				exit(1);
-			}
-		}
-
-		retval = rewrite_extents(fs, ino, inode);
-		if (retval) {
-			com_err("rewrite_extents", retval,
-				"while rewriting extents");
-			exit(1);
-		}
-
-		if (LINUX_S_ISDIR(inode->i_mode) &&
-		    ext2fs_inode_has_valid_blocks2(fs, inode)) {
-			retval = rewrite_directory(fs, ino, inode);
-			if (retval) {
-				com_err("rewrite_directory", retval,
-					"while rewriting directories");
-				exit(1);
-			}
-		}
-
-		file_acl_block = ext2fs_file_acl_block(fs, inode);
-		if (!file_acl_block)
-			continue;
-		retval = ext2fs_read_ext_attr3(fs, file_acl_block, ea_buf, ino);
-		if (retval) {
-			com_err("rewrite_eablock", retval,
-				"while rewriting extended attribute");
-			exit(1);
-		}
-		retval = ext2fs_write_ext_attr3(fs, file_acl_block, ea_buf,
-						ino);
-		if (retval) {
-			com_err("rewrite_eablock", retval,
-				"while rewriting extended attribute");
-			exit(1);
-		}
-	} while (ino);
-
-	ext2fs_free_mem(&zero);
+	ext2fs_free_mem(&ctx.zero_inode);
+	ext2fs_free_mem(&ctx.ea_buf);
 	ext2fs_free_mem(&inode);
-	ext2fs_free_mem(&ea_buf);
-	ext2fs_close_inode_scan(scan);
 }
 
 static void rewrite_metadata_checksums(ext2_filsys fs)
@@ -839,11 +948,8 @@ static void rewrite_metadata_checksums(ext2_filsys fs)
 	for (i = 0; i < fs->group_desc_count; i++)
 		ext2fs_group_desc_csum_set(fs, i);
 	retval = ext2fs_read_bitmaps(fs);
-	if (retval) {
-		com_err("rewrite_metadata_checksums", retval,
-			"while reading bitmaps");
-		exit(1);
-	}
+	if (retval)
+		fatal_err(retval, "while reading bitmaps");
 	rewrite_inodes(fs);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
@@ -3135,8 +3241,9 @@ retry_open:
 		}
 
 		ext2fs_mark_super_dirty(fs);
-		if (ext2fs_has_feature_metadata_csum(fs->super) &&
-		    !ext2fs_has_feature_csum_seed(fs->super))
+		if (!ext2fs_has_feature_csum_seed(fs->super) &&
+		    (ext2fs_has_feature_metadata_csum(fs->super) ||
+		     ext2fs_has_feature_ea_inode(fs->super)))
 			rewrite_checksums = 1;
 	}
 

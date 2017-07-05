@@ -33,7 +33,7 @@ static errcode_t read_ea_inode_hash(ext2_filsys fs, ext2_ino_t ino, __u32 *hash)
 	retval = ext2fs_read_inode(fs, ino, &inode);
 	if (retval)
 		return retval;
-	*hash = inode.i_atime;
+	*hash = ext2fs_get_ea_inode_hash(&inode);
 	return 0;
 }
 
@@ -100,6 +100,45 @@ errcode_t ext2fs_ext_attr_hash_entry2(ext2_filsys fs,
 	return 0;
 }
 
+#undef NAME_HASH_SHIFT
+#undef VALUE_HASH_SHIFT
+
+#define BLOCK_HASH_SHIFT 16
+
+/* Mirrors ext4_xattr_rehash() implementation in kernel. */
+void ext2fs_ext_attr_block_rehash(struct ext2_ext_attr_header *header,
+				  struct ext2_ext_attr_entry *end)
+{
+	struct ext2_ext_attr_entry *here;
+	__u32 hash = 0;
+
+	here = (struct ext2_ext_attr_entry *)(header+1);
+	while (here < end && !EXT2_EXT_IS_LAST_ENTRY(here)) {
+		if (!here->e_hash) {
+			/* Block is not shared if an entry's hash value == 0 */
+			hash = 0;
+			break;
+		}
+		hash = (hash << BLOCK_HASH_SHIFT) ^
+		       (hash >> (8*sizeof(hash) - BLOCK_HASH_SHIFT)) ^
+		       here->e_hash;
+		here = EXT2_EXT_ATTR_NEXT(here);
+	}
+	header->h_hash = hash;
+}
+
+#undef BLOCK_HASH_SHIFT
+
+__u32 ext2fs_get_ea_inode_hash(struct ext2_inode *inode)
+{
+	return inode->i_atime;
+}
+
+void ext2fs_set_ea_inode_hash(struct ext2_inode *inode, __u32 hash)
+{
+	inode->i_atime = hash;
+}
+
 static errcode_t check_ext_attr_header(struct ext2_ext_attr_header *header)
 {
 	if ((header->h_magic != EXT2_EXT_ATTR_MAGIC_v1 &&
@@ -109,9 +148,6 @@ static errcode_t check_ext_attr_header(struct ext2_ext_attr_header *header)
 
 	return 0;
 }
-
-#undef NAME_HASH_SHIFT
-#undef VALUE_HASH_SHIFT
 
 errcode_t ext2fs_read_ext_attr3(ext2_filsys fs, blk64_t block, void *buf,
 				ext2_ino_t inum)

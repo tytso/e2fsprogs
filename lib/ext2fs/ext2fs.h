@@ -1247,6 +1247,10 @@ errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 #define XATTR_HANDLE_FLAG_RAW	0x0001
 errcode_t ext2fs_xattrs_flags(struct ext2_xattr_handle *handle,
 			      unsigned int *new_flags, unsigned int *old_flags);
+extern void ext2fs_ext_attr_block_rehash(struct ext2_ext_attr_header *header,
+					 struct ext2_ext_attr_entry *end);
+extern __u32 ext2fs_get_ea_inode_hash(struct ext2_inode *inode);
+extern void ext2fs_set_ea_inode_hash(struct ext2_inode *inode, __u32 hash);
 
 /* extent.c */
 extern errcode_t ext2fs_extent_header_verify(void *ptr, int size);
