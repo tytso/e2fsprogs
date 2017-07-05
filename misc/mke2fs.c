@@ -1992,6 +1992,7 @@ profile_error:
 		ext2fs_clear_feature_filetype(&fs_param);
 		ext2fs_clear_feature_huge_file(&fs_param);
 		ext2fs_clear_feature_metadata_csum(&fs_param);
+		ext2fs_clear_feature_ea_inode(&fs_param);
 	}
 	edit_feature(fs_features ? fs_features : tmp,
 		     &fs_param.s_feature_compat);
@@ -2015,6 +2016,11 @@ profile_error:
 		if (ext2fs_has_feature_metadata_csum(&fs_param)) {
 			fprintf(stderr, "%s", _("The HURD does not support the "
 						"metadata_csum feature.\n"));
+			exit(1);
+		}
+		if (ext2fs_has_feature_ea_inode(&fs_param)) {
+			fprintf(stderr, "%s", _("The HURD does not support the "
+						"ea_inode feature.\n"));
 			exit(1);
 		}
 	}
