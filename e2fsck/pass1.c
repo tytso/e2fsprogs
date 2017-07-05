@@ -360,27 +360,54 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 				      struct problem_context *pctx)
 {
 	struct ext2_inode inode;
+	__u32 hash;
+	errcode_t retval;
 
 	/* Check if inode is within valid range */
 	if ((entry->e_value_inum < EXT2_FIRST_INODE(ctx->fs->super)) ||
-	    (entry->e_value_inum > ctx->fs->super->s_inodes_count))
+	    (entry->e_value_inum > ctx->fs->super->s_inodes_count)) {
+		pctx->num = entry->e_value_inum;
 		return PR_1_ATTR_VALUE_EA_INODE;
+	}
 
 	e2fsck_read_inode(ctx, entry->e_value_inum, &inode, "pass1");
-	if (!(inode.i_flags & EXT4_EA_INODE_FL)) {
-		/* If EXT4_EA_INODE_FL flag is not present but back-pointer
-		 * matches then we should set this flag */
-		if (inode.i_mtime == pctx->ino &&
-		    inode.i_generation == pctx->inode->i_generation &&
-		    fix_problem(ctx, PR_1_ATTR_SET_EA_INODE_FL, pctx)) {
-			inode.i_flags |= EXT4_EA_INODE_FL;
-			ext2fs_write_inode(ctx->fs, entry->e_value_inum,&inode);
-		} else
-			return PR_1_ATTR_NO_EA_INODE_FL;
-	} else if (inode.i_mtime != pctx->ino ||
-		   inode.i_generation != pctx->inode->i_generation)
-		return PR_1_ATTR_INVAL_EA_INODE;
 
+	retval = ext2fs_ext_attr_hash_entry2(ctx->fs, entry, NULL, &hash);
+	if (retval) {
+		com_err("check_large_ea_inode", retval,
+			_("while hashing entry with e_value_inum = %u"),
+			entry->e_value_inum);
+		fatal_error(ctx, 0);
+	}
+
+	if (hash != entry->e_hash) {
+		/* This might be an old Lustre-style ea_inode reference. */
+		if (inode.i_mtime != pctx->ino ||
+		    inode.i_generation != pctx->inode->i_generation) {
+
+			/* If target inode is also missing EA_INODE flag,
+			 * this is likely to be a bad reference.
+			 */
+			if (!(inode.i_flags & EXT4_EA_INODE_FL)) {
+				pctx->num = entry->e_value_inum;
+				return PR_1_ATTR_VALUE_EA_INODE;
+			} else {
+				pctx->num = entry->e_hash;
+				return PR_1_ATTR_HASH;
+			}
+		}
+	}
+
+	if (!(inode.i_flags & EXT4_EA_INODE_FL)) {
+		pctx->num = entry->e_value_inum;
+		if (fix_problem(ctx, PR_1_ATTR_SET_EA_INODE_FL, pctx)) {
+			inode.i_flags |= EXT4_EA_INODE_FL;
+			ext2fs_write_inode(ctx->fs, entry->e_value_inum,
+					   &inode);
+		} else {
+			return PR_1_ATTR_NO_EA_INODE_FL;
+		}
+	}
 	return 0;
 }
 
@@ -458,22 +485,22 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 				problem = PR_1_INODE_EA_ALLOC_COLLISION;
 				goto fix;
 			}
+
+			hash = ext2fs_ext_attr_hash_entry(entry,
+							  start + entry->e_value_offs);
+
+			/* e_hash may be 0 in older inode's ea */
+			if (entry->e_hash != 0 && entry->e_hash != hash) {
+				pctx->num = entry->e_hash;
+				problem = PR_1_ATTR_HASH;
+				goto fix;
+			}
 		} else {
 			problem = check_large_ea_inode(ctx, entry, pctx);
 			if (problem != 0)
 				goto fix;
 
 			mark_inode_ea_map(ctx, pctx, entry->e_value_inum);
-		}
-
-		hash = ext2fs_ext_attr_hash_entry(entry,
-						  start + entry->e_value_offs);
-
-		/* e_hash may be 0 in older inode's ea */
-		if (entry->e_hash != 0 && entry->e_hash != hash) {
-			pctx->num = entry->e_hash;
-			problem = PR_1_ATTR_HASH;
-			goto fix;
 		}
 
 		/* If EA value is stored in external inode then it does not
@@ -2439,6 +2466,16 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 						pctx))
 					goto clear_extattr;
 			}
+
+			hash = ext2fs_ext_attr_hash_entry(entry, block_buf +
+							  entry->e_value_offs);
+
+			if (entry->e_hash != hash) {
+				pctx->num = entry->e_hash;
+				if (fix_problem(ctx, PR_1_ATTR_HASH, pctx))
+					goto clear_extattr;
+				entry->e_hash = hash;
+			}
 		} else {
 			problem_t problem;
 
@@ -2448,16 +2485,6 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 						  entry->e_value_inum);
 			else if (fix_problem(ctx, problem, pctx))
 				goto clear_extattr;
-		}
-
-		hash = ext2fs_ext_attr_hash_entry(entry, block_buf +
-							 entry->e_value_offs);
-
-		if (entry->e_hash != hash) {
-			pctx->num = entry->e_hash;
-			if (fix_problem(ctx, PR_1_ATTR_HASH, pctx))
-				goto clear_extattr;
-			entry->e_hash = hash;
 		}
 
 		entry = EXT2_EXT_ATTR_NEXT(entry);

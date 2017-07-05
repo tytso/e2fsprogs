@@ -1198,6 +1198,9 @@ extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir);
 /* ext_attr.c */
 extern __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry,
 					void *data);
+extern errcode_t ext2fs_ext_attr_hash_entry2(ext2_filsys fs,
+					     struct ext2_ext_attr_entry *entry,
+					     void *data, __u32 *hash);
 extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
 extern errcode_t ext2fs_read_ext_attr2(ext2_filsys fs, blk64_t block,
 				       void *buf);

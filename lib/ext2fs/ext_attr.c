@@ -25,6 +25,18 @@
 
 #include "ext2fs.h"
 
+static errcode_t read_ea_inode_hash(ext2_filsys fs, ext2_ino_t ino, __u32 *hash)
+{
+	struct ext2_inode inode;
+	errcode_t retval;
+
+	retval = ext2fs_read_inode(fs, ino, &inode);
+	if (retval)
+		return retval;
+	*hash = inode.i_atime;
+	return 0;
+}
+
 #define NAME_HASH_SHIFT 5
 #define VALUE_HASH_SHIFT 16
 
@@ -57,6 +69,35 @@ __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry, void *data)
 	}
 
 	return hash;
+}
+
+/*
+ * ext2fs_ext_attr_hash_entry2()
+ *
+ * Compute the hash of an extended attribute.
+ * This version of the function supports hashing entries that reference
+ * external inodes (ea_inode feature).
+ */
+errcode_t ext2fs_ext_attr_hash_entry2(ext2_filsys fs,
+				      struct ext2_ext_attr_entry *entry,
+				      void *data, __u32 *hash)
+{
+	*hash = ext2fs_ext_attr_hash_entry(entry, data);
+
+	if (entry->e_value_inum) {
+		__u32 ea_inode_hash;
+		errcode_t retval;
+
+		retval = read_ea_inode_hash(fs, entry->e_value_inum,
+					    &ea_inode_hash);
+		if (retval)
+			return retval;
+
+		*hash = (*hash << VALUE_HASH_SHIFT) ^
+			(*hash >> (8*sizeof(*hash) - VALUE_HASH_SHIFT)) ^
+			ea_inode_hash;
+	}
+	return 0;
 }
 
 static errcode_t check_ext_attr_header(struct ext2_ext_attr_header *header)
@@ -785,6 +826,7 @@ out:
 }
 
 static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
+					 struct ext2_inode_large *inode,
 					 struct ext2_ext_attr_entry *entries,
 					 unsigned int storage_size,
 					 char *value_start,
@@ -914,9 +956,25 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			void *data = (entry->e_value_inum != 0) ?
 					0 : value_start + entry->e_value_offs;
 
-			hash = ext2fs_ext_attr_hash_entry(entry, data);
-			if (entry->e_hash != hash)
-				return EXT2_ET_BAD_EA_HASH;
+			err = ext2fs_ext_attr_hash_entry2(handle->fs, entry,
+							  data, &hash);
+			if (err)
+				return err;
+			if (entry->e_hash != hash) {
+				struct ext2_inode child;
+
+				/* Check whether this is an old Lustre-style
+				 * ea_inode reference.
+				 */
+				err = ext2fs_read_inode(handle->fs,
+							entry->e_value_inum,
+							&child);
+				if (err)
+					return err;
+				if (child.i_mtime != handle->ino ||
+				    child.i_generation != inode->i_generation)
+					return EXT2_ET_BAD_EA_HASH;
+			}
 		}
 
 		x++;
@@ -989,7 +1047,7 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 		start = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 			inode->i_extra_isize + sizeof(__u32);
 
-		err = read_xattrs_from_buffer(handle,
+		err = read_xattrs_from_buffer(handle, inode,
 			(struct ext2_ext_attr_entry *) start, storage_size,
 					      start, &handle->count);
 		if (err)
@@ -1026,7 +1084,7 @@ read_ea_block:
 		storage_size = handle->fs->blocksize -
 			sizeof(struct ext2_ext_attr_header);
 		start = block_buf + sizeof(struct ext2_ext_attr_header);
-		err = read_xattrs_from_buffer(handle,
+		err = read_xattrs_from_buffer(handle, inode,
 			(struct ext2_ext_attr_entry *) start, storage_size,
 					      block_buf, &handle->count);
 		if (err)

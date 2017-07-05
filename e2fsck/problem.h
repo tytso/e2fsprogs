@@ -678,9 +678,6 @@ struct problem_context {
 /* Inode has illegal EA value inode */
 #define PR_1_ATTR_VALUE_EA_INODE		0x010083
 
-/* Invalid backpointer from EA inode to parent inode */
-#define PR_1_ATTR_INVAL_EA_INODE		0x010084
-
 /* Parent inode has invalid EA entry. EA inode does not have
  * EXT4_EA_INODE_FL flag. Delete EA entry? */
 #define PR_1_ATTR_NO_EA_INODE_FL		0x010085

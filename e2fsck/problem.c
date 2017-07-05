@@ -1150,11 +1150,6 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has @I @a value @i %N.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
-	/* Invalid backpointer from extended attribute inode to parent inode */
-	{ PR_1_ATTR_INVAL_EA_INODE,
-	  N_("@n backpointer from @a @i %N to parent @i %i.\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK },
-
 	/* Inode has invalid extended attribute. EA inode missing
 	 * EA_INODE flag. */
 	{ PR_1_ATTR_NO_EA_INODE_FL,
