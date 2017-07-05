@@ -2058,6 +2058,15 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 			goto remap_blocks; /* Don't need to move inode. */
 
 		/*
+		 * Moving an extended attribute inode requires updating all inodes
+		 * that reference it which is a lot more involved.
+		 */
+		if (inode->i_flags & EXT4_EA_INODE_FL) {
+			retval = EXT2_ET_CANNOT_MOVE_EA_INODE;
+			goto errout;
+		}
+
+		/*
 		 * Find a new inode.  Now that extents and directory blocks
 		 * are tied to the inode number through the checksum, we must
 		 * set up the new inode before we start rewriting blocks.
