@@ -630,7 +630,8 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 	 * need to read in more blocks.
 	 */
 	if (scan->bytes_left < scan->inode_size) {
-		memcpy(scan->temp_buffer, scan->ptr, scan->bytes_left);
+		if (scan->bytes_left)
+			memcpy(scan->temp_buffer, scan->ptr, scan->bytes_left);
 		extra_bytes = scan->bytes_left;
 
 		retval = get_next_blocks(scan);

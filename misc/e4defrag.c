@@ -1675,6 +1675,7 @@ int main(int argc, char *argv[])
 	int	i, j, ret = 0;
 	int	flags = FTW_PHYS | FTW_MOUNT;
 	int	arg_type = -1;
+	int	mount_dir_len = 0;
 	int	success_flag = 0;
 	char	dir_name[PATH_MAX + 1];
 	char	dev_name[PATH_MAX + 1];
@@ -1818,7 +1819,6 @@ int main(int argc, char *argv[])
 		}
 
 		switch (arg_type) {
-			int mount_dir_len = 0;
 
 		case DIRNAME:
 			if (!(mode_flag & STATISTIC))
@@ -1830,11 +1830,11 @@ int main(int argc, char *argv[])
 			strncat(lost_found_dir, "/lost+found",
 				PATH_MAX - strnlen(lost_found_dir, PATH_MAX));
 
-			/* Not the case("e4defrag  mount_piont_dir") */
+			/* Not the case("e4defrag  mount_point_dir") */
 			if (dir_name[mount_dir_len] != '\0') {
 				/*
-				 * "e4defrag mount_piont_dir/lost+found"
-				 * or "e4defrag mount_piont_dir/lost+found/"
+				 * "e4defrag mount_point_dir/lost+found"
+				 * or "e4defrag mount_point_dir/lost+found/"
 				 */
 				if (strncmp(lost_found_dir, dir_name,
 					    strnlen(lost_found_dir,
@@ -1848,7 +1848,7 @@ int main(int argc, char *argv[])
 					continue;
 				}
 
-				/* "e4defrag mount_piont_dir/else_dir" */
+				/* "e4defrag mount_point_dir/else_dir" */
 				memset(lost_found_dir, 0, PATH_MAX + 1);
 			}
 		case DEVNAME:

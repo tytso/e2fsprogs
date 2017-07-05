@@ -230,9 +230,9 @@ errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 		return err;
 
 	if (qf_ino == 0)
-		qf_ino = *quota_sb_inump(fs->super, qtype)
+		qf_ino = *quota_sb_inump(fs->super, qtype);
 
-	log_debug("Opening quota ino=%lu, type=%d", qf_ino, qtype);
+	log_debug("Opening quota ino=%u, type=%d", qf_ino, qtype);
 	err = ext2fs_file_open(fs, qf_ino, flags, &e2_file);
 	if (err) {
 		log_err("ext2fs_file_open failed: %s", error_message(err));
@@ -366,7 +366,7 @@ errcode_t quota_file_create(struct quota_handle *h, ext2_filsys fs,
 	h->e2fs_write = quota_write_nomount;
 	h->e2fs_read = quota_read_nomount;
 
-	log_debug("Creating quota ino=%lu, type=%d", qf_inum, type);
+	log_debug("Creating quota ino=%u, type=%d", qf_inum, qtype);
 	err = ext2fs_file_open(fs, qf_inum, h->qh_file_flags, &e2_file);
 	if (err) {
 		log_err("ext2fs_file_open failed: %ld", err);

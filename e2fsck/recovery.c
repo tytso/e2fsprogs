@@ -124,6 +124,27 @@ failed:
 
 #endif /* __KERNEL__ */
 
+static inline __u32 get_be32(__be32 *p)
+{
+	unsigned char *cp = (unsigned char *) p;
+	__u32 ret;
+
+	ret = *cp++;
+	ret = (ret << 8) + *cp++;
+	ret = (ret << 8) + *cp++;
+	ret = (ret << 8) + *cp++;
+	return ret;
+}
+
+static inline __u16 get_be16(__be16 *p)
+{
+	unsigned char *cp = (unsigned char *) p;
+	__u16 ret;
+
+	ret = *cp++;
+	ret = (ret << 8) + *cp++;
+	return ret;
+}
 
 /*
  * Read a block from the journal
@@ -215,10 +236,10 @@ static int count_tags(journal_t *journal, struct buffer_head *bh)
 
 		nr++;
 		tagp += tag_bytes;
-		if (!(tag->t_flags & ext2fs_cpu_to_be16(JFS_FLAG_SAME_UUID)))
+		if (!(get_be16(&tag->t_flags) & JFS_FLAG_SAME_UUID))
 			tagp += 16;
 
-		if (tag->t_flags & ext2fs_cpu_to_be16(JFS_FLAG_LAST_TAG))
+		if (get_be16(&tag->t_flags) & JFS_FLAG_LAST_TAG)
 			break;
 	}
 
@@ -338,18 +359,6 @@ int journal_skip_recovery(journal_t *journal)
 	return err;
 }
 
-static inline __u32 get_be32(__be32 *p)
-{
-	unsigned char *cp = (unsigned char *) p;
-	__u32 ret;
-
-	ret = *cp++;
-	ret = (ret << 8) + *cp++;
-	ret = (ret << 8) + *cp++;
-	ret = (ret << 8) + *cp++;
-	return ret;
-}
-
 static inline unsigned long long read_tag_block(journal_t *journal,
 						journal_block_tag_t *tag)
 {
@@ -424,9 +433,9 @@ static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
 	csum32 = jbd2_chksum(j, csum32, buf, j->j_blocksize);
 
 	if (jfs_has_feature_csum3(j))
-		return tag3->t_checksum == ext2fs_cpu_to_be32(csum32);
+		return get_be32(&tag3->t_checksum) == csum32;
 
-	return tag->t_checksum == ext2fs_cpu_to_be16(csum32);
+	return get_be16(&tag->t_checksum) == (csum32 & 0xFFFF);
 }
 
 static int do_one_pass(journal_t *journal,
@@ -574,7 +583,7 @@ static int do_one_pass(journal_t *journal,
 				unsigned long io_block;
 
 				tag = (journal_block_tag_t *) tagp;
-				flags = ext2fs_be16_to_cpu(tag->t_flags);
+				flags = get_be16(&tag->t_flags);
 
 				io_block = next_log_block++;
 				wrap(journal, next_log_block);
