@@ -20,7 +20,7 @@ struct problem_context {
 	e2_blkcnt_t	blkcount;
 	dgrp_t		group;
 	__u32		csum1, csum2;
-	__u64	num;
+	__u64		num, num2;
 	const char *str;
 };
 
@@ -1130,6 +1130,9 @@ struct problem_context {
 
 /* Inconsistent inode count information cached */
 #define PR_4_INCONSISTENT_COUNT		0x040004
+
+/* Extended attribute inode ref count wrong */
+#define PR_4_EA_INODE_REF_COUNT		0x040005
 
 /*
  * Pass 5 errors

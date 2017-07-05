@@ -1869,6 +1869,10 @@ static struct e2fsck_problem problem_table[] = {
 	  "They @s the same!\n"),
 	  PROMPT_NONE, 0 },
 
+	{ PR_4_EA_INODE_REF_COUNT,
+	  N_("@a @i %i ref count is %N, @s %n. "),
+	  PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 5 errors */
 
 	/* Pass 5: Checking group summary information */

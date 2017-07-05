@@ -26,7 +26,7 @@
  * 	- A bitmap of which blocks are in use.		(block_found_map)
  * 	- A bitmap of which blocks are in use by two inodes	(block_dup_map)
  * 	- The data blocks of the directory inodes.	(dir_map)
- *	- A bitmap of EA inodes.			(inode_ea_map)
+ * 	- Ref counts for ea_inodes.			(ea_inode_refs)
  *
  * Pass 1 is designed to stash away enough information so that the
  * other passes should not need to read in the inode information
@@ -335,23 +335,6 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 
-static void mark_inode_ea_map(e2fsck_t ctx, struct problem_context *pctx,
-			      ext2_ino_t ino)
-{
-	if (!ctx->inode_ea_map) {
-		pctx->errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
-					 _("EA inode map"),
-					 &ctx->inode_ea_map);
-		if (pctx->errcode) {
-			fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR,
-				    pctx);
-			exit(1);
-		}
-	}
-
-	ext2fs_mark_inode_bitmap2(ctx->inode_ea_map, ino);
-}
-
 /*
  * For a given size, calculate how many blocks would be charged towards quota.
  */
@@ -428,13 +411,38 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 	return 0;
 }
 
+static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
+			      struct ext2_ext_attr_entry *first, void *end)
+{
+	struct ext2_ext_attr_entry *entry;
+
+	for (entry = first;
+	     (void *)entry < end && !EXT2_EXT_IS_LAST_ENTRY(entry);
+	     entry = EXT2_EXT_ATTR_NEXT(entry)) {
+		if (!entry->e_value_inum)
+			continue;
+		if (!ctx->ea_inode_refs) {
+			pctx->errcode = ea_refcount_create(0,
+							   &ctx->ea_inode_refs);
+			if (pctx->errcode) {
+				pctx->num = 4;
+				fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
+			}
+		}
+		ea_refcount_increment(ctx->ea_inode_refs, entry->e_value_inum,
+				      0);
+	}
+}
+
 static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
 			      blk64_t *ea_ibody_quota_blocks)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct ext2_inode_large *inode;
 	struct ext2_ext_attr_entry *entry;
-	char *start, *header;
+	char *start, *header, *end;
 	unsigned int storage_size, remain;
 	problem_t problem = 0;
 	region_t region = 0;
@@ -447,6 +455,7 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
 		inode->i_extra_isize;
 	header = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 		 inode->i_extra_isize;
+	end = header + storage_size;
 	start = header + sizeof(__u32);
 	entry = (struct ext2_ext_attr_entry *) start;
 
@@ -524,7 +533,6 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
 			if (problem != 0)
 				goto fix;
 
-			mark_inode_ea_map(ctx, pctx, entry->e_value_inum);
 			quota_blocks += entry_quota_blocks;
 		}
 
@@ -549,6 +557,8 @@ fix:
 	 * EA(s) in automatic fashion -bzzz
 	 */
 	if (problem == 0 || !fix_problem(ctx, problem, pctx)) {
+		inc_ea_inode_refs(ctx, pctx,
+				  (struct ext2_ext_attr_entry *)start, end);
 		*ea_ibody_quota_blocks = quota_blocks;
 		return;
 	}
@@ -1988,6 +1998,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->refcount_extra = 0;
 	}
 
+	if (ctx->ea_block_quota) {
+		ea_refcount_free(ctx->ea_block_quota);
+		ctx->ea_block_quota = 0;
+	}
+
 	if (ctx->invalid_bitmaps)
 		handle_fs_bad_blocks(ctx);
 
@@ -2349,7 +2364,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	blk64_t		blk;
 	char *		end;
 	struct ext2_ext_attr_header *header;
-	struct ext2_ext_attr_entry *entry;
+	struct ext2_ext_attr_entry *first, *entry;
 	blk64_t		quota_blocks = EXT2FS_C2B(fs, 1);
 	region_t	region = 0;
 	int		failed_csum = 0;
@@ -2473,8 +2488,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			goto clear_extattr;
 	}
 
-	entry = (struct ext2_ext_attr_entry *)(header+1);
+	first = (struct ext2_ext_attr_entry *)(header+1);
 	end = block_buf + fs->blocksize;
+	entry = first;
 	while ((char *)entry < end && *(__u32 *)entry) {
 		__u32 hash;
 
@@ -2522,10 +2538,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 			problem = check_large_ea_inode(ctx, entry, pctx,
 						       &entry_quota_blocks);
-			if (problem == 0)
-				mark_inode_ea_map(ctx, pctx,
-						  entry->e_value_inum);
-			else if (fix_problem(ctx, problem, pctx))
+			if (problem && fix_problem(ctx, problem, pctx))
 				goto clear_extattr;
 
 			quota_blocks += entry_quota_blocks;
@@ -2565,6 +2578,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		ea_refcount_store(ctx->ea_block_quota, blk, quota_blocks);
 	}
+	inc_ea_inode_refs(ctx, pctx, first, end);
 	ea_refcount_store(ctx->refcount, blk, header->h_refcount - 1);
 	mark_block_used(ctx, blk);
 	ext2fs_fast_mark_block_bitmap2(ctx->block_ea_map, blk);

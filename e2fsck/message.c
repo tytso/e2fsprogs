@@ -468,6 +468,13 @@ static _INLINE_ void expand_percent_expression(FILE *f, ext2_filsys fs,
 		fprintf(f, "%*llu", width, (long long)ctx->num);
 #endif
 		break;
+	case 'n':
+#ifdef EXT2_NO_64_TYPE
+		fprintf(f, "%*u", width, ctx->num2);
+#else
+		fprintf(f, "%*llu", width, (long long)ctx->num2);
+#endif
+		break;
 	case 'p':
 		print_pathname(f, fs, ctx->ino, 0);
 		break;

@@ -254,7 +254,6 @@ struct e2fsck_struct {
 	ext2fs_inode_bitmap inode_bb_map; /* Inodes which are in bad blocks */
 	ext2fs_inode_bitmap inode_imagic_map; /* AFS inodes */
 	ext2fs_inode_bitmap inode_reg_map; /* Inodes which are regular files*/
-	ext2fs_inode_bitmap inode_ea_map; /* EA inodes which are non-orphan */
 
 	ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 	ext2fs_block_bitmap block_dup_map; /* Blks referenced more than once */
@@ -273,6 +272,11 @@ struct e2fsck_struct {
 	 * Quota blocks to be charged for each ea block.
 	 */
 	ext2_refcount_t ea_block_quota;
+
+	/*
+	 * ea_inode references from attr entries.
+	 */
+	ext2_refcount_t ea_inode_refs;
 
 	/*
 	 * Array of flags indicating whether an inode bitmap, block
