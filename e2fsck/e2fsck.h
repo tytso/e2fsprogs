@@ -270,6 +270,11 @@ struct e2fsck_struct {
 	ext2_refcount_t refcount_extra;
 
 	/*
+	 * Quota blocks to be charged for each ea block.
+	 */
+	ext2_refcount_t ea_block_quota;
+
+	/*
 	 * Array of flags indicating whether an inode bitmap, block
 	 * bitmap, or inode table is invalid
 	 */

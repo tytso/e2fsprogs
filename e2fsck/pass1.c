@@ -66,7 +66,7 @@ static int process_bad_block(ext2_filsys fs, blk64_t *block_nr,
 			     e2_blkcnt_t blockcnt, blk64_t ref_blk,
 			     int ref_offset, void *priv_data);
 static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
-			 char *block_buf);
+			 char *block_buf, blk64_t ea_ibody_quota_blocks);
 static void mark_table_blocks(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
@@ -103,6 +103,7 @@ struct process_block_struct {
 
 struct process_inode_block {
 	ext2_ino_t ino;
+	blk64_t ea_ibody_quota_blocks;
 	struct ext2_inode_large inode;
 };
 
@@ -352,12 +353,24 @@ static void mark_inode_ea_map(e2fsck_t ctx, struct problem_context *pctx,
 }
 
 /*
+ * For a given size, calculate how many blocks would be charged towards quota.
+ */
+static blk64_t size_to_quota_blocks(ext2_filsys fs, size_t size)
+{
+	blk64_t clusters;
+
+	clusters = DIV_ROUND_UP(size, fs->blocksize << fs->cluster_ratio_bits);
+	return EXT2FS_C2B(fs, clusters);
+}
+
+/*
  * Check validity of EA inode. Return 0 if EA inode is valid, otherwise return
  * the problem code.
  */
 static problem_t check_large_ea_inode(e2fsck_t ctx,
 				      struct ext2_ext_attr_entry *entry,
-				      struct problem_context *pctx)
+				      struct problem_context *pctx,
+				      blk64_t *quota_blocks)
 {
 	struct ext2_inode inode;
 	__u32 hash;
@@ -380,11 +393,15 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 		fatal_error(ctx, 0);
 	}
 
-	if (hash != entry->e_hash) {
+	if (hash == entry->e_hash) {
+		*quota_blocks = size_to_quota_blocks(ctx->fs,
+						     entry->e_value_size);
+	} else {
 		/* This might be an old Lustre-style ea_inode reference. */
-		if (inode.i_mtime != pctx->ino ||
-		    inode.i_generation != pctx->inode->i_generation) {
-
+		if (inode.i_mtime == pctx->ino &&
+		    inode.i_generation == pctx->inode->i_generation) {
+			*quota_blocks = 0;
+		} else {
 			/* If target inode is also missing EA_INODE flag,
 			 * this is likely to be a bad reference.
 			 */
@@ -411,7 +428,8 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 	return 0;
 }
 
-static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
+static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
+			      blk64_t *ea_ibody_quota_blocks)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct ext2_inode_large *inode;
@@ -420,6 +438,9 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	unsigned int storage_size, remain;
 	problem_t problem = 0;
 	region_t region = 0;
+	blk64_t quota_blocks = 0;
+
+	*ea_ibody_quota_blocks = 0;
 
 	inode = (struct ext2_inode_large *) pctx->inode;
 	storage_size = EXT2_INODE_SIZE(ctx->fs->super) - EXT2_GOOD_OLD_INODE_SIZE -
@@ -496,11 +517,15 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 				goto fix;
 			}
 		} else {
-			problem = check_large_ea_inode(ctx, entry, pctx);
+			blk64_t entry_quota_blocks;
+
+			problem = check_large_ea_inode(ctx, entry, pctx,
+						       &entry_quota_blocks);
 			if (problem != 0)
 				goto fix;
 
 			mark_inode_ea_map(ctx, pctx, entry->e_value_inum);
+			quota_blocks += entry_quota_blocks;
 		}
 
 		/* If EA value is stored in external inode then it does not
@@ -523,8 +548,10 @@ fix:
 	 * it seems like a corruption. it's very unlikely we could repair
 	 * EA(s) in automatic fashion -bzzz
 	 */
-	if (problem == 0 || !fix_problem(ctx, problem, pctx))
+	if (problem == 0 || !fix_problem(ctx, problem, pctx)) {
+		*ea_ibody_quota_blocks = quota_blocks;
 		return;
+	}
 
 	/* simply remove all possible EA(s) */
 	*((__u32 *)header) = 0UL;
@@ -547,12 +574,15 @@ static int check_inode_extra_negative_epoch(__u32 xtime, __u32 extra) {
  */
 #define EXT4_EXTRA_NEGATIVE_DATE_CUTOFF 2 * (1LL << 32)
 
-static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
+static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx,
+				    blk64_t *ea_ibody_quota_blocks)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct ext2_inode_large *inode;
 	__u32 *eamagic;
 	int min, max;
+
+	*ea_ibody_quota_blocks = 0;
 
 	inode = (struct ext2_inode_large *) pctx->inode;
 	if (EXT2_INODE_SIZE(sb) == EXT2_GOOD_OLD_INODE_SIZE) {
@@ -592,7 +622,7 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 			inode->i_extra_isize);
 	if (*eamagic == EXT2_EXT_ATTR_MAGIC) {
 		/* it seems inode has an extended attribute(s) in body */
-		check_ea_in_inode(ctx, pctx);
+		check_ea_in_inode(ctx, pctx, ea_ibody_quota_blocks);
 	}
 
 	/*
@@ -1150,6 +1180,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	int		failed_csum = 0;
 	ext2_ino_t	ino_threshold = 0;
 	dgrp_t		ra_group = 0;
+	blk64_t		ea_ibody_quota_blocks;
 
 	init_resource_track(&rtrack, ctx->fs->io);
 	clear_problem_context(&pctx);
@@ -1695,7 +1726,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 							   "pass1");
 					failed_csum = 0;
 				}
-				check_blocks(ctx, &pctx, block_buf);
+				check_blocks(ctx, &pctx, block_buf, 0);
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
 			}
@@ -1722,7 +1753,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 							"pass1");
 					failed_csum = 0;
 				}
-				check_blocks(ctx, &pctx, block_buf);
+				check_blocks(ctx, &pctx, block_buf, 0);
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
 			}
@@ -1760,7 +1791,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 					failed_csum = 0;
 				}
 			}
-			check_blocks(ctx, &pctx, block_buf);
+			check_blocks(ctx, &pctx, block_buf, 0);
 			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 			continue;
 		}
@@ -1825,7 +1856,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			}
 		}
 
-		check_inode_extra_space(ctx, &pctx);
+		check_inode_extra_space(ctx, &pctx, &ea_ibody_quota_blocks);
 		check_is_really_dir(ctx, &pctx, block_buf);
 
 		/*
@@ -1872,7 +1903,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 				continue;
 			} else if (ext2fs_inode_data_blocks(fs, inode) == 0) {
 				ctx->fs_fast_symlinks_count++;
-				check_blocks(ctx, &pctx, block_buf);
+				check_blocks(ctx, &pctx, block_buf,
+					     ea_ibody_quota_blocks);
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 				continue;
 			}
@@ -1906,17 +1938,19 @@ void e2fsck_pass1(e2fsck_t ctx)
 		     inode->i_block[EXT2_DIND_BLOCK] ||
 		     inode->i_block[EXT2_TIND_BLOCK] ||
 		     ext2fs_file_acl_block(fs, inode))) {
-			struct ext2_inode_large *ip;
+			struct process_inode_block *itp;
 
-			inodes_to_process[process_inode_count].ino = ino;
-			ip = &inodes_to_process[process_inode_count].inode;
+			itp = &inodes_to_process[process_inode_count];
+			itp->ino = ino;
+			itp->ea_ibody_quota_blocks = ea_ibody_quota_blocks;
 			if (inode_size < sizeof(struct ext2_inode_large))
-				memcpy(ip, inode, inode_size);
+				memcpy(&itp->inode, inode, inode_size);
 			else
-				memcpy(ip, inode, sizeof(*ip));
+				memcpy(&itp->inode, inode, sizeof(itp->inode));
 			process_inode_count++;
 		} else
-			check_blocks(ctx, &pctx, block_buf);
+			check_blocks(ctx, &pctx, block_buf,
+				     ea_ibody_quota_blocks);
 
 		FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 
@@ -2086,7 +2120,8 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 		sprintf(buf, _("reading indirect blocks of inode %u"),
 			pctx.ino);
 		ehandler_operation(buf);
-		check_blocks(ctx, &pctx, block_buf);
+		check_blocks(ctx, &pctx, block_buf,
+			     inodes_to_process[i].ea_ibody_quota_blocks);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			break;
 	}
@@ -2306,7 +2341,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
  * Handle processing the extended attribute blocks
  */
 static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
-			   char *block_buf)
+			   char *block_buf, blk64_t *ea_block_quota_blocks)
 {
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t	ino = pctx->ino;
@@ -2315,7 +2350,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	char *		end;
 	struct ext2_ext_attr_header *header;
 	struct ext2_ext_attr_entry *entry;
-	int		count;
+	blk64_t		quota_blocks = EXT2FS_C2B(fs, 1);
 	region_t	region = 0;
 	int		failed_csum = 0;
 
@@ -2369,6 +2404,12 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 	/* Have we seen this EA block before? */
 	if (ext2fs_fast_test_block_bitmap2(ctx->block_ea_map, blk)) {
+		if (ctx->ea_block_quota)
+			ea_refcount_fetch(ctx->ea_block_quota, blk,
+					  ea_block_quota_blocks);
+		else
+			*ea_block_quota_blocks = 0;
+
 		if (ea_refcount_decrement(ctx->refcount, blk, 0) == 0)
 			return 1;
 		/* Ooops, this EA was referenced more than it stated */
@@ -2477,13 +2518,17 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			}
 		} else {
 			problem_t problem;
+			blk64_t entry_quota_blocks;
 
-			problem = check_large_ea_inode(ctx, entry, pctx);
+			problem = check_large_ea_inode(ctx, entry, pctx,
+						       &entry_quota_blocks);
 			if (problem == 0)
 				mark_inode_ea_map(ctx, pctx,
 						  entry->e_value_inum);
 			else if (fix_problem(ctx, problem, pctx))
 				goto clear_extattr;
+
+			quota_blocks += entry_quota_blocks;
 		}
 
 		entry = EXT2_EXT_ATTR_NEXT(entry);
@@ -2506,9 +2551,21 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			return 0;
 	}
 
-	count = header->h_refcount - 1;
-	if (count)
-		ea_refcount_store(ctx->refcount, blk, count);
+	*ea_block_quota_blocks = quota_blocks;
+	if (quota_blocks) {
+		if (!ctx->ea_block_quota) {
+			pctx->errcode = ea_refcount_create(0,
+							&ctx->ea_block_quota);
+			if (pctx->errcode) {
+				pctx->num = 3;
+				fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
+				ctx->flags |= E2F_FLAG_ABORT;
+				return 0;
+			}
+		}
+		ea_refcount_store(ctx->ea_block_quota, blk, quota_blocks);
+	}
+	ea_refcount_store(ctx->refcount, blk, header->h_refcount - 1);
 	mark_block_used(ctx, blk);
 	ext2fs_fast_mark_block_bitmap2(ctx->block_ea_map, blk);
 	return 1;
@@ -3162,7 +3219,7 @@ err:
  * blocks used by that inode.
  */
 static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
-			 char *block_buf)
+			 char *block_buf, blk64_t ea_ibody_quota_blocks)
 {
 	ext2_filsys fs = ctx->fs;
 	struct process_block_struct pb;
@@ -3173,9 +3230,10 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	int		extent_fs;
 	int		inlinedata_fs;
 	__u64		size;
+	blk64_t		ea_block_quota_blocks = 0;
 
 	pb.ino = ino;
-	pb.num_blocks = 0;
+	pb.num_blocks = EXT2FS_B2C(ctx->fs, ea_ibody_quota_blocks);
 	pb.last_block = ~0;
 	pb.last_init_lblock = -1;
 	pb.last_db_block = -1;
@@ -3198,10 +3256,10 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	extent_fs = ext2fs_has_feature_extents(ctx->fs->super);
 	inlinedata_fs = ext2fs_has_feature_inline_data(ctx->fs->super);
 
-	if (check_ext_attr(ctx, pctx, block_buf)) {
+	if (check_ext_attr(ctx, pctx, block_buf, &ea_block_quota_blocks)) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			goto out;
-		pb.num_blocks++;
+		pb.num_blocks += EXT2FS_B2C(ctx->fs, ea_block_quota_blocks);
 	}
 
 	if (inlinedata_fs && (inode->i_flags & EXT4_INLINE_DATA_FL))
