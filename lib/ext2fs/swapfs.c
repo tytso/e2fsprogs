@@ -170,7 +170,7 @@ void ext2fs_swap_ext_attr_entry(struct ext2_ext_attr_entry *to_entry,
 				struct ext2_ext_attr_entry *from_entry)
 {
 	to_entry->e_value_offs  = ext2fs_swab16(from_entry->e_value_offs);
-	to_entry->e_value_block = ext2fs_swab32(from_entry->e_value_block);
+	to_entry->e_value_inum  = ext2fs_swab32(from_entry->e_value_inum);
 	to_entry->e_value_size  = ext2fs_swab32(from_entry->e_value_size);
 	to_entry->e_hash	= ext2fs_swab32(from_entry->e_hash);
 }

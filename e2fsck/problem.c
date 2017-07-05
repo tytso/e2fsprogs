@@ -1145,6 +1145,28 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Timestamp(s) on @i %i beyond 2310-04-04 are likely pre-1970.\n"),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
+	/* Inode has illegal extended attribute value inode */
+	{ PR_1_ATTR_VALUE_EA_INODE,
+	  N_("@i %i has @I @a value @i %N.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Invalid backpointer from extended attribute inode to parent inode */
+	{ PR_1_ATTR_INVAL_EA_INODE,
+	  N_("@n backpointer from @a @i %N to parent @i %i.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Inode has invalid extended attribute. EA inode missing
+	 * EA_INODE flag. */
+	{ PR_1_ATTR_NO_EA_INODE_FL,
+	  N_("@i %i has @n @a. EA @i %N missing EA_INODE flag.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* EA inode for parent inode missing EA_INODE flag. */
+	{ PR_1_ATTR_SET_EA_INODE_FL,
+	  N_("EA @i %N for parent @i %i missing EA_INODE flag.\n "),
+	  PROMPT_FIX, PR_PREEN_OK },
+
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

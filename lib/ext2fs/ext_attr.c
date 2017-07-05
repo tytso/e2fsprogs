@@ -46,7 +46,7 @@ __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry, void *data)
 	}
 
 	/* The hash needs to be calculated on the data in little-endian. */
-	if (entry->e_value_block == 0 && entry->e_value_size != 0) {
+	if (entry->e_value_inum == 0 && entry->e_value_size != 0) {
 		__u32 *value = (__u32 *)data;
 		for (n = (entry->e_value_size + EXT2_EXT_ATTR_ROUND) >>
 			 EXT2_EXT_ATTR_PAD_BITS; n; n--) {
@@ -626,7 +626,7 @@ static errcode_t write_xattrs_to_buffer(struct ext2_xattr_handle *handle,
 		e->e_name_index = (ret ? idx : 0);
 		e->e_value_offs = end - value_size - (char *)entries_start +
 				value_offset_correction;
-		e->e_value_block = 0;
+		e->e_value_inum = 0;
 		e->e_value_size = x->value_len;
 
 		/* Store name and value */
@@ -824,38 +824,6 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	remain = storage_size;
 	while (remain >= sizeof(struct ext2_ext_attr_entry) &&
 	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
-		__u32 hash;
-
-		/* header eats this space */
-		remain -= sizeof(struct ext2_ext_attr_entry);
-
-		/* attribute len eats this space */
-		remain -= EXT2_EXT_ATTR_SIZE(entry->e_name_len);
-
-		/* check value size */
-		if (entry->e_value_size > remain)
-			return EXT2_ET_EA_BAD_VALUE_SIZE;
-
-		if (entry->e_value_offs + entry->e_value_size > values_size)
-			return EXT2_ET_EA_BAD_VALUE_OFFSET;
-
-		if (entry->e_value_size > 0 &&
-		    value_start + entry->e_value_offs <
-		    (char *)end + sizeof(__u32))
-			return EXT2_ET_EA_BAD_VALUE_OFFSET;
-
-		/* e_value_block must be 0 in inode's ea */
-		if (entry->e_value_block != 0)
-			return EXT2_ET_BAD_EA_BLOCK_NUM;
-
-		hash = ext2fs_ext_attr_hash_entry(entry, value_start +
-							 entry->e_value_offs);
-
-		/* e_hash may be 0 in older inode's ea */
-		if (entry->e_hash != 0 && entry->e_hash != hash)
-			return EXT2_ET_BAD_EA_HASH;
-
-		remain -= entry->e_value_size;
 
 		/* Allocate space for more attrs? */
 		if (x == handle->attrs + handle->length) {
@@ -865,7 +833,13 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			x = handle->attrs + handle->length - 4;
 		}
 
-		/* Extract name/value */
+		/* header eats this space */
+		remain -= sizeof(struct ext2_ext_attr_entry);
+
+		/* attribute len eats this space */
+		remain -= EXT2_EXT_ATTR_SIZE(entry->e_name_len);
+
+		/* Extract name */
 		prefix = find_ea_prefix(entry->e_name_index);
 		prefix_len = (prefix ? strlen(prefix) : 0);
 		err = ext2fs_get_memzero(entry->e_name_len + prefix_len + 1,
@@ -879,12 +853,72 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			       (char *)entry + sizeof(*entry),
 			       entry->e_name_len);
 
-		err = ext2fs_get_mem(entry->e_value_size, &x->value);
-		if (err)
-			return err;
+		/* Check & copy value */
+		if (!ext2fs_has_feature_ea_inode(handle->fs->super) &&
+		    entry->e_value_inum != 0)
+			return EXT2_ET_BAD_EA_BLOCK_NUM;
+
+		if (entry->e_value_inum == 0) {
+			if (entry->e_value_size > remain)
+				return EXT2_ET_EA_BAD_VALUE_SIZE;
+
+			if (entry->e_value_offs + entry->e_value_size > values_size)
+				return EXT2_ET_EA_BAD_VALUE_OFFSET;
+
+			if (entry->e_value_size > 0 &&
+			    value_start + entry->e_value_offs <
+			    (char *)end + sizeof(__u32))
+				return EXT2_ET_EA_BAD_VALUE_OFFSET;
+
+			remain -= entry->e_value_size;
+
+			err = ext2fs_get_mem(entry->e_value_size, &x->value);
+			if (err)
+				return err;
+			memcpy(x->value, value_start + entry->e_value_offs,
+			       entry->e_value_size);
+		} else {
+			ext2_file_t ea_file;
+
+			if (entry->e_value_offs != 0)
+				return EXT2_ET_EA_BAD_VALUE_OFFSET;
+
+			if (entry->e_value_size > (64 * 1024))
+				return EXT2_ET_EA_BAD_VALUE_SIZE;
+
+			err = ext2fs_get_mem(entry->e_value_size, &x->value);
+			if (err)
+				return err;
+
+			err = ext2fs_file_open(handle->fs, entry->e_value_inum,
+					       0, &ea_file);
+			if (err)
+				return err;
+
+			if (ext2fs_file_get_size(ea_file) !=
+			    entry->e_value_size)
+				err = EXT2_ET_EA_BAD_VALUE_SIZE;
+			else
+				err = ext2fs_file_read(ea_file, x->value,
+						       entry->e_value_size, 0);
+			ext2fs_file_close(ea_file);
+			if (err)
+				return err;
+		}
+
 		x->value_len = entry->e_value_size;
-		memcpy(x->value, value_start + entry->e_value_offs,
-		       entry->e_value_size);
+
+		/* e_hash may be 0 in older inode's ea */
+		if (entry->e_hash != 0) {
+			__u32 hash;
+			void *data = (entry->e_value_inum != 0) ?
+					0 : value_start + entry->e_value_offs;
+
+			hash = ext2fs_ext_attr_hash_entry(entry, data);
+			if (entry->e_hash != hash)
+				return EXT2_ET_BAD_EA_HASH;
+		}
+
 		x++;
 		(*nr_read)++;
 		entry = EXT2_EXT_ATTR_NEXT(entry);
@@ -1107,7 +1141,7 @@ errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 			inode->i_extra_isize + sizeof(__u32);
 		entry = (struct ext2_ext_attr_entry *) start;
 		while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
-			if (!entry->e_value_block && entry->e_value_size) {
+			if (!entry->e_value_inum && entry->e_value_size) {
 				unsigned int offs = entry->e_value_offs;
 				if (offs < minoff)
 					minoff = offs;

@@ -26,6 +26,7 @@
  * 	- A bitmap of which blocks are in use.		(block_found_map)
  * 	- A bitmap of which blocks are in use by two inodes	(block_dup_map)
  * 	- The data blocks of the directory inodes.	(dir_map)
+ *	- A bitmap of EA inodes.			(inode_ea_map)
  *
  * Pass 1 is designed to stash away enough information so that the
  * other passes should not need to read in the inode information
@@ -333,6 +334,56 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 
+static void mark_inode_ea_map(e2fsck_t ctx, struct problem_context *pctx,
+			      ext2_ino_t ino)
+{
+	if (!ctx->inode_ea_map) {
+		pctx->errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
+					 _("EA inode map"),
+					 &ctx->inode_ea_map);
+		if (pctx->errcode) {
+			fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR,
+				    pctx);
+			exit(1);
+		}
+	}
+
+	ext2fs_mark_inode_bitmap2(ctx->inode_ea_map, ino);
+}
+
+/*
+ * Check validity of EA inode. Return 0 if EA inode is valid, otherwise return
+ * the problem code.
+ */
+static problem_t check_large_ea_inode(e2fsck_t ctx,
+				      struct ext2_ext_attr_entry *entry,
+				      struct problem_context *pctx)
+{
+	struct ext2_inode inode;
+
+	/* Check if inode is within valid range */
+	if ((entry->e_value_inum < EXT2_FIRST_INODE(ctx->fs->super)) ||
+	    (entry->e_value_inum > ctx->fs->super->s_inodes_count))
+		return PR_1_ATTR_VALUE_EA_INODE;
+
+	e2fsck_read_inode(ctx, entry->e_value_inum, &inode, "pass1");
+	if (!(inode.i_flags & EXT4_EA_INODE_FL)) {
+		/* If EXT4_EA_INODE_FL flag is not present but back-pointer
+		 * matches then we should set this flag */
+		if (inode.i_mtime == pctx->ino &&
+		    inode.i_generation == pctx->inode->i_generation &&
+		    fix_problem(ctx, PR_1_ATTR_SET_EA_INODE_FL, pctx)) {
+			inode.i_flags |= EXT4_EA_INODE_FL;
+			ext2fs_write_inode(ctx->fs, entry->e_value_inum,&inode);
+		} else
+			return PR_1_ATTR_NO_EA_INODE_FL;
+	} else if (inode.i_mtime != pctx->ino ||
+		   inode.i_generation != pctx->inode->i_generation)
+		return PR_1_ATTR_INVAL_EA_INODE;
+
+	return 0;
+}
+
 static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
@@ -391,25 +442,28 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 		/* attribute len eats this space */
 		remain -= EXT2_EXT_ATTR_SIZE(entry->e_name_len);
 
-		/* check value size */
-		if (entry->e_value_size > remain) {
-			pctx->num = entry->e_value_size;
-			problem = PR_1_ATTR_VALUE_SIZE;
-			goto fix;
-		}
+		if (entry->e_value_inum == 0) {
+			/* check value size */
+			if (entry->e_value_size > remain) {
+				pctx->num = entry->e_value_size;
+				problem = PR_1_ATTR_VALUE_SIZE;
+				goto fix;
+			}
 
-		/* e_value_block must be 0 in inode's ea */
-		if (entry->e_value_block != 0) {
-			pctx->num = entry->e_value_block;
-			problem = PR_1_ATTR_VALUE_BLOCK;
-			goto fix;
-		}
+			if (entry->e_value_size &&
+			    region_allocate(region,
+					    sizeof(__u32) + entry->e_value_offs,
+					    EXT2_EXT_ATTR_SIZE(
+						entry->e_value_size))) {
+				problem = PR_1_INODE_EA_ALLOC_COLLISION;
+				goto fix;
+			}
+		} else {
+			problem = check_large_ea_inode(ctx, entry, pctx);
+			if (problem != 0)
+				goto fix;
 
-		if (entry->e_value_size &&
-		    region_allocate(region, sizeof(__u32) + entry->e_value_offs,
-				    EXT2_EXT_ATTR_SIZE(entry->e_value_size))) {
-			problem = PR_1_INODE_EA_ALLOC_COLLISION;
-			goto fix;
+			mark_inode_ea_map(ctx, pctx, entry->e_value_inum);
 		}
 
 		hash = ext2fs_ext_attr_hash_entry(entry,
@@ -422,7 +476,10 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 			goto fix;
 		}
 
-		remain -= entry->e_value_size;
+		/* If EA value is stored in external inode then it does not
+		 * consume space here */
+		if (entry->e_value_inum == 0)
+			remain -= entry->e_value_size;
 
 		entry = EXT2_EXT_ATTR_NEXT(entry);
 	}
@@ -2368,19 +2425,28 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 				goto clear_extattr;
 			break;
 		}
-		if (entry->e_value_block != 0) {
-			if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
-				goto clear_extattr;
-		}
-		if (entry->e_value_offs + entry->e_value_size > fs->blocksize) {
-			if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
-				goto clear_extattr;
-			break;
-		}
-		if (entry->e_value_size &&
-		    region_allocate(region, entry->e_value_offs,
-				    EXT2_EXT_ATTR_SIZE(entry->e_value_size))) {
-			if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
+		if (entry->e_value_inum == 0) {
+			if (entry->e_value_offs + entry->e_value_size >
+			    fs->blocksize) {
+				if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
+					goto clear_extattr;
+				break;
+			}
+			if (entry->e_value_size &&
+			    region_allocate(region, entry->e_value_offs,
+					    EXT2_EXT_ATTR_SIZE(entry->e_value_size))) {
+				if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION,
+						pctx))
+					goto clear_extattr;
+			}
+		} else {
+			problem_t problem;
+
+			problem = check_large_ea_inode(ctx, entry, pctx);
+			if (problem == 0)
+				mark_inode_ea_map(ctx, pctx,
+						  entry->e_value_inum);
+			else if (fix_problem(ctx, problem, pctx))
 				goto clear_extattr;
 		}
 
