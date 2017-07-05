@@ -2269,7 +2269,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 	ext2_filsys			fs = ctx->fs;
 	blk64_t				blk;
 	__u32				should_be;
-	int				count;
+	ea_value_t			count;
 
 	clear_problem_context(&pctx);
 
@@ -2286,7 +2286,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 		}
 		header = (struct ext2_ext_attr_header *) block_buf;
 		pctx.blkcount = header->h_refcount;
-		should_be = header->h_refcount + adjust_sign * count;
+		should_be = header->h_refcount + adjust_sign * (int)count;
 		pctx.num = should_be;
 		if (fix_problem(ctx, PR_1_EXTATTR_REFCOUNT, &pctx)) {
 			header->h_refcount = should_be;
