@@ -582,7 +582,6 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 			inode->i_extra_isize = (inode->i_extra_isize + 3) & ~3;
 		e2fsck_write_inode_full(ctx, pctx->ino, pctx->inode,
 					EXT2_INODE_SIZE(sb), "pass1");
-		return;
 	}
 
 	/* check if there is no place for an EA header */
