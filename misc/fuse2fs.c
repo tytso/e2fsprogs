@@ -3786,6 +3786,12 @@ int main(int argc, char *argv[])
 	global_fs->priv_data = &fctx;
 
 	ret = 3;
+	if (ext2fs_has_feature_ea_inode(global_fs->super)) {
+		printf(_("%s: fuse2fs does not support ea_inode feature.\n"),
+		       fctx.device);
+		goto out;
+	}
+
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (!fctx.ro) {
 			printf(_("%s: recovering journal\n"), fctx.device);
