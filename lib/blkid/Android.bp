@@ -20,11 +20,20 @@ cc_library {
     ],
     shared_libs: ["libext2_uuid"],
 
+    target: {
+        windows: {
+            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            cflags: [
+                "-Wno-pointer-to-int-cast",
+            ],
+            enabled: true
+        },
+    },
+
     cflags: [
         "-W",
         "-Wall",
         "-fno-strict-aliasing",
-        "-Wno-macro-redefined",
     ],
 
     header_libs: ["libext2-headers"],

@@ -6,10 +6,17 @@ cc_library {
     name: "libext2_misc",
     host_supported: true,
 
+    target: {
+        windows: {
+            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            enabled: true
+        },
+    },
+
     srcs: [
         "create_inode.c",
     ],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
+    cflags: ["-W", "-Wall"],
     shared_libs: [
         "libext2_quota",
         "libext2fs",
@@ -49,6 +56,13 @@ cc_binary {
                 "libbase",
                 "libz",
             ],
+        },
+        windows: {
+            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            cflags: ["-D_POSIX", "-D__USE_MINGW_ALARM"],
+            ldflags: ["-static"],
+            host_ldlibs: ["-lws2_32"],
+            enabled: true
         },
         android: {
             shared_libs: [

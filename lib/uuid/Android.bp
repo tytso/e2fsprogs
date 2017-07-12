@@ -22,7 +22,12 @@ cc_library {
         "-Wno-unused-function",
         "-Wno-unused-parameter",
     ],
-
+    target: {
+        windows: {
+            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            enabled: true
+        },
+    },
     header_libs: ["libext2-headers"],
     export_include_dirs: ["."],
     export_header_lib_headers: ["libext2-headers"],

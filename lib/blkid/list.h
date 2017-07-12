@@ -146,7 +146,7 @@ _INLINE_ void list_splice(struct list_head *list, struct list_head *head)
  * @member:	the name of the list_struct within the struct.
  */
 #define list_entry(ptr, type, member) \
-	((type *)((char *)(ptr)-(unsigned long)(&((type *)0)->member)))
+	((type *)((char *)(ptr)-(unsigned long)(intptr_t)(&((type *)0)->member)))
 
 /**
  * list_for_each - iterate over elements in a list

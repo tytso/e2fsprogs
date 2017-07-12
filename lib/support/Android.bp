@@ -18,9 +18,14 @@ cc_library {
     ],
     shared_libs: [
         "libext2fs",
-        "libext2_com_err",
         "libext2_blkid",
     ],
+
+    target: {
+        windows: {
+            enabled: true
+        },
+    },
 
     cflags: [
         "-W",

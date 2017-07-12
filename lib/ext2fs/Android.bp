@@ -114,15 +114,10 @@ cc_library {
             ],
         },
         windows: {
-            // include/nonunix is used as an overlay on top of the system
-            // include directory. Some empty header files in include/nonunix
-            // hide the ones in the system include path. This setup doesn't work
-            // unless we pass the include/nonunix as an -isystem flag.
-            // TODO(deymo): Enable windows
-            enabled: false,
+            enabled: true,
+            include_dirs: [ "external/e2fsprogs/include/mingw" ],
             cflags: [
                 "-Wno-format",
-            //    "-isystem external/e2fsprogs/include/nonunix",
             ],
             host_ldlibs: ["-lws2_32"],
         },
