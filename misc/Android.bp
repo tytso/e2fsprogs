@@ -35,16 +35,34 @@ cc_binary {
         "mke2fs.conf",
     ],
     cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
-    shared_libs: [
-        "libext2fs",
-        "libext2_blkid",
-        "libext2_misc",
-        "libext2_uuid",
-        "libext2_quota",
-        "libext2_com_err",
-        "libext2_e2p",
-    ],
-    system_shared_libs: ["libc"],
+    target: {
+        host: {
+            static_libs: [
+                "libext2_blkid",
+                "libext2_misc",
+                "libext2_uuid",
+                "libext2_quota",
+                "libext2_com_err",
+                "libext2_e2p",
+                "libext2fs",
+                "libsparse",
+                "libbase",
+                "libz",
+            ],
+        },
+        android: {
+            shared_libs: [
+                "libext2fs",
+                "libext2_blkid",
+                "libext2_misc",
+                "libext2_uuid",
+                "libext2_quota",
+                "libext2_com_err",
+                "libext2_e2p",
+            ],
+        },
+    },
+    stl: "libc++_static",
     include_dirs: ["external/e2fsprogs/e2fsck"],
 }
 

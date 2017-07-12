@@ -18,15 +18,34 @@ cc_binary {
         "hashmap.c",
     ],
     cflags: ["-W", "-Wall"],
-    shared_libs: [
-        "libext2fs",
-        "libext2_com_err",
-        "libext2_misc",
-        "libcutils",
-        "libbase",
-        "libselinux",
-        "libcrypto",
-    ],
+    target: {
+        host: {
+            static_libs: [
+                "libext2_com_err",
+                "libext2_misc",
+                "libext2fs",
+                "libsparse",
+                "libz",
+                "libcutils",
+                "libbase",
+                "libselinux",
+                "libcrypto",
+                "liblog",
+            ],
+        },
+        android: {
+            shared_libs: [
+                "libext2fs",
+                "libext2_com_err",
+                "libext2_misc",
+                "libcutils",
+                "libbase",
+                "libselinux",
+                "libcrypto",
+            ],
+        },
+    },
+    stl: "libc++_static",
 }
 
 //##########################################################################
