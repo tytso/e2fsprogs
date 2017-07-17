@@ -275,8 +275,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		}
 	}
 
-	if ((fs->super->s_log_block_size + EXT2_MIN_BLOCK_LOG_SIZE) >
-	    EXT2_MAX_BLOCK_LOG_SIZE) {
+	if (fs->super->s_log_block_size >
+	    (unsigned) (EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE)) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
