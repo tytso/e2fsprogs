@@ -505,6 +505,7 @@ extern void set_up_logging(e2fsck_t ctx);
 
 /* quota.c */
 extern void e2fsck_hide_quota(e2fsck_t ctx);
+extern void e2fsck_validate_quota_inodes(e2fsck_t ctx);
 
 /* pass1.c */
 extern errcode_t e2fsck_setup_icount(e2fsck_t ctx, const char *icount_name,

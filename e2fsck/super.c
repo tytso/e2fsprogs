@@ -910,6 +910,8 @@ void check_super_block(e2fsck_t ctx)
 		}
 	}
 
+	e2fsck_validate_quota_inodes(ctx);
+
 	/*
 	 * Move the ext3 journal file, if necessary.
 	 */

@@ -279,6 +279,9 @@ struct problem_context {
 /* Bad desired extra isize in superblock */
 #define PR_0_BAD_WANT_EXTRA_ISIZE		0x00004E
 
+/* Invalid quota inode number */
+#define PR_0_INVALID_QUOTA_INO			0x00004F
+
 
 /*
  * Pass 1 errors

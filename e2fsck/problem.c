@@ -488,6 +488,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Bad desired extra isize in @S (%N).  "),
 	  PROMPT_FIX, 0 },
 
+	/* Invalid quota inode number */
+	{ PR_0_INVALID_QUOTA_INO,
+	  N_("Invalid %U @q @i %i.  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
