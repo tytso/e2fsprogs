@@ -418,7 +418,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Making quota inode hidden */
 	{ PR_0_HIDE_QUOTA,
-	  N_("Making @q @i %i (%Q) hidden.\n"),
+	  N_("Hiding %U @q @i %i (%Q).\n"),
 	  PROMPT_NONE, PR_PREEN_OK },
 
 	/* Superblock has invalid MMP block. */
