@@ -2718,7 +2718,8 @@ report_problem:
 				fix_problem(ctx,
 					    PR_1_CRITICAL_METADATA_COLLISION,
 					    pctx);
-				ctx->flags |= E2F_FLAG_RESTART_LATER;
+				if ((ctx->options & E2F_OPT_NO) == 0)
+					ctx->flags |= E2F_FLAG_RESTART_LATER;
 			}
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
@@ -3453,7 +3454,8 @@ static int process_block(ext2_filsys fs,
 	    ext2fs_test_block_bitmap2(ctx->block_metadata_map, blk)) {
 		pctx->blk = blk;
 		fix_problem(ctx, PR_1_CRITICAL_METADATA_COLLISION, pctx);
-		ctx->flags |= E2F_FLAG_RESTART_LATER;
+		if ((ctx->options & E2F_OPT_NO) == 0)
+			ctx->flags |= E2F_FLAG_RESTART_LATER;
 	}
 
 	if (problem) {
