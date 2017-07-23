@@ -440,6 +440,10 @@ int main (int argc, char ** argv)
 		    !print_min_size)
 			checkit = 1;
 
+		if ((fs->super->s_free_blocks_count > fs->super->s_blocks_count) ||
+		    (fs->super->s_free_inodes_count > fs->super->s_inodes_count))
+			checkit = 1;
+
 		if (checkit) {
 			fprintf(stderr,
 				_("Please run 'e2fsck -f %s' first.\n\n"),
