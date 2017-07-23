@@ -69,7 +69,12 @@ ext2 file systems.
 .TP
 .B dir_nlink
 .br
-This ext4 feature allows more than 65000 subdirectories per directory.
+Normally ext4 allows an inode to have no more than 65,000 hard links.
+This applies to files as well as directories, which means that there can
+be no more than 64,998 subdirectories in a directory (because each of
+the '..' entries counts as a hard link).  This feature lifts this limit
+by causing ext4 to use a links count of 1 to indicate that the number of
+hard links to a directory is not known.
 .TP
 .B encrypt
 .br
