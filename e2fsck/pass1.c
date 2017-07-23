@@ -2710,6 +2710,7 @@ report_problem:
 			 * will reallocate the block; then we can try again.
 			 */
 			if (pb->ino != EXT2_RESIZE_INO &&
+			    extent.e_pblk < ctx->fs->super->s_blocks_count &&
 			    ext2fs_test_block_bitmap2(ctx->block_metadata_map,
 						      extent.e_pblk)) {
 				next_try_repairs = 0;
@@ -3448,6 +3449,7 @@ static int process_block(ext2_filsys fs,
 	 */
 	if (blockcnt < 0 &&
 	    p->ino != EXT2_RESIZE_INO &&
+	    blk < ctx->fs->super->s_blocks_count &&
 	    ext2fs_test_block_bitmap2(ctx->block_metadata_map, blk)) {
 		pctx->blk = blk;
 		fix_problem(ctx, PR_1_CRITICAL_METADATA_COLLISION, pctx);
