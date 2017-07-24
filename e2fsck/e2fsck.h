@@ -269,9 +269,10 @@ struct e2fsck_struct {
 	ext2_refcount_t refcount_extra;
 
 	/*
-	 * Quota blocks to be charged for each ea block.
+	 * Quota blocks and inodes to be charged for each ea block.
 	 */
-	ext2_refcount_t ea_block_quota;
+	ext2_refcount_t ea_block_quota_blocks;
+	ext2_refcount_t ea_block_quota_inodes;
 
 	/*
 	 * ea_inode references from attr entries.
