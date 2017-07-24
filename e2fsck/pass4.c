@@ -106,17 +106,8 @@ static void check_ea_inode(e2fsck_t ctx, ext2_ino_t i,
 
 	if (ctx->ea_inode_refs)
 		ea_refcount_fetch(ctx->ea_inode_refs, i, &actual_refs);
-	if (!actual_refs) {
-		/*
-		 * There are no attribute references to the ea_inode.
-		 * Zero the link count so that when  inode is linked to
-		 * lost+found it has correct link count.
-		 */
-		inode->i_links_count = 0;
-		e2fsck_write_inode(ctx, i, EXT2_INODE(inode), "check_ea_inode");
-		ext2fs_icount_store(ctx->inode_link_info, i, 0);
+	if (!actual_refs)
 		return;
-	}
 
 	/*
 	 * There are some attribute references, link_counted is now considered
