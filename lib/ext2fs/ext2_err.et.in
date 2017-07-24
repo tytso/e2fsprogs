@@ -542,7 +542,4 @@ ec	EXT2_ET_CORRUPT_JOURNAL_SB,
 ec	EXT2_ET_INODE_CORRUPTED,
 	"Inode is corrupted"
 
-ec	EXT2_ET_CANNOT_MOVE_EA_INODE,
-	"Cannot move extended attribute inode"
-
 	end
