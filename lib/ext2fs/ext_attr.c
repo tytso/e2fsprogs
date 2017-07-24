@@ -335,7 +335,7 @@ static struct ea_name_index ea_names[] = {
 
 static int find_ea_index(char *fullname, char **name, int *index);
 
-/* Push empty attributes to the end and inlinedata to the front. */
+/* Pull inlinedata to the front. */
 static int attr_compare(const void *a, const void *b)
 {
 	const struct ext2_xattr *xa = a, *xb = b;
@@ -343,11 +343,7 @@ static int attr_compare(const void *a, const void *b)
 	int xa_idx, xb_idx;
 	int cmp;
 
-	if (xa->name == NULL)
-		return +1;
-	else if (xb->name == NULL)
-		return -1;
-	else if (!strcmp(xa->name, "system.data"))
+	if (!strcmp(xa->name, "system.data"))
 		return -1;
 	else if (!strcmp(xb->name, "system.data"))
 		return +1;
@@ -675,10 +671,7 @@ static errcode_t write_xattrs_to_buffer(struct ext2_xattr_handle *handle,
 
 	memset(entries_start, 0, storage_size);
 	/* For all remaining x...  */
-	for (; x < handle->attrs + handle->capacity; x++) {
-		if (!x->name)
-			continue;
-
+	for (; x < handle->attrs + handle->count; x++) {
 		/* Calculate index and shortname position */
 		shortname = x->name;
 		ret = find_ea_index(x->name, &shortname, &idx);
@@ -766,12 +759,9 @@ errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 		goto out;
 	}
 
-	/*
-	 * Force the inlinedata attr to the front and the empty entries
-	 * to the end.
-	 */
+	/* Force the inlinedata attr to the front. */
 	x = handle->attrs;
-	qsort(x, handle->capacity, sizeof(struct ext2_xattr), attr_compare);
+	qsort(x, handle->count, sizeof(struct ext2_xattr), attr_compare);
 
 	/* Does the inode have space for EA? */
 	if (inode->i_extra_isize < sizeof(inode->i_extra_isize) ||
@@ -813,7 +803,7 @@ write_ea_block:
 	if (err)
 		goto out2;
 
-	if (x < handle->attrs + handle->capacity) {
+	if (x < handle->attrs + handle->count) {
 		err = EXT2_ET_EA_NO_SPACE;
 		goto out2;
 	}
@@ -865,8 +855,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 					 struct ext2_inode_large *inode,
 					 struct ext2_ext_attr_entry *entries,
 					 unsigned int storage_size,
-					 char *value_start,
-					 size_t *nr_read)
+					 char *value_start)
 {
 	struct ext2_xattr *x;
 	struct ext2_ext_attr_entry *entry, *end;
@@ -875,10 +864,6 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	errcode_t err;
 	unsigned int values_size = storage_size +
 			((char *)entries - value_start);
-
-	x = handle->attrs;
-	while (x->name)
-		x++;
 
 	/* find the end */
 	end = entries;
@@ -904,12 +889,13 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 
 		/* Allocate space for more attrs? */
-		if (x == handle->attrs + handle->capacity) {
+		if (handle->count == handle->capacity) {
 			err = ext2fs_xattrs_expand(handle, 4);
 			if (err)
 				return err;
-			x = handle->attrs + handle->capacity - 4;
 		}
+
+		x = handle->attrs + handle->count;
 
 		/* header eats this space */
 		remain -= sizeof(struct ext2_ext_attr_entry);
@@ -1013,8 +999,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			}
 		}
 
-		x++;
-		(*nr_read)++;
+		handle->count++;
 		entry = EXT2_EXT_ATTR_NEXT(entry);
 	}
 
@@ -1084,8 +1069,8 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 			inode->i_extra_isize + sizeof(__u32);
 
 		err = read_xattrs_from_buffer(handle, inode,
-			(struct ext2_ext_attr_entry *) start, storage_size,
-					      start, &handle->count);
+					(struct ext2_ext_attr_entry *) start,
+					storage_size, start);
 		if (err)
 			goto out;
 	}
@@ -1121,8 +1106,8 @@ read_ea_block:
 			sizeof(struct ext2_ext_attr_header);
 		start = block_buf + sizeof(struct ext2_ext_attr_header);
 		err = read_xattrs_from_buffer(handle, inode,
-			(struct ext2_ext_attr_entry *) start, storage_size,
-					      block_buf, &handle->count);
+					(struct ext2_ext_attr_entry *) start,
+					storage_size, block_buf);
 		if (err)
 			goto out3;
 
@@ -1149,10 +1134,7 @@ errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
 	int ret;
 
 	EXT2_CHECK_MAGIC(h, EXT2_ET_MAGIC_EA_HANDLE);
-	for (x = h->attrs; x < h->attrs + h->capacity; x++) {
-		if (!x->name)
-			continue;
-
+	for (x = h->attrs; x < h->attrs + h->count; x++) {
 		ret = func(x->name, x->value, x->value_len, data);
 		if (ret & XATTR_CHANGED)
 			h->dirty = 1;
@@ -1171,8 +1153,8 @@ errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
 	errcode_t err;
 
 	EXT2_CHECK_MAGIC(h, EXT2_ET_MAGIC_EA_HANDLE);
-	for (x = h->attrs; x < h->attrs + h->capacity; x++) {
-		if (!x->name || strcmp(x->name, key))
+	for (x = h->attrs; x < h->attrs + h->count; x++) {
+		if (strcmp(x->name, key))
 			continue;
 
 		if (!(h->flags & XATTR_HANDLE_FLAG_RAW) &&
@@ -1260,12 +1242,11 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 			   const void *value,
 			   size_t value_len)
 {
-	struct ext2_xattr *x, *last_empty;
+	struct ext2_xattr *x;
 	char *new_value;
 	errcode_t err;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
-	last_empty = NULL;
 
 	err = ext2fs_get_mem(value_len, &new_value);
 	if (err)
@@ -1280,12 +1261,7 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 	} else
 		memcpy(new_value, value, value_len);
 
-	for (x = handle->attrs; x < handle->attrs + handle->capacity; x++) {
-		if (!x->name) {
-			last_empty = x;
-			continue;
-		}
-
+	for (x = handle->attrs; x < handle->attrs + handle->count; x++) {
 		/* Replace xattr */
 		if (strcmp(x->name, key) == 0) {
 			ext2fs_free_mem(&x->value);
@@ -1296,25 +1272,15 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 		}
 	}
 
-	/* Add attr to empty slot */
-	if (last_empty) {
-		err = ext2fs_get_mem(strlen(key) + 1, &last_empty->name);
+	if (handle->count == handle->capacity) {
+		/* Expand array, append slot */
+		err = ext2fs_xattrs_expand(handle, 4);
 		if (err)
 			goto errout;
-		strcpy(last_empty->name, key);
-		last_empty->value = new_value;
-		last_empty->value_len = value_len;
-		handle->dirty = 1;
-		handle->count++;
-		return 0;
+
+		x = handle->attrs + handle->capacity - 4;
 	}
 
-	/* Expand array, append slot */
-	err = ext2fs_xattrs_expand(handle, 4);
-	if (err)
-		goto errout;
-
-	x = handle->attrs + handle->capacity - 4;
 	err = ext2fs_get_mem(strlen(key) + 1, &x->name);
 	if (err)
 		goto errout;
@@ -1337,16 +1303,15 @@ errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
 			      const char *key)
 {
 	struct ext2_xattr *x;
+	struct ext2_xattr *end = handle->attrs + handle->count;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
-	for (x = handle->attrs; x < handle->attrs + handle->capacity; x++) {
-		if (!x->name)
-			continue;
-
+	for (x = handle->attrs; x < end; x++) {
 		if (strcmp(x->name, key) == 0) {
 			ext2fs_free_mem(&x->name);
 			ext2fs_free_mem(&x->value);
-			x->value_len = 0;
+			memmove(x, x + 1, (char *)end - (char *)(x + 1));
+			memset(end, 0, sizeof(*end));
 			handle->dirty = 1;
 			handle->count--;
 			return 0;
