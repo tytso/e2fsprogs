@@ -306,13 +306,6 @@ void do_set_xattr(int argc, char **argv)
 	}
 
 	err = ext2fs_xattr_set(h, argv[optind + 1], buf, buflen);
-	if (err)
-		goto out;
-
-	err = ext2fs_xattrs_write(h);
-	if (err)
-		goto out;
-
 out:
 	ext2fs_xattrs_close(&h);
 	if (err)
@@ -360,10 +353,6 @@ void do_rm_xattr(int argc, char **argv)
 		if (err)
 			goto out;
 	}
-
-	err = ext2fs_xattrs_write(h);
-	if (err)
-		goto out;
 out:
 	ext2fs_xattrs_close(&h);
 	if (err)

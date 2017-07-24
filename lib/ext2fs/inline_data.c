@@ -42,11 +42,6 @@ static errcode_t ext2fs_inline_data_ea_set(struct ext2_inline_data *data)
 
 	retval = ext2fs_xattr_set(handle, "system.data",
 				  data->ea_data, data->ea_size);
-	if (retval)
-		goto err;
-
-	retval = ext2fs_xattrs_write(handle);
-
 err:
 	(void) ext2fs_xattrs_close(&handle);
 	return retval;
@@ -270,11 +265,6 @@ errcode_t ext2fs_inline_data_ea_remove(ext2_filsys fs, ext2_ino_t ino)
 		goto err;
 
 	retval = ext2fs_xattr_remove(handle, "system.data");
-	if (retval)
-		goto err;
-
-	retval = ext2fs_xattrs_write(handle);
-
 err:
 	(void) ext2fs_xattrs_close(&handle);
 	return retval;

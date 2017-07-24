@@ -48,12 +48,6 @@ static errcode_t ino_add_xattr(ext2_filsys fs, ext2_ino_t ino, const char *name,
 			_("while setting xattrs of inode %u"), ino);
 		goto xattrs_close;
 	}
-	retval = ext2fs_xattrs_write(xhandle);
-	if (retval) {
-		com_err(__func__, retval,
-			_("while writting xattrs of inode %u"), ino);
-		goto xattrs_close;
-	}
 xattrs_close:
 	close_retval = ext2fs_xattrs_close(&xhandle);
 	if (close_retval) {

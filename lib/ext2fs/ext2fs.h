@@ -1251,6 +1251,8 @@ extern void ext2fs_ext_attr_block_rehash(struct ext2_ext_attr_header *header,
 					 struct ext2_ext_attr_entry *end);
 extern __u32 ext2fs_get_ea_inode_hash(struct ext2_inode *inode);
 extern void ext2fs_set_ea_inode_hash(struct ext2_inode *inode, __u32 hash);
+extern __u64 ext2fs_get_ea_inode_ref(struct ext2_inode *inode);
+extern void ext2fs_set_ea_inode_ref(struct ext2_inode *inode, __u64 ref_count);
 
 /* extent.c */
 extern errcode_t ext2fs_extent_header_verify(void *ptr, int size);

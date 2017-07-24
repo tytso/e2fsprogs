@@ -87,22 +87,6 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i,
 	return 0;
 }
 
-/*
- * Get/set ref functions below could later be moved to somewhere in lib/ext2fs/.
- * Currently the only user is e2fsck so we rather not expose it in common
- * library until there are more users.
- */
-static __u64 ea_inode_get_ref(struct ext2_inode_large *inode)
-{
-	return ((__u64)inode->i_ctime << 32) | inode->osd1.linux1.l_i_version;
-}
-
-static void ea_inode_set_ref(struct ext2_inode_large *inode, __u64 ref_count)
-{
-	inode->i_ctime = (__u32)(ref_count >> 32);
-	inode->osd1.linux1.l_i_version = (__u32)ref_count;
-}
-
 static void check_ea_inode(e2fsck_t ctx, ext2_ino_t i,
 			   struct ext2_inode_large *inode, __u16 *link_counted)
 {
@@ -140,7 +124,7 @@ static void check_ea_inode(e2fsck_t ctx, ext2_ino_t i,
 	 */
 	*link_counted = 1;
 
-	ref_count = ea_inode_get_ref(inode);
+	ref_count = ext2fs_get_ea_inode_ref(EXT2_INODE(inode));
 
 	/* Old Lustre-style xattr inodes do not have a stored refcount.
 	 * However, their i_ctime and i_atime should be the same.
@@ -153,7 +137,7 @@ static void check_ea_inode(e2fsck_t ctx, ext2_ino_t i,
 		pctx.num = ref_count;
 		pctx.num2 = actual_refs;
 		if (fix_problem(ctx, PR_4_EA_INODE_REF_COUNT, &pctx)) {
-			ea_inode_set_ref(inode, actual_refs);
+			ext2fs_set_ea_inode_ref(EXT2_INODE(inode), actual_refs);
 			e2fsck_write_inode(ctx, i, EXT2_INODE(inode), "pass4");
 		}
 	}
