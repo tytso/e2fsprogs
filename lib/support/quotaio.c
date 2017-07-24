@@ -273,11 +273,13 @@ errcode_t quota_file_open(quota_ctx_t qctx, struct quota_handle *h,
 	if (h->qh_ops->check_file &&
 	    (h->qh_ops->check_file(h, qtype, fmt) == 0)) {
 		log_err("qh_ops->check_file failed");
+		err = EIO;
 		goto errout;
 	}
 
 	if (h->qh_ops->init_io && (h->qh_ops->init_io(h) < 0)) {
 		log_err("qh_ops->init_io failed");
+		err = EIO;
 		goto errout;
 	}
 	if (allocated_handle)
@@ -288,7 +290,7 @@ errout:
 	ext2fs_file_close(e2_file);
 	if (allocated_handle)
 		ext2fs_free_mem(&h);
-	return -1;
+	return err;
 }
 
 static errcode_t quota_inode_init_new(ext2_filsys fs, ext2_ino_t ino)
@@ -405,12 +407,12 @@ errcode_t quota_file_close(quota_ctx_t qctx, struct quota_handle *h)
 {
 	if (h->qh_io_flags & IOFL_INFODIRTY) {
 		if (h->qh_ops->write_info && h->qh_ops->write_info(h) < 0)
-			return -1;
+			return EIO;
 		h->qh_io_flags &= ~IOFL_INFODIRTY;
 	}
 
 	if (h->qh_ops->end_io && h->qh_ops->end_io(h) < 0)
-		return -1;
+		return EIO;
 	if (h->qh_qf.e2_file) {
 		__u64 new_size, size;
 
