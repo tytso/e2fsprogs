@@ -118,9 +118,17 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Expected filename after options\n");
 		exit(EXIT_FAILURE);
 	}
-	in_file = strdup(argv[optind]);
 
-	io_mgr = android_sparse_file ? sparse_io_manager: unix_io_manager;
+	if (android_sparse_file) {
+		io_mgr = sparse_io_manager;
+		if (asprintf(&in_file, "(%s)", argv[optind]) == -1) {
+			fprintf(stderr, "Failed to allocate file name\n");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		io_mgr = unix_io_manager;
+		in_file = strdup(argv[optind]);
+	}
 	retval = ext2fs_open(in_file, flags, 0, 0, io_mgr, &fs);
 	if (retval) {
 		com_err(prog_name, retval, "while opening file %s\n", in_file);

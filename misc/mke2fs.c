@@ -2854,7 +2854,7 @@ int main (int argc, char *argv[])
 				_("in malloc for android_sparse_params"));
 			exit(1);
 		}
-		snprintf(android_sparse_params, PATH_MAX + 32, "%s:%u:%u",
+		snprintf(android_sparse_params, PATH_MAX + 32, "(%s):%u:%u",
 			 device_name, fs_param.s_blocks_count,
 			 1024 << fs_param.s_log_block_size);
 		retval = ext2fs_initialize(android_sparse_params, flags,

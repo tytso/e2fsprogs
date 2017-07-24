@@ -7,6 +7,10 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 #if !defined(ENABLE_LIBSPARSE)
 static errcode_t sparse_open(const char *name EXT2FS_ATTR((unused)),
 			     int flags EXT2FS_ATTR((unused)),
@@ -155,7 +159,7 @@ static errcode_t io_manager_configure(struct sparse_io_params *params,
 			goto err_alloc;
 		}
 		if (params->fd < 0) {
-			sm->fd = open(params->file, O_CREAT | O_RDWR | O_TRUNC,
+			sm->fd = open(params->file, O_CREAT | O_RDWR | O_TRUNC | O_BINARY,
 				      0644);
 			if (sm->fd < 0) {
 				retval = errno;
@@ -206,11 +210,11 @@ static errcode_t read_sparse_argv(const char *name, bool is_fd,
 	}
 
 	if (is_fd) {
-		ret = sscanf(name, "%d:%llu:%u", &sparse_params->fd,
+		ret = sscanf(name, "(%d):%llu:%u", &sparse_params->fd,
 			     (unsigned long long *)&sparse_params->blocks_count,
 			     &sparse_params->block_size);
 	} else {
-		ret = sscanf(name, "%[^:]%*[:]%llu%*[:]%u", sparse_params->file,
+		ret = sscanf(name, "(%[^)])%*[:]%llu%*[:]%u", sparse_params->file,
 			     (unsigned long long *)&sparse_params->blocks_count,
 			     &sparse_params->block_size);
 	}

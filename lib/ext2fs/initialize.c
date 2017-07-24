@@ -28,6 +28,10 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 #if defined(__linux__)    &&	defined(EXT2_OS_LINUX)
 #define CREATOR_OS EXT2_OS_LINUX
 #else
@@ -124,6 +128,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		io_flags |= IO_FLAG_EXCLUSIVE;
 	if (flags & EXT2_FLAG_DIRECT_IO)
 		io_flags |= IO_FLAG_DIRECT_IO;
+	io_flags |= O_BINARY;
 	retval = manager->open(name, io_flags, &fs->io);
 	if (retval)
 		goto cleanup;
