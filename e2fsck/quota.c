@@ -71,14 +71,47 @@ void e2fsck_hide_quota(e2fsck_t ctx)
 		return;
 
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		pctx.dir = 2;	/* This is a guess, but it's a good one */
 		pctx.ino = *quota_sb_inump(sb, qtype);
+		pctx.num = qtype;
 		quota_ino = quota_type2inum(qtype, fs->super);
 		if (pctx.ino && (pctx.ino != quota_ino) &&
 		    fix_problem(ctx, PR_0_HIDE_QUOTA, &pctx)) {
 			move_quota_inode(fs, pctx.ino, quota_ino, qtype);
 			*quota_sb_inump(sb, qtype) = quota_ino;
+			ext2fs_mark_super_dirty(fs);
 		}
 	}
 
 	return;
+}
+
+void e2fsck_validate_quota_inodes(e2fsck_t ctx)
+{
+	struct ext2_super_block *sb = ctx->fs->super;
+	struct problem_context	pctx;
+	ext2_filsys		fs = ctx->fs;
+	enum quota_type qtype;
+	ext2_ino_t quota_ino;
+
+	clear_problem_context(&pctx);
+
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		pctx.ino = *quota_sb_inump(sb, qtype);
+		pctx.num = qtype;
+		if (pctx.ino &&
+		    ((pctx.ino == EXT2_BAD_INO) ||
+		     (pctx.ino == EXT2_ROOT_INO) ||
+		     (pctx.ino == EXT2_BOOT_LOADER_INO) ||
+		     (pctx.ino == EXT2_UNDEL_DIR_INO) ||
+		     (pctx.ino == EXT2_RESIZE_INO) ||
+		     (pctx.ino == EXT2_JOURNAL_INO) ||
+		     (pctx.ino == EXT2_EXCLUDE_INO) ||
+		     (pctx.ino == EXT4_REPLICA_INO) ||
+		     (pctx.ino > fs->super->s_inodes_count)) &&
+		    fix_problem(ctx, PR_0_INVALID_QUOTA_INO, &pctx)) {
+			*quota_sb_inump(sb, qtype) = 0;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
 }

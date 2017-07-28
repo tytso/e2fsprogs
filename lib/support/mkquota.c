@@ -193,20 +193,21 @@ errcode_t quota_write_inode(quota_ctx_t qctx, unsigned int qtype_bits)
 			continue;
 
 		retval = quota_file_create(h, fs, qtype, fmt);
-		if (retval < 0) {
-			log_debug("Cannot initialize io on quotafile");
-			continue;
+		if (retval) {
+			log_debug("Cannot initialize io on quotafile: %s",
+				  error_message(retval));
+			goto out;
 		}
 
 		write_dquots(dict, h);
 		retval = quota_file_close(qctx, h);
-		if (retval < 0) {
-			log_err("Cannot finish IO on new quotafile: %s",
-				strerror(errno));
+		if (retval) {
+			log_debug("Cannot finish IO on new quotafile: %s",
+				  strerror(errno));
 			if (h->qh_qf.e2_file)
 				ext2fs_file_close(h->qh_qf.e2_file);
 			(void) quota_inode_truncate(fs, h->qh_qf.ino);
-			continue;
+			goto out;
 		}
 
 		/* Set quota inode numbers in superblock. */

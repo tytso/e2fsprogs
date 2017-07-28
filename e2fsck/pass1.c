@@ -2897,6 +2897,7 @@ report_problem:
 			 * will reallocate the block; then we can try again.
 			 */
 			if (pb->ino != EXT2_RESIZE_INO &&
+			    extent.e_pblk < ctx->fs->super->s_blocks_count &&
 			    ext2fs_test_block_bitmap2(ctx->block_metadata_map,
 						      extent.e_pblk)) {
 				next_try_repairs = 0;
@@ -2904,7 +2905,8 @@ report_problem:
 				fix_problem(ctx,
 					    PR_1_CRITICAL_METADATA_COLLISION,
 					    pctx);
-				ctx->flags |= E2F_FLAG_RESTART_LATER;
+				if ((ctx->options & E2F_OPT_NO) == 0)
+					ctx->flags |= E2F_FLAG_RESTART_LATER;
 			}
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
@@ -3656,10 +3658,12 @@ static int process_block(ext2_filsys fs,
 	 */
 	if (blockcnt < 0 &&
 	    p->ino != EXT2_RESIZE_INO &&
+	    blk < ctx->fs->super->s_blocks_count &&
 	    ext2fs_test_block_bitmap2(ctx->block_metadata_map, blk)) {
 		pctx->blk = blk;
 		fix_problem(ctx, PR_1_CRITICAL_METADATA_COLLISION, pctx);
-		ctx->flags |= E2F_FLAG_RESTART_LATER;
+		if ((ctx->options & E2F_OPT_NO) == 0)
+			ctx->flags |= E2F_FLAG_RESTART_LATER;
 	}
 
 	if (problem) {

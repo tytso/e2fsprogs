@@ -1239,16 +1239,20 @@ dnl Test for sem_init, and which library it might require:
 dnl
 AH_TEMPLATE([HAVE_SEM_INIT], [Define to 1 if sem_init() exists])
 SEM_INIT_LIB=''
-AC_CHECK_FUNC(sem_init, ,
-  AC_CHECK_LIB(pthread, sem_init,
+echo GL_THREADS_API: ${gl_threads_api}
+if test "${gl_threads_api}" != none
+then
+  AC_CHECK_FUNC(sem_init, ,
+    AC_CHECK_LIB(pthread, sem_init,
   	AC_DEFINE(HAVE_SEM_INIT, 1)
   	SEM_INIT_LIB=-lpthread,
-  AC_CHECK_LIB(rt, sem_init,
+    AC_CHECK_LIB(rt, sem_init,
   	AC_DEFINE(HAVE_SEM_INIT, 1)
   	SEM_INIT_LIB=-lrt,
-  AC_CHECK_LIB(posix4, sem_init,
+    AC_CHECK_LIB(posix4, sem_init,
   	AC_DEFINE(HAVE_SEM_INIT, 1)
   	SEM_INIT_LIB=-lposix4))))dnl
+fi
 AC_SUBST(SEM_INIT_LIB)
 dnl
 dnl Check for unified diff

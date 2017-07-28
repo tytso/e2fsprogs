@@ -30,7 +30,7 @@ char *e2p_os2string(int os_type)
         const char	*os;
 	char 		*ret;
 
-	if (os_type <= EXT2_OS_LITES)
+	if (os_type >= 0 && os_type <= EXT2_OS_LITES)
 		os = os_tab[os_type];
 	else
 		os = "(unknown os)";
