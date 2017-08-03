@@ -61,6 +61,10 @@ int main(int argc, char *argv[])
 	struct fs_ops_callbacks fs_callbacks = { NULL, NULL };
 	char *token;
 	int nr_opt = 0;
+	ext2_ino_t inodes_count;
+	ext2_ino_t free_inodes_count;
+	blk64_t blocks_count;
+	blk64_t free_blocks_count;
 
 	add_error_table(&et_ext2_error_table);
 
@@ -190,12 +194,21 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	inodes_count = fs->super->s_inodes_count;
+	free_inodes_count = fs->super->s_free_inodes_count;
+	blocks_count = ext2fs_blocks_count(fs->super);
+	free_blocks_count = ext2fs_free_blocks_count(fs->super);
+
 	retval = ext2fs_close_free(&fs);
 	if (retval) {
 		com_err(prog_name, retval, "%s",
 				"while writing superblocks");
 		exit(1);
 	}
+
+	printf("Created filesystem with %u/%u inodes and %llu/%llu blocks\n",
+			inodes_count - free_inodes_count, inodes_count,
+			blocks_count - free_blocks_count, blocks_count);
 
 	remove_error_table(&et_ext2_error_table);
 	return 0;
