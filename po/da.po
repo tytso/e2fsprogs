@@ -73,7 +73,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.43.4\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2017-01-31 17:10-0500\n"
-"PO-Revision-Date: 2017-02-04 22:00+0200\n"
+"PO-Revision-Date: 2017-07-09 22:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -363,6 +363,7 @@ msgstr "sbør være"
 msgid "Ssuper@b"
 msgstr "Ssuper@b"
 
+# kunne måske også være: løstliggende
 #: e2fsck/message.c:140
 msgid "uunattached"
 msgstr "uikke forbundet"
@@ -607,11 +608,11 @@ msgstr "Gennemløb 5"
 
 #: e2fsck/pass5.c:104
 msgid "check_inode_bitmap_checksum: Memory allocation error"
-msgstr ""
+msgstr "check_inode_bitmap_checksum: Hukommelsesallokeringsfejl"
 
 #: e2fsck/pass5.c:158
 msgid "check_block_bitmap_checksum: Memory allocation error"
-msgstr ""
+msgstr "check_block_bitmap_checksum: Hukommelsesallokeringsfejl"
 
 #: e2fsck/problem.c:51
 msgid "(no prompt)"
@@ -2662,18 +2663,18 @@ msgstr "Gennemløb 4: Kontrollerer referenceantal\n"
 #: e2fsck/problem.c:1834
 #, c-format
 msgid "@u @z @i %i.  "
-msgstr ""
+msgstr "ikke forbundet nullængde iknude %i.  "
 
 #. @-expanded: unattached inode %i\n
 #: e2fsck/problem.c:1839
 #, c-format
 msgid "@u @i %i\n"
-msgstr ""
+msgstr "ikke forbundet iknude %i\n"
 
 #. @-expanded: inode %i ref count is %Il, should be %N.  
 #: e2fsck/problem.c:1844
 msgid "@i %i ref count is %Il, @s %N.  "
-msgstr ""
+msgstr "iknude %i ref-antal er %Il, skal være %n.  "
 
 #. @-expanded: WARNING: PROGRAMMING BUG IN E2FSCK!\n
 #. @-expanded: \tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n
@@ -2688,7 +2689,7 @@ msgstr ""
 #. @-expanded: Pass 5: Checking group summary information\n
 #: e2fsck/problem.c:1858
 msgid "Pass 5: Checking @g summary information\n"
-msgstr ""
+msgstr "Gennemløb 5: Kontrollerer resumeinformation for gruppe\n"
 
 #. @-expanded: Padding at end of inode bitmap is not set. 
 #: e2fsck/problem.c:1863
@@ -5927,6 +5928,14 @@ msgid ""
 "\t[-E extended-option[,...]] [-T last_check_time] [-U UUID]\n"
 "\t[-I new_inode_size] [-z undo_file] device\n"
 msgstr ""
+"Brug: %s [-c maks_monteringsantal] [-e fejl_opførsel] [-f] [-g gruppe]\n"
+"\t[-i interval[d|m|w]] [-j] [-J journal_tilvalg] [-l]\n"
+"\t[-m reserverede_blokke_procent] [-o [^]monteringstilvalg[,...]]\n"
+"\t[-p mmp_opdateringsinterval] [-r reserverede_blokke_antal] [-u bruger]\n"
+"\t[-C munteringsantal] [-L diskenhedsetiket] [-M sidst_monteret_mappe]\n"
+"\t[-O [^]feature[,...]] [-Q kvote_tilvalg]\n"
+"\t[-E udvidet-tilvalg[,...]] [-T sidste_kontroltidspunkt] [-U UUID]\n"
+"\t[-I ny_iknude_størrelse] [-z genskab_fil] enhed\n"
 
 #: misc/tune2fs.c:218
 msgid "Journal superblock not found!\n"
@@ -6481,11 +6490,11 @@ msgstr "UUID'en kan kun ændres når filsystemet er afmonteret.\n"
 
 #: misc/tune2fs.c:3051
 msgid "If you only use kernels newer than v4.4, run 'tune2fs -O metadata_csum_seed' and re-run this command.\n"
-msgstr ""
+msgstr "Hvis du kun bruger kerner nyere end version 4.4, så kør »tune2fs -O metadata_csum_seed« og kør denne kommando igen.\n"
 
 #: misc/tune2fs.c:3060
 msgid "Setting UUID on a checksummed filesystem could take some time."
-msgstr ""
+msgstr "Angivelse af UUID på et filsystem med kontrolsummer kan tage lang tid."
 
 #: misc/tune2fs.c:3085
 msgid "Invalid UUID format\n"
@@ -6497,27 +6506,30 @@ msgstr "Skal opdatere journalsuperblok.\n"
 
 #: misc/tune2fs.c:3126
 msgid "The inode size may only be changed when the filesystem is unmounted.\n"
-msgstr ""
+msgstr "Iknudens størrelse kan kun ændres når filsystemet er afmonteret.\n"
 
 #: misc/tune2fs.c:3133
 msgid ""
 "Changing the inode size not supported for filesystems with the flex_bg\n"
 "feature enabled.\n"
 msgstr ""
+"Ændring af iknudens størrelse er ikke understøttet på filsystemer med\n"
+"funktionen flex_bg aktiveret.\n"
 
 #: misc/tune2fs.c:3151
 #, c-format
 msgid "Setting inode size %lu\n"
-msgstr ""
+msgstr "Sætter iknudestørrelse %lu\n"
 
 #: misc/tune2fs.c:3155
 msgid "Failed to change inode size\n"
 msgstr "Kunne ikke ændre iknudestørrelse\n"
 
+# eng. tastefejl = stride kontra stripe
 #: misc/tune2fs.c:3169
 #, c-format
 msgid "Setting stride size to %d\n"
-msgstr ""
+msgstr "Sætter stridestørrelse til %d\n"
 
 #: misc/tune2fs.c:3174
 #, c-format
@@ -6527,7 +6539,7 @@ msgstr "Sætter stripebredde til %d\n"
 #: misc/tune2fs.c:3181
 #, c-format
 msgid "Setting extended default mount options to '%s'\n"
-msgstr ""
+msgstr "Sætter udvidede monteringsindstillinger til »%s«\n"
 
 #: misc/tune2fs.c:3192
 #, c-format
@@ -6539,6 +6551,12 @@ msgid ""
 "then rerun this command.  Otherwise, any changes made may be overwritten\n"
 "by journal recovery.\n"
 msgstr ""
+"Advarsel: Denne journal er beskidt. Du kan genafspille journalen således:\n"
+"\n"
+"\te2fsck -E journal_only %s\n"
+"\n"
+"kør så denne kommando igen. Ellers vil eventuelle ændringer blive overskrevet\n"
+"af journal-gendannelse.\n"
 
 #: misc/tune2fs.c:3203
 #, c-format
@@ -6573,7 +6591,7 @@ msgstr "mke2fs tvunget alligevel.\n"
 
 #: misc/util.c:161
 msgid "Couldn't allocate memory to parse journal options!\n"
-msgstr ""
+msgstr "Kunne ikke allokere hukommelse til at fortolke journalindstillinger!\n"
 
 #: misc/util.c:186
 #, c-format
@@ -6581,6 +6599,8 @@ msgid ""
 "\n"
 "Could not find journal device matching %s\n"
 msgstr ""
+"\n"
+"Kunne ikke finde journal-enhed der matcher %s\n"
 
 #: misc/util.c:213
 msgid ""
@@ -6598,12 +6618,27 @@ msgid ""
 "The journal size must be between 1024 and 10240000 filesystem blocks.\n"
 "\n"
 msgstr ""
+"\n"
+"Ugyldige journaltilvalg er angivet.\n"
+"\n"
+"Journaltilvalg er adskilt af komma, og kan bruge et argument som sendes\n"
+"\tafsted med et lig med-tegn (»=«).\n"
+"\n"
+"Gyldige journaltilvalg er:\n"
+"\tsize=<journalstørrelse i megabyte>\n"
+"\tdevice=<journalenhed>\n"
+"\tlocation=<journalplacering>\n"
+"\n"
+"Journalstørrelsen skal være mellem 1024 og 10240000 filsystemblokke.\n"
+"\n"
 
 #: misc/util.c:244
 msgid ""
 "\n"
 "Filesystem too small for a journal\n"
 msgstr ""
+"\n"
+"Filsystem er for lille for en journal\n"
 
 #: misc/util.c:251
 #, c-format
@@ -6612,6 +6647,9 @@ msgid ""
 "The requested journal size is %d blocks; it must be\n"
 "between 1024 and 10240000 blocks.  Aborting.\n"
 msgstr ""
+"\n"
+"Den anmodt journalstørrelse er på %d blokke; størrelsen\n"
+"skal være mellem 1024 og 10240000 blokke. Afbryder.\n"
 
 #: misc/util.c:259
 msgid ""
@@ -6817,6 +6855,10 @@ msgid ""
 "your own risk!  Use the force option if you want to go ahead anyway.\n"
 "\n"
 msgstr ""
+"\n"
+"Ændring af størrelsen på bigalloc-filsystemer er ikke testet fuldt ud.\n"
+"Fortsæt på egen risiko! Brug tilvalget force hvis du ønsker at fortsætte.\n"
+"\n"
 
 #: resize/main.c:365
 #, c-format
@@ -6858,7 +6900,7 @@ msgstr "Ny størrelse er mindre end minimum (%llu)\n"
 
 #: resize/main.c:534
 msgid "Invalid stride length"
-msgstr ""
+msgstr "Ugyldig stride-længde"
 
 #: resize/main.c:558
 #, c-format
@@ -6867,16 +6909,19 @@ msgid ""
 "You requested a new size of %llu blocks.\n"
 "\n"
 msgstr ""
+"Den indeholdte partition (eller enhed) er kun på %llu (%dk) blokke.\n"
+"Du anmodte om en størrelse på %llu blokke.\n"
+"\n"
 
 #: resize/main.c:565
 #, c-format
 msgid "Cannot set and unset 64bit feature.\n"
-msgstr ""
+msgstr "Kan ikke sætte eller fjerne 64-bit funktion.\n"
 
 #: resize/main.c:569
 #, c-format
 msgid "Cannot change the 64bit feature on a filesystem that is larger than 2^32 blocks.\n"
-msgstr ""
+msgstr "Kan ikke ændre 64-bit funktionen på et filsystem som er større end 2^32 blokke.\n"
 
 #: resize/main.c:575
 #, c-format
@@ -6948,7 +6993,7 @@ msgstr ""
 #: resize/main.c:645
 #, c-format
 msgid "while trying to truncate %s"
-msgstr ""
+msgstr "under forsøg på at forkorte %s"
 
 #: resize/online.c:81
 msgid "kernel does not support online resize with sparse_super2"
@@ -7271,11 +7316,11 @@ msgstr ""
 
 #: lib/ext2fs/ext2_err.c:67
 msgid "Block bitmaps are not the same"
-msgstr ""
+msgstr "Blok-bitmap er ikke ens"
 
 #: lib/ext2fs/ext2_err.c:68
 msgid "Inode bitmaps are not the same"
-msgstr ""
+msgstr "Iknude-bitmap er ikke ens"
 
 #: lib/ext2fs/ext2_err.c:69
 msgid "Illegal or malformed device name"
@@ -7323,23 +7368,23 @@ msgstr "Filsystemet har skrivebeskyttede funktioner der ikke er understøttet"
 
 #: lib/ext2fs/ext2_err.c:80
 msgid "IO Channel failed to seek on read or write"
-msgstr ""
+msgstr "IO-kanal kunne ikke søge på læs eller skriv"
 
 #: lib/ext2fs/ext2_err.c:81
 msgid "Memory allocation failed"
-msgstr ""
+msgstr "Hukommelsesallokering mislykkedes"
 
 #: lib/ext2fs/ext2_err.c:82
 msgid "Invalid argument passed to ext2 library"
-msgstr ""
+msgstr "Ugyldigt argument sendt til ext2-bibliotek"
 
 #: lib/ext2fs/ext2_err.c:83
 msgid "Could not allocate block in ext2 filesystem"
-msgstr ""
+msgstr "Kunne ikke allokere blok i ext2-filsystem"
 
 #: lib/ext2fs/ext2_err.c:84
 msgid "Could not allocate inode in ext2 filesystem"
-msgstr ""
+msgstr "Kunne ikke allokere iknude i ext2-filsystem"
 
 #: lib/ext2fs/ext2_err.c:85
 msgid "Ext2 inode is not a directory"
@@ -7475,115 +7520,115 @@ msgstr "Ext2fs-mappeblokliste er tom"
 
 #: lib/ext2fs/ext2_err.c:118
 msgid "Attempt to modify a block mapping via a read-only block iterator"
-msgstr ""
+msgstr "Forsøg på at ændre en blokoversættelse via en skrivebeskyttet blokiterator"
 
 #: lib/ext2fs/ext2_err.c:119
 msgid "Wrong magic number for ext4 extent saved path"
-msgstr "Forkert magi-antal for ext4-udstrækningens gemte sti"
+msgstr "Forkert magi-nummer for ext4-udstrækningens gemte sti"
 
 #: lib/ext2fs/ext2_err.c:120
 msgid "Wrong magic number for 64-bit generic bitmap"
-msgstr "Forkert magi-antal for 64-bit generisk bitmap"
+msgstr "Forkert magi-nummer for 64-bit generisk bitmap"
 
 #: lib/ext2fs/ext2_err.c:121
 msgid "Wrong magic number for 64-bit block bitmap"
-msgstr ""
+msgstr "Forkert magi-nummer for 64-bit blok-bitmap"
 
 #: lib/ext2fs/ext2_err.c:122
 msgid "Wrong magic number for 64-bit inode bitmap"
-msgstr ""
+msgstr "Forkert magi-nummer for 64-bit iknude-bitmap"
 
 #: lib/ext2fs/ext2_err.c:123
 msgid "Wrong magic number --- RESERVED_13"
-msgstr ""
+msgstr "Forkert magi-nummer --- RESERVED_13"
 
 #: lib/ext2fs/ext2_err.c:124
 msgid "Wrong magic number --- RESERVED_14"
-msgstr ""
+msgstr "Forkert magi-nummer --- RESERVED_14"
 
 #: lib/ext2fs/ext2_err.c:125
 msgid "Wrong magic number --- RESERVED_15"
-msgstr ""
+msgstr "Forkert magi-nummer --- RESERVED_15"
 
 #: lib/ext2fs/ext2_err.c:126
 msgid "Wrong magic number --- RESERVED_16"
-msgstr ""
+msgstr "Forkert magi-nummer --- RESERVED_16"
 
 #: lib/ext2fs/ext2_err.c:127
 msgid "Wrong magic number --- RESERVED_17"
-msgstr ""
+msgstr "Forkert magi-nummer --- RESERVED_17"
 
 #: lib/ext2fs/ext2_err.c:128
 msgid "Wrong magic number --- RESERVED_18"
-msgstr ""
+msgstr "Forkert magi-nummer --- RESERVED_18"
 
 #: lib/ext2fs/ext2_err.c:129
 msgid "Wrong magic number --- RESERVED_19"
-msgstr ""
+msgstr "Forkert magi-nummer --- RESERVED_19"
 
 #: lib/ext2fs/ext2_err.c:130
 msgid "Corrupt extent header"
-msgstr ""
+msgstr "Ødelagt områdehoved"
 
 #: lib/ext2fs/ext2_err.c:131
 msgid "Corrupt extent index"
-msgstr ""
+msgstr "Ødelagt områdeindeks"
 
 #: lib/ext2fs/ext2_err.c:132
 msgid "Corrupt extent"
-msgstr ""
+msgstr "Ødelagt område"
 
 #: lib/ext2fs/ext2_err.c:133
 msgid "No free space in extent map"
-msgstr ""
+msgstr "Ingen ledig plads i områdekort"
 
 #: lib/ext2fs/ext2_err.c:134
 msgid "Inode does not use extents"
-msgstr ""
+msgstr "Iknude bruger ikke områder"
 
 #: lib/ext2fs/ext2_err.c:135
 msgid "No 'next' extent"
-msgstr ""
+msgstr "Intet »næste« område"
 
 #: lib/ext2fs/ext2_err.c:136
 msgid "No 'previous' extent"
-msgstr ""
+msgstr "Intet »forrige« område"
 
 #: lib/ext2fs/ext2_err.c:137
 msgid "No 'up' extent"
-msgstr ""
+msgstr "Intet »up« område"
 
 #: lib/ext2fs/ext2_err.c:138
 msgid "No 'down' extent"
-msgstr ""
+msgstr "Intet »down« område"
 
 #: lib/ext2fs/ext2_err.c:139
 msgid "No current node"
-msgstr ""
+msgstr "Ingen aktuel knude"
 
 #: lib/ext2fs/ext2_err.c:140
 msgid "Ext2fs operation not supported"
-msgstr ""
+msgstr "Ext2fs-operation er ikke understøttet"
 
 #: lib/ext2fs/ext2_err.c:141
 msgid "No room to insert extent in node"
-msgstr ""
+msgstr "Ingen plads til at indsætte område i knude"
 
 #: lib/ext2fs/ext2_err.c:142
 msgid "Splitting would result in empty node"
-msgstr ""
+msgstr "Opdeling vil medføre en tom knude"
 
 #: lib/ext2fs/ext2_err.c:143
 msgid "Extent not found"
-msgstr ""
+msgstr "Område blev ikke fundet"
 
 #: lib/ext2fs/ext2_err.c:144
 msgid "Operation not supported for inodes containing extents"
-msgstr ""
+msgstr "Operation er ikke understøttet for iknuder, der indeholder områder"
 
 #: lib/ext2fs/ext2_err.c:145
 msgid "Extent length is invalid"
-msgstr ""
+msgstr "Områdelænge er ugyldig"
 
 #: lib/ext2fs/ext2_err.c:146
 msgid "I/O Channel does not support 64-bit block numbers"
@@ -7611,7 +7656,7 @@ msgstr "MMP: fsck køres"
 
 #: lib/ext2fs/ext2_err.c:152
 msgid "MMP: block number beyond filesystem range"
-msgstr ""
+msgstr "MMP: bloknummer er udover filsystemets interval"
 
 #: lib/ext2fs/ext2_err.c:153
 msgid "MMP: undergoing an unknown operation"
@@ -7619,11 +7664,11 @@ msgstr "MMP: undergår en ukendt operation"
 
 #: lib/ext2fs/ext2_err.c:154
 msgid "MMP: filesystem still in use"
-msgstr ""
+msgstr "MMP: filsystemet er stadig i brug"
 
 #: lib/ext2fs/ext2_err.c:155
 msgid "MMP: open with O_DIRECT failed"
-msgstr ""
+msgstr "MMP: åb nmed O_DIRECT mislykkedes"
 
 #: lib/ext2fs/ext2_err.c:156
 msgid "Block group descriptor size incorrect"
