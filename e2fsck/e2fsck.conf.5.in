@@ -1,26 +1,26 @@
 .\" -*- nroff -*-
 .\" Copyright 2006 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
-.\" 
+.\"
 .TH e2fsck.conf 5 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 e2fsck.conf \- Configuration file for e2fsck
 .SH DESCRIPTION
 .I e2fsck.conf
-is the configuration file for 
-.BR e2fsck (8).  
-It controls the default behavior of 
+is the configuration file for
+.BR e2fsck (8).
+It controls the default behavior of
 .BR e2fsck (8)
 while it is checking ext2, ext3, or ext4 filesystems.
 .PP
 The
 .I e2fsck.conf
-file uses an INI-style format.  Stanzas, or top-level sections, are 
-delimited by square braces: [ ].  Within each section, each line 
+file uses an INI-style format.  Stanzas, or top-level sections, are
+delimited by square braces: [ ].  Within each section, each line
 defines a relation, which assigns tags to values, or to a subsection,
-which contains further relations or subsections.   
+which contains further relations or subsections.
 .\" Tags can be assigned multiple values
-An example of the INI-style format used by this configuration file 
+An example of the INI-style format used by this configuration file
 follows below:
 .P
 	[section1]
@@ -49,23 +49,23 @@ follows below:
 .br
 	}
 .P
-Comments are delimited by a semicolon (';') or a hash ('#') character 
-at the beginning of the comment, and are terminated by the end of 
+Comments are delimited by a semicolon (';') or a hash ('#') character
+at the beginning of the comment, and are terminated by the end of
 line character.
 .P
 Tags and values must be quoted using double quotes if they contain
-spaces.  Within a quoted string, the standard backslash interpretations 
-apply: "\en" (for the newline character), 
-"\et" (for the tab character), "\eb" (for the backspace character), 
+spaces.  Within a quoted string, the standard backslash interpretations
+apply: "\en" (for the newline character),
+"\et" (for the tab character), "\eb" (for the backspace character),
 and "\e\e" (for the backslash character).
 .P
-The following stanzas are used in the 
+The following stanzas are used in the
 .I e2fsck.conf
 file.  They will be described in more detail in future sections of this
 document.
-.TP 
+.TP
 .I [options]
-This stanza contains general configuration parameters for 
+This stanza contains general configuration parameters for
 .BR e2fsck 's
 behavior.
 .TP
@@ -77,12 +77,12 @@ various filesystem inconsistencies.
 @TDB_MAN_COMMENT@This stanza controls when e2fsck will attempt to use
 @TDB_MAN_COMMENT@scratch files to reduce the need for memory.
 .SH THE [options] STANZA
-The following relations are defined in the 
+The following relations are defined in the
 .I [options]
 stanza.
 .TP
 .I allow_cancellation
-If this relation is set to a boolean value of true, then if the user 
+If this relation is set to a boolean value of true, then if the user
 interrupts e2fsck using ^C, and the filesystem is not explicitly flagged
 as containing errors, e2fsck will exit with an exit status of 0 instead
 of 32.  This setting defaults to false.
@@ -135,16 +135,16 @@ we changed the default, we also renamed this boolean relation to
 .IR accept_time_fudge.
 .TP
 .I clear_test_fs_flag
-This boolean relation controls whether or not 
+This boolean relation controls whether or not
 .BR e2fsck (8)
 will offer to clear
 the test_fs flag if the ext4 filesystem is available on the system.  It
 defaults to true.
-.TP 
+.TP
 .I defer_check_on_battery
-This boolean relation controls whether or not the interval between 
-filesystem checks (either based on time or number of mounts) should 
-be doubled if the system is running on battery.  This setting defaults to 
+This boolean relation controls whether or not the interval between
+filesystem checks (either based on time or number of mounts) should
+be doubled if the system is running on battery.  This setting defaults to
 true.
 .TP
 .I indexed_dir_slack_percentage
@@ -243,14 +243,14 @@ is always specified.  This will cause e2fsck to print some additional
 information at the end of each full file system check.
 .SH THE [problems] STANZA
 Each tag in the
-.I [problems] 
+.I [problems]
 stanza names a problem code specified with a leading "0x" followed by
-six hex digits.   
+six hex digits.
 The value of the tag is a subsection where the relations in that
-subsection override the default treatment of that particular problem 
+subsection override the default treatment of that particular problem
 code.
 .P
-Note that inappropriate settings in this stanza may cause 
+Note that inappropriate settings in this stanza may cause
 .B e2fsck
 to behave incorrectly, or even crash.  Most system administrators should
 not be making changes to this section without referring to source code.
@@ -262,13 +262,13 @@ This relation allows the message which is printed when this filesystem
 inconsistency is detected to be overridden.
 .TP
 .I preen_ok
-This boolean relation overrides the default behavior controlling 
+This boolean relation overrides the default behavior controlling
 whether this filesystem problem should be automatically fixed when
 .B e2fsck
 is running in preen mode.
 .TP
 .I max_count
-This integer relation overrides the 
+This integer relation overrides the
 .I max_count_problems
 parameter (set in the options section) for this particular problem.
 .TP
@@ -278,18 +278,18 @@ whether or not the filesystem will be marked as inconsistent if the user
 declines to fix the reported problem.
 .TP
 .I no_default
-This boolean relation overrides whether the default answer for this 
+This boolean relation overrides whether the default answer for this
 problem (or question) should be "no".
-.TP 
+.TP
 .I preen_nomessage
-This boolean relation overrides the default behavior controlling 
+This boolean relation overrides the default behavior controlling
 whether or not the description for this filesystem problem should
 be suppressed when
 .B e2fsck
 is running in preen mode.
 .TP
 .I no_nomsg
-This boolean relation overrides the default behavior controlling 
+This boolean relation overrides the default behavior controlling
 whether or not the description for this filesystem problem should
 be suppressed when a problem forced not to be fixed, either because
 .B e2fsck
@@ -455,7 +455,7 @@ no more than 16 instances of each type of file system corruption.
 .SH FILES
 .TP
 .I /etc/e2fsck.conf
-The configuration file for 
+The configuration file for
 .BR e2fsck (8).
 .SH SEE ALSO
 .BR e2fsck (8)
