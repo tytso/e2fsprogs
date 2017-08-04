@@ -14,6 +14,8 @@
 #ifndef _BLKID_PROBE_H
 #define _BLKID_PROBE_H
 
+#include <stdint.h>
+
 #include <blkid/blkid_types.h>
 
 struct blkid_magic;
@@ -762,6 +764,46 @@ struct f2fs_super_block {
     __u32 extension_count;     /* # of extensions below */
     __u8 extension_list[F2FS_MAX_EXTENSION][8]; /* extension array */
 } __attribute__((__packed__));
+
+struct exfat_super_block {
+    uint8_t jump[3];
+    uint8_t oem_name[8];
+    uint8_t __unused1[53];
+    uint64_t block_start;
+    uint64_t block_count;
+    uint32_t fat_block_start;
+    uint32_t fat_block_count;
+    uint32_t cluster_block_start;
+    uint32_t cluster_count;
+    uint32_t rootdir_cluster;
+    uint8_t volume_serial[4];
+    struct {
+        uint8_t vermin;
+        uint8_t vermaj;
+    } version;
+    uint16_t volume_state;
+    uint8_t block_bits;
+    uint8_t bpc_bits;
+    uint8_t fat_count;
+    uint8_t drive_no;
+    uint8_t allocated_percent;
+} __attribute__((__packed__));
+
+struct exfat_entry_label {
+    uint8_t type;
+    uint8_t length;
+    uint8_t name[30];
+} __attribute__((__packed__));
+
+#define BLOCK_SIZE(sb)   (1 << (sb)->block_bits)
+#define CLUSTER_SIZE(sb) (BLOCK_SIZE(sb) << (sb)->bpc_bits)
+
+#define EXFAT_FIRST_DATA_CLUSTER 2
+#define EXFAT_LAST_DATA_CLUSTER  0xffffff6
+#define EXFAT_ENTRY_SIZE         32
+
+#define EXFAT_ENTRY_EOD   0x00
+#define EXFAT_ENTRY_LABEL 0x83
 
 /*
  * Byte swap functions

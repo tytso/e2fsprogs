@@ -219,7 +219,7 @@ static EXT2_QSORT_TYPE name_cmp(const void *a, const void *b)
 	if (min_len > he_b_len)
 		min_len = he_b_len;
 
-	ret = strncmp(he_a->dir->name, he_b->dir->name, min_len);
+	ret = memcmp(he_a->dir->name, he_b->dir->name, min_len);
 	if (ret == 0) {
 		if (he_a_len > he_b_len)
 			ret = 1;
@@ -386,7 +386,7 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 		if (!ent->dir->inode ||
 		    (ext2fs_dirent_name_len(ent->dir) !=
 		     ext2fs_dirent_name_len(prev->dir)) ||
-		    strncmp(ent->dir->name, prev->dir->name,
+		    memcmp(ent->dir->name, prev->dir->name,
 			     ext2fs_dirent_name_len(ent->dir)))
 			continue;
 		pctx.dirent = ent->dir;
@@ -404,7 +404,7 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 			if ((i==j) ||
 			    (new_len !=
 			     (unsigned) ext2fs_dirent_name_len(fd->harray[j].dir)) ||
-			    strncmp(new_name, fd->harray[j].dir->name, new_len))
+			    memcmp(new_name, fd->harray[j].dir->name, new_len))
 				continue;
 			mutate_name(new_name, &new_len);
 

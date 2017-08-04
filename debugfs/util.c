@@ -119,13 +119,18 @@ ext2_ino_t string_to_inode(char *str)
 	 */
 	if ((len > 2) && (str[0] == '<') && (str[len-1] == '>')) {
 		ino = strtoul(str+1, &end, 0);
-		if (*end=='>')
+		if (*end=='>' && (ino <= current_fs->super->s_inodes_count))
 			return ino;
 	}
 
 	retval = ext2fs_namei(current_fs, root, cwd, str, &ino);
 	if (retval) {
 		com_err(str, retval, 0);
+		return 0;
+	}
+	if (ino > current_fs->super->s_inodes_count) {
+		com_err(str, 0, "resolves to an illegal inode number: %u\n",
+			ino);
 		return 0;
 	}
 	return ino;

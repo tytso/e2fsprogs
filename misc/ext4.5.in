@@ -69,7 +69,14 @@ ext2 file systems.
 .TP
 .B dir_nlink
 .br
-This ext4 feature allows more than 65000 subdirectories per directory.
+Normally, ext4 allows an inode to have no more than 65,000 hard links.
+This applies to regular files as well as directories, which means that
+there can be no more than 64,998 subdirectories in a directory (because
+each of the '.' and '..' entries, as well as the directory entry for the
+directory in its parent directory counts as a hard link).  This feature
+lifts this limit by causing ext4 to use a link count of 1 to indicate
+that the number of hard links to a directory is not known when the link
+count might exceed the maximum count limit.
 .TP
 .B encrypt
 .br
@@ -454,9 +461,9 @@ performance penalty.  If your disks are battery-backed in one way or another,
 disabling barriers may safely improve performance.
 .TP
 .BI commit= nrsec
-Sync all data and metadata every
+Start a journal commit every
 .I nrsec
-seconds. The default value is 5 seconds. Zero means default.
+seconds.  The default value is 5 seconds.  Zero means default.
 .TP
 .B user_xattr
 Enable Extended User Attributes. See the
@@ -693,7 +700,7 @@ ext4, 3.6
 ext4, 3.8
 .IP "\fBsparse_super2\fR" 2in
 ext4, 3.16
-.IP "\fBmetdata_csum\fR" 2in
+.IP "\fBmetadata_csum\fR" 2in
 ext4, 3.18
 .IP "\fBencrypt\fR" 2in
 ext4, 4.1

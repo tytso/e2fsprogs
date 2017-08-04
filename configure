@@ -13519,7 +13519,10 @@ $as_echo "#define HAVE_OPTRESET 1" >>confdefs.h
 fi
 
 SEM_INIT_LIB=''
-ac_fn_c_check_func "$LINENO" "sem_init" "ac_cv_func_sem_init"
+echo GL_THREADS_API: ${gl_threads_api}
+if test "${gl_threads_api}" != none
+then
+  ac_fn_c_check_func "$LINENO" "sem_init" "ac_cv_func_sem_init"
 if test "x$ac_cv_func_sem_init" = xyes; then :
 
 else
@@ -13651,6 +13654,7 @@ fi
 
 fi
 
+fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for unified diff option" >&5

@@ -418,7 +418,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Making quota inode hidden */
 	{ PR_0_HIDE_QUOTA,
-	  N_("Making @q @i %i (%Q) hidden.\n"),
+	  N_("Hiding %U @q @i %i (%Q).\n"),
 	  PROMPT_NONE, PR_PREEN_OK },
 
 	/* Superblock has invalid MMP block. */
@@ -486,6 +486,11 @@ static struct e2fsck_problem problem_table[] = {
 	/* Bad desired extra isize in superblock */
 	{ PR_0_BAD_WANT_EXTRA_ISIZE,
 	  N_("Bad desired extra isize in @S (%N).  "),
+	  PROMPT_FIX, 0 },
+
+	/* Invalid quota inode number */
+	{ PR_0_INVALID_QUOTA_INO,
+	  N_("Invalid %U @q @i %i.  "),
 	  PROMPT_FIX, 0 },
 
 	/* Pass 1 errors */

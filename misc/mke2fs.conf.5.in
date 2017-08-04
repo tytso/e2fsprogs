@@ -441,7 +441,12 @@ command line option to
 .TP
 .I make_hugefiles
 This boolean relation enables the creation of pre-allocated files as
-part of formatting the file system.
+part of formatting the file system.  The extent tree blocks for these
+pre-allocated files will be placed near the beginning of the file
+system, so that if all of the other metadata blocks are also configured
+to be placed near the beginning of the file system (by disabling the
+backup superblocks, using the packed_meta_blocks option, etc.), the data
+blocks of the pre-allocated files will be contiguous.
 .TP
 .I hugefiles_uid
 This relation controls the user ownership for all of the files and

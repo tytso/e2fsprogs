@@ -449,7 +449,7 @@ fix:
 }
 
 static int check_inode_extra_negative_epoch(__u32 xtime, __u32 extra) {
-	return (xtime & (1 << 31)) != 0 &&
+	return (xtime & (1U << 31)) != 0 &&
 		(extra & EXT4_EPOCH_MASK) == EXT4_EPOCH_MASK;
 }
 
@@ -1822,9 +1822,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 		     inode->i_block[EXT2_DIND_BLOCK] ||
 		     inode->i_block[EXT2_TIND_BLOCK] ||
 		     ext2fs_file_acl_block(fs, inode))) {
+			struct ext2_inode_large *ip;
+
 			inodes_to_process[process_inode_count].ino = ino;
-			inodes_to_process[process_inode_count].inode =
-				       *(struct ext2_inode_large *)inode;
+			ip = &inodes_to_process[process_inode_count].inode;
+			if (inode_size < sizeof(struct ext2_inode_large))
+				memcpy(ip, inode, inode_size);
+			else
+				memcpy(ip, inode, sizeof(*ip));
 			process_inode_count++;
 		} else
 			check_blocks(ctx, &pctx, block_buf);
@@ -2705,6 +2710,7 @@ report_problem:
 			 * will reallocate the block; then we can try again.
 			 */
 			if (pb->ino != EXT2_RESIZE_INO &&
+			    extent.e_pblk < ctx->fs->super->s_blocks_count &&
 			    ext2fs_test_block_bitmap2(ctx->block_metadata_map,
 						      extent.e_pblk)) {
 				next_try_repairs = 0;
@@ -2712,7 +2718,8 @@ report_problem:
 				fix_problem(ctx,
 					    PR_1_CRITICAL_METADATA_COLLISION,
 					    pctx);
-				ctx->flags |= E2F_FLAG_RESTART_LATER;
+				if ((ctx->options & E2F_OPT_NO) == 0)
+					ctx->flags |= E2F_FLAG_RESTART_LATER;
 			}
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
@@ -3067,7 +3074,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.previous_block = 0;
 	pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
 	pb.is_reg = LINUX_S_ISREG(inode->i_mode);
-	pb.max_blocks = 1 << (31 - fs->super->s_log_block_size);
+	pb.max_blocks = 1U << (31 - fs->super->s_log_block_size);
 	pb.inode = inode;
 	pb.pctx = pctx;
 	pb.ctx = ctx;
@@ -3174,7 +3181,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (ino != quota_type2inum(PRJQUOTA, fs->super) &&
 	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super))) {
 		quota_data_add(ctx->qctx, (struct ext2_inode_large *) inode,
-			       ino, pb.num_blocks * fs->blocksize);
+			       ino,
+			       pb.num_blocks * EXT2_CLUSTER_SIZE(fs->super));
 		quota_data_inodes(ctx->qctx, (struct ext2_inode_large *) inode,
 				  ino, +1);
 	}
@@ -3442,10 +3450,12 @@ static int process_block(ext2_filsys fs,
 	 */
 	if (blockcnt < 0 &&
 	    p->ino != EXT2_RESIZE_INO &&
+	    blk < ctx->fs->super->s_blocks_count &&
 	    ext2fs_test_block_bitmap2(ctx->block_metadata_map, blk)) {
 		pctx->blk = blk;
 		fix_problem(ctx, PR_1_CRITICAL_METADATA_COLLISION, pctx);
-		ctx->flags |= E2F_FLAG_RESTART_LATER;
+		if ((ctx->options & E2F_OPT_NO) == 0)
+			ctx->flags |= E2F_FLAG_RESTART_LATER;
 	}
 
 	if (problem) {

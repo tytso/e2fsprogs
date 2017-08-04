@@ -21,6 +21,7 @@
 #define CHECK_FS_EXIST	0x0004
 #define VERBOSE_CREATE	0x0008
 #define NO_SIZE		0x0010
+#define QUIET_CHECK	0x0020
 
 extern int check_plausibility(const char *device, int flags,
 			      int *ret_is_dev);
