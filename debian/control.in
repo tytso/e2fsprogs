@@ -8,7 +8,7 @@ Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any], libattr1-dev, debhelper (>= 9.0), UTIL_LINUX_NG_DEFINES m4
-Standards-Version: 3.9.8
+Standards-Version: 4.0.0
 Homepage: http://e2fsprogs.sourceforge.net
 
 ifdef(`FUSE2FS',``
