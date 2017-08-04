@@ -8,6 +8,7 @@ libe2p.so.2 e2fslibs #MINVER#
  e2p_is_null_uuid@Base 1.37
  e2p_jrnl_feature2string@Base 1.41.1
  e2p_jrnl_string2feature@Base 1.41.1
+ e2p_list_journal_super@Base 1.43.5
  e2p_mntopt2string@Base 1.37
  e2p_os2string@Base 1.37
  e2p_percent@Base 1.40
