@@ -356,16 +356,6 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	ext2fs_badblocks_list_free(bb_list);
 }
 
-static const char *journal_checksum_type_str(__u8 type)
-{
-	switch (type) {
-	case JBD2_CRC32C_CHKSUM:
-		return "crc32c";
-	default:
-		return "unknown";
-	}
-}
-
 static void print_inline_journal_information(ext2_filsys fs)
 {
 	journal_superblock_t	*jsb;
@@ -374,8 +364,6 @@ static void print_inline_journal_information(ext2_filsys fs)
 	errcode_t		retval;
 	ino_t			ino = fs->super->s_journal_inum;
 	char			buf[1024];
-	__u32			*mask_ptr, mask, m;
-	int			i, j, size, printed = 0;
 
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
 		return;
@@ -404,59 +392,14 @@ static void print_inline_journal_information(ext2_filsys fs)
 			_("Journal superblock magic number invalid!\n"));
 		exit(1);
 	}
-	printf("%s", _("Journal features:        "));
-	for (i=0, mask_ptr=&jsb->s_feature_compat; i <3; i++,mask_ptr++) {
-		mask = be32_to_cpu(*mask_ptr);
-		for (j=0,m=1; j < 32; j++, m<<=1) {
-			if (mask & m) {
-				printf(" %s", e2p_jrnl_feature2string(i, m));
-				printed++;
-			}
-		}
-	}
-	if (printed == 0)
-		printf(" (none)");
-	printf("\n");
-	fputs(_("Journal size:             "), stdout);
-	if (ext2fs_has_feature_huge_file(fs->super) &&
-	    (inode.i_flags & EXT4_HUGE_FILE_FL))
-		size = inode.i_blocks / (fs->blocksize / 1024);
-	else
-		size = inode.i_blocks >> 1;
-	if (size < 8192)
-		printf("%uk\n", size);
-	else
-		printf("%uM\n", size >> 10);
-	printf(_("Journal length:           %u\n"
-		 "Journal sequence:         0x%08x\n"
-		 "Journal start:            %u\n"),
-	       (unsigned int)ntohl(jsb->s_maxlen),
-	       (unsigned int)ntohl(jsb->s_sequence),
-	       (unsigned int)ntohl(jsb->s_start));
-	if (jsb->s_feature_compat &
-	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
-		printf("%s", _("Journal checksum type:    crc32\n"));
-	if ((jsb->s_feature_incompat &
-	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V3)) ||
-	    (jsb->s_feature_incompat &
-	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2)))
-		printf(_("Journal checksum type:    %s\n"
-			 "Journal checksum:         0x%08x\n"),
-		       journal_checksum_type_str(jsb->s_checksum_type),
-		       ext2fs_be32_to_cpu(jsb->s_checksum));
-	if (jsb->s_errno != 0)
-		printf(_("Journal errno:            %d\n"),
-		       (int) ntohl(jsb->s_errno));
+	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
 }
 
 static void print_journal_information(ext2_filsys fs)
 {
 	errcode_t	retval;
 	char		buf[1024];
-	char		str[80];
-	unsigned int	i, j, printed = 0;
 	journal_superblock_t	*jsb;
-	__u32			*mask_ptr, mask, m;
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk64(fs->io,
@@ -474,46 +417,7 @@ static void print_journal_information(ext2_filsys fs)
 			_("Couldn't find journal superblock magic numbers"));
 		exit(1);
 	}
-
-	if (jsb->s_feature_compat &
-	    ext2fs_cpu_to_be32(JFS_FEATURE_COMPAT_CHECKSUM))
-		printf("%s", _("Journal checksum type:    crc32\n"));
-	if ((jsb->s_feature_incompat &
-	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V3)) ||
-	    (jsb->s_feature_incompat &
-	     ext2fs_cpu_to_be32(JFS_FEATURE_INCOMPAT_CSUM_V2)))
-		printf(_("Journal checksum type:    %s\n"
-			 "Journal checksum:         0x%08x\n"),
-		       journal_checksum_type_str(jsb->s_checksum_type),
-		       ext2fs_be32_to_cpu(jsb->s_checksum));
-
-	printf("%s", _("Journal features:        "));
-	for (i = 0, mask_ptr = &jsb->s_feature_compat; i < 3; i++, mask_ptr++) {
-		mask = be32_to_cpu(*mask_ptr);
-		for (j = 0, m = 1; j < 32; j++, m <<= 1) {
-			if (mask & m) {
-				printf(" %s", e2p_jrnl_feature2string(i, m));
-				printed++;
-			}
-		}
-	}
-
-	printf(_("\nJournal block size:       %u\n"
-		 "Journal length:           %u\n"
-		 "Journal first block:      %u\n"
-		 "Journal sequence:         0x%08x\n"
-		 "Journal start:            %u\n"
-		 "Journal number of users:  %u\n"),
-	       (unsigned int)ntohl(jsb->s_blocksize),  (unsigned int)ntohl(jsb->s_maxlen),
-	       (unsigned int)ntohl(jsb->s_first), (unsigned int)ntohl(jsb->s_sequence),
-	       (unsigned int)ntohl(jsb->s_start), (unsigned int)ntohl(jsb->s_nr_users));
-
-	for (i=0; i < ntohl(jsb->s_nr_users); i++) {
-		uuid_unparse(&jsb->s_users[i*16], str);
-		printf(i ? "                          %s\n"
-		       : _("Journal users:            %s\n"),
-		       str);
-	}
+	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
 }
 
 static void parse_extended_opts(const char *opts, blk64_t *superblock,

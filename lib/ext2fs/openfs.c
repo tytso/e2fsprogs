@@ -121,6 +121,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	blk64_t		group_block, blk;
 	char		*dest, *cp;
 	int		group_zero_adjust = 0;
+	int		inode_size;
 #ifdef WORDS_BIGENDIAN
 	unsigned int	groups_per_block;
 	struct ext2_group_desc *gdp;
@@ -275,8 +276,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		}
 	}
 
-	if ((fs->super->s_log_block_size + EXT2_MIN_BLOCK_LOG_SIZE) >
-	    EXT2_MAX_BLOCK_LOG_SIZE) {
+	if (fs->super->s_log_block_size >
+	    (unsigned) (EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE)) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
@@ -297,7 +298,10 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		goto cleanup;
 	}
 	fs->fragsize = fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
-	if (EXT2_INODE_SIZE(fs->super) < EXT2_GOOD_OLD_INODE_SIZE) {
+	inode_size = EXT2_INODE_SIZE(fs->super);
+	if ((inode_size < EXT2_GOOD_OLD_INODE_SIZE) ||
+	    (inode_size > fs->blocksize) ||
+	    (inode_size & (inode_size - 1))) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
@@ -421,6 +425,12 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 #endif
 		dest += fs->blocksize*first_meta_bg;
 	}
+
+	for (i = first_meta_bg ; i < fs->desc_blocks; i++) {
+		blk = ext2fs_descriptor_block_loc2(fs, group_block, i);
+		io_channel_cache_readahead(fs->io, blk, 1);
+	}
+
 	for (i=first_meta_bg ; i < fs->desc_blocks; i++) {
 		blk = ext2fs_descriptor_block_loc2(fs, group_block, i);
 		retval = io_channel_read_blk64(fs->io, blk, 1, dest);

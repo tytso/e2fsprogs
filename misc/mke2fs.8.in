@@ -25,10 +25,6 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 .B \-D
 ]
 [
-.B \-f
-.I fragment-size
-]
-[
 .B \-g
 .I blocks-per-group
 ]
@@ -389,9 +385,6 @@ option is not specified is both user and group quotas.  If the project
 feature is enabled that project quotas will be initialized as well.
 .RE
 .TP
-.BI \-f " fragment-size"
-Specify the size of fragments in bytes.
-.TP
 .B \-F
 Force
 .B mke2fs
@@ -424,7 +417,7 @@ Specify the number of block groups that will be packed together to
 create a larger virtual block group (or "flex_bg group") in an
 ext4 filesystem.  This improves meta-data locality and performance
 on meta-data heavy workloads.  The number of groups must be a power
-of 2 and may only be specified if the 
+of 2 and may only be specified if the
 .B flex_bg
 filesystem feature is enabled.
 .TP
@@ -459,7 +452,7 @@ earlier vendor kernels it is possible to utilize inodes larger than
 extended attributes for improved performance.
 Extended attributes
 stored in large inodes are not visible with older kernels, and such
-filesystems will not be mountable with 2.4 kernels at all.  
+filesystems will not be mountable with 2.4 kernels at all.
 .IP
 The default inode size is controlled by the
 .BR mke2fs.conf (5)
@@ -745,7 +738,25 @@ will use the default filesystem type
 .IR default .
 .TP
 .BI \-U " UUID"
-Create the filesystem with the specified UUID.
+Set the universally unique identifier (UUID) of the filesystem to
+.IR UUID .
+The format of the UUID is a series of hex digits separated by hyphens,
+like this:
+"c1b9d5a2-f162-11cf-9ece-0020afc76f16".
+The
+.I UUID
+parameter may also be one of the following:
+.RS 1.2i
+.TP
+.I clear
+clear the filesystem UUID
+.TP
+.I random
+generate a new randomly-generated UUID
+.TP
+.I time
+generate a new time-based UUID
+.RE
 .TP
 .B \-v
 Verbose execution.
@@ -792,14 +803,6 @@ mount count or check interval.
 This version of
 .B mke2fs
 has been written by Theodore Ts'o <tytso@mit.edu>.
-.SH BUGS
-.B mke2fs
-accepts the
-.B \-f
-option but currently ignores it because the second
-extended file system does not support fragments yet.
-.br
-There may be other ones.  Please, report them to the author.
 .SH AVAILABILITY
 .B mke2fs
 is part of the e2fsprogs package and is available from

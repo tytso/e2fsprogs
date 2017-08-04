@@ -507,24 +507,12 @@ static int get_keyring_id(const char *keyring)
 
 	/*
 	 * If no keyring is specified, by default use either the user
-	 * session key ring or the session keyring.  Fetching the
+	 * session keyring or the session keyring.  Fetching the
 	 * session keyring will return the user session keyring if no
 	 * session keyring has been set.
-	 *
-	 * We need to do this instead of simply adding the key to
-	 * KEY_SPEC_SESSION_KEYRING since trying to add a key to a
-	 * session keyring that does not yet exist will cause the
-	 * kernel to create a session keyring --- which wil then get
-	 * garbage collected as soon as e4crypt exits.
-	 *
-	 * The fact that the keyctl system call and the add_key system
-	 * call treats KEY_SPEC_SESSION_KEYRING differently when a
-	 * session keyring does not exist is very unfortunate and
-	 * confusing, but so it goes...
 	 */
 	if (keyring == NULL)
-		return keyctl(KEYCTL_GET_KEYRING_ID,
-			      KEY_SPEC_SESSION_KEYRING, 0);
+		return KEY_SPEC_SESSION_KEYRING;
 	for (x = 0; x < (sizeof(keyrings) / sizeof(keyrings[0])); ++x) {
 		if (strcmp(keyring, keyrings[x].name) == 0) {
 			return keyrings[x].code;
@@ -585,6 +573,27 @@ static void insert_key_into_keyring(const char *keyring, struct salt *salt)
 	key.mode = EXT4_ENCRYPTION_MODE_AES_256_XTS;
 	memcpy(key.raw, salt->key, EXT4_MAX_KEY_SIZE);
 	key.size = EXT4_MAX_KEY_SIZE;
+
+	/*
+	 * We need to do this instead of simply adding the key to
+	 * KEY_SPEC_SESSION_KEYRING since trying to add a key to a
+	 * session keyring that does not yet exist will cause the
+	 * kernel to create a session keyring --- which wil then get
+	 * garbage collected as soon as e4crypt exits.
+	 *
+	 * The fact that the keyctl system call and the add_key system
+	 * call treats KEY_SPEC_SESSION_KEYRING differently when a
+	 * session keyring does not exist is very unfortunate and
+	 * confusing, but so it goes...
+	 */
+	if (keyring_id == KEY_SPEC_SESSION_KEYRING) {
+		keyring_id = keyctl(KEYCTL_GET_KEYRING_ID, keyring_id, 0);
+		if (keyring_id < 0) {
+			printf("Error getting session keyring ID: %s\n",
+			       strerror(errno));
+			exit(1);
+		}
+	}
 	rc = add_key(EXT2FS_KEY_TYPE_LOGON, key_ref_full, (void *)&key,
 		     sizeof(key), keyring_id);
 	if (rc == -1) {

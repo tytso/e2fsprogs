@@ -578,7 +578,7 @@ link_error:
 	ext2fs_icount_store(ctx->inode_count, ino, 2);
 	ext2fs_icount_store(ctx->inode_link_info, ino, 2);
 	ctx->lost_and_found = ino;
-	quota_data_add(ctx->qctx, &inode, ino, fs->blocksize);
+	quota_data_add(ctx->qctx, &inode, ino, EXT2_CLUSTER_SIZE(fs->super));
 	quota_data_inodes(ctx->qctx, &inode, ino, +1);
 #if 0
 	printf("/lost+found created; inode #%lu\n", ino);
@@ -899,7 +899,8 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	if (retval)
 		return retval;
 	ext2fs_iblk_add_blocks(fs, EXT2_INODE(&inode), es.newblocks);
-	quota_data_add(ctx->qctx, &inode, dir, es.newblocks * fs->blocksize);
+	quota_data_add(ctx->qctx, &inode, dir,
+		       es.newblocks * EXT2_CLUSTER_SIZE(fs->super));
 
 	e2fsck_write_inode_full(ctx, dir, EXT2_INODE(&inode),
 				sizeof(inode), "expand_directory");

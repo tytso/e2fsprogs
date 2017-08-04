@@ -18,7 +18,7 @@ create_file_with_xtime_and_extra() {
 			echo "set_inode_field $name $xtime @$time"
 			echo "set_inode_field $name ${xtime}_extra $extra"
 		done
-	} | $DEBUGFS -w -f /dev/stdin $TMPFILE >> $OUT 2>&1
+	} | $DEBUGFS -w $TMPFILE >> $OUT 2>&1
 }
 
 get_file_xtime_and_extra() {

@@ -572,6 +572,7 @@ static void clear_v2_journal_fields(journal_t *journal)
 	if (!fix_problem(ctx, PR_0_CLEAR_V2_JOURNAL, &pctx))
 		return;
 
+	ctx->flags |= E2F_FLAG_PROBLEMS_FIXED;
 	memset(((char *) journal->j_superblock) + V1_SB_SIZE, 0,
 	       ctx->fs->blocksize-V1_SB_SIZE);
 	mark_buffer_dirty(journal->j_sb_buffer);

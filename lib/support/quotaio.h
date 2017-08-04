@@ -12,7 +12,7 @@
  *
  *	quota_init_context(&qctx, fs, QUOTA_ALL_BIT);
  *	{
- *		quota_compute_usage(qctx, QUOTA_ALL_BIT);
+ *		quota_compute_usage(qctx);
  *		AND/OR
  *		quota_data_add/quota_data_sub/quota_data_inodes();
  *	}

@@ -588,7 +588,7 @@ int main(int argc, char**argv)
 	if (optind == argc)
 		usage(argv[0]);
 
-	for (cpp = argv + optind; *cpp != '\0'; cpp++) {
+	for (cpp = argv + optind; *cpp != NULL; cpp++) {
 		int rc2 = frag_report(*cpp);
 
 		if (rc2 < 0 && rc == 0)

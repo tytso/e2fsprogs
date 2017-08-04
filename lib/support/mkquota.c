@@ -50,7 +50,7 @@ static void print_dquot(const char *desc, struct dquot *dq)
 {
 	if (desc)
 		fprintf(stderr, "%s: ", desc);
-	fprintf(stderr, "%u %lld:%lld:%lld %lld:%lld:%lld\n",
+	fprintf(stderr, "%u %ld:%ld:%ld %ld:%ld:%ld\n",
 		dq->dq_id, dq->dq_dqb.dqb_curspace,
 		dq->dq_dqb.dqb_bsoftlimit, dq->dq_dqb.dqb_bhardlimit,
 		dq->dq_dqb.dqb_curinodes,
@@ -193,20 +193,21 @@ errcode_t quota_write_inode(quota_ctx_t qctx, unsigned int qtype_bits)
 			continue;
 
 		retval = quota_file_create(h, fs, qtype, fmt);
-		if (retval < 0) {
-			log_debug("Cannot initialize io on quotafile");
-			continue;
+		if (retval) {
+			log_debug("Cannot initialize io on quotafile: %s",
+				  error_message(retval));
+			goto out;
 		}
 
 		write_dquots(dict, h);
 		retval = quota_file_close(qctx, h);
-		if (retval < 0) {
-			log_err("Cannot finish IO on new quotafile: %s",
-				strerror(errno));
+		if (retval) {
+			log_debug("Cannot finish IO on new quotafile: %s",
+				  strerror(errno));
 			if (h->qh_qf.e2_file)
 				ext2fs_file_close(h->qh_qf.e2_file);
 			(void) quota_inode_truncate(fs, h->qh_qf.ino);
-			continue;
+			goto out;
 		}
 
 		/* Set quota inode numbers in superblock. */
@@ -518,16 +519,16 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 	print_dquot("mem", dq);
 	print_dquot("dsk", dquot);
 
-	/* Check if there is inconsistancy. */
+	/* Check if there is inconsistency */
 	if (dq->dq_dqb.dqb_curspace != dquot->dq_dqb.dqb_curspace ||
 	    dq->dq_dqb.dqb_curinodes != dquot->dq_dqb.dqb_curinodes) {
 		scan_data->usage_is_inconsistent = 1;
-		fprintf(stderr, "[QUOTA WARNING] Usage inconsistent for ID %d:"
-			"actual (%llu, %llu) != expected (%llu, %llu)\n",
-			dq->dq_id, (long long)dq->dq_dqb.dqb_curspace,
-			(long long)dq->dq_dqb.dqb_curinodes,
-			(long long)dquot->dq_dqb.dqb_curspace,
-			(long long)dquot->dq_dqb.dqb_curinodes);
+		fprintf(stderr, "[QUOTA WARNING] Usage inconsistent for ID %u:"
+			"actual (%ld, %ld) != expected (%ld, %ld)\n",
+			dq->dq_id, dq->dq_dqb.dqb_curspace,
+			dq->dq_dqb.dqb_curinodes,
+			dquot->dq_dqb.dqb_curspace,
+			dquot->dq_dqb.dqb_curinodes);
 	}
 
 	if (scan_data->update_limits) {

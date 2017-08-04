@@ -96,8 +96,6 @@ maindir		?= ${debdir}/e2fsprogs
 e2fsckstaticdir	?= ${debdir}/e2fsck-static
 debugdir	?= ${debdir}/e2fsprogs-dbg
 stdbuilddir	?= ${debdir}/BUILD-STD
-mipsbuilddir	?= ${debdir}/BUILD-MIPS
-mipsbuilddir64	?= ${debdir}/BUILD-MIPS-64
 # docdir	?= ${maindir}/usr/share/doc/${package}
 MANDIR		?= /usr/share/man
 mandir		?= ${tmpdir}${MANDIR}
@@ -207,20 +205,6 @@ BF_CONF_FLAGS ?= --enable-elf-shlibs --disable-nls --disable-imager \
 	--disable-testio-debug --disable-uuidd --disable-tls \
 	--disable-tdb --disable-debugfs
 
-MIPS_NOPIC_CONF_FLAGS ?= --disable-nls --disable-imager \
-	--disable-uuidd --disable-tls \
-        --disable-resizer # --disable-debugfs
-
-# we can't use those flags at configure time
-MIPS_CFLAGS ?= -G 0 -fno-pic -mno-abicalls
-MIPS_CFLAGS_64 ?= -mabi=64 -G 0 -fno-pic -mno-abicalls
-
-ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-ifneq (,$(findstring $(DEB_BUILD_ARCH),mips mipsel))
-ismips=ismips
-endif
-endif
-
 M4_ARGS=
 DBG_PACKAGES=
 
@@ -287,6 +271,9 @@ debian/e2fsprogs.shlibs.local: debian/e2fsprogs.shlibs.local.in
 
 ${CFGSTDSTAMP}:
 	dh_testdir
+	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
+		dh_update_autotools_config ;\
+	fi
 
 	# Make sure we don't try to rebuild the configure scripts
 	find . -name configure | xargs touch
@@ -312,32 +299,14 @@ else
 		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
 endif
 
-  # specially-built MIPS libs
-ifneq ($(ismips),)
-	mkdir -p ${mipsbuilddir} ${mipsbuilddir64}
-	cd ${mipsbuilddir} && AWK=/usr/bin/awk \
-		../../configure ${COMMON_CONF_FLAGS} \
-		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
-		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
-		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
-		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
-	cd ${mipsbuilddir64} && AWK=/usr/bin/awk \
-		../../configure ${COMMON_CONF_FLAGS} \
-		${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
-		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
-		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
-		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
-endif
-
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTDSTAMP}
 
 ${CFGBFSTAMP}:
 	dh_testdir
+	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
+		dh_update_autotools_config ;\
+	fi
 	rm -f config.cache
 
 	mkdir -p ${bfbuilddir}
@@ -371,9 +340,6 @@ build: build-std $(BUILD_BF)
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
-	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
-		dh_update_autotools_config ;\
-	fi
 	$(MAKE) -C ${stdbuilddir} V=1 all
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
@@ -387,18 +353,6 @@ endif
 
 	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs.html )
 	( cd ${stdbuilddir}/lib/et && $(MAKE) V=1 com_err.info com_err.html )
-
-  # specially-built MIPS libs
-ifneq ($(ismips),)
-	$(MAKE) -C ${mipsbuilddir}/util V=1
-	$(MAKE) -C ${mipsbuilddir} V=1 \
-		CFLAGS="${CFLAGS} ${MIPS_CFLAGS}" \
-		LIB_SUBDIRS="lib/et lib/ext2fs" libs
-	$(MAKE) -C ${mipsbuilddir64}/util V=1
-	$(MAKE) -C ${mipsbuilddir64} V=1 \
-		CFLAGS="${CFLAGS} ${MIPS_CFLAGS_64}" \
-		LIB_SUBDIRS="lib/et lib/ext2fs" libs
-endif
 
 	touch ${BUILDSTDSTAMP}
 
@@ -422,7 +376,7 @@ clean:
 	[ ! -f ${stdbuilddir}/Makefile ] || $(MAKE) -C ${stdbuilddir} V=1 distclean
 	[ ! -f ${bfbuilddir}/Makefile ] || $(MAKE) -C ${bfbuilddir} V=1 distclean
 	[ ! -f ${staticbuilddir}/Makefile ] || $(MAKE) -C ${staticbuilddir} V=1 distclean
-	rm -rf ${stdbuilddir} ${bfbuilddir} ${staticbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
+	rm -rf ${stdbuilddir} ${bfbuilddir} ${staticbuilddir}
 	rm -f debian/*.substvars
 	dh_clean
 
@@ -460,14 +414,6 @@ endif
 
 	dh_movefiles
 	test -z "`find ${tmpdir} -type f`"
-
-  # specially-built MIPS libs
-ifneq ($(ismips),)
-	$(INSTALL) -p -m 0644 ${mipsbuilddir}/lib/libext2fs.a \
-		${debdir}/e2fslibs-dev/usr/lib/libext2fs-nopic.a
-	$(INSTALL) -p -m 0644 ${mipsbuilddir64}/lib/libext2fs.a \
-		${debdir}/e2fslibs-dev/usr/lib/lib64ext2fs-nopic.a
-endif
 
 install-udeb: DH_OPTIONS=
 install-udeb: build
@@ -576,11 +522,7 @@ endif
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 	dh_strip $(call dh_strip_args2,e2fsck-static,e2fsprogs)
 endif
-ifneq ($(ismips),)
-	dh_strip $(call dh_strip_args,e2fslibs) -Xlib64ext2fs-nopic.a
-else
 	dh_strip $(call dh_strip_args,e2fslibs)
-endif
 	dh_strip $(call dh_strip_args,libss${SS_SOVERSION})
 	dh_strip $(call dh_strip_args,libcomerr${COMERR_SOVERSION})
 ifneq ($(UTIL_LINUX_NG),yes)

@@ -90,7 +90,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct problem_context	pctx;
 	ext2_filsys 		fs = ctx->fs;
-	char			*buf;
+	char			*buf = NULL;
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 #endif

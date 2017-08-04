@@ -134,12 +134,8 @@ static void flush_descriptor(journal_t *, struct buffer_head *, int, int);
 static inline int hash(journal_t *journal, unsigned long long block)
 {
 	struct jbd2_revoke_table_s *table = journal->j_revoke;
-	int hash_shift = table->hash_shift;
-	int hash = (int)block ^ (int)((block >> 31) >> 1);
 
-	return ((hash << (hash_shift - 6)) ^
-		(hash >> 13) ^
-		(hash << (hash_shift - 12))) & (table->hash_size - 1);
+	return (hash_64(block, table->hash_shift));
 }
 
 static int insert_revoke_hash(journal_t *journal, unsigned long long blocknr,
