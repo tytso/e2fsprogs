@@ -461,9 +461,9 @@ performance penalty.  If your disks are battery-backed in one way or another,
 disabling barriers may safely improve performance.
 .TP
 .BI commit= nrsec
-Sync all data and metadata every
+Start a journal commit every
 .I nrsec
-seconds. The default value is 5 seconds. Zero means default.
+seconds.  The default value is 5 seconds.  Zero means default.
 .TP
 .B user_xattr
 Enable Extended User Attributes. See the
