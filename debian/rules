@@ -271,6 +271,9 @@ debian/e2fsprogs.shlibs.local: debian/e2fsprogs.shlibs.local.in
 
 ${CFGSTDSTAMP}:
 	dh_testdir
+	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
+		dh_update_autotools_config ;\
+	fi
 
 	# Make sure we don't try to rebuild the configure scripts
 	find . -name configure | xargs touch
@@ -301,6 +304,9 @@ endif
 
 ${CFGBFSTAMP}:
 	dh_testdir
+	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
+		dh_update_autotools_config ;\
+	fi
 	rm -f config.cache
 
 	mkdir -p ${bfbuilddir}
@@ -334,9 +340,6 @@ build: build-std $(BUILD_BF)
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
-	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
-		dh_update_autotools_config ;\
-	fi
 	$(MAKE) -C ${stdbuilddir} V=1 all
 ifneq ($(BUILD_E2FSCK_STATIC),no)
 	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
