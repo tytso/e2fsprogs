@@ -179,7 +179,6 @@ int main(int argc, char *argv[])
 {
 	int opt;
 	int out_fd;
-	errcode_t retval;
 	struct sparse_file *s;
 
 	while ((opt = getopt(argc, argv, "czS")) != -1) {

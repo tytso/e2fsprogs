@@ -282,8 +282,8 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *src_dir,
 
 errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 			       char *mountpoint,
-			       struct selinux_opt *seopts,
-			       unsigned int nopt,
+			       struct selinux_opt *seopts EXT2FS_ATTR((unused)),
+			       unsigned int nopt EXT2FS_ATTR((unused)),
 			       char *fs_config_file, time_t fixed_time)
 {
 	errcode_t retval;

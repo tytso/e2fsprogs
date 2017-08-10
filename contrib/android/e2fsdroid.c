@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
@@ -41,7 +43,10 @@ static char *absolute_path(const char *file)
 	char cwd[PATH_MAX];
 
 	if (file[0] != '/') {
-		getcwd(cwd, PATH_MAX);
+		if (getcwd(cwd, PATH_MAX) == NULL) {
+			fprintf(stderr, "Failed to getcwd\n");
+			exit(EXIT_FAILURE);
+		}
 		ret = malloc(strlen(cwd) + 1 + strlen(file) + 1);
 		if (ret)
 			sprintf(ret, "%s/%s", cwd, file);

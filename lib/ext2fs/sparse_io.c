@@ -270,7 +270,8 @@ static errcode_t sparse_merge_blocks(struct sparse_map *sm, uint64_t start,
 
 	buf = calloc(num, block_size);
 	if (!buf) {
-		fprintf(stderr, "failed to alloc %lu\n", num * block_size);
+		fprintf(stderr, "failed to alloc %llu\n",
+			(unsigned long long)num * block_size);
 		return EXT2_ET_NO_MEMORY;
 	}
 
