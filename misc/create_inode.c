@@ -778,8 +778,11 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 
 		cur_dir_path_len = target->path_len;
 		retval = path_append(target, name);
-		if (retval)
-			return retval;
+		if (retval) {
+			com_err(__func__, retval,
+				"while appending %s", name);
+			goto out;
+		}
 
 		if (fs_callbacks && fs_callbacks->create_new_inode) {
 			retval = fs_callbacks->create_new_inode(fs,
