@@ -7018,14 +7018,14 @@ msgid "<proceeding>\n"
 msgstr "<verdergaand>\n"
 
 #: misc/util.c:104
-#, fuzzy, c-format
+#, c-format
 msgid "Proceed anyway (or wait %d seconds) ? (y,N) "
-msgstr "Toch doorgaan (of %d seconden wachten)? (j,n) "
+msgstr "Toch doorgaan (of %d seconden wachten)? (j,N) "
 
 #: misc/util.c:108
-#, fuzzy
+#,
 msgid "Proceed anyway? (y,N) "
-msgstr "Toch doorgaan? (j,n) "
+msgstr "Toch doorgaan? (j,N) "
 
 #: misc/util.c:133
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
