@@ -50,11 +50,13 @@ static void print_dquot(const char *desc, struct dquot *dq)
 {
 	if (desc)
 		fprintf(stderr, "%s: ", desc);
-	fprintf(stderr, "%u %ld:%ld:%ld %ld:%ld:%ld\n",
-		dq->dq_id, dq->dq_dqb.dqb_curspace,
-		dq->dq_dqb.dqb_bsoftlimit, dq->dq_dqb.dqb_bhardlimit,
-		dq->dq_dqb.dqb_curinodes,
-		dq->dq_dqb.dqb_isoftlimit, dq->dq_dqb.dqb_ihardlimit);
+	fprintf(stderr, "%u %lld:%lld:%lld %lld:%lld:%lld\n",
+		dq->dq_id, (long long) dq->dq_dqb.dqb_curspace,
+		(long long) dq->dq_dqb.dqb_bsoftlimit,
+		(long long) dq->dq_dqb.dqb_bhardlimit,
+		(long long) dq->dq_dqb.dqb_curinodes,
+		(long long) dq->dq_dqb.dqb_isoftlimit,
+		(long long) dq->dq_dqb.dqb_ihardlimit);
 }
 #else
 static void print_dquot(const char *desc EXT2FS_ATTR((unused)),
@@ -524,11 +526,11 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 	    dq->dq_dqb.dqb_curinodes != dquot->dq_dqb.dqb_curinodes) {
 		scan_data->usage_is_inconsistent = 1;
 		fprintf(stderr, "[QUOTA WARNING] Usage inconsistent for ID %u:"
-			"actual (%ld, %ld) != expected (%ld, %ld)\n",
-			dq->dq_id, dq->dq_dqb.dqb_curspace,
-			dq->dq_dqb.dqb_curinodes,
-			dquot->dq_dqb.dqb_curspace,
-			dquot->dq_dqb.dqb_curinodes);
+			"actual (%lld, %lld) != expected (%lld, %lld)\n",
+			dq->dq_id, (long long) dq->dq_dqb.dqb_curspace,
+			(long long) dq->dq_dqb.dqb_curinodes,
+			(long long) dquot->dq_dqb.dqb_curspace,
+			(long long) dquot->dq_dqb.dqb_curinodes);
 	}
 
 	if (scan_data->update_limits) {

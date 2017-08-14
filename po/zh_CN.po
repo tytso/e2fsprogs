@@ -6773,14 +6773,14 @@ msgid "<proceeding>\n"
 msgstr "<处理中>\n"
 
 #: misc/util.c:104
-#, fuzzy, c-format
+#, c-format
 msgid "Proceed anyway (or wait %d seconds) ? (y,N) "
-msgstr "无论如何也要继续（或等待 %d 秒）?（y,n） "
+msgstr "无论如何也要继续（或等待 %d 秒）?（y,N） "
 
 #: misc/util.c:108
-#, fuzzy
+#,
 msgid "Proceed anyway? (y,N) "
-msgstr "无论如何也要继续?（y,n） "
+msgstr "无论如何也要继续?（y,N） "
 
 #: misc/util.c:133
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"

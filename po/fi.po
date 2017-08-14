@@ -6460,14 +6460,14 @@ msgid "<proceeding>\n"
 msgstr "<jatketaan>\n"
 
 #: misc/util.c:104
-#, fuzzy, c-format
+#, c-format
 msgid "Proceed anyway (or wait %d seconds) ? (y,N) "
-msgstr "Jatketaanko silti (vai odotetaanko %d sekuntia)? (k,e)"
+msgstr "Jatketaanko silti (vai odotetaanko %d sekuntia)? (k,E)"
 
 #: misc/util.c:108
-#, fuzzy
+#,
 msgid "Proceed anyway? (y,N) "
-msgstr "Jatketaanko silti? (k,e) "
+msgstr "Jatketaanko silti? (k,E) "
 
 #: misc/util.c:133
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
