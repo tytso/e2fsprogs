@@ -249,6 +249,11 @@ static int dict_uint_cmp(const void *a, const void *b)
 		return -1;
 }
 
+static inline int project_quota_valid(quota_ctx_t qctx)
+{
+	return (EXT2_INODE_SIZE(qctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE);
+}
+
 static inline qid_t get_qid(struct ext2_inode_large *inode, enum quota_type qtype)
 {
 	unsigned int inode_size;
@@ -392,6 +397,8 @@ void quota_data_add(quota_ctx_t qctx, struct ext2_inode_large *inode,
 			inode_uid(*inode),
 			inode_gid(*inode), space);
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		if (qtype == PRJQUOTA && !project_quota_valid(qctx))
+			continue;
 		dict = qctx->quota_dict[qtype];
 		if (dict) {
 			dq = get_dq(dict, get_qid(inode, qtype));
@@ -419,6 +426,8 @@ void quota_data_sub(quota_ctx_t qctx, struct ext2_inode_large *inode,
 			inode_uid(*inode),
 			inode_gid(*inode), space);
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		if (qtype == PRJQUOTA && !project_quota_valid(qctx))
+			continue;
 		dict = qctx->quota_dict[qtype];
 		if (dict) {
 			dq = get_dq(dict, get_qid(inode, qtype));
@@ -444,6 +453,8 @@ void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode_large *inode,
 			inode_uid(*inode),
 			inode_gid(*inode), adjust);
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		if (qtype == PRJQUOTA && !project_quota_valid(qctx))
+			continue;
 		dict = qctx->quota_dict[qtype];
 		if (dict) {
 			dq = get_dq(dict, get_qid(inode, qtype));

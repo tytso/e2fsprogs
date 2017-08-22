@@ -7021,14 +7021,14 @@ msgid "<proceeding>\n"
 msgstr "<continuar>\n"
 
 #: misc/util.c:104
-#, c-format
+#, fuzzy, c-format
 msgid "Proceed anyway (or wait %d seconds) ? (y,N) "
-msgstr "Voleu continuar de totes maneres (o esperar %d segons) ? (s,N)"
+msgstr "Voleu continuar de totes maneres (o esperar %d segons) ? (s,n)"
 
 #: misc/util.c:108
-#,
+#, fuzzy
 msgid "Proceed anyway? (y,N) "
-msgstr "Voleu continuar de totes maneres? (s,N)"
+msgstr "Voleu continuar de totes maneres? (s,n)"
 
 #: misc/util.c:133
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"

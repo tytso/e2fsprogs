@@ -185,6 +185,7 @@ static errcode_t raw_read_blk(io_channel channel,
 		actual = pread64(data->dev, buf, size, location);
 		if (actual == size)
 			return 0;
+		actual = 0;
 	}
 #elif HAVE_PREAD
 	/* Try an aligned pread */
@@ -195,6 +196,7 @@ static errcode_t raw_read_blk(io_channel channel,
 		actual = pread(data->dev, buf, size, location);
 		if (actual == size)
 			return 0;
+		actual = 0;
 	}
 #endif /* HAVE_PREAD */
 
@@ -247,7 +249,8 @@ bounce_read:
 	return 0;
 
 error_out:
-	memset((char *) buf+actual, 0, size-actual);
+	if (actual >= 0 && actual < size)
+		memset((char *) buf+actual, 0, size-actual);
 	if (channel->read_error)
 		retval = (channel->read_error)(channel, block, count, buf,
 					       size, actual, retval);

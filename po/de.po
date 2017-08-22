@@ -7077,14 +7077,14 @@ msgid "<proceeding>\n"
 msgstr "<Verarbeitung läuft\n"
 
 #: misc/util.c:104
-#, c-format
+#, fuzzy, c-format
 msgid "Proceed anyway (or wait %d seconds) ? (y,N) "
-msgstr "Trotzdem fortfahren (oder %d Sekunden warten) ? (j,N) "
+msgstr "Trotzdem fortfahren (oder %d Sekunden warten) ? (j,n) "
 
 #: misc/util.c:108
-#,
+#, fuzzy
 msgid "Proceed anyway? (y,N) "
-msgstr "Trotzdem fortfahren? (j,N) "
+msgstr "Trotzdem fortfahren? (j,n) "
 
 #: misc/util.c:133
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
