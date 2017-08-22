@@ -1,13 +1,11 @@
 define(MULTIARCH_HEADERS,ifdef(`DO_MULTIARCH',
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends},REMOVE_ME))dnl
-define(UTIL_LINUX_NG_DEFINES,
-ifdef(`UTIL_LINUX_NG', ``libblkid-dev (>= 2.16), uuid-dev (>= 2.16),''))dnl
 Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any], libattr1-dev, debhelper (>= 9.0), UTIL_LINUX_NG_DEFINES m4
+Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any], libattr1-dev, debhelper (>= 9.0), libblkid-dev, uuid-dev, m4
 Standards-Version: 4.0.0
 Homepage: http://e2fsprogs.sourceforge.net
 
@@ -104,116 +102,6 @@ Description: command-line interface parsing library - headers and static librari
  It was originally inspired by the Multics SubSystem library.
  .
  This package contains the development environment for the ss library.
-ifdef(`UTIL_LINUX_NG',,``
-Package: libuuid1
-Section: libs
-Depends: passwd, ${shlibs:Depends}, ${misc:Depends}
-Recommends: uuid-runtime
-Replaces: e2fsprogs (<< 1.34-1)
-Architecture: any
-MULTIARCH_HEADERS
-Description: Universally Unique ID library
- The libuuid library generates and parses 128-bit universally unique
- ids (UUIDs).  A UUID is an identifier that is unique across both
- space and time, with respect to the space of all UUIDs.  A UUID can
- be used for multiple purposes, from tagging objects with an extremely
- short lifetime, to reliably identifying very persistent objects
- across a network.
- .
- See RFC 4122 for more information.  
-
-Package: uuid-runtime
-Section: libs
-Priority: optional
-Depends: passwd, libuuid1 (>> 1.40.3-1), ${shlibs:Depends}, ${misc:Depends}
-Replaces: e2fsprogs (<= 1.40.3-1ubuntu1)
-Architecture: any
-Description: runtime components for the Universally Unique ID library
- The libuuid library generates and parses 128-bit universally unique
- ids (UUIDs).  A UUID is an identifier that is unique across both
- space and time, with respect to the space of all UUIDs.  A UUID can
- be used for multiple purposes, from tagging objects with an extremely
- short lifetime, to reliably identifying very persistent objects
- across a network.
- .
- See RFC 4122 for more information.  
- .
- This package contains the uuidgen program and the uuidd daemon.
- .
- The uuidd daemon is used to generate UUIDs, especially time-based
- UUID’s, in a secure and guaranteed-unique fashion, even in the face
- of large numbers of threads trying to grab UUID’s running on
- different CPU’s. It is used by libuuid as well as the uuidgen
- program.
-
-ifdef(`UDEB_PKGS',``
-Package: libuuid1-udeb
-Package-Type: udeb
-Section: debian-installer
-Priority: optional
-Depends: ${shlibs:Depends}
-Architecture: any
-Description: stripped down universally unique id library, for debian-installer
- libuuid generates and parses 128-bit universally unique ids (UUIDs).
- See RFC 4122 for more information.
- .
- This is a minimal package for debian-installer.
-'')dnl
-
-Package: uuid-dev
-Section: libdevel
-Priority: extra
-Depends: libc6-dev | libc-dev, libuuid1 (= ${mainBinary}), ${misc:Depends}
-Replaces: e2fslibs-dev (<< 1.15)
-Architecture: any
-Description: universally unique id library - headers and static libraries
- libuuid generates and parses 128-bit universally unique ids (UUIDs).
- See RFC 4122 for more information.
- .
- This package contains the development environment for the uuid library.
-
-Package: libblkid1
-Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Architecture: any
-Description: block device id library
- The blkid library which allows system programs like fsck and 
- mount to quickly and easily find block devices by filesystem UUID and 
- LABEL.  This allows system administrators to avoid specifying 
- filesystems by hard-coded device names, but via a logical naming 
- system instead.
-
-ifdef(`UDEB_PKGS',``
-Package: libblkid1-udeb
-Package-Type: udeb
-Section: debian-installer
-Priority: optional
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Architecture: any
-Description: stripped down block device id library, for debian-installer
- The blkid library which allows system programs like fsck and 
- mount to quickly and easily find block devices by filesystem UUID and 
- LABEL.  This allows system administrators to avoid specifiying 
- filesystems by hard-coded device names, but via a logical naming 
- system instead.
- .
- This is a minimal package for debian-installer.
-'')dnl
-
-Package: libblkid-dev
-Section: libdevel
-Priority: extra
-Depends: libc6-dev | libc-dev, libblkid1 (= ${binary:Version}), ${misc:Depends}
-Architecture: any
-Description: block device id library - headers and static libraries
- The blkid library which allows system programs like fsck and 
- mount to quickly and easily find block devices by filesystem UUID and 
- LABEL.  This allows system administrators to avoid specifiying 
- filesystems by hard-coded device names, but via a logical naming 
- system instead.
- .
- This package contains the development environment for the blkid library.
-'')dnl
 
 ifdef(`UDEB_PKGS',``
 Package: e2fsprogs-udeb
@@ -265,11 +153,7 @@ Description: ext2/ext3/ext4 file system libraries - headers and static libraries
 
 Package: e2fsprogs
 Essential: yes
-ifdef(`UTIL_LINUX_NG',
-``Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, util-linux (>= 2.15~rc1-1)
-'',
-``Pre-Depends: ${shlibs:Depends}, ${misc:Depends}
-'')dnl
+Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Multi-Arch: foreign
 Suggests: gpart, parted, fuse2fs, e2fsck-static, e2fsprogs-l10n
 Architecture: any
@@ -292,20 +176,7 @@ Description: debugging information for e2fsprogs
  and its libraries, contained in the e2fsprogs and e2fsck-static packages.
  The debug information is used for execution tracing and core
  dump analysis.
-'')
-ifdef(`USE_DBGSYM',,ifdef(`UTIL_LINUX_NG',,``
-Package: uuid-runtime-dbg
-Section: debug
-Priority: extra
-Depends: uuid-runtime (= ${binary:Version}), ${misc:Depends}
-Architecture: any
-Description: debugging information for uuid-runtime
- This package includes the debug information useful for debugging the
- uuid runtime programs, contained in the uuid-runtime package.
- The debugging information is used for execution tracing and core
- dump analysis.
-''))dnl
-ifdef(`USE_DBGSYM',,``
+
 Package: e2fslibs-dbg
 Section: debug
 Priority: extra
@@ -336,24 +207,3 @@ Description: debugging information for libss2
  ss library, contained in the libss2 package.  The debug information
  is used for execution tracing and core dump analysis.
 '')dnl
-ifdef(`USE_DBGSYM',,ifdef(`UTIL_LINUX_NG',,``
-Package: libblkid1-dbg
-Section: debug
-Priority: extra
-Depends: libblkid1 (= ${binary:Version}), ${misc:Depends}
-Architecture: any
-Description: debugging information for libblkid1
- This package includes the debug information useful for debugging the
- blkid library, contained in the libblkid1 package.  The debug
- information is used for execution tracing and core dump analysis.
-
-Package: libuuid1-dbg
-Section: debug
-Priority: extra
-Depends: libuuid1 (= ${binary:Version}), ${misc:Depends}
-Architecture: any
-Description: debugging information for libuuid1
- This package includes the debug information useful for debugging the
- UUID library, contained in the libuuid1 package.  The debug
- information is used for execution tracing and core dump analysis.
-''))dnl
