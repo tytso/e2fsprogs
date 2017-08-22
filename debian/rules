@@ -21,7 +21,7 @@ DEB_BUILD_ARCH		?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 DEB_HOST_OS		?= $(shell dpkg-architecture -qDEB_HOST_OS)
 DEB_HOST_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null)
+DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # Allow distro-specific behaviour
 DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
@@ -144,21 +144,12 @@ ifneq ($(SKIP_FUSE2FS),)
 UTIL_CONF_FLAGS +=  --disable-fuse2fs
 endif
 
-ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
-MULTIARCH_CONF ?= --with-multiarch=$(DEB_HOST_MULTIARCH)
-# This doesn't work yet because gdb and lintian don't expect and/or
-# don't work with /usr/lib/<triplet>/debug
-#USRLIB = /usr/lib/$(DEB_HOST_MULTIARCH)
-USRLIB ?= /usr/lib
-else
-USRLIB ?= /usr/lib
-endif
-
 BACKTRACE_CONF_FLAGS ?= $(shell if ${debdir}/scripts/test-backtrace ; then echo --disable-backtrace ; fi)
 
 COMMON_CONF_FLAGS = --disable-e2initrd-helper --enable-quota \
 	--infodir=/usr/share/info  --enable-symlink-install \
-	$(MULTIARCH_CONF) $(BACKTRACE_CONF_FLAGS) $(UTIL_CONF_FLAGS)
+	--with-multiarch=$(DEB_HOST_MULTIARCH) \
+	$(BACKTRACE_CONF_FLAGS) $(UTIL_CONF_FLAGS)
 
 STD_CONF_FLAGS ?= --enable-elf-shlibs
 
@@ -174,12 +165,6 @@ M4_ARGS+=-DUSE_DBGSYM
 else
 DBG_PACKAGES += -pe2fsprogs-dbg -pe2fslibs-dbg -plibcomerr2-dbg -plibss2-dbg
 M4_ARGS+=-UUSE_DBGSYM
-endif
-
-ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
-M4_ARGS+=-DDO_MULTIARCH
-else
-M4_ARGS+=-UDO_MULTIARCH
 endif
 
 ifneq ($(BUILD_E2FSCK_STATIC),no)
@@ -201,18 +186,7 @@ else
 M4_ARGS+=-UFUSE2FS
 endif
 
-FILES_FIXUP= libcomerr2.files comerr-dev.files libss2.files ss-dev.files \
-	libuuid1.files uuid-dev.files libblkid1.files libblkid-dev.files \
-	e2fslibs.files e2fslibs-dev.files
-
 debian-files: debian/control
-ifeq ($(strip $(DEB_HOST_MULTIARCH)),)
-	for i in $(FILES_FIXUP); do \
-		sed -e 's;lib/\*/;lib/;' debian/$$i.in > debian/$$i; \
-	done
-else
-	for i in $(FILES_FIXUP); do cp debian/$$i.in debian/$$i; done
-endif
 
 mrproper: clean
 	rm debian/control
