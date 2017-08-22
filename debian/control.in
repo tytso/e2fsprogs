@@ -39,6 +39,19 @@ Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
  to run this program if something like your C library gets corrupted.
 '')dnl
 
+Package: e2fsprogs-l10n
+Priority: extra
+Depends: e2fsprogs (= ${binary:Version})
+Replaces: e2fsprogs (<< 1.43.5-1)
+Architecture: any
+Description: ext2/ext3/ext4 file system utilities - translations
+ The ext2, ext3 and ext4 file systems are successors of the original ext
+ ("extended") file system. They are the main file system types used for
+ hard disks on Debian and other Linux systems.
+ .
+ This package provides translations for messages for programs found in
+ the 'e2fsprogs' package.
+
 Package: libcomerr2
 Section: libs
 Provides: libcomerr-kth-compat
@@ -258,7 +271,7 @@ ifdef(`UTIL_LINUX_NG',
 ``Pre-Depends: ${shlibs:Depends}, ${misc:Depends}
 '')dnl
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static
+Suggests: gpart, parted, fuse2fs, e2fsck-static, e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities
  The ext2, ext3 and ext4 file systems are successors of the original ext
