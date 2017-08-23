@@ -11,6 +11,8 @@ Writing superblocks and filesystem accounting information:      done
 
 tune2fs -O metadata_csum test.img
 
+This operation requires a freshly checked filesystem.
+
 Please run e2fsck -f on the filesystem.
 
 Exit status is 1
@@ -57,6 +59,8 @@ Exit status is 0
 tune2fs -O metadata_csum test.img
 Enabling checksums could take some time.
 Proceed anyway (or wait 5 seconds) ? (y,N) 
+This operation requires a freshly checked filesystem.
+
 Please run e2fsck -fD on the filesystem.
 
 Exit status is 0
