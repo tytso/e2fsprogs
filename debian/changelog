@@ -1,3 +1,37 @@
+e2fsprogs (1.43.6-1) unstable; urgency=medium
+
+  * New upstream version
+  * Break out the locale files to a separate package (e2fsprogs-l10n) to
+    reduce the size of the e2fsprogs package, since it is an
+    essential/required package.
+  * Remove support for building uuid/blkid packages on pre-Wheezy
+    distributions (which are no longer supported).
+  * Remove support for pre-Multiarch versions of Debian (which are no
+    longer supported).
+  * Fixed the printing of quota inconsistency messages in e2fsck on 32-bit
+    platforms.  Also fixed a bug which caused project quota problems to be
+    labelled as group quota problems.
+  * Fixed a UI problem with yes/no questions when there are fuzzy
+    translation enties which caused some messages to be printed in English
+    and some in the language specified by the locale.  (Closes: #856586)
+  * Fix some out-of-bounds memory accesses in e2fsck caused by (usually
+    maliciously) corrupted file systems.  (Closes: #871539, 871540)
+  * Optimize CPU usage in e2fsck for very large, very fragmented sparse
+    files.
+  * Avoid creating file systems that use project quotas and 128 byte
+    inodes.
+  * Improve tune2fs's message when a file system needs to be checked using
+    e2fsck -f before running certain complex tune2fs operations.  (Closes:
+    #857336)
+  * Improve e2fsck's message when the proceed_delay option in
+    /etc/e2fsck.conf is enabled.  (Closes: #857336)
+  * Fix an LFS bug in e2image.  (Closes: #855246)
+  * Fix portability problem caused by the fact that disks are character
+    mode devices systems with FreeBSD kernels.
+  * Update the Czech, French, Polish, Swedish, and Vietnamese translations.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 29 Aug 2017 00:58:29 -0400
+
 e2fsprogs (1.43.5-1) unstable; urgency=medium
 
   * New upstream version
