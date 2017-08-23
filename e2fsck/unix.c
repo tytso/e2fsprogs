@@ -709,8 +709,17 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		} else if (strcmp(token, "nodiscard") == 0) {
 			ctx->options &= ~E2F_OPT_DISCARD;
 			continue;
+		} else if (strcmp(token, "optimize_extents") == 0) {
+			ctx->options &= ~E2F_OPT_NOOPT_EXTENTS;
+			continue;
 		} else if (strcmp(token, "no_optimize_extents") == 0) {
 			ctx->options |= E2F_OPT_NOOPT_EXTENTS;
+			continue;
+		} else if (strcmp(token, "inode_count_fullmap") == 0) {
+			ctx->options |= E2F_OPT_ICOUNT_FULLMAP;
+			continue;
+		} else if (strcmp(token, "no_inode_count_fullmap") == 0) {
+			ctx->options &= ~E2F_OPT_ICOUNT_FULLMAP;
 			continue;
 		} else if (strcmp(token, "log_filename") == 0) {
 			if (!arg)
@@ -733,17 +742,21 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 	free(buf);
 
 	if (extended_usage) {
-		fputs(("\nExtended options are separated by commas, "
+		fputs(_("\nExtended options are separated by commas, "
 		       "and may take an argument which\n"
 		       "is set off by an equals ('=') sign.  "
-		       "Valid extended options are:\n"), stderr);
-		fputs(("\tea_ver=<ea_version (1 or 2)>\n"), stderr);
-		fputs(("\tfragcheck\n"), stderr);
-		fputs(("\tjournal_only\n"), stderr);
-		fputs(("\tdiscard\n"), stderr);
-		fputs(("\tnodiscard\n"), stderr);
-		fputs(("\treadahead_kb=<buffer size>\n"), stderr);
-		fputs(("\tbmap2extent\n"), stderr);
+		       "Valid extended options are:\n\n"), stderr);
+		fputs(_("\tea_ver=<ea_version (1 or 2)>\n"), stderr);
+		fputs("\tfragcheck\n", stderr);
+		fputs("\tjournal_only\n", stderr);
+		fputs("\tdiscard\n", stderr);
+		fputs("\tnodiscard\n", stderr);
+		fputs("\toptimize_extents\n", stderr);
+		fputs("\tno_optimize_extents\n", stderr);
+		fputs("\tinode_count_fullmap\n", stderr);
+		fputs("\tno_inode_count_fullmap\n", stderr);
+		fputs(_("\treadahead_kb=<buffer size>\n"), stderr);
+		fputs("\tbmap2extent\n", stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}
@@ -1014,6 +1027,11 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			    0, 0, &c);
 	if (c)
 		ctx->options |= E2F_OPT_NOOPT_EXTENTS;
+
+	profile_get_boolean(ctx->profile, "options", "inode_count_fullmap",
+			    0, 0, &c);
+	if (c)
+		ctx->options |= E2F_OPT_ICOUNT_FULLMAP;
 
 	if (ctx->readahead_kb == ~0ULL) {
 		profile_get_integer(ctx->profile, "options",

@@ -532,6 +532,7 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
  * ext2_icount_t abstraction
  */
 #define EXT2_ICOUNT_OPT_INCREMENT	0x01
+#define EXT2_ICOUNT_OPT_FULLMAP		0x02
 
 typedef struct ext2_icount *ext2_icount_t;
 
