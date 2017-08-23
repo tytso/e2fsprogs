@@ -1310,6 +1310,11 @@ mmp_error:
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_PROJECT)) {
+		if (fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+			fprintf(stderr, _("Cannot enable project feature; "
+					  "inode size too small.\n"));
+			exit(1);
+		}
 		Q_flag = 1;
 		quota_enable[PRJQUOTA] = QOPT_ENABLE;
 	}
@@ -1496,6 +1501,13 @@ static void handle_quota_options(ext2_filsys fs)
 	if (qtype == MAXQUOTAS)
 		/* Nothing to do. */
 		return;
+
+	if (quota_enable[PRJQUOTA] == QOPT_ENABLE &&
+	    fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+		fprintf(stderr, _("Cannot enable project quota; "
+				  "inode size too small.\n"));
+		exit(1);
+	}
 
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
 		if (quota_enable[qtype] == QOPT_ENABLE)
