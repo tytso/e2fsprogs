@@ -21,7 +21,7 @@ cc_library {
         "libext2_quota",
         "libext2fs",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
     export_include_dirs: ["."],
 }
 
@@ -113,7 +113,7 @@ cc_binary {
     defaults: ["tune2fs-defaults"],
 
     shared_libs: tune2fs_libs,
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }
 
 cc_binary {
@@ -148,7 +148,7 @@ cc_binary {
         "libext2_blkid",
         "libext2_e2p",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }
 
 //########################################################################
@@ -164,7 +164,7 @@ cc_binary {
         "libext2_com_err",
         "libext2_e2p",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }
 
 //########################################################################
@@ -187,7 +187,7 @@ cc_binary {
     defaults: ["lsattr-defaults"],
 
     shared_libs: lsattr_libs,
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }
 
 cc_binary {
@@ -212,7 +212,7 @@ cc_binary {
         "libext2_com_err",
         "libext2_e2p",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }
 
 //########################################################################
@@ -228,7 +228,7 @@ cc_binary {
         "libext2fs",
         "libext2_uuid",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 
     target: {
         darwin: {
@@ -252,5 +252,5 @@ cc_binary {
         "libext2_com_err",
         "libext2_quota",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }

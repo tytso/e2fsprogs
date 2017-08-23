@@ -11,7 +11,7 @@ cc_binary {
 
     srcs: ["fsstress.c"],
     cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 
     target: {
         darwin: {
@@ -33,5 +33,5 @@ cc_binary {
         "libext2fs",
         "libext2_com_err",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }

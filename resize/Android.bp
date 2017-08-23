@@ -20,5 +20,5 @@ cc_binary {
         "libext2_uuid",
         "libext2_blkid",
     ],
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }

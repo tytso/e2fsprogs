@@ -60,7 +60,7 @@ cc_binary {
     defaults: ["debugfs-defaults"],
 
     shared_libs: debugfs_libs,
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }
 
 cc_binary {

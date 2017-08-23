@@ -52,7 +52,7 @@ cc_binary {
     defaults: ["e2fsck-defaults"],
 
     shared_libs: e2fsck_libs,
-    system_shared_libs: ["libc"],
+    system_shared_libs: ["libc", "libdl"],
 }
 
 cc_binary {
