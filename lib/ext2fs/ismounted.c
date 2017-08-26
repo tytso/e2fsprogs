@@ -66,7 +66,7 @@ static int check_loop_mounted(const char *mnt_fsname, dev_t mnt_rdev,
 				dev_t file_dev, ino_t file_ino)
 {
 #if defined(HAVE_LINUX_LOOP_H) && defined(HAVE_LINUX_MAJOR_H)
-	struct loop_info64 loopinfo;
+	struct loop_info64 loopinfo = {0, };
 	int loop_fd, ret;
 
 	if (major(mnt_rdev) == LOOP_MAJOR) {
