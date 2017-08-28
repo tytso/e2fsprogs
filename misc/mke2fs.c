@@ -105,6 +105,7 @@ static int	proceed_delay = -1;
 static blk64_t	dev_size;
 
 static struct ext2_super_block fs_param;
+static __u32 zero_buf[4];
 static char *fs_uuid = NULL;
 static char *creator_os;
 static char *volume_label;
@@ -834,6 +835,19 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 			param->s_desc_size = desc_size;
+		} else if (strcmp(token, "hash_seed") == 0) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			if (uuid_parse(arg,
+				(unsigned char *)param->s_hash_seed) != 0) {
+				fprintf(stderr,
+					_("Invalid hash seed: %s\n"), arg);
+				r_usage++;
+				continue;
+			}
 		} else if (strcmp(token, "offset") == 0) {
 			if (!arg) {
 				r_usage++;
@@ -2985,7 +2999,13 @@ int main (int argc, char *argv[])
 	free(hash_alg_str);
 	fs->super->s_def_hash_version = (hash_alg >= 0) ? hash_alg :
 		EXT2_HASH_HALF_MD4;
-	uuid_generate((unsigned char *) fs->super->s_hash_seed);
+
+	if (memcmp(fs_param.s_hash_seed, zero_buf,
+		sizeof(fs_param.s_hash_seed)) != 0) {
+		memcpy(fs->super->s_hash_seed, fs_param.s_hash_seed,
+			sizeof(fs->super->s_hash_seed));
+	} else
+		uuid_generate((unsigned char *) fs->super->s_hash_seed);
 
 	/*
 	 * Periodic checks can be enabled/disabled via config file.

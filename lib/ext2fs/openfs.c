@@ -128,6 +128,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	struct ext2_group_desc *gdp;
 	int		j;
 #endif
+	char		*time_env;
 
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
 
@@ -141,6 +142,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	/* don't overwrite sb backups unless flag is explicitly cleared */
 	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 	fs->umask = 022;
+
+	time_env = getenv("E2FSPROGS_FAKE_TIME");
+	if (time_env)
+		fs->now = strtoul(time_env, NULL, 0);
+
 	retval = ext2fs_get_mem(strlen(name)+1, &fs->device_name);
 	if (retval)
 		goto cleanup;
