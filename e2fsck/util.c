@@ -204,7 +204,7 @@ int ask_yn(e2fsck_t ctx, const char * string, int def)
 	static int	yes_answers;
 
 #ifdef HAVE_TERMIOS_H
-	struct termios	termios, tmp;
+	struct termios	termios = {0, }, tmp;
 
 	tcgetattr (0, &termios);
 	tmp = termios;

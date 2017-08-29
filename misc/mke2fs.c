@@ -2332,6 +2332,26 @@ profile_error:
 			(unsigned long long) fs_blocks_count);
 	}
 
+	if (quotatype_bits & QUOTA_PRJ_BIT)
+		ext2fs_set_feature_project(&fs_param);
+
+	if (ext2fs_has_feature_project(&fs_param)) {
+		quotatype_bits |= QUOTA_PRJ_BIT;
+		if (inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+			com_err(program_name, 0,
+				_("%d byte inodes are too small for "
+				  "project quota"),
+				inode_size);
+			exit(1);
+		}
+		if (inode_size == 0) {
+			inode_size = get_int_from_profile(fs_types,
+							  "inode_size", 0);
+			if (inode_size <= EXT2_GOOD_OLD_INODE_SIZE*2)
+				inode_size = EXT2_GOOD_OLD_INODE_SIZE*2;
+		}
+	}
+
 	/* Don't allow user to set both metadata_csum and uninit_bg bits. */
 	if (ext2fs_has_feature_metadata_csum(&fs_param) &&
 	    ext2fs_has_feature_gdt_csum(&fs_param))
@@ -2427,19 +2447,6 @@ profile_error:
 	    fs_param.s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
 		com_err(program_name, 0,
 			_("%d byte inodes are too small for inline data; "
-			  "specify larger size"),
-			fs_param.s_inode_size);
-		exit(1);
-	}
-
-	/*
-	 * If inode size is 128 and project quota is enabled, we need
-	 * to notify users that project ID will never be useful.
-	 */
-	if (ext2fs_has_feature_project(&fs_param) &&
-	    fs_param.s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
-		com_err(program_name, 0,
-			_("%d byte inodes are too small for project quota; "
 			  "specify larger size"),
 			fs_param.s_inode_size);
 		exit(1);
@@ -3230,8 +3237,6 @@ no_journal:
 
 	if (ext2fs_has_feature_bigalloc(&fs_param))
 		fix_cluster_bg_counts(fs);
-	if (ext2fs_has_feature_project(&fs_param))
-		quotatype_bits |= QUOTA_PRJ_BIT;
 	if (ext2fs_has_feature_quota(&fs_param))
 		create_quota_inodes(fs);
 

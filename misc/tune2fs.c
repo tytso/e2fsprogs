@@ -116,6 +116,8 @@ struct blk_move {
 
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
+static const char *fsck_explain = N_("\nThis operation requires a freshly checked filesystem.\n");
+
 static const char *please_fsck = N_("Please run e2fsck -f on the filesystem.\n");
 static const char *please_dir_fsck =
 		N_("Please run e2fsck -fD on the filesystem.\n");
@@ -421,7 +423,8 @@ static void check_fsck_needed(ext2_filsys fs, const char *prompt)
 	if (!(fs->super->s_state & EXT2_VALID_FS) ||
 	    (fs->super->s_state & EXT2_ERROR_FS) ||
 	    (fs->super->s_lastcheck < fs->super->s_mtime)) {
-		printf("\n%s\n", _(please_fsck));
+		puts(_(fsck_explain));
+		puts(_(please_fsck));
 		if (mount_flags & EXT2_MF_READONLY)
 			printf("%s", _("(and reboot afterwards!)\n"));
 		exit(1);
@@ -443,7 +446,8 @@ static void request_dir_fsck_afterwards(ext2_filsys fs)
 		return;
 	fsck_requested++;
 	fs->super->s_state &= ~EXT2_VALID_FS;
-	printf("\n%s\n", _(please_dir_fsck));
+	puts(_(fsck_explain));
+	puts(_(please_dir_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
 		printf("%s", _("(and reboot afterwards!)\n"));
 }
@@ -1418,6 +1422,11 @@ mmp_error:
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_PROJECT)) {
+		if (fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+			fprintf(stderr, _("Cannot enable project feature; "
+					  "inode size too small.\n"));
+			exit(1);
+		}
 		Q_flag = 1;
 		quota_enable[PRJQUOTA] = QOPT_ENABLE;
 	}
@@ -1604,6 +1613,13 @@ static void handle_quota_options(ext2_filsys fs)
 	if (qtype == MAXQUOTAS)
 		/* Nothing to do. */
 		return;
+
+	if (quota_enable[PRJQUOTA] == QOPT_ENABLE &&
+	    fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+		fprintf(stderr, _("Cannot enable project quota; "
+				  "inode size too small.\n"));
+		exit(1);
+	}
 
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
 		if (quota_enable[qtype] == QOPT_ENABLE)

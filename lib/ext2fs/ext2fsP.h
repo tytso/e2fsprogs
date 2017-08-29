@@ -9,9 +9,22 @@
  * %End-Header%
  */
 
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
 #include "ext2fs.h"
 
 #define EXT2FS_MAX_NESTED_LINKS  8
+
+static inline int ext2fsP_is_disk_device(mode_t mode)
+{
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+	return S_ISBLK(mode) || S_ISCHR(mode);
+#else
+	return S_ISBLK(mode);
+#endif
+}
 
 /*
  * Badblocks list

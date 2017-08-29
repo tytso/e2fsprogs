@@ -76,6 +76,7 @@
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "ext2fsP.h"
 
 /*
  * For checking structure magic numbers...
@@ -611,7 +612,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 	 * zero.
 	 */
 	if (ext2fs_fstat(data->dev, &st) == 0) {
-		if (S_ISBLK(st.st_mode))
+		if (ext2fsP_is_disk_device(st.st_mode))
 			io->flags |= CHANNEL_FLAGS_BLOCK_DEVICE;
 		else
 			io->flags |= CHANNEL_FLAGS_DISCARD_ZEROES;
@@ -682,7 +683,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 	     (ut.release[4] == '1') && (ut.release[5] >= '0') &&
 	     (ut.release[5] < '8')) &&
 	    (ext2fs_fstat(data->dev, &st) == 0) &&
-	    (S_ISBLK(st.st_mode))) {
+	    (ext2fsP_is_disk_device(st.st_mode))) {
 		struct rlimit	rlim;
 
 		rlim.rlim_cur = rlim.rlim_max = (unsigned long) RLIM_INFINITY;

@@ -485,7 +485,7 @@ static _INLINE_ void expand_percent_expression(FILE *f, ext2_filsys fs,
 			m = _("group");
 			break;
 		case PRJQUOTA:
-			m = _("group");
+			m = _("project");
 			break;
 		default:
 			m = _("unknown quota type");
