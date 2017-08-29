@@ -655,6 +655,7 @@ SIZEOF_LONG_LONG
 SIZEOF_LONG
 SIZEOF_INT
 SIZEOF_SHORT
+DD
 BUILD_CC
 MAKEINFO
 STRIP
@@ -12380,6 +12381,27 @@ _ACEOF
 fi
 
 done
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for a dd(1) program that supports iflag=fullblock" >&5
+$as_echo_n "checking for a dd(1) program that supports iflag=fullblock... " >&6; }
+DD=
+for i in dd gdd ; do
+	if "$i" if=/dev/null of=/dev/null count=1 bs=10k 2>/dev/null iflag=fullblock oflag=append ; then
+		DD=$i
+		break
+	fi
+done
+if test -n "$DD" ; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $DD" >&5
+$as_echo "$DD" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: not found, using dd" >&5
+$as_echo "not found, using dd" >&6; }
+	DD=dd
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No GNU-compatible dd(1) program found, expect some self-test failures." >&5
+$as_echo "$as_me: WARNING: No GNU-compatible dd(1) program found, expect some self-test failures." >&2;}
+fi
+
 
 for ac_header in net/if.h
 do :

@@ -157,6 +157,15 @@ the average fill ratio of directories can be maintained at a
 higher, more efficient level.  This relation defaults to 20
 percent.
 .TP
+.I inode_count_fullmap
+If this boolean relation is true, trade off using memory for speed when
+checking a file system with a large number of hard-linked files.  The
+amount of memory required is proportional to the number of inodes in the
+file system.  For large file systems, this can be gigabytes of memory.
+(For example a 40TB file system with 2.8 billion inodes will consume an
+additional 5.7 GB memory if this optimization is enabled.)  This setting
+defaults to false.
+.TP
 .I log_dir
 If the
 .I log_filename
@@ -206,8 +215,8 @@ of that type are squelched.  This can be useful if the console is slow
 end up delaying the boot process for a long time (potentially hours).
 .TP
 .I no_optimize_extents
-Do not offer to optimize the extent tree by eliminating unnecessary
-width or depth.
+If this boolean relation is true, do not offer to optimize the extent
+tree by reducing the tree's width or depth.  This setting defaults to false.
 .TP
 .I readahead_mem_pct
 Use this percentage of memory to try to read in metadata blocks ahead of the

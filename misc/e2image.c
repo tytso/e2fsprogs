@@ -43,6 +43,7 @@ extern int optind;
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
+#include "ext2fs/ext2fsP.h"
 #include "et/com_err.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
@@ -1620,7 +1621,7 @@ skip_device:
 				_("Can not stat output\n"));
 			exit(1);
 		}
-		if (S_ISBLK(st.st_mode))
+		if (ext2fsP_is_disk_device(st.st_mode))
 			output_is_blk = 1;
 	}
 	if (flags & E2IMAGE_IS_QCOW2_FLAG) {

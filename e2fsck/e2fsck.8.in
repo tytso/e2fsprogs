@@ -228,7 +228,29 @@ exactly the opposite of discard option. This is set as default.
 .TP
 .BI no_optimize_extents
 Do not offer to optimize the extent tree by eliminating unnecessary
-width or depth.
+width or depth.  This can also be enabled in the options section of
+.BR /etc/e2fsck.conf .
+.TP
+.BI optimize_extents
+Offer to optimize the extent tree by eliminating unnecessary
+width or depth.  This is the default unless otherwise specified in
+.BR /etc/e2fsck.conf .
+.TP
+.BI inode_count_fullmap
+Trade off using memory for speed when checking a file system with a
+large number of hard-linked files.  The amount of memory required is
+proportional to the number of inodes in the file system.  For large file
+systems, this can be gigabytes of memory.  (For example, a 40TB file system
+with 2.8 billion inodes will consume an additional 5.7 GB memory if this
+optimization is enabled.)  This optimization can also be enabled in the
+options section of
+.BR /etc/e2fsck.conf .
+.TP
+.BI no_inode_count_fullmap
+Disable the
+.B inode_count_fullmap
+optimization.  This is the default unless otherwise specified in
+.BR /etc/e2fsck.conf .
 .TP
 .BI readahead_kb
 Use this many KiB of memory to pre-fetch metadata in the hopes of reducing

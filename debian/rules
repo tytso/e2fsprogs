@@ -21,11 +21,10 @@ DEB_BUILD_ARCH		?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 DEB_HOST_OS		?= $(shell dpkg-architecture -qDEB_HOST_OS)
 DEB_HOST_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null)
+DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # Allow distro-specific behaviour
 DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
-UTIL_LINUX_NG ?= yes
 
 ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu)
 SKIP_FUSE2FS=yes
@@ -52,14 +51,6 @@ COMERR_SOVERSION ?= $(shell grep ELF_SO_VERSION lib/et/Makefile.in | cut '-d ' -
 SS_VERSION ?= $(shell grep ELF_VERSION lib/ss/Makefile.in | cut '-d ' -f3)
 SS_SOVERSION ?= $(shell grep ELF_SO_VERSION lib/ss/Makefile.in | cut '-d ' -f3)
 
-ifneq ($(UTIL_LINUX_NG),yes)
-UUID_VERSION ?= $(shell grep ELF_VERSION lib/uuid/Makefile.in | cut '-d ' -f3)
-UUID_SOVERSION ?= $(shell grep ELF_SO_VERSION lib/uuid/Makefile.in | cut '-d ' -f3)
-
-BLKID_VERSION ?= $(shell grep ELF_VERSION lib/blkid/Makefile.in | cut '-d ' -f3)
-BLKID_SOVERSION ?= $(shell grep ELF_SO_VERSION lib/blkid/Makefile.in | cut '-d ' -f3)
-endif
-
 EXT2FS_SOVERSION ?= $(shell grep ELF_SO_VERSION lib/ext2fs/Makefile.in | cut '-d ' -f3)
 E2P_SOVERSION ?= $(shell grep ELF_SO_VERSION lib/e2p/Makefile.in | cut '-d ' -f3)
 
@@ -69,26 +60,12 @@ topdir		?= $(shell pwd)
 debdir		?= ${topdir}/debian
 tmpdir		?= ${debdir}/tmp
 udebdir		?= ${debdir}/e2fsprogs-udeb
-ifneq ($(UTIL_LINUX_NG),yes)
-blkidudebdir	?= ${debdir}/libblkid1-udeb
-uuidudebdir	?= ${debdir}/libuuid1-udeb
-endif
 libcomerrdir	?= ${debdir}/libcomerr${COMERR_SOVERSION}
 comerrdevdir	?= ${debdir}/comerr-dev
 libcomerrdbgdir	?= ${debdir}/libcomerr2-dbg
 libssdir	?= ${debdir}/libss${SS_SOVERSION}
 ssdevdir	?= ${debdir}/ss-dev
 libssdbgdir	?= ${debdir}/libss2-dbg
-ifneq ($(UTIL_LINUX_NG),yes)
-libblkiddir	?= ${debdir}/libblkid${BLKID_SOVERSION}
-libblkiddevdir	?= ${debdir}/libblkid-dev
-libblkiddbgdir	?= ${debdir}/libblkid1-dbg
-libuuiddir	?= ${debdir}/libuuid${UUID_SOVERSION}
-uuiddevdir	?= ${debdir}/uuid-dev
-libuuiddbgdir	?= ${debdir}/libuuid1-dbg
-uuidruntimedir	?= ${debdir}/uuid-runtime
-uuidruntimedbgdir ?= ${debdir}/uuid-runtime-dbg
-endif
 libext2dir	?= ${debdir}/e2fslibs
 libext2devdir	?= ${debdir}/e2fslibs-dev
 libext2dbgdir	?= ${debdir}/e2fslibs-dbg
@@ -102,14 +79,6 @@ mandir		?= ${tmpdir}${MANDIR}
 
 UDEB_NAME 	?= $(package)-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
 UDEB_PRIORITY	?= $(shell grep '^Package: e2fsprogs-udeb' debian/control.in -A 10 | grep ^Priority: | cut -d ' ' -f 2)
-
-ifneq ($(UTIL_LINUX_NG),yes)
-BLKID_UDEB_NAME ?= libblkid1-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
-BLKID_UDEB_PRIORITY ?= $(shell grep '^Package: libblkid1-udeb' debian/control.in -A 10 | grep ^Priority: | cut -d ' ' -f 2)
-
-UUID_UDEB_NAME ?= libuuid1-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
-UUID_UDEB_PRIORITY ?= $(shell grep '^Package: libuuid1-udeb' debian/control.in -A 10 | grep ^Priority: | cut -d ' ' -f 2)
-endif
 
 STAMPSDIR	?= debian/stampdir
 CFGSTDSTAMP	?= ${STAMPSDIR}/configure-std-stamp
@@ -126,9 +95,6 @@ INSTALL_PROGRAM ?= $(INSTALL) -p -o root -g root -m 0755
 
 ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
 SYMBOL_LIBS := e2fslibs libcomerr2 libss2
-ifneq ($(UTIL_LINUX_NG),yes)
-SYMBOL_LIBS += libblkid1 libuuid1
-endif
 endif
 
 DEFAULT_CFLAGS ?= -g -O2
@@ -171,33 +137,19 @@ endif
 
 BF_CFLAGS = -Os -fomit-frame-pointer
 
-ifeq ($(UTIL_LINUX_NG),yes)
 UTIL_CONF_FLAGS ?= --disable-fsck --disable-libblkid \
 			--disable-libuuid --disable-uuidd
-else
-UTIL_CONF_FLAGS ?= --enable-fsck --enable-libblkid \
-			--enable-libuuid --enable-uuidd
-endif
 
 ifneq ($(SKIP_FUSE2FS),)
 UTIL_CONF_FLAGS +=  --disable-fuse2fs
 endif
 
-ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
-MULTIARCH_CONF ?= --with-multiarch=$(DEB_HOST_MULTIARCH)
-# This doesn't work yet because gdb and lintian don't expect and/or
-# don't work with /usr/lib/<triplet>/debug
-#USRLIB = /usr/lib/$(DEB_HOST_MULTIARCH)
-USRLIB ?= /usr/lib
-else
-USRLIB ?= /usr/lib
-endif
-
 BACKTRACE_CONF_FLAGS ?= $(shell if ${debdir}/scripts/test-backtrace ; then echo --disable-backtrace ; fi)
 
-COMMON_CONF_FLAGS = --disable-e2initrd-helper --enable-quota \
+COMMON_CONF_FLAGS = --disable-e2initrd-helper \
 	--infodir=/usr/share/info  --enable-symlink-install \
-	$(MULTIARCH_CONF) $(BACKTRACE_CONF_FLAGS) $(UTIL_CONF_FLAGS)
+	--with-multiarch=$(DEB_HOST_MULTIARCH) \
+	$(BACKTRACE_CONF_FLAGS) $(UTIL_CONF_FLAGS)
 
 STD_CONF_FLAGS ?= --enable-elf-shlibs
 
@@ -213,19 +165,6 @@ M4_ARGS+=-DUSE_DBGSYM
 else
 DBG_PACKAGES += -pe2fsprogs-dbg -pe2fslibs-dbg -plibcomerr2-dbg -plibss2-dbg
 M4_ARGS+=-UUSE_DBGSYM
-endif
-
-ifeq ($(UTIL_LINUX_NG),yes)
-M4_ARGS+=-DUTIL_LINUX_NG
-else
-DBG_PACKAGES += -puuid-runtime-dbg -plibuuid1-dbg -plibblkid1-dbg
-M4_ARGS+=-UUTIL_LINUX_NG
-endif
-
-ifneq ($(strip $(DEB_HOST_MULTIARCH)),)
-M4_ARGS+=-DDO_MULTIARCH
-else
-M4_ARGS+=-UDO_MULTIARCH
 endif
 
 ifneq ($(BUILD_E2FSCK_STATIC),no)
@@ -247,27 +186,13 @@ else
 M4_ARGS+=-UFUSE2FS
 endif
 
-FILES_FIXUP= libcomerr2.files comerr-dev.files libss2.files ss-dev.files \
-	libuuid1.files uuid-dev.files libblkid1.files libblkid-dev.files \
-	e2fslibs.files e2fslibs-dev.files
-
-debian-files: debian/control debian/e2fsprogs.shlibs.local
-ifeq ($(strip $(DEB_HOST_MULTIARCH)),)
-	for i in $(FILES_FIXUP); do \
-		sed -e 's;lib/\*/;lib/;' debian/$$i.in > debian/$$i; \
-	done
-else
-	for i in $(FILES_FIXUP); do cp debian/$$i.in debian/$$i; done
-endif
+debian-files: debian/control
 
 mrproper: clean
-	rm debian/control debian/e2fsprogs.shlibs.local
+	rm debian/control
 
 debian/control: debian/control.in debian/rules
 	m4 $(M4_ARGS) < debian/control.in | grep -v ^REMOVE_ME$$ > $@
-
-debian/e2fsprogs.shlibs.local: debian/e2fsprogs.shlibs.local.in
-	m4 $(M4_ARGS) < debian/e2fsprogs.shlibs.local.in > $@
 
 ${CFGSTDSTAMP}:
 	dh_testdir
@@ -439,14 +364,6 @@ install-udeb: build
 		ln -sf mke2fs mkfs.ext2 ; ln -sf mke2fs mkfs.ext3 ; \
 		ln -sf mke2fs mkfs.ext4)
 
-ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${blkidudebdir}/lib
-	mv ${udebdir}/lib/libblkid.* ${blkidudebdir}/lib
-
-	mkdir -p ${uuidudebdir}/lib
-	mv ${udebdir}/lib/libuuid.* ${uuidudebdir}/lib
-endif
-
 binary-indep: 
   # no arch-independant debs.
 
@@ -459,12 +376,6 @@ binary-arch: install $(INSTALL_UDEB)
 
   # symlinks to prepare dh_installdocs run
 
-ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}
-	mkdir -p ${debdir}/libblkid-dev/usr/share/doc
-	ln -sf libblkid${BLKID_SOVERSION} ${debdir}/libblkid-dev/usr/share/doc/libblkid-dev
-endif
-
 	mkdir -p ${debdir}/libss${SS_SOVERSION}/usr/share/doc/libss${SS_SOVERSION}
 	mkdir -p ${debdir}/ss-dev/usr/share/doc
 	ln -sf libss${SS_SOVERSION} ${debdir}/ss-dev/usr/share/doc/ss-dev
@@ -473,20 +384,9 @@ endif
 	mkdir -p ${debdir}/comerr-dev/usr/share/doc
 	ln -sf libcomerr${COMERR_SOVERSION} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
 
-ifneq ($(UTIL_LINUX_NG),yes)
-	mkdir -p ${debdir}/libuuid${UUID_SOVERSION}/usr/share/doc/libuuid${UUID_SOVERSION}
-	mkdir -p ${debdir}/uuid-dev/usr/share/doc
-#	ln -sf libuuid${UUID_SOVERSION} ${debdir}/uuid-dev/usr/share/doc/uuid-dev
-endif
-
 	mkdir -p ${debdir}/e2fslibs/usr/share/doc/e2fslibs
 	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc
 	ln -sf e2fslibs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
-
-ifneq ($(UTIL_LINUX_NG),yes)
-	$(INSTALL) -p -m 0644 debian/libblkid.copyright \
-		${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}/copyright
-endif
 
 	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 
@@ -525,10 +425,6 @@ endif
 	dh_strip $(call dh_strip_args,e2fslibs)
 	dh_strip $(call dh_strip_args,libss${SS_SOVERSION})
 	dh_strip $(call dh_strip_args,libcomerr${COMERR_SOVERSION})
-ifneq ($(UTIL_LINUX_NG),yes)
-	dh_strip $(call dh_strip_args,libblkid${BLKID_SOVERSION})
-	dh_strip $(call dh_strip_args,libuuid${UUID_SOVERSION})
-endif
 	dh_strip
 
 	# dpkg symbol handling
@@ -544,13 +440,6 @@ endif
 	dh_compress
 
 	dh_makeshlibs --add-udeb=e2fsprogs-udeb
-ifeq ($(SKIP_UDEB),)
-ifneq ($(UTIL_LINUX_NG),yes)
-	echo "udeb: libblkid 1 libblkid1-udeb" >> \
-		debian/libblkid1/DEBIAN/shlibs
-	echo "udeb: libuuid 1 libuuid1-udeb" >> debian/libuuid1/DEBIAN/shlibs
-endif
-endif
 
 	dh_installdeb
 	dh_shlibdeps -l${stdbuilddir}/lib
@@ -571,24 +460,12 @@ endif
 	  -u '-v${COMERR_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -pss-dev \
 	  -u '-v${SS_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
-ifneq ($(UTIL_LINUX_NG),yes)
-	DH_OPTIONS= dh_gencontrol -puuid-dev \
-	  -u '-v${UUID_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
-endif
 ifeq ($(SKIP_UDEB),)
 	dh_gencontrol	-pe2fsprogs-udeb -- -fdebian/files~
-ifneq ($(UTIL_LINUX_NG),yes)
-	dh_gencontrol	-plibblkid1-udeb -- -fdebian/files~
-	dh_gencontrol	-plibuuid1-udeb -- -fdebian/files~
-endif
 endif
 
 ifeq ($(SKIP_UDEB),)
 	dpkg-distaddfile $(UDEB_NAME) debian-installer $(UDEB_PRIORITY)
-ifneq ($(UTIL_LINUX_NG),yes)
-	dpkg-distaddfile $(BLKID_UDEB_NAME) debian-installer $(BLKID_UDEB_PRIORITY)
-	dpkg-distaddfile $(UUID_UDEB_NAME) debian-installer $(UUID_UDEB_PRIORITY)
-endif
 endif
 	dh_md5sums
 	dh_builddeb

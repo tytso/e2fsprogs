@@ -96,7 +96,7 @@ struct process_block_struct {
 	struct problem_context *pctx;
 	ext2fs_block_bitmap fs_meta_blocks;
 	e2fsck_t	ctx;
-	region_t	region;
+	blk64_t		next_lblock;
 	struct extent_tree_info	eti;
 };
 
@@ -711,6 +711,7 @@ extern errcode_t e2fsck_setup_icount(e2fsck_t ctx, const char *icount_name,
 	errcode_t		retval;
 	char			*tdb_dir;
 	int			enable;
+	int			full_map;
 
 	*ret = 0;
 
@@ -734,6 +735,8 @@ extern errcode_t e2fsck_setup_icount(e2fsck_t ctx, const char *icount_name,
 	}
 	e2fsck_set_bitmap_type(ctx->fs, EXT2FS_BMAP64_RBTREE, icount_name,
 			       &save_type);
+	if (ctx->options & E2F_OPT_ICOUNT_FULLMAP)
+		flags |= EXT2_ICOUNT_OPT_FULLMAP;
 	retval = ext2fs_create_icount2(ctx->fs, flags, 0, hint, ret);
 	ctx->fs->default_bitmap_type = save_type;
 	return retval;
@@ -2628,9 +2631,18 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			  (1U << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
 
-		if (is_leaf && problem == 0 && extent.e_len > 0 &&
-		    region_allocate(pb->region, extent.e_lblk, extent.e_len))
-			problem = PR_1_EXTENT_COLLISION;
+		if (is_leaf && problem == 0 && extent.e_len > 0) {
+#if 0
+			printf("extent_region(ino=%u, expect=%llu, "
+			       "lblk=%llu, len=%u)\n",
+			       pb->ino, pb->next_lblock,
+			       extent.e_lblk, extent.e_len);
+#endif
+			if (extent.e_lblk < pb->next_lblock)
+				problem = PR_1_EXTENT_COLLISION;
+			else if (extent.e_lblk + extent.e_len > pb->next_lblock)
+				pb->next_lblock = extent.e_lblk + extent.e_len;
+		}
 
 		/*
 		 * Uninitialized blocks in a directory?  Clear the flag and
@@ -2963,13 +2975,7 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 	memset(pb->eti.ext_info, 0, sizeof(pb->eti.ext_info));
 	pb->eti.ino = pb->ino;
 
-	pb->region = region_create(0, info.max_lblk);
-	if (!pb->region) {
-		ext2fs_extent_free(ehandle);
-		fix_problem(ctx, PR_1_EXTENT_ALLOC_REGION_ABORT, pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
+	pb->next_lblock = 0;
 
 	eof_lblk = ((EXT2_I_SIZE(inode) + fs->blocksize - 1) >>
 		EXT2_BLOCK_SIZE_BITS(fs->super)) - 1;
@@ -2982,8 +2988,6 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 				   "check_blocks_extents");
 		pctx->errcode = 0;
 	}
-	region_free(pb->region);
-	pb->region = NULL;
 	ext2fs_extent_free(ehandle);
 
 	/* Rebuild unless it's a dir and we're rehashing it */
