@@ -36,7 +36,7 @@ Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
 
 Package: e2fsprogs-l10n
 Priority: extra
-Depends: e2fsprogs (= ${binary:Version})
+Depends: e2fsprogs (= ${binary:Version}), ${misc:Depends}
 Replaces: e2fsprogs (<< 1.43.5-1)
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities - translations
