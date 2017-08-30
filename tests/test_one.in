@@ -63,6 +63,7 @@ fi
 rm -f $test_name.ok $test_name.failed
 #echo -e -n "$test_name: $test_description:\r"
 
+start=$SECONDS
 if [ -f $test_dir/script ]; then
 	. $test_dir/script
 else
@@ -73,6 +74,11 @@ else
 	else
 		echo "$test_name: Missing test script $default_script!"
 	fi
+fi
+elapsed=$((SECONDS - start))
+if [ $elapsed -gt 60 -a ! -f $test_dir/is_slow_test ]; then
+	echo "$test_name:  *** took $elapsed seconds to finish ***"
+	echo "$test_name:  consider adding $test_dir/is_slow_test"
 fi
 
 if [ "$SKIP_UNLINK" != "true" ] ; then
