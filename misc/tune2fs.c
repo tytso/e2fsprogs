@@ -929,8 +929,10 @@ static void rewrite_inodes(ext2_filsys fs)
 			if (!ino)
 				break;
 
-			if (pass == 1 && (inode->i_flags & EXT4_EA_INODE_FL) ||
-			    pass == 2 && !(inode->i_flags & EXT4_EA_INODE_FL))
+			if (((pass == 1) &&
+			     (inode->i_flags & EXT4_EA_INODE_FL)) ||
+			    ((pass == 2) &&
+			     !(inode->i_flags & EXT4_EA_INODE_FL)))
 				rewrite_one_inode(&ctx, ino, inode);
 		} while (ino);
 
