@@ -22,11 +22,12 @@ DEB_HOST_OS		?= $(shell dpkg-architecture -qDEB_HOST_OS)
 DEB_HOST_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+DEB_HOST_ARCH_OS	?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 
 # Allow distro-specific behaviour
 DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
 
-ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu)
+ifeq ($(DEB_HOST_ARCH_OS), hurd)
 SKIP_FUSE2FS=yes
 endif
 
@@ -180,12 +181,6 @@ else
 M4_ARGS+=-UUDEB_PKGS
 endif
 
-ifeq ($(SKIP_FUSE2FS),)
-M4_ARGS+=-DFUSE2FS
-else
-M4_ARGS+=-UFUSE2FS
-endif
-
 debian-files: debian/control
 
 mrproper: clean
@@ -333,7 +328,7 @@ ifneq ($(BUILD_E2FSCK_STATIC),no)
 	cp ${mandir}/man8/e2fsck.8 ${mandir}/man8/e2fsck.static.8
 endif
 
-ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu) 
+ifeq ($(DEB_HOST_ARCH_OS), hurd)
 	${INSTALL} -m 0644 misc/mke2fs-hurd.conf ${tmpdir}/etc/mke2fs.conf
 endif
 

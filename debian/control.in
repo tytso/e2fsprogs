@@ -6,7 +6,6 @@ Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any
 Standards-Version: 4.0.0
 Homepage: http://e2fsprogs.sourceforge.net
 
-ifdef(`FUSE2FS',``
 Package: fuse2fs
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -15,7 +14,6 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
  fuse2fs is a FUSE file system client that supports reading and
  writing from devices or image files containing ext2, ext3, and ext4
  file systems.
-'')dnl
 
 ifdef(`E2FSCK_STATIC',``
 Package: e2fsck-static
