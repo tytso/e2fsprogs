@@ -364,10 +364,22 @@ install-udeb: build
 		ln -sf mke2fs mkfs.ext2 ; ln -sf mke2fs mkfs.ext3 ; \
 		ln -sf mke2fs mkfs.ext4)
 
-binary-indep: 
-  # no arch-independant debs.
+binary-indep: install
+	dh_testdir
+	dh_testroot
+	dh_lintian -i
+	dh_installchangelogs -i
+	dh_fixperms -i
+	dh_compress -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
 
-binary-arch: DH_OPTIONS= -a
+# binary-arch builds a superset of binary-indep.  This is because
+# building e2fsprogs-l10n.deb unnecessarily takes less time than
+# running the install recipe twice.  At some point when we rototill
+# the rules file we can clean this up in a better way.
 binary-arch: install $(INSTALL_UDEB)
 	dh_testdir
 	dh_testroot
@@ -470,7 +482,9 @@ endif
 	dh_md5sums
 	dh_builddeb
 
-binary: binary-indep binary-arch
+# binary-arch builds a superset of binary-indep.  See the comment
+# before the binary-arch rule for more details.
+binary: binary-arch
 
 .PHONY: binary binary-arch binary-indep clean checkroot mrproper \
 	debug_flags debian-files

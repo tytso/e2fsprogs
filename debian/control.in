@@ -38,7 +38,7 @@ Package: e2fsprogs-l10n
 Priority: extra
 Depends: e2fsprogs (= ${binary:Version}), ${misc:Depends}
 Replaces: e2fsprogs (<< 1.43.5-1)
-Architecture: any
+Architecture: all
 Description: ext2/ext3/ext4 file system utilities - translations
  The ext2, ext3 and ext4 file systems are successors of the original ext
  ("extended") file system. They are the main file system types used for
