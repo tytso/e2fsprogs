@@ -153,7 +153,8 @@ Package: e2fsprogs
 Essential: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static, e2fsprogs-l10n
+Suggests: gpart, parted, fuse2fs, e2fsck-static
+Recommends: e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities
  The ext2, ext3 and ext4 file systems are successors of the original ext
