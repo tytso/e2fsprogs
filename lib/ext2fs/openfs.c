@@ -122,6 +122,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	char		*dest, *cp;
 	int		group_zero_adjust = 0;
 	int		inode_size;
+	__u64		groups_cnt;
 #ifdef WORDS_BIGENDIAN
 	unsigned int	groups_per_block;
 	struct ext2_group_desc *gdp;
@@ -371,9 +372,14 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
-	fs->group_desc_count = ext2fs_div64_ceil(ext2fs_blocks_count(fs->super) -
-						 fs->super->s_first_data_block,
-						 blocks_per_group);
+	groups_cnt = ext2fs_div64_ceil(ext2fs_blocks_count(fs->super) -
+				       fs->super->s_first_data_block,
+				       blocks_per_group);
+	if (groups_cnt >> 32) {
+		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
+	}
+	fs->group_desc_count = 	groups_cnt;
 	if (fs->group_desc_count * EXT2_INODES_PER_GROUP(fs->super) !=
 	    fs->super->s_inodes_count) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
