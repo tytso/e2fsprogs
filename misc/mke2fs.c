@@ -2869,7 +2869,7 @@ int main (int argc, char *argv[])
 	if (ext2fs_has_feature_csum_seed(fs->super) &&
 	    !ext2fs_has_feature_metadata_csum(fs->super)) {
 		printf("%s", _("The metadata_csum_seed feature "
-			       "requres the metadata_csum feature.\n"));
+			       "requires the metadata_csum feature.\n"));
 		exit(1);
 	}
 
