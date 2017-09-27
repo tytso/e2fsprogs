@@ -89,6 +89,7 @@ cc_library {
     ],
     shared_libs: [
         "libsparse",
+        "libz",
     ],
     whole_static_libs: [
         "libext2_com_err"
@@ -101,7 +102,6 @@ cc_library {
     ],
     target: {
         host: {
-            shared_libs: ["libz-host"],
             // Consider removing this library as a whole for the host. It is not
             // in the android side.
             whole_static_libs: ["libext2_com_err"],
@@ -110,7 +110,6 @@ cc_library {
             shared_libs: [
                 "libext2_com_err",
                 "libext2_uuid",
-                "libz"
             ],
         },
         windows: {

@@ -61,14 +61,6 @@ cc_binary {
         "libext2fs",
         "libext2_com_err",
         "libsparse",
+        "libz",
     ],
-
-    target: {
-        host: {
-            shared_libs: ["libz-host"],
-        },
-        android: {
-            shared_libs: ["libz"],
-        },
-    },
 }
