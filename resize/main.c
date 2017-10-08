@@ -422,7 +422,7 @@ int main (int argc, char ** argv)
 	 * unless the user is forcing it.
 	 *
 	 * We do ERROR and VALID checks even if we're only printing the
-	 * minimimum size, because traversal of a badly damaged filesystem
+	 * minimum size, because traversal of a badly damaged filesystem
 	 * can cause issues as well.  We don't require it to be fscked after
 	 * the last mount time in this case, though, as this is a bit less
 	 * risky.

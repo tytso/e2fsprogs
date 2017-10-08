@@ -4,7 +4,7 @@
  * Copyright (C) 1997, 1998 by Theodore Ts'o and
  * 	PowerQuest, Inc.
  *
- * Copyright (C) 1999, 2000 by Theosore Ts'o
+ * Copyright (C) 1999, 2000 by Theodore Ts'o
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -80,7 +80,7 @@ static int is_inode_tb(ext2_filsys fs, unsigned int grp, blk64_t blk)
 		      fs->inode_blocks_per_group);
 }
 
-/* Some bigalloc helper macros which are more succint... */
+/* Some bigalloc helper macros which are more succinct... */
 #define B2C(x)	EXT2FS_B2C(fs, (x))
 #define C2B(x)	EXT2FS_C2B(fs, (x))
 #define EQ_CLSTR(x, y) (B2C(x) == B2C(y))
@@ -578,7 +578,7 @@ out:
 }
 
 /*
- * Clean up the bitmaps for unitialized bitmaps
+ * Clean up the bitmaps for uninitialized bitmaps
  */
 static void fix_uninit_block_bitmaps(ext2_filsys fs)
 {
@@ -932,7 +932,7 @@ retry:
 	/*
 	 * If we changed the number of block_group descriptor blocks,
 	 * we need to make sure they are all marked as reserved in the
-	 * file systems's block allocation map.
+	 * filesystem's block allocation map.
 	 */
 	for (i = 0; i < old_fs->group_desc_count; i++)
 		ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
@@ -1503,7 +1503,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 
 		/*
 		 * For those structures that have changed, we need to
-		 * do bookkeepping.
+		 * do bookkeeping.
 		 */
 		if (ext2fs_block_bitmap_loc(old_fs, i) !=
 		    (blk = ext2fs_block_bitmap_loc(fs, i))) {
@@ -2783,7 +2783,7 @@ static int calc_group_overhead(ext2_filsys fs, blk64_t grp,
 
 
 /*
- * calcluate the minimum number of blocks the given fs can be resized to
+ * calculate the minimum number of blocks the given fs can be resized to
  */
 blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 {
@@ -2876,7 +2876,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 #endif
 
 	/*
-	 * if we need more group descriptors in order to accomodate our data
+	 * if we need more group descriptors in order to accommodate our data
 	 * then we need to add them here
 	 */
 	blks_needed = data_needed;

@@ -321,7 +321,7 @@ static errcode_t ext2fs_inline_data_convert_dir(ext2_filsys fs, ext2_ino_t ino,
 	dir->name[1] = '.';
 
 	/*
-	 * Ajust the last rec_len
+	 * Adjust the last rec_len
 	 */
 	offset = EXT2_DIR_REC_LEN(1) + EXT2_DIR_REC_LEN(2);
 	dir = (struct ext2_dir_entry *) (bbuf + offset);

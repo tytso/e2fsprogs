@@ -552,7 +552,7 @@ static int rb_remove_extent(__u64 start, __u64 count,
 			retval = 1;
 			continue;
 		} else {
-			/* modify the last extent in reigon to be removed */
+			/* modify the last extent in region to be removed */
 			ext->count -= ((start + count) - ext->start);
 			ext->start = start + count;
 			retval = 1;

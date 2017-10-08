@@ -33,7 +33,7 @@
  * This routine searches for free blocks that can allocate a full
  * group of bitmaps or inode tables for a flexbg group.  Returns the
  * block number with a correct offset were the bitmaps and inode
- * tables can be allocated continously and in order.
+ * tables can be allocated continuously and in order.
  */
 static blk64_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 			     ext2fs_block_bitmap bmap, int rem_grp,

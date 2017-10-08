@@ -302,7 +302,7 @@ static void print_bitmap_problem(e2fsck_t ctx, problem_t problem,
 	pctx->ino = pctx->ino2 = 0;
 }
 
-/* Just to be more succint */
+/* Just to be more succinct */
 #define B2C(x)	EXT2FS_B2C(fs, (x))
 #define EQ_CLSTR(x, y) (B2C(x) == B2C(y))
 #define LE_CLSTR(x, y) (B2C(x) <= B2C(y))

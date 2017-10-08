@@ -304,7 +304,7 @@ install: cleanup install-std
 
 # This rule allows to factorize the dh_clean between the 2 install rules
 # This must be launched before install-* (if launching them by hand, for
-# exemple) or results are unpredictable
+# example) or results are unpredictable
 cleanup:
 	dh_testdir
 	dh_testroot

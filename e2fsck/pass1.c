@@ -29,7 +29,7 @@
  *
  * Pass 1 is designed to stash away enough information so that the
  * other passes should not need to read in the inode information
- * during the normal course of a filesystem check.  (Althogh if an
+ * during the normal course of a filesystem check.  (Although if an
  * inconsistency is detected, other passes may need to read in an
  * inode to fix it.)
  *
@@ -1581,7 +1581,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			/*
 			 * Make sure the root inode is a directory; if
 			 * not, offer to clear it.  It will be
-			 * regnerated in pass #3.
+			 * regenerated in pass #3.
 			 */
 			if (!LINUX_S_ISDIR(inode->i_mode)) {
 				if (fix_problem(ctx, PR_1_ROOT_NO_DIR, &pctx))
@@ -3948,7 +3948,7 @@ static void mark_table_blocks(e2fsck_t ctx)
 }
 
 /*
- * Thes subroutines short circuits ext2fs_get_blocks and
+ * These subroutines short circuits ext2fs_get_blocks and
  * ext2fs_check_directory; we use them since we already have the inode
  * structure, so there's no point in letting the ext2fs library read
  * the inode again.

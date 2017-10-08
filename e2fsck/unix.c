@@ -1214,7 +1214,7 @@ static errcode_t e2fsck_check_mmp(ext2_filsys fs, e2fsck_t ctx)
 	if (retval)
 		goto check_error;
 
-	/* Print warning if e2fck will wait for more than 20 secs. */
+	/* Print warning if e2fsck will wait for more than 20 secs. */
 	if (verbose || wait_time > EXT4_MMP_MIN_CHECK_INTERVAL * 4) {
 		log_out(ctx, _("MMP interval is %u seconds and total wait "
 			       "time is %u seconds. Please wait...\n"),

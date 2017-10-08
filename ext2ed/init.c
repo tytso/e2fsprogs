@@ -57,7 +57,7 @@ int init (void)
 
 	general_commands.last_command=-1;	/* No commands whatsoever meanwhile */
 	ext2_commands.last_command=-1;
-	add_general_commands ();		/* Add the general commands, aviable always */
+	add_general_commands ();		/* Add the general commands, available always */
 	device_handle=NULL;			/* Notice that our device is still not set up */
 	device_offset=-1;
 	current_type=NULL;			/* No filesystem specific types yet */

@@ -84,7 +84,7 @@ int region_allocate(region_t region, region_addr_t start, int n)
 
 	/*
 	 * Search through the linked list.  If we find that it
-	 * conflicts witih something that's already allocated, return
+	 * conflicts with something that's already allocated, return
 	 * 1; if we can find an existing region which we can grow, do
 	 * so.  Otherwise, stop when we find the appropriate place
 	 * insert a new region element into the linked list.
