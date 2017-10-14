@@ -107,7 +107,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	/*
 	 * Allocate the block and inode bitmaps, if necessary
 	 */
-	if (fs->stride) {
+	if (fs->stride && !flexbg_size) {
 		retval = ext2fs_get_free_blocks2(fs, group_blk, last_blk,
 						 1, bmap, &start_blk);
 		if (retval)
