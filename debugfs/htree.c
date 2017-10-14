@@ -339,7 +339,7 @@ void do_dx_hash(int argc, char *argv[])
 	err = ext2fs_dirhash(hash_version, argv[optind], strlen(argv[optind]),
 			     hash_seed, &hash, &minor_hash);
 	if (err) {
-		com_err(argv[0], err, "while caclulating hash");
+		com_err(argv[0], err, "while calculating hash");
 		return;
 	}
 	printf("Hash of %s is 0x%0x (minor 0x%0x)\n", argv[optind],

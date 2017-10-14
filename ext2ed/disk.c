@@ -86,7 +86,7 @@ If logging is enabled, we log the change before writing it to the device.
 	char temp [80];
 
 	if (!write_access) {
-		wprintw (command_win,"Error - Write access not aviable (use enablewrite)\n");
+		wprintw (command_win,"Error - Write access not available (use enablewrite)\n");
 		return (0);
 	}
 
