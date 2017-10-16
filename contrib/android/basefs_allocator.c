@@ -55,7 +55,7 @@ errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
 	allocator->cur_entry = NULL;
 	allocator->entries = entries;
 
-	/* Overhide the default allocator */
+	/* Override the default allocator */
 	fs->get_alloc_block2 = basefs_block_allocator;
 	fs->priv_data = allocator;
 
