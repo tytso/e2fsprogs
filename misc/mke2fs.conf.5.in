@@ -384,7 +384,7 @@ This relation indicates whether file systems with the
 feature enabled should be created with 0, 1, or 2 backup superblocks.
 .TP
 .I packed_meta_blocks
-This boolean relation specifes whether the allocation bitmaps, inode
+This boolean relation specifies whether the allocation bitmaps, inode
 table, and journal should be located at the beginning of the file system.
 .TP
 .I inode_ratio

@@ -118,7 +118,7 @@ DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR)
 
 COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../lib/et/et ../lib/et/compile_et
 
-# This nastyness is needed because of jfs_user.h hackery; when we finally
+# This nastiness is needed because of jfs_user.h hackery; when we finally
 # clean up this mess, we should be able to drop it
 JOURNAL_CFLAGS = -I$(srcdir)/../e2fsck $(ALL_CFLAGS) -DDEBUGFS
 DEPEND_CFLAGS = -I$(top_srcdir)/e2fsck

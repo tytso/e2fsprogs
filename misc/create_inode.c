@@ -33,7 +33,7 @@
 #include "create_inode.h"
 #include "support/nls-enable.h"
 
-/* 64KiB is the minimium blksize to best minimize system call overhead. */
+/* 64KiB is the minimum blksize to best minimize system call overhead. */
 #define COPY_FILE_BUFLEN	65536
 
 static int ext2_file_type(unsigned int mode)

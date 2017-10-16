@@ -224,7 +224,7 @@ static void print_time(FILE *f, time_t t)
 	static int		do_gmt = -1;
 
 #ifdef __dietlibc__
-		/* The diet libc doesn't respect the TZ environemnt variable */
+		/* The diet libc doesn't respect the TZ environment variable */
 		if (do_gmt == -1) {
 			time_str = getenv("TZ");
 			if (!time_str)

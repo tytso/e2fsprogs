@@ -5,7 +5,7 @@ top_builddir = ../..
 my_dir = lib/ext2fs
 INSTALL = @INSTALL@
 DEPEND_CFLAGS = -I$(top_srcdir)/debugfs -I$(srcdir)/../../e2fsck -DDEBUGFS
-# This nastyness is needed because of jfs_user.h hackery; when we finally
+# This nastiness is needed because of jfs_user.h hackery; when we finally
 # clean up this mess, we should be able to drop it
 DEBUGFS_CFLAGS = -I$(srcdir)/../../e2fsck $(ALL_CFLAGS) -DDEBUGFS
 

@@ -1109,7 +1109,7 @@ static int update_refcount(int fd, struct ext2_qcow2_image *img,
 	/*
 	 * We are relying on the fact that we are creating the qcow2
 	 * image sequentially, hence we will always allocate refcount
-	 * block items sequentialy.
+	 * block items sequentially.
 	 */
 	ref->refcount_block[ref->refcount_block_index] = ext2fs_cpu_to_be16(1);
 	ref->refcount_block_index++;

@@ -226,7 +226,7 @@ Clear the contents of the inode
 .IR filespec .
 .TP
 .BI copy_inode " source_inode destination_inode"
-Copy the conents of the inode structure in
+Copy the contents of the inode structure in
 .I source_inode
 and use it to overwrite the inode structure at
 .IR destination_inode .

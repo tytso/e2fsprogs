@@ -46,7 +46,7 @@ STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBSS) \
 		$(DEPSTATIC_LIBCOM_ERR) $(DEPSTATIC_LIBUUID) \
 		$(DEPSTATIC_LIBE2P)
 
-# This nastyness is needed because of jfs_user.h hackery; when we finally
+# This nastiness is needed because of jfs_user.h hackery; when we finally
 # clean up this mess, we should be able to drop it
 LOCAL_CFLAGS = -I$(srcdir)/../e2fsck -DDEBUGFS
 DEPEND_CFLAGS = -I$(srcdir)

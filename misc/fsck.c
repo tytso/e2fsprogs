@@ -997,7 +997,7 @@ static int check_all(NOARGS)
 	}
 	/*
 	 * This is for the bone-headed user who enters the root
-	 * filesystem twice.  Skip root will skep all root entries.
+	 * filesystem twice.  Skip root will skip all root entries.
 	 */
 	if (skip_root)
 		for (fs = filesys_info; fs; fs = fs->next)

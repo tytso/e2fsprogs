@@ -178,17 +178,17 @@ relation.
 This relation contains an alternate directory that will be used if the
 directory specified by
 .I log_dir
-is not available or is not writeable.
+is not available or is not writable.
 .TP
 .I log_dir_wait
 If this boolean relation is true, them if the directories specified by
 .I log_dir
 or
 .I log_dir_fallback
-are not available or are not yet writeable, e2fsck will save the output
+are not available or are not yet writable, e2fsck will save the output
 in a memory buffer, and a child process will periodically test to see if
 the log directory has become available after the boot sequence has
-mounted the requiste file system for reading/writing.  This implements the
+mounted the requested file system for reading/writing.  This implements the
 functionality provided by
 .BR logsave (8)
 for e2fsck log files.
@@ -413,7 +413,7 @@ The name of the user running e2fsck.
 .B %U
 This percent expression does not expand to anything, but it signals that
 any following date or time expressions should be expressed in UTC time
-instead of the local timzeone.
+instead of the local timezone.
 .TP
 .B %y
 The last two digits of the current year (00..99)
