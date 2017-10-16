@@ -1602,7 +1602,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 }
 
 /*
- * This fuction deallocates an inode
+ * This function deallocates an inode
  */
 static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 {
@@ -1672,7 +1672,7 @@ clear_inode:
 }
 
 /*
- * This fuction clears the htree flag on an inode
+ * This function clears the htree flag on an inode
  */
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino)
 {

@@ -12,7 +12,7 @@ GZIP=gzip
 
 #
 # This hack is needed because texi2dvi blows up horribly if there are 
-# any '~' chracters in the directory pathname.  So we kludge around it by
+# any '~' characters in the directory pathname.  So we kludge around it by
 # using a non-standard directory name for WIP releases.  dpkg-source
 # complains, but life goes on.
 #

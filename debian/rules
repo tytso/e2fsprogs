@@ -22,11 +22,12 @@ DEB_HOST_OS		?= $(shell dpkg-architecture -qDEB_HOST_OS)
 DEB_HOST_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_MULTIARCH	?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+DEB_HOST_ARCH_OS	?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 
 # Allow distro-specific behaviour
 DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
 
-ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu)
+ifeq ($(DEB_HOST_ARCH_OS), hurd)
 SKIP_FUSE2FS=yes
 endif
 
@@ -180,12 +181,6 @@ else
 M4_ARGS+=-UUDEB_PKGS
 endif
 
-ifeq ($(SKIP_FUSE2FS),)
-M4_ARGS+=-DFUSE2FS
-else
-M4_ARGS+=-UFUSE2FS
-endif
-
 debian-files: debian/control
 
 mrproper: clean
@@ -309,7 +304,7 @@ install: cleanup install-std
 
 # This rule allows to factorize the dh_clean between the 2 install rules
 # This must be launched before install-* (if launching them by hand, for
-# exemple) or results are unpredictable
+# example) or results are unpredictable
 cleanup:
 	dh_testdir
 	dh_testroot
@@ -333,7 +328,7 @@ ifneq ($(BUILD_E2FSCK_STATIC),no)
 	cp ${mandir}/man8/e2fsck.8 ${mandir}/man8/e2fsck.static.8
 endif
 
-ifeq ($(DEB_BUILD_GNU_SYSTEM), gnu) 
+ifeq ($(DEB_HOST_ARCH_OS), hurd)
 	${INSTALL} -m 0644 misc/mke2fs-hurd.conf ${tmpdir}/etc/mke2fs.conf
 endif
 
@@ -364,10 +359,22 @@ install-udeb: build
 		ln -sf mke2fs mkfs.ext2 ; ln -sf mke2fs mkfs.ext3 ; \
 		ln -sf mke2fs mkfs.ext4)
 
-binary-indep: 
-  # no arch-independant debs.
+binary-indep: install
+	dh_testdir
+	dh_testroot
+	dh_lintian -i
+	dh_installchangelogs -i
+	dh_fixperms -i
+	dh_compress -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
 
-binary-arch: DH_OPTIONS= -a
+# binary-arch builds a superset of binary-indep.  This is because
+# building e2fsprogs-l10n.deb unnecessarily takes less time than
+# running the install recipe twice.  At some point when we rototill
+# the rules file we can clean this up in a better way.
 binary-arch: install $(INSTALL_UDEB)
 	dh_testdir
 	dh_testroot
@@ -388,7 +395,7 @@ binary-arch: install $(INSTALL_UDEB)
 	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc
 	ln -sf e2fslibs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
 
-	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+	dh_installdocs -Ne2fsprogs-udeb
 
   # HTML docs
 	$(INSTALL) -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
@@ -454,8 +461,7 @@ ifeq ($(SKIP_FUSE2FS),)
 		-u"-Ldebian/e2fsprogs.shlibs.local"
 endif
 
-	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
-		-Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+	dh_gencontrol -Ncomerr-dev -Nss-dev -Ne2fsprogs-udeb
 	DH_OPTIONS= dh_gencontrol -pcomerr-dev \
 	  -u '-v${COMERR_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -pss-dev \
@@ -470,7 +476,9 @@ endif
 	dh_md5sums
 	dh_builddeb
 
-binary: binary-indep binary-arch
+# binary-arch builds a superset of binary-indep.  See the comment
+# before the binary-arch rule for more details.
+binary: binary-arch
 
 .PHONY: binary binary-arch binary-indep clean checkroot mrproper \
 	debug_flags debian-files

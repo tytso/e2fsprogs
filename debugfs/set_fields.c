@@ -430,7 +430,7 @@ static struct field_set_info *find_field(struct field_set_info *fields,
 
 /*
  * Note: info->size == 6 is special; this means a base size 4 bytes,
- * and secondiory (high) size of 2 bytes.  This is needed for the
+ * and secondary (high) size of 2 bytes.  This is needed for the
  * special case of i_blocks_high and i_file_acl_high.
  */
 static errcode_t parse_uint(struct field_set_info *info, char *field,

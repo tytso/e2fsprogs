@@ -433,7 +433,7 @@ be smaller than the blocksize of the filesystem, since in that case more
 inodes would be made than can ever be used.  Be warned that it is not
 possible to change this ratio on a filesystem after it is created, so be
 careful deciding the correct value for this parameter.  Note that resizing
-a filesystem changes the numer of inodes to maintain this ratio.
+a filesystem changes the number of inodes to maintain this ratio.
 .TP
 .BI \-I " inode-size"
 Specify the size of each inode in bytes.

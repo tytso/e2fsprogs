@@ -735,7 +735,7 @@ int check_for_modules(const char *fs_name)
 
 /*
  * Helper function that does the right thing if write returns a
- * partial write, or an EGAIN/EINTR error.
+ * partial write, or an EAGAIN/EINTR error.
  */
 int write_all(int fd, char *buf, size_t count)
 {

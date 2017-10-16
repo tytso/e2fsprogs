@@ -32,9 +32,6 @@ fi
 
 test_name=`echo $test_dir | sed -e 's;.*/;;'`
 
-TMPFILE=$(mktemp ${TMPDIR:-/tmp}/e2fsprogs-tmp-$test_name.XXXXXX)
-trap 'rm -f $TMPFILE ; exit' 1 2 15
-
 if [ -f $test_dir ] ; then
 	exit 0;
 fi
@@ -53,6 +50,9 @@ fi
 
 rm -f $test_name.ok $test_name.failed
 #echo -e -n "$test_name: $test_description:\r"
+
+TMPFILE=$(mktemp ${TMPDIR:-/tmp}/e2fsprogs-tmp-$test_name.XXXXXX)
+trap 'rm -f $TMPFILE ; exit' 1 2 15
 
 if [ -f $test_dir/script ]; then
 	. $test_dir/script

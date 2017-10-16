@@ -465,9 +465,6 @@ static void request_fsck_afterwards(ext2_filsys fs)
 
 static void convert_64bit(ext2_filsys fs, int direction)
 {
-	if (!direction)
-		return;
-
 	/*
 	 * Is resize2fs going to demand a fsck run? Might as well tell the
 	 * user now.
@@ -3238,7 +3235,9 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		if (err) {
 			com_err("tune2fs", err, "while recovering journal.\n");
 			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
-			goto closefs;
+			if (fs)
+				ext2fs_close_free(&fs);
+			exit(1);
 		}
 		ext2fs_clear_feature_journal_needs_recovery(fs->super);
 		ext2fs_mark_super_dirty(fs);
@@ -3256,6 +3255,7 @@ closefs:
 #endif
 	}
 
-	convert_64bit(fs, feature_64bit);
+	if (feature_64bit)
+		convert_64bit(fs, feature_64bit);
 	return (ext2fs_close_free(&fs) ? 1 : 0);
 }

@@ -3759,7 +3759,7 @@ int main(int argc, char *argv[])
 		fctx.err_fp = fopen(logfile, "a");
 		if (!fctx.err_fp) {
 			perror(logfile);
-			goto out_nofs;
+			goto out;
 		}
 	} else
 		fctx.err_fp = stderr;
@@ -3780,7 +3780,7 @@ int main(int argc, char *argv[])
 	if (err) {
 		printf(_("%s: %s.\n"), fctx.device, error_message(err));
 		printf(_("Please run e2fsck -fy %s.\n"), fctx.device);
-		goto out_nofs;
+		goto out;
 	}
 	fctx.fs = global_fs;
 	global_fs->priv_data = &fctx;
@@ -3869,12 +3869,12 @@ int main(int argc, char *argv[])
 
 	ret = 0;
 out:
-	err = ext2fs_close(global_fs);
-	if (err)
-		com_err(argv[0], err, "while closing fs");
-	global_fs = NULL;
-out_nofs:
-
+	if (global_fs) {
+		err = ext2fs_close(global_fs);
+		if (err)
+			com_err(argv[0], err, "while closing fs");
+		global_fs = NULL;
+	}
 	return ret;
 }
 

@@ -124,8 +124,8 @@ else
 fi
 AC_USE_SYSTEM_EXTENSIONS
 dnl
-dnl Set default values for library extentions.  Will be dealt with after
-dnl parsing configuration opions, which may modify these
+dnl Set default values for library extensions.  Will be dealt with after
+dnl parsing configuration options, which may modify these
 dnl
 LIB_EXT=.a
 STATIC_LIB_EXT=.a
@@ -975,7 +975,7 @@ AC_CHECK_HEADERS(net/if.h,,,
 ]])
 AC_FUNC_VPRINTF
 dnl Check to see if dirent has member d_reclen. On cygwin those d_reclen
-dnl is not decleared.
+dnl is not declared.
 AC_CHECK_MEMBER(struct dirent.d_reclen,[AC_DEFINE(HAVE_RECLEN_DIRENT, 1,
 		       [Define to 1 if dirent has d_reclen])],,
 		[#include <dirent.h>])

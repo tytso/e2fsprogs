@@ -578,7 +578,7 @@ static void insert_key_into_keyring(const char *keyring, struct salt *salt)
 	 * We need to do this instead of simply adding the key to
 	 * KEY_SPEC_SESSION_KEYRING since trying to add a key to a
 	 * session keyring that does not yet exist will cause the
-	 * kernel to create a session keyring --- which wil then get
+	 * kernel to create a session keyring --- which will then get
 	 * garbage collected as soon as e4crypt exits.
 	 *
 	 * The fact that the keyctl system call and the add_key system

@@ -3,10 +3,9 @@ Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any], libattr1-dev, debhelper (>= 9.0), libblkid-dev, uuid-dev, m4
-Standards-Version: 4.0.0
+Standards-Version: 4.1.1
 Homepage: http://e2fsprogs.sourceforge.net
 
-ifdef(`FUSE2FS',``
 Package: fuse2fs
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -15,13 +14,12 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
  fuse2fs is a FUSE file system client that supports reading and
  writing from devices or image files containing ext2, ext3, and ext4
  file systems.
-'')dnl
 
 ifdef(`E2FSCK_STATIC',``
 Package: e2fsck-static
 Priority: optional
 Depends: ${misc:Depends}
-Recommends: sash | bash-static | zsh-static | busybox-static | zsh30-static
+Recommends: sash | bash-static | zsh-static | busybox-static
 Architecture: any
 Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
  This may be of some help to you if your filesystem gets corrupted enough
@@ -35,10 +33,11 @@ Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
 '')dnl
 
 Package: e2fsprogs-l10n
-Priority: extra
+Section: localization
+Priority: optional
 Depends: e2fsprogs (= ${binary:Version}), ${misc:Depends}
 Replaces: e2fsprogs (<< 1.43.5-1)
-Architecture: any
+Architecture: all
 Description: ext2/ext3/ext4 file system utilities - translations
  The ext2, ext3 and ext4 file systems are successors of the original ext
  ("extended") file system. They are the main file system types used for
@@ -62,7 +61,7 @@ Description: common error description library
 
 Package: comerr-dev
 Section: libdevel
-Priority: extra
+Priority: optional
 Depends: libc6-dev | libc-dev, libcomerr2 (= ${mainBinary}), ${misc:Depends}
 Suggests: doc-base
 Replaces: e2fslibs-dev (<< 1.33-2), libkrb5-dev (<< 1.3)
@@ -90,7 +89,7 @@ Description: command-line interface parsing library
 
 Package: ss-dev
 Section: libdevel
-Priority: extra
+Priority: optional
 Depends: libc6-dev | libc-dev, libss2 (= ${mainBinary}), comerr-dev, ${misc:Depends}
 Architecture: any
 Description: command-line interface parsing library - headers and static libraries
@@ -137,7 +136,7 @@ Description: ext2/ext3/ext4 file system libraries
 
 Package: e2fslibs-dev
 Section: libdevel
-Priority: extra
+Priority: optional
 Depends: libc6-dev | libc-dev, comerr-dev, e2fslibs (= ${binary:Version}), ${misc:Depends}
 Suggests: doc-base
 Provides: ext2fs-dev, e2p-dev
@@ -155,7 +154,8 @@ Package: e2fsprogs
 Essential: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static, e2fsprogs-l10n
+Suggests: gpart, parted, fuse2fs, e2fsck-static
+Recommends: e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities
  The ext2, ext3 and ext4 file systems are successors of the original ext

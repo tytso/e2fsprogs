@@ -70,7 +70,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU e2fsprogs 1.43.4\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2017-08-29 01:11-0400\n"
+"POT-Creation-Date: 2017-10-16 01:44-0400\n"
 "PO-Revision-Date: 2017-04-06 04:34+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
@@ -99,7 +99,7 @@ msgstr "приликом читања и-чвора лоших блокова"
 #: e2fsck/unix.c:1626 misc/badblocks.c:1251 misc/badblocks.c:1259
 #: misc/badblocks.c:1273 misc/badblocks.c:1285 misc/dumpe2fs.c:593
 #: misc/e2image.c:1401 misc/e2image.c:1585 misc/e2image.c:1606
-#: misc/mke2fs.c:230 misc/tune2fs.c:2726 misc/tune2fs.c:2820 resize/main.c:413
+#: misc/mke2fs.c:230 misc/tune2fs.c:2723 misc/tune2fs.c:2817 resize/main.c:413
 #, c-format
 msgid "while trying to open %s"
 msgstr "док сам покушавао да отворим „%s“"
@@ -3089,21 +3089,21 @@ msgstr "приликом покретања скенирања и-чвора"
 msgid "while doing inode scan"
 msgstr "приликом обављања скенирања и-чвора"
 
-#: e2fsck/super.c:190
+#: e2fsck/super.c:207
 #, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
 msgstr "приликом позивања „ext2fs_block_iterate“ за и-чвор „%d“"
 
-#: e2fsck/super.c:213
+#: e2fsck/super.c:230
 #, c-format
 msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
 msgstr "приликом позивања „ext2fs_adjust_ea_refcount2“ за и-чвор „%d“"
 
-#: e2fsck/super.c:274
+#: e2fsck/super.c:291
 msgid "Truncating"
 msgstr "Скраћујем"
 
-#: e2fsck/super.c:275
+#: e2fsck/super.c:292
 msgid "Clearing"
 msgstr "Чистим"
 
@@ -3319,7 +3319,7 @@ msgstr[0] "%12u датотека\n"
 msgstr[1] "%12u датотеке\n"
 msgstr[2] "%12u датотека\n"
 
-#: e2fsck/unix.c:235 misc/badblocks.c:1002 misc/tune2fs.c:2911 misc/util.c:126
+#: e2fsck/unix.c:235 misc/badblocks.c:1002 misc/tune2fs.c:2908 misc/util.c:126
 #: resize/main.c:353
 #, c-format
 msgid "while determining whether %s is mounted."
@@ -3496,7 +3496,7 @@ msgid "The -t option is not supported on this version of e2fsck.\n"
 msgstr "Опција „-t“ није подржана на овом издању „e2fsck“-а.\n"
 
 #: e2fsck/unix.c:912 e2fsck/unix.c:989 misc/e2initrd_helper.c:330
-#: misc/tune2fs.c:1631 misc/tune2fs.c:1926 misc/tune2fs.c:1944
+#: misc/tune2fs.c:1628 misc/tune2fs.c:1923 misc/tune2fs.c:1941
 #, c-format
 msgid "Unable to resolve '%s'"
 msgstr "Не могу да решим „%s“"
@@ -3558,7 +3558,7 @@ msgstr ""
 msgid "while checking MMP block"
 msgstr "приликом провере ММП блока"
 
-#: e2fsck/unix.c:1243 misc/tune2fs.c:2825
+#: e2fsck/unix.c:1243 misc/tune2fs.c:2822
 msgid ""
 "If you are sure the filesystem is not in use on any node, run:\n"
 "'tune2fs -f -E clear_mmp {device}'\n"
@@ -3572,8 +3572,8 @@ msgid "while reading MMP block"
 msgstr "приликом читања ММП блока"
 
 #: e2fsck/unix.c:1278 e2fsck/unix.c:1330 misc/e2undo.c:230 misc/e2undo.c:275
-#: misc/mke2fs.c:2567 misc/mke2fs.c:2618 misc/tune2fs.c:2643
-#: misc/tune2fs.c:2688 resize/main.c:187 resize/main.c:232
+#: misc/mke2fs.c:2567 misc/mke2fs.c:2618 misc/tune2fs.c:2640
+#: misc/tune2fs.c:2685 resize/main.c:187 resize/main.c:232
 #, c-format
 msgid ""
 "Overwriting existing filesystem; this can be undone using the command:\n"
@@ -3584,7 +3584,7 @@ msgstr ""
 "    e2undo %s %s\n"
 "\n"
 
-#: e2fsck/unix.c:1319 misc/e2undo.c:264 misc/mke2fs.c:2607 misc/tune2fs.c:2677
+#: e2fsck/unix.c:1319 misc/e2undo.c:264 misc/mke2fs.c:2607 misc/tune2fs.c:2674
 #: resize/main.c:221
 #, c-format
 msgid "while trying to delete %s"
@@ -4519,7 +4519,7 @@ msgstr "приликом читања суперблока дневника"
 msgid "Couldn't find journal superblock magic numbers"
 msgstr "Не могу да нађем чаробне бројеве суперблока дневника"
 
-#: misc/dumpe2fs.c:434 misc/mke2fs.c:786 misc/tune2fs.c:1963
+#: misc/dumpe2fs.c:434 misc/mke2fs.c:786 misc/tune2fs.c:1960
 msgid "Couldn't allocate memory to parse options!\n"
 msgstr "Не могу да доделим меморију да бих обрадио опције!\n"
 
@@ -4572,7 +4572,7 @@ msgstr ""
 "„e2fsck“!\n"
 "\n"
 
-#: misc/dumpe2fs.c:595 misc/e2image.c:1587 misc/tune2fs.c:2838
+#: misc/dumpe2fs.c:595 misc/e2image.c:1587 misc/tune2fs.c:2835
 #: resize/main.c:415
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Не могу да нађем исправан суперблок система датотека.\n"
@@ -4871,7 +4871,7 @@ msgstr "e2label: грешка читања суперблока\n"
 msgid "e2label: not an ext2 filesystem\n"
 msgstr "e2label: није систем датотека екст2\n"
 
-#: misc/e2label.c:97 misc/tune2fs.c:3011
+#: misc/e2label.c:97 misc/tune2fs.c:3008
 #, c-format
 msgid "Warning: label too long, truncating.\n"
 msgstr "Упозорење: натпис је предуг, скраћујем.\n"
@@ -4886,7 +4886,7 @@ msgstr "e2label: не могу опет да пређем на супербло�
 msgid "e2label: error writing superblock\n"
 msgstr "e2label: грешка писања суперблока\n"
 
-#: misc/e2label.c:117 misc/tune2fs.c:1623
+#: misc/e2label.c:117 misc/tune2fs.c:1620
 #, c-format
 msgid "Usage: e2label device [newlabel]\n"
 msgstr "Употреба: e2label уређај [нови_натпис]\n"
@@ -5222,7 +5222,7 @@ msgstr "%s: Омогућавам корисницима да доделе све
 msgid "%s: %s.\n"
 msgstr "%s: %s.\n"
 
-#: misc/fuse2fs.c:3782 misc/fuse2fs.c:3796 misc/tune2fs.c:3240
+#: misc/fuse2fs.c:3782 misc/fuse2fs.c:3796 misc/tune2fs.c:3237
 #, c-format
 msgid "Please run e2fsck -fy %s.\n"
 msgstr "Покрените „e2fsck -fy“ „%s“.\n"
@@ -5550,7 +5550,7 @@ msgstr "Неисправна величина описника: %s\n"
 msgid "Invalid offset: %s\n"
 msgstr "Неисправан померај: %s\n"
 
-#: misc/mke2fs.c:854 misc/tune2fs.c:1991
+#: misc/mke2fs.c:854 misc/tune2fs.c:1988
 #, c-format
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr "Неисправан период освежавања ммп-а: %s\n"
@@ -5660,7 +5660,7 @@ msgstr ""
 "Грешка синтаксе у датотеци подешавања „mke2fs“-а (%s, %d. ред)\n"
 "\t%s\n"
 
-#: misc/mke2fs.c:1115 misc/tune2fs.c:1012
+#: misc/mke2fs.c:1115 misc/tune2fs.c:1009
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr "Постављена је неисправна опција система датотека: %s\n"
@@ -5731,7 +5731,7 @@ msgstr "неисправна величина кластера — %s"
 msgid "'-R' is deprecated, use '-E' instead"
 msgstr "„-R“ је застарело, користите „-E“"
 
-#: misc/mke2fs.c:1615 misc/tune2fs.c:1720
+#: misc/mke2fs.c:1615 misc/tune2fs.c:1717
 #, c-format
 msgid "bad error behavior - %s"
 msgstr "лоше понашање грешке — %s"
@@ -6146,7 +6146,8 @@ msgstr ""
 "исправите.\n"
 
 #: misc/mke2fs.c:2871
-msgid "The metadata_csum_seed feature requres the metadata_csum feature.\n"
+#, fuzzy
+msgid "The metadata_csum_seed feature requires the metadata_csum feature.\n"
 msgstr "Функција „metadata_csum_seed“ захтеца функцију „metadata_csum“.\n"
 
 #: misc/mke2fs.c:2895
@@ -6190,7 +6191,7 @@ msgstr "приликом постављања на нулу блока %llu на
 msgid "while reserving blocks for online resize"
 msgstr "приликом резервисања блокова за промену величине на мрежи"
 
-#: misc/mke2fs.c:3140 misc/tune2fs.c:1428
+#: misc/mke2fs.c:3140 misc/tune2fs.c:1425
 msgid "journal"
 msgstr "дневник"
 
@@ -6209,7 +6210,7 @@ msgstr ""
 "\tприликом покушаја додавања дневника уређају „%s“"
 
 #: misc/mke2fs.c:3164 misc/mke2fs.c:3193 misc/mke2fs.c:3231
-#: misc/mk_hugefiles.c:596 misc/tune2fs.c:1457 misc/tune2fs.c:1476
+#: misc/mk_hugefiles.c:596 misc/tune2fs.c:1454 misc/tune2fs.c:1473
 msgid "done\n"
 msgstr "готово\n"
 
@@ -6230,7 +6231,7 @@ msgstr ""
 "\n"
 "\tприликом покушаја стварања дневника"
 
-#: misc/mke2fs.c:3201 misc/tune2fs.c:1077
+#: misc/mke2fs.c:3201 misc/tune2fs.c:1074
 msgid ""
 "\n"
 "Error while enabling multiple mount protection feature."
@@ -6388,12 +6389,12 @@ msgstr "Нисам нашао суперблок дневника!\n"
 msgid "while trying to open external journal"
 msgstr "приликом покушаја отварања спољног дневника"
 
-#: misc/tune2fs.c:285 misc/tune2fs.c:2734
+#: misc/tune2fs.c:285 misc/tune2fs.c:2731
 #, c-format
 msgid "%s is not a journal device.\n"
 msgstr "„%s“ није уређај дневника.\n"
 
-#: misc/tune2fs.c:295 misc/tune2fs.c:2745
+#: misc/tune2fs.c:295 misc/tune2fs.c:2742
 msgid "Filesystem's UUID not found on journal device.\n"
 msgstr "Нисам нашао УУИД система датотека на уређају дневника.\n"
 
@@ -6425,32 +6426,32 @@ msgstr "приликом писања и-чвора дневника"
 msgid "(and reboot afterwards!)\n"
 msgstr "(и после поново подигните систем!)\n"
 
-#: misc/tune2fs.c:481
+#: misc/tune2fs.c:478
 #, c-format
 msgid "After running e2fsck, please run `resize2fs %s %s"
 msgstr "Након што покренете „e2fsck“, покрените „resize2fs %s %s“"
 
-#: misc/tune2fs.c:484
+#: misc/tune2fs.c:481
 #, c-format
 msgid "Please run `resize2fs %s %s"
 msgstr "Покрените „resize2fs %s %s"
 
-#: misc/tune2fs.c:488
+#: misc/tune2fs.c:485
 #, c-format
 msgid " -z \"%s\""
 msgstr " -z „%s“"
 
-#: misc/tune2fs.c:490
+#: misc/tune2fs.c:487
 #, c-format
 msgid "' to enable 64-bit mode.\n"
 msgstr "“ да укључите 64-битни режим.\n"
 
-#: misc/tune2fs.c:492
+#: misc/tune2fs.c:489
 #, c-format
 msgid "' to disable 64-bit mode.\n"
 msgstr "“ да искључите 64-битни режим.\n"
 
-#: misc/tune2fs.c:979
+#: misc/tune2fs.c:976
 msgid ""
 "WARNING: Could not confirm kernel support for metadata_csum_seed.\n"
 "  This requires Linux >= v4.4.\n"
@@ -6458,17 +6459,17 @@ msgstr ""
 "УПОЗОРЕЊЕ: Не могу да потврдим подршку језгра за „metadata_csum_seed“.\n"
 "  Ово захтева Линукс >= v4.4.\n"
 
-#: misc/tune2fs.c:1015
+#: misc/tune2fs.c:1012
 #, c-format
 msgid "Clearing filesystem feature '%s' not supported.\n"
 msgstr "Брисање „%s“ функције система датотека није подржано.\n"
 
-#: misc/tune2fs.c:1021
+#: misc/tune2fs.c:1018
 #, c-format
 msgid "Setting filesystem feature '%s' not supported.\n"
 msgstr "Постављање „%s“ функције система датотека није подржано.\n"
 
-#: misc/tune2fs.c:1030
+#: misc/tune2fs.c:1027
 msgid ""
 "The has_journal feature may only be cleared when the filesystem is\n"
 "unmounted or mounted read-only.\n"
@@ -6476,7 +6477,7 @@ msgstr ""
 "Функција „has_journal“ може бити очишћена само када је систем датотека\n"
 "откачен или прикачен само за читање.\n"
 
-#: misc/tune2fs.c:1038
+#: misc/tune2fs.c:1035
 msgid ""
 "The needs_recovery flag is set.  Please run e2fsck before clearing\n"
 "the has_journal flag.\n"
@@ -6484,7 +6485,7 @@ msgstr ""
 "Заставица „needs_recovery“ је постављена. Покрените „e2fsck“ пре\n"
 "брисања заставице „has_journal“.\n"
 
-#: misc/tune2fs.c:1056
+#: misc/tune2fs.c:1053
 msgid ""
 "Setting filesystem feature 'sparse_super' not supported\n"
 "for filesystems with the meta_bg feature enabled.\n"
@@ -6492,7 +6493,7 @@ msgstr ""
 "Постављање „sparse_super“ функције система датотека није подржано\n"
 "за системе датотека са укљученом функцијом „meta_bg“.\n"
 
-#: misc/tune2fs.c:1069
+#: misc/tune2fs.c:1066
 msgid ""
 "The multiple mount protection feature can't\n"
 "be set if the filesystem is mounted or\n"
@@ -6502,14 +6503,14 @@ msgstr ""
 "бити постављена ако је систем датотека прикачен\n"
 "или само за читање.\n"
 
-#: misc/tune2fs.c:1087
+#: misc/tune2fs.c:1084
 #, c-format
 msgid "Multiple mount protection has been enabled with update interval %ds.\n"
 msgstr ""
 "Заштита од вишеструког качења је била укључена са периодом освежавања од %d "
 "сек.\n"
 
-#: misc/tune2fs.c:1096
+#: misc/tune2fs.c:1093
 msgid ""
 "The multiple mount protection feature cannot\n"
 "be disabled if the filesystem is readonly.\n"
@@ -6517,20 +6518,20 @@ msgstr ""
 "Функција заштите од вишеструког качења не може бити\n"
 "искључена ако је систем датотека само за читање.\n"
 
-#: misc/tune2fs.c:1104
+#: misc/tune2fs.c:1101
 msgid "Error while reading bitmaps\n"
 msgstr "Грешка приликом читања битмапа\n"
 
-#: misc/tune2fs.c:1113
+#: misc/tune2fs.c:1110
 #, c-format
 msgid "Magic number in MMP block does not match. expected: %x, actual: %x\n"
 msgstr "Магични број у ММП блоку не одговара. очекиван: %x, стваран: %x\n"
 
-#: misc/tune2fs.c:1118
+#: misc/tune2fs.c:1115
 msgid "while reading MMP block."
 msgstr "приликом читања ММП блока."
 
-#: misc/tune2fs.c:1150
+#: misc/tune2fs.c:1147
 msgid ""
 "Clearing the flex_bg flag would cause the the filesystem to be\n"
 "inconsistent.\n"
@@ -6538,7 +6539,7 @@ msgstr ""
 "Брисање заставице „flex_bg“ ће довести до недоследности\n"
 "система датотека.\n"
 
-#: misc/tune2fs.c:1161
+#: misc/tune2fs.c:1158
 msgid ""
 "The huge_file feature may only be cleared when the filesystem is\n"
 "unmounted or mounted read-only.\n"
@@ -6546,15 +6547,15 @@ msgstr ""
 "Функција „huge_file“ може бити очишћена само када је систем датотека\n"
 "откачен или прикачен само за читање.\n"
 
-#: misc/tune2fs.c:1172
+#: misc/tune2fs.c:1169
 msgid "Enabling checksums could take some time."
 msgstr "Укључивање сума провере може потрајати."
 
-#: misc/tune2fs.c:1174
+#: misc/tune2fs.c:1171
 msgid "Cannot enable metadata_csum on a mounted filesystem!\n"
 msgstr "Не могу да укључим „metadata_csum“ на прикаченом систему датотека!\n"
 
-#: misc/tune2fs.c:1180
+#: misc/tune2fs.c:1177
 msgid ""
 "Extents are not enabled.  The file extent tree can be checksummed, whereas "
 "block maps cannot.  Not enabling extents reduces the coverage of metadata "
@@ -6565,7 +6566,7 @@ msgstr ""
 "метаподатака током суме провере.  Поново покрените са „-O“ распоном да "
 "исправите.\n"
 
-#: misc/tune2fs.c:1187
+#: misc/tune2fs.c:1184
 msgid ""
 "64-bit filesystem support is not enabled.  The larger fields afforded by "
 "this feature enable full-strength checksumming.  Run resize2fs -b to "
@@ -6575,30 +6576,30 @@ msgstr ""
 "функцијом укључују свеобухватну суму проевере.  Покрените „resize2fs -b“ да "
 "исправите.\n"
 
-#: misc/tune2fs.c:1213
+#: misc/tune2fs.c:1210
 msgid "Disabling checksums could take some time."
 msgstr "Искључивање сума провере може потрајати."
 
-#: misc/tune2fs.c:1215
+#: misc/tune2fs.c:1212
 msgid "Cannot disable metadata_csum on a mounted filesystem!\n"
 msgstr "Не могу да искључим „metadata_csum“ на прикаченом систему датотека!\n"
 
-#: misc/tune2fs.c:1278
+#: misc/tune2fs.c:1275
 #, c-format
 msgid "Cannot enable 64-bit mode while mounted!\n"
 msgstr "Не могу да укључим 64-битни режим док је прикачен!\n"
 
-#: misc/tune2fs.c:1288
+#: misc/tune2fs.c:1285
 #, c-format
 msgid "Cannot disable 64-bit mode while mounted!\n"
 msgstr "Не могу да искључим 64-битни режим док је прикачен!\n"
 
-#: misc/tune2fs.c:1318
+#: misc/tune2fs.c:1315
 #, c-format
 msgid "Cannot enable project feature; inode size too small.\n"
 msgstr ""
 
-#: misc/tune2fs.c:1339
+#: misc/tune2fs.c:1336
 msgid ""
 "\n"
 "Warning: '^quota' option overrides '-Q'arguments.\n"
@@ -6606,7 +6607,7 @@ msgstr ""
 "\n"
 "Упозорење: Опција „^quota“ превазилази аргументе „-Q“.\n"
 
-#: misc/tune2fs.c:1357
+#: misc/tune2fs.c:1354
 msgid ""
 "Setting feature 'metadata_csum_seed' is only supported\n"
 "on filesystems with the metadata_csum feature enabled.\n"
@@ -6614,7 +6615,7 @@ msgstr ""
 "Постављање функције „metadata_csum_seed“ је подржано само\n"
 "на системима датотека са укљученом функцијом „metadata_csum“.\n"
 
-#: misc/tune2fs.c:1375
+#: misc/tune2fs.c:1372
 msgid ""
 "UUID has changed since enabling metadata_csum.  Filesystem must be "
 "unmounted \n"
@@ -6624,11 +6625,11 @@ msgstr ""
 "мора бити откачен \n"
 "да би се безбедно преписали сви метаподаци како би одговарали новом УУИД-у.\n"
 
-#: misc/tune2fs.c:1421
+#: misc/tune2fs.c:1418
 msgid "The filesystem already has a journal.\n"
 msgstr "Систем датотека већ има дневник.\n"
 
-#: misc/tune2fs.c:1441
+#: misc/tune2fs.c:1438
 #, c-format
 msgid ""
 "\n"
@@ -6637,21 +6638,21 @@ msgstr ""
 "\n"
 "\tприликом покушаја отварања дневника на „%s“\n"
 
-#: misc/tune2fs.c:1445
+#: misc/tune2fs.c:1442
 #, c-format
 msgid "Creating journal on device %s: "
 msgstr "Стварам дневник на уређају „%s“: "
 
-#: misc/tune2fs.c:1453
+#: misc/tune2fs.c:1450
 #, c-format
 msgid "while adding filesystem to journal on %s"
 msgstr "приликом додавања система датотека дневнику на „%s“"
 
-#: misc/tune2fs.c:1459
+#: misc/tune2fs.c:1456
 msgid "Creating journal inode: "
 msgstr "Стварам и-чвор дневника: "
 
-#: misc/tune2fs.c:1473
+#: misc/tune2fs.c:1470
 msgid ""
 "\n"
 "\twhile trying to create journal file"
@@ -6659,31 +6660,31 @@ msgstr ""
 "\n"
 "\tприликом покушаја стварања датотеке дневника"
 
-#: misc/tune2fs.c:1511
+#: misc/tune2fs.c:1508
 #, c-format
 msgid "Cannot enable project quota; inode size too small.\n"
 msgstr ""
 
-#: misc/tune2fs.c:1524
+#: misc/tune2fs.c:1521
 msgid "while initializing quota context in support library"
 msgstr "приликом покретања контекста квоте у библиотеци подршке"
 
-#: misc/tune2fs.c:1539
+#: misc/tune2fs.c:1536
 #, c-format
 msgid "while updating quota limits (%d)"
 msgstr "приликом освежавања ограничења квоте (%d)"
 
-#: misc/tune2fs.c:1547
+#: misc/tune2fs.c:1544
 #, c-format
 msgid "while writing quota file (%d)"
 msgstr "приликом писања датотеке квоте (%d)"
 
-#: misc/tune2fs.c:1565
+#: misc/tune2fs.c:1562
 #, c-format
 msgid "while removing quota file (%d)"
 msgstr "приликом уклањања датотеке квоте (%d)"
 
-#: misc/tune2fs.c:1608
+#: misc/tune2fs.c:1605
 msgid ""
 "\n"
 "Bad quota options specified.\n"
@@ -6707,65 +6708,65 @@ msgstr ""
 "\n"
 "\n"
 
-#: misc/tune2fs.c:1666
+#: misc/tune2fs.c:1663
 #, c-format
 msgid "Couldn't parse date/time specifier: %s"
 msgstr "Не могу да обрадим одредник датума/времена: %s"
 
-#: misc/tune2fs.c:1691 misc/tune2fs.c:1704
+#: misc/tune2fs.c:1688 misc/tune2fs.c:1701
 #, c-format
 msgid "bad mounts count - %s"
 msgstr "лош број качења — %s"
 
-#: misc/tune2fs.c:1747
+#: misc/tune2fs.c:1744
 #, c-format
 msgid "bad gid/group name - %s"
 msgstr "лош назив гид-а/групе — %s"
 
-#: misc/tune2fs.c:1780
+#: misc/tune2fs.c:1777
 #, c-format
 msgid "bad interval - %s"
 msgstr "лош период — %s"
 
-#: misc/tune2fs.c:1809
+#: misc/tune2fs.c:1806
 #, c-format
 msgid "bad reserved block ratio - %s"
 msgstr "лош опсег резервисаног блока — %s"
 
-#: misc/tune2fs.c:1824
+#: misc/tune2fs.c:1821
 msgid "-o may only be specified once"
 msgstr "„-o“ се може навести само једном"
 
-#: misc/tune2fs.c:1833
+#: misc/tune2fs.c:1830
 msgid "-O may only be specified once"
 msgstr "„-O“ се може навести само једном"
 
-#: misc/tune2fs.c:1850
+#: misc/tune2fs.c:1847
 #, c-format
 msgid "bad reserved blocks count - %s"
 msgstr "лош број резервисаних блокова — %s"
 
-#: misc/tune2fs.c:1879
+#: misc/tune2fs.c:1876
 #, c-format
 msgid "bad uid/user name - %s"
 msgstr "лош назив уид-а/корисника — %s"
 
-#: misc/tune2fs.c:1896
+#: misc/tune2fs.c:1893
 #, c-format
 msgid "bad inode size - %s"
 msgstr "лоша величина и-чвора — %s"
 
-#: misc/tune2fs.c:1903
+#: misc/tune2fs.c:1900
 #, c-format
 msgid "Inode size must be a power of two- %s"
 msgstr "Величина и-чвора мора бити степен двојке — %s"
 
-#: misc/tune2fs.c:2000
+#: misc/tune2fs.c:1997
 #, c-format
 msgid "mmp_update_interval too big: %lu\n"
 msgstr "период_ммп_освежавања је превелик: %lu\n"
 
-#: misc/tune2fs.c:2005
+#: misc/tune2fs.c:2002
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
 msgid_plural ""
@@ -6777,27 +6778,27 @@ msgstr[1] ""
 msgstr[2] ""
 "Постављам период освежавања заштите од вишеструког качења на %lu секунди\n"
 
-#: misc/tune2fs.c:2028
+#: misc/tune2fs.c:2025
 #, c-format
 msgid "Invalid RAID stride: %s\n"
 msgstr "Неисправан РАИД искорак: %s\n"
 
-#: misc/tune2fs.c:2043
+#: misc/tune2fs.c:2040
 #, c-format
 msgid "Invalid RAID stripe-width: %s\n"
 msgstr "Неисправна РАИД ширина траке: %s\n"
 
-#: misc/tune2fs.c:2058
+#: misc/tune2fs.c:2055
 #, c-format
 msgid "Invalid hash algorithm: %s\n"
 msgstr "Неисправан хеш алгоритам: %s\n"
 
-#: misc/tune2fs.c:2064
+#: misc/tune2fs.c:2061
 #, c-format
 msgid "Setting default hash algorithm to %s (%d)\n"
 msgstr "Постављам основни хеш алгоритам на „%s“ (%d)\n"
 
-#: misc/tune2fs.c:2083
+#: misc/tune2fs.c:2080
 msgid ""
 "\n"
 "Bad options specified.\n"
@@ -6829,32 +6830,32 @@ msgstr ""
 "\ttest_fs\n"
 "\t^test_fs\n"
 
-#: misc/tune2fs.c:2552
+#: misc/tune2fs.c:2549
 msgid "Failed to read inode bitmap\n"
 msgstr "Нисам успео да прочитам битмапу и-чвора\n"
 
-#: misc/tune2fs.c:2557
+#: misc/tune2fs.c:2554
 msgid "Failed to read block bitmap\n"
 msgstr "Нисам успео да прочитам битмапу блока\n"
 
-#: misc/tune2fs.c:2574 resize/resize2fs.c:1276
+#: misc/tune2fs.c:2571 resize/resize2fs.c:1276
 msgid "blocks to be moved"
 msgstr "блокови за премештање"
 
-#: misc/tune2fs.c:2577
+#: misc/tune2fs.c:2574
 msgid "Failed to allocate block bitmap when increasing inode size\n"
 msgstr ""
 "Нисам успео да доделим битмау блока приликом повећања величине и-чвора\n"
 
-#: misc/tune2fs.c:2583
+#: misc/tune2fs.c:2580
 msgid "Not enough space to increase inode size \n"
 msgstr "Нема довољно простора за повећање величине и-чвора \n"
 
-#: misc/tune2fs.c:2588
+#: misc/tune2fs.c:2585
 msgid "Failed to relocate blocks during inode resize \n"
 msgstr "Нисам успео да преместим блокове приликом промене величине и-чвора \n"
 
-#: misc/tune2fs.c:2620
+#: misc/tune2fs.c:2617
 msgid ""
 "Error in resizing the inode size.\n"
 "Run e2undo to undo the file system changes. \n"
@@ -6862,7 +6863,7 @@ msgstr ""
 "Грешка промене величине и-чвора.\n"
 "Покрените „e2undo“ да поништите измене система датотека. \n"
 
-#: misc/tune2fs.c:2832
+#: misc/tune2fs.c:2829
 #, c-format
 msgid ""
 "MMP block magic is bad. Try to fix it by running:\n"
@@ -6871,74 +6872,74 @@ msgstr ""
 "Магија ММП блока је лоша. Покушајте да је поправите покретањем:\n"
 "„e2fsck -f %s“\n"
 
-#: misc/tune2fs.c:2844
+#: misc/tune2fs.c:2841
 msgid "Cannot modify a journal device.\n"
 msgstr "Не могу да изменим уређај дневника.\n"
 
-#: misc/tune2fs.c:2857
+#: misc/tune2fs.c:2854
 #, c-format
 msgid "The inode size is already %lu\n"
 msgstr "Величина и-чвора је већ %lu\n"
 
-#: misc/tune2fs.c:2864
+#: misc/tune2fs.c:2861
 msgid "Shrinking inode size is not supported\n"
 msgstr "Скупљање величине и-чвора није подржано\n"
 
-#: misc/tune2fs.c:2869
+#: misc/tune2fs.c:2866
 #, c-format
 msgid "Invalid inode size %lu (max %d)\n"
 msgstr "Неисправна величина и-чвора %lu (најв. %d)\n"
 
-#: misc/tune2fs.c:2875
+#: misc/tune2fs.c:2872
 msgid "Resizing inodes could take some time."
 msgstr "Промена величине и-чворова може потрајати мало дуже."
 
-#: misc/tune2fs.c:2922
+#: misc/tune2fs.c:2919
 #, c-format
 msgid "Setting maximal mount count to %d\n"
 msgstr "Постављам највећи број качења на %d\n"
 
-#: misc/tune2fs.c:2928
+#: misc/tune2fs.c:2925
 #, c-format
 msgid "Setting current mount count to %d\n"
 msgstr "Постављам текући број качења на %d\n"
 
-#: misc/tune2fs.c:2933
+#: misc/tune2fs.c:2930
 #, c-format
 msgid "Setting error behavior to %d\n"
 msgstr "Постављам понашање грешке на %d\n"
 
-#: misc/tune2fs.c:2938
+#: misc/tune2fs.c:2935
 #, c-format
 msgid "Setting reserved blocks gid to %lu\n"
 msgstr "Постављам гид резервисаних блокова на %lu\n"
 
-#: misc/tune2fs.c:2943
+#: misc/tune2fs.c:2940
 #, c-format
 msgid "interval between checks is too big (%lu)"
 msgstr "период између провера је превелик (%lu)"
 
-#: misc/tune2fs.c:2950
+#: misc/tune2fs.c:2947
 #, c-format
 msgid "Setting interval between checks to %lu seconds\n"
 msgstr "Постављам период између провера на %lu секунде\n"
 
-#: misc/tune2fs.c:2957
+#: misc/tune2fs.c:2954
 #, c-format
 msgid "Setting reserved blocks percentage to %g%% (%llu blocks)\n"
 msgstr "Постављам проценат резервисаних блокова на %g%% (%llu блока)\n"
 
-#: misc/tune2fs.c:2963
+#: misc/tune2fs.c:2960
 #, c-format
 msgid "reserved blocks count is too big (%llu)"
 msgstr "број резервисаних блокова је превелик (%llu)"
 
-#: misc/tune2fs.c:2970
+#: misc/tune2fs.c:2967
 #, c-format
 msgid "Setting reserved blocks count to %llu\n"
 msgstr "Постављам брј резервисаних блокова на %llu\n"
 
-#: misc/tune2fs.c:2975
+#: misc/tune2fs.c:2972
 msgid ""
 "\n"
 "The filesystem already has sparse superblocks.\n"
@@ -6946,7 +6947,7 @@ msgstr ""
 "\n"
 "Систем датотека већ има оскудне суперблокове.\n"
 
-#: misc/tune2fs.c:2978
+#: misc/tune2fs.c:2975
 msgid ""
 "\n"
 "Setting the sparse superblock flag not supported\n"
@@ -6956,7 +6957,7 @@ msgstr ""
 "Постављање заставице оскудног суперблока није подржано\n"
 "за системе датотека са укљученом функцијом „meta_bg“.\n"
 
-#: misc/tune2fs.c:2988
+#: misc/tune2fs.c:2985
 #, c-format
 msgid ""
 "\n"
@@ -6965,7 +6966,7 @@ msgstr ""
 "\n"
 "Заставица оскудног суперблока је постављена.  %s"
 
-#: misc/tune2fs.c:2993
+#: misc/tune2fs.c:2990
 msgid ""
 "\n"
 "Clearing the sparse superblock flag not supported.\n"
@@ -6973,31 +6974,31 @@ msgstr ""
 "\n"
 "Брисање заставице оскудног суперблока није подржано.\n"
 
-#: misc/tune2fs.c:3001
+#: misc/tune2fs.c:2998
 #, c-format
 msgid "Setting time filesystem last checked to %s\n"
 msgstr "Постављам време последње провере система датотека на %s\n"
 
-#: misc/tune2fs.c:3007
+#: misc/tune2fs.c:3004
 #, c-format
 msgid "Setting reserved blocks uid to %lu\n"
 msgstr "Постављам уид резервисаних блокова на %lu\n"
 
-#: misc/tune2fs.c:3039
+#: misc/tune2fs.c:3036
 msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr "Грешка коришћења „clear_mmp“-а. Мора се користити са „-f“\n"
 
-#: misc/tune2fs.c:3057
+#: misc/tune2fs.c:3054
 msgid ""
 "The quota feature may only be changed when the filesystem is unmounted.\n"
 msgstr ""
 "Функција квоте се може изменити само када је систем датотека откачен.\n"
 
-#: misc/tune2fs.c:3081
+#: misc/tune2fs.c:3078
 msgid "The UUID may only be changed when the filesystem is unmounted.\n"
 msgstr "УУИД се може изменити само када је систем датотека откачен.\n"
 
-#: misc/tune2fs.c:3084
+#: misc/tune2fs.c:3081
 msgid ""
 "If you only use kernels newer than v4.4, run 'tune2fs -O metadata_csum_seed' "
 "and re-run this command.\n"
@@ -7005,26 +7006,26 @@ msgstr ""
 "Ако користите само језгра новија од v4.4, покрените „tune2fs -O "
 "metadata_csum_seed“ и поново је покрените.\n"
 
-#: misc/tune2fs.c:3093
+#: misc/tune2fs.c:3090
 msgid "Setting UUID on a checksummed filesystem could take some time."
 msgstr ""
 "Подешавање УУИД-а на систему датотека са сумом провере може потрајати мало "
 "дуже."
 
-#: misc/tune2fs.c:3118
+#: misc/tune2fs.c:3115
 msgid "Invalid UUID format\n"
 msgstr "Неисправан УУИД запис\n"
 
-#: misc/tune2fs.c:3134
+#: misc/tune2fs.c:3131
 msgid "Need to update journal superblock.\n"
 msgstr "Потребно је освежавање суперблока дневника.\n"
 
-#: misc/tune2fs.c:3159
+#: misc/tune2fs.c:3156
 msgid "The inode size may only be changed when the filesystem is unmounted.\n"
 msgstr ""
 "Величина и-чвора се може изменити само када је систем датотека откачен.\n"
 
-#: misc/tune2fs.c:3166
+#: misc/tune2fs.c:3163
 msgid ""
 "Changing the inode size not supported for filesystems with the flex_bg\n"
 "feature enabled.\n"
@@ -7032,31 +7033,31 @@ msgstr ""
 "Промена величине и-чвора није подржана за системе датотека са укљученом\n"
 "функцијом „flex_bg“.\n"
 
-#: misc/tune2fs.c:3184
+#: misc/tune2fs.c:3181
 #, c-format
 msgid "Setting inode size %lu\n"
 msgstr "Постављам величину и-чвора %lu\n"
 
-#: misc/tune2fs.c:3188
+#: misc/tune2fs.c:3185
 msgid "Failed to change inode size\n"
 msgstr "Нисам успео да изменим величину и-чвора\n"
 
-#: misc/tune2fs.c:3202
+#: misc/tune2fs.c:3199
 #, c-format
 msgid "Setting stride size to %d\n"
 msgstr "Постављам величину искорака на %d\n"
 
-#: misc/tune2fs.c:3207
+#: misc/tune2fs.c:3204
 #, c-format
 msgid "Setting stripe width to %d\n"
 msgstr "Постављам ширину траке на %d\n"
 
-#: misc/tune2fs.c:3214
+#: misc/tune2fs.c:3211
 #, c-format
 msgid "Setting extended default mount options to '%s'\n"
 msgstr "Постављам проширене основне опције качења на „%s“\n"
 
-#: misc/tune2fs.c:3225
+#: misc/tune2fs.c:3222
 #, c-format
 msgid ""
 "Warning: The journal is dirty. You may wish to replay the journal like:\n"
@@ -7074,7 +7075,7 @@ msgstr ""
 "бити преписане\n"
 "опоравком дневника.\n"
 
-#: misc/tune2fs.c:3236
+#: misc/tune2fs.c:3233
 #, c-format
 msgid "Recovering journal.\n"
 msgstr "Опорављам дневник.\n"
@@ -7636,7 +7637,7 @@ msgstr "Ово није требало да се деси: промена вел
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.6"
+msgid "EXT2FS Library version 1.43.7"
 msgstr "„EXT2FS“ библиотека издања 1.43.4-WIP"
 
 #: lib/ext2fs/ext2_err.c:12

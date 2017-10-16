@@ -1,3 +1,33 @@
+E2fsprogs 1.43.7 (October 16, 2017)
+===================================
+
+Fix the error handling code in debugfs, fuse2fs and tune2fs so errors
+trying to replay the journal won't accidentally result in a seg fault
+if reopening the file system after the journal replay fails for some
+reason.
+
+Fix resize2fs to avoid it from either failing or corrupting the file
+system image in certain corner cases when doing an off-line resize.
+
+Fix many spelling mistakes in various man pages, code comments, and
+program messages.
+
+Fix e2fsck and debugfs so that maliciously corrupted file systems will
+not cause buffer overflows.  (Addresses Debian Bugs: #873757, #878104)
+
+Update German translation.  (Addresses Debian Bug: #833514)
+
+Fixed various Debian Packaging Issues.  (Addresses Debian Bugs:
+#873812, #873813, #876551)
+
+Programming notes
+-----------------
+
+Test descritions have been shorted to fit in 80 columns.
+
+Fix various tests to avoid leaving temp files in /tmp.
+
+
 E2fsprogs 1.43.6 (August 29, 2017)
 ==================================
 
@@ -35,7 +65,7 @@ inode size is < 256 bytes.
 The tune2fs program will not allow the project feature or project
 quotas to be enabled in the inode size is 128 bytes.
 
-The tune2fs progam now prints a more understandable message explaining
+The tune2fs program now prints a more understandable message explaining
 that the file system needs to be checked using e2fsck -f before
 running certain complex tune2fs operations.  (Addresses Debian Bug:
 #857336)
@@ -123,7 +153,7 @@ Fix libext2fs to correctly handle accounting for an external xattr
 block on bigalloc file systems.
 
 Fix e2fsck to correctly handle quota accounting when deleting files
-that have mnultiply-claimed blocks pass 1b.
+that have multiply-claimed blocks pass 1b.
 
 Fix potential buffer overrun bug in e2fsck when using 128 byte inodes.
 (Addresses Google Bug 37326362).
@@ -145,7 +175,7 @@ to speed up opening very large file systems with the meta_bg option.
 If e2fsck logging is enabled, e2fsck will report the exit code in the
 last line of the log file.
 
-Debugfs can now open file systems with a bad sueprblock checksum, and
+Debugfs can now open file systems with a bad superblock checksum, and
 the show_super_stats command will print the expected checksum.
 
 Fix a regression introduced in e2fsprogs 1.43.4 where tune2fs was not
@@ -285,7 +315,7 @@ E2fsck will now check, and if necessary repair the extra isize fields
 in the inode and superblock.
 
 Fix crashes on architectures such as sparc64 that are sensitive to
-unaligned pointer derferences in the journal recovery code when
+unaligned pointer dereferences in the journal recovery code when
 journal checksums are enabled.
 
 Programming notes
@@ -308,7 +338,7 @@ E2fsprogs 1.43.2 (September 1, 2016)
 ====================================
 
 Fix resize2fs so it will not crash if there is an extended attribute
-block but it doesn't need to migate any blocks during an off-line
+block but it doesn't need to migrate any blocks during an off-line
 resize
 
 Fix a crash when mke2fs or debugfs tries to copy in a directory
@@ -348,7 +378,7 @@ Avoid installing the man page for fuse2fs if it has not been built.
 
 Update the Catalan, Chinese, Danish, Dutch, French, German, Polish,
 Swedish, Ukrainian translations and added new translations for
-Hugarian and Serbian.
+Hungarian and Serbian.
 
 
 Programming notes
@@ -415,7 +445,7 @@ Debugfs's rdump command now works correctly when dumping the root
 directory of a file system.  (Addresses Debian Bug: #766125)
 
 Fixed a bug in debugfs so it would correctly calculate a block group's
-checksum field field on 64-bit ssystems.
+checksum field field on 64-bit systems.
 
 E2fsck now has a much more understandable error message when the
 journal superblock is corrupt and the user declines to fix it.
@@ -444,11 +474,11 @@ whether the creator OS is *not* EXT2_OS_HURD which is the one
 operating system where there has been extensive abuse of the
 s_creator_os flag.
 
-The libmagic libary has been suppressed when running the regression
+The libmagic library has been suppressed when running the regression
 test suite to avoid false test failures caused by differences between
 versions of libmagic (and/or the magic number database).
 
-The tests/test_script progam now accepts the --failed option, which
+The tests/test_script program now accepts the --failed option, which
 will run those tests that had previously failed.
 
 Fixed tests build on those systems which require LDFLAGS to be set.
@@ -590,7 +620,7 @@ when trying grow a file system and we need to allocate blocks to grow
 the block group descriptors.
 
 Fixed a bug in resize2fs which could cause it to get fooled trying to
-determinthe the RAID array's stride when flex_bg is enabled.
+determine the RAID array's stride when flex_bg is enabled.
 
 Fix resize2fs bug that could leave block allocation bitmaps
 uninitialized.
@@ -644,9 +674,9 @@ Android source tree.
 
 Reduce the use of libc functions in libext2fs that may not be present
 in the boot loader environment, at least for those functions that are
-needed by boot loadsers such as yaboot.
+needed by boot loaders such as yaboot.
 
-Developers can now overide the debugging and optimization flags by
+Developers can now override the debugging and optimization flags by
 redefining the CFLAGS makefile macro.
 
 The libext2fs library now has support for fallocate.
@@ -743,7 +773,7 @@ translation.
 Programmer's Notes
 ------------------
 
-Fixed coverity, sparce gcc -Wall, and clang warnings/nits.
+Fixed coverity, sparc gcc -Wall, and clang warnings/nits.
 
 Clean up some build system problems (build failures with various
 configure options, fix Posix portability issues, etc.)
@@ -828,7 +858,7 @@ Dumpe2fs will now complain if extra arguments are given to it.
 
 Updated/fixed various man pages.  (Addresses-Debian-Bug: #726760)
 
-Update Czech, Dutch, French, Polish, Spanish, Sweedish, Ukrainian, and
+Update Czech, Dutch, French, Polish, Spanish, Swedish, Ukrainian, and
 Vietnamese translations.
 
 Programmer's Notes
@@ -875,7 +905,7 @@ pessimal metadata layouts.
 The mke2fs program will provide a better metadata layout for
 moderately large (but believable) flex_bg counts, such as 133,072.
 
-The mke2fs progam will also check the kernel version number to
+The mke2fs program will also check the kernel version number to
 determine whether the lazy_itable_init option is supported, so that
 lazy inode table initialization can be used even if the ext4 is
 compiled as a module which isn't loaded at the time that mke2fs is
@@ -896,13 +926,13 @@ unsupported revision number will not be accepted by any of the other
 file system tools, and this command line option is rarely used, so
 let's try to help the user not shoot their own foot off.
 
-The debugfs progam can now set the error count and associated
+The debugfs program can now set the error count and associated
 first_error and last_error fields in the superblock using the
 set_super_value command.
 
 Resize2fs will not try to calculate the minimum size of a file system
 if it contains errors.  Otherwise a very badly corrupted file system
-image can cause the minimum size calculation to loop forwever.  Since
+image can cause the minimum size calculation to loop forever.  Since
 resize2fs will not allow a file system marked as containing errors to
 be resized.  It's pointless to calculate the minimum size, so just
 skip it.
@@ -910,7 +940,7 @@ skip it.
 Fixed a typo in one of mke2fs's error message.
 
 If filefrag runs into an error, it will continue processing the rest
-of the files specified on thec ommand line, but then exit with an
+of the files specified on the command line, but then exit with an
 error code.
 
 Filefrag now prints some additional new flags (such as
@@ -925,8 +955,8 @@ Fixed a regression introduced in 1.42.10 which caused mke2fs to fail
 to create file systems larger than 2GB on 32-bit platforms.
 (Addresses Red Hat Bugzilla: #1099892, Debian Bug: #752107)
 
-Add Esparanto and Ukrainian translations, and update Czech, Dutch,
-French, German, Italian, Polish, Sweedish, and Vietnamese
+Add Esperanto and Ukrainian translations, and update Czech, Dutch,
+French, German, Italian, Polish, Swedish, and Vietnamese
 translations.
 
 Fixed various compiler warnings.
@@ -998,7 +1028,7 @@ be useful when creating a disk image for virtual machines (Addresses
 Debian Bug: #497984)
 
 Previously, e2fsck had a number of very serious bugs when checking a
-file system wich used the new the quota file system option (where the
+file system which used the new the quota file system option (where the
 quota inodes were stored in hidden inodes) and the quota inode was
 inconsistent with the actual usage data.  This problem was documented
 in https://ext4.wiki.kernel.org/index.php/Quota.  These problems have
@@ -1017,11 +1047,11 @@ few megabytes in a single resize2fs -M operation.
 E2fsck will now force a full file system check if there are any file
 system inconsistencies detected in the super block.
 
-The filefrag program will now display hte shared extent flag, which is
+The filefrag program will now display the shared extent flag, which is
 used by file systems such as btrfs.
 
 If the number of inodes in the file systems is larger than the time
-that file sytem was created (as measured by the number of seconds
+that file system was created (as measured by the number of seconds
 since January 1, 1970) e2fsck would print a scary (but otherwise
 harmless) warning of file system corruption for each inode in the
 orphan list.  This false positive has been fixed.
@@ -1029,7 +1059,7 @@ orphan list.  This false positive has been fixed.
 The e4defrag program has been fixed so it will no longer refuse with
 filesystem with the 64-bit or the bigalloc feature enabled.
 
-The logsave progam will print a much less scary message which could
+The logsave program will print a much less scary message which could
 lead users to believe something has gone very wrong with e2fsck exits
 with a non-zero exit status (since this is normal after e2fsck has
 automatically fixed a file system corruption during a preen
@@ -1077,7 +1107,7 @@ A bug introduced in 1.42.9 would cause debugfs to print two error
 messages if it found an error while parsing a user-supplied block
 number.  This has been fixed in 1.42.10.
 
-Update Czech, Dutch, French, German, Polish, Spanish, Sweedish, and
+Update Czech, Dutch, French, German, Polish, Spanish, Swedish, and
 Vietnamese translations.  (Addresses Debian Bug: #703048)
 
 Updated/fixed various man pages.  (Addresses Debian Bugs: #719189,
@@ -1089,7 +1119,7 @@ Fixed various Debian Packaging Issues.  (Addresses Debian Bug: #718725)
 Programmer's Notes
 ------------------
 
-Fixed a lot of coverity, sparce gcc -Wall, and clang warnings/nits.
+Fixed a lot of coverity, sparc gcc -Wall, and clang warnings/nits.
 
 Allow the location of pkg-config files to be specified independent of
 the libdir location via a makefile variable.
@@ -1104,7 +1134,7 @@ not have the "truncate" or "mksawp" programs.
 Allow e2fsck to build correctly on systems (such as Android) that do
 not have the signal.h file.
 
-E2fsprogs now has code coverage testing which can be enbled using
+E2fsprogs now has code coverage testing which can be enabled using
 "configure --enable-gcov".
 
 The libe2p.h header file can now be used included by C++ programs.
@@ -1321,7 +1351,7 @@ E2fsprogs 1.42.8 (June 20, 2013)
 ================================
 
 As a part of mke2fs's option parsing cleanup, the use of the -R option
-will give a warning that it is depreated (it has been so documented
+will give a warning that it is deprecated (it has been so documented
 since 2005) and -E should be used instead.
 
 Mke2fs will not give warnings about the bigalloc and quota options in
@@ -1497,7 +1527,7 @@ version which we checked into the e2fsprogs source tree.  These
 enhancements include thread safety, support for readdir64_r(), and
 safe_getenv() support in case spd_readdir.so is used for setuid binaries.
 
-Update Czech, Dutch, French, German, Polish, Sweedish, and Vietnamese
+Update Czech, Dutch, French, German, Polish, Swedish, and Vietnamese
 translations
 
 Add a command to debugfs to create symlinks.
@@ -1605,7 +1635,7 @@ Programmer's Notes
 
 The configure option --enable-relative-symlink was broken so that it
 needed to be --enable-symlink-relative-symlinks.  We will support both
-for at least two years, but then the worng configure option will be
+for at least two years, but then the wrong configure option will be
 removed.
 
 Fixed a regression introduced in 1.42.5 so the link order for
@@ -1713,7 +1743,7 @@ replayed, and if the journal *was* being replayed, the "error bit"
 wasn't getting flushed out to disk.
 
 Fixed a false positive complaint by e2fsck if all of the extents in
-the last extent tree block are uninitalized and located after the end
+the last extent tree block are uninitialized and located after the end
 of the file as defined by i_size.
 
 The dumpe2fs will now display the journal's s_errno field if it is
@@ -1811,7 +1841,7 @@ Fix a bug which would cause mke2fs to fail creating the journal if
     
 Updated/fixed various man pages.
 
-Update Czech, Dutch, French, German, Polish, Sweedish, and Vietnamese
+Update Czech, Dutch, French, German, Polish, Swedish, and Vietnamese
 translations
 
 Fixed various Debian Packaging issues.
@@ -1910,7 +1940,7 @@ during the block group descriptor checks.  (Addresses Google Bug:
 If there are incorrect block group checks, e2fsck will now report the
 incorrect and corrected checksum values.
 
-The e2fsck progam can now write log files containing the details of
+The e2fsck program can now write log files containing the details of
 the problems that were found and fixed directly, via configuration
 parameters in /etc/e2fsck.conf.
 
@@ -1927,7 +1957,7 @@ if it is incorrect.  This helps to diagnose problems caused by
 incorrect block group checksums.
 
 E2fsck now checks for extents with a zero length, since the kernel
-will oops if it comes accross such a corrupted data structure.  (See
+will oops if it comes across such a corrupted data structure.  (See
 https://bugzilla.kernel.org/show_bug.cgi?id=42859)
 
 E2fsck has a number of bugs relating to discard that have been fixed.
@@ -1973,7 +2003,7 @@ Fixed the debian rules file so that the calls to dpkg-buildflags works
 when the shell is dash.
 
 The debian package build now uses V=1 so that there is more
-information about potential build failures in debian buildd logs.
+information about potential build failures in debian build logs.
 
 If the uninit flags get cleared by functions such as
 ext2fs_new_inode() or ext2fs_new_block2(), we now make sure the
@@ -1981,7 +2011,7 @@ superblock is marked dirty and the block group descriptor checksum is
 updated if necessary.
 
 The debian rules file will now try to load debian/rules.custom of it
-exists.  This flie can skip various builds for speed reasons if there
+exists.  This file can skip various builds for speed reasons if there
 is no need for the e2fsck-static or udeb packages.  Available
 customizations in the rules file includes SKIP_STATIC=yes,
 SKIP_BF=yes, and SKIP_DIETLIBC=yes.
@@ -2021,7 +2051,7 @@ ext2fs_open2() function clears the UNINIT bits to ensure all of the
 inodes in the file systems get scanned.  However, the code which reset
 the UNINIT flags did not also recalculate the checksum, which produced
 many spurious (and scary) e2fsck messages.  This has been fixed by
-resetting cheksums when the UNINIT bits are cleared.
+resetting checksums when the UNINIT bits are cleared.
 
 Relax a check in e2fsck which required that the block bitmap to be
 initialized when the inode bitmap is in use.  This will allow us to
@@ -2053,7 +2083,7 @@ calculate the minimum file system size for use with the -M option.
 Fixed the badblocks program to honor the -s flag when in read-only -t
 mode.  (Addresses Debian Bug #646629)
 
-Update Czech, Dutch, French, Polish, and Sweedish translation from the
+Update Czech, Dutch, French, Polish, and Swedish translation from the
 Translation Project.
 
 Fixed various Debian Packaging issues so that dpkg-buildflags is used
@@ -2132,7 +2162,7 @@ a false positive.  (Addresses Debian Bug: #619859)
 E2fsck now uses less cpu time in pass 5 when large portions of the
 bitmaps are uninitialized.
 
-E2fsck will no longer segault when a corrupted file system has a bad
+E2fsck will no longer segfault when a corrupted file system has a bad
 extent, and removing it leads to a block needing to be deallocated.
 (Addresses SourceForge Bug: #2971800)
 
@@ -2147,7 +2177,7 @@ to get confused and do more harm than good.
 
 If e2fsck modifies certain superblock fields which the kernel doesn't
 look at, it will now mark the superblock as dirty without marking the
-file system as changed.  This avoids signalling the init scripts that
+file system as changed.  This avoids signaling the init scripts that
 a reboot is necessary, since the kernel isn't going to look at those
 fields, so it won't care if they have been changed.
 
@@ -2190,7 +2220,7 @@ lost+found directories.
 Mke2fs will skip zero'ing the journal if the extended option
 "lazy_journal_init" is specified.  This can save a lot of time, but it
 does add a small amount of risk if the system crashes before the
-journal is overwritten entirely once.  It is epsecially useful for
+journal is overwritten entirely once.  It is especially useful for
 testing.
 
 Mke2fs will now create file systems that enable user namespace
@@ -2340,7 +2370,7 @@ Reserved file system code points for new 1st class quota feature.
 Shortened the compilation lines by moving the autoconf defines to
 a config.h header file.
 
-Fixed a potential free of an unitialized pointer in
+Fixed a potential free of an uninitialized pointer in
 ext2fs_update_bb_inode().
 
 Fixed miscellaneous gcc -Wall and coverity warnings.
@@ -2371,7 +2401,7 @@ The i_e2image test was fixed so it works with valgrind.
 Tests that rely on debugfs are now skipped if debugfs wasn't built.
 
 Fixed the dependencies for "make check" so all required dependencies
-are built before running the gression tests.
+are built before running the regression tests.
 
 A link to com_err.h is installed in $(includedir) during a "make install".
 
@@ -2467,7 +2497,7 @@ fields which track where and when the first and most recent file
 system errors occurred.  These fields are displayed by dumpe2fs and
 cleared by e2fsck.  These new superblock fields were added in 2.6.36.
 
-Debugfs now uses a more concicse format for listing extents in its
+Debugfs now uses a more concise format for listing extents in its
 stat command.  This format also includes the interior extent tree
 blocks, which previously was missing from stat's output for
 extent-based files.
@@ -2507,7 +2537,7 @@ complaining about an invalid inode ratio specified by the user.
 
 Mke2fs now understands the extended option "discard" and "nodiscard",
 and the older option -K is deprecated.  The default of whether
-discards are enabled by default can be controled by the mke2fs.conf
+discards are enabled by default can be controlled by the mke2fs.conf
 file.
 
 Mke2fs's handling of logical and physical sector sizes has been
@@ -2600,7 +2630,7 @@ altogether.
 
 E2fsck could potentially remove directory entries for inodes found in
 the unused region of the inode table; this would generally happen on
-ext4 file systems that do not use journaling.  This bug has been fixed
+ext4 file systems that do not use journalling.  This bug has been fixed
 by not clearing these directory entries once it has been established
 that bg_unused_inodes may not be trustworthy; once pass #2 has been
 completed, e2fsck will restart the file system check from the
@@ -2659,7 +2689,7 @@ needed for a particular build.  Given that install floppies are going
 
 Add configure options --enable-symlink-build and
 --enable-symlink-install, which allow e2fsprogs be built using
-symlinks instad of hard links, and to be installed using symlinks
+symlinks instead of hard links, and to be installed using symlinks
 instead of hard links, respectively.  It is useful when the file
 system where the build is taking place, or the file system where
 e2fsprogs is installed, can't handle hard links for some reason.
@@ -2912,7 +2942,7 @@ Enhance dumpe2fs to dump the extent information via the 'stat'
 command, and more detailed extent information via the new command
 'dump_extents'.
     
-Update French, Polish, Czech, and Sweedish translation from the
+Update French, Polish, Czech, and Swedish translation from the
 Translation Project.
 
 Fixed various Debian packaging issues --- see debian/changelog for
@@ -2967,7 +2997,7 @@ contrib directory.
 
 Fix filefrag program for files that have more than 144 extents.
 
-Update French, Polish, Czech, Indonsian, and Sweedish translation from
+Update French, Polish, Czech, Indonesian, and Swedish translation from
 the Translation Project.
 
 Fixed various Debian packaging issues --- see debian/changelog for
@@ -3000,7 +3030,7 @@ E2fsprogs 1.41.7 (June 29, 2009)
 ================================
 
 Fix a bug in libext2fs which can cause e2fsck and resize2fs to write
-uninitalized data into the portion of the inode beyond the first 128
+uninitialized data into the portion of the inode beyond the first 128
 bytes when operating on inodes mapped via extents; potentially
 corrupting filesystems.
 
@@ -3028,7 +3058,7 @@ filesystems as the kernel when encoding rec_len >= 64k.  For 64k
 filesystems (currently all that is supported by e2fsprogs, this is
 only a minor corner case).
 
-Resize2fs will now update the journal backup fileds in the sup0erblock
+Resize2fs will now update the journal backup fields in the superblock
 if the journal is moved; this avoids an unnecessary full fsck after
 resizing the filesystem.  (Addresses RedHat Bugzilla: #505339)
     
@@ -3037,7 +3067,7 @@ journal and resize inodes.
 
 Change badblocks to allow block sizes larger than 4k.
 
-Fix filefrag progam so it correctly checks for errors from the fiemap ioctl.
+Fix filefrag program so it correctly checks for errors from the fiemap ioctl.
 
 Update Chinese and Czech translation from the Translation Project.
 
@@ -3082,7 +3112,7 @@ Bug: #527859)
     
 Fix e2fsck so that if the primary group descriptors are corrupted, but
 the backup superblock is entirely invalid, to go back to using (and
-fixing) the priary group descriptors instead of completely giving up
+fixing) the primary group descriptors instead of completely giving up
 on the filesystem.  (Addresses Debian Bug: #516820)
     
 Change e2fsck to not abort a preen pass if an inode is found to have
@@ -3103,7 +3133,7 @@ Add support to chattr to migrate inodes from using direct/indirect
 blocks to extents.
 
 Avoid corrupting the filesystem if there is an attempt to shrink a
-filesystem using resize2fs smaller than posible by making
+filesystem using resize2fs smaller than possible by making
 ext2fs_set_bmap() more careful not to delete the old block until the
 new block can be inserted.  In addition, fix a bug in how the minimum
 size of the filesystem (plus a safety margin) is calculated, and
@@ -3113,9 +3143,9 @@ size without the force flag.
 Teach blkid to try to figure out DM device names using take advantage
 of information in sysfs when running on kernels (2.6.29 and later)
 which provide this information in /sys/block/dm-<N>/dm/name; this is
-much faster than scanning for the devncie number in /dev/mapper.
+much faster than scanning for the device number in /dev/mapper.
 
-Fix blkid to prefer /dev/mapper/<name> device names instad of the
+Fix blkid to prefer /dev/mapper/<name> device names instead of the
 private /dev/dm-X names.
 
 Add an -a option to debugfs's close_filesys command which writes any
@@ -3146,7 +3176,7 @@ Clean up e2fsck by removing #ifdef RESOURCE_TRACK by adding an empty
 function declaration for init_resource_track() and
 print_resource_track() when RESOURCE_TRACK is not defined.
 
-The test code which is used to build the tst_csum progam has been
+The test code which is used to build the tst_csum program has been
 moved from from tst_csum.c into csum.c under an #ifdef DEBUG to to
 avoid compile problems caused by not having a prototype for
 ext2fs_group_desc_csum().  (Addresses Sourceforge Bug #2484331)
@@ -3181,7 +3211,7 @@ blocks so they are read using a single read operation.
 The libuuid library will now close all file descriptors before running
 uuidd.  This avoids problems when the calling program has open sockets
 which then never get closed because uuidd is a long-running helper
-daeomn.  (Addresses Launchpad bug: #305057)
+daemon.  (Addresses Launchpad bug: #305057)
 
 In order to avoid unnecessary full filesystem checks by e2fsck after
 an on-line resize, e2fsck will ignore the NEEDS_RECOVERY flag set on
@@ -3212,7 +3242,7 @@ used to support filesystems without a journal.  Update the blkid
 library so it understands this.
 
 The blkid library will remove an entry from the blkid cache
-representing the entire disk if partitions are found, since presuambly
+representing the entire disk if partitions are found, since presumably
 the device previously had no partition table, but has now transitioned
 to using a partition table.
 
@@ -3224,7 +3254,7 @@ Add support for tracking the number kilobytes written to the
 filesystem via the superblock field s_kbytes_written.  It will be
 updated by the kernel as well as by e2fsprogs programs which write to
 the filesystem.  This is useful for tracking the wear to filesystems
-on Solid Sstate Drives.
+on Solid State Drives.
 
 Fix compatibility issue in the libext2fs info file and makeinfo
 version 4.12.  (Addresses Red Hat Bugzilla: #481620)
@@ -3311,7 +3341,7 @@ INODE_UNINIT flag.
 E2fsck now distinguishes between fragmented directories and fragmented
 files in verbose mode statistics and in the fragcheck report.
 
-Fix a bug in e2fsck which casued it double count non-contiguous
+Fix a bug in e2fsck which caused it double count non-contiguous
 extent-based inodes.
 
 E2fsck will leave some slack space when repacking directories to allow
@@ -3358,7 +3388,7 @@ number to avoid overrunning an array boundary.
 Various signed/unsigned errors for variables containing block numbers
 have been fixed.
 
-Accomodations for gcc's stupidity in not realizing that constant
+Accommodations for gcc's stupidity in not realizing that constant
 strings that do not contain a '%' character are safe to use in format
 strings have been made so that distributions that want to compile
 e2fsprogs with -Werror=format-security have an easier time doing so.
@@ -3432,7 +3462,7 @@ from e2fsprogs 1.40.7 which caused e2fsck to fail if the user
 specifies a block number using the -b option if the blocksize option
 isn't also specified using -B.  Unfortunately, users very commonly
 invoke e2fsck using "e2fsck -b 32768 /dev/hdXXX" to use the backup
-superblock; in fack e2fsck will often suggest this kind of command
+superblock; in fact e2fsck will often suggest this kind of command
 line.  Oops.
 
 Enhance the debugfs's "ncheck" command so it will print all of the
@@ -3468,7 +3498,7 @@ Fix the usage message for debugfs's logdump command to be consistent
 with its man manpage.
 
 Update Polish, French, Vietnamese, Dutch, Indonesian, German, Czech,
-and Sweedish translation from the Translation Project.
+and Swedish translation from the Translation Project.
 
 Add documentation for the file I/O functions to the libext2fs.texinfo
 file.  (Addresses Debian Bug: #484877)
@@ -3482,7 +3512,7 @@ details. (Addresses Debian Bug: #497619)
 Programmer's Notes
 ------------------
 
-Fix a potential file descriptor leack in libcom_err by setting the
+Fix a potential file descriptor leak in libcom_err by setting the
 close-on-exec flag for a fd used for debugging.  (Addresses Red Hat
 Bugzilla #464689)
 
@@ -3560,7 +3590,7 @@ Mke2fs will correctly enforce the prohibition against features
 (specifically read-only features) in revision 0 filesystems.  (Thanks
 to Benno Schulenberg for noticing this problem.)
 
-Mke2fs previously would occasionaly create some slightly non-optimally
+Mke2fs previously would occasionally create some slightly non-optimally
 placed inode tables; this bug has been fixed.
 
 The mke2fs and tune2fs programs now print the correct usage message
@@ -3607,7 +3637,7 @@ Add support for on-line resizing ext4 filesystem with the flex_bg
 filesystem feature.  The method for doing so is not optimal, but to do
 a better job will require kernel support.
 
-E2fsprogs 1.41.0 intrduced a bug in libext2fs which casued e2image and
+E2fsprogs 1.41.0 introduced a bug in libext2fs which caused e2image and
 debugfs programs to not be able to read e2image files; the signed
 vs. unsigned bug in the code which read bitmaps from the e2image has
 been fixed.   (Addresses Debian Bug: #495830)
@@ -3683,7 +3713,7 @@ errors in the libext2fs texinfo file.
 Fixed various Debian packaging issues --- see debian/changelog for
 details.
 
-Add Indonesian and update French, Polish, Dutch, German, Sweedish,
+Add Indonesian and update French, Polish, Dutch, German, Swedish,
 Czech, and Vietnamese Translations.  (Addresses Debian Bugs: #313697,
 #401092)
 
@@ -3698,7 +3728,7 @@ LD_LIBRARY_PATH before running the various e2fsck internal library
 regression tests.
 
 The crc32 regression test in the e2fsck library is now portable to
-greater varienty of environments, including big-endian systems and
+greater variety of environments, including big-endian systems and
 when cross-building e2fsprogs for embedded systems.  (Addresses
 Sourceforge Bug: #2019287)
 
@@ -3746,7 +3776,7 @@ Disable a very annoying automatic "%.sh -> %" GNU make rule in the
 top-level Makefile.  That automatic rule is used to better support
 SCCS, but it caused problems for a particular niche distribution which
 likes to use configure.sh files to store the configure options used to
-build a package.  Unfortuntaely GNU make will use the configure.sh to
+build a package.  Unfortunately GNU make will use the configure.sh to
 replace the configure script, resulting in a self-inflicted fork bomb
 leading to an out-of-memory crash.
 
@@ -3776,9 +3806,9 @@ The io_channel_read_blk64() and io_channel_write_blk64() functions are
 now functions instead of C preprocessor macros to provide better
 forward compatibility.
 
-The e2fpsrogs translation template now expands the @x abbrevation.
+The e2fpsrogs translation template now expands the @x abbreviation.
 
-Various namespace leackages in libblkid, libe2p, and libext2fs have
+Various namespace leakages in libblkid, libe2p, and libext2fs have
 been fixed.
 
 Fix a parallel build problem in e2fsprogs.
@@ -3791,7 +3821,7 @@ E2fsprogs is now more portable to Solaris.
   * Flush stdio handles before calling setbuf(), since Solaris will
     discard any pending output to the stream.
   * Define _XOPEN_SOURCE to 600 since Solaris's header files are very
-    picky about which C compiler can beused for SUSv3 conformance.
+    picky about which C compiler can be used for SUSv3 conformance.
     Use of C99 is not compatible with SUSv2 (_XOPEN_SOURCE=500),
     and C89 is not compatible with SUSv3 (_XOPEN_SOURCE=600).
     Since we need some SUSv3 functions, consistently use SUSv3 so
@@ -3801,9 +3831,9 @@ E2fsprogs is now more portable to Solaris.
     is included, which conflicts with e2fsprogs' use of the kmem_cache_t
     typedef.
   * Solaris ships with a pathetically ancient shell in /bin/sh so we
-    avoid the use of various more avanced shell constructs such as $().
+    avoid the use of various more advanced shell constructs such as $().
 
-The "make rpm" command will now take some extra configure optiosn from
+The "make rpm" command will now take some extra configure options from
 the build environment without needing to patch the source tree.
 
 The ext2fs_add_dir_block() function will now grow the dblist more
@@ -3904,7 +3934,7 @@ it to quote the filenames so that spaces or tabs in directory entries
 are easily visible.  (Addresses Red Hat Bugzilla: #149480; Addresses
 Sourceforge Feature Request: #1201667)
 
-Fix a potential off-by-one buffer oveflow in the fs_device_name in an
+Fix a potential off-by-one buffer overflow in the fs_device_name in an
 e2image file.
 
 The chattr program will return a non-zero exit code in case of
@@ -3943,7 +3973,7 @@ bitmaps.
 
 Fix gcc -Wall warnings
 
-Fix the pkg-config files so that private librares are specified in
+Fix the pkg-config files so that private libraries are specified in
 "Libs.private:".
 
 Fix the libext2fs.texinfo manual so it builds with modern versions of
@@ -4020,9 +4050,9 @@ which has been journalled starts with the first four bytes 0xc03b3998,
 when e2fsck replays the journal, those four bytes will be replaced
 with zero's.  Fortunately, it is highly, highly unlikely for e2fsck
 metadata to begin with those fatal 4 byte sequence, and unless
-data=ordered mode is in use, data blocks are never journaled.
+data=ordered mode is in use, data blocks are never journalled.
 
-Updated German, Dutch, Sweedish, and Vietnamese translations.
+Updated German, Dutch, Swedish, and Vietnamese translations.
 
 Programmer's notes:
 -------------------
@@ -4045,7 +4075,7 @@ directory, but it's good to get them fixed.
 One additional fix in ext2fs_swap_inode_full() needed for resize2fs to
 work correctly with in-inode extended attributes.
 
-Updated German, Czech, Dutch, French, Polish, Sweedish, and Vietnamese
+Updated German, Czech, Dutch, French, Polish, Swedish, and Vietnamese
 translations.
 
 Debugfs will avoid using a pager if the standard output is not a tty.
@@ -4077,9 +4107,9 @@ s_first_data_block setting.
 Fix bug in blkid when run by an unprivileged user; most devices were
 not reported correctly.  9Addresses Launchpad Bug: #220275)
 
-Mke2fs will not allow the logically incorect combination of
+Mke2fs will not allow the logically incorrect combination of
 resize_inode and meta_bg, which had previously caused mke2fs to create
-a corrupt fileystem.
+a corrupt filesystem.
 
 Fix fsck in German locales so that a 'j' means yes.
 (Addresses Sourceforge Bug: #1947683)
@@ -4130,7 +4160,7 @@ completely on big-endian systems such as PowerPC.  The bug should be
 completely fixed now.  Yay for regression test suites.  (Addresses Red
 Hat Bugzilla: #434893)
     
-Updated German, Czech, Dutch, Polish, Sweedish, and Vietnamese
+Updated German, Czech, Dutch, Polish, Swedish, and Vietnamese
 translations.  Many thanks to Philipp Thomas from Novell for stepping
 up to become the new German translation maintainer!  (Addresses Debian
 Bugs: #302512, #370247, #401092, #412882).
@@ -4202,13 +4232,13 @@ Fix bug which could cause libblkid to seg fault if a device mapper
 volume disappears while it is being probed.  (Addresses RedHat
 Bugzilla: #433857)
     
-Inhance e2fsck's reporting of unsupported filesystem feature flags.
+Enhance e2fsck's reporting of unsupported filesystem feature flags.
 (Addresses Sourceforge Feature Request: #1175808)
     
 Fix option syntax in dumpe2fs for explicit superblock and blocksize
 parameters.  What was currently documented in the man page has been
 broken for some time, due to getopt() implementation changes.  The
-option sytax has been changed to one which is can be more portable
+option syntax has been changed to one which is can be more portable
 supported and which is consistent with the format for extended options
 in mke2fs and tune2fs.  (Addresses Sourceforge Bug: #1830994)
     
@@ -4235,7 +4265,7 @@ Fix uuidd so that it creates the pid file with the correct pid number.
 
 Fix various gcc -Wall warnings.
 
-Update Czech, Dutch, Polish, Sweedish, and Vietnamese translations
+Update Czech, Dutch, Polish, Swedish, and Vietnamese translations
 
 Fixed spelling mistakes, typos, and otherwise clarified man pages.  
 (Addresses Sourceforge Patch: #1399325)
@@ -4324,7 +4354,7 @@ long.
 
 Mke2fs will now create new filesystems with 256 byte inodes and the
 ext_attr feature flag by default.  This allows for much better future
-compatibity with ext4 and speeds up extended attributes even on ext3
+compatibility with ext4 and speeds up extended attributes even on ext3
 filesystems.
 
 Teach e2fsck to ignore certain "safe" filesystem features which are
@@ -4352,7 +4382,7 @@ skip calling ftruncate in that case.
 
 Add support for detecting HFS+ filesystems in the blkid library.
 
-Add supprt in the blkid library for ext4/ext4dev filesystems.
+Add support in the blkid library for ext4/ext4dev filesystems.
 
 Fix a bug in blkid where it could die on a floating point exception
 when presented with a corrupt reiserfs image.
@@ -4474,7 +4504,7 @@ root in the dom0 host environment, thus allowing the untrusted user to
 gain privileged access in the host OS.  Thanks to the McAfee AVERT
 Research group for reporting this issue.  (Addresses CVE-2007-5497.)
 
-Fix hueristics in blkid which could cause a disk without partitions to
+Fix heuristics in blkid which could cause a disk without partitions to
 be incorrectly skipped when a loopback device is present.  (Addresses
 Red Hat Bugzilla #400321.)
 
@@ -4550,11 +4580,11 @@ Fix mke2fs tests to avoid needing any significant ^M (CR) characters
 
 Add "make check" to the RPM spec file
 
-Fix "make install" and 'make unstall" in misc/Makefile.in so that it
+Fix "make install" and 'make uninstall" in misc/Makefile.in so that it
 works correctly when the prefix is not the root directory.
 
 Fix the resize2fs tests, r_move_itable and r_resize_inode, so they
-clena up after themselves by deleting the test.img temporary file
+clean up after themselves by deleting the test.img temporary file
 after completing the test.
 
 Fixed a corner case bug ext2fs_unlink() when trying to delete the
@@ -4563,7 +4593,7 @@ entry in the previous directory block is not in use.  Fortunately
 ext2fs_unlink() is only used by debugfs and e2fsck, and in e2fsck in
 places where it is extremely unlikely to run into this corner case.
 
-Fix missing dependency which would cuase parallel builds to fail.
+Fix missing dependency which would cause parallel builds to fail.
 (Addresses Sourceforge Bug #1842331.)
 
 Fix a build error on newer gcc caused by lib/ext2fs/ismounted.c
@@ -4587,7 +4617,7 @@ Since we normally can very accurately predict how big the the dirinfo
 array needs to be, this bug only got triggered on very badly corrupted
 filesystems.
 
-Fix a bug in e2fsck which caused it to incorrectly salvange
+Fix a bug in e2fsck which caused it to incorrectly salvage
 directories when the last entry's rec_len is bogusly too big.  This
 resulted in a nonsense filesystem corruption to be reported, and
 required a second run of e2fsck to fully fix up the directory.
@@ -4650,7 +4680,7 @@ e2fsprogs-1.32-mk_cmds-cosmetic.patch)
     
 Fix the test suite to use LC_ALL instead of LANG.  LC_ALL is the "high
 priority" environment variable that overrides all others, where as
-LANG is the lowest priorty environment variable.  If LC_ALL is set, it
+LANG is the lowest priority environment variable.  If LC_ALL is set, it
 doesn't matter whether LANG, LANGUAGE, LC_COLLATE, LC_MESSAGES, and
 the all the rest are set.  This will assure that the locale when
 running the test suites is the "C" locale.  (Obviates Gentoo patch:
@@ -4767,7 +4797,7 @@ error case.
 
 Add libreadline.so.5 support to libss.
 
-Impove badblocks -n/-w exclusive usage message.
+Improve badblocks -n/-w exclusive usage message.
 
 Fix dump_unused segfault in debugfs when a filesystem is not open
 
@@ -4816,7 +4846,7 @@ Add explanatory message to badblocks that -n and -w are mutually exclusive
 Allow debugfs and dumpe2fs to support fs features under development.
 
 Add support for the new flag EXT2_FLAG_SOFTSUPP_FEATURES flag to
-ext2fs_open() , which allows application to open filesystes with features
+ext2fs_open() , which allows application to open filesystems with features
 which are currently only partially supported by e2fsprogs.
 
 Allow unix_io to support offsets greater than 2G (Addresses
@@ -4890,7 +4920,7 @@ determining a partition's size, since binary searching to determine
 the device doesn't work on FreeBSD.
 
 Documentation about UUID's is available in enough places, and it's
-awkward to deal with debian-legal's insanities.  So I'm caving in the
+awkward to deal with debian-legal's inanities.  So I'm caving in the
 "more-lunatic-than-RMS" wing of Debian by removing RFC-4122 so we
 don't have do the dfsg tarball.  Also remove the rule that only tried
 to install RFC-4122 on Ubuntu, since Ubuntu seems to want to fetch
@@ -4970,7 +5000,7 @@ reruns any failed tests
 Update draft-leach-uuids-guids-01.txt with rfc4122.txt
 
 Fix miscellaneous bugs reported by Coverity: Dead code, potential nul
-pointer dereferences, memory leaks, etc.  None were security-criticial
+pointer dereferences, memory leaks, etc.  None were security-critical
 problems.
 
 Fix up usage and decrement error messages in the test_icount program
@@ -5046,7 +5076,7 @@ resize inode for large filesystems.  (Addresses Debian Bug #346580)
 When allocating space for the RAID filesystems with the stride
 parameter, mke2fs will now place each portion of the group's inode
 table right up after the superblock (if present) in order to minimize
-fragmentation of the freespace.
+fragmentation of the free space.
 
 Speed up mke2fs and e2fsck by writing inode and block bitmaps more
 efficiently by writing the inode and block bitmaps in one pass, thus
@@ -5166,7 +5196,7 @@ filesystems.
 Fix a compile_et bug which miscount the number of error messages if
 continuations are used in the .et file.
 
-Add extra sanity checks to protect users from unusual cirucmstances
+Add extra sanity checks to protect users from unusual circumstances
 where /etc/mtab may not be sane, by checking to see if the device is
 reported busy (works on Linux 2.6) kernels.  (Addresses Debian Bug
 #319002)
@@ -5230,7 +5260,7 @@ Sourceforge Bug #1261547)
 
 Clean up the blkid library by making the superblock and generic i/o
 functions to be more generic.  Clean up interface to the probe
-function, and fix memory leak.  Finallly, remove an unneeded reference
+function, and fix memory leak.  Finally, remove an unneeded reference
 to probe.h in the lib/blkid/resolve.c
 
 Add an ext2fs_read_bb_FILE regression test to confirm proper detection
@@ -5283,7 +5313,7 @@ Bugzilla ##161183.)
 
 Fix com_err library to make it more compatible with recent changes
 made to the com_err library in MIT Kerberos V5 version 1.4.
-(Addresses Sourcefroge Bug #1150146)
+(Addresses Sourceforge Bug #1150146)
 
 General cleanup of messages printed by e2fsprogs programs for grammar,
 consistency, and to make life easier for translators.  Fixed a few
@@ -5341,7 +5371,7 @@ filesystems.  (Addresses Debian Bug: #303509)
 If the superblock last mount time indicates that the system clock may
 not be accurate, then e2fsck will omit checking inodes' deletion time
 field for indications of a potential corrupted orphaned inode list.
-(Previously e2fsck only ommited these LOW_DTIME checks when the
+(Previously e2fsck only omitted these LOW_DTIME checks when the
 superblock's last write time looked insane.)
 
 Fixed a IA64 core dump bug in the e2p library which affected dumpe2fs.
@@ -5383,7 +5413,7 @@ are searched before searching all devices in the system.
 Added new functions to the blkid library, blkid_dev_set_search() and
 blkid_dev_has_tag().
 
-E2fsck's problem strings can now use @m and @n as abbrevations for
+E2fsck's problem strings can now use @m and @n as abbreviations for
 "multiply-claimed" and "invalid", respectively.
 
 The e2fsprog.pot file now has an explanation of how the @-expansion
@@ -5394,10 +5424,10 @@ make life easier for translators.
 Fixed missing return values in the ext2fs library which could cause it
 to return random garbage in certain error conditions.
 
-Allow the current time to be overriden via the E2FSCK_TIME environment
+Allow the current time to be overridden via the E2FSCK_TIME environment
 variable for use in regression tests.
 
-The test scrpit driver program now exits with a non-zero status if
+The test script driver program now exits with a non-zero status if
 there any of its test that it ran failed.
 
 Fixed problems with parabuilds on SMP systems.  (Addresses Sourceforge
@@ -5469,7 +5499,7 @@ Cleaned up the lib/ext2fs Makefile slightly.
 E2fsprogs 1.36 (February 4, 2005)
 =================================
 
-All of the patches that were applied to Fedore Core 3's
+All of the patches that were applied to Fedora Core 3's
 e2fsprogs-1.35-11.2 have been integrated, although sometimes with a
 lot of bug fixes first.  Users of Fedora Core 3 are strongly
 encouraged to upgrade to e2fsprogs 1.36 as soon as possible.
@@ -5536,7 +5566,7 @@ too big to be expressed using a 1k blocksize.  (Addresses Sourceforge
 bug #1106631)
 
 Change blkid to test for NTFS first because Windows sometimes doesn't
-clear enough of the parition to confuse the probing routines into
+clear enough of the partition to confuse the probing routines into
 thinking the old filesystem type is still valid.  (Addresses Debian
 Bug #291990)
 
@@ -5571,7 +5601,7 @@ Mke2fs will now accept a size in megabytes, gigabytes, and other units
 convenient than specifying a block count.
 
 Fix an obscure, hard-to find bug in "e2fsck -S" caused by an inode
-cache conherency problem.
+cache coherency problem.
 
 Debugfs now supports a new command, set_inode_field, which allows a
 user to manually set a specific inode field more conveniently, as well
@@ -5579,7 +5609,7 @@ as set entries in the indirect block map.
 
 Debugfs's set_super_value command has been enhanced so that the user
 can set most superblock fields, including the date/time fields and
-some of the more newsly added superblock fields.
+some of the more newly added superblock fields.
 
 E2fsprogs programs now accept an offset to be passed to the file
 specifiers, via the syntax: "/tmp/test.img?offset=1024".
@@ -5622,7 +5652,7 @@ Change e2fsck to accept directories greater than 32MB.
 Fix e2fsck so that a checkinterval of zero disables a time-based check
 of the filesystem.
 
-Debugfs will check the DEBUGFS_PAGER enviroment variable in preference
+Debugfs will check the DEBUGFS_PAGER environment variable in preference
 to the PAGER environment variable.  (Addresses Debian Bug #239547)
 
 Tune2fs will not mark rewrite the superblock if the feature bitmasks 
@@ -5638,7 +5668,7 @@ Add e2image -I option which allows the e2image metadata to be
 installed into a filesystem.
 
 Fixed bug in the badblocks program which caused "done" to always
-appear in english even when a translation was available.  (Addresses
+appear in English even when a translation was available.  (Addresses
 Debian Bug #252836)
 
 The blkid program has a new option -o which controls the output format
@@ -5651,7 +5681,7 @@ of clock sequence when generating UUID's.
 Fix a Y8.8888K problem in the uuid library.
 
 Logsave now creates a new session id for itself to avoid getting
-killed by init whan transitioning between init levels.
+killed by init when transitioning between init levels.
 
 Change the licensing of the UUID library to be the 3-clause BSD-style
 license; this allows Apple to use the uuid library in Darwin.
@@ -5662,7 +5692,7 @@ Fix a memory and file descriptor leak in the blkid library.
 
 The blkid library will revalidate the device if the system time is
 earlier than last verification time of the device, since that
-indicates that the system time is probably nottrustworthy.
+indicates that the system time is probably not trustworthy.
 
 The blkid library will override the default location of the blkid.tab
 file by the BLKID_FILE environment variable, if it is available.
@@ -5697,7 +5727,7 @@ The uuid library now has new functions uuid_unparse_upper() and
 uuid_unparse_lower() which forces the case of the hex digits to be
 upper case, or lower case.
 
-The build process has been speeded up by enhancing the subst program
+The build process has been sped up by enhancing the subst program
 to update the modtime on the generated files even when the generated
 file hasn't changed.
 
@@ -5732,7 +5762,7 @@ __attribute__ ((unused)) if we are using GCC, so that UUID_DEFINE can
 be used in header files.
 
 Add support for the install-strip and install-shlibs-strip targets, as
-suggested by the GNU coding guielines.  "make install" no longer
+suggested by the GNU coding guidelines.  "make install" no longer
 strips the binaries which are installed.
 
 Remove support for the --enable-old-bitops configure option which was
@@ -5761,7 +5791,7 @@ Fix "make uninstall" to so that it removes everything that is installed.
 
 Add a configure --enable-maintainer-mode option which enables the
 makefile rules to rebuild the configure script from configure.in, and
-to reubuild the .gmo files in po directory.
+to rebuild the .gmo files in po directory.
 
 Drop the sparc assembly bitwise operations; it's less efficient
 than the GCC 3.4 compile code and triggers compiler warnings on
@@ -5781,7 +5811,7 @@ E2fsprogs will now deal correctly with symlinks that contain
 extended attribute information, which can be created using SE Linux.
 (Addresses Debian Bug #232328)
                                                                                
-Remove a double longjump into an invalid stack frame bug in e2fsck.
+Remove a double longjmp into an invalid stack frame bug in e2fsck.
 (This was during an abort sequence, which normally worked on Linux and
 caused a core dump on other operating systems.)
 
@@ -5952,7 +5982,7 @@ to be an even multiple of the VM pagesize in order to avoid a Linux
 kernel bug introduced when the storage of the buffer cache was moved
 into the page cache.
 
-Mke2fs will warn the user when creating a filesystem with journaling
+Mke2fs will warn the user when creating a filesystem with journalling
 and a blocksize greater than 4096.  (Addresses Debian bug #193773)
 
 Fixed a bug in resize2fs which caused it to fail on filesystems with a
@@ -5989,7 +6019,7 @@ Fixed a bug in the blkid library which caused it to not update its
 cache if a filesystem changes from having a label to not having a
 label.
 
-Fixed a bug in the blkid library wihch could avoid an infinite loop
+Fixed a bug in the blkid library which could avoid an infinite loop
 in blkid_find_dev_with_tag() if /proc is not mounted and there the
 /etc/blkid.tab file has not yet been created.
 
@@ -6000,10 +6030,10 @@ thrashing the system block buffer cache.
 Fixed various NLS issues.
  - Added Czech and Swedish translations
  - Removed testing NYC translation
- - Fixed NLS support for message abbrevations in e2fsck
+ - Fixed NLS support for message abbreviations in e2fsck
  - Remove de-utf.po, since we shouldn't have two versions using different
 	charset encodings.
- - Used ngettext() (abbreivated with the macro P_(str1, str2, n)) to 
+ - Used ngettext() (abbreviated with the macro P_(str1, str2, n)) to
 	simplify the statistics reporting in e2fsck.
 
 Changed configure.in so that its defaults for *BSD systems no longer
@@ -6025,7 +6055,7 @@ Updated gettext implementation used by e2fsprogs to 0.11.5, and enable
 NLS support by default.  (Added partial workaround for gettext/Darwin
 incompatibility problems.)
 
-Added full MIT KRB5 and Himdall compaibility support to the com_err
+Added full MIT KRB5 and Himdall compatibility support to the com_err
 library and the compile_et program.  (Addresses Debian bug #191900)
 
 Added the blkid_known_fstype() function to the blkid library, which
@@ -6209,8 +6239,8 @@ Updated config.guess and config.sub with newer versions from the FSF.
 Removed unnecessary libraries from being linked into the fsck, lsattr, 
 chattr, and blkid executables.
 
-E2fsprogs 1.32 (Nomvember 9, 2002)
-==================================
+E2fsprogs 1.32 (November 9, 2002)
+=================================
 
 Fixed a bug in the Unix I/O routines which caused needless writebacks
 of clean blocks from the unix_io cache (they were erroneously marked
@@ -6224,12 +6254,12 @@ small amount of CPU time.
 Updated internationalization files.
 
 
-E2fsprogs 1.31 (Nomvember 8, 2002)
-==================================
+E2fsprogs 1.31 (November 8, 2002)
+=================================
 
 Update EVMS ext2fsim plugin with EVMS 1.2.  (We still support
 compiling the fsim plugin with EVMS 1.0 and 1.1.)  Add better error
-handling for child process that die unexpectly.  Add a hack to force
+handling for child process that die unexpectedly.  Add a hack to force
 mkfs to create filesystems that won't cause problems with hardware
 that has 2k or 4k minimum blocksize requirements.  Read from child
 processes in non-blocking mode, so that the GUI continues to update.
@@ -6250,7 +6280,7 @@ Fix a bug where e2fsck could erroneously mark a filesystem as being
 clean if a check of dirty filesystem is interrupted with a ^C.  (Bug
 introduced in e2fsprogs 1.28.)
 
-If journal debuging is enabled using --enable-jbd-debug, the debugging
+If journal debugging is enabled using --enable-jbd-debug, the debugging
 level is now set via the E2FSCK_JBD_DEBUG environment variable.
 
 If byteswapping support is disabled using configure --disable-swapfs,
@@ -6258,7 +6288,7 @@ skip the tests which depend on byte-swapping, so that "make check"
 won't bomb out.
 
 Lshattr will now display the indexed directory flag.  Also, some of
-the more esoteric compression flags are supressed unless compression
+the more esoteric compression flags are suppressed unless compression
 support has been enabled.
 
 Update man pages.
@@ -6272,7 +6302,7 @@ update the inode's ctime field, and the mtime field of the containing
 directories, so that incremental backups using dump/restore will work
 correctly.
 
-In order to avoid spurious errors, e2fsck wil check the last
+In order to avoid spurious errors, e2fsck will check the last
 superblock write time to determine whether or not it can safely use
 the LOW_DTIME checks to determine if there are inodes on the orphan
 inode linked list that had somehow gotten disconnected.  (Addresses
@@ -6292,7 +6322,7 @@ mounted using the loopback interface.  (Addresses Sourceforge bug
 When flushing buffers (as is done by badblocks, for example) check to
 see if the BLKFLSBUF ioctl succeeds, and if so, avoid using the
 FDFLUSH ioctl which causes the MD device driver which causes confusing
-syslog messages about obselete ioctl messages.  (Addresses Sourceforge
+syslog messages about obsolete ioctl messages.  (Addresses Sourceforge
 bug #545832).
 
 Debugfs's write command now checks to see if the destination filename
@@ -6315,7 +6345,7 @@ the location of the block/inode bitmaps and inode table.
 
 Add support for the an alternative block group descriptor layout which
 allows for on-line resizing without needing to prepare the filesystem
-in advance.  (This is the incomat feature flag meta_bg.)
+in advance.  (This is the incompat feature flag meta_bg.)
 
 Add support for storing default mount options in the superblock, so
 that the filesystem can be mounted with specific mount options without
@@ -6326,7 +6356,7 @@ Add support for a new inode flag, which is to be used for indicating
 the top of directory hierarchies for the Orlov block allocator.
 
 Fix e2fsck so that if it creates the lost+found directory, it does so
-with the more apporpriate permissions of 0700.  Also change
+with the more appropriate permissions of 0700.  Also change
 mklost+found so that it also creates the directory 0700.
 
 Fixed format bug in e2fsck if NLS is in use.
@@ -6356,7 +6386,7 @@ block.
 E2fsck now performs additional consistency checks on indexed (HTREE)
 directories.
 
-Fix bug where efsck might get confused about whether a completely
+Fix bug where e2fsck might get confused about whether a completely
 empty directory block is an empty leaf block or an interior htree
 node.  This could cause e2fsck to get confused into think that a valid
 indexed directory was corrupted.
@@ -6391,7 +6421,7 @@ E2fsprogs 1.29 (September 24, 2002)
 ===================================
 
 Fixed a bug in e2fsck which could corrupt a directory when optimizing
-it (via the -D option) or rebuiliding the hash tree index with a 1 in
+it (via the -D option) or rebuilding the hash tree index with a 1 in
 512 probability, due to a fence post error.
 
 Fixed a bug in the LVM support code which caused LABEL='xxx' not to
@@ -6427,7 +6457,7 @@ for setting the htree flag is not included yet, although it can be
 manually turned on via the debugfs program.
 
 Clarified e2fsck error message which is printed when it cannot find
-sufficient contiguous block when relcating filesystem metadata.
+sufficient contiguous block when relocating filesystem metadata.
 
 Added support for building an EVMS plugin module for ext2/3.  This
 module is substantially the same as the EVMS module shipping with EVMS
@@ -6486,7 +6516,7 @@ SIGINT/SIGTERM to its child processes, and wait until they have all
 exited before it exits.
 
 The uuid parsing code in the uuid library now properly complains when
-an illegally formated uuid is presented to it.  (Addresses Debian bug
+an illegally formatted uuid is presented to it.  (Addresses Debian bug
 #152891)
 
 Restrict use of the 2.4 setrlimit ABI f*ckup to kernels between 2.4.10
@@ -6544,7 +6574,7 @@ e2fsck will not complain that the file is too small.
 Resize2fs will print the actual new size of the filesystem when it is
 finished resizing.
 
-Fixed a bug in debugfs where "ls -l" would report incorrectl file type
+Fixed a bug in debugfs where "ls -l" would report incorrectly file type
 information on big-endian systems.
 
 
@@ -6560,7 +6590,7 @@ limitations and bugs which make it unsuitable for production use.)
 
 The ext2fs_read_dir_block2 and ext2fs_write_dir_block now take a new
 flag, EXT2_DIRBLOCK_V2_STRUCT, which will will reverse when the
-name_len field is byte swampped on big-endian machines, since in the
+name_len field is byte swapped on big-endian machines, since in the
 V2 structure, name_len is a char field which is doesn't need to be
 byte swapped --- except if an old-style kernel had byte-swapped the
 name_len field as part of the V1 structure.
@@ -6612,7 +6642,7 @@ Programmer's notes:
 
 Fixed various gcc -Wall complaints.
 
-Fixed a few memory leaks in the e2fsck journaling code, and in the
+Fixed a few memory leaks in the e2fsck journalling code, and in the
 ismounted code checking for a swap device.
 
 Add new inode I/O abstraction interface which exports an inode as
@@ -6678,7 +6708,7 @@ automatically identify reiserfs filesystems.
 The number of processes spawned by fsck can now be limited using the
 FSCK_MAX_INST environment variable.
 
-Fsck now searchs the LVM proc hierarchy to find logical volumes which
+Fsck now searches the LVM proc hierarchy to find logical volumes which
 should be searched for  UUID and label information.
 
 Work around a bug in 2.4.10+ kernels by trying to unset the filesize
@@ -6693,7 +6723,7 @@ badblocks.
 
 Mke2fs now automatically clears the immutable attribute on a
 pre-existing .journal file left over from a previous failed attempt to
-add a journal to an alreadyy-mounted filesystem.
+add a journal to an already-mounted filesystem.
 
 Fixed mke2fs's exit codes to consistently indicate when the mke2fs
 operation failed.
@@ -6765,7 +6795,7 @@ Fix general gcc -Wall complaints.
 E2fsprogs (mostly) works with the dietlibc.
 
 The programming texinfo file has been expanded to include description
-of additional libext2fs functions.  (Still not compeltely done, but a
+of additional libext2fs functions.  (Still not completely done, but a
 lot of the more important functions have been documented.)
 
 Added a umask structure to struct_ext2_filsys, which currently only
@@ -6783,7 +6813,7 @@ information to the callback function (identical to the one used by
 ext2fs_dblist_dir_iterate).  The directory iterator functions take a
 new flag, DIRENT_FLAG_INCLUDE_REMOVED, which will return deleted
 directory entries.  If the directory entry is deleted, the callback
-function will be called with the entry paraemter set to
+function will be called with the entry parameter set to
 DIRENT_DELETED_FILE.
   
 Added new functions, ext2fs_inode_alloc_stats and
@@ -6796,7 +6826,7 @@ E2fsprogs 1.25 (September 20, 2001)
 ===================================
 
 This is primarily a bug-fix release; no new features were added, but
-there are a number of embarassing bug fixes and cleanups applied.
+there are a number of embarrassing bug fixes and cleanups applied.
 
 Fix a bug mke2fs which causes stack garbage to be written to disk when
 zapping disk sectors.  (This bug could cause mke2fs to core dump for
@@ -6856,7 +6886,7 @@ result.
 
 Mke2fs is now more careful about zapping swap space signatures and
 other filesystem/raid superblock magic values so that programs like
-mount who try to use hueristics to determine the filesystem type of a
+mount who try to use heuristics to determine the filesystem type of a
 partition are less likely to be confused.
 
 E2fsck will no longer complain if the the mode of EXT2_RESIZE_INO is a
@@ -6871,11 +6901,11 @@ E2fsprogs program no longer print the filesystem version number
 purpose.
 
 E2fsck will once again compile under libc5, since it will supply its
-own version of strnlen if necesssary.
+own version of strnlen if necessary.
 
 mke2fs and tune2fs will allow the use of UUID= or LABEL= specifiers
 when specifying the external journal device.  tune2fs will also search
-devices looking for the externla journal debice when removing.  
+devices looking for the external journal device when removing.
 
 E2fsprogs 1.23 (August 15, 2001)
 ================================
@@ -6970,7 +7000,7 @@ ioctls, and allow them to be defined for non-i386 platforms.
 The uuid.h header file is now protected against multiple inclusions.
 
 E2fsprogs is now being developed using BitKeeper.  Changed the test
-scripts to deal with BK's stripping CR characgters from text files,
+scripts to deal with BK's stripping CR characters from text files,
 and changed the top-level Makefile.in to avoid including BitKeeper
 files when generating the source tarball.
 
@@ -6979,7 +7009,7 @@ E2fsprogs 1.21 (June 15, 2001)
 ==============================
 
 Added new configure flags which allow a subset e2fsprogs to be built;
-this is most useful for boot floopies, since the resulting shared
+this is most useful for boot floppies, since the resulting shared
 libraries and programs are slimmed down by removing features that
 aren't necessary for a boot floppy.  The new flags that were added
 are: --disable-swapfs, which removes support for byte swapping old
@@ -7037,7 +7067,7 @@ directories correctly because the change modified the layout of struct
 dirent to be incompatible with the libe2p shared library.
 
 Cleaned up the mke2fs manual page and included a discussion about why
-it's good to periodically check the filesystem even when journaling is
+it's good to periodically check the filesystem even when journalling is
 enabled.
 
 Programmer's notes:
@@ -7060,7 +7090,7 @@ Fixed the d_loaddump test case to be more robust, and not depend on
 bash'isms.
 
 Removed debugfs's dependence on pread(), which was accidentally
-intrudced in e2fsprogs 1.20
+introduced in e2fsprogs 1.20
 
 Fixed a performance bug in the libext2fs's icount routine; the size
 estimate of the icount array was incorrectly being calculated.
@@ -7092,7 +7122,7 @@ Miscellaneous code cleanups:
 		their dependencies would be properly calculated.
 	* Removed redundant code
 	* Fixed comments in code
-	* Removed no-longer unneeded argsused #pragma.
+	* Removed no-longer unneeded args used #pragma.
 
 
 E2fsprogs 1.20 (May 20, 2001)
@@ -7128,7 +7158,7 @@ of the directory entry before using it.
 The ext2 library has been enhanced to make tune2fs safe to run on
 mounted filesystems.  (Users could usually get away with using tune2fs
 on mounted filesystems before, but with the advent of ext3 and
-journaling, it became important to make tune2fs was *really* safe for
+journalling, it became important to make tune2fs was *really* safe for
 use even when the filesystem being modified is mounted.)  E2label is
 now implemented by tune2fs using an argv[0] dispatch, so that e2label
 is also now safe for use on mounted filesystems.
@@ -7145,7 +7175,7 @@ large file when deciding whether or not the filesystem has large files.
 Fixed lsattr and chattr so that they work correctly on large files.
 (Fixes Debian bug #72690.)
 
-Removed limitation in get_device_size() which imposed a one terrabyte
+Removed limitation in get_device_size() which imposed a one terabyte
 filesystem limitation.  (Most 2.2 kernels still have a signed int
 problem which cause 1 TB block device limitation.  Fortunately, the
 kernel patches to fix this are much easier than fixing the 2TB
@@ -7315,11 +7345,11 @@ Added ext3 journalling support.  E2fsck will run the journal (if
 necessary) by temporarily mounting the filesystem.  /sbin/fsck.ext3 is
 installed as a symlink to e2fsck.  Fsck has been taught about ext3,
 and treats it the same as ext2 in terms of the progress bar logic.
-Dumpe2fs will display the superblock journaling information if the
+Dumpe2fs will display the superblock journalling information if the
 filesystem has a journal.  The ext2 library will now permit opening an
 ext3 filesystem with the recovery flag set.  This is necessary for
 on-line dump's to work correctly, but there may be issues with this
-working well since ext3 is much less agressive about syncing blocks to
+working well since ext3 is much less aggressive about syncing blocks to
 the filesystem, since they're safe on the journal.
 
 Tune2fs and e2fsck have been changed to allow the mount_count check to
@@ -7337,7 +7367,7 @@ kernel version changes.  Which include files are used by e2fsprogs
 have also been cleaned up to improve portability.
 
 Limit the number of times that e2fsck updates the progress bar so that
-people who are booting using a 9600 baud console don't get swampped by
+people who are booting using a 9600 baud console don't get swamped by
 too many updates.
 
 Improved the loop detection algorithm in e2sck's pass #3 so that it is
@@ -7383,7 +7413,7 @@ check filesystems if there were any LABEL= or UUID= entries in
 /etc/fstab.
 
 The Hurd doesn't support the filetype filesystem feature.  The mke2fs
-program now makes sure that for the Hurd, the filestype feature is
+program now makes sure that for the Hurd, the filetype feature is
 turned off.  E2fsck will check to see if the filetype feature is
 turned on for Hurd filesystems, and offer to turn off the feature.
 
@@ -7404,7 +7434,7 @@ which is used in catastrophic situations where the block group
 descriptors are corrupt.  If the -c option is specified, debugfs will
 skip trying to read in the block and inode bitmaps.
 
-Debufs's lsdel command was fixed to handle bad blocks in the inode
+Debugfs's lsdel command was fixed to handle bad blocks in the inode
 table.
 
 A Y2K bug in debugfs's "ls -l" handling was fixed by switching to use
@@ -7526,7 +7556,7 @@ The ext2fs_free() command now uses the new badblocks API to avoid
 using the compatibility layer.
 
 Added new regression test cases; the run_e2fsck test script now
-supports the ability for a test case to run a prepratory command
+supports the ability for a test case to run a preparatory command
 before running e2fsck.
 
 E2fsprogs 1.17 (October 26, 1999)
@@ -7582,7 +7612,7 @@ sparse_superblock features enabled by default, unless it is run on a
 pre-2.2 kernel.  These features are not supported by a pre-2.2 kernel,
 so there is now a new flag -O which allows the user to specify with
 which features she would like to create the filesystem; "mke2fs -O
-none" will create a filesystsem compatible with 2.0 kernels.
+none" will create a filesystem compatible with 2.0 kernels.
 
 The tune2fs program now has a -O option which allows the user to set
 and reset "safe" filesystem features.  Currently, the only ones which
@@ -7608,7 +7638,7 @@ expanded to the point where an indirect block needed to be allocated.
 
 E2fsck now makes some additional sanity checks on the superblock to
 avoid crashing or giving a memory allocation error if some of the
-values in the superblock are unresonable (but the superblock otherwise
+values in the superblock are unreasonable (but the superblock otherwise
 looks valid).
 
 Fixed a bug in e2fsck where a very badly corrupted filesystem might
@@ -7658,12 +7688,12 @@ Linux 2.3 kernels that have renamed i_version to i_generation.
 
 E2fsck now prints a progress/completion bar (and not just a simple
 spinner) if the -C0 option is requested or if it receives a SIGUSR1
-signal.  Fsck will automatically manage the (potentially muliple)
+signal.  Fsck will automatically manage the (potentially multiple)
 e2fsck processes to print completion bars if it is given a -C option,
 with the right thing happening if multiple filesystems are being
 checked in parallel.
 
-Mke2fs now has better automatic hueristics to determine the filesystem
+Mke2fs now has better automatic heuristics to determine the filesystem
 parameters to be used for a particular filesystem.  Added a new option
 -T which allows the user to specify how the filesystem is to be used,
 which helps mke2fs do a better job selecting the filesystem parameters.
@@ -7693,7 +7723,7 @@ caused the last block in the bitmap not to get cleared.
 Cleaned up a number of messages in e2fsck:
 	* The message "Group's #'s copy of the group descriptor..."
 		was fixed so that the correct number would be displayed.
-	* Added missing space in the "disk write-protected" error messsage
+	* Added missing space in the "disk write-protected" error message
 	* Cleaned up the error message printed when a non-interactive
 		e2fsck needs to abort a check because the filesystem
 		appears to be mounted.
@@ -7702,12 +7732,12 @@ Added a new command-line utility, uuidgen, which will create and print
 a UUID.
 
 Make debugfs's icheck command more robust by checking to make sure an
-inode has valid blocks before interarting over the inode's blocks.
+inode has valid blocks before interacting over the inode's blocks.
 
 UUID generation now uses a random-based scheme whenever possible to
 prevent potential privacy problems.
 
-Man pages for all of the UUID functions in the lirbary were added.
+Man pages for all of the UUID functions in the library were added.
 
 Fixed bug in fsck so it won't coredump if a filesystem not in
 /etc/fstab is given to it.
@@ -7745,7 +7775,7 @@ Cleaned up functions such as pass1_get_blocks, pass1_read_inode which
 in e2fsck's pass1.c really should have been static.
 
 The return value of the uuid_compare() function was changed to make it
-match with the convetions used by strcmp, memcmp, and Paul Leach's
+match with the conventions used by strcmp, memcmp, and Paul Leach's
 UUID sample document.
 
 The "make depend" process has now been made more automated; it now
@@ -7837,7 +7867,7 @@ one of the reasons is that it is uncleanly mounted, e2fsck will print
 that as the reason why the filesystem is being checked.
 
 Cleaned up the output routines of mke2fs so that it doesn't overflow
-an 80 column display when formating really big filesystems.
+an 80 column display when formatting really big filesystems.
 
 Added a sanity check to e2fsck to make sure that file descriptors 0,
 1, 2 are open before opening the hard disk.  This avoids a problem
@@ -7864,7 +7894,7 @@ to grow the bad blocks list.
 Fixed a bug in e2fsck which caused it to dereference a freed pointer
 just before exiting.
 
-Fixed the substition process for generating the mk_cmds and compile_et
+Fixed the substitution process for generating the mk_cmds and compile_et
 scripts so that they will work outside of the build tree.
 
 Add sanity check to e2fsck so that if an internal routine
@@ -7874,7 +7904,7 @@ and causing a core dump.  This should never happen, but...
 E2fsprogs 1.12 (July 9, 1998)
 ==================================
 
-E2fsprogs now works with glibc (at least with the version shipped wtih
+E2fsprogs now works with glibc (at least with the version shipped with
 RedHat 5.0).  The ext2fs_llseek() function should now work even with
 i386 ELF shared libraries and if llseek() is not present.  We also
 explicitly do a configure test to see if (a) llseek is in libc, and
@@ -7933,7 +7963,7 @@ Fixed a bug in e2fsck (really in libext2fs's dblist function) where if
 the block group descriptor table is corrupt, it was possible to try to
 allocate a huge array, fail, and then abort e2fsck.
 ext2fs_get_num_dirs() now sanity checks the block group descriptor,
-and subsitutes reasonable values if the descriptors are obviously bogus.
+and substitutes reasonable values if the descriptors are obviously bogus.
 
 If e2fsck finds a device file which has the immutable flag set and the
 i_blocks beyond the normal device number are non-zero, e2fsck will
@@ -7959,10 +7989,10 @@ Fixed a minor bug in e2fsck's pass1b's file cloning function, where
 certain errors would not be properly reported.
 
 Updated and expanded a few points in the man pages which users
-complained wheren't explicit enough.
+complained weren't explicit enough.
 
 Added special case byte-swapping code if compiling on the PowerPC, to
-accomodate the strange big-endian variant of the ext2 filesystem that
+accommodate the strange big-endian variant of the ext2 filesystem that
 was previously used on the PowerPC port.
 
 
@@ -7998,7 +8028,7 @@ instead of malloc, free, and resize.  This makes it easier for us to
 be ported to strange environments where malloc, et. al. aren't
 necessarily available.
 
-Change the libext2fs fucntion to return ext2-specific error codes
+Change the libext2fs function to return ext2-specific error codes
 (EXT2_DIR_EXISTS and EXT2_DB_NOT_FOUND, for example) instead of using
 and depending on the existence of system error codes (such as EEXIST
 and ENOENT).
@@ -8010,7 +8040,7 @@ Add protection against ext2_io.h and ext2fs.h being included multiple
 times.
 
 The types used for memory lengths, etc. have been made more portable.
-In generla, the code has been made 16-bit safe.  Added Mark
+In general, the code has been made 16-bit safe.  Added Mark
 Habersack's contributed DOS disk i/o routines.
 
 Miscellaneous portability fixes, including not depending on char's
@@ -8025,7 +8055,7 @@ EXT2_ET_CALLBACK_NOTHANDLED if it wishes ext2fs_check_directory() to
 really do the checking, despite the presence of the callback function.
 
 
-E2fsprosg 1.11 (June 17, 1997)
+E2fsprogs 1.11 (June 17, 1997)
 ==============================
 
 Fixed e2fsck to detect (previously ignored) conflicts between the
@@ -8059,7 +8089,7 @@ Fixed install rule in lib/ss so that ss_err.h is actually getting
 installed.
 
 Fixed bug in ext2fs_copy_bitmap; the destination bitmap wasn't getting
-bassed back to the caller.
+passed back to the caller.
 
 Fixed bug in ext2fs_inode_scan_goto_blockgroup; it had not been
 setting the current inode number (which meant this function wasn't
@@ -8117,7 +8147,7 @@ since that can't be assumed to be true --- RedHat doesn't install
 libc-static by default.
 
 Fixed bug in libext2's block iterator functions where under some
-cirmcustances, file with holes would cause the bcount parameter to the
+circumstances, file with holes would cause the bcount parameter to the
 callback function to be incorrect.  This bug didn't affect any of
 e2fsprogs programs, but it was discovered by Paul Mackerras, the
 author of the PPC boot loader.
@@ -8218,7 +8248,7 @@ helps to speed up e2fsck.
 Added a new function ext2fs_icount_validate() which checks the rep
 invariant for the icount structure.  This is used mostly for testing.
 
-The error mesasage given when a bad inode number is passed to
+The error message given when a bad inode number is passed to
 test_generic_bitmap to reflect EXT2FS_TEST_ERROR (instead of
 EXT2FS_UNMARK_ERROR).
 
@@ -8254,7 +8284,7 @@ E2fsck's pass 3 has been made more efficient; most noticeable on
 filesystems with a very large number of directories.
 
 Completely revamped e2fsck's system of printing problem reports.  It
-is now table driven, to make them more easily customizeable and
+is now table driven, to make them more easily customizable and
 extendable.  Error messages which can be printed out during preen mode
 are now one line long.
 
@@ -8271,7 +8301,7 @@ isn't).
 Added a check to e2fsck to make sure that a directory entry isn't a
 link to the root directory, since that isn't allowed.
 
-Added a check to e2fsk to now make sure the '.' and '..' directory
+Added a check to e2fsck to now make sure the '.' and '..' directory
 entries are null terminated, since the 2.0 kernel requires it.
 
 Added check to write_bitmaps() to make sure the superblock doesn't get
@@ -8299,7 +8329,7 @@ non-existent device.
 When badblocks is given the -vv option, it now updates the block that
 it is currently testing on every block.
 
-Fixed a bug in fsck where it wouldn't modify the PATH envirnoment
+Fixed a bug in fsck where it wouldn't modify the PATH environment
 currently correctly if PATH wasn't already set.
 
 Shared libraries now built with dependencies.  This allows the shared
@@ -8381,7 +8411,7 @@ the top level directory.  Users should manually run "make check" if
 they wish to run the test suite.
 
 Upon a preenhalt(), make the printed message more explicit that
-running e2fsck "MANAULLY" means without the -p or -a options.
+running e2fsck "MANUALLY" means without the -p or -a options.
 
 In e2fsck, if a disconnected inode is zero-length, offer to clear it
 instead of offering to connect it to lost+found.
@@ -8438,7 +8468,7 @@ confusing for users.  It now mentions that another reason for the
 "corrupt superblock" message might be that the partition might not be
 an ext2 filesystem at all (it might swap, msdos filesystem, ufs, etc.)
 
-Make the libext2 library more robuest so that e2fsck won't coredump on
+Make the libext2 library more robust so that e2fsck won't coredump on
 an illegal superblock where the blocksize is zero.  (f_crashdisk is
 the test case).
 
@@ -8458,7 +8488,7 @@ function is invoked by using the '-s' option to e2fsck.
 Debugfs's "dump" command has been enhanced so that it writes out the
 exact size of the file so that the nulls at the end of the file are
 eliminated.  The command also accept a new "-p" option which will
-attempt preserve to preserve the ownernship, permissions, and
+attempt preserve to preserve the ownership, permissions, and
 file modification/access times.
 
 Debugfs has two new options, -f and -R.  The -R option allows the user
@@ -8471,7 +8501,7 @@ printing the check interval as a number of seconds.
 
 Fix bugs in debugfs: the params command when no filesystem is opened
 no longer causes a core dump.  It is now possible to unlink a file
-when a pathame containing a '/' is specified.
+when a pathname containing a '/' is specified.
 
 Tune2fs has a new -C option which sets the number of times the
 filesystem has been mounted.
@@ -8551,8 +8581,8 @@ Lots of miscellaneous linking/installation cleanups:
   Programs such as fsck which didn't need to be linked against
   libext2fs (or mke2fs which didn't need to be linked against libe2p)
   only link against libraries they actually need.  Otherwise, those
-  programs would require the presense of libraries that otherwise
-  could be removed from a rescuse diskette.
+  programs would require the presence of libraries that otherwise
+  could be removed from a rescue diskette.
 
   The ss include files are now installed correctly so they can
   actually be used by another package.
@@ -8580,7 +8610,7 @@ openable in read/write mode in order to determine its size.  This
 caused e2fsck -n to require read/write access when it was not
 previously necessary.
 
-Fixed a bug in e2fsck which casued it to occasionally fail the test
+Fixed a bug in e2fsck which caused it to occasionally fail the test
 suite depending on which version of the floating point library it was
 using.
 
@@ -8589,7 +8619,7 @@ certain superblock consistency checks fail.  Previously it continued
 running e2fsck, with some potential confusing/damaging consequences.
 
 Added new flag to fsck which allows the root to be checked in parallel
-with other filesytems.  This is not the safest thing in the world to
+with other filesystems.  This is not the safest thing in the world to
 do, but some system administrators really wanted it.
 
 Fixed -Wall flames in lib/ss.
@@ -8607,7 +8637,7 @@ guaranteed to be non-contiguous.
 In mke2fs, print a warning message if a user tries to format a whole
 disk (/dev/hda versus /dev/hda1).  If a user really wants to format a
 whole disk, the -F (force) option forces mke2fs to format a whole disk
-as a filesytem.
+as a filesystem.
 
 Fix a bug in fsck where in some cases it might start checking
 partitions in the next pass before it finishes checking partitions in

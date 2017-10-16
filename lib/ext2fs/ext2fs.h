@@ -326,7 +326,7 @@ struct struct_ext2_filsys {
  *
  * BLOCK_FLAG_DEPTH_TRAVERSE indicates that the iterator function for
  * the indirect, doubly indirect, etc. blocks should be called after
- * all of the blocks containined in the indirect blocks are processed.
+ * all of the blocks contained in the indirect blocks are processed.
  * This is useful if you are going to be deallocating blocks from an
  * inode.
  *
@@ -409,7 +409,7 @@ typedef struct ext2_extent_path *ext2_extent_path_t;
 /*
  * Flags used by ext2fs_extent_delete()
  */
-#define EXT2_EXTENT_DELETE_KEEP_EMPTY	0x001 /* keep node if last extnt gone */
+#define EXT2_EXTENT_DELETE_KEEP_EMPTY	0x001 /* keep node if last extent gone */
 
 /*
  * Flags used by ext2fs_extent_set_bmap()
