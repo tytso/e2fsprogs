@@ -830,8 +830,8 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	else if (LINUX_S_ISSOCK(inode->i_mode)) i_type = "socket";
 	else i_type = "bad type";
 	fprintf(out, "%sInode: %u   Type: %s    ", prefix, inode_num, i_type);
-	fprintf(out, "%sMode:  %04o   Flags: 0x%x\n",
-		prefix, inode->i_mode & 0777, inode->i_flags);
+	fprintf(out, "%sMode:  0%03o   Flags: 0x%x\n",
+		prefix, inode->i_mode & 07777, inode->i_flags);
 	if (is_large_inode && large_inode->i_extra_isize >= 24) {
 		fprintf(out, "%sGeneration: %u    Version: 0x%08x:%08x\n",
 			prefix, inode->i_generation, large_inode->i_version_hi,
