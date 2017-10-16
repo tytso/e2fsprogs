@@ -218,6 +218,7 @@ tests/*.ok
 tests/*.failed
 tests/*.log
 tests/*.tmp
+tests/*.slow
 tests/mke2fs.conf
 tests/test_script
 tests/test_one
