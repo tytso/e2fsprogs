@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.43.7">E2fsprogs 1.43.7 (October 16, 2017)</A>
 <LI><A HREF="#1.43.6">E2fsprogs 1.43.6 (August 29, 2017)</A>
 <LI><A HREF="#1.43.5">E2fsprogs 1.43.5 (August 4, 2017)</A>
 <LI><A HREF="#1.43.4">E2fsprogs 1.43.4 (January 31, 2017)</A>
@@ -118,6 +119,34 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.43.7">E2fsprogs 1.43.7 (October 16, 2017)</A></H2>
+
+<P>Fix the error handling code in debugfs, fuse2fs and tune2fs so errors
+trying to replay the journal won't accidentally result in a seg fault
+if reopening the file system after the journal replay fails for some
+reason.</P>
+
+<P>Fix resize2fs to avoid it from either failing or corrupting the file
+system image in certain corner cases when doing an off-line resize.</P>
+
+<P>Fix many spelling mistakes in various man pages, code comments, and
+program messages.</P>
+
+<P>Fix e2fsck and debugfs so that maliciously corrupted file systems will
+not cause buffer overflows.  (Addresses Debian Bugs: #873757, #878104)</P>
+
+<P>Update German translation.  (Addresses Debian Bug: #833514)</P>
+
+<P>Fixed various Debian Packaging Issues.  (Addresses Debian Bugs:
+#873812, #873813, #876551)</P>
+
+<H3>Programming notes</H3>
+
+<P>Test descritions have been shorted to fit in 80 columns.</P>
+
+<P>Fix various tests to avoid leaving temp files in /tmp.</P>
+
 
 <H2><A NAME="1.43.6">E2fsprogs 1.43.6 (August 29, 2017)</A></H2>
 
