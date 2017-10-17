@@ -395,7 +395,7 @@ binary-arch: install $(INSTALL_UDEB)
 	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc
 	ln -sf e2fslibs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
 
-	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+	dh_installdocs -Ne2fsprogs-udeb
 
   # HTML docs
 	$(INSTALL) -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
@@ -461,8 +461,7 @@ ifeq ($(SKIP_FUSE2FS),)
 		-u"-Ldebian/e2fsprogs.shlibs.local"
 endif
 
-	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
-		-Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+	dh_gencontrol -Ncomerr-dev -Nss-dev -Ne2fsprogs-udeb
 	DH_OPTIONS= dh_gencontrol -pcomerr-dev \
 	  -u '-v${COMERR_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -pss-dev \

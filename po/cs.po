@@ -71,7 +71,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2017-08-29 01:11-0400\n"
+"POT-Creation-Date: 2017-10-16 01:44-0400\n"
 "PO-Revision-Date: 2017-08-17 20:38+02:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
@@ -99,7 +99,7 @@ msgstr "při čtení iuzlu špatných bloků"
 #: e2fsck/unix.c:1626 misc/badblocks.c:1251 misc/badblocks.c:1259
 #: misc/badblocks.c:1273 misc/badblocks.c:1285 misc/dumpe2fs.c:593
 #: misc/e2image.c:1401 misc/e2image.c:1585 misc/e2image.c:1606
-#: misc/mke2fs.c:230 misc/tune2fs.c:2726 misc/tune2fs.c:2820 resize/main.c:413
+#: misc/mke2fs.c:230 misc/tune2fs.c:2723 misc/tune2fs.c:2817 resize/main.c:413
 #, c-format
 msgid "while trying to open %s"
 msgstr "při pokusu otevřít %s"
@@ -3036,21 +3036,21 @@ msgstr "při spouštění prohlídky iuzlů"
 msgid "while doing inode scan"
 msgstr "při provádění prohlídky iuzlů"
 
-#: e2fsck/super.c:190
+#: e2fsck/super.c:207
 #, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
 msgstr "při volání ext2fs_block_iterate pro iuzel %d"
 
-#: e2fsck/super.c:213
+#: e2fsck/super.c:230
 #, c-format
 msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
 msgstr "při volání ext2fs_adjust_ea_refcount2 pro iuzel %d"
 
-#: e2fsck/super.c:274
+#: e2fsck/super.c:291
 msgid "Truncating"
 msgstr "Usekávám"
 
-#: e2fsck/super.c:275
+#: e2fsck/super.c:292
 msgid "Clearing"
 msgstr "Mažu"
 
@@ -3269,7 +3269,7 @@ msgstr[0] "%12u soubor\n"
 msgstr[1] "%12u soubory\n"
 msgstr[2] "%12u souborů\n"
 
-#: e2fsck/unix.c:235 misc/badblocks.c:1002 misc/tune2fs.c:2911 misc/util.c:126
+#: e2fsck/unix.c:235 misc/badblocks.c:1002 misc/tune2fs.c:2908 misc/util.c:126
 #: resize/main.c:353
 #, c-format
 msgid "while determining whether %s is mounted."
@@ -3441,7 +3441,7 @@ msgid "The -t option is not supported on this version of e2fsck.\n"
 msgstr "Přepínač -t není v této verzi e2fsck podporován.\n"
 
 #: e2fsck/unix.c:912 e2fsck/unix.c:989 misc/e2initrd_helper.c:330
-#: misc/tune2fs.c:1631 misc/tune2fs.c:1926 misc/tune2fs.c:1944
+#: misc/tune2fs.c:1628 misc/tune2fs.c:1923 misc/tune2fs.c:1941
 #, c-format
 msgid "Unable to resolve '%s'"
 msgstr "Nelze vyřešit „%s“"
@@ -3503,7 +3503,7 @@ msgstr ""
 msgid "while checking MMP block"
 msgstr "při kontrole bloku MMP"
 
-#: e2fsck/unix.c:1243 misc/tune2fs.c:2825
+#: e2fsck/unix.c:1243 misc/tune2fs.c:2822
 msgid ""
 "If you are sure the filesystem is not in use on any node, run:\n"
 "'tune2fs -f -E clear_mmp {device}'\n"
@@ -3517,8 +3517,8 @@ msgid "while reading MMP block"
 msgstr "při čtení bloku MMP"
 
 #: e2fsck/unix.c:1278 e2fsck/unix.c:1330 misc/e2undo.c:230 misc/e2undo.c:275
-#: misc/mke2fs.c:2567 misc/mke2fs.c:2618 misc/tune2fs.c:2643
-#: misc/tune2fs.c:2688 resize/main.c:187 resize/main.c:232
+#: misc/mke2fs.c:2567 misc/mke2fs.c:2618 misc/tune2fs.c:2640
+#: misc/tune2fs.c:2685 resize/main.c:187 resize/main.c:232
 #, c-format
 msgid ""
 "Overwriting existing filesystem; this can be undone using the command:\n"
@@ -3528,7 +3528,7 @@ msgstr ""
 "Přepisuji existující systém souborů, toto může být odčiněno příkazem:\n"
 "   e2undo %s %s\n"
 
-#: e2fsck/unix.c:1319 misc/e2undo.c:264 misc/mke2fs.c:2607 misc/tune2fs.c:2677
+#: e2fsck/unix.c:1319 misc/e2undo.c:264 misc/mke2fs.c:2607 misc/tune2fs.c:2674
 #: resize/main.c:221
 #, c-format
 msgid "while trying to delete %s"
@@ -4463,7 +4463,7 @@ msgstr "při čtení superbloku žurnálu"
 msgid "Couldn't find journal superblock magic numbers"
 msgstr "Nemohu najít magická čísla superbloku žurnálu"
 
-#: misc/dumpe2fs.c:434 misc/mke2fs.c:786 misc/tune2fs.c:1963
+#: misc/dumpe2fs.c:434 misc/mke2fs.c:786 misc/tune2fs.c:1960
 msgid "Couldn't allocate memory to parse options!\n"
 msgstr "Nemohu alokovat paměť pro zpracování přepínačů!\n"
 
@@ -4516,7 +4516,7 @@ msgstr ""
 "*** Okamžitě spusťte e2fsck!\n"
 "\n"
 
-#: misc/dumpe2fs.c:595 misc/e2image.c:1587 misc/tune2fs.c:2838
+#: misc/dumpe2fs.c:595 misc/e2image.c:1587 misc/tune2fs.c:2835
 #: resize/main.c:415
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Nemohu najít platný superblok systému souborů.\n"
@@ -4814,7 +4814,7 @@ msgstr "e2label: chyba při čtení superbloku\n"
 msgid "e2label: not an ext2 filesystem\n"
 msgstr "e2label: není systém souborů ext2\n"
 
-#: misc/e2label.c:97 misc/tune2fs.c:3011
+#: misc/e2label.c:97 misc/tune2fs.c:3008
 #, c-format
 msgid "Warning: label too long, truncating.\n"
 msgstr "Varování: jmenovka příliš dlouhá, zkracuji.\n"
@@ -4829,7 +4829,7 @@ msgstr "e2label: nemohu se zase posunout na superblok\n"
 msgid "e2label: error writing superblock\n"
 msgstr "e2label: chyba při zápisu superbloku\n"
 
-#: misc/e2label.c:117 misc/tune2fs.c:1623
+#: misc/e2label.c:117 misc/tune2fs.c:1620
 #, c-format
 msgid "Usage: e2label device [newlabel]\n"
 msgstr "Použití: e2label zařízení [novájmenovka]\n"
@@ -5169,7 +5169,7 @@ msgstr ""
 msgid "%s: %s.\n"
 msgstr "%s: %s.\n"
 
-#: misc/fuse2fs.c:3782 misc/fuse2fs.c:3796 misc/tune2fs.c:3240
+#: misc/fuse2fs.c:3782 misc/fuse2fs.c:3796 misc/tune2fs.c:3237
 #, c-format
 msgid "Please run e2fsck -fy %s.\n"
 msgstr "Spusťte prosím „e2fsck -fy %s“.\n"
@@ -5492,7 +5492,7 @@ msgstr "Neplatná desc_size: „%s“\n"
 msgid "Invalid offset: %s\n"
 msgstr "Neplatná pozice: %s\n"
 
-#: misc/mke2fs.c:854 misc/tune2fs.c:1991
+#: misc/mke2fs.c:854 misc/tune2fs.c:1988
 #, c-format
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr "Neplatný interval_aktualizace_mmp: %s\n"
@@ -5599,7 +5599,7 @@ msgstr ""
 "Chyba syntaxe v konfiguračním souboru mke2fs (%s, řádek č. %d)\n"
 "\t%s\n"
 
-#: misc/mke2fs.c:1115 misc/tune2fs.c:1012
+#: misc/mke2fs.c:1115 misc/tune2fs.c:1009
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr "Neplatná sada přepínačů systému souborů: %s\n"
@@ -5669,7 +5669,7 @@ msgstr "špatná velikost clusteru – %s"
 msgid "'-R' is deprecated, use '-E' instead"
 msgstr "Přepínač „-R“ je zastaralý, použijte místo něj „-E“"
 
-#: misc/mke2fs.c:1615 misc/tune2fs.c:1720
+#: misc/mke2fs.c:1615 misc/tune2fs.c:1717
 #, c-format
 msgid "bad error behavior - %s"
 msgstr "špatné chování při chybách - %s"
@@ -6077,7 +6077,8 @@ msgstr ""
 "uvedením -I 64bit.\n"
 
 #: misc/mke2fs.c:2871
-msgid "The metadata_csum_seed feature requres the metadata_csum feature.\n"
+#, fuzzy
+msgid "The metadata_csum_seed feature requires the metadata_csum feature.\n"
 msgstr "Vlastnost metadata_csum_seed vyžaduje vlastnost metadata_csum.\n"
 
 #: misc/mke2fs.c:2895
@@ -6121,7 +6122,7 @@ msgstr "při nulování bloku %llu na konci systému souborů"
 msgid "while reserving blocks for online resize"
 msgstr "při rezervaci bloků pro změnu velikosti za běhu"
 
-#: misc/mke2fs.c:3140 misc/tune2fs.c:1428
+#: misc/mke2fs.c:3140 misc/tune2fs.c:1425
 msgid "journal"
 msgstr "žurnál"
 
@@ -6140,7 +6141,7 @@ msgstr ""
 "\tpři pokusu přidat žurnál k zařízení %s"
 
 #: misc/mke2fs.c:3164 misc/mke2fs.c:3193 misc/mke2fs.c:3231
-#: misc/mk_hugefiles.c:596 misc/tune2fs.c:1457 misc/tune2fs.c:1476
+#: misc/mk_hugefiles.c:596 misc/tune2fs.c:1454 misc/tune2fs.c:1473
 msgid "done\n"
 msgstr "hotovo\n"
 
@@ -6161,7 +6162,7 @@ msgstr ""
 "\n"
 "\tpři pokusu vytvořit žurnál"
 
-#: misc/mke2fs.c:3201 misc/tune2fs.c:1077
+#: misc/mke2fs.c:3201 misc/tune2fs.c:1074
 msgid ""
 "\n"
 "Error while enabling multiple mount protection feature."
@@ -6321,12 +6322,12 @@ msgstr "Superblok žurnálu nenalezen!\n"
 msgid "while trying to open external journal"
 msgstr "při pokusu otevřít externí žurnál"
 
-#: misc/tune2fs.c:285 misc/tune2fs.c:2734
+#: misc/tune2fs.c:285 misc/tune2fs.c:2731
 #, c-format
 msgid "%s is not a journal device.\n"
 msgstr "%s není zařízení žurnálu.\n"
 
-#: misc/tune2fs.c:295 misc/tune2fs.c:2745
+#: misc/tune2fs.c:295 misc/tune2fs.c:2742
 msgid "Filesystem's UUID not found on journal device.\n"
 msgstr "UUID systému souborů nenalezeno na zařízení žurnálu.\n"
 
@@ -6358,32 +6359,32 @@ msgstr "při zápisu iuzlu žurnálu"
 msgid "(and reboot afterwards!)\n"
 msgstr "(a po té rebootujte!)\n"
 
-#: misc/tune2fs.c:481
+#: misc/tune2fs.c:478
 #, c-format
 msgid "After running e2fsck, please run `resize2fs %s %s"
 msgstr "Po dokončení e2fsck spusťte, prosím, „resize2fs %s %s"
 
-#: misc/tune2fs.c:484
+#: misc/tune2fs.c:481
 #, c-format
 msgid "Please run `resize2fs %s %s"
 msgstr "Spusťte, prosím, „resize2fs %s %s"
 
-#: misc/tune2fs.c:488
+#: misc/tune2fs.c:485
 #, c-format
 msgid " -z \"%s\""
 msgstr " -z „%s“"
 
-#: misc/tune2fs.c:490
+#: misc/tune2fs.c:487
 #, c-format
 msgid "' to enable 64-bit mode.\n"
 msgstr "“, abyste zapnuli 64bitový režim.\n"
 
-#: misc/tune2fs.c:492
+#: misc/tune2fs.c:489
 #, c-format
 msgid "' to disable 64-bit mode.\n"
 msgstr "“, abyste vypnuli 64bitový režim.\n"
 
-#: misc/tune2fs.c:979
+#: misc/tune2fs.c:976
 msgid ""
 "WARNING: Could not confirm kernel support for metadata_csum_seed.\n"
 "  This requires Linux >= v4.4.\n"
@@ -6391,17 +6392,17 @@ msgstr ""
 "POZOR: Nebylo možné potvrdit podporu pro metadata_csum_seed v jádře.\n"
 "Tato vlastnost vyžaduje Linux >= v4.4.\n"
 
-#: misc/tune2fs.c:1015
+#: misc/tune2fs.c:1012
 #, c-format
 msgid "Clearing filesystem feature '%s' not supported.\n"
 msgstr "Odstranění vlastnosti systému souborů „%s“ není podporováno.\n"
 
-#: misc/tune2fs.c:1021
+#: misc/tune2fs.c:1018
 #, c-format
 msgid "Setting filesystem feature '%s' not supported.\n"
 msgstr "Nastavená vlastnosti systému souborů „%s“ není podporováno.\n"
 
-#: misc/tune2fs.c:1030
+#: misc/tune2fs.c:1027
 msgid ""
 "The has_journal feature may only be cleared when the filesystem is\n"
 "unmounted or mounted read-only.\n"
@@ -6409,7 +6410,7 @@ msgstr ""
 "Příznak has_journal může být vymazán jen, když je systém souborů\n"
 "odpojen nebo připojen jen pro čtení.\n"
 
-#: misc/tune2fs.c:1038
+#: misc/tune2fs.c:1035
 msgid ""
 "The needs_recovery flag is set.  Please run e2fsck before clearing\n"
 "the has_journal flag.\n"
@@ -6417,7 +6418,7 @@ msgstr ""
 "Příznak needs_recovery je nastaven. Před vymazáním příznaku has_journal\n"
 "prosím spusťte e2fsck.\n"
 
-#: misc/tune2fs.c:1056
+#: misc/tune2fs.c:1053
 msgid ""
 "Setting filesystem feature 'sparse_super' not supported\n"
 "for filesystems with the meta_bg feature enabled.\n"
@@ -6425,7 +6426,7 @@ msgstr ""
 "Na souborových systémech se zapnutou vlastností meta_bg není nastavení\n"
 "vlastnosti „sparse_super“ podporováno.\n"
 
-#: misc/tune2fs.c:1069
+#: misc/tune2fs.c:1066
 msgid ""
 "The multiple mount protection feature can't\n"
 "be set if the filesystem is mounted or\n"
@@ -6434,14 +6435,14 @@ msgstr ""
 "Ochranu před násobným připojením nelze nastavit,\n"
 "pokud je systém souborů připojen nebo je-li jen pro čtení.\n"
 
-#: misc/tune2fs.c:1087
+#: misc/tune2fs.c:1084
 #, c-format
 msgid "Multiple mount protection has been enabled with update interval %ds.\n"
 msgstr ""
 "Ochrana před násobným připojením byla zapnuta s intervalem aktualizace "
 "%d s.\n"
 
-#: misc/tune2fs.c:1096
+#: misc/tune2fs.c:1093
 msgid ""
 "The multiple mount protection feature cannot\n"
 "be disabled if the filesystem is readonly.\n"
@@ -6449,21 +6450,21 @@ msgstr ""
 "Ochranu před násobným přijením nelze vypnout,\n"
 "je-li souborový systém jen pro čtení.\n"
 
-#: misc/tune2fs.c:1104
+#: misc/tune2fs.c:1101
 msgid "Error while reading bitmaps\n"
 msgstr "Chyba při čtení bitmap\n"
 
-#: misc/tune2fs.c:1113
+#: misc/tune2fs.c:1110
 #, c-format
 msgid "Magic number in MMP block does not match. expected: %x, actual: %x\n"
 msgstr ""
 "Magické číslo v bloku MMP se neshoduje. Očekáváno: %x, skutečnost: %x\n"
 
-#: misc/tune2fs.c:1118
+#: misc/tune2fs.c:1115
 msgid "while reading MMP block."
 msgstr "při čtení bloku MMP."
 
-#: misc/tune2fs.c:1150
+#: misc/tune2fs.c:1147
 msgid ""
 "Clearing the flex_bg flag would cause the the filesystem to be\n"
 "inconsistent.\n"
@@ -6471,7 +6472,7 @@ msgstr ""
 "Odstranění příznaku flex_bg by mohlo způsobit nekonzistenci systému\n"
 "souborů.\n"
 
-#: misc/tune2fs.c:1161
+#: misc/tune2fs.c:1158
 msgid ""
 "The huge_file feature may only be cleared when the filesystem is\n"
 "unmounted or mounted read-only.\n"
@@ -6479,15 +6480,15 @@ msgstr ""
 "Příznak huge_file může být vymazán jen, když je systém souborů\n"
 "odpojen nebo připojen jen pro čtení.\n"
 
-#: misc/tune2fs.c:1172
+#: misc/tune2fs.c:1169
 msgid "Enabling checksums could take some time."
 msgstr "Zapnutí kontrolních součtů by mohlo trvat nějakou dobu."
 
-#: misc/tune2fs.c:1174
+#: misc/tune2fs.c:1171
 msgid "Cannot enable metadata_csum on a mounted filesystem!\n"
 msgstr "Na připojeném souborovém systému nelze zapnout metadata_csum!\n"
 
-#: misc/tune2fs.c:1180
+#: misc/tune2fs.c:1177
 msgid ""
 "Extents are not enabled.  The file extent tree can be checksummed, whereas "
 "block maps cannot.  Not enabling extents reduces the coverage of metadata "
@@ -6497,7 +6498,7 @@ msgstr ""
 "kontrolní součty, ale mapy bloků nikoliv. Nezapnutí rozsahů snižuje pokrytí\n"
 "metadat kontrolními součty. Situaci lze napravit spuštěním s -O extent.\n"
 
-#: misc/tune2fs.c:1187
+#: misc/tune2fs.c:1184
 msgid ""
 "64-bit filesystem support is not enabled.  The larger fields afforded by "
 "this feature enable full-strength checksumming.  Run resize2fs -b to "
@@ -6507,30 +6508,30 @@ msgstr ""
 "s touto podporou umožní silnější kontrolní součty. Situaci lze napravit\n"
 "spuštěním resize2fs -b.\n"
 
-#: misc/tune2fs.c:1213
+#: misc/tune2fs.c:1210
 msgid "Disabling checksums could take some time."
 msgstr "Vypnutí kontrolních součtů by mohlo trvat nějakou dobu."
 
-#: misc/tune2fs.c:1215
+#: misc/tune2fs.c:1212
 msgid "Cannot disable metadata_csum on a mounted filesystem!\n"
 msgstr "Na připojeném souborovém systému nelze vypnout metadata_csum!\n"
 
-#: misc/tune2fs.c:1278
+#: misc/tune2fs.c:1275
 #, c-format
 msgid "Cannot enable 64-bit mode while mounted!\n"
 msgstr "64bitový režim nelze zapnout, je-li systém připojen!\n"
 
-#: misc/tune2fs.c:1288
+#: misc/tune2fs.c:1285
 #, c-format
 msgid "Cannot disable 64-bit mode while mounted!\n"
 msgstr "64bitový systém nelze vypnout, je-li systém připojen!\n"
 
-#: misc/tune2fs.c:1318
+#: misc/tune2fs.c:1315
 #, c-format
 msgid "Cannot enable project feature; inode size too small.\n"
 msgstr ""
 
-#: misc/tune2fs.c:1339
+#: misc/tune2fs.c:1336
 msgid ""
 "\n"
 "Warning: '^quota' option overrides '-Q'arguments.\n"
@@ -6538,7 +6539,7 @@ msgstr ""
 "\n"
 "Pozor: přepínač „^quota“ přebije argumenty „–Q“.\n"
 
-#: misc/tune2fs.c:1357
+#: misc/tune2fs.c:1354
 msgid ""
 "Setting feature 'metadata_csum_seed' is only supported\n"
 "on filesystems with the metadata_csum feature enabled.\n"
@@ -6546,7 +6547,7 @@ msgstr ""
 "Nastavení vlastnosti „metadata_csum_seed“ je podporováno jen\n"
 "na souborových systémech se zapnutou vlastností metadata_csum.\n"
 
-#: misc/tune2fs.c:1375
+#: misc/tune2fs.c:1372
 msgid ""
 "UUID has changed since enabling metadata_csum.  Filesystem must be "
 "unmounted \n"
@@ -6555,11 +6556,11 @@ msgstr ""
 "Od zapnutí metadata_csum se UUID změnilo. Aby se bezpečně přepsala\n"
 "všechna metadata na nové UUID, souborový systém musí být odpojen.\n"
 
-#: misc/tune2fs.c:1421
+#: misc/tune2fs.c:1418
 msgid "The filesystem already has a journal.\n"
 msgstr "Systém souborů již žurnál má.\n"
 
-#: misc/tune2fs.c:1441
+#: misc/tune2fs.c:1438
 #, c-format
 msgid ""
 "\n"
@@ -6568,21 +6569,21 @@ msgstr ""
 "\n"
 "\tpři pokusu otevřít žurnál na %s\n"
 
-#: misc/tune2fs.c:1445
+#: misc/tune2fs.c:1442
 #, c-format
 msgid "Creating journal on device %s: "
 msgstr "Vytváří se žurnál na zařízení %s: "
 
-#: misc/tune2fs.c:1453
+#: misc/tune2fs.c:1450
 #, c-format
 msgid "while adding filesystem to journal on %s"
 msgstr "při přidávání systému souborů do žurnálu na %s"
 
-#: misc/tune2fs.c:1459
+#: misc/tune2fs.c:1456
 msgid "Creating journal inode: "
 msgstr "Vytváří se iuzel žurnálu: "
 
-#: misc/tune2fs.c:1473
+#: misc/tune2fs.c:1470
 msgid ""
 "\n"
 "\twhile trying to create journal file"
@@ -6590,31 +6591,31 @@ msgstr ""
 "\n"
 "\tpři pokusu vytvořit soubor žurnálu"
 
-#: misc/tune2fs.c:1511
+#: misc/tune2fs.c:1508
 #, c-format
 msgid "Cannot enable project quota; inode size too small.\n"
 msgstr ""
 
-#: misc/tune2fs.c:1524
+#: misc/tune2fs.c:1521
 msgid "while initializing quota context in support library"
 msgstr "při inicializaci kontextu kvóty v podpůrné knihovně"
 
-#: misc/tune2fs.c:1539
+#: misc/tune2fs.c:1536
 #, c-format
 msgid "while updating quota limits (%d)"
 msgstr "při aktualizaci hodnot kvót (%d)"
 
-#: misc/tune2fs.c:1547
+#: misc/tune2fs.c:1544
 #, c-format
 msgid "while writing quota file (%d)"
 msgstr "při zápisu souboru s kvótami (%d)"
 
-#: misc/tune2fs.c:1565
+#: misc/tune2fs.c:1562
 #, c-format
 msgid "while removing quota file (%d)"
 msgstr "při odstraňovaní souboru s kvótami (%d)"
 
-#: misc/tune2fs.c:1608
+#: misc/tune2fs.c:1605
 msgid ""
 "\n"
 "Bad quota options specified.\n"
@@ -6637,65 +6638,65 @@ msgstr ""
 "\n"
 "\n"
 
-#: misc/tune2fs.c:1666
+#: misc/tune2fs.c:1663
 #, c-format
 msgid "Couldn't parse date/time specifier: %s"
 msgstr "Nemohu zpracovat určení data/času: %s"
 
-#: misc/tune2fs.c:1691 misc/tune2fs.c:1704
+#: misc/tune2fs.c:1688 misc/tune2fs.c:1701
 #, c-format
 msgid "bad mounts count - %s"
 msgstr "špatný počet připojení - %s"
 
-#: misc/tune2fs.c:1747
+#: misc/tune2fs.c:1744
 #, c-format
 msgid "bad gid/group name - %s"
 msgstr "špatné gid/jméno skupiny - %s"
 
-#: misc/tune2fs.c:1780
+#: misc/tune2fs.c:1777
 #, c-format
 msgid "bad interval - %s"
 msgstr "Špatný interval - %s"
 
-#: misc/tune2fs.c:1809
+#: misc/tune2fs.c:1806
 #, c-format
 msgid "bad reserved block ratio - %s"
 msgstr "špatný podíl rezervovaných bloků - %s"
 
-#: misc/tune2fs.c:1824
+#: misc/tune2fs.c:1821
 msgid "-o may only be specified once"
 msgstr "-o může být zadáno jen jednou"
 
-#: misc/tune2fs.c:1833
+#: misc/tune2fs.c:1830
 msgid "-O may only be specified once"
 msgstr "-O může být zadáno jen jednou"
 
-#: misc/tune2fs.c:1850
+#: misc/tune2fs.c:1847
 #, c-format
 msgid "bad reserved blocks count - %s"
 msgstr "špatný počet rezervovaných bloků - %s"
 
-#: misc/tune2fs.c:1879
+#: misc/tune2fs.c:1876
 #, c-format
 msgid "bad uid/user name - %s"
 msgstr "špatné uid/jméno uživatele - %s"
 
-#: misc/tune2fs.c:1896
+#: misc/tune2fs.c:1893
 #, c-format
 msgid "bad inode size - %s"
 msgstr "špatná velikost iuzlu – %s"
 
-#: misc/tune2fs.c:1903
+#: misc/tune2fs.c:1900
 #, c-format
 msgid "Inode size must be a power of two- %s"
 msgstr "Velikost iuzlu musí být mocnina dvou – %s"
 
-#: misc/tune2fs.c:2000
+#: misc/tune2fs.c:1997
 #, c-format
 msgid "mmp_update_interval too big: %lu\n"
 msgstr "interval_aktualizace_mmp je příliš velký: %lu\n"
 
-#: misc/tune2fs.c:2005
+#: misc/tune2fs.c:2002
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
 msgid_plural ""
@@ -6710,27 +6711,27 @@ msgstr[2] ""
 "Nastavuje se interval aktualizace ochrany proti násobnému připojení na %'lu "
 "sekund\n"
 
-#: misc/tune2fs.c:2028
+#: misc/tune2fs.c:2025
 #, c-format
 msgid "Invalid RAID stride: %s\n"
 msgstr "Neplatný kroku (stride) RAIDu: %s\n"
 
-#: misc/tune2fs.c:2043
+#: misc/tune2fs.c:2040
 #, c-format
 msgid "Invalid RAID stripe-width: %s\n"
 msgstr "Neplatná šířka pruhu RAIDu (stripe-width): %s\n"
 
-#: misc/tune2fs.c:2058
+#: misc/tune2fs.c:2055
 #, c-format
 msgid "Invalid hash algorithm: %s\n"
 msgstr "Neplatný hashovací algoritmus: %s\n"
 
-#: misc/tune2fs.c:2064
+#: misc/tune2fs.c:2061
 #, c-format
 msgid "Setting default hash algorithm to %s (%d)\n"
 msgstr "Implicitní hashovací algoritmus se nastavuje na %s (%d)\n"
 
-#: misc/tune2fs.c:2083
+#: misc/tune2fs.c:2080
 msgid ""
 "\n"
 "Bad options specified.\n"
@@ -6762,31 +6763,31 @@ msgstr ""
 "\ttest_fs\n"
 "\t^test_fs\n"
 
-#: misc/tune2fs.c:2552
+#: misc/tune2fs.c:2549
 msgid "Failed to read inode bitmap\n"
 msgstr "Čtení bitmapy iuzlů selhalo.\n"
 
-#: misc/tune2fs.c:2557
+#: misc/tune2fs.c:2554
 msgid "Failed to read block bitmap\n"
 msgstr "Čtení bitmapy bloků selhalo\n"
 
-#: misc/tune2fs.c:2574 resize/resize2fs.c:1276
+#: misc/tune2fs.c:2571 resize/resize2fs.c:1276
 msgid "blocks to be moved"
 msgstr "bloky pro přesun"
 
-#: misc/tune2fs.c:2577
+#: misc/tune2fs.c:2574
 msgid "Failed to allocate block bitmap when increasing inode size\n"
 msgstr "Během zvětšování iuzlu selhala alokace bitmapy bloků\n"
 
-#: misc/tune2fs.c:2583
+#: misc/tune2fs.c:2580
 msgid "Not enough space to increase inode size \n"
 msgstr "Nedostatek místa pro zvětšení iuzlu\n"
 
-#: misc/tune2fs.c:2588
+#: misc/tune2fs.c:2585
 msgid "Failed to relocate blocks during inode resize \n"
 msgstr "Během změny velikosti iuzlu selhala realokace bloků\n"
 
-#: misc/tune2fs.c:2620
+#: misc/tune2fs.c:2617
 msgid ""
 "Error in resizing the inode size.\n"
 "Run e2undo to undo the file system changes. \n"
@@ -6794,7 +6795,7 @@ msgstr ""
 "Chyba při měnění velikost iuzlu.\n"
 "Spusťte e2undo, abyste vrátili změny provedené na systému souborů.\n"
 
-#: misc/tune2fs.c:2832
+#: misc/tune2fs.c:2829
 #, c-format
 msgid ""
 "MMP block magic is bad. Try to fix it by running:\n"
@@ -6803,74 +6804,74 @@ msgstr ""
 "Magické číslo bloku MMP je chybné. Můžete jej zkusit opravit pomocí:\n"
 "„e2fsck -f %s“\n"
 
-#: misc/tune2fs.c:2844
+#: misc/tune2fs.c:2841
 msgid "Cannot modify a journal device.\n"
 msgstr "Zařízení žurnálu nelze upravit.\n"
 
-#: misc/tune2fs.c:2857
+#: misc/tune2fs.c:2854
 #, c-format
 msgid "The inode size is already %lu\n"
 msgstr "Velikost iuzlu již je %lu\n"
 
-#: misc/tune2fs.c:2864
+#: misc/tune2fs.c:2861
 msgid "Shrinking inode size is not supported\n"
 msgstr "Zmenšování velikosti iuzlu není podporováno\n"
 
-#: misc/tune2fs.c:2869
+#: misc/tune2fs.c:2866
 #, c-format
 msgid "Invalid inode size %lu (max %d)\n"
 msgstr "špatná velikost iuzlu %lu (max %d)\n"
 
-#: misc/tune2fs.c:2875
+#: misc/tune2fs.c:2872
 msgid "Resizing inodes could take some time."
 msgstr "Změna velikosti iuzlů by mohla trvat nějakou dobu."
 
-#: misc/tune2fs.c:2922
+#: misc/tune2fs.c:2919
 #, c-format
 msgid "Setting maximal mount count to %d\n"
 msgstr "Nastavuje se maximální počet připojení na %d\n"
 
-#: misc/tune2fs.c:2928
+#: misc/tune2fs.c:2925
 #, c-format
 msgid "Setting current mount count to %d\n"
 msgstr "Nastavuje se aktuální počet připojení na %d\n"
 
-#: misc/tune2fs.c:2933
+#: misc/tune2fs.c:2930
 #, c-format
 msgid "Setting error behavior to %d\n"
 msgstr "Nastavuje se chování při chybách na %d\n"
 
-#: misc/tune2fs.c:2938
+#: misc/tune2fs.c:2935
 #, c-format
 msgid "Setting reserved blocks gid to %lu\n"
 msgstr "Nastavuje se GID rezervovaných bloků na %lu\n"
 
-#: misc/tune2fs.c:2943
+#: misc/tune2fs.c:2940
 #, c-format
 msgid "interval between checks is too big (%lu)"
 msgstr "interval mezi kontrolami je příliš dlouhý (%'lu)"
 
-#: misc/tune2fs.c:2950
+#: misc/tune2fs.c:2947
 #, c-format
 msgid "Setting interval between checks to %lu seconds\n"
 msgstr "Interval mezi kontrolami se nastavuje na %'lu sekund\n"
 
-#: misc/tune2fs.c:2957
+#: misc/tune2fs.c:2954
 #, c-format
 msgid "Setting reserved blocks percentage to %g%% (%llu blocks)\n"
 msgstr "Procento rezervovaných bloků se nastavuje na %g %% (%'llu bloků)\n"
 
-#: misc/tune2fs.c:2963
+#: misc/tune2fs.c:2960
 #, c-format
 msgid "reserved blocks count is too big (%llu)"
 msgstr "počet rezervovaných bloků je příliš velký (%'llu)"
 
-#: misc/tune2fs.c:2970
+#: misc/tune2fs.c:2967
 #, c-format
 msgid "Setting reserved blocks count to %llu\n"
 msgstr "Počet rezervovaných bloků se nastavuje na %'llu\n"
 
-#: misc/tune2fs.c:2975
+#: misc/tune2fs.c:2972
 msgid ""
 "\n"
 "The filesystem already has sparse superblocks.\n"
@@ -6878,7 +6879,7 @@ msgstr ""
 "\n"
 "Systém souborů již má řídké superbloky.\n"
 
-#: misc/tune2fs.c:2978
+#: misc/tune2fs.c:2975
 msgid ""
 "\n"
 "Setting the sparse superblock flag not supported\n"
@@ -6888,7 +6889,7 @@ msgstr ""
 "Na souborových systémech se zapnutou vlastností meta_bg není nastavení\n"
 "příznaku řídkého superbloku podporováno.\n"
 
-#: misc/tune2fs.c:2988
+#: misc/tune2fs.c:2985
 #, c-format
 msgid ""
 "\n"
@@ -6897,7 +6898,7 @@ msgstr ""
 "\n"
 "Příznak řídkých superbloků nastaven.  %s"
 
-#: misc/tune2fs.c:2993
+#: misc/tune2fs.c:2990
 msgid ""
 "\n"
 "Clearing the sparse superblock flag not supported.\n"
@@ -6905,30 +6906,30 @@ msgstr ""
 "\n"
 "Odstranění příznaku řídkého superbloku není podporováno.\n"
 
-#: misc/tune2fs.c:3001
+#: misc/tune2fs.c:2998
 #, c-format
 msgid "Setting time filesystem last checked to %s\n"
 msgstr "Nastavuje se čas poslední kontroly systému souborů na %s\n"
 
-#: misc/tune2fs.c:3007
+#: misc/tune2fs.c:3004
 #, c-format
 msgid "Setting reserved blocks uid to %lu\n"
 msgstr "Nastavuje se UID rezervovaných bloků na %lu\n"
 
-#: misc/tune2fs.c:3039
+#: misc/tune2fs.c:3036
 msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr "Chybné použití clear_mmp. Je třeba jej použít s -f\n"
 
-#: misc/tune2fs.c:3057
+#: misc/tune2fs.c:3054
 msgid ""
 "The quota feature may only be changed when the filesystem is unmounted.\n"
 msgstr "Vlastnost kvóty smí být změněna, jen když je systém souborů odpojen.\n"
 
-#: misc/tune2fs.c:3081
+#: misc/tune2fs.c:3078
 msgid "The UUID may only be changed when the filesystem is unmounted.\n"
 msgstr "UUID smí být změněno, jen když je systém souborů odpojen.\n"
 
-#: misc/tune2fs.c:3084
+#: misc/tune2fs.c:3081
 msgid ""
 "If you only use kernels newer than v4.4, run 'tune2fs -O metadata_csum_seed' "
 "and re-run this command.\n"
@@ -6936,25 +6937,25 @@ msgstr ""
 "Pouze pokud používáte jádra novější než v4.4, spusťte\n"
 "„tune2fs -O metadata_csum_seed“ a poté znovu tento příkaz.\n"
 
-#: misc/tune2fs.c:3093
+#: misc/tune2fs.c:3090
 msgid "Setting UUID on a checksummed filesystem could take some time."
 msgstr ""
 "Nastavení UUID na souborovém systému s kontrolnímu součty může nějakou dobu "
 "trvat."
 
-#: misc/tune2fs.c:3118
+#: misc/tune2fs.c:3115
 msgid "Invalid UUID format\n"
 msgstr "Neplatný formát UUID\n"
 
-#: misc/tune2fs.c:3134
+#: misc/tune2fs.c:3131
 msgid "Need to update journal superblock.\n"
 msgstr "Je třeba aktualizovat superblok žurnálu.\n"
 
-#: misc/tune2fs.c:3159
+#: misc/tune2fs.c:3156
 msgid "The inode size may only be changed when the filesystem is unmounted.\n"
 msgstr "Velikost iuzlu smí být změněna, jen když je systém souborů odpojen.\n"
 
-#: misc/tune2fs.c:3166
+#: misc/tune2fs.c:3163
 msgid ""
 "Changing the inode size not supported for filesystems with the flex_bg\n"
 "feature enabled.\n"
@@ -6963,31 +6964,31 @@ msgstr ""
 "velikosti\n"
 "iuzlu podporována.\n"
 
-#: misc/tune2fs.c:3184
+#: misc/tune2fs.c:3181
 #, c-format
 msgid "Setting inode size %lu\n"
 msgstr "Velikost iuzlu se nastavuje na %lu\n"
 
-#: misc/tune2fs.c:3188
+#: misc/tune2fs.c:3185
 msgid "Failed to change inode size\n"
 msgstr "Změna velikosti iuzlu selhala.\n"
 
-#: misc/tune2fs.c:3202
+#: misc/tune2fs.c:3199
 #, c-format
 msgid "Setting stride size to %d\n"
 msgstr "Velikost kroku (stride) se nastavuje na %d\n"
 
-#: misc/tune2fs.c:3207
+#: misc/tune2fs.c:3204
 #, c-format
 msgid "Setting stripe width to %d\n"
 msgstr "Šířka pruhu (stripe width) se nastavuje na %d\n"
 
-#: misc/tune2fs.c:3214
+#: misc/tune2fs.c:3211
 #, c-format
 msgid "Setting extended default mount options to '%s'\n"
 msgstr "Implicitní rozšířené přepínače při přípojení se nastavují na „%s“\n"
 
-#: misc/tune2fs.c:3225
+#: misc/tune2fs.c:3222
 #, c-format
 msgid ""
 "Warning: The journal is dirty. You may wish to replay the journal like:\n"
@@ -7004,7 +7005,7 @@ msgstr ""
 "Pak tento příkaz spusťte znovu. Jinak jakékoliv provedené změny mohou být\n"
 "přepsány při obnově žurnálu.\n"
 
-#: misc/tune2fs.c:3236
+#: misc/tune2fs.c:3233
 #, c-format
 msgid "Recovering journal.\n"
 msgstr "Obnovuje se žurnál.\n"
@@ -7562,7 +7563,7 @@ msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.6"
+msgid "EXT2FS Library version 1.43.7"
 msgstr "Knihovna EXT2FS verze 1.43.5"
 
 #: lib/ext2fs/ext2_err.c:12

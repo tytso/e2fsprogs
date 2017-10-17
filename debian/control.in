@@ -3,7 +3,7 @@ Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any], libattr1-dev, debhelper (>= 9.0), libblkid-dev, uuid-dev, m4
-Standards-Version: 4.0.0
+Standards-Version: 4.1.1
 Homepage: http://e2fsprogs.sourceforge.net
 
 Package: fuse2fs
@@ -33,6 +33,7 @@ Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
 '')dnl
 
 Package: e2fsprogs-l10n
+Section: localization
 Priority: optional
 Depends: e2fsprogs (= ${binary:Version}), ${misc:Depends}
 Replaces: e2fsprogs (<< 1.43.5-1)

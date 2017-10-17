@@ -1,3 +1,23 @@
+e2fsprogs (1.43.7-1) unstable; urgency=medium
+
+  * New upstream version
+  * Fix error handling in debugfs, fuse2fs, and tune2fs so errors while
+    replaying the journal will not cause a segfault in some corner cases
+  * Fix resize2fs to avoid it from either failing or corrupting the file
+    system image in certain corner cases when doing an off-line resize
+  * Fix many spelling mistakes in various man pages, code comments, and
+    program messages.
+  * Fix e2fsck and debugfs so that maliciously corrupted file systems will
+    not cause buffer overflows (Closes: #873757, #878104)
+  * Update German translation (Closes: #833514)
+  * Update debian policy version to 4.1.1
+  * Fix FTBFS caused by debhelper/10.9 and references to obsolete packages
+    in the rules file (Closes: #876551)
+  * Promote e2fsprogs-l10n from suggests to recommends (Closes: #873812)
+  * Make e2fsprogs-l10n be arch:all (Closes: #873813)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 16 Oct 2017 01:20:54 -0400
+
 e2fsprogs (1.43.6-1) unstable; urgency=medium
 
   * New upstream version
