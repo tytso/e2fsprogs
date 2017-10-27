@@ -32,6 +32,9 @@ cc_binary {
                 "libcrypto",
                 "liblog",
             ],
+            sanitize: {
+                address: false,  // http://b/68387795 - heap overflow in e2fsdroid
+            },
         },
         android: {
             shared_libs: [
