@@ -1196,16 +1196,16 @@ int main (int argc, char ** argv)
 		case 'X':
 			exclusive_ok++;
 			break;
-        case 'P':
-            parseable_output = 1;
-            break;
-        case 'a':
+		case 'P':
+			parseable_output = 1;
+			break;
+		case 'a':
 			alarm_interval = parse_uint(optarg, "status alarm interval (seconds)");
-            if (alarm_interval == 0) {
-                com_err(program_name, 0, "%s",
-                    _("Minimum alarm interval is 1 second"));
-                exit(1);
-            }
+			if (alarm_interval == 0) {
+				com_err(program_name, 0, "%s",
+					_("Minimum alarm interval is 1 second"));
+				exit(1);
+			}
 			break;
 		default:
 			usage();
