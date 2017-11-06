@@ -226,23 +226,23 @@ static void print_status(void)
 	wchar_t wline_buf[128];
 #endif
 	int len;
-    char format_str[128];
+	char format_str[128];
 
-    if (parseable_output) {
-        strcpy(format_str, "%6.2f, %s, %d, %d, %d");
-    } else {
-        strcpy(format_str, "%6.2f%% done, %s elapsed. (%d/%d/%d errors)");
-    }
+	if (parseable_output) {
+		strcpy(format_str, "%6.2f, %s, %d, %d, %d");
+	} else {
+		strcpy(format_str, "%6.2f%% done, %s elapsed. (%d/%d/%d errors)");
+	}
 
 	gettimeofday(&time_end, 0);
 	len = snprintf(line_buf, sizeof(line_buf), 
-		       _(format_str),
-		       calc_percent((unsigned long) currently_testing,
-				    (unsigned long) num_blocks), 
-		       time_diff_format(&time_end, &time_start, diff_buf),
-		       num_read_errors,
-		       num_write_errors,
-		       num_corruption_errors);
+			_(format_str),
+			calc_percent((unsigned long) currently_testing,
+			(unsigned long) num_blocks),
+			time_diff_format(&time_end, &time_start, diff_buf),
+			num_read_errors,
+			num_write_errors,
+			num_corruption_errors);
 #ifdef HAVE_MBSTOWCS
 	mbstowcs(wline_buf, line_buf, sizeof(line_buf));
 	len = wcswidth(wline_buf, sizeof(line_buf));
@@ -250,13 +250,13 @@ static void print_status(void)
 		len = strlen(line_buf); /* Should never happen... */
 #endif
 	fputs(line_buf, stderr);
-    if (!parseable_output) {
-	    memset(line_buf, '\b', len);
-	    line_buf[len] = 0;
-	    fputs(line_buf, stderr);	
-    } else {
-        fputs("\n", stderr);
-    }
+	if (!parseable_output) {
+		memset(line_buf, '\b', len);
+		line_buf[len] = 0;
+		fputs(line_buf, stderr);
+	} else {
+		fputs("\n", stderr);
+	}
 	fflush (stderr);
 }
 
