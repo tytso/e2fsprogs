@@ -5,7 +5,11 @@ badblocks \- search a device for bad blocks
 .SH SYNOPSIS
 .B badblocks
 [
-.B \-svwnfBX
+.B \-svwnfBXP
+]
+[
+.B \-a
+.I alarm_interval
 ]
 [
 .B \-b
@@ -82,6 +86,9 @@ and
 .B mke2fs
 programs.
 .SH OPTIONS
+.TP
+.BI \-a " alarm_interval"
+Interval (in seconds) used for displaying status updates. The default is 1.
 .TP
 .BI \-b " block_size"
 Specify the size of blocks in bytes.  The default is 1024.
@@ -198,6 +205,13 @@ option, as they are mutually exclusive.
 .TP
 .B \-B
 Use buffered I/O and do not use Direct I/O, even if it is available.
+.TP
+.B \-P
+Display status in machine parseable format. The data is comma separated and
+LF terminated to make it easier to parsing by external applications. The
+data format is:
+% completed, time elapsed, read errors, write errors, corruption errors.
+Example: 10.06, 1:22, 0, 0, 0
 .TP
 .B \-X
 Internal flag only to be used by

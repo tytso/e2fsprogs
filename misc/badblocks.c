@@ -84,6 +84,8 @@ static int t_max;			/* allocated test patterns */
 static unsigned int *t_patts;		/* test patterns */
 static int use_buffered_io;
 static int exclusive_ok;
+static int parseable_output = 0;  /* print output that can be easily parsed */
+static int alarm_interval = 1;
 static unsigned int max_bb = MAX_BAD_BLOCKS;	/* Abort test if more than this
 						 * number of bad blocks has been
 						 * encountered */
@@ -97,9 +99,10 @@ static unsigned int sys_page_size = 4096;
 static void usage(void)
 {
 	fprintf(stderr, _(
-"Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
+"Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnfP]\n"
 "       [-c blocks_at_once] [-d delay_factor_between_reads] [-e max_bad_blocks]\n"
 "       [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
+"       [-a alarm_interval]\n"
 "       device [last_block [first_block]]\n"),
 		 program_name);
 	exit (1);
@@ -223,11 +226,17 @@ static void print_status(void)
 	wchar_t wline_buf[128];
 #endif
 	int len;
+    char format_str[128];
+
+    if (parseable_output) {
+        strcpy(format_str, "%6.2f, %s, %d, %d, %d");
+    } else {
+        strcpy(format_str, "%6.2f%% done, %s elapsed. (%d/%d/%d errors)");
+    }
 
 	gettimeofday(&time_end, 0);
 	len = snprintf(line_buf, sizeof(line_buf), 
-		       _("%6.2f%% done, %s elapsed. "
-		         "(%d/%d/%d errors)"),
+		       _(format_str),
 		       calc_percent((unsigned long) currently_testing,
 				    (unsigned long) num_blocks), 
 		       time_diff_format(&time_end, &time_start, diff_buf),
@@ -241,16 +250,20 @@ static void print_status(void)
 		len = strlen(line_buf); /* Should never happen... */
 #endif
 	fputs(line_buf, stderr);
-	memset(line_buf, '\b', len);
-	line_buf[len] = 0;
-	fputs(line_buf, stderr);	
+    if (!parseable_output) {
+	    memset(line_buf, '\b', len);
+	    line_buf[len] = 0;
+	    fputs(line_buf, stderr);	
+    } else {
+        fputs("\n", stderr);
+    }
 	fflush (stderr);
 }
 
 static void alarm_intr(int alnum EXT2FS_ATTR((unused)))
 {
 	signal (SIGALRM, alarm_intr);
-	alarm(1);
+	alarm(alarm_interval);
 	if (!num_blocks)
 		return;
 	print_status();
@@ -1094,7 +1107,7 @@ int main (int argc, char ** argv)
 
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:BX")) != EOF) {
+	while ((c = getopt (argc, argv, "a:b:d:e:fi:o:svwnc:p:h:t:BXP")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = parse_uint(optarg, "block size");
@@ -1182,6 +1195,17 @@ int main (int argc, char ** argv)
 			break;
 		case 'X':
 			exclusive_ok++;
+			break;
+        case 'P':
+            parseable_output = 1;
+            break;
+        case 'a':
+			alarm_interval = parse_uint(optarg, "status alarm interval (seconds)");
+            if (alarm_interval == 0) {
+                com_err(program_name, 0, "%s",
+                    _("Minimum alarm interval is 1 second"));
+                exit(1);
+            }
 			break;
 		default:
 			usage();
