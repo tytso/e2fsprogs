@@ -125,7 +125,7 @@ static errcode_t set_perms_and_caps(ext2_filsys fs, ext2_ino_t ino,
 	if (!capabilities)
 		return 0;
 	memset(&cap_data, 0, sizeof(cap_data));
-	cap_data.magic_etc = VFS_CAP_REVISION | VFS_CAP_FLAGS_EFFECTIVE;
+	cap_data.magic_etc = VFS_CAP_REVISION_2 | VFS_CAP_FLAGS_EFFECTIVE;
 	cap_data.data[0].permitted = (uint32_t) (capabilities & 0xffffffff);
 	cap_data.data[1].permitted = (uint32_t) (capabilities >> 32);
 	return ino_add_xattr(fs, ino,  "security." XATTR_CAPS_SUFFIX,
