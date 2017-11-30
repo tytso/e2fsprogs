@@ -10,9 +10,6 @@
 typedef unsigned __int8 __u8;
 typedef signed __int8 __s8;
 
-typedef signed   __int64 __s64;
-typedef unsigned __int64 __u64;
-
 typedef	signed   __int16	__s16;
 typedef	unsigned __int16	__u16;
 
