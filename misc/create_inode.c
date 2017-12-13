@@ -18,7 +18,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <limits.h> /* for PATH_MAX */
-#ifdef HAVE_ATTR_XATTR_H
+#if defined HAVE_SYS_XATTR_H
+#include <sys/xattr.h>
+#elif defined HAVE_ATTR_XATTR_H
 #include <attr/xattr.h>
 #endif
 #include <sys/ioctl.h>
