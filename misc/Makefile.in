@@ -392,19 +392,19 @@ fuse2fs: $(FUSE2FS_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
 		$(CLOCK_GETTIME_LIB) $(SYSLIBS)
 
 journal.o: $(srcdir)/../debugfs/journal.c
-	$(E) "	CC $@"
+	$(E) "	CC $<"
 	$(Q) $(CC) -c $(JOURNAL_CFLAGS) -I$(srcdir) \
 		$(srcdir)/../debugfs/journal.c -o $@
 @PROFILE_CMT@	$(Q) $(CC) $(JOURNAL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 
 recovery.o: $(srcdir)/../e2fsck/recovery.c
-	$(E) "	CC $@"
+	$(E) "	CC $<"
 	$(Q) $(CC) -c $(JOURNAL_CFLAGS) -I$(srcdir) \
 		$(srcdir)/../e2fsck/recovery.c -o $@
 @PROFILE_CMT@	$(Q) $(CC) $(JOURNAL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 
 revoke.o: $(srcdir)/../e2fsck/revoke.c
-	$(E) "	CC $@"
+	$(E) "	CC $<"
 	$(Q) $(CC) -c $(JOURNAL_CFLAGS) -I$(srcdir) \
 		$(srcdir)/../e2fsck/revoke.c -o $@
 @PROFILE_CMT@	$(Q) $(CC) $(JOURNAL_CFLAGS) -g -pg -o profiled/$*.o -c $<
