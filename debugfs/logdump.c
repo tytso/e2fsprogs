@@ -275,7 +275,7 @@ errout:
 	return;
 
 print_usage:
-	fprintf(stderr, "%s: Usage: logdump [-acsO] [-b<block>] [-i<filespec>]\n\t"
+	fprintf(stderr, "%s: Usage: logdump [-acsOS] [-b<block>] [-i<filespec>]\n\t"
 		"[-f<journal_file>] [output_file]\n", argv[0]);
 }
 
