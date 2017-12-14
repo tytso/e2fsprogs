@@ -69,6 +69,12 @@ This stanza contains general configuration parameters for
 .BR e2fsck 's
 behavior.
 .TP
+.I [defaults]
+Contains relations which define the default parameters used by
+.BR e2fsck (8).
+In general, these defaults may be overridden by command-line options
+provided by the user.
+.TP
 .I [problems]
 This stanza allows the administrator to reconfigure how e2fsck handles
 various filesystem inconsistencies.
@@ -250,6 +256,19 @@ If this boolean relation is true, e2fsck will run as if the option
 .B -v
 is always specified.  This will cause e2fsck to print some additional
 information at the end of each full file system check.
+.SH THE [defaults] STANZA
+The following relations are defined in the
+.I [defaults]
+stanza.
+.TP
+.I undo_dir
+This relation specifies the directory where the undo file should be
+stored.  It can be overridden via the
+.B E2FSPROGS_UNDO_DIR
+environment variable.  If the directory location is set to the value
+.IR none ,
+.B e2fsck
+will not create an undo file.
 .SH THE [problems] STANZA
 Each tag in the
 .I [problems]
@@ -336,7 +355,7 @@ data structure, such as pruning an extent tree.
 @TDB_MAN_COMMENT@.TP
 @TDB_MAN_COMMENT@.I numdirs_threshold
 @TDB_MAN_COMMENT@If this relation is set, then in-memory data structures
-@TDB_MAN_COMMENT@be used if the number of directories in the filesystem
+@TDB_MAN_COMMENT@will be used if the number of directories in the filesystem
 @TDB_MAN_COMMENT@are fewer than amount specified.
 @TDB_MAN_COMMENT@.TP
 @TDB_MAN_COMMENT@.I dirinfo
