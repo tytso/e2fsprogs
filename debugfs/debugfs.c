@@ -2125,7 +2125,7 @@ void do_idump(int argc, char *argv[])
 	err = ext2fs_read_inode_full(current_fs, ino,
 				     (struct ext2_inode *)buf, isize);
 	if (err) {
-		com_err(argv[0], err, "while reading inode %d", ino);
+		com_err(argv[0], err, "while reading inode %u", ino);
 		goto err;
 	}
 
