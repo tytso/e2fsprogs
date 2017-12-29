@@ -396,9 +396,9 @@ static ssize_t my_pread(int fd, void *buf, size_t count, off_t offset)
 }
 #endif /* !defined HAVE_PREAD64 && !defined HAVE_PREAD */
 
-static errcode_t copy_file_range(ext2_filsys fs, int fd, ext2_file_t e2_file,
-				 off_t start, off_t end, char *buf,
-				 char *zerobuf)
+static errcode_t _copy_file_range(ext2_filsys fs, int fd, ext2_file_t e2_file,
+				  off_t start, off_t end, char *buf,
+				  char *zerobuf)
 {
 	off_t off, bpos;
 	ssize_t got, blen;
@@ -470,8 +470,8 @@ static errcode_t try_lseek_copy(ext2_filsys fs, int fd, struct stat *statbuf,
 
 		data_blk = data & ~(fs->blocksize - 1);
 		hole_blk = (hole + (fs->blocksize - 1)) & ~(fs->blocksize - 1);
-		err = copy_file_range(fs, fd, e2_file, data_blk, hole_blk, buf,
-				      zerobuf);
+		err = _copy_file_range(fs, fd, e2_file, data_blk, hole_blk, buf,
+				       zerobuf);
 		if (err)
 			return err;
 
@@ -521,9 +521,9 @@ static errcode_t try_fiemap_copy(ext2_filsys fs, int fd, ext2_file_t e2_file,
 			goto out;
 		for (i = 0, ext = ext_buf; i < fiemap_buf->fm_mapped_extents;
 		     i++, ext++) {
-			err = copy_file_range(fs, fd, e2_file, ext->fe_logical,
-					      ext->fe_logical + ext->fe_length,
-					      buf, zerobuf);
+			err = _copy_file_range(fs, fd, e2_file, ext->fe_logical,
+					       ext->fe_logical + ext->fe_length,
+					       buf, zerobuf);
 			if (err)
 				goto out;
 		}
@@ -574,8 +574,8 @@ static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 		goto out;
 #endif
 
-	err = copy_file_range(fs, fd, e2_file, 0, statbuf->st_size, buf,
-			      zerobuf);
+	err = _copy_file_range(fs, fd, e2_file, 0, statbuf->st_size, buf,
+			       zerobuf);
 out:
 	ext2fs_free_mem(&zerobuf);
 	ext2fs_free_mem(&buf);
