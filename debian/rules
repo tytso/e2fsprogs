@@ -39,6 +39,10 @@ ifneq ($(filter pkg.e2fsprogs.no-fuse2fs,$(DEB_BUILD_PROFILES)),)
 SKIP_FUSE2FS=yes
 endif
 
+ifneq ($(filter noudeb,$(DEB_BUILD_PROFILES)),)
+SKIP_UDEB=yes
+endif
+
 DH_VERSION := $(shell dpkg-query -W -f '$${Version}' debhelper)
 
 # USE_DBGSYM :=
