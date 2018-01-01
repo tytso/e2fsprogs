@@ -2,11 +2,12 @@ Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any], libattr1-dev, debhelper (>= 9.0), libblkid-dev, uuid-dev, m4
+Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, libattr1-dev, debhelper (>= 9.0), libblkid-dev, uuid-dev, m4
 Standards-Version: 4.1.3
 Homepage: http://e2fsprogs.sourceforge.net
 
 Package: fuse2fs
+Build-Profiles: <!pkg.e2fsprogs.no-fuse2fs>
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Architecture: linux-any kfreebsd-any

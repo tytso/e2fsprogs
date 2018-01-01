@@ -35,6 +35,10 @@ ifeq ($(DEB_HOST_ARCH_OS), hurd)
 SKIP_FUSE2FS=yes
 endif
 
+ifneq ($(filter pkg.e2fsprogs.no-fuse2fs,$(DEB_BUILD_PROFILES)),)
+SKIP_FUSE2FS=yes
+endif
+
 DH_VERSION := $(shell dpkg-query -W -f '$${Version}' debhelper)
 
 # USE_DBGSYM :=
