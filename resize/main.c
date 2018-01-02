@@ -47,7 +47,8 @@ static char *device_name, *io_options;
 static void usage (char *prog)
 {
 	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] "
-			   "[-p] device [-b|-s|new_size] [-z undo_file]\n\n"),
+			   "[-p] device [-b|-s|new_size] [-S RAID-stride] "
+			   "[-z undo_file]\n\n"),
 		 prog);
 
 	exit (1);
@@ -440,7 +441,8 @@ int main (int argc, char ** argv)
 		    !print_min_size)
 			checkit = 1;
 
-		if ((fs->super->s_free_blocks_count > fs->super->s_blocks_count) ||
+		if ((ext2fs_free_blocks_count(fs->super) >
+		     ext2fs_blocks_count(fs->super)) ||
 		    (fs->super->s_free_inodes_count > fs->super->s_inodes_count))
 			checkit = 1;
 

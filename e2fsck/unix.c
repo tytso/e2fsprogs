@@ -106,7 +106,7 @@ static void show_stats(e2fsck_t	ctx)
 	unsigned int dir_links;
 	unsigned int num_files, num_links;
 	__u32 *mask, m;
-	int frag_percent_file, frag_percent_dir, frag_percent_total;
+	int frag_percent_file = 0, frag_percent_dir = 0, frag_percent_total = 0;
 	int i, j, printed = 0;
 
 	dir_links = 2 * ctx->fs_directory_count - 1;
@@ -119,16 +119,18 @@ static void show_stats(e2fsck_t	ctx)
 	blocks_used = (ext2fs_blocks_count(fs->super) -
 		       ext2fs_free_blocks_count(fs->super));
 
-	frag_percent_file = (10000 * ctx->fs_fragmented) / inodes_used;
-	frag_percent_file = (frag_percent_file + 5) / 10;
+	if (inodes_used > 0) {
+		frag_percent_file = (10000 * ctx->fs_fragmented) / inodes_used;
+		frag_percent_file = (frag_percent_file + 5) / 10;
 
-	frag_percent_dir = (10000 * ctx->fs_fragmented_dir) / inodes_used;
-	frag_percent_dir = (frag_percent_dir + 5) / 10;
+		frag_percent_dir = (10000 * ctx->fs_fragmented_dir) / inodes_used;
+		frag_percent_dir = (frag_percent_dir + 5) / 10;
 
-	frag_percent_total = ((10000 * (ctx->fs_fragmented +
-					ctx->fs_fragmented_dir))
-			      / inodes_used);
-	frag_percent_total = (frag_percent_total + 5) / 10;
+		frag_percent_total = ((10000 * (ctx->fs_fragmented +
+						ctx->fs_fragmented_dir))
+				      / inodes_used);
+		frag_percent_total = (frag_percent_total + 5) / 10;
+	}
 
 	if (!verbose) {
 		log_out(ctx, _("%s: %u/%u files (%0d.%d%% non-contiguous), "
@@ -757,6 +759,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		fputs("\tno_inode_count_fullmap\n", stderr);
 		fputs(_("\treadahead_kb=<buffer size>\n"), stderr);
 		fputs("\tbmap2extent\n", stderr);
+		fputs("\tfixes_only\n", stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}

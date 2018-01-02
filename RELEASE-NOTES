@@ -1,3 +1,52 @@
+E2fsprogs 1.43.8 (January 1, 2018)
+==================================
+
+Fix a bug where updated bitmap checks might not be written to disk.
+(Addresses Debian Bug: #883869)
+
+Some newly added fields in the superblocks were not getting byte
+swapped (which were not noticed since big endian systems are amazingly
+unpopular).  Fix them and compile-time checks to avoid this class of
+bugs from happening in the future.  (Lustre Bug #9309)
+
+Fix a potential use after free bug in e2fsck when fixing a corrupted
+root node in directory hash tree.
+
+Fix a bug in e2fsck where a badly/maliciously corrupted superblock
+(which is not fixed due to the -n option, for example) can cause a
+floating point exception when printing the summary statistics.
+(Addresses Debian Bug: #879220)
+
+Fix debugfs's ncheck command so that it correctly prints the inode
+number when printing an error message.
+
+Fix a bug in e2freefrag where it could print an incorrect free blocks
+count on a file system with the 64-bit block number feature.
+
+Update the German, Serbian, Spanish, and Ukrainian translations.
+
+Fix a bug where resize2fs's free blocks sanity check could fail with a
+false positive and refuse to check a file system with the 64-bit block
+number feature.
+
+Fix and clarify various man pages and documentations.  Also fixed up
+some random usage texts that were incorrect.  (Addresses Debian Bugs:
+#880483)
+
+Fixed various Debian Packaging Issues.  (Addresses Debian Bugs: #880207,
+#881408, #881590, #881591)
+
+Programming notes
+-----------------
+
+Fix various compiler warnings.
+
+Clean up Makefile output.
+
+Fix compatibility problems with glibc 2.27 casued by a collision with
+copy_file_range().
+
+
 E2fsprogs 1.43.7 (October 16, 2017)
 ===================================
 
@@ -667,7 +716,7 @@ Updated/fixed various man pages.  (Addresses Debian Bug: #798425)
 Programmer's Notes
 ------------------
 
-Fixed coverity, sparse gcc -Wall, and clang warnings/nits.
+Fixed coverity, sparse, gcc -Wall, and clang warnings/nits.
 
 Added Android build files so that e2fsprogs can be built in the
 Android source tree.
@@ -773,7 +822,7 @@ translation.
 Programmer's Notes
 ------------------
 
-Fixed coverity, sparc gcc -Wall, and clang warnings/nits.
+Fixed coverity, sparse, gcc -Wall, and clang warnings/nits.
 
 Clean up some build system problems (build failures with various
 configure options, fix Posix portability issues, etc.)
@@ -1119,7 +1168,7 @@ Fixed various Debian Packaging Issues.  (Addresses Debian Bug: #718725)
 Programmer's Notes
 ------------------
 
-Fixed a lot of coverity, sparc gcc -Wall, and clang warnings/nits.
+Fixed a lot of coverity, sparse, gcc -Wall, and clang warnings/nits.
 
 Allow the location of pkg-config files to be specified independent of
 the libdir location via a makefile variable.
@@ -2083,7 +2132,7 @@ calculate the minimum file system size for use with the -M option.
 Fixed the badblocks program to honor the -s flag when in read-only -t
 mode.  (Addresses Debian Bug #646629)
 
-Update Czech, Dutch, French, Polish, and Swedish translation from the
+Update Czech, Dutch, French, Polish, and Swedish translations from the
 Translation Project.
 
 Fixed various Debian Packaging issues so that dpkg-buildflags is used
@@ -2942,7 +2991,7 @@ Enhance dumpe2fs to dump the extent information via the 'stat'
 command, and more detailed extent information via the new command
 'dump_extents'.
     
-Update French, Polish, Czech, and Swedish translation from the
+Update French, Polish, Czech, and Swedish translations from the
 Translation Project.
 
 Fixed various Debian packaging issues --- see debian/changelog for
@@ -2995,9 +3044,9 @@ The e2croncheck script, which creates an LVM snapshot and then checks
 the ext3/4 filesystem via the LVM snapshot, has been added to the
 contrib directory.
 
-Fix filefrag program for files that have more than 144 extents.
+Fix the filefrag program for files that have more than 144 extents.
 
-Update French, Polish, Czech, Indonesian, and Swedish translation from
+Update French, Polish, Czech, Indonesian, and Swedish translations from
 the Translation Project.
 
 Fixed various Debian packaging issues --- see debian/changelog for
@@ -3067,7 +3116,8 @@ journal and resize inodes.
 
 Change badblocks to allow block sizes larger than 4k.
 
-Fix filefrag program so it correctly checks for errors from the fiemap ioctl.
+Fix the filefrag program so it correctly checks for errors from the
+fiemap ioctl.
 
 Update Chinese and Czech translation from the Translation Project.
 
@@ -3498,7 +3548,7 @@ Fix the usage message for debugfs's logdump command to be consistent
 with its man manpage.
 
 Update Polish, French, Vietnamese, Dutch, Indonesian, German, Czech,
-and Swedish translation from the Translation Project.
+and Swedish translations from the Translation Project.
 
 Add documentation for the file I/O functions to the libext2fs.texinfo
 file.  (Addresses Debian Bug: #484877)
@@ -4402,7 +4452,7 @@ it to a specific destination directory, since this might require
 allocating blocks that could overwrite some yet-to-be-recovered
 deleted files.  (Addresses-Sourceforge-Feature-Request: #967141)
 
-Update Swedish translations from the Translation Project.
+Update Swedish translation from the Translation Project.
 
 Programmer's Notes:
 -------------------
@@ -4920,7 +4970,7 @@ determining a partition's size, since binary searching to determine
 the device doesn't work on FreeBSD.
 
 Documentation about UUID's is available in enough places, and it's
-awkward to deal with debian-legal's inanities.  So I'm caving in the
+awkward to deal with debian-legal's insanities.  So I'm caving in the
 "more-lunatic-than-RMS" wing of Debian by removing RFC-4122 so we
 don't have do the dfsg tarball.  Also remove the rule that only tried
 to install RFC-4122 on Ubuntu, since Ubuntu seems to want to fetch
@@ -6287,7 +6337,7 @@ If byteswapping support is disabled using configure --disable-swapfs,
 skip the tests which depend on byte-swapping, so that "make check"
 won't bomb out.
 
-Lshattr will now display the indexed directory flag.  Also, some of
+Lsattr will now display the indexed directory flag.  Also, some of
 the more esoteric compression flags are suppressed unless compression
 support has been enabled.
 
@@ -6386,7 +6436,7 @@ block.
 E2fsck now performs additional consistency checks on indexed (HTREE)
 directories.
 
-Fix bug where e2fsck might get confused about whether a completely
+Fix a bug where e2fsck might get confused about whether a completely
 empty directory block is an empty leaf block or an interior htree
 node.  This could cause e2fsck to get confused into think that a valid
 indexed directory was corrupted.
@@ -6574,7 +6624,7 @@ e2fsck will not complain that the file is too small.
 Resize2fs will print the actual new size of the filesystem when it is
 finished resizing.
 
-Fixed a bug in debugfs where "ls -l" would report incorrectly file type
+Fixed a bug in debugfs where "ls -l" would report incorrect file type
 information on big-endian systems.
 
 
@@ -6905,7 +6955,7 @@ own version of strnlen if necessary.
 
 mke2fs and tune2fs will allow the use of UUID= or LABEL= specifiers
 when specifying the external journal device.  tune2fs will also search
-devices looking for the external journal device when removing.
+devices looking for the external journal device when removing it.
 
 E2fsprogs 1.23 (August 15, 2001)
 ================================
@@ -7122,7 +7172,7 @@ Miscellaneous code cleanups:
 		their dependencies would be properly calculated.
 	* Removed redundant code
 	* Fixed comments in code
-	* Removed no-longer unneeded args used #pragma.
+	* Removed no-longer needed argsused #pragma.
 
 
 E2fsprogs 1.20 (May 20, 2001)
@@ -7732,7 +7782,7 @@ Added a new command-line utility, uuidgen, which will create and print
 a UUID.
 
 Make debugfs's icheck command more robust by checking to make sure an
-inode has valid blocks before interacting over the inode's blocks.
+inode has valid blocks before iterating over the inode's blocks.
 
 UUID generation now uses a random-based scheme whenever possible to
 prevent potential privacy problems.
@@ -8488,8 +8538,8 @@ function is invoked by using the '-s' option to e2fsck.
 Debugfs's "dump" command has been enhanced so that it writes out the
 exact size of the file so that the nulls at the end of the file are
 eliminated.  The command also accept a new "-p" option which will
-attempt preserve to preserve the ownership, permissions, and
-file modification/access times.
+attempt to preserve the ownership, permissions, and file
+modification/access times.
 
 Debugfs has two new options, -f and -R.  The -R option allows the user
 to execute a single debugfs command from the command line.  The -f

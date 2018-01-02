@@ -944,6 +944,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/types.h
 	sys/un.h
 	sys/wait.h
+	sys/xattr.h
 ]))
 dnl Check where to find a dd(1) that supports iflag=fullblock
 dnl and oflag=append

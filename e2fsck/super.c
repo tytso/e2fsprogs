@@ -204,7 +204,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 				      block_buf, release_inode_block, &pb);
 	if (retval) {
 		com_err("release_inode_blocks", retval,
-			_("while calling ext2fs_block_iterate for inode %d"),
+			_("while calling ext2fs_block_iterate for inode %u"),
 			ino);
 		return 1;
 	}
@@ -227,7 +227,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		}
 		if (retval) {
 			com_err("release_inode_blocks", retval,
-		_("while calling ext2fs_adjust_ea_refcount2 for inode %d"),
+		_("while calling ext2fs_adjust_ea_refcount2 for inode %u"),
 				ino);
 			return 1;
 		}

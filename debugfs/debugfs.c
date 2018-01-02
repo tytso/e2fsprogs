@@ -292,7 +292,7 @@ void do_open_filesys(int argc, char **argv)
 
 print_usage:
 	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] "
-		"[-d image_filename] [-c] [-i] [-f] [-e] [-D] "
+		"[-d image_filename] [-z undo_file] [-c] [-i] [-f] [-e] [-D] "
 #ifndef READ_ONLY
 		"[-w] "
 #endif
@@ -514,7 +514,7 @@ void do_show_super_stats(int argc, char *argv[])
 	close_pager(out);
 	return;
 print_usage:
-	fprintf(stderr, "%s: Usage: show_super [-h]\n", argv[0]);
+	fprintf(stderr, "%s: Usage: show_super_stats [-h]\n", argv[0]);
 }
 
 #ifndef READ_ONLY
@@ -1693,7 +1693,7 @@ void do_find_free_inode(int argc, char *argv[])
 	char		*tmp;
 
 	if (argc > 3 || (argc>1 && *argv[1] == '?')) {
-		com_err(argv[0], 0, "Usage: find_free_inode [dir] [mode]");
+		com_err(argv[0], 0, "Usage: find_free_inode [dir [mode]]");
 		return;
 	}
 	if (check_fs_open(argv[0]))
@@ -2125,7 +2125,7 @@ void do_idump(int argc, char *argv[])
 	err = ext2fs_read_inode_full(current_fs, ino,
 				     (struct ext2_inode *)buf, isize);
 	if (err) {
-		com_err(argv[0], err, "while reading inode %d", ino);
+		com_err(argv[0], err, "while reading inode %u", ino);
 		goto err;
 	}
 
@@ -2425,11 +2425,11 @@ int main(int argc, char **argv)
 	int		retval;
 	const char	*usage = 
 		"Usage: %s [-b blocksize] [-s superblock] [-f cmd_file] "
-		"[-R request] [-V] ["
+		"[-R request] [-d data_source_device] [-i] [-n] [-D] [-V] ["
 #ifndef READ_ONLY
 		"[-w] [-z undo_file] "
 #endif
-		"[-c] device]";
+		"[-c]] [device]";
 	int		c;
 	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS;
 	char		*request = 0;
