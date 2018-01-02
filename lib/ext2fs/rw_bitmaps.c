@@ -94,6 +94,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (retval)
 			return retval;
 		ext2fs_group_desc_csum_set(fs, i);
+		fs->flags |= EXT2_FLAG_DIRTY;
 
 		blk = ext2fs_block_bitmap_loc(fs, i);
 		if (blk) {
@@ -125,6 +126,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (retval)
 			goto errout;
 		ext2fs_group_desc_csum_set(fs, i);
+		fs->flags |= EXT2_FLAG_DIRTY;
 
 		blk = ext2fs_inode_bitmap_loc(fs, i);
 		if (blk) {

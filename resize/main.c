@@ -47,7 +47,8 @@ static char *device_name, *io_options;
 static void usage (char *prog)
 {
 	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] "
-			   "[-p] device [-b|-s|new_size] [-z undo_file]\n\n"),
+			   "[-p] device [-b|-s|new_size] [-S RAID-stride] "
+			   "[-z undo_file]\n\n"),
 		 prog);
 
 	exit (1);

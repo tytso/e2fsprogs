@@ -104,7 +104,7 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [ -r|Q ] [ -fr ] device image-file\n"),
+	fprintf(stderr, _("Usage: %s [ -r|Q ] [ -f ] device image-file\n"),
 		program_name);
 	fprintf(stderr, _("       %s -I device image-file\n"), program_name);
 	fprintf(stderr, _("       %s -ra  [  -cfnp  ] [ -o src_offset ] "

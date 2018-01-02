@@ -759,6 +759,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		fputs("\tno_inode_count_fullmap\n", stderr);
 		fputs(_("\treadahead_kb=<buffer size>\n"), stderr);
 		fputs("\tbmap2extent\n", stderr);
+		fputs("\tfixes_only\n", stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}
