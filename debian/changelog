@@ -5,8 +5,11 @@ e2fsprogs (1.43.8-2) unstable; urgency=medium
   * Simplify the debian/rules file and don't build e2fsprogs-l10n
     unnecessarily
   * Fix FTBFS on big-endian systems (Closes: #886119)
+  * Add support for the build profile: noudeb
+  * Add support for the build profile: pkg.e2fsprogs.no-fuse2fs
+  * Add support for the build profile: pkg.e2fsprogs.no-static-e2fsck
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 03 Jan 2018 01:37:09 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 03 Jan 2018 16:18:40 -0500
 
 e2fsprogs (1.43.8-1) unstable; urgency=medium
 
