@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.43.8">E2fsprogs 1.43.8 (January 1, 2018)</A>
 <LI><A HREF="#1.43.7">E2fsprogs 1.43.7 (October 16, 2017)</A>
 <LI><A HREF="#1.43.6">E2fsprogs 1.43.6 (August 29, 2017)</A>
 <LI><A HREF="#1.43.5">E2fsprogs 1.43.5 (August 4, 2017)</A>
@@ -119,6 +120,53 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.43.8">E2fsprogs 1.43.8 (January 1, 2018)</A></H2>
+
+<P>Fix a bug where updated bitmap checks might not be written to disk.
+(Addresses Debian Bug: #883869)</P>
+
+<P>Some newly added fields in the superblocks were not getting byte
+swapped (which were not noticed since big endian systems are amazingly
+unpopular).  Fix them and compile-time checks to avoid this class of
+bugs from happening in the future.  (Lustre Bug #9309)</P>
+
+<P>Fix a potential use after free bug in e2fsck when fixing a corrupted
+root node in directory hash tree.</P>
+
+<P>Fix a bug in e2fsck where a badly/maliciously corrupted superblock
+(which is not fixed due to the -n option, for example) can cause a
+floating point exception when printing the summary statistics.
+(Addresses Debian Bug: #879220)</P>
+
+<P>Fix debugfs's ncheck command so that it correctly prints the inode
+number when printing an error message.</P>
+
+<P>Fix a bug in e2freefrag where it could print an incorrect free blocks
+count on a file system with the 64-bit block number feature.</P>
+
+<P>Update the German, Serbian, Spanish, and Ukrainian translations.</P>
+
+<P>Fix a bug where resize2fs's free blocks sanity check could fail with a
+false positive and refuse to check a file system with the 64-bit block
+number feature.</P>
+
+<P>Fix and clarify various man pages and documentations.  Also fixed up
+some random usage texts that were incorrect.  (Addresses Debian Bugs:
+#880483)</P>
+
+<P>Fixed various Debian Packaging Issues.  (Addresses Debian Bugs: #880207,
+#881408, #881590, #881591)</P>
+
+<H3>Programming notes</H3>
+
+<P>Fix various compiler warnings.</P>
+
+<P>Clean up Makefile output.</P>
+
+<P>Fix compatibility problems with glibc 2.27 casued by a collision with
+copy_file_range().</P>
+
 
 <H2><A NAME="1.43.7">E2fsprogs 1.43.7 (October 16, 2017)</A></H2>
 
