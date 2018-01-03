@@ -16,8 +16,8 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
  writing from devices or image files containing ext2, ext3, and ext4
  file systems.
 
-ifdef(`E2FSCK_STATIC',``
 Package: e2fsck-static
+Build-Profiles: <!pkg.e2fsprogs.no-static-e2fsck>
 Priority: optional
 Depends: ${misc:Depends}
 Recommends: sash | bash-static | zsh-static | busybox-static
@@ -31,7 +31,6 @@ Description: statically-linked version of the ext2/ext3/ext4 filesystem checker
  .
  You may want to install a statically-linked shell as well, to be able
  to run this program if something like your C library gets corrupted.
-'')dnl
 
 Package: e2fsprogs-l10n
 Section: localization
@@ -107,7 +106,6 @@ Description: command-line interface parsing library - headers and static librari
  .
  This package contains the development environment for the ss library.
 
-ifdef(`UDEB_PKGS',``
 Package: e2fsprogs-udeb
 Build-Profiles: <!noudeb>
 Package-Type: udeb
@@ -119,9 +117,8 @@ Description: stripped-down versions of e2fsprogs, for debian-installer
  This package is an e2fsprogs package built for a reduced size, so that
  it can help to save space in debian-installer.
  .
- Don'''``t attempt to install this package, it has no support for a couple of
+ Don't attempt to install this package, it has no support for a couple of
  features you surely want.  Anyway it should refuse to install.
-'')dnl
 
 Package: e2fslibs
 Section: libs
@@ -173,8 +170,9 @@ Description: ext2/ext3/ext4 file system utilities
  This package contains programs for creating, checking, and maintaining
  ext2/3/4-based file systems.  It also includes the "badblocks" program,
  which can be used to scan for bad blocks on a disk or other storage device.
-ifdef(`USE_DBGSYM',,``
+
 Package: e2fsprogs-dbg
+Build-Profiles: <pkg.e2fsprogs.legacy-dbg>
 Section: debug
 Priority: extra
 Depends: e2fsprogs (= ${binary:Version}), ${misc:Depends}
@@ -186,6 +184,7 @@ Description: debugging information for e2fsprogs
  dump analysis.
 
 Package: e2fslibs-dbg
+Build-Profiles: <pkg.e2fsprogs.legacy-dbg>
 Section: debug
 Priority: extra
 Depends: e2fslibs (= ${binary:Version}), ${misc:Depends}
@@ -196,6 +195,7 @@ Description: debugging information for e2fslibs
  information is used for execution tracing and core dump analysis.
 
 Package: libcomerr2-dbg
+Build-Profiles: <pkg.e2fsprogs.legacy-dbg>
 Section: debug
 Priority: extra
 Depends: libcomerr2 (= ${binary:Version}), ${misc:Depends}
@@ -206,6 +206,7 @@ Description: debugging information for libcomerr2
  information is used for execution tracing and core dump analysis.
 
 Package: libss2-dbg
+Build-Profiles: <pkg.e2fsprogs.legacy-dbg>
 Section: debug
 Priority: extra
 Depends: libss2 (= ${binary:Version}), ${misc:Depends}
@@ -214,4 +215,3 @@ Description: debugging information for libss2
  This package includes the debug information useful for debugging the
  ss library, contained in the libss2 package.  The debug information
  is used for execution tracing and core dump analysis.
-'')dnl
