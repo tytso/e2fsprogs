@@ -7,8 +7,6 @@
 # The `binary' target must be run as root, as it needs to install files with
 # specific ownerships.
 
--include debian/rules.custom
-
 .PHONY: binary binary-arch binary-indep build build-arch build-indep \
 	build-bf build-std install install-udeb \
 	clean checkroot mrproper debug_flags debian-files
@@ -35,6 +33,18 @@ ifeq ($(DEB_HOST_ARCH_OS), hurd)
 SKIP_FUSE2FS=yes
 endif
 
+ifneq ($(filter pkg.e2fsprogs.no-fuse2fs,$(DEB_BUILD_PROFILES)),)
+SKIP_FUSE2FS=yes
+endif
+
+ifneq ($(filter pkg.e2fsprogs.no-static-e2fsck,$(DEB_BUILD_PROFILES)),)
+SKIP_E2FSCK_STATIC=yes
+endif
+
+ifneq ($(filter noudeb,$(DEB_BUILD_PROFILES)),)
+SKIP_UDEB=yes
+endif
+
 DH_VERSION := $(shell dpkg-query -W -f '$${Version}' debhelper)
 
 # USE_DBGSYM :=
@@ -46,7 +56,10 @@ dh_strip_args2 = -p$(1) --dbgsym-migration='$(2)-dbg (<= 1.43-1)'
 else
 dh_strip_args = -p$(1) --dbg-package=$(1)-dbg
 dh_strip_args2 = -p$(1) --dbg-package=$(2)-dbg
+DBG_PACKAGES += -pe2fsprogs-dbg -pe2fslibs-dbg -plibcomerr2-dbg -plibss2-dbg
+export DEB_BUILD_PROFILES += pkg.e2fsprogs.legacy-dbg
 endif
+
 # find the version for the main package, from changelog file
 MAIN_VERSION = $(shell head -n 1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
 # find versions for libraries going into their own packages, from their Makefile.in's,
@@ -83,7 +96,7 @@ MANDIR		?= /usr/share/man
 mandir		?= ${tmpdir}${MANDIR}
 
 UDEB_NAME 	?= $(package)-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
-UDEB_PRIORITY	?= $(shell grep '^Package: e2fsprogs-udeb' debian/control.in -A 10 | grep ^Priority: | cut -d ' ' -f 2)
+UDEB_PRIORITY	?= $(shell grep '^Package: e2fsprogs-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
 
 STAMPSDIR	?= debian/stampdir
 CFGSTDSTAMP	?= ${STAMPSDIR}/configure-std-stamp
@@ -162,36 +175,25 @@ BF_CONF_FLAGS ?= --enable-elf-shlibs --disable-nls --disable-imager \
 	--disable-testio-debug --disable-uuidd --disable-tls \
 	--disable-tdb --disable-debugfs
 
-M4_ARGS=
 DBG_PACKAGES=
-
-ifeq ($(USE_DBGSYM),yes)
-M4_ARGS+=-DUSE_DBGSYM
-else
-DBG_PACKAGES += -pe2fsprogs-dbg -pe2fslibs-dbg -plibcomerr2-dbg -plibss2-dbg
-M4_ARGS+=-UUSE_DBGSYM
-endif
-
-ifneq ($(BUILD_E2FSCK_STATIC),no)
-M4_ARGS+=-DE2FSCK_STATIC
-else
-M4_ARGS+=-UE2FSCK_STATIC
-endif
 
 ifeq ($(SKIP_UDEB),)
 INSTALL_UDEB = install-udeb
-M4_ARGS+=-DUDEB_PKGS
-else
-M4_ARGS+=-UUDEB_PKGS
 endif
 
-debian-files: debian/control
+debian-files:
+ifneq ($(USE_DBGSYM),yes)
+	if test ! -f debian/control.save; then \
+		mv debian/control debian/control.save ; \
+		cat debian/control.save debian/control.legacy-dbg \
+			>> debian/control ; \
+	fi
+endif
 
 mrproper: clean
-	rm debian/control
-
-debian/control: debian/control.in debian/rules
-	m4 $(M4_ARGS) < debian/control.in | grep -v ^REMOVE_ME$$ > $@
+	if test -f debian/control.save; then \
+		mv debian/control.save debian/control ; \
+	fi
 
 ${CFGSTDSTAMP}:
 	dh_testdir
@@ -265,7 +267,7 @@ build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
 	$(MAKE) -C ${stdbuilddir} V=1 all
-ifneq ($(BUILD_E2FSCK_STATIC),no)
+ifneq ($(SKIP_E2FSCK_STATIC),yes)
 	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 e2fsck.static
 endif
 	if ! test -d debian/orig-gmo ; then \
@@ -316,7 +318,7 @@ install: build
   # static libs and .h files
 	$(MAKE) -C ${stdbuilddir} V=1 install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
-ifneq ($(BUILD_E2FSCK_STATIC),no)
+ifneq ($(SKIP_E2FSCK_STATIC),yes)
   # statically-linked fsck
 	${INSTALL_PROGRAM} $(E2FSCK_STATIC) ${tmpdir}/sbin
 	cp ${mandir}/man8/e2fsck.8 ${mandir}/man8/e2fsck.static.8
@@ -416,7 +418,7 @@ binary-arch: install $(INSTALL_UDEB)
 	dh_installchangelogs -a
 	dh_fixperms -a
 	dh_strip $(call dh_strip_args,e2fsprogs)
-ifneq ($(BUILD_E2FSCK_STATIC),no)
+ifneq ($(SKIP_E2FSCK_STATIC),yes)
 	dh_strip $(call dh_strip_args2,e2fsck-static,e2fsprogs)
 endif
 	dh_strip $(call dh_strip_args,e2fslibs)
