@@ -182,8 +182,18 @@ INSTALL_UDEB = install-udeb
 endif
 
 debian-files:
+ifneq ($(USE_DBGSYM),yes)
+	if test ! -f debian/control.save; then \
+		mv debian/control debian/control.save ; \
+		cat debian/control.save debian/control.legacy-dbg \
+			>> debian/control ; \
+	fi
+endif
 
 mrproper: clean
+	if test -f debian/control.save; then \
+		mv debian/control.save debian/control ; \
+	fi
 
 ${CFGSTDSTAMP}:
 	dh_testdir
