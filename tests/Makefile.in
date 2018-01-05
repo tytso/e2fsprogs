@@ -21,6 +21,7 @@ test_one: $(srcdir)/test_one.in Makefile mke2fs.conf
 	@echo "SRCDIR=@srcdir@" >> test_one
 	@echo "DIFF_OPTS=@UNI_DIFF_OPTS@" >> test_one
 	@echo "SIZEOF_TIME_T=@SIZEOF_TIME_T@" >> test_one
+	@echo "DD=@DD@" >>test_one
 	@cat $(srcdir)/test_one.in >> test_one
 	@chmod +x test_one
 

@@ -116,6 +116,8 @@ struct blk_move {
 
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
+static const char *fsck_explain = N_("\nThis operation requires a freshly checked filesystem.\n");
+
 static const char *please_fsck = N_("Please run e2fsck -f on the filesystem.\n");
 static const char *please_dir_fsck =
 		N_("Please run e2fsck -fD on the filesystem.\n");
@@ -135,9 +137,8 @@ static void usage(void)
 		  "[-g group]\n"
 		  "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
 		  "\t[-m reserved_blocks_percent] [-o [^]mount_options[,...]]\n"
-		  "\t[-p mmp_update_interval] [-r reserved_blocks_count] "
-		  "[-u user]\n"
-		  "\t[-C mount_count] [-L volume_label] [-M last_mounted_dir]\n"
+		  "\t[-r reserved_blocks_count] [-u user] [-C mount_count]\n"
+		  "\t[-L volume_label] [-M last_mounted_dir]\n"
 		  "\t[-O [^]feature[,...]] [-Q quota_options]\n"
 		  "\t[-E extended-option[,...]] [-T last_check_time] "
 		  "[-U UUID]\n\t[-I new_inode_size] [-z undo_file] device\n"),
@@ -419,7 +420,8 @@ static void check_fsck_needed(ext2_filsys fs, const char *prompt)
 	if (!(fs->super->s_state & EXT2_VALID_FS) ||
 	    (fs->super->s_state & EXT2_ERROR_FS) ||
 	    (fs->super->s_lastcheck < fs->super->s_mtime)) {
-		printf("\n%s\n", _(please_fsck));
+		puts(_(fsck_explain));
+		puts(_(please_fsck));
 		if (mount_flags & EXT2_MF_READONLY)
 			printf("%s", _("(and reboot afterwards!)\n"));
 		exit(1);
@@ -441,7 +443,8 @@ static void request_dir_fsck_afterwards(ext2_filsys fs)
 		return;
 	fsck_requested++;
 	fs->super->s_state &= ~EXT2_VALID_FS;
-	printf("\n%s\n", _(please_dir_fsck));
+	puts(_(fsck_explain));
+	puts(_(please_dir_fsck));
 	if (mount_flags & EXT2_MF_READONLY)
 		printf("%s", _("(and reboot afterwards!)\n"));
 }
@@ -461,9 +464,6 @@ static void request_fsck_afterwards(ext2_filsys fs)
 
 static void convert_64bit(ext2_filsys fs, int direction)
 {
-	if (!direction)
-		return;
-
 	/*
 	 * Is resize2fs going to demand a fsck run? Might as well tell the
 	 * user now.
@@ -1310,6 +1310,11 @@ mmp_error:
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_PROJECT)) {
+		if (fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+			fprintf(stderr, _("Cannot enable project feature; "
+					  "inode size too small.\n"));
+			exit(1);
+		}
 		Q_flag = 1;
 		quota_enable[PRJQUOTA] = QOPT_ENABLE;
 	}
@@ -1496,6 +1501,13 @@ static void handle_quota_options(ext2_filsys fs)
 	if (qtype == MAXQUOTAS)
 		/* Nothing to do. */
 		return;
+
+	if (quota_enable[PRJQUOTA] == QOPT_ENABLE &&
+	    fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
+		fprintf(stderr, _("Cannot enable project quota; "
+				  "inode size too small.\n"));
+		exit(1);
+	}
 
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
 		if (quota_enable[qtype] == QOPT_ENABLE)
@@ -2072,6 +2084,7 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 			"\tclear_mmp\n"
 			"\thash_alg=<hash algorithm>\n"
 			"\tmount_opts=<extended default mount options>\n"
+			"\tmmp_update_interval=<mmp update interval in seconds>\n"
 			"\tstride=<RAID per-disk chunk size in blocks>\n"
 			"\tstripe_width=<RAID stride*data disks in blocks>\n"
 			"\ttest_fs\n"
@@ -3222,7 +3235,9 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		if (err) {
 			com_err("tune2fs", err, "while recovering journal.\n");
 			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
-			goto closefs;
+			if (fs)
+				ext2fs_close_free(&fs);
+			exit(1);
 		}
 		ext2fs_clear_feature_journal_needs_recovery(fs->super);
 		ext2fs_mark_super_dirty(fs);
@@ -3240,6 +3255,7 @@ closefs:
 #endif
 	}
 
-	convert_64bit(fs, feature_64bit);
+	if (feature_64bit)
+		convert_64bit(fs, feature_64bit);
 	return (ext2fs_close_free(&fs) ? 1 : 0);
 }

@@ -154,9 +154,10 @@ static errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info,
 
 	scan_block_bitmap(fs, info);
 
-	fprintf(f, "Total blocks: %llu\nFree blocks: %u (%0.1f%%)\n",
-		ext2fs_blocks_count(fs->super), fs->super->s_free_blocks_count,
-		(double)fs->super->s_free_blocks_count * 100 /
+	fprintf(f, "Total blocks: %llu\nFree blocks: %llu (%0.1f%%)\n",
+		ext2fs_blocks_count(fs->super),
+		ext2fs_free_blocks_count(fs->super),
+		(double)ext2fs_free_blocks_count(fs->super) * 100 /
 		ext2fs_blocks_count(fs->super));
 
 	if (info->chunkbytes) {
@@ -200,7 +201,7 @@ static errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info,
 				info->histogram.fc_chunks[i],
 				info->histogram.fc_blocks[i],
 				(double)info->histogram.fc_blocks[i] * 100 /
-				fs->super->s_free_blocks_count);
+				ext2fs_free_blocks_count(fs->super));
 		}
 		start = end;
 		if (start == 1<<10) {

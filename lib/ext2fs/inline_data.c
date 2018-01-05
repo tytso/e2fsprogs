@@ -321,7 +321,7 @@ static errcode_t ext2fs_inline_data_convert_dir(ext2_filsys fs, ext2_ino_t ino,
 	dir->name[1] = '.';
 
 	/*
-	 * Ajust the last rec_len
+	 * Adjust the last rec_len
 	 */
 	offset = EXT2_DIR_REC_LEN(1) + EXT2_DIR_REC_LEN(2);
 	dir = (struct ext2_dir_entry *) (bbuf + offset);
@@ -613,7 +613,7 @@ static errcode_t file_test(ext2_filsys fs)
 	/* create a new file */
 	retval = ext2fs_new_inode(fs, 2, 010755, 0, &newfile);
 	if (retval) {
-		com_err("file_test", retval, "while allocaing a new inode");
+		com_err("file_test", retval, "while allocating a new inode");
 		return 1;
 	}
 
@@ -623,7 +623,7 @@ static errcode_t file_test(ext2_filsys fs)
 	inode.i_mode = LINUX_S_IFREG;
 	retval = ext2fs_write_new_inode(fs, newfile, &inode);
 	if (retval) {
-		com_err("file_test", retval, "while writting a new inode");
+		com_err("file_test", retval, "while writing a new inode");
 		return 1;
 	}
 
@@ -811,7 +811,7 @@ int main(int argc, char *argv[])
 	retval = ext2fs_allocate_tables(fs);
 	if (retval) {
 		com_err("setup", retval,
-			"while allocating tables for test filesysmte");
+			"while allocating tables for test filesystem");
 		exit(1);
 	}
 

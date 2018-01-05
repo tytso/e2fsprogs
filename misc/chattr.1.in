@@ -29,7 +29,7 @@ The operator '+' causes the selected attributes to be added to the
 existing attributes of the files; '-' causes them to be removed; and '='
 causes them to be the only attributes that the files have.
 .PP
-The letters 'aAcCdDeijsStTu' select the new attributes for the files:
+The letters 'aAcCdDeijPsStTu' select the new attributes for the files:
 append only (a),
 no atime updates (A),
 compressed (c),
@@ -156,7 +156,7 @@ although it can be displayed by
 .PP
 A directory with the 'P' attribute set will enforce a hierarchical
 structure for project id's.  This means that files and directory created
-in the directory will inhert the project id of the directory, rename
+in the directory will inherit the project id of the directory, rename
 operations are constrained so when a file or directory is moved into
 another directory, that the project id's much match.  In addition, a
 hard link to file can only be created when the project id for the file

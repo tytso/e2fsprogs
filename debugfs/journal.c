@@ -793,14 +793,14 @@ errcode_t ext2fs_run_ext3_journal(ext2_filsys *fsp)
 		kbytes_written = stats->bytes_written >> 10;
 
 	ext2fs_mmp_stop(fs);
-	fsname = strdup(fs->device_name);
+	fsname = fs->device_name;
+	fs->device_name = NULL;
 	fsflags = fs->flags;
 	fsblocksize = fs->blocksize;
 	ext2fs_free(fs);
-	retval = ext2fs_open(fsname, fsflags,
-			     0, fsblocksize, io_ptr,
-			     fsp);
-	free(fsname);
+	*fsp = NULL;
+	retval = ext2fs_open(fsname, fsflags, 0, fsblocksize, io_ptr, fsp);
+	ext2fs_free_mem(&fsname);
 	if (retval)
 		return retval;
 

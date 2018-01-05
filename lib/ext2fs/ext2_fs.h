@@ -970,7 +970,7 @@ struct ext2_dir_entry {
  * bigger than 255 chars, it's safe to reclaim the extra byte for the
  * file_type field.
  *
- * This structure is deprecated due to endianity issues. Please use struct
+ * This structure is deprecated due to endian issues. Please use struct
  * ext2_dir_entry and accessor functions
  *   ext2fs_dirent_name_len
  *   ext2fs_dirent_set_name_len
@@ -1048,7 +1048,7 @@ struct ext2_dir_entry_tail {
  * regardless of how old the timestamp is.
  *
  * The timestamp in the MMP structure will be updated by e2fsck at some
- * arbitary intervals (start of passes, after every few groups of inodes
+ * arbitrary intervals (start of passes, after every few groups of inodes
  * in pass1 and pass1b).  There is no guarantee that e2fsck is updating
  * the MMP block in a timely manner, and the updates it does are purely
  * for the convenience of the sysadmin and not for automatic validation.

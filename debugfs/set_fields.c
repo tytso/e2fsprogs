@@ -430,7 +430,7 @@ static struct field_set_info *find_field(struct field_set_info *fields,
 
 /*
  * Note: info->size == 6 is special; this means a base size 4 bytes,
- * and secondiory (high) size of 2 bytes.  This is needed for the
+ * and secondary (high) size of 2 bytes.  This is needed for the
  * special case of i_blocks_high and i_file_acl_high.
  */
 static errcode_t parse_uint(struct field_set_info *info, char *field,
@@ -788,7 +788,7 @@ void do_set_inode(int argc, char *argv[])
 void do_set_block_group_descriptor(int argc, char *argv[])
 {
 	const char *usage = "<bg number> <field> <value>\n"
-		"\t\"set_block_group_descriptor -l\" will list the names of "
+		"\t\"set_block_group -l\" will list the names of "
 		"the fields in a block group descriptor\n\twhich can be set.";
 	struct field_set_info	*table;
 	struct field_set_info	*ss;
@@ -819,7 +819,7 @@ void do_set_block_group_descriptor(int argc, char *argv[])
 		return;
 	}
 
-	if (common_args_process(argc, argv, 4, 4, "set_block_group_descriptor",
+	if (common_args_process(argc, argv, 4, 4, "set_block_group",
 				usage, CHECK_FS_RW))
 		return;
 

@@ -91,7 +91,7 @@ struct problem_context {
 /* Miscellaneous superblock corruption */
 #define PR_0_MISC_CORRUPT_SUPER			0x00000B
 
-/* Error determing physical device size of filesystem */
+/* Error determining physical device size of filesystem */
 #define PR_0_GETSIZE_ERROR			0x00000C
 
 /* Inode count in the superblock incorrect */
@@ -783,7 +783,7 @@ struct problem_context {
 /* Directory entry has deleted or unused inode */
 #define PR_2_UNUSED_INODE	0x020003
 
-/* Directry entry is link to '.' */
+/* Directory entry is link to '.' */
 #define PR_2_LINK_DOT		0x020004
 
 /* Directory entry points to inode now located in a bad block */
@@ -792,7 +792,7 @@ struct problem_context {
 /* Directory entry contains a link to a directory */
 #define PR_2_LINK_DIR		0x020006
 
-/* Directory entry contains a link to the root directry */
+/* Directory entry contains a link to the root directory */
 #define PR_2_LINK_ROOT		0x020007
 
 /* Directory entry has illegal characters in its name */
@@ -1082,7 +1082,7 @@ struct problem_context {
 #define PR_3_LPF_ENCRYPTED		0x03001B
 
 /*
- * Pass 3a --- rehashing diretories
+ * Pass 3a --- rehashing directories
  */
 /* Pass 3a: Reindexing directories */
 #define PR_3A_PASS_HEADER		0x031000
@@ -1196,7 +1196,7 @@ struct problem_context {
 /* Inode range not used, but marked in bitmap */
 #define PR_5_INODE_RANGE_UNUSED		0x050016
 
-/* Inode rangeused, but not marked used in bitmap */
+/* Inode range used, but not marked used in bitmap */
 #define PR_5_INODE_RANGE_USED		0x050017
 
 /* Block in use but group is marked BLOCK_UNINIT */

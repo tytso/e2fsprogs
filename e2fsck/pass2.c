@@ -1062,7 +1062,7 @@ inline_read_fail:
 			    fix_problem(ctx, PR_2_HTREE_BAD_ROOT, &cd->pctx)) {
 				clear_htree(ctx, ino);
 				dx_dir->numblocks = 0;
-				dx_db = 0;
+				dx_db = NULL;
 			}
 			dx_dir->hashversion = root->hash_version;
 			if ((dx_dir->hashversion <= EXT2_HASH_TEA) &&
@@ -1074,9 +1074,10 @@ inline_read_fail:
 			   (ext2fs_dirent_name_len(dirent) == 0) &&
 			   (ext2fs_le16_to_cpu(limit->limit) ==
 			    ((fs->blocksize - (8 + dx_csum_size)) /
-			     sizeof(struct ext2_dx_entry))))
+			     sizeof(struct ext2_dx_entry)))) {
 			dx_db->type = DX_DIRBLOCK_NODE;
-		is_leaf = (dx_db->type == DX_DIRBLOCK_LEAF);
+		}
+		is_leaf = dx_db ? (dx_db->type == DX_DIRBLOCK_LEAF) : 0;
 	}
 out_htree:
 
@@ -1602,7 +1603,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 }
 
 /*
- * This fuction deallocates an inode
+ * This function deallocates an inode
  */
 static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 {
@@ -1672,7 +1673,7 @@ clear_inode:
 }
 
 /*
- * This fuction clears the htree flag on an inode
+ * This function clears the htree flag on an inode
  */
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino)
 {

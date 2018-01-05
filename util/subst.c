@@ -1,7 +1,7 @@
 /*
  * subst.c --- substitution program
  *
- * Subst is used as a quicky program to do @ substitutions
+ * Subst is used as a quickie program to do @ substitutions
  *
  */
 

@@ -5,7 +5,7 @@ Most of this file is just copied from the ext2 main include file.
 My parser is very primitive - It only searches for the struct keywords,
 and uses the variables in there. The rest of the file is just ignored.
 
-You will find at the end a few additional types which are not aviable in
+You will find at the end a few additional types which are not available in
 the original include file, such as the types "file" and "dir". They have
 no variables, but are necessary due to the way ext2ed binds C commands
 to specific types.

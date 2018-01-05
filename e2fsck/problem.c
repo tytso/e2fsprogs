@@ -174,7 +174,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Corruption found in @S.  (%s = %N).\n"),
 	  PROMPT_NONE, PR_AFTER_CODE, PR_0_SB_CORRUPT },
 
-	/* Error determing physical device size of filesystem */
+	/* Error determining physical device size of filesystem */
 	{ PR_0_GETSIZE_ERROR,
 	  N_("Error determining size of the physical @v: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
@@ -1311,7 +1311,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@E has @D/unused @i %Di.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
-	/* Directry entry is link to '.' */
+	/* Directory entry is link to '.' */
 	{ PR_2_LINK_DOT,
 	  N_("@E @L to '.'  "),
 	  PROMPT_CLEAR, 0 },
@@ -1326,7 +1326,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@E @L to @d %P (%Di).\n"),
 	  PROMPT_CLEAR, 0 },
 
-	/* Directory entry contains a link to the root directry */
+	/* Directory entry contains a link to the root directory */
 	{ PR_2_LINK_ROOT,
 	  N_("@E @L to the @r.\n"),
 	  PROMPT_CLEAR, 0 },

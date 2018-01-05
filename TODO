@@ -29,7 +29,7 @@ Date: Mon, 08 Mar 1999 21:46:14 +0100
 From: Sergio Polini <s.polini@mclink.it>
 
 
-I'm reading the sorce code of e2fsck 1.14.
+I'm reading the source code of e2fsck 1.14.
 In pass2.c, lines 352-357, I read:
 
 if ((dirent->name_len & 0xFF) > EXT2_NAME_LEN) {
@@ -72,7 +72,7 @@ directories by using debugfs to get the relevant block numbers, then
 using dd to get the actual data.
 
 If debugfs had a feature where it ignored the size of a directory reported by
-the inode and instead just dumped all the blocks, it would have facilited
+the inode and instead just dumped all the blocks, it would have facilitated
 things a bit. This seems like a very easy feature to add.
 
 Again, thanks for writing debugfs (and all the other Linux stuff you've written!).
