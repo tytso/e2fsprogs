@@ -152,7 +152,7 @@ Description: ext2/ext3/ext4 file system libraries - headers and static libraries
  ("extended") file system. They are the main file system types used for
  hard disks on Debian and other Linux systems.
  .
- This package contains the development environment for the ext2fs and e2p 
+ This package contains the development environment for the ext2fs and e2p
  libraries.
 
 Package: e2fsprogs
@@ -170,4 +170,3 @@ Description: ext2/ext3/ext4 file system utilities
  This package contains programs for creating, checking, and maintaining
  ext2/3/4-based file systems.  It also includes the "badblocks" program,
  which can be used to scan for bad blocks on a disk or other storage device.
-
