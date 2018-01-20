@@ -47,6 +47,7 @@ cc_library {
         "get_pathname.c",
         "getsize.c",
         "getsectsize.c",
+        "hashmap.c",
         "i_block.c",
         "icount.c",
         "imager.c",

@@ -16,7 +16,6 @@ cc_binary {
         "base_fs.c",
         "perms.c",
         "basefs_allocator.c",
-        "hashmap.c",
     ],
     target: {
         host: {

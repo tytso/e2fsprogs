@@ -10,7 +10,6 @@ e2fsdroid_src_files := \
         base_fs.c \
         perms.c \
         basefs_allocator.c \
-        hashmap.c \
 
 e2fsdroid_cflags := -W -Wall -Werror -Wno-error=macro-redefined
 
