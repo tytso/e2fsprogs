@@ -94,6 +94,12 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			    manager, ret_fs);
 }
 
+static void block_sha_map_free_entry(void *data)
+{
+    free(data);
+    return;
+}
+
 /*
  *  Note: if superblock is non-zero, block-size must also be non-zero.
  * 	Superblock and block_size can be zero to use the default size.
@@ -484,6 +490,16 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			ext2fs_mmp_stop(fs);
 			goto cleanup;
 		}
+	}
+
+	if (fs->flags & EXT2_FLAG_SHARE_DUP) {
+		fs->block_sha_map = ext2fs_hashmap_create(ext2fs_djb2_hash,
+					block_sha_map_free_entry, 4096);
+		if (!fs->block_sha_map) {
+			retval = EXT2_ET_NO_MEMORY;
+			goto cleanup;
+		}
+		ext2fs_set_feature_shared_blocks(fs->super);
 	}
 
 	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;

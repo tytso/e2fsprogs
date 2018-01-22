@@ -94,6 +94,8 @@ typedef __u32 __bitwise		ext2_dirhash_t;
 #include <ext2fs/ext2_ext_attr.h>
 #endif
 
+#include "hashmap.h"
+
 /*
  * Portability help for Microsoft Visual C++
  */
@@ -195,7 +197,8 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_DIRECT_IO		0x80000
 #define EXT2_FLAG_SKIP_MMP		0x100000
 #define EXT2_FLAG_IGNORE_CSUM_ERRORS	0x200000
-#define EXT2_FLAG_IGNORE_SB_ERRORS	0x400000
+#define EXT2_FLAG_SHARE_DUP		0x400000
+#define EXT2_FLAG_IGNORE_SB_ERRORS	0x800000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -296,6 +299,9 @@ struct struct_ext2_filsys {
 			       blk64_t len, blk64_t *pblk, blk64_t *plen);
 	void (*block_alloc_stats_range)(ext2_filsys fs, blk64_t blk, blk_t num,
 					int inuse);
+
+	/* hashmap for SHA of data blocks */
+	struct ext2fs_hashmap* block_sha_map;
 };
 
 #if EXT2_FLAT_INCLUDES
@@ -618,7 +624,8 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT4_FEATURE_RO_COMPAT_QUOTA|\
 					 EXT4_FEATURE_RO_COMPAT_METADATA_CSUM|\
 					 EXT4_FEATURE_RO_COMPAT_READONLY |\
-					 EXT4_FEATURE_RO_COMPAT_PROJECT)
+					 EXT4_FEATURE_RO_COMPAT_PROJECT |\
+					 EXT4_FEATURE_RO_COMPAT_SHARED_BLOCKS)
 
 /*
  * These features are only allowed if EXT2_FLAG_SOFTSUPP_FEATURES is passed
