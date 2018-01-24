@@ -2366,8 +2366,6 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[])
 	fprintf(stdout, "device_name: %s\n", mmp_s->mmp_bdevname);
 	fprintf(stdout, "magic: 0x%x\n", mmp_s->mmp_magic);
 	fprintf(stdout, "checksum: 0x%08x\n", mmp_s->mmp_checksum);
-	fprintf(stdout, "MMP is unsupported, please recompile with "
-	                "--enable-mmp\n");
 }
 #else
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)),
