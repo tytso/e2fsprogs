@@ -475,6 +475,11 @@ errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 				ext2fs_hashmap_add(fs->block_sha_map, new_block,
 					new_block->sha, sizeof(new_block->sha));
 			}
+
+			if (bmap_flags & BMAP_SET) {
+				ext2fs_iblk_add_blocks(fs, &file->inode, 1);
+				ext2fs_write_inode(fs, file->ino, &file->inode);
+			}
 		}
 
 		file->pos += c;
