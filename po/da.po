@@ -72,7 +72,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.43.4\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2017-07-09 22:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
@@ -2915,13 +2915,13 @@ msgid "while doing inode scan"
 msgstr "under udførsel af iknudeskanning"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "under kald af ext2fs_block_iterate for iknude %d"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "under kald af ext2fs_adjust_ea_refcount2 for iknude %d"
 
 #: e2fsck/super.c:291
@@ -7266,7 +7266,7 @@ msgstr "Bør aldrig ske: ændring af størrelse for iknude er ødelagt!\n"
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "EXT2FS-biblioteksversion 1.43.4-WIP"
 
 #: lib/ext2fs/ext2_err.c:12

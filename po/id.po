@@ -73,7 +73,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.41.12\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2010-05-24 12:30+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -2984,13 +2984,13 @@ msgid "while doing inode scan"
 msgstr "ketika melakukan pemeriksaan inode"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "ketika memanggil ext2fs_block_iterate untuk inode %d"
 
 #: e2fsck/super.c:230
 #, fuzzy, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "ketika memanggil ext2fs_adjust_ea_refcount untuk inode %d"
 
 #: e2fsck/super.c:291
@@ -7450,7 +7450,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Seharusnya tidak pernah terjadi: resize inode corrupt!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12

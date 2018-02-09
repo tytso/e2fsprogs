@@ -69,7 +69,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2017-08-22 18:50+0200\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -2981,13 +2981,13 @@ msgid "while doing inode scan"
 msgstr "podczas przeszukiwania i-węzłów"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "podczas wywołania ext2fs_block_iterate dla i-węzła %d"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "podczas wywołania ext2fs_adjust_ea_refcount2 dla i-węzła %d"
 
 #: e2fsck/super.c:291
@@ -7520,7 +7520,7 @@ msgstr "Nigdy się nie powinno zdarzyć: i-węzeł zmiany rozmiaru uszkodzony!\n
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "Biblioteka EXT2FS w wersji 1.43.5"
 
 #: lib/ext2fs/ext2_err.c:12

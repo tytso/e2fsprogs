@@ -72,7 +72,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2017-11-06 10:06+0100\n"
 "Last-Translator: Philipp Thomas <pth@suse.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -3129,13 +3129,13 @@ msgid "while doing inode scan"
 msgstr "während der Inode-Prüfung"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "während des Aufrufs von ext2fs_block_iterate für Inode %d"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "während des Aufrufs von ext2fs_adjust_ea_refcount2 für Inode %d"
 
 #: e2fsck/super.c:291
@@ -7742,7 +7742,7 @@ msgstr "Dies sollte nie geschehen: Der Größenänderungs-Inode ist defekt!\n"
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "EXT2FS-Bibliothek, Version 1.43.5"
 
 #: lib/ext2fs/ext2_err.c:12

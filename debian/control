@@ -48,11 +48,20 @@ Description: ext2/ext3/ext4 file system utilities - translations
  the 'e2fsprogs' package.
 
 Package: libcomerr2
+Depends: libcom-err2, ${misc:Depends}
+Architecture: all
+Priority: optional
+Section: oldlibs
+Description: transitional package
+ This is a transitional package. It can safely be removed.
+
+Package: libcom-err2
 Section: libs
 Priority: optional
-Provides: libcomerr-kth-compat
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Replaces: e2fsprogs (<< 1.34-1)
+Replaces: libcomerr2 (<< 1.43.9-1~)
+Breaks: libcomerr2 (<< 1.43.9-1~)
+Provides: libcomerr2 (= ${binary:Version})
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -64,7 +73,7 @@ Description: common error description library
 Package: comerr-dev
 Section: libdevel
 Priority: optional
-Depends: libc6-dev | libc-dev, libcomerr2 (= ${mainBinary}), ${misc:Depends}
+Depends: libc6-dev | libc-dev, libcom-err2 (= ${mainBinary}), ${misc:Depends}
 Suggests: doc-base
 Replaces: e2fslibs-dev (<< 1.33-2), libkrb5-dev (<< 1.3)
 Architecture: any
@@ -79,7 +88,7 @@ Description: common error description library - headers and static libraries
 Package: libss2
 Section: libs
 Priority: optional
-Depends: libcomerr2, ${shlibs:Depends}, ${misc:Depends}
+Depends: libcom-err2, ${shlibs:Depends}, ${misc:Depends}
 Replaces: e2fsprogs (<< 1.34-1)
 Architecture: any
 Multi-Arch: same
@@ -121,11 +130,28 @@ Description: stripped-down versions of e2fsprogs, for debian-installer
  features you surely want.  Anyway it should refuse to install.
 
 Package: e2fslibs
+Depends: libext2fs2, ${misc:Depends}
+Architecture: all
+Priority: optional
+Section: oldlibs
+Description: transitional package
+ This is a transitional package. It can safely be removed.
+
+Package: e2fslibs-dev
+Depends: libext2fs-dev, ${misc:Depends}
+Architecture: all
+Priority: optional
+Section: oldlibs
+Description: transitional package
+ This is a transitional package. It can safely be removed.
+
+Package: libext2fs2
 Section: libs
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Replaces: e2fsprogs (<< 1.34-1)
-Provides: libext2fs2, libe2p2
+Replaces: e2fslibs (<< 1.43.9-1~)
+Breaks: e2fslibs (<< 1.43.9-1~)
+Provides: e2fslibs (= ${binary:Version})
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -139,20 +165,21 @@ Description: ext2/ext3/ext4 file system libraries
  include e2fsck, mke2fs, and tune2fs. Programs that use libe2p include
  dumpe2fs, chattr, and lsattr.
 
-Package: e2fslibs-dev
+Package: libext2fs-dev
 Section: libdevel
 Priority: optional
-Depends: libc6-dev | libc-dev, comerr-dev, e2fslibs (= ${binary:Version}), ${misc:Depends}
+Depends: libc6-dev | libc-dev, comerr-dev, libext2fs2 (= ${binary:Version}), ${misc:Depends}
+Replaces: e2fslibs-dev (<< 1.43.9-1~)
+Breaks: e2fslibs-dev (<< 1.43.9-1~)
+Provides: e2fslibs-dev (= ${binary:Version})
 Suggests: doc-base
-Provides: ext2fs-dev, e2p-dev
-Replaces: libkrb5-dev (<< 1.3)
 Architecture: any
 Description: ext2/ext3/ext4 file system libraries - headers and static libraries
  The ext2, ext3 and ext4 file systems are successors of the original ext
  ("extended") file system. They are the main file system types used for
  hard disks on Debian and other Linux systems.
  .
- This package contains the development environment for the ext2fs and e2p 
+ This package contains the development environment for the ext2fs and e2p
  libraries.
 
 Package: e2fsprogs
@@ -170,4 +197,3 @@ Description: ext2/ext3/ext4 file system utilities
  This package contains programs for creating, checking, and maintaining
  ext2/3/4-based file systems.  It also includes the "badblocks" program,
  which can be used to scan for bad blocks on a disk or other storage device.
-

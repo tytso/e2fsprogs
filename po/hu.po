@@ -4,7 +4,7 @@
 #     2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 by Theodore Ts'o.
 # Theodore Ts'o <tytso@mit.edu>, 2010.
 # Gabor Kelemen <kelemeng at gnome dot hu>, 2016.
-# Balázs Úr <urbalazs@gmail.com>, 2017.
+# Balázs Úr <urbalazs@gmail.com>, 2017, 2018.
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
 #. there is an @-expansion, where strings like "@i" are expanded to
@@ -69,10 +69,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.43.4\n"
+"Project-Id-Version: e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
-"PO-Revision-Date: 2017-04-27 21:50+0200\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
+"PO-Revision-Date: 2018-01-21 15:55+0100\n"
 "Last-Translator: Balázs Úr <urbalazs@gmail.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
 "Language: hu\n"
@@ -475,21 +475,19 @@ msgstr "blokk #"
 
 #: e2fsck/message.c:509
 msgid "user"
-msgstr ""
+msgstr "felhasználó"
 
 #: e2fsck/message.c:512
-#, fuzzy
 msgid "group"
-msgstr "ggroup"
+msgstr "csoport"
 
 #: e2fsck/message.c:515
 msgid "project"
 msgstr ""
 
 #: e2fsck/message.c:518
-#, fuzzy
 msgid "unknown quota type"
-msgstr "ismeretlen oprendszer - %s"
+msgstr "ismeretlen kvótatípus"
 
 #: e2fsck/pass1b.c:222
 msgid "multiply claimed inode map"
@@ -1239,11 +1237,8 @@ msgstr "A szabad blokkok számának beállítása erre: %c (volt: %b)\n"
 
 #. @-expanded: Hiding %U quota inode %i (%Q).\n
 #: e2fsck/problem.c:421
-#, fuzzy
 msgid "Hiding %U @q @i %i (%Q).\n"
-msgstr ""
-"A kvóta inode: %i (%Q) megjelölése rejtettként.\n"
-"\n"
+msgstr "%U kvóta i-node %i (%Q) elrejtése.\n"
 
 #. @-expanded: superblock has invalid MMP block.  
 #: e2fsck/problem.c:426
@@ -1277,18 +1272,16 @@ msgstr ""
 
 #. @-expanded: superblock MMP block checksum does not match MMP block.  
 #: e2fsck/problem.c:453
-#, fuzzy
 msgid "@S MMP @b checksum does not match MMP @b.  "
 msgstr ""
-"A szuperblokk MMP blokk ellenőrzőösszege nem felel meg az MMP blokknak. "
+"A szuperblokk MMP blokk ellenőrzőösszege nem felel meg az MMP blokknak.  "
 
 #. @-expanded: superblock 64bit filesystem needs extents to access the whole disk.  
 #: e2fsck/problem.c:458
-#, fuzzy
 msgid "@S 64bit @f needs extents to access the whole disk.  "
 msgstr ""
 "A 64 bites szuperblokkú fájlrendszereknek extentekre van szükségük a teljes "
-"lemez eléréséhez. "
+"lemez eléréséhez.  "
 
 #: e2fsck/problem.c:463
 msgid "First_meta_bg is too big.  (%N, max value %g).  "
@@ -1325,9 +1318,8 @@ msgstr "Hibás kívánt további isize ebben: @S (%N).  "
 
 #. @-expanded: Invalid %U quota inode %i.  
 #: e2fsck/problem.c:493
-#, fuzzy
 msgid "Invalid %U @q @i %i.  "
-msgstr "nem csatlakoztatott, nulla hosszúságú inode: %i. "
+msgstr "Érvénytelen %U kvóta inode: %i.  "
 
 #. @-expanded: Pass 1: Checking inodes, blocks, and sizes\n
 #: e2fsck/problem.c:500
@@ -1902,9 +1894,8 @@ msgstr ""
 
 #. @-expanded: quota inode is not a regular file.  
 #: e2fsck/problem.c:983
-#, fuzzy
 msgid "@q @i is not a regular file.  "
-msgstr "a kvóta inode nem normál fájl. "
+msgstr "a kvóta inode nem normál fájl.  "
 
 #. @-expanded: quota inode is not in use, but contains data.  
 #: e2fsck/problem.c:988
@@ -3088,13 +3079,13 @@ msgid "while doing inode scan"
 msgstr "inode vizsgálat végrehajtása közben"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "az ext2fs_block_iterate meghívásakor a(z) %d. inode-ra"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "az ext2fs_adjust_ea_refcount2 meghívásakor a(z) %d. inode-ra"
 
 #: e2fsck/super.c:291
@@ -3748,18 +3739,18 @@ msgid "while resetting context"
 msgstr "a kontextus alaphelyzetbe állításakor"
 
 #: e2fsck/unix.c:1942
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "%s: ***** FILE SYSTEM ERRORS CORRECTED *****\n"
 msgstr ""
 "\n"
-"%s: ***** A FÁJLRENDSZER MÓDOSÍTVA LETT *****\n"
+"%s: ***** FÁJLRENDSZERHIBÁK JAVÍTVA *****\n"
 
 #: e2fsck/unix.c:1944
-#, fuzzy, c-format
+#, c-format
 msgid "%s: File system was modified.\n"
-msgstr "A fájlrendszer sérült"
+msgstr "%s: A fájlrendszer módosítva lett.\n"
 
 #: e2fsck/unix.c:1948 e2fsck/util.c:71
 #, c-format
@@ -6256,9 +6247,9 @@ msgstr ""
 "\n"
 
 #: misc/mk_hugefiles.c:337
-#, fuzzy, c-format
+#, c-format
 msgid "while zeroing block %llu for hugefile"
-msgstr "%llu blokk nullázásakor a fájlrendszer végén"
+msgstr "%llu blokk nullázásakor a nagy fájlnál"
 
 #: misc/mk_hugefiles.c:512
 #, c-format
@@ -7615,8 +7606,8 @@ msgstr "Soha nem fordulhatna elő: az átméretezendő inode sérült!\n"
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
-msgstr "EXT2FS programkönyvtár 1.43.4-WIP verzió"
+msgid "EXT2FS Library version 1.43.9"
+msgstr "EXT2FS programkönyvtár 1.43.5 verzió"
 
 #: lib/ext2fs/ext2_err.c:12
 msgid "Wrong magic number for ext2_filsys structure"
@@ -8526,58 +8517,3 @@ msgstr "%s egy %s fájlrendszert tartalmaz\n"
 #, c-format
 msgid "%s contains `%s' data\n"
 msgstr "%s „%s” adatokat tartalmaz\n"
-
-#~ msgid "Journal features:        "
-#~ msgstr "Napló jellemzői:          "
-
-#~ msgid "Journal size:             "
-#~ msgstr "Napló mérete:             "
-
-#~ msgid ""
-#~ "Journal length:           %u\n"
-#~ "Journal sequence:         0x%08x\n"
-#~ "Journal start:            %u\n"
-#~ msgstr ""
-#~ "Napló hossza:             %u\n"
-#~ "Naplósorozat:             0x%08x\n"
-#~ "Napló kezdete:            %u\n"
-
-#~ msgid "Journal checksum type:    crc32\n"
-#~ msgstr "Napló ellenőrzőösszegének típusa:    crc32\n"
-
-#~ msgid ""
-#~ "Journal checksum type:    %s\n"
-#~ "Journal checksum:         0x%08x\n"
-#~ msgstr ""
-#~ "Napló ellenőrzőösszegének típusa:    %s\n"
-#~ "Napló ellenőrzőösszege:              0x%08x\n"
-
-#~ msgid "Journal errno:            %d\n"
-#~ msgstr "Napló hibaszáma:          %d\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "Journal block size:       %u\n"
-#~ "Journal length:           %u\n"
-#~ "Journal first block:      %u\n"
-#~ "Journal sequence:         0x%08x\n"
-#~ "Journal start:            %u\n"
-#~ "Journal number of users:  %u\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Napló blokkmérete:        %u\n"
-#~ "Napló hossza:             %u\n"
-#~ "Napló első blokkja:       %u\n"
-#~ "Naplósorozat:             0x%08x\n"
-#~ "Napló kezdete:            %u\n"
-#~ "Napló felhasználószáma:   %u\n"
-
-#~ msgid "Journal users:            %s\n"
-#~ msgstr "Napló felhasználói:       %s\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "Warning: enabled project without quota together\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Figyelmeztetés: projekt engedélyezve a kvóta nélkül\n"
