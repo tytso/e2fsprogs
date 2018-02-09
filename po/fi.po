@@ -69,7 +69,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.12-pre2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2016-05-26 21:46+0300\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -2834,12 +2834,12 @@ msgstr ""
 
 #: e2fsck/super.c:207
 #, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr ""
 
 #: e2fsck/super.c:230
 #, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr ""
 
 #: e2fsck/super.c:291
@@ -6993,7 +6993,7 @@ msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "EXT2FS-kirjaston versio 1.42.12"
 
 #: lib/ext2fs/ext2_err.c:12

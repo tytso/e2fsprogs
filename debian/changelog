@@ -1,3 +1,21 @@
+e2fsprogs (1.43.9-1) unstable; urgency=medium
+
+  * Remove some obsolete flags and add document new flags in the chattr
+    man page
+  * Remove misplaced "MNP is unsupported" message from debugfs
+  * Suppress false positive lintian warning about "new essential
+    package" (caused by preparatory work to make the e2fsprogs
+    package no longer essential)
+  * Fixing missing "General" in "GNU General Public License" in
+    copyright files.
+  * Fix whitespace issue in the debian control file
+  * Update the Hungarian translation.
+  * Rename the packages e2fslibs* to libext2fs* and libcomerr2* to
+    libcom-err2* to conform with the standard Debian library package
+    naming conventions.  (Closes: #269569)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 08 Feb 2018 13:09:49 -0500
+
 e2fsprogs (1.43.8-2) unstable; urgency=medium
 
   * Update debian policy version to 4.1.3

@@ -1,4 +1,4 @@
-libcom_err.so.2 libcomerr2 #MINVER#
+libcom_err.so.2 libcom-err2 #MINVER#
  _et_dynamic_list@Base 1.38
  _et_list@Base 1.01
  add_error_table@Base 1.34

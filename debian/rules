@@ -56,7 +56,7 @@ dh_strip_args2 = -p$(1) --dbgsym-migration='$(2)-dbg (<= 1.43-1)'
 else
 dh_strip_args = -p$(1) --dbg-package=$(1)-dbg
 dh_strip_args2 = -p$(1) --dbg-package=$(2)-dbg
-DBG_PACKAGES += -pe2fsprogs-dbg -pe2fslibs-dbg -plibcomerr2-dbg -plibss2-dbg
+DBG_PACKAGES += -pe2fsprogs-dbg -plibext2fs-dbg -plibcom-err2-dbg -plibss2-dbg
 export DEB_BUILD_PROFILES += pkg.e2fsprogs.legacy-dbg
 endif
 
@@ -78,15 +78,15 @@ topdir		?= $(shell pwd)
 debdir		?= ${topdir}/debian
 tmpdir		?= ${debdir}/tmp
 udebdir		?= ${debdir}/e2fsprogs-udeb
-libcomerrdir	?= ${debdir}/libcomerr${COMERR_SOVERSION}
+libcomerrdir	?= ${debdir}/libcom-err${COMERR_SOVERSION}
 comerrdevdir	?= ${debdir}/comerr-dev
-libcomerrdbgdir	?= ${debdir}/libcomerr2-dbg
+libcomerrdbgdir	?= ${debdir}/libcom-err2-dbg
 libssdir	?= ${debdir}/libss${SS_SOVERSION}
 ssdevdir	?= ${debdir}/ss-dev
 libssdbgdir	?= ${debdir}/libss2-dbg
-libext2dir	?= ${debdir}/e2fslibs
-libext2devdir	?= ${debdir}/e2fslibs-dev
-libext2dbgdir	?= ${debdir}/e2fslibs-dbg
+libext2dir	?= ${debdir}/libext2fs2
+libext2devdir	?= ${debdir}/libext2fs-dev
+libext2dbgdir	?= ${debdir}/libext2fs2-dbg
 maindir		?= ${debdir}/e2fsprogs
 e2fsckstaticdir	?= ${debdir}/e2fsck-static
 debugdir	?= ${debdir}/e2fsprogs-dbg
@@ -112,7 +112,7 @@ INSTALL_PROGRAM ?= $(INSTALL) -p -o root -g root -m 0755
 #endif
 
 ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
-SYMBOL_LIBS := e2fslibs libcomerr2 libss2
+SYMBOL_LIBS := libext2fs libcomerr2 libss2
 endif
 
 DEFAULT_CFLAGS ?= -g -O2
@@ -379,41 +379,41 @@ binary-arch: install $(INSTALL_UDEB)
 	mkdir -p ${debdir}/ss-dev/usr/share/doc
 	ln -sf libss${SS_SOVERSION} ${debdir}/ss-dev/usr/share/doc/ss-dev
 
-	mkdir -p ${debdir}/libcomerr${COMERR_SOVERSION}/usr/share/doc/libcomerr${COMERR_SOVERSION}
+	mkdir -p ${debdir}/libcom-err${COMERR_SOVERSION}/usr/share/doc/libcom-err${COMERR_SOVERSION}
 	mkdir -p ${debdir}/comerr-dev/usr/share/doc
-	ln -sf libcomerr${COMERR_SOVERSION} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
+	ln -sf libcom-err${COMERR_SOVERSION} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
 
-	mkdir -p ${debdir}/e2fslibs/usr/share/doc/e2fslibs
-	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc
-	ln -sf e2fslibs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
+	mkdir -p ${debdir}/libext2fs2/usr/share/doc/libext2fs
+	mkdir -p ${debdir}/libext2fs-dev/usr/share/doc
+	ln -sf libext2fs2 ${debdir}/libext2fs-dev/usr/share/doc/libext2fs-dev
 
 	dh_installdocs -a -Ne2fsprogs-udeb
 
   # HTML docs
-	$(INSTALL) -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
+	$(INSTALL) -d ${debdir}/libext2fs-dev/usr/share/doc/libext2fs/html-info/
 	$(INSTALL) -p -m 0644 ${stdbuilddir}/doc/*.html \
-	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
-	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
+	   ${debdir}/libext2fs-dev/usr/share/doc/libext2fs/html-info/
+	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/libcom-err${COMERR_SOVERSION}/html-info/
 	$(INSTALL) -p -m 0644 ${stdbuilddir}/lib/et/*.html \
-	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
+	   ${debdir}/comerr-dev/usr/share/doc/libcom-err${COMERR_SOVERSION}/html-info/
 
   # texinfo docs
-	mkdir -p ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}
+	mkdir -p ${debdir}/comerr-dev/usr/share/doc/libcom-err${COMERR_SOVERSION}
 	$(INSTALL) -p -m 0644 ${topdir}/doc/libext2fs.texinfo \
-	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/libext2fs.texi
+	   ${debdir}/libext2fs-dev/usr/share/doc/libext2fs/libext2fs.texi
 	$(INSTALL) -p -m 0644 ${topdir}/lib/et/com_err.texinfo \
-	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/com_err.texi
+	   ${debdir}/comerr-dev/usr/share/doc/libcom-err${COMERR_SOVERSION}/com_err.texi
 
-	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/examples
+	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/libcom-err${COMERR_SOVERSION}/examples
 	$(INSTALL) -p -m 0644 lib/ss/ss_err.et \
 		${stdbuilddir}/lib/ext2fs/ext2_err.et \
-		${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/examples
+		${debdir}/comerr-dev/usr/share/doc/libcom-err${COMERR_SOVERSION}/examples
 	$(INSTALL) -d ${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
 	$(INSTALL) -p -m 0644 debugfs/debug_cmds.ct \
 		${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
 
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
-	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
+	dh_installinfo -plibext2fs-dev ${stdbuilddir}/doc/libext2fs.info
 
 	dh_installchangelogs -a
 	dh_fixperms -a
@@ -421,9 +421,9 @@ binary-arch: install $(INSTALL_UDEB)
 ifneq ($(SKIP_E2FSCK_STATIC),yes)
 	dh_strip $(call dh_strip_args2,e2fsck-static,e2fsprogs)
 endif
-	dh_strip $(call dh_strip_args,e2fslibs)
+	dh_strip $(call dh_strip_args,libext2fs2)
 	dh_strip $(call dh_strip_args,libss${SS_SOVERSION})
-	dh_strip $(call dh_strip_args,libcomerr${COMERR_SOVERSION})
+	dh_strip $(call dh_strip_args,libcom-err${COMERR_SOVERSION})
 	dh_strip -a
 
 	# dpkg symbol handling
@@ -440,6 +440,8 @@ endif
 
 	dh_makeshlibs -a --add-udeb=e2fsprogs-udeb
 
+	$(INSTALL) -D -p -m644 debian/e2fsprogs-udeb.lintian-overrides \
+	    debian/e2fsprogs-udeb/usr/share/lintian/overrides/e2fsprogs-udeb
 	dh_installdeb -a
 	dh_shlibdeps -a -l${stdbuilddir}/lib
 	dh_shlibdeps -pe2fsprogs -l${stdbuilddir}/lib \
