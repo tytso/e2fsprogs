@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.43.9">E2fsprogs 1.43.9 (February 8, 2018)</A>
 <LI><A HREF="#1.43.8">E2fsprogs 1.43.8 (January 1, 2018)</A>
 <LI><A HREF="#1.43.7">E2fsprogs 1.43.7 (October 16, 2017)</A>
 <LI><A HREF="#1.43.6">E2fsprogs 1.43.6 (August 29, 2017)</A>
@@ -120,6 +121,20 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.43.9">E2fsprogs 1.43.9 (February 8, 2018)</A></H2>
+
+<P>Remove the huge file flag from libe2p (and hence from chattr/lsattr),
+since it was never made visible by the kernel.  Remove the description
+of some compression related flags, and add a description of the
+encrypted file flag, and the project hierarchy flag.</P>
+
+<P>Remove a misplaced "MNP is unsupported" message from debugfs.</P>
+
+<P>Fix a build failure in lib/ext2fs/swapfs.c on big-endian systems.
+(Addresses Debian Bug #886119)</P>
+
+<P>Fix various Debian packaging issues.  (Addresses Debian Bug #269569).</P>
 
 <H2><A NAME="1.43.8">E2fsprogs 1.43.8 (January 1, 2018)</A></H2>
 
