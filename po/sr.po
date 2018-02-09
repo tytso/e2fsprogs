@@ -70,7 +70,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2017-11-05 09:06+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
@@ -3083,13 +3083,13 @@ msgid "while doing inode scan"
 msgstr "приликом обављања скенирања и-чвора"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "приликом позивања „ext2fs_block_iterate“ за и-чвор „%d“"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "приликом позивања „ext2fs_adjust_ea_refcount2“ за и-чвор „%d“"
 
 #: e2fsck/super.c:291
@@ -7634,7 +7634,7 @@ msgstr "Ово није требало да се деси: промена вел
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "„EXT2FS“ библиотека издања 1.43.5"
 
 #: lib/ext2fs/ext2_err.c:12

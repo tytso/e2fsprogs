@@ -71,7 +71,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2017-08-17 20:38+02:00\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
@@ -3037,13 +3037,13 @@ msgid "while doing inode scan"
 msgstr "při provádění prohlídky iuzlů"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "při volání ext2fs_block_iterate pro iuzel %d"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "při volání ext2fs_adjust_ea_refcount2 pro iuzel %d"
 
 #: e2fsck/super.c:291
@@ -7567,7 +7567,7 @@ msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "Knihovna EXT2FS verze 1.43.5"
 
 #: lib/ext2fs/ext2_err.c:12

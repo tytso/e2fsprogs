@@ -71,7 +71,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2017-08-17 00:33+0200\n"
 "Last-Translator: Samuel Thibault <samuel.thibault@ens-lyon.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -3046,13 +3046,13 @@ msgid "while doing inode scan"
 msgstr "lors de l'examen des i-noeuds"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "lors de l'appel de ext2fs_block_iterate pour l'i-noeud %d"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "lors de l'appel à ext2fs_adjust_ea_refcount2 pour l'i-noeud %d"
 
 #: e2fsck/super.c:291
@@ -7689,7 +7689,7 @@ msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "Bibliothèque EXT2FS version 1.43.5"
 
 #: lib/ext2fs/ext2_err.c:12

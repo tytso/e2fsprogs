@@ -72,7 +72,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2017-08-15 07:32+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
@@ -2965,14 +2965,14 @@ msgid "while doing inode scan"
 msgstr "trong khi chạy tiến trình quét nút thông tin"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr ""
 "trong khi gọi hàm lặp lại khối “ext2fs_block_iterate” cho nút thông tin %d"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "trong khi gọi hàm “ext2fs_adjust_ea_refcount” cho nút thông tin %d"
 
 #: e2fsck/super.c:291
@@ -7473,7 +7473,7 @@ msgstr "Không bao giờ nên xảy ra: nút thông tin thay đổi kích cỡ b
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "Thư viện EXT2FS phiên bản 1.43.5"
 
 #: lib/ext2fs/ext2_err.c:12

@@ -70,7 +70,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.12-pre2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2015-07-26 11:42+0100\n"
 "Last-Translator: Angel Mompo <mecatxis@mecatxis.cat>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -3035,13 +3035,13 @@ msgid "while doing inode scan"
 msgstr "en fer l'exploració dels nodes-i"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "en fer la crida a ext2fs_block_iterate per al node-i %d"
 
 #: e2fsck/super.c:230
-#, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "en fer la crida a ext2fs_adjust_ea_refcount2 per al node-i %d"
 
 #: e2fsck/super.c:291
@@ -7631,7 +7631,7 @@ msgstr "Això no hauria de passar mai: canvi de mida del node-i malmesa\n"
 
 #: lib/ext2fs/ext2_err.c:11
 #, fuzzy
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr "Versió 1.42.12 de la llibreria EXT2FS"
 
 #: lib/ext2fs/ext2_err.c:12

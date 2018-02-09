@@ -70,7 +70,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.8\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-01-01 19:32-0500\n"
+"POT-Creation-Date: 2018-02-08 00:11-0500\n"
 "PO-Revision-Date: 2013-11-01 22:49+0100\n"
 "Last-Translator: Volkan Gezer <vlkngzr@gmail.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -3029,13 +3029,13 @@ msgid "while doing inode scan"
 msgstr "- düğüm taraması yapılırken hata oluştu"
 
 #: e2fsck/super.c:207
-#, c-format
-msgid "while calling ext2fs_block_iterate for inode %d"
+#, fuzzy, c-format
+msgid "while calling ext2fs_block_iterate for inode %u"
 msgstr "Düğüm %d için ext2fs_block_iterate işlevi çağrılırken hata oluştu"
 
 #: e2fsck/super.c:230
 #, fuzzy, c-format
-msgid "while calling ext2fs_adjust_ea_refcount2 for inode %d"
+msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
 msgstr "Düğüm %d için ext2fs_block_iterate işlevi çağrılırken hata oluştu"
 
 #: e2fsck/super.c:291
@@ -7711,7 +7711,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Bu olmamalıydı: boyutlandırırken düğümü kaybettik!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.43.7"
+msgid "EXT2FS Library version 1.43.9"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12
