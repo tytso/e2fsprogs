@@ -1,2 +1,1 @@
 enable-metadata_csum-by-default
-fix-FTBFS-on-big-endian-systems
