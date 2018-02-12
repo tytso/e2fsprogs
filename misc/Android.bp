@@ -39,10 +39,11 @@ cc_binary {
         "mk_hugefiles.c",
         "default_profile.c",
     ],
-    required: [
-        "mke2fs.conf",
+    cflags: [
+        "-Wno-error=format",
+        "-Wno-error=type-limits",
+        "-Wno-format-extra-args",
     ],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     target: {
         host: {
             static_libs: [
@@ -58,6 +59,11 @@ cc_binary {
                 "libz",
             ],
         },
+        not_windows: {
+            required: [
+                "mke2fs.conf",
+            ],
+        },
         windows: {
             include_dirs: [ "external/e2fsprogs/include/mingw" ],
             cflags: ["-D_POSIX", "-D__USE_MINGW_ALARM"],
@@ -66,6 +72,9 @@ cc_binary {
             enabled: true
         },
         android: {
+            required: [
+                "mke2fs.conf",
+            ],
             shared_libs: [
                 "libext2fs",
                 "libext2_blkid",
@@ -75,7 +84,7 @@ cc_binary {
                 "libext2_com_err",
                 "libext2_e2p",
             ],
-	    symlinks: ["mkfs.ext2", "mkfs.ext3", "mkfs.ext4"],
+            symlinks: ["mkfs.ext2", "mkfs.ext3", "mkfs.ext4"],
         },
     },
     stl: "libc++_static",
