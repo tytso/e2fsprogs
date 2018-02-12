@@ -75,6 +75,7 @@ cc_binary {
                 "libext2_com_err",
                 "libext2_e2p",
             ],
+	    symlinks: ["mkfs.ext2", "mkfs.ext3", "mkfs.ext4"],
         },
     },
     stl: "libc++_static",
