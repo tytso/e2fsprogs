@@ -3226,7 +3226,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	}
 #else
 	/* Recover the journal if possible. */
-	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & EXT2_MF_MOUNTED) &&
+	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & (EXT2_MF_BUSY | EXT2_MF_MOUNTED)) &&
 	    ext2fs_has_feature_journal_needs_recovery(fs->super)) {
 		errcode_t err;
 
