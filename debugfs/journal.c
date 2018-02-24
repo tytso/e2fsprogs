@@ -250,6 +250,12 @@ static void ext2fs_clear_recover(ext2_filsys fs, int error)
 	/* if we had an error doing journal recovery, we need a full fsck */
 	if (error)
 		fs->super->s_state &= ~EXT2_VALID_FS;
+	/*
+	 * If we replayed the journal by definition the file system
+	 * was mounted since the last time it was checked
+	 */
+	if (fs->super->s_lastcheck >= fs->super->s_mtime)
+		fs->super->s_lastcheck = fs->super->s_mtime - 1;
 	ext2fs_mark_super_dirty(fs);
 }
 
