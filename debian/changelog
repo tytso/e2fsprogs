@@ -1,3 +1,15 @@
+e2fsprogs (1.43.9-2) unstable; urgency=medium
+
+  * Fix upgrade when there are two installations of a library (for
+    different architectures) that we are transitioning to the new package
+    name.  (Closes: #890590)
+  * Add support for libreadline.so.7 to libss
+  * Fix tune2fs's journal recovery support
+  * Fix tune2fs to require a freshly checked file system if turning off
+    the metadata_csum feature and UUID has been changed.
+
+ -- Theodore Ts'o <tytso@mit.edu>  Sat, 24 Feb 2018 20:48:29 -0500
+
 e2fsprogs (1.43.9-1) unstable; urgency=medium
 
   * Remove some obsolete flags and add document new flags in the chattr
