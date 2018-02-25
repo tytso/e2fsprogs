@@ -1,0 +1,23 @@
+Description: libuuid: fix UBSAN issue in get_random_fd()
+From: Theodore Ts'o <tytso@mit.edu>
+Origin: upstream, commit:6074cf36b9fa
+---
+ lib/uuid/gen_uuid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/uuid/gen_uuid.c b/lib/uuid/gen_uuid.c
+index 0028c7caf..af5509352 100644
+--- a/lib/uuid/gen_uuid.c
++++ b/lib/uuid/gen_uuid.c
+@@ -154,7 +154,7 @@ static int get_random_fd(void)
+ 				fcntl(fd, F_SETFD, i | FD_CLOEXEC);
+ 		}
+ #endif
+-		srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
++		srand(((unsigned)getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
+ #ifdef DO_JRAND_MIX
+ 		jrand_seed[0] = getpid() ^ (tv.tv_sec & 0xFFFF);
+ 		jrand_seed[1] = getppid() ^ (tv.tv_usec & 0xFFFF);
+-- 
+2.16.1.72.g5be1f00a9a
+

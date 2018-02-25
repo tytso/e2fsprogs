@@ -1,0 +1,119 @@
+Description: tune2fs: perform journal recovery before modifying the superblock
+From: Theodore Ts'o <tytso@mit.edu>
+Origin: upstream, commit:f5eb38e816c0
+---
+ misc/tune2fs.c                | 61 +++++++++++++++++++++----------------------
+ tests/t_replay_and_set/expect |  2 +-
+ tests/t_replay_and_set/script |  4 +--
+ 3 files changed, 33 insertions(+), 34 deletions(-)
+
+diff --git a/misc/tune2fs.c b/misc/tune2fs.c
+index a3374ab9d..9c8b6e43d 100644
+--- a/misc/tune2fs.c
++++ b/misc/tune2fs.c
+@@ -2910,6 +2910,36 @@ retry_open:
+ 		rc = 1;
+ 		goto closefs;
+ 	}
++
++#ifdef NO_RECOVERY
++	/* Warn if file system needs recovery and it is opened for writing. */
++	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & EXT2_MF_MOUNTED) &&
++	    (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
++	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER)) {
++		fprintf(stderr,
++_("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
++  "\te2fsck -E journal_only %s\n\n"
++  "then rerun this command.  Otherwise, any changes made may be overwritten\n"
++  "by journal recovery.\n"), device_name);
++	}
++#else
++	/* Recover the journal if possible. */
++	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & (EXT2_MF_BUSY | EXT2_MF_MOUNTED)) &&
++	    ext2fs_has_feature_journal_needs_recovery(fs->super)) {
++		errcode_t err;
++
++		printf(_("Recovering journal.\n"));
++		err = ext2fs_run_ext3_journal(&fs);
++		if (err) {
++			com_err("tune2fs", err, "while recovering journal.\n");
++			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
++			if (fs)
++				ext2fs_close_free(&fs);
++			exit(1);
++		}
++	}
++#endif
++
+ 	/* Normally we only need to write out the superblock */
+ 	fs->flags |= EXT2_FLAG_SUPER_ONLY;
+ 
+@@ -3213,37 +3243,6 @@ retry_open:
+ 		free(ext_mount_opts);
+ 	}
+ 
+-#ifdef NO_RECOVERY
+-	/* Warn if file system needs recovery and it is opened for writing. */
+-	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & EXT2_MF_MOUNTED) &&
+-	    (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+-	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER)) {
+-		fprintf(stderr,
+-_("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
+-  "\te2fsck -E journal_only %s\n\n"
+-  "then rerun this command.  Otherwise, any changes made may be overwritten\n"
+-  "by journal recovery.\n"), device_name);
+-	}
+-#else
+-	/* Recover the journal if possible. */
+-	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & (EXT2_MF_BUSY | EXT2_MF_MOUNTED)) &&
+-	    ext2fs_has_feature_journal_needs_recovery(fs->super)) {
+-		errcode_t err;
+-
+-		printf(_("Recovering journal.\n"));
+-		err = ext2fs_run_ext3_journal(&fs);
+-		if (err) {
+-			com_err("tune2fs", err, "while recovering journal.\n");
+-			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
+-			if (fs)
+-				ext2fs_close_free(&fs);
+-			exit(1);
+-		}
+-		ext2fs_clear_feature_journal_needs_recovery(fs->super);
+-		ext2fs_mark_super_dirty(fs);
+-	}
+-#endif
+-
+ 	free(device_name);
+ 	remove_error_table(&et_ext2_error_table);
+ 
+diff --git a/tests/t_replay_and_set/expect b/tests/t_replay_and_set/expect
+index f4919372a..f63a73af5 100644
+--- a/tests/t_replay_and_set/expect
++++ b/tests/t_replay_and_set/expect
+@@ -16,7 +16,7 @@ Pass 5: Checking group summary information
+ test_filesys: 11/16384 files (0.0% non-contiguous), 5164/65536 blocks
+ Exit status is 0
+ debugfs write journal
+-disable metadata_csum on a dirty-journal fs
++set the label on a dirty-journal fs
+ Recovering journal.
+ fsck the whole mess
+ Pass 1: Checking inodes, blocks, and sizes
+diff --git a/tests/t_replay_and_set/script b/tests/t_replay_and_set/script
+index 0be10ea80..36411fcfe 100644
+--- a/tests/t_replay_and_set/script
++++ b/tests/t_replay_and_set/script
+@@ -29,8 +29,8 @@ $DEBUGFS_EXE -w -f $TMPFILE.cmd $TMPFILE 2>> $OUT.new > /dev/null
+ sed -f $cmd_dir/filter.sed < $OUT.new >> $OUT
+ rm -rf $OUT.new
+ 
+-echo "disable metadata_csum on a dirty-journal fs" >> $OUT
+-$TUNE2FS -O ^metadata_csum $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT 2>&1
++echo "set the label on a dirty-journal fs" >> $OUT
++$TUNE2FS -L testing $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT 2>&1
+ 
+ echo "fsck the whole mess" >> $OUT
+ $FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+-- 
+2.16.1.72.g5be1f00a9a
+

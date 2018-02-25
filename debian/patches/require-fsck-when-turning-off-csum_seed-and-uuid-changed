@@ -1,0 +1,48 @@
+Description: tune2fs: require fsck if turning off csum_seed and the
+ UUID has changed
+ .
+ In the case where the UUID has changed and the user wants to turn off
+ the csum_seed feature, it's important that file system be freshly
+ checked.  That's also the only case when it's necessary to recalculate
+ all of the metadata file systems.
+From: Theodore Ts'o <tytso@mit.edu>
+Origin: upstream, commit:1dc5c3928d27
+---
+ misc/tune2fs.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/misc/tune2fs.c b/misc/tune2fs.c
+index 9c8b6e43d..b11b2e3f3 100644
+--- a/misc/tune2fs.c
++++ b/misc/tune2fs.c
+@@ -1366,16 +1366,18 @@ mmp_error:
+ 
+ 		uuid_seed = ext2fs_crc32c_le(~0, fs->super->s_uuid,
+ 					sizeof(fs->super->s_uuid));
+-		if (fs->super->s_checksum_seed != uuid_seed &&
+-		    (mount_flags & EXT2_MF_MOUNTED)) {
+-			fputs(_("UUID has changed since enabling "
+-				"metadata_csum.  Filesystem must be unmounted "
+-				"\nto safely rewrite all metadata to "
+-				"match the new UUID.\n"), stderr);
+-			return 1;
++		if (fs->super->s_checksum_seed != uuid_seed) {
++			if (mount_flags & (EXT2_MF_BUSY|EXT2_MF_MOUNTED)) {
++				fputs(_("UUID has changed since enabling "
++		"metadata_csum.  Filesystem must be unmounted "
++		"\nto safely rewrite all metadata to match the new UUID.\n"),
++				      stderr);
++				return 1;
++			}
++			check_fsck_needed(fs, _("Recalculating checksums "
++						"could take some time."));
++			rewrite_checksums = 1;
+ 		}
+-
+-		rewrite_checksums = 1;
+ 	}
+ 
+ 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
+-- 
+2.16.1.72.g5be1f00a9a
+

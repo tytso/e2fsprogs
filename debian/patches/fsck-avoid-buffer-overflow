@@ -1,0 +1,44 @@
+Description: fsck: avoid buffer overflow if user passes in an insanely
+ long fs type
+From: Theodore Ts'o <tytso@mit.edu>
+Origin: upstream, commit:d8e5da0a3b94
+---
+ misc/fsck.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/misc/fsck.c b/misc/fsck.c
+index de5ae256d..a2e0dfba5 100644
+--- a/misc/fsck.c
++++ b/misc/fsck.c
+@@ -408,7 +408,8 @@ static char *find_fsck(char *type)
+   tpl = (strncmp(type, "fsck.", 5) ? "%s/fsck.%s" : "%s/%s");
+ 
+   for(s = strtok(p, ":"); s; s = strtok(NULL, ":")) {
+-	sprintf(prog, tpl, s, type);
++	if (snprintf(prog, sizeof(prog), tpl, s, type) >= sizeof(prog))
++		continue;
+ 	if (stat(prog, &st) == 0) break;
+   }
+   free(p);
+@@ -435,7 +436,7 @@ static int progress_active(NOARGS)
+ static int execute(const char *type, const char *device, const char *mntpt,
+ 		   int interactive)
+ {
+-	char *s, *argv[80], prog[80];
++	char *s, *argv[80], prog[256];
+ 	int  argc, i;
+ 	struct fsck_instance *inst, *p;
+ 	pid_t	pid;
+@@ -445,7 +446,8 @@ static int execute(const char *type, const char *device, const char *mntpt,
+ 		return ENOMEM;
+ 	memset(inst, 0, sizeof(struct fsck_instance));
+ 
+-	sprintf(prog, "fsck.%s", type);
++	if (snprintf(prog, sizeof(prog), "fsck.%s", type) >= sizeof(prog))
++		return EINVAL;
+ 	argv[0] = string_copy(prog);
+ 	argc = 1;
+ 
+-- 
+2.16.1.72.g5be1f00a9a
+
