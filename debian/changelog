@@ -8,7 +8,7 @@ e2fsprogs (1.43.9-2) unstable; urgency=medium
   * Fix tune2fs to require a freshly checked file system if turning off
     the metadata_csum feature and UUID has been changed.
 
- -- Theodore Ts'o <tytso@mit.edu>  Sat, 24 Feb 2018 20:48:29 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 24 Feb 2018 20:48:29 -0500
 
 e2fsprogs (1.43.9-1) unstable; urgency=medium
 
