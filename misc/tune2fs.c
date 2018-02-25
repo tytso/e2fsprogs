@@ -1366,16 +1366,18 @@ mmp_error:
 
 		uuid_seed = ext2fs_crc32c_le(~0, fs->super->s_uuid,
 					sizeof(fs->super->s_uuid));
-		if (fs->super->s_checksum_seed != uuid_seed &&
-		    (mount_flags & EXT2_MF_MOUNTED)) {
-			fputs(_("UUID has changed since enabling "
-				"metadata_csum.  Filesystem must be unmounted "
-				"\nto safely rewrite all metadata to "
-				"match the new UUID.\n"), stderr);
-			return 1;
+		if (fs->super->s_checksum_seed != uuid_seed) {
+			if (mount_flags & (EXT2_MF_BUSY|EXT2_MF_MOUNTED)) {
+				fputs(_("UUID has changed since enabling "
+		"metadata_csum.  Filesystem must be unmounted "
+		"\nto safely rewrite all metadata to match the new UUID.\n"),
+				      stderr);
+				return 1;
+			}
+			check_fsck_needed(fs, _("Recalculating checksums "
+						"could take some time."));
+			rewrite_checksums = 1;
 		}
-
-		rewrite_checksums = 1;
 	}
 
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
