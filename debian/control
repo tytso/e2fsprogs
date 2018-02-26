@@ -49,7 +49,8 @@ Description: ext2/ext3/ext4 file system utilities - translations
 
 Package: libcomerr2
 Depends: libcom-err2, ${misc:Depends}
-Architecture: all
+Architecture: any
+Multi-Arch: same
 Priority: optional
 Section: oldlibs
 Description: transitional package
@@ -131,7 +132,8 @@ Description: stripped-down versions of e2fsprogs, for debian-installer
 
 Package: e2fslibs
 Depends: libext2fs2, ${misc:Depends}
-Architecture: all
+Architecture: any
+Multi-Arch: same
 Priority: optional
 Section: oldlibs
 Description: transitional package
