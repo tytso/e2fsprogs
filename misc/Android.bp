@@ -5,6 +5,7 @@
 cc_library {
     name: "libext2_misc",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     target: {
         windows: {
@@ -17,7 +18,7 @@ cc_library {
     srcs: [
         "create_inode.c",
     ],
-    cflags: ["-W", "-Wall"],
+    cflags: ["-Wno-error=format-extra-args"],
     shared_libs: [
         "libext2_quota",
         "libext2fs",
@@ -32,6 +33,7 @@ cc_library {
 cc_binary {
     name: "mke2fs",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: [
         "mke2fs.c",
@@ -66,7 +68,14 @@ cc_binary {
         },
         windows: {
             include_dirs: [ "external/e2fsprogs/include/mingw" ],
-            cflags: ["-D_POSIX", "-D__USE_MINGW_ALARM"],
+            cflags: [
+                "-D_POSIX",
+                "-D__USE_MINGW_ALARM",
+                // mke2fs.c has a warning from gcc which cannot be suppressed:
+                // passing argument 3 of 'ext2fs_get_device_size' from
+                // incompatible pointer type
+                "-Wno-error"
+            ],
             ldflags: ["-static"],
             host_ldlibs: ["-lws2_32"],
             enabled: true
@@ -96,16 +105,12 @@ cc_binary {
 
 cc_defaults {
     name: "tune2fs-defaults",
+    defaults: ["e2fsprogs-defaults"],
     srcs: [
         "tune2fs.c",
         "util.c",
     ],
-    cflags: [
-        "-W",
-        "-Wall",
-        "-DNO_RECOVERY",
-        "-Wno-macro-redefined",
-    ],
+    cflags: ["-DNO_RECOVERY"],
     include_dirs: ["external/e2fsprogs/e2fsck"],
 }
 
@@ -149,9 +154,9 @@ cc_library_static {
 cc_binary {
     name: "badblocks",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: ["badblocks.c"],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",
@@ -168,9 +173,9 @@ cc_binary {
 cc_binary {
     name: "chattr",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: ["chattr.c"],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2_com_err",
         "libext2_e2p",
@@ -184,7 +189,7 @@ cc_binary {
 cc_defaults {
     name: "lsattr-defaults",
     srcs: ["lsattr.c"],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
+    defaults: ["e2fsprogs-defaults"],
 }
 
 lsattr_libs = [
@@ -214,9 +219,9 @@ cc_binary {
 
 cc_binary {
     name: "blkid",
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: ["blkid.c"],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_blkid",
@@ -232,9 +237,9 @@ cc_binary {
 cc_binary {
     name: "e4crypt",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: ["e4crypt.c"],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_uuid",
@@ -254,9 +259,9 @@ cc_binary {
 cc_binary {
     name: "e2image",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: ["e2image.c"],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_blkid",

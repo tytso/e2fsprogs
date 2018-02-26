@@ -8,9 +8,9 @@ subdirs = ["android"]
 cc_binary {
     name: "add_ext4_encrypt",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: ["add_ext4_encrypt.c"],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",

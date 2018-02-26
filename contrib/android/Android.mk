@@ -12,7 +12,7 @@ e2fsdroid_src_files := \
         basefs_allocator.c \
         hashmap.c \
 
-e2fsdroid_cflags := -W -Wall
+e2fsdroid_cflags := -W -Wall -Werror -Wno-error=macro-redefined
 
 e2fsdroid_static_libraries := \
         libext2_com_err \

@@ -3,6 +3,7 @@
 cc_binary {
     name: "resize2fs",
     host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
 
     srcs: [
         "extent.c",
@@ -12,7 +13,6 @@ cc_binary {
         "sim_progress.c",
         "resource_track.c",
     ],
-    cflags: ["-W", "-Wall", "-Wno-macro-redefined"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",

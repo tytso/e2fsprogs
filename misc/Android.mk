@@ -12,7 +12,7 @@ mke2fs_src_files := \
 mke2fs_c_includes := \
        external/e2fsprogs/e2fsck
 
-mke2fs_cflags := -W -Wall -Wno-macro-redefined
+mke2fs_cflags := -W -Wall -Werror -Wno-macro-redefined
 
 mke2fs_static_libraries := \
        libext2_blkid \
