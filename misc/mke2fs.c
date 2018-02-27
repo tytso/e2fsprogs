@@ -441,9 +441,9 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 		}
 		if (sync_kludge) {
 			if (sync_kludge == 1)
-				sync();
+				io_channel_flush(fs->io);
 			else if ((i % sync_kludge) == 0)
-				sync();
+				io_channel_flush(fs->io);
 		}
 	}
 	ext2fs_numeric_progress_close(fs, &progress,
@@ -1526,10 +1526,6 @@ static void PRS(int argc, char *argv[])
 	}
 	putenv (newpath);
 
-	tmp = getenv("MKE2FS_SYNC");
-	if (tmp)
-		sync_kludge = atoi(tmp);
-
 	/* Determine the system page size if possible */
 #ifdef HAVE_SYSCONF
 #if (!defined(_SC_PAGESIZE) && defined(_SC_PAGE_SIZE))
@@ -1891,6 +1887,12 @@ profile_error:
 	}
 	if (optind < argc)
 		usage();
+
+	profile_get_integer(profile, "options", "sync_kludge", 0, 0,
+			    &sync_kludge);
+	tmp = getenv("MKE2FS_SYNC");
+	if (tmp)
+		sync_kludge = atoi(tmp);
 
 	profile_get_integer(profile, "options", "proceed_delay", 0, 0,
 			    &proceed_delay);
