@@ -606,7 +606,6 @@ int main (int argc, char ** argv)
 		exit(0);
 	}
 	if (mount_flags & EXT2_MF_MOUNTED) {
-		bigalloc_check(fs, force);
 		retval = online_resize_fs(fs, mtpt, &new_size, flags);
 	} else {
 		bigalloc_check(fs, force);
