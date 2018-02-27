@@ -13,18 +13,8 @@
 #define HAVE_GETPWUID_R 1
 #define HAVE_INTPTR_T 1
 #define HAVE_INTTYPES_H 1
-#ifdef __linux__
-#define HAVE_LSEEK64 1
-#define HAVE_LSEEK64_PROTOTYPE 1
-#endif
 #define HAVE_MMAP 1
-#ifdef __linux__
-#define HAVE_MNTENT_H 1
-#endif
 #define HAVE_SETJMP_H 1
-#ifdef __linux__
-#define HAVE_SETMNTENT 1
-#endif
 #define HAVE_SNPRINTF 1
 #define HAVE_STDLIB_H 1
 #define HAVE_STRCASECMP 1
@@ -69,8 +59,10 @@
 # define HAVE_LINUX_TYPES_H 1
 # define HAVE_LSEEK64 1
 # define HAVE_LSEEK64_PROTOTYPE 1
+# define HAVE_MNTENT_H 1
 # define HAVE_PREAD64 1
 # define HAVE_PWRITE64 1
+# define HAVE_SETMNTENT 1
 # define HAVE_SYS_PRCTL_H 1
 # define HAVE_SYS_SYSMACROS_H 1
 #endif
