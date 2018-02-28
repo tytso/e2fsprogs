@@ -1,3 +1,19 @@
+e2fsprogs (1.44.0~rc1-1) experimental; urgency=low
+
+  * New upstream release
+  * Add support for the large_dir feature
+  * Add support for the ea_data feature
+  * Resize2fs will not complain about online resizes of bigalloc file
+    systems
+  * Debugfs's ls command will now print the high bits of the mode bits
+  * Fix some corner cases with tune2fs and journal replay
+  * Add support for libreadline.so.7
+  * E2freefrag will now use the GETFSMAP ioctl for mounted file systems
+  * E2fsck is now much faster when scanning extents on bigalloc file systems
+  * Fix various compiler and UBSAN warnings
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 27 Feb 2018 16:56:32 -0500
+
 e2fsprogs (1.43.9-2) unstable; urgency=medium
 
   * Fix upgrade when there are two installations of a library (for
