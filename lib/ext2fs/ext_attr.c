@@ -1382,9 +1382,11 @@ static int xattr_find_position(struct ext2_xattr *attrs, int count,
 	return i;
 }
 
-errcode_t xattr_array_update(struct ext2_xattr_handle *h, const char *name,
-			const void *value, size_t value_len, int ibody_free,
-			int block_free, int old_idx, int in_inode)
+static errcode_t xattr_array_update(struct ext2_xattr_handle *h,
+				    const char *name,
+				    const void *value, size_t value_len,
+				    int ibody_free, int block_free,
+				    int old_idx, int in_inode)
 {
 	struct ext2_xattr tmp;
 	int add_to_ibody;
@@ -1492,7 +1494,7 @@ add_new:
 	return 0;
 }
 
-int space_used(struct ext2_xattr *attrs, int count)
+static int space_used(struct ext2_xattr *attrs, int count)
 {
 	int total = 0;
 	struct ext2_xattr *x;
