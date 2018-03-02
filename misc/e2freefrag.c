@@ -30,6 +30,10 @@ extern int optind;
 #include "ext2fs/ext2fs.h"
 #include "e2freefrag.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 static void usage(const char *prog)
 {
 	fprintf(stderr, "usage: %s [-c chunksize in kb] [-h] "
