@@ -44,6 +44,10 @@ extern int optind;
 # include "fsmap.h"
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 static void usage(const char *prog)
 {
 	fprintf(stderr, "usage: %s [-c chunksize in kb] [-h] "

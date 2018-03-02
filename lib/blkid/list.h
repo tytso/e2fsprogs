@@ -5,6 +5,14 @@
 extern "C" {
 #endif
 
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#endif
+
 #ifdef __GNUC__
 #define _INLINE_ static __inline__
 #else                         /* For Watcom C */

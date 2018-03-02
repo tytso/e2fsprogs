@@ -542,10 +542,6 @@ extern void e2fsck_intercept_block_allocations(e2fsck_t ctx);
 /* pass2.c */
 extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 				    ext2_ino_t ino, char *buf);
-extern int get_filename_hash(ext2_filsys fs, int encrypted, int version,
-			     const char *name, int len,
-			     ext2_dirhash_t *ret_hash,
-			     ext2_dirhash_t *ret_minor_hash);
 
 /* pass3.c */
 extern int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t inode);
