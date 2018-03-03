@@ -203,9 +203,9 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		return 1;
 	}
 
-	if (ext2fs_is_fast_symlink(inode) &&
-	    !(inode->i_flags & EXT4_EXTENTS_FL)) {
-
+	if (ext2fs_is_fast_symlink(inode)) {
+		if (inode->i_flags & EXT4_EXTENTS_FL)
+			return 0;
 		buf = (char *)inode->i_block;
 		buflen = sizeof(inode->i_block);
 	} else {
