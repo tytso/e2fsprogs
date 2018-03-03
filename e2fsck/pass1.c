@@ -243,7 +243,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		} else {
 			len = strnlen(buf, fs->blocksize);
 		}
-		if (len == fs->blocksize)
+		if (len >= fs->blocksize)
 			return 0;
 	} else if (inode->i_flags & EXT4_INLINE_DATA_FL) {
 		char *inline_buf = NULL;
