@@ -260,8 +260,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		return 0;
 
 	if (len != inode->i_size)
-		if ((inode->i_flags & EXT4_ENCRYPT_FL) == 0)
-			return 0;
+		return 0;
 	return 1;
 }
 
