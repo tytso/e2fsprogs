@@ -183,6 +183,7 @@ int e2fsck_pass1_check_device_inode(ext2_filsys fs EXT2FS_ATTR((unused)),
 int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 			       struct ext2_inode *inode, char *buf)
 {
+	unsigned int buflen;
 	unsigned int len;
 	int i;
 	ext2_extent_handle_t	handle;
@@ -232,9 +233,8 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		if (inode->i_size >= sizeof(inode->i_block))
 			return 0;
 
-		len = strnlen((char *)inode->i_block, sizeof(inode->i_block));
-		if (len == sizeof(inode->i_block))
-			return 0;
+		buf = (char *)inode->i_block;
+		buflen = sizeof(inode->i_block);
 	} else {
 		if ((inode->i_size >= fs->blocksize) ||
 		    (inode->i_block[0] < fs->super->s_first_data_block) ||
@@ -248,14 +248,17 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		if (io_channel_read_blk64(fs->io, inode->i_block[0], 1, buf))
 			return 0;
 
-		if (inode->i_flags & EXT4_ENCRYPT_FL) {
-			len = ext2fs_le16_to_cpu(*((__u16 *)buf)) + 2;
-		} else {
-			len = strnlen(buf, fs->blocksize);
-		}
-		if (len >= fs->blocksize)
-			return 0;
+		buflen = fs->blocksize;
 	}
+
+	if (inode->i_flags & EXT4_ENCRYPT_FL)
+		len = ext2fs_le16_to_cpu(*(__u16 *)buf) + 2;
+	else
+		len = strnlen(buf, buflen);
+
+	if (len >= buflen)
+		return 0;
+
 	if (len != inode->i_size)
 		if ((inode->i_flags & EXT4_ENCRYPT_FL) == 0)
 			return 0;
