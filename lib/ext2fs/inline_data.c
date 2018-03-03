@@ -545,7 +545,10 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 				 void *buf, size_t size)
 {
 	struct ext2_inode inode_buf;
-	struct ext2_inline_data data;
+	struct ext2_inline_data data = {
+		.fs = fs,
+		.ino = ino,
+	};
 	errcode_t retval;
 	size_t free_ea_size, existing_size, free_inode_size;
 
@@ -558,37 +561,34 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 
 	if (size <= EXT4_MIN_INLINE_DATA_SIZE) {
 		memcpy((void *)inode->i_block, buf, size);
-		return ext2fs_write_inode(fs, ino, inode);
+	} else {
+		retval = ext2fs_xattr_inode_max_size(fs, ino, &free_ea_size);
+		if (retval)
+			return retval;
+
+		retval = ext2fs_inline_data_size(fs, ino, &existing_size);
+		if (retval)
+			return retval;
+
+		if (existing_size < EXT4_MIN_INLINE_DATA_SIZE) {
+			free_inode_size = EXT4_MIN_INLINE_DATA_SIZE -
+					  existing_size;
+		} else {
+			free_inode_size = 0;
+		}
+
+		if (size != existing_size &&
+		    size > existing_size + free_ea_size + free_inode_size)
+			return EXT2_ET_INLINE_DATA_NO_SPACE;
+
+		memcpy((void *)inode->i_block, buf, EXT4_MIN_INLINE_DATA_SIZE);
+		if (size > EXT4_MIN_INLINE_DATA_SIZE)
+			data.ea_size = size - EXT4_MIN_INLINE_DATA_SIZE;
+		data.ea_data = (char *) buf + EXT4_MIN_INLINE_DATA_SIZE;
 	}
-
-	retval = ext2fs_xattr_inode_max_size(fs, ino, &free_ea_size);
-	if (retval)
-		return retval;
-
-	retval = ext2fs_inline_data_size(fs, ino, &existing_size);
-	if (retval)
-		return retval;
-
-	if (existing_size < EXT4_MIN_INLINE_DATA_SIZE)
-		free_inode_size = EXT4_MIN_INLINE_DATA_SIZE - existing_size;
-	else
-		free_inode_size = 0;
-
-	if (size != existing_size &&
-	    size > existing_size + free_ea_size + free_inode_size)
-		return EXT2_ET_INLINE_DATA_NO_SPACE;
-
-	memcpy((void *)inode->i_block, buf, EXT4_MIN_INLINE_DATA_SIZE);
 	retval = ext2fs_write_inode(fs, ino, inode);
 	if (retval)
 		return retval;
-	data.fs = fs;
-	data.ino = ino;
-	if (size > EXT4_MIN_INLINE_DATA_SIZE)
-		data.ea_size = size - EXT4_MIN_INLINE_DATA_SIZE;
-	else
-		data.ea_size = 0;
-	data.ea_data = (char *) buf + EXT4_MIN_INLINE_DATA_SIZE;
 	return ext2fs_inline_data_ea_set(&data);
 }
 
