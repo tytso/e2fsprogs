@@ -239,7 +239,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 			return 0;
 
 		if (inode->i_flags & EXT4_ENCRYPT_FL) {
-			len = ext2fs_le32_to_cpu(*((__u32 *)buf)) + 4;
+			len = ext2fs_le16_to_cpu(*((__u16 *)buf)) + 2;
 		} else {
 			len = strnlen(buf, fs->blocksize);
 		}
