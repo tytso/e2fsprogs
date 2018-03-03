@@ -230,14 +230,10 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	if (ext2fs_is_fast_symlink(inode)) {
-		if (inode->i_size >= sizeof(inode->i_block))
-			return 0;
-
 		buf = (char *)inode->i_block;
 		buflen = sizeof(inode->i_block);
 	} else {
-		if ((inode->i_size >= fs->blocksize) ||
-		    (inode->i_block[0] < fs->super->s_first_data_block) ||
+		if ((inode->i_block[0] < fs->super->s_first_data_block) ||
 		    (inode->i_block[0] >= ext2fs_blocks_count(fs->super)))
 			return 0;
 
