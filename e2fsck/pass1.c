@@ -185,42 +185,16 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 {
 	unsigned int buflen;
 	unsigned int len;
-	int i;
-	ext2_extent_handle_t	handle;
-	struct ext2_extent_info	info;
-	struct ext2fs_extent	extent;
 
 	if ((inode->i_size_high || inode->i_size == 0) ||
 	    (inode->i_flags & EXT2_INDEX_FL))
 		return 0;
 
-	if (inode->i_flags & EXT4_EXTENTS_FL) {
-		if (inode->i_flags & EXT4_INLINE_DATA_FL)
-			return 0;
-		if (inode->i_size > fs->blocksize)
-			return 0;
-		if (ext2fs_extent_open2(fs, ino, inode, &handle))
-			return 0;
-		i = 0;
-		if (ext2fs_extent_get_info(handle, &info) ||
-		    (info.num_entries != 1) ||
-		    (info.max_depth != 0))
-			goto exit_extent;
-		if (ext2fs_extent_get(handle, EXT2_EXTENT_ROOT, &extent) ||
-		    (extent.e_lblk != 0) ||
-		    (extent.e_len != 1) ||
-		    (extent.e_pblk < fs->super->s_first_data_block) ||
-		    (extent.e_pblk >= ext2fs_blocks_count(fs->super)))
-			goto exit_extent;
-		i = 1;
-	exit_extent:
-		ext2fs_extent_free(handle);
-		return i;
-	}
-
 	if (inode->i_flags & EXT4_INLINE_DATA_FL) {
 		size_t inline_size;
 
+		if (inode->i_flags & EXT4_EXTENTS_FL)
+			return 0;
 		if (ext2fs_inline_data_size(fs, ino, &inline_size))
 			return 0;
 		if (inode->i_size != inline_size)
@@ -229,19 +203,49 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		return 1;
 	}
 
-	if (ext2fs_is_fast_symlink(inode)) {
+	if (ext2fs_is_fast_symlink(inode) &&
+	    !(inode->i_flags & EXT4_EXTENTS_FL)) {
+
 		buf = (char *)inode->i_block;
 		buflen = sizeof(inode->i_block);
 	} else {
-		if ((inode->i_block[0] < fs->super->s_first_data_block) ||
-		    (inode->i_block[0] >= ext2fs_blocks_count(fs->super)))
+		ext2_extent_handle_t	handle;
+		struct ext2_extent_info	info;
+		struct ext2fs_extent	extent;
+		blk64_t blk;
+		int i;
+
+		if (inode->i_flags & EXT4_EXTENTS_FL) {
+			if (ext2fs_extent_open2(fs, ino, inode, &handle))
+				return 0;
+			if (ext2fs_extent_get_info(handle, &info) ||
+			    (info.num_entries != 1) ||
+			    (info.max_depth != 0)) {
+				ext2fs_extent_free(handle);
+				return 0;
+			}
+			if (ext2fs_extent_get(handle, EXT2_EXTENT_ROOT,
+					      &extent) ||
+			    (extent.e_lblk != 0) ||
+			    (extent.e_len != 1)) {
+				ext2fs_extent_free(handle);
+				return 0;
+			}
+			blk = extent.e_pblk;
+			ext2fs_extent_free(handle);
+		} else {
+			blk = inode->i_block[0];
+
+			for (i = 1; i < EXT2_N_BLOCKS; i++)
+				if (inode->i_block[i])
+					return 0;
+		}
+
+		if (blk < fs->super->s_first_data_block ||
+		    blk >= ext2fs_blocks_count(fs->super))
 			return 0;
 
-		for (i = 1; i < EXT2_N_BLOCKS; i++)
-			if (inode->i_block[i])
-				return 0;
-
-		if (io_channel_read_blk64(fs->io, inode->i_block[0], 1, buf))
+		if (io_channel_read_blk64(fs->io, blk, 1, buf))
 			return 0;
 
 		buflen = fs->blocksize;
