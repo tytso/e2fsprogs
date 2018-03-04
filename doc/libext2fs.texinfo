@@ -61,7 +61,7 @@ by the author.
 @title The EXT2FS Library
 @subtitle The EXT2FS Library
 @subtitle Version 1.44.0
-@subtitle February 2018
+@subtitle March 2018
 
 @author by Theodore Ts'o
 

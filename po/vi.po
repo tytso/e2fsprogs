@@ -72,7 +72,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-02-27 22:23-0500\n"
+"POT-Creation-Date: 2018-03-04 16:02-0500\n"
 "PO-Revision-Date: 2017-08-15 07:32+0700\n"
 "Last-Translator: Trần Ngọc Quân <vnwildman@gmail.com>\n"
 "Language-Team: Vietnamese <translation-team-vi@lists.sourceforge.net>\n"
@@ -519,86 +519,86 @@ msgstr "lỗi nội bộ: không thể tra tìm mục ghi khối EA cho %llu"
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr "lỗi nội bộ: không thể tra tìm mục ghi nút thông tin EA cho %u"
 
-#: e2fsck/pass1.c:354
+#: e2fsck/pass1.c:356
 #, c-format
 msgid "while hashing entry with e_value_inum = %u"
 msgstr ""
 
-#: e2fsck/pass1.c:772 e2fsck/pass2.c:1004
+#: e2fsck/pass1.c:774 e2fsck/pass2.c:1004
 msgid "reading directory block"
 msgstr "đang đọc khối thư mục"
 
-#: e2fsck/pass1.c:1222
+#: e2fsck/pass1.c:1224
 msgid "in-use inode map"
 msgstr "ánh xạ nút thông tin đang được dùng"
 
-#: e2fsck/pass1.c:1233
+#: e2fsck/pass1.c:1235
 msgid "directory inode map"
 msgstr "ánh xạ nút thông tin thư mục"
 
-#: e2fsck/pass1.c:1243
+#: e2fsck/pass1.c:1245
 msgid "regular file inode map"
 msgstr "ánh xạ nút thông tin tập tin chuẩn"
 
-#: e2fsck/pass1.c:1252 misc/e2image.c:1269
+#: e2fsck/pass1.c:1254 misc/e2image.c:1269
 msgid "in-use block map"
 msgstr "ánh xạ khối đang được dùng"
 
-#: e2fsck/pass1.c:1261
+#: e2fsck/pass1.c:1263
 msgid "metadata block map"
 msgstr "bản đồ khối siêu_dữ_liệu"
 
-#: e2fsck/pass1.c:1323
+#: e2fsck/pass1.c:1325
 msgid "opening inode scan"
 msgstr "đang mở bản quét nút thông tin"
 
-#: e2fsck/pass1.c:1361
+#: e2fsck/pass1.c:1363
 msgid "getting next inode from scan"
 msgstr "đang lấy nút thông tin kế tiếp từ bản quét"
 
-#: e2fsck/pass1.c:2064
+#: e2fsck/pass1.c:2066
 msgid "Pass 1"
 msgstr "Lần 1"
 
-#: e2fsck/pass1.c:2125
+#: e2fsck/pass1.c:2127
 #, c-format
 msgid "reading indirect blocks of inode %u"
 msgstr "đang đọc khối gián tiếp của nút thông tin %u"
 
-#: e2fsck/pass1.c:2176
+#: e2fsck/pass1.c:2178
 msgid "bad inode map"
 msgstr "ánh xạ nút thông tin sai"
 
-#: e2fsck/pass1.c:2216
+#: e2fsck/pass1.c:2218
 msgid "inode in bad block map"
 msgstr "nút thông tin trong ánh xạ khối sai"
 
-#: e2fsck/pass1.c:2236
+#: e2fsck/pass1.c:2238
 msgid "imagic inode map"
 msgstr "ánh xạ nút thông tin ma thuật imagic"
 
-#: e2fsck/pass1.c:2263
+#: e2fsck/pass1.c:2265
 msgid "multiply claimed block map"
 msgstr "ánh xạ khối đa tuyên bố"
 
-#: e2fsck/pass1.c:2387
+#: e2fsck/pass1.c:2389
 msgid "ext attr block map"
 msgstr "ánh xạ khối ext attr (thuộc tính thêm?)"
 
-#: e2fsck/pass1.c:3635
+#: e2fsck/pass1.c:3637
 #, c-format
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
 msgstr "%6lu (%c): cần %6lu nhưng lại nhận được %6lu vật lý (đếm khối %lld)\n"
 
-#: e2fsck/pass1.c:4052
+#: e2fsck/pass1.c:4054
 msgid "block bitmap"
 msgstr "mảng ảnh khối"
 
-#: e2fsck/pass1.c:4058
+#: e2fsck/pass1.c:4060
 msgid "inode bitmap"
 msgstr "mảng ảnh nút thông tin"
 
-#: e2fsck/pass1.c:4064
+#: e2fsck/pass1.c:4066
 msgid "inode table"
 msgstr "bảng nút thông tin"
 

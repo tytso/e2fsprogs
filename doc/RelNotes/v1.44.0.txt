@@ -53,6 +53,12 @@ The e2freefrag program will use the GETFSMAP ioctl if it is available
 and the file system is mounted, so that the free space statistics will
 be more accurate.
 
+The consistency checks for symlinks (especially for encrypted and inline
+data file sytems) in e2fsck are now much more careful/stringent.  Also
+fixed a bug where creating a symlink using ext2fs_symlink() which was
+exactly 60 bytes long when inline data was enabled would result in a
+missing system.data xattr.
+
 
 Performance, Internal Implementation, Development Support etc.
 --------------------------------------------------------------

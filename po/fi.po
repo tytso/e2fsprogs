@@ -69,7 +69,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.42.12-pre2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-02-27 22:23-0500\n"
+"POT-Creation-Date: 2018-03-04 16:02-0500\n"
 "PO-Revision-Date: 2016-05-26 21:46+0300\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -511,88 +511,88 @@ msgstr ""
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr ""
 
-#: e2fsck/pass1.c:354
+#: e2fsck/pass1.c:356
 #, c-format
 msgid "while hashing entry with e_value_inum = %u"
 msgstr ""
 
-#: e2fsck/pass1.c:772 e2fsck/pass2.c:1004
+#: e2fsck/pass1.c:774 e2fsck/pass2.c:1004
 msgid "reading directory block"
 msgstr ""
 
-#: e2fsck/pass1.c:1222
+#: e2fsck/pass1.c:1224
 msgid "in-use inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:1233
+#: e2fsck/pass1.c:1235
 msgid "directory inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:1243
+#: e2fsck/pass1.c:1245
 msgid "regular file inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:1252 misc/e2image.c:1269
+#: e2fsck/pass1.c:1254 misc/e2image.c:1269
 msgid "in-use block map"
 msgstr ""
 
-#: e2fsck/pass1.c:1261
+#: e2fsck/pass1.c:1263
 #, fuzzy
 msgid "metadata block map"
 msgstr "Lohkobittikartan luku ei onnistu"
 
-#: e2fsck/pass1.c:1323
+#: e2fsck/pass1.c:1325
 #, fuzzy
 msgid "opening inode scan"
 msgstr "Laajennetaan i-solmutaulua"
 
-#: e2fsck/pass1.c:1361
+#: e2fsck/pass1.c:1363
 msgid "getting next inode from scan"
 msgstr ""
 
-#: e2fsck/pass1.c:2064
+#: e2fsck/pass1.c:2066
 msgid "Pass 1"
 msgstr "Vaihe 1"
 
-#: e2fsck/pass1.c:2125
+#: e2fsck/pass1.c:2127
 #, c-format
 msgid "reading indirect blocks of inode %u"
 msgstr ""
 
-#: e2fsck/pass1.c:2176
+#: e2fsck/pass1.c:2178
 msgid "bad inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:2216
+#: e2fsck/pass1.c:2218
 msgid "inode in bad block map"
 msgstr ""
 
-#: e2fsck/pass1.c:2236
+#: e2fsck/pass1.c:2238
 msgid "imagic inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:2263
+#: e2fsck/pass1.c:2265
 msgid "multiply claimed block map"
 msgstr ""
 
-#: e2fsck/pass1.c:2387
+#: e2fsck/pass1.c:2389
 msgid "ext attr block map"
 msgstr ""
 
-#: e2fsck/pass1.c:3635
+#: e2fsck/pass1.c:3637
 #, c-format
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
 msgstr ""
 
-#: e2fsck/pass1.c:4052
+#: e2fsck/pass1.c:4054
 msgid "block bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4058
+#: e2fsck/pass1.c:4060
 msgid "inode bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4064
+#: e2fsck/pass1.c:4066
 msgid "inode table"
 msgstr ""
 

@@ -91,7 +91,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.43.5\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-02-27 22:23-0500\n"
+"POT-Creation-Date: 2018-03-04 16:02-0500\n"
 "PO-Revision-Date: 2017-12-30 09:33+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -561,88 +561,88 @@ msgstr ""
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr "Error interno: no se puede encontrar el registro de bloque EA %u"
 
-#: e2fsck/pass1.c:354
+#: e2fsck/pass1.c:356
 #, c-format
 msgid "while hashing entry with e_value_inum = %u"
 msgstr ""
 
-#: e2fsck/pass1.c:772 e2fsck/pass2.c:1004
+#: e2fsck/pass1.c:774 e2fsck/pass2.c:1004
 msgid "reading directory block"
 msgstr "leyendo bloque de directorio"
 
-#: e2fsck/pass1.c:1222
+#: e2fsck/pass1.c:1224
 msgid "in-use inode map"
 msgstr "mapa de nodos-i usados"
 
-#: e2fsck/pass1.c:1233
+#: e2fsck/pass1.c:1235
 msgid "directory inode map"
 msgstr "mapa de nodos-i de directorio"
 
-#: e2fsck/pass1.c:1243
+#: e2fsck/pass1.c:1245
 msgid "regular file inode map"
 msgstr "mapa de nodos-i de ficheros normales"
 
-#: e2fsck/pass1.c:1252 misc/e2image.c:1269
+#: e2fsck/pass1.c:1254 misc/e2image.c:1269
 msgid "in-use block map"
 msgstr "mapa de bloques usados"
 
-#: e2fsck/pass1.c:1261
+#: e2fsck/pass1.c:1263
 msgid "metadata block map"
 msgstr "mapa de bloques de metadatos"
 
-#: e2fsck/pass1.c:1323
+#: e2fsck/pass1.c:1325
 msgid "opening inode scan"
 msgstr "iniciando la exploración de los nodos-i"
 
-#: e2fsck/pass1.c:1361
+#: e2fsck/pass1.c:1363
 msgid "getting next inode from scan"
 msgstr "obteniendo el siguiente nodo-i para examinar"
 
-#: e2fsck/pass1.c:2064
+#: e2fsck/pass1.c:2066
 msgid "Pass 1"
 msgstr "Paso 1"
 
-#: e2fsck/pass1.c:2125
+#: e2fsck/pass1.c:2127
 #, c-format
 msgid "reading indirect blocks of inode %u"
 msgstr "leyendo bloques indirectos del nodo-i %u"
 
-#: e2fsck/pass1.c:2176
+#: e2fsck/pass1.c:2178
 msgid "bad inode map"
 msgstr "mapa de nodos-i dañados"
 
-#: e2fsck/pass1.c:2216
+#: e2fsck/pass1.c:2218
 msgid "inode in bad block map"
 msgstr "el nodo-i está en el mapa de bloques dañados"
 
-#: e2fsck/pass1.c:2236
+#: e2fsck/pass1.c:2238
 msgid "imagic inode map"
 msgstr "mapa de nodos-i con 'imagic'"
 
-#: e2fsck/pass1.c:2263
+#: e2fsck/pass1.c:2265
 msgid "multiply claimed block map"
 msgstr "mapa de bloques reclamados en múltiples ocasiones"
 
-#: e2fsck/pass1.c:2387
+#: e2fsck/pass1.c:2389
 msgid "ext attr block map"
 msgstr "mapa de bloques de atributos extendidos"
 
-#: e2fsck/pass1.c:3635
+#: e2fsck/pass1.c:3637
 #, c-format
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
 msgstr ""
 "%6lu(%c): se esperaba %6lu, pero se han obtenido bloques físicos %6lu "
 "(número de bloques %lld)\n"
 
-#: e2fsck/pass1.c:4052
+#: e2fsck/pass1.c:4054
 msgid "block bitmap"
 msgstr "mapa de bits de bloques"
 
-#: e2fsck/pass1.c:4058
+#: e2fsck/pass1.c:4060
 msgid "inode bitmap"
 msgstr "mapa de bits de nodos-i"
 
-#: e2fsck/pass1.c:4064
+#: e2fsck/pass1.c:4066
 msgid "inode table"
 msgstr "tabla de nodos-i"
 

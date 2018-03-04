@@ -1,3 +1,11 @@
+e2fsprogs (1.44.0~rc2-1) experimental; urgency=medium
+
+  * New upstream release
+  * Fix FTBFS problem on Hurd
+  * Improved e2fsck's consistency checking for symlink.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 04 Mar 2018 15:57:21 -0500
+
 e2fsprogs (1.44.0~rc1-1) experimental; urgency=low
 
   * New upstream release
