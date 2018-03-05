@@ -2261,8 +2261,10 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk64_t block)
 	clear_problem_context(&pctx);
 
 	if (ext2fs_fast_test_block_bitmap2(ctx->block_found_map, block)) {
-		if (ext2fs_has_feature_shared_blocks(ctx->fs->super))
+		if (ext2fs_has_feature_shared_blocks(ctx->fs->super) &&
+		    !(ctx->options & E2F_OPT_UNSHARE_BLOCKS)) {
 			return;
+		}
 		if (!ctx->block_dup_map) {
 			pctx.errcode = e2fsck_allocate_block_bitmap(ctx->fs,
 					_("multiply claimed block map"),

@@ -172,6 +172,7 @@ struct resource_track {
 #define E2F_OPT_FIXES_ONLY	0x8000 /* skip all optimizations */
 #define E2F_OPT_NOOPT_EXTENTS	0x10000 /* don't optimize extents */
 #define E2F_OPT_ICOUNT_FULLMAP	0x20000 /* use an array for inode counts */
+#define E2F_OPT_UNSHARE_BLOCKS  0x40000
 
 /*
  * E2fsck flags
