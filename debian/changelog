@@ -1,3 +1,10 @@
+e2fsprogs (1.44.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * Update Czech, Spanish, French, Malay, and Ukrainian translations.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 07 Mar 2018 14:39:52 -0500
+
 e2fsprogs (1.44.0~rc2-1) experimental; urgency=medium
 
   * New upstream release

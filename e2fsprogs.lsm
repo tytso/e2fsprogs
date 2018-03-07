@@ -1,14 +1,14 @@
 Begin3
 Title:          EXT2 Filesystem utilities
 Version:        1.44.0
-Entered-date:   2018-02-27
+Entered-date:   2018-03-07
 Description:    The filesystem utilities for the EXT2, EXT3, and EXT4
 		filesystems, including e2fsck, mke2fs, dumpe2fs, and others.
 Keywords:       utilities, filesystem, Ext2fs, ext3, ext4
 Author:         tytso@mit.edu (Theodore Tso)
 Maintained-by:  tytso@mit.edu (Theodore Tso)
 Primary-site:   ftp.kernel.org /pub/linux/kernel/people/tytso/e2fsprogs
-                7348kB e2fsprogs-1.44.0.tar.gz
+                7364kB e2fsprogs-1.44.0.tar.gz
                 700kB  e2fsprogs-libs-1.44.0.tar.gz
                 1kB    e2fsprogs-1.44.0.lsm
 Alternate-site: download.sourceforge.net /pub/sourceforge/e2fsprogs
