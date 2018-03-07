@@ -5,7 +5,7 @@
 #
 #     2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,.
 # Theodore Ts'o <tytso@mit.edu>, 2013.
-# Yuri Chornoivan <yurchor@ukr.net>, 2013, 2014, 2016, 2017.
+# Yuri Chornoivan <yurchor@ukr.net>, 2013, 2014, 2016, 2017, 2018.
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
 #. there is an @-expansion, where strings like "@i" are expanded to
@@ -70,10 +70,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.43.5\n"
+"Project-Id-Version: e2fsprogs 1.44.0-rc2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2018-03-04 16:02-0500\n"
-"PO-Revision-Date: 2017-12-31 13:04+0200\n"
+"PO-Revision-Date: 2018-03-05 21:50+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "Language: uk\n"
@@ -81,8 +81,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Lokalize 2.0\n"
 
 #: e2fsck/badblocks.c:23 misc/mke2fs.c:220
@@ -123,9 +122,7 @@ msgstr "при оновленні inode пошкоджених блоків"
 #: e2fsck/badblocks.c:133
 #, c-format
 msgid "Warning: illegal block %u found in bad block inode.  Cleared.\n"
-msgstr ""
-"Попередження: в inode пошкоджених блоків знайдено недопустимий блок %u. "
-"Очищено.\n"
+msgstr "Попередження: в inode пошкоджених блоків знайдено недопустимий блок %u. Очищено.\n"
 
 #: e2fsck/ehandler.c:55
 #, c-format
@@ -195,8 +192,7 @@ msgstr "Користування: %s диск\n"
 #: e2fsck/flushb.c:64
 #, c-format
 msgid "BLKFLSBUF ioctl not supported!  Can't flush buffers.\n"
-msgstr ""
-"Підтримки ioctl BLKFLSBUF не передбачено! Скидання буферів неможливе.\n"
+msgstr "Підтримки ioctl BLKFLSBUF не передбачено! Скидання буферів неможливе.\n"
 
 #: e2fsck/iscan.c:44
 #, c-format
@@ -253,8 +249,7 @@ msgstr "%s: відновлюємо журнал\n"
 #: e2fsck/journal.c:971
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
-msgstr ""
-"%s: відновлення журналу не буде виконано до виходу з режиму лише читання\n"
+msgstr "%s: відновлення журналу не буде виконано до виходу з режиму лише читання\n"
 
 #: e2fsck/journal.c:998
 #, c-format
@@ -488,7 +483,7 @@ msgstr "група"
 
 #: e2fsck/message.c:488
 msgid "project"
-msgstr ""
+msgstr "проект"
 
 #: e2fsck/message.c:491
 msgid "unknown quota type"
@@ -510,21 +505,17 @@ msgstr "повернуто з clone_file_block"
 #: e2fsck/pass1b.c:929
 #, c-format
 msgid "internal error: couldn't lookup EA block record for %llu"
-msgstr ""
-"внутрішня помилка: не вдалося виконати пошук запису блоку з розширеним "
-"атрибутом для %llu"
+msgstr "внутрішня помилка: не вдалося виконати пошук запису блоку з розширеним атрибутом для %llu"
 
 #: e2fsck/pass1b.c:941
 #, c-format
 msgid "internal error: couldn't lookup EA inode record for %u"
-msgstr ""
-"внутрішня помилка: не вдалося виконати пошук запису inode з розширеним "
-"атрибутом для %u"
+msgstr "внутрішня помилка: не вдалося виконати пошук запису inode з розширеним атрибутом для %u"
 
 #: e2fsck/pass1.c:356
 #, c-format
 msgid "while hashing entry with e_value_inum = %u"
-msgstr ""
+msgstr "під час хешування запису з e_value_inum = %u"
 
 #: e2fsck/pass1.c:774 e2fsck/pass2.c:1004
 msgid "reading directory block"
@@ -638,8 +629,7 @@ msgstr "Прохід 5"
 
 #: e2fsck/pass5.c:102
 msgid "check_inode_bitmap_checksum: Memory allocation error"
-msgstr ""
-"check_inode_bitmap_checksum: помилка під час спроби розподілити пам’ять"
+msgstr "check_inode_bitmap_checksum: помилка під час спроби розподілити пам’ять"
 
 #: e2fsck/pass5.c:156
 msgid "check_block_bitmap_checksum: Memory allocation error"
@@ -880,8 +870,7 @@ msgid ""
 "from the @b size.\n"
 msgstr ""
 "Розмір блоку супреблоку = %b, розмір фрагмента = %c.\n"
-"У цій версії e2fsck не передбачено варіанта, коли розміри фрагмента "
-"відрізняються\n"
+"У цій версії e2fsck не передбачено варіанта, коли розміри фрагмента відрізняються\n"
 "від розмірів блоку.\n"
 
 #. @-expanded: superblock blocks_per_group = %b, should have been %c\n
@@ -951,9 +940,7 @@ msgstr "Журна суперблоку є некоректним (@i %i).\n"
 #. @-expanded: External journal has multiple filesystem users (unsupported).\n
 #: e2fsck/problem.c:198
 msgid "External @j has multiple @f users (unsupported).\n"
-msgstr ""
-"У зовнішньому журналі визначено декілька користувачів файлової системи (така "
-"конфігурація не підтримується).\n"
+msgstr "У зовнішньому журналі визначено декілька користувачів файлової системи (така конфігурація не підтримується).\n"
 
 #. @-expanded: Can't find external journal\n
 #: e2fsck/problem.c:203
@@ -968,8 +955,7 @@ msgstr "У зовнішнього журналу пошкоджено супер
 #. @-expanded: External journal does not support this filesystem\n
 #: e2fsck/problem.c:213
 msgid "External @j does not support this @f\n"
-msgstr ""
-"Для зовнішнього журналу не передбачено підтримки цієї файлової системи\n"
+msgstr "Для зовнішнього журналу не передбачено підтримки цієї файлової системи\n"
 
 #. @-expanded: filesystem journal superblock is unknown type %N (unsupported).\n
 #. @-expanded: It is likely that your copy of e2fsck is old and/or doesn't support this journal 
@@ -978,14 +964,11 @@ msgstr ""
 #: e2fsck/problem.c:218
 msgid ""
 "@f @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
-"format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
-"суперблок журналу файлової системи належить до невідомого типу %N (не "
-"підтримується).\n"
-"Ймовірно, ваша копія e2fsck є застарілою і/або не підтримує цього формату "
-"журналу.\n"
+"суперблок журналу файлової системи належить до невідомого типу %N (не підтримується).\n"
+"Ймовірно, ваша копія e2fsck є застарілою і/або не підтримує цього формату журналу.\n"
 "Ймовірно, суперблок журналу пошкоджено.\n"
 
 #. @-expanded: journal superblock is corrupt.\n
@@ -1001,15 +984,12 @@ msgstr "прапорець суперблоку has_journal скинуто, ал
 #. @-expanded: superblock needs_recovery flag is set, but no journal is present.\n
 #: e2fsck/problem.c:236
 msgid "@S needs_recovery flag is set, but no @j is present.\n"
-msgstr ""
-"Встановлено прапорець needs_recovery для суперблоку, але не виявлено "
-"журналу.\n"
+msgstr "Встановлено прапорець needs_recovery для суперблоку, але не виявлено журналу.\n"
 
 #. @-expanded: superblock needs_recovery flag is clear, but journal has data.\n
 #: e2fsck/problem.c:241
 msgid "@S needs_recovery flag is clear, but @j has data.\n"
-msgstr ""
-"Знято прапорець needs_recovery для суперблоку, але у журналі немає даних.\n"
+msgstr "Знято прапорець needs_recovery для суперблоку, але у журналі немає даних.\n"
 
 #. @-expanded: Clear journal
 #: e2fsck/problem.c:246
@@ -1019,9 +999,7 @@ msgstr "Очистити журнал"
 #. @-expanded: filesystem has feature flag(s) set, but is a revision 0 filesystem.  
 #: e2fsck/problem.c:251 e2fsck/problem.c:751
 msgid "@f has feature flag(s) set, but is a revision 0 @f.  "
-msgstr ""
-"Для файлової системи встановлено прапорці можливостей, але ця файлова "
-"система має версію 0.  "
+msgstr "Для файлової системи встановлено прапорці можливостей, але ця файлова система має версію 0.  "
 
 #. @-expanded: %s orphaned inode %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n
 #: e2fsck/problem.c:256
@@ -1053,22 +1031,17 @@ msgstr "некоректний @i %i у списку осиротілих @i.\n"
 #. @-expanded: journal superblock has an unknown read-only feature flag set.\n
 #: e2fsck/problem.c:281
 msgid "@j @S has an unknown read-only feature flag set.\n"
-msgstr ""
-"Для суперблоку журналу встановлено невідомий придатний лише до читання "
-"прапорець можливості.\n"
+msgstr "Для суперблоку журналу встановлено невідомий придатний лише до читання прапорець можливості.\n"
 
 #. @-expanded: journal superblock has an unknown incompatible feature flag set.\n
 #: e2fsck/problem.c:286
 msgid "@j @S has an unknown incompatible feature flag set.\n"
-msgstr ""
-"Для суперблоку журналу встановлено невідомий і несумісний прапорець "
-"можливості.\n"
+msgstr "Для суперблоку журналу встановлено невідомий і несумісний прапорець можливості.\n"
 
 #. @-expanded: journal version not supported by this e2fsck.\n
 #: e2fsck/problem.c:291
 msgid "@j version not supported by this e2fsck.\n"
-msgstr ""
-"Підтримки цієї версії журналу у поточній версії e2fsck не передбачено.\n"
+msgstr "Підтримки цієї версії журналу у поточній версії e2fsck не передбачено.\n"
 
 #. @-expanded: Moving journal from /%s to hidden inode.\n
 #. @-expanded: \n
@@ -1113,9 +1086,7 @@ msgstr "Запустити журналювання попри це"
 #. @-expanded: Recovery flag not set in backup superblock, so running journal anyway.\n
 #: e2fsck/problem.c:317
 msgid "Recovery flag not set in backup @S, so running @j anyway.\n"
-msgstr ""
-"У резервному суперблоці не встановлено прапорець відновлення, отже, попри "
-"все запускаємо журнал.\n"
+msgstr "У резервному суперблоці не встановлено прапорець відновлення, отже, попри все запускаємо журнал.\n"
 
 #. @-expanded: Backing up journal inode block information.\n
 #. @-expanded: \n
@@ -1192,16 +1163,12 @@ msgstr "контрольна сума дескриптора групи %g до�
 #: e2fsck/problem.c:369
 #, c-format
 msgid "@g descriptor %g marked uninitialized without feature set.\n"
-msgstr ""
-"дескриптор групи %g позначено неініціалізованим без встановлення відповідної "
-"можливості.\n"
+msgstr "дескриптор групи %g позначено неініціалізованим без встановлення відповідної можливості.\n"
 
 #. @-expanded: group descriptor %g has invalid unused inodes count %b.  
 #: e2fsck/problem.c:374
 msgid "@g descriptor %g has invalid unused inodes count %b.  "
-msgstr ""
-"дескриптор групи %g містить дані щодо некоректної кількості невикористаних "
-"inode %b.  "
+msgstr "дескриптор групи %g містить дані щодо некоректної кількості невикористаних inode %b.  "
 
 #. @-expanded: Last group block bitmap uninitialized.  
 #: e2fsck/problem.c:379
@@ -1223,12 +1190,10 @@ msgstr "Встановлено прапорець test_fs (і доступна e
 #: e2fsck/problem.c:394
 msgid ""
 "@S last mount time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set)\n"
+"\t(by less than a day, probably due to the hardware clock being incorrectly set)\n"
 msgstr ""
 "Час останнього монтування суперблоку лежить у майбутньому.\n"
-"\t(менше ніж на день, ймовірно через помилковий час на апаратному "
-"годиннику)\n"
+"\t(менше ніж на день, ймовірно через помилковий час на апаратному годиннику)\n"
 
 #. @-expanded: superblock last write time is in the future.\n
 #. @-expanded: \t(by less than a day, probably due to the hardware clock being incorrectly 
@@ -1236,18 +1201,15 @@ msgstr ""
 #: e2fsck/problem.c:400
 msgid ""
 "@S last write time is in the future.\n"
-"\t(by less than a day, probably due to the hardware clock being incorrectly "
-"set)\n"
+"\t(by less than a day, probably due to the hardware clock being incorrectly set)\n"
 msgstr ""
 "Час останнього запису суперблоку лежить у майбутньому.\n"
-"\t(менше ніж на день, ймовірно через помилковий час на апаратному "
-"годиннику)\n"
+"\t(менше ніж на день, ймовірно через помилковий час на апаратному годиннику)\n"
 
 #. @-expanded: One or more block group descriptor checksums are invalid.  
 #: e2fsck/problem.c:406
 msgid "One or more @b @g descriptor checksums are invalid.  "
-msgstr ""
-"Одна або декілька контрольних сум дескрипторів груп блоків є некоректними.  "
+msgstr "Одна або декілька контрольних сум дескрипторів груп блоків є некоректними.  "
 
 #. @-expanded: Setting free inodes count to %j (was %i)\n
 #: e2fsck/problem.c:411
@@ -1287,12 +1249,8 @@ msgstr "ext2fs_check_desc: %m\n"
 #. @-expanded: superblock metadata_csum supersedes uninit_bg; both feature bits cannot be set 
 #. @-expanded: simultaneously.
 #: e2fsck/problem.c:447
-msgid ""
-"@S metadata_csum supersedes uninit_bg; both feature bits cannot be set "
-"simultaneously."
-msgstr ""
-"metadata_csum суперблоку заміщує uninit_bg; не можна встановлювати обидва "
-"біти властивостей одночасно."
+msgid "@S metadata_csum supersedes uninit_bg; both feature bits cannot be set simultaneously."
+msgstr "metadata_csum суперблоку заміщує uninit_bg; не можна встановлювати обидва біти властивостей одночасно."
 
 #. @-expanded: superblock MMP block checksum does not match MMP block.  
 #: e2fsck/problem.c:453
@@ -1302,20 +1260,16 @@ msgstr "Контрольна сума блоку MMP суперблоку не �
 #. @-expanded: superblock 64bit filesystem needs extents to access the whole disk.  
 #: e2fsck/problem.c:458
 msgid "@S 64bit @f needs extents to access the whole disk.  "
-msgstr ""
-"64-бітові файлові системи суперблоку потребують розширень для доступу до "
-"усього диска.  "
+msgstr "64-бітові файлові системи суперблоку потребують розширень для доступу до усього диска.  "
 
 #: e2fsck/problem.c:463
 msgid "First_meta_bg is too big.  (%N, max value %g).  "
-msgstr ""
-"Значення First_meta_bg є надто великим. (%N, максимальним є значення %g).  "
+msgstr "Значення First_meta_bg є надто великим. (%N, максимальним є значення %g).  "
 
 #. @-expanded: External journal superblock checksum does not match superblock.  
 #: e2fsck/problem.c:468
 msgid "External @j @S checksum does not match @S.  "
-msgstr ""
-"Контрольна сума суперблоку зовнішнього журналу не відповідає суперблоку.  "
+msgstr "Контрольна сума суперблоку зовнішнього журналу не відповідає суперблоку.  "
 
 #. @-expanded: superblock metadata_csum_seed is not necessary without metadata_csum.
 #: e2fsck/problem.c:473
@@ -1325,9 +1279,7 @@ msgstr "metadata_csum_seed суперблоку необов’язково бе
 #: e2fsck/problem.c:478
 #, c-format
 msgid "Error initializing quota context in support library: %m\n"
-msgstr ""
-"Помилка під час спроби ініціалізувати контекст квот у бібліотеці підтримки: "
-"%m\n"
+msgstr "Помилка під час спроби ініціалізувати контекст квот у бібліотеці підтримки: %m\n"
 
 #. @-expanded: Bad required extra isize in superblock (%N).  
 #: e2fsck/problem.c:483
@@ -1357,9 +1309,7 @@ msgstr "кореневий inode не є каталогом.  "
 #. @-expanded: root inode has dtime set (probably due to old mke2fs).  
 #: e2fsck/problem.c:509
 msgid "@r has dtime set (probably due to old mke2fs).  "
-msgstr ""
-"для кореневого inode встановлено dtime (ймовірно, через застарілу програму "
-"mke2fs).  "
+msgstr "для кореневого inode встановлено dtime (ймовірно, через застарілу програму mke2fs).  "
 
 #. @-expanded: Reserved inode %i (%Q) has invalid mode.  
 #: e2fsck/problem.c:514
@@ -1387,23 +1337,17 @@ msgstr "@i %i є каталогом нульової довжини.  "
 #. @-expanded: group %g's block bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:534
 msgid "@g %g's @b @B at %b @C.\n"
-msgstr ""
-"бітова карта блоків групи %g за адресою %b конфліктує з іншим блоком "
-"файлової системи.\n"
+msgstr "бітова карта блоків групи %g за адресою %b конфліктує з іншим блоком файлової системи.\n"
 
 #. @-expanded: group %g's inode bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:539
 msgid "@g %g's @i @B at %b @C.\n"
-msgstr ""
-"бітова карта inode групи %g у %b конфліктує з якимось іншим блоком файлової "
-"системи.\n"
+msgstr "бітова карта inode групи %g у %b конфліктує з якимось іншим блоком файлової системи.\n"
 
 #. @-expanded: group %g's inode table at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:544
 msgid "@g %g's @i table at %b @C.\n"
-msgstr ""
-"таблиця inode групи %g у %b конфліктує з певним блоком іншої файлової "
-"системи.\n"
+msgstr "таблиця inode групи %g у %b конфліктує з певним блоком іншої файлової системи.\n"
 
 #. @-expanded: group %g's block bitmap (%b) is bad.  
 #: e2fsck/problem.c:549
@@ -1465,9 +1409,7 @@ msgstr "Використовується дублікат або помилко�
 #. @-expanded: Bad block %b used as bad block inode indirect block.  
 #: e2fsck/problem.c:604
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
-msgstr ""
-"Пошкоджений блок %b використано як опосередкований блок @i пошкодженого "
-"блоку.  "
+msgstr "Пошкоджений блок %b використано як опосередкований блок @i пошкодженого блоку.  "
 
 #. @-expanded: \n
 #. @-expanded: The bad block inode has probably been corrupted.  You probably\n
@@ -1504,8 +1446,7 @@ msgid ""
 "that the @b is really OK.  But there are no guarantees.\n"
 "\n"
 msgstr ""
-"Ви можете вилучити цей блок зі списку пошкоджених блоків і сподіватися на "
-"те,\n"
+"Ви можете вилучити цей блок зі списку пошкоджених блоків і сподіватися на те,\n"
 "що блок насправді не пошкоджено. Втім, гарантувати це неможливо.\n"
 "\n"
 
@@ -1517,8 +1458,7 @@ msgstr "Основний суперблок (%b) перебуває у спис�
 #. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
 #: e2fsck/problem.c:632
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
-msgstr ""
-"Блок %b у основних дескрипторах груп перебуває у списку помилкових блоків\n"
+msgstr "Блок %b у основних дескрипторах груп перебуває у списку помилкових блоків\n"
 
 #. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
 #: e2fsck/problem.c:638
@@ -1528,22 +1468,17 @@ msgstr "Попередження: суперблок групи %g (%b) є по�
 #. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
 #: e2fsck/problem.c:644
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr ""
-"Попередження: копія дескрипторів груп групи %g містить пошкоджений блок "
-"(%b).\n"
+msgstr "Попередження: копія дескрипторів груп групи %g містить пошкоджений блок (%b).\n"
 
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
 #: e2fsck/problem.c:650
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
-msgstr ""
-"Помилка у програмі? Блок №%b витребувано без причини у process_bad_block.\n"
+msgstr "Помилка у програмі? Блок №%b витребувано без причини у process_bad_block.\n"
 
 #. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
 #: e2fsck/problem.c:656
 msgid "@A %N contiguous @b(s) in @b @g %g for %s: %m\n"
-msgstr ""
-"помилка під час отримання %N неперервних блоків у групі блоків %g для %s: "
-"%m\n"
+msgstr "помилка під час отримання %N неперервних блоків у групі блоків %g для %s: %m\n"
 
 #. @-expanded: error allocating block buffer for relocating %s\n
 #: e2fsck/problem.c:661
@@ -1609,16 +1544,12 @@ msgstr "Помилка під час виконання ітерації над 
 #. @-expanded: Error storing inode count information (inode=%i, count=%N): %m\n
 #: e2fsck/problem.c:716
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
-msgstr ""
-"Помилка під час спроби зберегти дані щодо кількості @i (@i=%i, кількість="
-"%N): %m\n"
+msgstr "Помилка під час спроби зберегти дані щодо кількості @i (@i=%i, кількість=%N): %m\n"
 
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
 #: e2fsck/problem.c:721
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr ""
-"Помилка під час спроби зберегти дані щодо блоків каталогу (@i=%i, блок=%b, к-"
-"ть=%N): %m\n"
+msgstr "Помилка під час спроби зберегти дані щодо блоків каталогу (@i=%i, блок=%b, к-ть=%N): %m\n"
 
 #. @-expanded: Error reading inode %i: %m\n
 #: e2fsck/problem.c:727
@@ -1668,9 +1599,7 @@ msgstr "@i %i є частиною списку осиротілих @i.  "
 #. @-expanded: inodes that were part of a corrupted orphan linked list found.  
 #: e2fsck/problem.c:772
 msgid "@is that were part of a corrupted orphan linked list found.  "
-msgstr ""
-"виявлено @i, які були частиною пов’язаного списку пошкоджених осиротілих "
-"блоків.  "
+msgstr "виявлено @i, які були частиною пов’язаного списку пошкоджених осиротілих блоків.  "
 
 #. @-expanded: error allocating refcount structure (%N): %m\n
 #: e2fsck/problem.c:777
@@ -1695,9 +1624,7 @@ msgstr "Помилка під час читання блоку розширен�
 #. @-expanded: extended attribute block %b has reference count %r, should be %N.  
 #: e2fsck/problem.c:797
 msgid "@a @b %b has reference count %r, @s %N.  "
-msgstr ""
-"у блоку розширеного атрибута %b кількість посилань дорівнює %r, а має бути "
-"%N.  "
+msgstr "у блоку розширеного атрибута %b кількість посилань дорівнює %r, а має бути %N.  "
 
 #. @-expanded: Error writing extended attribute block %b (%m).  
 #: e2fsck/problem.c:802
@@ -1712,9 +1639,7 @@ msgstr "блок розширеного атрибута %b має h_blocks > 1.
 #. @-expanded: error allocating extended attribute region allocation structure.  
 #: e2fsck/problem.c:812
 msgid "@A @a region allocation structure.  "
-msgstr ""
-"помилка під час спроби розмістити структуру розміщення регіонів розширених "
-"атрибутів.  "
+msgstr "помилка під час спроби розмістити структуру розміщення регіонів розширених атрибутів.  "
 
 #. @-expanded: extended attribute block %b is corrupt (allocation collision).  
 #: e2fsck/problem.c:817
@@ -1754,9 +1679,7 @@ msgstr "%B (%b) робить символічне посилання надто 
 #: e2fsck/problem.c:851
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
-msgstr ""
-"для @i %i встановлено прапорець INDEX_FL у файловій системі, де підтримки "
-"htree не передбачено.\n"
+msgstr "для @i %i встановлено прапорець INDEX_FL у файловій системі, де підтримки htree не передбачено.\n"
 
 #. @-expanded: inode %i has INDEX_FL flag set but is not a directory.\n
 #: e2fsck/problem.c:856
@@ -1779,16 +1702,12 @@ msgstr "@h %i належить до непідтримуваної версії 
 #: e2fsck/problem.c:871
 #, c-format
 msgid "@h %i uses an incompatible htree root node flag.\n"
-msgstr ""
-"inode каталогу HTREE %i використовує несумісний прапорець кореневого вузла "
-"htree.\n"
+msgstr "inode каталогу HTREE %i використовує несумісний прапорець кореневого вузла htree.\n"
 
 #. @-expanded: HTREE directory inode %i has a tree depth (%N) which is too big\n
 #: e2fsck/problem.c:876
 msgid "@h %i has a tree depth (%N) which is too big\n"
-msgstr ""
-"inode каталогу HTREE %i має рівень вкладеності у ієрархії (%N), який є надто "
-"великим\n"
+msgstr "inode каталогу HTREE %i має рівень вкладеності у ієрархії (%N), який є надто великим\n"
 
 #. @-expanded: Bad block inode has an indirect block (%b) that conflicts with\n
 #. @-expanded: filesystem metadata.  
@@ -1824,8 +1743,7 @@ msgstr "розширений атрибут у @i %i має некоректни
 #. @-expanded: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
 #: e2fsck/problem.c:908
 msgid "@a in @i %i has a value @b (%N) which is @n (must be 0)\n"
-msgstr ""
-"розширений атрибут у @i %i має некоректний блок значення (%N), має бути 0\n"
+msgstr "розширений атрибут у @i %i має некоректний блок значення (%N), має бути 0\n"
 
 #. @-expanded: extended attribute in inode %i has a value size (%N) which is invalid\n
 #: e2fsck/problem.c:913
@@ -1882,17 +1800,13 @@ msgstr ""
 #: e2fsck/problem.c:949
 #, c-format
 msgid "@i %i has EXTENTS_FL flag set on @f without extents support.\n"
-msgstr ""
-"для @i %i встановлено прапорець EXTENTS_FL на файловій системі без підтримки "
-"розширень.\n"
+msgstr "для @i %i встановлено прапорець EXTENTS_FL на файловій системі без підтримки розширень.\n"
 
 #. @-expanded: inode %i is in extent format, but superblock is missing EXTENTS feature\n
 #: e2fsck/problem.c:954
 #, c-format
 msgid "@i %i is in extent format, but @S is missing EXTENTS feature\n"
-msgstr ""
-"@i %i записано у форматі розширення, але у суперблоці немає можливості "
-"EXTENTS\n"
+msgstr "@i %i записано у форматі розширення, але у суперблоці немає можливості EXTENTS\n"
 
 #. @-expanded: inode %i missing EXTENT_FL, but is in extents format\n
 #: e2fsck/problem.c:959
@@ -1981,16 +1895,13 @@ msgid ""
 "@i %i extent block passes checks, but checksum does not match extent\n"
 "\t(logical @b %c, physical @b %b, len %N)\n"
 msgstr ""
-"блок розширення @i %i пройшов перевірку, але контрольна сума не відповідає "
-"розширенню\n"
+"блок розширення @i %i пройшов перевірку, але контрольна сума не відповідає розширенню\n"
 "\t(логічний блок %c, фізичний блок %b, довжина %N)\n"
 
 #. @-expanded: inode %i extended attribute block %b passes checks, but checksum does not match block.  
 #: e2fsck/problem.c:1035
 msgid "@i %i @a @b %b passes checks, but checksum does not match @b.  "
-msgstr ""
-"блок розширеного атрибута @i %i %b пройшов перевірку, але контрольна сума не "
-"відповідає блокові.  "
+msgstr "блок розширеного атрибута @i %i %b пройшов перевірку, але контрольна сума не відповідає блокові.  "
 
 #. @-expanded: Interior extent node level %N of inode %i:\n
 #. @-expanded: Logical start %b does not match logical start %c at next level.  
@@ -2016,25 +1927,18 @@ msgstr ""
 #: e2fsck/problem.c:1051
 #, c-format
 msgid "@i %i has inline data, but @S is missing INLINE_DATA feature\n"
-msgstr ""
-"@i %i містить вбудовані дані, але у суперблоку немає властивості "
-"INLINE_DATA\n"
+msgstr "@i %i містить вбудовані дані, але у суперблоку немає властивості INLINE_DATA\n"
 
 #. @-expanded: inode %i has INLINE_DATA_FL flag on filesystem without inline data support.\n
 #: e2fsck/problem.c:1056
 #, c-format
 msgid "@i %i has INLINE_DATA_FL flag on @f without inline data support.\n"
-msgstr ""
-"для @i %i встановлено прапорець INLINE_DATA_FL на файловій системі без "
-"підтримки вбудованих даних.\n"
+msgstr "для @i %i встановлено прапорець INLINE_DATA_FL на файловій системі без підтримки вбудованих даних.\n"
 
 #. @-expanded: inode %i block %b conflicts with critical metadata, skipping block checks.\n
 #: e2fsck/problem.c:1063
-msgid ""
-"@i %i block %b conflicts with critical metadata, skipping block checks.\n"
-msgstr ""
-"@i %i, блок %b конфліктує із критичними метаданими, пропускаємо перевірки "
-"блоків.\n"
+msgid "@i %i block %b conflicts with critical metadata, skipping block checks.\n"
+msgstr "@i %i, блок %b конфліктує із критичними метаданими, пропускаємо перевірки блоків.\n"
 
 #. @-expanded: directory inode %i block %b should be at block %c.  
 #: e2fsck/problem.c:1068
@@ -2054,17 +1958,14 @@ msgid ""
 "@i %i logical @b %b (physical @b %c) violates cluster allocation rules.\n"
 "Will fix in pass 1B.\n"
 msgstr ""
-"логічний блок @i %i %b (фізичний блок %c) порушує правила розподілу "
-"кластерів.\n"
+"логічний блок @i %i %b (фізичний блок %c) порушує правила розподілу кластерів.\n"
 "Буде виправлено на кроці 1B.\n"
 
 #. @-expanded: inode %i has INLINE_DATA_FL flag but extended attribute not found.  
 #: e2fsck/problem.c:1083
 #, c-format
 msgid "@i %i has INLINE_DATA_FL flag but @a not found.  "
-msgstr ""
-"для @i %i встановлено прапорець INLINE_DATA_FL, але відповідного атрибута не "
-"знайдено.  "
+msgstr "для @i %i встановлено прапорець INLINE_DATA_FL, але відповідного атрибута не знайдено.  "
 
 #. @-expanded: Special (device/socket/fifo) file (inode %i) has extents\n
 #. @-expanded: or inline-data flag set.  
@@ -2081,45 +1982,35 @@ msgstr ""
 #: e2fsck/problem.c:1095
 #, c-format
 msgid "@i %i has @x header but inline data flag is set.\n"
-msgstr ""
-"@i %i має розширений заголовок, але встановлено прапорець вбудованих даних.\n"
+msgstr "@i %i має розширений заголовок, але встановлено прапорець вбудованих даних.\n"
 
 #. @-expanded: inode %i seems to have inline data but extent flag is set.\n
 #: e2fsck/problem.c:1100
 #, c-format
 msgid "@i %i seems to have inline data but @x flag is set.\n"
-msgstr ""
-"здається, @i %i містить вбудовані дані, але для нього встановлено прапорець "
-"розширення.\n"
+msgstr "здається, @i %i містить вбудовані дані, але для нього встановлено прапорець розширення.\n"
 
 #. @-expanded: inode %i seems to have block map but inline data and extent flags set.\n
 #: e2fsck/problem.c:1105
 #, c-format
 msgid "@i %i seems to have @b map but inline data and @x flags set.\n"
-msgstr ""
-"здається, @i %i містить карту блоків, але встановлено прапорці вбудованих "
-"даних і розширення.\n"
+msgstr "здається, @i %i містить карту блоків, але встановлено прапорці вбудованих даних і розширення.\n"
 
 #. @-expanded: inode %i has inline data and extent flags set but i_block contains junk.\n
 #: e2fsck/problem.c:1110
 #, c-format
 msgid "@i %i has inline data and @x flags set but i_block contains junk.\n"
-msgstr ""
-"@i %i містить вбудовані дані і встановлено прапорці розширення, але у "
-"i_block міститься мотлох.\n"
+msgstr "@i %i містить вбудовані дані і встановлено прапорці розширення, але у i_block міститься мотлох.\n"
 
 #. @-expanded: Bad block list says the bad block list inode is bad.  
 #: e2fsck/problem.c:1115
 msgid "Bad block list says the bad block list @i is bad.  "
-msgstr ""
-"У списку пошкоджених блоків повідомляється, що @i списку пошкоджених блоків "
-"пошкоджено.  "
+msgstr "У списку пошкоджених блоків повідомляється, що @i списку пошкоджених блоків пошкоджено.  "
 
 #. @-expanded: error allocating extent region allocation structure.  
 #: e2fsck/problem.c:1120
 msgid "@A @x region allocation structure.  "
-msgstr ""
-"помилка під час спроби розмістити структуру розміщення регіонів розширення.  "
+msgstr "помилка під час спроби розмістити структуру розміщення регіонів розширення.  "
 
 #. @-expanded: inode %i has a duplicate extent mapping\n
 #. @-expanded: \t(logical block %c, invalid physical block %b, len %N)\n
@@ -2157,23 +2048,17 @@ msgstr "@i %i має пошкоджений заголовок розширен�
 #: e2fsck/problem.c:1150
 #, c-format
 msgid "Timestamp(s) on @i %i beyond 2310-04-04 are likely pre-1970.\n"
-msgstr ""
-"Часові позначки на @i %i після 4 квітня 2310 року ймовірно є часовими "
-"позначками періоду часу до 1970 року.\n"
+msgstr "Часові позначки на @i %i після 4 квітня 2310 року ймовірно є часовими позначками періоду часу до 1970 року.\n"
 
 #. @-expanded: inode %i has illegal extended attribute value inode %N.\n
 #: e2fsck/problem.c:1155
-#, fuzzy
 msgid "@i %i has @I @a value @i %N.\n"
-msgstr "@i %i містить пошкоджений блок розширеного атрибута %b.  "
+msgstr "@i %i містить @I @a значення @i %N.\n"
 
 #. @-expanded: inode %i has invalid extended attribute. EA inode %N missing EA_INODE flag.\n
 #: e2fsck/problem.c:1161
-#, fuzzy
 msgid "@i %i has @n @a. EA @i %N missing EA_INODE flag.\n"
-msgstr ""
-"@i %i містить вбудовані дані, але у суперблоку немає властивості "
-"INLINE_DATA\n"
+msgstr "@i %i містить @n @a. EA @i %N не містить прапорця EA_INODE.\n"
 
 #. @-expanded: EA inode %N for parent inode %i missing EA_INODE flag.\n
 #. @-expanded:  
@@ -2182,6 +2067,8 @@ msgid ""
 "EA @i %N for parent @i %i missing EA_INODE flag.\n"
 " "
 msgstr ""
+"EA @i %N для батьківського @i %i не містить прапорця EA_INODE.\n"
+" "
 
 #. @-expanded: \n
 #. @-expanded: Running additional passes to resolve blocks claimed by more than one inode...\n
@@ -2193,8 +2080,7 @@ msgid ""
 "Pass 1B: Rescanning for @m @bs\n"
 msgstr ""
 "\n"
-"Виконуємо додаткові проходи для усування блоків, які використано понад одним "
-"@i...\n"
+"Виконуємо додаткові проходи для усування блоків, які використано понад одним @i...\n"
 "Прохід 1B: повторюємо сканування для блоків кратного використання\n"
 
 #. @-expanded: multiply-claimed block(s) in inode %i:
@@ -2223,9 +2109,7 @@ msgstr "Помилка під час виконання ітерації над 
 #. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
 #: e2fsck/problem.c:1210 e2fsck/problem.c:1572
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr ""
-"Помилка під час спроби коригування кількості посилань для блоку розширеного "
-"атрибута %b (@i %i): %m\n"
+msgstr "Помилка під час спроби коригування кількості посилань для блоку розширеного атрибута %b (@i %i): %m\n"
 
 #. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
 #: e2fsck/problem.c:1220
@@ -2300,9 +2184,7 @@ msgstr "Оптимізуємо ієрархії розширень: "
 
 #: e2fsck/problem.c:1296
 msgid "Internal error: max extent tree depth too large (%b; expected=%c).\n"
-msgstr ""
-"Внутрішня помилка: дерево максимального розширення є надто великим (%b; мало "
-"бути=%c).\n"
+msgstr "Внутрішня помилка: дерево максимального розширення є надто великим (%b; мало бути=%c).\n"
 
 #. @-expanded: inode %i extent tree (at level %b) could be shorter.  
 #: e2fsck/problem.c:1301
@@ -2394,9 +2276,8 @@ msgstr "i_file_acl @F %If, а має бути нуль.\n"
 
 #. @-expanded: i_size_high for inode %i (%Q) is %Id, should be zero.\n
 #: e2fsck/problem.c:1388
-#, fuzzy
 msgid "i_size_high @F %Id, @s zero.\n"
-msgstr "i_fsize @F %N, а має бути нуль.\n"
+msgstr "i_size_high для %Id, має бути нулем.\n"
 
 #. @-expanded: i_frag for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1393
@@ -2496,8 +2377,7 @@ msgstr "Помилка під час спроби записати блок ка
 #: e2fsck/problem.c:1483
 #, c-format
 msgid "@A new @d @b for @i %i (%s): %m\n"
-msgstr ""
-"помилка під час спроби розмістити новий блок каталогу для @i %i (%s): %m\n"
+msgstr "помилка під час спроби розмістити новий блок каталогу для @i %i (%s): %m\n"
 
 #. @-expanded: Error deallocating inode %i: %m\n
 #: e2fsck/problem.c:1488
@@ -2554,9 +2434,7 @@ msgstr "блок розширеного атрибута @F некоректни
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
 #: e2fsck/problem.c:1538
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
-msgstr ""
-"файлова система містить великі файли, але не має прапорця LARGE_FILE у "
-"суперблоці.\n"
+msgstr "файлова система містить великі файли, але не має прапорця LARGE_FILE у суперблоці.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B not referenced\n
 #: e2fsck/problem.c:1543
@@ -2571,14 +2449,12 @@ msgstr "проблема у inode каталогу HTREE %d: подвійне п
 #. @-expanded: problem in HTREE directory inode %d: %B has bad min hash\n
 #: e2fsck/problem.c:1553
 msgid "@p @h %d: %B has bad min hash\n"
-msgstr ""
-"проблема у @i каталогу HTREE %d: %B має помилкову мінімальну хеш-суму\n"
+msgstr "проблема у @i каталогу HTREE %d: %B має помилкову мінімальну хеш-суму\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B has bad max hash\n
 #: e2fsck/problem.c:1558
 msgid "@p @h %d: %B has bad max hash\n"
-msgstr ""
-"проблема у @i каталогу HTREE %d: %B має помилкову максимальну хеш-суму\n"
+msgstr "проблема у @i каталогу HTREE %d: %B має помилкову максимальну хеш-суму\n"
 
 #. @-expanded: invalid HTREE directory inode %d (%q).  
 #: e2fsck/problem.c:1563
@@ -2614,8 +2490,7 @@ msgstr "проблема у @i каталогу HTREE %d: %B має невпор
 #. @-expanded: problem in HTREE directory inode %d: %B has invalid depth (%N)\n
 #: e2fsck/problem.c:1597
 msgid "@p @h %d: %B has @n depth (%N)\n"
-msgstr ""
-"проблема у @i каталогу HTREE %d: %B має некоректний рівень вкладеності (%N)\n"
+msgstr "проблема у @i каталогу HTREE %d: %B має некоректний рівень вкладеності (%N)\n"
 
 #. @-expanded: Duplicate entry '%Dn' in %p (%i) found.  
 #: e2fsck/problem.c:1602
@@ -2664,9 +2539,7 @@ msgstr "@E посилається на @i %Di у групі %g, де встан�
 #. @-expanded: entry '%Dn' in %p (%i) references inode %Di found in group %g's unused inodes area.\n
 #: e2fsck/problem.c:1631
 msgid "@E references @i %Di found in @g %g's unused inodes area.\n"
-msgstr ""
-"@E посилається на @i %Di, який знайдено у області невикористаних @i групи "
-"%g.\n"
+msgstr "@E посилається на @i %Di, який знайдено у області невикористаних @i групи %g.\n"
 
 #. @-expanded: i_file_acl_hi for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1636
@@ -2677,17 +2550,13 @@ msgstr "i_file_acl_hi @F %N, має бути нуль.\n"
 #: e2fsck/problem.c:1641
 #, c-format
 msgid "@p @h %d: root node fails checksum.\n"
-msgstr ""
-"проблема у @i каталогу HTREE %d: кореневий вузол не пройшов перевірки "
-"контрольною сумою\n"
+msgstr "проблема у @i каталогу HTREE %d: кореневий вузол не пройшов перевірки контрольною сумою\n"
 
 #. @-expanded: problem in HTREE directory inode %d: internal node fails checksum.\n
 #: e2fsck/problem.c:1646
 #, c-format
 msgid "@p @h %d: internal node fails checksum.\n"
-msgstr ""
-"проблема у @i каталогу HTREE %d: внутрішній вузол не пройшов перевірки "
-"контрольною сумою\n"
+msgstr "проблема у @i каталогу HTREE %d: внутрішній вузол не пройшов перевірки контрольною сумою\n"
 
 #. @-expanded: directory inode %i, %B, offset %N: directory has no checksum.\n
 #: e2fsck/problem.c:1651
@@ -2697,9 +2566,7 @@ msgstr "@i каталогу %i, %B, відступ %N: каталог не ма�
 #. @-expanded: directory inode %i, %B: directory passes checks but fails checksum.\n
 #: e2fsck/problem.c:1656
 msgid "@d @i %i, %B: @d passes checks but fails checksum.\n"
-msgstr ""
-"@i %i каталогу, %B: каталог пройшов перевірку, але має невідповідну "
-"контрольну суму.\n"
+msgstr "@i %i каталогу, %B: каталог пройшов перевірку, але має невідповідну контрольну суму.\n"
 
 #. @-expanded: Inline directory inode %i size (%N) must be a multiple of 4.\n
 #: e2fsck/problem.c:1661
@@ -2710,8 +2577,7 @@ msgstr "Розмір @i %i вбудованого каталогу (%N) має �
 #: e2fsck/problem.c:1666
 #, c-format
 msgid "Fixing size of inline @d @i %i failed.\n"
-msgstr ""
-"Спроба виправлення розміру @i %i вбудованого каталогу зазнала невдачі.\n"
+msgstr "Спроба виправлення розміру @i %i вбудованого каталогу зазнала невдачі.\n"
 
 #. @-expanded: Encrypted entry '%Dn' in %p (%i) is too short.\n
 #: e2fsck/problem.c:1671
@@ -2752,9 +2618,7 @@ msgstr "«..» у %Q (%i) дорівнює %P (%j), має бути %q (%d).\n"
 #. @-expanded: Bad or non-existent /lost+found.  Cannot reconnect.\n
 #: e2fsck/problem.c:1708
 msgid "Bad or non-existent /@l.  Cannot reconnect.\n"
-msgstr ""
-"Помилковий каталог /@l або каталогу не існує. Повторне приєднання "
-"неможливе.\n"
+msgstr "Помилковий каталог /@l або каталогу не існує. Повторне приєднання неможливе.\n"
 
 #. @-expanded: Could not expand /lost+found: %m\n
 #: e2fsck/problem.c:1713
@@ -2822,8 +2686,7 @@ msgid ""
 "Couldn't fix parent of @i %i: Couldn't find parent @d @e\n"
 "\n"
 msgstr ""
-"Не вдалося виправити батьківський каталог @i %i: не вдалося знайти запис "
-"батьківського каталогу\n"
+"Не вдалося виправити батьківський каталог @i %i: не вдалося знайти запис батьківського каталогу\n"
 "\n"
 
 #. @-expanded: Error creating root directory (%s): %m\n
@@ -2936,14 +2799,12 @@ msgid ""
 msgstr ""
 "УВАГА: ПОМИЛКА У КОДІ E2FSCK!\n"
 "\tАБО ХТОСЬ (ВИ) ПЕРЕВІРЯЄ ЗМОНТОВАНУ (РОБОЧУ) ФАЙЛОВУ СИСТЕМУ.\n"
-"@i_link_info[%i] дорівнює %N, а @i.i_links_count дорівнює %Il. Ці значення "
-"мають бути однаковими!\n"
+"@i_link_info[%i] дорівнює %N, а @i.i_links_count дорівнює %Il. Ці значення мають бути однаковими!\n"
 
 #. @-expanded: extended attribute inode %i ref count is %N, should be %n. 
 #: e2fsck/problem.c:1878
-#, fuzzy
 msgid "@a @i %i ref count is %N, @s %n. "
-msgstr "кількість посилань @i %i дорівнює %Il, а має бути %N.  "
+msgstr "кількість посилань @i %i дорівнює %N, а має бути %n. "
 
 #. @-expanded: Pass 5: Checking group summary information\n
 #: e2fsck/problem.c:1885
@@ -2998,12 +2859,8 @@ msgstr "Помилкова кількість вільних блоків (%b, �
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:1965
-msgid ""
-"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
-"endpoints (%i, %j)\n"
-msgstr ""
-"ПОМИЛКА У КОДІ: кінцеві точки бітової картки файлової системи (%N) (%b, %c) "
-"не збігаються із обчисленими кінцевими точками бітової карти (%i, %j)\n"
+msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
+msgstr "ПОМИЛКА У КОДІ: кінцеві точки бітової картки файлової системи (%N) (%b, %c) не збігаються із обчисленими кінцевими точками бітової карти (%i, %j)\n"
 
 #: e2fsck/problem.c:1971
 msgid "Internal error: fudging end of bitmap (%N)\n"
@@ -3058,8 +2915,7 @@ msgstr "Оновити дані щодо квоти для типу квоти %
 #: e2fsck/problem.c:2038
 #, c-format
 msgid "Error setting @b @g checksum info: %m\n"
-msgstr ""
-"Помилка під час встановлення даних щодо контрольної суми групи блоків: %m\n"
+msgstr "Помилка під час встановлення даних щодо контрольної суми групи блоків: %m\n"
 
 #: e2fsck/problem.c:2043
 #, c-format
@@ -3069,8 +2925,7 @@ msgstr "Помилка під час запису даних щодо файло
 #: e2fsck/problem.c:2048
 #, c-format
 msgid "Error flushing writes to storage device: %m\n"
-msgstr ""
-"Помилка під час запису для витирання на пристрій зберігання даних: %m\n"
+msgstr "Помилка під час запису для витирання на пристрій зберігання даних: %m\n"
 
 #: e2fsck/problem.c:2053
 msgid "Error writing quota info for quota type %N: %m\n"
@@ -3108,14 +2963,14 @@ msgid "while doing inode scan"
 msgstr "під час виконання сканування inode"
 
 #: e2fsck/super.c:207
-#, fuzzy, c-format
+#, c-format
 msgid "while calling ext2fs_block_iterate for inode %u"
-msgstr "під час виклику ext2fs_block_iterate для inode %d"
+msgstr "під час виклику ext2fs_block_iterate для inode %u"
 
 #: e2fsck/super.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "while calling ext2fs_adjust_ea_refcount2 for inode %u"
-msgstr "під час виклику ext2fs_adjust_ea_refcount2 для inode %d"
+msgstr "під час виклику ext2fs_adjust_ea_refcount2 для inode %u"
 
 #: e2fsck/super.c:291
 msgid "Truncating"
@@ -3143,8 +2998,7 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock "
-"list\n"
+" -c                   Check for bad blocks and add them to the badblock list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -3153,8 +3007,7 @@ msgstr ""
 " -n                   не вносити змін до файлової системи\n"
 " -y                   відповісти на усі питання «так»\n"
 " -c                   знайти пошкоджені блоки і додати їх до списку\n"
-" -f                   примусова перевірка, навіть якщо систему позначено як "
-"непошкоджену\n"
+" -f                   примусова перевірка, навіть якщо систему позначено як непошкоджену\n"
 
 #: e2fsck/unix.c:88
 msgid ""
@@ -3402,9 +3255,7 @@ msgstr " не було демонтовано у штатному режимі"
 
 #: e2fsck/unix.c:377
 msgid " primary superblock features different from backup"
-msgstr ""
-" можливості основного суперблоку відрізняється від можливостей у резервній "
-"копії"
+msgstr " можливості основного суперблоку відрізняється від можливостей у резервній копії"
 
 #: e2fsck/unix.c:381
 #, c-format
@@ -3413,9 +3264,7 @@ msgstr " змонтовано %u разів без перевірки"
 
 #: e2fsck/unix.c:388
 msgid " has filesystem last checked time in the future"
-msgstr ""
-" містить файлову систему, час останньої перевірки якої перебуває у "
-"майбутньому"
+msgstr " містить файлову систему, час останньої перевірки якої перебуває у майбутньому"
 
 #: e2fsck/unix.c:394
 #, c-format
@@ -3463,7 +3312,6 @@ msgid "Unknown extended option: %s\n"
 msgstr "Невідомий розширений параметр: %s\n"
 
 #: e2fsck/unix.c:747
-#, fuzzy
 msgid ""
 "\n"
 "Extended options are separated by commas, and may take an argument which\n"
@@ -3471,24 +3319,18 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Вказано помилкові додаткові параметри: %s\n"
-"\n"
 "Додаткові параметри слід відокремлювати комами. Додаткові параметри можуть\n"
-"\tприймати аргументи, значення яких встановлюються за допомогою знаку "
-"рівності (=).\n"
-"\n"
+"приймати аргументи, значення яких встановлюються за допомогою знаку рівності (=).\n"
 "Коректні додаткові параметри:\n"
-"\tsuperblock=<номер суперблоку>\n"
-"\tblocksize=<розмір блоку>\n"
+"\n"
 
 #: e2fsck/unix.c:751
 msgid "\tea_ver=<ea_version (1 or 2)>\n"
-msgstr ""
+msgstr "\tea_ver=<ea_version (1 або 2)>\n"
 
 #: e2fsck/unix.c:760
-#, fuzzy
 msgid "\treadahead_kb=<buffer size>\n"
-msgstr "Некоректний розмір буфера випереджального читання.\n"
+msgstr "\treadahead_kb=<розмір буфера>\n"
 
 #: e2fsck/unix.c:771
 #, c-format
@@ -3569,12 +3411,8 @@ msgstr ""
 
 #: e2fsck/unix.c:1222
 #, c-format
-msgid ""
-"MMP interval is %u seconds and total wait time is %u seconds. Please "
-"wait...\n"
-msgstr ""
-"Інтервал MMP дорівнює %u секунд, а загальний час очікування дорівнює %u "
-"секунд. Будь ласка, зачекайте...\n"
+msgid "MMP interval is %u seconds and total wait time is %u seconds. Please wait...\n"
+msgstr "Інтервал MMP дорівнює %u секунд, а загальний час очікування дорівнює %u секунд. Будь ласка, зачекайте...\n"
 
 #: e2fsck/unix.c:1239 e2fsck/unix.c:1244
 msgid "while checking MMP block"
@@ -3585,8 +3423,7 @@ msgid ""
 "If you are sure the filesystem is not in use on any node, run:\n"
 "'tune2fs -f -E clear_mmp {device}'\n"
 msgstr ""
-"Якщо ви впевнені, що файлова система не використовується жодним вузлом. "
-"Віддайте команду:\n"
+"Якщо ви впевнені, що файлова система не використовується жодним вузлом. Віддайте команду:\n"
 "«tune2fs -f -E clear_mmp {пристрій}»\n"
 
 #: e2fsck/unix.c:1261
@@ -3602,8 +3439,7 @@ msgid ""
 "    e2undo %s %s\n"
 "\n"
 msgstr ""
-"Перезаписуємо наявну файлову систему; скасувати перезаписування можна за "
-"допомогою команди:\n"
+"Перезаписуємо наявну файлову систему; скасувати перезаписування можна за допомогою команди:\n"
 "    e2undo %s %s\n"
 "\n"
 
@@ -3674,20 +3510,15 @@ msgstr "Можливо, це розділ з нульовою довжиною?\
 #: e2fsck/unix.c:1549
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
-msgstr ""
-"Вам потрібен доступ %s до файлової системи або адміністративний доступ "
-"(root)\n"
+msgstr "Вам потрібен доступ %s до файлової системи або адміністративний доступ (root)\n"
 
 #: e2fsck/unix.c:1555
 msgid "Possibly non-existent or swap device?\n"
-msgstr ""
-"Можливо, пристрою не існує або це пристрій резервної пам’яті (свопінгу)?\n"
+msgstr "Можливо, пристрою не існує або це пристрій резервної пам’яті (свопінгу)?\n"
 
 #: e2fsck/unix.c:1557
 msgid "Filesystem mounted or opened exclusively by another program?\n"
-msgstr ""
-"Файлову систему змонтовано або відкрито іншою програмою у режимі, що "
-"виключає доступ сторонніх програм?\n"
+msgstr "Файлову систему змонтовано або відкрито іншою програмою у режимі, що виключає доступ сторонніх програм?\n"
 
 #: e2fsck/unix.c:1561
 msgid "Possibly non-existent device?\n"
@@ -3715,13 +3546,8 @@ msgid "Cannot proceed with file system check"
 msgstr "Продовження перевірки файлової системи неможливе"
 
 #: e2fsck/unix.c:1690
-msgid ""
-"Warning: skipping journal recovery because doing a read-only filesystem "
-"check.\n"
-msgstr ""
-"Попередження: не виконуємо відновлення журналу, оскільки перевірка "
-"виконується для файлової системи, доступ до якої здійснюється у режимі лише "
-"читання.\n"
+msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
+msgstr "Попередження: не виконуємо відновлення журналу, оскільки перевірка виконується для файлової системи, доступ до якої здійснюється у режимі лише читання.\n"
 
 #: e2fsck/unix.c:1702
 #, c-format
@@ -3967,30 +3793,23 @@ msgid "while writing inode %lu in %s"
 msgstr "під час запису inode %lu до %s"
 
 #: e2fsck/util.c:779
-msgid ""
-"UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is "
-"running.\n"
-msgstr ""
-"НЕОЧІКУВАНА ВТРАТА ЦІЛІСНОСТІ: під час виконання fsck до файлової системи "
-"було внесено зміни.\n"
+msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is running.\n"
+msgstr "НЕОЧІКУВАНА ВТРАТА ЦІЛІСНОСТІ: під час виконання fsck до файлової системи було внесено зміни.\n"
 
 #: misc/badblocks.c:75
 msgid "done                                                 \n"
 msgstr "виконано                                             \n"
 
 #: misc/badblocks.c:100
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnfBX]\n"
-"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e "
-"max_bad_blocks]\n"
+"       [-c blocks_at_once] [-d delay_factor_between_reads] [-e max_bad_blocks]\n"
 "       [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 "       device [last_block [first_block]]\n"
 msgstr ""
-"Користування: %s [-b розмір_блоку] [-i вхідний_файл] [-o файл_виведення] [-"
-"svwnf]\n"
-"       [-c блоків_одночасно] [-d коеф_затримки_між_читаннями] [-e "
-"макс_пошк_блоків]\n"
+"Користування: %s [-b розмір_блоку] [-i вхідний_файл] [-o файл_виведення] [-svwnfBX]\n"
+"       [-c блоків_одночасно] [-d коеф_затримки_між_читаннями] [-e макс_пошк_блоків]\n"
 "       [-p к-ть_проходів] [-t тест_зразок [-t тест_зразок [...]]]\n"
 "       пристрій [останній_блок [перший_блок]]\n"
 
@@ -4074,9 +3893,7 @@ msgstr "Шукаємо помилкові блоки у режимі читан�
 
 #: misc/badblocks.c:796
 msgid "Checking for bad blocks (non-destructive read-write test)\n"
-msgstr ""
-"Перевіряємо на пошкоджені блоки (перевірка читанням-записом без руйнування "
-"даних)\n"
+msgstr "Перевіряємо на пошкоджені блоки (перевірка читанням-записом без руйнування даних)\n"
 
 #: misc/badblocks.c:803
 msgid ""
@@ -4098,8 +3915,7 @@ msgstr "%s змонтовано; "
 
 #: misc/badblocks.c:1009
 msgid "badblocks forced anyway.  Hope /etc/mtab is incorrect.\n"
-msgstr ""
-"Примусове виконання badblocks. Сподіваємося, що /etc/mtab містить помилки.\n"
+msgstr "Примусове виконання badblocks. Сподіваємося, що /etc/mtab містить помилки.\n"
 
 #: misc/badblocks.c:1014
 msgid "it's not safe to run badblocks!\n"
@@ -4122,9 +3938,7 @@ msgstr "некоректний %s - %s"
 #: misc/badblocks.c:1136
 #, c-format
 msgid "Too big max bad blocks count %u - maximum is %u"
-msgstr ""
-"Завелика максимальна кількість пошкоджених блоків, %u — не може бути більшою "
-"за %u"
+msgstr "Завелика максимальна кількість пошкоджених блоків, %u — не може бути більшою за %u"
 
 #: misc/badblocks.c:1163
 #, c-format
@@ -4407,11 +4221,8 @@ msgstr "під час спроби зберегти дані inode"
 
 #: misc/dumpe2fs.c:56
 #, c-format
-msgid ""
-"Usage: %s [-bfghixV] [-o superblock=<num>] [-o blocksize=<num>] device\n"
-msgstr ""
-"Користування: %s [-bfghixV] [-o superblock=<номер>] [-o blocksize=<номер>] "
-"пристрій\n"
+msgid "Usage: %s [-bfghixV] [-o superblock=<num>] [-o blocksize=<num>] device\n"
+msgstr "Користування: %s [-bfghixV] [-o superblock=<номер>] [-o blocksize=<номер>] пристрій\n"
 
 #: misc/dumpe2fs.c:159
 msgid "blocks"
@@ -4584,8 +4395,7 @@ msgstr ""
 "Вказано помилкові додаткові параметри: %s\n"
 "\n"
 "Додаткові параметри слід відокремлювати комами. Додаткові параметри можуть\n"
-"\tприймати аргументи, значення яких встановлюються за допомогою знаку "
-"рівності (=).\n"
+"\tприймати аргументи, значення яких встановлюються за допомогою знаку рівності (=).\n"
 "\n"
 "Коректні додаткові параметри:\n"
 "\tsuperblock=<номер суперблоку>\n"
@@ -4603,8 +4413,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"*** У файловій системі виявлено помилки у контрольних сумах! Запустіть "
-"e2fsck зараз же!\n"
+"*** У файловій системі виявлено помилки у контрольних сумах! Запустіть e2fsck зараз же!\n"
 "\n"
 
 #: misc/dumpe2fs.c:595 misc/e2image.c:1587 misc/tune2fs.c:2947
@@ -4619,8 +4428,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"*** У бітових картка виявлено помилки у контрольних сумах! Запустіть e2fsck "
-"зараз же!\n"
+"*** У бітових картка виявлено помилки у контрольних сумах! Запустіть e2fsck зараз же!\n"
 "\n"
 
 #: misc/dumpe2fs.c:634
@@ -4633,9 +4441,9 @@ msgstr ""
 "%s: %s: помилка під час читання бітових карт: %s\n"
 
 #: misc/e2image.c:107
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [ -r|Q ] [ -f ] device image-file\n"
-msgstr "Користування: %s [ -r|Q ] [ -fr ] пристрій файл-образу\n"
+msgstr "Користування: %s [ -r|Q ] [ -f ] пристрій файл-образу\n"
 
 #: misc/e2image.c:109
 #, c-format
@@ -4644,14 +4452,11 @@ msgstr "       %s -I пристрій файл-образу\n"
 
 #: misc/e2image.c:110
 #, c-format
-msgid ""
-"       %s -ra  [  -cfnp  ] [ -o src_offset ] [ -O dest_offset ] src_fs "
-"[ dest_fs ]\n"
-msgstr ""
-"       %s -ra  [  -cfnp  ] [ -o відступ джерела ] [ -O відступ призначення ] "
-"ФС_джерела [ ФС_призначення ]\n"
+msgid "       %s -ra  [  -cfnp  ] [ -o src_offset ] [ -O dest_offset ] src_fs [ dest_fs ]\n"
+msgstr "       %s -ra  [  -cfnp  ] [ -o відступ джерела ] [ -O відступ призначення ] ФС_джерела [ ФС_призначення ]\n"
 
-#: misc/e2image.c:175 misc/e2image.c:580 misc/e2image.c:586 misc/e2image.c:1182
+#: misc/e2image.c:175 misc/e2image.c:580 misc/e2image.c:586
+#: misc/e2image.c:1182
 msgid "while allocating buffer"
 msgstr "під час розміщення буфера у пам’яті"
 
@@ -4713,11 +4518,8 @@ msgid "Copying "
 msgstr "Копіюємо "
 
 #: misc/e2image.c:627
-msgid ""
-"Stopping now will destroy the filesystem, interrupt again if you are sure\n"
-msgstr ""
-"Якщо зараз зупинити обробку, файлову систему буде зруйновано. Перервіть "
-"обробку ще раз, якщо це саме те, що потрібно.\n"
+msgid "Stopping now will destroy the filesystem, interrupt again if you are sure\n"
+msgstr "Якщо зараз зупинити обробку, файлову систему буде зруйновано. Перервіть обробку ще раз, якщо це саме те, що потрібно.\n"
 
 #: misc/e2image.c:653
 #, c-format
@@ -4748,13 +4550,8 @@ msgid "while allocating l2 cache"
 msgstr "під час розміщення кешу l2 у пам’яті"
 
 #: misc/e2image.c:827
-msgid ""
-"Warning: There are still tables in the cache while putting the cache, data "
-"will be lost so the image may not be valid.\n"
-msgstr ""
-"Попередження: під час розміщення кешу у ньому залишилися таблиці. "
-"Неможливість розмістити ці таблиці призведе до втрати даних, отже образ може "
-"виявитися некоректним.\n"
+msgid "Warning: There are still tables in the cache while putting the cache, data will be lost so the image may not be valid.\n"
+msgstr "Попередження: під час розміщення кешу у ньому залишилися таблиці. Неможливість розмістити ці таблиці призведе до втрати даних, отже образ може виявитися некоректним.\n"
 
 #: misc/e2image.c:1149
 msgid "while allocating ext2_qcow2_image"
@@ -4766,8 +4563,7 @@ msgstr "під час спроби ініціалізувати ext2_qcow2_image
 
 #: misc/e2image.c:1215 misc/e2image.c:1233
 msgid "Programming error: multiple sequential refcount blocks created!\n"
-msgstr ""
-"Помилка у коді: створено декілька послідовних блоків підрахунку посилань!\n"
+msgstr "Помилка у коді: створено декілька послідовних блоків підрахунку посилань!\n"
 
 #: misc/e2image.c:1273
 msgid "while allocating block bitmap"
@@ -4868,9 +4664,7 @@ msgstr "Підтримку параметра -c передбачено лише
 
 #: misc/e2image.c:1651
 msgid "The -c option not supported when writing to stdout\n"
-msgstr ""
-"Підтримки записування до стандартного виведення з параметром -c не "
-"передбачено\n"
+msgstr "Підтримки записування до стандартного виведення з параметром -c не передбачено\n"
 
 #: misc/e2image.c:1658
 msgid "while allocating check_buf"
@@ -4931,12 +4725,9 @@ msgid "Usage: e2label device [newlabel]\n"
 msgstr "Користування: e2label пристрій [нова мітка]\n"
 
 #: misc/e2undo.c:118
-#, fuzzy, c-format
-msgid ""
-"Usage: %s [-f] [-h] [-n] [-o offset] [-v] [-z undo_file] <transaction file> "
-"<filesystem>\n"
-msgstr ""
-"Користування: %s [-f] [-h] [-n] [-v] <файл транзакцій> <файлова система>\n"
+#, c-format
+msgid "Usage: %s [-f] [-h] [-n] [-o offset] [-v] [-z undo_file] <transaction file> <filesystem>\n"
+msgstr "Користування: %s [-f] [-h] [-n] [-o offset] [-v] [-z файл скасовування дій] <файл транзакцій> <файлова система>\n"
 
 #: misc/e2undo.c:143
 msgid "The file system superblock doesn't match the undo file.\n"
@@ -4979,8 +4770,7 @@ msgstr "Некоректний відступ: %s"
 #: misc/e2undo.c:358
 #, c-format
 msgid "Will not write to an undo file while replaying it.\n"
-msgstr ""
-"Запис до файла скасовування дій не вестиметься протягом його відтворення.\n"
+msgstr "Запис до файла скасовування дій не вестиметься протягом його відтворення.\n"
 
 #: misc/e2undo.c:367
 #, c-format
@@ -5066,9 +4856,7 @@ msgstr "під час спроби отримання блоку %llu."
 #: misc/e2undo.c:570
 #, c-format
 msgid "checksum error in filesystem block %llu (undo blk %llu)\n"
-msgstr ""
-"помилка контрольної суми у блоці файлової системи %llu (скасовування блоку "
-"%llu)\n"
+msgstr "помилка контрольної суми у блоці файлової системи %llu (скасовування блоку %llu)\n"
 
 #: misc/e2undo.c:609
 #, c-format
@@ -5083,9 +4871,7 @@ msgstr "Файл скасовування дій пошкоджено; запу�
 #: misc/e2undo.c:617
 #, c-format
 msgid "IO error during replay; run e2fsck NOW!\n"
-msgstr ""
-"Помилка введення-виведення під час скасовування дій; запустіть e2fsck ЗАРАЗ "
-"ЖЕ!\n"
+msgstr "Помилка введення-виведення під час скасовування дій; запустіть e2fsck ЗАРАЗ ЖЕ!\n"
 
 #: misc/e2undo.c:620
 #, c-format
@@ -5133,12 +4919,8 @@ msgstr ""
 
 #: misc/findsuper.c:190
 #, c-format
-msgid ""
-"byte_offset  byte_start     byte_end  fs_blocks blksz  grp  mkfs/"
-"mount_time           sb_uuid label\n"
-msgstr ""
-"зміщ_у_байт  поч_байт       кінц_байт блок_фс   роз_бл грп  час_mkfs/"
-"mount            sb_uuid мітка\n"
+msgid "byte_offset  byte_start     byte_end  fs_blocks blksz  grp  mkfs/mount_time           sb_uuid label\n"
+msgstr "зміщ_у_байт  поч_байт       кінц_байт блок_фс   роз_бл грп  час_mkfs/mount            sb_uuid мітка\n"
 
 #: misc/findsuper.c:264
 #, c-format
@@ -5184,8 +4966,7 @@ msgstr "%s: очікування: не залишилося дочірніх п�
 #: misc/fsck.c:618
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
-msgstr ""
-"Попередження... виконання %s для пристрою %s завершилося сигналом %d.\n"
+msgstr "Попередження... виконання %s для пристрою %s завершилося сигналом %d.\n"
 
 #: misc/fsck.c:624
 #, c-format
@@ -5207,8 +4988,7 @@ msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
 msgstr ""
-"Префікс «no» або «!» має бути передано або всім або жодному з типів "
-"файлових\n"
+"Префікс «no» або «!» має бути передано або всім або жодному з типів файлових\n"
 "систем, переданих до -t.\n"
 
 #: misc/fsck.c:763
@@ -5217,12 +4997,8 @@ msgstr "Не вдалося розмістити у пам’яті типи ф�
 
 #: misc/fsck.c:886
 #, c-format
-msgid ""
-"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
-"number\n"
-msgstr ""
-"%s: пропускаємо помилковий рядок у /etc/fstab: монтування з прив’язуванням і "
-"ненульовою кількістю проходів fsck\n"
+msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
+msgstr "%s: пропускаємо помилковий рядок у /etc/fstab: монтування з прив’язуванням і ненульовою кількістю проходів fsck\n"
 
 #: misc/fsck.c:913
 #, c-format
@@ -5239,11 +5015,8 @@ msgid "--waiting-- (pass %d)\n"
 msgstr "--очікування-- (прохід %d)\n"
 
 #: misc/fsck.c:1080
-msgid ""
-"Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
-msgstr ""
-"Користування: fsck [-AMNPRTV] [ -C [ дескриптор файла ] ] [-t тип ФС] "
-"[параметри ФС] [файлова система ...]\n"
+msgid "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
+msgstr "Користування: fsck [-AMNPRTV] [ -C [ дескриптор файла ] ] [-t тип ФС] [параметри ФС] [файлова система ...]\n"
 
 #: misc/fsck.c:1122
 #, c-format
@@ -5276,8 +5049,7 @@ msgstr "Будь ласка, віддайте команду e2fsck -fy %s.\n"
 
 #: misc/fuse2fs.c:3791
 msgid "Journal needs recovery; running `e2fsck -E journal_only' is required.\n"
-msgstr ""
-"Журнал потребує відновлення; слід запустити «e2fsck -E journal_only».\n"
+msgstr "Журнал потребує відновлення; слід запустити «e2fsck -E journal_only».\n"
 
 #: misc/fuse2fs.c:3799
 #, c-format
@@ -5286,15 +5058,11 @@ msgstr "%s: підтримки запису до журналу не перед�
 
 #: misc/fuse2fs.c:3814
 msgid "Warning: Mounting unchecked fs, running e2fsck is recommended.\n"
-msgstr ""
-"Попередження: монтуємо неперевірену файлову систему, рекомендуємо запустити "
-"e2fsck.\n"
+msgstr "Попередження: монтуємо неперевірену файлову систему, рекомендуємо запустити e2fsck.\n"
 
 #: misc/fuse2fs.c:3818
 msgid "Warning: Maximal mount count reached, running e2fsck is recommended.\n"
-msgstr ""
-"Попередження: досягнуто максимальної кількості монтувань, рекомендуємо "
-"запустити e2fsck.\n"
+msgstr "Попередження: досягнуто максимальної кількості монтувань, рекомендуємо запустити e2fsck.\n"
 
 #: misc/fuse2fs.c:3823
 msgid "Warning: Check time reached; running e2fsck is recommended.\n"
@@ -5337,8 +5105,7 @@ msgid ""
 "\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 "\t[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]\n"
 "\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]\n"
-"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior][-z "
-"undo_file]\n"
+"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior][-z undo_file]\n"
 "\t[-jnqvDFSV] device [blocks-count]\n"
 msgstr ""
 "Користування: %s [-c|-l назва файла] [-b розмір блоку] [-C розмір кластера]\n"
@@ -5372,8 +5139,7 @@ msgstr "Пошкоджено блок %d у основному дескрипт�
 #: misc/mke2fs.c:301
 #, c-format
 msgid "Blocks %u through %u must be good in order to build a filesystem.\n"
-msgstr ""
-"Щоб побудувати файлову систему, блоки від %u до %u має бути не пошкоджено.\n"
+msgstr "Щоб побудувати файлову систему, блоки від %u до %u має бути не пошкоджено.\n"
 
 #: misc/mke2fs.c:304
 msgid "Aborting....\n"
@@ -5590,9 +5356,9 @@ msgid "Invalid desc_size: '%s'\n"
 msgstr "Некоректне значення desc_size: «%s»\n"
 
 #: misc/mke2fs.c:847
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid hash seed: %s\n"
-msgstr "Некоректний новий розмір: %s\n"
+msgstr "Некоректний породжувач хешу: %s\n"
 
 #: misc/mke2fs.c:859
 #, c-format
@@ -5630,9 +5396,7 @@ msgstr "Максимум зміни розміру має перевищуват
 
 #: misc/mke2fs.c:978
 msgid "On-line resizing not supported with revision 0 filesystems\n"
-msgstr ""
-"Підтримки інтерактивної зміни розмірів для файлових систем модифікації 0 не "
-"передбачено\n"
+msgstr "Підтримки інтерактивної зміни розмірів для файлових систем модифікації 0 не передбачено\n"
 
 #: misc/mke2fs.c:1004 misc/mke2fs.c:1013
 #, c-format
@@ -5668,8 +5432,7 @@ msgstr ""
 "\n"
 "Вказано помилкові параметри: %s\n"
 "\n"
-"Додаткові параметри слід відокремлювати комами, до них можна додавати "
-"аргумент,\n"
+"Додаткові параметри слід відокремлювати комами, до них можна додавати аргумент,\n"
 "\tзначення якого записується після знаку рівності («=»).\n"
 "\n"
 "Коректні додаткові параметри:\n"
@@ -5816,12 +5579,8 @@ msgid "invalid inode size - %s"
 msgstr "некоректний розмір inode - %s"
 
 #: misc/mke2fs.c:1703
-msgid ""
-"Warning: -K option is deprecated and should not be used anymore. Use '-E "
-"nodiscard' extended option instead!\n"
-msgstr ""
-"Попередження: параметр -K є застарілим, ним не варто більше користуватися. "
-"Вам варто користуватися параметром «-E nodiscard»!\n"
+msgid "Warning: -K option is deprecated and should not be used anymore. Use '-E nodiscard' extended option instead!\n"
+msgstr "Попередження: параметр -K є застарілим, ним не варто більше користуватися. Вам варто користуватися параметром «-E nodiscard»!\n"
 
 #: misc/mke2fs.c:1714
 msgid "in malloc for bad_blocks_filename"
@@ -5876,8 +5635,7 @@ msgstr "під час спроби відкрити пристрій журна�
 #: misc/mke2fs.c:1866
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
-msgstr ""
-"Розмір блоку пристрою журналу (%d) є меншим за мінімальний розмір блоку %d\n"
+msgstr "Розмір блоку пристрою журналу (%d) є меншим за мінімальний розмір блоку %d\n"
 
 #: misc/mke2fs.c:1872
 #, c-format
@@ -5939,9 +5697,8 @@ msgid "The HURD does not support the metadata_csum feature.\n"
 msgstr "У HURD не передбачено підтримки можливості metadata_csum.\n"
 
 #: misc/mke2fs.c:2045
-#, fuzzy
 msgid "The HURD does not support the ea_inode feature.\n"
-msgstr "У HURD не передбачено підтримки можливості huge_file.\n"
+msgstr "У HURD не передбачено підтримки можливості ea_inode.\n"
 
 #: misc/mke2fs.c:2055
 msgid "while trying to determine hardware sector size"
@@ -5953,16 +5710,12 @@ msgstr "під час спроби визначити фізичний розм�
 
 #: misc/mke2fs.c:2093
 msgid "while setting blocksize; too small for device\n"
-msgstr ""
-"під час встановлення розміру блоку; розмір є надто малим для пристрою\n"
+msgstr "під час встановлення розміру блоку; розмір є надто малим для пристрою\n"
 
 #: misc/mke2fs.c:2098
 #, c-format
-msgid ""
-"Warning: specified blocksize %d is less than device physical sectorsize %d\n"
-msgstr ""
-"Попередження: вказаний розмір блоку, %d, є меншим за фізичний розмір сектора "
-"пристрою, %d\n"
+msgid "Warning: specified blocksize %d is less than device physical sectorsize %d\n"
+msgstr "Попередження: вказаний розмір блоку, %d, є меншим за фізичний розмір сектора пристрою, %d\n"
 
 #: misc/mke2fs.c:2122
 #, c-format
@@ -5988,15 +5741,11 @@ msgstr "fs_types для розв’язання mke2fs.conf: "
 
 #: misc/mke2fs.c:2163
 msgid "Filesystem features not supported with revision 0 filesystems\n"
-msgstr ""
-"У файлових системах модифікації 0 можливості файлової системи не "
-"підтримуються\n"
+msgstr "У файлових системах модифікації 0 можливості файлової системи не підтримуються\n"
 
 #: misc/mke2fs.c:2171
 msgid "Sparse superblocks not supported with revision 0 filesystems\n"
-msgstr ""
-"У файлових системах модифікації 0 підтримки розріджених суперблоків не "
-"передбачено\n"
+msgstr "У файлових системах модифікації 0 підтримки розріджених суперблоків не передбачено\n"
 
 #: misc/mke2fs.c:2181
 msgid "Journals not supported with revision 0 filesystems\n"
@@ -6008,12 +5757,8 @@ msgid "invalid reserved blocks percent - %lf"
 msgstr "некоректний відсоток зарезервованих блоків - %lf"
 
 #: misc/mke2fs.c:2211
-msgid ""
-"Extents MUST be enabled for a 64-bit filesystem.  Pass -O extents to "
-"rectify.\n"
-msgstr ""
-"Для 64-бітової файлової системи слід увімкнути розширення. Передайте "
-"програмі -O extents, щоб виправити це.\n"
+msgid "Extents MUST be enabled for a 64-bit filesystem.  Pass -O extents to rectify.\n"
+msgstr "Для 64-бітової файлової системи слід увімкнути розширення. Передайте програмі -O extents, щоб виправити це.\n"
 
 #: misc/mke2fs.c:2231
 msgid "The cluster size may not be smaller than the block size.\n"
@@ -6035,11 +5780,8 @@ msgstr "вирівнювання %s зсунуто на %lu байтів.\n"
 
 #: misc/mke2fs.c:2262
 #, c-format
-msgid ""
-"This may result in very poor performance, (re)-partitioning suggested.\n"
-msgstr ""
-"Це може призвести до значної втрати швидкодії. Вам варто виконати повторний "
-"розподіл пристрою на розділи.\n"
+msgid "This may result in very poor performance, (re)-partitioning suggested.\n"
+msgstr "Це може призвести до значної втрати швидкодії. Вам варто виконати повторний розподіл пристрою на розділи.\n"
 
 #: misc/mke2fs.c:2283
 #, c-format
@@ -6048,20 +5790,13 @@ msgstr "%d-байтові блоки є надто великими для си�
 
 #: misc/mke2fs.c:2287
 #, c-format
-msgid ""
-"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
-msgstr ""
-"Попередження: %d-байтові блоки є надто великими для системи (макс. - %d), "
-"примусово продовжуємо роботу\n"
+msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgstr "Попередження: %d-байтові блоки є надто великими для системи (макс. - %d), примусово продовжуємо роботу\n"
 
 #: misc/mke2fs.c:2295
 #, c-format
-msgid ""
-"Suggestion: Use Linux kernel >= 3.18 for improved stability of the metadata "
-"and journal checksum features.\n"
-msgstr ""
-"Пропозиція: скористайтеся ядром Linux >= 3.18, щоб поліпшити стабільність "
-"роботи з метаданими та можливості з обчислення контрольних сум журналу.\n"
+msgid "Suggestion: Use Linux kernel >= 3.18 for improved stability of the metadata and journal checksum features.\n"
+msgstr "Пропозиція: скористайтеся ядром Linux >= 3.18, щоб поліпшити стабільність роботи з метаданими та можливості з обчислення контрольних сум журналу.\n"
 
 #: misc/mke2fs.c:2350
 #, c-format
@@ -6079,10 +5814,9 @@ msgstr ""
 "\n"
 
 #: misc/mke2fs.c:2365
-#, fuzzy, c-format
+#, c-format
 msgid "%d byte inodes are too small for project quota"
-msgstr ""
-"inode із %d байтів є надто малим для квот проектів; вкажіть більший розмір"
+msgstr "inode із %d байтів є надто малим для квот проектів"
 
 #: misc/mke2fs.c:2387
 msgid "Can't support bigalloc feature without extents feature"
@@ -6110,9 +5844,7 @@ msgstr ""
 
 #: misc/mke2fs.c:2414
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
-msgstr ""
-"у нерозріджених файлових системах підтримки інтерактивної зміни розмірів "
-"блоків не передбачено"
+msgstr "у нерозріджених файлових системах підтримки інтерактивної зміни розмірів блоків не передбачено"
 
 #: misc/mke2fs.c:2423
 msgid "blocks per group count out of range"
@@ -6120,8 +5852,7 @@ msgstr "кількість блоків на групу лежить за меж
 
 #: misc/mke2fs.c:2445
 msgid "Flex_bg feature not enabled, so flex_bg size may not be specified"
-msgstr ""
-"Можливість flex_bg не увімкнено, отже, розмір flex_bg не можна вказувати"
+msgstr "Можливість flex_bg не увімкнено, отже, розмір flex_bg не можна вказувати"
 
 #: misc/mke2fs.c:2457
 #, c-format
@@ -6131,8 +5862,7 @@ msgstr "некоректний розмір inode %d (мін. %d/макс. %d)"
 #: misc/mke2fs.c:2472
 #, c-format
 msgid "%d byte inodes are too small for inline data; specify larger size"
-msgstr ""
-"inode із %d байтів є надто малим для вбудованих даних; вкажіть більший розмір"
+msgstr "inode із %d байтів є надто малим для вбудованих даних; вкажіть більший розмір"
 
 #: misc/mke2fs.c:2487
 #, c-format
@@ -6152,8 +5882,7 @@ msgid ""
 "\tor lower inode count (-N).\n"
 msgstr ""
 "Значення inode_size (%u) * inodes_count (%u) є надто великим\n"
-"\tдля файлової системи з %llu блоків, вкажіть більше значення inode_ratio (-"
-"i)\n"
+"\tдля файлової системи з %llu блоків, вкажіть більше значення inode_ratio (-i)\n"
 "\tабо зменшіть кількість inode (-N).\n"
 
 #: misc/mke2fs.c:2695
@@ -6178,43 +5907,28 @@ msgid "bad error behavior in profile - %s"
 msgstr "помилкова поведінка у відповідь на помилки у профілі — %s"
 
 #: misc/mke2fs.c:2877
-#, fuzzy
 msgid "in malloc for android_sparse_params"
-msgstr "у malloc для bad_blocks_filename"
+msgstr "у malloc для android_sparse_params"
 
 #: misc/mke2fs.c:2890
 msgid "while setting up superblock"
 msgstr "під час налаштовування суперблоку"
 
 #: misc/mke2fs.c:2906
-msgid ""
-"Extents are not enabled.  The file extent tree can be checksummed, whereas "
-"block maps cannot.  Not enabling extents reduces the coverage of metadata "
-"checksumming.  Pass -O extents to rectify.\n"
-msgstr ""
-"Розширення не увімкнено. Для ієрархії розширень файлів можна обчислювати "
-"контрольні суми, а для карт блоків — ні. Вимикання розширень зменшує "
-"покриття контрольних сум метаданих. Передайте параметр -O extents, щоб "
-"виправити.\n"
+msgid "Extents are not enabled.  The file extent tree can be checksummed, whereas block maps cannot.  Not enabling extents reduces the coverage of metadata checksumming.  Pass -O extents to rectify.\n"
+msgstr "Розширення не увімкнено. Для ієрархії розширень файлів можна обчислювати контрольні суми, а для карт блоків — ні. Вимикання розширень зменшує покриття контрольних сум метаданих. Передайте параметр -O extents, щоб виправити.\n"
 
 #: misc/mke2fs.c:2913
-msgid ""
-"64-bit filesystem support is not enabled.  The larger fields afforded by "
-"this feature enable full-strength checksumming.  Pass -O 64bit to rectify.\n"
-msgstr ""
-"Не увімкнено підтримку 64-бітових файлових систем. Збільшення розміру полів, "
-"які надаються цією можливістю, уможливлює повноцінне обчислення контрольних "
-"сум. Передайте параметр -O 64bit, щоб виправити цю помилку.\n"
+msgid "64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Pass -O 64bit to rectify.\n"
+msgstr "Не увімкнено підтримку 64-бітових файлових систем. Збільшення розміру полів, які надаються цією можливістю, уможливлює повноцінне обчислення контрольних сум. Передайте параметр -O 64bit, щоб виправити цю помилку.\n"
 
 #: misc/mke2fs.c:2921
-#, fuzzy
 msgid "The metadata_csum_seed feature requires the metadata_csum feature.\n"
 msgstr "Можливість metadata_csum_seed потребує можливості metadata_csum.\n"
 
 #: misc/mke2fs.c:2945
 msgid "Discard succeeded and will return 0s - skipping inode table wipe\n"
-msgstr ""
-"Успішно відкинуто, буде повернуто 0s - пропускаємо витирання таблиці inode\n"
+msgstr "Успішно відкинуто, буде повернуто 0s - пропускаємо витирання таблиці inode\n"
 
 #: misc/mke2fs.c:3044
 #, c-format
@@ -6302,9 +6016,7 @@ msgstr ""
 #: misc/mke2fs.c:3262
 #, c-format
 msgid "Multiple mount protection is enabled with update interval %d seconds.\n"
-msgstr ""
-"Увімкнено захист від повторного монтування з інтервалом оновлення у %d "
-"секунд.\n"
+msgstr "Увімкнено захист від повторного монтування з інтервалом оновлення у %d секунд.\n"
 
 #: misc/mke2fs.c:3278
 msgid "Copying files into the device: "
@@ -6341,10 +6053,8 @@ msgstr "під час занулення блоку %llu для великого
 
 #: misc/mk_hugefiles.c:514
 #, c-format
-msgid ""
-"Partition offset of %llu (%uk) blocks not compatible with cluster size %u.\n"
-msgstr ""
-"Зміщення розділу у %llu (%uk) блоків є несумісним із розміром кластера, %u.\n"
+msgid "Partition offset of %llu (%uk) blocks not compatible with cluster size %u.\n"
+msgstr "Зміщення розділу у %llu (%uk) блоків є несумісним із розміром кластера, %u.\n"
 
 #: misc/mk_hugefiles.c:581
 msgid "Huge files will be zero'ed\n"
@@ -6409,6 +6119,8 @@ msgid ""
 "\n"
 "This operation requires a freshly checked filesystem.\n"
 msgstr ""
+"\n"
+"Ця операція потребує щойно перевіреної файлової системи.\n"
 
 #: misc/tune2fs.c:121
 msgid "Please run e2fsck -f on the filesystem.\n"
@@ -6419,7 +6131,7 @@ msgid "Please run e2fsck -fD on the filesystem.\n"
 msgstr "Будь ласка, запустіть e2fsck -fD для файлової системи.\n"
 
 #: misc/tune2fs.c:136
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-c max_mounts_count] [-e errors_behavior] [-f] [-g group]\n"
 "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
@@ -6430,12 +6142,11 @@ msgid ""
 "\t[-E extended-option[,...]] [-T last_check_time] [-U UUID]\n"
 "\t[-I new_inode_size] [-z undo_file] device\n"
 msgstr ""
-"Користування: %s [-c макс_к-ть_монтувань] [-e повед_для_помилок] [-f] [-g "
-"група]\n"
+"Користування: %s [-c макс_к-ть_монтувань] [-e повед_для_помилок] [-f] [-g група]\n"
 "\t[-i інтервал[d|m|w]] [-j] [-J параметри_журналу] [-l]\n"
 "\t[-m відс_зарез_блоків] [-o [^]параметри_монтування[,...]]\n"
-"[-p інтервал_оновлення_mmp] [-r к-ть_зарез_блоків] [-u користувач]\n"
-"\t[-C к-ть_монтувань] [-L мітка_тому] [-M ост_змонт_каталог]\n"
+"\t[-r к-ть_зарез_блоків] [-u користувач] [-C к-ть_монтувань]\n"
+"\t[-L мітка_тому] [-M ост_змонт_каталог]\n"
 "\t[-O [^]можливість[,...]] [-Q параметри_квотування]\n"
 "\t[-E додатковий_параметр[,...]] [-T час_ост_перевірки] [-U UUID]\n"
 "\t[ -I новий_розмір_inode] [-z файл скасування дій] пристрій\n"
@@ -6521,14 +6232,12 @@ msgstr ""
 #: misc/tune2fs.c:1121
 #, c-format
 msgid "Clearing filesystem feature '%s' not supported.\n"
-msgstr ""
-"Підтримки спорожнення можливості файлової системи «%s» не передбачено.\n"
+msgstr "Підтримки спорожнення можливості файлової системи «%s» не передбачено.\n"
 
 #: misc/tune2fs.c:1127
 #, c-format
 msgid "Setting filesystem feature '%s' not supported.\n"
-msgstr ""
-"Підтримки встановлення можливості файлової системи «%s» не передбачено.\n"
+msgstr "Підтримки встановлення можливості файлової системи «%s» не передбачено.\n"
 
 #: misc/tune2fs.c:1136
 msgid ""
@@ -6567,9 +6276,7 @@ msgstr ""
 #: misc/tune2fs.c:1193
 #, c-format
 msgid "Multiple mount protection has been enabled with update interval %ds.\n"
-msgstr ""
-"Увімкнено захист від повторного монтування з інтервалом оновлення у %d "
-"секунд.\n"
+msgstr "Увімкнено захист від повторного монтування з інтервалом оновлення у %d секунд.\n"
 
 #: misc/tune2fs.c:1202
 msgid ""
@@ -6586,8 +6293,7 @@ msgstr "Помилка під час читання бітових карт\n"
 #: misc/tune2fs.c:1219
 #, c-format
 msgid "Magic number in MMP block does not match. expected: %x, actual: %x\n"
-msgstr ""
-"Контрольна сума у блоці MMP є невідповідною. Мало бути: %x, маємо: %x\n"
+msgstr "Контрольна сума у блоці MMP є невідповідною. Мало бути: %x, маємо: %x\n"
 
 #: misc/tune2fs.c:1224
 msgid "while reading MMP block."
@@ -6618,25 +6324,12 @@ msgid "Cannot enable metadata_csum on a mounted filesystem!\n"
 msgstr "Не можна вмикати metadata_csum для змонтованої файлової системи!\n"
 
 #: misc/tune2fs.c:1286
-msgid ""
-"Extents are not enabled.  The file extent tree can be checksummed, whereas "
-"block maps cannot.  Not enabling extents reduces the coverage of metadata "
-"checksumming.  Re-run with -O extent to rectify.\n"
-msgstr ""
-"Розширення не увімкнено. Для ієрархії розширень файлів можна обчислювати "
-"контрольні суми, а для карт блоків — ні. Вимикання розширень зменшує "
-"покриття контрольних сум метаданих. Повторно запустіть із -O extent, щоб "
-"виправити.\n"
+msgid "Extents are not enabled.  The file extent tree can be checksummed, whereas block maps cannot.  Not enabling extents reduces the coverage of metadata checksumming.  Re-run with -O extent to rectify.\n"
+msgstr "Розширення не увімкнено. Для ієрархії розширень файлів можна обчислювати контрольні суми, а для карт блоків — ні. Вимикання розширень зменшує покриття контрольних сум метаданих. Повторно запустіть із -O extent, щоб виправити.\n"
 
 #: misc/tune2fs.c:1293
-msgid ""
-"64-bit filesystem support is not enabled.  The larger fields afforded by "
-"this feature enable full-strength checksumming.  Run resize2fs -b to "
-"rectify.\n"
-msgstr ""
-"Не увімкнено підтримку 64-бітових файлових систем. Збільшення розміру полів, "
-"які надаються цією можливістю, уможливлює повноцінне обчислення контрольних "
-"сум. Запустіть resize2fs -b, щоб виправити цю помилку.\n"
+msgid "64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Run resize2fs -b to rectify.\n"
+msgstr "Не увімкнено підтримку 64-бітових файлових систем. Збільшення розміру полів, які надаються цією можливістю, уможливлює повноцінне обчислення контрольних сум. Запустіть resize2fs -b, щоб виправити цю помилку.\n"
 
 #: misc/tune2fs.c:1319
 msgid "Disabling checksums could take some time."
@@ -6659,7 +6352,7 @@ msgstr "Не можна вимикати 64-бітовий режим, доки 
 #: misc/tune2fs.c:1424
 #, c-format
 msgid "Cannot enable project feature; inode size too small.\n"
-msgstr ""
+msgstr "Не вдалося увімкнути можливість проекту; розмір inode є надто малим.\n"
 
 #: misc/tune2fs.c:1445
 msgid ""
@@ -6679,18 +6372,15 @@ msgstr ""
 
 #: misc/tune2fs.c:1481
 msgid ""
-"UUID has changed since enabling metadata_csum.  Filesystem must be "
-"unmounted \n"
+"UUID has changed since enabling metadata_csum.  Filesystem must be unmounted \n"
 "to safely rewrite all metadata to match the new UUID.\n"
 msgstr ""
-"З часу вмикання metadata_csum змінилося значення UUID. Файлову систему слід "
-"демонтувати, \n"
+"З часу вмикання metadata_csum змінилося значення UUID. Файлову систему слід демонтувати, \n"
 "щоб безпечно перезаписати усі метадані, що відповідають новому UUID.\n"
 
 #: misc/tune2fs.c:1487
-#, fuzzy
 msgid "Recalculating checksums could take some time."
-msgstr "Вмикання контрольних сум потребуватиме певного часу."
+msgstr "Повторне обчислення контрольних сум потребуватиме певного часу."
 
 #: misc/tune2fs.c:1529
 msgid "The filesystem already has a journal.\n"
@@ -6730,7 +6420,7 @@ msgstr ""
 #: misc/tune2fs.c:1619
 #, c-format
 msgid "Cannot enable project quota; inode size too small.\n"
-msgstr ""
+msgstr "Не вдалося увімкнути квоту проекту; розмір inode є надто малим.\n"
 
 #: misc/tune2fs.c:1632
 msgid "while initializing quota context in support library"
@@ -6756,8 +6446,7 @@ msgid ""
 "\n"
 "Bad quota options specified.\n"
 "\n"
-"Following valid quota options are available (pass by separating with "
-"comma):\n"
+"Following valid quota options are available (pass by separating with comma):\n"
 "\t[^]usr[quota]\n"
 "\t[^]grp[quota]\n"
 "\t[^]prj[quota]\n"
@@ -6767,8 +6456,7 @@ msgstr ""
 "\n"
 "Вказано некоректні параметри квотування.\n"
 "\n"
-"Можна використовувати такі коректні параметри квотування (при передаванні "
-"слід відокремлювати комами):\n"
+"Можна використовувати такі коректні параметри квотування (при передаванні слід відокремлювати комами):\n"
 "\t[^]usr[quota]\n"
 "\t[^]grp[quota]\n"
 "\t[^]prj[quota]\n"
@@ -6836,17 +6524,10 @@ msgstr "Надто велике значення mmp_update_interval: %lu\n"
 #: misc/tune2fs.c:2113
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
-msgid_plural ""
-"Setting multiple mount protection update interval to %lu seconds\n"
-msgstr[0] ""
-"Встановлення інтервалу оновлення захисту від повторного монтування у %lu "
-"секунду\n"
-msgstr[1] ""
-"Встановлення інтервалу оновлення захисту від повторного монтування у %lu "
-"секунди\n"
-msgstr[2] ""
-"Встановлення інтервалу оновлення захисту від повторного монтування у %lu "
-"секунд\n"
+msgid_plural "Setting multiple mount protection update interval to %lu seconds\n"
+msgstr[0] "Встановлення інтервалу оновлення захисту від повторного монтування у %lu секунду\n"
+msgstr[1] "Встановлення інтервалу оновлення захисту від повторного монтування у %lu секунди\n"
+msgstr[2] "Встановлення інтервалу оновлення захисту від повторного монтування у %lu секунд\n"
 
 #: misc/tune2fs.c:2136
 #, c-format
@@ -6869,7 +6550,6 @@ msgid "Setting default hash algorithm to %s (%d)\n"
 msgstr "Встановлюємо типовий алгоритм хешування %s (%d)\n"
 
 #: misc/tune2fs.c:2191
-#, fuzzy
 msgid ""
 "\n"
 "Bad options specified.\n"
@@ -6897,6 +6577,7 @@ msgstr ""
 "\tclear_mmp\n"
 "\thash_alg=<алгоритм хешування>\n"
 "\tmount_opts=<розширені типові параметри монтування>\n"
+"\tmmp_update_interval=<інтервал оновлення mmp у секундах>\n"
 "\tstride=<розмір фрагмента RAID на окремому диску у блоках>\n"
 "\tstripe_width=<страйд RAID*диски даних у блоках>\n"
 "\ttest_fs\n"
@@ -6916,8 +6597,7 @@ msgstr "блоки, які буде пересунуто"
 
 #: misc/tune2fs.c:2686
 msgid "Failed to allocate block bitmap when increasing inode size\n"
-msgstr ""
-"Не вдалося розмістити бітову карту блоків під час збільшення розмірів inode\n"
+msgstr "Не вдалося розмістити бітову карту блоків під час збільшення розмірів inode\n"
 
 #: misc/tune2fs.c:2692
 msgid "Not enough space to increase inode size \n"
@@ -6941,8 +6621,7 @@ msgid ""
 "MMP block magic is bad. Try to fix it by running:\n"
 "'e2fsck -f %s'\n"
 msgstr ""
-"Контрольна сума блоку MMP вказує на пошкодженість. Спробуйте виправити це за "
-"допомогою команди:\n"
+"Контрольна сума блоку MMP вказує на пошкодженість. Спробуйте виправити це за допомогою команди:\n"
 "«e2fsck -f %s»\n"
 
 #: misc/tune2fs.c:2953
@@ -6977,13 +6656,11 @@ msgid ""
 "then rerun this command.  Otherwise, any changes made may be overwritten\n"
 "by journal recovery.\n"
 msgstr ""
-"Попередження: журнал містить сліди пошкодження. Вам варто відтворити журнал "
-"за допомогою\n"
+"Попередження: журнал містить сліди пошкодження. Вам варто відтворити журнал за допомогою\n"
 "\n"
 "\te2fsck -E journal_only %s\n"
 "\n"
-"а потім повторно віддати цю команду. Якщо ви цього не зробите, внесені нею "
-"зміни\n"
+"а потім повторно віддати цю команду. Якщо ви цього не зробите, внесені нею зміни\n"
 "може бути перезаписано після відновлення журналу.\n"
 
 #: misc/tune2fs.c:3043
@@ -7086,29 +6763,20 @@ msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr "Помилка у використанні clear_mmp. Слід використовувати з -f\n"
 
 #: misc/tune2fs.c:3196
-msgid ""
-"The quota feature may only be changed when the filesystem is unmounted.\n"
-msgstr ""
-"Змінювати значення цієї можливості обмеження квоти можна, лише якщо файлову "
-"систему демонтовано.\n"
+msgid "The quota feature may only be changed when the filesystem is unmounted.\n"
+msgstr "Змінювати значення цієї можливості обмеження квоти можна, лише якщо файлову систему демонтовано.\n"
 
 #: misc/tune2fs.c:3220
 msgid "The UUID may only be changed when the filesystem is unmounted.\n"
 msgstr "Змінювати UUID можна, лише якщо файлову систему демонтовано.\n"
 
 #: misc/tune2fs.c:3223
-msgid ""
-"If you only use kernels newer than v4.4, run 'tune2fs -O metadata_csum_seed' "
-"and re-run this command.\n"
-msgstr ""
-"Якщо ви користуєтеся лише ядрами, новішими за версію 4.4, запустіть «tune2fs "
-"-O metadata_csum_seed», потім знову віддайте цю команду.\n"
+msgid "If you only use kernels newer than v4.4, run 'tune2fs -O metadata_csum_seed' and re-run this command.\n"
+msgstr "Якщо ви користуєтеся лише ядрами, новішими за версію 4.4, запустіть «tune2fs -O metadata_csum_seed», потім знову віддайте цю команду.\n"
 
 #: misc/tune2fs.c:3232
 msgid "Setting UUID on a checksummed filesystem could take some time."
-msgstr ""
-"Встановлення UUID на файловій системі із контрольними сумами може бути "
-"доволі тривалим."
+msgstr "Встановлення UUID на файловій системі із контрольними сумами може бути доволі тривалим."
 
 #: misc/tune2fs.c:3257
 msgid "Invalid UUID format\n"
@@ -7127,8 +6795,7 @@ msgid ""
 "Changing the inode size not supported for filesystems with the flex_bg\n"
 "feature enabled.\n"
 msgstr ""
-"Підтримки зміни розмірів inode size для файлових систем з увімкненою "
-"можливістю flex_bg\n"
+"Підтримки зміни розмірів inode size для файлових систем з увімкненою можливістю flex_bg\n"
 "не передбачено.\n"
 
 #: misc/tune2fs.c:3324
@@ -7153,15 +6820,14 @@ msgstr "Встановлюємо ширину stripe %d\n"
 #: misc/tune2fs.c:3354
 #, c-format
 msgid "Setting extended default mount options to '%s'\n"
-msgstr ""
-"Встановлюємо для розширених типових параметрів монтування значення «%s»\n"
+msgstr "Встановлюємо для розширених типових параметрів монтування значення «%s»\n"
 
 #: misc/util.c:100
 msgid "<proceeding>\n"
 msgstr "<продовження>\n"
 
 #: misc/util.c:104
-#, fuzzy, c-format
+#, c-format
 msgid "Proceed anyway (or wait %d seconds to proceed) ? (y,N) "
 msgstr "Продовжувати (чи зачекати %d секунд)? (y - так, N - ні) "
 
@@ -7171,8 +6837,7 @@ msgstr "Продовжувати? (y - так, N - ні) "
 
 #: misc/util.c:133
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
-msgstr ""
-"Примусове виконання mke2fs. Сподіваємося, що /etc/mtab містить помилки.\n"
+msgstr "Примусове виконання mke2fs. Сподіваємося, що /etc/mtab містить помилки.\n"
 
 #: misc/util.c:138
 #, c-format
@@ -7223,8 +6888,7 @@ msgstr ""
 "\tdevice=<пристрій журналювання>\n"
 "\tlocation=<розташування журналу>\n"
 "\n"
-"Розмір журналу має належати діапазону від 1024 до 10240000 блоків файлової "
-"системи.\n"
+"Розмір журналу має належати діапазону від 1024 до 10240000 блоків файлової системи.\n"
 "\n"
 
 #: misc/util.c:244
@@ -7268,8 +6932,7 @@ msgstr ""
 #: misc/uuidd.c:49
 #, c-format
 msgid "Usage: %s [-d] [-p pidfile] [-s socketpath] [-T timeout]\n"
-msgstr ""
-"Користування: %s [-d] [-p файл_pid] [-s шлях_до_сокета] [-T час_очікування]\n"
+msgstr "Користування: %s [-d] [-p файл_pid] [-s шлях_до_сокета] [-T час_очікування]\n"
 
 #: misc/uuidd.c:51
 #, c-format
@@ -7411,14 +7074,12 @@ msgid "#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"
 msgstr "№\tНом=%llu, Розм=%llu, Курсор=%llu, Упорядк=%llu\n"
 
 #: resize/main.c:49
-#, fuzzy, c-format
+#, c-format
 msgid ""
-"Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] [-p] device [-b|-s|new_size] "
-"[-S RAID-stride] [-z undo_file]\n"
+"Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] [-p] device [-b|-s|new_size] [-S RAID-stride] [-z undo_file]\n"
 "\n"
 msgstr ""
-"Користування: %s [-d прапорці_діагностики] [-f] [-F] [-M] [-P] [-p] пристрій "
-"[-b|-s|новий розмір] [-z файл скасування дій]\n"
+"Користування: %s [-d прапорці_діагностики] [-f] [-F] [-M] [-P] [-p] пристрій [-b|-s|новий розмір] [-S RAID-stride] [-z файл скасування дій]\n"
 "\n"
 
 #: resize/main.c:73
@@ -7494,9 +7155,7 @@ msgstr "Некоректний новий розмір: %s\n"
 
 #: resize/main.c:526
 msgid "New size too large to be expressed in 32 bits\n"
-msgstr ""
-"Новий розмір є надто великим для представлення його у форматі 32-бітового "
-"числа\n"
+msgstr "Новий розмір є надто великим для представлення його у форматі 32-бітового числа\n"
 
 #: resize/main.c:534
 #, c-format
@@ -7521,34 +7180,22 @@ msgstr ""
 #: resize/main.c:571
 #, c-format
 msgid "Cannot set and unset 64bit feature.\n"
-msgstr ""
-"Не можна встановлювати або скасовувати встановлення можливості 64-бітового "
-"режиму.\n"
+msgstr "Не можна встановлювати або скасовувати встановлення можливості 64-бітового режиму.\n"
 
 #: resize/main.c:575
 #, c-format
-msgid ""
-"Cannot change the 64bit feature on a filesystem that is larger than 2^32 "
-"blocks.\n"
-msgstr ""
-"Не можна змінювати значення увімкненості можливості 64bit на файловій "
-"системі, розмір якої перевищує 2^32 блоків.\n"
+msgid "Cannot change the 64bit feature on a filesystem that is larger than 2^32 blocks.\n"
+msgstr "Не можна змінювати значення увімкненості можливості 64bit на файловій системі, розмір якої перевищує 2^32 блоків.\n"
 
 #: resize/main.c:581
 #, c-format
 msgid "Cannot change the 64bit feature while the filesystem is mounted.\n"
-msgstr ""
-"Не можна змінювати параметри можливості 64-бітового режиму, доки файлову "
-"систему змонтовано.\n"
+msgstr "Не можна змінювати параметри можливості 64-бітового режиму, доки файлову систему змонтовано.\n"
 
 #: resize/main.c:587
 #, c-format
-msgid ""
-"Please enable the extents feature with tune2fs before enabling the 64bit "
-"feature.\n"
-msgstr ""
-"Будь ласка, увімкніть можливість розширень (extents) у tune2fs до вмикання "
-"можливості 64-бітового режиму (64bit).\n"
+msgid "Please enable the extents feature with tune2fs before enabling the 64bit feature.\n"
+msgstr "Будь ласка, увімкніть можливість розширень (extents) у tune2fs до вмикання можливості 64-бітового режиму (64bit).\n"
 
 #: resize/main.c:593
 #, c-format
@@ -7556,8 +7203,7 @@ msgid ""
 "The filesystem is already %llu (%dk) blocks long.  Nothing to do!\n"
 "\n"
 msgstr ""
-"Файлова система вже складається з %llu (%dК) блоків. Потреби у додаткових "
-"діях немає.\n"
+"Файлова система вже складається з %llu (%dК) блоків. Потреби у додаткових діях немає.\n"
 "\n"
 
 #: resize/main.c:600
@@ -7615,15 +7261,12 @@ msgstr "під час спроби обрізати %s"
 
 #: resize/online.c:81
 msgid "kernel does not support online resize with sparse_super2"
-msgstr ""
-"у ядрі не передбачено інтерактивної зміни розмірів за допомогою sparse_super2"
+msgstr "у ядрі не передбачено інтерактивної зміни розмірів за допомогою sparse_super2"
 
 #: resize/online.c:86
 #, c-format
 msgid "Filesystem at %s is mounted on %s; on-line resizing required\n"
-msgstr ""
-"Файлову систему у %s змонтовано до %s; надіслано запит щодо інтерактивної "
-"зміни розмірів\n"
+msgstr "Файлову систему у %s змонтовано до %s; надіслано запит щодо інтерактивної зміни розмірів\n"
 
 #: resize/online.c:90
 msgid "On-line shrinking not supported"
@@ -7631,8 +7274,7 @@ msgstr "Підтримки інтерактивного зменшення ро�
 
 #: resize/online.c:114
 msgid "Filesystem does not support online resizing"
-msgstr ""
-"У файловій системі не передбачено підтримки інтерактивної зміни розмірів"
+msgstr "У файловій системі не передбачено підтримки інтерактивної зміни розмірів"
 
 #: resize/online.c:122
 msgid "Not enough reserved gdt blocks for resizing"
@@ -7640,9 +7282,7 @@ msgstr "Недостатньо зарезервованих блоків gdt д�
 
 #: resize/online.c:129
 msgid "Kernel does not support resizing a file system this large"
-msgstr ""
-"У ядрі операційної системи не передбачено підтримки зміни розмірів таких "
-"великих файлових систем"
+msgstr "У ядрі операційної системи не передбачено підтримки зміни розмірів таких великих файлових систем"
 
 #: resize/online.c:137
 #, c-format
@@ -7664,9 +7304,7 @@ msgstr "Під час перевірки можливості інтеракти
 
 #: resize/online.c:181
 msgid "Kernel does not support online resizing"
-msgstr ""
-"У ядрі операційної системи не передбачено підтримки інтерактивної зміни "
-"розмірів"
+msgstr "У ядрі операційної системи не передбачено підтримки інтерактивної зміни розмірів"
 
 #: resize/online.c:220
 #, c-format
@@ -7684,12 +7322,8 @@ msgstr "Під час спроби додати групу %d"
 
 #: resize/online.c:295
 #, c-format
-msgid ""
-"Filesystem at %s is mounted on %s, and on-line resizing is not supported on "
-"this system.\n"
-msgstr ""
-"Файлову систему у %s змонтовано до %s, підтримки інтерактивної зміни "
-"розмірів для цієї файлової системи не передбачено.\n"
+msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
+msgstr "Файлову систему у %s змонтовано до %s, підтримки інтерактивної зміни розмірів для цієї файлової системи не передбачено.\n"
 
 #: resize/resize2fs.c:759
 #, c-format
@@ -7714,17 +7348,15 @@ msgstr "Такого не повинно було статися! Немає sb 
 
 #: resize/resize2fs.c:2701
 msgid "Should never happen!  Unexpected old_desc in super_sparse bg?\n"
-msgstr ""
-"Такого не повинно було статися! Неочікуване old_desc у super_sparse bg?\n"
+msgstr "Такого не повинно було статися! Неочікуване old_desc у super_sparse bg?\n"
 
 #: resize/resize2fs.c:2774
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Такого не повинно було статися: inode зміни розмірів пошкоджено!\n"
 
 #: lib/ext2fs/ext2_err.c:11
-#, fuzzy
 msgid "EXT2FS Library version 1.44.0-rc1"
-msgstr "Бібліотека EXT2FS версії 1.43.5"
+msgstr "Бібліотека EXT2FS версії 1.44.0-rc1"
 
 #: lib/ext2fs/ext2_err.c:12
 msgid "Wrong magic number for ext2_filsys structure"
@@ -7772,8 +7404,7 @@ msgstr "Помилкове значення контрольної суми дл
 
 #: lib/ext2fs/ext2_err.c:23
 msgid "Wrong magic number for directory block list structure"
-msgstr ""
-"Помилкове значення контрольної суми для структури списку блоків каталогів"
+msgstr "Помилкове значення контрольної суми для структури списку блоків каталогів"
 
 #: lib/ext2fs/ext2_err.c:24
 msgid "Wrong magic number for icount structure"
@@ -7781,8 +7412,7 @@ msgstr "Помилкова контрольна сума для структур
 
 #: lib/ext2fs/ext2_err.c:25
 msgid "Wrong magic number for Powerquest io_channel structure"
-msgstr ""
-"Помилкове значення контрольної суми для структури Powerquest io_channel"
+msgstr "Помилкове значення контрольної суми для структури Powerquest io_channel"
 
 #: lib/ext2fs/ext2_err.c:26
 msgid "Wrong magic number for ext2 file structure"
@@ -7870,15 +7500,11 @@ msgstr "Каталог EXT2 пошкоджено"
 
 #: lib/ext2fs/ext2_err.c:47
 msgid "Attempt to read block from filesystem resulted in short read"
-msgstr ""
-"Спроба прочитати блок з файлової системи призвела до читання недостатньої "
-"кількості даних"
+msgstr "Спроба прочитати блок з файлової системи призвела до читання недостатньої кількості даних"
 
 #: lib/ext2fs/ext2_err.c:48
 msgid "Attempt to write block to filesystem resulted in short write"
-msgstr ""
-"Спроба записати блок до файлової системи призвела до недостатності обсягу "
-"даних"
+msgstr "Спроба записати блок до файлової системи призвела до недостатності обсягу даних"
 
 #: lib/ext2fs/ext2_err.c:49
 msgid "No free space in the directory"
@@ -7974,18 +7600,15 @@ msgstr "Суперблок ext2 пошкоджено"
 
 #: lib/ext2fs/ext2_err.c:72
 msgid "Illegal generic bit number passed to ext2fs_mark_generic_bitmap"
-msgstr ""
-"ext2fs_mark_generic_bitmap передано некоректну загальну кількість бітів"
+msgstr "ext2fs_mark_generic_bitmap передано некоректну загальну кількість бітів"
 
 #: lib/ext2fs/ext2_err.c:73
 msgid "Illegal generic bit number passed to ext2fs_unmark_generic_bitmap"
-msgstr ""
-"ext2fs_unmark_generic_bitmap передано некоректну загальну кількість бітів"
+msgstr "ext2fs_unmark_generic_bitmap передано некоректну загальну кількість бітів"
 
 #: lib/ext2fs/ext2_err.c:74
 msgid "Illegal generic bit number passed to ext2fs_test_generic_bitmap"
-msgstr ""
-"ext2fs_test_generic_bitmap передано некоректну загальну кількість бітів"
+msgstr "ext2fs_test_generic_bitmap передано некоректну загальну кількість бітів"
 
 #: lib/ext2fs/ext2_err.c:75
 msgid "Too many symbolic links encountered."
@@ -8009,9 +7632,7 @@ msgstr "У файлової системи є непідтримувані вл�
 
 #: lib/ext2fs/ext2_err.c:80
 msgid "IO Channel failed to seek on read or write"
-msgstr ""
-"Не вдалося виконати позиціювання каналу введення-виведення під час читання "
-"чи запису"
+msgstr "Не вдалося виконати позиціювання каналу введення-виведення під час читання чи запису"
 
 #: lib/ext2fs/ext2_err.c:81
 msgid "Memory allocation failed"
@@ -8163,14 +7784,11 @@ msgstr "Список блокувань каталогів ext2fs є порож�
 
 #: lib/ext2fs/ext2_err.c:118
 msgid "Attempt to modify a block mapping via a read-only block iterator"
-msgstr ""
-"Спроба змінити прив’язку блоків за допомогою ітератора, придатного лише для "
-"читання"
+msgstr "Спроба змінити прив’язку блоків за допомогою ітератора, придатного лише для читання"
 
 #: lib/ext2fs/ext2_err.c:119
 msgid "Wrong magic number for ext4 extent saved path"
-msgstr ""
-"Помилкове значення контрольної суми для збереженого шляху розширення ext4"
+msgstr "Помилкове значення контрольної суми для збереженого шляху розширення ext4"
 
 #: lib/ext2fs/ext2_err.c:120
 msgid "Wrong magic number for 64-bit generic bitmap"
@@ -8282,14 +7900,11 @@ msgstr "У каналі введення-виведення не передба�
 
 #: lib/ext2fs/ext2_err.c:147
 msgid "Can't check if filesystem is mounted due to missing mtab file"
-msgstr ""
-"Не вдалося перевірити, чи змонтовано файлову систему, оскільки немає файла "
-"mtab"
+msgstr "Не вдалося перевірити, чи змонтовано файлову систему, оскільки немає файла mtab"
 
 #: lib/ext2fs/ext2_err.c:148
 msgid "Filesystem too large to use legacy bitmaps"
-msgstr ""
-"Файлова система є надто великою для використання застарілих бітових карт"
+msgstr "Файлова система є надто великою для використання застарілих бітових карт"
 
 #: lib/ext2fs/ext2_err.c:149
 msgid "MMP: invalid magic number"
@@ -8369,8 +7984,7 @@ msgstr "Контрольна сума бітової карти блоку не 
 
 #: lib/ext2fs/ext2_err.c:168
 msgid "Cannot iterate data blocks of an inode containing inline data"
-msgstr ""
-"Не можна здійснювати ітерацію блоками даних inode, що містить вбудовані дані"
+msgstr "Не можна здійснювати ітерацію блоками даних inode, що містить вбудовані дані"
 
 #: lib/ext2fs/ext2_err.c:169
 msgid "Extended attribute has an invalid name length"
@@ -8706,17 +8320,13 @@ msgstr "%s містить дані «%s»\n"
 #~ msgstr "Будь ласка, запустіть e2fsck для файлової системи.\n"
 
 #~ msgid "@i %i has @cion flag set on @f without @cion support.  "
-#~ msgstr ""
-#~ "для @i %i встановлено прапорець стискання у файловій системі, де "
-#~ "підтримки стискання не передбачено.  "
+#~ msgstr "для @i %i встановлено прапорець стискання у файловій системі, де підтримки стискання не передбачено.  "
 
 #~ msgid "@A @a @b %b.  "
 #~ msgstr "помилка під час спроби розміщення блоку розширеного атрибута %b.  "
 
 #~ msgid "%s: warning: compression support is experimental.\n"
-#~ msgstr ""
-#~ "%s: попередження: тестування підтримки стискання ще не завершено "
-#~ "(експериментальна можливість).\n"
+#~ msgstr "%s: попередження: тестування підтримки стискання ще не завершено (експериментальна можливість).\n"
 
 #~ msgid ""
 #~ "%s: e2fsck not compiled with HTREE support,\n"
@@ -8756,12 +8366,10 @@ msgstr "%s містить дані «%s»\n"
 #~ msgstr "Некоректний параметр quotatype: %s\n"
 
 #~ msgid "Couldn't allocate memory to parse quota options!\n"
-#~ msgstr ""
-#~ "Не вдалося отримати область пам’яті для обробки параметрів квотування!\n"
+#~ msgstr "Не вдалося отримати область пам’яті для обробки параметрів квотування!\n"
 
 #~ msgid "Couldn't allocate memory for tdb filename\n"
-#~ msgstr ""
-#~ "Не вдалося отримати область пам’яті для зберігання назви файла tdb\n"
+#~ msgstr "Не вдалося отримати область пам’яті для зберігання назви файла tdb\n"
 
 #~ msgid ""
 #~ "To undo the tune2fs operation please run the command\n"
@@ -8775,12 +8383,8 @@ msgstr "%s містить дані «%s»\n"
 #~ msgid "%s is entire device, not just one partition!\n"
 #~ msgstr "%s є цілим пристроєм, а не лише одним розділом!\n"
 
-#~ msgid ""
-#~ "\b\b\b\b\b\b\b\bCopied %llu / %llu blocks (%llu%%) in %s at %.2f MB/"
-#~ "s       \n"
-#~ msgstr ""
-#~ "\b\b\b\b\b\b\b\bСкопійовано %llu з %llu блоків (%llu%%) за %s зі "
-#~ "швидкістю %.2f МБ/с\n"
+#~ msgid "\b\b\b\b\b\b\b\bCopied %llu / %llu blocks (%llu%%) in %s at %.2f MB/s       \n"
+#~ msgstr "\b\b\b\b\b\b\b\bСкопійовано %llu з %llu блоків (%llu%%) за %s зі швидкістю %.2f МБ/с\n"
 
 #~ msgid ""
 #~ "\n"
