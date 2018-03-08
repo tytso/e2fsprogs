@@ -1296,6 +1296,40 @@ linux*)
 	;;
 esac
 dnl
+dnl Enable LTO for all packages
+dnl
+AC_ARG_ENABLE([lto],
+[  --enable-lto		  enable link time optimization],,
+enable_lto=probe)
+if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports LTO])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	LTO_FLAGS="-flto -ffat-lto-objects"
+	CFLAGS="$CFLAGS $LTO_FLAGS"
+	LDFLAGS="$LDFLAGS $LTO_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[lto_cflags=$LTO_FLAGS]
+		[lto_ldflags=$LTO_FLAGS]
+		[AC_PATH_PROG(gcc_ar, gcc-ar,,)]
+		[AC_PATH_PROG(gcc_ranlib, gcc-ranlib,,)],
+		[AC_MSG_RESULT([no])])
+	if test -x "$gcc_ar" && test -x "$gcc_ranlib"; then
+		have_lto=yes
+		AR="${gcc_ar}"
+		RANLIB="${gcc_ranlib}"
+	fi
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_lto)
+	AC_SUBST(lto_cflags)
+	AC_SUBST(lto_ldflags)
+fi
+if test "$enable_lto" = "yes" && test "$have_lto" != "yes"; then
+	AC_MSG_ERROR([LTO not supported by compiler.])
+fi
+dnl
 dnl OS-specific uncomment control
 dnl
 LINUX_CMT="#"

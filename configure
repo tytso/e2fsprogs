@@ -653,6 +653,11 @@ E2SCRUB_CMT
 UNIX_CMT
 CYGWIN_CMT
 LINUX_CMT
+lto_ldflags
+lto_cflags
+have_lto
+gcc_ranlib
+gcc_ar
 UNI_DIFF_OPTS
 SEM_INIT_LIB
 FUSE_CMT
@@ -903,6 +908,7 @@ with_libiconv_prefix
 with_included_gettext
 with_libintl_prefix
 enable_fuse2fs
+enable_lto
 with_multiarch
 with_udev_rules_dir
 with_crond_dir
@@ -1581,6 +1587,7 @@ Optional Features:
   --disable-threads       build without multithread safety
   --disable-rpath         do not hardcode runtime library paths
   --disable-fuse2fs	  do not build fuse2fs
+  --enable-lto		  enable link time optimization
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -13729,6 +13736,137 @@ $as_echo "#define HAVE_EXT2_IOCTLS 1" >>confdefs.h
 
 	;;
 esac
+# Check whether --enable-lto was given.
+if test "${enable_lto+set}" = set; then :
+  enableval=$enable_lto;
+else
+  enable_lto=probe
+fi
+
+if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if C compiler supports LTO" >&5
+$as_echo_n "checking if C compiler supports LTO... " >&6; }
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	LTO_FLAGS="-flto -ffat-lto-objects"
+	CFLAGS="$CFLAGS $LTO_FLAGS"
+	LDFLAGS="$LDFLAGS $LTO_FLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		lto_cflags=$LTO_FLAGS
+		lto_ldflags=$LTO_FLAGS
+		# Extract the first word of "gcc-ar", so it can be a program name with args.
+set dummy gcc-ar; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_gcc_ar+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $gcc_ar in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_gcc_ar="$gcc_ar" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_gcc_ar="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+gcc_ar=$ac_cv_path_gcc_ar
+if test -n "$gcc_ar"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_ar" >&5
+$as_echo "$gcc_ar" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+		# Extract the first word of "gcc-ranlib", so it can be a program name with args.
+set dummy gcc-ranlib; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_gcc_ranlib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $gcc_ranlib in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_gcc_ranlib="$gcc_ranlib" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_gcc_ranlib="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+gcc_ranlib=$ac_cv_path_gcc_ranlib
+if test -n "$gcc_ranlib"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_ranlib" >&5
+$as_echo "$gcc_ranlib" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	if test -x "$gcc_ar" && test -x "$gcc_ranlib"; then
+		have_lto=yes
+		AR="${gcc_ar}"
+		RANLIB="${gcc_ranlib}"
+	fi
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+
+
+
+fi
+if test "$enable_lto" = "yes" && test "$have_lto" != "yes"; then
+	as_fn_error $? "LTO not supported by compiler." "$LINENO" 5
+fi
 LINUX_CMT="#"
 CYGWIN_CMT="#"
 UNIX_CMT=
