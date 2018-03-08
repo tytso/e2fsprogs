@@ -81,8 +81,8 @@ SYSTEMD_SYSTEM_UNIT_DIR = @systemd_system_unit_dir@
 @ifNotGNUmake@ CHECK_CMD=true
 @ifNotGNUmake@ CPPCHECK_CMD=true
 
-SANITIZER_CFLAGS = @lto_cflags@ @ubsan_cflags@
-SANITIZER_LDFLAGS = @lto_ldflags@ @ubsan_ldflags@
+SANITIZER_CFLAGS = @lto_cflags@ @ubsan_cflags@ @addrsan_cflags@
+SANITIZER_LDFLAGS = @lto_ldflags@ @ubsan_ldflags@ @addrsan_ldflags@
 
 CC = @CC@
 BUILD_CC = @BUILD_CC@

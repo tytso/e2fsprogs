@@ -1358,6 +1358,34 @@ if test "$enable_ubsan" = "yes" && test "$have_ubsan" != "yes"; then
 	AC_MSG_ERROR([UBSAN not supported by compiler.])
 fi
 dnl
+dnl Enable ADDRSAN for all packages
+dnl
+AC_ARG_ENABLE([addrsan],
+[  --enable-addrsan	  enable address sanitizer],,
+enable_addrsan=no)
+if test "$enable_addrsan" = "yes" || test "$enable_addrsan" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports ADDRSAN])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	ADDRSAN_FLAGS="-fsanitize=address"
+	CFLAGS="$CFLAGS $ADDRSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $ADDRSAN_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[addrsan_cflags=$ADDRSAN_FLAGS]
+		[addrsan_ldflags=$ADDRSAN_FLAGS]
+		[have_addrsan=yes],
+		[AC_MSG_RESULT([no])])
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_addrsan)
+	AC_SUBST(addrsan_cflags)
+	AC_SUBST(addrsan_ldflags)
+fi
+if test "$enable_addrsan" = "yes" && test "$have_addrsan" != "yes"; then
+	AC_MSG_ERROR([ADDRSAN not supported by compiler.])
+fi
+dnl
 dnl OS-specific uncomment control
 dnl
 LINUX_CMT="#"
