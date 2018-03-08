@@ -653,6 +653,9 @@ E2SCRUB_CMT
 UNIX_CMT
 CYGWIN_CMT
 LINUX_CMT
+threadsan_ldflags
+threadsan_cflags
+have_threadsan
 addrsan_ldflags
 addrsan_cflags
 have_addrsan
@@ -917,6 +920,7 @@ enable_fuse2fs
 enable_lto
 enable_ubsan
 enable_addrsan
+enable_threadsan
 with_multiarch
 with_udev_rules_dir
 with_crond_dir
@@ -1598,6 +1602,7 @@ Optional Features:
   --enable-lto		  enable link time optimization
   --enable-ubsan	  enable undefined behavior sanitizer
   --enable-addrsan	  enable address sanitizer
+  --enable-threadsan	  enable thread sanitizer
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -13970,6 +13975,57 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 if test "$enable_addrsan" = "yes" && test "$have_addrsan" != "yes"; then
 	as_fn_error $? "ADDRSAN not supported by compiler." "$LINENO" 5
+fi
+# Check whether --enable-threadsan was given.
+if test "${enable_threadsan+set}" = set; then :
+  enableval=$enable_threadsan;
+else
+  enable_threadsan=no
+fi
+
+if test "$enable_threadsan" = "yes" || test "$enable_threadsan" = "probe"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if C compiler supports THREADSAN" >&5
+$as_echo_n "checking if C compiler supports THREADSAN... " >&6; }
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	THREADSAN_FLAGS="-fsanitize=thread"
+	CFLAGS="$CFLAGS $THREADSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $THREADSAN_FLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		threadsan_cflags=$THREADSAN_FLAGS
+		threadsan_ldflags=$THREADSAN_FLAGS
+		have_threadsan=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+
+
+
+fi
+if test "$enable_threadsan" = "yes" && test "$have_threadsan" != "yes"; then
+	as_fn_error $? "THREADSAN not supported by compiler." "$LINENO" 5
+fi
+if test "$have_threadsan" = "yes" && test "$have_addrsan" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ADDRSAN and THREADSAN are not known to work together." >&5
+$as_echo "$as_me: WARNING: ADDRSAN and THREADSAN are not known to work together." >&2;}
 fi
 LINUX_CMT="#"
 CYGWIN_CMT="#"

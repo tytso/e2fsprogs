@@ -1386,6 +1386,37 @@ if test "$enable_addrsan" = "yes" && test "$have_addrsan" != "yes"; then
 	AC_MSG_ERROR([ADDRSAN not supported by compiler.])
 fi
 dnl
+dnl Enable THREADSAN for all packages
+dnl
+AC_ARG_ENABLE([threadsan],
+[  --enable-threadsan	  enable thread sanitizer],,
+enable_threadsan=no)
+if test "$enable_threadsan" = "yes" || test "$enable_threadsan" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports THREADSAN])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	THREADSAN_FLAGS="-fsanitize=thread"
+	CFLAGS="$CFLAGS $THREADSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $THREADSAN_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[threadsan_cflags=$THREADSAN_FLAGS]
+		[threadsan_ldflags=$THREADSAN_FLAGS]
+		[have_threadsan=yes],
+		[AC_MSG_RESULT([no])])
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_threadsan)
+	AC_SUBST(threadsan_cflags)
+	AC_SUBST(threadsan_ldflags)
+fi
+if test "$enable_threadsan" = "yes" && test "$have_threadsan" != "yes"; then
+	AC_MSG_ERROR([THREADSAN not supported by compiler.])
+fi
+if test "$have_threadsan" = "yes" && test "$have_addrsan" = "yes"; then
+	AC_MSG_WARN([ADDRSAN and THREADSAN are not known to work together.])
+fi
+dnl
 dnl OS-specific uncomment control
 dnl
 LINUX_CMT="#"
