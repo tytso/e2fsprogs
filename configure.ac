@@ -1330,6 +1330,34 @@ if test "$enable_lto" = "yes" && test "$have_lto" != "yes"; then
 	AC_MSG_ERROR([LTO not supported by compiler.])
 fi
 dnl
+dnl Enable UBSAN for all packages
+dnl
+AC_ARG_ENABLE([ubsan],
+[  --enable-ubsan	  enable undefined behavior sanitizer],,
+enable_ubsan=no)
+if test "$enable_ubsan" = "yes" || test "$enable_ubsan" = "probe"; then
+	AC_MSG_CHECKING([if C compiler supports UBSAN])
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	UBSAN_FLAGS="-fsanitize=undefined"
+	CFLAGS="$CFLAGS $UBSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $UBSAN_FLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[ubsan_cflags=$UBSAN_FLAGS]
+		[ubsan_ldflags=$UBSAN_FLAGS]
+		[have_ubsan=yes],
+		[AC_MSG_RESULT([no])])
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_SUBST(have_ubsan)
+	AC_SUBST(ubsan_cflags)
+	AC_SUBST(ubsan_ldflags)
+fi
+if test "$enable_ubsan" = "yes" && test "$have_ubsan" != "yes"; then
+	AC_MSG_ERROR([UBSAN not supported by compiler.])
+fi
+dnl
 dnl OS-specific uncomment control
 dnl
 LINUX_CMT="#"

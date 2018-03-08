@@ -653,6 +653,9 @@ E2SCRUB_CMT
 UNIX_CMT
 CYGWIN_CMT
 LINUX_CMT
+ubsan_ldflags
+ubsan_cflags
+have_ubsan
 lto_ldflags
 lto_cflags
 have_lto
@@ -909,6 +912,7 @@ with_included_gettext
 with_libintl_prefix
 enable_fuse2fs
 enable_lto
+enable_ubsan
 with_multiarch
 with_udev_rules_dir
 with_crond_dir
@@ -1588,6 +1592,7 @@ Optional Features:
   --disable-rpath         do not hardcode runtime library paths
   --disable-fuse2fs	  do not build fuse2fs
   --enable-lto		  enable link time optimization
+  --enable-ubsan	  enable undefined behavior sanitizer
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -13866,6 +13871,53 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 if test "$enable_lto" = "yes" && test "$have_lto" != "yes"; then
 	as_fn_error $? "LTO not supported by compiler." "$LINENO" 5
+fi
+# Check whether --enable-ubsan was given.
+if test "${enable_ubsan+set}" = set; then :
+  enableval=$enable_ubsan;
+else
+  enable_ubsan=no
+fi
+
+if test "$enable_ubsan" = "yes" || test "$enable_ubsan" = "probe"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if C compiler supports UBSAN" >&5
+$as_echo_n "checking if C compiler supports UBSAN... " >&6; }
+	OLD_CFLAGS="$CFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	UBSAN_FLAGS="-fsanitize=undefined"
+	CFLAGS="$CFLAGS $UBSAN_FLAGS"
+	LDFLAGS="$LDFLAGS $UBSAN_FLAGS"
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		ubsan_cflags=$UBSAN_FLAGS
+		ubsan_ldflags=$UBSAN_FLAGS
+		have_ubsan=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	CFLAGS="${OLD_CFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+
+
+
+fi
+if test "$enable_ubsan" = "yes" && test "$have_ubsan" != "yes"; then
+	as_fn_error $? "UBSAN not supported by compiler." "$LINENO" 5
 fi
 LINUX_CMT="#"
 CYGWIN_CMT="#"
