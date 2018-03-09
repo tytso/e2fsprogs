@@ -643,7 +643,7 @@ static void parse_int_node(ext2_filsys fs,
 		printf("Entry #%d: Hash 0x%08x, block %u\n", i,
 		       hash, ext2fs_le32_to_cpu(ent[i].block));
 #endif
-		blk = ext2fs_le32_to_cpu(ent[i].block) & 0x0ffffff;
+		blk = ext2fs_le32_to_cpu(ent[i].block) & EXT4_DX_BLOCK_MASK;
 		/* Check to make sure the block is valid */
 		if (blk >= (blk_t) dx_dir->numblocks) {
 			cd->pctx.blk = blk;
@@ -664,7 +664,8 @@ static void parse_int_node(ext2_filsys fs,
 		}
 
 		dx_db->previous =
-			i ? ext2fs_le32_to_cpu(ent[i-1].block & 0x0ffffff) : 0;
+			i ? (ext2fs_le32_to_cpu(ent[i-1].block) &
+			     EXT4_DX_BLOCK_MASK) : 0;
 
 		if (hash < min_hash)
 			min_hash = hash;

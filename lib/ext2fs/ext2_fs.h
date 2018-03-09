@@ -232,6 +232,8 @@ struct ext2_dx_root_info {
 
 #define EXT2_HASH_FLAG_INCOMPAT	0x1
 
+#define EXT4_DX_BLOCK_MASK 0x0fffffff
+
 struct ext2_dx_entry {
 	__le32 hash;
 	__le32 block;
