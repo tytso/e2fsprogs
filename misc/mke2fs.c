@@ -16,7 +16,7 @@
  * enforced (but it's not much fun on a character device :-).
  */
 
-#define _XOPEN_SOURCE 600 /* for inclusion of PATH_MAX */
+#define _XOPEN_SOURCE 600
 
 #include "config.h"
 #include <stdio.h>
@@ -117,7 +117,6 @@ const char *src_root_dir;  /* Copy files from the specified directory */
 static char *undo_file;
 
 static int android_sparse_file; /* -E android_sparse */
-static char *android_sparse_params;
 
 static profile_t	profile;
 
@@ -2871,17 +2870,19 @@ int main (int argc, char *argv[])
 	if (!quiet)
 		flags |= EXT2_FLAG_PRINT_PROGRESS;
 	if (android_sparse_file) {
-		android_sparse_params = malloc(PATH_MAX + 32);
+		char *android_sparse_params = malloc(strlen(device_name) + 48);
+
 		if (!android_sparse_params) {
 			com_err(program_name, ENOMEM, "%s",
 				_("in malloc for android_sparse_params"));
 			exit(1);
 		}
-		snprintf(android_sparse_params, PATH_MAX + 32, "(%s):%u:%u",
+		sprintf(android_sparse_params, "(%s):%u:%u",
 			 device_name, fs_param.s_blocks_count,
 			 1024 << fs_param.s_log_block_size);
 		retval = ext2fs_initialize(android_sparse_params, flags,
 					   &fs_param, sparse_io_manager, &fs);
+		free(android_sparse_params);
 	} else
 		retval = ext2fs_initialize(device_name, flags, &fs_param,
 					   io_ptr, &fs);

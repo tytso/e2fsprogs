@@ -693,7 +693,7 @@ static errcode_t dir_test(ext2_filsys fs)
 	const char *parent_name = "test";
 	ext2_ino_t parent, dir, tmp;
 	errcode_t retval;
-	char dirname[PATH_MAX];
+	char dirname[32];
 	int i;
 
 	retval = ext2fs_mkdir(fs, 11, 11, stub_name);
