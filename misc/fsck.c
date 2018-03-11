@@ -441,13 +441,14 @@ static int execute(const char *type, const char *device, const char *mntpt,
 	struct fsck_instance *inst, *p;
 	pid_t	pid;
 
+	if (snprintf(prog, sizeof(prog), "fsck.%s", type) >= sizeof(prog))
+		return EINVAL;
+
 	inst = malloc(sizeof(struct fsck_instance));
 	if (!inst)
 		return ENOMEM;
 	memset(inst, 0, sizeof(struct fsck_instance));
 
-	if (snprintf(prog, sizeof(prog), "fsck.%s", type) >= sizeof(prog))
-		return EINVAL;
 	argv[0] = string_copy(prog);
 	argc = 1;
 
