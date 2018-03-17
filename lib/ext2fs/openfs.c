@@ -416,7 +416,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 #ifdef WORDS_BIGENDIAN
 	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
 #endif
-	if (ext2fs_has_feature_meta_bg(fs->super)) {
+	if (ext2fs_has_feature_meta_bg(fs->super) &&
+	    !(flags & EXT2_FLAG_IMAGE_FILE)) {
 		first_meta_bg = fs->super->s_first_meta_bg;
 		if (first_meta_bg > fs->desc_blocks)
 			first_meta_bg = fs->desc_blocks;
