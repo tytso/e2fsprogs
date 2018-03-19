@@ -255,7 +255,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE) {
 		blk = (fs->image_header->offset_inodemap / fs->blocksize);
 		ino_cnt = fs->super->s_inodes_count;
-		while (inode_nbytes > 0) {
+		while (inode_bitmap && ino_cnt > 0) {
 			retval = io_channel_read_blk64(fs->image_io, blk++,
 						     1, inode_bitmap);
 			if (retval)
@@ -267,15 +267,14 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 					       ino_itr, cnt, inode_bitmap);
 			if (retval)
 				goto cleanup;
-			ino_itr += fs->blocksize << 3;
-			ino_cnt -= fs->blocksize << 3;
-			inode_nbytes -= fs->blocksize;
+			ino_itr += cnt;
+			ino_cnt -= cnt;
 		}
 		blk = (fs->image_header->offset_blockmap /
 		       fs->blocksize);
 		blk_cnt = EXT2_GROUPS_TO_CLUSTERS(fs->super,
 						  fs->group_desc_count);
-		while (block_nbytes > 0) {
+		while (block_bitmap && blk_cnt > 0) {
 			retval = io_channel_read_blk64(fs->image_io, blk++,
 						     1, block_bitmap);
 			if (retval)
@@ -287,9 +286,8 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 				       blk_itr, cnt, block_bitmap);
 			if (retval)
 				goto cleanup;
-			blk_itr += fs->blocksize << 3;
-			blk_cnt -= fs->blocksize << 3;
-			block_nbytes -= fs->blocksize;
+			blk_itr += cnt;
+			blk_cnt -= cnt;
 		}
 		goto success_cleanup;
 	}
