@@ -193,14 +193,10 @@ try_open_again:
 	if (catastrophic)
 		com_err(device, 0, "catastrophic mode - not reading inode or group bitmaps");
 	else {
-		retval = ext2fs_read_inode_bitmap(current_fs);
+		retval = ext2fs_read_bitmaps(current_fs);
 		if (retval) {
-			com_err(device, retval, "while reading inode bitmap");
-			goto errout;
-		}
-		retval = ext2fs_read_block_bitmap(current_fs);
-		if (retval) {
-			com_err(device, retval, "while reading block bitmap");
+			com_err(device, retval,
+				"while reading allocation bitmaps");
 			goto errout;
 		}
 	}
