@@ -1792,11 +1792,17 @@ static int release_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
 			       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
 			       blk64_t ref_block EXT2FS_ATTR((unused)),
 			       int ref_offset EXT2FS_ATTR((unused)),
-			       void *private EXT2FS_ATTR((unused)))
+			       void *private)
 {
-	blk64_t	block;
+	blk64_t	block = *blocknr;
+	blk64_t *last_cluster = (blk64_t *)private;
+	blk64_t cluster = EXT2FS_B2C(fs, block);
 
-	block = *blocknr;
+	if (cluster == *last_cluster)
+		return 0;
+
+	*last_cluster = cluster;
+
 	ext2fs_block_alloc_stats2(fs, block, -1);
 	return 0;
 }
@@ -1811,8 +1817,9 @@ static void kill_file_by_inode(ext2_ino_t inode)
 	if (debugfs_write_inode(inode, &inode_buf, 0))
 		return;
 	if (ext2fs_inode_has_valid_blocks2(current_fs, &inode_buf)) {
+		blk64_t last_cluster = 0;
 		ext2fs_block_iterate3(current_fs, inode, BLOCK_FLAG_READ_ONLY,
-				      NULL, release_blocks_proc, NULL);
+				      NULL, release_blocks_proc, &last_cluster);
 	}
 	printf("\n");
 	ext2fs_inode_alloc_stats2(current_fs, inode, -1,
