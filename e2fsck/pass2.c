@@ -1610,6 +1610,7 @@ abort_free_dict:
 struct del_block {
 	e2fsck_t	ctx;
 	e2_blkcnt_t	num;
+	blk64_t last_cluster;
 };
 
 /*
@@ -1624,14 +1625,20 @@ static int deallocate_inode_block(ext2_filsys fs,
 				  void *priv_data)
 {
 	struct del_block *p = priv_data;
+	blk64_t cluster = EXT2FS_B2C(fs, *block_nr);
 
 	if (*block_nr == 0)
 		return 0;
+
+	if (cluster == p->last_cluster)
+		return 0;
+
+	p->last_cluster = cluster;
 	if ((*block_nr < fs->super->s_first_data_block) ||
 	    (*block_nr >= ext2fs_blocks_count(fs->super)))
 		return 0;
-	if ((*block_nr % EXT2FS_CLUSTER_RATIO(fs)) == 0)
-		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
+
+        ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 	p->num++;
 	return 0;
 }
@@ -1692,6 +1699,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 
 	del_block.ctx = ctx;
 	del_block.num = 0;
+	del_block.last_cluster = 0;
 	pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
 					     deallocate_inode_block,
 					     &del_block);
