@@ -2118,6 +2118,10 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 			       intv);
 			fs->super->s_mmp_update_interval = intv;
 			ext2fs_mark_super_dirty(fs);
+		} else if (!strcmp(token, "force_fsck")) {
+			fs->super->s_state |= EXT2_ERROR_FS;
+			printf(_("Setting filesystem error flag to force fsck.\n"));
+			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "test_fs")) {
 			fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 			printf("Setting test filesystem flag\n");
@@ -2200,6 +2204,7 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 			"\tmmp_update_interval=<mmp update interval in seconds>\n"
 			"\tstride=<RAID per-disk chunk size in blocks>\n"
 			"\tstripe_width=<RAID stride*data disks in blocks>\n"
+			"\tforce_fsck\n"
 			"\ttest_fs\n"
 			"\t^test_fs\n"));
 		free(buf);
