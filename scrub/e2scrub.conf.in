@@ -8,3 +8,6 @@
 
 # Arguments passed into e2fsck.
 # e2fsck_opts="-vtt"
+
+# Set this to 1 to have e2scrub_all scrub all LVs, not just the mounted ones.
+# scrub_all=0

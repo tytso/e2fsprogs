@@ -1,0 +1,85 @@
+#!/bin/bash
+
+#  Copyright (C) 2018 Oracle.  All Rights Reserved.
+#
+#  Author: Darrick J. Wong <darrick.wong@oracle.com>
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it would be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write the Free Software Foundation,
+#  Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+
+scrub_all=0
+conffile="@root_sysconfdir@/e2scrub.conf"
+
+test -f "${conffile}" && . "${conffile}"
+
+scrub_args=""
+
+print_help() {
+	echo "Usage: $0 [OPTIONS]"
+	echo " -A: Scrub all ext[234] filesystems even if not mounted."
+	echo " -r: Remove e2scrub snapshots."
+	echo " -V: Print version information and exit."
+}
+
+print_version() {
+	echo "e2scrub_all @E2FSPROGS_VERSION@ (@E2FSPROGS_DATE@)"
+}
+
+while getopts "ArV" opt; do
+	case "${opt}" in
+	"A") scrub_all=1;;
+	"r") scrub_args="${scrub_args} -r";;
+	"V") print_version; exit 0;;
+	*) print_help; exit 2;;
+	esac
+done
+shift "$((OPTIND - 1))"
+
+# Find scrub targets, make sure we only do this once.
+ls_scrub_targets() {
+	lsblk -o NAME,FSTYPE,MOUNTPOINT -p -P -n | while read vars; do
+		eval "${vars}"
+
+		# Skip non-ext[234]
+		case "${FSTYPE}" in
+		ext[234])	;;
+		*)		continue;;
+		esac
+
+		# Skip unmounted filesystems unless -A
+		if [ "${scrub_all}" -eq 0 ] && [ -z "${MOUNTPOINT}" ]; then
+			continue;
+		fi
+
+		# Skip non-lvm devices and lvm snapshots
+		lvm_vars="$(lvs --nameprefixes -o vg_name,lv_name,lv_role --noheadings "${NAME}" 2> /dev/null)"
+		test $? -ne 0 && continue
+		eval "${lvm_vars}"
+		echo "${LVM2_LV_ROLE}" | grep -q "snapshot" && continue
+
+		if [ -n "${MOUNTPOINT}" ]; then
+			echo "${MOUNTPOINT}"
+		else
+			echo "${NAME}"
+		fi
+	done | sort | uniq
+}
+
+# Scrub any mounted fs on lvm by creating a snapshot and fscking that.
+stdin="$(realpath /dev/stdin)"
+ls_scrub_targets | while read tgt; do
+	${DBG} "@root_sbindir@/e2scrub" ${scrub_args} "${tgt}" < "${stdin}"
+done
+
+exit 0

@@ -11,8 +11,8 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-PROGS=		e2scrub
-MANPAGES=	e2scrub.8
+PROGS=		e2scrub e2scrub_all
+MANPAGES=	e2scrub.8 e2scrub_all.8
 CONFFILES=	e2scrub.conf
 
 ifeq ($(HAVE_UDEV),yes)
@@ -27,6 +27,11 @@ all:: $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES)
 e2scrub: $(DEP_SUBSTITUTE) e2scrub.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2scrub.in $@
+	$(Q) chmod a+x $@
+
+e2scrub_all: e2scrub_all.in
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2scrub_all.in $@
 	$(Q) chmod a+x $@
 
 %.8: %.8.in $(DEP_SUBSTITUTE)
