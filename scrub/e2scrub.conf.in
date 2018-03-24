@@ -1,0 +1,10 @@
+# e2scrub configuration file
+
+# Snapshots will be created to run fsck; the snapshot will be of this size.
+# snap_size_mb=256
+
+# Set this to 1 to enable fstrim for everyone.
+# fstrim=0
+
+# Arguments passed into e2fsck.
+# e2fsck_opts="-vtt"

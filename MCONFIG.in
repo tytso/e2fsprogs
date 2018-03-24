@@ -33,6 +33,9 @@ infodir = @infodir@
 datadir = @datadir@
 pkgconfigdir = $(libdir)/pkgconfig
 
+HAVE_UDEV = @have_udev@
+UDEV_RULES_DIR = @pkg_udev_rules_dir@
+
 @SET_MAKE@
 
 @ifGNUmake@ V =

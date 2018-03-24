@@ -3,3 +3,4 @@ usr/bin
 usr/sbin
 usr/share/man
 etc
+lib/udev/rules.d

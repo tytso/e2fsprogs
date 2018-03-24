@@ -11,11 +11,11 @@ dnl This is to figure out the version number and the date....
 dnl
 E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
 	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
-DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
-	| tr \" " "`
-E2FSPROGS_DAY=$(echo $DATE | awk -F- '{print $1}' | sed -e '/^[[1-9]]$/s/^/0/')
-MONTH=`echo $DATE | awk -F- '{print $2}'`
-YEAR=`echo $DATE | awk -F- '{print $3}'`
+E2FSPROGS_DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
+	| tr \" " " | awk '{print $1}'`
+E2FSPROGS_DAY=$(echo $E2FSPROGS_DATE | awk -F- '{print $1}' | sed -e '/^[[1-9]]$/s/^/0/')
+MONTH=`echo $E2FSPROGS_DATE | awk -F- '{print $2}'`
+YEAR=`echo $E2FSPROGS_DATE | awk -F- '{print $3}'`
 
 if expr $YEAR ">" 1900 > /dev/null ; then
 	E2FSPROGS_YEAR=$YEAR
@@ -63,6 +63,7 @@ AC_SUBST(E2FSPROGS_MONTH)
 AC_SUBST(E2FSPROGS_DAY)
 AC_SUBST(E2FSPROGS_VERSION)
 AC_SUBST(E2FSPROGS_PKGVER)
+AC_SUBST(E2FSPROGS_DATE)
 dnl
 dnl Use diet libc
 dnl 
@@ -1313,6 +1314,11 @@ AC_SUBST(LINUX_CMT)
 AC_SUBST(CYGWIN_CMT)
 AC_SUBST(UNIX_CMT)
 dnl
+dnl e2scrub only builds on linux
+dnl
+E2SCRUB_CMT="$LINUX_CMT"
+AC_SUBST(E2SCRUB_CMT)
+dnl
 dnl Linux and Hurd places root files in the / by default
 dnl
 case "$host_os" in
@@ -1470,6 +1476,44 @@ LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
 AC_SUBST(CFLAGS_SHLIB)
 AC_SUBST(CFLAGS_STLIB)
 AC_SUBST(LDFLAGS_SHLIB)
+
+dnl
+dnl Where do udev rules go?
+dnl
+AC_ARG_WITH([udev_rules_dir],
+  [AS_HELP_STRING([--with-udev-rules-dir@<:@=DIR@:>@],
+	[Install udev rules into DIR.])],
+  [],
+  [with_udev_rules_dir=yes])
+AS_IF([test "x${with_udev_rules_dir}" != "xno"],
+  [
+	AS_IF([test "x${with_udev_rules_dir}" = "xyes"],
+	  [
+		PKG_CHECK_MODULES([udev], [udev],
+		  [
+			with_udev_rules_dir="$($PKG_CONFIG --variable=udevdir udev)/rules.d"
+		  ], [
+			with_udev_rules_dir=""
+		  ])
+	  ])
+	AC_MSG_CHECKING([for udev rules dir])
+	pkg_udev_rules_dir="${with_udev_rules_dir}"
+	AS_IF([test -n "${pkg_udev_rules_dir}"],
+	  [
+		AC_MSG_RESULT(${pkg_udev_rules_dir})
+		have_udev="yes"
+	  ],
+	  [
+		AC_MSG_RESULT(no)
+		have_udev="no"
+	  ])
+  ],
+  [
+	have_udev="disabled"
+  ])
+AC_SUBST(have_udev)
+AC_SUBST(pkg_udev_rules_dir)
+
 dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
@@ -1495,7 +1539,7 @@ for i in MCONFIG Makefile e2fsprogs.spec \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
 	resize/Makefile doc/Makefile intl/Makefile \
-	intl/libgnuintl.h po/Makefile.in ; do
+	intl/libgnuintl.h po/Makefile.in scrub/Makefile; do
 	if test -d `dirname ${srcdir}/$i` ; then
 		outlist="$outlist $i"
 	fi

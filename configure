@@ -625,6 +625,10 @@ gl_use_threads_default=
 ac_func_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+pkg_udev_rules_dir
+have_udev
+udev_LIBS
+udev_CFLAGS
 LDFLAGS_SHLIB
 CFLAGS_STLIB
 CFLAGS_SHLIB
@@ -639,6 +643,7 @@ root_libdir
 root_sbindir
 root_bindir
 root_prefix
+E2SCRUB_CMT
 UNIX_CMT
 CYGWIN_CMT
 LINUX_CMT
@@ -795,6 +800,7 @@ build_os
 build_vendor
 build_cpu
 build
+E2FSPROGS_DATE
 E2FSPROGS_PKGVER
 E2FSPROGS_VERSION
 E2FSPROGS_DAY
@@ -892,6 +898,7 @@ with_included_gettext
 with_libintl_prefix
 enable_fuse2fs
 with_multiarch
+with_udev_rules_dir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -904,7 +911,9 @@ CPPFLAGS
 CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
-PKG_CONFIG_LIBDIR'
+PKG_CONFIG_LIBDIR
+udev_CFLAGS
+udev_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1580,6 +1589,8 @@ Optional Packages:
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
   --with-multiarch=ARCH specify the multiarch triplet
+  --with-udev-rules-dir[=DIR]
+                          Install udev rules into DIR.
 
 Some influential environment variables:
   CC          C compiler command
@@ -1595,6 +1606,8 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
+  udev_CFLAGS C compiler flags for udev, overriding pkg-config
+  udev_LIBS   linker flags for udev, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2758,11 +2771,11 @@ MCONFIG=./MCONFIG
 BINARY_TYPE=bin
 E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
 	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
-DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
-	| tr \" " "`
-E2FSPROGS_DAY=$(echo $DATE | awk -F- '{print $1}' | sed -e '/^[1-9]$/s/^/0/')
-MONTH=`echo $DATE | awk -F- '{print $2}'`
-YEAR=`echo $DATE | awk -F- '{print $3}'`
+E2FSPROGS_DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
+	| tr \" " " | awk '{print $1}'`
+E2FSPROGS_DAY=$(echo $E2FSPROGS_DATE | awk -F- '{print $1}' | sed -e '/^[1-9]$/s/^/0/')
+MONTH=`echo $E2FSPROGS_DATE | awk -F- '{print $2}'`
+YEAR=`echo $E2FSPROGS_DATE | awk -F- '{print $3}'`
 
 if expr $YEAR ">" 1900 > /dev/null ; then
 	E2FSPROGS_YEAR=$YEAR
@@ -2808,6 +2821,7 @@ unset DATE MONTH YEAR base_ver pre_vers date_spec
 $as_echo "Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION" >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}" >&5
 $as_echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}" >&6; }
+
 
 
 
@@ -7236,8 +7250,6 @@ main ()
     if (*(data + i) != *(data3 + i))
       return 14;
   close (fd);
-  free (data);
-  free (data3);
   return 0;
 }
 _ACEOF
@@ -13713,6 +13725,8 @@ esac
 
 
 
+E2SCRUB_CMT="$LINUX_CMT"
+
 case "$host_os" in
 linux* | gnu* | k*bsd*-gnu)
 	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
@@ -13878,6 +13892,123 @@ LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
 
 
 
+
+
+# Check whether --with-udev_rules_dir was given.
+if test "${with_udev_rules_dir+set}" = set; then :
+  withval=$with_udev_rules_dir;
+else
+  with_udev_rules_dir=yes
+fi
+
+if test "x${with_udev_rules_dir}" != "xno"; then :
+
+	if test "x${with_udev_rules_dir}" = "xyes"; then :
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for udev" >&5
+$as_echo_n "checking for udev... " >&6; }
+
+if test -n "$udev_CFLAGS"; then
+    pkg_cv_udev_CFLAGS="$udev_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"udev\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "udev") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_udev_CFLAGS=`$PKG_CONFIG --cflags "udev" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$udev_LIBS"; then
+    pkg_cv_udev_LIBS="$udev_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"udev\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "udev") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_udev_LIBS=`$PKG_CONFIG --libs "udev" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        udev_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "udev" 2>&1`
+        else
+	        udev_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "udev" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$udev_PKG_ERRORS" >&5
+
+
+			with_udev_rules_dir=""
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+			with_udev_rules_dir=""
+
+else
+	udev_CFLAGS=$pkg_cv_udev_CFLAGS
+	udev_LIBS=$pkg_cv_udev_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+			with_udev_rules_dir="$($PKG_CONFIG --variable=udevdir udev)/rules.d"
+
+fi
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for udev rules dir" >&5
+$as_echo_n "checking for udev rules dir... " >&6; }
+	pkg_udev_rules_dir="${with_udev_rules_dir}"
+	if test -n "${pkg_udev_rules_dir}"; then :
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${pkg_udev_rules_dir}" >&5
+$as_echo "${pkg_udev_rules_dir}" >&6; }
+		have_udev="yes"
+
+else
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		have_udev="no"
+
+fi
+
+else
+
+	have_udev="disabled"
+
+fi
+
+
+
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
@@ -13899,7 +14030,7 @@ for i in MCONFIG Makefile e2fsprogs.spec \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
 	resize/Makefile doc/Makefile intl/Makefile \
-	intl/libgnuintl.h po/Makefile.in ; do
+	intl/libgnuintl.h po/Makefile.in scrub/Makefile; do
 	if test -d `dirname ${srcdir}/$i` ; then
 		outlist="$outlist $i"
 	fi
