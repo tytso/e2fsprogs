@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Email logs of failed e2scrub unit runs when the systemd service fails.
+
+recipient="$1"
+test -z "${recipient}" && exit 0
+device="$2"
+test -z "${device}" && exit 0
+hostname="$(hostname -f 2>/dev/null)"
+test -z "${hostname}" && hostname="${HOSTNAME}"
+if ! type sendmail > /dev/null 2>&1; then
+	echo "$0: sendmail program not found."
+	exit 1
+fi
+
+(cat << ENDL
+To: $1
+From: <e2scrub@${hostname}>
+Subject: e2scrub failure on ${device}
+
+So sorry, the automatic e2scrub of ${device} on ${hostname} failed.
+
+A log of what happened follows:
+ENDL
+systemctl status --full --lines 4294967295 "e2scrub@${device}") | sendmail -t -i

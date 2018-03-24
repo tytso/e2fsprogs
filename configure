@@ -625,6 +625,12 @@ gl_use_threads_default=
 ac_func_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+systemd_system_unit_dir
+have_systemd
+systemd_LIBS
+systemd_CFLAGS
+crond_dir
+have_crond
 pkg_udev_rules_dir
 have_udev
 udev_LIBS
@@ -899,6 +905,8 @@ with_libintl_prefix
 enable_fuse2fs
 with_multiarch
 with_udev_rules_dir
+with_crond_dir
+with_systemd_unit_dir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -913,7 +921,9 @@ PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 udev_CFLAGS
-udev_LIBS'
+udev_LIBS
+systemd_CFLAGS
+systemd_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1591,6 +1601,9 @@ Optional Packages:
   --with-multiarch=ARCH specify the multiarch triplet
   --with-udev-rules-dir[=DIR]
                           Install udev rules into DIR.
+  --with-crond-dir[=DIR]  Install system crontabs into DIR.
+  --with-systemd-unit-dir[=DIR]
+                          Install systemd system units into DIR.
 
 Some influential environment variables:
   CC          C compiler command
@@ -1608,6 +1621,10 @@ Some influential environment variables:
               path overriding pkg-config's built-in search path
   udev_CFLAGS C compiler flags for udev, overriding pkg-config
   udev_LIBS   linker flags for udev, overriding pkg-config
+  systemd_CFLAGS
+              C compiler flags for systemd, overriding pkg-config
+  systemd_LIBS
+              linker flags for systemd, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -7250,6 +7267,8 @@ main ()
     if (*(data + i) != *(data3 + i))
       return 14;
   close (fd);
+  free (data);
+  free (data3);
   return 0;
 }
 _ACEOF
@@ -13803,6 +13822,7 @@ else
 fi
 
 fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we can link with -static" >&5
 $as_echo_n "checking whether we can link with -static... " >&6; }
 if ${ac_cv_e2fsprogs_use_static+:} false; then :
@@ -14004,6 +14024,165 @@ fi
 else
 
 	have_udev="disabled"
+
+fi
+
+
+
+
+# Check whether --with-crond_dir was given.
+if test "${with_crond_dir+set}" = set; then :
+  withval=$with_crond_dir;
+else
+  with_crond_dir=yes
+fi
+
+if test "x${with_crond_dir}" != "xno"; then :
+
+	if test "x${with_crond_dir}" = "xyes"; then :
+
+		if test -d "/etc/cron.d"; then :
+  with_crond_dir="/etc/cron.d"
+fi
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for system crontab dir" >&5
+$as_echo_n "checking for system crontab dir... " >&6; }
+	crond_dir="${with_crond_dir}"
+	if test -n "${crond_dir}"; then :
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${crond_dir}" >&5
+$as_echo "${crond_dir}" >&6; }
+		have_crond="yes"
+
+else
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		have_crond="no"
+
+fi
+
+else
+
+	have_crond="disabled"
+
+fi
+
+
+
+
+# Check whether --with-systemd_unit_dir was given.
+if test "${with_systemd_unit_dir+set}" = set; then :
+  withval=$with_systemd_unit_dir;
+else
+  with_systemd_unit_dir=yes
+fi
+
+if test "x${with_systemd_unit_dir}" != "xno"; then :
+
+	if test "x${with_systemd_unit_dir}" = "xyes"; then :
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for systemd" >&5
+$as_echo_n "checking for systemd... " >&6; }
+
+if test -n "$systemd_CFLAGS"; then
+    pkg_cv_systemd_CFLAGS="$systemd_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"systemd\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "systemd") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_systemd_CFLAGS=`$PKG_CONFIG --cflags "systemd" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$systemd_LIBS"; then
+    pkg_cv_systemd_LIBS="$systemd_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"systemd\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "systemd") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_systemd_LIBS=`$PKG_CONFIG --libs "systemd" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        systemd_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "systemd" 2>&1`
+        else
+	        systemd_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "systemd" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$systemd_PKG_ERRORS" >&5
+
+
+			with_systemd_unit_dir=""
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+			with_systemd_unit_dir=""
+
+else
+	systemd_CFLAGS=$pkg_cv_systemd_CFLAGS
+	systemd_LIBS=$pkg_cv_systemd_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+			with_systemd_unit_dir="$($PKG_CONFIG --variable=systemdsystemunitdir systemd)"
+
+fi
+
+
+fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for systemd system unit dir" >&5
+$as_echo_n "checking for systemd system unit dir... " >&6; }
+	systemd_system_unit_dir="${with_systemd_unit_dir}"
+	if test -n "${systemd_system_unit_dir}"; then :
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${systemd_system_unit_dir}" >&5
+$as_echo "${systemd_system_unit_dir}" >&6; }
+		have_systemd="yes"
+
+else
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		have_systemd="no"
+
+fi
+
+else
+
+	have_systemd="disabled"
 
 fi
 

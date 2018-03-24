@@ -36,12 +36,34 @@ print_version() {
 	echo "e2scrub_all @E2FSPROGS_VERSION@ (@E2FSPROGS_DATE@)"
 }
 
+exitcode() {
+	ret="$1"
+
+	# If we're being run as a service, the return code must fit the LSB
+	# init script action error guidelines, which is to say that we
+	# compress all errors to 1 ("generic or unspecified error", LSB 5.0
+	# section 22.2) and hope the admin will scan the log for what
+	# actually happened.
+
+	# We have to sleep 2 seconds here because journald uses the pid to
+	# connect our log messages to the systemd service.  This is critical
+	# for capturing all the log messages if the scrub fails, because the
+	# fail service uses the service name to gather log messages for the
+	# error report.
+	if [ -n "${SERVICE_MODE}" ]; then
+		test "${ret}" -ne 0 && ret=1
+		sleep 2
+	fi
+
+	exit "${ret}"
+}
+
 while getopts "ArV" opt; do
 	case "${opt}" in
 	"A") scrub_all=1;;
 	"r") scrub_args="${scrub_args} -r";;
-	"V") print_version; exit 0;;
-	*) print_help; exit 2;;
+	"V") print_version; exitcode 0;;
+	*) print_help; exitcode 2;;
 	esac
 done
 shift "$((OPTIND - 1))"
@@ -76,10 +98,35 @@ ls_scrub_targets() {
 	done | sort | uniq
 }
 
+# systemd doesn't know to do path escaping on the instance variable we pass
+# to the e2scrub service, which breaks things if there is a dash in the path
+# name.  Therefore, do the path escaping ourselves if needed.
+escape_path_for_systemd() {
+	local path="$1"
+
+	if echo "${path}" | grep -q -- "-"; then
+		echo "-$(systemd-escape --path "${path}")"
+	else
+		echo "${path}"
+	fi
+}
+
 # Scrub any mounted fs on lvm by creating a snapshot and fscking that.
 stdin="$(realpath /dev/stdin)"
 ls_scrub_targets | while read tgt; do
+	# If we're not reaping and systemd is present, try invoking the
+	# systemd service.
+	if [ -z "${scrub_args}" ] && type systemctl > /dev/null 2>&1; then
+		tgt_esc="$(escape_path_for_systemd "${tgt}")"
+		${DBG} systemctl start "e2scrub@${tgt_esc}" 2> /dev/null < "${stdin}"
+		res=$?
+		if [ "${res}" -eq 0 ] || [ "${res}" -eq 1 ]; then
+			continue;
+		fi
+	fi
+
+	# Otherwise use direct invocation
 	${DBG} "@root_sbindir@/e2scrub" ${scrub_args} "${tgt}" < "${stdin}"
 done
 
-exit 0
+exitcode 0

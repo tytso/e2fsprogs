@@ -44,12 +44,34 @@ print_version() {
 	echo "e2scrub @E2FSPROGS_VERSION@ (@E2FSPROGS_DATE@)"
 }
 
+exitcode() {
+	ret="$1"
+
+	# If we're being run as a service, the return code must fit the LSB
+	# init script action error guidelines, which is to say that we
+	# compress all errors to 1 ("generic or unspecified error", LSB 5.0
+	# section 22.2) and hope the admin will scan the log for what
+	# actually happened.
+
+	# We have to sleep 2 seconds here because journald uses the pid to
+	# connect our log messages to the systemd service.  This is critical
+	# for capturing all the log messages if the scrub fails, because the
+	# fail service uses the service name to gather log messages for the
+	# error report.
+	if [ -n "${SERVICE_MODE}" ]; then
+		test "${ret}" -ne 0 && ret=1
+		sleep 2
+	fi
+
+	exit "${ret}"
+}
+
 while getopts "rtV" opt; do
 	case "${opt}" in
 	"r") reap=1;;
 	"t") fstrim=1;;
-	"V") print_version; exit 0;;
-	*) print_help; exit 2;;
+	"V") print_version; exitcode 0;;
+	*) print_help; exitcode 2;;
 	esac
 done
 shift "$((OPTIND - 1))"
@@ -57,7 +79,7 @@ shift "$((OPTIND - 1))"
 arg="$1"
 if [ -z "${arg}" ]; then
 	print_help
-	exit 1
+	exitcode 1
 fi
 
 # Find the device for a given mountpoint
@@ -112,7 +134,7 @@ fi
 if [ ! -e "${dev}" ]; then
 	echo "${arg}: Not an ext[234] filesystem."
 	print_help
-	exit 16
+	exitcode 16
 fi
 
 # Make sure this is an LVM device we can snapshot
@@ -122,7 +144,7 @@ if [ -z "${LVM2_VG_NAME}" ] || [ -z "${LVM2_LV_NAME}" ] ||
    echo "${LVM2_LV_ROLE}" | grep -q "snapshot"; then
 	echo "${arg}: Not connnected to a LVM logical volume."
 	print_help
-	exit 16
+	exitcode 16
 fi
 start_time="$(date +'%Y%m%d%H%M%S')"
 snap="${LVM2_LV_NAME}.e2scrub"
@@ -185,7 +207,7 @@ if [ "${reap}" -gt 0 ]; then
 	exit 0
 fi
 if ! setup; then
-	exit 8
+	exitcode 8
 fi
 trap "teardown; exit 1" EXIT INT QUIT TERM
 
@@ -236,4 +258,4 @@ case "$?" in
 	;;
 esac
 
-exit "${ret}"
+exitcode "${ret}"

@@ -22,7 +22,23 @@ INSTALL_TGT	+= install-udev
 UNINSTALL_TGT	+= uninstall-udev
 endif
 
-all:: $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES)
+ifeq ($(HAVE_CROND),yes)
+CRONTABS	= e2scrub_all.cron
+LIBPROGS	+= e2scrub_all_cron
+INSTALLDIRS_TGT	+= installdirs-crond installdirs-libprogs
+INSTALL_TGT	+= install-crond install-libprogs
+UNINSTALL_TGT	+= uninstall-crond uninstall-libprogs
+endif
+
+ifeq ($(HAVE_SYSTEMD),yes)
+SERVICE_FILES	= e2scrub@.service e2scrub_all.service e2scrub_all.timer e2scrub_fail@.service e2scrub_reap.service
+LIBPROGS	+= e2scrub_fail
+INSTALLDIRS_TGT	+= installdirs-systemd installdirs-libprogs
+INSTALL_TGT	+= install-systemd install-libprogs
+UNINSTALL_TGT	+= uninstall-systemd uninstall-libprogs
+endif
+
+all:: $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES) $(SERVICE_FILES) $(CRONTABS) $(LIBPROGS)
 
 e2scrub: $(DEP_SUBSTITUTE) e2scrub.in
 	$(E) "	SUBST $@"
@@ -32,6 +48,16 @@ e2scrub: $(DEP_SUBSTITUTE) e2scrub.in
 e2scrub_all: e2scrub_all.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2scrub_all.in $@
+	$(Q) chmod a+x $@
+
+e2scrub_fail: e2scrub_fail.in
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2scrub_fail.in $@
+	$(Q) chmod a+x $@
+
+e2scrub_all_cron: e2scrub_all_cron.in
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2scrub_all_cron.in $@
 	$(Q) chmod a+x $@
 
 %.8: %.8.in $(DEP_SUBSTITUTE)
@@ -46,9 +72,33 @@ e2scrub_all: e2scrub_all.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $< $@
 
+%.service: %.service.in $(DEP_SUBSTITUTE)
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $< $@
+
+%.cron: %.cron.in $(DEP_SUBSTITUTE)
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $< $@
+
+%.timer: %.timer.in $(DEP_SUBSTITUTE)
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $< $@
+
 installdirs-udev:
 	$(E) "	MKINSTALLDIRS $(UDEV_RULES_DIR)"
 	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(UDEV_RULES_DIR)
+
+installdirs-crond:
+	$(E) "	MKINSTALLDIRS $(CROND_DIR)"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(CROND_DIR)
+
+installdirs-libprogs:
+	$(E) "	MKINSTALLDIRS $(pkglibdir)"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(pkglibdir)
+
+installdirs-systemd:
+	$(E) "	MKINSTALLDIRS $(SYSTEMD_SYSTEM_UNIT_DIR)"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(SYSTEMD_SYSTEM_UNIT_DIR)
 
 installdirs: $(INSTALLDIRS_TGT)
 	$(E) "	MKINSTALLDIRS $(root_sbindir) $(man8dir) $(root_sysconfdir)"
@@ -59,6 +109,24 @@ install-udev:
 	$(Q) for i in $(UDEV_RULES); do \
 		$(ES) "	INSTALL $(UDEV_RULES_DIR)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(UDEV_RULES_DIR)/96-$$i; \
+	done
+
+install-crond:
+	$(Q) for i in $(CRONTABS); do \
+		$(ES) "	INSTALL $(CROND_DIR)/$$i"; \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(CROND_DIR)/$$i; \
+	done
+
+install-libprogs: $(LIBPROGS)
+	$(Q) for i in $(LIBPROGS); do \
+		$(ES) "	INSTALL $(pkglibdir)/$$i"; \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(pkglibdir)/$$i; \
+	done
+
+install-systemd: $(SERVICE_FILES)
+	$(Q) for i in $(SERVICE_FILES); do \
+		$(ES) "	INSTALL_DATA $(SYSTEMD_SYSTEM_UNIT_DIR)/$$i"; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(SYSTEMD_SYSTEM_UNIT_DIR)/$$i; \
 	done
 
 install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs $(INSTALL_TGT)
@@ -81,6 +149,21 @@ install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs $(INSTALL_TGT)
 uninstall-udev:
 	for i in $(UDEV_RULES); do \
 		$(RM) -f $(DESTDIR)$(UDEV_RULES_DIR)/96-$$i; \
+	done
+
+uninstall-crond:
+	for i in $(CRONTABS); do \
+		$(RM) -f $(DESTDIR)$(CROND_DIR)/$$i; \
+	done
+
+uninstall-libprogs:
+	for i in $(LIBPROGS); do \
+		$(RM) -f $(DESTDIR)$(pkglibdir)/$$i; \
+	done
+
+uninstall-systemd:
+	for i in $(SERVICE_FILES); do \
+		$(RM) -f $(DESTDIR)$(SYSTEMD_SYSTEM_UNIT_DIR)/$$i; \
 	done
 
 uninstall: $(UNINSTALL_TGT)
