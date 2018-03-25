@@ -1,3 +1,20 @@
+e2fsprogs (1.44.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * Fix FTBFS problem on Hurd (Closes: #893590)
+  * Fix e2fsck support of HTree directories on big-endian systems
+  * Fix miscellaneous e2image image handling for file systems with bigalloc
+    and meta_bg features enabled.
+  * Fix orphan list handling of inodes on bigalloc file systems (and other
+    situations where inodes need to be deleted or truncated) in e2fsck.
+  * Update Sweedish translation.
+  * Add Vcs-* headers in Debian packaging (Closes: #887512)
+  * Speed up reading bitmap blocks in debugfs when opening large file
+    systems.
+  * Add clarifications to chattr's man page.  (Closes: #890390)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 24 Mar 2018 15:13:28 -0400
+
 e2fsprogs (1.44.0-1) unstable; urgency=medium
 
   * New upstream release
