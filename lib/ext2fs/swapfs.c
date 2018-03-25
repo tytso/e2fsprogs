@@ -201,7 +201,7 @@ void ext2fs_swap_ext_attr_entry(struct ext2_ext_attr_entry *to_entry,
 				struct ext2_ext_attr_entry *from_entry)
 {
 	to_entry->e_value_offs  = ext2fs_swab16(from_entry->e_value_offs);
-	to_entry->e_value_block = ext2fs_swab32(from_entry->e_value_block);
+	to_entry->e_value_inum  = ext2fs_swab32(from_entry->e_value_inum);
 	to_entry->e_value_size  = ext2fs_swab32(from_entry->e_value_size);
 	to_entry->e_hash	= ext2fs_swab32(from_entry->e_hash);
 }
@@ -241,18 +241,24 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 			    struct ext2_inode_large *f, int hostorder,
 			    int bufsize)
 {
-	unsigned i, has_data_blocks, extra_isize, attr_magic;
-	int has_extents = 0;
-	int has_inline_data = 0;
-	int islnk = 0;
+	unsigned i, extra_isize, attr_magic;
+	int has_extents, has_inline_data, islnk, fast_symlink;
 	int inode_size;
 	__u32 *eaf, *eat;
 
-	if (hostorder && LINUX_S_ISLNK(f->i_mode))
-		islnk = 1;
+	/*
+	 * Note that t and f may point to the same address. That's why
+	 * if (hostorder) condition is executed before swab calls and
+	 * if (!hostorder) afterwards.
+	 */
+	if (hostorder) {
+		islnk = LINUX_S_ISLNK(f->i_mode);
+		fast_symlink = ext2fs_is_fast_symlink(EXT2_INODE(f));
+		has_extents = (f->i_flags & EXT4_EXTENTS_FL) != 0;
+		has_inline_data = (f->i_flags & EXT4_INLINE_DATA_FL) != 0;
+	}
+
 	t->i_mode = ext2fs_swab16(f->i_mode);
-	if (!hostorder && LINUX_S_ISLNK(t->i_mode))
-		islnk = 1;
 	t->i_uid = ext2fs_swab16(f->i_uid);
 	t->i_size = ext2fs_swab32(f->i_size);
 	t->i_atime = ext2fs_swab32(f->i_atime);
@@ -262,27 +268,21 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	t->i_gid = ext2fs_swab16(f->i_gid);
 	t->i_links_count = ext2fs_swab16(f->i_links_count);
 	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
-	if (hostorder)
-		has_data_blocks = ext2fs_inode_data_blocks(fs,
-					   (struct ext2_inode *) f);
 	t->i_blocks = ext2fs_swab32(f->i_blocks);
-	if (!hostorder)
-		has_data_blocks = ext2fs_inode_data_blocks(fs,
-					   (struct ext2_inode *) t);
-	if (hostorder && (f->i_flags & EXT4_EXTENTS_FL))
-		has_extents = 1;
-	if (hostorder && (f->i_flags & EXT4_INLINE_DATA_FL))
-		has_inline_data = 1;
 	t->i_flags = ext2fs_swab32(f->i_flags);
-	if (!hostorder && (t->i_flags & EXT4_EXTENTS_FL))
-		has_extents = 1;
-	if (!hostorder && (t->i_flags & EXT4_INLINE_DATA_FL))
-		has_inline_data = 1;
-	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
+	t->i_size_high = ext2fs_swab32(f->i_size_high);
+
+	if (!hostorder) {
+		islnk = LINUX_S_ISLNK(t->i_mode);
+		fast_symlink = ext2fs_is_fast_symlink(EXT2_INODE(t));
+		has_extents = (t->i_flags & EXT4_EXTENTS_FL) != 0;
+		has_inline_data = (t->i_flags & EXT4_INLINE_DATA_FL) != 0;
+	}
+
 	/*
 	 * Extent data and inline data are swapped on access, not here
 	 */
-	if (!has_extents && !has_inline_data && (!islnk || has_data_blocks)) {
+	if (!has_extents && !has_inline_data && (!islnk || !fast_symlink)) {
 		for (i = 0; i < EXT2_N_BLOCKS; i++)
 			t->i_block[i] = ext2fs_swab32(f->i_block[i]);
 	} else if (t != f) {

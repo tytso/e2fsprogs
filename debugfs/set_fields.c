@@ -212,7 +212,6 @@ static struct field_set_info inode_fields[] = {
 	/* Special case: i_file_acl_high is 2 bytes */
 	{ "file_acl", &set_inode.i_file_acl, 
 		&set_inode.osd2.linux2.l_i_file_acl_high, 6, parse_uint },
-	{ "dir_acl", &set_inode.i_dir_acl, NULL, 4, parse_uint, FLAG_ALIAS },
 	{ "faddr", &set_inode.i_faddr, NULL, 4, parse_uint },
 	{ "frag", &set_inode.osd2.hurd2.h_i_frag, NULL, 1, parse_uint, FLAG_ALIAS },
 	{ "fsize", &set_inode.osd2.hurd2.h_i_fsize, NULL, 1, parse_uint },

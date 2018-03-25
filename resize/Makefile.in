@@ -94,7 +94,7 @@ uninstall:
 test_extent.out: test_extent $(srcdir)/test_extent.in
 	$(TESTENV) ./test_extent < $(srcdir)/test_extent.in > test_extent.out
 
-check:: test_extent.out
+fullcheck check:: test_extent.out
 	$(Q) if cmp -s test_extent.out $(srcdir)/test_extent.in ; then \
 		echo "Test succeeded." ; \
 	else \

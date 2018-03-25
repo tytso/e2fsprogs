@@ -20,7 +20,7 @@ struct problem_context {
 	e2_blkcnt_t	blkcount;
 	dgrp_t		group;
 	__u32		csum1, csum2;
-	__u64	num;
+	__u64		num, num2;
 	const char *str;
 };
 
@@ -678,6 +678,17 @@ struct problem_context {
 /* Timestamp(s) on inode beyond 2310-04-04 are likely pre-1970. */
 #define PR_1_EA_TIME_OUT_OF_RANGE		0x010082
 
+/* Inode has illegal EA value inode */
+#define PR_1_ATTR_VALUE_EA_INODE		0x010083
+
+/* Parent inode has invalid EA entry. EA inode does not have
+ * EXT4_EA_INODE_FL flag. Delete EA entry? */
+#define PR_1_ATTR_NO_EA_INODE_FL		0x010085
+
+/* EA inode for parent inode does not have EXT4_EA_INODE_FL flag */
+#define PR_1_ATTR_SET_EA_INODE_FL		0x010086
+
+
 /*
  * Pass 1b errors
  */
@@ -816,8 +827,8 @@ struct problem_context {
 /* i_file_acl should be zero */
 #define PR_2_FILE_ACL_ZERO	0x02000E
 
-/* i_dir_acl should be zero */
-#define PR_2_DIR_ACL_ZERO	0x02000F
+/* i_size_high should be zero */
+#define PR_2_DIR_SIZE_HIGH_ZERO	0x02000F
 
 /* i_frag should be zero */
 #define PR_2_FRAG_ZERO		0x020010
@@ -1122,6 +1133,9 @@ struct problem_context {
 
 /* Inconsistent inode count information cached */
 #define PR_4_INCONSISTENT_COUNT		0x040004
+
+/* Extended attribute inode ref count wrong */
+#define PR_4_EA_INODE_REF_COUNT		0x040005
 
 /*
  * Pass 5 errors

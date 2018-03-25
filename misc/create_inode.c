@@ -15,6 +15,7 @@
 
 #include "config.h"
 #include <time.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <limits.h> /* for PATH_MAX */
@@ -23,7 +24,9 @@
 #elif defined HAVE_ATTR_XATTR_H
 #include <attr/xattr.h>
 #endif
+#ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
 #ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
 #endif
@@ -229,6 +232,7 @@ static errcode_t set_inode_xattr(ext2_filsys fs EXT2FS_ATTR((unused)),
 }
 #endif  /* HAVE_LLISTXATTR */
 
+#ifndef _WIN32
 /* Make a special files (block and character devices), fifo's, and sockets  */
 errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 			    struct stat *st)
@@ -252,10 +256,12 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 		mode = LINUX_S_IFIFO;
 		filetype = EXT2_FT_FIFO;
 		break;
+#ifndef _WIN32
 	case S_IFSOCK:
 		mode = LINUX_S_IFSOCK;
 		filetype = EXT2_FT_SOCK;
 		break;
+#endif
 	default:
 		return EXT2_ET_INVALID_ARGUMENT;
 	}
@@ -313,6 +319,7 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 
 	return retval;
 }
+#endif
 
 /* Make a symlink name -> target */
 errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
@@ -685,10 +692,31 @@ out:
 	return retval;
 }
 
+struct file_info {
+	char *path;
+	size_t path_len;
+	size_t path_max_len;
+};
+
+static errcode_t path_append(struct file_info *target, const char *file)
+{
+	if (strlen(file) + target->path_len + 1 > target->path_max_len) {
+		target->path_max_len *= 2;
+		target->path = realloc(target->path, target->path_max_len);
+		if (!target->path)
+			return EXT2_ET_NO_MEMORY;
+	}
+	target->path_len += sprintf(target->path + target->path_len, "/%s",
+				    file);
+	return 0;
+}
+
 /* Copy files from source_dir to fs */
 static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			       const char *source_dir, ext2_ino_t root,
-			       struct hdlinks_s *hdlinks)
+			       struct hdlinks_s *hdlinks,
+			       struct file_info *target,
+			       struct fs_ops_callbacks *fs_callbacks)
 {
 	const char	*name;
 	DIR		*dh;
@@ -700,6 +728,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 	errcode_t	retval = 0;
 	int		read_cnt;
 	int		hdlink;
+	size_t		cur_dir_path_len;
 
 	if (chdir(source_dir) < 0) {
 		retval = errno;
@@ -747,10 +776,27 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				save_inode = 1;
 		}
 
+		cur_dir_path_len = target->path_len;
+		retval = path_append(target, name);
+		if (retval) {
+			com_err(__func__, retval,
+				"while appending %s", name);
+			goto out;
+		}
+
+		if (fs_callbacks && fs_callbacks->create_new_inode) {
+			retval = fs_callbacks->create_new_inode(fs,
+				target->path, name, parent_ino, root,
+				st.st_mode & S_IFMT);
+			if (retval)
+				goto out;
+		}
+
 		switch(st.st_mode & S_IFMT) {
 		case S_IFCHR:
 		case S_IFBLK:
 		case S_IFIFO:
+#ifndef _WIN32
 		case S_IFSOCK:
 			retval = do_mknod_internal(fs, parent_ino, name, &st);
 			if (retval) {
@@ -795,6 +841,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				goto out;
 			}
 			break;
+#endif
 		case S_IFREG:
 			retval = do_write_internal(fs, parent_ino, name, name,
 						   root);
@@ -824,7 +871,8 @@ find_lnf:
 					goto out;
 			}
 			/* Populate the dir recursively*/
-			retval = __populate_fs(fs, ino, name, root, hdlinks);
+			retval = __populate_fs(fs, ino, name, root, hdlinks,
+					       target, fs_callbacks);
 			if (retval)
 				goto out;
 			if (chdir("..")) {
@@ -860,6 +908,14 @@ find_lnf:
 			goto out;
 		}
 
+		if (fs_callbacks && fs_callbacks->end_create_new_inode) {
+			retval = fs_callbacks->end_create_new_inode(fs,
+				target->path, name, parent_ino, root,
+				st.st_mode & S_IFMT);
+			if (retval)
+				goto out;
+		}
+
 		/* Save the hardlink ino */
 		if (save_inode) {
 			/*
@@ -885,6 +941,8 @@ find_lnf:
 			hdlinks->hdl[hdlinks->count].dst_ino = ino;
 			hdlinks->count++;
 		}
+		target->path_len = cur_dir_path_len;
+		target->path[target->path_len] = 0;
 	}
 
 out:
@@ -892,9 +950,11 @@ out:
 	return retval;
 }
 
-errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
-		      const char *source_dir, ext2_ino_t root)
+errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
+		       const char *source_dir, ext2_ino_t root,
+		       struct fs_ops_callbacks *fs_callbacks)
 {
+	struct file_info file_info;
 	struct hdlinks_s hdlinks;
 	errcode_t retval;
 
@@ -912,8 +972,20 @@ errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		return retval;
 	}
 
-	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks);
+	file_info.path_len = 0;
+	file_info.path_max_len = 255;
+	file_info.path = calloc(file_info.path_max_len, 1);
 
+	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks,
+			       &file_info, fs_callbacks);
+
+	free(file_info.path);
 	free(hdlinks.hdl);
 	return retval;
+}
+
+errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
+		      const char *source_dir, ext2_ino_t root)
+{
+	return populate_fs2(fs, parent_ino, source_dir, root, NULL);
 }

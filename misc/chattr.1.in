@@ -120,7 +120,8 @@ although it can be displayed by
 .BR lsattr (1).
 .PP
 A file with the 'i' attribute cannot be modified: it cannot be deleted or
-renamed, no link can be created to this file and no data can be written
+renamed, no link can be created to this file, most of the file's
+metadata can not be modified, and no data can be written
 to the file.  Only the superuser or a process possessing the
 CAP_LINUX_IMMUTABLE capability can set or clear this attribute.
 .PP
@@ -130,13 +131,13 @@ is being indexed using hashed trees.  It may not be set or reset using
 although it can be displayed by
 .BR lsattr (1).
 .PP
-A file with the 'j' attribute has all of its data written to the ext3
-or ext4 journal before being written to the file itself, if the filesystem
-is mounted with the "data=ordered" or "data=writeback" options.  When the
-filesystem is mounted with the "data=journal" option all file data
-is already journalled and this attribute has no effect.  Only
-the superuser or a process possessing the CAP_SYS_RESOURCE
-capability can set or clear this attribute.
+A file with the 'j' attribute has all of its data written to the ext3 or
+ext4 journal before being written to the file itself, if the file system
+is mounted with the "data=ordered" or "data=writeback" options and the
+file system has a journal.  When the filesystem is mounted with the
+"data=journal" option all file data is already journalled and this
+attribute has no effect.  Only the superuser or a process possessing the
+CAP_SYS_RESOURCE capability can set or clear this attribute.
 .PP
 A file with the 'N' attribute set indicates that the file has data
 stored inline, within the inode itself. It may not be set or reset using
@@ -191,7 +192,7 @@ The 'c', 's',  and 'u' attributes are not honored
 by the ext2, ext3, and ext4 filesystems as implemented in the current
 mainline Linux kernels.
 .PP
-The 'j' option is only useful if the filesystem is mounted as ext3 or ext4.
+The 'j' option is only useful for ext3 and ext4 file systems.
 .PP
 The 'D' option is only useful on Linux kernel 2.5.19 and later.
 .SH AVAILABILITY

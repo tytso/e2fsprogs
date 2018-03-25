@@ -8,6 +8,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #else
+#define HAVE_SYS_STAT_H
 #define HAVE_SYS_TIME_H
 #endif
 #include <stdio.h>

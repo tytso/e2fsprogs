@@ -1,3 +1,51 @@
+e2fsprogs (1.44.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * Fix FTBFS problem on Hurd (Closes: #893590)
+  * Fix e2fsck support of HTree directories on big-endian systems
+  * Fix miscellaneous e2image image handling for file systems with bigalloc
+    and meta_bg features enabled.
+  * Fix orphan list handling of inodes on bigalloc file systems (and other
+    situations where inodes need to be deleted or truncated) in e2fsck.
+  * Update Sweedish translation.
+  * Add Vcs-* headers in Debian packaging (Closes: #887512)
+  * Speed up reading bitmap blocks in debugfs when opening large file
+    systems.
+  * Add clarifications to chattr's man page.  (Closes: #890390)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 24 Mar 2018 15:13:28 -0400
+
+e2fsprogs (1.44.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * Update Czech, Spanish, French, Malay, and Ukrainian translations.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 07 Mar 2018 14:39:52 -0500
+
+e2fsprogs (1.44.0~rc2-1) experimental; urgency=medium
+
+  * New upstream release
+  * Fix FTBFS problem on Hurd
+  * Improved e2fsck's consistency checking for symlink.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 04 Mar 2018 15:57:21 -0500
+
+e2fsprogs (1.44.0~rc1-1) experimental; urgency=low
+
+  * New upstream release
+  * Add support for the large_dir feature
+  * Add support for the ea_data feature
+  * Resize2fs will not complain about online resizes of bigalloc file
+    systems
+  * Debugfs's ls command will now print the high bits of the mode bits
+  * Fix some corner cases with tune2fs and journal replay
+  * Add support for libreadline.so.7
+  * E2freefrag will now use the GETFSMAP ioctl for mounted file systems
+  * E2fsck is now much faster when scanning extents on bigalloc file systems
+  * Fix various compiler and UBSAN warnings
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 27 Feb 2018 16:56:32 -0500
+
 e2fsprogs (1.43.9-2) unstable; urgency=medium
 
   * Fix upgrade when there are two installations of a library (for

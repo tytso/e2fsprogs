@@ -232,6 +232,8 @@ struct ext2_dx_root_info {
 
 #define EXT2_HASH_FLAG_INCOMPAT	0x1
 
+#define EXT4_DX_BLOCK_MASK 0x0fffffff
+
 struct ext2_dx_entry {
 	__le32 hash;
 	__le32 block;
@@ -398,7 +400,7 @@ struct ext2_inode {
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
 	__u32	i_file_acl;	/* File ACL */
-	__u32	i_size_high;	/* Formerly i_dir_acl, directory ACL */
+	__u32	i_size_high;
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
@@ -446,7 +448,7 @@ struct ext2_inode_large {
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
 	__u32	i_file_acl;	/* File ACL */
-	__u32	i_size_high;	/* Formerly i_dir_acl, directory ACL */
+	__u32	i_size_high;
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
@@ -483,8 +485,6 @@ struct ext2_inode_large {
 
 #define EXT4_EPOCH_BITS 2
 #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
-
-#define i_dir_acl	i_size_high
 
 #define i_checksum_lo	osd2.linux2.l_i_checksum_lo
 
@@ -923,7 +923,9 @@ EXT4_FEATURE_INCOMPAT_FUNCS(encrypt,		4, ENCRYPT)
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
 #define EXT2_FEATURE_INCOMPAT_SUPP    (EXT2_FEATURE_INCOMPAT_FILETYPE| \
-				       EXT4_FEATURE_INCOMPAT_MMP)
+				       EXT4_FEATURE_INCOMPAT_MMP| \
+				       EXT4_FEATURE_INCOMPAT_LARGEDIR| \
+				       EXT4_FEATURE_INCOMPAT_EA_INODE)
 #define EXT2_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER| \
 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
 					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK| \

@@ -71,6 +71,7 @@ struct process_block_struct {
 	int		truncated_blocks;
 	int		abort;
 	errcode_t	errcode;
+	blk64_t last_cluster;
 };
 
 static int release_inode_block(ext2_filsys fs,
@@ -84,6 +85,7 @@ static int release_inode_block(ext2_filsys fs,
 	e2fsck_t 		ctx;
 	struct problem_context	*pctx;
 	blk64_t			blk = *block_nr;
+	blk64_t			cluster = EXT2FS_B2C(fs, *block_nr);
 	int			retval = 0;
 
 	pb = (struct process_block_struct *) priv_data;
@@ -95,6 +97,11 @@ static int release_inode_block(ext2_filsys fs,
 
 	if (blk == 0)
 		return 0;
+
+	if (pb->last_cluster == cluster)
+		return 0;
+
+	pb->last_cluster = cluster;
 
 	if ((blk < fs->super->s_first_data_block) ||
 	    (blk >= ext2fs_blocks_count(fs->super))) {
@@ -188,6 +195,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	pb.abort = 0;
 	pb.errcode = 0;
 	pb.pctx = pctx;
+	pb.last_cluster = 0;
 	if (inode->i_links_count) {
 		pb.truncating = 1;
 		pb.truncate_block = (e2_blkcnt_t)

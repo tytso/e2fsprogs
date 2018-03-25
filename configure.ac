@@ -918,8 +918,10 @@ AC_CHECK_HEADERS(m4_flatten([
 	attr/xattr.h
 	linux/falloc.h
 	linux/fd.h
+	linux/fsmap.h
 	linux/major.h
 	linux/loop.h
+	linux/types.h
 	net/if_dl.h
 	netinet/in.h
 	sys/acl.h
@@ -1114,8 +1116,10 @@ AC_CHECK_FUNCS(m4_flatten([
 	fallocate
 	fallocate64
 	fchown
+	fcntl
 	fdatasync
 	fstat64
+	fsync
 	ftruncate64
 	futimes
 	getcwd

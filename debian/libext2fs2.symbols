@@ -56,6 +56,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_adjust_ea_refcount3@Base 1.43
  ext2fs_adjust_ea_refcount@Base 1.37
  ext2fs_alloc_block2@Base 1.42
+ ext2fs_alloc_block3@Base 1.44.0~rc1
  ext2fs_alloc_block@Base 1.37
  ext2fs_alloc_generic_bmap@Base 1.42
  ext2fs_alloc_range@Base 1.43
@@ -175,6 +176,8 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_expand_dir@Base 1.37
  ext2fs_ext_attr_block_csum_set@Base 1.43
  ext2fs_ext_attr_block_csum_verify@Base 1.43
+ ext2fs_ext_attr_block_rehash@Base 1.44.0~rc1
+ ext2fs_ext_attr_hash_entry2@Base 1.44.0~rc1
  ext2fs_ext_attr_hash_entry@Base 1.41.0
  ext2fs_extent_block_csum_set@Base 1.43
  ext2fs_extent_block_csum_verify@Base 1.43
@@ -283,6 +286,8 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_get_device_size@Base 1.37
  ext2fs_get_dio_alignment@Base 1.42.3
  ext2fs_get_dx_countlimit@Base 1.43
+ ext2fs_get_ea_inode_hash@Base 1.44.0~rc1
+ ext2fs_get_ea_inode_ref@Base 1.44.0~rc1
  ext2fs_get_free_blocks2@Base 1.42
  ext2fs_get_free_blocks@Base 1.37
  ext2fs_get_generic_bitmap_end@Base 1.41.0
@@ -319,6 +324,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_group_of_blk2@Base 1.42
  ext2fs_group_of_blk@Base 1.37
  ext2fs_group_of_ino@Base 1.37
+ ext2fs_htree_intnode_maxrecs@Base 1.44.0~rc1
  ext2fs_iblk_add_blocks@Base 1.41.0
  ext2fs_iblk_set@Base 1.41.0
  ext2fs_iblk_sub_blocks@Base 1.41.0
@@ -366,6 +372,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_inode_size_set@Base 1.42.12
  ext2fs_inode_table_loc@Base 1.42
  ext2fs_inode_table_loc_set@Base 1.42
+ ext2fs_is_fast_symlink@Base 1.44.0~rc1
  ext2fs_journal_sb_start@Base 1.42.12
  ext2fs_link@Base 1.37
  ext2fs_llseek@Base 1.37
@@ -403,6 +410,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_namei_follow@Base 1.37
  ext2fs_native_flag@Base 1.37
  ext2fs_new_block2@Base 1.42
+ ext2fs_new_block3@Base 1.44.0~rc1
  ext2fs_new_block@Base 1.37
  ext2fs_new_dir_block@Base 1.37
  ext2fs_new_dir_inline_data@Base 1.43
@@ -469,6 +477,8 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_set_data_io@Base 1.37
  ext2fs_set_dir_block2@Base 1.42
  ext2fs_set_dir_block@Base 1.37
+ ext2fs_set_ea_inode_hash@Base 1.44.0~rc1
+ ext2fs_set_ea_inode_ref@Base 1.44.0~rc1
  ext2fs_set_gdt_csum@Base 1.41.0
  ext2fs_set_generic_bitmap_padding@Base 1.41.0
  ext2fs_set_generic_bitmap_range@Base 1.41.0
@@ -629,6 +639,8 @@ libext2fs.so.2 libext2fs2 #MINVER#
  qcow2_write_raw_image@Base 1.42
  set_undo_io_backing_manager@Base 1.41.0
  set_undo_io_backup_file@Base 1.41.0
+ sparse_io_manager@Base 1.44.0~rc1
+ sparsefd_io_manager@Base 1.44.0~rc1
  test_io_backing_manager@Base 1.37
  test_io_cb_read_blk64@Base 1.41.0
  test_io_cb_read_blk@Base 1.37

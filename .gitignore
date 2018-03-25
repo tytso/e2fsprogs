@@ -22,6 +22,7 @@ MCONFIG
 asm_types.h
 config.log
 config.status
+cscope.*
 debugfs/extent_cmds.c
 debugfs/debug_cmds.c
 debugfs/debugfs
@@ -171,6 +172,8 @@ misc/e2initrd_helper
 misc/e2label.8
 misc/e2undo
 misc/e2undo.8
+misc/e4crypt
+misc/e4crypt.8
 misc/e4defrag
 misc/e4defrag.8
 misc/ext4.5
@@ -201,6 +204,7 @@ misc/uuidd
 misc/uuidd.8
 misc/uuidgen
 misc/uuidgen.1
+ncscope.*
 parse-types.log
 po/Makefile.in
 po/POTFILES
@@ -218,6 +222,7 @@ tests/*.ok
 tests/*.failed
 tests/*.log
 tests/*.tmp
+tests/*.slow
 tests/mke2fs.conf
 tests/test_script
 tests/test_one

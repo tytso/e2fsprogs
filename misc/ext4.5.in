@@ -78,6 +78,14 @@ lifts this limit by causing ext4 to use a link count of 1 to indicate
 that the number of hard links to a directory is not known when the link
 count might exceed the maximum count limit.
 .TP
+.B ea_inode
+.br
+Normally, a file's extended attributes and associated metadata must fit within
+the inode or the inode's associated extended attribute block. This feature
+allows the value of each extended attribute to be placed in the data blocks of a
+separate inode if necessary, increasing the limit on the size and number of
+extended attributes per file.
+.TP
 .B encrypt
 .br
 This ext4 feature provides file-system level encryption of data blocks
@@ -174,6 +182,13 @@ option to
 .BR mke2fs (8)
 or
 .BR tune2fs(8).
+.TP
+.B large_dir
+.br
+This feature increases the limit on the number of files per directory by
+raising the maximum size of directories and, for hashed b-tree directories (see
+.BR dir_index ),
+the maximum height of the hashed b-tree used to store the directory entries.
 .TP
 .B large_file
 .br

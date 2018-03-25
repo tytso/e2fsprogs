@@ -98,12 +98,21 @@ The following relations are defined in the
 stanza.
 .TP
 .I proceed_delay
-If this relation is set to a positive integer, then if mke2fs will
-proceed after waiting
+If this relation is set to a positive integer, then mke2fs will
+wait
 .I proceed_delay
-seconds, after asking the user for permission to proceed, even if the
+seconds after asking the user for permission to proceed and
+then continue, even if the
 user has not answered the question.  Defaults to 0, which means to wait
 until the user answers the question one way or another.
+.TP
+.I sync_kludge
+If this relation is set to a positive integer, then while writing the
+inode table, mke2fs will request the operating system flush out pending
+writes to initialize the inode table every
+.I sync_kludge
+block groups.   This is needed to work around buggy kernels that don't
+handle writeback throttling correctly.
 .SH THE [defaults] STANZA
 The following relations are defined in the
 .I [defaults]
