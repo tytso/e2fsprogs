@@ -28,6 +28,22 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+#ifndef HAVE_STRNLEN
+/*
+ * Incredibly, libc5 doesn't appear to have strnlen.  So we have to
+ * provide our own.
+ */
+static int my_strnlen(const char * s, int count)
+{
+	const char *cp = s;
+
+	while (count-- && *cp)
+		cp++;
+	return cp - s;
+}
+#define strnlen(str, x) my_strnlen((str),(x))
+#endif
+
 errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 			 const char *name, const char *target)
 {
