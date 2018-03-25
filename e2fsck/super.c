@@ -72,6 +72,7 @@ struct process_block_struct {
 	int		abort;
 	errcode_t	errcode;
 	blk64_t last_cluster;
+	struct ext2_inode_large *inode;
 };
 
 static int release_inode_block(ext2_filsys fs,
@@ -168,6 +169,8 @@ static int release_inode_block(ext2_filsys fs,
 		retval |= BLOCK_CHANGED;
 	}
 
+	if (ctx->qctx)
+		quota_data_sub(ctx->qctx, pb->inode, 0, ctx->fs->blocksize);
 	ext2fs_block_alloc_stats2(fs, blk, -1);
 	ctx->free_blocks++;
 	return retval;
@@ -179,15 +182,16 @@ static int release_inode_block(ext2_filsys fs,
  * not deleted.
  */
 static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
-				struct ext2_inode *inode, char *block_buf,
+				struct ext2_inode_large *inode, char *block_buf,
 				struct problem_context *pctx)
 {
 	struct process_block_struct 	pb;
 	ext2_filsys			fs = ctx->fs;
+	blk64_t				blk;
 	errcode_t			retval;
 	__u32				count;
 
-	if (!ext2fs_inode_has_valid_blocks2(fs, inode))
+	if (!ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(inode)))
 		return 0;
 
 	pb.buf = block_buf + 3 * ctx->fs->blocksize;
@@ -196,6 +200,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	pb.errcode = 0;
 	pb.pctx = pctx;
 	pb.last_cluster = 0;
+	pb.inode = inode;
 	if (inode->i_links_count) {
 		pb.truncating = 1;
 		pb.truncate_block = (e2_blkcnt_t)
@@ -220,15 +225,17 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		return 1;
 
 	/* Refresh the inode since ext2fs_block_iterate may have changed it */
-	e2fsck_read_inode(ctx, ino, inode, "release_inode_blocks");
+	e2fsck_read_inode_full(ctx, ino, EXT2_INODE(inode), sizeof(*inode),
+			"release_inode_blocks");
 
 	if (pb.truncated_blocks)
-		ext2fs_iblk_sub_blocks(fs, inode, pb.truncated_blocks);
+		ext2fs_iblk_sub_blocks(fs, EXT2_INODE(inode),
+				pb.truncated_blocks);
 
-	if (ext2fs_file_acl_block(fs, inode)) {
-		retval = ext2fs_adjust_ea_refcount3(fs,
-				ext2fs_file_acl_block(fs, inode),
-				block_buf, -1, &count, ino);
+	blk = ext2fs_file_acl_block(fs, EXT2_INODE(inode));
+	if (blk) {
+		retval = ext2fs_adjust_ea_refcount3(fs, blk, block_buf, -1,
+				&count, ino);
 		if (retval == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			retval = 0;
 			count = 1;
@@ -240,13 +247,66 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 			return 1;
 		}
 		if (count == 0) {
-			ext2fs_block_alloc_stats2(fs,
-					ext2fs_file_acl_block(fs, inode), -1);
+			if (ctx->qctx)
+				quota_data_sub(ctx->qctx, inode, 0,
+						ctx->fs->blocksize);
+			ext2fs_block_alloc_stats2(fs, blk, -1);
 			ctx->free_blocks++;
 		}
-		ext2fs_file_acl_block_set(fs, inode, 0);
+		ext2fs_file_acl_block_set(fs, EXT2_INODE(inode), 0);
 	}
 	return 0;
+}
+
+/* Load all quota data in preparation for orphan clearing. */
+static errcode_t e2fsck_read_all_quotas(e2fsck_t ctx)
+{
+	ext2_ino_t qf_ino;
+	enum quota_type qtype;
+	errcode_t retval = 0;
+
+	if (!ext2fs_has_feature_quota(ctx->fs->super))
+		return retval;
+
+	retval = quota_init_context(&ctx->qctx, ctx->fs, 0);
+	if (retval)
+		return retval;
+
+	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++) {
+		qf_ino = *quota_sb_inump(ctx->fs->super, qtype);
+		if (qf_ino == 0)
+			continue;
+
+		retval = quota_update_limits(ctx->qctx, qf_ino, qtype);
+		if (retval)
+			break;
+	}
+	if (retval)
+		quota_release_context(&ctx->qctx);
+	return retval;
+}
+
+/* Write all the quota info to disk. */
+static errcode_t e2fsck_write_all_quotas(e2fsck_t ctx)
+{
+	struct problem_context pctx;
+	enum quota_type qtype;
+
+	if (!ext2fs_has_feature_quota(ctx->fs->super))
+		return 0;
+
+	clear_problem_context(&pctx);
+	for (qtype = 0 ; qtype < MAXQUOTAS; qtype++) {
+		pctx.num = qtype;
+		pctx.errcode = quota_write_inode(ctx->qctx, 1 << qtype);
+		if (pctx.errcode) {
+			fix_problem(ctx, PR_6_WRITE_QUOTAS, &pctx);
+			break;
+		}
+	}
+
+	quota_release_context(&ctx->qctx);
+	return pctx.errcode;
 }
 
 /*
@@ -257,12 +317,19 @@ static int release_orphan_inodes(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t	ino, next_ino;
-	struct ext2_inode inode;
+	struct ext2_inode_large inode;
 	struct problem_context pctx;
 	char *block_buf;
 
 	if ((ino = fs->super->s_last_orphan) == 0)
 		return 0;
+
+	clear_problem_context(&pctx);
+	pctx.errcode = e2fsck_read_all_quotas(ctx);
+	if (pctx.errcode) {
+		fix_problem(ctx, PR_0_QUOTA_INIT_CTX, &pctx);
+		return 1;
+	}
 
 	/*
 	 * Win or lose, we won't be using the head of the orphan inode
@@ -276,15 +343,18 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	 * list, since the orphan list can't be trusted; and we're
 	 * going to be running a full e2fsck run anyway...
 	 */
-	if (fs->super->s_state & EXT2_ERROR_FS)
+	if (fs->super->s_state & EXT2_ERROR_FS) {
+		if (ctx->qctx)
+			quota_release_context(&ctx->qctx);
 		return 0;
+	}
 
 	if ((ino < EXT2_FIRST_INODE(fs->super)) ||
 	    (ino > fs->super->s_inodes_count)) {
 		clear_problem_context(&pctx);
 		pctx.ino = ino;
 		fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_HEAD_INODE, &pctx);
-		return 1;
+		goto err_qctx;
 	}
 
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 4,
@@ -292,10 +362,11 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	e2fsck_read_bitmaps(ctx);
 
 	while (ino) {
-		e2fsck_read_inode(ctx, ino, &inode, "release_orphan_inodes");
+		e2fsck_read_inode_full(ctx, ino, EXT2_INODE(&inode),
+				sizeof(inode), "release_orphan_inodes");
 		clear_problem_context(&pctx);
 		pctx.ino = ino;
-		pctx.inode = &inode;
+		pctx.inode = EXT2_INODE(&inode);
 		pctx.str = inode.i_links_count ? _("Truncating") :
 			_("Clearing");
 
@@ -307,13 +378,15 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		     (next_ino > fs->super->s_inodes_count))) {
 			pctx.ino = next_ino;
 			fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_INODE, &pctx);
-			goto return_abort;
+			goto err_buf;
 		}
 
 		if (release_inode_blocks(ctx, ino, &inode, block_buf, &pctx))
-			goto return_abort;
+			goto err_buf;
 
 		if (!inode.i_links_count) {
+			if (ctx->qctx)
+				quota_data_inodes(ctx->qctx, &inode, ino, -1);
 			ext2fs_inode_alloc_stats2(fs, ino, -1,
 						  LINUX_S_ISDIR(inode.i_mode));
 			ctx->free_inodes++;
@@ -321,13 +394,21 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		} else {
 			inode.i_dtime = 0;
 		}
-		e2fsck_write_inode(ctx, ino, &inode, "delete_file");
+		e2fsck_write_inode_full(ctx, ino, EXT2_INODE(&inode),
+				sizeof(inode), "delete_file");
 		ino = next_ino;
 	}
 	ext2fs_free_mem(&block_buf);
+	pctx.errcode = e2fsck_write_all_quotas(ctx);
+	if (pctx.errcode)
+		goto err;
 	return 0;
-return_abort:
+err_buf:
 	ext2fs_free_mem(&block_buf);
+err_qctx:
+	if (ctx->qctx)
+		quota_release_context(&ctx->qctx);
+err:
 	return 1;
 }
 
