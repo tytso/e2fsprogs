@@ -1,8 +1,0 @@
-enable-metadata_csum-by-default
-libuuid-fix-UBSAN-issue-in-get_random_fd
-fsck-avoid-buffer-overflow
-libss-add-newer-libreadline.so.7-to-dlopen-path
-tune2fs-dont-recover-journal-if-device-is-busy
-tune2fs-move-the-journal-recovery
-fix-up-s_lastcheck
-require-fsck-when-turning-off-csum_seed-and-uuid-changed
