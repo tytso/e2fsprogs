@@ -179,7 +179,7 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 	print_flag(&fe_flags, FIEMAP_EXTENT_SHARED, flags, "shared,");
 	/* print any unknown flags as hex values */
 	for (mask = 1; fe_flags != 0 && mask != 0; mask <<= 1) {
-		char hex[6];
+		char hex[sizeof(mask) * 2 + 4]; /* 2 chars/byte + 0x, + NUL */
 
 		if ((fe_flags & mask) == 0)
 			continue;
