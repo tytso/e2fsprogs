@@ -1129,14 +1129,14 @@ static int probe_gfs2(struct blkid_probe *probe,
 	return 1;
 }
 
-static void unicode_16be_to_utf8(unsigned char *str, int out_len,
-				 const unsigned char *buf, int in_len)
+static void unicode_to_utf8(unsigned char *str, int out_len,
+				 const unsigned char *buf, int in_len, int be)
 {
 	int i, j;
 	unsigned int c;
 
 	for (i = j = 0; i + 2 <= in_len; i += 2) {
-		c = (buf[i] << 8) | buf[i+1];
+		c = (buf[be ? i : i + 1] << 8) | buf[be ? i + 1 : i];
 		if (c == 0) {
 			str[j] = '\0';
 			break;
@@ -1158,6 +1158,18 @@ static void unicode_16be_to_utf8(unsigned char *str, int out_len,
 		}
 	}
 	str[j] = '\0';
+}
+
+static void unicode_16be_to_utf8(unsigned char *str, int out_len,
+				 const unsigned char *buf, int in_len)
+{
+	unicode_to_utf8(str, out_len, buf, in_len, 1);
+}
+
+static void unicode_16le_to_utf8(unsigned char *str, int out_len,
+				 const unsigned char *buf, int in_len)
+{
+	unicode_to_utf8(str, out_len, buf, in_len, 0);
 }
 
 static int probe_hfs(struct blkid_probe *probe __BLKID_ATTR((unused)),
@@ -1482,7 +1494,11 @@ static int probe_exfat(struct blkid_probe *probe, struct blkid_magic *id,
 
     label = find_exfat_entry_label(probe, sb);
     if (label) {
-        blkid_set_tag(probe->dev, "LABEL", label->name, label->length);
+        uint8_t buf[512];
+        memset(buf, 0, sizeof(buf));
+        uint8_t buf_len = label->length * 2;
+        unicode_16le_to_utf8((unsigned char *)buf, sizeof(buf), label->name, buf_len);
+        blkid_set_tag(probe->dev, "LABEL", buf, buf_len);
     } else {
         blkid_set_tag(probe->dev, "LABEL", "disk", 4);
     }
