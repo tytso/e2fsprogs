@@ -1542,6 +1542,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			case EXT2_ET_NO_INLINE_DATA:
 			case EXT2_ET_EXT_ATTR_CSUM_INVALID:
 			case EXT2_ET_EA_BAD_VALUE_OFFSET:
+			case EXT2_ET_EA_INODE_CORRUPTED:
 				/* broken EA or no system.data EA; truncate */
 				if (fix_problem(ctx, PR_1_INLINE_DATA_NO_ATTR,
 						&pctx)) {
