@@ -903,6 +903,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			memcpy(x->value, value_start + entry->e_value_offs,
 			       entry->e_value_size);
 		} else {
+			struct ext2_inode *ea_inode;
 			ext2_file_t ea_file;
 
 			if (entry->e_value_offs != 0)
@@ -920,7 +921,12 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			if (err)
 				return err;
 
-			if (ext2fs_file_get_size(ea_file) !=
+			ea_inode = ext2fs_file_get_inode(ea_file);
+			if ((ea_inode->i_flags & EXT4_INLINE_DATA_FL) ||
+			    !(ea_inode->i_flags & EXT4_EA_INODE_FL) ||
+			    ea_inode->i_links_count == 0)
+				err = EXT2_ET_EA_INODE_CORRUPTED;
+			else if (ext2fs_file_get_size(ea_file) !=
 			    entry->e_value_size)
 				err = EXT2_ET_EA_BAD_VALUE_SIZE;
 			else

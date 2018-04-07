@@ -542,4 +542,7 @@ ec	EXT2_ET_CORRUPT_JOURNAL_SB,
 ec	EXT2_ET_INODE_CORRUPTED,
 	"Inode is corrupted"
 
+ec	EXT2_ET_EA_INODE_CORRUPTED,
+	"Inode containing extended attribute value is corrupted"
+
 	end
