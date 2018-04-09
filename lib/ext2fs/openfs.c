@@ -185,10 +185,10 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 					     fs->image_header);
 		if (retval)
 			goto cleanup;
-		if (fs->image_header->magic_number != EXT2_ET_MAGIC_E2IMAGE)
+		if (ext2fs_le32_to_cpu(fs->image_header->magic_number) != EXT2_ET_MAGIC_E2IMAGE)
 			return EXT2_ET_MAGIC_E2IMAGE;
 		superblock = 1;
-		block_size = fs->image_header->fs_blocksize;
+		block_size = ext2fs_le32_to_cpu(fs->image_header->fs_blocksize);
 	}
 
 	/*
