@@ -96,8 +96,8 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 
 static void block_sha_map_free_entry(void *data)
 {
-    free(data);
-    return;
+	free(data);
+	return;
 }
 
 /*
