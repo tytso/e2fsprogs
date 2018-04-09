@@ -396,7 +396,12 @@ static void check_if_skip(e2fsck_t ctx)
 		if (batt && ((ctx->now - fs->super->s_lastcheck) <
 			     fs->super->s_checkinterval*2))
 			reason = 0;
+	} else if (broken_system_clock && fs->super->s_checkinterval) {
+		log_out(ctx, "%s: ", ctx->device_name);
+		log_out(ctx, "%s",
+			_("ignoring check interval, broken_system_clock set\n"));
 	}
+
 	if (reason) {
 		log_out(ctx, "%s", ctx->device_name);
 		log_out(ctx, reason, reason_arg);
