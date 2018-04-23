@@ -67,7 +67,7 @@ static void free_sparse_blocks(struct sparse_map *sm)
 	sm->blocks = NULL;
 }
 
-static int sparse_import_segment(void *priv, const void *data, int len,
+static int sparse_import_segment(void *priv, const void *data, size_t len,
 				 unsigned int block, unsigned int nr_blocks)
 {
 	struct sparse_map *sm = priv;
