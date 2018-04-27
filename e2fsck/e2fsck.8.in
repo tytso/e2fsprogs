@@ -275,6 +275,11 @@ If the filesystem does not have the read-only feature bit, but has shared
 blocks anyway, then this option will have no effect. Note when using this
 option, if there is no free space to clone blocks, there is no prompt to
 delete files and instead the operation will fail.
+.IP
+Note that unshare_blocks requires the "-f" option to ensure that all passes
+are run. Additionally, if "-n" is also specified, e2fsck will simulate trying
+to allocate enough space to deduplicate. If this fails, the exit code will
+be non-zero.
 .RE
 .TP
 .B \-f
