@@ -1255,7 +1255,8 @@ check_error:
 		dump_mmp_msg(fs->mmp_buf,
 			     _("If you are sure the filesystem is not "
 			       "in use on any node, run:\n"
-			       "'tune2fs -f -E clear_mmp {device}'\n"));
+			       "'tune2fs -f -E clear_mmp %s'\n"),
+			     ctx->device_name);
 	} else if (retval == EXT2_ET_MMP_MAGIC_INVALID) {
 		if (fix_problem(ctx, PR_0_MMP_INVALID_MAGIC, &pctx)) {
 			ext2fs_mmp_clear(fs);

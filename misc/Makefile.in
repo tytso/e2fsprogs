@@ -39,7 +39,8 @@ USPROGS=	mklost+found filefrag e2freefrag $(UUIDD_PROG) \
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 $(FINDFS_MAN) $(BLKID_MAN) $(E2IMAGE_MAN) \
 			logsave.8 filefrag.8 e2freefrag.8 e2undo.8 \
-			$(UUIDD_MAN) $(E4DEFRAG_MAN) $(E4CRYPT_MAN) @FSCK_MAN@
+			$(UUIDD_MAN) $(E4DEFRAG_MAN) $(E4CRYPT_MAN) @FSCK_MAN@ \
+			e2mmpstatus.8
 FMANPAGES=	mke2fs.conf.5 ext4.5
 
 UPROGS=		chattr lsattr @UUID_CMT@ uuidgen
@@ -475,6 +476,10 @@ dumpe2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/dumpe2fs.8.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/dumpe2fs.8.in dumpe2fs.8
 
+e2mmpstatus.8: $(DEP_SUBSTITUTE) $(srcdir)/e2mmpstatus.8.in
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2mmpstatus.8.in e2mmpstatus.8
+
 badblocks.8: $(DEP_SUBSTITUTE) $(srcdir)/badblocks.8.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/badblocks.8.in badblocks.8	
@@ -545,6 +550,8 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		(cd $(DESTDIR)$(root_sbindir); \
 			$(LN) $(LINK_INSTALL_FLAGS) mke2fs mkfs.$$i); \
 	done
+	$(Q) (cd $(DESTDIR)$(root_sbindir); \
+		$(LN) $(LINK_INSTALL_FLAGS) dumpe2fs e2mmpstatus)
 	$(Q) (cd $(DESTDIR)$(root_sbindir); \
 		$(LN) $(LINK_INSTALL_FLAGS) tune2fs e2label)
 	$(Q) if test -n "$(FINDFS_LINK)"; then \
@@ -661,7 +668,7 @@ uninstall:
 	for i in $(UMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man1dir)/$$i; \
 	done
-	for i in $(FINDFS_LINK) e2label ; do \
+	for i in $(FINDFS_LINK) e2label e2mmpstatus ; do \
 		$(RM) -f $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 	for i in $(FMANPAGES); do \

@@ -25,6 +25,7 @@ RESIZE2FS_EXE="../resize/resize2fs"
 RESIZE2FS="$USE_VALGRIND $RESIZE2FS_EXE"
 E2UNDO_EXE="../misc/e2undo"
 E2UNDO="$USE_VALGRIND $E2UNDO_EXE"
+E2MMPSTATUS="$USE_VALGRIND ../misc/dumpe2fs -m"
 TEST_REL=../tests/progs/test_rel
 TEST_ICOUNT=../tests/progs/test_icount
 CRCSUM=../tests/progs/crcsum

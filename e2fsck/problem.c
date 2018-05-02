@@ -450,7 +450,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Superblock MMP block checksum does not match MMP block. */
 	{ PR_0_MMP_CSUM_INVALID,
-	  N_("@S MMP @b checksum does not match MMP @b.  "),
+	  N_("@S MMP @b checksum does not match.  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
 
 	/* Superblock 64bit filesystem needs extents to access the whole disk */

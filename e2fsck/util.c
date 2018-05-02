@@ -756,16 +756,28 @@ int write_all(int fd, char *buf, size_t count)
 	return c;
 }
 
-void dump_mmp_msg(struct mmp_struct *mmp, const char *msg)
+void dump_mmp_msg(struct mmp_struct *mmp, const char *fmt, ...)
 {
+	va_list pvar;
 
-	if (msg)
-		printf("MMP check failed: %s\n", msg);
+	if (fmt) {
+		printf("MMP check failed: ");
+		va_start(pvar, fmt);
+		vprintf(fmt, pvar);
+		va_end(pvar);
+	}
 	if (mmp) {
 		time_t t = mmp->mmp_time;
 
-		printf("MMP error info: last update: %s node: %s device: %s\n",
-		       ctime(&t), mmp->mmp_nodename, mmp->mmp_bdevname);
+		printf("MMP_block:\n");
+		printf("    mmp_magic: 0x%x\n", mmp->mmp_magic);
+		printf("    mmp_check_interval: %d\n",
+		       mmp->mmp_check_interval);
+		printf("    mmp_sequence: %08x\n", mmp->mmp_seq);
+		printf("    mmp_update_date: %s", ctime(&t));
+		printf("    mmp_update_time: %lld\n", mmp->mmp_time);
+		printf("    mmp_node_name: %s\n", mmp->mmp_nodename);
+		printf("    mmp_device_name: %s\n", mmp->mmp_bdevname);
 	}
 }
 
