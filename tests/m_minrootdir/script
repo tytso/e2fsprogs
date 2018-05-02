@@ -36,7 +36,7 @@ stat /emptydir
 stat /dir
 stat /dir/file
 ENDL
-$DEBUGFS -f $TMPFILE.cmd $TMPFILE 2>&1 | egrep "(stat|Size:|Type:)" | sed -f $test_dir/output.sed >> $OUT
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE 2>&1 | egrep "(stat|Size:|Type:)" >> $OUT
 
 cat > $TMPFILE.cmd << ENDL
 ex /emptyfile
@@ -46,7 +46,7 @@ ex /bigzerofile
 ex /dir
 ex /dir/file
 ENDL
-$DEBUGFS -f $TMPFILE.cmd $TMPFILE 2>&1 | sed -f $test_dir/output.sed >> $OUT
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE >> $OUT 2>&1
 $FSCK -f -n $TMPFILE >> $OUT 2>&1
 
 echo "minify fs" >> $OUT
@@ -61,7 +61,7 @@ $RESIZE2FS -M $TMPFILE >> $OUT 2>&1
 $DUMPE2FS $TMPFILE >> $OUT 2>&1
 $FSCK -f -n $TMPFILE >> $OUT 2>&1
 
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" < $OUT > $OUT.tmp
+sed -f $cmd_dir/filter.sed -f $test_dir/output.sed -e "s;$TMPFILE;test.img;" < $OUT > $OUT.tmp
 mv $OUT.tmp $OUT
 
 # Do the verification
@@ -76,5 +76,5 @@ else
         diff $DIFF_OPTS $EXP $OUT > $test_name.failed
 fi
 
-rm -rf $TMPFILE.cmd $MKFS_DIR $OUT.sed
+rm -rf $TMPFILE.cmd $MKFS_DIR
 unset MKFS_DIR OUT EXP

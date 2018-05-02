@@ -12,8 +12,6 @@ else
 	EXP=$test_dir/expect
 fi
 
-cp /dev/null $OUT
-
 cat > $TMPFILE.conf << ENDL
 [fs_types]
 ext4 = {
@@ -24,16 +22,14 @@ ext4 = {
         inode_ratio = 16384
 }
 ENDL
-MKE2FS_CONFIG=$TMPFILE.conf $MKE2FS -F -o Linux -b 1024 -O bigalloc -T ext4 $TMPFILE 65536 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT 2>&1
-rm -rf $TMPFILE.conf
+MKE2FS_CONFIG=$TMPFILE.conf $MKE2FS -F -o Linux -b 1024 -O bigalloc -T ext4 $TMPFILE 65536 > $OUT.new 2>&1
+rm -f $TMPFILE.conf
 
-$FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
-rm -f $OUT.new
 
-echo "debugfs write files" >> $OUT
+echo "debugfs write files" >> $OUT.new
 make_file() {
 	name="$1"
 	start="$2"
@@ -103,16 +99,12 @@ echo "ex /f" >> $TMPFILE.cmd2
 
 $DEBUGFS -w -f $TMPFILE.cmd $TMPFILE > /dev/null 2>&1
 $DEBUGFS -f $TMPFILE.cmd2 $TMPFILE >> $OUT.new 2>&1
-sed -f $cmd_dir/filter.sed < $OUT.new >> $OUT
-rm -rf $OUT.new $TMPFILE.cmd $TMPFILE.cmd2
 
-$FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
-rm -f $OUT.new
-
-rm -f $TMPFILE
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $TMPFILE.cmd $TMPFILE.cmd2 $OUT.new
 
 cmp -s $OUT $EXP
 status=$?

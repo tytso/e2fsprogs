@@ -12,17 +12,13 @@ else
 	EXP=$test_dir/expect
 fi
 
-cp /dev/null $OUT
+$MKE2FS -F -o Linux -b 1024 -O has_journal -T ext4 $TMPFILE 262144 > $OUT.new 2>&1
 
-$MKE2FS -F -o Linux -b 1024 -O has_journal -T ext4 $TMPFILE 262144 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT 2>&1
-
-$FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
-rm -f $OUT.new
 
-echo "debugfs write journal" >> $OUT
+echo "debugfs write journal" >> $OUT.new
 echo "jo" > $TMPFILE.cmd
 echo "jw -b 259-4356 /dev/zero" >> $TMPFILE.cmd
 echo "jc" >> $TMPFILE.cmd
@@ -30,21 +26,16 @@ echo "jo" >> $TMPFILE.cmd
 echo "jw -r 259-4356" >> $TMPFILE.cmd
 echo "jc" >> $TMPFILE.cmd
 $DEBUGFS -w -f $TMPFILE.cmd $TMPFILE 2>> $OUT.new > /dev/null
-sed -f $cmd_dir/filter.sed < $OUT.new >> $OUT
-rm -rf $OUT.new
 
 test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp "$TMPFILE" "$JOURNAL_DUMP_DIR/$test_name.img"
 echo "logdump -c" > $TMPFILE.cmd
-$DEBUGFS -f $TMPFILE.cmd $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
-rm -rf $TMPFILE.cmd
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE >> $OUT.new 2>&1
 
-$FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
-rm -f $OUT.new
-
-rm -f $TMPFILE
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new > $OUT
+rm -f $TMPFILE $TMPFILE.cmd $OUT.new
 
 cmp -s $OUT $EXP
 status=$?

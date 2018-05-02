@@ -10,9 +10,8 @@ if [ $(uname -s) = "Darwin" ]; then
 fi
 
 cp /dev/null $TMPFILE
-rm -f $OUT.new
 
-echo mke2fs -q -t ext4 -F -o Linux -b 1024 test.img 1G >> $OUT.new
+echo mke2fs -q -t ext4 -F -o Linux -b 1024 test.img 1G > $OUT.new
 $MKE2FS -q -t ext4 -F -o Linux -b 1024 $TMPFILE 1G >> $OUT.new 2>&1
 
 echo "tune2fs -f -O ^uninit_bg test.img" >> $OUT.new
@@ -33,10 +32,9 @@ $TUNE2FS -f -O ^uninit_bg $TMPFILE >> $OUT.new 2>&1
 echo " " >> $OUT.new
 echo fsck $FSCK_OPT -N test_filesys test.img >> $OUT.new
 $FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
+sed -f $cmd_dir/filter.sed < $OUT.new > $OUT
 
-sed -f $cmd_dir/filter.sed $OUT.new > $OUT
-
-rm -f $OUT.new $TMPFILE
+rm -f $TMPFILE $OUT.new
 
 #
 # Do the verification

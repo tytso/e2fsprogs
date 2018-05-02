@@ -27,7 +27,7 @@ ENDL
 echo "resize2fs test" > $OUT
 
 MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4h $TMPFILE 786432 >> $OUT 2>&1
-rm -rf $CONF
+rm -f $CONF
 
 # dump and check
 ($DUMPE2FS -h $TMPFILE; $DUMPE2FS -g $TMPFILE) 2> /dev/null | sed -f $cmd_dir/filter.sed > $OUT.before
@@ -37,7 +37,7 @@ echo Exit status is $status >> $OUT
 
 # convert it
 echo "resize2fs test.img -b" >> $OUT
-$RESIZE2FS -b -f $TMPFILE 2>&1 >> $OUT 2>&1
+$RESIZE2FS -b -f $TMPFILE >> $OUT 2>&1
 status=$?
 echo Exit status is $status >> $OUT
 

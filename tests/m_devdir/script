@@ -16,7 +16,7 @@ $DEBUGFS -R 'ls /' $TMPFILE >> $OUT 2>&1
 $FSCK -f -n $TMPFILE >> $OUT 2>&1
 fsck_status=$?
 
-sed -f $cmd_dir/filter.sed < $OUT > $OUT.tmp
+sed -f $cmd_dir/filter.sed $OUT > $OUT.tmp
 mv $OUT.tmp $OUT
 
 if [ $mkfs_status -ne 0 ]; then
@@ -28,5 +28,5 @@ else
         echo "$test_name: $test_description: failed"
 fi
 
-rm -rf $TMPFILE.cmd $OUT.sed
+rm -f $TMPFILE.cmd
 unset MKFS_DIR OUT EXP

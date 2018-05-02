@@ -10,10 +10,10 @@ EXP=$test_dir/expect
 
 gunzip < $IMAGE > $TMPFILE
 
-echo "resize2fs test" > $OUT
+echo "resize2fs test" > $OUT.new
 
-echo "resize2fs -M test.img" >> $OUT
-$RESIZE2FS -M $TMPFILE 2>&1 >> $OUT.new 2>&1
+echo "resize2fs -M test.img" >> $OUT.new
+$RESIZE2FS -M $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
 
@@ -21,8 +21,7 @@ echo " " >> $OUT.new
 echo fsck $FSCK_OPT -N test_filesys test.img >> $OUT.new
 $FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
 echo Exit status is $status >> $OUT.new
-
-sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
 rm $TMPFILE $OUT.new
 
 #

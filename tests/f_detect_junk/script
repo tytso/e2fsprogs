@@ -18,7 +18,7 @@ else
 	EXP=$test_dir/expect.nodebugfs
 fi
 OUT=$test_name.log
-rm -rf $test_name.failed $test_name.ok
+rm -f $test_name.failed $test_name.ok
 
 echo "*** e2fsck" > $OUT
 $FSCK $FSCK_OPT $TMPFILE >> $OUT 2>&1

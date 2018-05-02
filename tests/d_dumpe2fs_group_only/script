@@ -18,20 +18,16 @@ else
 	EXP=$test_dir/expect
 fi
 
-cp /dev/null $OUT
+$MKE2FS -F -o Linux -b 4096 -O has_journal -T ext4 $TMPFILE 1048576 > $OUT.new 2>&1
 
-$MKE2FS -F -o Linux -b 4096 -O has_journal -T ext4 $TMPFILE 1048576 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT 2>&1
-
-$FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
-rm -f $OUT.new
 
-echo "dumpe2fs output" >> $OUT
-$DUMPE2FS -g $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT
-
-rm -f $TMPFILE
+echo "dumpe2fs output" >> $OUT.new
+$DUMPE2FS -g $TMPFILE >> $OUT.new 2>&1
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $OUT.new
 
 cmp -s $OUT $EXP
 status=$?

@@ -13,18 +13,17 @@ gzip -d < $IMAGE > $TMPFILE
 # Run fsck to fix things?
 EXP=$test_dir/expect
 OUT=$test_name.log
-rm -rf $test_name.failed $test_name.ok
 
-$FSCK $FSCK_OPT -N test_filesys $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed > $OUT
-echo "Exit status is $?" >> $OUT
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE 2>&1 > $OUT.new
+echo "Exit status is $?" >> $OUT.new
 
-echo "debugfs cat uninit file" >> $OUT
+echo "debugfs cat uninit file" >> $OUT.new
 echo "ex /a" > $TMPFILE.cmd
 echo "cat /a" >> $TMPFILE.cmd
 $DEBUGFS -w -f $TMPFILE.cmd $TMPFILE >> $OUT.new 2>&1
 echo >> $OUT.new
-sed -f $cmd_dir/filter.sed < $OUT.new >> $OUT
-rm -rf $OUT.new $TMPFILE $TMPFILE.cmd
+sed -f $cmd_dir/filter.sed < $OUT.new > $OUT
+rm -f $OUT.new $TMPFILE $TMPFILE.cmd
 
 # Figure out what happened
 if cmp -s $EXP $OUT; then
