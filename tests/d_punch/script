@@ -29,7 +29,7 @@ rm -rf $TMPFILE.conf
 $FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 rm -f $OUT.new
 
 echo "debugfs write files" >> $OUT
@@ -108,7 +108,7 @@ rm -rf $OUT.new $TMPFILE.cmd $TMPFILE.cmd2
 $FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 rm -f $OUT.new
 
 rm -f $TMPFILE

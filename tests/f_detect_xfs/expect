@@ -17,7 +17,7 @@ is corrupt, and you might try running e2fsck with an alternate superblock:
 
 test.img contains a xfs file system labelled 'test_filsys'
 *** debugfs
-test.img: Bad magic number in super-block while opening filesystem
+debugfs: Bad magic number in super-block while trying to open test.img
 Checksum errors in superblock!  Retrying...
 test.img contains a xfs file system labelled 'test_filsys'
 *** tune2fs

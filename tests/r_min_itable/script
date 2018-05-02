@@ -22,7 +22,7 @@ echo fsck $FSCK_OPT -N test_filesys test.img >> $OUT.new
 $FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT.new 2>&1
 echo Exit status is $status >> $OUT.new
 
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 rm $TMPFILE $OUT.new
 
 #

@@ -19,12 +19,12 @@ dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
 
 echo mke2fs -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 16384 > $OUT
 $MKE2FS -F -O resize_inode -o Linux -b 1024 -g 1024 $TMPFILE 16384 2>&1 |
-	sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" >> $OUT
+	sed -f $cmd_dir/filter.sed >> $OUT
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 rm -f $OUT.new
 
 echo ----------------------------------------------- >> $OUT

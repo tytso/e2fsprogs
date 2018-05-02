@@ -19,7 +19,7 @@ $MKE2FS -F -o Linux -b 4096 -O has_journal -T ext4 $TMPFILE 65536 2>&1 | sed -f 
 $FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 rm -f $OUT.new
 
 bitmaps="$($DUMPE2FS $TMPFILE 2>&1 | grep 'bitmap at' | sed -e 's/^.*bitmap at \([0-9]*\).*$/\1/g' | tr '\n' ',')"
@@ -49,7 +49,7 @@ rm -rf $OUT.new
 $FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
-sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new >> $OUT
+sed -f $cmd_dir/filter.sed $OUT.new >> $OUT
 rm -f $OUT.new
 
 rm -f $TMPFILE $TMPFILE.cmd

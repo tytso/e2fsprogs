@@ -177,7 +177,8 @@ try_open_again:
 		goto try_open_again;
 	}
 	if (retval) {
-		com_err(device, retval, "while opening filesystem");
+		com_err(debug_prog_name, retval,
+			"while trying to open %s", device);
 		if (retval == EXT2_ET_BAD_MAGIC)
 			check_plausibility(device, CHECK_FS_EXIST, NULL);
 		current_fs = NULL;
