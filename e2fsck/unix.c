@@ -742,6 +742,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 			continue;
 		} else if (strcmp(token, "unshare_blocks") == 0) {
 			ctx->options |= E2F_OPT_UNSHARE_BLOCKS;
+			ctx->options |= E2F_OPT_FORCE;
 			continue;
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
