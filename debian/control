@@ -187,7 +187,7 @@ Description: ext2/ext3/ext4 file system libraries - headers and static libraries
  libraries.
 
 Package: e2fsprogs
-Essential: yes
+XB-Important: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Multi-Arch: foreign
 Suggests: gpart, parted, fuse2fs, e2fsck-static
