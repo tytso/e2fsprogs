@@ -1,3 +1,16 @@
+e2fsprogs (1.44.2-1) unstable; urgency=medium
+
+  * New upstream release
+  * Demote e2fsprogs from Essential: yes to XB-Important: yes
+    (Closes: #474540)
+  * Fix mke2fs to print a more useful/correct error message if
+    ext2fs_close_free() fails at the end of the file system
+    creation process
+  * Improve chattr's man page
+  * Update Polish translation
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 14 May 2018 19:59:27 -0400
+
 e2fsprogs (1.44.1-2) unstable; urgency=medium
 
   * Fix e2image handling of e2i files on big endian systems
