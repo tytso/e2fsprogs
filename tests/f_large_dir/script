@@ -32,7 +32,7 @@ $MKE2FS -b 1024 -O large_dir,uninit_bg,dir_nlink -F $TMPFILE 460800 \
 	    printf "ln foofile %0255X\n" $i
 	    i=$(($i + 1))
 	done
-} | $DEBUGFS -w -f /dev/stdin $TMPFILE > /dev/null 2>&1
+} | $DEBUGFS -w $TMPFILE > /dev/null 2>&1
 
 $E2FSCK -yfD $TMPFILE > $OUT.new 2>&1
 status=$?

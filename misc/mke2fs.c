@@ -3295,8 +3295,9 @@ no_journal:
 	max_mnt_count = fs->super->s_max_mnt_count;
 	retval = ext2fs_close_free(&fs);
 	if (retval) {
-		fprintf(stderr, "%s",
-			_("\nWarning, had trouble writing out superblocks.\n"));
+		com_err(program_name, retval, "%s",
+			_("while writing out and closing file system"));
+		retval = 1;
 	} else if (!quiet) {
 		printf("%s", _("done\n\n"));
 		if (!getenv("MKE2FS_SKIP_CHECK_MSG"))
