@@ -2097,15 +2097,30 @@ void do_imap(int argc, char *argv[])
 
 void do_idump(int argc, char *argv[])
 {
+	struct ext2_inode_large *inode;
 	ext2_ino_t	ino;
 	unsigned char	*buf;
 	errcode_t	err;
-	int		isize;
+	unsigned int	isize, size, offset = 0;
+	int		c, mode = 0;
 
-	if (common_args_process(argc, argv, 2, 2, argv[0],
-				"<file>", 0))
+	reset_getopt();
+	while ((c = getopt (argc, argv, "be")) != EOF) {
+		if (mode || c == '?') {
+		print_usage:
+			com_err(argv[0], 0,
+				"Usage: inode_dump [-b]|[-e] <file>");
+			return;
+		}
+		mode = c;
+	}
+	if (optind != argc-1)
 		return;
-	ino = string_to_inode(argv[1]);
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	ino = string_to_inode(argv[optind]);
 	if (!ino)
 		return;
 
@@ -2123,7 +2138,26 @@ void do_idump(int argc, char *argv[])
 		goto err;
 	}
 
-	do_byte_hexdump(stdout, buf, isize);
+	inode = (struct ext2_inode_large *) buf;
+	size = isize;
+	switch (mode) {
+	case 'b':
+		offset = ((char *) (&inode->i_block)) - ((char *) buf);
+		size = sizeof(inode->i_block);
+		break;
+	case 'e':
+		if (size <= EXT2_GOOD_OLD_INODE_SIZE) {
+		no_extra_space:
+			com_err(argv[0], 0, "No extra space in inode");
+			goto err;
+		}
+		offset = EXT2_GOOD_OLD_INODE_SIZE + inode->i_extra_isize;
+		if (offset > size)
+			goto err;
+		size -= offset;
+		break;
+	}
+	do_byte_hexdump(stdout, buf + offset, size);
 err:
 	ext2fs_free_mem(&buf);
 }
