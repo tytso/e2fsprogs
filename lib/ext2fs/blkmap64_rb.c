@@ -758,6 +758,15 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap bitmap,
 	}
 
 	memset(out, 0, (num + 7) >> 3);
+	if(num%8!=0) {
+		pos=num;
+		count =8-(num -((num>>3)<<3));
+		while (count > 0) {
+			ext2fs_fast_set_bit(pos, out);
+			pos++;
+			count--;
+		}
+	}
 
 	for (; parent != NULL; parent = next) {
 		next = ext2fs_rb_next(parent);

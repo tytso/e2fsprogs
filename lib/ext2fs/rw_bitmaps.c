@@ -115,19 +115,16 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (csum_flag && ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT)
 		    )
 			goto skip_this_inode_bitmap;
-
 		retval = ext2fs_get_inode_bitmap_range2(fs->inode_map,
-				ino_itr, inode_nbytes << 3, inode_buf);
+				ino_itr, EXT2_INODES_PER_GROUP(fs->super), inode_buf);
 		if (retval)
 			goto errout;
-
 		retval = ext2fs_inode_bitmap_csum_set(fs, i, inode_buf,
 						      inode_nbytes);
 		if (retval)
 			goto errout;
 		ext2fs_group_desc_csum_set(fs, i);
 		fs->flags |= EXT2_FLAG_DIRTY;
-
 		blk = ext2fs_inode_bitmap_loc(fs, i);
 		if (blk) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
@@ -138,7 +135,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			}
 		}
 	skip_this_inode_bitmap:
-		ino_itr += inode_nbytes << 3;
+		ino_itr += EXT2_INODES_PER_GROUP(fs->super);
 
 	}
 	if (do_block) {
@@ -349,12 +346,12 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 				}
 			} else
 				memset(inode_bitmap, 0, inode_nbytes);
-			cnt = inode_nbytes << 3;
+			cnt = EXT2_INODES_PER_GROUP(fs->super);
 			retval = ext2fs_set_inode_bitmap_range2(fs->inode_map,
 					       ino_itr, cnt, inode_bitmap);
 			if (retval)
 				goto cleanup;
-			ino_itr += inode_nbytes << 3;
+			ino_itr += EXT2_INODES_PER_GROUP(fs->super);
 		}
 	}
 
