@@ -1364,7 +1364,7 @@ int main (int argc, char *argv[])
 	const char	*lib_ver_date;
 	int		my_ver, lib_ver;
 	e2fsck_t	ctx;
-	blk64_t		orig_superblock;
+	blk64_t		orig_superblock = ~(blk64_t)0;
 	struct problem_context pctx;
 	int flags, run_result, was_changed;
 	int journal_size;
@@ -1571,6 +1571,26 @@ failure:
 					     "check of the device.\n"));
 #endif
 		else {
+			/*
+			 * Let's try once more will less consistency checking
+			 * so that we are able to recover from more errors
+			 * (e.g. some tool messing up some value in the sb).
+			 */
+			if (!(flags & EXT2_FLAG_IGNORE_SB_ERRORS)) {
+				if (fs)
+					ext2fs_close_free(&fs);
+				log_out(ctx, _("%s: Trying to load superblock "
+					"despite errors...\n"),
+					ctx->program_name);
+				flags |= EXT2_FLAG_IGNORE_SB_ERRORS;
+				/*
+				 * If we tried backup sb, revert to the
+				 * original one now.
+				 */
+				if (orig_superblock != ~(blk64_t)0)
+					ctx->superblock = orig_superblock;
+				goto restart;
+			}
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
 			if (retval == EXT2_ET_BAD_MAGIC)
 				check_plausibility(ctx->filesystem_name,

@@ -1,6 +1,8 @@
 *** e2fsck
 ext2fs_open2: Bad magic number in super-block
 ../e2fsck/e2fsck: Superblock invalid, trying backup blocks...
+ext2fs_open2: Bad magic number in super-block
+../e2fsck/e2fsck: Superblock invalid, trying backup blocks...
 ../e2fsck/e2fsck: Bad magic number in super-block while trying to open test.img
 
 The superblock could not be read or does not describe a valid ext2/ext3/ext4
