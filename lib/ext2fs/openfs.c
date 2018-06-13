@@ -319,12 +319,6 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			retval = EXT2_ET_BAD_DESC_SIZE;
 			goto cleanup;
 		}
-	} else {
-		if (fs->super->s_desc_size &&
-		    fs->super->s_desc_size != EXT2_MIN_DESC_SIZE) {
-			retval = EXT2_ET_BAD_DESC_SIZE;
-			goto cleanup;
-		}
 	}
 
 	fs->cluster_ratio_bits = fs->super->s_log_cluster_size -
