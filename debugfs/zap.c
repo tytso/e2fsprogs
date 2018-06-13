@@ -174,18 +174,21 @@ void do_block_dump(int argc, char *argv[])
 	errcode_t	errcode;
 	blk64_t		block;
 	char		*file = NULL;
+	int		xattr_dump = 0;
 	int		c, err;
 
 	if (check_fs_open(argv[0]))
 		return;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "f:")) != EOF) {
+	while ((c = getopt (argc, argv, "f:x")) != EOF) {
 		switch (c) {
 		case 'f':
 			file = optarg;
 			break;
-
+		case 'x':
+			xattr_dump = 1;
+			break;
 		default:
 			goto print_usage;
 		}
@@ -193,7 +196,7 @@ void do_block_dump(int argc, char *argv[])
 
 	if (argc != optind + 1) {
 	print_usage:
-		com_err(0, 0, "Usage: block_dump [-f inode] block_num");
+		com_err(0, 0, "Usage: block_dump [-x] [-f inode] block_num");
 		return;
 	}
 
@@ -227,7 +230,10 @@ void do_block_dump(int argc, char *argv[])
 		goto errout;
 	}
 
-	do_byte_hexdump(stdout, buf, current_fs->blocksize);
+	if (xattr_dump)
+		block_xattr_dump(stdout, buf, current_fs->blocksize);
+	else
+		do_byte_hexdump(stdout, buf, current_fs->blocksize);
 errout:
 	free(buf);
 }

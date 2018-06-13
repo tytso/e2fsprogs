@@ -2105,7 +2105,7 @@ void do_idump(int argc, char *argv[])
 	int		c, mode = 0;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "be")) != EOF) {
+	while ((c = getopt (argc, argv, "bex")) != EOF) {
 		if (mode || c == '?') {
 		print_usage:
 			com_err(argv[0], 0,
@@ -2145,6 +2145,7 @@ void do_idump(int argc, char *argv[])
 		offset = ((char *) (&inode->i_block)) - ((char *) buf);
 		size = sizeof(inode->i_block);
 		break;
+	case 'x':
 	case 'e':
 		if (size <= EXT2_GOOD_OLD_INODE_SIZE) {
 		no_extra_space:
@@ -2157,7 +2158,10 @@ void do_idump(int argc, char *argv[])
 		size -= offset;
 		break;
 	}
-	do_byte_hexdump(stdout, buf + offset, size);
+	if (mode == 'x')
+		raw_inode_xattr_dump(stdout, buf + offset, size);
+	else
+		do_byte_hexdump(stdout, buf + offset, size);
 err:
 	ext2fs_free_mem(&buf);
 }
