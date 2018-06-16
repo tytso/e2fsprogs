@@ -341,7 +341,8 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		bmap = fs->inode_map;
 		itr = 1;
 		cnt = EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count;
-		size = (EXT2_INODES_PER_GROUP(fs->super) / 8);
+		size = ((EXT2_INODES_PER_GROUP(fs->super)+7) / 8);
+		total_size = (EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count+7)/8;
 	} else {
 		if (!fs->block_map) {
 			retval = ext2fs_read_block_bitmap(fs);
@@ -352,13 +353,14 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		itr = fs->super->s_first_data_block;
 		cnt = EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count);
 		size = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
+		total_size = size * fs->group_desc_count;
 	}
-	total_size = size * fs->group_desc_count;
+
 
 	while (cnt > 0) {
 		size = sizeof(buf);
-		if (size > (cnt >> 3))
-			size = (cnt >> 3);
+		if (size > ((cnt+7) >> 3))
+			size = ((cnt+7) >> 3);
 
 		retval = ext2fs_get_generic_bmap_range(bmap, itr,
 						       size << 3, buf);
@@ -372,7 +374,11 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 			return EXT2_ET_SHORT_READ;
 
 		itr += size << 3;
-		cnt -= size << 3;
+		if(cnt<(size << 3)) {
+			cnt=0;
+		} else {
+			cnt -= size << 3;
+		}
 	}
 
 	size = total_size % fs->blocksize;
@@ -394,7 +400,6 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 	return 0;
 }
 
-
 /*
  * Read the block/inode bitmaps.
  */
@@ -406,6 +411,7 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 	char			buf[1024];
 	unsigned int		size;
 	ssize_t			actual;
+	__u64 			count, pos;
 
 	if (flags & IMAGER_FLAG_INODEMAP) {
 		if (!fs->inode_map) {
@@ -431,8 +437,8 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 
 	while (cnt > 0) {
 		size = sizeof(buf);
-		if (size > (cnt >> 3))
-			size = (cnt >> 3);
+		if (size > ((cnt+7) >> 3))
+			size = ((cnt+7) >> 3);
 
 		actual = read(fd, buf, size);
 		if (actual == -1)
@@ -440,13 +446,27 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 		if (actual != (int) size)
 			return EXT2_ET_SHORT_READ;
 
+		if(cnt%8!=0 && cnt < sizeof(buf)) {
+			pos=cnt;
+			count =(((cnt +7)>>3)<<3)-cnt;
+			while (count > 0) {
+				ext2fs_fast_clear_bit(pos, buf);
+				pos++;
+				count--;
+			}
+		}
+
 		retval = ext2fs_set_generic_bmap_range(bmap, itr,
 						       size << 3, buf);
 		if (retval)
 			return retval;
 
 		itr += size << 3;
-		cnt -= size << 3;
+		if(cnt<(size << 3)) {
+			cnt=0;
+		} else {
+			cnt -= size << 3;
+		}
 	}
 	return 0;
 }
