@@ -168,7 +168,7 @@ static void list_desc(ext2_filsys fs, int grp_only)
 		units = _("clusters");
 
 	block_nbytes = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
-	inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
+	inode_nbytes = (EXT2_INODES_PER_GROUP(fs->super)+7) / 8;
 
 	if (fs->block_map)
 		block_bitmap = malloc(block_nbytes);
@@ -303,7 +303,7 @@ static void list_desc(ext2_filsys fs, int grp_only)
 		if (inode_bitmap) {
 			fputs(_("  Free inodes: "), stdout);
 			retval = ext2fs_get_inode_bitmap_range2(fs->inode_map,
-				 ino_itr, inode_nbytes << 3, inode_bitmap);
+				 ino_itr, EXT2_INODES_PER_GROUP(fs->super), inode_bitmap);
 			if (retval)
 				com_err("list_desc", retval,
 					"while reading inode bitmap");
