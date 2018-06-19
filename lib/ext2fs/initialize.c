@@ -295,7 +295,7 @@ retry:
 	i = fs->blocksize >= 4096 ? 1 : 4096 / fs->blocksize;
 
 	if (ext2fs_has_feature_64bit(super) &&
-	    (ext2fs_blocks_count(super) / i) > (1ULL << 32))
+	    (ext2fs_blocks_count(super) / i) >= (1ULL << 32))
 		set_field(s_inodes_count, ~0U);
 	else
 		set_field(s_inodes_count, ext2fs_blocks_count(super) / i);
