@@ -159,11 +159,6 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 		}
 	}
 
-	if (catastrophic && (open_flags & EXT2_FLAG_RW)) {
-		com_err(device, 0,
-			"opening read-only because of catastrophic mode");
-		open_flags &= ~EXT2_FLAG_RW;
-	}
 	if (catastrophic)
 		open_flags |= EXT2_FLAG_SKIP_MMP;
 
