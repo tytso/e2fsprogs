@@ -380,7 +380,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		goto cleanup;
 	}
 	fs->group_desc_count = 	groups_cnt;
-	if (fs->group_desc_count * EXT2_INODES_PER_GROUP(fs->super) !=
+	if ((__u64)fs->group_desc_count * EXT2_INODES_PER_GROUP(fs->super) !=
 	    fs->super->s_inodes_count) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
