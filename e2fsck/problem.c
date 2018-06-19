@@ -493,6 +493,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Invalid %U @q @i %i.  "),
 	  PROMPT_FIX, 0 },
 
+	/* Too many inodes in the filesystem */
+	{ PR_0_INODE_COUNT_BIG,
+	  N_("@S would have too many inodes (%N).\n"),
+	  PROMPT_NONE, PR_AFTER_CODE, PR_0_SB_CORRUPT },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */

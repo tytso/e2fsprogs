@@ -282,6 +282,8 @@ struct problem_context {
 /* Invalid quota inode number */
 #define PR_0_INVALID_QUOTA_INO			0x00004F
 
+/* Inode count in the superblock incorrect */
+#define PR_0_INODE_COUNT_BIG			0x000050
 
 /*
  * Pass 1 errors

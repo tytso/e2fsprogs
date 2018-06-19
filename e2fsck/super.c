@@ -646,6 +646,22 @@ void check_super_block(e2fsck_t ctx)
 	check_super_value(ctx, "desc_size",
 			  sb->s_desc_size, MAX_CHECK | LOG2_CHECK, 0,
 			  EXT2_MAX_DESC_SIZE);
+
+	should_be = (__u64)sb->s_inodes_per_group * fs->group_desc_count;
+	if (should_be > ~0U) {
+		pctx.num = should_be;
+		fix_problem(ctx, PR_0_INODE_COUNT_BIG, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+	if (sb->s_inodes_count != should_be) {
+		pctx.ino = sb->s_inodes_count;
+		pctx.ino2 = should_be;
+		if (fix_problem(ctx, PR_0_INODE_COUNT_WRONG, &pctx)) {
+			sb->s_inodes_count = should_be;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
 	if (sb->s_rev_level > EXT2_GOOD_OLD_REV)
 		check_super_value(ctx, "first_ino", sb->s_first_ino,
 				  MIN_CHECK | MAX_CHECK,
@@ -683,17 +699,6 @@ void check_super_block(e2fsck_t ctx)
 		return;
 	}
 
-	should_be = (blk64_t)sb->s_inodes_per_group * fs->group_desc_count;
-	if (should_be > UINT_MAX)
-		should_be = UINT_MAX;
-	if (sb->s_inodes_count != should_be) {
-		pctx.ino = sb->s_inodes_count;
-		pctx.ino2 = should_be;
-		if (fix_problem(ctx, PR_0_INODE_COUNT_WRONG, &pctx)) {
-			sb->s_inodes_count = should_be;
-			ext2fs_mark_super_dirty(fs);
-		}
-	}
 	if (EXT2_INODE_SIZE(sb) > EXT2_GOOD_OLD_INODE_SIZE) {
 		unsigned min =
 			sizeof(((struct ext2_inode_large *) 0)->i_extra_isize) +
