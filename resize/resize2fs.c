@@ -756,7 +756,7 @@ retry:
 	 */
 	new_inodes =(unsigned long long) fs->super->s_inodes_per_group * fs->group_desc_count;
 	if (new_inodes > ~0U) {
-		fprintf(stderr, _("inodes (%llu) must be less than %u"),
+		fprintf(stderr, _("inodes (%llu) must be less than %u\n"),
 				   new_inodes, ~0U);
 		return EXT2_ET_TOO_MANY_INODES;
 	}
