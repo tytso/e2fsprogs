@@ -160,7 +160,7 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 	}
 
 	if (catastrophic)
-		open_flags |= EXT2_FLAG_SKIP_MMP;
+		open_flags |= EXT2_FLAG_SKIP_MMP | EXT2_FLAG_IGNORE_SB_ERRORS;
 
 	if (undo_file) {
 		retval = debugfs_setup_tdb(device, undo_file, &io_ptr);
