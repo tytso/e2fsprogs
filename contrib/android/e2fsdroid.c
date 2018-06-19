@@ -265,10 +265,12 @@ int main(int argc, char *argv[])
 		case 'u':
 			if (!parse_ugid_map(optarg, &uid_map))
 				exit(EXIT_FAILURE);
+			android_configure = 1;
 			break;
 		case 'g':
 			if (!parse_ugid_map(optarg, &gid_map))
 				exit(EXIT_FAILURE);
+			android_configure = 1;
 			break;
 		default:
 			usage(EXIT_FAILURE);
