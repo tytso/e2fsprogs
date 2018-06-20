@@ -5,6 +5,7 @@
 cc_library {
     name: "libext2_misc",
     host_supported: true,
+    recovery_available: true,
     defaults: ["e2fsprogs-defaults"],
 
     target: {
@@ -33,6 +34,7 @@ cc_library {
 cc_binary {
     name: "mke2fs",
     host_supported: true,
+    recovery_available: true,
     defaults: ["e2fsprogs-defaults"],
 
     srcs: [
