@@ -1,17 +1,4 @@
 #!/bin/bash
-
-FSCK_OPT="-fyvD"
-. $cmd_dir/run_e2fsck
-rm -f $TMPFILE
-
-exit 0
-# This script depends on "mke2fs -d", which is only in master and not maint,
-# to populate the file directory tree poorly (namely that there are no
-# contiguous blocks in the directory leaf and the extent tree is large).
-
-# Once the "mke2fs -d" option is available on the "maint" branch, the
-# above few lines should be deleted, along with the "image.gz" file.
-
 TMPDIR=${TMPDIR:-"/tmp"}
 OUT=$test_name.log
 
@@ -65,6 +52,5 @@ $DEBUGFS -c -R "htree subdir" $TMPFILE 2>> $OUT |
 	awk '/yyyyy/ { print "rm '$SUB'/"$4 }' > $DELETE_LIST
 $DEBUGFS -w -f $DELETE_LIST $TMPFILE >> $OUT 2>&1
 rm $DELETE_LIST
-cp $TMPFILE $TMPFILE.sav
 
 . $cmd_dir/run_e2fsck

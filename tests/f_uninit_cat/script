@@ -14,7 +14,7 @@ gzip -d < $IMAGE > $TMPFILE
 EXP=$test_dir/expect
 OUT=$test_name.log
 
-$FSCK $FSCK_OPT -N test_filesys $TMPFILE 2>&1 > $OUT.new
+$FSCK $FSCK_OPT -N test_filesys $TMPFILE > $OUT.new 2>&1
 echo "Exit status is $?" >> $OUT.new
 
 echo "debugfs cat uninit file" >> $OUT.new
