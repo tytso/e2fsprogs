@@ -61,7 +61,7 @@ rm -f $test_name.ok $test_name.failed
 #echo -e -n "$test_name: $test_description:\r"
 
 TMPFILE=$(mktemp ${TMPDIR:-/tmp}/e2fsprogs-tmp-$test_name.XXXXXX)
-trap 'rm -f $TMPFILE ; exit' 1 2 15
+[ "$SKIP_UNLINK" != "true" ] && trap 'rm -f $TMPFILE ; exit' 1 2 15
 
 start=$SECONDS
 if [ -f $test_dir/script ]; then
