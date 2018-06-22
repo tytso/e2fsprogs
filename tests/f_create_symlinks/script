@@ -1,4 +1,7 @@
-if test -x $DEBUGFS_EXE; then
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
 
 FSCK_OPT=-yf
 OUT=$test_name.log
@@ -56,7 +59,3 @@ else
 fi
 
 unset IMAGE FSCK_OPT OUT EXP
-
-else #if test -a -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi

@@ -1,5 +1,8 @@
-if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
 test_description="fix up last bg when expanding beyond the last bg"
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
 
 EXP=$test_dir/expect
 OUT=$test_name.out
@@ -31,7 +34,3 @@ else
 fi
 
 unset EXP LOG OUT E2FSCK
-
-else #if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi

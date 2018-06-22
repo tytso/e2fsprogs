@@ -20,7 +20,7 @@ AFTER_CMD='$DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed >> $OUT1'
 
 else #if test -x $DEBUGFS_EXE; then
 	rm -f $test_name.ok $test_name.failed
-	echo "skipped"
+	echo "skipped (no debugfs)"
 fi 
 
 unset DESCRIPTION FS_SIZE MKE2FS_OPTS MKE2FS_SKIP_PROGRESS \

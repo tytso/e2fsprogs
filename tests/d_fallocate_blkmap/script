@@ -1,4 +1,7 @@
-if test -x $DEBUGFS_EXE; then
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
 
 FSCK_OPT=-fy
 OUT=$test_name.log
@@ -53,8 +56,8 @@ ENDL
 echo "stat /a" >> $TMPFILE.cmd2
 echo "stat /b" >> $TMPFILE.cmd2
 
-$DEBUGFS_EXE -w -f $TMPFILE.cmd $TMPFILE > /dev/null 2>&1
-$DEBUGFS_EXE -f $TMPFILE.cmd2 $TMPFILE >> $OUT.new 2>&1
+$DEBUGFS -w -f $TMPFILE.cmd $TMPFILE > /dev/null 2>&1
+$DEBUGFS -f $TMPFILE.cmd2 $TMPFILE >> $OUT.new 2>&1
 sed -f $cmd_dir/filter.sed -e '/^.*time:.*$/d' < $OUT.new >> $OUT
 rm -rf $OUT.new $TMPFILE.cmd $TMPFILE.cmd2
 
@@ -79,7 +82,3 @@ else
 fi
 
 unset IMAGE FSCK_OPT OUT EXP
-
-else #if test -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi

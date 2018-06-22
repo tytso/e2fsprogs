@@ -1,6 +1,9 @@
-if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-
 test_description="ext4 with bigalloc"
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+
 FEATURES="-t ext4 -O bigalloc"
 SIZE_1=512M
 SIZE_2=2T
@@ -30,8 +33,3 @@ else
 fi
 
 unset FEATURES SIZE_1 SIZE_2 LOG E2FSCK
-
-else #if test -x $RESIZE2FS_EXE -a -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi 
-

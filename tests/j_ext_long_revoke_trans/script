@@ -1,4 +1,7 @@
-if test -x $DEBUGFS_EXE; then
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
 
 FSCK_OPT=-fy
 OUT=$test_name.log
@@ -39,14 +42,14 @@ echo "jc" >> $TMPFILE.cmd
 echo "jo -f $JNLFILE" >> $TMPFILE.cmd
 echo "jw -r 259-4356 /dev/zero" >> $TMPFILE.cmd
 echo "jc" >> $TMPFILE.cmd
-$DEBUGFS_EXE -w -f $TMPFILE.cmd $TMPFILE 2>> $OUT.new > /dev/null
+$DEBUGFS -w -f $TMPFILE.cmd $TMPFILE 2>> $OUT.new > /dev/null
 sed -f $cmd_dir/filter.sed < $OUT.new >> $OUT
 rm -rf $OUT.new
 
 test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp "$TMPFILE" "$JOURNAL_DUMP_DIR/$test_name.img"
 test -d "$JOURNAL_DUMP_DIR" -a -w "$JOURNAL_DUMP_DIR" && cp "$JNLFILE" "$JOURNAL_DUMP_DIR/$test_name.img.jnl"
 echo "logdump -c -f $JNLFILE" > $TMPFILE.cmd
-$DEBUGFS_EXE -f $TMPFILE.cmd $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed -e 's/logdump -c -f.*/logdump -c/g' >> $OUT
+$DEBUGFS -f $TMPFILE.cmd $TMPFILE 2>&1 | sed -f $cmd_dir/filter.sed -e 's/logdump -c -f.*/logdump -c/g' >> $OUT
 rm -rf $TMPFILE.cmd
 
 echo "debugfs fsck" >> $OUT
@@ -71,7 +74,3 @@ else
 fi
 
 unset IMAGE FSCK_OPT OUT EXP JNLFILE
-
-else #if test -x $DEBUGFS_EXE; then
-	echo "$test_name: $test_description: skipped"
-fi
