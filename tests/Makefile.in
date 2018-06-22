@@ -94,7 +94,7 @@ testend: test_one ${TDIR}/image
 
 clean::
 	$(RM) -f *~ *.log *.new *.failed *.ok *.tmp *.slow
-	$(RM) -f test_one test_script mke2fs.conf
+	$(RM) -f test_one test_script mke2fs.conf test_data.tmp
 
 distclean:: clean
 	$(RM) -f Makefile
