@@ -1139,6 +1139,9 @@ struct problem_context {
 /* Extended attribute inode ref count wrong */
 #define PR_4_EA_INODE_REF_COUNT		0x040005
 
+/* directory exceeds max links, but no DIR_NLINK feature in superblock */
+#define PR_4_DIR_NLINK_FEATURE		0x040006
+
 /*
  * Pass 5 errors
  */

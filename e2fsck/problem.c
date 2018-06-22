@@ -1883,6 +1883,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@a @i %i ref count is %N, @s %n. "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* directory exceeds max links, but no DIR_NLINK feature in superblock*/
+	{ PR_4_DIR_NLINK_FEATURE,
+	  N_("@d exceeds max links, but no DIR_NLINK feature in @S.\n"),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 5 errors */
 
 	/* Pass 5: Checking group summary information */
