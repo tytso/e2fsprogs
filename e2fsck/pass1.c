@@ -151,10 +151,10 @@ int e2fsck_pass1_check_device_inode(ext2_filsys fs EXT2FS_ATTR((unused)),
 	int	i;
 
 	/*
-	 * If the index flag is set, then this is a bogus
+	 * If the index or extents flag is set, then this is a bogus
 	 * device/fifo/socket
 	 */
-	if (inode->i_flags & EXT2_INDEX_FL)
+	if (inode->i_flags & (EXT2_INDEX_FL | EXT4_EXTENTS_FL))
 		return 0;
 
 	/*
