@@ -69,7 +69,9 @@ void *ext2fs_hashmap_iter_in_order(struct ext2fs_hashmap *h,
 
 void ext2fs_hashmap_free(struct ext2fs_hashmap *h)
 {
-	for (size_t i = 0; i < h->size; ++i) {
+	size_t	i;
+
+	for (i = 0; i < h->size; ++i) {
 		struct ext2fs_hashmap_entry *it = h->entries[i];
 		while (it) {
 			struct ext2fs_hashmap_entry *tmp = it->next;
