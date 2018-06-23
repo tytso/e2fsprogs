@@ -484,8 +484,10 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 	}
 	inode_size = fs->super->s_inode_size;
 	inode = malloc(inode_size);
-	if (!inode)
+	if (!inode) {
+		ext2fs_close_inode_scan(scan);
 		return ENOMEM;
+	}
 	while (1) {
 		ret = ext2fs_get_next_inode_full(scan, &ino,
 						 EXT2_INODE(inode), inode_size);
