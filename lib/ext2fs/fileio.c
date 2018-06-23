@@ -467,8 +467,11 @@ errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 					      bmap_flags,
 					      file->blockno, 0,
 					      &file->physblock);
-			if (retval)
+			if (retval) {
+				free(new_block);
+				new_block = NULL;
 				goto fail;
+			}
 
 			if (new_block) {
 				new_block->physblock = file->physblock;
