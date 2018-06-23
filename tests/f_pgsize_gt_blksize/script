@@ -1,0 +1,18 @@
+SKIP_GUNZIP="true"
+
+touch $TMPFILE
+$MKE2FS -N 32 -F -o Linux -b 1024 $TMPFILE 100 > /dev/null 2>&1
+
+DATA_FILE=$(mktemp ${TMPDIR:-/tmp}/e2fsprogs-zerodata.XXXXXX)
+dd if=$TEST_BITS of=$DATA_FILE bs=1k count=16 > /dev/null 2>&1
+$DEBUGFS -w $TMPFILE << EOF > /dev/null 2>&1
+write $DATA_FILE foo
+set_inode_field foo size 13000
+q
+EOF
+
+. $cmd_dir/run_e2fsck
+
+rm -f $DATA_FILE
+
+unset DATA_FILE
