@@ -1633,13 +1633,18 @@ skip_device:
 			if (ret == -QCOW_COMPRESSED)
 				fprintf(stderr, _("Image (%s) is compressed\n"),
 					image_fn);
-			if (ret == -QCOW_ENCRYPTED)
+			else if (ret == -QCOW_ENCRYPTED)
 				fprintf(stderr, _("Image (%s) is encrypted\n"),
 					image_fn);
-			com_err(program_name, ret,
-				_("while trying to convert qcow2 image"
-				  " (%s) into raw image (%s)"),
-				device_name, image_fn);
+			else if (ret == -QCOW_CORRUPTED)
+				fprintf(stderr, _("Image (%s) is corrupted\n"),
+					image_fn);
+			else
+				com_err(program_name, ret,
+					_("while trying to convert qcow2 image"
+					  " (%s) into raw image (%s)"),
+					image_fn, device_name);
+			ret = 1;
 		}
 		goto out;
 	}
