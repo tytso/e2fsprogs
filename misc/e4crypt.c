@@ -676,8 +676,10 @@ static void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 			options |= OPT_QUIET;
 			break;
 		default:
-			fprintf(stderr, "Unrecognized option: %c\n", opt);
 		case '?':
+			if (opt != '?')
+				fprintf(stderr, "Unrecognized option: %c\n",
+					opt);
 			fputs("USAGE:\n  ", stderr);
 			fputs(cmd->cmd_help, stderr);
 			exit(1);

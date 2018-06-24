@@ -635,7 +635,8 @@ extern blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs,
 			   const char *name, io_manager manager);
 extern int ext2_file_type(unsigned int mode);
 extern int write_all(int fd, char *buf, size_t count);
-void dump_mmp_msg(struct mmp_struct *mmp, const char *fmt, ...);
+void dump_mmp_msg(struct mmp_struct *mmp, const char *fmt, ...)
+	E2FSCK_ATTR((format(printf, 2, 3)));
 errcode_t e2fsck_mmp_update(ext2_filsys fs);
 
 extern void e2fsck_set_bitmap_type(ext2_filsys fs,

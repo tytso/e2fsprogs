@@ -1738,6 +1738,7 @@ extern blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group);
 extern blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group);
 extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
+extern int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
 extern int ext2fs_dirent_name_len(const struct ext2_dir_entry *entry);
@@ -1969,18 +1970,6 @@ _INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 	return (blk_t) ext2fs_inode_data_blocks2(fs, inode);
 }
 
-/* htree levels for ext4 */
-#define EXT4_HTREE_LEVEL_COMPAT 2
-#define EXT4_HTREE_LEVEL	3
-
-static inline unsigned int ext2_dir_htree_level(ext2_filsys fs)
-{
-	if (ext2fs_has_feature_largedir(fs->super))
-		return EXT4_HTREE_LEVEL;
-
-	return EXT4_HTREE_LEVEL_COMPAT;
-}
-
 _INLINE_ int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks)
 {
 	return blocks * ((fs->blocksize - 8) / sizeof(struct ext2_dx_entry));
@@ -2038,6 +2027,18 @@ ext2fs_const_inode(const struct ext2_inode_large * large_inode)
 
 #undef _INLINE_
 #endif
+
+/* htree levels for ext4 */
+#define EXT4_HTREE_LEVEL_COMPAT 2
+#define EXT4_HTREE_LEVEL	3
+
+static inline unsigned int ext2_dir_htree_level(ext2_filsys fs)
+{
+	if (ext2fs_has_feature_largedir(fs->super))
+		return EXT4_HTREE_LEVEL;
+
+	return EXT4_HTREE_LEVEL_COMPAT;
+}
 
 #ifdef __cplusplus
 }

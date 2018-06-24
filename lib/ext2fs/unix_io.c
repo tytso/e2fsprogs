@@ -349,7 +349,7 @@ bounce_write:
 					retval = errno;
 					goto error_out;
 				}
-				memset(data->bounce + actual, 0,
+				memset((char *) data->bounce + actual, 0,
 				       channel->block_size - actual);
 			}
 		}

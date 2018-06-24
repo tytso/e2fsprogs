@@ -17,7 +17,10 @@ struct ext2fs_hashmap {
 		struct ext2fs_hashmap_entry *next;
 		struct ext2fs_hashmap_entry *list_next;
 		struct ext2fs_hashmap_entry *list_prev;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 	} *entries[0];
+#pragma GCC diagnostic pop
 };
 
 struct ext2fs_hashmap *ext2fs_hashmap_create(

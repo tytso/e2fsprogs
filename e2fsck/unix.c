@@ -287,7 +287,7 @@ static int is_on_batt(void)
 {
 	FILE	*f;
 	DIR	*d;
-	char	tmp[80], tmp2[80], fname[80];
+	char	tmp[80], tmp2[80], fname[NAME_MAX+30];
 	unsigned int	acflag;
 	struct dirent*	de;
 
@@ -311,7 +311,8 @@ static int is_on_batt(void)
 		while ((de=readdir(d)) != NULL) {
 			if (!strncmp(".", de->d_name, 1))
 				continue;
-			snprintf(fname, 80, "/proc/acpi/ac_adapter/%s/state",
+			snprintf(fname, sizeof(fname),
+				 "/proc/acpi/ac_adapter/%s/state",
 				 de->d_name);
 			f = fopen(fname, "r");
 			if (!f)
@@ -934,6 +935,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			break;
 		case 'L':
 			replace_bad_blocks++;
+			/* fall through */
 		case 'l':
 			if (bad_blocks_file)
 				free(bad_blocks_file);

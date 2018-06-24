@@ -52,8 +52,8 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 	journal_superblock_t *jsb = (journal_superblock_t *) journal_sb_buf;
 	__u32 *mask_ptr, mask, m;
 	unsigned int size;
-	int i, j, printed = 0;
-	unsigned int nr_users;
+	int j, printed = 0;
+	unsigned int i, nr_users;
 
 	fprintf(f, "%s", "Journal features:        ");
 	for (i=0, mask_ptr=&jsb->s_feature_compat; i <3; i++,mask_ptr++) {
@@ -75,7 +75,7 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 	else
 		fprintf(f, "%uM\n", size >> 10);
 	nr_users = (unsigned int) ntohl(jsb->s_nr_users);
-	if (exp_block_size != ntohl(jsb->s_blocksize))
+	if (exp_block_size != (int) ntohl(jsb->s_blocksize))
 		fprintf(f, "Journal block size:       %u\n",
 			(unsigned int)ntohl(jsb->s_blocksize));
 	fprintf(f, "Journal length:           %u\n",

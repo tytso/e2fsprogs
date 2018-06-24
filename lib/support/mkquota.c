@@ -268,6 +268,7 @@ static inline qid_t get_qid(struct ext2_inode_large *inode, enum quota_type qtyp
 			inode->i_extra_isize;
 		if (inode_includes(inode_size, i_projid))
 			return inode_projid(*inode);
+		return 0;
 	default:
 		return 0;
 	}
@@ -567,7 +568,8 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
  * Read all dquots from quota file into memory
  */
 static errcode_t quota_read_all_dquots(struct quota_handle *qh,
-                                       quota_ctx_t qctx, int update_limits)
+                                       quota_ctx_t qctx,
+				       int update_limits EXT2FS_ATTR((unused)))
 {
 	struct scan_dquots_data scan_data;
 

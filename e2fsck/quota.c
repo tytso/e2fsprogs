@@ -92,7 +92,6 @@ void e2fsck_validate_quota_inodes(e2fsck_t ctx)
 	struct problem_context	pctx;
 	ext2_filsys		fs = ctx->fs;
 	enum quota_type qtype;
-	ext2_ino_t quota_ino;
 
 	clear_problem_context(&pctx);
 

@@ -1991,7 +1991,6 @@ static int fix_ea_entries(ext2_extent imap, struct ext2_ext_attr_entry *entry,
 {
 	int modified = 0;
 	ext2_ino_t new_ino;
-	errcode_t retval;
 
 	while (entry < end && !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		if (entry->e_value_inum > last_ino) {
@@ -2061,9 +2060,11 @@ static errcode_t fix_ea_inode_refs(ext2_resize_t rfs, struct ext2_inode *inode,
 	int		inode_size = EXT2_INODE_SIZE(fs->super);
 	blk64_t		blk;
 	int		modified;
-	struct blk_cache blk_cache = { 0 };
+	struct blk_cache blk_cache;
 	struct ext2_ext_attr_header *header;
 	errcode_t		retval;
+
+	memset(&blk_cache, 0, sizeof(blk_cache));
 
 	header = (struct ext2_ext_attr_header *)block_buf;
 

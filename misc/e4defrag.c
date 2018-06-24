@@ -1851,6 +1851,7 @@ int main(int argc, char *argv[])
 				/* "e4defrag mount_point_dir/else_dir" */
 				memset(lost_found_dir, 0, PATH_MAX + 1);
 			}
+			/* fall through */
 		case DEVNAME:
 			if (arg_type == DEVNAME) {
 				strncpy(lost_found_dir, dir_name,

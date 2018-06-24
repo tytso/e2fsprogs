@@ -819,7 +819,6 @@ extern errcode_t e2fsck_setup_icount(e2fsck_t ctx, const char *icount_name,
 	errcode_t		retval;
 	char			*tdb_dir;
 	int			enable;
-	int			full_map;
 
 	*ret = 0;
 
@@ -1173,8 +1172,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	const char	*old_op;
 	int		imagic_fs, extent_fs, inlinedata_fs;
 	int		low_dtime_check = 1;
-	int		inode_size = EXT2_INODE_SIZE(fs->super);
-	int		bufsize;
+	unsigned int	inode_size = EXT2_INODE_SIZE(fs->super);
+	unsigned int	bufsize;
 	int		failed_csum = 0;
 	ext2_ino_t	ino_threshold = 0;
 	dgrp_t		ra_group = 0;
@@ -2295,7 +2294,8 @@ static _INLINE_ void mark_blocks_used(e2fsck_t ctx, blk64_t block,
 	if (ext2fs_test_block_bitmap_range2(ctx->block_found_map, block, num))
 		ext2fs_mark_block_bitmap_range2(ctx->block_found_map, block, num);
 	else {
-		int i;
+		unsigned int i;
+
 		for (i = 0; i < num; i += EXT2FS_CLUSTER_RATIO(ctx->fs))
 			mark_block_used(ctx, block + i);
 	}
@@ -2574,7 +2574,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			return 0;
 	}
 
-	if (quota_blocks != EXT2FS_C2B(fs, 1)) {
+	if (quota_blocks != EXT2FS_C2B(fs, 1U)) {
 		if (!ctx->ea_block_quota_blocks) {
 			pctx->errcode = ea_refcount_create(0,
 						&ctx->ea_block_quota_blocks);

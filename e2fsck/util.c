@@ -204,9 +204,10 @@ int ask_yn(e2fsck_t ctx, const char * string, int def)
 	static int	yes_answers;
 
 #ifdef HAVE_TERMIOS_H
-	struct termios	termios = {0, }, tmp;
+	struct termios	termios, tmp;
 
-	tcgetattr (0, &termios);
+	if (tcgetattr (0, &termios) < 0)
+		memset(&termios, 0, sizeof(termios));
 	tmp = termios;
 	tmp.c_lflag &= ~(ICANON | ECHO);
 	tmp.c_cc[VMIN] = 1;

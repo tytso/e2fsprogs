@@ -60,8 +60,9 @@ static int debugfs_setup_tdb(const char *device_name, char *undo_file,
 			     io_manager *io_ptr)
 {
 	errcode_t retval = ENOMEM;
-	char *tdb_dir = NULL, *tdb_file = NULL;
-	char *dev_name, *tmp_name;
+	const char	*tdb_dir = NULL;
+	char		*tdb_file = NULL;
+	char		*dev_name, *tmp_name;
 
 	/* (re)open a specific undo file */
 	if (undo_file && undo_file[0] != 0) {
@@ -2103,7 +2104,6 @@ void do_idump(int argc, char *argv[])
 	reset_getopt();
 	while ((c = getopt (argc, argv, "bex")) != EOF) {
 		if (mode || c == '?') {
-		print_usage:
 			com_err(argv[0], 0,
 				"Usage: inode_dump [-b]|[-e] <file>");
 			return;
@@ -2144,7 +2144,6 @@ void do_idump(int argc, char *argv[])
 	case 'x':
 	case 'e':
 		if (size <= EXT2_GOOD_OLD_INODE_SIZE) {
-		no_extra_space:
 			com_err(argv[0], 0, "No extra space in inode");
 			goto err;
 		}

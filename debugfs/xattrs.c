@@ -406,7 +406,6 @@ static void dump_xattr_raw_entries(FILE *f, unsigned char *buf,
 				   unsigned value_start)
 {
 	struct ext2_ext_attr_entry ent;
-	char *name;
 	unsigned int off = start;
 	unsigned int vstart;
 
@@ -417,7 +416,6 @@ static void dump_xattr_raw_entries(FILE *f, unsigned char *buf,
 			break;
 		}
 		if ((off + sizeof(struct ext2_ext_attr_entry)) >= len) {
-		overrun:
 			fprintf(f, "xattr buffer overrun at %u (len = %u)\n",
 				off, len);
 			break;
@@ -456,7 +454,7 @@ static void dump_xattr_raw_entries(FILE *f, unsigned char *buf,
 				   ent.e_value_size);
 		else {
 			fprintf(f, "<hexdump>\n");
-			do_byte_hexdump(f, (char *)(buf + vstart),
+			do_byte_hexdump(f, (unsigned char *)(buf + vstart),
 					ent.e_value_size);
 		}
 		fputc('\n', f);

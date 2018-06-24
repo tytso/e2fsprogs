@@ -137,6 +137,7 @@ extern void do_rm(int argc, char **argv);
 extern void do_link(int argc, char **argv);
 extern void do_undel(int argc, char **argv);
 extern void do_unlink(int argc, char **argv);
+extern void do_copy_inode(int argc, char *argv[]);
 extern void do_find_free_block(int argc, char **argv);
 extern void do_find_free_inode(int argc, char **argv);
 extern void do_stat(int argc, char **argv);
