@@ -359,9 +359,15 @@ static void write_reserved_inodes(ext2_filsys fs)
 		exit(1);
 	}
 
-	for (ino = 1; ino < EXT2_FIRST_INO(fs->super); ino++)
-		ext2fs_write_inode_full(fs, ino, inode,
-					EXT2_INODE_SIZE(fs->super));
+	for (ino = 1; ino < EXT2_FIRST_INO(fs->super); ino++) {
+		retval = ext2fs_write_inode_full(fs, ino, inode,
+						 EXT2_INODE_SIZE(fs->super));
+		if (retval) {
+			com_err("ext2fs_write_inode_full", retval,
+				_("while writing reserved inodes"));
+			exit(1);
+		}
+	}
 
 	ext2fs_free_mem(&inode);
 }
