@@ -874,14 +874,17 @@ static int init_refcount(struct ext2_qcow2_image *img, blk64_t table_offset)
 	return ret;
 }
 
-static int initialize_qcow2_image(int fd, ext2_filsys fs,
-			    struct ext2_qcow2_image *image)
+static errcode_t initialize_qcow2_image(int fd, ext2_filsys fs,
+					struct ext2_qcow2_image *image)
 {
 	struct ext2_qcow2_hdr *header;
 	blk64_t total_size, offset;
 	int shift, l2_bits, header_size, l1_size, ret;
 	int cluster_bits = get_bits_from_size(fs->blocksize);
 	struct ext2_super_block *sb = fs->super;
+
+	if (fs->blocksize < 1024)
+		return EINVAL;	/* Can never happen, but just in case... */
 
 	/* Allocate header */
 	ret = ext2fs_get_memzero(sizeof(struct ext2_qcow2_hdr), &header);
