@@ -552,7 +552,7 @@ static void sigint_handler(int unused EXT2FS_ATTR((unused)))
 
 #define calc_percent(a, b) ((int) ((100.0 * (((float) (a)) / \
 					     ((float) (b)))) + 0.5))
-#define calc_rate(t, b, d) (((float)(t) / ((1024 * 1024) / (b))) / (d))
+#define calc_rate(t, b, d) (((float)(t) / ((float)(1024 * 1024) / (b))) / (d))
 
 static int print_progress(blk64_t num, blk64_t total)
 {
