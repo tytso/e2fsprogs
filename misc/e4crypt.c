@@ -566,7 +566,7 @@ static void insert_key_into_keyring(const char *keyring, struct salt *salt)
 		return;
 	} else if ((rc == -1) && (errno != ENOKEY)) {
 		printf("keyctl_search failed: %s\n", strerror(errno));
-		if (errno == -EINVAL)
+		if (errno == EINVAL)
 			printf("Keyring [%s] is not available.\n", keyring);
 		exit(1);
 	}
