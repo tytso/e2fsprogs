@@ -495,7 +495,7 @@ static errcode_t parse_uint(struct field_set_info *info, char *field,
 	}
 	if (!field2)
 		return 0;
-	n = num >> (size*8);
+	n = (size == 8) ? 0 : (num >> (size*8));
 	u.ptr8 = (__u8 *) field2;
 	if (info->size == 6)
 		size = 2;
