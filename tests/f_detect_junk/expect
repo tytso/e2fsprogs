@@ -13,7 +13,6 @@ is corrupt, and you might try running e2fsck with an alternate superblock:
 
 *** debugfs
 debugfs: Bad magic number in super-block while trying to open test.img
-Checksum errors in superblock!  Retrying...
 *** tune2fs
 ../misc/tune2fs: Bad magic number in super-block while trying to open test.img
 *** mke2fs
