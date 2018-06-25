@@ -1,3 +1,9 @@
+e2fsprogs (1.44.3~rc1-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 25 Jun 2018 09:37:15 -0400
+
 e2fsprogs (1.44.2-1) unstable; urgency=medium
 
   * New upstream release
