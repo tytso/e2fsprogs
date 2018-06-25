@@ -1584,7 +1584,8 @@ failure:
 			 * so that we are able to recover from more errors
 			 * (e.g. some tool messing up some value in the sb).
 			 */
-			if (!(flags & EXT2_FLAG_IGNORE_SB_ERRORS)) {
+			if ((retval == EXT2_ET_CORRUPT_SUPERBLOCK) &&
+			    !(flags & EXT2_FLAG_IGNORE_SB_ERRORS)) {
 				if (fs)
 					ext2fs_close_free(&fs);
 				log_out(ctx, _("%s: Trying to load superblock "
