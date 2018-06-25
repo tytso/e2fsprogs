@@ -172,7 +172,8 @@ static void open_filesystem(char *device, int open_flags, blk64_t superblock,
 try_open_again:
 	retval = ext2fs_open(device, open_flags, superblock, blocksize,
 			     io_ptr, &current_fs);
-	if (retval && !(open_flags & EXT2_FLAG_IGNORE_CSUM_ERRORS)) {
+	if (retval && (retval == EXT2_ET_SB_CSUM_INVALID) &&
+	    !(open_flags & EXT2_FLAG_IGNORE_CSUM_ERRORS)) {
 		open_flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		printf("Checksum errors in superblock!  Retrying...\n");
 		goto try_open_again;
