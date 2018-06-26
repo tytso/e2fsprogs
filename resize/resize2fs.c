@@ -920,8 +920,9 @@ retry:
 	group_block = ext2fs_group_first_block2(fs,
 						old_fs->group_desc_count);
 	csum_flag = ext2fs_has_group_desc_csum(fs);
-	if (!getenv("RESIZE2FS_FORCE_ITABLE_INIT") &&
-	    access("/sys/fs/ext4/features/lazy_itable_init", F_OK) == 0)
+	if (getenv("RESIZE2FS_FORCE_LAZY_ITABLE_INIT") ||
+	    (!getenv("RESIZE2FS_FORCE_ITABLE_INIT") &&
+	     access("/sys/fs/ext4/features/lazy_itable_init", F_OK) == 0))
 		lazy_itable_init = 1;
 	if (ext2fs_has_feature_meta_bg(fs->super))
 		old_desc_blocks = fs->super->s_first_meta_bg;

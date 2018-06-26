@@ -30,7 +30,7 @@ echo mke2fs -q -F -o Linux -b 1024 -i 1024 -O ^resize_inode -t ext4 test.img 102
 $MKE2FS -q -F -o Linux -b 1024 -i 1024 -O ^resize_inode -t ext4 \
 	$TMPFILE 1024000 >> $OUT 2>&1
 
-echo resize2fs -p test.img 10240000 >> $OUT
+echo resize2fs -p test.img 100000000 >> $OUT
 $RESIZE2FS -p $TMPFILE 100000000 >> $OUT 2>&1
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE >> $OUT 2>&1
