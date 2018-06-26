@@ -1767,7 +1767,8 @@ void do_mknod(int argc, char *argv[])
 		goto usage;
 
 	st.st_rdev = makedev(major, minor);
-	retval = do_mknod_internal(current_fs, cwd, argv[1], &st);
+	retval = do_mknod_internal(current_fs, cwd, argv[1],
+				   st.st_mode, st.st_rdev);
 	if (retval)
 		com_err(argv[0], retval, 0);
 }
