@@ -55,6 +55,7 @@ int sci_idx;
 ext2_filsys	current_fs;
 quota_ctx_t	current_qctx;
 ext2_ino_t	root, cwd;
+int		no_copy_xattrs;
 
 static int debugfs_setup_tdb(const char *device_name, char *undo_file,
 			     io_manager *io_ptr)

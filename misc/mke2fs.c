@@ -95,6 +95,7 @@ int	journal_size;
 int	journal_flags;
 static int	lazy_itable_init;
 static int	packed_meta_blocks;
+int		no_copy_xattrs;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 /* Initialize usr/grp quotas by default */
@@ -880,6 +881,9 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				r_usage++;
 				continue;
 			}
+		} else if (strcmp(token, "no_copy_xattrs") == 0) {
+			no_copy_xattrs = 1;
+			continue;
 		} else if (strcmp(token, "num_backup_sb") == 0) {
 			if (!arg) {
 				r_usage++;

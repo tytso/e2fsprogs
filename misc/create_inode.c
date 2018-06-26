@@ -142,6 +142,9 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 	char				*list = NULL;
 	int				i;
 
+	if (no_copy_xattrs)
+		return 0;
+
 	size = llistxattr(filename, NULL, 0);
 	if (size == -1) {
 		retval = errno;
