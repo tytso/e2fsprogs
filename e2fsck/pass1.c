@@ -3448,16 +3448,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 
 		size = EXT2_I_SIZE(inode);
 		if ((pb.last_init_lblock >= 0) &&
-		    /* if size is smaller than expected by the block count,
-		     * allow allocated blocks to end of PAGE_SIZE.
-		     * last_init_lblock is the last in-use block, so it is
-		     * the minimum expected file size, but +1 because it is
-		     * the base-zero block number and not the block count. */
-		    (size < (__u64)pb.last_init_lblock * fs->blocksize) &&
-		    ((pb.last_init_lblock + 1) / blkpg * blkpg !=
-		     (pb.last_init_lblock + 1) ||
-		     size < (__u64)(pb.last_init_lblock & ~(blkpg - 1)) *
-		     fs->blocksize))
+		    /* Do not allow initialized allocated blocks past i_size*/
+		    (size < (__u64)pb.last_init_lblock * fs->blocksize))
 			bad_size = 3;
 		else if (!(extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
 			 size > ext2_max_sizes[fs->super->s_log_block_size])
