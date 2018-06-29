@@ -676,6 +676,12 @@ void check_super_block(e2fsck_t ctx)
 		if (fix_problem(ctx, PR_0_INODE_COUNT_WRONG, &pctx)) {
 			sb->s_inodes_count = should_be;
 			ext2fs_mark_super_dirty(fs);
+		} else {
+			pctx.num = sb->s_inodes_count;
+			pctx.str = "inodes_count";
+			fix_problem(ctx, PR_0_MISC_CORRUPT_SUPER, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
 		}
 	}
 	if (sb->s_rev_level > EXT2_GOOD_OLD_REV &&
