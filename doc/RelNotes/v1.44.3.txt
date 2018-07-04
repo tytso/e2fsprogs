@@ -1,5 +1,5 @@
-E2fsprogs 1.44.3 (June 24, 2018)  8951fd9f51e9
-================================
+E2fsprogs 1.44.3 (July 3, 2018)
+===============================
 
 Updates/Fixes since v1.44.2:
 
@@ -38,10 +38,6 @@ willing to mount.
 E2fsck now considers device inodes with the extents flag as corrupt
 and offer to clear them.
 
-E2fsck now correctly handles block preallocation support in cases
-where the kernel PAGE_SIZE is larger than the filesystem
-blocksize.
-
 E2fsck more properly handles cases where s_inodes_count is corrupted.
 
 E2fsck no longer spews large number of errors when the superblock
@@ -55,6 +51,17 @@ E2fsck will no longer loop infinitely due to a maliciously crafted
 file system which has a fully uninitialized inode table in the first
 block group.
 
+E2fsck will no longer hang if the last block in the file system is a
+fixed-metadata block.  (Very rare, but could happen.)
+
+E2fsck no longer allows initialized blocks to exist past i_size.  This
+is something the Linux implementation of ext4 has never done (and should
+never do).
+
+While replaying the journal in e2fsck, certain errors would previously
+cause e2fsck to print a non-sensical error message (e.g., "Unknown code
+____ 251 while recovering journal").  This has been fixed.
+
 In cases where more than 75% of the block group will be used for group
 descriptor table, mke2fs would previously create an invalid file
 system with both the meta_bg and resize_inode features enabled.  It
@@ -63,6 +70,12 @@ will now disable the resize_inode feature.
 The mke2fs program now properly creates a file system which is exactly
 1 << 32 blocks.  Previously the s_inodes_count field would overflow,
 and the file system would be created with a minimal number of inodes.
+
+Recent kernels will report errors on a file or block device which
+occurred before the file or block device was opened via fsync() or
+close().  This will cause e2fsck to incorrectly report a failure.  Work
+around this by calling fsync() immediately after the file or block
+device is opened in the unix_io layer, and throwing away the error.
 
 Filefrag will no longer ignore errors returned by fsync.
 
@@ -78,10 +91,15 @@ Performance, Internal Implementation, Development Support etc.
 
 Synchronized changes from Android's AOSP e2fsprogs tree.
 
+Debugfs's mknod command now works correctly on some 32-bit systems where
+previously it had a portability problem caused by some object files
+being compiled with LFS, and some without.  This fixes some regression
+test failures on 32-bit MIPS (for example).
+
 Various clean ups, portability, and performance improvements to
 e2fsprogs's regression test framework.
 
 Fixed Coverity, sparse, gcc -Wall, and clang warnings/nits.
 
-Update Czech, Dutch, Spanish, French, Swedish, Ukrainian, and
+Update Czech, Dutch, Spanish, French, Polish, Swedish, Ukrainian, and
 Vietnamese translations.
