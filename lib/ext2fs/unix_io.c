@@ -569,6 +569,14 @@ static errcode_t unix_open_channel(const char *name, int fd,
 	if (safe_getenv("UNIX_IO_FORCE_BOUNCE"))
 		flags |= IO_FLAG_FORCE_BOUNCE;
 
+#ifdef __linux__
+	/*
+	 * We need to make sure any previous errors in the block
+	 * device are thrown away, sigh.
+	 */
+	(void) fsync(fd);
+#endif
+
 	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)
 		goto cleanup;
