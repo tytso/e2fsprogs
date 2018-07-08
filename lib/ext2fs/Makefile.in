@@ -225,7 +225,7 @@ SRCS= ext2_err.c \
 	$(DEBUG_SRCS)
 
 HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_ext_attr.h ext3_extents.h \
-	tdb.h qcow2.h
+	tdb.h qcow2.h hashmap.h
 HFILES_IN=  ext2_err.h ext2_types.h
 
 LIBRARY= libext2fs
