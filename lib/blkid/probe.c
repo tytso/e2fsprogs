@@ -1184,6 +1184,8 @@ static int probe_hfs(struct blkid_probe *probe __BLKID_ATTR((unused)),
 }
 
 
+#define HFSPLUS_SECTOR_SIZE        512
+
 static int probe_hfsplus(struct blkid_probe *probe,
 			 struct blkid_magic *id,
 			 unsigned char *buf)
@@ -1247,6 +1249,9 @@ static int probe_hfsplus(struct blkid_probe *probe,
 	}
 
 	blocksize = blkid_be32(hfsplus->blocksize);
+	if (blocksize < HFSPLUS_SECTOR_SIZE)
+		return 1;
+
 	memcpy(extents, hfsplus->cat_file.extents, sizeof(extents));
 	cat_block = blkid_be32(extents[0].start_block);
 
