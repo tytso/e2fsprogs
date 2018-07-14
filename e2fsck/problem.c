@@ -99,8 +99,10 @@ static const char *preen_msg[] = {
 	"",			/* 20 */
 };
 
+#if __GNUC_PREREQ (4, 6)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
 
 static struct e2fsck_problem problem_table[] = {
 
@@ -2086,7 +2088,9 @@ static struct latch_descr pr_latch_info[] = {
 	{ PR_LATCH_OPTIMIZE_EXT, PR_1E_OPTIMIZE_EXT_HEADER, PR_1E_OPTIMIZE_EXT_END },
 	{ -1, 0, 0 },
 };
+#if __GNUC_PREREQ (4, 6)
 #pragma GCC diagnostic pop
+#endif
 
 static struct e2fsck_problem *find_problem(problem_t code)
 {

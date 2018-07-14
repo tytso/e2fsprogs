@@ -118,10 +118,14 @@ typedef struct {
 
 typedef struct {
 	u_int32_t	a_version;
+#if __GNUC_PREREQ (4, 8)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#endif
 	acl_ea_entry	a_entries[0];
+#if __GNUC_PREREQ (4, 8)
 #pragma GCC diagnostic pop
+#endif
 } acl_ea_header;
 
 static inline size_t acl_ea_size(int count)
