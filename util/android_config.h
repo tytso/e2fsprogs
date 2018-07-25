@@ -28,7 +28,9 @@
 #define HAVE_UTIME_H 1
 
 #define HAVE_SYS_STAT_H 1
-#define HAVE_SYS_SYSMACROS_H 1
+#if !defined(__APPLE__)
+# define HAVE_SYS_SYSMACROS_H 1
+#endif
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TYPES_H 1
 
