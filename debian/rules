@@ -377,15 +377,12 @@ binary-arch: install $(INSTALL_UDEB)
 
 	mkdir -p ${debdir}/libss${SS_SOVERSION}/usr/share/doc/libss${SS_SOVERSION}
 	mkdir -p ${debdir}/ss-dev/usr/share/doc
-	ln -sf libss${SS_SOVERSION} ${debdir}/ss-dev/usr/share/doc/ss-dev
 
 	mkdir -p ${debdir}/libcom-err${COMERR_SOVERSION}/usr/share/doc/libcom-err${COMERR_SOVERSION}
 	mkdir -p ${debdir}/comerr-dev/usr/share/doc
-	ln -sf libcom-err${COMERR_SOVERSION} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
 
 	mkdir -p ${debdir}/libext2fs2/usr/share/doc/libext2fs
 	mkdir -p ${debdir}/libext2fs-dev/usr/share/doc
-	ln -sf libext2fs2 ${debdir}/libext2fs-dev/usr/share/doc/libext2fs-dev
 
 	dh_installdocs -a -Ne2fsprogs-udeb
 
