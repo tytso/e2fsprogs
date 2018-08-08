@@ -111,9 +111,14 @@ typedef struct struct_ext2_filsys *ext2_filsys;
 #define EXT2FS_UNMARK_ERROR 	1
 #define EXT2FS_TEST_ERROR	2
 
-typedef struct ext2fs_struct_generic_bitmap *ext2fs_generic_bitmap;
-typedef struct ext2fs_struct_generic_bitmap *ext2fs_inode_bitmap;
-typedef struct ext2fs_struct_generic_bitmap *ext2fs_block_bitmap;
+struct ext2fs_struct_generic_bitmap_base {
+	errcode_t		magic;
+	ext2_filsys 		fs;
+};
+
+typedef struct ext2fs_struct_generic_bitmap_base *ext2fs_generic_bitmap;
+typedef struct ext2fs_struct_generic_bitmap_base *ext2fs_inode_bitmap;
+typedef struct ext2fs_struct_generic_bitmap_base *ext2fs_block_bitmap;
 
 #define EXT2_FIRST_INODE(s)	EXT2_FIRST_INO(s)
 
