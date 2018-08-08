@@ -723,7 +723,8 @@ static void print_possible_fields(struct field_set_info *fields)
 }
 
 
-void do_set_super(int argc, char *argv[])
+void do_set_super(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	const char *usage = "<field> <value>\n"
 		"\t\"set_super_value -l\" will list the names of "
@@ -750,7 +751,8 @@ void do_set_super(int argc, char *argv[])
 	}
 }
 
-void do_set_inode(int argc, char *argv[])
+void do_set_inode(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		  void *infop EXT2FS_ATTR((unused)))
 {
 	const char *usage = "<inode> <field> <value>\n"
 		"\t\"set_inode_field -l\" will list the names of "
@@ -788,7 +790,9 @@ void do_set_inode(int argc, char *argv[])
 	}
 }
 
-void do_set_block_group_descriptor(int argc, char *argv[])
+void do_set_block_group_descriptor(int argc, char *argv[],
+				   int sci_idx EXT2FS_ATTR((unused)),
+				   void *infop EXT2FS_ATTR((unused)))
 {
 	const char *usage = "<bg number> <field> <value>\n"
 		"\t\"set_block_group -l\" will list the names of "
@@ -866,7 +870,8 @@ static errcode_t parse_mmp_clear(struct field_set_info *info,
 }
 
 #ifdef CONFIG_MMP
-void do_set_mmp_value(int argc, char *argv[])
+void do_set_mmp_value(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		      void *infop EXT2FS_ATTR((unused)))
 {
 	const char *usage = "<field> <value>\n"
 		"\t\"set_mmp_value -l\" will list the names of "
@@ -925,7 +930,9 @@ void do_set_mmp_value(int argc, char *argv[])
 }
 #else
 void do_set_mmp_value(int argc EXT2FS_ATTR((unused)),
-		      char *argv[] EXT2FS_ATTR((unused)))
+		      char *argv[] EXT2FS_ATTR((unused)),
+		      int sci_idx EXT2FS_ATTR((unused)),
+		      void *infop EXT2FS_ATTR((unused)))
 {
 	fprintf(stdout, "MMP is unsupported, please recompile with "
 	                "--enable-mmp\n");

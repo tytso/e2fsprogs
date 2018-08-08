@@ -371,7 +371,8 @@ static void open_device(char *device_name, ext2_filsys *fs)
 #ifdef DEBUGFS
 #include "debugfs.h"
 
-void do_freefrag(int argc, char **argv)
+void do_freefrag(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 #else
 int main(int argc, char *argv[])
 #endif

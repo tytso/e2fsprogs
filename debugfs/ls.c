@@ -189,7 +189,8 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	return 0;
 }
 
-void do_list_dir(int argc, char *argv[])
+void do_list_dir(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+		 void *infop EXT2FS_ATTR((unused)))
 {
 	struct ext2_inode inode;
 	ext2_ino_t	ino;
