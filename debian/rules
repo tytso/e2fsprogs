@@ -436,6 +436,7 @@ endif
 	dh_compress -a
 
 	dh_makeshlibs -a --add-udeb=e2fsprogs-udeb
+	dh_installsystemd -p e2fsprogs
 
 	$(INSTALL) -D -p -m644 debian/e2fsprogs-udeb.lintian-overrides \
 	    debian/e2fsprogs-udeb/usr/share/lintian/overrides/e2fsprogs-udeb
