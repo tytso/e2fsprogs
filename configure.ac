@@ -1305,7 +1305,7 @@ if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then
 	AC_MSG_CHECKING([if C compiler supports LTO])
 	OLD_CFLAGS="$CFLAGS"
 	OLD_LDFLAGS="$LDFLAGS"
-	LTO_FLAGS="-flto -ffat-lto-objects"
+	LTO_FLAGS="-g -flto -ffat-lto-objects"
 	CFLAGS="$CFLAGS $LTO_FLAGS"
 	LDFLAGS="$LDFLAGS $LTO_FLAGS"
 	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],

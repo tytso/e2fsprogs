@@ -13763,7 +13763,7 @@ if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then
 $as_echo_n "checking if C compiler supports LTO... " >&6; }
 	OLD_CFLAGS="$CFLAGS"
 	OLD_LDFLAGS="$LDFLAGS"
-	LTO_FLAGS="-flto -ffat-lto-objects"
+	LTO_FLAGS="-g -flto -ffat-lto-objects"
 	CFLAGS="$CFLAGS $LTO_FLAGS"
 	LDFLAGS="$LDFLAGS $LTO_FLAGS"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
