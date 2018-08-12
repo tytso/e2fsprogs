@@ -617,9 +617,10 @@ static void reserve_stdio_fds(void)
 			fprintf(stderr, _("ERROR: Couldn't open "
 				"/dev/null (%s)\n"),
 				strerror(errno));
-			break;
+			return;
 		}
 	}
+	(void) close(fd);
 }
 
 #ifdef HAVE_SIGNAL_H
