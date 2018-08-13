@@ -240,6 +240,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'p':
 			product_out = absolute_path(optarg);
+			android_configure = 1;
 			break;
 		case 'a':
 			mountpoint = strdup(optarg);
