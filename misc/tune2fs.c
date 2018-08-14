@@ -292,6 +292,12 @@ static int remove_journal_device(ext2_filsys fs)
 	jsb = (journal_superblock_t *) buf;
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
+	if (nr_users > JFS_USERS_MAX) {
+		fprintf(stderr, _("Journal superblock is corrupted, nr_users\n"
+				 "is too high (%d).\n"), nr_users);
+		commit_remove_journal = 1;
+		goto no_valid_journal;
+	}
 
 	if (!journal_user(fs->super->s_uuid, jsb->s_users, nr_users)) {
 		fputs(_("Filesystem's UUID not found on journal device.\n"),
@@ -2850,6 +2856,11 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 	jsb = (journal_superblock_t *) buf;
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
+	if (nr_users > JFS_USERS_MAX) {
+		fprintf(stderr, _("Journal superblock is corrupted, nr_users\n"
+				 "is too high (%d).\n"), nr_users);
+		return EXT2_ET_CORRUPT_JOURNAL_SB;
+	}
 
 	j_uuid = journal_user(old_uuid, jsb->s_users, nr_users);
 	if (j_uuid == NULL) {
