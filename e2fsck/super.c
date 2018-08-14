@@ -436,6 +436,14 @@ void check_resize_inode(e2fsck_t ctx)
 
 	clear_problem_context(&pctx);
 
+	if (ext2fs_has_feature_resize_inode(fs->super) &&
+	    ext2fs_has_feature_meta_bg(fs->super) &&
+	    fix_problem(ctx, PR_0_DISABLE_RESIZE_INODE, &pctx)) {
+		ext2fs_clear_feature_resize_inode(fs->super);
+		fs->super->s_reserved_gdt_blocks = 0;
+		ext2fs_mark_super_dirty(fs);
+	}
+
 	/*
 	 * If the resize inode feature isn't set, then
 	 * s_reserved_gdt_blocks must be zero.

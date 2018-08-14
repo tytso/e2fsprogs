@@ -40,8 +40,8 @@ subdir = intl
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
-MKINSTALLDIRS = @MKINSTALLDIRS@
-mkinstalldirs = $(SHELL) $(MKINSTALLDIRS)
+MKDIR_P = @MKDIR_P@
+mkinstalldirs = $(SHELL) $(MKDIR_P)
 
 @SET_MAKE@
 
