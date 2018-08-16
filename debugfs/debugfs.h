@@ -25,7 +25,7 @@
 extern ext2_filsys current_fs;
 extern quota_ctx_t current_qctx;
 extern ext2_ino_t	root, cwd;
-extern int sci_idx;
+extern int ss_sci_idx;
 extern ss_request_table debug_cmds, extent_cmds;
 
 extern void reset_getopt(void);
