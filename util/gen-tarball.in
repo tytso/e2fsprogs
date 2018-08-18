@@ -40,7 +40,6 @@ if test -z "$SOURCE_DATE_EPOCH" ; then
     export SOURCE_DATE_EPOCH=$(cd $top_srcdir; git log -1 --pretty=%ct)
 fi
 
-mv ../e2fsprogs.spec $top_srcdir/e2fsprogs.spec
 (cd $top_srcdir/.. ; find $base_e2fsprogs \( -name \*~ -o -name \*.orig \
 		-o -name CVS -o -name \*.rej -o -name Makefile.pq \
 		-o -name TAGS -o -name \*.old -o -name SCCS \
@@ -56,5 +55,3 @@ sed -e "s;^;$base_e2fsprogs/;" < $srcdir/$list.exclude >> $exclude
     | $GZIP -9n -c > $tarout
 $GZIP -ln $tarout
 rm -f "$exclude"
-
-mv $top_srcdir/e2fsprogs.spec ../e2fsprogs.spec 

@@ -40,10 +40,7 @@ progs: all-progs-recursive
 libs: all-libs-recursive
 all-progs-recursive all-libs-recursive: subs
 
-e2fsprogs.spec: $(DEP_SUBSTITUTE) e2fsprogs.spec.in
-	cd $(top_builddir); CONFIG_FILES=./e2fsprogs.spec ./config.status
-
-rpm: e2fsprogs.spec
+rpm:
 	sh contrib/build-rpm
 
 docs:
@@ -117,7 +114,7 @@ clean:: clean-recursive clean-local clean-doc
 	$(RM) -f $(SUBS) 
 
 distclean: distclean-doc distclean-recursive
-	$(RM) -rf autom4te.cache e2fsprogs.spec ext2ed/Makefile po/stamp-po \
+	$(RM) -rf autom4te.cache ext2ed/Makefile po/stamp-po \
 		asm_types.h config.log public_config.h parse-types.log
 	$(MAKE) distclean-local 
 
