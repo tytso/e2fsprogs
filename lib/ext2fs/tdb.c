@@ -79,12 +79,10 @@ static char *rep_strdup(const char *s)
 {
 	char *ret;
 	int length;
+
 	if (!s)
 		return NULL;
-
-	if (!length)
-		length = strlen(s);
-
+	length = strlen(s);
 	ret = malloc(length + 1);
 	if (ret) {
 		strncpy(ret, s, length);
