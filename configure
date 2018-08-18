@@ -13755,7 +13755,7 @@ esac
 if test "${enable_lto+set}" = set; then :
   enableval=$enable_lto;
 else
-  enable_lto=probe
+  enable_lto=no
 fi
 
 if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then

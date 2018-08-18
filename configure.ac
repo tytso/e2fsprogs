@@ -1301,7 +1301,7 @@ dnl Enable LTO for all packages
 dnl
 AC_ARG_ENABLE([lto],
 [  --enable-lto		  enable link time optimization],,
-enable_lto=probe)
+enable_lto=no)
 if test "$enable_lto" = "yes" || test "$enable_lto" = "probe"; then
 	AC_MSG_CHECKING([if C compiler supports LTO])
 	OLD_CFLAGS="$CFLAGS"
