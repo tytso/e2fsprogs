@@ -338,6 +338,15 @@ small risk if the system crashes before the journal has been overwritten
 entirely one time.  If the option value is omitted, it defaults to 1 to
 enable lazy journal inode zeroing.
 .TP
+.BI no_copy_xattrs
+Normally
+.B mke2fs
+will copy the extended attributes of the files in the directory
+hierarchy specified via the (optional)
+.B \-d
+option.  This will disable the copy and leaves the files in the newly
+created file system without any extended attributes.
+.TP
 .BI num_backup_sb= <0|1|2>
 If the
 .B sparse_super2

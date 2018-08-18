@@ -268,6 +268,7 @@ static inline qid_t get_qid(struct ext2_inode_large *inode, enum quota_type qtyp
 			inode->i_extra_isize;
 		if (inode_includes(inode_size, i_projid))
 			return inode_projid(*inode);
+		return 0;
 	default:
 		return 0;
 	}
@@ -484,8 +485,10 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 	}
 	inode_size = fs->super->s_inode_size;
 	inode = malloc(inode_size);
-	if (!inode)
+	if (!inode) {
+		ext2fs_close_inode_scan(scan);
 		return ENOMEM;
+	}
 	while (1) {
 		ret = ext2fs_get_next_inode_full(scan, &ino,
 						 EXT2_INODE(inode), inode_size);
@@ -565,7 +568,8 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
  * Read all dquots from quota file into memory
  */
 static errcode_t quota_read_all_dquots(struct quota_handle *qh,
-                                       quota_ctx_t qctx, int update_limits)
+                                       quota_ctx_t qctx,
+				       int update_limits EXT2FS_ATTR((unused)))
 {
 	struct scan_dquots_data scan_data;
 

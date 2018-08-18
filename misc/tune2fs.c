@@ -753,7 +753,8 @@ static void update_ea_inode_hash(struct rewrite_context *ctx, ext2_ino_t ino,
 	if (retval)
 		fatal_err(retval, "close ea_inode");
 
-	hash = ext2fs_crc32c_le(ctx->fs->csum_seed, ctx->ea_buf, inode->i_size);
+	hash = ext2fs_crc32c_le(ctx->fs->csum_seed,
+				(unsigned char *) ctx->ea_buf, inode->i_size);
 	ext2fs_set_ea_inode_hash(inode, hash);
 }
 
@@ -802,7 +803,7 @@ static void update_inline_xattr_hashes(struct rewrite_context *ctx,
 }
 
 static void update_block_xattr_hashes(struct rewrite_context *ctx,
-				      void *block_buf)
+				      char *block_buf)
 {
 	struct ext2_ext_attr_header *header;
 	struct ext2_ext_attr_entry *start, *end;

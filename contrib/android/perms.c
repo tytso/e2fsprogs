@@ -23,6 +23,8 @@ struct inode_params {
 	fs_config_f fs_config_func;
 	struct selabel_handle *sehnd;
 	time_t fixed_time;
+	const struct ugid_map* uid_map;
+	const struct ugid_map* gid_map;
 };
 
 static errcode_t ino_add_xattr(ext2_filsys fs, ext2_ino_t ino, const char *name,
@@ -90,6 +92,26 @@ static errcode_t set_selinux_xattr(ext2_filsys fs, ext2_ino_t ino,
 	return retval;
 }
 
+/*
+ * Returns mapped UID/GID if there is a corresponding entry in |mapping|.
+ * Otherwise |id| as is.
+ */
+static unsigned int resolve_ugid(const struct ugid_map* mapping,
+				 unsigned int id)
+{
+	size_t i;
+	for (i = 0; i < mapping->size; ++i) {
+		const struct ugid_map_entry* entry = &mapping->entries[i];
+		if (entry->parent_id <= id &&
+		    id < entry->parent_id + entry->length) {
+			return id + entry->child_id - entry->parent_id;
+		}
+	}
+
+	/* No entry is found. */
+	return id;
+}
+
 static errcode_t set_perms_and_caps(ext2_filsys fs, ext2_ino_t ino,
 				    struct inode_params *params)
 {
@@ -107,11 +129,20 @@ static errcode_t set_perms_and_caps(ext2_filsys fs, ext2_ino_t ino,
 
 	/* Permissions */
 	if (params->fs_config_func != NULL) {
-		params->fs_config_func(params->filename, S_ISDIR(inode.i_mode),
+		const char *filename = params->filename;
+		if (strcmp(filename, params->mountpoint) == 0) {
+			/* The root of the filesystem needs to be an empty string. */
+			filename = "";
+		}
+		params->fs_config_func(filename, S_ISDIR(inode.i_mode),
 				       params->target_out, &uid, &gid, &imode,
 				       &capabilities);
-		inode.i_uid = uid & 0xffff;
-		inode.i_gid = gid & 0xffff;
+		uid = resolve_ugid(params->uid_map, uid);
+		gid = resolve_ugid(params->gid_map, gid);
+		inode.i_uid = (__u16) uid;
+		inode.i_gid = (__u16) gid;
+		ext2fs_set_i_uid_high(inode, (__u16) (uid >> 16));
+		ext2fs_set_i_gid_high(inode, (__u16) (gid >> 16));
 		inode.i_mode = (inode.i_mode & S_IFMT) | (imode & 0xffff);
 		retval = ext2fs_write_inode(fs, ino, &inode);
 		if (retval) {
@@ -250,7 +281,9 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *src_dir,
 				 char *mountpoint,
 				 fs_config_f fs_config_func,
 				 struct selabel_handle *sehnd,
-				 time_t fixed_time)
+				 time_t fixed_time,
+				 const struct ugid_map* uid_map,
+				 const struct ugid_map* gid_map)
 {
 	errcode_t retval;
 	struct inode_params params = {
@@ -263,16 +296,15 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *src_dir,
 		.path = mountpoint,
 		.filename = mountpoint,
 		.mountpoint = mountpoint,
+		.uid_map = uid_map,
+		.gid_map = gid_map,
 	};
 
 	/* walk_dir will add the "/". Don't add it twice. */
 	if (strlen(mountpoint) == 1 && mountpoint[0] == '/')
 		params.path = "";
 
-	retval = set_selinux_xattr(fs, EXT2_ROOT_INO, &params);
-	if (retval)
-		return retval;
-	retval = set_timestamp(fs, EXT2_ROOT_INO, &params);
+	retval = androidify_inode(fs, EXT2_ROOT_INO, &params);
 	if (retval)
 		return retval;
 
@@ -284,7 +316,9 @@ errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 			       char *mountpoint,
 			       struct selinux_opt *seopts EXT2FS_ATTR((unused)),
 			       unsigned int nopt EXT2FS_ATTR((unused)),
-			       char *fs_config_file, time_t fixed_time)
+			       char *fs_config_file, time_t fixed_time,
+			       const struct ugid_map* uid_map,
+			       const struct ugid_map* gid_map)
 {
 	errcode_t retval;
 	fs_config_f fs_config_func = NULL;
@@ -324,5 +358,6 @@ errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,
 		fs_config_func = fs_config;
 
 	return __android_configure_fs(fs, src_dir, target_out, mountpoint,
-				      fs_config_func, sehnd, fixed_time);
+				      fs_config_func, sehnd, fixed_time,
+				      uid_map, gid_map);
 }

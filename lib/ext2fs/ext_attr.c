@@ -357,13 +357,13 @@ static const char *find_ea_prefix(int index)
 	return NULL;
 }
 
-static int find_ea_index(const char *fullname, char **name, int *index)
+static int find_ea_index(const char *fullname, const char **name, int *index)
 {
 	struct ea_name_index *e;
 
 	for (e = ea_names; e->name; e++) {
 		if (strncmp(fullname, e->name, strlen(e->name)) == 0) {
-			*name = (char *)fullname + strlen(e->name);
+			*name = fullname + strlen(e->name);
 			*index = e->index;
 			return 1;
 		}
@@ -525,11 +525,13 @@ posix_acl_xattr_count(size_t size)
 static errcode_t convert_posix_acl_to_disk_buffer(const void *value, size_t size,
 						  void *out_buf, size_t *size_out)
 {
-	posix_acl_xattr_header *header = (posix_acl_xattr_header*) value;
-	posix_acl_xattr_entry *entry = (posix_acl_xattr_entry *)(header+1), *end;
+	const posix_acl_xattr_header *header =
+		(const posix_acl_xattr_header*) value;
+	const posix_acl_xattr_entry *end, *entry =
+		(const posix_acl_xattr_entry *)(header+1);
 	ext4_acl_header *ext_acl;
 	size_t s;
-	void *e;
+	char *e;
 
 	int count;
 
@@ -579,7 +581,7 @@ static errcode_t convert_disk_buffer_to_posix_acl(const void *value, size_t size
 {
 	posix_acl_xattr_header *header;
 	posix_acl_xattr_entry *entry;
-	ext4_acl_header *ext_acl = (ext4_acl_header *) value;
+	const ext4_acl_header *ext_acl = (const ext4_acl_header *) value;
 	errcode_t err;
 	const char *cp;
 	char *out;
@@ -597,7 +599,7 @@ static errcode_t convert_disk_buffer_to_posix_acl(const void *value, size_t size
 	header->a_version = ext2fs_cpu_to_le32(POSIX_ACL_XATTR_VERSION);
 	entry = (posix_acl_xattr_entry *) (out + sizeof(posix_acl_xattr_header));
 
-	cp = value + sizeof(ext4_acl_header);
+	cp = (const char *) value + sizeof(ext4_acl_header);
 	size -= sizeof(ext4_acl_header);
 
 	while (size > 0) {
@@ -640,9 +642,9 @@ write_xattrs_to_buffer(ext2_filsys fs, struct ext2_xattr *attrs, int count,
 {
 	struct ext2_xattr *x;
 	struct ext2_ext_attr_entry *e = entries_start;
-	void *end = entries_start + storage_size;
-	char *shortname;
-	unsigned int entry_size, value_size;
+	char *end = (char *) entries_start + storage_size;
+	const char *shortname;
+	unsigned int value_size;
 	int idx, ret;
 	errcode_t err;
 
@@ -652,10 +654,6 @@ write_xattrs_to_buffer(ext2_filsys fs, struct ext2_xattr *attrs, int count,
 		shortname = x->name;
 		ret = find_ea_index(x->name, &shortname, &idx);
 
-		/* Calculate entry and value size */
-		entry_size = (sizeof(*e) + strlen(shortname) +
-			      EXT2_EXT_ATTR_PAD - 1) &
-			     ~(EXT2_EXT_ATTR_PAD - 1);
 		value_size = ((x->value_len + EXT2_EXT_ATTR_PAD - 1) /
 			      EXT2_EXT_ATTR_PAD) * EXT2_EXT_ATTR_PAD;
 
@@ -672,8 +670,8 @@ write_xattrs_to_buffer(ext2_filsys fs, struct ext2_xattr *attrs, int count,
 			e->e_value_offs = 0;
 		} else {
 			end -= value_size;
-			e->e_value_offs = end - entries_start +
-							value_offset_correction;
+			e->e_value_offs = end - (char *) entries_start +
+						value_offset_correction;
 			memcpy(end, x->value, e->e_value_size);
 		}
 
@@ -695,7 +693,7 @@ write_xattrs_to_buffer(ext2_filsys fs, struct ext2_xattr *attrs, int count,
 errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle)
 {
 	ext2_filsys fs = handle->fs;
-	const int inode_size = EXT2_INODE_SIZE(fs->super);
+	const unsigned int inode_size = EXT2_INODE_SIZE(fs->super);
 	struct ext2_inode_large *inode;
 	char *start, *block_buf = NULL;
 	struct ext2_ext_attr_header *header;
@@ -977,7 +975,7 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 static void xattrs_free_keys(struct ext2_xattr_handle *h)
 {
 	struct ext2_xattr *a = h->attrs;
-	size_t i;
+	int i;
 
 	for (i = 0; i < h->capacity; i++) {
 		if (a[i].name)
@@ -1362,7 +1360,7 @@ static int xattr_find_position(struct ext2_xattr *attrs, int count,
 {
 	struct ext2_xattr *x;
 	int i;
-	char *shortname, *x_shortname;
+	const char *shortname, *x_shortname;
 	int name_idx, x_name_idx;
 	int shortname_len, x_shortname_len;
 
@@ -1398,7 +1396,7 @@ static errcode_t xattr_array_update(struct ext2_xattr_handle *h,
 	int add_to_ibody;
 	int needed;
 	int name_len, name_idx;
-	char *shortname;
+	const char *shortname;
 	int new_idx;
 	int ret;
 
@@ -1504,7 +1502,7 @@ static int space_used(struct ext2_xattr *attrs, int count)
 {
 	int total = 0;
 	struct ext2_xattr *x;
-	char *shortname;
+	const char *shortname;
 	int i, len, name_idx;
 
 	for (i = 0, x = attrs; i < count; i++, x++) {

@@ -756,7 +756,7 @@ retry:
 	 */
 	new_inodes =(unsigned long long) fs->super->s_inodes_per_group * fs->group_desc_count;
 	if (new_inodes > ~0U) {
-		fprintf(stderr, _("inodes (%llu) must be less than %u"),
+		fprintf(stderr, _("inodes (%llu) must be less than %u\n"),
 				   new_inodes, ~0U);
 		return EXT2_ET_TOO_MANY_INODES;
 	}
@@ -920,8 +920,9 @@ retry:
 	group_block = ext2fs_group_first_block2(fs,
 						old_fs->group_desc_count);
 	csum_flag = ext2fs_has_group_desc_csum(fs);
-	if (!getenv("RESIZE2FS_FORCE_ITABLE_INIT") &&
-	    access("/sys/fs/ext4/features/lazy_itable_init", F_OK) == 0)
+	if (getenv("RESIZE2FS_FORCE_LAZY_ITABLE_INIT") ||
+	    (!getenv("RESIZE2FS_FORCE_ITABLE_INIT") &&
+	     access("/sys/fs/ext4/features/lazy_itable_init", F_OK) == 0))
 		lazy_itable_init = 1;
 	if (ext2fs_has_feature_meta_bg(fs->super))
 		old_desc_blocks = fs->super->s_first_meta_bg;
@@ -1991,7 +1992,6 @@ static int fix_ea_entries(ext2_extent imap, struct ext2_ext_attr_entry *entry,
 {
 	int modified = 0;
 	ext2_ino_t new_ino;
-	errcode_t retval;
 
 	while (entry < end && !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		if (entry->e_value_inum > last_ino) {
@@ -2061,9 +2061,11 @@ static errcode_t fix_ea_inode_refs(ext2_resize_t rfs, struct ext2_inode *inode,
 	int		inode_size = EXT2_INODE_SIZE(fs->super);
 	blk64_t		blk;
 	int		modified;
-	struct blk_cache blk_cache = { 0 };
+	struct blk_cache blk_cache;
 	struct ext2_ext_attr_header *header;
 	errcode_t		retval;
+
+	memset(&blk_cache, 0, sizeof(blk_cache));
 
 	header = (struct ext2_ext_attr_header *)block_buf;
 

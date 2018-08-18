@@ -429,7 +429,7 @@ ec	EXT2_ET_MMP_FAILED,
 	"MMP: device currently active"
 
 ec	EXT2_ET_MMP_FSCK_ON,
-	"MMP: fsck being run"
+	"MMP: e2fsck being run"
 
 ec	EXT2_ET_MMP_BAD_BLOCK,
 	"MMP: block number beyond filesystem range"
@@ -471,7 +471,7 @@ ec	EXT2_ET_UNKNOWN_CSUM,
 	"Unknown checksum algorithm"
 
 ec	EXT2_ET_MMP_CSUM_INVALID,
-	"MMP block checksum does not match MMP block"
+	"MMP block checksum does not match"
 
 ec	EXT2_ET_FILE_EXISTS,
 	"Ext2 file already exists"

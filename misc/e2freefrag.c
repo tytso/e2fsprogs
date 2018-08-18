@@ -173,7 +173,7 @@ static int scan_online(ext2_filsys fs, struct chunk_info *info)
 	int mount_flags;
 	int fd;
 	int ret;
-	int i;
+	unsigned int i;
 
 	/* Try to open the mountpoint for a live query. */
 	retval = ext2fs_check_mount_point(fs->device_name, &mount_flags,
@@ -182,7 +182,7 @@ static int scan_online(ext2_filsys fs, struct chunk_info *info)
 		com_err(fs->device_name, retval, "while checking mount status");
 		return 0;
 	}
-	if (!mount_flags & EXT2_MF_MOUNTED)
+	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return 0;
 	fd = open(mntpoint, O_RDONLY);
 	if (fd < 0) {

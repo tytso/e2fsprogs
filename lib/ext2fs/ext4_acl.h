@@ -50,6 +50,9 @@ typedef struct {
 
 typedef struct {
         __le32                  a_version;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
         posix_acl_xattr_entry   a_entries[0];
+#pragma GCC diagnostic pop
 } posix_acl_xattr_header;
 

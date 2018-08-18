@@ -450,7 +450,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Superblock MMP block checksum does not match MMP block. */
 	{ PR_0_MMP_CSUM_INVALID,
-	  N_("@S MMP @b checksum does not match MMP @b.  "),
+	  N_("@S MMP @b checksum does not match.  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK},
 
 	/* Superblock 64bit filesystem needs extents to access the whole disk */
@@ -492,6 +492,11 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_0_INVALID_QUOTA_INO,
 	  N_("Invalid %U @q @i %i.  "),
 	  PROMPT_FIX, 0 },
+
+	/* Too many inodes in the filesystem */
+	{ PR_0_INODE_COUNT_BIG,
+	  N_("@S would have too many inodes (%N).\n"),
+	  PROMPT_NONE, PR_AFTER_CODE, PR_0_SB_CORRUPT },
 
 	/* Pass 1 errors */
 
@@ -1877,6 +1882,11 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_4_EA_INODE_REF_COUNT,
 	  N_("@a @i %i ref count is %N, @s %n. "),
 	  PROMPT_FIX, PR_PREEN_OK },
+
+	/* directory exceeds max links, but no DIR_NLINK feature in superblock*/
+	{ PR_4_DIR_NLINK_FEATURE,
+	  N_("@d exceeds max links, but no DIR_NLINK feature in @S.\n"),
+	  PROMPT_FIX, 0 },
 
 	/* Pass 5 errors */
 

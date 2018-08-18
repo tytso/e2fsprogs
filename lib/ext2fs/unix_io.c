@@ -349,7 +349,7 @@ bounce_write:
 					retval = errno;
 					goto error_out;
 				}
-				memset(data->bounce + actual, 0,
+				memset((char *) data->bounce + actual, 0,
 				       channel->block_size - actual);
 			}
 		}
@@ -568,6 +568,14 @@ static errcode_t unix_open_channel(const char *name, int fd,
 
 	if (safe_getenv("UNIX_IO_FORCE_BOUNCE"))
 		flags |= IO_FLAG_FORCE_BOUNCE;
+
+#ifdef __linux__
+	/*
+	 * We need to make sure any previous errors in the block
+	 * device are thrown away, sigh.
+	 */
+	(void) fsync(fd);
+#endif
 
 	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)

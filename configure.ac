@@ -1124,6 +1124,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	futimes
 	getcwd
 	getdtablesize
+	gethostname
 	getmntinfo
 	getpwuid_r
 	getrlimit

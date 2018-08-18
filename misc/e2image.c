@@ -552,7 +552,7 @@ static void sigint_handler(int unused EXT2FS_ATTR((unused)))
 
 #define calc_percent(a, b) ((int) ((100.0 * (((float) (a)) / \
 					     ((float) (b)))) + 0.5))
-#define calc_rate(t, b, d) (((float)(t) / ((1024 * 1024) / (b))) / (d))
+#define calc_rate(t, b, d) (((float)(t) / ((float)(1024 * 1024) / (b))) / (d))
 
 static int print_progress(blk64_t num, blk64_t total)
 {
@@ -874,14 +874,17 @@ static int init_refcount(struct ext2_qcow2_image *img, blk64_t table_offset)
 	return ret;
 }
 
-static int initialize_qcow2_image(int fd, ext2_filsys fs,
-			    struct ext2_qcow2_image *image)
+static errcode_t initialize_qcow2_image(int fd, ext2_filsys fs,
+					struct ext2_qcow2_image *image)
 {
 	struct ext2_qcow2_hdr *header;
 	blk64_t total_size, offset;
 	int shift, l2_bits, header_size, l1_size, ret;
 	int cluster_bits = get_bits_from_size(fs->blocksize);
 	struct ext2_super_block *sb = fs->super;
+
+	if (fs->blocksize < 1024)
+		return EINVAL;	/* Can never happen, but just in case... */
 
 	/* Allocate header */
 	ret = ext2fs_get_memzero(sizeof(struct ext2_qcow2_hdr), &header);
@@ -1630,13 +1633,18 @@ skip_device:
 			if (ret == -QCOW_COMPRESSED)
 				fprintf(stderr, _("Image (%s) is compressed\n"),
 					image_fn);
-			if (ret == -QCOW_ENCRYPTED)
+			else if (ret == -QCOW_ENCRYPTED)
 				fprintf(stderr, _("Image (%s) is encrypted\n"),
 					image_fn);
-			com_err(program_name, ret,
-				_("while trying to convert qcow2 image"
-				  " (%s) into raw image (%s)"),
-				device_name, image_fn);
+			else if (ret == -QCOW_CORRUPTED)
+				fprintf(stderr, _("Image (%s) is corrupted\n"),
+					image_fn);
+			else
+				com_err(program_name, ret,
+					_("while trying to convert qcow2 image"
+					  " (%s) into raw image (%s)"),
+					image_fn, device_name);
+			ret = 1;
 		}
 		goto out;
 	}
