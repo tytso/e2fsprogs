@@ -80,8 +80,8 @@ fullcheck check::	tst_ostype tst_feature
 	./tst_feature
 
 installdirs::
-	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	$(E) "	MKDIR_P $(libdir) $(includedir)/e2p"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/e2p $(DESTDIR)$(pkgconfigdir)
 
 install:: all installdirs 

@@ -34,9 +34,11 @@
 #define O_DIRECT 0
 #endif
 
+#if __GNUC_PREREQ (4, 6)
 #pragma GCC diagnostic push
 #ifndef CONFIG_MMP
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 #endif
 
 errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
@@ -465,4 +467,6 @@ mmp_error:
 	return EXT2_ET_OP_NOT_SUPPORTED;
 #endif
 }
+#if __GNUC_PREREQ (4, 6)
 #pragma GCC diagnostic pop
+#endif

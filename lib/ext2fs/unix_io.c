@@ -1127,8 +1127,10 @@ unimplemented:
 }
 
 /* parameters might not be used if OS doesn't support zeroout */
+#if __GNUC_PREREQ (4, 6)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 			      unsigned long long count)
 {
@@ -1195,7 +1197,9 @@ err:
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
 }
+#if __GNUC_PREREQ (4, 6)
 #pragma GCC diagnostic pop
+#endif
 
 static struct struct_io_manager struct_unix_manager = {
 	.magic		= EXT2_ET_MAGIC_IO_MANAGER,

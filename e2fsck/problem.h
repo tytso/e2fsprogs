@@ -285,6 +285,9 @@ struct problem_context {
 /* Inode count in the superblock incorrect */
 #define PR_0_INODE_COUNT_BIG			0x000050
 
+/* Meta_bg and resize_inode are not compatible, remove resize_inode*/
+#define PR_0_DISABLE_RESIZE_INODE		0x000051
+
 /*
  * Pass 1 errors
  */

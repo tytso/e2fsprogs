@@ -2,7 +2,6 @@
 #
 #
 
-datarootdir=@datarootdir@
 DIR=@datadir@/ss
 AWK=@AWK@
 SED=@SED@

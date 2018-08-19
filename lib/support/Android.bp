@@ -50,3 +50,15 @@ cc_library_shared {
     export_include_dirs: ["."],
     export_header_lib_headers: ["libext2-headers"],
 }
+
+cc_library {
+    name: "libext2_support",
+    host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
+
+    srcs: [
+        "cstring.c",
+    ],
+    header_libs: ["libext2-headers"],
+    export_include_dirs: ["."],
+}
