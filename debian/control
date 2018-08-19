@@ -6,7 +6,7 @@ Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any
 Standards-Version: 4.1.5
 Homepage: http://e2fsprogs.sourceforge.net
 Vcs-Browser: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
-Vcs-Git: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
+Vcs-Git: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git -b debian/master
 
 Package: fuse2fs
 Build-Profiles: <!pkg.e2fsprogs.no-fuse2fs>
