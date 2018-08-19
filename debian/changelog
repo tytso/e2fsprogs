@@ -1,3 +1,17 @@
+e2fsprogs (1.44.4-1) unstable; urgency=medium
+
+  * New upstream release
+  * Add basic support for the ext4 verity (fsverity) feature
+  * E2fsck will fix file systems that have both the resize_inode
+    and meta_bg feature enabled
+  * Debugfs's ncheck command will now correctly inodes that have
+    multiple hard links
+  * Remove kilo/kibi rant (Closes: #757831)
+  * Update Danish, Spanish, and Swedish translations
+  * Fix symlink to directory conversions (Closes: #905195)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 18 Aug 2018 20:46:29 -0400
+
 e2fsprogs (1.44.3-1) unstable; urgency=medium
 
   * New upstream release
