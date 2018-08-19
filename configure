@@ -766,6 +766,7 @@ DEFRAG_CMT
 RESIZER_CMT
 IMAGER_CMT
 DEBUGFS_CMT
+ALL_CMT
 BLKID_CMT
 DEPPROFILED_LIBBLKID
 PROFILED_LIBBLKID
@@ -894,6 +895,7 @@ enable_blkid_debug
 enable_testio_debug
 enable_libuuid
 enable_libblkid
+enable_subset
 enable_backtrace
 enable_debugfs
 enable_imager
@@ -1579,6 +1581,7 @@ Optional Features:
   --disable-testio-debug  disable the use of the test I/O manager for debugging
   --enable-libuuid	  build and use private uuid library
   --enable-libblkid	  build and use private blkid library
+  --enable-subset  	  enable subset-only build
   --disable-backtrace	  disable use backtrace
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
@@ -5691,6 +5694,22 @@ fi
 
 
 
+
+
+ALL_CMT=
+# Check whether --enable-subset was given.
+if test "${enable_subset+set}" = set; then :
+  enableval=$enable_subset; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling subset-only build" >&5
+$as_echo "Disabling subset-only build" >&6; }
+else
+	ALL_CMT=#
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling subset-only-build" >&5
+$as_echo "Enabling subset-only-build" >&6; }
+fi
+
+fi
 
 
 
@@ -14485,7 +14504,7 @@ if test -z "$BLKID_CMT" ; then
 	blkid_out_list="lib/blkid/Makefile lib/blkid/blkid.pc \
 		lib/blkid/blkid_types.h"
 fi
-for i in MCONFIG Makefile e2fsprogs.spec \
+for i in MCONFIG Makefile \
 	util/Makefile util/subst.conf util/gen-tarball util/install-symlink \
 	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
 	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \

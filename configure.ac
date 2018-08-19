@@ -566,6 +566,21 @@ AC_SUBST(PROFILED_LIBBLKID)
 AC_SUBST(DEPPROFILED_LIBBLKID)
 AC_SUBST(BLKID_CMT)
 dnl
+dnl handle --enable-subset
+dnl
+ALL_CMT=
+AC_ARG_ENABLE([subset],
+[  --enable-subset  	  enable subset-only build],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling subset-only build])
+else
+	ALL_CMT=#
+	AC_MSG_RESULT([Enabling subset-only-build])
+fi
+,)
+AC_SUBST(ALL_CMT)
+dnl
 dnl handle --disable-backtrace
 dnl
 AH_TEMPLATE([DISABLE_BACKTRACE], [Define to 1 to disable use of backtrace])
@@ -1723,7 +1738,7 @@ if test -z "$BLKID_CMT" ; then
 	blkid_out_list="lib/blkid/Makefile lib/blkid/blkid.pc \
 		lib/blkid/blkid_types.h"
 fi
-for i in MCONFIG Makefile e2fsprogs.spec \
+for i in MCONFIG Makefile \
 	util/Makefile util/subst.conf util/gen-tarball util/install-symlink \
 	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
 	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
