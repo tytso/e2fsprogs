@@ -1,0 +1,25 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Date: Sun, 19 Aug 2018 16:46:04 -0400
+Subject: tune2fs: fix dereference of freed memory after journal replay
+
+This can be found by running the test t_replay_and_set under valgrind.
+
+Reported-by: Chris Clayton <chris2553@googlemail.com>
+Signed-off-by: Theodore Ts'o <tytso@mit.edu>
+Origin: Upstream, https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/commit/?h=maint&id=ed50488ec0f0
+---
+ misc/tune2fs.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/misc/tune2fs.c b/misc/tune2fs.c
+index 723f7ae..b8cddfa 100644
+--- a/misc/tune2fs.c
++++ b/misc/tune2fs.c
+@@ -3051,6 +3051,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
+ 				ext2fs_close_free(&fs);
+ 			exit(1);
+ 		}
++		sb = fs->super;
+ 	}
+ #endif
+ 
