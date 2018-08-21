@@ -3056,6 +3056,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 				ext2fs_close_free(&fs);
 			exit(1);
 		}
+		sb = fs->super;
 	}
 #endif
 
