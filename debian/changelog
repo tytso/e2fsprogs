@@ -1,3 +1,13 @@
+e2fsprogs (1.44.4-2) unstable; urgency=medium
+
+  * tune2fs fix dereference of freed memory after journal
+  * fix verity support
+  * Generate NEWS.gz for e2fsprogs's package documentation directory
+  * Update Debian policy compliance to 4.2.0
+  * Improve version dependency for libcom-err and ss2 for e2fsprogs
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 22 Aug 2018 19:30:17 -0400
+
 e2fsprogs (1.44.4-1) unstable; urgency=medium
 
   * New upstream release
