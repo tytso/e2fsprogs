@@ -416,6 +416,14 @@ static void mark_table_blocks(ext2_filsys fs)
 	}
 	meta_blocks_count += fs->desc_blocks;
 
+	/*
+	 *  Mark MMP block
+	 */
+	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_MMP) {
+		ext2fs_mark_block_bitmap2(meta_block_map, fs->super->s_mmp_block);
+		meta_blocks_count++;
+	}
+
 	for (i = 0; i < fs->group_desc_count; i++) {
 		/*
 		 * Mark the blocks used for the inode table
