@@ -57,3 +57,4 @@ the "git archive" command.
 Fixed various debian packaging issues (Addresses Debian Bug: #905195)
 
 Update Danish, Spanish, and Swedish translations.
+
