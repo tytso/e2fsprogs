@@ -3447,7 +3447,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		size = EXT2_I_SIZE(inode);
 		if ((pb.last_init_lblock >= 0) &&
 		    /* Do not allow initialized allocated blocks past i_size*/
-		    (size < (__u64)pb.last_init_lblock * fs->blocksize))
+		    (size < (__u64)pb.last_init_lblock * fs->blocksize) &&
+		    !(inode->i_flags & EXT4_VERITY_FL))
 			bad_size = 3;
 		else if (!(extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
 			 size > ext2_max_sizes[fs->super->s_log_block_size])

@@ -294,6 +294,8 @@ endif
 
 	( cd ${stdbuilddir}/doc && $(MAKE) V=1 libext2fs.html )
 	( cd ${stdbuilddir}/lib/et && $(MAKE) V=1 com_err.info com_err.html )
+	cat $(shell /bin/ls -1 ./doc/RelNotes/*.txt | tac) | \
+		gzip -9n > ${stdbuilddir}/NEWS.gz
 
 	touch ${BUILDSTDSTAMP}
 
@@ -352,6 +354,8 @@ ifeq ($(DEB_HOST_ARCH_OS), hurd)
 	${INSTALL} -m 0644 misc/mke2fs-hurd.conf ${tmpdir}/etc/mke2fs.conf
 endif
 
+	dh_install -p e2fsprogs --sourcedir=${stdbuilddir} NEWS.gz \
+		usr/share/doc/e2fsprogs
 	dh_movefiles
 	test -z "`find ${tmpdir} -type f`"
 

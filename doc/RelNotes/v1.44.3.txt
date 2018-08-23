@@ -103,3 +103,4 @@ Fixed Coverity, sparse, gcc -Wall, and clang warnings/nits.
 
 Update Czech, Dutch, Spanish, French, Polish, Swedish, Ukrainian, and
 Vietnamese translations.
+
