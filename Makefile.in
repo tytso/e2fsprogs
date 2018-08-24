@@ -64,7 +64,7 @@ distclean-doc:
 
 install: subs all-libs-recursive install-progs-recursive \
   install-shlibs-libs-recursive install-doc-libs
-	if test ! -d e2fsck && test ! -d debugfs && test ! -d misc && test ! -d ext2ed ; then $(MAKE) install-libs ; fi
+@SUBSET_CMT@	$(MAKE) install-libs
 
 install-strip: subs all-libs-recursive install-strip-progs-recursive \
   install-shlibs-strip-libs-recursive install-doc-libs

@@ -568,10 +568,12 @@ dnl
 dnl handle --enable-subset
 dnl
 ALL_CMT=
+SUBSET_CMT=
 AC_ARG_ENABLE([subset],
 [  --enable-subset  	  enable subset-only build],
 if test "$enableval" = "no"
 then
+	SUBSET_CMT=#
 	AC_MSG_RESULT([Disabling subset-only build])
 else
 	ALL_CMT=#
@@ -579,6 +581,7 @@ else
 fi
 ,)
 AC_SUBST(ALL_CMT)
+AC_SUBST(SUBSET_CMT)
 dnl
 dnl handle --disable-backtrace
 dnl
