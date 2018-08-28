@@ -85,24 +85,24 @@ e2scrub_all_cron: e2scrub_all_cron.in
 	$(Q) $(SUBSTITUTE_UPTIME) $< $@
 
 installdirs-udev:
-	$(E) "	MKINSTALLDIRS $(UDEV_RULES_DIR)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(UDEV_RULES_DIR)
+	$(E) "	MKDIR_P $(UDEV_RULES_DIR)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(UDEV_RULES_DIR)
 
 installdirs-crond:
-	$(E) "	MKINSTALLDIRS $(CROND_DIR)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(CROND_DIR)
+	$(E) "	MKDIR_P $(CROND_DIR)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(CROND_DIR)
 
 installdirs-libprogs:
-	$(E) "	MKINSTALLDIRS $(pkglibdir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(pkglibdir)
+	$(E) "	MKDIR_P $(pkglibdir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(pkglibdir)
 
 installdirs-systemd:
-	$(E) "	MKINSTALLDIRS $(SYSTEMD_SYSTEM_UNIT_DIR)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(SYSTEMD_SYSTEM_UNIT_DIR)
+	$(E) "	MKDIR_P $(SYSTEMD_SYSTEM_UNIT_DIR)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(SYSTEMD_SYSTEM_UNIT_DIR)
 
 installdirs: $(INSTALLDIRS_TGT)
-	$(E) "	MKINSTALLDIRS $(root_sbindir) $(man8dir) $(root_sysconfdir)"
-	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	$(E) "	MKDIR_P $(root_sbindir) $(man8dir) $(root_sysconfdir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir) $(DESTDIR)$(root_sysconfdir)
 
 install-udev:
