@@ -1315,6 +1315,10 @@ linux*)
 	;;
 esac
 dnl
+dnl Check the available mount options
+dnl
+AX_CHECK_MOUNT_OPT(nosuid)
+AX_CHECK_MOUNT_OPT(nodev)
 dnl Enable LTO for all packages
 dnl
 AC_ARG_ENABLE([lto],
