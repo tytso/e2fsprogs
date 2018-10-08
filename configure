@@ -13774,6 +13774,140 @@ $as_echo "#define HAVE_EXT2_IOCTLS 1" >>confdefs.h
 
 	;;
 esac
+
+    if test "x$ac_cv_header_sys_mount_h" = x; then :
+  for ac_header in sys/mount.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/mount.h" "ac_cv_header_sys_mount_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_mount_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_MOUNT_H 1
+_ACEOF
+
+fi
+
+done
+
+fi
+    if test "x$ac_cv_header_sys_mount_h" = xno; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "error: sys/mount.h not present on your system!
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+    $as_echo_n "checking for mount 'nosuid' option... "
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MS_NOSUID); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NOSUID 1" >>confdefs.h
+
+         ac_cv_mount_nosuid=yes
+         $as_echo "yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MNT_NOSUID); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NOSUID 1" >>confdefs.h
+
+             ac_cv_mount_nosuid=yes
+             $as_echo "yes"
+else
+  ac_cv_mount_nosuid=no
+             $as_echo "no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+
+    if test "x$ac_cv_header_sys_mount_h" = x; then :
+  for ac_header in sys/mount.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/mount.h" "ac_cv_header_sys_mount_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_mount_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_MOUNT_H 1
+_ACEOF
+
+fi
+
+done
+
+fi
+    if test "x$ac_cv_header_sys_mount_h" = xno; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "error: sys/mount.h not present on your system!
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+    $as_echo_n "checking for mount 'nodev' option... "
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MS_NODEV); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NODEV 1" >>confdefs.h
+
+         ac_cv_mount_nodev=yes
+         $as_echo "yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/mount.h>
+int
+main ()
+{
+void *temp = (void *)(MNT_NODEV); (void) temp;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_MOUNT_NODEV 1" >>confdefs.h
+
+             ac_cv_mount_nodev=yes
+             $as_echo "yes"
+else
+  ac_cv_mount_nodev=no
+             $as_echo "no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 # Check whether --enable-lto was given.
 if test "${enable_lto+set}" = set; then :
   enableval=$enable_lto;
