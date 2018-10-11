@@ -45,7 +45,9 @@ extern int optind;
 #include <sys/stat.h>
 #include <sys/vfs.h>
 #include <sys/ioctl.h>
+#ifdef HAVE_LINUX_FD_H
 #include <linux/fd.h>
+#endif
 #include <ext2fs/ext2fs.h>
 #include <ext2fs/ext2_types.h>
 #include <ext2fs/fiemap.h>
