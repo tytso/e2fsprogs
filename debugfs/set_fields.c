@@ -75,7 +75,7 @@ static errcode_t parse_gd_csum(struct field_set_info *info, char *field, char *a
 static errcode_t parse_mmp_clear(struct field_set_info *info, char *field,
 				 char *arg);
 
-#if __GNUC_PREREQ (4, 6)
+#if __GNUC_PREREQ (4, 6) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
