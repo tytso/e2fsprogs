@@ -3845,7 +3845,7 @@ int main(int argc, char *argv[])
 	/* Set up default fuse parameters */
 	snprintf(extra_args, BUFSIZ, "-okernel_cache,subtype=ext4,use_ino,"
 		 "fsname=%s,attr_timeout=0" FUSE_PLATFORM_OPTS,
-		 argv[1]);
+		 fctx.device);
 	if (fctx.no_default_opts == 0)
 		fuse_opt_add_arg(&args, extra_args);
 
