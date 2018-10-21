@@ -1016,7 +1016,9 @@ static int get_best_count(ext4_fsblk_t block_count)
 	int ret;
 	unsigned int flex_bg_num;
 
-	/* Calculate best extents count */
+	if (blocks_per_group == 0)
+		return 1;
+
 	if (feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
 		flex_bg_num = 1 << log_groups_per_flex;
 		ret = ((block_count - 1) /
@@ -1508,10 +1510,7 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 		goto out;
 	}
 
-	if (current_uid == ROOT_UID)
-		best = get_best_count(blk_count);
-	else
-		best = 1;
+	best = get_best_count(blk_count);
 
 	if (file_frags_start <= best)
 		goto check_improvement;
@@ -1805,17 +1804,16 @@ int main(int argc, char *argv[])
 					  block_size, unix_io_manager, &fs);
 			if (ret) {
 				if (mode_flag & DETAIL)
-					com_err(argv[1], ret,
-						"while trying to open file system: %s",
-						dev_name);
-				continue;
+					fprintf(stderr,
+						"Warning: couldn't get file "
+						"system details for %s: %s\n",
+						dev_name, error_message(ret));
+			} else {
+				blocks_per_group = fs->super->s_blocks_per_group;
+				feature_incompat = fs->super->s_feature_incompat;
+				log_groups_per_flex = fs->super->s_log_groups_per_flex;
+				ext2fs_close_free(&fs);
 			}
-
-			blocks_per_group = fs->super->s_blocks_per_group;
-			feature_incompat = fs->super->s_feature_incompat;
-			log_groups_per_flex = fs->super->s_log_groups_per_flex;
-
-			ext2fs_close_free(&fs);
 		}
 
 		switch (arg_type) {
