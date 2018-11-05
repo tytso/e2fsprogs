@@ -101,13 +101,18 @@ ls_scrub_targets() {
 # systemd doesn't know to do path escaping on the instance variable we pass
 # to the e2scrub service, which breaks things if there is a dash in the path
 # name.  Therefore, do the path escaping ourselves if needed.
+#
+# systemd path escaping also drops the initial slash so we add that back in so
+# that log messages from the service units preserve the full path and users can
+# look up log messages using full paths.  However, for "/" the escaping rules
+# do /not/ drop the initial slash, so we have to special-case that here.
 escape_path_for_systemd() {
 	local path="$1"
 
-	if echo "${path}" | grep -q -- "-"; then
+	if [ "${path}" != "/" ]; then
 		echo "-$(systemd-escape --path "${path}")"
 	else
-		echo "${path}"
+		echo "-"
 	fi
 }
 
