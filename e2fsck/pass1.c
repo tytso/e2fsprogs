@@ -1496,8 +1496,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    (ino >= EXT2_FIRST_INODE(fs->super))) {
 			size_t size = 0;
 
-			pctx.errcode = ext2fs_inline_data_size(fs, ino, &size);
-			if (!pctx.errcode && size &&
+			pctx.errcode = get_inline_data_ea_size(fs, ino, &size);
+			if (!pctx.errcode &&
 			    fix_problem(ctx, PR_1_INLINE_DATA_FEATURE, &pctx)) {
 				ext2fs_set_feature_inline_data(sb);
 				ext2fs_mark_super_dirty(fs);

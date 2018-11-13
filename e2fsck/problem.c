@@ -1063,7 +1063,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Inode has inline data, but superblock is missing INLINE_DATA feature */
 	{ PR_1_INLINE_DATA_FEATURE,
 	  N_("@i %i has inline data, but @S is missing INLINE_DATA feature\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK, 0, 0, 0 },
+	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
 
 	/* inode has INLINE_DATA_FL flag on filesystem without inline data */
 	{ PR_1_INLINE_DATA_SET,
