@@ -755,7 +755,9 @@ struct ext2_super_block {
 	__u8	s_first_error_time_hi;
 	__u8	s_last_error_time_hi;
 	__u8	s_pad[2];
-	__le32	s_reserved[96];		/* Padding to the end of the block */
+/*27c*/ __le16	s_encoding;		/* Filename charset encoding */
+	__le16	s_encoding_flags;	/* Filename charset encoding flags */
+	__le32	s_reserved[95];		/* Padding to the end of the block */
 /*3fc*/	__u32	s_checksum;		/* crc32c(superblock) */
 };
 
@@ -846,6 +848,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
 #define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
 #define EXT4_FEATURE_INCOMPAT_ENCRYPT		0x10000
+#define EXT4_FEATURE_INCOMPAT_FNAME_ENCODING	0x20000
 
 #define EXT4_FEATURE_COMPAT_FUNCS(name, ver, flagname) \
 static inline int ext2fs_has_feature_##name(struct ext2_super_block *sb) \
@@ -939,6 +942,7 @@ EXT4_FEATURE_INCOMPAT_FUNCS(csum_seed,		4, CSUM_SEED)
 EXT4_FEATURE_INCOMPAT_FUNCS(largedir,		4, LARGEDIR)
 EXT4_FEATURE_INCOMPAT_FUNCS(inline_data,	4, INLINE_DATA)
 EXT4_FEATURE_INCOMPAT_FUNCS(encrypt,		4, ENCRYPT)
+EXT4_FEATURE_INCOMPAT_FUNCS(fname_encoding,	4, FNAME_ENCODING)
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
 #define EXT2_FEATURE_INCOMPAT_SUPP    (EXT2_FEATURE_INCOMPAT_FILETYPE| \
