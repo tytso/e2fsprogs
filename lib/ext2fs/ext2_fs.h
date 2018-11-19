@@ -748,7 +748,14 @@ struct ext2_super_block {
 /*268*/	__le32	s_lpf_ino;		/* Location of the lost+found inode */
 	__le32  s_prj_quota_inum;	/* inode for tracking project quota */
 /*270*/	__le32	s_checksum_seed;	/* crc32c(orig_uuid) if csum_seed set */
-	__le32	s_reserved[98];		/* Padding to the end of the block */
+/*274*/	__u8	s_wtime_hi;
+	__u8	s_mtime_hi;
+	__u8	s_mkfs_time_hi;
+	__u8	s_lastcheck_hi;
+	__u8	s_first_error_time_hi;
+	__u8	s_last_error_time_hi;
+	__u8	s_pad[2];
+	__le32	s_reserved[96];		/* Padding to the end of the block */
 /*3fc*/	__u32	s_checksum;		/* crc32c(superblock) */
 };
 
