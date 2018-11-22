@@ -4,7 +4,7 @@
 
 DIR=@datadir@/ss
 AWK=@AWK@
-SED=@SED@
+SED=sed
 
 for as_var in \
   LANG LANGUAGE LC_ADDRESS LC_ALL LC_COLLATE LC_CTYPE LC_IDENTIFICATION \
