@@ -3221,6 +3221,15 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 		__u8 old_uuid[UUID_SIZE];
 
+		if (!ext2fs_has_feature_csum_seed(fs->super) &&
+		    (ext2fs_has_feature_metadata_csum(fs->super) ||
+		     ext2fs_has_feature_ea_inode(fs->super))) {
+			check_fsck_needed(fs,
+				_("Setting the UUID on this "
+				  "filesystem could take some time."));
+			rewrite_checksums = 1;
+		}
+
 		if (ext2fs_has_group_desc_csum(fs)) {
 			/*
 			 * Changing the UUID on a metadata_csum FS requires
@@ -3241,10 +3250,6 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 				try_confirm_csum_seed_support();
 				exit(1);
 			}
-			if (!ext2fs_has_feature_csum_seed(fs->super))
-				check_fsck_needed(fs,
-					_("Setting UUID on a checksummed "
-					  "filesystem could take some time."));
 
 			/*
 			 * Determine if the block group checksums are
@@ -3302,10 +3307,6 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		}
 
 		ext2fs_mark_super_dirty(fs);
-		if (!ext2fs_has_feature_csum_seed(fs->super) &&
-		    (ext2fs_has_feature_metadata_csum(fs->super) ||
-		     ext2fs_has_feature_ea_inode(fs->super)))
-			rewrite_checksums = 1;
 	}
 
 	if (I_flag) {
