@@ -233,6 +233,7 @@ struct e2fsck_struct {
 	int	flags;		/* E2fsck internal flags */
 	int	options;
 	int	blocksize;	/* blocksize */
+	int blocks_at_once; /* for badblocks */
 	blk64_t	use_superblock;	/* sb requested by user */
 	blk64_t	superblock;	/* sb used to open fs */
 	blk64_t	num_blocks;	/* Total number of blocks */
