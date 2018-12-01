@@ -97,6 +97,10 @@ The following relations are defined in the
 .I [options]
 stanza.
 .TP
+.I fname_encoding
+This relation defines the file name encoding to be used by mke2fs, in
+case the user doesn't specify an encoding in the command line.
+.TP
 .I proceed_delay
 If this relation is set to a positive integer, then mke2fs will
 wait
