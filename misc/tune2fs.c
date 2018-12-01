@@ -1401,6 +1401,12 @@ mmp_error:
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT)) {
+		if (ext2fs_has_feature_fname_encoding(sb)) {
+			fputs(_("Cannot enable encrypt feature on filesystems "
+				"with the encoding feature enabled.\n"),
+			      stderr);
+			return 1;
+		}
 		fs->super->s_encrypt_algos[0] =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		fs->super->s_encrypt_algos[1] =
