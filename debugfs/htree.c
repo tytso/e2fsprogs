@@ -27,6 +27,8 @@ extern char *optarg;
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
 
+#include "ext2fs/nls.h"
+
 static FILE *pager;
 
 static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
@@ -44,6 +46,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	ext2_dirhash_t 	hash, minor_hash;
 	unsigned int	rec_len;
 	int		hash_alg;
+	int		hash_flags = inode->i_flags & EXT4_CASEFOLD_FL;
 	int		csum_size = 0;
 
 	if (ext2fs_has_feature_metadata_csum(fs->super))
@@ -89,9 +92,10 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		}
 		strncpy(name, dirent->name, thislen);
 		name[thislen] = '\0';
-		errcode = ext2fs_dirhash(hash_alg, name,
-					 thislen, fs->super->s_hash_seed,
-					 &hash, &minor_hash);
+		errcode = ext2fs_dirhash2(hash_alg, name, thislen,
+					  fs->encoding, hash_flags,
+					  fs->super->s_hash_seed,
+					  &hash, &minor_hash);
 		if (errcode)
 			com_err("htree_dump_leaf_node", errcode,
 				"while calculating hash");
@@ -306,11 +310,12 @@ errout:
 void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		void *infop EXT2FS_ATTR((unused)))
 {
-	ext2_dirhash_t hash, minor_hash;
+	ext2_dirhash_t hash, minor_hash, hash_flags;
 	errcode_t	err;
 	int		c;
 	int		hash_version = 0;
 	__u32		hash_seed[4];
+	const struct nls_table *encoding;
 
 	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
 
@@ -329,6 +334,15 @@ void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 				return;
 			}
 			break;
+		case 'c':
+			hash_flags = EXT4_CASEFOLD_FL;
+			break;
+		case 'e':
+			encoding = nls_load_table(e2p_str2encoding(optarg));
+			if (!encoding)
+				fprintf(stderr, "Invalid encoding: %s\n",
+					optarg);
+				return;
 		default:
 			goto print_usage;
 		}
@@ -336,11 +350,13 @@ void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	if (optind != argc-1) {
 	print_usage:
 		com_err(argv[0], 0, "usage: dx_hash [-h hash_alg] "
-			"[-s hash_seed] filename");
+			"[-s hash_seed] [-c] [-e encoding] filename");
 		return;
 	}
-	err = ext2fs_dirhash(hash_version, argv[optind], strlen(argv[optind]),
-			     hash_seed, &hash, &minor_hash);
+	err = ext2fs_dirhash2(hash_version, argv[optind],
+			      strlen(argv[optind]), encoding, hash_flags,
+			      hash_seed, &hash, &minor_hash);
+
 	if (err) {
 		com_err(argv[0], err, "while calculating hash");
 		return;
