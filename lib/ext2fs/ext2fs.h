@@ -307,6 +307,8 @@ struct struct_ext2_filsys {
 
 	/* hashmap for SHA of data blocks */
 	struct ext2fs_hashmap* block_sha_map;
+
+	const struct nls_table *encoding;
 };
 
 #if EXT2_FLAT_INCLUDES
@@ -1174,6 +1176,12 @@ extern errcode_t ext2fs_dirhash(int version, const char *name, int len,
 				ext2_dirhash_t *ret_hash,
 				ext2_dirhash_t *ret_minor_hash);
 
+extern errcode_t ext2fs_dirhash2(int version, const char *name, int len,
+				 const struct nls_table *charset,
+				 int hash_flags,
+				 const __u32 *seed,
+				 ext2_dirhash_t *ret_hash,
+				 ext2_dirhash_t *ret_minor_hash);
 
 /* dir_iterate.c */
 extern errcode_t ext2fs_get_rec_len(ext2_filsys fs,

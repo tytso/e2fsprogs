@@ -933,6 +933,7 @@ static int check_dir_block(ext2_filsys fs,
 	int	filetype = 0;
 	int	encrypted = 0;
 	size_t	max_block_size;
+	int	hash_flags = 0;
 
 	cd = (struct check_dir_struct *) priv_data;
 	ibuf = buf = cd->buf;
@@ -1426,9 +1427,13 @@ skip_checksum:
 			dir_modified++;
 
 		if (dx_db) {
-			ext2fs_dirhash(dx_dir->hashversion, dirent->name,
-				       ext2fs_dirent_name_len(dirent),
-				       fs->super->s_hash_seed, &hash, 0);
+			if (dx_dir->casefolded_hash)
+				hash_flags = EXT4_CASEFOLD_FL;
+
+			ext2fs_dirhash2(dx_dir->hashversion, dirent->name,
+					ext2fs_dirent_name_len(dirent),
+					fs->encoding, hash_flags,
+					fs->super->s_hash_seed, &hash, 0);
 			if (hash < dx_db->min_hash)
 				dx_db->min_hash = hash;
 			if (hash > dx_db->max_hash)
