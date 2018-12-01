@@ -1127,4 +1127,11 @@ struct mmp_struct {
  */
 #define EXT4_INLINE_DATA_DOTDOT_SIZE	(4)
 
+#define EXT4_ENC_ASCII		0
+#define EXT4_ENC_UTF8_11_0	1
+
+#define EXT4_ENC_STRICT_MODE_FL			(1 << 0) /* Reject invalid sequences */
+#define EXT4_UTF8_NORMALIZATION_TYPE_NFKD	(1 << 1)
+#define EXT4_UTF8_CASEFOLD_TYPE_NFKDCF		(1 << 4)
+
 #endif	/* _LINUX_EXT2_FS_H */
