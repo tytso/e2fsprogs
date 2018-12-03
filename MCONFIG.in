@@ -183,6 +183,14 @@ $(top_builddir)/util/subst:
 	cd $(top_builddir)/util ; $(MAKE) subst
 
 #
+# Script for generating utf8data.h
+#
+MKUTF8DATA=$(top_builddir)/util/mkutf8data
+
+$(top_builddir)/util/mkutf8data:
+	 $(MAKE) -C $(top_builddir)/util mkutf8data
+
+#
 # Script for installing symlinks (for shared libraries)
 #
 $(top_builddir)/util/install-symlink: $(top_srcdir)/util/install-symlink.in \

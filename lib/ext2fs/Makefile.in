@@ -620,6 +620,18 @@ $(top_builddir)/$(my_dir)/ext2_types.h: $(srcdir)/ext2_types.h.in \
 		$(top_builddir)/config.status
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/ext2_types.h ./config.status
 
+$(srcdir)/utf8data.h:
+	$(Q) $(MAKE) $(MKUTF8DATA)
+	$(E) "MKUTF8DATA $@"
+	$(Q) $(MKUTF8DATA) -a $(top_srcdir)/util/ucd/DerivedAge-11.0.0.txt \
+		-c $(top_srcdir)/util/ucd/DerivedCombiningClass-11.0.0.txt \
+		-p $(top_srcdir)/util/ucd/DerivedCoreProperties-11.0.0.txt \
+		-d $(top_srcdir)/util/ucd/UnicodeData-11.0.0.txt \
+		-f $(top_srcdir)/util/ucd/CaseFolding-11.0.0.txt \
+		-n $(top_srcdir)/util/ucd/NormalizationCorrections-11.0.0.txt \
+		-t $(top_srcdir)/util/ucd/NormalizationTest-11.0.0.txt \
+		-o $@
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
@@ -1419,4 +1431,4 @@ do_journal.o: $(top_srcdir)/debugfs/do_journal.c $(top_builddir)/lib/config.h \
  $(srcdir)/jfs_compat.h $(srcdir)/kernel-list.h \
  $(top_srcdir)/debugfs/journal.h $(srcdir)/../../e2fsck/jfs_user.h
 $(NLS_OBJS): $(srcdir)/nls.h
-nls_ascii-norm.o: $(srcdir)/utf8n.h $(srcdir)/utf8data.h $(srcdir)/nls.h
+nls_utf8-norm.o: $(srcdir)/utf8n.h $(srcdir)/utf8data.h $(srcdir)/nls.h
