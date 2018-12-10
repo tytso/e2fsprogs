@@ -439,7 +439,7 @@ static errcode_t copy_file_chunk(ext2_filsys fs, int fd, ext2_file_t e2_file,
 				continue;
 			}
 			err = ext2fs_file_llseek(e2_file, off + bpos,
-						EXT2_SEEK_SET, NULL);
+						 EXT2_SEEK_SET, NULL);
 			if (err)
 				goto fail;
 			while (blen > 0) {
@@ -481,7 +481,8 @@ static errcode_t try_lseek_copy(ext2_filsys fs, int fd, struct stat *statbuf,
 			return EXT2_ET_UNIMPLEMENTED;
 
 		data_blk = data & ~(off_t)(fs->blocksize - 1);
-		hole_blk = (hole + (off_t)(fs->blocksize - 1)) & ~(off_t)(fs->blocksize - 1);
+		hole_blk = ((hole + (off_t)(fs->blocksize - 1)) &
+			    ~(off_t)(fs->blocksize - 1));
 		err = copy_file_chunk(fs, fd, e2_file, data_blk, hole_blk, buf,
 				      zerobuf);
 		if (err)
