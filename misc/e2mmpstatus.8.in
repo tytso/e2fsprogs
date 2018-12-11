@@ -34,11 +34,11 @@ the filesystem being modified simultaneously by more than one node.
 It is NOT safe to mount a filesystem when one of the following conditions
 is true:
 .br
-\	1. e2fsck is running on the filesystem.
+	1. e2fsck is running on the filesystem.
 .br
-\	2. the filesystem is in use by another node.
+	2. the filesystem is in use by another node.
 .br
-\	3. The MMP block is corrupted or cannot be read for some reason.
+	3. The MMP block is corrupted or cannot be read for some reason.
 .br
 The
 .B e2mmpstatus
