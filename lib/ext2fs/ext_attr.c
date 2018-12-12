@@ -1595,7 +1595,8 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *h,
 			ret = EXT2_ET_FILESYSTEM_CORRUPTED;
 			goto out;
 		}
-		ret = xattr_array_update(h, name, value, value_len, ibody_free,
+		ret = xattr_array_update(h, name, new_value, value_len,
+					 ibody_free,
 					 0 /* block_free */, old_idx,
 					 0 /* in_inode */);
 		if (ret)
@@ -1614,12 +1615,12 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *h,
 	    value_len > EXT4_XATTR_MIN_LARGE_EA_SIZE(fs->blocksize))
 		in_inode = 1;
 
-	ret = xattr_array_update(h, name, value, value_len, ibody_free,
+	ret = xattr_array_update(h, name, new_value, value_len, ibody_free,
 				 block_free, old_idx, in_inode);
 	if (ret == EXT2_ET_EA_NO_SPACE && !in_inode &&
 	    ext2fs_has_feature_ea_inode(fs->super))
-		ret = xattr_array_update(h, name, value, value_len, ibody_free,
-				 block_free, old_idx, 1 /* in_inode */);
+		ret = xattr_array_update(h, name, new_value, value_len,
+			ibody_free, block_free, old_idx, 1 /* in_inode */);
 	if (ret)
 		goto out;
 
