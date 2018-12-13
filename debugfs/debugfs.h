@@ -54,12 +54,12 @@ extern int common_block_args_process(int argc, char *argv[],
 				     blk64_t *block, blk64_t *count);
 extern int debugfs_read_inode(ext2_ino_t ino, struct ext2_inode * inode,
 			      const char *cmd);
-extern int debugfs_read_inode_full(ext2_ino_t ino, struct ext2_inode * inode,
-				   const char *cmd, int bufsize);
+extern int debugfs_read_inode2(ext2_ino_t ino, struct ext2_inode * inode,
+			       const char *cmd, int bufsize, int flags);
 extern int debugfs_write_inode(ext2_ino_t ino, struct ext2_inode * inode,
 			       const char *cmd);
-extern int debugfs_write_inode_full(ext2_ino_t ino, struct ext2_inode * inode,
-				    const char *cmd, int bufsize);
+extern int debugfs_write_inode2(ext2_ino_t ino, struct ext2_inode * inode,
+				const char *cmd, int bufsize, int flags);
 extern int debugfs_write_new_inode(ext2_ino_t ino, struct ext2_inode * inode,
 				   const char *cmd);
 extern int ext2_file_type(unsigned int mode);

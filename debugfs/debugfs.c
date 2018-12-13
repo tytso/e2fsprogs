@@ -994,8 +994,8 @@ void do_stat(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		return;
 	}
 
-	if (debugfs_read_inode_full(inode, inode_buf, argv[0],
-					EXT2_INODE_SIZE(current_fs->super))) {
+	if (debugfs_read_inode2(inode, inode_buf, argv[0],
+				EXT2_INODE_SIZE(current_fs->super), 0)) {
 		free(inode_buf);
 		return;
 	}
@@ -1636,12 +1636,12 @@ void do_copy_inode(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	if (!dest_ino)
 		return;
 
-	if (debugfs_read_inode_full(src_ino, (struct ext2_inode *) buf,
-				    argv[0], sizeof(buf)))
+	if (debugfs_read_inode2(src_ino, (struct ext2_inode *) buf,
+				argv[0], sizeof(buf), 0))
 		return;
 
-	if (debugfs_write_inode_full(dest_ino, (struct ext2_inode *) buf,
-				     argv[0], sizeof(buf)))
+	if (debugfs_write_inode2(dest_ino, (struct ext2_inode *) buf,
+				 argv[0], sizeof(buf), 0))
 		return;
 }
 
