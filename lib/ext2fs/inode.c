@@ -728,8 +728,9 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ext2_ino_t *ino,
 /*
  * Functions to read and write a single inode.
  */
-errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
-				 struct ext2_inode * inode, int bufsize)
+errcode_t ext2fs_read_inode2(ext2_filsys fs, ext2_ino_t ino,
+			     struct ext2_inode * inode, int bufsize,
+			     int flags)
 {
 	blk64_t		block_nr;
 	unsigned long 	group, block, offset;
@@ -833,21 +834,29 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	}
 	memcpy(inode, iptr, (bufsize > length) ? length : bufsize);
 
-	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) && fail_csum)
+	if (!(fs->flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) &&
+	    !(flags & READ_INODE_NOCSUM) && fail_csum)
 		return EXT2_ET_INODE_CSUM_INVALID;
 
 	return 0;
 }
 
+errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
+				 struct ext2_inode * inode, int bufsize)
+{
+	return ext2fs_read_inode2(fs, ino, inode, bufsize, 0);
+}
+
 errcode_t ext2fs_read_inode(ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode * inode)
 {
-	return ext2fs_read_inode_full(fs, ino, inode,
-					sizeof(struct ext2_inode));
+	return ext2fs_read_inode2(fs, ino, inode,
+				  sizeof(struct ext2_inode), 0);
 }
 
-errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
-				  struct ext2_inode * inode, int bufsize)
+errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
+			      struct ext2_inode * inode, int bufsize,
+			      int flags)
 {
 	blk64_t block_nr;
 	unsigned long group, block, offset;
@@ -877,12 +886,9 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 
 	if (bufsize < length) {
 		int old_flags = fs->flags;
-		fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
-		retval = ext2fs_read_inode_full(fs, ino,
-						(struct ext2_inode *)w_inode,
-						length);
-		fs->flags = (old_flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
-			    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
+		retval = ext2fs_read_inode2(fs, ino,
+					    (struct ext2_inode *)w_inode,
+					    length, READ_INODE_NOCSUM);
 		if (retval)
 			goto errout;
 	}
@@ -912,9 +918,11 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	ext2fs_swap_inode_full(fs, w_inode, w_inode, 1, length);
 #endif
 
-	retval = ext2fs_inode_csum_set(fs, ino, w_inode);
-	if (retval)
-		goto errout;
+	if ((flags & WRITE_INODE_NOCSUM) == 0) {
+		retval = ext2fs_inode_csum_set(fs, ino, w_inode);
+		if (retval)
+			goto errout;
+	}
 
 	group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
 	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
@@ -964,11 +972,17 @@ errout:
 	return retval;
 }
 
+errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
+				  struct ext2_inode * inode, int bufsize)
+{
+	return ext2fs_write_inode2(fs, ino, inode, bufsize, 0);
+}
+
 errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_inode *inode)
 {
-	return ext2fs_write_inode_full(fs, ino, inode,
-				       sizeof(struct ext2_inode));
+	return ext2fs_write_inode2(fs, ino, inode,
+				   sizeof(struct ext2_inode), 0);
 }
 
 /*

@@ -578,6 +578,16 @@ typedef struct ext2_icount *ext2_icount_t;
 #define BMAP_RET_UNINIT	0x0001
 
 /*
+ * Flags for ext2fs_read_inode2
+ */
+#define READ_INODE_NOCSUM	0x0001
+
+/*
+ * Flags for ext2fs_write_inode2
+ */
+#define WRITE_INODE_NOCSUM	0x0001
+
+/*
  * Flags for imager.c functions
  */
 #define IMAGER_FLAG_INODEMAP	1
@@ -1530,13 +1540,19 @@ extern int ext2fs_inode_scan_flags(ext2_inode_scan scan, int set_flags,
 extern errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 					struct ext2_inode * inode,
 					int bufsize);
-extern errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
+extern errcode_t ext2fs_read_inode(ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode * inode);
+extern errcode_t ext2fs_read_inode2(ext2_filsys fs, ext2_ino_t ino,
+				    struct ext2_inode * inode,
+				    int bufsize, int flags);
 extern errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 					 struct ext2_inode * inode,
 					 int bufsize);
 extern errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode * inode);
+extern errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
+				     struct ext2_inode * inode,
+				     int bufsize, int flags);
 extern errcode_t ext2fs_write_new_inode(ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode * inode);
 extern errcode_t ext2fs_get_blocks(ext2_filsys fs, ext2_ino_t ino, blk_t *blocks);
