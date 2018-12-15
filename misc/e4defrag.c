@@ -169,13 +169,13 @@ static int	block_size;
 static int	extents_before_defrag;
 static int	extents_after_defrag;
 static int	mode_flag;
-static unsigned int	current_uid;
-static unsigned int	defraged_file_count;
-static unsigned int	frag_files_before_defrag;
-static unsigned int	frag_files_after_defrag;
-static unsigned int	regular_count;
-static unsigned int	succeed_cnt;
-static unsigned int	total_count;
+static uid_t	current_uid;
+static unsigned long long	defraged_file_count;
+static unsigned long long	frag_files_before_defrag;
+static unsigned long long	frag_files_after_defrag;
+static unsigned long long	regular_count;
+static unsigned long long	succeed_cnt;
+static unsigned long long	total_count;
 static __u8 log_groups_per_flex;
 static __u32 blocks_per_group;
 static __u32 feature_incompat;
@@ -1912,9 +1912,9 @@ int main(int argc, char *argv[])
 			}
 			/* File tree walk */
 			nftw64(dir_name, file_defrag, FTW_OPEN_FD, flags);
-			printf("\n\tSuccess:\t\t\t[ %u/%u ]\n", succeed_cnt,
-				total_count);
-			printf("\tFailure:\t\t\t[ %u/%u ]\n",
+			printf("\n\tSuccess:\t\t\t[ %llu/%llu ]\n",
+			       succeed_cnt, total_count);
+			printf("\tFailure:\t\t\t[ %llu/%llu ]\n",
 				total_count - succeed_cnt, total_count);
 			if (mode_flag & DETAIL) {
 				printf("\tTotal extents:\t\t\t%4d->%d\n",
@@ -1923,12 +1923,10 @@ int main(int argc, char *argv[])
 				printf("\tFragmented percentage:\t\t"
 					"%3llu%%->%llu%%\n",
 					!regular_count ? 0 :
-					((unsigned long long)
-					frag_files_before_defrag * 100) /
+					(frag_files_before_defrag * 100) /
 					regular_count,
 					!regular_count ? 0 :
-					((unsigned long long)
-					frag_files_after_defrag * 100) /
+					(frag_files_after_defrag * 100) /
 					regular_count);
 			}
 			break;
