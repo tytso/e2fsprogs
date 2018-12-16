@@ -41,7 +41,8 @@
 #define PROMPT_UNLINK	17
 #define PROMPT_CLEAR_HTREE 18
 #define PROMPT_RECREATE 19
-#define PROMPT_NULL	20
+#define PROMPT_OPTIMIZE 20
+#define PROMPT_NULL	21
 
 /*
  * These are the prompts which are used to ask the user if they want
@@ -68,7 +69,8 @@ static const char *prompt[] = {
 	N_("Unlink"),		/* 17 */
 	N_("Clear HTree index"),/* 18 */
 	N_("Recreate"),		/* 19 */
-	"",			/* 20 */
+	N_("Optimize"),		/* 20 */
+	"",			/* 21 */
 };
 
 /*
@@ -96,7 +98,8 @@ static const char *preen_msg[] = {
 	N_("UNLINKED"),		/* 17 */
 	N_("HTREE INDEX CLEARED"),/* 18 */
 	N_("WILL RECREATE"),	/* 19 */
-	"",			/* 20 */
+	N_("WILL OPTIMIZE"),	/* 20 */
+	"",			/* 21 */
 };
 
 #if __GNUC_PREREQ (4, 6)
@@ -1313,12 +1316,12 @@ static struct e2fsck_problem problem_table[] = {
 	/* Inode extent tree could be shorter */
 	{ PR_1E_CAN_COLLAPSE_EXTENT_TREE,
 	  N_("@i %i @x tree (at level %b) could be shorter.  "),
-	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK | PR_NOT_A_FIX, 0, 0, 0 },
+	  PROMPT_OPTIMIZE, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK | PR_NOT_A_FIX, 0, 0, 0 },
 
 	/* Inode extent tree could be narrower */
 	{ PR_1E_CAN_NARROW_EXTENT_TREE,
 	  N_("@i %i @x tree (at level %b) could be narrower.  "),
-	  PROMPT_FIX, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK | PR_NOT_A_FIX, 0, 0, 0 },
+	  PROMPT_OPTIMIZE, PR_NO_OK | PR_PREEN_NO | PR_PREEN_OK | PR_NOT_A_FIX, 0, 0, 0 },
 
 	/* Pass 2 errors */
 
