@@ -101,10 +101,10 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 			e2p_be32(jsb->s_checksum));
 	if ((nr_users > 1) ||
 	    !e2p_is_null_uuid(&jsb->s_users[0])) {
-		for (i=0; i < nr_users; i++) {
+		for (i=0; i < nr_users && i < JFS_USERS_MAX; i++) {
 			printf(i ? "                          %s\n"
 			       : "Journal users:            %s\n",
-			       e2p_uuid2str(&jsb->s_users[i*16]));
+			       e2p_uuid2str(&jsb->s_users[i * UUID_SIZE]));
 		}
 	}
 	if (jsb->s_errno != 0)

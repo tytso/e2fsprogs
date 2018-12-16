@@ -42,7 +42,7 @@ subs: $(DEP_SUBSTITUTE)
 
 progs: all-progs-recursive
 libs: all-libs-recursive
-all-progs-recursive all-libs-recursive: subs
+all-progs-recursive all-libs-recursive:: subs
 
 rpm:
 	sh contrib/build-rpm
@@ -64,7 +64,7 @@ distclean-doc:
 
 install: subs all-libs-recursive install-progs-recursive \
   install-shlibs-libs-recursive install-doc-libs
-	if test ! -d e2fsck && test ! -d debugfs && test ! -d misc && test ! -d ext2ed ; then $(MAKE) install-libs ; fi
+@SUBSET_CMT@	$(MAKE) install-libs
 
 install-strip: subs all-libs-recursive install-strip-progs-recursive \
   install-shlibs-strip-libs-recursive install-doc-libs
@@ -91,19 +91,23 @@ TAGS clean-recursive distclean-recursive depend-recursive fullcheck-recursive \
 	done
 
 all-progs-recursive install-progs-recursive install-strip-progs-recursive \
-  uninstall-progs-recursive coverage.txt-progs-recursive: all-libs-recursive
-	@for subdir in $(PROG_SUBDIRS); do \
-	  if test -d $$subdir ; then \
-	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \
-	    echo making $$target in $$subdir; \
-	    (cd $$subdir && $(MAKE) $$target) || exit 1; \
-	  fi ; \
-	done
+  uninstall-progs-recursive coverage.txt-progs-recursive:: all-libs-recursive
+
+
+@ALL_CMT@all-progs-recursive install-progs-recursive install-strip-progs-recursive \
+@ALL_CMT@  uninstall-progs-recursive coverage.txt-progs-recursive:: all-libs-recursive
+@ALL_CMT@	@for subdir in $(PROG_SUBDIRS); do \
+@ALL_CMT@	  if test -d $$subdir ; then \
+@ALL_CMT@	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \
+@ALL_CMT@	    echo making $$target in $$subdir; \
+@ALL_CMT@	    (cd $$subdir && $(MAKE) $$target) || exit 1; \
+@ALL_CMT@	  fi ; \
+@ALL_CMT@	done
 
 all-libs-recursive install-libs-recursive install-strip-libs-recursive \
   uninstall-libs-recursive install-shlibs-libs-recursive \
   install-shlibs-strip-libs-recursive uninstall-shlibs-libs-recursive \
-  coverage.txt-libs-recursive:
+  coverage.txt-libs-recursive::
 	@for subdir in $(LIB_SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-libs-recursive//'`; \

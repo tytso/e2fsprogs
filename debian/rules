@@ -385,15 +385,15 @@ binary-arch: install $(INSTALL_UDEB)
 	mkdir -p ${debdir}/libcom-err${COMERR_SOVERSION}/usr/share/doc/libcom-err${COMERR_SOVERSION}
 	mkdir -p ${debdir}/comerr-dev/usr/share/doc
 
-	mkdir -p ${debdir}/libext2fs2/usr/share/doc/libext2fs
+	mkdir -p ${debdir}/libext2fs2/usr/share/doc/libext2fs2
 	mkdir -p ${debdir}/libext2fs-dev/usr/share/doc
 
 	dh_installdocs -a -Ne2fsprogs-udeb
 
   # HTML docs
-	$(INSTALL) -d ${debdir}/libext2fs-dev/usr/share/doc/libext2fs/html-info/
+	$(INSTALL) -d ${debdir}/libext2fs-dev/usr/share/doc/libext2fs2/html-info/
 	$(INSTALL) -p -m 0644 ${stdbuilddir}/doc/*.html \
-	   ${debdir}/libext2fs-dev/usr/share/doc/libext2fs/html-info/
+	   ${debdir}/libext2fs-dev/usr/share/doc/libext2fs2/html-info/
 	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/comerr-dev/html-info/
 	$(INSTALL) -p -m 0644 ${stdbuilddir}/lib/et/*.html \
 	   ${debdir}/comerr-dev/usr/share/doc/comerr-dev/html-info/
@@ -401,7 +401,7 @@ binary-arch: install $(INSTALL_UDEB)
   # texinfo docs
 	mkdir -p ${debdir}/comerr-dev/usr/share/doc/comerr-dev
 	$(INSTALL) -p -m 0644 ${topdir}/doc/libext2fs.texinfo \
-	   ${debdir}/libext2fs-dev/usr/share/doc/libext2fs/libext2fs.texi
+	   ${debdir}/libext2fs-dev/usr/share/doc/libext2fs2/libext2fs.texi
 	$(INSTALL) -p -m 0644 ${topdir}/lib/et/com_err.texinfo \
 	   ${debdir}/comerr-dev/usr/share/doc/comerr-dev/com_err.texi
 

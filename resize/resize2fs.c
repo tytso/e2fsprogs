@@ -2244,31 +2244,20 @@ remap_blocks:
 		if (retval)
 			goto errout;
 
-		/* Rewrite extent block checksums with new inode number */
-		if (ext2fs_has_feature_metadata_csum(rfs->old_fs->super) &&
-		    (inode->i_flags & EXT4_EXTENTS_FL)) {
-			rfs->old_fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
-			retval = rewrite_extents(rfs->old_fs, new_inode);
-			rfs->old_fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
-			if (retval)
-				goto errout;
-		}
-
 		/*
 		 * Update inodes to point to new blocks; schedule directory
 		 * blocks for inode remapping.  Need to write out dir blocks
 		 * with new inode numbers if we have metadata_csum enabled.
 		 */
+		rfs->old_fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 		if (ext2fs_inode_has_valid_blocks2(rfs->old_fs, inode) &&
 		    (rfs->bmap || pb.is_dir)) {
 			pb.ino = new_inode;
 			pb.old_ino = ino;
 			pb.has_extents = inode->i_flags & EXT4_EXTENTS_FL;
-			rfs->old_fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
 			retval = ext2fs_block_iterate3(rfs->old_fs,
 						       new_inode, 0, block_buf,
 						       process_block, &pb);
-			rfs->old_fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 			if (retval)
 				goto errout;
 			if (pb.error) {
@@ -2280,6 +2269,14 @@ remap_blocks:
 			/* inline data dir; update it too */
 			retval = ext2fs_add_dir_block2(rfs->old_fs->dblist,
 						       new_inode, 0, 0);
+			if (retval)
+				goto errout;
+		}
+
+		/* Fix up extent block checksums with the new inode number */
+		if (ext2fs_has_feature_metadata_csum(rfs->old_fs->super) &&
+		    (inode->i_flags & EXT4_EXTENTS_FL)) {
+			retval = rewrite_extents(rfs->old_fs, new_inode);
 			if (retval)
 				goto errout;
 		}
@@ -2296,6 +2293,7 @@ remap_blocks:
 
 errout:
 	reset_com_err_hook();
+	rfs->old_fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	if (rfs->bmap) {
 		ext2fs_free_extent_table(rfs->bmap);
 		rfs->bmap = 0;

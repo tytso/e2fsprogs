@@ -25,6 +25,7 @@ struct inode_params {
 	time_t fixed_time;
 	const struct ugid_map* uid_map;
 	const struct ugid_map* gid_map;
+	errcode_t error;
 };
 
 static errcode_t ino_add_xattr(ext2_filsys fs, ext2_ino_t ino, const char *name,
@@ -82,7 +83,7 @@ static errcode_t set_selinux_xattr(ext2_filsys fs, ext2_ino_t ino,
 	if (retval < 0) {
 		com_err(__func__, retval,
 			_("searching for label \"%s\""), params->filename);
-		exit(1);
+		return retval;
 	}
 
 	retval = ino_add_xattr(fs, ino,  "security." XATTR_SELINUX_SUFFIX,
@@ -249,8 +250,10 @@ static int walk_dir(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		return 0;
 
 	if (asprintf(&params->filename, "%s/%.*s", params->path, name_len,
-		     de->name) < 0)
+		     de->name) < 0) {
+		params->error = ENOMEM;
 		return -ENOMEM;
+        }
 
 	if (!strncmp(de->name, "lost+found", 10)) {
 		retval = set_selinux_xattr(params->fs, de->inode, params);
@@ -264,8 +267,10 @@ static int walk_dir(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			char *cur_path = params->path;
 			char *cur_filename = params->filename;
 			params->path = params->filename;
-			ext2fs_dir_iterate2(params->fs, de->inode, 0, NULL,
-					    walk_dir, params);
+			retval = ext2fs_dir_iterate2(params->fs, de->inode, 0, NULL,
+						     walk_dir, params);
+			if (retval)
+				goto end;
 			params->path = cur_path;
 			params->filename = cur_filename;
 		}
@@ -273,6 +278,7 @@ static int walk_dir(ext2_ino_t dir EXT2FS_ATTR((unused)),
 
 end:
 	free(params->filename);
+	params->error |= retval;
 	return retval;
 }
 
@@ -298,6 +304,7 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *src_dir,
 		.mountpoint = mountpoint,
 		.uid_map = uid_map,
 		.gid_map = gid_map,
+		.error = 0
 	};
 
 	/* walk_dir will add the "/". Don't add it twice. */
@@ -308,8 +315,11 @@ errcode_t __android_configure_fs(ext2_filsys fs, char *src_dir,
 	if (retval)
 		return retval;
 
-	return ext2fs_dir_iterate2(fs, EXT2_ROOT_INO, 0, NULL, walk_dir,
-				   &params);
+	retval = ext2fs_dir_iterate2(fs, EXT2_ROOT_INO, 0, NULL, walk_dir,
+				     &params);
+	if (retval)
+		return retval;
+	return params.error;
 }
 
 errcode_t android_configure_fs(ext2_filsys fs, char *src_dir, char *target_out,

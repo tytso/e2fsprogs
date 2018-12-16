@@ -1496,8 +1496,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    (ino >= EXT2_FIRST_INODE(fs->super))) {
 			size_t size = 0;
 
-			pctx.errcode = ext2fs_inline_data_size(fs, ino, &size);
-			if (!pctx.errcode && size &&
+			pctx.errcode = get_inline_data_ea_size(fs, ino, &size);
+			if (!pctx.errcode &&
 			    fix_problem(ctx, PR_1_INLINE_DATA_FEATURE, &pctx)) {
 				ext2fs_set_feature_inline_data(sb);
 				ext2fs_mark_super_dirty(fs);
@@ -3447,7 +3447,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		size = EXT2_I_SIZE(inode);
 		if ((pb.last_init_lblock >= 0) &&
 		    /* Do not allow initialized allocated blocks past i_size*/
-		    (size < (__u64)pb.last_init_lblock * fs->blocksize))
+		    (size < (__u64)pb.last_init_lblock * fs->blocksize) &&
+		    !(inode->i_flags & EXT4_VERITY_FL))
 			bad_size = 3;
 		else if (!(extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
 			 size > ext2_max_sizes[fs->super->s_log_block_size])

@@ -741,6 +741,7 @@ DEFRAG_CMT
 RESIZER_CMT
 IMAGER_CMT
 DEBUGFS_CMT
+SUBSET_CMT
 ALL_CMT
 BLKID_CMT
 DEPPROFILED_LIBBLKID
@@ -5644,10 +5645,12 @@ fi
 
 
 ALL_CMT=
+SUBSET_CMT=
 # Check whether --enable-subset was given.
 if test "${enable_subset+set}" = set; then :
   enableval=$enable_subset; if test "$enableval" = "no"
 then
+	SUBSET_CMT=#
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling subset-only build" >&5
 $as_echo "Disabling subset-only build" >&6; }
 else
@@ -5657,6 +5660,7 @@ $as_echo "Enabling subset-only-build" >&6; }
 fi
 
 fi
+
 
 
 
