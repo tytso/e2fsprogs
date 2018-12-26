@@ -271,3 +271,18 @@ cc_binary {
     ],
     system_shared_libs: ["libc", "libdl"],
 }
+
+//##########################################################################
+// Build filefrag
+
+cc_binary {
+    name: "filefrag",
+    host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
+
+    srcs: ["filefrag.c"],
+    shared_libs: [
+        "libext2fs",
+    ],
+    system_shared_libs: ["libc", "libdl"],
+}
