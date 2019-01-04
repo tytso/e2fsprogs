@@ -1055,6 +1055,8 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 	struct fiemap_extent_list *logical_list_head = NULL;
 
 	defraged_file_count++;
+	if (defraged_file_count > total_count)
+		total_count = defraged_file_count;
 
 	if (mode_flag & DETAIL) {
 		if (total_count == 1 && regular_count == 1)
@@ -1421,6 +1423,8 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 	struct fiemap_extent_group	*orig_group_tmp = NULL;
 
 	defraged_file_count++;
+	if (defraged_file_count > total_count)
+		total_count = defraged_file_count;
 
 	if (mode_flag & DETAIL) {
 		printf("[%u/%u]", defraged_file_count, total_count);
