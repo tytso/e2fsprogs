@@ -235,7 +235,7 @@ static int scan_online(ext2_filsys fs, struct chunk_info *info,
 			break;
 		fsmap_advance(fsmap);
 	}
-
+	free(fsmap);
 	return 1;
 }
 #else
