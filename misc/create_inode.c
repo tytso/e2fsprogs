@@ -704,10 +704,12 @@ struct file_info {
 static errcode_t path_append(struct file_info *target, const char *file)
 {
 	if (strlen(file) + target->path_len + 1 > target->path_max_len) {
+		void *p;
 		target->path_max_len *= 2;
-		target->path = realloc(target->path, target->path_max_len);
-		if (!target->path)
+		p = realloc(target->path, target->path_max_len);
+		if (p == NULL)
 			return EXT2_ET_NO_MEMORY;
+		target->path = p;
 	}
 	target->path_len += sprintf(target->path + target->path_len, "/%s",
 				    file);
