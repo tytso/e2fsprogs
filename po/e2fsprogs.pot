@@ -1,9 +1,9 @@
 # E2fsprogs translation template file
 # Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
 #     2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-#      2013, 2014, 2015, 2016, 2017, 2018 by Theodore Ts'o
+#      2013, 2014, 2015, 2016, 2017, 2018, 2019 by Theodore Ts'o
 # This file is distributed under the same license as the e2fsprogs package.
-# Theodore Ts'o <tytso@mit.edu>, 2018.
+# Theodore Ts'o <tytso@mit.edu>, 2019.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -70,9 +70,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.44.5\n"
+"Project-Id-Version: e2fsprogs 1.44.6\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2018-12-15 22:49-0500\n"
+"POT-Creation-Date: 2019-03-05 14:46-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -586,15 +586,15 @@ msgstr ""
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
 msgstr ""
 
-#: e2fsck/pass1.c:4055
+#: e2fsck/pass1.c:4058
 msgid "block bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4061
+#: e2fsck/pass1.c:4064
 msgid "inode bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4067
+#: e2fsck/pass1.c:4070
 msgid "inode table"
 msgstr ""
 
@@ -3907,155 +3907,155 @@ msgstr ""
 msgid "Must use '-v', =, - or +\n"
 msgstr ""
 
-#: misc/create_inode.c:79 misc/create_inode.c:118
+#: misc/create_inode.c:80 misc/create_inode.c:119
 #, c-format
 msgid "while reading inode %u"
 msgstr ""
 
-#: misc/create_inode.c:89 misc/create_inode.c:287 misc/create_inode.c:352
-#: misc/create_inode.c:390
+#: misc/create_inode.c:90 misc/create_inode.c:288 misc/create_inode.c:353
+#: misc/create_inode.c:391
 msgid "while expanding directory"
 msgstr ""
 
-#: misc/create_inode.c:96
+#: misc/create_inode.c:97
 #, c-format
 msgid "while linking \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:104 misc/create_inode.c:131 misc/create_inode.c:321
+#: misc/create_inode.c:105 misc/create_inode.c:132 misc/create_inode.c:322
 #, c-format
 msgid "while writing inode %u"
 msgstr ""
 
-#: misc/create_inode.c:151 misc/create_inode.c:175
+#: misc/create_inode.c:152 misc/create_inode.c:176
 #, c-format
 msgid "while listing attributes of \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:162
+#: misc/create_inode.c:163
 #, c-format
 msgid "while opening inode %u"
 msgstr ""
 
-#: misc/create_inode.c:168 misc/create_inode.c:195 misc/create_inode.c:975
+#: misc/create_inode.c:169 misc/create_inode.c:196 misc/create_inode.c:1043
 #: misc/e2undo.c:182 misc/e2undo.c:479 misc/e2undo.c:485 misc/e2undo.c:491
 #: misc/mke2fs.c:359
 msgid "while allocating memory"
 msgstr ""
 
-#: misc/create_inode.c:188 misc/create_inode.c:204
+#: misc/create_inode.c:189 misc/create_inode.c:205
 #, c-format
 msgid "while reading attribute \"%s\" of \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:213
+#: misc/create_inode.c:214
 #, c-format
 msgid "while writing attribute \"%s\" to inode %u"
 msgstr ""
 
-#: misc/create_inode.c:223
+#: misc/create_inode.c:224
 #, c-format
 msgid "while closing inode %u"
 msgstr ""
 
-#: misc/create_inode.c:274
+#: misc/create_inode.c:275
 #, c-format
 msgid "while allocating inode \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:293
+#: misc/create_inode.c:294
 #, c-format
 msgid "while creating inode \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:359
+#: misc/create_inode.c:360
 #, c-format
 msgid "while creating symlink \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:377 misc/create_inode.c:896
+#: misc/create_inode.c:378 misc/create_inode.c:963
 #, c-format
 msgid "while looking up \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:397
+#: misc/create_inode.c:398
 #, c-format
 msgid "while creating directory \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:625
+#: misc/create_inode.c:627
 #, c-format
 msgid "while opening \"%s\" to copy"
 msgstr ""
 
-#: misc/create_inode.c:739
+#: misc/create_inode.c:805
 #, c-format
 msgid "while changing working directory to \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:747
+#: misc/create_inode.c:815
 #, c-format
-msgid "while opening directory \"%s\""
-msgstr ""
-
-#: misc/create_inode.c:757
-#, c-format
-msgid "while lstat \"%s\""
-msgstr ""
-
-#: misc/create_inode.c:808
-#, c-format
-msgid "while creating special file \"%s\""
-msgstr ""
-
-#: misc/create_inode.c:817
-msgid "malloc failed"
+msgid "while scanning directory \"%s\""
 msgstr ""
 
 #: misc/create_inode.c:825
 #, c-format
+msgid "while lstat \"%s\""
+msgstr ""
+
+#: misc/create_inode.c:875
+#, c-format
+msgid "while creating special file \"%s\""
+msgstr ""
+
+#: misc/create_inode.c:884
+msgid "malloc failed"
+msgstr ""
+
+#: misc/create_inode.c:892
+#, c-format
 msgid "while trying to read link \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:832
+#: misc/create_inode.c:899
 msgid "symlink increased in size between lstat() and readlink()"
 msgstr ""
 
-#: misc/create_inode.c:843
+#: misc/create_inode.c:910
 #, c-format
 msgid "while writing symlink\"%s\""
 msgstr ""
 
-#: misc/create_inode.c:854
+#: misc/create_inode.c:921
 #, c-format
 msgid "while writing file \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:867
+#: misc/create_inode.c:934
 #, c-format
 msgid "while making dir \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:885
+#: misc/create_inode.c:952
 msgid "while changing directory"
 msgstr ""
 
-#: misc/create_inode.c:891
+#: misc/create_inode.c:958
 #, c-format
 msgid "ignoring entry \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:904
+#: misc/create_inode.c:971
 #, c-format
 msgid "while setting inode for \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:911
+#: misc/create_inode.c:978
 #, c-format
 msgid "while setting xattrs for \"%s\""
 msgstr ""
 
-#: misc/create_inode.c:937
+#: misc/create_inode.c:1004
 msgid "while saving inode data"
 msgstr ""
 
@@ -5744,7 +5744,7 @@ msgid ""
 msgstr ""
 
 #: misc/mke2fs.c:3232 misc/mke2fs.c:3261 misc/mke2fs.c:3299
-#: misc/mk_hugefiles.c:598 misc/tune2fs.c:1573 misc/tune2fs.c:1592
+#: misc/mk_hugefiles.c:600 misc/tune2fs.c:1573 misc/tune2fs.c:1592
 msgid "done\n"
 msgstr ""
 
@@ -5801,27 +5801,27 @@ msgstr ""
 msgid "while zeroing block %llu for hugefile"
 msgstr ""
 
-#: misc/mk_hugefiles.c:514
+#: misc/mk_hugefiles.c:515
 #, c-format
 msgid ""
 "Partition offset of %llu (%uk) blocks not compatible with cluster size %u.\n"
 msgstr ""
 
-#: misc/mk_hugefiles.c:581
+#: misc/mk_hugefiles.c:583
 msgid "Huge files will be zero'ed\n"
-msgstr ""
-
-#: misc/mk_hugefiles.c:582
-#, c-format
-msgid "Creating %lu huge file(s) "
 msgstr ""
 
 #: misc/mk_hugefiles.c:584
 #, c-format
+msgid "Creating %lu huge file(s) "
+msgstr ""
+
+#: misc/mk_hugefiles.c:586
+#, c-format
 msgid "with %llu blocks each"
 msgstr ""
 
-#: misc/mk_hugefiles.c:593
+#: misc/mk_hugefiles.c:595
 #, c-format
 msgid "while creating huge file %lu"
 msgstr ""
@@ -7002,7 +7002,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.44.4"
+msgid "EXT2FS Library version 1.44.6"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12
