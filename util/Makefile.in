@@ -70,3 +70,4 @@ distclean: clean
 # the Makefile.in file
 #
 subst.o: $(srcdir)/subst.c $(top_builddir)/lib/config.h dirpaths.h
+mkutf8data.o: $(srcdir)/mkutf8data.c
