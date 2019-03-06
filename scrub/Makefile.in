@@ -178,7 +178,7 @@ uninstall: $(UNINSTALL_TGT)
 	done
 
 clean::
-	$(RM) -f $(PROGS)
+	$(RM) -f $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES) $(SERVICE_FILES) $(CRONTABS) $(LIBPROGS)
 
 mostlyclean: clean
 distclean: clean
