@@ -1,3 +1,26 @@
+e2fsprogs (1.45.0-1) unstable; urgency=medium
+
+  * New upstream feature
+  * tune2fs can now set the file system error bit to force a check at the
+    next fsck by using the extended option "force_fsck".
+  * There is now an e2scrub script which will allow e2fsck to be run
+    on mounted file systems using an LVM device.  There will be a systemd
+    script to automatically run e2scrub on all ext4* file systems where it
+    can be supported.
+  * mke2fs will attempt avoid discarding pre-allocated blocks when
+    initializing a file system on a file.
+  * The fuse2fs command now supports a "fakeroot" option to allow an
+    unprivileged user to fuse2fs to modify rootfs images.
+  * Add initial support for the character set and case-folding file system
+    feature.
+  * Debugfs can now set the inode's checksum field
+  * E2image now accepts the -b and -B options to allow the user to specify
+    the superblock location when creating a raw or qcow2 image.
+  * Update the debhelper compatibility level to 11
+  * Update the Debian policy compliance to 4.3.0
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 06 Mar 2019 12:55:18 -0500
+
 e2fsprogs (1.44.6-1) unstable; urgency=medium
 
   * New upstream version
