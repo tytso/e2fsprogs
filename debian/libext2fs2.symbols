@@ -1,4 +1,5 @@
 libe2p.so.2 libext2fs2 #MINVER#
+* Build-Depends-Package: libext2fs-dev
  e2p_edit_feature2@Base 1.40.7
  e2p_edit_feature@Base 1.37
  e2p_edit_mntopts@Base 1.37
@@ -38,6 +39,7 @@ libe2p.so.2 libext2fs2 #MINVER#
  setflags@Base 1.37
  setversion@Base 1.37
 libext2fs.so.2 libext2fs2 #MINVER#
+* Build-Depends-Package: libext2fs-dev
  badblocks_list_add@Base 1.37
  badblocks_list_create@Base 1.37
  badblocks_list_free@Base 1.37

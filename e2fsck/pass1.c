@@ -3646,9 +3646,12 @@ static int process_block(ext2_filsys fs,
 		}
 	}
 
-	if (p->is_dir && blockcnt > (1 << (21 - fs->super->s_log_block_size)))
+	if (p->is_dir && !ext2fs_has_feature_largedir(fs->super) &&
+	    blockcnt > (1 << (21 - fs->super->s_log_block_size)))
 		problem = PR_1_TOOBIG_DIR;
-	if (p->is_reg && p->num_blocks+1 >= p->max_blocks)
+	if (p->is_dir && p->num_blocks + 1 >= p->max_blocks)
+		problem = PR_1_TOOBIG_DIR;
+	if (p->is_reg && p->num_blocks + 1 >= p->max_blocks)
 		problem = PR_1_TOOBIG_REG;
 	if (!p->is_dir && !p->is_reg && blockcnt > 0)
 		problem = PR_1_TOOBIG_SYMLINK;

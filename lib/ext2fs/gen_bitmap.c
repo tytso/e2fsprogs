@@ -554,7 +554,8 @@ int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 				   blk_t block, int num)
 {
 	EXT2_CHECK_MAGIC(bitmap, EXT2_ET_MAGIC_BLOCK_BITMAP);
-	if ((block < bitmap->start) || (block+num-1 > bitmap->real_end)) {
+	if ((block < bitmap->start) || (block > bitmap->real_end) ||
+	    (block+num-1 > bitmap->real_end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_TEST,
 				   block, bitmap->description);
 		return 0;
@@ -567,7 +568,8 @@ int ext2fs_test_inode_bitmap_range(ext2fs_inode_bitmap bitmap,
 				   ext2_ino_t inode, int num)
 {
 	EXT2_CHECK_MAGIC(bitmap, EXT2_ET_MAGIC_INODE_BITMAP);
-	if ((inode < bitmap->start) || (inode+num-1 > bitmap->real_end)) {
+	if ((inode < bitmap->start) || (inode > bitmap->real_end) ||
+	    (inode+num-1 > bitmap->real_end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_INODE_TEST,
 				   inode, bitmap->description);
 		return 0;
@@ -581,7 +583,8 @@ void ext2fs_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 {
 	int	i;
 
-	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+	if ((block < bitmap->start) || (block > bitmap->end) ||
+	    (block+num-1 > bitmap->end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_MARK, block,
 				   bitmap->description);
 		return;
@@ -595,7 +598,8 @@ void ext2fs_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 {
 	int	i;
 
-	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+	if ((block < bitmap->start) || (block > bitmap->end) ||
+	    (block+num-1 > bitmap->end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_UNMARK, block,
 				   bitmap->description);
 		return;

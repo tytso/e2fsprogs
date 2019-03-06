@@ -152,9 +152,6 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		fprintf(ls->f, "(%d)  %5d  %5d   ",
 			ext2fs_dirent_file_type(dirent),
 			inode_uid(inode), inode_gid(inode));
-		if (LINUX_S_ISDIR(inode.i_mode))
-			fprintf(ls->f, "%5d", inode.i_size);
-		else
 			fprintf(ls->f, "%5llu", EXT2_I_SIZE(&inode));
 		fprintf(ls->f, " %s ", datestr);
 		print_filename(ls->f, dirent, options);
