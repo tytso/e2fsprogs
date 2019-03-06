@@ -1,3 +1,23 @@
+e2fsprogs (1.44.6-1) unstable; urgency=medium
+
+  * New upstream version
+  * Fix e4defrag overflow problem when files are being created while it is
+    running (Closes: #888899)
+  * Fix e2fsck so it can correctly handle directories > 2 GiB when the
+    largedir feature is enabled.
+  * Fix mke2fs's hugefile creation so it works correctly for certain
+    unfortunately sized disks/partitions.
+  * Fix the libext2fs library to be more robust against
+    invalid/maliciously corrupted block group descriptors.
+  * Fix mke2fs and debugfs so they can correctly copy in files > 2 GiB.
+  * Fix debugfs so its stat command can correct supportly display directory
+    sizes > 2 GiB.
+  * Fix memory leaks in debugfs, mke2fs, and e2freefrag.
+  * Avoid unnecessarily linking badblocks with the libblkid shared library.
+    (Closes: #919958)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 05 Mar 2019 15:10:40 -0500
+
 e2fsprogs (1.44.5-1) unstable; urgency=medium
 
   * New upstream version
