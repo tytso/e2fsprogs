@@ -108,13 +108,13 @@ installdirs: $(INSTALLDIRS_TGT)
 install-udev:
 	$(Q) for i in $(UDEV_RULES); do \
 		$(ES) "	INSTALL $(UDEV_RULES_DIR)/$$i"; \
-		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(UDEV_RULES_DIR)/96-$$i; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(UDEV_RULES_DIR)/96-$$i; \
 	done
 
 install-crond:
 	$(Q) for i in $(CRONTABS); do \
 		$(ES) "	INSTALL $(CROND_DIR)/$$i"; \
-		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(CROND_DIR)/$$i; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(CROND_DIR)/$$i; \
 	done
 
 install-libprogs: $(LIBPROGS)
