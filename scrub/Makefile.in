@@ -112,10 +112,10 @@ install-udev:
 	done
 
 install-crond:
-	$(Q) for i in $(CRONTABS); do \
-		$(ES) "	INSTALL $(CROND_DIR)/$$i"; \
-		$(INSTALL_DATA) $$i $(DESTDIR)$(CROND_DIR)/$$i; \
-	done
+	$(Q) if test -n "$(CRONTABS)" ; then \
+		$(ES) "	INSTALL $(CROND_DIR)/e2scrub_all" ; \
+		$(INSTALL_DATA) e2scrub_all.cron $(DESTDIR)$(CROND_DIR)/e2scrub_all ; \
+	fi
 
 install-libprogs: $(LIBPROGS)
 	$(Q) for i in $(LIBPROGS); do \
@@ -152,9 +152,9 @@ uninstall-udev:
 	done
 
 uninstall-crond:
-	for i in $(CRONTABS); do \
-		$(RM) -f $(DESTDIR)$(CROND_DIR)/$$i; \
-	done
+	if test -n "$(CRONTABS)" ; then \
+		$(RM) -f $(DESTDIR)$(CROND_DIR)/e2scrub_all ; \
+	fi
 
 uninstall-libprogs:
 	for i in $(LIBPROGS); do \
