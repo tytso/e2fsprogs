@@ -1,5 +1,13 @@
 # e2scrub configuration file
 
+# e-mail destination used by e2scrub_fail when problems are found with
+# the file system.
+# recipient=root
+
+# e-mail sender used by e2scrub_fail when problems are found with
+# the file system.
+# sender=e2scrub@host.domain.name
+
 # Snapshots will be created to run fsck; the snapshot will be of this size.
 # snap_size_mb=256
 

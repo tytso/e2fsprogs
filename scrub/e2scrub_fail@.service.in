@@ -4,8 +4,7 @@ Documentation=man:e2scrub(8)
 
 [Service]
 Type=oneshot
-Environment=EMAIL_ADDR=root
-ExecStart=@pkglibdir@/e2scrub_fail "${EMAIL_ADDR}" %I
+ExecStart=@pkglibdir@/e2scrub_fail "%I"
 User=mail
 Group=mail
 SupplementaryGroups=systemd-journal
