@@ -1119,9 +1119,11 @@ dnl the functions added after migrating that library to util-linux
 dnl
 if test -n "$BLKID_CMT"; then
   AC_CHECK_LIB(blkid, blkid_probe_get_topology,
-		      AC_DEFINE(HAVE_BLKID_PROBE_GET_TOPOLOGY, 1))
+		      AC_DEFINE(HAVE_BLKID_PROBE_GET_TOPOLOGY, 1,
+				[Define to 1 if blkid has blkid_probe_get_topology]))
   AC_CHECK_LIB(blkid, blkid_probe_enable_partitions,
-		      AC_DEFINE(HAVE_BLKID_PROBE_ENABLE_PARTITIONS, 1))
+		      AC_DEFINE(HAVE_BLKID_PROBE_ENABLE_PARTITIONS, 1,
+				[Define to 1 if blkid has blkid_probe_enable_partitions]))
 fi
 dnl
 if test -n "$DLOPEN_LIB" ; then
