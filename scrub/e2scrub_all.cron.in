@@ -1,0 +1,2 @@
+30 3 * * 0 root test -e /run/systemd/system || @pkglibdir@/e2scrub_all_cron
+10 3 * * * root test -e /run/systemd/system || @root_sbindir@/e2scrub_all -A -r

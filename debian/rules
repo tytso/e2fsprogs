@@ -47,6 +47,8 @@ endif
 
 DH_VERSION := $(shell dpkg-query -W -f '$${Version}' debhelper)
 
+USE_DH9 ?= $(shell if dpkg --compare-versions $(DH_VERSION) lt 11 ; then echo yes ; fi)
+
 # USE_DBGSYM :=
 USE_DBGSYM ?= $(shell if dpkg --compare-versions $(DH_VERSION) ">=" 9.20160114 ; then echo yes ; fi)
 
@@ -99,6 +101,7 @@ UDEB_NAME 	?= $(package)-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
 UDEB_PRIORITY	?= $(shell grep '^Package: e2fsprogs-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
 
 STAMPSDIR	?= debian/stampdir
+CFGDH		?= ${STAMPSDIR}/configure-dh
 CFGSTDSTAMP	?= ${STAMPSDIR}/configure-std-stamp
 CFGBFSTAMP	?= ${STAMPSDIR}/configure-bf-stamp
 BUILDSTDSTAMP	?= ${STAMPSDIR}/build-std-stamp
@@ -164,7 +167,8 @@ endif
 
 BACKTRACE_CONF_FLAGS ?= $(shell if ${debdir}/scripts/test-backtrace ; then echo --disable-backtrace ; fi)
 
-COMMON_CONF_FLAGS = --disable-e2initrd-helper \
+COMMON_CONF_FLAGS = --enable-lto --disable-ubsan --disable-addrsan \
+	--disable-threadsan --disable-e2initrd-helper \
 	--infodir=/usr/share/info  --enable-symlink-install \
 	--with-multiarch=$(DEB_HOST_MULTIARCH) \
 	$(BACKTRACE_CONF_FLAGS) $(UTIL_CONF_FLAGS)
@@ -195,7 +199,18 @@ mrproper: clean
 		mv debian/control.save debian/control ; \
 	fi
 
-${CFGSTDSTAMP}:
+${CFGDH}:
+ifeq ($(USE_DH9),yes)
+	mv debian/compat debian/compat.save
+	echo 9 > debian/compat
+	mv debian/e2fsprogs.postinst debian/e2fsprogs.postinst.save
+	cp debian/e2fsprogs.postinst.dh9 debian/e2fsprogs.postinst
+	cp debian/e2fsprogs.postrm.dh9 debian/e2fsprogs.postrm
+endif
+	mkdir -p ${STAMPSDIR}
+	touch ${CFGDH}
+
+${CFGSTDSTAMP}: ${CFGDH}
 	dh_testdir
 	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
 		dh_update_autotools_config ;\
@@ -228,7 +243,7 @@ endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTDSTAMP}
 
-${CFGBFSTAMP}:
+${CFGBFSTAMP}: ${CFGDH}
 	dh_testdir
 	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
 		dh_update_autotools_config ;\
@@ -299,6 +314,15 @@ clean:
 		rm -f po/*.gmo po/*.po ; \
 		mv debian/orig-gmo/* po ; \
 		rmdir debian/orig-gmo ; \
+	fi
+	if test -f debian/compat.save; then \
+		mv debian/compat.save debian/compat ; \
+	fi
+	if test -f debian/e2fsprogs.postinst.save; then \
+		mv debian/e2fsprogs.postinst.save debian/e2fsprogs.postinst ; \
+	fi
+	if test -f debian/e2fsprogs.postrm; then \
+		rm -f debian/e2fsprogs.postrm ; \
 	fi
 	rm -rf ${STAMPSDIR}
 	[ ! -f ${stdbuilddir}/Makefile ] || $(MAKE) -C ${stdbuilddir} V=1 distclean
@@ -440,7 +464,9 @@ endif
 	dh_compress -a
 
 	dh_makeshlibs -a --add-udeb=e2fsprogs-udeb
-
+ifneq ($(USE_DH9),yes)
+	dh_installsystemd -p e2fsprogs
+endif
 	$(INSTALL) -D -p -m644 debian/e2fsprogs-udeb.lintian-overrides \
 	    debian/e2fsprogs-udeb/usr/share/lintian/overrides/e2fsprogs-udeb
 	dh_installdeb -a

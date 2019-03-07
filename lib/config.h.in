@@ -313,6 +313,12 @@
 /* Define to 1 if you have the <mntent.h> header file. */
 #undef HAVE_MNTENT_H
 
+/* Define to 1 if mount supports nodev. */
+#undef HAVE_MOUNT_NODEV
+
+/* Define to 1 if mount supports nosuid. */
+#undef HAVE_MOUNT_NOSUID
+
 /* Define to 1 if you have the `msync' function. */
 #undef HAVE_MSYNC
 

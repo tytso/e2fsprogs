@@ -1,0 +1,137 @@
+#!/bin/bash
+
+#  Copyright (C) 2018 Oracle.  All Rights Reserved.
+#
+#  Author: Darrick J. Wong <darrick.wong@oracle.com>
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it would be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write the Free Software Foundation,
+#  Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
+
+scrub_all=0
+conffile="@root_sysconfdir@/e2scrub.conf"
+
+test -f "${conffile}" && . "${conffile}"
+
+scrub_args=""
+
+print_help() {
+	echo "Usage: $0 [OPTIONS]"
+	echo " -A: Scrub all ext[234] filesystems even if not mounted."
+	echo " -r: Remove e2scrub snapshots."
+	echo " -V: Print version information and exit."
+}
+
+print_version() {
+	echo "e2scrub_all @E2FSPROGS_VERSION@ (@E2FSPROGS_DATE@)"
+}
+
+exitcode() {
+	ret="$1"
+
+	# If we're being run as a service, the return code must fit the LSB
+	# init script action error guidelines, which is to say that we
+	# compress all errors to 1 ("generic or unspecified error", LSB 5.0
+	# section 22.2) and hope the admin will scan the log for what
+	# actually happened.
+
+	# We have to sleep 2 seconds here because journald uses the pid to
+	# connect our log messages to the systemd service.  This is critical
+	# for capturing all the log messages if the scrub fails, because the
+	# fail service uses the service name to gather log messages for the
+	# error report.
+	if [ -n "${SERVICE_MODE}" ]; then
+		test "${ret}" -ne 0 && ret=1
+		sleep 2
+	fi
+
+	exit "${ret}"
+}
+
+while getopts "ArV" opt; do
+	case "${opt}" in
+	"A") scrub_all=1;;
+	"r") scrub_args="${scrub_args} -r";;
+	"V") print_version; exitcode 0;;
+	*) print_help; exitcode 2;;
+	esac
+done
+shift "$((OPTIND - 1))"
+
+# Find scrub targets, make sure we only do this once.
+ls_scrub_targets() {
+	lsblk -o NAME,FSTYPE,MOUNTPOINT -p -P -n | while read vars; do
+		eval "${vars}"
+
+		# Skip non-ext[234]
+		case "${FSTYPE}" in
+		ext[234])	;;
+		*)		continue;;
+		esac
+
+		# Skip unmounted filesystems unless -A
+		if [ "${scrub_all}" -eq 0 ] && [ -z "${MOUNTPOINT}" ]; then
+			continue;
+		fi
+
+		# Skip non-lvm devices and lvm snapshots
+		lvm_vars="$(lvs --nameprefixes -o vg_name,lv_name,lv_role --noheadings "${NAME}" 2> /dev/null)"
+		test $? -ne 0 && continue
+		eval "${lvm_vars}"
+		echo "${LVM2_LV_ROLE}" | grep -q "snapshot" && continue
+
+		if [ -n "${MOUNTPOINT}" ]; then
+			echo "${MOUNTPOINT}"
+		else
+			echo "${NAME}"
+		fi
+	done | sort | uniq
+}
+
+# systemd doesn't know to do path escaping on the instance variable we pass
+# to the e2scrub service, which breaks things if there is a dash in the path
+# name.  Therefore, do the path escaping ourselves if needed.
+#
+# systemd path escaping also drops the initial slash so we add that back in so
+# that log messages from the service units preserve the full path and users can
+# look up log messages using full paths.  However, for "/" the escaping rules
+# do /not/ drop the initial slash, so we have to special-case that here.
+escape_path_for_systemd() {
+	local path="$1"
+
+	if [ "${path}" != "/" ]; then
+		echo "-$(systemd-escape --path "${path}")"
+	else
+		echo "-"
+	fi
+}
+
+# Scrub any mounted fs on lvm by creating a snapshot and fscking that.
+stdin="$(realpath /dev/stdin)"
+ls_scrub_targets | while read tgt; do
+	# If we're not reaping and systemd is present, try invoking the
+	# systemd service.
+	if [ -z "${scrub_args}" ] && type systemctl > /dev/null 2>&1; then
+		tgt_esc="$(escape_path_for_systemd "${tgt}")"
+		${DBG} systemctl start "e2scrub@${tgt_esc}" 2> /dev/null < "${stdin}"
+		res=$?
+		if [ "${res}" -eq 0 ] || [ "${res}" -eq 1 ]; then
+			continue;
+		fi
+	fi
+
+	# Otherwise use direct invocation
+	${DBG} "@root_sbindir@/e2scrub" ${scrub_args} "${tgt}" < "${stdin}"
+done
+
+exitcode 0

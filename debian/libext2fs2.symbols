@@ -5,6 +5,7 @@ libe2p.so.2 libext2fs2 #MINVER#
  e2p_edit_mntopts@Base 1.37
  e2p_encmode2string@Base 1.43
  e2p_feature2string@Base 1.37
+ e2p_get_encoding_flags@Base 1.45
  e2p_hash2string@Base 1.37
  e2p_is_null_uuid@Base 1.37
  e2p_jrnl_feature2string@Base 1.41.1
@@ -13,6 +14,8 @@ libe2p.so.2 libext2fs2 #MINVER#
  e2p_mntopt2string@Base 1.37
  e2p_os2string@Base 1.37
  e2p_percent@Base 1.40
+ e2p_str2encoding@Base 1.45
+ e2p_str2encoding_flags@Base 1.45
  e2p_string2encmode@Base 1.43
  e2p_string2feature@Base 1.37
  e2p_string2hash@Base 1.37
@@ -171,6 +174,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_dirent_name_len@Base 1.43
  ext2fs_dirent_set_file_type@Base 1.43
  ext2fs_dirent_set_name_len@Base 1.43
+ ext2fs_dirhash2@Base 1.45
  ext2fs_dirhash@Base 1.37
  ext2fs_div64_ceil@Base 1.42
  ext2fs_div_ceil@Base 1.40
@@ -249,6 +253,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_find_first_zero_generic_bmap@Base 1.42.2
  ext2fs_find_first_zero_inode_bitmap2@Base 1.42.2
  ext2fs_find_inode_goal@Base 1.43
+ ext2fs_fix_extents_checksums@Base 1.45
  ext2fs_flush2@Base 1.42
  ext2fs_flush@Base 1.37
  ext2fs_flush_icache@Base 1.37
@@ -461,6 +466,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_read_ext_attr3@Base 1.43
  ext2fs_read_ext_attr@Base 1.37
  ext2fs_read_ind_block@Base 1.37
+ ext2fs_read_inode2@Base 1.45
  ext2fs_read_inode@Base 1.37
  ext2fs_read_inode_bitmap@Base 1.37
  ext2fs_read_inode_full@Base 1.37
@@ -615,6 +621,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_write_ext_attr3@Base 1.43
  ext2fs_write_ext_attr@Base 1.37
  ext2fs_write_ind_block@Base 1.37
+ ext2fs_write_inode2@Base 1.45
  ext2fs_write_inode@Base 1.37
  ext2fs_write_inode_bitmap@Base 1.37
  ext2fs_write_inode_full@Base 1.37
@@ -643,6 +650,8 @@ libext2fs.so.2 libext2fs2 #MINVER#
  io_channel_write_blk64@Base 1.41.1
  io_channel_write_byte@Base 1.37
  io_channel_zeroout@Base 1.43
+ nls_ascii@Base 1.45
+ nls_utf8_11_0@Base 1.45
  qcow2_read_header@Base 1.42
  qcow2_write_raw_image@Base 1.42
  set_undo_io_backing_manager@Base 1.41.0
@@ -660,3 +669,16 @@ libext2fs.so.2 libext2fs2 #MINVER#
  undo_io_manager@Base 1.41.0
  unix_io_manager@Base 1.37
  unixfd_io_manager@Base 1.43.2
+ utf8agemax@Base 1.45
+ utf8agemin@Base 1.45
+ utf8byte@Base 1.45
+ utf8cursor@Base 1.45
+ utf8len@Base 1.45
+ utf8nagemax@Base 1.45
+ utf8nagemin@Base 1.45
+ utf8ncursor@Base 1.45
+ utf8nfkdi@Base 1.45
+ utf8nfkdicf@Base 1.45
+ utf8nlen@Base 1.45
+ utf8version_is_supported@Base 1.45
+ utf8version_latest@Base 1.45

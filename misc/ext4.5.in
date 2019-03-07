@@ -151,6 +151,16 @@ can be specified using the
 .B \-G
 option.
 .TP
+.B fname_encoding
+.br
+This ext4 feature provides file system level character encoding support
+for files and directories name.  This feature is name-preserving on the
+disk, but it allows applications to lookup for a file in the file system
+using any encoding equivalent version of the file name.
+
+This feature is required to perform in-kernel case-insensitive file
+name lookups.
+.TP
 .B has_journal
 .br
 Create a journal to ensure filesystem consistency even across unclean

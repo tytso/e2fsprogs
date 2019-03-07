@@ -109,6 +109,8 @@ static struct feature feature_list[] = {
 			"inline_data"},
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT,
 			"encrypt"},
+	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_FNAME_ENCODING,
+			"fname_encoding"},
 	{	0, 0, 0 },
 };
 
