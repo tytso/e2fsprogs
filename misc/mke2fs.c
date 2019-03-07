@@ -1133,7 +1133,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			exit(1);
 		}
 	} else if (encoding_flags) {
-		fprintf(stderr, _("error: An encoding must be explicitely "
+		fprintf(stderr, _("error: An encoding must be explicitly "
 				  "specified when passing encoding-flags\n"));
 		free(buf);
 		exit(1);
