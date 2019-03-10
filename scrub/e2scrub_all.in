@@ -18,6 +18,8 @@
 #  along with this program; if not, write the Free Software Foundation,
 #  Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
 scrub_all=0
 conffile="@root_sysconfdir@/e2scrub.conf"
 
@@ -67,6 +69,20 @@ while getopts "ArV" opt; do
 	esac
 done
 shift "$((OPTIND - 1))"
+
+# If some prerequisite packages are not installed, exit with a code
+# indicating success to avoid spamming the sysadmin with fail messages
+# when e2scrub_all is run out of cron or a systemd timer.
+
+if ! type lsblk >& /dev/null ; then
+    echo "e2scrub_all: can't find lsblk --- is util-linux installed?"
+    exitcode 0
+fi
+
+if ! type lvcreate >& /dev/null ; then
+    echo "e2scrub_all: can't find lvcreate --- is lvm2 installed?"
+    exitcode 0
+fi
 
 # Find scrub targets, make sure we only do this once.
 ls_scrub_targets() {
