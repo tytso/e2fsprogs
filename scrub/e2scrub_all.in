@@ -29,8 +29,9 @@ scrub_args=""
 
 print_help() {
 	echo "Usage: $0 [OPTIONS]"
-	echo " -A: Scrub all ext[234] filesystems even if not mounted."
+	echo " -n: Show what commands e2scrub_all would execute."
 	echo " -r: Remove e2scrub snapshots."
+	echo " -A: Scrub all ext[234] filesystems even if not mounted."
 	echo " -V: Print version information and exit."
 }
 
@@ -60,10 +61,11 @@ exitcode() {
 	exit "${ret}"
 }
 
-while getopts "ArV" opt; do
+while getopts "nrAV" opt; do
 	case "${opt}" in
-	"A") scrub_all=1;;
+	"n") DBG="echo Would execute: " ;;
 	"r") scrub_args="${scrub_args} -r";;
+	"A") scrub_all=1;;
 	"V") print_version; exitcode 0;;
 	*) print_help; exitcode 2;;
 	esac
