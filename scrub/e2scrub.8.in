@@ -38,6 +38,15 @@ If the filesystem is not repaired,
 will be run before the next mount.
 .SH OPTIONS
 .TP
+\fB-n\fR
+Print what commands
+.B e2scrub
+would execute to check the file system.  (Note: the commands will not
+actually be executed; however, since
+.B e2scrub
+needs to run some commands to query the system to determine what
+commands would be executed, it still needs to be run as root.)
+.TP
 \fB-r\fR
 Remove the e2scrub snapshot and exit without checking anything.
 .TP
@@ -57,4 +66,4 @@ The exit codes are the same as in
 .SH AUTHOR
 Darrick J. Wong <darrick.wong@oracle.com>
 .SH COPYRIGHT
-Copyright ©2018 Oracle.  License is GPLv2+. <http://www.gnu.org/licenses/gpl-2.0.html>
+Copyright \[co]2018 Oracle.  License is GPLv2+. <http://www.gnu.org/licenses/gpl-2.0.html>

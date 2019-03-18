@@ -37,6 +37,7 @@ print_help() {
 	echo "Usage: $0 [OPTIONS] mountpoint | device"
 	echo
 	echo "mountpoint must be on a LVM-managed block device"
+	echo "-n: Show what commands e2scrub would execute."
 	echo "-r: Remove e2scrub snapshot and exit, do not check anything."
 	echo "-t: Run fstrim if successful."
 	echo "-V: Print version information and exit."
@@ -68,8 +69,9 @@ exitcode() {
 	exit "${ret}"
 }
 
-while getopts "rtV" opt; do
-	case "${opt}" in
+while getopts "nrtV" opt; do
+    case "${opt}" in
+	"n") DBG="echo Would execute: " ;;
 	"r") reap=1;;
 	"t") fstrim=1;;
 	"V") print_version; exitcode 0;;
