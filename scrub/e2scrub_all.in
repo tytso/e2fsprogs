@@ -22,6 +22,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 scrub_all=0
 snap_size_mb=256
+reap=0
 conffile="@root_sysconfdir@/e2scrub.conf"
 
 test -f "${conffile}" && . "${conffile}"
@@ -65,7 +66,7 @@ exitcode() {
 while getopts "nrAV" opt; do
 	case "${opt}" in
 	"n") DBG="echo Would execute: " ;;
-	"r") scrub_args="${scrub_args} -r";;
+	"r") scrub_args="${scrub_args} -r"; reap=1;;
 	"A") scrub_all=1;;
 	"V") print_version; exitcode 0;;
 	*) print_help; exitcode 2;;
@@ -88,36 +89,30 @@ if ! type lvcreate >& /dev/null ; then
 fi
 
 # Find scrub targets, make sure we only do this once.
-ls_scrub_targets() {
-	lsblk -o NAME,FSTYPE,MOUNTPOINT -p -P -n | while read vars; do
+ls_scan_targets() {
+	lsblk -o NAME,MOUNTPOINT,FSTYPE -P -n -p \
+	      $(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>${snap_size_mb}") | \
+	    grep FSTYPE=\"ext\[234\]\" | while read vars ; do
 		eval "${vars}"
 
-		# Skip non-ext[234]
-		case "${FSTYPE}" in
-		ext[234])	;;
-		*)		continue;;
-		esac
-
-		# Skip unmounted filesystems unless -A
-		if [ "${scrub_all}" -eq 0 ] && [ -z "${MOUNTPOINT}" ]; then
-			continue;
+		if [ "${scrub_all}" -eq 1 ] || [ -n "${MOUNTPOINT}" ]; then
+		    echo ${MOUNTPOINT:-${NAME}}
 		fi
+	done
+}
 
-		# Skip non-lvm devices and lvm snapshots
-		lvm_vars="$(lvs --nameprefixes -o vg_name,lv_name,lv_role --noheadings "${NAME}" 2> /dev/null)"
-		test $? -ne 0 && continue
-		eval "${lvm_vars}"
-		echo "${LVM2_LV_ROLE}" | grep -q "snapshot" && continue
+# Find leftover scrub snapshots
+ls_reap_targets() {
+	lvs -o lv_path -S lv_role=snapshot -S lv_name=~\(e2scrub$\) --noheadings
+}
 
-		free_space="$(vgs -o vg_free --units m --noheadings --no-suffix "${LVM2_VG_NAME}" 2> /dev/null | sed -e 's/\..*//')"
-		test "${snap_size_mb}" -gt "${free_space}" && continue
-
-		if [ -n "${MOUNTPOINT}" ]; then
-			echo "${MOUNTPOINT}"
-		else
-			echo "${NAME}"
-		fi
-	done | sort | uniq
+# Figure out what we're targeting
+ls_targets() {
+	if [ "${reap}" -eq 1 ]; then
+		ls_reap_targets
+	else
+		ls_scan_targets
+	fi
 }
 
 # systemd doesn't know to do path escaping on the instance variable we pass
@@ -140,10 +135,10 @@ escape_path_for_systemd() {
 
 # Scrub any mounted fs on lvm by creating a snapshot and fscking that.
 stdin="$(realpath /dev/stdin)"
-ls_scrub_targets | while read tgt; do
+ls_targets | while read tgt; do
 	# If we're not reaping and systemd is present, try invoking the
 	# systemd service.
-	if [ -z "${scrub_args}" ] && type systemctl > /dev/null 2>&1; then
+	if [ "${reap}" -ne 1 ] && type systemctl > /dev/null 2>&1; then
 		tgt_esc="$(escape_path_for_systemd "${tgt}")"
 		${DBG} systemctl start "e2scrub@${tgt_esc}" 2> /dev/null < "${stdin}"
 		res=$?
