@@ -21,6 +21,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 scrub_all=0
+snap_size_mb=256
 conffile="@root_sysconfdir@/e2scrub.conf"
 
 test -f "${conffile}" && . "${conffile}"
@@ -107,6 +108,9 @@ ls_scrub_targets() {
 		test $? -ne 0 && continue
 		eval "${lvm_vars}"
 		echo "${LVM2_LV_ROLE}" | grep -q "snapshot" && continue
+
+		free_space="$(vgs -o vg_free --units m --noheadings --no-suffix "${LVM2_VG_NAME}" 2> /dev/null | sed -e 's/\..*//')"
+		test "${snap_size_mb}" -gt "${free_space}" && continue
 
 		if [ -n "${MOUNTPOINT}" ]; then
 			echo "${MOUNTPOINT}"
