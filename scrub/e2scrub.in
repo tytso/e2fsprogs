@@ -25,6 +25,11 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
+if (( $EUID != 0 )); then
+    echo "e2scrub must be run as root"
+    exit 1
+fi
+
 snap_size_mb=256
 fstrim=0
 reap=0
