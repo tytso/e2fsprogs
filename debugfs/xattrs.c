@@ -452,7 +452,7 @@ static void dump_xattr_raw_entries(FILE *f, unsigned char *buf,
 		else if (ent.e_value_offs >= len ||
 			 (vstart + ent.e_value_size) > len)
 			fprintf(f, "<runs off end>");
-		if (is_mostly_printable((char *)(buf + vstart),
+		else if (is_mostly_printable((char *)(buf + vstart),
 					ent.e_value_size))
 			safe_print(f, (char *)(buf + vstart),
 				   ent.e_value_size);
