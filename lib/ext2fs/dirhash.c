@@ -279,7 +279,6 @@ errcode_t ext2fs_dirhash2(int version, const char *name, int len,
 {
 	errcode_t r;
 	int dlen;
-	unsigned char *buff;
 
 	if (len && charset && (hash_flags & EXT4_CASEFOLD_FL)) {
 		char buff[PATH_MAX];
