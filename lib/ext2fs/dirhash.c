@@ -281,15 +281,11 @@ errcode_t ext2fs_dirhash2(int version, const char *name, int len,
 	int dlen;
 	unsigned char *buff;
 
-	if (len && charset) {
+	if (len && charset && (hash_flags & EXT4_CASEFOLD_FL)) {
 		char buff[PATH_MAX];
 
-		if (hash_flags & EXT4_CASEFOLD_FL)
-			dlen = charset->ops->casefold(charset, name, len, buff,
+		dlen = charset->ops->casefold(charset, name, len, buff,
 						      sizeof(buff));
-		else
-			dlen = charset->ops->normalize(charset, name, len, buff,
-						       sizeof(buff));
 		if (dlen < 0) {
 			if (dlen == -EINVAL)
 				goto opaque_seq;
