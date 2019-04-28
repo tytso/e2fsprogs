@@ -29,7 +29,7 @@ static int utf8_casefold(const struct nls_table *table,
 			  const unsigned char *str, size_t len,
 			  unsigned char *dest, size_t dlen)
 {
-	const struct utf8data *data = utf8nfkdicf(table->version);
+	const struct utf8data *data = utf8nfdicf(table->version);
 	struct utf8cursor cur;
 	size_t nlen = 0;
 
@@ -58,7 +58,7 @@ static int utf8_normalize(const struct nls_table *table,
 			  const unsigned char *str, size_t len,
 			  unsigned char *dest, size_t dlen)
 {
-	const struct utf8data *data = utf8nfkdi(table->version);
+	const struct utf8data *data = utf8nfdi(table->version);
 	struct utf8cursor cur;
 	ssize_t nlen = 0;
 

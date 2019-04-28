@@ -770,24 +770,24 @@ ccc_mismatch:
 	}
 }
 
-const struct utf8data *utf8nfkdi(unsigned int maxage)
+const struct utf8data *utf8nfdi(unsigned int maxage)
 {
-	int i = ARRAY_SIZE(utf8nfkdidata) - 1;
+	int i = ARRAY_SIZE(utf8nfdidata) - 1;
 
-	while (maxage < utf8nfkdidata[i].maxage)
+	while (maxage < utf8nfdidata[i].maxage)
 		i--;
-	if (maxage > utf8nfkdidata[i].maxage)
+	if (maxage > utf8nfdidata[i].maxage)
 		return NULL;
-	return &utf8nfkdidata[i];
+	return &utf8nfdidata[i];
 }
 
-const struct utf8data *utf8nfkdicf(unsigned int maxage)
+const struct utf8data *utf8nfdicf(unsigned int maxage)
 {
-	int i = ARRAY_SIZE(utf8nfkdicfdata) - 1;
+	int i = ARRAY_SIZE(utf8nfdicfdata) - 1;
 
-	while (maxage < utf8nfkdicfdata[i].maxage)
+	while (maxage < utf8nfdicfdata[i].maxage)
 		i--;
-	if (maxage > utf8nfkdicfdata[i].maxage)
+	if (maxage > utf8nfdicfdata[i].maxage)
 		return NULL;
-	return &utf8nfkdicfdata[i];
+	return &utf8nfdicfdata[i];
 }
