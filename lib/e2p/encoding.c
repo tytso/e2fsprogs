@@ -67,7 +67,7 @@ int e2p_get_encoding_flags(int encoding)
 
 	for (i = 0 ; i < ARRAY_SIZE(ext4_encoding_map); i++)
 		if (ext4_encoding_map[i].encoding_magic == encoding)
-			return ext4_encoding_map[encoding].default_flags;
+			return ext4_encoding_map[i].default_flags;
 
 	return 0;
 }
