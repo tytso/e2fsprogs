@@ -89,7 +89,7 @@ const static struct nls_ops utf8_ops = {
 
 };
 
-const struct nls_table nls_utf8_11_0 = {
+const struct nls_table nls_utf8_12_1 = {
 	.ops = &utf8_ops,
-	.version = UNICODE_AGE(11, 0, 0),
+	.version = UNICODE_AGE(12, 1, 0),
 };
