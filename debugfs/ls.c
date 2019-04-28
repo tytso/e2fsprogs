@@ -62,21 +62,15 @@ static int print_filename(FILE *f, struct ext2_dir_entry *dirent, int options)
 	}
 	while (len--) {
 		ch = *cp++;
-		if (ch > 128) {
+		if (ch < 32 || ch >= 127 || ch == '\\') {
 			if (f)
-				fputs("M-", f);
-			ch -= 128;
-			retlen += 2;
-		}
-		if ((ch < 32) || (ch == 0x7f)) {
+				fprintf(f, "\\x%02x", ch);
+			retlen += 4;
+		} else {
 			if (f)
-				fputc('^', f);
-			ch ^= 0x40; /* ^@, ^A, ^B; ^? for DEL */
+				fputc(ch, f);
 			retlen++;
 		}
-		if (f)
-			fputc(ch, f);
-		retlen++;
 	}
 	return retlen;
 }
