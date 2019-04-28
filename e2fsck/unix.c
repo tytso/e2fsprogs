@@ -55,7 +55,6 @@ extern int optind;
 #include "problem.h"
 #include "jfs_user.h"
 #include "../version.h"
-#include <ext2fs/nls.h>
 
 /* Command line options */
 static int cflag;		/* check disk */
@@ -1785,13 +1784,10 @@ print_unsupp_features:
 		goto get_newer;
 	}
 
-	if (ext2fs_has_feature_fname_encoding(sb)) {
-		fs->encoding = nls_load_table(sb->s_encoding);
-		if (!fs->encoding) {
-			log_err(ctx, _("%s has unsupported encoding: %0x\n"),
-				ctx->filesystem_name, sb->s_encoding);
-			goto get_newer;
-		}
+	if (ext2fs_has_feature_fname_encoding(sb) && !fs->encoding) {
+		log_err(ctx, _("%s has unsupported encoding: %0x\n"),
+			ctx->filesystem_name, sb->s_encoding);
+		goto get_newer;
 	}
 
 	/*
