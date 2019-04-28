@@ -335,7 +335,7 @@ utf8hangul(const char *str, unsigned char *hangul)
 static utf8leaf_t *utf8nlookup(const struct utf8data *data,
 			       unsigned char *hangul, const char *s, size_t len)
 {
-	utf8trie_t	*trie = utf8data + data->offset;
+	utf8trie_t	*trie;
 	int		offlen;
 	int		offset;
 	int		mask;
@@ -345,6 +345,8 @@ static utf8leaf_t *utf8nlookup(const struct utf8data *data,
 		return NULL;
 	if (len == 0)
 		return NULL;
+
+	trie = utf8data + data->offset;
 	node = 1;
 	while (node) {
 		offlen = (*trie & OFFLEN) >> OFFLEN_SHIFT;
