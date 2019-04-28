@@ -43,14 +43,12 @@ struct nls_table {
 	const struct nls_ops *ops;
 };
 
-extern const struct nls_table nls_ascii;
 extern const struct nls_table nls_utf8_12_1;
 
 static const struct {
 	int encoding_magic;
 	const struct nls_table *tbl;
 } nls_map[] = {
-	{ EXT4_ENC_ASCII, &nls_ascii },
 	{ EXT4_ENC_UTF8_12_1, &nls_utf8_12_1 },
 };
 

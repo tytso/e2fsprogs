@@ -29,11 +29,6 @@ static const struct {
 
 } ext4_encoding_map[] = {
 	{
-		.encoding_magic = EXT4_ENC_ASCII,
-		.name = "ascii",
-		.default_flags = 0
-	},
-	{
 		.encoding_magic = EXT4_ENC_UTF8_12_1,
 		.name = "utf8",
 		.default_flags = 0,

@@ -20,8 +20,8 @@ COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../et ../et/compile_et
 @TEST_IO_CMT@TEST_IO_LIB_OBJS = test_io.o
 @IMAGER_CMT@E2IMAGE_LIB_OBJS = imager.o
 
-NLS_OBJS=nls_ascii.o nls_utf8-norm.o nls_utf8.o
-NLS_SRCS=$(srcdir)/nls_ascii.c $(srcdir)/nls_utf8-norm.c $(srcdir)/nls_utf8.c
+NLS_OBJS=nls_utf8-norm.o nls_utf8.o
+NLS_SRCS=$(srcdir)/nls_utf8-norm.c $(srcdir)/nls_utf8.c
 
 DEBUG_OBJS= debug_cmds.o extent_cmds.o tst_cmds.o debugfs.o util.o \
 	ncheck.o icheck.o ls.o lsdel.o dump.o set_fields.o logdump.o \
@@ -1328,7 +1328,6 @@ do_journal.o: $(top_srcdir)/debugfs/do_journal.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/support/quotaio_tree.h $(srcdir)/kernel-jbd.h \
  $(srcdir)/jfs_compat.h $(srcdir)/kernel-list.h \
  $(top_srcdir)/debugfs/journal.h $(srcdir)/../../e2fsck/jfs_user.h
-nls_ascii.o: $(srcdir)/nls_ascii.c $(srcdir)/nls.h $(srcdir)/ext2_fs.h
 nls_utf8-norm.o: $(srcdir)/nls_utf8-norm.c $(srcdir)/utf8n.h \
  $(srcdir)/utf8data.h
 nls_utf8.o: $(srcdir)/nls_utf8.c $(srcdir)/nls.h $(srcdir)/ext2_fs.h \
