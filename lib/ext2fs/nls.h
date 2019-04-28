@@ -33,10 +33,6 @@ struct nls_table;
         (sizeof(array) / sizeof(array[0]))
 
 struct nls_ops {
-	int (*normalize)(const struct nls_table *charset,
-			 const unsigned char *str, size_t len,
-			 unsigned char *dest, size_t dlen);
-
 	int (*casefold)(const struct nls_table *charset,
 			const unsigned char *str, size_t len,
 			unsigned char *dest, size_t dlen);

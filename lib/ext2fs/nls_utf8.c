@@ -54,39 +54,8 @@ invalid_seq:
 	return -EINVAL;
 }
 
-static int utf8_normalize(const struct nls_table *table,
-			  const unsigned char *str, size_t len,
-			  unsigned char *dest, size_t dlen)
-{
-	const struct utf8data *data = utf8nfdi(table->version);
-	struct utf8cursor cur;
-	ssize_t nlen = 0;
-
-	if (utf8ncursor(&cur, data, str, len) < 0)
-		goto invalid_seq;
-
-	for (nlen = 0; nlen < dlen; nlen++) {
-		dest[nlen] = utf8byte(&cur);
-		if (!dest[nlen])
-			return nlen;
-		if (dest[nlen] == -1)
-			break;
-	}
-
-	return -ENAMETOOLONG;
-
-invalid_seq:
-	if (dlen < len)
-		return -ENAMETOOLONG;
-
-	/* Signal invalid sequence */
-	return -EINVAL;
-}
-
 const static struct nls_ops utf8_ops = {
 	.casefold = utf8_casefold,
-	.normalize = utf8_normalize,
-
 };
 
 const struct nls_table nls_utf8_12_1 = {

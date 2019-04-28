@@ -36,8 +36,7 @@ static const struct {
 	{
 		.encoding_magic = EXT4_ENC_UTF8_12_1,
 		.name = "utf8",
-		.default_flags = (EXT4_UTF8_NORMALIZATION_TYPE_NFKD |
-				  EXT4_UTF8_CASEFOLD_TYPE_NFKDCF)
+		.default_flags = 0,
 	},
 };
 
