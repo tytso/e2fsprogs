@@ -46,7 +46,7 @@ int utf8version_is_supported(uint8_t maj, uint8_t min, uint8_t rev)
 	return 0;
 }
 
-int utf8version_latest()
+int utf8version_latest(void)
 {
 	return utf8vers;
 }
