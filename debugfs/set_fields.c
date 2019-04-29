@@ -674,7 +674,6 @@ static errcode_t parse_inode_csum(struct field_set_info *info, char *field,
 	errcode_t	retval = 0;
 	__u32		crc;
 	int		is_large_inode = 0;
-	struct ext2_inode_large *tmp_inode;
 
 	if (strcmp(arg, "calc") == 0) {
 		size_t sz = EXT2_INODE_SIZE(current_fs->super);
