@@ -29,10 +29,8 @@
 
 #include "ext2_fs.h"
 
-
 #include "ext2fs.h"
 #include "e2image.h"
-#include "nls.h"
 
 blk64_t ext2fs_descriptor_block_loc2(ext2_filsys fs, blk64_t group_block,
 				     dgrp_t i)
@@ -504,7 +502,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	}
 
 	if (ext2fs_has_feature_fname_encoding(fs->super))
-		fs->encoding = nls_load_table(fs->super->s_encoding);
+		fs->encoding = ext2fs_load_nls_table(fs->super->s_encoding);
 
 	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;
 	*ret_fs = fs;

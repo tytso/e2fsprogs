@@ -19,13 +19,16 @@
  * implementation.
  */
 
-#include "nls.h"
+#include "config.h"
+#include "ext2_fs.h"
+#include "ext2fs.h"
+
 #include "utf8n.h"
 
 #include <limits.h>
 #include <errno.h>
 
-static int utf8_casefold(const struct nls_table *table,
+static int utf8_casefold(const struct ext2fs_nls_table *table,
 			  const unsigned char *str, size_t len,
 			  unsigned char *dest, size_t dlen)
 {
@@ -54,11 +57,21 @@ invalid_seq:
 	return -EINVAL;
 }
 
-const static struct nls_ops utf8_ops = {
+const static struct ext2fs_nls_ops utf8_ops = {
 	.casefold = utf8_casefold,
 };
 
-const struct nls_table nls_utf8_12_1 = {
+static const struct ext2fs_nls_table nls_utf8 = {
 	.ops = &utf8_ops,
 	.version = UNICODE_AGE(12, 1, 0),
 };
+
+const struct ext2fs_nls_table *ext2fs_load_nls_table(int encoding)
+{
+	int i;
+
+	if (encoding == EXT4_ENC_UTF8_12_1)
+		return &nls_utf8;
+
+	return NULL;
+}

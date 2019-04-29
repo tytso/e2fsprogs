@@ -27,8 +27,6 @@ extern char *optarg;
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
 
-#include "ext2fs/nls.h"
-
 static FILE *pager;
 
 static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
@@ -316,7 +314,7 @@ void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	int		hash_version = 0;
 	__u32		hash_seed[4];
 	int		hash_flags = 0;
-	const struct nls_table *encoding = NULL;
+	const struct ext2fs_nls_table *encoding = NULL;
 
 	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
 
@@ -339,7 +337,7 @@ void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 			hash_flags |= EXT4_CASEFOLD_FL;
 			break;
 		case 'e':
-			encoding = nls_load_table(e2p_str2encoding(optarg));
+			encoding = ext2fs_load_nls_table(e2p_str2encoding(optarg));
 			if (!encoding) {
 				fprintf(stderr, "Invalid encoding: %s\n",
 					optarg);

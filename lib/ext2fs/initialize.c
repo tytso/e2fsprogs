@@ -27,7 +27,6 @@
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
-#include "nls.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -192,7 +191,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	assign_field(s_encoding_flags);
 
 	if (ext2fs_has_feature_fname_encoding(param))
-		fs->encoding = nls_load_table(param->s_encoding);
+		fs->encoding = ext2fs_load_nls_table(param->s_encoding);
 
 	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
 		retval = EXT2_ET_UNSUPP_FEATURE;

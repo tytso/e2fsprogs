@@ -18,7 +18,6 @@
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
-#include "nls.h"
 
 /*
  * Keyed 32-bit hash function using TEA in a Davis-Meyer function
@@ -272,8 +271,8 @@ errcode_t ext2fs_dirhash(int version, const char *name, int len,
  * ext2fs_dirhash for documentation on the input and output parameters.
  */
 errcode_t ext2fs_dirhash2(int version, const char *name, int len,
-			  const struct nls_table *charset, int hash_flags,
-			  const __u32 *seed,
+			  const struct ext2fs_nls_table *charset,
+			  int hash_flags, const __u32 *seed,
 			  ext2_dirhash_t *ret_hash,
 			  ext2_dirhash_t *ret_minor_hash)
 {

@@ -178,6 +178,20 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_SEEK_END	2
 
 /*
+ * NLS defintions
+ */
+struct ext2fs_nls_table {
+	int version;
+	const struct ext2fs_nls_ops *ops;
+};
+
+struct ext2fs_nls_ops {
+	int (*casefold)(const struct ext2fs_nls_table *charset,
+			const unsigned char *str, size_t len,
+			unsigned char *dest, size_t dlen);
+};
+
+/*
  * Flags for the ext2_filsys structure and for ext2fs_open()
  */
 #define EXT2_FLAG_RW			0x01
@@ -308,7 +322,7 @@ struct struct_ext2_filsys {
 	/* hashmap for SHA of data blocks */
 	struct ext2fs_hashmap* block_sha_map;
 
-	const struct nls_table *encoding;
+	const struct ext2fs_nls_table *encoding;
 };
 
 #if EXT2_FLAT_INCLUDES
@@ -1187,7 +1201,7 @@ extern errcode_t ext2fs_dirhash(int version, const char *name, int len,
 				ext2_dirhash_t *ret_minor_hash);
 
 extern errcode_t ext2fs_dirhash2(int version, const char *name, int len,
-				 const struct nls_table *charset,
+				 const struct ext2fs_nls_table *charset,
 				 int hash_flags,
 				 const __u32 *seed,
 				 ext2_dirhash_t *ret_hash,
@@ -1599,6 +1613,9 @@ extern errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
 				ext2_ino_t parent_ino, char **block);
 extern errcode_t ext2fs_new_dir_inline_data(ext2_filsys fs, ext2_ino_t dir_ino,
 				ext2_ino_t parent_ino, __u32 *iblock);
+
+/* nls_utf8.c */
+extern const struct ext2fs_nls_table *ext2fs_load_nls_table(int encoding);
 
 /* mkdir.c */
 extern errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
