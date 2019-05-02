@@ -70,6 +70,7 @@ static errcode_t parse_int(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_string(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_uuid(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_hashalg(struct field_set_info *info, char *field, char *arg);
+static errcode_t parse_encoding(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_time(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_bmap(struct field_set_info *info, char *field, char *arg);
 static errcode_t parse_gd_csum(struct field_set_info *info, char *field, char *arg);
@@ -181,6 +182,7 @@ static struct field_set_info super_fields[] = {
 	{ "encrypt_pw_salt", &set_sb.s_encrypt_pw_salt, NULL, 16, parse_uuid },
 	{ "lpf_ino", &set_sb.s_lpf_ino, NULL, 4, parse_uint },
 	{ "checksum_seed", &set_sb.s_checksum_seed, NULL, 4, parse_uint },
+	{ "encoding", &set_sb.s_encoding, NULL, 2, parse_encoding },
 	{ 0, 0, 0, 0 }
 };
 
@@ -628,6 +630,19 @@ static errcode_t parse_hashalg(struct field_set_info *info,
 		return EINVAL;
 	}
 	*p = hashv;
+	return 0;
+}
+
+static errcode_t parse_encoding(struct field_set_info *info,
+				char *field EXT2FS_ATTR((unused)), char *arg)
+{
+	int	encoding;
+	unsigned char	*p = (unsigned char *) info->ptr;
+
+	encoding = e2p_str2encoding(arg);
+	if (encoding < 0)
+		return parse_uint(info, field, arg);
+	*p = encoding;
 	return 0;
 }
 
