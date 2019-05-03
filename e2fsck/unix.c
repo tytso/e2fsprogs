@@ -1784,7 +1784,7 @@ print_unsupp_features:
 		goto get_newer;
 	}
 
-	if (ext2fs_has_feature_fname_encoding(sb) && !fs->encoding) {
+	if (ext2fs_has_feature_casefold(sb) && !fs->encoding) {
 		log_err(ctx, _("%s has unsupported encoding: %0x\n"),
 			ctx->filesystem_name, sb->s_encoding);
 		goto get_newer;

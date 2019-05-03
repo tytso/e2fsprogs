@@ -1058,15 +1058,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			}
 		} else if (!strcmp(token, "android_sparse")) {
 			android_sparse_file = 1;
-		} else if (!strcmp(token, "fname_encoding")) {
+		} else if (!strcmp(token, "encoding")) {
 			if (!arg) {
-				profile_get_string(profile, "options",
-						   "fname_encoding", 0, 0,
-						   &arg);
-				if (!arg) {
-					r_usage++;
-					continue;
-				}
+				r_usage++;
+				continue;
 			}
 
 			encoding = e2p_str2encoding(arg);
@@ -1076,8 +1071,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 			param->s_encoding = encoding;
-			ext2fs_set_feature_fname_encoding(param);
-		} else if (!strcmp(token, "fname_encoding_flags")) {
+			ext2fs_set_feature_casefold(param);
+		} else if (!strcmp(token, "encoding_flags")) {
 			if (!arg) {
 				r_usage++;
 				continue;
@@ -1107,8 +1102,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n"
-			"\tfname_encoding=<encoding>\n"
-			"\tfname_encoding_flags=<flags>\n"
+			"\encoding=<encoding>\n"
+			"\tencoding_flags=<flags>\n"
 			"\tquotatype=<quota type(s) to be enabled>\n\n"),
 			badopt ? badopt : "");
 		free(buf);
@@ -1120,7 +1115,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				  "multiple of stride %u.\n\n"),
 			param->s_raid_stripe_width, param->s_raid_stride);
 
-	if (ext2fs_has_feature_fname_encoding(param)) {
+	if (ext2fs_has_feature_casefold(param)) {
 		param->s_encoding_flags =
 			e2p_get_encoding_flags(param->s_encoding);
 
@@ -1160,7 +1155,7 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_64BIT|
 		EXT4_FEATURE_INCOMPAT_INLINE_DATA|
 		EXT4_FEATURE_INCOMPAT_ENCRYPT |
-		EXT4_FEATURE_INCOMPAT_FNAME_ENCODING |
+		EXT4_FEATURE_INCOMPAT_CASEFOLD |
 		EXT4_FEATURE_INCOMPAT_CSUM_SEED |
 		EXT4_FEATURE_INCOMPAT_LARGEDIR,
 	/* R/O compat */
@@ -1567,8 +1562,6 @@ static void PRS(int argc, char *argv[])
 	int		use_bsize;
 	char		*newpath;
 	int		pathlen = sizeof(PATH_SET) + 1;
-	char		*encoding_name = NULL;
-	int		encoding;
 
 	if (oldpath)
 		pathlen += strlen(oldpath);
@@ -2077,7 +2070,7 @@ profile_error:
 		ext2fs_clear_feature_huge_file(&fs_param);
 		ext2fs_clear_feature_metadata_csum(&fs_param);
 		ext2fs_clear_feature_ea_inode(&fs_param);
-		ext2fs_clear_feature_fname_encoding(&fs_param);
+		ext2fs_clear_feature_casefold(&fs_param);
 	}
 	edit_feature(fs_features ? fs_features : tmp,
 		     &fs_param.s_feature_compat);
@@ -2393,24 +2386,29 @@ profile_error:
 	if (packed_meta_blocks)
 		journal_location = 0;
 
-	if (ext2fs_has_feature_fname_encoding(&fs_param)) {
-		profile_get_string(profile, "options", "fname_encoding",
-				   0, 0, &encoding_name);
-		if (!encoding_name) {
-			com_err(program_name, 0, "%s",
-				_("Filename encoding type must be specified\n"
-				  "Use -E fname_encoding=<name> instead"));
-			exit(1);
-		}
-		encoding = e2p_str2encoding(encoding_name);
+	if (ext2fs_has_feature_casefold(&fs_param)) {
+		char *ef, *en = get_string_from_profile(fs_types,
+							"encoding", "utf8");
+		int encoding = e2p_str2encoding(en);
+
 		if (encoding < 0) {
-			com_err(program_name, 0, "%s",
-				_("Unknown default filename encoding\n"
-				  "Use -E fname_encoding=<name> instead"));
+			com_err(program_name, 0,
+				_("Unknown filename encoding from profile: %s"),
+				en);
 			exit(1);
 		}
 		fs_param.s_encoding = encoding;
-		fs_param.s_encoding_flags = e2p_get_encoding_flags(encoding);
+		ef = get_string_from_profile(fs_types, "encoding_flags", NULL);
+		if (ef) {
+			if (e2p_str2encoding_flags(encoding, ef,
+					&fs_param.s_encoding_flags) < 0) {
+				com_err(program_name, 0,
+			_("Unknown encoding flags from profile: %s"), ef);
+				exit(1);
+			}
+		} else
+			fs_param.s_encoding_flags =
+				e2p_get_encoding_flags(encoding);
 	}
 
 	/* Get options from profile */
@@ -2457,10 +2455,10 @@ profile_error:
 		}
 	}
 
-	if (ext2fs_has_feature_fname_encoding(&fs_param) &&
+	if (ext2fs_has_feature_casefold(&fs_param) &&
 	    ext2fs_has_feature_encrypt(&fs_param)) {
 		com_err(program_name, 0, "%s",
-			_("The encrypt and encoding features are not "
+			_("The encrypt and casefold features are not "
 			  "compatible.\nThey can not be both enabled "
 			  "simultaneously.\n"));
 		      exit (1);

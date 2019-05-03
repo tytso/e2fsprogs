@@ -151,7 +151,7 @@ can be specified using the
 .B \-G
 option.
 .TP
-.B fname_encoding
+.B casefold
 .br
 This ext4 feature provides file system level character encoding support
 for directories with the casefold (+F) flag enabled.  This feature is

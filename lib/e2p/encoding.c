@@ -90,6 +90,8 @@ int e2p_str2encoding_flags(int encoding, char *param, __u16 *flags)
 	const struct enc_flags *fl;
 	unsigned int i, neg = 0;
 
+	if (encoding != EXT4_ENC_UTF8_12_1)
+		return -EINVAL;
 	while (f) {
 		neg = 0;
 		if (!strncmp("no", f, 2)) {
