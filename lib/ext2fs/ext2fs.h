@@ -178,20 +178,6 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_SEEK_END	2
 
 /*
- * NLS defintions
- */
-struct ext2fs_nls_table {
-	int version;
-	const struct ext2fs_nls_ops *ops;
-};
-
-struct ext2fs_nls_ops {
-	int (*casefold)(const struct ext2fs_nls_table *charset,
-			const unsigned char *str, size_t len,
-			unsigned char *dest, size_t dlen);
-};
-
-/*
  * Flags for the ext2_filsys structure and for ext2fs_open()
  */
 #define EXT2_FLAG_RW			0x01

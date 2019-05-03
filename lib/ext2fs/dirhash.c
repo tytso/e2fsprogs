@@ -18,6 +18,7 @@
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "ext2fsP.h"
 
 /*
  * Keyed 32-bit hash function using TEA in a Davis-Meyer function
@@ -282,8 +283,9 @@ errcode_t ext2fs_dirhash2(int version, const char *name, int len,
 	if (len && charset && (hash_flags & EXT4_CASEFOLD_FL)) {
 		char buff[PATH_MAX];
 
-		dlen = charset->ops->casefold(charset, name, len, buff,
-						      sizeof(buff));
+		dlen = charset->ops->casefold(charset,
+			      (const unsigned char *) name, len,
+			      (unsigned char *) buff, sizeof(buff));
 		if (dlen < 0) {
 			if (dlen == -EINVAL)
 				goto opaque_seq;
