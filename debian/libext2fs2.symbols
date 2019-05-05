@@ -4,6 +4,7 @@ libe2p.so.2 libext2fs2 #MINVER#
  e2p_edit_feature@Base 1.37
  e2p_edit_mntopts@Base 1.37
  e2p_encmode2string@Base 1.43
+ e2p_encoding2str@Base 1.45.1
  e2p_feature2string@Base 1.37
  e2p_get_encoding_flags@Base 1.45
  e2p_hash2string@Base 1.37
@@ -236,6 +237,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_file_get_lsize@Base 1.37
  ext2fs_file_get_size@Base 1.37
  ext2fs_file_llseek@Base 1.37
+ ext2fs_load_nls_table@Base 1.45.1
  ext2fs_file_lseek@Base 1.37
  ext2fs_file_open2@Base 1.37
  ext2fs_file_open@Base 1.37
@@ -650,8 +652,6 @@ libext2fs.so.2 libext2fs2 #MINVER#
  io_channel_write_blk64@Base 1.41.1
  io_channel_write_byte@Base 1.37
  io_channel_zeroout@Base 1.43
- nls_ascii@Base 1.45
- nls_utf8_11_0@Base 1.45
  qcow2_read_header@Base 1.42
  qcow2_write_raw_image@Base 1.42
  set_undo_io_backing_manager@Base 1.41.0
@@ -669,16 +669,3 @@ libext2fs.so.2 libext2fs2 #MINVER#
  undo_io_manager@Base 1.41.0
  unix_io_manager@Base 1.37
  unixfd_io_manager@Base 1.43.2
- utf8agemax@Base 1.45
- utf8agemin@Base 1.45
- utf8byte@Base 1.45
- utf8cursor@Base 1.45
- utf8len@Base 1.45
- utf8nagemax@Base 1.45
- utf8nagemin@Base 1.45
- utf8ncursor@Base 1.45
- utf8nfkdi@Base 1.45
- utf8nfkdicf@Base 1.45
- utf8nlen@Base 1.45
- utf8version_is_supported@Base 1.45
- utf8version_latest@Base 1.45
