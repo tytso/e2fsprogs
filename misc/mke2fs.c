@@ -2183,9 +2183,11 @@ profile_error:
 	}
 	/*
 	 * Guard against group descriptor count overflowing... Mostly to avoid
-	 * strange results for absurdly large devices.
+	 * strange results for absurdly large devices.  This is in log2:
+	 * (blocksize) * (bits per byte) * (maximum number of block groups)
 	 */
-	if (fs_blocks_count > ((1ULL << (fs_param.s_log_block_size + 3 + 32)) - 1)) {
+	if (fs_blocks_count >
+	    (1ULL << (EXT2_BLOCK_SIZE_BITS(&fs_param) + 3 + 32)) - 1) {
 		fprintf(stderr, _("%s: Size of device (0x%llx blocks) %s "
 				  "too big to create\n\t"
 				  "a filesystem using a blocksize of %d.\n"),
