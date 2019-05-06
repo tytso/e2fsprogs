@@ -515,7 +515,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 1: Checking inodes, blocks, and sizes */
 	{ PR_1_PASS_HEADER,
 	  N_("Pass 1: Checking @is, @bs, and sizes\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 	/* Root inode is not a directory */
 	{ PR_1_ROOT_NO_DIR, N_("@r is not a @d.  "),
@@ -1190,7 +1190,7 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1B_PASS_HEADER,
 	  N_("\nRunning additional passes to resolve @bs claimed by more than one @i...\n"
 	  "Pass 1B: Rescanning for @m @bs\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 	/* Duplicate/bad block(s) header */
 	{ PR_1B_DUP_BLOCK_HEADER,
@@ -1235,13 +1235,13 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 1C: Scan directories for inodes with multiply-claimed blocks. */
 	{ PR_1C_PASS_HEADER,
 	  N_("Pass 1C: Scanning directories for @is with @m @bs\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 
 	/* Pass 1D: Reconciling multiply-claimed blocks */
 	{ PR_1D_PASS_HEADER,
 	  N_("Pass 1D: Reconciling @m @bs\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 	/* File has duplicate blocks */
 	{ PR_1D_DUP_FILE,
@@ -1286,7 +1286,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 1E: Optimizing extent trees */
 	{ PR_1E_PASS_HEADER,
 	  N_("Pass 1E: Optimizing @x trees\n"),
-	  PROMPT_NONE, PR_PREEN_NOMSG, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER | PR_PREEN_NOMSG, 0, 0, 0 },
 
 	/* Failed to optimize extent tree */
 	{ PR_1E_OPTIMIZE_EXT_ERR,
@@ -1328,7 +1328,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 2: Checking directory structure */
 	{ PR_2_PASS_HEADER,
 	  N_("Pass 2: Checking @d structure\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 	/* Bad inode number for '.' */
 	{ PR_2_BAD_INODE_DOT,
@@ -1694,7 +1694,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 3: Checking directory connectivity */
 	{ PR_3_PASS_HEADER,
 	  N_("Pass 3: Checking @d connectivity\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 	/* Root inode not allocated */
 	{ PR_3_NO_ROOT_INODE,
@@ -1836,7 +1836,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 3A: Optimizing directories */
 	{ PR_3A_PASS_HEADER,
 	  N_("Pass 3A: Optimizing directories\n"),
-	  PROMPT_NONE, PR_PREEN_NOMSG, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER | PR_PREEN_NOMSG, 0, 0, 0 },
 
 	/* Error iterating over directories */
 	{ PR_3A_OPTIMIZE_ITER,
@@ -1868,7 +1868,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 4: Checking reference counts */
 	{ PR_4_PASS_HEADER,
 	  N_("Pass 4: Checking reference counts\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 	/* Unattached zero-length inode */
 	{ PR_4_ZERO_LEN_INODE,
@@ -1906,7 +1906,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Pass 5: Checking group summary information */
 	{ PR_5_PASS_HEADER,
 	  N_("Pass 5: Checking @g summary information\n"),
-	  PROMPT_NONE, 0, 0, 0, 0 },
+	  PROMPT_NONE, PR_HEADER, 0, 0, 0 },
 
 	/* Padding at end of inode bitmap is not set. */
 	{ PR_5_INODE_BMAP_PADDING,
@@ -2191,6 +2191,45 @@ static void reconfigure_bool(e2fsck_t ctx, struct e2fsck_problem *ptr,
 		ptr->flags &= ~mask;
 }
 
+static void print_problem(FILE *f, problem_t code, int answer, int fixed,
+			  struct e2fsck_problem *ptr,
+			  struct problem_context *pctx)
+{
+	if (ptr->flags & PR_HEADER) {
+		fprintf(f, "<header code=\"0x%06x\">\n", code);
+		return;
+	}
+	fprintf(f, "<problem code=\"0x%06x\" answer=\"%d\"", code, answer);
+	if (pctx->errcode)
+		fprintf(f, " errcode=\"%lu\"", pctx->errcode);
+	if (fixed)
+		fputs(" fixed=\"1\"", f);
+	if (pctx->ino)
+		fprintf(f, " ino=\"%lu\"", pctx->ino);
+	if (pctx->ino2)
+		fprintf(f, " ino2=\"%lu\"", pctx->ino2);
+	if (pctx->dir)
+		fprintf(f, " dir=\"%lu\"", pctx->dir);
+	if (pctx->blk)
+		fprintf(f, " blk=\"%llu\"", pctx->blk);
+	if (pctx->blk2)
+		fprintf(f, " blk2=\"%llu\"", pctx->blk2);
+	if (pctx->blkcount != (e2_blkcnt_t) -1)
+		fprintf(f, " blkcount=\"%lld\"", pctx->blkcount);
+	if (pctx->group != (dgrp_t) -1)
+		fprintf(f, " group=\"%lu\"", pctx->group);
+	if (pctx->csum1)
+		fprintf(f, " csum1=\"%lu\"", pctx->csum1);
+	if (pctx->csum2)
+		fprintf(f, " csum2=\"%lu\"", pctx->csum2);
+	if (pctx->num)
+		fprintf(f, " num=\"%llu\"", pctx->num);
+	if (pctx->num2)
+		fprintf(f, " num2=\"%llu\"", pctx->num2);
+	if (pctx->str)
+		fprintf(f, " str=\"%s\"", pctx->str);
+	fputs("/>\n", f);
+}
 
 int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 {
@@ -2201,6 +2240,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	int		def_yn, answer, ans;
 	int		print_answer = 0;
 	int		suppress = 0;
+	int		fixed = 0;
 
 	ptr = find_problem(code);
 	if (!ptr) {
@@ -2275,6 +2315,9 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		    (ldesc->flags & (PRL_YES | PRL_NO)))
 			suppress++;
 		if (ptr->count == ptr->max_count + 1) {
+			if (ctx->problem_logf)
+				fprintf(ctx->problem_logf,
+					"<suppressed code=\"0x%06x\">\n", code);
 			printf("...problem 0x%06x suppressed\n",
 			       ptr->e2p_code);
 			fflush(stdout);
@@ -2345,8 +2388,14 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		answer = fix_problem(ctx, ptr->second_code, pctx);
 
 	if (answer && (ptr->prompt != PROMPT_NONE) &&
-	    !(ptr->flags & PR_NOT_A_FIX))
+	    !(ptr->flags & PR_NOT_A_FIX)) {
+		fixed = 1;
 		ctx->flags |= E2F_FLAG_PROBLEMS_FIXED;
+	}
+
+	if (ctx->problem_logf)
+		print_problem(ctx->problem_logf, code, answer, fixed,
+			      ptr, pctx);
 
 	return answer;
 }

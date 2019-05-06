@@ -231,6 +231,8 @@ struct e2fsck_struct {
 	char *io_options;
 	FILE	*logf;
 	char	*log_fn;
+	FILE	*problem_logf;
+	char	*problem_log_fn;
 	int	flags;		/* E2fsck internal flags */
 	int	options;
 	int	blocksize;	/* blocksize */
