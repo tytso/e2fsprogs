@@ -849,7 +849,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
 #define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
 #define EXT4_FEATURE_INCOMPAT_ENCRYPT		0x10000
-#define EXT4_FEATURE_INCOMPAT_FNAME_ENCODING	0x20000
+#define EXT4_FEATURE_INCOMPAT_CASEFOLD		0x20000
 
 #define EXT4_FEATURE_COMPAT_FUNCS(name, ver, flagname) \
 static inline int ext2fs_has_feature_##name(struct ext2_super_block *sb) \
@@ -943,7 +943,7 @@ EXT4_FEATURE_INCOMPAT_FUNCS(csum_seed,		4, CSUM_SEED)
 EXT4_FEATURE_INCOMPAT_FUNCS(largedir,		4, LARGEDIR)
 EXT4_FEATURE_INCOMPAT_FUNCS(inline_data,	4, INLINE_DATA)
 EXT4_FEATURE_INCOMPAT_FUNCS(encrypt,		4, ENCRYPT)
-EXT4_FEATURE_INCOMPAT_FUNCS(fname_encoding,	4, FNAME_ENCODING)
+EXT4_FEATURE_INCOMPAT_FUNCS(casefold,		4, CASEFOLD)
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
 #define EXT2_FEATURE_INCOMPAT_SUPP    (EXT2_FEATURE_INCOMPAT_FILETYPE| \
@@ -1128,11 +1128,8 @@ struct mmp_struct {
  */
 #define EXT4_INLINE_DATA_DOTDOT_SIZE	(4)
 
-#define EXT4_ENC_ASCII		0
-#define EXT4_ENC_UTF8_11_0	1
+#define EXT4_ENC_UTF8_12_1	1
 
 #define EXT4_ENC_STRICT_MODE_FL			(1 << 0) /* Reject invalid sequences */
-#define EXT4_UTF8_NORMALIZATION_TYPE_NFKD	(1 << 1)
-#define EXT4_UTF8_CASEFOLD_TYPE_NFKDCF		(1 << 4)
 
 #endif	/* _LINUX_EXT2_FS_H */

@@ -23,27 +23,26 @@
         (sizeof(array) / sizeof(array[0]))
 
 static const struct {
-	char *name;
+	const char *name;
 	__u16 encoding_magic;
 	__u16 default_flags;
 
 } ext4_encoding_map[] = {
 	{
-		.encoding_magic = EXT4_ENC_ASCII,
-		.name = "ascii",
-		.default_flags = 0
+		.encoding_magic = EXT4_ENC_UTF8_12_1,
+		.name = "utf8-12.1",
+		.default_flags = 0,
 	},
 	{
-		.encoding_magic = EXT4_ENC_UTF8_11_0,
+		.encoding_magic = EXT4_ENC_UTF8_12_1,
 		.name = "utf8",
-		.default_flags = (EXT4_UTF8_NORMALIZATION_TYPE_NFKD |
-				  EXT4_UTF8_CASEFOLD_TYPE_NFKDCF)
+		.default_flags = 0,
 	},
 };
 
 static const struct enc_flags {
 	__u16 flag;
-	char *param;
+	const char *param;
 } encoding_flags[] = {
 	{ EXT4_ENC_STRICT_MODE_FL, "strict" },
 };
@@ -52,7 +51,7 @@ static const struct enc_flags {
  * or a negative value indicating error. */
 int e2p_str2encoding(const char *string)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0 ; i < ARRAY_SIZE(ext4_encoding_map); i++)
 		if (!strcmp(string, ext4_encoding_map[i].name))
@@ -61,13 +60,26 @@ int e2p_str2encoding(const char *string)
 	return -EINVAL;
 }
 
-int e2p_get_encoding_flags(int encoding)
+/* Return the name of an encoding or NULL */
+const char *e2p_encoding2str(int encoding)
 {
-	int i;
+	unsigned int i;
+	static char buf[32];
 
 	for (i = 0 ; i < ARRAY_SIZE(ext4_encoding_map); i++)
 		if (ext4_encoding_map[i].encoding_magic == encoding)
-			return ext4_encoding_map[encoding].default_flags;
+			return ext4_encoding_map[i].name;
+	sprintf(buf, "UNKNOWN_ENCODING_%d", encoding);
+	return buf;
+}
+
+int e2p_get_encoding_flags(int encoding)
+{
+	unsigned int i;
+
+	for (i = 0 ; i < ARRAY_SIZE(ext4_encoding_map); i++)
+		if (ext4_encoding_map[i].encoding_magic == encoding)
+			return ext4_encoding_map[i].default_flags;
 
 	return 0;
 }
@@ -76,8 +88,10 @@ int e2p_str2encoding_flags(int encoding, char *param, __u16 *flags)
 {
 	char *f = strtok(param, "-");
 	const struct enc_flags *fl;
-	int i, neg = 0;
+	unsigned int i, neg = 0;
 
+	if (encoding != EXT4_ENC_UTF8_12_1)
+		return -EINVAL;
 	while (f) {
 		neg = 0;
 		if (!strncmp("no", f, 2)) {

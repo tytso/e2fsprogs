@@ -123,7 +123,7 @@ although it can be displayed by
 A directory with the 'F' attribute set indicates that all the path
 lookups inside that directory are made in a case-insensitive fashion.
 This attribute can only be changed in empty directories on file systems
-with the fname_encoding feature enabled.
+with the casefold feature enabled.
 .PP
 A file with the 'i' attribute cannot be modified: it cannot be deleted or
 renamed, no link can be created to this file, most of the file's

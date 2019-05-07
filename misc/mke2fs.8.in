@@ -280,9 +280,9 @@ option is still accepted for backwards compatibility, but is deprecated.
 The following extended options are supported:
 .RS 1.2i
 .TP
-.BI fname_encoding= encoding-name
+.BI encoding= encoding-name
 Enable the
-.I fname_encoding
+.I casefold
 feature in the super block and set
 .I encoding-name
 as the encoding to be used.  If
@@ -291,7 +291,7 @@ is not specified, the encoding defined in
 .BR mke2fs.conf (5)
 is used.
 .TP
-.BI fname_encoding_flags= encoding-flags
+.BI encoding_flags= encoding-flags
 Define parameters for file name character encoding operations.  If a
 flag is not changed using this parameter, its default value is used.
 .I encoding-flags

@@ -73,10 +73,10 @@
 /* Define to 1 if you have the `backtrace' function. */
 #undef HAVE_BACKTRACE
 
-/* Define to 1 if you have the `blkid_probe_enable_partitions' function. */
+/* Define to 1 if blkid has blkid_probe_enable_partitions */
 #undef HAVE_BLKID_PROBE_ENABLE_PARTITIONS
 
-/* Define to 1 if you have the `blkid_probe_get_topology' function. */
+/* Define to 1 if blkid has blkid_probe_get_topology */
 #undef HAVE_BLKID_PROBE_GET_TOPOLOGY
 
 /* Define to 1 if the compiler understands __builtin_expect. */

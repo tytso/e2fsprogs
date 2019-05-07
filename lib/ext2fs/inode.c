@@ -903,7 +903,6 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 
 	if (bufsize < length) {
-		int old_flags = fs->flags;
 		retval = ext2fs_read_inode2(fs, ino,
 					    (struct ext2_inode *)w_inode,
 					    length, READ_INODE_NOCSUM);

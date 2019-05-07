@@ -23,6 +23,13 @@
 # check filesystems in VGs that have at least 256MB (or so) of
 # free space.
 
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+if (( $EUID != 0 )); then
+    echo "e2scrub must be run as root"
+    exit 1
+fi
+
 snap_size_mb=256
 fstrim=0
 reap=0
@@ -35,6 +42,7 @@ print_help() {
 	echo "Usage: $0 [OPTIONS] mountpoint | device"
 	echo
 	echo "mountpoint must be on a LVM-managed block device"
+	echo "-n: Show what commands e2scrub would execute."
 	echo "-r: Remove e2scrub snapshot and exit, do not check anything."
 	echo "-t: Run fstrim if successful."
 	echo "-V: Print version information and exit."
@@ -66,8 +74,9 @@ exitcode() {
 	exit "${ret}"
 }
 
-while getopts "rtV" opt; do
-	case "${opt}" in
+while getopts "nrtV" opt; do
+    case "${opt}" in
+	"n") DBG="echo Would execute: " ;;
 	"r") reap=1;;
 	"t") fstrim=1;;
 	"V") print_version; exitcode 0;;
@@ -80,6 +89,16 @@ arg="$1"
 if [ -z "${arg}" ]; then
 	print_help
 	exitcode 1
+fi
+
+if ! type lsblk >& /dev/null ; then
+    echo "e2scrub: can't find lsblk --- is util-linux installed?"
+    exitcode 1
+fi
+
+if ! type lvcreate >& /dev/null ; then
+    echo "e2scrub: can't find lvcreate --- is lvm2 installed?"
+    exitcode 1
 fi
 
 # Find the device for a given mountpoint

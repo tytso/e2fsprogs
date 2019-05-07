@@ -20,11 +20,22 @@ See the
 manual page for more information about how the checking is performed.
 .SH OPTIONS
 .TP
-\fB-A\fR
-Scrub all ext[234] filesystems even if they are not mounted.
+\fB-n\fR
+Print what commands
+.B e2scrub_all
+would execute to initiate the e2scrub operations.
+(Note: these commands will not actually be executed; however, since
+.B e2scrub_all
+needs to run some additional, privileged commands to query the
+system to determine which
+.B e2scrub
+commands would be executed, it still needs to be run as root.)
 .TP
 \fB-r\fR
 Remove e2scrub snapshots but do not check anything.
+.TP
+\fB-A\fR
+Scrub all ext[234] filesystems even if they are not mounted.
 .TP
 \fB-V\fR
 Print version information and exit.
@@ -33,4 +44,4 @@ Print version information and exit.
 .SH AUTHOR
 Darrick J. Wong <darrick.wong@oracle.com>
 .SH COPYRIGHT
-Copyright ©2018 Oracle.  License is GPLv2+. <http://www.gnu.org/licenses/gpl-2.0.html>
+Copyright \[co]2018 Oracle.  License is GPLv2+. <http://www.gnu.org/licenses/gpl-2.0.html>

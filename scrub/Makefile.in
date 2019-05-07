@@ -129,6 +129,8 @@ install-systemd: $(SERVICE_FILES)
 		$(INSTALL_DATA) $$i $(DESTDIR)$(SYSTEMD_SYSTEM_UNIT_DIR)/$$i; \
 	done
 
+install-strip: install
+
 install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs $(INSTALL_TGT)
 	$(Q) for i in $(PROGS); do \
 		$(ES) "	INSTALL $(root_sbindir)/$$i"; \

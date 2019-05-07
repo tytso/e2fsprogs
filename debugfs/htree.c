@@ -27,8 +27,6 @@ extern char *optarg;
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
 
-#include "ext2fs/nls.h"
-
 static FILE *pager;
 
 static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
@@ -310,17 +308,18 @@ errout:
 void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		void *infop EXT2FS_ATTR((unused)))
 {
-	ext2_dirhash_t hash, minor_hash, hash_flags;
+	ext2_dirhash_t hash, minor_hash;
 	errcode_t	err;
 	int		c;
 	int		hash_version = 0;
 	__u32		hash_seed[4];
-	const struct nls_table *encoding;
+	int		hash_flags = 0;
+	const struct ext2fs_nls_table *encoding = NULL;
 
 	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "h:s:")) != EOF) {
+	while ((c = getopt(argc, argv, "h:s:ce:")) != EOF) {
 		switch (c) {
 		case 'h':
 			hash_version = e2p_string2hash(optarg);
@@ -335,14 +334,16 @@ void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 			}
 			break;
 		case 'c':
-			hash_flags = EXT4_CASEFOLD_FL;
+			hash_flags |= EXT4_CASEFOLD_FL;
 			break;
 		case 'e':
-			encoding = nls_load_table(e2p_str2encoding(optarg));
-			if (!encoding)
+			encoding = ext2fs_load_nls_table(e2p_str2encoding(optarg));
+			if (!encoding) {
 				fprintf(stderr, "Invalid encoding: %s\n",
 					optarg);
 				return;
+			}
+			break;
 		default:
 			goto print_usage;
 		}

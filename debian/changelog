@@ -1,3 +1,31 @@
+e2fsprogs (1.45.1~rc1-1) unstable; urgency=medium
+
+  * New upstream feature
+  * Drop lvm2 from the recommends line (Closes: #924275)
+  * Add the -n flag to the e2scrub and e2scrub_all commands
+  * Teach e2scrub to issue more useful error messages
+  * Update support for the case-folding file system feature to match what
+    finally will be landing in the kernel.
+  * Teach e2scrub_all to skip scrubing a file system if there is not
+    enough free space to create a snapshot.  (Closes: #924301)
+  * Fixed debugfs so it correctly prints ea_in_inode xattr values.
+  * Debugfs now prints non-printing characters using C-style hex escape
+    sequences.
+  * E2fsck now checks the unused portions of the bitmap blocks when the
+    number of blocks/inodes is less than the full blocksize to make sure
+    they are properly set.
+  * Fixed mke2fs's insanely large file system check, so that creating a
+    900TB file system will succeed.
+  * E2scrub now tags its temp snapshot volumes with UDISK_IGNORE to avoid
+    them showing up in GUI's.  (Closes: #926112)
+  * Mark the e2scrub systemd service files to indicate that it requires
+    CAP_SYS_ADMIN and CAP_SYS_RAWIO so e2scrub will get skipped when run
+    in cointainers that don't give root these capabilities.  (Closes: #926138)
+  * E2fsck can now save a problem code log for debugging or monitoring
+    purposes.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 06 May 2019 18:48:32 -0400
+
 e2fsprogs (1.45.0-1) unstable; urgency=medium
 
   * New upstream feature
