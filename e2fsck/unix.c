@@ -1438,11 +1438,13 @@ int main (int argc, char *argv[])
 
 		fputs("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n",
 		      ctx->problem_logf);
+		fprintf(ctx->problem_logf, "<problem_log time=\"%lu\">\n",
+			ctx->now);
 		fprintf(ctx->problem_logf, "<invocation prog=\"%s\"",
 			argv[0]);
 		for (i = 1; i < argc; i++)
-			fprintf(ctx->problem_logf, " arg=\"%s\"", argv[i]);
-		fputs(">\n", ctx->problem_logf);
+			fprintf(ctx->problem_logf, " arg%d=\"%s\"", i, argv[i]);
+		fputs("/>\n", ctx->problem_logf);
 	}
 
 	init_resource_track(&ctx->global_rtrack, NULL);
@@ -1712,11 +1714,10 @@ failure:
 		}
 		if (sb->s_volume_name[0]) {
 			memset(buf, 0, sizeof(buf));
-			strncpy(buf, sb->s_volume_name,
-				sizeof(sb->s_volume_name));
+			strncpy(buf, sb->s_volume_name, sizeof(buf));
 			fprintf(ctx->problem_logf, " label=\"%s\"", buf);
 		}
-		fputs(">\n", ctx->problem_logf);
+		fputs("/>\n", ctx->problem_logf);
 	}
 
 	ehandler_init(fs->io);

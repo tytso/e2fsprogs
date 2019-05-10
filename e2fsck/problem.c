@@ -2196,7 +2196,7 @@ static void print_problem(FILE *f, problem_t code, int answer, int fixed,
 			  struct problem_context *pctx)
 {
 	if (ptr->flags & PR_HEADER) {
-		fprintf(f, "<header code=\"0x%06x\">\n", code);
+		fprintf(f, "<header code=\"0x%06x\"/>\n", code);
 		return;
 	}
 	fprintf(f, "<problem code=\"0x%06x\" answer=\"%d\"", code, answer);
@@ -2317,7 +2317,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		if (ptr->count == ptr->max_count + 1) {
 			if (ctx->problem_logf)
 				fprintf(ctx->problem_logf,
-					"<suppressed code=\"0x%06x\">\n", code);
+					"<suppressed code=\"0x%06x\"/>\n",
+					code);
 			printf("...problem 0x%06x suppressed\n",
 			       ptr->e2p_code);
 			fflush(stdout);
