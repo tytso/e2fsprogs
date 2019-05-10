@@ -1102,7 +1102,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n"
-			"\encoding=<encoding>\n"
+			"\tencoding=<encoding>\n"
 			"\tencoding_flags=<flags>\n"
 			"\tquotatype=<quota type(s) to be enabled>\n\n"),
 			badopt ? badopt : "");
@@ -2399,6 +2399,7 @@ profile_error:
 				en);
 			exit(1);
 		}
+		free(en);
 		fs_param.s_encoding = encoding;
 		ef = get_string_from_profile(fs_types, "encoding_flags", NULL);
 		if (ef) {
@@ -2408,6 +2409,7 @@ profile_error:
 			_("Unknown encoding flags from profile: %s"), ef);
 				exit(1);
 			}
+			free(ef);
 		} else
 			fs_param.s_encoding_flags =
 				e2p_get_encoding_flags(encoding);
