@@ -886,11 +886,12 @@ static void check_inode_end(e2fsck_t ctx)
 	 * be written back to disk.
 	 */
 check_intra_bg_tail:
-	if (!asked && fs->flags & EXT2_FLAG_IBITMAP_TAIL_PROBLEM)
+	if (!asked && fs->flags & EXT2_FLAG_IBITMAP_TAIL_PROBLEM) {
 		if (fix_problem(ctx, PR_5_INODE_BMAP_PADDING, &pctx))
 			ext2fs_mark_ib_dirty(fs);
 		else
 			ext2fs_unmark_valid(fs);
+	}
 }
 
 static void check_block_end(e2fsck_t ctx)
