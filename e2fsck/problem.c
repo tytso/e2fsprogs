@@ -2196,7 +2196,7 @@ static void print_problem(FILE *f, problem_t code, int answer, int fixed,
 			  struct problem_context *pctx)
 {
 	if (ptr->flags & PR_HEADER) {
-		fprintf(f, "<header code=\"0x%06x\">\n", code);
+		fprintf(f, "<header code=\"0x%06x\"/>\n", code);
 		return;
 	}
 	fprintf(f, "<problem code=\"0x%06x\" answer=\"%d\"", code, answer);
@@ -2205,11 +2205,11 @@ static void print_problem(FILE *f, problem_t code, int answer, int fixed,
 	if (fixed)
 		fputs(" fixed=\"1\"", f);
 	if (pctx->ino)
-		fprintf(f, " ino=\"%lu\"", pctx->ino);
+		fprintf(f, " ino=\"%u\"", pctx->ino);
 	if (pctx->ino2)
-		fprintf(f, " ino2=\"%lu\"", pctx->ino2);
+		fprintf(f, " ino2=\"%u\"", pctx->ino2);
 	if (pctx->dir)
-		fprintf(f, " dir=\"%lu\"", pctx->dir);
+		fprintf(f, " dir=\"%u\"", pctx->dir);
 	if (pctx->blk)
 		fprintf(f, " blk=\"%llu\"", pctx->blk);
 	if (pctx->blk2)
@@ -2217,11 +2217,11 @@ static void print_problem(FILE *f, problem_t code, int answer, int fixed,
 	if (pctx->blkcount != (e2_blkcnt_t) -1)
 		fprintf(f, " blkcount=\"%lld\"", pctx->blkcount);
 	if (pctx->group != (dgrp_t) -1)
-		fprintf(f, " group=\"%lu\"", pctx->group);
+		fprintf(f, " group=\"%u\"", pctx->group);
 	if (pctx->csum1)
-		fprintf(f, " csum1=\"%lu\"", pctx->csum1);
+		fprintf(f, " csum1=\"%u\"", pctx->csum1);
 	if (pctx->csum2)
-		fprintf(f, " csum2=\"%lu\"", pctx->csum2);
+		fprintf(f, " csum2=\"%u\"", pctx->csum2);
 	if (pctx->num)
 		fprintf(f, " num=\"%llu\"", pctx->num);
 	if (pctx->num2)
@@ -2317,7 +2317,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		if (ptr->count == ptr->max_count + 1) {
 			if (ctx->problem_logf)
 				fprintf(ctx->problem_logf,
-					"<suppressed code=\"0x%06x\">\n", code);
+					"<suppressed code=\"0x%06x\"/>\n",
+					code);
 			printf("...problem 0x%06x suppressed\n",
 			       ptr->e2p_code);
 			fflush(stdout);

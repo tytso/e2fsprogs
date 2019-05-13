@@ -4,7 +4,7 @@ libe2p.so.2 libext2fs2 #MINVER#
  e2p_edit_feature@Base 1.37
  e2p_edit_mntopts@Base 1.37
  e2p_encmode2string@Base 1.43
- e2p_encoding2str@Base 1.45.1~rc1
+ e2p_encoding2str@Base 1.45.1
  e2p_feature2string@Base 1.37
  e2p_get_encoding_flags@Base 1.45
  e2p_hash2string@Base 1.37
@@ -237,7 +237,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_file_get_lsize@Base 1.37
  ext2fs_file_get_size@Base 1.37
  ext2fs_file_llseek@Base 1.37
- ext2fs_load_nls_table@Base 1.45.1~rc1
+ ext2fs_load_nls_table@Base 1.45.1
  ext2fs_file_lseek@Base 1.37
  ext2fs_file_open2@Base 1.37
  ext2fs_file_open@Base 1.37
