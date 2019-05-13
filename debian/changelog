@@ -1,4 +1,4 @@
-e2fsprogs (1.45.1~rc1-1) unstable; urgency=medium
+e2fsprogs (1.45.1-1) unstable; urgency=medium
 
   * New upstream feature
   * Drop lvm2 from the recommends line (Closes: #924275)
@@ -24,7 +24,7 @@ e2fsprogs (1.45.1~rc1-1) unstable; urgency=medium
   * E2fsck can now save a problem code log for debugging or monitoring
     purposes.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 06 May 2019 18:48:32 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 12 May 2019 21:23:25 -0400
 
 e2fsprogs (1.45.0-1) unstable; urgency=medium
 
