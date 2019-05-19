@@ -103,8 +103,12 @@ fi
 
 # Find scrub targets, make sure we only do this once.
 ls_scan_targets() {
-	lsblk -o NAME,MOUNTPOINT,FSTYPE -P -n -p \
-	      $(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>${snap_size_mb}") | \
+    local devices=$(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>${snap_size_mb}")
+
+    if [ -z "$devices" ]; then
+	return 0;
+    fi
+    lsblk -o NAME,MOUNTPOINT,FSTYPE -P -n -p $devices | \
 	    grep FSTYPE=\"ext\[234\]\" | while read vars ; do
 		eval "${vars}"
 
