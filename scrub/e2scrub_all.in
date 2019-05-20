@@ -26,6 +26,7 @@ if (( $EUID != 0 )); then
 fi
 
 scrub_all=0
+run_from_cron=0
 snap_size_mb=256
 reap=0
 conffile="@root_sysconfdir@/e2scrub.conf"
@@ -73,6 +74,7 @@ while getopts "nrAV" opt; do
 	"n") DBG="echo Would execute: " ;;
 	"r") scrub_args="${scrub_args} -r"; reap=1;;
 	"A") scrub_all=1;;
+	"C") run_from_cron=1;;
 	"V") print_version; exitcode 0;;
 	*) print_help; exitcode 2;;
 	esac
@@ -84,19 +86,29 @@ shift "$((OPTIND - 1))"
 # when e2scrub_all is run out of cron or a systemd timer.
 
 if ! type lsblk >& /dev/null ; then
+    if [ "${run_from_cron}" -eq 1 ] ; then
+	exitcode 0
+    fi
     echo "e2scrub_all: can't find lsblk --- is util-linux installed?"
-    exitcode 0
+    exitcode 1
 fi
 
 if ! type lvcreate >& /dev/null ; then
+    if [ "${run_from_cron}" -eq 1 ] ; then
+	exitcode 0
+    fi
     echo "e2scrub_all: can't find lvcreate --- is lvm2 installed?"
-    exitcode 0
+    exitcode 1
 fi
 
 # Find scrub targets, make sure we only do this once.
 ls_scan_targets() {
-	lsblk -o NAME,MOUNTPOINT,FSTYPE -P -n -p \
-	      $(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>${snap_size_mb}") | \
+    local devices=$(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>${snap_size_mb}")
+
+    if [ -z "$devices" ]; then
+	return 0;
+    fi
+    lsblk -o NAME,MOUNTPOINT,FSTYPE -P -n -p $devices | \
 	    grep FSTYPE=\"ext\[234\]\" | while read vars ; do
 		eval "${vars}"
 
