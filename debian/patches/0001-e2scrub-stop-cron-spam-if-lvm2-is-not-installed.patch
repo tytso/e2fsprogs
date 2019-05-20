@@ -1,0 +1,103 @@
+From 9d41a057d9643505942628c919869a7019646276 Mon Sep 17 00:00:00 2001
+From: Theodore Ts'o <tytso@mit.edu>
+Date: Thu, 16 May 2019 14:56:37 -0400
+Subject: [PATCH 1/2] e2scrub: stop cron spam if lvm2 is not installed.
+
+Addresses-Debian-Bug: #928977
+
+Signed-off-by: Theodore Ts'o <tytso@mit.edu>
+---
+ scrub/e2scrub_all.cron.in     |  2 +-
+ scrub/e2scrub_all.in          | 12 ++++++++++--
+ scrub/e2scrub_all.service.in  |  2 +-
+ scrub/e2scrub_all_cron.in     |  2 +-
+ scrub/e2scrub_reap.service.in |  2 +-
+ 5 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/scrub/e2scrub_all.cron.in b/scrub/e2scrub_all.cron.in
+index 7d42c3f2e..5bf83ec97 100644
+--- a/scrub/e2scrub_all.cron.in
++++ b/scrub/e2scrub_all.cron.in
+@@ -1,2 +1,2 @@
+ 30 3 * * 0 root test -e /run/systemd/system || @pkglibdir@/e2scrub_all_cron
+-10 3 * * * root test -e /run/systemd/system || @root_sbindir@/e2scrub_all -A -r
++10 3 * * * root test -e /run/systemd/system || @root_sbindir@/e2scrub_all -C -A -r
+diff --git a/scrub/e2scrub_all.in b/scrub/e2scrub_all.in
+index 31ebc7970..7ee653158 100644
+--- a/scrub/e2scrub_all.in
++++ b/scrub/e2scrub_all.in
+@@ -26,6 +26,7 @@ if (( $EUID != 0 )); then
+ fi
+ 
+ scrub_all=0
++run_from_cron=0
+ snap_size_mb=256
+ reap=0
+ conffile="@root_sysconfdir@/e2scrub.conf"
+@@ -73,6 +74,7 @@ while getopts "nrAV" opt; do
+ 	"n") DBG="echo Would execute: " ;;
+ 	"r") scrub_args="${scrub_args} -r"; reap=1;;
+ 	"A") scrub_all=1;;
++	"C") run_from_cron=1;;
+ 	"V") print_version; exitcode 0;;
+ 	*) print_help; exitcode 2;;
+ 	esac
+@@ -84,13 +86,19 @@ shift "$((OPTIND - 1))"
+ # when e2scrub_all is run out of cron or a systemd timer.
+ 
+ if ! type lsblk >& /dev/null ; then
++    if [ "${run_from_cron}" -eq 1 ] ; then
++	exitcode 0
++    fi
+     echo "e2scrub_all: can't find lsblk --- is util-linux installed?"
+-    exitcode 0
++    exitcode 1
+ fi
+ 
+ if ! type lvcreate >& /dev/null ; then
++    if [ "${run_from_cron}" -eq 1 ] ; then
++	exitcode 0
++    fi
+     echo "e2scrub_all: can't find lvcreate --- is lvm2 installed?"
+-    exitcode 0
++    exitcode 1
+ fi
+ 
+ # Find scrub targets, make sure we only do this once.
+diff --git a/scrub/e2scrub_all.service.in b/scrub/e2scrub_all.service.in
+index 20f42bfe3..77b6ad599 100644
+--- a/scrub/e2scrub_all.service.in
++++ b/scrub/e2scrub_all.service.in
+@@ -8,5 +8,5 @@ Documentation=man:e2scrub_all(8)
+ [Service]
+ Type=oneshot
+ Environment=SERVICE_MODE=1
+-ExecStart=@root_sbindir@/e2scrub_all
++ExecStart=@root_sbindir@/e2scrub_all -C
+ SyslogIdentifier=e2scrub_all
+diff --git a/scrub/e2scrub_all_cron.in b/scrub/e2scrub_all_cron.in
+index f9cff878c..bc26fee3d 100644
+--- a/scrub/e2scrub_all_cron.in
++++ b/scrub/e2scrub_all_cron.in
+@@ -65,4 +65,4 @@ on_ac_power() {
+ test -e /run/systemd/system && exit 0
+ on_ac_power || exit 0
+ 
+-exec @root_sbindir@/e2scrub_all
++exec @root_sbindir@/e2scrub_all -C
+diff --git a/scrub/e2scrub_reap.service.in b/scrub/e2scrub_reap.service.in
+index cf26437cd..40511f735 100644
+--- a/scrub/e2scrub_reap.service.in
++++ b/scrub/e2scrub_reap.service.in
+@@ -16,7 +16,7 @@ NoNewPrivileges=yes
+ User=root
+ IOSchedulingClass=idle
+ CPUSchedulingPolicy=idle
+-ExecStart=@root_sbindir@/e2scrub_all -A -r
++ExecStart=@root_sbindir@/e2scrub_all -C -A -r
+ SyslogIdentifier=%N
+ RemainAfterExit=no
+ 
+-- 
+2.19.1
+
