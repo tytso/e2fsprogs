@@ -7,7 +7,7 @@ e2scrub [OPTION] MOUNTPOINT | DEVICE
 .SH DESCRIPTION
 .B e2scrub
 attempts to check (but not repair) all metadata in a mounted ext[234]
-filesystem if the filesystem resides on a LVM logical volume.
+filesystem if the filesystem resides on an LVM logical volume.
 The block device of the LVM logical volume can also be passed in.
 
 This program snapshots the volume and runs a file system check on the snapshot

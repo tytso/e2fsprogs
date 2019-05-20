@@ -18,7 +18,7 @@
 #  along with this program; if not, write the Free Software Foundation,
 #  Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Automatically check a LVM-managed filesystem online.
+# Automatically check an LVM-managed filesystem online.
 # We use lvm snapshots to do this, which means that we can only
 # check filesystems in VGs that have at least 256MB (or so) of
 # free space.
@@ -41,7 +41,7 @@ test -f "${conffile}" && . "${conffile}"
 print_help() {
 	echo "Usage: $0 [OPTIONS] mountpoint | device"
 	echo
-	echo "mountpoint must be on a LVM-managed block device"
+	echo "mountpoint must be on an LVM-managed block device"
 	echo "-n: Show what commands e2scrub would execute."
 	echo "-r: Remove e2scrub snapshot and exit, do not check anything."
 	echo "-t: Run fstrim if successful."
@@ -161,7 +161,7 @@ lvm_vars="$(lvs --nameprefixes -o name,vgname,lv_role --noheadings "${dev}" 2> /
 eval "${lvm_vars}"
 if [ -z "${LVM2_VG_NAME}" ] || [ -z "${LVM2_LV_NAME}" ] ||
    echo "${LVM2_LV_ROLE}" | grep -q "snapshot"; then
-	echo "${arg}: Not connnected to a LVM logical volume."
+	echo "${arg}: Not connnected to an LVM logical volume."
 	print_help
 	exitcode 16
 fi
