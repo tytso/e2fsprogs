@@ -69,7 +69,7 @@ exitcode() {
 	exit "${ret}"
 }
 
-while getopts "nrAV" opt; do
+while getopts "nrACV" opt; do
 	case "${opt}" in
 	"n") DBG="echo Would execute: " ;;
 	"r") scrub_args="${scrub_args} -r"; reap=1;;
