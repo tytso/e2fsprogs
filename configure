@@ -13150,7 +13150,8 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_blkid_blkid_probe_get_topology" >&5
 $as_echo "$ac_cv_lib_blkid_blkid_probe_get_topology" >&6; }
 if test "x$ac_cv_lib_blkid_blkid_probe_get_topology" = xyes; then :
-  $as_echo "#define HAVE_BLKID_PROBE_GET_TOPOLOGY 1" >>confdefs.h
+
+$as_echo "#define HAVE_BLKID_PROBE_GET_TOPOLOGY 1" >>confdefs.h
 
 fi
 
@@ -13191,7 +13192,8 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_blkid_blkid_probe_enable_partitions" >&5
 $as_echo "$ac_cv_lib_blkid_blkid_probe_enable_partitions" >&6; }
 if test "x$ac_cv_lib_blkid_blkid_probe_enable_partitions" = xyes; then :
-  $as_echo "#define HAVE_BLKID_PROBE_ENABLE_PARTITIONS 1" >>confdefs.h
+
+$as_echo "#define HAVE_BLKID_PROBE_ENABLE_PARTITIONS 1" >>confdefs.h
 
 fi
 
@@ -14511,6 +14513,8 @@ if test "x${with_crond_dir}" != "xno"; then :
 
 		if test -d "/etc/cron.d"; then :
   with_crond_dir="/etc/cron.d"
+else
+  have_crond="no"; with_crond_dir=""
 fi
 
 fi
