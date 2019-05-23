@@ -2812,8 +2812,9 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		else if (extent.e_lblk < start_block)
 			problem = PR_1_OUT_OF_ORDER_EXTENTS;
 		else if ((end_block && last_lblk > end_block) &&
-			 (!(extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT &&
-				last_lblk > eof_block)))
+			 !(last_lblk > eof_block &&
+			   ((extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT) ||
+			    (pctx->inode->i_flags & EXT4_VERITY_FL))))
 			problem = PR_1_EXTENT_END_OUT_OF_BOUNDS;
 		else if (is_leaf && extent.e_len == 0)
 			problem = PR_1_EXTENT_LENGTH_ZERO;
