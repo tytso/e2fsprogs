@@ -30,6 +30,9 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.45.2">E2fsprogs 1.45.2 (May 27, 2019)</A>
+<LI><A HREF="#1.45.1">E2fsprogs 1.45.1 (May 12, 2019)</A>
+<LI><A HREF="#1.45.0">E2fsprogs 1.45.0 (March 6, 2019)</A>
 <LI><A HREF="#1.44.5">E2fsprogs 1.44.5 (December 15, 2018)</A>
 <LI><A HREF="#1.44.4">E2fsprogs 1.44.4 (August 18, 2018)</A>
 <LI><A HREF="#1.44.3">E2fsprogs 1.44.3 (July 10, 2018)</A>
@@ -128,7 +131,144 @@
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
 
-<H2><A NAME="1.44.5">E2fsprogs 1.44.5 (December 15, 2018)</A>
+<H2><A NAME="1.45.2">E2fsprogs 1.45.2 (May 27, 2019)</A></H2>
+
+<H3>Fixes</H3>
+
+<P>Fixed various problems with how e2scrub_all is run from cron, when not
+all of the required packages are installed, or there are no LVM devices
+on the system.  (Addresses Debian Bug: #929186, #929287, #928977)</P>
+
+<P>When mke2fs asks the user if she should proceed, fall back to the
+English 'y' or 'Y' characters since there could be a missing translation
+prompting the use of the English 'y' character.  (Addresses Debian Bug:
+#907034)</P>
+
+<P>Fix spurious complaint of blocks beyond i_size for verity files.</P>
+
+
+<H3>Performance, Internal Implementation, Development Support etc.</H3>
+
+<P>Fixed various debian packaging issues.</P>
+
+<P>Fixed "make install" failure when the cron.d directory does not exist.</P>
+
+<P>Update the Czech, Malay, Polish, Spanish, Swedish, and Ukarainian
+translations.  Add the new Portuguese translation.</P>
+
+
+<H2><A NAME="1.45.1">E2fsprogs 1.45.1 (May 12, 2019)</A></H2>
+
+<H3>UI and Features</H3>
+
+<P>Teach the e2scrub and e2scub_all commands the -n option, which prints
+what these commands would do.</P>
+
+<P>Finalize the casefold support so it is synchronized with what we
+actually shipped in the kernel.  This includes updating to Unicode 12.1,
+dropping ASCII casefolding support, and switching from NFKD to NFD.  The
+the ext4 feature name also changed from fname_encoding to casefold.
+Add support for casefold to dumpe2fs and debugfs.</P>
+
+<P>Debugfs now prints non-printable characters using C-style hex escape
+sequences (e.g., "\xc1" instead of M-A).  The old scheme printed
+filenames in an ambiguous way, which complicated using debugfs for ext4
+encryption regression tests.</P>
+
+<P>E2fsck now checks to make sure that all unused bits in the block
+allocation bitmaps are set; if there are some unset bits in the block
+bitmaps for file systems where the blocks_per_group is less than
+8*blocksize (not the default), this can confuse the kernel's multi-block
+allocator and return a bogus free extent.  E2fsprogs guarantees this
+when it writes out the bitmap blocks, but it's possible that file system
+blocks could have gotten corrupted since the last time e2fsprogs wrote
+out the bitmap blocks.</P>
+
+<P>E2fsck now has support write out a problem code log which can provide
+more debugging and monitoring information.  This can be configured using
+/etc/e2fsck.conf.</P>
+
+
+<H3>Fixes</H3>
+
+<P>Teach e2scrub and e2scrub to give more intelligible error messages when
+the lvm2 and util-linux packages are not installed, or if the commands
+are not run as root.</P>
+
+<P>Teach e2scrub_all to skip trying to run e2scrub on a logical volume if
+its volume group did not have enough space to create a snapshot.
+(Addresses Debian Bug: #924301)</P>
+
+<P>E2scrub will tag its snapshots with UDISK_IGNORE so they do not show up
+in GUI's.   (Addresses Debian Bug: #926112)</P>
+
+<P>Mark the e2scrub service files to indicate that CAP_SYS_ADMIN and
+CAP_SYS_RAWIO are required.  This avoids errors when e2scrub is run an
+container where root does not have these capabilities.  (Addresses
+Debian Bug: #926138)</P>
+
+<P>Fix mke2fs's check for absurdly large disks.  Previously check was 2^10
+too small, so mke2fs would fail when trying to format a 900TB file
+system.</P>
+
+<P>Fixed debugfs so it correctly prints ea_in_inode xattr values.</P>
+
+<P>Fixed various casefold bugs.</P>
+
+
+<H3>Performance, Internal Implementation, Development Support etc.</H3>
+
+<P>Synchronized changes from Android's AOSP e2fsprogs tree.</P>
+
+<P>Fix autoheader warnings caused by a missing template in AC_CHECK_LIB.</P>
+
+<P>Fix the the "make install-strip" command.</P>
+
+<P>Dropped utf8_* and nls_* symbols from the libext2fs shared library, to
+avoid namespace contamination.</P>
+
+<P>Fix the f_valid_ea_in_inode test so actually tests the ea_in_inode
+feature.</P>
+
+<P>Fixed various debian packaging issues.  (Addresses Debian Bug: #924275)</P>
+
+
+<H2><A NAME="1.45.0">E2fsprogs 1.45.0 (March 6, 2019)</A></H2>
+
+<H3>UI and Features</H3>
+
+<P>Tune2fs can now set the file system error bit to force a check at the
+next fsck by using the extended option "force_fsck".</P>
+
+<P>E2fsprogs now has an e2scrub script which will allow e2fsck to be run on
+volumes that are mounted on an LVM device.  The e2scrub_all will find
+all ext* file systems and run them using e2scrub (if possible).</P>
+
+<P>Mke2fs will attempt to use ZERO_RANGE before PUNCH_HOLE so that we don't
+lose allocated blocks in preallocated files.</P>
+
+<P>The fuse2fs command now supports a "fakeroot" option to allow an
+unprivileged user to fuse2fs to modify rootfs images.</P>
+
+<P>Add initial support for setting the character set encoding and case
+folding file system feature.  We don't have support to validate file
+names as being valid for a given character set encoding yet, but this
+will allow compatibility for this feature when the kernel support
+lands.  This includes support in lsattr and chattr to understanding the
+casefold attribute flag.</P>
+
+<P>Debugfs can now set the inode's checksum field to test support for
+inodes with bad inode checksums.</P>
+
+<P>E2image now accepts the -b and -B options to allow the user to specify
+the superblock location when creating a raw or qcow2 image.</P>
+
+<H3>Performance, Internal Implementation, Development Support etc.</H3>
+
+<P>Add support for building e2fsprogs using Link Time Optimization (LTO),
+UBSAN, Address Sanitizer, or Thread Sanitizer.</P>
+
+<H2><A NAME="1.44.5">E2fsprogs 1.44.5 (December 15, 2018)</A></H2>
 
 <H3>UI and Features</H3>
 
@@ -144,7 +284,7 @@ using in e4defrag, to avoid overflows when more than 2**32 files are
 defragmented.  (Addresses Debian Bug: #888899)</P>
 
 <P>Correctly translate Posix ACL's.  This was a regression introduced in
-v1.44.4.   (Addresses Launchpad Bug: #1807288)</P>
+v1.44.   (Addresses Launchpad Bug: #1807288)</P>
 
 <P>Use the online free block counts so e2freefrag's percentages are
 correct.</P>
@@ -174,7 +314,7 @@ metadata-only image.</P>
 <P>Fix various Verity handling bugs which made it completely unusable in
 e2fsprogs 1.44.4.</P>
 
-<P>Fox a bug in tune2fs where it would dereference of freed memory after
+<P>Fix a bug in tune2fs where it would dereference of freed memory after
 replaying the journal.</P>
 
 
@@ -200,7 +340,7 @@ exits.</P>
 <P>Fix build failures on non-glibc systems.</P>
 
 
-<H2><A NAME="1.44.4">E2fsprogs 1.44.4 (August 18, 2018)</A>
+<H2><A NAME="1.44.4">E2fsprogs 1.44.4 (August 18, 2018)</A></H2>
 
 <H3>UI and Features</H3>
 
@@ -255,7 +395,7 @@ the "git archive" command.</P>
 <P>Update Danish, Spanish, and Swedish translations.</P>
   
 
-<H2><A NAME="1.44.3">E2fsprogs 1.44.3 (July 10, 2018)</A>
+<H2><A NAME="1.44.3">E2fsprogs 1.44.3 (July 10, 2018)</A></H2>
 
 <H3>UI and Features</H3>
 
@@ -354,7 +494,7 @@ e2fsprogs's regression test framework.</P>
 <P>Update Czech, Dutch, Spanish, French, Polish, Swedish, Ukrainian, and
 Vietnamese translations.</P>
 
-<H2><A NAME="1.44.2">E2fsprogs 1.44.2 (May 14, 2018)</A>
+<H2><A NAME="1.44.2">E2fsprogs 1.44.2 (May 14, 2018)</A></H2>
 
 <H3>Fixes</H3>
 
@@ -402,7 +542,7 @@ so they uses mke2fs and ebugfs from the build tree.  They may not exist
 in the users PATH, and if they not or if they are extremely
 old/obsolete, those tests would fail.</P>
 
-<H2><A NAME="1.44.1">E2fsprogs 1.44.1 (March 24, 2018)</A>
+<H2><A NAME="1.44.1">E2fsprogs 1.44.1 (March 24, 2018)</A></H2>
 
 <H3>Fixes</H3>
 
@@ -446,7 +586,7 @@ size.</P>
 <P>Add new regression tests.</P>
   
 
-<H2><A NAME="1.44.0">E2fsprogs 1.44.0 (March 7, 2018)</A>
+<H2><A NAME="1.44.0">E2fsprogs 1.44.0 (March 7, 2018)</A></H2>
 
 <H3>UI and Features</H3>
 
