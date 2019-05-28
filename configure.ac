@@ -1674,7 +1674,8 @@ AS_IF([test "x${with_crond_dir}" != "xno"],
 	AS_IF([test "x${with_crond_dir}" = "xyes"],
 	  [
 		AS_IF([test -d "/etc/cron.d"],
-		  [with_crond_dir="/etc/cron.d"])
+		  [with_crond_dir="/etc/cron.d"],
+		  [have_crond="no"; with_crond_dir=""])
 	  ])
 	AC_MSG_CHECKING([for system crontab dir])
 	crond_dir="${with_crond_dir}"
