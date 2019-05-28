@@ -1,3 +1,16 @@
+e2fsprogs (1.45.2-1) unstable; urgency=medium
+
+  * New upstream version
+  * When mke2fs asks the user if she should proceed, fall back to the
+    English 'y' or 'Y' characters since there could be a missing
+    translation prompting the use of the English 'y' character.
+    (Closes: #907034)
+  * Fix spurious complaint of blocks beyond i_size for verity files.
+  * Update the Czech, Malay, Polish, Spanish, Swedish, and Ukarainian
+    translations.  Add the new Portuguese translation.  (Closes: #912185)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 27 May 2019 21:46:31 -0400
+
 e2fsprogs (1.45.1-3) unstable; urgency=medium
 
   * Fix e2scrub_all cron failures (Closes: #929287)

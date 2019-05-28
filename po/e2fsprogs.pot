@@ -70,9 +70,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.45.1\n"
+"Project-Id-Version: e2fsprogs v1.45.2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2019-05-12 21:06-0400\n"
+"POT-Creation-Date: 2019-05-27 22:05-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -581,20 +581,20 @@ msgstr ""
 msgid "ext attr block map"
 msgstr ""
 
-#: e2fsck/pass1.c:3639
+#: e2fsck/pass1.c:3640
 #, c-format
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
 msgstr ""
 
-#: e2fsck/pass1.c:4059
+#: e2fsck/pass1.c:4060
 msgid "block bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4065
+#: e2fsck/pass1.c:4066
 msgid "inode bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4071
+#: e2fsck/pass1.c:4072
 msgid "inode table"
 msgstr ""
 
@@ -3068,7 +3068,7 @@ msgid_plural "%12u files\n"
 msgstr[0] ""
 msgstr[1] ""
 
-#: e2fsck/unix.c:238 misc/badblocks.c:1002 misc/tune2fs.c:2986 misc/util.c:126
+#: e2fsck/unix.c:238 misc/badblocks.c:1002 misc/tune2fs.c:2986 misc/util.c:129
 #: resize/main.c:354
 #, c-format
 msgid "while determining whether %s is mounted."
@@ -3520,7 +3520,7 @@ msgstr ""
 msgid "yY"
 msgstr ""
 
-#: e2fsck/util.c:197
+#: e2fsck/util.c:197 misc/util.c:112
 msgid "nN"
 msgstr ""
 
@@ -3755,7 +3755,7 @@ msgstr ""
 msgid "during test data write, block %lu"
 msgstr ""
 
-#: misc/badblocks.c:1007 misc/util.c:131
+#: misc/badblocks.c:1007 misc/util.c:134
 #, c-format
 msgid "%s is mounted; "
 msgstr ""
@@ -3768,7 +3768,7 @@ msgstr ""
 msgid "it's not safe to run badblocks!\n"
 msgstr ""
 
-#: misc/badblocks.c:1019 misc/util.c:142
+#: misc/badblocks.c:1019 misc/util.c:145
 #, c-format
 msgid "%s is apparently in use by the system; "
 msgstr ""
@@ -6565,44 +6565,44 @@ msgstr ""
 msgid "Setting extended default mount options to '%s'\n"
 msgstr ""
 
-#: misc/util.c:100
+#: misc/util.c:101
 msgid "<proceeding>\n"
 msgstr ""
 
-#: misc/util.c:104
+#: misc/util.c:105
 #, c-format
 msgid "Proceed anyway (or wait %d seconds to proceed) ? (y,N) "
 msgstr ""
 
-#: misc/util.c:108
+#: misc/util.c:109
 msgid "Proceed anyway? (y,N) "
 msgstr ""
 
-#: misc/util.c:133
+#: misc/util.c:136
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
 msgstr ""
 
-#: misc/util.c:138
+#: misc/util.c:141
 #, c-format
 msgid "will not make a %s here!\n"
 msgstr ""
 
-#: misc/util.c:145
+#: misc/util.c:148
 msgid "mke2fs forced anyway.\n"
 msgstr ""
 
-#: misc/util.c:161
+#: misc/util.c:164
 msgid "Couldn't allocate memory to parse journal options!\n"
 msgstr ""
 
-#: misc/util.c:186
+#: misc/util.c:189
 #, c-format
 msgid ""
 "\n"
 "Could not find journal device matching %s\n"
 msgstr ""
 
-#: misc/util.c:213
+#: misc/util.c:216
 msgid ""
 "\n"
 "Bad journal options specified.\n"
@@ -6619,13 +6619,13 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/util.c:244
+#: misc/util.c:247
 msgid ""
 "\n"
 "Filesystem too small for a journal\n"
 msgstr ""
 
-#: misc/util.c:251
+#: misc/util.c:254
 #, c-format
 msgid ""
 "\n"
@@ -6633,13 +6633,13 @@ msgid ""
 "between 1024 and 10240000 blocks.  Aborting.\n"
 msgstr ""
 
-#: misc/util.c:259
+#: misc/util.c:262
 msgid ""
 "\n"
 "Journal size too big for filesystem.\n"
 msgstr ""
 
-#: misc/util.c:273
+#: misc/util.c:276
 #, c-format
 msgid ""
 "This filesystem will be automatically checked every %d mounts or\n"
@@ -7059,7 +7059,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.45.1"
+msgid "EXT2FS Library version 1.45.2"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12
