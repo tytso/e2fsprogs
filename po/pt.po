@@ -73,7 +73,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.45.1\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2019-05-12 21:06-0400\n"
-"PO-Revision-Date: 2019-05-22 08:11+0100\n"
+"PO-Revision-Date: 2019-05-28 07:22+0100\n"
 "Last-Translator: Pedro Albuquerque <palbuquerque73@gmail.com>\n"
 "Language-Team: Portuguese <translation-team-pt@lists.sourceforge.net>\n"
 "Language: pt\n"
@@ -3683,7 +3683,7 @@ msgstr ""
 
 #: e2fsck/util.c:196 misc/util.c:93
 msgid "yY"
-msgstr "yS"
+msgstr "sS"
 
 #: e2fsck/util.c:197
 msgid "nN"
@@ -3691,7 +3691,7 @@ msgstr "nN"
 
 #: e2fsck/util.c:198
 msgid "aA"
-msgstr "aT"
+msgstr "tT"
 
 #: e2fsck/util.c:202
 msgid " ('a' enables 'yes' to all) "
