@@ -441,7 +441,8 @@ static int defrag_fadvise(int fd, struct move_extent defrag_data,
 			offset += pagesize;
 			continue;
 		}
-		if (posix_fadvise(fd, offset, pagesize, fadvise_flag) < 0) {
+		if ((errno = posix_fadvise(fd, offset,
+					   pagesize, fadvise_flag)) != 0) {
 			if ((mode_flag & DETAIL) && flag) {
 				perror("\tFailed to fadvise");
 				flag = 0;
