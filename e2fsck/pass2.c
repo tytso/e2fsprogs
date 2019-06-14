@@ -980,7 +980,8 @@ static int check_dir_block(ext2_filsys fs,
 	 * very large and then the files are deleted. For now, all that is
 	 * needed is to avoid e2fsck filling in these holes as part of
 	 * feature flag. */
-	if (db->blk == 0 && ext2fs_has_feature_largedir(fs->super))
+	if (db->blk == 0 && ext2fs_has_feature_largedir(fs->super) &&
+	    !ext2fs_has_feature_inline_data(fs->super))
 		return 0;
 
 	if (db->blk == 0 && !inline_data_size) {
