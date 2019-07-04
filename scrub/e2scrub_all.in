@@ -102,8 +102,9 @@ ls_scan_targets() {
     if [ -z "$devices" ]; then
 	return 0;
     fi
-    lsblk -o NAME,MOUNTPOINT,FSTYPE -P -n -p $devices | \
-	    grep FSTYPE=\"ext\[234\]\" | while read vars ; do
+    lsblk -o NAME,MOUNTPOINT,FSTYPE,TYPE -P -n -p $devices | \
+	grep FSTYPE=\"ext\[234\]\" | grep TYPE=\"lvm\" | \
+	while read vars ; do
 		eval "${vars}"
 
 		if [ "${scrub_all}" -eq 1 ] || [ -n "${MOUNTPOINT}" ]; then
