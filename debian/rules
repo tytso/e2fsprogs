@@ -8,7 +8,7 @@
 # specific ownerships.
 
 .PHONY: binary binary-arch binary-indep build build-arch build-indep \
-	build-bf build-std install install-udeb \
+	build-std install install-udeb \
 	clean checkroot mrproper debug_flags debian-files
 
 export DEB_BUILD_MAINT_OPTIONS ?= hardening=+all
@@ -103,9 +103,7 @@ UDEB_PRIORITY	?= $(shell grep '^Package: e2fsprogs-udeb' debian/control -A 10 | 
 STAMPSDIR	?= debian/stampdir
 CFGDH		?= ${STAMPSDIR}/configure-dh
 CFGSTDSTAMP	?= ${STAMPSDIR}/configure-std-stamp
-CFGBFSTAMP	?= ${STAMPSDIR}/configure-bf-stamp
 BUILDSTDSTAMP	?= ${STAMPSDIR}/build-std-stamp
-BUILDBFSTAMP	?= ${STAMPSDIR}/build-bf-stamp
 
 INSTALL ?= install
 INSTALL_PROGRAM ?= $(INSTALL) -p -o root -g root -m 0755
@@ -144,20 +142,6 @@ CFLAGS_STLIB = $(CFLAGS)
 LDFLAGS_SHLIB = $(LDFLAGS)
 LDFLAGS_STATIC = $(filter-out -fPIE -fpie -pie,$(LDFLAGS))
 
-ifneq ($(SKIP_UDEB),)
-SKIP_BF ?= yes
-endif
-
-ifeq ($(SKIP_BF),yes)
-BUILD_BF =
-bfbuilddir	?= ${stdbuilddir}
-else
-BUILD_BF = build-bf
-bfbuilddir	?= ${debdir}/BUILD-BF
-endif
-
-BF_CFLAGS = -Os -fomit-frame-pointer
-
 UTIL_CONF_FLAGS ?= --disable-fsck --disable-libblkid \
 			--disable-libuuid --disable-uuidd
 
@@ -174,10 +158,6 @@ COMMON_CONF_FLAGS = --enable-lto --disable-ubsan --disable-addrsan \
 	$(BACKTRACE_CONF_FLAGS) $(UTIL_CONF_FLAGS)
 
 STD_CONF_FLAGS ?= --enable-elf-shlibs
-
-BF_CONF_FLAGS ?= --enable-elf-shlibs --disable-nls --disable-imager \
-	--disable-testio-debug --disable-uuidd --disable-tls \
-	--disable-tdb --disable-debugfs
 
 DBG_PACKAGES=
 
@@ -243,42 +223,10 @@ endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTDSTAMP}
 
-${CFGBFSTAMP}: ${CFGDH}
-	dh_testdir
-	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
-		dh_update_autotools_config ;\
-	fi
-	rm -f config.cache
-
-	mkdir -p ${bfbuilddir}
-ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	cd ${bfbuilddir} && AWK=/usr/bin/awk \
-		../../configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
-		${EXTRA_CONF_FLAGS} CFLAGS="${CFLAGS} ${BF_CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
-		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
-		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
-		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
-else
-	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		../../configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
-		${EXTRA_CONF_FLAGS} --build=$(DEB_BUILD_GNU_TYPE) \
-		--host=$(DEB_HOST_GNU_TYPE) CFLAGS="${CFLAGS}" \
-		CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-		CFLAGS_SHLIB="$(CFLAGS_SHLIB)" \
-		CFLAGS_STLIB="$(CFLAGS_STLIB)" \
-		LDFLAGS_SHLIB="$(LDFLAGS_SHLIB)" \
-		LDFLAGS_STATIC="$(LDFLAGS_STATIC)"
-endif
-	mkdir -p ${STAMPSDIR}
-	touch ${CFGBFSTAMP}
-
 build-arch: build
 build-indep: build
-build: build-std $(BUILD_BF)
 
-build-std: ${BUILDSTDSTAMP}
+build: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
 	$(MAKE) -C ${stdbuilddir} V=1 all
@@ -299,15 +247,6 @@ endif
 
 	touch ${BUILDSTDSTAMP}
 
-build-bf: ${BUILDBFSTAMP}
-${BUILDBFSTAMP}: ${CFGBFSTAMP}
-	dh_testdir
-	$(MAKE) -C ${bfbuilddir} V=1 libs
-	$(MAKE) -C ${bfbuilddir}/e2fsck V=1 all
-	$(MAKE) -C ${bfbuilddir}/misc V=1 all
-	$(MAKE) -C ${bfbuilddir}/resize V=1 all
-	touch ${BUILDBFSTAMP}
-
 clean:
 	dh_testdir
 	if test -d debian/orig-gmo ; then \
@@ -324,11 +263,7 @@ clean:
 	if test -f debian/e2fsprogs.postrm; then \
 		rm -f debian/e2fsprogs.postrm ; \
 	fi
-	rm -rf ${STAMPSDIR}
-	[ ! -f ${stdbuilddir}/Makefile ] || $(MAKE) -C ${stdbuilddir} V=1 distclean
-	[ ! -f ${bfbuilddir}/Makefile ] || $(MAKE) -C ${bfbuilddir} V=1 distclean
-	[ ! -f ${staticbuilddir}/Makefile ] || $(MAKE) -C ${staticbuilddir} V=1 distclean
-	rm -rf ${stdbuilddir} ${bfbuilddir} ${staticbuilddir}
+	rm -rf ${STAMPSDIR} ${stdbuilddir}
 	rm -f debian/*.substvars
 	dh_clean
 
@@ -363,13 +298,13 @@ install-udeb: build
 	dh_testdir
 	dh_testroot
 
-	$(MAKE) -C ${bfbuilddir} V=1 install-shlibs-libs-recursive DESTDIR=${udebdir} \
+	$(MAKE) -C ${stdbuilddir} V=1 install-shlibs-libs-recursive DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${bfbuilddir}/e2fsck V=1 install DESTDIR=${udebdir} \
+	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${bfbuilddir}/misc V=1 install DESTDIR=${udebdir} \
+	$(MAKE) -C ${stdbuilddir}/misc V=1 install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${bfbuilddir}/resize V=1 install DESTDIR=${udebdir} \
+	$(MAKE) -C ${stdbuilddir}/resize V=1 install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
 
 	rm -rf ${udebdir}/usr
