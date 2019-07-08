@@ -45,23 +45,6 @@ ifneq ($(filter noudeb,$(DEB_BUILD_PROFILES)),)
 SKIP_UDEB=yes
 endif
 
-DH_VERSION := $(shell dpkg-query -W -f '$${Version}' debhelper)
-
-USE_DH9 ?= $(shell if dpkg --compare-versions $(DH_VERSION) lt 11 ; then echo yes ; fi)
-
-# USE_DBGSYM :=
-USE_DBGSYM ?= $(shell if dpkg --compare-versions $(DH_VERSION) ">=" 9.20160114 ; then echo yes ; fi)
-
-ifeq ($(USE_DBGSYM),yes)
-dh_strip_args = -p$(1) --dbgsym-migration='$(1)-dbg (<= 1.43-1)'
-dh_strip_args2 = -p$(1) --dbgsym-migration='$(2)-dbg (<= 1.43-1)'
-else
-dh_strip_args = -p$(1) --dbg-package=$(1)-dbg
-dh_strip_args2 = -p$(1) --dbg-package=$(2)-dbg
-DBG_PACKAGES += -pe2fsprogs-dbg -plibext2fs-dbg -plibcom-err2-dbg -plibss2-dbg
-export DEB_BUILD_PROFILES += pkg.e2fsprogs.legacy-dbg
-endif
-
 # find the version for the main package, from changelog file
 MAIN_VERSION = $(shell head -n 1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
 # find versions for libraries going into their own packages, from their Makefile.in's,
@@ -82,16 +65,12 @@ tmpdir		?= ${debdir}/tmp
 udebdir		?= ${debdir}/e2fsprogs-udeb
 libcomerrdir	?= ${debdir}/libcom-err${COMERR_SOVERSION}
 comerrdevdir	?= ${debdir}/comerr-dev
-libcomerrdbgdir	?= ${debdir}/libcom-err2-dbg
 libssdir	?= ${debdir}/libss${SS_SOVERSION}
 ssdevdir	?= ${debdir}/ss-dev
-libssdbgdir	?= ${debdir}/libss2-dbg
 libext2dir	?= ${debdir}/libext2fs2
 libext2devdir	?= ${debdir}/libext2fs-dev
-libext2dbgdir	?= ${debdir}/libext2fs2-dbg
 maindir		?= ${debdir}/e2fsprogs
 e2fsckstaticdir	?= ${debdir}/e2fsck-static
-debugdir	?= ${debdir}/e2fsprogs-dbg
 stdbuilddir	?= ${debdir}/BUILD-STD
 # docdir	?= ${maindir}/usr/share/doc/${package}
 MANDIR		?= /usr/share/man
@@ -101,7 +80,6 @@ UDEB_NAME 	?= $(package)-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
 UDEB_PRIORITY	?= $(shell grep '^Package: e2fsprogs-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
 
 STAMPSDIR	?= debian/stampdir
-CFGDH		?= ${STAMPSDIR}/configure-dh
 CFGSTDSTAMP	?= ${STAMPSDIR}/configure-std-stamp
 BUILDSTDSTAMP	?= ${STAMPSDIR}/build-std-stamp
 
@@ -159,19 +137,8 @@ COMMON_CONF_FLAGS = --enable-lto --disable-ubsan --disable-addrsan \
 
 STD_CONF_FLAGS ?= --enable-elf-shlibs
 
-DBG_PACKAGES=
-
 ifeq ($(SKIP_UDEB),)
 INSTALL_UDEB = install-udeb
-endif
-
-debian-files:
-ifneq ($(USE_DBGSYM),yes)
-	if test ! -f debian/control.save; then \
-		mv debian/control debian/control.save ; \
-		cat debian/control.save debian/control.legacy-dbg \
-			>> debian/control ; \
-	fi
 endif
 
 mrproper: clean
@@ -179,18 +146,7 @@ mrproper: clean
 		mv debian/control.save debian/control ; \
 	fi
 
-${CFGDH}:
-ifeq ($(USE_DH9),yes)
-	mv debian/compat debian/compat.save
-	echo 9 > debian/compat
-	mv debian/e2fsprogs.postinst debian/e2fsprogs.postinst.save
-	cp debian/e2fsprogs.postinst.dh9 debian/e2fsprogs.postinst
-	cp debian/e2fsprogs.postrm.dh9 debian/e2fsprogs.postrm
-endif
-	mkdir -p ${STAMPSDIR}
-	touch ${CFGDH}
-
-${CFGSTDSTAMP}: ${CFGDH}
+${CFGSTDSTAMP}:
 	dh_testdir
 	if which dh_update_autotools_config > /dev/null 2>&1 ; then \
 		dh_update_autotools_config ;\
@@ -377,13 +333,6 @@ binary-arch: install $(INSTALL_UDEB)
 
 	dh_installchangelogs -a
 	dh_fixperms -a
-	dh_strip $(call dh_strip_args,e2fsprogs)
-ifneq ($(SKIP_E2FSCK_STATIC),yes)
-	dh_strip $(call dh_strip_args2,e2fsck-static,e2fsprogs)
-endif
-	dh_strip $(call dh_strip_args,libext2fs2)
-	dh_strip $(call dh_strip_args,libss${SS_SOVERSION})
-	dh_strip $(call dh_strip_args,libcom-err${COMERR_SOVERSION})
 	dh_strip -a
 
 	# dpkg symbol handling
@@ -399,9 +348,7 @@ endif
 	dh_compress -a
 
 	dh_makeshlibs -a --add-udeb=e2fsprogs-udeb
-ifneq ($(USE_DH9),yes)
 	dh_installsystemd -p e2fsprogs
-endif
 	$(INSTALL) -D -p -m644 debian/e2fsprogs-udeb.lintian-overrides \
 	    debian/e2fsprogs-udeb/usr/share/lintian/overrides/e2fsprogs-udeb
 	dh_installdeb -a
