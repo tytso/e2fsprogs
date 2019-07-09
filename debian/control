@@ -19,7 +19,6 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
  file systems.
 
 Package: e2fsck-static
-Build-Profiles: <!pkg.e2fsprogs.no-static-e2fsck>
 Priority: optional
 Depends: ${misc:Depends}
 Recommends: sash | bash-static | zsh-static | busybox-static
@@ -119,7 +118,6 @@ Description: command-line interface parsing library - headers and static librari
  This package contains the development environment for the ss library.
 
 Package: e2fsprogs-udeb
-Build-Profiles: <!noudeb>
 Package-Type: udeb
 Section: debian-installer
 Priority: optional
