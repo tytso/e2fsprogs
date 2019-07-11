@@ -25,6 +25,7 @@ if (( $EUID != 0 )); then
     exit 1
 fi
 
+periodic_e2scrub=0
 scrub_all=0
 snap_size_mb=256
 reap=0
@@ -78,6 +79,11 @@ while getopts "nrAV" opt; do
 	esac
 done
 shift "$((OPTIND - 1))"
+
+if [ -n "${SERVICE_MODE}" -a "${reap}" -ne 1 -a "${periodic_e2scrub}" -ne 1 ]
+then
+    exitcode 0
+fi
 
 # If some prerequisite packages are not installed, exit with a code
 # indicating success to avoid spamming the sysadmin with fail messages
