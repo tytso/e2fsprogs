@@ -33,12 +33,6 @@ ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
 SYMBOL_LIBS := libext2fs libcomerr2 libss2
 endif
 
-ifeq (${DEB_HOST_ARCH},alpha)
-CFLAGS += -DHAVE_NETINET_IN_H
-else
-CFLAGS += -D__NO_STRING_INLINES
-endif
-
 CFLAGS_SHLIB = $(CFLAGS)
 CFLAGS_STLIB = $(CFLAGS)
 LDFLAGS_SHLIB = $(LDFLAGS)
