@@ -115,7 +115,8 @@ ls_scan_targets() {
 
 # Find leftover scrub snapshots
 ls_reap_targets() {
-	lvs -o lv_path -S lv_role=snapshot -S lv_name=~\(e2scrub$\) --noheadings
+    lvs -o lv_path -S lv_role=snapshot -S lv_name=~\(e2scrub$\) \
+	--noheadings | sed -e 's/.e2scrub$//'
 }
 
 # Figure out what we're targeting
