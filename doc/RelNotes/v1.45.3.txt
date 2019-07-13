@@ -31,7 +31,8 @@ problem descriptions.  (Addresses Debian Bug: #892173)
 Performance, Internal Implementation, Development Support etc.
 --------------------------------------------------------------
 
-Fixed various debian packaging issues.  (Addresses Debian Bug: #931266)
+Fixed various debian packaging issues.  (Addresses Debian Bug: #931266,
+#923372)
 
 Fixed error checking for calls to posix_{memalign,fadvise}.
 

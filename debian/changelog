@@ -17,8 +17,9 @@ e2fsprogs (1.45.3-1) unstable; urgency=medium
   * Restructure rules file to use dh
   * Only require the udev, systemd, and cron build dependencies when
     building on Linux. (Closes: #931266)
+  * Move logsave to its own package.  (Closes: #923372)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 13 Jul 2019 16:13:38 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 13 Jul 2019 17:28:38 -0400
 
 e2fsprogs (1.45.2-1) unstable; urgency=medium
 

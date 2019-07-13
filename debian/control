@@ -18,6 +18,19 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
  writing from devices or image files containing ext2, ext3, and ext4
  file systems.
 
+Package: logsave
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: e2fsprogs (<< 1.45.2-1)
+Breaks: e2fsprogs (<< 1.45.2-1)
+Architecture: linux-any kfreebsd-any
+Description: save the output of a command in a log file
+ The logsave program will execute cmd_prog with the specified
+ argument(s), and save a copy of its output to logfile.  If the
+ containing directory for logfile does not exist, logsave will
+ accumulate the output in memory until it can be written out.  A copy
+ of the output will also be written to standard output.
+
 Package: e2fsck-static
 Priority: optional
 Depends: ${misc:Depends}
@@ -188,7 +201,7 @@ Package: e2fsprogs
 XB-Important: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static
+Suggests: gpart, parted, fuse2fs, e2fsck-static, logsave
 Recommends: e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities

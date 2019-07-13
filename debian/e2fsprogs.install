@@ -9,7 +9,6 @@ sbin/e2scrub
 sbin/e2scrub_all
 sbin/e2undo
 sbin/fsck.ext?
-sbin/logsave
 sbin/mke2fs
 sbin/mkfs.ext?
 sbin/resize2fs
@@ -43,7 +42,6 @@ usr/share/man/man8/e4crypt.8
 usr/share/man/man8/e4defrag.8
 usr/share/man/man8/filefrag.8
 usr/share/man/man8/fsck.ext?.8
-usr/share/man/man8/logsave.8
 usr/share/man/man8/mke2fs.8
 usr/share/man/man8/mkfs.ext?.8
 usr/share/man/man8/mklost+found.8
