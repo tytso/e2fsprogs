@@ -1526,9 +1526,8 @@ msgstr "Đang định vị lại %s của @g %g từ %b sang %c…\n"
 
 #. @-expanded: Relocating group %g's %s to %c...\n
 #: e2fsck/problem.c:684
-#, c-format
 msgid "Relocating @g %g's %s to %c...\n"
-msgstr "Đang định vị lại %2$s của @g %1$g sang %3$c…\n"
+msgstr "Đang định vị lại %s của @g %g sang %c…\n"
 
 #. @-expanded: Warning: could not read block %b of %s: %m\n
 #: e2fsck/problem.c:689

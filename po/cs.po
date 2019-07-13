@@ -1939,7 +1939,7 @@ msgstr ""
 #. @-expanded: inode %i extended attribute block %b passes checks, but checksum does not match block.  
 #: e2fsck/problem.c:1052
 msgid "@i %i @a @b %b passes checks, but checksum does not match @b.  "
-msgstr "Block %2$b rozšířeného atributu iuzlu %1$i projde kontrolami, ale kontrolní součet bloku neodpovídá. "
+msgstr "Block %b rozšířeného atributu iuzlu %i projde kontrolami, ale kontrolní součet bloku neodpovídá. "
 
 # ??? WTF
 #. @-expanded: Interior extent node level %N of inode %i:\n
@@ -1977,7 +1977,7 @@ msgstr "Iuzel %i má nastaven příznak INLINE_DATA_FL na systému souborů bez 
 #. @-expanded: inode %i block %b conflicts with critical metadata, skipping block checks.\n
 #: e2fsck/problem.c:1080
 msgid "@i %i block %b conflicts with critical metadata, skipping block checks.\n"
-msgstr "Blok %2$b iuzlu %1$i se neslučuje s kritickými metadaty, kontrola bloku se vynechá.\n"
+msgstr "Blok %b iuzlu %i se neslučuje s kritickými metadaty, kontrola bloku se vynechá.\n"
 
 #. @-expanded: directory inode %i block %b should be at block %c.  
 #: e2fsck/problem.c:1085
@@ -2613,7 +2613,7 @@ msgstr "Iuzel adresáře %i, %B: adresář prošel kontrolami, ale součet nesou
 #. @-expanded: Inline directory inode %i size (%N) must be a multiple of 4.\n
 #: e2fsck/problem.c:1679
 msgid "Inline @d @i %i size (%N) must be a multiple of 4.\n"
-msgstr "Velikost (%2$N) iuzlu %1$i vestavěného adresáře musí být násobek čtyř.\n"
+msgstr "Velikost (%N) iuzlu %i vestavěného adresáře musí být násobek čtyř.\n"
 
 #. @-expanded: Fixing size of inline directory inode %i failed.\n
 #: e2fsck/problem.c:1684
