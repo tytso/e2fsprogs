@@ -104,31 +104,11 @@ ifeq ($(DEB_HOST_ARCH_OS), hurd)
 	${INSTALL} -m 0644 misc/mke2fs-hurd.conf ${tmpdir}/etc/mke2fs.conf
 endif
 
-    # install for e2fsprogs-udeb
-	$(MAKE) -C ${stdbuilddir} V=1 install-shlibs-libs-recursive DESTDIR=${udebdir} \
-		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${stdbuilddir}/e2fsck V=1 install DESTDIR=${udebdir} \
-		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${stdbuilddir}/misc V=1 install DESTDIR=${udebdir} \
-		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	$(MAKE) -C ${stdbuilddir}/resize V=1 install DESTDIR=${udebdir} \
-		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-
-	rm -rf ${udebdir}/usr
-	find ${udebdir}/sbin -type f -a ! -name e2fsck \
-		-a ! -name mke2fs -a ! -name tune2fs \
-		-a ! -name resize2fs -a ! -name badblocks -print | xargs rm
-
-	(cd ${udebdir}/sbin; ln -sf e2fsck fsck.ext2 ; \
-		ln -sf e2fsck fsck.ext3 ; ln -sf e2fsck fsck.ext4 ; \
-		ln -sf mke2fs mkfs.ext2 ; ln -sf mke2fs mkfs.ext3 ; \
-		ln -sf mke2fs mkfs.ext4)
-
 override_dh_install:
 	dh_install -p e2fsprogs --sourcedir=${stdbuilddir} NEWS.gz \
 		usr/share/doc/e2fsprogs
-	dh_movefiles
-	test -z "`find ${tmpdir} -type f`"
+	dh_install
+	dh_missing --fail-missing
 
 override_dh_lintian:
 	dh_lintian
@@ -185,10 +165,8 @@ endif
 	dh_shlibdeps --remaining-packages -l${stdbuilddir}/lib
 
 override_dh_gencontrol:
-	dh_gencontrol -pcomerr-dev \
-	  -- -v${COMERR_VERSION}-${DEB_VERSION} -VmainBinary=${DEB_VERSION}
-	dh_gencontrol -pss-dev \
-	  -- -v${SS_VERSION}-${DEB_VERSION} -VmainBinary=${DEB_VERSION}
+	dh_gencontrol -pcomerr-dev -- -v${COMERR_VERSION}-${DEB_VERSION} -VmainBinary=${DEB_VERSION}
+	dh_gencontrol -pss-dev -- -v${SS_VERSION}-${DEB_VERSION} -VmainBinary=${DEB_VERSION}
 	dh_gencontrol --remaining-packages
 
 test_printenv:

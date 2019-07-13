@@ -1,9 +1,0 @@
-sbin
-usr/bin
-usr/lib
-usr/sbin
-usr/share/man
-etc
-lib/udev/rules.d
-lib/systemd/system
-usr/lib
