@@ -1,3 +1,25 @@
+e2fsprogs (1.45.3-1) unstable; urgency=medium
+
+  * New upstream version
+  * Automatic online file system scrubs is now disabled by default.
+    They can be enabled by editing /etc/e2scrub.conf.
+  * Fixed e2fsck support of file systems using large_dir and inline
+    directories at the same time.
+  * Fixed a bug in e2scrub_all so it correctly handles an LUKS volume
+    stacked on top of an LV.  (Closes: #931387)
+  * Fixed a bug in e2scrub_all so it correctl specifies the volumes to
+    clean up when using "e2scrub_all -r".   (Closes: #931679)
+  * Fixed improper use of positional markers in the Czech, Dutch,
+    German, and Vietnamese translations.  (Closes: #892173)
+  * Remove ancient special-case CFLAGS for Alpha and Powermac platforms
+  * Drop packaging support for Debian Jessie
+  * Use the same build tree for the e2fsprogs udeb package
+  * Restructure rules file to use dh
+  * Only require the udev, systemd, and cron build dependencies when
+    building on Linux. (Closes: #931266)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 13 Jul 2019 16:13:38 -0400
+
 e2fsprogs (1.45.2-1) unstable; urgency=medium
 
   * New upstream version
