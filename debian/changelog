@@ -3,6 +3,10 @@ e2fsprogs (1.45.3-1) unstable; urgency=medium
   * New upstream version
   * Automatic online file system scrubs is now disabled by default.
     They can be enabled by editing /etc/e2scrub.conf.
+  * fuse2fs is now installed in /usr/bin instead of /usr/sbin
+  * Fix fuse2fs compatibility with fuse3; but specifying the
+    nonempty option may be necessary if fusermount with fuse v2 is in use.
+    See NEWS.gz for more details.
   * Fixed e2fsck support of file systems using large_dir and inline
     directories at the same time.
   * Fixed a bug in e2scrub_all so it correctly handles an LUKS volume
@@ -18,8 +22,9 @@ e2fsprogs (1.45.3-1) unstable; urgency=medium
   * Only require the udev, systemd, and cron build dependencies when
     building on Linux. (Closes: #931266)
   * Move logsave to its own package.  (Closes: #923372)
+  * Update the Czech and Dutch translations
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 13 Jul 2019 17:28:38 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 14 Jul 2019 21:01:11 -0400
 
 e2fsprogs (1.45.2-1) unstable; urgency=medium
 

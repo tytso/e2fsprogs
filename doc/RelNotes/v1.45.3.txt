@@ -1,4 +1,4 @@
-E2fsprogs 1.45.3 (July 13, 2019)
+E2fsprogs 1.45.3 (July 14, 2019)
 ================================
 
 Updates/Fixes since v1.45.2:
@@ -9,6 +9,17 @@ UI and Features
 Whether or not automatic online scrubs will be run is now controlled by
 a setting in /etc/e2scrub.conf.  To enable automatic online scrubs,
 uncomment out the line containing "periodic_e2scrub=1".
+
+The fuse2fs program is now installed in /usr/bin instead of /usr/sbin,
+since it does not require root privileges.
+
+Fuse2fs now works with if fusermount from FUSE V3 is installed.
+However, in order to provide this compatibility, if you are using a
+fusermount from FUSE v2, and you want to mount on top of a non-empty
+directory, you will need to specify -o nonempty explicitly.  FUSE V3
+always allows mounting on top of non-empty directories, and will fail if
+the user or fuse2fs passes the nonempty option.
+
 
 Fixes
 -----
@@ -38,6 +49,10 @@ Fixed error checking for calls to posix_{memalign,fadvise}.
 
 Add regression test for checking a file system using fs-verity.
 
+Various regression test cleanups.
+
+Fixed various compiler warnings.
+
 Added xgettext markers to fix incorrectly marked strings in the
 e2fsprogs translations template file as being c-style printf strings
 when in fact they aren't.
@@ -45,5 +60,6 @@ when in fact they aren't.
 Added utility script which generates the release tarfile using git
 archive.
 
-Update the Portuguese translation.
+Update the Czech, Dutch, and Portuguese translations from the
+Translation Project.
 
