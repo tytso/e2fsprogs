@@ -29,7 +29,14 @@
 #. it can expand to either the string "indirect block" (possibly preceded
 #. by the word "double" or "triple"), or the string "block #" immediately
 #. followed by an integer indicating a block sequence number.
-#.  
+#.
+#. Please note that the %-expansion for most e2fsck's problem.c should not
+#. use positional indicators such as %1, since although they look like c-style
+#. format strings, they are NOT c-style format strings, and the positional
+#. indicators (which BTW are GNU extensions and so won't work on other Unix
+#. gettext implementations) won't work with e2fsck's print_e2fsck_message()
+#. function found in e2fsck/message.c
+#.
 #.	%b	<blk>			block number
 #.	%B	"indirect block" | "block #"<blkcount>	string | string+integer
 #.	%c	<blk2>			block number
@@ -72,7 +79,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs v1.45.3\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2019-07-13 16:08-0400\n"
+"POT-Creation-Date: 2019-07-14 20:56-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
