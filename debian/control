@@ -2,7 +2,7 @@ Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, libattr1-dev, debhelper (>= 11.0), libblkid-dev, uuid-dev, m4, udev, systemd, cron
+Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, libattr1-dev, debhelper (>= 11.0), libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], cron [linux-any]
 Standards-Version: 4.3.0
 Homepage: http://e2fsprogs.sourceforge.net
 Vcs-Browser: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
@@ -18,8 +18,20 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
  writing from devices or image files containing ext2, ext3, and ext4
  file systems.
 
+Package: logsave
+Priority: optional
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: e2fsprogs (<< 1.45.2-1)
+Breaks: e2fsprogs (<< 1.45.2-1)
+Architecture: linux-any kfreebsd-any
+Description: save the output of a command in a log file
+ The logsave program will execute cmd_prog with the specified
+ argument(s), and save a copy of its output to logfile.  If the
+ containing directory for logfile does not exist, logsave will
+ accumulate the output in memory until it can be written out.  A copy
+ of the output will also be written to standard output.
+
 Package: e2fsck-static
-Build-Profiles: <!pkg.e2fsprogs.no-static-e2fsck>
 Priority: optional
 Depends: ${misc:Depends}
 Recommends: sash | bash-static | zsh-static | busybox-static
@@ -119,7 +131,6 @@ Description: command-line interface parsing library - headers and static librari
  This package contains the development environment for the ss library.
 
 Package: e2fsprogs-udeb
-Build-Profiles: <!noudeb>
 Package-Type: udeb
 Section: debian-installer
 Priority: optional
@@ -190,7 +201,7 @@ Package: e2fsprogs
 XB-Important: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static
+Suggests: gpart, parted, fuse2fs, e2fsck-static, logsave
 Recommends: e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities

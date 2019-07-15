@@ -19,7 +19,7 @@
 # include <linux/fs.h>
 # include <linux/falloc.h>
 # include <linux/xattr.h>
-# define FUSE_PLATFORM_OPTS	",nonempty,big_writes"
+# define FUSE_PLATFORM_OPTS	",big_writes"
 # ifdef HAVE_SYS_ACL_H
 #  define TRANSLATE_LINUX_ACLS
 # endif

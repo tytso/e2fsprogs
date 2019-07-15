@@ -16,7 +16,8 @@ NoNewPrivileges=yes
 User=root
 IOSchedulingClass=idle
 CPUSchedulingPolicy=idle
-ExecStart=@root_sbindir@/e2scrub_all -C -A -r
+Environment=SERVICE_MODE=1
+ExecStart=@root_sbindir@/e2scrub_all -A -r
 SyslogIdentifier=%N
 RemainAfterExit=no
 

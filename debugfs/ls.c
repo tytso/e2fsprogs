@@ -54,11 +54,8 @@ static int print_filename(FILE *f, struct ext2_dir_entry *dirent, int options)
 	if ((options & ENCRYPT_OPT) && !(options & RAW_OPT)) {
 		if (f)
 			return fprintf(f, "<encrypted (%d)>", len);
-		else {
-			char tmp[1];
-			return snprintf(tmp, sizeof(tmp),
-					"<encrypted (%d)>", len);
-		}
+		else
+			return snprintf(NULL, 0, "<encrypted (%d)>", len);
 	}
 	while (len--) {
 		ch = *cp++;

@@ -2064,7 +2064,7 @@ msgstr ""
 msgid ""
 "@i %i block %b conflicts with critical metadata, skipping block checks.\n"
 msgstr ""
-"Block %2$b von Inode %1$i steht in Konflikt mit kritischen Metadaten, "
+"Block %b von Inode %i steht in Konflikt mit kritischen Metadaten, "
 "Blockprüfungen werden übersprungen.\n"
 
 #. @-expanded: directory inode %i block %b should be at block %c.  
@@ -2349,13 +2349,13 @@ msgstr ""
 #: e2fsck/problem.c:1314
 msgid "@i %i @x tree (at level %b) could be shorter.  "
 msgstr ""
-"Der Erweiterungsbaum von Inode %1$i (auf Ebene %2$b) könnte kürzer sein.  "
+"Der Erweiterungsbaum von Inode %i (auf Ebene %b) könnte kürzer sein.  "
 
 #. @-expanded: inode %i extent tree (at level %b) could be narrower.  
 #: e2fsck/problem.c:1319
 msgid "@i %i @x tree (at level %b) could be narrower.  "
 msgstr ""
-"Der Erweiterungsbaum von Inode %1$i (auf Ebene %2$b) könnte schmaler sein.  "
+"Der Erweiterungsbaum von Inode %i (auf Ebene %b) könnte schmaler sein.  "
 
 #. @-expanded: Pass 2: Checking directory structure\n
 #: e2fsck/problem.c:1326

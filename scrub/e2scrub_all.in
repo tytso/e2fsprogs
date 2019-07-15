@@ -25,8 +25,8 @@ if (( $EUID != 0 )); then
     exit 1
 fi
 
+periodic_e2scrub=0
 scrub_all=0
-run_from_cron=0
 snap_size_mb=256
 reap=0
 conffile="@root_sysconfdir@/e2scrub.conf"
@@ -69,34 +69,34 @@ exitcode() {
 	exit "${ret}"
 }
 
-while getopts "nrACV" opt; do
+while getopts "nrAV" opt; do
 	case "${opt}" in
 	"n") DBG="echo Would execute: " ;;
 	"r") scrub_args="${scrub_args} -r"; reap=1;;
 	"A") scrub_all=1;;
-	"C") run_from_cron=1;;
 	"V") print_version; exitcode 0;;
 	*) print_help; exitcode 2;;
 	esac
 done
 shift "$((OPTIND - 1))"
 
+if [ -n "${SERVICE_MODE}" -a "${reap}" -ne 1 -a "${periodic_e2scrub}" -ne 1 ]
+then
+    exitcode 0
+fi
+
 # If some prerequisite packages are not installed, exit with a code
 # indicating success to avoid spamming the sysadmin with fail messages
 # when e2scrub_all is run out of cron or a systemd timer.
 
 if ! type lsblk >& /dev/null ; then
-    if [ "${run_from_cron}" -eq 1 ] ; then
-	exitcode 0
-    fi
+    test -n "${SERVICE_MODE}" && exitcode 0
     echo "e2scrub_all: can't find lsblk --- is util-linux installed?"
     exitcode 1
 fi
 
 if ! type lvcreate >& /dev/null ; then
-    if [ "${run_from_cron}" -eq 1 ] ; then
-	exitcode 0
-    fi
+    test -n "${SERVICE_MODE}" && exitcode 0
     echo "e2scrub_all: can't find lvcreate --- is lvm2 installed?"
     exitcode 1
 fi
@@ -108,8 +108,9 @@ ls_scan_targets() {
     if [ -z "$devices" ]; then
 	return 0;
     fi
-    lsblk -o NAME,MOUNTPOINT,FSTYPE -P -n -p $devices | \
-	    grep FSTYPE=\"ext\[234\]\" | while read vars ; do
+    lsblk -o NAME,MOUNTPOINT,FSTYPE,TYPE -P -n -p $devices | \
+	grep FSTYPE=\"ext\[234\]\" | grep TYPE=\"lvm\" | \
+	while read vars ; do
 		eval "${vars}"
 
 		if [ "${scrub_all}" -eq 1 ] || [ -n "${MOUNTPOINT}" ]; then
@@ -120,7 +121,8 @@ ls_scan_targets() {
 
 # Find leftover scrub snapshots
 ls_reap_targets() {
-	lvs -o lv_path -S lv_role=snapshot -S lv_name=~\(e2scrub$\) --noheadings
+    lvs -o lv_path -S lv_role=snapshot -S lv_name=~\(e2scrub$\) \
+	--noheadings | sed -e 's/.e2scrub$//'
 }
 
 # Figure out what we're targeting
