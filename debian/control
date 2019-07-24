@@ -200,8 +200,9 @@ Description: ext2/ext3/ext4 file system libraries - headers and static libraries
 Package: e2fsprogs
 XB-Important: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
+Depends: logsave
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static, logsave
+Suggests: gpart, parted, fuse2fs, e2fsck-static
 Recommends: e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities
