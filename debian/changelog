@@ -1,3 +1,16 @@
+e2fsprogs (1.45.3-2) unstable; urgency=medium
+
+  * Add a hard dependency on logsave to e2fsprogs to fix initramfs issues
+    (Closes: #932855, #932859, #932861, #932881, #932888)
+  * Add check in e2scrub_all.cron so that it doesn't fail if the package
+    is removed, since e2scrub_all.cron is marked as a config file.
+    (Closes: #932622)
+  * Update the Debian policy compliance to 4.4.0
+  * Update Czech, French, German, Polish, Portuguese, Swedish, and
+    Ukrainian translations
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 24 Jul 2019 12:56:52 -0400
+
 e2fsprogs (1.45.3-1) unstable; urgency=medium
 
   * New upstream version
