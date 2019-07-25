@@ -2,7 +2,7 @@ Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, libattr1-dev, debhelper (>= 11.0), libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], cron [linux-any]
+Build-Depends: gettext, texinfo, pkg-config, libfuse-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, libattr1-dev, debhelper (>= 11.0), dh-exec, libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], cron [linux-any]
 Standards-Version: 4.4.0
 Homepage: http://e2fsprogs.sourceforge.net
 Vcs-Browser: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
@@ -21,9 +21,10 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
 Package: logsave
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Replaces: e2fsprogs (<< 1.45.2-1)
-Breaks: e2fsprogs (<< 1.45.2-1)
-Architecture: linux-any kfreebsd-any
+Replaces: e2fsprogs (<< 1.45.3-1)
+Breaks: e2fsprogs (<< 1.45.3-1)
+Architecture: any
+Multi-Arch: foreign
 Description: save the output of a command in a log file
  The logsave program will execute cmd_prog with the specified
  argument(s), and save a copy of its output to logfile.  If the

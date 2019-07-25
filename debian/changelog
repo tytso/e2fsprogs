@@ -1,3 +1,13 @@
+e2fsprogs (1.45.3-3) unstable; urgency=medium
+
+  * Fix Breaks/Replace dependency for logsave (Closes: #932874)
+  * Mark logsave as Multi-Arch: foreign (Closes: #932876)
+  * Fix test bug on the x32 architecture (Closes: #932906)
+  * Fix FTBFS problem on FreeBSD and Hurd since they don't have systemd
+  * Fix blhc problem when running "make check"
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 25 Jul 2019 15:35:01 -0400
+
 e2fsprogs (1.45.3-2) unstable; urgency=medium
 
   * Add a hard dependency on logsave to e2fsprogs to fix initramfs issues

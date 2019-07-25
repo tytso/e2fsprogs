@@ -37,7 +37,7 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 
 	time_env = getenv("E2FSCK_TIME");
 	if (time_env)
-		context->now = strtoul(time_env, NULL, 0);
+		context->now = (time_t) strtoull(time_env, NULL, 0);
 	else {
 		context->now = time(0);
 		if (context->now < 1262322000) /* January 1 2010 */

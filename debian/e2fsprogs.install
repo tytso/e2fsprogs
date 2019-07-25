@@ -1,3 +1,4 @@
+#!/usr/bin/dh-exec
 sbin/badblocks
 sbin/debugfs
 sbin/dumpe2fs
@@ -48,5 +49,5 @@ usr/share/man/man8/mklost+found.8
 usr/share/man/man8/resize2fs.8
 usr/share/man/man8/tune2fs.8
 etc
-lib/udev/rules.d
-lib/systemd/system
+[linux-any] lib/udev/rules.d
+[linux-any] lib/systemd/system
