@@ -169,5 +169,8 @@ override_dh_gencontrol:
 	dh_gencontrol -pss-dev -- -v${SS_VERSION}-${DEB_VERSION} -VmainBinary=${DEB_VERSION}
 	dh_gencontrol --remaining-packages
 
+override_dh_auto_test:
+	$(MAKE) -C ${stdbuilddir} V=1 check
+
 test_printenv:
 	printenv | sort
