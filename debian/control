@@ -21,8 +21,8 @@ Description: ext2 / ext3 / ext4 file system driver for FUSE
 Package: logsave
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Replaces: e2fsprogs (<< 1.45.2-1)
-Breaks: e2fsprogs (<< 1.45.2-1)
+Replaces: e2fsprogs (<< 1.45.3-1)
+Breaks: e2fsprogs (<< 1.45.3-1)
 Architecture: linux-any kfreebsd-any
 Description: save the output of a command in a log file
  The logsave program will execute cmd_prog with the specified
