@@ -40,7 +40,7 @@ LDFLAGS_STATIC = $(filter-out -fPIE -fpie -pie,$(LDFLAGS))
 
 BACKTRACE_CONF_FLAGS ?= $(shell if debian/scripts/test-backtrace ; then echo --disable-backtrace ; fi)
 
-COMMON_CONF_FLAGS = --enable-elf-shlibs --enable-lto --disable-ubsan \
+COMMON_CONF_FLAGS = --enable-elf-shlibs --disable-ubsan \
 	--disable-addrsan --disable-threadsan --disable-e2initrd-helper \
 	--disable-fsck --disable-libblkid --disable-libuuid --disable-uuidd \
 	--infodir=/usr/share/info  --enable-symlink-install \
