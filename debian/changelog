@@ -1,3 +1,9 @@
+e2fsprogs (1.45.3-3~bpo10+1) buster-backports; urgency=medium
+
+  * Rebuild for buster-backports.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 01 Aug 2019 22:34:56 -0400
+
 e2fsprogs (1.45.3-3) unstable; urgency=medium
 
   * Fix Breaks/Replace dependency for logsave (Closes: #932874)
