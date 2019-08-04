@@ -75,13 +75,14 @@ int journal_enable_debug = -1;
 static void usage(e2fsck_t ctx)
 {
 	fprintf(stderr,
-		_("Usage: %s [-panyrcdfktvDFV] [-b superblock] [-B blocksize]\n"
+		_("Usage: %s [-pamnyrcdfktvDFV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j external_journal]\n"
 		"\t\t[-E extended-options] [-z undo_file] device\n"),
 		ctx->program_name);
 
 	fprintf(stderr, "%s", _("\nEmergency help:\n"
 		" -p                   Automatic repair (no questions)\n"
+		" -m                   multiple threads to speedup fsck\n"
 		" -n                   Make no changes to the filesystem\n"
 		" -y                   Assume \"yes\" to all questions\n"
 		" -c                   Check for bad blocks and add them to the badblock list\n"
@@ -847,7 +848,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 
 	phys_mem_kb = get_memory_size() / 1024;
 	ctx->readahead_kb = ~0ULL;
-	while ((c = getopt(argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDkz:")) != EOF)
+
+	while ((c = getopt(argc, argv, "pamnyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDkz:")) != EOF)
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
@@ -887,6 +889,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	_("Only one of the options -p/-a, -n or -y may be specified."));
 			}
 			ctx->options |= E2F_OPT_PREEN;
+			break;
+		case 'm':
+			ctx->options |= E2F_OPT_MULTITHREAD;
 			break;
 		case 'n':
 			if (ctx->options & (E2F_OPT_YES|E2F_OPT_PREEN))
@@ -1006,6 +1011,18 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			_("The -n and -l/-L options are incompatible."));
 		fatal_error(ctx, 0);
 	}
+	if (ctx->options & E2F_OPT_MULTITHREAD) {
+		if ((ctx->options & (E2F_OPT_YES|E2F_OPT_NO|E2F_OPT_PREEN)) == 0) {
+			com_err(ctx->program_name, 0, "%s",
+				_("The -m option should be used together with one of -p/-y/-n options."));
+			fatal_error(ctx, 0);
+		}
+		if (ctx->progress) {
+			com_err(ctx->program_name, 0, "%s",
+				_("Only one of the options -C or -m may be specified."));
+			fatal_error(ctx, 0);
+		}
+	}
 	if (ctx->options & E2F_OPT_NO)
 		ctx->options |= E2F_OPT_READONLY;
 
@@ -1112,10 +1129,12 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef SA_RESTART
 	sa.sa_flags = SA_RESTART;
 #endif
-	sa.sa_handler = signal_progress_on;
-	sigaction(SIGUSR1, &sa, 0);
-	sa.sa_handler = signal_progress_off;
-	sigaction(SIGUSR2, &sa, 0);
+	if ((ctx->options & E2F_OPT_MULTITHREAD) == 0) {
+		sa.sa_handler = signal_progress_on;
+		sigaction(SIGUSR1, &sa, 0);
+		sa.sa_handler = signal_progress_off;
+		sigaction(SIGUSR2, &sa, 0);
+	}
 #endif
 
 	/* Update our PATH to include /sbin if we need to run badblocks  */
