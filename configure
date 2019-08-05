@@ -785,6 +785,7 @@ LIBUUID
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+DEV_FEATURES_CMT
 TEST_IO_CMT
 PRIVATE_LIBS_CMT
 LDFLAG_DYNAMIC
@@ -894,6 +895,7 @@ enable_hardening
 enable_jbd_debug
 enable_blkid_debug
 enable_testio_debug
+enable_developer_features
 enable_libuuid
 enable_libblkid
 enable_subset
@@ -1580,6 +1582,7 @@ Optional Features:
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --disable-testio-debug  disable the use of the test I/O manager for debugging
+  --enable-developer-features  enable features for use by ext4 developers
   --enable-libuuid	  build and use private uuid library
   --enable-libblkid	  build and use private blkid library
   --enable-subset  	  enable subset-only build
@@ -5164,6 +5167,30 @@ $as_echo "Enabling testio debugging by default" >&6; }
 $as_echo "#define CONFIG_TESTIO_DEBUG 1" >>confdefs.h
 
 TEST_IO_CMT=
+
+fi
+
+
+# Check whether --enable-developer-features was given.
+if test "${enable_developer_features+set}" = set; then :
+  enableval=$enable_developer_features;
+if test "$enableval" = "yes"
+then
+	DEV_FEATURES_CMT=
+	$as_echo "#define CONFIG_DEVELOPER_FEATURES 1" >>confdefs.h
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling ext4 developer features" >&5
+$as_echo "Enabling ext4 developer features" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling ext4 developer features" >&5
+$as_echo "Disabling ext4 developer features" >&6; }
+	DEV_FEATURES_CMT="#"
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling ext4 developer features by default" >&5
+$as_echo "Disabling ext4 developer features by default" >&6; }
+DEV_FEATURES_CMT=
 
 fi
 

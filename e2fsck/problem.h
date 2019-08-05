@@ -693,6 +693,9 @@ struct problem_context {
 /* EA inode for parent inode does not have EXT4_EA_INODE_FL flag */
 #define PR_1_ATTR_SET_EA_INODE_FL		0x010086
 
+/* Offer to clear uninitialized flag on an extent */
+#define PR_1_CLEAR_UNINIT_EXTENT		0x010087
+
 
 /*
  * Pass 1b errors

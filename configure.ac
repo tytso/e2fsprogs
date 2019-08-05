@@ -439,6 +439,27 @@ TEST_IO_CMT=
 )
 AC_SUBST(TEST_IO_CMT)
 dnl
+dnl handle --enable-developer-features
+dnl
+AC_ARG_ENABLE([developer-features],
+[  --enable-developer-features  enable features for use by ext4 developers],
+AH_TEMPLATE([CONFIG_DEVELOPER_FEATURES],
+	[Define to 1 for features for use by ext4 developers])
+if test "$enableval" = "yes"
+then
+	DEV_FEATURES_CMT=
+	AC_DEFINE(CONFIG_DEVELOPER_FEATURES, 1)
+	AC_MSG_RESULT([Enabling ext4 developer features])
+else
+	AC_MSG_RESULT([Disabling ext4 developer features])
+	DEV_FEATURES_CMT="#"
+fi
+,
+AC_MSG_RESULT([Disabling ext4 developer features by default])
+DEV_FEATURES_CMT=
+)
+AC_SUBST(DEV_FEATURES_CMT)
+dnl
 dnl handle --disable-libuuid
 dnl
 PKG_PROG_PKG_CONFIG

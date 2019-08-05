@@ -2855,7 +2855,20 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 				return;
 			failed_csum = 0;
 		}
-
+#ifdef CONFIG_DEVELOPER_FEATURES
+		if (try_repairs && !is_dir && problem == 0 &&
+		    (ctx->options & E2F_OPT_CLEAR_UNINIT) &&
+		    (extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
+		    fix_problem(ctx, PR_1_CLEAR_UNINIT_EXTENT, pctx)) {
+			extent.e_flags &= ~EXT2_EXTENT_FLAGS_UNINIT;
+			pb->inode_modified = 1;
+			pctx->errcode = ext2fs_extent_replace(ehandle, 0,
+							      &extent);
+			if (pctx->errcode)
+				return;
+			failed_csum = 0;
+		}
+#endif
 		if (try_repairs && problem) {
 report_problem:
 			if (fix_problem(ctx, problem, pctx)) {

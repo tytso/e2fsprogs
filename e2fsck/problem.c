@@ -1240,6 +1240,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("EA @i %N for parent @i %i missing EA_INODE flag.\n "),
 	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
 
+	/* Offer to clear uninitialized flag on an extent */
+	{ PR_1_CLEAR_UNINIT_EXTENT,
+	  /* xgettext:no-c-format */
+	  N_("@i %i has @x marked uninitialized at @b %c (len %N).  "),
+	  PROMPT_CLEAR, PR_PREEN_OK, 0, 0, 0 },
 
 	/* Pass 1b errors */
 

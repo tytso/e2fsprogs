@@ -753,6 +753,11 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 			ctx->options |= E2F_OPT_UNSHARE_BLOCKS;
 			ctx->options |= E2F_OPT_FORCE;
 			continue;
+#ifdef CONFIG_DEVELOPER_FEATURES
+		} else if (strcmp(token, "clear_all_uninit_bits") == 0) {
+			ctx->options |= E2F_OPT_CLEAR_UNINIT;
+			continue;
+#endif
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
 				token);
