@@ -1144,7 +1144,22 @@ static int quota_inum_is_reserved(ext2_filsys fs, ext2_ino_t ino)
 	return 0;
 }
 
-void e2fsck_pass1(e2fsck_t ctx)
+static int e2fsck_should_abort(e2fsck_t ctx)
+{
+	e2fsck_t global_ctx;
+
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		return 1;
+
+	if (ctx->global_ctx) {
+		global_ctx = ctx->global_ctx;
+		if (global_ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			return 1;
+	}
+	return 0;
+}
+
+void e2fsck_pass1_thread(e2fsck_t ctx)
 {
 	int	i;
 	__u64	max_sizes;
@@ -1360,7 +1375,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (ino > ino_threshold)
 			pass1_readahead(ctx, &ra_group, &ino_threshold);
 		ehandler_operation(old_op);
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		if (e2fsck_should_abort(ctx))
 			goto endit;
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
 			/*
@@ -1955,7 +1970,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (process_inode_count >= ctx->process_inode_size) {
 			process_inodes(ctx, block_buf);
 
-			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			if (e2fsck_should_abort(ctx))
 				goto endit;
 		}
 	}
@@ -2068,6 +2083,89 @@ endit:
 	else
 		ctx->invalid_bitmaps++;
 }
+
+static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx)
+{
+	errcode_t	retval;
+	e2fsck_t	thread_context;
+
+	retval = ext2fs_get_mem(sizeof(struct e2fsck_struct), &thread_context);
+	if (retval) {
+		com_err(global_ctx->program_name, retval, "while allocating memory");
+		return retval;
+	}
+	memcpy(thread_context, global_ctx, sizeof(struct e2fsck_struct));
+	thread_context->fs->priv_data = thread_context;
+	thread_context->global_ctx = global_ctx;
+
+	*thread_ctx = thread_context;
+	return 0;
+}
+
+static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
+{
+	int	flags = global_ctx->flags;
+#ifdef HAVE_SETJMP_H
+	jmp_buf	old_jmp;
+
+	memcpy(old_jmp, global_ctx->abort_loc, sizeof(jmp_buf));
+#endif
+	memcpy(global_ctx, thread_ctx, sizeof(struct e2fsck_struct));
+#ifdef HAVE_SETJMP_H
+	memcpy(global_ctx->abort_loc, old_jmp, sizeof(jmp_buf));
+#endif
+	/* Keep the global singal flags*/
+	global_ctx->flags |= (flags & E2F_FLAG_SIGNAL_MASK) |
+			     (global_ctx->flags & E2F_FLAG_SIGNAL_MASK);
+
+	global_ctx->fs->priv_data = global_ctx;
+	ext2fs_free_mem(&thread_ctx);
+	return 0;
+}
+
+void e2fsck_pass1_multithread(e2fsck_t ctx)
+{
+	errcode_t	retval;
+	e2fsck_t	thread_ctx;
+
+	retval = e2fsck_pass1_thread_prepare(ctx, &thread_ctx);
+	if (retval) {
+		com_err(ctx->program_name, 0,
+			_("while preparing pass1 thread\n"));
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+
+#ifdef HAVE_SETJMP_H
+	/*
+	 * When fatal_error() happens, jump to here. The thread
+	 * context's flags will be saved, but its abort_loc will
+	 * be overwritten by original jump buffer for the later
+	 * tests.
+	 */
+	if (setjmp(thread_ctx->abort_loc)) {
+		thread_ctx->flags &= ~E2F_FLAG_SETJMP_OK;
+		e2fsck_pass1_thread_join(ctx, thread_ctx);
+		return;
+	}
+	thread_ctx->flags |= E2F_FLAG_SETJMP_OK;
+#endif
+
+	e2fsck_pass1_thread(thread_ctx);
+	retval = e2fsck_pass1_thread_join(ctx, thread_ctx);
+	if (retval) {
+		com_err(ctx->program_name, 0,
+			_("while joining pass1 thread\n"));
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+}
+
+void e2fsck_pass1(e2fsck_t ctx)
+{
+	e2fsck_pass1_multithread(ctx);
+}
+
 #undef FINISH_INODE_LOOP
 
 /*
@@ -2130,7 +2228,7 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 		ehandler_operation(buf);
 		check_blocks(ctx, &pctx, block_buf,
 			     &inodes_to_process[i].ea_ibody_quota);
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		if (e2fsck_should_abort(ctx))
 			break;
 	}
 	ctx->stashed_inode = old_stashed_inode;
@@ -3300,7 +3398,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	inlinedata_fs = ext2fs_has_feature_inline_data(ctx->fs->super);
 
 	if (check_ext_attr(ctx, pctx, block_buf, &ea_block_quota)) {
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		if (e2fsck_should_abort(ctx))
 			goto out;
 		pb.num_blocks += EXT2FS_B2C(ctx->fs, ea_block_quota.blocks);
 	}
@@ -3355,7 +3453,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	}
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	end_problem_latch(ctx, PR_LATCH_TOOBIG);
-	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+	if (e2fsck_should_abort(ctx))
 		goto out;
 	if (pctx->errcode)
 		fix_problem(ctx, PR_1_BLOCK_ITERATE, pctx);
@@ -3836,7 +3934,7 @@ static int process_bad_block(ext2_filsys fs,
 				*block_nr = 0;
 				return BLOCK_CHANGED;
 			}
-			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			if (e2fsck_should_abort(ctx))
 				return BLOCK_ABORT;
 		} else
 			mark_block_used(ctx, blk);
@@ -3933,7 +4031,7 @@ static int process_bad_block(ext2_filsys fs,
 			*block_nr = 0;
 			return BLOCK_CHANGED;
 		}
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		if (e2fsck_should_abort(ctx))
 			return BLOCK_ABORT;
 		return 0;
 	}
