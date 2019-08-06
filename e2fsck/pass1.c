@@ -49,6 +49,8 @@
 
 #include "e2fsck.h"
 #include <ext2fs/ext2_ext_attr.h>
+/* todo remove this finally */
+#include <ext2fs/ext2fsP.h>
 #include <e2p/e2p.h>
 
 #include "problem.h"
@@ -2084,10 +2086,23 @@ endit:
 		ctx->invalid_bitmaps++;
 }
 
+static void e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
+{
+	memcpy(dest, src, sizeof(struct struct_ext2_filsys));
+	if (dest->dblist)
+		dest->dblist->fs = dest;
+	if (dest->inode_map)
+		dest->inode_map->fs = dest;
+	if (dest->block_map)
+		dest->block_map->fs = dest;
+}
+
 static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx)
 {
 	errcode_t	retval;
 	e2fsck_t	thread_context;
+	ext2_filsys	thread_fs;
+	ext2_filsys	global_fs = global_ctx->fs;
 
 	retval = ext2fs_get_mem(sizeof(struct e2fsck_struct), &thread_context);
 	if (retval) {
@@ -2095,18 +2110,32 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 		return retval;
 	}
 	memcpy(thread_context, global_ctx, sizeof(struct e2fsck_struct));
-	thread_context->fs->priv_data = thread_context;
 	thread_context->global_ctx = global_ctx;
 
+	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys), &thread_fs);
+	if (retval) {
+		com_err(global_ctx->program_name, retval, "while allocating memory");
+		goto out_context;
+	}
+
+	e2fsck_pass1_copy_fs(thread_fs, global_fs);
+	thread_fs->priv_data = thread_context;
+
+	thread_context->fs = thread_fs;
 	*thread_ctx = thread_context;
 	return 0;
+out_context:
+	ext2fs_free_mem(&thread_context);
+	return retval;
 }
 
 static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 {
-	int	flags = global_ctx->flags;
+	int		flags = global_ctx->flags;
+	ext2_filsys	thread_fs = thread_ctx->fs;
+	ext2_filsys	global_fs = global_ctx->fs;
 #ifdef HAVE_SETJMP_H
-	jmp_buf	old_jmp;
+	jmp_buf		old_jmp;
 
 	memcpy(old_jmp, global_ctx->abort_loc, sizeof(jmp_buf));
 #endif
@@ -2118,7 +2147,11 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 	global_ctx->flags |= (flags & E2F_FLAG_SIGNAL_MASK) |
 			     (global_ctx->flags & E2F_FLAG_SIGNAL_MASK);
 
-	global_ctx->fs->priv_data = global_ctx;
+	e2fsck_pass1_copy_fs(global_fs, thread_fs);
+	global_fs->priv_data = global_ctx;
+	global_ctx->fs = global_fs;
+
+	ext2fs_free_mem(&thread_ctx->fs);
 	ext2fs_free_mem(&thread_ctx);
 	return 0;
 }
