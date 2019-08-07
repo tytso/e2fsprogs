@@ -1,3 +1,12 @@
+e2fsprogs (1.45.3-4) unstable; urgency=medium
+
+  * stop using Link Time Optimization; it breaks reproducible builds
+  * skip "make check" if DEB_BUILD_OPTIONS contains nocheck; this is
+    needed for some ports builds to complete successfully (Closes: #933247)
+  * fix e2fsprogs build problems on non-Linux ports
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 06 Aug 2019 15:22:30 -0400
+
 e2fsprogs (1.45.3-3) unstable; urgency=medium
 
   * Fix Breaks/Replace dependency for logsave (Closes: #932874)
