@@ -40,7 +40,7 @@ LDFLAGS_STATIC = $(filter-out -fPIE -fpie -pie,$(LDFLAGS))
 
 BACKTRACE_CONF_FLAGS ?= $(shell if debian/scripts/test-backtrace ; then echo --disable-backtrace ; fi)
 
-COMMON_CONF_FLAGS = --enable-elf-shlibs --enable-lto --disable-ubsan \
+COMMON_CONF_FLAGS = --enable-elf-shlibs --disable-ubsan \
 	--disable-addrsan --disable-threadsan --disable-e2initrd-helper \
 	--disable-fsck --disable-libblkid --disable-libuuid --disable-uuidd \
 	--infodir=/usr/share/info  --enable-symlink-install \
@@ -170,7 +170,9 @@ override_dh_gencontrol:
 	dh_gencontrol --remaining-packages
 
 override_dh_auto_test:
+ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	$(MAKE) -C ${stdbuilddir} V=1 check
+endif
 
 test_printenv:
 	printenv | sort

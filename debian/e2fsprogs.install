@@ -6,8 +6,8 @@ sbin/e2fsck
 sbin/e2image
 sbin/e2label
 sbin/e2mmpstatus
-sbin/e2scrub
-sbin/e2scrub_all
+[linux-any] sbin/e2scrub
+[linux-any] sbin/e2scrub_all
 sbin/e2undo
 sbin/fsck.ext?
 sbin/mke2fs
@@ -16,11 +16,11 @@ sbin/resize2fs
 sbin/tune2fs
 usr/bin/chattr
 usr/bin/lsattr
-usr/lib/*/e2fsprogs/e2scrub_all_cron
-usr/lib/*/e2fsprogs/e2scrub_fail
+[linux-any] usr/lib/*/e2fsprogs/e2scrub_all_cron
+[linux-any] usr/lib/*/e2fsprogs/e2scrub_fail
 usr/sbin/e2freefrag
-usr/sbin/e4crypt
-usr/sbin/e4defrag
+[linux-any] usr/sbin/e4crypt
+[linux-any] usr/sbin/e4defrag
 usr/sbin/filefrag
 usr/sbin/mklost+found
 usr/share/man/man1/chattr.1
@@ -36,11 +36,11 @@ usr/share/man/man8/e2fsck.8
 usr/share/man/man8/e2image.8
 usr/share/man/man8/e2label.8
 usr/share/man/man8/e2mmpstatus.8
-usr/share/man/man8/e2scrub.8
-usr/share/man/man8/e2scrub_all.8
+[linux-any] usr/share/man/man8/e2scrub.8
+[linux-any] usr/share/man/man8/e2scrub_all.8
 usr/share/man/man8/e2undo.8
-usr/share/man/man8/e4crypt.8
-usr/share/man/man8/e4defrag.8
+[linux-any] usr/share/man/man8/e4crypt.8
+[linux-any] usr/share/man/man8/e4defrag.8
 usr/share/man/man8/filefrag.8
 usr/share/man/man8/fsck.ext?.8
 usr/share/man/man8/mke2fs.8
