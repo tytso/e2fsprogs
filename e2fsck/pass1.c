@@ -2087,6 +2087,22 @@ endit:
 		ctx->invalid_bitmaps++;
 }
 
+static errcode_t e2fsck_pass1_copy_bitmap(ext2_filsys fs, ext2fs_generic_bitmap *src,
+					  ext2fs_generic_bitmap *dest)
+{
+	errcode_t ret;
+
+	ret = ext2fs_copy_bitmap(*src, dest);
+	if (ret)
+		return ret;
+
+	(*dest)->fs = fs;
+	ext2fs_free_generic_bmap(*src);
+	*src = NULL;
+
+	return 0;
+}
+
 static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
 {
 	errcode_t	retval;
@@ -2094,33 +2110,52 @@ static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
 	memcpy(dest, src, sizeof(struct struct_ext2_filsys));
 	if (dest->dblist)
 		dest->dblist->fs = dest;
-	if (dest->inode_map)
-		dest->inode_map->fs = dest;
-	if (dest->block_map)
-		dest->block_map->fs = dest;
+	if (src->block_map) {
+		retval = e2fsck_pass1_copy_bitmap(dest, &src->block_map,
+						  &dest->block_map);
+		if (retval)
+			return retval;
+	}
+	if (src->inode_map) {
+		retval = e2fsck_pass1_copy_bitmap(dest, &src->inode_map,
+						  &dest->inode_map);
+		if (retval)
+			return retval;
+	}
 
 	/* icache will be rebuilt if needed, so do not copy from @src */
 	src->icache = NULL;
 	return 0;
 }
 
-static void e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
+static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 {
 	struct ext2_inode_cache *icache = dest->icache;
+	errcode_t	retval = 0;
 
 	memcpy(dest, src, sizeof(struct struct_ext2_filsys));
 	if (dest->dblist)
 		dest->dblist->fs = dest;
-	if (dest->inode_map)
-		dest->inode_map->fs = dest;
-	if (dest->block_map)
-		dest->block_map->fs = dest;
+	if (src->inode_map) {
+		retval = e2fsck_pass1_copy_bitmap(dest, &src->inode_map,
+						  &dest->inode_map);
+		if (retval)
+			return retval;
+	}
+	if (src->block_map) {
+		retval = e2fsck_pass1_copy_bitmap(dest, &src->block_map,
+						  &dest->block_map);
+		if (retval)
+			return retval;
+	}
 	dest->icache = icache;
 
 	if (src->icache) {
 		ext2fs_free_inode_cache(src->icache);
 		src->icache = NULL;
 	}
+
+	return retval;
 }
 
 static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx)
@@ -2174,8 +2209,9 @@ out_context:
 	return retval;
 }
 
-static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
+static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 {
+	errcode_t	retval;
 	int		flags = global_ctx->flags;
 	ext2_filsys	thread_fs = thread_ctx->fs;
 	ext2_filsys	global_fs = global_ctx->fs;
@@ -2192,13 +2228,104 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 	global_ctx->flags |= (flags & E2F_FLAG_SIGNAL_MASK) |
 			     (global_ctx->flags & E2F_FLAG_SIGNAL_MASK);
 
-	e2fsck_pass1_merge_fs(global_fs, thread_fs);
+	retval = e2fsck_pass1_merge_fs(global_fs, thread_fs);
+	if (retval) {
+		com_err(global_ctx->program_name, 0, _("while merging fs\n"));
+		return retval;
+	}
 	global_fs->priv_data = global_ctx;
 	global_ctx->fs = global_fs;
 
+	if (thread_ctx->inode_used_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->inode_used_map,
+					&global_ctx->inode_used_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->inode_bad_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->inode_bad_map,
+					&global_ctx->inode_bad_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->inode_dir_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->inode_dir_map,
+					&global_ctx->inode_dir_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->inode_bb_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->inode_bb_map,
+					&global_ctx->inode_bb_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->inode_imagic_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->inode_imagic_map,
+					&global_ctx->inode_imagic_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->inode_reg_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->inode_reg_map,
+					&global_ctx->inode_reg_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->inodes_to_rebuild) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->inodes_to_rebuild,
+					&global_ctx->inodes_to_rebuild);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->block_found_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->block_found_map,
+					&global_ctx->block_found_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->block_dup_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->block_dup_map,
+					&global_ctx->block_dup_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->block_ea_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->block_ea_map,
+					&global_ctx->block_ea_map);
+		if (retval)
+			return retval;
+	}
+	if (thread_ctx->block_metadata_map) {
+		retval = e2fsck_pass1_copy_bitmap(global_fs,
+					&thread_ctx->block_metadata_map,
+					&global_ctx->block_metadata_map);
+		if (retval)
+			return retval;
+	}
+
+	return 0;
+}
+
+static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
+{
+	errcode_t	retval;
+
+	retval = e2fsck_pass1_thread_join_one(global_ctx, thread_ctx);
 	ext2fs_free_mem(&thread_ctx->fs);
 	ext2fs_free_mem(&thread_ctx);
-	return 0;
+
+	return retval;
 }
 
 void e2fsck_pass1_multithread(e2fsck_t ctx)
