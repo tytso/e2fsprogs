@@ -228,6 +228,8 @@ typedef struct e2fsck_struct *e2fsck_t;
 #define MAX_EXTENT_DEPTH_COUNT 5
 
 struct e2fsck_struct {
+	/* Global context to get the cancel flag */
+	e2fsck_t		global_ctx;
 	ext2_filsys fs;
 	const char *program_name;
 	char *filesystem_name;
@@ -247,6 +249,7 @@ struct e2fsck_struct {
 	ext2_ino_t free_inodes;
 	int	mount_flags;
 	int	openfs_flags;
+	io_manager io_manager;
 	blkid_cache blkid;	/* blkid cache */
 
 #ifdef HAVE_SETJMP_H

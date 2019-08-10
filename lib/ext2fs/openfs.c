@@ -99,6 +99,40 @@ static void block_sha_map_free_entry(void *data)
 	return;
 }
 
+errcode_t ext2fs_open_channel(ext2_filsys fs, const char *io_options,
+			      io_manager manager, int flags,
+			      int blocksize)
+{
+	errcode_t	retval;
+	unsigned int	io_flags = 0;
+
+	if (flags & EXT2_FLAG_RW)
+		io_flags |= IO_FLAG_RW;
+	if (flags & EXT2_FLAG_EXCLUSIVE)
+		io_flags |= IO_FLAG_EXCLUSIVE;
+	if (flags & EXT2_FLAG_DIRECT_IO)
+		io_flags |= IO_FLAG_DIRECT_IO;
+	if (flags & EXT2_FLAG_THREADS)
+		io_flags |= IO_FLAG_THREADS;
+	retval = manager->open(fs->device_name, io_flags, &fs->io);
+	if (retval)
+		return retval;
+
+	if (io_options &&
+	    (retval = io_channel_set_options(fs->io, io_options)))
+		goto out_close;
+	fs->image_io = fs->io;
+	fs->io->app_data = fs;
+
+	if (blocksize > 0)
+		io_channel_set_blksize(fs->io, blocksize);
+
+	return 0;
+out_close:
+	io_channel_close(fs->io);
+	return retval;
+}
+
 /*
  *  Note: if superblock is non-zero, block-size must also be non-zero.
  * 	Superblock and block_size can be zero to use the default size.
@@ -122,7 +156,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	errcode_t	retval;
 	unsigned long	i, first_meta_bg;
 	__u32		features;
-	unsigned int	blocks_per_group, io_flags;
+	unsigned int	blocks_per_group;
 	blk64_t		group_block, blk;
 	char		*dest, *cp;
 	int		group_zero_adjust = 0;
@@ -163,23 +197,9 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		io_options = cp;
 	}
 
-	io_flags = 0;
-	if (flags & EXT2_FLAG_RW)
-		io_flags |= IO_FLAG_RW;
-	if (flags & EXT2_FLAG_EXCLUSIVE)
-		io_flags |= IO_FLAG_EXCLUSIVE;
-	if (flags & EXT2_FLAG_DIRECT_IO)
-		io_flags |= IO_FLAG_DIRECT_IO;
-	if (flags & EXT2_FLAG_THREADS)
-		io_flags |= IO_FLAG_THREADS;
-	retval = manager->open(fs->device_name, io_flags, &fs->io);
+	retval = ext2fs_open_channel(fs, io_options, manager, flags, 0);
 	if (retval)
 		goto cleanup;
-	if (io_options &&
-	    (retval = io_channel_set_options(fs->io, io_options)))
-		goto cleanup;
-	fs->image_io = fs->io;
-	fs->io->app_data = fs;
 	retval = io_channel_alloc_buf(fs->io, -SUPERBLOCK_SIZE, &fs->super);
 	if (retval)
 		goto cleanup;

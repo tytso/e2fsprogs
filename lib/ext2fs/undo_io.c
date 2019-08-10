@@ -1022,6 +1022,24 @@ static errcode_t undo_flush(io_channel channel)
 	return retval;
 }
 
+/*
+ * Flush data buffers to disk and cleanup the cache.
+ */
+static errcode_t undo_flush_cleanup(io_channel channel)
+{
+	errcode_t	retval = 0;
+	struct undo_private_data *data;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct undo_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (data->real)
+		retval = io_channel_flush_cleanup(data->real);
+
+	return retval;
+}
+
 static errcode_t undo_set_option(io_channel channel, const char *option,
 				 const char *arg)
 {
@@ -1093,6 +1111,7 @@ static struct struct_io_manager struct_undo_manager = {
 	.read_blk	= undo_read_blk,
 	.write_blk	= undo_write_blk,
 	.flush		= undo_flush,
+	.flush_cleanup	= undo_flush_cleanup,
 	.write_byte	= undo_write_byte,
 	.set_option	= undo_set_option,
 	.get_stats	= undo_get_stats,

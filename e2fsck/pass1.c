@@ -2103,7 +2103,9 @@ static errcode_t e2fsck_pass1_copy_bitmap(ext2_filsys fs, ext2fs_generic_bitmap 
 	return 0;
 }
 
-static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
+
+static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, e2fsck_t src_context,
+				      ext2_filsys src)
 {
 	errcode_t	retval;
 
@@ -2129,6 +2131,33 @@ static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
 			return retval;
 	}
 
+	/* disable it for now */
+	src_context->openfs_flags &= ~EXT2_FLAG_EXCLUSIVE;
+	retval = ext2fs_open_channel(dest, src_context->io_options,
+				     src_context->io_manager,
+				     src_context->openfs_flags,
+				     src->io->block_size);
+	if (retval)
+		return retval;
+
+	/* Block size might not be default */
+	io_channel_set_blksize(dest->io, src->io->block_size);
+	ehandler_init(dest->io);
+
+	assert(dest->io->magic == src->io->magic);
+	assert(dest->io->manager == src->io->manager);
+	assert(strcmp(dest->io->name, src->io->name) == 0);
+	assert(dest->io->block_size == src->io->block_size);
+	assert(dest->io->read_error == src->io->read_error);
+	assert(dest->io->write_error == src->io->write_error);
+	assert(dest->io->refcount == src->io->refcount);
+	assert(dest->io->flags == src->io->flags);
+	assert(dest->io->app_data == dest);
+	assert(src->io->app_data == src);
+	assert(dest->io->align == src->io->align);
+
+	/* The data should be written to disk immediately */
+	dest->io->flags |= CHANNEL_FLAGS_WRITETHROUGH;
 	/* icache will be rebuilt if needed, so do not copy from @src */
 	src->icache = NULL;
 	return 0;
@@ -2137,9 +2166,17 @@ static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
 static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 {
 	struct ext2_inode_cache *icache = dest->icache;
-	errcode_t	retval = 0;
+	errcode_t retval = 0;
+	io_channel dest_io;
+	io_channel dest_image_io;
+
+	dest_io = dest->io;
+	dest_image_io = dest->image_io;
 
 	memcpy(dest, src, sizeof(struct struct_ext2_filsys));
+	dest->io = dest_io;
+	dest->image_io = dest_image_io;
+	dest->icache = icache;
 	if (dest->dblist)
 		dest->dblist->fs = dest;
 	if (src->inode_map) {
@@ -2154,7 +2191,6 @@ static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 		if (retval)
 			return retval;
 	}
-	dest->icache = icache;
 
 	if (src->icache) {
 		ext2fs_free_inode_cache(src->icache);
@@ -2168,6 +2204,7 @@ static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 		src->badblocks = NULL;
 	}
 
+	io_channel_close(src->io);
 	return retval;
 }
 
@@ -2205,7 +2242,8 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 		goto out_context;
 	}
 
-	retval = e2fsck_pass1_copy_fs(thread_fs, global_fs);
+	io_channel_flush_cleanup(global_fs->io);
+	retval = e2fsck_pass1_copy_fs(thread_fs, global_ctx, global_fs);
 	if (retval) {
 		com_err(global_ctx->program_name, retval, "while copying fs");
 		goto out_fs;

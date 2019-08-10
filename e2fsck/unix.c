@@ -1526,6 +1526,7 @@ restart:
 	}
 
 	ctx->openfs_flags = flags;
+	ctx->io_manager = io_ptr;
 	retval = try_open_fs(ctx, flags, io_ptr, &fs);
 
 	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) &&

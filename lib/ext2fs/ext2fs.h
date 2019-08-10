@@ -1671,6 +1671,9 @@ extern errcode_t ext2fs_open2(const char *name, const char *io_options,
 			      int flags, int superblock,
 			      unsigned int block_size, io_manager manager,
 			      ext2_filsys *ret_fs);
+errcode_t ext2fs_open_channel(ext2_filsys fs, const char *io_options,
+			      io_manager manager, int flags,
+			      int blocksize);
 /*
  * The dgrp_t argument to these two functions is not actually a group number
  * but a block number offset within a group table!  Convert with the formula

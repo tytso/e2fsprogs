@@ -82,6 +82,7 @@ struct struct_io_manager {
 	errcode_t (*write_blk)(io_channel channel, unsigned long block,
 			       int count, const void *data);
 	errcode_t (*flush)(io_channel channel);
+	errcode_t (*flush_cleanup)(io_channel channel);
 	errcode_t (*write_byte)(io_channel channel, unsigned long offset,
 				int count, const void *data);
 	errcode_t (*set_option)(io_channel channel, const char *option,
@@ -116,6 +117,7 @@ struct struct_io_manager {
 #define io_channel_read_blk(c,b,n,d)	((c)->manager->read_blk((c),b,n,d))
 #define io_channel_write_blk(c,b,n,d)	((c)->manager->write_blk((c),b,n,d))
 #define io_channel_flush(c) 		((c)->manager->flush((c)))
+#define io_channel_flush_cleanup(c) 	((c)->manager->flush_cleanup((c)))
 #define io_channel_bumpcount(c)		((c)->refcount++)
 
 /* io_manager.c */

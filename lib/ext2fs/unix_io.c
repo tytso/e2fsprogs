@@ -1139,9 +1139,9 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 }
 
 /*
- * Flush data buffers to disk.
+ * Flush data buffers to disk and invalidate cache if needed
  */
-static errcode_t unix_flush(io_channel channel)
+static errcode_t _unix_flush(io_channel channel, int invalidate)
 {
 	struct unix_private_data *data;
 	errcode_t retval = 0;
@@ -1151,13 +1151,29 @@ static errcode_t unix_flush(io_channel channel)
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 #ifndef NO_IO_CACHE
-	retval = flush_cached_blocks(channel, data, 0);
+	retval = flush_cached_blocks(channel, data, invalidate);
 #endif
 #ifdef HAVE_FSYNC
 	if (!retval && fsync(data->dev) != 0)
 		return errno;
 #endif
 	return retval;
+}
+
+/*
+ * Flush data buffers to disk.
+ */
+static errcode_t unix_flush(io_channel channel)
+{
+	return _unix_flush(channel, 0);
+}
+
+/*
+ * Flush data buffers to disk and invalidate cache.
+ */
+static errcode_t unix_flush_cleanup(io_channel channel)
+{
+	return _unix_flush(channel, 1);
 }
 
 static errcode_t unix_set_option(io_channel channel, const char *option,
@@ -1349,6 +1365,7 @@ static struct struct_io_manager struct_unix_manager = {
 	.discard	= unix_discard,
 	.cache_readahead	= unix_cache_readahead,
 	.zeroout	= unix_zeroout,
+	.flush_cleanup	= unix_flush_cleanup,
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
@@ -1370,6 +1387,7 @@ static struct struct_io_manager struct_unixfd_manager = {
 	.discard	= unix_discard,
 	.cache_readahead	= unix_cache_readahead,
 	.zeroout	= unix_zeroout,
+	.flush_cleanup	= unix_flush_cleanup,
 };
 
 io_manager unixfd_io_manager = &struct_unixfd_manager;
