@@ -2250,6 +2250,9 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 	}
 	thread_fs->priv_data = thread_context;
 
+	thread_context->thread_index = 0;
+	set_up_logging(thread_context);
+
 	thread_context->fs = thread_fs;
 	*thread_ctx = thread_context;
 	return 0;
@@ -2262,12 +2265,14 @@ out_context:
 
 static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 {
-	errcode_t	retval;
-	int		flags = global_ctx->flags;
-	ext2_filsys	thread_fs = thread_ctx->fs;
-	ext2_filsys	global_fs = global_ctx->fs;
+	errcode_t	 retval;
+	int		 flags = global_ctx->flags;
+	ext2_filsys	 thread_fs = thread_ctx->fs;
+	ext2_filsys	 global_fs = global_ctx->fs;
+	FILE		*global_logf = global_ctx->logf;
+	FILE		*global_problem_logf = global_ctx->problem_logf;
 #ifdef HAVE_SETJMP_H
-	jmp_buf		old_jmp;
+	jmp_buf		 old_jmp;
 
 	memcpy(old_jmp, global_ctx->abort_loc, sizeof(jmp_buf));
 #endif
@@ -2286,6 +2291,8 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	}
 	global_fs->priv_data = global_ctx;
 	global_ctx->fs = global_fs;
+	global_ctx->logf = global_logf;
+	global_ctx->problem_logf = global_problem_logf;
 
 	if (thread_ctx->inode_used_map) {
 		retval = e2fsck_pass1_copy_bitmap(global_fs,
@@ -2374,6 +2381,12 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 
 	retval = e2fsck_pass1_thread_join_one(global_ctx, thread_ctx);
 	ext2fs_free_mem(&thread_ctx->fs);
+	if (thread_ctx->logf)
+		fclose(thread_ctx->logf);
+	if (thread_ctx->problem_logf) {
+		fputs("</problem_log>\n", thread_ctx->problem_logf);
+		fclose(thread_ctx->problem_logf);
+	}
 	ext2fs_free_mem(&thread_ctx);
 
 	return retval;

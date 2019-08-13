@@ -1,0 +1,32 @@
+LOG_FNAME="f_multithread_logfile_xxx"
+FSCK_OPT="-fy -m -y -E log_filename=$LOG_FNAME"
+SKIP_VERIFY="true"
+ONE_PASS_ONLY="true"
+SKIP_CLEANUP="true"
+
+rm -f $LOG_FNAME.* $LOG_FNAME
+
+. $cmd_dir/run_e2fsck
+
+rm -f $test_name.ok $test_name.failed
+cmp -s $OUT1 $EXP1
+status1=$?
+
+if [ "$status1" -eq 0 ]; then
+	if [ ! -f $LOG_FNAME -o ! -f $LOG_FNAME.0 ]; then
+		echo "$LOG_FNAME or $LOG_FNAME.0 is not created" > $test_name.failed
+		echo "$test_name: $test_description: failed"
+	else
+		echo "$test_name: $test_description: ok"
+		touch $test_name.ok
+	fi
+else
+	diff $DIFF_OPTS $test_dir/expect.1 \
+		$test_name.1.log >> $test_name.failed
+        echo "$test_name: $test_description: failed"
+fi
+
+unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2
+unset SKIP_VERIFY SKIP_CLEANUP SKIP_GUNZIP ONE_PASS_ONLY PREP_CMD
+unset DESCRIPTION SKIP_UNLINK AFTER_CMD PASS_ZERO
+unset LOG_FINAME

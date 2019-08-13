@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include "e2fsck.h"
 #include <pwd.h>
@@ -291,6 +292,8 @@ static FILE *set_up_log_file(e2fsck_t ctx, const char *key, const char *fn)
 	struct string s, s1, s2;
 	char *s0 = 0, *log_dir = 0, *log_fn = 0;
 	int log_dir_wait = 0;
+	int string_size;
+	char string_index[10];
 
 	s.s = s1.s = s2.s = 0;
 
@@ -307,6 +310,12 @@ static FILE *set_up_log_file(e2fsck_t ctx, const char *key, const char *fn)
 		goto out;
 
 	expand_logfn(ctx, log_fn, &s);
+	if (ctx->global_ctx) {
+		sprintf(string_index, "%d", ctx->thread_index);
+		append_string(&s, ".", 1);
+		append_string(&s, string_index, 0);
+	}
+
 	if ((log_fn[0] == '/') || !log_dir || !log_dir[0])
 		s0 = s.s;
 
@@ -325,7 +334,6 @@ static FILE *set_up_log_file(e2fsck_t ctx, const char *key, const char *fn)
 		append_string(&s2, log_dir, 0);
 		append_string(&s2, "/", 1);
 		append_string(&s2, s.s, 0);
-		printf("%s\n", s2.s);
 	}
 
 	if (s0)

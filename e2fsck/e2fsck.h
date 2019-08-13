@@ -308,8 +308,10 @@ struct e2fsck_struct {
 	/*
 	 * For pass1_check_directory and pass1_get_blocks
 	 */
-	ext2_ino_t stashed_ino;
-	struct ext2_inode *stashed_inode;
+	ext2_ino_t		stashed_ino;
+	struct ext2_inode	*stashed_inode;
+	/* Thread index, if global_ctx is null, this field is unused */
+	int			thread_index;
 
 	/*
 	 * Location of the lost and found directory
