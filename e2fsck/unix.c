@@ -82,7 +82,9 @@ static void usage(e2fsck_t ctx)
 
 	fprintf(stderr, "%s", _("\nEmergency help:\n"
 		" -p                   Automatic repair (no questions)\n"
+#ifdef HAVE_PTHREAD
 		" -m                   multiple threads to speedup fsck\n"
+#endif
 		" -n                   Make no changes to the filesystem\n"
 		" -y                   Assume \"yes\" to all questions\n"
 		" -c                   Check for bad blocks and add them to the badblock list\n"
@@ -849,7 +851,11 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	phys_mem_kb = get_memory_size() / 1024;
 	ctx->readahead_kb = ~0ULL;
 
+#ifdef HAVE_PTHREAD
 	while ((c = getopt(argc, argv, "pamnyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDkz:")) != EOF)
+#else
+	while ((c = getopt(argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDkz:")) != EOF)
+#endif
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
@@ -890,9 +896,11 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			}
 			ctx->options |= E2F_OPT_PREEN;
 			break;
+#ifdef HAVE_PTHREAD
 		case 'm':
 			ctx->options |= E2F_OPT_MULTITHREAD;
 			break;
+#endif
 		case 'n':
 			if (ctx->options & (E2F_OPT_YES|E2F_OPT_PREEN))
 				goto conflict_opt;
@@ -1011,6 +1019,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			_("The -n and -l/-L options are incompatible."));
 		fatal_error(ctx, 0);
 	}
+#ifdef HAVE_PTHREAD
 	if (ctx->options & E2F_OPT_MULTITHREAD) {
 		if ((ctx->options & (E2F_OPT_YES|E2F_OPT_NO|E2F_OPT_PREEN)) == 0) {
 			com_err(ctx->program_name, 0, "%s",
@@ -1023,6 +1032,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			fatal_error(ctx, 0);
 		}
 	}
+#endif
 	if (ctx->options & E2F_OPT_NO)
 		ctx->options |= E2F_OPT_READONLY;
 

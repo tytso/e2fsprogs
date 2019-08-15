@@ -426,6 +426,19 @@ struct e2fsck_struct {
 	char *undo_file;
 };
 
+#ifdef HAVE_PTHREAD
+struct e2fsck_thread_info {
+	/* ID returned by pthread_create() */
+	pthread_t		 eti_thread_id;
+	/* Application-defined thread index */
+	int			 eti_thread_index;
+	/* Thread has been started */
+	int			 eti_started;
+	/* Context used for this thread */
+	e2fsck_t		 eti_thread_ctx;
+};
+#endif
+
 /* Data structures to evaluate whether an extent tree needs rebuilding. */
 struct extent_tree_level {
 	unsigned int	num_extents;

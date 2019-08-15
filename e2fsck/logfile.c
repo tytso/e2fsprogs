@@ -310,11 +310,13 @@ static FILE *set_up_log_file(e2fsck_t ctx, const char *key, const char *fn)
 		goto out;
 
 	expand_logfn(ctx, log_fn, &s);
+#ifdef HAVE_PTHREAD
 	if (ctx->global_ctx) {
 		sprintf(string_index, "%d", ctx->thread_index);
 		append_string(&s, ".", 1);
 		append_string(&s, string_index, 0);
 	}
+#endif
 
 	if ((log_fn[0] == '/') || !log_dir || !log_dir[0])
 		s0 = s.s;

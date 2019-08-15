@@ -27,6 +27,7 @@ esac
 
 test_dir=$1
 cmd_dir=$SRCDIR
+pfsck_enabled="no"
 
 if test "$TEST_CONFIG"x = x; then
 	TEST_CONFIG=$SRCDIR/test_config
@@ -50,6 +51,13 @@ if [ -f $test_dir/name ]; then
 	test_description=`cat $test_dir/name`
 else
 	test_description=
+fi
+
+$FSCK --help 2>&1 | grep -q -w -- -m && pfsck_enabled=yes
+if [ "$pfsck_enabled" != "yes" ] ; then
+	echo "$test_dir" | grep -q multithread &&
+	echo "$test_name: $test_description: skipped (pfsck disabled)" &&
+	exit 0
 fi
 
 if [ -n "$SKIP_SLOW_TESTS" -a -f $test_dir/is_slow_test ]; then

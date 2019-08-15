@@ -47,6 +47,9 @@
 #include <errno.h>
 #endif
 #include <assert.h>
+#ifdef HAVE_PTHREAD
+#include <pthread.h>
+#endif
 
 #include "e2fsck.h"
 #include <ext2fs/ext2_ext_attr.h>
@@ -1162,7 +1165,7 @@ static int e2fsck_should_abort(e2fsck_t ctx)
 	return 0;
 }
 
-void e2fsck_pass1_thread(e2fsck_t ctx)
+void e2fsck_pass1_run(e2fsck_t ctx)
 {
 	int	i;
 	__u64	max_sizes;
@@ -2087,6 +2090,7 @@ endit:
 		ctx->invalid_bitmaps++;
 }
 
+#ifdef HAVE_PTHREAD
 static errcode_t e2fsck_pass1_copy_bitmap(ext2_filsys fs, ext2fs_generic_bitmap *src,
 					  ext2fs_generic_bitmap *dest)
 {
@@ -2392,18 +2396,38 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 	return retval;
 }
 
-void e2fsck_pass1_multithread(e2fsck_t ctx)
+static int e2fsck_pass1_threads_join(struct e2fsck_thread_info *infos,
+				      int num_threads, e2fsck_t global_ctx)
 {
-	errcode_t	retval;
-	e2fsck_t	thread_ctx;
+	errcode_t			 rc;
+	errcode_t			 ret = 0;
+	int				 i;
+	struct e2fsck_thread_info	*pinfo;
 
-	retval = e2fsck_pass1_thread_prepare(ctx, &thread_ctx);
-	if (retval) {
-		com_err(ctx->program_name, 0,
-			_("while preparing pass1 thread\n"));
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
+	for (i = 0; i < num_threads; i++) {
+		pinfo = &infos[i];
+
+		if (!pinfo->eti_started)
+			continue;
+
+		rc = pthread_join(pinfo->eti_thread_id, NULL);
+		if (rc) {
+			com_err(global_ctx->program_name, rc,
+				_("while joining thread\n"));
+			if (ret == 0)
+				ret = rc;
+		}
+		e2fsck_pass1_thread_join(global_ctx, infos[i].eti_thread_ctx);
 	}
+	free(infos);
+
+	return ret;
+}
+
+static void *e2fsck_pass1_thread(void *arg)
+{
+	struct e2fsck_thread_info	*info = arg;
+	e2fsck_t			 thread_ctx = info->eti_thread_ctx;
 
 #ifdef HAVE_SETJMP_H
 	/*
@@ -2414,25 +2438,118 @@ void e2fsck_pass1_multithread(e2fsck_t ctx)
 	 */
 	if (setjmp(thread_ctx->abort_loc)) {
 		thread_ctx->flags &= ~E2F_FLAG_SETJMP_OK;
-		e2fsck_pass1_thread_join(ctx, thread_ctx);
-		return;
+		goto out;
 	}
 	thread_ctx->flags |= E2F_FLAG_SETJMP_OK;
 #endif
 
-	e2fsck_pass1_thread(thread_ctx);
-	retval = e2fsck_pass1_thread_join(ctx, thread_ctx);
-	if (retval) {
-		com_err(ctx->program_name, 0,
-			_("while joining pass1 thread\n"));
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
+	e2fsck_pass1_run(thread_ctx);
+
+out:
+	return NULL;
 }
+
+static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
+				      int num_threads, e2fsck_t global_ctx)
+{
+	struct e2fsck_thread_info	*infos;
+	pthread_attr_t			 attr;
+	errcode_t			 retval;
+	errcode_t			 ret;
+	struct e2fsck_thread_info	*tmp_pinfo;
+	int				 i;
+	e2fsck_t			 thread_ctx;
+
+	retval = pthread_attr_init(&attr);
+	if (retval) {
+		com_err(global_ctx->program_name, retval,
+			_("while setting pthread attribute\n"));
+		return retval;
+	}
+
+	infos = calloc(num_threads, sizeof(struct e2fsck_thread_info));
+	if (infos == NULL) {
+		retval = -ENOMEM;
+		com_err(global_ctx->program_name, retval,
+			_("while allocating memory for threads\n"));
+		pthread_attr_destroy(&attr);
+		return retval;
+	}
+
+	for (i = 0; i < num_threads; i++) {
+		tmp_pinfo = &infos[i];
+		tmp_pinfo->eti_thread_index = i;
+		retval = e2fsck_pass1_thread_prepare(global_ctx, &thread_ctx);
+		if (retval) {
+			com_err(global_ctx->program_name, retval,
+				_("while preparing pass1 thread\n"));
+			break;
+		}
+		tmp_pinfo->eti_thread_ctx = thread_ctx;
+
+		retval = pthread_create(&tmp_pinfo->eti_thread_id, &attr,
+					&e2fsck_pass1_thread, tmp_pinfo);
+		if (retval) {
+			com_err(global_ctx->program_name, retval,
+				_("while creating thread\n"));
+			e2fsck_pass1_thread_join(global_ctx, thread_ctx);
+			break;
+		}
+
+		tmp_pinfo->eti_started = 1;
+	}
+
+	/* destroy the thread attribute object, since it is no longer needed */
+	ret = pthread_attr_destroy(&attr);
+	if (ret) {
+		com_err(global_ctx->program_name, ret,
+			_("while destroying thread attribute\n"));
+		if (retval == 0)
+			retval = ret;
+	}
+
+	if (retval) {
+		e2fsck_pass1_threads_join(infos, num_threads, global_ctx);
+		return retval;
+	}
+	*pinfo = infos;
+	return 0;
+}
+
+static void e2fsck_pass1_multithread(e2fsck_t global_ctx)
+{
+	struct e2fsck_thread_info	*infos = NULL;
+	int				 num_threads = 1;
+	errcode_t			 retval;
+
+	retval = e2fsck_pass1_threads_start(&infos, num_threads, global_ctx);
+	if (retval) {
+		com_err(global_ctx->program_name, retval,
+			_("while starting pass1 threads\n"));
+		goto out_abort;
+	}
+
+	retval = e2fsck_pass1_threads_join(infos, num_threads, global_ctx);
+	if (retval) {
+		com_err(global_ctx->program_name, retval,
+			_("while joining pass1 threads\n"));
+		goto out_abort;
+	}
+	return;
+out_abort:
+	global_ctx->flags |= E2F_FLAG_ABORT;
+	return;
+}
+#endif
 
 void e2fsck_pass1(e2fsck_t ctx)
 {
+
+#ifdef HAVE_PTHREAD
 	e2fsck_pass1_multithread(ctx);
+#else
+	e2fsck_pass1_run(ctx);
+#endif
 }
 
 #undef FINISH_INODE_LOOP
