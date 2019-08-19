@@ -324,6 +324,7 @@ struct fuse2fs {
 	int minixdf;
 	int fakeroot;
 	int alloc_all_blocks;
+	int norecovery;
 	FILE *err_fp;
 	unsigned int next_generation;
 };
@@ -3662,6 +3663,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("fakeroot",		fakeroot,		1),
 	FUSE2FS_OPT("fuse2fs_debug",	debug,			1),
 	FUSE2FS_OPT("no_default_opts",	no_default_opts,	1),
+	FUSE2FS_OPT("norecovery",	norecovery,		1),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -3700,6 +3702,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o minixdf             minix-style df\n"
 	"    -o fakeroot            pretend to be root for permission checks\n"
 	"    -o no_default_opts     do not include default fuse options\n"
+	"    -o norecovery	    don't replay the journal (implies ro)\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
 	"\n",
 			outargs->argv[0]);
@@ -3741,6 +3744,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (fctx.norecovery)
+		fctx.ro = 1;
 	if (fctx.ro)
 		printf("%s", _("Mounting read-only.\n"));
 
@@ -3788,7 +3793,11 @@ int main(int argc, char *argv[])
 	ret = 3;
 
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
-		if (!fctx.ro) {
+		if (fctx.norecovery) {
+			printf(_("%s: mounting read-only without "
+				 "recovering journal\n"),
+			       fctx.device);
+		} else if (!fctx.ro) {
 			printf(_("%s: recovering journal\n"), fctx.device);
 			err = ext2fs_run_ext3_journal(&global_fs);
 			if (err) {
