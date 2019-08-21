@@ -707,6 +707,9 @@ struct problem_context {
 /* Encrypted inode has corrupt encryption extended attribute */
 #define PR_1_CORRUPT_ENCRYPTION_XATTR		0x01008B
 
+/* Failed to goto block group */
+#define PR_1_SCAN_GOTO				0x0100A0
+
 /*
  * Pass 1b errors
  */

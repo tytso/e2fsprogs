@@ -548,4 +548,7 @@ ec	EXT2_ET_EA_INODE_CORRUPTED,
 ec	EXT2_ET_NO_GDESC,
 	"Group descriptors not loaded"
 
+ec	EXT2_ET_SCAN_FINISHED,
+	"Scanning finished"
+
 	end

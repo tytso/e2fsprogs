@@ -1370,6 +1370,23 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 	/* Set up ctx->lost_and_found if possible */
 	(void) e2fsck_get_lost_and_found(ctx, 0);
 
+#ifdef HAVE_PTHREAD
+	if (ctx->global_ctx) {
+		if (ctx->options & E2F_OPT_DEBUG &&
+		    ctx->options & E2F_OPT_MULTITHREAD)
+			fprintf(stderr, "thread %d jumping to group %d\n",
+					ctx->thread_info.et_thread_index,
+					ctx->thread_info.et_group_start);
+		pctx.errcode = ext2fs_inode_scan_goto_blockgroup(scan,
+					ctx->thread_info.et_group_start);
+		if (pctx.errcode) {
+			fix_problem(ctx, PR_1_PASS_HEADER, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			goto endit;
+		}
+	}
+#endif
+
 	while (1) {
 		if (ino % (fs->super->s_inodes_per_group * 4) == 1) {
 			if (e2fsck_mmp_update(fs))
@@ -1413,6 +1430,8 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
 			continue;
 		}
+		if (pctx.errcode == EXT2_ET_SCAN_FINISHED)
+			break;
 		if (pctx.errcode &&
 		    pctx.errcode != EXT2_ET_INODE_CSUM_INVALID &&
 		    pctx.errcode != EXT2_ET_INODE_IS_GARBAGE) {
@@ -2212,12 +2231,14 @@ static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 	return retval;
 }
 
-static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx)
+static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx,
+					     int thread_index)
 {
-	errcode_t	retval;
-	e2fsck_t	thread_context;
-	ext2_filsys	thread_fs;
-	ext2_filsys	global_fs = global_ctx->fs;
+	errcode_t		retval;
+	e2fsck_t		thread_context;
+	ext2_filsys		thread_fs;
+	ext2_filsys		global_fs = global_ctx->fs;
+	struct e2fsck_thread	*tinfo;
 
 	assert(global_ctx->inode_used_map == NULL);
 	assert(global_ctx->inode_dir_map == NULL);
@@ -2254,8 +2275,14 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 	}
 	thread_fs->priv_data = thread_context;
 
-	thread_context->thread_index = 0;
+	thread_context->thread_info.et_thread_index = thread_index;
 	set_up_logging(thread_context);
+
+	assert(thread_index == 0);
+	tinfo = &thread_context->thread_info;
+	tinfo->et_group_start = 0;
+	tinfo->et_group_next = 0;
+	tinfo->et_group_end = thread_fs->group_desc_count;
 
 	thread_context->fs = thread_fs;
 	*thread_ctx = thread_context;
@@ -2479,7 +2506,7 @@ static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
 	for (i = 0; i < num_threads; i++) {
 		tmp_pinfo = &infos[i];
 		tmp_pinfo->eti_thread_index = i;
-		retval = e2fsck_pass1_thread_prepare(global_ctx, &thread_ctx);
+		retval = e2fsck_pass1_thread_prepare(global_ctx, &thread_ctx, i);
 		if (retval) {
 			com_err(global_ctx->program_name, retval,
 				_("while preparing pass1 thread\n"));
@@ -2564,6 +2591,7 @@ static errcode_t scan_callback(ext2_filsys fs,
 {
 	struct scan_callback_struct *scan_struct;
 	e2fsck_t ctx;
+	struct e2fsck_thread *tinfo;
 
 	scan_struct = (struct scan_callback_struct *) priv_data;
 	ctx = scan_struct->ctx;
@@ -2574,6 +2602,15 @@ static errcode_t scan_callback(ext2_filsys fs,
 		if ((ctx->progress)(ctx, 1, group+1,
 				    ctx->fs->group_desc_count))
 			return EXT2_ET_CANCEL_REQUESTED;
+
+#ifdef HAVE_PTHREAD
+	if (ctx->global_ctx) {
+		tinfo = &ctx->thread_info;
+		tinfo->et_group_next++;
+		if (tinfo->et_group_next >= tinfo->et_group_end)
+			return EXT2_ET_SCAN_FINISHED;
+	}
+#endif
 
 	return 0;
 }

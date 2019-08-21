@@ -1269,6 +1269,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Encrypted @i %i has corrupt encryption @a.\n"),
 	  PROMPT_CLEAR_INODE, 0, 0, 0, 0 },
 
+	/* Failed to goto block group */
+	{ PR_1_SCAN_GOTO,
+	  N_("failed to goto block group"),
+          PROMPT_NONE, PR_FATAL, 0, 0, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
