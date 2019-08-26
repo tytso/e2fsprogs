@@ -11,6 +11,7 @@
 
 #include "config.h"
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -88,13 +89,67 @@ out:
 	exit(exit_value);
 }
 
+#ifdef HAVE_PTHREAD
+static void thread_log_out(struct e2fsck_thread *tinfo)
+{
+	printf("[Thread %d] %s", tinfo->et_thread_index,
+	       tinfo->et_log_buf);
+	tinfo->et_log_length = 0;
+	tinfo->et_log_buf[0] = '\0';
+}
+#endif
+
 void log_out(e2fsck_t ctx, const char *fmt, ...)
 {
 	va_list pvar;
+	struct e2fsck_thread *tinfo;
+	int buf_size;
+	int msg_size;
+	int left_size;
+	int fmt_length = strlen(fmt);
 
-	va_start(pvar, fmt);
-	vprintf(fmt, pvar);
-	va_end(pvar);
+#ifdef HAVE_PTHREAD
+	if ((ctx->options & E2F_OPT_MULTITHREAD) && ctx->global_ctx) {
+		tinfo = &ctx->thread_info;
+		buf_size = sizeof(tinfo->et_log_buf);
+		left_size = buf_size - tinfo->et_log_length;
+
+		va_start(pvar, fmt);
+		msg_size = vsnprintf(tinfo->et_log_buf + tinfo->et_log_length,
+				     left_size, fmt, pvar);
+		va_end(pvar);
+
+		if (msg_size >= left_size) {
+			tinfo->et_log_buf[tinfo->et_log_length] = '\0';
+
+			assert(msg_size < buf_size);
+			if (msg_size < buf_size) {
+				thread_log_out(tinfo);
+
+				va_start(pvar, fmt);
+				msg_size = vsnprintf(tinfo->et_log_buf, buf_size,
+						     fmt, pvar);
+				va_end(pvar);
+
+				tinfo->et_log_length += msg_size;
+				tinfo->et_log_buf[tinfo->et_log_length] = '\0';
+			}
+		} else {
+			tinfo->et_log_length += msg_size;
+			tinfo->et_log_buf[tinfo->et_log_length] = '\0';
+		}
+
+		if (tinfo->et_log_length > 0 &&
+		    tinfo->et_log_buf[tinfo->et_log_length - 1] == '\n')
+			thread_log_out(tinfo);
+	} else
+#endif
+	{
+		va_start(pvar, fmt);
+		vprintf(fmt, pvar);
+		va_end(pvar);
+	}
+
 	if (ctx->logf) {
 		va_start(pvar, fmt);
 		vfprintf(ctx->logf, fmt, pvar);

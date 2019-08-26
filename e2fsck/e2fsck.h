@@ -240,6 +240,10 @@ struct e2fsck_thread {
 	dgrp_t		et_group_end;
 	/* The next group number to check */
 	dgrp_t		et_group_next;
+	/* Scanned inode number */
+	ext2_ino_t	et_inode_number;
+	char		et_log_buf[2048];
+	char		et_log_length;
 };
 #endif
 
