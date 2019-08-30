@@ -7,6 +7,7 @@
 
 #undef DIRINFO_DEBUG
 
+#include <assert.h>
 #include "config.h"
 #include "e2fsck.h"
 #include <sys/stat.h>
@@ -123,6 +124,104 @@ static void setup_db(e2fsck_t ctx)
 }
 
 /*
+ * Return the min index that has ino larger or equal to @ino
+ * If not found, return -ENOENT
+ */
+static int
+e2fsck_dir_info_min_larger_equal(struct dir_info_db *dir_info,
+				 ext2_ino_t ino, ext2_ino_t *index)
+{
+	ext2_ino_t low = 0;
+	ext2_ino_t mid, high;
+	ext2_ino_t tmp_ino;
+	int found = 0;
+
+	if (dir_info->count == 0)
+		return -ENOENT;
+
+	high = dir_info->count - 1;
+	while (low <= high) {
+		/* sum may overflow, but result will fit into mid again */
+		mid = (unsigned long long)(low + high) / 2;
+		tmp_ino = dir_info->array[mid].ino;
+		if (ino == tmp_ino) {
+			*index = mid;
+			found = 1;
+			return 0;
+		} else if (ino < tmp_ino) {
+			/*
+			 * The mid ino is larger than @ino, remember the index
+			 * here so we won't miss this ino
+			 */
+			*index = mid;
+			found = 1;
+			if (mid == 0)
+				break;
+			high = mid - 1;
+		} else {
+			low = mid + 1;
+		}
+	}
+
+	if (found)
+		return 0;
+
+	return -ENOENT;
+}
+
+/*
+ *
+ * Insert an inode into the sorted array. The array should have at least one
+ * free slot.
+ *
+ * Normally, add_dir_info is called with each inode in
+ * sequential order; but once in a while (like when pass 3
+ * needs to recreate the root directory or lost+found
+ * directory) it is called out of order.  In those cases, we
+ * need to move the dir_info entries down to make room, since
+ * the dir_info array needs to be sorted by inode number for
+ * get_dir_info()'s sake.
+ */
+static void e2fsck_insert_dir_info(struct dir_info_db *dir_info, ext2_ino_t ino, ext2_ino_t parent)
+{
+	ext2_ino_t		index;
+	struct dir_info		*dir;
+	size_t			dir_size = sizeof(*dir);
+	struct dir_info		*array = dir_info->array;
+	ext2_ino_t		array_count = dir_info->count;
+	int			err;
+
+	/*
+	 * Removing this check won't break anything. But since seqential ino
+	 * inserting happens a lot, this check avoids binary search.
+	 */
+	if (array_count == 0 || array[array_count - 1].ino < ino) {
+		dir = &array[array_count];
+		dir_info->count++;
+		goto out;
+	}
+
+	err = e2fsck_dir_info_min_larger_equal(dir_info, ino, &index);
+	if (err >= 0 && array[index].ino == ino) {
+		dir = &array[index];
+		goto out;
+	}
+	if (err < 0) {
+		dir = &array[array_count];
+		dir_info->count++;
+		goto out;
+	}
+
+	dir = &array[index];
+	memmove((char *)dir + dir_size, dir, dir_size * (array_count - index));
+	dir_info->count++;
+out:
+	dir->ino = ino;
+	dir->dotdot = parent;
+	dir->parent = parent;
+}
+
+/*
  * This subroutine is called during pass1 to create a directory info
  * entry.  During pass1, the passed-in parent is 0; it will get filled
  * in during pass2.
@@ -171,30 +270,7 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 	}
 #endif
 
-	/*
-	 * Normally, add_dir_info is called with each inode in
-	 * sequential order; but once in a while (like when pass 3
-	 * needs to recreate the root directory or lost+found
-	 * directory) it is called out of order.  In those cases, we
-	 * need to move the dir_info entries down to make room, since
-	 * the dir_info array needs to be sorted by inode number for
-	 * get_dir_info()'s sake.
-	 */
-	if (ctx->dir_info->count &&
-	    ctx->dir_info->array[ctx->dir_info->count-1].ino >= ino) {
-		for (i = ctx->dir_info->count-1; i > 0; i--)
-			if (ctx->dir_info->array[i-1].ino < ino)
-				break;
-		dir = &ctx->dir_info->array[i];
-		if (dir->ino != ino)
-			for (j = ctx->dir_info->count++; j > i; j--)
-				ctx->dir_info->array[j] = ctx->dir_info->array[j-1];
-	} else
-		dir = &ctx->dir_info->array[ctx->dir_info->count++];
-
-	dir->ino = ino;
-	dir->dotdot = parent;
-	dir->parent = parent;
+	e2fsck_insert_dir_info(ctx->dir_info, ino, parent);
 }
 
 /*
@@ -204,7 +280,8 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 static struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct dir_info_db	*db = ctx->dir_info;
-	ext2_ino_t low, high, mid;
+	ext2_ino_t		index;
+	int			err;
 
 	if (!db)
 		return 0;
@@ -245,44 +322,19 @@ static struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino)
 	if (db->last_lookup && db->last_lookup->ino == ino)
 		return db->last_lookup;
 
-	low = 0;
-	high = ctx->dir_info->count - 1;
-	if (ino == ctx->dir_info->array[low].ino) {
+	err = e2fsck_dir_info_min_larger_equal(ctx->dir_info, ino, &index);
+	if (err < 0)
+		return NULL;
+	assert(ino <= ctx->dir_info->array[index].ino);
+	if (ino == ctx->dir_info->array[index].ino) {
 #ifdef DIRINFO_DEBUG
-		printf("(%u,%u,%u)\n", ino,
-		       ctx->dir_info->array[low].dotdot,
-		       ctx->dir_info->array[low].parent);
+		printf("(%d,%d,%d)\n", ino,
+		       ctx->dir_info->array[index].dotdot,
+		       ctx->dir_info->array[index].parent);
 #endif
-		return &ctx->dir_info->array[low];
+		return &ctx->dir_info->array[index];
 	}
-	if (ino == ctx->dir_info->array[high].ino) {
-#ifdef DIRINFO_DEBUG
-		printf("(%u,%u,%u)\n", ino,
-		       ctx->dir_info->array[high].dotdot,
-		       ctx->dir_info->array[high].parent);
-#endif
-		return &ctx->dir_info->array[high];
-	}
-
-	while (low < high) {
-		/* sum may overflow, but result will fit into mid again */
-		mid = (unsigned long long)(low + high) / 2;
-		if (mid == low || mid == high)
-			break;
-		if (ino == ctx->dir_info->array[mid].ino) {
-#ifdef DIRINFO_DEBUG
-			printf("(%u,%u,%u)\n", ino,
-			       ctx->dir_info->array[mid].dotdot,
-			       ctx->dir_info->array[mid].parent);
-#endif
-			return &ctx->dir_info->array[mid];
-		}
-		if (ino < ctx->dir_info->array[mid].ino)
-			high = mid;
-		else
-			low = mid;
-	}
-	return 0;
+	return NULL;
 }
 
 static void e2fsck_put_dir_info(e2fsck_t ctx EXT2FS_NO_TDB_UNUSED,
