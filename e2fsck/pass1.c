@@ -86,7 +86,6 @@ static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
 static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
-static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
 static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 				  dgrp_t group, void * priv_data);
@@ -121,15 +120,15 @@ struct process_inode_block {
 };
 
 struct scan_callback_struct {
-	e2fsck_t	ctx;
-	char		*block_buf;
+	e2fsck_t			 ctx;
+	char				*block_buf;
+	struct process_inode_block	*inodes_to_process;
+	int				*process_inode_count;
 };
 
-/*
- * For the inodes to process list.
- */
-static struct process_inode_block *inodes_to_process;
-static int process_inode_count;
+static void process_inodes(e2fsck_t ctx, char *block_buf,
+			   struct process_inode_block *inodes_to_process,
+			   int *process_inode_count);
 
 static __u64 ext2_max_sizes[EXT2_MAX_BLOCK_LOG_SIZE -
 			    EXT2_MIN_BLOCK_LOG_SIZE + 1];
@@ -1168,7 +1167,6 @@ static int e2fsck_should_abort(e2fsck_t ctx)
 void e2fsck_pass1_run(e2fsck_t ctx)
 {
 	int	i;
-	__u64	max_sizes;
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t	ino = 0;
 	struct ext2_inode *inode = NULL;
@@ -1191,6 +1189,8 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 	ext2_ino_t	ino_threshold = 0;
 	dgrp_t		ra_group = 0;
 	struct ea_quota	ea_ibody_quota;
+	struct process_inode_block *inodes_to_process;
+	int		process_inode_count;
 
 	init_resource_track(&rtrack, ctx->fs->io);
 	clear_problem_context(&pctx);
@@ -1214,17 +1214,6 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 #ifdef MTRACE
 	mtrace_print("Pass 1");
 #endif
-
-#define EXT2_BPP(bits) (1ULL << ((bits) - 2))
-
-	for (i = EXT2_MIN_BLOCK_LOG_SIZE; i <= EXT2_MAX_BLOCK_LOG_SIZE; i++) {
-		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(i);
-		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i);
-		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i) * EXT2_BPP(i);
-		max_sizes = (max_sizes * (1UL << i));
-		ext2_max_sizes[i - EXT2_MIN_BLOCK_LOG_SIZE] = max_sizes;
-	}
-#undef EXT2_BPP
 
 	imagic_fs = ext2fs_has_feature_imagic_inodes(sb);
 	extent_fs = ext2fs_has_feature_extents(sb);
@@ -1349,6 +1338,8 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 	ctx->stashed_inode = inode;
 	scan_struct.ctx = ctx;
 	scan_struct.block_buf = block_buf;
+	scan_struct.inodes_to_process = inodes_to_process;
+	scan_struct.process_inode_count = &process_inode_count;
 	ext2fs_set_inode_callback(scan, scan_callback, &scan_struct);
 	if (ctx->progress && ((ctx->progress)(ctx, 1, 0,
 					      ctx->fs->group_desc_count)))
@@ -1997,13 +1988,15 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			goto endit;
 
 		if (process_inode_count >= ctx->process_inode_size) {
-			process_inodes(ctx, block_buf);
+			process_inodes(ctx, block_buf, inodes_to_process,
+				       &process_inode_count);
 
 			if (e2fsck_should_abort(ctx))
 				goto endit;
 		}
 	}
-	process_inodes(ctx, block_buf);
+	process_inodes(ctx, block_buf, inodes_to_process,
+		       &process_inode_count);
 	ext2fs_close_inode_scan(scan);
 	scan = NULL;
 
@@ -2111,6 +2104,27 @@ endit:
 		print_resource_track(ctx, _("Pass 1"), &rtrack, ctx->fs->io);
 	else
 		ctx->invalid_bitmaps++;
+}
+
+static void init_ext2_max_sizes()
+{
+	int	i;
+	__u64	max_sizes;
+
+	/*
+	 * Init ext2_max_sizes which will be immutable and shared between
+	 * threads
+	 */
+#define EXT2_BPP(bits) (1ULL << ((bits) - 2))
+
+	for (i = EXT2_MIN_BLOCK_LOG_SIZE; i <= EXT2_MAX_BLOCK_LOG_SIZE; i++) {
+		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(i);
+		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i);
+		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i) * EXT2_BPP(i);
+		max_sizes = (max_sizes * (1UL << i));
+		ext2_max_sizes[i - EXT2_MIN_BLOCK_LOG_SIZE] = max_sizes;
+	}
+#undef EXT2_BPP
 }
 
 #ifdef HAVE_PTHREAD
@@ -2656,6 +2670,7 @@ out_abort:
 void e2fsck_pass1(e2fsck_t ctx)
 {
 
+	init_ext2_max_sizes();
 #ifdef HAVE_PTHREAD
 	e2fsck_pass1_multithread(ctx);
 #else
@@ -2680,7 +2695,9 @@ static errcode_t scan_callback(ext2_filsys fs,
 	scan_struct = (struct scan_callback_struct *) priv_data;
 	ctx = scan_struct->ctx;
 
-	process_inodes((e2fsck_t) fs->priv_data, scan_struct->block_buf);
+	process_inodes((e2fsck_t) fs->priv_data, scan_struct->block_buf,
+		       scan_struct->inodes_to_process,
+		       scan_struct->process_inode_count);
 
 	if (ctx->progress)
 		if ((ctx->progress)(ctx, 1, group+1,
@@ -2706,7 +2723,9 @@ static errcode_t scan_callback(ext2_filsys fs,
 /*
  * Process the inodes in the "inodes to process" list.
  */
-static void process_inodes(e2fsck_t ctx, char *block_buf)
+static void process_inodes(e2fsck_t ctx, char *block_buf,
+			   struct process_inode_block *inodes_to_process,
+			   int *process_inode_count)
 {
 	int			i;
 	struct ext2_inode	*old_stashed_inode;
@@ -2718,15 +2737,15 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 #if 0
 	printf("begin process_inodes: ");
 #endif
-	if (process_inode_count == 0)
+	if (*process_inode_count == 0)
 		return;
 	old_operation = ehandler_operation(0);
 	old_stashed_inode = ctx->stashed_inode;
 	old_stashed_ino = ctx->stashed_ino;
-	qsort(inodes_to_process, process_inode_count,
+	qsort(inodes_to_process, *process_inode_count,
 		      sizeof(struct process_inode_block), process_inode_cmp);
 	clear_problem_context(&pctx);
-	for (i=0; i < process_inode_count; i++) {
+	for (i=0; i < *process_inode_count; i++) {
 		pctx.inode = ctx->stashed_inode =
 			(struct ext2_inode *) &inodes_to_process[i].inode;
 		pctx.ino = ctx->stashed_ino = inodes_to_process[i].ino;
@@ -2744,7 +2763,7 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 	}
 	ctx->stashed_inode = old_stashed_inode;
 	ctx->stashed_ino = old_stashed_ino;
-	process_inode_count = 0;
+	*process_inode_count = 0;
 #if 0
 	printf("end process inodes\n");
 #endif
