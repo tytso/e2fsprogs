@@ -1340,8 +1340,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (ctx->progress && ((ctx->progress)(ctx, 1, 0,
 					      ctx->fs->group_desc_count)))
 		goto endit;
-	if ((fs->super->s_wtime < fs->super->s_inodes_count) ||
-	    (fs->super->s_mtime < fs->super->s_inodes_count) ||
+	if ((fs->super->s_wtime &&
+	     fs->super->s_wtime < fs->super->s_inodes_count) ||
+	    (fs->super->s_mtime &&
+	     fs->super->s_mtime < fs->super->s_inodes_count) ||
 	    (fs->super->s_mkfs_time &&
 	     fs->super->s_mkfs_time < fs->super->s_inodes_count))
 		low_dtime_check = 0;
