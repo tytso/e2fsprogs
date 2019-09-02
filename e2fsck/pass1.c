@@ -2363,6 +2363,21 @@ out_context:
 	return retval;
 }
 
+static void e2fsck_pass1_merge_dir_info(e2fsck_t global_ctx, e2fsck_t thread_ctx)
+{
+	if (thread_ctx->dir_info == NULL)
+		return;
+
+	if (global_ctx->dir_info == NULL) {
+		global_ctx->dir_info = thread_ctx->dir_info;
+		thread_ctx->dir_info = NULL;
+		return;
+	}
+
+	e2fsck_merge_dir_info(global_ctx, thread_ctx->dir_info,
+			      global_ctx->dir_info);
+}
+
 static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 {
 	errcode_t	 retval;
@@ -2372,6 +2387,7 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	FILE		*global_logf = global_ctx->logf;
 	FILE		*global_problem_logf = global_ctx->problem_logf;
 	ext2fs_inode_bitmap inode_bad_map = global_ctx->inode_bad_map;
+	struct dir_info_db *dir_info = global_ctx->dir_info;
 	ext2fs_inode_bitmap inode_used_map = global_ctx->inode_used_map;
 	ext2fs_inode_bitmap inode_dir_map = global_ctx->inode_dir_map;
 	ext2fs_inode_bitmap inode_bb_map = global_ctx->inode_bb_map;
@@ -2404,6 +2420,8 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	global_ctx->block_dup_map = block_dup_map;
 	global_ctx->block_ea_map = block_ea_map;
 	global_ctx->block_metadata_map = block_metadata_map;
+	global_ctx->dir_info = dir_info;
+	e2fsck_pass1_merge_dir_info(global_ctx, thread_ctx);
 
 	/* Keep the global singal flags*/
 	global_ctx->flags |= (flags & E2F_FLAG_SIGNAL_MASK) |
@@ -2503,6 +2521,7 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 	e2fsck_pass1_free_bitmap(&thread_ctx->block_dup_map);
 	e2fsck_pass1_free_bitmap(&thread_ctx->block_ea_map);
 	e2fsck_pass1_free_bitmap(&thread_ctx->block_metadata_map);
+	e2fsck_free_dir_info(thread_ctx);
 	ext2fs_free_mem(&thread_ctx);
 
 	return retval;
@@ -2667,15 +2686,48 @@ out_abort:
 }
 #endif
 
+/* TODO: tdb needs to be handled properly for multiple threads*/
+static int multiple_threads_supported(e2fsck_t ctx)
+{
+#ifdef	CONFIG_TDB
+	unsigned int		threshold;
+	ext2_ino_t		num_dirs;
+	errcode_t		retval;
+	char			*tdb_dir;
+	int			enable;
+
+	profile_get_string(ctx->profile, "scratch_files", "directory", 0, 0,
+			   &tdb_dir);
+	profile_get_uint(ctx->profile, "scratch_files",
+			 "numdirs_threshold", 0, 0, &threshold);
+	profile_get_boolean(ctx->profile, "scratch_files",
+			    "icount", 0, 1, &enable);
+
+	retval = ext2fs_get_num_dirs(ctx->fs, &num_dirs);
+	if (retval)
+		num_dirs = 1024;	/* Guess */
+
+	/* tdb is unsupported now */
+	if (enable && tdb_dir && !access(tdb_dir, W_OK) &&
+	    (!threshold || num_dirs > threshold))
+		return 0;
+ #endif
+	return 1;
+}
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 
 	init_ext2_max_sizes();
 #ifdef HAVE_PTHREAD
-	e2fsck_pass1_multithread(ctx);
-#else
-	e2fsck_pass1_run(ctx);
+	if (multiple_threads_supported(ctx)) {
+		e2fsck_pass1_multithread(ctx);
+		return;
+	}
+	fprintf(stderr, "Fall through single thread for pass1 "
+			"because tdb could not handle properly\n");
 #endif
+	e2fsck_pass1_run(ctx);
 }
 
 #undef FINISH_INODE_LOOP

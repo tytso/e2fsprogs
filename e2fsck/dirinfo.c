@@ -170,6 +170,72 @@ e2fsck_dir_info_min_larger_equal(struct dir_info_db *dir_info,
 }
 
 /*
+ * Merge two sorted dir info to @dest
+ */
+void e2fsck_merge_dir_info(e2fsck_t ctx, struct dir_info_db *src,
+			   struct dir_info_db *dest)
+{
+	size_t		 size_dir_info = sizeof(struct dir_info);
+	ext2_ino_t	 size = dest->size;
+	struct dir_info	 *src_array = src->array;
+	struct dir_info	 *dest_array = dest->array;
+	ext2_ino_t	 src_count = src->count;
+	ext2_ino_t	 dest_count = dest->count;
+	ext2_ino_t	 total_count = src_count + dest_count;
+	struct dir_info	*tmp_array;
+	struct dir_info	*array_ptr;
+	ext2_ino_t	 src_index = 0;
+	ext2_ino_t	 dest_index = 0;
+
+	if (src->count == 0)
+		return;
+
+	if (size < total_count)
+		size = total_count;
+
+	if (size < src->size)
+		size = src->size;
+
+	tmp_array = e2fsck_allocate_memory(ctx, size * size_dir_info,
+					    "directory map");
+	array_ptr = tmp_array;
+	/*
+	 * This can be improved by binary search and memcpy, but codes
+	 * would be more complex. And if the groups distributed to each
+	 * thread are strided, this implementation won't be too bad
+	 * comparing to the optimiztion.
+	 */
+	while (src_index < src_count || dest_index < dest_count) {
+		if (src_index >= src_count) {
+			memcpy(array_ptr, &dest_array[dest_index],
+			       (dest_count - dest_index) * size_dir_info);
+			break;
+		}
+		if (dest_index >= dest_count) {
+			memcpy(array_ptr, &src_array[src_index],
+			       (src_count - src_index) * size_dir_info);
+			break;
+		}
+		if (src_array[src_index].ino < dest_array[dest_index].ino) {
+			*array_ptr = src_array[src_index];
+			src_index++;
+		} else {
+			assert(src_array[src_index].ino >
+			       dest_array[dest_index].ino);
+			*array_ptr = dest_array[dest_index];
+			dest_index++;
+		}
+		array_ptr++;
+	}
+
+	if (dest->array)
+		ext2fs_free_mem(&dest->array);
+	dest->array = tmp_array;
+	dest->size = size;
+	dest->count = total_count;
+}
+
+/*
  *
  * Insert an inode into the sorted array. The array should have at least one
  * free slot.
