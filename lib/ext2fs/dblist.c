@@ -120,6 +120,42 @@ errcode_t ext2fs_copy_dblist(ext2_dblist src, ext2_dblist *dest)
 }
 
 /*
+ * Merge a directory block list @src to @dest
+ */
+errcode_t ext2fs_merge_dblist(ext2_dblist src, ext2_dblist dest)
+{
+	unsigned long long src_count = src->count;
+	unsigned long long dest_count = dest->count;
+	unsigned long long size = src_count + dest_count;
+	size_t size_entry = sizeof(struct ext2_db_entry2);
+	struct ext2_db_entry2 *array, *array2;
+	errcode_t retval;
+
+	if (src_count == 0)
+		return 0;
+
+	if (src->sorted || (dest->sorted && dest_count != 0))
+		return EINVAL;
+
+	retval = ext2fs_get_array(size, size_entry, &array);
+	if (retval)
+		return retval;
+
+	array2 = array;
+	memcpy(array, src->list, src_count * size_entry);
+	array += src_count;
+	memcpy(array, dest->list, dest_count * size_entry);
+	ext2fs_free_mem(&dest->list);
+
+	dest->list = array2;
+	dest->count = src_count + dest_count;
+	dest->size = size;
+	dest->sorted = 0;
+
+	return 0;
+}
+
+/*
  * Close a directory block list
  *
  * (moved to closefs.c)
