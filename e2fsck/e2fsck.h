@@ -450,6 +450,18 @@ struct e2fsck_struct {
 };
 
 #ifdef HAVE_PTHREAD
+#ifdef DEBUG_THREADS
+/*
+ * Enabling DEBUG_THREADS would cause the parallel
+ * fsck threads run sequentially.
+ */
+struct e2fsck_thread_debug {
+	pthread_mutex_t	etd_mutex;
+	pthread_cond_t	etd_cond;
+	int		etd_finished_threads;
+};
+#endif
+
 struct e2fsck_thread_info {
 	/* ID returned by pthread_create() */
 	pthread_t		 eti_thread_id;
@@ -459,7 +471,11 @@ struct e2fsck_thread_info {
 	int			 eti_started;
 	/* Context used for this thread */
 	e2fsck_t		 eti_thread_ctx;
+#ifdef DEBUG_THREADS
+	struct e2fsck_thread_debug	*eti_debug;
+#endif
 };
+
 #endif
 
 /* Data structures to evaluate whether an extent tree needs rebuilding. */
