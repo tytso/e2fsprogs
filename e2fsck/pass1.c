@@ -2245,6 +2245,7 @@ static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 	ext2fs_block_bitmap block_map;
 	ext2_badblocks_list badblocks;
 	ext2_dblist dblist;
+	int flags;
 
 	dest_io = dest->io;
 	dest_image_io = dest->image_io;
@@ -2252,6 +2253,7 @@ static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 	block_map = dest->block_map;
 	badblocks = dest->badblocks;
 	dblist = dest->dblist;
+	flags = dest->flags;
 
 	memcpy(dest, src, sizeof(struct struct_ext2_filsys));
 	dest->io = dest_io;
@@ -2263,6 +2265,9 @@ static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 	dest->dblist = dblist;
 	if (dest->dblist)
 		dest->dblist->fs = dest;
+	dest->flags = src->flags | flags;
+	if (!(src->flags & EXT2_FLAG_VALID) || !(flags & EXT2_FLAG_VALID))
+		ext2fs_unmark_valid(dest);
 
 	if (src->icache) {
 		ext2fs_free_inode_cache(src->icache);
