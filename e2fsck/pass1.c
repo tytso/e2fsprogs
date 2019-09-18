@@ -27,6 +27,7 @@
  * 	- A bitmap of which blocks are in use by two inodes	(block_dup_map)
  * 	- The data blocks of the directory inodes.	(dir_map)
  * 	- Ref counts for ea_inodes.			(ea_inode_refs)
+ * 	- The encryption policy ID of each encrypted inode. (encrypted_files)
  *
  * Pass 1 is designed to stash away enough information so that the
  * other passes should not need to read in the inode information
@@ -78,7 +79,6 @@ static void mark_table_blocks(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
 static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
-static void add_encrypted_dir(e2fsck_t ctx, ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -1883,12 +1883,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 			failed_csum = 0;
 		}
 
+		if ((inode->i_flags & EXT4_ENCRYPT_FL) &&
+		    add_encrypted_file(ctx, &pctx) < 0)
+			goto clear_inode;
+
 		if (LINUX_S_ISDIR(inode->i_mode)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_dir_map, ino);
 			e2fsck_add_dir_info(ctx, ino, 0);
 			ctx->fs_directory_count++;
-			if (inode->i_flags & EXT4_ENCRYPT_FL)
-				add_encrypted_dir(ctx, ino);
 		} else if (LINUX_S_ISREG (inode->i_mode)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_reg_map, ino);
 			ctx->fs_regular_count++;
@@ -2016,6 +2018,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ext2fs_free_block_bitmap(ctx->block_ea_map);
 		ctx->block_ea_map = 0;
 	}
+
+	/* We don't need the encryption policy => ID map any more */
+	destroy_encryption_policy_map(ctx);
 
 	if (ctx->flags & E2F_FLAG_RESIZE_INODE) {
 		clear_problem_context(&pctx);
@@ -2199,24 +2204,6 @@ static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
 		}
 	}
 	ext2fs_mark_inode_bitmap2(ctx->inode_bad_map, ino);
-}
-
-static void add_encrypted_dir(e2fsck_t ctx, ino_t ino)
-{
-	struct		problem_context pctx;
-
-	if (!ctx->encrypted_dirs) {
-		pctx.errcode = ext2fs_u32_list_create(&ctx->encrypted_dirs, 0);
-		if (pctx.errcode)
-			goto error;
-	}
-	pctx.errcode = ext2fs_u32_list_add(ctx->encrypted_dirs, ino);
-	if (pctx.errcode == 0)
-		return;
-error:
-	fix_problem(ctx, PR_1_ALLOCATE_ENCRYPTED_DIRLIST, &pctx);
-	/* Should never get here */
-	ctx->flags |= E2F_FLAG_ABORT;
 }
 
 /*

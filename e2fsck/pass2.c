@@ -35,10 +35,12 @@
  * 	- The inode_used_map bitmap
  * 	- The inode_bad_map bitmap
  * 	- The inode_dir_map bitmap
+ * 	- The encrypted_file_info
  *
  * Pass 2 frees the following data structures
  * 	- The inode_bad_map bitmap
  * 	- The inode_reg_map bitmap
+ * 	- The encrypted_file_info
  */
 
 #define _GNU_SOURCE 1 /* get strnlen() */
@@ -284,10 +286,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
 		ctx->inode_reg_map = 0;
 	}
-	if (ctx->encrypted_dirs) {
-		ext2fs_u32_list_free(ctx->encrypted_dirs);
-		ctx->encrypted_dirs = 0;
-	}
+	destroy_encrypted_file_info(ctx);
 
 	clear_problem_context(&pctx);
 	if (ctx->large_files) {
@@ -504,14 +503,12 @@ static int check_name(e2fsck_t ctx,
 }
 
 static int encrypted_check_name(e2fsck_t ctx,
-				struct ext2_dir_entry *dirent,
+				const struct ext2_dir_entry *dirent,
 				struct problem_context *pctx)
 {
 	if (ext2fs_dirent_name_len(dirent) < EXT4_CRYPTO_BLOCK_SIZE) {
-		if (fix_problem(ctx, PR_2_BAD_ENCRYPTED_NAME, pctx)) {
-			dirent->inode = 0;
+		if (fix_problem(ctx, PR_2_BAD_ENCRYPTED_NAME, pctx))
 			return 1;
-		}
 		ext2fs_unmark_valid(ctx->fs);
 	}
 	return 0;
@@ -877,6 +874,71 @@ err:
 	return retval;
 }
 
+/* Return true if this type of file needs encryption */
+static int needs_encryption(e2fsck_t ctx, const struct ext2_dir_entry *dirent)
+{
+	int filetype = ext2fs_dirent_file_type(dirent);
+	ext2_ino_t ino = dirent->inode;
+	struct ext2_inode inode;
+
+	if (filetype != EXT2_FT_UNKNOWN)
+		return filetype == EXT2_FT_REG_FILE ||
+		       filetype == EXT2_FT_DIR ||
+		       filetype == EXT2_FT_SYMLINK;
+
+	if (ext2fs_test_inode_bitmap2(ctx->inode_reg_map, ino) ||
+	    ext2fs_test_inode_bitmap2(ctx->inode_dir_map, ino))
+		return 1;
+
+	e2fsck_read_inode(ctx, ino, &inode, "check_encryption_policy");
+	return LINUX_S_ISREG(inode.i_mode) ||
+	       LINUX_S_ISDIR(inode.i_mode) ||
+	       LINUX_S_ISLNK(inode.i_mode);
+}
+
+/*
+ * All regular files, directories, and symlinks in encrypted directories must be
+ * encrypted using the same encryption policy as their directory.
+ *
+ * Returns 1 if the dirent should be cleared, otherwise 0.
+ */
+static int check_encryption_policy(e2fsck_t ctx,
+				   const struct ext2_dir_entry *dirent,
+				   __u32 dir_encpolicy_id,
+				   struct problem_context *pctx)
+{
+	__u32 file_encpolicy_id = find_encryption_policy(ctx, dirent->inode);
+
+	/* Same policy or both UNRECOGNIZED_ENCRYPTION_POLICY? */
+	if (file_encpolicy_id == dir_encpolicy_id)
+		return 0;
+
+	if (file_encpolicy_id == NO_ENCRYPTION_POLICY) {
+		if (!needs_encryption(ctx, dirent))
+			return 0;
+		return fix_problem(ctx, PR_2_UNENCRYPTED_FILE, pctx);
+	}
+
+	return fix_problem(ctx, PR_2_INCONSISTENT_ENCRYPTION_POLICY, pctx);
+}
+
+/*
+ * Check an encrypted directory entry.
+ *
+ * Returns 1 if the dirent should be cleared, otherwise 0.
+ */
+static int check_encrypted_dirent(e2fsck_t ctx,
+				  const struct ext2_dir_entry *dirent,
+				  __u32 dir_encpolicy_id,
+				  struct problem_context *pctx)
+{
+	if (encrypted_check_name(ctx, dirent, pctx))
+		return 1;
+	if (check_encryption_policy(ctx, dirent, dir_encpolicy_id, pctx))
+		return 1;
+	return 0;
+}
+
 static int check_dir_block2(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
 			   void *priv_data)
@@ -931,7 +993,7 @@ static int check_dir_block(ext2_filsys fs,
 	int	is_leaf = 1;
 	size_t	inline_data_size = 0;
 	int	filetype = 0;
-	int	encrypted = 0;
+	__u32   dir_encpolicy_id = NO_ENCRYPTION_POLICY;
 	size_t	max_block_size;
 	int	hash_flags = 0;
 
@@ -1150,8 +1212,7 @@ skip_checksum:
 	} else
 		max_block_size = fs->blocksize - de_csum_size;
 
-	if (ctx->encrypted_dirs)
-		encrypted = ext2fs_u32_list_test(ctx->encrypted_dirs, ino);
+	dir_encpolicy_id = find_encryption_policy(ctx, ino);
 
 	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	prev = 0;
@@ -1415,17 +1476,24 @@ skip_checksum:
 			}
 		}
 
-		if (!encrypted && check_name(ctx, dirent, &cd->pctx))
-			dir_modified++;
-
-		if (encrypted && (dot_state) > 1 &&
-		    encrypted_check_name(ctx, dirent, &cd->pctx)) {
-			dir_modified++;
-			goto next;
-		}
-
 		if (check_filetype(ctx, dirent, ino, &cd->pctx))
 			dir_modified++;
+
+		if (dir_encpolicy_id == NO_ENCRYPTION_POLICY) {
+			/* Unencrypted directory */
+			if (check_name(ctx, dirent, &cd->pctx))
+				dir_modified++;
+		} else {
+			/* Encrypted directory */
+			if (dot_state > 1 &&
+			    check_encrypted_dirent(ctx, dirent,
+						   dir_encpolicy_id,
+						   &cd->pctx)) {
+				dirent->inode = 0;
+				dir_modified++;
+				goto next;
+			}
+		}
 
 		if (dx_db) {
 			if (dx_dir->casefolded_hash)

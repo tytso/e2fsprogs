@@ -138,6 +138,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_u32_list_free(ctx->dirs_to_hash);
 		ctx->dirs_to_hash = 0;
 	}
+	destroy_encrypted_file_info(ctx);
 
 	/*
 	 * Clear the array of invalid meta-data flags
@@ -153,10 +154,6 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	if (ctx->invalid_inode_table_flag) {
 		ext2fs_free_mem(&ctx->invalid_inode_table_flag);
 		ctx->invalid_inode_table_flag = 0;
-	}
-	if (ctx->encrypted_dirs) {
-		ext2fs_u32_list_free(ctx->encrypted_dirs);
-		ctx->encrypted_dirs = 0;
 	}
 	if (ctx->inode_count) {
 		ext2fs_free_icount(ctx->inode_count);

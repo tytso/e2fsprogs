@@ -135,6 +135,8 @@ struct dx_dirblock_info {
 #define DX_FLAG_FIRST		4
 #define DX_FLAG_LAST		8
 
+struct encrypted_file_info;
+
 #define RESOURCE_TRACK
 
 #ifdef RESOURCE_TRACK
@@ -329,6 +331,11 @@ struct e2fsck_struct {
 	ext2_u32_list	dirs_to_hash;
 
 	/*
+	 * Encrypted file information
+	 */
+	struct encrypted_file_info *encrypted_files;
+
+	/*
 	 * Tuning parameters
 	 */
 	int process_inode_size;
@@ -390,7 +397,6 @@ struct e2fsck_struct {
 	int ext_attr_ver;
 	profile_t	profile;
 	int blocks_per_page;
-	ext2_u32_list encrypted_dirs;
 
 	/* Reserve blocks for root and l+f re-creation */
 	blk64_t root_repair_block, lnf_repair_block;
@@ -505,8 +511,20 @@ extern ea_key_t ea_refcount_intr_next(ext2_refcount_t refcount,
 extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
 
-/* extents.c */
+/* encrypted_files.c */
+
 struct problem_context;
+int add_encrypted_file(e2fsck_t ctx, struct problem_context *pctx);
+
+#define NO_ENCRYPTION_POLICY		((__u32)-1)
+#define CORRUPT_ENCRYPTION_POLICY	((__u32)-2)
+#define UNRECOGNIZED_ENCRYPTION_POLICY	((__u32)-3)
+__u32 find_encryption_policy(e2fsck_t ctx, ext2_ino_t ino);
+
+void destroy_encryption_policy_map(e2fsck_t ctx);
+void destroy_encrypted_file_info(e2fsck_t ctx);
+
+/* extents.c */
 errcode_t e2fsck_rebuild_extents_later(e2fsck_t ctx, ext2_ino_t ino);
 int e2fsck_ino_will_be_rebuilt(e2fsck_t ctx, ext2_ino_t ino);
 void e2fsck_pass1e(e2fsck_t ctx);

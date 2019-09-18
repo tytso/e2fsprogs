@@ -667,8 +667,8 @@ struct problem_context {
 /* Inode leaf has a duplicate extent mapping */
 #define PR_1_EXTENT_COLLISION			0x01007D
 
-/* Error allocating memory for encrypted directory list */
-#define PR_1_ALLOCATE_ENCRYPTED_DIRLIST		0x01007E
+/* Error allocating memory for encrypted inode list */
+#define PR_1_ALLOCATE_ENCRYPTED_INODE_LIST	0x01007E
 
 /* Inode extent tree could be more shallow */
 #define PR_1_EXTENT_BAD_MAX_DEPTH		0x01007F
@@ -701,6 +701,11 @@ struct problem_context {
 /* Casefold flag set, but file system is missing the casefold feature */
 #define PR_1_CASEFOLD_FEATURE			0x010089
 
+/* Inode has encrypt flag but no encryption extended attribute */
+#define PR_1_MISSING_ENCRYPTION_XATTR		0x01008A
+
+/* Encrypted inode has corrupt encryption extended attribute */
+#define PR_1_CORRUPT_ENCRYPTION_XATTR		0x01008B
 
 /*
  * Pass 1b errors
@@ -1016,6 +1021,12 @@ struct problem_context {
 
 /* Encrypted directory entry is too short */
 #define PR_2_BAD_ENCRYPTED_NAME		0x020050
+
+/* Encrypted directory contains unencrypted file */
+#define PR_2_UNENCRYPTED_FILE		0x020051
+
+/* Encrypted directory contains file with different encryption policy */
+#define PR_2_INCONSISTENT_ENCRYPTION_POLICY	0x020052
 
 /*
  * Pass 3 errors

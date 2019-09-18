@@ -1199,9 +1199,9 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has a duplicate @x mapping\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
 
-	/* Error allocating memory for encrypted directory list */
-	{ PR_1_ALLOCATE_ENCRYPTED_DIRLIST,
-	  N_("@A memory for encrypted @d list\n"),
+	/* Error allocating memory for encrypted inode list */
+	{ PR_1_ALLOCATE_ENCRYPTED_INODE_LIST,
+	  N_("@A %N bytes of memory for encrypted @i list\n"),
 	  PROMPT_NONE, PR_FATAL, 0, 0, 0 },
 
 	/* Inode extent tree could be more shallow */
@@ -1258,6 +1258,16 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1_CASEFOLD_FEATURE,
 	  N_("@d %p has the casefold flag, but the\ncasefold feature is not enabled.  "),
 	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
+
+	/* Inode has encrypt flag but no encryption extended attribute */
+	{ PR_1_MISSING_ENCRYPTION_XATTR,
+	  N_("@i %i has encrypt flag but no encryption @a.\n"),
+	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
+
+	/* Encrypted inode has corrupt encryption extended attribute */
+	{ PR_1_CORRUPT_ENCRYPTION_XATTR,
+	  N_("Encrypted @i %i has corrupt encryption @a.\n"),
+	  PROMPT_CLEAR_INODE, 0, 0, 0, 0 },
 
 	/* Pass 1b errors */
 
@@ -1783,6 +1793,16 @@ static struct e2fsck_problem problem_table[] = {
 	/* Encrypted directory entry is too short */
 	{ PR_2_BAD_ENCRYPTED_NAME,
 	  N_("Encrypted @E is too short.\n"),
+	  PROMPT_CLEAR, 0, 0, 0, 0 },
+
+	/* Encrypted directory contains unencrypted file */
+	{ PR_2_UNENCRYPTED_FILE,
+	  N_("Encrypted @E references unencrypted @i %Di.\n"),
+	  PROMPT_CLEAR, 0, 0, 0, 0 },
+
+	/* Encrypted directory contains file with different encryption policy */
+	{ PR_2_INCONSISTENT_ENCRYPTION_POLICY,
+	  N_("Encrypted @E references @i %Di, which has a different encryption policy.\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
 
 	/* Pass 3 errors */
