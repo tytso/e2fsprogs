@@ -61,6 +61,14 @@ This feature requires that the
 .B extent
 feature be enabled.
 .TP
+.B casefold
+.br
+This ext4 feature provides file system level character encoding support
+for directories with the casefold (+F) flag enabled.  This feature is
+name-preserving on the disk, but it allows applications to lookup for a
+file in the file system using an encoding equivalent version of the file
+name.
+.TP
 .B dir_index
 .br
 Use hashed b-trees to speed up name lookups in large directories.  This
@@ -150,14 +158,6 @@ block group of each "flex_bg group".   The size of the flex_bg group
 can be specified using the
 .B \-G
 option.
-.TP
-.B casefold
-.br
-This ext4 feature provides file system level character encoding support
-for directories with the casefold (+F) flag enabled.  This feature is
-name-preserving on the disk, but it allows applications to lookup for a
-file in the file system using an encoding equivalent version of the file
-name.
 .TP
 .B has_journal
 .br
