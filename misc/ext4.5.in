@@ -772,6 +772,8 @@ ext4, 4.5
 ext4, 4.13
 .IP "\fBlarge_dir\fR" 2i
 ext4, 4.13
+.IP "\fBcasefold\fR" 2i
+ext4, 5.2
 .SH SEE ALSO
 .BR mke2fs (8),
 .BR mke2fs.conf (5),
