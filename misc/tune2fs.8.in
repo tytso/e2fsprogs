@@ -550,7 +550,7 @@ extended attributes per file.
 currently only supports setting this filesystem feature.
 .TP
 .B encrypt
-Enable file system level encryption.
+Enable support for file system level encryption.
 .B Tune2fs
 currently only supports setting this filesystem feature.
 .TP
