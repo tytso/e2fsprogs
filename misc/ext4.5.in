@@ -96,9 +96,9 @@ extended attributes per file.
 .TP
 .B encrypt
 .br
-This ext4 feature provides file-system level encryption of data blocks
-and file names.  The inode metadata (timestamps, file size, user/group
-ownership, etc.) is
+Enables support for file-system level encryption of data blocks and file
+names.  The inode metadata (timestamps, file size, user/group ownership,
+etc.) is
 .I not
 encrypted.
 .IP
