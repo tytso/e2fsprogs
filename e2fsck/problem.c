@@ -42,7 +42,8 @@
 #define PROMPT_CLEAR_HTREE 18
 #define PROMPT_RECREATE 19
 #define PROMPT_OPTIMIZE 20
-#define PROMPT_NULL	21
+#define PROMPT_CLEAR_FLAG 21
+#define PROMPT_NULL	22
 
 /*
  * These are the prompts which are used to ask the user if they want
@@ -70,7 +71,8 @@ static const char *prompt[] = {
 	N_("Clear HTree index"),/* 18 */
 	N_("Recreate"),		/* 19 */
 	N_("Optimize"),		/* 20 */
-	"",			/* 21 */
+	N_("Clear flag"),	/* 21 */
+	"",			/* 22 */
 };
 
 /*
@@ -99,7 +101,8 @@ static const char *preen_msg[] = {
 	N_("HTREE INDEX CLEARED"),/* 18 */
 	N_("WILL RECREATE"),	/* 19 */
 	N_("WILL OPTIMIZE"),	/* 20 */
-	"",			/* 21 */
+	N_("FLAG CLEARED"),	/* 21 */
+	"",			/* 22 */
 };
 
 #if __GNUC_PREREQ (4, 6)
@@ -1240,6 +1243,15 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("EA @i %N for parent @i %i missing EA_INODE flag.\n "),
 	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
 
+	/* Casefold flag set on a non-directory */
+	{ PR_1_CASEFOLD_NONDIR,
+	  N_("@i %i has the casefold flag set but is not a directory.  "),
+	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
+
+	/* Casefold flag set, but file system is missing the casefold feature */
+	{ PR_1_CASEFOLD_FEATURE,
+	  N_("@d %p has the casefold flag, but the\ncasefold feature is not enabled.  "),
+	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
 
 	/* Pass 1b errors */
 

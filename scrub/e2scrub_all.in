@@ -85,6 +85,9 @@ then
     exitcode 0
 fi
 
+# close file descriptor 3 (from cron) since it causes lvm to kvetch
+exec 3<&-
+
 # If some prerequisite packages are not installed, exit with a code
 # indicating success to avoid spamming the sysadmin with fail messages
 # when e2scrub_all is run out of cron or a systemd timer.
@@ -103,7 +106,7 @@ fi
 
 # Find scrub targets, make sure we only do this once.
 ls_scan_targets() {
-    local devices=$(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>${snap_size_mb}")
+    local devices=$(lvs -o lv_path --noheadings -S "lv_active=active,lv_role=public,lv_role!=snapshot,vg_free>=${snap_size_mb}")
 
     if [ -z "$devices" ]; then
 	return 0;
