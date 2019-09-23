@@ -101,6 +101,9 @@ if ! type lvcreate >& /dev/null ; then
     exitcode 1
 fi
 
+# close file descriptor 3 (from cron) since it causes lvm to kvetch
+exec 3<&-
+
 # Find the device for a given mountpoint
 dev_from_mount() {
 	local mountpt="$(realpath "$1")"
@@ -171,10 +174,10 @@ snap_dev="/dev/${LVM2_VG_NAME}/${snap}"
 
 teardown() {
 	# Remove and wait for removal to succeed.
-	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}" 3>&-
+	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
 	while [ -e "${snap_dev}" ] && [ "$?" -eq "5" ]; do
 		sleep 0.5
-		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}" 3>&-
+		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
 	done
 }
 
@@ -199,18 +202,18 @@ mark_corrupt() {
 setup() {
 	# Try to remove snapshot for 30s, bail out if we can't remove it.
 	lveremove_deadline="$(( $(date "+%s") + 30))"
-	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}" 3>&- 2>/dev/null
+	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}" 2>/dev/null
 	while [ -e "${snap_dev}" ] && [ "$?" -eq "5" ] &&
 	      [ "$(date "+%s")" -lt "${lvremove_deadline}" ]; do
 		sleep 0.5
-		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}" 3>&-
+		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
 	done
 	if [ -e "${snap_dev}" ]; then
 		echo "${arg}: e2scrub snapshot is in use, cannot check!"
 		return 1
 	fi
 	# Create the snapshot, wait for device to appear.
-	${DBG} lvcreate -s -L "${snap_size_mb}m" -n "${snap}" "${LVM2_VG_NAME}/${LVM2_LV_NAME}" 3>&-
+	${DBG} lvcreate -s -L "${snap_size_mb}m" -n "${snap}" "${LVM2_VG_NAME}/${LVM2_LV_NAME}"
 	if [ $? -ne 0 ]; then
 		echo "${arg}: e2scrub snapshot FAILED, will not check!"
 		return 1
