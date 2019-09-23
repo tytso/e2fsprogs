@@ -1,3 +1,25 @@
+e2fsprogs (1.45.4-1) unstable; urgency=medium
+
+  * New upstream feature
+  * Fix CVE-2019-5094: A maliciously corrupted file systems can trigger
+    buffer overruns in the quota code used by e2fsck.
+  * E2fsck will now check to make sure the casefold flag is only set on
+    directories, and only when the casefold feature is enabled.
+  * E2fsck will not disable the low dtime checks when using a backup
+    superblock where the last mount time is zero to fix a failure in
+    xfstests ext4/007
+  * Fix e2fsck so that when it needs to recreate the root directory, the
+    quota counts are correctly updated
+  * Update the man pages to document the new fsverity feature, and improve
+    the documentation for the casefold and encrypt features
+  * Allow e2scrub_all to work when the VG free space is exactly the
+    snapshot size (Closes: #935009)
+  * Avoid spurious lvm warnings when e2scrub_all is run out of cron on
+    non-systemd systems (Closes: #940240)
+  * Update the Dutch, German, Malay, Spanish, and Vietnamese translations
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 23 Sep 2019 15:31:27 -0400
+
 e2fsprogs (1.45.3-4) unstable; urgency=medium
 
   * stop using Link Time Optimization; it breaks reproducible builds
