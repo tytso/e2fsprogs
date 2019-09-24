@@ -7,6 +7,7 @@ cc_library {
     unique_host_soname: true,
     defaults: ["e2fsprogs-defaults"],
     srcs: [
+        "encoding.c",
         "feature.c",
         "fgetflags.c",
         "fsetflags.c",
