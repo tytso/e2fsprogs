@@ -1,3 +1,11 @@
+e2fsprogs (1.46~WIP.2019.10.03-1) experimental; urgency=medium
+
+  * Add (minimal) support to enable the fast commit feaure.  This is just
+    enough to enable kernel development work; e2fsck replay of journals
+    with the fast commit feature is *not* available.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 03 Oct 2019 21:49:36 -0400
+
 e2fsprogs (1.45.4-1) unstable; urgency=medium
 
   * New upstream feature
