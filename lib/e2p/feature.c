@@ -45,6 +45,8 @@ static struct feature feature_list[] = {
 			"snapshot_bitmap" },
 	{	E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
 			"sparse_super2" },
+	{	E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_FAST_COMMIT,
+			"fast_commit" },
 
 	{	E2P_FEATURE_RO_INCOMPAT, EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER,
 			"sparse_super" },
