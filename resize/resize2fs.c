@@ -2926,11 +2926,11 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 			fs->super->s_reserved_gdt_blocks;
 
 	/* calculate how many blocks are needed for data */
-	data_needed = ext2fs_blocks_count(fs->super) -
-		ext2fs_free_blocks_count(fs->super);
-
-	for (grp = 0; grp < fs->group_desc_count; grp++)
+	data_needed = ext2fs_blocks_count(fs->super);
+	for (grp = 0; grp < fs->group_desc_count; grp++) {
 		data_needed -= calc_group_overhead(fs, grp, old_desc_blocks);
+		data_needed -= ext2fs_bg_free_blocks_count(fs, grp);
+	}
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)
 		printf("fs requires %llu data blocks.\n", data_needed);
