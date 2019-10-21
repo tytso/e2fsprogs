@@ -605,6 +605,12 @@ int main (int argc, char ** argv)
 		fprintf(stderr, _("The filesystem is already 32-bit.\n"));
 		exit(0);
 	}
+	if (new_size < ext2fs_blocks_count(fs->super) &&
+	    ext2fs_has_feature_stable_inodes(fs->super)) {
+		fprintf(stderr, _("Cannot shrink this filesystem "
+			"because it has the stable_inodes feature flag.\n"));
+		exit(1);
+	}
 	if (mount_flags & EXT2_MF_MOUNTED) {
 		retval = online_resize_fs(fs, mtpt, &new_size, flags);
 	} else {
