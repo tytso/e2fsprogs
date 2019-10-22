@@ -1698,7 +1698,7 @@ static void parse_e2label_options(int argc, char ** argv)
 			argv[1]);
 		exit(1);
 	}
-	open_flag = EXT2_FLAG_JOURNAL_DEV_OK;
+	open_flag = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SUPER_ONLY;
 	if (argc == 3) {
 		open_flag |= EXT2_FLAG_RW;
 		L_flag = 1;

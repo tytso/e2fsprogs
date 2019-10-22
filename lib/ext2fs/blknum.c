@@ -185,9 +185,42 @@ struct ext2_group_desc *ext2fs_group_desc(ext2_filsys fs,
 					  struct opaque_ext2_group_desc *gdp,
 					  dgrp_t group)
 {
-	int desc_size = EXT2_DESC_SIZE(fs->super) & ~7;
+	struct ext2_group_desc *ret_gdp;
+	errcode_t	retval;
+	static char	*buf = 0;
+	static int	bufsize = 0;
+	blk64_t		blk;
+	int		desc_size = EXT2_DESC_SIZE(fs->super) & ~7;
+	int		desc_per_blk = EXT2_DESC_PER_BLOCK(fs->super);
 
-	return (struct ext2_group_desc *)((char *)gdp + group * desc_size);
+	if (group > fs->group_desc_count)
+		return NULL;
+	if (gdp)
+		return (struct ext2_group_desc *)((char *)gdp +
+						  group * desc_size);
+	/*
+	 * If fs->group_desc wasn't read in when the file system was
+	 * opened, then read it on demand here.
+	 */
+	if (bufsize < fs->blocksize)
+		ext2fs_free_mem(&buf);
+	if (!buf) {
+		retval = ext2fs_get_mem(fs->blocksize, &buf);
+		if (retval)
+			return NULL;
+		bufsize = fs->blocksize;
+	}
+	blk = ext2fs_descriptor_block_loc2(fs, fs->super->s_first_data_block,
+					   group / desc_per_blk);
+	retval = io_channel_read_blk(fs->io, blk, 1, buf);
+	if (retval)
+		return NULL;
+	ret_gdp = (struct ext2_group_desc *)
+		(buf + ((group % desc_per_blk) * desc_size));
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_group_desc2(fs, ret_gdp);
+#endif
+	return ret_gdp;
 }
 
 /* Do the same but as an ext4 group desc for internal use here */

@@ -666,6 +666,8 @@ int main (int argc, char ** argv)
 		flags |= EXT2_FLAG_FORCE;
 	if (image_dump)
 		flags |= EXT2_FLAG_IMAGE_FILE;
+	if (header_only)
+		flags |= EXT2_FLAG_SUPER_ONLY;
 try_open_again:
 	if (use_superblock && !use_blocksize) {
 		for (use_blocksize = EXT2_MIN_BLOCK_SIZE;

@@ -393,6 +393,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	}
 	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
 					  EXT2_DESC_PER_BLOCK(fs->super));
+	if (flags & EXT2_FLAG_SUPER_ONLY)
+		goto skip_read_bg;
 	retval = ext2fs_get_array(fs->desc_blocks, fs->blocksize,
 				&fs->group_desc);
 	if (retval)
@@ -479,7 +481,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		if (fs->flags & EXT2_FLAG_RW)
 			ext2fs_mark_super_dirty(fs);
 	}
-
+skip_read_bg:
 	if (ext2fs_has_feature_mmp(fs->super) &&
 	    !(flags & EXT2_FLAG_SKIP_MMP) &&
 	    (flags & (EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE))) {
