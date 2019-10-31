@@ -68,6 +68,7 @@ cc_library {
         "namei.c",
         "native.c",
         "newdir.c",
+        "nls_utf8.c",
         "openfs.c",
         "progress.c",
         "punch.c",
