@@ -54,7 +54,7 @@ extern int optind;
 #include "support/plausible.h"
 #include "../version.h"
 
-#define QCOW_OFLAG_COPIED     (1LL << 63)
+#define QCOW_OFLAG_COPIED     (1ULL << 63)
 #define NO_BLK ((blk64_t) -1)
 
 /* Image types */
