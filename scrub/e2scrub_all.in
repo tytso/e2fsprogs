@@ -80,9 +80,18 @@ while getopts "nrAV" opt; do
 done
 shift "$((OPTIND - 1))"
 
-if [ -n "${SERVICE_MODE}" -a "${reap}" -ne 1 -a "${periodic_e2scrub}" -ne 1 ]
-then
-    exitcode 0
+# If we're in service mode and the service is not enabled via config file...
+if [ -n "${SERVICE_MODE}" -a "${periodic_e2scrub}" -ne 1 ]; then
+	# ...don't start e2scrub processes.
+	if [ "${reap}" -eq 0 ]; then
+		exitcode 0
+	fi
+
+	# ...and if we don't see any leftover e2scrub snapshots, don't
+	# run the reaping process either, because lvs can be slow.
+	if ! readlink -q -s -e /dev/mapper/*.e2scrub* > /dev/null; then
+		exitcode 0
+	fi
 fi
 
 # close file descriptor 3 (from cron) since it causes lvm to kvetch
