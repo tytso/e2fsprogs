@@ -358,9 +358,9 @@ static errcode_t ext2fs_dirent_csum_set(ext2_filsys fs, ext2_ino_t inum,
 	return 0;
 }
 
-static errcode_t ext2fs_dx_csum(ext2_filsys fs, ext2_ino_t inum,
-				struct ext2_dir_entry *dirent,
-				__u32 *crc, struct ext2_dx_tail **ret_t)
+errcode_t ext2fs_dx_csum(ext2_filsys fs, ext2_ino_t inum,
+			 struct ext2_dir_entry *dirent,
+			 __u32 *crc, struct ext2_dx_tail **ret_t)
 {
 	errcode_t retval;
 	char *buf = (char *)dirent;

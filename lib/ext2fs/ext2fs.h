@@ -1082,6 +1082,9 @@ extern errcode_t ext2fs_get_dx_countlimit(ext2_filsys fs,
 					  struct ext2_dir_entry *dirent,
 					  struct ext2_dx_countlimit **cc,
 					  int *offset);
+extern errcode_t ext2fs_dx_csum(ext2_filsys fs, ext2_ino_t inum,
+				struct ext2_dir_entry *dirent,
+				__u32 *crc, struct ext2_dx_tail **ret_t);
 extern errcode_t ext2fs_extent_block_csum_set(ext2_filsys fs,
 					      ext2_ino_t inum,
 					      struct ext3_extent_header *eh);
