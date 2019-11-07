@@ -360,18 +360,29 @@ static errcode_t ext2fs_dirent_csum_set(ext2_filsys fs, ext2_ino_t inum,
 
 static errcode_t ext2fs_dx_csum(ext2_filsys fs, ext2_ino_t inum,
 				struct ext2_dir_entry *dirent,
-				__u32 *crc, int count_offset, int count,
-				struct ext2_dx_tail *t)
+				__u32 *crc, struct ext2_dx_tail **ret_t)
 {
 	errcode_t retval;
 	char *buf = (char *)dirent;
 	int size;
-	__u32 old_csum, gen;
+	__u32 gen, dummy_csum = 0;
 	struct ext2_inode inode;
+	struct ext2_dx_tail *t;
+	struct ext2_dx_countlimit *c;
+	int count_offset, limit, count;
+
+	retval = __get_dx_countlimit(fs, dirent, &c, &count_offset, 1);
+	if (retval)
+		return retval;
+	limit = ext2fs_le16_to_cpu(c->limit);
+	count = ext2fs_le16_to_cpu(c->count);
+	if (count_offset + (limit * sizeof(struct ext2_dx_entry)) >
+	    fs->blocksize - sizeof(struct ext2_dx_tail))
+		return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
+	/* htree structs are accessed in LE order */
+	t = (struct ext2_dx_tail *)(((struct ext2_dx_entry *)c) + limit);
 
 	size = count_offset + (count * sizeof(struct ext2_dx_entry));
-	old_csum = t->dt_checksum;
-	t->dt_checksum = 0;
 
 	retval = ext2fs_read_inode(fs, inum, &inode);
 	if (retval)
@@ -383,10 +394,11 @@ static errcode_t ext2fs_dx_csum(ext2_filsys fs, ext2_ino_t inum,
 				sizeof(inum));
 	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)&gen, sizeof(gen));
 	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)buf, size);
-	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)t,
-				sizeof(struct ext2_dx_tail));
-	t->dt_checksum = old_csum;
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)t, 4);
+	*crc = ext2fs_crc32c_le(*crc, (unsigned char *)&dummy_csum, 4);
 
+	if (ret_t)
+		*ret_t = t;
 	return 0;
 }
 
@@ -395,22 +407,9 @@ static int ext2fs_dx_csum_verify(ext2_filsys fs, ext2_ino_t inum,
 {
 	__u32 calculated;
 	errcode_t retval;
-	struct ext2_dx_countlimit *c;
 	struct ext2_dx_tail *t;
-	int count_offset, limit, count;
 
-	retval = __get_dx_countlimit(fs, dirent, &c, &count_offset, 1);
-	if (retval)
-		return 1;
-	limit = ext2fs_le16_to_cpu(c->limit);
-	count = ext2fs_le16_to_cpu(c->count);
-	if (count_offset + (limit * sizeof(struct ext2_dx_entry)) >
-	    fs->blocksize - sizeof(struct ext2_dx_tail))
-		return 0;
-	/* htree structs are accessed in LE order */
-	t = (struct ext2_dx_tail *)(((struct ext2_dx_entry *)c) + limit);
-	retval = ext2fs_dx_csum(fs, inum, dirent, &calculated, count_offset,
-				count, t);
+	retval = ext2fs_dx_csum(fs, inum, dirent, &calculated, &t);
 	if (retval)
 		return 0;
 
@@ -422,22 +421,9 @@ static errcode_t ext2fs_dx_csum_set(ext2_filsys fs, ext2_ino_t inum,
 {
 	__u32 crc;
 	errcode_t retval = 0;
-	struct ext2_dx_countlimit *c;
 	struct ext2_dx_tail *t;
-	int count_offset, limit, count;
 
-	retval = __get_dx_countlimit(fs, dirent, &c, &count_offset, 1);
-	if (retval)
-		return retval;
-	limit = ext2fs_le16_to_cpu(c->limit);
-	count = ext2fs_le16_to_cpu(c->count);
-	if (count_offset + (limit * sizeof(struct ext2_dx_entry)) >
-	    fs->blocksize - sizeof(struct ext2_dx_tail))
-		return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
-	t = (struct ext2_dx_tail *)(((struct ext2_dx_entry *)c) + limit);
-
-	/* htree structs are accessed in LE order */
-	retval = ext2fs_dx_csum(fs, inum, dirent, &crc, count_offset, count, t);
+	retval = ext2fs_dx_csum(fs, inum, dirent, &crc, &t);
 	if (retval)
 		return retval;
 	t->dt_checksum = ext2fs_cpu_to_le32(crc);
