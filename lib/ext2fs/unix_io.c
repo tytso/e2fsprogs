@@ -166,7 +166,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	unsigned char	*buf = bufv;
 	ssize_t		really_read = 0;
 
-	size = (count < 0) ? -count : count * channel->block_size;
+	size = (count < 0) ? -count : (ext2_loff_t) count * channel->block_size;
 	data->io_stats.bytes_read += size;
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 
@@ -275,7 +275,7 @@ static errcode_t raw_write_blk(io_channel channel,
 		if (count < 0)
 			size = -count;
 		else
-			size = count * channel->block_size;
+			size = (ext2_loff_t) count * channel->block_size;
 	}
 	data->io_stats.bytes_written += size;
 
