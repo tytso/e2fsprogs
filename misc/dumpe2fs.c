@@ -387,7 +387,7 @@ static void print_inline_journal_information(ext2_filsys fs)
 	}
 	ext2fs_file_close(journal_file);
 	jsb = (journal_superblock_t *) buf;
-	if (be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) {
+	if (be32_to_cpu(jsb->s_header.h_magic) != JBD2_MAGIC_NUMBER) {
 		fprintf(stderr, "%s",
 			_("Journal superblock magic number invalid!\n"));
 		exit(1);
@@ -410,9 +410,9 @@ static void print_journal_information(ext2_filsys fs)
 		exit(1);
 	}
 	jsb = (journal_superblock_t *) buf;
-	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
+	if ((jsb->s_header.h_magic != (unsigned) ntohl(JBD2_MAGIC_NUMBER)) ||
 	    (jsb->s_header.h_blocktype !=
-	     (unsigned) ntohl(JFS_SUPERBLOCK_V2))) {
+	     (unsigned) ntohl(JBD2_SUPERBLOCK_V2))) {
 		com_err(program_name, 0, "%s",
 			_("Couldn't find journal superblock magic numbers"));
 		exit(1);

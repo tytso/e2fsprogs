@@ -325,15 +325,15 @@ static int read_journal_block(const char *cmd, struct journal_source *source,
 static const char *type_to_name(int btype)
 {
 	switch (btype) {
-	case JFS_DESCRIPTOR_BLOCK:
+	case JBD2_DESCRIPTOR_BLOCK:
 		return "descriptor block";
-	case JFS_COMMIT_BLOCK:
+	case JBD2_COMMIT_BLOCK:
 		return "commit block";
-	case JFS_SUPERBLOCK_V1:
+	case JBD2_SUPERBLOCK_V1:
 		return "V1 superblock";
-	case JFS_SUPERBLOCK_V2:
+	case JBD2_SUPERBLOCK_V2:
 		return "V2 superblock";
-	case JFS_REVOKE_BLOCK:
+	case JBD2_REVOKE_BLOCK:
 		return "revoke table";
 	}
 	return "unrecognised type";
@@ -366,7 +366,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 		ext2fs_swap_super(sb);
 #endif
 
-	if ((be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) &&
+	if ((be32_to_cpu(jsb->s_header.h_magic) != JBD2_MAGIC_NUMBER) &&
 	    (sb->s_magic == EXT2_SUPER_MAGIC) &&
 	    ext2fs_has_feature_journal_dev(sb)) {
 		blocksize = EXT2_BLOCK_SIZE(sb);
@@ -395,7 +395,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	}
 
 	jsb = (journal_superblock_t *) jsb_buffer;
-	if (be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) {
+	if (be32_to_cpu(jsb->s_header.h_magic) != JBD2_MAGIC_NUMBER) {
 		fprintf(out_file,
 			"Journal superblock magic number invalid!\n");
 		return;
@@ -428,7 +428,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 		sequence = be32_to_cpu(header->h_sequence);
 		blocktype = be32_to_cpu(header->h_blocktype);
 
-		if (magic != JFS_MAGIC_NUMBER) {
+		if (magic != JBD2_MAGIC_NUMBER) {
 			fprintf (out_file, "No magic number at block %u: "
 				 "end of journal.\n", blocknr);
 			return;
@@ -450,19 +450,19 @@ static void dump_journal(char *cmdname, FILE *out_file,
 		}
 
 		switch (blocktype) {
-		case JFS_DESCRIPTOR_BLOCK:
+		case JBD2_DESCRIPTOR_BLOCK:
 			dump_descriptor_block(out_file, source, buf, jsb,
 					      &blocknr, blocksize,
 					      transaction);
 			continue;
 
-		case JFS_COMMIT_BLOCK:
+		case JBD2_COMMIT_BLOCK:
 			transaction++;
 			blocknr++;
 			WRAP(jsb, blocknr);
 			continue;
 
-		case JFS_REVOKE_BLOCK:
+		case JBD2_REVOKE_BLOCK:
 			dump_revoke_block(out_file, buf, jsb,
 					  blocknr, blocksize,
 					  transaction);
@@ -482,15 +482,15 @@ static inline size_t journal_super_tag_bytes(journal_superblock_t *jsb)
 {
 	size_t sz;
 
-	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V3))
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JBD2_FEATURE_INCOMPAT_CSUM_V3))
 		return sizeof(journal_block_tag3_t);
 
 	sz = sizeof(journal_block_tag_t);
 
-	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V2))
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JBD2_FEATURE_INCOMPAT_CSUM_V2))
 		sz += sizeof(__u16);
 
-	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_64BIT))
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JBD2_FEATURE_INCOMPAT_64BIT))
 		return sz;
 
 	return sz - sizeof(__u32);
@@ -514,9 +514,9 @@ static void dump_descriptor_block(FILE *out_file,
 	offset = sizeof(journal_header_t);
 	blocknr = *blockp;
 
-	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V3) ||
-	    JSB_HAS_INCOMPAT_FEATURE(jsb, JFS_FEATURE_INCOMPAT_CSUM_V2))
-		csum_size = sizeof(struct journal_block_tail);
+	if (JSB_HAS_INCOMPAT_FEATURE(jsb, JBD2_FEATURE_INCOMPAT_CSUM_V3) ||
+	    JSB_HAS_INCOMPAT_FEATURE(jsb, JBD2_FEATURE_INCOMPAT_CSUM_V2))
+		csum_size = sizeof(struct jbd2_journal_block_tail);
 
 	if (dump_all)
 		fprintf(out_file, "Dumping descriptor block, sequence %u, at "
@@ -540,7 +540,7 @@ static void dump_descriptor_block(FILE *out_file,
 		tag_block = be32_to_cpu(tag->t_blocknr);
 		tag_flags = be16_to_cpu(tag->t_flags);
 
-		if (!(tag_flags & JFS_FLAG_SAME_UUID))
+		if (!(tag_flags & JBD2_FLAG_SAME_UUID))
 			offset += 16;
 
 		dump_metadata_block(out_file, source, jsb,
@@ -550,7 +550,7 @@ static void dump_descriptor_block(FILE *out_file,
 		++blocknr;
 		WRAP(jsb, blocknr);
 
-	} while (!(tag_flags & JFS_FLAG_LAST_TAG));
+	} while (!(tag_flags & JBD2_FLAG_LAST_TAG));
 
 	*blockp = blocknr;
 }
@@ -563,7 +563,7 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 			      tid_t transaction)
 {
 	int			offset, max;
-	journal_revoke_header_t *header;
+	jbd2_journal_revoke_header_t *header;
 	unsigned long long	rblock;
 	int			tag_size = sizeof(__u32);
 
@@ -571,11 +571,11 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 		fprintf(out_file, "Dumping revoke block, sequence %u, at "
 			"block %u:\n", transaction, blocknr);
 
-	if (be32_to_cpu(jsb->s_feature_incompat) & JFS_FEATURE_INCOMPAT_64BIT)
+	if (be32_to_cpu(jsb->s_feature_incompat) & JBD2_FEATURE_INCOMPAT_64BIT)
 		tag_size = sizeof(__u64);
 
-	header = (journal_revoke_header_t *) buf;
-	offset = sizeof(journal_revoke_header_t);
+	header = (jbd2_journal_revoke_header_t *) buf;
+	offset = sizeof(jbd2_journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
 
 	while (offset < max) {

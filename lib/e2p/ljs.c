@@ -89,19 +89,19 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 		(unsigned int)ntohl(jsb->s_start));
 	if (nr_users != 1)
 		fprintf(f, "Journal number of users:  %u\n", nr_users);
-	if (jsb->s_feature_compat & e2p_be32(JFS_FEATURE_COMPAT_CHECKSUM))
+	if (jsb->s_feature_compat & e2p_be32(JBD2_FEATURE_COMPAT_CHECKSUM))
 		fprintf(f, "%s", "Journal checksum type:    crc32\n");
 	if ((jsb->s_feature_incompat &
-	     e2p_be32(JFS_FEATURE_INCOMPAT_CSUM_V3)) ||
+	     e2p_be32(JBD2_FEATURE_INCOMPAT_CSUM_V3)) ||
 	    (jsb->s_feature_incompat &
-	     e2p_be32(JFS_FEATURE_INCOMPAT_CSUM_V2)))
+	     e2p_be32(JBD2_FEATURE_INCOMPAT_CSUM_V2)))
 		fprintf(f, "Journal checksum type:    %s\n"
 			"Journal checksum:         0x%08x\n",
 			journal_checksum_type_str(jsb->s_checksum_type),
 			e2p_be32(jsb->s_checksum));
 	if ((nr_users > 1) ||
 	    !e2p_is_null_uuid(&jsb->s_users[0])) {
-		for (i=0; i < nr_users && i < JFS_USERS_MAX; i++) {
+		for (i=0; i < nr_users && i < JBD2_USERS_MAX; i++) {
 			printf(i ? "                          %s\n"
 			       : "Journal users:            %s\n",
 			       e2p_uuid2str(&jsb->s_users[i * UUID_SIZE]));

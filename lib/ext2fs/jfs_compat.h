@@ -33,11 +33,9 @@ struct buffer_head;
 struct inode;
 
 #define GFP_KERNEL	0
-#define JFS_TAG_SIZE32	JBD_TAG_SIZE32
-#define JFS_BARRIER	0
+#define JBD2_TAG_SIZE32	JBD_TAG_SIZE32
+#define JBD2_BARRIER	0
 typedef __u64 u64;
-#define JFS_CRC32_CHKSUM	JBD2_CRC32_CHKSUM
-#define JFS_CRC32_CHKSUM_SIZE	JBD2_CRC32_CHKSUM_SIZE
 #define put_bh(x)	brelse(x)
 #define be64_to_cpu(x)	ext2fs_be64_to_cpu(x)
 

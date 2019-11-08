@@ -2279,9 +2279,9 @@ void do_supported_features(int argc, char *argv[],
 	__u32	supp[3] = { EXT2_LIB_FEATURE_COMPAT_SUPP,
 			    EXT2_LIB_FEATURE_INCOMPAT_SUPP,
 			    EXT2_LIB_FEATURE_RO_COMPAT_SUPP };
-	__u32	jrnl_supp[3] = { JFS_KNOWN_COMPAT_FEATURES,
-				 JFS_KNOWN_INCOMPAT_FEATURES,
-				 JFS_KNOWN_ROCOMPAT_FEATURES };
+	__u32	jrnl_supp[3] = { JBD2_KNOWN_COMPAT_FEATURES,
+				 JBD2_KNOWN_INCOMPAT_FEATURES,
+				 JBD2_KNOWN_ROCOMPAT_FEATURES };
 
 	if (argc > 1) {
 		ret = find_supp_feature(supp, E2P_FS_FEATURE, argv[1]);

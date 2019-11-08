@@ -222,8 +222,8 @@ static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 	}
 
 	jsb = (journal_superblock_t *) buf;
-	if ((jsb->s_header.h_magic != (unsigned)ntohl(JFS_MAGIC_NUMBER)) ||
-	    (jsb->s_header.h_blocktype != (unsigned)ntohl(JFS_SUPERBLOCK_V2))) {
+	if ((jsb->s_header.h_magic != (unsigned)ntohl(JBD2_MAGIC_NUMBER)) ||
+	    (jsb->s_header.h_blocktype != (unsigned)ntohl(JBD2_SUPERBLOCK_V2))) {
 		fputs(_("Journal superblock not found!\n"), stderr);
 		return EXT2_ET_BAD_MAGIC;
 	}
@@ -231,7 +231,7 @@ static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 	return 0;
 }
 
-static __u8 *journal_user(__u8 uuid[UUID_SIZE], __u8 s_users[JFS_USERS_SIZE],
+static __u8 *journal_user(__u8 uuid[UUID_SIZE], __u8 s_users[JBD2_USERS_SIZE],
 			  int nr_users)
 {
 	int i;
@@ -296,7 +296,7 @@ static int remove_journal_device(ext2_filsys fs)
 	jsb = (journal_superblock_t *) buf;
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
-	if (nr_users > JFS_USERS_MAX) {
+	if (nr_users > JBD2_USERS_MAX) {
 		fprintf(stderr, _("Journal superblock is corrupted, nr_users\n"
 				 "is too high (%d).\n"), nr_users);
 		commit_remove_journal = 1;
@@ -2813,7 +2813,7 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 	jsb = (journal_superblock_t *) buf;
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
-	if (nr_users > JFS_USERS_MAX) {
+	if (nr_users > JBD2_USERS_MAX) {
 		fprintf(stderr, _("Journal superblock is corrupted, nr_users\n"
 				 "is too high (%d).\n"), nr_users);
 		return EXT2_ET_CORRUPT_JOURNAL_SB;

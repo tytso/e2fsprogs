@@ -180,7 +180,8 @@ _INLINE_ __u32 hash_64(__u64 val, unsigned int bits)
 /*
  * Kernel compatibility functions are defined in journal.c
  */
-int journal_bmap(journal_t *journal, blk64_t block, unsigned long long *phys);
+int jbd2_journal_bmap(journal_t *journal, blk64_t block,
+		      unsigned long long *phys);
 struct buffer_head *getblk(kdev_t ctx, blk64_t blocknr, int blocksize);
 int sync_blockdev(kdev_t kdev);
 void ll_rw_block(int rw, int op_flags, int nr, struct buffer_head *bh[]);
@@ -202,7 +203,7 @@ void wait_on_buffer(struct buffer_head *bh);
 #define J_ASSERT(x)	assert(x)
 
 #define JSB_HAS_INCOMPAT_FEATURE(jsb, mask)				\
-	((jsb)->s_header.h_blocktype == ext2fs_cpu_to_be32(JFS_SUPERBLOCK_V2) &&	\
+	((jsb)->s_header.h_blocktype == ext2fs_cpu_to_be32(JBD2_SUPERBLOCK_V2) &&	\
 	 ((jsb)->s_feature_incompat & ext2fs_cpu_to_be32((mask))))
 #else  /* !DEBUGFS */
 
@@ -226,17 +227,17 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 #endif
 
 /* recovery.c */
-extern int	journal_recover    (journal_t *journal);
-extern int	journal_skip_recovery (journal_t *);
+extern int	jbd2_journal_recover    (journal_t *journal);
+extern int	jbd2_journal_skip_recovery (journal_t *);
 
 /* revoke.c */
-extern int	journal_init_revoke(journal_t *, int);
-extern void	journal_destroy_revoke(journal_t *);
-extern void	journal_destroy_revoke_caches(void);
-extern int	journal_init_revoke_caches(void);
+extern int	jbd2_journal_init_revoke(journal_t *, int);
+extern void	jbd2_journal_destroy_revoke(journal_t *);
+extern void	jbd2_journal_destroy_revoke_caches(void);
+extern int	jbd2_journal_init_revoke_caches(void);
 
-extern int	journal_set_revoke(journal_t *, unsigned long long, tid_t);
-extern int	journal_test_revoke(journal_t *, unsigned long long, tid_t);
-extern void	journal_clear_revoke(journal_t *);
+extern int	jbd2_journal_set_revoke(journal_t *, unsigned long long, tid_t);
+extern int	jbd2_journal_test_revoke(journal_t *, unsigned long long, tid_t);
+extern void	jbd2_journal_clear_revoke(journal_t *);
 
 #endif /* _JFS_USER_H */

@@ -44,7 +44,7 @@ static int bh_count = 0;
 static int e2fsck_journal_verify_csum_type(journal_t *j,
 					   journal_superblock_t *jsb)
 {
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return 1;
 
 	return jsb->s_checksum_type == JBD2_CRC32C_CHKSUM;
@@ -68,7 +68,7 @@ static int e2fsck_journal_sb_csum_verify(journal_t *j,
 {
 	__u32 provided, calculated;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return 1;
 
 	provided = ext2fs_be32_to_cpu(jsb->s_checksum);
@@ -82,7 +82,7 @@ static errcode_t e2fsck_journal_sb_csum_set(journal_t *j,
 {
 	__u32 crc;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return 0;
 
 	crc = e2fsck_journal_sb_csum(jsb);
@@ -94,7 +94,8 @@ static errcode_t e2fsck_journal_sb_csum_set(journal_t *j,
  * to use the recovery.c file virtually unchanged from the kernel, so we
  * don't have to do much to keep kernel and user recovery in sync.
  */
-int journal_bmap(journal_t *journal, blk64_t block, unsigned long long *phys)
+int jbd2_journal_bmap(journal_t *journal, blk64_t block,
+		      unsigned long long *phys)
 {
 #ifdef USE_INODE_IO
 	*phys = block;
@@ -356,7 +357,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			goto try_backup_journal;
 		}
 		if (EXT2_I_SIZE(&j_inode->i_ext2) / journal->j_blocksize <
-		    JFS_MIN_JOURNAL_BLOCKS) {
+		    JBD2_MIN_JOURNAL_BLOCKS) {
 			retval = EXT2_ET_JOURNAL_TOO_SMALL;
 			goto try_backup_journal;
 		}
@@ -390,7 +391,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 #else
 		journal->j_inode = j_inode;
 		ctx->journal_io = ctx->fs->io;
-		if ((ret = journal_bmap(journal, 0, &start)) != 0) {
+		if ((ret = jbd2_journal_bmap(journal, 0, &start)) != 0) {
 			retval = (errcode_t) (-1 * ret);
 			goto errout;
 		}
@@ -599,12 +600,12 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	}
 
 	jsb = journal->j_superblock;
-	/* If we don't even have JFS_MAGIC, we probably have a wrong inode */
-	if (jsb->s_header.h_magic != htonl(JFS_MAGIC_NUMBER))
+	/* If we don't even have JBD2_MAGIC, we probably have a wrong inode */
+	if (jsb->s_header.h_magic != htonl(JBD2_MAGIC_NUMBER))
 		return e2fsck_journal_fix_bad_inode(ctx, &pctx);
 
 	switch (ntohl(jsb->s_header.h_blocktype)) {
-	case JFS_SUPERBLOCK_V1:
+	case JBD2_SUPERBLOCK_V1:
 		journal->j_format_version = 1;
 		if (jsb->s_feature_compat ||
 		    jsb->s_feature_incompat ||
@@ -613,7 +614,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 			clear_v2_journal_fields(journal);
 		break;
 
-	case JFS_SUPERBLOCK_V2:
+	case JBD2_SUPERBLOCK_V2:
 		journal->j_format_version = 2;
 		if (ntohl(jsb->s_nr_users) > 1 &&
 		    uuid_is_null(ctx->fs->super->s_journal_uuid))
@@ -628,9 +629,9 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	 * These should never appear in a journal super block, so if
 	 * they do, the journal is badly corrupted.
 	 */
-	case JFS_DESCRIPTOR_BLOCK:
-	case JFS_COMMIT_BLOCK:
-	case JFS_REVOKE_BLOCK:
+	case JBD2_DESCRIPTOR_BLOCK:
+	case JBD2_COMMIT_BLOCK:
+	case JBD2_REVOKE_BLOCK:
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	/* If we don't understand the superblock major type, but there
@@ -640,25 +641,25 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 		return EXT2_ET_JOURNAL_UNSUPP_VERSION;
 	}
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, ~JFS_KNOWN_INCOMPAT_FEATURES))
+	if (JBD2_HAS_INCOMPAT_FEATURE(journal, ~JBD2_KNOWN_INCOMPAT_FEATURES))
 		return EXT2_ET_UNSUPP_FEATURE;
 
-	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES))
+	if (JBD2_HAS_RO_COMPAT_FEATURE(journal, ~JBD2_KNOWN_ROCOMPAT_FEATURES))
 		return EXT2_ET_RO_UNSUPP_FEATURE;
 
 	/* Checksum v1-3 are mutually exclusive features. */
-	if (jfs_has_feature_csum2(journal) && jfs_has_feature_csum3(journal))
+	if (jbd2_has_feature_csum2(journal) && jbd2_has_feature_csum3(journal))
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
-	if (journal_has_csum_v2or3(journal) &&
-	    jfs_has_feature_checksum(journal))
+	if (jbd2_journal_has_csum_v2or3(journal) &&
+	    jbd2_has_feature_checksum(journal))
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	if (!e2fsck_journal_verify_csum_type(journal, jsb) ||
 	    !e2fsck_journal_sb_csum_verify(journal, jsb))
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
-	if (journal_has_csum_v2or3(journal))
+	if (jbd2_journal_has_csum_v2or3(journal))
 		journal->j_csum_seed = jbd2_chksum(journal, ~0, jsb->s_uuid,
 						   sizeof(jsb->s_uuid));
 
@@ -705,10 +706,10 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 	 * Anything unrecognisable we overwrite with a new V2
 	 * signature. */
 
-	if (jsb->s_header.h_magic != htonl(JFS_MAGIC_NUMBER) ||
-	    jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK_V1)) {
-		jsb->s_header.h_magic = htonl(JFS_MAGIC_NUMBER);
-		jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V2);
+	if (jsb->s_header.h_magic != htonl(JBD2_MAGIC_NUMBER) ||
+	    jsb->s_header.h_blocktype != htonl(JBD2_SUPERBLOCK_V1)) {
+		jsb->s_header.h_magic = htonl(JBD2_MAGIC_NUMBER);
+		jsb->s_header.h_blocktype = htonl(JBD2_SUPERBLOCK_V2);
 	}
 
 	/* Zero out everything else beyond the superblock header */
@@ -928,7 +929,7 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 
 	clear_problem_context(&pctx);
 
-	journal_init_revoke_caches();
+	jbd2_journal_init_revoke_caches();
 	retval = e2fsck_get_journal(ctx, &journal);
 	if (retval)
 		return retval;
@@ -937,11 +938,11 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 	if (retval)
 		goto errout;
 
-	retval = journal_init_revoke(journal, 1024);
+	retval = jbd2_journal_init_revoke(journal, 1024);
 	if (retval)
 		goto errout;
 
-	retval = -journal_recover(journal);
+	retval = -jbd2_journal_recover(journal);
 	if (retval)
 		goto errout;
 
@@ -955,8 +956,8 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 	journal->j_tail_sequence = journal->j_transaction_sequence;
 
 errout:
-	journal_destroy_revoke(journal);
-	journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke(journal);
+	jbd2_journal_destroy_revoke_caches();
 	e2fsck_journal_release(ctx, journal, 1, 0);
 	return retval;
 }

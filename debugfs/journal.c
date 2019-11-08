@@ -49,7 +49,7 @@ static int bh_count = 0;
 static int ext2fs_journal_verify_csum_type(journal_t *j,
 					   journal_superblock_t *jsb)
 {
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return 1;
 
 	return jsb->s_checksum_type == JBD2_CRC32C_CHKSUM;
@@ -73,7 +73,7 @@ static int ext2fs_journal_sb_csum_verify(journal_t *j,
 {
 	__u32 provided, calculated;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return 1;
 
 	provided = ext2fs_be32_to_cpu(jsb->s_checksum);
@@ -87,7 +87,7 @@ static errcode_t ext2fs_journal_sb_csum_set(journal_t *j,
 {
 	__u32 crc;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return 0;
 
 	crc = ext2fs_journal_sb_csum(jsb);
@@ -99,7 +99,8 @@ static errcode_t ext2fs_journal_sb_csum_set(journal_t *j,
  * to use the recovery.c file virtually unchanged from the kernel, so we
  * don't have to do much to keep kernel and user recovery in sync.
  */
-int journal_bmap(journal_t *journal, blk64_t block, unsigned long long *phys)
+int jbd2_journal_bmap(journal_t *journal, blk64_t block,
+		      unsigned long long *phys)
 {
 #ifdef USE_INODE_IO
 	*phys = block;
@@ -355,7 +356,7 @@ try_backup_journal:
 			goto try_backup_journal;
 		}
 		if (EXT2_I_SIZE(&j_inode->i_ext2) / journal->j_blocksize <
-		    JFS_MIN_JOURNAL_BLOCKS) {
+		    JBD2_MIN_JOURNAL_BLOCKS) {
 			retval = EXT2_ET_JOURNAL_TOO_SMALL;
 			goto try_backup_journal;
 		}
@@ -389,7 +390,7 @@ try_backup_journal:
 #else
 		journal->j_inode = j_inode;
 		fs->journal_io = fs->io;
-		retval = (errcode_t)journal_bmap(journal, 0, &start);
+		retval = (errcode_t) jbd2_journal_bmap(journal, 0, &start);
 		if (retval)
 			goto errout;
 #endif
@@ -559,12 +560,12 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 		return jbh->b_err;
 
 	jsb = journal->j_superblock;
-	/* If we don't even have JFS_MAGIC, we probably have a wrong inode */
-	if (jsb->s_header.h_magic != htonl(JFS_MAGIC_NUMBER))
+	/* If we don't even have JBD2_MAGIC, we probably have a wrong inode */
+	if (jsb->s_header.h_magic != htonl(JBD2_MAGIC_NUMBER))
 		return ext2fs_journal_fix_bad_inode(fs);
 
 	switch (ntohl(jsb->s_header.h_blocktype)) {
-	case JFS_SUPERBLOCK_V1:
+	case JBD2_SUPERBLOCK_V1:
 		journal->j_format_version = 1;
 		if (jsb->s_feature_compat ||
 		    jsb->s_feature_incompat ||
@@ -573,7 +574,7 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 			clear_v2_journal_fields(journal);
 		break;
 
-	case JFS_SUPERBLOCK_V2:
+	case JBD2_SUPERBLOCK_V2:
 		journal->j_format_version = 2;
 		if (ntohl(jsb->s_nr_users) > 1 &&
 		    uuid_is_null(fs->super->s_journal_uuid))
@@ -586,9 +587,9 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 	 * These should never appear in a journal super block, so if
 	 * they do, the journal is badly corrupted.
 	 */
-	case JFS_DESCRIPTOR_BLOCK:
-	case JFS_COMMIT_BLOCK:
-	case JFS_REVOKE_BLOCK:
+	case JBD2_DESCRIPTOR_BLOCK:
+	case JBD2_COMMIT_BLOCK:
+	case JBD2_REVOKE_BLOCK:
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	/* If we don't understand the superblock major type, but there
@@ -598,25 +599,25 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 		return EXT2_ET_JOURNAL_UNSUPP_VERSION;
 	}
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, ~JFS_KNOWN_INCOMPAT_FEATURES))
+	if (JBD2_HAS_INCOMPAT_FEATURE(journal, ~JBD2_KNOWN_INCOMPAT_FEATURES))
 		return EXT2_ET_UNSUPP_FEATURE;
 
-	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES))
+	if (JBD2_HAS_RO_COMPAT_FEATURE(journal, ~JBD2_KNOWN_ROCOMPAT_FEATURES))
 		return EXT2_ET_RO_UNSUPP_FEATURE;
 
 	/* Checksum v1-3 are mutually exclusive features. */
-	if (jfs_has_feature_csum2(journal) && jfs_has_feature_csum3(journal))
+	if (jbd2_has_feature_csum2(journal) && jbd2_has_feature_csum3(journal))
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
-	if (journal_has_csum_v2or3(journal) &&
-	    jfs_has_feature_checksum(journal))
+	if (jbd2_journal_has_csum_v2or3(journal) &&
+	    jbd2_has_feature_checksum(journal))
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	if (!ext2fs_journal_verify_csum_type(journal, jsb) ||
 	    !ext2fs_journal_sb_csum_verify(journal, jsb))
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
-	if (journal_has_csum_v2or3(journal))
+	if (jbd2_journal_has_csum_v2or3(journal))
 		journal->j_csum_seed = jbd2_chksum(journal, ~0, jsb->s_uuid,
 						   sizeof(jsb->s_uuid));
 
@@ -740,7 +741,7 @@ static errcode_t recover_ext3_journal(ext2_filsys fs)
 	journal_t *journal;
 	errcode_t retval;
 
-	journal_init_revoke_caches();
+	jbd2_journal_init_revoke_caches();
 	retval = ext2fs_get_journal(fs, &journal);
 	if (retval)
 		return retval;
@@ -749,11 +750,11 @@ static errcode_t recover_ext3_journal(ext2_filsys fs)
 	if (retval)
 		goto errout;
 
-	retval = journal_init_revoke(journal, 1024);
+	retval = jbd2_journal_init_revoke(journal, 1024);
 	if (retval)
 		goto errout;
 
-	retval = -journal_recover(journal);
+	retval = -jbd2_journal_recover(journal);
 	if (retval)
 		goto errout;
 
@@ -763,8 +764,8 @@ static errcode_t recover_ext3_journal(ext2_filsys fs)
 	}
 
 errout:
-	journal_destroy_revoke(journal);
-	journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke(journal);
+	jbd2_journal_destroy_revoke_caches();
 	ext2fs_journal_release(fs, journal, 1, 0);
 	return retval;
 }
@@ -830,7 +831,7 @@ errcode_t ext2fs_open_journal(ext2_filsys fs, journal_t **j)
 	journal_t *journal;
 	errcode_t retval;
 
-	journal_init_revoke_caches();
+	jbd2_journal_init_revoke_caches();
 	retval = ext2fs_get_journal(fs, &journal);
 	if (retval)
 		return retval;
@@ -839,7 +840,7 @@ errcode_t ext2fs_open_journal(ext2_filsys fs, journal_t **j)
 	if (retval)
 		goto errout;
 
-	retval = journal_init_revoke(journal, 1024);
+	retval = jbd2_journal_init_revoke(journal, 1024);
 	if (retval)
 		goto errout;
 
@@ -852,8 +853,8 @@ errcode_t ext2fs_open_journal(ext2_filsys fs, journal_t **j)
 	return 0;
 
 errout:
-	journal_destroy_revoke(journal);
-	journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke(journal);
+	jbd2_journal_destroy_revoke_caches();
 	ext2fs_journal_release(fs, journal, 1, 0);
 	return retval;
 }
@@ -862,8 +863,8 @@ errcode_t ext2fs_close_journal(ext2_filsys fs, journal_t **j)
 {
 	journal_t *journal = *j;
 
-	journal_destroy_revoke(journal);
-	journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke(journal);
+	jbd2_journal_destroy_revoke_caches();
 	ext2fs_journal_release(fs, journal, 0, 0);
 	*j = NULL;
 
@@ -875,7 +876,7 @@ void jbd2_commit_block_csum_set(journal_t *j, struct buffer_head *bh)
 	struct commit_header *h;
 	__u32 csum;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return;
 
 	h = (struct commit_header *)(bh->b_data);
@@ -891,7 +892,7 @@ void jbd2_revoke_csum_set(journal_t *j, struct buffer_head *bh)
 	struct journal_revoke_tail *tail;
 	__u32 csum;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return;
 
 	tail = (struct journal_revoke_tail *)(bh->b_data + j->j_blocksize -
@@ -903,14 +904,14 @@ void jbd2_revoke_csum_set(journal_t *j, struct buffer_head *bh)
 
 void jbd2_descr_block_csum_set(journal_t *j, struct buffer_head *bh)
 {
-	struct journal_block_tail *tail;
+	struct jbd2_journal_block_tail *tail;
 	__u32 csum;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return;
 
-	tail = (struct journal_block_tail *)(bh->b_data + j->j_blocksize -
-			sizeof(struct journal_block_tail));
+	tail = (struct jbd2_journal_block_tail *)(bh->b_data + j->j_blocksize -
+			sizeof(struct jbd2_journal_block_tail));
 	tail->t_checksum = 0;
 	csum = jbd2_chksum(j, j->j_csum_seed, bh->b_data, j->j_blocksize);
 	tail->t_checksum = ext2fs_cpu_to_be32(csum);
@@ -923,14 +924,14 @@ void jbd2_block_tag_csum_set(journal_t *j, journal_block_tag_t *tag,
 	__u32 csum32;
 	__be32 seq;
 
-	if (!journal_has_csum_v2or3(j))
+	if (!jbd2_journal_has_csum_v2or3(j))
 		return;
 
 	seq = ext2fs_cpu_to_be32(sequence);
 	csum32 = jbd2_chksum(j, j->j_csum_seed, (__u8 *)&seq, sizeof(seq));
 	csum32 = jbd2_chksum(j, csum32, bh->b_data, bh->b_size);
 
-	if (jfs_has_feature_csum3(j))
+	if (jbd2_has_feature_csum3(j))
 		tag3->t_checksum = ext2fs_cpu_to_be32(csum32);
 	else
 		tag->t_checksum = ext2fs_cpu_to_be16(csum32);
