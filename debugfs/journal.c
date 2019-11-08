@@ -162,14 +162,14 @@ int sync_blockdev(kdev_t kdev)
 	return io_channel_flush(io) ? EIO : 0;
 }
 
-void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
+void ll_rw_block(int rw, int op_flags, int nr, struct buffer_head *bhp[])
 {
 	errcode_t retval;
 	struct buffer_head *bh;
 
 	for (; nr > 0; --nr) {
 		bh = *bhp++;
-		if (rw == READ && !bh->b_uptodate) {
+		if (rw == REQ_OP_READ && !bh->b_uptodate) {
 			jfs_debug(3, "reading block %llu/%p\n",
 				  bh->b_blocknr, (void *) bh);
 			retval = io_channel_read_blk64(bh->b_io,
@@ -183,7 +183,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 				continue;
 			}
 			bh->b_uptodate = 1;
-		} else if (rw == WRITE && bh->b_dirty) {
+		} else if (rw == REQ_OP_WRITE && bh->b_dirty) {
 			jfs_debug(3, "writing block %llu/%p\n",
 				  bh->b_blocknr,
 				  (void *) bh);
@@ -201,7 +201,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 			bh->b_uptodate = 1;
 		} else {
 			jfs_debug(3, "no-op %s for block %llu\n",
-				  rw == READ ? "read" : "write",
+				  rw == REQ_OP_READ ? "read" : "write",
 				  bh->b_blocknr);
 		}
 	}
@@ -220,7 +220,7 @@ static void mark_buffer_clean(struct buffer_head *bh)
 void brelse(struct buffer_head *bh)
 {
 	if (bh->b_dirty)
-		ll_rw_block(WRITE, 1, &bh);
+		ll_rw_block(REQ_OP_WRITE, 0, 1, &bh);
 	jfs_debug(3, "freeing block %llu/%p (total %d)\n",
 		  bh->b_blocknr, (void *) bh, --bh_count);
 	ext2fs_free_mem(&bh);
@@ -239,7 +239,7 @@ void mark_buffer_uptodate(struct buffer_head *bh, int val)
 void wait_on_buffer(struct buffer_head *bh)
 {
 	if (!bh->b_uptodate)
-		ll_rw_block(READ, 1, &bh);
+		ll_rw_block(REQ_OP_READ, 0, 1, &bh);
 }
 
 
@@ -443,7 +443,7 @@ try_backup_journal:
 			retval = EXT2_ET_NO_MEMORY;
 			goto errout;
 		}
-		ll_rw_block(READ, 1, &bh);
+		ll_rw_block(REQ_OP_READ, 0, 1, &bh);
 		retval = bh->b_err;
 		if (retval) {
 			brelse(bh);
@@ -554,7 +554,7 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 	journal_superblock_t *jsb;
 	struct buffer_head *jbh = journal->j_sb_buffer;
 
-	ll_rw_block(READ, 1, &jbh);
+	ll_rw_block(REQ_OP_READ, 0, 1, &jbh);
 	if (jbh->b_err)
 		return jbh->b_err;
 

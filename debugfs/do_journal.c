@@ -105,7 +105,7 @@ static errcode_t journal_commit_trans(journal_transaction_t *trans)
 			if (err)
 				goto error;
 			mark_buffer_uptodate(cbh, 0);
-			ll_rw_block(READ, 1, &cbh);
+			ll_rw_block(REQ_OP_READ, 0, 1, &cbh);
 			err = cbh->b_err;
 			if (err)
 				goto error;
@@ -140,7 +140,7 @@ static errcode_t journal_commit_trans(journal_transaction_t *trans)
 	dbg_printf("Writing commit block at %llu:%llu\n", trans->block,
 		   bh->b_blocknr);
 	mark_buffer_dirty(bh);
-	ll_rw_block(WRITE, 1, &bh);
+	ll_rw_block(REQ_OP_WRITE, 0, 1, &bh);
 	err = bh->b_err;
 	if (err)
 		goto error;
@@ -213,7 +213,7 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 			dbg_printf("Writing revoke block at %llu:%llu\n",
 				   curr_blk, bh->b_blocknr);
 			mark_buffer_dirty(bh);
-			ll_rw_block(WRITE, 1, &bh);
+			ll_rw_block(REQ_OP_WRITE, 0, 1, &bh);
 			err = bh->b_err;
 			if (err)
 				goto error;
@@ -247,7 +247,7 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 		dbg_printf("Writing revoke block at %llu:%llu\n",
 			   curr_blk, bh->b_blocknr);
 		mark_buffer_dirty(bh);
-		ll_rw_block(WRITE, 1, &bh);
+		ll_rw_block(REQ_OP_WRITE, 0, 1, &bh);
 		err = bh->b_err;
 		if (err)
 			goto error;
@@ -329,7 +329,7 @@ static errcode_t journal_add_blocks_to_trans(journal_transaction_t *trans,
 			dbg_printf("Writing descriptor block at %llu:%llu\n",
 				   jdb_blk, bh->b_blocknr);
 			mark_buffer_dirty(bh);
-			ll_rw_block(WRITE, 1, &bh);
+			ll_rw_block(REQ_OP_WRITE, 0, 1, &bh);
 			err = bh->b_err;
 			if (err)
 				goto error;
@@ -376,7 +376,7 @@ static errcode_t journal_add_blocks_to_trans(journal_transaction_t *trans,
 			   block_list[i], curr_blk, data_bh->b_blocknr,
 			   tag_bytes);
 		mark_buffer_dirty(data_bh);
-		ll_rw_block(WRITE, 1, &data_bh);
+		ll_rw_block(REQ_OP_WRITE, 0, 1, &data_bh);
 		err = data_bh->b_err;
 		if (err)
 			goto error;
@@ -394,7 +394,7 @@ static errcode_t journal_add_blocks_to_trans(journal_transaction_t *trans,
 		dbg_printf("Writing descriptor block at %llu:%llu\n",
 			   jdb_blk, bh->b_blocknr);
 		mark_buffer_dirty(bh);
-		ll_rw_block(WRITE, 1, &bh);
+		ll_rw_block(REQ_OP_WRITE, 0, 1, &bh);
 		err = bh->b_err;
 		if (err)
 			goto error;
@@ -691,7 +691,7 @@ static errcode_t journal_find_head(journal_t *journal)
 		if (err)
 			goto err;
 		mark_buffer_uptodate(bh, 0);
-		ll_rw_block(READ, 1, &bh);
+		ll_rw_block(REQ_OP_READ, 0, 1, &bh);
 		err = bh->b_err;
 		if (err)
 			goto err;

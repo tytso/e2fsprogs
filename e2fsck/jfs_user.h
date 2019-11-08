@@ -183,7 +183,7 @@ _INLINE_ __u32 hash_64(__u64 val, unsigned int bits)
 int journal_bmap(journal_t *journal, blk64_t block, unsigned long long *phys);
 struct buffer_head *getblk(kdev_t ctx, blk64_t blocknr, int blocksize);
 int sync_blockdev(kdev_t kdev);
-void ll_rw_block(int rw, int dummy, struct buffer_head *bh[]);
+void ll_rw_block(int rw, int op_flags, int nr, struct buffer_head *bh[]);
 void mark_buffer_dirty(struct buffer_head *bh);
 void mark_buffer_uptodate(struct buffer_head *bh, int val);
 void brelse(struct buffer_head *bh);

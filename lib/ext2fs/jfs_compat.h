@@ -17,8 +17,8 @@
 #define KERN_ERR ""
 #define KERN_DEBUG ""
 
-#define READ 0
-#define WRITE 1
+#define REQ_OP_READ 0
+#define REQ_OP_WRITE 1
 
 #define cpu_to_be32(n) htonl(n)
 #define be32_to_cpu(n) ntohl(n)
