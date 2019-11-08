@@ -396,11 +396,11 @@ success_cleanup:
 
 cleanup:
 	if (do_block) {
-		ext2fs_free_mem(&fs->block_map);
+		ext2fs_free_block_bitmap(fs->block_map);
 		fs->block_map = 0;
 	}
 	if (do_inode) {
-		ext2fs_free_mem(&fs->inode_map);
+		ext2fs_free_inode_bitmap(fs->inode_map);
 		fs->inode_map = 0;
 	}
 	if (inode_bitmap)
