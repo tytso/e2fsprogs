@@ -306,9 +306,10 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (block_bitmap) {
 			blk = ext2fs_block_bitmap_loc(fs, i);
-			if (csum_flag &&
-			    ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT) &&
-			    ext2fs_group_desc_csum_verify(fs, i))
+			if ((csum_flag &&
+			     ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT) &&
+			     ext2fs_group_desc_csum_verify(fs, i)) ||
+			    (blk >= ext2fs_blocks_count(fs->super)))
 				blk = 0;
 			if (blk) {
 				retval = io_channel_read_blk64(fs->io, blk,
@@ -340,9 +341,10 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		}
 		if (inode_bitmap) {
 			blk = ext2fs_inode_bitmap_loc(fs, i);
-			if (csum_flag &&
-			    ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT) &&
-			    ext2fs_group_desc_csum_verify(fs, i))
+			if ((csum_flag &&
+			     ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT) &&
+			     ext2fs_group_desc_csum_verify(fs, i)) ||
+			    (blk >= ext2fs_blocks_count(fs->super)))
 				blk = 0;
 			if (blk) {
 				retval = io_channel_read_blk64(fs->io, blk,
