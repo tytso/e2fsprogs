@@ -187,9 +187,10 @@ _INLINE_ __u32 hash_64(__u64 val, unsigned int bits)
 /*
  * Kernel compatibility functions are defined in journal.c
  */
-int jbd2_journal_bmap(journal_t *journal, blk64_t block,
+int jbd2_journal_bmap(journal_t *journal, unsigned long block,
 		      unsigned long long *phys);
-struct buffer_head *getblk(kdev_t ctx, blk64_t blocknr, int blocksize);
+struct buffer_head *getblk(kdev_t ctx, unsigned long long blocknr,
+			   int blocksize);
 int sync_blockdev(kdev_t kdev);
 void ll_rw_block(int rw, int op_flags, int nr, struct buffer_head *bh[]);
 void mark_buffer_dirty(struct buffer_head *bh);

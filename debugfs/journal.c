@@ -99,7 +99,7 @@ static errcode_t ext2fs_journal_sb_csum_set(journal_t *j,
  * to use the recovery.c file virtually unchanged from the kernel, so we
  * don't have to do much to keep kernel and user recovery in sync.
  */
-int jbd2_journal_bmap(journal_t *journal, blk64_t block,
+int jbd2_journal_bmap(journal_t *journal, unsigned long block,
 		      unsigned long long *phys)
 {
 #ifdef USE_INODE_IO
@@ -116,13 +116,15 @@ int jbd2_journal_bmap(journal_t *journal, blk64_t block,
 	}
 
 	retval = ext2fs_bmap2(inode->i_fs, inode->i_ino,
-			      &inode->i_ext2, NULL, 0, block, 0, &pblk);
+			      &inode->i_ext2, NULL, 0, (blk64_t) block,
+			      0, &pblk);
 	*phys = pblk;
 	return (int) retval;
 #endif
 }
 
-struct buffer_head *getblk(kdev_t kdev, blk64_t blocknr, int blocksize)
+struct buffer_head *getblk(kdev_t kdev, unsigned long long blocknr,
+			   int blocksize)
 {
 	struct buffer_head *bh;
 	int bufsize = sizeof(*bh) + kdev->k_fs->blocksize -
@@ -138,7 +140,7 @@ struct buffer_head *getblk(kdev_t kdev, blk64_t blocknr, int blocksize)
 		bh_count++;
 #endif
 	jfs_debug(4, "getblk for block %llu (%d bytes)(total %d)\n",
-		  (unsigned long long) blocknr, blocksize, bh_count);
+		  blocknr, blocksize, bh_count);
 
 	bh->b_fs = kdev->k_fs;
 	if (kdev->k_dev == K_DEV_FS)
