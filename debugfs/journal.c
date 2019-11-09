@@ -741,7 +741,14 @@ static errcode_t recover_ext3_journal(ext2_filsys fs)
 	journal_t *journal;
 	errcode_t retval;
 
-	jbd2_journal_init_revoke_caches();
+	retval = jbd2_journal_init_revoke_record_cache();
+	if (retval)
+		return retval;
+
+	retval = jbd2_journal_init_revoke_table_cache();
+	if (retval)
+		return retval;
+
 	retval = ext2fs_get_journal(fs, &journal);
 	if (retval)
 		return retval;
@@ -765,7 +772,8 @@ static errcode_t recover_ext3_journal(ext2_filsys fs)
 
 errout:
 	jbd2_journal_destroy_revoke(journal);
-	jbd2_journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke_record_cache();
+	jbd2_journal_destroy_revoke_table_cache();
 	ext2fs_journal_release(fs, journal, 1, 0);
 	return retval;
 }
@@ -831,7 +839,14 @@ errcode_t ext2fs_open_journal(ext2_filsys fs, journal_t **j)
 	journal_t *journal;
 	errcode_t retval;
 
-	jbd2_journal_init_revoke_caches();
+	retval = jbd2_journal_init_revoke_record_cache();
+	if (retval)
+		return retval;
+
+	retval = jbd2_journal_init_revoke_table_cache();
+	if (retval)
+		return retval;
+
 	retval = ext2fs_get_journal(fs, &journal);
 	if (retval)
 		return retval;
@@ -854,7 +869,8 @@ errcode_t ext2fs_open_journal(ext2_filsys fs, journal_t **j)
 
 errout:
 	jbd2_journal_destroy_revoke(journal);
-	jbd2_journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke_record_cache();
+	jbd2_journal_destroy_revoke_table_cache();
 	ext2fs_journal_release(fs, journal, 1, 0);
 	return retval;
 }
@@ -864,7 +880,8 @@ errcode_t ext2fs_close_journal(ext2_filsys fs, journal_t **j)
 	journal_t *journal = *j;
 
 	jbd2_journal_destroy_revoke(journal);
-	jbd2_journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke_record_cache();
+	jbd2_journal_destroy_revoke_table_cache();
 	ext2fs_journal_release(fs, journal, 0, 0);
 	*j = NULL;
 

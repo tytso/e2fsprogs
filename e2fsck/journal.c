@@ -929,7 +929,14 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 
 	clear_problem_context(&pctx);
 
-	jbd2_journal_init_revoke_caches();
+	retval = jbd2_journal_init_revoke_record_cache();
+	if (retval)
+		return retval;
+
+	retval = jbd2_journal_init_revoke_table_cache();
+	if (retval)
+		return retval;
+
 	retval = e2fsck_get_journal(ctx, &journal);
 	if (retval)
 		return retval;
@@ -957,7 +964,8 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 
 errout:
 	jbd2_journal_destroy_revoke(journal);
-	jbd2_journal_destroy_revoke_caches();
+	jbd2_journal_destroy_revoke_record_cache();
+	jbd2_journal_destroy_revoke_table_cache();
 	e2fsck_journal_release(ctx, journal, 1, 0);
 	return retval;
 }

@@ -256,8 +256,11 @@ extern int	jbd2_journal_skip_recovery (journal_t *);
 /* revoke.c */
 extern int	jbd2_journal_init_revoke(journal_t *, int);
 extern void	jbd2_journal_destroy_revoke(journal_t *);
-extern void	jbd2_journal_destroy_revoke_caches(void);
-extern int	jbd2_journal_init_revoke_caches(void);
+extern void	jbd2_journal_destroy_revoke_record_cache(void);
+extern void	jbd2_journal_destroy_revoke_table_cache(void);
+extern int	jbd2_journal_init_revoke_record_cache(void);
+extern int	jbd2_journal_init_revoke_table_cache(void);
+
 
 extern int	jbd2_journal_set_revoke(journal_t *, unsigned long long, tid_t);
 extern int	jbd2_journal_test_revoke(journal_t *, unsigned long long, tid_t);
