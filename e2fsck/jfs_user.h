@@ -92,6 +92,13 @@ typedef struct {
 #define kmalloc(len, flags) malloc(len)
 #define kfree(p) free(p)
 
+static inline void *kmalloc_array(unsigned n, unsigned size, int flags)
+{
+	if (n && (~0U)/n < size)
+		return NULL;
+	return malloc(n * size);
+}
+
 #define cond_resched()	do { } while (0)
 
 #define __init
