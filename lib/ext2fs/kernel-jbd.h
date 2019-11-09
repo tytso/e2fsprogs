@@ -100,9 +100,9 @@ extern void * __jbd_kmalloc (char *where, size_t size, int flags, int retry);
  */
 typedef struct journal_header_s
 {
-	__u32		h_magic;
-	__u32		h_blocktype;
-	__u32		h_sequence;
+	__be32		h_magic;
+	__be32		h_blocktype;
+	__be32		h_sequence;
 } journal_header_t;
 
 /*
@@ -135,15 +135,15 @@ typedef struct journal_header_s
  * Checksum v1, v2, and v3 are mutually exclusive features.
  */
 struct commit_header {
-	__u32		h_magic;
-	__u32		h_blocktype;
-	__u32		h_sequence;
+	__be32		h_magic;
+	__be32		h_blocktype;
+	__be32		h_sequence;
 	unsigned char	h_chksum_type;
 	unsigned char	h_chksum_size;
 	unsigned char	h_padding[2];
-	__u32		h_chksum[JBD2_CHECKSUM_BYTES];
-	__u64		h_commit_sec;
-	__u32		h_commit_nsec;
+	__be32		h_chksum[JBD2_CHECKSUM_BYTES];
+	__be64		h_commit_sec;
+	__be32		h_commit_nsec;
 };
 
 /*
@@ -151,18 +151,18 @@ struct commit_header {
  */
 typedef struct journal_block_tag3_s
 {
-	__u32		t_blocknr;	/* The on-disk block number */
-	__u32		t_flags;	/* See below */
-	__u32		t_blocknr_high; /* most-significant high 32bits. */
-	__u32		t_checksum;	/* crc32c(uuid+seq+block) */
+	__be32		t_blocknr;	/* The on-disk block number */
+	__be32		t_flags;	/* See below */
+	__be32		t_blocknr_high; /* most-significant high 32bits. */
+	__be32		t_checksum;	/* crc32c(uuid+seq+block) */
 } journal_block_tag3_t;
 
 typedef struct journal_block_tag_s
 {
-	__u32		t_blocknr;	/* The on-disk block number */
-	__u16		t_checksum;	/* truncated crc32c(uuid+seq+block) */
-	__u16		t_flags;	/* See below */
-	__u32		t_blocknr_high; /* most-significant high 32bits. */
+	__be32		t_blocknr;	/* The on-disk block number */
+	__be16		t_checksum;	/* truncated crc32c(uuid+seq+block) */
+	__be16		t_flags;	/* See below */
+	__be32		t_blocknr_high; /* most-significant high 32bits. */
 } journal_block_tag_t;
 
 /* Tail of descriptor or revoke block, for checksumming */
@@ -177,7 +177,7 @@ struct jbd2_journal_block_tail {
 typedef struct journal_revoke_header_s
 {
 	journal_header_t r_header;
-	int		 r_count;	/* Count of bytes used in the block */
+	__be32		 r_count;	/* Count of bytes used in the block */
 } jbd2_journal_revoke_header_t;
 
 /* Definitions for the journal tag flags word: */
@@ -200,14 +200,14 @@ typedef struct journal_superblock_s
 
 /* 0x000C */
 	/* Static information describing the journal */
-	__u32	s_blocksize;		/* journal device blocksize */
-	__u32	s_maxlen;		/* total blocks in journal file */
-	__u32	s_first;		/* first block of log information */
+	__be32	s_blocksize;		/* journal device blocksize */
+	__be32	s_maxlen;		/* total blocks in journal file */
+	__be32	s_first;		/* first block of log information */
 
 /* 0x0018 */
 	/* Dynamic information describing the current state of the log */
-	__u32	s_sequence;		/* first commit ID expected in log */
-	__u32	s_start;		/* blocknr of start of log */
+	__be32	s_sequence;		/* first commit ID expected in log */
+	__be32	s_start;		/* blocknr of start of log */
 
 /* 0x0020 */
 	/* Error value, as set by journal_abort(). */
@@ -215,26 +215,26 @@ typedef struct journal_superblock_s
 
 /* 0x0024 */
 	/* Remaining fields are only valid in a version-2 superblock */
-	__u32	s_feature_compat; 	/* compatible feature set */
-	__u32	s_feature_incompat; 	/* incompatible feature set */
-	__u32	s_feature_ro_compat; 	/* readonly-compatible feature set */
+	__be32	s_feature_compat; 	/* compatible feature set */
+	__be32	s_feature_incompat; 	/* incompatible feature set */
+	__be32	s_feature_ro_compat; 	/* readonly-compatible feature set */
 /* 0x0030 */
 	__u8	s_uuid[16];		/* 128-bit uuid for journal */
 
 /* 0x0040 */
-	__u32	s_nr_users;		/* Nr of filesystems sharing log */
+	__be32	s_nr_users;		/* Nr of filesystems sharing log */
 
-	__u32	s_dynsuper;		/* Blocknr of dynamic superblock copy*/
+	__be32	s_dynsuper;		/* Blocknr of dynamic superblock copy*/
 
 /* 0x0048 */
-	__u32	s_max_transaction;	/* Limit of journal blocks per trans.*/
-	__u32	s_max_trans_data;	/* Limit of data blocks per trans. */
+	__be32	s_max_transaction;	/* Limit of journal blocks per trans.*/
+	__be32	s_max_trans_data;	/* Limit of data blocks per trans. */
 
 /* 0x0050 */
 	__u8	s_checksum_type;	/* checksum type */
 	__u8	s_padding2[3];
-	__u32	s_padding[42];
-	__u32	s_checksum;		/* crc32c(superblock) */
+	__be32	s_padding[42];
+	__be32	s_checksum;		/* crc32c(superblock) */
 
 /* 0x0100 */
 	__u8	s_users[JBD2_USERS_SIZE];		/* ids of all fs'es sharing the log */

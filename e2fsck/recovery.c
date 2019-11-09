@@ -195,7 +195,7 @@ static int jread(struct buffer_head **bhp, journal_t *journal,
 static int jbd2_descriptor_block_csum_verify(journal_t *j, void *buf)
 {
 	struct jbd2_journal_block_tail *tail;
-	__u32 provided;
+	__be32 provided;
 	__u32 calculated;
 
 	if (!jbd2_journal_has_csum_v2or3(j))
@@ -399,7 +399,7 @@ static int calc_chksums(journal_t *journal, struct buffer_head *bh,
 static int jbd2_commit_block_csum_verify(journal_t *j, void *buf)
 {
 	struct commit_header *h;
-	__u32 provided;
+	__be32 provided;
 	__u32 calculated;
 
 	if (!jbd2_journal_has_csum_v2or3(j))
@@ -419,7 +419,7 @@ static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
 {
 	journal_block_tag3_t *tag3 = (journal_block_tag3_t *)tag;
 	__u32 csum32;
-	__u32 seq;
+	__be32 seq;
 
 	if (!jbd2_journal_has_csum_v2or3(j))
 		return 1;
@@ -643,7 +643,7 @@ static int do_one_pass(journal_t *journal,
 					memcpy(nbh->b_data, obh->b_data,
 							journal->j_blocksize);
 					if (flags & JBD2_FLAG_ESCAPE) {
-						__u32 magic = ext2fs_cpu_to_be32(JBD2_MAGIC_NUMBER);
+						__be32 magic = ext2fs_cpu_to_be32(JBD2_MAGIC_NUMBER);
 						memcpy(nbh->b_data, &magic,
 						       sizeof(magic));
 					}
@@ -858,9 +858,9 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 		int err;
 
 		if (record_len == 4)
-			blocknr = ext2fs_be32_to_cpu(* ((__u32 *) (bh->b_data+offset)));
+			blocknr = ext2fs_be32_to_cpu(* ((__be32 *) (bh->b_data+offset)));
 		else
-			blocknr = ext2fs_be64_to_cpu(* ((__u64 *) (bh->b_data+offset)));
+			blocknr = ext2fs_be64_to_cpu(* ((__be64 *) (bh->b_data+offset)));
 		offset += record_len;
 		err = jbd2_journal_set_revoke(journal, blocknr, sequence);
 		if (err)
