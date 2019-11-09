@@ -181,7 +181,7 @@ static errcode_t journal_add_revoke_to_trans(journal_transaction_t *trans,
 
 	/* Do we need to leave space at the end for a checksum? */
 	if (jbd2_journal_has_csum_v2or3(trans->journal))
-		csum_size = sizeof(struct journal_revoke_tail);
+		csum_size = sizeof(struct jbd2_journal_block_tail);
 
 	curr_blk = trans->block;
 
@@ -419,7 +419,7 @@ static blk64_t journal_guess_blocks(journal_t *journal, blk64_t data_blocks,
 	/* Estimate # of revoke blocks */
 	bs = journal->j_blocksize;
 	if (jbd2_journal_has_csum_v2or3(journal))
-		bs -= sizeof(struct journal_revoke_tail);
+		bs -= sizeof(struct jbd2_journal_block_tail);
 	sz = jbd2_has_feature_64bit(journal) ? sizeof(__u64) : sizeof(__u32);
 	ret += revoke_blocks * sz / bs;
 

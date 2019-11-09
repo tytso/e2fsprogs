@@ -165,7 +165,7 @@ typedef struct journal_block_tag_s
 	__u32		t_blocknr_high; /* most-significant high 32bits. */
 } journal_block_tag_t;
 
-/* Tail of descriptor block, for checksumming */
+/* Tail of descriptor or revoke block, for checksumming */
 struct jbd2_journal_block_tail {
 	__be32		t_checksum;
 };
@@ -179,11 +179,6 @@ typedef struct journal_revoke_header_s
 	journal_header_t r_header;
 	int		 r_count;	/* Count of bytes used in the block */
 } jbd2_journal_revoke_header_t;
-
-/* Tail of revoke block, for checksumming */
-struct journal_revoke_tail {
-	__be32		r_checksum;
-};
 
 /* Definitions for the journal tag flags word: */
 #define JBD2_FLAG_ESCAPE		1	/* on-disk block is escaped */

@@ -889,17 +889,7 @@ void jbd2_commit_block_csum_set(journal_t *j, struct buffer_head *bh)
 
 void jbd2_revoke_csum_set(journal_t *j, struct buffer_head *bh)
 {
-	struct journal_revoke_tail *tail;
-	__u32 csum;
-
-	if (!jbd2_journal_has_csum_v2or3(j))
-		return;
-
-	tail = (struct journal_revoke_tail *)(bh->b_data + j->j_blocksize -
-			sizeof(struct journal_revoke_tail));
-	tail->r_checksum = 0;
-	csum = jbd2_chksum(j, j->j_csum_seed, bh->b_data, j->j_blocksize);
-	tail->r_checksum = ext2fs_cpu_to_be32(csum);
+	jbd2_descr_block_csum_set(j, bh);
 }
 
 void jbd2_descr_block_csum_set(journal_t *j, struct buffer_head *bh)

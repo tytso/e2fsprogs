@@ -192,8 +192,7 @@ static int jread(struct buffer_head **bhp, journal_t *journal,
 	return 0;
 }
 
-static int jbd2_descr_block_csum_verify(journal_t *j,
-					void *buf)
+static int jbd2_descriptor_block_csum_verify(journal_t *j, void *buf)
 {
 	struct jbd2_journal_block_tail *tail;
 	__u32 provided;
@@ -343,7 +342,7 @@ int jbd2_journal_skip_recovery(journal_t *journal)
 		++journal->j_transaction_sequence;
 	} else {
 #ifdef CONFIG_JBD2_DEBUG
-		int dropped = info.end_transaction -
+		int dropped = info.end_transaction - 
 			ext2fs_be32_to_cpu(journal->j_superblock->s_sequence);
 		jbd_debug(1,
 			  "JBD2: ignoring %d transaction%s from the journal.\n",
@@ -540,8 +539,8 @@ static int do_one_pass(journal_t *journal,
 				descr_csum_size =
 					sizeof(struct jbd2_journal_block_tail);
 			if (descr_csum_size > 0 &&
-			    !jbd2_descr_block_csum_verify(journal,
-							  bh->b_data)) {
+			    !jbd2_descriptor_block_csum_verify(journal,
+							       bh->b_data)) {
 				err = -EFSBADCRC;
 				brelse(bh);
 				goto failed;
@@ -827,26 +826,6 @@ static int do_one_pass(journal_t *journal,
 	return err;
 }
 
-static int jbd2_revoke_block_csum_verify(journal_t *j,
-					 void *buf)
-{
-	struct journal_revoke_tail *tail;
-	__u32 provided;
-	__u32 calculated;
-
-	if (!jbd2_journal_has_csum_v2or3(j))
-		return 1;
-
-	tail = (struct journal_revoke_tail *)((char *)buf + j->j_blocksize -
-			sizeof(struct journal_revoke_tail));
-	provided = tail->r_checksum;
-	tail->r_checksum = 0;
-	calculated = jbd2_chksum(j, j->j_csum_seed, buf, j->j_blocksize);
-	tail->r_checksum = provided;
-
-	return provided == ext2fs_cpu_to_be32(calculated);
-}
-
 /* Scan a revoke record, marking all blocks mentioned as revoked. */
 
 static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
@@ -862,11 +841,11 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 	offset = sizeof(jbd2_journal_revoke_header_t);
 	rcount = ext2fs_be32_to_cpu(header->r_count);
 
-	if (!jbd2_revoke_block_csum_verify(journal, header))
+	if (!jbd2_descriptor_block_csum_verify(journal, header))
 		return -EFSBADCRC;
 
 	if (jbd2_journal_has_csum_v2or3(journal))
-		csum_size = sizeof(struct journal_revoke_tail);
+		csum_size = sizeof(struct jbd2_journal_block_tail);
 	if (rcount > journal->j_blocksize - csum_size)
 		return -EINVAL;
 	max = rcount;
