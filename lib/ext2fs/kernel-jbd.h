@@ -24,7 +24,7 @@
 #define __FUNCTION__ ""
 #endif
 
-#define journal_oom_retry 1
+#define journal_oom_retry 0
 
 #ifdef __STDC__
 #ifdef CONFIG_JBD_DEBUG

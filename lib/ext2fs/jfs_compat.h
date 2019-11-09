@@ -32,7 +32,10 @@ typedef struct kdev_s *kdev_t;
 struct buffer_head;
 struct inode;
 
+typedef unsigned int gfp_t;
 #define GFP_KERNEL	0
+#define GFP_NOFS	0
+#define __GFP_NOFAIL	0
 #define JBD2_TAG_SIZE32	JBD_TAG_SIZE32
 #define JBD2_BARRIER	0
 typedef __u64 u64;
@@ -49,7 +52,6 @@ static inline __u32 jbd2_chksum(journal_t *j EXT2FS_ATTR((unused)),
 #define spin_lock_init(x)
 #define spin_lock(x)
 #define spin_unlock(x)
-#define yield()
 #define SLAB_HWCACHE_ALIGN	0
 #define SLAB_TEMPORARY		0
 #define KMEM_CACHE(__struct, __flags) kmem_cache_create(#__struct,\
