@@ -648,7 +648,7 @@ static void flush_descriptor(journal_t *journal,
 		return;
 
 	header = (jbd2_journal_revoke_header_t *)descriptor->b_data;
-	header->r_count = ext2fs_cpu_to_be32(offset);
+	header->r_count = cpu_to_be32(offset);
 	jbd2_descriptor_block_csum_set(journal, descriptor);
 
 	set_buffer_jwrite(descriptor);

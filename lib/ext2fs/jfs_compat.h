@@ -20,10 +20,13 @@
 #define REQ_OP_READ 0
 #define REQ_OP_WRITE 1
 
-#define cpu_to_be32(n) htonl(n)
-#define be32_to_cpu(n) ntohl(n)
-#define cpu_to_be16(n) htons(n)
-#define be16_to_cpu(n) ntohs(n)
+#define cpu_to_be16(x)	ext2fs_cpu_to_be16(x)
+#define cpu_to_be32(x)	ext2fs_cpu_to_be32(x)
+#define cpu_to_be64(x)	ext2fs_cpu_to_be64(x)
+
+#define be16_to_cpu(x)	ext2fs_be16_to_cpu(x)
+#define be32_to_cpu(x)	ext2fs_be32_to_cpu(x)
+#define be64_to_cpu(x)	ext2fs_be64_to_cpu(x)
 
 typedef unsigned int tid_t;
 typedef struct journal_s journal_t;
@@ -40,7 +43,6 @@ typedef unsigned int gfp_t;
 #define JBD2_BARRIER	0
 typedef __u64 u64;
 #define put_bh(x)	brelse(x)
-#define be64_to_cpu(x)	ext2fs_be64_to_cpu(x)
 
 static inline __u32 jbd2_chksum(journal_t *j EXT2FS_ATTR((unused)),
 				__u32 crc, const void *address,

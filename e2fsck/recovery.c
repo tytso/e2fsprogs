@@ -208,7 +208,7 @@ static int jbd2_descriptor_block_csum_verify(journal_t *j, void *buf)
 	calculated = jbd2_chksum(j, j->j_csum_seed, buf, j->j_blocksize);
 	tail->t_checksum = provided;
 
-	return provided == ext2fs_cpu_to_be32(calculated);
+	return provided == cpu_to_be32(calculated);
 }
 
 /*
@@ -280,8 +280,8 @@ int jbd2_journal_recover(journal_t *journal)
 
 	if (!sb->s_start) {
 		jbd_debug(1, "No recovery required, last transaction %d\n",
-			  ext2fs_be32_to_cpu(sb->s_sequence));
-		journal->j_transaction_sequence = ext2fs_be32_to_cpu(sb->s_sequence) + 1;
+			  be32_to_cpu(sb->s_sequence));
+		journal->j_transaction_sequence = be32_to_cpu(sb->s_sequence) + 1;
 		return 0;
 	}
 
@@ -343,7 +343,7 @@ int jbd2_journal_skip_recovery(journal_t *journal)
 	} else {
 #ifdef CONFIG_JBD2_DEBUG
 		int dropped = info.end_transaction - 
-			ext2fs_be32_to_cpu(journal->j_superblock->s_sequence);
+			be32_to_cpu(journal->j_superblock->s_sequence);
 		jbd_debug(1,
 			  "JBD2: ignoring %d transaction%s from the journal.\n",
 			  dropped, (dropped == 1) ? "" : "s");
@@ -411,7 +411,7 @@ static int jbd2_commit_block_csum_verify(journal_t *j, void *buf)
 	calculated = jbd2_chksum(j, j->j_csum_seed, buf, j->j_blocksize);
 	h->h_chksum[0] = provided;
 
-	return provided == ext2fs_cpu_to_be32(calculated);
+	return provided == cpu_to_be32(calculated);
 }
 
 static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
@@ -424,7 +424,7 @@ static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
 	if (!jbd2_journal_has_csum_v2or3(j))
 		return 1;
 
-	seq = ext2fs_cpu_to_be32(sequence);
+	seq = cpu_to_be32(sequence);
 	csum32 = jbd2_chksum(j, j->j_csum_seed, (__u8 *)&seq, sizeof(seq));
 	csum32 = jbd2_chksum(j, csum32, buf, j->j_blocksize);
 
@@ -457,8 +457,8 @@ static int do_one_pass(journal_t *journal,
 	 */
 
 	sb = journal->j_superblock;
-	next_commit_ID = ext2fs_be32_to_cpu(sb->s_sequence);
-	next_log_block = ext2fs_be32_to_cpu(sb->s_start);
+	next_commit_ID = be32_to_cpu(sb->s_sequence);
+	next_log_block = be32_to_cpu(sb->s_start);
 
 	first_commit_ID = next_commit_ID;
 	if (pass == PASS_SCAN)
@@ -513,13 +513,13 @@ static int do_one_pass(journal_t *journal,
 
 		tmp = (journal_header_t *)bh->b_data;
 
-		if (tmp->h_magic != ext2fs_cpu_to_be32(JBD2_MAGIC_NUMBER)) {
+		if (tmp->h_magic != cpu_to_be32(JBD2_MAGIC_NUMBER)) {
 			brelse(bh);
 			break;
 		}
 
-		blocktype = ext2fs_be32_to_cpu(tmp->h_blocktype);
-		sequence = ext2fs_be32_to_cpu(tmp->h_sequence);
+		blocktype = be32_to_cpu(tmp->h_blocktype);
+		sequence = be32_to_cpu(tmp->h_sequence);
 		jbd_debug(3, "Found magic %d, sequence %d\n",
 			  blocktype, sequence);
 
@@ -613,7 +613,7 @@ static int do_one_pass(journal_t *journal,
 					/* Look for block corruption */
 					if (!jbd2_block_tag_csum_verify(
 						journal, tag, obh->b_data,
-						ext2fs_be32_to_cpu(tmp->h_sequence))) {
+						be32_to_cpu(tmp->h_sequence))) {
 						brelse(obh);
 						success = -EFSBADCRC;
 						printk(KERN_ERR "JBD2: Invalid "
@@ -643,7 +643,7 @@ static int do_one_pass(journal_t *journal,
 					memcpy(nbh->b_data, obh->b_data,
 							journal->j_blocksize);
 					if (flags & JBD2_FLAG_ESCAPE) {
-						__be32 magic = ext2fs_cpu_to_be32(JBD2_MAGIC_NUMBER);
+						__be32 magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
 						memcpy(nbh->b_data, &magic,
 						       sizeof(magic));
 					}
@@ -713,7 +713,7 @@ static int do_one_pass(journal_t *journal,
 				struct commit_header *cbh =
 					(struct commit_header *)bh->b_data;
 				unsigned found_chksum =
-					ext2fs_be32_to_cpu(cbh->h_chksum[0]);
+					be32_to_cpu(cbh->h_chksum[0]);
 
 				chksum_err = chksum_seen = 0;
 
@@ -839,7 +839,7 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 
 	header = (jbd2_journal_revoke_header_t *) bh->b_data;
 	offset = sizeof(jbd2_journal_revoke_header_t);
-	rcount = ext2fs_be32_to_cpu(header->r_count);
+	rcount = be32_to_cpu(header->r_count);
 
 	if (!jbd2_descriptor_block_csum_verify(journal, header))
 		return -EFSBADCRC;
@@ -858,9 +858,9 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 		int err;
 
 		if (record_len == 4)
-			blocknr = ext2fs_be32_to_cpu(* ((__be32 *) (bh->b_data+offset)));
+			blocknr = be32_to_cpu(* ((__be32 *) (bh->b_data+offset)));
 		else
-			blocknr = ext2fs_be64_to_cpu(* ((__be64 *) (bh->b_data+offset)));
+			blocknr = be64_to_cpu(* ((__be64 *) (bh->b_data+offset)));
 		offset += record_len;
 		err = jbd2_journal_set_revoke(journal, blocknr, sequence);
 		if (err)
