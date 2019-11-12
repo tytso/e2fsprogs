@@ -81,9 +81,9 @@ struct kdev_s {
 #define buffer_req(bh) 1
 #define do_readahead(journal, start) do {} while (0)
 
-typedef struct {
+typedef struct kmem_cache {
 	int	object_length;
-} lkmem_cache_t;
+} kmem_cache_t;
 
 #define kmem_cache_alloc(cache, flags) malloc((cache)->object_length)
 #define kmem_cache_free(cache, obj) free(obj)
@@ -113,8 +113,8 @@ static inline void *kmalloc_array(unsigned n, unsigned size, int flags)
  * functions.
  */
 #ifdef NO_INLINE_FUNCS
-extern lkmem_cache_t *do_cache_create(int len);
-extern void do_cache_destroy(lkmem_cache_t *cache);
+extern kmem_cache_t *do_cache_create(int len);
+extern void do_cache_destroy(kmem_cache_t *cache);
 extern size_t journal_tag_bytes(journal_t *journal);
 extern __u32 __hash_32(__u32 val);
 extern __u32 hash_32(__u32 val, unsigned int bits);
@@ -140,9 +140,9 @@ extern __u32 hash_64(__u64 val, unsigned int bits);
 #endif /* __STDC_VERSION__ >= 199901L */
 #endif /* E2FSCK_INCLUDE_INLINE_FUNCS */
 
-_INLINE_ lkmem_cache_t *do_cache_create(int len)
+_INLINE_ kmem_cache_t *do_cache_create(int len)
 {
-	lkmem_cache_t *new_cache;
+	kmem_cache_t *new_cache;
 
 	new_cache = malloc(sizeof(*new_cache));
 	if (new_cache)
@@ -150,7 +150,7 @@ _INLINE_ lkmem_cache_t *do_cache_create(int len)
 	return new_cache;
 }
 
-_INLINE_ void do_cache_destroy(lkmem_cache_t *cache)
+_INLINE_ void do_cache_destroy(kmem_cache_t *cache)
 {
 	free(cache);
 }
