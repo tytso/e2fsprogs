@@ -369,7 +369,7 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_0_EXTERNAL_JOURNAL_HINT,
 	  /* xgettext:no-c-format */
 	  N_("@S hint for external superblock @s %X.  "),
-	     PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
+	     PROMPT_FIX, PR_PREEN_OK | PR_NOT_A_FIX, 0, 0, 0 },
 
 	/* Adding dirhash hint to filesystem */
 	{ PR_0_DIRHASH_HINT,
