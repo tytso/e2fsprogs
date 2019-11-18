@@ -52,7 +52,8 @@ The following attributes are read-only, and may be listed by
 but not modified by chattr:
 encrypted (E),
 indexed directory (I),
-and inline data (N).
+inline data (N),
+and verity (V).
 .PP
 Not all flags are supported or utilized by all filesystems; refer to
 filesystem-specific man pages such as
@@ -188,6 +189,15 @@ When a file with the 'u' attribute set is deleted, its contents are
 saved.  This allows the user to ask for its undeletion.  Note: please
 make sure to read the bugs and limitations section at the end of this
 document.
+.PP
+A file with the 'V' attribute set has fs-verity enabled.  It cannot be
+written to, and the filesystem will automatically verify all data read
+from it against a cryptographic hash that covers the entire file's
+contents, e.g. via a Merkle tree.  This makes it possible to efficiently
+authenticate the file.  This attribute may not be set or reset using
+.BR chattr (1),
+although it can be displayed by
+.BR lsattr (1).
 .PP
 .SH AUTHOR
 .B chattr
