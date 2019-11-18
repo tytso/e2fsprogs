@@ -171,8 +171,8 @@ A file with the 't' attribute will not have a partial block fragment at
 the end of the file merged with other files (for those filesystems which
 support tail-merging).  This is necessary for applications such as LILO
 which read the filesystem directly, and which don't understand tail-merged
-files.  Note: As of this writing, the ext2 or ext3 filesystems do not
-(yet, except in very experimental patches) support tail-merging.
+files.  Note: As of this writing, the ext2, ext3, and ext4 filesystems do
+not support tail-merging.
 .PP
 A directory with the 'T' attribute will be deemed to be the top of
 directory hierarchies for the purposes of the Orlov block allocator.
