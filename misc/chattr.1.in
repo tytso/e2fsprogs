@@ -115,7 +115,7 @@ the blocks on disk.  It may not be removed using
 .BR chattr (1).
 .PP
 A file, directory, or symlink with the 'E' attribute set is encrypted by the
-filesystem.  This attribute may not be set or reset using
+filesystem.  This attribute may not be set or cleared using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
@@ -132,7 +132,7 @@ Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE
 capability can set or clear this attribute.
 .PP
 The 'I' attribute is used by the htree code to indicate that a directory
-is being indexed using hashed trees.  It may not be set or reset using
+is being indexed using hashed trees.  It may not be set or cleared using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
@@ -146,7 +146,8 @@ attribute has no effect.  Only the superuser or a process possessing the
 CAP_SYS_RESOURCE capability can set or clear this attribute.
 .PP
 A file with the 'N' attribute set indicates that the file has data
-stored inline, within the inode itself. It may not be set or reset using
+stored inline, within the inode itself. It may not be set or cleared
+using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
@@ -193,7 +194,7 @@ A file with the 'V' attribute set has fs-verity enabled.  It cannot be
 written to, and the filesystem will automatically verify all data read
 from it against a cryptographic hash that covers the entire file's
 contents, e.g. via a Merkle tree.  This makes it possible to efficiently
-authenticate the file.  This attribute may not be set or reset using
+authenticate the file.  This attribute may not be set or cleared using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
