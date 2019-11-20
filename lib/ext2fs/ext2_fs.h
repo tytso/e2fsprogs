@@ -742,7 +742,7 @@ struct ext2_super_block {
 /*200*/	__u8	s_mount_opts[64];	/* default mount options, no NUL? */
 /*240*/	__u32	s_usr_quota_inum;	/* inode number of user quota file */
 	__u32	s_grp_quota_inum;	/* inode number of group quota file */
-	__u32	s_overhead_blocks;	/* overhead blocks/clusters in fs */
+	__u32	s_overhead_clusters;	/* overhead blocks/clusters in fs */
 /*24c*/	__u32	s_backup_bgs[2];	/* If sparse_super2 enabled */
 /*254*/	__u8	s_encrypt_algos[4];	/* Encryption algorithms in use  */
 /*258*/	__u8	s_encrypt_pw_salt[16];	/* Salt used for string2key algorithm */
