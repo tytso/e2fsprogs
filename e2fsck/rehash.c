@@ -276,7 +276,11 @@ static errcode_t alloc_size_dir(ext2_filsys fs, struct out_dir *outdir,
 		outdir->hashes = new_mem;
 	} else {
 		outdir->buf = malloc(blocks * fs->blocksize);
+		if (!outdir->buf)
+			return ENOMEM;
 		outdir->hashes = malloc(blocks * sizeof(ext2_dirhash_t));
+		if (!outdir->hashes)
+			return ENOMEM;
 		outdir->num = 0;
 	}
 	outdir->max = blocks;
