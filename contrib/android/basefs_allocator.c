@@ -10,6 +10,8 @@ struct base_fs_allocator {
 	struct basefs_entry *cur_entry;
 	/* Blocks which are definitely owned by a single inode in BaseFS. */
 	ext2fs_block_bitmap exclusive_block_map;
+	/* Blocks which are available to the first inode that requests it. */
+	ext2fs_block_bitmap dedup_block_map;
 };
 
 static errcode_t basefs_block_allocator(ext2_filsys, blk64_t, blk64_t *,
@@ -51,6 +53,7 @@ static void basefs_allocator_free(ext2_filsys fs,
 		ext2fs_hashmap_free(entries);
 	}
 	ext2fs_free_block_bitmap(allocator->exclusive_block_map);
+	ext2fs_free_block_bitmap(allocator->dedup_block_map);
 	free(allocator);
 }
 
@@ -59,18 +62,30 @@ static void basefs_allocator_free(ext2_filsys fs,
  * Base FS. Blocks which are not valid or are de-duplicated are skipped. This
  * is called during allocator initialization, to ensure that libext2fs does
  * not allocate which we want to re-use.
+ *
+ * If a block was allocated in the initial filesystem, it can never be re-used,
+ * so it will appear in neither the exclusive or dedup set. If a block is used
+ * by multiple files, it will be removed from the owned set and instead added
+ * to the dedup set.
+ *
+ * The dedup set is not removed from fs->block_map. This allows us to re-use
+ * dedup blocks separately and not have them be allocated outside of file data.
  */
 static void fs_reserve_block(ext2_filsys fs,
 			     struct base_fs_allocator *allocator,
 			     blk64_t block)
 {
 	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
+	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
 	if (block >= ext2fs_blocks_count(fs->super))
 		return;
 
 	if (ext2fs_test_block_bitmap2(fs->block_map, block)) {
+		if (!ext2fs_test_block_bitmap2(exclusive_map, block))
+			return;
 		ext2fs_unmark_block_bitmap2(exclusive_map, block);
+		ext2fs_mark_block_bitmap2(dedup_map, block);
 	} else {
 		ext2fs_mark_block_bitmap2(fs->block_map, block);
 		ext2fs_mark_block_bitmap2(exclusive_map, block);
@@ -134,6 +149,10 @@ errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
 		&allocator->exclusive_block_map);
 	if (retval)
 		goto err_load;
+	retval = ext2fs_allocate_block_bitmap(fs, "dedup map",
+		&allocator->dedup_block_map);
+	if (retval)
+		goto err_load;
 
 	fs_reserve_blocks(fs, allocator);
 
@@ -155,6 +174,7 @@ static int get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
 {
 	blk64_t block;
 	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
+	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
 	while (list->head) {
 		block = consume_next_block(list);
@@ -162,6 +182,11 @@ static int get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
 			continue;
 		if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
 			ext2fs_unmark_block_bitmap2(exclusive_map, block);
+			*ret = block;
+			return 0;
+		}
+		if (ext2fs_test_block_bitmap2(dedup_map, block)) {
+			ext2fs_unmark_block_bitmap2(dedup_map, block);
 			*ret = block;
 			return 0;
 		}
