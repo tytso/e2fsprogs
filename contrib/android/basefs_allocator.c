@@ -25,6 +25,23 @@ static void fs_free_blocks_range(ext2_filsys fs,
 	}
 }
 
+static void basefs_allocator_free(ext2_filsys fs,
+				  struct base_fs_allocator *allocator)
+{
+	struct basefs_entry *e;
+	struct ext2fs_hashmap_entry *it = NULL;
+	struct ext2fs_hashmap *entries = allocator->entries;
+
+	if (entries) {
+		while ((e = ext2fs_hashmap_iter_in_order(entries, &it))) {
+			fs_free_blocks_range(fs, &e->blocks);
+			delete_block_ranges(&e->blocks);
+		}
+		ext2fs_hashmap_free(entries);
+	}
+	free(allocator);
+}
+
 static void fs_reserve_blocks_range(ext2_filsys fs,
 				    struct block_range_list *list)
 {
@@ -36,41 +53,58 @@ static void fs_reserve_blocks_range(ext2_filsys fs,
 	}
 }
 
+/*
+ * For each file in the base FS map, ensure that its blocks are reserved in
+ * the actual block map. This prevents libext2fs from allocating them for
+ * general purpose use, and ensures that if the file needs data blocks, they
+ * can be re-acquired exclusively for that file.
+ */
+static void fs_reserve_blocks(ext2_filsys fs,
+			      struct base_fs_allocator *allocator)
+{
+	struct basefs_entry *e;
+	struct ext2fs_hashmap_entry *it = NULL;
+	struct ext2fs_hashmap *entries = allocator->entries;
+
+	while ((e = ext2fs_hashmap_iter_in_order(entries, &it)))
+		fs_reserve_blocks_range(fs, &e->blocks);
+}
+
 errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
 			     const char *mountpoint)
 {
-	errcode_t retval;
-	struct basefs_entry *e;
-	struct ext2fs_hashmap_entry *it = NULL;
+	errcode_t retval = 0;
 	struct base_fs_allocator *allocator;
-	struct ext2fs_hashmap *entries = basefs_parse(file, mountpoint);
-	if (!entries)
-		return -1;
 
-	allocator = malloc(sizeof(*allocator));
-	if (!allocator)
-		goto err_alloc;
+	allocator = calloc(1, sizeof(*allocator));
+	if (!allocator) {
+		retval = ENOMEM;
+		goto out;
+	}
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)
-		goto err_bitmap;
-	while ((e = ext2fs_hashmap_iter_in_order(entries, &it)))
-		fs_reserve_blocks_range(fs, &e->blocks);
+		goto err_alloc;
 
 	allocator->cur_entry = NULL;
-	allocator->entries = entries;
+	allocator->entries = basefs_parse(file, mountpoint);
+	if (!allocator->entries) {
+		retval = EIO;
+		goto err_alloc;
+	}
+
+	fs_reserve_blocks(fs, allocator);
 
 	/* Override the default allocator */
 	fs->get_alloc_block2 = basefs_block_allocator;
 	fs->priv_data = allocator;
 
-	return 0;
+	goto out;
 
-err_bitmap:
-	free(allocator);
 err_alloc:
-	ext2fs_hashmap_free(entries);
-	return EXIT_FAILURE;
+	basefs_allocator_free(fs, allocator);
+out:
+	return retval;
 }
 
 static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
@@ -94,19 +128,9 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 
 void base_fs_alloc_cleanup(ext2_filsys fs)
 {
-	struct basefs_entry *e;
-	struct ext2fs_hashmap_entry *it = NULL;
-	struct base_fs_allocator *allocator = fs->priv_data;
-
-	while ((e = ext2fs_hashmap_iter_in_order(allocator->entries, &it))) {
-		fs_free_blocks_range(fs, &e->blocks);
-		delete_block_ranges(&e->blocks);
-	}
-
+	basefs_allocator_free(fs, fs->priv_data);
 	fs->priv_data = NULL;
 	fs->get_alloc_block2 = NULL;
-	ext2fs_hashmap_free(allocator->entries);
-	free(allocator);
 }
 
 errcode_t base_fs_alloc_set_target(ext2_filsys fs, const char *target_path,
