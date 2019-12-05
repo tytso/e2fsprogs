@@ -8,20 +8,31 @@
 struct base_fs_allocator {
 	struct ext2fs_hashmap *entries;
 	struct basefs_entry *cur_entry;
+	/* Blocks which are definitely owned by a single inode in BaseFS. */
+	ext2fs_block_bitmap exclusive_block_map;
 };
 
 static errcode_t basefs_block_allocator(ext2_filsys, blk64_t, blk64_t *,
 					struct blk_alloc_ctx *ctx);
 
+/*
+ * Free any reserved, but unconsumed block ranges in the allocator. This both
+ * frees the block_range_list data structure and unreserves exclusive blocks
+ * from the block map.
+ */
 static void fs_free_blocks_range(ext2_filsys fs,
+				 struct base_fs_allocator *allocator,
 				 struct block_range_list *list)
 {
-	struct block_range *blocks = list->head;
+	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
 
-	while (blocks) {
-		ext2fs_unmark_block_bitmap_range2(fs->block_map, blocks->start,
-			blocks->end - blocks->start + 1);
-		blocks = blocks->next;
+	blk64_t block;
+	while (list->head) {
+		block = consume_next_block(list);
+		if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
+			ext2fs_unmark_block_bitmap2(fs->block_map, block);
+			ext2fs_unmark_block_bitmap2(exclusive_map, block);
+		}
 	}
 }
 
@@ -34,21 +45,48 @@ static void basefs_allocator_free(ext2_filsys fs,
 
 	if (entries) {
 		while ((e = ext2fs_hashmap_iter_in_order(entries, &it))) {
-			fs_free_blocks_range(fs, &e->blocks);
+			fs_free_blocks_range(fs, allocator, &e->blocks);
 			delete_block_ranges(&e->blocks);
 		}
 		ext2fs_hashmap_free(entries);
 	}
+	ext2fs_free_block_bitmap(allocator->exclusive_block_map);
 	free(allocator);
 }
 
+/*
+ * Build a bitmap of which blocks are definitely owned by exactly one file in
+ * Base FS. Blocks which are not valid or are de-duplicated are skipped. This
+ * is called during allocator initialization, to ensure that libext2fs does
+ * not allocate which we want to re-use.
+ */
+static void fs_reserve_block(ext2_filsys fs,
+			     struct base_fs_allocator *allocator,
+			     blk64_t block)
+{
+	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
+
+	if (block >= ext2fs_blocks_count(fs->super))
+		return;
+
+	if (ext2fs_test_block_bitmap2(fs->block_map, block)) {
+		ext2fs_unmark_block_bitmap2(exclusive_map, block);
+	} else {
+		ext2fs_mark_block_bitmap2(fs->block_map, block);
+		ext2fs_mark_block_bitmap2(exclusive_map, block);
+	}
+}
+
 static void fs_reserve_blocks_range(ext2_filsys fs,
+				    struct base_fs_allocator *allocator,
 				    struct block_range_list *list)
 {
+	blk64_t block;
 	struct block_range *blocks = list->head;
+
 	while (blocks) {
-		ext2fs_mark_block_bitmap_range2(fs->block_map,
-			blocks->start, blocks->end - blocks->start + 1);
+		for (block = blocks->start; block <= blocks->end; block++)
+			fs_reserve_block(fs, allocator, block);
 		blocks = blocks->next;
 	}
 }
@@ -67,7 +105,7 @@ static void fs_reserve_blocks(ext2_filsys fs,
 	struct ext2fs_hashmap *entries = allocator->entries;
 
 	while ((e = ext2fs_hashmap_iter_in_order(entries, &it)))
-		fs_reserve_blocks_range(fs, &e->blocks);
+		fs_reserve_blocks_range(fs, allocator, &e->blocks);
 }
 
 errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
@@ -84,14 +122,18 @@ errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)
-		goto err_alloc;
+		goto err_load;
 
 	allocator->cur_entry = NULL;
 	allocator->entries = basefs_parse(file, mountpoint);
 	if (!allocator->entries) {
 		retval = EIO;
-		goto err_alloc;
+		goto err_load;
 	}
+	retval = ext2fs_allocate_block_bitmap(fs, "exclusive map",
+		&allocator->exclusive_block_map);
+	if (retval)
+		goto err_load;
 
 	fs_reserve_blocks(fs, allocator);
 
@@ -101,10 +143,30 @@ errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
 
 	goto out;
 
-err_alloc:
+err_load:
 	basefs_allocator_free(fs, allocator);
 out:
 	return retval;
+}
+
+/* Try and acquire the next usable block from the Base FS map. */
+static int get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
+			  struct block_range_list* list, blk64_t *ret)
+{
+	blk64_t block;
+	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
+
+	while (list->head) {
+		block = consume_next_block(list);
+		if (block >= ext2fs_blocks_count(fs->super))
+			continue;
+		if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
+			ext2fs_unmark_block_bitmap2(exclusive_map, block);
+			*ret = block;
+			return 0;
+		}
+	}
+	return -1;
 }
 
 static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
@@ -114,15 +176,15 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 	struct base_fs_allocator *allocator = fs->priv_data;
 	struct basefs_entry *e = allocator->cur_entry;
 
-	/* Try to get a block from the base_fs */
-	if (e && e->blocks.head && ctx && (ctx->flags & BLOCK_ALLOC_DATA)) {
-		*ret = consume_next_block(&e->blocks);
-	} else { /* Allocate a new block */
-		retval = ext2fs_new_block2(fs, goal, fs->block_map, ret);
-		if (retval)
-			return retval;
-		ext2fs_mark_block_bitmap2(fs->block_map, *ret);
+	if (e && ctx && (ctx->flags & BLOCK_ALLOC_DATA)) {
+		if (!get_next_block(fs, allocator, &e->blocks, ret))
+			return 0;
 	}
+
+	retval = ext2fs_new_block2(fs, goal, fs->block_map, ret);
+	if (retval)
+		return retval;
+	ext2fs_mark_block_bitmap2(fs->block_map, *ret);
 	return 0;
 }
 
@@ -161,7 +223,7 @@ errcode_t base_fs_alloc_unset_target(ext2_filsys fs,
 	if (!allocator || !allocator->cur_entry || mode != S_IFREG)
 		return 0;
 
-	fs_free_blocks_range(fs, &allocator->cur_entry->blocks);
+	fs_free_blocks_range(fs, allocator, &allocator->cur_entry->blocks);
 	delete_block_ranges(&allocator->cur_entry->blocks);
 	return 0;
 }
