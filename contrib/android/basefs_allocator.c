@@ -96,38 +96,59 @@ static void basefs_allocator_free(ext2_filsys fs,
  *
  * The dedup set is not removed from fs->block_map. This allows us to re-use
  * dedup blocks separately and not have them be allocated outside of file data.
+ *
+ * This function returns non-zero if the block was owned, and 0 otherwise.
  */
-static void fs_reserve_block(ext2_filsys fs,
-			     struct base_fs_allocator *allocator,
-			     blk64_t block)
+static int fs_reserve_block(ext2_filsys fs,
+			    struct base_fs_allocator *allocator,
+			    blk64_t block)
 {
 	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
 	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
 	if (block >= ext2fs_blocks_count(fs->super))
-		return;
+		return 0;
 
 	if (ext2fs_test_block_bitmap2(fs->block_map, block)) {
 		if (!ext2fs_test_block_bitmap2(exclusive_map, block))
-			return;
+			return 0;
 		ext2fs_unmark_block_bitmap2(exclusive_map, block);
 		ext2fs_mark_block_bitmap2(dedup_map, block);
+		return 0;
 	} else {
 		ext2fs_mark_block_bitmap2(fs->block_map, block);
 		ext2fs_mark_block_bitmap2(exclusive_map, block);
+		return 1;
 	}
 }
 
+/*
+ * Walk the requested block list and reserve blocks, either into the owned
+ * pool or the dedup pool as appropriate. We stop once the file has enough
+ * owned blocks to satisfy |file_size|. This allows any extra blocks to be
+ * re-used, since otherwise a large block movement between files could
+ * trigger block allocation errors.
+ */
 static void fs_reserve_blocks_range(ext2_filsys fs,
 				    struct base_fs_allocator *allocator,
-				    struct block_range_list *list)
+				    struct block_range_list *list,
+				    off_t file_size)
 {
 	blk64_t block;
+	off_t blocks_needed;
+	off_t blocks_acquired = 0;
 	struct block_range *blocks = list->head;
 
+	blocks_needed = file_size + (fs->blocksize - 1);
+	blocks_needed /= fs->blocksize;
+
 	while (blocks) {
-		for (block = blocks->start; block <= blocks->end; block++)
-			fs_reserve_block(fs, allocator, block);
+		for (block = blocks->start; block <= blocks->end; block++) {
+			if (fs_reserve_block(fs, allocator, block))
+				blocks_acquired++;
+			if (blocks_acquired >= blocks_needed)
+				return;
+		}
 		blocks = blocks->next;
 	}
 }
@@ -163,7 +184,7 @@ static errcode_t fs_reserve_blocks(ext2_filsys fs,
 			return ENAMETOOLONG;
 		if (lstat(full_path, &st) || !S_ISREG(st.st_mode))
 			continue;
-		fs_reserve_blocks_range(fs, allocator, &e->blocks);
+		fs_reserve_blocks_range(fs, allocator, &e->blocks, st.st_size);
 	}
 	return 0;
 }
