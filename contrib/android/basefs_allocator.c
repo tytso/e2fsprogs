@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "basefs_allocator.h"
@@ -111,20 +112,39 @@ static void fs_reserve_blocks_range(ext2_filsys fs,
  * the actual block map. This prevents libext2fs from allocating them for
  * general purpose use, and ensures that if the file needs data blocks, they
  * can be re-acquired exclusively for that file.
+ *
+ * If a file in the base map is missing, or not a regular file in the new
+ * filesystem, then it's skipped to ensure that its blocks are reusable.
  */
-static void fs_reserve_blocks(ext2_filsys fs,
-			      struct base_fs_allocator *allocator)
+static errcode_t fs_reserve_blocks(ext2_filsys fs,
+			      struct base_fs_allocator *allocator,
+			      const char *src_dir)
 {
+	int nbytes;
+	char full_path[PATH_MAX];
+	const char *sep = "/";
+	struct stat st;
 	struct basefs_entry *e;
 	struct ext2fs_hashmap_entry *it = NULL;
 	struct ext2fs_hashmap *entries = allocator->entries;
 
-	while ((e = ext2fs_hashmap_iter_in_order(entries, &it)))
+	if (strlen(src_dir) && src_dir[strlen(src_dir) - 1] == '/')
+		sep = "";
+
+	while ((e = ext2fs_hashmap_iter_in_order(entries, &it))) {
+		nbytes = snprintf(full_path, sizeof(full_path), "%s%s%s",
+			src_dir, sep, e->path);
+		if (nbytes >= sizeof(full_path))
+			return ENAMETOOLONG;
+		if (lstat(full_path, &st) || !S_ISREG(st.st_mode))
+			continue;
 		fs_reserve_blocks_range(fs, allocator, &e->blocks);
+	}
+	return 0;
 }
 
 errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
-			     const char *mountpoint)
+			     const char *mountpoint, const char *src_dir)
 {
 	errcode_t retval = 0;
 	struct base_fs_allocator *allocator;
@@ -154,7 +174,9 @@ errcode_t base_fs_alloc_load(ext2_filsys fs, const char *file,
 	if (retval)
 		goto err_load;
 
-	fs_reserve_blocks(fs, allocator);
+	retval = fs_reserve_blocks(fs, allocator, src_dir);
+	if (retval)
+		goto err_load;
 
 	/* Override the default allocator */
 	fs->get_alloc_block2 = basefs_block_allocator;
@@ -200,6 +222,7 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 	errcode_t retval;
 	struct base_fs_allocator *allocator = fs->priv_data;
 	struct basefs_entry *e = allocator->cur_entry;
+	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
 	if (e && ctx && (ctx->flags & BLOCK_ALLOC_DATA)) {
 		if (!get_next_block(fs, allocator, &e->blocks, ret))
@@ -207,10 +230,21 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 	}
 
 	retval = ext2fs_new_block2(fs, goal, fs->block_map, ret);
-	if (retval)
-		return retval;
-	ext2fs_mark_block_bitmap2(fs->block_map, *ret);
-	return 0;
+	if (!retval) {
+		ext2fs_mark_block_bitmap2(fs->block_map, *ret);
+		return 0;
+	}
+	if (retval == EXT2_ET_BLOCK_ALLOC_FAIL) {
+		/* Try to steal a block from the dedup pool. */
+		retval = ext2fs_find_first_set_block_bitmap2(dedup_map,
+			fs->super->s_first_data_block,
+			ext2fs_blocks_count(fs->super) - 1, ret);
+		if (!retval) {
+			ext2fs_unmark_block_bitmap2(dedup_map, *ret);
+			return 0;
+		}
+	}
+	return retval;
 }
 
 void base_fs_alloc_cleanup(ext2_filsys fs)
