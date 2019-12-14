@@ -934,6 +934,7 @@ static int check_dir_block(ext2_filsys fs,
 	int	encrypted = 0;
 	size_t	max_block_size;
 	int	hash_flags = 0;
+	static char *eop_read_dirblock = NULL;
 
 	cd = (struct check_dir_struct *) priv_data;
 	ibuf = buf = cd->buf;
@@ -1004,7 +1005,9 @@ static int check_dir_block(ext2_filsys fs,
 	       db->blockcnt, ino);
 #endif
 
-	ehandler_operation(_("reading directory block"));
+	if (!eop_read_dirblock)
+		eop_read_dirblock = (char *) _("reading directory block");
+	ehandler_operation(eop_read_dirblock);
 	if (inline_data_size) {
 		memset(buf, 0, fs->blocksize - inline_data_size);
 		cd->pctx.errcode = ext2fs_inline_data_get(fs, ino, 0, buf, 0);
