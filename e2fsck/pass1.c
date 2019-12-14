@@ -2379,6 +2379,62 @@ out:
 	return retval;
 }
 
+static void e2fsck_pass1_copy_invalid_bitmaps(e2fsck_t global_ctx,
+					      e2fsck_t thread_ctx)
+{
+	dgrp_t i, j;
+	dgrp_t grp_start = thread_ctx->thread_info.et_group_start;
+	dgrp_t grp_end = thread_ctx->thread_info.et_group_end;
+	dgrp_t total = grp_end - grp_start;
+
+	thread_ctx->invalid_inode_bitmap_flag =
+			e2fsck_allocate_memory(global_ctx, sizeof(int) * total,
+						"invalid_inode_bitmap");
+	thread_ctx->invalid_block_bitmap_flag =
+			e2fsck_allocate_memory(global_ctx, sizeof(int) * total,
+					       "invalid_block_bitmap");
+	thread_ctx->invalid_inode_table_flag =
+			e2fsck_allocate_memory(global_ctx, sizeof(int) * total,
+					       "invalid_inode_table");
+
+	memcpy(thread_ctx->invalid_block_bitmap_flag,
+	       &global_ctx->invalid_block_bitmap_flag[grp_start],
+	       total * sizeof(int));
+	memcpy(thread_ctx->invalid_inode_bitmap_flag,
+	       &global_ctx->invalid_inode_bitmap_flag[grp_start],
+	       total * sizeof(int));
+	memcpy(thread_ctx->invalid_inode_table_flag,
+	       &global_ctx->invalid_inode_table_flag[grp_start],
+	       total * sizeof(int));
+
+	thread_ctx->invalid_bitmaps = 0;
+	for (i = grp_start, j = 0; i < grp_end; i++, j++) {
+		if (thread_ctx->invalid_block_bitmap_flag[j])
+			thread_ctx->invalid_bitmaps++;
+		if (thread_ctx->invalid_inode_bitmap_flag[j])
+			thread_ctx->invalid_bitmaps++;
+		if (thread_ctx->invalid_inode_table_flag[j])
+			thread_ctx->invalid_bitmaps++;
+	}
+}
+
+static void e2fsck_pass1_merge_invalid_bitmaps(e2fsck_t global_ctx,
+					       e2fsck_t thread_ctx)
+{
+	dgrp_t i, j;
+	dgrp_t grp_start = thread_ctx->thread_info.et_group_start;
+	dgrp_t grp_end = thread_ctx->thread_info.et_group_end;
+	dgrp_t total = grp_end - grp_start;
+
+	memcpy(&global_ctx->invalid_block_bitmap_flag[grp_start],
+	       thread_ctx->invalid_block_bitmap_flag, total * sizeof(int));
+	memcpy(&global_ctx->invalid_inode_bitmap_flag[grp_start],
+	       thread_ctx->invalid_inode_bitmap_flag, total * sizeof(int));
+	memcpy(&global_ctx->invalid_inode_table_flag[grp_start],
+	       thread_ctx->invalid_inode_table_flag, total * sizeof(int));
+	global_ctx->invalid_bitmaps += thread_ctx->invalid_bitmaps;
+}
+
 static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx,
 					     int thread_index, int num_threads)
 {
@@ -2455,6 +2511,7 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 		goto out_fs;
 	}
 	*thread_ctx = thread_context;
+	e2fsck_pass1_copy_invalid_bitmaps(global_ctx, thread_context);
 	return 0;
 out_fs:
 	ext2fs_free_mem(&thread_fs);
@@ -2589,6 +2646,10 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	ext2_ino_t dx_dir_info_count = global_ctx->dx_dir_info_count;
 	ext2_u32_list dirs_to_hash = global_ctx->dirs_to_hash;
 	quota_ctx_t qctx = global_ctx->qctx;
+	int *invalid_block_bitmap_flag = global_ctx->invalid_block_bitmap_flag;
+	int *invalid_inode_bitmap_flag = global_ctx->invalid_inode_bitmap_flag;
+	int *invalid_inode_table_flag  = global_ctx->invalid_inode_table_flag;
+	int invalid_bitmaps = global_ctx->invalid_bitmaps;
 
 #ifdef HAVE_SETJMP_H
 	jmp_buf		 old_jmp;
@@ -2667,6 +2728,11 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 					      thread_ctx->qctx);
 	if (retval)
 		return retval;
+	global_ctx->invalid_block_bitmap_flag = invalid_block_bitmap_flag;
+	global_ctx->invalid_inode_bitmap_flag = invalid_inode_bitmap_flag;
+	global_ctx->invalid_inode_table_flag = invalid_inode_table_flag;
+	global_ctx->invalid_bitmaps = invalid_bitmaps;
+	e2fsck_pass1_merge_invalid_bitmaps(global_ctx, thread_ctx);
 
 	retval = e2fsck_pass1_merge_bitmap(global_fs,
 				&thread_ctx->inode_used_map,
@@ -2739,6 +2805,9 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 	if (thread_ctx->dirs_to_hash)
 		ext2fs_badblocks_list_free(thread_ctx->dirs_to_hash);
 	quota_release_context(&thread_ctx->qctx);
+	ext2fs_free_mem(&thread_ctx->invalid_block_bitmap_flag);
+	ext2fs_free_mem(&thread_ctx->invalid_inode_bitmap_flag);
+	ext2fs_free_mem(&thread_ctx->invalid_inode_table_flag);
 	ext2fs_free_mem(&thread_ctx);
 
 	return retval;
@@ -2752,6 +2821,8 @@ static int e2fsck_pass1_threads_join(struct e2fsck_thread_info *infos,
 	int				 i;
 	struct e2fsck_thread_info	*pinfo;
 
+	/* merge invalid bitmaps will recalculate it */
+	global_ctx->invalid_bitmaps = 0;
 	for (i = 0; i < num_threads; i++) {
 		pinfo = &infos[i];
 
