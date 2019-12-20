@@ -1024,6 +1024,8 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 			if (!ext2fs_u32_list_iterate(iter, &ino))
 				break;
 		}
+		if (!ext2fs_test_inode_bitmap2(ctx->inode_dir_map, ino))
+			continue;
 
 		pctx.dir = ino;
 		if (first) {
