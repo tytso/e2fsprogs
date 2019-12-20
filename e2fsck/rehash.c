@@ -159,6 +159,10 @@ static int fill_dir_block(ext2_filsys fs,
 		dir_offset += rec_len;
 		if (dirent->inode == 0)
 			continue;
+		if ((name_len) == 0) {
+			fd->err = EXT2_ET_DIR_CORRUPTED;
+			return BLOCK_ABORT;
+		}
 		if (!fd->compress && (name_len == 1) &&
 		    (dirent->name[0] == '.'))
 			continue;
@@ -398,6 +402,11 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 			continue;
 		}
 		new_len = ext2fs_dirent_name_len(ent->dir);
+		if (new_len == 0) {
+			 /* should never happen */
+			ext2fs_unmark_valid(fs);
+			continue;
+		}
 		memcpy(new_name, ent->dir->name, new_len);
 		mutate_name(new_name, &new_len);
 		for (j=0; j < fd->num_array; j++) {
