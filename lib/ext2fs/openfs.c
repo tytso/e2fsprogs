@@ -435,7 +435,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		gdp = (struct ext2_group_desc *) dest;
 		for (j=0; j < groups_per_block*first_meta_bg; j++) {
 			gdp = ext2fs_group_desc(fs, fs->group_desc, j);
-			ext2fs_swap_group_desc2(fs, gdp);
+			if (gdp)
+				ext2fs_swap_group_desc2(fs, gdp);
 		}
 #endif
 		dest += fs->blocksize*first_meta_bg;
@@ -455,7 +456,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		for (j=0; j < groups_per_block; j++) {
 			gdp = ext2fs_group_desc(fs, fs->group_desc,
 						i * groups_per_block + j);
-			ext2fs_swap_group_desc2(fs, gdp);
+			if (gdp)
+				ext2fs_swap_group_desc2(fs, gdp);
 		}
 #endif
 		dest += fs->blocksize;
