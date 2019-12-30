@@ -754,23 +754,6 @@ static void *op_init(struct fuse_conn_info *conn)
 	return ff;
 }
 
-static blkcnt_t blocks_from_inode(ext2_filsys fs,
-				  struct ext2_inode_large *inode)
-{
-	blkcnt_t b;
-
-	b = inode->i_blocks;
-	if (ext2fs_has_feature_huge_file(fs->super))
-		b += ((long long) inode->osd2.linux2.l_i_blocks_hi) << 32;
-
-	if (!ext2fs_has_feature_huge_file(fs->super) ||
-	    !(inode->i_flags & EXT4_HUGE_FILE_FL))
-		b *= fs->blocksize / 512;
-	b *= EXT2FS_CLUSTER_RATIO(fs);
-
-	return b;
-}
-
 static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 {
 	struct ext2_inode_large inode;
@@ -794,7 +777,8 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 	statbuf->st_gid = inode_gid(inode);
 	statbuf->st_size = EXT2_I_SIZE(&inode);
 	statbuf->st_blksize = fs->blocksize;
-	statbuf->st_blocks = blocks_from_inode(fs, &inode);
+	statbuf->st_blocks = ext2fs_get_stat_i_blocks(fs,
+						(struct ext2_inode *)&inode);
 	EXT4_INODE_GET_XTIME(i_atime, &tv, &inode);
 	statbuf->st_atime = tv.tv_sec;
 	EXT4_INODE_GET_XTIME(i_mtime, &tv, &inode);

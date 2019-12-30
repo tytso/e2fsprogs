@@ -86,6 +86,22 @@ blk64_t ext2fs_inode_i_blocks(ext2_filsys fs,
 }
 
 /*
+ * Return the inode i_blocks in stat (512 byte) units
+ */
+blk64_t ext2fs_get_stat_i_blocks(ext2_filsys fs,
+				 struct ext2_inode *inode)
+{
+	blk64_t	ret = inode->i_blocks;
+
+	if (ext2fs_has_feature_huge_file(fs->super)) {
+		ret += ((long long) inode->osd2.linux2.l_i_blocks_hi) << 32;
+		if (inode->i_flags & EXT4_HUGE_FILE_FL)
+			ret *= (fs->blocksize / 512);
+	}
+	return ret;
+}
+
+/*
  * Return the fs block count
  */
 blk64_t ext2fs_blocks_count(struct ext2_super_block *super)
