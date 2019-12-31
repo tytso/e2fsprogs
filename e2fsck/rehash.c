@@ -301,7 +301,11 @@ static errcode_t get_next_block(ext2_filsys fs, struct out_dir *outdir,
 	errcode_t	retval;
 
 	if (outdir->num >= outdir->max) {
-		retval = alloc_size_dir(fs, outdir, outdir->max + 50);
+		int increment = outdir->max / 10;
+
+		if (increment < 50)
+			increment = 50;
+		retval = alloc_size_dir(fs, outdir, outdir->max + increment);
 		if (retval)
 			return retval;
 	}
@@ -645,6 +649,9 @@ static int alloc_blocks(ext2_filsys fs,
 	if (retval)
 		return retval;
 
+	/* outdir->buf might be reallocated */
+	*prev_ent = (struct ext2_dx_entry *) (outdir->buf + *prev_offset);
+
 	*next_ent = set_int_node(fs, block_start);
 	*limit = (struct ext2_dx_countlimit *)(*next_ent);
 	if (next_offset)
@@ -734,6 +741,9 @@ static errcode_t calculate_tree(ext2_filsys fs,
 					return retval;
 			}
 			if (c3 == 0) {
+				int delta1 = (char *)int_limit - outdir->buf;
+				int delta2 = (char *)root - outdir->buf;
+
 				retval = alloc_blocks(fs, &limit, &int_ent,
 						      &dx_ent, &int_offset,
 						      NULL, outdir, i, &c2,
@@ -741,6 +751,11 @@ static errcode_t calculate_tree(ext2_filsys fs,
 				if (retval)
 					return retval;
 
+				/* outdir->buf might be reallocated */
+				int_limit = (struct ext2_dx_countlimit *)
+					(outdir->buf + delta1);
+				root = (struct ext2_dx_entry *)
+					(outdir->buf + delta2);
 			}
 			dx_ent->block = ext2fs_cpu_to_le32(i);
 			if (c3 != limit->limit)
