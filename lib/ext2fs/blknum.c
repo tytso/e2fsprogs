@@ -537,6 +537,9 @@ void ext2fs_file_acl_block_set(ext2_filsys fs, struct ext2_inode *inode,
 errcode_t ext2fs_inode_size_set(ext2_filsys fs, struct ext2_inode *inode,
 				ext2_off64_t size)
 {
+	if (size < 0)
+		return EINVAL;
+
 	/* Only regular files get to be larger than 4GB */
 	if (!LINUX_S_ISREG(inode->i_mode) && (size >> 32))
 		return EXT2_ET_FILE_TOO_BIG;

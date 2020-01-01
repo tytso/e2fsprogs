@@ -77,8 +77,8 @@ typedef __u32 __bitwise		ext2_ino_t;
 typedef __u32 __bitwise		blk_t;
 typedef __u64 __bitwise		blk64_t;
 typedef __u32 __bitwise		dgrp_t;
-typedef __u32 __bitwise		ext2_off_t;
-typedef __u64 __bitwise		ext2_off64_t;
+typedef __s32 __bitwise		ext2_off_t;
+typedef __s64 __bitwise		ext2_off64_t;
 typedef __s64 __bitwise		e2_blkcnt_t;
 typedef __u32 __bitwise		ext2_dirhash_t;
 
