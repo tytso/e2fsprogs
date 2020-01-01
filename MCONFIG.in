@@ -213,8 +213,7 @@ DEP_INSTALL_SYMLINK = $(top_builddir)/util/install-symlink \
 # Run make gcc-wall to do a build with warning messages.
 #
 #
-WFLAGS=		-std=gnu99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE \
-			-pedantic $(WFLAGS_EXTRA) \
+WFLAGS=		-std=gnu99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE $(WFLAGS_EXTRA) \
 			-Wall -W -Wwrite-strings -Wpointer-arith \
 			-Wcast-qual -Wcast-align -Wno-variadic-macros \
 			-Wstrict-prototypes -Wmissing-prototypes \
@@ -224,14 +223,14 @@ WFLAGS=		-std=gnu99 -D_XOPEN_SOURCE=600 -D_GNU_SOURCE \
 			-UENABLE_NLS
 
 gcc-wall-new:
-	($(MAKE) CFLAGS_WARN="$(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup
+	($(MAKE) CFLAGS_WARN="$(WFLAGS)" > /dev/null) 2>&1
 
 gcc-wall:
 	$(MAKE) clean > /dev/null
 	$(MAKE) gcc-wall-new
 
 static-check:
-	($(MAKE) C=1 V=1 CFLAGS="$(ALL_CFLAGS) $(WFLAGS)") 2>&1 | sed -f $(top_srcdir)/util/static-analysis-cleanup
+	($(MAKE) C=1 V=1 CFLAGS="$(ALL_CFLAGS) $(WFLAGS)") 2>&1
 
 static-check-all:
 	$(MAKE) clean > /dev/null
