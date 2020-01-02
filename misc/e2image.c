@@ -104,11 +104,11 @@ static int get_bits_from_size(size_t size)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [ -r|Q ] [ -f ] [ -b superblock ] [ -B blocksize]"
-			  "[ -fr ] device image-file\n"),
+	fprintf(stderr, _("Usage: %s [ -r|-Q ] [ -f ] [ -b superblock ] [ -B blocksize ] "
+			  "device image-file\n"),
 		program_name);
 	fprintf(stderr, _("       %s -I device image-file\n"), program_name);
-	fprintf(stderr, _("       %s -ra  [  -cfnp  ] [ -o src_offset ] "
+	fprintf(stderr, _("       %s -ra [ -cfnp ] [ -o src_offset ] "
 			  "[ -O dest_offset ] src_fs [ dest_fs ]\n"),
 		program_name);
 	exit (1);

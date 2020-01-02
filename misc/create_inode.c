@@ -121,7 +121,9 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	inode.i_uid = st->st_uid;
+	ext2fs_set_i_uid_high(inode, st->st_uid >> 16);
 	inode.i_gid = st->st_gid;
+	ext2fs_set_i_gid_high(inode, st->st_gid >> 16);
 	inode.i_mode |= st->st_mode;
 	inode.i_atime = st->st_atime;
 	inode.i_mtime = st->st_mtime;

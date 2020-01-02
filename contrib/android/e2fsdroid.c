@@ -301,7 +301,8 @@ int main(int argc, char *argv[])
 	if (src_dir) {
 		ext2fs_read_bitmaps(fs);
 		if (basefs_in) {
-			retval = base_fs_alloc_load(fs, basefs_in, mountpoint);
+			retval = base_fs_alloc_load(fs, basefs_in, mountpoint,
+				src_dir);
 			if (retval) {
 				com_err(prog_name, retval, "%s",
 				"while reading base_fs file");

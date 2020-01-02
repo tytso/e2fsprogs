@@ -924,8 +924,8 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			    !(ea_inode->i_flags & EXT4_EA_INODE_FL) ||
 			    ea_inode->i_links_count == 0)
 				err = EXT2_ET_EA_INODE_CORRUPTED;
-			else if (ext2fs_file_get_size(ea_file) !=
-			    entry->e_value_size)
+			else if ((__u64) ext2fs_file_get_size(ea_file) !=
+				 entry->e_value_size)
 				err = EXT2_ET_EA_BAD_VALUE_SIZE;
 			else
 				err = ext2fs_file_read(ea_file, x->value,

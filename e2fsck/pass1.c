@@ -1171,6 +1171,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		scan_callback_struct scan_struct;
 	struct ext2_super_block *sb = ctx->fs->super;
 	const char	*old_op;
+	const char	*eop_next_inode = _("getting next inode from scan");
 	int		imagic_fs, extent_fs, inlinedata_fs, casefold_fs;
 	int		low_dtime_check = 1;
 	unsigned int	inode_size = EXT2_INODE_SIZE(fs->super);
@@ -1363,7 +1364,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (e2fsck_mmp_update(fs))
 				fatal_error(ctx, 0);
 		}
-		old_op = ehandler_operation(_("getting next inode from scan"));
+		old_op = ehandler_operation(eop_next_inode);
 		pctx.errcode = ext2fs_get_next_inode_full(scan, &ino,
 							  inode, inode_size);
 		if (ino > ino_threshold)
