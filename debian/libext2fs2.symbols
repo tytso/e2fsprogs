@@ -326,6 +326,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_get_num_dirs@Base 1.37
  ext2fs_get_pathname@Base 1.37
  ext2fs_get_rec_len@Base 1.41.7
+ ext2fs_get_stat_i_blocks@Base 1.45.5
  ext2fs_group_blocks_count@Base 1.42
  ext2fs_group_desc@Base 1.42
  ext2fs_group_desc_csum@Base 1.42.2
