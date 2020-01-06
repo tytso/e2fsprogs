@@ -1,3 +1,35 @@
+e2fsprogs (1.45.5-1) unstable; urgency=medium
+
+  * New upstream feature
+  * E2fsck will no longer force a full file system check if time-based
+    forced checks are disabled and the last mount time or last write time in
+    the superblock are in the future.
+  * Fix spurious weekly e-mails when e2scrub_all is run via a cron job
+    on non-systemd systems.  (Closes: #944033)
+  * Remove an unnecessary sleep in e2scrub which could add up to an
+    additional two second delay during the boot up.  Also, avoid
+    trying to reap aborted snapshots if it has been disabled via
+    e2scrub.conf.  (Closes: #948193)
+  * Resize2fs -M's estimates are now more accurate on mounted file systems.
+  * Tune2fs prohibits enabling or disabling the uninit_bg feature on
+    mounted file systems, since this is unsafe.
+  * Fix support of 32-bit uid's and gid's in fuse2fs and in mke2fs -d.
+  * Fix mke2fs's setting bad blocks to bigalloc file systems.
+  * Fix a bug where fuse2fs would incorrectly report the i_blocks fields for
+    bigalloc file systems.
+  * Fix potential crash in e2fsck when rebuilding very large directories on
+    file systems which have the new large_dir feature enable.
+  * Fix FTBFS problem hurd/i386. (Closes: #944649)
+  * Fix CVE-2019-5188: potential a out of bounds write in mutate_name()
+    when checking a maliciously corrupted file systems
+  * Add autopkgtest tests smoke and fuse2fs
+  * Updated and clarified various man pages
+  * Update the debhelper compatibility level to 12
+  * Update the Chinese and Malay translations
+  * Update the Debian policy compliance to 4.4.1
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 07 Jan 2020 09:18:39 -0500
+
 e2fsprogs (1.45.4-1) unstable; urgency=medium
 
   * New upstream feature

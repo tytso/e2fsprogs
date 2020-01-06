@@ -264,7 +264,7 @@ extents_loaded:
 		goto err;
 
 	ext_written = 0;
-	start_val = ext2fs_inode_i_blocks(ctx->fs, EXT2_INODE(&inode));
+	start_val = ext2fs_get_stat_i_blocks(ctx->fs, EXT2_INODE(&inode));
 	for (i = 0, ex = list->extents; i < list->count; i++, ex++) {
 		memcpy(&extent, ex, sizeof(struct ext2fs_extent));
 		extent.e_flags &= EXT2_EXTENT_FLAGS_UNINIT;
@@ -302,15 +302,10 @@ extents_loaded:
 		ext_written++;
 	}
 
-	delta = ext2fs_inode_i_blocks(ctx->fs, EXT2_INODE(&inode)) - start_val;
-	if (delta) {
-		if (!ext2fs_has_feature_huge_file(ctx->fs->super) ||
-		    !(inode.i_flags & EXT4_HUGE_FILE_FL))
-			delta <<= 9;
-		else
-			delta *= ctx->fs->blocksize;
-		quota_data_add(ctx->qctx, &inode, ino, delta);
-	}
+	delta = ext2fs_get_stat_i_blocks(ctx->fs, EXT2_INODE(&inode)) -
+		start_val;
+	if (delta)
+		quota_data_add(ctx->qctx, &inode, ino, delta << 9);
 
 #if defined(DEBUG) || defined(DEBUG_SUMMARY)
 	printf("rebuild: ino=%d extents=%d->%d\n", ino, list->ext_read,

@@ -8,19 +8,18 @@ e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
 .SH SYNOPSIS
 .B e2image
 [
-.B \-r|Q
+.B \-r|\-Q
 ]
 [
 .B \-f
+]
+[
 .B \-b
 .I superblock
 ]
 [
 .B \-B
 .I blocksize
-]
-[
-.B \-fr
 ]
 .I device
 .I image-file

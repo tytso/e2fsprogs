@@ -1308,6 +1308,12 @@ mmp_error:
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("Cannot enable uninit_bg on a mounted "
+				"filesystem!\n"), stderr);
+			exit(1);
+		}
+
 		/* Do not enable uninit_bg when metadata_csum enabled */
 		if (ext2fs_has_feature_metadata_csum(fs->super))
 			ext2fs_clear_feature_gdt_csum(fs->super);
@@ -1317,6 +1323,12 @@ mmp_error:
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
 			EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("Cannot disable uninit_bg on a mounted "
+				"filesystem!\n"), stderr);
+			exit(1);
+		}
+
 		err = disable_uninit_bg(fs,
 				EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 		if (err)
