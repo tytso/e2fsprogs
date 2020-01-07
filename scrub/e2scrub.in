@@ -66,7 +66,7 @@ exitcode() {
 	# for capturing all the log messages if the scrub fails, because the
 	# fail service uses the service name to gather log messages for the
 	# error report.
-	if [ -n "${SERVICE_MODE}" ]; then
+	if [ -n "${SERVICE_MODE}" -a "${ret}" -ne 0 ]; then
 		test "${ret}" -ne 0 && ret=1
 		sleep 2
 	fi
