@@ -1,3 +1,12 @@
+e2fsprogs (1.45.5-2) unstable; urgency=medium
+
+  * Fix com_err support on Hurd, which has POSIX E* error code starting at
+    0x40000000.  Otherwise the regression tests will fail since the
+    expected output for various error cases will not have the correct
+    error text.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 08 Jan 2020 15:58:44 -0500
+
 e2fsprogs (1.45.5-1) unstable; urgency=medium
 
   * New upstream feature
