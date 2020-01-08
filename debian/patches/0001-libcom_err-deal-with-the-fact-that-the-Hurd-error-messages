@@ -1,0 +1,50 @@
+From 00179a29867b72c47e074d8e0babe6622d074dba Mon Sep 17 00:00:00 2001
+From: Theodore Ts'o <tytso@mit.edu>
+Date: Wed, 8 Jan 2020 10:59:37 -0500
+Subject: [PATCH] libcom_err: deal with the fact that the Hurd error messages
+ are not zero-based
+
+Signed-off-by: Theodore Ts'o <tytso@mit.edu>
+---
+ debian/changelog       |  9 +++++++++
+ lib/et/error_message.c | 13 +++++++++----
+ 2 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/lib/et/error_message.c b/lib/et/error_message.c
+index bd18be78..cd9f57f5 100644
+--- a/lib/et/error_message.c
++++ b/lib/et/error_message.c
+@@ -113,6 +113,11 @@ gettextf set_com_err_gettext(gettextf new_proc)
+     return x;
+ }
+ 
++#ifdef __GNU__
++#define SYS_ERR_BASE 0x40000000
++#else
++#define SYS_ERR_BASE 0
++#endif
+ 
+ const char * error_message (errcode_t code)
+ {
+@@ -124,14 +129,14 @@ const char * error_message (errcode_t code)
+ 
+     offset = (int) (code & ((1<<ERRCODE_RANGE)-1));
+     table_num = code - offset;
+-    if (!table_num) {
++    if (table_num == SYS_ERR_BASE) {
+ #ifdef HAS_SYS_ERRLIST
+-	if (offset < sys_nerr)
+-	    return(sys_errlist[offset]);
++	if (code < sys_nerr)
++	    return(sys_errlist[code]);
+ 	else
+ 	    goto oops;
+ #else
+-	cp = strerror(offset);
++	cp = strerror(code);
+ 	if (cp)
+ 	    return(cp);
+ 	else
+-- 
+2.24.1
+
