@@ -1,2 +1,5 @@
 revert-e4defrag-use-64-bit-counters-to-t.patch
 libsupport-add-checks-to-prevent-buffer-.patch
+e2fsck-abort-if-there-is-a-corrupted-directory-block.patch
+e2fsck-don-t-try-to-rehash-a-deleted-directory.patch
+e2fsck-fix-use-after-free-in-calculate_tree.patch
