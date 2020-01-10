@@ -1,3 +1,10 @@
+e2fsprogs (1.44.5-1+deb10u3) buster; urgency=medium
+
+  * Fix CVE-2019-5188: potential stack underflow in e2fsck (Closes: #948508)
+  * Fix use after free in e2fsck (Closes: #948517)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 09 Jan 2020 20:19:57 -0500
+
 e2fsprogs (1.44.5-1+deb10u2) buster-security; urgency=high
 
   * Fix CVE-2019-5094: potential buffer overrun in e2fsck (Closes: #941139)
