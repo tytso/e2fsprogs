@@ -1096,9 +1096,9 @@ struct ext2_dir_entry_tail {
 struct mmp_struct {
 	__u32	mmp_magic;		/* Magic number for MMP */
 	__u32	mmp_seq;		/* Sequence no. updated periodically */
-	__u64	mmp_time;		/* Time last updated */
-	char	mmp_nodename[64];	/* Node which last updated MMP block */
-	char	mmp_bdevname[32];	/* Bdev which last updated MMP block */
+	__u64	mmp_time;		/* Time last updated (seconds) */
+	__u8	mmp_nodename[64];	/* Node updating MMP block, no NUL? */
+	__u8	mmp_bdevname[32];	/* Bdev updating MMP block, no NUL? */
 	__u16	mmp_check_interval;	/* Changed mmp_check_interval */
 	__u16	mmp_pad1;
 	__u32	mmp_pad2[226];
