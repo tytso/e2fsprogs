@@ -778,11 +778,9 @@ void dump_mmp_msg(struct mmp_struct *mmp, const char *fmt, ...)
 		printf("    mmp_update_date: %s", ctime(&t));
 		printf("    mmp_update_time: %lld\n", mmp->mmp_time);
 		printf("    mmp_node_name: %.*s\n",
-		       (int)sizeof(mmp->mmp_nodename),
-		       (char *)mmp->mmp_nodename);
+		       EXT2_LEN_STR(mmp->mmp_nodename));
 		printf("    mmp_device_name: %.*s\n",
-		       (int)sizeof(mmp->mmp_bdevname),
-		       (char *)mmp->mmp_bdevname);
+		       EXT2_LEN_STR(mmp->mmp_bdevname));
 	}
 }
 

@@ -2986,8 +2986,7 @@ retry_open:
 
 	if (print_label) {
 		/* For e2label emulation */
-		printf("%.*s\n", (int) sizeof(sb->s_volume_name),
-		       sb->s_volume_name);
+		printf("%.*s\n", EXT2_LEN_STR(sb->s_volume_name));
 		remove_error_table(&et_ext2_error_table);
 		goto closefs;
 	}

@@ -441,10 +441,8 @@ static int check_mmp(ext2_filsys fs)
 				fprintf(stderr,
 					"%s: MMP update by '%.*s%.*s' at %s",
 					program_name,
-					(int)sizeof(mmp->mmp_nodename),
-					(char *)mmp->mmp_nodename,
-					(int)sizeof(mmp->mmp_bdevname),
-					(char *)mmp->mmp_bdevname,
+					EXT2_LEN_STR(mmp->mmp_nodename),
+					EXT2_LEN_STR(mmp->mmp_bdevname),
 					ctime(&mmp_time));
 			}
 			retval = 1;
@@ -494,9 +492,9 @@ static void print_mmp_block(ext2_filsys fs)
 	printf("    mmp_update_date: %s", ctime(&mmp_time));
 	printf("    mmp_update_time: %lld\n", mmp->mmp_time);
 	printf("    mmp_node_name: %.*s\n",
-	       (int)sizeof(mmp->mmp_nodename), (char *)mmp->mmp_nodename);
+	       EXT2_LEN_STR(mmp->mmp_nodename));
 	printf("    mmp_device_name: %.*s\n",
-	       (int)sizeof(mmp->mmp_bdevname), (char *)mmp->mmp_bdevname);
+	       EXT2_LEN_STR(mmp->mmp_bdevname));
 }
 
 static void parse_extended_opts(const char *opts, blk64_t *superblock,

@@ -1692,11 +1692,10 @@ failure:
 	 * Set the device name, which is used whenever we print error
 	 * or informational messages to the user.
 	 */
-	if (ctx->device_name == 0 &&
-	    (sb->s_volume_name[0] != 0)) {
+	if (ctx->device_name == 0 && sb->s_volume_name[0])
 		ctx->device_name = string_copy(ctx, sb->s_volume_name,
 					       sizeof(sb->s_volume_name));
-	}
+
 	if (ctx->device_name == 0)
 		ctx->device_name = string_copy(ctx, ctx->filesystem_name, 0);
 	for (cp = ctx->device_name; *cp; cp++)
@@ -1704,19 +1703,19 @@ failure:
 			*cp = '_';
 
 	if (ctx->problem_logf) {
-		char buf[48];
 
 		fprintf(ctx->problem_logf, "<filesystem dev=\"%s\"",
 			ctx->filesystem_name);
 		if (!uuid_is_null(sb->s_uuid)) {
+			char buf[48];
+
 			uuid_unparse(sb->s_uuid, buf);
 			fprintf(ctx->problem_logf, " uuid=\"%s\"", buf);
 		}
-		if (sb->s_volume_name[0]) {
-			memset(buf, 0, sizeof(buf));
-			strncpy(buf, sb->s_volume_name, sizeof(buf));
-			fprintf(ctx->problem_logf, " label=\"%s\"", buf);
-		}
+		if (sb->s_volume_name[0])
+			fprintf(ctx->problem_logf, " label=\"%.*s\"",
+				EXT2_LEN_STR(sb->s_volume_name));
+
 		fputs("/>\n", ctx->problem_logf);
 	}
 

@@ -289,9 +289,7 @@ void dump_mmp_msg(struct mmp_struct *mmp, const char *msg)
 		time_t t = mmp->mmp_time;
 
 		printf("MMP error info: node: %.*s, device: %.*s, updated: %s",
-		       (int)sizeof(mmp->mmp_nodename),
-		       (char *)mmp->mmp_nodename,
-		       (int)sizeof(mmp->mmp_bdevname),
-		       (char *)mmp->mmp_bdevname, ctime(&t));
+		       EXT2_LEN_STR(mmp->mmp_nodename),
+		       EXT2_LEN_STR(mmp->mmp_bdevname), ctime(&t));
 	}
 }

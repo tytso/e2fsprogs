@@ -2447,9 +2447,9 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[],
 	fprintf(stdout, "sequence: %08x\n", mmp_s->mmp_seq);
 	fprintf(stdout, "time: %lld -- %s", mmp_s->mmp_time, ctime(&t));
 	fprintf(stdout, "node_name: %.*s\n",
-		(int)sizeof(mmp_s->mmp_nodename), (char *)mmp_s->mmp_nodename);
+		EXT2_LEN_STR(mmp_s->mmp_nodename));
 	fprintf(stdout, "device_name: %.*s\n",
-		(int)sizeof(mmp_s->mmp_bdevname), (char *)mmp_s->mmp_bdevname);
+		EXT2_LEN_STR(mmp_s->mmp_bdevname));
 	fprintf(stdout, "magic: 0x%x\n", mmp_s->mmp_magic);
 	fprintf(stdout, "checksum: 0x%08x\n", mmp_s->mmp_checksum);
 }

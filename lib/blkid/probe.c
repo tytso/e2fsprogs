@@ -144,7 +144,7 @@ static void get_ext2_info(blkid_dev dev, struct blkid_magic *id,
 		   blkid_le32(es->s_feature_incompat),
 		   blkid_le32(es->s_feature_ro_compat)));
 
-	if (strlen(es->s_volume_name))
+	if (es->s_volume_name[0])
 		label = es->s_volume_name;
 	blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
 
