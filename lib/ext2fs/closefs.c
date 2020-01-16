@@ -293,6 +293,11 @@ errcode_t ext2fs_flush2(ext2_filsys fs, int flags)
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	if ((fs->flags & EXT2_FLAG_SUPER_ONLY) == 0 &&
+	    !ext2fs_has_feature_journal_dev(fs->super) &&
+	    fs->group_desc == NULL)
+		return EXT2_ET_NO_GDESC;
+
 	fs_state = fs->super->s_state;
 	feature_incompat = fs->super->s_feature_incompat;
 
