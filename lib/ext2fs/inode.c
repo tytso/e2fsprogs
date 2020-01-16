@@ -309,6 +309,7 @@ errcode_t ext2fs_inode_scan_goto_blockgroup(ext2_inode_scan scan,
 {
 	scan->current_group = group - 1;
 	scan->groups_left = scan->fs->group_desc_count - group;
+	scan->bad_block_ptr = 0;
 	return get_next_blockgroup(scan);
 }
 
@@ -331,6 +332,12 @@ static errcode_t check_for_inode_bad_blocks(ext2_inode_scan scan,
 	 */
 	if (blk == 0)
 		return 0;
+
+	/* Make sure bad_block_ptr is still valid */
+	if (scan->bad_block_ptr >= bb->num) {
+		scan->scan_flags &= ~EXT2_SF_CHK_BADBLOCKS;
+		return 0;
+	}
 
 	/*
 	 * If the current block is greater than the bad block listed
