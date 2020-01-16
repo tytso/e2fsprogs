@@ -201,6 +201,9 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd,
 	int		j;
 #endif
 
+	if (fs->group_desc == NULL)
+		return EXT2_ET_NO_GDESC;
+
 	buf = malloc(fs->blocksize);
 	if (!buf)
 		return ENOMEM;
