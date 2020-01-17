@@ -1382,17 +1382,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 					fix_problem(ctx, PR_1_ISCAN_ERROR,
 						    &pctx);
 					ctx->flags |= E2F_FLAG_ABORT;
-					goto endit;
-				}
-				err = ext2fs_inode_scan_goto_blockgroup(scan,
-									0);
-				if (err) {
-					fix_problem(ctx, PR_1_ISCAN_ERROR,
-						    &pctx);
-					ctx->flags |= E2F_FLAG_ABORT;
-					goto endit;
-				}
-				continue;
+				} else
+					ctx->flags |= E2F_FLAG_RESTART;
+				goto endit;
 			}
 			if (!ctx->inode_bb_map)
 				alloc_bb_map(ctx);
