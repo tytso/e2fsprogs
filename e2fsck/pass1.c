@@ -129,16 +129,6 @@ static __u64 ext2_max_sizes[EXT2_MAX_BLOCK_LOG_SIZE -
 			    EXT2_MIN_BLOCK_LOG_SIZE + 1];
 
 /*
- * Free all memory allocated by pass1 in preparation for restarting
- * things.
- */
-static void unwind_pass1(ext2_filsys fs EXT2FS_ATTR((unused)))
-{
-	ext2fs_free_mem(&inodes_to_process);
-	inodes_to_process = 0;
-}
-
-/*
  * Check to make sure a device inode is real.  Returns 1 if the device
  * checks out, 0 if not.
  *
@@ -2052,7 +2042,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 		 * master superblock.
 		 */
 		ctx->use_superblock = 0;
-		unwind_pass1(fs);
 		goto endit;
 	}
 
@@ -2064,9 +2053,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		e2fsck_pass1_dupblocks(ctx, block_buf);
 	}
 	ctx->flags |= E2F_FLAG_ALLOC_OK;
-	ext2fs_free_mem(&inodes_to_process);
 endit:
 	e2fsck_use_inode_shortcuts(ctx, 0);
+	ext2fs_free_mem(&inodes_to_process);
+	inodes_to_process = 0;
 
 	if (scan)
 		ext2fs_close_inode_scan(scan);
