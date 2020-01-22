@@ -66,3 +66,13 @@ cc_binary {
 
     static_libs: e2fsck_libs,
 }
+
+cc_binary {
+    name: "e2fsck_ramdisk",
+    stem: "e2fsck",
+    static_executable: true,
+    ramdisk: true,
+    defaults: ["e2fsck-defaults"],
+    system_shared_libs: [],
+    static_libs: e2fsck_libs,
+}
