@@ -43,6 +43,14 @@ is unspecified it defaults to 1024 bytes.
 .B \-e
 Print output in extent format, even for block-mapped files.
 .TP
+.B \-E
+Display the contents of ext4's extent status cache.  This feature is not
+supported on all kernels, and is only supported on ext4 file systems.
+.TP
+.TP
+.B -P
+Pre-load the ext4's extent status cache for the file.  This feature is not
+supported on all kernels, and is only supported on ext4 file systems.
 .B \-k
 Use 1024\-byte blocksize for output (identical to '\-b 1024').
 .TP
