@@ -174,7 +174,7 @@ cc_binary {
 // Build chattr
 
 cc_binary {
-    name: "chattr",
+    name: "chattr-e2fsprogs",
     host_supported: true,
     defaults: ["e2fsprogs-defaults"],
 
@@ -201,7 +201,7 @@ lsattr_libs = [
 ]
 
 cc_binary {
-    name: "lsattr",
+    name: "lsattr-e2fsprogs",
     host_supported: true,
     defaults: ["lsattr-defaults"],
 
