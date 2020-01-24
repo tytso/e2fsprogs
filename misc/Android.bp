@@ -288,3 +288,22 @@ cc_binary {
     ],
     system_shared_libs: ["libc", "libdl"],
 }
+
+//##########################################################################
+// Build e2freefrag
+
+cc_binary {
+    name: "e2freefrag",
+    host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
+
+    srcs: [
+        "e2freefrag.c",
+    ],
+    header_libs: ["libext2-headers"],
+    shared_libs: [
+        "libext2fs",
+        "libext2_com_err",
+    ],
+    system_shared_libs: ["libc", "libdl"],
+}
