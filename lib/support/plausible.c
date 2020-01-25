@@ -101,7 +101,6 @@ static void print_ext2_info(const char *device)
 	ext2_filsys		fs;
 	errcode_t		retval;
 	time_t			tm;
-	char			buf[80];
 
 	retval = ext2fs_open2(device, 0, EXT2_FLAG_64BITS, 0, 0,
 			      unix_io_manager, &fs);
@@ -111,13 +110,10 @@ static void print_ext2_info(const char *device)
 
 	if (sb->s_mtime) {
 		tm = sb->s_mtime;
-		if (sb->s_last_mounted[0]) {
-			memset(buf, 0, sizeof(buf));
-			strncpy(buf, sb->s_last_mounted,
-				sizeof(sb->s_last_mounted));
-			printf(_("\tlast mounted on %s on %s"), buf,
-			       ctime(&tm));
-		} else
+		if (sb->s_last_mounted[0])
+			printf(_("\tlast mounted on %.*s on %s"),
+			       EXT2_LEN_STR(sb->s_last_mounted), ctime(&tm));
+		else
 			printf(_("\tlast mounted on %s"), ctime(&tm));
 	} else if (sb->s_mkfs_time) {
 		tm = sb->s_mkfs_time;
