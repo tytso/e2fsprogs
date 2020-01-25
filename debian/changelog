@@ -1,3 +1,75 @@
+e2fsprogs (1.45.5-2) unstable; urgency=medium
+
+  * Fix com_err support on Hurd, which has POSIX E* error code starting at
+    0x40000000.  Otherwise the regression tests will fail since the
+    expected output for various error cases will not have the correct
+    error text.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 08 Jan 2020 15:58:44 -0500
+
+e2fsprogs (1.45.5-1) unstable; urgency=medium
+
+  * New upstream feature
+  * E2fsck will no longer force a full file system check if time-based
+    forced checks are disabled and the last mount time or last write time in
+    the superblock are in the future.
+  * Fix spurious weekly e-mails when e2scrub_all is run via a cron job
+    on non-systemd systems.  (Closes: #944033)
+  * Remove an unnecessary sleep in e2scrub which could add up to an
+    additional two second delay during the boot up.  Also, avoid
+    trying to reap aborted snapshots if it has been disabled via
+    e2scrub.conf.  (Closes: #948193)
+  * Resize2fs -M's estimates are now more accurate on mounted file systems.
+  * Tune2fs prohibits enabling or disabling the uninit_bg feature on
+    mounted file systems, since this is unsafe.
+  * Fix support of 32-bit uid's and gid's in fuse2fs and in mke2fs -d.
+  * Fix mke2fs's setting bad blocks to bigalloc file systems.
+  * Fix a bug where fuse2fs would incorrectly report the i_blocks fields for
+    bigalloc file systems.
+  * Fix potential crash in e2fsck when rebuilding very large directories on
+    file systems which have the new large_dir feature enable.
+  * Fix FTBFS problem hurd/i386. (Closes: #944649)
+  * Fix CVE-2019-5188: potential a out of bounds write in mutate_name()
+    when checking a maliciously corrupted file systems
+  * Add autopkgtest tests smoke and fuse2fs
+  * Updated and clarified various man pages
+  * Update the debhelper compatibility level to 12
+  * Update the Chinese and Malay translations
+  * Update the Debian policy compliance to 4.4.1
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 07 Jan 2020 09:18:39 -0500
+
+e2fsprogs (1.45.4-1) unstable; urgency=medium
+
+  * New upstream feature
+  * Fix CVE-2019-5094: A maliciously corrupted file systems can trigger
+    buffer overruns in the quota code used by e2fsck.
+  * E2fsck will now check to make sure the casefold flag is only set on
+    directories, and only when the casefold feature is enabled.
+  * E2fsck will not disable the low dtime checks when using a backup
+    superblock where the last mount time is zero to fix a failure in
+    xfstests ext4/007
+  * Fix e2fsck so that when it needs to recreate the root directory, the
+    quota counts are correctly updated
+  * Update the man pages to document the new fsverity feature, and improve
+    the documentation for the casefold and encrypt features
+  * Allow e2scrub_all to work when the VG free space is exactly the
+    snapshot size (Closes: #935009)
+  * Avoid spurious lvm warnings when e2scrub_all is run out of cron on
+    non-systemd systems (Closes: #940240)
+  * Update the Dutch, German, Malay, Spanish, and Vietnamese translations
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 23 Sep 2019 15:31:27 -0400
+
+e2fsprogs (1.45.3-4) unstable; urgency=medium
+
+  * stop using Link Time Optimization; it breaks reproducible builds
+  * skip "make check" if DEB_BUILD_OPTIONS contains nocheck; this is
+    needed for some ports builds to complete successfully (Closes: #933247)
+  * fix e2fsprogs build problems on non-Linux ports
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 06 Aug 2019 15:22:30 -0400
+
 e2fsprogs (1.45.3-3~bpo10+1) buster-backports; urgency=medium
 
   * Rebuild for buster-backports.

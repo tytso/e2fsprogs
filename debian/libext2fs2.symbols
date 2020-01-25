@@ -175,6 +175,10 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_dirent_name_len@Base 1.43
  ext2fs_dirent_set_file_type@Base 1.43
  ext2fs_dirent_set_name_len@Base 1.43
+ ext2fs_dirent_swab_in2@Base 1.43
+ ext2fs_dirent_swab_in@Base 1.43
+ ext2fs_dirent_swab_out2@Base 1.43
+ ext2fs_dirent_swab_out@Base 1.43
  ext2fs_dirhash2@Base 1.45
  ext2fs_dirhash@Base 1.37
  ext2fs_div64_ceil@Base 1.42
@@ -322,6 +326,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_get_num_dirs@Base 1.37
  ext2fs_get_pathname@Base 1.37
  ext2fs_get_rec_len@Base 1.41.7
+ ext2fs_get_stat_i_blocks@Base 1.45.5
  ext2fs_group_blocks_count@Base 1.42
  ext2fs_group_desc@Base 1.42
  ext2fs_group_desc_csum@Base 1.42.2
@@ -514,6 +519,15 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_swab16@Base 1.37
  ext2fs_swab32@Base 1.37
  ext2fs_swab64@Base 1.40
+ ext2fs_swap_ext_attr@Base 1.40
+ ext2fs_swap_ext_attr_entry@Base 1.41
+ ext2fs_swap_ext_attr_header@Base 1.41
+ ext2fs_swap_group_desc2@Base 1.42
+ ext2fs_swap_group_desc@Base 1.37
+ ext2fs_swap_inode@Base 1.37
+ ext2fs_swap_inode_full@Base 1.40
+ ext2fs_swap_mmp@Base 1.42
+ ext2fs_swap_super@Base 1.37
  ext2fs_symlink@Base 1.42.7
  ext2fs_sync_device@Base 1.37
  ext2fs_tdb_append@Base 1.40

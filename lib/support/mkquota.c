@@ -503,8 +503,8 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 		if (inode->i_links_count &&
 		    (ino == EXT2_ROOT_INO ||
 		     ino >= EXT2_FIRST_INODE(fs->super))) {
-			space = ext2fs_inode_i_blocks(fs,
-						      EXT2_INODE(inode)) << 9;
+			space = ext2fs_get_stat_i_blocks(fs,
+						EXT2_INODE(inode)) << 9;
 			quota_data_add(qctx, inode, ino, space);
 			quota_data_inodes(qctx, inode, ino, +1);
 		}
@@ -671,6 +671,7 @@ errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 	err = qh.qh_ops->scan_dquots(&qh, scan_dquots_callback, &scan_data);
 	if (err) {
 		log_debug("Error scanning dquots");
+		*usage_inconsistent = 1;
 		goto out_close_qh;
 	}
 

@@ -22,7 +22,6 @@
 #include "ext2fsP.h"
 #include <ext2fs/ext2_ext_attr.h>
 
-#ifdef WORDS_BIGENDIAN
 void ext2fs_swap_super(struct ext2_super_block * sb)
 {
 	int i;
@@ -479,5 +478,3 @@ errcode_t ext2fs_dirent_swab_out2(ext2_filsys fs, char *buf,
 
 	return 0;
 }
-
-#endif

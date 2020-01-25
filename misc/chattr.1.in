@@ -23,7 +23,7 @@ chattr \- change file attributes on a Linux file system
 .B chattr
 changes the file attributes on a Linux file system.
 .PP
-The format of a symbolic mode is +-=[aAcCdDeijPsStTu].
+The format of a symbolic mode is +-=[aAcCdDeFijPsStTu].
 .PP
 The operator '+' causes the selected attributes to be added to the
 existing attributes of the files; '-' causes them to be removed; and '='
@@ -52,7 +52,8 @@ The following attributes are read-only, and may be listed by
 but not modified by chattr:
 encrypted (E),
 indexed directory (I),
-and inline data (N).
+inline data (N),
+and verity (V).
 .PP
 Not all flags are supported or utilized by all filesystems; refer to
 filesystem-specific man pages such as
@@ -78,9 +79,9 @@ Set the file's version/generation number.
 .BI \-p " project"
 Set the file's project number.
 .SH ATTRIBUTES
-A file with the 'a' attribute set can only be open in append mode for writing.
-Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE
-capability can set or clear this attribute.
+A file with the 'a' attribute set can only be opened in append mode for
+writing.  Only the superuser or a process possessing the
+CAP_LINUX_IMMUTABLE capability can set or clear this attribute.
 .PP
 When a file with the 'A' attribute set is accessed, its atime record is
 not modified.  This avoids a certain amount of disk I/O for laptop
@@ -101,21 +102,20 @@ be fully stable.  If the 'C' flag is set on a directory, it will have no
 effect on the directory, but new files created in that directory will
 have the No_COW attribute set.)
 .PP
-A file with the 'd' attribute set is not candidate for backup when the
+A file with the 'd' attribute set is not a candidate for backup when the
 .BR dump (8)
 program is run.
 .PP
 When a directory with the 'D' attribute set is modified,
-the changes are written synchronously on the disk; this is equivalent to
+the changes are written synchronously to the disk; this is equivalent to
 the 'dirsync' mount option applied to a subset of the files.
 .PP
 The 'e' attribute indicates that the file is using extents for mapping
 the blocks on disk.  It may not be removed using
 .BR chattr (1).
 .PP
-The 'E' attribute is used by the experimental encryption patches to
-indicate that the file has been encrypted.  It may not be
-set or reset using
+A file, directory, or symlink with the 'E' attribute set is encrypted by the
+filesystem.  This attribute may not be set or cleared using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
@@ -132,7 +132,7 @@ Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE
 capability can set or clear this attribute.
 .PP
 The 'I' attribute is used by the htree code to indicate that a directory
-is being indexed using hashed trees.  It may not be set or reset using
+is being indexed using hashed trees.  It may not be set or cleared using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
@@ -146,7 +146,8 @@ attribute has no effect.  Only the superuser or a process possessing the
 CAP_SYS_RESOURCE capability can set or clear this attribute.
 .PP
 A file with the 'N' attribute set indicates that the file has data
-stored inline, within the inode itself. It may not be set or reset using
+stored inline, within the inode itself. It may not be set or cleared
+using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
@@ -164,15 +165,15 @@ and written back to the disk.  Note: please make sure to read the bugs
 and limitations section at the end of this document.
 .PP
 When a file with the 'S' attribute set is modified,
-the changes are written synchronously on the disk; this is equivalent to
+the changes are written synchronously to the disk; this is equivalent to
 the 'sync' mount option applied to a subset of the files.
 .PP
 A file with the 't' attribute will not have a partial block fragment at
 the end of the file merged with other files (for those filesystems which
 support tail-merging).  This is necessary for applications such as LILO
 which read the filesystem directly, and which don't understand tail-merged
-files.  Note: As of this writing, the ext2 or ext3 filesystems do not
-(yet, except in very experimental patches) support tail-merging.
+files.  Note: As of this writing, the ext2, ext3, and ext4 filesystems do
+not support tail-merging.
 .PP
 A directory with the 'T' attribute will be deemed to be the top of
 directory hierarchies for the purposes of the Orlov block allocator.
@@ -188,6 +189,15 @@ When a file with the 'u' attribute set is deleted, its contents are
 saved.  This allows the user to ask for its undeletion.  Note: please
 make sure to read the bugs and limitations section at the end of this
 document.
+.PP
+A file with the 'V' attribute set has fs-verity enabled.  It cannot be
+written to, and the filesystem will automatically verify all data read
+from it against a cryptographic hash that covers the entire file's
+contents, e.g. via a Merkle tree.  This makes it possible to efficiently
+authenticate the file.  This attribute may not be set or cleared using
+.BR chattr (1),
+although it can be displayed by
+.BR lsattr (1).
 .PP
 .SH AUTHOR
 .B chattr

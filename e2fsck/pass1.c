@@ -1171,7 +1171,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		scan_callback_struct scan_struct;
 	struct ext2_super_block *sb = ctx->fs->super;
 	const char	*old_op;
-	int		imagic_fs, extent_fs, inlinedata_fs;
+	const char	*eop_next_inode = _("getting next inode from scan");
+	int		imagic_fs, extent_fs, inlinedata_fs, casefold_fs;
 	int		low_dtime_check = 1;
 	unsigned int	inode_size = EXT2_INODE_SIZE(fs->super);
 	unsigned int	bufsize;
@@ -1217,6 +1218,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	imagic_fs = ext2fs_has_feature_imagic_inodes(sb);
 	extent_fs = ext2fs_has_feature_extents(sb);
 	inlinedata_fs = ext2fs_has_feature_inline_data(sb);
+	casefold_fs = ext2fs_has_feature_casefold(sb);
 
 	/*
 	 * Allocate bitmaps structures
@@ -1340,8 +1342,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (ctx->progress && ((ctx->progress)(ctx, 1, 0,
 					      ctx->fs->group_desc_count)))
 		goto endit;
-	if ((fs->super->s_wtime < fs->super->s_inodes_count) ||
-	    (fs->super->s_mtime < fs->super->s_inodes_count) ||
+	if ((fs->super->s_wtime &&
+	     fs->super->s_wtime < fs->super->s_inodes_count) ||
+	    (fs->super->s_mtime &&
+	     fs->super->s_mtime < fs->super->s_inodes_count) ||
 	    (fs->super->s_mkfs_time &&
 	     fs->super->s_mkfs_time < fs->super->s_inodes_count))
 		low_dtime_check = 0;
@@ -1360,7 +1364,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (e2fsck_mmp_update(fs))
 				fatal_error(ctx, 0);
 		}
-		old_op = ehandler_operation(_("getting next inode from scan"));
+		old_op = ehandler_operation(eop_next_inode);
 		pctx.errcode = ext2fs_get_next_inode_full(scan, &ino,
 							  inode, inode_size);
 		if (ino > ino_threshold)
@@ -1478,6 +1482,15 @@ void e2fsck_pass1(e2fsck_t ctx)
 			}
 			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 			continue;
+		}
+
+		if ((inode->i_flags & EXT4_CASEFOLD_FL) &&
+		    ((!LINUX_S_ISDIR(inode->i_mode) &&
+		      fix_problem(ctx, PR_1_CASEFOLD_NONDIR, &pctx)) ||
+		     (!casefold_fs &&
+		      fix_problem(ctx, PR_1_CASEFOLD_FEATURE, &pctx)))) {
+			inode->i_flags &= ~EXT4_CASEFOLD_FL;
+			e2fsck_write_inode(ctx, ino, inode, "pass1");
 		}
 
 		/* Conflicting inlinedata/extents inode flags? */

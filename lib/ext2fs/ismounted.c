@@ -128,8 +128,19 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	while ((mnt = getmntent (f)) != NULL) {
 		if (mnt->mnt_fsname[0] != '/')
 			continue;
-		if (strcmp(file, mnt->mnt_fsname) == 0)
+		if (stat(mnt->mnt_dir, &st_buf) != 0)
+			continue;
+		if (strcmp(file, mnt->mnt_fsname) == 0) {
+			if (file_rdev && (file_rdev != st_buf.st_dev)) {
+#ifdef DEBUG
+				printf("Bogus entry in %s!  "
+				       "(%s does not exist)\n",
+				       mtab_file, mnt->mnt_dir);
+#endif /* DEBUG */
+				continue;
+			}
 			break;
+		}
 		if (stat(mnt->mnt_fsname, &st_buf) == 0) {
 			if (ext2fsP_is_disk_device(st_buf.st_mode)) {
 #ifndef __GNU__
@@ -168,32 +179,6 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 #endif	/* __GNU__ */
 		goto errout;
 	}
-#ifndef __GNU__ /* The GNU hurd is deficient; what else is new? */
-	/* Validate the entry in case /etc/mtab is out of date */
-	/*
-	 * We need to be paranoid, because some broken distributions
-	 * (read: Slackware) don't initialize /etc/mtab before checking
-	 * all of the non-root filesystems on the disk.
-	 */
-	if (stat(mnt->mnt_dir, &st_buf) < 0) {
-		retval = errno;
-		if (retval == ENOENT) {
-#ifdef DEBUG
-			printf("Bogus entry in %s!  (%s does not exist)\n",
-			       mtab_file, mnt->mnt_dir);
-#endif /* DEBUG */
-			retval = 0;
-		}
-		goto errout;
-	}
-	if (file_rdev && (st_buf.st_dev != file_rdev)) {
-#ifdef DEBUG
-		printf("Bogus entry in %s!  (%s not mounted on %s)\n",
-		       mtab_file, file, mnt->mnt_dir);
-#endif /* DEBUG */
-		goto errout;
-	}
-#endif /* __GNU__ */
 	*mount_flags = EXT2_MF_MOUNTED;
 
 #ifdef MNTOPT_RO
@@ -242,7 +227,7 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 #ifdef __linux__
 	retval = check_mntent_file("/proc/mounts", file, mount_flags,
 				   mtpt, mtlen);
-	if (retval == 0 && (*mount_flags != 0))
+	if (retval == 0)
 		return 0;
 #endif /* __linux__ */
 #if defined(MOUNTED) || defined(_PATH_MOUNTED)

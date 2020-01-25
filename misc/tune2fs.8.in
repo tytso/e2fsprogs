@@ -550,7 +550,7 @@ extended attributes per file.
 currently only supports setting this filesystem feature.
 .TP
 .B encrypt
-Enable file system level encryption.
+Enable support for file system level encryption.
 .B Tune2fs
 currently only supports setting this filesystem feature.
 .TP
@@ -631,6 +631,11 @@ keep a high watermark for the unused inodes in a filesystem, to reduce
 time.  The first e2fsck run after enabling this feature will take the
 full time, but subsequent e2fsck runs will take only a fraction of the
 original time, depending on how full the file system is.
+.TP
+.B verity
+Enable support for verity protected files.
+.B Tune2fs
+currently only supports setting this filesystem feature.
 .RE
 .IP
 After setting or clearing
