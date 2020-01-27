@@ -2912,6 +2912,8 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
+	badblocks_iterate	bb_iter;
+	blk_t		blk;
 	unsigned int	journal_blocks = 0;
 	unsigned int	i, checkinterval;
 	int		max_mnt_count;
@@ -2922,6 +2924,7 @@ int main (int argc, char *argv[])
 	char		opt_string[40];
 	char		*hash_alg_str;
 	int		itable_zeroed = 0;
+	blk64_t		overhead;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -3213,11 +3216,50 @@ int main (int argc, char *argv[])
 	if (!quiet)
 		printf("%s", _("done                            \n"));
 
+	/*
+	 * Unmark bad blocks to calculate overhead, because metadata
+	 * blocks and bad blocks can land on the same allocation cluster.
+	 */
+	if (bb_list) {
+		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
+							     &bb_iter);
+		if (retval) {
+			com_err("ext2fs_badblocks_list_iterate_begin", retval,
+				"%s", _("while unmarking bad blocks"));
+			exit(1);
+		}
+		while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
+			ext2fs_unmark_block_bitmap2(fs->block_map, blk);
+		ext2fs_badblocks_list_iterate_end(bb_iter);
+	}
+
 	retval = ext2fs_convert_subcluster_bitmap(fs, &fs->block_map);
 	if (retval) {
 		com_err(program_name, retval, "%s",
 			_("\n\twhile converting subcluster bitmap"));
 		exit(1);
+	}
+
+	retval = ext2fs_count_used_clusters(fs, fs->super->s_first_data_block,
+					ext2fs_blocks_count(fs->super) - 1,
+					&overhead);
+	if (retval) {
+		com_err(program_name, retval, "%s",
+			_("while calculating overhead"));
+		exit(1);
+	}
+
+	if (bb_list) {
+		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
+							     &bb_iter);
+		if (retval) {
+			com_err("ext2fs_badblocks_list_iterate_begin", retval,
+				"%s", _("while marking bad blocks as used"));
+			exit(1);
+		}
+		while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
+			ext2fs_mark_block_bitmap2(fs->block_map, blk);
+		ext2fs_badblocks_list_iterate_end(bb_iter);
 	}
 
 	if (super_only) {
@@ -3317,6 +3359,7 @@ int main (int argc, char *argv[])
 		free(journal_device);
 	} else if ((journal_size) ||
 		   ext2fs_has_feature_journal(&fs_param)) {
+		overhead += EXT2FS_NUM_B2C(fs, journal_blocks);
 		if (super_only) {
 			printf("%s", _("Skipping journal creation in super-only mode\n"));
 			fs->super->s_journal_inum = EXT2_JOURNAL_INO;
@@ -3358,6 +3401,10 @@ no_journal:
 				 "with update interval %d seconds.\n"),
 			       fs->super->s_mmp_update_interval);
 	}
+
+	overhead += fs->super->s_first_data_block;
+	if (!super_only)
+		fs->super->s_overhead_clusters = overhead;
 
 	if (ext2fs_has_feature_bigalloc(&fs_param))
 		fix_cluster_bg_counts(fs);

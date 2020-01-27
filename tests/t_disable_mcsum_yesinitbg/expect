@@ -28,7 +28,7 @@ Change in FS metadata:
  Default mount options:    user_xattr acl
  Filesystem state:         clean
  Errors behavior:          Continue
-@@ -33,7 +33,6 @@
+@@ -34,7 +34,6 @@
  Journal inode:            8
  Default directory hash:   half_md4
  Journal backup:           inode blocks

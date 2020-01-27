@@ -28,7 +28,7 @@ Change in FS metadata:
  Default mount options:    user_xattr acl
  Filesystem state:         clean
  Errors behavior:          Continue
-@@ -33,7 +33,6 @@
+@@ -34,7 +34,6 @@
  Journal inode:            8
  Default directory hash:   half_md4
  Journal backup:           inode blocks
@@ -36,7 +36,7 @@ Change in FS metadata:
  Journal features:         (none)
  Journal size:             16M
  Journal length:           16384
-@@ -47,18 +46,18 @@
+@@ -48,18 +47,18 @@
    Block bitmap at 262 (+261)
    Inode bitmap at 278 (+277)
    Inode table at 294-549 (+293)

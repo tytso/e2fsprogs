@@ -31,7 +31,7 @@ Change in FS metadata:
  Default mount options:    user_xattr acl
  Filesystem state:         clean
  Errors behavior:          Continue
-@@ -29,6 +29,7 @@
+@@ -30,6 +30,7 @@
  Journal inode:            8
  Default directory hash:   half_md4
  Journal backup:           inode blocks
@@ -39,7 +39,7 @@ Change in FS metadata:
  Journal features:         (none)
  Journal size:             16M
  Journal length:           16384
-@@ -36,7 +37,7 @@
+@@ -37,7 +38,7 @@
  Journal start:            0
  
  
@@ -48,7 +48,7 @@ Change in FS metadata:
    Primary superblock at 1, Group descriptors at 2-3
    Reserved GDT blocks at 4-259
    Block bitmap at 260 (+259)
-@@ -45,7 +46,7 @@
+@@ -46,7 +47,7 @@
    0 free blocks, 1013 free inodes, 2 directories
    Free blocks: 
    Free inodes: 12-1024
@@ -57,7 +57,7 @@ Change in FS metadata:
    Backup superblock at 8193, Group descriptors at 8194-8195
    Reserved GDT blocks at 8196-8451
    Block bitmap at 8452 (+259)
-@@ -54,6 +55,6 @@
+@@ -55,6 +56,6 @@
    0 free blocks, 1024 free inodes, 0 directories
    Free blocks: 
    Free inodes: 1025-2048

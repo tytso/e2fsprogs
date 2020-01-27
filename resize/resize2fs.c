@@ -703,6 +703,7 @@ errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs,
 	double		percent;
 
 	ext2fs_blocks_count_set(fs->super, new_size);
+	fs->super->s_overhead_clusters = 0;
 
 retry:
 	fs->group_desc_count = ext2fs_div64_ceil(ext2fs_blocks_count(fs->super) -

@@ -10,6 +10,7 @@ Filesystem OS type:       Linux
 Inode count:              1024
 Block count:              16384
 Reserved block count:     819
+Overhead clusters:        1543
 Free blocks:              14786
 Free inodes:              1005
 First block:              1

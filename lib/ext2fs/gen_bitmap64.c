@@ -940,3 +940,38 @@ errcode_t ext2fs_find_first_set_generic_bmap(ext2fs_generic_bitmap bitmap,
 
 	return ENOENT;
 }
+
+errcode_t ext2fs_count_used_clusters(ext2_filsys fs, blk64_t start,
+				     blk64_t end, blk64_t *out)
+{
+	blk64_t		next;
+	blk64_t		tot_set = 0;
+	errcode_t	retval;
+
+	while (start < end) {
+		retval = ext2fs_find_first_set_block_bitmap2(fs->block_map,
+							start, end, &next);
+		if (retval) {
+			if (retval == ENOENT)
+				retval = 0;
+			break;
+		}
+		start = next;
+
+		retval = ext2fs_find_first_zero_block_bitmap2(fs->block_map,
+							start, end, &next);
+		if (retval == 0) {
+			tot_set += next - start;
+			start  = next + 1;
+		} else if (retval == ENOENT) {
+			retval = 0;
+			tot_set += end - start + 1;
+			break;
+		} else
+			break;
+	}
+
+	if (!retval)
+		*out = EXT2FS_NUM_B2C(fs, tot_set);
+	return retval;
+}
