@@ -39,6 +39,28 @@ static void fs_free_blocks_range(ext2_filsys fs,
 	}
 }
 
+/*
+ * Free any blocks in the bitmap that were reserved but never used. This is
+ * needed to free dedup_block_map and ensure the free block bitmap is
+ * internally consistent.
+ */
+static void fs_free_blocks_bitmap(ext2_filsys fs, ext2fs_block_bitmap bitmap)
+{
+	blk64_t block = 0;
+	blk64_t start = fs->super->s_first_data_block;
+	blk64_t end = ext2fs_blocks_count(fs->super) - 1;
+	errcode_t retval;
+
+	for (;;) {
+		retval = ext2fs_find_first_set_block_bitmap2(bitmap, start, end,
+			&block);
+		if (retval)
+			break;
+		ext2fs_unmark_block_bitmap2(fs->block_map, block);
+		start = block + 1;
+	}
+}
+
 static void basefs_allocator_free(ext2_filsys fs,
 				  struct base_fs_allocator *allocator)
 {
@@ -53,6 +75,7 @@ static void basefs_allocator_free(ext2_filsys fs,
 		}
 		ext2fs_hashmap_free(entries);
 	}
+	fs_free_blocks_bitmap(fs, allocator->dedup_block_map);
 	ext2fs_free_block_bitmap(allocator->exclusive_block_map);
 	ext2fs_free_block_bitmap(allocator->dedup_block_map);
 	free(allocator);
