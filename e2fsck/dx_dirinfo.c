@@ -73,11 +73,10 @@ void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino, struct ext2_inode *inode,
 	dir->ino = ino;
 	dir->numblocks = num_blocks;
 	dir->hashversion = 0;
-	dir->casefolded_hash = inode->i_flags & EXT4_CASEFOLD_FL;
+	dir->casefolded_hash = !!(inode->i_flags & EXT4_CASEFOLD_FL);
 	dir->dx_block = e2fsck_allocate_memory(ctx, num_blocks
 				       * sizeof (struct dx_dirblock_info),
 				       "dx_block info array");
-
 }
 
 /*

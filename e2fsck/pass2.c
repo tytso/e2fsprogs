@@ -71,8 +71,8 @@ static int allocate_dir_block(e2fsck_t ctx,
 			      struct ext2_db_entry2 *dir_blocks_info,
 			      char *buf, struct problem_context *pctx);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
-static int htree_depth(struct dx_dir_info *dx_dir,
-		       struct dx_dirblock_info *dx_db);
+static short htree_depth(struct dx_dir_info *dx_dir,
+			 struct dx_dirblock_info *dx_db);
 static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b);
 
 struct check_dir_struct {
@@ -132,7 +132,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct dx_dirblock_info	*dx_db;
 	int			b;
 	ext2_ino_t		i;
-	int			depth;
+	short			depth;
 	problem_t		code;
 	int			bad_dir;
 	int (*check_dir_func)(ext2_filsys fs,
@@ -311,10 +311,10 @@ cleanup:
 }
 
 #define MAX_DEPTH 32000
-static int htree_depth(struct dx_dir_info *dx_dir,
-		       struct dx_dirblock_info *dx_db)
+static short htree_depth(struct dx_dir_info *dx_dir,
+			 struct dx_dirblock_info *dx_db)
 {
-	int	depth = 0;
+	short depth = 0;
 
 	while (dx_db->type != DX_DIRBLOCK_ROOT && depth < MAX_DEPTH) {
 		dx_db = &dx_dir->dx_block[dx_db->parent];
