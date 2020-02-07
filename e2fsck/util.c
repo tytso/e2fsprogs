@@ -421,9 +421,6 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 #ifdef HAVE_GETRUSAGE
 	struct rusage r;
 #endif
-#ifdef HAVE_MALLINFO
-	struct mallinfo	malloc_info;
-#endif
 	struct timeval time_end;
 
 	if ((desc && !(ctx->options & E2F_OPT_TIME2)) ||
@@ -436,18 +433,21 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 	if (desc)
 		log_out(ctx, "%s: ", desc);
 
+#define kbytes(x)	(((unsigned long long)(x) + 1023) / 1024)
 #ifdef HAVE_MALLINFO
-#define kbytes(x)	(((unsigned long)(x) + 1023) / 1024)
+	/* don't use mallinfo() if over 2GB used, since it returns "int" */
+	if ((char *)sbrk(0) - (char *)track->brk_start < 2ULL << 30) {
+		struct mallinfo	malloc_info = mallinfo();
 
-	malloc_info = mallinfo();
-	log_out(ctx, _("Memory used: %luk/%luk (%luk/%luk), "),
-		kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
-		kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
-#else
-	log_out(ctx, _("Memory used: %lu, "),
-		(unsigned long) (((char *) sbrk(0)) -
-				 ((char *) track->brk_start)));
+		log_out(ctx, _("Memory used: %lluk/%lluk (%lluk/%lluk), "),
+			kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
+			kbytes(malloc_info.uordblks),
+			kbytes(malloc_info.fordblks));
+	} else
 #endif
+	log_out(ctx, _("Memory used: %lluk, "),
+		kbytes(((char *)sbrk(0)) - ((char *)track->brk_start)));
+
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
