@@ -235,12 +235,12 @@ struct e2fsck_struct {
 	char	*problem_log_fn;
 	int	flags;		/* E2fsck internal flags */
 	int	options;
-	int	blocksize;	/* blocksize */
+	unsigned blocksize;	/* blocksize */
 	blk64_t	use_superblock;	/* sb requested by user */
 	blk64_t	superblock;	/* sb used to open fs */
 	blk64_t	num_blocks;	/* Total number of blocks */
-	blk64_t free_blocks;
-	ino_t	free_inodes;
+	blk64_t	free_blocks;
+	ext2_ino_t free_inodes;
 	int	mount_flags;
 	int	openfs_flags;
 	blkid_cache blkid;	/* blkid cache */
@@ -478,8 +478,9 @@ extern void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino,
 			      struct ext2_inode *inode, int num_blocks);
 extern struct dx_dir_info *e2fsck_get_dx_dir_info(e2fsck_t ctx, ext2_ino_t ino);
 extern void e2fsck_free_dx_dir_info(e2fsck_t ctx);
-extern int e2fsck_get_num_dx_dirinfo(e2fsck_t ctx);
-extern struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx, int *control);
+extern ext2_ino_t e2fsck_get_num_dx_dirinfo(e2fsck_t ctx);
+extern struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx,
+						   ext2_ino_t *control);
 
 /* ea_refcount.c */
 typedef __u64 ea_key_t;

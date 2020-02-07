@@ -362,7 +362,7 @@ static void print_inline_journal_information(ext2_filsys fs)
 	struct ext2_inode	inode;
 	ext2_file_t		journal_file;
 	errcode_t		retval;
-	ino_t			ino = fs->super->s_journal_inum;
+	ext2_ino_t		ino = fs->super->s_journal_inum;
 	char			buf[1024];
 
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE)

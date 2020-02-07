@@ -312,7 +312,7 @@ struct process_block_struct {
  * structure, so there's no point in letting the ext2fs library read
  * the inode again.
  */
-static ino_t stashed_ino = 0;
+static ext2_ino_t stashed_ino = 0;
 static struct ext2_inode *stashed_inode;
 
 static errcode_t meta_get_blocks(ext2_filsys fs EXT2FS_ATTR((unused)),

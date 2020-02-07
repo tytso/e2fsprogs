@@ -138,7 +138,7 @@ void e2fsck_free_dx_dir_info(e2fsck_t ctx)
 /*
  * Return the count of number of directories in the dx_dir_info structure
  */
-int e2fsck_get_num_dx_dirinfo(e2fsck_t ctx)
+ext2_ino_t e2fsck_get_num_dx_dirinfo(e2fsck_t ctx)
 {
 	return ctx->dx_dir_info_count;
 }
@@ -146,10 +146,10 @@ int e2fsck_get_num_dx_dirinfo(e2fsck_t ctx)
 /*
  * A simple interator function
  */
-struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx, int *control)
+struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx, ext2_ino_t *control)
 {
 	if (*control >= ctx->dx_dir_info_count)
 		return 0;
 
-	return(ctx->dx_dir_info + (*control)++);
+	return ctx->dx_dir_info + (*control)++;
 }

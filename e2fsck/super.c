@@ -595,7 +595,7 @@ void check_super_block(e2fsck_t ctx)
 	blk64_t	should_be;
 	struct problem_context	pctx;
 	blk64_t	free_blocks = 0;
-	ino_t	free_inodes = 0;
+	ext2_ino_t free_inodes = 0;
 	int     csum_flag, clear_test_fs_flag;
 
 	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
