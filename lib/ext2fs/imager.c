@@ -347,7 +347,8 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		}
 		bmap = fs->inode_map;
 		itr = 1;
-		cnt = EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count;
+		cnt = (__u64)EXT2_INODES_PER_GROUP(fs->super) *
+			fs->group_desc_count;
 		size = (EXT2_INODES_PER_GROUP(fs->super) / 8);
 	} else {
 		if (!fs->block_map) {
@@ -422,7 +423,8 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 		}
 		bmap = fs->inode_map;
 		itr = 1;
-		cnt = EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count;
+		cnt = (__u64)EXT2_INODES_PER_GROUP(fs->super) *
+			fs->group_desc_count;
 		size = (EXT2_INODES_PER_GROUP(fs->super) / 8);
 	} else {
 		if (!fs->block_map) {
