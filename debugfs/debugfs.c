@@ -2494,6 +2494,10 @@ static int source_file(const char *cmd_file, int ss_idx)
 	while (!feof(f)) {
 		if (fgets(buf, sizeof(buf), f) == NULL)
 			break;
+		if (buf[0] == '#') {
+			printf("%s", buf);
+			continue;
+		}
 		cp = strchr(buf, '\n');
 		if (cp)
 			*cp = 0;
