@@ -59,7 +59,7 @@ static journal_t *current_journal = NULL;
 static void journal_dump_trans(journal_transaction_t *trans EXT2FS_ATTR((unused)),
 			       const char *tag EXT2FS_ATTR((unused)))
 {
-	dbg_printf("TRANS %p(%s): tid=%d start=%llu block=%llu end=%llu "
+	dbg_printf("TRANS %p(%s): tid=%u start=%llu block=%llu end=%llu "
 		   "flags=0x%x\n", trans, tag, trans->tid, trans->start,
 		   trans->block, trans->end, trans->flags);
 }
@@ -912,7 +912,7 @@ void do_journal_open(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	}
 	journal = current_journal;
 
-	dbg_printf("JOURNAL: seq=%d tailseq=%d start=%lu first=%lu "
+	dbg_printf("JOURNAL: seq=%u tailseq=%u start=%lu first=%lu "
 		   "maxlen=%lu\n", journal->j_tail_sequence,
 		   journal->j_transaction_sequence, journal->j_tail,
 		   journal->j_first, journal->j_last);

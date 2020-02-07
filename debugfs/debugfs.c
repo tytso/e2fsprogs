@@ -473,7 +473,7 @@ void do_show_super_stats(int argc, char *argv[],
 	}
 	for (i=0; i < current_fs->group_desc_count; i++)
 		numdirs += ext2fs_bg_used_dirs_count(current_fs, i);
-	fprintf(out, "Directories:              %d\n", numdirs);
+	fprintf(out, "Directories:              %u\n", numdirs);
 
 	if (header_only) {
 		close_pager(out);
@@ -724,7 +724,7 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 				continue;
 			}
 
-			fprintf(f, "%s(ETB%d):%lld",
+			fprintf(f, "%s(ETB%d):%llu",
 				printed ? ", " : "", info.curr_level,
 				extent.e_pblk);
 			printed = 1;
@@ -857,10 +857,10 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode))
 		fprintf(out, "%llu\n", EXT2_I_SIZE(inode));
 	else
-		fprintf(out, "%d\n", inode->i_size);
+		fprintf(out, "%u\n", inode->i_size);
 	if (os == EXT2_OS_HURD)
 		fprintf(out,
-			"%sFile ACL: %d Translator: %d\n",
+			"%sFile ACL: %u Translator: %u\n",
 			prefix,
 			inode->i_file_acl,
 			inode->osd1.hurd1.h_i_translator);
@@ -870,13 +870,13 @@ void internal_dump_inode(FILE *out, const char *prefix,
 			inode->i_file_acl | ((long long)
 				(inode->osd2.linux2.l_i_file_acl_high) << 32));
 	if (os != EXT2_OS_HURD)
-		fprintf(out, "%sLinks: %d   Blockcount: %llu\n",
+		fprintf(out, "%sLinks: %u   Blockcount: %llu\n",
 			prefix, inode->i_links_count,
 			(((unsigned long long)
 			  inode->osd2.linux2.l_i_blocks_hi << 32)) +
 			inode->i_blocks);
 	else
-		fprintf(out, "%sLinks: %d   Blockcount: %u\n",
+		fprintf(out, "%sLinks: %u   Blockcount: %u\n",
 			prefix, inode->i_links_count, inode->i_blocks);
 	switch (os) {
 	    case EXT2_OS_HURD:
@@ -886,7 +886,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	    default:
 		frag = fsize = 0;
 	}
-	fprintf(out, "%sFragment:  Address: %d    Number: %d    Size: %d\n",
+	fprintf(out, "%sFragment:  Address: %u    Number: %u    Size: %u\n",
 		prefix, inode->i_faddr, frag, fsize);
 	if (is_large_inode && large_inode->i_extra_isize >= 24) {
 		fprintf(out, "%s ctime: 0x%08x:%08x -- %s", prefix,
@@ -1403,7 +1403,7 @@ void do_modify_inode(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		modify_u8(argv[0], "Fragment size", decimal_format, fsize);
 
 	for (i=0;  i < EXT2_NDIR_BLOCKS; i++) {
-		sprintf(buf, "Direct Block #%d", i);
+		sprintf(buf, "Direct Block #%u", i);
 		modify_u32(argv[0], buf, decimal_format, &inode.i_block[i]);
 	}
 	modify_u32(argv[0], "Indirect Block", decimal_format,
@@ -2139,7 +2139,7 @@ void do_imap(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		block;
 	offset &= (EXT2_BLOCK_SIZE(current_fs->super) - 1);
 
-	printf("Inode %d is part of block group %lu\n"
+	printf("Inode %u is part of block group %lu\n"
 	       "\tlocated at block %lu, offset 0x%04lx\n", ino, group,
 	       block_nr, offset);
 
