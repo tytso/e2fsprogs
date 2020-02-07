@@ -131,7 +131,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db;
 	int			b;
-	int			i, depth;
+	ext2_ino_t		i;
+	int			depth;
 	problem_t		code;
 	int			bad_dir;
 	int (*check_dir_func)(ext2_filsys fs,
@@ -586,10 +587,10 @@ static void parse_int_node(ext2_filsys fs,
 #ifdef DX_DEBUG
 		printf("Root node dump:\n");
 		printf("\t Reserved zero: %u\n", root->reserved_zero);
-		printf("\t Hash Version: %d\n", root->hash_version);
-		printf("\t Info length: %d\n", root->info_length);
-		printf("\t Indirect levels: %d\n", root->indirect_levels);
-		printf("\t Flags: %d\n", root->unused_flags);
+		printf("\t Hash Version: %u\n", root->hash_version);
+		printf("\t Info length: %u\n", root->info_length);
+		printf("\t Indirect levels: %u\n", root->indirect_levels);
+		printf("\t Flags: %x\n", root->unused_flags);
 #endif
 
 		ent = (struct ext2_dx_entry *) (block_buf + 24 + root->info_length);

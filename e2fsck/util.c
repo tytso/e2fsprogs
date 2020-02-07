@@ -116,7 +116,7 @@ void log_err(e2fsck_t ctx, const char *fmt, ...)
 	}
 }
 
-void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
+void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 			     const char *description)
 {
 	void *ret;
@@ -125,13 +125,12 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 #ifdef DEBUG_ALLOCATE_MEMORY
 	printf("Allocating %u bytes for %s...\n", size, description);
 #endif
-	ret = malloc(size);
-	if (!ret) {
+	if (ext2fs_get_memzero(size, &ret)) {
 		sprintf(buf, "Can't allocate %u bytes for %s\n",
 			size, description);
 		fatal_error(ctx, buf);
 	}
-	memset(ret, 0, size);
+
 	return ret;
 }
 

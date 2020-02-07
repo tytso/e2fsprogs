@@ -353,7 +353,7 @@ void set_up_logging(e2fsck_t ctx)
 					    ctx->problem_log_fn);
 }
 #else
-void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
+void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 			     const char *description)
 {
 	void *ret;

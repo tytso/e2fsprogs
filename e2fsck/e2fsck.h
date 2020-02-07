@@ -318,9 +318,9 @@ struct e2fsck_struct {
 	/*
 	 * Indexed directory information
 	 */
-	int		dx_dir_info_count;
-	int		dx_dir_info_size;
-	struct dx_dir_info *dx_dir_info;
+	ext2_ino_t		dx_dir_info_count;
+	ext2_ino_t		dx_dir_info_size;
+	struct dx_dir_info	*dx_dir_info;
 
 	/*
 	 * Directories to hash
@@ -595,7 +595,7 @@ int check_backup_super_block(e2fsck_t ctx);
 void check_resize_inode(e2fsck_t ctx);
 
 /* util.c */
-extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
+extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 				    const char *description);
 extern int ask(e2fsck_t ctx, const char * string, int def);
 extern int ask_yn(e2fsck_t ctx, const char * string, int def);
