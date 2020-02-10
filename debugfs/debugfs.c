@@ -48,8 +48,14 @@ extern char *optarg;
 int journal_enable_debug = -1;
 #endif
 
+/*
+ * There must be only one definition if we're hooking in extra commands or
+ * chaging default prompt. Use -DSKIP_GLOBDEF for that.
+ */
+#ifndef SKIP_GLOBDEFS
 ss_request_table *extra_cmds;
 const char *debug_prog_name;
+#endif
 int ss_sci_idx;
 
 ext2_filsys	current_fs;
