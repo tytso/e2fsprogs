@@ -1762,6 +1762,8 @@ extern errcode_t ext2fs_get_arrayzero(unsigned long count,
 extern errcode_t ext2fs_free_mem(void *ptr);
 extern errcode_t ext2fs_resize_mem(unsigned long old_size,
 				   unsigned long size, void *ptr);
+extern errcode_t ext2fs_resize_array(unsigned long old_count, unsigned long count,
+				     unsigned long size, void *ptr);
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);
 extern void ext2fs_mark_changed(ext2_filsys fs);
 extern int ext2fs_test_changed(ext2_filsys fs);
@@ -1839,7 +1841,8 @@ _INLINE_ errcode_t ext2fs_get_memzero(unsigned long size, void *ptr)
 	return 0;
 }
 
-_INLINE_ errcode_t ext2fs_get_array(unsigned long count, unsigned long size, void *ptr)
+_INLINE_ errcode_t ext2fs_get_array(unsigned long count, unsigned long size,
+				    void *ptr)
 {
 	if (count && (~0UL)/count < size)
 		return EXT2_ET_NO_MEMORY;
@@ -1849,15 +1852,10 @@ _INLINE_ errcode_t ext2fs_get_array(unsigned long count, unsigned long size, voi
 _INLINE_ errcode_t ext2fs_get_arrayzero(unsigned long count,
 					unsigned long size, void *ptr)
 {
-	void *pp;
-
 	if (count && (~0UL)/count < size)
 		return EXT2_ET_NO_MEMORY;
-	pp = calloc(count, size);
-	if (!pp)
-		return EXT2_ET_NO_MEMORY;
-	memcpy(ptr, &pp, sizeof(pp));
-	return 0;
+
+	return ext2fs_get_memzero((size_t)count * size, ptr);
 }
 
 /*
@@ -1889,6 +1887,36 @@ _INLINE_ errcode_t ext2fs_resize_mem(unsigned long EXT2FS_ATTR((unused)) old_siz
 	if (!p)
 		return EXT2_ET_NO_MEMORY;
 	memcpy(ptr, &p, sizeof(p));
+	return 0;
+}
+
+/*
+ *  Resize array.  The 'ptr' arg must point to a pointer.
+ */
+_INLINE_ errcode_t ext2fs_resize_array(unsigned long size,
+				       unsigned long old_count,
+				       unsigned long count, void *ptr)
+{
+	unsigned long old_size;
+	errcode_t retval;
+
+	if (count && (~0UL)/count < size)
+		return EXT2_ET_NO_MEMORY;
+
+	size *= count;
+	old_size = size * old_count;
+	retval = ext2fs_resize_mem(old_size, size, ptr);
+	if (retval)
+		return retval;
+
+	if (size > old_size) {
+		void *p;
+
+		memcpy(&p, ptr, sizeof(p));
+		memset((char *)p + old_size, 0, size - old_size);
+		memcpy(ptr, &p, sizeof(p));
+	}
+
 	return 0;
 }
 #endif	/* Custom memory routines */

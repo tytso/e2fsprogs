@@ -88,7 +88,7 @@ struct check_dir_struct {
 static void update_parents(struct dx_dir_info *dx_dir, int type)
 {
 	struct dx_dirblock_info *dx_db, *dx_parent, *dx_previous;
-	int b;
+	blk_t b;
 
 	for (b = 0, dx_db = dx_dir->dx_block;
 	     b < dx_dir->numblocks;
@@ -130,7 +130,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct check_dir_struct cd;
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db;
-	int			b;
+	blk_t			b;
 	ext2_ino_t		i;
 	short			depth;
 	problem_t		code;
@@ -570,8 +570,8 @@ static void parse_int_node(ext2_filsys fs,
 			   struct dx_dir_info	*dx_dir,
 			   char *block_buf, int failed_csum)
 {
-	struct 		ext2_dx_root_info  *root;
-	struct 		ext2_dx_entry *ent;
+	struct		ext2_dx_root_info  *root;
+	struct		ext2_dx_entry *ent;
 	struct		ext2_dx_countlimit *limit;
 	struct dx_dirblock_info	*dx_db;
 	int		i, expect_limit, count;
@@ -646,7 +646,7 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 		blk = ext2fs_le32_to_cpu(ent[i].block) & EXT4_DX_BLOCK_MASK;
 		/* Check to make sure the block is valid */
-		if (blk >= (blk_t) dx_dir->numblocks) {
+		if (blk >= dx_dir->numblocks) {
 			cd->pctx.blk = blk;
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
 					&cd->pctx))
