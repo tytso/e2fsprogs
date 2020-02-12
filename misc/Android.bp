@@ -143,6 +143,16 @@ cc_binary {
     static_libs: tune2fs_libs,
 }
 
+cc_binary {
+    name: "tune2fs_ramdisk",
+    stem: "tune2fs",
+    static_executable: true,
+    ramdisk: true,
+    defaults: ["tune2fs-defaults"],
+    system_shared_libs: [],
+    static_libs: tune2fs_libs,
+}
+
 cc_library_static {
     name: "libtune2fs",
     defaults: ["tune2fs-defaults"],
