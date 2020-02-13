@@ -237,6 +237,8 @@ void e2fsck_pass4(e2fsck_t ctx)
 			link_counted = 1;
 		}
 		if (link_counted != link_count) {
+			int fix_nlink = 0;
+
 			e2fsck_read_inode_full(ctx, i, EXT2_INODE(inode),
 					       inode_size, "pass4");
 			pctx.ino = i;
@@ -250,10 +252,20 @@ void e2fsck_pass4(e2fsck_t ctx)
 			pctx.num = link_counted;
 			/* i_link_count was previously exceeded, but no longer
 			 * is, fix this but don't consider it an error */
-			if ((isdir && link_counted > 1 &&
-			     (inode->i_flags & EXT2_INDEX_FL) &&
-			     link_count == 1 && !(ctx->options & E2F_OPT_NO)) ||
-			    fix_problem(ctx, PR_4_BAD_REF_COUNT, &pctx)) {
+			if (isdir && link_counted > 1 &&
+			    (inode->i_flags & EXT2_INDEX_FL) &&
+			    link_count == 1) {
+				if ((ctx->options & E2F_OPT_READONLY) == 0) {
+					fix_nlink =
+						fix_problem(ctx,
+							PR_4_DIR_OVERFLOW_REF_COUNT,
+							&pctx);
+				}
+			} else {
+				fix_nlink = fix_problem(ctx, PR_4_BAD_REF_COUNT,
+						&pctx);
+			}
+			if (fix_nlink) {
 				inode->i_links_count = link_counted;
 				e2fsck_write_inode_full(ctx, i,
 							EXT2_INODE(inode),
