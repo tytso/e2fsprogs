@@ -2047,7 +2047,13 @@ _INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 
 _INLINE_ int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks)
 {
-	return blocks * ((fs->blocksize - 8) / sizeof(struct ext2_dx_entry));
+	int csum_size = 0;
+
+	if ((EXT2_SB(fs->super)->s_feature_ro_compat &
+	     EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) != 0)
+		csum_size = sizeof(struct ext2_dx_tail);
+	return blocks * ((fs->blocksize - (8 + csum_size)) /
+						sizeof(struct ext2_dx_entry));
 }
 
 /*
