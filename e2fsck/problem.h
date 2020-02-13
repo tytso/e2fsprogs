@@ -1153,6 +1153,9 @@ struct problem_context {
 /* directory exceeds max links, but no DIR_NLINK feature in superblock */
 #define PR_4_DIR_NLINK_FEATURE		0x040006
 
+/* Directory ref count set to overflow but it doesn't have to be */
+#define PR_4_DIR_OVERFLOW_REF_COUNT	0x040007
+
 /*
  * Pass 5 errors
  */
