@@ -216,29 +216,30 @@ out:
 }
 
 /* Try and acquire the next usable block from the Base FS map. */
-static int get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
-			  struct block_range_list* list, blk64_t *ret)
+static errcode_t get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
+				struct block_range_list* list, blk64_t *ret)
 {
 	blk64_t block;
 	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
 	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
-	while (list->head) {
-		block = consume_next_block(list);
-		if (block >= ext2fs_blocks_count(fs->super))
-			continue;
-		if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
-			ext2fs_unmark_block_bitmap2(exclusive_map, block);
-			*ret = block;
-			return 0;
-		}
-		if (ext2fs_test_block_bitmap2(dedup_map, block)) {
-			ext2fs_unmark_block_bitmap2(dedup_map, block);
-			*ret = block;
-			return 0;
-		}
+	if (!list->head)
+		return EXT2_ET_BLOCK_ALLOC_FAIL;
+
+	block = consume_next_block(list);
+	if (block >= ext2fs_blocks_count(fs->super))
+		return EXT2_ET_BLOCK_ALLOC_FAIL;
+	if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
+		ext2fs_unmark_block_bitmap2(exclusive_map, block);
+		*ret = block;
+		return 0;
 	}
-	return -1;
+	if (ext2fs_test_block_bitmap2(dedup_map, block)) {
+		ext2fs_unmark_block_bitmap2(dedup_map, block);
+		*ret = block;
+		return 0;
+	}
+	return EXT2_ET_BLOCK_ALLOC_FAIL;
 }
 
 /*
@@ -299,17 +300,28 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 		ext2fs_mark_block_bitmap2(fs->block_map, *ret);
 		return 0;
 	}
-	if (retval == EXT2_ET_BLOCK_ALLOC_FAIL) {
-		/* Try to steal a block from the dedup pool. */
-		retval = ext2fs_find_first_set_block_bitmap2(dedup_map,
-			fs->super->s_first_data_block,
-			ext2fs_blocks_count(fs->super) - 1, ret);
-		if (!retval) {
-			ext2fs_unmark_block_bitmap2(dedup_map, *ret);
-			return 0;
-		}
+	if (retval != EXT2_ET_BLOCK_ALLOC_FAIL)
+		return retval;
+
+	/* Try to steal a block from the dedup pool. */
+	retval = ext2fs_find_first_set_block_bitmap2(dedup_map,
+		fs->super->s_first_data_block,
+		ext2fs_blocks_count(fs->super) - 1, ret);
+	if (!retval) {
+		ext2fs_unmark_block_bitmap2(dedup_map, *ret);
+		return 0;
 	}
-	return retval;
+
+	/*
+	 * As a last resort, take any block from our file's list. This
+	 * risks bloating the diff, but means we are more likely to
+	 * successfully build an image.
+	 */
+	while (e->blocks.head) {
+		if (!get_next_block(fs, allocator, &e->blocks, ret))
+			return 0;
+	}
+	return EXT2_ET_BLOCK_ALLOC_FAIL;
 }
 
 void base_fs_alloc_cleanup(ext2_filsys fs)
