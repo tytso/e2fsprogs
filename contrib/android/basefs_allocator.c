@@ -9,6 +9,8 @@
 struct base_fs_allocator {
 	struct ext2fs_hashmap *entries;
 	struct basefs_entry *cur_entry;
+	/* The next expected logical block to allocate for cur_entry. */
+	blk64_t next_lblk;
 	/* Blocks which are definitely owned by a single inode in BaseFS. */
 	ext2fs_block_bitmap exclusive_block_map;
 	/* Blocks which are available to the first inode that requests it. */
@@ -239,6 +241,42 @@ static int get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
 	return -1;
 }
 
+/*
+ * BaseFS lists blocks in logical block order. However, the allocator hook is
+ * only called if a block needs to be allocated. In the case of a deduplicated
+ * block, or a hole, the hook is not invoked. This means the next block
+ * allocation request will be out of sequence. For example, consider if BaseFS
+ * specifies the following (0 being a hole):
+ *     1 2 3 0 4 5
+ *
+ * If the new file has a hole at logical block 0, we could accidentally
+ * shift the entire expected block list as follows:
+ *     0 1 2 0 3 4
+ *
+ * To account for this, we track the next expected logical block in the
+ * allocator. If the current request is for a later logical block, we skip and
+ * free the intermediate physical blocks that would have been allocated. This
+ * ensures the original block assignment is respected.
+ */
+static void skip_blocks(ext2_filsys fs, struct base_fs_allocator *allocator,
+			struct blk_alloc_ctx *ctx)
+{
+	blk64_t block;
+	struct block_range_list *list = &allocator->cur_entry->blocks;
+	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
+
+	while (list->head && allocator->next_lblk < ctx->lblk) {
+		block = consume_next_block(list);
+		if (block >= ext2fs_blocks_count(fs->super))
+			continue;
+		if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
+			ext2fs_unmark_block_bitmap2(exclusive_map, block);
+			ext2fs_unmark_block_bitmap2(fs->block_map, block);
+		}
+		allocator->next_lblk++;
+	}
+}
+
 static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 					blk64_t *ret, struct blk_alloc_ctx *ctx)
 {
@@ -248,6 +286,10 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
 	if (e && ctx && (ctx->flags & BLOCK_ALLOC_DATA)) {
+		if (allocator->next_lblk < ctx->lblk)
+			skip_blocks(fs, allocator, ctx);
+		allocator->next_lblk = ctx->lblk + 1;
+
 		if (!get_next_block(fs, allocator, &e->blocks, ret))
 			return 0;
 	}
@@ -287,10 +329,12 @@ errcode_t base_fs_alloc_set_target(ext2_filsys fs, const char *target_path,
 	if (mode != S_IFREG)
 		return 0;
 
-	if (allocator)
+	if (allocator) {
 		allocator->cur_entry = ext2fs_hashmap_lookup(allocator->entries,
 						      target_path,
 						      strlen(target_path));
+		allocator->next_lblk = 0;
+	}
 	return 0;
 }
 
