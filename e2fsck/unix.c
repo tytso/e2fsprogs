@@ -85,6 +85,7 @@ static void usage(e2fsck_t ctx)
 		" -n                   Make no changes to the filesystem\n"
 		" -y                   Assume \"yes\" to all questions\n"
 		" -c                   Check for bad blocks and add them to the badblock list\n"
+		" -K blocks_at_once    The number of blocks which are tested at a time when using badblocks. The default is 64.\n"
 		" -f                   Force checking even if filesystem is marked clean\n"));
 	fprintf(stderr, "%s", _(""
 		" -v                   Be verbose\n"
@@ -847,7 +848,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 
 	phys_mem_kb = get_memory_size() / 1024;
 	ctx->readahead_kb = ~0ULL;
-	while ((c = getopt(argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDkz:")) != EOF)
+	while ((c = getopt(argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDkz:K:")) != EOF)
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
@@ -913,6 +914,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			if (cflag++)
 				ctx->options |= E2F_OPT_WRITECHECK;
 			ctx->options |= E2F_OPT_CHECKBLOCKS;
+			break;
+		case 'K':
+			ctx->blocks_at_once = atoi(optarg);
 			break;
 		case 'r':
 			/* What we do by default, anyway! */
