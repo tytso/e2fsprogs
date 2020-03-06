@@ -447,6 +447,10 @@ struct e2fsck_struct {
 
 	/* Undo file */
 	char *undo_file;
+#ifdef HAVE_PTHREAD
+	/* serialize fix operation for multiple threads */
+	pthread_mutex_t		 fs_fix_mutex;
+#endif
 };
 
 #ifdef HAVE_PTHREAD
@@ -744,6 +748,8 @@ extern errcode_t e2fsck_allocate_subcluster_bitmap(ext2_filsys fs,
 						   const char *profile_name,
 						   ext2fs_block_bitmap *ret);
 unsigned long long get_memory_size(void);
+extern void e2fsck_pass1_fix_lock(e2fsck_t ctx);
+extern void e2fsck_pass1_fix_unlock(e2fsck_t ctx);
 
 /* unix.c */
 extern void e2fsck_clear_progbar(e2fsck_t ctx);

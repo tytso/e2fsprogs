@@ -380,8 +380,10 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 		pctx->num = entry->e_value_inum;
 		if (fix_problem(ctx, PR_1_ATTR_SET_EA_INODE_FL, pctx)) {
 			inode.i_flags |= EXT4_EA_INODE_FL;
+			e2fsck_pass1_fix_lock(ctx);
 			ext2fs_write_inode(ctx->fs, entry->e_value_inum,
 					   &inode);
+			e2fsck_pass1_fix_unlock(ctx);
 		} else {
 			return PR_1_ATTR_NO_EA_INODE_FL;
 		}
@@ -872,8 +874,11 @@ static errcode_t recheck_bad_inode_checksum(ext2_filsys fs, ext2_ino_t ino,
 	if (!fix_problem(ctx, PR_1_INODE_ONLY_CSUM_INVALID, pctx))
 		return 0;
 
+
+	e2fsck_pass1_fix_lock(ctx);
 	retval = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
 					 sizeof(inode));
+	e2fsck_pass1_fix_unlock(ctx);
 	return retval;
 }
 
@@ -883,15 +888,19 @@ static void reserve_block_for_root_repair(e2fsck_t ctx)
 	errcode_t	err;
 	ext2_filsys	fs = ctx->fs;
 
+	e2fsck_pass1_fix_lock(ctx);
 	ctx->root_repair_block = 0;
 	if (ext2fs_test_inode_bitmap2(ctx->inode_used_map, EXT2_ROOT_INO))
-		return;
+		goto out;
 
 	err = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (err)
-		return;
+		goto out;
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
 	ctx->root_repair_block = blk;
+out:
+	e2fsck_pass1_fix_unlock(ctx);
+	return;
 }
 
 static void reserve_block_for_lnf_repair(e2fsck_t ctx)
@@ -902,15 +911,19 @@ static void reserve_block_for_lnf_repair(e2fsck_t ctx)
 	static const char name[] = "lost+found";
 	ext2_ino_t	ino;
 
+	e2fsck_pass1_fix_lock(ctx);
 	ctx->lnf_repair_block = 0;
 	if (!ext2fs_lookup(fs, EXT2_ROOT_INO, name, sizeof(name)-1, 0, &ino))
-		return;
+		goto out;
 
 	err = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (err)
-		return;
+		goto out;
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
 	ctx->lnf_repair_block = blk;
+out:
+	e2fsck_pass1_fix_unlock(ctx);
+	return;
 }
 
 static errcode_t get_inline_data_ea_size(ext2_filsys fs, ext2_ino_t ino,
@@ -1531,8 +1544,10 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			pctx.errcode = get_inline_data_ea_size(fs, ino, &size);
 			if (!pctx.errcode &&
 			    fix_problem(ctx, PR_1_INLINE_DATA_FEATURE, &pctx)) {
+				e2fsck_pass1_fix_lock(ctx);
 				ext2fs_set_feature_inline_data(sb);
 				ext2fs_mark_super_dirty(fs);
+				e2fsck_pass1_fix_unlock(ctx);
 				inlinedata_fs = 1;
 			} else if (fix_problem(ctx, PR_1_INLINE_DATA_SET, &pctx)) {
 				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
@@ -1620,9 +1635,11 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			if ((ext2fs_extent_header_verify(inode->i_block,
 						 sizeof(inode->i_block)) == 0) &&
 			    fix_problem(ctx, PR_1_EXTENT_FEATURE, &pctx)) {
+				e2fsck_pass1_fix_lock(ctx);
 				ext2fs_set_feature_extents(sb);
 				ext2fs_mark_super_dirty(fs);
 				extent_fs = 1;
+				e2fsck_pass1_fix_unlock(ctx);
 			} else if (fix_problem(ctx, PR_1_EXTENTS_SET, &pctx)) {
 			clear_inode:
 				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
@@ -2031,8 +2048,11 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 		ctx->ea_block_quota_inodes = 0;
 	}
 
-	if (ctx->invalid_bitmaps)
+	if (ctx->invalid_bitmaps) {
+		e2fsck_pass1_fix_lock(ctx);
 		handle_fs_bad_blocks(ctx);
+		e2fsck_pass1_fix_unlock(ctx);
+	}
 
 	/* We don't need the block_ea_map any more */
 	if (ctx->block_ea_map) {
@@ -2045,7 +2065,9 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 
 	if (ctx->flags & E2F_FLAG_RESIZE_INODE) {
 		clear_problem_context(&pctx);
+		e2fsck_pass1_fix_lock(ctx);
 		pctx.errcode = ext2fs_create_resize_inode(fs);
+		e2fsck_pass1_fix_unlock(ctx);
 		if (pctx.errcode) {
 			if (!fix_problem(ctx, PR_1_RESIZE_INODE_CREATE,
 					 &pctx)) {
@@ -2874,6 +2896,7 @@ static void e2fsck_pass1_multithread(e2fsck_t global_ctx)
 	int				 num_threads = 1;
 	errcode_t			 retval;
 
+	pthread_mutex_init(&global_ctx->fs_fix_mutex, NULL);
 	retval = e2fsck_pass1_threads_start(&infos, num_threads, global_ctx);
 	if (retval) {
 		com_err(global_ctx->program_name, retval,
@@ -3172,6 +3195,18 @@ static _INLINE_ void mark_blocks_used(e2fsck_t ctx, blk64_t block,
 	}
 }
 
+static errcode_t _INLINE_ e2fsck_write_ext_attr3(e2fsck_t ctx, blk64_t block,
+						 void *inbuf, ext2_ino_t inum)
+{
+	errcode_t retval;
+	ext2_filsys fs = ctx->fs;
+
+	e2fsck_pass1_fix_lock(ctx);
+	retval = ext2fs_write_ext_attr3(fs, block, inbuf, inum);
+	e2fsck_pass1_fix_unlock(ctx);
+
+	return retval;
+}
 /*
  * Adjust the extended attribute block's reference counts at the end
  * of pass 1, either by subtracting out references for EA blocks that
@@ -3208,7 +3243,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 		pctx.num = should_be;
 		if (fix_problem(ctx, PR_1_EXTATTR_REFCOUNT, &pctx)) {
 			header->h_refcount = should_be;
-			pctx.errcode = ext2fs_write_ext_attr3(fs, blk,
+			pctx.errcode = e2fsck_write_ext_attr3(ctx, blk,
 							     block_buf,
 							     pctx.ino);
 			if (pctx.errcode) {
@@ -3439,7 +3474,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	 */
 	if (failed_csum &&
 	    fix_problem(ctx, PR_1_EA_BLOCK_ONLY_CSUM_INVALID, pctx)) {
-		pctx->errcode = ext2fs_write_ext_attr3(fs, blk, block_buf,
+		pctx->errcode = e2fsck_write_ext_attr3(ctx, blk, block_buf,
 						       pctx->ino);
 		if (pctx->errcode)
 			return 0;
@@ -3717,10 +3752,12 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		if (try_repairs && is_dir && problem == 0 &&
 		    (extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
 		    fix_problem(ctx, PR_1_UNINIT_DBLOCK, pctx)) {
+			e2fsck_pass1_fix_lock(ctx);
 			extent.e_flags &= ~EXT2_EXTENT_FLAGS_UNINIT;
 			pb->inode_modified = 1;
 			pctx->errcode = ext2fs_extent_replace(ehandle, 0,
 							      &extent);
+			e2fsck_pass1_fix_unlock(ctx);
 			if (pctx->errcode)
 				return;
 			failed_csum = 0;
@@ -3762,15 +3799,19 @@ report_problem:
 					}
 					continue;
 				}
+				e2fsck_pass1_fix_lock(ctx);
 				e2fsck_read_bitmaps(ctx);
 				pb->inode_modified = 1;
 				pctx->errcode =
 					ext2fs_extent_delete(ehandle, 0);
+				e2fsck_pass1_fix_unlock(ctx);
 				if (pctx->errcode) {
 					pctx->str = "ext2fs_extent_delete";
 					return;
 				}
+				e2fsck_pass1_fix_lock(ctx);
 				pctx->errcode = ext2fs_extent_fix_parents(ehandle);
+				e2fsck_pass1_fix_unlock(ctx);
 				if (pctx->errcode &&
 				    pctx->errcode != EXT2_ET_NO_CURRENT_NODE) {
 					pctx->str = "ext2fs_extent_fix_parents";
@@ -3834,9 +3875,11 @@ report_problem:
 				pctx->num = e_info.curr_level - 1;
 				problem = PR_1_EXTENT_INDEX_START_INVALID;
 				if (fix_problem(ctx, problem, pctx)) {
+					e2fsck_pass1_fix_lock(ctx);
 					pb->inode_modified = 1;
 					pctx->errcode =
 						ext2fs_extent_fix_parents(ehandle);
+					e2fsck_pass1_fix_unlock(ctx);
 					if (pctx->errcode) {
 						pctx->str = "ext2fs_extent_fix_parents";
 						return;
@@ -3900,15 +3943,19 @@ report_problem:
 			pctx->blk = extent.e_lblk;
 			pctx->blk2 = new_lblk;
 			if (fix_problem(ctx, PR_1_COLLAPSE_DBLOCK, pctx)) {
+				e2fsck_pass1_fix_lock(ctx);
 				extent.e_lblk = new_lblk;
 				pb->inode_modified = 1;
 				pctx->errcode = ext2fs_extent_replace(ehandle,
 								0, &extent);
+				e2fsck_pass1_fix_unlock(ctx);
 				if (pctx->errcode) {
 					pctx->errcode = 0;
 					goto alloc_later;
 				}
+				e2fsck_pass1_fix_lock(ctx);
 				pctx->errcode = ext2fs_extent_fix_parents(ehandle);
+				e2fsck_pass1_fix_unlock(ctx);
 				if (pctx->errcode)
 					goto failed_add_dir_block;
 				pctx->errcode = ext2fs_extent_goto(ehandle,
@@ -4004,8 +4051,10 @@ alloc_later:
 	/* Failed csum but passes checks?  Ask to fix checksum. */
 	if (failed_csum &&
 	    fix_problem(ctx, PR_1_EXTENT_ONLY_CSUM_INVALID, pctx)) {
+		e2fsck_pass1_fix_lock(ctx);
 		pb->inode_modified = 1;
 		pctx->errcode = ext2fs_extent_replace(ehandle, 0, &extent);
+		e2fsck_pass1_fix_unlock(ctx);
 		if (pctx->errcode)
 			return;
 	}

@@ -42,6 +42,10 @@
 #include <sys/sysctl.h>
 #endif
 
+#ifdef HAVE_PTHREAD
+#include <pthread.h>
+#endif
+
 #include "e2fsck.h"
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
@@ -565,13 +569,45 @@ void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
 	}
 }
 
+#ifdef HAVE_PTHREAD
+void e2fsck_pass1_fix_lock(e2fsck_t ctx)
+{
+	e2fsck_t global_ctx = ctx->global_ctx;
+	if (!global_ctx)
+		global_ctx = ctx;
+
+	pthread_mutex_lock(&global_ctx->fs_fix_mutex);
+}
+
+void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
+{
+	e2fsck_t global_ctx = ctx->global_ctx;
+	if (!global_ctx)
+		global_ctx = ctx;
+
+	pthread_mutex_unlock(&global_ctx->fs_fix_mutex);
+}
+#else
+void e2fsck_pass1_fix_lock(e2fsck_t ctx)
+{
+
+}
+
+void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
+{
+
+}
+#endif
+
 void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
 			     struct ext2_inode * inode, int bufsize,
 			     const char *proc)
 {
 	errcode_t retval;
 
+	e2fsck_pass1_fix_lock(ctx);
 	retval = ext2fs_write_inode_full(ctx->fs, ino, inode, bufsize);
+	e2fsck_pass1_fix_unlock(ctx);
 	if (retval) {
 		com_err("ext2fs_write_inode", retval,
 			_("while writing inode %lu in %s"), ino, proc);
@@ -584,7 +620,9 @@ void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 {
 	errcode_t retval;
 
+	e2fsck_pass1_fix_lock(ctx);
 	retval = ext2fs_write_inode(ctx->fs, ino, inode);
+	e2fsck_pass1_fix_unlock(ctx);
 	if (retval) {
 		com_err("ext2fs_write_inode", retval,
 			_("while writing inode %lu in %s"), ino, proc);
