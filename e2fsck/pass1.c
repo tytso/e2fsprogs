@@ -2388,6 +2388,12 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 		log_out(thread_context, _("Scan group range [%d, %d)\n"),
 			tinfo->et_group_start, tinfo->et_group_end);
 	thread_context->fs = thread_fs;
+	retval = quota_init_context(&thread_context->qctx, thread_fs, 0);
+	if (retval) {
+		com_err(global_ctx->program_name, retval,
+			"while init quota context");
+		goto out_fs;
+	}
 	*thread_ctx = thread_context;
 	return 0;
 out_fs:
@@ -2481,7 +2487,6 @@ static errcode_t e2fsck_pass1_merge_dirs_to_hash(e2fsck_t global_ctx,
 	return retval;
 }
 
-
 static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 {
 	errcode_t	 retval;
@@ -2525,6 +2530,7 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	ext2_ino_t dx_dir_info_size = global_ctx->dx_dir_info_size;
 	ext2_ino_t dx_dir_info_count = global_ctx->dx_dir_info_count;
 	ext2_u32_list dirs_to_hash = global_ctx->dirs_to_hash;
+	quota_ctx_t qctx = global_ctx->qctx;
 
 #ifdef HAVE_SETJMP_H
 	jmp_buf		 old_jmp;
@@ -2599,6 +2605,12 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 			_("while merging dirs to hash\n"));
 		return retval;
 	}
+
+	global_ctx->qctx = qctx;
+	retval = quota_merge_and_update_usage(global_ctx->qctx,
+					      thread_ctx->qctx);
+	if (retval)
+		return retval;
 
 	retval = e2fsck_pass1_merge_bitmap(global_fs,
 				&thread_ctx->inode_used_map,
@@ -2688,6 +2700,7 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 	ext2fs_free_icount(thread_ctx->inode_link_info);
 	if (thread_ctx->dirs_to_hash)
 		ext2fs_badblocks_list_free(thread_ctx->dirs_to_hash);
+	quota_release_context(&thread_ctx->qctx);
 	ext2fs_free_mem(&thread_ctx);
 
 	return retval;

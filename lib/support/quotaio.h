@@ -40,6 +40,7 @@
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "dqblk_v2.h"
+#include "support/dict.h"
 
 typedef int64_t qsize_t;	/* Type in which we store size limitations */
 
@@ -233,6 +234,8 @@ int quota_file_exists(ext2_filsys fs, enum quota_type qtype);
 void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, enum quota_type qtype);
 errcode_t quota_compare_and_update(quota_ctx_t qctx, enum quota_type qtype,
 				   int *usage_inconsistent);
+errcode_t quota_merge_and_update_usage(quota_ctx_t dest_qctx,
+					quota_ctx_t src_qctx);
 int parse_quota_opts(const char *opts, int (*func)(char *));
 
 /* parse_qtype.c */
