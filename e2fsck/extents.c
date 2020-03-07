@@ -322,7 +322,7 @@ err:
 /* Rebuild the extents immediately */
 static errcode_t e2fsck_rebuild_extents(e2fsck_t ctx, ext2_ino_t ino)
 {
-	struct extent_list	list;
+	struct extent_list list = { 0 };
 	errcode_t err;
 
 	if (!ext2fs_has_feature_extents(ctx->fs->super) ||
@@ -331,9 +331,8 @@ static errcode_t e2fsck_rebuild_extents(e2fsck_t ctx, ext2_ino_t ino)
 		return 0;
 
 	e2fsck_read_bitmaps(ctx);
-	memset(&list, 0, sizeof(list));
-	err = ext2fs_get_mem(sizeof(struct ext2fs_extent) * NUM_EXTENTS,
-				&list.extents);
+	err = ext2fs_get_array(NUM_EXTENTS, sizeof(struct ext2fs_extent),
+			       &list.extents);
 	if (err)
 		return err;
 	list.size = NUM_EXTENTS;
@@ -349,7 +348,7 @@ static void rebuild_extents(e2fsck_t ctx, const char *pass_name, int pr_header)
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 #endif
-	struct extent_list	list;
+	struct extent_list	list = { 0 };
 	int			first = 1;
 	ext2_ino_t		ino = 0;
 	errcode_t		retval;
@@ -369,10 +368,11 @@ static void rebuild_extents(e2fsck_t ctx, const char *pass_name, int pr_header)
 	clear_problem_context(&pctx);
 	e2fsck_read_bitmaps(ctx);
 
-	memset(&list, 0, sizeof(list));
-	retval = ext2fs_get_mem(sizeof(struct ext2fs_extent) * NUM_EXTENTS,
-				&list.extents);
 	list.size = NUM_EXTENTS;
+	retval = ext2fs_get_array(sizeof(struct ext2fs_extent),
+				  list.size, &list.extents);
+	if (retval)
+		return;
 	while (1) {
 		retval = ext2fs_find_first_set_inode_bitmap2(
 				ctx->inodes_to_rebuild, ino + 1,

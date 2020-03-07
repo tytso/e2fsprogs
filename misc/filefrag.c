@@ -53,7 +53,7 @@ extern int optind;
 #include <ext2fs/fiemap.h>
 
 int verbose = 0;
-int blocksize;		/* Use specified blocksize (default 1kB) */
+unsigned int blocksize;	/* Use specified blocksize (default 1kB) */
 int sync_file = 0;	/* fsync file before getting the mapping */
 int precache_file = 0;	/* precache the file before getting the mapping */
 int xattr_map = 0;	/* get xattr mapping */
@@ -75,7 +75,7 @@ const char *hex_fmt = "%4d: %*llx..%*llx: %*llx..%*llx: %6llx: %s\n";
 #define	EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
 #define	EXT3_IOC_GETFLAGS		_IOR('f', 1, long)
 
-static int int_log2(int arg)
+static int ulong_log2(unsigned long arg)
 {
 	int     l = 0;
 
@@ -87,7 +87,7 @@ static int int_log2(int arg)
 	return l;
 }
 
-static int int_log10(unsigned long long arg)
+static int ulong_log10(unsigned long long arg)
 {
 	int     l = 0;
 
@@ -472,20 +472,20 @@ static int frag_report(const char *filename)
 	}
 	last_device = st.st_dev;
 
-	width = int_log10(fsinfo.f_blocks);
+	width = ulong_log10(fsinfo.f_blocks);
 	if (width > physical_width)
 		physical_width = width;
 
 	numblocks = (st.st_size + blksize - 1) / blksize;
 	if (blocksize != 0)
-		blk_shift = int_log2(blocksize);
+		blk_shift = ulong_log2(blocksize);
 	else
-		blk_shift = int_log2(blksize);
+		blk_shift = ulong_log2(blksize);
 
 	if (use_extent_cache)
 		width = 10;
 	else
-		width = int_log10(numblocks);
+		width = ulong_log10(numblocks);
 	if (width > logical_width)
 		logical_width = width;
 	if (verbose) {
@@ -558,7 +558,7 @@ out_close:
 
 static void usage(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [-b{blocksize}] [-BeEksvxX] file ...\n",
+	fprintf(stderr, "Usage: %s [-b{blocksize}[KMG]] [-BeEksvxX] file ...\n",
 		progname);
 	exit(1);
 }
@@ -576,7 +576,9 @@ int main(int argc, char**argv)
 		case 'b':
 			if (optarg) {
 				char *end;
-				blocksize = strtoul(optarg, &end, 0);
+				unsigned long val;
+
+				val = strtoul(optarg, &end, 0);
 				if (end) {
 #if __GNUC_PREREQ (7, 0)
 #pragma GCC diagnostic push
@@ -585,15 +587,15 @@ int main(int argc, char**argv)
 					switch (end[0]) {
 					case 'g':
 					case 'G':
-						blocksize *= 1024;
+						val *= 1024;
 						/* fall through */
 					case 'm':
 					case 'M':
-						blocksize *= 1024;
+						val *= 1024;
 						/* fall through */
 					case 'k':
 					case 'K':
-						blocksize *= 1024;
+						val *= 1024;
 						break;
 					default:
 						break;
@@ -602,6 +604,16 @@ int main(int argc, char**argv)
 #pragma GCC diagnostic pop
 #endif
 				}
+				/* Specifying too large a blocksize will just
+				 * shift all extents down to zero length. Even
+				 * 1GB is questionable, but caveat emptor. */
+				if (val > 1024 * 1024 * 1024) {
+					fprintf(stderr,
+						"%s: blocksize %lu over 1GB\n",
+						argv[0], val);
+					usage(argv[0]);
+				}
+				blocksize = val;
 			} else { /* Allow -b without argument for compat. Remove
 				  * this eventually so "-b {blocksize}" works */
 				fprintf(stderr, "%s: -b needs a blocksize "

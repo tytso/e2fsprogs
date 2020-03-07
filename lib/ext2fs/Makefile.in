@@ -377,7 +377,7 @@ extent_cmds.c extent_cmds.h: $(top_srcdir)/debugfs/extent_cmds.ct
 
 debugfs.o: $(top_srcdir)/debugfs/debugfs.c
 	$(E) "	CC $<"
-	$(Q) $(CC) $(DEBUGFS_CFLAGS) -c $< -o $@
+	$(Q) $(CC) $(DEBUGFS_CFLAGS) -DSKIP_GLOBDEFS -c $< -o $@
 
 extent_inode.o: $(top_srcdir)/debugfs/extent_inode.c
 	$(E) "	CC $<"

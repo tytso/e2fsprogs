@@ -369,7 +369,7 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 {
 	struct ext2_inode	inode;
 	errcode_t		retval;
-	ino_t			ino = fs->super->s_journal_inum;
+	ext2_ino_t		ino = fs->super->s_journal_inum;
 
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {

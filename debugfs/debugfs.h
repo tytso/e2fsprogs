@@ -123,6 +123,8 @@ extern void do_set_block_group_descriptor(int argc, char **, int sci_idx, void *
 extern void do_dump_unused(int argc, char **argv, int sci_idx, void *infop);
 
 /* debugfs.c */
+extern ss_request_table *extra_cmds;
+extern const char *debug_prog_name;
 extern void internal_dump_inode(FILE *, const char *, ext2_ino_t,
 				struct ext2_inode *, int);
 
