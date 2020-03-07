@@ -570,22 +570,33 @@ void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
 }
 
 #ifdef HAVE_PTHREAD
+#define e2fsck_get_lock_context(ctx)		\
+	e2fsck_t global_ctx = ctx->global_ctx;	\
+	if (!global_ctx)			\
+		global_ctx = ctx;		\
+
 void e2fsck_pass1_fix_lock(e2fsck_t ctx)
 {
-	e2fsck_t global_ctx = ctx->global_ctx;
-	if (!global_ctx)
-		global_ctx = ctx;
-
+	e2fsck_get_lock_context(ctx);
 	pthread_mutex_lock(&global_ctx->fs_fix_mutex);
 }
 
 void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
 {
-	e2fsck_t global_ctx = ctx->global_ctx;
-	if (!global_ctx)
-		global_ctx = ctx;
-
+	e2fsck_get_lock_context(ctx);
 	pthread_mutex_unlock(&global_ctx->fs_fix_mutex);
+}
+
+void e2fsck_pass1_block_map_lock(e2fsck_t ctx)
+{
+	e2fsck_get_lock_context(ctx);
+	pthread_mutex_lock(&global_ctx->fs_block_map_mutex);
+}
+
+void e2fsck_pass1_block_map_unlock(e2fsck_t ctx)
+{
+	e2fsck_get_lock_context(ctx);
+	pthread_mutex_unlock(&global_ctx->fs_block_map_mutex);
 }
 #else
 void e2fsck_pass1_fix_lock(e2fsck_t ctx)
@@ -596,6 +607,15 @@ void e2fsck_pass1_fix_lock(e2fsck_t ctx)
 void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
 {
 
+}
+
+void e2fsck_pass1_block_map_lock(e2fsck_t ctx)
+{
+
+}
+
+void e2fsck_pass1_block_map_unlock(e2fsck_t ctx)
+{
 }
 #endif
 
