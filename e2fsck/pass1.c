@@ -1194,6 +1194,97 @@ static int e2fsck_should_abort(e2fsck_t ctx)
 	return 0;
 }
 
+static void init_ext2_max_sizes()
+{
+	int	i;
+	__u64	max_sizes;
+
+	/*
+	 * Init ext2_max_sizes which will be immutable and shared between
+	 * threads
+	 */
+#define EXT2_BPP(bits) (1ULL << ((bits) - 2))
+
+	for (i = EXT2_MIN_BLOCK_LOG_SIZE; i <= EXT2_MAX_BLOCK_LOG_SIZE; i++) {
+		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(i);
+		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i);
+		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i) * EXT2_BPP(i);
+		max_sizes = (max_sizes * (1UL << i));
+		ext2_max_sizes[i - EXT2_MIN_BLOCK_LOG_SIZE] = max_sizes;
+	}
+#undef EXT2_BPP
+}
+
+#ifdef HAVE_PTHREAD
+/* TODO: tdb needs to be handled properly for multiple threads*/
+static int multiple_threads_supported(e2fsck_t ctx)
+{
+#ifdef	CONFIG_TDB
+	unsigned int		threshold;
+	ext2_ino_t		num_dirs;
+	errcode_t		retval;
+	char			*tdb_dir;
+	int			enable;
+
+	profile_get_string(ctx->profile, "scratch_files", "directory", 0, 0,
+			   &tdb_dir);
+	profile_get_uint(ctx->profile, "scratch_files",
+			 "numdirs_threshold", 0, 0, &threshold);
+	profile_get_boolean(ctx->profile, "scratch_files",
+			    "icount", 0, 1, &enable);
+
+	retval = ext2fs_get_num_dirs(ctx->fs, &num_dirs);
+	if (retval)
+		num_dirs = 1024;	/* Guess */
+
+	/* tdb is unsupported now */
+	if (enable && tdb_dir && !access(tdb_dir, W_OK) &&
+	    (!threshold || num_dirs > threshold))
+		return 0;
+#endif
+	return 1;
+}
+
+/**
+ * Even though we could specify number of threads,
+ * but it might be more than the whole filesystem
+ * block groups, correct it here.
+ */
+static void e2fsck_pass1_set_thread_num(e2fsck_t ctx)
+{
+	unsigned flexbg_size = 1;
+	ext2_filsys fs = ctx->fs;
+	int num_threads = ctx->fs_num_threads;
+	int max_threads;
+
+	if (num_threads < 1) {
+		num_threads = 1;
+		goto out;
+	}
+
+	if (!multiple_threads_supported(ctx)) {
+		num_threads = 1;
+		fprintf(stderr, "Fall through single thread for pass1 "
+			"because tdb could not handle properly\n");
+		goto out;
+	}
+
+	if (ext2fs_has_feature_flex_bg(fs->super))
+		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+	max_threads = fs->group_desc_count / flexbg_size;
+	if (max_threads == 0)
+		max_threads = 1;
+
+	if (num_threads > max_threads) {
+		fprintf(stderr, "Use max possible thread num: %d instead\n",
+				max_threads);
+		num_threads = max_threads;
+	}
+out:
+	ctx->fs_num_threads = num_threads;
+}
+#endif
+
 /*
  * We need call mark_table_blocks() before multiple
  * thread start, since all known system blocks should be
@@ -1203,6 +1294,11 @@ static errcode_t e2fsck_pass1_prepare(e2fsck_t ctx)
 {
 	struct problem_context pctx;
 	ext2_filsys fs = ctx->fs;
+
+	init_ext2_max_sizes();
+#ifdef	HAVE_PTHREAD
+	e2fsck_pass1_set_thread_num(ctx);
+#endif
 
 	clear_problem_context(&pctx);
 	if (!(ctx->options & E2F_OPT_PREEN))
@@ -2207,27 +2303,6 @@ endit:
 		ctx->invalid_bitmaps++;
 }
 
-static void init_ext2_max_sizes()
-{
-	int	i;
-	__u64	max_sizes;
-
-	/*
-	 * Init ext2_max_sizes which will be immutable and shared between
-	 * threads
-	 */
-#define EXT2_BPP(bits) (1ULL << ((bits) - 2))
-
-	for (i = EXT2_MIN_BLOCK_LOG_SIZE; i <= EXT2_MAX_BLOCK_LOG_SIZE; i++) {
-		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(i);
-		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i);
-		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i) * EXT2_BPP(i);
-		max_sizes = (max_sizes * (1UL << i));
-		ext2_max_sizes[i - EXT2_MIN_BLOCK_LOG_SIZE] = max_sizes;
-	}
-#undef EXT2_BPP
-}
-
 #ifdef HAVE_PTHREAD
 static errcode_t e2fsck_pass1_copy_bitmap(ext2_filsys fs, ext2fs_generic_bitmap *src,
 					  ext2fs_generic_bitmap *dest)
@@ -3220,9 +3295,9 @@ static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
 
 static void e2fsck_pass1_multithread(e2fsck_t global_ctx)
 {
-	struct e2fsck_thread_info	*infos = NULL;
-	int				 num_threads = 1;
-	errcode_t			 retval;
+	struct e2fsck_thread_info *infos = NULL;
+	int num_threads = global_ctx->fs_num_threads;
+	errcode_t retval;
 
 	retval = e2fsck_pass1_threads_start(&infos, num_threads, global_ctx);
 	if (retval) {
@@ -3244,54 +3319,22 @@ out_abort:
 }
 #endif
 
-/* TODO: tdb needs to be handled properly for multiple threads*/
-static int multiple_threads_supported(e2fsck_t ctx)
-{
-#ifdef	CONFIG_TDB
-	unsigned int		threshold;
-	ext2_ino_t		num_dirs;
-	errcode_t		retval;
-	char			*tdb_dir;
-	int			enable;
-
-	profile_get_string(ctx->profile, "scratch_files", "directory", 0, 0,
-			   &tdb_dir);
-	profile_get_uint(ctx->profile, "scratch_files",
-			 "numdirs_threshold", 0, 0, &threshold);
-	profile_get_boolean(ctx->profile, "scratch_files",
-			    "icount", 0, 1, &enable);
-
-	retval = ext2fs_get_num_dirs(ctx->fs, &num_dirs);
-	if (retval)
-		num_dirs = 1024;	/* Guess */
-
-	/* tdb is unsupported now */
-	if (enable && tdb_dir && !access(tdb_dir, W_OK) &&
-	    (!threshold || num_dirs > threshold))
-		return 0;
- #endif
-	return 1;
-}
-
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	errcode_t retval;
-	int multiple = 0;
+	int need_single = 1;
 
-	init_ext2_max_sizes();
 	retval = e2fsck_pass1_prepare(ctx);
 	if (retval)
 		return;
 #ifdef HAVE_PTHREAD
-	if (multiple_threads_supported(ctx)) {
-		multiple = 1;
+	if (ctx->fs_num_threads > 1 ||
+	    ctx->options & E2F_OPT_MULTITHREAD) {
+		need_single = 0;
 		e2fsck_pass1_multithread(ctx);
-	} else {
-		fprintf(stderr, "Fall through single thread for pass1 "
-				"because tdb could not handle properly\n");
 	}
 #endif
-	if (!multiple)
+	if (need_single)
 		e2fsck_pass1_run(ctx);
 	e2fsck_pass1_post(ctx);
 }

@@ -1,4 +1,4 @@
-FSCK_OPT="-fy -m -C 1"
+FSCK_OPT="-fy -m1 -C 1"
 SECOND_FSCK_OPT=-yf
 
 . $cmd_dir/run_e2fsck

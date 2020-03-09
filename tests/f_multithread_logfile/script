@@ -1,5 +1,5 @@
 LOG_FNAME="f_multithread_logfile_xxx"
-FSCK_OPT="-fy -m -y -E log_filename=$LOG_FNAME"
+FSCK_OPT="-fy -m1 -y -E log_filename=$LOG_FNAME"
 SKIP_VERIFY="true"
 ONE_PASS_ONLY="true"
 SKIP_CLEANUP="true"
