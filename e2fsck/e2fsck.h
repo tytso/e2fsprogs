@@ -202,6 +202,7 @@ struct resource_track {
 #define E2F_FLAG_TIME_INSANE	0x2000 /* Time is insane */
 #define E2F_FLAG_PROBLEMS_FIXED	0x4000 /* At least one problem was fixed */
 #define E2F_FLAG_ALLOC_OK	0x8000 /* Can we allocate blocks? */
+#define E2F_FLAG_DUP_BLOCK	0x20000 /* dup block found during pass1 */
 
 #define E2F_RESET_FLAGS (E2F_FLAG_TIME_INSANE | E2F_FLAG_PROBLEMS_FIXED)
 
@@ -452,7 +453,7 @@ struct e2fsck_struct {
 	/* serialize fix operation for multiple threads */
 	pthread_mutex_t		 fs_fix_mutex;
 	/* protect block_found_map, block_dup_map */
-	pthread_mutex_t		 fs_block_map_mutex;
+	pthread_rwlock_t	 fs_block_map_rwlock;
 #endif
 };
 
@@ -753,8 +754,10 @@ extern errcode_t e2fsck_allocate_subcluster_bitmap(ext2_filsys fs,
 unsigned long long get_memory_size(void);
 extern void e2fsck_pass1_fix_lock(e2fsck_t ctx);
 extern void e2fsck_pass1_fix_unlock(e2fsck_t ctx);
-extern void e2fsck_pass1_block_map_lock(e2fsck_t ctx);
-extern void e2fsck_pass1_block_map_unlock(e2fsck_t ctx);
+extern void e2fsck_pass1_block_map_w_lock(e2fsck_t ctx);
+extern void e2fsck_pass1_block_map_w_unlock(e2fsck_t ctx);
+extern void e2fsck_pass1_block_map_r_lock(e2fsck_t ctx);
+extern void e2fsck_pass1_block_map_r_unlock(e2fsck_t ctx);
 
 /* unix.c */
 extern void e2fsck_clear_progbar(e2fsck_t ctx);

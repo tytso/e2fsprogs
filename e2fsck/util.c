@@ -587,17 +587,29 @@ void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
 	pthread_mutex_unlock(&global_ctx->fs_fix_mutex);
 }
 
-void e2fsck_pass1_block_map_lock(e2fsck_t ctx)
+void e2fsck_pass1_block_map_w_lock(e2fsck_t ctx)
 {
 	e2fsck_get_lock_context(ctx);
-	pthread_mutex_lock(&global_ctx->fs_block_map_mutex);
+	pthread_rwlock_wrlock(&global_ctx->fs_block_map_rwlock);
 }
 
-void e2fsck_pass1_block_map_unlock(e2fsck_t ctx)
+void e2fsck_pass1_block_map_w_unlock(e2fsck_t ctx)
 {
 	e2fsck_get_lock_context(ctx);
-	pthread_mutex_unlock(&global_ctx->fs_block_map_mutex);
+	pthread_rwlock_unlock(&global_ctx->fs_block_map_rwlock);
 }
+
+void e2fsck_pass1_block_map_r_lock(e2fsck_t ctx)
+{
+	e2fsck_get_lock_context(ctx);
+	pthread_rwlock_rdlock(&global_ctx->fs_block_map_rwlock);
+}
+
+void e2fsck_pass1_block_map_r_unlock(e2fsck_t ctx)
+{
+	e2fsck_get_lock_context(ctx);
+	pthread_rwlock_unlock(&global_ctx->fs_block_map_rwlock);
+ }
 #else
 void e2fsck_pass1_fix_lock(e2fsck_t ctx)
 {
@@ -608,14 +620,24 @@ void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
 {
 
 }
-
-void e2fsck_pass1_block_map_lock(e2fsck_t ctx)
+void e2fsck_pass1_block_map_w_lock(e2fsck_t ctx)
 {
 
 }
 
-void e2fsck_pass1_block_map_unlock(e2fsck_t ctx)
+void e2fsck_pass1_block_map_w_unlock(e2fsck_t ctx)
 {
+
+}
+
+void e2fsck_pass1_block_map_r_lock(e2fsck_t ctx)
+{
+
+}
+
+void e2fsck_pass1_block_map_r_unlock(e2fsck_t ctx)
+{
+
 }
 #endif
 
