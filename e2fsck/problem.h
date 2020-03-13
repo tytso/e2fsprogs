@@ -701,6 +701,15 @@ struct problem_context {
 /* Casefold flag set, but file system is missing the casefold feature */
 #define PR_1_CASEFOLD_FEATURE			0x010089
 
+/* Error allocating memory for casefolded directory list */
+#define PR_1_ALLOCATE_CASEFOLDED_DIRLIST	0x01008C
+
+/* Htree directory should use SipHash but does not */
+#define PR_1_HTREE_NEEDS_SIPHASH		0x01008D
+
+/* Htree directory uses SipHash but should not */
+#define PR_1_HTREE_CANNOT_SIPHASH		0x01008E
+
 
 /*
  * Pass 1b errors

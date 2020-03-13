@@ -238,6 +238,7 @@ struct ext2_dx_root_info {
 #define EXT2_HASH_LEGACY_UNSIGNED	3 /* reserved for userspace lib */
 #define EXT2_HASH_HALF_MD4_UNSIGNED	4 /* reserved for userspace lib */
 #define EXT2_HASH_TEA_UNSIGNED		5 /* reserved for userspace lib */
+#define EXT2_HASH_SIPHASH		6
 
 #define EXT2_HASH_FLAG_INCOMPAT	0x1
 
@@ -983,6 +984,12 @@ EXT4_FEATURE_INCOMPAT_FUNCS(casefold,		4, CASEFOLD)
 #define EXT4_DEFM_DISCARD	0x0400
 #define EXT4_DEFM_NODELALLOC	0x0800
 
+static inline int ext4_hash_in_dirent(const struct ext2_inode *inode)
+{
+	return (inode->i_flags & EXT4_ENCRYPT_FL) &&
+		(inode->i_flags & EXT4_CASEFOLD_FL);
+}
+
 /*
  * Structure of a directory entry
  */
@@ -1016,6 +1023,25 @@ struct ext2_dir_entry_2 {
 	__u8	file_type;
 	char	name[EXT2_NAME_LEN];	/* File name */
 };
+
+/*
+ * Hashes for ext4_dir_entry for casefolded and ecrypted directories.
+ * This is located at the first 4 bit aligned location after the name.
+ */
+
+struct ext2_dir_entry_hash {
+	__le32 hash;
+	__le32 minor_hash;
+};
+
+#define EXT2_DIRENT_HASHES(entry) \
+	((struct ext2_dir_entry_hash *) &entry->name[\
+		(ext2fs_dirent_name_len(entry) + \
+			EXT2_DIR_ROUND) & ~EXT2_DIR_ROUND])
+#define EXT2_DIRENT_HASH(entry) \
+		ext2fs_le32_to_cpu(EXT2_DIRENT_HASHES(entry)->hash)
+#define EXT2_DIRENT_MINOR_HASH(entry) \
+		ext2fs_le32_to_cpu(EXT2_DIRENT_HASHES(entry)->minor_hash)
 
 /*
  * This is a bogus directory entry at the end of each leaf block that
@@ -1057,12 +1083,21 @@ struct ext2_dir_entry_tail {
  * NOTE: It must be a multiple of 4
  */
 #define EXT2_DIR_ENTRY_HEADER_LEN	8
+#define EXT2_DIR_ENTRY_HASH_LEN		8
 #define EXT2_DIR_PAD			4
 #define EXT2_DIR_ROUND			(EXT2_DIR_PAD - 1)
-#define EXT2_DIR_REC_LEN(name_len)	(((name_len) + \
-					  EXT2_DIR_ENTRY_HEADER_LEN + \
-					  EXT2_DIR_ROUND) & \
-					 ~EXT2_DIR_ROUND)
+#define EXT2_DIR_REC_LEN(name_len) ext2fs_dir_rec_len(name_len, 0)
+
+static inline unsigned int ext2fs_dir_rec_len(__u8 name_len,
+						int extended)
+{
+	int rec_len = (name_len + EXT2_DIR_ENTRY_HEADER_LEN + EXT2_DIR_ROUND);
+
+	rec_len &= ~EXT2_DIR_ROUND;
+	if (extended)
+		rec_len += EXT2_DIR_ENTRY_HASH_LEN;
+	return rec_len;
+}
 
 /*
  * Constants for ext4's extended time encoding

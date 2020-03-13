@@ -1253,6 +1253,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@d %p has the casefold flag, but the\ncasefold feature is not enabled.  "),
 	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
 
+	/* Htree directory should use SipHash but does not */
+	{ PR_1_HTREE_NEEDS_SIPHASH,
+	  N_("@h %i uses hash version (%N), but should use SipHash (6) \n"),
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK, 0, 0, 0 },
+
+	/* Htree directory uses SipHash but should not */
+	{ PR_1_HTREE_CANNOT_SIPHASH,
+	  N_("@h %i uses SipHash, but should not.  "),
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK, 0, 0, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
