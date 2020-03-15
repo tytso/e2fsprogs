@@ -144,11 +144,11 @@ tst_logfile: $(srcdir)/logfile.c
 	$(Q) $(CC) -o tst_logfile $(srcdir)/logfile.c \
 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM $(SYSLIBS)
 
-tst_region: region.c $(DEPLIBCOM_ERR) $(LIBEXT2FS)
+tst_region: region.c $(LIBEXT2FS) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_region $(srcdir)/region.c \
 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM \
-		$(LIBCOM_ERR) $(LIBEXT2FS) $(SYSLIBS)
+		$(LIBEXT2FS) $(LIBCOM_ERR) $(SYSLIBS)
 
 fullcheck check:: tst_refcount tst_region tst_problem
 	$(TESTENV) ./tst_refcount
