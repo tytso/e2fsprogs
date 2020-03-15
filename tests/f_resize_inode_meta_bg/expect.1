@@ -5,9 +5,6 @@ Resize_inode not enabled, but the resize inode is non-zero.  Clear? yes
 
 Pass 1: Checking inodes, blocks, and sizes
 Pass 2: Checking directory structure
-Directory inode 2, block #0, offset 0: directory has no checksum.
-Fix? yes
-
 First entry '' (inode=348) in directory inode 2 (???) should be '.'
 Fix? yes
 
@@ -18,6 +15,9 @@ Fix? yes
 Setting filetype for entry '..' in ??? (2) to 2.
 Directory inode 2, block #0, offset 860: directory corrupted
 Salvage? yes
+
+Entry '' in ??? (2) has rec_len of 0, should be 12.
+Fix? yes
 
 Directory inode 11, block #0, offset 0: directory corrupted
 Salvage? yes
@@ -41,6 +41,9 @@ Clear? yes
 
 Directory inode 11, block #3, offset 864: directory corrupted
 Salvage? yes
+
+Entry '' in ??? (11) has rec_len of 0, should be 12.
+Fix? yes
 
 Pass 3: Checking directory connectivity
 '..' in / (2) is <The NULL inode> (0), should be / (2).
