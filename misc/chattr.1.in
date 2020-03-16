@@ -168,10 +168,10 @@ although it can be displayed by
 .TP
 .B P
 A directory with the 'P' attribute set will enforce a hierarchical
-structure for project id's.  This means that files and directory created
+structure for project id's.  This means that files and directories created
 in the directory will inherit the project id of the directory, rename
 operations are constrained so when a file or directory is moved into
-another directory, that the project id's much match.  In addition, a
+another directory, that the project ids must match.  In addition, a
 hard link to file can only be created when the project id for the file
 and the destination directory match.
 .TP

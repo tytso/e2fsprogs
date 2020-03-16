@@ -267,13 +267,15 @@ static errcode_t __get_dirent_tail(ext2_filsys fs,
 	top = EXT2_DIRENT_TAIL(dirent, fs->blocksize);
 
 	rec_len = translate(d->rec_len);
-	while (rec_len && !(rec_len & 0x3)) {
+	while ((void *) d < top) {
+		if ((rec_len < 8) || (rec_len & 0x03))
+			return EXT2_ET_DIR_CORRUPTED;
 		d = (struct ext2_dir_entry *)(((char *)d) + rec_len);
-		if ((void *)d >= top)
-			break;
 		rec_len = translate(d->rec_len);
 	}
 
+	if ((void *)d > ((void *)dirent + fs->blocksize))
+			return EXT2_ET_DIR_CORRUPTED;
 	if (d != top)
 		return EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
 
@@ -290,7 +292,8 @@ static errcode_t __get_dirent_tail(ext2_filsys fs,
 
 int ext2fs_dirent_has_tail(ext2_filsys fs, struct ext2_dir_entry *dirent)
 {
-	return __get_dirent_tail(fs, dirent, NULL, 0) == 0;
+	return __get_dirent_tail(fs, dirent, NULL, 0) !=
+		EXT2_ET_DIR_NO_SPACE_FOR_CSUM;
 }
 
 static errcode_t ext2fs_dirent_csum(ext2_filsys fs, ext2_ino_t inum,
