@@ -2936,6 +2936,7 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	ext2_refcount_t ea_inode_refs = global_ctx->ea_inode_refs;
 	ext2fs_block_bitmap  block_found_map = global_ctx->block_found_map;
 	ext2fs_block_bitmap  block_dup_map = global_ctx->block_dup_map;
+	int options = global_ctx->options;
 
 #ifdef HAVE_SETJMP_H
 	jmp_buf		 old_jmp;
@@ -2988,7 +2989,8 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	global_ctx->fs_fragmented += fs_fragmented;
 	global_ctx->fs_fragmented_dir += fs_fragmented_dir;
 	global_ctx->large_files += large_files;
-
+	/* threads might enable E2F_OPT_YES */
+	global_ctx->options |= options;
 	global_ctx->flags |= flags;
 
 	retval = e2fsck_pass1_merge_fs(global_fs, thread_fs);
@@ -3023,10 +3025,7 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 					      thread_ctx->qctx);
 	if (retval)
 		return retval;
-	global_ctx->invalid_block_bitmap_flag = invalid_block_bitmap_flag;
-	global_ctx->invalid_inode_bitmap_flag = invalid_inode_bitmap_flag;
-	global_ctx->invalid_inode_table_flag = invalid_inode_table_flag;
-	global_ctx->invalid_bitmaps = invalid_bitmaps;
+
 	e2fsck_pass1_merge_invalid_bitmaps(global_ctx, thread_ctx);
 
 	retval = e2fsck_pass1_merge_bitmap(global_fs,
