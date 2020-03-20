@@ -135,17 +135,20 @@ static struct feature jrnl_feature_list[] = {
        {       0, 0, 0 },
 };
 
-const char *e2p_feature2string(int compat, unsigned int mask)
+void e2p_feature_to_string(int compat, unsigned int mask, char *buf,
+                           size_t buf_len)
 {
 	struct feature  *f;
-	static char buf[20];
 	char	fchar;
 	int	fnum;
 
 	for (f = feature_list; f->string; f++) {
 		if ((compat == f->compat) &&
-		    (mask == f->mask))
-			return f->string;
+		    (mask == f->mask)) {
+			strncpy(buf, f->string, buf_len);
+			buf[buf_len - 1] = 0;
+			return;
+		}
 	}
 	switch (compat) {
 	case  E2P_FEATURE_COMPAT:
@@ -163,6 +166,13 @@ const char *e2p_feature2string(int compat, unsigned int mask)
 	}
 	for (fnum = 0; mask >>= 1; fnum++);
 	sprintf(buf, "FEATURE_%c%d", fchar, fnum);
+}
+
+const char *e2p_feature2string(int compat, unsigned int mask)
+{
+	static char buf[20];
+
+	e2p_feature_to_string(compat, mask, buf, sizeof(buf) / sizeof(buf[0]));
 	return buf;
 }
 
