@@ -2936,8 +2936,11 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	ext2_refcount_t ea_inode_refs = global_ctx->ea_inode_refs;
 	ext2fs_block_bitmap  block_found_map = global_ctx->block_found_map;
 	ext2fs_block_bitmap  block_dup_map = global_ctx->block_dup_map;
-	int options = global_ctx->options;
+	int options = global_ctx->options, i;
+	__u32 extent_depth_count[MAX_EXTENT_DEPTH_COUNT];
 
+	memcpy(extent_depth_count, global_ctx->extent_depth_count,
+	       sizeof(extent_depth_count));
 #ifdef HAVE_SETJMP_H
 	jmp_buf		 old_jmp;
 
@@ -2997,6 +3000,12 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	 * later passes will recalculate it if necessary
 	 */
 	global_ctx->lost_and_found = 0;
+	memcpy(global_ctx->extent_depth_count, extent_depth_count,
+	       sizeof(extent_depth_count));
+	/* merge extent depth count */
+	for (i = 0; i < MAX_EXTENT_DEPTH_COUNT; i++)
+		global_ctx->extent_depth_count[i] +=
+			thread_ctx->extent_depth_count[i];
 
 	retval = e2fsck_pass1_merge_fs(global_fs, thread_fs);
 	if (retval) {
