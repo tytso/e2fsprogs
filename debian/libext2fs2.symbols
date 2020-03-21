@@ -6,6 +6,7 @@ libe2p.so.2 libext2fs2 #MINVER#
  e2p_encmode2string@Base 1.43
  e2p_encoding2str@Base 1.45.1
  e2p_feature2string@Base 1.37
+ e2p_feature_to_string@Base 1.45.6
  e2p_get_encoding_flags@Base 1.45
  e2p_hash2string@Base 1.37
  e2p_is_null_uuid@Base 1.37
@@ -479,6 +480,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_read_inode_full@Base 1.37
  ext2fs_remove_exit_fn@Base 1.43
  ext2fs_reserve_super_and_bgd@Base 1.37
+ ext2fs_resize_array@Base 1.45.6
  ext2fs_resize_block_bitmap2@Base 1.42
  ext2fs_resize_block_bitmap@Base 1.37
  ext2fs_resize_generic_bitmap@Base 1.37
