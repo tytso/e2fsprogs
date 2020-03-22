@@ -104,12 +104,12 @@ struct dir_info {
  * directories which contain a hash tree index.
  */
 struct dx_dir_info {
-	ext2_ino_t		ino; 		/* Inode number */
-	int			numblocks;	/* number of blocks */
-	int			hashversion;
-	short			depth;		/* depth of tree */
-	struct dx_dirblock_info	*dx_block; 	/* Array of size numblocks */
-	int			casefolded_hash;
+	ext2_ino_t		ino;		/* Inode number */
+	short			depth;		/* depth of tree (15 bits) */
+	__u8			hashversion;
+	__u8			casefolded_hash:1;
+	blk_t			numblocks;	/* number of blocks in dir */
+	struct dx_dirblock_info	*dx_block;	/* Array of size numblocks */
 };
 
 #define DX_DIRBLOCK_ROOT	1
@@ -120,8 +120,8 @@ struct dx_dir_info {
 
 struct dx_dirblock_info {
 	int		type;
-	blk64_t		phys;
 	int		flags;
+	blk64_t		phys;
 	blk64_t		parent;
 	blk64_t		previous;
 	ext2_dirhash_t	min_hash;
@@ -235,12 +235,12 @@ struct e2fsck_struct {
 	char	*problem_log_fn;
 	int	flags;		/* E2fsck internal flags */
 	int	options;
-	int	blocksize;	/* blocksize */
+	unsigned blocksize;	/* blocksize */
 	blk64_t	use_superblock;	/* sb requested by user */
 	blk64_t	superblock;	/* sb used to open fs */
 	blk64_t	num_blocks;	/* Total number of blocks */
-	blk64_t free_blocks;
-	ino_t	free_inodes;
+	blk64_t	free_blocks;
+	ext2_ino_t free_inodes;
 	int	mount_flags;
 	int	openfs_flags;
 	blkid_cache blkid;	/* blkid cache */
@@ -318,9 +318,9 @@ struct e2fsck_struct {
 	/*
 	 * Indexed directory information
 	 */
-	int		dx_dir_info_count;
-	int		dx_dir_info_size;
-	struct dx_dir_info *dx_dir_info;
+	ext2_ino_t		dx_dir_info_count;
+	ext2_ino_t		dx_dir_info_size;
+	struct dx_dir_info	*dx_dir_info;
 
 	/*
 	 * Directories to hash
@@ -478,8 +478,9 @@ extern void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino,
 			      struct ext2_inode *inode, int num_blocks);
 extern struct dx_dir_info *e2fsck_get_dx_dir_info(e2fsck_t ctx, ext2_ino_t ino);
 extern void e2fsck_free_dx_dir_info(e2fsck_t ctx);
-extern int e2fsck_get_num_dx_dirinfo(e2fsck_t ctx);
-extern struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx, int *control);
+extern ext2_ino_t e2fsck_get_num_dx_dirinfo(e2fsck_t ctx);
+extern struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx,
+						   ext2_ino_t *control);
 
 /* ea_refcount.c */
 typedef __u64 ea_key_t;
@@ -595,7 +596,7 @@ int check_backup_super_block(e2fsck_t ctx);
 void check_resize_inode(e2fsck_t ctx);
 
 /* util.c */
-extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
+extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 				    const char *description);
 extern int ask(e2fsck_t ctx, const char * string, int def);
 extern int ask_yn(e2fsck_t ctx, const char * string, int def);

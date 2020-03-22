@@ -71,8 +71,8 @@ static int allocate_dir_block(e2fsck_t ctx,
 			      struct ext2_db_entry2 *dir_blocks_info,
 			      char *buf, struct problem_context *pctx);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
-static int htree_depth(struct dx_dir_info *dx_dir,
-		       struct dx_dirblock_info *dx_db);
+static short htree_depth(struct dx_dir_info *dx_dir,
+			 struct dx_dirblock_info *dx_db);
 static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b);
 
 struct check_dir_struct {
@@ -88,7 +88,7 @@ struct check_dir_struct {
 static void update_parents(struct dx_dir_info *dx_dir, int type)
 {
 	struct dx_dirblock_info *dx_db, *dx_parent, *dx_previous;
-	int b;
+	blk_t b;
 
 	for (b = 0, dx_db = dx_dir->dx_block;
 	     b < dx_dir->numblocks;
@@ -130,8 +130,9 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct check_dir_struct cd;
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db;
-	int			b;
-	int			i, depth;
+	blk_t			b;
+	ext2_ino_t		i;
+	short			depth;
 	problem_t		code;
 	int			bad_dir;
 	int (*check_dir_func)(ext2_filsys fs,
@@ -310,10 +311,10 @@ cleanup:
 }
 
 #define MAX_DEPTH 32000
-static int htree_depth(struct dx_dir_info *dx_dir,
-		       struct dx_dirblock_info *dx_db)
+static short htree_depth(struct dx_dir_info *dx_dir,
+			 struct dx_dirblock_info *dx_db)
 {
-	int	depth = 0;
+	short depth = 0;
 
 	while (dx_db->type != DX_DIRBLOCK_ROOT && depth < MAX_DEPTH) {
 		dx_db = &dx_dir->dx_block[dx_db->parent];
@@ -569,8 +570,8 @@ static void parse_int_node(ext2_filsys fs,
 			   struct dx_dir_info	*dx_dir,
 			   char *block_buf, int failed_csum)
 {
-	struct 		ext2_dx_root_info  *root;
-	struct 		ext2_dx_entry *ent;
+	struct		ext2_dx_root_info  *root;
+	struct		ext2_dx_entry *ent;
 	struct		ext2_dx_countlimit *limit;
 	struct dx_dirblock_info	*dx_db;
 	int		i, expect_limit, count;
@@ -586,10 +587,10 @@ static void parse_int_node(ext2_filsys fs,
 #ifdef DX_DEBUG
 		printf("Root node dump:\n");
 		printf("\t Reserved zero: %u\n", root->reserved_zero);
-		printf("\t Hash Version: %d\n", root->hash_version);
-		printf("\t Info length: %d\n", root->info_length);
-		printf("\t Indirect levels: %d\n", root->indirect_levels);
-		printf("\t Flags: %d\n", root->unused_flags);
+		printf("\t Hash Version: %u\n", root->hash_version);
+		printf("\t Info length: %u\n", root->info_length);
+		printf("\t Indirect levels: %u\n", root->indirect_levels);
+		printf("\t Flags: %x\n", root->unused_flags);
 #endif
 
 		ent = (struct ext2_dx_entry *) (block_buf + 24 + root->info_length);
@@ -645,7 +646,7 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 		blk = ext2fs_le32_to_cpu(ent[i].block) & EXT4_DX_BLOCK_MASK;
 		/* Check to make sure the block is valid */
-		if (blk >= (blk_t) dx_dir->numblocks) {
+		if (blk >= dx_dir->numblocks) {
 			cd->pctx.blk = blk;
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
 					&cd->pctx))

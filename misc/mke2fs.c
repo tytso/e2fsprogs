@@ -655,7 +655,6 @@ write_superblock:
 static void show_stats(ext2_filsys fs)
 {
 	struct ext2_super_block *s = fs->super;
-	char 			buf[80];
         char                    *os;
 	blk64_t			group_block;
 	dgrp_t			i;
@@ -673,9 +672,8 @@ static void show_stats(ext2_filsys fs)
 		fprintf(stderr, _("warning: %llu blocks unused.\n\n"),
 		       ext2fs_blocks_count(&fs_param) - ext2fs_blocks_count(s));
 
-	memset(buf, 0, sizeof(buf));
-	strncpy(buf, s->s_volume_name, sizeof(s->s_volume_name));
-	printf(_("Filesystem label=%s\n"), buf);
+	printf(_("Filesystem label=%.*s\n"), EXT2_LEN_STR(s->s_volume_name));
+
 	os = e2p_os2string(fs->super->s_creator_os);
 	if (os)
 		printf(_("OS type: %s\n"), os);

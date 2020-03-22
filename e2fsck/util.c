@@ -116,7 +116,7 @@ void log_err(e2fsck_t ctx, const char *fmt, ...)
 	}
 }
 
-void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
+void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 			     const char *description)
 {
 	void *ret;
@@ -125,13 +125,12 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 #ifdef DEBUG_ALLOCATE_MEMORY
 	printf("Allocating %u bytes for %s...\n", size, description);
 #endif
-	ret = malloc(size);
-	if (!ret) {
+	if (ext2fs_get_memzero(size, &ret)) {
 		sprintf(buf, "Can't allocate %u bytes for %s\n",
 			size, description);
 		fatal_error(ctx, buf);
 	}
-	memset(ret, 0, size);
+
 	return ret;
 }
 
@@ -422,9 +421,6 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 #ifdef HAVE_GETRUSAGE
 	struct rusage r;
 #endif
-#ifdef HAVE_MALLINFO
-	struct mallinfo	malloc_info;
-#endif
 	struct timeval time_end;
 
 	if ((desc && !(ctx->options & E2F_OPT_TIME2)) ||
@@ -437,18 +433,21 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 	if (desc)
 		log_out(ctx, "%s: ", desc);
 
+#define kbytes(x)	(((unsigned long long)(x) + 1023) / 1024)
 #ifdef HAVE_MALLINFO
-#define kbytes(x)	(((unsigned long)(x) + 1023) / 1024)
+	/* don't use mallinfo() if over 2GB used, since it returns "int" */
+	if ((char *)sbrk(0) - (char *)track->brk_start < 2ULL << 30) {
+		struct mallinfo	malloc_info = mallinfo();
 
-	malloc_info = mallinfo();
-	log_out(ctx, _("Memory used: %luk/%luk (%luk/%luk), "),
-		kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
-		kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
-#else
-	log_out(ctx, _("Memory used: %lu, "),
-		(unsigned long) (((char *) sbrk(0)) -
-				 ((char *) track->brk_start)));
+		log_out(ctx, _("Memory used: %lluk/%lluk (%lluk/%lluk), "),
+			kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
+			kbytes(malloc_info.uordblks),
+			kbytes(malloc_info.fordblks));
+	} else
 #endif
+	log_out(ctx, _("Memory used: %lluk, "),
+		kbytes(((char *)sbrk(0)) - ((char *)track->brk_start)));
+
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
@@ -777,8 +776,10 @@ void dump_mmp_msg(struct mmp_struct *mmp, const char *fmt, ...)
 		printf("    mmp_sequence: %08x\n", mmp->mmp_seq);
 		printf("    mmp_update_date: %s", ctime(&t));
 		printf("    mmp_update_time: %lld\n", mmp->mmp_time);
-		printf("    mmp_node_name: %s\n", mmp->mmp_nodename);
-		printf("    mmp_device_name: %s\n", mmp->mmp_bdevname);
+		printf("    mmp_node_name: %.*s\n",
+		       EXT2_LEN_STR(mmp->mmp_nodename));
+		printf("    mmp_device_name: %.*s\n",
+		       EXT2_LEN_STR(mmp->mmp_bdevname));
 	}
 }
 

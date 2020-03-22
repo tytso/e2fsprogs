@@ -181,9 +181,9 @@ static int process_fs(const char *fsname)
 	int flags, fd;
 	ext2_filsys fs = NULL;
 	ext2fs_block_bitmap corrupt_map;
-	off_t hsize, count, off, offset, corrupt_bytes;
+	loff_t hsize, count, off, offset, corrupt_bytes;
 	unsigned char c;
-	off_t i;
+	loff_t i;
 
 	/* If mounted rw, force dryrun mode */
 	ret = ext2fs_check_if_mounted(fsname, &flags);
@@ -277,8 +277,8 @@ static int process_fs(const char *fsname)
 			c |= 0x80;
 		if (verbose)
 			printf("Corrupting byte %lld in block %lld to 0x%x\n",
-			       (long long) off % fs->blocksize,
-			       (long long) off / fs->blocksize, c);
+			       off % fs->blocksize,
+			       off / fs->blocksize, c);
 		if (dryrun)
 			continue;
 #ifdef HAVE_PWRITE64

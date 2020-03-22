@@ -53,10 +53,9 @@ errcode_t ea_refcount_create(size_t size, ext2_refcount_t *ret)
 	errcode_t	retval;
 	size_t		bytes;
 
-	retval = ext2fs_get_mem(sizeof(struct ea_refcount), &refcount);
+	retval = ext2fs_get_memzero(sizeof(struct ea_refcount), &refcount);
 	if (retval)
 		return retval;
-	memset(refcount, 0, sizeof(struct ea_refcount));
 
 	if (!size)
 		size = 500;
@@ -66,10 +65,9 @@ errcode_t ea_refcount_create(size_t size, ext2_refcount_t *ret)
 	printf("Refcount allocated %zu entries, %zu bytes.\n",
 	       refcount->size, bytes);
 #endif
-	retval = ext2fs_get_mem(bytes, &refcount->list);
+	retval = ext2fs_get_memzero(bytes, &refcount->list);
 	if (retval)
 		goto errout;
-	memset(refcount->list, 0, bytes);
 
 	refcount->count = 0;
 	refcount->cursor = 0;

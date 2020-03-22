@@ -80,10 +80,10 @@ struct fill_dir_struct {
 	errcode_t err;
 	e2fsck_t ctx;
 	struct hash_entry *harray;
-	int max_array, num_array;
-	unsigned int dir_size;
+	blk_t max_array, num_array;
+	ext2_off64_t dir_size;
 	int compress;
-	ino_t parent;
+	ext2_ino_t parent;
 	ext2_ino_t dir;
 };
 
@@ -95,8 +95,8 @@ struct hash_entry {
 };
 
 struct out_dir {
-	int		num;
-	int		max;
+	blk_t		num;
+	blk_t		max;
 	char		*buf;
 	ext2_dirhash_t	*hashes;
 };
@@ -173,13 +173,16 @@ static int fill_dir_block(ext2_filsys fs,
 			continue;
 		}
 		if (fd->num_array >= fd->max_array) {
-			new_array = realloc(fd->harray,
-			    sizeof(struct hash_entry) * (fd->max_array+500));
-			if (!new_array) {
-				fd->err = ENOMEM;
+			errcode_t retval;
+
+			retval = ext2fs_resize_array(sizeof(struct hash_entry),
+						     fd->max_array,
+						     fd->max_array + 500,
+						     &fd->harray);
+			if (retval) {
+				fd->err = retval;
 				return BLOCK_ABORT;
 			}
-			fd->harray = new_array;
 			fd->max_array += 500;
 		}
 		ent = fd->harray + fd->num_array++;
@@ -260,27 +263,28 @@ static EXT2_QSORT_TYPE hash_cmp(const void *a, const void *b)
 }
 
 static errcode_t alloc_size_dir(ext2_filsys fs, struct out_dir *outdir,
-				int blocks)
+				blk_t blocks)
 {
-	void			*new_mem;
+	errcode_t retval;
 
 	if (outdir->max) {
-		new_mem = realloc(outdir->buf, blocks * fs->blocksize);
-		if (!new_mem)
-			return ENOMEM;
-		outdir->buf = new_mem;
-		new_mem = realloc(outdir->hashes,
-				  blocks * sizeof(ext2_dirhash_t));
-		if (!new_mem)
-			return ENOMEM;
-		outdir->hashes = new_mem;
+		retval = ext2fs_resize_array(fs->blocksize, outdir->max, blocks,
+					     &outdir->buf);
+		if (retval)
+			return retval;
+		retval = ext2fs_resize_array(sizeof(ext2_dirhash_t),
+					     outdir->max, blocks,
+					     &outdir->hashes);
+		if (retval)
+			return retval;
 	} else {
-		outdir->buf = malloc(blocks * fs->blocksize);
-		if (!outdir->buf)
-			return ENOMEM;
-		outdir->hashes = malloc(blocks * sizeof(ext2_dirhash_t));
-		if (!outdir->hashes)
-			return ENOMEM;
+		retval = ext2fs_get_array(fs->blocksize, blocks, &outdir->buf);
+		if (retval)
+			return retval;
+		retval = ext2fs_get_array(sizeof(ext2_dirhash_t), blocks,
+					  &outdir->hashes);
+		if (retval)
+			return retval;
 		outdir->num = 0;
 	}
 	outdir->max = blocks;
@@ -309,7 +313,7 @@ static errcode_t get_next_block(ext2_filsys fs, struct out_dir *outdir,
 		if (retval)
 			return retval;
 	}
-	*ret = outdir->buf + (outdir->num++ * fs->blocksize);
+	*ret = outdir->buf + (size_t)outdir->num++ * fs->blocksize;
 	memset(*ret, 0, fs->blocksize);
 	return 0;
 }
@@ -379,8 +383,8 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 				    struct fill_dir_struct *fd)
 {
 	struct problem_context	pctx;
-	struct hash_entry 	*ent, *prev;
-	int			i, j;
+	struct hash_entry	*ent, *prev;
+	blk_t			i, j;
 	int			fixed = 0;
 	char			new_name[256];
 	unsigned int		new_len;
@@ -897,14 +901,14 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino,
 	   (inode.i_flags & EXT4_INLINE_DATA_FL))
 		return 0;
 
-	retval = ENOMEM;
-	dir_buf = malloc(inode.i_size);
-	if (!dir_buf)
+	retval = ext2fs_get_mem(inode.i_size, &dir_buf);
+	if (retval)
 		goto errout;
 
 	fd.max_array = inode.i_size / 32;
-	fd.harray = malloc(fd.max_array * sizeof(struct hash_entry));
-	if (!fd.harray)
+	retval = ext2fs_get_array(sizeof(struct hash_entry),
+				  fd.max_array, &fd.harray);
+	if (retval)
 		goto errout;
 
 	fd.ino = ino;
@@ -993,8 +997,8 @@ resort:
 	else
 		retval = e2fsck_check_rebuild_extents(ctx, ino, &inode, pctx);
 errout:
-	free(dir_buf);
-	free(fd.harray);
+	ext2fs_free_mem(&dir_buf);
+	ext2fs_free_mem(&fd.harray);
 
 	free_out_dir(&outdir);
 	return retval;

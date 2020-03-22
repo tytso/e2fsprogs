@@ -224,7 +224,7 @@ static const char *quota_type2prefix(enum quota_type qtype)
 void list_super2(struct ext2_super_block * sb, FILE *f)
 {
 	int inode_blocks_per_group;
-	char buf[80], *str;
+	char *str;
 	time_t	tm;
 	enum quota_type qtype;
 
@@ -232,18 +232,16 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 				    EXT2_INODE_SIZE(sb)) +
 				   EXT2_BLOCK_SIZE(sb) - 1) /
 				  EXT2_BLOCK_SIZE(sb));
-	if (sb->s_volume_name[0]) {
-		memset(buf, 0, sizeof(buf));
-		strncpy(buf, sb->s_volume_name, sizeof(sb->s_volume_name));
-	} else
-		strcpy(buf, "<none>");
-	fprintf(f, "Filesystem volume name:   %s\n", buf);
-	if (sb->s_last_mounted[0]) {
-		memset(buf, 0, sizeof(buf));
-		strncpy(buf, sb->s_last_mounted, sizeof(sb->s_last_mounted));
-	} else
-		strcpy(buf, "<not available>");
-	fprintf(f, "Last mounted on:          %s\n", buf);
+	if (sb->s_volume_name[0])
+		fprintf(f, "Filesystem volume name:   %.*s\n",
+			EXT2_LEN_STR(sb->s_volume_name));
+	else
+		fprintf(f, "Filesystem volume name:   <none>\n");
+	if (sb->s_last_mounted[0])
+		fprintf(f, "Last mounted on:          %.*s\n",
+			EXT2_LEN_STR(sb->s_last_mounted));
+	else
+		fprintf(f, "Last mounted on:          <not available>\n");
 	fprintf(f, "Filesystem UUID:          %s\n", e2p_uuid2str(sb->s_uuid));
 	fprintf(f, "Filesystem magic number:  0x%04X\n", sb->s_magic);
 	fprintf(f, "Filesystem revision #:    %d", sb->s_rev_level);
@@ -259,7 +257,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	print_super_flags(sb, f);
 	print_mntopts(sb, f);
 	if (sb->s_mount_opts[0])
-		fprintf(f, "Mount options:            %s\n", sb->s_mount_opts);
+		fprintf(f, "Mount options:            %.*s\n",
+			EXT2_LEN_STR(sb->s_mount_opts));
 	fprintf(f, "Filesystem state:        ");
 	print_fs_state (f, sb->s_state);
 	fprintf(f, "\n");
@@ -419,10 +418,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (sb->s_first_error_time) {
 		tm = sb->s_first_error_time;
 		fprintf(f, "First error time:         %s", ctime(&tm));
-		memset(buf, 0, sizeof(buf));
-		strncpy(buf, (char *)sb->s_first_error_func,
-			sizeof(sb->s_first_error_func));
-		fprintf(f, "First error function:     %s\n", buf);
+		fprintf(f, "First error function:     %.*s\n",
+			EXT2_LEN_STR(sb->s_first_error_func));
 		fprintf(f, "First error line #:       %u\n",
 			sb->s_first_error_line);
 		fprintf(f, "First error inode #:      %u\n",
@@ -433,10 +430,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (sb->s_last_error_time) {
 		tm = sb->s_last_error_time;
 		fprintf(f, "Last error time:          %s", ctime(&tm));
-		memset(buf, 0, sizeof(buf));
-		strncpy(buf, (char *)sb->s_last_error_func,
-			sizeof(sb->s_last_error_func));
-		fprintf(f, "Last error function:      %s\n", buf);
+		fprintf(f, "Last error function:      %.*s\n",
+			EXT2_LEN_STR(sb->s_last_error_func));
 		fprintf(f, "Last error line #:        %u\n",
 			sb->s_last_error_line);
 		fprintf(f, "Last error inode #:       %u\n",

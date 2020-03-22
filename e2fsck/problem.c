@@ -2009,6 +2009,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@d exceeds max links, but no DIR_NLINK feature in @S.\n"),
 	  PROMPT_FIX, 0, 0, 0, 0 },
 
+	/* Directory inode ref count set to overflow but could be exact value */
+	{ PR_4_DIR_OVERFLOW_REF_COUNT,
+	  N_("@d @i %i ref count set to overflow but could be exact value %N.  "),
+	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
+
 	/* Pass 5 errors */
 
 	/* Pass 5: Checking group summary information */

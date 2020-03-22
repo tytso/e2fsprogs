@@ -362,7 +362,7 @@ static void print_inline_journal_information(ext2_filsys fs)
 	struct ext2_inode	inode;
 	ext2_file_t		journal_file;
 	errcode_t		retval;
-	ino_t			ino = fs->super->s_journal_inum;
+	ext2_ino_t		ino = fs->super->s_journal_inum;
 	char			buf[1024];
 
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
@@ -439,8 +439,10 @@ static int check_mmp(ext2_filsys fs)
 				time_t mmp_time = mmp->mmp_time;
 
 				fprintf(stderr,
-					"%s: MMP last updated by '%s' on %s",
-					program_name, mmp->mmp_nodename,
+					"%s: MMP update by '%.*s%.*s' at %s",
+					program_name,
+					EXT2_LEN_STR(mmp->mmp_nodename),
+					EXT2_LEN_STR(mmp->mmp_bdevname),
 					ctime(&mmp_time));
 			}
 			retval = 1;
@@ -489,8 +491,10 @@ static void print_mmp_block(ext2_filsys fs)
 	printf("    mmp_sequence: %#08x\n", mmp->mmp_seq);
 	printf("    mmp_update_date: %s", ctime(&mmp_time));
 	printf("    mmp_update_time: %lld\n", mmp->mmp_time);
-	printf("    mmp_node_name: %s\n", mmp->mmp_nodename);
-	printf("    mmp_device_name: %s\n", mmp->mmp_bdevname);
+	printf("    mmp_node_name: %.*s\n",
+	       EXT2_LEN_STR(mmp->mmp_nodename));
+	printf("    mmp_device_name: %.*s\n",
+	       EXT2_LEN_STR(mmp->mmp_bdevname));
 }
 
 static void parse_extended_opts(const char *opts, blk64_t *superblock,

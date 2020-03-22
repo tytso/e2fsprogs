@@ -365,7 +365,7 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 {
 	struct ext2_inode	inode;
 	errcode_t		retval;
-	ino_t			ino = fs->super->s_journal_inum;
+	ext2_ino_t		ino = fs->super->s_journal_inum;
 
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
@@ -2986,8 +2986,7 @@ retry_open:
 
 	if (print_label) {
 		/* For e2label emulation */
-		printf("%.*s\n", (int) sizeof(sb->s_volume_name),
-		       sb->s_volume_name);
+		printf("%.*s\n", EXT2_LEN_STR(sb->s_volume_name));
 		remove_error_table(&et_ext2_error_table);
 		goto closefs;
 	}

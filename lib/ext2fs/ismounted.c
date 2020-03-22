@@ -352,6 +352,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 				  char *mtpt, int mtlen)
 {
 	errcode_t	retval = 0;
+	int 		busy = 0;
 
 	if (getenv("EXT2FS_PRETEND_RO_MOUNT")) {
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_READONLY;
@@ -365,6 +366,30 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 			*mount_flags = EXT2_MF_ISROOT;
 		return 0;
 	}
+
+#ifdef __linux__ /* This only works on Linux 2.6+ systems */
+	{
+		struct stat st_buf;
+
+		if (stat(device, &st_buf) == 0 &&
+		    ext2fsP_is_disk_device(st_buf.st_mode)) {
+			int fd = open(device, O_RDONLY | O_EXCL);
+
+			if (fd >= 0) {
+				/*
+				 * The device is not busy so it's
+				 * definitelly not mounted. No need to
+				 * to perform any more checks.
+				 */
+				close(fd);
+				*mount_flags = 0;
+				return 0;
+			} else if (errno == EBUSY) {
+				busy = 1;
+			}
+		}
+	}
+#endif
 
 	if (is_swap_device(device)) {
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
@@ -386,21 +411,8 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 	if (retval)
 		return retval;
 
-#ifdef __linux__ /* This only works on Linux 2.6+ systems */
-	{
-		struct stat st_buf;
-
-		if (stat(device, &st_buf) == 0 &&
-		    ext2fsP_is_disk_device(st_buf.st_mode)) {
-			int fd = open(device, O_RDONLY | O_EXCL);
-
-			if (fd >= 0)
-				close(fd);
-			else if (errno == EBUSY)
-				*mount_flags |= EXT2_MF_BUSY;
-		}
-	}
-#endif
+	if (busy)
+		*mount_flags |= EXT2_MF_BUSY;
 
 	return 0;
 }

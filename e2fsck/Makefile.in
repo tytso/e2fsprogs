@@ -133,7 +133,7 @@ tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(LIBEXT2FS) \
 		$(srcdir)/problem.c -DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR) \
 		$(LIBINTL) $(SYSLIBS)
 
-tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR)
+tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR) $(LIBEXT2FS)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM \
@@ -144,11 +144,11 @@ tst_logfile: $(srcdir)/logfile.c
 	$(Q) $(CC) -o tst_logfile $(srcdir)/logfile.c \
 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM $(SYSLIBS)
 
-tst_region: region.c $(DEPLIBCOM_ERR)
+tst_region: region.c $(LIBEXT2FS) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_region $(srcdir)/region.c \
 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM \
-		$(LIBCOM_ERR) $(SYSLIBS)
+		$(LIBEXT2FS) $(LIBCOM_ERR) $(SYSLIBS)
 
 fullcheck check:: tst_refcount tst_region tst_problem
 	$(TESTENV) ./tst_refcount

@@ -484,13 +484,10 @@ space in the filesystem and can also negatively impact performance.
 It is not
 possible to change this value after the filesystem is created.
 .IP
-In kernels after 2.6.10 and some
-earlier vendor kernels it is possible to utilize inodes larger than
-128 bytes to store
-extended attributes for improved performance.
-Extended attributes
-stored in large inodes are not visible with older kernels, and such
-filesystems will not be mountable with 2.4 kernels at all.
+File systems with an inode size of 128 bytes do not support timestamps
+beyond January 19, 2038.  Inodes which are 256 bytes or larger will
+support extended timestamps, project id's, and the ability to store some
+extended attributes in the inode table for improved performance.
 .IP
 The default inode size is controlled by the
 .BR mke2fs.conf (5)

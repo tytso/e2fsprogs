@@ -2357,7 +2357,7 @@ static int op_statfs(const char *path EXT2FS_ATTR((unused)),
 		overhead = 0;
 	else
 		overhead = fs->desc_blocks +
-			   fs->group_desc_count *
+			   (blk64_t)fs->group_desc_count *
 			   (fs->inode_blocks_per_group + 2);
 	reserved = ext2fs_r_blocks_count(fs->super);
 	if (!reserved)

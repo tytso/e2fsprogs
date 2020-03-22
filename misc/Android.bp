@@ -143,6 +143,16 @@ cc_binary {
     static_libs: tune2fs_libs,
 }
 
+cc_binary {
+    name: "tune2fs_ramdisk",
+    stem: "tune2fs",
+    static_executable: true,
+    ramdisk: true,
+    defaults: ["tune2fs-defaults"],
+    system_shared_libs: [],
+    static_libs: tune2fs_libs,
+}
+
 cc_library_static {
     name: "libtune2fs",
     defaults: ["tune2fs-defaults"],
@@ -174,7 +184,7 @@ cc_binary {
 // Build chattr
 
 cc_binary {
-    name: "chattr",
+    name: "chattr-e2fsprogs",
     host_supported: true,
     defaults: ["e2fsprogs-defaults"],
 
@@ -201,7 +211,7 @@ lsattr_libs = [
 ]
 
 cc_binary {
-    name: "lsattr",
+    name: "lsattr-e2fsprogs",
     host_supported: true,
     defaults: ["lsattr-defaults"],
 
@@ -285,6 +295,25 @@ cc_binary {
     srcs: ["filefrag.c"],
     shared_libs: [
         "libext2fs",
+    ],
+    system_shared_libs: ["libc", "libdl"],
+}
+
+//##########################################################################
+// Build e2freefrag
+
+cc_binary {
+    name: "e2freefrag",
+    host_supported: true,
+    defaults: ["e2fsprogs-defaults"],
+
+    srcs: [
+        "e2freefrag.c",
+    ],
+    header_libs: ["libext2-headers"],
+    shared_libs: [
+        "libext2fs",
+        "libext2_com_err",
     ],
     system_shared_libs: ["libc", "libdl"],
 }

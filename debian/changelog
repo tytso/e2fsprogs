@@ -1,3 +1,27 @@
+e2fsprogs (1.45.6-1) unstable; urgency=medium
+
+  * New upstream release
+  * Fixed a number of potential out of bounds memory accesses caused by
+    fuzzed / malicious file systems.
+  * Fix a spurious complaint from e2fsck when a directory which previously
+    had more than 32000 subdirectories has the number of subdirectories
+    drops below 32000.
+  * Improve e2fsck's ability to deal with file systems with a *very* large
+    number of directories.
+  * Debugfs will ignore lines in its command files which start with a
+    comment character ("#").
+  * Fix debugfs so it correctly prints inode numbers > 2**31.
+  * Filefrag now supports very large files (with > 4 billion blocks), as
+    well as block sizes up to 1 GiB.
+  * Mke2fs -d now correctly sets permission with files where the owner
+    permissions are not rwx.
+  * Updated and clarified various man pages
+    (Closes: #953493, #953494, #951808)
+  * Drop as unneeded libattr1-dev as a build dependency (Closes: #953926)
+  * Update the Malay translation from the translation project.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 20 Mar 2020 23:49:33 -0400
+
 e2fsprogs (1.45.5-2) unstable; urgency=medium
 
   * Fix com_err support on Hurd, which has POSIX E* error code starting at
@@ -9,7 +33,7 @@ e2fsprogs (1.45.5-2) unstable; urgency=medium
 
 e2fsprogs (1.45.5-1) unstable; urgency=medium
 
-  * New upstream feature
+  * New upstream release
   * E2fsck will no longer force a full file system check if time-based
     forced checks are disabled and the last mount time or last write time in
     the superblock are in the future.

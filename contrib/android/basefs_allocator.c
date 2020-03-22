@@ -9,6 +9,8 @@
 struct base_fs_allocator {
 	struct ext2fs_hashmap *entries;
 	struct basefs_entry *cur_entry;
+	/* The next expected logical block to allocate for cur_entry. */
+	blk64_t next_lblk;
 	/* Blocks which are definitely owned by a single inode in BaseFS. */
 	ext2fs_block_bitmap exclusive_block_map;
 	/* Blocks which are available to the first inode that requests it. */
@@ -39,6 +41,28 @@ static void fs_free_blocks_range(ext2_filsys fs,
 	}
 }
 
+/*
+ * Free any blocks in the bitmap that were reserved but never used. This is
+ * needed to free dedup_block_map and ensure the free block bitmap is
+ * internally consistent.
+ */
+static void fs_free_blocks_bitmap(ext2_filsys fs, ext2fs_block_bitmap bitmap)
+{
+	blk64_t block = 0;
+	blk64_t start = fs->super->s_first_data_block;
+	blk64_t end = ext2fs_blocks_count(fs->super) - 1;
+	errcode_t retval;
+
+	for (;;) {
+		retval = ext2fs_find_first_set_block_bitmap2(bitmap, start, end,
+			&block);
+		if (retval)
+			break;
+		ext2fs_unmark_block_bitmap2(fs->block_map, block);
+		start = block + 1;
+	}
+}
+
 static void basefs_allocator_free(ext2_filsys fs,
 				  struct base_fs_allocator *allocator)
 {
@@ -53,6 +77,7 @@ static void basefs_allocator_free(ext2_filsys fs,
 		}
 		ext2fs_hashmap_free(entries);
 	}
+	fs_free_blocks_bitmap(fs, allocator->dedup_block_map);
 	ext2fs_free_block_bitmap(allocator->exclusive_block_map);
 	ext2fs_free_block_bitmap(allocator->dedup_block_map);
 	free(allocator);
@@ -191,29 +216,66 @@ out:
 }
 
 /* Try and acquire the next usable block from the Base FS map. */
-static int get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
-			  struct block_range_list* list, blk64_t *ret)
+static errcode_t get_next_block(ext2_filsys fs, struct base_fs_allocator *allocator,
+				struct block_range_list* list, blk64_t *ret)
 {
 	blk64_t block;
 	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
 	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
-	while (list->head) {
+	if (!list->head)
+		return EXT2_ET_BLOCK_ALLOC_FAIL;
+
+	block = consume_next_block(list);
+	if (block >= ext2fs_blocks_count(fs->super))
+		return EXT2_ET_BLOCK_ALLOC_FAIL;
+	if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
+		ext2fs_unmark_block_bitmap2(exclusive_map, block);
+		*ret = block;
+		return 0;
+	}
+	if (ext2fs_test_block_bitmap2(dedup_map, block)) {
+		ext2fs_unmark_block_bitmap2(dedup_map, block);
+		*ret = block;
+		return 0;
+	}
+	return EXT2_ET_BLOCK_ALLOC_FAIL;
+}
+
+/*
+ * BaseFS lists blocks in logical block order. However, the allocator hook is
+ * only called if a block needs to be allocated. In the case of a deduplicated
+ * block, or a hole, the hook is not invoked. This means the next block
+ * allocation request will be out of sequence. For example, consider if BaseFS
+ * specifies the following (0 being a hole):
+ *     1 2 3 0 4 5
+ *
+ * If the new file has a hole at logical block 0, we could accidentally
+ * shift the entire expected block list as follows:
+ *     0 1 2 0 3 4
+ *
+ * To account for this, we track the next expected logical block in the
+ * allocator. If the current request is for a later logical block, we skip and
+ * free the intermediate physical blocks that would have been allocated. This
+ * ensures the original block assignment is respected.
+ */
+static void skip_blocks(ext2_filsys fs, struct base_fs_allocator *allocator,
+			struct blk_alloc_ctx *ctx)
+{
+	blk64_t block;
+	struct block_range_list *list = &allocator->cur_entry->blocks;
+	ext2fs_block_bitmap exclusive_map = allocator->exclusive_block_map;
+
+	while (list->head && allocator->next_lblk < ctx->lblk) {
 		block = consume_next_block(list);
 		if (block >= ext2fs_blocks_count(fs->super))
 			continue;
 		if (ext2fs_test_block_bitmap2(exclusive_map, block)) {
 			ext2fs_unmark_block_bitmap2(exclusive_map, block);
-			*ret = block;
-			return 0;
+			ext2fs_unmark_block_bitmap2(fs->block_map, block);
 		}
-		if (ext2fs_test_block_bitmap2(dedup_map, block)) {
-			ext2fs_unmark_block_bitmap2(dedup_map, block);
-			*ret = block;
-			return 0;
-		}
+		allocator->next_lblk++;
 	}
-	return -1;
 }
 
 static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
@@ -225,6 +287,10 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 	ext2fs_block_bitmap dedup_map = allocator->dedup_block_map;
 
 	if (e && ctx && (ctx->flags & BLOCK_ALLOC_DATA)) {
+		if (allocator->next_lblk < ctx->lblk)
+			skip_blocks(fs, allocator, ctx);
+		allocator->next_lblk = ctx->lblk + 1;
+
 		if (!get_next_block(fs, allocator, &e->blocks, ret))
 			return 0;
 	}
@@ -234,17 +300,28 @@ static errcode_t basefs_block_allocator(ext2_filsys fs, blk64_t goal,
 		ext2fs_mark_block_bitmap2(fs->block_map, *ret);
 		return 0;
 	}
-	if (retval == EXT2_ET_BLOCK_ALLOC_FAIL) {
-		/* Try to steal a block from the dedup pool. */
-		retval = ext2fs_find_first_set_block_bitmap2(dedup_map,
-			fs->super->s_first_data_block,
-			ext2fs_blocks_count(fs->super) - 1, ret);
-		if (!retval) {
-			ext2fs_unmark_block_bitmap2(dedup_map, *ret);
-			return 0;
-		}
+	if (retval != EXT2_ET_BLOCK_ALLOC_FAIL)
+		return retval;
+
+	/* Try to steal a block from the dedup pool. */
+	retval = ext2fs_find_first_set_block_bitmap2(dedup_map,
+		fs->super->s_first_data_block,
+		ext2fs_blocks_count(fs->super) - 1, ret);
+	if (!retval) {
+		ext2fs_unmark_block_bitmap2(dedup_map, *ret);
+		return 0;
 	}
-	return retval;
+
+	/*
+	 * As a last resort, take any block from our file's list. This
+	 * risks bloating the diff, but means we are more likely to
+	 * successfully build an image.
+	 */
+	while (e->blocks.head) {
+		if (!get_next_block(fs, allocator, &e->blocks, ret))
+			return 0;
+	}
+	return EXT2_ET_BLOCK_ALLOC_FAIL;
 }
 
 void base_fs_alloc_cleanup(ext2_filsys fs)
@@ -264,10 +341,12 @@ errcode_t base_fs_alloc_set_target(ext2_filsys fs, const char *target_path,
 	if (mode != S_IFREG)
 		return 0;
 
-	if (allocator)
+	if (allocator) {
 		allocator->cur_entry = ext2fs_hashmap_lookup(allocator->entries,
 						      target_path,
 						      strlen(target_path));
+		allocator->next_lblk = 0;
+	}
 	return 0;
 }
 

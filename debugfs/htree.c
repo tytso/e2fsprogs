@@ -288,7 +288,7 @@ void do_htree_dump(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	fprintf(pager, "\t Hash Version: %d\n", rootnode->hash_version);
 	fprintf(pager, "\t Info length: %d\n", rootnode->info_length);
 	fprintf(pager, "\t Indirect levels: %d\n", rootnode->indirect_levels);
-	fprintf(pager, "\t Flags: %d\n", rootnode->unused_flags);
+	fprintf(pager, "\t Flags: %#x\n", rootnode->unused_flags);
 
 	ent = (struct ext2_dx_entry *)
 		((char *)rootnode + rootnode->info_length);
