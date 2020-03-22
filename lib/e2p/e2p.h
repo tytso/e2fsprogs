@@ -50,6 +50,8 @@ int setversion (int fd, unsigned long version);
 void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 			    int exp_block_size, int flags);
 
+void e2p_feature_to_string(int compat, unsigned int mask, char *buf,
+                           size_t buf_len);
 const char *e2p_feature2string(int compat, unsigned int mask);
 const char *e2p_jrnl_feature2string(int compat, unsigned int mask);
 int e2p_string2feature(char *string, int *compat, unsigned int *mask);

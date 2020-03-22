@@ -299,7 +299,13 @@ consistency first using
 .BR e2fsck (8).
 This operation can also take a while and the file system can be
 corrupted and data lost if it is interrupted while in the middle of
-converting the file system.
+converting the file system.  Backing up the file system before changing
+inode size is recommended.
+.IP
+File systems with an inode size of 128 bytes do not support timestamps
+beyond January 19, 2038.  Inodes which are 256 bytes or larger will
+support extended timestamps, project id's, and the ability to store some
+extended attributes in the inode table for improved performance.
 .TP
 .B \-j
 Add an ext3 journal to the filesystem.  If the
