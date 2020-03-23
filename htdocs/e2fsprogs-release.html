@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.45.6">E2fsprogs 1.45.6 (March 20, 2020)</A>
 <LI><A HREF="#1.45.5">E2fsprogs 1.45.5 (January 7, 2020)</A>
 <LI><A HREF="#1.45.4">E2fsprogs 1.45.4 (September 23, 2019)</A>
 <LI><A HREF="#1.45.3">E2fsprogs 1.45.3 (July 14, 2019)</A>
@@ -134,6 +135,62 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.45.6">E2fsprogs 1.45.6 (March 20, 2020)</A></H2>
+
+<H3>UI and Features</H3>
+
+<P>Debugfs will ignore lines in its command files which start with a
+comment character ("#").</P>
+
+
+<H3>Fixes</H3>
+
+<P>Fixed a number of potential out of bounds memory accesses caused by
+fuzzed / malicious file systems.  (Addresses Google Bug: #147849134)</P>
+
+<P>Fix a spurious complaint from e2fsck when a directory which previously
+had more than 32000 subdirectories has the number of subdirectories
+drops below 32000.</P>
+
+<P>Fix an ismounted check when an LVM device is renamed while the device is
+mounted.</P>
+
+<P>Mke2fs -d now correctly sets permission with files where the owner
+permissions are not rwx.</P>
+
+<P>Improve e2fsck's ability to deal with file systems with very large
+number of directories, such that various data structures take more than
+2GiB of memory.  Use better structure packing to improve the memory
+efficiency of these data structures.</P>
+
+<P>Fix debugfs so it correctly prints inode numbers > 2**31.</P>
+
+<P>Filefrag now supports very large files (with > 4 billion blocks), as
+well as block sizes up to 1 GiB.</P>
+
+<P>Updated and clarified various man pages.  (Addresses Debian Bugs:
+#953493, #953494, #951808)</P>
+
+
+<H3>Performance, Internal Implementation, Development Support etc.</H3>
+
+<P>Reserved the error code EXT2_ET_NO_GDESC (which will be used in
+e2fsprogs v1.46+)</P>
+
+<P>Added a thread-safe variant of e2p_feature2string(),
+e2p_feature_to_string() to the libe2p library.</P>
+
+<P>Fixed portability problems caused by gcc 10.</P>
+
+<P>Fixed portability problem in libcom_err with GNU Hurd.</P>
+
+<P>Fixed various Debian packaging issues.  (Addresses-Debian-Bug: #953926)</P>
+
+<P>Synchronized changes from Android's AOSP e2fsprogs tree.</P>
+
+<P>Update the Malay translation from the translation project.</P>
+
 
 <H2><A NAME="1.45.5">E2fsprogs 1.45.5 (January 7, 2020)</A></H2>
 
