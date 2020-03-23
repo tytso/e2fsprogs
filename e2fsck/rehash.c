@@ -109,7 +109,7 @@ static int fill_dir_block(ext2_filsys fs,
 			  void *priv_data)
 {
 	struct fill_dir_struct	*fd = (struct fill_dir_struct *) priv_data;
-	struct hash_entry 	*new_array, *ent;
+	struct hash_entry 	*ent;
 	struct ext2_dir_entry 	*dirent;
 	char			*dir;
 	unsigned int		offset, dir_offset, rec_len, name_len;
@@ -460,7 +460,7 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 	struct hash_entry 	*ent;
 	struct ext2_dir_entry	*dirent;
 	unsigned int		rec_len, prev_rec_len, left, slack, offset;
-	int			i;
+	blk_t			i;
 	ext2_dirhash_t		prev_hash;
 	int			csum_size = 0;
 	struct			ext2_dir_entry_tail *t;

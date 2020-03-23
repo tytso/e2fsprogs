@@ -126,7 +126,7 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 	printf("Allocating %u bytes for %s...\n", size, description);
 #endif
 	if (ext2fs_get_memzero(size, &ret)) {
-		sprintf(buf, "Can't allocate %u bytes for %s\n",
+		sprintf(buf, "Can't allocate %lu bytes for %s\n",
 			size, description);
 		fatal_error(ctx, buf);
 	}
@@ -436,7 +436,7 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 #define kbytes(x)	(((unsigned long long)(x) + 1023) / 1024)
 #ifdef HAVE_MALLINFO
 	/* don't use mallinfo() if over 2GB used, since it returns "int" */
-	if ((char *)sbrk(0) - (char *)track->brk_start < 2ULL << 30) {
+	if ((char *)sbrk(0) - (char *)track->brk_start < 2LL << 30) {
 		struct mallinfo	malloc_info = mallinfo();
 
 		log_out(ctx, _("Memory used: %lluk/%lluk (%lluk/%lluk), "),
