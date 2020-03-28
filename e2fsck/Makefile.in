@@ -111,6 +111,8 @@ all:: profiled $(PROGS) e2fsck $(MANPAGES) $(FMANPAGES)
 
 @PROFILE_CMT@all:: e2fsck.profiled
 
+all-static:: e2fsck.static
+
 e2fsck: $(OBJS)  $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(LD) $(ALL_LDFLAGS) $(RDYNAMIC) -o e2fsck $(OBJS) $(LIBS) 

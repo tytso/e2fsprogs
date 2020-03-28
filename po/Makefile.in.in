@@ -78,6 +78,8 @@ all: all-@USE_NLS@
 
 all-yes: @MAINTAINER_CMT@stamp-po
 all-no:
+all-static:
+depend:
 
 # stamp-po is a timestamp denoting the last time at which the CATALOGS have
 # been loosely updated. Its purpose is that when a developer or translator

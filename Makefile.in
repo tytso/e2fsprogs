@@ -36,6 +36,10 @@ all:: subs
 @ALL_CMT@	$(MAKE) progs
 @ALL_CMT@	$(MAKE) docs
 
+all-static::
+	$(MAKE) libs
+@ALL_CMT@	$(MAKE) static-progs
+
 subs: $(DEP_SUBSTITUTE)
 	@for i in $(SUBS) ; do if test -d `dirname $$i` ; \
 		then $(MAKE) $$i || exit $$? ; fi ; done
@@ -44,6 +48,7 @@ subs: $(DEP_SUBSTITUTE)
 	@(if test -d lib/support ; then cd lib/support && $(MAKE) prof_err.h; fi)
 
 progs: all-progs-recursive
+static-progs: all-static-progs-recursive
 libs: all-libs-recursive
 all-progs-recursive all-libs-recursive:: subs
 
@@ -97,8 +102,9 @@ all-progs-recursive install-progs-recursive install-strip-progs-recursive \
   uninstall-progs-recursive coverage.txt-progs-recursive:: all-libs-recursive
 
 
-@ALL_CMT@all-progs-recursive install-progs-recursive install-strip-progs-recursive \
-@ALL_CMT@  uninstall-progs-recursive coverage.txt-progs-recursive:: all-libs-recursive
+@ALL_CMT@all-progs-recursive all-static-progs-recursive install-progs-recursive \
+@ALL_CMT@  install-strip-progs-recursive uninstall-progs-recursive \
+@ALL_CMT@  coverage.txt-progs-recursive:: all-libs-recursive
 @ALL_CMT@	@for subdir in $(PROG_SUBDIRS); do \
 @ALL_CMT@	  if test -d $$subdir ; then \
 @ALL_CMT@	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \

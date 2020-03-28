@@ -18,13 +18,16 @@ INSTALL = @INSTALL@
 @LINUX_CMT@E4CRYPT_MAN= e4crypt.8
 
 @IMAGER_CMT@E2IMAGE_PROG= e2image
+@IMAGER_CMT@E2IMAGE_STATIC= e2image.static
 @IMAGER_CMT@E2IMAGE_MAN= e2image.8
 
 @UUIDD_CMT@UUIDD_PROG= uuidd
+@UUIDD_CMT@UUIDD_STATIC= uuidd.static
 @UUIDD_CMT@UUIDD_MAN= uuidd.8
 @UUIDD_CMT@UUIDD_PROFILED= uuidd.profiled
 
 @BLKID_CMT@BLKID_PROG= blkid
+@BLKID_CMT@BLKID_STATIC= blkid.static
 @BLKID_CMT@BLKID_MAN= blkid.8
 
 @BLKID_CMT@FINDFS_LINK= findfs
@@ -134,6 +137,9 @@ DEPEND_CFLAGS = -I$(top_srcdir)/e2fsck
 
 all:: profiled $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
 	$(FMANPAGES) $(LPROGS) $(E4DEFRAG_PROG) $(E4CRYPT_PROGS) e2fuzz
+
+all-static:: $(E2IMAGE_STATIC) $(UUIDD_STATIC) $(BLKID_STATIC) \
+	dumpe2fs.static mke2fs.static tune2fs.static
 
 @PROFILE_CMT@all:: tune2fs.profiled blkid.profiled e2image.profiled \
 	e2undo.profiled mke2fs.profiled dumpe2fs.profiled fsck.profiled \
