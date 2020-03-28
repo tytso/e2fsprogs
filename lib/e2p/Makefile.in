@@ -20,17 +20,20 @@ OBJS=		feature.o fgetflags.o fsetflags.o fgetversion.o fsetversion.o \
 		getflags.o getversion.o hashstr.o iod.o ls.o ljs.o mntopts.o \
 		parse_num.o pe.o pf.o ps.o setflags.o setversion.o uuid.o \
 		ostype.o percent.o crypto_mode.o fgetproject.o fsetproject.o \
-		encoding.o
+		encoding.o errcode.o
 
 SRCS=		$(srcdir)/feature.c $(srcdir)/fgetflags.c \
 		$(srcdir)/fsetflags.c $(srcdir)/fgetversion.c \
 		$(srcdir)/fsetversion.c $(srcdir)/getflags.c \
 		$(srcdir)/getversion.c $(srcdir)/hashstr.c $(srcdir)/iod.c \
-		$(srcdir)/ls.c $(srcdir)/ljs.c $(srcdir)/mntopts.c $(srcdir)/parse_num.c \
-		$(srcdir)/pe.c $(srcdir)/pf.c $(srcdir)/ps.c \
-		$(srcdir)/setflags.c $(srcdir)/setversion.c $(srcdir)/uuid.c \
-		$(srcdir)/ostype.c $(srcdir)/percent.c $(srcdir)/crypto_mode.c \
-		$(srcdir)/fgetproject.c $(srcdir)/fsetproject.c $(srcdir)/encoding.c
+		$(srcdir)/ls.c $(srcdir)/ljs.c $(srcdir)/mntopts.c \
+		$(srcdir)/parse_num.c $(srcdir)/pe.c $(srcdir)/pf.c \
+		$(srcdir)/ps.c $(srcdir)/setflags.c $(srcdir)/setversion.c \
+		$(srcdir)/uuid.c $(srcdir)/ostype.c $(srcdir)/percent.c \
+		$(srcdir)/crypto_mode.c $(srcdir)/fgetproject.c \
+		$(srcdir)/fsetproject.c $(srcdir)/encoding.c \
+		$(srcdir)/errcode.c
+
 HFILES= e2p.h
 
 LIBRARY= libe2p

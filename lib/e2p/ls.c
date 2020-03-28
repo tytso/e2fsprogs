@@ -422,10 +422,15 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 			EXT2_LEN_STR(sb->s_first_error_func));
 		fprintf(f, "First error line #:       %u\n",
 			sb->s_first_error_line);
-		fprintf(f, "First error inode #:      %u\n",
-			sb->s_first_error_ino);
-		fprintf(f, "First error block #:      %llu\n",
-			sb->s_first_error_block);
+		if (sb->s_first_error_ino)
+			fprintf(f, "First error inode #:      %u\n",
+				sb->s_first_error_ino);
+		if (sb->s_first_error_block)
+			fprintf(f, "First error block #:      %llu\n",
+				sb->s_first_error_block);
+		if (sb->s_first_error_errcode)
+			fprintf(f, "First error err:          %s\n",
+				e2p_errcode2str(sb->s_first_error_errcode));
 	}
 	if (sb->s_last_error_time) {
 		tm = sb->s_last_error_time;
@@ -434,10 +439,15 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 			EXT2_LEN_STR(sb->s_last_error_func));
 		fprintf(f, "Last error line #:        %u\n",
 			sb->s_last_error_line);
-		fprintf(f, "Last error inode #:       %u\n",
-			sb->s_last_error_ino);
-		fprintf(f, "Last error block #:       %llu\n",
-			sb->s_last_error_block);
+		if (sb->s_last_error_ino)
+			fprintf(f, "Last error inode #:       %u\n",
+				sb->s_last_error_ino);
+		if (sb->s_last_error_block)
+			fprintf(f, "Last error block #:       %llu\n",
+				sb->s_last_error_block);
+		if (sb->s_last_error_errcode)
+			fprintf(f, "Last error err:           %s\n",
+				e2p_errcode2str(sb->s_last_error_errcode));
 	}
 	if (ext2fs_has_feature_mmp(sb)) {
 		fprintf(f, "MMP block number:         %llu\n",

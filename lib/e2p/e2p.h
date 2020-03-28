@@ -87,3 +87,5 @@ int e2p_str2encoding(const char *string);
 const char *e2p_encoding2str(int encoding);
 int e2p_get_encoding_flags(int encoding);
 int e2p_str2encoding_flags(int encoding, char *param, __u16 *flags);
+
+const char *e2p_errcode2str(int err);

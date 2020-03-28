@@ -148,7 +148,8 @@ int main(int argc, char **argv)
 	check_field(s_lastcheck_hi, 1);
 	check_field(s_first_error_time_hi, 1);
 	check_field(s_last_error_time_hi, 1);
-	check_field(s_pad, 2);
+	check_field(s_first_error_errcode, 1);
+	check_field(s_last_error_errcode, 1);
 	check_field(s_encoding, 2);
 	check_field(s_encoding_flags, 2);
 	check_field(s_reserved, 95 * 4);

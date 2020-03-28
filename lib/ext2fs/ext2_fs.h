@@ -755,7 +755,8 @@ struct ext2_super_block {
 	__u8	s_lastcheck_hi;
 	__u8	s_first_error_time_hi;
 	__u8	s_last_error_time_hi;
-	__u8	s_pad[2];
+	__u8	s_first_error_errcode;
+	__u8    s_last_error_errcode;
 /*27c*/ __le16	s_encoding;		/* Filename charset encoding */
 	__le16	s_encoding_flags;	/* Filename charset encoding flags */
 	__le32	s_reserved[95];		/* Padding to the end of the block */
