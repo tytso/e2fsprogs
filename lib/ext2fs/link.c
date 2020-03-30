@@ -473,7 +473,7 @@ static errcode_t dx_grow_tree(ext2_filsys fs, ext2_ino_t dir,
 		    ext2fs_le16_to_cpu(info->frames[i].head->limit))
 			break;
 	/* Need to grow tree depth? */
-	if (i < 0 && info->levels > ext2_dir_htree_level(fs))
+	if (i < 0 && info->levels >= ext2_dir_htree_level(fs))
 		return EXT2_ET_DIR_NO_SPACE;
 	lblk = size / fs->blocksize;
 	size += fs->blocksize;
