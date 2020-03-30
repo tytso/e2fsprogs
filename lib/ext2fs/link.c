@@ -571,7 +571,7 @@ static errcode_t dx_link(ext2_filsys fs, ext2_ino_t dir,
 	dx_info.namelen = strlen(name);
 again:
 	retval = dx_lookup(fs, dir, diri, &dx_info);
-	if (retval < 0)
+	if (retval)
 		goto free_buf;
 
 	retval = add_dirent_to_buf(fs,
