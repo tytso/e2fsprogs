@@ -3236,6 +3236,13 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 		__u8 old_uuid[UUID_SIZE];
 
+		if (ext2fs_has_feature_stable_inodes(fs->super)) {
+			fputs(_("Cannot change the UUID of this filesystem "
+				"because it has the stable_inodes feature "
+				"flag.\n"), stderr);
+			exit(1);
+		}
+
 		if (!ext2fs_has_feature_csum_seed(fs->super) &&
 		    (ext2fs_has_feature_metadata_csum(fs->super) ||
 		     ext2fs_has_feature_ea_inode(fs->super))) {
