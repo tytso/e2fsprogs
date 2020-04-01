@@ -630,6 +630,13 @@ Limit the number of backup superblocks to save space on large filesystems.
 .B Tune2fs
 currently only supports setting this filesystem feature.
 .TP
+.B stable_inodes
+Prevent the filesystem from being shrunk or having its UUID changed, in order to
+allow the use of specialized encryption settings that make use of the inode
+numbers and UUID.
+.B Tune2fs
+currently only supports setting this filesystem feature.
+.TP
 .B uninit_bg
 Allow the kernel to initialize bitmaps and inode tables lazily, and to
 keep a high watermark for the unused inodes in a filesystem, to reduce
