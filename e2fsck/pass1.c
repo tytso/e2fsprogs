@@ -986,8 +986,10 @@ static void finish_processing_inode(e2fsck_t ctx, ext2_ino_t ino,
 #define FINISH_INODE_LOOP(ctx, ino, pctx, failed_csum) \
 	do { \
 		finish_processing_inode((ctx), (ino), (pctx), (failed_csum)); \
-		if ((ctx)->flags & E2F_FLAG_ABORT) \
+		if ((ctx)->flags & E2F_FLAG_ABORT) { \
+			e2fsck_pass1_check_unlock(ctx); \
 			return; \
+		} \
 	} while (0)
 
 static int could_be_block_map(ext2_filsys fs, struct ext2_inode *inode)
@@ -1369,8 +1371,10 @@ static errcode_t e2fsck_pass1_prepare(e2fsck_t ctx)
 		ext2fs_mark_block_bitmap2(ctx->block_found_map,
 					  fs->super->s_mmp_block);
 #ifdef	HAVE_PTHREAD
-	pthread_mutex_init(&ctx->fs_fix_mutex, NULL);
+	pthread_rwlock_init(&ctx->fs_fix_rwlock, NULL);
 	pthread_rwlock_init(&ctx->fs_block_map_rwlock, NULL);
+	if (ctx->fs_num_threads > 1)
+		ctx->fs_need_locking = 1;
 #endif
 
 	return 0;
@@ -1643,6 +1647,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 #endif
 
 	while (1) {
+		e2fsck_pass1_check_lock(ctx);
 		if (ino % (fs->super->s_inodes_per_group * 4) == 1) {
 			if (e2fsck_mmp_update(fs))
 				fatal_error(ctx, 0);
@@ -1653,8 +1658,10 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 		if (ino > ino_threshold)
 			pass1_readahead(ctx, &ra_group, &ino_threshold);
 		ehandler_operation(old_op);
-		if (e2fsck_should_abort(ctx))
+		if (e2fsck_should_abort(ctx)) {
+			e2fsck_pass1_check_unlock(ctx);
 			goto endit;
+		}
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
 			/*
 			 * If badblocks says badblocks is bad, offer to clear
@@ -1675,27 +1682,45 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 					fix_problem(ctx, PR_1_ISCAN_ERROR,
 						    &pctx);
 					ctx->flags |= E2F_FLAG_ABORT;
+					e2fsck_pass1_check_unlock(ctx);
+					goto endit;
 				} else
 					ctx->flags |= E2F_FLAG_RESTART;
-				goto endit;
+				err = ext2fs_inode_scan_goto_blockgroup(scan,
+									0);
+				if (err) {
+					fix_problem(ctx, PR_1_ISCAN_ERROR,
+						    &pctx);
+					ctx->flags |= E2F_FLAG_ABORT;
+					e2fsck_pass1_check_unlock(ctx);
+					goto endit;
+				}
+				e2fsck_pass1_check_unlock(ctx);
+				continue;
 			}
 			if (!ctx->inode_bb_map)
 				alloc_bb_map(ctx);
 			ext2fs_mark_inode_bitmap2(ctx->inode_bb_map, ino);
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
+			e2fsck_pass1_check_unlock(ctx);
 			continue;
 		}
-		if (pctx.errcode == EXT2_ET_SCAN_FINISHED)
+		if (pctx.errcode == EXT2_ET_SCAN_FINISHED) {
+			e2fsck_pass1_check_unlock(ctx);
 			break;
+		}
 		if (pctx.errcode &&
 		    pctx.errcode != EXT2_ET_INODE_CSUM_INVALID &&
 		    pctx.errcode != EXT2_ET_INODE_IS_GARBAGE) {
 			fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
+			e2fsck_pass1_check_unlock(ctx);
 			goto endit;
 		}
-		if (!ino)
+		if (!ino) {
+			e2fsck_pass1_check_unlock(ctx);
 			break;
+		}
 #ifdef HAVE_PTHREAD
 		if (ctx->global_ctx)
 		        ctx->thread_info.et_inode_number++;
@@ -1748,6 +1773,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 				pctx.num = inode->i_links_count;
 				fix_problem(ctx, PR_1_ICOUNT_STORE, &pctx);
 				ctx->flags |= E2F_FLAG_ABORT;
+				e2fsck_pass1_check_unlock(ctx);
 				goto endit;
 			}
 		} else if ((ino >= EXT2_FIRST_INODE(fs->super)) &&
@@ -1762,6 +1788,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 				}
 			}
 			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+			e2fsck_pass1_check_unlock(ctx);
 			continue;
 		}
 
@@ -1782,6 +1809,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 							       &pctx);
 			if (res < 0) {
 				/* skip FINISH_INODE_LOOP */
+				e2fsck_pass1_check_unlock(ctx);
 				continue;
 			}
 		}
@@ -1802,6 +1830,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			} else if (fix_problem(ctx, PR_1_INLINE_DATA_SET, &pctx)) {
 				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
 				/* skip FINISH_INODE_LOOP */
+				e2fsck_pass1_check_unlock(ctx);
 				continue;
 			}
 		}
@@ -1846,6 +1875,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 					if (err) {
 						pctx.errcode = err;
 						ctx->flags |= E2F_FLAG_ABORT;
+						e2fsck_pass1_check_unlock(ctx);
 						goto endit;
 					}
 					inode->i_flags &= ~EXT4_INLINE_DATA_FL;
@@ -1860,6 +1890,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 				/* Some other kind of non-xattr error? */
 				pctx.errcode = err;
 				ctx->flags |= E2F_FLAG_ABORT;
+				e2fsck_pass1_check_unlock(ctx);
 				goto endit;
 			}
 		}
@@ -1897,6 +1928,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 					ext2fs_mark_inode_bitmap2(ctx->inode_used_map,
 								 ino);
 				/* skip FINISH_INODE_LOOP */
+				e2fsck_pass1_check_unlock(ctx);
 				continue;
 			}
 		}
@@ -1960,6 +1992,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 				pctx.num = 4;
 				fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
 				ctx->flags |= E2F_FLAG_ABORT;
+				e2fsck_pass1_check_unlock(ctx);
 				goto endit;
 			}
 			pb.ino = EXT2_BAD_INO;
@@ -1977,16 +2010,19 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			if (pctx.errcode) {
 				fix_problem(ctx, PR_1_BLOCK_ITERATE, &pctx);
 				ctx->flags |= E2F_FLAG_ABORT;
+				e2fsck_pass1_check_unlock(ctx);
 				goto endit;
 			}
 			if (pb.bbcheck)
 				if (!fix_problem(ctx, PR_1_BBINODE_BAD_METABLOCK_PROMPT, &pctx)) {
 				ctx->flags |= E2F_FLAG_ABORT;
+				e2fsck_pass1_check_unlock(ctx);
 				goto endit;
 			}
 			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
 			clear_problem_context(&pctx);
 			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+			e2fsck_pass1_check_unlock(ctx);
 			continue;
 		} else if (ino == EXT2_ROOT_INO) {
 			/*
@@ -2028,6 +2064,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 				}
 				check_blocks(ctx, &pctx, block_buf, NULL);
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+				e2fsck_pass1_check_unlock(ctx);
 				continue;
 			}
 			if ((inode->i_links_count ||
@@ -2055,6 +2092,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 				}
 				check_blocks(ctx, &pctx, block_buf, NULL);
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+				e2fsck_pass1_check_unlock(ctx);
 				continue;
 			}
 			if ((inode->i_links_count ||
@@ -2093,11 +2131,13 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			}
 			check_blocks(ctx, &pctx, block_buf, NULL);
 			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+			e2fsck_pass1_check_unlock(ctx);
 			continue;
 		}
 
 		if (!inode->i_links_count) {
 			FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+			e2fsck_pass1_check_unlock(ctx);
 			continue;
 		}
 		/*
@@ -2202,12 +2242,14 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 			ctx->fs_symlinks_count++;
 			if (inode->i_flags & EXT4_INLINE_DATA_FL) {
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+				e2fsck_pass1_check_unlock(ctx);
 				continue;
 			} else if (ext2fs_is_fast_symlink(inode)) {
 				ctx->fs_fast_symlinks_count++;
 				check_blocks(ctx, &pctx, block_buf,
 					     &ea_ibody_quota);
 				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+				e2fsck_pass1_check_unlock(ctx);
 				continue;
 			}
 		}
@@ -2255,16 +2297,21 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 
 		FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
 
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		if (e2fsck_should_abort(ctx)) {
+			e2fsck_pass1_check_unlock(ctx);
 			goto endit;
+		}
 
 		if (process_inode_count >= ctx->process_inode_size) {
 			process_inodes(ctx, block_buf, inodes_to_process,
 				       &process_inode_count);
 
-			if (e2fsck_should_abort(ctx))
+			if (e2fsck_should_abort(ctx)) {
+				e2fsck_pass1_check_unlock(ctx);
 				goto endit;
+			}
 		}
+		e2fsck_pass1_check_unlock(ctx);
 	}
 	process_inodes(ctx, block_buf, inodes_to_process,
 		       &process_inode_count);
@@ -3272,6 +3319,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		need_single = 0;
 		e2fsck_pass1_multithread(ctx);
 	}
+	/* No lock is needed at this time */
+	ctx->fs_need_locking = 0;
 #endif
 	if (need_single)
 		e2fsck_pass1_run(ctx);

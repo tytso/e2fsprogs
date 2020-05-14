@@ -86,7 +86,8 @@ void fatal_error(e2fsck_t ctx, const char *msg)
 	}
 out:
 	ctx->flags |= E2F_FLAG_ABORT;
-	if (ctx->flags & E2F_FLAG_SETJMP_OK)
+	if (!(ctx->options & E2F_OPT_MULTITHREAD) &&
+	    ctx->flags & E2F_FLAG_SETJMP_OK)
 		longjmp(ctx->abort_loc, 1);
 	if (ctx->logf)
 		fprintf(ctx->logf, "Exit status: %d\n", exit_value);
@@ -575,38 +576,79 @@ void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
 	if (!global_ctx)			\
 		global_ctx = ctx;		\
 
+/**
+ * before we hold write lock, read lock should
+ * has been held.
+ */
 void e2fsck_pass1_fix_lock(e2fsck_t ctx)
 {
+	int err;
+
+	if (!ctx->fs_need_locking)
+		return;
+
 	e2fsck_get_lock_context(ctx);
-	pthread_mutex_lock(&global_ctx->fs_fix_mutex);
+	err = pthread_rwlock_trywrlock(&global_ctx->fs_fix_rwlock);
+	assert(err != 0);
+	pthread_rwlock_unlock(&global_ctx->fs_fix_rwlock);
+	pthread_rwlock_wrlock(&global_ctx->fs_fix_rwlock);
 }
 
 void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
 {
+	if (!ctx->fs_need_locking)
+		return;
 	e2fsck_get_lock_context(ctx);
-	pthread_mutex_unlock(&global_ctx->fs_fix_mutex);
+	/* unlock write lock */
+	pthread_rwlock_unlock(&global_ctx->fs_fix_rwlock);
+	/* get read lock again */
+	pthread_rwlock_rdlock(&global_ctx->fs_fix_rwlock);
+}
+
+void e2fsck_pass1_check_lock(e2fsck_t ctx)
+{
+	if (!ctx->fs_need_locking)
+		return;
+	e2fsck_get_lock_context(ctx);
+	pthread_rwlock_rdlock(&global_ctx->fs_fix_rwlock);
+}
+
+void e2fsck_pass1_check_unlock(e2fsck_t ctx)
+{
+	if (!ctx->fs_need_locking)
+		return;
+	e2fsck_get_lock_context(ctx);
+	pthread_rwlock_unlock(&global_ctx->fs_fix_rwlock);
 }
 
 void e2fsck_pass1_block_map_w_lock(e2fsck_t ctx)
 {
+	if (!ctx->fs_need_locking)
+		return;
 	e2fsck_get_lock_context(ctx);
 	pthread_rwlock_wrlock(&global_ctx->fs_block_map_rwlock);
 }
 
 void e2fsck_pass1_block_map_w_unlock(e2fsck_t ctx)
 {
+	if (!ctx->fs_need_locking)
+		return;
 	e2fsck_get_lock_context(ctx);
 	pthread_rwlock_unlock(&global_ctx->fs_block_map_rwlock);
 }
 
 void e2fsck_pass1_block_map_r_lock(e2fsck_t ctx)
 {
+	if (!ctx->fs_need_locking)
+		return;
 	e2fsck_get_lock_context(ctx);
 	pthread_rwlock_rdlock(&global_ctx->fs_block_map_rwlock);
 }
 
 void e2fsck_pass1_block_map_r_unlock(e2fsck_t ctx)
 {
+	if (!ctx->fs_need_locking)
+		return;
 	e2fsck_get_lock_context(ctx);
 	pthread_rwlock_unlock(&global_ctx->fs_block_map_rwlock);
  }
@@ -617,6 +659,14 @@ void e2fsck_pass1_fix_lock(e2fsck_t ctx)
 }
 
 void e2fsck_pass1_fix_unlock(e2fsck_t ctx)
+{
+
+}
+void e2fsck_pass1_check_lock(e2fsck_t ctx)
+{
+
+}
+void e2fsck_pass1_check_unlock(e2fsck_t ctx)
 {
 
 }

@@ -451,8 +451,9 @@ struct e2fsck_struct {
 	char *undo_file;
 #ifdef HAVE_PTHREAD
 	__u32			 fs_num_threads;
+	int			 fs_need_locking;
 	/* serialize fix operation for multiple threads */
-	pthread_mutex_t		 fs_fix_mutex;
+	pthread_rwlock_t	 fs_fix_rwlock;
 	/* protect block_found_map, block_dup_map */
 	pthread_rwlock_t	 fs_block_map_rwlock;
 #endif
@@ -514,6 +515,8 @@ extern int e2fsck_strnlen(const char * s, int count);
 
 extern void e2fsck_pass1(e2fsck_t ctx);
 extern void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf);
+extern void e2fsck_pass1_check_lock(e2fsck_t ctx);
+extern void e2fsck_pass1_check_unlock(e2fsck_t ctx);
 extern void e2fsck_pass2(e2fsck_t ctx);
 extern void e2fsck_pass3(e2fsck_t ctx);
 extern void e2fsck_pass4(e2fsck_t ctx);
