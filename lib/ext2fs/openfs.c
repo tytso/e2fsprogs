@@ -134,6 +134,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	int		j;
 #endif
 	char		*time_env;
+	int		csum_retries = 0;
 
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
 
@@ -221,6 +222,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		if (retval)
 			goto cleanup;
 	}
+retry:
 	retval = io_channel_read_blk(fs->io, superblock, -SUPERBLOCK_SIZE,
 				     fs->super);
 	if (retval)
@@ -232,8 +234,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = 0;
 		if (!ext2fs_verify_csum_type(fs, fs->super))
 			retval = EXT2_ET_UNKNOWN_CSUM;
-		if (!ext2fs_superblock_csum_verify(fs, fs->super))
+		if (!ext2fs_superblock_csum_verify(fs, fs->super)) {
+			if (csum_retries++ < 3)
+				goto retry;
 			retval = EXT2_ET_SB_CSUM_INVALID;
+		}
 	}
 
 #ifdef WORDS_BIGENDIAN
