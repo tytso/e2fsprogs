@@ -58,6 +58,8 @@ static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size,
 		if (retval)
 			goto cleanup;
 		dblist->size = (num_dirs * 2) + 12;
+		if (fs->fs_num_threads)
+			dblist->size /= fs->fs_num_threads;
 	}
 	len = (size_t) sizeof(struct ext2_db_entry2) * dblist->size;
 	dblist->count = count;

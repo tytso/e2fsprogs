@@ -237,6 +237,8 @@ errcode_t ext2fs_create_icount_tdb(ext2_filsys fs EXT2FS_NO_TDB_UNUSED,
 	 * value.
 	 */
 	num_inodes = fs->super->s_inodes_count - fs->super->s_free_inodes_count;
+	if (fs->fs_num_threads)
+		num_inodes /= fs->fs_num_threads;
 
 	icount->tdb = tdb_open(fn, num_inodes, TDB_NOLOCK | TDB_NOSYNC,
 			       O_RDWR | O_CREAT | O_TRUNC, 0600);
@@ -288,6 +290,8 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 		if (retval)
 			goto errout;
 		icount->size += fs->super->s_inodes_count / 50;
+		if (fs->fs_num_threads)
+			icount->size /= fs->fs_num_threads;
 	}
 
 	bytes = (size_t) (icount->size * sizeof(struct ext2_icount_el));
