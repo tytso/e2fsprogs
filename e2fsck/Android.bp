@@ -57,6 +57,7 @@ cc_binary {
 
     shared_libs: e2fsck_libs,
     system_shared_libs: ["libc", "libdl"],
+    required: ["badblocks"],
 }
 
 cc_binary {
