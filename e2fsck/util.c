@@ -135,7 +135,7 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 }
 
 char *string_copy(e2fsck_t ctx EXT2FS_ATTR((unused)),
-		  const char *str, int len)
+		  const char *str, size_t len)
 {
 	char	*ret;
 
