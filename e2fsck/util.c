@@ -123,7 +123,7 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 	char buf[256];
 
 #ifdef DEBUG_ALLOCATE_MEMORY
-	printf("Allocating %u bytes for %s...\n", size, description);
+	printf("Allocating %lu bytes for %s...\n", size, description);
 #endif
 	if (ext2fs_get_memzero(size, &ret)) {
 		sprintf(buf, "Can't allocate %lu bytes for %s\n",
