@@ -1419,12 +1419,6 @@ mmp_error:
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT)) {
-		if (ext2fs_has_feature_casefold(sb)) {
-			fputs(_("Cannot enable encrypt feature on filesystems "
-				"with the encoding feature enabled.\n"),
-			      stderr);
-			return 1;
-		}
 		fs->super->s_encrypt_algos[0] =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		fs->super->s_encrypt_algos[1] =
@@ -1432,12 +1426,6 @@ mmp_error:
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD)) {
-		if (ext2fs_has_feature_encrypt(sb)) {
-			fputs(_("Cannot enable casefold feature on filesystems "
-				"with the encrypt feature enabled.\n"),
-			      stderr);
-			return 1;
-		}
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("The casefold feature may only be enabled when "
 				"the filesystem is unmounted.\n"), stderr);
@@ -2187,11 +2175,6 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 			ext_mount_opts = strdup(arg);
 		} else if (!strcmp(token, "encoding")) {
 			if (!arg) {
-				r_usage++;
-				continue;
-			}
-			if (ext2fs_has_feature_encrypt(sb)) {
-				fprintf(stderr, _("error: Cannot enable casefolding if encryption is set\n"));
 				r_usage++;
 				continue;
 			}
