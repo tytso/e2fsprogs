@@ -1779,6 +1779,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Encrypted @E is too short.\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
 
+	 /* Non-unique filename found, but can't rename */
+	 { PR_2_NON_UNIQUE_FILE_NO_RENAME,
+	   N_("Duplicate filename @E found.  "),
+	   PROMPT_CLEAR, 0, 0, 0, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

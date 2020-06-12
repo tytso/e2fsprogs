@@ -416,6 +416,15 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 			fixed++;
 			continue;
 		}
+		/* Can't alter encrypted name without key, so just drop it */
+		if (fd->inode->i_flags & EXT4_ENCRYPT_FL) {
+			if (fix_problem(ctx, PR_2_NON_UNIQUE_FILE_NO_RENAME, &pctx)) {
+				e2fsck_adjust_inode_count(ctx, ent->dir->inode, -1);
+				ent->dir->inode = 0;
+				fixed++;
+				continue;
+			}
+		}
 		new_len = ext2fs_dirent_name_len(ent->dir);
 		if (new_len == 0) {
 			 /* should never happen */
