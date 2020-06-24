@@ -77,7 +77,7 @@ static int parse_ugid_map_entry(char* line, struct ugid_map_entry* result)
 	     token = strtok_r(NULL, " ", &token_saveptr), ++num_tokens) {
 		char* endptr = NULL;
 		*parsed[num_tokens] = strtoul(token, &endptr, 10);
-		if ((*parsed[num_tokens] == ULONG_MAX && errno) || *endptr) {
+		if ((*parsed[num_tokens] == UINT_MAX && errno) || *endptr) {
 			fprintf(stderr, "Malformed u/gid mapping line\n");
 			return 0;
 		}
