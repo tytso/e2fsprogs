@@ -652,6 +652,7 @@ static void do_help(int argc, char **argv, const struct cmd_desc *cmd);
 static void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 {
 	struct salt *salt;
+	struct salt *explicit_salt = NULL;
 	char *keyring = NULL;
 	int i, opt, pad = 4;
 	unsigned j;
@@ -666,8 +667,13 @@ static void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 			pad = atoi(optarg);
 			break;
 		case 'S':
+			if (explicit_salt) {
+				fputs("May only provide -S once\n", stderr);
+				exit(1);
+			}
 			/* Salt value for passphrase. */
 			parse_salt(optarg, 0);
+			explicit_salt = salt_list;
 			break;
 		case 'v':
 			options |= OPT_VERBOSE;
@@ -703,7 +709,7 @@ static void do_add_key(int argc, char **argv, const struct cmd_desc *cmd)
 		insert_key_into_keyring(keyring, salt);
 	}
 	if (optind != argc)
-		set_policy(NULL, pad, argc, argv, optind);
+		set_policy(explicit_salt, pad, argc, argv, optind);
 	clear_secrets();
 	exit(0);
 }
