@@ -344,10 +344,9 @@ static void parse_salt(char *salt_str, int flags)
 	add_salt(salt_buf, salt_len);
 }
 
-static void set_policy(struct salt *set_salt, int pad,
+static void set_policy(struct salt *salt, int pad,
 		       int argc, char *argv[], int path_start_index)
 {
-	struct salt *salt;
 	struct ext4_encryption_policy policy;
 	uuid_t	uu;
 	int fd;
@@ -366,9 +365,7 @@ static void set_policy(struct salt *set_salt, int pad,
 			perror(argv[x]);
 			exit(1);
 		}
-		if (set_salt)
-			salt = set_salt;
-		else {
+		if (!salt) {
 			if (ioctl(fd, EXT4_IOC_GET_ENCRYPTION_PWSALT,
 				  &uu) < 0) {
 				perror("EXT4_IOC_GET_ENCRYPTION_PWSALT");
