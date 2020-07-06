@@ -2,7 +2,7 @@
 .SH NAME
 e4crypt \- ext4 filesystem encryption utility
 .SH SYNOPSIS
-.B e4crypt add_key -S \fR[\fB -k \fIkeyring\fR ] [\fB-v\fR] [\fB-q\fR] \fR[\fB -p \fIpad\fR ] [ \fIpath\fR ... ]
+.B e4crypt add_key \fR[\fB-vq\fR] [\fB-S\fI salt\fR ] [\fB-k \fIkeyring\fR ] [\fB -p \fIpad\fR ] [ \fIpath\fR ... ]
 .br
 .B e4crypt new_session
 .br
