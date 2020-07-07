@@ -48,7 +48,9 @@ values are 4, 8, 16, and 32.
 If one or more directory paths are specified, e4crypt will try to
 set the policy of those directories to use the key just added by the
 .B add_key
-command.
+command.  If a salt was explicitly specified, then it will be used
+to derive the encryption key of those directories.  Otherwise a
+directory-specific default salt will be used.
 .TP
 .B e4crypt get_policy \fIpath\fR ...
 Print the policy for the directories specified on the command line.
