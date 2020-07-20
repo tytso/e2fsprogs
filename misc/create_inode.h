@@ -11,7 +11,7 @@
 struct hdlink_s
 {
 	dev_t src_dev;
-	ino_t src_ino;
+	ext2_ino_t src_ino;
 	ext2_ino_t dst_ino;
 };
 
