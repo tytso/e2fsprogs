@@ -601,7 +601,7 @@ out:
 	return err;
 }
 
-static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ext2_ino_t ino)
+static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ino_t ino)
 {
 	int i;
 
