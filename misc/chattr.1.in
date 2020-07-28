@@ -23,13 +23,13 @@ chattr \- change file attributes on a Linux file system
 .B chattr
 changes the file attributes on a Linux file system.
 .PP
-The format of a symbolic mode is +-=[aAcCdDeFijPsStTu].
+The format of a symbolic mode is +-=[aAcCdDeFijPsStTux].
 .PP
 The operator '+' causes the selected attributes to be added to the
 existing attributes of the files; '-' causes them to be removed; and '='
 causes them to be the only attributes that the files have.
 .PP
-The letters 'aAcCdDeFijPsStTu' select the new attributes for the files:
+The letters 'aAcCdDeFijPsStTux' select the new attributes for the files:
 append only (a),
 no atime updates (A),
 compressed (c),
@@ -45,7 +45,8 @@ secure deletion (s),
 synchronous updates (S),
 no tail-merging (t),
 top of directory hierarchy (T),
-and undeletable (u).
+undeletable (u),
+and direct access for files (x).
 .PP
 The following attributes are read-only, and may be listed by
 .BR lsattr (1)
@@ -209,6 +210,14 @@ When a file with the 'u' attribute set is deleted, its contents are
 saved.  This allows the user to ask for its undeletion.  Note: please
 make sure to read the bugs and limitations section at the end of this
 document.
+.TP
+.B x
+The 'x' attribute can be set on a directory or file.  If the attribute
+is set on an existing directory, it will be inherited by all files and
+subdirectories that are subsequently created in the directory.  If an
+existing directory has contained some files and subdirectories, modifying
+the attribute on the parent directory doesn't change the attributes on
+these files and subdirectories.
 .TP
 .B V
 A file with the 'V' attribute set has fs-verity enabled.  It cannot be
