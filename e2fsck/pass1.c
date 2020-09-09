@@ -1282,6 +1282,7 @@ static void e2fsck_pass1_set_thread_num(e2fsck_t ctx)
 	}
 out:
 	ctx->fs_num_threads = num_threads;
+	ctx->fs->fs_num_threads = num_threads;
 }
 #endif
 
@@ -2551,14 +2552,14 @@ static void e2fsck_pass1_merge_invalid_bitmaps(e2fsck_t global_ctx,
 }
 
 static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx,
-					     int thread_index, int num_threads)
+					     int thread_index, int num_threads,
+					     dgrp_t average_group)
 {
 	errcode_t		retval;
 	e2fsck_t		thread_context;
 	ext2_filsys		thread_fs;
 	ext2_filsys		global_fs = global_ctx->fs;
 	struct e2fsck_thread	*tinfo;
-	dgrp_t			average_group;
 
 	assert(global_ctx->inode_used_map == NULL);
 	assert(global_ctx->inode_dir_map == NULL);
@@ -2605,16 +2606,9 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 	thread_context->thread_info.et_thread_index = thread_index;
 	set_up_logging(thread_context);
 
-	/*
-	 * Distribute work to multiple threads:
-	 * Each thread work on fs->group_desc_count / nthread groups.
-	 */
 	tinfo = &thread_context->thread_info;
-	average_group = thread_fs->group_desc_count / num_threads;
-	if (average_group == 0)
-		average_group = 1;
 	tinfo->et_group_start = average_group * thread_index;
-	if (thread_index == num_threads - 1)
+	if (thread_index == global_fs->fs_num_threads - 1)
 		tinfo->et_group_end = thread_fs->group_desc_count;
 	else
 		tinfo->et_group_end = average_group * (thread_index + 1);
@@ -3130,12 +3124,13 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 }
 
 static int e2fsck_pass1_threads_join(struct e2fsck_thread_info *infos,
-				      int num_threads, e2fsck_t global_ctx)
+				     e2fsck_t global_ctx)
 {
 	errcode_t			 rc;
 	errcode_t			 ret = 0;
 	int				 i;
 	struct e2fsck_thread_info	*pinfo;
+	int				 num_threads = global_ctx->fs_num_threads;
 
 	/* merge invalid bitmaps will recalculate it */
 	global_ctx->invalid_bitmaps = 0;
@@ -3217,7 +3212,7 @@ out:
 }
 
 static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
-				      int num_threads, e2fsck_t global_ctx)
+				      e2fsck_t global_ctx)
 {
 	struct e2fsck_thread_info	*infos;
 	pthread_attr_t			 attr;
@@ -3226,6 +3221,8 @@ static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
 	struct e2fsck_thread_info	*tmp_pinfo;
 	int				 i;
 	e2fsck_t			 thread_ctx;
+	dgrp_t				 average_group;
+	int				 num_threads = global_ctx->fs_num_threads;
 #ifdef DEBUG_THREADS
 	struct e2fsck_thread_debug	 thread_debug =
 		{PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER, 0};
@@ -3249,6 +3246,7 @@ static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
 		return retval;
 	}
 
+	average_group = ext2fs_get_avg_group(global_ctx->fs);
 	for (i = 0; i < num_threads; i++) {
 		tmp_pinfo = &infos[i];
 		tmp_pinfo->eti_thread_index = i;
@@ -3256,7 +3254,8 @@ static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
 		tmp_pinfo->eti_debug = &thread_debug;
 #endif
 		retval = e2fsck_pass1_thread_prepare(global_ctx, &thread_ctx,
-						     i, num_threads);
+						     i, num_threads,
+						     average_group);
 		if (retval) {
 			com_err(global_ctx->program_name, retval,
 				_("while preparing pass1 thread\n"));
@@ -3286,7 +3285,7 @@ static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
 	}
 
 	if (retval) {
-		e2fsck_pass1_threads_join(infos, num_threads, global_ctx);
+		e2fsck_pass1_threads_join(infos, global_ctx);
 		return retval;
 	}
 	*pinfo = infos;
@@ -3296,17 +3295,16 @@ static int e2fsck_pass1_threads_start(struct e2fsck_thread_info **pinfo,
 static void e2fsck_pass1_multithread(e2fsck_t global_ctx)
 {
 	struct e2fsck_thread_info *infos = NULL;
-	int num_threads = global_ctx->fs_num_threads;
 	errcode_t retval;
 
-	retval = e2fsck_pass1_threads_start(&infos, num_threads, global_ctx);
+	retval = e2fsck_pass1_threads_start(&infos, global_ctx);
 	if (retval) {
 		com_err(global_ctx->program_name, retval,
 			_("while starting pass1 threads\n"));
 		goto out_abort;
 	}
 
-	retval = e2fsck_pass1_threads_join(infos, num_threads, global_ctx);
+	retval = e2fsck_pass1_threads_join(infos, global_ctx);
 	if (retval) {
 		com_err(global_ctx->program_name, retval,
 			_("while joining pass1 threads\n"));

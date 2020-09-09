@@ -262,10 +262,11 @@ struct struct_ext2_filsys {
 	int				cluster_ratio_bits;
 	__u16				default_bitmap_type;
 	__u16				pad;
+	__u32				fs_num_threads;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[5];
+	__u32				reserved[4];
 
 	/*
 	 * Reserved for the use of the calling application.
@@ -2147,6 +2148,35 @@ ext2fs_const_inode(const struct ext2_inode_large * large_inode)
 {
 	/* It is always safe to convert large inode to a small inode */
 	return (const struct ext2_inode *) large_inode;
+}
+
+static dgrp_t ext2fs_get_avg_group(ext2_filsys fs)
+{
+#ifdef HAVE_PTHREAD
+	dgrp_t average_group;
+	unsigned flexbg_size;
+
+	if (fs->fs_num_threads <= 1)
+		return fs->group_desc_count;
+
+	average_group = fs->group_desc_count / fs->fs_num_threads;
+	if (average_group <= 1)
+		return 1;
+
+	if (ext2fs_has_feature_flex_bg(fs->super)) {
+		int times = 1;
+
+		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+		if (average_group % flexbg_size) {
+			times = average_group / flexbg_size;
+			average_group = times * flexbg_size;
+		}
+	}
+
+	return average_group;
+#else
+	return fs->group_desc_count;
+#endif
 }
 
 #undef _INLINE_
