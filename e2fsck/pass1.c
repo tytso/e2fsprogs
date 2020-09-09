@@ -2123,6 +2123,12 @@ static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
 			return retval;
 	}
 
+	if (src->badblocks) {
+		retval = ext2fs_badblocks_copy(src->badblocks, &dest->badblocks);
+		if (retval)
+			return retval;
+	}
+
 	/* icache will be rebuilt if needed, so do not copy from @src */
 	src->icache = NULL;
 	return 0;
@@ -2153,6 +2159,13 @@ static int e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
 	if (src->icache) {
 		ext2fs_free_inode_cache(src->icache);
 		src->icache = NULL;
+	}
+
+	if (src->badblocks) {
+		retval = ext2fs_badblocks_copy(src->badblocks, &dest->badblocks);
+
+		ext2fs_badblocks_list_free(src->badblocks);
+		src->badblocks = NULL;
 	}
 
 	return retval;
