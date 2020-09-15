@@ -234,6 +234,8 @@ int e2fsck_can_readahead(ext2_filsys fs)
 	return err != EXT2_ET_OP_NOT_SUPPORTED;
 }
 
+#define MIN_DEFAULT_RA	(1024 * 1024)
+
 unsigned long long e2fsck_guess_readahead(ext2_filsys fs)
 {
 	unsigned long long guess;
@@ -245,6 +247,8 @@ unsigned long long e2fsck_guess_readahead(ext2_filsys fs)
 	 * in e2fsck runtime.
 	 */
 	guess = 2ULL * fs->blocksize * fs->inode_blocks_per_group;
+	if (guess < MIN_DEFAULT_RA)
+		guess = MIN_DEFAULT_RA;
 
 	/* Disable RA if it'd use more 1/50th of RAM. */
 	if (get_memory_size() > (guess * 50))
