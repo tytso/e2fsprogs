@@ -2086,8 +2086,10 @@ endit:
 		ctx->invalid_bitmaps++;
 }
 
-static void e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
+static errcode_t e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
 {
+	errcode_t	retval;
+
 	memcpy(dest, src, sizeof(struct struct_ext2_filsys));
 	if (dest->dblist)
 		dest->dblist->fs = dest;
@@ -2095,6 +2097,29 @@ static void e2fsck_pass1_copy_fs(ext2_filsys dest, ext2_filsys src)
 		dest->inode_map->fs = dest;
 	if (dest->block_map)
 		dest->block_map->fs = dest;
+
+	/* icache will be rebuilt if needed, so do not copy from @src */
+	src->icache = NULL;
+	return 0;
+}
+
+static void e2fsck_pass1_merge_fs(ext2_filsys dest, ext2_filsys src)
+{
+	struct ext2_inode_cache *icache = dest->icache;
+
+	memcpy(dest, src, sizeof(struct struct_ext2_filsys));
+	if (dest->dblist)
+		dest->dblist->fs = dest;
+	if (dest->inode_map)
+		dest->inode_map->fs = dest;
+	if (dest->block_map)
+		dest->block_map->fs = dest;
+	dest->icache = icache;
+
+	if (src->icache) {
+		ext2fs_free_inode_cache(src->icache);
+		src->icache = NULL;
+	}
 }
 
 static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thread_ctx)
@@ -2118,12 +2143,18 @@ static errcode_t e2fsck_pass1_thread_prepare(e2fsck_t global_ctx, e2fsck_t *thre
 		goto out_context;
 	}
 
-	e2fsck_pass1_copy_fs(thread_fs, global_fs);
+	retval = e2fsck_pass1_copy_fs(thread_fs, global_fs);
+	if (retval) {
+		com_err(global_ctx->program_name, retval, "while copying fs");
+		goto out_fs;
+	}
 	thread_fs->priv_data = thread_context;
 
 	thread_context->fs = thread_fs;
 	*thread_ctx = thread_context;
 	return 0;
+out_fs:
+	ext2fs_free_mem(&thread_fs);
 out_context:
 	ext2fs_free_mem(&thread_context);
 	return retval;
@@ -2147,7 +2178,7 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 	global_ctx->flags |= (flags & E2F_FLAG_SIGNAL_MASK) |
 			     (global_ctx->flags & E2F_FLAG_SIGNAL_MASK);
 
-	e2fsck_pass1_copy_fs(global_fs, thread_fs);
+	e2fsck_pass1_merge_fs(global_fs, thread_fs);
 	global_fs->priv_data = global_ctx;
 	global_ctx->fs = global_fs;
 
