@@ -1235,6 +1235,7 @@ void e2fsck_pass1_run(e2fsck_t ctx)
 	}
 	pctx.errcode = e2fsck_allocate_inode_bitmap(fs,
 			_("directory inode map"),
+			ctx->global_ctx ? EXT2FS_BMAP64_RBTREE :
 			EXT2FS_BMAP64_AUTODIR,
 			"inode_dir_map", &ctx->inode_dir_map);
 	if (pctx.errcode) {
