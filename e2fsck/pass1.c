@@ -2464,6 +2464,23 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	ext2fs_block_bitmap inodes_to_rebuild = global_ctx->inodes_to_rebuild;
 	ext2_icount_t inode_count = global_ctx->inode_count;
 	ext2_icount_t inode_link_info = global_ctx->inode_link_info;
+	__u32 fs_directory_count = global_ctx->fs_directory_count;
+	__u32 fs_regular_count = global_ctx->fs_regular_count;
+	__u32 fs_blockdev_count = global_ctx->fs_blockdev_count;
+	__u32 fs_chardev_count = global_ctx->fs_chardev_count;
+	__u32 fs_links_count = global_ctx->fs_links_count;
+	__u32 fs_symlinks_count = global_ctx->fs_symlinks_count;
+	__u32 fs_fast_symlinks_count = global_ctx->fs_fast_symlinks_count;
+	__u32 fs_fifo_count = global_ctx->fs_fifo_count;
+	__u32 fs_total_count = global_ctx->fs_total_count;
+	__u32 fs_badblocks_count = global_ctx->fs_badblocks_count;
+	__u32 fs_sockets_count = global_ctx->fs_sockets_count;
+	__u32 fs_ind_count = global_ctx->fs_ind_count;
+	__u32 fs_dind_count = global_ctx->fs_dind_count;
+	__u32 fs_tind_count = global_ctx->fs_tind_count;
+	__u32 fs_fragmented = global_ctx->fs_fragmented;
+	__u32 fs_fragmented_dir = global_ctx->fs_fragmented_dir;
+	__u32 large_files = global_ctx->large_files;
 
 #ifdef HAVE_SETJMP_H
 	jmp_buf		 old_jmp;
@@ -2490,6 +2507,23 @@ static int e2fsck_pass1_thread_join_one(e2fsck_t global_ctx, e2fsck_t thread_ctx
 	e2fsck_pass1_merge_dir_info(global_ctx, thread_ctx);
 	global_ctx->inode_count = inode_count;
 	global_ctx->inode_link_info = inode_link_info;
+	global_ctx->fs_directory_count += fs_directory_count;
+	global_ctx->fs_regular_count += fs_regular_count;
+	global_ctx->fs_blockdev_count += fs_blockdev_count;
+	global_ctx->fs_chardev_count += fs_chardev_count;
+	global_ctx->fs_links_count += fs_links_count;
+	global_ctx->fs_symlinks_count += fs_symlinks_count;
+	global_ctx->fs_fast_symlinks_count += fs_fast_symlinks_count;
+	global_ctx->fs_fifo_count += fs_fifo_count;
+	global_ctx->fs_total_count += fs_total_count;
+	global_ctx->fs_badblocks_count += fs_badblocks_count;
+	global_ctx->fs_sockets_count += fs_sockets_count;
+	global_ctx->fs_ind_count += fs_ind_count;
+	global_ctx->fs_dind_count += fs_dind_count;
+	global_ctx->fs_tind_count += fs_tind_count;
+	global_ctx->fs_fragmented += fs_fragmented;
+	global_ctx->fs_fragmented_dir += fs_fragmented_dir;
+	global_ctx->large_files += large_files;
 
 	/* Keep the global singal flags*/
 	global_ctx->flags |= (flags & E2F_FLAG_SIGNAL_MASK) |
