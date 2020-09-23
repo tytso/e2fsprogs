@@ -968,11 +968,76 @@ static void rb_print_stats(ext2fs_generic_bitmap_64 bitmap EXT2FS_ATTR((unused))
 }
 #endif
 
+static errcode_t rb_merge_bmap(ext2fs_generic_bitmap_64 src,
+			       ext2fs_generic_bitmap_64 dest,
+			       ext2fs_generic_bitmap_64 dup,
+			       ext2fs_generic_bitmap_64 dup_allowed)
+{
+	struct ext2fs_rb_private *src_bp, *dest_bp, *dup_bp = NULL;
+	struct bmap_rb_extent *src_ext;
+	struct rb_node *src_node;
+	errcode_t retval = 0;
+	int dup_found = 0;
+	__u64 i;
+
+	src_bp = (struct ext2fs_rb_private *) src->private;
+	dest_bp = (struct ext2fs_rb_private *) dest->private;
+	if (dup)
+		dup_bp = (struct ext2fs_rb_private *)dup->private;
+	src_bp->rcursor = NULL;
+	dest_bp->rcursor = NULL;
+
+	src_node = ext2fs_rb_first(&src_bp->root);
+	while (src_node) {
+		src_ext = node_to_extent(src_node);
+		retval = rb_test_clear_bmap_extent(dest,
+					src_ext->start + src->start,
+					src_ext->count);
+		if (retval) {
+			rb_insert_extent(src_ext->start, src_ext->count,
+					 dest_bp);
+			goto next;
+		}
+
+		/* unlikely case, do it one by one block */
+		for (i = src_ext->start;
+		     i < src_ext->start + src_ext->count; i++) {
+			retval = rb_test_clear_bmap_extent(dest, i + src->start, 1);
+			if (retval) {
+				rb_insert_extent(i, 1, dest_bp);
+				continue;
+			}
+			if (dup_allowed) {
+				retval = rb_test_clear_bmap_extent(dup_allowed,
+							i + src->start, 1);
+				/* not existed in dup_allowed */
+				if (retval) {
+					dup_found = 1;
+					if (dup_bp)
+						rb_insert_extent(i, 1, dup_bp);
+				} /* else we conside it not duplicated */
+			} else {
+				if (dup_bp)
+					rb_insert_extent(i, 1, dup_bp);
+				dup_found = 1;
+			}
+		}
+next:
+		src_node = ext2fs_rb_next(src_node);
+	}
+
+	if (dup_found && dup)
+		return EEXIST;
+
+	return 0;
+}
+
 struct ext2_bitmap_ops ext2fs_blkmap64_rbtree = {
 	.type = EXT2FS_BMAP64_RBTREE,
 	.new_bmap = rb_new_bmap,
 	.free_bmap = rb_free_bmap,
 	.copy_bmap = rb_copy_bmap,
+	.merge_bmap = rb_merge_bmap,
 	.resize_bmap = rb_resize_bmap,
 	.mark_bmap = rb_mark_bmap,
 	.unmark_bmap = rb_unmark_bmap,

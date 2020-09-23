@@ -344,6 +344,35 @@ errcode_t ext2fs_copy_generic_bmap(ext2fs_generic_bitmap gen_src,
 	return 0;
 }
 
+errcode_t ext2fs_merge_generic_bmap(ext2fs_generic_bitmap gen_src,
+				    ext2fs_generic_bitmap gen_dest,
+				    ext2fs_generic_bitmap gen_dup,
+				    ext2fs_generic_bitmap gen_dup_allowed)
+{
+	ext2fs_generic_bitmap_64 src = (ext2fs_generic_bitmap_64)gen_src;
+	ext2fs_generic_bitmap_64 dest = (ext2fs_generic_bitmap_64)gen_dest;
+	ext2fs_generic_bitmap_64 dup = (ext2fs_generic_bitmap_64)gen_dup;
+	ext2fs_generic_bitmap_64 dup_allowed = (ext2fs_generic_bitmap_64)gen_dup_allowed;
+
+	if (!src || !dest)
+		return EINVAL;
+
+	if (!EXT2FS_IS_64_BITMAP(src) || !EXT2FS_IS_64_BITMAP(dest) ||
+	    (dup && !EXT2FS_IS_64_BITMAP(dup)) ||
+		(dup_allowed && !EXT2FS_IS_64_BITMAP(dup_allowed)))
+		return EINVAL;
+
+	if (src->bitmap_ops != dest->bitmap_ops ||
+	    (dup && src->bitmap_ops != dup->bitmap_ops) ||
+	    (dup_allowed && src->bitmap_ops != dup_allowed->bitmap_ops))
+		return EINVAL;
+
+	if (src->bitmap_ops->merge_bmap == NULL)
+		return EOPNOTSUPP;
+
+	return src->bitmap_ops->merge_bmap(src, dest, dup, dup_allowed);
+}
+
 errcode_t ext2fs_resize_generic_bmap(ext2fs_generic_bitmap gen_bmap,
 				     __u64 new_end,
 				     __u64 new_real_end)
