@@ -3080,32 +3080,14 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 		fputs("</problem_log>\n", thread_ctx->problem_logf);
 		fclose(thread_ctx->problem_logf);
 	}
-	e2fsck_pass1_free_bitmap(&thread_ctx->inode_used_map);
-	e2fsck_pass1_free_bitmap(&thread_ctx->inode_bad_map);
-	e2fsck_pass1_free_bitmap(&thread_ctx->inode_dir_map);
-	e2fsck_pass1_free_bitmap(&thread_ctx->inode_bb_map);
-	e2fsck_pass1_free_bitmap(&thread_ctx->inode_imagic_map);
-	e2fsck_pass1_free_bitmap(&thread_ctx->inode_reg_map);
-	e2fsck_pass1_free_bitmap(&thread_ctx->inodes_to_rebuild);
-	e2fsck_pass1_free_bitmap(&thread_ctx->block_found_map);
-	e2fsck_pass1_free_bitmap(&thread_ctx->block_ea_map);
-	if (thread_ctx->refcount)
-		ea_refcount_free(thread_ctx->refcount);
-	if (thread_ctx->refcount_extra)
-		ea_refcount_free(thread_ctx->refcount_extra);
-	if (thread_ctx->ea_inode_refs)
-		ea_refcount_free(thread_ctx->ea_inode_refs);
-	if (thread_ctx->refcount_orig)
-		ea_refcount_free(thread_ctx->refcount_orig);
-	e2fsck_free_dir_info(thread_ctx);
-	ext2fs_free_icount(thread_ctx->inode_count);
-	ext2fs_free_icount(thread_ctx->inode_link_info);
-	if (thread_ctx->dirs_to_hash)
-		ext2fs_badblocks_list_free(thread_ctx->dirs_to_hash);
-	quota_release_context(&thread_ctx->qctx);
-	ext2fs_free_mem(&thread_ctx->invalid_block_bitmap_flag);
-	ext2fs_free_mem(&thread_ctx->invalid_inode_bitmap_flag);
-	ext2fs_free_mem(&thread_ctx->invalid_inode_table_flag);
+
+	/*
+	 * @block_metadata_map and @block_dup_map are
+	 * shared, so we don't free them.
+	 */
+	thread_ctx->block_metadata_map = NULL;
+	thread_ctx->block_dup_map = NULL;
+	e2fsck_reset_context(thread_ctx);
 	ext2fs_free_mem(&thread_ctx);
 
 	return retval;
