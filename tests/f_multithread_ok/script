@@ -1,0 +1,21 @@
+FSCK_OPT="-fym4"
+SKIP_VERIFY="true"
+ONE_PASS_ONLY="true"
+SKIP_CLEANUP="true"
+
+. $cmd_dir/run_e2fsck
+
+grep -v Thread $OUT1 > $OUT1.tmp
+cmp -s $EXP1 $OUT1.tmp
+status1=$?
+if [ "$status1" -eq 0 ]; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP1 $OUT1.tmp > $test_name.failed
+fi
+
+unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2
+unset SKIP_VERIFY SKIP_CLEANUP SKIP_GUNZIP ONE_PASS_ONLY PREP_CMD
+unset DESCRIPTION SKIP_UNLINK AFTER_CMD PASS_ZERO
