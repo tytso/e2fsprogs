@@ -102,6 +102,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ea_refcount_free(ctx->refcount_extra);
 		ctx->refcount_extra = 0;
 	}
+	if (ctx->refcount_orig) {
+		ea_refcount_free(ctx->refcount_orig);
+		ctx->refcount_orig = 0;
+	}
 	if (ctx->ea_block_quota_blocks) {
 		ea_refcount_free(ctx->ea_block_quota_blocks);
 		ctx->ea_block_quota_blocks = 0;

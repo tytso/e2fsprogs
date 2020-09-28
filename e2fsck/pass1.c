@@ -3111,6 +3111,7 @@ static int e2fsck_pass1_thread_join(e2fsck_t global_ctx, e2fsck_t thread_ctx)
 		fclose(thread_ctx->problem_logf);
 	}
 
+	quota_release_context(&thread_ctx->qctx);
 	/*
 	 * @block_metadata_map and @block_dup_map are
 	 * shared, so we don't free them.
