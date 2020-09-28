@@ -8,7 +8,7 @@ e2fsck \- check a Linux ext2/ext3/ext4 file system
 .SH SYNOPSIS
 .B e2fsck
 [
-.B \-pacnyrdfkvtDFV
+.B \-pacnyrdfkmvtDFV
 ]
 [
 .B \-b
@@ -328,6 +328,12 @@ Set the bad blocks list to be the list of blocks specified by
 .B \-l
 option, except the bad blocks list is cleared before the blocks listed
 in the file are added to the bad blocks list.)
+.TP
+.B \-m " threads"
+Run e2fsck with up to the specified number of
+.IR threads .
+The actual number of threads may be lower, if the filesystem does not
+have enough block groups to effectively parallelize the workload.
 .TP
 .B \-n
 Open the filesystem read-only, and assume an answer of `no' to all

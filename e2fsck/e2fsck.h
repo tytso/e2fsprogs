@@ -243,8 +243,8 @@ struct e2fsck_thread {
 	dgrp_t		et_group_next;
 	/* Scanned inode number */
 	ext2_ino_t	et_inode_number;
-	char		et_log_buf[2048];
 	char		et_log_length;
+	char		et_log_buf[2048];
 };
 #endif
 
@@ -332,11 +332,6 @@ struct e2fsck_struct {
 	 */
 	ext2_ino_t		stashed_ino;
 	struct ext2_inode	*stashed_inode;
-
-	/* if @global_ctx is null, this field is unused */
-#ifdef HAVE_PTHREAD
-	struct e2fsck_thread	 thread_info;
-#endif
 
 	/*
 	 * Location of the lost and found directory
@@ -450,7 +445,9 @@ struct e2fsck_struct {
 	/* Undo file */
 	char *undo_file;
 #ifdef HAVE_PTHREAD
-	__u32			 fs_num_threads;
+	/* if @global_ctx is null, this field is unused */
+	struct e2fsck_thread	 thread_info;
+	__u32			 pfs_num_threads;
 	__u32			 mmp_update_thread;
 	int			 fs_need_locking;
 	/* serialize fix operation for multiple threads */
@@ -689,7 +686,7 @@ int check_backup_super_block(e2fsck_t ctx);
 void check_resize_inode(e2fsck_t ctx);
 
 /* util.c */
-#define E2FSCK_MAX_THREADS	(65536)
+#define E2FSCK_MAX_THREADS	(65535)
 extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 				    const char *description);
 extern int ask(e2fsck_t ctx, const char * string, int def);

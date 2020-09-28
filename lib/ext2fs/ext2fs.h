@@ -261,12 +261,11 @@ struct struct_ext2_filsys {
 	time_t				now;
 	int				cluster_ratio_bits;
 	__u16				default_bitmap_type;
-	__u16				pad;
-	__u32				fs_num_threads;
+	__u16				fs_num_threads;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[4];
+	__u32				reserved[5];
 
 	/*
 	 * Reserved for the use of the calling application.

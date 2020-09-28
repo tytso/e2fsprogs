@@ -908,12 +908,12 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 					_("Invalid multiple thread num.\n"));
 			if (thread_num > E2FSCK_MAX_THREADS) {
 				fprintf(stderr,
-					_("threads %lu too large (max %lu)\n"),
+					_("threads %lu too large (max %u)\n"),
 					thread_num, E2FSCK_MAX_THREADS);
 				fatal_error(ctx, 0);
 			}
 			ctx->options |= E2F_OPT_MULTITHREAD;
-			ctx->fs_num_threads = thread_num;
+			ctx->pfs_num_threads = thread_num;
 			break;
 #endif
 		case 'n':
