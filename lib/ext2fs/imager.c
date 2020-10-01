@@ -67,7 +67,7 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 	blk64_t		blk;
 	ssize_t		actual;
 	errcode_t	retval;
-	loff_t		r;
+	ext2_loff_t	r;
 
 	buf = malloc(fs->blocksize * BUF_BLOCKS);
 	if (!buf)

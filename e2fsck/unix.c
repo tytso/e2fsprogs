@@ -1444,7 +1444,7 @@ int main (int argc, char *argv[])
 		fputs("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n",
 		      ctx->problem_logf);
 		fprintf(ctx->problem_logf, "<problem_log time=\"%lu\">\n",
-			ctx->now);
+			(unsigned long) ctx->now);
 		fprintf(ctx->problem_logf, "<invocation prog=\"%s\"",
 			argv[0]);
 		for (i = 1; i < argc; i++)

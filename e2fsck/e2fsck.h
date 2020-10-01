@@ -627,7 +627,7 @@ extern void log_err(e2fsck_t ctx, const char *fmt, ...)
 extern void e2fsck_read_bitmaps(e2fsck_t ctx);
 extern void e2fsck_write_bitmaps(e2fsck_t ctx);
 extern void preenhalt(e2fsck_t ctx);
-extern char *string_copy(e2fsck_t ctx, const char *str, int len);
+extern char *string_copy(e2fsck_t ctx, const char *str, size_t len);
 extern int fs_proc_check(const char *fs_name);
 extern int check_for_modules(const char *fs_name);
 #ifdef RESOURCE_TRACK

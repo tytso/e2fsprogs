@@ -276,7 +276,11 @@ void do_open_filesys(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 				return;
 			break;
 		case 'z':
+#ifdef READ_ONLY
+			goto print_usage;
+#else
 			undo_file = optarg;
+#endif
 			break;
 		default:
 			goto print_usage;
@@ -294,9 +298,10 @@ void do_open_filesys(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 
 print_usage:
 	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] "
+#ifdef READ_ONLY
 		"[-d image_filename] [-z undo_file] [-c] [-i] [-f] [-e] [-D] "
-#ifndef READ_ONLY
-		"[-w] "
+#else
+		"[-d image_filename] [-c] [-i] [-f] [-e] [-D] [-w] "
 #endif
 		"<device>\n", argv[0]);
 }
@@ -2379,7 +2384,6 @@ void do_fallocate(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		return;
 	}
 }
-#endif /* READ_ONLY */
 
 void do_symlink(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		void *infop EXT2FS_ATTR((unused)))
@@ -2395,6 +2399,7 @@ void do_symlink(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		com_err(argv[0], retval, 0);
 
 }
+#endif /* READ_ONLY */
 
 #if CONFIG_MMP
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[],
@@ -2539,8 +2544,8 @@ int main(int argc, char **argv)
 	const char	*opt_string = "nicR:f:b:s:Vd:D";
 #else
 	const char	*opt_string = "niwcR:f:b:s:Vd:Dz:";
-	char		*undo_file = NULL;
 #endif
+	char		*undo_file = NULL;
 #ifdef CONFIG_JBD_DEBUG
 	char		*jbd_debug;
 #endif
@@ -2612,9 +2617,11 @@ int main(int argc, char **argv)
 			fprintf(stderr, "\tUsing %s\n",
 				error_message(EXT2_ET_BASE));
 			exit(0);
+#ifndef READ_ONLY
 		case 'z':
 			undo_file = optarg;
 			break;
+#endif
 		default:
 			com_err(argv[0], 0, usage, debug_prog_name);
 			return 1;

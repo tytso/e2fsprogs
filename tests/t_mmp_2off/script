@@ -8,7 +8,7 @@ if [ "$status" != 0 ] ; then
 	return $status
 fi
 
-$TUNE2FS -O ^mmp $TMPFILE > $test_name.log 2>&1
+$TUNE2FS -O ^mmp $TMPFILE >> $test_name.log 2>&1
 status=$?
 if [ "$status" != 0 ] ; then
 	echo "tune2fs -O ^mmp failed" > $test_name.failed
@@ -16,7 +16,7 @@ if [ "$status" != 0 ] ; then
 	return $status
 fi
 
-$FSCK $FSCK_OPT $TMPFILE > $test_name.log 2>&1
+$FSCK $FSCK_OPT $TMPFILE >> $test_name.log 2>&1
 status=$?
 if [ "$status" = 0 ] ; then
 	echo "$test_name: $test_description: ok"

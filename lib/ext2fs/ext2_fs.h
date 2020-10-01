@@ -335,6 +335,7 @@ struct ext2_dx_tail {
 /* EXT4_EOFBLOCKS_FL 0x00400000 was here */
 #define FS_NOCOW_FL			0x00800000 /* Do not cow file */
 #define EXT4_SNAPFILE_FL		0x01000000  /* Inode is a snapshot */
+#define FS_DAX_FL			0x02000000 /* Inode is DAX */
 #define EXT4_SNAPFILE_DELETED_FL	0x04000000  /* Snapshot is being deleted */
 #define EXT4_SNAPFILE_SHRUNK_FL		0x08000000  /* Snapshot shrink has completed */
 #define EXT4_INLINE_DATA_FL		0x10000000 /* Inode has inline data */

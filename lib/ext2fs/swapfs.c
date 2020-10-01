@@ -456,12 +456,11 @@ errcode_t ext2fs_dirent_swab_out2(ext2_filsys fs, char *buf,
 {
 	errcode_t	retval;
 	char		*p, *end;
-	unsigned int	rec_len, left;
+	unsigned int	rec_len;
 	struct ext2_dir_entry *dirent;
 
 	p = buf;
 	end = buf + size;
-	left = size;
 	while (p < end) {
 		dirent = (struct ext2_dir_entry *) p;
 		retval = ext2fs_get_rec_len(fs, dirent, &rec_len);
