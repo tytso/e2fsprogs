@@ -251,7 +251,7 @@ struct e2fsck_thread {
 struct e2fsck_struct {
 	/* Global context to get the cancel flag */
 	e2fsck_t		global_ctx;
-	ext2_filsys fs;
+	ext2_filsys fs; /* [fs_fix_rwlock] */
 	const char *program_name;
 	char *filesystem_name;
 	char *device_name;
@@ -260,7 +260,9 @@ struct e2fsck_struct {
 	char	*log_fn;
 	FILE	*problem_logf;
 	char	*problem_log_fn;
-	int	flags;		/* E2fsck internal flags */
+	/* E2fsck internal flags.
+	 * shared by different threads for pass1 [fs_fix_rwlock] */
+	int	flags;
 	int	options;
 	unsigned blocksize;	/* blocksize */
 	blk64_t	use_superblock;	/* sb requested by user */
@@ -281,6 +283,7 @@ struct e2fsck_struct {
 	int (*progress)(e2fsck_t ctx, int pass, unsigned long cur,
 			unsigned long max);
 
+	/* The following inode bitmaps are separately used in thread_ctx Pass1*/
 	ext2fs_inode_bitmap inode_used_map; /* Inodes which are in use */
 	ext2fs_inode_bitmap inode_bad_map; /* Inodes which are bad somehow */
 	ext2fs_inode_bitmap inode_dir_map; /* Inodes which are directories */
@@ -288,12 +291,14 @@ struct e2fsck_struct {
 	ext2fs_inode_bitmap inode_imagic_map; /* AFS inodes */
 	ext2fs_inode_bitmap inode_reg_map; /* Inodes which are regular files*/
 
+	/* Following 3 protected by [fs_block_map_rwlock] */
 	ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 	ext2fs_block_bitmap block_dup_map; /* Blks referenced more than once */
 	ext2fs_block_bitmap block_ea_map; /* Blocks which are used by EA's */
 
 	/*
-	 * Inode count arrays
+	 * Inode count arrays.
+	 * Separately used in thread_ctx, pass1
 	 */
 	ext2_icount_t	inode_count;
 	ext2_icount_t inode_link_info;
@@ -315,7 +320,8 @@ struct e2fsck_struct {
 
 	/*
 	 * Array of flags indicating whether an inode bitmap, block
-	 * bitmap, or inode table is invalid
+	 * bitmap, or inode table is invalid.
+	 * Separately used in thread_ctx, pass1
 	 */
 	int *invalid_inode_bitmap_flag;
 	int *invalid_block_bitmap_flag;
@@ -328,7 +334,8 @@ struct e2fsck_struct {
 	char *block_buf;
 
 	/*
-	 * For pass1_check_directory and pass1_get_blocks
+	 * For pass1_check_directory and pass1_get_blocks.
+	 * Separately used in thread_ctx in pass1
 	 */
 	ext2_ino_t		stashed_ino;
 	struct ext2_inode	*stashed_inode;
@@ -387,6 +394,7 @@ struct e2fsck_struct {
 
 	/*
 	 * How we display the progress update (for unix)
+	 * shared by different threads for pass1 [fs_fix_rwlock]
 	 */
 	int progress_fd;
 	int progress_pos;
@@ -395,7 +403,7 @@ struct e2fsck_struct {
 	int interactive;	/* Are we connected directly to a tty? */
 	char start_meta[2], stop_meta[2];
 
-	/* File counts */
+	/* File counts. Separately used in thread_ctx, pass1 */
 	__u32 fs_directory_count;
 	__u32 fs_regular_count;
 	__u32 fs_blockdev_count;
