@@ -894,7 +894,7 @@ AC_SUBST(GETTEXT_PACKAGE)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
-AM_GNU_GETTEXT
+AM_GNU_GETTEXT([external])
 dnl
 dnl End of configuration options
 dnl
@@ -1781,8 +1781,7 @@ for i in MCONFIG Makefile \
 	lib/ss/ss.pc lib/et/com_err.pc lib/e2p/e2p.pc lib/ext2fs/ext2fs.pc \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
-	resize/Makefile doc/Makefile intl/Makefile \
-	intl/libgnuintl.h po/Makefile.in scrub/Makefile; do
+	resize/Makefile doc/Makefile po/Makefile.in scrub/Makefile; do
 	if test -d `dirname ${srcdir}/$i` ; then
 		outlist="$outlist $i"
 	fi
