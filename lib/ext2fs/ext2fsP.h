@@ -104,6 +104,8 @@ struct ext2fs_nls_ops {
 	int (*casefold)(const struct ext2fs_nls_table *charset,
 			const unsigned char *str, size_t len,
 			unsigned char *dest, size_t dlen);
+	int (*validate)(const struct ext2fs_nls_table *table,
+			char *s, size_t len, char **pos);
 };
 
 /* Function prototypes */

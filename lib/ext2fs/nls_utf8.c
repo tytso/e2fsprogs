@@ -920,8 +920,30 @@ invalid_seq:
 	return -EINVAL;
 }
 
+static int utf8_validate(const struct ext2fs_nls_table *table,
+			 char *s, size_t len, char **pos)
+{
+	const struct utf8data *data = utf8nfdicf(table->version);
+	utf8leaf_t	*leaf;
+	unsigned char	hangul[UTF8HANGULLEAF];
+
+	if (!data)
+		return -1;
+	while (len && *s) {
+		leaf = utf8nlookup(data, hangul, s, len);
+		if (!leaf) {
+			*pos = s;
+			return 1;
+		}
+		len -= utf8clen(s);
+		s += utf8clen(s);
+	}
+	return 0;
+}
+
 static const struct ext2fs_nls_ops utf8_ops = {
 	.casefold = utf8_casefold,
+	.validate = utf8_validate,
 };
 
 static const struct ext2fs_nls_table nls_utf8 = {
@@ -935,4 +957,10 @@ const struct ext2fs_nls_table *ext2fs_load_nls_table(int encoding)
 		return &nls_utf8;
 
 	return NULL;
+}
+
+int ext2fs_check_encoded_name(const struct ext2fs_nls_table *table,
+			      char *name, size_t len, char **pos)
+{
+	return table->ops->validate(table, name, len, pos);
 }
