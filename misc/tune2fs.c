@@ -161,7 +161,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_64BIT |
 		EXT4_FEATURE_INCOMPAT_ENCRYPT |
 		EXT4_FEATURE_INCOMPAT_CSUM_SEED |
-		EXT4_FEATURE_INCOMPAT_LARGEDIR,
+		EXT4_FEATURE_INCOMPAT_LARGEDIR |
+		EXT4_FEATURE_INCOMPAT_CASEFOLD,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -1512,6 +1513,18 @@ mmp_error:
 				return 1;
 			rewrite_checksums = REWRITE_ALL;
 		}
+	}
+
+	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD)) {
+		if (ext2fs_has_feature_encrypt(sb)) {
+			fputs(_("Cannot enable casefold feature on filesystems "
+				"with the encrypt feature enabled.\n"),
+			      stderr);
+			return 1;
+		}
+
+		sb->s_encoding = EXT4_ENC_UTF8_12_1;
+		sb->s_encoding_flags = e2p_get_encoding_flags(sb->s_encoding);
 	}
 
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
