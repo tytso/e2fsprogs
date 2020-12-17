@@ -1028,6 +1028,9 @@ struct problem_context {
 /* Encrypted directory contains file with different encryption policy */
 #define PR_2_INCONSISTENT_ENCRYPTION_POLICY	0x020052
 
+/* Encoded directory entry has illegal characters in its name */
+#define PR_2_BAD_ENCODED_NAME		0x020053
+
 /*
  * Pass 3 errors
  */

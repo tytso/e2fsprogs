@@ -1805,6 +1805,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Encrypted @E references @i %Di, which has a different encryption policy.\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
 
+	/* Casefolded directory entry has illegal characters in its name */
+	{ PR_2_BAD_ENCODED_NAME,
+	  N_("@E has illegal UTF-8 characters in its name.\n"),
+	  PROMPT_FIX, 0, 0, 0, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */
