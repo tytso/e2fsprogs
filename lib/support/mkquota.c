@@ -234,7 +234,7 @@ out:
 /* Helper functions for computing quota in memory.                */
 /******************************************************************/
 
-static int dict_uint_cmp(const void *a, const void *b)
+static int dict_uint_cmp(const void *cmp_ctx, const void *a, const void *b)
 {
 	unsigned int	c, d;
 

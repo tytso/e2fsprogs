@@ -328,7 +328,7 @@ static short htree_depth(struct dx_dir_info *dx_dir,
 	return depth;
 }
 
-static int dict_de_cmp(const void *a, const void *b)
+static int dict_de_cmp(const void *cmp_ctx, const void *a, const void *b)
 {
 	const struct ext2_dir_entry *de_a, *de_b;
 	int	a_len, b_len;
