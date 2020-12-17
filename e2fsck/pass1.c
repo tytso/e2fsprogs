@@ -23,6 +23,7 @@
  * 	- A bitmap of which inodes have bad fields.	(inode_bad_map)
  * 	- A bitmap of which inodes are in bad blocks.	(inode_bb_map)
  * 	- A bitmap of which inodes are imagic inodes.	(inode_imagic_map)
+ * 	- A bitmap of which inodes are casefolded.	(inode_casefold_map)
  * 	- A bitmap of which blocks are in use.		(block_found_map)
  * 	- A bitmap of which blocks are in use by two inodes	(block_dup_map)
  * 	- The data blocks of the directory inodes.	(dir_map)
@@ -1260,6 +1261,20 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
+	if (casefold_fs) {
+		pctx.errcode =
+			e2fsck_allocate_inode_bitmap(fs,
+						     _("inode casefold map"),
+						     EXT2FS_BMAP64_RBTREE,
+						     "inode_casefold_map",
+						     &ctx->inode_casefold_map);
+		if (pctx.errcode) {
+			pctx.num = 1;
+			fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
+	}
 	pctx.errcode = e2fsck_setup_icount(ctx, "inode_link_info", 0, NULL,
 					   &ctx->inode_link_info);
 	if (pctx.errcode) {
@@ -1869,6 +1884,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if ((inode->i_flags & EXT4_ENCRYPT_FL) &&
 		    add_encrypted_file(ctx, &pctx) < 0)
 			goto clear_inode;
+
+		if (casefold_fs && inode->i_flags & EXT4_CASEFOLD_FL)
+			ext2fs_mark_inode_bitmap2(ctx->inode_casefold_map, ino);
 
 		if (LINUX_S_ISDIR(inode->i_mode)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_dir_map, ino);

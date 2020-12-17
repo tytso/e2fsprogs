@@ -75,6 +75,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_free_block_bitmap(ctx->block_found_map);
 		ctx->block_found_map = 0;
 	}
+	if (ctx->inode_casefold_map) {
+		ext2fs_free_block_bitmap(ctx->inode_casefold_map);
+		ctx->inode_casefold_map = 0;
+	}
 	if (ctx->inode_link_info) {
 		ext2fs_free_icount(ctx->inode_link_info);
 		ctx->inode_link_info = 0;

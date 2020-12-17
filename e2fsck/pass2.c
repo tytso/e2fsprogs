@@ -36,11 +36,13 @@
  * 	- The inode_bad_map bitmap
  * 	- The inode_dir_map bitmap
  * 	- The encrypted_file_info
+ *	- The inode_casefold_map bitmap
  *
  * Pass 2 frees the following data structures
  * 	- The inode_bad_map bitmap
  * 	- The inode_reg_map bitmap
  * 	- The encrypted_file_info
+ *	- The inode_casefold_map bitmap
  */
 
 #define _GNU_SOURCE 1 /* get strnlen() */
@@ -287,6 +289,10 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
 		ctx->inode_reg_map = 0;
 	}
+	if (ctx->inode_casefold_map) {
+		ext2fs_free_inode_bitmap(ctx->inode_casefold_map);
+		ctx->inode_casefold_map = 0;
+	}
 	destroy_encrypted_file_info(ctx);
 
 	clear_problem_context(&pctx);
@@ -513,6 +519,30 @@ static int encrypted_check_name(e2fsck_t ctx,
 		ext2fs_unmark_valid(ctx->fs);
 	}
 	return 0;
+}
+
+static int encoded_check_name(e2fsck_t ctx,
+			      struct ext2_dir_entry *dirent,
+			      struct problem_context *pctx)
+{
+	const struct ext2fs_nls_table *tbl = ctx->fs->encoding;
+	int ret;
+	int len = ext2fs_dirent_name_len(dirent);
+	char *pos, *end;
+
+	ret = ext2fs_check_encoded_name(tbl, dirent->name, len, &pos);
+	if (ret < 0) {
+		fatal_error(ctx, _("NLS is broken."));
+	} else if(ret > 0) {
+		ret = fix_problem(ctx, PR_2_BAD_ENCODED_NAME, pctx);
+		if (ret) {
+			end = &dirent->name[len];
+			for (; *pos && pos != end; pos++)
+				*pos = '.';
+		}
+	}
+
+	return (ret || check_name(ctx, dirent, pctx));
 }
 
 /*
@@ -998,10 +1028,17 @@ static int check_dir_block(ext2_filsys fs,
 	size_t	max_block_size;
 	int	hash_flags = 0;
 	static char *eop_read_dirblock = NULL;
+	int cf_dir = 0;
 
 	cd = (struct check_dir_struct *) priv_data;
 	ibuf = buf = cd->buf;
 	ctx = cd->ctx;
+
+	/* We only want filename encoding verification on strict
+	 * mode. */
+	if (ext2fs_test_inode_bitmap2(ctx->inode_casefold_map, ino) &&
+	    (ctx->fs->super->s_encoding_flags & EXT4_ENC_STRICT_MODE_FL))
+		cf_dir = 1;
 
 	if (ctx->flags & E2F_FLAG_RUN_RETURN)
 		return DIRENT_ABORT;
@@ -1483,11 +1520,7 @@ skip_checksum:
 		if (check_filetype(ctx, dirent, ino, &cd->pctx))
 			dir_modified++;
 
-		if (dir_encpolicy_id == NO_ENCRYPTION_POLICY) {
-			/* Unencrypted directory */
-			if (check_name(ctx, dirent, &cd->pctx))
-				dir_modified++;
-		} else {
+		if (dir_encpolicy_id != NO_ENCRYPTION_POLICY) {
 			/* Encrypted directory */
 			if (dot_state > 1 &&
 			    check_encrypted_dirent(ctx, dirent,
@@ -1497,6 +1530,14 @@ skip_checksum:
 				dir_modified++;
 				goto next;
 			}
+		} else if (cf_dir) {
+			/* Casefolded directory */
+			if (encoded_check_name(ctx, dirent, &cd->pctx))
+				dir_modified++;
+		} else {
+			/* Unencrypted and uncasefolded directory */
+			if (check_name(ctx, dirent, &cd->pctx))
+				dir_modified++;
 		}
 
 		if (dx_db) {
