@@ -622,6 +622,7 @@ ac_includes_default="\
 gt_needs=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+OS_IO_FILE
 systemd_system_unit_dir
 have_systemd
 systemd_LIBS
@@ -12671,6 +12672,15 @@ else
 fi
 
 
+OS_IO_FILE=""
+case "$host_os" in
+  cigwin*|mingw*|msys*)
+    OS_IO_FILE=windows_io
+  ;;
+  *)
+    OS_IO_FILE=unix_io
+  ;;
+esac
 
 test -d lib || mkdir lib
 test -d include || mkdir include
