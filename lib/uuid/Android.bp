@@ -37,4 +37,8 @@ cc_library {
     header_libs: ["libext2-headers"],
     export_include_dirs: ["."],
     export_header_lib_headers: ["libext2-headers"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.virt",
+    ],
 }
