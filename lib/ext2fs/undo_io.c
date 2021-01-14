@@ -698,6 +698,8 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 	int		undo_fd = -1;
 	errcode_t	retval;
 
+	/* We don't support multi-threading, at least for now */
+	flags &= ~IO_FLAG_THREADS;
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
 	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
