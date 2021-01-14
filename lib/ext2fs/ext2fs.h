@@ -689,6 +689,14 @@ struct ext2_xattr_handle;
 #define XATTR_CHANGED	2
 
 /*
+ * flags for ext2fs_rw_bitmaps()
+ */
+#define EXT2FS_BITMAPS_WRITE		0x0001
+#define EXT2FS_BITMAPS_BLOCK		0x0002
+#define EXT2FS_BITMAPS_INODE		0x0004
+#define EXT2FS_BITMAPS_VALID_FLAGS	0x0007
+
+/*
  * function prototypes
  */
 static inline int ext2fs_has_group_desc_csum(ext2_filsys fs)
