@@ -942,6 +942,8 @@ static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 #ifdef NO_IO_CACHE
 	return raw_read_blk(channel, data, block, count, buf);
 #else
+	if (data->flags & IO_FLAG_NOCACHE)
+		return raw_read_blk(channel, data, block, count, buf);
 	/*
 	 * If we're doing an odd-sized read or a very large read,
 	 * flush out the cache and then do a direct read.
@@ -1032,6 +1034,8 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 #ifdef NO_IO_CACHE
 	return raw_write_blk(channel, data, block, count, buf);
 #else
+	if (data->flags & IO_FLAG_NOCACHE)
+		return raw_write_blk(channel, data, block, count, buf);
 	/*
 	 * If we're doing an odd-sized write or a very large write,
 	 * flush out the cache completely and then do a direct write.
@@ -1161,6 +1165,7 @@ static errcode_t unix_set_option(io_channel channel, const char *option,
 {
 	struct unix_private_data *data;
 	unsigned long long tmp;
+	errcode_t retval;
 	char *end;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
@@ -1178,6 +1183,20 @@ static errcode_t unix_set_option(io_channel channel, const char *option,
 		if (data->offset < 0)
 			return EXT2_ET_INVALID_ARGUMENT;
 		return 0;
+	}
+	if (!strcmp(option, "cache")) {
+		if (!arg)
+			return EXT2_ET_INVALID_ARGUMENT;
+		if (!strcmp(arg, "on")) {
+			data->flags &= ~IO_FLAG_NOCACHE;
+			return 0;
+		}
+		if (!strcmp(arg, "off")) {
+			retval = flush_cached_blocks(channel, data, 0);
+			data->flags |= IO_FLAG_NOCACHE;
+			return retval;
+		}
+		return EXT2_ET_INVALID_ARGUMENT;
 	}
 	return EXT2_ET_INVALID_ARGUMENT;
 }
