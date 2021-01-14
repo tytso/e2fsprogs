@@ -231,7 +231,8 @@ void do_open_filesys(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 	int	catastrophic = 0;
 	blk64_t	superblock = 0;
 	blk64_t	blocksize = 0;
-	int	open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS; 
+	int	open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS |
+		EXT2_FLAG_THREADS;
 	char	*data_filename = 0;
 	char	*undo_file = NULL;
 
@@ -2532,7 +2533,8 @@ int main(int argc, char **argv)
 #endif
 		"[-c]] [device]";
 	int		c;
-	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS;
+	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES |
+				EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 	char		*request = 0;
 	int		exit_status = 0;
 	char		*cmd_file = 0;

@@ -3727,7 +3727,8 @@ int main(int argc, char *argv[])
 	errcode_t err;
 	char *logfile;
 	char extra_args[BUFSIZ];
-	int ret = 0, flags = EXT2_FLAG_64BITS | EXT2_FLAG_EXCLUSIVE;
+	int ret = 0;
+	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE;
 
 	memset(&fctx, 0, sizeof(fctx));
 	fctx.magic = FUSE2FS_MAGIC;

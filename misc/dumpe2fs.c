@@ -665,7 +665,7 @@ int main (int argc, char ** argv)
 
 	device_name = argv[optind++];
 	flags = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SOFTSUPP_FEATURES |
-		EXT2_FLAG_64BITS;
+		EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 	if (force)
 		flags |= EXT2_FLAG_FORCE;
 	if (image_dump)

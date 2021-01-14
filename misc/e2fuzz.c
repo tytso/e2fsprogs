@@ -201,8 +201,8 @@ static int process_fs(const char *fsname)
 	}
 
 	/* Ensure the fs is clean and does not have errors */
-	ret = ext2fs_open(fsname, EXT2_FLAG_64BITS, 0, 0, unix_io_manager,
-			  &fs);
+	ret = ext2fs_open(fsname, EXT2_FLAG_64BITS | EXT2_FLAG_THREADS,
+			  0, 0, unix_io_manager, &fs);
 	if (ret) {
 		fprintf(stderr, "%s: failed to open filesystem.\n",
 			fsname);

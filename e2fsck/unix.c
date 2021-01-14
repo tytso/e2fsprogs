@@ -1474,7 +1474,7 @@ int main (int argc, char *argv[])
 	}
 	ctx->superblock = ctx->use_superblock;
 
-	flags = EXT2_FLAG_SKIP_MMP;
+	flags = EXT2_FLAG_SKIP_MMP | EXT2_FLAG_THREADS;
 restart:
 #ifdef CONFIG_TESTIO_DEBUG
 	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {

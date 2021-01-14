@@ -2950,7 +2950,8 @@ retry_open:
 	if ((open_flag & EXT2_FLAG_RW) == 0 || f_flag)
 		open_flag |= EXT2_FLAG_SKIP_MMP;
 
-	open_flag |= EXT2_FLAG_64BITS | EXT2_FLAG_JOURNAL_DEV_OK;
+	open_flag |= EXT2_FLAG_64BITS | EXT2_FLAG_THREADS |
+		EXT2_FLAG_JOURNAL_DEV_OK;
 
 	/* keep the filesystem struct around to dump MMP data */
 	open_flag |= EXT2_FLAG_NOFREE_ON_ERROR;

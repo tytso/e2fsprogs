@@ -404,7 +404,7 @@ int main (int argc, char ** argv)
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
 
-	io_flags |= EXT2_FLAG_64BITS;
+	io_flags |= EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 	if (undo_file) {
 		retval = resize2fs_setup_tdb(device_name, undo_file, &io_ptr);
 		if (retval)

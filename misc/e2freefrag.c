@@ -363,7 +363,7 @@ static void collect_info(ext2_filsys fs, struct chunk_info *chunk_info, FILE *f)
 static void open_device(char *device_name, ext2_filsys *fs)
 {
 	int retval;
-	int flag = EXT2_FLAG_FORCE | EXT2_FLAG_64BITS;
+	int flag = EXT2_FLAG_FORCE | EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 
 	retval = ext2fs_open(device_name, flag, 0, 0, unix_io_manager, fs);
 	if (retval) {
