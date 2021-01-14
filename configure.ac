@@ -773,6 +773,30 @@ fi
 dnl
 dnl
 dnl
+AC_ARG_WITH([pthread],
+[  --without-pthread       disable use of pthread support],
+[if test "$withval" = "no"
+then
+	try_pthread=""
+	AC_MSG_RESULT([Disabling pthread support])
+else
+	try_pthread="yes"
+	AC_MSG_RESULT([Testing for pthread support])
+fi]
+,
+try_pthread="yes"
+AC_MSG_RESULT([Try testing for pthread support by default])
+)
+if test "$try_pthread" = "yes"
+then
+AX_PTHREAD
+else
+test -n "$PTHREAD_CC" || PTHREAD_CC="$CC"
+AC_SUBST([PTHREAD_CC])
+fi
+dnl
+dnl
+dnl
 AH_TEMPLATE([USE_UUIDD], [Define to 1 to build uuidd])
 AC_ARG_ENABLE([uuidd],
 [  --disable-uuidd         disable building the uuid daemon],
