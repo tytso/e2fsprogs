@@ -689,7 +689,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	journal->j_tail = ntohl(jsb->s_start);
 	journal->j_first = ntohl(jsb->s_first);
 	if (jbd2_has_feature_fast_commit(journal)) {
-		if (ntohl(jsb->s_maxlen) - jbd_get_num_fc_blks(jsb)
+		if (ntohl(jsb->s_maxlen) - jbd2_journal_get_num_fc_blks(jsb)
 			< JBD2_MIN_JOURNAL_BLOCKS) {
 			com_err(ctx->program_name, EXT2_ET_CORRUPT_JOURNAL_SB,
 				_("%s: incorrect fast commit blocks\n"),
@@ -698,7 +698,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 		}
 		journal->j_fc_last = ntohl(jsb->s_maxlen);
 		journal->j_last = journal->j_fc_last -
-					jbd_get_num_fc_blks(jsb);
+					jbd2_journal_get_num_fc_blks(jsb);
 		journal->j_fc_first = journal->j_last + 1;
 	} else {
 		journal->j_last = ntohl(jsb->s_maxlen);

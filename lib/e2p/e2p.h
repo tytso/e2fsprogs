@@ -47,6 +47,7 @@ void print_fs_state (FILE * f, unsigned short state);
 int setflags (int fd, unsigned long flags);
 int setversion (int fd, unsigned long version);
 
+#define E2P_LIST_JOURNAL_FLAG_FC		0x1
 void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 			    int exp_block_size, int flags);
 

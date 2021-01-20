@@ -72,10 +72,6 @@ extern void * __jbd_kmalloc (char *where, size_t size, int flags, int retry);
 	__jbd_kmalloc(__FUNCTION__, (size), (flags), journal_oom_retry)
 #define jbd_rep_kmalloc(size, flags) \
 	__jbd_kmalloc(__FUNCTION__, (size), (flags), 1)
-#define jbd_get_num_fc_blks(jsb)					\
-	(be32_to_cpu((jsb)->s_num_fc_blks) ?				\
-	 be32_to_cpu((jsb)->s_num_fc_blks) : JBD2_DEFAULT_FAST_COMMIT_BLOCKS)
-
 
 #define JBD2_MIN_JOURNAL_BLOCKS 1024
 #define JBD2_DEFAULT_FAST_COMMIT_BLOCKS 256
@@ -425,6 +421,13 @@ _INLINE_ int jbd2_journal_has_csum_v2or3(journal_t *journal)
 		return 1;
 
 	return 0;
+}
+
+_INLINE_ int jbd2_journal_get_num_fc_blks(journal_superblock_t *jsb)
+{
+	int num_fc_blocks = be32_to_cpu(jsb->s_num_fc_blks);
+
+	return num_fc_blocks ? num_fc_blocks : JBD2_DEFAULT_FAST_COMMIT_BLOCKS;
 }
 
 /* Comparison functions for transaction IDs: perform comparisons using

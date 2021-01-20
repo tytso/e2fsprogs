@@ -221,6 +221,12 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_MKJOURNAL_LAZYINIT	0x0000002 /* don't zero journal inode before use*/
 #define EXT2_MKJOURNAL_NO_MNT_CHECK 0x0000004 /* don't check mount status */
 
+/*
+ * Normal journal area size to fast commit area size ratio. This is used to
+ * set default size of fast commit area.
+ */
+#define EXT2_JOURNAL_TO_FC_BLKS_RATIO		64
+
 struct blk_alloc_ctx;
 struct opaque_ext2_group_desc;
 
@@ -1629,6 +1635,12 @@ extern errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum
 			      const char *name);
 
 /* mkjournal.c */
+struct ext2fs_journal_params {
+	blk_t num_journal_blocks;
+	blk_t num_fc_blocks;
+};
+extern errcode_t ext2fs_get_journal_params(
+		struct ext2fs_journal_params *params, ext2_filsys fs);
 extern errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 				    blk_t *ret_blk, int *ret_count);
 extern errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
@@ -1636,12 +1648,18 @@ extern errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 extern errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 						  __u32 num_blocks, int flags,
 						  char  **ret_jsb);
+extern errcode_t ext2fs_create_journal_superblock2(ext2_filsys fs,
+						  struct ext2fs_journal_params *params,
+						  int flags, char  **ret_jsb);
 extern errcode_t ext2fs_add_journal_device(ext2_filsys fs,
 					   ext2_filsys journal_dev);
 extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t num_blocks,
 					  int flags);
 extern errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
 					   blk64_t goal, int flags);
+extern errcode_t ext2fs_add_journal_inode3(ext2_filsys fs,
+				    struct ext2fs_journal_params *params,
+				    blk64_t goal, int flags);
 extern int ext2fs_default_journal_size(__u64 num_blocks);
 extern int ext2fs_journal_sb_start(int blocksize);
 

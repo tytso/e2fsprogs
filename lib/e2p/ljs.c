@@ -36,6 +36,17 @@ static __u32 e2p_swab32(__u32 val)
 #define e2p_be32(x) e2p_swab32(x)
 #endif
 
+/*
+ * This function is copied from kernel-jbd.h's function
+ * jbd2_journal_get_num_fc_blks() to avoid inter-library dependencies.
+ */
+static inline int get_num_fc_blks(journal_superblock_t *jsb)
+{
+	int num_fc_blocks = e2p_be32(jsb->s_num_fc_blks);
+
+	return num_fc_blocks ? num_fc_blocks : JBD2_DEFAULT_FAST_COMMIT_BLOCKS;
+}
+
 static const char *journal_checksum_type_str(__u8 type)
 {
 	switch (type) {
@@ -54,7 +65,12 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 	unsigned int size;
 	int j, printed = 0;
 	unsigned int i, nr_users;
+	int num_fc_blks = 0;
+	int journal_blks = 0;
 
+	if (flags & E2P_LIST_JOURNAL_FLAG_FC)
+		num_fc_blks = get_num_fc_blks((journal_superblock_t *)journal_sb_buf);
+	journal_blks = ntohl(jsb->s_maxlen) - num_fc_blks;
 	fprintf(f, "%s", "Journal features:        ");
 	for (i=0, mask_ptr=&jsb->s_feature_compat; i <3; i++,mask_ptr++) {
 		mask = e2p_be32(*mask_ptr);
@@ -68,7 +84,7 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 	if (printed == 0)
 		fprintf(f, " (none)");
 	fputc('\n', f);
-	fputs("Journal size:             ", f);
+	fputs("Total journal size:       ", f);
 	size = (ntohl(jsb->s_blocksize) / 1024) * ntohl(jsb->s_maxlen);
 	if (size < 8192)
 		fprintf(f, "%uk\n", size);
@@ -78,8 +94,13 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 	if (exp_block_size != (int) ntohl(jsb->s_blocksize))
 		fprintf(f, "Journal block size:       %u\n",
 			(unsigned int)ntohl(jsb->s_blocksize));
-	fprintf(f, "Journal length:           %u\n",
-		(unsigned int)ntohl(jsb->s_maxlen));
+	fprintf(f, "Total journal blocks:     %u\n",
+		(unsigned int)(journal_blks + num_fc_blks));
+	fprintf(f, "Max transaction length:   %u\n",
+		(unsigned int)journal_blks);
+	fprintf(f, "Fast commit length:       %u\n",
+		(unsigned int)num_fc_blks);
+
 	if (ntohl(jsb->s_first) != 1)
 		fprintf(f, "Journal first block:      %u\n",
 			(unsigned int)ntohl(jsb->s_first));
