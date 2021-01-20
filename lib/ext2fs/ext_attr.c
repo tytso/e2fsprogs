@@ -336,6 +336,7 @@ struct ea_name_index {
 
 /* Keep these names sorted in order of decreasing specificity. */
 static struct ea_name_index ea_names[] = {
+	{10, "gnu."},
 	{3, "system.posix_acl_default"},
 	{2, "system.posix_acl_access"},
 	{8, "system.richacl"},

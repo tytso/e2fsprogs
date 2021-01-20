@@ -438,13 +438,13 @@ static int frag_report(const char *filename)
 		goto out_close;
 	}
 
-	if (last_device != st.st_dev) {
+	if ((last_device != st.st_dev) || !st.st_dev) {
 		if (fstatfs(fd, &fsinfo) < 0) {
 			rc = -errno;
 			perror("fstatfs");
 			goto out_close;
 		}
-		if (ioctl(fd, FIGETBSZ, &blksize) < 0)
+		if ((ioctl(fd, FIGETBSZ, &blksize) < 0) || !blksize)
 			blksize = fsinfo.f_bsize;
 		if (verbose)
 			printf("Filesystem type is: %lx\n",
