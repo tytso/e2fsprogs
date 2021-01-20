@@ -49,7 +49,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs);
 static errcode_t inode_ref_fix(ext2_resize_t rfs);
 static errcode_t move_itables(ext2_resize_t rfs);
 static errcode_t fix_resize_inode(ext2_filsys fs);
-static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs);
+static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs);
 static errcode_t fix_sb_journal_backup(ext2_filsys fs);
 static errcode_t mark_table_blocks(ext2_filsys fs,
 				   ext2fs_block_bitmap bmap);
@@ -211,7 +211,7 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 		goto errout;
 
 	init_resource_track(&rtrack, "calculate_summary_stats", fs->io);
-	retval = ext2fs_calculate_summary_stats(rfs->new_fs);
+	retval = resize2fs_calculate_summary_stats(rfs->new_fs);
 	if (retval)
 		goto errout;
 	print_resource_track(rfs, &rtrack, fs->io);
@@ -2740,7 +2740,7 @@ errout:
 /*
  * Finally, recalculate the summary information
  */
-static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
+static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs)
 {
 	blk64_t		blk;
 	ext2_ino_t	ino;

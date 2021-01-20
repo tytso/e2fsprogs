@@ -2603,63 +2603,6 @@ err_out:
 	return retval;
 }
 
-static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
-{
-	blk64_t		blk;
-	ext2_ino_t	ino;
-	unsigned int	group = 0;
-	unsigned int	count = 0;
-	int		total_free = 0;
-	int		group_free = 0;
-
-	/*
-	 * First calculate the block statistics
-	 */
-	for (blk = fs->super->s_first_data_block;
-	     blk < ext2fs_blocks_count(fs->super); blk++) {
-		if (!ext2fs_fast_test_block_bitmap2(fs->block_map, blk)) {
-			group_free++;
-			total_free++;
-		}
-		count++;
-		if ((count == fs->super->s_blocks_per_group) ||
-		    (blk == ext2fs_blocks_count(fs->super)-1)) {
-			ext2fs_bg_free_blocks_count_set(fs, group++,
-							group_free);
-			count = 0;
-			group_free = 0;
-		}
-	}
-	total_free = EXT2FS_C2B(fs, total_free);
-	ext2fs_free_blocks_count_set(fs->super, total_free);
-
-	/*
-	 * Next, calculate the inode statistics
-	 */
-	group_free = 0;
-	total_free = 0;
-	count = 0;
-	group = 0;
-
-	/* Protect loop from wrap-around if s_inodes_count maxed */
-	for (ino = 1; ino <= fs->super->s_inodes_count && ino > 0; ino++) {
-		if (!ext2fs_fast_test_inode_bitmap2(fs->inode_map, ino)) {
-			group_free++;
-			total_free++;
-		}
-		count++;
-		if ((count == fs->super->s_inodes_per_group) ||
-		    (ino == fs->super->s_inodes_count)) {
-			ext2fs_bg_free_inodes_count_set(fs, group++,
-							group_free);
-			count = 0;
-			group_free = 0;
-		}
-	}
-	fs->super->s_free_inodes_count = total_free;
-	ext2fs_mark_super_dirty(fs);
-	return 0;
-}
 
 #define list_for_each_safe(pos, pnext, head) \
 	for (pos = (head)->next, pnext = pos->next; pos != (head); \
@@ -2738,7 +2681,7 @@ static int resize_inode(ext2_filsys fs, unsigned long new_size)
 	if (retval)
 		goto err_out_undo;
 
-	ext2fs_calculate_summary_stats(fs);
+	ext2fs_calculate_summary_stats(fs, 1 /* super only */);
 
 	fs->super->s_state |= EXT2_VALID_FS;
 	/* mark super block and block bitmap as dirty */
