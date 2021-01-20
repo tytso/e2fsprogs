@@ -20,12 +20,18 @@
 #define REQ_OP_READ 0
 #define REQ_OP_WRITE 1
 
+#define cpu_to_le16(x)	ext2fs_cpu_to_le16(x)
 #define cpu_to_be16(x)	ext2fs_cpu_to_be16(x)
+#define cpu_to_le32(x)	ext2fs_cpu_to_le32(x)
 #define cpu_to_be32(x)	ext2fs_cpu_to_be32(x)
+#define cpu_to_le64(x)	ext2fs_cpu_to_le64(x)
 #define cpu_to_be64(x)	ext2fs_cpu_to_be64(x)
 
+#define le16_to_cpu(x)	ext2fs_le16_to_cpu(x)
 #define be16_to_cpu(x)	ext2fs_be16_to_cpu(x)
+#define le32_to_cpu(x)	ext2fs_le32_to_cpu(x)
 #define be32_to_cpu(x)	ext2fs_be32_to_cpu(x)
+#define le64_to_cpu(x)	ext2fs_le64_to_cpu(x)
 #define be64_to_cpu(x)	ext2fs_be64_to_cpu(x)
 
 typedef unsigned int tid_t;

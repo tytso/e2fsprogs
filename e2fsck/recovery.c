@@ -121,27 +121,6 @@ failed:
 
 #endif /* __KERNEL__ */
 
-static inline __u32 get_be32(__be32 *p)
-{
-	unsigned char *cp = (unsigned char *) p;
-	__u32 ret;
-
-	ret = *cp++;
-	ret = (ret << 8) + *cp++;
-	ret = (ret << 8) + *cp++;
-	ret = (ret << 8) + *cp++;
-	return ret;
-}
-
-static inline __u16 get_be16(__be16 *p)
-{
-	unsigned char *cp = (unsigned char *) p;
-	__u16 ret;
-
-	ret = *cp++;
-	ret = (ret << 8) + *cp++;
-	return ret;
-}
 
 /*
  * Read a block from the journal
@@ -232,10 +211,10 @@ static int count_tags(journal_t *journal, struct buffer_head *bh)
 
 		nr++;
 		tagp += tag_bytes;
-		if (!(get_be16(&tag->t_flags) & JBD2_FLAG_SAME_UUID))
+		if (!(tag->t_flags & cpu_to_be16(JBD2_FLAG_SAME_UUID)))
 			tagp += 16;
 
-		if (get_be16(&tag->t_flags) & JBD2_FLAG_LAST_TAG)
+		if (tag->t_flags & cpu_to_be16(JBD2_FLAG_LAST_TAG))
 			break;
 	}
 
@@ -358,9 +337,9 @@ int jbd2_journal_skip_recovery(journal_t *journal)
 static inline unsigned long long read_tag_block(journal_t *journal,
 						journal_block_tag_t *tag)
 {
-	unsigned long long block = get_be32(&tag->t_blocknr);
+	unsigned long long block = be32_to_cpu(tag->t_blocknr);
 	if (jbd2_has_feature_64bit(journal))
-		block |= (u64)get_be32(&tag->t_blocknr_high) << 32;
+		block |= (u64)be32_to_cpu(tag->t_blocknr_high) << 32;
 	return block;
 }
 
@@ -429,9 +408,9 @@ static int jbd2_block_tag_csum_verify(journal_t *j, journal_block_tag_t *tag,
 	csum32 = jbd2_chksum(j, csum32, buf, j->j_blocksize);
 
 	if (jbd2_has_feature_csum3(j))
-		return get_be32(&tag3->t_checksum) == csum32;
-
-	return get_be16(&tag->t_checksum) == (csum32 & 0xFFFF);
+		return tag3->t_checksum == cpu_to_be32(csum32);
+	else
+		return tag->t_checksum == cpu_to_be16(csum32);
 }
 
 static int do_one_pass(journal_t *journal,
@@ -579,7 +558,7 @@ static int do_one_pass(journal_t *journal,
 				unsigned long io_block;
 
 				tag = (journal_block_tag_t *) tagp;
-				flags = get_be16(&tag->t_flags);
+				flags = be16_to_cpu(tag->t_flags);
 
 				io_block = next_log_block++;
 				wrap(journal, next_log_block);
@@ -643,9 +622,8 @@ static int do_one_pass(journal_t *journal,
 					memcpy(nbh->b_data, obh->b_data,
 							journal->j_blocksize);
 					if (flags & JBD2_FLAG_ESCAPE) {
-						__be32 magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
-						memcpy(nbh->b_data, &magic,
-						       sizeof(magic));
+						*((__be32 *)nbh->b_data) =
+						cpu_to_be32(JBD2_MAGIC_NUMBER);
 					}
 
 					BUFFER_TRACE(nbh, "marking dirty");
