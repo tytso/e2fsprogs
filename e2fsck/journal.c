@@ -379,7 +379,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 				goto errout;
 		}
 
-		journal->j_maxlen = EXT2_I_SIZE(&j_inode->i_ext2) /
+		journal->j_total_len = EXT2_I_SIZE(&j_inode->i_ext2) /
 			journal->j_blocksize;
 
 #ifdef USE_INODE_IO
@@ -503,7 +503,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 		brelse(bh);
 
 		maxlen = ext2fs_blocks_count(&jsuper);
-		journal->j_maxlen = (maxlen < 1ULL << 32) ? maxlen : (1ULL << 32) - 1;
+		journal->j_total_len = (maxlen < 1ULL << 32) ? maxlen : (1ULL << 32) - 1;
 		start++;
 	}
 
@@ -675,9 +675,9 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 	}
 
-	if (ntohl(jsb->s_maxlen) < journal->j_maxlen)
-		journal->j_maxlen = ntohl(jsb->s_maxlen);
-	else if (ntohl(jsb->s_maxlen) > journal->j_maxlen) {
+	if (ntohl(jsb->s_maxlen) < journal->j_total_len)
+		journal->j_total_len = ntohl(jsb->s_maxlen);
+	else if (ntohl(jsb->s_maxlen) > journal->j_total_len) {
 		com_err(ctx->program_name, EXT2_ET_CORRUPT_JOURNAL_SB,
 			_("%s: journal too short\n"),
 			ctx->device_name);
@@ -688,7 +688,21 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	journal->j_transaction_sequence = journal->j_tail_sequence;
 	journal->j_tail = ntohl(jsb->s_start);
 	journal->j_first = ntohl(jsb->s_first);
-	journal->j_last = ntohl(jsb->s_maxlen);
+	if (jbd2_has_feature_fast_commit(journal)) {
+		if (ntohl(jsb->s_maxlen) - jbd_get_num_fc_blks(jsb)
+			< JBD2_MIN_JOURNAL_BLOCKS) {
+			com_err(ctx->program_name, EXT2_ET_CORRUPT_JOURNAL_SB,
+				_("%s: incorrect fast commit blocks\n"),
+				ctx->device_name);
+			return EXT2_ET_CORRUPT_JOURNAL_SB;
+		}
+		journal->j_fc_last = ntohl(jsb->s_maxlen);
+		journal->j_last = journal->j_fc_last -
+					jbd_get_num_fc_blks(jsb);
+		journal->j_fc_first = journal->j_last + 1;
+	} else {
+		journal->j_last = ntohl(jsb->s_maxlen);
+	}
 
 	return 0;
 }
@@ -720,7 +734,7 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 	memset (p, 0, ctx->fs->blocksize-sizeof(journal_header_t));
 
 	jsb->s_blocksize = htonl(ctx->fs->blocksize);
-	jsb->s_maxlen = htonl(journal->j_maxlen);
+	jsb->s_maxlen = htonl(journal->j_total_len);
 	jsb->s_first = htonl(1);
 
 	/* Initialize the journal sequence number so that there is "no"

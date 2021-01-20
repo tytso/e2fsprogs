@@ -378,7 +378,7 @@ try_backup_journal:
 				goto errout;
 		}
 
-		journal->j_maxlen = EXT2_I_SIZE(&j_inode->i_ext2) /
+		journal->j_total_len = EXT2_I_SIZE(&j_inode->i_ext2) /
 			journal->j_blocksize;
 
 #ifdef USE_INODE_IO
@@ -493,7 +493,7 @@ try_backup_journal:
 		brelse(bh);
 
 		maxlen = ext2fs_blocks_count(&jsuper);
-		journal->j_maxlen = (maxlen < 1ULL << 32) ? maxlen :
+		journal->j_total_len = (maxlen < 1ULL << 32) ? maxlen :
 				    (1ULL << 32) - 1;
 		start++;
 	}
@@ -629,9 +629,9 @@ static errcode_t ext2fs_journal_load(journal_t *journal)
 	if (jsb->s_blocksize != htonl(journal->j_blocksize))
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
-	if (ntohl(jsb->s_maxlen) < journal->j_maxlen)
-		journal->j_maxlen = ntohl(jsb->s_maxlen);
-	else if (ntohl(jsb->s_maxlen) > journal->j_maxlen)
+	if (ntohl(jsb->s_maxlen) < journal->j_total_len)
+		journal->j_total_len = ntohl(jsb->s_maxlen);
+	else if (ntohl(jsb->s_maxlen) > journal->j_total_len)
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
 
 	journal->j_tail_sequence = ntohl(jsb->s_sequence);

@@ -12,6 +12,7 @@
 #else
 #include <arpa/inet.h>
 #endif
+#include <stdbool.h>
 
 #define printk printf
 #define KERN_ERR ""
@@ -66,9 +67,15 @@ static inline __u32 jbd2_chksum(journal_t *j EXT2FS_ATTR((unused)),
                 sizeof(struct __struct), __alignof__(struct __struct),\
                 (__flags), NULL)
 
-#define blkdev_issue_flush(kdev, a, b)	sync_blockdev(kdev)
+#define blkdev_issue_flush(kdev, a)	sync_blockdev(kdev)
 #define is_power_of_2(x)	((x) != 0 && (((x) & ((x) - 1)) == 0))
 #define pr_emerg(fmt)
+#define pr_err(...)
+
+enum passtype {PASS_SCAN, PASS_REVOKE, PASS_REPLAY};
+
+#define JBD2_FC_REPLAY_STOP		0
+#define JBD2_FC_REPLAY_CONTINUE		1
 
 struct journal_s
 {
@@ -79,13 +86,16 @@ struct journal_s
 	int			j_format_version;
 	unsigned long		j_head;
 	unsigned long		j_tail;
+	unsigned long		j_fc_first;
+	unsigned long		j_fc_off;
+	unsigned long		j_fc_last;
 	unsigned long		j_free;
 	unsigned long		j_first, j_last;
 	kdev_t			j_dev;
 	kdev_t			j_fs_dev;
 	int			j_blocksize;
 	unsigned int		j_blk_offset;
-	unsigned int		j_maxlen;
+	unsigned int		j_total_len;
 	struct inode *		j_inode;
 	tid_t			j_tail_sequence;
 	tid_t			j_transaction_sequence;
@@ -94,6 +104,11 @@ struct journal_s
 	struct jbd2_revoke_table_s *j_revoke_table[2];
 	tid_t			j_failed_commit;
 	__u32			j_csum_seed;
+	int (*j_fc_replay_callback)(struct journal_s *journal,
+				    struct buffer_head *bh,
+				    enum passtype pass, int off,
+				    tid_t expected_tid);
+
 };
 
 #define is_journal_abort(x) 0
