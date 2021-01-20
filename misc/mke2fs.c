@@ -93,6 +93,7 @@ static uid_t	root_uid;
 static gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
+int	journal_fc_size;
 static int	lazy_itable_init;
 static int	packed_meta_blocks;
 int		no_copy_xattrs;
@@ -604,9 +605,16 @@ static void create_journal_dev(ext2_filsys fs)
 	char			*buf;
 	blk64_t			blk, err_blk;
 	int			c, count, err_count;
+	struct ext2fs_journal_params	jparams;
 
-	retval = ext2fs_create_journal_superblock(fs,
-				  ext2fs_blocks_count(fs->super), 0, &buf);
+	retval = ext2fs_get_journal_params(&jparams, fs);
+	if (retval) {
+		com_err("create_journal_dev", retval, "%s",
+			_("while splitting the journal size"));
+		exit(1);
+	}
+
+	retval = ext2fs_create_journal_superblock2(fs, &jparams, 0, &buf);
 	if (retval) {
 		com_err("create_journal_dev", retval, "%s",
 			_("while initializing journal superblock"));
@@ -1753,6 +1761,8 @@ profile_error:
 		case 'j':
 			if (!journal_size)
 				journal_size = -1;
+			if (!journal_fc_size)
+				journal_fc_size = -1;
 			break;
 		case 'J':
 			parse_journal_opts(optarg);
@@ -2937,7 +2947,7 @@ int main (int argc, char *argv[])
 	badblocks_list	bb_list = 0;
 	badblocks_iterate	bb_iter;
 	blk_t		blk;
-	unsigned int	journal_blocks = 0;
+	struct ext2fs_journal_params	jparams = {0};
 	unsigned int	i, checkinterval;
 	int		max_mnt_count;
 	int		val, hash_alg;
@@ -3047,7 +3057,7 @@ int main (int argc, char *argv[])
 	/* Calculate journal blocks */
 	if (!journal_device && ((journal_size) ||
 	    ext2fs_has_feature_journal(&fs_param)))
-		journal_blocks = figure_journal_size(journal_size, fs);
+		figure_journal_size(&jparams, journal_size, journal_fc_size, fs);
 
 	sprintf(opt_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
 		32768 : fs->blocksize * 8);
@@ -3382,23 +3392,23 @@ int main (int argc, char *argv[])
 		free(journal_device);
 	} else if ((journal_size) ||
 		   ext2fs_has_feature_journal(&fs_param)) {
-		overhead += EXT2FS_NUM_B2C(fs, journal_blocks);
+		overhead += EXT2FS_NUM_B2C(fs, jparams.num_journal_blocks + jparams.num_fc_blocks);
 		if (super_only) {
 			printf("%s", _("Skipping journal creation in super-only mode\n"));
 			fs->super->s_journal_inum = EXT2_JOURNAL_INO;
 			goto no_journal;
 		}
 
-		if (!journal_blocks) {
+		if (!jparams.num_journal_blocks) {
 			ext2fs_clear_feature_journal(fs->super);
 			goto no_journal;
 		}
 		if (!quiet) {
 			printf(_("Creating journal (%u blocks): "),
-			       journal_blocks);
+			       jparams.num_journal_blocks + jparams.num_fc_blocks);
 			fflush(stdout);
 		}
-		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+		retval = ext2fs_add_journal_inode3(fs, &jparams,
 						   journal_location,
 						   journal_flags);
 		if (retval) {

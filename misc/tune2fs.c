@@ -102,7 +102,7 @@ static int feature_64bit;
 static int fsck_requested;
 static char *undo_file;
 
-int journal_size, journal_flags;
+int journal_size, journal_fc_size, journal_flags;
 char *journal_device;
 static blk64_t journal_location = ~0LL;
 
@@ -1543,7 +1543,7 @@ mmp_error:
  */
 static int add_journal(ext2_filsys fs)
 {
-	unsigned long journal_blocks;
+	struct ext2fs_journal_params	jparams;
 	errcode_t	retval;
 	ext2_filsys	jfs;
 	io_manager	io_ptr;
@@ -1589,13 +1589,13 @@ static int add_journal(ext2_filsys fs)
 	} else if (journal_size) {
 		fputs(_("Creating journal inode: "), stdout);
 		fflush(stdout);
-		journal_blocks = figure_journal_size(journal_size, fs);
+		figure_journal_size(&jparams, journal_size, journal_fc_size, fs);
 
 		if (journal_location_string)
 			journal_location =
 				parse_num_blocks2(journal_location_string,
 						  fs->super->s_log_block_size);
-		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+		retval = ext2fs_add_journal_inode3(fs, &jparams,
 						   journal_location,
 						   journal_flags);
 		if (retval) {

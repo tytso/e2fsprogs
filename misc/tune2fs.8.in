@@ -357,6 +357,27 @@ and may be no more than 10,240,000 filesystem blocks.
 There must be enough free space in the filesystem to create a journal of
 that size.
 .TP
+.BI fast_commit_size= fast-commit-size
+Create an additional fast commit journal area of size
+.I fast-commit-size
+kilobytes.
+This option is only valid if
+.B fast_commit
+feature is enabled
+on the file system. If this option is not specified and if
+.B fast_commit
+feature is turned on, fast commit area size defaults to
+.I journal-size
+/ 64 megabytes. The total size of the journal with
+.B fast_commit
+feature set is
+.I journal-size
++ (
+.I fast-commit-size
+* 1024) megabytes. The total journal size may be no more than
+10,240,000 filesystem blocks or half the total file system size
+(whichever is smaller).
+.TP
 .BI location =journal-location
 Specify the location of the journal.  The argument
 .I journal-location
@@ -585,6 +606,10 @@ Use a journal to ensure filesystem consistency even across unclean shutdowns.
 Setting the filesystem feature is equivalent to using the
 .B \-j
 option.
+.TP
+.TP
+.B fast_commit
+Enable fast commit journaling feature to improve fsync latency.
 .TP
 .B large_dir
 Increase the limit on the number of files per directory.

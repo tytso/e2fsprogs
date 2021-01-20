@@ -364,6 +364,7 @@ static void print_inline_journal_information(ext2_filsys fs)
 	errcode_t		retval;
 	ext2_ino_t		ino = fs->super->s_journal_inum;
 	char			buf[1024];
+	int			flags;
 
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
 		return;
@@ -392,7 +393,9 @@ static void print_inline_journal_information(ext2_filsys fs)
 			_("Journal superblock magic number invalid!\n"));
 		exit(1);
 	}
-	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
+	flags = ext2fs_has_feature_fast_commit(fs->super) ?
+			E2P_LIST_JOURNAL_FLAG_FC : 0;
+	e2p_list_journal_super(stdout, buf, fs->blocksize, flags);
 }
 
 static void print_journal_information(ext2_filsys fs)
@@ -400,6 +403,7 @@ static void print_journal_information(ext2_filsys fs)
 	errcode_t	retval;
 	char		buf[1024];
 	journal_superblock_t	*jsb;
+	int		flags;
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk64(fs->io,
@@ -417,7 +421,9 @@ static void print_journal_information(ext2_filsys fs)
 			_("Couldn't find journal superblock magic numbers"));
 		exit(1);
 	}
-	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
+	flags = ext2fs_has_feature_fast_commit(fs->super) ?
+			E2P_LIST_JOURNAL_FLAG_FC : 0;
+	e2p_list_journal_super(stdout, buf, fs->blocksize, flags);
 }
 
 static int check_mmp(ext2_filsys fs)
