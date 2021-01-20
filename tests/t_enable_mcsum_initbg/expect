@@ -58,9 +58,9 @@ Change in FS metadata:
  Journal backup:           inode blocks
 +Checksum type:            crc32c
  Journal features:         (none)
- Journal size:             16M
- Journal length:           16384
-@@ -41,24 +42,24 @@
+ Total journal size:       16M
+ Total journal blocks:     16384
+@@ -43,24 +44,24 @@
  Journal start:            0
  
  

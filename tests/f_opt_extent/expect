@@ -35,7 +35,7 @@ Change in FS metadata:
  Free inodes:              65047
  First block:              1
  Block size:               1024
-@@ -48,8 +48,8 @@
+@@ -50,8 +50,8 @@
    Block bitmap at 262 (+261)
    Inode bitmap at 278 (+277)
    Inode table at 294-549 (+293)
