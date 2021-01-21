@@ -1924,13 +1924,6 @@ print_unsupp_features:
 				jparams.num_journal_blocks = journal_size;
 				jparams.num_fc_blocks = 0;
 			}
-			if (jparams.num_journal_blocks < 0) {
-				ext2fs_clear_feature_journal(fs->super);
-				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-				log_out(ctx, "%s: Couldn't determine "
-					"journal size\n", ctx->program_name);
-				goto no_journal;
-			}
 			log_out(ctx, _("Creating journal (%d blocks): "),
 			       jparams.num_journal_blocks);
 			fflush(stdout);
