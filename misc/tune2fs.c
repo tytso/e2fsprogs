@@ -1238,9 +1238,10 @@ mmp_error:
 
 	if (FEATURE_OFF(E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_DIR_INDEX) &&
 	    ext2fs_has_feature_metadata_csum(sb)) {
-		check_fsck_needed(fs,
+		if (check_fsck_needed(fs,
 			_("Disabling directory index on filesystem with "
-			  "checksums could take some time."));
+			  "checksums could take some time.")))
+			return 1;
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("Cannot disable dir_index on a mounted "
 				"filesystem!\n"), stderr);
