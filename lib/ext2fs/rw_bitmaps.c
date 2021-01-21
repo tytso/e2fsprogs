@@ -576,7 +576,7 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 
 	thread_ids = calloc(sizeof(pthread_t), num_threads);
 	if (!thread_ids)
-		return -ENOMEM;
+		return ENOMEM;
 
 	thread_infos = calloc(sizeof(struct read_bitmaps_thread_info),
 				num_threads);
