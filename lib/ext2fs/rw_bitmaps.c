@@ -266,7 +266,6 @@ static errcode_t read_bitmaps_range_prepare(ext2_filsys fs, int flags)
 			goto cleanup;
 	}
 	ext2fs_free_mem(&buf);
-
 	return retval;
 
 cleanup:
@@ -278,8 +277,7 @@ cleanup:
 		ext2fs_free_inode_bitmap(fs->inode_map);
 		fs->inode_map = 0;
 	}
-	if (buf)
-		ext2fs_free_mem(&buf);
+	ext2fs_free_mem(&buf);
 	return retval;
 }
 
@@ -547,19 +545,19 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	    (num_threads == 1) || (fs->flags & EXT2_FLAG_IMAGE_FILE))
 		goto fallback;
 
-	if (num_threads < 0) {
 #if defined(HAVE_SYSCONF) && defined(_SC_NPROCESSORS_CONF)
+	if (num_threads < 0)
 		num_threads = sysconf(_SC_NPROCESSORS_CONF);
-#else
-		/*
-		 * Guess for now; eventually we should probably define
-		 * ext2fs_get_num_cpus() and teach it how to get this info on
-		 * MacOS, FreeBSD, etc.
-		 * ref: https://stackoverflow.com/questions/150355
-		 */
+#endif
+	/*
+	 * Guess for now; eventually we should probably define
+	 * ext2fs_get_num_cpus() and teach it how to get this info on
+	 * MacOS, FreeBSD, etc.
+	 * ref: https://stackoverflow.com/questions/150355
+	 */
+	if (num_threads < 0)
 		num_threads = 4;
-#endif /* HAVE_SYSCONF */
-	}
+
 	if (num_threads > fs->group_desc_count)
 		num_threads = fs->group_desc_count;
 	average_group = fs->group_desc_count / num_threads;
