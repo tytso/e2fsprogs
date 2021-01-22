@@ -1693,6 +1693,10 @@ extern errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t 
 			       char **name);
 
 /* link.c */
+#define EXT2FS_UNLINK_FORCE		0x1	/* Forcefully unlink even if
+						 * the inode number doesn't
+						 * match the dirent
+						 */
 errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 		      ext2_ino_t ino, int flags);
 errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir, const char *name,

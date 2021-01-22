@@ -380,6 +380,114 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 out_err:
 	return ret;
 }
+
+static int __errcode_to_errno(errcode_t err, const char *func, int line)
+{
+	if (err == 0)
+		return 0;
+	fprintf(stderr, "Error \"%s\" encountered in function %s at line %d\n",
+		error_message(err), func, line);
+	if (err <= 256)
+		return -err;
+	return -EFAULT;
+}
+
+#define errcode_to_errno(err)	__errcode_to_errno(err, __func__, __LINE__)
+
+/* Helper struct for dentry replay routines */
+struct dentry_info_args {
+	int parent_ino, dname_len, ino, inode_len;
+	char *dname;
+};
+
+static inline void tl_to_darg(struct dentry_info_args *darg,
+				struct  ext4_fc_tl *tl)
+{
+	struct ext4_fc_dentry_info *fcd;
+	int tag = le16_to_cpu(tl->fc_tag);
+
+	fcd = (struct ext4_fc_dentry_info *)ext4_fc_tag_val(tl);
+
+	darg->parent_ino = le32_to_cpu(fcd->fc_parent_ino);
+	darg->ino = le32_to_cpu(fcd->fc_ino);
+	darg->dname = fcd->fc_dname;
+	darg->dname_len = ext4_fc_tag_len(tl) -
+			sizeof(struct ext4_fc_dentry_info);
+	darg->dname = malloc(darg->dname_len + 1);
+	memcpy(darg->dname, fcd->fc_dname, darg->dname_len);
+	darg->dname[darg->dname_len] = 0;
+	jbd_debug(1, "%s: %s, ino %d, parent %d\n",
+		tag == EXT4_FC_TAG_CREAT ? "create" :
+		(tag == EXT4_FC_TAG_LINK ? "link" :
+		(tag == EXT4_FC_TAG_UNLINK ? "unlink" : "error")),
+		darg->dname, darg->ino, darg->parent_ino);
+}
+
+static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl)
+{
+	struct ext2_inode inode;
+	struct dentry_info_args darg;
+	ext2_filsys fs = ctx->fs;
+	int ret;
+
+	tl_to_darg(&darg, tl);
+	ret = errcode_to_errno(
+		       ext2fs_unlink(ctx->fs, darg.parent_ino,
+				     darg.dname, darg.ino, 0));
+	/* It's okay if the above call fails */
+	free(darg.dname);
+	return ret;
+}
+
+static int ext4_fc_handle_link_and_create(e2fsck_t ctx, struct ext4_fc_tl *tl)
+{
+	struct dentry_info_args darg;
+	ext2_filsys fs = ctx->fs;
+	struct ext2_inode_large inode_large;
+	int ret, filetype, mode;
+
+	tl_to_darg(&darg, tl);
+	ret = errcode_to_errno(ext2fs_read_inode(fs, darg.ino,
+						 (struct ext2_inode *)&inode_large));
+	if (ret)
+		goto out;
+
+	mode = inode_large.i_mode;
+
+	if (LINUX_S_ISREG(mode))
+		filetype = EXT2_FT_REG_FILE;
+	else if (LINUX_S_ISDIR(mode))
+		filetype = EXT2_FT_DIR;
+	else if (LINUX_S_ISCHR(mode))
+		filetype = EXT2_FT_CHRDEV;
+	else if (LINUX_S_ISBLK(mode))
+		filetype = EXT2_FT_BLKDEV;
+	else if (LINUX_S_ISLNK(mode))
+		return EXT2_FT_SYMLINK;
+	else if (LINUX_S_ISFIFO(mode))
+		filetype = EXT2_FT_FIFO;
+	else if (LINUX_S_ISSOCK(mode))
+		filetype = EXT2_FT_SOCK;
+	else {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	/*
+	 * Forcefully unlink if the same name is present and ignore the error
+	 * if any, since this dirent might not exist
+	 */
+	ext2fs_unlink(fs, darg.parent_ino, darg.dname, darg.ino,
+			EXT2FS_UNLINK_FORCE);
+
+	ret = errcode_to_errno(
+		       ext2fs_link(fs, darg.parent_ino, darg.dname, darg.ino,
+				   filetype));
+out:
+	free(darg.dname);
+	return ret;
+
+}
 /*
  * Main recovery path entry point. This function returns JBD2_FC_REPLAY_CONTINUE
  * to indicate that it is expecting more fast commit blocks. It returns
@@ -437,7 +545,11 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 		switch (le16_to_cpu(tl->fc_tag)) {
 		case EXT4_FC_TAG_CREAT:
 		case EXT4_FC_TAG_LINK:
+			ret = ext4_fc_handle_link_and_create(ctx, tl);
+			break;
 		case EXT4_FC_TAG_UNLINK:
+			ret = ext4_fc_handle_unlink(ctx, tl);
+			break;
 		case EXT4_FC_TAG_ADD_RANGE:
 		case EXT4_FC_TAG_DEL_RANGE:
 		case EXT4_FC_TAG_INODE:
