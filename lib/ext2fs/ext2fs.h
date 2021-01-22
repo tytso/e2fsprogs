@@ -1341,6 +1341,10 @@ extern errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle);
 extern size_t ext2fs_max_extent_depth(ext2_extent_handle_t handle);
 extern errcode_t ext2fs_fix_extents_checksums(ext2_filsys fs, ext2_ino_t ino,
 					      struct ext2_inode *inode);
+extern errcode_t ext2fs_count_blocks(ext2_filsys fs, ext2_ino_t ino,
+				     struct ext2_inode *inode, blk64_t *ret_count);
+extern errcode_t ext2fs_decode_extent(struct ext2fs_extent *to, void *from,
+				      int len);
 
 /* fallocate.c */
 #define EXT2_FALLOCATE_ZERO_BLOCKS	(0x1)
