@@ -278,6 +278,108 @@ static int process_journal_block(ext2_filsys fs,
 	return 0;
 }
 
+static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
+				int off, tid_t expected_tid)
+{
+	e2fsck_t ctx = j->j_fs_dev->k_ctx;
+	struct e2fsck_fc_replay_state *state;
+	int ret = JBD2_FC_REPLAY_CONTINUE;
+	struct ext4_fc_add_range *ext;
+	struct ext4_fc_tl *tl;
+	struct ext4_fc_tail *tail;
+	__u8 *start, *end;
+	struct ext4_fc_head *head;
+	struct ext2fs_extent ext2fs_ex;
+
+	state = &ctx->fc_replay_state;
+
+	start = (__u8 *)bh->b_data;
+	end = (__u8 *)bh->b_data + j->j_blocksize - 1;
+
+	jbd_debug(1, "Scan phase starting, expected %d", expected_tid);
+	if (state->fc_replay_expected_off == 0) {
+		memset(state, 0, sizeof(*state));
+		/* Check if we can stop early */
+		if (le16_to_cpu(((struct ext4_fc_tl *)start)->fc_tag)
+			!= EXT4_FC_TAG_HEAD) {
+			jbd_debug(1, "Ending early!, not a head tag");
+			return 0;
+		}
+	}
+
+	if (off != state->fc_replay_expected_off) {
+		ret = -EFSCORRUPTED;
+		goto out_err;
+	}
+
+	state->fc_replay_expected_off++;
+	fc_for_each_tl(start, end, tl) {
+		jbd_debug(3, "Scan phase, tag:%s, blk %lld\n",
+			  tag2str(le16_to_cpu(tl->fc_tag)), bh->b_blocknr);
+		switch (le16_to_cpu(tl->fc_tag)) {
+		case EXT4_FC_TAG_ADD_RANGE:
+			ext = (struct ext4_fc_add_range *)ext4_fc_tag_val(tl);
+			ret = ext2fs_decode_extent(&ext2fs_ex, (void *)&ext->fc_ex,
+						   sizeof(ext->fc_ex));
+			if (ret)
+				ret = JBD2_FC_REPLAY_STOP;
+			else
+				ret = JBD2_FC_REPLAY_CONTINUE;
+		case EXT4_FC_TAG_DEL_RANGE:
+		case EXT4_FC_TAG_LINK:
+		case EXT4_FC_TAG_UNLINK:
+		case EXT4_FC_TAG_CREAT:
+		case EXT4_FC_TAG_INODE:
+		case EXT4_FC_TAG_PAD:
+			state->fc_cur_tag++;
+			state->fc_crc = jbd2_chksum(j, state->fc_crc, tl,
+					sizeof(*tl) + ext4_fc_tag_len(tl));
+			break;
+		case EXT4_FC_TAG_TAIL:
+			state->fc_cur_tag++;
+			tail = (struct ext4_fc_tail *)ext4_fc_tag_val(tl);
+			state->fc_crc = jbd2_chksum(j, state->fc_crc, tl,
+						sizeof(*tl) +
+						offsetof(struct ext4_fc_tail,
+						fc_crc));
+			jbd_debug(1, "tail tid %d, expected %d\n",
+					le32_to_cpu(tail->fc_tid),
+					expected_tid);
+			if (le32_to_cpu(tail->fc_tid) == expected_tid &&
+				le32_to_cpu(tail->fc_crc) == state->fc_crc) {
+				state->fc_replay_num_tags = state->fc_cur_tag;
+			} else {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSBADCRC;
+			}
+			state->fc_crc = 0;
+			break;
+		case EXT4_FC_TAG_HEAD:
+			head = (struct ext4_fc_head *)ext4_fc_tag_val(tl);
+			if (le32_to_cpu(head->fc_features) &
+				~EXT4_FC_SUPPORTED_FEATURES) {
+				ret = -EOPNOTSUPP;
+				break;
+			}
+			if (le32_to_cpu(head->fc_tid) != expected_tid) {
+				ret = -EINVAL;
+				break;
+			}
+			state->fc_cur_tag++;
+			state->fc_crc = jbd2_chksum(j, state->fc_crc, tl,
+					sizeof(*tl) + ext4_fc_tag_len(tl));
+			break;
+		default:
+			ret = state->fc_replay_num_tags ?
+				JBD2_FC_REPLAY_STOP : -ECANCELED;
+		}
+		if (ret < 0 || ret == JBD2_FC_REPLAY_STOP)
+			break;
+	}
+
+out_err:
+	return ret;
+}
 /*
  * Main recovery path entry point. This function returns JBD2_FC_REPLAY_CONTINUE
  * to indicate that it is expecting more fast commit blocks. It returns
@@ -286,6 +388,13 @@ static int process_journal_block(ext2_filsys fs,
 static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 				enum passtype pass, int off, tid_t expected_tid)
 {
+	e2fsck_t ctx = journal->j_fs_dev->k_ctx;
+	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
+
+	if (pass == PASS_SCAN) {
+		state->fc_current_pass = PASS_SCAN;
+		return ext4_fc_replay_scan(journal, bh, off, expected_tid);
+	}
 	return JBD2_FC_REPLAY_STOP;
 }
 
