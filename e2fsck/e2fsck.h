@@ -68,6 +68,7 @@
 #endif
 
 #include "support/quotaio.h"
+#include "ext2fs/fast_commit.h"
 
 /*
  * Exit codes used by fsck-type programs
@@ -239,6 +240,18 @@ struct extent_list {
 	errcode_t retval;
 	ext2_ino_t ino;
 };
+
+/* State structure for fast commit replay */
+struct e2fsck_fc_replay_state {
+	struct extent_list fc_extent_list;
+	int fc_replay_num_tags;
+	int fc_replay_expected_off;
+	int fc_current_pass;
+	int fc_cur_tag;
+	int fc_crc;
+	__u16 fc_super_state;
+};
+
 struct e2fsck_struct {
 	ext2_filsys fs;
 	const char *program_name;
@@ -431,6 +444,9 @@ struct e2fsck_struct {
 
 	/* Undo file */
 	char *undo_file;
+
+	/* Fast commit replay state */
+	struct e2fsck_fc_replay_state fc_replay_state;
 };
 
 /* Data structures to evaluate whether an extent tree needs rebuilding. */

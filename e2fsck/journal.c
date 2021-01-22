@@ -278,6 +278,17 @@ static int process_journal_block(ext2_filsys fs,
 	return 0;
 }
 
+/*
+ * Main recovery path entry point. This function returns JBD2_FC_REPLAY_CONTINUE
+ * to indicate that it is expecting more fast commit blocks. It returns
+ * JBD2_FC_REPLAY_STOP to indicate that replay is done.
+ */
+static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
+				enum passtype pass, int off, tid_t expected_tid)
+{
+	return JBD2_FC_REPLAY_STOP;
+}
+
 static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 {
 	struct process_block_struct pb;
@@ -514,6 +525,10 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 
 	journal->j_sb_buffer = bh;
 	journal->j_superblock = (journal_superblock_t *)bh->b_data;
+	if (ext2fs_has_feature_fast_commit(ctx->fs->super))
+		journal->j_fc_replay_callback = ext4_fc_replay;
+	else
+		journal->j_fc_replay_callback = NULL;
 
 #ifdef USE_INODE_IO
 	if (j_inode)
