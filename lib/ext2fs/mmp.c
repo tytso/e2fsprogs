@@ -172,9 +172,11 @@ unsigned ext2fs_mmp_new_seq(void)
 #ifdef CONFIG_MMP
 	unsigned new_seq;
 	struct timeval tv;
+	unsigned long pid = getpid();
 
 	gettimeofday(&tv, 0);
-	srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
+	pid = (pid >> 16) | ((pid & 0xFFFF) << 16);
+	srand(pid ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
 
 	gettimeofday(&tv, 0);
 	/* Crank the random number generator a few times */
