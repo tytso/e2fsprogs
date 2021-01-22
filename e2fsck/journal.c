@@ -390,11 +390,83 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 {
 	e2fsck_t ctx = journal->j_fs_dev->k_ctx;
 	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
+	int ret = JBD2_FC_REPLAY_CONTINUE;
+	struct ext4_fc_tl *tl;
+	__u8 *start, *end;
 
 	if (pass == PASS_SCAN) {
 		state->fc_current_pass = PASS_SCAN;
 		return ext4_fc_replay_scan(journal, bh, off, expected_tid);
 	}
+
+	if (state->fc_replay_num_tags == 0)
+		goto replay_done;
+
+	if (state->fc_current_pass != pass) {
+		/* Starting replay phase */
+		state->fc_current_pass = pass;
+		/* We will reset checksums */
+		ctx->fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+		ret = ext2fs_read_bitmaps(ctx->fs);
+		if (ret) {
+			jbd_debug(1, "Error %d while reading bitmaps\n", ret);
+			return ret;
+		}
+		state->fc_super_state = ctx->fs->super->s_state;
+		/*
+		 * Mark the file system to indicate it contains errors. That's
+		 * because the updates performed by fast commit replay code are
+		 * not atomic and may result in incosistent file system if it
+		 * crashes before the replay is complete.
+		 */
+		ctx->fs->super->s_state |= EXT2_ERROR_FS;
+		ctx->fs->super->s_state |= EXT4_FC_REPLAY;
+		ext2fs_mark_super_dirty(ctx->fs);
+		ext2fs_flush(ctx->fs);
+	}
+
+	start = (__u8 *)bh->b_data;
+	end = (__u8 *)bh->b_data + journal->j_blocksize - 1;
+
+	fc_for_each_tl(start, end, tl) {
+		if (state->fc_replay_num_tags == 0)
+			goto replay_done;
+		jbd_debug(3, "Replay phase processing %s tag\n",
+				tag2str(le16_to_cpu(tl->fc_tag)));
+		state->fc_replay_num_tags--;
+		switch (le16_to_cpu(tl->fc_tag)) {
+		case EXT4_FC_TAG_CREAT:
+		case EXT4_FC_TAG_LINK:
+		case EXT4_FC_TAG_UNLINK:
+		case EXT4_FC_TAG_ADD_RANGE:
+		case EXT4_FC_TAG_DEL_RANGE:
+		case EXT4_FC_TAG_INODE:
+		case EXT4_FC_TAG_TAIL:
+		case EXT4_FC_TAG_PAD:
+		case EXT4_FC_TAG_HEAD:
+			break;
+		default:
+			ret = -ECANCELED;
+			break;
+		}
+		if (ret < 0)
+			break;
+		ret = JBD2_FC_REPLAY_CONTINUE;
+	}
+	return ret;
+replay_done:
+	jbd_debug(1, "End of fast commit replay\n");
+	if (state->fc_current_pass != pass)
+		return JBD2_FC_REPLAY_STOP;
+
+	ext2fs_calculate_summary_stats(ctx->fs, 0 /* update bg also */);
+	ext2fs_write_block_bitmap(ctx->fs);
+	ext2fs_write_inode_bitmap(ctx->fs);
+	ext2fs_mark_super_dirty(ctx->fs);
+	ext2fs_set_gdt_csum(ctx->fs);
+	ctx->fs->super->s_state = state->fc_super_state;
+	ext2fs_flush(ctx->fs);
+
 	return JBD2_FC_REPLAY_STOP;
 }
 
