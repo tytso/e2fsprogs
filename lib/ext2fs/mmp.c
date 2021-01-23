@@ -212,11 +212,11 @@ static errcode_t ext2fs_mmp_reset(ext2_filsys fs)
 	mmp_s->mmp_seq = EXT4_MMP_SEQ_CLEAN;
 	mmp_s->mmp_time = 0;
 #ifdef HAVE_GETHOSTNAME
-	gethostname(mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
+	gethostname((char *) mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
 #else
 	mmp_s->mmp_nodename[0] = '\0';
 #endif
-	strncpy(mmp_s->mmp_bdevname, fs->device_name,
+	strncpy((char *) mmp_s->mmp_bdevname, fs->device_name,
 		sizeof(mmp_s->mmp_bdevname));
 
 	mmp_s->mmp_check_interval = fs->super->s_mmp_update_interval;
@@ -354,11 +354,11 @@ clean_seq:
 
 	mmp_s->mmp_seq = seq = ext2fs_mmp_new_seq();
 #ifdef HAVE_GETHOSTNAME
-	gethostname(mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
+	gethostname((char *) mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
 #else
 	strcpy(mmp_s->mmp_nodename, "unknown host");
 #endif
-	strncpy(mmp_s->mmp_bdevname, fs->device_name,
+	strncpy((char *) mmp_s->mmp_bdevname, fs->device_name,
 		sizeof(mmp_s->mmp_bdevname));
 
 	retval = ext2fs_mmp_write(fs, fs->super->s_mmp_block, fs->mmp_buf);

@@ -173,7 +173,8 @@ static uint64_t rand_num(uint64_t min, uint64_t max)
 	for (i = 0; i < sizeof(x); i++)
 		px[i] = random();
 
-	return min + (uint64_t)((double)(max - min) * (x / (UINT64_MAX + 1.0)));
+	return min + (uint64_t)((double)(max - min) *
+				(x / ((double) UINT64_MAX + 1.0)));
 }
 
 static int process_fs(const char *fsname)
