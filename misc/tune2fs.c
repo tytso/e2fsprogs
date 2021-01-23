@@ -1670,6 +1670,8 @@ static int handle_quota_options(ext2_filsys fs)
 					com_err(program_name, retval,
 						_("while updating quota limits (%d)"),
 						qtype);
+				quota_errout:
+					quota_release_context(&qctx);
 					return 1;
 				}
 			}
@@ -1678,7 +1680,7 @@ static int handle_quota_options(ext2_filsys fs)
 				com_err(program_name, retval,
 					_("while writing quota file (%d)"),
 					qtype);
-				return 1;
+				goto quota_errout;
 			}
 			/* Enable Quota feature if one of quota enabled */
 			if (!ext2fs_has_feature_quota(fs->super)) {
@@ -1696,7 +1698,7 @@ static int handle_quota_options(ext2_filsys fs)
 				com_err(program_name, retval,
 					_("while removing quota file (%d)"),
 					qtype);
-				return 1;
+				goto quota_errout;
 			}
 			if (qtype == PRJQUOTA) {
 				ext2fs_clear_feature_project(fs->super);

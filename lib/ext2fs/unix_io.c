@@ -822,7 +822,7 @@ static errcode_t unixfd_open(const char *str_fd, int flags,
 #if defined(HAVE_FCNTL)
 	fd_flags = fcntl(fd, F_GETFD);
 	if (fd_flags == -1)
-		return -EBADF;
+		return EBADF;
 
 	flags = 0;
 	if (fd_flags & O_RDWR)

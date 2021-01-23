@@ -249,7 +249,7 @@ e4defrag: $(E4DEFRAG_OBJS) $(DEPLIBS)
 e4crypt: $(E4CRYPT_OBJS) $(DEPLIBS) $(DEPSTATIC_LIBUUID)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o e4crypt $(E4CRYPT_OBJS) \
-		$(LIBUUID) $(LIBS)
+		$(LIBUUID) $(LIBS) $(SYSLIBS)
 
 e4defrag.profiled: $(E4DEFRAG_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"

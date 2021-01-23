@@ -3189,7 +3189,7 @@ int main (int argc, char *argv[])
 	if (volume_label) {
 		memset(fs->super->s_volume_name, 0,
 		       sizeof(fs->super->s_volume_name));
-		strncpy(fs->super->s_volume_name, volume_label,
+		strncpy((char *) fs->super->s_volume_name, volume_label,
 			sizeof(fs->super->s_volume_name));
 	}
 
@@ -3199,7 +3199,7 @@ int main (int argc, char *argv[])
 	if (mount_dir) {
 		memset(fs->super->s_last_mounted, 0,
 		       sizeof(fs->super->s_last_mounted));
-		strncpy(fs->super->s_last_mounted, mount_dir,
+		strncpy((char *) fs->super->s_last_mounted, mount_dir,
 			sizeof(fs->super->s_last_mounted));
 	}
 

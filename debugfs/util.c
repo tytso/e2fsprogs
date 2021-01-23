@@ -545,10 +545,8 @@ errcode_t read_list(char *str, blk64_t **list, size_t *len)
 			goto err;
 		}
 		l = realloc(lst, sizeof(blk64_t) * (ln + y - x + 1));
-		if (l == NULL) {
-			retval = ENOMEM;
-			goto err;
-		}
+		if (l == NULL)
+			return ENOMEM;
 		lst = l;
 		for (; x <= y; x++)
 			lst[ln++] = x;

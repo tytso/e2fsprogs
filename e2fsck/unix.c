@@ -1699,7 +1699,7 @@ failure:
 	 * or informational messages to the user.
 	 */
 	if (ctx->device_name == 0 && sb->s_volume_name[0])
-		ctx->device_name = string_copy(ctx, sb->s_volume_name,
+		ctx->device_name = string_copy(ctx, (char *) sb->s_volume_name,
 					       sizeof(sb->s_volume_name));
 
 	if (ctx->device_name == 0)
