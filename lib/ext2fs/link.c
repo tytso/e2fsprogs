@@ -381,7 +381,7 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 	struct ext2_dir_entry *de;
 	void *buf2;
 	errcode_t retval = 0;
-	int rec_len;
+	unsigned int rec_len;
 	int offset, move_size;
 	int i, count = 0;
 	struct dx_hash_map *map;

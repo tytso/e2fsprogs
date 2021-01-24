@@ -536,7 +536,7 @@ static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 				(struct ext4_fc_add_range *)ext4_fc_tag_val(tl);
 			ex = (struct ext3_extent *)add_range->fc_ex;
 			fprintf(out_file,
-				"tag %s, inode %d, lblk %lu, pblk %llu, len %lu\n",
+				"tag %s, inode %d, lblk %u, pblk %llu, len %lu\n",
 				tag2str(tl->fc_tag),
 				le32_to_cpu(add_range->fc_ino),
 				le32_to_cpu(ex->ee_block),
