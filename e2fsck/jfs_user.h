@@ -51,7 +51,7 @@ struct buffer_head {
 	unsigned int	b_dirty:1;
 	unsigned int	b_uptodate:1;
 	unsigned long long b_blocknr;
-	char		b_data[1024];
+	char		b_data[4096];
 };
 
 struct inode {
