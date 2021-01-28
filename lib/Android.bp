@@ -7,7 +7,9 @@ cc_library_headers {
     name: "libext2-headers",
     host_supported: true,
     vendor_available: true,
+    product_available: true,
     ramdisk_available: true,
+    vendor_ramdisk_available: true,
     recovery_available: true,
     target: {
         windows: {
@@ -15,6 +17,10 @@ cc_library_headers {
         },
     },
     export_include_dirs: ["."],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.virt",
+    ],
 }
 
 

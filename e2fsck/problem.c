@@ -1269,6 +1269,17 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Encrypted @i %i has corrupt encryption @a.\n"),
 	  PROMPT_CLEAR_INODE, 0, 0, 0, 0 },
 
+	/* Htree directory should use SipHash but does not */
+	{ PR_1_HTREE_NEEDS_SIPHASH,
+	  N_("@h %i uses hash version (%N), but should use SipHash (6) \n"),
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK, 0, 0, 0 },
+
+	/* Htree directory uses SipHash but should not */
+	{ PR_1_HTREE_CANNOT_SIPHASH,
+	  N_("@h %i uses SipHash, but should not.  "),
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK, 0, 0, 0 },
+
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -1809,6 +1820,12 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_2_BAD_ENCODED_NAME,
 	  N_("@E has illegal UTF-8 characters in its name.\n"),
 	  PROMPT_FIX, 0, 0, 0, 0 },
+
+	 /* Non-unique filename found, but can't rename */
+	 { PR_2_NON_UNIQUE_FILE_NO_RENAME,
+	   N_("Duplicate filename @E found.  "),
+	   PROMPT_CLEAR, 0, 0, 0, 0 },
+
 
 	/* Pass 3 errors */
 

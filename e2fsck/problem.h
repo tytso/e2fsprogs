@@ -707,6 +707,16 @@ struct problem_context {
 /* Encrypted inode has corrupt encryption extended attribute */
 #define PR_1_CORRUPT_ENCRYPTION_XATTR		0x01008B
 
+/* Error allocating memory for casefolded directory list */
+#define PR_1_ALLOCATE_CASEFOLDED_DIRLIST	0x01008C
+
+/* Htree directory should use SipHash but does not */
+#define PR_1_HTREE_NEEDS_SIPHASH		0x01008D
+
+/* Htree directory uses SipHash but should not */
+#define PR_1_HTREE_CANNOT_SIPHASH		0x01008E
+
+
 /*
  * Pass 1b errors
  */
@@ -1030,6 +1040,9 @@ struct problem_context {
 
 /* Encoded directory entry has illegal characters in its name */
 #define PR_2_BAD_ENCODED_NAME		0x020053
+
+/* Non-unique filename found, but can't rename */
+#define PR_2_NON_UNIQUE_FILE_NO_RENAME	0x020054
 
 /*
  * Pass 3 errors

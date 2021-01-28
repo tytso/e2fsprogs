@@ -159,6 +159,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_free_mem(&ctx->invalid_inode_table_flag);
 		ctx->invalid_inode_table_flag = 0;
 	}
+	if (ctx->casefolded_dirs) {
+		ext2fs_u32_list_free(ctx->casefolded_dirs);
+		ctx->casefolded_dirs = 0;
+	}
 	if (ctx->inode_count) {
 		ext2fs_free_icount(ctx->inode_count);
 		ctx->inode_count = 0;

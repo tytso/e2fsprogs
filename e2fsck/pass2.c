@@ -294,6 +294,10 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ctx->inode_casefold_map = 0;
 	}
 	destroy_encrypted_file_info(ctx);
+	if (ctx->casefolded_dirs) {
+		ext2fs_u32_list_free(ctx->casefolded_dirs);
+		ctx->casefolded_dirs = 0;
+	}
 
 	clear_problem_context(&pctx);
 	if (ctx->large_files) {
@@ -747,7 +751,8 @@ static void salvage_directory(ext2_filsys fs,
 			      struct ext2_dir_entry *dirent,
 			      struct ext2_dir_entry *prev,
 			      unsigned int *offset,
-			      unsigned int block_len)
+			      unsigned int block_len,
+			      int hash_in_dirent)
 {
 	char	*cp = (char *) dirent;
 	int left;
@@ -772,7 +777,8 @@ static void salvage_directory(ext2_filsys fs,
 	 * Special case of directory entry of size 8: copy what's left
 	 * of the directory block up to cover up the invalid hole.
 	 */
-	if ((left >= 12) && (rec_len == EXT2_DIR_ENTRY_HEADER_LEN)) {
+	if ((left >= ext2fs_dir_rec_len(1, hash_in_dirent)) &&
+	     (rec_len == EXT2_DIR_ENTRY_HEADER_LEN)) {
 		memmove(cp, cp+EXT2_DIR_ENTRY_HEADER_LEN, left);
 		memset(cp + left, 0, EXT2_DIR_ENTRY_HEADER_LEN);
 		return;
@@ -784,7 +790,7 @@ static void salvage_directory(ext2_filsys fs,
 	 */
 	if ((left < 0) &&
 	    ((int) rec_len + left > EXT2_DIR_ENTRY_HEADER_LEN) &&
-	    ((int) name_len + EXT2_DIR_ENTRY_HEADER_LEN <= (int) rec_len + left) &&
+	    ((int) ext2fs_dir_rec_len(name_len, hash_in_dirent) <= (int) rec_len + left) &&
 	    dirent->inode <= fs->super->s_inodes_count &&
 	    strnlen(dirent->name, name_len) == name_len) {
 		(void) ext2fs_set_rec_len(fs, (int) rec_len + left, dirent);
@@ -1039,6 +1045,8 @@ static int check_dir_block(ext2_filsys fs,
 	size_t	inline_data_size = 0;
 	int	filetype = 0;
 	__u32   dir_encpolicy_id = NO_ENCRYPTION_POLICY;
+	int	hash_in_dirent = 0;
+	int	casefolded = 0;
 	size_t	max_block_size;
 	int	hash_flags = 0;
 	static char *eop_read_dirblock = NULL;
@@ -1276,12 +1284,19 @@ skip_checksum:
 	} else {
 		dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	}
+	if (ctx->casefolded_dirs)
+		casefolded = ext2fs_u32_list_test(ctx->casefolded_dirs, ino);
+	hash_in_dirent = (casefolded &&
+			  (dir_encpolicy_id != NO_ENCRYPTION_POLICY));
 
 	prev = 0;
 	do {
 		dgrp_t group;
 		ext2_ino_t first_unused_inode;
 		unsigned int name_len;
+		/* csum entry is not checked here, so don't worry about it */
+		int extended = (dot_state > 1) && hash_in_dirent;
+		int min_dir_len = ext2fs_dir_rec_len(1, extended);
 
 		problem = 0;
 		if (!inline_data_size || dot_state > 1) {
@@ -1291,15 +1306,16 @@ skip_checksum:
 			 * force salvaging this dir.
 			 */
 			if (max_block_size - offset < EXT2_DIR_ENTRY_HEADER_LEN)
-				rec_len = EXT2_DIR_REC_LEN(1);
+				rec_len = ext2fs_dir_rec_len(1, extended);
 			else
 				(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 			cd->pctx.dirent = dirent;
 			cd->pctx.num = offset;
 			if ((offset + rec_len > max_block_size) ||
-			    (rec_len < 12) ||
+			    (rec_len < min_dir_len) ||
 			    ((rec_len % 4) != 0) ||
-			    (((unsigned) ext2fs_dirent_name_len(dirent) + EXT2_DIR_ENTRY_HEADER_LEN) > rec_len)) {
+			    ((ext2fs_dir_rec_len(ext2fs_dirent_name_len(dirent),
+						 extended)) > rec_len)) {
 				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
 						&cd->pctx)) {
 #ifdef WORDS_BIGENDIAN
@@ -1332,7 +1348,8 @@ skip_checksum:
 #endif
 					salvage_directory(fs, dirent, prev,
 							  &offset,
-							  max_block_size);
+							  max_block_size,
+							  hash_in_dirent);
 #ifdef WORDS_BIGENDIAN
 					if (need_reswab) {
 						(void) ext2fs_get_rec_len(fs,
@@ -1565,10 +1582,17 @@ skip_checksum:
 			if (dx_dir->casefolded_hash)
 				hash_flags = EXT4_CASEFOLD_FL;
 
-			ext2fs_dirhash2(dx_dir->hashversion, dirent->name,
-					ext2fs_dirent_name_len(dirent),
-					fs->encoding, hash_flags,
-					fs->super->s_hash_seed, &hash, 0);
+			if (dx_dir->hashversion == EXT2_HASH_SIPHASH) {
+				if (dot_state > 1)
+					hash = EXT2_DIRENT_HASH(dirent);
+			} else {
+				ext2fs_dirhash2(dx_dir->hashversion,
+						dirent->name,
+						ext2fs_dirent_name_len(dirent),
+						fs->encoding, hash_flags,
+						fs->super->s_hash_seed,
+						&hash, 0);
+			}
 			if (hash < dx_db->min_hash)
 				dx_db->min_hash = hash;
 			if (hash > dx_db->max_hash)

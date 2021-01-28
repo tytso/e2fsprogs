@@ -101,6 +101,7 @@ static int rewrite_checksums;
 static int feature_64bit;
 static int fsck_requested;
 static char *undo_file;
+int enabling_casefold;
 
 int journal_size, journal_fc_size, journal_flags;
 char *journal_device;
@@ -1469,16 +1470,21 @@ mmp_error:
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT)) {
-		if (ext2fs_has_feature_casefold(sb)) {
-			fputs(_("Cannot enable encrypt feature on filesystems "
-				"with the casefold feature enabled.\n"),
-			      stderr);
-			return 1;
-		}
 		fs->super->s_encrypt_algos[0] =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		fs->super->s_encrypt_algos[1] =
 			EXT4_ENCRYPTION_MODE_AES_256_CTS;
+	}
+
+	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD)) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("The casefold feature may only be enabled when "
+				"the filesystem is unmounted.\n"), stderr);
+			return 1;
+		}
+		fs->super->s_encoding = EXT4_ENC_UTF8_12_1;
+		fs->super->s_encoding_flags = e2p_get_encoding_flags(EXT4_ENC_UTF8_12_1);
+		enabling_casefold = 1;
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT,
@@ -1513,18 +1519,6 @@ mmp_error:
 				return 1;
 			rewrite_checksums = REWRITE_ALL;
 		}
-	}
-
-	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD)) {
-		if (ext2fs_has_feature_encrypt(sb)) {
-			fputs(_("Cannot enable casefold feature on filesystems "
-				"with the encrypt feature enabled.\n"),
-			      stderr);
-			return 1;
-		}
-
-		sb->s_encoding = EXT4_ENC_UTF8_12_1;
-		sb->s_encoding_flags = e2p_get_encoding_flags(sb->s_encoding);
 	}
 
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
@@ -2099,9 +2093,12 @@ void do_findfs(int argc, char **argv)
 
 static int parse_extended_opts(ext2_filsys fs, const char *opts)
 {
+	struct ext2_super_block *sb = fs->super;
 	char	*buf, *token, *next, *p, *arg;
 	int	len, hash_alg;
 	int	r_usage = 0;
+	int encoding = 0;
+	char	*encoding_flags = NULL;
 
 	len = strlen(opts);
 	buf = malloc(len+1);
@@ -2154,18 +2151,18 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				  "Setting multiple mount protection update "
 				  "interval to %lu seconds\n", intv),
 			       intv);
-			fs->super->s_mmp_update_interval = intv;
+			sb->s_mmp_update_interval = intv;
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "force_fsck")) {
-			fs->super->s_state |= EXT2_ERROR_FS;
+			sb->s_state |= EXT2_ERROR_FS;
 			printf(_("Setting filesystem error flag to force fsck.\n"));
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "test_fs")) {
-			fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
+			sb->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 			printf("Setting test filesystem flag\n");
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "^test_fs")) {
-			fs->super->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
+			sb->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
 			printf("Clearing test filesystem flag\n");
 			ext2fs_mark_super_dirty(fs);
 		} else if (strcmp(token, "stride") == 0) {
@@ -2211,7 +2208,7 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				r_usage++;
 				continue;
 			}
-			fs->super->s_def_hash_version = hash_alg;
+			sb->s_def_hash_version = hash_alg;
 			printf(_("Setting default hash algorithm "
 				 "to %s (%d)\n"),
 			       arg, hash_alg);
@@ -2227,8 +2224,62 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				continue;
 			}
 			ext_mount_opts = strdup(arg);
+		} else if (!strcmp(token, "encoding")) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			if (mount_flags & EXT2_MF_MOUNTED) {
+				fputs(_("The casefold feature may only be enabled when "
+					"the filesystem is unmounted.\n"), stderr);
+				r_usage++;
+				continue;
+			}
+			if (ext2fs_has_feature_casefold(sb) && !enabling_casefold) {
+				fprintf(stderr, _("Cannot alter existing encoding\n"));
+				r_usage++;
+				continue;
+			}
+			encoding = e2p_str2encoding(arg);
+			if (encoding < 0) {
+				fprintf(stderr, _("Invalid encoding: %s\n"), arg);
+				r_usage++;
+				continue;
+			}
+			enabling_casefold = 1;
+			sb->s_encoding = encoding;
+			printf(_("Setting encoding to '%s'\n"), arg);
+			sb->s_encoding_flags =
+				e2p_get_encoding_flags(sb->s_encoding);
+		} else if (!strcmp(token, "encoding_flags")) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			encoding_flags = arg;
 		} else
 			r_usage++;
+	}
+
+	if (encoding > 0 && !r_usage) {
+		sb->s_encoding_flags =
+			e2p_get_encoding_flags(sb->s_encoding);
+
+		if (encoding_flags &&
+		    e2p_str2encoding_flags(sb->s_encoding, encoding_flags,
+					   &sb->s_encoding_flags)) {
+			fprintf(stderr, _("error: Invalid encoding flag: %s\n"),
+					encoding_flags);
+			r_usage++;
+		} else if (encoding_flags)
+			printf(_("Setting encoding_flags to '%s'\n"),
+				 encoding_flags);
+		ext2fs_set_feature_casefold(sb);
+		ext2fs_mark_super_dirty(fs);
+	} else if (encoding_flags && !r_usage) {
+		fprintf(stderr, _("error: An encoding must be explicitly "
+				  "specified when passing encoding-flags\n"));
+		r_usage++;
 	}
 	if (r_usage) {
 		fprintf(stderr, "%s", _("\nBad options specified.\n\n"
@@ -2244,7 +2295,9 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 			"\tstripe_width=<RAID stride*data disks in blocks>\n"
 			"\tforce_fsck\n"
 			"\ttest_fs\n"
-			"\t^test_fs\n"));
+			"\t^test_fs\n"
+			"\tencoding=<encoding>\n"
+			"\tencoding_flags=<flags>\n"));
 		free(buf);
 		return 1;
 	}

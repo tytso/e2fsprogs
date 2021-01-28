@@ -2492,15 +2492,6 @@ profile_error:
 		}
 	}
 
-	if (ext2fs_has_feature_casefold(&fs_param) &&
-	    ext2fs_has_feature_encrypt(&fs_param)) {
-		com_err(program_name, 0, "%s",
-			_("The encrypt and casefold features are not "
-			  "compatible.\nThey can not be both enabled "
-			  "simultaneously.\n"));
-		      exit (1);
-	}
-
 	/* Don't allow user to set both metadata_csum and uninit_bg bits. */
 	if (ext2fs_has_feature_metadata_csum(&fs_param) &&
 	    ext2fs_has_feature_gdt_csum(&fs_param))
