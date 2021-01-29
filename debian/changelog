@@ -1,3 +1,51 @@
+e2fsprogs (1.46.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * Add support for the new fast_commit feature.  (Requires Linux version
+    5.10 or higher)
+  * Add support for the new stable_inodes feature which is needed to
+    support some file system encryption algorithms such as siphash.
+  * Add support for file systems that have both case folding and
+    encryption enabled.  (Requires Linux version 5.10 or higher)
+  * The fuse2fs program now supports the "norecovery" which omits replying
+    the journal and mounts the file system read-only.
+  * Bitmap loading is now done using multiple threads which can speed up
+    debugfs, dumpe2fs, and e2fsck on very large file systems.
+  * E2fsck now will check file names on file systems with case folding
+    enabled to make sure the characters are valid UTF-8 characters.
+    This is done for file systems which enforce strict encodings, and
+    optionally if the extended "check_encoding" option is requested.
+  * E2fsck will properly handle checking for duplicated file names when
+    case folding is enabled.
+  * E2fsck will now find and fix file system corruptions when the encrypted
+    files have a different policy from their containing directory.
+  * The "htree" command in debugfs now displays the metadata checksums for
+    hash tree index blocks.
+  * Fix various bugs where a maliciously corrupted file systems could case
+    e2fsck and other e2fsprogs programs to crash.
+  * Dumpe2fs will print the error code that Linux kernels newer than v5.6
+    will save to indicate the class of error which triggered the ext4_error
+    event.
+  * E2fsprogs programs (in particular, fuse2fs) can now update htree
+    directories without clearing the htree index.
+  * Tune2fs will properly recalculate directory block checksums when
+    clearing the dir_index feature.
+  * Fix a bug in e2fsck directory rehashing which could fail with ENOSPC
+    because it doesn't take into account the space needed for the metadata
+    checksum, and doesn't create a sufficiently deep index tree.
+  * Clarify the e2fsck messages when it resets the directory link count when
+    it is set to the overflow value but it is no longer needed.
+  * Mke2fs now sets the s_overhead_cluster field, so that the kernel doesn't
+    need to calculate it at mount time.  This speeds up mounting very large
+    file systems.
+  * Speed up mke2fs when creating large bigalloc file systems by optimizing
+    ext2fs_convert_subcluster_bitmap().
+  * The filefrag program can now request the kernel to display the extent
+    status cache by using "filefrag -E".  (This requires Linux version 5.4
+    or newer.)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 29 Jan 2021 16:24:41 -0500
+
 e2fsprogs (1.45.7-1) unstable; urgency=medium
 
   * New upstream release
