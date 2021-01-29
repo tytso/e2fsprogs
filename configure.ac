@@ -1010,7 +1010,6 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/sockio.h
 	sys/stat.h
 	sys/syscall.h
-	sys/sysctl.h
 	sys/sysmacros.h
 	sys/time.h
 	sys/types.h

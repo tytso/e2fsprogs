@@ -37,10 +37,6 @@
 #include <errno.h>
 #endif
 
-#ifdef HAVE_SYS_SYSCTL_H
-#include <sys/sysctl.h>
-#endif
-
 #include "e2fsck.h"
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
@@ -885,12 +881,6 @@ unsigned long long get_memory_size(void)
 	unsigned long long size = 0;
 # elif defined(CTL_HW_UINT)
 	unsigned int size = 0;
-# endif
-# if defined(CTL_HW_INT64) || defined(CTL_HW_UINT)
-	size_t len = sizeof(size);
-
-	if (sysctl(mib, 2, &size, &len, NULL, 0) == 0)
-		return (unsigned long long)size;
 # endif
 	return 0;
 #else
