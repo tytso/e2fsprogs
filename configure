@@ -690,6 +690,7 @@ RM
 CP
 MV
 LN_S
+mkdir_p
 LN
 ifNotGNUmake
 ifGNUmake
@@ -9660,6 +9661,8 @@ $as_echo "no" >&6; }
 fi
 
 
+
+mkdir_p=$MKDIR_P
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
 $as_echo_n "checking whether ln -s works... " >&6; }

@@ -927,6 +927,11 @@ AC_PROG_MAKE_SET
 CHECK_GNU_MAKE
 AC_PATH_PROG(LN, ln, ln)
 AC_PROG_MKDIR_P
+dnl
+dnl @mkdir_p@ is used by po's Makefile.in
+dnl
+mkdir_p=$MKDIR_P
+AC_SUBST(mkdir_p)
 AC_PROG_LN_S
 AC_PATH_PROG(MV, mv, mv)
 AC_PATH_PROG(CP, cp, cp)
