@@ -1,3 +1,48 @@
+e2fsprogs (1.45.7-1) unstable; urgency=medium
+
+  * New upstream release
+  * Mke2fs will now warn when creating a file system on a DAX-capable
+    device and the block size is incompatible with DAX.
+  * The chattr and lsattr programs now support using the 'x' attribute
+    to set/get dax support on a particular file.
+  * E2fsprogs now supports the gnu.* extended attribute namespace, which
+    allows mke2fs -d to import the gnu.translator extended attributes.
+  * Add support for the simultaneous enablement of the casefold and
+    encryption features, which ext4 supports starting with the v5.5
+    Linux kernel.
+  * Debugfs will now retry opening the superblock if it finds that the
+    superblock has an invalid checksum, since this could happen when
+    opening a mounted file system.
+  * Fix an off-by-one error when validating the depth of an htree which
+    caused e2fsck to potentially fail to notice an invalid htree.
+  * Fix potential buffer overrun in e2fsck when scanning directory blocks
+    in pass 2. (Addresses Google Bug: #158564737)
+  * Fix tune2fs so that it unlocks the MMP block if it can't perform the
+    requested operation.
+  * Fix mke2fs so it can import the contents of a directory using the -d
+    option when it has inode numbers that are greater than 2**32.   Also
+    fix an ommission were the extended attributes on the top-level directory
+    was not getting copied to the root directory.
+  * Fix e4crypt so that the add_key operation uses the explicitly provided
+    salt if it is provided.
+  * Fix resize2fs to prevent it from overflowing the block group descriptors
+    from overflowing the first block group.  (This can only happen when the
+    block size is 1k and the file system is very large.)
+  * Fix debugfs's set_super_value command so it can set 64-bit integer
+    fields, such as s_kbytes_written.
+  * Fix filefrag so that it won't crash if the kernel returns zero for
+    statfs(2)'s device id or if it returns a blocksize of zero the device's
+    blocksize.
+  * Fix a few bad error code returns in the unix and sparse I/O managers.
+  * E2fsck will no longer try to fix duplicate file names in an encrypted
+    directory by mutating the encrypted file name.
+  * Updated and clarified various man pages.
+  * Update the Dutch, Malay, and Serbian translations from the translation
+    project.
+  * Update the Debian policy compliance to 4.5.1
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 29 Jan 2021 00:19:52 -0500
+
 e2fsprogs (1.45.6-1) unstable; urgency=medium
 
   * New upstream release

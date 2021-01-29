@@ -210,7 +210,7 @@ manual page for more details.
 Specify the size of blocks in bytes.  Valid block-size values are powers of two
 from 1024 up to 65536 (however note that the kernel is able to mount only
 filesystems with block-size smaller or equal to the system page size - 4k on
-x86 systems, upto 64k on ppc64 or aarch64 depending on kernel configuration).
+x86 systems, up to 64k on ppc64 or aarch64 depending on kernel configuration).
 If omitted, block-size is heuristically determined by the filesystem size and
 the expected usage of the filesystem (see the
 .B \-T

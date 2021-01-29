@@ -1,7 +1,7 @@
 # e2fsprogs Bahasa Melayu (Malay) (ms).
-# Copyright (C) 2008, 2009, 2015, 2018, 2019, 2020 Theodore Tso (msgids)
+# Copyright (C) 2008, 2009, 2015, 2018, 2019, 2020, 2021 Theodore Tso (msgids)
 # This file is distributed under the same license as the e2fsprogs package.
-# Sharuzzaman Ahmat Raslan <sharuzzaman@gmail.com>, 2008, 2009, 2015, 2018, 2019, 2020.
+# Sharuzzaman Ahmat Raslan <sharuzzaman@gmail.com>, 2008, 2009, 2015, 2018, 2019, 2020, 2021.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -77,7 +77,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.45.3\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2019-07-14 20:56-0400\n"
-"PO-Revision-Date: 2020-11-01 14:20+0800\n"
+"PO-Revision-Date: 2021-01-01 16:12+0800\n"
 "Last-Translator: Sharuzzaman Ahmat Raslan <sharuzzaman@gmail.com>\n"
 "Language-Team: Malay <translation-team-ms@lists.sourceforge.net>\n"
 "Language: ms\n"
@@ -86,7 +86,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.4.1\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #: e2fsck/badblocks.c:23 misc/mke2fs.c:220
 #, c-format
@@ -173,7 +173,7 @@ msgstr "%%empty pada hukum bukan kosong"
 #: e2fsck/emptydir.c:62
 #, fuzzy
 msgid "empty dir map"
-msgstr "Peta terjemahan: sintaks tidak betul"
+msgstr "Tiada ruang bebas dalam peta takat"
 
 #: e2fsck/emptydir.c:98
 #, c-format
@@ -198,12 +198,12 @@ msgstr ""
 #: e2fsck/extents.c:42
 #, fuzzy
 msgid "extent rebuild inode map"
-msgstr "fail kosong biasa"
+msgstr "Tiada ruang bebas dalam peta takat"
 
 #: e2fsck/flushb.c:35
 #, fuzzy, c-format
 msgid "Usage: %s disk\n"
-msgstr "Penggunaan: %s [-r] [-t]\n"
+msgstr "%s\t\tPenggunaan Kekunci (%s):\n"
 
 #: e2fsck/flushb.c:64
 #, c-format
@@ -474,7 +474,7 @@ msgstr "direktori"
 #: e2fsck/message.c:331
 #, fuzzy
 msgid "character device"
-msgstr "peranti tidak sah %s %s"
+msgstr "aksara"
 
 #: e2fsck/message.c:333
 #, fuzzy
@@ -579,17 +579,17 @@ msgstr "membaca direktori %s"
 #: e2fsck/pass1.c:1224
 #, fuzzy
 msgid "in-use inode map"
-msgstr "Tidak dapat memetakan nama \"%s\" ke menu\n"
+msgstr "Inode tidak menggunakan takat"
 
 #: e2fsck/pass1.c:1235
 #, fuzzy
 msgid "directory inode map"
-msgstr "Peta terjemahan: sintaks tidak betul"
+msgstr "Tiada ruang bebas dalam peta takat"
 
 #: e2fsck/pass1.c:1245
 #, fuzzy
 msgid "regular file inode map"
-msgstr "fail kosong biasa"
+msgstr "Mencipta fail biasa %s\n"
 
 #: e2fsck/pass1.c:1254 misc/e2image.c:1282
 #, fuzzy
@@ -722,7 +722,9 @@ msgstr "Auto simpan ketika keluar, jangan maklum"
 #: e2fsck/problem.c:53
 #, fuzzy
 msgid "Fix"
-msgstr "pembetulan boleh diterapkan. Ulang laksana dengan pilihan '--update'."
+msgstr ""
+"Tidak dapat membaiki induk untuk @i %i: %m\n"
+"\n"
 
 #: e2fsck/problem.c:54
 msgid "Clear"
@@ -1019,7 +1021,7 @@ msgstr ""
 #: e2fsck/problem.c:180
 #, fuzzy
 msgid "Corruption found in @S.  (%s = %N).\n"
-msgstr "Hujah sah adalah nombor bulat n seperti: %s\n"
+msgstr "\"%.*s%s\" tidak dijumpai"
 
 #. @-expanded: Error determining size of the physical device: %m\n
 #: e2fsck/problem.c:186
@@ -1081,7 +1083,7 @@ msgstr ""
 #: e2fsck/problem.c:235
 #, fuzzy
 msgid "@j @S is corrupt.\n"
-msgstr "Menerima data yang rosak."
+msgstr "Takat rosak"
 
 #. @-expanded: superblock has_journal flag is clear, but a journal is present.\n
 #: e2fsck/problem.c:240
@@ -1355,7 +1357,7 @@ msgstr ""
 #: e2fsck/problem.c:471
 #, fuzzy
 msgid "@S MMP @b checksum does not match.  "
-msgstr "Pengiraan bitmap MMP tidak sesesss"
+msgstr "Pengiraan bitmap MMP tidak sepadan"
 
 #. @-expanded: superblock 64bit filesystem needs extents to access the whole disk.  
 #: e2fsck/problem.c:476
@@ -1396,7 +1398,7 @@ msgstr ""
 #: e2fsck/problem.c:512
 #, fuzzy
 msgid "Invalid %U @q @i %i.  "
-msgstr "@i %i (%Q) adalah soket @I.\n"
+msgstr "@u @z @i %i.  "
 
 #. @-expanded: superblock would have too many inodes (%N).\n
 #: e2fsck/problem.c:517
@@ -1497,7 +1499,7 @@ msgstr "i_blocks_hi @F %N, @s sifar.\n"
 #: e2fsck/problem.c:602
 #, fuzzy
 msgid "@I %B (%b) in @i %i.  "
-msgstr "@i @B untuk @g %g tiada didalam @g.  (@b %b)\n"
+msgstr "@A @i @B (%N): %m\n"
 
 #. @-expanded: %B (%b) overlaps filesystem metadata in inode %i.  
 #: e2fsck/problem.c:607
@@ -1716,7 +1718,7 @@ msgstr "Data EXIF mengandungi gambar kecil (%i byte)."
 #: e2fsck/problem.c:806
 #, fuzzy
 msgid "@j is not regular file.  "
-msgstr "fail kosong biasa"
+msgstr "Mencipta fail biasa %s\n"
 
 #. @-expanded: inode %i was part of the orphaned inode list.  
 #: e2fsck/problem.c:812
@@ -2231,7 +2233,7 @@ msgstr ""
 #: e2fsck/problem.c:1288 e2fsck/problem.c:1663
 #, fuzzy
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr "Ralat menyalin dalam penggantian @i @B: %m\n"
+msgstr "Ralat menulis @d @b %b (@i %i): %m\n"
 
 #. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
 #: e2fsck/problem.c:1298
@@ -3196,7 +3198,7 @@ msgstr ""
 #: e2fsck/unix.c:185
 #, fuzzy
 msgid "             Extent depth histogram: "
-msgstr "Panjang takat tidak sah"
+msgstr "Kedalaman maksimum %s"
 
 #: e2fsck/unix.c:194
 #, c-format
@@ -3656,7 +3658,7 @@ msgstr "Superblok jurnal tidak dijumpai!\n"
 #, fuzzy, c-format
 #| msgid "Journal removed\n"
 msgid "Journal corrupted in %s\n"
-msgstr "%s adalah bukan peranti jurnal.\n"
+msgstr "Menambah jurnal ke peranti %s:"
 
 #: e2fsck/unix.c:1789
 #, fuzzy, c-format
@@ -3888,7 +3890,7 @@ msgstr "masa lepas: %6.3f\n"
 #: e2fsck/util.c:495 e2fsck/util.c:509
 #, fuzzy, c-format
 msgid "while reading inode %lu in %s"
-msgstr "ketika membaca inod jurnal"
+msgstr "Ralat membaca blok %lu (%s) ketika %s.  "
 
 #: e2fsck/util.c:523 e2fsck/util.c:536
 #, fuzzy, c-format
@@ -4190,7 +4192,7 @@ msgstr "ketika membuka %s"
 #: misc/create_inode.c:105 misc/create_inode.c:132 misc/create_inode.c:322
 #, fuzzy, c-format
 msgid "while writing inode %u"
-msgstr "ketika menulis inod bitmap"
+msgstr "ketika menulis jadual inod"
 
 #: misc/create_inode.c:152 misc/create_inode.c:176
 #, fuzzy, c-format
@@ -4213,7 +4215,7 @@ msgstr "ketika mengumpukkan penimbal"
 #, fuzzy, c-format
 #| msgid "while reading flags on %s"
 msgid "while reading attribute \"%s\" of \"%s\""
-msgstr "Ketika membaca penanda pada %s"
+msgstr "ketika membaca penanda pada %s"
 
 #: misc/create_inode.c:214
 #, fuzzy, c-format
@@ -5788,7 +5790,7 @@ msgstr "Menggunakan saiz blok peranti jurnal: %d\n"
 #: misc/mke2fs.c:1937
 #, fuzzy, c-format
 msgid "invalid blocks '%s' on device '%s'"
-msgstr "nombor peranti minor tidak sah %s"
+msgstr "nombor peranti major tidak sah %s"
 
 #: misc/mke2fs.c:1967
 msgid "filesystem"
@@ -6896,7 +6898,7 @@ msgstr "Menetapkan saiz inod %lu\n"
 #: misc/tune2fs.c:3296
 #, fuzzy
 msgid "Failed to change inode size\n"
-msgstr "saiz inode tidak sah - %s"
+msgstr "gagal menukar hakmilik %s ke %s\n"
 
 #: misc/tune2fs.c:3310
 #, c-format
@@ -7040,7 +7042,7 @@ msgstr "Kiraan Perkataan"
 #: misc/uuidd.c:206
 #, fuzzy
 msgid "bad response length"
-msgstr "\t\t\tKekangan Panjang Laluan: %d\n"
+msgstr "Panjang stride tidak sah"
 
 #: misc/uuidd.c:271
 #, c-format
@@ -7423,8 +7425,9 @@ msgid "EXT2FS Library version 1.45.3"
 msgstr "Versi pustaka tasn1 terlalu lama."
 
 #: lib/ext2fs/ext2_err.c:12
+#, fuzzy
 msgid "Wrong magic number for ext2_filsys structure"
-msgstr ""
+msgstr "Nombor ajaib yang salah --- RESERVED_13"
 
 #: lib/ext2fs/ext2_err.c:13
 msgid "Wrong magic number for badblocks_list structure"
@@ -7471,8 +7474,9 @@ msgid "Wrong magic number for directory block list structure"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:24
+#, fuzzy
 msgid "Wrong magic number for icount structure"
-msgstr ""
+msgstr "Nombor ajaib yang salah --- RESERVED_13"
 
 #: lib/ext2fs/ext2_err.c:25
 msgid "Wrong magic number for Powerquest io_channel structure"
@@ -7513,12 +7517,12 @@ msgstr ""
 #: lib/ext2fs/ext2_err.c:33
 #, fuzzy
 msgid "Can't read group descriptors"
-msgstr ", Penghurai kumpulan di"
+msgstr ", Penerangan kumpulan di "
 
 #: lib/ext2fs/ext2_err.c:34
 #, fuzzy
 msgid "Can't write group descriptors"
-msgstr ", Penghurai kumpulan di"
+msgstr ", Penerangan kumpulan di "
 
 #: lib/ext2fs/ext2_err.c:35
 msgid "Corrupt group descriptor: bad block for block bitmap"
@@ -7771,7 +7775,7 @@ msgstr "Mod lihat (baca sahaja)"
 #: lib/ext2fs/ext2_err.c:89
 #, fuzzy
 msgid "Ext2 directory block not found"
-msgstr "Blok direktori tidak mempunyai ruang untuk semakan"
+msgstr "Senarai blok direktori Ext2fs kosong"
 
 #: lib/ext2fs/ext2_err.c:90
 #, fuzzy
@@ -7848,7 +7852,7 @@ msgstr " Penghurai kumpulan di"
 #: lib/ext2fs/ext2_err.c:105
 #, fuzzy
 msgid "Resize inode is corrupt"
-msgstr "Menerima data yang rosak."
+msgstr "Pengepala takat rosak"
 
 #: lib/ext2fs/ext2_err.c:106
 msgid "Tried to set block bmap with missing indirect block"
@@ -7862,7 +7866,7 @@ msgstr "Berjaya."
 #: lib/ext2fs/ext2_err.c:108
 #, fuzzy
 msgid "TDB: Corrupt database"
-msgstr "tdb_fetch %s gagal\n"
+msgstr "TDB: Tulis tidak dibenarkan"
 
 #: lib/ext2fs/ext2_err.c:109
 #, fuzzy
@@ -7899,14 +7903,12 @@ msgid "TDB: Record does not exist"
 msgstr "pengguna %s tidak wujud"
 
 #: lib/ext2fs/ext2_err.c:116
-#, fuzzy
 msgid "TDB: Write not permitted"
-msgstr "tdb_fetch %s gagal\n"
+msgstr "TDB: Tulis tidak dibenarkan"
 
 #: lib/ext2fs/ext2_err.c:117
-#, fuzzy
 msgid "Ext2fs directory block list is empty"
-msgstr "Blok direktori kosong %u (#%d) dalam inode %u\n"
+msgstr "Senarai blok direktori Ext2fs kosong"
 
 #: lib/ext2fs/ext2_err.c:118
 msgid "Attempt to modify a block mapping via a read-only block iterator"
@@ -7929,44 +7931,36 @@ msgid "Wrong magic number for 64-bit inode bitmap"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:123
-#, fuzzy
 msgid "Wrong magic number --- RESERVED_13"
-msgstr "MMP: nombor magic tidak sah"
+msgstr "Nombor ajaib yang salah --- RESERVED_13"
 
 #: lib/ext2fs/ext2_err.c:124
-#, fuzzy
 msgid "Wrong magic number --- RESERVED_14"
-msgstr "MMP: nombor magic tidak sah"
+msgstr "Nombor ajaib yang salah --- RESERVED_14"
 
 #: lib/ext2fs/ext2_err.c:125
-#, fuzzy
 msgid "Wrong magic number --- RESERVED_15"
-msgstr "MMP: nombor magic tidak sah"
+msgstr "Nombor ajaib yang salah --- RESERVED_15"
 
 #: lib/ext2fs/ext2_err.c:126
-#, fuzzy
 msgid "Wrong magic number --- RESERVED_16"
-msgstr "MMP: nombor magic tidak sah"
+msgstr "Nombor ajaib yang salah --- RESERVED_16"
 
 #: lib/ext2fs/ext2_err.c:127
-#, fuzzy
 msgid "Wrong magic number --- RESERVED_17"
-msgstr "MMP: nombor magic tidak sah"
+msgstr "Nombor ajaib yang salah --- RESERVED_17"
 
 #: lib/ext2fs/ext2_err.c:128
-#, fuzzy
 msgid "Wrong magic number --- RESERVED_18"
-msgstr "MMP: nombor magic tidak sah"
+msgstr "Nombor ajaib yang salah --- RESERVED_18"
 
 #: lib/ext2fs/ext2_err.c:129
-#, fuzzy
 msgid "Wrong magic number --- RESERVED_19"
-msgstr "MMP: nombor magic tidak sah"
+msgstr "Nombor ajaib yang salah --- RESERVED_19"
 
 #: lib/ext2fs/ext2_err.c:130
-#, fuzzy
 msgid "Corrupt extent header"
-msgstr "Menerima data yang rosak."
+msgstr "Pengepala takat rosak"
 
 #: lib/ext2fs/ext2_err.c:131
 msgid "Corrupt extent index"
