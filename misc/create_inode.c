@@ -601,7 +601,7 @@ out:
 	return err;
 }
 
-static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ext2_ino_t ino)
+static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ino_t ino)
 {
 	int i;
 
@@ -1050,9 +1050,17 @@ errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
 	file_info.path_max_len = 255;
 	file_info.path = calloc(file_info.path_max_len, 1);
 
+	retval = set_inode_xattr(fs, root, source_dir);
+	if (retval) {
+		com_err(__func__, retval,
+			_("while copying xattrs on root directory"));
+		goto out;
+	}
+
 	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks,
 			       &file_info, fs_callbacks);
 
+out:
 	free(file_info.path);
 	free(hdlinks.hdl);
 	return retval;

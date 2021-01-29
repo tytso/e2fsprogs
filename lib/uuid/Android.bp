@@ -4,8 +4,10 @@ cc_library {
     name: "libext2_uuid",
     host_supported: true,
     ramdisk_available: true,
+    vendor_ramdisk_available: true,
     recovery_available: true,
     vendor_available: true,
+    product_available: true,
     unique_host_soname: true,
     defaults: ["e2fsprogs-defaults"],
     srcs: [
@@ -35,4 +37,8 @@ cc_library {
     header_libs: ["libext2-headers"],
     export_include_dirs: ["."],
     export_header_lib_headers: ["libext2-headers"],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.virt",
+    ],
 }

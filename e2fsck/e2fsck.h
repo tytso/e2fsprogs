@@ -390,6 +390,7 @@ struct e2fsck_struct {
 	profile_t	profile;
 	int blocks_per_page;
 	ext2_u32_list encrypted_dirs;
+	ext2_u32_list casefolded_dirs;
 
 	/* Reserve blocks for root and l+f re-creation */
 	blk64_t root_repair_block, lnf_repair_block;
@@ -608,7 +609,7 @@ extern void log_err(e2fsck_t ctx, const char *fmt, ...)
 extern void e2fsck_read_bitmaps(e2fsck_t ctx);
 extern void e2fsck_write_bitmaps(e2fsck_t ctx);
 extern void preenhalt(e2fsck_t ctx);
-extern char *string_copy(e2fsck_t ctx, const char *str, int len);
+extern char *string_copy(e2fsck_t ctx, const char *str, size_t len);
 extern int fs_proc_check(const char *fs_name);
 extern int check_for_modules(const char *fs_name);
 #ifdef RESOURCE_TRACK

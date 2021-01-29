@@ -269,6 +269,8 @@ int main (int argc, char ** argv)
 	long		sysval;
 	int		len, mount_flags;
 	char		*mtpt, *undo_file = NULL;
+	dgrp_t		new_group_desc_count;
+	unsigned long	new_desc_blocks;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -527,6 +529,18 @@ int main (int argc, char ** argv)
 				  "expressed in 32 bits\n"));
 			exit(1);
 		}
+	}
+	new_group_desc_count = ext2fs_div64_ceil(new_size -
+				fs->super->s_first_data_block,
+						 EXT2_BLOCKS_PER_GROUP(fs->super));
+	new_desc_blocks = ext2fs_div_ceil(new_group_desc_count,
+					  EXT2_DESC_PER_BLOCK(fs->super));
+	if ((new_desc_blocks + fs->super->s_first_data_block) >
+	    EXT2_BLOCKS_PER_GROUP(fs->super)) {
+		com_err(program_name, 0,
+			_("New size results in too many block group "
+			  "descriptors.\n"));
+		exit(1);
 	}
 
 	if (!force && new_size < min_size) {

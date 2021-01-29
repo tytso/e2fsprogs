@@ -33,9 +33,10 @@ static unsigned long long user_corrupt_bytes = 0;
 static double user_corrupt_pct = 0.0;
 
 #if !defined HAVE_PWRITE64 && !defined HAVE_PWRITE
-static ssize_t my_pwrite(int fd, const void *buf, size_t count, off_t offset)
+static ssize_t my_pwrite(int fd, const void *buf, size_t count,
+			 ext2_loff_t offset)
 {
-	if (lseek(fd, offset, SEEK_SET) < 0)
+	if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
 		return 0;
 
 	return write(fd, buf, count);
@@ -82,7 +83,7 @@ static int find_block_helper(ext2_filsys fs EXT2FS_ATTR((unused)),
 }
 
 static errcode_t find_metadata_blocks(ext2_filsys fs, ext2fs_block_bitmap bmap,
-				      off_t *corrupt_bytes)
+				      ext2_loff_t *corrupt_bytes)
 {
 	dgrp_t i;
 	blk64_t b, c;
@@ -172,7 +173,8 @@ static uint64_t rand_num(uint64_t min, uint64_t max)
 	for (i = 0; i < sizeof(x); i++)
 		px[i] = random();
 
-	return min + (uint64_t)((double)(max - min) * (x / (UINT64_MAX + 1.0)));
+	return min + (uint64_t)((double)(max - min) *
+				(x / ((double) UINT64_MAX + 1.0)));
 }
 
 static int process_fs(const char *fsname)
@@ -181,9 +183,8 @@ static int process_fs(const char *fsname)
 	int flags, fd;
 	ext2_filsys fs = NULL;
 	ext2fs_block_bitmap corrupt_map;
-	loff_t hsize, count, off, offset, corrupt_bytes;
+	ext2_loff_t hsize, count, off, offset, corrupt_bytes, i;
 	unsigned char c;
-	loff_t i;
 
 	/* If mounted rw, force dryrun mode */
 	ret = ext2fs_check_if_mounted(fsname, &flags);

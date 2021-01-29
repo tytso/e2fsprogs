@@ -207,12 +207,14 @@ manual page for more details.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"
-Specify the size of blocks in bytes.  Valid block-size values are 1024,
-2048 and 4096 bytes per block.  If omitted,
-block-size is heuristically determined by the filesystem size and
+Specify the size of blocks in bytes.  Valid block-size values are powers of two
+from 1024 up to 65536 (however note that the kernel is able to mount only
+filesystems with block-size smaller or equal to the system page size - 4k on
+x86 systems, up to 64k on ppc64 or aarch64 depending on kernel configuration).
+If omitted, block-size is heuristically determined by the filesystem size and
 the expected usage of the filesystem (see the
 .B \-T
-option).  If
+option).  In most common cases, the default block size is 4k. If
 .I block-size
 is preceded by a negative sign ('-'), then
 .B mke2fs

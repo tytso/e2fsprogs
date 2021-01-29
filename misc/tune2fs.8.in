@@ -218,6 +218,30 @@ directories.  Valid algorithms accepted are:
 and
 .IR tea .
 .TP
+.BI encoding= encoding-name
+Enable the
+.I casefold
+feature in the super block and set
+.I encoding-name
+as the encoding to be used.  If
+.I encoding-name
+is not specified, utf8 is used. The encoding cannot be altered if casefold
+was previously enabled.
+.TP
+.BI encoding_flags= encoding-flags
+Define parameters for file name character encoding operations.  If a
+flag is not changed using this parameter, its default value is used.
+.I encoding-flags
+should be a comma-separated lists of flags to be enabled.  The flags cannot be
+altered if casefold was previously enabled.
+
+The only flag that can be set right now is
+.I strict
+which means that invalid strings should be rejected by the file system.
+In the default configuration, the
+.I strict
+flag is disabled.
+.TP
 .BI mount_opts= mount_option_string
 Set a set of default mount options which will be used when the file
 system is mounted.  Unlike the bitmask-based default mount options which
@@ -541,6 +565,11 @@ The following filesystem features can be set or cleared using
 .TP
 .B 64bit
 Enable the file system to be larger than 2^32 blocks.
+.TP
+.B casefold
+Enable support for file system level casefolding.
+.B Tune2fs
+currently only supports setting this filesystem feature.
 .TP
 .B dir_index
 Use hashed b-trees to speed up lookups for large directories.

@@ -24,6 +24,7 @@ cc_defaults {
 cc_binary {
     name: "resize2fs",
     host_supported: true,
+    vendor_ramdisk_available: true,
     defaults: ["resize2fs-defaults"],
 
     // Host binaries can be compiled statically to be re-used in other environments.

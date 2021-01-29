@@ -1439,7 +1439,7 @@ int main (int argc, char *argv[])
 		fputs("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n",
 		      ctx->problem_logf);
 		fprintf(ctx->problem_logf, "<problem_log time=\"%lu\">\n",
-			ctx->now);
+			(unsigned long) ctx->now);
 		fprintf(ctx->problem_logf, "<invocation prog=\"%s\"",
 			argv[0]);
 		for (i = 1; i < argc; i++)
@@ -1693,7 +1693,7 @@ failure:
 	 * or informational messages to the user.
 	 */
 	if (ctx->device_name == 0 && sb->s_volume_name[0])
-		ctx->device_name = string_copy(ctx, sb->s_volume_name,
+		ctx->device_name = string_copy(ctx, (char *) sb->s_volume_name,
 					       sizeof(sb->s_volume_name));
 
 	if (ctx->device_name == 0)

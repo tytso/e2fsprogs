@@ -53,10 +53,12 @@ e2fsck_libs = [
 cc_binary {
     name: "e2fsck",
     host_supported: true,
+    vendor_ramdisk_available: true,
     defaults: ["e2fsck-defaults"],
 
     shared_libs: e2fsck_libs,
     system_shared_libs: ["libc", "libdl"],
+    required: ["badblocks"],
 }
 
 cc_binary {

@@ -79,6 +79,7 @@ static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
 static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
 static void add_encrypted_dir(e2fsck_t ctx, ino_t ino);
+static void add_casefolded_dir(e2fsck_t ctx, ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -1890,6 +1891,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ctx->fs_directory_count++;
 			if (inode->i_flags & EXT4_ENCRYPT_FL)
 				add_encrypted_dir(ctx, ino);
+			if (inode->i_flags & EXT4_CASEFOLD_FL)
+				add_casefolded_dir(ctx, ino);
 		} else if (LINUX_S_ISREG (inode->i_mode)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_reg_map, ino);
 			ctx->fs_regular_count++;
@@ -2216,6 +2219,24 @@ static void add_encrypted_dir(e2fsck_t ctx, ino_t ino)
 		return;
 error:
 	fix_problem(ctx, PR_1_ALLOCATE_ENCRYPTED_DIRLIST, &pctx);
+	/* Should never get here */
+	ctx->flags |= E2F_FLAG_ABORT;
+}
+
+static void add_casefolded_dir(e2fsck_t ctx, ino_t ino)
+{
+	struct		problem_context pctx;
+
+	if (!ctx->casefolded_dirs) {
+		pctx.errcode = ext2fs_u32_list_create(&ctx->casefolded_dirs, 0);
+		if (pctx.errcode)
+			goto error;
+	}
+	pctx.errcode = ext2fs_u32_list_add(ctx->casefolded_dirs, ino);
+	if (pctx.errcode == 0)
+		return;
+error:
+	fix_problem(ctx, PR_1_ALLOCATE_CASEFOLDED_DIRLIST, &pctx);
 	/* Should never get here */
 	ctx->flags |= E2F_FLAG_ABORT;
 }
@@ -2677,15 +2698,26 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	if ((root->hash_version != EXT2_HASH_LEGACY) &&
 	    (root->hash_version != EXT2_HASH_HALF_MD4) &&
 	    (root->hash_version != EXT2_HASH_TEA) &&
+	    (root->hash_version != EXT2_HASH_SIPHASH) &&
 	    fix_problem(ctx, PR_1_HTREE_HASHV, pctx))
 		return 1;
+
+	if (ext4_hash_in_dirent(inode)) {
+		if (root->hash_version != EXT2_HASH_SIPHASH &&
+		    fix_problem(ctx, PR_1_HTREE_NEEDS_SIPHASH, pctx))
+			return 1;
+	} else {
+		if (root->hash_version == EXT2_HASH_SIPHASH &&
+		   fix_problem(ctx, PR_1_HTREE_CANNOT_SIPHASH, pctx))
+			return 1;
+	}
 
 	if ((root->unused_flags & EXT2_HASH_FLAG_INCOMPAT) &&
 	    fix_problem(ctx, PR_1_HTREE_INCOMPAT, pctx))
 		return 1;
 
 	pctx->num = root->indirect_levels;
-	if ((root->indirect_levels > ext2_dir_htree_level(fs)) &&
+	if ((root->indirect_levels >= ext2_dir_htree_level(fs)) &&
 	    fix_problem(ctx, PR_1_HTREE_DEPTH, pctx))
 		return 1;
 

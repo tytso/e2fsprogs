@@ -129,6 +129,7 @@ tune2fs_libs = [
 cc_binary {
     name: "tune2fs",
     host_supported: true,
+    vendor_ramdisk_available: true,
     defaults: ["tune2fs-defaults"],
 
     shared_libs: tune2fs_libs,

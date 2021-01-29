@@ -172,9 +172,11 @@ unsigned ext2fs_mmp_new_seq(void)
 #ifdef CONFIG_MMP
 	unsigned new_seq;
 	struct timeval tv;
+	unsigned long pid = getpid();
 
 	gettimeofday(&tv, 0);
-	srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
+	pid = (pid >> 16) | ((pid & 0xFFFF) << 16);
+	srand(pid ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
 
 	gettimeofday(&tv, 0);
 	/* Crank the random number generator a few times */
@@ -210,11 +212,11 @@ static errcode_t ext2fs_mmp_reset(ext2_filsys fs)
 	mmp_s->mmp_seq = EXT4_MMP_SEQ_CLEAN;
 	mmp_s->mmp_time = 0;
 #ifdef HAVE_GETHOSTNAME
-	gethostname(mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
+	gethostname((char *) mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
 #else
 	mmp_s->mmp_nodename[0] = '\0';
 #endif
-	strncpy(mmp_s->mmp_bdevname, fs->device_name,
+	strncpy((char *) mmp_s->mmp_bdevname, fs->device_name,
 		sizeof(mmp_s->mmp_bdevname));
 
 	mmp_s->mmp_check_interval = fs->super->s_mmp_update_interval;
@@ -352,11 +354,11 @@ clean_seq:
 
 	mmp_s->mmp_seq = seq = ext2fs_mmp_new_seq();
 #ifdef HAVE_GETHOSTNAME
-	gethostname(mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
+	gethostname((char *) mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
 #else
 	strcpy(mmp_s->mmp_nodename, "unknown host");
 #endif
-	strncpy(mmp_s->mmp_bdevname, fs->device_name,
+	strncpy((char *) mmp_s->mmp_bdevname, fs->device_name,
 		sizeof(mmp_s->mmp_bdevname));
 
 	retval = ext2fs_mmp_write(fs, fs->super->s_mmp_block, fs->mmp_buf);
