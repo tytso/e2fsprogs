@@ -975,6 +975,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	malloc.h
 	mntent.h
 	paths.h
+	pthread.h
 	semaphore.h
 	setjmp.h
 	signal.h
