@@ -281,10 +281,7 @@ static _INLINE_ void expand_inode_expression(FILE *f, ext2_filsys fs, char ch,
 
 	switch (ch) {
 	case 's':
-		if (LINUX_S_ISDIR(inode->i_mode))
-			fprintf(f, "%u", inode->i_size);
-		else
-			fprintf(f, "%llu", EXT2_I_SIZE(inode));
+		fprintf(f, "%llu", EXT2_I_SIZE(inode));
 		break;
 	case 'S':
 		fprintf(f, "%u", large_inode->i_extra_isize);

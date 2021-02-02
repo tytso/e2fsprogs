@@ -1666,7 +1666,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Filesystem contains large files, but has no such flag in sb */
 	{ PR_2_FEATURE_LARGE_FILES,
 	  N_("@f contains large files, but lacks LARGE_FILE flag in @S.\n"),
-	  PROMPT_FIX, 0, 0, 0, 0 },
+	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
 
 	/* Node in HTREE directory not referenced */
 	{ PR_2_HTREE_NOTREF,
@@ -1692,6 +1692,11 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_2_HTREE_CLEAR,
 	  N_("@n @h %d (%q).  "), PROMPT_CLEAR_HTREE, 0, 0, 0, 0 },
 
+	/* Filesystem has large directories, but has no such flag in sb */
+	{ PR_2_FEATURE_LARGE_DIRS,
+	  N_("@f has large directories, but lacks LARGE_DIR flag in @S.\n"),
+	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
+
 	/* Bad block in htree interior node */
 	{ PR_2_HTREE_BADBLK,
 	  N_("@p @h %d (%q): bad @b number %b.\n"),
@@ -1702,7 +1707,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Error adjusting refcount for @a @b %b (@i %i): %m\n"),
 	  PROMPT_NONE, PR_FATAL, 0, 0, 0 },
 
-	/* Invalid HTREE root node */
+	/* Problem in HTREE directory inode: root node is invalid */
 	{ PR_2_HTREE_BAD_ROOT,
 	  /* xgettext:no-c-format */
 	  N_("@p @h %d: root node is @n\n"),

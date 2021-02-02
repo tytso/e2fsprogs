@@ -2058,6 +2058,21 @@ void e2fsck_pass1(e2fsck_t ctx)
 		goto endit;
 	}
 
+	if (ctx->large_dirs && !ext2fs_has_feature_largedir(ctx->fs->super)) {
+		ext2_filsys fs = ctx->fs;
+
+		if (fix_problem(ctx, PR_2_FEATURE_LARGE_DIRS, &pctx)) {
+			ext2fs_set_feature_largedir(fs->super);
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+			ext2fs_mark_super_dirty(fs);
+		}
+		if (fs->super->s_rev_level == EXT2_GOOD_OLD_REV &&
+		    fix_problem(ctx, PR_1_FS_REV_LEVEL, &pctx)) {
+			ext2fs_update_dynamic_rev(fs);
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+
 	if (ctx->block_dup_map) {
 		if (ctx->options & E2F_OPT_PREEN) {
 			clear_problem_context(&pctx);
@@ -2704,9 +2719,29 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 		return 1;
 
 	pctx->num = root->indirect_levels;
-	if ((root->indirect_levels >= ext2_dir_htree_level(fs)) &&
+	/* if htree level is clearly too high, consider it to be broken */
+	if (root->indirect_levels > EXT4_HTREE_LEVEL &&
 	    fix_problem(ctx, PR_1_HTREE_DEPTH, pctx))
 		return 1;
+
+	/* if level is only maybe too high, LARGE_DIR feature could be unset */
+	if (root->indirect_levels > ext2_dir_htree_level(fs) &&
+	    !ext2fs_has_feature_largedir(fs->super)) {
+		int blockbits = EXT2_BLOCK_SIZE_BITS(fs->super) + 10;
+		int idx_pb = 1 << (blockbits - 3);
+
+		/* compare inode size/blocks vs. max-sized 2-level htree */
+		if (EXT2_I_SIZE(pctx->inode) <
+		    (idx_pb - 1) * (idx_pb - 2) << blockbits &&
+		    pctx->inode->i_blocks <
+		    (idx_pb - 1) * (idx_pb - 2) << (blockbits - 9) &&
+		    fix_problem(ctx, PR_1_HTREE_DEPTH, pctx))
+			return 1;
+	}
+
+	if (root->indirect_levels > EXT4_HTREE_LEVEL_COMPAT ||
+	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(inode)))
+		ctx->large_dirs++;
 
 	return 0;
 }
@@ -2854,7 +2889,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			 (extent.e_pblk + extent.e_len) >
 			 ext2fs_blocks_count(ctx->fs->super))
 			problem = PR_1_EXTENT_ENDS_BEYOND;
-		else if (is_leaf && is_dir &&
+		else if (is_leaf && is_dir && !pctx->inode->i_size_high &&
+			 !ext2fs_has_feature_largedir(ctx->fs->super) &&
 			 ((extent.e_lblk + extent.e_len) >
 			  (1U << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
@@ -3462,8 +3498,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	       ino, inode->i_size, pb.last_block, ext2fs_inode_i_blocks(fs, inode),
 	       pb.num_blocks);
 #endif
+	size = EXT2_I_SIZE(inode);
 	if (pb.is_dir) {
-		unsigned nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
+		unsigned nblock = size >> EXT2_BLOCK_SIZE_BITS(fs->super);
 		if (inode->i_flags & EXT4_INLINE_DATA_FL) {
 			int flags;
 			size_t sz = 0;
@@ -3477,11 +3514,11 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 					  EXT2_FLAG_IGNORE_CSUM_ERRORS) |
 					 (ctx->fs->flags &
 					  ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
-			if (err || sz != inode->i_size) {
+			if (err || sz != size) {
 				bad_size = 7;
 				pctx->num = sz;
 			}
-		} else if (inode->i_size & (fs->blocksize - 1))
+		} else if (size & (fs->blocksize - 1))
 			bad_size = 5;
 		else if (nblock > (pb.last_block + 1))
 			bad_size = 1;
@@ -3491,7 +3528,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 				bad_size = 2;
 		}
 	} else {
-		size = EXT2_I_SIZE(inode);
 		if ((pb.last_init_lblock >= 0) &&
 		    /* Do not allow initialized allocated blocks past i_size*/
 		    (size < (__u64)pb.last_init_lblock * fs->blocksize) &&
@@ -3514,8 +3550,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			pctx->num = (pb.last_block + 1) * fs->blocksize;
 		pctx->group = bad_size;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
-			if (LINUX_S_ISDIR(inode->i_mode))
-				pctx->num &= 0xFFFFFFFFULL;
 			ext2fs_inode_size_set(fs, inode, pctx->num);
 			if (EXT2_I_SIZE(inode) == 0 &&
 			    (inode->i_flags & EXT4_INLINE_DATA_FL)) {
@@ -3694,6 +3728,7 @@ static int process_block(ext2_filsys fs,
 	}
 
 	if (p->is_dir && !ext2fs_has_feature_largedir(fs->super) &&
+	    !pctx->inode->i_size_high &&
 	    blockcnt > (1 << (21 - fs->super->s_log_block_size)))
 		problem = PR_1_TOOBIG_DIR;
 	if (p->is_dir && p->num_blocks + 1 >= p->max_blocks)

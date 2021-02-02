@@ -573,18 +573,29 @@ errcode_t ext2fs_inode_size_set(ext2_filsys fs, struct ext2_inode *inode,
 	if (size < 0)
 		return EINVAL;
 
-	/* Only regular files get to be larger than 4GB */
-	if (!LINUX_S_ISREG(inode->i_mode) && (size >> 32))
-		return EXT2_ET_FILE_TOO_BIG;
+	/* If writing a large inode, set the large_file or large_dir flag */
+	if (ext2fs_needs_large_file_feature(size)) {
+		int dirty_sb = 0;
 
-	/* If we're writing a large file, set the large_file flag */
-	if (LINUX_S_ISREG(inode->i_mode) &&
-	    ext2fs_needs_large_file_feature(size) &&
-	    (!ext2fs_has_feature_large_file(fs->super) ||
-	     fs->super->s_rev_level == EXT2_GOOD_OLD_REV)) {
-		ext2fs_set_feature_large_file(fs->super);
-		ext2fs_update_dynamic_rev(fs);
-		ext2fs_mark_super_dirty(fs);
+		if (LINUX_S_ISREG(inode->i_mode)) {
+			if (!ext2fs_has_feature_large_file(fs->super)) {
+				ext2fs_set_feature_large_file(fs->super);
+				dirty_sb = 1;
+			}
+		} else if (LINUX_S_ISDIR(inode->i_mode)) {
+			if (!ext2fs_has_feature_largedir(fs->super)) {
+				ext2fs_set_feature_largedir(fs->super);
+				dirty_sb = 1;
+			}
+		} else {
+			/* Only regular files get to be larger than 4GB */
+			return EXT2_ET_FILE_TOO_BIG;
+		}
+		if (dirty_sb) {
+			if (fs->super->s_rev_level == EXT2_GOOD_OLD_REV)
+				ext2fs_update_dynamic_rev(fs);
+			ext2fs_mark_super_dirty(fs);
+		}
 	}
 
 	inode->i_size = size & 0xffffffff;
