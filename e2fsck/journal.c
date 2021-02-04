@@ -706,19 +706,19 @@ out:
 static void ext4_fc_replay_fixup_iblocks(struct ext2_inode_large *ondisk_inode,
 	struct ext2_inode_large *fc_inode)
 {
-	if (le32_to_cpu(ondisk_inode->i_flags) & EXT4_EXTENTS_FL) {
+	if (ondisk_inode->i_flags & EXT4_EXTENTS_FL) {
 		struct ext3_extent_header *eh;
 
 		eh = (struct ext3_extent_header *)(&ondisk_inode->i_block[0]);
-		if (eh->eh_magic != EXT3_EXT_MAGIC) {
+		if (le16_to_cpu(eh->eh_magic) != EXT3_EXT_MAGIC) {
 			memset(eh, 0, sizeof(*eh));
-			eh->eh_magic = EXT3_EXT_MAGIC;
+			eh->eh_magic = cpu_to_le16(EXT3_EXT_MAGIC);
 			eh->eh_max = cpu_to_le16(
 				(sizeof(ondisk_inode->i_block) -
 					sizeof(struct ext3_extent_header)) /
-					sizeof(struct ext3_extent));
+				sizeof(struct ext3_extent));
 		}
-	} else if (le32_to_cpu(ondisk_inode->i_flags) & EXT4_INLINE_DATA_FL) {
+	} else if (ondisk_inode->i_flags & EXT4_INLINE_DATA_FL) {
 		memcpy(ondisk_inode->i_block, fc_inode->i_block,
 			sizeof(fc_inode->i_block));
 	}
@@ -728,34 +728,41 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, struct ext4_fc_tl *tl)
 {
 	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
 	int ino, inode_len = EXT2_GOOD_OLD_INODE_SIZE;
-	struct ext2_inode_large *inode = NULL;
-	struct ext4_fc_inode *fc_inode;
+	struct ext2_inode_large *inode = NULL, *fc_inode = NULL;
+	struct ext4_fc_inode *fc_inode_val;
 	errcode_t err;
 	blk64_t blks;
 
-	fc_inode = (struct ext4_fc_inode *)ext4_fc_tag_val(tl);
-	ino = le32_to_cpu(fc_inode->fc_ino);
+	fc_inode_val = (struct ext4_fc_inode *)ext4_fc_tag_val(tl);
+	ino = le32_to_cpu(fc_inode_val->fc_ino);
 
 	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
 		inode_len += ext2fs_le16_to_cpu(
-			((struct ext2_inode_large *)fc_inode->fc_raw_inode)
+			((struct ext2_inode_large *)fc_inode_val->fc_raw_inode)
 				->i_extra_isize);
 	err = ext2fs_get_mem(inode_len, &inode);
 	if (err)
-		return errcode_to_errno(err);
+		goto out;
+	err = ext2fs_get_mem(inode_len, &fc_inode);
+	if (err)
+		goto out;
 	ext4_fc_flush_extents(ctx, ino);
 
 	err = ext2fs_read_inode_full(ctx->fs, ino, (struct ext2_inode *)inode,
 					inode_len);
 	if (err)
 		goto out;
-	memcpy(inode, fc_inode->fc_raw_inode,
-		offsetof(struct ext2_inode_large, i_block));
-	memcpy(&inode->i_generation,
-		&((struct ext2_inode_large *)(fc_inode->fc_raw_inode))->i_generation,
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_inode_full(ctx->fs, fc_inode,
+			       (struct ext2_inode_large *)fc_inode_val->fc_raw_inode,
+			       0, sizeof(*inode));
+#else
+	memcpy(fc_inode, fc_inode_val->fc_raw_inode, inode_len);
+#endif
+	memcpy(inode, fc_inode, offsetof(struct ext2_inode_large, i_block));
+	memcpy(&inode->i_generation, &fc_inode->i_generation,
 		inode_len - offsetof(struct ext2_inode_large, i_generation));
-	ext4_fc_replay_fixup_iblocks(inode,
-		(struct ext2_inode_large *)fc_inode->fc_raw_inode);
+	ext4_fc_replay_fixup_iblocks(inode, fc_inode);
 	err = ext2fs_count_blocks(ctx->fs, ino, EXT2_INODE(inode), &blks);
 	if (err)
 		goto out;
@@ -774,6 +781,7 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, struct ext4_fc_tl *tl)
 
 out:
 	ext2fs_free_mem(&inode);
+	ext2fs_free_mem(&fc_inode);
 	return errcode_to_errno(err);
 }
 
@@ -819,7 +827,7 @@ static int ext4_fc_handle_del_range(e2fsck_t ctx, struct ext4_fc_tl *tl)
 
 	memset(&extent, 0, sizeof(extent));
 	extent.e_lblk = ext2fs_le32_to_cpu(del_range->fc_lblk);
-	extent.e_len = ext2fs_le16_to_cpu(del_range->fc_len);
+	extent.e_len = ext2fs_le32_to_cpu(del_range->fc_len);
 	ret = ext4_fc_read_extents(ctx, ino);
 	if (ret)
 		return ret;
