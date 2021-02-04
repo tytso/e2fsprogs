@@ -1809,7 +1809,7 @@ errcode_t ext2fs_decode_extent(struct ext2fs_extent *to, void *addr, int len)
 errcode_t ext2fs_count_blocks(ext2_filsys fs, ext2_ino_t ino,
 			      struct ext2_inode *inode, blk64_t *ret_count)
 {
-	ext2_extent_handle_t	handle;
+	ext2_extent_handle_t	handle = NULL;
 	struct ext2fs_extent	extent;
 	errcode_t		errcode;
 	int			i;
