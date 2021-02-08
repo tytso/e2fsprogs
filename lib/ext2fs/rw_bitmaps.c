@@ -530,7 +530,6 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	unsigned flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 	dgrp_t average_group;
 	int i, tail_flags = 0;
-	io_manager manager = unix_io_manager;
 #endif
 
 	if (flags & ~EXT2FS_BITMAPS_VALID_FLAGS)

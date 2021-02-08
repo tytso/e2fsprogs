@@ -852,10 +852,6 @@ extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
 extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
 				    ext2fs_generic_bitmap *dest);
-extern errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs);
-extern errcode_t ext2fs_write_block_bitmap (ext2_filsys fs);
-extern errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs);
-extern errcode_t ext2fs_read_block_bitmap(ext2_filsys fs);
 extern errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 					      const char *descr,
 					      ext2fs_block_bitmap *ret);
@@ -874,8 +870,6 @@ extern errcode_t ext2fs_fudge_block_bitmap_end2(ext2fs_block_bitmap bitmap,
 					 blk64_t end, blk64_t *oend);
 extern void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap);
-extern errcode_t ext2fs_read_bitmaps(ext2_filsys fs);
-extern errcode_t ext2fs_write_bitmaps(ext2_filsys fs);
 extern errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
 					    ext2fs_inode_bitmap bmap);
 extern errcode_t ext2fs_resize_inode_bitmap2(__u64 new_end,
@@ -1742,6 +1736,15 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 
 /* res_gdt.c */
 extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
+
+/* rw_bitmaps.c */
+extern errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads);
+extern errcode_t ext2fs_read_bitmaps(ext2_filsys fs);
+extern errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs);
+extern errcode_t ext2fs_read_block_bitmap(ext2_filsys fs);
+extern errcode_t ext2fs_write_bitmaps(ext2_filsys fs);
+extern errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs);
+extern errcode_t ext2fs_write_block_bitmap (ext2_filsys fs);
 
 /*sha256.c */
 #define EXT2FS_SHA256_LENGTH 32

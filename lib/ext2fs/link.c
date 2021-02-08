@@ -46,7 +46,6 @@ static errcode_t alloc_dx_frame(ext2_filsys fs, struct dx_frame *frame)
 
 static void dx_release(struct dx_lookup_info *info)
 {
-	struct ext2_dx_root_info *root;
 	int level;
 
 	for (level = 0; level < info->levels; level++) {
@@ -98,7 +97,7 @@ static errcode_t dx_lookup(ext2_filsys fs, ext2_ino_t dir,
 	int count, limit;
 	int hash_alg;
 	int hash_flags = diri->i_flags & EXT4_CASEFOLD_FL;
-	__u32 hash, minor_hash;
+	__u32 minor_hash;
 	struct dx_frame *frame;
 
 	errcode = alloc_dx_frame(fs, &(info->frames[0]));
@@ -193,7 +192,6 @@ static int link_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	unsigned int rec_len, min_rec_len, curr_rec_len;
 	int ret = 0;
 	int csum_size = 0;
-	struct ext2_dir_entry_tail *t;
 
 	if (ls->done)
 		return DIRENT_ABORT;
@@ -322,7 +320,7 @@ static errcode_t dx_move_dirents(ext2_filsys fs, struct dx_hash_map *map,
 {
 	struct ext2_dir_entry *de;
 	int i;
-	int rec_len;
+	int rec_len = 0;
 	errcode_t retval;
 	int csum_size = 0;
 	void *base = to;
@@ -382,7 +380,7 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 	void *buf2;
 	errcode_t retval = 0;
 	unsigned int rec_len;
-	int offset, move_size;
+	unsigned int offset, move_size;
 	int i, count = 0;
 	struct dx_hash_map *map;
 	int continued;
