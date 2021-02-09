@@ -51,6 +51,7 @@
 #include <errno.h>
 #include "e2fsck.h"
 #include "problem.h"
+#include "support/sort_r.h"
 
 /* Schedule a dir to be rebuilt during pass 3A. */
 void e2fsck_rehash_dir_later(e2fsck_t ctx, ext2_ino_t ino)
@@ -251,7 +252,8 @@ static int same_name(const struct name_cmp_ctx *cmp_ctx, char *s1,
 		return (len1 == len2 &&	!memcmp(s1, s2, len1));
 	else
 		return !ext2fs_casefold_cmp(cmp_ctx->tbl,
-					    s1, len1, s2, len2);
+					    (unsigned char *) s1, len1,
+					    (unsigned char *) s2, len2);
 }
 
 /* Used for sorting the hash entry */
@@ -291,8 +293,9 @@ static EXT2_QSORT_TYPE name_cf_cmp(const struct name_cmp_ctx *ctx,
 	he_a_len = ext2fs_dirent_name_len(he_a->dir);
 	he_b_len = ext2fs_dirent_name_len(he_b->dir);
 
-	ret = ext2fs_casefold_cmp(ctx->tbl, he_a->dir->name, he_a_len,
-				  he_b->dir->name, he_b_len);
+	ret = ext2fs_casefold_cmp(ctx->tbl,
+				  (unsigned char *) he_a->dir->name, he_a_len,
+				  (unsigned char *) he_b->dir->name, he_b_len);
 	if (ret == 0) {
 		if (he_a_len > he_b_len)
 			ret = 1;
@@ -1048,11 +1051,13 @@ retry_nohash:
 	/* Sort the list */
 resort:
 	if (fd.compress && fd.num_array > 1)
-		qsort_r(fd.harray+2, fd.num_array-2, sizeof(struct hash_entry),
-			hash_cmp, &name_cmp_ctx);
+		sort_r_simple(fd.harray+2, fd.num_array-2,
+			      sizeof(struct hash_entry),
+			      hash_cmp, &name_cmp_ctx);
 	else
-		qsort_r(fd.harray, fd.num_array, sizeof(struct hash_entry),
-			hash_cmp, &name_cmp_ctx);
+		sort_r_simple(fd.harray, fd.num_array,
+			      sizeof(struct hash_entry),
+			      hash_cmp, &name_cmp_ctx);
 
 	/*
 	 * Look for duplicates
