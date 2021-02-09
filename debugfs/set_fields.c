@@ -160,7 +160,7 @@ static struct field_set_info super_fields[] = {
 	{ "usr_quota_inum", &set_sb.s_usr_quota_inum, NULL, 4, parse_uint },
 	{ "grp_quota_inum", &set_sb.s_grp_quota_inum, NULL, 4, parse_uint },
 	{ "prj_quota_inum", &set_sb.s_prj_quota_inum, NULL, 4, parse_uint },
-	{ "overhead_blocks", &set_sb.s_overhead_blocks, NULL, 4, parse_uint },
+	{ "overhead_clusters", &set_sb.s_overhead_clusters, NULL, 4, parse_uint },
 	{ "backup_bgs", &set_sb.s_backup_bgs[0], NULL, 4, parse_uint,
 	  FLAG_ARRAY, 2 },
 	{ "checksum", &set_sb.s_checksum, NULL, 4, parse_uint },

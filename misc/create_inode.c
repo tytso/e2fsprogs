@@ -166,6 +166,13 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 	}
 
+	retval = ext2fs_xattrs_read(handle);
+	if (retval) {
+		com_err(__func__, retval,
+			_("while reading xattrs for inode %u"), ino);
+		return retval;
+	}
+
 	retval = ext2fs_get_mem(size, &list);
 	if (retval) {
 		com_err(__func__, retval, _("while allocating memory"));

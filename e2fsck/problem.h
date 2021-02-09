@@ -667,8 +667,8 @@ struct problem_context {
 /* Inode leaf has a duplicate extent mapping */
 #define PR_1_EXTENT_COLLISION			0x01007D
 
-/* Error allocating memory for encrypted directory list */
-#define PR_1_ALLOCATE_ENCRYPTED_DIRLIST		0x01007E
+/* Error allocating memory for encrypted inode list */
+#define PR_1_ALLOCATE_ENCRYPTED_INODE_LIST	0x01007E
 
 /* Inode extent tree could be more shallow */
 #define PR_1_EXTENT_BAD_MAX_DEPTH		0x01007F
@@ -700,6 +700,12 @@ struct problem_context {
 
 /* Casefold flag set, but file system is missing the casefold feature */
 #define PR_1_CASEFOLD_FEATURE			0x010089
+
+/* Inode has encrypt flag but no encryption extended attribute */
+#define PR_1_MISSING_ENCRYPTION_XATTR		0x01008A
+
+/* Encrypted inode has corrupt encryption extended attribute */
+#define PR_1_CORRUPT_ENCRYPTION_XATTR		0x01008B
 
 /* Error allocating memory for casefolded directory list */
 #define PR_1_ALLOCATE_CASEFOLDED_DIRLIST	0x01008C
@@ -957,8 +963,8 @@ struct problem_context {
 /* Clear invalid HTREE directory */
 #define PR_2_HTREE_CLEAR	0x020038
 
-/* Clear the htree flag forcibly */
-/* #define PR_2_HTREE_FCLR	0x020039 */
+/* Filesystem has large directories, but has no such flag in superblock */
+#define PR_2_FEATURE_LARGE_DIRS	0x020039
 
 /* Bad block in htree interior node */
 #define PR_2_HTREE_BADBLK	0x02003A

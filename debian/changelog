@@ -1,3 +1,67 @@
+e2fsprogs (1.46.1-1) unstable; urgency=medium
+
+  * Drop transitional packages libcomerr2, e2fslibs, and e2fslibs-dev
+  * Fix a bug in libext2fs and debugfs when trying to set an extended
+    attribute will result in a seg fault.
+  * Fix e2fsck so it properly accepts large_dir directories which are
+    greater than 4GB in size.
+  * Fix mke2fs -d so it correctly handles important a directory or small
+    file which is stored using inline_data and contains an ACL or extended
+    attribute.   (Closes: #971014)
+  * Add build profiles noudeb and pkg.e2fsprogs.no-static (Closes: #966686)
+  * Update the Czech, French, Malay, Polish, Portuguese, Sweedish, and
+    Ukranian translations from the translation project.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 09 Feb 2021 17:36:02 -0500
+
+e2fsprogs (1.46.0-1) experimental; urgency=medium
+
+  * New upstream release
+  * Add support for the new fast_commit feature.  (Requires Linux version
+    5.10 or higher)
+  * Add support for the new stable_inodes feature which is needed to
+    support some the fscrypt siphash algorithm.
+  * Add support for file systems that have both case folding and
+    encryption enabled.  (Not yet upstream, but used in some Android handsets.)
+  * The fuse2fs program now supports the "norecovery" which omits replying
+    the journal and mounts the file system read-only.
+  * Bitmap loading is now done using multiple threads which can speed up
+    debugfs, dumpe2fs, and e2fsck on very large file systems.
+  * E2fsck now will check file names on file systems with case folding
+    enabled to make sure the characters are valid UTF-8 characters.
+    This is done for file systems which enforce strict encodings, and
+    optionally if the extended "check_encoding" option is requested.
+  * E2fsck will properly handle checking for duplicated file names when
+    case folding is enabled.
+  * E2fsck will now find and fix file system corruptions when the encrypted
+    files have a different policy from their containing directory.
+  * The "htree" command in debugfs now displays the metadata checksums for
+    hash tree index blocks.
+  * Fix various bugs where a maliciously corrupted file systems could case
+    e2fsck and other e2fsprogs programs to crash.
+  * Dumpe2fs will print the error code that Linux kernels newer than v5.6
+    will save to indicate the class of error which triggered the ext4_error
+    event.
+  * E2fsprogs programs (in particular, fuse2fs) can now update htree
+    directories without clearing the htree index.
+  * Tune2fs will properly recalculate directory block checksums when
+    clearing the dir_index feature.
+  * Fix a bug in e2fsck directory rehashing which could fail with ENOSPC
+    because it doesn't take into account the space needed for the metadata
+    checksum, and doesn't create a sufficiently deep index tree.
+  * Clarify the e2fsck messages when it resets the directory link count when
+    it is set to the overflow value but it is no longer needed.
+  * Mke2fs now sets the s_overhead_cluster field, so that the kernel doesn't
+    need to calculate it at mount time.  This speeds up mounting very large
+    file systems.
+  * Speed up mke2fs when creating large bigalloc file systems by optimizing
+    ext2fs_convert_subcluster_bitmap().
+  * The filefrag program can now request the kernel to display the extent
+    status cache by using "filefrag -E".  (This requires Linux version 5.4
+    or newer.)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 29 Jan 2021 16:24:41 -0500
+
 e2fsprogs (1.45.7-1) unstable; urgency=medium
 
   * New upstream release
@@ -107,6 +171,15 @@ e2fsprogs (1.45.5-1) unstable; urgency=medium
   * Update the Debian policy compliance to 4.4.1
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 07 Jan 2020 09:18:39 -0500
+
+e2fsprogs (1.46~WIP.2019.10.09-1) experimental; urgency=medium
+
+  * Add (minimal) support to enable the fast commit feaure.  This is just
+    enough to enable kernel development work; e2fsck replay of journals
+    with the fast commit feature is *not* available.
+  * E2fsck will now check encryption policies for consistency
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 09 Oct 2019 20:22:50 -0400
 
 e2fsprogs (1.45.4-1) unstable; urgency=medium
 

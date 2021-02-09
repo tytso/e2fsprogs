@@ -104,7 +104,7 @@ static dict_t clstr_dict, ino_dict;
 
 static ext2fs_inode_bitmap inode_dup_map;
 
-static int dict_int_cmp(const void *a, const void *b)
+static int dict_int_cmp(const void* cmp_ctx, const void *a, const void *b)
 {
 	intptr_t	ia, ib;
 

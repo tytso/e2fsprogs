@@ -502,8 +502,8 @@ errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 
 #ifdef PUNCH_DEBUG
-	printf("%u: write inode size now %u blocks %u\n",
-		ino, inode->i_size, inode->i_blocks);
+	printf("%u: write inode size now %lu blocks %u\n",
+		ino, EXT2_I_SIZE(inode), inode->i_blocks);
 #endif
 	return ext2fs_write_inode(fs, ino, inode);
 }

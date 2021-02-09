@@ -93,6 +93,7 @@ static uid_t	root_uid;
 static gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
+int	journal_fc_size;
 static int	lazy_itable_init;
 static int	packed_meta_blocks;
 int		no_copy_xattrs;
@@ -604,9 +605,16 @@ static void create_journal_dev(ext2_filsys fs)
 	char			*buf;
 	blk64_t			blk, err_blk;
 	int			c, count, err_count;
+	struct ext2fs_journal_params	jparams;
 
-	retval = ext2fs_create_journal_superblock(fs,
-				  ext2fs_blocks_count(fs->super), 0, &buf);
+	retval = ext2fs_get_journal_params(&jparams, fs);
+	if (retval) {
+		com_err("create_journal_dev", retval, "%s",
+			_("while splitting the journal size"));
+		exit(1);
+	}
+
+	retval = ext2fs_create_journal_superblock2(fs, &jparams, 0, &buf);
 	if (retval) {
 		com_err("create_journal_dev", retval, "%s",
 			_("while initializing journal superblock"));
@@ -1141,7 +1149,9 @@ static __u32 ok_features[3] = {
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
 		EXT2_FEATURE_COMPAT_EXT_ATTR |
-		EXT4_FEATURE_COMPAT_SPARSE_SUPER2,
+		EXT4_FEATURE_COMPAT_SPARSE_SUPER2 |
+		EXT4_FEATURE_COMPAT_FAST_COMMIT |
+		EXT4_FEATURE_COMPAT_STABLE_INODES,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|
 		EXT3_FEATURE_INCOMPAT_EXTENTS|
@@ -1751,6 +1761,8 @@ profile_error:
 		case 'j':
 			if (!journal_size)
 				journal_size = -1;
+			if (!journal_fc_size)
+				journal_fc_size = -1;
 			break;
 		case 'J':
 			parse_journal_opts(optarg);
@@ -2924,7 +2936,9 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
-	unsigned int	journal_blocks = 0;
+	badblocks_iterate	bb_iter;
+	blk_t		blk;
+	struct ext2fs_journal_params	jparams = {0};
 	unsigned int	i, checkinterval;
 	int		max_mnt_count;
 	int		val, hash_alg;
@@ -2934,6 +2948,7 @@ int main (int argc, char *argv[])
 	char		opt_string[40];
 	char		*hash_alg_str;
 	int		itable_zeroed = 0;
+	blk64_t		overhead;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -3033,7 +3048,7 @@ int main (int argc, char *argv[])
 	/* Calculate journal blocks */
 	if (!journal_device && ((journal_size) ||
 	    ext2fs_has_feature_journal(&fs_param)))
-		journal_blocks = figure_journal_size(journal_size, fs);
+		figure_journal_size(&jparams, journal_size, journal_fc_size, fs);
 
 	sprintf(opt_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
 		32768 : fs->blocksize * 8);
@@ -3225,11 +3240,50 @@ int main (int argc, char *argv[])
 	if (!quiet)
 		printf("%s", _("done                            \n"));
 
+	/*
+	 * Unmark bad blocks to calculate overhead, because metadata
+	 * blocks and bad blocks can land on the same allocation cluster.
+	 */
+	if (bb_list) {
+		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
+							     &bb_iter);
+		if (retval) {
+			com_err("ext2fs_badblocks_list_iterate_begin", retval,
+				"%s", _("while unmarking bad blocks"));
+			exit(1);
+		}
+		while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
+			ext2fs_unmark_block_bitmap2(fs->block_map, blk);
+		ext2fs_badblocks_list_iterate_end(bb_iter);
+	}
+
 	retval = ext2fs_convert_subcluster_bitmap(fs, &fs->block_map);
 	if (retval) {
 		com_err(program_name, retval, "%s",
 			_("\n\twhile converting subcluster bitmap"));
 		exit(1);
+	}
+
+	retval = ext2fs_count_used_clusters(fs, fs->super->s_first_data_block,
+					ext2fs_blocks_count(fs->super) - 1,
+					&overhead);
+	if (retval) {
+		com_err(program_name, retval, "%s",
+			_("while calculating overhead"));
+		exit(1);
+	}
+
+	if (bb_list) {
+		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
+							     &bb_iter);
+		if (retval) {
+			com_err("ext2fs_badblocks_list_iterate_begin", retval,
+				"%s", _("while marking bad blocks as used"));
+			exit(1);
+		}
+		while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
+			ext2fs_mark_block_bitmap2(fs->block_map, blk);
+		ext2fs_badblocks_list_iterate_end(bb_iter);
 	}
 
 	if (super_only) {
@@ -3329,22 +3383,23 @@ int main (int argc, char *argv[])
 		free(journal_device);
 	} else if ((journal_size) ||
 		   ext2fs_has_feature_journal(&fs_param)) {
+		overhead += EXT2FS_NUM_B2C(fs, jparams.num_journal_blocks + jparams.num_fc_blocks);
 		if (super_only) {
 			printf("%s", _("Skipping journal creation in super-only mode\n"));
 			fs->super->s_journal_inum = EXT2_JOURNAL_INO;
 			goto no_journal;
 		}
 
-		if (!journal_blocks) {
+		if (!jparams.num_journal_blocks) {
 			ext2fs_clear_feature_journal(fs->super);
 			goto no_journal;
 		}
 		if (!quiet) {
 			printf(_("Creating journal (%u blocks): "),
-			       journal_blocks);
+			       jparams.num_journal_blocks + jparams.num_fc_blocks);
 			fflush(stdout);
 		}
-		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+		retval = ext2fs_add_journal_inode3(fs, &jparams,
 						   journal_location,
 						   journal_flags);
 		if (retval) {
@@ -3370,6 +3425,10 @@ no_journal:
 				 "with update interval %d seconds.\n"),
 			       fs->super->s_mmp_update_interval);
 	}
+
+	overhead += fs->super->s_first_data_block;
+	if (!super_only)
+		fs->super->s_overhead_clusters = overhead;
 
 	if (ext2fs_has_feature_bigalloc(&fs_param))
 		fix_cluster_bg_counts(fs);

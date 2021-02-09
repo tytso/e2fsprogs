@@ -1199,9 +1199,9 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has a duplicate @x mapping\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
 
-	/* Error allocating memory for encrypted directory list */
-	{ PR_1_ALLOCATE_ENCRYPTED_DIRLIST,
-	  N_("@A memory for encrypted @d list\n"),
+	/* Error allocating memory for encrypted inode list */
+	{ PR_1_ALLOCATE_ENCRYPTED_INODE_LIST,
+	  N_("@A %N bytes of memory for encrypted @i list\n"),
 	  PROMPT_NONE, PR_FATAL, 0, 0, 0 },
 
 	/* Inode extent tree could be more shallow */
@@ -1243,6 +1243,12 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("EA @i %N for parent @i %i missing EA_INODE flag.\n "),
 	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
 
+	/* Offer to clear uninitialized flag on an extent */
+	{ PR_1_CLEAR_UNINIT_EXTENT,
+	  /* xgettext:no-c-format */
+	  N_("@i %i has @x marked uninitialized at @b %c (len %N).  "),
+	  PROMPT_CLEAR, PR_PREEN_OK, 0, 0, 0 },
+
 	/* Casefold flag set on a non-directory */
 	{ PR_1_CASEFOLD_NONDIR,
 	  N_("@i %i has the casefold flag set but is not a directory.  "),
@@ -1253,6 +1259,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@d %p has the casefold flag, but the\ncasefold feature is not enabled.  "),
 	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
 
+	/* Inode has encrypt flag but no encryption extended attribute */
+	{ PR_1_MISSING_ENCRYPTION_XATTR,
+	  N_("@i %i has encrypt flag but no encryption @a.\n"),
+	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
+
+	/* Encrypted inode has corrupt encryption extended attribute */
+	{ PR_1_CORRUPT_ENCRYPTION_XATTR,
+	  N_("Encrypted @i %i has corrupt encryption @a.\n"),
+	  PROMPT_CLEAR_INODE, 0, 0, 0, 0 },
+
 	/* Htree directory should use SipHash but does not */
 	{ PR_1_HTREE_NEEDS_SIPHASH,
 	  N_("@h %i uses hash version (%N), but should use SipHash (6) \n"),
@@ -1262,6 +1278,7 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1_HTREE_CANNOT_SIPHASH,
 	  N_("@h %i uses SipHash, but should not.  "),
 	  PROMPT_CLEAR_HTREE, PR_PREEN_OK, 0, 0, 0 },
+
 
 	/* Pass 1b errors */
 
@@ -1649,7 +1666,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Filesystem contains large files, but has no such flag in sb */
 	{ PR_2_FEATURE_LARGE_FILES,
 	  N_("@f contains large files, but lacks LARGE_FILE flag in @S.\n"),
-	  PROMPT_FIX, 0, 0, 0, 0 },
+	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
 
 	/* Node in HTREE directory not referenced */
 	{ PR_2_HTREE_NOTREF,
@@ -1675,6 +1692,11 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_2_HTREE_CLEAR,
 	  N_("@n @h %d (%q).  "), PROMPT_CLEAR_HTREE, 0, 0, 0, 0 },
 
+	/* Filesystem has large directories, but has no such flag in sb */
+	{ PR_2_FEATURE_LARGE_DIRS,
+	  N_("@f has large directories, but lacks LARGE_DIR flag in @S.\n"),
+	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
+
 	/* Bad block in htree interior node */
 	{ PR_2_HTREE_BADBLK,
 	  N_("@p @h %d (%q): bad @b number %b.\n"),
@@ -1685,7 +1707,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Error adjusting refcount for @a @b %b (@i %i): %m\n"),
 	  PROMPT_NONE, PR_FATAL, 0, 0, 0 },
 
-	/* Invalid HTREE root node */
+	/* Problem in HTREE directory inode: root node is invalid */
 	{ PR_2_HTREE_BAD_ROOT,
 	  /* xgettext:no-c-format */
 	  N_("@p @h %d: root node is @n\n"),
@@ -1789,10 +1811,26 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Encrypted @E is too short.\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
 
+	/* Encrypted directory contains unencrypted file */
+	{ PR_2_UNENCRYPTED_FILE,
+	  N_("Encrypted @E references unencrypted @i %Di.\n"),
+	  PROMPT_CLEAR, 0, 0, 0, 0 },
+
+	/* Encrypted directory contains file with different encryption policy */
+	{ PR_2_INCONSISTENT_ENCRYPTION_POLICY,
+	  N_("Encrypted @E references @i %Di, which has a different encryption policy.\n"),
+	  PROMPT_CLEAR, 0, 0, 0, 0 },
+
+	/* Casefolded directory entry has illegal characters in its name */
+	{ PR_2_BAD_ENCODED_NAME,
+	  N_("@E has illegal UTF-8 characters in its name.\n"),
+	  PROMPT_FIX, 0, 0, 0, 0 },
+
 	 /* Non-unique filename found, but can't rename */
 	 { PR_2_NON_UNIQUE_FILE_NO_RENAME,
 	   N_("Duplicate filename @E found.  "),
 	   PROMPT_CLEAR, 0, 0, 0, 0 },
+
 
 	/* Pass 3 errors */
 

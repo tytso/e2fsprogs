@@ -120,7 +120,7 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	/* sb->s_mount_opts is __u8 and does not need swabbing */
 	sb->s_usr_quota_inum = ext2fs_swab32(sb->s_usr_quota_inum);
 	sb->s_grp_quota_inum = ext2fs_swab32(sb->s_grp_quota_inum);
-	sb->s_overhead_blocks = ext2fs_swab32(sb->s_overhead_blocks);
+	sb->s_overhead_clusters = ext2fs_swab32(sb->s_overhead_clusters);
 	sb->s_backup_bgs[0] = ext2fs_swab32(sb->s_backup_bgs[0]);
 	sb->s_backup_bgs[1] = ext2fs_swab32(sb->s_backup_bgs[1]);
 	/* sb->s_encrypt_algos is __u8 and does not need swabbing */
@@ -245,7 +245,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 {
 	unsigned i, extra_isize, attr_magic;
 	int has_extents, has_inline_data, islnk, fast_symlink;
-	int inode_size;
+	unsigned int inode_size;
 	__u32 *eaf, *eat;
 
 	/*

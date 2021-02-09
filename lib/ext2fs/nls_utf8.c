@@ -920,8 +920,57 @@ invalid_seq:
 	return -EINVAL;
 }
 
+static int utf8_validate(const struct ext2fs_nls_table *table,
+			 char *s, size_t len, char **pos)
+{
+	const struct utf8data *data = utf8nfdicf(table->version);
+	utf8leaf_t	*leaf;
+	unsigned char	hangul[UTF8HANGULLEAF];
+
+	if (!data)
+		return -1;
+	while (len && *s) {
+		leaf = utf8nlookup(data, hangul, s, len);
+		if (!leaf) {
+			*pos = s;
+			return 1;
+		}
+		len -= utf8clen(s);
+		s += utf8clen(s);
+	}
+	return 0;
+}
+
+static int utf8_casefold_cmp(const struct ext2fs_nls_table *table,
+			     const unsigned char *str1, size_t len1,
+			     const unsigned char *str2, size_t len2)
+{
+	const struct utf8data *data = utf8nfdicf(table->version);
+	int c1, c2;
+	struct utf8cursor cur1, cur2;
+
+	if (utf8ncursor(&cur1, data, (const char *) str1, len1) < 0)
+		return -1;
+	if (utf8ncursor(&cur2, data, (const char *) str2, len2) < 0)
+		return -1;
+
+	do {
+		c1 = utf8byte(&cur1);
+		c2 = utf8byte(&cur2);
+
+		if (c1 < 0 || c2 < 0)
+			return -1;
+		if (c1 != c2)
+			return c1 - c2;
+	} while (c1);
+
+	return 0;
+}
+
 static const struct ext2fs_nls_ops utf8_ops = {
 	.casefold = utf8_casefold,
+	.validate = utf8_validate,
+	.casefold_cmp = utf8_casefold_cmp,
 };
 
 static const struct ext2fs_nls_table nls_utf8 = {
@@ -935,4 +984,17 @@ const struct ext2fs_nls_table *ext2fs_load_nls_table(int encoding)
 		return &nls_utf8;
 
 	return NULL;
+}
+
+int ext2fs_check_encoded_name(const struct ext2fs_nls_table *table,
+			      char *name, size_t len, char **pos)
+{
+	return table->ops->validate(table, name, len, pos);
+}
+
+int ext2fs_casefold_cmp(const struct ext2fs_nls_table *table,
+			const unsigned char *str1, size_t len1,
+			const unsigned char *str2, size_t len2)
+{
+	return table->ops->casefold_cmp(table, str1, len1, str2, len2);
 }

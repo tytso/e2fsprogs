@@ -47,6 +47,8 @@ static struct feature feature_list[] = {
 			"sparse_super2" },
 	{	E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_FAST_COMMIT,
 			"fast_commit" },
+	{	E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_STABLE_INODES,
+			"stable_inodes" },
 
 	{	E2P_FEATURE_RO_INCOMPAT, EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER,
 			"sparse_super" },
@@ -119,18 +121,18 @@ static struct feature feature_list[] = {
 };
 
 static struct feature jrnl_feature_list[] = {
-       {       E2P_FEATURE_COMPAT, JFS_FEATURE_COMPAT_CHECKSUM,
+       {       E2P_FEATURE_COMPAT, JBD2_FEATURE_COMPAT_CHECKSUM,
                        "journal_checksum" },
 
-       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_REVOKE,
+       {       E2P_FEATURE_INCOMPAT, JBD2_FEATURE_INCOMPAT_REVOKE,
                        "journal_incompat_revoke" },
-       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_64BIT,
+       {       E2P_FEATURE_INCOMPAT, JBD2_FEATURE_INCOMPAT_64BIT,
                        "journal_64bit" },
-       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_ASYNC_COMMIT,
+       {       E2P_FEATURE_INCOMPAT, JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT,
                        "journal_async_commit" },
-       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_CSUM_V2,
+       {       E2P_FEATURE_INCOMPAT, JBD2_FEATURE_INCOMPAT_CSUM_V2,
                        "journal_checksum_v2" },
-       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_CSUM_V3,
+       {       E2P_FEATURE_INCOMPAT, JBD2_FEATURE_INCOMPAT_CSUM_V3,
                        "journal_checksum_v3" },
        {       0, 0, 0 },
 };

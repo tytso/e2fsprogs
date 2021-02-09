@@ -20,13 +20,13 @@ tune2fs -I 256 test.img
 Setting inode size 256
 Exit status is 0
 Change in FS metadata:
-@@ -13 +13 @@
+@@ -14 +14 @@
 -Free blocks:              12301
 +Free blocks:              12
-@@ -22 +22 @@
+@@ -23 +23 @@
 -Inode blocks per group:   128
 +Inode blocks per group:   256
-@@ -28 +28 @@
+@@ -29 +29 @@
 -Inode size:	          128
 +Inode size:	          256
 Pass 1: Checking inodes, blocks, and sizes

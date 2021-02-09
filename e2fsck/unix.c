@@ -753,6 +753,14 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 			ctx->options |= E2F_OPT_UNSHARE_BLOCKS;
 			ctx->options |= E2F_OPT_FORCE;
 			continue;
+		} else if (strcmp(token, "check_encoding") == 0) {
+			ctx->options |= E2F_OPT_CHECK_ENCODING;
+			continue;
+#ifdef CONFIG_DEVELOPER_FEATURES
+		} else if (strcmp(token, "clear_all_uninit_bits") == 0) {
+			ctx->options |= E2F_OPT_CLEAR_UNINIT;
+			continue;
+#endif
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
 				token);
@@ -779,6 +787,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		fputs("\tbmap2extent\n", stderr);
 		fputs("\tunshare_blocks\n", stderr);
 		fputs("\tfixes_only\n", stderr);
+		fputs("\tcheck_encoding\n", stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}
@@ -1389,6 +1398,7 @@ int main (int argc, char *argv[])
 	__u32 features[3];
 	char *cp;
 	enum quota_type qtype;
+	struct ext2fs_journal_params jparams;
 
 	clear_problem_context(&pctx);
 	sigcatcher_setup();
@@ -1469,7 +1479,7 @@ int main (int argc, char *argv[])
 	}
 	ctx->superblock = ctx->use_superblock;
 
-	flags = EXT2_FLAG_SKIP_MMP;
+	flags = EXT2_FLAG_SKIP_MMP | EXT2_FLAG_THREADS;
 restart:
 #ifdef CONFIG_TESTIO_DEBUG
 	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
@@ -1882,9 +1892,15 @@ print_unsupp_features:
 	/*
 	 * Save the journal size in megabytes.
 	 * Try and use the journal size from the backup else let e2fsck
-	 * find the default journal size.
+	 * find the default journal size. If fast commit feature is enabled,
+	 * it is not clear how many of the journal blocks were fast commit
+	 * blocks. So, ignore the size of journal found in backup.
+	 *
+	 * TODO: Add a new backup type that captures fast commit info as
+	 * well.
 	 */
-	if (sb->s_jnl_backup_type == EXT3_JNL_BACKUP_BLOCKS)
+	if (sb->s_jnl_backup_type == EXT3_JNL_BACKUP_BLOCKS &&
+		!ext2fs_has_feature_fast_commit(sb))
 		journal_size = (sb->s_jnl_blocks[15] << (32 - 20)) |
 			       (sb->s_jnl_blocks[16] >> 20);
 	else
@@ -1906,20 +1922,16 @@ print_unsupp_features:
 	if (!ctx->invalid_bitmaps &&
 	    (ctx->flags & E2F_FLAG_JOURNAL_INODE)) {
 		if (fix_problem(ctx, PR_6_RECREATE_JOURNAL, &pctx)) {
-			if (journal_size < 1024)
-				journal_size = ext2fs_default_journal_size(ext2fs_blocks_count(fs->super));
-			if (journal_size < 0) {
-				ext2fs_clear_feature_journal(fs->super);
-				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-				log_out(ctx, "%s: Couldn't determine "
-					"journal size\n", ctx->program_name);
-				goto no_journal;
+			if (journal_size < 1024) {
+				ext2fs_get_journal_params(&jparams, fs);
+			} else {
+				jparams.num_journal_blocks = journal_size;
+				jparams.num_fc_blocks = 0;
 			}
 			log_out(ctx, _("Creating journal (%d blocks): "),
-			       journal_size);
+			       jparams.num_journal_blocks);
 			fflush(stdout);
-			retval = ext2fs_add_journal_inode(fs,
-							  journal_size, 0);
+			retval = ext2fs_add_journal_inode3(fs, &jparams, ~0ULL, 0);
 			if (retval) {
 				log_out(ctx, "%s: while trying to create "
 					"journal\n", error_message(retval));

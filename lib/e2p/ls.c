@@ -271,9 +271,9 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Inode count:              %u\n", sb->s_inodes_count);
 	fprintf(f, "Block count:              %llu\n", e2p_blocks_count(sb));
 	fprintf(f, "Reserved block count:     %llu\n", e2p_r_blocks_count(sb));
-	if (sb->s_overhead_blocks)
-		fprintf(f, "Overhead blocks:          %u\n",
-			sb->s_overhead_blocks);
+	if (sb->s_overhead_clusters)
+		fprintf(f, "Overhead clusters:        %u\n",
+			sb->s_overhead_clusters);
 	fprintf(f, "Free blocks:              %llu\n", e2p_free_blocks_count(sb));
 	fprintf(f, "Free inodes:              %u\n", sb->s_free_inodes_count);
 	fprintf(f, "First block:              %u\n", sb->s_first_data_block);
@@ -422,10 +422,15 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 			EXT2_LEN_STR(sb->s_first_error_func));
 		fprintf(f, "First error line #:       %u\n",
 			sb->s_first_error_line);
-		fprintf(f, "First error inode #:      %u\n",
-			sb->s_first_error_ino);
-		fprintf(f, "First error block #:      %llu\n",
-			sb->s_first_error_block);
+		if (sb->s_first_error_ino)
+			fprintf(f, "First error inode #:      %u\n",
+				sb->s_first_error_ino);
+		if (sb->s_first_error_block)
+			fprintf(f, "First error block #:      %llu\n",
+				sb->s_first_error_block);
+		if (sb->s_first_error_errcode)
+			fprintf(f, "First error err:          %s\n",
+				e2p_errcode2str(sb->s_first_error_errcode));
 	}
 	if (sb->s_last_error_time) {
 		tm = sb->s_last_error_time;
@@ -434,10 +439,15 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 			EXT2_LEN_STR(sb->s_last_error_func));
 		fprintf(f, "Last error line #:        %u\n",
 			sb->s_last_error_line);
-		fprintf(f, "Last error inode #:       %u\n",
-			sb->s_last_error_ino);
-		fprintf(f, "Last error block #:       %llu\n",
-			sb->s_last_error_block);
+		if (sb->s_last_error_ino)
+			fprintf(f, "Last error inode #:       %u\n",
+				sb->s_last_error_ino);
+		if (sb->s_last_error_block)
+			fprintf(f, "Last error block #:       %llu\n",
+				sb->s_last_error_block);
+		if (sb->s_last_error_errcode)
+			fprintf(f, "Last error err:           %s\n",
+				e2p_errcode2str(sb->s_last_error_errcode));
 	}
 	if (ext2fs_has_feature_mmp(sb)) {
 		fprintf(f, "MMP block number:         %llu\n",

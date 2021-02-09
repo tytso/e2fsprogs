@@ -68,6 +68,7 @@
 #endif
 
 #include "support/quotaio.h"
+#include "ext2fs/fast_commit.h"
 
 /*
  * Exit codes used by fsck-type programs
@@ -135,6 +136,8 @@ struct dx_dirblock_info {
 #define DX_FLAG_FIRST		4
 #define DX_FLAG_LAST		8
 
+struct encrypted_file_info;
+
 #define RESOURCE_TRACK
 
 #ifdef RESOURCE_TRACK
@@ -174,6 +177,8 @@ struct resource_track {
 #define E2F_OPT_NOOPT_EXTENTS	0x10000 /* don't optimize extents */
 #define E2F_OPT_ICOUNT_FULLMAP	0x20000 /* use an array for inode counts */
 #define E2F_OPT_UNSHARE_BLOCKS  0x40000
+#define E2F_OPT_CLEAR_UNINIT	0x80000 /* Hack to clear the uninit bit */
+#define E2F_OPT_CHECK_ENCODING  0x100000 /* Force verification of encoded filenames */
 
 /*
  * E2fsck flags
@@ -223,6 +228,31 @@ typedef struct e2fsck_struct *e2fsck_t;
 
 #define MAX_EXTENT_DEPTH_COUNT 5
 
+/*
+ * This strucutre is used to manage the list of extents in a file. Placing
+ * it here since this is used by fast_commit.h.
+ */
+struct extent_list {
+	blk64_t blocks_freed;
+	struct ext2fs_extent *extents;
+	unsigned int count;
+	unsigned int size;
+	unsigned int ext_read;
+	errcode_t retval;
+	ext2_ino_t ino;
+};
+
+/* State structure for fast commit replay */
+struct e2fsck_fc_replay_state {
+	struct extent_list fc_extent_list;
+	int fc_replay_num_tags;
+	int fc_replay_expected_off;
+	int fc_current_pass;
+	int fc_cur_tag;
+	int fc_crc;
+	__u16 fc_super_state;
+};
+
 struct e2fsck_struct {
 	ext2_filsys fs;
 	const char *program_name;
@@ -259,6 +289,7 @@ struct e2fsck_struct {
 	ext2fs_inode_bitmap inode_bb_map; /* Inodes which are in bad blocks */
 	ext2fs_inode_bitmap inode_imagic_map; /* AFS inodes */
 	ext2fs_inode_bitmap inode_reg_map; /* Inodes which are regular files*/
+	ext2fs_inode_bitmap inode_casefold_map; /* Inodes which are casefolded */
 
 	ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 	ext2fs_block_bitmap block_dup_map; /* Blks referenced more than once */
@@ -328,6 +359,11 @@ struct e2fsck_struct {
 	ext2_u32_list	dirs_to_hash;
 
 	/*
+	 * Encrypted file information
+	 */
+	struct encrypted_file_info *encrypted_files;
+
+	/*
 	 * Tuning parameters
 	 */
 	int process_inode_size;
@@ -379,6 +415,7 @@ struct e2fsck_struct {
 	__u32 fs_fragmented;
 	__u32 fs_fragmented_dir;
 	__u32 large_files;
+	__u32 large_dirs;
 	__u32 fs_ext_attr_inodes;
 	__u32 fs_ext_attr_blocks;
 	__u32 extent_depth_count[MAX_EXTENT_DEPTH_COUNT];
@@ -389,7 +426,6 @@ struct e2fsck_struct {
 	int ext_attr_ver;
 	profile_t	profile;
 	int blocks_per_page;
-	ext2_u32_list encrypted_dirs;
 	ext2_u32_list casefolded_dirs;
 
 	/* Reserve blocks for root and l+f re-creation */
@@ -412,6 +448,9 @@ struct e2fsck_struct {
 
 	/* Undo file */
 	char *undo_file;
+
+	/* Fast commit replay state */
+	struct e2fsck_fc_replay_state fc_replay_state;
 };
 
 /* Data structures to evaluate whether an extent tree needs rebuilding. */
@@ -506,8 +545,20 @@ extern ea_key_t ea_refcount_intr_next(ext2_refcount_t refcount,
 extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
 
-/* extents.c */
+/* encrypted_files.c */
+
 struct problem_context;
+int add_encrypted_file(e2fsck_t ctx, struct problem_context *pctx);
+
+#define NO_ENCRYPTION_POLICY		((__u32)-1)
+#define CORRUPT_ENCRYPTION_POLICY	((__u32)-2)
+#define UNRECOGNIZED_ENCRYPTION_POLICY	((__u32)-3)
+__u32 find_encryption_policy(e2fsck_t ctx, ext2_ino_t ino);
+
+void destroy_encryption_policy_map(e2fsck_t ctx);
+void destroy_encrypted_file_info(e2fsck_t ctx);
+
+/* extents.c */
 errcode_t e2fsck_rebuild_extents_later(e2fsck_t ctx, ext2_ino_t ino);
 int e2fsck_ino_will_be_rebuilt(e2fsck_t ctx, ext2_ino_t ino);
 void e2fsck_pass1e(e2fsck_t ctx);
@@ -518,6 +569,9 @@ errcode_t e2fsck_should_rebuild_extents(e2fsck_t ctx,
 					struct problem_context *pctx,
 					struct extent_tree_info *eti,
 					struct ext2_extent_info *info);
+errcode_t e2fsck_read_extents(e2fsck_t ctx, struct extent_list *extents);
+errcode_t e2fsck_rewrite_extent_tree(e2fsck_t ctx,
+				     struct extent_list *extents);
 
 /* journal.c */
 extern errcode_t e2fsck_check_ext3_journal(e2fsck_t ctx);

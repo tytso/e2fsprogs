@@ -404,7 +404,7 @@ int main (int argc, char ** argv)
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
 
-	io_flags |= EXT2_FLAG_64BITS;
+	io_flags |= EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 	if (undo_file) {
 		retval = resize2fs_setup_tdb(device_name, undo_file, &io_ptr);
 		if (retval)
@@ -618,6 +618,12 @@ int main (int argc, char ** argv)
 	    !ext2fs_has_feature_64bit(fs->super)) {
 		fprintf(stderr, _("The filesystem is already 32-bit.\n"));
 		exit(0);
+	}
+	if (new_size < ext2fs_blocks_count(fs->super) &&
+	    ext2fs_has_feature_stable_inodes(fs->super)) {
+		fprintf(stderr, _("Cannot shrink this filesystem "
+			"because it has the stable_inodes feature flag.\n"));
+		exit(1);
 	}
 	if (mount_flags & EXT2_MF_MOUNTED) {
 		retval = online_resize_fs(fs, mtpt, &new_size, flags);

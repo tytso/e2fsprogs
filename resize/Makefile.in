@@ -43,6 +43,8 @@ DEPSTATIC_LIBS= $(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 
 all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) 
 
+all-static:: resize2fs.static
+
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS) 

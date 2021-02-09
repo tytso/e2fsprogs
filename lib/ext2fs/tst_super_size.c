@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 	check_field(s_mount_opts, 64);
 	check_field(s_usr_quota_inum, 4);
 	check_field(s_grp_quota_inum, 4);
-	check_field(s_overhead_blocks, 4);
+	check_field(s_overhead_clusters, 4);
 	check_field(s_backup_bgs, 8);
 	check_field(s_encrypt_algos, 4);
 	check_field(s_encrypt_pw_salt, 16);
@@ -148,7 +148,8 @@ int main(int argc, char **argv)
 	check_field(s_lastcheck_hi, 1);
 	check_field(s_first_error_time_hi, 1);
 	check_field(s_last_error_time_hi, 1);
-	check_field(s_pad, 2);
+	check_field(s_first_error_errcode, 1);
+	check_field(s_last_error_errcode, 1);
 	check_field(s_encoding, 2);
 	check_field(s_encoding_flags, 2);
 	check_field(s_reserved, 95 * 4);
