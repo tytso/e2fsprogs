@@ -1536,44 +1536,51 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-maintainer-mode enable makefile rules useful for maintainers
-  --enable-symlink-install use symlinks when installing instead of hard links
-  --enable-relative-symlinks use relative symlinks when installing
+  --enable-maintainer-mode
+                          enable makefile rules useful for maintainers
+  --enable-symlink-install
+                          use symlinks when installing instead of hard links
+  --enable-relative-symlinks
+                          use relative symlinks when installing
 
   --enable-symlink-build  use symlinks while building instead of hard links
-  --enable-verbose-makecmds enable verbose make command output
-  --enable-elf-shlibs	  select ELF shared libraries
-  --enable-bsd-shlibs	  select BSD shared libraries
-  --enable-profile	  build profiling libraries
-  --enable-gcov	  	  build for coverage testing using gcov
-  --enable-hardening	  	  build for coverage testing using gcov
-  --enable-jbd-debug  	  enable journal debugging
+  --enable-verbose-makecmds
+                          enable verbose make command output
+  --enable-elf-shlibs     select ELF shared libraries
+  --enable-bsd-shlibs     select BSD shared libraries
+  --enable-profile        build profiling libraries
+  --enable-gcov           build for coverage testing using gcov
+  --enable-hardening      build for coverage testing using gcov
+  --enable-jbd-debug      enable journal debugging
   --enable-blkid-debug    enable blkid debugging
-  --disable-testio-debug  disable the use of the test I/O manager for debugging
-  --enable-developer-features  enable features for use by ext4 developers
-  --enable-libuuid	  build and use private uuid library
-  --enable-libblkid	  build and use private blkid library
-  --enable-subset  	  enable subset-only build
-  --disable-backtrace	  disable use backtrace
-  --disable-debugfs   	  disable support of debugfs program
-  --disable-imager   	  disable support of e2image program
-  --disable-resizer   	  disable support of e2resize program
-  --disable-defrag   	  disable support of e4defrag program
+  --disable-testio-debug  disable the use of the test I/O manager for
+                          debugging
+  --enable-developer-features
+                          enable features for use by ext4 developers
+  --enable-libuuid        build and use private uuid library
+  --enable-libblkid       build and use private blkid library
+  --enable-subset         enable subset-only build
+  --disable-backtrace     disable use backtrace
+  --disable-debugfs       disable support of debugfs program
+  --disable-imager        disable support of e2image program
+  --disable-resizer       disable support of e2resize program
+  --disable-defrag        disable support of e4defrag program
   --enable-fsck           build fsck wrapper program
-  --enable-e2initrd-helper build e2initrd-helper program
+  --enable-e2initrd-helper
+                          build e2initrd-helper program
   --disable-tls           disable use of thread local support
   --disable-uuidd         disable building the uuid daemon
   --disable-mmp           disable support mmp, Multi Mount Protection
   --disable-tdb           disable tdb support
-  --disable-bmap-stats    disable collection of bitmap stats.
+  --disable-bmap-stats    disable collection of bitmap stats
   --enable-bmap-stats-ops enable collection of additional bitmap stats
   --disable-nls           do not use Native Language Support
   --disable-rpath         do not hardcode runtime library paths
-  --disable-fuse2fs	  do not build fuse2fs
-  --enable-lto		  enable link time optimization
-  --enable-ubsan	  enable undefined behavior sanitizer
-  --enable-addrsan	  enable address sanitizer
-  --enable-threadsan	  enable thread sanitizer
+  --disable-fuse2fs       do not build fuse2fs
+  --enable-lto            enable link time optimization
+  --enable-ubsan          enable undefined behavior sanitizer
+  --enable-addrsan        enable address sanitizer
+  --enable-threadsan      enable thread sanitizer
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1582,14 +1589,16 @@ Optional Packages:
   --with-cc               no longer supported, use CC= instead
   --with-ccopts           no longer supported, use CFLAGS= instead
   --with-ldopts           no longer supported, use LDFLAGS= instead
-  --with-root-prefix=PREFIX override prefix variable for files to be placed in the root
+  --with-root-prefix=PREFIX
+                          override prefix variable for files to be placed in
+                          the root
   --without-pthread       disable use of pthread support
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
-  --with-multiarch=ARCH specify the multiarch triplet
+  --with-multiarch=ARCH   specify the multiarch triplet
   --with-udev-rules-dir[=DIR]
                           Install udev rules into DIR.
   --with-crond-dir[=DIR]  Install system crontabs into DIR.
