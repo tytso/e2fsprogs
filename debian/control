@@ -33,6 +33,7 @@ Description: save the output of a command in a log file
  of the output will also be written to standard output.
 
 Package: e2fsck-static
+Build-Profiles: <!pkg.e2fsprogs.no-static>
 Priority: optional
 Depends: ${misc:Depends}
 Recommends: sash | bash-static | zsh-static | busybox-static
@@ -123,6 +124,7 @@ Description: command-line interface parsing library - headers and static librari
  This package contains the development environment for the ss library.
 
 Package: e2fsprogs-udeb
+Build-Profiles: <!noudeb>
 Package-Type: udeb
 Section: debian-installer
 Priority: optional
