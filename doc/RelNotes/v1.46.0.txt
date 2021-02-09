@@ -13,15 +13,15 @@ should also improve the performance of ext4 file systems exported via
 NFS.
 
 E2fsprogs now supports the stable_inodes (COMPAT_STABLE_INODES) feature.
-This needed to support the siphash file system encryption algorithm,
-which calculates the initial vector (IV) for encryption based on the
-UUID and the inode number.  This means that we can't renumber inodes
-(for example, when shrinking a file system) and the UUID can't be
-changed without breaking the ability to decrypt the encryption.
+This needed to support fscrypt siphash algorithm, which calculates the
+initial vector (IV) for encryption based on the UUID and the inode
+number.  This means that we can't renumber inodes (for example, when
+shrinking a file system) and the UUID can't be changed without breaking
+the ability to decrypt the encryption.
 
 E2fsprogs now supports file systems which have both file system
-encryption and the casefold feature enabled.  This requires Linux
-version 5.10.
+encryption and the casefold feature enabled.  This is used in some
+Android handsets, but has not yet landed upstream yet.
 
 E2fsck now will check file names on file systems with case folding
 enabled to make sure the characters are valid UTF-8 characters.  This is

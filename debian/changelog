@@ -1,12 +1,28 @@
-e2fsprogs (1.46.0-1) unstable; urgency=medium
+e2fsprogs (1.46.1-1) unstable; urgency=medium
+
+  * Drop transitional packages libcomerr2, e2fslibs, and e2fslibs-dev
+  * Fix a bug in libext2fs and debugfs when trying to set an extended
+    attribute will result in a seg fault.
+  * Fix e2fsck so it properly accepts large_dir directories which are
+    greater than 4GB in size.
+  * Fix mke2fs -d so it correctly handles important a directory or small
+    file which is stored using inline_data and contains an ACL or extended
+    attribute.   (Closes: #971014)
+  * Add build profiles noudeb and pkg.e2fsprogs.no-static (Closes: #966686)
+  * Update the Czech, French, Malay, Polish, Portuguese, Sweedish, and
+    Ukranian translations from the translation project.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 09 Feb 2021 17:36:02 -0500
+
+e2fsprogs (1.46.0-1) experimental; urgency=medium
 
   * New upstream release
   * Add support for the new fast_commit feature.  (Requires Linux version
     5.10 or higher)
   * Add support for the new stable_inodes feature which is needed to
-    support some file system encryption algorithms such as siphash.
+    support some the fscrypt siphash algorithm.
   * Add support for file systems that have both case folding and
-    encryption enabled.  (Requires Linux version 5.10 or higher)
+    encryption enabled.  (Not yet upstream, but used in some Android handsets.)
   * The fuse2fs program now supports the "norecovery" which omits replying
     the journal and mounts the file system read-only.
   * Bitmap loading is now done using multiple threads which can speed up
