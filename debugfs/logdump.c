@@ -177,7 +177,8 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 					* sizeof(struct ext2_inode));
 		printf("Inode %u is at group %u, block %llu, offset %u\n",
 		       inode_to_dump, inode_group,
-		       inode_block_to_dump, inode_offset_to_dump);
+		       (unsigned long long) inode_block_to_dump,
+		       inode_offset_to_dump);
 	}
 
 	if (optind == argc) {
@@ -541,7 +542,7 @@ static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 				le32_to_cpu(add_range->fc_ino),
 				le32_to_cpu(ex->ee_block),
 				le32_to_cpu(ex->ee_start) +
-				(((__u64) le16_to_cpu(ex->ee_start_hi)) << 32),
+				(((unsigned long long) le16_to_cpu(ex->ee_start_hi)) << 32),
 				le16_to_cpu(ex->ee_len) > EXT_INIT_MAX_LEN ?
 				le16_to_cpu(ex->ee_len) - EXT_INIT_MAX_LEN :
 				le16_to_cpu(ex->ee_len));
@@ -699,7 +700,8 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 			rblock = ext2fs_be64_to_cpu(*entry);
 		}
 		if (dump_all || rblock == block_to_dump) {
-			fprintf(out_file, "  Revoke FS block %llu", rblock);
+			fprintf(out_file, "  Revoke FS block %llu",
+				(unsigned long long) rblock);
 			if (dump_all)
 				fprintf(out_file, "\n");
 			else
@@ -783,7 +785,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 
 		fprintf(out_file, "    (block bitmap for block %llu: "
 			"block is %s)\n",
-			block_to_dump,
+			(unsigned long long) block_to_dump,
 			ext2fs_test_bit(offset, buf) ? "SET" : "CLEAR");
 	}
 

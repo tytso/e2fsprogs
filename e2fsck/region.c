@@ -180,10 +180,13 @@ void region_print(region_t region, FILE *f)
 	struct region_el	*r;
 	int	i = 0;
 
-	fprintf(f, "Printing region (min=%llu. max=%llu)\n\t", region->min,
-		region->max);
+	fprintf(f, "Printing region (min=%llu. max=%llu)\n\t",
+		(unsigned long long) region->min,
+		(unsigned long long) region->max);
 	for (r = region->allocated; r; r = r->next) {
-		fprintf(f, "(%llu, %llu)  ", r->start, r->end);
+		fprintf(f, "(%llu, %llu)  ",
+			(unsigned long long) r->start,
+			(unsigned long long) r->end);
 		if (++i >= 8)
 			fprintf(f, "\n\t");
 	}
@@ -205,7 +208,8 @@ int main(int argc, char **argv)
 			start = bcode_program[pc++];
 			end = bcode_program[pc++];
 			printf("Creating region with args(%llu, %llu)\n",
-			       start, end);
+			       (unsigned long long) start,
+			       (unsigned long long) end);
 			r = region_create(start, end);
 			if (!r) {
 				fprintf(stderr, "Couldn't create region.\n");
@@ -217,7 +221,8 @@ int main(int argc, char **argv)
 			end = bcode_program[pc++];
 			ret = region_allocate(r, start, end);
 			printf("Region_allocate(%llu, %llu) returns %d\n",
-			       start, end, ret);
+			       (unsigned long long) start,
+			       (unsigned long long) end, ret);
 			break;
 		case BCODE_PRINT:
 			region_print(r, stdout);

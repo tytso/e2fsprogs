@@ -3142,20 +3142,21 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 					  ext2fs_blocks_count(sb) / 100.0);
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting reserved blocks percentage to %g%% (%llu blocks)\n"),
-			reserved_ratio, ext2fs_r_blocks_count(sb));
+			reserved_ratio,
+			(unsigned long long) ext2fs_r_blocks_count(sb));
 	}
 	if (r_flag) {
 		if (reserved_blocks > ext2fs_blocks_count(sb)/2) {
 			com_err(program_name, 0,
 				_("reserved blocks count is too big (%llu)"),
-				reserved_blocks);
+				(unsigned long long) reserved_blocks);
 			rc = 1;
 			goto closefs;
 		}
 		ext2fs_r_blocks_count_set(sb, reserved_blocks);
 		ext2fs_mark_super_dirty(fs);
 		printf(_("Setting reserved blocks count to %llu\n"),
-		       reserved_blocks);
+		       (unsigned long long) reserved_blocks);
 	}
 	if (s_flag == 1) {
 		if (ext2fs_has_feature_sparse_super(sb)) {

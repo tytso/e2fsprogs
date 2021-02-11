@@ -133,7 +133,8 @@ void do_zap_block(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 				       block, 0, &block);
 		if (errcode) {
 			com_err(argv[0], errcode,
-				"while mapping logical block %llu\n", block);
+				"while mapping logical block %llu\n",
+				(unsigned long long) block);
 			return;
 		}
 	}
@@ -147,7 +148,8 @@ void do_zap_block(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	errcode = io_channel_read_blk64(current_fs->io, block, 1, buf);
 	if (errcode) {
 		com_err(argv[0], errcode,
-			"while reading block %llu\n", block);
+			"while reading block %llu\n",
+			(unsigned long long) block);
 		goto errout;
 	}
 
@@ -159,7 +161,8 @@ void do_zap_block(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	errcode = io_channel_write_blk64(current_fs->io, block, 1, buf);
 	if (errcode) {
 		com_err(argv[0], errcode,
-			"while write block %llu\n", block);
+			"while write block %llu\n",
+			(unsigned long long) block);
 		goto errout;
 	}
 
@@ -214,7 +217,8 @@ void do_block_dump(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 				       block, 0, &block);
 		if (errcode) {
 			com_err(argv[0], errcode,
-				"while mapping logical block %llu\n", block);
+				"while mapping logical block %llu\n",
+				(unsigned long long) block);
 			return;
 		}
 	}
@@ -228,7 +232,8 @@ void do_block_dump(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	errcode = io_channel_read_blk64(current_fs->io, block, 1, buf);
 	if (errcode) {
 		com_err(argv[0], errcode,
-			"while reading block %llu\n", block);
+			"while reading block %llu\n",
+			(unsigned long long) block);
 		goto errout;
 	}
 

@@ -201,10 +201,15 @@ void ext2fs_extent_dump(ext2_extent extent, FILE *out)
 
 	fputs(_("# Extent dump:\n"), out);
 	fprintf(out, _("#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"),
-	       extent->num, extent->size, extent->cursor, extent->sorted);
+	       (unsigned long long) extent->num,
+		(unsigned long long) extent->size,
+		(unsigned long long) extent->cursor,
+		(unsigned long long) extent->sorted);
 	for (i=0, ent=extent->list; i < extent->num; i++, ent++) {
-		fprintf(out, "#\t\t %llu -> %llu (%llu)\n", ent->old_loc,
-			ent->new_loc, ent->size);
+		fprintf(out, "#\t\t %llu -> %llu (%llu)\n",
+			(unsigned long long) ent->old_loc,
+			(unsigned long long) ent->new_loc,
+			(unsigned long long) ent->size);
 	}
 }
 

@@ -118,7 +118,8 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		if (LINUX_S_ISDIR(inode.i_mode))
 			fprintf(ls->f, "/");
 		else
-			fprintf(ls->f, "%lld/", EXT2_I_SIZE(&inode));
+			fprintf(ls->f, "%llu/",
+				(unsigned long long) EXT2_I_SIZE(&inode));
 		fprintf(ls->f, "\n");
 	} else if (options & LONG_OPT) {
 		if (ino) {
@@ -143,7 +144,8 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		fprintf(ls->f, "(%d)  %5d  %5d   ",
 			ext2fs_dirent_file_type(dirent),
 			inode_uid(inode), inode_gid(inode));
-			fprintf(ls->f, "%5llu", EXT2_I_SIZE(&inode));
+			fprintf(ls->f, "%5llu",
+				(unsigned long long) EXT2_I_SIZE(&inode));
 		fprintf(ls->f, " %s ", datestr);
 		print_filename(ls->f, dirent, options);
 		fputc('\n', ls->f);

@@ -374,9 +374,9 @@ static int filefrag_fibmap(int fd, int blk_shift, int *num_extents,
 			if (verbose && expected != 0) {
 				printf("Discontinuity: Block %llu is at %llu "
 				       "(was %llu)\n",
-					fm_ext.fe_logical / st->st_blksize,
-					fm_ext.fe_physical / st->st_blksize,
-					expected / st->st_blksize);
+				       (unsigned long long) (fm_ext.fe_logical / st->st_blksize),
+				       (unsigned long long) (fm_ext.fe_physical / st->st_blksize),
+				       (unsigned long long) (expected / st->st_blksize));
 			}
 			/* create the new extent */
 			fm_last = fm_ext;
@@ -492,8 +492,8 @@ static int frag_report(const char *filename)
 		__u32 state;
 
 		printf("File size of %s is %llu (%llu block%s of %d bytes)",
-		       filename, (unsigned long long)st.st_size,
-		       numblocks * blksize >> blk_shift,
+		       filename, (unsigned long long) st.st_size,
+		       (unsigned long long) (numblocks * blksize >> blk_shift),
 		       numblocks == 1 ? "" : "s", 1 << blk_shift);
 		if (use_extent_cache &&
 		    ioctl(fd, EXT4_IOC_GETSTATE, &state) == 0 &&

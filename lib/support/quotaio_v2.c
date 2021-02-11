@@ -197,7 +197,8 @@ static int v2_init_io(struct quota_handle *h)
 	     (filesize + QT_BLKSIZE - 1) >> QT_BLKSIZE_BITS)) {
 		log_err("Quota inode %u corrupted: file size %llu; "
 			"dqi_blocks %u", h->qh_qf.ino,
-			filesize, info->dqi_qtree.dqi_blocks);
+			(unsigned long long) filesize,
+			info->dqi_qtree.dqi_blocks);
 		return -1;
 	}
 	if (info->dqi_qtree.dqi_free_blk >= info->dqi_qtree.dqi_blocks) {

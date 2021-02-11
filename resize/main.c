@@ -470,7 +470,7 @@ int main (int argc, char ** argv)
 
 	if (print_min_size) {
 		printf(_("Estimated minimum size of the filesystem: %llu\n"),
-		       min_size);
+		       (unsigned long long) min_size);
 		exit(0);
 	}
 
@@ -545,7 +545,8 @@ int main (int argc, char ** argv)
 
 	if (!force && new_size < min_size) {
 		com_err(program_name, 0,
-			_("New size smaller than minimum (%llu)\n"), min_size);
+			_("New size smaller than minimum (%llu)\n"),
+			(unsigned long long) min_size);
 		exit(1);
 	}
 	if (use_stride >= 0) {
@@ -577,8 +578,8 @@ int main (int argc, char ** argv)
 	if (!force && (new_size > max_size)) {
 		fprintf(stderr, _("The containing partition (or device)"
 			" is only %llu (%dk) blocks.\nYou requested a new size"
-			" of %llu blocks.\n\n"), max_size,
-			blocksize / 1024, new_size);
+			" of %llu blocks.\n\n"), (unsigned long long) max_size,
+			blocksize / 1024, (unsigned long long) new_size);
 		exit(1);
 	}
 	if ((flags & RESIZE_DISABLE_64BIT) && (flags & RESIZE_ENABLE_64BIT)) {
@@ -605,7 +606,8 @@ int main (int argc, char ** argv)
 		}
 	} else if (new_size == ext2fs_blocks_count(fs->super)) {
 		fprintf(stderr, _("The filesystem is already %llu (%dk) "
-			"blocks long.  Nothing to do!\n\n"), new_size,
+			"blocks long.  Nothing to do!\n\n"),
+			(unsigned long long) new_size,
 			blocksize / 1024);
 		exit(0);
 	}
@@ -636,7 +638,8 @@ int main (int argc, char ** argv)
 		else
 			printf(_("Resizing the filesystem on "
 				 "%s to %llu (%dk) blocks.\n"),
-			       device_name, new_size, blocksize / 1024);
+			       device_name, (unsigned long long) new_size,
+			       blocksize / 1024);
 		retval = resize_fs(fs, &new_size, flags,
 				   ((flags & RESIZE_PERCENT_COMPLETE) ?
 				    resize_progress_func : 0));
@@ -653,7 +656,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 	printf(_("The filesystem on %s is now %llu (%dk) blocks long.\n\n"),
-	       device_name, new_size, blocksize / 1024);
+	       device_name, (unsigned long long) new_size, blocksize / 1024);
 
 	if ((st_buf.st_size > new_file_size) &&
 	    (fd > 0)) {

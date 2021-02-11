@@ -1179,10 +1179,13 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 			do {
 				count++;
 				printf("[ext %d]:\tstart %llu:\tlogical "
-						"%llu:\tlen %llu\n", count,
-						ext_list_tmp->data.physical,
-						ext_list_tmp->data.logical,
-						ext_list_tmp->data.len);
+				       "%llu:\tlen %llu\n", count,
+				       (unsigned long long)
+				       ext_list_tmp->data.physical,
+				       (unsigned long long)
+				       ext_list_tmp->data.logical,
+				       (unsigned long long)
+				       ext_list_tmp->data.len);
 				ext_list_tmp = ext_list_tmp->next;
 			} while (ext_list_tmp != logical_list_head);
 
@@ -1192,12 +1195,14 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 			if (current_uid == ROOT_UID) {
 				if (strlen(file) > 40)
 					printf("%s\n%50d/%-10d%6llu KB\n",
-						file, now_ext_count,
-						best_ext_count, size_per_ext);
+					       file, now_ext_count,
+					       best_ext_count,
+					       (unsigned long long) size_per_ext);
 				else
 					printf("%-40s%10d/%-10d%6llu KB\n",
-						file, now_ext_count,
-						best_ext_count, size_per_ext);
+					       file, now_ext_count,
+					       best_ext_count,
+					       (unsigned long long) size_per_ext);
 			} else {
 				if (strlen(file) > 40)
 					printf("%s\n%50d/%-10s%7s\n",
@@ -1220,14 +1225,16 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 		if (current_uid == ROOT_UID) {
 			if (strlen(msg_buffer) > 40)
 				printf("\033[79;0H\033[K%s\n"
-						"%50d/%-10d%6llu KB\n",
-						msg_buffer, now_ext_count,
-						best_ext_count, size_per_ext);
+				       "%50d/%-10d%6llu KB\n",
+				       msg_buffer, now_ext_count,
+				       best_ext_count,
+				       (unsigned long long) size_per_ext);
 			else
 				printf("\033[79;0H\033[K%-40s"
-						"%10d/%-10d%6llu KB\n",
-						msg_buffer, now_ext_count,
-						best_ext_count, size_per_ext);
+				       "%10d/%-10d%6llu KB\n",
+				       msg_buffer, now_ext_count,
+				       best_ext_count,
+				       (unsigned long long) size_per_ext);
 		} else {
 			if (strlen(msg_buffer) > 40)
 				printf("\033[79;0H\033[K%s\n%50d/%-10s%7s\n",
@@ -1897,6 +1904,7 @@ int main(int argc, char *argv[])
 							frag_rank[j].msg_buffer,
 							frag_rank[j].now_count,
 							frag_rank[j].best_count,
+							(unsigned long long)
 							frag_rank[j].
 								size_per_ext);
 						} else if (strlen(frag_rank[j].
@@ -1907,6 +1915,7 @@ int main(int argc, char *argv[])
 							frag_rank[j].msg_buffer,
 							frag_rank[j].now_count,
 							frag_rank[j].best_count,
+							(unsigned long long)
 							frag_rank[j].
 								size_per_ext);
 						} else
@@ -1999,12 +2008,12 @@ int main(int argc, char *argv[])
 						100 / files_block_count;
 				score = CALC_SCORE(files_ratio);
 				printf("\n Total/best extents\t\t\t\t%d/%d\n"
-					" Average size per extent"
-					"\t\t\t%llu KB\n"
-					" Fragmentation score\t\t\t\t%.0f\n",
-						extents_before_defrag,
-						extents_after_defrag,
-						size_per_ext, score);
+				       " Average size per extent"
+				       "\t\t\t%llu KB\n"
+				       " Fragmentation score\t\t\t\t%.0f\n",
+				       extents_before_defrag,
+				       extents_after_defrag,
+				       (unsigned long long) size_per_ext, score);
 				printf(" [0-30 no problem:"
 					" 31-55 a little bit fragmented:"
 					" 56- needs defrag]\n");

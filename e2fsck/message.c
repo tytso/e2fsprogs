@@ -281,7 +281,7 @@ static _INLINE_ void expand_inode_expression(FILE *f, ext2_filsys fs, char ch,
 
 	switch (ch) {
 	case 's':
-		fprintf(f, "%llu", EXT2_I_SIZE(inode));
+		fprintf(f, "%llu", (unsigned long long) EXT2_I_SIZE(inode));
 		break;
 	case 'S':
 		fprintf(f, "%u", large_inode->i_extra_isize);
@@ -307,7 +307,8 @@ static _INLINE_ void expand_inode_expression(FILE *f, ext2_filsys fs, char ch,
 		fprintf(f, "%u", inode->i_faddr);
 		break;
 	case 'f':
-		fprintf(f, "%llu", ext2fs_file_acl_block(fs, inode));
+		fprintf(f, "%llu",
+			(unsigned long long) ext2fs_file_acl_block(fs, inode));
 		break;
 	case 'd':
 		fprintf(f, "%u", (LINUX_S_ISDIR(inode->i_mode) ?
@@ -462,7 +463,9 @@ static _INLINE_ void expand_percent_expression(FILE *f, ext2_filsys fs,
 		fprintf(f, "%*lld", width, (long long) ctx->blkcount);
 		break;
 	case 'S':
-		fprintf(f, "%llu", get_backup_sb(NULL, fs, NULL, NULL));
+		fprintf(f, "%llu",
+			(unsigned long long) get_backup_sb(NULL, fs,
+							   NULL, NULL));
 		break;
 	case 's':
 		fprintf(f, "%*s", width, ctx->str ? ctx->str : "NULL");

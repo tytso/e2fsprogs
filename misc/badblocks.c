@@ -1066,7 +1066,7 @@ int main (int argc, char ** argv)
 				  unsigned int);
 	int open_flag;
 	long sysval;
-	blk64_t inblk;
+	unsigned long long inblk;
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -1231,14 +1231,15 @@ int main (int argc, char ** argv)
 	} else first_block = 0;
 	if (first_block >= last_block) {
 	    com_err (program_name, 0, _("invalid starting block (%llu): must be less than %llu"),
-		     first_block, last_block);
+		     (unsigned long long) first_block,
+		     (unsigned long long) last_block);
 	    exit (1);
 	}
 	/* ext2 badblocks file can't handle large values */
 	if (last_block >> 32) {
 		com_err(program_name, EOVERFLOW,
 			_("invalid end block (%llu): must be 32-bit value"),
-			last_block);
+			(unsigned long long) last_block);
 		exit(1);
 	}
 	if (w_flag)

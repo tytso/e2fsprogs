@@ -2386,11 +2386,11 @@ static void print_problem(FILE *f, problem_t code, int answer, int fixed,
 	if (pctx->dir)
 		fprintf(f, " dir=\"%u\"", pctx->dir);
 	if (pctx->blk)
-		fprintf(f, " blk=\"%llu\"", pctx->blk);
+		fprintf(f, " blk=\"%llu\"", (unsigned long long) pctx->blk);
 	if (pctx->blk2)
-		fprintf(f, " blk2=\"%llu\"", pctx->blk2);
+		fprintf(f, " blk2=\"%llu\"", (unsigned long long) pctx->blk2);
 	if (pctx->blkcount != (e2_blkcnt_t) -1)
-		fprintf(f, " blkcount=\"%lld\"", pctx->blkcount);
+		fprintf(f, " blkcount=\"%lld\"", (unsigned long long) pctx->blkcount);
 	if (pctx->group != (dgrp_t) -1)
 		fprintf(f, " group=\"%u\"", pctx->group);
 	if (pctx->csum1)
@@ -2398,9 +2398,9 @@ static void print_problem(FILE *f, problem_t code, int answer, int fixed,
 	if (pctx->csum2)
 		fprintf(f, " csum2=\"%u\"", pctx->csum2);
 	if (pctx->num)
-		fprintf(f, " num=\"%llu\"", pctx->num);
+		fprintf(f, " num=\"%llu\"", (unsigned long long) pctx->num);
 	if (pctx->num2)
-		fprintf(f, " num2=\"%llu\"", pctx->num2);
+		fprintf(f, " num2=\"%llu\"", (unsigned long long) pctx->num2);
 	if (pctx->str)
 		fprintf(f, " str=\"%s\"", pctx->str);
 	fputs("/>\n", f);
