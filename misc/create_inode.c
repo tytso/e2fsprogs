@@ -170,7 +170,7 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 	if (retval) {
 		com_err(__func__, retval,
 			_("while reading xattrs for inode %u"), ino);
-		return retval;
+		goto out;
 	}
 
 	retval = ext2fs_get_mem(size, &list);
