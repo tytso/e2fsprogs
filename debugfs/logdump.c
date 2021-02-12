@@ -406,10 +406,13 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			"Journal superblock magic number invalid!\n");
 		return;
 	}
-	if (be32_to_cpu(jsb->s_blocksize) != blocksize) {
+	blocksize = be32_to_cpu(jsb->s_blocksize);
+	if ((current_fs && (blocksize != current_fs->blocksize)) ||
+	    (!current_fs && (!blocksize || (blocksize & (blocksize - 1)) ||
+			     (blocksize > 65536)))) {
 		fprintf(out_file,
-			"Journal block size invalid: %u\n",
-			be32_to_cpu(jsb->s_blocksize));
+			"Journal block size invalid: %u (%u)\n",
+			be32_to_cpu(jsb->s_blocksize), blocksize);
 		return;
 	}
 	transaction = be32_to_cpu(jsb->s_sequence);
