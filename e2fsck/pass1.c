@@ -3027,7 +3027,12 @@ report_problem:
 			if (extent.e_lblk != lblk) {
 				struct ext2_extent_info e_info;
 
-				ext2fs_extent_get_info(ehandle, &e_info);
+				pctx->errcode = ext2fs_extent_get_info(ehandle,
+								       &e_info);
+				if (pctx->errcode) {
+					pctx->str = "ext2fs_extent_get_info";
+					return;
+				}
 				pctx->blk = lblk;
 				pctx->blk2 = extent.e_lblk;
 				pctx->num = e_info.curr_level - 1;
