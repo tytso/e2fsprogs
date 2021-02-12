@@ -406,7 +406,12 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			"Journal superblock magic number invalid!\n");
 		return;
 	}
-	blocksize = be32_to_cpu(jsb->s_blocksize);
+	if (be32_to_cpu(jsb->s_blocksize) != blocksize) {
+		fprintf(out_file,
+			"Journal block size invalid: %u\n",
+			be32_to_cpu(jsb->s_blocksize));
+		return;
+	}
 	transaction = be32_to_cpu(jsb->s_sequence);
 	blocknr = be32_to_cpu(jsb->s_start);
 
@@ -690,6 +695,11 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 	header = (jbd2_journal_revoke_header_t *) buf;
 	offset = sizeof(jbd2_journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
+	if (max > jsb->s_blocksize) {
+		fprintf(out_file, "Revoke block's r_count invalid: %u\b",
+			max);
+		max = jsb->s_blocksize;
+	}
 
 	while (offset < max) {
 		if (tag_size == sizeof(__u32)) {
