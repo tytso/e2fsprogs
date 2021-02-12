@@ -325,7 +325,7 @@ errcode_t e2fsck_read_extents(e2fsck_t ctx, struct extent_list *extents)
 	retval = ext2fs_get_array(NUM_EXTENTS, sizeof(struct ext2fs_extent),
 				  &extents->extents);
 	if (retval)
-		return -ENOMEM;
+		return ENOMEM;
 
 	retval = ext2fs_read_inode(ctx->fs, extents->ino, EXT2_INODE(&inode));
 	if (retval)
