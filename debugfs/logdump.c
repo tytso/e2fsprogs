@@ -56,7 +56,7 @@ static void dump_journal(char *, FILE *, struct journal_source *);
 
 static void dump_descriptor_block(FILE *, struct journal_source *,
 				  char *, journal_superblock_t *,
-				  unsigned int *, int, tid_t);
+				  unsigned int *, int, __u32, tid_t);
 
 static void dump_revoke_block(FILE *, char *, journal_superblock_t *,
 				  unsigned int, int, tid_t);
@@ -71,10 +71,9 @@ static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 
 static void do_hexdump (FILE *, char *, int);
 
-#define WRAP(jsb, blocknr)					\
-	if (blocknr >= be32_to_cpu((jsb)->s_maxlen))		\
-		blocknr -= (be32_to_cpu((jsb)->s_maxlen) -	\
-			    be32_to_cpu((jsb)->s_first));
+#define WRAP(jsb, blocknr, maxlen)					\
+	if (blocknr >= (maxlen))					\
+	    blocknr -= (maxlen - be32_to_cpu((jsb)->s_first));
 
 void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		    void *infop EXT2FS_ATTR((unused)))
@@ -359,6 +358,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	tid_t			transaction;
 	unsigned int		blocknr = 0;
 	int			fc_done;
+	__u64			total_len;
+	__u32			maxlen;
 
 	/* First, check to see if there's an ext2 superblock header */
 	retval = read_journal_block(cmdname, source, 0, buf, 2048);
@@ -417,6 +418,25 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	}
 	transaction = be32_to_cpu(jsb->s_sequence);
 	blocknr = be32_to_cpu(jsb->s_start);
+	if (source->where == JOURNAL_IS_INTERNAL) {
+		retval = ext2fs_file_get_lsize(source->file, &total_len);
+		if (retval) {
+		stat_err:
+			com_err("dump_journal", retval,
+				"while getting journal inode size");
+			return;
+		}
+		total_len /= blocksize;
+	} else {
+			struct stat st;
+
+			if (fstat(source->fd, &st) < 0)
+				goto stat_err;
+			total_len = st.st_size / blocksize;
+	}
+	maxlen = be32_to_cpu(jsb->s_maxlen);
+	if (maxlen > total_len)
+		maxlen = total_len;
 
 	fprintf(out_file, "Journal starts at block %u, transaction %u\n",
 		blocknr, transaction);
@@ -466,14 +486,14 @@ static void dump_journal(char *cmdname, FILE *out_file,
 		switch (blocktype) {
 		case JBD2_DESCRIPTOR_BLOCK:
 			dump_descriptor_block(out_file, source, buf, jsb,
-					      &blocknr, blocksize,
+					      &blocknr, blocksize, maxlen,
 					      transaction);
 			continue;
 
 		case JBD2_COMMIT_BLOCK:
 			transaction++;
 			blocknr++;
-			WRAP(jsb, blocknr);
+			WRAP(jsb, blocknr, maxlen);
 			continue;
 
 		case JBD2_REVOKE_BLOCK:
@@ -481,7 +501,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 					  blocknr, blocksize,
 					  transaction);
 			blocknr++;
-			WRAP(jsb, blocknr);
+			WRAP(jsb, blocknr, maxlen);
 			continue;
 
 		default:
@@ -492,8 +512,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	}
 
 fc:
-	blocknr = be32_to_cpu(jsb->s_maxlen) - jbd2_journal_get_num_fc_blks(jsb) + 1;
-	while (blocknr <= be32_to_cpu(jsb->s_maxlen)) {
+	blocknr = maxlen - jbd2_journal_get_num_fc_blks(jsb) + 1;
+	while (blocknr <= maxlen) {
 		retval = read_journal_block(cmdname, source,
 				((ext2_loff_t) blocknr) * blocksize,
 				buf, blocksize);
@@ -622,6 +642,7 @@ static void dump_descriptor_block(FILE *out_file,
 				  char *buf,
 				  journal_superblock_t *jsb,
 				  unsigned int *blockp, int blocksize,
+				  __u32 maxlen,
 				  tid_t transaction)
 {
 	int			offset, tag_size, csum_size = 0;
@@ -644,7 +665,7 @@ static void dump_descriptor_block(FILE *out_file,
 			"block %u:\n", transaction, blocknr);
 
 	++blocknr;
-	WRAP(jsb, blocknr);
+	WRAP(jsb, blocknr, maxlen);
 
 	do {
 		/* Work out the location of the current tag, and skip to
@@ -669,7 +690,7 @@ static void dump_descriptor_block(FILE *out_file,
 				    transaction);
 
 		++blocknr;
-		WRAP(jsb, blocknr);
+		WRAP(jsb, blocknr, maxlen);
 
 	} while (!(tag_flags & JBD2_FLAG_LAST_TAG));
 
