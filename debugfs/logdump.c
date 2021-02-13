@@ -350,7 +350,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 {
 	struct ext2_super_block *sb;
 	char			jsb_buffer[1024];
-	char			buf[8192];
+	char			buf[EXT2_MAX_BLOCK_SIZE];
 	journal_superblock_t	*jsb;
 	unsigned int		blocksize = 1024;
 	int			retval;
@@ -409,7 +409,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	blocksize = be32_to_cpu(jsb->s_blocksize);
 	if ((current_fs && (blocksize != current_fs->blocksize)) ||
 	    (!current_fs && (!blocksize || (blocksize & (blocksize - 1)) ||
-			     (blocksize > 65536)))) {
+			     (blocksize > EXT2_MAX_BLOCK_SIZE)))) {
 		fprintf(out_file,
 			"Journal block size invalid: %u (%u)\n",
 			be32_to_cpu(jsb->s_blocksize), blocksize);
