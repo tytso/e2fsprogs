@@ -556,15 +556,19 @@ void do_journal_write(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		switch (opt) {
 		case 'b':
 			err = read_list(optarg, &blist, &bn);
-			if (err)
+			if (err) {
 				com_err(argv[0], err,
 					"while reading block list");
+				goto out;
+			}
 			break;
 		case 'r':
 			err = read_list(optarg, &rlist, &rn);
-			if (err)
+			if (err) {
 				com_err(argv[0], err,
 					"while reading revoke list");
+				goto out;
+			}
 			break;
 		case 'c':
 			flags |= JOURNAL_WRITE_NO_COMMIT;
