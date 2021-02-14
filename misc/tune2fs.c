@@ -1826,8 +1826,15 @@ static void parse_tune2fs_options(int argc, char **argv)
 	while ((c = getopt(argc, argv, optstring)) != EOF)
 		switch (c) {
 		case 'c':
+			open_flag = EXT2_FLAG_RW;
+			c_flag = 1;
+			if (strcmp(optarg, "random") == 0) {
+				max_mount_count = 65536;
+				break;
+			}
 			max_mount_count = strtol(optarg, &tmp, 0);
-			if (*tmp || max_mount_count > 16000) {
+			if (*tmp || max_mount_count > 16000 ||
+			    max_mount_count < -16000) {
 				com_err(program_name, 0,
 					_("bad mounts count - %s"),
 					optarg);
@@ -1835,8 +1842,6 @@ static void parse_tune2fs_options(int argc, char **argv)
 			}
 			if (max_mount_count == 0)
 				max_mount_count = -1;
-			c_flag = 1;
-			open_flag = EXT2_FLAG_RW;
 			break;
 		case 'C':
 			mount_count = strtoul(optarg, &tmp, 0);
@@ -3104,6 +3109,9 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	fs->flags |= EXT2_FLAG_SUPER_ONLY;
 
 	if (c_flag) {
+		if (max_mount_count == 65536)
+			max_mount_count = EXT2_DFL_MAX_MNT_COUNT +
+				(random() % EXT2_DFL_MAX_MNT_COUNT);
 		sb->s_max_mnt_count = max_mount_count;
 		ext2fs_mark_super_dirty(fs);
 		printf(_("Setting maximal mount count to %d\n"),
