@@ -403,7 +403,8 @@ errcode_t ext2fs_mmp_stop(ext2_filsys fs)
 	errcode_t retval = 0;
 
 	if (!ext2fs_has_feature_mmp(fs->super) ||
-	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
+	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP) ||
+	    (fs->mmp_buf == NULL) || (fs->mmp_cmp == NULL))
 		goto mmp_error;
 
 	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, fs->mmp_buf);
