@@ -1,3 +1,9 @@
+e2fsprogs (1.46.1-1~bpo10+1) buster-backports; urgency=medium
+
+  * Rebuild for buster-backports.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 16 Feb 2021 13:47:36 -0500
+
 e2fsprogs (1.46.1-1) unstable; urgency=medium
 
   * Drop transitional packages libcomerr2, e2fslibs, and e2fslibs-dev
