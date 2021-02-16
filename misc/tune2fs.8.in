@@ -218,6 +218,30 @@ directories.  Valid algorithms accepted are:
 and
 .IR tea .
 .TP
+.BI encoding= encoding-name
+Enable the
+.I casefold
+feature in the super block and set
+.I encoding-name
+as the encoding to be used.  If
+.I encoding-name
+is not specified, utf8 is used. The encoding cannot be altered if casefold
+was previously enabled.
+.TP
+.BI encoding_flags= encoding-flags
+Define parameters for file name character encoding operations.  If a
+flag is not changed using this parameter, its default value is used.
+.I encoding-flags
+should be a comma-separated lists of flags to be enabled.  The flags cannot be
+altered if casefold was previously enabled.
+
+The only flag that can be set right now is
+.I strict
+which means that invalid strings should be rejected by the file system.
+In the default configuration, the
+.I strict
+flag is disabled.
+.TP
 .BI mount_opts= mount_option_string
 Set a set of default mount options which will be used when the file
 system is mounted.  Unlike the bitmask-based default mount options which
@@ -299,7 +323,13 @@ consistency first using
 .BR e2fsck (8).
 This operation can also take a while and the file system can be
 corrupted and data lost if it is interrupted while in the middle of
-converting the file system.
+converting the file system.  Backing up the file system before changing
+inode size is recommended.
+.IP
+File systems with an inode size of 128 bytes do not support timestamps
+beyond January 19, 2038.  Inodes which are 256 bytes or larger will
+support extended timestamps, project id's, and the ability to store some
+extended attributes in the inode table for improved performance.
 .TP
 .B \-j
 Add an ext3 journal to the filesystem.  If the
@@ -350,6 +380,27 @@ megabytes.   The size of the journal must be at least 1024 filesystem blocks
 and may be no more than 10,240,000 filesystem blocks.
 There must be enough free space in the filesystem to create a journal of
 that size.
+.TP
+.BI fast_commit_size= fast-commit-size
+Create an additional fast commit journal area of size
+.I fast-commit-size
+kilobytes.
+This option is only valid if
+.B fast_commit
+feature is enabled
+on the file system. If this option is not specified and if
+.B fast_commit
+feature is turned on, fast commit area size defaults to
+.I journal-size
+/ 64 megabytes. The total size of the journal with
+.B fast_commit
+feature set is
+.I journal-size
++ (
+.I fast-commit-size
+* 1024) megabytes. The total journal size may be no more than
+10,240,000 filesystem blocks or half the total file system size
+(whichever is smaller).
 .TP
 .BI location =journal-location
 Specify the location of the journal.  The argument
@@ -536,6 +587,11 @@ The following filesystem features can be set or cleared using
 .B 64bit
 Enable the file system to be larger than 2^32 blocks.
 .TP
+.B casefold
+Enable support for file system level casefolding.
+.B Tune2fs
+currently only supports setting this filesystem feature.
+.TP
 .B dir_index
 Use hashed b-trees to speed up lookups for large directories.
 .TP
@@ -580,6 +636,10 @@ Setting the filesystem feature is equivalent to using the
 .B \-j
 option.
 .TP
+.TP
+.B fast_commit
+Enable fast commit journaling feature to improve fsync latency.
+.TP
 .B large_dir
 Increase the limit on the number of files per directory.
 .B Tune2fs
@@ -621,6 +681,13 @@ only supports clearing this filesystem feature.
 .TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.
+.B Tune2fs
+currently only supports setting this filesystem feature.
+.TP
+.B stable_inodes
+Prevent the filesystem from being shrunk or having its UUID changed, in order to
+allow the use of specialized encryption settings that make use of the inode
+numbers and UUID.
 .B Tune2fs
 currently only supports setting this filesystem feature.
 .TP

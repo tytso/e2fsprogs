@@ -35,10 +35,14 @@
  * 	- The inode_used_map bitmap
  * 	- The inode_bad_map bitmap
  * 	- The inode_dir_map bitmap
+ * 	- The encrypted_file_info
+ *	- The inode_casefold_map bitmap
  *
  * Pass 2 frees the following data structures
  * 	- The inode_bad_map bitmap
  * 	- The inode_reg_map bitmap
+ * 	- The encrypted_file_info
+ *	- The inode_casefold_map bitmap
  */
 
 #define _GNU_SOURCE 1 /* get strnlen() */
@@ -71,8 +75,8 @@ static int allocate_dir_block(e2fsck_t ctx,
 			      struct ext2_db_entry2 *dir_blocks_info,
 			      char *buf, struct problem_context *pctx);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
-static int htree_depth(struct dx_dir_info *dx_dir,
-		       struct dx_dirblock_info *dx_db);
+static short htree_depth(struct dx_dir_info *dx_dir,
+			 struct dx_dirblock_info *dx_db);
 static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b);
 
 struct check_dir_struct {
@@ -88,7 +92,7 @@ struct check_dir_struct {
 static void update_parents(struct dx_dir_info *dx_dir, int type)
 {
 	struct dx_dirblock_info *dx_db, *dx_parent, *dx_previous;
-	int b;
+	blk_t b;
 
 	for (b = 0, dx_db = dx_dir->dx_block;
 	     b < dx_dir->numblocks;
@@ -130,8 +134,9 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct check_dir_struct cd;
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db;
-	int			b;
-	int			i, depth;
+	blk_t			b;
+	ext2_ino_t		i;
+	short			depth;
 	problem_t		code;
 	int			bad_dir;
 	int (*check_dir_func)(ext2_filsys fs,
@@ -284,9 +289,14 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
 		ctx->inode_reg_map = 0;
 	}
-	if (ctx->encrypted_dirs) {
-		ext2fs_u32_list_free(ctx->encrypted_dirs);
-		ctx->encrypted_dirs = 0;
+	if (ctx->inode_casefold_map) {
+		ext2fs_free_inode_bitmap(ctx->inode_casefold_map);
+		ctx->inode_casefold_map = 0;
+	}
+	destroy_encrypted_file_info(ctx);
+	if (ctx->casefolded_dirs) {
+		ext2fs_u32_list_free(ctx->casefolded_dirs);
+		ctx->casefolded_dirs = 0;
 	}
 
 	clear_problem_context(&pctx);
@@ -310,10 +320,10 @@ cleanup:
 }
 
 #define MAX_DEPTH 32000
-static int htree_depth(struct dx_dir_info *dx_dir,
-		       struct dx_dirblock_info *dx_db)
+static short htree_depth(struct dx_dir_info *dx_dir,
+			 struct dx_dirblock_info *dx_db)
 {
-	int	depth = 0;
+	short depth = 0;
 
 	while (dx_db->type != DX_DIRBLOCK_ROOT && depth < MAX_DEPTH) {
 		dx_db = &dx_dir->dx_block[dx_db->parent];
@@ -322,7 +332,7 @@ static int htree_depth(struct dx_dir_info *dx_dir,
 	return depth;
 }
 
-static int dict_de_cmp(const void *a, const void *b)
+static int dict_de_cmp(const void *cmp_ctx, const void *a, const void *b)
 {
 	const struct ext2_dir_entry *de_a, *de_b;
 	int	a_len, b_len;
@@ -336,6 +346,20 @@ static int dict_de_cmp(const void *a, const void *b)
 		return (a_len - b_len);
 
 	return memcmp(de_a->name, de_b->name, a_len);
+}
+
+static int dict_de_cf_cmp(const void *cmp_ctx, const void *a, const void *b)
+{
+	const struct ext2fs_nls_table *tbl = cmp_ctx;
+	const struct ext2_dir_entry *de_a, *de_b;
+	int	a_len, b_len;
+
+	de_a = (const struct ext2_dir_entry *) a;
+	a_len = ext2fs_dirent_name_len(de_a);
+	de_b = (const struct ext2_dir_entry *) b;
+	b_len = ext2fs_dirent_name_len(de_b);
+
+	return ext2fs_casefold_cmp(tbl, de_a->name, a_len, de_b->name, b_len);
 }
 
 /*
@@ -504,17 +528,39 @@ static int check_name(e2fsck_t ctx,
 }
 
 static int encrypted_check_name(e2fsck_t ctx,
-				struct ext2_dir_entry *dirent,
+				const struct ext2_dir_entry *dirent,
 				struct problem_context *pctx)
 {
 	if (ext2fs_dirent_name_len(dirent) < EXT4_CRYPTO_BLOCK_SIZE) {
-		if (fix_problem(ctx, PR_2_BAD_ENCRYPTED_NAME, pctx)) {
-			dirent->inode = 0;
+		if (fix_problem(ctx, PR_2_BAD_ENCRYPTED_NAME, pctx))
 			return 1;
-		}
 		ext2fs_unmark_valid(ctx->fs);
 	}
 	return 0;
+}
+
+static int encoded_check_name(e2fsck_t ctx,
+			      struct ext2_dir_entry *dirent,
+			      struct problem_context *pctx)
+{
+	const struct ext2fs_nls_table *tbl = ctx->fs->encoding;
+	int ret;
+	int len = ext2fs_dirent_name_len(dirent);
+	char *pos, *end;
+
+	ret = ext2fs_check_encoded_name(tbl, dirent->name, len, &pos);
+	if (ret < 0) {
+		fatal_error(ctx, _("NLS is broken."));
+	} else if(ret > 0) {
+		ret = fix_problem(ctx, PR_2_BAD_ENCODED_NAME, pctx);
+		if (ret) {
+			end = &dirent->name[len];
+			for (; *pos && pos != end; pos++)
+				*pos = '.';
+		}
+	}
+
+	return (ret || check_name(ctx, dirent, pctx));
 }
 
 /*
@@ -569,8 +615,8 @@ static void parse_int_node(ext2_filsys fs,
 			   struct dx_dir_info	*dx_dir,
 			   char *block_buf, int failed_csum)
 {
-	struct 		ext2_dx_root_info  *root;
-	struct 		ext2_dx_entry *ent;
+	struct		ext2_dx_root_info  *root;
+	struct		ext2_dx_entry *ent;
 	struct		ext2_dx_countlimit *limit;
 	struct dx_dirblock_info	*dx_db;
 	int		i, expect_limit, count;
@@ -586,10 +632,10 @@ static void parse_int_node(ext2_filsys fs,
 #ifdef DX_DEBUG
 		printf("Root node dump:\n");
 		printf("\t Reserved zero: %u\n", root->reserved_zero);
-		printf("\t Hash Version: %d\n", root->hash_version);
-		printf("\t Info length: %d\n", root->info_length);
-		printf("\t Indirect levels: %d\n", root->indirect_levels);
-		printf("\t Flags: %d\n", root->unused_flags);
+		printf("\t Hash Version: %u\n", root->hash_version);
+		printf("\t Info length: %u\n", root->info_length);
+		printf("\t Indirect levels: %u\n", root->indirect_levels);
+		printf("\t Flags: %x\n", root->unused_flags);
 #endif
 
 		ent = (struct ext2_dx_entry *) (block_buf + 24 + root->info_length);
@@ -645,7 +691,7 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 		blk = ext2fs_le32_to_cpu(ent[i].block) & EXT4_DX_BLOCK_MASK;
 		/* Check to make sure the block is valid */
-		if (blk >= (blk_t) dx_dir->numblocks) {
+		if (blk >= dx_dir->numblocks) {
 			cd->pctx.blk = blk;
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
 					&cd->pctx))
@@ -705,7 +751,8 @@ static void salvage_directory(ext2_filsys fs,
 			      struct ext2_dir_entry *dirent,
 			      struct ext2_dir_entry *prev,
 			      unsigned int *offset,
-			      unsigned int block_len)
+			      unsigned int block_len,
+			      int hash_in_dirent)
 {
 	char	*cp = (char *) dirent;
 	int left;
@@ -730,7 +777,8 @@ static void salvage_directory(ext2_filsys fs,
 	 * Special case of directory entry of size 8: copy what's left
 	 * of the directory block up to cover up the invalid hole.
 	 */
-	if ((left >= 12) && (rec_len == EXT2_DIR_ENTRY_HEADER_LEN)) {
+	if ((left >= ext2fs_dir_rec_len(1, hash_in_dirent)) &&
+	     (rec_len == EXT2_DIR_ENTRY_HEADER_LEN)) {
 		memmove(cp, cp+EXT2_DIR_ENTRY_HEADER_LEN, left);
 		memset(cp + left, 0, EXT2_DIR_ENTRY_HEADER_LEN);
 		return;
@@ -742,7 +790,7 @@ static void salvage_directory(ext2_filsys fs,
 	 */
 	if ((left < 0) &&
 	    ((int) rec_len + left > EXT2_DIR_ENTRY_HEADER_LEN) &&
-	    ((int) name_len + EXT2_DIR_ENTRY_HEADER_LEN <= (int) rec_len + left) &&
+	    ((int) ext2fs_dir_rec_len(name_len, hash_in_dirent) <= (int) rec_len + left) &&
 	    dirent->inode <= fs->super->s_inodes_count &&
 	    strnlen(dirent->name, name_len) == name_len) {
 		(void) ext2fs_set_rec_len(fs, (int) rec_len + left, dirent);
@@ -877,6 +925,71 @@ err:
 	return retval;
 }
 
+/* Return true if this type of file needs encryption */
+static int needs_encryption(e2fsck_t ctx, const struct ext2_dir_entry *dirent)
+{
+	int filetype = ext2fs_dirent_file_type(dirent);
+	ext2_ino_t ino = dirent->inode;
+	struct ext2_inode inode;
+
+	if (filetype != EXT2_FT_UNKNOWN)
+		return filetype == EXT2_FT_REG_FILE ||
+		       filetype == EXT2_FT_DIR ||
+		       filetype == EXT2_FT_SYMLINK;
+
+	if (ext2fs_test_inode_bitmap2(ctx->inode_reg_map, ino) ||
+	    ext2fs_test_inode_bitmap2(ctx->inode_dir_map, ino))
+		return 1;
+
+	e2fsck_read_inode(ctx, ino, &inode, "check_encryption_policy");
+	return LINUX_S_ISREG(inode.i_mode) ||
+	       LINUX_S_ISDIR(inode.i_mode) ||
+	       LINUX_S_ISLNK(inode.i_mode);
+}
+
+/*
+ * All regular files, directories, and symlinks in encrypted directories must be
+ * encrypted using the same encryption policy as their directory.
+ *
+ * Returns 1 if the dirent should be cleared, otherwise 0.
+ */
+static int check_encryption_policy(e2fsck_t ctx,
+				   const struct ext2_dir_entry *dirent,
+				   __u32 dir_encpolicy_id,
+				   struct problem_context *pctx)
+{
+	__u32 file_encpolicy_id = find_encryption_policy(ctx, dirent->inode);
+
+	/* Same policy or both UNRECOGNIZED_ENCRYPTION_POLICY? */
+	if (file_encpolicy_id == dir_encpolicy_id)
+		return 0;
+
+	if (file_encpolicy_id == NO_ENCRYPTION_POLICY) {
+		if (!needs_encryption(ctx, dirent))
+			return 0;
+		return fix_problem(ctx, PR_2_UNENCRYPTED_FILE, pctx);
+	}
+
+	return fix_problem(ctx, PR_2_INCONSISTENT_ENCRYPTION_POLICY, pctx);
+}
+
+/*
+ * Check an encrypted directory entry.
+ *
+ * Returns 1 if the dirent should be cleared, otherwise 0.
+ */
+static int check_encrypted_dirent(e2fsck_t ctx,
+				  const struct ext2_dir_entry *dirent,
+				  __u32 dir_encpolicy_id,
+				  struct problem_context *pctx)
+{
+	if (encrypted_check_name(ctx, dirent, pctx))
+		return 1;
+	if (check_encryption_policy(ctx, dirent, dir_encpolicy_id, pctx))
+		return 1;
+	return 0;
+}
+
 static int check_dir_block2(ext2_filsys fs,
 			   struct ext2_db_entry2 *db,
 			   void *priv_data)
@@ -931,14 +1044,24 @@ static int check_dir_block(ext2_filsys fs,
 	int	is_leaf = 1;
 	size_t	inline_data_size = 0;
 	int	filetype = 0;
-	int	encrypted = 0;
+	__u32   dir_encpolicy_id = NO_ENCRYPTION_POLICY;
+	int	hash_in_dirent = 0;
+	int	casefolded = 0;
 	size_t	max_block_size;
 	int	hash_flags = 0;
 	static char *eop_read_dirblock = NULL;
+	int cf_dir = 0;
 
 	cd = (struct check_dir_struct *) priv_data;
 	ibuf = buf = cd->buf;
 	ctx = cd->ctx;
+
+	/* We only want filename encoding verification on strict
+	 * mode or if explicitly requested by user. */
+	if (ext2fs_test_inode_bitmap2(ctx->inode_casefold_map, ino) &&
+	    ((ctx->fs->super->s_encoding_flags & EXT4_ENC_STRICT_MODE_FL) ||
+	     (ctx->options & E2F_OPT_CHECK_ENCODING)))
+		cf_dir = 1;
 
 	if (ctx->flags & E2F_FLAG_RUN_RETURN)
 		return DIRENT_ABORT;
@@ -1094,6 +1217,9 @@ inline_read_fail:
 			root = (struct ext2_dx_root_info *) (buf + 24);
 			dx_db->type = DX_DIRBLOCK_ROOT;
 			dx_db->flags |= DX_FLAG_FIRST | DX_FLAG_LAST;
+
+			/* large_dir was set in pass1 if large dirs were found,
+			 * so ext2_dir_htree_level() should now be correct */
 			if ((root->reserved_zero ||
 			     root->info_length < 8 ||
 			     root->indirect_levels >=
@@ -1153,15 +1279,27 @@ skip_checksum:
 	} else
 		max_block_size = fs->blocksize - de_csum_size;
 
-	if (ctx->encrypted_dirs)
-		encrypted = ext2fs_u32_list_test(ctx->encrypted_dirs, ino);
+	dir_encpolicy_id = find_encryption_policy(ctx, ino);
 
-	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
+	if (cf_dir) {
+		dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cf_cmp);
+		dict_set_cmp_context(&de_dict, (void *)ctx->fs->encoding);
+	} else {
+		dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
+	}
+	if (ctx->casefolded_dirs)
+		casefolded = ext2fs_u32_list_test(ctx->casefolded_dirs, ino);
+	hash_in_dirent = (casefolded &&
+			  (dir_encpolicy_id != NO_ENCRYPTION_POLICY));
+
 	prev = 0;
 	do {
 		dgrp_t group;
 		ext2_ino_t first_unused_inode;
 		unsigned int name_len;
+		/* csum entry is not checked here, so don't worry about it */
+		int extended = (dot_state > 1) && hash_in_dirent;
+		int min_dir_len = ext2fs_dir_rec_len(1, extended);
 
 		problem = 0;
 		if (!inline_data_size || dot_state > 1) {
@@ -1171,15 +1309,16 @@ skip_checksum:
 			 * force salvaging this dir.
 			 */
 			if (max_block_size - offset < EXT2_DIR_ENTRY_HEADER_LEN)
-				rec_len = EXT2_DIR_REC_LEN(1);
+				rec_len = ext2fs_dir_rec_len(1, extended);
 			else
 				(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 			cd->pctx.dirent = dirent;
 			cd->pctx.num = offset;
 			if ((offset + rec_len > max_block_size) ||
-			    (rec_len < 12) ||
+			    (rec_len < min_dir_len) ||
 			    ((rec_len % 4) != 0) ||
-			    (((unsigned) ext2fs_dirent_name_len(dirent) + EXT2_DIR_ENTRY_HEADER_LEN) > rec_len)) {
+			    ((ext2fs_dir_rec_len(ext2fs_dirent_name_len(dirent),
+						 extended)) > rec_len)) {
 				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
 						&cd->pctx)) {
 #ifdef WORDS_BIGENDIAN
@@ -1212,7 +1351,8 @@ skip_checksum:
 #endif
 					salvage_directory(fs, dirent, prev,
 							  &offset,
-							  max_block_size);
+							  max_block_size,
+							  hash_in_dirent);
 #ifdef WORDS_BIGENDIAN
 					if (need_reswab) {
 						(void) ext2fs_get_rec_len(fs,
@@ -1418,26 +1558,44 @@ skip_checksum:
 			}
 		}
 
-		if (!encrypted && check_name(ctx, dirent, &cd->pctx))
-			dir_modified++;
-
-		if (encrypted && (dot_state) > 1 &&
-		    encrypted_check_name(ctx, dirent, &cd->pctx)) {
-			dir_modified++;
-			goto next;
-		}
-
 		if (check_filetype(ctx, dirent, ino, &cd->pctx))
 			dir_modified++;
+
+		if (dir_encpolicy_id != NO_ENCRYPTION_POLICY) {
+			/* Encrypted directory */
+			if (dot_state > 1 &&
+			    check_encrypted_dirent(ctx, dirent,
+						   dir_encpolicy_id,
+						   &cd->pctx)) {
+				dirent->inode = 0;
+				dir_modified++;
+				goto next;
+			}
+		} else if (cf_dir) {
+			/* Casefolded directory */
+			if (encoded_check_name(ctx, dirent, &cd->pctx))
+				dir_modified++;
+		} else {
+			/* Unencrypted and uncasefolded directory */
+			if (check_name(ctx, dirent, &cd->pctx))
+				dir_modified++;
+		}
 
 		if (dx_db) {
 			if (dx_dir->casefolded_hash)
 				hash_flags = EXT4_CASEFOLD_FL;
 
-			ext2fs_dirhash2(dx_dir->hashversion, dirent->name,
-					ext2fs_dirent_name_len(dirent),
-					fs->encoding, hash_flags,
-					fs->super->s_hash_seed, &hash, 0);
+			if (dx_dir->hashversion == EXT2_HASH_SIPHASH) {
+				if (dot_state > 1)
+					hash = EXT2_DIRENT_HASH(dirent);
+			} else {
+				ext2fs_dirhash2(dx_dir->hashversion,
+						dirent->name,
+						ext2fs_dirent_name_len(dirent),
+						fs->encoding, hash_flags,
+						fs->super->s_hash_seed,
+						&hash, 0);
+			}
 			if (hash < dx_db->min_hash)
 				dx_db->min_hash = hash;
 			if (hash > dx_db->max_hash)
@@ -1702,9 +1860,12 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	if (inode.i_flags & EXT4_INLINE_DATA_FL)
 		goto clear_inode;
 
-	if (LINUX_S_ISREG(inode.i_mode) &&
-	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(&inode)))
-		ctx->large_files--;
+	if (ext2fs_needs_large_file_feature(EXT2_I_SIZE(&inode))) {
+		if (LINUX_S_ISREG(inode.i_mode))
+		    ctx->large_files--;
+		else if (LINUX_S_ISDIR(inode.i_mode))
+		    ctx->large_dirs--;
+	}
 
 	del_block.ctx = ctx;
 	del_block.num = 0;
@@ -1864,6 +2025,7 @@ int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 			not_fixed++;
 	}
 	if (inode.i_size_high && !ext2fs_has_feature_largedir(fs->super) &&
+	    inode.i_blocks < 1ULL << (29 - EXT2_BLOCK_SIZE_BITS(fs->super)) &&
 	    LINUX_S_ISDIR(inode.i_mode)) {
 		if (fix_problem(ctx, PR_2_DIR_SIZE_HIGH_ZERO, &pctx)) {
 			inode.i_size_high = 0;

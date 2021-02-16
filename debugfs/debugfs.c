@@ -48,8 +48,14 @@ extern char *optarg;
 int journal_enable_debug = -1;
 #endif
 
+/*
+ * There must be only one definition if we're hooking in extra commands or
+ * chaging default prompt. Use -DSKIP_GLOBDEF for that.
+ */
+#ifndef SKIP_GLOBDEFS
 ss_request_table *extra_cmds;
 const char *debug_prog_name;
+#endif
 int ss_sci_idx;
 
 ext2_filsys	current_fs;
@@ -225,7 +231,8 @@ void do_open_filesys(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 	int	catastrophic = 0;
 	blk64_t	superblock = 0;
 	blk64_t	blocksize = 0;
-	int	open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS; 
+	int	open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS |
+		EXT2_FLAG_THREADS;
 	char	*data_filename = 0;
 	char	*undo_file = NULL;
 
@@ -270,7 +277,11 @@ void do_open_filesys(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 				return;
 			break;
 		case 'z':
+#ifdef READ_ONLY
+			goto print_usage;
+#else
 			undo_file = optarg;
+#endif
 			break;
 		default:
 			goto print_usage;
@@ -288,9 +299,10 @@ void do_open_filesys(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 
 print_usage:
 	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] "
+#ifdef READ_ONLY
 		"[-d image_filename] [-z undo_file] [-c] [-i] [-f] [-e] [-D] "
-#ifndef READ_ONLY
-		"[-w] "
+#else
+		"[-d image_filename] [-c] [-i] [-f] [-e] [-D] [-w] "
 #endif
 		"<device>\n", argv[0]);
 }
@@ -467,7 +479,7 @@ void do_show_super_stats(int argc, char *argv[],
 	}
 	for (i=0; i < current_fs->group_desc_count; i++)
 		numdirs += ext2fs_bg_used_dirs_count(current_fs, i);
-	fprintf(out, "Directories:              %d\n", numdirs);
+	fprintf(out, "Directories:              %u\n", numdirs);
 
 	if (header_only) {
 		close_pager(out);
@@ -718,7 +730,7 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 				continue;
 			}
 
-			fprintf(f, "%s(ETB%d):%lld",
+			fprintf(f, "%s(ETB%d):%llu",
 				printed ? ", " : "", info.curr_level,
 				extent.e_pblk);
 			printed = 1;
@@ -851,10 +863,10 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode))
 		fprintf(out, "%llu\n", EXT2_I_SIZE(inode));
 	else
-		fprintf(out, "%d\n", inode->i_size);
+		fprintf(out, "%u\n", inode->i_size);
 	if (os == EXT2_OS_HURD)
 		fprintf(out,
-			"%sFile ACL: %d Translator: %d\n",
+			"%sFile ACL: %u Translator: %u\n",
 			prefix,
 			inode->i_file_acl,
 			inode->osd1.hurd1.h_i_translator);
@@ -864,13 +876,13 @@ void internal_dump_inode(FILE *out, const char *prefix,
 			inode->i_file_acl | ((long long)
 				(inode->osd2.linux2.l_i_file_acl_high) << 32));
 	if (os != EXT2_OS_HURD)
-		fprintf(out, "%sLinks: %d   Blockcount: %llu\n",
+		fprintf(out, "%sLinks: %u   Blockcount: %llu\n",
 			prefix, inode->i_links_count,
 			(((unsigned long long)
 			  inode->osd2.linux2.l_i_blocks_hi << 32)) +
 			inode->i_blocks);
 	else
-		fprintf(out, "%sLinks: %d   Blockcount: %u\n",
+		fprintf(out, "%sLinks: %u   Blockcount: %u\n",
 			prefix, inode->i_links_count, inode->i_blocks);
 	switch (os) {
 	    case EXT2_OS_HURD:
@@ -880,7 +892,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	    default:
 		frag = fsize = 0;
 	}
-	fprintf(out, "%sFragment:  Address: %d    Number: %d    Size: %d\n",
+	fprintf(out, "%sFragment:  Address: %u    Number: %u    Size: %u\n",
 		prefix, inode->i_faddr, frag, fsize);
 	if (is_large_inode && large_inode->i_extra_isize >= 24) {
 		fprintf(out, "%s ctime: 0x%08x:%08x -- %s", prefix,
@@ -1397,7 +1409,7 @@ void do_modify_inode(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		modify_u8(argv[0], "Fragment size", decimal_format, fsize);
 
 	for (i=0;  i < EXT2_NDIR_BLOCKS; i++) {
-		sprintf(buf, "Direct Block #%d", i);
+		sprintf(buf, "Direct Block #%u", i);
 		modify_u32(argv[0], buf, decimal_format, &inode.i_block[i]);
 	}
 	modify_u32(argv[0], "Indirect Block", decimal_format,
@@ -2133,7 +2145,7 @@ void do_imap(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		block;
 	offset &= (EXT2_BLOCK_SIZE(current_fs->super) - 1);
 
-	printf("Inode %d is part of block group %lu\n"
+	printf("Inode %u is part of block group %lu\n"
 	       "\tlocated at block %lu, offset 0x%04lx\n", ino, group,
 	       block_nr, offset);
 
@@ -2279,9 +2291,9 @@ void do_supported_features(int argc, char *argv[],
 	__u32	supp[3] = { EXT2_LIB_FEATURE_COMPAT_SUPP,
 			    EXT2_LIB_FEATURE_INCOMPAT_SUPP,
 			    EXT2_LIB_FEATURE_RO_COMPAT_SUPP };
-	__u32	jrnl_supp[3] = { JFS_KNOWN_COMPAT_FEATURES,
-				 JFS_KNOWN_INCOMPAT_FEATURES,
-				 JFS_KNOWN_ROCOMPAT_FEATURES };
+	__u32	jrnl_supp[3] = { JBD2_KNOWN_COMPAT_FEATURES,
+				 JBD2_KNOWN_INCOMPAT_FEATURES,
+				 JBD2_KNOWN_ROCOMPAT_FEATURES };
 
 	if (argc > 1) {
 		ret = find_supp_feature(supp, E2P_FS_FEATURE, argv[1]);
@@ -2373,7 +2385,6 @@ void do_fallocate(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		return;
 	}
 }
-#endif /* READ_ONLY */
 
 void do_symlink(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		void *infop EXT2FS_ATTR((unused)))
@@ -2389,6 +2400,7 @@ void do_symlink(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		com_err(argv[0], retval, 0);
 
 }
+#endif /* READ_ONLY */
 
 #if CONFIG_MMP
 void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[],
@@ -2446,8 +2458,10 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[],
 	fprintf(stdout, "check_interval: %d\n", mmp_s->mmp_check_interval);
 	fprintf(stdout, "sequence: %08x\n", mmp_s->mmp_seq);
 	fprintf(stdout, "time: %lld -- %s", mmp_s->mmp_time, ctime(&t));
-	fprintf(stdout, "node_name: %s\n", mmp_s->mmp_nodename);
-	fprintf(stdout, "device_name: %s\n", mmp_s->mmp_bdevname);
+	fprintf(stdout, "node_name: %.*s\n",
+		EXT2_LEN_STR(mmp_s->mmp_nodename));
+	fprintf(stdout, "device_name: %.*s\n",
+		EXT2_LEN_STR(mmp_s->mmp_bdevname));
 	fprintf(stdout, "magic: 0x%x\n", mmp_s->mmp_magic);
 	fprintf(stdout, "checksum: 0x%08x\n", mmp_s->mmp_checksum);
 }
@@ -2486,6 +2500,10 @@ static int source_file(const char *cmd_file, int ss_idx)
 	while (!feof(f)) {
 		if (fgets(buf, sizeof(buf), f) == NULL)
 			break;
+		if (buf[0] == '#') {
+			printf("%s", buf);
+			continue;
+		}
 		cp = strchr(buf, '\n');
 		if (cp)
 			*cp = 0;
@@ -2515,7 +2533,8 @@ int main(int argc, char **argv)
 #endif
 		"[-c]] [device]";
 	int		c;
-	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS;
+	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES |
+				EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 	char		*request = 0;
 	int		exit_status = 0;
 	char		*cmd_file = 0;
@@ -2527,8 +2546,8 @@ int main(int argc, char **argv)
 	const char	*opt_string = "nicR:f:b:s:Vd:D";
 #else
 	const char	*opt_string = "niwcR:f:b:s:Vd:Dz:";
-	char		*undo_file = NULL;
 #endif
+	char		*undo_file = NULL;
 #ifdef CONFIG_JBD_DEBUG
 	char		*jbd_debug;
 #endif
@@ -2600,9 +2619,11 @@ int main(int argc, char **argv)
 			fprintf(stderr, "\tUsing %s\n",
 				error_message(EXT2_ET_BASE));
 			exit(0);
+#ifndef READ_ONLY
 		case 'z':
 			undo_file = optarg;
 			break;
+#endif
 		default:
 			com_err(argv[0], 0, usage, debug_prog_name);
 			return 1;

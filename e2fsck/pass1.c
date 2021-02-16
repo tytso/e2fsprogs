@@ -23,10 +23,12 @@
  * 	- A bitmap of which inodes have bad fields.	(inode_bad_map)
  * 	- A bitmap of which inodes are in bad blocks.	(inode_bb_map)
  * 	- A bitmap of which inodes are imagic inodes.	(inode_imagic_map)
+ * 	- A bitmap of which inodes are casefolded.	(inode_casefold_map)
  * 	- A bitmap of which blocks are in use.		(block_found_map)
  * 	- A bitmap of which blocks are in use by two inodes	(block_dup_map)
  * 	- The data blocks of the directory inodes.	(dir_map)
  * 	- Ref counts for ea_inodes.			(ea_inode_refs)
+ * 	- The encryption policy ID of each encrypted inode. (encrypted_files)
  *
  * Pass 1 is designed to stash away enough information so that the
  * other passes should not need to read in the inode information
@@ -78,7 +80,7 @@ static void mark_table_blocks(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
 static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
-static void add_encrypted_dir(e2fsck_t ctx, ino_t ino);
+static void add_casefolded_dir(e2fsck_t ctx, ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -127,16 +129,6 @@ static int process_inode_count;
 
 static __u64 ext2_max_sizes[EXT2_MAX_BLOCK_LOG_SIZE -
 			    EXT2_MIN_BLOCK_LOG_SIZE + 1];
-
-/*
- * Free all memory allocated by pass1 in preparation for restarting
- * things.
- */
-static void unwind_pass1(ext2_filsys fs EXT2FS_ATTR((unused)))
-{
-	ext2fs_free_mem(&inodes_to_process);
-	inodes_to_process = 0;
-}
 
 /*
  * Check to make sure a device inode is real.  Returns 1 if the device
@@ -1270,6 +1262,20 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
+	if (casefold_fs) {
+		pctx.errcode =
+			e2fsck_allocate_inode_bitmap(fs,
+						     _("inode casefold map"),
+						     EXT2FS_BMAP64_RBTREE,
+						     "inode_casefold_map",
+						     &ctx->inode_casefold_map);
+		if (pctx.errcode) {
+			pctx.num = 1;
+			fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
+	}
 	pctx.errcode = e2fsck_setup_icount(ctx, "inode_link_info", 0, NULL,
 					   &ctx->inode_link_info);
 	if (pctx.errcode) {
@@ -1392,17 +1398,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 					fix_problem(ctx, PR_1_ISCAN_ERROR,
 						    &pctx);
 					ctx->flags |= E2F_FLAG_ABORT;
-					goto endit;
-				}
-				err = ext2fs_inode_scan_goto_blockgroup(scan,
-									0);
-				if (err) {
-					fix_problem(ctx, PR_1_ISCAN_ERROR,
-						    &pctx);
-					ctx->flags |= E2F_FLAG_ABORT;
-					goto endit;
-				}
-				continue;
+				} else
+					ctx->flags |= E2F_FLAG_RESTART;
+				goto endit;
 			}
 			if (!ctx->inode_bb_map)
 				alloc_bb_map(ctx);
@@ -1884,12 +1882,19 @@ void e2fsck_pass1(e2fsck_t ctx)
 			failed_csum = 0;
 		}
 
+		if ((inode->i_flags & EXT4_ENCRYPT_FL) &&
+		    add_encrypted_file(ctx, &pctx) < 0)
+			goto clear_inode;
+
+		if (casefold_fs && inode->i_flags & EXT4_CASEFOLD_FL)
+			ext2fs_mark_inode_bitmap2(ctx->inode_casefold_map, ino);
+
 		if (LINUX_S_ISDIR(inode->i_mode)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_dir_map, ino);
 			e2fsck_add_dir_info(ctx, ino, 0);
 			ctx->fs_directory_count++;
-			if (inode->i_flags & EXT4_ENCRYPT_FL)
-				add_encrypted_dir(ctx, ino);
+			if (inode->i_flags & EXT4_CASEFOLD_FL)
+				add_casefolded_dir(ctx, ino);
 		} else if (LINUX_S_ISREG (inode->i_mode)) {
 			ext2fs_mark_inode_bitmap2(ctx->inode_reg_map, ino);
 			ctx->fs_regular_count++;
@@ -2018,6 +2023,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->block_ea_map = 0;
 	}
 
+	/* We don't need the encryption policy => ID map any more */
+	destroy_encryption_policy_map(ctx);
+
 	if (ctx->flags & E2F_FLAG_RESIZE_INODE) {
 		clear_problem_context(&pctx);
 		pctx.errcode = ext2fs_create_resize_inode(fs);
@@ -2047,8 +2055,22 @@ void e2fsck_pass1(e2fsck_t ctx)
 		 * master superblock.
 		 */
 		ctx->use_superblock = 0;
-		unwind_pass1(fs);
 		goto endit;
+	}
+
+	if (ctx->large_dirs && !ext2fs_has_feature_largedir(ctx->fs->super)) {
+		ext2_filsys fs = ctx->fs;
+
+		if (fix_problem(ctx, PR_2_FEATURE_LARGE_DIRS, &pctx)) {
+			ext2fs_set_feature_largedir(fs->super);
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+			ext2fs_mark_super_dirty(fs);
+		}
+		if (fs->super->s_rev_level == EXT2_GOOD_OLD_REV &&
+		    fix_problem(ctx, PR_1_FS_REV_LEVEL, &pctx)) {
+			ext2fs_update_dynamic_rev(fs);
+			ext2fs_mark_super_dirty(fs);
+		}
 	}
 
 	if (ctx->block_dup_map) {
@@ -2059,9 +2081,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		e2fsck_pass1_dupblocks(ctx, block_buf);
 	}
 	ctx->flags |= E2F_FLAG_ALLOC_OK;
-	ext2fs_free_mem(&inodes_to_process);
 endit:
 	e2fsck_use_inode_shortcuts(ctx, 0);
+	ext2fs_free_mem(&inodes_to_process);
+	inodes_to_process = 0;
 
 	if (scan)
 		ext2fs_close_inode_scan(scan);
@@ -2202,20 +2225,20 @@ static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
 	ext2fs_mark_inode_bitmap2(ctx->inode_bad_map, ino);
 }
 
-static void add_encrypted_dir(e2fsck_t ctx, ino_t ino)
+static void add_casefolded_dir(e2fsck_t ctx, ino_t ino)
 {
 	struct		problem_context pctx;
 
-	if (!ctx->encrypted_dirs) {
-		pctx.errcode = ext2fs_u32_list_create(&ctx->encrypted_dirs, 0);
+	if (!ctx->casefolded_dirs) {
+		pctx.errcode = ext2fs_u32_list_create(&ctx->casefolded_dirs, 0);
 		if (pctx.errcode)
 			goto error;
 	}
-	pctx.errcode = ext2fs_u32_list_add(ctx->encrypted_dirs, ino);
+	pctx.errcode = ext2fs_u32_list_add(ctx->casefolded_dirs, ino);
 	if (pctx.errcode == 0)
 		return;
 error:
-	fix_problem(ctx, PR_1_ALLOCATE_ENCRYPTED_DIRLIST, &pctx);
+	fix_problem(ctx, PR_1_ALLOCATE_CASEFOLDED_DIRLIST, &pctx);
 	/* Should never get here */
 	ctx->flags |= E2F_FLAG_ABORT;
 }
@@ -2677,17 +2700,48 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	if ((root->hash_version != EXT2_HASH_LEGACY) &&
 	    (root->hash_version != EXT2_HASH_HALF_MD4) &&
 	    (root->hash_version != EXT2_HASH_TEA) &&
+	    (root->hash_version != EXT2_HASH_SIPHASH) &&
 	    fix_problem(ctx, PR_1_HTREE_HASHV, pctx))
 		return 1;
+
+	if (ext4_hash_in_dirent(inode)) {
+		if (root->hash_version != EXT2_HASH_SIPHASH &&
+		    fix_problem(ctx, PR_1_HTREE_NEEDS_SIPHASH, pctx))
+			return 1;
+	} else {
+		if (root->hash_version == EXT2_HASH_SIPHASH &&
+		   fix_problem(ctx, PR_1_HTREE_CANNOT_SIPHASH, pctx))
+			return 1;
+	}
 
 	if ((root->unused_flags & EXT2_HASH_FLAG_INCOMPAT) &&
 	    fix_problem(ctx, PR_1_HTREE_INCOMPAT, pctx))
 		return 1;
 
 	pctx->num = root->indirect_levels;
-	if ((root->indirect_levels > ext2_dir_htree_level(fs)) &&
+	/* if htree level is clearly too high, consider it to be broken */
+	if (root->indirect_levels > EXT4_HTREE_LEVEL &&
 	    fix_problem(ctx, PR_1_HTREE_DEPTH, pctx))
 		return 1;
+
+	/* if level is only maybe too high, LARGE_DIR feature could be unset */
+	if (root->indirect_levels > ext2_dir_htree_level(fs) &&
+	    !ext2fs_has_feature_largedir(fs->super)) {
+		int blockbits = EXT2_BLOCK_SIZE_BITS(fs->super) + 10;
+		int idx_pb = 1 << (blockbits - 3);
+
+		/* compare inode size/blocks vs. max-sized 2-level htree */
+		if (EXT2_I_SIZE(pctx->inode) <
+		    (idx_pb - 1) * (idx_pb - 2) << blockbits &&
+		    pctx->inode->i_blocks <
+		    (idx_pb - 1) * (idx_pb - 2) << (blockbits - 9) &&
+		    fix_problem(ctx, PR_1_HTREE_DEPTH, pctx))
+			return 1;
+	}
+
+	if (root->indirect_levels > EXT4_HTREE_LEVEL_COMPAT ||
+	    ext2fs_needs_large_file_feature(EXT2_I_SIZE(inode)))
+		ctx->large_dirs++;
 
 	return 0;
 }
@@ -2835,7 +2889,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			 (extent.e_pblk + extent.e_len) >
 			 ext2fs_blocks_count(ctx->fs->super))
 			problem = PR_1_EXTENT_ENDS_BEYOND;
-		else if (is_leaf && is_dir &&
+		else if (is_leaf && is_dir && !pctx->inode->i_size_high &&
+			 !ext2fs_has_feature_largedir(ctx->fs->super) &&
 			 ((extent.e_lblk + extent.e_len) >
 			  (1U << (21 - ctx->fs->super->s_log_block_size))))
 			problem = PR_1_TOOBIG_DIR;
@@ -2868,7 +2923,20 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 				return;
 			failed_csum = 0;
 		}
-
+#ifdef CONFIG_DEVELOPER_FEATURES
+		if (try_repairs && !is_dir && problem == 0 &&
+		    (ctx->options & E2F_OPT_CLEAR_UNINIT) &&
+		    (extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
+		    fix_problem(ctx, PR_1_CLEAR_UNINIT_EXTENT, pctx)) {
+			extent.e_flags &= ~EXT2_EXTENT_FLAGS_UNINIT;
+			pb->inode_modified = 1;
+			pctx->errcode = ext2fs_extent_replace(ehandle, 0,
+							      &extent);
+			if (pctx->errcode)
+				return;
+			failed_csum = 0;
+		}
+#endif
 		if (try_repairs && problem) {
 report_problem:
 			if (fix_problem(ctx, problem, pctx)) {
@@ -3430,8 +3498,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	       ino, inode->i_size, pb.last_block, ext2fs_inode_i_blocks(fs, inode),
 	       pb.num_blocks);
 #endif
+	size = EXT2_I_SIZE(inode);
 	if (pb.is_dir) {
-		unsigned nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
+		unsigned nblock = size >> EXT2_BLOCK_SIZE_BITS(fs->super);
 		if (inode->i_flags & EXT4_INLINE_DATA_FL) {
 			int flags;
 			size_t sz = 0;
@@ -3445,11 +3514,11 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 					  EXT2_FLAG_IGNORE_CSUM_ERRORS) |
 					 (ctx->fs->flags &
 					  ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
-			if (err || sz != inode->i_size) {
+			if (err || sz != size) {
 				bad_size = 7;
 				pctx->num = sz;
 			}
-		} else if (inode->i_size & (fs->blocksize - 1))
+		} else if (size & (fs->blocksize - 1))
 			bad_size = 5;
 		else if (nblock > (pb.last_block + 1))
 			bad_size = 1;
@@ -3459,7 +3528,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 				bad_size = 2;
 		}
 	} else {
-		size = EXT2_I_SIZE(inode);
 		if ((pb.last_init_lblock >= 0) &&
 		    /* Do not allow initialized allocated blocks past i_size*/
 		    (size < (__u64)pb.last_init_lblock * fs->blocksize) &&
@@ -3482,8 +3550,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			pctx->num = (pb.last_block + 1) * fs->blocksize;
 		pctx->group = bad_size;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
-			if (LINUX_S_ISDIR(inode->i_mode))
-				pctx->num &= 0xFFFFFFFFULL;
 			ext2fs_inode_size_set(fs, inode, pctx->num);
 			if (EXT2_I_SIZE(inode) == 0 &&
 			    (inode->i_flags & EXT4_INLINE_DATA_FL)) {
@@ -3662,6 +3728,7 @@ static int process_block(ext2_filsys fs,
 	}
 
 	if (p->is_dir && !ext2fs_has_feature_largedir(fs->super) &&
+	    !pctx->inode->i_size_high &&
 	    blockcnt > (1 << (21 - fs->super->s_log_block_size)))
 		problem = PR_1_TOOBIG_DIR;
 	if (p->is_dir && p->num_blocks + 1 >= p->max_blocks)

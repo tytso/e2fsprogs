@@ -362,8 +362,9 @@ static void print_inline_journal_information(ext2_filsys fs)
 	struct ext2_inode	inode;
 	ext2_file_t		journal_file;
 	errcode_t		retval;
-	ino_t			ino = fs->super->s_journal_inum;
+	ext2_ino_t		ino = fs->super->s_journal_inum;
 	char			buf[1024];
+	int			flags;
 
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
 		return;
@@ -387,12 +388,14 @@ static void print_inline_journal_information(ext2_filsys fs)
 	}
 	ext2fs_file_close(journal_file);
 	jsb = (journal_superblock_t *) buf;
-	if (be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) {
+	if (be32_to_cpu(jsb->s_header.h_magic) != JBD2_MAGIC_NUMBER) {
 		fprintf(stderr, "%s",
 			_("Journal superblock magic number invalid!\n"));
 		exit(1);
 	}
-	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
+	flags = ext2fs_has_feature_fast_commit(fs->super) ?
+			E2P_LIST_JOURNAL_FLAG_FC : 0;
+	e2p_list_journal_super(stdout, buf, fs->blocksize, flags);
 }
 
 static void print_journal_information(ext2_filsys fs)
@@ -400,6 +403,7 @@ static void print_journal_information(ext2_filsys fs)
 	errcode_t	retval;
 	char		buf[1024];
 	journal_superblock_t	*jsb;
+	int		flags;
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk64(fs->io,
@@ -410,14 +414,16 @@ static void print_journal_information(ext2_filsys fs)
 		exit(1);
 	}
 	jsb = (journal_superblock_t *) buf;
-	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
+	if ((jsb->s_header.h_magic != (unsigned) ntohl(JBD2_MAGIC_NUMBER)) ||
 	    (jsb->s_header.h_blocktype !=
-	     (unsigned) ntohl(JFS_SUPERBLOCK_V2))) {
+	     (unsigned) ntohl(JBD2_SUPERBLOCK_V2))) {
 		com_err(program_name, 0, "%s",
 			_("Couldn't find journal superblock magic numbers"));
 		exit(1);
 	}
-	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
+	flags = ext2fs_has_feature_fast_commit(fs->super) ?
+			E2P_LIST_JOURNAL_FLAG_FC : 0;
+	e2p_list_journal_super(stdout, buf, fs->blocksize, flags);
 }
 
 static int check_mmp(ext2_filsys fs)
@@ -439,8 +445,10 @@ static int check_mmp(ext2_filsys fs)
 				time_t mmp_time = mmp->mmp_time;
 
 				fprintf(stderr,
-					"%s: MMP last updated by '%s' on %s",
-					program_name, mmp->mmp_nodename,
+					"%s: MMP update by '%.*s%.*s' at %s",
+					program_name,
+					EXT2_LEN_STR(mmp->mmp_nodename),
+					EXT2_LEN_STR(mmp->mmp_bdevname),
 					ctime(&mmp_time));
 			}
 			retval = 1;
@@ -489,8 +497,10 @@ static void print_mmp_block(ext2_filsys fs)
 	printf("    mmp_sequence: %#08x\n", mmp->mmp_seq);
 	printf("    mmp_update_date: %s", ctime(&mmp_time));
 	printf("    mmp_update_time: %lld\n", mmp->mmp_time);
-	printf("    mmp_node_name: %s\n", mmp->mmp_nodename);
-	printf("    mmp_device_name: %s\n", mmp->mmp_bdevname);
+	printf("    mmp_node_name: %.*s\n",
+	       EXT2_LEN_STR(mmp->mmp_nodename));
+	printf("    mmp_device_name: %.*s\n",
+	       EXT2_LEN_STR(mmp->mmp_bdevname));
 }
 
 static void parse_extended_opts(const char *opts, blk64_t *superblock,
@@ -661,11 +671,13 @@ int main (int argc, char ** argv)
 
 	device_name = argv[optind++];
 	flags = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SOFTSUPP_FEATURES |
-		EXT2_FLAG_64BITS;
+		EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 	if (force)
 		flags |= EXT2_FLAG_FORCE;
 	if (image_dump)
 		flags |= EXT2_FLAG_IMAGE_FILE;
+	if (header_only)
+		flags |= EXT2_FLAG_SUPER_ONLY;
 try_open_again:
 	if (use_superblock && !use_blocksize) {
 		for (use_blocksize = EXT2_MIN_BLOCK_SIZE;

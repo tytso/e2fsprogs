@@ -51,6 +51,7 @@ static inline errcode_t android_configure_fs(ext2_filsys fs,
 #  endif
 #  include <private/android_filesystem_config.h>
 #  include <private/canned_fs_config.h>
+#  include <private/fs_config.h>
 
 errcode_t android_configure_fs(ext2_filsys fs, char *src_dir,
 			       char *target_out,

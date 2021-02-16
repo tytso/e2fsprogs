@@ -269,6 +269,8 @@ int main (int argc, char ** argv)
 	long		sysval;
 	int		len, mount_flags;
 	char		*mtpt, *undo_file = NULL;
+	dgrp_t		new_group_desc_count;
+	unsigned long	new_desc_blocks;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -402,7 +404,7 @@ int main (int argc, char ** argv)
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
 
-	io_flags |= EXT2_FLAG_64BITS;
+	io_flags |= EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
 	if (undo_file) {
 		retval = resize2fs_setup_tdb(device_name, undo_file, &io_ptr);
 		if (retval)
@@ -528,6 +530,18 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	}
+	new_group_desc_count = ext2fs_div64_ceil(new_size -
+				fs->super->s_first_data_block,
+						 EXT2_BLOCKS_PER_GROUP(fs->super));
+	new_desc_blocks = ext2fs_div_ceil(new_group_desc_count,
+					  EXT2_DESC_PER_BLOCK(fs->super));
+	if ((new_desc_blocks + fs->super->s_first_data_block) >
+	    EXT2_BLOCKS_PER_GROUP(fs->super)) {
+		com_err(program_name, 0,
+			_("New size results in too many block group "
+			  "descriptors.\n"));
+		exit(1);
+	}
 
 	if (!force && new_size < min_size) {
 		com_err(program_name, 0,
@@ -604,6 +618,12 @@ int main (int argc, char ** argv)
 	    !ext2fs_has_feature_64bit(fs->super)) {
 		fprintf(stderr, _("The filesystem is already 32-bit.\n"));
 		exit(0);
+	}
+	if (new_size < ext2fs_blocks_count(fs->super) &&
+	    ext2fs_has_feature_stable_inodes(fs->super)) {
+		fprintf(stderr, _("Cannot shrink this filesystem "
+			"because it has the stable_inodes feature flag.\n"));
+		exit(1);
 	}
 	if (mount_flags & EXT2_MF_MOUNTED) {
 		retval = online_resize_fs(fs, mtpt, &new_size, flags);

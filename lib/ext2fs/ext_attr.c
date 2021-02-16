@@ -293,7 +293,9 @@ errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 
 /* Manipulate the contents of extended attribute regions */
 struct ext2_xattr {
+	int name_index;
 	char *name;
+	char *short_name;
 	void *value;
 	unsigned int value_len;
 	ext2_ino_t ea_ino;
@@ -336,6 +338,7 @@ struct ea_name_index {
 
 /* Keep these names sorted in order of decreasing specificity. */
 static struct ea_name_index ea_names[] = {
+	{10, "gnu."},
 	{3, "system.posix_acl_default"},
 	{2, "system.posix_acl_access"},
 	{8, "system.richacl"},
@@ -643,29 +646,23 @@ write_xattrs_to_buffer(ext2_filsys fs, struct ext2_xattr *attrs, int count,
 	struct ext2_xattr *x;
 	struct ext2_ext_attr_entry *e = entries_start;
 	char *end = (char *) entries_start + storage_size;
-	const char *shortname;
 	unsigned int value_size;
-	int idx, ret;
 	errcode_t err;
 
 	memset(entries_start, 0, storage_size);
 	for (x = attrs; x < attrs + count; x++) {
-		/* Calculate index and shortname position */
-		shortname = x->name;
-		ret = find_ea_index(x->name, &shortname, &idx);
-
 		value_size = ((x->value_len + EXT2_EXT_ATTR_PAD - 1) /
 			      EXT2_EXT_ATTR_PAD) * EXT2_EXT_ATTR_PAD;
 
 		/* Fill out e appropriately */
-		e->e_name_len = strlen(shortname);
-		e->e_name_index = (ret ? idx : 0);
+		e->e_name_len = strlen(x->short_name);
+		e->e_name_index = x->name_index;
 
 		e->e_value_size = x->value_len;
 		e->e_value_inum = x->ea_ino;
 
 		/* Store name */
-		memcpy((char *)e + sizeof(*e), shortname, e->e_name_len);
+		memcpy((char *)e + sizeof(*e), x->short_name, e->e_name_len);
 		if (x->ea_ino) {
 			e->e_value_offs = 0;
 		} else {
@@ -875,6 +872,8 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 			memcpy(x->name + prefix_len,
 			       (char *)entry + sizeof(*entry),
 			       entry->e_name_len);
+		x->short_name = x->name + prefix_len;
+		x->name_index = entry->e_name_index;
 
 		/* Check & copy value */
 		if (!ext2fs_has_feature_ea_inode(handle->fs->super) &&
@@ -1302,7 +1301,8 @@ out:
 }
 
 static errcode_t xattr_update_entry(ext2_filsys fs, struct ext2_xattr *x,
-				    const char *name, const void *value,
+				    const char *name, const char *short_name,
+				    int index, const void *value,
 				    size_t value_len, int in_inode)
 {
 	ext2_ino_t ea_ino = 0;
@@ -1336,8 +1336,11 @@ static errcode_t xattr_update_entry(ext2_filsys fs, struct ext2_xattr *x,
 			goto fail;
 	}
 
-	if (!x->name)
+	if (!x->name) {
 		x->name = new_name;
+		x->short_name = new_name + (short_name  - name);
+	}
+	x->name_index = index;
 
 	if (x->value)
 		ext2fs_free_mem(&x->value);
@@ -1356,31 +1359,27 @@ fail:
 }
 
 static int xattr_find_position(struct ext2_xattr *attrs, int count,
-			       const char *name)
+			       const char *shortname, int name_idx)
 {
 	struct ext2_xattr *x;
 	int i;
-	const char *shortname, *x_shortname;
-	int name_idx, x_name_idx;
 	int shortname_len, x_shortname_len;
 
-	find_ea_index(name, &shortname, &name_idx);
 	shortname_len = strlen(shortname);
 
 	for (i = 0, x = attrs; i < count; i++, x++) {
-		find_ea_index(x->name, &x_shortname, &x_name_idx);
-		if (name_idx < x_name_idx)
+		if (name_idx < x->name_index)
 			break;
-		if (name_idx > x_name_idx)
+		if (name_idx > x->name_index)
 			continue;
 
-		x_shortname_len = strlen(x_shortname);
+		x_shortname_len = strlen(x->short_name);
 		if (shortname_len < x_shortname_len)
 			break;
 		if (shortname_len > x_shortname_len)
 			continue;
 
-		if (memcmp(shortname, x_shortname, shortname_len) <= 0)
+		if (memcmp(shortname, x->short_name, shortname_len) <= 0)
 			break;
 	}
 	return i;
@@ -1395,8 +1394,8 @@ static errcode_t xattr_array_update(struct ext2_xattr_handle *h,
 	struct ext2_xattr tmp;
 	int add_to_ibody;
 	int needed;
-	int name_len, name_idx;
-	const char *shortname;
+	int name_len, name_idx = 0;
+	const char *shortname = name;
 	int new_idx;
 	int ret;
 
@@ -1423,7 +1422,8 @@ static errcode_t xattr_array_update(struct ext2_xattr_handle *h,
 
 		/* Update the existing entry. */
 		ret = xattr_update_entry(h->fs, &h->attrs[old_idx], name,
-					 value, value_len, in_inode);
+					 shortname, name_idx, value,
+					 value_len, in_inode);
 		if (ret)
 			return ret;
 		if (h->ibody_count <= old_idx) {
@@ -1451,7 +1451,8 @@ static errcode_t xattr_array_update(struct ext2_xattr_handle *h,
 	if (old_idx >= 0) {
 		/* Update the existing entry. */
 		ret = xattr_update_entry(h->fs, &h->attrs[old_idx], name,
-					 value, value_len, in_inode);
+					 shortname, name_idx, value,
+					 value_len, in_inode);
 		if (ret)
 			return ret;
 		if (old_idx < h->ibody_count) {
@@ -1460,7 +1461,8 @@ static errcode_t xattr_array_update(struct ext2_xattr_handle *h,
 			 * entries in the block are sorted.
 			 */
 			new_idx = xattr_find_position(h->attrs + h->ibody_count,
-				h->count - h->ibody_count, name);
+						      h->count - h->ibody_count,
+						      shortname, name_idx);
 			new_idx += h->ibody_count - 1;
 			tmp = h->attrs[old_idx];
 			memmove(h->attrs + old_idx, h->attrs + old_idx + 1,
@@ -1472,7 +1474,8 @@ static errcode_t xattr_array_update(struct ext2_xattr_handle *h,
 	}
 
 	new_idx = xattr_find_position(h->attrs + h->ibody_count,
-				      h->count - h->ibody_count, name);
+				      h->count - h->ibody_count,
+				      shortname, name_idx);
 	new_idx += h->ibody_count;
 	add_to_ibody = 0;
 
@@ -1483,8 +1486,8 @@ add_new:
 			return ret;
 	}
 
-	ret = xattr_update_entry(h->fs, &h->attrs[h->count], name, value,
-				 value_len, in_inode);
+	ret = xattr_update_entry(h->fs, &h->attrs[h->count], name, shortname,
+				 name_idx, value, value_len, in_inode);
 	if (ret)
 		return ret;
 
@@ -1502,12 +1505,10 @@ static int space_used(struct ext2_xattr *attrs, int count)
 {
 	int total = 0;
 	struct ext2_xattr *x;
-	const char *shortname;
-	int i, len, name_idx;
+	int i, len;
 
 	for (i = 0, x = attrs; i < count; i++, x++) {
-		find_ea_index(x->name, &shortname, &name_idx);
-		len = strlen(shortname);
+		len = strlen(x->short_name);
 		total += EXT2_EXT_ATTR_LEN(len);
 		if (!x->ea_ino)
 			total += EXT2_EXT_ATTR_SIZE(x->value_len);

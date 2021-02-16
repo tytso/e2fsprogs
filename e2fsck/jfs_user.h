@@ -51,7 +51,7 @@ struct buffer_head {
 	unsigned int	b_dirty:1;
 	unsigned int	b_uptodate:1;
 	unsigned long long b_blocknr;
-	char		b_data[1024];
+	char		b_data[4096];
 };
 
 struct inode {
@@ -81,9 +81,9 @@ struct kdev_s {
 #define buffer_req(bh) 1
 #define do_readahead(journal, start) do {} while (0)
 
-typedef struct {
+typedef struct kmem_cache {
 	int	object_length;
-} lkmem_cache_t;
+} kmem_cache_t;
 
 #define kmem_cache_alloc(cache, flags) malloc((cache)->object_length)
 #define kmem_cache_free(cache, obj) free(obj)
@@ -91,6 +91,13 @@ typedef struct {
 #define kmem_cache_destroy(cache) do_cache_destroy(cache)
 #define kmalloc(len, flags) malloc(len)
 #define kfree(p) free(p)
+
+static inline void *kmalloc_array(unsigned n, unsigned size, int flags)
+{
+	if (n && (~0U)/n < size)
+		return NULL;
+	return malloc(n * size);
+}
 
 #define cond_resched()	do { } while (0)
 
@@ -106,8 +113,8 @@ typedef struct {
  * functions.
  */
 #ifdef NO_INLINE_FUNCS
-extern lkmem_cache_t *do_cache_create(int len);
-extern void do_cache_destroy(lkmem_cache_t *cache);
+extern kmem_cache_t *do_cache_create(int len);
+extern void do_cache_destroy(kmem_cache_t *cache);
 extern size_t journal_tag_bytes(journal_t *journal);
 extern __u32 __hash_32(__u32 val);
 extern __u32 hash_32(__u32 val, unsigned int bits);
@@ -133,9 +140,9 @@ extern __u32 hash_64(__u64 val, unsigned int bits);
 #endif /* __STDC_VERSION__ >= 199901L */
 #endif /* E2FSCK_INCLUDE_INLINE_FUNCS */
 
-_INLINE_ lkmem_cache_t *do_cache_create(int len)
+_INLINE_ kmem_cache_t *do_cache_create(int len)
 {
-	lkmem_cache_t *new_cache;
+	kmem_cache_t *new_cache;
 
 	new_cache = malloc(sizeof(*new_cache));
 	if (new_cache)
@@ -143,7 +150,7 @@ _INLINE_ lkmem_cache_t *do_cache_create(int len)
 	return new_cache;
 }
 
-_INLINE_ void do_cache_destroy(lkmem_cache_t *cache)
+_INLINE_ void do_cache_destroy(kmem_cache_t *cache)
 {
 	free(cache);
 }
@@ -180,10 +187,12 @@ _INLINE_ __u32 hash_64(__u64 val, unsigned int bits)
 /*
  * Kernel compatibility functions are defined in journal.c
  */
-int journal_bmap(journal_t *journal, blk64_t block, unsigned long long *phys);
-struct buffer_head *getblk(kdev_t ctx, blk64_t blocknr, int blocksize);
+int jbd2_journal_bmap(journal_t *journal, unsigned long block,
+		      unsigned long long *phys);
+struct buffer_head *getblk(kdev_t ctx, unsigned long long blocknr,
+			   int blocksize);
 int sync_blockdev(kdev_t kdev);
-void ll_rw_block(int rw, int dummy, struct buffer_head *bh[]);
+void ll_rw_block(int rw, int op_flags, int nr, struct buffer_head *bh[]);
 void mark_buffer_dirty(struct buffer_head *bh);
 void mark_buffer_uptodate(struct buffer_head *bh, int val);
 void brelse(struct buffer_head *bh);
@@ -202,7 +211,7 @@ void wait_on_buffer(struct buffer_head *bh);
 #define J_ASSERT(x)	assert(x)
 
 #define JSB_HAS_INCOMPAT_FEATURE(jsb, mask)				\
-	((jsb)->s_header.h_blocktype == ext2fs_cpu_to_be32(JFS_SUPERBLOCK_V2) &&	\
+	((jsb)->s_header.h_blocktype == ext2fs_cpu_to_be32(JBD2_SUPERBLOCK_V2) &&	\
 	 ((jsb)->s_feature_incompat & ext2fs_cpu_to_be32((mask))))
 #else  /* !DEBUGFS */
 
@@ -225,18 +234,37 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 #define EFSCORRUPTED	EXT2_ET_FILESYSTEM_CORRUPTED
 #endif
 
+static inline void jbd2_descriptor_block_csum_set(journal_t *j,
+						  struct buffer_head *bh)
+{
+	struct jbd2_journal_block_tail *tail;
+	__u32 csum;
+
+	if (!jbd2_journal_has_csum_v2or3(j))
+		return;
+
+	tail = (struct jbd2_journal_block_tail *)(bh->b_data + j->j_blocksize -
+			sizeof(struct jbd2_journal_block_tail));
+	tail->t_checksum = 0;
+	csum = jbd2_chksum(j, j->j_csum_seed, bh->b_data, j->j_blocksize);
+	tail->t_checksum = cpu_to_be32(csum);
+}
+
 /* recovery.c */
-extern int	journal_recover    (journal_t *journal);
-extern int	journal_skip_recovery (journal_t *);
+extern int	jbd2_journal_recover    (journal_t *journal);
+extern int	jbd2_journal_skip_recovery (journal_t *);
 
 /* revoke.c */
-extern int	journal_init_revoke(journal_t *, int);
-extern void	journal_destroy_revoke(journal_t *);
-extern void	journal_destroy_revoke_caches(void);
-extern int	journal_init_revoke_caches(void);
+extern int	jbd2_journal_init_revoke(journal_t *, int);
+extern void	jbd2_journal_destroy_revoke(journal_t *);
+extern void	jbd2_journal_destroy_revoke_record_cache(void);
+extern void	jbd2_journal_destroy_revoke_table_cache(void);
+extern int	jbd2_journal_init_revoke_record_cache(void);
+extern int	jbd2_journal_init_revoke_table_cache(void);
 
-extern int	journal_set_revoke(journal_t *, unsigned long long, tid_t);
-extern int	journal_test_revoke(journal_t *, unsigned long long, tid_t);
-extern void	journal_clear_revoke(journal_t *);
+
+extern int	jbd2_journal_set_revoke(journal_t *, unsigned long long, tid_t);
+extern int	jbd2_journal_test_revoke(journal_t *, unsigned long long, tid_t);
+extern void	jbd2_journal_clear_revoke(journal_t *);
 
 #endif /* _JFS_USER_H */

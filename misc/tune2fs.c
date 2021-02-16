@@ -101,8 +101,9 @@ static int rewrite_checksums;
 static int feature_64bit;
 static int fsck_requested;
 static char *undo_file;
+int enabling_casefold;
 
-int journal_size, journal_flags;
+int journal_size, journal_fc_size, journal_flags;
 char *journal_device;
 static blk64_t journal_location = ~0LL;
 
@@ -149,7 +150,9 @@ static void usage(void)
 static __u32 ok_features[3] = {
 	/* Compat */
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
-		EXT2_FEATURE_COMPAT_DIR_INDEX,
+		EXT2_FEATURE_COMPAT_DIR_INDEX |
+		EXT4_FEATURE_COMPAT_FAST_COMMIT |
+		EXT4_FEATURE_COMPAT_STABLE_INODES,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE |
 		EXT3_FEATURE_INCOMPAT_EXTENTS |
@@ -159,7 +162,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_64BIT |
 		EXT4_FEATURE_INCOMPAT_ENCRYPT |
 		EXT4_FEATURE_INCOMPAT_CSUM_SEED |
-		EXT4_FEATURE_INCOMPAT_LARGEDIR,
+		EXT4_FEATURE_INCOMPAT_LARGEDIR |
+		EXT4_FEATURE_INCOMPAT_CASEFOLD,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -178,7 +182,8 @@ static __u32 clear_ok_features[3] = {
 	/* Compat */
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
-		EXT2_FEATURE_COMPAT_DIR_INDEX,
+		EXT2_FEATURE_COMPAT_DIR_INDEX |
+		EXT4_FEATURE_COMPAT_FAST_COMMIT,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE |
 		EXT4_FEATURE_INCOMPAT_FLEX_BG |
@@ -218,8 +223,8 @@ static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 	}
 
 	jsb = (journal_superblock_t *) buf;
-	if ((jsb->s_header.h_magic != (unsigned)ntohl(JFS_MAGIC_NUMBER)) ||
-	    (jsb->s_header.h_blocktype != (unsigned)ntohl(JFS_SUPERBLOCK_V2))) {
+	if ((jsb->s_header.h_magic != (unsigned)ntohl(JBD2_MAGIC_NUMBER)) ||
+	    (jsb->s_header.h_blocktype != (unsigned)ntohl(JBD2_SUPERBLOCK_V2))) {
 		fputs(_("Journal superblock not found!\n"), stderr);
 		return EXT2_ET_BAD_MAGIC;
 	}
@@ -227,7 +232,7 @@ static int get_journal_sb(ext2_filsys jfs, char buf[SUPERBLOCK_SIZE])
 	return 0;
 }
 
-static __u8 *journal_user(__u8 uuid[UUID_SIZE], __u8 s_users[JFS_USERS_SIZE],
+static __u8 *journal_user(__u8 uuid[UUID_SIZE], __u8 s_users[JBD2_USERS_SIZE],
 			  int nr_users)
 {
 	int i;
@@ -292,7 +297,7 @@ static int remove_journal_device(ext2_filsys fs)
 	jsb = (journal_superblock_t *) buf;
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
-	if (nr_users > JFS_USERS_MAX) {
+	if (nr_users > JBD2_USERS_MAX) {
 		fprintf(stderr, _("Journal superblock is corrupted, nr_users\n"
 				 "is too high (%d).\n"), nr_users);
 		commit_remove_journal = 1;
@@ -365,7 +370,7 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 {
 	struct ext2_inode	inode;
 	errcode_t		retval;
-	ino_t			ino = fs->super->s_journal_inum;
+	ext2_ino_t		ino = fs->super->s_journal_inum;
 
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
@@ -423,7 +428,7 @@ static int update_mntopts(ext2_filsys fs, char *mntopts)
 	return 0;
 }
 
-static void check_fsck_needed(ext2_filsys fs, const char *prompt)
+static int check_fsck_needed(ext2_filsys fs, const char *prompt)
 {
 	/* Refuse to modify anything but a freshly checked valid filesystem. */
 	if (!(fs->super->s_state & EXT2_VALID_FS) ||
@@ -433,15 +438,17 @@ static void check_fsck_needed(ext2_filsys fs, const char *prompt)
 		puts(_(please_fsck));
 		if (mount_flags & EXT2_MF_READONLY)
 			printf("%s", _("(and reboot afterwards!)\n"));
-		exit(1);
+		return 1;
 	}
 
 	/* Give the admin a few seconds to bail out of a dangerous op. */
 	if (!getenv("TUNE2FS_FORCE_PROMPT") && (!isatty(0) || !isatty(1)))
-		return;
+		return 0;
 
 	puts(prompt);
 	proceed_question(5);
+
+	return 0;
 }
 
 static void request_dir_fsck_afterwards(ext2_filsys fs)
@@ -504,7 +511,8 @@ struct rewrite_dir_context {
 	char *buf;
 	errcode_t errcode;
 	ext2_ino_t dir;
-	int is_htree;
+	int is_htree:1;
+	int clear_htree:1;
 };
 
 static int rewrite_dir_block(ext2_filsys fs,
@@ -523,8 +531,13 @@ static int rewrite_dir_block(ext2_filsys fs,
 	if (ctx->errcode)
 		return BLOCK_ABORT;
 
-	/* if htree node... */
-	if (ctx->is_htree)
+	/*
+	 * if htree node... Note that if we are clearing htree structures from
+	 * the directory, we treat the htree internal block as an ordinary leaf.
+	 * The code below will do the right thing and make space for checksum
+	 * there.
+	 */
+	if (ctx->is_htree && !ctx->clear_htree)
 		ext2fs_get_dx_countlimit(fs, (struct ext2_dir_entry *)ctx->buf,
 					 &dcl, &dcl_offset);
 	if (dcl) {
@@ -653,7 +666,8 @@ static errcode_t rewrite_directory(ext2_filsys fs, ext2_ino_t dir,
 	if (retval)
 		return retval;
 
-	ctx.is_htree = (inode->i_flags & EXT2_INDEX_FL);
+	ctx.is_htree = !!(inode->i_flags & EXT2_INDEX_FL);
+	ctx.clear_htree = !ext2fs_has_feature_dir_index(fs->super);
 	ctx.dir = dir;
 	ctx.errcode = 0;
 	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_READ_ONLY |
@@ -663,6 +677,13 @@ static errcode_t rewrite_directory(ext2_filsys fs, ext2_ino_t dir,
 	ext2fs_free_mem(&ctx.buf);
 	if (retval)
 		return retval;
+
+	if (ctx.is_htree && ctx.clear_htree) {
+		inode->i_flags &= ~EXT2_INDEX_FL;
+		retval = ext2fs_write_inode(fs, dir, inode);
+		if (retval)
+			return retval;
+	}
 
 	return ctx.errcode;
 }
@@ -818,27 +839,66 @@ static void rewrite_one_inode(struct rewrite_context *ctx, ext2_ino_t ino,
 		fatal_err(retval, "while rewriting extended attribute");
 }
 
-/*
- * Forcibly set checksums in all inodes.
- */
-static void rewrite_inodes(ext2_filsys fs)
+#define REWRITE_EA_FL		0x01	/* Rewrite EA inodes */
+#define REWRITE_DIR_FL		0x02	/* Rewrite directories */
+#define REWRITE_NONDIR_FL	0x04	/* Rewrite other inodes */
+#define REWRITE_ALL (REWRITE_EA_FL | REWRITE_DIR_FL | REWRITE_NONDIR_FL)
+
+static void rewrite_inodes_pass(struct rewrite_context *ctx, unsigned int flags)
 {
 	ext2_inode_scan	scan;
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	struct ext2_inode *inode;
-	int pass;
+	int rewrite;
+
+	retval = ext2fs_get_mem(ctx->inode_size, &inode);
+	if (retval)
+		fatal_err(retval, "while allocating memory");
+
+	retval = ext2fs_open_inode_scan(ctx->fs, 0, &scan);
+	if (retval)
+		fatal_err(retval, "while opening inode scan");
+
+	do {
+		retval = ext2fs_get_next_inode_full(scan, &ino, inode,
+						    ctx->inode_size);
+		if (retval)
+			fatal_err(retval, "while getting next inode");
+		if (!ino)
+			break;
+
+		rewrite = 0;
+		if (inode->i_flags & EXT4_EA_INODE_FL) {
+			if (flags & REWRITE_EA_FL)
+				rewrite = 1;
+		} else if (LINUX_S_ISDIR(inode->i_mode)) {
+			if (flags & REWRITE_DIR_FL)
+				rewrite = 1;
+		} else {
+			if (flags & REWRITE_NONDIR_FL)
+				rewrite = 1;
+		}
+		if (rewrite)
+			rewrite_one_inode(ctx, ino, inode);
+	} while (ino);
+	ext2fs_close_inode_scan(scan);
+	ext2fs_free_mem(&inode);
+}
+
+/*
+ * Forcibly rewrite checksums in inodes specified by 'flags'
+ */
+static void rewrite_inodes(ext2_filsys fs, unsigned int flags)
+{
 	struct rewrite_context ctx = {
 		.fs = fs,
 		.inode_size = EXT2_INODE_SIZE(fs->super),
 	};
+	errcode_t retval;
 
 	if (fs->super->s_creator_os == EXT2_OS_HURD)
 		return;
-
-	retval = ext2fs_get_mem(ctx.inode_size, &inode);
-	if (retval)
-		fatal_err(retval, "while allocating memory");
 
 	retval = ext2fs_get_memzero(ctx.inode_size, &ctx.zero_inode);
 	if (retval)
@@ -858,39 +918,16 @@ static void rewrite_inodes(ext2_filsys fs)
 	 *
 	 * pass 2: go over other inodes to update their checksums.
 	 */
-	if (ext2fs_has_feature_ea_inode(fs->super))
-		pass = 1;
-	else
-		pass = 2;
-	for (;pass <= 2; pass++) {
-		retval = ext2fs_open_inode_scan(fs, 0, &scan);
-		if (retval)
-			fatal_err(retval, "while opening inode scan");
-
-		do {
-			retval = ext2fs_get_next_inode_full(scan, &ino, inode,
-							    ctx.inode_size);
-			if (retval)
-				fatal_err(retval, "while getting next inode");
-			if (!ino)
-				break;
-
-			if (((pass == 1) &&
-			     (inode->i_flags & EXT4_EA_INODE_FL)) ||
-			    ((pass == 2) &&
-			     !(inode->i_flags & EXT4_EA_INODE_FL)))
-				rewrite_one_inode(&ctx, ino, inode);
-		} while (ino);
-
-		ext2fs_close_inode_scan(scan);
-	}
+	if (ext2fs_has_feature_ea_inode(fs->super) && (flags & REWRITE_EA_FL))
+		rewrite_inodes_pass(&ctx, REWRITE_EA_FL);
+	flags &= ~REWRITE_EA_FL;
+	rewrite_inodes_pass(&ctx, flags);
 
 	ext2fs_free_mem(&ctx.zero_inode);
 	ext2fs_free_mem(&ctx.ea_buf);
-	ext2fs_free_mem(&inode);
 }
 
-static void rewrite_metadata_checksums(ext2_filsys fs)
+static void rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
 {
 	errcode_t retval;
 	dgrp_t i;
@@ -902,7 +939,7 @@ static void rewrite_metadata_checksums(ext2_filsys fs)
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)
 		fatal_err(retval, "while reading bitmaps");
-	rewrite_inodes(fs);
+	rewrite_inodes(fs, flags);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
 	ext2fs_mmp_update2(fs, 1);
@@ -1201,6 +1238,24 @@ mmp_error:
 			uuid_generate((unsigned char *) sb->s_hash_seed);
 	}
 
+	if (FEATURE_OFF(E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_DIR_INDEX) &&
+	    ext2fs_has_feature_metadata_csum(sb)) {
+		if (check_fsck_needed(fs,
+			_("Disabling directory index on filesystem with "
+			  "checksums could take some time.")))
+			return 1;
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("Cannot disable dir_index on a mounted "
+				"filesystem!\n"), stderr);
+			exit(1);
+		}
+		/*
+		 * Clearing dir_index on checksummed filesystem requires
+		 * rewriting all directories to update checksums.
+		 */
+		rewrite_checksums |= REWRITE_DIR_FL;
+	}
+
 	if (FEATURE_OFF(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
 		if (ext2fs_check_desc(fs)) {
 			fputs(_("Clearing the flex_bg flag would "
@@ -1224,12 +1279,13 @@ mmp_error:
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
-		check_fsck_needed(fs,
-			_("Enabling checksums could take some time."));
+		if (check_fsck_needed(fs,
+			_("Enabling checksums could take some time.")))
+			return 1;
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("Cannot enable metadata_csum on a mounted "
 				"filesystem!\n"), stderr);
-			exit(1);
+			return 1;
 		}
 		if (!ext2fs_has_feature_extents(fs->super))
 			printf("%s",
@@ -1244,7 +1300,7 @@ mmp_error:
 				 "The larger fields afforded by this feature "
 				 "enable full-strength checksumming.  "
 				 "Run resize2fs -b to rectify.\n"));
-		rewrite_checksums = 1;
+		rewrite_checksums = REWRITE_ALL;
 		/* metadata_csum supersedes uninit_bg */
 		ext2fs_clear_feature_gdt_csum(fs->super);
 
@@ -1265,14 +1321,15 @@ mmp_error:
 			EXT4_FEATURE_RO_COMPAT_METADATA_CSUM)) {
 		__u32	test_features[3];
 
-		check_fsck_needed(fs,
-			_("Disabling checksums could take some time."));
+		if (check_fsck_needed(fs,
+			_("Disabling checksums could take some time.")))
+			return 1;
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("Cannot disable metadata_csum on a mounted "
 				"filesystem!\n"), stderr);
-			exit(1);
+			return 1;
 		}
-		rewrite_checksums = 1;
+		rewrite_checksums = REWRITE_ALL;
 
 		/* Enable uninit_bg unless the user expressly turned it off */
 		memcpy(test_features, old_features, sizeof(test_features));
@@ -1311,7 +1368,7 @@ mmp_error:
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("Cannot enable uninit_bg on a mounted "
 				"filesystem!\n"), stderr);
-			exit(1);
+			return 1;
 		}
 
 		/* Do not enable uninit_bg when metadata_csum enabled */
@@ -1326,7 +1383,7 @@ mmp_error:
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fputs(_("Cannot disable uninit_bg on a mounted "
 				"filesystem!\n"), stderr);
-			exit(1);
+			return 1;
 		}
 
 		err = disable_uninit_bg(fs,
@@ -1345,7 +1402,7 @@ mmp_error:
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fprintf(stderr, _("Cannot enable 64-bit mode "
 					  "while mounted!\n"));
-			exit(1);
+			return 1;
 		}
 		ext2fs_clear_feature_64bit(sb);
 		feature_64bit = 1;
@@ -1355,7 +1412,7 @@ mmp_error:
 		if (mount_flags & EXT2_MF_MOUNTED) {
 			fprintf(stderr, _("Cannot disable 64-bit mode "
 					  "while mounted!\n"));
-			exit(1);
+			return 1;
 		}
 		ext2fs_set_feature_64bit(sb);
 		feature_64bit = -1;
@@ -1385,7 +1442,7 @@ mmp_error:
 		if (fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
 			fprintf(stderr, _("Cannot enable project feature; "
 					  "inode size too small.\n"));
-			exit(1);
+			return 1;
 		}
 		Q_flag = 1;
 		quota_enable[PRJQUOTA] = QOPT_ENABLE;
@@ -1413,16 +1470,21 @@ mmp_error:
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_ENCRYPT)) {
-		if (ext2fs_has_feature_casefold(sb)) {
-			fputs(_("Cannot enable encrypt feature on filesystems "
-				"with the encoding feature enabled.\n"),
-			      stderr);
-			return 1;
-		}
 		fs->super->s_encrypt_algos[0] =
 			EXT4_ENCRYPTION_MODE_AES_256_XTS;
 		fs->super->s_encrypt_algos[1] =
 			EXT4_ENCRYPTION_MODE_AES_256_CTS;
+	}
+
+	if (FEATURE_ON(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD)) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("The casefold feature may only be enabled when "
+				"the filesystem is unmounted.\n"), stderr);
+			return 1;
+		}
+		fs->super->s_encoding = EXT4_ENC_UTF8_12_1;
+		fs->super->s_encoding_flags = e2p_get_encoding_flags(EXT4_ENC_UTF8_12_1);
+		enabling_casefold = 1;
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT,
@@ -1452,9 +1514,10 @@ mmp_error:
 				      stderr);
 				return 1;
 			}
-			check_fsck_needed(fs, _("Recalculating checksums "
-						"could take some time."));
-			rewrite_checksums = 1;
+			if (check_fsck_needed(fs, _("Recalculating checksums "
+						    "could take some time.")))
+				return 1;
+			rewrite_checksums = REWRITE_ALL;
 		}
 	}
 
@@ -1488,7 +1551,7 @@ mmp_error:
  */
 static int add_journal(ext2_filsys fs)
 {
-	unsigned long journal_blocks;
+	struct ext2fs_journal_params	jparams;
 	errcode_t	retval;
 	ext2_filsys	jfs;
 	io_manager	io_ptr;
@@ -1534,13 +1597,13 @@ static int add_journal(ext2_filsys fs)
 	} else if (journal_size) {
 		fputs(_("Creating journal inode: "), stdout);
 		fflush(stdout);
-		journal_blocks = figure_journal_size(journal_size, fs);
+		figure_journal_size(&jparams, journal_size, journal_fc_size, fs);
 
 		if (journal_location_string)
 			journal_location =
 				parse_num_blocks2(journal_location_string,
 						  fs->super->s_log_block_size);
-		retval = ext2fs_add_journal_inode2(fs, journal_blocks,
+		retval = ext2fs_add_journal_inode3(fs, &jparams,
 						   journal_location,
 						   journal_flags);
 		if (retval) {
@@ -1566,7 +1629,7 @@ err:
 	return 1;
 }
 
-static void handle_quota_options(ext2_filsys fs)
+static int handle_quota_options(ext2_filsys fs)
 {
 	errcode_t retval;
 	quota_ctx_t qctx;
@@ -1580,13 +1643,13 @@ static void handle_quota_options(ext2_filsys fs)
 			break;
 	if (qtype == MAXQUOTAS)
 		/* Nothing to do. */
-		return;
+		return 0;
 
 	if (quota_enable[PRJQUOTA] == QOPT_ENABLE &&
 	    fs->super->s_inode_size == EXT2_GOOD_OLD_INODE_SIZE) {
 		fprintf(stderr, _("Cannot enable project quota; "
 				  "inode size too small.\n"));
-		exit(1);
+		return 1;
 	}
 
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
@@ -1598,7 +1661,7 @@ static void handle_quota_options(ext2_filsys fs)
 	if (retval) {
 		com_err(program_name, retval,
 			_("while initializing quota context in support library"));
-		exit(1);
+		return 1;
 	}
 
 	if (qtype_bits)
@@ -1614,7 +1677,9 @@ static void handle_quota_options(ext2_filsys fs)
 					com_err(program_name, retval,
 						_("while updating quota limits (%d)"),
 						qtype);
-					exit(1);
+				quota_errout:
+					quota_release_context(&qctx);
+					return 1;
 				}
 			}
 			retval = quota_write_inode(qctx, 1 << qtype);
@@ -1622,7 +1687,7 @@ static void handle_quota_options(ext2_filsys fs)
 				com_err(program_name, retval,
 					_("while writing quota file (%d)"),
 					qtype);
-				exit(1);
+				goto quota_errout;
 			}
 			/* Enable Quota feature if one of quota enabled */
 			if (!ext2fs_has_feature_quota(fs->super)) {
@@ -1640,7 +1705,7 @@ static void handle_quota_options(ext2_filsys fs)
 				com_err(program_name, retval,
 					_("while removing quota file (%d)"),
 					qtype);
-				exit(1);
+				goto quota_errout;
 			}
 			if (qtype == PRJQUOTA) {
 				ext2fs_clear_feature_project(fs->super);
@@ -1663,7 +1728,7 @@ static void handle_quota_options(ext2_filsys fs)
 	}
 	if (need_dirty)
 		ext2fs_mark_super_dirty(fs);
-	return;
+	return 0;
 }
 
 static int option_handle_function(char *token)
@@ -1708,7 +1773,7 @@ static void parse_e2label_options(int argc, char ** argv)
 			argv[1]);
 		exit(1);
 	}
-	open_flag = EXT2_FLAG_JOURNAL_DEV_OK;
+	open_flag = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SUPER_ONLY;
 	if (argc == 3) {
 		open_flag |= EXT2_FLAG_RW;
 		L_flag = 1;
@@ -2028,9 +2093,12 @@ void do_findfs(int argc, char **argv)
 
 static int parse_extended_opts(ext2_filsys fs, const char *opts)
 {
+	struct ext2_super_block *sb = fs->super;
 	char	*buf, *token, *next, *p, *arg;
 	int	len, hash_alg;
 	int	r_usage = 0;
+	int encoding = 0;
+	char	*encoding_flags = NULL;
 
 	len = strlen(opts);
 	buf = malloc(len+1);
@@ -2083,18 +2151,18 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				  "Setting multiple mount protection update "
 				  "interval to %lu seconds\n", intv),
 			       intv);
-			fs->super->s_mmp_update_interval = intv;
+			sb->s_mmp_update_interval = intv;
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "force_fsck")) {
-			fs->super->s_state |= EXT2_ERROR_FS;
+			sb->s_state |= EXT2_ERROR_FS;
 			printf(_("Setting filesystem error flag to force fsck.\n"));
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "test_fs")) {
-			fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
+			sb->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 			printf("Setting test filesystem flag\n");
 			ext2fs_mark_super_dirty(fs);
 		} else if (!strcmp(token, "^test_fs")) {
-			fs->super->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
+			sb->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
 			printf("Clearing test filesystem flag\n");
 			ext2fs_mark_super_dirty(fs);
 		} else if (strcmp(token, "stride") == 0) {
@@ -2140,7 +2208,7 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				r_usage++;
 				continue;
 			}
-			fs->super->s_def_hash_version = hash_alg;
+			sb->s_def_hash_version = hash_alg;
 			printf(_("Setting default hash algorithm "
 				 "to %s (%d)\n"),
 			       arg, hash_alg);
@@ -2156,8 +2224,62 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				continue;
 			}
 			ext_mount_opts = strdup(arg);
+		} else if (!strcmp(token, "encoding")) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			if (mount_flags & EXT2_MF_MOUNTED) {
+				fputs(_("The casefold feature may only be enabled when "
+					"the filesystem is unmounted.\n"), stderr);
+				r_usage++;
+				continue;
+			}
+			if (ext2fs_has_feature_casefold(sb) && !enabling_casefold) {
+				fprintf(stderr, _("Cannot alter existing encoding\n"));
+				r_usage++;
+				continue;
+			}
+			encoding = e2p_str2encoding(arg);
+			if (encoding < 0) {
+				fprintf(stderr, _("Invalid encoding: %s\n"), arg);
+				r_usage++;
+				continue;
+			}
+			enabling_casefold = 1;
+			sb->s_encoding = encoding;
+			printf(_("Setting encoding to '%s'\n"), arg);
+			sb->s_encoding_flags =
+				e2p_get_encoding_flags(sb->s_encoding);
+		} else if (!strcmp(token, "encoding_flags")) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			encoding_flags = arg;
 		} else
 			r_usage++;
+	}
+
+	if (encoding > 0 && !r_usage) {
+		sb->s_encoding_flags =
+			e2p_get_encoding_flags(sb->s_encoding);
+
+		if (encoding_flags &&
+		    e2p_str2encoding_flags(sb->s_encoding, encoding_flags,
+					   &sb->s_encoding_flags)) {
+			fprintf(stderr, _("error: Invalid encoding flag: %s\n"),
+					encoding_flags);
+			r_usage++;
+		} else if (encoding_flags)
+			printf(_("Setting encoding_flags to '%s'\n"),
+				 encoding_flags);
+		ext2fs_set_feature_casefold(sb);
+		ext2fs_mark_super_dirty(fs);
+	} else if (encoding_flags && !r_usage) {
+		fprintf(stderr, _("error: An encoding must be explicitly "
+				  "specified when passing encoding-flags\n"));
+		r_usage++;
 	}
 	if (r_usage) {
 		fprintf(stderr, "%s", _("\nBad options specified.\n\n"
@@ -2173,7 +2295,9 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 			"\tstripe_width=<RAID stride*data disks in blocks>\n"
 			"\tforce_fsck\n"
 			"\ttest_fs\n"
-			"\t^test_fs\n"));
+			"\t^test_fs\n"
+			"\tencoding=<encoding>\n"
+			"\tencoding_flags=<flags>\n"));
 		free(buf);
 		return 1;
 	}
@@ -2548,63 +2672,6 @@ err_out:
 	return retval;
 }
 
-static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
-{
-	blk64_t		blk;
-	ext2_ino_t	ino;
-	unsigned int	group = 0;
-	unsigned int	count = 0;
-	int		total_free = 0;
-	int		group_free = 0;
-
-	/*
-	 * First calculate the block statistics
-	 */
-	for (blk = fs->super->s_first_data_block;
-	     blk < ext2fs_blocks_count(fs->super); blk++) {
-		if (!ext2fs_fast_test_block_bitmap2(fs->block_map, blk)) {
-			group_free++;
-			total_free++;
-		}
-		count++;
-		if ((count == fs->super->s_blocks_per_group) ||
-		    (blk == ext2fs_blocks_count(fs->super)-1)) {
-			ext2fs_bg_free_blocks_count_set(fs, group++,
-							group_free);
-			count = 0;
-			group_free = 0;
-		}
-	}
-	total_free = EXT2FS_C2B(fs, total_free);
-	ext2fs_free_blocks_count_set(fs->super, total_free);
-
-	/*
-	 * Next, calculate the inode statistics
-	 */
-	group_free = 0;
-	total_free = 0;
-	count = 0;
-	group = 0;
-
-	/* Protect loop from wrap-around if s_inodes_count maxed */
-	for (ino = 1; ino <= fs->super->s_inodes_count && ino > 0; ino++) {
-		if (!ext2fs_fast_test_inode_bitmap2(fs->inode_map, ino)) {
-			group_free++;
-			total_free++;
-		}
-		count++;
-		if ((count == fs->super->s_inodes_per_group) ||
-		    (ino == fs->super->s_inodes_count)) {
-			ext2fs_bg_free_inodes_count_set(fs, group++,
-							group_free);
-			count = 0;
-			group_free = 0;
-		}
-	}
-	fs->super->s_free_inodes_count = total_free;
-	ext2fs_mark_super_dirty(fs);
-	return 0;
-}
 
 #define list_for_each_safe(pos, pnext, head) \
 	for (pos = (head)->next, pnext = pos->next; pos != (head); \
@@ -2683,7 +2750,7 @@ static int resize_inode(ext2_filsys fs, unsigned long new_size)
 	if (retval)
 		goto err_out_undo;
 
-	ext2fs_calculate_summary_stats(fs);
+	ext2fs_calculate_summary_stats(fs, 1 /* super only */);
 
 	fs->super->s_state |= EXT2_VALID_FS;
 	/* mark super block and block bitmap as dirty */
@@ -2821,7 +2888,7 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 	jsb = (journal_superblock_t *) buf;
 	/* Find the filesystem UUID */
 	nr_users = ntohl(jsb->s_nr_users);
-	if (nr_users > JFS_USERS_MAX) {
+	if (nr_users > JBD2_USERS_MAX) {
 		fprintf(stderr, _("Journal superblock is corrupted, nr_users\n"
 				 "is too high (%d).\n"), nr_users);
 		return EXT2_ET_CORRUPT_JOURNAL_SB;
@@ -2895,7 +2962,8 @@ retry_open:
 	if ((open_flag & EXT2_FLAG_RW) == 0 || f_flag)
 		open_flag |= EXT2_FLAG_SKIP_MMP;
 
-	open_flag |= EXT2_FLAG_64BITS | EXT2_FLAG_JOURNAL_DEV_OK;
+	open_flag |= EXT2_FLAG_64BITS | EXT2_FLAG_THREADS |
+		EXT2_FLAG_JOURNAL_DEV_OK;
 
 	/* keep the filesystem struct around to dump MMP data */
 	open_flag |= EXT2_FLAG_NOFREE_ON_ERROR;
@@ -2958,8 +3026,10 @@ retry_open:
 			rc = 1;
 			goto closefs;
 		}
-		check_fsck_needed(fs,
+		rc = check_fsck_needed(fs,
 			_("Resizing inodes could take some time."));
+		if (rc)
+			goto closefs;
 		/*
 		 * If inode resize is requested use the
 		 * Undo I/O manager
@@ -2986,8 +3056,7 @@ retry_open:
 
 	if (print_label) {
 		/* For e2label emulation */
-		printf("%.*s\n", (int) sizeof(sb->s_volume_name),
-		       sb->s_volume_name);
+		printf("%.*s\n", EXT2_LEN_STR(sb->s_volume_name));
 		remove_error_table(&et_ext2_error_table);
 		goto closefs;
 	}
@@ -3016,16 +3085,16 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	/* Recover the journal if possible. */
 	if ((open_flag & EXT2_FLAG_RW) && !(mount_flags & (EXT2_MF_BUSY | EXT2_MF_MOUNTED)) &&
 	    ext2fs_has_feature_journal_needs_recovery(fs->super)) {
-		errcode_t err;
-
 		printf(_("Recovering journal.\n"));
-		err = ext2fs_run_ext3_journal(&fs);
-		if (err) {
-			com_err("tune2fs", err, "while recovering journal.\n");
+		retval = ext2fs_run_ext3_journal(&fs);
+		if (retval) {
+			com_err("tune2fs", retval,
+				"while recovering journal.\n");
 			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
 			if (fs)
 				ext2fs_close_free(&fs);
-			exit(1);
+			rc = 1;
+			goto closefs;
 		}
 		sb = fs->super;
 	}
@@ -3129,13 +3198,13 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 			fputs(_("Warning: label too long, truncating.\n"),
 			      stderr);
 		memset(sb->s_volume_name, 0, sizeof(sb->s_volume_name));
-		strncpy(sb->s_volume_name, new_label,
+		strncpy((char *)sb->s_volume_name, new_label,
 			sizeof(sb->s_volume_name));
 		ext2fs_mark_super_dirty(fs);
 	}
 	if (M_flag) {
 		memset(sb->s_last_mounted, 0, sizeof(sb->s_last_mounted));
-		strncpy(sb->s_last_mounted, new_last_mounted,
+		strncpy((char *)sb->s_last_mounted, new_last_mounted,
 			sizeof(sb->s_last_mounted));
 		ext2fs_mark_super_dirty(fs);
 	}
@@ -3177,7 +3246,9 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 			rc = 1;
 			goto closefs;
 		}
-		handle_quota_options(fs);
+		rc = handle_quota_options(fs);
+		if (rc)
+			goto closefs;
 	}
 
 	if (U_flag) {
@@ -3186,13 +3257,22 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 		__u8 old_uuid[UUID_SIZE];
 
+		if (ext2fs_has_feature_stable_inodes(fs->super)) {
+			fputs(_("Cannot change the UUID of this filesystem "
+				"because it has the stable_inodes feature "
+				"flag.\n"), stderr);
+			exit(1);
+		}
+
 		if (!ext2fs_has_feature_csum_seed(fs->super) &&
 		    (ext2fs_has_feature_metadata_csum(fs->super) ||
 		     ext2fs_has_feature_ea_inode(fs->super))) {
-			check_fsck_needed(fs,
+			rc = check_fsck_needed(fs,
 				_("Setting the UUID on this "
 				  "filesystem could take some time."));
-			rewrite_checksums = 1;
+			if (rc)
+				goto closefs;
+			rewrite_checksums = REWRITE_ALL;
 		}
 
 		if (ext2fs_has_group_desc_csum(fs)) {
@@ -3213,7 +3293,8 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 					"metadata_csum_seed' and re-run this "
 					"command.\n"), stderr);
 				try_confirm_csum_seed_support();
-				exit(1);
+				rc = 1;
+				goto closefs;
 			}
 
 			/*
@@ -3303,7 +3384,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		if (retval == 0) {
 			printf(_("Setting inode size %lu\n"),
 							new_inode_size);
-			rewrite_checksums = 1;
+			rewrite_checksums = REWRITE_ALL;
 		} else {
 			printf("%s", _("Failed to change inode size\n"));
 			rc = 1;
@@ -3312,7 +3393,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	}
 
 	if (rewrite_checksums)
-		rewrite_metadata_checksums(fs);
+		rewrite_metadata_checksums(fs, rewrite_checksums);
 
 	if (l_flag)
 		list_super(sb);

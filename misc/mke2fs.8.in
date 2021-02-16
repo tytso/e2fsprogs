@@ -207,12 +207,14 @@ manual page for more details.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"
-Specify the size of blocks in bytes.  Valid block-size values are 1024,
-2048 and 4096 bytes per block.  If omitted,
-block-size is heuristically determined by the filesystem size and
+Specify the size of blocks in bytes.  Valid block-size values are powers of two
+from 1024 up to 65536 (however note that the kernel is able to mount only
+filesystems with block-size smaller or equal to the system page size - 4k on
+x86 systems, up to 64k on ppc64 or aarch64 depending on kernel configuration).
+If omitted, block-size is heuristically determined by the filesystem size and
 the expected usage of the filesystem (see the
 .B \-T
-option).  If
+option).  In most common cases, the default block size is 4k. If
 .I block-size
 is preceded by a negative sign ('-'), then
 .B mke2fs
@@ -484,13 +486,10 @@ space in the filesystem and can also negatively impact performance.
 It is not
 possible to change this value after the filesystem is created.
 .IP
-In kernels after 2.6.10 and some
-earlier vendor kernels it is possible to utilize inodes larger than
-128 bytes to store
-extended attributes for improved performance.
-Extended attributes
-stored in large inodes are not visible with older kernels, and such
-filesystems will not be mountable with 2.4 kernels at all.
+File systems with an inode size of 128 bytes do not support timestamps
+beyond January 19, 2038.  Inodes which are 256 bytes or larger will
+support extended timestamps, project id's, and the ability to store some
+extended attributes in the inode table for improved performance.
 .IP
 The default inode size is controlled by the
 .BR mke2fs.conf (5)
@@ -523,6 +522,27 @@ The size of the journal must be at least 1024 filesystem blocks
 (i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.)
 and may be no more than 10,240,000 filesystem blocks or half the total
 file system size (whichever is smaller)
+.TP
+.BI fast_commit_size= fast-commit-size
+Create an additional fast commit journal area of size
+.I fast-commit-size
+kilobytes.
+This option is only valid if
+.B fast_commit
+feature is enabled
+on the file system. If this option is not specified and if
+.B fast_commit
+feature is turned on, fast commit area size defaults to
+.I journal-size
+/ 64 megabytes. The total size of the journal with
+.B fast_commit
+feature set is
+.I journal-size
++ (
+.I fast-commit-size
+* 1024) megabytes. The total journal size may be no more than
+10,240,000 filesystem blocks or half the total file system size
+(whichever is smaller).
 .TP
 .BI location =journal-location
 Specify the location of the journal.  The argument

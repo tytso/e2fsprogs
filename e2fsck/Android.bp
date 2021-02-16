@@ -34,6 +34,7 @@ cc_defaults {
         "sigcatcher.c",
         "readahead.c",
         "extents.c",
+        "encrypted_files.c",
     ],
     cflags: [
         "-Wno-sign-compare",
@@ -53,10 +54,12 @@ e2fsck_libs = [
 cc_binary {
     name: "e2fsck",
     host_supported: true,
+    vendor_ramdisk_available: true,
     defaults: ["e2fsck-defaults"],
 
     shared_libs: e2fsck_libs,
     system_shared_libs: ["libc", "libdl"],
+    required: ["badblocks"],
 }
 
 cc_binary {
@@ -64,5 +67,15 @@ cc_binary {
     static_executable: true,
     defaults: ["e2fsck-defaults"],
 
+    static_libs: e2fsck_libs,
+}
+
+cc_binary {
+    name: "e2fsck_ramdisk",
+    stem: "e2fsck",
+    static_executable: true,
+    ramdisk: true,
+    defaults: ["e2fsck-defaults"],
+    system_shared_libs: [],
     static_libs: e2fsck_libs,
 }

@@ -124,7 +124,7 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
 	ext2fs_set_i_uid_high(inode, st->st_uid >> 16);
 	inode.i_gid = st->st_gid;
 	ext2fs_set_i_gid_high(inode, st->st_gid >> 16);
-	inode.i_mode |= st->st_mode;
+	inode.i_mode = (LINUX_S_IFMT & inode.i_mode) | (~S_IFMT & st->st_mode);
 	inode.i_atime = st->st_atime;
 	inode.i_mtime = st->st_mtime;
 	inode.i_ctime = st->st_ctime;
@@ -163,6 +163,13 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 		if (retval == EXT2_ET_MISSING_EA_FEATURE)
 			return 0;
 		com_err(__func__, retval, _("while opening inode %u"), ino);
+		return retval;
+	}
+
+	retval = ext2fs_xattrs_read(handle);
+	if (retval) {
+		com_err(__func__, retval,
+			_("while reading xattrs for inode %u"), ino);
 		return retval;
 	}
 
@@ -662,7 +669,7 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 		com_err(__func__, 0, "Warning: inode already set");
 	ext2fs_inode_alloc_stats2(fs, newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
-	inode.i_mode = (statbuf.st_mode & ~LINUX_S_IFMT) | LINUX_S_IFREG;
+	inode.i_mode = (statbuf.st_mode & ~S_IFMT) | LINUX_S_IFREG;
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
 		fs->now ? fs->now : time(0);
 	inode.i_links_count = 1;
@@ -1050,9 +1057,17 @@ errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
 	file_info.path_max_len = 255;
 	file_info.path = calloc(file_info.path_max_len, 1);
 
+	retval = set_inode_xattr(fs, root, source_dir);
+	if (retval) {
+		com_err(__func__, retval,
+			_("while copying xattrs on root directory"));
+		goto out;
+	}
+
 	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks,
 			       &file_info, fs_callbacks);
 
+out:
 	free(file_info.path);
 	free(hdlinks.hdl);
 	return retval;

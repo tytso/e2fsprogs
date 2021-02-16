@@ -104,7 +104,7 @@ static dict_t clstr_dict, ino_dict;
 
 static ext2fs_inode_bitmap inode_dup_map;
 
-static int dict_int_cmp(const void *a, const void *b)
+static int dict_int_cmp(const void* cmp_ctx, const void *a, const void *b)
 {
 	intptr_t	ia, ib;
 
@@ -180,10 +180,10 @@ static void inode_dnode_free(dnode_t *node,
 	di = (struct dup_inode *) dnode_get(node);
 	for (p = di->cluster_list; p; p = next) {
 		next = p->next;
-		free(p);
+		ext2fs_free_mem(&p);
 	}
-	free(di);
-	free(node);
+	ext2fs_free_mem(&di);
+	ext2fs_free_mem(&node);
 }
 
 /*
@@ -198,10 +198,10 @@ static void cluster_dnode_free(dnode_t *node,
 	dc = (struct dup_cluster *) dnode_get(node);
 	for (p = dc->inode_list; p; p = next) {
 		next = p->next;
-		free(p);
+		ext2fs_free_mem(&p);
 	}
-	free(dc);
-	free(node);
+	ext2fs_free_mem(&dc);
+	ext2fs_free_mem(&node);
 }
 
 
