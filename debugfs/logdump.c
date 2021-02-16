@@ -771,7 +771,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 				tid_t transaction)
 {
 	int		retval;
-	char 		buf[8192];
+	char 		buf[EXT2_MAX_BLOCK_SIZE];
 
 	if (!(dump_all
 	      || (fs_blocknr == block_to_dump)
