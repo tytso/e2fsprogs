@@ -57,21 +57,21 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	 * regardless of how the io_manager is doing reads, to avoid caching of
 	 * the MMP block by the io_manager or the VM.  It needs to be fresh. */
 	if (fs->mmp_fd <= 0) {
+		struct stat st;
 		int flags = O_RDWR | O_DIRECT;
 
-retry:
+		/*
+		 * There is no reason for using O_DIRECT if we're working with
+		 * regular file. Disabling it also avoids problems with
+		 * alignment when the device of the host file system has sector
+		 * size larger than blocksize of the fs we're working with.
+		 */
+		if (stat(fs->device_name, &st) == 0 &&
+		    S_ISREG(st.st_mode))
+			flags &= ~O_DIRECT;
+
 		fs->mmp_fd = open(fs->device_name, flags);
 		if (fs->mmp_fd < 0) {
-			struct stat st;
-
-			/* Avoid O_DIRECT for filesystem image files if open
-			 * fails, since it breaks when running on tmpfs. */
-			if (errno == EINVAL && (flags & O_DIRECT) &&
-			    stat(fs->device_name, &st) == 0 &&
-			    S_ISREG(st.st_mode)) {
-				flags &= ~O_DIRECT;
-				goto retry;
-			}
 			retval = EXT2_ET_MMP_OPEN_DIRECT;
 			goto out;
 		}
