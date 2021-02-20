@@ -530,12 +530,16 @@ errcode_t read_list(char *str, blk64_t **list, size_t *len)
 
 		errno = 0;
 		y = x = strtoull(tok, &e, 0);
-		if (errno)
-			return errno;
+		if (errno) {
+			retval = errno;
+			break;
+		}
 		if (*e == '-') {
 			y = strtoull(e + 1, NULL, 0);
-			if (errno)
-				return errno;
+			if (errno) {
+				retval = errno;
+				break;
+			}
 		} else if (*e != 0) {
 			retval = EINVAL;
 			break;
