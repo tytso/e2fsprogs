@@ -1797,7 +1797,7 @@ errcode_t ext2fs_decode_extent(struct ext2fs_extent *to, void *addr, int len)
 			<< 32);
 	to->e_lblk = ext2fs_le32_to_cpu(from->ee_block);
 	to->e_len = ext2fs_le16_to_cpu(from->ee_len);
-	to->e_flags |= EXT2_EXTENT_FLAGS_LEAF;
+	to->e_flags = EXT2_EXTENT_FLAGS_LEAF;
 	if (to->e_len > EXT_INIT_MAX_LEN) {
 		to->e_len -= EXT_INIT_MAX_LEN;
 		to->e_flags |= EXT2_EXTENT_FLAGS_UNINIT;

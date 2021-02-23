@@ -289,7 +289,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 	struct ext4_fc_tail *tail;
 	__u8 *start, *end;
 	struct ext4_fc_head *head;
-	struct ext2fs_extent ext2fs_ex;
+	struct ext2fs_extent ext2fs_ex = {0};
 
 	state = &ctx->fc_replay_state;
 
