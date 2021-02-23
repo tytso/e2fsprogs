@@ -622,7 +622,7 @@ static inline void tl_to_darg(struct dentry_info_args *darg,
 
 	darg->parent_ino = le32_to_cpu(fcd->fc_parent_ino);
 	darg->ino = le32_to_cpu(fcd->fc_ino);
-	darg->dname = fcd->fc_dname;
+	darg->dname = (char *) fcd->fc_dname;
 	darg->dname_len = ext4_fc_tag_len(tl) -
 			sizeof(struct ext4_fc_dentry_info);
 	darg->dname = malloc(darg->dname_len + 1);

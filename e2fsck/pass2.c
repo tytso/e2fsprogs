@@ -359,7 +359,8 @@ static int dict_de_cf_cmp(const void *cmp_ctx, const void *a, const void *b)
 	de_b = (const struct ext2_dir_entry *) b;
 	b_len = ext2fs_dirent_name_len(de_b);
 
-	return ext2fs_casefold_cmp(tbl, de_a->name, a_len, de_b->name, b_len);
+	return ext2fs_casefold_cmp(tbl, (unsigned char *) de_a->name, a_len,
+				   (unsigned char *) de_b->name, b_len);
 }
 
 /*
