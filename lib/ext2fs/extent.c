@@ -1824,8 +1824,11 @@ errcode_t ext2fs_count_blocks(ext2_filsys fs, ext2_ino_t ino,
 	if (errcode)
 		goto out;
 
-	ext2fs_get_array(handle->max_depth, sizeof(blk64_t),
-				&intermediate_nodes);
+	errcode = ext2fs_get_array(handle->max_depth, sizeof(blk64_t),
+				   &intermediate_nodes);
+	if (errcode)
+		goto out;
+
 	blkcount = handle->level;
 	while (!errcode) {
 		if (extent.e_flags & EXT2_EXTENT_FLAGS_LEAF) {
