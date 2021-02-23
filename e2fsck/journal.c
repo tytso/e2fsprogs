@@ -325,6 +325,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 				ret = JBD2_FC_REPLAY_STOP;
 			else
 				ret = JBD2_FC_REPLAY_CONTINUE;
+			/* fallthrough */
 		case EXT4_FC_TAG_DEL_RANGE:
 		case EXT4_FC_TAG_LINK:
 		case EXT4_FC_TAG_UNLINK:
