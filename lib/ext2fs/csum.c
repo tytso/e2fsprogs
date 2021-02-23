@@ -263,6 +263,9 @@ static errcode_t __get_dirent_tail(ext2_filsys fs,
 	errcode_t retval = 0;
 	__u16 (*translate)(__u16) = (need_swab ? disk_to_host16 : do_nothing16);
 
+	if (fs->blocksize < 1024)
+		return EXT2_FILSYS_CORRUPTED; /* Should never happen */
+
 	d = dirent;
 	top = EXT2_DIRENT_TAIL(dirent, fs->blocksize);
 

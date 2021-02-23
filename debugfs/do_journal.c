@@ -530,8 +530,6 @@ static errcode_t journal_write(journal_t *journal,
 	}
 
 	err = journal_close_trans(&trans);
-	if (err)
-		goto error;
 error:
 	return err;
 }

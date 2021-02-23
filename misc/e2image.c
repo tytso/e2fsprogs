@@ -897,8 +897,9 @@ static errcode_t initialize_qcow2_image(int fd, ext2_filsys fs,
 	int cluster_bits = get_bits_from_size(fs->blocksize);
 	struct ext2_super_block *sb = fs->super;
 
-	if (fs->blocksize < 1024)
-		return EINVAL;	/* Can never happen, but just in case... */
+	/* Sbould never happen, but just in case... */
+	if (cluster_bits < 0)
+		return EXT2_FILSYS_CORRUPTED;
 
 	/* Allocate header */
 	ret = ext2fs_get_memzero(sizeof(struct ext2_qcow2_hdr), &header);
