@@ -650,7 +650,7 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 		if (retval) {
 			com_err(dest, retval, _("while looking up \"%s\""),
 				dest);
-			return retval;
+			goto out;
 		}
 		dest = cp+1;
 	} else
