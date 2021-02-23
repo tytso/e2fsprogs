@@ -85,11 +85,11 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 
 	char		*inode_spec = NULL;
 	char		*journal_fn = NULL;
-	int		journal_fd = 0;
+	int		journal_fd = -1;
 	int		use_sb = 0;
 	ext2_ino_t	journal_inum;
 	struct ext2_inode journal_inode;
-	ext2_file_t 	journal_file;
+	ext2_file_t 	journal_file = NULL;
 	char		*tmp;
 	struct journal_source journal_source;
 	struct ext2_super_block *es = NULL;
@@ -149,9 +149,6 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		goto print_usage;
 	}
 
-	if (current_fs)
-		es = current_fs->super;
-
 	if (inode_spec) {
 		int inode_group, group_offset, inodes_per_block;
 
@@ -188,7 +185,7 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		if (!out_file) {
 			com_err(argv[0], errno, "while opening %s for logdump",
 				out_fn);
-			goto errout;
+			goto cleanup;
 		}
 	}
 
@@ -199,26 +196,30 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		bitmap_to_dump = ext2fs_block_bitmap_loc(current_fs, group_to_dump);
 	}
 
-	if (!journal_fn && check_fs_open(argv[0]))
-		goto errout;
-
 	if (journal_fn) {
 		/* Set up to read journal from a regular file somewhere */
 		journal_fd = open(journal_fn, O_RDONLY, 0);
 		if (journal_fd < 0) {
 			com_err(argv[0], errno, "while opening %s for logdump",
 				journal_fn);
-			goto errout;
+			goto cleanup;
 		}
-
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
-	} else if ((journal_inum = es->s_journal_inum)) {
+		dump_journal(argv[0], out_file, &journal_source);
+		goto cleanup;
+
+	}
+	if (check_fs_open(argv[0]))
+		goto cleanup;
+	es = current_fs->super;
+
+	if ((journal_inum = es->s_journal_inum)) {
 		if (use_sb) {
 			if (es->s_jnl_backup_type != EXT3_JNL_BACKUP_BLOCKS) {
 				com_err(argv[0], 0,
 					"no journal backup in super block\n");
-				goto errout;
+				goto cleanup;
 			}
 			memset(&journal_inode, 0, sizeof(struct ext2_inode));
 			memcpy(&journal_inode.i_block[0], es->s_jnl_blocks,
@@ -230,14 +231,14 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		} else {
 			if (debugfs_read_inode(journal_inum, &journal_inode,
 					       argv[0]))
-				goto errout;
+				goto cleanup;
 		}
 
 		retval = ext2fs_file_open2(current_fs, journal_inum,
 					   &journal_inode, 0, &journal_file);
 		if (retval) {
 			com_err(argv[0], retval, "while opening ext2 file");
-			goto errout;
+			goto cleanup;
 		}
 		journal_source.where = JOURNAL_IS_INTERNAL;
 		journal_source.file = journal_file;
@@ -250,14 +251,14 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 				journal_fn = blkid_devno_to_devname(es->s_journal_dev);
 		if (!journal_fn) {
 			com_err(argv[0], 0, "filesystem has no journal");
-			goto errout;
+			goto cleanup;
 		}
 		journal_fd = open(journal_fn, O_RDONLY, 0);
 		if (journal_fd < 0) {
 			com_err(argv[0], errno, "while opening %s for logdump",
 				journal_fn);
 			free(journal_fn);
-			goto errout;
+			goto cleanup;
 		}
 		fprintf(out_file, "Using external journal found at %s\n",
 			journal_fn);
@@ -265,15 +266,12 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
 	}
-
 	dump_journal(argv[0], out_file, &journal_source);
-
-	if (journal_source.where == JOURNAL_IS_INTERNAL)
-		ext2fs_file_close(journal_file);
-	else
+cleanup:
+	if (journal_fd >= 0)
 		close(journal_fd);
-
-errout:
+	if (journal_file)
+		ext2fs_file_close(journal_file);
 	if (out_file && (out_file != stdout))
 		fclose(out_file);
 
