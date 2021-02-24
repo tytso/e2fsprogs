@@ -71,11 +71,16 @@ int fgetflags (const char * name, unsigned long * flags)
 #endif
 
 	return 0;
-#else /* !HAVE_STAT_FLAGS || (APPLE_DARWIN && HAVE_EXT2_IOCTLS) */
-#if HAVE_EXT2_IOCTLS
+#elif APPLE_DARWIN && HAVE_EXT2_IOCTLS
+	int f, save_errno = 0;
+
+	f = -1;
+	save_errno = syscall(SYS_fsctl, name, EXT2_IOC_GETFLAGS, &f, 0);
+	*flags = f;
+	return (save_errno);
+#elif HAVE_EXT2_IOCTLS
 	int fd, r, f, save_errno = 0;
 
-#if !APPLE_DARWIN
 	fd = open(name, OPEN_FLAGS);
 	if (fd == -1) {
 		if (errno == ELOOP || errno == ENXIO)
@@ -93,14 +98,8 @@ int fgetflags (const char * name, unsigned long * flags)
 	if (save_errno)
 		errno = save_errno;
 	return r;
-#else /* APPLE_DARWIN */
-	f = -1;
-	save_errno = syscall(SYS_fsctl, name, EXT2_IOC_GETFLAGS, &f, 0);
-	*flags = f;
-	return (save_errno);
-#endif /* !APPLE_DARWIN */
-#endif /* HAVE_EXT2_IOCTLS */
-#endif
+#else
 	errno = EOPNOTSUPP;
 	return -1;
+#endif
 }

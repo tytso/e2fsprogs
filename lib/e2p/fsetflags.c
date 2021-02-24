@@ -76,12 +76,13 @@ int fsetflags (const char * name, unsigned long flags)
 #endif
 
 	return chflags (name, bsd_flags);
-#else /* !HAVE_CHFLAGS || (APPLE_DARWIN && HAVE_EXT2_IOCTLS) */
-#if HAVE_EXT2_IOCTLS
+#elif APPLE_DARWIN && HAVE_EXT2_IOCTLS
+	int f = (int) flags;
+	return syscall(SYS_fsctl, name, EXT2_IOC_SETFLAGS, &f, 0);
+#elif HAVE_EXT2_IOCTLS
 	int fd, r, f, save_errno = 0;
 	struct stat buf;
 
-#if !APPLE_DARWIN
 	fd = open(name, OPEN_FLAGS);
 	if (fd == -1) {
 		if (errno == ELOOP || errno == ENXIO)
@@ -99,12 +100,8 @@ int fsetflags (const char * name, unsigned long flags)
 	if (save_errno)
 		errno = save_errno;
 	return r;
-#else /* APPLE_DARWIN */
-	f = (int) flags;
-	return syscall(SYS_fsctl, name, EXT2_IOC_SETFLAGS, &f, 0);
-#endif /* !APPLE_DARWIN */
-#endif /* HAVE_EXT2_IOCTLS */
-#endif
+#else
 	errno = EOPNOTSUPP;
 	return -1;
+#endif
 }
