@@ -192,7 +192,7 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 
 	if (block_to_dump != ANY_BLOCK) {
 		if (check_fs_open(argv[0]))
-			return;
+			goto cleanup;
 		es = current_fs->super;
 		group_to_dump = ((block_to_dump -
 				  es->s_first_data_block)
