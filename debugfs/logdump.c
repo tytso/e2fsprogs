@@ -159,6 +159,7 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		if (!inode_to_dump)
 			return;
 
+		es = current_fs->super;
 		inode_group = ((inode_to_dump - 1)
 			       / es->s_inodes_per_group);
 		group_offset = ((inode_to_dump - 1)
@@ -189,7 +190,10 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		}
 	}
 
-	if (block_to_dump != ANY_BLOCK && current_fs != NULL) {
+	if (block_to_dump != ANY_BLOCK) {
+		if (check_fs_open(argv[0]))
+			return;
+		es = current_fs->super;
 		group_to_dump = ((block_to_dump -
 				  es->s_first_data_block)
 				 / es->s_blocks_per_group);
