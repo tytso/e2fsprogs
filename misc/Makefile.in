@@ -140,7 +140,7 @@ all:: profiled $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
 	$(FMANPAGES) $(LPROGS) $(E4DEFRAG_PROG) $(E4CRYPT_PROGS) e2fuzz
 
 all-static:: $(E2IMAGE_STATIC) $(UUIDD_STATIC) $(BLKID_STATIC) \
-	dumpe2fs.static mke2fs.static tune2fs.static
+	dumpe2fs.static mke2fs.static tune2fs.static lsattr.static chattr.static
 
 @PROFILE_CMT@all:: tune2fs.profiled blkid.profiled e2image.profiled \
 	e2undo.profiled mke2fs.profiled dumpe2fs.profiled fsck.profiled \
@@ -304,10 +304,20 @@ chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
 	$(Q) $(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) \
 		$(LIBINTL) $(SYSLIBS)
 
+chattr.static: $(CHATTR_OBJS) $(STATIC_LIBE2P) $(STATIC_LIBCOM_ERR)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -o chattr.static $(CHATTR_OBJS) $(STATIC_LIBE2P) \
+		$(STATIC_LIBCOM_ERR) $(LIBINTL) $(SYSLIBS)
+
 lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P) \
 		$(LIBINTL) $(SYSLIBS)
+
+lsattr.static: $(LSATTR_OBJS) $(STATIC_LIBE2P) $(STATIC_LIBCOM_ERR)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -o lsattr.static $(LSATTR_OBJS) $(STATIC_LIBE2P) \
+		$(STATIC_LIBCOM_ERR) $(LIBINTL) $(SYSLIBS)
 
 uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
 	$(E) "	LD $@"
