@@ -629,7 +629,6 @@ static errcode_t convert_disk_buffer_to_posix_acl(const void *value, size_t size
 		default:
 			ext2fs_free_mem(&out);
 			return EINVAL;
-			break;
 		}
 		entry++;
 	}

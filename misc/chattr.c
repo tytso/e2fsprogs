@@ -204,7 +204,6 @@ static int decode_arg (int * i, int argc, char ** argv)
 		break;
 	default:
 		return EOF;
-		break;
 	}
 	return 1;
 }
