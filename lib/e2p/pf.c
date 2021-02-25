@@ -49,6 +49,7 @@ static struct flags_name flags_array[] = {
 	{ EXT4_INLINE_DATA_FL, "N", "Inline_Data" },
 	{ EXT4_PROJINHERIT_FL, "P", "Project_Hierarchy" },
 	{ EXT4_VERITY_FL, "V", "Verity" },
+	{ EXT2_NOCOMPR_FL, "m", "Dont_Compress" },
 	{ 0, NULL, NULL }
 };
 
@@ -76,4 +77,3 @@ void print_flags (FILE * f, unsigned long flags, unsigned options)
 	if (long_opt && first)
 		fputs("---", f);
 }
-
