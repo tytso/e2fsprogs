@@ -234,7 +234,6 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 		retval = retval ? retval : close_retval;
 	}
 	return retval;
-	return 0;
 }
 #else /* HAVE_LLISTXATTR */
 static errcode_t set_inode_xattr(ext2_filsys fs EXT2FS_ATTR((unused)),
