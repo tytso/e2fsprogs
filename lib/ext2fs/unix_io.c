@@ -218,6 +218,8 @@ static errcode_t raw_read_blk(io_channel channel,
 	int		actual = 0;
 	unsigned char	*buf = bufv;
 	ssize_t		really_read = 0;
+	unsigned long long aligned_blk;
+	int		align_size, offset;
 
 	size = (count < 0) ? -count : (ext2_loff_t) count * channel->block_size;
 	mutex_lock(data, STATS_MTX);
@@ -226,7 +228,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 
 	if (data->flags & IO_FLAG_FORCE_BOUNCE) {
-		if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 			goto error_out;
 		}
@@ -237,6 +239,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	/* Try an aligned pread */
 	if ((channel->align == 0) ||
 	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(location, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
 		actual = pread64(data->dev, buf, size, location);
 		if (actual == size)
@@ -248,6 +251,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	if ((sizeof(off_t) >= sizeof(ext2_loff_t)) &&
 	    ((channel->align == 0) ||
 	     (IS_ALIGNED(buf, channel->align) &&
+	      IS_ALIGNED(location, channel->align) &&
 	      IS_ALIGNED(size, channel->align)))) {
 		actual = pread(data->dev, buf, size, location);
 		if (actual == size)
@@ -256,12 +260,13 @@ static errcode_t raw_read_blk(io_channel channel,
 	}
 #endif /* HAVE_PREAD */
 
-	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+	if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 		goto error_out;
 	}
 	if ((channel->align == 0) ||
 	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(location, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
 		actual = read(data->dev, buf, size);
 		if (actual != size) {
@@ -286,23 +291,39 @@ static errcode_t raw_read_blk(io_channel channel,
 	 * to the O_DIRECT rules, so we need to do this the hard way...
 	 */
 bounce_read:
+	if ((channel->block_size > channel->align) &&
+	    (channel->block_size % channel->align) == 0)
+		align_size = channel->block_size;
+	else
+		align_size = channel->align;
+	aligned_blk = location / align_size;
+	offset = location % align_size;
+
+	if (ext2fs_llseek(data->dev, aligned_blk * align_size, SEEK_SET) < 0) {
+		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+		goto error_out;
+	}
 	while (size > 0) {
 		mutex_lock(data, BOUNCE_MTX);
-		actual = read(data->dev, data->bounce, channel->block_size);
-		if (actual != channel->block_size) {
+		actual = read(data->dev, data->bounce, align_size);
+		if (actual != align_size) {
 			mutex_unlock(data, BOUNCE_MTX);
 			actual = really_read;
 			buf -= really_read;
 			size += really_read;
 			goto short_read;
 		}
-		actual = size;
-		if (size > channel->block_size)
-			actual = channel->block_size;
-		memcpy(buf, data->bounce, actual);
+		if ((actual + offset) > align_size)
+			actual = align_size - offset;
+		if (actual > size)
+			actual = size;
+		memcpy(buf, data->bounce + offset, actual);
+
 		really_read += actual;
 		size -= actual;
 		buf += actual;
+		offset = 0;
+		aligned_blk++;
 		mutex_unlock(data, BOUNCE_MTX);
 	}
 	return 0;
@@ -326,6 +347,8 @@ static errcode_t raw_write_blk(io_channel channel,
 	int		actual = 0;
 	errcode_t	retval;
 	const unsigned char *buf = bufv;
+	unsigned long long aligned_blk;
+	int		align_size, offset;
 
 	if (count == 1)
 		size = channel->block_size;
@@ -342,7 +365,7 @@ static errcode_t raw_write_blk(io_channel channel,
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 
 	if (data->flags & IO_FLAG_FORCE_BOUNCE) {
-		if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 			goto error_out;
 		}
@@ -353,6 +376,7 @@ static errcode_t raw_write_blk(io_channel channel,
 	/* Try an aligned pwrite */
 	if ((channel->align == 0) ||
 	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(location, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
 		actual = pwrite64(data->dev, buf, size, location);
 		if (actual == size)
@@ -363,6 +387,7 @@ static errcode_t raw_write_blk(io_channel channel,
 	if ((sizeof(off_t) >= sizeof(ext2_loff_t)) &&
 	    ((channel->align == 0) ||
 	     (IS_ALIGNED(buf, channel->align) &&
+	      IS_ALIGNED(location, channel->align) &&
 	      IS_ALIGNED(size, channel->align)))) {
 		actual = pwrite(data->dev, buf, size, location);
 		if (actual == size)
@@ -370,13 +395,14 @@ static errcode_t raw_write_blk(io_channel channel,
 	}
 #endif /* HAVE_PWRITE */
 
-	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+	if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 		goto error_out;
 	}
 
 	if ((channel->align == 0) ||
 	    (IS_ALIGNED(buf, channel->align) &&
+	     IS_ALIGNED(location, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
 		actual = write(data->dev, buf, size);
 		if (actual < 0) {
@@ -400,40 +426,59 @@ static errcode_t raw_write_blk(io_channel channel,
 	 * to the O_DIRECT rules, so we need to do this the hard way...
 	 */
 bounce_write:
+	if ((channel->block_size > channel->align) &&
+	    (channel->block_size % channel->align) == 0)
+		align_size = channel->block_size;
+	else
+		align_size = channel->align;
+	aligned_blk = location / align_size;
+	offset = location % align_size;
+
 	while (size > 0) {
+		int actual_w;
+
 		mutex_lock(data, BOUNCE_MTX);
-		if (size < channel->block_size) {
+		if (size < align_size || offset) {
+			if (ext2fs_llseek(data->dev, aligned_blk * align_size,
+					  SEEK_SET) < 0) {
+				retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+				goto error_out;
+			}
 			actual = read(data->dev, data->bounce,
-				      channel->block_size);
-			if (actual != channel->block_size) {
+				      align_size);
+			if (actual != align_size) {
 				if (actual < 0) {
 					mutex_unlock(data, BOUNCE_MTX);
 					retval = errno;
 					goto error_out;
 				}
 				memset((char *) data->bounce + actual, 0,
-				       channel->block_size - actual);
+				       align_size - actual);
 			}
 		}
 		actual = size;
-		if (size > channel->block_size)
-			actual = channel->block_size;
-		memcpy(data->bounce, buf, actual);
-		if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+		if ((actual + offset) > align_size)
+			actual = align_size - offset;
+		if (actual > size)
+			actual = size;
+		memcpy(((char *)data->bounce) + offset, buf, actual);
+		if (ext2fs_llseek(data->dev, aligned_blk * align_size, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 			goto error_out;
 		}
-		actual = write(data->dev, data->bounce, channel->block_size);
+		actual_w = write(data->dev, data->bounce, align_size);
 		mutex_unlock(data, BOUNCE_MTX);
-		if (actual < 0) {
+		if (actual_w < 0) {
 			retval = errno;
 			goto error_out;
 		}
-		if (actual != channel->block_size)
+		if (actual_w != align_size)
 			goto short_write;
 		size -= actual;
 		buf += actual;
 		location += actual;
+		aligned_blk++;
+		offset = 0;
 	}
 	return 0;
 
