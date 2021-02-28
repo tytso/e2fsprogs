@@ -227,13 +227,8 @@ static errcode_t raw_read_blk(io_channel channel,
 	mutex_unlock(data, STATS_MTX);
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 
-	if (data->flags & IO_FLAG_FORCE_BOUNCE) {
-		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
-			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
-			goto error_out;
-		}
+	if (data->flags & IO_FLAG_FORCE_BOUNCE)
 		goto bounce_read;
-	}
 
 #ifdef HAVE_PREAD64
 	/* Try an aligned pread */
@@ -291,6 +286,8 @@ static errcode_t raw_read_blk(io_channel channel,
 	 * to the O_DIRECT rules, so we need to do this the hard way...
 	 */
 bounce_read:
+	if (channel->align == 0)
+		channel->align = 1;
 	if ((channel->block_size > channel->align) &&
 	    (channel->block_size % channel->align) == 0)
 		align_size = channel->block_size;
@@ -364,13 +361,8 @@ static errcode_t raw_write_blk(io_channel channel,
 
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 
-	if (data->flags & IO_FLAG_FORCE_BOUNCE) {
-		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
-			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
-			goto error_out;
-		}
+	if (data->flags & IO_FLAG_FORCE_BOUNCE)
 		goto bounce_write;
-	}
 
 #ifdef HAVE_PWRITE64
 	/* Try an aligned pwrite */
@@ -426,6 +418,8 @@ static errcode_t raw_write_blk(io_channel channel,
 	 * to the O_DIRECT rules, so we need to do this the hard way...
 	 */
 bounce_write:
+	if (channel->align == 0)
+		channel->align = 1;
 	if ((channel->block_size > channel->align) &&
 	    (channel->block_size % channel->align) == 0)
 		align_size = channel->block_size;
