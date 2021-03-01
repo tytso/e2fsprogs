@@ -670,7 +670,7 @@ static int delete_file_block(ext2_filsys fs,
 		} else
 			com_err("delete_file_block", 0,
 			    _("internal error: can't find dup_blk for %llu\n"),
-				*block_nr);
+				(unsigned long long) *block_nr);
 	} else {
 		if ((*block_nr % EXT2FS_CLUSTER_RATIO(ctx->fs)) == 0)
 			ext2fs_block_alloc_stats2(fs, *block_nr, -1);
@@ -828,7 +828,7 @@ static int clone_file_block(ext2_filsys fs,
 		if (!n) {
 			com_err("clone_file_block", 0,
 			    _("internal error: can't find dup_blk for %llu\n"),
-				*block_nr);
+				(unsigned long long) *block_nr);
 			return 0;
 		}
 
@@ -878,7 +878,8 @@ cluster_alloc_ok:
 		}
 #if 0
  		printf("Cloning block #%lld from %llu to %llu\n",
-		       blockcnt, *block_nr, new_block);
+		       blockcnt, (unsigned long long) *block_nr,
+		       (unsigned long long) new_block);
 #endif
 		retval = io_channel_read_blk64(fs->io, *block_nr, 1, cs->buf);
 		if (retval) {
@@ -978,7 +979,8 @@ static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 		if (!n) {
 			com_err("clone_file", 0,
 				_("internal error: couldn't lookup EA "
-				  "block record for %llu"), blk);
+				  "block record for %llu"),
+				(unsigned long long) blk);
 			retval = 0; /* OK to stumble on... */
 			goto errout;
 		}

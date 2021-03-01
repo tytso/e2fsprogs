@@ -493,11 +493,12 @@ void do_show_super_stats(int argc, char *argv[],
 		        "inode table at %llu\n"
 		        "           %u free %s%s, "
 		        "%u free %s, "
-		        "%u used %s%s",
-		        i, ext2fs_block_bitmap_loc(current_fs, i),
-		        ext2fs_inode_bitmap_loc(current_fs, i),
-			ext2fs_inode_table_loc(current_fs, i),
-		        ext2fs_bg_free_blocks_count(current_fs, i), units,
+		        "%u used %s%s", i,
+		        (unsigned long long) ext2fs_block_bitmap_loc(current_fs, i),
+		        (unsigned long long) ext2fs_inode_bitmap_loc(current_fs, i),
+			(unsigned long long) ext2fs_inode_table_loc(current_fs, i),
+		        ext2fs_bg_free_blocks_count(current_fs, i),
+			units,
 		        ext2fs_bg_free_blocks_count(current_fs, i) != 1 ?
 			"s" : "",
 		        ext2fs_bg_free_inodes_count(current_fs, i),
@@ -567,11 +568,13 @@ static void finish_range(struct list_blocks_struct *lb)
 		fprintf(lb->f, ", ");
 	if (lb->first_block == lb->last_block)
 		fprintf(lb->f, "(%lld):%llu",
-			(long long)lb->first_bcnt, lb->first_block);
+			(long long)lb->first_bcnt,
+			(unsigned long long) lb->first_block);
 	else
 		fprintf(lb->f, "(%lld-%lld):%llu-%llu",
 			(long long)lb->first_bcnt, (long long)lb->last_bcnt,
-			lb->first_block, lb->last_block);
+			(unsigned long long) lb->first_block,
+			(unsigned long long) lb->last_block);
 	lb->first_block = 0;
 }
 
@@ -721,18 +724,18 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 					info.curr_level, info.max_depth,
 					info.curr_entry, info.num_entries,
 					logical_width,
-					extent.e_lblk,
+					(unsigned long long) extent.e_lblk,
 					logical_width,
-					extent.e_lblk + (extent.e_len - 1),
+					(unsigned long long) extent.e_lblk + (extent.e_len - 1),
 					physical_width,
-					extent.e_pblk,
+					(unsigned long long) extent.e_pblk,
 					physical_width+3, "", extent.e_len);
 				continue;
 			}
 
 			fprintf(f, "%s(ETB%d):%llu",
 				printed ? ", " : "", info.curr_level,
-				extent.e_pblk);
+				(unsigned long long) extent.e_pblk);
 			printed = 1;
 			continue;
 		}
@@ -743,13 +746,13 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 				info.curr_level, info.max_depth,
 				info.curr_entry, info.num_entries,
 				logical_width,
-				extent.e_lblk,
+				(unsigned long long) extent.e_lblk,
 				logical_width,
-				extent.e_lblk + (extent.e_len - 1),
+				(unsigned long long) extent.e_lblk + (extent.e_len - 1),
 				physical_width,
-				extent.e_pblk,
+				(unsigned long long) extent.e_pblk,
 				physical_width,
-				extent.e_pblk + (extent.e_len - 1),
+				(unsigned long long) extent.e_pblk + (extent.e_len - 1),
 				extent.e_len,
 				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
 					"Uninit" : "");
@@ -762,20 +765,20 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 			fprintf(f,
 				"%s(%lld%s):%lld",
 				printed ? ", " : "",
-				extent.e_lblk,
+				(unsigned long long) extent.e_lblk,
 				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
 				"[u]" : "",
-				extent.e_pblk);
+				(unsigned long long) extent.e_pblk);
 		else
 			fprintf(f,
 				"%s(%lld-%lld%s):%lld-%lld",
 				printed ? ", " : "",
-				extent.e_lblk,
-				extent.e_lblk + (extent.e_len - 1),
+				(unsigned long long) extent.e_lblk,
+				(unsigned long long) extent.e_lblk + (extent.e_len - 1),
 				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
 					"[u]" : "",
-				extent.e_pblk,
-				extent.e_pblk + (extent.e_len - 1));
+				(unsigned long long) extent.e_pblk,
+				(unsigned long long) extent.e_pblk + (extent.e_len - 1));
 		printed = 1;
 	}
 	if (printed)
@@ -861,7 +864,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		fprintf(out, "   Project: %5d", large_inode->i_projid);
 	fputs("   Size: ", out);
 	if (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode))
-		fprintf(out, "%llu\n", EXT2_I_SIZE(inode));
+		fprintf(out, "%llu\n", (unsigned long long) EXT2_I_SIZE(inode));
 	else
 		fprintf(out, "%u\n", inode->i_size);
 	if (os == EXT2_OS_HURD)
@@ -1085,7 +1088,7 @@ static int print_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 			     int ref_offset EXT2FS_ATTR((unused)),
 			     void *private EXT2FS_ATTR((unused)))
 {
-	printf("%llu ", *blocknr);
+	printf("%llu ", (unsigned long long) *blocknr);
 	return 0;
 }
 
@@ -1232,7 +1235,7 @@ void do_freeb(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	while (count-- > 0) {
 		if (!ext2fs_test_block_bitmap2(current_fs->block_map,block))
 			com_err(argv[0], 0, "Warning: block %llu already clear",
-				block);
+				(unsigned long long) block);
 		ext2fs_unmark_block_bitmap2(current_fs->block_map,block);
 		block++;
 	}
@@ -1252,7 +1255,7 @@ void do_setb(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	while (count-- > 0) {
 		if (ext2fs_test_block_bitmap2(current_fs->block_map,block))
 			com_err(argv[0], 0, "Warning: block %llu already set",
-				block);
+				(unsigned long long) block);
 		ext2fs_mark_block_bitmap2(current_fs->block_map,block);
 		block++;
 	}
@@ -1270,9 +1273,11 @@ void do_testb(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		return;
 	while (count-- > 0) {
 		if (ext2fs_test_block_bitmap2(current_fs->block_map,block))
-			printf("Block %llu marked in use\n", block);
+			printf("Block %llu marked in use\n",
+			       (unsigned long long) block);
 		else
-			printf("Block %llu not in use\n", block);
+			printf("Block %llu not in use\n",
+			       (unsigned long long) block);
 		block++;
 	}
 }
@@ -1708,7 +1713,7 @@ void do_find_free_block(int argc, char *argv[],
 			com_err("ext2fs_new_block", retval, 0);
 			return;
 		} else
-			printf("%llu ", free_blk);
+			printf("%llu ", (unsigned long long) free_blk);
 	}
  	printf("\n");
 }
@@ -2110,10 +2115,11 @@ void do_bmap(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 			       &ret_flags, &pblk);
 	if (errcode) {
 		com_err(argv[0], errcode,
-			"while mapping logical block %llu\n", blk);
+			"while mapping logical block %llu\n",
+			(unsigned long long) blk);
 		return;
 	}
-	printf("%llu", pblk);
+	printf("%llu", (unsigned long long) pblk);
 	if (ret_flags & BMAP_RET_UNINIT)
 		fputs(" (uninit)", stdout);
 	fputc('\n', stdout);
@@ -2447,17 +2453,19 @@ void do_dump_mmp(int argc EXT2FS_ATTR((unused)), char *argv[],
 	retval = ext2fs_mmp_read(current_fs, mmp_block, current_fs->mmp_buf);
 	if (retval) {
 		com_err(argv[0], retval, "reading MMP block %llu.\n",
-			mmp_block);
+			(unsigned long long) mmp_block);
 		return;
 	}
 
 	t = mmp_s->mmp_time;
-	fprintf(stdout, "block_number: %llu\n", current_fs->super->s_mmp_block);
+	fprintf(stdout, "block_number: %llu\n",
+		(unsigned long long) current_fs->super->s_mmp_block);
 	fprintf(stdout, "update_interval: %d\n",
 		current_fs->super->s_mmp_update_interval);
 	fprintf(stdout, "check_interval: %d\n", mmp_s->mmp_check_interval);
 	fprintf(stdout, "sequence: %08x\n", mmp_s->mmp_seq);
-	fprintf(stdout, "time: %lld -- %s", mmp_s->mmp_time, ctime(&t));
+	fprintf(stdout, "time: %llu -- %s",
+		(unsigned long long) mmp_s->mmp_time, ctime(&t));
 	fprintf(stdout, "node_name: %.*s\n",
 		EXT2_LEN_STR(mmp_s->mmp_nodename));
 	fprintf(stdout, "device_name: %.*s\n",

@@ -192,7 +192,8 @@ static void generic_write(int fd, void *buf, int blocksize, blk64_t block)
 
 		if (block)
 			com_err(program_name, err,
-				_("error writing block %llu"), block);
+				_("error writing block %llu"),
+				(unsigned long long) block);
 		else
 			com_err(program_name, err, "%s",
 				_("error in generic_write()"));
@@ -565,8 +566,10 @@ static void sigint_handler(int unused EXT2FS_ATTR((unused)))
 
 static int print_progress(blk64_t num, blk64_t total)
 {
-	return fprintf(stderr, _("%llu / %llu blocks (%d%%)"), num, total,
-		      calc_percent(num, total));
+	return fprintf(stderr, _("%llu / %llu blocks (%d%%)"),
+		       (unsigned long long) num,
+		       (unsigned long long) total,
+		       calc_percent(num, total));
 }
 
 static void output_meta_data_blocks(ext2_filsys fs, int fd, int flags)
@@ -671,7 +674,8 @@ more_blocks:
 			retval = io_channel_read_blk64(fs->io, blk, 1, buf);
 			if (retval) {
 				com_err(program_name, retval,
-					_("error reading block %llu"), blk);
+					_("error reading block %llu"),
+					(unsigned long long) blk);
 			}
 			total_written++;
 			if (scramble_block_map &&
@@ -726,7 +730,8 @@ more_blocks:
 		fputc('\r', stderr);
 		strftime(buff, 30, "%T", gmtime(&duration));
 		fprintf(stderr, _("Copied %llu / %llu blocks (%d%%) in %s "),
-			total_written, meta_blocks_count,
+			(unsigned long long) total_written,
+			(unsigned long long) meta_blocks_count,
 			calc_percent(total_written, meta_blocks_count), buff);
 		if (duration)
 			fprintf(stderr, _("at %.2f MB/s"),
@@ -892,8 +897,9 @@ static errcode_t initialize_qcow2_image(int fd, ext2_filsys fs,
 	int cluster_bits = get_bits_from_size(fs->blocksize);
 	struct ext2_super_block *sb = fs->super;
 
-	if (fs->blocksize < 1024)
-		return EINVAL;	/* Can never happen, but just in case... */
+	/* Sbould never happen, but just in case... */
+	if (cluster_bits < 0)
+		return EXT2_FILSYS_CORRUPTED;
 
 	/* Allocate header */
 	ret = ext2fs_get_memzero(sizeof(struct ext2_qcow2_hdr), &header);
@@ -1201,7 +1207,8 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 			retval = io_channel_read_blk64(fs->io, blk, 1, buf);
 			if (retval) {
 				com_err(program_name, retval,
-					_("error reading block %llu"), blk);
+					_("error reading block %llu"),
+					(unsigned long long) blk);
 				continue;
 			}
 			if (scramble_block_map &&
@@ -1621,7 +1628,7 @@ int main (int argc, char ** argv)
 			goto skip_device;
 		}
 	}
-	sprintf(offset_opt, "offset=%llu", source_offset);
+	sprintf(offset_opt, "offset=%llu", (unsigned long long) source_offset);
 	retval = ext2fs_open2(device_name, offset_opt, open_flag,
 			      superblock, blocksize, unix_io_manager, &fs);
         if (retval) {

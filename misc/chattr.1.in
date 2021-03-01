@@ -23,13 +23,13 @@ chattr \- change file attributes on a Linux file system
 .B chattr
 changes the file attributes on a Linux file system.
 .PP
-The format of a symbolic mode is +-=[aAcCdDeFijPsStTux].
+The format of a symbolic mode is +-=[aAcCdDeFijmPsStTux].
 .PP
 The operator '+' causes the selected attributes to be added to the
 existing attributes of the files; '-' causes them to be removed; and '='
 causes them to be the only attributes that the files have.
 .PP
-The letters 'aAcCdDeFijPsStTux' select the new attributes for the files:
+The letters 'aAcCdDeFijmPsStTux' select the new attributes for the files:
 append only (a),
 no atime updates (A),
 compressed (c),
@@ -40,6 +40,7 @@ extent format (e),
 case-insensitive directory lookups (F),
 immutable (i),
 data journalling (j),
+don't compress (m),
 project hierarchy (P),
 secure deletion (s),
 synchronous updates (S),
@@ -96,7 +97,8 @@ A file with the 'c' attribute set is automatically compressed on the disk
 by the kernel.  A read from this file returns uncompressed data.  A write to
 this file compresses data before storing them on the disk.  Note: please
 make sure to read the bugs and limitations section at the end of this
-document.
+document.  (Note: For btrfs, If the 'c' flag is set, then the 'C' flag
+cannot be set. Also conflicts with btrfs mount option 'nodatasum')
 .TP
 .B C
 A file with the 'C' attribute set will not be subject to copy-on-write
@@ -106,7 +108,8 @@ set on new or empty files.  If it is set on a file which already has
 data blocks, it is undefined when the blocks assigned to the file will
 be fully stable.  If the 'C' flag is set on a directory, it will have no
 effect on the directory, but new files created in that directory will
-have the No_COW attribute set.)
+have the No_COW attribute set. If the 'C' flag is set, then the 'c' flag
+cannot be set.)
 .TP
 .B d
 A file with the 'd' attribute set is not a candidate for backup when the
@@ -158,6 +161,10 @@ file system has a journal.  When the filesystem is mounted with the
 "data=journal" option all file data is already journalled and this
 attribute has no effect.  Only the superuser or a process possessing the
 CAP_SYS_RESOURCE capability can set or clear this attribute.
+.TP
+.B m
+A file with the 'm' attribute is excluded from compression on file
+systems that support per-file compression.
 .TP
 .B N
 A file with the 'N' attribute set indicates that the file has data

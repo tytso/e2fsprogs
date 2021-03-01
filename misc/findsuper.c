@@ -115,11 +115,11 @@ static void usage(void)
 int main(int argc, char *argv[])
 {
 	int skiprate=512;		/* one sector */
-	loff_t sk=0, skl=0;
+	ext2_loff_t sk=0, skl=0;
 	int fd;
 	char *s;
 	time_t tm, last = time(0);
-	loff_t interval = 1024 * 1024;
+	ext2_loff_t interval = 1024 * 1024;
 	int c, print_jnl_copies = 0;
 	const char * device_name;
 	struct ext2_super_block ext2;

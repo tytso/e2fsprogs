@@ -102,6 +102,7 @@ static const struct flags_char flags_array[] = {
 	{ EXT2_DIRSYNC_FL, 'D' },
 	{ EXT2_APPEND_FL, 'a' },
 	{ EXT2_COMPR_FL, 'c' },
+	{ EXT2_NOCOMPR_FL, 'm' },
 	{ EXT2_NODUMP_FL, 'd' },
 	{ EXT4_EXTENTS_FL, 'e'},
 	{ EXT2_IMMUTABLE_FL, 'i' },
@@ -203,7 +204,6 @@ static int decode_arg (int * i, int argc, char ** argv)
 		break;
 	default:
 		return EOF;
-		break;
 	}
 	return 1;
 }

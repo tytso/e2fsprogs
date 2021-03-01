@@ -892,7 +892,6 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			test_ptr += got * block_size;
 			currently_testing += got;
 			if (got != try) {
-				try = 1;
 				if (recover_block == ~0U)
 					recover_block = currently_testing -
 						got + blocks_at_once;
@@ -1066,7 +1065,7 @@ int main (int argc, char ** argv)
 				  unsigned int);
 	int open_flag;
 	long sysval;
-	blk64_t inblk;
+	unsigned long long inblk;
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -1201,6 +1200,19 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	}
+	if ((block_size <= 0) || (block_size > (1 << 24)) ||
+	    (block_size & (block_size - 1))) {
+		com_err(program_name, 0, _("Invalid block size: %d\n"),
+			block_size);
+		exit(1);
+	}
+	if ((blocks_at_once <= 0) ||
+	    (((unsigned long long) block_size * blocks_at_once) > 0xFFFFFFFF)) {
+		com_err(program_name, 0, _("Invalid blocks_at_once: %d\n"),
+			blocks_at_once);
+		exit(1);
+	}
+
 	if (optind > argc - 1)
 		usage();
 	device_name = argv[optind++];
@@ -1231,14 +1243,15 @@ int main (int argc, char ** argv)
 	} else first_block = 0;
 	if (first_block >= last_block) {
 	    com_err (program_name, 0, _("invalid starting block (%llu): must be less than %llu"),
-		     first_block, last_block);
+		     (unsigned long long) first_block,
+		     (unsigned long long) last_block);
 	    exit (1);
 	}
 	/* ext2 badblocks file can't handle large values */
 	if (last_block >> 32) {
 		com_err(program_name, EOVERFLOW,
 			_("invalid end block (%llu): must be 32-bit value"),
-			last_block);
+			(unsigned long long) last_block);
 		exit(1);
 	}
 	if (w_flag)

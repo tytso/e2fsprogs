@@ -138,7 +138,8 @@ static void show_stats(e2fsck_t	ctx)
 			       "%llu/%llu blocks\n"),
 			ctx->device_name, inodes_used, inodes,
 			frag_percent_total / 10, frag_percent_total % 10,
-			blocks_used, blocks);
+			(unsigned long long) blocks_used,
+			(unsigned long long) blocks);
 		return;
 	}
 	profile_get_boolean(ctx->profile, "options", "report_features", 0, 0,
@@ -194,7 +195,8 @@ static void show_stats(e2fsck_t	ctx)
 	log_out(ctx, P_("%12llu block used (%2.2f%%, out of %llu)\n",
 			"%12llu blocks used (%2.2f%%, out of %llu)\n",
 		   blocks_used),
-		blocks_used, 100.0 * blocks_used / blocks, blocks);
+		(unsigned long long) blocks_used, 100.0 * blocks_used / blocks,
+		(unsigned long long) blocks);
 	log_out(ctx, P_("%12u bad block\n", "%12u bad blocks\n",
 			ctx->fs_badblocks_count), ctx->fs_badblocks_count);
 	log_out(ctx, P_("%12u large file\n", "%12u large files\n",
@@ -444,9 +446,9 @@ static void check_if_skip(e2fsck_t ctx)
 		ctx->device_name,
 		fs->super->s_inodes_count - fs->super->s_free_inodes_count,
 		fs->super->s_inodes_count,
-		ext2fs_blocks_count(fs->super) -
+		(unsigned long long) ext2fs_blocks_count(fs->super) -
 		ext2fs_free_blocks_count(fs->super),
-		ext2fs_blocks_count(fs->super));
+		(unsigned long long) ext2fs_blocks_count(fs->super));
 	next_check = 100000;
 	if (fs->super->s_max_mnt_count > 0) {
 		next_check = fs->super->s_max_mnt_count - fs->super->s_mnt_count;
@@ -821,7 +823,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef CONFIG_JBD_DEBUG
 	char 		*jbd_debug;
 #endif
-	unsigned long long phys_mem_kb;
+	unsigned long long phys_mem_kb, blk;
 
 	retval = e2fsck_allocate_context(&ctx);
 	if (retval)
@@ -922,7 +924,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			/* What we do by default, anyway! */
 			break;
 		case 'b':
-			res = sscanf(optarg, "%llu", &ctx->use_superblock);
+			res = sscanf(optarg, "%llu", &blk);
+			ctx->use_superblock = blk;
 			if (res != 1)
 				goto sscanf_err;
 			ctx->flags |= E2F_FLAG_SB_SPECIFIED;

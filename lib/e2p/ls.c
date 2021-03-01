@@ -269,12 +269,15 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Filesystem OS type:       %s\n", str);
 	free(str);
 	fprintf(f, "Inode count:              %u\n", sb->s_inodes_count);
-	fprintf(f, "Block count:              %llu\n", e2p_blocks_count(sb));
-	fprintf(f, "Reserved block count:     %llu\n", e2p_r_blocks_count(sb));
+	fprintf(f, "Block count:              %llu\n",
+		(unsigned long long) e2p_blocks_count(sb));
+	fprintf(f, "Reserved block count:     %llu\n",
+		(unsigned long long) e2p_r_blocks_count(sb));
 	if (sb->s_overhead_clusters)
 		fprintf(f, "Overhead clusters:        %u\n",
 			sb->s_overhead_clusters);
-	fprintf(f, "Free blocks:              %llu\n", e2p_free_blocks_count(sb));
+	fprintf(f, "Free blocks:              %llu\n",
+		(unsigned long long) e2p_free_blocks_count(sb));
 	fprintf(f, "Free inodes:              %u\n", sb->s_free_inodes_count);
 	fprintf(f, "First block:              %u\n", sb->s_first_data_block);
 	fprintf(f, "Block size:               %u\n", EXT2_BLOCK_SIZE(sb));
@@ -336,18 +339,19 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (sb->s_kbytes_written) {
 		fprintf(f, "Lifetime writes:          ");
 		if (sb->s_kbytes_written < POW2(13))
-			fprintf(f, "%llu kB\n", sb->s_kbytes_written);
+			fprintf(f, "%llu kB\n",
+				(unsigned long long) sb->s_kbytes_written);
 		else if (sb->s_kbytes_written < POW2(23))
-			fprintf(f, "%llu MB\n",
-				(sb->s_kbytes_written + POW2(9)) >> 10);
+		  fprintf(f, "%llu MB\n", (unsigned long long)
+			  (sb->s_kbytes_written + POW2(9)) >> 10);
 		else if (sb->s_kbytes_written < POW2(33))
-			fprintf(f, "%llu GB\n",
+		  fprintf(f, "%llu GB\n", (unsigned long long)
 				(sb->s_kbytes_written + POW2(19)) >> 20);
 		else if (sb->s_kbytes_written < POW2(43))
-			fprintf(f, "%llu TB\n",
+			fprintf(f, "%llu TB\n", (unsigned long long)
 				(sb->s_kbytes_written + POW2(29)) >> 30);
 		else
-			fprintf(f, "%llu PB\n",
+			fprintf(f, "%llu PB\n", (unsigned long long)
 				(sb->s_kbytes_written + POW2(39)) >> 40);
 	}
 	fprintf(f, "Reserved blocks uid:      ");
@@ -407,7 +411,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Snapshot ID:              %u\n",
 			sb->s_snapshot_id);
 		fprintf(f, "Snapshot reserved blocks: %llu\n",
-			sb->s_snapshot_r_blocks_count);
+			(unsigned long long) sb->s_snapshot_r_blocks_count);
 	}
 	if (sb->s_snapshot_list)
 		fprintf(f, "Snapshot list head:       %u\n",
@@ -427,7 +431,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 				sb->s_first_error_ino);
 		if (sb->s_first_error_block)
 			fprintf(f, "First error block #:      %llu\n",
-				sb->s_first_error_block);
+				(unsigned long long) sb->s_first_error_block);
 		if (sb->s_first_error_errcode)
 			fprintf(f, "First error err:          %s\n",
 				e2p_errcode2str(sb->s_first_error_errcode));
@@ -444,14 +448,14 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 				sb->s_last_error_ino);
 		if (sb->s_last_error_block)
 			fprintf(f, "Last error block #:       %llu\n",
-				sb->s_last_error_block);
+				(unsigned long long) sb->s_last_error_block);
 		if (sb->s_last_error_errcode)
 			fprintf(f, "Last error err:           %s\n",
 				e2p_errcode2str(sb->s_last_error_errcode));
 	}
 	if (ext2fs_has_feature_mmp(sb)) {
 		fprintf(f, "MMP block number:         %llu\n",
-			(long long)sb->s_mmp_block);
+			(unsigned long long) sb->s_mmp_block);
 		fprintf(f, "MMP update interval:      %u\n",
 			sb->s_mmp_update_interval);
 	}

@@ -196,9 +196,9 @@ static void list_desc(ext2_filsys fs, int grp_only)
 					  &old_desc_blk, &new_desc_blk, 0);
 
 		if (grp_only) {
-			printf("%lu:%llu:", i, first_block);
+			printf("%lu:%llu:", i, (unsigned long long) first_block);
 			if (i == 0 || super_blk)
-				printf("%llu:", super_blk);
+				printf("%llu:", (unsigned long long) super_blk);
 			else
 				printf("-1:");
 			if (old_desc_blk) {
@@ -206,13 +206,13 @@ static void list_desc(ext2_filsys fs, int grp_only)
 					    old_desc_blk + old_desc_blocks - 1);
 				printf(":");
 			} else if (new_desc_blk)
-				printf("%llu:", new_desc_blk);
+				printf("%llu:", (unsigned long long) new_desc_blk);
 			else
 				printf("-1:");
 			printf("%llu:%llu:%llu\n",
-			       ext2fs_block_bitmap_loc(fs, i),
-			       ext2fs_inode_bitmap_loc(fs, i),
-			       ext2fs_inode_table_loc(fs, i));
+			       (unsigned long long) ext2fs_block_bitmap_loc(fs, i),
+			       (unsigned long long) ext2fs_inode_bitmap_loc(fs, i),
+			       (unsigned long long) ext2fs_inode_table_loc(fs, i));
 			continue;
 		}
 
@@ -485,7 +485,8 @@ static void print_mmp_block(ext2_filsys fs)
 	if (retval) {
 		com_err(program_name, retval,
 			_("reading MMP block %llu from '%s'\n"),
-			fs->super->s_mmp_block, fs->device_name);
+			(unsigned long long) fs->super->s_mmp_block,
+			fs->device_name);
 		return;
 	}
 
@@ -496,7 +497,8 @@ static void print_mmp_block(ext2_filsys fs)
 	printf("    mmp_check_interval: %d\n", mmp->mmp_check_interval);
 	printf("    mmp_sequence: %#08x\n", mmp->mmp_seq);
 	printf("    mmp_update_date: %s", ctime(&mmp_time));
-	printf("    mmp_update_time: %lld\n", mmp->mmp_time);
+	printf("    mmp_update_time: %llu\n",
+	       (unsigned long long) mmp->mmp_time);
 	printf("    mmp_node_name: %.*s\n",
 	       EXT2_LEN_STR(mmp->mmp_nodename));
 	printf("    mmp_device_name: %.*s\n",

@@ -74,9 +74,11 @@ static void warn_bitmap(ext2fs_generic_bitmap_64 bitmap,
 #ifndef OMIT_COM_ERR
 	if (bitmap->description)
 		com_err(0, bitmap->base_error_code+code,
-			"#%llu for %s", arg, bitmap->description);
+			"#%llu for %s", (unsigned long long) arg,
+			bitmap->description);
 	else
-		com_err(0, bitmap->base_error_code + code, "#%llu", arg);
+		com_err(0, bitmap->base_error_code + code, "#%llu",
+			(unsigned long long) arg);
 #endif
 }
 

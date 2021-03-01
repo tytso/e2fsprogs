@@ -771,7 +771,8 @@ void dump_mmp_msg(struct mmp_struct *mmp, const char *fmt, ...)
 		       mmp->mmp_check_interval);
 		printf("    mmp_sequence: %08x\n", mmp->mmp_seq);
 		printf("    mmp_update_date: %s", ctime(&t));
-		printf("    mmp_update_time: %lld\n", mmp->mmp_time);
+		printf("    mmp_update_time: %lld\n",
+		       (long long) mmp->mmp_time);
 		printf("    mmp_node_name: %.*s\n",
 		       EXT2_LEN_STR(mmp->mmp_nodename));
 		printf("    mmp_device_name: %.*s\n",
