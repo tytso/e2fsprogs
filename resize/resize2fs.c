@@ -1177,6 +1177,11 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 		if (blk)
 			ext2fs_mark_block_bitmap2(bmap, blk);
 	}
+	/* Reserve the MMP block */
+	if (ext2fs_has_feature_mmp(fs->super) &&
+	    fs->super->s_mmp_block > fs->super->s_first_data_block &&
+	    fs->super->s_mmp_block < ext2fs_blocks_count(fs->super))
+		ext2fs_mark_block_bitmap2(bmap, fs->super->s_mmp_block);
 	return 0;
 }
 
