@@ -51,13 +51,14 @@ extern int optind;
 #include <ext2fs/ext2fs.h>
 #include <ext2fs/ext2_types.h>
 #include <ext2fs/fiemap.h>
+#include "../version.h"
 
 int verbose = 0;
 unsigned int blocksize;	/* Use specified blocksize (default 1kB) */
 int sync_file = 0;	/* fsync file before getting the mapping */
 int precache_file = 0;	/* precache the file before getting the mapping */
 int xattr_map = 0;	/* get xattr mapping */
-int force_bmap;	/* force use of FIBMAP instead of FIEMAP */
+int force_bmap;		/* force use of FIBMAP instead of FIEMAP */
 int force_extent;	/* print output in extent format always */
 int use_extent_cache;	/* Use extent cache */
 int logical_width = 8;
@@ -132,11 +133,47 @@ static void print_extent_header(void)
 
 static void print_flag(__u32 *flags, __u32 mask, char *buf, const char *name)
 {
+	char hex[sizeof(mask) * 2 + 4]; /* 2 chars/byte + 0x, + NUL */
+
 	if ((*flags & mask) == 0)
 		return;
 
+	if (name == NULL) {
+		sprintf(hex, "%#04x,", mask);
+		name = hex;
+	}
 	strcat(buf, name);
 	*flags &= ~mask;
+}
+
+static void print_flags(__u32 fe_flags, char *flags, int len, int print_unknown)
+{
+	__u32 mask;
+
+	print_flag(&fe_flags, FIEMAP_EXTENT_LAST, flags, "last,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_UNKNOWN, flags, "unknown_loc,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_DELALLOC, flags, "delalloc,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_ENCODED, flags, "encoded,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_DATA_ENCRYPTED, flags,"encrypted,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_NOT_ALIGNED, flags, "not_aligned,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_DATA_INLINE, flags, "inline,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_DATA_TAIL, flags, "tail_packed,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_UNWRITTEN, flags, "unwritten,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_MERGED, flags, "merged,");
+	print_flag(&fe_flags, FIEMAP_EXTENT_SHARED, flags, "shared,");
+	print_flag(&fe_flags, EXT4_FIEMAP_EXTENT_HOLE, flags, "hole,");
+
+	if (!print_unknown)
+		goto out;
+
+	/* print any unknown flags as hex values */
+	for (mask = 1; fe_flags != 0 && mask != 0; mask <<= 1)
+		print_flag(&fe_flags, mask, flags, NULL);
+out:
+	/* Remove trailing comma, if any */
+	if (flags[0])
+		flags[strnlen(flags, len) - 1] = '\0';
+
 }
 
 static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
@@ -148,7 +185,6 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 	unsigned long long ext_len;
 	unsigned long long ext_blks;
 	unsigned long long ext_blks_phys;
-	__u32 fe_flags, mask;
 	char flags[256] = "";
 
 	/* For inline data all offsets should be in bytes, not blocks */
@@ -164,44 +200,19 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 		physical_blk = fm_extent->fe_physical >> blk_shift;
 	}
 
-	fe_flags = fm_extent->fe_flags;
 	if (expected &&
-	    !(fe_flags & FIEMAP_EXTENT_UNKNOWN) &&
-	    !(fe_flags & EXT4_FIEMAP_EXTENT_HOLE))
+	    !(fm_extent->fe_flags & FIEMAP_EXTENT_UNKNOWN) &&
+	    !(fm_extent->fe_flags & EXT4_FIEMAP_EXTENT_HOLE))
 		sprintf(flags, ext_fmt == hex_fmt ? "%*llx: " : "%*llu: ",
 			physical_width, expected >> blk_shift);
 	else
 		sprintf(flags, "%.*s  ", physical_width, "                   ");
 
-	print_flag(&fe_flags, FIEMAP_EXTENT_LAST, flags, "last,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_UNKNOWN, flags, "unknown_loc,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_DELALLOC, flags, "delalloc,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_ENCODED, flags, "encoded,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_DATA_ENCRYPTED, flags,"encrypted,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_NOT_ALIGNED, flags, "not_aligned,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_DATA_INLINE, flags, "inline,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_DATA_TAIL, flags, "tail_packed,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_UNWRITTEN, flags, "unwritten,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_MERGED, flags, "merged,");
-	print_flag(&fe_flags, FIEMAP_EXTENT_SHARED, flags, "shared,");
-	print_flag(&fe_flags, EXT4_FIEMAP_EXTENT_HOLE, flags, "hole,");
-	/* print any unknown flags as hex values */
-	for (mask = 1; fe_flags != 0 && mask != 0; mask <<= 1) {
-		char hex[sizeof(mask) * 2 + 4]; /* 2 chars/byte + 0x, + NUL */
-
-		if ((fe_flags & mask) == 0)
-			continue;
-		sprintf(hex, "%#04x,", mask);
-		print_flag(&fe_flags, mask, flags, hex);
-	}
+	print_flags(fm_extent->fe_flags, flags, sizeof(flags), 1);
 
 	if (fm_extent->fe_logical + fm_extent->fe_length >=
-	    (unsigned long long) st->st_size)
-		strcat(flags, "eof,");
-
-	/* Remove trailing comma, if any */
-	if (flags[0] != '\0')
-		flags[strnlen(flags, sizeof(flags)) - 1] = '\0';
+	    (unsigned long long)st->st_size)
+		strcat(flags, flags[0] ? ",eof" : "eof");
 
 	if ((fm_extent->fe_flags & FIEMAP_EXTENT_UNKNOWN) ||
 	    (fm_extent->fe_flags & EXT4_FIEMAP_EXTENT_HOLE)) {
@@ -522,8 +533,8 @@ static int frag_report(const char *filename)
 					   &st, numblocks, is_ext2);
 		if (expected < 0) {
 			if (expected == -EINVAL || expected == -ENOTTY) {
-				fprintf(stderr, "%s: FIBMAP unsupported\n",
-					filename);
+				fprintf(stderr, "%s: FIBMAP%s unsupported\n",
+					filename, force_bmap ? "" : "/FIEMAP");
 			} else if (expected == -EPERM) {
 				fprintf(stderr,
 					"%s: FIBMAP requires root privileges\n",
@@ -567,8 +578,9 @@ int main(int argc, char**argv)
 {
 	char **cpp;
 	int rc = 0, c;
+	int version = 0;
 
-	while ((c = getopt(argc, argv, "Bb::eEkPsvxX")) != EOF) {
+	while ((c = getopt(argc, argv, "Bb::eEkPsvVxX")) != EOF) {
 		switch (c) {
 		case 'B':
 			force_bmap++;
@@ -642,6 +654,9 @@ int main(int argc, char**argv)
 		case 'v':
 			verbose++;
 			break;
+		case 'V':
+			version++;
+			break;
 		case 'x':
 			xattr_map++;
 			break;
@@ -652,6 +667,17 @@ int main(int argc, char**argv)
 			usage(argv[0]);
 			break;
 		}
+	}
+	if (version) {
+		/* Print version number and exit */
+		printf("filefrag %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
+		if (version + verbose > 1) {
+			char flags[256] = "";
+
+			print_flags(0xffffffff, flags, sizeof(flags), 0);
+			printf("supported: %s\n", flags);
+		}
+		exit(0);
 	}
 
 	if (optind == argc)

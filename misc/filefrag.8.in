@@ -8,7 +8,7 @@ filefrag \- report on file fragmentation
 .BI \-b blocksize
 ]
 [
-.B \-BeksvxX
+.B \-BeEkPsvVxX
 ]
 [
 .I files...
@@ -38,7 +38,10 @@ filesystem blocksize.  For compatibility with earlier versions of
 .BR filefrag ,
 if
 .I blocksize
-is unspecified it defaults to 1024 bytes.
+is unspecified it defaults to 1024 bytes.  Since
+.I blocksize
+is an optional argument, it must be added without any space after
+.BR -b .
 .TP
 .B \-e
 Print output in extent format, even for block-mapped files.
@@ -47,18 +50,22 @@ Print output in extent format, even for block-mapped files.
 Display the contents of ext4's extent status cache.  This feature is not
 supported on all kernels, and is only supported on ext4 file systems.
 .TP
+.B \-k
+Use 1024\-byte blocksize for output (identical to '\-b1024').
 .TP
 .B -P
-Pre-load the ext4's extent status cache for the file.  This feature is not
-supported on all kernels, and is only supported on ext4 file systems.
-.B \-k
-Use 1024\-byte blocksize for output (identical to '\-b 1024').
+Pre-load the ext4 extent status cache for the file.  This is not
+supported on all kernels, and is only supported on ext4 filesystems.
 .TP
 .B \-s
 Sync the file before requesting the mapping.
 .TP
 .B \-v
 Be verbose when checking for file fragmentation.
+.TP
+.B \-V
+Print version number of program and library.  If given twice, also
+print the FIEMAP flags that are understood by the current version.
 .TP
 .B \-x
 Display mapping of extended attributes.
