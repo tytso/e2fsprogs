@@ -170,7 +170,7 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 	if (retval) {
 		com_err(__func__, retval,
 			_("while reading xattrs for inode %u"), ino);
-		return retval;
+		goto out;
 	}
 
 	retval = ext2fs_get_mem(size, &list);
@@ -626,9 +626,10 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 {
 	int		fd;
 	struct stat	statbuf;
-	ext2_ino_t	newfile;
+	ext2_ino_t	newfile, parent_ino;
 	errcode_t	retval;
 	struct ext2_inode inode;
+	char		*cp;
 
 	fd = ext2fs_open_file(src, O_RDONLY, 0);
 	if (fd < 0) {
@@ -642,25 +643,37 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 		goto out;
 	}
 
-	retval = ext2fs_namei(fs, root, cwd, dest, &newfile);
+	cp = strrchr(dest, '/');
+	if (cp) {
+		*cp = 0;
+		retval = ext2fs_namei(fs, root, cwd, dest, &parent_ino);
+		if (retval) {
+			com_err(dest, retval, _("while looking up \"%s\""),
+				dest);
+			goto out;
+		}
+		dest = cp+1;
+	} else
+		parent_ino = cwd;
+
+	retval = ext2fs_namei(fs, root, parent_ino, dest, &newfile);
 	if (retval == 0) {
 		retval = EXT2_ET_FILE_EXISTS;
 		goto out;
 	}
 
-	retval = ext2fs_new_inode(fs, cwd, 010755, 0, &newfile);
+	retval = ext2fs_new_inode(fs, parent_ino, 010755, 0, &newfile);
 	if (retval)
 		goto out;
 #ifdef DEBUGFS
 	printf("Allocated inode: %u\n", newfile);
 #endif
-	retval = ext2fs_link(fs, cwd, dest, newfile,
-				EXT2_FT_REG_FILE);
+	retval = ext2fs_link(fs, parent_ino, dest, newfile, EXT2_FT_REG_FILE);
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
-		retval = ext2fs_expand_dir(fs, cwd);
+		retval = ext2fs_expand_dir(fs, parent_ino);
 		if (retval)
 			goto out;
-		retval = ext2fs_link(fs, cwd, dest, newfile,
+		retval = ext2fs_link(fs, parent_ino, dest, newfile,
 					EXT2_FT_REG_FILE);
 	}
 	if (retval)

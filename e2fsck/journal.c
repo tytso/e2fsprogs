@@ -289,7 +289,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 	struct ext4_fc_tail *tail;
 	__u8 *start, *end;
 	struct ext4_fc_head *head;
-	struct ext2fs_extent ext2fs_ex;
+	struct ext2fs_extent ext2fs_ex = {0};
 
 	state = &ctx->fc_replay_state;
 
@@ -325,6 +325,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 				ret = JBD2_FC_REPLAY_STOP;
 			else
 				ret = JBD2_FC_REPLAY_CONTINUE;
+			/* fallthrough */
 		case EXT4_FC_TAG_DEL_RANGE:
 		case EXT4_FC_TAG_LINK:
 		case EXT4_FC_TAG_UNLINK:
@@ -621,7 +622,7 @@ static inline void tl_to_darg(struct dentry_info_args *darg,
 
 	darg->parent_ino = le32_to_cpu(fcd->fc_parent_ino);
 	darg->ino = le32_to_cpu(fcd->fc_ino);
-	darg->dname = fcd->fc_dname;
+	darg->dname = (char *) fcd->fc_dname;
 	darg->dname_len = ext4_fc_tag_len(tl) -
 			sizeof(struct ext4_fc_dentry_info);
 	darg->dname = malloc(darg->dname_len + 1);

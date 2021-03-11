@@ -2898,9 +2898,10 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		if (is_leaf && problem == 0 && extent.e_len > 0) {
 #if 0
 			printf("extent_region(ino=%u, expect=%llu, "
-			       "lblk=%llu, len=%u)\n",
-			       pb->ino, pb->next_lblock,
-			       extent.e_lblk, extent.e_len);
+			       "lblk=%llu, len=%u)\n", pb->ino,
+			       (unsigned long long) pb->next_lblock,
+			       (unsigned long long) extent.e_lblk,
+			       extent.e_len);
 #endif
 			if (extent.e_lblk < pb->next_lblock)
 				problem = PR_1_EXTENT_COLLISION;
@@ -3026,7 +3027,12 @@ report_problem:
 			if (extent.e_lblk != lblk) {
 				struct ext2_extent_info e_info;
 
-				ext2fs_extent_get_info(ehandle, &e_info);
+				pctx->errcode = ext2fs_extent_get_info(ehandle,
+								       &e_info);
+				if (pctx->errcode) {
+					pctx->str = "ext2fs_extent_get_info";
+					return;
+				}
 				pctx->blk = lblk;
 				pctx->blk2 = extent.e_lblk;
 				pctx->num = e_info.curr_level - 1;
@@ -3495,8 +3501,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.num_blocks *= EXT2FS_CLUSTER_RATIO(fs);
 #if 0
 	printf("inode %u, i_size = %u, last_block = %llu, i_blocks=%llu, num_blocks = %llu\n",
-	       ino, inode->i_size, pb.last_block, ext2fs_inode_i_blocks(fs, inode),
-	       pb.num_blocks);
+	       ino, inode->i_size, (unsigned long long) pb.last_block,
+	       (unsigned long long) ext2fs_inode_i_blocks(fs, inode),
+	       (unsigned long long) pb.num_blocks);
 #endif
 	size = EXT2_I_SIZE(inode);
 	if (pb.is_dir) {
@@ -3721,7 +3728,7 @@ static int process_block(ext2_filsys fs,
 				       (unsigned long) pctx->ino, type,
 				       (unsigned long) p->previous_block+1,
 				       (unsigned long) blk,
-				       blockcnt);
+				       (long long) blockcnt);
 			}
 			p->fragmented = 1;
 		}

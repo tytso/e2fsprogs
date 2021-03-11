@@ -53,16 +53,18 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	errcode = ext2fs_bmap2(fs, ino, inode, buf, 0, blk, 0, &pblk);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
-			"while mapping logical block %llu\n", blk);
+			"while mapping logical block %llu\n",
+			(unsigned long long) blk);
 		return;
 	}
 
-	fprintf(pager, "Reading directory block %llu, phys %llu\n", blk, pblk);
+	fprintf(pager, "Reading directory block %llu, phys %llu\n",
+		(unsigned long long) blk, (unsigned long long) pblk);
 	errcode = ext2fs_read_dir_block4(current_fs, pblk, buf, 0, ino);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
 			"while reading block %llu (%llu)\n",
-			blk, pblk);
+			(unsigned long long) blk, (unsigned long long) pblk);
 		return;
 	}
 	hash_alg = rootnode->hash_version;
@@ -85,7 +87,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		    ((rec_len % 4) != 0) ||
 		    ((unsigned) thislen + 8 > rec_len)) {
 			fprintf(pager, "Corrupted directory block (%llu)!\n",
-				blk);
+				(unsigned long long) blk);
 			break;
 		}
 		strncpy(name, dirent->name, thislen);
@@ -213,14 +215,16 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 	errcode = ext2fs_bmap2(fs, ino, inode, buf, 0, blk, 0, &pblk);
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
-			"while mapping logical block %llu\n", blk);
+			"while mapping logical block %llu\n",
+			(unsigned long long) blk);
 		goto errout;
 	}
 
 	errcode = io_channel_read_blk64(current_fs->io, pblk, 1, buf);
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
-			"while reading block %llu\n", blk);
+			"while reading block %llu\n",
+			(unsigned long long) blk);
 		goto errout;
 	}
 
@@ -473,7 +477,7 @@ static int search_dir_block(ext2_filsys fs, blk64_t *blocknr,
 			    p->len) == 0) {
 			printf("Entry found at logical block %lld, "
 			       "phys %llu, offset %u\n", (long long)blockcnt,
-			       *blocknr, offset);
+			       (unsigned long long) *blocknr, offset);
 			printf("offset %u\n", offset);
 			return BLOCK_ABORT;
 		}

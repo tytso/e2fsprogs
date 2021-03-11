@@ -265,8 +265,8 @@ static errcode_t dump_chunk_info(ext2_filsys fs, struct chunk_info *info,
 	int i, retval = 0;
 
 	fprintf(f, "Total blocks: %llu\nFree blocks: %llu (%0.1f%%)\n",
-		ext2fs_blocks_count(fs->super),
-		free_blks,
+		(unsigned long long) ext2fs_blocks_count(fs->super),
+		(unsigned long long) free_blks,
 		(double)free_blks * 100 /
 		ext2fs_blocks_count(fs->super));
 

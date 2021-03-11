@@ -168,9 +168,13 @@ flushb: flushb.o
 	$(E) "	LD $@"
 	$(Q) $(LD) $(ALL_LDFLAGS) -o flushb flushb.o $(CHECKLIB)
 
-iscan: iscan.o util.o ehandler.o $(DEPLIBS)
+iscan: iscan.o $(DEPLIBS)
 	$(E) "	LD $@"
-	$(Q) $(LD) $(ALL_LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
+	$(Q) $(LD) $(ALL_LDFLAGS) -o iscan iscan.o $(LIBS)
+
+iscan.static: iscan.o $(STATIC_DEPLIBS)
+	$(E) "	LD $@"
+	$(Q) $(LD) $(LDFLAGS_STATIC) -o iscan.static iscan.o $(STATIC_LIBS)
 
 test_profile: $(srcdir)/profile.c profile_helpers.o argv_parse.o \
 		prof_err.o profile.h $(DEPSTATIC_LIBCOM_ERR)
@@ -254,7 +258,7 @@ clean::
 		e2fsck.shared e2fsck.profiled flushb e2fsck.8 \
 		tst_problem tst_region tst_refcount tst_crc32 \
 		gen_crc32table e2fsck.conf.5 \
-		prof_err.c prof_err.h test_profile
+		prof_err.c prof_err.h test_profile iscan iscan.static
 	$(RM) -rf profiled
 
 mostlyclean: clean

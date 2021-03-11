@@ -257,7 +257,8 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 
 	sprintf(buf, "badblocks -b %d -X %s%s%s %llu", fs->blocksize,
 		quiet ? "" : "-s ", (cflag > 1) ? "-w " : "",
-		fs->device_name, ext2fs_blocks_count(fs->super)-1);
+		fs->device_name,
+		(unsigned long long) ext2fs_blocks_count(fs->super)-1);
 	if (verbose)
 		printf(_("Running command: %s\n"), buf);
 	f = popen(buf, "r");
@@ -442,7 +443,8 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 			if (retval) {
 				fprintf(stderr, _("\nCould not write %d "
 					  "blocks in inode table starting at %llu: %s\n"),
-					num, blk, error_message(retval));
+					num, (unsigned long long) blk,
+					error_message(retval));
 				exit(1);
 			}
 		}
@@ -639,7 +641,7 @@ static void create_journal_dev(ext2_filsys fs)
 			com_err("create_journal_dev", retval,
 				_("while zeroing journal device "
 				  "(block %llu, count %d)"),
-				err_blk, err_count);
+				(unsigned long long) err_blk, err_count);
 			exit(1);
 		}
 		blk += c;
@@ -671,14 +673,15 @@ static void show_stats(ext2_filsys fs)
 	if (!verbose) {
 		printf(_("Creating filesystem with %llu %dk blocks and "
 			 "%u inodes\n"),
-		       ext2fs_blocks_count(s), fs->blocksize >> 10,
-		       s->s_inodes_count);
+		       (unsigned long long) ext2fs_blocks_count(s),
+		       fs->blocksize >> 10, s->s_inodes_count);
 		goto skip_details;
 	}
 
 	if (ext2fs_blocks_count(&fs_param) != ext2fs_blocks_count(s))
 		fprintf(stderr, _("warning: %llu blocks unused.\n\n"),
-		       ext2fs_blocks_count(&fs_param) - ext2fs_blocks_count(s));
+			(unsigned long long) (ext2fs_blocks_count(&fs_param) -
+					      ext2fs_blocks_count(s)));
 
 	printf(_("Filesystem label=%.*s\n"), EXT2_LEN_STR(s->s_volume_name));
 
@@ -698,9 +701,9 @@ static void show_stats(ext2_filsys fs)
 	printf(_("Stride=%u blocks, Stripe width=%u blocks\n"),
 	       s->s_raid_stride, s->s_raid_stripe_width);
 	printf(_("%u inodes, %llu blocks\n"), s->s_inodes_count,
-	       ext2fs_blocks_count(s));
+	       (unsigned long long) ext2fs_blocks_count(s));
 	printf(_("%llu blocks (%2.2f%%) reserved for the super user\n"),
-		ext2fs_r_blocks_count(s),
+	       (unsigned long long) ext2fs_r_blocks_count(s),
 	       100.0 *  ext2fs_r_blocks_count(s) / ext2fs_blocks_count(s));
 	printf(_("First data block=%u\n"), s->s_first_data_block);
 	if (root_uid != 0 || root_gid != 0)
@@ -744,7 +747,7 @@ skip_details:
 			col_left = 72;
 		}
 		col_left -= need;
-		printf("%llu", group_block);
+		printf("%llu", (unsigned long long) group_block);
 	}
 	printf("\n\n");
 }
@@ -2192,8 +2195,8 @@ profile_error:
 		fprintf(stderr, _("%s: Size of device (0x%llx blocks) %s "
 				  "too big to be expressed\n\t"
 				  "in 32 bits using a blocksize of %d.\n"),
-			program_name, fs_blocks_count, device_name,
-			EXT2_BLOCK_SIZE(&fs_param));
+			program_name, (unsigned long long) fs_blocks_count,
+			device_name, EXT2_BLOCK_SIZE(&fs_param));
 		exit(1);
 	}
 	/*
@@ -2206,8 +2209,8 @@ profile_error:
 		fprintf(stderr, _("%s: Size of device (0x%llx blocks) %s "
 				  "too big to create\n\t"
 				  "a filesystem using a blocksize of %d.\n"),
-			program_name, fs_blocks_count, device_name,
-			EXT2_BLOCK_SIZE(&fs_param));
+			program_name, (unsigned long long) fs_blocks_count,
+			device_name, EXT2_BLOCK_SIZE(&fs_param));
 		exit(1);
 	}
 
@@ -2602,14 +2605,15 @@ profile_error:
 			else {
 				com_err(program_name, 0,
 					_("too many inodes (%llu), raise "
-					  "inode ratio?"), n);
+					  "inode ratio?"),
+					(unsigned long long) n);
 				exit(1);
 			}
 		}
 	} else if (num_inodes > MAX_32_NUM) {
 		com_err(program_name, 0,
 			_("too many inodes (%llu), specify < 2^32 inodes"),
-			  num_inodes);
+			(unsigned long long) num_inodes);
 		exit(1);
 	}
 	/*
@@ -3054,7 +3058,7 @@ int main (int argc, char *argv[])
 		32768 : fs->blocksize * 8);
 	io_channel_set_options(fs->io, opt_string);
 	if (offset) {
-		sprintf(opt_string, "offset=%llu", offset);
+		sprintf(opt_string, "offset=%llu", (unsigned long long) offset);
 		io_channel_set_options(fs->io, opt_string);
 	}
 
@@ -3330,7 +3334,7 @@ int main (int argc, char *argv[])
 		if (retval) {
 			com_err(program_name, retval,
 				_("while zeroing block %llu at end of filesystem"),
-				ret_blk);
+				(unsigned long long) ret_blk);
 		}
 		write_inode_tables(fs, lazy_itable_init, itable_zeroed);
 		create_root_dir(fs);

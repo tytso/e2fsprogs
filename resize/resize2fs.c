@@ -177,9 +177,9 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_BMOVE)
 		printf("Number of free blocks: %llu/%llu, Needed: %llu\n",
-		       ext2fs_free_blocks_count(rfs->old_fs->super),
-		       ext2fs_free_blocks_count(rfs->new_fs->super),
-		       rfs->needed_blocks);
+		       (unsigned long long) ext2fs_free_blocks_count(rfs->old_fs->super),
+		       (unsigned long long) ext2fs_free_blocks_count(rfs->new_fs->super),
+		       (unsigned long long) rfs->needed_blocks);
 #endif
 
 	init_resource_track(&rtrack, "block_mover", fs->io);
@@ -758,7 +758,7 @@ retry:
 	new_inodes =(unsigned long long) fs->super->s_inodes_per_group * fs->group_desc_count;
 	if (new_inodes > ~0U) {
 		fprintf(stderr, _("inodes (%llu) must be less than %u\n"),
-				   new_inodes, ~0U);
+			(unsigned long long) new_inodes, ~0U);
 		return EXT2_ET_TOO_MANY_INODES;
 	}
 	fs->super->s_inodes_count = fs->super->s_inodes_per_group *
@@ -1243,7 +1243,8 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 		 * nothing other than standard metadata in use.
 		 */
 		return;
-	} else if (ext2fs_test_block_bitmap2(rfs->old_fs->block_map, blk) &&
+	} else if (blk < ext2fs_blocks_count(rfs->old_fs->super) &&
+		   ext2fs_test_block_bitmap2(rfs->old_fs->block_map, blk) &&
 		   !ext2fs_test_block_bitmap2(meta_bmap, blk)) {
 		ext2fs_mark_block_bitmap2(rfs->move_blocks, blk);
 		rfs->needed_blocks++;
@@ -1510,7 +1511,8 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		if (ext2fs_block_bitmap_loc(old_fs, i) !=
 		    (blk = ext2fs_block_bitmap_loc(fs, i))) {
 			ext2fs_block_alloc_stats2(fs, blk, +1);
-			if (ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
+			if (blk < ext2fs_blocks_count(old_fs->super) &&
+			    ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
 			    !ext2fs_test_block_bitmap2(meta_bmap, blk))
 				ext2fs_mark_block_bitmap2(rfs->move_blocks,
 							 blk);
@@ -1518,7 +1520,8 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		if (ext2fs_inode_bitmap_loc(old_fs, i) !=
 		    (blk = ext2fs_inode_bitmap_loc(fs, i))) {
 			ext2fs_block_alloc_stats2(fs, blk, +1);
-			if (ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
+			if (blk < ext2fs_blocks_count(old_fs->super) &&
+			    ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
 			    !ext2fs_test_block_bitmap2(meta_bmap, blk))
 				ext2fs_mark_block_bitmap2(rfs->move_blocks,
 							 blk);
@@ -1544,7 +1547,8 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		for (blk = ext2fs_inode_table_loc(fs, i), j=0;
 		     j < fs->inode_blocks_per_group ; j++, blk++) {
 			ext2fs_block_alloc_stats2(fs, blk, +1);
-			if (ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
+			if (blk < ext2fs_blocks_count(old_fs->super) &&
+			    ext2fs_test_block_bitmap2(old_fs->block_map, blk) &&
 			    !ext2fs_test_block_bitmap2(meta_bmap, blk))
 				ext2fs_mark_block_bitmap2(rfs->move_blocks,
 							 blk);
@@ -1644,7 +1648,8 @@ static errcode_t resize2fs_get_alloc_block(ext2_filsys fs,
 
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & 0xF)
-		printf("get_alloc_block allocating %llu\n", blk);
+		printf("get_alloc_block allocating %llu\n",
+		       (unsigned long long) blk);
 #endif
 
 	ext2fs_mark_block_bitmap2(rfs->old_fs->block_map, blk);
@@ -1750,7 +1755,9 @@ static errcode_t block_mover(ext2_resize_t rfs)
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_BMOVE)
 			printf("Moving %llu blocks %llu->%llu\n",
-			       size, old_blk, new_blk);
+			       (unsigned long long) size,
+			       (unsigned long long) old_blk,
+			       (unsigned long long) new_blk);
 #endif
 		do {
 			c = size;
@@ -1843,8 +1850,9 @@ static int process_block(ext2_filsys fs, blk64_t	*block_nr,
 #ifdef RESIZE2FS_DEBUG
 			if (pb->rfs->flags & RESIZE_DEBUG_BMOVE)
 				printf("ino=%u, blockcnt=%lld, %llu->%llu\n",
-				       pb->old_ino, blockcnt, block,
-				       new_block);
+				       pb->old_ino, (long long) blockcnt,
+				       (unsigned long long) block,
+				       (unsigned long long) new_block);
 #endif
 			block = new_block;
 		}
@@ -2460,7 +2468,8 @@ static errcode_t move_itables(ext2_resize_t rfs)
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE)
 			printf("Itable move group %d block %llu->%llu (diff %lld)\n",
-			       i, old_blk, new_blk, diff);
+			       i, (unsigned long long) old_blk,
+			       (unsigned long long) new_blk, diff);
 #endif
 
 		if (!diff)
@@ -2934,7 +2943,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	}
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)
-		printf("fs requires %llu data blocks.\n", data_needed);
+		printf("fs requires %llu data blocks.\n",
+		       (unsigned long long) data_needed);
 #endif
 
 	/*
@@ -2977,7 +2987,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)
 		printf("With %d group(s), we have %llu blocks available.\n",
-		       groups, data_blocks);
+		       groups, (unsigned long long) data_blocks);
 #endif
 
 	/*
@@ -3030,8 +3040,10 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 		if (flags & RESIZE_DEBUG_MIN_CALC)
 			printf("Added %d extra group(s), "
 			       "blks_needed %llu, data_blocks %llu, "
-			       "last_start %llu\n", extra_grps, blks_needed,
-			       data_blocks, last_start);
+			       "last_start %llu\n", extra_grps,
+			       (unsigned long long) blks_needed,
+			       (unsigned long long) data_blocks,
+			       (unsigned long long) last_start);
 #endif
 	}
 
@@ -3046,7 +3058,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)
-		printf("Last group's overhead is %llu\n", overhead);
+		printf("Last group's overhead is %llu\n",
+		       (unsigned long long) overhead);
 #endif
 
 	/*
@@ -3059,7 +3072,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 #ifdef RESIZE2FS_DEBUG
 		if (flags & RESIZE_DEBUG_MIN_CALC)
 			printf("Need %llu data blocks in last group\n",
-			       remainder);
+			       (unsigned long long) remainder);
 #endif
 		/*
 		 * 50 is a magic number that mkfs/resize uses to see if its
@@ -3077,7 +3090,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	overhead += fs->super->s_first_data_block;
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)
-		printf("Final size of last group is %lld\n", overhead);
+		printf("Final size of last group is %llu\n",
+		       (unsigned long long) overhead);
 #endif
 
 	/* Add extra slack for bigalloc file systems */
@@ -3104,7 +3118,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)
-		printf("Estimated blocks needed: %llu\n", blks_needed);
+		printf("Estimated blocks needed: %llu\n",
+		       (unsigned long long) blks_needed);
 #endif
 
 	/*
@@ -3139,7 +3154,8 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 
 #ifdef RESIZE2FS_DEBUG
 		if (flags & RESIZE_DEBUG_MIN_CALC)
-			printf("Extents safety margin: %llu\n", safe_margin);
+			printf("Extents safety margin: %llu\n",
+			       (unsigned long long) safe_margin);
 #endif
 		blks_needed += safe_margin;
 	}

@@ -1797,7 +1797,7 @@ errcode_t ext2fs_decode_extent(struct ext2fs_extent *to, void *addr, int len)
 			<< 32);
 	to->e_lblk = ext2fs_le32_to_cpu(from->ee_block);
 	to->e_len = ext2fs_le16_to_cpu(from->ee_len);
-	to->e_flags |= EXT2_EXTENT_FLAGS_LEAF;
+	to->e_flags = EXT2_EXTENT_FLAGS_LEAF;
 	if (to->e_len > EXT_INIT_MAX_LEN) {
 		to->e_len -= EXT_INIT_MAX_LEN;
 		to->e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
@@ -1824,8 +1824,11 @@ errcode_t ext2fs_count_blocks(ext2_filsys fs, ext2_ino_t ino,
 	if (errcode)
 		goto out;
 
-	ext2fs_get_array(handle->max_depth, sizeof(blk64_t),
-				&intermediate_nodes);
+	errcode = ext2fs_get_array(handle->max_depth, sizeof(blk64_t),
+				   &intermediate_nodes);
+	if (errcode)
+		goto out;
+
 	blkcount = handle->level;
 	while (!errcode) {
 		if (extent.e_flags & EXT2_EXTENT_FLAGS_LEAF) {

@@ -40,7 +40,7 @@ mask::r-x
 other::r-x
 default:user::rwx
 default:group::r-x
-default:group:adm:r-x
+default:group:4:r-x
 default:mask::r-x
 default:other::r-x
 EOF

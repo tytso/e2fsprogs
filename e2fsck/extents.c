@@ -290,8 +290,10 @@ errcode_t e2fsck_rewrite_extent_tree(e2fsck_t ctx, struct extent_list *list)
 	errcode_t err;
 
 	memset(&inode, 0, sizeof(inode));
-	ext2fs_read_inode_full(ctx->fs, list->ino, EXT2_INODE(&inode),
-				sizeof(inode));
+	err = ext2fs_read_inode_full(ctx->fs, list->ino, EXT2_INODE(&inode),
+				     sizeof(inode));
+	if (err)
+		return err;
 
 	/* Skip deleted inodes and inline data files */
 	if (inode.i_flags & EXT4_INLINE_DATA_FL)
@@ -305,11 +307,11 @@ errcode_t e2fsck_rewrite_extent_tree(e2fsck_t ctx, struct extent_list *list)
 				  &blk_count);
 	if (err)
 		return err;
-	ext2fs_iblk_set(ctx->fs, EXT2_INODE(&inode), blk_count);
-	ext2fs_write_inode_full(ctx->fs, list->ino, EXT2_INODE(&inode),
-		sizeof(inode));
-
-	return 0;
+	err = ext2fs_iblk_set(ctx->fs, EXT2_INODE(&inode), blk_count);
+	if (err)
+		return err;
+	return ext2fs_write_inode_full(ctx->fs, list->ino, EXT2_INODE(&inode),
+				       sizeof(inode));
 }
 
 errcode_t e2fsck_read_extents(e2fsck_t ctx, struct extent_list *extents)
@@ -325,7 +327,7 @@ errcode_t e2fsck_read_extents(e2fsck_t ctx, struct extent_list *extents)
 	retval = ext2fs_get_array(NUM_EXTENTS, sizeof(struct ext2fs_extent),
 				  &extents->extents);
 	if (retval)
-		return -ENOMEM;
+		return ENOMEM;
 
 	retval = ext2fs_read_inode(ctx->fs, extents->ino, EXT2_INODE(&inode));
 	if (retval)

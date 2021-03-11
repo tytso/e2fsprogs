@@ -117,6 +117,9 @@ Adjust the number of mounts after which the filesystem will be checked by
 .BR e2fsck (8).
 If
 .I max-mount-counts
+is the string "random", tune2fs will use a random value between 20 and 40.
+If
+.I max-mount-counts
 is 0 or \-1, the number of times the filesystem is mounted will be disregarded
 by
 .BR e2fsck (8)
@@ -127,21 +130,13 @@ checked will avoid all filesystems being checked at one time
 when using journaled filesystems.
 .sp
 Mount-count-dependent checking is disabled by default to avoid
-unanticipated long reboots while e2fsck does its work.  However,
-you may wish to consider the consequences of disabling
-mount-count-dependent checking entirely.  Bad disk drives, cables,
-memory, and kernel bugs could all corrupt a filesystem without
-marking the filesystem dirty or in error.  If you are using
-journaling on your filesystem, your filesystem will
-.B never
-be marked dirty, so it will not normally be checked.  A
-filesystem error detected by the kernel will still force
-an fsck on the next reboot, but it may already be too late
-to prevent data loss at that point.
-.sp
-See also the
-.B \-i
-option for time-dependent checking.
+unanticipated long reboots while e2fsck does its work.  If you
+are concerned about file system corruptions caused by potential hardware
+problems of kernel bugs, a better solution than mount-count-dependent
+checking is to use the
+.BR e2scrub (8)
+program.  This does require placing the file system on an LVM volume,
+however.
 .TP
 .BI \-C " mount-count"
 Set the number of times the filesystem has been mounted.

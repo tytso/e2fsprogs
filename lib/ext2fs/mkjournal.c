@@ -524,7 +524,7 @@ errcode_t ext2fs_add_journal_inode3(ext2_filsys fs, struct ext2fs_journal_params
 			retval = ioctl(fd, EXT2_IOC_SETFLAGS, &f);
 			close(fd);
 			if (retval)
-				return retval;
+				return errno;
 		}
 #endif
 #endif
