@@ -1,3 +1,11 @@
+e2fsprogs (1.46.2-1~bpo10+2) buster-backports; urgency=medium
+
+  * Rebuild to fix incorrect build environment for x86_64 (no source
+    changes were needed between 1.46.2-1~bpo10+1 and 1.46.2-1~bpo10+2)
+    (Closes: #985296)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 18 Mar 2021 19:44:28 -0400
+
 e2fsprogs (1.46.2-1~bpo10+1) buster-backports; urgency=medium
 
   * Rebuild for buster-backports.
