@@ -911,6 +911,7 @@ static void reserve_block_for_lnf_repair(e2fsck_t ctx)
 }
 
 static errcode_t get_inline_data_ea_size(ext2_filsys fs, ext2_ino_t ino,
+					 struct ext2_inode *inode,
 					 size_t *sz)
 {
 	void *p;
@@ -921,7 +922,8 @@ static errcode_t get_inline_data_ea_size(ext2_filsys fs, ext2_ino_t ino,
 	if (retval)
 		return retval;
 
-	retval = ext2fs_xattrs_read(handle);
+	retval = ext2fs_xattrs_read_inode(handle,
+					  (struct ext2_inode_large *)inode);
 	if (retval)
 		goto err;
 
@@ -1508,7 +1510,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    (ino >= EXT2_FIRST_INODE(fs->super))) {
 			size_t size = 0;
 
-			pctx.errcode = get_inline_data_ea_size(fs, ino, &size);
+			pctx.errcode = get_inline_data_ea_size(fs, ino, inode,
+							       &size);
 			if (!pctx.errcode &&
 			    fix_problem(ctx, PR_1_INLINE_DATA_FEATURE, &pctx)) {
 				ext2fs_set_feature_inline_data(sb);
@@ -1531,7 +1534,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			flags = fs->flags;
 			if (failed_csum)
 				fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
-			err = get_inline_data_ea_size(fs, ino, &size);
+			err = get_inline_data_ea_size(fs, ino, inode, &size);
 			fs->flags = (flags & EXT2_FLAG_IGNORE_CSUM_ERRORS) |
 				    (fs->flags & ~EXT2_FLAG_IGNORE_CSUM_ERRORS);
 
