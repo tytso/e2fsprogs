@@ -379,7 +379,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* group descriptor N checksum is invalid, should be yyyy. */
 	{ PR_0_GDT_CSUM,
 	  N_("@g descriptor %g checksum is %04x, should be %04y.  "),
-	     PROMPT_FIX, PR_LATCH_BG_CHECKSUM, 0, 0, 0 },
+	     PROMPT_FIX, PR_PREEN_OK | PR_LATCH_BG_CHECKSUM, 0, 0, 0 },
 
 	/* group descriptor N marked uninitialized without feature set. */
 	{ PR_0_GDT_UNINIT,
