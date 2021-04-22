@@ -238,7 +238,7 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 			if (offset == 0)
 				continue;
 
-			off_out = (l1_index * img.l2_size) +
+			off_out = ((__u64)l1_index * img.l2_size) +
 				  l2_index;
 			off_out <<= img.cluster_bits;
 			ret = qcow2_copy_data(qcow2_fd, raw_fd, offset,
