@@ -398,7 +398,7 @@ static errcode_t raw_write_blk(io_channel channel,
 		mutex_lock(data, BOUNCE_MTX);
 		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
-			goto error_out;
+			goto error_unlock;
 		}
 		actual = write(data->dev, buf, size);
 		mutex_unlock(data, BOUNCE_MTX);
