@@ -311,10 +311,10 @@ bounce_read:
 			size += really_read;
 			goto short_read;
 		}
-		actual = size;
-		if (actual > align_size)
-			actual = align_size;
-		actual -= offset;
+		if ((actual + offset) > align_size)
+			actual = align_size - offset;
+		if (actual > size)
+			actual = size;
 		memcpy(buf, data->bounce + offset, actual);
 
 		really_read += actual;
@@ -455,9 +455,10 @@ bounce_write:
 			}
 		}
 		actual = size;
-		if (actual > align_size)
-			actual = align_size;
-		actual -= offset;
+		if ((actual + offset) > align_size)
+			actual = align_size - offset;
+		if (actual > size)
+			actual = size;
 		memcpy(((char *)data->bounce) + offset, buf, actual);
 		if (ext2fs_llseek(data->dev, aligned_blk * align_size, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
