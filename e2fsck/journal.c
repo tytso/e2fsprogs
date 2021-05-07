@@ -285,9 +285,9 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 	struct e2fsck_fc_replay_state *state;
 	int ret = JBD2_FC_REPLAY_CONTINUE;
 	struct ext4_fc_add_range *ext;
-	struct ext4_fc_tl *tl;
+	struct ext4_fc_tl tl;
 	struct ext4_fc_tail tail;
-	__u8 *start, *end;
+	__u8 *start, *cur, *end, *val;
 	struct ext4_fc_head head;
 	struct ext2fs_extent ext2fs_ex = {0};
 
@@ -313,12 +313,15 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 	}
 
 	state->fc_replay_expected_off++;
-	fc_for_each_tl(start, end, tl) {
+	for (cur = start; cur < end; cur = cur + le16_to_cpu(tl.fc_len) + sizeof(tl)) {
+		memcpy(&tl, cur, sizeof(tl));
+		val = cur + sizeof(tl);
+
 		jbd_debug(3, "Scan phase, tag:%s, blk %lld\n",
-			  tag2str(le16_to_cpu(tl->fc_tag)), bh->b_blocknr);
-		switch (le16_to_cpu(tl->fc_tag)) {
+			  tag2str(le16_to_cpu(tl.fc_tag)), bh->b_blocknr);
+		switch (le16_to_cpu(tl.fc_tag)) {
 		case EXT4_FC_TAG_ADD_RANGE:
-			ext = (struct ext4_fc_add_range *)ext4_fc_tag_val(tl);
+			ext = (struct ext4_fc_add_range *)val;
 			ret = ext2fs_decode_extent(&ext2fs_ex, (void *)&ext->fc_ex,
 						   sizeof(ext->fc_ex));
 			if (ret)
@@ -333,14 +336,14 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 		case EXT4_FC_TAG_INODE:
 		case EXT4_FC_TAG_PAD:
 			state->fc_cur_tag++;
-			state->fc_crc = jbd2_chksum(j, state->fc_crc, tl,
-					sizeof(*tl) + ext4_fc_tag_len(tl));
+			state->fc_crc = jbd2_chksum(j, state->fc_crc, cur,
+					sizeof(tl) + ext4_fc_tag_len(&tl));
 			break;
 		case EXT4_FC_TAG_TAIL:
 			state->fc_cur_tag++;
-			memcpy(&tail, ext4_fc_tag_val(tl), sizeof(tail));
-			state->fc_crc = jbd2_chksum(j, state->fc_crc, tl,
-						sizeof(*tl) +
+			memcpy(&tail, val, sizeof(tail));
+			state->fc_crc = jbd2_chksum(j, state->fc_crc, cur,
+						sizeof(tl) +
 						offsetof(struct ext4_fc_tail,
 						fc_crc));
 			jbd_debug(1, "tail tid %d, expected %d\n",
@@ -355,7 +358,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 			state->fc_crc = 0;
 			break;
 		case EXT4_FC_TAG_HEAD:
-			memcpy(&head, ext4_fc_tag_val(tl), sizeof(head));
+			memcpy(&head, val, sizeof(head));
 			if (le32_to_cpu(head.fc_features) &
 			    ~EXT4_FC_SUPPORTED_FEATURES) {
 				ret = -EOPNOTSUPP;
@@ -366,8 +369,8 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 				break;
 			}
 			state->fc_cur_tag++;
-			state->fc_crc = jbd2_chksum(j, state->fc_crc, tl,
-					sizeof(*tl) + ext4_fc_tag_len(tl));
+			state->fc_crc = jbd2_chksum(j, state->fc_crc, cur,
+					sizeof(tl) + ext4_fc_tag_len(&tl));
 			break;
 		default:
 			ret = state->fc_replay_num_tags ?
@@ -612,12 +615,12 @@ struct dentry_info_args {
 };
 
 static inline int tl_to_darg(struct dentry_info_args *darg,
-				struct  ext4_fc_tl *tl)
+			     struct  ext4_fc_tl *tl, __u8 *val)
 {
 	struct ext4_fc_dentry_info fcd;
 	int tag = le16_to_cpu(tl->fc_tag);
 
-	memcpy(&fcd, ext4_fc_tag_val(tl), sizeof(fcd));
+	memcpy(&fcd, val, sizeof(fcd));
 
 	darg->parent_ino = le32_to_cpu(fcd.fc_parent_ino);
 	darg->ino = le32_to_cpu(fcd.fc_ino);
@@ -627,7 +630,7 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 	if (!darg->dname)
 		return -ENOMEM;
 	memcpy(darg->dname,
-	       ext4_fc_tag_val(tl) + sizeof(struct ext4_fc_dentry_info),
+	       val + sizeof(struct ext4_fc_dentry_info),
 	       darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
 	jbd_debug(1, "%s: %s, ino %d, parent %d\n",
@@ -638,14 +641,14 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 	return 0;
 }
 
-static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl)
+static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 {
 	struct ext2_inode inode;
 	struct dentry_info_args darg;
 	ext2_filsys fs = ctx->fs;
 	int ret;
 
-	ret = tl_to_darg(&darg, tl);
+	ret = tl_to_darg(&darg, tl, val);
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, darg.ino);
@@ -657,14 +660,14 @@ static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl)
 	return ret;
 }
 
-static int ext4_fc_handle_link_and_create(e2fsck_t ctx, struct ext4_fc_tl *tl)
+static int ext4_fc_handle_link_and_create(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 {
 	struct dentry_info_args darg;
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode_large inode_large;
 	int ret, filetype, mode;
 
-	ret = tl_to_darg(&darg, tl);
+	ret = tl_to_darg(&darg, tl, val);
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, 0);
@@ -732,7 +735,7 @@ static void ext4_fc_replay_fixup_iblocks(struct ext2_inode_large *ondisk_inode,
 	}
 }
 
-static int ext4_fc_handle_inode(e2fsck_t ctx, struct ext4_fc_tl *tl)
+static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 {
 	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
 	int ino, inode_len = EXT2_GOOD_OLD_INODE_SIZE;
@@ -742,8 +745,8 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, struct ext4_fc_tl *tl)
 	errcode_t err;
 	blk64_t blks;
 
-	memcpy(&fc_ino, ext4_fc_tag_val(tl), sizeof(fc_ino));
-	fc_raw_inode = ext4_fc_tag_val(tl) + sizeof(fc_ino);
+	memcpy(&fc_ino, val, sizeof(fc_ino));
+	fc_raw_inode = val + sizeof(fc_ino);
 	ino = le32_to_cpu(fc_ino);
 
 	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
@@ -797,13 +800,13 @@ out:
 /*
  * Handle add extent replay tag.
  */
-static int ext4_fc_handle_add_extent(e2fsck_t ctx, struct ext4_fc_tl *tl)
+static int ext4_fc_handle_add_extent(e2fsck_t ctx, __u8 *val)
 {
 	struct ext2fs_extent extent;
 	struct ext4_fc_add_range add_range;
 	int ret = 0, ino;
 
-	memcpy(&add_range, ext4_fc_tag_val(tl), sizeof(add_range));
+	memcpy(&add_range, val, sizeof(add_range));
 	ino = le32_to_cpu(add_range.fc_ino);
 	ext4_fc_flush_extents(ctx, ino);
 
@@ -823,13 +826,13 @@ static int ext4_fc_handle_add_extent(e2fsck_t ctx, struct ext4_fc_tl *tl)
 /*
  * Handle delete logical range replay tag.
  */
-static int ext4_fc_handle_del_range(e2fsck_t ctx, struct ext4_fc_tl *tl)
+static int ext4_fc_handle_del_range(e2fsck_t ctx, __u8 *val)
 {
 	struct ext2fs_extent extent;
 	struct ext4_fc_del_range del_range;
 	int ret, ino;
 
-	memcpy(&del_range, ext4_fc_tag_val(tl), sizeof(del_range));
+	memcpy(&del_range, val, sizeof(del_range));
 	ino = le32_to_cpu(del_range.fc_ino);
 	ext4_fc_flush_extents(ctx, ino);
 
@@ -854,8 +857,8 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 	e2fsck_t ctx = journal->j_fs_dev->k_ctx;
 	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
 	int ret = JBD2_FC_REPLAY_CONTINUE;
-	struct ext4_fc_tl *tl;
-	__u8 *start, *end;
+	struct ext4_fc_tl tl;
+	__u8 *start, *end, *cur, *val;
 
 	if (pass == PASS_SCAN) {
 		state->fc_current_pass = PASS_SCAN;
@@ -891,28 +894,31 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 	start = (__u8 *)bh->b_data;
 	end = (__u8 *)bh->b_data + journal->j_blocksize - 1;
 
-	fc_for_each_tl(start, end, tl) {
+	for (cur = start; cur < end; cur = cur + le16_to_cpu(tl.fc_len) + sizeof(tl)) {
+		memcpy(&tl, cur, sizeof(tl));
+		val = cur + sizeof(tl);
+
 		if (state->fc_replay_num_tags == 0)
 			goto replay_done;
 		jbd_debug(3, "Replay phase processing %s tag\n",
-				tag2str(le16_to_cpu(tl->fc_tag)));
+				tag2str(le16_to_cpu(tl.fc_tag)));
 		state->fc_replay_num_tags--;
-		switch (le16_to_cpu(tl->fc_tag)) {
+		switch (le16_to_cpu(tl.fc_tag)) {
 		case EXT4_FC_TAG_CREAT:
 		case EXT4_FC_TAG_LINK:
-			ret = ext4_fc_handle_link_and_create(ctx, tl);
+			ret = ext4_fc_handle_link_and_create(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_UNLINK:
-			ret = ext4_fc_handle_unlink(ctx, tl);
+			ret = ext4_fc_handle_unlink(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_ADD_RANGE:
-			ret = ext4_fc_handle_add_extent(ctx, tl);
+			ret = ext4_fc_handle_add_extent(ctx, val);
 			break;
 		case EXT4_FC_TAG_DEL_RANGE:
-			ret = ext4_fc_handle_del_range(ctx, tl);
+			ret = ext4_fc_handle_del_range(ctx, val);
 			break;
 		case EXT4_FC_TAG_INODE:
-			ret = ext4_fc_handle_inode(ctx, tl);
+			ret = ext4_fc_handle_inode(ctx, val);
 			break;
 		case EXT4_FC_TAG_TAIL:
 			ext4_fc_flush_extents(ctx, 0);
