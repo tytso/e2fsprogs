@@ -284,7 +284,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 	e2fsck_t ctx = j->j_fs_dev->k_ctx;
 	struct e2fsck_fc_replay_state *state;
 	int ret = JBD2_FC_REPLAY_CONTINUE;
-	struct ext4_fc_add_range *ext;
+	struct ext4_fc_add_range ext;
 	struct ext4_fc_tl tl;
 	struct ext4_fc_tail tail;
 	__u8 *start, *cur, *end, *val;
@@ -321,9 +321,10 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 			  tag2str(le16_to_cpu(tl.fc_tag)), bh->b_blocknr);
 		switch (le16_to_cpu(tl.fc_tag)) {
 		case EXT4_FC_TAG_ADD_RANGE:
-			ext = (struct ext4_fc_add_range *)val;
-			ret = ext2fs_decode_extent(&ext2fs_ex, (void *)&ext->fc_ex,
-						   sizeof(ext->fc_ex));
+			memcpy(&ext, val, sizeof(ext));
+			ret = ext2fs_decode_extent(&ext2fs_ex,
+						   (void *)&ext.fc_ex,
+						   sizeof(ext.fc_ex));
 			if (ret)
 				ret = JBD2_FC_REPLAY_STOP;
 			else
@@ -764,12 +765,9 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 					inode_len);
 	if (err)
 		goto out;
-#ifdef WORDS_BIGENDIAN
-	ext2fs_swap_inode_full(ctx->fs, fc_inode,
-			       (struct ext2_inode_large *)fc_raw_inode,
-			       0, sizeof(*inode));
-#else
 	memcpy(fc_inode, fc_raw_inode, inode_len);
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_inode_full(ctx->fs, fc_inode, fc_inode, 0, inode_len);
 #endif
 	memcpy(inode, fc_inode, offsetof(struct ext2_inode_large, i_block));
 	memcpy(&inode->i_generation, &fc_inode->i_generation,
