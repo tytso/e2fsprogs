@@ -574,6 +574,8 @@ static errcode_t convert_posix_acl_to_disk_buffer(const void *value, size_t size
 				e += sizeof(ext4_acl_entry);
 				s += sizeof(ext4_acl_entry);
 				break;
+			default:
+				return EINVAL;
 		}
 	}
 	*size_out = s;
@@ -627,9 +629,9 @@ static errcode_t convert_disk_buffer_to_posix_acl(const void *value, size_t size
 				cp += sizeof(ext4_acl_entry);
 				size -= sizeof(ext4_acl_entry);
 				break;
-		default:
-			ext2fs_free_mem(&out);
-			return EINVAL;
+			default:
+				ext2fs_free_mem(&out);
+				return EINVAL;
 		}
 		entry++;
 	}
