@@ -405,6 +405,7 @@ static int check_dot(e2fsck_t ctx,
 	int		status = 0;
 	int		created = 0;
 	problem_t	problem = 0;
+	int		ftype = EXT2_FT_DIR;
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT;
@@ -416,12 +417,14 @@ static int check_dot(e2fsck_t ctx,
 
 	(void) ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (problem) {
+		if (!ext2fs_has_feature_filetype(ctx->fs->super))
+			ftype = EXT2_FT_UNKNOWN;
 		if (fix_problem(ctx, problem, pctx)) {
 			if (rec_len < 12)
 				rec_len = dirent->rec_len = 12;
 			dirent->inode = ino;
 			ext2fs_dirent_set_name_len(dirent, 1);
-			ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
+			ext2fs_dirent_set_file_type(dirent, ftype);
 			dirent->name[0] = '.';
 			dirent->name[1] = '\0';
 			status = 1;
@@ -442,12 +445,18 @@ static int check_dot(e2fsck_t ctx,
 				nextdir = (struct ext2_dir_entry *)
 					((char *) dirent + 12);
 				dirent->rec_len = 12;
-				(void) ext2fs_set_rec_len(ctx->fs, new_len,
-							  nextdir);
-				nextdir->inode = 0;
-				ext2fs_dirent_set_name_len(nextdir, 0);
-				ext2fs_dirent_set_file_type(nextdir,
-							    EXT2_FT_UNKNOWN);
+				/* if the next entry looks like "..", leave it
+				 * and let check_dotdot() verify the dirent,
+				 * otherwise zap the following entry. */
+				if (strncmp(nextdir->name, "..", 3) != 0) {
+					(void)ext2fs_set_rec_len(ctx->fs,
+								 new_len,
+								 nextdir);
+					nextdir->inode = 0;
+					ext2fs_dirent_set_name_len(nextdir, 0);
+					ext2fs_dirent_set_file_type(nextdir,
+								    ftype);
+				}
 				status = 1;
 			}
 		}
@@ -466,6 +475,7 @@ static int check_dotdot(e2fsck_t ctx,
 {
 	problem_t	problem = 0;
 	unsigned int	rec_len;
+	int		ftype = EXT2_FT_DIR;
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;
@@ -478,6 +488,8 @@ static int check_dotdot(e2fsck_t ctx,
 
 	(void) ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (problem) {
+		if (!ext2fs_has_feature_filetype(ctx->fs->super))
+			ftype = EXT2_FT_UNKNOWN;
 		if (fix_problem(ctx, problem, pctx)) {
 			if (rec_len < 12)
 				dirent->rec_len = 12;
@@ -488,7 +500,7 @@ static int check_dotdot(e2fsck_t ctx,
 			 */
 			dirent->inode = EXT2_ROOT_INO;
 			ext2fs_dirent_set_name_len(dirent, 2);
-			ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
+			ext2fs_dirent_set_file_type(dirent, ftype);
 			dirent->name[0] = '.';
 			dirent->name[1] = '.';
 			dirent->name[2] = '\0';
