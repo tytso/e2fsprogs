@@ -20,6 +20,7 @@ cc_library {
     defaults: ["e2fsprogs-defaults"],
     srcs: [
         "encoding.c",
+        "errcode.c",
         "feature.c",
         "fgetflags.c",
         "fsetflags.c",
