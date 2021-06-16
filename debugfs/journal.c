@@ -26,9 +26,7 @@
 #include "uuid/uuid.h"
 #include "journal.h"
 
-#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jfs-debug */
 static int bh_count = 0;
-#endif
 
 #if EXT2_FLAT_INCLUDES
 #include "blkid.h"
@@ -135,10 +133,8 @@ struct buffer_head *getblk(kdev_t kdev, unsigned long long blocknr,
 	if (retval)
 		return NULL;
 
-#ifdef CONFIG_JBD_DEBUG
 	if (journal_enable_debug >= 3)
 		bh_count++;
-#endif
 	jfs_debug(4, "getblk for block %llu (%d bytes)(total %d)\n",
 		  blocknr, blocksize, bh_count);
 
