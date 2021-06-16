@@ -81,7 +81,6 @@ int fsetflags (const char * name, unsigned long flags)
 	return syscall(SYS_fsctl, name, EXT2_IOC_SETFLAGS, &f, 0);
 #elif HAVE_EXT2_IOCTLS
 	int fd, r, f, save_errno = 0;
-	struct stat buf;
 
 	fd = open(name, OPEN_FLAGS);
 	if (fd == -1) {

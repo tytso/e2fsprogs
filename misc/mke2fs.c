@@ -1577,7 +1577,9 @@ static void PRS(int argc, char *argv[])
 	int		use_bsize;
 	char		*newpath;
 	int		pathlen = sizeof(PATH_SET) + 1;
+#ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
 	struct device_param dev_param;
+#endif
 
 	if (oldpath)
 		pathlen += strlen(oldpath);

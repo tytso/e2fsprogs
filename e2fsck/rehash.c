@@ -287,7 +287,7 @@ static EXT2_QSORT_TYPE name_cf_cmp(const struct name_cmp_ctx *ctx,
 {
 	const struct hash_entry *he_a = (const struct hash_entry *) a;
 	const struct hash_entry *he_b = (const struct hash_entry *) b;
-	unsigned int he_a_len, he_b_len, min_len;
+	unsigned int he_a_len, he_b_len;
 	int ret;
 
 	he_a_len = ext2fs_dirent_name_len(he_a->dir);

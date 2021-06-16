@@ -50,8 +50,8 @@
 
 int fgetflags (const char * name, unsigned long * flags)
 {
-	struct stat buf;
 #if HAVE_STAT_FLAGS && !(APPLE_DARWIN && HAVE_EXT2_IOCTLS)
+	struct stat buf;
 
 	if (stat (name, &buf) == -1)
 		return -1;

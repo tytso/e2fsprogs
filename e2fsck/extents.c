@@ -203,7 +203,7 @@ errcode_t rewrite_extent_replay(e2fsck_t ctx, struct extent_list *list,
 	ext2_extent_handle_t	handle;
 	unsigned int		i, ext_written;
 	struct ext2fs_extent	*ex, extent;
-	blk64_t			start_val, delta, blkcount;
+	blk64_t			start_val, delta;
 
 	/* Reset extent tree */
 	inode->i_flags &= ~EXT4_EXTENTS_FL;

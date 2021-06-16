@@ -34,7 +34,6 @@ static const char *err_string[] = {
 /* Return the name of an encoding or NULL */
 const char *e2p_errcode2str(int err)
 {
-	unsigned int i;
 	static char buf[32];
 
 	if (err < ARRAY_SIZE(err_string))
