@@ -329,7 +329,6 @@ success_unlock:
 
 error_unlock:
 	mutex_unlock(data, BOUNCE_MTX);
-error_out:
 	if (actual >= 0 && actual < size)
 		memset((char *) buf+actual, 0, size-actual);
 	if (channel->read_error)
