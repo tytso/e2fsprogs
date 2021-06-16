@@ -42,7 +42,7 @@ license {
 
 cc_defaults {
     name: "e2fsprogs-defaults",
-    cflags: ["-Wall", "-Werror"],
+    cflags: ["-Wall", "-Werror", "-Wno-pointer-arith"],
     target: {
         darwin: {
             // Still has unfixed/unsuppressed warnings.
