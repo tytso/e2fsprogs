@@ -585,8 +585,10 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 		else {
 			magic = (unsigned int *) (buf + BSD_LABEL_OFFSET);
 			if ((*magic == BSD_DISKMAGIC) ||
-			    (*magic == BSD_MAGICDISK))
+			    (*magic == BSD_MAGICDISK)) {
+				free(buf);
 				return;
+			}
 		}
 	}
 
