@@ -11,15 +11,17 @@
 		features = has_journal
 	}
 	ext4 = {
-		features = has_journal,extent,huge_file,flex_bg,metadata_csum,64bit,dir_nlink,extra_isize
+		features = has_journal,extent,huge_file,flex_bg,metadata_csum,64bit,dir_nlink,extra_isize,orphan_file
 		inode_size = 256
 	}
 	small = {
+		default_features = ^orphan_file
 		blocksize = 1024
 		inode_size = 128
 		inode_ratio = 4096
 	}
 	floppy = {
+		default_features = ^orphan_file
 		blocksize = 1024
 		inode_size = 128
 		inode_ratio = 8192
