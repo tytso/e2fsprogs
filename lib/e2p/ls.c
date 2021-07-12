@@ -482,6 +482,9 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (ext2fs_has_feature_casefold(sb))
 		fprintf(f, "Character encoding:       %s\n",
 			e2p_encoding2str(sb->s_encoding));
+	if (ext2fs_has_feature_orphan_file(sb))
+		fprintf(f, "Orphan file inode:        %u\n",
+			sb->s_orphan_file_inum);
 }
 
 void list_super (struct ext2_super_block * s)
