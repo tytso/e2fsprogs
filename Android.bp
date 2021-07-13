@@ -55,6 +55,9 @@ cc_defaults {
                 "-Wno-unused-variable",
             ],
         },
+        bionic: {
+            system_shared_libs: ["libc", "libdl"],
+        },
     },
 }
 

@@ -69,7 +69,6 @@ cc_binary {
     defaults: ["e2fsck-defaults"],
 
     shared_libs: e2fsck_libs,
-    system_shared_libs: ["libc", "libdl"],
     required: ["badblocks"],
 }
 
@@ -87,6 +86,5 @@ cc_binary {
     static_executable: true,
     ramdisk: true,
     defaults: ["e2fsck-defaults"],
-    system_shared_libs: [],
     static_libs: e2fsck_libs,
 }

@@ -25,5 +25,4 @@ cc_binary {
         "libext2fs",
         "libext2_com_err",
     ],
-    system_shared_libs: ["libc", "libdl"],
 }
