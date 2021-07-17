@@ -563,7 +563,7 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	if (ext2fs_has_feature_flex_bg(fs->super)) {
 		average_group = (average_group / flexbg_size) * flexbg_size;
 	}
-	if (average_group == 0)
+	if ((num_threads <= 1) || (average_group == 0))
 		goto fallback;
 
 	io_channel_set_options(fs->io, "cache=off");
