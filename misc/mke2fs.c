@@ -2794,7 +2794,7 @@ static int mke2fs_discard_device(ext2_filsys fs)
 	struct ext2fs_numeric_progress_struct progress;
 	blk64_t blocks = ext2fs_blocks_count(fs->super);
 	blk64_t count = DISCARD_STEP_MB;
-	blk64_t cur;
+	blk64_t cur = 0;
 	int retval = 0;
 
 	/*
@@ -2802,10 +2802,9 @@ static int mke2fs_discard_device(ext2_filsys fs)
 	 * we do not print numeric progress resulting in failure
 	 * afterwards.
 	 */
-	retval = io_channel_discard(fs->io, 0, fs->blocksize);
+	retval = io_channel_discard(fs->io, 0, 1);
 	if (retval)
 		return retval;
-	cur = fs->blocksize;
 
 	count *= (1024 * 1024);
 	count /= fs->blocksize;
