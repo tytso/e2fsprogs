@@ -1973,18 +1973,8 @@ profile_error:
 	profile_get_integer(profile, "options", "proceed_delay", 0, 0,
 			    &proceed_delay);
 
-	/* The isatty() test is so we don't break existing scripts */
-	flags = CREATE_FILE;
-	if (isatty(0) && isatty(1) && !offset)
-		flags |= CHECK_FS_EXIST;
-	if (!quiet)
-		flags |= VERBOSE_CREATE;
-	if (fs_blocks_count == 0)
-		flags |= NO_SIZE;
-	else
+	if (fs_blocks_count)
 		explicit_fssize = 1;
-	if (!check_plausibility(device_name, flags, &is_device) && !force)
-		proceed_question(proceed_delay);
 
 	check_mount(device_name, force, _("filesystem"));
 
@@ -2650,6 +2640,17 @@ profile_error:
 
 	free(fs_type);
 	free(usage_types);
+
+	/* The isatty() test is so we don't break existing scripts */
+	flags = CREATE_FILE;
+	if (isatty(0) && isatty(1) && !offset)
+		flags |= CHECK_FS_EXIST;
+	if (!quiet)
+		flags |= VERBOSE_CREATE;
+	if (!explicit_fssize)
+		flags |= NO_SIZE;
+	if (!check_plausibility(device_name, flags, &is_device) && !force)
+		proceed_question(proceed_delay);
 }
 
 static int should_do_undo(const char *name)

@@ -282,11 +282,11 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		return !has_magic;
 	}
 #endif
-
-	ret = check_partition_table(device);
-	if (ret >= 0)
-		return ret;
-
+	if (flags & CHECK_FS_EXIST) {
+		ret = check_partition_table(device);
+		if (ret >= 0)
+			return ret;
+	}
 	return 1;
 }
 
