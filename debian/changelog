@@ -50,7 +50,7 @@ e2fsprogs (1.46.0-1) experimental; urgency=medium
   * Add support for file systems that have both case folding and
     encryption enabled.  (Not yet upstream, but used in some Android handsets.)
   * The fuse2fs program now supports the "norecovery" which omits replying
-    the journal and mounts the file system read-only.
+    the journal and mounts the file system read-only.  (Closes: #878927)
   * Bitmap loading is now done using multiple threads which can speed up
     debugfs, dumpe2fs, and e2fsck on very large file systems.
   * E2fsck now will check file names on file systems with case folding
