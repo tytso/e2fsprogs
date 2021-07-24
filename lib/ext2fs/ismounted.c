@@ -128,14 +128,14 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	while ((mnt = getmntent (f)) != NULL) {
 		if (mnt->mnt_fsname[0] != '/')
 			continue;
-		if (stat(mnt->mnt_dir, &st_buf) != 0)
-			continue;
 		if (strcmp(file, mnt->mnt_fsname) == 0) {
+			if (stat(mnt->mnt_dir, &st_buf) != 0)
+				continue;
 			if (file_rdev && (file_rdev != st_buf.st_dev)) {
 #ifdef DEBUG
 				printf("Bogus entry in %s!  "
-				       "(%s does not exist)\n",
-				       mtab_file, mnt->mnt_dir);
+				       "(%s is not mounted on %s)\n",
+				       mtab_file, file, mnt->mnt_dir);
 #endif /* DEBUG */
 				continue;
 			}
