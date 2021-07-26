@@ -247,9 +247,9 @@ struct e2fsck_fc_replay_state {
 	struct extent_list fc_extent_list;
 	int fc_replay_num_tags;
 	int fc_replay_expected_off;
-	int fc_current_pass;
+	enum passtype fc_current_pass;
 	int fc_cur_tag;
-	int fc_crc;
+	unsigned int fc_crc;
 	__u16 fc_super_state;
 };
 

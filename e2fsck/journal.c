@@ -419,8 +419,8 @@ static int make_room(struct extent_list *list, int i)
 
 static int ex_compar(const void *arg1, const void *arg2)
 {
-	struct ext2fs_extent *ex1 = (struct ext2fs_extent *)arg1;
-	struct ext2fs_extent *ex2 = (struct ext2fs_extent *)arg2;
+	const struct ext2fs_extent *ex1 = (const struct ext2fs_extent *)arg1;
+	const struct ext2fs_extent *ex2 = (const struct ext2fs_extent *)arg2;
 
 	if (ex1->e_lblk < ex2->e_lblk)
 		return -1;
@@ -431,8 +431,8 @@ static int ex_compar(const void *arg1, const void *arg2)
 
 static int ex_len_compar(const void *arg1, const void *arg2)
 {
-	struct ext2fs_extent *ex1 = (struct ext2fs_extent *)arg1;
-	struct ext2fs_extent *ex2 = (struct ext2fs_extent *)arg2;
+	const struct ext2fs_extent *ex1 = (const struct ext2fs_extent *)arg1;
+	const struct ext2fs_extent *ex2 = (const struct ext2fs_extent *)arg2;
 
 	if (ex1->e_len < ex2->e_len)
 		return 1;
@@ -445,7 +445,7 @@ static int ex_len_compar(const void *arg1, const void *arg2)
 
 static void ex_sort_and_merge(struct extent_list *list)
 {
-	int i, j;
+	unsigned int i, j;
 
 	if (list->count < 2)
 		return;
@@ -490,8 +490,8 @@ static void ex_sort_and_merge(struct extent_list *list)
 static int ext4_modify_extent_list(e2fsck_t ctx, struct extent_list *list,
 					struct ext2fs_extent *ex, int del)
 {
-	int ret;
-	int i, offset;
+	int ret, offset;
+	unsigned int i;
 	struct ext2fs_extent add_ex = *ex;
 
 	/* First let's create a hole from ex->e_lblk of length ex->e_len */
@@ -575,7 +575,7 @@ static int ext4_del_extent_from_list(e2fsck_t ctx, struct extent_list *list,
 	return ext4_modify_extent_list(ctx, list, ex, 1 /* delete */);
 }
 
-static int ext4_fc_read_extents(e2fsck_t ctx, int ino)
+static int ext4_fc_read_extents(e2fsck_t ctx, ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -594,7 +594,7 @@ static int ext4_fc_read_extents(e2fsck_t ctx, int ino)
  * for the inode so that we can flush all of them at once and it also saves us
  * from continuously growing and shrinking the extent tree.
  */
-static void ext4_fc_flush_extents(e2fsck_t ctx, int ino)
+static void ext4_fc_flush_extents(e2fsck_t ctx, ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -607,7 +607,9 @@ static void ext4_fc_flush_extents(e2fsck_t ctx, int ino)
 
 /* Helper struct for dentry replay routines */
 struct dentry_info_args {
-	int parent_ino, dname_len, ino, inode_len;
+	ino_t parent_ino;
+	int dname_len;
+	ino_t ino;
 	char *dname;
 };
 
@@ -630,7 +632,7 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 	       val + sizeof(struct ext4_fc_dentry_info),
 	       darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
-	jbd_debug(1, "%s: %s, ino %d, parent %d\n",
+	jbd_debug(1, "%s: %s, ino %lu, parent %lu\n",
 		tag == EXT4_FC_TAG_CREAT ? "create" :
 		(tag == EXT4_FC_TAG_LINK ? "link" :
 		(tag == EXT4_FC_TAG_UNLINK ? "unlink" : "error")),
@@ -795,7 +797,8 @@ static int ext4_fc_handle_add_extent(e2fsck_t ctx, __u8 *val)
 {
 	struct ext2fs_extent extent;
 	struct ext4_fc_add_range add_range;
-	int ret = 0, ino;
+	ino_t ino;
+	int ret = 0;
 
 	memcpy(&add_range, val, sizeof(add_range));
 	ino = le32_to_cpu(add_range.fc_ino);

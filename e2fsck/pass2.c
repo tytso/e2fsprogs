@@ -360,8 +360,9 @@ static int dict_de_cf_cmp(const void *cmp_ctx, const void *a, const void *b)
 	de_b = (const struct ext2_dir_entry *) b;
 	b_len = ext2fs_dirent_name_len(de_b);
 
-	return ext2fs_casefold_cmp(tbl, (unsigned char *) de_a->name, a_len,
-				   (unsigned char *) de_b->name, b_len);
+	return ext2fs_casefold_cmp(tbl,
+				   (const unsigned char *) de_a->name, a_len,
+				   (const unsigned char *) de_b->name, b_len);
 }
 
 /*
@@ -791,7 +792,7 @@ static void salvage_directory(ext2_filsys fs,
 	 * Special case of directory entry of size 8: copy what's left
 	 * of the directory block up to cover up the invalid hole.
 	 */
-	if ((left >= ext2fs_dir_rec_len(1, hash_in_dirent)) &&
+	if ((left >= (int) ext2fs_dir_rec_len(1, hash_in_dirent)) &&
 	     (rec_len == EXT2_DIR_ENTRY_HEADER_LEN)) {
 		memmove(cp, cp+EXT2_DIR_ENTRY_HEADER_LEN, left);
 		memset(cp + left, 0, EXT2_DIR_ENTRY_HEADER_LEN);
@@ -1297,7 +1298,7 @@ skip_checksum:
 
 	if (cf_dir) {
 		dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cf_cmp);
-		dict_set_cmp_context(&de_dict, (void *)ctx->fs->encoding);
+		dict_set_cmp_context(&de_dict, (const void *)ctx->fs->encoding);
 	} else {
 		dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	}
@@ -1313,7 +1314,7 @@ skip_checksum:
 		unsigned int name_len;
 		/* csum entry is not checked here, so don't worry about it */
 		int extended = (dot_state > 1) && hash_in_dirent;
-		int min_dir_len = ext2fs_dir_rec_len(1, extended);
+		unsigned int min_dir_len = ext2fs_dir_rec_len(1, extended);
 
 		problem = 0;
 		if (!inline_data_size || dot_state > 1) {

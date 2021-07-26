@@ -557,7 +557,7 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	if (num_threads < 0)
 		num_threads = 4;
 
-	if (num_threads > fs->group_desc_count)
+	if ((unsigned) num_threads > fs->group_desc_count)
 		num_threads = fs->group_desc_count;
 	average_group = fs->group_desc_count / num_threads;
 	if (ext2fs_has_feature_flex_bg(fs->super)) {

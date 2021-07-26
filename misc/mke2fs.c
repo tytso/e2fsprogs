@@ -2321,9 +2321,9 @@ profile_error:
 			device_name);
 	} else {
 		/* setting stripe/stride to blocksize is pointless */
-		if (dev_param.min_io > blocksize)
+		if (dev_param.min_io > (unsigned) blocksize)
 			fs_param.s_raid_stride = dev_param.min_io / blocksize;
-		if (dev_param.opt_io > blocksize) {
+		if (dev_param.opt_io > (unsigned) blocksize) {
 			fs_param.s_raid_stripe_width =
 						dev_param.opt_io / blocksize;
 		}

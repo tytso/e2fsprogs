@@ -263,6 +263,7 @@ typedef struct journal_superblock_s
 #ifdef NO_INLINE_FUNCS
 extern size_t journal_tag_bytes(journal_t *journal);
 extern int jbd2_journal_has_csum_v2or3(journal_t *journal);
+extern int jbd2_journal_get_num_fc_blks(journal_superblock_t *jsb);
 extern int tid_gt(tid_t x, tid_t y) EXT2FS_ATTR((unused));
 extern int tid_geq(tid_t x, tid_t y) EXT2FS_ATTR((unused));
 #endif

@@ -35,7 +35,7 @@ struct dx_lookup_info {
 	int namelen;
 	int hash_alg;
 	__u32 hash;
-	int levels;
+	unsigned levels;
 	struct dx_frame frames[EXT4_HTREE_LEVEL];
 };
 
@@ -46,7 +46,7 @@ static errcode_t alloc_dx_frame(ext2_filsys fs, struct dx_frame *frame)
 
 static void dx_release(struct dx_lookup_info *info)
 {
-	int level;
+	unsigned level;
 
 	for (level = 0; level < info->levels; level++) {
 		if (info->frames[level].buf == NULL)
@@ -110,7 +110,8 @@ static errcode_t dx_lookup(ext2_filsys fs, ext2_ino_t dir,
 					 info->frames[0].buf);
 	if (errcode)
 		goto out_err;
-	root = info->frames[0].buf + EXT2_DX_ROOT_OFF;
+	root = (struct ext2_dx_root_info *) ((char *)info->frames[0].buf +
+					     EXT2_DX_ROOT_OFF);
 	hash_alg = root->hash_version;
 	if (hash_alg != EXT2_HASH_TEA && hash_alg != EXT2_HASH_HALF_MD4 &&
 	    hash_alg != EXT2_HASH_LEGACY) {
@@ -329,19 +330,19 @@ static errcode_t dx_move_dirents(ext2_filsys fs, struct dx_hash_map *map,
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
 	for (i = 0; i < count; i++) {
-		de = from + map[i].off;
+		de = (struct ext2_dir_entry *) ((char *)from + map[i].off);
 		rec_len = EXT2_DIR_REC_LEN(ext2fs_dirent_name_len(de));
 		memcpy(to, de, rec_len);
 		retval = ext2fs_set_rec_len(fs, rec_len, to);
 		if (retval)
 			return retval;
-		to += rec_len;
+		to = (char *)to + rec_len;
 	}
 	/*
 	 * Update rec_len of the last dir entry to stretch to the end of block
 	 */
-	to -= rec_len;
-	rec_len = fs->blocksize - (to - base) - csum_size;
+	to = (char *)to - rec_len;
+	rec_len = fs->blocksize - ((char *)to - (char *)base) - csum_size;
 	retval = ext2fs_set_rec_len(fs, rec_len, to);
 	if (retval)
 		return retval;
@@ -396,7 +397,7 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 		return retval;
 	}
 	for (offset = 0; offset < fs->blocksize; offset += rec_len) {
-		de = buf + offset;
+		de = (struct ext2_dir_entry *) ((char *)buf + offset);
 		retval = ext2fs_get_rec_len(fs, de, &rec_len);
 		if (retval)
 			goto out;
@@ -490,7 +491,7 @@ static errcode_t dx_grow_tree(ext2_filsys fs, ext2_ino_t dir,
 	if (retval)
 		return retval;
 	/* Only leaf addition needed? */
-	if (i == info->levels - 1)
+	if (i == (int)info->levels - 1)
 		return dx_split_leaf(fs, dir, diri, info, buf, leaf_pblk,
 				     lblk, pblk);
 
@@ -501,7 +502,7 @@ static errcode_t dx_grow_tree(ext2_filsys fs, ext2_ino_t dir,
 	retval = ext2fs_set_rec_len(fs, fs->blocksize, de);
 	if (retval)
 		return retval;
-	head = buf + 8;
+	head = (struct ext2_dx_countlimit *) ((char *)buf + 8);
 	count = ext2fs_le16_to_cpu(info->frames[i+1].head->count);
 	/* Growing tree depth? */
 	if (i < 0) {
@@ -517,7 +518,8 @@ static errcode_t dx_grow_tree(ext2_filsys fs, ext2_ino_t dir,
 		/* Now update tree root */
 		info->frames[0].head->count = ext2fs_cpu_to_le16(1);
 		info->frames[0].entries[0].block = ext2fs_cpu_to_le32(lblk);
-		root = info->frames[0].buf + EXT2_DX_ROOT_OFF;
+		root = (struct ext2_dx_root_info *)
+			((char *)info->frames[0].buf + EXT2_DX_ROOT_OFF);
 		root->indirect_levels++;
 	} else {
 		/* Splitting internal node in two */
@@ -558,7 +560,7 @@ static errcode_t dx_link(ext2_filsys fs, ext2_ino_t dir,
 	struct dx_lookup_info dx_info;
 	errcode_t retval;
 	void *blockbuf;
-	int restart = 0;
+	unsigned restart = 0;
 	blk64_t leaf_pblk;
 
 	retval = ext2fs_get_mem(fs->blocksize, &blockbuf);

@@ -272,7 +272,7 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd,
 		retval = errno;
 		goto errout;
 	}
-	if (actual != (ssize_t)fs->blocksize * fs->desc_blocks) {
+	if (actual != (ssize_t)(fs->blocksize * fs->desc_blocks)) {
 		retval = EXT2_ET_SHORT_WRITE;
 		goto errout;
 	}

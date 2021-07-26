@@ -196,7 +196,7 @@ static int find_blocks(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
 	return 0;
 }
 
-errcode_t rewrite_extent_replay(e2fsck_t ctx, struct extent_list *list,
+static errcode_t rewrite_extent_replay(e2fsck_t ctx, struct extent_list *list,
 				       struct ext2_inode_large *inode)
 {
 	errcode_t		retval;

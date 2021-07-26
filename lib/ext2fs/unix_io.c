@@ -315,7 +315,7 @@ bounce_read:
 			actual = align_size - offset;
 		if (actual > size)
 			actual = size;
-		memcpy(buf, data->bounce + offset, actual);
+		memcpy(buf, (char *)data->bounce + offset, actual);
 
 		really_read += actual;
 		size -= actual;
