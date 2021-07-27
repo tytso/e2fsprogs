@@ -196,14 +196,14 @@ static int find_blocks(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
 	return 0;
 }
 
-errcode_t rewrite_extent_replay(e2fsck_t ctx, struct extent_list *list,
+static errcode_t rewrite_extent_replay(e2fsck_t ctx, struct extent_list *list,
 				       struct ext2_inode_large *inode)
 {
 	errcode_t		retval;
 	ext2_extent_handle_t	handle;
 	unsigned int		i, ext_written;
 	struct ext2fs_extent	*ex, extent;
-	blk64_t			start_val, delta, blkcount;
+	blk64_t			start_val, delta;
 
 	/* Reset extent tree */
 	inode->i_flags &= ~EXT4_EXTENTS_FL;

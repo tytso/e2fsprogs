@@ -1305,7 +1305,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int type, int flags,
 	}
 
 	if (superblock) {
-		int j;
+		unsigned int j;
 
 		ext2fs_mark_block_bitmap2(meta_block_map, superblock);
 		meta_blocks_count++;

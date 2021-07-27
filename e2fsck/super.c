@@ -1038,9 +1038,9 @@ void check_super_block(e2fsck_t ctx)
 	 * Check to see if the superblock last mount time or last
 	 * write time is in the future.
 	 */
-	if (!broken_system_clock && fs->super->s_checkinterval &&
-	    !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
-	    fs->super->s_mtime > (__u32) ctx->now) {
+	if (((ctx->options & E2F_OPT_FORCE) || fs->super->s_checkinterval) &&
+	    !broken_system_clock && !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
+	    (fs->super->s_mtime > (__u32) ctx->now)) {
 		pctx.num = fs->super->s_mtime;
 		problem = PR_0_FUTURE_SB_LAST_MOUNT;
 		if (fs->super->s_mtime <= (__u32) ctx->now + ctx->time_fudge)
@@ -1050,9 +1050,9 @@ void check_super_block(e2fsck_t ctx)
 			fs->flags |= EXT2_FLAG_DIRTY;
 		}
 	}
-	if (!broken_system_clock && fs->super->s_checkinterval &&
-	    !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
-	    fs->super->s_wtime > (__u32) ctx->now) {
+	if (((ctx->options & E2F_OPT_FORCE) || fs->super->s_checkinterval) &&
+	    !broken_system_clock && !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
+	    (fs->super->s_wtime > (__u32) ctx->now)) {
 		pctx.num = fs->super->s_wtime;
 		problem = PR_0_FUTURE_SB_LAST_WRITE;
 		if (fs->super->s_wtime <= (__u32) ctx->now + ctx->time_fudge)

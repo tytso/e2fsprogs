@@ -604,7 +604,6 @@ errcode_t ext2fs_add_journal_inode2(ext2_filsys fs, blk_t num_blocks,
 				    blk64_t goal, int flags)
 {
 	struct ext2fs_journal_params jparams;
-	errcode_t ret;
 
 	jparams.num_journal_blocks = num_blocks;
 	jparams.num_fc_blocks = 0;

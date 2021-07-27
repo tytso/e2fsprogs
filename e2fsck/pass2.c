@@ -332,7 +332,8 @@ static short htree_depth(struct dx_dir_info *dx_dir,
 	return depth;
 }
 
-static int dict_de_cmp(const void *cmp_ctx, const void *a, const void *b)
+static int dict_de_cmp(const void *cmp_ctx EXT2FS_ATTR((unused)),
+		       const void *a, const void *b)
 {
 	const struct ext2_dir_entry *de_a, *de_b;
 	int	a_len, b_len;
@@ -359,8 +360,9 @@ static int dict_de_cf_cmp(const void *cmp_ctx, const void *a, const void *b)
 	de_b = (const struct ext2_dir_entry *) b;
 	b_len = ext2fs_dirent_name_len(de_b);
 
-	return ext2fs_casefold_cmp(tbl, (unsigned char *) de_a->name, a_len,
-				   (unsigned char *) de_b->name, b_len);
+	return ext2fs_casefold_cmp(tbl,
+				   (const unsigned char *) de_a->name, a_len,
+				   (const unsigned char *) de_b->name, b_len);
 }
 
 /*
@@ -405,6 +407,7 @@ static int check_dot(e2fsck_t ctx,
 	int		status = 0;
 	int		created = 0;
 	problem_t	problem = 0;
+	int		ftype = EXT2_FT_DIR;
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT;
@@ -416,12 +419,14 @@ static int check_dot(e2fsck_t ctx,
 
 	(void) ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (problem) {
+		if (!ext2fs_has_feature_filetype(ctx->fs->super))
+			ftype = EXT2_FT_UNKNOWN;
 		if (fix_problem(ctx, problem, pctx)) {
 			if (rec_len < 12)
 				rec_len = dirent->rec_len = 12;
 			dirent->inode = ino;
 			ext2fs_dirent_set_name_len(dirent, 1);
-			ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
+			ext2fs_dirent_set_file_type(dirent, ftype);
 			dirent->name[0] = '.';
 			dirent->name[1] = '\0';
 			status = 1;
@@ -442,12 +447,18 @@ static int check_dot(e2fsck_t ctx,
 				nextdir = (struct ext2_dir_entry *)
 					((char *) dirent + 12);
 				dirent->rec_len = 12;
-				(void) ext2fs_set_rec_len(ctx->fs, new_len,
-							  nextdir);
-				nextdir->inode = 0;
-				ext2fs_dirent_set_name_len(nextdir, 0);
-				ext2fs_dirent_set_file_type(nextdir,
-							    EXT2_FT_UNKNOWN);
+				/* if the next entry looks like "..", leave it
+				 * and let check_dotdot() verify the dirent,
+				 * otherwise zap the following entry. */
+				if (strncmp(nextdir->name, "..", 3) != 0) {
+					(void)ext2fs_set_rec_len(ctx->fs,
+								 new_len,
+								 nextdir);
+					nextdir->inode = 0;
+					ext2fs_dirent_set_name_len(nextdir, 0);
+					ext2fs_dirent_set_file_type(nextdir,
+								    ftype);
+				}
 				status = 1;
 			}
 		}
@@ -466,6 +477,7 @@ static int check_dotdot(e2fsck_t ctx,
 {
 	problem_t	problem = 0;
 	unsigned int	rec_len;
+	int		ftype = EXT2_FT_DIR;
 
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;
@@ -478,6 +490,8 @@ static int check_dotdot(e2fsck_t ctx,
 
 	(void) ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (problem) {
+		if (!ext2fs_has_feature_filetype(ctx->fs->super))
+			ftype = EXT2_FT_UNKNOWN;
 		if (fix_problem(ctx, problem, pctx)) {
 			if (rec_len < 12)
 				dirent->rec_len = 12;
@@ -488,7 +502,7 @@ static int check_dotdot(e2fsck_t ctx,
 			 */
 			dirent->inode = EXT2_ROOT_INO;
 			ext2fs_dirent_set_name_len(dirent, 2);
-			ext2fs_dirent_set_file_type(dirent, EXT2_FT_UNKNOWN);
+			ext2fs_dirent_set_file_type(dirent, ftype);
 			dirent->name[0] = '.';
 			dirent->name[1] = '.';
 			dirent->name[2] = '\0';
@@ -778,7 +792,7 @@ static void salvage_directory(ext2_filsys fs,
 	 * Special case of directory entry of size 8: copy what's left
 	 * of the directory block up to cover up the invalid hole.
 	 */
-	if ((left >= ext2fs_dir_rec_len(1, hash_in_dirent)) &&
+	if ((left >= (int) ext2fs_dir_rec_len(1, hash_in_dirent)) &&
 	     (rec_len == EXT2_DIR_ENTRY_HEADER_LEN)) {
 		memmove(cp, cp+EXT2_DIR_ENTRY_HEADER_LEN, left);
 		memset(cp + left, 0, EXT2_DIR_ENTRY_HEADER_LEN);
@@ -1284,7 +1298,7 @@ skip_checksum:
 
 	if (cf_dir) {
 		dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cf_cmp);
-		dict_set_cmp_context(&de_dict, (void *)ctx->fs->encoding);
+		dict_set_cmp_context(&de_dict, (const void *)ctx->fs->encoding);
 	} else {
 		dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	}
@@ -1300,7 +1314,7 @@ skip_checksum:
 		unsigned int name_len;
 		/* csum entry is not checked here, so don't worry about it */
 		int extended = (dot_state > 1) && hash_in_dirent;
-		int min_dir_len = ext2fs_dir_rec_len(1, extended);
+		unsigned int min_dir_len = ext2fs_dir_rec_len(1, extended);
 
 		problem = 0;
 		if (!inline_data_size || dot_state > 1) {

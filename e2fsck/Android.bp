@@ -3,6 +3,17 @@
 //########################
 // Build the e2fsck binary
 
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "external_e2fsprogs_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-GPL
+    //   SPDX-license-identifier-GPL-2.0
+    //   SPDX-license-identifier-LGPL
+    default_applicable_licenses: ["external_e2fsprogs_license"],
+}
+
 cc_defaults {
     name: "e2fsck-defaults",
     defaults: ["e2fsprogs-defaults"],
@@ -58,7 +69,6 @@ cc_binary {
     defaults: ["e2fsck-defaults"],
 
     shared_libs: e2fsck_libs,
-    system_shared_libs: ["libc", "libdl"],
     required: ["badblocks"],
 }
 
@@ -76,6 +86,5 @@ cc_binary {
     static_executable: true,
     ramdisk: true,
     defaults: ["e2fsck-defaults"],
-    system_shared_libs: [],
     static_libs: e2fsck_libs,
 }

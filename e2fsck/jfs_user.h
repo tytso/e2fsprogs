@@ -92,7 +92,8 @@ typedef struct kmem_cache {
 #define kmalloc(len, flags) malloc(len)
 #define kfree(p) free(p)
 
-static inline void *kmalloc_array(unsigned n, unsigned size, int flags)
+static inline void *kmalloc_array(unsigned n, unsigned size,
+				  int flags EXT2FS_ATTR((unused)))
 {
 	if (n && (~0U)/n < size)
 		return NULL;

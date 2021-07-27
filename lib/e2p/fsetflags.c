@@ -80,13 +80,24 @@ int fsetflags (const char * name, unsigned long flags)
 	int f = (int) flags;
 	return syscall(SYS_fsctl, name, EXT2_IOC_SETFLAGS, &f, 0);
 #elif HAVE_EXT2_IOCTLS
-	int fd, r, f, save_errno = 0;
 	struct stat buf;
+	int fd, r, f, save_errno = 0;
 
+	if (!stat(name, &buf) &&
+	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
+		errno = EOPNOTSUPP;
+		return -1;
+	}
 	fd = open(name, OPEN_FLAGS);
 	if (fd == -1) {
 		if (errno == ELOOP || errno == ENXIO)
 			errno = EOPNOTSUPP;
+		return -1;
+	}
+	if (!fstat(fd, &buf) &&
+	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
+		close(fd);
+		errno = EOPNOTSUPP;
 		return -1;
 	}
 	f = (int) flags;

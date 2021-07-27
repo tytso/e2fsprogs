@@ -27,9 +27,7 @@
 #include "problem.h"
 #include "uuid/uuid.h"
 
-#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jfs-debug */
 static int bh_count = 0;
-#endif
 
 /*
  * Define USE_INODE_IO to use the inode_io.c / fileio.c codepaths.
@@ -129,10 +127,8 @@ struct buffer_head *getblk(kdev_t kdev, unsigned long long blocknr,
 	if (!bh)
 		return NULL;
 
-#ifdef CONFIG_JBD_DEBUG
 	if (journal_enable_debug >= 3)
 		bh_count++;
-#endif
 	jfs_debug(4, "getblk for block %llu (%d bytes)(total %d)\n",
 		  blocknr, blocksize, bh_count);
 
@@ -159,7 +155,8 @@ int sync_blockdev(kdev_t kdev)
 	return io_channel_flush(io) ? -EIO : 0;
 }
 
-void ll_rw_block(int rw, int op_flags, int nr, struct buffer_head *bhp[])
+void ll_rw_block(int rw, int op_flags EXT2FS_ATTR((unused)), int nr,
+		 struct buffer_head *bhp[])
 {
 	errcode_t retval;
 	struct buffer_head *bh;
@@ -422,8 +419,8 @@ static int make_room(struct extent_list *list, int i)
 
 static int ex_compar(const void *arg1, const void *arg2)
 {
-	struct ext2fs_extent *ex1 = (struct ext2fs_extent *)arg1;
-	struct ext2fs_extent *ex2 = (struct ext2fs_extent *)arg2;
+	const struct ext2fs_extent *ex1 = (const struct ext2fs_extent *)arg1;
+	const struct ext2fs_extent *ex2 = (const struct ext2fs_extent *)arg2;
 
 	if (ex1->e_lblk < ex2->e_lblk)
 		return -1;
@@ -434,8 +431,8 @@ static int ex_compar(const void *arg1, const void *arg2)
 
 static int ex_len_compar(const void *arg1, const void *arg2)
 {
-	struct ext2fs_extent *ex1 = (struct ext2fs_extent *)arg1;
-	struct ext2fs_extent *ex2 = (struct ext2fs_extent *)arg2;
+	const struct ext2fs_extent *ex1 = (const struct ext2fs_extent *)arg1;
+	const struct ext2fs_extent *ex2 = (const struct ext2fs_extent *)arg2;
 
 	if (ex1->e_len < ex2->e_len)
 		return 1;
@@ -446,10 +443,9 @@ static int ex_len_compar(const void *arg1, const void *arg2)
 	return 0;
 }
 
-static void ex_sort_and_merge(e2fsck_t ctx, struct extent_list *list)
+static void ex_sort_and_merge(struct extent_list *list)
 {
-	blk64_t ex_end;
-	int i, j;
+	unsigned int i, j;
 
 	if (list->count < 2)
 		return;
@@ -494,9 +490,9 @@ static void ex_sort_and_merge(e2fsck_t ctx, struct extent_list *list)
 static int ext4_modify_extent_list(e2fsck_t ctx, struct extent_list *list,
 					struct ext2fs_extent *ex, int del)
 {
-	int ret;
-	int i, offset;
-	struct ext2fs_extent add_ex = *ex, add_ex2;
+	int ret, offset;
+	unsigned int i;
+	struct ext2fs_extent add_ex = *ex;
 
 	/* First let's create a hole from ex->e_lblk of length ex->e_len */
 	for (i = 0; i < list->count; i++) {
@@ -556,7 +552,7 @@ static int ext4_modify_extent_list(e2fsck_t ctx, struct extent_list *list,
 		list->extents[list->count - 1] = add_ex;
 	}
 
-	ex_sort_and_merge(ctx, list);
+	ex_sort_and_merge(list);
 
 	/* Mark all occupied blocks allocated */
 	for (i = 0; i < list->count; i++)
@@ -579,7 +575,7 @@ static int ext4_del_extent_from_list(e2fsck_t ctx, struct extent_list *list,
 	return ext4_modify_extent_list(ctx, list, ex, 1 /* delete */);
 }
 
-static int ext4_fc_read_extents(e2fsck_t ctx, int ino)
+static int ext4_fc_read_extents(e2fsck_t ctx, ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -598,7 +594,7 @@ static int ext4_fc_read_extents(e2fsck_t ctx, int ino)
  * for the inode so that we can flush all of them at once and it also saves us
  * from continuously growing and shrinking the extent tree.
  */
-static void ext4_fc_flush_extents(e2fsck_t ctx, int ino)
+static void ext4_fc_flush_extents(e2fsck_t ctx, ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -611,7 +607,9 @@ static void ext4_fc_flush_extents(e2fsck_t ctx, int ino)
 
 /* Helper struct for dentry replay routines */
 struct dentry_info_args {
-	int parent_ino, dname_len, ino, inode_len;
+	ino_t parent_ino;
+	int dname_len;
+	ino_t ino;
 	char *dname;
 };
 
@@ -634,7 +632,7 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 	       val + sizeof(struct ext4_fc_dentry_info),
 	       darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
-	jbd_debug(1, "%s: %s, ino %d, parent %d\n",
+	jbd_debug(1, "%s: %s, ino %lu, parent %lu\n",
 		tag == EXT4_FC_TAG_CREAT ? "create" :
 		(tag == EXT4_FC_TAG_LINK ? "link" :
 		(tag == EXT4_FC_TAG_UNLINK ? "unlink" : "error")),
@@ -644,9 +642,7 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 
 static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 {
-	struct ext2_inode inode;
 	struct dentry_info_args darg;
-	ext2_filsys fs = ctx->fs;
 	int ret;
 
 	ret = tl_to_darg(&darg, tl, val);
@@ -738,7 +734,6 @@ static void ext4_fc_replay_fixup_iblocks(struct ext2_inode_large *ondisk_inode,
 
 static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 {
-	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
 	int ino, inode_len = EXT2_GOOD_OLD_INODE_SIZE;
 	struct ext2_inode_large *inode = NULL, *fc_inode = NULL;
 	__le32 fc_ino;
@@ -802,7 +797,8 @@ static int ext4_fc_handle_add_extent(e2fsck_t ctx, __u8 *val)
 {
 	struct ext2fs_extent extent;
 	struct ext4_fc_add_range add_range;
-	int ret = 0, ino;
+	ino_t ino;
+	int ret = 0;
 
 	memcpy(&add_range, val, sizeof(add_range));
 	ino = le32_to_cpu(add_range.fc_ino);

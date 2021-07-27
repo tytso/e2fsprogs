@@ -164,7 +164,7 @@ static int fill_dir_block(ext2_filsys fs,
 	/* While the directory block is "hot", index it. */
 	dir_offset = 0;
 	while (dir_offset < fs->blocksize) {
-		int min_rec = EXT2_DIR_ENTRY_HEADER_LEN;
+		unsigned int min_rec = EXT2_DIR_ENTRY_HEADER_LEN;
 		int extended = hash_in_entry && !is_fake_entry(fs, blockcnt, dir_offset);
 
 		if (extended)
@@ -287,7 +287,7 @@ static EXT2_QSORT_TYPE name_cf_cmp(const struct name_cmp_ctx *ctx,
 {
 	const struct hash_entry *he_a = (const struct hash_entry *) a;
 	const struct hash_entry *he_b = (const struct hash_entry *) b;
-	unsigned int he_a_len, he_b_len, min_len;
+	unsigned int he_a_len, he_b_len;
 	int ret;
 
 	he_a_len = ext2fs_dirent_name_len(he_a->dir);
@@ -548,7 +548,7 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 	int			csum_size = 0;
 	struct			ext2_dir_entry_tail *t;
 	int hash_in_entry = ext4_hash_in_dirent(fd->inode);
-	int min_rec_len = ext2fs_dir_rec_len(1, hash_in_entry);
+	unsigned int min_rec_len = ext2fs_dir_rec_len(1, hash_in_entry);
 
 	if (ctx->htree_slack_percentage == 255) {
 		profile_get_uint(ctx->profile, "options",

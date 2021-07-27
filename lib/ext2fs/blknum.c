@@ -204,7 +204,7 @@ struct ext2_group_desc *ext2fs_group_desc(ext2_filsys fs,
 	struct ext2_group_desc *ret_gdp;
 	errcode_t	retval;
 	static char	*buf = 0;
-	static int	bufsize = 0;
+	static unsigned	bufsize = 0;
 	blk64_t		blk;
 	int		desc_size = EXT2_DESC_SIZE(fs->super) & ~7;
 	int		desc_per_blk = EXT2_DESC_PER_BLOCK(fs->super);
