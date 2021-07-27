@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.46.3">E2fsprogs 1.46.3 (July 27, 2021)</A>
 <LI><A HREF="#1.46.2">E2fsprogs 1.46.2 (February 28, 2021)</A>
 <LI><A HREF="#1.46.1">E2fsprogs 1.46.1 (February 9, 2021)</A>
 <LI><A HREF="#1.46.0">E2fsprogs 1.46.0 (January 29, 2021)</A>
@@ -139,6 +140,79 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.46.3">E2fsprogs 1.46.3 (July 27, 2021)</A></H2>
+
+<h3>UI and Features</h3>
+
+<P>Teach the filefrag program the -V option, which will print the version
+of the tool, or if -V option is specified twice, will print the list of
+supported FIEMAP flags.</P>
+
+
+<h3>Fixes</h3>
+
+<P>Fix bug in resize2fs where growing a file system with MMP enabled and
+there aren't any (or sufficient) reserved block group descriptors,
+resize2fs could potentially overwrite the MMP block, leading to file
+system corruption.  (Addresses Debian Bug: #984472)</P>
+
+<P>Fix fast_commit portability problems on sparc64 and arm64 architectures
+(the latter when running e2fsprogs compiled for arm32).   (Addresses
+Debian Bug: #987641)</P>
+
+<P>Fix missing mutex unlock in an error path in the Unix I/O manager.</P>
+
+<P>Fix Direct I/O support in the Unix I/O manager (this was a regression
+that was introduced in v1.46.2).</P>
+
+<P>Fix mke2fs to avoid discarding blocks beyond the end of the file system
+to be created when creating a file system which is smaller than 16MB and
+the file system size was explicitly specified and smaller than the size
+of the block device.  (Addresses Debian Bug: #989630)</P>
+
+<P>Teach mke2fs to avoid giving a spurious warning about a pre-existing
+partition table and it is creating a file system at a non-zero offset
+(so the partition table wouldn't be overwritten in any case).
+(Addresses Debian Bug: #989612)</P>
+
+<P>Fix e2image -Q to prevent a multiplcation overflow could corrupt the
+generated QCOW2 output file for very large file systems.</P>
+
+<P>When e2fsck repairs '.' and '..' entries in corrupted directories, set
+the file type in the directory entry to be EXT2_FT_DIR and do not leave
+the file type as EXT2_FT_UNKNOWN.</P>
+
+<P>Fix e2fsck so that the if the s_interval is zero, and the last mount or
+write time is in the future, it will fix invalid last mount/write
+timestamps in the superblock.  (This was a regression introduced in
+v1.45.5.)</P>
+
+<P>Fix potential memory leaks and seg faults when memory allocations fail.</P>
+
+<P>Fix lsattr and chattr to avoid opening or calling EXT2_IOC_[GS]ETFLAGS
+on devices, since this can cause some devices to react badly as a
+result.  (Thix fixes a regression introduced in v1.46.2 and addresses
+Debian Bug: #986332)</P>
+
+<P>Updated and clarified the e2image and filefrag man pages.</P>
+
+
+<h3>Performance, Internal Implementation, Development Support etc.</h3>
+
+<P>Avoid forking an unnecessary thread in ext2fs_rw_bitmaps().</P>
+
+<P>Avoid unnecessary stat(2) calls on mountpoints when checking if a file
+system is mounted.</P>
+
+<P>Add more modern support for Windows I/O.</P>
+
+<P>Fix various compiler and valgrind warnings.</P>
+
+<P>Synchronized changes from Android's AOSP e2fsprogs tree.</P>
+
+<P>Update Dutch, Malay, and Serbian translations.</P>
+
 
 <H2><A NAME="1.46.2">E2fsprogs 1.46.2 (February 28, 2021)</A></H2>
 
