@@ -1,5 +1,0 @@
-0001-e2fsck-fix-portability-problems-caused-by-unaligned-.patch
-0002-e2fsck-fix-unaligned-accesses-to-ext4_fc_tl-struct.patch
-0003-e2fsck-fix-unaligned-accesses-to-ext4_fc_add_range-a.patch
-0004-libext2fs-fix-missing-mutex-unlock-in-an-error-path-.patch
-0005-e2image-add-OPTIONS-section-to-man-page.patch
