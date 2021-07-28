@@ -458,6 +458,12 @@ static int check_dot(e2fsck_t ctx,
 					ext2fs_dirent_set_name_len(nextdir, 0);
 					ext2fs_dirent_set_file_type(nextdir,
 								    ftype);
+#ifdef WORDS_BIGENDIAN
+				} else {
+					(void) ext2fs_dirent_swab_in2(ctx->fs,
+						(char *) nextdir,
+						ctx->fs->blocksize - 12, 0);
+#endif
 				}
 				status = 1;
 			}
@@ -1370,12 +1376,14 @@ skip_checksum:
 							  hash_in_dirent);
 #ifdef WORDS_BIGENDIAN
 					if (need_reswab) {
+						unsigned int len;
+
 						(void) ext2fs_get_rec_len(fs,
-							dirent, &rec_len);
-						ext2fs_dirent_swab_in2(fs,
-							((char *)dirent) + offset + rec_len,
-							max_block_size - offset - rec_len,
-							0);
+							dirent, &len);
+						len += offset;
+						if (max_block_size > len)
+							ext2fs_dirent_swab_in2(fs,
+				((char *)dirent) + len, max_block_size - len, 0);
 					}
 #endif
 					dir_modified++;
