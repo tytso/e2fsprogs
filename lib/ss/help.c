@@ -148,13 +148,16 @@ void ss_add_info_dir(int sci_idx, char *info_dir, int *code_ptr)
     dirs = (char **)realloc((char *)dirs,
 			    (unsigned)(n_dirs + 2)*sizeof(char *));
     if (dirs == (char **)NULL) {
-	info->info_dirs = (char **)NULL;
-	*code_ptr = errno;
+	*code_ptr = ENOMEM;
 	return;
     }
     info->info_dirs = dirs;
     dirs[n_dirs + 1] = (char *)NULL;
     dirs[n_dirs] = malloc((unsigned)strlen(info_dir)+1);
+    if (dirs[n_dirs] == (char *)NULL) {
+        *code_ptr = ENOMEM;
+        return;
+    }
     strcpy(dirs[n_dirs], info_dir);
     *code_ptr = 0;
 }
