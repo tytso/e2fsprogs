@@ -9,6 +9,13 @@ if ! setfacl --help > /dev/null 2>&1 ; then
 	return 0
 fi
 
+os=$(uname -s)
+if [ "$os" = "GNU" ]; then
+	# requires Posix ACL support
+	echo "$test_name: $test_description: skipped for $os"
+	return 0
+fi
+
 MKFS_DIR=$TMPFILE.dir
 OUT=$test_name.log
 EXP=$test_dir/expect
