@@ -36,6 +36,7 @@ int ss_create_invocation(const char *subsystem_name, const char *version_string,
 	new_table = (ss_data *) malloc(sizeof(ss_data));
 	if (!new_table)
 		goto out;
+	memset(new_table, 0, sizeof(ss_data));
 
 	if (table == (ss_data **) NULL) {
 		table = (ss_data **) malloc(2 * size);
