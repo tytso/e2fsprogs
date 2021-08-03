@@ -1986,6 +1986,25 @@ profile_error:
 		retval = ext2fs_get_device_size2(device_name,
 						 EXT2_BLOCK_SIZE(&fs_param),
 						 &dev_size);
+	if (retval == ENOENT) {
+		int fd;
+
+		if (!explicit_fssize) {
+			fprintf(stderr,
+				_("The file %s does not exist and no "
+				  "size was specified.\n"), device_name);
+			exit(1);
+		}
+		fd = ext2fs_open_file(device_name,
+				      O_CREAT | O_WRONLY, 0666);
+		if (fd < 0) {
+			retval = errno;
+		} else {
+			dev_size = 0;
+			retval = 0;
+			printf(_("Creating regular file %s\n"), device_name);
+		}
+	}
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval, "%s",
 			_("while trying to determine filesystem size"));
