@@ -393,7 +393,8 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 
 	if (is_swap_device(device)) {
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
-		strncpy(mtpt, "<swap>", mtlen);
+		if (mtpt)
+			strncpy(mtpt, "<swap>", mtlen);
 	} else {
 #ifdef HAVE_SETMNTENT
 		retval = check_mntent(device, mount_flags, mtpt, mtlen);
