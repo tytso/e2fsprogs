@@ -433,7 +433,8 @@ void quota_data_sub(quota_ctx_t qctx, struct ext2_inode_large *inode,
 		dict = qctx->quota_dict[qtype];
 		if (dict) {
 			dq = get_dq(dict, get_qid(inode, qtype));
-			dq->dq_dqb.dqb_curspace -= space;
+			if (dq)
+				dq->dq_dqb.dqb_curspace -= space;
 		}
 	}
 }
@@ -460,7 +461,8 @@ void quota_data_inodes(quota_ctx_t qctx, struct ext2_inode_large *inode,
 		dict = qctx->quota_dict[qtype];
 		if (dict) {
 			dq = get_dq(dict, get_qid(inode, qtype));
-			dq->dq_dqb.dqb_curinodes += adjust;
+			if (dq)
+				dq->dq_dqb.dqb_curinodes += adjust;
 		}
 	}
 }
@@ -533,6 +535,8 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 	struct dquot *dq;
 
 	dq = get_dq(quota_dict, dquot->dq_id);
+	if (!dq)
+		return -1;
 	dq->dq_id = dquot->dq_id;
 	dq->dq_flags |= DQF_SEEN;
 
