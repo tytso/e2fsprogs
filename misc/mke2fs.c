@@ -2603,6 +2603,17 @@ profile_error:
 		exit(1);
 	}
 
+	/*
+	 * Warn the user that filesystems with 128-byte inodes will
+	 * not work properly beyond 2038.  This can be suppressed via
+	 * a boolean in the mke2fs.conf file, and we will disable this
+	 * warning for file systems created for the GNU Hurd.
+	 */
+	if (inode_size == EXT2_GOOD_OLD_INODE_SIZE &&
+	    get_bool_from_profile(fs_types, "warn_y2038_dates", 1))
+		printf(
+_("128-byte inodes cannot handle dates beyond 2038 and are deprecated\n"));
+
 	/* Make sure number of inodes specified will fit in 32 bits */
 	if (num_inodes == 0) {
 		unsigned long long n;

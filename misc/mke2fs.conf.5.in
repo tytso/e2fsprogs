@@ -505,6 +505,13 @@ This relation specifies the base file name for the huge files.
 This relation specifies the (zero-padded) width of the field for the
 huge file number.
 .TP
+.I warn_y2038_dates
+This boolean relation specifies wheather mke2fs will issue a warning
+when creating a file system with 128 byte inodes (and so therefore will
+not support dates after January 19th, 2038).  The default value is true,
+except for file systems created for the GNU Hurd since it only supports
+128-byte inodes.
+.TP
 .I zero_hugefiles
 This boolean relation specifies whether or not zero blocks will be
 written to the hugefiles while

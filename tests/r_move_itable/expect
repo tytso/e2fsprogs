@@ -1,4 +1,5 @@
 mke2fs -q -F -o Linux -b 1024 -g 256 test.img 1024
+128-byte inodes cannot handle dates beyond 2038 and are deprecated
 resize2fs -p test.img 10000
 Resizing the filesystem on test.img to 10000 (1k) blocks.
 Begin pass 1 (max = 35)

@@ -1,4 +1,5 @@
 mke2fs -q -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 16384
+128-byte inodes cannot handle dates beyond 2038 and are deprecated
 resize2fs test.img 65536
 Resizing the filesystem on test.img to 65536 (1k) blocks.
 The filesystem on test.img is now 65536 (1k) blocks long.
@@ -446,6 +447,7 @@ Group 63: (Blocks 64513-65535)
   Free inodes: 16129-16384
 --------------------------------
 mke2fs -q -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 65536
+128-byte inodes cannot handle dates beyond 2038 and are deprecated
 resize2fs test.img 16384
 Resizing the filesystem on test.img to 16384 (1k) blocks.
 The filesystem on test.img is now 16384 (1k) blocks long.
