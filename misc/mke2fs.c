@@ -2526,11 +2526,12 @@ profile_error:
 		exit(1);
 	}
 
-	if (!quiet && ext2fs_has_feature_bigalloc(&fs_param))
-		fprintf(stderr, "%s", _("\nWarning: the bigalloc feature is "
-				  "still under development\n"
-				  "See https://ext4.wiki.kernel.org/"
-				  "index.php/Bigalloc for more information\n\n"));
+	if (!quiet && ext2fs_has_feature_bigalloc(&fs_param) &&
+	    EXT2_CLUSTER_SIZE(&fs_param) > 16 * EXT2_BLOCK_SIZE(&fs_param))
+		fprintf(stderr, "%s", _("\nWarning: bigalloc file systems "
+				"with a cluster size greater than\n"
+				"16 times the block size is considered "
+				"experimental\n"));
 
 	/*
 	 * Since sparse_super is the default, we would only have a problem
