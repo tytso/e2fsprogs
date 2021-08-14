@@ -1,2 +1,1 @@
-128-byte inodes cannot handle dates beyond 2038 and are deprecated
 test.img: Cannot create filesystem with requested number of inodes while setting up superblock
