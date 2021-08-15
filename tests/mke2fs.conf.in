@@ -8,6 +8,7 @@
 	lazy_itable_init = false
 	no_discard = true
 	default_mntopts = ^acl
+	creator_os = Linux
 
 [fs_types]
 	ext3 = {

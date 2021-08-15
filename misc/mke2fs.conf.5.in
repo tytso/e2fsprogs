@@ -118,6 +118,13 @@ The following relations are defined in the
 .I [defaults]
 stanza.
 .TP
+.I creator_os
+This relation specifies the "creator operating system" for the
+file system unless it is overriden on the command line.
+The default value is the OS for which the
+.B mke2fs
+executable was compiled.
+.TP
 .I fs_type
 This relation specifies the default filesystem type if the user does not
 specify it via the

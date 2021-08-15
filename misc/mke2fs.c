@@ -2048,6 +2048,9 @@ profile_error:
 	if (!usage_types)
 		profile_get_string(profile, "devices", device_name,
 				   "usage_types", 0, &usage_types);
+	if (!creator_os)
+		profile_get_string(profile, "defaults", "creator_os", 0,
+				   0, &creator_os);
 
 	/*
 	 * We have the file system (or device) size, so we can now
