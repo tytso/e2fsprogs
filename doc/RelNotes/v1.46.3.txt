@@ -38,7 +38,7 @@ partition table and it is creating a file system at a non-zero offset
 (so the partition table wouldn't be overwritten in any case).
 (Addresses Debian Bug: #989612)
 
-Fix e2image -Q to prevent a multiplcation overflow could corrupt the
+Fix e2image -Q to prevent a multiplication overflow could corrupt the
 generated QCOW2 output file for very large file systems.
 
 When e2fsck repairs '.' and '..' entries in corrupted directories, set

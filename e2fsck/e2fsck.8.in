@@ -45,7 +45,7 @@ is used to check the ext2/ext3/ext4 family of file systems.
 For ext3 and ext4 file systems that use a journal, if the system has been
 shut down uncleanly without any errors, normally, after replaying the
 committed transactions  in the journal, the file system should be
-marked as clean.   Hence, for file systems that use journalling,
+marked as clean.   Hence, for file systems that use journaling,
 .B e2fsck
 will normally replay the journal and exit, unless its superblock
 indicates that further checking is required.
@@ -169,7 +169,7 @@ Print debugging output (useless unless you are debugging
 .TP
 .B \-D
 Optimize directories in file system.  This option causes e2fsck to
-try to optimize all directories, either by reindexing them if the
+try to optimize all directories, either by re-indexing them if the
 file system supports directory indexing,  or by sorting and compressing
 directories for smaller directories, or for file systems using
 traditional linear directories.
