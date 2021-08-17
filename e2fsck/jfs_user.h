@@ -92,14 +92,6 @@ typedef struct kmem_cache {
 #define kmalloc(len, flags) malloc(len)
 #define kfree(p) free(p)
 
-static inline void *kmalloc_array(unsigned n, unsigned size,
-				  int flags EXT2FS_ATTR((unused)))
-{
-	if (n && (~0U)/n < size)
-		return NULL;
-	return malloc(n * size);
-}
-
 #define cond_resched()	do { } while (0)
 
 #define __init
@@ -120,6 +112,11 @@ extern size_t journal_tag_bytes(journal_t *journal);
 extern __u32 __hash_32(__u32 val);
 extern __u32 hash_32(__u32 val, unsigned int bits);
 extern __u32 hash_64(__u64 val, unsigned int bits);
+extern void *kmalloc_array(unsigned n, unsigned size, int flags);
+extern __u32 jbd2_chksum(journal_t *j, __u32 crc, const void *address,
+			 unsigned int length);
+extern void jbd2_descriptor_block_csum_set(journal_t *j,
+					   struct buffer_head *bh);
 #endif
 
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
@@ -182,6 +179,36 @@ _INLINE_ __u32 hash_64(__u64 val, unsigned int bits)
 	}
 }
 
+_INLINE_ void *kmalloc_array(unsigned n, unsigned size,
+			     int flags EXT2FS_ATTR((unused)))
+{
+	if (n && (~0U)/n < size)
+		return NULL;
+	return malloc(n * size);
+}
+
+_INLINE_ __u32 jbd2_chksum(journal_t *j EXT2FS_ATTR((unused)),
+			   __u32 crc, const void *address,
+			   unsigned int length)
+{
+	return ext2fs_crc32c_le(crc, address, length);
+}
+
+_INLINE_ void jbd2_descriptor_block_csum_set(journal_t *j,
+					     struct buffer_head *bh)
+{
+	struct jbd2_journal_block_tail *tail;
+	__u32 csum;
+
+	if (!jbd2_journal_has_csum_v2or3(j))
+		return;
+
+	tail = (struct jbd2_journal_block_tail *)(bh->b_data + j->j_blocksize -
+			sizeof(struct jbd2_journal_block_tail));
+	tail->t_checksum = 0;
+	csum = jbd2_chksum(j, j->j_csum_seed, bh->b_data, j->j_blocksize);
+	tail->t_checksum = cpu_to_be32(csum);
+}
 #undef _INLINE_
 #endif
 
@@ -234,22 +261,6 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 #ifndef EFSCORRUPTED
 #define EFSCORRUPTED	EXT2_ET_FILESYSTEM_CORRUPTED
 #endif
-
-static inline void jbd2_descriptor_block_csum_set(journal_t *j,
-						  struct buffer_head *bh)
-{
-	struct jbd2_journal_block_tail *tail;
-	__u32 csum;
-
-	if (!jbd2_journal_has_csum_v2or3(j))
-		return;
-
-	tail = (struct jbd2_journal_block_tail *)(bh->b_data + j->j_blocksize -
-			sizeof(struct jbd2_journal_block_tail));
-	tail->t_checksum = 0;
-	csum = jbd2_chksum(j, j->j_csum_seed, bh->b_data, j->j_blocksize);
-	tail->t_checksum = cpu_to_be32(csum);
-}
 
 /* recovery.c */
 extern int	jbd2_journal_recover    (journal_t *journal);

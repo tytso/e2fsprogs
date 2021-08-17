@@ -98,6 +98,11 @@ static inline struct page * rb_insert_page_cache(struct inode * inode,
 #include <stdint.h>
 #include "compiler.h"
 
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
 struct rb_node
 {
 	uintptr_t  rb_parent_color;
@@ -170,5 +175,9 @@ static inline void ext2fs_rb_link_node(struct rb_node * node,
 
 	*rb_link = node;
 }
+
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic pop
+#endif
 
 #endif	/* _LINUX_RBTREE_H */
