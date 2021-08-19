@@ -69,6 +69,21 @@ e2fsprogs (1.46.3-1) experimental; urgency=medium
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 27 Jul 2021 11:04:05 -0400
 
+e2fsprogs (1.46.2-2) unstable; urgency=medium
+
+  * Fix FTBFS on arm32 when building on a system with an arm64 kernel.
+    This also fixes a portability problem when replaying a fast-commit
+    journal on an arm64 kernel when using an arm32 userspace.
+    (Closes: #987641)
+  * Fix additional fast-commit portability problems on non-x86 systems
+    which don't allow non-aligned pointer dereferences (for example, on a
+    sparc64 system).
+  * Fix a missing mutex unlock on an error path which can cause e2fsck
+    to hang on I/O errors.
+  * Clean up and improve the man page for e2image
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 07 Jun 2021 07:27:15 -0400
+
 e2fsprogs (1.46.2-1) unstable; urgency=medium
 
   * New upstream release
