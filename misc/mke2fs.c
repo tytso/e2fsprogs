@@ -1986,6 +1986,26 @@ profile_error:
 		retval = ext2fs_get_device_size2(device_name,
 						 EXT2_BLOCK_SIZE(&fs_param),
 						 &dev_size);
+	if (retval == ENOENT) {
+		int fd;
+
+		if (!explicit_fssize) {
+			fprintf(stderr,
+				_("The file %s does not exist and no "
+				  "size was specified.\n"), device_name);
+			exit(1);
+		}
+		fd = ext2fs_open_file(device_name,
+				      O_CREAT | O_WRONLY, 0666);
+		if (fd < 0) {
+			retval = errno;
+		} else {
+			dev_size = 0;
+			retval = 0;
+			close(fd);
+			printf(_("Creating regular file %s\n"), device_name);
+		}
+	}
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval, "%s",
 			_("while trying to determine filesystem size"));
@@ -2028,6 +2048,9 @@ profile_error:
 	if (!usage_types)
 		profile_get_string(profile, "devices", device_name,
 				   "usage_types", 0, &usage_types);
+	if (!creator_os)
+		profile_get_string(profile, "defaults", "creator_os", 0,
+				   0, &creator_os);
 
 	/*
 	 * We have the file system (or device) size, so we can now
@@ -2506,11 +2529,12 @@ profile_error:
 		exit(1);
 	}
 
-	if (!quiet && ext2fs_has_feature_bigalloc(&fs_param))
-		fprintf(stderr, "%s", _("\nWarning: the bigalloc feature is "
-				  "still under development\n"
-				  "See https://ext4.wiki.kernel.org/"
-				  "index.php/Bigalloc for more information\n\n"));
+	if (!quiet && ext2fs_has_feature_bigalloc(&fs_param) &&
+	    EXT2_CLUSTER_SIZE(&fs_param) > 16 * EXT2_BLOCK_SIZE(&fs_param))
+		fprintf(stderr, "%s", _("\nWarning: bigalloc file systems "
+				"with a cluster size greater than\n"
+				"16 times the block size is considered "
+				"experimental\n"));
 
 	/*
 	 * Since sparse_super is the default, we would only have a problem
@@ -2582,6 +2606,17 @@ profile_error:
 			fs_param.s_inode_size);
 		exit(1);
 	}
+
+	/*
+	 * Warn the user that filesystems with 128-byte inodes will
+	 * not work properly beyond 2038.  This can be suppressed via
+	 * a boolean in the mke2fs.conf file, and we will disable this
+	 * warning for file systems created for the GNU Hurd.
+	 */
+	if (inode_size == EXT2_GOOD_OLD_INODE_SIZE &&
+	    get_bool_from_profile(fs_types, "warn_y2038_dates", 1))
+		printf(
+_("128-byte inodes cannot handle dates beyond 2038 and are deprecated\n"));
 
 	/* Make sure number of inodes specified will fit in 32 bits */
 	if (num_inodes == 0) {

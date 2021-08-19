@@ -67,7 +67,7 @@ static inline __u32 jbd2_chksum(journal_t *j EXT2FS_ATTR((unused)),
                 sizeof(struct __struct), __alignof__(struct __struct),\
                 (__flags), NULL)
 
-#define blkdev_issue_flush(kdev, a)	sync_blockdev(kdev)
+#define blkdev_issue_flush(kdev)	sync_blockdev(kdev)
 #define is_power_of_2(x)	((x) != 0 && (((x) & ((x) - 1)) == 0))
 #define pr_emerg(fmt)
 #define pr_err(...)

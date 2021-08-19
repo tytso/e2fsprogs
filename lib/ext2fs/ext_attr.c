@@ -556,10 +556,10 @@ static errcode_t convert_posix_acl_to_disk_buffer(const void *value, size_t size
 	s = sizeof(ext4_acl_header);
 	for (end = entry + count; entry != end;entry++) {
 		ext4_acl_entry *disk_entry = (ext4_acl_entry*) e;
-		disk_entry->e_tag = ext2fs_cpu_to_le16(entry->e_tag);
-		disk_entry->e_perm = ext2fs_cpu_to_le16(entry->e_perm);
+		disk_entry->e_tag = entry->e_tag;
+		disk_entry->e_perm = entry->e_perm;
 
-		switch(entry->e_tag) {
+		switch(ext2fs_le16_to_cpu(entry->e_tag)) {
 			case ACL_USER_OBJ:
 			case ACL_GROUP_OBJ:
 			case ACL_MASK:
@@ -569,10 +569,12 @@ static errcode_t convert_posix_acl_to_disk_buffer(const void *value, size_t size
 				break;
 			case ACL_USER:
 			case ACL_GROUP:
-				disk_entry->e_id =  ext2fs_cpu_to_le32(entry->e_id);
+				disk_entry->e_id = entry->e_id;
 				e += sizeof(ext4_acl_entry);
 				s += sizeof(ext4_acl_entry);
 				break;
+			default:
+				return EINVAL;
 		}
 	}
 	*size_out = s;
@@ -608,10 +610,10 @@ static errcode_t convert_disk_buffer_to_posix_acl(const void *value, size_t size
 	while (size > 0) {
 		const ext4_acl_entry *disk_entry = (const ext4_acl_entry *) cp;
 
-		entry->e_tag = ext2fs_le16_to_cpu(disk_entry->e_tag);
-		entry->e_perm = ext2fs_le16_to_cpu(disk_entry->e_perm);
+		entry->e_tag = disk_entry->e_tag;
+		entry->e_perm = disk_entry->e_perm;
 
-		switch(entry->e_tag) {
+		switch(ext2fs_le16_to_cpu(entry->e_tag)) {
 			case ACL_USER_OBJ:
 			case ACL_GROUP_OBJ:
 			case ACL_MASK:
@@ -622,13 +624,13 @@ static errcode_t convert_disk_buffer_to_posix_acl(const void *value, size_t size
 				break;
 			case ACL_USER:
 			case ACL_GROUP:
-				entry->e_id = ext2fs_le32_to_cpu(disk_entry->e_id);
+				entry->e_id = disk_entry->e_id;
 				cp += sizeof(ext4_acl_entry);
 				size -= sizeof(ext4_acl_entry);
 				break;
-		default:
-			ext2fs_free_mem(&out);
-			return EINVAL;
+			default:
+				ext2fs_free_mem(&out);
+				return EINVAL;
 		}
 		entry++;
 	}

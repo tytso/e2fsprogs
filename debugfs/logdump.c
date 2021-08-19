@@ -721,10 +721,10 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 	header = (jbd2_journal_revoke_header_t *) buf;
 	offset = sizeof(jbd2_journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
-	if (max > jsb->s_blocksize) {
+	if (max > be32_to_cpu(jsb->s_blocksize)) {
 		fprintf(out_file, "Revoke block's r_count invalid: %u\b",
 			max);
-		max = jsb->s_blocksize;
+		max = be32_to_cpu(jsb->s_blocksize);
 	}
 
 	while (offset < max) {

@@ -3,6 +3,7 @@
 FSCK_OPT=-fy
 IMAGE=$test_dir/image.gz
 CMDS=$test_dir/commands
+test_description="replay fast commit journal"
 
 gunzip < $IMAGE > $TMPFILE
 

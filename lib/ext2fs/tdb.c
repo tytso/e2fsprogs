@@ -3089,9 +3089,10 @@ void tdb_increment_seqnum_nonblock(struct tdb_context *tdb)
 	/* we ignore errors from this, as we have no sane way of
 	   dealing with them.
 	*/
-	tdb_ofs_read(tdb, TDB_SEQNUM_OFS, &seqnum);
+	if (tdb_ofs_read(tdb, TDB_SEQNUM_OFS, &seqnum) == -1)
+		return;
 	seqnum++;
-	tdb_ofs_write(tdb, TDB_SEQNUM_OFS, &seqnum);
+	(void) tdb_ofs_write(tdb, TDB_SEQNUM_OFS, &seqnum);
 }
 
 /*
@@ -3692,7 +3693,8 @@ int tdb_get_seqnum(struct tdb_context *tdb)
 {
 	tdb_off_t seqnum=0;
 
-	tdb_ofs_read(tdb, TDB_SEQNUM_OFS, &seqnum);
+	if (tdb_ofs_read(tdb, TDB_SEQNUM_OFS, &seqnum) == -1)
+		return 0;
 	return seqnum;
 }
 
@@ -3914,7 +3916,8 @@ struct tdb_context *tdb_open_ex(const char *name, int hash_size, int tdb_flags,
 	}
 
 	if (read(tdb->fd, &tdb->header, sizeof(tdb->header)) != sizeof(tdb->header)
-	    || strcmp(tdb->header.magic_food, TDB_MAGIC_FOOD) != 0
+	    || memcmp(tdb->header.magic_food, TDB_MAGIC_FOOD,
+		      sizeof(TDB_MAGIC_FOOD)) != 0
 	    || (tdb->header.version != TDB_VERSION
 		&& !(rev = (tdb->header.version==TDB_BYTEREV(TDB_VERSION))))) {
 		/* its not a valid database - possibly initialise it */

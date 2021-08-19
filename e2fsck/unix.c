@@ -304,7 +304,7 @@ static int is_on_batt(void)
 	}
 	f = fopen("/proc/apm", "r");
 	if (f) {
-		if (fscanf(f, "%s %s %s %x", tmp, tmp, tmp, &acflag) != 4)
+		if (fscanf(f, "%79s %79s %79s %x", tmp, tmp, tmp, &acflag) != 4)
 			acflag = 1;
 		fclose(f);
 		return (acflag != 1);
@@ -320,7 +320,7 @@ static int is_on_batt(void)
 			f = fopen(fname, "r");
 			if (!f)
 				continue;
-			if (fscanf(f, "%s %s", tmp2, tmp) != 2)
+			if (fscanf(f, "%79s %79s", tmp2, tmp) != 2)
 				tmp[0] = 0;
 			fclose(f);
 			if (strncmp(tmp, "off-line", 8) == 0) {

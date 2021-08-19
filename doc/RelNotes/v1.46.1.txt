@@ -37,5 +37,5 @@ autoconf 2.69.
 Fixed/improved various Debian packaging issues.  (Addresses-Debian-Bug:
 #966686)
 
-Update the Czech, French, Malay, Polish, Portuguese, Sweedish, and
+Update the Czech, French, Malay, Polish, Portuguese, Swedish, and
 Ukranian translations from the translation project.

@@ -462,9 +462,6 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_r_blocks_count@Base 1.42
  ext2fs_r_blocks_count_add@Base 1.42
  ext2fs_r_blocks_count_set@Base 1.42
- ext2fs_rb_augment_erase_begin@Base 1.42.1
- ext2fs_rb_augment_erase_end@Base 1.42.1
- ext2fs_rb_augment_insert@Base 1.42.1
  ext2fs_rb_erase@Base 1.42.1
  ext2fs_rb_first@Base 1.42.1
  ext2fs_rb_insert_color@Base 1.42.1

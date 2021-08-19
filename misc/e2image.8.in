@@ -4,7 +4,7 @@
 .\"
 .TH E2IMAGE 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
+e2image \- Save critical ext2/ext3/ext4 file system metadata to a file
 
 .SH SYNOPSIS
 .B e2image
@@ -39,7 +39,7 @@ e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
 .SH DESCRIPTION
 The
 .B e2image
-program will save critical ext2, ext3, or ext4 filesystem metadata located on
+program will save critical ext2, ext3, or ext4 file system metadata located on
 .I device
 to a file specified by
 .IR image-file .
@@ -50,15 +50,15 @@ and
 by using the
 .B \-i
 option to those programs.  This can assist an expert in recovering
-catastrophically corrupted filesystems.
+catastrophically corrupted file systems.
 .PP
-It is a very good idea to create image files for all filesystems on a
+It is a very good idea to create image files for all file systems on a
 system and save the partition layout (which can be generated using the
 .B fdisk \-l
 command) at regular intervals --- at boot time, and/or every week or so.
-The image file should be stored on some filesystem other than
-the filesystem whose data it contains, to ensure that this data is
-accessible in the case where the filesystem has been badly damaged.
+The image file should be stored on some file system other than
+the file system whose data it contains, to ensure that this data is
+accessible in the case where the file system has been badly damaged.
 .PP
 To save disk space,
 .B e2image
@@ -71,9 +71,9 @@ option to the GNU version of
 This does not apply to the QCOW2 image, which is not sparse.
 .PP
 The size of an ext2 image file depends primarily on the size of the
-filesystems and how many inodes are in use.  For a typical 10 Gigabyte
-filesystem, with 200,000 inodes in use out of 1.2 million inodes, the image
-file will be approximately 35 Megabytes; a 4 Gigabyte filesystem with 15,000
+file systems and how many inodes are in use.  For a typical 10 Gigabyte
+file system, with 200,000 inodes in use out of 1.2 million inodes, the image
+file will be approximately 35 Megabytes; a 4 Gigabyte file system with 15,000
 inodes in use out of 550,000 inodes will result in a 3 Megabyte image file.
 Image files tend to be quite compressible; an image file taking up 32 Megabytes
 of space on disk will generally compress down to 3 or 4 Megabytes.
@@ -110,16 +110,16 @@ or QCOW2
 formats.  In conjunction with the
 .B \-r
 option it is possible to clone all and only the used blocks of one
-filesystem to another device/image file.
+file system to another device/image file.
 .TP
 .BI \-b " superblock"
 Get image from partition with broken primary superblock by using
-the superblock located at filesystem block number
+the superblock located at file system block number
 .IR superblock .
 The partition is copied as-is including broken primary superblock.
 .TP
 .BI \-B " blocksize"
-Set the filesystem blocksize in bytes.  Normally,
+Set the file system blocksize in bytes.  Normally,
 .B e2image
 will search for the superblock at various different block sizes in an
 attempt to find the appropriate blocksize. This search can be fooled in
@@ -138,29 +138,29 @@ useful if the file system is being cloned to a flash-based storage device
 writes to reduce write wear on the device).
 .TP
 .B \-f
-Override the read-only requirement for the source filesystem when saving
+Override the read-only requirement for the source file system when saving
 the image file using the
 .B \-r
 and
 .B \-Q
-options.  Normally, if the source filesystem is in use, the resulting image
+options.  Normally, if the source file system is in use, the resulting image
 file is very likely not going to be useful. In some cases where the source
-filesystem is in constant use this may be better than no image at all.
+file system is in constant use this may be better than no image at all.
 .TP
 .B \-I
 install the metadata stored in the image file back to the device.
-It can be used to restore the filesystem metadata back to the device
+It can be used to restore the file system metadata back to the device
 in emergency situations.
 .PP
 .B WARNING!!!!
 The
 .B \-I
 option should only be used as a desperation measure when other
-alternatives have failed.  If the filesystem has changed since the image
+alternatives have failed.  If the file system has changed since the image
 file was created, data
 .B will
 be lost.  In general, you should make another full image backup of the
-filesystem first, in case you wish to try other recovery strategies afterward.
+file system first, in case you wish to try other recovery strategies afterward.
 .TP
 .B \-n
 Cause all image writes to be skipped, and instead only print the block
@@ -199,14 +199,14 @@ below for details.
 .B \-s
 Scramble directory entries and zero out unused portions of the directory
 blocks in the written image file to avoid revealing information about
-the contents of the filesystem.  However, this will prevent analysis of
+the contents of the file system.  However, this will prevent analysis of
 problems related to hash-tree indexed directories.
 
 .SH RAW IMAGE FILES
 The
 .B \-r
 option will create a raw image file, which differs
-from a normal image file in two ways.  First, the filesystem metadata is
+from a normal image file in two ways.  First, the file system metadata is
 placed in the same relative offset within
 .I image-file
 as it is in the
@@ -221,10 +221,10 @@ the amount of disk space consumed by the raw image file, it is
 created as a sparse file.  (Beware of copying or
 compressing/decompressing this file with utilities that don't understand
 how to create sparse files; the file will become as large as the
-filesystem itself!)  Secondly, the raw image file also includes indirect
+file system itself!)  Secondly, the raw image file also includes indirect
 blocks and directory blocks, which the standard image file does not have.
 .PP
-Raw image files are sometimes used when sending filesystems to the maintainer
+Raw image files are sometimes used when sending file systems to the maintainer
 as part of bug reports to e2fsprogs.  When used in this capacity, the
 recommended command is as follows (replace
 .B hda1
@@ -235,7 +235,7 @@ with the appropriate device for your system):
 .PP
 This will only send the metadata information, without any data blocks.
 However, the filenames in the directory blocks can still reveal
-information about the contents of the filesystem that the bug reporter
+information about the contents of the file system that the bug reporter
 may wish to keep confidential.  To address this concern, the
 .B \-s
 option can be specified to scramble the filenames in the image.
@@ -255,7 +255,7 @@ the raw image it is not sparse. The QCOW2 image minimize the amount of space
 used by the image by storing it in special format which packs data closely
 together, hence avoiding holes while still minimizing size.
 .PP
-In order to send filesystem to the maintainer as a part of bug report to
+In order to send file system to the maintainer as a part of bug report to
 e2fsprogs, use following commands (replace
 .B hda1
 with the appropriate device for your system):
@@ -270,7 +270,7 @@ As described for
 .B RAW IMAGE FILES
 the
 .B \-s
-option can be specified to scramble the filesystem names in the image.
+option can be specified to scramble the file system names in the image.
 .PP
 Note that the QCOW2 image created by
 .B e2image
@@ -289,16 +289,16 @@ sparse image file where it can be loop mounted, or to a disk partition.
 Note that this may not work with QCOW2 images not generated by e2image.
 
 .SH OFFSETS
-Normally a filesystem starts at the beginning of a partition, and
+Normally a file system starts at the beginning of a partition, and
 .B e2image
 is run on the partition.  When working with image files, you don't
 have the option of using the partition device, so you can specify
-the offset where the filesystem starts directly with the
+the offset where the file system starts directly with the
 .B \-o
 option.  Similarly the
 .B \-O
 option specifies the offset that should be seeked to in the destination
-before writing the filesystem.
+before writing the file system.
 .PP
 For example, if you have a
 .B dd
@@ -309,7 +309,7 @@ starting at 1 MiB, you can clone that image to a block device with:
 \	\fBe2image \-aro 1048576 img /dev/sda1\fR
 .br
 .PP
-Or you can clone a filesystem from a block device into an image file,
+Or you can clone a file system from a block device into an image file,
 leaving room in the first MiB for a partition table with:
 .PP
 .br
@@ -317,7 +317,7 @@ leaving room in the first MiB for a partition table with:
 .br
 .PP
 If you specify at least one offset, and only one file, an in-place
-move will be performed, allowing you to safely move the filesystem
+move will be performed, allowing you to safely move the file system
 from one offset to another.
 
 .SH AUTHOR

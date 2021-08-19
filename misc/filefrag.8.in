@@ -16,8 +16,8 @@ filefrag \- report on file fragmentation
 .SH DESCRIPTION
 .B filefrag
 reports on how badly fragmented a particular file might be.  It makes
-allowances for indirect blocks for ext2 and ext3 filesystems, but can be
-used on files for any filesystem.
+allowances for indirect blocks for ext2 and ext3 file systems, but can be
+used on files for any file system.
 .PP
 The
 .B filefrag
@@ -34,7 +34,7 @@ testing purposes.
 Use
 .I blocksize
 in bytes, or with [KMG] suffix, up to 1GB for output instead of the
-filesystem blocksize.  For compatibility with earlier versions of
+file system blocksize.  For compatibility with earlier versions of
 .BR filefrag ,
 if
 .I blocksize
@@ -55,7 +55,7 @@ Use 1024\-byte blocksize for output (identical to '\-b1024').
 .TP
 .B -P
 Pre-load the ext4 extent status cache for the file.  This is not
-supported on all kernels, and is only supported on ext4 filesystems.
+supported on all kernels, and is only supported on ext4 file systems.
 .TP
 .B \-s
 Sync the file before requesting the mapping.

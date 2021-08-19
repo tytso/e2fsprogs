@@ -1,6 +1,6 @@
 .TH E4CRYPT 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-e4crypt \- ext4 filesystem encryption utility
+e4crypt \- ext4 file system encryption utility
 .SH SYNOPSIS
 .B e4crypt add_key -S \fR[\fB -k \fIkeyring\fR ] [\fB-v\fR] [\fB-q\fR] \fR[\fB -p \fIpad\fR ] [ \fIpath\fR ... ]
 .br
