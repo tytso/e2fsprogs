@@ -219,4 +219,5 @@ encoding.o: $(srcdir)/encoding.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
 errcode.o: $(srcdir)/errcode.c $(top_builddir)/lib/config.h \
- $(top_builddir)/lib/dirpaths.h
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/e2p.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h

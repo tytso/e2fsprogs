@@ -1,4 +1,4 @@
-e2fsprogs (1.46.4~rc1-1) unstable; urgency=medium
+e2fsprogs (1.46.4-1) unstable; urgency=medium
 
   * New upstream release
   * Mke2fs now creates 256 byte inodes by default for all non-GNU Hurd
@@ -24,7 +24,7 @@ e2fsprogs (1.46.4~rc1-1) unstable; urgency=medium
   * Update Czech, Dutch, French, Polish, Portuguese, and Swedish
     translations.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 15 Aug 2021 19:37:36 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 18 Aug 2021 22:47:40 -0400
 
 e2fsprogs (1.46.3-1) experimental; urgency=medium
 
