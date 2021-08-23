@@ -282,7 +282,7 @@ static errcode_t e2fsck_read_all_quotas(e2fsck_t ctx)
 			continue;
 
 		retval = quota_read_all_dquots(ctx->qctx, qf_ino, qtype,
-					       QREAD_USAGE);
+					       QREAD_USAGE | QREAD_LIMITS);
 		if (retval)
 			break;
 	}
