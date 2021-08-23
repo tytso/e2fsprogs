@@ -572,26 +572,6 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 }
 
 /*
- * Write all memory dquots into quota file
- */
-#if 0 /* currently unused, but may be useful in the future? */
-static errcode_t quota_write_all_dquots(struct quota_handle *qh,
-                                        quota_ctx_t qctx)
-{
-	errcode_t err;
-
-	err = ext2fs_read_bitmaps(qctx->fs);
-	if (err)
-		return err;
-	write_dquots(qctx->quota_dict[qh->qh_type], qh);
-	ext2fs_mark_bb_dirty(qctx->fs);
-	qctx->fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
-	ext2fs_write_bitmaps(qctx->fs);
-	return 0;
-}
-#endif
-
-/*
  * Read quotas from disk and updates the in-memory information determined by
  * 'flags' from the on-disk data.
  */
