@@ -8,9 +8,9 @@ Pass 5: Checking group summary information
 test_filesystem: ***** FILE SYSTEM WAS MODIFIED *****
 test_filesystem: 11/512 files (9.1% non-contiguous), 1070/2048 blocks
 Exit status is 0
-   user id      blocks   quota    limit      inodes    quota    limit
+   user id      space    quota    limit      inodes    quota    limit
          0      20480        0        0           2        0        0
       1000          0     5000     6000           0       50       60
-  group id      blocks   quota    limit      inodes    quota    limit
+  group id      space    quota    limit      inodes    quota    limit
          0      20480        0        0           2        0        0
        100          0     6000     7000           0       60       70
