@@ -572,23 +572,6 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 }
 
 /*
- * Read all dquots from quota file into memory
- */
-static errcode_t quota_read_all_dquots(struct quota_handle *qh,
-                                       quota_ctx_t qctx,
-				       int update_limits EXT2FS_ATTR((unused)))
-{
-	struct scan_dquots_data scan_data;
-
-	scan_data.quota_dict = qctx->quota_dict[qh->qh_type];
-	scan_data.check_consistency = 0;
-	scan_data.update_limits = 0;
-	scan_data.update_usage = 1;
-
-	return qh->qh_ops->scan_dquots(qh, scan_dquots_callback, &scan_data);
-}
-
-/*
  * Write all memory dquots into quota file
  */
 #if 0 /* currently unused, but may be useful in the future? */
@@ -614,6 +597,7 @@ static errcode_t quota_write_all_dquots(struct quota_handle *qh,
 errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
 			      enum quota_type qtype)
 {
+	struct scan_dquots_data scan_data;
 	struct quota_handle *qh;
 	errcode_t err;
 
@@ -632,7 +616,11 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
 		goto out;
 	}
 
-	quota_read_all_dquots(qh, qctx, 1);
+	scan_data.quota_dict = qctx->quota_dict[qh->qh_type];
+	scan_data.check_consistency = 0;
+	scan_data.update_limits = 0;
+	scan_data.update_usage = 1;
+	qh->qh_ops->scan_dquots(qh, scan_dquots_callback, &scan_data);
 
 	err = quota_file_close(qctx, qh);
 	if (err) {
