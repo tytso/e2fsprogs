@@ -592,10 +592,11 @@ static errcode_t quota_write_all_dquots(struct quota_handle *qh,
 #endif
 
 /*
- * Updates the in-memory quota limits from the given quota inode.
+ * Read quotas from disk and updates the in-memory information determined by
+ * 'flags' from the on-disk data.
  */
-errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
-			      enum quota_type qtype)
+errcode_t quota_read_all_dquots(quota_ctx_t qctx, ext2_ino_t qf_ino,
+				enum quota_type qtype, unsigned int flags)
 {
 	struct scan_dquots_data scan_data;
 	struct quota_handle *qh;
@@ -618,8 +619,8 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
 
 	scan_data.quota_dict = qctx->quota_dict[qh->qh_type];
 	scan_data.check_consistency = 0;
-	scan_data.update_limits = 0;
-	scan_data.update_usage = 1;
+	scan_data.update_limits = !!(flags & QREAD_LIMITS);
+	scan_data.update_usage = !!(flags & QREAD_USAGE);
 	qh->qh_ops->scan_dquots(qh, scan_dquots_callback, &scan_data);
 
 	err = quota_file_close(qctx, qh);
