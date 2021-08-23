@@ -1679,7 +1679,7 @@ static int handle_quota_options(ext2_filsys fs)
 			if ((qf_ino = quota_file_exists(fs, qtype)) > 0) {
 				retval = quota_read_all_dquots(qctx, qf_ino,
 							       qtype,
-							       QREAD_USAGE);
+							       QREAD_LIMITS);
 				if (retval) {
 					com_err(program_name, retval,
 						_("while updating quota limits (%d)"),
