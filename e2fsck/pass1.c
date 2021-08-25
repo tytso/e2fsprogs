@@ -1778,6 +1778,32 @@ void e2fsck_pass1(e2fsck_t ctx)
 							inode_size, "pass1");
 				failed_csum = 0;
 			}
+		} else if (ino == fs->super->s_orphan_file_inum) {
+			ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
+			if (ext2fs_has_feature_orphan_file(fs->super)) {
+				if (!LINUX_S_ISREG(inode->i_mode) &&
+				    fix_problem(ctx, PR_1_ORPHAN_FILE_BAD_MODE,
+						&pctx)) {
+					inode->i_mode = LINUX_S_IFREG;
+					e2fsck_write_inode(ctx, ino, inode,
+							   "pass1");
+					failed_csum = 0;
+				}
+				check_blocks(ctx, &pctx, block_buf, NULL);
+				FINISH_INODE_LOOP(ctx, ino, &pctx, failed_csum);
+				continue;
+			}
+			if ((inode->i_links_count ||
+			     inode->i_blocks || inode->i_block[0]) &&
+			    fix_problem(ctx, PR_1_ORPHAN_FILE_NOT_CLEAR,
+					&pctx)) {
+				memset(inode, 0, inode_size);
+				ext2fs_icount_store(ctx->inode_link_info, ino,
+						    0);
+				e2fsck_write_inode_full(ctx, ino, inode,
+							inode_size, "pass1");
+				failed_csum = 0;
+			}
 		} else if (ino < EXT2_FIRST_INODE(fs->super)) {
 			problem_t problem = 0;
 
@@ -3482,6 +3508,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	}
 
 	if (ino != quota_type2inum(PRJQUOTA, fs->super) &&
+	    ino != fs->super->s_orphan_file_inum &&
 	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super)) &&
 	    !(inode->i_flags & EXT4_EA_INODE_FL)) {
 		quota_data_add(ctx->qctx, (struct ext2_inode_large *) inode,

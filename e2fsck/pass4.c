@@ -192,7 +192,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 					goto errout;
 		}
 		if (i == quota_type2inum(PRJQUOTA, ctx->fs->super) ||
-		    i == EXT2_BAD_INO ||
+		    i == fs->super->s_orphan_file_inum || i == EXT2_BAD_INO ||
 		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INODE(fs->super)))
 			continue;
 		if (!(ext2fs_test_inode_bitmap2(ctx->inode_used_map, i)) ||
