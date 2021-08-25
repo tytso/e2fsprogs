@@ -773,7 +773,8 @@ struct ext2_super_block {
 	__u8    s_last_error_errcode;
 /*27c*/ __le16	s_encoding;		/* Filename charset encoding */
 	__le16	s_encoding_flags;	/* Filename charset encoding flags */
-	__le32	s_reserved[95];		/* Padding to the end of the block */
+	__le32  s_orphan_file_inum;	/* Inode for tracking orphan inodes */
+	__le32	s_reserved[94];		/* Padding to the end of the block */
 /*3fc*/	__u32	s_checksum;		/* crc32c(superblock) */
 };
 
@@ -828,7 +829,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_COMPAT_SPARSE_SUPER2	0x0200
 #define EXT4_FEATURE_COMPAT_FAST_COMMIT		0x0400
 #define EXT4_FEATURE_COMPAT_STABLE_INODES	0x0800
-
+#define EXT4_FEATURE_COMPAT_ORPHAN_FILE		0x1000
 
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
 #define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
@@ -851,6 +852,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_RO_COMPAT_PROJECT		0x2000 /* Project quota */
 #define EXT4_FEATURE_RO_COMPAT_SHARED_BLOCKS	0x4000
 #define EXT4_FEATURE_RO_COMPAT_VERITY		0x8000
+#define EXT4_FEATURE_RO_COMPAT_ORPHAN_PRESENT	0x10000
 
 #define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
 #define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
@@ -931,6 +933,7 @@ EXT4_FEATURE_COMPAT_FUNCS(exclude_bitmap,	2, EXCLUDE_BITMAP)
 EXT4_FEATURE_COMPAT_FUNCS(sparse_super2,	4, SPARSE_SUPER2)
 EXT4_FEATURE_COMPAT_FUNCS(fast_commit,		4, FAST_COMMIT)
 EXT4_FEATURE_COMPAT_FUNCS(stable_inodes,	4, STABLE_INODES)
+EXT4_FEATURE_COMPAT_FUNCS(orphan_file,		4, ORPHAN_FILE)
 
 EXT4_FEATURE_RO_COMPAT_FUNCS(sparse_super,	2, SPARSE_SUPER)
 EXT4_FEATURE_RO_COMPAT_FUNCS(large_file,	2, LARGE_FILE)
@@ -947,6 +950,7 @@ EXT4_FEATURE_RO_COMPAT_FUNCS(readonly,		4, READONLY)
 EXT4_FEATURE_RO_COMPAT_FUNCS(project,		4, PROJECT)
 EXT4_FEATURE_RO_COMPAT_FUNCS(shared_blocks,	4, SHARED_BLOCKS)
 EXT4_FEATURE_RO_COMPAT_FUNCS(verity,		4, VERITY)
+EXT4_FEATURE_RO_COMPAT_FUNCS(orphan_present,	4, ORPHAN_PRESENT)
 
 EXT4_FEATURE_INCOMPAT_FUNCS(compression,	2, COMPRESSION)
 EXT4_FEATURE_INCOMPAT_FUNCS(filetype,		2, FILETYPE)
@@ -1113,6 +1117,14 @@ static inline unsigned int ext2fs_dir_rec_len(__u8 name_len,
 		rec_len += EXT2_DIR_ENTRY_HASH_LEN;
 	return rec_len;
 }
+
+#define EXT4_ORPHAN_BLOCK_MAGIC 0x0b10ca04
+
+/* Structure at the tail of orphan block */
+struct ext4_orphan_block_tail {
+	__u32 ob_magic;
+	__u32 ob_checksum;
+};
 
 /*
  * Constants for ext4's extended time encoding

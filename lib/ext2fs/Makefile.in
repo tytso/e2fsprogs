@@ -115,6 +115,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	newdir.o \
 	nls_utf8.o \
 	openfs.o \
+	orphan.o \
 	progress.o \
 	punch.o \
 	qcow2.o \
@@ -198,6 +199,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/newdir.c \
 	$(srcdir)/nls_utf8.c \
 	$(srcdir)/openfs.c \
+	$(srcdir)/orphan.c \
 	$(srcdir)/progress.c \
 	$(srcdir)/punch.c \
 	$(srcdir)/qcow2.c \
