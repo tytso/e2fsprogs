@@ -611,12 +611,16 @@ int main (int argc, char ** argv)
 				"feature.\n"));
 			goto errout;
 		}
-	} else if (new_size == ext2fs_blocks_count(fs->super)) {
-		fprintf(stderr, _("The filesystem is already %llu (%dk) "
-			"blocks long.  Nothing to do!\n\n"),
-			(unsigned long long) new_size,
-			blocksize / 1024);
-		goto success_exit;
+	} else {
+		adjust_new_size(fs, &new_size);
+		if (new_size == ext2fs_blocks_count(fs->super)) {
+			fprintf(stderr, _("The filesystem is already "
+					  "%llu (%dk) blocks long.  "
+					  "Nothing to do!\n\n"),
+				(unsigned long long) new_size,
+				blocksize / 1024);
+			goto success_exit;
+		}
 	}
 	if ((flags & RESIZE_ENABLE_64BIT) &&
 	    ext2fs_has_feature_64bit(fs->super)) {

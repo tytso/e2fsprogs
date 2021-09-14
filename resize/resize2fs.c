@@ -1029,6 +1029,85 @@ errout:
 }
 
 /*
+ * Replicate the first part of adjust_fs_info to determine what the
+ * new size of the file system should be.  This allows resize2fs to
+ * exit early if we aren't going to make any changes to the file
+ * system.
+ */
+void adjust_new_size(ext2_filsys fs, blk64_t *sizep)
+{
+	blk64_t		size, rem, overhead = 0;
+	unsigned long	desc_blocks;
+	dgrp_t		group_desc_count;
+	int		has_bg;
+	unsigned long long new_inodes;	/* u64 to check for overflow */
+
+	size = *sizep;
+retry:
+	group_desc_count = ext2fs_div64_ceil(size -
+					     fs->super->s_first_data_block,
+					     EXT2_BLOCKS_PER_GROUP(fs->super));
+	if (group_desc_count == 0)
+		return;
+	desc_blocks = ext2fs_div_ceil(group_desc_count,
+				      EXT2_DESC_PER_BLOCK(fs->super));
+
+	/*
+	 * Overhead is the number of bookkeeping blocks per group.  It
+	 * includes the superblock backup, the group descriptor
+	 * backups, the inode bitmap, the block bitmap, and the inode
+	 * table.
+	 */
+	overhead = (int) (2 + fs->inode_blocks_per_group);
+
+	has_bg = 0;
+	if (ext2fs_has_feature_sparse_super2(fs->super)) {
+		/*
+		 * We have to do this manually since
+		 * super->s_backup_bgs hasn't been set up yet.
+		 */
+		if (group_desc_count == 2)
+			has_bg = fs->super->s_backup_bgs[0] != 0;
+		else
+			has_bg = fs->super->s_backup_bgs[1] != 0;
+	} else
+		has_bg = ext2fs_bg_has_super(fs, group_desc_count - 1);
+	if (has_bg)
+		overhead += 1 + desc_blocks +
+			fs->super->s_reserved_gdt_blocks;
+
+	/*
+	 * See if the last group is big enough to support the
+	 * necessary data structures.  If not, we need to get rid of
+	 * it.
+	 */
+	rem = (size - fs->super->s_first_data_block) %
+		fs->super->s_blocks_per_group;
+	if ((group_desc_count == 1) && rem && (rem < overhead))
+		return;
+	if ((group_desc_count > 1) && rem && (rem < overhead+50)) {
+		size -= rem;
+		goto retry;
+	}
+
+	/*
+	 * If we need to reduce the size by no more than a block
+	 * group to avoid overrunning the max inode limit, do it.
+	 */
+	new_inodes =(unsigned long long) fs->super->s_inodes_per_group * group_desc_count;
+	if (new_inodes > ~0U) {
+		new_inodes = (unsigned long long) fs->super->s_inodes_per_group * (group_desc_count - 1);
+		if (new_inodes > ~0U)
+			return;
+		size = ((unsigned long long) fs->super->s_blocks_per_group *
+			(group_desc_count - 1)) + fs->super->s_first_data_block;
+
+		goto retry;
+	}
+	*sizep = size;
+}
+
+/*
  * This routine adjusts the superblock and other data structures, both
  * in disk as well as in memory...
  */
