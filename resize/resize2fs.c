@@ -757,6 +757,15 @@ retry:
 	 */
 	new_inodes =(unsigned long long) fs->super->s_inodes_per_group * fs->group_desc_count;
 	if (new_inodes > ~0U) {
+		new_inodes = (unsigned long long) fs->super->s_inodes_per_group * (fs->group_desc_count - 1);
+		if (new_inodes <= ~0U) {
+			unsigned long long new_blocks =
+		((unsigned long long) fs->super->s_blocks_per_group *
+		 (fs->group_desc_count - 1)) + fs->super->s_first_data_block;
+
+			ext2fs_blocks_count_set(fs->super, new_blocks);
+			goto retry;
+		}
 		fprintf(stderr, _("inodes (%llu) must be less than %u\n"),
 			(unsigned long long) new_inodes, ~0U);
 		return EXT2_ET_TOO_MANY_INODES;
