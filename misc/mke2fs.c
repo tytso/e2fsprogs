@@ -96,6 +96,7 @@ int	journal_flags;
 int	journal_fc_size;
 static e2_blkcnt_t	orphan_file_blocks;
 static int	lazy_itable_init;
+static int	assume_storage_prezeroed;
 static int	packed_meta_blocks;
 int		no_copy_xattrs;
 static char	*bad_blocks_filename = NULL;
@@ -1013,6 +1014,11 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				lazy_itable_init = strtoul(arg, &p, 0);
 			else
 				lazy_itable_init = 1;
+		} else if (!strcmp(token, "assume_storage_prezeroed")) {
+			if (arg)
+				assume_storage_prezeroed = strtoul(arg, &p, 0);
+			else
+				assume_storage_prezeroed = 1;
 		} else if (!strcmp(token, "lazy_journal_init")) {
 			if (arg)
 				journal_flags |= strtoul(arg, &p, 0) ?
@@ -1131,7 +1137,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tnodiscard\n"
 			"\tencoding=<encoding>\n"
 			"\tencoding_flags=<flags>\n"
-			"\tquotatype=<quota type(s) to be enabled>\n\n"),
+			"\tquotatype=<quota type(s) to be enabled>\n"
+			"\tassume_storage_prezeroed=<0 to disable, 1 to enable>\n\n"),
 			badopt ? badopt : "");
 		free(buf);
 		exit(1);
@@ -3123,6 +3130,18 @@ int main (int argc, char *argv[])
 	if (offset) {
 		sprintf(opt_string, "offset=%llu", (unsigned long long) offset);
 		io_channel_set_options(fs->io, opt_string);
+	}
+
+	if (assume_storage_prezeroed) {
+		if (verbose)
+			printf("%s",
+			       _("Assuming the storage device is prezeroed "
+			       "- skipping inode table and journal wipe\n"));
+
+		lazy_itable_init = 1;
+		itable_zeroed = 1;
+		zero_hugefile = 0;
+		journal_flags |= EXT2_MKJOURNAL_LAZYINIT;
 	}
 
 	/* Can't undo discard ... */
