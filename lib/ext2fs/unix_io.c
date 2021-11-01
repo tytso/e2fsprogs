@@ -957,8 +957,11 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 		mutex_lock(data, CACHE_MTX);
 		mutex_lock(data, BOUNCE_MTX);
 #ifndef NO_IO_CACHE
-		if ((retval = flush_cached_blocks(channel, data, FLUSH_NOLOCK)))
+		if ((retval = flush_cached_blocks(channel, data, FLUSH_NOLOCK))){
+			mutex_unlock(data, BOUNCE_MTX);
+			mutex_unlock(data, CACHE_MTX);
 			return retval;
+		}
 #endif
 
 		channel->block_size = blksize;
