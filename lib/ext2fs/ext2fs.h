@@ -531,6 +531,7 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
 #define EXT2_MF_READONLY	4
 #define EXT2_MF_SWAP		8
 #define EXT2_MF_BUSY		16
+#define EXT2_MF_EXTFS		32
 
 /*
  * Ext2/linux mode flags.  We define them here so that we don't need

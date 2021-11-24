@@ -207,6 +207,11 @@ is_root:
 			close(fd);
 		(void) unlink(TEST_FILE);
 	}
+
+	if (!strcmp(mnt->mnt_type, "ext4") ||
+	    !strcmp(mnt->mnt_type, "ext3") ||
+	    !strcmp(mnt->mnt_type, "ext2"))
+		*mount_flags |= EXT2_MF_EXTFS;
 	retval = 0;
 errout:
 	endmntent (f);

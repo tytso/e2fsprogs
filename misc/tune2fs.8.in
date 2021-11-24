@@ -457,8 +457,12 @@ Ext2 file system labels can be at most 16 characters long; if
 .I volume-label
 is longer than 16 characters,
 .B tune2fs
-will truncate it and print a warning.  The volume label can be used
-by
+will truncate it and print a warning.  For other file systems that
+support online label manipulation and are mounted
+.B tune2fs
+will work as well, but it will not attempt to truncate the
+.I volume-label
+at all.  The volume label can be used by
 .BR mount (8),
 .BR fsck (8),
 and

@@ -52,6 +52,9 @@ extern int optind;
 #include <sys/types.h>
 #include <libgen.h>
 #include <limits.h>
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
@@ -69,6 +72,15 @@ extern int optind;
 
 #define QOPT_ENABLE	(1)
 #define QOPT_DISABLE	(-1)
+
+#ifndef FS_IOC_SETFSLABEL
+#define FSLABEL_MAX 256
+#define FS_IOC_SETFSLABEL	_IOW(0x94, 50, char[FSLABEL_MAX])
+#endif
+
+#ifndef FS_IOC_GETFSLABEL
+#define FS_IOC_GETFSLABEL	_IOR(0x94, 49, char[FSLABEL_MAX])
+#endif
 
 extern int ask_yn(const char *string, int def);
 
@@ -2997,6 +3009,75 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 	return 0;
 }
 
+/*
+ * Use FS_IOC_SETFSLABEL or FS_IOC_GETFSLABEL to set/get file system label
+ * Return:	0 on success
+ *		1 on error
+ *		-1 when the old method should be used
+ */
+int handle_fslabel(int setlabel) {
+	errcode_t ret;
+	int mnt_flags, fd;
+	char label[FSLABEL_MAX];
+	int maxlen = FSLABEL_MAX - 1;
+	char mntpt[PATH_MAX + 1];
+
+	ret = ext2fs_check_mount_point(device_name, &mnt_flags,
+					  mntpt, sizeof(mntpt));
+	if (ret) {
+		com_err(device_name, ret, _("while checking mount status"));
+		return 1;
+	}
+	if (!(mnt_flags & EXT2_MF_MOUNTED) ||
+	    (setlabel && (mnt_flags & EXT2_MF_READONLY)))
+		return -1;
+
+	if (!mntpt[0]) {
+		fprintf(stderr,_("Unknown mount point for %s\n"), device_name);
+		return 1;
+	}
+
+	fd = open(mntpt, O_RDONLY);
+	if (fd < 0) {
+		com_err(mntpt, errno, _("while opening mount point"));
+		return 1;
+	}
+
+	/* Get fs label */
+	if (!setlabel) {
+		if (ioctl(fd, FS_IOC_GETFSLABEL, &label)) {
+			close(fd);
+			if (errno == ENOTTY)
+				return -1;
+			com_err(mntpt, errno, _("while trying to get fs label"));
+			return 1;
+		}
+		close(fd);
+		printf("%.*s\n", EXT2_LEN_STR(label));
+		return 0;
+	}
+
+	/* If it's extN file system, truncate the label to appropriate size */
+	if (mnt_flags & EXT2_MF_EXTFS)
+		maxlen = EXT2_LABEL_LEN;
+	if (strlen(new_label) > maxlen) {
+		fputs(_("Warning: label too long, truncating.\n"),
+		      stderr);
+		new_label[maxlen] = '\0';
+	}
+
+	/* Set fs label */
+	if (ioctl(fd, FS_IOC_SETFSLABEL, new_label)) {
+		close(fd);
+		if (errno == ENOTTY)
+			return -1;
+		com_err(mntpt, errno, _("while trying to set fs label"));
+		return 1;
+	}
+	close(fd);
+	return 0;
+}
+
 #ifndef BUILD_AS_LIB
 int main(int argc, char **argv)
 #else
@@ -3037,6 +3118,21 @@ int tune2fs_main(int argc, char **argv)
 	} else
 #endif
 		io_ptr = unix_io_manager;
+
+	/*
+	 * Try the get/set fs label using ioctls before we even attempt
+	 * to open the file system.
+	 */
+	if (L_flag || print_label) {
+		rc = handle_fslabel(L_flag);
+		if (rc != -1) {
+#ifndef BUILD_AS_LIB
+			exit(rc);
+#endif
+			return rc;
+		}
+		rc = 0;
+	}
 
 retry_open:
 	if ((open_flag & EXT2_FLAG_RW) == 0 || f_flag)
