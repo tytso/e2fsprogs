@@ -1852,7 +1852,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Unconnected directory inode */
 	{ PR_3_UNCONNECTED_DIR,
 	  /* xgettext:no-c-format */
-	  N_("Unconnected @d @i %i (%p)\n"),
+	  N_("Unconnected @d @i %i (was in %q)\n"),
 	  PROMPT_CONNECT, 0, 0, 0, 0 },
 
 	/* /lost+found not found */
@@ -1988,6 +1988,12 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_3_LPF_ENCRYPTED,
 	  N_("/@l is encrypted\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
+
+	/* Recursively looped directory inode */
+	{ PR_3_LOOPED_DIR,
+	  /* xgettext:no-c-format */
+	  N_("Recursively looped @d @i %i (%p)\n"),
+	  PROMPT_CONNECT, 0, 0, 0, 0 },
 
 	/* Pass 3A Directory Optimization	*/
 
