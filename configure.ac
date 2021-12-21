@@ -1005,6 +1005,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/mman.h
 	sys/mount.h
 	sys/prctl.h
+	sys/random.h
 	sys/resource.h
 	sys/select.h
 	sys/socket.h
@@ -1200,9 +1201,11 @@ AC_CHECK_FUNCS(m4_flatten([
 	futimes
 	getcwd
 	getdtablesize
+	getentropy
 	gethostname
 	getmntinfo
 	getpwuid_r
+	getrandom
 	getrlimit
 	getrusage
 	jrand48

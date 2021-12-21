@@ -70,6 +70,9 @@
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
+#ifdef HAVE_SYS_RANDOM_H
+#include <sys/random.h>
+#endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
@@ -174,10 +177,21 @@ static int get_random_fd(void)
  */
 static void get_random_bytes(void *buf, int nbytes)
 {
-	int i, n = nbytes, fd = get_random_fd();
+	int i, n = nbytes, fd;
 	int lose_counter = 0;
 	unsigned char *cp = buf;
 
+#ifdef HAVE_GETRANDOM
+	i = getrandom(buf, nbytes, 0);
+	if (i == nbytes)
+		return;
+#endif
+#ifdef HAVE_GETENTROPY
+	if (getentropy(buf, nbytes) == 0)
+		return;
+#endif
+
+	fd = get_random_fd();
 	if (fd >= 0) {
 		while (n > 0) {
 			i = read(fd, cp, n);
