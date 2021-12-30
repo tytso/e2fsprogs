@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.46.5">E2fsprogs 1.46.5 (December 30, 2021)</A>
 <LI><A HREF="#1.46.4">E2fsprogs 1.46.4 (August 18, 2021)</A>
 <LI><A HREF="#1.46.3">E2fsprogs 1.46.3 (July 27, 2021)</A>
 <LI><A HREF="#1.46.2">E2fsprogs 1.46.2 (February 28, 2021)</A>
@@ -141,6 +142,81 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.46.5">E2fsprogs 1.46.5 (December 30, 2021)</A></H2>
+
+<h3>UI and Features</h3>
+
+<P>When resizing a file system and the inode count exceeds the 2**32
+maximum, if resize2fs can successfully perform the resize by dropping
+the last block group, resize2fs will do that in order to allow the file
+system grow operation to succeed.  For example, using the default inode
+ratio size of 16k, this will allow a successful resize to 64TB - 128MB
+when the storage device is 64TB.</P>
+
+<h3>Fixes</h3>
+
+<P>Avoid a potential infinite loop in resize2fs -P when the file system is
+corrupted (introduced in e2fsprogs 1.45.5).  (Addresses github issue
+https://github.com/tytso/e2fsprogs/issues/94)</P>
+
+<P>E2fsck now updates the bg_checksum after fixing problems in the block
+group descriptor, which eliminates some unnecessary messages printed or
+asked of the system administrator.</P>
+
+<P>Fixed some potential deadlock problems in the unix_io handler in the case
+of I/O errors.  The fix should also improve the performance of parallel
+bitmap loading.</P>
+
+<P>Fixed e2fsck's fast commit handling which could result it in crashing
+when trying to merge extents when there were none available to be
+merged.</P>
+
+<P>Fix e2fsck's support of quota limit data, which could sometimes get
+dropped when the quota data needs to be regenerated, or when processing
+the orphan list.</P>
+
+<P>Fix tune2fs to correctly transfer the quota limits when converting quota
+files to the internal quota inodes.  Also add support for tune2fs to
+properly handle the older version 0 quota files.</P>
+
+<P>Fix debugfs's get_quota and list_quota commands so that the header of
+the report printed by these commands correctly reflect that the units of
+used space is in bytes instead of blocks.</P>
+
+<h3>Performance, Internal Implementation, Development Support etc.</h3>
+
+<P>Add some additional packages to the setup-schroot script to account for
+the fact that the script can be run on older Debian distributions and so
+the build dependencies might omit some packages needed to build
+e2fsprogs on unstable version of Debian.</P>
+
+<P>Reduce resize2fs's CPU overhead when counting the number of blocks in
+use which can reduce the wall clock time for very large file systems
+by substantial amount.</P>
+
+<P>Teach libuuid to use getrandom() or getentropy() if available in favor
+of reading from /dev/[u]random.</P>
+
+<P>Teach libss to use libreadline.so.8 if it is available.</P>
+
+<P>Update some test expect files to fix some regression tests that were
+broken in e2fsprogs 1.46.4.</P>
+
+<P>If the PRINT_FAILED environment variable is set, failed tests will
+display the diff output to make it easier to debug test failures on
+autobuilders.</P>
+
+<P>Fix various compiler warnings.</P>
+
+<P>Update tst_getsize to use ext2fs_get_size2() to support testing devices
+which are larger than 2**32 sectors.</P>
+
+<P>Fixed spelling mistakes in the mke2fs.conf man page.</P>
+
+<P>Update Chinese, Malay, Serbian, Spanish, Swedish, and Ukrainian
+translations.</P>
+
 
 <H2><A NAME="1.46.4">E2fsprogs 1.46.4 (August 18, 2021)</A></H2>
 
