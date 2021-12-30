@@ -61,7 +61,7 @@ Group 3: (Blocks 769-1023)
   Free blocks: 781-1023
   Free inodes: 97-128
 resize2fs -p test.img 10000
-Resizing the filesystem on test.img to 10000 (1k) blocks.
+Resizing the filesystem on test.img to 9985 (1k) blocks.
 Begin pass 1 (max = 35)
 Extending the inode table     ----------------------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 Begin pass 2 (max = 1)
@@ -354,7 +354,7 @@ Group 38: (Blocks 9729-9984)
   Free inodes: 1217-1248
 --------------------------------
 resize2fs -p test.img 20000
-Resizing the filesystem on test.img to 20000 (1k) blocks.
+Resizing the filesystem on test.img to 19969 (1k) blocks.
 Begin pass 1 (max = 39)
 Extending the inode table     ----------------------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 Begin pass 2 (max = 1)
@@ -884,7 +884,7 @@ Group 77: (Blocks 19713-19968)
   Free inodes: 2465-2496
 --------------------------------
 resize2fs -p test.img 30000
-Resizing the filesystem on test.img to 30000 (1k) blocks.
+Resizing the filesystem on test.img to 29953 (1k) blocks.
 Begin pass 1 (max = 39)
 Extending the inode table     ----------------------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 Begin pass 2 (max = 8)

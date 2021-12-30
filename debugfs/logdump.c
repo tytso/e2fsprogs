@@ -33,7 +33,14 @@ extern char *optarg;
 #include "debugfs.h"
 #include "blkid/blkid.h"
 #include "jfs_user.h"
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 #include "ext2fs/fast_commit.h"
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic pop
+#endif
 #include <uuid/uuid.h>
 
 enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
@@ -67,7 +74,7 @@ static void dump_metadata_block(FILE *, struct journal_source *,
 				int, tid_t);
 
 static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
-			  int transaction, int *fc_done, int dump_old);
+			  tid_t transaction, int *fc_done);
 
 static void do_hexdump (FILE *, char *, int);
 
@@ -522,8 +529,7 @@ fc:
 		if (retval)
 			return;
 
-		dump_fc_block(out_file, buf, blocksize, transaction, &fc_done,
-			dump_old);
+		dump_fc_block(out_file, buf, blocksize, transaction, &fc_done);
 		if (!dump_old && fc_done)
 			break;
 		blocknr++;
@@ -549,7 +555,7 @@ static inline size_t journal_super_tag_bytes(journal_superblock_t *jsb)
 }
 
 static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
-	int transaction, int *fc_done, int dump_old)
+			  tid_t transaction, int *fc_done)
 {
 	struct ext4_fc_tl	tl;
 	struct ext4_fc_head	*head;
@@ -706,7 +712,7 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 			      int blocksize EXT2FS_ATTR((unused)),
 			      tid_t transaction)
 {
-	int			offset, max;
+	unsigned int		offset, max;
 	jbd2_journal_revoke_header_t *header;
 	unsigned long long	rblock;
 	int			tag_size = sizeof(__u32);

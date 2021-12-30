@@ -757,6 +757,15 @@ retry:
 	 */
 	new_inodes =(unsigned long long) fs->super->s_inodes_per_group * fs->group_desc_count;
 	if (new_inodes > ~0U) {
+		new_inodes = (unsigned long long) fs->super->s_inodes_per_group * (fs->group_desc_count - 1);
+		if (new_inodes <= ~0U) {
+			unsigned long long new_blocks =
+		((unsigned long long) fs->super->s_blocks_per_group *
+		 (fs->group_desc_count - 1)) + fs->super->s_first_data_block;
+
+			ext2fs_blocks_count_set(fs->super, new_blocks);
+			goto retry;
+		}
 		fprintf(stderr, _("inodes (%llu) must be less than %u\n"),
 			(unsigned long long) new_inodes, ~0U);
 		return EXT2_ET_TOO_MANY_INODES;
@@ -1017,6 +1026,85 @@ retry:
 
 errout:
 	return (retval);
+}
+
+/*
+ * Replicate the first part of adjust_fs_info to determine what the
+ * new size of the file system should be.  This allows resize2fs to
+ * exit early if we aren't going to make any changes to the file
+ * system.
+ */
+void adjust_new_size(ext2_filsys fs, blk64_t *sizep)
+{
+	blk64_t		size, rem, overhead = 0;
+	unsigned long	desc_blocks;
+	dgrp_t		group_desc_count;
+	int		has_bg;
+	unsigned long long new_inodes;	/* u64 to check for overflow */
+
+	size = *sizep;
+retry:
+	group_desc_count = ext2fs_div64_ceil(size -
+					     fs->super->s_first_data_block,
+					     EXT2_BLOCKS_PER_GROUP(fs->super));
+	if (group_desc_count == 0)
+		return;
+	desc_blocks = ext2fs_div_ceil(group_desc_count,
+				      EXT2_DESC_PER_BLOCK(fs->super));
+
+	/*
+	 * Overhead is the number of bookkeeping blocks per group.  It
+	 * includes the superblock backup, the group descriptor
+	 * backups, the inode bitmap, the block bitmap, and the inode
+	 * table.
+	 */
+	overhead = (int) (2 + fs->inode_blocks_per_group);
+
+	has_bg = 0;
+	if (ext2fs_has_feature_sparse_super2(fs->super)) {
+		/*
+		 * We have to do this manually since
+		 * super->s_backup_bgs hasn't been set up yet.
+		 */
+		if (group_desc_count == 2)
+			has_bg = fs->super->s_backup_bgs[0] != 0;
+		else
+			has_bg = fs->super->s_backup_bgs[1] != 0;
+	} else
+		has_bg = ext2fs_bg_has_super(fs, group_desc_count - 1);
+	if (has_bg)
+		overhead += 1 + desc_blocks +
+			fs->super->s_reserved_gdt_blocks;
+
+	/*
+	 * See if the last group is big enough to support the
+	 * necessary data structures.  If not, we need to get rid of
+	 * it.
+	 */
+	rem = (size - fs->super->s_first_data_block) %
+		fs->super->s_blocks_per_group;
+	if ((group_desc_count == 1) && rem && (rem < overhead))
+		return;
+	if ((group_desc_count > 1) && rem && (rem < overhead+50)) {
+		size -= rem;
+		goto retry;
+	}
+
+	/*
+	 * If we need to reduce the size by no more than a block
+	 * group to avoid overrunning the max inode limit, do it.
+	 */
+	new_inodes =(unsigned long long) fs->super->s_inodes_per_group * group_desc_count;
+	if (new_inodes > ~0U) {
+		new_inodes = (unsigned long long) fs->super->s_inodes_per_group * (group_desc_count - 1);
+		if (new_inodes > ~0U)
+			return;
+		size = ((unsigned long long) fs->super->s_blocks_per_group *
+			(group_desc_count - 1)) + fs->super->s_first_data_block;
+
+		goto retry;
+	}
+	*sizep = size;
 }
 
 /*
@@ -2756,69 +2844,40 @@ errout:
  */
 static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs)
 {
-	blk64_t		blk;
+	errcode_t	retval;
+	blk64_t		blk = fs->super->s_first_data_block;
 	ext2_ino_t	ino;
-	unsigned int	group = 0;
-	unsigned int	count = 0;
-	blk64_t		total_blocks_free = 0;
+	unsigned int	n, c, group, count;
+	blk64_t		total_clusters_free = 0;
 	int		total_inodes_free = 0;
 	int		group_free = 0;
 	int		uninit = 0;
-	blk64_t		super_blk, old_desc_blk, new_desc_blk;
-	int		old_desc_blocks;
+	char		*bitmap_buf;
 
 	/*
 	 * First calculate the block statistics
 	 */
-	uninit = ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT);
-	ext2fs_super_and_bgd_loc2(fs, group, &super_blk, &old_desc_blk,
-				  &new_desc_blk, 0);
-	if (ext2fs_has_feature_meta_bg(fs->super))
-		old_desc_blocks = fs->super->s_first_meta_bg;
-	else
-		old_desc_blocks = fs->desc_blocks +
-			fs->super->s_reserved_gdt_blocks;
-	for (blk = B2C(fs->super->s_first_data_block);
-	     blk < ext2fs_blocks_count(fs->super);
-	     blk += EXT2FS_CLUSTER_RATIO(fs)) {
-		if ((uninit &&
-		     !(EQ_CLSTR(blk, super_blk) ||
-		       ((old_desc_blk && old_desc_blocks &&
-			 GE_CLSTR(blk, old_desc_blk) &&
-			 LT_CLSTR(blk, old_desc_blk + old_desc_blocks))) ||
-		       ((new_desc_blk && EQ_CLSTR(blk, new_desc_blk))) ||
-		       EQ_CLSTR(blk, ext2fs_block_bitmap_loc(fs, group)) ||
-		       EQ_CLSTR(blk, ext2fs_inode_bitmap_loc(fs, group)) ||
-		       ((GE_CLSTR(blk, ext2fs_inode_table_loc(fs, group)) &&
-			 LT_CLSTR(blk, ext2fs_inode_table_loc(fs, group)
-				  + fs->inode_blocks_per_group))))) ||
-		    (!ext2fs_fast_test_block_bitmap2(fs->block_map, blk))) {
-			group_free++;
-			total_blocks_free++;
+	bitmap_buf = malloc(fs->blocksize);
+	if (!bitmap_buf)
+		return ENOMEM;
+	for (group = 0; group < fs->group_desc_count;
+	     group++) {
+		retval = ext2fs_get_block_bitmap_range2(fs->block_map,
+			B2C(blk), fs->super->s_clusters_per_group, bitmap_buf);
+		if (retval) {
+			free(bitmap_buf);
+			return retval;
 		}
-		count++;
-		if ((count == fs->super->s_clusters_per_group) ||
-		    EQ_CLSTR(blk, ext2fs_blocks_count(fs->super)-1)) {
-			ext2fs_bg_free_blocks_count_set(fs, group, group_free);
-			ext2fs_group_desc_csum_set(fs, group);
-			group++;
-			if (group >= fs->group_desc_count)
-				break;
-			count = 0;
-			group_free = 0;
-			uninit = ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT);
-			ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
-						  &old_desc_blk,
-						  &new_desc_blk, 0);
-			if (ext2fs_has_feature_meta_bg(fs->super))
-				old_desc_blocks = fs->super->s_first_meta_bg;
-			else
-				old_desc_blocks = fs->desc_blocks +
-					fs->super->s_reserved_gdt_blocks;
-		}
+		n = ext2fs_bitcount(bitmap_buf,
+				    fs->super->s_clusters_per_group / 8);
+		group_free = fs->super->s_clusters_per_group - n;
+		total_clusters_free += group_free;
+		ext2fs_bg_free_blocks_count_set(fs, group, group_free);
+		ext2fs_group_desc_csum_set(fs, group);
+		blk += fs->super->s_blocks_per_group;
 	}
-	total_blocks_free = C2B(total_blocks_free);
-	ext2fs_free_blocks_count_set(fs->super, total_blocks_free);
+	free(bitmap_buf);
+	ext2fs_free_blocks_count_set(fs->super, C2B(total_clusters_free));
 
 	/*
 	 * Next, calculate the inode statistics
@@ -2943,8 +3002,17 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	/* calculate how many blocks are needed for data */
 	data_needed = ext2fs_blocks_count(fs->super);
 	for (grp = 0; grp < fs->group_desc_count; grp++) {
-		data_needed -= calc_group_overhead(fs, grp, old_desc_blocks);
-		data_needed -= ext2fs_bg_free_blocks_count(fs, grp);
+		__u32 n = ext2fs_bg_free_blocks_count(fs, grp);
+
+		if (n > EXT2_BLOCKS_PER_GROUP(fs->super))
+			n = EXT2_BLOCKS_PER_GROUP(fs->super);
+		n += calc_group_overhead(fs, grp, old_desc_blocks);
+		if (data_needed < n) {
+			if (flags & RESIZE_DEBUG_MIN_CALC)
+				printf("file system appears inconsistent?!?\n");
+			return ext2fs_blocks_count(fs->super);
+		}
+		data_needed -= n;
 	}
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)

@@ -4,7 +4,7 @@
 #
 # Göran Uddeborg <goeran@uddeborg.se>, 2003, 2005, 2006, 2008, 2009, 2010, 2011, 2012, 2014, 2016, 2017, 2018, 2019, 2021.
 #
-# $Revision: 1.108 $
+# $Revision: 1.109 $
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -80,7 +80,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.46.3\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2021-07-27 12:40-0400\n"
-"PO-Revision-Date: 2021-08-12 22:14+0200\n"
+"PO-Revision-Date: 2021-08-30 11:58+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -1521,7 +1521,7 @@ msgstr "Fel vid allokering av %N konsekutiva block i blockgrupp %g för %s: %m\n
 #: e2fsck/problem.c:700
 #, no-c-format
 msgid "@A @b buffer for relocating %s\n"
-msgstr "Fil vid allokering av blockbuffert för relokering av %s\n"
+msgstr "Fel vid allokering av blockbuffert för relokering av %s\n"
 
 #. @-expanded: Relocating group %g's %s from %b to %c...\n
 #: e2fsck/problem.c:705
@@ -1676,7 +1676,7 @@ msgstr "Utökade attribut-block %b har h_blocks > 1.  "
 #. @-expanded: error allocating extended attribute region allocation structure.  
 #: e2fsck/problem.c:861
 msgid "@A @a region allocation structure.  "
-msgstr "Fel vid allokering utökade attributs regionallokeringsstruktur.  "
+msgstr "Fel vid allokering av utökade attributs regionallokeringsstruktur.  "
 
 #. @-expanded: extended attribute block %b is corrupt (allocation collision).  
 #: e2fsck/problem.c:866
@@ -2048,7 +2048,7 @@ msgstr "Trasig-block-lista säger att inoden för listan över trasiga block är
 #. @-expanded: error allocating extent region allocation structure.  
 #: e2fsck/problem.c:1194
 msgid "@A @x region allocation structure.  "
-msgstr "Fel vid allokering utsträckningars regionallokeringsstruktur.  "
+msgstr "Fel vid allokering av utsträckningars regionallokeringsstruktur.  "
 
 #. @-expanded: inode %i has a duplicate extent mapping\n
 #. @-expanded: \t(logical block %c, invalid physical block %b, len %N)\n
@@ -2118,7 +2118,7 @@ msgstr "Inod %i har en utsträckning markerad oinitierad vid block %c (längd %N
 #: e2fsck/problem.c:1254
 #, c-format
 msgid "@i %i has the casefold flag set but is not a directory.  "
-msgstr "Inod %i har flaggan casefold_FL satt men är inte en katalog.  "
+msgstr "Inod %i har flaggan casefold satt men är inte en katalog.  "
 
 #. @-expanded: directory %p has the casefold flag, but the\n
 #. @-expanded: casefold feature is not enabled.  
@@ -2548,7 +2548,7 @@ msgstr "Ogiltig HTREE-kataloginod %d (%q).  "
 #. @-expanded: filesystem has large directories, but lacks LARGE_DIR flag in superblock.\n
 #: e2fsck/problem.c:1697
 msgid "@f has large directories, but lacks LARGE_DIR flag in @S.\n"
-msgstr "Filsystem har stora kataloger, men saknar flaggan LARGE_FILE i superblocket.\n"
+msgstr "Filsystem har stora kataloger, men saknar flaggan LARGE_DIR i superblocket.\n"
 
 #. @-expanded: problem in HTREE directory inode %d (%q): bad block number %b.\n
 #: e2fsck/problem.c:1702
@@ -6526,7 +6526,7 @@ msgstr "vid läsning av MMP-block."
 
 #: misc/tune2fs.c:1246
 msgid "Disabling directory index on filesystem with checksums could take some time."
-msgstr "Att avaktivera katalogindex på filsystem kontrollsummor kan ta ett tag."
+msgstr "Att avaktivera katalogindex på filsystem med kontrollsummor kan ta ett tag."
 
 #: misc/tune2fs.c:1250
 msgid "Cannot disable dir_index on a mounted filesystem!\n"
@@ -7443,7 +7443,7 @@ msgstr "Ny storlek för stor för att uttryckas i 32 bitar\n"
 
 #: resize/main.c:548
 msgid "New size results in too many block group descriptors.\n"
-msgstr "Ny storlek resulterar i för mång blockgruppbeskrivare.\n"
+msgstr "Ny storlek resulterar i för många blockgruppbeskrivare.\n"
 
 #: resize/main.c:555
 #, c-format

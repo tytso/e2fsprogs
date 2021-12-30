@@ -572,48 +572,13 @@ static int scan_dquots_callback(struct dquot *dquot, void *cb_data)
 }
 
 /*
- * Read all dquots from quota file into memory
+ * Read quotas from disk and updates the in-memory information determined by
+ * 'flags' from the on-disk data.
  */
-static errcode_t quota_read_all_dquots(struct quota_handle *qh,
-                                       quota_ctx_t qctx,
-				       int update_limits EXT2FS_ATTR((unused)))
+errcode_t quota_read_all_dquots(quota_ctx_t qctx, ext2_ino_t qf_ino,
+				enum quota_type qtype, unsigned int flags)
 {
 	struct scan_dquots_data scan_data;
-
-	scan_data.quota_dict = qctx->quota_dict[qh->qh_type];
-	scan_data.check_consistency = 0;
-	scan_data.update_limits = 0;
-	scan_data.update_usage = 1;
-
-	return qh->qh_ops->scan_dquots(qh, scan_dquots_callback, &scan_data);
-}
-
-/*
- * Write all memory dquots into quota file
- */
-#if 0 /* currently unused, but may be useful in the future? */
-static errcode_t quota_write_all_dquots(struct quota_handle *qh,
-                                        quota_ctx_t qctx)
-{
-	errcode_t err;
-
-	err = ext2fs_read_bitmaps(qctx->fs);
-	if (err)
-		return err;
-	write_dquots(qctx->quota_dict[qh->qh_type], qh);
-	ext2fs_mark_bb_dirty(qctx->fs);
-	qctx->fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
-	ext2fs_write_bitmaps(qctx->fs);
-	return 0;
-}
-#endif
-
-/*
- * Updates the in-memory quota limits from the given quota inode.
- */
-errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
-			      enum quota_type qtype)
-{
 	struct quota_handle *qh;
 	errcode_t err;
 
@@ -632,7 +597,11 @@ errcode_t quota_update_limits(quota_ctx_t qctx, ext2_ino_t qf_ino,
 		goto out;
 	}
 
-	quota_read_all_dquots(qh, qctx, 1);
+	scan_data.quota_dict = qctx->quota_dict[qh->qh_type];
+	scan_data.check_consistency = 0;
+	scan_data.update_limits = !!(flags & QREAD_LIMITS);
+	scan_data.update_usage = !!(flags & QREAD_USAGE);
+	qh->qh_ops->scan_dquots(qh, scan_dquots_callback, &scan_data);
 
 	err = quota_file_close(qctx, qh);
 	if (err) {

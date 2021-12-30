@@ -1677,8 +1677,9 @@ static int handle_quota_options(ext2_filsys fs)
 		if (quota_enable[qtype] == QOPT_ENABLE &&
 		    *quota_sb_inump(fs->super, qtype) == 0) {
 			if ((qf_ino = quota_file_exists(fs, qtype)) > 0) {
-				retval = quota_update_limits(qctx, qf_ino,
-							     qtype);
+				retval = quota_read_all_dquots(qctx, qf_ino,
+							       qtype,
+							       QREAD_LIMITS);
 				if (retval) {
 					com_err(program_name, retval,
 						_("while updating quota limits (%d)"),
