@@ -35,7 +35,7 @@ system image using mke2fs into a non-existent file would fail.
 Fix mke2fs to correctly create Posix ACL's on big-endian systems when
 copying files from a directory hierarchy.
 
-Updated and clarified the resize2fs man pages.  (Addresses Debian Bug:
+Updated and clarified the resize2fs man page.  (Addresses Debian Bug:
 #979411)
 
 
