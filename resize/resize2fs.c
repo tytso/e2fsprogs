@@ -3002,8 +3002,17 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	/* calculate how many blocks are needed for data */
 	data_needed = ext2fs_blocks_count(fs->super);
 	for (grp = 0; grp < fs->group_desc_count; grp++) {
-		data_needed -= calc_group_overhead(fs, grp, old_desc_blocks);
-		data_needed -= ext2fs_bg_free_blocks_count(fs, grp);
+		__u32 n = ext2fs_bg_free_blocks_count(fs, grp);
+
+		if (n > EXT2_BLOCKS_PER_GROUP(fs->super))
+			n = EXT2_BLOCKS_PER_GROUP(fs->super);
+		n += calc_group_overhead(fs, grp, old_desc_blocks);
+		if (data_needed < n) {
+			if (flags & RESIZE_DEBUG_MIN_CALC)
+				printf("file system appears inconsistent?!?\n");
+			return ext2fs_blocks_count(fs->super);
+		}
+		data_needed -= n;
 	}
 #ifdef RESIZE2FS_DEBUG
 	if (flags & RESIZE_DEBUG_MIN_CALC)

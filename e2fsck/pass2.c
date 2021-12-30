@@ -1540,6 +1540,7 @@ skip_checksum:
 					&cd->pctx)){
 				ext2fs_bg_flags_clear(fs, group,
 						      EXT2_BG_INODE_UNINIT);
+				ext2fs_group_desc_csum_set(fs, group);
 				ext2fs_mark_super_dirty(fs);
 				ctx->flags |= E2F_FLAG_RESTART_LATER;
 			} else {
@@ -1551,6 +1552,7 @@ skip_checksum:
 			pctx.num = dirent->inode;
 			if (fix_problem(ctx, PR_2_INOREF_IN_UNUSED, &cd->pctx)){
 				ext2fs_bg_itable_unused_set(fs, group, 0);
+				ext2fs_group_desc_csum_set(fs, group);
 				ext2fs_mark_super_dirty(fs);
 				ctx->flags |= E2F_FLAG_RESTART_LATER;
 			} else {

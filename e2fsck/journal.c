@@ -464,6 +464,9 @@ static void ex_sort_and_merge(struct extent_list *list)
 		}
 	}
 
+	if (list->count == 0)
+		return;
+
 	/* Now sort by logical offset */
 	qsort(list->extents, list->count, sizeof(list->extents[0]),
 		ex_compar);

@@ -1,3 +1,29 @@
+e2fsprogs (1.46.5-1) unstable; urgency=medium
+
+  * New upstream release
+  * Resize2fs will automatically drop one block group (128M) if that will
+    allow a resize operation to succeed when it would have failed due to
+    running afoul of the 2**32 inode count limit.
+  * Fix resize2fs -P so it won't potentially loop forever when the file
+    system is corrupted
+  * E2fsck will now automatically update the block group checksum when
+    fixing a problem in a block group descriptor
+  * Fix error handling in the unix_io module which could cause e2fsck
+    to deadlock in the face of I/O errors.
+  * Fix a bug in e2fsck fast commit handling which could result it in
+    crashing in some rare cases.
+  * Fix e2fsck and tune2fs's handling of quota limits, which previously
+    could get lost.
+  * Correct the report header printed by debugfs's get_quota and
+    list_quota commands.
+  * Speed up off-line resizing of very large file system.
+  * Fixed spelling mistakes in the mke2fs.conf man page.
+  * Update Chinese, Malay, Serbian, Spanish, Swedish, and Ukrainian
+    translations.
+  * Update the Debian policy compliance to 4.6.0.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 30 Dec 2021 00:35:14 -0500
+
 e2fsprogs (1.46.4-1) unstable; urgency=medium
 
   * New upstream release
@@ -20,7 +46,7 @@ e2fsprogs (1.46.4-1) unstable; urgency=medium
   * Fix FTBFS on GNU Hurd
   * Use WantedBy=multi-user.target in e2scrub_reap.service.
     (Closes: #991349)
-  * Updated and clarified the resize2fs man pages.  (Closes: #979411)
+  * Updated and clarified the resize2fs man page.  (Closes: #979411)
   * Update Czech, Dutch, French, Polish, Portuguese, and Swedish
     translations.
 
