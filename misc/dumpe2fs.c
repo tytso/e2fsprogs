@@ -338,6 +338,7 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	if (retval) {
 		com_err("ext2fs_badblocks_list_iterate_begin", retval,
 			"%s", _("while printing bad block list"));
+		ext2fs_badblocks_list_free(bb_list);
 		return;
 	}
 	if (dump) {

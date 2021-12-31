@@ -1781,11 +1781,11 @@ static errcode_t block_mover(ext2_resize_t rfs)
 					fs->inode_blocks_per_group,
 					&rfs->itable_buf);
 		if (retval)
-			return retval;
+			goto errout;
 	}
 	retval = ext2fs_create_extent_table(&rfs->bmap, 0);
 	if (retval)
-		return retval;
+		goto errout;
 
 	/*
 	 * The first step is to figure out where all of the blocks
