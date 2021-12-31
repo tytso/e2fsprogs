@@ -248,6 +248,8 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 	return 0;
 
 cleanup:
+	if (io && io->name)
+		ext2fs_free_mem(&io->name);
 	if (io)
 		ext2fs_free_mem(&io);
 	if (data)
