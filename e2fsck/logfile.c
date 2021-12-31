@@ -32,7 +32,7 @@ static void alloc_string(struct string *s, int len)
 {
 	s->s = malloc(len);
 /* e2fsck_allocate_memory(ctx, len, "logfile name"); */
-	s->len = len;
+	s->len = s->s ? len : 0;
 	s->end = 0;
 }
 
