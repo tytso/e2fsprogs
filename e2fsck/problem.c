@@ -2321,6 +2321,8 @@ int end_problem_latch(e2fsck_t ctx, int mask)
 	int answer = -1;
 
 	ldesc = find_latch(mask);
+	if (!ldesc)
+		return answer;
 	if (ldesc->end_message && (ldesc->flags & PRL_LATCHED)) {
 		clear_problem_context(&pctx);
 		answer = fix_problem(ctx, ldesc->end_message, &pctx);
@@ -2467,8 +2469,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	 * Do special latch processing.  This is where we ask the
 	 * latch question, if it exists
 	 */
-	if (ptr->flags & PR_LATCH_MASK) {
-		ldesc = find_latch(ptr->flags & PR_LATCH_MASK);
+	if (ptr->flags & PR_LATCH_MASK &&
+	    (ldesc = find_latch(ptr->flags & PR_LATCH_MASK)) != NULL) {
 		if (ldesc->question && !(ldesc->flags & PRL_LATCHED)) {
 			ans = fix_problem(ctx, ldesc->question, pctx);
 			if (ans == 1)
