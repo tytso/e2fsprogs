@@ -17,7 +17,7 @@ $MKE2FS -q -F -t ext4 -o Linux -b 1024 $TMPFILE 32M >> $OUT.new 2>&1
 echo debugfs -w -R \"set_bg 1 free_blocks_count 65536\" /tmp/foo.img >> $OUT.new
 $DEBUGFS -w -R "set_bg 1 free_blocks_count 65536" $TMPFILE > /dev/null 2>&1
 
-if type timeout > /dev/null 2>&1 ; then
+if timeout -v 1s true > /dev/null 2>&1 ; then
    TIMEOUT="timeout -v 30s"
 else
    TIMEOUT=
