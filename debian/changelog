@@ -1,3 +1,9 @@
+e2fsprogs (1.46.5-2~bpo10+1) buster-backports; urgency=medium
+
+  * Rebuild for buster-backports.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 06 Jan 2022 15:32:24 -0500
+
 e2fsprogs (1.46.5-2) unstable; urgency=medium
 
   * Fix build on GNU/kFreeBSD (caused by the fact that the Debian port has
