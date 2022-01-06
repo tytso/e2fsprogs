@@ -38,7 +38,7 @@ requested operation.
 
 Fix mke2fs so it can import the contents of a directory using the -d
 option when it has inode numbers that are greater than 2**32.   Also fix
-an ommission were the extended attributes on the top-level directory was
+an omission were the extended attributes on the top-level directory was
 not getting copied to the root directory.
 
 Fix e4crypt so that the add_key operation uses the explicitly provided

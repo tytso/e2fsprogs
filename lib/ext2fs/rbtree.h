@@ -98,6 +98,11 @@ static inline struct page * rb_insert_page_cache(struct inode * inode,
 #include <stdint.h>
 #include "compiler.h"
 
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
 struct rb_node
 {
 	uintptr_t  rb_parent_color;
@@ -151,14 +156,6 @@ static inline void ext2fs_rb_clear_node(struct rb_node *node)
 extern void ext2fs_rb_insert_color(struct rb_node *, struct rb_root *);
 extern void ext2fs_rb_erase(struct rb_node *, struct rb_root *);
 
-typedef void (*rb_augment_f)(struct rb_node *node, void *data);
-
-extern void ext2fs_rb_augment_insert(struct rb_node *node,
-			      rb_augment_f func, void *data);
-extern struct rb_node *ext2fs_rb_augment_erase_begin(struct rb_node *node);
-extern void ext2fs_rb_augment_erase_end(struct rb_node *node,
-				 rb_augment_f func, void *data);
-
 /* Find logical next and previous nodes in a tree */
 extern struct rb_node *ext2fs_rb_next(struct rb_node *);
 extern struct rb_node *ext2fs_rb_prev(struct rb_node *);
@@ -178,5 +175,9 @@ static inline void ext2fs_rb_link_node(struct rb_node * node,
 
 	*rb_link = node;
 }
+
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic pop
+#endif
 
 #endif	/* _LINUX_RBTREE_H */

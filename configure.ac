@@ -1005,6 +1005,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/mman.h
 	sys/mount.h
 	sys/prctl.h
+	sys/random.h
 	sys/resource.h
 	sys/select.h
 	sys/socket.h
@@ -1200,9 +1201,11 @@ AC_CHECK_FUNCS(m4_flatten([
 	futimes
 	getcwd
 	getdtablesize
+	getentropy
 	gethostname
 	getmntinfo
 	getpwuid_r
+	getrandom
 	getrlimit
 	getrusage
 	jrand48
@@ -1785,7 +1788,18 @@ AS_IF([test "x${with_systemd_unit_dir}" != "xno"],
   ])
 AC_SUBST(have_systemd)
 AC_SUBST(systemd_system_unit_dir)
-
+dnl Adjust the compiled files if we are on windows vs everywhere else
+dnl
+OS_IO_FILE=""
+[case "$host_os" in
+  cigwin*|mingw*|msys*)
+    OS_IO_FILE=windows_io
+  ;;
+  *)
+    OS_IO_FILE=unix_io
+  ;;
+esac]
+AC_SUBST(OS_IO_FILE)
 dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories

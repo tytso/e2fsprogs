@@ -39,7 +39,7 @@ synchronous directory updates (D),
 extent format (e),
 case-insensitive directory lookups (F),
 immutable (i),
-data journalling (j),
+data journaling (j),
 don't compress (m),
 project hierarchy (P),
 secure deletion (s),
@@ -57,13 +57,13 @@ indexed directory (I),
 inline data (N),
 and verity (V).
 .PP
-Not all flags are supported or utilized by all filesystems; refer to
-filesystem-specific man pages such as
+Not all flags are supported or utilized by all file systems; refer to
+file system-specific man pages such as
 .BR btrfs (5),
 .BR ext4 (5),
 and
 .BR xfs (5)
-for more filesystem-specific details.
+for more file system-specific details.
 .SH OPTIONS
 .TP
 .B \-R
@@ -128,7 +128,7 @@ the blocks on disk.  It may not be removed using
 .TP
 .B E
 A file, directory, or symlink with the 'E' attribute set is encrypted by the
-filesystem.  This attribute may not be set or cleared using
+file system.  This attribute may not be set or cleared using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
@@ -157,7 +157,7 @@ although it can be displayed by
 A file with the 'j' attribute has all of its data written to the ext3 or
 ext4 journal before being written to the file itself, if the file system
 is mounted with the "data=ordered" or "data=writeback" options and the
-file system has a journal.  When the filesystem is mounted with the
+file system has a journal.  When the file system is mounted with the
 "data=journal" option all file data is already journalled and this
 attribute has no effect.  Only the superuser or a process possessing the
 CAP_SYS_RESOURCE capability can set or clear this attribute.
@@ -195,10 +195,10 @@ the 'sync' mount option applied to a subset of the files.
 .TP
 .B t
 A file with the 't' attribute will not have a partial block fragment at
-the end of the file merged with other files (for those filesystems which
+the end of the file merged with other files (for those file systems which
 support tail-merging).  This is necessary for applications such as LILO
-which read the filesystem directly, and which don't understand tail-merged
-files.  Note: As of this writing, the ext2, ext3, and ext4 filesystems do
+which read the file system directly, and which don't understand tail-merged
+files.  Note: As of this writing, the ext2, ext3, and ext4 file systems do
 not support tail-merging.
 .TP
 .B T
@@ -228,7 +228,7 @@ these files and subdirectories.
 .TP
 .B V
 A file with the 'V' attribute set has fs-verity enabled.  It cannot be
-written to, and the filesystem will automatically verify all data read
+written to, and the file system will automatically verify all data read
 from it against a cryptographic hash that covers the entire file's
 contents, e.g. via a Merkle tree.  This makes it possible to efficiently
 authenticate the file.  This attribute may not be set or cleared using
@@ -242,7 +242,7 @@ was written by Remy Card <Remy.Card@linux.org>.  It is currently being
 maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .SH BUGS AND LIMITATIONS
 The 'c', 's',  and 'u' attributes are not honored
-by the ext2, ext3, and ext4 filesystems as implemented in the current
+by the ext2, ext3, and ext4 file systems as implemented in the current
 mainline Linux kernels.
 Setting 'a' and 'i' attributes will not affect the ability to write
 to already existing file descriptors.

@@ -128,14 +128,14 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	while ((mnt = getmntent (f)) != NULL) {
 		if (mnt->mnt_fsname[0] != '/')
 			continue;
-		if (stat(mnt->mnt_dir, &st_buf) != 0)
-			continue;
 		if (strcmp(file, mnt->mnt_fsname) == 0) {
+			if (stat(mnt->mnt_dir, &st_buf) != 0)
+				continue;
 			if (file_rdev && (file_rdev != st_buf.st_dev)) {
 #ifdef DEBUG
 				printf("Bogus entry in %s!  "
-				       "(%s does not exist)\n",
-				       mtab_file, mnt->mnt_dir);
+				       "(%s is not mounted on %s)\n",
+				       mtab_file, file, mnt->mnt_dir);
 #endif /* DEBUG */
 				continue;
 			}
@@ -393,7 +393,8 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 
 	if (is_swap_device(device)) {
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
-		strncpy(mtpt, "<swap>", mtlen);
+		if (mtpt)
+			strncpy(mtpt, "<swap>", mtlen);
 	} else {
 #ifdef HAVE_SETMNTENT
 		retval = check_mntent(device, mount_flags, mtpt, mtlen);

@@ -2058,9 +2058,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		goto endit;
 	}
 
-	if (ctx->large_dirs && !ext2fs_has_feature_largedir(ctx->fs->super)) {
-		ext2_filsys fs = ctx->fs;
-
+	if (ctx->large_dirs && !ext2fs_has_feature_largedir(fs->super)) {
 		if (fix_problem(ctx, PR_2_FEATURE_LARGE_DIRS, &pctx)) {
 			ext2fs_set_feature_largedir(fs->super);
 			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
@@ -2728,7 +2726,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	if (root->indirect_levels > ext2_dir_htree_level(fs) &&
 	    !ext2fs_has_feature_largedir(fs->super)) {
 		int blockbits = EXT2_BLOCK_SIZE_BITS(fs->super) + 10;
-		int idx_pb = 1 << (blockbits - 3);
+		unsigned idx_pb = 1 << (blockbits - 3);
 
 		/* compare inode size/blocks vs. max-sized 2-level htree */
 		if (EXT2_I_SIZE(pctx->inode) <

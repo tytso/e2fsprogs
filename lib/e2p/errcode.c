@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "e2p.h"
+
 static const char *err_string[] = {
 	"",
 	"UNKNOWN",		/*  1 */
@@ -32,15 +34,14 @@ static const char *err_string[] = {
         (sizeof(array) / sizeof(array[0]))
 
 /* Return the name of an encoding or NULL */
-const char *e2p_errcode2str(int err)
+const char *e2p_errcode2str(unsigned int err)
 {
-	unsigned int i;
 	static char buf[32];
 
 	if (err < ARRAY_SIZE(err_string))
 		return err_string[err];
 
-	sprintf(buf, "UNKNOWN_ERRCODE_%d", err);
+	sprintf(buf, "UNKNOWN_ERRCODE_%u", err);
 	return buf;
 }
 

@@ -18,6 +18,18 @@
 #define EXT2FS_ATTR(x)
 #endif
 
+#ifndef __nonstring
+#ifdef __has_attribute
+#if __has_attribute(__nonstring__)
+#define __nonstring                    __attribute__((__nonstring__))
+#else
+#define __nonstring
+#endif /* __has_attribute(__nonstring__) */
+#else
+# define __nonstring
+#endif /* __has_attribute */
+#endif /* __nonstring */
+
 #ifdef CONFIG_TDB
 #define EXT2FS_NO_TDB_UNUSED
 #else

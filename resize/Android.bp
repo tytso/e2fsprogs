@@ -1,5 +1,14 @@
 // Copyright 2017 The Android Open Source Project
 
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "external_e2fsprogs_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-GPL
+    default_applicable_licenses: ["external_e2fsprogs_license"],
+}
+
 resize2fs_libs = [
     "libext2fs",
     "libext2_com_err",
@@ -37,7 +46,6 @@ cc_binary {
             shared_libs: resize2fs_libs,
         },
     },
-    system_shared_libs: ["libc", "libdl"],
 }
 
 cc_binary {
@@ -46,6 +54,5 @@ cc_binary {
     static_executable: true,
     ramdisk: true,
     defaults: ["resize2fs-defaults"],
-    system_shared_libs: [],
     static_libs: resize2fs_libs,
 }

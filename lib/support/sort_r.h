@@ -24,12 +24,12 @@ void sort_r(void *base, size_t nel, size_t width,
 
 #define _SORT_R_INLINE inline
 
-#if (defined __APPLE__ || defined __MACH__ || defined __DARWIN__ || \
-     defined __FreeBSD__ || defined __DragonFly__)
-#  define _SORT_R_BSD
-#elif (defined _GNU_SOURCE || defined __gnu_hurd__ || defined __GNU__ || \
+#if (defined __gnu_hurd__ || defined __GNU__ || \
        defined __linux__ || defined __MINGW32__ || defined __GLIBC__)
 #  define _SORT_R_LINUX
+#elif (defined __APPLE__ || defined __MACH__ || defined __DARWIN__ || \
+     defined __FreeBSD__ || defined __DragonFly__)
+#  define _SORT_R_BSD
 #elif (defined _WIN32 || defined _WIN64 || defined __WINDOWS__)
 #  define _SORT_R_WINDOWS
 #  undef _SORT_R_INLINE

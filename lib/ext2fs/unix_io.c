@@ -311,11 +311,11 @@ bounce_read:
 			size += really_read;
 			goto short_read;
 		}
-		actual = size;
-		if (actual > align_size)
-			actual = align_size;
-		actual -= offset;
-		memcpy(buf, data->bounce + offset, actual);
+		if ((actual + offset) > align_size)
+			actual = align_size - offset;
+		if (actual > size)
+			actual = size;
+		memcpy(buf, (char *)data->bounce + offset, actual);
 
 		really_read += actual;
 		size -= actual;
@@ -329,7 +329,6 @@ success_unlock:
 
 error_unlock:
 	mutex_unlock(data, BOUNCE_MTX);
-error_out:
 	if (actual >= 0 && actual < size)
 		memset((char *) buf+actual, 0, size-actual);
 	if (channel->read_error)
@@ -398,7 +397,7 @@ static errcode_t raw_write_blk(io_channel channel,
 		mutex_lock(data, BOUNCE_MTX);
 		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
-			goto error_out;
+			goto error_unlock;
 		}
 		actual = write(data->dev, buf, size);
 		mutex_unlock(data, BOUNCE_MTX);
@@ -455,9 +454,10 @@ bounce_write:
 			}
 		}
 		actual = size;
-		if (actual > align_size)
-			actual = align_size;
-		actual -= offset;
+		if ((actual + offset) > align_size)
+			actual = align_size - offset;
+		if (actual > size)
+			actual = size;
 		memcpy(((char *)data->bounce) + offset, buf, actual);
 		if (ext2fs_llseek(data->dev, aligned_blk * align_size, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
@@ -957,8 +957,11 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 		mutex_lock(data, CACHE_MTX);
 		mutex_lock(data, BOUNCE_MTX);
 #ifndef NO_IO_CACHE
-		if ((retval = flush_cached_blocks(channel, data, FLUSH_NOLOCK)))
+		if ((retval = flush_cached_blocks(channel, data, FLUSH_NOLOCK))){
+			mutex_unlock(data, BOUNCE_MTX);
+			mutex_unlock(data, CACHE_MTX);
 			return retval;
+		}
 #endif
 
 		channel->block_size = blksize;
@@ -974,8 +977,8 @@ static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 			       int count, void *buf)
 {
 	struct unix_private_data *data;
-	struct unix_cache *cache, *reuse[READ_DIRECT_SIZE];
-	errcode_t	retval = 0;
+	struct unix_cache *cache;
+	errcode_t	retval;
 	char		*cp;
 	int		i, j;
 
@@ -1002,7 +1005,7 @@ static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 	mutex_lock(data, CACHE_MTX);
 	while (count > 0) {
 		/* If it's in the cache, use it! */
-		if ((cache = find_cached_block(data, block, &reuse[0]))) {
+		if ((cache = find_cached_block(data, block, NULL))) {
 #ifdef DEBUG
 			printf("Using cached block %lu\n", block);
 #endif
@@ -1012,47 +1015,35 @@ static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 			cp += channel->block_size;
 			continue;
 		}
-		if (count == 1) {
-			/*
-			 * Special case where we read directly into the
-			 * cache buffer; important in the O_DIRECT case
-			 */
-			cache = reuse[0];
-			reuse_cache(channel, data, cache, block);
-			if ((retval = raw_read_blk(channel, data, block, 1,
-						   cache->buf))) {
-				cache->in_use = 0;
-				break;
-			}
-			memcpy(cp, cache->buf, channel->block_size);
-			retval = 0;
-			break;
-		}
 
 		/*
 		 * Find the number of uncached blocks so we can do a
 		 * single read request
 		 */
 		for (i=1; i < count; i++)
-			if (find_cached_block(data, block+i, &reuse[i]))
+			if (find_cached_block(data, block+i, NULL))
 				break;
 #ifdef DEBUG
 		printf("Reading %d blocks starting at %lu\n", i, block);
 #endif
+		mutex_unlock(data, CACHE_MTX);
 		if ((retval = raw_read_blk(channel, data, block, i, cp)))
-			break;
+			return retval;
+		mutex_lock(data, CACHE_MTX);
 
 		/* Save the results in the cache */
 		for (j=0; j < i; j++) {
+			if (!find_cached_block(data, block, &cache)) {
+				reuse_cache(channel, data, cache, block);
+				memcpy(cache->buf, cp, channel->block_size);
+			}
 			count--;
-			cache = reuse[j];
-			reuse_cache(channel, data, cache, block++);
-			memcpy(cache->buf, cp, channel->block_size);
+			block++;
 			cp += channel->block_size;
 		}
 	}
 	mutex_unlock(data, CACHE_MTX);
-	return retval;
+	return 0;
 #endif /* NO_IO_CACHE */
 }
 

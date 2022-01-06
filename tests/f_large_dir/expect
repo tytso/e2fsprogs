@@ -1,3 +1,4 @@
+128-byte inodes cannot handle dates beyond 2038 and are deprecated
 Creating filesystem with 108341 1k blocks and 65072 inodes
 Superblock backups stored on blocks: 
 	8193, 24577, 40961, 57345, 73729

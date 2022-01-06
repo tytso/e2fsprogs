@@ -2,6 +2,18 @@
 
 // Library used to export files from this directory to other programs in this
 // project.
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "external_e2fsprogs_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-GPL
+    //   SPDX-license-identifier-LGPL
+    //   SPDX-license-identifier-LGPL-2.1
+    //   SPDX-license-identifier-LGPL-3.0
+    default_applicable_licenses: ["external_e2fsprogs_license"],
+}
+
 cc_library {
     name: "libext2_misc",
     host_supported: true,
@@ -25,7 +37,6 @@ cc_library {
         "libext2_com_err",
         "libext2_quota",
     ],
-    system_shared_libs: ["libc", "libdl"],
     export_include_dirs: ["."],
 }
 
@@ -133,7 +144,6 @@ cc_binary {
     defaults: ["tune2fs-defaults"],
 
     shared_libs: tune2fs_libs,
-    system_shared_libs: ["libc", "libdl"],
 }
 
 cc_binary {
@@ -150,7 +160,6 @@ cc_binary {
     static_executable: true,
     ramdisk: true,
     defaults: ["tune2fs-defaults"],
-    system_shared_libs: [],
     static_libs: tune2fs_libs,
 }
 
@@ -178,7 +187,6 @@ cc_binary {
         "libext2_blkid",
         "libext2_e2p",
     ],
-    system_shared_libs: ["libc", "libdl"],
 }
 
 //########################################################################
@@ -194,7 +202,6 @@ cc_binary {
         "libext2_com_err",
         "libext2_e2p",
     ],
-    system_shared_libs: ["libc", "libdl"],
 }
 
 //########################################################################
@@ -217,7 +224,6 @@ cc_binary {
     defaults: ["lsattr-defaults"],
 
     shared_libs: lsattr_libs,
-    system_shared_libs: ["libc", "libdl"],
 }
 
 cc_binary {
@@ -242,7 +248,6 @@ cc_binary {
         "libext2_com_err",
         "libext2_e2p",
     ],
-    system_shared_libs: ["libc", "libdl"],
 }
 
 //########################################################################
@@ -258,7 +263,6 @@ cc_binary {
         "libext2fs",
         "libext2_uuid",
     ],
-    system_shared_libs: ["libc", "libdl"],
 
     target: {
         darwin: {
@@ -282,7 +286,6 @@ cc_binary {
         "libext2_com_err",
         "libext2_quota",
     ],
-    system_shared_libs: ["libc", "libdl"],
 }
 
 //##########################################################################
@@ -297,7 +300,6 @@ cc_binary {
     shared_libs: [
         "libext2fs",
     ],
-    system_shared_libs: ["libc", "libdl"],
 }
 
 //##########################################################################
@@ -316,5 +318,4 @@ cc_binary {
         "libext2fs",
         "libext2_com_err",
     ],
-    system_shared_libs: ["libc", "libdl"],
 }

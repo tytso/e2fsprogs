@@ -103,7 +103,12 @@ static void print_ext2_info(const char *device)
 	time_t			tm;
 
 	retval = ext2fs_open2(device, 0, EXT2_FLAG_64BITS, 0, 0,
-			      unix_io_manager, &fs);
+#ifdef _WIN64
+			      windows_io_manager,
+#else
+			      unix_io_manager,
+#endif
+                  &fs);
 	if (retval)
 		return;
 	sb = fs->super;
@@ -277,11 +282,11 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
 		return !has_magic;
 	}
 #endif
-
-	ret = check_partition_table(device);
-	if (ret >= 0)
-		return ret;
-
+	if (flags & CHECK_FS_EXIST) {
+		ret = check_partition_table(device);
+		if (ret >= 0)
+			return ret;
+	}
 	return 1;
 }
 

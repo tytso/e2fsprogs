@@ -33,7 +33,14 @@ extern char *optarg;
 #include "debugfs.h"
 #include "blkid/blkid.h"
 #include "jfs_user.h"
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 #include "ext2fs/fast_commit.h"
+#if __GNUC_PREREQ (4, 6)
+#pragma GCC diagnostic pop
+#endif
 #include <uuid/uuid.h>
 
 enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
@@ -67,7 +74,7 @@ static void dump_metadata_block(FILE *, struct journal_source *,
 				int, tid_t);
 
 static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
-			  int transaction, int *fc_done, int dump_old);
+			  tid_t transaction, int *fc_done);
 
 static void do_hexdump (FILE *, char *, int);
 
@@ -522,8 +529,7 @@ fc:
 		if (retval)
 			return;
 
-		dump_fc_block(out_file, buf, blocksize, transaction, &fc_done,
-			dump_old);
+		dump_fc_block(out_file, buf, blocksize, transaction, &fc_done);
 		if (!dump_old && fc_done)
 			break;
 		blocknr++;
@@ -549,26 +555,30 @@ static inline size_t journal_super_tag_bytes(journal_superblock_t *jsb)
 }
 
 static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
-	int transaction, int *fc_done, int dump_old)
+			  tid_t transaction, int *fc_done)
 {
-	struct ext4_fc_tl	*tl;
+	struct ext4_fc_tl	tl;
 	struct ext4_fc_head	*head;
 	struct ext4_fc_add_range	*add_range;
 	struct ext4_fc_del_range	*del_range;
 	struct ext4_fc_dentry_info	*dentry_info;
 	struct ext4_fc_tail		*tail;
 	struct ext3_extent	*ex;
+	__u8			*cur, *val;
 
 	*fc_done = 0;
-	fc_for_each_tl(buf, buf + blocksize, tl) {
-		switch (le16_to_cpu(tl->fc_tag)) {
+	for (cur = (__u8 *)buf; cur < (__u8 *)buf + blocksize;
+	     cur = cur + sizeof(tl) + le16_to_cpu(tl.fc_len)) {
+		memcpy(&tl, cur, sizeof(tl));
+		val = cur + sizeof(tl);
+
+		switch (le16_to_cpu(tl.fc_tag)) {
 		case EXT4_FC_TAG_ADD_RANGE:
-			add_range =
-				(struct ext4_fc_add_range *)ext4_fc_tag_val(tl);
+			add_range = (struct ext4_fc_add_range *)val;
 			ex = (struct ext3_extent *)add_range->fc_ex;
 			fprintf(out_file,
 				"tag %s, inode %d, lblk %u, pblk %llu, len %lu\n",
-				tag2str(tl->fc_tag),
+				tag2str(tl.fc_tag),
 				le32_to_cpu(add_range->fc_ino),
 				le32_to_cpu(ex->ee_block),
 				le32_to_cpu(ex->ee_start) +
@@ -578,10 +588,9 @@ static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 				le16_to_cpu(ex->ee_len));
 			break;
 		case EXT4_FC_TAG_DEL_RANGE:
-			del_range =
-				(struct ext4_fc_del_range *)ext4_fc_tag_val(tl);
+			del_range = (struct ext4_fc_del_range *)val;
 			fprintf(out_file, "tag %s, inode %d, lblk %d, len %d\n",
-				tag2str(tl->fc_tag),
+				tag2str(tl.fc_tag),
 				le32_to_cpu(del_range->fc_ino),
 				le32_to_cpu(del_range->fc_lblk),
 				le32_to_cpu(del_range->fc_len));
@@ -589,29 +598,26 @@ static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 		case EXT4_FC_TAG_LINK:
 		case EXT4_FC_TAG_UNLINK:
 		case EXT4_FC_TAG_CREAT:
-			dentry_info =
-				(struct ext4_fc_dentry_info *)
-					ext4_fc_tag_val(tl);
+			dentry_info = (struct ext4_fc_dentry_info *)val;
 			fprintf(out_file,
 				"tag %s, parent %d, ino %d, name \"%s\"\n",
-				tag2str(tl->fc_tag),
+				tag2str(tl.fc_tag),
 				le32_to_cpu(dentry_info->fc_parent_ino),
 				le32_to_cpu(dentry_info->fc_ino),
 				dentry_info->fc_dname);
 			break;
 		case EXT4_FC_TAG_INODE:
 			fprintf(out_file, "tag %s, inode %d\n",
-				tag2str(tl->fc_tag),
-				le32_to_cpu(((struct ext4_fc_inode *)
-					ext4_fc_tag_val(tl))->fc_ino));
+				tag2str(tl.fc_tag),
+				le32_to_cpu(((struct ext4_fc_inode *)val)->fc_ino));
 			break;
 		case EXT4_FC_TAG_PAD:
-			fprintf(out_file, "tag %s\n", tag2str(tl->fc_tag));
+			fprintf(out_file, "tag %s\n", tag2str(tl.fc_tag));
 			break;
 		case EXT4_FC_TAG_TAIL:
-			tail = (struct ext4_fc_tail *)ext4_fc_tag_val(tl);
+			tail = (struct ext4_fc_tail *)val;
 			fprintf(out_file, "tag %s, tid %d\n",
-				tag2str(tl->fc_tag),
+				tag2str(tl.fc_tag),
 				le32_to_cpu(tail->fc_tid));
 			if (!dump_old &&
 				le32_to_cpu(tail->fc_tid) < transaction) {
@@ -621,9 +627,9 @@ static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 			break;
 		case EXT4_FC_TAG_HEAD:
 			fprintf(out_file, "\n*** Fast Commit Area ***\n");
-			head = (struct ext4_fc_head *)ext4_fc_tag_val(tl);
+			head = (struct ext4_fc_head *)val;
 			fprintf(out_file, "tag %s, features 0x%x, tid %d\n",
-				tag2str(tl->fc_tag),
+				tag2str(tl.fc_tag),
 				le32_to_cpu(head->fc_features),
 				le32_to_cpu(head->fc_tid));
 			if (!dump_old &&
@@ -706,7 +712,7 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 			      int blocksize EXT2FS_ATTR((unused)),
 			      tid_t transaction)
 {
-	int			offset, max;
+	unsigned int		offset, max;
 	jbd2_journal_revoke_header_t *header;
 	unsigned long long	rblock;
 	int			tag_size = sizeof(__u32);
@@ -721,10 +727,10 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 	header = (jbd2_journal_revoke_header_t *) buf;
 	offset = sizeof(jbd2_journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
-	if (max > jsb->s_blocksize) {
+	if (max > be32_to_cpu(jsb->s_blocksize)) {
 		fprintf(out_file, "Revoke block's r_count invalid: %u\b",
 			max);
-		max = jsb->s_blocksize;
+		max = be32_to_cpu(jsb->s_blocksize);
 	}
 
 	while (offset < max) {

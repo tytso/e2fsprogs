@@ -3,6 +3,7 @@
 FSCK_OPT=-fy
 IMAGE=$test_dir/image.gz
 CMDS=$test_dir/commands
+test_description="replay fast commit journal"
 
 gunzip < $IMAGE > $TMPFILE
 
@@ -10,7 +11,6 @@ gunzip < $IMAGE > $TMPFILE
 EXP=$test_dir/expect
 OUT=$test_name.log
 
-cp $TMPFILE /tmp/debugthis
 $FSCK $FSCK_OPT -E journal_only -N test_filesys $TMPFILE 2>/dev/null | head -n 1000 | tail -n +2 > $OUT
 echo "Exit status is $?" >> $OUT
 

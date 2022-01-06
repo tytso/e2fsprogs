@@ -585,8 +585,10 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 		else {
 			magic = (unsigned int *) (buf + BSD_LABEL_OFFSET);
 			if ((*magic == BSD_DISKMAGIC) ||
-			    (*magic == BSD_MAGICDISK))
+			    (*magic == BSD_MAGICDISK)) {
+				free(buf);
 				return;
+			}
 		}
 	}
 
@@ -1577,7 +1579,9 @@ static void PRS(int argc, char *argv[])
 	int		use_bsize;
 	char		*newpath;
 	int		pathlen = sizeof(PATH_SET) + 1;
+#ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
 	struct device_param dev_param;
+#endif
 
 	if (oldpath)
 		pathlen += strlen(oldpath);
@@ -1969,18 +1973,8 @@ profile_error:
 	profile_get_integer(profile, "options", "proceed_delay", 0, 0,
 			    &proceed_delay);
 
-	/* The isatty() test is so we don't break existing scripts */
-	flags = CREATE_FILE;
-	if (isatty(0) && isatty(1) && !offset)
-		flags |= CHECK_FS_EXIST;
-	if (!quiet)
-		flags |= VERBOSE_CREATE;
-	if (fs_blocks_count == 0)
-		flags |= NO_SIZE;
-	else
+	if (fs_blocks_count)
 		explicit_fssize = 1;
-	if (!check_plausibility(device_name, flags, &is_device) && !force)
-		proceed_question(proceed_delay);
 
 	check_mount(device_name, force, _("filesystem"));
 
@@ -1989,15 +1983,29 @@ profile_error:
 		dev_size = fs_blocks_count;
 		retval = 0;
 	} else
-#ifndef _WIN32
 		retval = ext2fs_get_device_size2(device_name,
 						 EXT2_BLOCK_SIZE(&fs_param),
 						 &dev_size);
-#else
-		retval = ext2fs_get_device_size(device_name,
-						EXT2_BLOCK_SIZE(&fs_param),
-						&dev_size);
-#endif
+	if (retval == ENOENT) {
+		int fd;
+
+		if (!explicit_fssize) {
+			fprintf(stderr,
+				_("The file %s does not exist and no "
+				  "size was specified.\n"), device_name);
+			exit(1);
+		}
+		fd = ext2fs_open_file(device_name,
+				      O_CREAT | O_WRONLY, 0666);
+		if (fd < 0) {
+			retval = errno;
+		} else {
+			dev_size = 0;
+			retval = 0;
+			close(fd);
+			printf(_("Creating regular file %s\n"), device_name);
+		}
+	}
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval, "%s",
 			_("while trying to determine filesystem size"));
@@ -2040,6 +2048,9 @@ profile_error:
 	if (!usage_types)
 		profile_get_string(profile, "devices", device_name,
 				   "usage_types", 0, &usage_types);
+	if (!creator_os)
+		profile_get_string(profile, "defaults", "creator_os", 0,
+				   0, &creator_os);
 
 	/*
 	 * We have the file system (or device) size, so we can now
@@ -2333,9 +2344,9 @@ profile_error:
 			device_name);
 	} else {
 		/* setting stripe/stride to blocksize is pointless */
-		if (dev_param.min_io > blocksize)
+		if (dev_param.min_io > (unsigned) blocksize)
 			fs_param.s_raid_stride = dev_param.min_io / blocksize;
-		if (dev_param.opt_io > blocksize) {
+		if (dev_param.opt_io > (unsigned) blocksize) {
 			fs_param.s_raid_stripe_width =
 						dev_param.opt_io / blocksize;
 		}
@@ -2518,11 +2529,12 @@ profile_error:
 		exit(1);
 	}
 
-	if (!quiet && ext2fs_has_feature_bigalloc(&fs_param))
-		fprintf(stderr, "%s", _("\nWarning: the bigalloc feature is "
-				  "still under development\n"
-				  "See https://ext4.wiki.kernel.org/"
-				  "index.php/Bigalloc for more information\n\n"));
+	if (!quiet && ext2fs_has_feature_bigalloc(&fs_param) &&
+	    EXT2_CLUSTER_SIZE(&fs_param) > 16 * EXT2_BLOCK_SIZE(&fs_param))
+		fprintf(stderr, "%s", _("\nWarning: bigalloc file systems "
+				"with a cluster size greater than\n"
+				"16 times the block size is considered "
+				"experimental\n"));
 
 	/*
 	 * Since sparse_super is the default, we would only have a problem
@@ -2595,6 +2607,17 @@ profile_error:
 		exit(1);
 	}
 
+	/*
+	 * Warn the user that filesystems with 128-byte inodes will
+	 * not work properly beyond 2038.  This can be suppressed via
+	 * a boolean in the mke2fs.conf file, and we will disable this
+	 * warning for file systems created for the GNU Hurd.
+	 */
+	if (inode_size == EXT2_GOOD_OLD_INODE_SIZE &&
+	    get_bool_from_profile(fs_types, "warn_y2038_dates", 1))
+		printf(
+_("128-byte inodes cannot handle dates beyond 2038 and are deprecated\n"));
+
 	/* Make sure number of inodes specified will fit in 32 bits */
 	if (num_inodes == 0) {
 		unsigned long long n;
@@ -2652,6 +2675,17 @@ profile_error:
 
 	free(fs_type);
 	free(usage_types);
+
+	/* The isatty() test is so we don't break existing scripts */
+	flags = CREATE_FILE;
+	if (isatty(0) && isatty(1) && !offset)
+		flags |= CHECK_FS_EXIST;
+	if (!quiet)
+		flags |= VERBOSE_CREATE;
+	if (!explicit_fssize)
+		flags |= NO_SIZE;
+	if (!check_plausibility(device_name, flags, &is_device) && !force)
+		proceed_question(proceed_delay);
 }
 
 static int should_do_undo(const char *name)
@@ -2796,7 +2830,7 @@ static int mke2fs_discard_device(ext2_filsys fs)
 	struct ext2fs_numeric_progress_struct progress;
 	blk64_t blocks = ext2fs_blocks_count(fs->super);
 	blk64_t count = DISCARD_STEP_MB;
-	blk64_t cur;
+	blk64_t cur = 0;
 	int retval = 0;
 
 	/*
@@ -2804,10 +2838,9 @@ static int mke2fs_discard_device(ext2_filsys fs)
 	 * we do not print numeric progress resulting in failure
 	 * afterwards.
 	 */
-	retval = io_channel_discard(fs->io, 0, fs->blocksize);
+	retval = io_channel_discard(fs->io, 0, 1);
 	if (retval)
 		return retval;
-	cur = fs->blocksize;
 
 	count *= (1024 * 1024);
 	count /= fs->blocksize;

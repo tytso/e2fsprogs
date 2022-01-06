@@ -69,7 +69,7 @@ typedef struct dict_t {
     dnode_alloc_t dict_allocnode;
     dnode_free_t dict_freenode;
     void *dict_context;
-    void *cmp_ctx;
+    const void *cmp_ctx;
     int dict_dupes;
 #else
     int dict_dummmy;
@@ -89,7 +89,7 @@ typedef struct dict_load_t {
 
 extern dict_t *dict_create(dictcount_t, dict_comp_t);
 extern void dict_set_allocator(dict_t *, dnode_alloc_t, dnode_free_t, void *);
-extern void dict_set_cmp_context(dict_t *, void *);
+extern void dict_set_cmp_context(dict_t *, const void *);
 extern void dict_destroy(dict_t *);
 extern void dict_free_nodes(dict_t *);
 extern void dict_free(dict_t *);

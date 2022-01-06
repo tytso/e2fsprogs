@@ -27,7 +27,7 @@ udebdir		?= ${topdir}/debian/e2fsprogs-udeb
 stdbuilddir	?= ${topdir}/debian/BUILD-STD
 
 INSTALL ?= install
-INSTALL_PROGRAM ?= $(INSTALL) -p -o root -g root -m 0755
+INSTALL_PROGRAM ?= $(INSTALL) -p -m 0755
 
 ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
 SYMBOL_LIBS := libext2fs libcomerr2 libss2
@@ -179,7 +179,7 @@ override_dh_gencontrol:
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
-	$(MAKE) -C ${stdbuilddir} V=1 check
+	PRINT_FAILED=yes $(MAKE) -C ${stdbuilddir} V=1 check
 endif
 
 test_printenv:

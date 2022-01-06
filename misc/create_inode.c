@@ -234,7 +234,6 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 		retval = retval ? retval : close_retval;
 	}
 	return retval;
-	return 0;
 }
 #else /* HAVE_LLISTXATTR */
 static errcode_t set_inode_xattr(ext2_filsys fs EXT2FS_ATTR((unused)),
@@ -772,6 +771,8 @@ static int scandir(const char *dir_name, struct dirent ***name_list,
 		}
 		// add the copy of dirent to the list
 		temp_list[num_dent] = (struct dirent*)malloc((dent->d_reclen + 3) & ~3);
+		if (!temp_list[num_dent])
+			goto out;
 		memcpy(temp_list[num_dent], dent, dent->d_reclen);
 		num_dent++;
 	}

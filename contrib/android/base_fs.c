@@ -110,10 +110,16 @@ struct ext2fs_hashmap *basefs_parse(const char *file, const char *mountpoint)
 	if (!entries)
 		goto end;
 
-	while ((entry = basefs_readline(f, mountpoint, &err)))
-		ext2fs_hashmap_add(entries, entry, entry->path,
+	while ((entry = basefs_readline(f, mountpoint, &err))) {
+		err = ext2fs_hashmap_add(entries, entry, entry->path,
 				   strlen(entry->path));
-
+		if (err) {
+			free_base_fs_entry(entry);
+			fclose(f);
+			ext2fs_hashmap_free(entries);
+			return NULL;
+		}
+	}
 	if (err) {
 		fclose(f);
 		ext2fs_hashmap_free(entries);

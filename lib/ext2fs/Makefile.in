@@ -127,7 +127,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	symlink.o \
 	$(TDB_OBJ) \
 	undo_io.o \
-	unix_io.o \
+	@OS_IO_FILE@.o \
 	sparse_io.o \
 	unlink.o \
 	valid_blk.o \
@@ -217,7 +217,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/tst_getsize.c \
 	$(srcdir)/tst_iscan.c \
 	$(srcdir)/undo_io.c \
-	$(srcdir)/unix_io.c \
+	$(srcdir)/@OS_IO_FILE@.c \
 	$(srcdir)/sparse_io.c \
 	$(srcdir)/unlink.c \
 	$(srcdir)/valid_blk.c \
@@ -629,6 +629,19 @@ $(srcdir)/utf8data.h:
 		-n $(top_srcdir)/util/ucd/NormalizationCorrections-11.0.0.txt \
 		-t $(top_srcdir)/util/ucd/NormalizationTest-11.0.0.txt \
 		-o $@
+
+#
+# This needs to be manually maintained since "make depend" on a
+# Linux system is going to blow up due to the lack of windows.h
+# header file.  If someone on Windows tries to run "make depend",
+# they will need to comment this chunk below.
+#
+windows_io.o: $(srcdir)/windows_io.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h $(srcdir)/ext2fsP.h
 
 # +++ Dependency line eater +++
 # 

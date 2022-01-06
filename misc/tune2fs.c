@@ -393,6 +393,8 @@ static errcode_t remove_journal_inode(ext2_filsys fs)
 				_("while clearing journal inode"));
 			return retval;
 		}
+		fs->super->s_overhead_clusters -=
+			EXT2FS_NUM_B2C(fs, EXT2_I_SIZE(&inode) / fs->blocksize);
 		memset(&inode, 0, sizeof(inode));
 		ext2fs_mark_bb_dirty(fs);
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
@@ -1611,8 +1613,12 @@ static int add_journal(ext2_filsys fs)
 			com_err(program_name, retval, "%s",
 				_("\n\twhile trying to create journal file"));
 			return retval;
-		} else
-			fputs(_("done\n"), stdout);
+		}
+		fs->super->s_overhead_clusters += EXT2FS_NUM_B2C(fs,
+			jparams.num_journal_blocks + jparams.num_fc_blocks);
+		ext2fs_mark_super_dirty(fs);
+		fputs(_("done\n"), stdout);
+
 		/*
 		 * If the filesystem wasn't mounted, we need to force
 		 * the block group descriptors out.
@@ -1671,8 +1677,9 @@ static int handle_quota_options(ext2_filsys fs)
 		if (quota_enable[qtype] == QOPT_ENABLE &&
 		    *quota_sb_inump(fs->super, qtype) == 0) {
 			if ((qf_ino = quota_file_exists(fs, qtype)) > 0) {
-				retval = quota_update_limits(qctx, qf_ino,
-							     qtype);
+				retval = quota_read_all_dquots(qctx, qf_ino,
+							       qtype,
+							       QREAD_LIMITS);
 				if (retval) {
 					com_err(program_name, retval,
 						_("while updating quota limits (%d)"),
