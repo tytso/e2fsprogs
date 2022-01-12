@@ -1,3 +1,10 @@
+e2fsprogs (1.46.5-2~bpo11+2) bullseye-backports; urgency=medium
+
+  * Rebuild without using digt so that the build schroot *actually* gets
+    used.  (Closes: #1003583)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 12 Jan 2022 12:31:42 -0500
+
 e2fsprogs (1.46.5-2~bpo11+1) bullseye-backports; urgency=medium
 
   * Rebuild for bullseye-backports.
