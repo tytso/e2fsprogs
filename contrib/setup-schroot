@@ -38,7 +38,8 @@ dd-schroot-cmd -c "$CHROOT" apt-get update
 dd-schroot-cmd -c "$CHROOT" -y apt-get upgrade
 dd-schroot-cmd -c "$CHROOT" -y apt-get build-dep e2fsprogs
 dd-schroot-cmd -c "$CHROOT" -y apt-get install git gdb emacs-nox lintian \
-	acl libreadline-dev dh-exec udev systemd cron
+	acl libreadline-dev dh-exec cron
+dd-schroot-cmd -c "$CHROOT" -y apt-get install udev systemd
 echo " "
 echo "Start chroot by running: "
 echo "schroot -r -c $CHROOT"
