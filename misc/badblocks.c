@@ -389,7 +389,7 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 	/* Try the read */
 	if (d_flag)
 		gettimeofday(&tv1, NULL);
-	got = read (dev, buffer, try * block_size);
+	got = read (dev, buffer, (size_t) try * block_size);
 	if (d_flag)
 		gettimeofday(&tv2, NULL);
 	if (got < 0)
@@ -460,7 +460,7 @@ static int do_write(int dev, unsigned char * buffer, int try, int block_size,
 		com_err (program_name, errno, "%s", _("during seek"));
 
 	/* Try the write */
-	got = write (dev, buffer, try * block_size);
+	got = write (dev, buffer, (size_t) try * block_size);
 	if (got < 0)
 		got = 0;
 	if (got & 511)
@@ -510,9 +510,9 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	} while (next_bad && next_bad < first_block);
 
 	if (t_flag) {
-		blkbuf = allocate_buffer((blocks_at_once + 1) * block_size);
+		blkbuf = allocate_buffer(((size_t) blocks_at_once + 1) * block_size);
 	} else {
-		blkbuf = allocate_buffer(blocks_at_once * block_size);
+		blkbuf = allocate_buffer((size_t) blocks_at_once * block_size);
 	}
 	if (!blkbuf)
 	{
@@ -612,7 +612,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	/* set up abend handler */
 	capture_terminate(NULL);
 
-	buffer = allocate_buffer(2 * blocks_at_once * block_size);
+	buffer = allocate_buffer((size_t) 2 * blocks_at_once * block_size);
 	read_buffer = buffer + blocks_at_once * block_size;
 
 	if (!buffer) {
@@ -771,7 +771,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
 	} while (next_bad && next_bad < first_block);
 
-	blkbuf = allocate_buffer(3 * blocks_at_once * block_size);
+	blkbuf = allocate_buffer((size_t) 3 * blocks_at_once * block_size);
 	test_record = malloc(blocks_at_once * sizeof(struct saved_blk_record));
 	if (!blkbuf || !test_record) {
 		com_err(program_name, ENOMEM, "%s",
@@ -1215,7 +1215,8 @@ int main (int argc, char ** argv)
 		com_err(program_name, 0, _("Invalid number of blocks: %d\n"),
 			blocks_at_once);
 		exit(1);
-	} else if (((unsigned long long) block_size * blocks_at_once) > 0xFFFFFFFF) {
+	} else if (((size_t) block_size * blocks_at_once) > SIZE_MAX / 3) {
+		/* maximum usage is in test_nd() */
 		com_err(program_name, 0, _("For block size %d, number of blocks too large: %d\n"),
 			block_size, blocks_at_once);
 		exit(1);
