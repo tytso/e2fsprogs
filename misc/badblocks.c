@@ -1055,7 +1055,7 @@ int main (int argc, char ** argv)
 	char * input_file = NULL;
 	char * output_file = NULL;
 	FILE * in = NULL;
-	int block_size = 1024;
+	unsigned int block_size = 1024;
 	unsigned int blocks_at_once = 64;
 	blk64_t last_block, first_block;
 	int num_passes = 0;
@@ -1203,9 +1203,9 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	}
-	if ((block_size <= 0) || (block_size > (1 << 24)) ||
+	if ((block_size == 0) || (block_size > (1 << 24)) ||
 	    (block_size & (block_size - 1))) {
-		com_err(program_name, 0, _("Invalid block size: %d\n"),
+		com_err(program_name, 0, _("Invalid block size: %u\n"),
 			block_size);
 		exit(1);
 	}
@@ -1221,7 +1221,7 @@ int main (int argc, char ** argv)
 	device_name = argv[optind++];
 	if (optind > argc - 1) {
 		errcode = ext2fs_get_device_size2(device_name,
-						 block_size,
+						 (int) block_size,
 						 &last_block);
 		if (errcode == EXT2_ET_UNIMPLEMENTED) {
 			com_err(program_name, 0, "%s",
@@ -1351,7 +1351,7 @@ int main (int argc, char ** argv)
 	do {
 		unsigned int bb_count;
 
-		bb_count = test_func(dev, last_block, block_size,
+		bb_count = test_func(dev, last_block, (int) block_size,
 				     first_block, blocks_at_once);
 		if (bb_count)
 			passes_clean = 0;
