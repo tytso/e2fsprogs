@@ -1211,10 +1211,13 @@ int main (int argc, char ** argv)
 			block_size);
 		exit(1);
 	}
-	if ((blocks_at_once <= 0) ||
-	    (((unsigned long long) block_size * blocks_at_once) > 0xFFFFFFFF)) {
-		com_err(program_name, 0, _("Invalid blocks_at_once: %d\n"),
+	if (blocks_at_once == 0) {
+		com_err(program_name, 0, _("Invalid number of blocks: %d\n"),
 			blocks_at_once);
+		exit(1);
+	} else if (((unsigned long long) block_size * blocks_at_once) > 0xFFFFFFFF) {
+		com_err(program_name, 0, _("For block size %d, number of blocks too large: %d\n"),
+			block_size, blocks_at_once);
 		exit(1);
 	}
 
