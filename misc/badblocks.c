@@ -1036,9 +1036,12 @@ static unsigned int parse_uint(const char *str, const char *descr)
 
 	errno = 0;
 	ret = strtoul(str, &tmp, 0);
-	if (*tmp || errno || (ret > UINT_MAX) ||
-	    (ret == ULONG_MAX && errno == ERANGE)) {
+	if (*tmp || errno) {
 		com_err (program_name, 0, _("invalid %s - %s"), descr, str);
+		exit (1);
+	} else if ((ret > UINT_MAX) ||
+	    (ret == ULONG_MAX && errno == ERANGE)) {
+		com_err (program_name, 0, _("%s too large - %lu"), descr, ret);
 		exit (1);
 	}
 	return ret;
