@@ -2847,7 +2847,7 @@ static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs)
 	errcode_t	retval;
 	blk64_t		blk = fs->super->s_first_data_block;
 	ext2_ino_t	ino;
-	unsigned int	n, c, group, count;
+	unsigned int	n, group, count;
 	blk64_t		total_clusters_free = 0;
 	int		total_inodes_free = 0;
 	int		group_free = 0;
