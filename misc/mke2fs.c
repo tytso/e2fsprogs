@@ -118,6 +118,7 @@ char *journal_device;
 static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 char **fs_types;
 const char *src_root_dir;  /* Copy files from the specified directory */
+const char *src_archive_file;  /* Copy files from the specified archive */
 static char *undo_file;
 
 static int android_sparse_file; /* -E android_sparse */
@@ -130,7 +131,7 @@ static int errors_behavior = 0;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-c|-l filename] [-b block-size] "
+	fprintf(stderr, _("Usage: %s [-a archive-file] [-c|-l filename] [-b block-size] "
 	"[-C cluster-size]\n\t[-i bytes-per-inode] [-I inode-size] "
 	"[-J journal-options]\n"
 	"\t[-G flex-group-size] [-N number-of-inodes] "
@@ -1675,8 +1676,11 @@ profile_error:
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cd:e:g:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
+		    "a:b:cd:e:g:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
 		switch (c) {
+		case 'a':
+			src_archive_file = optarg;
+			break;
 		case 'b':
 			blocksize = parse_num_blocks2(optarg, -1);
 			b = (blocksize > 0) ? blocksize : -blocksize;
@@ -3547,6 +3551,20 @@ no_journal:
 			printf("%s", _("Copying files into the device: "));
 
 		retval = populate_fs(fs, EXT2_ROOT_INO, src_root_dir,
+				     EXT2_ROOT_INO);
+		if (retval) {
+			com_err(program_name, retval, "%s",
+				_("while populating file system"));
+			exit(1);
+		} else if (!quiet)
+			printf("%s", _("done\n"));
+	}
+
+	if (src_archive_file) {
+		if (!quiet)
+			printf("%s", _("Copying files into the device: "));
+
+		retval = populate_fs_archive(fs, EXT2_ROOT_INO, src_archive_file,
 				     EXT2_ROOT_INO);
 		if (retval) {
 			com_err(program_name, retval, "%s",

@@ -36,6 +36,9 @@
 #include <ext2fs/ext2_types.h>
 #include <ext2fs/fiemap.h>
 
+#include <archive.h>
+#include <archive_entry.h>
+
 #include "create_inode.h"
 #include "support/nls-enable.h"
 
@@ -109,7 +112,7 @@ static errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 
 /* Set the uid, gid, mode and time for the inode */
 static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
-				 struct stat *st)
+				 const struct stat *st)
 {
 	errcode_t		retval;
 	struct ext2_inode	inode;
@@ -244,6 +247,59 @@ static errcode_t set_inode_xattr(ext2_filsys fs EXT2FS_ATTR((unused)),
 }
 #endif  /* HAVE_LLISTXATTR */
 
+static errcode_t set_inode_xattr_archive(ext2_filsys fs, ext2_ino_t ino,
+				 struct archive_entry *entry)
+{
+	errcode_t			retval, close_retval;
+	struct ext2_xattr_handle	*handle;
+
+	if (no_copy_xattrs)
+		return 0;
+
+	retval = ext2fs_xattrs_open(fs, ino, &handle);
+	if (retval) {
+		if (retval == EXT2_ET_MISSING_EA_FEATURE)
+			return 0;
+		com_err(__func__, retval, _("while opening inode %u"), ino);
+		return retval;
+	}
+
+	retval = ext2fs_xattrs_read(handle);
+	if (retval) {
+		com_err(__func__, retval,
+			_("while reading xattrs for inode %u"), ino);
+		goto out;
+	}
+
+	archive_entry_xattr_reset(entry);
+	for (;;) {
+		const char *name;
+		const void *value;
+		size_t value_size;
+
+		retval = archive_entry_xattr_next(entry, &name, &value, &value_size);
+		if (retval == ARCHIVE_WARN) {
+			retval = 0;
+			break;
+		}
+
+		retval = ext2fs_xattr_set(handle, name, value, value_size);
+		if (retval) {
+			com_err(__func__, retval,
+				_("while writing attribute \"%s\" to inode %u"),
+				name, ino);
+			break;
+		}
+	}
+ out:
+	close_retval = ext2fs_xattrs_close(&handle);
+	if (close_retval) {
+		com_err(__func__, retval, _("while closing inode %u"), ino);
+		retval = retval ? retval : close_retval;
+	}
+	return retval;
+}
+
 #ifndef _WIN32
 /* Make a special files (block and character devices), fifo's, and sockets  */
 errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
@@ -335,7 +391,7 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 
 /* Make a symlink name -> target */
 errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
-			      char *target, ext2_ino_t root)
+			      const char *target, ext2_ino_t root)
 {
 	char			*cp;
 	ext2_ino_t		parent_ino;
@@ -619,28 +675,14 @@ static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ino_t ino)
 	return -1;
 }
 
-/* Copy the native file to the fs */
-errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
-			    const char *dest, ext2_ino_t root)
+errcode_t __do_write_internal(ext2_filsys fs, ext2_ino_t cwd,
+		size_t size, mode_t mode, const char *dest, ext2_ino_t root,
+		ext2_ino_t *newfile)
 {
-	int		fd;
-	struct stat	statbuf;
-	ext2_ino_t	newfile, parent_ino;
+	ext2_ino_t	parent_ino;
 	errcode_t	retval;
 	struct ext2_inode inode;
 	char		*cp;
-
-	fd = ext2fs_open_file(src, O_RDONLY, 0);
-	if (fd < 0) {
-		retval = errno;
-		com_err(__func__, retval, _("while opening \"%s\" to copy"),
-			src);
-		return retval;
-	}
-	if (fstat(fd, &statbuf) < 0) {
-		retval = errno;
-		goto out;
-	}
 
 	cp = strrchr(dest, '/');
 	if (cp) {
@@ -655,37 +697,37 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 	} else
 		parent_ino = cwd;
 
-	retval = ext2fs_namei(fs, root, parent_ino, dest, &newfile);
+	retval = ext2fs_namei(fs, root, parent_ino, dest, newfile);
 	if (retval == 0) {
 		retval = EXT2_ET_FILE_EXISTS;
 		goto out;
 	}
 
-	retval = ext2fs_new_inode(fs, parent_ino, 010755, 0, &newfile);
+	retval = ext2fs_new_inode(fs, parent_ino, 010755, 0, newfile);
 	if (retval)
 		goto out;
 #ifdef DEBUGFS
-	printf("Allocated inode: %u\n", newfile);
+	printf("Allocated inode: %u\n", *newfile);
 #endif
-	retval = ext2fs_link(fs, parent_ino, dest, newfile, EXT2_FT_REG_FILE);
+	retval = ext2fs_link(fs, parent_ino, dest, *newfile, EXT2_FT_REG_FILE);
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		retval = ext2fs_expand_dir(fs, parent_ino);
 		if (retval)
 			goto out;
-		retval = ext2fs_link(fs, parent_ino, dest, newfile,
+		retval = ext2fs_link(fs, parent_ino, dest, *newfile,
 					EXT2_FT_REG_FILE);
 	}
 	if (retval)
 		goto out;
-	if (ext2fs_test_inode_bitmap2(fs->inode_map, newfile))
+	if (ext2fs_test_inode_bitmap2(fs->inode_map, *newfile))
 		com_err(__func__, 0, "Warning: inode already set");
-	ext2fs_inode_alloc_stats2(fs, newfile, +1, 0);
+	ext2fs_inode_alloc_stats2(fs, *newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
-	inode.i_mode = (statbuf.st_mode & ~S_IFMT) | LINUX_S_IFREG;
+	inode.i_mode = (mode & ~S_IFMT) | LINUX_S_IFREG;
 	inode.i_atime = inode.i_ctime = inode.i_mtime =
 		fs->now ? fs->now : time(0);
 	inode.i_links_count = 1;
-	retval = ext2fs_inode_size_set(fs, &inode, statbuf.st_size);
+	retval = ext2fs_inode_size_set(fs, &inode, size);
 	if (retval)
 		goto out;
 	if (ext2fs_has_feature_inline_data(fs->super)) {
@@ -694,27 +736,147 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 		ext2_extent_handle_t handle;
 
 		inode.i_flags &= ~EXT4_EXTENTS_FL;
-		retval = ext2fs_extent_open2(fs, newfile, &inode, &handle);
+		retval = ext2fs_extent_open2(fs, *newfile, &inode, &handle);
 		if (retval)
 			goto out;
 		ext2fs_extent_free(handle);
 	}
 
-	retval = ext2fs_write_new_inode(fs, newfile, &inode);
+	retval = ext2fs_write_new_inode(fs, *newfile, &inode);
 	if (retval)
 		goto out;
 	if (inode.i_flags & EXT4_INLINE_DATA_FL) {
-		retval = ext2fs_inline_data_init(fs, newfile);
-		if (retval)
-			goto out;
-	}
-	if (LINUX_S_ISREG(inode.i_mode)) {
-		retval = copy_file(fs, fd, &statbuf, newfile);
+		retval = ext2fs_inline_data_init(fs, *newfile);
 		if (retval)
 			goto out;
 	}
 out:
+	return retval;
+}
+
+/* Copy the native file to the fs */
+errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
+			    const char *dest, ext2_ino_t root)
+{
+	int		fd;
+	errcode_t	retval;
+	struct stat	statbuf;
+	ext2_ino_t	newfile;
+
+	fd = ext2fs_open_file(src, O_RDONLY, 0);
+	if (fd < 0) {
+		retval = errno;
+		com_err(__func__, retval, _("while opening \"%s\" to copy"),
+			src);
+		return retval;
+	}
+	if (fstat(fd, &statbuf) < 0) {
+		retval = errno;
+		goto out;
+	}
+
+	retval = __do_write_internal(fs, cwd, statbuf.st_size, statbuf.st_mode, dest, root, &newfile);
+	if (retval)
+		goto out;
+
+	retval = copy_file(fs, fd, &statbuf, newfile);
+
+out:
 	close(fd);
+	return retval;
+}
+
+/* Copy the native file to the fs */
+errcode_t do_write_internal_archive(ext2_filsys fs, ext2_ino_t cwd, struct archive *a,
+		struct archive_entry *entry, const char *dest, ext2_ino_t root)
+{
+	errcode_t	retval;
+	ext2_file_t     e2_file;
+	char            *blockbuf = NULL;
+	char            *zerobuf = NULL;
+	errcode_t 	close_err;
+	ext2_ino_t	newfile;
+	off_t		off;
+
+	retval = __do_write_internal(fs, cwd, archive_entry_size(entry),
+			archive_entry_mode(entry), dest, root, &newfile);
+	if (retval)
+		return retval;
+
+	retval = ext2fs_file_open(fs, newfile, EXT2_FILE_WRITE, &e2_file);
+	if (retval)
+		return retval;
+
+	retval = ext2fs_get_mem(fs->blocksize, &blockbuf);
+	if (retval)
+		goto out;
+
+	retval = ext2fs_get_memzero(fs->blocksize, &zerobuf);
+	if (retval)
+		goto out;
+
+	off = 0;
+	while (off < archive_entry_size(entry)) {
+		const void *buf;
+		size_t len;
+
+		retval = archive_read_data_block(a, &buf, &len, &off);
+		if (retval) {
+			retval = archive_errno(a);
+			goto out;
+		}
+		while (len) {
+			off_t block_offset;
+			size_t block_len;
+			int end;
+
+			block_offset = off % fs->blocksize;
+			if (len > (fs->blocksize - block_offset))
+				block_len = fs->blocksize - block_offset;
+			else
+				block_len = len;
+
+			end = off + block_len == archive_entry_size(entry);
+
+			if (block_offset || (block_len != fs->blocksize && !end))
+				memcpy(blockbuf + block_offset, buf, block_len);
+
+			if (block_offset + block_len == fs->blocksize || end) {
+				const void *ptr = block_offset ? blockbuf : buf;
+				size_t blen = block_offset + block_len;
+
+				if (memcmp(ptr, zerobuf, blen) != 0) {
+					retval = ext2fs_file_llseek(e2_file, off - block_offset, EXT2_SEEK_SET, NULL);
+					if (retval)
+						goto out;
+					while (blen > 0) {
+						unsigned int written;
+						retval = ext2fs_file_write(e2_file, ptr, blen,
+								&written);
+						if (retval)
+							goto out;
+						if (written == 0) {
+							retval = EIO;
+							goto out;
+						}
+						blen -= written;
+						ptr += written;
+					}
+				}
+			}
+
+			buf += block_len;
+			len -= block_len;
+			off += block_len;
+		}
+	}
+
+out:
+	ext2fs_free_mem(&blockbuf);
+	ext2fs_free_mem(&zerobuf);
+	close_err = ext2fs_file_close(e2_file);
+	if (retval == 0)
+		retval = close_err;
 	return retval;
 }
 
@@ -1091,4 +1253,229 @@ errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		      const char *source_dir, ext2_ino_t root)
 {
 	return populate_fs2(fs, parent_ino, source_dir, root, NULL);
+}
+
+/*
+ * Canonicalize path name:
+ *  - Eliminate trailing slash or trailing /.
+ *  - Eliminate ./ elements and double slash
+ */
+static char *cleanup_path(const char *input_path)
+{
+	char *path = malloc(strlen(input_path) + 2);
+	const char *ipos;
+	char *opos;
+	int start = 2;
+
+	opos = path;
+	ipos = input_path;
+	while (*ipos) {
+		if (ipos[0] == '/') {
+			start = 1;
+			ipos++;
+		} else if (start && ipos[0] == '.' && !ipos[1]) {
+			break;
+		} else if (start && ipos[0] == '.' && ipos[1] == '/') {
+			ipos += 2;
+		} else {
+			if (start == 1) {
+				*(opos++) = '/';
+			}
+			start = 0;
+			*(opos++) = *(ipos++);
+		}
+	}
+	if (opos == path)
+		*(opos++) = start == 2 ? '.' : '/';
+	*opos = '\0';
+
+	return path;
+}
+
+errcode_t populate_fs_archive(ext2_filsys fs, ext2_ino_t parent_ino,
+		      const char *archive_file, ext2_ino_t root)
+{
+	struct archive  *a;
+	struct archive_entry *entry;
+	const char	*s;
+	char		*name;
+	const char	*basename;
+	char		*ln_target = NULL;
+	ext2_ino_t	ino;
+	errcode_t	retval = 0;
+	char	 	*linkname;
+	char		*cwd_last_name;
+	ext2_ino_t	cwd_last_ino;
+
+	if (!(fs->flags & EXT2_FLAG_RW)) {
+		com_err(__func__, 0, "Filesystem opened readonly");
+		return EROFS;
+	}
+
+	a = archive_read_new();
+	archive_read_support_filter_all(a);
+	archive_read_support_format_all(a);
+	if (!strcmp(archive_file, "-"))
+		retval = archive_read_open_filename(a, NULL, 10240);
+	else
+		retval = archive_read_open_filename(a, archive_file, 10240);
+	if (retval != ARCHIVE_OK) {
+		retval = archive_errno(a);
+		com_err(__func__, 0, "Failed to open archive %s: %s", archive_file, archive_error_string(a));
+		archive_read_free(a);
+		return retval;
+	} else
+		retval = 0;
+
+	name = NULL;
+	cwd_last_name = NULL;
+	cwd_last_ino = parent_ino;
+	for (;;) {
+		const char *cp;
+		const char *basename;
+
+		retval = archive_read_next_header(a, &entry);
+		if (retval == ARCHIVE_EOF) {
+			retval = 0;
+			break;
+		} else if (retval == ARCHIVE_OK) {
+			retval = 0;
+		} else {
+			retval = archive_errno(a);
+			com_err(__func__, 0, "while extracting from %s: %s",
+					archive_file, archive_error_string(a));
+			break;
+		}
+
+		s = archive_entry_pathname(entry);
+		free(name);
+		name = cleanup_path(s);
+
+		if (!strcmp(name, "/") || !strcmp(name, ".")) {
+			ino = parent_ino;
+			goto is_root_ino;
+		}
+
+		cp = strrchr(name, '/');
+		if (!cp || cp == name) {
+			free(cwd_last_name);
+			cwd_last_name = NULL;
+			cwd_last_ino = parent_ino;
+		} else if (!cwd_last_name ||
+			    strlen(cwd_last_name) != cp - name ||
+			   strncmp(cwd_last_name, name, cp - name)) {
+			free(cwd_last_name);
+			cwd_last_name = strndup(name, cp - name);
+			retval = ext2fs_namei(fs, root, parent_ino, cwd_last_name, &cwd_last_ino);
+			if (retval != 0) {
+				retval = archive_errno(a);
+				com_err(__func__, 0, "Parent directory for %s, %s: %s",
+						name, cwd_last_name,  archive_error_string(a));
+				goto out;
+			}
+		}
+
+		basename = cp ? cp + 1 : name;
+
+		s = archive_entry_hardlink(entry);
+		if (s) {
+			linkname = cleanup_path(s);
+			retval = ext2fs_namei(fs, root, parent_ino, linkname, &ino);
+			free(linkname);
+			if (retval != ARCHIVE_OK) {
+				retval = archive_errno(a);
+				com_err(__func__, 0, "while linking %s: %s",
+						name, archive_error_string(a));
+				goto out;
+			}
+			retval = add_link(fs, cwd_last_ino, ino, basename);
+			if (retval) {
+				com_err(__func__, retval,
+					"while linking %s", name);
+				goto out;
+			}
+			continue;
+		}
+
+		switch(archive_entry_filetype(entry) & AE_IFMT) {
+		case AE_IFCHR:
+		case AE_IFBLK:
+		case AE_IFIFO:
+		case AE_IFSOCK:
+			retval = do_mknod_internal(fs, cwd_last_ino, basename,
+						   archive_entry_mode(entry),
+						   archive_entry_rdev(entry));
+			if (retval) {
+				com_err(__func__, retval,
+					_("while creating special file "
+					  "\"%s\""), name);
+				goto out;
+			}
+			break;
+		case AE_IFLNK:
+			retval = do_symlink_internal(fs, cwd_last_ino, basename,
+						     archive_entry_symlink(entry), root);
+			if (retval) {
+				com_err(__func__, retval,
+					_("while writing symlink\"%s\""),
+					name);
+				goto out;
+			}
+			break;
+		case AE_IFREG:
+			retval = do_write_internal_archive(fs, cwd_last_ino,
+							a, entry, basename, root);
+			if (retval) {
+				com_err(__func__, retval,
+					_("while writing file \"%s\""), name);
+				goto out;
+			}
+			break;
+		case AE_IFDIR:
+			retval = do_mkdir_internal(fs, cwd_last_ino, basename,
+						   root);
+			if (retval) {
+				com_err(__func__, retval,
+					_("while making dir \"%s\""), name);
+				goto out;
+			}
+			break;
+		default:
+			com_err(__func__, 0,
+				_("ignoring entry \"%s\""), name);
+		}
+
+		retval =  ext2fs_namei(fs, root, cwd_last_ino, basename, &ino);
+		if (retval) {
+			com_err(name, retval, _("while looking up \"%s\""),
+				name);
+			goto out;
+		}
+
+is_root_ino:
+		retval = set_inode_extra(fs, ino, archive_entry_stat(entry));
+		if (retval) {
+			com_err(__func__, retval,
+				_("while setting inode for \"%s\""), name);
+			goto out;
+		}
+
+		retval = set_inode_xattr_archive(fs, ino, entry);
+		if (retval) {
+			com_err(__func__, retval,
+				_("while setting xattrs for \"%s\""), name);
+			goto out;
+		}
+	}
+
+out:
+	free(cwd_last_name);
+	free(name);
+	if (retval == 0)
+		archive_read_free(a);
+	else {
+		retval = archive_read_free(a);
+		retval = retval == ARCHIVE_OK ? 0 : archive_errno(a);
+	}
+	return retval;
 }
