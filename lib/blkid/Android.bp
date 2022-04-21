@@ -39,15 +39,14 @@ cc_library {
 
     target: {
         windows: {
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            include_dirs: ["external/e2fsprogs/include/mingw"],
             cflags: [
                 "-Wno-pointer-to-int-cast",
                 "-Wno-unused-variable",
-            ],
-            clang_cflags: [
                 "-Wno-error=typedef-redefinition",
             ],
-            enabled: true
+
+            enabled: true,
         },
     },
 
