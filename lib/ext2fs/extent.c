@@ -495,6 +495,10 @@ retry:
 			ext2fs_le16_to_cpu(eh->eh_entries);
 		newpath->max_entries = ext2fs_le16_to_cpu(eh->eh_max);
 
+		/* Make sure there is at least one extent present */
+		if (newpath->left <= 0)
+			return EXT2_ET_EXTENT_NO_DOWN;
+
 		if (path->left > 0) {
 			ix++;
 			newpath->end_blk = ext2fs_le32_to_cpu(ix->ei_block);
@@ -1629,6 +1633,10 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 		return EXT2_ET_NO_CURRENT_NODE;
 
 	cp = path->curr;
+
+	/* Sanity check before memmove() */
+	if (path->left < 0)
+		return EXT2_ET_EXTENT_LEAF_BAD;
 
 	if (path->left) {
 		memmove(cp, cp + sizeof(struct ext3_extent_idx),
