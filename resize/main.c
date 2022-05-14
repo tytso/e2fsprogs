@@ -537,6 +537,12 @@ int main (int argc, char ** argv)
 			goto errout;
 		}
 	}
+
+	/* If using cluster allocations, trim down to a cluster boundary */
+	if (ext2fs_has_feature_bigalloc(fs->super)) {
+		new_size &= ~((blk64_t)(1 << fs->cluster_ratio_bits) - 1);
+	}
+
 	new_group_desc_count = ext2fs_div64_ceil(new_size -
 				fs->super->s_first_data_block,
 						 EXT2_BLOCKS_PER_GROUP(fs->super));
