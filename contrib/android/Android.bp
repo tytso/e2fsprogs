@@ -46,12 +46,15 @@ cc_binary {
             },
         },
         android: {
+            static_libs: [
+                "libbase",
+            ],
             shared_libs: [
                 "libext2fs",
                 "libext2_com_err",
                 "libext2_misc",
                 "libcutils",
-                "libbase",
+                "liblog",
                 "libselinux",
                 "libcrypto",
             ],
