@@ -256,6 +256,7 @@ int main (int argc, char ** argv)
 	int		force_min_size = 0;
 	int		print_min_size = 0;
 	int		fd, ret;
+	int		open_flags = O_RDWR;
 	blk64_t		new_size = 0;
 	blk64_t		max_size = 0;
 	blk64_t		min_size = 0;
@@ -363,7 +364,10 @@ int main (int argc, char ** argv)
 		len = 2 * len;
 	}
 
-	fd = ext2fs_open_file(device_name, O_RDWR, 0);
+	if (print_min_size)
+		open_flags = O_RDONLY;
+
+	fd = ext2fs_open_file(device_name, open_flags, 0);
 	if (fd < 0) {
 		com_err("open", errno, _("while opening %s"),
 			device_name);
@@ -401,7 +405,7 @@ int main (int argc, char ** argv)
 #endif
 		io_ptr = unix_io_manager;
 
-	if (!(mount_flags & EXT2_MF_MOUNTED))
+	if (!(mount_flags & EXT2_MF_MOUNTED) && !print_min_size)
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
 
 	io_flags |= EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
