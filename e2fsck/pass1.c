@@ -389,13 +389,13 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
 			      struct ext2_ext_attr_entry *first, void *end)
 {
-	struct ext2_ext_attr_entry *entry;
+	struct ext2_ext_attr_entry *entry = first;
+	struct ext2_ext_attr_entry *np = EXT2_EXT_ATTR_NEXT(entry);
 
-	for (entry = first;
-	     (void *)entry < end && !EXT2_EXT_IS_LAST_ENTRY(entry);
-	     entry = EXT2_EXT_ATTR_NEXT(entry)) {
+	while ((void *) entry < end && (void *) np < end &&
+	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		if (!entry->e_value_inum)
-			continue;
+			goto next;
 		if (!ctx->ea_inode_refs) {
 			pctx->errcode = ea_refcount_create(0,
 							   &ctx->ea_inode_refs);
@@ -408,6 +408,9 @@ static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		ea_refcount_increment(ctx->ea_inode_refs, entry->e_value_inum,
 				      0);
+	next:
+		entry = np;
+		np = EXT2_EXT_ATTR_NEXT(entry);
 	}
 }
 
