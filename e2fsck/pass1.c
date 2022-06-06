@@ -2556,8 +2556,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			break;
 		}
 		if (entry->e_value_inum == 0) {
-			if (entry->e_value_offs + entry->e_value_size >
-			    fs->blocksize) {
+			if (entry->e_value_size > EXT2_XATTR_SIZE_MAX ||
+			    (entry->e_value_offs + entry->e_value_size >
+			     fs->blocksize)) {
 				if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
 					goto clear_extattr;
 				break;
