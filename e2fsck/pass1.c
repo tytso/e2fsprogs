@@ -2842,7 +2842,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	if (pctx->errcode)
 		return;
 	if (!(ctx->options & E2F_OPT_FIXES_ONLY) &&
-	    !pb->eti.force_rebuild) {
+	    !pb->eti.force_rebuild &&
+	    info.curr_level < MAX_EXTENT_DEPTH_COUNT) {
 		struct extent_tree_level *etl;
 
 		etl = pb->eti.ext_info + info.curr_level;
