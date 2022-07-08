@@ -593,8 +593,10 @@ Enable the file system to be larger than 2^32 blocks.
 .TP
 .B casefold
 Enable support for file system level casefolding.
-.B Tune2fs
-currently only supports setting this file system feature.
+The option can be cleared only if filesystem has no
+directories with
+.B F
+attribute.
 .TP
 .B dir_index
 Use hashed b-trees to speed up lookups for large directories.
