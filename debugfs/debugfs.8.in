@@ -505,7 +505,7 @@ which is a hard link to
 .IR filespec .
 Note this does not adjust the inode reference counts.
 .TP
-.BI logdump " [-acsOS] [-b block] [-i filespec] [-f journal_file] [output_file]"
+.BI logdump " [-acsOS] [-b block] [-n num_trans ] [-i filespec] [-f journal_file] [output_file]"
 Dump the contents of the ext3 journal.  By default, dump the journal inode as
 specified in the superblock.  However, this can be overridden with the
 .I \-i
@@ -528,7 +528,7 @@ The
 .I \-a
 option causes the
 .B logdump
-program to print the contents of all of the descriptor blocks.
+to print the contents of all of the descriptor blocks.
 The
 .I \-b
 option causes
@@ -548,6 +548,15 @@ The
 option causes logdump to display old (checkpointed) journal entries.
 This can be used to try to track down journal problems even after the
 journal has been replayed.
+.IP
+The
+.I \-n
+option causes
+.B logdump
+to continue past a journal block which is missing a magic number.
+Instead, it will stop only when the entire log is printed or after
+.I num_trans
+transactions.
 .TP
 .BI ls " [-l] [-c] [-d] [-p] [-r] filespec"
 Print a listing of the files in the directory
