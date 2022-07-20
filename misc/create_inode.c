@@ -39,6 +39,8 @@
 #include "create_inode.h"
 #include "support/nls-enable.h"
 
+#include "create_inode_libarchive.h"
+
 /* 64KiB is the minimum blksize to best minimize system call overhead. */
 #define COPY_FILE_BUFLEN	65536
 
@@ -69,7 +71,7 @@ static int ext2_file_type(unsigned int mode)
 }
 
 /* Link an inode number to a directory */
-static errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
+errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 			  ext2_ino_t ino, const char *name)
 {
 	struct ext2_inode	inode;
@@ -108,8 +110,8 @@ static errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 }
 
 /* Set the uid, gid, mode and time for the inode */
-static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
-				 struct stat *st)
+errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
+				 const struct stat *st)
 {
 	errcode_t		retval;
 	struct ext2_inode	inode;
@@ -720,12 +722,6 @@ out:
 	return retval;
 }
 
-struct file_info {
-	char *path;
-	size_t path_len;
-	size_t path_max_len;
-};
-
 static errcode_t path_append(struct file_info *target, const char *file)
 {
 	if (strlen(file) + target->path_len + 1 > target->path_max_len) {
@@ -1044,7 +1040,7 @@ out:
 }
 
 errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
-		       const char *source_dir, ext2_ino_t root,
+		       const char *source, ext2_ino_t root,
 		       struct fs_ops_callbacks *fs_callbacks)
 {
 	struct file_info file_info;
@@ -1069,14 +1065,35 @@ errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
 	file_info.path_max_len = 255;
 	file_info.path = calloc(file_info.path_max_len, 1);
 
-	retval = set_inode_xattr(fs, root, source_dir);
+	/* interpret input as tarball either if it's "-" (stdin) or if it's
+	 * a regular file (or a symlink pointing to a regular file)
+	 */
+	if (strcmp(source, "-") == 0) {
+		retval = __populate_fs_from_tar(fs, parent_ino, NULL, root, &hdlinks,
+					   &file_info, fs_callbacks);
+		goto out;
+	}
+
+	struct stat st;
+	if (stat(source, &st)) {
+		retval = errno;
+		com_err(__func__, retval, _("while calling stat"));
+		return retval;
+	}
+	if (S_ISREG(st.st_mode)) {
+		retval = __populate_fs_from_tar(fs, parent_ino, source, root, &hdlinks,
+					   &file_info, fs_callbacks);
+		goto out;
+	}
+
+	retval = set_inode_xattr(fs, root, source);
 	if (retval) {
 		com_err(__func__, retval,
 			_("while copying xattrs on root directory"));
 		goto out;
 	}
 
-	retval = __populate_fs(fs, parent_ino, source_dir, root, &hdlinks,
+	retval = __populate_fs(fs, parent_ino, source, root, &hdlinks,
 			       &file_info, fs_callbacks);
 
 out:
@@ -1086,7 +1103,7 @@ out:
 }
 
 errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
-		      const char *source_dir, ext2_ino_t root)
+		      const char *source, ext2_ino_t root)
 {
-	return populate_fs2(fs, parent_ino, source_dir, root, NULL);
+	return populate_fs2(fs, parent_ino, source, root, NULL);
 }
