@@ -620,7 +620,6 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 			     struct  ext4_fc_tl *tl, __u8 *val)
 {
 	struct ext4_fc_dentry_info fcd;
-	int tag = le16_to_cpu(tl->fc_tag);
 
 	memcpy(&fcd, val, sizeof(fcd));
 
@@ -636,10 +635,10 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 	       darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
 	jbd_debug(1, "%s: %s, ino %lu, parent %lu\n",
-		tag == EXT4_FC_TAG_CREAT ? "create" :
-		(tag == EXT4_FC_TAG_LINK ? "link" :
-		(tag == EXT4_FC_TAG_UNLINK ? "unlink" : "error")),
-		darg->dname, darg->ino, darg->parent_ino);
+		  le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_CREAT ? "create" :
+		  (le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_LINK ? "link" :
+		   (le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_UNLINK ? "unlink" :
+		    "error")), darg->dname, darg->ino, darg->parent_ino);
 	return 0;
 }
 
@@ -652,11 +651,11 @@ static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, darg.ino);
-	ret = errcode_to_errno(
-		       ext2fs_unlink(ctx->fs, darg.parent_ino,
-				     darg.dname, darg.ino, 0));
+	ret = errcode_to_errno(ext2fs_unlink(ctx->fs, darg.parent_ino,
+					     darg.dname, darg.ino, 0));
 	/* It's okay if the above call fails */
 	free(darg.dname);
+
 	return ret;
 }
 

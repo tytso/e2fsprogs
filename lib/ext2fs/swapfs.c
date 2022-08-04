@@ -244,7 +244,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 			    int bufsize)
 {
 	unsigned i, extra_isize, attr_magic;
-	int has_extents, has_inline_data, islnk, fast_symlink;
+	int has_extents = 0, has_inline_data = 0, islnk = 0, fast_symlink = 0;
 	unsigned int inode_size;
 	__u32 *eaf, *eat;
 
