@@ -2266,7 +2266,8 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		if (inode->i_flags & EXT4_EA_INODE_FL)
 			update_ea_inode_refs = 1;
 		else
-			inode->i_ctime = time(0);
+			inode->i_ctime = rfs->old_fs->now ?
+				rfs->old_fs->now : time(0);
 
 		retval = ext2fs_write_inode_full(rfs->old_fs, new_inode,
 						inode, inode_size);
@@ -2419,7 +2420,8 @@ static int check_and_change_inodes(ext2_ino_t dir,
 	/* Update the directory mtime and ctime */
 	retval = ext2fs_read_inode(is->rfs->old_fs, dir, &inode);
 	if (retval == 0) {
-		inode.i_mtime = inode.i_ctime = time(0);
+		inode.i_mtime = inode.i_ctime = is->rfs->old_fs->now ?
+			is->rfs->old_fs->now : time(0);
 		is->err = ext2fs_write_inode(is->rfs->old_fs, dir, &inode);
 		if (is->err)
 			return ret | DIRENT_ABORT;
