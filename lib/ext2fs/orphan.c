@@ -68,7 +68,7 @@ struct mkorphan_info {
 	blk_t alloc_blocks;
 	blk64_t last_blk;
 	errcode_t err;
-	ino_t ino;
+	ext2_ino_t ino;
 	__u32 generation;
 };
 
