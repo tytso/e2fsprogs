@@ -42,11 +42,13 @@ extern errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 extern errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
 			      const char *source_dir, ext2_ino_t root,
 			      struct fs_ops_callbacks *fs_callbacks);
+extern errcode_t populate_fs_archive(ext2_filsys fs, ext2_ino_t parent_ino,
+			     const char *archive_file, ext2_ino_t root);
 extern errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd,
 				   const char *name, unsigned int st_mode,
 				   unsigned int st_rdev);
 extern errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd,
-				     const char *name, char *target,
+				     const char *name, const char *target,
 				     ext2_ino_t root);
 extern errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd,
 				   const char *name, ext2_ino_t root);
