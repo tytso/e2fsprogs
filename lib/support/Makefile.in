@@ -18,6 +18,7 @@ OBJS=		cstring.o \
 		plausible.o \
 		profile.o \
 		parse_qtype.o \
+		print_fs_flags.o \
 		profile_helpers.o \
 		prof_err.o \
 		quotaio.o \
@@ -30,6 +31,7 @@ SRCS=		$(srcdir)/argv_parse.c \
 		$(srcdir)/mkquota.c \
 		$(srcdir)/parse_qtype.c \
 		$(srcdir)/plausible.c \
+		$(srcdir)/print_fs_flags.c \
 		$(srcdir)/profile.c \
 		$(srcdir)/profile_helpers.c \
 		prof_err.c \
