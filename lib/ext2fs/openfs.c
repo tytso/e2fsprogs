@@ -299,7 +299,8 @@ retry:
 	     (unsigned) (EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE)) ||
 	    (fs->super->s_log_cluster_size >
 	     (unsigned) (EXT2_MAX_CLUSTER_LOG_SIZE - EXT2_MIN_CLUSTER_LOG_SIZE)) ||
-	    (fs->super->s_log_block_size > fs->super->s_log_cluster_size)) {
+	    (fs->super->s_log_block_size > fs->super->s_log_cluster_size) ||
+	    (fs->super->s_log_groups_per_flex > 31)) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
