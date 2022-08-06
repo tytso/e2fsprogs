@@ -1214,6 +1214,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	llseek
 	lseek64
 	mallinfo
+	mallinfo2
 	mbstowcs
 	memalign
 	mempcpy

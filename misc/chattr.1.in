@@ -23,44 +23,77 @@ chattr \- change file attributes on a Linux file system
 .B chattr
 changes the file attributes on a Linux file system.
 .PP
-The format of a symbolic mode is +-=[aAcCdDeFijmPsStTux].
+The format of a symbolic
+.I mode
+is
+.BR +-= [ aAcCdDeFijmPsStTux ].
 .PP
-The operator '+' causes the selected attributes to be added to the
-existing attributes of the files; '-' causes them to be removed; and '='
+The operator
+.RB ' + '
+causes the selected attributes to be added to the
+existing attributes of the files;
+.RB ' - '
+causes them to be removed; and
+.RB ' = '
 causes them to be the only attributes that the files have.
 .PP
-The letters 'aAcCdDeFijmPsStTux' select the new attributes for the files:
-append only (a),
-no atime updates (A),
-compressed (c),
-no copy on write (C),
-no dump (d),
-synchronous directory updates (D),
-extent format (e),
-case-insensitive directory lookups (F),
-immutable (i),
-data journaling (j),
-don't compress (m),
-project hierarchy (P),
-secure deletion (s),
-synchronous updates (S),
-no tail-merging (t),
-top of directory hierarchy (T),
-undeletable (u),
-and direct access for files (x).
+The letters
+.RB ' aAcCdDeFijmPsStTux '
+select the new attributes for the files:
+append only
+.RB ( a ),
+no atime updates
+.RB ( A ),
+compressed
+.RB ( c ),
+no copy on write
+.RB ( C ),
+no dump
+.RB ( d ),
+synchronous directory updates
+.RB ( D ),
+extent format
+.RB ( e ),
+case-insensitive directory lookups
+.RB ( F ),
+immutable
+.RB ( i ),
+data journaling
+.RB ( j ),
+don't compress
+.RB ( m ),
+project hierarchy
+.RB ( P ),
+secure deletion
+.RB ( s ),
+synchronous updates
+.RB ( S ),
+no tail-merging
+.RB ( t ),
+top of directory hierarchy
+.RB ( T ),
+undeletable
+.RB ( u ),
+and direct access for files
+.RB ( x ).
 .PP
 The following attributes are read-only, and may be listed by
 .BR lsattr (1)
 but not modified by chattr:
-encrypted (E),
-indexed directory (I),
-inline data (N),
-and verity (V).
+encrypted
+.RB ( E ),
+indexed directory
+.RB ( I ),
+inline data
+.RB ( N ),
+and verity
+.RB ( V ).
 .PP
 Not all flags are supported or utilized by all file systems; refer to
 file system-specific man pages such as
 .BR btrfs (5),
 .BR ext4 (5),
+.BR mkfs.f2fs (8),
 and
 .BR xfs (5)
 for more file system-specific details.
@@ -258,4 +291,5 @@ http://e2fsprogs.sourceforge.net.
 .BR lsattr (1),
 .BR btrfs (5),
 .BR ext4 (5),
+.BR mkfs.f2fs (8),
 .BR xfs (5).

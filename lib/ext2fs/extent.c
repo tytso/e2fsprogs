@@ -47,6 +47,7 @@ struct extent_path {
 	int		visit_num;
 	int		flags;
 	blk64_t		end_blk;
+	blk64_t		blk;
 	void		*curr;
 };
 
@@ -286,6 +287,7 @@ errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
 	handle->path[0].end_blk =
 		(EXT2_I_SIZE(handle->inode) + fs->blocksize - 1) >>
 		 EXT2_BLOCK_SIZE_BITS(fs->super);
+	handle->path[0].blk = 0;
 	handle->path[0].visit_num = 1;
 	handle->level = 0;
 	handle->magic = EXT2_ET_MAGIC_EXTENT_HANDLE;
@@ -305,14 +307,14 @@ errout:
 errcode_t ext2fs_extent_get(ext2_extent_handle_t handle,
 			    int flags, struct ext2fs_extent *extent)
 {
-	struct extent_path	*path, *newpath;
+	struct extent_path	*path, *newpath, *tp;
 	struct ext3_extent_header	*eh;
 	struct ext3_extent_idx		*ix = 0;
 	struct ext3_extent		*ex;
 	errcode_t			retval;
 	blk64_t				blk;
 	blk64_t				end_blk;
-	int				orig_op, op;
+	int				orig_op, op, l;
 	int				failed_csum = 0;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
@@ -467,6 +469,11 @@ retry:
 		}
 		blk = ext2fs_le32_to_cpu(ix->ei_leaf) +
 			((__u64) ext2fs_le16_to_cpu(ix->ei_leaf_hi) << 32);
+		for (l = handle->level, tp = path; l > 0; l--, tp--) {
+			if (blk == tp->blk)
+				return EXT2_ET_EXTENT_CYCLE;
+		}
+		newpath->blk = blk;
 		if ((handle->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
 		    (handle->fs->io != handle->fs->image_io))
 			memset(newpath->buf, 0, handle->fs->blocksize);
@@ -494,6 +501,10 @@ retry:
 		newpath->left = newpath->entries =
 			ext2fs_le16_to_cpu(eh->eh_entries);
 		newpath->max_entries = ext2fs_le16_to_cpu(eh->eh_max);
+
+		/* Make sure there is at least one extent present */
+		if (newpath->left <= 0)
+			return EXT2_ET_EXTENT_NO_DOWN;
 
 		if (path->left > 0) {
 			ix++;
@@ -1629,6 +1640,10 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 		return EXT2_ET_NO_CURRENT_NODE;
 
 	cp = path->curr;
+
+	/* Sanity check before memmove() */
+	if (path->left < 0)
+		return EXT2_ET_EXTENT_LEAF_BAD;
 
 	if (path->left) {
 		memmove(cp, cp + sizeof(struct ext3_extent_idx),

@@ -989,7 +989,14 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	journal->j_blocksize = ctx->fs->blocksize;
 
 	if (uuid_is_null(sb->s_journal_uuid)) {
-		if (!sb->s_journal_inum) {
+		/*
+		 * The full set of superblock sanity checks haven't
+		 * been performed yet, so we need to do some basic
+		 * checks here to avoid potential array overruns.
+		 */
+		if (!sb->s_journal_inum ||
+		    (sb->s_journal_inum >
+		     (ctx->fs->group_desc_count * sb->s_inodes_per_group))) {
 			retval = EXT2_ET_BAD_INODE_NUM;
 			goto errout;
 		}

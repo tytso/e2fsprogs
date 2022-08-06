@@ -551,4 +551,7 @@ ec	EXT2_ET_NO_GDESC,
 ec	EXT2_FILSYS_CORRUPTED,
 	"The internal ext2_filsys data structure appears to be corrupted"
 
+ec	EXT2_ET_EXTENT_CYCLE,
+	"Found cyclic loop in extent tree"
+
 	end
