@@ -2973,7 +2973,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	blk64_t grp, data_needed, last_start;
 	blk64_t overhead = 0;
 	int old_desc_blocks;
-	int flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+	unsigned flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 
 	/*
 	 * first figure out how many group descriptors we need to

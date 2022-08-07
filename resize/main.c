@@ -111,8 +111,8 @@ static void determine_fs_stride(ext2_filsys fs)
 	unsigned int	group;
 	unsigned long long sum;
 	unsigned int	has_sb, prev_has_sb = 0, num;
+	unsigned int	flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 	int		i_stride, b_stride;
-	int		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 
 	if (fs->stride)
 		return;

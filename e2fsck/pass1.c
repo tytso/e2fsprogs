@@ -4067,7 +4067,7 @@ static void new_table_block(e2fsck_t ctx, blk64_t first_block, dgrp_t group,
 	 */
 	is_flexbg = ext2fs_has_feature_flex_bg(fs->super);
 	if (is_flexbg) {
-		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+		flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 		flexbg = group / flexbg_size;
 		first_block = ext2fs_group_first_block2(fs,
 							flexbg_size * flexbg);
