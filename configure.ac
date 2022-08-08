@@ -1,8 +1,10 @@
-AC_INIT(version.h)
-AC_PREREQ(2.69)
+AC_INIT
+AC_CONFIG_SRCDIR([version.h])
+AC_PREREQ([2.71])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADERS([lib/config.h])
 AH_BOTTOM([#include <dirpaths.h>])
+AC_USE_SYSTEM_EXTENSIONS
 MCONFIG=./MCONFIG
 AC_SUBST_FILE(MCONFIG)
 BINARY_TYPE=bin
@@ -123,7 +125,6 @@ then
 else
     AC_MSG_RESULT([[(none)]])
 fi
-AC_USE_SYSTEM_EXTENSIONS
 dnl
 dnl Set default values for library extensions.  Will be dealt with after
 dnl parsing configuration options, which may modify these
@@ -1138,18 +1139,12 @@ dnl flags somewhat portably.  Also check for the analogous setter, chflags().
 dnl
 AC_MSG_CHECKING(whether struct stat has a st_flags field)
 AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags,
-	AC_TRY_COMPILE([#include <sys/stat.h>],
-		[struct stat stat; stat.st_flags = 0;],
-		[e2fsprogs_cv_struct_st_flags=yes],
-		[e2fsprogs_cv_struct_st_flags=no]))
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]], [[struct stat stat; stat.st_flags = 0;]])],[e2fsprogs_cv_struct_st_flags=yes],[e2fsprogs_cv_struct_st_flags=no]))
 AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags)
 if test "$e2fsprogs_cv_struct_st_flags" = yes; then
   AC_MSG_CHECKING(whether st_flags field is useful)
   AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags_immut,
-	AC_TRY_COMPILE([#include <sys/stat.h>],
-		[struct stat stat; stat.st_flags |= UF_IMMUTABLE;],
-		[e2fsprogs_cv_struct_st_flags_immut=yes],
-		[e2fsprogs_cv_struct_st_flags_immut=no]))
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]], [[struct stat stat; stat.st_flags |= UF_IMMUTABLE;]])],[e2fsprogs_cv_struct_st_flags_immut=yes],[e2fsprogs_cv_struct_st_flags_immut=no]))
   AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags_immut)
   if test "$e2fsprogs_cv_struct_st_flags_immut" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS, 1,
@@ -1607,8 +1602,7 @@ dnl
 AC_MSG_CHECKING([whether we can link with -static])
 AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
 [SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
-AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
- ac_cv_e2fsprogs_use_static=yes, ac_cv_e2fsprogs_use_static=no)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]], [[fflush(stdout);]])],[ac_cv_e2fsprogs_use_static=yes],[ac_cv_e2fsprogs_use_static=no])
 LDFLAGS=$SAVE_LDFLAGS])
 dnl
 dnl Regardless of how the test turns out, Solaris doesn't handle -static
@@ -1830,5 +1824,6 @@ for i in MCONFIG Makefile \
 		outlist="$outlist $i"
 	fi
 done
-AC_OUTPUT($outlist)
+AC_CONFIG_FILES([$outlist])
+AC_OUTPUT
 if test -f util/gen-tarball; then chmod +x util/gen-tarball; fi

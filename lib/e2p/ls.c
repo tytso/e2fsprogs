@@ -312,7 +312,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 			sb->s_first_meta_bg);
 	if (sb->s_log_groups_per_flex)
 		fprintf(f, "Flex block group size:    %u\n",
-			1 << sb->s_log_groups_per_flex);
+			1U << sb->s_log_groups_per_flex);
 	if (sb->s_mkfs_time) {
 		tm = sb->s_mkfs_time;
 		fprintf(f, "Filesystem created:       %s", ctime(&tm));

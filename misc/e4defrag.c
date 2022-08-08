@@ -1021,7 +1021,7 @@ static int get_best_count(ext4_fsblk_t block_count)
 		return 1;
 
 	if (feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
-		flex_bg_num = 1 << log_groups_per_flex;
+		flex_bg_num = 1U << log_groups_per_flex;
 		ret = ((block_count - 1) /
 			((ext4_fsblk_t)blocks_per_group *
 				flex_bg_num)) + 1;

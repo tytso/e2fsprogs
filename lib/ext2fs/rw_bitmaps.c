@@ -527,7 +527,7 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	pthread_mutex_t rbt_mutex = PTHREAD_MUTEX_INITIALIZER;
 	errcode_t retval;
 	errcode_t rc;
-	unsigned flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+	unsigned flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 	dgrp_t average_group;
 	int i, tail_flags = 0;
 #endif
