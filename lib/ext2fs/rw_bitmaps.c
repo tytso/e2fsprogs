@@ -535,6 +535,9 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	if (flags & ~EXT2FS_BITMAPS_VALID_FLAGS)
 		return EXT2_ET_INVALID_ARGUMENT;
 
+	if (ext2fs_has_feature_journal_dev(fs->super))
+		return EXT2_ET_EXTERNAL_JOURNAL_NOSUPP;
+
 	if (flags & EXT2FS_BITMAPS_WRITE)
 		return write_bitmaps(fs, flags & EXT2FS_BITMAPS_INODE,
 				     flags & EXT2FS_BITMAPS_BLOCK);

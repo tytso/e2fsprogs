@@ -144,6 +144,10 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	errcode_t (*save_get_blocks)(ext2_filsys f, ext2_ino_t ino, blk_t *blocks);
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	if (ext2fs_has_feature_journal_dev(fs->super))
+		return EXT2_ET_EXTERNAL_JOURNAL_NOSUPP;
+
 	if (fs->blocksize < 1024)
 		return EXT2_FILSYS_CORRUPTED; /* Should never happen */
 
@@ -766,6 +770,10 @@ errcode_t ext2fs_read_inode2(ext2_filsys fs, ext2_ino_t ino,
 	int		cache_slot, fail_csum;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	if (ext2fs_has_feature_journal_dev(fs->super))
+		return EXT2_ET_EXTERNAL_JOURNAL_NOSUPP;
+
 	if (fs->blocksize < 1024)
 		return EXT2_FILSYS_CORRUPTED; /* Should never happen */
 
@@ -897,6 +905,9 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 	int length = EXT2_INODE_SIZE(fs->super);
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	if (ext2fs_has_feature_journal_dev(fs->super))
+		return EXT2_ET_EXTERNAL_JOURNAL_NOSUPP;
 
 	/* Check to see if user provided an override function */
 	if (fs->write_inode) {
