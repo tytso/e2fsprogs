@@ -119,7 +119,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		fs->flags |= EXT2_FLAG_DIRTY;
 
 		blk = ext2fs_block_bitmap_loc(fs, i);
-		if (blk) {
+		if (blk && blk < ext2fs_blocks_count(fs->super)) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 							block_buf);
 			if (retval) {
@@ -151,7 +151,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		fs->flags |= EXT2_FLAG_DIRTY;
 
 		blk = ext2fs_inode_bitmap_loc(fs, i);
-		if (blk) {
+		if (blk && blk < ext2fs_blocks_count(fs->super)) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 						      inode_buf);
 			if (retval) {
@@ -204,14 +204,14 @@ static errcode_t mark_uninit_bg_group_blocks(ext2_filsys fs)
 		 * Mark block used for the block bitmap
 		 */
 		blk = ext2fs_block_bitmap_loc(fs, i);
-		if (blk)
+		if (blk && blk < ext2fs_blocks_count(fs->super))
 			ext2fs_mark_block_bitmap2(bmap, blk);
 
 		/*
 		 * Mark block used for the inode bitmap
 		 */
 		blk = ext2fs_inode_bitmap_loc(fs, i);
-		if (blk)
+		if (blk && blk < ext2fs_blocks_count(fs->super))
 			ext2fs_mark_block_bitmap2(bmap, blk);
 	}
 	return 0;
