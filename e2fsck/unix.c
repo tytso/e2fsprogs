@@ -1171,25 +1171,32 @@ static errcode_t try_open_fs(e2fsck_t ctx, int flags, io_manager io_ptr,
 	errcode_t retval;
 
 	*ret_fs = NULL;
-	if (ctx->superblock && ctx->blocksize) {
-		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
-				      flags, ctx->superblock, ctx->blocksize,
-				      io_ptr, ret_fs);
-	} else if (ctx->superblock) {
-		int blocksize;
-		for (blocksize = EXT2_MIN_BLOCK_SIZE;
-		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
-			if (*ret_fs) {
-				ext2fs_free(*ret_fs);
-				*ret_fs = NULL;
+
+	if (ctx->superblock) {
+		unsigned long blocksize = ctx->blocksize;
+
+		if (!blocksize) {
+			for (blocksize = EXT2_MIN_BLOCK_SIZE;
+			     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
+
+				retval = ext2fs_open2(ctx->filesystem_name,
+						      ctx->io_options, flags,
+						      ctx->superblock, blocksize,
+						      unix_io_manager, ret_fs);
+				if (*ret_fs) {
+					ext2fs_free(*ret_fs);
+					*ret_fs = NULL;
+				}
+				if (!retval)
+					break;
 			}
-			retval = ext2fs_open2(ctx->filesystem_name,
-					      ctx->io_options, flags,
-					      ctx->superblock, blocksize,
-					      io_ptr, ret_fs);
-			if (!retval)
-				break;
+			if (retval)
+				return retval;
 		}
+
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
+				      flags, ctx->superblock, blocksize,
+				      io_ptr, ret_fs);
 	} else
 		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
 				      flags, 0, 0, io_ptr, ret_fs);

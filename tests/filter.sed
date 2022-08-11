@@ -20,6 +20,7 @@ s/\\015//g
 /^Maximum mount count:/d
 /^Next check after:/d
 /^Suggestion:/d
+/security.selinux/d
 /Reserved blocks uid:/s/ (user .*)//
 /Reserved blocks gid:/s/ (group .*)//
 /whichever comes first/d

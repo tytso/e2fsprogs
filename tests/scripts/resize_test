@@ -60,6 +60,14 @@ rm -f $OUT_TMP
 echo $FSCK -fy $TMPFILE >> $LOG 2>&1 
 $FSCK -fy $TMPFILE >> $LOG 2>&1 
 
+chmod u-w $TMPFILE
+echo $RESIZE2FS -P $TMPFILE >> $LOG 2>&1
+if ! $RESIZE2FS -P $TMPFILE >> $LOG 2>&1
+then
+	return 1
+fi
+chmod u+w $TMPFILE
+
 echo $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS $TMPFILE $SIZE_2 >> $LOG 2>&1
 if ! $RESIZE2FS $RESIZE2FS_OPTS -d $DBG_FLAGS $TMPFILE $SIZE_2 >> $LOG 2>&1
 then
