@@ -80,6 +80,11 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 			goto errout;
 		}
 		left = fs->inode_blocks_per_group;
+		if ((blk < fs->super->s_first_data_block) ||
+		    (blk + left - 1 >= ext2fs_blocks_count(fs->super))) {
+			retval = EXT2_ET_GDESC_BAD_INODE_TABLE;
+			goto errout;
+		}
 		while (left) {
 			c = BUF_BLOCKS;
 			if (c > left)
