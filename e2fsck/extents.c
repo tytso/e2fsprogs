@@ -583,7 +583,7 @@ errcode_t e2fsck_should_rebuild_extents(e2fsck_t ctx,
 			    sizeof(struct ext3_extent);
 
 	/* If the extent tree is too deep, then rebuild it. */
-	if (info->max_depth > MAX_EXTENT_DEPTH_COUNT) {
+	if (info->max_depth > MAX_EXTENT_DEPTH_COUNT-1) {
 		pctx->blk = info->max_depth;
 		op = PR_1E_CAN_COLLAPSE_EXTENT_TREE;
 		goto rebuild;

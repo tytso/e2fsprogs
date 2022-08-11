@@ -1619,7 +1619,8 @@ failure:
 			 * so that we are able to recover from more errors
 			 * (e.g. some tool messing up some value in the sb).
 			 */
-			if ((retval == EXT2_ET_CORRUPT_SUPERBLOCK) &&
+			if (((retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
+			     (retval == EXT2_ET_BAD_DESC_SIZE)) &&
 			    !(flags & EXT2_FLAG_IGNORE_SB_ERRORS)) {
 				if (fs)
 					ext2fs_close_free(&fs);

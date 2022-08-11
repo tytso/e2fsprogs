@@ -1495,6 +1495,45 @@ if test "$have_threadsan" = "yes" && test "$have_addrsan" = "yes"; then
 	AC_MSG_WARN([ADDRSAN and THREADSAN are not known to work together.])
 fi
 dnl
+dnl Enable the fuzzer sanitizer for all packages
+dnl
+FUZZING_CMT="#"
+AC_ARG_ENABLE([fuzzing],
+AS_HELP_STRING([--enable-fuzzing],[enable fuzzing sanitizer]),,
+enable_fuzzing=no)
+if test "$enable_fuzzing" = "yes" || test "$enable_fuzzing" = "probe"; then
+	AC_PROG_CXX
+	AC_MSG_CHECKING([if C compiler supports fuzzing sanitizer])
+	AC_LANG_PUSH([C++])
+	OLD_CXXFLAGS="$CXXFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	FUZZER_FLAGS="-fsanitize=fuzzer"
+	CXXFLAGS="$CXXFLAGS $FUZZER_FLAGS"
+	LDFLAGS="$LDFLAGS $FUZZER_FLAGS"
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+		#include <stddef.h>
+		#include <stdint.h>
+		]],
+		[ return 0; ])],
+		[AC_MSG_RESULT([yes])]
+		[fuzzer_cflags=$FUZZER_FLAGS]
+		[fuzzer_ldflags=$FUZZER_FLAGS]
+		[FUZZING_CMT=]
+		[have_fuzzer=yes],
+		[AC_MSG_RESULT([no])]
+		[AC_MSG_ERROR([fuzzing requested but not available])])
+	CXXFLAGS="${OLD_CXXFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_LANG_POP([C++])
+	AC_SUBST(have_fuzzer)
+	AC_SUBST(fuzzer_cflags)
+	AC_SUBST(fuzzer_ldflags)
+fi
+if test "$enable_fuzzer" = "yes" && test "$have_fuzzer" != "yes"; then
+	AC_MSG_ERROR([Fuzzing not supported by compiler.])
+fi
+AC_SUBST(FUZZING_CMT)
+dnl
 dnl OS-specific uncomment control
 dnl
 LINUX_CMT="#"
@@ -1819,7 +1858,8 @@ for i in MCONFIG Makefile \
 	lib/ss/ss.pc lib/et/com_err.pc lib/e2p/e2p.pc lib/ext2fs/ext2fs.pc \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
-	resize/Makefile doc/Makefile po/Makefile.in scrub/Makefile; do
+	tests/fuzz/Makefile resize/Makefile doc/Makefile \
+	po/Makefile.in scrub/Makefile; do
 	if test -d `dirname ${srcdir}/$i` ; then
 		outlist="$outlist $i"
 	fi

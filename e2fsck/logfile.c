@@ -155,6 +155,9 @@ static void expand_percent_expression(e2fsck_t ctx, char ch,
 	case 'Y':
 		sprintf(buf, "%d", tm->tm_year + 1900);
 		break;
+	default:
+		sprintf(buf, "%%%c", ch);
+		break;
 	}
 	append_string(s, buf, 0);
 }
