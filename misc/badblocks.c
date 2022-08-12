@@ -1093,6 +1093,8 @@ int main (int argc, char ** argv)
 
 	if (argc && *argv)
 		program_name = *argv;
+	else
+		usage();
 	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:BX")) != EOF) {
 		switch (c) {
 		case 'b':

@@ -1517,6 +1517,8 @@ int main (int argc, char ** argv)
 		 E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
+	else
+		usage();
 	add_error_table(&et_ext2_error_table);
 	while ((c = getopt(argc, argv, "b:B:nrsIQafo:O:pc")) != EOF)
 		switch (c) {
