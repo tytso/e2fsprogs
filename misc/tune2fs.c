@@ -59,6 +59,7 @@ extern int optind;
 #include "et/com_err.h"
 #include "support/plausible.h"
 #include "support/quotaio.h"
+#include "support/devname.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
 #include "util.h"
@@ -1774,7 +1775,7 @@ static void parse_e2label_options(int argc, char ** argv)
 	io_options = strchr(argv[1], '?');
 	if (io_options)
 		*io_options++ = 0;
-	device_name = blkid_get_devname(NULL, argv[1], NULL);
+	device_name = get_devname(NULL, argv[1], NULL);
 	if (!device_name) {
 		com_err("e2label", 0, _("Unable to resolve '%s'"),
 			argv[1]);
@@ -2074,7 +2075,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	io_options = strchr(argv[optind], '?');
 	if (io_options)
 		*io_options++ = 0;
-	device_name = blkid_get_devname(NULL, argv[optind], NULL);
+	device_name = get_devname(NULL, argv[optind], NULL);
 	if (!device_name) {
 		com_err(program_name, 0, _("Unable to resolve '%s'"),
 			argv[optind]);
