@@ -324,8 +324,8 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 			if (parent)
 				pctx->dir = parent;
 			else
-				ext2fs_lookup(fs, ino, "..", 2, NULL,
-					      &pctx->dir);
+				(void) ext2fs_lookup(fs, ino, "..", 2, NULL,
+						     &pctx->dir);
 			if (fix_problem(ctx, !parent ? PR_3_UNCONNECTED_DIR :
 						       PR_3_LOOPED_DIR, pctx)) {
 				if (e2fsck_reconnect_file(ctx, pctx->ino)) {
