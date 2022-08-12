@@ -943,7 +943,7 @@ static errcode_t initialize_qcow2_image(int fd, ext2_filsys fs,
 	header->refcount_table_clusters =
 		ext2fs_cpu_to_be32(image->refcount.refcount_table_clusters);
 	offset += image->cluster_size;
-	offset += image->refcount.refcount_table_clusters <<
+	offset += (blk64_t) image->refcount.refcount_table_clusters <<
 		image->cluster_bits;
 
 	/* Make space for L2 tables */

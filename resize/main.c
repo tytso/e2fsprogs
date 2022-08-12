@@ -544,7 +544,7 @@ int main (int argc, char ** argv)
 
 	/* If using cluster allocations, trim down to a cluster boundary */
 	if (ext2fs_has_feature_bigalloc(fs->super)) {
-		new_size &= ~((blk64_t)(1 << fs->cluster_ratio_bits) - 1);
+		new_size &= ~((blk64_t)(1ULL << fs->cluster_ratio_bits) - 1);
 	}
 
 	new_group_desc_count = ext2fs_div64_ceil(new_size -
