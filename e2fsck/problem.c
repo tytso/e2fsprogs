@@ -2573,8 +2573,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		if ((ctx->options & E2F_OPT_PREEN) &&
 		    (ptr->flags & PR_PREEN_OK))
 			suppress++;
-		if ((ptr->flags & PR_LATCH_MASK) &&
-		    (ldesc->flags & (PRL_YES | PRL_NO)))
+		if (ldesc && (ldesc->flags & (PRL_YES | PRL_NO)))
 			suppress++;
 		if (ptr->count == ptr->max_count + 1) {
 			if (ctx->problem_logf)
@@ -2619,8 +2618,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 			answer = def_yn;
 			if (!(ptr->flags & PR_PREEN_NOMSG))
 				print_answer = 1;
-		} else if ((ptr->flags & PR_LATCH_MASK) &&
-			   (ldesc->flags & (PRL_YES | PRL_NO))) {
+		} else if (ldesc && (ldesc->flags & (PRL_YES | PRL_NO))) {
 			print_answer = 1;
 			if (ldesc->flags & PRL_YES)
 				answer = 1;

@@ -3100,6 +3100,8 @@ int tune2fs_main(int argc, char **argv)
 #endif
 	if (argc && *argv)
 		program_name = *argv;
+	else
+		usage();
 	add_error_table(&et_ext2_error_table);
 
 #ifdef CONFIG_BUILD_FINDFS

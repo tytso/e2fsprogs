@@ -49,7 +49,7 @@ static void usage (char *prog)
 	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] "
 			   "[-p] device [-b|-s|new_size] [-S RAID-stride] "
 			   "[-z undo_file]\n\n"),
-		 prog);
+		 prog ? prog : "resize2fs");
 
 	exit (1);
 }
@@ -287,6 +287,8 @@ int main (int argc, char ** argv)
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
+	else
+		usage(NULL);
 
 	while ((c = getopt(argc, argv, "d:fFhMPpS:bsz:")) != EOF) {
 		switch (c) {
@@ -544,7 +546,7 @@ int main (int argc, char ** argv)
 
 	/* If using cluster allocations, trim down to a cluster boundary */
 	if (ext2fs_has_feature_bigalloc(fs->super)) {
-		new_size &= ~((blk64_t)(1 << fs->cluster_ratio_bits) - 1);
+		new_size &= ~((blk64_t)(1ULL << fs->cluster_ratio_bits) - 1);
 	}
 
 	new_group_desc_count = ext2fs_div64_ceil(new_size -

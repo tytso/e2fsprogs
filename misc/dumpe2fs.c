@@ -619,7 +619,8 @@ int main (int argc, char ** argv)
 			mmp_check = 1;
 			header_only = 1;
 		}
-	}
+	} else
+		usage();
 
 	if (!mmp_check)
 		fprintf(stderr, "dumpe2fs %s (%s)\n", E2FSPROGS_VERSION,

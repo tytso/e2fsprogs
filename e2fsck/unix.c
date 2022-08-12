@@ -74,11 +74,15 @@ int journal_enable_debug = -1;
 
 static void usage(e2fsck_t ctx)
 {
+	char *program_name = "e2fsck";
+
+	if (ctx && ctx->program_name)
+		program_name = ctx>program_name;
 	fprintf(stderr,
 		_("Usage: %s [-panyrcdfktvDFV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j external_journal]\n"
 		"\t\t[-E extended-options] [-z undo_file] device\n"),
-		ctx->program_name);
+		program_name);
 
 	fprintf(stderr, "%s", _("\nEmergency help:\n"
 		" -p                   Automatic repair (no questions)\n"
@@ -849,7 +853,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if (argc && *argv)
 		ctx->program_name = *argv;
 	else
-		ctx->program_name = "e2fsck";
+		usage(NULL);
 
 	phys_mem_kb = get_memory_size() / 1024;
 	ctx->readahead_kb = ~0ULL;

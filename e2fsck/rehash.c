@@ -414,6 +414,8 @@ static void mutate_name(char *str, unsigned int *len)
 			l += 2;
 		else
 			l = (l+3) & ~3;
+		if (l > 255)
+			l = 255;
 		str[l-2] = '~';
 		str[l-1] = '0';
 		*len = l;
