@@ -747,9 +747,19 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 	fc_raw_inode = val + sizeof(fc_ino);
 	ino = le32_to_cpu(fc_ino);
 
-	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
-		inode_len += ext2fs_le16_to_cpu(
+	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
+		__u16 extra_isize = ext2fs_le16_to_cpu(
 			((struct ext2_inode_large *)fc_raw_inode)->i_extra_isize);
+
+		if ((extra_isize < (sizeof(inode->i_extra_isize) +
+				    sizeof(inode->i_checksum_hi))) ||
+		    (extra_isize > (EXT2_INODE_SIZE(ctx->fs->super) -
+				    EXT2_GOOD_OLD_INODE_SIZE))) {
+			err = EFSCORRUPTED;
+			goto out;
+		}
+		inode_len += extra_isize;
+	}
 	err = ext2fs_get_mem(inode_len, &inode);
 	if (err)
 		goto out;
