@@ -465,7 +465,8 @@ unix.o: $(srcdir)/unix.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/fast_commit.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
  $(top_srcdir)/lib/ext2fs/kernel-list.h $(top_srcdir)/lib/ext2fs/compiler.h \
  $(srcdir)/problem.h $(srcdir)/jfs_user.h \
- $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/version.h
+ $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/version.h \
+ $(top_srcdir)/lib/support/devname.h
 dirinfo.o: $(srcdir)/dirinfo.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \

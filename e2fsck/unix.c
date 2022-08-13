@@ -52,6 +52,7 @@ extern int optind;
 #include "e2p/e2p.h"
 #include "uuid/uuid.h"
 #include "support/plausible.h"
+#include "support/devname.h"
 #include "e2fsck.h"
 #include "problem.h"
 #include "jfs_user.h"
@@ -943,8 +944,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 				goto sscanf_err;
 			break;
 		case 'j':
-			ctx->journal_name = blkid_get_devname(ctx->blkid,
-							      optarg, NULL);
+			ctx->journal_name = get_devname(ctx->blkid,
+							optarg, NULL);
 			if (!ctx->journal_name) {
 				com_err(ctx->program_name, 0,
 					_("Unable to resolve '%s'"),
@@ -1023,7 +1024,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	ctx->io_options = strchr(argv[optind], '?');
 	if (ctx->io_options)
 		*ctx->io_options++ = 0;
-	ctx->filesystem_name = blkid_get_devname(ctx->blkid, argv[optind], 0);
+	ctx->filesystem_name = get_devname(ctx->blkid, argv[optind], 0);
 	if (!ctx->filesystem_name) {
 		com_err(ctx->program_name, 0, _("Unable to resolve '%s'"),
 			argv[optind]);
