@@ -372,6 +372,8 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		size = sizeof(buf);
 		if (size > (cnt >> 3))
 			size = (cnt >> 3);
+		if (size == 0)
+			break;
 
 		retval = ext2fs_get_generic_bmap_range(bmap, itr,
 						       size << 3, buf);
@@ -447,6 +449,8 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 		size = sizeof(buf);
 		if (size > (cnt >> 3))
 			size = (cnt >> 3);
+		if (size == 0)
+			break;
 
 		actual = read(fd, buf, size);
 		if (actual == -1)
