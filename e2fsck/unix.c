@@ -75,15 +75,11 @@ int journal_enable_debug = -1;
 
 static void usage(e2fsck_t ctx)
 {
-	char *program_name = "e2fsck";
-
-	if (ctx && ctx->program_name)
-		program_name = ctx>program_name;
 	fprintf(stderr,
 		_("Usage: %s [-panyrcdfktvDFV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j external_journal]\n"
 		"\t\t[-E extended-options] [-z undo_file] device\n"),
-		program_name);
+		ctx->program_name ? ctx->program_name : "e2fsck");
 
 	fprintf(stderr, "%s", _("\nEmergency help:\n"
 		" -p                   Automatic repair (no questions)\n"

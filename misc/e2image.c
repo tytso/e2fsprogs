@@ -1263,7 +1263,7 @@ static void output_qcow2_meta_data_blocks(ext2_filsys fs, int fd)
 			offset += img->cluster_size;
 		}
 	}
-	update_refcount(fd, img, offset, offset);
+	(void) update_refcount(fd, img, offset, offset);
 	flush_l2_cache(img);
 	sync_refcount(fd, img);
 
