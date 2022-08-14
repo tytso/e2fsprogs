@@ -434,11 +434,14 @@ errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf,
 			return retval;
 		if ((rec_len < 8) || (rec_len % 4)) {
 			rec_len = 8;
-			retval = EXT2_ET_DIR_CORRUPTED;
+			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
+				return EXT2_ET_DIR_CORRUPTED;
 		} else if (((name_len & 0xFF) + 8) > rec_len)
-			retval = EXT2_ET_DIR_CORRUPTED;
+			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
+				return EXT2_ET_DIR_CORRUPTED;
 		if (rec_len > left)
-			return EXT2_ET_DIR_CORRUPTED;
+			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
+				return EXT2_ET_DIR_CORRUPTED;
 		left -= rec_len;
 		p += rec_len;
 	}
