@@ -83,11 +83,25 @@ extern int optind;
 #define FS_IOC_GETFSLABEL	_IOR(0x94, 49, char[FSLABEL_MAX])
 #endif
 
+struct fsuuid {
+	__u32   fsu_len;
+	__u32   fsu_flags;
+	__u8    fsu_uuid[];
+};
+
+#ifndef EXT4_IOC_GETFSUUID
+#define EXT4_IOC_GETFSUUID	_IOR('f', 44, struct fsuuid)
+#endif
+
+#ifndef EXT4_IOC_SETFSUUID
+#define EXT4_IOC_SETFSUUID	_IOW('f', 44, struct fsuuid)
+#endif
+
 extern int ask_yn(const char *string, int def);
 
 const char *program_name = "tune2fs";
 char *device_name;
-char *new_label, *new_last_mounted, *new_UUID;
+char *new_label, *new_last_mounted, *requested_uuid;
 char *io_options;
 static int c_flag, C_flag, e_flag, f_flag, g_flag, i_flag, l_flag, L_flag;
 static int m_flag, M_flag, Q_flag, r_flag, s_flag = -1, u_flag, U_flag, T_flag;
@@ -2155,7 +2169,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 				open_flag = EXT2_FLAG_RW;
 				break;
 		case 'U':
-			new_UUID = optarg;
+			requested_uuid = optarg;
 			U_flag = 1;
 			open_flag = EXT2_FLAG_RW |
 				EXT2_FLAG_JOURNAL_DEV_OK;
@@ -3075,6 +3089,7 @@ int handle_fslabel(int setlabel) {
 	int maxlen = FSLABEL_MAX - 1;
 	char mntpt[PATH_MAX + 1];
 
+#ifdef __linux__
 	ret = ext2fs_check_mount_point(device_name, &mnt_flags,
 					  mntpt, sizeof(mntpt));
 	if (ret) {
@@ -3129,6 +3144,9 @@ int handle_fslabel(int setlabel) {
 	}
 	close(fd);
 	return 0;
+#else
+	return -1;
+#endif
 }
 
 #ifndef BUILD_AS_LIB
@@ -3143,6 +3161,9 @@ int tune2fs_main(int argc, char **argv)
 	io_manager io_ptr, io_ptr_orig = NULL;
 	int rc = 0;
 	char default_undo_file[1] = { 0 };
+	char mntpt[PATH_MAX + 1] = { 0 };
+	int fd = -1;
+	struct fsuuid *fsuuid = NULL;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -3292,9 +3313,10 @@ retry_open:
 		goto closefs;
 	}
 
-	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	retval = ext2fs_check_mount_point(device_name, &mount_flags,
+					mntpt, sizeof(mntpt));
 	if (retval) {
-		com_err("ext2fs_check_if_mount", retval,
+		com_err("ext2fs_check_mount_point", retval,
 			_("while determining whether %s is mounted."),
 			device_name);
 		rc = 1;
@@ -3509,6 +3531,8 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		dgrp_t i;
 		char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 		__u8 old_uuid[UUID_SIZE];
+		uuid_t new_uuid;
+		errcode_t ret = -1;
 
 		if (ext2fs_has_feature_stable_inodes(fs->super)) {
 			fputs(_("Cannot change the UUID of this filesystem "
@@ -3562,25 +3586,62 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 				set_csum = 1;
 		}
 
-		memcpy(old_uuid, sb->s_uuid, UUID_SIZE);
-		if ((strcasecmp(new_UUID, "null") == 0) ||
-		    (strcasecmp(new_UUID, "clear") == 0)) {
-			uuid_clear(sb->s_uuid);
-		} else if (strcasecmp(new_UUID, "time") == 0) {
-			uuid_generate_time(sb->s_uuid);
-		} else if (strcasecmp(new_UUID, "random") == 0) {
-			uuid_generate(sb->s_uuid);
-		} else if (uuid_parse(new_UUID, sb->s_uuid)) {
+#ifdef __linux__
+		if ((mount_flags & EXT2_MF_MOUNTED) &&
+		    !(mount_flags & EXT2_MF_READONLY) && mntpt) {
+			fd = open(mntpt, O_RDONLY);
+			if (fd >= 0)
+				fsuuid = malloc(sizeof(*fsuuid) + UUID_SIZE);
+			if (fsuuid) {
+				fsuuid->fsu_len = UUID_SIZE;
+				fsuuid->fsu_flags = 0;
+				ret = ioctl(fd, EXT4_IOC_GETFSUUID, fsuuid);
+				if (ret || fsuuid->fsu_len != UUID_SIZE) {
+					free(fsuuid);
+					fsuuid = NULL;
+				}
+			}
+		}
+#endif
+
+		memcpy(old_uuid, fsuuid ? fsuuid->fsu_uuid : sb->s_uuid,
+		       UUID_SIZE);
+		if ((strcasecmp(requested_uuid, "null") == 0) ||
+		    (strcasecmp(requested_uuid, "clear") == 0)) {
+			uuid_clear(new_uuid);
+		} else if (strcasecmp(requested_uuid, "time") == 0) {
+			uuid_generate_time(new_uuid);
+		} else if (strcasecmp(requested_uuid, "random") == 0) {
+			uuid_generate(new_uuid);
+		} else if (uuid_parse(requested_uuid, new_uuid)) {
 			com_err(program_name, 0, "%s",
 				_("Invalid UUID format\n"));
 			rc = 1;
 			goto closefs;
 		}
-		ext2fs_init_csum_seed(fs);
-		if (set_csum) {
-			for (i = 0; i < fs->group_desc_count; i++)
-				ext2fs_group_desc_csum_set(fs, i);
-			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+
+		ret = -1;
+#ifdef __linux__
+		if (fsuuid) {
+			fsuuid->fsu_len - UUID_SIZE;
+			fsuuid->fsu_flags = 0;
+			memcpy(&fsuuid->fsu_uuid, new_uuid, UUID_SIZE);
+			ret = ioctl(fd, EXT4_IOC_SETFSUUID, fsuuid);
+		}
+#endif
+		/*
+		 * If we can't set the UUID via the ioctl, fall
+		 * back to directly modifying the superblock
+		 .*/
+		if (ret) {
+			memcpy(sb->s_uuid, new_uuid, UUID_SIZE);
+			ext2fs_init_csum_seed(fs);
+			if (set_csum) {
+				for (i = 0; i < fs->group_desc_count; i++)
+					ext2fs_group_desc_csum_set(fs, i);
+				fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+			}
+			ext2fs_mark_super_dirty(fs);
 		}
 
 		/* If this is a journal dev, we need to copy UUID into jsb */
@@ -3604,8 +3665,6 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 			if ((rc = fs_update_journal_user(sb, old_uuid)))
 				goto closefs;
 		}
-
-		ext2fs_mark_super_dirty(fs);
 	}
 
 	if (I_flag) {
@@ -3674,6 +3733,10 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	remove_error_table(&et_ext2_error_table);
 
 closefs:
+	if (fd >= 0)
+		close(fd);
+	if (fsuuid)
+		free(fsuuid);
 	if (rc) {
 		ext2fs_mmp_stop(fs);
 #ifndef BUILD_AS_LIB
