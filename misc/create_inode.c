@@ -150,6 +150,8 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 
 	size = llistxattr(filename, NULL, 0);
 	if (size == -1) {
+		if (errno == ENOTSUP)
+			return 0;
 		retval = errno;
 		com_err(__func__, retval, _("while listing attributes of \"%s\""),
 			filename);
