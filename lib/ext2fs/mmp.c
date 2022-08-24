@@ -58,7 +58,7 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	 * the MMP block by the io_manager or the VM.  It needs to be fresh. */
 	if (fs->mmp_fd <= 0) {
 		struct stat st;
-		int flags = O_RDWR | O_DIRECT;
+		int flags = O_DIRECT;
 
 		/*
 		 * There is no reason for using O_DIRECT if we're working with
