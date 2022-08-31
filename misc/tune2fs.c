@@ -3588,7 +3588,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 
 #ifdef __linux__
 		if ((mount_flags & EXT2_MF_MOUNTED) &&
-		    !(mount_flags & EXT2_MF_READONLY) && mntpt) {
+		    !(mount_flags & EXT2_MF_READONLY) && mntpt[0]) {
 			fd = open(mntpt, O_RDONLY);
 			if (fd >= 0)
 				fsuuid = malloc(sizeof(*fsuuid) + UUID_SIZE);
