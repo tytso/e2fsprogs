@@ -41,6 +41,16 @@ FUZZ_DEP= $(STATIC_DEPLIBS) $(srcdir)/Makefile.in
 clean::
 	$(RM) -f $(PROGS) *.o
 
+install:
+
+install-strip:
+
+uninstall:
+
+mostlyclean: clean
+distclean: clean
+	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
+
 ext2fs_check_directory_fuzzer: ext2fs_check_directory_fuzzer.o $(FUZZ_DEP)
 	$(E) "	LD $@"
 	$(Q) $(CXX) $(FUZZ_LDFLAGS) -o $@ $< $(STATIC_LIBS) $(SYSLIBS)
