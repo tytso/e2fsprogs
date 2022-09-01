@@ -80,7 +80,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.46.3\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2021-07-27 12:40-0400\n"
-"PO-Revision-Date: 2021-12-18 23:11+0800\n"
+"PO-Revision-Date: 2021-12-31 17:19+0800\n"
 "Last-Translator: Wenbin Lv <wenbin816@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -118,7 +118,7 @@ msgstr "尝试打开 %s 时"
 #: e2fsck/badblocks.c:84
 #, c-format
 msgid "while trying popen '%s'"
-msgstr "尝试 popen“%s”时"
+msgstr "尝试 popen \"%s\" 时"
 
 #: e2fsck/badblocks.c:95 misc/mke2fs.c:244
 msgid "while reading in list of bad blocks from file"
@@ -140,12 +140,12 @@ msgstr "释放 dir_info tdb 文件时"
 #: e2fsck/ehandler.c:55
 #, c-format
 msgid "Error reading block %lu (%s) while %s.  "
-msgstr "%3$s时读取块 %1$lu（%2$s）出错。"
+msgstr "%3$s时读取块 %1$lu 出错（%2$s）。"
 
 #: e2fsck/ehandler.c:58
 #, c-format
 msgid "Error reading block %lu (%s).  "
-msgstr "读取块 %lu（%s）出错。"
+msgstr "读取块 %lu 出错（%s）。"
 
 #: e2fsck/ehandler.c:66 e2fsck/ehandler.c:115
 msgid "Ignore error"
@@ -158,12 +158,12 @@ msgstr "强制覆盖"
 #: e2fsck/ehandler.c:109
 #, c-format
 msgid "Error writing block %lu (%s) while %s.  "
-msgstr "%3$s时写入块 %1$lu（%2$s）出错。"
+msgstr "%3$s时写入块 %1$lu 出错（%2$s）。"
 
 #: e2fsck/ehandler.c:112
 #, c-format
 msgid "Error writing block %lu (%s).  "
-msgstr "写块 %lu（%s）出错。"
+msgstr "写块 %lu 出错（%s）。"
 
 #: e2fsck/emptydir.c:56
 msgid "empty dirblocks"
@@ -176,12 +176,12 @@ msgstr "空目录映射"
 #: e2fsck/emptydir.c:97
 #, c-format
 msgid "Empty directory block %u (#%d) in inode %u\n"
-msgstr "空目录块 %u（#%d）于 inode %u 中\n"
+msgstr "空目录块 %u (#%d) 于 inode %u 中\n"
 
 #: e2fsck/extend.c:22
 #, c-format
 msgid "%s: %s filename nblocks blocksize\n"
-msgstr "%s：%s  文件名  块数  块大小\n"
+msgstr "%s: %s 文件名 块数 块大小\n"
 
 #: e2fsck/extend.c:45
 #, c-format
@@ -200,7 +200,7 @@ msgstr "extent 重建 inode 映射"
 #: e2fsck/flushb.c:35
 #, c-format
 msgid "Usage: %s disk\n"
-msgstr "用法：%s  磁盘名\n"
+msgstr "用法：%s 磁盘名\n"
 
 #: e2fsck/flushb.c:64
 #, c-format
@@ -214,27 +214,27 @@ msgstr "读取日志超级块\n"
 #: e2fsck/journal.c:1343
 #, c-format
 msgid "%s: no valid journal superblock found\n"
-msgstr "%s：没有发现日志超级块\n"
+msgstr "%s: 没有发现日志超级块\n"
 
 #: e2fsck/journal.c:1352
 #, c-format
 msgid "%s: journal too short\n"
-msgstr "%s：日志过短\n"
+msgstr "%s: 日志过短\n"
 
 #: e2fsck/journal.c:1365
 #, c-format
 msgid "%s: incorrect fast commit blocks\n"
-msgstr "%s：错误的快速提交块\n"
+msgstr "%s: 错误的快速提交块\n"
 
 #: e2fsck/journal.c:1667 misc/fuse2fs.c:3797
 #, c-format
 msgid "%s: recovering journal\n"
-msgstr "%s：正在修复日志\n"
+msgstr "%s: 正在恢复日志\n"
 
 #: e2fsck/journal.c:1669
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
-msgstr "%s：使用只读模式时不会进行日志修复\n"
+msgstr "%s: 使用只读模式时不会进行日志修复\n"
 
 #: e2fsck/journal.c:1696
 #, c-format
@@ -279,7 +279,7 @@ msgstr "e项"
 
 #: e2fsck/message.c:125
 msgid "E@e '%Dn' in %p (%i)"
-msgstr "E位于 %p（%i）的@e“%Dn”"
+msgstr "E位于 %p (%i) 的@e \"%Dn\""
 
 #: e2fsck/message.c:126
 msgid "ffilesystem"
@@ -287,7 +287,7 @@ msgstr "f文件系统"
 
 #: e2fsck/message.c:127
 msgid "Ffor @i %i (%Q) is"
-msgstr "F关于 @i %i（%Q）为"
+msgstr "F关于 @i %i (%Q) 为"
 
 #: e2fsck/message.c:128
 msgid "ggroup"
@@ -367,7 +367,7 @@ msgstr "z零长度"
 
 #: e2fsck/message.c:157
 msgid "<The NULL inode>"
-msgstr "<空的 inode>"
+msgstr "<NULL inode>"
 
 #: e2fsck/message.c:158
 msgid "<The bad blocks inode>"
@@ -411,7 +411,7 @@ msgstr "一般文件"
 
 #: e2fsck/message.c:327
 msgid "directory"
-msgstr "文件夹"
+msgstr "目录"
 
 #: e2fsck/message.c:329
 msgid "character device"
@@ -500,7 +500,7 @@ msgstr "内部错误：无法查找 %u 的 EA inode 块记录"
 #: e2fsck/pass1.c:349
 #, c-format
 msgid "while hashing entry with e_value_inum = %u"
-msgstr "对 e_value_inum = %u 的项进行散列时"
+msgstr "对 e_value_inum = %u 的项进行哈希时"
 
 #: e2fsck/pass1.c:767 e2fsck/pass2.c:1147
 msgid "reading directory block"
@@ -508,7 +508,7 @@ msgstr "读取目录块"
 
 #: e2fsck/pass1.c:1166
 msgid "getting next inode from scan"
-msgstr "从扫描进度中获取下一个 inode"
+msgstr "从扫描中获取下一个 inode"
 
 #: e2fsck/pass1.c:1218
 msgid "in-use inode map"
@@ -536,7 +536,7 @@ msgstr "inode casefold 映射"
 
 #: e2fsck/pass1.c:1333
 msgid "opening inode scan"
-msgstr "开始 inode 扫描"
+msgstr "打开 inode 扫描"
 
 #: e2fsck/pass1.c:2101
 msgid "Pass 1"
@@ -570,7 +570,7 @@ msgstr "扩展属性块映射"
 #: e2fsck/pass1.c:3724
 #, c-format
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
-msgstr "%6lu（%c）：应为 %6lu 但得到物理块 %6lu（块计数 %lld）\n"
+msgstr "%6lu (%c): 应为 %6lu 但得到物理块 %6lu（块计数 %lld）\n"
 
 #: e2fsck/pass1.c:4145
 msgid "block bitmap"
@@ -622,11 +622,11 @@ msgstr "第 5 遍"
 
 #: e2fsck/pass5.c:102
 msgid "check_inode_bitmap_checksum: Memory allocation error"
-msgstr "check_inode_bitmap_checksum：内存分配出错"
+msgstr "check_inode_bitmap_checksum: 内存分配出错"
 
 #: e2fsck/pass5.c:156
 msgid "check_block_bitmap_checksum: Memory allocation error"
-msgstr "check_block_bitmap_checksum：内存分配出错"
+msgstr "check_block_bitmap_checksum: 内存分配出错"
 
 #: e2fsck/problem.c:53
 msgid "(no prompt)"
@@ -634,7 +634,7 @@ msgstr "（没有提示）"
 
 #: e2fsck/problem.c:54
 msgid "Fix"
-msgstr "处理"
+msgstr "修复"
 
 #: e2fsck/problem.c:55
 msgid "Clear"
@@ -662,7 +662,7 @@ msgstr "创建"
 
 #: e2fsck/problem.c:61
 msgid "Salvage"
-msgstr "修复"
+msgstr "抢救"
 
 #: e2fsck/problem.c:62
 msgid "Truncate"
@@ -674,7 +674,7 @@ msgstr "清除 inode"
 
 #: e2fsck/problem.c:64
 msgid "Abort"
-msgstr "中断"
+msgstr "中止"
 
 #: e2fsck/problem.c:65
 msgid "Split"
@@ -722,7 +722,7 @@ msgstr "（空）"
 
 #: e2fsck/problem.c:84
 msgid "FIXED"
-msgstr "已处理"
+msgstr "已修复"
 
 #: e2fsck/problem.c:85
 msgid "CLEARED"
@@ -750,7 +750,7 @@ msgstr "已创建"
 
 #: e2fsck/problem.c:91
 msgid "SALVAGED"
-msgstr "已修复"
+msgstr "已抢救"
 
 #: e2fsck/problem.c:92
 msgid "TRUNCATED"
@@ -762,7 +762,7 @@ msgstr "INODE 已清除"
 
 #: e2fsck/problem.c:94
 msgid "ABORTED"
-msgstr "已中断"
+msgstr "已中止"
 
 #: e2fsck/problem.c:95
 msgid "SPLIT"
@@ -790,7 +790,7 @@ msgstr "已解除链接"
 
 #: e2fsck/problem.c:101
 msgid "HTREE INDEX CLEARED"
-msgstr "HTree 索引已清除"
+msgstr "HTREE 索引已清除"
 
 #: e2fsck/problem.c:102
 msgid "WILL RECREATE"
@@ -812,7 +812,7 @@ msgstr "@g %g 的@b@B并不在@g中。（@b %b）\n"
 #. @-expanded: inode bitmap for group %g is not in group.  (block %b)\n
 #: e2fsck/problem.c:122
 msgid "@i @B for @g %g is not in @g.  (@b %b)\n"
-msgstr "@g %g 的@i@B 并不在@g中。（@b %b）\n"
+msgstr "@g %g 的 @i @B并不在@g中。（@b %b）\n"
 
 #. @-expanded: inode table for group %g is not in group.  (block %b)\n
 #. @-expanded: WARNING: SEVERE DATA LOSS POSSIBLE.\n
@@ -912,7 +912,7 @@ msgid ""
 msgstr ""
 "注意：如果有数个 inode、块位图块或 inode 表\n"
 "的一部分需要重定位，您可以先尝试\n"
-"用“-b %S”选项运行 e2fsck。有可能\n"
+"用 \"-b %S\" 选项运行 e2fsck。有可能\n"
 "只有主块组描述符有问题，\n"
 "备份块组描述符可能是正常的。\n"
 "\n"
@@ -920,7 +920,7 @@ msgstr ""
 #. @-expanded: Corruption found in superblock.  (%s = %N).\n
 #: e2fsck/problem.c:183
 msgid "Corruption found in @S.  (%s = %N).\n"
-msgstr "在@S中发现错误。（%s = %N）。\n"
+msgstr "在@S中发现损坏。(%s = %N)。\n"
 
 #. @-expanded: Error determining size of the physical device: %m\n
 #: e2fsck/problem.c:189
@@ -941,7 +941,7 @@ msgstr "Hurd 不支持 filetype 特性。\n"
 #: e2fsck/problem.c:204
 #, no-c-format
 msgid "@S has an @n @j (@i %i).\n"
-msgstr "@S含有一个@n@j（@i %i）。\n"
+msgstr "@S含有一个@n@j (@i %i)。\n"
 
 #. @-expanded: External journal has multiple filesystem users (unsupported).\n
 #: e2fsck/problem.c:209
@@ -1010,17 +1010,17 @@ msgstr "@f被设置了特性标志，但@f版本为 0。"
 #. @-expanded: %s orphaned inode %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n
 #: e2fsck/problem.c:268
 msgid "%s @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"
-msgstr "%s@o @i %i（uid=%lu，gid=%lg，mode=%lm，size=%ls）\n"
+msgstr "%s@o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"
 
 #. @-expanded: illegal %B (%b) found in orphaned inode %i.\n
 #: e2fsck/problem.c:273
 msgid "@I %B (%b) found in @o @i %i.\n"
-msgstr "@o @i %i 中发现@I%B（%b）。\n"
+msgstr "@o @i %i 中发现@I%B (%b)。\n"
 
 #. @-expanded: Already cleared %B (%b) found in orphaned inode %i.\n
 #: e2fsck/problem.c:278
 msgid "Already cleared %B (%b) found in @o @i %i.\n"
-msgstr "@o @i %i 中发现已清除的%B（%b）。\n"
+msgstr "@o @i %i 中发现已清除的%B (%b)。\n"
 
 #. @-expanded: illegal orphaned inode %i in superblock.\n
 #: e2fsck/problem.c:284
@@ -1157,13 +1157,13 @@ msgid ""
 "Adding dirhash hint to @f.\n"
 "\n"
 msgstr ""
-"正在将 dirhash 标记添加到@f。\n"
+"正在将 dirhash 提示添加到@f。\n"
 "\n"
 
 #. @-expanded: group descriptor %g checksum is %04x, should be %04y.  
 #: e2fsck/problem.c:381
 msgid "@g descriptor %g checksum is %04x, should be %04y.  "
-msgstr "@g描述符 %g 的校验和为%04x，应当为 %04y。"
+msgstr "@g描述符 %g 的校验和为 %04x，应当为 %04y。"
 
 #. @-expanded: group descriptor %g marked uninitialized without feature set.\n
 #: e2fsck/problem.c:387
@@ -1184,7 +1184,7 @@ msgstr "最后一个@g@b@B未初始化。"
 #: e2fsck/problem.c:403
 #, no-c-format
 msgid "Journal transaction %i was corrupt, replay was aborted.\n"
-msgstr "日志事务 %i 损坏，重放过程已终止。\n"
+msgstr "日志事务 %i 损坏，重放过程已中止。\n"
 
 #: e2fsck/problem.c:408
 msgid "The test_fs flag is set (and ext4 is available).  "
@@ -1220,17 +1220,17 @@ msgstr "一个或多个@b@g描述符的校验和无效。"
 #. @-expanded: Setting free inodes count to %j (was %i)\n
 #: e2fsck/problem.c:430
 msgid "Setting free @is count to %j (was %i)\n"
-msgstr "设置未使用的 @i 数为 %j（曾为 %i）\n"
+msgstr "设置未使用的 @i 数为 %j（之前为 %i）\n"
 
 #. @-expanded: Setting free blocks count to %c (was %b)\n
 #: e2fsck/problem.c:435
 msgid "Setting free @bs count to %c (was %b)\n"
-msgstr "设置未使用的@b数为 %c（曾为 %b）\n"
+msgstr "设置未使用的@b数为 %c（之前为 %b）\n"
 
 #. @-expanded: Hiding %U quota inode %i (%Q).\n
 #: e2fsck/problem.c:440
 msgid "Hiding %U @q @i %i (%Q).\n"
-msgstr "隐藏 %U @q @i %i（%Q）。\n"
+msgstr "隐藏 %U @q @i %i (%Q)。\n"
 
 #. @-expanded: superblock has invalid MMP block.  
 #: e2fsck/problem.c:445
@@ -1245,18 +1245,18 @@ msgstr "@S含有无效的 MMP 幻数。"
 #: e2fsck/problem.c:456
 #, no-c-format
 msgid "ext2fs_open2: %m\n"
-msgstr "ext2fs_open2：%m\n"
+msgstr "ext2fs_open2: %m\n"
 
 #: e2fsck/problem.c:462
 #, no-c-format
 msgid "ext2fs_check_desc: %m\n"
-msgstr "ext2fs_check_desc：%m\n"
+msgstr "ext2fs_check_desc: %m\n"
 
 #. @-expanded: superblock metadata_csum supersedes uninit_bg; both feature bits cannot be set 
 #. @-expanded: simultaneously.
 #: e2fsck/problem.c:468
 msgid "@S metadata_csum supersedes uninit_bg; both feature bits cannot be set simultaneously."
-msgstr "@S 的 metadata_csum 特性将取代 uninit_bg 特性，因此不能同时将二者开启。"
+msgstr "@S的 metadata_csum 特性将取代 uninit_bg 特性，因此不能同时将二者开启。"
 
 #. @-expanded: superblock MMP block checksum does not match.  
 #: e2fsck/problem.c:474
@@ -1270,12 +1270,12 @@ msgstr "@S 64 位@f需要 extent 来访问整个磁盘。"
 
 #: e2fsck/problem.c:484
 msgid "First_meta_bg is too big.  (%N, max value %g).  "
-msgstr "First_meta_bg 太大。（%N，最大值 %g）。"
+msgstr "first_meta_bg 太大。（%N，最大值 %g）。"
 
 #. @-expanded: External journal superblock checksum does not match superblock.  
 #: e2fsck/problem.c:489
 msgid "External @j @S checksum does not match @S.  "
-msgstr "外部@j@S校验和与@S自身不符。"
+msgstr "外部@j@S校验和与@S不符。"
 
 #. @-expanded: superblock metadata_csum_seed is not necessary without metadata_csum.
 #: e2fsck/problem.c:494
@@ -1290,12 +1290,12 @@ msgstr "初始化支持库中的配额上下文时出错：%m\n"
 #. @-expanded: Bad required extra isize in superblock (%N).  
 #: e2fsck/problem.c:505
 msgid "Bad required extra isize in @S (%N).  "
-msgstr "@S（%N）中的 required extra isize 有误。"
+msgstr "@S (%N) 中的 required extra isize 有误。"
 
 #. @-expanded: Bad desired extra isize in superblock (%N).  
 #: e2fsck/problem.c:510
 msgid "Bad desired extra isize in @S (%N).  "
-msgstr "@S（%N）中的 desired extra isize 有误。"
+msgstr "@S (%N) 中的 desired extra isize 有误。"
 
 #. @-expanded: Invalid %U quota inode %i.  
 #: e2fsck/problem.c:515
@@ -1305,7 +1305,7 @@ msgstr "无效的 %U @q @i %i。"
 #. @-expanded: superblock would have too many inodes (%N).\n
 #: e2fsck/problem.c:520
 msgid "@S would have too many inodes (%N).\n"
-msgstr "@S 将含有过多 inode（%N）。\n"
+msgstr "@S 将含有过多 inode (%N)。\n"
 
 #. @-expanded: Resize_inode and meta_bg features are enabled. Those features are\n
 #. @-expanded: not compatible. Resize inode should be disabled.  
@@ -1314,8 +1314,8 @@ msgid ""
 "Resize_@i and meta_bg features are enabled. Those features are\n"
 "not compatible. Resize @i should be disabled.  "
 msgstr ""
-"Resize_@i 和 meta_bg 特性均被启用。这两个特性\n"
-"不兼容。Resize @i 应当被禁用。"
+"resize_@i 和 meta_bg 特性均被启用。这两个特性\n"
+"不兼容。resize @i 应当被禁用。"
 
 #. @-expanded: Pass 1: Checking inodes, blocks, and sizes\n
 #: e2fsck/problem.c:533
@@ -1335,7 +1335,7 @@ msgstr "@r 被设置了删除时间（可能由老版本的 mke2fs 导致）。"
 #. @-expanded: Reserved inode %i (%Q) has invalid mode.  
 #: e2fsck/problem.c:547
 msgid "Reserved @i %i (%Q) has @n mode.  "
-msgstr "保留的 @i %i（%Q）的模式无效。"
+msgstr "保留的 @i %i (%Q) 的模式无效。"
 
 #. @-expanded: deleted inode %i has zero dtime.  
 #: e2fsck/problem.c:553
@@ -1373,32 +1373,32 @@ msgstr "位于 %b 的@g %g的 @i 表@C。\n"
 #. @-expanded: group %g's block bitmap (%b) is bad.  
 #: e2fsck/problem.c:585
 msgid "@g %g's @b @B (%b) is bad.  "
-msgstr "@g %g 的@b@B（%b）无效。"
+msgstr "@g %g 的@b@B (%b) 无效。"
 
 #. @-expanded: group %g's inode bitmap (%b) is bad.  
 #: e2fsck/problem.c:590
 msgid "@g %g's @i @B (%b) is bad.  "
-msgstr "@g %g 的 @i @B（%b）无效。"
+msgstr "@g %g 的 @i @B (%b) 无效。"
 
 #. @-expanded: inode %i, i_size is %Is, should be %N.  
 #: e2fsck/problem.c:595
 msgid "@i %i, i_size is %Is, @s %N.  "
-msgstr "@i %i的 i_size 为 %ls，@s %N。"
+msgstr "@i %i 的 i_size 为 %Is，@s %N。"
 
 #. @-expanded: inode %i, i_blocks is %Ib, should be %N.  
 #: e2fsck/problem.c:600
 msgid "@i %i, i_@bs is %Ib, @s %N.  "
-msgstr "@i %i的 i_blocks 为 %ls，@s %N。"
+msgstr "@i %i 的 i_blocks 为 %Ib，@s %N。"
 
 #. @-expanded: illegal %B (%b) in inode %i.  
 #: e2fsck/problem.c:605
 msgid "@I %B (%b) in @i %i.  "
-msgstr "@i %i 的%B（%b）非法。"
+msgstr "@i %i 的%B (%b) 非法。"
 
 #. @-expanded: %B (%b) overlaps filesystem metadata in inode %i.  
 #: e2fsck/problem.c:610
 msgid "%B (%b) overlaps @f metadata in @i %i.  "
-msgstr "%B（%b）与 @i %i 中的@f元数据重叠。"
+msgstr "%B (%b) 与 @i %i 中的@f元数据重叠。"
 
 #. @-expanded: inode %i has illegal block(s).  
 #: e2fsck/problem.c:616
@@ -1415,7 +1415,7 @@ msgstr "@i %i 中包含了过多的非法@b。\n"
 #. @-expanded: illegal %B (%b) in bad block inode.  
 #: e2fsck/problem.c:627
 msgid "@I %B (%b) in bad @b @i.  "
-msgstr "坏@b @i 中的%B（%b）非法。"
+msgstr "坏@b @i 中的%B (%b) 非法。"
 
 #. @-expanded: Bad block inode has illegal block(s).  
 #: e2fsck/problem.c:632
@@ -1473,7 +1473,7 @@ msgstr ""
 #. @-expanded: The primary superblock (%b) is on the bad block list.\n
 #: e2fsck/problem.c:665
 msgid "The primary @S (%b) is on the bad @b list.\n"
-msgstr "主@S（%b）位于坏@b列表中。\n"
+msgstr "主@S (%b) 位于坏@b列表中。\n"
 
 #. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
 #: e2fsck/problem.c:670
@@ -1483,12 +1483,12 @@ msgstr "主@g描述符中的块 %b 位于坏@b列表中\n"
 #. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
 #: e2fsck/problem.c:676
 msgid "Warning: Group %g's @S (%b) is bad.\n"
-msgstr "警告：组 %g 的@S（%b）为坏块。\n"
+msgstr "警告：组 %g 的@S (%b) 为坏块。\n"
 
 #. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
 #: e2fsck/problem.c:682
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr "警告：组 %g 的@g描述符的备份含有一个坏@b（%b）。\n"
+msgstr "警告：组 %g 的@g描述符的备份含有一个坏@b (%b)。\n"
 
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
 #: e2fsck/problem.c:688
@@ -1504,7 +1504,7 @@ msgstr "在@b@g %g 中为 %s 分配 %N 个连续的@b时出错：%m\n"
 #: e2fsck/problem.c:700
 #, no-c-format
 msgid "@A @b buffer for relocating %s\n"
-msgstr "重定位 %s 时分配@b缓存时出错\n"
+msgstr "重定位 %s 时分配@b缓冲区时出错\n"
 
 #. @-expanded: Relocating group %g's %s from %b to %c...\n
 #: e2fsck/problem.c:705
@@ -1520,22 +1520,22 @@ msgstr "正在将@g %g 的 %s 重定位至 %c...\n"
 #. @-expanded: Warning: could not read block %b of %s: %m\n
 #: e2fsck/problem.c:716
 msgid "Warning: could not read @b %b of %s: %m\n"
-msgstr "警告：无法从%s中读取@b %b：%m\n"
+msgstr "警告：无法从 %s 中读取@b %b：%m\n"
 
 #. @-expanded: Warning: could not write block %b for %s: %m\n
 #: e2fsck/problem.c:721
 msgid "Warning: could not write @b %b for %s: %m\n"
-msgstr "警告：无法向%s中写入@b %b：%m\n"
+msgstr "警告：无法向 %s 中写入@b %b：%m\n"
 
 #. @-expanded: error allocating inode bitmap (%N): %m\n
 #: e2fsck/problem.c:726 e2fsck/problem.c:1936
 msgid "@A @i @B (%N): %m\n"
-msgstr "分配 @i @B（%N）时出错：%m\n"
+msgstr "分配 @i @B (%N) 时出错：%m\n"
 
 #. @-expanded: error allocating block bitmap (%N): %m\n
 #: e2fsck/problem.c:731
 msgid "@A @b @B (%N): %m\n"
-msgstr "分配@b@B（%N）时出错：%m\n"
+msgstr "分配@b@B (%N) 时出错：%m\n"
 
 #. @-expanded: error allocating icount link information: %m\n
 #: e2fsck/problem.c:737
@@ -1553,7 +1553,7 @@ msgstr "分配@d@b数组时出错：%m\n"
 #: e2fsck/problem.c:749
 #, no-c-format
 msgid "Error while scanning @is (%i): %m\n"
-msgstr "扫描 @i（%i）时出错：%m\n"
+msgstr "扫描 @i (%i) 时出错：%m\n"
 
 #. @-expanded: Error while iterating over blocks in inode %i: %m\n
 #: e2fsck/problem.c:755
@@ -1569,13 +1569,13 @@ msgstr "写入 @i 计数信息时出错（@i=%i，计数=%N）：%m\n"
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
 #: e2fsck/problem.c:765
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr "写入@d@b信息时出错（@i=%i，@b=%b，数量=%N）：%m\n"
+msgstr "写入@d@b信息时出错（@i=%i，@b=%b，num=%N）：%m\n"
 
 #. @-expanded: Error reading inode %i: %m\n
 #: e2fsck/problem.c:772
 #, no-c-format
 msgid "Error reading @i %i: %m\n"
-msgstr "读取 @i %i出错：%m\n"
+msgstr "读取 @i %i 时出错：%m\n"
 
 #. @-expanded: inode %i has imagic flag set.  
 #: e2fsck/problem.c:781
@@ -1591,14 +1591,14 @@ msgid ""
 "Special (@v/socket/fifo/symlink) file (@i %i) has immutable\n"
 "or append-only flag set.  "
 msgstr ""
-"特殊文件（@v/套接字/队列/ 符号链接）（@i %i）被设置了\n"
+"特殊（@v/套接字/队列/符号链接）文件 (@i %i) 被设置了\n"
 "immutable 或 append-only 标志。"
 
 #. @-expanded: Special (device/socket/fifo) inode %i has non-zero size.  
 #: e2fsck/problem.c:794
 #, no-c-format
 msgid "Special (@v/socket/fifo) @i %i has non-zero size.  "
-msgstr "特殊文件（@v/套接字/队列）@i %i 的大小非零。"
+msgstr "特殊（@v/套接字/队列）@i %i 的大小非零。"
 
 #. @-expanded: journal inode is not in use, but contains data.  
 #: e2fsck/problem.c:804
@@ -1624,7 +1624,7 @@ msgstr "发现了曾属于损坏的孤立链表的 @i。"
 #. @-expanded: error allocating refcount structure (%N): %m\n
 #: e2fsck/problem.c:826
 msgid "@A refcount structure (%N): %m\n"
-msgstr "分配 refcount 结构体（%N）时出错：%m\n"
+msgstr "分配 refcount 结构体 (%N) 时出错：%m\n"
 
 #. @-expanded: Error reading extended attribute block %b for inode %i.  
 #: e2fsck/problem.c:831
@@ -1685,15 +1685,15 @@ msgstr "@i %i 过大。"
 #. @-expanded: %B (%b) causes directory to be too big.  
 #: e2fsck/problem.c:886
 msgid "%B (%b) causes @d to be too big.  "
-msgstr "%B（%b）造成@d过大。"
+msgstr "%B (%b) 造成@d过大。"
 
 #: e2fsck/problem.c:891
 msgid "%B (%b) causes file to be too big.  "
-msgstr "%B（%b）造成文件过大。"
+msgstr "%B (%b) 造成文件过大。"
 
 #: e2fsck/problem.c:896
 msgid "%B (%b) causes symlink to be too big.  "
-msgstr "%B（%b）造成符号链接过大。"
+msgstr "%B (%b) 造成符号链接过大。"
 
 #. @-expanded: inode %i has INDEX_FL flag set on filesystem without htree support.\n
 #: e2fsck/problem.c:902
@@ -1716,7 +1716,7 @@ msgstr "@h %i 有一个@n根节点。\n"
 #. @-expanded: HTREE directory inode %i has an unsupported hash version (%N)\n
 #: e2fsck/problem.c:919
 msgid "@h %i has an unsupported hash version (%N)\n"
-msgstr "@h %i 有一个不受支持的 hash 版本（%N）\n"
+msgstr "@h %i 有一个不受支持的 hash 版本 (%N)\n"
 
 #. @-expanded: HTREE directory inode %i uses an incompatible htree root node flag.\n
 #: e2fsck/problem.c:925
@@ -1727,7 +1727,7 @@ msgstr "@h %i 使用了一个不兼容的 htree 根节点标志。\n"
 #. @-expanded: HTREE directory inode %i has a tree depth (%N) which is too big\n
 #: e2fsck/problem.c:930
 msgid "@h %i has a tree depth (%N) which is too big\n"
-msgstr "@h %i 的树深度过大（%N）\n"
+msgstr "@h %i 的树深度过大 (%N)\n"
 
 #. @-expanded: Bad block inode has an indirect block (%b) that conflicts with\n
 #. @-expanded: filesystem metadata.  
@@ -1735,48 +1735,48 @@ msgstr "@h %i 的树深度过大（%N）\n"
 msgid ""
 "Bad @b @i has an indirect @b (%b) that conflicts with\n"
 "@f metadata.  "
-msgstr "坏@b @i 含有一个与@f元数据冲突的间接@b（%b）。"
+msgstr "坏@b @i 含有一个与@f元数据冲突的间接@b (%b)。"
 
 #. @-expanded: Resize inode (re)creation failed: %m.
 #: e2fsck/problem.c:943
 #, no-c-format
 msgid "Resize @i (re)creation failed: %m."
-msgstr "（重）创建 Resize @i 失败：%m。"
+msgstr "（重新）创建 resize @i 失败：%m。"
 
 #. @-expanded: inode %i has a extra size (%IS) which is invalid\n
 #: e2fsck/problem.c:948
 msgid "@i %i has a extra size (%IS) which is @n\n"
-msgstr "@i %i 有一个额外的大小 %lS（@n值）\n"
+msgstr "@i %i 有一个额外的大小 %IS（@n值）\n"
 
 #. @-expanded: extended attribute in inode %i has a namelen (%N) which is invalid\n
 #: e2fsck/problem.c:953
 msgid "@a in @i %i has a namelen (%N) which is @n\n"
-msgstr "@i %i 中的@a有一个名称长度 %N（@n值）\n"
+msgstr "@i %i 中的@a含有一个无效的 namelen (%N)\n"
 
 #. @-expanded: extended attribute in inode %i has a value offset (%N) which is invalid\n
 #: e2fsck/problem.c:958
 msgid "@a in @i %i has a value offset (%N) which is @n\n"
-msgstr "@i %i 中的@a含有一个无效的偏移量（%N）\n"
+msgstr "@i %i 中的@a含有一个无效的偏移量值 (%N)\n"
 
 #. @-expanded: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
 #: e2fsck/problem.c:963
 msgid "@a in @i %i has a value @b (%N) which is @n (must be 0)\n"
-msgstr "@i %i 中的@a含有一个无效的数值块（%N），应当为 0\n"
+msgstr "@i %i 中的@a含有一个无效的块值 (%N)，应当为 0\n"
 
 #. @-expanded: extended attribute in inode %i has a value size (%N) which is invalid\n
 #: e2fsck/problem.c:968
 msgid "@a in @i %i has a value size (%N) which is @n\n"
-msgstr "@i %i 中的@a含有一个无效的大小（%N）\n"
+msgstr "@i %i 中的@a含有一个无效的大小值 (%N)\n"
 
 #. @-expanded: extended attribute in inode %i has a hash (%N) which is invalid\n
 #: e2fsck/problem.c:973
 msgid "@a in @i %i has a hash (%N) which is @n\n"
-msgstr "@i %i 中的@a含有一个无效的 hash（%N）\n"
+msgstr "@i %i 中的@a含有一个无效的 hash (%N)\n"
 
 #. @-expanded: inode %i is a %It but it looks like it is really a directory.\n
 #: e2fsck/problem.c:978
 msgid "@i %i is a %It but it looks like it is really a directory.\n"
-msgstr "@i %i 是一个 %lt，但它看起来实际是一个目录。\n"
+msgstr "@i %i 是一个 %It，但它看起来实际是一个目录。\n"
 
 #. @-expanded: Error while reading over extent tree in inode %i: %m\n
 #: e2fsck/problem.c:984
@@ -1792,7 +1792,7 @@ msgid ""
 "\t(op %s, blk %b, lblk %c): %m\n"
 msgstr ""
 "迭代 @i %i 中的 extent 失败\n"
-"\t（op %s，blk %b，lblk %c）：%m\n"
+"\t(op %s, blk %b, lblk %c)：%m\n"
 
 #. @-expanded: inode %i has an invalid extent\n
 #. @-expanded: \t(logical block %c, invalid physical block %b, len %N)\n
@@ -1812,7 +1812,7 @@ msgid ""
 "\t(logical @b %c, physical @b %b, @n len %N)\n"
 msgstr ""
 "@i %i 有一个@n extent\n"
-"\t（逻辑块 %c，物理块 %b，无效的长度 %N）\n"
+"\t（逻辑@b %c，物理@b %b，@n长度 %N）\n"
 
 #. @-expanded: inode %i has EXTENTS_FL flag set on filesystem without extents support.\n
 #: e2fsck/problem.c:1006
@@ -1850,7 +1850,7 @@ msgstr ""
 #. @-expanded: inode %i has an invalid extent node (blk %b, lblk %c)\n
 #: e2fsck/problem.c:1033
 msgid "@i %i has an invalid extent node (blk %b, lblk %c)\n"
-msgstr "@i %i 是一个无效的 extent 节点（blk %b，lblk %c）\n"
+msgstr "@i %i 是一个无效的 extent 节点 (blk %b, lblk %c)\n"
 
 #. @-expanded: Error converting subcluster block bitmap: %m\n
 #: e2fsck/problem.c:1039
@@ -1913,13 +1913,13 @@ msgid ""
 "@i %i extent block passes checks, but checksum does not match extent\n"
 "\t(logical @b %c, physical @b %b, len %N)\n"
 msgstr ""
-"@i %i extent 块通过检验，但其校验和与 extent 不符\n"
+"@i %i extent 块通过了检查，但其校验和与 extent 不符\n"
 "\t（逻辑@b %c，物理@b %b，长度 %N）\n"
 
 #. @-expanded: inode %i extended attribute block %b passes checks, but checksum does not match block.  
 #: e2fsck/problem.c:1099
 msgid "@i %i @a @b %b passes checks, but checksum does not match @b.  "
-msgstr "@i %i 的@a@b %b 通过检验，但其校验和与@b不符。"
+msgstr "@i %i 的@a@b %b 通过了检查，但其校验和与@b不符。"
 
 #. @-expanded: Interior extent node level %N of inode %i:\n
 #. @-expanded: Logical start %b does not match logical start %c at next level.  
@@ -1928,8 +1928,8 @@ msgid ""
 "Interior @x node level %N of @i %i:\n"
 "Logical start %b does not match logical start %c at next level.  "
 msgstr ""
-"@i %i 的子 @x 节点等级 %N：\n"
-"逻辑起始位点 %b 与下一等级的逻辑起始位点 %c 不匹配。"
+"@i %i 的子 @x 节点第 %N 层：\n"
+"逻辑起始位点 %b 与下一层的逻辑起始位点 %c 不匹配。"
 
 #. @-expanded: inode %i, end of extent exceeds allowed value\n
 #. @-expanded: \t(logical block %c, physical block %b, len %N)\n
@@ -1994,7 +1994,7 @@ msgid ""
 "Special (@v/socket/fifo) file (@i %i) has extents\n"
 "or inline-data flag set.  "
 msgstr ""
-"特殊文件（@v/套接字/队列）（@i %i）被设置了\n"
+"特殊（@v/套接字/队列）文件 (@i %i) 被设置了\n"
 "extents 或 inline-data 标志。"
 
 #. @-expanded: inode %i has extent header but inline data flag is set.\n
@@ -2013,7 +2013,7 @@ msgstr "@i %i 似乎含有内联数据，但被设置了 @x 标志。\n"
 #: e2fsck/problem.c:1178
 #, no-c-format
 msgid "@i %i seems to have @b map but inline data and @x flags set.\n"
-msgstr "@i %i 似乎含有@b位图，但被设置了 inline-data 标志和 @x 标志。\n"
+msgstr "@i %i 似乎含有@b映射，但被设置了 inline-data 标志和 @x 标志。\n"
 
 #. @-expanded: inode %i has inline data and extent flags set but i_block contains junk.\n
 #: e2fsck/problem.c:1184
@@ -2127,7 +2127,7 @@ msgstr "加密的 @i %i 的加密@a已损坏。\n"
 #. @-expanded: HTREE directory inode %i uses hash version (%N), but should use SipHash (6) \n
 #: e2fsck/problem.c:1274
 msgid "@h %i uses hash version (%N), but should use SipHash (6) \n"
-msgstr "@h %i 使用了 hash 版本（%N），但应当使用 SipHash（6）\n"
+msgstr "@h %i 使用了 hash 版本 (%N)，但应当使用 SipHash (6)\n"
 
 #. @-expanded: HTREE directory inode %i uses SipHash, but should not.  
 #: e2fsck/problem.c:1279
@@ -2157,24 +2157,24 @@ msgstr "@m@b位于 @i %i："
 #: e2fsck/problem.c:1310
 #, no-c-format
 msgid "Error while scanning inodes (%i): %m\n"
-msgstr "扫描 inode（%i）时出错：%m\n"
+msgstr "扫描 inode (%i) 时出错：%m\n"
 
 #. @-expanded: error allocating inode bitmap (inode_dup_map): %m\n
 #: e2fsck/problem.c:1316
 #, no-c-format
 msgid "@A @i @B (@i_dup_map): %m\n"
-msgstr "分配 @i @B时出错（inode_dup_map）：%m\n"
+msgstr "分配 @i @B时出错 (inode_dup_map)：%m\n"
 
 #. @-expanded: Error while iterating over blocks in inode %i (%s): %m\n
 #: e2fsck/problem.c:1322
 #, no-c-format
 msgid "Error while iterating over @bs in @i %i (%s): %m\n"
-msgstr "迭代 @i %i中的@b时出错（%s）：%m\n"
+msgstr "迭代 @i %i (%s) 中的@b时出错：%m\n"
 
 #. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
 #: e2fsck/problem.c:1327 e2fsck/problem.c:1707
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr "为@a@b %b（@i %i）调整引用计数时出错：%m\n"
+msgstr "为@a@b %b (@i %i) 调整引用计数时出错：%m\n"
 
 #. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
 #: e2fsck/problem.c:1337
@@ -2240,7 +2240,7 @@ msgstr "第 1E 遍：优化 @x 树\n"
 #: e2fsck/problem.c:1395
 #, no-c-format
 msgid "Failed to optimize @x tree %p (%i): %m\n"
-msgstr "优化 @x 树 %p（%i）失败：%m\n"
+msgstr "优化 @x 树 %p (%i) 失败：%m\n"
 
 #. @-expanded: Optimizing extent trees: 
 #: e2fsck/problem.c:1400
@@ -2270,94 +2270,94 @@ msgstr "第 2 遍：检查目录结构\n"
 #: e2fsck/problem.c:1438
 #, no-c-format
 msgid "@n @i number for '.' in @d @i %i.\n"
-msgstr "@d @i %i 中“.”的 @i 编号无效。\n"
+msgstr "@d @i %i 中 \".\" 的 @i 编号无效。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has invalid inode #: %Di.\n
 #: e2fsck/problem.c:1443
 msgid "@E has @n @i #: %Di.\n"
-msgstr "@E含有@n @i #：%Di。\n"
+msgstr "@E 含有@n @i 编号：%Di。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has deleted/unused inode %Di.  
 #: e2fsck/problem.c:1448
 msgid "@E has @D/unused @i %Di.  "
-msgstr "@E含有@D或未使用的 @i %Di。"
+msgstr "@E 含有@D或未使用的 @i %Di。"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to '.'  
 #: e2fsck/problem.c:1453
 msgid "@E @L to '.'  "
-msgstr "@E是一个指向“.”的链接  "
+msgstr "@E 是一个指向 \".\" 的链接  "
 
 #. @-expanded: entry '%Dn' in %p (%i) points to inode (%Di) located in a bad block.\n
 #: e2fsck/problem.c:1458
 msgid "@E points to @i (%Di) located in a bad @b.\n"
-msgstr "@E指向位于坏@b的 @i（%Di）。\n"
+msgstr "@E 指向位于坏@b的 @i (%Di)。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to directory %P (%Di).\n
 #: e2fsck/problem.c:1463
 msgid "@E @L to @d %P (%Di).\n"
-msgstr "@E是一个指向@d %P（%Di）的链接。\n"
+msgstr "@E 是一个指向@d %P (%Di) 的链接。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to the root inode.\n
 #: e2fsck/problem.c:1468
 msgid "@E @L to the @r.\n"
-msgstr "@E是一个指向@r 的链接。\n"
+msgstr "@E 是一个指向@r 的链接。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has illegal characters in its name.\n
 #: e2fsck/problem.c:1473
 msgid "@E has illegal characters in its name.\n"
-msgstr "@E的名称中有非法字符。\n"
+msgstr "@E 的名称中有非法字符。\n"
 
 #. @-expanded: Missing '.' in directory inode %i.\n
 #: e2fsck/problem.c:1479
 #, no-c-format
 msgid "Missing '.' in @d @i %i.\n"
-msgstr "@d @i %i 中缺少“.”。\n"
+msgstr "@d @i %i 中缺少 \".\"。\n"
 
 #. @-expanded: Missing '..' in directory inode %i.\n
 #: e2fsck/problem.c:1485
 #, no-c-format
 msgid "Missing '..' in @d @i %i.\n"
-msgstr "@d @i %i 中缺少“..”。\n"
+msgstr "@d @i %i 中缺少 \"..\"。\n"
 
 #. @-expanded: First entry '%Dn' (inode=%Di) in directory inode %i (%p) should be '.'\n
 #: e2fsck/problem.c:1490
 msgid "First @e '%Dn' (@i=%Di) in @d @i %i (%p) @s '.'\n"
-msgstr "@d @i %i 中的第一个@e“%Dn”（@i=%Di）@s“.”\n"
+msgstr "@d @i %i (%p) 中的第一个@e \"%Dn\" (@i=%Di) @s \".\"\n"
 
 #. @-expanded: Second entry '%Dn' (inode=%Di) in directory inode %i should be '..'\n
 #: e2fsck/problem.c:1495
 msgid "Second @e '%Dn' (@i=%Di) in @d @i %i @s '..'\n"
-msgstr "@d @i %i 中的第二个@e“%Dn”（@i=%Di）@s“..”\n"
+msgstr "@d @i %i 中的第二个@e \"%Dn\" (@i=%Di) @s \"..\"\n"
 
 #. @-expanded: i_faddr for inode %i (%Q) is %IF, should be zero.\n
 #: e2fsck/problem.c:1500
 msgid "i_faddr @F %IF, @s zero.\n"
-msgstr "@i %i（%Q）的 i_faddr 为 %IF，@s 0。\n"
+msgstr "@i %i (%Q) 的 i_faddr 为 %IF，@s 0。\n"
 
 #. @-expanded: i_file_acl for inode %i (%Q) is %If, should be zero.\n
 #: e2fsck/problem.c:1505
 msgid "i_file_acl @F %If, @s zero.\n"
-msgstr "@i %i（%Q）的 i_file_acl 为 %IF，@s 0。\n"
+msgstr "@i %i (%Q) 的 i_file_acl 为 %IF，@s 0。\n"
 
 #. @-expanded: i_size_high for inode %i (%Q) is %Id, should be zero.\n
 #: e2fsck/problem.c:1510
 msgid "i_size_high @F %Id, @s zero.\n"
-msgstr "@i %i（%Q）的 i_size_high 为 %ld，@s 0。\n"
+msgstr "@i %i (%Q) 的 i_size_high 为 %Id，@s 0。\n"
 
 #. @-expanded: i_frag for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1515
 msgid "i_frag @F %N, @s zero.\n"
-msgstr "@i %i（%Q）的 i_frag 为 %N，@s 0。\n"
+msgstr "@i %i (%Q) 的 i_frag 为 %N，@s 0。\n"
 
 #. @-expanded: i_fsize for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1520
 msgid "i_fsize @F %N, @s zero.\n"
-msgstr "@i %i（%Q）的 i_size 为 %N，@s 0。\n"
+msgstr "@i %i (%Q) 的 i_size 为 %N，@s 0。\n"
 
 #. @-expanded: inode %i (%Q) has invalid mode (%Im).\n
 #: e2fsck/problem.c:1525
 msgid "@i %i (%Q) has @n mode (%Im).\n"
-msgstr "@i %i（%Q）有@n模式（%Im）。\n"
+msgstr "@i %i (%Q) 有@n模式 (%Im)。\n"
 
 #. @-expanded: directory inode %i, %B, offset %N: directory corrupted\n
 #: e2fsck/problem.c:1530
@@ -2378,33 +2378,33 @@ msgstr "@d @i %i 含有未分配的%B。"
 #: e2fsck/problem.c:1546
 #, no-c-format
 msgid "'.' @d @e in @d @i %i is not NULL terminated\n"
-msgstr "@d @i %i 中的“.”@d@e没有以 NULL 终止\n"
+msgstr "@d @i %i 中的 \".\" @d@e没有以 NULL 终止\n"
 
 #. @-expanded: '..' directory entry in directory inode %i is not NULL terminated\n
 #: e2fsck/problem.c:1552
 #, no-c-format
 msgid "'..' @d @e in @d @i %i is not NULL terminated\n"
-msgstr "@d @i %i 中的“..”@d@e没有以 NULL 终止\n"
+msgstr "@d @i %i 中的 \"..\" @d@e没有以 NULL 终止\n"
 
 #. @-expanded: inode %i (%Q) is an illegal character device.\n
 #: e2fsck/problem.c:1557
 msgid "@i %i (%Q) is an @I character @v.\n"
-msgstr "@i %i（%Q）是一个非法的字符@v。\n"
+msgstr "@i %i (%Q) 是一个非法的字符@v。\n"
 
 #. @-expanded: inode %i (%Q) is an illegal block device.\n
 #: e2fsck/problem.c:1562
 msgid "@i %i (%Q) is an @I @b @v.\n"
-msgstr "@i %i（%Q）是一个非法的@b@v。\n"
+msgstr "@i %i (%Q) 是一个非法的@b@v。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) is duplicate '.' entry.\n
 #: e2fsck/problem.c:1567
 msgid "@E is duplicate '.' @e.\n"
-msgstr "@E为重复的“.”目录@e。\n"
+msgstr "@E 为重复的 \".\" 目录@e。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) is duplicate '..' entry.\n
 #: e2fsck/problem.c:1572
 msgid "@E is duplicate '..' @e.\n"
-msgstr "@E为重复的“..”目录@e。\n"
+msgstr "@E 为重复的 \"..\" 目录@e。\n"
 
 #: e2fsck/problem.c:1578 e2fsck/problem.c:1963
 #, no-c-format
@@ -2414,7 +2414,7 @@ msgstr "内部错误：无法找到 %i 的 dir_info。\n"
 #. @-expanded: entry '%Dn' in %p (%i) has rec_len of %Dr, should be %N.\n
 #: e2fsck/problem.c:1583
 msgid "@E has rec_len of %Dr, @s %N.\n"
-msgstr "@E的 rec_len 为 %Dr，@s %N。\n"
+msgstr "@E 的 rec_len 为 %Dr，@s %N。\n"
 
 #. @-expanded: error allocating icount structure: %m\n
 #: e2fsck/problem.c:1589
@@ -2431,18 +2431,18 @@ msgstr "迭代@d@b时出错：%m\n"
 #. @-expanded: Error reading directory block %b (inode %i): %m\n
 #: e2fsck/problem.c:1600
 msgid "Error reading @d @b %b (@i %i): %m\n"
-msgstr "读取@d@b %b（@i %i）时出错：%m\n"
+msgstr "读取@d@b %b (@i %i) 时出错：%m\n"
 
 #. @-expanded: Error writing directory block %b (inode %i): %m\n
 #: e2fsck/problem.c:1605
 msgid "Error writing @d @b %b (@i %i): %m\n"
-msgstr "写入@d@b %b（@i %i）时出错：%m\n"
+msgstr "写入@d@b %b (@i %i) 时出错：%m\n"
 
 #. @-expanded: error allocating new directory block for inode %i (%s): %m\n
 #: e2fsck/problem.c:1611
 #, no-c-format
 msgid "@A new @d @b for @i %i (%s): %m\n"
-msgstr "为 @i %i（%s）分配新@d@b时出错：%m\n"
+msgstr "为 @i %i (%s) 分配新@d@b时出错：%m\n"
 
 #. @-expanded: Error deallocating inode %i: %m\n
 #: e2fsck/problem.c:1617
@@ -2454,47 +2454,47 @@ msgstr "取消分配 @i %i 时出错：%m\n"
 #: e2fsck/problem.c:1623
 #, no-c-format
 msgid "@d @e for '.' in %p (%i) is big.\n"
-msgstr "%p（%i）中“.”的@d@e太大。\n"
+msgstr "%p (%i) 中 \".\" 的@d@e太大。\n"
 
 #. @-expanded: inode %i (%Q) is an illegal FIFO.\n
 #: e2fsck/problem.c:1628
 msgid "@i %i (%Q) is an @I FIFO.\n"
-msgstr "@i %i（%Q）是一个@I队列。\n"
+msgstr "@i %i (%Q) 是一个@I队列。\n"
 
 #. @-expanded: inode %i (%Q) is an illegal socket.\n
 #: e2fsck/problem.c:1633
 msgid "@i %i (%Q) is an @I socket.\n"
-msgstr "@i %i（%Q）是一个@I套接字。\n"
+msgstr "@i %i (%Q) 是一个@I套接字。\n"
 
 #. @-expanded: Setting filetype for entry '%Dn' in %p (%i) to %N.\n
 #: e2fsck/problem.c:1638
 msgid "Setting filetype for @E to %N.\n"
-msgstr "将@E的文件类型设置为 %N。\n"
+msgstr "将@E 的文件类型设置为 %N。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has an incorrect filetype (was %Dt, should be %N).\n
 #: e2fsck/problem.c:1643
 msgid "@E has an incorrect filetype (was %Dt, @s %N).\n"
-msgstr "@E含有错误的文件类型（%Dt，@s %N）。\n"
+msgstr "@E 含有错误的文件类型（%Dt，@s %N）。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has filetype set.\n
 #: e2fsck/problem.c:1648
 msgid "@E has filetype set.\n"
-msgstr "@E被设置了文件类型。\n"
+msgstr "@E 被设置了文件类型。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has a zero-length name.\n
 #: e2fsck/problem.c:1653
 msgid "@E has a @z name.\n"
-msgstr "@E含有长度为零的名称。\n"
+msgstr "@E 含有长度为零的名称。\n"
 
 #. @-expanded: Symlink %Q (inode #%i) is invalid.\n
 #: e2fsck/problem.c:1658
 msgid "Symlink %Q (@i #%i) is @n.\n"
-msgstr "符号链接 %Q（@i #%i）无效。\n"
+msgstr "符号链接 %Q (@i #%i) 无效。\n"
 
 #. @-expanded: extended attribute block for inode %i (%Q) is invalid (%If).\n
 #: e2fsck/problem.c:1663
 msgid "@a @b @F @n (%If).\n"
-msgstr "@i %i（%Q）的@a@b无效（%lf）。\n"
+msgstr "@i %i (%Q) 的@a@b无效 (%If)。\n"
 
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
 #: e2fsck/problem.c:1668
@@ -2524,7 +2524,7 @@ msgstr "@h %d 中发现问题：%B 含有错误的最大 hash 值\n"
 #. @-expanded: invalid HTREE directory inode %d (%q).  
 #: e2fsck/problem.c:1693
 msgid "@n @h %d (%q).  "
-msgstr "@n @h %d（%q）。"
+msgstr "@n @h %d (%q)。"
 
 #. @-expanded: filesystem has large directories, but lacks LARGE_DIR flag in superblock.\n
 #: e2fsck/problem.c:1697
@@ -2534,7 +2534,7 @@ msgstr "@f含有大目录，但@S中未设置 LARGE_DIR 标志。\n"
 #. @-expanded: problem in HTREE directory inode %d (%q): bad block number %b.\n
 #: e2fsck/problem.c:1702
 msgid "@p @h %d (%q): bad @b number %b.\n"
-msgstr "@h %d（%q）中发现问题：@b编号 %b 无效。\n"
+msgstr "@h %d (%q) 中发现问题：@b编号 %b 无效。\n"
 
 #. @-expanded: problem in HTREE directory inode %d: root node is invalid\n
 #: e2fsck/problem.c:1713
@@ -2545,12 +2545,12 @@ msgstr "@h %d 中发现问题：根结点无效\n"
 #. @-expanded: problem in HTREE directory inode %d: %B has invalid limit (%N)\n
 #: e2fsck/problem.c:1718
 msgid "@p @h %d: %B has @n limit (%N)\n"
-msgstr "@h %d 中发现问题：%B 含有@n限制（%N）\n"
+msgstr "@h %d 中发现问题：%B 含有@n限制 (%N)\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B has invalid count (%N)\n
 #: e2fsck/problem.c:1723
 msgid "@p @h %d: %B has @n count (%N)\n"
-msgstr "@h %d 中发现问题：%B 含有@n计数（%N）\n"
+msgstr "@h %d 中发现问题：%B 含有@n计数 (%N)\n"
 
 #. @-expanded: problem in HTREE directory inode %d: %B has an unordered hash table\n
 #: e2fsck/problem.c:1728
@@ -2560,12 +2560,12 @@ msgstr "@h %d 中发现问题：%B 含有未排序的 hash 表\n"
 #. @-expanded: problem in HTREE directory inode %d: %B has invalid depth (%N)\n
 #: e2fsck/problem.c:1733
 msgid "@p @h %d: %B has @n depth (%N)\n"
-msgstr "@h %d 中发现问题：%B 含有@n深度（%N）\n"
+msgstr "@h %d 中发现问题：%B 含有@n深度 (%N)\n"
 
 #. @-expanded: Duplicate entry '%Dn' in %p (%i) found.  
 #: e2fsck/problem.c:1738
 msgid "Duplicate @E found.  "
-msgstr "发现 %p（%i）中有重复项“%Dn”。"
+msgstr "发现 %p (%i) 中有重复项 \"%Dn\"。"
 
 #. @-expanded: entry '%Dn' in %p (%i) has a non-unique filename.\n
 #. @-expanded: Rename to %s
@@ -2575,7 +2575,7 @@ msgid ""
 "@E has a non-unique filename.\n"
 "Rename to %s"
 msgstr ""
-"@E含有一个非唯一的文件名。\n"
+"@E 含有一个非唯一的文件名。\n"
 "重命名为 %s"
 
 #. @-expanded: Duplicate entry '%Dn' found.\n
@@ -2587,34 +2587,34 @@ msgid ""
 "\tMarking %p (%i) to be rebuilt.\n"
 "\n"
 msgstr ""
-"发现了重复的@e“@Dn”。\n"
-"\t将 %p（%i）标记为需要重建的。\n"
+"发现了重复的@e \"@Dn\"。\n"
+"\t将 %p (%i) 标记为需要重建的。\n"
 "\n"
 
 #. @-expanded: i_blocks_hi for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1753
 msgid "i_blocks_hi @F %N, @s zero.\n"
-msgstr "@i %i（%Q）的 i_blocks_hi 为 %N，@s 0。\n"
+msgstr "@i %i (%Q) 的 i_blocks_hi 为 %N，@s 0。\n"
 
 #. @-expanded: Unexpected block in HTREE directory inode %d (%q).\n
 #: e2fsck/problem.c:1758
 msgid "Unexpected @b in @h %d (%q).\n"
-msgstr "@h %d（%q）中有非预期的@b。\n"
+msgstr "@h %d (%q) 中有非预期的@b。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) references inode %Di in group %g where _INODE_UNINIT is set.\n
 #: e2fsck/problem.c:1763
 msgid "@E references @i %Di in @g %g where _INODE_UNINIT is set.\n"
-msgstr "@E引用了@g %g 中的 @i %Di，但该@g被设置了 _INODE_UNINIT 标志。\n"
+msgstr "@E 引用了@g %g 中的 @i %Di，但该@g被设置了 _INODE_UNINIT 标志。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) references inode %Di found in group %g's unused inodes area.\n
 #: e2fsck/problem.c:1768
 msgid "@E references @i %Di found in @g %g's unused inodes area.\n"
-msgstr "@E引用了@g %g 中的 @i %Di，但该 @i 位于未使用的 inode 区。\n"
+msgstr "@E 引用了 @i %Di，但该 @i 位于@g %g 的未使用的 inode 区。\n"
 
 #. @-expanded: i_file_acl_hi for inode %i (%Q) is %N, should be zero.\n
 #: e2fsck/problem.c:1773
 msgid "i_file_acl_hi @F %N, @s zero.\n"
-msgstr "@i %i（%Q）的 i_file_acl_hi 为 %N，@s 0。\n"
+msgstr "@i %i (%Q) 的 i_file_acl_hi 为 %N，@s 0。\n"
 
 #. @-expanded: problem in HTREE directory inode %d: root node fails checksum.\n
 #: e2fsck/problem.c:1779
@@ -2631,17 +2631,17 @@ msgstr "@p @h %d：内部结点的校验和错误。\n"
 #. @-expanded: directory inode %i, %B, offset %N: directory has no checksum.\n
 #: e2fsck/problem.c:1790
 msgid "@d @i %i, %B, offset %N: @d has no checksum.\n"
-msgstr "@d @i %i，%B，偏移量 %N：@d缺少校验和。\n"
+msgstr "@d @i %i，%B，偏移量 %N：@d没有校验和。\n"
 
 #. @-expanded: directory inode %i, %B: directory passes checks but fails checksum.\n
 #: e2fsck/problem.c:1795
 msgid "@d @i %i, %B: @d passes checks but fails checksum.\n"
-msgstr "@d @i %i，%B：@d通过了检验，但校验和错误。\n"
+msgstr "@d @i %i，%B：@d通过了检查，但校验和错误。\n"
 
 #. @-expanded: Inline directory inode %i size (%N) must be a multiple of 4.\n
 #: e2fsck/problem.c:1800
 msgid "Inline @d @i %i size (%N) must be a multiple of 4.\n"
-msgstr "内联@d @i %i 的大小（%N）必须为 4 的整数倍。\n"
+msgstr "内联@d @i %i 的大小 (%N) 必须为 4 的整数倍。\n"
 
 #. @-expanded: Fixing size of inline directory inode %i failed.\n
 #: e2fsck/problem.c:1806
@@ -2652,27 +2652,27 @@ msgstr "修复内联@d @i %i 的大小失败。\n"
 #. @-expanded: Encrypted entry '%Dn' in %p (%i) is too short.\n
 #: e2fsck/problem.c:1811
 msgid "Encrypted @E is too short.\n"
-msgstr "加密的@E太短。\n"
+msgstr "加密的@E 太短。\n"
 
 #. @-expanded: Encrypted entry '%Dn' in %p (%i) references unencrypted inode %Di.\n
 #: e2fsck/problem.c:1816
 msgid "Encrypted @E references unencrypted @i %Di.\n"
-msgstr "加密的@E引用了未加密的 @i %Di。\n"
+msgstr "加密的@E 引用了未加密的 @i %Di。\n"
 
 #. @-expanded: Encrypted entry '%Dn' in %p (%i) references inode %Di, which has a different encryption policy.\n
 #: e2fsck/problem.c:1821
 msgid "Encrypted @E references @i %Di, which has a different encryption policy.\n"
-msgstr "加密的@E引用了 @i %Di，但它具有不同的加密策略。\n"
+msgstr "加密的@E 引用了 @i %Di，但它具有不同的加密策略。\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has illegal UTF-8 characters in its name.\n
 #: e2fsck/problem.c:1826
 msgid "@E has illegal UTF-8 characters in its name.\n"
-msgstr "@E的名称中含有无效的 UTF-8 字符。\n"
+msgstr "@E 的名称中含有无效的 UTF-8 字符。\n"
 
 #. @-expanded: Duplicate filename entry '%Dn' in %p (%i) found.  
 #: e2fsck/problem.c:1831
 msgid "Duplicate filename @E found.  "
-msgstr "发现 %p（%i）中有重复的文件名项“%Dn”。"
+msgstr "发现 %p (%i) 中有重复的文件名项 \"%Dn\"。"
 
 #. @-expanded: Pass 3: Checking directory connectivity\n
 #: e2fsck/problem.c:1839
@@ -2693,7 +2693,7 @@ msgstr "@l @d中没有空间。"
 #: e2fsck/problem.c:1855
 #, no-c-format
 msgid "Unconnected @d @i %i (%p)\n"
-msgstr "未被连接的@d @i %i（%p）\n"
+msgstr "未被连接的@d @i %i (%p)\n"
 
 #. @-expanded: /lost+found not found.  
 #: e2fsck/problem.c:1860
@@ -2703,7 +2703,7 @@ msgstr "/@l 未找到。"
 #. @-expanded: '..' in %Q (%i) is %P (%j), should be %q (%d).\n
 #: e2fsck/problem.c:1865
 msgid "'..' in %Q (%i) is %P (%j), @s %q (%d).\n"
-msgstr "%Q（%i）中的“..”为 %P（%j），@s %q（%d）。\n"
+msgstr "%Q (%i) 中的 \"..\" 为 %P (%j)，@s %q (%d)。\n"
 
 #. @-expanded: Bad or non-existent /lost+found.  Cannot reconnect.\n
 #: e2fsck/problem.c:1871
@@ -2732,25 +2732,25 @@ msgstr "尝试查找 /@l 时出错：%m\n"
 #: e2fsck/problem.c:1895
 #, no-c-format
 msgid "ext2fs_new_@b: %m while trying to create /@l @d\n"
-msgstr "ext2fs_new_block：尝试创建 /@l @d时%m\n"
+msgstr "ext2fs_new_block: 尝试创建 /@l @d时%m\n"
 
 #. @-expanded: ext2fs_new_inode: %m while trying to create /lost+found directory\n
 #: e2fsck/problem.c:1901
 #, no-c-format
 msgid "ext2fs_new_@i: %m while trying to create /@l @d\n"
-msgstr "ext2fs_new_inode：尝试创建 /@l @d时%m\n"
+msgstr "ext2fs_new_inode: 尝试创建 /@l @d时%m\n"
 
 #. @-expanded: ext2fs_new_dir_block: %m while creating new directory block\n
 #: e2fsck/problem.c:1907
 #, no-c-format
 msgid "ext2fs_new_dir_@b: %m while creating new @d @b\n"
-msgstr "ext2fs_new_dir_block：创建新的@d@b时%m\n"
+msgstr "ext2fs_new_dir_block: 创建新的@d@b时%m\n"
 
 #. @-expanded: ext2fs_write_dir_block: %m while writing the directory block for /lost+found\n
 #: e2fsck/problem.c:1913
 #, no-c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
-msgstr "ext2fs_new_dir_block：为 /@l 写入@d@b时%m\n"
+msgstr "ext2fs_new_dir_block: 为 /@l 写入@d@b时%m\n"
 
 #. @-expanded: Error while adjusting inode count on inode %i\n
 #: e2fsck/problem.c:1919
@@ -2784,18 +2784,18 @@ msgstr ""
 #: e2fsck/problem.c:1942
 #, no-c-format
 msgid "Error creating root @d (%s): %m\n"
-msgstr "创建根@d（%s）时出错：%m\n"
+msgstr "创建根@d (%s) 时出错：%m\n"
 
 #. @-expanded: Error creating /lost+found directory (%s): %m\n
 #: e2fsck/problem.c:1948
 #, no-c-format
 msgid "Error creating /@l @d (%s): %m\n"
-msgstr "创建 /@l @d（%s）时出错：%m\n"
+msgstr "创建 /@l @d (%s) 时出错：%m\n"
 
 #. @-expanded: root inode is not a directory; aborting.\n
 #: e2fsck/problem.c:1953
 msgid "@r is not a @d; aborting.\n"
-msgstr "@r 不是一个@d；已终止执行。\n"
+msgstr "@r 不是一个@d；已中止执行。\n"
 
 #. @-expanded: Cannot proceed without a root inode.\n
 #: e2fsck/problem.c:1958
@@ -2806,7 +2806,7 @@ msgstr "无法在没有@r 的情况下继续。\n"
 #: e2fsck/problem.c:1969
 #, no-c-format
 msgid "/@l is not a @d (ino=%i)\n"
-msgstr "/@l 不是一个@d（ino=%i）\n"
+msgstr "/@l 不是一个@d (ino=%i)\n"
 
 #. @-expanded: /lost+found has inline data\n
 #: e2fsck/problem.c:1974
@@ -2852,7 +2852,7 @@ msgstr "创建 dirs_to_hash 迭代器失败：%m\n"
 
 #: e2fsck/problem.c:2007
 msgid "Failed to optimize directory %q (%d): %m\n"
-msgstr "优化目录 %q（%d）失败：%m\n"
+msgstr "优化目录 %q (%d) 失败：%m\n"
 
 #: e2fsck/problem.c:2012
 msgid "Optimizing directories: "
@@ -2888,8 +2888,8 @@ msgid ""
 "\tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n"
 "@i_link_info[%i] is %N, @i.i_links_count is %Il.  They @s the same!\n"
 msgstr ""
-"警告：e2fsck中出现程序错误！\n"
-"\t或者是（粗心大意的）你正在检查一个被挂载的（活动的）文件系统。\n"
+"警告：e2fsck 中出现程序错误！\n"
+"\t或者某个粗心大意的人（你）正在检查一个已挂载的（活动的）文件系统。\n"
 "@i_link_info[%i] 为 %N，@i.i_links_count 为 %Il。它们应当相同！\n"
 
 #. @-expanded: extended attribute inode %i ref count is %N, should be %n. 
@@ -2930,42 +2930,42 @@ msgstr "@b@B的差异："
 #. @-expanded: inode bitmap differences: 
 #: e2fsck/problem.c:2111
 msgid "@i @B differences: "
-msgstr "@i@B的差异："
+msgstr "@i @B的差异："
 
 #. @-expanded: Free inodes count wrong for group #%g (%i, counted=%j).\n
 #: e2fsck/problem.c:2133
 msgid "Free @is count wrong for @g #%g (%i, counted=%j).\n"
-msgstr "@g #%g 的可用 @i 计数错误（%i，counted=%j）。\n"
+msgstr "@g #%g 的可用 @i 计数错误 (%i, counted=%j)。\n"
 
 #. @-expanded: Directories count wrong for group #%g (%i, counted=%j).\n
 #: e2fsck/problem.c:2138
 msgid "Directories count wrong for @g #%g (%i, counted=%j).\n"
-msgstr "@g #%g 的目录计数错误（%i，counted=%j）\n"
+msgstr "@g #%g 的目录计数错误 (%i, counted=%j)。\n"
 
 #. @-expanded: Free inodes count wrong (%i, counted=%j).\n
 #: e2fsck/problem.c:2143
 msgid "Free @is count wrong (%i, counted=%j).\n"
-msgstr "可用 @i 计数错误（%i，counted=%j）\n"
+msgstr "可用 @i 计数错误 (%i, counted=%j)。\n"
 
 #. @-expanded: Free blocks count wrong for group #%g (%b, counted=%c).\n
 #: e2fsck/problem.c:2148
 msgid "Free @bs count wrong for @g #%g (%b, counted=%c).\n"
-msgstr "@g #%g 的可用@b计数错误（%b，counted=%c）。\n"
+msgstr "@g #%g 的可用@b计数错误 (%b, counted=%c)。\n"
 
 #. @-expanded: Free blocks count wrong (%b, counted=%c).\n
 #: e2fsck/problem.c:2153
 msgid "Free @bs count wrong (%b, counted=%c).\n"
-msgstr "可用@b计数错误（%b，counted=%c）\n"
+msgstr "可用@b计数错误 (%b, counted=%c)。\n"
 
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:2158
 msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
-msgstr "程序错误：@f（#%N）@B端点（%b，%c）与计算的@B端点（%i，%j）不符\n"
+msgstr "程序错误：@f (#%N) @B端点 (%b，%c) 与计算的@B端点 (%i，%j) 不符\n"
 
 #: e2fsck/problem.c:2164
 msgid "Internal error: fudging end of bitmap (%N)\n"
-msgstr "内部错误：伪造位图尾部（%N）\n"
+msgstr "内部错误：伪造位图尾部 (%N)\n"
 
 #. @-expanded: Error copying in replacement inode bitmap: %m\n
 #: e2fsck/problem.c:2170
@@ -3016,7 +3016,7 @@ msgstr "更新配额类型 %N 的配额信息"
 #: e2fsck/problem.c:2242
 #, no-c-format
 msgid "Error setting @b @g checksum info: %m\n"
-msgstr "设置@b@g的校验信息时出错：%m\n"
+msgstr "设置@b@g的校验和信息时出错：%m\n"
 
 #: e2fsck/problem.c:2248
 #, no-c-format
@@ -3026,7 +3026,7 @@ msgstr "写入文件系统信息时出错：%m\n"
 #: e2fsck/problem.c:2254
 #, no-c-format
 msgid "Error flushing writes to storage device: %m\n"
-msgstr "将缓冲写入到存储设备时出错：%m\n"
+msgstr "排空缓冲区到存储设备时出错：%m\n"
 
 #: e2fsck/problem.c:2259
 msgid "Error writing quota info for quota type %N: %m\n"
@@ -3035,7 +3035,7 @@ msgstr "写入配额类型 %N 的配额信息时出错：%m\n"
 #: e2fsck/problem.c:2422
 #, c-format
 msgid "Unhandled error code (0x%x)!\n"
-msgstr "未处理的错误码（0x%x）！\n"
+msgstr "未处理的错误码 (0x%x)！\n"
 
 #: e2fsck/problem.c:2552 e2fsck/problem.c:2556
 msgid "IGNORED"
@@ -3107,12 +3107,12 @@ msgid ""
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
-"重要提示：\n"
+"应急提示：\n"
 " -p                   自动修复（不询问）\n"
 " -n                   不对文件系统做任何更改\n"
-" -y                   对所有询问都回答“是”\n"
+" -y                   对所有询问都回答 \"是\"\n"
 " -c                   检查可能的坏块，并将它们加入坏块列表\n"
-" -f                   强制进行检查，即使文件系统被标记为“没有问题”\n"
+" -f                   强制进行检查，即使文件系统被标记为 \"没有问题\"\n"
 
 #: e2fsck/unix.c:89
 msgid ""
@@ -3125,17 +3125,17 @@ msgid ""
 " -z undo_file         Create an undo file\n"
 msgstr ""
 " -v                   显示更多信息\n"
-" -b superblock        使用备选超级块\n"
-" -B blocksize         使用指定块大小来查找超级块\n"
-" -j external_journal  指定外部日志的位置\n"
-" -l bad_blocks_file   添加文件到坏块列表\n"
-" -L bad_blocks_file   指定坏块列表\n"
-" -z undo_file         创建一个撤销文件\n"
+" -b 超级块            使用备选超级块\n"
+" -B 块大小            使用指定块大小来查找超级块\n"
+" -j 外部日志          指定外部日志的位置\n"
+" -l 坏块文件          添加文件到坏块列表\n"
+" -L 坏块文件          指定坏块列表\n"
+" -z 撤销文件          创建一个撤销文件\n"
 
 #: e2fsck/unix.c:137
 #, c-format
 msgid "%s: %u/%u files (%0d.%d%% non-contiguous), %llu/%llu blocks\n"
-msgstr "%s：%u/%u 文件（%0d.%d%% 为非连续的），%llu/%llu 块\n"
+msgstr "%s: %u/%u 文件（%0d.%d%% 不连续），%llu/%llu 块\n"
 
 #: e2fsck/unix.c:164
 #, c-format
@@ -3153,13 +3153,13 @@ msgstr[0] ""
 #, c-format
 msgid "%12u non-contiguous file (%0d.%d%%)\n"
 msgid_plural "%12u non-contiguous files (%0d.%d%%)\n"
-msgstr[0] "%12u 个不连续的文件（%0d.%d%%）\n"
+msgstr[0] "%12u 个不连续的文件 (%0d.%d%%)\n"
 
 #: e2fsck/unix.c:173
 #, c-format
 msgid "%12u non-contiguous directory (%0d.%d%%)\n"
 msgid_plural "%12u non-contiguous directories (%0d.%d%%)\n"
-msgstr[0] "%12u 个不连续的目录（%0d.%d%%）\n"
+msgstr[0] "%12u 个不连续的目录 (%0d.%d%%)\n"
 
 #: e2fsck/unix.c:178
 #, c-format
@@ -3168,7 +3168,7 @@ msgstr "             含有一次/二次/三次间接块的 inode 数：%u/%u/%u
 
 #: e2fsck/unix.c:186
 msgid "             Extent depth histogram: "
-msgstr "             Extent 深度直方图："
+msgstr "             extent 深度直方图："
 
 #: e2fsck/unix.c:195
 #, c-format
@@ -3348,7 +3348,7 @@ msgstr "，强制进行检查。\n"
 #: e2fsck/unix.c:445
 #, c-format
 msgid "%s: clean, %u/%u files, %llu/%llu blocks"
-msgstr "%s：没有问题，%u/%u 文件，%llu/%llu 块"
+msgstr "%s: 没有问题，%u/%u 文件，%llu/%llu 块"
 
 #: e2fsck/unix.c:465
 msgid " (check deferred; on battery)"
@@ -3366,7 +3366,7 @@ msgstr "（将于 %ld 次挂载后进行检查）"
 #: e2fsck/unix.c:620
 #, c-format
 msgid "ERROR: Couldn't open /dev/null (%s)\n"
-msgstr "错误：无法打开/dev/null（%s）\n"
+msgstr "错误：无法打开 /dev/null（%s）\n"
 
 #: e2fsck/unix.c:691
 msgid "Invalid EA version.\n"
@@ -3389,7 +3389,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"扩展选项由逗号分隔，有些需要通过等号（“=”）\n"
+"扩展选项由逗号分隔，有些需要通过等号 (\"=\")\n"
 "传递参数。有效的扩展选项有：\n"
 "\n"
 
@@ -3432,7 +3432,7 @@ msgstr "此版本的 e2fsck 不支持 -t 选项。\n"
 #: misc/tune2fs.c:1778 misc/tune2fs.c:2078 misc/tune2fs.c:2096
 #, c-format
 msgid "Unable to resolve '%s'"
-msgstr "无法解析“%s”"
+msgstr "无法解析 \"%s\""
 
 #: e2fsck/unix.c:1003
 msgid "The -n and -D options are incompatible."
@@ -3474,7 +3474,7 @@ msgid ""
 "E2FSCK_JBD_DEBUG \"%s\" not an integer\n"
 "\n"
 msgstr ""
-"E2FSCK_JBD_DEBUG“%s”不是整数\n"
+"E2FSCK_JBD_DEBUG \"%s\" 不是整数\n"
 "\n"
 
 #: e2fsck/unix.c:1163
@@ -3485,7 +3485,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"-%c 接收到无效的非数值参数（“%s”）\n"
+"-%c 接收到无效的非数值参数 (\"%s\")\n"
 "\n"
 
 #: e2fsck/unix.c:1254
@@ -3503,8 +3503,8 @@ msgid ""
 "If you are sure the filesystem is not in use on any node, run:\n"
 "'tune2fs -f -E clear_mmp %s'\n"
 msgstr ""
-"如果您确定文件系统并没有挂载到任何节点上，请运行：\n"
-"“tune2fs -f -E clear_mmp %s”\n"
+"如果您确定文件系统没有在任何节点上使用，请运行：\n"
+"\"tune2fs -f -E clear_mmp %s\"\n"
 
 #: e2fsck/unix.c:1294
 msgid "while reading MMP block"
@@ -3553,7 +3553,7 @@ msgstr "需要在终端中进行交互式修复"
 #: e2fsck/unix.c:1542
 #, c-format
 msgid "%s: %s trying backup blocks...\n"
-msgstr "%s：%s正在尝试备份块...\n"
+msgstr "%s: %s正在尝试备份块...\n"
 
 #: e2fsck/unix.c:1544
 msgid "Superblock invalid,"
@@ -3566,12 +3566,12 @@ msgstr "组描述符似乎是错误的..."
 #: e2fsck/unix.c:1555
 #, c-format
 msgid "%s: %s while using the backup blocks"
-msgstr "%s：尝试备份块时%s"
+msgstr "%s: 尝试备份块时%s"
 
 #: e2fsck/unix.c:1559
 #, c-format
 msgid "%s: going back to original superblock\n"
-msgstr "%s：回到原先的超级块\n"
+msgstr "%s: 回到原先的超级块\n"
 
 #: e2fsck/unix.c:1588
 msgid ""
@@ -3615,7 +3615,7 @@ msgstr "磁盘被写保护；请使用 -n 选项进行只读检查。\n"
 #: e2fsck/unix.c:1626
 #, c-format
 msgid "%s: Trying to load superblock despite errors...\n"
-msgstr "%s：尽管有错误，仍然尝试加载超级块...\n"
+msgstr "%s: 尽管有错误，仍然尝试加载超级块...\n"
 
 #: e2fsck/unix.c:1701
 msgid "Get a newer version of e2fsck!"
@@ -3667,7 +3667,7 @@ msgstr "%s 有不被支持的编码：%0x\n"
 #: e2fsck/unix.c:1888
 #, c-format
 msgid "%s: %s while reading bad blocks inode\n"
-msgstr "%s：读取坏块 inode 时%s\n"
+msgstr "%s: 读取坏块 inode 时%s\n"
 
 #: e2fsck/unix.c:1891
 msgid "This doesn't bode well, but we'll try to go on...\n"
@@ -3697,7 +3697,7 @@ msgstr "已中止"
 #: e2fsck/unix.c:1953
 #, c-format
 msgid "%s: e2fsck canceled.\n"
-msgstr "%s：e2fsck 被取消。\n"
+msgstr "%s: e2fsck 被取消。\n"
 
 #: e2fsck/unix.c:1980
 msgid "Restarting e2fsck from the beginning...\n"
@@ -3714,12 +3714,12 @@ msgid ""
 "%s: ***** FILE SYSTEM ERRORS CORRECTED *****\n"
 msgstr ""
 "\n"
-"%s：***** 文件系统错误已修正 *****\n"
+"%s: ***** 文件系统错误已修正 *****\n"
 
 #: e2fsck/unix.c:2045
 #, c-format
 msgid "%s: File system was modified.\n"
-msgstr "%s：文件系统已被修改。\n"
+msgstr "%s: 文件系统已被修改。\n"
 
 #: e2fsck/unix.c:2049 e2fsck/util.c:67
 #, c-format
@@ -3728,12 +3728,12 @@ msgid ""
 "%s: ***** FILE SYSTEM WAS MODIFIED *****\n"
 msgstr ""
 "\n"
-"%s：***** 文件系统已被修改 *****\n"
+"%s: ***** 文件系统已被修改 *****\n"
 
 #: e2fsck/unix.c:2054
 #, c-format
 msgid "%s: ***** REBOOT SYSTEM *****\n"
-msgstr "%s：***** 请重新启动系统 *****\n"
+msgstr "%s: ***** 请重新启动系统 *****\n"
 
 #: e2fsck/unix.c:2064 e2fsck/util.c:73
 #, c-format
@@ -3743,7 +3743,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"%s：********** 警告：文件系统上仍有错误 **********\n"
+"%s: ********** 警告：文件系统上仍有错误 **********\n"
 "\n"
 
 #: e2fsck/util.c:191 misc/util.c:93
@@ -3760,7 +3760,7 @@ msgstr "aA"
 
 #: e2fsck/util.c:197
 msgid " ('a' enables 'yes' to all) "
-msgstr "（“a”表示全部回答“yes”）"
+msgstr "（\"a\" 表示全部回答 \"是\"）"
 
 #: e2fsck/util.c:214
 msgid "<y>"
@@ -3772,7 +3772,7 @@ msgstr "<n>"
 
 #: e2fsck/util.c:218
 msgid " (y/n)"
-msgstr "（y/n）"
+msgstr " (y/n)"
 
 #: e2fsck/util.c:241
 msgid "cancelled!\n"
@@ -3780,7 +3780,7 @@ msgstr "已取消！\n"
 
 #: e2fsck/util.c:274
 msgid "yes to all\n"
-msgstr "全部回答“yes”\n"
+msgstr "全部回答 \"是\"\n"
 
 #: e2fsck/util.c:276
 msgid "yes\n"
@@ -3819,7 +3819,7 @@ msgstr "否"
 #: e2fsck/util.c:312
 #, c-format
 msgid "e2fsck_read_bitmaps: illegal bitmap block(s) for %s"
-msgstr "e2fsck_read_bitmaps：%s 含有非法的位图块"
+msgstr "e2fsck_read_bitmaps: %s 含有非法的位图块"
 
 #: e2fsck/util.c:317
 msgid "reading inode and block bitmaps"
@@ -3849,13 +3849,13 @@ msgid ""
 msgstr ""
 "\n"
 "\n"
-"%s：未预期的不一致性；请手动运行 fsck。\n"
+"%s: 未预期的不一致性；请手动运行 fsck。\n"
 "\t（即不使用 -a 或 -p 选项）\n"
 
 #: e2fsck/util.c:438
 #, c-format
 msgid "Memory used: %lluk/%lluk (%lluk/%lluk), "
-msgstr "内存使用量：%lluk/%lluk（%lluk/%lluk），"
+msgstr "内存使用量：%lluk/%lluk (%lluk/%lluk)，"
 
 #: e2fsck/util.c:444
 #, c-format
@@ -3909,7 +3909,7 @@ msgid ""
 "%s: The -n and -w options are mutually exclusive.\n"
 "\n"
 msgstr ""
-"%s：-n 和 -w 选项是互斥的。\n"
+"%s: -n 和 -w 选项是互斥的。\n"
 "\n"
 
 #: misc/badblocks.c:229
@@ -3933,7 +3933,7 @@ msgstr "定位时"
 #: misc/badblocks.c:398
 #, c-format
 msgid "Weird value (%ld) in do_read\n"
-msgstr "do_read 时遇到异常值（%ld）\n"
+msgstr "do_read 时遇到异常值 (%ld)\n"
 
 #: misc/badblocks.c:485
 msgid "during ext2fs_sync_device"
@@ -3963,7 +3963,7 @@ msgstr "检查坏块（只读测试）："
 #: misc/badblocks.c:545 misc/badblocks.c:652 misc/badblocks.c:694
 #: misc/badblocks.c:841
 msgid "Too many bad blocks, aborting test\n"
-msgstr "坏块太多，终止测试\n"
+msgstr "坏块太多，中止测试\n"
 
 #: misc/badblocks.c:627
 msgid "Checking for bad blocks in read-write mode\n"
@@ -4029,7 +4029,7 @@ msgstr "无效的 %s - %s"
 #: misc/badblocks.c:1135
 #, c-format
 msgid "Too big max bad blocks count %u - maximum is %u"
-msgstr "最大坏块数（%u）过大 - 最大值为 %u"
+msgstr "最大坏块数 (%u) 过大 - 最大值为 %u"
 
 #: misc/badblocks.c:1162
 #, c-format
@@ -4075,12 +4075,12 @@ msgstr "首块"
 #: misc/badblocks.c:1245
 #, c-format
 msgid "invalid starting block (%llu): must be less than %llu"
-msgstr "首块（%llu）无效：必须小于 %llu"
+msgstr "首块 (%llu) 无效：必须小于 %llu"
 
 #: misc/badblocks.c:1253
 #, c-format
 msgid "invalid end block (%llu): must be 32-bit value"
-msgstr "末块（%llu）无效：必须为 32 位值"
+msgstr "末块 (%llu) 无效：必须为 32 位值"
 
 #: misc/badblocks.c:1309
 msgid "while creating in-memory bad blocks list"
@@ -4160,11 +4160,11 @@ msgstr "无法在 chattr_dir_proc 中为路径变量分配内存"
 
 #: misc/chattr.c:339
 msgid "= is incompatible with - and +\n"
-msgstr "= 与 - / + 选项不相容\n"
+msgstr "= 与 - / + 不相容\n"
 
 #: misc/chattr.c:347
 msgid "Must use '-v', =, - or +\n"
-msgstr "必须使用“-v”、=、- 或 + 其中之一\n"
+msgstr "必须使用 \"-v\"、=、- 或 + 其中之一\n"
 
 #: misc/create_inode.c:80 misc/create_inode.c:119
 #, c-format
@@ -4179,7 +4179,7 @@ msgstr "扩充目录时"
 #: misc/create_inode.c:97
 #, c-format
 msgid "while linking \"%s\""
-msgstr "链接“%s”时"
+msgstr "链接 \"%s\" 时"
 
 #: misc/create_inode.c:105 misc/create_inode.c:134 misc/create_inode.c:330
 #, c-format
@@ -4189,7 +4189,7 @@ msgstr "写入 inode %u 时"
 #: misc/create_inode.c:154 misc/create_inode.c:185
 #, c-format
 msgid "while listing attributes of \"%s\""
-msgstr "尝试列出“%s”的属性时"
+msgstr "尝试列出 \"%s\" 的属性时"
 
 #: misc/create_inode.c:165
 #, c-format
@@ -4210,12 +4210,12 @@ msgstr "分配内存时"
 #: misc/create_inode.c:198 misc/create_inode.c:214
 #, c-format
 msgid "while reading attribute \"%s\" of \"%s\""
-msgstr "读取“%2$s”的“%1$s”属性时"
+msgstr "读取 \"%2$s\" 的 \"%1$s\" 属性时"
 
 #: misc/create_inode.c:223
 #, c-format
 msgid "while writing attribute \"%s\" to inode %u"
-msgstr "写入属性“%s”到 inode %u 时"
+msgstr "写入属性 \"%s\" 到 inode %u 时"
 
 #: misc/create_inode.c:233
 #, c-format
@@ -4225,52 +4225,52 @@ msgstr "关闭 inode %u 时"
 #: misc/create_inode.c:283
 #, c-format
 msgid "while allocating inode \"%s\""
-msgstr "分配 inode“%s”时"
+msgstr "分配 inode \"%s\" 时"
 
 #: misc/create_inode.c:302
 #, c-format
 msgid "while creating inode \"%s\""
-msgstr "创建 inode“%s”时"
+msgstr "创建 inode \"%s\" 时"
 
 #: misc/create_inode.c:368
 #, c-format
 msgid "while creating symlink \"%s\""
-msgstr "创建符号链接“%s”时"
+msgstr "创建符号链接 \"%s\" 时"
 
 #: misc/create_inode.c:386 misc/create_inode.c:650 misc/create_inode.c:986
 #, c-format
 msgid "while looking up \"%s\""
-msgstr "查找“%s”时"
+msgstr "查找 \"%s\" 时"
 
 #: misc/create_inode.c:406
 #, c-format
 msgid "while creating directory \"%s\""
-msgstr "创建目录“%s”时"
+msgstr "创建目录 \"%s\" 时"
 
 #: misc/create_inode.c:636
 #, c-format
 msgid "while opening \"%s\" to copy"
-msgstr "打开“%s”准备拷贝时"
+msgstr "打开 \"%s\" 准备拷贝时"
 
 #: misc/create_inode.c:828
 #, c-format
 msgid "while changing working directory to \"%s\""
-msgstr "改变工作目录为“%s”时"
+msgstr "改变工作目录为 \"%s\" 时"
 
 #: misc/create_inode.c:838
 #, c-format
 msgid "while scanning directory \"%s\""
-msgstr "扫描目录“%s”时"
+msgstr "扫描目录 \"%s\" 时"
 
 #: misc/create_inode.c:848
 #, c-format
 msgid "while lstat \"%s\""
-msgstr "对“%s”进行 lstat 调用时"
+msgstr "对 \"%s\" 进行 lstat 调用时"
 
 #: misc/create_inode.c:898
 #, c-format
 msgid "while creating special file \"%s\""
-msgstr "创建特殊文件“%s”时"
+msgstr "创建特殊文件 \"%s\" 时"
 
 #: misc/create_inode.c:907
 msgid "malloc failed"
@@ -4279,7 +4279,7 @@ msgstr "内存分配失败"
 #: misc/create_inode.c:915
 #, c-format
 msgid "while trying to read link \"%s\""
-msgstr "尝试读取链接“%s”时"
+msgstr "尝试读取链接 \"%s\" 时"
 
 #: misc/create_inode.c:922
 msgid "symlink increased in size between lstat() and readlink()"
@@ -4288,17 +4288,17 @@ msgstr "在执行 lstat() 与 readlink() 之间，符号链接的大小增加了
 #: misc/create_inode.c:933
 #, c-format
 msgid "while writing symlink\"%s\""
-msgstr "写入符号链接“%s”时"
+msgstr "写入符号链接 \"%s\" 时"
 
 #: misc/create_inode.c:944
 #, c-format
 msgid "while writing file \"%s\""
-msgstr "写入文件“%s”时"
+msgstr "写入文件 \"%s\" 时"
 
 #: misc/create_inode.c:957
 #, c-format
 msgid "while making dir \"%s\""
-msgstr "创建目录“%s”时"
+msgstr "创建目录 \"%s\" 时"
 
 #: misc/create_inode.c:975
 msgid "while changing directory"
@@ -4307,17 +4307,17 @@ msgstr "改变目录时"
 #: misc/create_inode.c:981
 #, c-format
 msgid "ignoring entry \"%s\""
-msgstr "忽略项“%s”"
+msgstr "忽略项 \"%s\""
 
 #: misc/create_inode.c:994
 #, c-format
 msgid "while setting inode for \"%s\""
-msgstr "为“%s”设置 inode 时"
+msgstr "为 \"%s\" 设置 inode 时"
 
 #: misc/create_inode.c:1001
 #, c-format
 msgid "while setting xattrs for \"%s\""
-msgstr "设置“%s”的 xattr 时"
+msgstr "设置 \"%s\" 的 xattr 时"
 
 #: misc/create_inode.c:1027
 msgid "while saving inode data"
@@ -4407,7 +4407,7 @@ msgstr ""
 
 #: misc/dumpe2fs.c:266
 msgid " Inode bitmap at "
-msgstr " Inode 位图位于 "
+msgstr " inode 位图位于 "
 
 #: misc/dumpe2fs.c:273
 msgid ""
@@ -4415,7 +4415,7 @@ msgid ""
 "  Inode table at "
 msgstr ""
 "\n"
-"  Inode 表位于 "
+"  inode 表位于 "
 
 #: misc/dumpe2fs.c:279
 #, c-format
@@ -4429,7 +4429,7 @@ msgstr ""
 #: misc/dumpe2fs.c:286
 #, c-format
 msgid ", %u unused inodes\n"
-msgstr "，%u 个未使用的inodes\n"
+msgstr "，%u 个未使用的 inode\n"
 
 #: misc/dumpe2fs.c:289
 msgid "  Free blocks: "
@@ -4437,7 +4437,7 @@ msgstr "  可用块数："
 
 #: misc/dumpe2fs.c:304
 msgid "  Free inodes: "
-msgstr "  可用inode数："
+msgstr "  可用 inode 数："
 
 #: misc/dumpe2fs.c:340
 msgid "while printing bad block list"
@@ -4479,7 +4479,7 @@ msgstr "分配 MMP 缓冲区失败\n"
 #: misc/dumpe2fs.c:487
 #, c-format
 msgid "reading MMP block %llu from '%s'\n"
-msgstr "从“%2$s”读取 MMP 块 %1$llu 时\n"
+msgstr "从 \"%2$s\" 读取 MMP 块 %1$llu 时\n"
 
 #: misc/dumpe2fs.c:519 misc/mke2fs.c:811 misc/tune2fs.c:2118
 msgid "Couldn't allocate memory to parse options!\n"
@@ -4511,7 +4511,7 @@ msgstr ""
 "\n"
 "指定了错误的扩展属性：%s\n"
 "\n"
-"扩展属性由逗号分隔，有些需要通过等号（“=”）传递参数。\n"
+"扩展属性由逗号分隔，有些需要通过等号 (\"=\") 传递参数。\n"
 "\n"
 "有效的参数有：\n"
 "\tsuperblock=<超级块编号>\n"
@@ -4530,12 +4530,12 @@ msgstr "找不到有效的文件系统超级块。\n"
 #: misc/dumpe2fs.c:730
 #, c-format
 msgid "%s: MMP feature not enabled.\n"
-msgstr "%s：MMP 特性未启用。\n"
+msgstr "%s: MMP 特性未启用。\n"
 
 #: misc/dumpe2fs.c:761
 #, c-format
 msgid "while trying to read '%s' bitmaps\n"
-msgstr "尝试读取“%s”位图时\n"
+msgstr "尝试读取 \"%s\" 位图时\n"
 
 #: misc/dumpe2fs.c:770
 msgid ""
@@ -4606,17 +4606,17 @@ msgstr "写入 inode 位图时"
 #: misc/e2image.c:516
 #, c-format
 msgid "Corrupt directory block %llu: bad rec_len (%d)\n"
-msgstr "损坏的目录块 %llu：rec_len（%d）错误\n"
+msgstr "损坏的目录块 %llu：rec_len (%d) 错误\n"
 
 #: misc/e2image.c:528
 #, c-format
 msgid "Corrupt directory block %llu: bad name_len (%d)\n"
-msgstr "损坏的目录块 %llu：name_len（%d）错误\n"
+msgstr "损坏的目录块 %llu：name_len (%d) 错误\n"
 
 #: misc/e2image.c:569
 #, c-format
 msgid "%llu / %llu blocks (%d%%)"
-msgstr "%llu / %llu 块（%d%%）"
+msgstr "%llu / %llu 块 (%d%%)"
 
 #: misc/e2image.c:602 misc/e2image.c:642
 msgid "Copying "
@@ -4624,7 +4624,7 @@ msgstr "正在拷贝 "
 
 #: misc/e2image.c:639
 msgid "Stopping now will destroy the filesystem, interrupt again if you are sure\n"
-msgstr "现在终止将会损坏文件系统；如果你确定要终止，请再次进行打断\n"
+msgstr "现在停止将会损坏文件系统；如果你确定要停止，请再次发送中断\n"
 
 #: misc/e2image.c:665
 #, c-format
@@ -4639,7 +4639,7 @@ msgstr "读取块 %llu 出错"
 #: misc/e2image.c:732
 #, c-format
 msgid "Copied %llu / %llu blocks (%d%%) in %s "
-msgstr "已复制 %llu / %llu 块（%d%%），用时 %s "
+msgstr "已复制 %llu / %llu 块 (%d%%)，用时 %s "
 
 #: misc/e2image.c:737
 #, c-format
@@ -4697,7 +4697,7 @@ msgstr "遍历 inode %u 时"
 
 #: misc/e2image.c:1422
 msgid "Raw and qcow2 images cannot be installed"
-msgstr "Raw 和 qcow2 镜像无法被安装"
+msgstr "raw 和 qcow2 镜像无法被安装"
 
 #: misc/e2image.c:1444
 msgid "error reading bitmaps"
@@ -4721,11 +4721,11 @@ msgstr "-b 选项只能用于 raw 或 QCOW2 镜像。"
 
 #: misc/e2image.c:1584
 msgid "Offsets are only allowed with raw images."
-msgstr "偏移量只能用于 raw 镜像"
+msgstr "偏移量只能用于 raw 镜像。"
 
 #: misc/e2image.c:1589
 msgid "Move mode is only allowed with raw images."
-msgstr "移动模式只能用于 raw 镜像"
+msgstr "移动模式只能用于 raw 镜像。"
 
 #: misc/e2image.c:1594
 msgid "Move mode requires all data mode."
@@ -4757,22 +4757,22 @@ msgstr "无法对输出进行 stat 操作\n"
 #: misc/e2image.c:1681
 #, c-format
 msgid "Image (%s) is compressed\n"
-msgstr "镜像（%s）已被压缩\n"
+msgstr "镜像 (%s) 已被压缩\n"
 
 #: misc/e2image.c:1684
 #, c-format
 msgid "Image (%s) is encrypted\n"
-msgstr "镜像（%s）已被加密\n"
+msgstr "镜像 (%s) 已被加密\n"
 
 #: misc/e2image.c:1687
 #, c-format
 msgid "Image (%s) is corrupted\n"
-msgstr "镜像（%s）已损坏\n"
+msgstr "镜像 (%s) 已损坏\n"
 
 #: misc/e2image.c:1691
 #, c-format
 msgid "while trying to convert qcow2 image (%s) into raw image (%s)"
-msgstr "尝试将 qcow2 镜像（%s）转换为 raw 镜像（%s）时"
+msgstr "尝试将 qcow2 镜像 (%s) 转换为 raw 镜像 (%s) 时"
 
 #: misc/e2image.c:1701
 msgid "The -c option only supported in raw mode\n"
@@ -4803,22 +4803,22 @@ msgstr "用法：%s -r 设备\n"
 #: misc/e2label.c:58
 #, c-format
 msgid "e2label: cannot open %s\n"
-msgstr "e2label：无法打开 %s\n"
+msgstr "e2label: 无法打开 %s\n"
 
 #: misc/e2label.c:63
 #, c-format
 msgid "e2label: cannot seek to superblock\n"
-msgstr "e2label：无法定位到超级块\n"
+msgstr "e2label: 无法定位到超级块\n"
 
 #: misc/e2label.c:68
 #, c-format
 msgid "e2label: error reading superblock\n"
-msgstr "e2label：读取超级块时出错\n"
+msgstr "e2label: 读取超级块时出错\n"
 
 #: misc/e2label.c:72
 #, c-format
 msgid "e2label: not an ext2 filesystem\n"
-msgstr "e2label：不是一个 ext2 文件系统\n"
+msgstr "e2label: 不是一个 ext2 文件系统\n"
 
 #: misc/e2label.c:97 misc/tune2fs.c:3213
 #, c-format
@@ -4828,12 +4828,12 @@ msgstr "警告：标签太长，已截短。\n"
 #: misc/e2label.c:100
 #, c-format
 msgid "e2label: cannot seek to superblock again\n"
-msgstr "e2label：再一次无法定位到超级块\n"
+msgstr "e2label: 再一次无法定位到超级块\n"
 
 #: misc/e2label.c:105
 #, c-format
 msgid "e2label: error writing superblock\n"
-msgstr "e2label：写入超级块时出错\n"
+msgstr "e2label: 写入超级块时出错\n"
 
 #: misc/e2label.c:117 misc/tune2fs.c:1770
 #, c-format
@@ -4891,7 +4891,7 @@ msgstr "在进行重放操作时，不会写入到撤销文件。\n"
 #: misc/e2undo.c:377
 #, c-format
 msgid "while opening undo file `%s'\n"
-msgstr "打开撤销文件“%s”时\n"
+msgstr "打开撤销文件 \"%s\" 时\n"
 
 #: misc/e2undo.c:384
 msgid "while reading undo file"
@@ -4900,32 +4900,32 @@ msgstr "读取撤销文件时"
 #: misc/e2undo.c:389
 #, c-format
 msgid "%s: Not an undo file.\n"
-msgstr "%s：不是撤销文件。\n"
+msgstr "%s: 不是撤销文件。\n"
 
 #: misc/e2undo.c:400
 #, c-format
 msgid "%s: Header checksum doesn't match.\n"
-msgstr "%s：头部校验和不匹配。\n"
+msgstr "%s: 头部校验和不匹配。\n"
 
 #: misc/e2undo.c:407
 #, c-format
 msgid "%s: Corrupt undo file header.\n"
-msgstr "%s：撤销文件头损坏。\n"
+msgstr "%s: 撤销文件头损坏。\n"
 
 #: misc/e2undo.c:411
 #, c-format
 msgid "%s: Undo block size too large.\n"
-msgstr "%s：撤销块过大。\n"
+msgstr "%s: 撤销块过大。\n"
 
 #: misc/e2undo.c:416
 #, c-format
 msgid "%s: Undo block size too small.\n"
-msgstr "%s：撤销块过小。\n"
+msgstr "%s: 撤销块过小。\n"
 
 #: misc/e2undo.c:429
 #, c-format
 msgid "%s: Unknown undo file feature set.\n"
-msgstr "%s：设置了未知的撤销文件特性。\n"
+msgstr "%s: 设置了未知的撤销文件特性。\n"
 
 #: misc/e2undo.c:437
 #, c-format
@@ -4939,7 +4939,7 @@ msgstr "e2undo 只能用于未挂载的文件系统"
 #: misc/e2undo.c:459
 #, c-format
 msgid "while opening `%s'"
-msgstr "打开“%s”时"
+msgstr "打开 \"%s\" 时"
 
 #: misc/e2undo.c:470
 msgid "specified offset is too large"
@@ -4952,17 +4952,17 @@ msgstr "读取键时"
 #: misc/e2undo.c:523
 #, c-format
 msgid "%s: wrong key magic at %llu\n"
-msgstr "%s：%llu 中的键幻数有误\n"
+msgstr "%s: %llu 中的键幻数有误\n"
 
 #: misc/e2undo.c:533
 #, c-format
 msgid "%s: key block checksum error at %llu.\n"
-msgstr "%s：%llu 中的键块的校验和有误。\n"
+msgstr "%s: %llu 中的键块的校验和有误。\n"
 
 #: misc/e2undo.c:556
 #, c-format
 msgid "%s: block %llu is too long."
-msgstr "%s：块 %llu 太长。"
+msgstr "%s: 块 %llu 太长。"
 
 #: misc/e2undo.c:569 misc/e2undo.c:606
 #, c-format
@@ -5002,22 +5002,22 @@ msgstr "用法：findsuper 设备 [跳过字节数 [起始kb数]]\n"
 #: misc/findsuper.c:155
 #, c-format
 msgid "skipbytes should be a number, not %s\n"
-msgstr "“跳过字节数”应当为一个数字，而不是 %s\n"
+msgstr "\"跳过字节数\" 应当为一个数字，而不是 %s\n"
 
 #: misc/findsuper.c:162
 #, c-format
 msgid "skipbytes must be a multiple of the sector size\n"
-msgstr "“跳过字节数”应当是扇区大小的整数倍\n"
+msgstr "\"跳过字节数\" 应当是扇区大小的整数倍\n"
 
 #: misc/findsuper.c:169
 #, c-format
 msgid "startkb should be a number, not %s\n"
-msgstr "“起始kb数”应当为一个数字，而不是 %s\n"
+msgstr "\"起始kb数\" 应当为一个数字，而不是 %s\n"
 
 #: misc/findsuper.c:175
 #, c-format
 msgid "startkb should be positive, not %llu\n"
-msgstr "“起始kb数”应当为正数，而不是 %llu\n"
+msgstr "\"起始kb数\" 应当为正数，而不是 %llu\n"
 
 #: misc/findsuper.c:186
 #, c-format
@@ -5036,7 +5036,7 @@ msgstr ""
 #: misc/findsuper.c:190
 #, c-format
 msgid "byte_offset  byte_start     byte_end  fs_blocks blksz  grp  mkfs/mount_time           sb_uuid label\n"
-msgstr "偏移字节     起始字节      结束字节   块数      块大小  组  创建/挂载时间             超级块 UUID 标签\n"
+msgstr "偏移字节     起始字节      结束字节   块数      块大小  组  创建/挂载时间             超级块UUID 标签\n"
 
 #: misc/findsuper.c:265
 #, c-format
@@ -5045,7 +5045,7 @@ msgid ""
 "%11Lu: finished with errno %d\n"
 msgstr ""
 "\n"
-"%11Lu：已结束，错误号为 %d\n"
+"%11Lu: 已结束，错误号为 %d\n"
 
 #: misc/fsck.c:343
 #, c-format
@@ -5071,22 +5071,22 @@ msgstr ""
 #: misc/fsck.c:485
 #, c-format
 msgid "fsck: %s: not found\n"
-msgstr "fsck：%s：未找到\n"
+msgstr "fsck: %s: 未找到\n"
 
 #: misc/fsck.c:601
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
-msgstr "%s：等待中：没有子进程了吗？！？\n"
+msgstr "%s: wait: 没有子进程了吗？！？\n"
 
 #: misc/fsck.c:623
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
-msgstr "警告...设备 %2$s 的 %1$s 操作收到信号 %3$d 后退出。\n"
+msgstr "警告...设备 %2$s 的 %1$s 收到信号 %3$d 后退出。\n"
 
 #: misc/fsck.c:629
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
-msgstr "%s %s：状态为 %x，这不应当发生。\n"
+msgstr "%s %s: 状态为 %x，这不应该发生。\n"
 
 #: misc/fsck.c:668
 #, c-format
@@ -5096,7 +5096,7 @@ msgstr "已完成 %s（退出状态码 %d）\n"
 #: misc/fsck.c:728
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
-msgstr "%1$s：执行 fsck.%3$s %4$s 时出错，退出状态码 %2$d\n"
+msgstr "%1$s: 执行 fsck.%3$s %4$s 时出错，退出状态码 %2$d\n"
 
 #: misc/fsck.c:749
 msgid ""
@@ -5104,7 +5104,7 @@ msgid ""
 "with 'no' or '!'.\n"
 msgstr ""
 "所有通过 -t 选项指定的文件系统类型必须都含有（或都不含有）\n"
-"“no”或“!”前缀。\n"
+"\"no\" 或 \"!\" 前缀。\n"
 
 #: misc/fsck.c:768
 msgid "Couldn't allocate memory for filesystem types\n"
@@ -5115,12 +5115,12 @@ msgstr ""
 #: misc/fsck.c:891
 #, c-format
 msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
-msgstr "%s：跳过 /etc/fstab 中的错误行：bind 挂载项的 fsck pass 数非零\n"
+msgstr "%s: 跳过 /etc/fstab 中的错误行：bind 挂载项的 fsck pass 数非零\n"
 
 #: misc/fsck.c:918
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
-msgstr "fsck：无法检查 %s：找不到 fsck.%s\n"
+msgstr "fsck: 无法检查 %s：找不到 fsck.%s\n"
 
 #: misc/fsck.c:974
 msgid "Checking all file systems.\n"
@@ -5138,12 +5138,12 @@ msgstr "用法：fsck [-AMNPRTV] [ -C [ fd ] ] [-t 文件系统类型] [文件�
 #: misc/fsck.c:1127
 #, c-format
 msgid "%s: too many devices\n"
-msgstr "%s：设备过多\n"
+msgstr "%s: 设备过多\n"
 
 #: misc/fsck.c:1160 misc/fsck.c:1246
 #, c-format
 msgid "%s: too many arguments\n"
-msgstr "%s：参数过多\n"
+msgstr "%s: 参数过多\n"
 
 #: misc/fuse2fs.c:3746
 msgid "Mounting read-only.\n"
@@ -5152,31 +5152,31 @@ msgstr "以只读模式挂载。\n"
 #: misc/fuse2fs.c:3770
 #, c-format
 msgid "%s: Allowing users to allocate all blocks. This is dangerous!\n"
-msgstr "%s：允许用户分配所有块。这样做很危险！\n"
+msgstr "%s: 允许用户分配所有块。这样做很危险！\n"
 
 #: misc/fuse2fs.c:3782 misc/fuse2fs.c:3800
 #, c-format
 msgid "%s: %s.\n"
-msgstr "%s：%s。\n"
+msgstr "%s: %s。\n"
 
 #: misc/fuse2fs.c:3783 misc/fuse2fs.c:3802 misc/tune2fs.c:3104
 #, c-format
 msgid "Please run e2fsck -fy %s.\n"
-msgstr "请先运行“e2fsck -fy %s”。\n"
+msgstr "请先运行 \"e2fsck -fy %s\"。\n"
 
 #: misc/fuse2fs.c:3793
 #, c-format
 msgid "%s: mounting read-only without recovering journal\n"
-msgstr "%s：以只读方式挂载且不恢复日志\n"
+msgstr "%s: 以只读方式挂载且不恢复日志\n"
 
 #: misc/fuse2fs.c:3809
 msgid "Journal needs recovery; running `e2fsck -E journal_only' is required.\n"
-msgstr "日志需要恢复；请运行“e2fsck -E journal_only”。\n"
+msgstr "需要恢复日志；请运行 \"e2fsck -E journal_only\"。\n"
 
 #: misc/fuse2fs.c:3817
 #, c-format
 msgid "%s: Writing to the journal is not supported.\n"
-msgstr "%s：不支持写入日志。\n"
+msgstr "%s: 不支持写入日志。\n"
 
 #: misc/fuse2fs.c:3832
 msgid "Warning: Mounting unchecked fs, running e2fsck is recommended.\n"
@@ -5185,12 +5185,12 @@ msgstr "警告：正在挂载未经检查的文件系统，建议您运行 e2fsc
 #: misc/fuse2fs.c:3836
 msgid "Warning: Maximal mount count reached, running e2fsck is recommended.\n"
 msgstr ""
-"警告：达到了最大挂载计数，建议您运行 e2fsck。\n"
+"警告：达到了最大挂载次数，建议您运行 e2fsck。\n"
 "\n"
 
 #: misc/fuse2fs.c:3841
 msgid "Warning: Check time reached; running e2fsck is recommended.\n"
-msgstr "警告：检查超时，建议您运行 e2fsck。\n"
+msgstr "警告：检查时间已到；建议您运行 e2fsck。\n"
 
 #: misc/fuse2fs.c:3845
 msgid "Orphans detected; running e2fsck is recommended.\n"
@@ -5249,7 +5249,7 @@ msgstr "正在执行命令：%s\n"
 #: misc/mke2fs.c:267
 #, c-format
 msgid "while trying to run '%s'"
-msgstr "尝试运行“%s”时"
+msgstr "尝试运行 \"%s\" 时"
 
 #: misc/mke2fs.c:274
 msgid "while processing list of bad blocks from program"
@@ -5267,7 +5267,7 @@ msgstr "若要创建文件系统，块 %u 至 %u 必须为好块。\n"
 
 #: misc/mke2fs.c:306
 msgid "Aborting....\n"
-msgstr "正在终止...\n"
+msgstr "正在中止...\n"
 
 #: misc/mke2fs.c:326
 #, c-format
@@ -5276,7 +5276,7 @@ msgid ""
 "\tbad blocks.\n"
 "\n"
 msgstr ""
-"警告：备份超级块/组描述符中发现坏块（%u）\n"
+"警告：备份超级块/组描述符中发现坏块 (%u)\n"
 "\n"
 
 #: misc/mke2fs.c:345 misc/mke2fs.c:3283
@@ -5395,17 +5395,17 @@ msgstr "操作系统类型：%s\n"
 #: misc/mke2fs.c:694
 #, c-format
 msgid "Block size=%u (log=%u)\n"
-msgstr "块大小=%u（log=%u）\n"
+msgstr "块大小=%u (log=%u)\n"
 
 #: misc/mke2fs.c:697
 #, c-format
 msgid "Cluster size=%u (log=%u)\n"
-msgstr "簇大小=%u（log=%u）\n"
+msgstr "簇大小=%u (log=%u)\n"
 
 #: misc/mke2fs.c:701
 #, c-format
 msgid "Fragment size=%u (log=%u)\n"
-msgstr "分块大小=%u（log=%u）\n"
+msgstr "分块大小=%u (log=%u)\n"
 
 #: misc/mke2fs.c:703
 #, c-format
@@ -5420,7 +5420,7 @@ msgstr "%u 个 inode，%llu 个块\n"
 #: misc/mke2fs.c:707
 #, c-format
 msgid "%llu blocks (%2.2f%%) reserved for the super user\n"
-msgstr "%llu 个块（%2.2f%%）为超级用户保留\n"
+msgstr "%llu 个块 (%2.2f%%) 为超级用户保留\n"
 
 #: misc/mke2fs.c:710
 #, c-format
@@ -5479,18 +5479,18 @@ msgstr "超级块的备份存储于下列块："
 #, c-format
 msgid "%s requires '-O 64bit'\n"
 msgstr ""
-"%s 需要“-O 64bit”选项\n"
+"%s 需要 \"-O 64bit\" 选项\n"
 "\n"
 
 #: misc/mke2fs.c:839
 #, c-format
 msgid "'%s' must be before 'resize=%u'\n"
-msgstr "“%s”选项必须位于“resize=%u”之前\n"
+msgstr "\"%s\" 选项必须位于 \"resize=%u\" 之前\n"
 
 #: misc/mke2fs.c:852
 #, c-format
 msgid "Invalid desc_size: '%s'\n"
-msgstr "无效的 desc_size：“%s”\n"
+msgstr "无效的 desc_size：\"%s\"\n"
 
 #: misc/mke2fs.c:866
 #, c-format
@@ -5538,7 +5538,7 @@ msgstr "文件系统版本 0 不支持在线调整大小。\n"
 #: misc/mke2fs.c:1026 misc/mke2fs.c:1035
 #, c-format
 msgid "Invalid root_owner: '%s'\n"
-msgstr "无效的根目录所有者：“%s”\n"
+msgstr "无效的根目录所有者：\"%s\"\n"
 
 #: misc/mke2fs.c:1080
 #, c-format
@@ -5576,7 +5576,7 @@ msgstr ""
 "\n"
 "指定了错误的选项：%s\n"
 "\n"
-"扩展选项由逗号分隔，有些需要通过等号（“=”）传递参数。\n"
+"扩展选项由逗号分隔，有些需要通过等号 (\"=\") 传递参数。\n"
 "\n"
 "有效的扩展选项有：\n"
 "\tmmp_update_interval=<间隔>\n"
@@ -5656,7 +5656,7 @@ msgstr ""
 
 #: misc/mke2fs.c:1361
 msgid "Aborting...\n"
-msgstr "正在终止...\n"
+msgstr "正在中止...\n"
 
 #: misc/mke2fs.c:1402
 #, c-format
@@ -5695,7 +5695,7 @@ msgstr "无效的簇大小 - %s"
 
 #: misc/mke2fs.c:1694
 msgid "'-R' is deprecated, use '-E' instead"
-msgstr "“-R”选项已被废弃，请使用“-E”选项"
+msgstr "\"-R\" 选项已被废弃，请使用 \"-E\" 选项"
 
 #: misc/mke2fs.c:1708 misc/tune2fs.c:1872
 #, c-format
@@ -5721,7 +5721,7 @@ msgstr "flex_bg 的大小必须是 2 的幂"
 #: misc/mke2fs.c:1744
 #, c-format
 msgid "flex_bg size (%lu) must be less than or equal to 2^31"
-msgstr "flex_bg 的大小（%lu）必须小于等于 2^31"
+msgstr "flex_bg 的大小 (%lu) 必须小于等于 2^31"
 
 #: misc/mke2fs.c:1754
 #, c-format
@@ -5735,9 +5735,7 @@ msgstr "无效的 inode 大小 - %s"
 
 #: misc/mke2fs.c:1779
 msgid "Warning: -K option is deprecated and should not be used anymore. Use '-E nodiscard' extended option instead!\n"
-msgstr ""
-"警告：-K 选项已被废弃，不应当再被使用。请使用扩展选项\n"
-"“-E nodiscard”作为替代！\n"
+msgstr "警告：-K 选项已被废弃，不应当再被使用。请使用扩展选项 \"-E nodiscard\" 作为替代！\n"
 
 #: misc/mke2fs.c:1790
 msgid "in malloc for bad_blocks_filename"
@@ -5749,7 +5747,7 @@ msgid ""
 "Warning: label too long; will be truncated to '%s'\n"
 "\n"
 msgstr ""
-"警告：标签太长；将截短为“%s”\n"
+"警告：标签太长；将截短为 \"%s\"\n"
 "\n"
 
 #: misc/mke2fs.c:1808
@@ -5792,7 +5790,7 @@ msgstr "尝试打开日志设备 %s 时\n"
 #: misc/mke2fs.c:1942
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
-msgstr "日志设备的块大小（%d）低于最小的块大小 %d\n"
+msgstr "日志设备的块大小 (%d) 低于最小的块大小 %d\n"
 
 #: misc/mke2fs.c:1948
 #, c-format
@@ -5802,7 +5800,7 @@ msgstr "使用日志设备的块大小：%d\n"
 #: misc/mke2fs.c:1959
 #, c-format
 msgid "invalid blocks '%s' on device '%s'"
-msgstr "设备“%2$s”的块数“%1$s”无效"
+msgstr "设备 \"%2$s\" 的块数 \"%1$s\" 无效"
 
 #: misc/mke2fs.c:1979
 msgid "filesystem"
@@ -5876,7 +5874,7 @@ msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to be expressed\n"
 "\tin 32 bits using a blocksize of %d.\n"
 msgstr ""
-"%1$s：使用的块大小为 %4$d 时，设备 %3$s 的尺寸\n"
+"%1$s: 使用的块大小为 %4$d 时，设备 %3$s 的尺寸\n"
 "（0x%2$llx 个块）太大，无法用 32 位整数表示。\n"
 
 #: misc/mke2fs.c:2197
@@ -5885,7 +5883,7 @@ msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to create\n"
 "\ta filesystem using a blocksize of %d.\n"
 msgstr ""
-"%1$s：使用的块大小为 %4$d 时，设备 %3$s 的尺寸\n"
+"%1$s: 使用的块大小为 %4$d 时，设备 %3$s 的尺寸\n"
 "（0x%2$llx 个块）太大，无法创建文件系统。\n"
 
 #: misc/mke2fs.c:2219
@@ -5913,7 +5911,7 @@ msgstr "无效的保留块百分比 - %lf"
 
 #: misc/mke2fs.c:2274
 msgid "Extents MUST be enabled for a 64-bit filesystem.  Pass -O extents to rectify.\n"
-msgstr "64 位文件系统必须启用 extent 特性。请使用“-O extents”选项来修正。\n"
+msgstr "64 位文件系统必须启用 extent 特性。请使用 \"-O extents\" 选项来修正。\n"
 
 #: misc/mke2fs.c:2294
 msgid "The cluster size may not be smaller than the block size.\n"
@@ -6021,12 +6019,12 @@ msgstr "每组块数超过允许范围"
 
 #: misc/mke2fs.c:2553
 msgid "Flex_bg feature not enabled, so flex_bg size may not be specified"
-msgstr "Flex_bg 特性未启用，所以无法指定 flex_bg 尺寸"
+msgstr "flex_bg 特性未启用，所以无法指定 flex_bg 尺寸"
 
 #: misc/mke2fs.c:2565
 #, c-format
 msgid "invalid inode size %d (min %d/max %d)"
-msgstr "无效的 inode 大小 %d（最小 %d /最大 %d）"
+msgstr "无效的 inode 大小 %d（最小 %d/最大 %d）"
 
 #: misc/mke2fs.c:2580
 #, c-format
@@ -6036,12 +6034,12 @@ msgstr "%d 字节的 inode 对于内联数据来说太小；请指定一个更�
 #: misc/mke2fs.c:2595
 #, c-format
 msgid "too many inodes (%llu), raise inode ratio?"
-msgstr "inode 太多（%llu），是否提高 inode 比？"
+msgstr "inode 太多 (%llu)，是否提高 inode 比？"
 
 #: misc/mke2fs.c:2603
 #, c-format
 msgid "too many inodes (%llu), specify < 2^32 inodes"
-msgstr "inode 太多（%llu），请指定小于 2^32 的 inode 数"
+msgstr "inode 太多 (%llu)，请指定小于 2^32 的 inode 数"
 
 #: misc/mke2fs.c:2617
 #, c-format
@@ -6050,9 +6048,9 @@ msgid ""
 "\tfilesystem with %llu blocks, specify higher inode_ratio (-i)\n"
 "\tor lower inode count (-N).\n"
 msgstr ""
-"inode大小（%u）*inode数（%u）对于含有 %llu 个块\n"
-"\t的文件系统来说太大，请指定更高的 inode 比（使用 -i 选项）\n"
-"\t或更少的 inode 数（-N）。\n"
+"inode 大小 (%u) * inode 数 (%u) 对于含有 %llu 个块\n"
+"\t的文件系统来说太大，请指定更高的 inode 比 (-i)\n"
+"\t或更少的 inode 数 (-N)。\n"
 
 #: misc/mke2fs.c:2814
 msgid "Discarding device blocks: "
@@ -6085,11 +6083,11 @@ msgstr "设置超级块时"
 
 #: misc/mke2fs.c:3030
 msgid "Extents are not enabled.  The file extent tree can be checksummed, whereas block maps cannot.  Not enabling extents reduces the coverage of metadata checksumming.  Pass -O extents to rectify.\n"
-msgstr "未启用 extent 特性，所以仅对文件 extent 树进行校验，而不会对块映射进行校验。不启用 extent 将降低元数据校验和的覆盖范围。可以使用参数“-O extents”来进行纠正。\n"
+msgstr "未启用 extent 特性，所以仅对文件 extent 树进行校验，而不会对块映射进行校验。不启用 extent 将降低元数据校验和的覆盖范围。可以使用参数 \"-O extents\" 来进行纠正。\n"
 
 #: misc/mke2fs.c:3037
 msgid "64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Pass -O 64bit to rectify.\n"
-msgstr "未启用 64 位文件系统支持，将无法使用更大的字段来进行更完整的校验。可以使用参数“-O 64bit”来进行纠正。\n"
+msgstr "未启用 64 位文件系统支持，将无法使用更大的字段来进行更完整的校验。可以使用参数 \"-O 64bit\" 来进行纠正。\n"
 
 #: misc/mke2fs.c:3045
 msgid "The metadata_csum_seed feature requires the metadata_csum feature.\n"
@@ -6227,7 +6225,7 @@ msgstr "对大文件的块 %llu 填零时"
 #: misc/mk_hugefiles.c:516
 #, c-format
 msgid "Partition offset of %llu (%uk) blocks not compatible with cluster size %u.\n"
-msgstr "分区偏移量 %llu（%uk）块与簇大小 %u 不相容。\n"
+msgstr "分区偏移量 %llu (%uk) 块与簇大小 %u 不相容。\n"
 
 #: misc/mk_hugefiles.c:584
 msgid "Huge files will be zero'ed\n"
@@ -6285,7 +6283,7 @@ msgstr "无法获得 %s 的大小：%s"
 #: misc/partinfo.c:73
 #, c-format
 msgid "%s: h=%3d s=%3d c=%4d   start=%8d size=%8lu end=%8d\n"
-msgstr "%s：磁头=%3d 扇区=%3d 柱面=%4d   起始=%8d 大小=%8lu 终止=%8d\n"
+msgstr "%s: 磁头=%3d 扇区=%3d 柱面=%4d   起始=%8d 大小=%8lu 终止=%8d\n"
 
 #: misc/tune2fs.c:120
 msgid ""
@@ -6344,7 +6342,7 @@ msgid ""
 "is too high (%d).\n"
 msgstr ""
 "日志超级块已损坏，nr_users\n"
-"过高（%d）。\n"
+"过高 (%d)。\n"
 
 #: misc/tune2fs.c:308 misc/tune2fs.c:2910
 msgid "Filesystem's UUID not found on journal device.\n"
@@ -6381,12 +6379,12 @@ msgstr "（并且在此之后重启！）\n"
 #: misc/tune2fs.c:495
 #, c-format
 msgid "After running e2fsck, please run `resize2fs %s %s"
-msgstr "在运行 e2fsck 后，请运行“resize2fs %s %s"
+msgstr "在运行 e2fsck 后，请运行 \"resize2fs %s %s"
 
 #: misc/tune2fs.c:498
 #, c-format
 msgid "Please run `resize2fs %s %s"
-msgstr "请运行“resize2fs %s %s"
+msgstr "请运行 \"resize2fs %s %s"
 
 #: misc/tune2fs.c:502
 #, c-format
@@ -6396,12 +6394,12 @@ msgstr " -z \"%s\""
 #: misc/tune2fs.c:504
 #, c-format
 msgid "' to enable 64-bit mode.\n"
-msgstr "”来启用 64 位模式。\n"
+msgstr "\" 来启用 64 位模式。\n"
 
 #: misc/tune2fs.c:506
 #, c-format
 msgid "' to disable 64-bit mode.\n"
-msgstr "”来禁用 64 位模式。\n"
+msgstr "\" 来禁用 64 位模式。\n"
 
 #: misc/tune2fs.c:1074
 msgid ""
@@ -6414,12 +6412,12 @@ msgstr ""
 #: misc/tune2fs.c:1110
 #, c-format
 msgid "Clearing filesystem feature '%s' not supported.\n"
-msgstr "不支持移除文件系统特性“%s”。\n"
+msgstr "不支持移除文件系统特性 \"%s\"。\n"
 
 #: misc/tune2fs.c:1116
 #, c-format
 msgid "Setting filesystem feature '%s' not supported.\n"
-msgstr "不支持设置文件系统特性“%s”。\n"
+msgstr "不支持设置文件系统特性 \"%s\"。\n"
 
 #: misc/tune2fs.c:1125
 msgid ""
@@ -6439,7 +6437,7 @@ msgid ""
 "for filesystems with the meta_bg feature enabled.\n"
 msgstr ""
 "启用了 meta_bg 特性的文件系统不支持\n"
-"设置“sparse_super”特性。\n"
+"设置 \"sparse_super\" 特性。\n"
 
 #: misc/tune2fs.c:1164
 msgid ""
@@ -6502,11 +6500,11 @@ msgstr "无法在已挂载的文件系统上启用 metadata_csum 特性！\n"
 
 #: misc/tune2fs.c:1294
 msgid "Extents are not enabled.  The file extent tree can be checksummed, whereas block maps cannot.  Not enabling extents reduces the coverage of metadata checksumming.  Re-run with -O extent to rectify.\n"
-msgstr "未启用 extent 特性，所以仅对文件 extent 树进行校验，而不会对块位图进行校验。不启用 extent 将降低元数据校验和的覆盖范围。可以加上参数“-O extents”重新运行来纠正这一问题。\n"
+msgstr "未启用 extent 特性，所以仅对文件 extent 树进行校验，而不会对块位图进行校验。不启用 extent 将降低元数据校验和的覆盖范围。可以加上参数 \"-O extents\" 重新运行来纠正这一问题。\n"
 
 #: misc/tune2fs.c:1301
 msgid "64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Run resize2fs -b to rectify.\n"
-msgstr "未启用 64 位文件系统支持，将无法使用更大的字段来进行更完整的校验。可以运行“resize2fs -b”来纠正这一问题。\n"
+msgstr "未启用 64 位文件系统支持，将无法使用更大的字段来进行更完整的校验。可以运行 \"resize2fs -b\" 来纠正这一问题。\n"
 
 #: misc/tune2fs.c:1327
 msgid "Disabling checksums could take some time."
@@ -6545,7 +6543,7 @@ msgid ""
 "Warning: '^quota' option overrides '-Q'arguments.\n"
 msgstr ""
 "\n"
-"警告：“^quota”选项将覆盖“-Q”的参数。\n"
+"警告：\"^quota\" 选项将覆盖 \"-Q\" 的参数。\n"
 
 #: misc/tune2fs.c:1483 misc/tune2fs.c:2244
 msgid "The casefold feature may only be enabled when the filesystem is unmounted.\n"
@@ -6557,7 +6555,7 @@ msgid ""
 "on filesystems with the metadata_csum feature enabled.\n"
 msgstr ""
 "只有在启用了 metadata_csum 特性的文件系统才支持\n"
-"“metadata_csum_seed”特性。\n"
+"\"metadata_csum_seed\" 特性。\n"
 
 #: misc/tune2fs.c:1513
 msgid ""
@@ -6569,7 +6567,7 @@ msgstr ""
 
 #: misc/tune2fs.c:1519
 msgid "Recalculating checksums could take some time."
-msgstr "重新计算校验和需要花费一段时间。"
+msgstr "重新计算校验和可能需要花费一些时间。"
 
 #: misc/tune2fs.c:1562
 msgid "The filesystem already has a journal.\n"
@@ -6618,17 +6616,17 @@ msgstr "初始化支持库中的配额上下文时"
 #: misc/tune2fs.c:1684
 #, c-format
 msgid "while updating quota limits (%d)"
-msgstr "更新配额限制（%d）时"
+msgstr "更新配额限制 (%d) 时"
 
 #: misc/tune2fs.c:1694
 #, c-format
 msgid "while writing quota file (%d)"
-msgstr "写入配额文件（%d）时"
+msgstr "写入配额文件 (%d) 时"
 
 #: misc/tune2fs.c:1712
 #, c-format
 msgid "while removing quota file (%d)"
-msgstr "移除配额文件（%d）时"
+msgstr "移除配额文件 (%d) 时"
 
 #: misc/tune2fs.c:1755
 msgid ""
@@ -6739,7 +6737,7 @@ msgstr "无效的 hash 算法：%s\n"
 #: misc/tune2fs.c:2223
 #, c-format
 msgid "Setting default hash algorithm to %s (%d)\n"
-msgstr "将默认 hash 算法设置为 %s（%d）\n"
+msgstr "将默认 hash 算法设置为 %s (%d)\n"
 
 #: misc/tune2fs.c:2250
 #, c-format
@@ -6754,12 +6752,12 @@ msgstr "无效的编码：%s\n"
 #: misc/tune2fs.c:2262
 #, c-format
 msgid "Setting encoding to '%s'\n"
-msgstr "设置编码为“%s”\n"
+msgstr "设置编码为 \"%s\"\n"
 
 #: misc/tune2fs.c:2286
 #, c-format
 msgid "Setting encoding_flags to '%s'\n"
-msgstr "设置 encoding_flags 为“%s”\n"
+msgstr "设置 encoding_flags 为 \"%s\"\n"
 
 #: misc/tune2fs.c:2296
 msgid ""
@@ -6785,7 +6783,7 @@ msgstr ""
 "\n"
 "指定了错误的选项。\n"
 "\n"
-"扩展选项由逗号分隔，有些需要通过等号（“=”）传递参数。\n"
+"扩展选项由逗号分隔，有些需要通过等号 (\"=\") 传递参数。\n"
 "\n"
 "有效的扩展选项有：\n"
 "\tclear_mmp\n"
@@ -6839,7 +6837,7 @@ msgid ""
 "'tune2fs -f -E clear_mmp {device}'\n"
 msgstr ""
 "如果您确定文件系统并没有挂载到任何节点上，请运行：\n"
-"“tune2fs -f -E clear_mmp {设备}”\n"
+"\"tune2fs -f -E clear_mmp {设备}\"\n"
 
 #: misc/tune2fs.c:2998
 #, c-format
@@ -6848,7 +6846,7 @@ msgid ""
 "'e2fsck -f %s'\n"
 msgstr ""
 "MMP 块幻数错误。请尝试运行以下命令来修复：\n"
-"“e2fsck -f %s”\n"
+"\"e2fsck -f %s\"\n"
 
 #: misc/tune2fs.c:3010
 msgid "Cannot modify a journal device.\n"
@@ -6916,7 +6914,7 @@ msgstr "设置保留块的 gid 为 %lu\n"
 #: misc/tune2fs.c:3144
 #, c-format
 msgid "interval between checks is too big (%lu)"
-msgstr "检查间隔太长（%lu）"
+msgstr "检查间隔太长 (%lu)"
 
 #: misc/tune2fs.c:3151
 #, c-format
@@ -6931,7 +6929,7 @@ msgstr "将保留块百分比设置为 %g%%（%llu 个块）\n"
 #: misc/tune2fs.c:3165
 #, c-format
 msgid "reserved blocks count is too big (%llu)"
-msgstr "保留块的数量太大（%llu）"
+msgstr "保留块的数量太大 (%llu)"
 
 #: misc/tune2fs.c:3172
 #, c-format
@@ -7006,7 +7004,7 @@ msgstr "只有当文件系统未挂载时才能改变 UUID。\n"
 
 #: misc/tune2fs.c:3306
 msgid "If you only use kernels newer than v4.4, run 'tune2fs -O metadata_csum_seed' and re-run this command.\n"
-msgstr "若您仅使用 v4.4 以上的内核，请运行“tune2fs -O metadata_csum_seed”，然后重新运行此命令。\n"
+msgstr "若您仅使用 v4.4 以上的内核，请运行 \"tune2fs -O metadata_csum_seed\"，然后重新运行此命令。\n"
 
 #: misc/tune2fs.c:3337
 msgid "Invalid UUID format\n"
@@ -7048,7 +7046,7 @@ msgstr "设置带宽为 %d\n"
 #: misc/tune2fs.c:3430
 #, c-format
 msgid "Setting extended default mount options to '%s'\n"
-msgstr "设置扩展的默认挂载选项为“%s”\n"
+msgstr "设置扩展的默认挂载选项为 \"%s\"\n"
 
 #: misc/util.c:101
 msgid "<proceeding>\n"
@@ -7057,11 +7055,11 @@ msgstr "<正在继续>\n"
 #: misc/util.c:105
 #, c-format
 msgid "Proceed anyway (or wait %d seconds to proceed) ? (y,N) "
-msgstr "无论如何也要继续（或等待 %d 秒以继续）？（y,N）"
+msgstr "无论如何也要继续（或等待 %d 秒以继续）？(y,N) "
 
 #: misc/util.c:109
 msgid "Proceed anyway? (y,N) "
-msgstr "无论如何也要继续？（y,N）"
+msgstr "无论如何也要继续？(y,N) "
 
 #: misc/util.c:136
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
@@ -7070,7 +7068,7 @@ msgstr "仍然强制执行 mke2fs 。希望 /etc/mtab 中反映的并非真实�
 #: misc/util.c:141
 #, c-format
 msgid "will not make a %s here!\n"
-msgstr "将不会在此建立%s ！\n"
+msgstr "将不会在此创建%s！\n"
 
 #: misc/util.c:148
 msgid "mke2fs forced anyway.\n"
@@ -7108,10 +7106,10 @@ msgstr ""
 "\n"
 "给定的日志选项有误。\n"
 "\n"
-"日志选项由逗号分隔，有些还需要通过等号（“=”）传递参数。\n"
+"日志选项由逗号分隔，有些还需要通过等号 (\"=\") 传递参数。\n"
 "\n"
 "有效的日志选项为：\n"
-"\tsize=<日志大小（MB）>\n"
+"\tsize=<日志大小 (MB)>\n"
 "\tdevice=<日志设备>\n"
 "\tlocation=<日志所在位置>\n"
 "\n"
@@ -7135,7 +7133,7 @@ msgid ""
 msgstr ""
 "\n"
 "给定的日志总大小为 %d 个块；但该值必须\n"
-"介于 1024 至 10240000 块之间。终止执行。\n"
+"介于 1024 至 10240000 块之间。中止执行。\n"
 
 #: misc/util.c:292
 msgid ""
@@ -7253,7 +7251,7 @@ msgstr "错误的数值：%s\n"
 #: misc/uuidd.c:534 misc/uuidd.c:563
 #, c-format
 msgid "Error calling uuidd daemon (%s): %s\n"
-msgstr "调用 uuidd 守护进程（%s）时出错：%s\n"
+msgstr "调用 uuidd 守护进程 (%s) 时出错：%s\n"
 
 #: misc/uuidd.c:544
 #, c-format
@@ -7292,9 +7290,7 @@ msgstr "# Extent 转储：\n"
 #: resize/extent.c:203
 #, c-format
 msgid "#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"
-msgstr ""
-"#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"
-"\n"
+msgstr "#\tNum=%llu, Size=%llu, Cursor=%llu, Sorted=%llu\n"
 
 #: resize/main.c:49
 #, c-format
@@ -7362,7 +7358,7 @@ msgid ""
 "Please run 'e2fsck -f %s' first.\n"
 "\n"
 msgstr ""
-"请先运行“e2fsck -f %s”。\n"
+"请先运行 \"e2fsck -f %s\"。\n"
 "\n"
 
 #: resize/main.c:476
@@ -7386,7 +7382,7 @@ msgstr "新的大小会导致块组描述符的数量过多。\n"
 #: resize/main.c:555
 #, c-format
 msgid "New size smaller than minimum (%llu)\n"
-msgstr "新大小低于允许的最小值（%llu）\n"
+msgstr "新大小低于允许的最小值 (%llu)\n"
 
 #: resize/main.c:562
 msgid "Invalid stride length"
@@ -7473,7 +7469,7 @@ msgid ""
 "Please run 'e2fsck -fy %s' to fix the filesystem\n"
 "after the aborted resize operation.\n"
 msgstr ""
-"请在终止调整大小操作后运行“e2fsck -fy %s”\n"
+"请在调整大小操作中止后运行 \"e2fsck -fy %s\"\n"
 "来修复文件系统。\n"
 
 #: resize/main.c:664
@@ -7561,7 +7557,7 @@ msgstr "文件系统 %s 被挂载于 %s，并且本系统不支持在线调整�
 #: resize/resize2fs.c:760
 #, c-format
 msgid "inodes (%llu) must be less than %u\n"
-msgstr "inode 数（%llu）必须小于 %u\n"
+msgstr "inode 数 (%llu) 必须小于 %u\n"
 
 #: resize/resize2fs.c:1039
 msgid "reserved blocks"
@@ -7817,7 +7813,7 @@ msgstr "块位图不相同"
 
 #: lib/ext2fs/ext2_err.c:68
 msgid "Inode bitmaps are not the same"
-msgstr "Inode 位图不相同"
+msgstr "inode 位图不相同"
 
 #: lib/ext2fs/ext2_err.c:69
 msgid "Illegal or malformed device name"
@@ -7973,43 +7969,43 @@ msgstr "尝试在块位图中设置丢失的间接块"
 
 #: lib/ext2fs/ext2_err.c:107
 msgid "TDB: Success"
-msgstr "TDB：成功"
+msgstr "TDB: 成功"
 
 #: lib/ext2fs/ext2_err.c:108
 msgid "TDB: Corrupt database"
-msgstr "TDB：数据库损坏"
+msgstr "TDB: 数据库损坏"
 
 #: lib/ext2fs/ext2_err.c:109
 msgid "TDB: IO Error"
-msgstr "TDB：I/O 错误"
+msgstr "TDB: I/O 错误"
 
 #: lib/ext2fs/ext2_err.c:110
 msgid "TDB: Locking error"
-msgstr "TDB：加锁错误"
+msgstr "TDB: 加锁错误"
 
 #: lib/ext2fs/ext2_err.c:111
 msgid "TDB: Out of memory"
-msgstr "TDB：内存耗尽"
+msgstr "TDB: 内存耗尽"
 
 #: lib/ext2fs/ext2_err.c:112
 msgid "TDB: Record exists"
-msgstr "TDB：记录已存在"
+msgstr "TDB: 记录已存在"
 
 #: lib/ext2fs/ext2_err.c:113
 msgid "TDB: Lock exists on other keys"
-msgstr "TDB：锁已存在于其他键"
+msgstr "TDB: 锁已存在于其他键"
 
 #: lib/ext2fs/ext2_err.c:114
 msgid "TDB: Invalid parameter"
-msgstr "TDB：无效的参数"
+msgstr "TDB: 无效的参数"
 
 #: lib/ext2fs/ext2_err.c:115
 msgid "TDB: Record does not exist"
-msgstr "TDB：记录不存在"
+msgstr "TDB: 记录不存在"
 
 #: lib/ext2fs/ext2_err.c:116
 msgid "TDB: Write not permitted"
-msgstr "TDB：不允许写入"
+msgstr "TDB: 不允许写入"
 
 #: lib/ext2fs/ext2_err.c:117
 msgid "Ext2fs directory block list is empty"
@@ -8085,19 +8081,19 @@ msgstr "inode 未使用 extent"
 
 #: lib/ext2fs/ext2_err.c:135
 msgid "No 'next' extent"
-msgstr "找不到“next”extent"
+msgstr "找不到 \"next\" extent"
 
 #: lib/ext2fs/ext2_err.c:136
 msgid "No 'previous' extent"
-msgstr "找不到“previous”extent"
+msgstr "找不到 \"previous\" extent"
 
 #: lib/ext2fs/ext2_err.c:137
 msgid "No 'up' extent"
-msgstr "找不到“up”extent"
+msgstr "找不到 \"up\" extent"
 
 #: lib/ext2fs/ext2_err.c:138
 msgid "No 'down' extent"
-msgstr "找不到“down”extent"
+msgstr "找不到 \"down\" extent"
 
 #: lib/ext2fs/ext2_err.c:139
 msgid "No current node"
@@ -8105,7 +8101,7 @@ msgstr "当前节点不存在"
 
 #: lib/ext2fs/ext2_err.c:140
 msgid "Ext2fs operation not supported"
-msgstr "不支持的 Ext2fs 操作"
+msgstr "不支持的 ext2fs 操作"
 
 #: lib/ext2fs/ext2_err.c:141
 msgid "No room to insert extent in node"
@@ -8141,31 +8137,31 @@ msgstr "文件系统太大，无法使用传统位图"
 
 #: lib/ext2fs/ext2_err.c:149
 msgid "MMP: invalid magic number"
-msgstr "MMP：无效的幻数"
+msgstr "MMP: 无效的幻数"
 
 #: lib/ext2fs/ext2_err.c:150
 msgid "MMP: device currently active"
-msgstr "MMP：设备当前为活动状态"
+msgstr "MMP: 设备当前为活动状态"
 
 #: lib/ext2fs/ext2_err.c:151
 msgid "MMP: e2fsck being run"
-msgstr "MMP：试图运行 e2fsck"
+msgstr "MMP: 试图运行 e2fsck"
 
 #: lib/ext2fs/ext2_err.c:152
 msgid "MMP: block number beyond filesystem range"
-msgstr "MMP：块编号超出文件系统边界"
+msgstr "MMP: 块编号超出文件系统边界"
 
 #: lib/ext2fs/ext2_err.c:153
 msgid "MMP: undergoing an unknown operation"
-msgstr "MMP：正在进行未知的操作"
+msgstr "MMP: 正在进行未知的操作"
 
 #: lib/ext2fs/ext2_err.c:154
 msgid "MMP: filesystem still in use"
-msgstr "MMP：文件系统仍在使用"
+msgstr "MMP: 文件系统仍在使用"
 
 #: lib/ext2fs/ext2_err.c:155
 msgid "MMP: open with O_DIRECT failed"
-msgstr "MMP：使用 O_DIRECT 标志打开失败"
+msgstr "MMP: 使用 O_DIRECT 标志打开失败"
 
 #: lib/ext2fs/ext2_err.c:156
 msgid "Block group descriptor size incorrect"
@@ -8173,15 +8169,15 @@ msgstr "块组描述符大小错误"
 
 #: lib/ext2fs/ext2_err.c:157
 msgid "Inode checksum does not match inode"
-msgstr "inode 校验和与 inode 自身不符"
+msgstr "inode 校验和与 inode 不符"
 
 #: lib/ext2fs/ext2_err.c:158
 msgid "Inode bitmap checksum does not match bitmap"
-msgstr "inode 位图校验和与位图自身不符"
+msgstr "inode 位图校验和与位图不符"
 
 #: lib/ext2fs/ext2_err.c:159
 msgid "Extent block checksum does not match extent block"
-msgstr "extent 块校验和与 extent 块自身不符"
+msgstr "extent 块校验和与 extent 块不符"
 
 #: lib/ext2fs/ext2_err.c:160
 msgid "Directory block does not have space for checksum"
@@ -8189,15 +8185,15 @@ msgstr "目录块中没有用于存储校验和的空间"
 
 #: lib/ext2fs/ext2_err.c:161
 msgid "Directory block checksum does not match directory block"
-msgstr "目录块校验和与目录块自身不符"
+msgstr "目录块校验和与目录块不符"
 
 #: lib/ext2fs/ext2_err.c:162
 msgid "Extended attribute block checksum does not match block"
-msgstr "扩展属性块校验和与块自身不符"
+msgstr "扩展属性块校验和与块不符"
 
 #: lib/ext2fs/ext2_err.c:163
 msgid "Superblock checksum does not match superblock"
-msgstr "超级块校验和与超级块自身不符"
+msgstr "超级块校验和与超级块不符"
 
 #: lib/ext2fs/ext2_err.c:164
 msgid "Unknown checksum algorithm"
@@ -8209,11 +8205,11 @@ msgstr "MMP 块校验和不符"
 
 #: lib/ext2fs/ext2_err.c:166
 msgid "Ext2 file already exists"
-msgstr "Ext2 文件已存在"
+msgstr "ext2 文件已存在"
 
 #: lib/ext2fs/ext2_err.c:167
 msgid "Block bitmap checksum does not match bitmap"
-msgstr "块位图校验和与位图自身不符"
+msgstr "块位图校验和与位图不符"
 
 #: lib/ext2fs/ext2_err.c:168
 msgid "Cannot iterate data blocks of an inode containing inline data"
@@ -8249,7 +8245,7 @@ msgstr "文件系统缺少 ext_attr 或 inline_data 特性"
 
 #: lib/ext2fs/ext2_err.c:176
 msgid "Inode doesn't have inline data"
-msgstr "Inode 中不含内联数据"
+msgstr "inode 中不含内联数据"
 
 #: lib/ext2fs/ext2_err.c:177
 msgid "No block for an inode with inline data"
@@ -8265,7 +8261,7 @@ msgstr "扩展属性结构体中的幻数有错"
 
 #: lib/ext2fs/ext2_err.c:180
 msgid "Inode seems to contain garbage"
-msgstr "Inode 中含有无效数据"
+msgstr "inode 中含有无效数据"
 
 #: lib/ext2fs/ext2_err.c:181
 msgid "Extended attribute has an invalid value offset"
@@ -8297,7 +8293,7 @@ msgstr "日志超级块已损坏"
 
 #: lib/ext2fs/ext2_err.c:188
 msgid "Inode is corrupted"
-msgstr "Inode 已损坏"
+msgstr "inode 已损坏"
 
 #: lib/ext2fs/ext2_err.c:189
 msgid "Inode containing extended attribute value is corrupted"
@@ -8491,7 +8487,7 @@ msgstr "%s 不是块设备。\n"
 #: lib/support/plausible.c:250
 #, c-format
 msgid "%s contains a %s file system labelled '%s'\n"
-msgstr "%1$s 有一个标签为“%3$s”的 %2$s 文件系统\n"
+msgstr "%1$s 有一个标签为 \"%3$s\" 的 %2$s 文件系统\n"
 
 #: lib/support/plausible.c:253
 #, c-format
@@ -8501,7 +8497,7 @@ msgstr "%s 有一个 %s 文件系统\n"
 #: lib/support/plausible.c:277
 #, c-format
 msgid "%s contains `%s' data\n"
-msgstr "%s 含有“%s”数据\n"
+msgstr "%s 含有 \"%s\" 数据\n"
 
 #~ msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 #~ msgstr "用法：%s [-F] [-I inode缓冲块] 设备\n"
