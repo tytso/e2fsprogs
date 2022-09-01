@@ -3478,6 +3478,9 @@ int main (int argc, char *argv[])
 
 		if (!jparams.num_journal_blocks) {
 			ext2fs_clear_feature_journal(fs->super);
+			ext2fs_clear_feature_orphan_file(fs->super);
+			ext2fs_clear_feature_journal(&fs_param);
+			ext2fs_clear_feature_orphan_file(&fs_param);
 			goto no_journal;
 		}
 		if (!quiet) {
