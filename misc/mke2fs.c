@@ -1576,6 +1576,7 @@ static void PRS(int argc, char *argv[])
 	int		show_version_only = 0, is_device = 0;
 	unsigned long long num_inodes = 0; /* unsigned long long to catch too-large input */
 	int		default_orphan_file = 0;
+	int		default_csum_seed = 0;
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
 	char *		extended_opts = 0;
@@ -2135,11 +2136,15 @@ profile_error:
 	 */
 	if (ext2fs_has_feature_orphan_file(&fs_param))
 		default_orphan_file = 1;
+	if (ext2fs_has_feature_csum_seed(&fs_param))
+		default_csum_seed = 1;
 	if (fs_features)
 		edit_feature(fs_features, &fs_param.s_feature_compat);
 	/* Silently disable orphan_file if user chose fs without journal */
 	if (default_orphan_file && !ext2fs_has_feature_journal(&fs_param))
 		ext2fs_clear_feature_orphan_file(&fs_param);
+	if (default_csum_seed && !ext2fs_has_feature_metadata_csum(&fs_param))
+		ext2fs_clear_feature_csum_seed(&fs_param);
 	if (tmp)
 		free(tmp);
 	(void) ext2fs_free_mem(&fs_features);
