@@ -3106,8 +3106,6 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 			com_err("tune2fs", retval,
 				"while recovering journal.\n");
 			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
-			if (fs)
-				ext2fs_close_free(&fs);
 			rc = 1;
 			goto closefs;
 		}
