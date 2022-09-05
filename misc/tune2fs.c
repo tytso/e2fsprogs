@@ -3243,6 +3243,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 			fputs(_("Error in using clear_mmp. "
 				"It must be used with -f\n"),
 			      stderr);
+			rc = 1;
 			goto closefs;
 		}
 	}
@@ -3447,5 +3448,5 @@ closefs:
 
 	if (feature_64bit)
 		convert_64bit(fs, feature_64bit);
-	return (ext2fs_close_free(&fs) ? 1 : 0);
+	return (ext2fs_close_free(&fs) ? 1 : rc);
 }
