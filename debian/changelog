@@ -1,8 +1,38 @@
-e2fsprogs (1.46.6~rc0-1) unstable; urgency=medium
+e2fsprogs (1.46.6~rc1-1) unstable; urgency=medium
 
   * Trial upstream release for 1.46.6
+  * Debugfs's ncheck command now allows the inode number to be surrounded
+    by angle brackets
+  * Debugfs -c no longer prints a scary message on startup
+  * Resize2fs will round down the requested new file system size to the
+    nearest cluster boundary when resizing bigalloc file systems
+  * Avoid triggering udev in dumpe2fs and "resize2fs -P" for file systems
+    with MMP enabled
+  * Fix a bug where e2fsck could fail when specifying an undo file and an
+    explicit superblock number
+  * Fix e2image so it won't potentially loop forever for certain invalid
+    file systems
+  * Resize2fs now honors the E2FSPROGS_FAKE_TIME environment variable
+  * Fix tune2fs, fuse2fs, and debugsfs to update j_tail_sequence when
+    replaying the journal
+  * Add additional bullet-proofing for very badly corrupted file systems
+    (Addresses CVE-2022-1304)  (Closes: #1010263)
+  * Check for and handle malloc() failures when computing the log filename
+    in e2fsck and in the libss library
+  * Tune2fs and e2fsck to accept pathames which include '=' characters
+  * Update and clarify's chattr's man page and usage message
+  * Fix tune2fs to avoid a crash if the journal replay fails and to make
+    sure its exit status is non-zero if there is some failure.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 01 Sep 2022 10:47:58 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 12 Sep 2022 08:27:55 -0400
+
+e2fsprogs (1.46.5-2) unstable; urgency=medium
+
+  * Fix build on GNU/kFreeBSD (caused by the fact that the Debian port has
+    an ancient version of coreutils, so the timeout program doesn't support
+    the -v option.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 03 Jan 2022 23:48:13 -0500
 
 e2fsprogs (1.46.5-1) unstable; urgency=medium
 

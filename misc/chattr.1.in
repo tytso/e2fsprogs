@@ -252,12 +252,16 @@ make sure to read the bugs and limitations section at the end of this
 document.
 .TP
 .B x
-The 'x' attribute can be set on a directory or file.  If the attribute
-is set on an existing directory, it will be inherited by all files and
-subdirectories that are subsequently created in the directory.  If an
-existing directory has contained some files and subdirectories, modifying
-the attribute on the parent directory doesn't change the attributes on
-these files and subdirectories.
+A file with the 'x' requests the use of direct access (dax) mode, if the
+kernel supports DAX.  This can be overridden by the 'dax=never' mount
+option.  For more information see the kernel documentation for dax:
+<https://www.kernel.org/doc/html/latest/filesystems/dax.html>.
+.IP
+If the attribute is set on an existing directory, it will be inherited
+by all files and subdirectories that are subsequently created in the
+directory.  If an existing directory has contained some files and
+subdirectories, modifying the attribute on the parent directory doesn't
+change the attributes on these files and subdirectories.
 .TP
 .B V
 A file with the 'V' attribute set has fs-verity enabled.  It cannot be

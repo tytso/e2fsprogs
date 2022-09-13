@@ -53,14 +53,13 @@ cc_library {
 
     target: {
         windows: {
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
+            include_dirs: ["external/e2fsprogs/include/mingw"],
             enabled: true,
             cflags: [
                 "-Wno-unused-variable",
-            ],
-            clang_cflags: [
                 "-Wno-error=typedef-redefinition",
             ],
+
             host_ldlibs: [
                 "-lws2_32",
             ],
