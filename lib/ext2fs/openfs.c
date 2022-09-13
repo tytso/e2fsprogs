@@ -409,6 +409,12 @@ retry:
 	}
 	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
 					  EXT2_DESC_PER_BLOCK(fs->super));
+	if (ext2fs_has_feature_meta_bg(fs->super) &&
+	    (fs->super->s_first_meta_bg > fs->desc_blocks) &&
+	    !(flags & EXT2_FLAG_IGNORE_SB_ERRORS)) {
+		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
+	}
 	if (flags & EXT2_FLAG_SUPER_ONLY)
 		goto skip_read_bg;
 	retval = ext2fs_get_array(fs->desc_blocks, fs->blocksize,
