@@ -1132,6 +1132,9 @@ struct problem_context {
 /* Lost+found is encrypted */
 #define PR_3_LPF_ENCRYPTED		0x03001B
 
+/* Recursively looped directory inode */
+#define PR_3_LOOPED_DIR			0x03001D
+
 /*
  * Pass 3a --- rehashing directories
  */

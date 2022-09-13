@@ -252,7 +252,7 @@ static blk64_t get_midpoint_journal_block(ext2_filsys fs)
 
 	group = ext2fs_group_of_blk2(fs, (ext2fs_blocks_count(fs->super) -
 					 fs->super->s_first_data_block) / 2);
-	log_flex = 1 << fs->super->s_log_groups_per_flex;
+	log_flex = 1U << fs->super->s_log_groups_per_flex;
 	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
 		group = group & ~(log_flex - 1);
 		while ((group < fs->group_desc_count) &&

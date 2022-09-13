@@ -338,6 +338,7 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	if (retval) {
 		com_err("ext2fs_badblocks_list_iterate_begin", retval,
 			"%s", _("while printing bad block list"));
+		ext2fs_badblocks_list_free(bb_list);
 		return;
 	}
 	if (dump) {
@@ -618,7 +619,8 @@ int main (int argc, char ** argv)
 			mmp_check = 1;
 			header_only = 1;
 		}
-	}
+	} else
+		usage();
 
 	if (!mmp_check)
 		fprintf(stderr, "dumpe2fs %s (%s)\n", E2FSPROGS_VERSION,

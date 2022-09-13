@@ -295,8 +295,12 @@ retry:
 		}
 	}
 
-	if (fs->super->s_log_block_size >
-	    (unsigned) (EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE)) {
+	if ((fs->super->s_log_block_size >
+	     (unsigned) (EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE)) ||
+	    (fs->super->s_log_cluster_size >
+	     (unsigned) (EXT2_MAX_CLUSTER_LOG_SIZE - EXT2_MIN_CLUSTER_LOG_SIZE)) ||
+	    (fs->super->s_log_block_size > fs->super->s_log_cluster_size) ||
+	    (fs->super->s_log_groups_per_flex > 31)) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
@@ -326,8 +330,13 @@ retry:
 	}
 
 	/* Enforce the block group descriptor size */
-	if (ext2fs_has_feature_64bit(fs->super)) {
-		if (fs->super->s_desc_size < EXT2_MIN_DESC_SIZE_64BIT) {
+	if (!(flags & EXT2_FLAG_IGNORE_SB_ERRORS) &&
+	    ext2fs_has_feature_64bit(fs->super)) {
+		unsigned desc_size = fs->super->s_desc_size;
+
+		if ((desc_size < EXT2_MIN_DESC_SIZE_64BIT) ||
+		    (desc_size > EXT2_MAX_DESC_SIZE) ||
+		    (desc_size & (desc_size - 1)) != 0) {
 			retval = EXT2_ET_BAD_DESC_SIZE;
 			goto cleanup;
 		}

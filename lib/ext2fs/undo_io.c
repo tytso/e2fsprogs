@@ -790,6 +790,8 @@ cleanup:
 		io_channel_close(data->real);
 	if (data)
 		ext2fs_free_mem(&data);
+	if (io && io->name)
+		ext2fs_free_mem(&io->name);
 	if (io)
 		ext2fs_free_mem(&io);
 	return retval;

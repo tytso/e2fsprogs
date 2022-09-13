@@ -99,6 +99,8 @@ void quota_set_sb_inum(ext2_filsys fs, ext2_ino_t ino, enum quota_type qtype)
 
 	log_debug("setting quota ino in superblock: ino=%u, type=%d", ino,
 		 qtype);
+	if (inump == NULL)
+		return;
 	*inump = ino;
 	ext2fs_mark_super_dirty(fs);
 }

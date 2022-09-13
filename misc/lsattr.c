@@ -187,6 +187,8 @@ int main (int argc, char ** argv)
 #endif
 	if (argc && *argv)
 		program_name = *argv;
+	else
+		usage();
 	while ((c = getopt (argc, argv, "RVadlvp")) != EOF)
 		switch (c)
 		{

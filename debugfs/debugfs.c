@@ -195,9 +195,7 @@ try_open_again:
 	}
 	current_fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
 
-	if (catastrophic)
-		com_err(device, 0, "catastrophic mode - not reading inode or group bitmaps");
-	else {
+	if (!catastrophic) {
 		retval = ext2fs_read_bitmaps(current_fs);
 		if (retval) {
 			com_err(device, retval,

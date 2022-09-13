@@ -16,12 +16,10 @@ if [ "$os" = "GNU" ]; then
 	return 0
 fi
 
-MKFS_DIR=$TMPFILE.dir
+MKFS_DIR=$(mktemp -d ./$test_name-XXXXXX.tmp)
 OUT=$test_name.log
 EXP=$test_dir/expect
 
-rm -rf $MKFS_DIR
-mkdir -p $MKFS_DIR
 touch $MKFS_DIR/emptyfile
 dd if=/dev/zero bs=1024 count=32 2> /dev/null | tr '\0' 'a' > $MKFS_DIR/bigfile
 echo "M" | dd of=$MKFS_DIR/sparsefile bs=1 count=1 seek=1024 2> /dev/null
@@ -60,7 +58,14 @@ mask::r-x
 other::r-x
 EOF
 
-$MKE2FS -q -F -o Linux -T ext4 -O metadata_csum,inline_data,64bit -E lazy_itable_init=1 -b 1024 -d $MKFS_DIR $TMPFILE 16384 > $OUT 2>&1
+if ! getfattr -d -m - $MKFS_DIR/acl_dir | grep -q posix_acl; then
+	echo "$test_name: $test_description: skipped (no posix_acl xattrs)"
+	rm -rf $MKFS_DIR
+	return 0
+fi
+
+# use 512-byte inodes so with/out security.selinux xattr doesn't fail
+$MKE2FS -q -F -o Linux -T ext4 -I 512 -O metadata_csum,inline_data,64bit -E lazy_itable_init=1 -b 1024 -d $MKFS_DIR $TMPFILE 16384 > $OUT 2>&1
 
 $DUMPE2FS $TMPFILE >> $OUT 2>&1
 cat > $TMPFILE.cmd << ENDL

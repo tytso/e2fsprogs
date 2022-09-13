@@ -49,7 +49,7 @@ static void usage (char *prog)
 	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] "
 			   "[-p] device [-b|-s|new_size] [-S RAID-stride] "
 			   "[-z undo_file]\n\n"),
-		 prog);
+		 prog ? prog : "resize2fs");
 
 	exit (1);
 }
@@ -111,8 +111,8 @@ static void determine_fs_stride(ext2_filsys fs)
 	unsigned int	group;
 	unsigned long long sum;
 	unsigned int	has_sb, prev_has_sb = 0, num;
+	unsigned int	flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 	int		i_stride, b_stride;
-	int		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 
 	if (fs->stride)
 		return;
@@ -256,6 +256,7 @@ int main (int argc, char ** argv)
 	int		force_min_size = 0;
 	int		print_min_size = 0;
 	int		fd, ret;
+	int		open_flags = O_RDWR;
 	blk64_t		new_size = 0;
 	blk64_t		max_size = 0;
 	blk64_t		min_size = 0;
@@ -286,6 +287,8 @@ int main (int argc, char ** argv)
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
+	else
+		usage(NULL);
 
 	while ((c = getopt(argc, argv, "d:fFhMPpS:bsz:")) != EOF) {
 		switch (c) {
@@ -363,7 +366,10 @@ int main (int argc, char ** argv)
 		len = 2 * len;
 	}
 
-	fd = ext2fs_open_file(device_name, O_RDWR, 0);
+	if (print_min_size)
+		open_flags = O_RDONLY;
+
+	fd = ext2fs_open_file(device_name, open_flags, 0);
 	if (fd < 0) {
 		com_err("open", errno, _("while opening %s"),
 			device_name);
@@ -401,7 +407,7 @@ int main (int argc, char ** argv)
 #endif
 		io_ptr = unix_io_manager;
 
-	if (!(mount_flags & EXT2_MF_MOUNTED))
+	if (!(mount_flags & EXT2_MF_MOUNTED) && !print_min_size)
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
 
 	io_flags |= EXT2_FLAG_64BITS | EXT2_FLAG_THREADS;
@@ -537,6 +543,12 @@ int main (int argc, char ** argv)
 			goto errout;
 		}
 	}
+
+	/* If using cluster allocations, trim down to a cluster boundary */
+	if (ext2fs_has_feature_bigalloc(fs->super)) {
+		new_size &= ~((blk64_t)(1ULL << fs->cluster_ratio_bits) - 1);
+	}
+
 	new_group_desc_count = ext2fs_div64_ceil(new_size -
 				fs->super->s_first_data_block,
 						 EXT2_BLOCKS_PER_GROUP(fs->super));

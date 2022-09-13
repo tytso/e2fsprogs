@@ -50,14 +50,12 @@ errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, __u64 size)
 	extent->num = 0;
 	extent->sorted = 1;
 
-	retval = ext2fs_get_array(sizeof(struct ext2_extent_entry),
+	retval = ext2fs_get_arrayzero(sizeof(struct ext2_extent_entry),
 				extent->size, &extent->list);
 	if (retval) {
 		ext2fs_free_mem(&extent);
 		return retval;
 	}
-	memset(extent->list, 0,
-	       sizeof(struct ext2_extent_entry) * extent->size);
 	*ret_extent = extent;
 	return 0;
 }
