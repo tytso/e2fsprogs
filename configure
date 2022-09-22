@@ -13270,6 +13270,12 @@ then :
   printf "%s\n" "#define HAVE_PWRITE64 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "qsort_r" "ac_cv_func_qsort_r"
+if test "x$ac_cv_func_qsort_r" = xyes
+then :
+  printf "%s\n" "#define HAVE_QSORT_R 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "secure_getenv" "ac_cv_func_secure_getenv"
 if test "x$ac_cv_func_secure_getenv" = xyes
 then :
@@ -13951,6 +13957,90 @@ fi
 fi
 fi
 
+if test "$ac_cv_func_qsort_r" != no
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether qsort_r is GNU version" >&5
+printf %s "checking whether qsort_r is GNU version... " >&6; }
+if test ${e2_cv_gnu_qsort_r+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	    int (*compar)(const void *, const void *, void *),
+	    void *arg);
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  e2_cv_gnu_qsort_r=yes
+else $as_nop
+  e2_cv_gnu_qsort_r=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $e2_cv_gnu_qsort_r" >&5
+printf "%s\n" "$e2_cv_gnu_qsort_r" >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether qsort_r is BSD version" >&5
+printf %s "checking whether qsort_r is BSD version... " >&6; }
+if test ${e2_cv_bsd_qsort_r+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	     void *arg, int (*compar)(void *, const void *, const void *));
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  e2_cv_bsd_qsort_r=yes
+else $as_nop
+  e2_cv_bsd_qsort_r=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $e2_cv_bsd_qsort_r" >&5
+printf "%s\n" "$e2_cv_bsd_qsort_r" >&6; }
+  case "$e2_cv_gnu_qsort_r:$e2_cv_bsd_qsort_r" in #(
+  yes:no) :
+
+    printf "%s\n" "#define HAVE_GNU_QSORT_R 1" >>confdefs.h
+
+   ;; #(
+  no:yes) :
+
+    printf "%s\n" "#define HAVE_BSD_QSORT_R 1" >>confdefs.h
+
+   ;; #(
+  *) :
+     ;;
+esac
+
+fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for unified diff option" >&5
 printf %s "checking for unified diff option... " >&6; }
 if diff -u $0 $0 > /dev/null 2>&1 ; then

@@ -1226,6 +1226,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	pwrite
 	pread64
 	pwrite64
+	qsort_r
 	secure_getenv
 	setmntent
 	setresgid
@@ -1350,6 +1351,33 @@ then
   	SEM_INIT_LIB=-lposix4))))dnl
 fi
 AC_SUBST(SEM_INIT_LIB)
+dnl
+dnl qsort_r detection
+dnl
+AS_IF([test "$ac_cv_func_qsort_r" != no], [
+  AC_CACHE_CHECK(whether qsort_r is GNU version, e2_cv_gnu_qsort_r,
+    [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+@%:@include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	    int (*compar)(const void *, const void *, void *),
+	    void *arg);
+]], [[ ]])],[e2_cv_gnu_qsort_r=yes],[e2_cv_gnu_qsort_r=no])
+  ])
+  AC_CACHE_CHECK(whether qsort_r is BSD version, e2_cv_bsd_qsort_r,
+    [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+@%:@include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	     void *arg, int (*compar)(void *, const void *, const void *));
+]], [[ ]])],[e2_cv_bsd_qsort_r=yes],[e2_cv_bsd_qsort_r=no])
+  ])
+  AS_CASE("$e2_cv_gnu_qsort_r:$e2_cv_bsd_qsort_r",
+  [yes:no], [
+    AC_DEFINE(HAVE_GNU_QSORT_R, 1, [ Define to 1 if you have the GNU-style 'qsort_r' function.])
+  ],
+  [no:yes], [
+    AC_DEFINE(HAVE_BSD_QSORT_R, 1, [ Define to 1 if you have the BSD-style 'qsort_r' function.])
+  ])
+])
 dnl
 dnl Check for unified diff
 dnl
