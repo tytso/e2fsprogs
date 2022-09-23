@@ -3450,5 +3450,13 @@ closefs:
 
 	if (feature_64bit)
 		convert_64bit(fs, feature_64bit);
-	return (ext2fs_close_free(&fs) ? 1 : rc);
+
+	retval = ext2fs_close_free(&fs);
+	if (retval) {
+		com_err("tune2fs", retval,
+			_("while writing out and closing file system"));
+		rc = 1;
+	}
+
+	return rc;
 }
