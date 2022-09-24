@@ -11840,6 +11840,12 @@ then :
   printf "%s\n" "#define HAVE_GETOPT_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "libunwind.h" "ac_cv_header_libunwind_h" "$ac_includes_default"
+if test "x$ac_cv_header_libunwind_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBUNWIND_H 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "malloc.h" "ac_cv_header_malloc_h" "$ac_includes_default"
 if test "x$ac_cv_header_malloc_h" = xyes
 then :

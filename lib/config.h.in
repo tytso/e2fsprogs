@@ -169,6 +169,9 @@
 /* Define to 1 if you have the `keyctl' function. */
 #undef HAVE_KEYCTL
 
+/* Define to 1 if you have the <libunwind.h> header file. */
+#undef HAVE_LIBUNWIND_H
+
 /* Define to 1 if you have the <linux/falloc.h> header file. */
 #undef HAVE_LINUX_FALLOC_H
 
