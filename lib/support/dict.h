@@ -16,6 +16,7 @@
  *
  * $Id: dict.h,v 1.22.2.6 2000/11/13 01:36:44 kaz Exp $
  * $Name: kazlib_1_20 $
+ * The work has been modified.
  */
 
 #ifndef DICT_H
