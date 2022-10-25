@@ -967,6 +967,13 @@ find_lnf:
 			goto out;
 		}
 
+		if (fs_callbacks && fs_callbacks->new_inode_extra) {
+			retval = fs_callbacks->new_inode_extra(fs, target->path,
+				name, parent_ino, root, &st);
+			if (retval)
+				goto out;
+		}
+
 		retval = set_inode_extra(fs, ino, &st);
 		if (retval) {
 			com_err(__func__, retval,
