@@ -1039,7 +1039,8 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			tried_backup_jnl++;
 		}
 		if (!j_inode->i_ext2.i_links_count ||
-		    !LINUX_S_ISREG(j_inode->i_ext2.i_mode)) {
+		    !LINUX_S_ISREG(j_inode->i_ext2.i_mode) ||
+		    (j_inode->i_ext2.i_flags & EXT4_ENCRYPT_FL)) {
 			retval = EXT2_ET_NO_JOURNAL;
 			goto try_backup_journal;
 		}
