@@ -306,7 +306,6 @@ bounce_read:
 	while (size > 0) {
 		actual = read(data->dev, data->bounce, align_size);
 		if (actual != align_size) {
-			mutex_unlock(data, BOUNCE_MTX);
 			actual = really_read;
 			buf -= really_read;
 			size += really_read;
