@@ -1894,6 +1894,9 @@ OS_IO_FILE=""
   ;;
 esac]
 AC_SUBST(OS_IO_FILE)
+
+AC_SYS_LARGEFILE
+
 dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
