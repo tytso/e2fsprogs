@@ -195,10 +195,6 @@ static struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
 #error posix_fadvise not available!
 #endif
 
-#ifndef HAVE_FALLOCATE64
-#error fallocate64 not available!
-#endif /* ! HAVE_FALLOCATE64 */
-
 /*
  * get_mount_point() -	Get device's mount point.
  *
@@ -1568,7 +1564,7 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 	/* Allocate space for donor inode */
 	orig_group_tmp = orig_group_head;
 	do {
-		ret = fallocate64(donor_fd, 0,
+		ret = fallocate(donor_fd, 0,
 		  (ext2_loff_t)orig_group_tmp->start->data.logical * block_size,
 		  (ext2_loff_t)orig_group_tmp->len * block_size);
 		if (ret < 0) {
