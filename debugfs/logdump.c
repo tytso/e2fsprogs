@@ -376,6 +376,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	journal_header_t	*header;
 	tid_t			transaction;
 	unsigned int		blocknr = 0;
+	unsigned int		first_transaction_blocknr;
 	int			fc_done;
 	__u64			total_len;
 	__u32			maxlen;
@@ -470,9 +471,17 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			blocknr = 1;
 	}
 
+	first_transaction_blocknr = blocknr;
+
 	while (1) {
 		if (dump_old && (dump_counts != -1) && (cur_counts >= dump_counts))
 			break;
+
+		if ((blocknr == first_transaction_blocknr) &&
+		    (cur_counts != 0) && dump_old && (dump_counts != -1)) {
+			fprintf(out_file, "Dump all %lld journal records.\n", cur_counts);
+			break;
+		}
 
 		retval = read_journal_block(cmdname, source,
 				((ext2_loff_t) blocknr) * blocksize,
