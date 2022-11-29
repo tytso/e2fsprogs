@@ -407,7 +407,7 @@ errcode_t ext2fs_mmp_stop(ext2_filsys fs)
 	    (fs->mmp_buf == NULL) || (fs->mmp_cmp == NULL))
 		goto mmp_error;
 
-	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, fs->mmp_buf);
+	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, NULL);
 	if (retval)
 		goto mmp_error;
 
