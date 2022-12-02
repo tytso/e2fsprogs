@@ -248,6 +248,22 @@ cc_binary {
     ],
 }
 
+cc_binary {
+    name: "blkid_static",
+    host_supported: true,
+    static_executable: true,
+    defaults: ["e2fsprogs-defaults"],
+
+    srcs: ["blkid.c"],
+    static_libs: [
+        "libext2fs",
+        "libext2_blkid",
+        "libext2_com_err",
+        "libext2_e2p",
+        "libext2_uuid",
+    ],
+}
+
 //########################################################################
 // Build e4crypt
 
