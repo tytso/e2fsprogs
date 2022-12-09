@@ -43,9 +43,8 @@ cc_library {
 //########################################################################
 // Build mke2fs
 
-cc_binary {
-    name: "mke2fs",
-    host_supported: true,
+cc_defaults {
+    name: "mke2fs_defaults",
     recovery_available: true,
     defaults: ["e2fsprogs-defaults"],
 
@@ -60,6 +59,15 @@ cc_binary {
         "-Wno-error=type-limits",
         "-Wno-format-extra-args",
     ],
+
+    stl: "libc++_static",
+    include_dirs: ["external/e2fsprogs/e2fsck"],
+}
+
+cc_binary {
+    name: "mke2fs",
+    host_supported: true,
+    defaults: ["mke2fs_defaults"],
     target: {
         host: {
             static_libs: [
@@ -107,8 +115,32 @@ cc_binary {
             symlinks: ["mkfs.ext2", "mkfs.ext3", "mkfs.ext4"],
         },
     },
-    stl: "libc++_static",
-    include_dirs: ["external/e2fsprogs/e2fsck"],
+}
+
+cc_binary {
+    name: "mke2fs.microdroid",
+    defaults: ["mke2fs_defaults"],
+    bootstrap: true,
+    target: {
+        android: {
+            required: [
+                "mke2fs.conf",
+            ],
+            shared_libs: [
+                "libext2fs",
+                "libext2_blkid",
+                "libext2_misc",
+                "libext2_uuid",
+                "libext2_quota",
+                "libext2_com_err",
+                "libext2_e2p",
+            ],
+            symlinks: ["mkfs.ext4.microdroid"],
+        },
+    },
+    installable: false,
+    stem: "mke2fs",
+    visibility: ["//packages/modules/Virtualization/microdroid"],
 }
 
 //##########################################################################
