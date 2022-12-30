@@ -1482,7 +1482,7 @@ extern const char *mke2fs_default_profile;
 static const char *default_files[] = { "<default>", 0 };
 
 struct device_param {
-	unsigned long min_io;		/* prefered minimum IO size */
+	unsigned long min_io;		/* preferred minimum IO size */
 	unsigned long opt_io;		/* optimal IO size */
 	unsigned long alignment_offset;	/* alignment offset wrt physical block size */
 	unsigned int dax:1;		/* supports dax? */

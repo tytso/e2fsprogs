@@ -888,7 +888,7 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 		/*
 		 * Mark the file system to indicate it contains errors. That's
 		 * because the updates performed by fast commit replay code are
-		 * not atomic and may result in incosistent file system if it
+		 * not atomic and may result in inconsistent file system if it
 		 * crashes before the replay is complete.
 		 */
 		ctx->fs->super->s_state |= EXT2_ERROR_FS;

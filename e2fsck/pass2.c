@@ -1811,7 +1811,7 @@ struct del_block {
 };
 
 /*
- * This function is called to deallocate a block, and is an interator
+ * This function is called to deallocate a block, and is an iterator
  * functioned called by deallocate inode via ext2fs_iterate_block().
  */
 static int deallocate_inode_block(ext2_filsys fs,

@@ -236,7 +236,7 @@ typedef struct e2fsck_struct *e2fsck_t;
 #define MAX_EXTENT_DEPTH_COUNT 8
 
 /*
- * This strucutre is used to manage the list of extents in a file. Placing
+ * This structure is used to manage the list of extents in a file. Placing
  * it here since this is used by fast_commit.h.
  */
 struct extent_list {
