@@ -389,13 +389,13 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
 			      struct ext2_ext_attr_entry *first, void *end)
 {
-	struct ext2_ext_attr_entry *entry;
+	struct ext2_ext_attr_entry *entry = first;
+	struct ext2_ext_attr_entry *np = EXT2_EXT_ATTR_NEXT(entry);
 
-	for (entry = first;
-	     (void *)entry < end && !EXT2_EXT_IS_LAST_ENTRY(entry);
-	     entry = EXT2_EXT_ATTR_NEXT(entry)) {
+	while ((void *) entry < end && (void *) np < end &&
+	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		if (!entry->e_value_inum)
-			continue;
+			goto next;
 		if (!ctx->ea_inode_refs) {
 			pctx->errcode = ea_refcount_create(0,
 							   &ctx->ea_inode_refs);
@@ -408,6 +408,9 @@ static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		ea_refcount_increment(ctx->ea_inode_refs, entry->e_value_inum,
 				      0);
+	next:
+		entry = np;
+		np = EXT2_EXT_ATTR_NEXT(entry);
 	}
 }
 
@@ -2553,8 +2556,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			break;
 		}
 		if (entry->e_value_inum == 0) {
-			if (entry->e_value_offs + entry->e_value_size >
-			    fs->blocksize) {
+			if (entry->e_value_size > EXT2_XATTR_SIZE_MAX ||
+			    (entry->e_value_offs + entry->e_value_size >
+			     fs->blocksize)) {
 				if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
 					goto clear_extattr;
 				break;
@@ -2838,7 +2842,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	if (pctx->errcode)
 		return;
 	if (!(ctx->options & E2F_OPT_FIXES_ONLY) &&
-	    !pb->eti.force_rebuild) {
+	    !pb->eti.force_rebuild &&
+	    info.curr_level < MAX_EXTENT_DEPTH_COUNT) {
 		struct extent_tree_level *etl;
 
 		etl = pb->eti.ext_info + info.curr_level;
@@ -4062,7 +4067,7 @@ static void new_table_block(e2fsck_t ctx, blk64_t first_block, dgrp_t group,
 	 */
 	is_flexbg = ext2fs_has_feature_flex_bg(fs->super);
 	if (is_flexbg) {
-		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+		flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 		flexbg = group / flexbg_size;
 		first_block = ext2fs_group_first_block2(fs,
 							flexbg_size * flexbg);

@@ -52,6 +52,7 @@ extern int optind;
 #include "e2p/e2p.h"
 #include "uuid/uuid.h"
 #include "support/plausible.h"
+#include "support/devname.h"
 #include "e2fsck.h"
 #include "problem.h"
 #include "jfs_user.h"
@@ -78,7 +79,7 @@ static void usage(e2fsck_t ctx)
 		_("Usage: %s [-panyrcdfktvDFV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j external_journal]\n"
 		"\t\t[-E extended-options] [-z undo_file] device\n"),
-		ctx->program_name);
+		ctx->program_name ? ctx->program_name : "e2fsck");
 
 	fprintf(stderr, "%s", _("\nEmergency help:\n"
 		" -p                   Automatic repair (no questions)\n"
@@ -849,7 +850,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if (argc && *argv)
 		ctx->program_name = *argv;
 	else
-		ctx->program_name = "e2fsck";
+		usage(NULL);
 
 	phys_mem_kb = get_memory_size() / 1024;
 	ctx->readahead_kb = ~0ULL;
@@ -939,8 +940,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 				goto sscanf_err;
 			break;
 		case 'j':
-			ctx->journal_name = blkid_get_devname(ctx->blkid,
-							      optarg, NULL);
+			ctx->journal_name = get_devname(ctx->blkid,
+							optarg, NULL);
 			if (!ctx->journal_name) {
 				com_err(ctx->program_name, 0,
 					_("Unable to resolve '%s'"),
@@ -1019,7 +1020,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	ctx->io_options = strchr(argv[optind], '?');
 	if (ctx->io_options)
 		*ctx->io_options++ = 0;
-	ctx->filesystem_name = blkid_get_devname(ctx->blkid, argv[optind], 0);
+	ctx->filesystem_name = get_devname(ctx->blkid, argv[optind], 0);
 	if (!ctx->filesystem_name) {
 		com_err(ctx->program_name, 0, _("Unable to resolve '%s'"),
 			argv[optind]);
@@ -1171,25 +1172,32 @@ static errcode_t try_open_fs(e2fsck_t ctx, int flags, io_manager io_ptr,
 	errcode_t retval;
 
 	*ret_fs = NULL;
-	if (ctx->superblock && ctx->blocksize) {
-		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
-				      flags, ctx->superblock, ctx->blocksize,
-				      io_ptr, ret_fs);
-	} else if (ctx->superblock) {
-		int blocksize;
-		for (blocksize = EXT2_MIN_BLOCK_SIZE;
-		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
-			if (*ret_fs) {
-				ext2fs_free(*ret_fs);
-				*ret_fs = NULL;
+
+	if (ctx->superblock) {
+		unsigned long blocksize = ctx->blocksize;
+
+		if (!blocksize) {
+			for (blocksize = EXT2_MIN_BLOCK_SIZE;
+			     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
+
+				retval = ext2fs_open2(ctx->filesystem_name,
+						      ctx->io_options, flags,
+						      ctx->superblock, blocksize,
+						      unix_io_manager, ret_fs);
+				if (*ret_fs) {
+					ext2fs_free(*ret_fs);
+					*ret_fs = NULL;
+				}
+				if (!retval)
+					break;
 			}
-			retval = ext2fs_open2(ctx->filesystem_name,
-					      ctx->io_options, flags,
-					      ctx->superblock, blocksize,
-					      io_ptr, ret_fs);
-			if (!retval)
-				break;
+			if (retval)
+				return retval;
 		}
+
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
+				      flags, ctx->superblock, blocksize,
+				      io_ptr, ret_fs);
 	} else
 		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
 				      flags, 0, 0, io_ptr, ret_fs);
@@ -1619,7 +1627,8 @@ failure:
 			 * so that we are able to recover from more errors
 			 * (e.g. some tool messing up some value in the sb).
 			 */
-			if ((retval == EXT2_ET_CORRUPT_SUPERBLOCK) &&
+			if (((retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
+			     (retval == EXT2_ET_BAD_DESC_SIZE)) &&
 			    !(flags & EXT2_FLAG_IGNORE_SB_ERRORS)) {
 				if (fs)
 					ext2fs_close_free(&fs);

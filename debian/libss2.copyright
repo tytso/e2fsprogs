@@ -1,25 +1,44 @@
-This is the Debian GNU/Linux prepackaged version of the ss
-command-line interface parsing library. It is currently
-distributed together with the EXT2 file system utilities, which are
-otherwise packaged as "e2fsprogs".
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: e2fsprogs
+Upstream-Contact: Theodore Ts'o <tytso@mit.edu>
+Source: http://sourceforge.net/projects/e2fsprogs
+Comment:
+ This is the Debian GNU/Linux prepackaged version of the ss
+ command-line interface parsing library. It is currently
+ distributed together with the EXT2 file system utilities.
+ .
+ This package was put together by Yann Dirson <dirson@debian.org>.
 
-This package was put together by Yann Dirson <dirson@debian.org>,
-from sources obtained from a mirror of:
- tsx-11.mit.edu:/pub/linux/packages/ext2fs/
+Files: lib/ss/*
+Copyright: 1987, 1988, 2003 MIT Student Information Processing Board
+License: NTP-0
 
-From the original distribution:
+Files: lib/ss/mk_cmds.1
+Copyright: 2003 Theodore Ts'o
+License: NTP-0
 
-Copyright 1987, 1988 by the Student Information Processing Board
-	of the Massachusetts Institute of Technology
+Files: lib/ss/mit-sipb-copyright.h
+Copyright: 1987 by the Student Information Processing Board
+ of the Massachusetts Institute of Technology
+License: NTP
+ Permission to use, copy, modify, and distribute this software
+ and its documentation for any purpose and without fee is
+ hereby granted, provided that the above copyright notice
+ appear in all copies and that both that copyright notice and
+ this permission notice appear in supporting documentation,
+ and that the names of M.I.T. and the M.I.T. S.I.P.B. not be
+ used in advertising or publicity pertaining to distribution
+ of the software without specific, written prior permission.
+ M.I.T. and the M.I.T. S.I.P.B. make no representations about
+ the suitability of this software for any purpose.  It is
+ provided "as is" without express or implied warranty.
 
-Permission to use, copy, modify, and distribute this software
-and its documentation for any purpose and without fee is
-hereby granted, provided that the above copyright notice
-appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation,
-and that the names of M.I.T. and the M.I.T. S.I.P.B. not be
-used in advertising or publicity pertaining to distribution
-of the software without specific, written prior permission.
-M.I.T. and the M.I.T. S.I.P.B. make no representations about
-the suitability of this software for any purpose.  It is
-provided "as is" without express or implied warranty.
+License: NTP-0
+ Permission to use, copy, modify, and distribute this software and
+ its documentation for any purpose is hereby granted, provided that
+ the names of M.I.T. and the M.I.T. S.I.P.B. not be used in
+ advertising or publicity pertaining to distribution of the software
+ without specific, written prior permission.  M.I.T. and the
+ M.I.T. S.I.P.B. make no representations about the suitability of
+ this software for any purpose.  It is provided "as is" without
+ express or implied warranty.

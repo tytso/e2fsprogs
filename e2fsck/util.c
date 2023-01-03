@@ -430,7 +430,16 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 		log_out(ctx, "%s: ", desc);
 
 #define kbytes(x)	(((unsigned long long)(x) + 1023) / 1024)
-#ifdef HAVE_MALLINFO
+#ifdef HAVE_MALLINFO2
+	if (1) {
+		struct mallinfo2 malloc_info = mallinfo2();
+
+		log_out(ctx, _("Memory used: %lluk/%lluk (%lluk/%lluk), "),
+			kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
+			kbytes(malloc_info.uordblks),
+			kbytes(malloc_info.fordblks));
+	} else
+#elif defined HAVE_MALLINFO
 	/* don't use mallinfo() if over 2GB used, since it returns "int" */
 	if ((char *)sbrk(0) - (char *)track->brk_start < 2LL << 30) {
 		struct mallinfo	malloc_info = mallinfo();

@@ -63,15 +63,15 @@ static void dump_journal(char *, FILE *, struct journal_source *);
 
 static void dump_descriptor_block(FILE *, struct journal_source *,
 				  char *, journal_superblock_t *,
-				  unsigned int *, int, __u32, tid_t);
+				  unsigned int *, unsigned int, __u32, tid_t);
 
 static void dump_revoke_block(FILE *, char *, journal_superblock_t *,
-				  unsigned int, int, tid_t);
+				  unsigned int, unsigned int, tid_t);
 
 static void dump_metadata_block(FILE *, struct journal_source *,
 				journal_superblock_t*,
 				unsigned int, unsigned int, unsigned int,
-				int, tid_t);
+				unsigned int, tid_t);
 
 static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 			  tid_t transaction, int *fc_done);
@@ -649,11 +649,11 @@ static void dump_descriptor_block(FILE *out_file,
 				  struct journal_source *source,
 				  char *buf,
 				  journal_superblock_t *jsb,
-				  unsigned int *blockp, int blocksize,
+				  unsigned int *blockp, unsigned blocksize,
 				  __u32 maxlen,
 				  tid_t transaction)
 {
-	int			offset, tag_size, csum_size = 0;
+	unsigned		offset, tag_size, csum_size = 0;
 	char			*tagp;
 	journal_block_tag_t	*tag;
 	unsigned int		blocknr;
@@ -709,7 +709,7 @@ static void dump_descriptor_block(FILE *out_file,
 static void dump_revoke_block(FILE *out_file, char *buf,
 			      journal_superblock_t *jsb EXT2FS_ATTR((unused)),
 			      unsigned int blocknr,
-			      int blocksize EXT2FS_ATTR((unused)),
+			      unsigned int blocksize,
 			      tid_t transaction)
 {
 	unsigned int		offset, max;
@@ -727,10 +727,10 @@ static void dump_revoke_block(FILE *out_file, char *buf,
 	header = (jbd2_journal_revoke_header_t *) buf;
 	offset = sizeof(jbd2_journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
-	if (max > be32_to_cpu(jsb->s_blocksize)) {
+	if (max > blocksize) {
 		fprintf(out_file, "Revoke block's r_count invalid: %u\b",
 			max);
-		max = be32_to_cpu(jsb->s_blocksize);
+		max = blocksize;
 	}
 
 	while (offset < max) {
@@ -775,7 +775,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 				unsigned int log_blocknr,
 				unsigned int fs_blocknr,
 				unsigned int log_tag_flags,
-				int blocksize,
+				unsigned int blocksize,
 				tid_t transaction)
 {
 	int		retval;

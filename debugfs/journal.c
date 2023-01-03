@@ -769,6 +769,8 @@ static errcode_t recover_ext3_journal(ext2_filsys fs)
 		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 
+	journal->j_tail_sequence = journal->j_transaction_sequence;
+
 errout:
 	jbd2_journal_destroy_revoke(journal);
 	jbd2_journal_destroy_revoke_record_cache();

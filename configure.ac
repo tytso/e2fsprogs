@@ -1,8 +1,10 @@
-AC_INIT(version.h)
-AC_PREREQ(2.69)
+AC_INIT
+AC_CONFIG_SRCDIR([version.h])
+AC_PREREQ([2.71])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADERS([lib/config.h])
 AH_BOTTOM([#include <dirpaths.h>])
+AC_USE_SYSTEM_EXTENSIONS
 MCONFIG=./MCONFIG
 AC_SUBST_FILE(MCONFIG)
 BINARY_TYPE=bin
@@ -123,7 +125,6 @@ then
 else
     AC_MSG_RESULT([[(none)]])
 fi
-AC_USE_SYSTEM_EXTENSIONS
 dnl
 dnl Set default values for library extensions.  Will be dealt with after
 dnl parsing configuration options, which may modify these
@@ -1138,18 +1139,12 @@ dnl flags somewhat portably.  Also check for the analogous setter, chflags().
 dnl
 AC_MSG_CHECKING(whether struct stat has a st_flags field)
 AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags,
-	AC_TRY_COMPILE([#include <sys/stat.h>],
-		[struct stat stat; stat.st_flags = 0;],
-		[e2fsprogs_cv_struct_st_flags=yes],
-		[e2fsprogs_cv_struct_st_flags=no]))
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]], [[struct stat stat; stat.st_flags = 0;]])],[e2fsprogs_cv_struct_st_flags=yes],[e2fsprogs_cv_struct_st_flags=no]))
 AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags)
 if test "$e2fsprogs_cv_struct_st_flags" = yes; then
   AC_MSG_CHECKING(whether st_flags field is useful)
   AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags_immut,
-	AC_TRY_COMPILE([#include <sys/stat.h>],
-		[struct stat stat; stat.st_flags |= UF_IMMUTABLE;],
-		[e2fsprogs_cv_struct_st_flags_immut=yes],
-		[e2fsprogs_cv_struct_st_flags_immut=no]))
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/stat.h>]], [[struct stat stat; stat.st_flags |= UF_IMMUTABLE;]])],[e2fsprogs_cv_struct_st_flags_immut=yes],[e2fsprogs_cv_struct_st_flags_immut=no]))
   AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags_immut)
   if test "$e2fsprogs_cv_struct_st_flags_immut" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS, 1,
@@ -1214,6 +1209,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	llseek
 	lseek64
 	mallinfo
+	mallinfo2
 	mbstowcs
 	memalign
 	mempcpy
@@ -1499,6 +1495,45 @@ if test "$have_threadsan" = "yes" && test "$have_addrsan" = "yes"; then
 	AC_MSG_WARN([ADDRSAN and THREADSAN are not known to work together.])
 fi
 dnl
+dnl Enable the fuzzer sanitizer for all packages
+dnl
+FUZZING_CMT="#"
+AC_ARG_ENABLE([fuzzing],
+AS_HELP_STRING([--enable-fuzzing],[enable fuzzing sanitizer]),,
+enable_fuzzing=no)
+if test "$enable_fuzzing" = "yes" || test "$enable_fuzzing" = "probe"; then
+	AC_PROG_CXX
+	AC_MSG_CHECKING([if C compiler supports fuzzing sanitizer])
+	AC_LANG_PUSH([C++])
+	OLD_CXXFLAGS="$CXXFLAGS"
+	OLD_LDFLAGS="$LDFLAGS"
+	FUZZER_FLAGS="-fsanitize=fuzzer"
+	CXXFLAGS="$CXXFLAGS $FUZZER_FLAGS"
+	LDFLAGS="$LDFLAGS $FUZZER_FLAGS"
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+		#include <stddef.h>
+		#include <stdint.h>
+		]],
+		[ return 0; ])],
+		[AC_MSG_RESULT([yes])]
+		[fuzzer_cflags=$FUZZER_FLAGS]
+		[fuzzer_ldflags=$FUZZER_FLAGS]
+		[FUZZING_CMT=]
+		[have_fuzzer=yes],
+		[AC_MSG_RESULT([no])]
+		[AC_MSG_ERROR([fuzzing requested but not available])])
+	CXXFLAGS="${OLD_CXXFLAGS}"
+	LDFLAGS="${OLD_LDFLAGS}"
+	AC_LANG_POP([C++])
+	AC_SUBST(have_fuzzer)
+	AC_SUBST(fuzzer_cflags)
+	AC_SUBST(fuzzer_ldflags)
+fi
+if test "$enable_fuzzer" = "yes" && test "$have_fuzzer" != "yes"; then
+	AC_MSG_ERROR([Fuzzing not supported by compiler.])
+fi
+AC_SUBST(FUZZING_CMT)
+dnl
 dnl OS-specific uncomment control
 dnl
 LINUX_CMT="#"
@@ -1606,8 +1641,7 @@ dnl
 AC_MSG_CHECKING([whether we can link with -static])
 AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
 [SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS_STATIC -static"
-AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
- ac_cv_e2fsprogs_use_static=yes, ac_cv_e2fsprogs_use_static=no)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>]], [[fflush(stdout);]])],[ac_cv_e2fsprogs_use_static=yes],[ac_cv_e2fsprogs_use_static=no])
 LDFLAGS=$SAVE_LDFLAGS])
 dnl
 dnl Regardless of how the test turns out, Solaris doesn't handle -static
@@ -1824,10 +1858,12 @@ for i in MCONFIG Makefile \
 	lib/ss/ss.pc lib/et/com_err.pc lib/e2p/e2p.pc lib/ext2fs/ext2fs.pc \
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
-	resize/Makefile doc/Makefile po/Makefile.in scrub/Makefile; do
+	tests/fuzz/Makefile resize/Makefile doc/Makefile \
+	po/Makefile.in scrub/Makefile; do
 	if test -d `dirname ${srcdir}/$i` ; then
 		outlist="$outlist $i"
 	fi
 done
-AC_OUTPUT($outlist)
+AC_CONFIG_FILES([$outlist])
+AC_OUTPUT
 if test -f util/gen-tarball; then chmod +x util/gen-tarball; fi

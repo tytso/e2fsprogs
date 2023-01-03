@@ -50,29 +50,29 @@
  * to fix a problem.
  */
 static const char *prompt[] = {
-	N_("(no prompt)"),	/* 0 */
-	N_("Fix"),		/* 1 */
-	N_("Clear"),		/* 2 */
-	N_("Relocate"),		/* 3 */
-	N_("Allocate"),		/* 4 */
-	N_("Expand"),		/* 5 */
-	N_("Connect to /lost+found"), /* 6 */
-	N_("Create"),		/* 7 */
-	N_("Salvage"),		/* 8 */
-	N_("Truncate"),		/* 9 */
-	N_("Clear inode"),	/* 10 */
-	N_("Abort"),		/* 11 */
-	N_("Split"),		/* 12 */
-	N_("Continue"),		/* 13 */
-	N_("Clone multiply-claimed blocks"), /* 14 */
-	N_("Delete file"),	/* 15 */
-	N_("Suppress messages"),/* 16 */
-	N_("Unlink"),		/* 17 */
-	N_("Clear HTree index"),/* 18 */
-	N_("Recreate"),		/* 19 */
-	N_("Optimize"),		/* 20 */
-	N_("Clear flag"),	/* 21 */
-	"",			/* 22 */
+	N_("(no prompt)"),			/* PROMPT_NONE		=  0 */
+	N_("Fix"),				/* PROMPT_FIX		=  1 */
+	N_("Clear"),				/* PROMPT_CLEAR		=  2 */
+	N_("Relocate"),				/* PROMPT_RELOCATE	=  3 */
+	N_("Allocate"),				/* PROMPT_CREATE	=  4 */
+	N_("Expand"),				/* PROMPT_EXPAND	=  5 */
+	N_("Connect to /lost+found"),		/* PROMPT_CONNECT	=  6 */
+	N_("Create"),				/* PROMPT_CREATE	=  7 */
+	N_("Salvage"),				/* PROMPT_SALVAGE	=  8 */
+	N_("Truncate"),				/* PROMPT_TRUNCATE	=  9 */
+	N_("Clear inode"),			/* PROMPT_CLEAR_INODE	= 10 */
+	N_("Abort"),				/* PROMPT_ABORT		= 11 */
+	N_("Split"),				/* PROMPT_SPLIT		= 12 */
+	N_("Continue"),				/* PROMPT_CONTINUE	= 13 */
+	N_("Clone multiply-claimed blocks"),	/* PROMPT_CLONE		= 14 */
+	N_("Delete file"),			/* PROMPT_DELETE	= 15 */
+	N_("Suppress messages"),		/* PROMPT_SUPPRESS	= 16 */
+	N_("Unlink"),				/* PROMPT_UNLINK	= 17 */
+	N_("Clear HTree index"),		/* PROMPT_CLEAR_HTREE	= 18 */
+	N_("Recreate"),				/* PROMPT_RECREATE	= 19 */
+	N_("Optimize"),				/* PROMPT_OPTIMIZE	= 20 */
+	N_("Clear flag"),			/* PROMPT_CLEAR_FLAG	= 21 */
+	"",					/* PROMPT_NULL		= 22 */
 };
 
 /*
@@ -1852,7 +1852,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Unconnected directory inode */
 	{ PR_3_UNCONNECTED_DIR,
 	  /* xgettext:no-c-format */
-	  N_("Unconnected @d @i %i (%p)\n"),
+	  N_("Unconnected @d @i %i (was in %q)\n"),
 	  PROMPT_CONNECT, 0, 0, 0, 0 },
 
 	/* /lost+found not found */
@@ -1988,6 +1988,12 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_3_LPF_ENCRYPTED,
 	  N_("/@l is encrypted\n"),
 	  PROMPT_CLEAR, 0, 0, 0, 0 },
+
+	/* Recursively looped directory inode */
+	{ PR_3_LOOPED_DIR,
+	  /* xgettext:no-c-format */
+	  N_("Recursively looped @d @i %i (%p)\n"),
+	  PROMPT_CONNECT, 0, 0, 0, 0 },
 
 	/* Pass 3A Directory Optimization	*/
 
@@ -2315,6 +2321,8 @@ int end_problem_latch(e2fsck_t ctx, int mask)
 	int answer = -1;
 
 	ldesc = find_latch(mask);
+	if (!ldesc)
+		return answer;
 	if (ldesc->end_message && (ldesc->flags & PRL_LATCHED)) {
 		clear_problem_context(&pctx);
 		answer = fix_problem(ctx, ldesc->end_message, &pctx);
@@ -2461,8 +2469,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	 * Do special latch processing.  This is where we ask the
 	 * latch question, if it exists
 	 */
-	if (ptr->flags & PR_LATCH_MASK) {
-		ldesc = find_latch(ptr->flags & PR_LATCH_MASK);
+	if (ptr->flags & PR_LATCH_MASK &&
+	    (ldesc = find_latch(ptr->flags & PR_LATCH_MASK)) != NULL) {
 		if (ldesc->question && !(ldesc->flags & PRL_LATCHED)) {
 			ans = fix_problem(ctx, ldesc->question, pctx);
 			if (ans == 1)
@@ -2486,8 +2494,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		if ((ctx->options & E2F_OPT_PREEN) &&
 		    (ptr->flags & PR_PREEN_OK))
 			suppress++;
-		if ((ptr->flags & PR_LATCH_MASK) &&
-		    (ldesc->flags & (PRL_YES | PRL_NO)))
+		if (ldesc && (ldesc->flags & (PRL_YES | PRL_NO)))
 			suppress++;
 		if (ptr->count == ptr->max_count + 1) {
 			if (ctx->problem_logf)
@@ -2532,8 +2539,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 			answer = def_yn;
 			if (!(ptr->flags & PR_PREEN_NOMSG))
 				print_answer = 1;
-		} else if ((ptr->flags & PR_LATCH_MASK) &&
-			   (ldesc->flags & (PRL_YES | PRL_NO))) {
+		} else if (ldesc && (ldesc->flags & (PRL_YES | PRL_NO))) {
 			print_answer = 1;
 			if (ldesc->flags & PRL_YES)
 				answer = 1;

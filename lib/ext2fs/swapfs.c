@@ -244,7 +244,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 			    int bufsize)
 {
 	unsigned i, extra_isize, attr_magic;
-	int has_extents, has_inline_data, islnk, fast_symlink;
+	int has_extents = 0, has_inline_data = 0, islnk = 0, fast_symlink = 0;
 	unsigned int inode_size;
 	__u32 *eaf, *eat;
 
@@ -434,11 +434,14 @@ errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf,
 			return retval;
 		if ((rec_len < 8) || (rec_len % 4)) {
 			rec_len = 8;
-			retval = EXT2_ET_DIR_CORRUPTED;
+			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
+				return EXT2_ET_DIR_CORRUPTED;
 		} else if (((name_len & 0xFF) + 8) > rec_len)
-			retval = EXT2_ET_DIR_CORRUPTED;
+			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
+				return EXT2_ET_DIR_CORRUPTED;
 		if (rec_len > left)
-			return EXT2_ET_DIR_CORRUPTED;
+			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
+				return EXT2_ET_DIR_CORRUPTED;
 		left -= rec_len;
 		p += rec_len;
 	}

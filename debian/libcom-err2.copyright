@@ -1,24 +1,127 @@
-This is the Debian GNU/Linux prepackaged version of the Common Error
-Description library. It is currently distributed together with the EXT2 file
-system utilities, which are otherwise packaged as "e2fsprogs".
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: e2fsprogs
+Upstream-Contact: Theodore Ts'o <tytso@mit.edu>
+Source: http://sourceforge.net/projects/e2fsprogs
+Comment:
+ This is the Debian GNU/Linux prepackaged version of the Common Error
+ Description library. It is currently distributed together with the EXT2 file
+ system utilities.
+ .
+ This package was put together by Yann Dirson <dirson@debian.org>.
 
-This package was put together by Yann Dirson <dirson@debian.org>,
-from sources obtained from a mirror of:
- tsx-11.mit.edu:/pub/linux/packages/ext2fs/
+Files: lib/et/*
+Copyright: 1987-1988 MIT Student Information Processing Board
+License: NTP-0
+ Permission to use, copy, modify, and distribute this software and
+ its documentation for any purpose is hereby granted, provided that
+ the names of M.I.T. and the M.I.T. S.I.P.B. not be used in
+ advertising or publicity pertaining to distribution of the software
+ without specific, written prior permission.  M.I.T. and the
+ M.I.T. S.I.P.B. make no representations about the suitability of
+ this software for any purpose.  It is provided "as is" without
+ express or implied warranty.
 
-From the original distribution:
+Files: lib/et/vfprintf.c
+Copyright: 1988 Regents of the University of California
+License: BSD-3-Clause-Variant
+ Redistribution and use in source and binary forms are permitted
+ provided that the above copyright notice and this paragraph are
+ duplicated in all such forms and that any documentation,
+ advertising materials, and other materials related to such
+ distribution and use acknowledge that the software was developed
+ by the University of California, Berkeley.  The name of the
+ University may not be used to endorse or promote products derived
+ from this software without specific prior written permission.
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
-Copyright 1987, 1988 by the Student Information Processing Board
-	of the Massachusetts Institute of Technology
+Files: lib/et/com_err.texinfo
+Copyright: (C) 1987, 1988 Student Information Processing Board of the
+ Massachusetts Institute of Technology.
+License: NTP
+ Permission to use, copy, modify, and distribute this software
+ and its documentation for any purpose and without fee is
+ hereby granted, provided that the above copyright notice
+ appear in all copies and that both that copyright notice and
+ this permission notice appear in supporting documentation,
+ and that the names of M.I.T. and the M.I.T. S.I.P.B. not be
+ used in advertising or publicity pertaining to distribution
+ of the software without specific, written prior permission.
+ M.I.T. and the M.I.T. S.I.P.B. make no representations about
+ the suitability of this software for any purpose.  It is
+ provided "as is" without express or implied warranty.
 
-Permission to use, copy, modify, and distribute this software
-and its documentation for any purpose and without fee is
-hereby granted, provided that the above copyright notice
-appear in all copies and that both that copyright notice and
-this permission notice appear in supporting documentation,
-and that the names of M.I.T. and the M.I.T. S.I.P.B. not be
-used in advertising or publicity pertaining to distribution
-of the software without specific, written prior permission.
-M.I.T. and the M.I.T. S.I.P.B. make no representations about
-the suitability of this software for any purpose.  It is
-provided "as is" without express or implied warranty.
+Files: lib/et/com_right.c
+Comment: Taken from lib/com_err/error.c from Kerberos4kth distribution.
+Copyright: (c) 2003 by Theodore Ts'o
+ Copyright (c) 1997, 1998, 2001 Kungliga Tekniska Högskolan
+ (Royal Institute of Technology, Stockholm, Sweden).
+ All rights reserved.
+License: BSD-3-Clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+ .
+ 3. Neither the name of the Institute nor the names of its contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+Files: lib/et/test_cases/imap_err.et
+Copyright: 1994-2008 Carnegie Mellon University.
+License: BSD-4-Clause-CMU
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+ .
+ 3. The name "Carnegie Mellon University" must not be used to
+    endorse or promote products derived from this software without
+    prior written permission. For permission or any legal
+    details, please contact
+      Carnegie Mellon University
+      Center for Technology Transfer and Enterprise Creation
+      4615 Forbes Avenue
+      Suite 302
+      Pittsburgh, PA  15213
+      (412) 268-7393, fax: (412) 268-7395
+      innovation@andrew.cmu.edu
+ .
+ 4. Redistributions of any form whatsoever must retain the following
+    acknowledgment:
+    "This product includes software developed by Computing Services
+     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
+ .
+ CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
+ THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
+ FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+ OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.

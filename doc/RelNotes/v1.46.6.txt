@@ -1,0 +1,90 @@
+E2fsprogs 1.46.6 (September 12, 2022)
+=====================================
+
+Updates/Fixes since v1.46.5:
+
+UI and Features
+---------------
+
+Debugfs's ncheck command now allows the inode number to be surrounded by
+angle brackets, to be consistent with other debugfs commands.
+
+Debugfs no longer prints a scary message when debugfs -c (which enables
+"catastrophic mode") is used.  This was intended to allow debugfs to
+operate on very badly corrupted file systems, but it is now sometimes
+used to suppress reading the block and inode bitmaps when they are not
+needed.
+
+Resize2fs will round down the requested new file system size to the
+nearest cluster boundary when resizing bigalloc file systems.
+
+
+Fixes
+-----
+
+Avoid triggering udev in dumpe2fs and "resize2fs -P" for file systems
+with MMP enabled by opening the device read-only when reading the MMP
+block.
+
+Fix a bug where e2fsck could fail when specifying an undo file and an
+explicit superblock number.
+
+Fix e2image so it won't potentially loop forever for certain invalid
+file systems.
+
+Fix resize2fs to honor the E2FSPROGS_FAKE_TIME environment variable.
+This allows embedded system builders who use resize2fs as part of their
+image build process to create reproducible images.
+
+Fix tune2fs to avoid a crash if the journal replay fails and to make
+sure its exit status is non-zero if there is some failure.
+
+Fix tune2fs, fuse2fs, and debugsfs to update j_tail_sequence when
+replaying the journal.
+
+Add additional bullet-proofing for very badly corrupted file systems.
+Try avoid UBSAN warnings, null pointer derferences, and other memory
+bugs.  (Addresses CVE-2022-1304)
+
+Check for and handle malloc() failures when computing the log filename
+in e2fsck and in the libss library.
+
+Fix tune2fs and e2fsck to accept pathames which include '=' characters.
+Previously arguments to tune2fs and e2fsck which included '=' characters
+are presumed to be blkid specifiers such as UUID=xxx or LABEL=yyy.  If a
+specifier is both a valid pathname name and blkid tag name specifier,
+priority is given to a blkid resolved pathname.
+
+Update and clarify's chattr's man page and usage message.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Update to autoconf 2.71.
+
+Update flags used to create shared library on Darwin/MacOS.
+
+Add tests/fuzz directory with fuzzers from oss-fuzz.
+
+Fix various Coverity and compiler warnings.
+
+Make tests more portable on various different OS's and system
+configurations (e.g., with SELinux enabled).
+
+Use mallinfo2() instead of mallinfo() where avilable, since mallinfo()
+is deprecated on newer glibc versions.
+
+E2fsck will no longer do a full scan of disconnected directory when
+trying to print the parent directory, which is pointless and can slow
+down e2fsck if there are a large number of disconnected directories.
+
+Fix the setup-schroot script to work on non-Linux platforms.
+
+Fix memory leaks on error paths.
+
+Updated config.guess and config.sub with newer versions from the FSF.
+
+Add Friulian translation.
+
+Update Chinese and Malay translations.
