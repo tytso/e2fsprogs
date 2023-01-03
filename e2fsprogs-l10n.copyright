@@ -1,0 +1,26 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: e2fsprogs
+Upstream-Contact: Theodore Ts'o <tytso@mit.edu>
+Source: http://sourceforge.net/projects/e2fsprogs
+Comment:
+ This is the Debian GNU/Linux prepackaged version of the translation
+ files of the EXT2 file system utilities.  The EXT2 utilities were
+ written by Theodore Ts'o <tytso@mit.edu> and Remy Card
+ <card@masi.ibp.fr>.
+
+Files: po/*
+Copyright: 1993-2022 Theodore Ts'o
+License: GPL-2
+
+Files: po/fr.po
+       po/vi.po
+Copyright: 2008, 2014 Theodore Ts'o
+           1996, 2014 Free Software Foundation, Inc.
+License: GPL-2
+
+License: GPL-2
+ This package, the EXT2 filesystem utilities, is protected by the GNU
+ General Public License version 2.
+Comment:
+ On Debian GNU systems, the complete text of the GNU General
+ Public License can be found in `/usr/share/common-licenses/GPL-2'.
