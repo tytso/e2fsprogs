@@ -258,12 +258,12 @@ static int get_mount_point(const char *devname, char *mount_point,
  *
  * @file:		the file's name.
  */
-static int is_ext4(const char *file, char *devname)
+static int is_ext4(const char *file, char devname[PATH_MAX + 1])
 {
 	int 	maxlen = 0;
 	int	len, ret;
+	int	type_is_ext4 = 0;
 	FILE	*fp = NULL;
-	char	*mnt_type = NULL;
 	/* Refer to /etc/mtab */
 	const char	*mtab = MOUNTED;
 	char	file_path[PATH_MAX + 1];
@@ -307,26 +307,16 @@ static int is_ext4(const char *file, char *devname)
 
 		maxlen = len;
 
-		mnt_type = realloc(mnt_type, strlen(mnt->mnt_type) + 1);
-		if (mnt_type == NULL) {
-			endmntent(fp);
-			return -1;
-		}
-		memset(mnt_type, 0, strlen(mnt->mnt_type) + 1);
-		strncpy(mnt_type, mnt->mnt_type, strlen(mnt->mnt_type));
+		type_is_ext4 = !strcmp(mnt->mnt_type, FS_EXT4);
 		strncpy(lost_found_dir, mnt->mnt_dir, PATH_MAX);
-		strncpy(devname, mnt->mnt_fsname, strlen(mnt->mnt_fsname) + 1);
+		strncpy(devname, mnt->mnt_fsname, PATH_MAX);
 	}
 
 	endmntent(fp);
-	if (mnt_type && strcmp(mnt_type, FS_EXT4) == 0) {
-		FREE(mnt_type);
+	if (type_is_ext4)
 		return 0;
-	} else {
-		FREE(mnt_type);
-		PRINT_ERR_MSG(NGMSG_EXT4);
-		return -1;
-	}
+	PRINT_ERR_MSG(NGMSG_EXT4);
+	return -1;
 }
 
 /*
@@ -1865,11 +1855,9 @@ int main(int argc, char *argv[])
 			/* fall through */
 		case DEVNAME:
 			if (arg_type == DEVNAME) {
-				strncpy(lost_found_dir, dir_name,
-					strnlen(dir_name, PATH_MAX));
+				strcpy(lost_found_dir, dir_name);
 				strncat(lost_found_dir, "/lost+found/",
-					PATH_MAX - strnlen(lost_found_dir,
-							   PATH_MAX));
+					PATH_MAX - strlen(lost_found_dir));
 			}
 
 			nftw64(dir_name, calc_entry_counts, FTW_OPEN_FD, flags);
