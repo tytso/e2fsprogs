@@ -3627,7 +3627,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		ret = -1;
 #ifdef __linux__
 		if (fsuuid) {
-			fsuuid->fsu_len - UUID_SIZE;
+			fsuuid->fsu_len = UUID_SIZE;
 			fsuuid->fsu_flags = 0;
 			memcpy(&fsuuid->fsu_uuid, new_uuid, UUID_SIZE);
 			ret = ioctl(fd, EXT4_IOC_SETFSUUID, fsuuid);
