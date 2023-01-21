@@ -91,7 +91,6 @@ cc_binary {
                 "-Wno-error"
             ],
             ldflags: ["-static"],
-            host_ldlibs: ["-lws2_32"],
             enabled: true
         },
         android: {
