@@ -1854,7 +1854,7 @@ dnl Adjust the compiled files if we are on windows vs everywhere else
 dnl
 OS_IO_FILE=""
 [case "$host_os" in
-  cigwin*|mingw*|msys*)
+  mingw*)
     OS_IO_FILE=windows_io
   ;;
   *)
