@@ -183,11 +183,9 @@ static void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap_64 bitmap)
 #ifdef ENABLE_BMAP_STATS_OPS
 	float mark_seq_perc = 0.0, test_seq_perc = 0.0;
 	float mark_back_perc = 0.0, test_back_perc = 0.0;
-#endif
-	double inuse;
 	struct timeval now;
+	double inuse;
 
-#ifdef ENABLE_BMAP_STATS_OPS
 	if (stats->test_count) {
 		test_seq_perc = ((float)stats->test_seq /
 				 stats->test_count) * 100;
@@ -201,7 +199,6 @@ static void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap_64 bitmap)
 		mark_back_perc = ((float)stats->mark_back /
 				  stats->mark_count) * 100;
 	}
-#endif
 
 	if (gettimeofday(&now, (struct timezone *) NULL) == -1) {
 		perror("gettimeofday");
@@ -212,6 +209,7 @@ static void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap_64 bitmap)
 		(((double) now.tv_usec) * 0.000001);
 	inuse -= (double) stats->created.tv_sec + \
 		(((double) stats->created.tv_usec) * 0.000001);
+#endif /* ENABLE_BMAP_STATS_OPS */
 
 	fprintf(stderr, "\n[+] %s bitmap (type %d)\n", bitmap->description,
 		stats->type);
