@@ -765,39 +765,33 @@ static int scandir(const char *dir_name, struct dirent ***name_list,
 			size_t new_list_size = temp_list_size + 32;
 			struct dirent **new_list = (struct dirent**)realloc(
 				temp_list, new_list_size * sizeof(struct dirent*));
-			if (new_list == NULL) {
-				goto out;
-			}
+			if (new_list == NULL)
+				goto out_err;
 			temp_list_size = new_list_size;
 			temp_list = new_list;
 		}
 		// add the copy of dirent to the list
 		temp_list[num_dent] = (struct dirent*)malloc((dent->d_reclen + 3) & ~3);
 		if (!temp_list[num_dent])
-			goto out;
+			goto out_err;
 		memcpy(temp_list[num_dent], dent, dent->d_reclen);
 		num_dent++;
 	}
+	closedir(dir);
 
 	if (compar != NULL) {
 		qsort(temp_list, num_dent, sizeof(struct dirent*),
 		      (int (*)(const void*, const void*))compar);
 	}
-
-        // release the temp list
 	*name_list = temp_list;
-	temp_list = NULL;
-
-out:
-	if (temp_list != NULL) {
-		while (num_dent > 0) {
-			free(temp_list[--num_dent]);
-		}
-		free(temp_list);
-		num_dent = -1;
-	}
-	closedir(dir);
 	return num_dent;
+
+out_err:
+	closedir(dir);
+	while (num_dent > 0)
+		free(temp_list[--num_dent]);
+	free(temp_list);
+	return -1;
 }
 
 static int alphasort(const struct dirent **a, const struct dirent **b) {
