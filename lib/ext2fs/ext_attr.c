@@ -991,13 +991,11 @@ static void xattrs_free_keys(struct ext2_xattr_handle *h)
 errcode_t ext2fs_xattrs_read_inode(struct ext2_xattr_handle *handle,
 				   struct ext2_inode_large *inode)
 {
-
 	struct ext2_ext_attr_header *header;
 	__u32 ea_inode_magic;
 	unsigned int storage_size;
 	char *start, *block_buf = NULL;
 	blk64_t blk;
-	size_t i;
 	errcode_t err = 0;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
