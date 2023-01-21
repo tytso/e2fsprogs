@@ -356,7 +356,7 @@ clean_seq:
 #ifdef HAVE_GETHOSTNAME
 	gethostname((char *) mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
 #else
-	strcpy(mmp_s->mmp_nodename, "unknown host");
+	strcpy((char *) mmp_s->mmp_nodename, "unknown host");
 #endif
 	strncpy((char *) mmp_s->mmp_bdevname, fs->device_name,
 		sizeof(mmp_s->mmp_bdevname));
