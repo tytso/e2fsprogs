@@ -1572,7 +1572,6 @@ static void PRS(int argc, char *argv[])
 	 * Finally, we complain about fs_blocks_count > 2^32 on a non-64bit fs.
 	 */
 	blk64_t		fs_blocks_count = 0;
-	long		sysval;
 	int		s_opt = -1, r_opt = -1;
 	char		*fs_features = 0;
 	int		fs_features_size = 0;
@@ -1606,9 +1605,12 @@ static void PRS(int argc, char *argv[])
 #define _SC_PAGESIZE _SC_PAGE_SIZE
 #endif
 #ifdef _SC_PAGESIZE
-	sysval = sysconf(_SC_PAGESIZE);
-	if (sysval > 0)
-		sys_page_size = sysval;
+	{
+		long sysval = sysconf(_SC_PAGESIZE);
+
+		if (sysval > 0)
+			sys_page_size = sysval;
+	}
 #endif /* _SC_PAGESIZE */
 #endif /* HAVE_SYSCONF */
 
