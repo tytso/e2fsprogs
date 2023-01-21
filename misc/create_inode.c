@@ -815,11 +815,9 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 	const char	*name;
 	struct dirent	**dent;
 	struct stat	st;
-	char		*ln_target = NULL;
 	unsigned int	save_inode;
 	ext2_ino_t	ino;
 	errcode_t	retval = 0;
-	int		read_cnt;
 	int		hdlink;
 	size_t		cur_dir_path_len;
 	int		i, num_dents;
@@ -902,7 +900,10 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				goto out;
 			}
 			break;
-		case S_IFLNK:
+		case S_IFLNK: {
+			char *ln_target;
+			int read_cnt;
+
 			ln_target = malloc(st.st_size + 1);
 			if (ln_target == NULL) {
 				com_err(__func__, retval,
@@ -937,7 +938,8 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				goto out;
 			}
 			break;
-#endif
+		}
+#endif /* !_WIN32 */
 		case S_IFREG:
 			retval = do_write_internal(fs, parent_ino, name, name,
 						   root);
