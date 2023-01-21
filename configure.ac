@@ -1036,6 +1036,17 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/wait.h
 	sys/xattr.h
 ]))
+case "$host_os" in
+mingw*)
+	# The above checks only detect system headers, not the headers in
+	# ./include/mingw/, so explicitly define them to be available.
+	AC_DEFINE(HAVE_LINUX_TYPES_H, 1)
+	AC_DEFINE(HAVE_SYS_STAT_H, 1)
+	AC_DEFINE(HAVE_SYS_SYSMACROS_H, 1)
+	AC_DEFINE(HAVE_SYS_TYPES_H, 1)
+	AC_DEFINE(HAVE_UNISTD_H, 1)
+	;;
+esac
 dnl Check where to find a dd(1) that supports iflag=fullblock
 dnl and oflag=append
 AC_MSG_CHECKING([for a dd(1) program that supports iflag=fullblock])
@@ -1738,6 +1749,11 @@ fi
 if test -n "$WITH_DIET_LIBC" ; then
 	INCLUDES="$INCLUDES -D_REENTRANT"
 fi
+case "$host_os" in
+mingw*)
+	INCLUDES=$INCLUDES' -I$(top_srcdir)/include/mingw'
+	;;
+esac
 AC_SUBST(INCLUDES)
 dnl
 dnl Build CFLAGS
