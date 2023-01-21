@@ -58,7 +58,6 @@ char *get_devname(blkid_cache cache, const char *token, const char *value)
 		goto out;
 	}
 
-out_strdup:
 	if (is_file)
 		ret = strdup(token);
 out:
