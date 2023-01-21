@@ -103,7 +103,7 @@ static void print_ext2_info(const char *device)
 	time_t			tm;
 
 	retval = ext2fs_open2(device, 0, EXT2_FLAG_64BITS, 0, 0,
-#ifdef _WIN64
+#ifdef _WIN32
 			      windows_io_manager,
 #else
 			      unix_io_manager,
