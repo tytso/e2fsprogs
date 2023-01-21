@@ -1924,10 +1924,10 @@ profile_error:
 #ifdef CONFIG_TESTIO_DEBUG
 		if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
 			io_ptr = test_io_manager;
-			test_io_backing_manager = unix_io_manager;
+			test_io_backing_manager = default_io_manager;
 		} else
 #endif
-			io_ptr = unix_io_manager;
+			io_ptr = default_io_manager;
 		retval = ext2fs_open(journal_device,
 				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
 				     0, io_ptr, &jfs);
@@ -2694,7 +2694,7 @@ static int should_do_undo(const char *name)
 	io_channel channel;
 	__u16	s_magic;
 	struct ext2_super_block super;
-	io_manager manager = unix_io_manager;
+	io_manager manager = default_io_manager;
 	int csum_flag, force_undo;
 
 	csum_flag = ext2fs_has_feature_metadata_csum(&fs_param) ||
@@ -2999,10 +2999,10 @@ int main (int argc, char *argv[])
 #ifdef CONFIG_TESTIO_DEBUG
 	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
 		io_ptr = test_io_manager;
-		test_io_backing_manager = unix_io_manager;
+		test_io_backing_manager = default_io_manager;
 	} else
 #endif
-		io_ptr = unix_io_manager;
+		io_ptr = default_io_manager;
 
 	if (undo_file != NULL || should_do_undo(device_name)) {
 		retval = mke2fs_setup_tdb(device_name, &io_ptr);
@@ -3395,7 +3395,7 @@ int main (int argc, char *argv[])
 
 		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
 				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
-				     fs->blocksize, unix_io_manager, &jfs);
+				     fs->blocksize, default_io_manager, &jfs);
 		if (retval) {
 			com_err(program_name, retval,
 				_("while trying to open journal device %s\n"),
