@@ -83,8 +83,6 @@ cc_binary {
         windows: {
             include_dirs: [ "external/e2fsprogs/include/mingw" ],
             cflags: [
-                "-D_POSIX",
-                "-D__USE_MINGW_ALARM",
                 // mke2fs.c has a warning from gcc which cannot be suppressed:
                 // passing argument 3 of 'ext2fs_get_device_size' from
                 // incompatible pointer type
