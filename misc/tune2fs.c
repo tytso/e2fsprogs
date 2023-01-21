@@ -3085,14 +3085,15 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
  *		1 on error
  *		-1 when the old method should be used
  */
-int handle_fslabel(int setlabel) {
+static int handle_fslabel(int setlabel)
+{
+#ifdef __linux__
 	errcode_t ret;
 	int mnt_flags, fd;
 	char label[FSLABEL_MAX];
 	int maxlen = FSLABEL_MAX - 1;
 	char mntpt[PATH_MAX + 1];
 
-#ifdef __linux__
 	ret = ext2fs_check_mount_point(device_name, &mnt_flags,
 					  mntpt, sizeof(mntpt));
 	if (ret) {
