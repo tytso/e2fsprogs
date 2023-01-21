@@ -845,23 +845,39 @@ dnl
 AH_TEMPLATE([CONFIG_TDB], [Define to 1 to enable tdb support])
 AC_ARG_ENABLE([tdb],
 AS_HELP_STRING([--disable-tdb],[disable tdb support]),
+[
 if test "$enableval" = "no"
 then
 	AC_MSG_RESULT([Disabling tdb support])
-	TDB_CMT="#"
-	TDB_MAN_COMMENT='.\"'
+	CONFIG_TDB=0
 else
 	AC_MSG_RESULT([Enabling tdb support])
+	CONFIG_TDB=1
+fi
+]
+,
+[
+case "$host_os" in
+mingw*)
+	AC_MSG_RESULT([Disabling tdb support by default])
+	CONFIG_TDB=0
+	;;
+*)
+	AC_MSG_RESULT([Enabling tdb support by default])
+	CONFIG_TDB=1
+	;;
+esac
+]
+)
+if test "$CONFIG_TDB" = "1"
+then
 	AC_DEFINE(CONFIG_TDB, 1)
 	TDB_CMT=""
 	TDB_MAN_COMMENT=""
+else
+	TDB_CMT="#"
+	TDB_MAN_COMMENT='.\"'
 fi
-,
-AC_MSG_RESULT([Enabling mmp support by default])
-AC_DEFINE(CONFIG_TDB, 1)
-TDB_CMT=""
-TDB_MAN_COMMENT=""
-)
 AC_SUBST(TDB_CMT)
 AC_SUBST(TDB_MAN_COMMENT)
 dnl
