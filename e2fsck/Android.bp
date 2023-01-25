@@ -49,7 +49,6 @@ cc_defaults {
     ],
     cflags: [
         "-Wno-sign-compare",
-        "-fno-strict-aliasing",
     ],
 }
 

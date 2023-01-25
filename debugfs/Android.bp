@@ -43,7 +43,6 @@ cc_defaults {
     ],
     cflags: [
         "-Wno-unused-variable",
-        "-fno-strict-aliasing",
         "-DDEBUGFS",
     ],
     include_dirs: [

@@ -53,7 +53,6 @@ cc_library {
         "-Wno-error=attributes",
         "-Wno-error=pointer-sign",
         "-Wno-unused-parameter",
-        "-fno-strict-aliasing",
     ],
 
     header_libs: ["libext2-headers"],
