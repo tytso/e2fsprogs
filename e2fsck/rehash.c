@@ -1053,13 +1053,11 @@ retry_nohash:
 	/* Sort the list */
 resort:
 	if (fd.compress && fd.num_array > 1)
-		sort_r_simple(fd.harray+2, fd.num_array-2,
-			      sizeof(struct hash_entry),
-			      hash_cmp, &name_cmp_ctx);
+		sort_r(fd.harray+2, fd.num_array-2, sizeof(struct hash_entry),
+		       hash_cmp, &name_cmp_ctx);
 	else
-		sort_r_simple(fd.harray, fd.num_array,
-			      sizeof(struct hash_entry),
-			      hash_cmp, &name_cmp_ctx);
+		sort_r(fd.harray, fd.num_array, sizeof(struct hash_entry),
+		       hash_cmp, &name_cmp_ctx);
 
 	/*
 	 * Look for duplicates

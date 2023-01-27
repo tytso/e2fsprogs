@@ -2508,9 +2508,10 @@ static int copy_names(char *name, char *value EXT2FS_ATTR((unused)),
 		      size_t value_len EXT2FS_ATTR((unused)), void *data)
 {
 	char **b = data;
+	size_t name_len = strlen(name);
 
-	strncpy(*b, name, strlen(name));
-	*b = *b + strlen(name) + 1;
+	memcpy(*b, name, name_len + 1);
+	*b = *b + name_len + 1;
 
 	return 0;
 }

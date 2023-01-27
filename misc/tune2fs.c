@@ -960,7 +960,7 @@ static void rewrite_inodes(ext2_filsys fs, unsigned int flags)
 	ext2fs_free_mem(&ctx.ea_buf);
 }
 
-static void rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
+static errcode_t rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
 {
 	errcode_t retval;
 	dgrp_t i;
@@ -975,7 +975,9 @@ static void rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
 	rewrite_inodes(fs, flags);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
-	ext2fs_mmp_update2(fs, 1);
+	retval = ext2fs_mmp_update2(fs, 1);
+	if (retval)
+		return retval;
 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	if (ext2fs_has_feature_metadata_csum(fs->super))
@@ -983,6 +985,7 @@ static void rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
 	else
 		fs->super->s_checksum_type = 0;
 	ext2fs_mark_super_dirty(fs);
+	return 0;
 }
 
 static void enable_uninit_bg(ext2_filsys fs)
@@ -3343,7 +3346,9 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		if (retval) {
 			com_err("tune2fs", retval,
 				"while recovering journal.\n");
-			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
+			printf(_("Please run e2fsck -fy %s.\n"), device_name);
+			if (!fs)
+				exit(1);
 			rc = 1;
 			goto closefs;
 		}
@@ -3703,8 +3708,14 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		}
 	}
 
-	if (rewrite_checksums)
-		rewrite_metadata_checksums(fs, rewrite_checksums);
+	if (rewrite_checksums) {
+		retval = rewrite_metadata_checksums(fs, rewrite_checksums);
+		if (retval != 0) {
+			printf("Failed to rewrite metadata checksums\n");
+			rc = 1;
+			goto closefs;
+		}
+	}
 
 	if (l_flag)
 		list_super(sb);
@@ -3745,5 +3756,13 @@ closefs:
 
 	if (feature_64bit)
 		convert_64bit(fs, feature_64bit);
-	return (ext2fs_close_free(&fs) ? 1 : rc);
+
+	retval = ext2fs_close_free(&fs);
+	if (retval) {
+		com_err("tune2fs", retval,
+			_("while writing out and closing file system"));
+		rc = 1;
+	}
+
+	return rc;
 }

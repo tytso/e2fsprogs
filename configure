@@ -7956,31 +7956,47 @@ fi
 # Check whether --enable-tdb was given.
 if test ${enable_tdb+y}
 then :
-  enableval=$enable_tdb; if test "$enableval" = "no"
+  enableval=$enable_tdb;
+if test "$enableval" = "no"
 then
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling tdb support" >&5
 printf "%s\n" "Disabling tdb support" >&6; }
-	TDB_CMT="#"
-	TDB_MAN_COMMENT='.\"'
+	CONFIG_TDB=0
 else
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Enabling tdb support" >&5
 printf "%s\n" "Enabling tdb support" >&6; }
+	CONFIG_TDB=1
+fi
+
+
+else $as_nop
+
+case "$host_os" in
+mingw*)
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling tdb support by default" >&5
+printf "%s\n" "Disabling tdb support by default" >&6; }
+	CONFIG_TDB=0
+	;;
+*)
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Enabling tdb support by default" >&5
+printf "%s\n" "Enabling tdb support by default" >&6; }
+	CONFIG_TDB=1
+	;;
+esac
+
+
+fi
+
+if test "$CONFIG_TDB" = "1"
+then
 	printf "%s\n" "#define CONFIG_TDB 1" >>confdefs.h
 
 	TDB_CMT=""
 	TDB_MAN_COMMENT=""
+else
+	TDB_CMT="#"
+	TDB_MAN_COMMENT='.\"'
 fi
-
-else $as_nop
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Enabling mmp support by default" >&5
-printf "%s\n" "Enabling mmp support by default" >&6; }
-printf "%s\n" "#define CONFIG_TDB 1" >>confdefs.h
-
-TDB_CMT=""
-TDB_MAN_COMMENT=""
-
-fi
-
 
 
 
@@ -12117,6 +12133,22 @@ then :
 
 fi
 
+case "$host_os" in
+mingw*)
+	# The above checks only detect system headers, not the headers in
+	# ./include/mingw/, so explicitly define them to be available.
+	printf "%s\n" "#define HAVE_LINUX_TYPES_H 1" >>confdefs.h
+
+	printf "%s\n" "#define HAVE_SYS_STAT_H 1" >>confdefs.h
+
+	printf "%s\n" "#define HAVE_SYS_SYSMACROS_H 1" >>confdefs.h
+
+	printf "%s\n" "#define HAVE_SYS_TYPES_H 1" >>confdefs.h
+
+	printf "%s\n" "#define HAVE_UNISTD_H 1" >>confdefs.h
+
+	;;
+esac
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a dd(1) program that supports iflag=fullblock" >&5
 printf %s "checking for a dd(1) program that supports iflag=fullblock... " >&6; }
 DD=
@@ -13270,6 +13302,12 @@ then :
   printf "%s\n" "#define HAVE_PWRITE64 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "qsort_r" "ac_cv_func_qsort_r"
+if test "x$ac_cv_func_qsort_r" = xyes
+then :
+  printf "%s\n" "#define HAVE_QSORT_R 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "secure_getenv" "ac_cv_func_secure_getenv"
 if test "x$ac_cv_func_secure_getenv" = xyes
 then :
@@ -13951,6 +13989,92 @@ fi
 fi
 fi
 
+if test "$ac_cv_func_qsort_r" != no
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether qsort_r is GNU version" >&5
+printf %s "checking whether qsort_r is GNU version... " >&6; }
+if test ${e2_cv_gnu_qsort_r+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	    int (*compar)(const void *, const void *, void *),
+	    void *arg);
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  e2_cv_gnu_qsort_r=yes
+else $as_nop
+  e2_cv_gnu_qsort_r=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $e2_cv_gnu_qsort_r" >&5
+printf "%s\n" "$e2_cv_gnu_qsort_r" >&6; }
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether qsort_r is BSD version" >&5
+printf %s "checking whether qsort_r is BSD version... " >&6; }
+if test ${e2_cv_bsd_qsort_r+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	     void *arg, int (*compar)(void *, const void *, const void *));
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  e2_cv_bsd_qsort_r=yes
+else $as_nop
+  e2_cv_bsd_qsort_r=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $e2_cv_bsd_qsort_r" >&5
+printf "%s\n" "$e2_cv_bsd_qsort_r" >&6; }
+  case "$e2_cv_gnu_qsort_r:$e2_cv_bsd_qsort_r" in #(
+  yes:no) :
+
+
+printf "%s\n" "#define HAVE_GNU_QSORT_R 1" >>confdefs.h
+
+   ;; #(
+  no:yes) :
+
+
+printf "%s\n" "#define HAVE_BSD_QSORT_R 1" >>confdefs.h
+
+   ;; #(
+  *) :
+     ;;
+esac
+
+fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for unified diff option" >&5
 printf %s "checking for unified diff option... " >&6; }
 if diff -u $0 $0 > /dev/null 2>&1 ; then
@@ -14650,11 +14774,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_11+y}
+if test ${ac_cv_prog_cxx_cxx11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_11=no
+  ac_cv_prog_cxx_cxx11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14696,11 +14820,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_98+y}
+if test ${ac_cv_prog_cxx_cxx98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_98=no
+  ac_cv_prog_cxx_cxx98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14963,6 +15087,11 @@ fi
 if test -n "$WITH_DIET_LIBC" ; then
 	INCLUDES="$INCLUDES -D_REENTRANT"
 fi
+case "$host_os" in
+mingw*)
+	INCLUDES=$INCLUDES' -I$(top_srcdir)/include/mingw'
+	;;
+esac
 
 if test $cross_compiling = no; then
    BUILD_CFLAGS="$CFLAGS $CPPFLAGS $INCLUDES -DHAVE_CONFIG_H"
@@ -15035,7 +15164,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15044,25 +15173,25 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        udev_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "udev" 2>&1`
+                udev_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "udev" 2>&1`
         else
-	        udev_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "udev" 2>&1`
+                udev_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "udev" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$udev_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$udev_PKG_ERRORS" >&5
 
 
 			with_udev_rules_dir=""
 
 elif test $pkg_failed = untried; then
-     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 			with_udev_rules_dir=""
 
 else
-	udev_CFLAGS=$pkg_cv_udev_CFLAGS
-	udev_LIBS=$pkg_cv_udev_LIBS
+        udev_CFLAGS=$pkg_cv_udev_CFLAGS
+        udev_LIBS=$pkg_cv_udev_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -15204,7 +15333,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15213,25 +15342,25 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        systemd_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "systemd" 2>&1`
+                systemd_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "systemd" 2>&1`
         else
-	        systemd_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "systemd" 2>&1`
+                systemd_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "systemd" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$systemd_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$systemd_PKG_ERRORS" >&5
 
 
 			with_systemd_unit_dir=""
 
 elif test $pkg_failed = untried; then
-     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 			with_systemd_unit_dir=""
 
 else
-	systemd_CFLAGS=$pkg_cv_systemd_CFLAGS
-	systemd_LIBS=$pkg_cv_systemd_LIBS
+        systemd_CFLAGS=$pkg_cv_systemd_CFLAGS
+        systemd_LIBS=$pkg_cv_systemd_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -15268,7 +15397,7 @@ fi
 
 OS_IO_FILE=""
 case "$host_os" in
-  cigwin*|mingw*|msys*)
+  mingw*)
     OS_IO_FILE=windows_io
   ;;
   *)

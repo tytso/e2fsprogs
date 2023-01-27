@@ -845,23 +845,39 @@ dnl
 AH_TEMPLATE([CONFIG_TDB], [Define to 1 to enable tdb support])
 AC_ARG_ENABLE([tdb],
 AS_HELP_STRING([--disable-tdb],[disable tdb support]),
+[
 if test "$enableval" = "no"
 then
 	AC_MSG_RESULT([Disabling tdb support])
-	TDB_CMT="#"
-	TDB_MAN_COMMENT='.\"'
+	CONFIG_TDB=0
 else
 	AC_MSG_RESULT([Enabling tdb support])
+	CONFIG_TDB=1
+fi
+]
+,
+[
+case "$host_os" in
+mingw*)
+	AC_MSG_RESULT([Disabling tdb support by default])
+	CONFIG_TDB=0
+	;;
+*)
+	AC_MSG_RESULT([Enabling tdb support by default])
+	CONFIG_TDB=1
+	;;
+esac
+]
+)
+if test "$CONFIG_TDB" = "1"
+then
 	AC_DEFINE(CONFIG_TDB, 1)
 	TDB_CMT=""
 	TDB_MAN_COMMENT=""
+else
+	TDB_CMT="#"
+	TDB_MAN_COMMENT='.\"'
 fi
-,
-AC_MSG_RESULT([Enabling mmp support by default])
-AC_DEFINE(CONFIG_TDB, 1)
-TDB_CMT=""
-TDB_MAN_COMMENT=""
-)
 AC_SUBST(TDB_CMT)
 AC_SUBST(TDB_MAN_COMMENT)
 dnl
@@ -1020,6 +1036,17 @@ AC_CHECK_HEADERS(m4_flatten([
 	sys/wait.h
 	sys/xattr.h
 ]))
+case "$host_os" in
+mingw*)
+	# The above checks only detect system headers, not the headers in
+	# ./include/mingw/, so explicitly define them to be available.
+	AC_DEFINE(HAVE_LINUX_TYPES_H, 1)
+	AC_DEFINE(HAVE_SYS_STAT_H, 1)
+	AC_DEFINE(HAVE_SYS_SYSMACROS_H, 1)
+	AC_DEFINE(HAVE_SYS_TYPES_H, 1)
+	AC_DEFINE(HAVE_UNISTD_H, 1)
+	;;
+esac
 dnl Check where to find a dd(1) that supports iflag=fullblock
 dnl and oflag=append
 AC_MSG_CHECKING([for a dd(1) program that supports iflag=fullblock])
@@ -1226,6 +1253,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	pwrite
 	pread64
 	pwrite64
+	qsort_r
 	secure_getenv
 	setmntent
 	setresgid
@@ -1350,6 +1378,33 @@ then
   	SEM_INIT_LIB=-lposix4))))dnl
 fi
 AC_SUBST(SEM_INIT_LIB)
+dnl
+dnl qsort_r detection
+dnl
+AS_IF([test "$ac_cv_func_qsort_r" != no], [
+  AC_CACHE_CHECK(whether qsort_r is GNU version, e2_cv_gnu_qsort_r,
+    [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+@%:@include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	    int (*compar)(const void *, const void *, void *),
+	    void *arg);
+]], [[ ]])],[e2_cv_gnu_qsort_r=yes],[e2_cv_gnu_qsort_r=no])
+  ])
+  AC_CACHE_CHECK(whether qsort_r is BSD version, e2_cv_bsd_qsort_r,
+    [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+@%:@include <stdlib.h>
+void (qsort_r)(void *base, size_t nmemb, size_t size,
+	     void *arg, int (*compar)(void *, const void *, const void *));
+]], [[ ]])],[e2_cv_bsd_qsort_r=yes],[e2_cv_bsd_qsort_r=no])
+  ])
+  AS_CASE("$e2_cv_gnu_qsort_r:$e2_cv_bsd_qsort_r",
+  [yes:no], [
+    AC_DEFINE(HAVE_GNU_QSORT_R, 1, [ Define to 1 if you have the GNU-style 'qsort_r' function.])
+  ],
+  [no:yes], [
+    AC_DEFINE(HAVE_BSD_QSORT_R, 1, [ Define to 1 if you have the BSD-style 'qsort_r' function.])
+  ])
+])
 dnl
 dnl Check for unified diff
 dnl
@@ -1694,6 +1749,11 @@ fi
 if test -n "$WITH_DIET_LIBC" ; then
 	INCLUDES="$INCLUDES -D_REENTRANT"
 fi
+case "$host_os" in
+mingw*)
+	INCLUDES=$INCLUDES' -I$(top_srcdir)/include/mingw'
+	;;
+esac
 AC_SUBST(INCLUDES)
 dnl
 dnl Build CFLAGS
@@ -1826,7 +1886,7 @@ dnl Adjust the compiled files if we are on windows vs everywhere else
 dnl
 OS_IO_FILE=""
 [case "$host_os" in
-  cigwin*|mingw*|msys*)
+  mingw*)
     OS_IO_FILE=windows_io
   ;;
   *)

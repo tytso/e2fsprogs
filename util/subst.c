@@ -434,7 +434,7 @@ int main(int argc, char **argv)
 					printf("Using original atime\n");
 				set_utimes(outfn, fileno(old), tv);
 			}
-#ifndef _WIN64
+#ifndef _WIN32
 			if (ofd >= 0)
 				(void) fchmod(ofd, 0444);
 #endif
@@ -444,7 +444,7 @@ int main(int argc, char **argv)
 		} else {
 			if (verbose)
 				printf("Creating or replacing %s.\n", outfn);
-#ifndef _WIN64
+#ifndef _WIN32
 			if (ofd >= 0)
 				(void) fchmod(ofd, 0444);
 #endif

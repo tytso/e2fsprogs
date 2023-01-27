@@ -59,10 +59,6 @@ cc_library {
                 "-Wno-unused-variable",
                 "-Wno-error=typedef-redefinition",
             ],
-
-            host_ldlibs: [
-                "-lws2_32",
-            ],
         },
     },
 

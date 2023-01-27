@@ -82,16 +82,9 @@ struct kdev_s {
 #define buffer_req(bh) 1
 #define do_readahead(journal, start) do {} while (0)
 
-typedef struct kmem_cache {
-	int	object_length;
-} kmem_cache_t;
-
-#define kmem_cache_alloc(cache, flags) malloc((cache)->object_length)
-#define kmem_cache_free(cache, obj) free(obj)
-#define kmem_cache_create(name, len, a, b, c) do_cache_create(len)
-#define kmem_cache_destroy(cache) do_cache_destroy(cache)
-#define kmalloc(len, flags) malloc(len)
-#define kfree(p) free(p)
+struct kmem_cache {
+	unsigned int	object_size;
+};
 
 #define cond_resched()	do { } while (0)
 
@@ -107,8 +100,16 @@ typedef struct kmem_cache {
  * functions.
  */
 #ifdef NO_INLINE_FUNCS
-extern kmem_cache_t *do_cache_create(int len);
-extern void do_cache_destroy(kmem_cache_t *cache);
+extern struct kmem_cache *kmem_cache_create(const char *name,
+					    unsigned int size,
+					    unsigned int align,
+					    unsigned int flags,
+					    void (*ctor)(void *));
+extern void kmem_cache_destroy(struct kmem_cache *s);
+extern void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags);
+extern void kmem_cache_free(struct kmem_cache *s, void *objp);
+extern void *kmalloc(size_t size, gfp_t flags);
+extern void kfree(const void *objp);
 extern size_t journal_tag_bytes(journal_t *journal);
 extern __u32 __hash_32(__u32 val);
 extern __u32 hash_32(__u32 val, unsigned int bits);
@@ -139,19 +140,46 @@ extern void jbd2_descriptor_block_csum_set(journal_t *j,
 #endif /* __STDC_VERSION__ >= 199901L */
 #endif /* E2FSCK_INCLUDE_INLINE_FUNCS */
 
-_INLINE_ kmem_cache_t *do_cache_create(int len)
+_INLINE_ struct kmem_cache *
+kmem_cache_create(const char *name EXT2FS_ATTR((unused)),
+		  unsigned int size,
+		  unsigned int align EXT2FS_ATTR((unused)),
+		  unsigned int flags EXT2FS_ATTR((unused)),
+		  void (*ctor)(void *) EXT2FS_ATTR((unused)))
 {
-	kmem_cache_t *new_cache;
+	struct kmem_cache *new_cache;
 
 	new_cache = malloc(sizeof(*new_cache));
 	if (new_cache)
-		new_cache->object_length = len;
+		new_cache->object_size = size;
 	return new_cache;
 }
 
-_INLINE_ void do_cache_destroy(kmem_cache_t *cache)
+_INLINE_ void kmem_cache_destroy(struct kmem_cache *s)
 {
-	free(cache);
+	free(s);
+}
+
+_INLINE_ void *kmem_cache_alloc(struct kmem_cache *cachep,
+				gfp_t flags EXT2FS_ATTR((unused)))
+{
+	return malloc(cachep->object_size);
+}
+
+_INLINE_ void kmem_cache_free(struct kmem_cache *s EXT2FS_ATTR((unused)),
+			      void *objp)
+{
+	free(objp);
+}
+
+_INLINE_ void *kmalloc(size_t size, gfp_t flags EXT2FS_ATTR((unused)))
+{
+	return malloc(size);
+}
+
+_INLINE_ void kfree(const void *objp)
+{
+	free((void *)objp);
 }
 
 /* generic hashing taken from the Linux kernel */

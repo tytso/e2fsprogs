@@ -356,7 +356,7 @@ clean_seq:
 #ifdef HAVE_GETHOSTNAME
 	gethostname((char *) mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
 #else
-	strcpy(mmp_s->mmp_nodename, "unknown host");
+	strcpy((char *) mmp_s->mmp_nodename, "unknown host");
 #endif
 	strncpy((char *) mmp_s->mmp_bdevname, fs->device_name,
 		sizeof(mmp_s->mmp_bdevname));
@@ -407,7 +407,7 @@ errcode_t ext2fs_mmp_stop(ext2_filsys fs)
 	    (fs->mmp_buf == NULL) || (fs->mmp_cmp == NULL))
 		goto mmp_error;
 
-	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, fs->mmp_buf);
+	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, NULL);
 	if (retval)
 		goto mmp_error;
 

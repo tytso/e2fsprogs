@@ -355,9 +355,9 @@ struct struct_ext2_filsys {
 #define BLOCK_INLINE_DATA_CHANGED	8
 
 /*
- * Block interate flags
+ * Block iterate flags
  *
- * BLOCK_FLAG_APPEND, or BLOCK_FLAG_HOLE, indicates that the interator
+ * BLOCK_FLAG_APPEND, or BLOCK_FLAG_HOLE, indicates that the iterator
  * function should be called on blocks where the block number is zero.
  * This is used by ext2fs_expand_dir() to be able to add a new block
  * to an inode.  It can also be used for programs that want to be able

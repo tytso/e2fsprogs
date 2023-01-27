@@ -50,7 +50,7 @@ int journal_enable_debug = -1;
 
 /*
  * There must be only one definition if we're hooking in extra commands or
- * chaging default prompt. Use -DSKIP_GLOBDEF for that.
+ * changing default prompt. Use -DSKIP_GLOBDEF for that.
  */
 #ifndef SKIP_GLOBDEFS
 ss_request_table *extra_cmds;

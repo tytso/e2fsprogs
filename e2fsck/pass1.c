@@ -1331,7 +1331,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		goto endit;
 	}
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
-						    "block interate buffer");
+						    "block iterate buffer");
 	if (EXT2_INODE_SIZE(fs->super) == EXT2_GOOD_OLD_INODE_SIZE)
 		e2fsck_use_inode_shortcuts(ctx, 1);
 	e2fsck_intercept_block_allocations(ctx);

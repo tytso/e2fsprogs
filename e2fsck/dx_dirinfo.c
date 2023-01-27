@@ -143,7 +143,7 @@ ext2_ino_t e2fsck_get_num_dx_dirinfo(e2fsck_t ctx)
 }
 
 /*
- * A simple interator function
+ * A simple iterator function
  */
 struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx, ext2_ino_t *control)
 {
