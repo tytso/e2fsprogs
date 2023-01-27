@@ -79,8 +79,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 static void mark_table_blocks(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
-static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
-static void add_casefolded_dir(e2fsck_t ctx, ino_t ino);
+static void mark_inode_bad(e2fsck_t ctx, ext2_ino_t ino);
+static void add_casefolded_dir(e2fsck_t ctx, ext2_ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -2205,7 +2205,7 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 /*
  * Mark an inode as being bad in some what
  */
-static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
+static void mark_inode_bad(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct		problem_context pctx;
 
@@ -2226,7 +2226,7 @@ static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
 	ext2fs_mark_inode_bitmap2(ctx->inode_bad_map, ino);
 }
 
-static void add_casefolded_dir(e2fsck_t ctx, ino_t ino)
+static void add_casefolded_dir(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct		problem_context pctx;
 
