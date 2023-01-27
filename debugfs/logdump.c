@@ -479,7 +479,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 
 		if ((blocknr == first_transaction_blocknr) &&
 		    (cur_counts != 0) && dump_old && (dump_counts != -1)) {
-			fprintf(out_file, "Dump all %lld journal records.\n", cur_counts);
+			fprintf(out_file, "Dump all %lld journal records.\n",
+				(long long) cur_counts);
 			break;
 		}
 
