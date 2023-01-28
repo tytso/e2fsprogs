@@ -48,7 +48,8 @@ static errcode_t read_ea_inode_hash(ext2_filsys fs, ext2_ino_t ino, __u32 *hash)
 __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry, void *data)
 {
 	__u32 hash = 0;
-	char *name = ((char *) entry) + sizeof(struct ext2_ext_attr_entry);
+	unsigned char *name = (((unsigned char *) entry) +
+			       sizeof(struct ext2_ext_attr_entry));
 	int n;
 
 	for (n = 0; n < entry->e_name_len; n++) {
@@ -71,18 +72,51 @@ __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry, void *data)
 	return hash;
 }
 
+__u32 ext2fs_ext_attr_hash_entry_signed(struct ext2_ext_attr_entry *entry,
+					void *data)
+{
+	__u32 hash = 0;
+	signed char *name = (((signed char *) entry) +
+			     sizeof(struct ext2_ext_attr_entry));
+	int n;
+
+	for (n = 0; n < entry->e_name_len; n++) {
+		hash = (hash << NAME_HASH_SHIFT) ^
+		       (hash >> (8*sizeof(hash) - NAME_HASH_SHIFT)) ^
+		       *name++;
+	}
+
+	/* The hash needs to be calculated on the data in little-endian. */
+	if (entry->e_value_inum == 0 && entry->e_value_size != 0) {
+		__u32 *value = (__u32 *)data;
+		for (n = (entry->e_value_size + EXT2_EXT_ATTR_ROUND) >>
+			 EXT2_EXT_ATTR_PAD_BITS; n; n--) {
+			hash = (hash << VALUE_HASH_SHIFT) ^
+			       (hash >> (8*sizeof(hash) - VALUE_HASH_SHIFT)) ^
+			       ext2fs_le32_to_cpu(*value++);
+		}
+	}
+
+	return hash;
+}
+
+
 /*
- * ext2fs_ext_attr_hash_entry2()
+ * ext2fs_ext_attr_hash_entry3()
  *
- * Compute the hash of an extended attribute.
- * This version of the function supports hashing entries that reference
- * external inodes (ea_inode feature).
+ * Compute the hash of an extended attribute.  This version of the
+ * function supports hashing entries that reference external inodes
+ * (ea_inode feature) as well as calculating the old legacy signed
+ * hash variant.
  */
-errcode_t ext2fs_ext_attr_hash_entry2(ext2_filsys fs,
+errcode_t ext2fs_ext_attr_hash_entry3(ext2_filsys fs,
 				      struct ext2_ext_attr_entry *entry,
-				      void *data, __u32 *hash)
+				      void *data, __u32 *hash,
+				      __u32 *signed_hash)
 {
 	*hash = ext2fs_ext_attr_hash_entry(entry, data);
+	if (signed_hash)
+		*signed_hash = ext2fs_ext_attr_hash_entry_signed(entry, data);
 
 	if (entry->e_value_inum) {
 		__u32 ea_inode_hash;
@@ -96,8 +130,27 @@ errcode_t ext2fs_ext_attr_hash_entry2(ext2_filsys fs,
 		*hash = (*hash << VALUE_HASH_SHIFT) ^
 			(*hash >> (8*sizeof(*hash) - VALUE_HASH_SHIFT)) ^
 			ea_inode_hash;
+		if (signed_hash)
+			*signed_hash = (*signed_hash << VALUE_HASH_SHIFT) ^
+				(*signed_hash >> (8*sizeof(*hash) -
+						  VALUE_HASH_SHIFT)) ^
+				ea_inode_hash;
 	}
 	return 0;
+}
+
+/*
+ * ext2fs_ext_attr_hash_entry2()
+ *
+ * Compute the hash of an extended attribute.
+ * This version of the function supports hashing entries that reference
+ * external inodes (ea_inode feature).
+ */
+errcode_t ext2fs_ext_attr_hash_entry2(ext2_filsys fs,
+				      struct ext2_ext_attr_entry *entry,
+				      void *data, __u32 *hash)
+{
+	return ext2fs_ext_attr_hash_entry3(fs, entry, data, hash, NULL);
 }
 
 #undef NAME_HASH_SHIFT
@@ -940,15 +993,18 @@ static errcode_t read_xattrs_from_buffer(struct ext2_xattr_handle *handle,
 
 		/* e_hash may be 0 in older inode's ea */
 		if (entry->e_hash != 0) {
-			__u32 hash;
+			__u32 hash, signed_hash;
+
 			void *data = (entry->e_value_inum != 0) ?
 					0 : value_start + entry->e_value_offs;
 
-			err = ext2fs_ext_attr_hash_entry2(handle->fs, entry,
-							  data, &hash);
+			err = ext2fs_ext_attr_hash_entry3(handle->fs, entry,
+							  data, &hash,
+							  &signed_hash);
 			if (err)
 				return err;
-			if (entry->e_hash != hash) {
+			if ((entry->e_hash != hash) &&
+			    (entry->e_hash != signed_hash)) {
 				struct ext2_inode child;
 
 				/* Check whether this is an old Lustre-style
