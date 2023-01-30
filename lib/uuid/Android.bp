@@ -39,9 +39,6 @@ cc_library {
         "unparse.c",
         "uuid_time.c",
     ],
-    cflags: [
-        "-Wno-unused-parameter",
-    ],
     target: {
         windows: {
             enabled: true

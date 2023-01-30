@@ -46,16 +46,9 @@ cc_library {
         "percent.c",
     ],
 
-    cflags: [
-        "-Wno-unused-parameter",
-    ],
-
     target: {
         windows: {
             enabled: true,
-            cflags: [
-                "-Wno-error=typedef-redefinition",
-            ],
         },
     },
 

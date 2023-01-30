@@ -112,7 +112,6 @@ cc_library {
         "libsparse",
         "libz",
     ],
-    cflags: ["-Wno-unused-parameter"],
     target: {
         android: {
             shared_libs: ["libext2_uuid"],
@@ -121,9 +120,6 @@ cc_library {
             enabled: true,
             srcs: ["windows_io.c"],
             exclude_srcs: ["unix_io.c"],
-            cflags: [
-                "-Wno-error=typedef-redefinition",
-            ],
         },
     },
 

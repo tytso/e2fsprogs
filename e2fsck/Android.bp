@@ -47,9 +47,6 @@ cc_defaults {
         "extents.c",
         "encrypted_files.c",
     ],
-    cflags: [
-        "-Wno-sign-compare",
-    ],
 }
 
 e2fsck_libs = [

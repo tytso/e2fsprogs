@@ -39,17 +39,9 @@ cc_library {
 
     target: {
         windows: {
-            cflags: [
-                "-Wno-error=typedef-redefinition",
-            ],
-
             enabled: true,
         },
     },
-
-    cflags: [
-        "-Wno-unused-parameter",
-    ],
 
     header_libs: ["libext2-headers"],
     export_include_dirs: ["."],

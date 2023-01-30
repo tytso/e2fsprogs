@@ -51,10 +51,6 @@ cc_defaults {
         "mk_hugefiles.c",
         "default_profile.c",
     ],
-    cflags: [
-        "-Wno-error=type-limits",
-    ],
-
     stl: "libc++_static",
     include_dirs: ["external/e2fsprogs/e2fsck"],
 }
