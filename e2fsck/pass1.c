@@ -331,7 +331,7 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 				      blk64_t *quota_blocks)
 {
 	struct ext2_inode inode;
-	__u32 hash;
+	__u32 hash, signed_hash;
 	errcode_t retval;
 
 	/* Check if inode is within valid range */
@@ -343,7 +343,8 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 
 	e2fsck_read_inode(ctx, entry->e_value_inum, &inode, "pass1");
 
-	retval = ext2fs_ext_attr_hash_entry2(ctx->fs, entry, NULL, &hash);
+	retval = ext2fs_ext_attr_hash_entry3(ctx->fs, entry, NULL, &hash,
+					     &signed_hash);
 	if (retval) {
 		com_err("check_large_ea_inode", retval,
 			_("while hashing entry with e_value_inum = %u"),
@@ -351,7 +352,7 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 		fatal_error(ctx, 0);
 	}
 
-	if (hash == entry->e_hash) {
+	if ((hash == entry->e_hash) || (signed_hash == entry->e_hash)) {
 		*quota_blocks = size_to_quota_blocks(ctx->fs,
 						     entry->e_value_size);
 	} else {
@@ -495,7 +496,10 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
 			}
 
 			hash = ext2fs_ext_attr_hash_entry(entry,
-							  start + entry->e_value_offs);
+						start + entry->e_value_offs);
+			if (entry->e_hash != 0 && entry->e_hash != hash)
+				hash = ext2fs_ext_attr_hash_entry_signed(entry,
+						start + entry->e_value_offs);
 
 			/* e_hash may be 0 in older inode's ea */
 			if (entry->e_hash != 0 && entry->e_hash != hash) {
@@ -2602,6 +2606,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 			hash = ext2fs_ext_attr_hash_entry(entry, block_buf +
 							  entry->e_value_offs);
+			if (entry->e_hash != hash)
+				hash = ext2fs_ext_attr_hash_entry_signed(entry,
+					block_buf + entry->e_value_offs);
 
 			if (entry->e_hash != hash) {
 				pctx->num = entry->e_hash;

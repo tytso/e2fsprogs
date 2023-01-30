@@ -179,7 +179,17 @@ _INLINE_ void *kmalloc(size_t size, gfp_t flags EXT2FS_ATTR((unused)))
 
 _INLINE_ void kfree(const void *objp)
 {
+#ifdef HAVE_INTPTR_T
+	/*
+	 * Work around a botch in the C standard, which triggers
+	 * compiler warnings.  For better or for worse, the kernel
+	 * uses const void * for kfree, while the C standard mandates
+	 * the use of void *.  See: https://yarchive.net/comp/const.html
+	 */
+	free((void *)(intptr_t)objp);
+#else
 	free((void *)objp);
+#endif
 }
 
 /* generic hashing taken from the Linux kernel */

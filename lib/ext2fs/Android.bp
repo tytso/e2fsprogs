@@ -121,7 +121,6 @@ cc_library {
             enabled: true,
             include_dirs: ["external/e2fsprogs/include/mingw"],
             cflags: [
-                "-Wno-error=cpp",
                 "-Wno-format",
                 "-Wno-unused-variable",
                 "-Wno-error=typedef-redefinition",
