@@ -8,7 +8,7 @@ jobs:
     name: Build and test with gcc
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - run: ./configure CC=gcc CFLAGS="$DEF_CFLAGS"
     - run: make -j8 check V=1 CFLAGS_WARN="-Werror"
     - run: make -j8 install V=1 DESTDIR=$PWD/installdir
@@ -18,7 +18,7 @@ jobs:
     name: Build and test with clang
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -32,7 +32,7 @@ jobs:
     name: Build and test with gcc -m32
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -46,7 +46,7 @@ jobs:
     name: Build and test with ASAN enabled
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -59,7 +59,7 @@ jobs:
     name: Build and test with UBSAN enabled
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -72,7 +72,7 @@ jobs:
     name: Build and test on macOS
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - run: ./configure CFLAGS="$DEF_CFLAGS"
       # -Wno-error=deprecated-declarations is needed to suppress known warnings
       # due to e2fsprogs' use of sbrk(0) and daemon().
@@ -92,7 +92,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: msys2/setup-msys2@v2
       with:
         msystem: ${{matrix.sys}}
