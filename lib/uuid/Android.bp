@@ -45,7 +45,6 @@ cc_library {
     ],
     target: {
         windows: {
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
             enabled: true
         },
     },

@@ -22,7 +22,6 @@ cc_library {
 
     target: {
         windows: {
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
             enabled: true,
             cflags: ["-Wno-unused-variable"],
         },
@@ -89,7 +88,6 @@ cc_binary {
             ],
         },
         windows: {
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
             ldflags: ["-static"],
             enabled: true
         },

@@ -39,7 +39,6 @@ cc_library {
 
     target: {
         windows: {
-            include_dirs: ["external/e2fsprogs/include/mingw"],
             cflags: [
                 "-Wno-pointer-to-int-cast",
                 "-Wno-error=typedef-redefinition",
