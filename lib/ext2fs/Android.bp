@@ -122,8 +122,6 @@ cc_library {
             srcs: ["windows_io.c"],
             exclude_srcs: ["unix_io.c"],
             cflags: [
-                "-Wno-format",
-                "-Wno-unused-variable",
                 "-Wno-error=typedef-redefinition",
             ],
         },

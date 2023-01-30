@@ -23,14 +23,12 @@ cc_library {
     target: {
         windows: {
             enabled: true,
-            cflags: ["-Wno-unused-variable"],
         },
     },
 
     srcs: [
         "create_inode.c",
     ],
-    cflags: ["-Wno-error=format-extra-args"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",
@@ -54,9 +52,7 @@ cc_defaults {
         "default_profile.c",
     ],
     cflags: [
-        "-Wno-error=format",
         "-Wno-error=type-limits",
-        "-Wno-format-extra-args",
     ],
 
     stl: "libc++_static",

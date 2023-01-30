@@ -47,7 +47,6 @@ cc_library {
     ],
 
     cflags: [
-        "-Wno-error=attributes",
         "-Wno-unused-parameter",
     ],
 
@@ -55,7 +54,6 @@ cc_library {
         windows: {
             enabled: true,
             cflags: [
-                "-Wno-unused-variable",
                 "-Wno-error=typedef-redefinition",
             ],
         },

@@ -40,7 +40,6 @@ cc_library {
     target: {
         windows: {
             cflags: [
-                "-Wno-pointer-to-int-cast",
                 "-Wno-error=typedef-redefinition",
             ],
 
@@ -49,8 +48,6 @@ cc_library {
     },
 
     cflags: [
-        "-Wno-error=attributes",
-        "-Wno-error=pointer-sign",
         "-Wno-unused-parameter",
     ],
 

@@ -52,7 +52,6 @@ cc_defaults {
             cflags: [
                 "-Wno-typedef-redefinition",
                 "-Wno-unused-parameter",
-                "-Wno-unused-variable",
             ],
         },
         bionic: {

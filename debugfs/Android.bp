@@ -42,7 +42,6 @@ cc_defaults {
         "do_journal.c",
     ],
     cflags: [
-        "-Wno-unused-variable",
         "-DDEBUGFS",
     ],
     include_dirs: [

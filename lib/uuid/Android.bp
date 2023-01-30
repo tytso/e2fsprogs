@@ -40,7 +40,6 @@ cc_library {
         "uuid_time.c",
     ],
     cflags: [
-        "-Wno-unused-function",
         "-Wno-unused-parameter",
     ],
     target: {
