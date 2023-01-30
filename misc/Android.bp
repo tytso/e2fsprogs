@@ -81,7 +81,7 @@ cc_binary {
         },
         windows: {
             ldflags: ["-static"],
-            enabled: true
+            enabled: true,
         },
         android: {
             required: [
@@ -96,7 +96,11 @@ cc_binary {
                 "libext2_com_err",
                 "libext2_e2p",
             ],
-            symlinks: ["mkfs.ext2", "mkfs.ext3", "mkfs.ext4"],
+            symlinks: [
+                "mkfs.ext2",
+                "mkfs.ext3",
+                "mkfs.ext4",
+            ],
         },
     },
 }

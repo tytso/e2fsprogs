@@ -41,7 +41,7 @@ cc_library {
     ],
     target: {
         windows: {
-            enabled: true
+            enabled: true,
         },
     },
     header_libs: ["libext2-headers"],

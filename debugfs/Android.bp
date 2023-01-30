@@ -46,7 +46,7 @@ cc_defaults {
     ],
     include_dirs: [
         "external/e2fsprogs/misc",
-        "external/e2fsprogs/e2fsck"
+        "external/e2fsprogs/e2fsck",
     ],
 }
 

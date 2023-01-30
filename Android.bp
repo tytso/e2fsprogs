@@ -57,7 +57,10 @@ cc_defaults {
     ],
     target: {
         bionic: {
-            system_shared_libs: ["libc", "libdl"],
+            system_shared_libs: [
+                "libc",
+                "libdl",
+            ],
         },
         windows: {
             include_dirs: ["external/e2fsprogs/include/mingw"],
