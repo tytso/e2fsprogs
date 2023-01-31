@@ -337,10 +337,13 @@ error_unlock:
 	return retval;
 }
 
+#define RAW_WRITE_NO_HANDLER	1
+
 static errcode_t raw_write_blk(io_channel channel,
 			       struct unix_private_data *data,
 			       unsigned long long block,
-			       int count, const void *bufv)
+			       int count, const void *bufv,
+			       int flags)
 {
 	ssize_t		size;
 	ext2_loff_t	location;
@@ -482,7 +485,7 @@ bounce_write:
 error_unlock:
 	mutex_unlock(data, BOUNCE_MTX);
 error_out:
-	if (channel->write_error)
+	if (((flags & RAW_WRITE_NO_HANDLER) == 0) && channel->write_error)
 		retval = (channel->write_error)(channel, block, count, buf,
 						size, actual, retval);
 	return retval;
@@ -580,7 +583,7 @@ static void reuse_cache(io_channel channel, struct unix_private_data *data,
 		 struct unix_cache *cache, unsigned long long block)
 {
 	if (cache->dirty && cache->in_use)
-		raw_write_blk(channel, data, cache->block, 1, cache->buf);
+		raw_write_blk(channel, data, cache->block, 1, cache->buf, 0);
 
 	cache->in_use = 1;
 	cache->dirty = 0;
@@ -616,7 +619,7 @@ static errcode_t flush_cached_blocks(io_channel channel,
 			continue;
 
 		retval = raw_write_blk(channel, data,
-				       cache->block, 1, cache->buf);
+				       cache->block, 1, cache->buf, 0);
 		if (retval)
 			retval2 = retval;
 		else
@@ -1067,10 +1070,10 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 #ifdef NO_IO_CACHE
-	return raw_write_blk(channel, data, block, count, buf);
+	return raw_write_blk(channel, data, block, count, buf, 0);
 #else
 	if (data->flags & IO_FLAG_NOCACHE)
-		return raw_write_blk(channel, data, block, count, buf);
+		return raw_write_blk(channel, data, block, count, buf, 0);
 	/*
 	 * If we're doing an odd-sized write or a very large write,
 	 * flush out the cache completely and then do a direct write.
@@ -1079,7 +1082,7 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 		if ((retval = flush_cached_blocks(channel, data,
 						  FLUSH_INVALIDATE)))
 			return retval;
-		return raw_write_blk(channel, data, block, count, buf);
+		return raw_write_blk(channel, data, block, count, buf, 0);
 	}
 
 	/*
@@ -1089,7 +1092,7 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 	 */
 	writethrough = channel->flags & CHANNEL_FLAGS_WRITETHROUGH;
 	if (writethrough)
-		retval = raw_write_blk(channel, data, block, count, buf);
+		retval = raw_write_blk(channel, data, block, count, buf, 0);
 
 	cp = buf;
 	mutex_lock(data, CACHE_MTX);
