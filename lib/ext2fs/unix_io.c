@@ -94,6 +94,7 @@ struct unix_cache {
 	int			access_time;
 	unsigned		dirty:1;
 	unsigned		in_use:1;
+	unsigned		write_err:1;
 };
 
 #define CACHE_SIZE 8
@@ -579,16 +580,27 @@ static struct unix_cache *find_cached_block(struct unix_private_data *data,
 /*
  * Reuse a particular cache entry for another block.
  */
-static void reuse_cache(io_channel channel, struct unix_private_data *data,
-		 struct unix_cache *cache, unsigned long long block)
+static errcode_t reuse_cache(io_channel channel,
+		struct unix_private_data *data, struct unix_cache *cache,
+		unsigned long long block)
 {
-	if (cache->dirty && cache->in_use)
-		raw_write_blk(channel, data, cache->block, 1, cache->buf, 0);
+	if (cache->dirty && cache->in_use) {
+		errcode_t retval;
+
+		retval = raw_write_blk(channel, data, cache->block, 1,
+				       cache->buf, RAW_WRITE_NO_HANDLER);
+		if (retval) {
+			cache->write_err = 1;
+			return retval;
+		}
+	}
 
 	cache->in_use = 1;
 	cache->dirty = 0;
+	cache->write_err = 0;
 	cache->block = block;
 	cache->access_time = ++data->access_time;
+	return 0;
 }
 
 #define FLUSH_INVALIDATE	0x01
@@ -1037,7 +1049,10 @@ static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 		/* Save the results in the cache */
 		for (j=0; j < i; j++) {
 			if (!find_cached_block(data, block, &cache)) {
-				reuse_cache(channel, data, cache, block);
+				retval = reuse_cache(channel, data,
+						     cache, block);
+				if (retval)
+					goto call_write_handler;
 				memcpy(cache->buf, cp, channel->block_size);
 			}
 			count--;
@@ -1047,6 +1062,28 @@ static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 	}
 	mutex_unlock(data, CACHE_MTX);
 	return 0;
+
+call_write_handler:
+	if (cache->write_err && channel->write_error) {
+		char *err_buf = NULL;
+		unsigned long long err_block = cache->block;
+
+		cache->dirty = 0;
+		cache->in_use = 0;
+		cache->write_err = 0;
+		if (io_channel_alloc_buf(channel, 0, &err_buf))
+			err_buf = NULL;
+		else
+			memcpy(err_buf, cache->buf, channel->block_size);
+		mutex_unlock(data, CACHE_MTX);
+		(channel->write_error)(channel, err_block, 1, err_buf,
+				       channel->block_size, -1,
+				       retval);
+		if (err_buf)
+			ext2fs_free_mem(&err_buf);
+	} else
+		mutex_unlock(data, CACHE_MTX);
+	return retval;
 #endif /* NO_IO_CACHE */
 }
 
@@ -1099,8 +1136,12 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 	while (count > 0) {
 		cache = find_cached_block(data, block, &reuse);
 		if (!cache) {
+			errcode_t err;
+
 			cache = reuse;
-			reuse_cache(channel, data, cache, block);
+			err = reuse_cache(channel, data, cache, block);
+			if (err)
+				goto call_write_handler;
 		}
 		if (cache->buf != cp)
 			memcpy(cache->buf, cp, channel->block_size);
@@ -1110,6 +1151,28 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 		cp += channel->block_size;
 	}
 	mutex_unlock(data, CACHE_MTX);
+	return retval;
+
+call_write_handler:
+	if (cache->write_err && channel->write_error) {
+		char *err_buf = NULL;
+		unsigned long long err_block = cache->block;
+
+		cache->dirty = 0;
+		cache->in_use = 0;
+		cache->write_err = 0;
+		if (io_channel_alloc_buf(channel, 0, &err_buf))
+			err_buf = NULL;
+		else
+			memcpy(err_buf, cache->buf, channel->block_size);
+		mutex_unlock(data, CACHE_MTX);
+		(channel->write_error)(channel, err_block, 1, err_buf,
+				       channel->block_size, -1,
+				       retval);
+		if (err_buf)
+			ext2fs_free_mem(&err_buf);
+	} else
+		mutex_unlock(data, CACHE_MTX);
 	return retval;
 #endif /* NO_IO_CACHE */
 }
