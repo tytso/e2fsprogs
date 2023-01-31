@@ -614,31 +614,66 @@ static errcode_t flush_cached_blocks(io_channel channel,
 				     int flags)
 {
 	struct unix_cache	*cache;
-	errcode_t		retval, retval2;
+	errcode_t		retval, retval2 = 0;
 	int			i;
+	int			errors_found = 0;
 
-	retval2 = 0;
 	if ((flags & FLUSH_NOLOCK) == 0)
 		mutex_lock(data, CACHE_MTX);
 	for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
-		if (!cache->in_use)
+		if (!cache->in_use || !cache->dirty)
 			continue;
-
-		if (flags & FLUSH_INVALIDATE)
-			cache->in_use = 0;
-
-		if (!cache->dirty)
-			continue;
-
 		retval = raw_write_blk(channel, data,
-				       cache->block, 1, cache->buf, 0);
-		if (retval)
+				       cache->block, 1, cache->buf,
+				       RAW_WRITE_NO_HANDLER);
+		if (retval) {
+			cache->write_err = 1;
+			errors_found = 1;
 			retval2 = retval;
-		else
+		} else {
 			cache->dirty = 0;
+			cache->write_err = 0;
+			if (flags & FLUSH_INVALIDATE)
+				cache->in_use = 0;
+		}
 	}
 	if ((flags & FLUSH_NOLOCK) == 0)
 		mutex_unlock(data, CACHE_MTX);
+retry:
+	while (errors_found) {
+		if ((flags & FLUSH_NOLOCK) == 0)
+			mutex_lock(data, CACHE_MTX);
+		errors_found = 0;
+		for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
+			if (!cache->in_use || !cache->write_err)
+				continue;
+			errors_found = 1;
+			if (cache->write_err && channel->write_error) {
+				char *err_buf = NULL;
+				unsigned long long err_block = cache->block;
+
+				cache->dirty = 0;
+				cache->in_use = 0;
+				cache->write_err = 0;
+				if (io_channel_alloc_buf(channel, 0,
+							 &err_buf))
+					err_buf = NULL;
+				else
+					memcpy(err_buf, cache->buf,
+					       channel->block_size);
+				mutex_unlock(data, CACHE_MTX);
+				(channel->write_error)(channel, err_block,
+					1, err_buf, channel->block_size, -1,
+					retval2);
+				if (err_buf)
+					ext2fs_free_mem(&err_buf);
+				goto retry;
+			} else
+				cache->write_err = 0;
+		}
+		if ((flags & FLUSH_NOLOCK) == 0)
+			mutex_unlock(data, CACHE_MTX);
+	}
 	return retval2;
 }
 #endif /* NO_IO_CACHE */
