@@ -62,6 +62,10 @@ cc_defaults {
                 "libdl",
             ],
         },
+        darwin: {
+            // Still has unfixed/unsuppressed warnings.
+            cflags: ["-Wno-error"],
+        },
         windows: {
             include_dirs: ["external/e2fsprogs/include/mingw"],
         },
