@@ -79,8 +79,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 static void mark_table_blocks(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
-static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
-static void add_casefolded_dir(e2fsck_t ctx, ino_t ino);
+static void mark_inode_bad(e2fsck_t ctx, ext2_ino_t ino);
+static void add_casefolded_dir(e2fsck_t ctx, ext2_ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -331,7 +331,7 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 				      blk64_t *quota_blocks)
 {
 	struct ext2_inode inode;
-	__u32 hash;
+	__u32 hash, signed_hash;
 	errcode_t retval;
 
 	/* Check if inode is within valid range */
@@ -343,7 +343,8 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 
 	e2fsck_read_inode(ctx, entry->e_value_inum, &inode, "pass1");
 
-	retval = ext2fs_ext_attr_hash_entry2(ctx->fs, entry, NULL, &hash);
+	retval = ext2fs_ext_attr_hash_entry3(ctx->fs, entry, NULL, &hash,
+					     &signed_hash);
 	if (retval) {
 		com_err("check_large_ea_inode", retval,
 			_("while hashing entry with e_value_inum = %u"),
@@ -351,7 +352,7 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 		fatal_error(ctx, 0);
 	}
 
-	if (hash == entry->e_hash) {
+	if ((hash == entry->e_hash) || (signed_hash == entry->e_hash)) {
 		*quota_blocks = size_to_quota_blocks(ctx->fs,
 						     entry->e_value_size);
 	} else {
@@ -495,7 +496,10 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
 			}
 
 			hash = ext2fs_ext_attr_hash_entry(entry,
-							  start + entry->e_value_offs);
+						start + entry->e_value_offs);
+			if (entry->e_hash != 0 && entry->e_hash != hash)
+				hash = ext2fs_ext_attr_hash_entry_signed(entry,
+						start + entry->e_value_offs);
 
 			/* e_hash may be 0 in older inode's ea */
 			if (entry->e_hash != 0 && entry->e_hash != hash) {
@@ -1329,7 +1333,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		goto endit;
 	}
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
-						    "block interate buffer");
+						    "block iterate buffer");
 	if (EXT2_INODE_SIZE(fs->super) == EXT2_GOOD_OLD_INODE_SIZE)
 		e2fsck_use_inode_shortcuts(ctx, 1);
 	e2fsck_intercept_block_allocations(ctx);
@@ -2205,7 +2209,7 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 /*
  * Mark an inode as being bad in some what
  */
-static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
+static void mark_inode_bad(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct		problem_context pctx;
 
@@ -2226,7 +2230,7 @@ static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
 	ext2fs_mark_inode_bitmap2(ctx->inode_bad_map, ino);
 }
 
-static void add_casefolded_dir(e2fsck_t ctx, ino_t ino)
+static void add_casefolded_dir(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct		problem_context pctx;
 
@@ -2573,6 +2577,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 			hash = ext2fs_ext_attr_hash_entry(entry, block_buf +
 							  entry->e_value_offs);
+			if (entry->e_hash != hash)
+				hash = ext2fs_ext_attr_hash_entry_signed(entry,
+					block_buf + entry->e_value_offs);
 
 			if (entry->e_hash != hash) {
 				pctx->num = entry->e_hash;

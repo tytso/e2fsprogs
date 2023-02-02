@@ -145,10 +145,12 @@ extern errcode_t io_channel_cache_readahead(io_channel io,
 #ifdef _WIN32
 /* windows_io.c */
 extern io_manager windows_io_manager;
+#define default_io_manager windows_io_manager
 #else
 /* unix_io.c */
 extern io_manager unix_io_manager;
 extern io_manager unixfd_io_manager;
+#define default_io_manager unix_io_manager
 #endif
 
 /* sparse_io.c */

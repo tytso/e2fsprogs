@@ -1,7 +1,7 @@
 .TH E2SCRUB 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 e2scrub - check the contents of a mounted ext[234] file system
-.SH SYNOPSYS
+.SH SYNOPSIS
 .B
 e2scrub [OPTION] MOUNTPOINT | DEVICE
 .SH DESCRIPTION

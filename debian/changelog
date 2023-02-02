@@ -1,3 +1,44 @@
+e2fsprogs (1.46.6-1) unstable; urgency=medium
+
+  * Upstream version
+  * NMU acknowledge (Closes: #1022096)
+  * In line with v6.2 and later Linux kernel, the extended xattribute hash
+    may be calculated using either the signed or unsigned char variant,
+    but new xattr entries will be set using the unsigned variant.  Since
+    this difference is only seen for extended attribute names that contain
+    non-ASCII characters, the fact that we had a signed vs unsigned char
+    dependency was not noticed for over two decades.
+  * E2fsck will now check to make sure the journal inode does not have the
+    encrypt flag set.
+  * Fuse2fs now supports an offset=<bytes> option which allows
+    operating on a file system image which is located starting at the
+    specified offset from the beginning of the image.
+  * Fix a deadlock bug in e2fsck's error handler when there are errors
+    trying to write to the file system.
+  * Fix a bug in tune2fs which could cause it to crash if device goes
+    off-line just as it being opened.
+  * Improve error messages issued by badblocks and tune2fs.
+  * Fix a crash in badblocks when the user specifies an overly large
+    number of blocks tested at a time in read/write or nondestructive
+    mode.
+  * Speed up e2fsck's clonning of multiply-claimed blocks so it is
+    substantially faster on very large file systems.
+  * Don't fail when the source directory for mke2fs -d doesn't support
+    extended attributes.
+  * Update Chinese, Czech, Dutch, French, German, Malay, Polish, Serbian,
+    Spanish, Swedish, and Ukrainian translations.
+  * Update the Debian policy compliance to 4.6.1.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 02 Feb 2023 00:38:18 -0500
+
+e2fsprogs (1.46.6~rc1-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload
+  * Convert copyright files to machine-readable format, adding the missing
+    licenses and copyright information  (Closes: #1022096)
+
+ -- Bastian Germann <bage@debian.org>  Tue, 03 Jan 2023 14:31:18 +0100
+
 e2fsprogs (1.46.6~rc1-1) unstable; urgency=medium
 
   * Trial upstream release for 1.46.6
@@ -8,6 +49,8 @@ e2fsprogs (1.46.6~rc1-1) unstable; urgency=medium
     nearest cluster boundary when resizing bigalloc file systems
   * Avoid triggering udev in dumpe2fs and "resize2fs -P" for file systems
     with MMP enabled
+  * Fix tune2fs so it will detect another device stealing the MMP sessions
+    while rewriting metadata checksums.
   * Fix a bug where e2fsck could fail when specifying an undo file and an
     explicit superblock number
   * Fix e2image so it won't potentially loop forever for certain invalid

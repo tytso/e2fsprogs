@@ -31,9 +31,6 @@ cc_library {
     target: {
         windows: {
             enabled: true,
-            cflags: [
-                "-Wno-unused-variable",
-            ],
         },
     },
 

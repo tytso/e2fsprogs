@@ -235,7 +235,6 @@ static FILE *debug_f = 0;
 static void init_debug(void)
 {
 	char	*dstr, *fn, *tmp;
-	int	fd, flags;
 
 	if (debug_mask & DEBUG_INIT)
 		return;
@@ -257,10 +256,12 @@ static void init_debug(void)
 	if (!debug_f)
 		debug_f = fopen("/dev/tty", "a");
 	if (debug_f) {
-		fd = fileno(debug_f);
-#if defined(HAVE_FCNTL)
+#ifdef HAVE_FCNTL
+		int fd = fileno(debug_f);
+
 		if (fd >= 0) {
-			flags = fcntl(fd, F_GETFD);
+			int flags = fcntl(fd, F_GETFD);
+
 			if (flags >= 0)
 				flags = fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
 			if (flags < 0) {
@@ -274,7 +275,6 @@ static void init_debug(void)
 #endif
 	} else
 		debug_mask = DEBUG_INIT;
-
 }
 
 /*

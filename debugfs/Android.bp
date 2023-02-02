@@ -42,13 +42,11 @@ cc_defaults {
         "do_journal.c",
     ],
     cflags: [
-        "-Wno-unused-variable",
-        "-fno-strict-aliasing",
         "-DDEBUGFS",
     ],
     include_dirs: [
         "external/e2fsprogs/misc",
-        "external/e2fsprogs/e2fsck"
+        "external/e2fsprogs/e2fsck",
     ],
 }
 

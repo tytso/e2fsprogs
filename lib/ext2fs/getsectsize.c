@@ -51,10 +51,10 @@
  */
 errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize)
 {
-#ifdef _WIN64
+#ifdef _WIN32
 	*sectsize = 512; // just guessing
 	return 0;
-#else // not _WIN64
+#else // not _WIN32
 
 	int	fd;
 
@@ -78,7 +78,7 @@ errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize)
 	close(fd);
 	return 0;
 
-#endif // ifdef _WIN64
+#endif // ifdef _WIN32
 }
 
 /*
@@ -117,11 +117,11 @@ int ext2fs_get_dio_alignment(int fd)
  */
 errcode_t ext2fs_get_device_phys_sectsize(const char *file, int *sectsize)
 {
-#ifdef _WIN64
+#ifdef _WIN32
 
 	return ext2fs_get_device_sectsize(file, sectsize);
 
-#else // not _WIN64
+#else // not _WIN32
 
 	int	fd;
 
@@ -147,5 +147,5 @@ errcode_t ext2fs_get_device_phys_sectsize(const char *file, int *sectsize)
 	close(fd);
 	return 0;
 
-#endif // ifdef _WIN64
+#endif // ifdef _WIN32
 }

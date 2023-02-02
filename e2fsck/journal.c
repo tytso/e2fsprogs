@@ -578,7 +578,7 @@ static int ext4_del_extent_from_list(e2fsck_t ctx, struct extent_list *list,
 	return ext4_modify_extent_list(ctx, list, ex, 1 /* delete */);
 }
 
-static int ext4_fc_read_extents(e2fsck_t ctx, ino_t ino)
+static int ext4_fc_read_extents(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -597,7 +597,7 @@ static int ext4_fc_read_extents(e2fsck_t ctx, ino_t ino)
  * for the inode so that we can flush all of them at once and it also saves us
  * from continuously growing and shrinking the extent tree.
  */
-static void ext4_fc_flush_extents(e2fsck_t ctx, ino_t ino)
+static void ext4_fc_flush_extents(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -610,9 +610,9 @@ static void ext4_fc_flush_extents(e2fsck_t ctx, ino_t ino)
 
 /* Helper struct for dentry replay routines */
 struct dentry_info_args {
-	ino_t parent_ino;
+	ext2_ino_t parent_ino;
 	int dname_len;
-	ino_t ino;
+	ext2_ino_t ino;
 	char *dname;
 };
 
@@ -634,7 +634,7 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 	       val + sizeof(struct ext4_fc_dentry_info),
 	       darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
-	jbd_debug(1, "%s: %s, ino %lu, parent %lu\n",
+	jbd_debug(1, "%s: %s, ino %u, parent %u\n",
 		  le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_CREAT ? "create" :
 		  (le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_LINK ? "link" :
 		   (le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_UNLINK ? "unlink" :
@@ -809,7 +809,7 @@ static int ext4_fc_handle_add_extent(e2fsck_t ctx, __u8 *val)
 {
 	struct ext2fs_extent extent;
 	struct ext4_fc_add_range add_range;
-	ino_t ino;
+	ext2_ino_t ino;
 	int ret = 0;
 
 	memcpy(&add_range, val, sizeof(add_range));
@@ -888,7 +888,7 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 		/*
 		 * Mark the file system to indicate it contains errors. That's
 		 * because the updates performed by fast commit replay code are
-		 * not atomic and may result in incosistent file system if it
+		 * not atomic and may result in inconsistent file system if it
 		 * crashes before the replay is complete.
 		 */
 		ctx->fs->super->s_state |= EXT2_ERROR_FS;
@@ -1039,7 +1039,8 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			tried_backup_jnl++;
 		}
 		if (!j_inode->i_ext2.i_links_count ||
-		    !LINUX_S_ISREG(j_inode->i_ext2.i_mode)) {
+		    !LINUX_S_ISREG(j_inode->i_ext2.i_mode) ||
+		    (j_inode->i_ext2.i_flags & EXT4_ENCRYPT_FL)) {
 			retval = EXT2_ET_NO_JOURNAL;
 			goto try_backup_journal;
 		}

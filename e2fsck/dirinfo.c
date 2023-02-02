@@ -376,7 +376,7 @@ void e2fsck_dir_info_iter_end(e2fsck_t ctx EXT2FS_ATTR((unused)),
 }
 
 /*
- * A simple interator function
+ * A simple iterator function
  */
 struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, struct dir_info_iter *iter)
 {

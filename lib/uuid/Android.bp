@@ -39,16 +39,9 @@ cc_library {
         "unparse.c",
         "uuid_time.c",
     ],
-    cflags: [
-        "-Wno-unused-function",
-        "-Wno-unused-parameter",
-    ],
     target: {
         windows: {
-            // Cannot suppress the _WIN32_WINNT redefined warning.
-            cflags: ["-Wno-error"],
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
-            enabled: true
+            enabled: true,
         },
     },
     header_libs: ["libext2-headers"],

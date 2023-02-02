@@ -16,6 +16,11 @@
 #define _LARGEFILE64_SOURCE
 #endif
 
+#ifdef _WIN32
+#define _POSIX
+#define __USE_MINGW_ALARM
+#endif
+
 #include "config.h"
 #include <fcntl.h>
 #include <setjmp.h>

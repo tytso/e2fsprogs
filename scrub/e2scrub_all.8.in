@@ -1,7 +1,7 @@
 .TH E2SCRUB 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 e2scrub_all - check all mounted ext[234] file systems for errors.
-.SH SYNOPSYS
+.SH SYNOPSIS
 .B
 e2scrub_all [OPTION]
 .SH DESCRIPTION

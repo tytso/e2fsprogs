@@ -97,7 +97,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 				   int *mount_flags, char *mtpt, int mtlen)
 {
 	struct mntent 	*mnt;
-	struct stat	st_buf;
+	struct stat	st_buf, dir_st_buf;
 	errcode_t	retval = 0;
 	dev_t		file_dev=0, file_rdev=0;
 	ino_t		file_ino=0;
@@ -144,8 +144,14 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		if (stat(mnt->mnt_fsname, &st_buf) == 0) {
 			if (ext2fsP_is_disk_device(st_buf.st_mode)) {
 #ifndef __GNU__
-				if (file_rdev && (file_rdev == st_buf.st_rdev))
-					break;
+				if (file_rdev &&
+				    (file_rdev == st_buf.st_rdev)) {
+					if (stat(mnt->mnt_dir,
+						 &dir_st_buf) != 0)
+						continue;
+					if (file_rdev == dir_st_buf.st_dev)
+						break;
+				}
 				if (check_loop_mounted(mnt->mnt_fsname,
 						st_buf.st_rdev, file_dev,
 						file_ino) == 1)
@@ -402,7 +408,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 #ifdef HAVE_GETMNTINFO
 		retval = check_getmntinfo(device, mount_flags, mtpt, mtlen);
 #else
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(_WIN32)
  #warning "Can't use getmntent or getmntinfo to check for mounted filesystems!"
 #endif
 		*mount_flags = 0;

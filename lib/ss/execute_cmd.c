@@ -17,8 +17,6 @@
 #endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
-#else
-extern int errno;
 #endif
 #include "ss_internal.h"
 #include <stdio.h>
