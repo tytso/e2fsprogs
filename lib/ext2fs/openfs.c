@@ -385,7 +385,7 @@ retry:
 	 * Read group descriptors
 	 */
 	blocks_per_group = EXT2_BLOCKS_PER_GROUP(fs->super);
-	if (blocks_per_group == 0 ||
+	if (blocks_per_group < 8 ||
 	    blocks_per_group > EXT2_MAX_BLOCKS_PER_GROUP(fs->super) ||
 	    fs->inode_blocks_per_group > EXT2_MAX_INODES_PER_GROUP(fs->super) ||
            EXT2_DESC_PER_BLOCK(fs->super) == 0 ||

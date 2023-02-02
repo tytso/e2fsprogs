@@ -46,19 +46,9 @@ cc_library {
         "percent.c",
     ],
 
-    cflags: [
-        "-Wno-error=attributes",
-        "-Wno-unused-parameter",
-    ],
-
     target: {
         windows: {
-            include_dirs: ["external/e2fsprogs/include/mingw"],
             enabled: true,
-            cflags: [
-                "-Wno-unused-variable",
-                "-Wno-error=typedef-redefinition",
-            ],
         },
     },
 

@@ -201,7 +201,9 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_ext_attr_block_csum_verify@Base 1.43
  ext2fs_ext_attr_block_rehash@Base 1.44.0~rc1
  ext2fs_ext_attr_hash_entry2@Base 1.44.0~rc1
+ ext2fs_ext_attr_hash_entry3@Base 1.46.6
  ext2fs_ext_attr_hash_entry@Base 1.41.0
+ ext2fs_ext_attr_hash_entry_signed@Base 1.46.6
  ext2fs_extent_block_csum_set@Base 1.43
  ext2fs_extent_block_csum_verify@Base 1.43
  ext2fs_extent_delete@Base 1.41.0

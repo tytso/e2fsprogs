@@ -325,6 +325,7 @@ struct fuse2fs {
 	int fakeroot;
 	int alloc_all_blocks;
 	int norecovery;
+	unsigned long offset;
 	FILE *err_fp;
 	unsigned int next_generation;
 };
@@ -3660,6 +3661,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("fuse2fs_debug",	debug,			1),
 	FUSE2FS_OPT("no_default_opts",	no_default_opts,	1),
 	FUSE2FS_OPT("norecovery",	norecovery,		1),
+	FUSE2FS_OPT("offset=%lu",	offset,		0),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -3698,6 +3700,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o minixdf             minix-style df\n"
 	"    -o fakeroot            pretend to be root for permission checks\n"
 	"    -o no_default_opts     do not include default fuse options\n"
+	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
 	"    -o norecovery	    don't replay the journal (implies ro)\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
 	"\n",
@@ -3777,7 +3780,9 @@ int main(int argc, char *argv[])
 	ret = 2;
 	if (!fctx.ro)
 		flags |= EXT2_FLAG_RW;
-	err = ext2fs_open2(fctx.device, NULL, flags, 0, 0, unix_io_manager,
+	char options[50];
+	sprintf(options, "offset=%lu", fctx.offset);
+	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
 	if (err) {
 		printf(_("%s: %s.\n"), fctx.device, error_message(err));

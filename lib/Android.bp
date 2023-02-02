@@ -40,7 +40,6 @@ cc_library_headers {
     ],
 }
 
-
 subdirs = [
     "*",
 ]

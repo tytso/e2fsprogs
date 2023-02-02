@@ -195,10 +195,6 @@ static struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
 #error posix_fadvise not available!
 #endif
 
-#ifndef HAVE_FALLOCATE64
-#error fallocate64 not available!
-#endif /* ! HAVE_FALLOCATE64 */
-
 /*
  * get_mount_point() -	Get device's mount point.
  *
@@ -1041,7 +1037,7 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 	__u64	size_per_ext = 0;
 	float	ratio = 0.0;
 	ext4_fsblk_t	blk_count = 0;
-	char	msg_buffer[PATH_MAX + 24];
+	char	msg_buffer[PATH_MAX + 48];
 	struct fiemap_extent_list *physical_list_head = NULL;
 	struct fiemap_extent_list *logical_list_head = NULL;
 
@@ -1210,8 +1206,9 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 
 	if (mode_flag & DETAIL) {
 		/* Print statistic info */
-		sprintf(msg_buffer, "[%u/%u]%s",
-				defraged_file_count, total_count, file);
+		sprintf(msg_buffer, "[%u/%u]%.*s",
+				defraged_file_count, total_count,
+			PATH_MAX, file);
 		if (current_uid == ROOT_UID) {
 			if (strlen(msg_buffer) > 40)
 				printf("\033[79;0H\033[K%s\n"
@@ -1558,7 +1555,7 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 	/* Allocate space for donor inode */
 	orig_group_tmp = orig_group_head;
 	do {
-		ret = fallocate64(donor_fd, 0,
+		ret = fallocate(donor_fd, 0,
 		  (ext2_loff_t)orig_group_tmp->start->data.logical * block_size,
 		  (ext2_loff_t)orig_group_tmp->len * block_size);
 		if (ret < 0) {

@@ -112,19 +112,14 @@ cc_library {
         "libsparse",
         "libz",
     ],
-    cflags: ["-Wno-unused-parameter"],
     target: {
         android: {
             shared_libs: ["libext2_uuid"],
         },
         windows: {
             enabled: true,
-            include_dirs: ["external/e2fsprogs/include/mingw"],
-            cflags: [
-                "-Wno-format",
-                "-Wno-unused-variable",
-                "-Wno-error=typedef-redefinition",
-            ],
+            srcs: ["windows_io.c"],
+            exclude_srcs: ["unix_io.c"],
         },
     },
 

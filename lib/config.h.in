@@ -653,7 +653,13 @@
 # endif
 #endif
 
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
 /* Define to 1 if Apple Darwin libintl workaround is needed */
 #undef _INTL_REDIRECT_MACROS
+
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
 
 #include <dirpaths.h>
