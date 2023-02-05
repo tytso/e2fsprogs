@@ -1,3 +1,9 @@
+e2fsprogs (1.46.6-1~bpo11+1) unstable; urgency=medium
+
+  * Rebuild for bullseye-backports.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 05 Feb 2023 15:19:15 -0500
+
 e2fsprogs (1.46.6-1) unstable; urgency=medium
 
   * New upstream version
