@@ -159,6 +159,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_create_inode_cache@Base 1.43
  ext2fs_create_journal_superblock2@Base 1.46.0
  ext2fs_create_journal_superblock@Base 1.37
+ ext2fs_create_orphan_file@Base 1.47.0
  ext2fs_create_resize_inode@Base 1.37
  ext2fs_dblist_count2@Base 1.42
  ext2fs_dblist_count@Base 1.37
@@ -173,6 +174,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_dblist_sort@Base 1.37
  ext2fs_decode_extent@Base 1.46.0
  ext2fs_default_journal_size@Base 1.40
+ ext2fs_default_orphan_file_blocks@Base 1.47.0
  ext2fs_descriptor_block_loc2@Base 1.42
  ext2fs_descriptor_block_loc@Base 1.37
  ext2fs_dir_block_csum_set@Base 1.43
@@ -194,6 +196,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_div64_ceil@Base 1.42
  ext2fs_div_ceil@Base 1.40
  ext2fs_djb2_hash@Base 1.44.3~rc1
+ ext2fs_do_orphan_file_block_csum@Base 1.47.0
  ext2fs_dup_handle@Base 1.37
  ext2fs_dx_csum@Base 1.46~WIP.2019.10.09
  ext2fs_expand_dir@Base 1.37
@@ -406,6 +409,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_inode_size_set@Base 1.42.12
  ext2fs_inode_table_loc@Base 1.42
  ext2fs_inode_table_loc_set@Base 1.42
+ ext2fs_inodes_per_orphan_block@Base 1.47.0
  ext2fs_is_fast_symlink@Base 1.44.0~rc1
  ext2fs_journal_sb_start@Base 1.42.12
  ext2fs_link@Base 1.37
@@ -458,6 +462,9 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_open@Base 1.37
  ext2fs_open_file@Base 1.42
  ext2fs_open_inode_scan@Base 1.37
+ ext2fs_orphan_block_tail@Base 1.47.0
+ ext2fs_orphan_file_block_csum_set@Base 1.47.0
+ ext2fs_orphan_file_block_csum_verify@Base 1.47.0
  ext2fs_parse_version_string@Base 1.37
  ext2fs_process_dir_block@Base 1.37
  ext2fs_punch@Base 1.42
@@ -611,6 +618,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_test_inode_bitmap@Base 1.37
  ext2fs_test_inode_bitmap_range@Base 1.41.8
  ext2fs_test_valid@Base 1.37
+ ext2fs_truncate_orphan_file@Base 1.47.0
  ext2fs_u32_copy@Base 1.37
  ext2fs_u32_list_add@Base 1.37
  ext2fs_u32_list_count@Base 1.37
@@ -665,6 +673,7 @@ libext2fs.so.2 libext2fs2 #MINVER#
  ext2fs_xattrs_iterate@Base 1.43
  ext2fs_xattrs_open@Base 1.43
  ext2fs_xattrs_read@Base 1.43
+ ext2fs_xattrs_read_inode@Base 1.47.0
  ext2fs_xattrs_write@Base 1.43
  ext2fs_zero_blocks2@Base 1.42
  ext2fs_zero_blocks@Base 1.41.0

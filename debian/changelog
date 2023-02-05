@@ -1,6 +1,25 @@
+e2fsprogs (1.47.0-1) unstable; urgency=medium
+
+  * New upstream version
+  * Add support for the new orphan_file feature, which speeds up workloads
+    that are deleting or truncating a large number files in parallel.
+  * Mke2fs now enables the orphan_file and metadata_csum_seed feature.
+  * Mke2fs now supports the extended option "assume_storage_prezeroed"
+    which causes mke2fs to skip zeroing the journal and inode tables and
+    to mark the inode tables as zeroed.
+  * Tune2fs and e2label will more reliably modify the label and UUID for a
+    mounted file system using new kernel ioctls.
+  * Tune2fs can now disable the casefold feature after scanning all of the
+    directories do not have the casefold flag set.
+  * Fix a potential unbalanced mutex unlock when there is a short read
+    while using the bounce buffer when using direct I/O.
+  * Update to standards 4.6.2
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 06 Feb 2023 22:07:49 -0500
+
 e2fsprogs (1.46.6-1) unstable; urgency=medium
 
-  * Upstream version
+  * New upstream version
   * NMU acknowledge (Closes: #1022096)
   * In line with v6.2 and later Linux kernel, the extended xattribute hash
     may be calculated using either the signed or unsigned char variant,
