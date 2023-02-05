@@ -280,7 +280,7 @@ The hash seed specified with
 must be in UUID format.
 .TP
 .BI dump_extents " [-n] [-l] filespec"
-Dump the the extent tree of the inode
+Dump the extent tree of the inode
 .IR filespec .
 The
 .I -n

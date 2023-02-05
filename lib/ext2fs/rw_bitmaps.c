@@ -119,7 +119,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		fs->flags |= EXT2_FLAG_DIRTY;
 
 		blk = ext2fs_block_bitmap_loc(fs, i);
-		if (blk) {
+		if (blk && blk < ext2fs_blocks_count(fs->super)) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 							block_buf);
 			if (retval) {
@@ -151,7 +151,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		fs->flags |= EXT2_FLAG_DIRTY;
 
 		blk = ext2fs_inode_bitmap_loc(fs, i);
-		if (blk) {
+		if (blk && blk < ext2fs_blocks_count(fs->super)) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 						      inode_buf);
 			if (retval) {
@@ -204,14 +204,14 @@ static errcode_t mark_uninit_bg_group_blocks(ext2_filsys fs)
 		 * Mark block used for the block bitmap
 		 */
 		blk = ext2fs_block_bitmap_loc(fs, i);
-		if (blk)
+		if (blk && blk < ext2fs_blocks_count(fs->super))
 			ext2fs_mark_block_bitmap2(bmap, blk);
 
 		/*
 		 * Mark block used for the inode bitmap
 		 */
 		blk = ext2fs_inode_bitmap_loc(fs, i);
-		if (blk)
+		if (blk && blk < ext2fs_blocks_count(fs->super))
 			ext2fs_mark_block_bitmap2(bmap, blk);
 	}
 	return 0;
@@ -527,13 +527,16 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	pthread_mutex_t rbt_mutex = PTHREAD_MUTEX_INITIALIZER;
 	errcode_t retval;
 	errcode_t rc;
-	unsigned flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+	unsigned flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 	dgrp_t average_group;
 	int i, tail_flags = 0;
 #endif
 
 	if (flags & ~EXT2FS_BITMAPS_VALID_FLAGS)
 		return EXT2_ET_INVALID_ARGUMENT;
+
+	if (ext2fs_has_feature_journal_dev(fs->super))
+		return EXT2_ET_EXTERNAL_JOURNAL_NOSUPP;
 
 	if (flags & EXT2FS_BITMAPS_WRITE)
 		return write_bitmaps(fs, flags & EXT2FS_BITMAPS_INODE,

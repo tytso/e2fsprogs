@@ -47,10 +47,6 @@ cc_defaults {
         "extents.c",
         "encrypted_files.c",
     ],
-    cflags: [
-        "-Wno-sign-compare",
-        "-fno-strict-aliasing",
-    ],
 }
 
 e2fsck_libs = [

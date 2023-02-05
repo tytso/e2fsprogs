@@ -91,7 +91,7 @@ struct fill_dir_struct {
 struct hash_entry {
 	ext2_dirhash_t	hash;
 	ext2_dirhash_t	minor_hash;
-	ino_t		ino;
+	ext2_ino_t	ino;
 	struct ext2_dir_entry	*dir;
 };
 
@@ -414,6 +414,8 @@ static void mutate_name(char *str, unsigned int *len)
 			l += 2;
 		else
 			l = (l+3) & ~3;
+		if (l > 255)
+			l = 255;
 		str[l-2] = '~';
 		str[l-1] = '0';
 		*len = l;
@@ -1051,13 +1053,11 @@ retry_nohash:
 	/* Sort the list */
 resort:
 	if (fd.compress && fd.num_array > 1)
-		sort_r_simple(fd.harray+2, fd.num_array-2,
-			      sizeof(struct hash_entry),
-			      hash_cmp, &name_cmp_ctx);
+		sort_r(fd.harray+2, fd.num_array-2, sizeof(struct hash_entry),
+		       hash_cmp, &name_cmp_ctx);
 	else
-		sort_r_simple(fd.harray, fd.num_array,
-			      sizeof(struct hash_entry),
-			      hash_cmp, &name_cmp_ctx);
+		sort_r(fd.harray, fd.num_array, sizeof(struct hash_entry),
+		       hash_cmp, &name_cmp_ctx);
 
 	/*
 	 * Look for duplicates

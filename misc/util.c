@@ -16,6 +16,11 @@
 #define _LARGEFILE64_SOURCE
 #endif
 
+#ifdef _WIN32
+#define _POSIX
+#define __USE_MINGW_ALARM
+#endif
+
 #include "config.h"
 #include <fcntl.h>
 #include <setjmp.h>
@@ -45,6 +50,7 @@
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "support/nls-enable.h"
+#include "support/devname.h"
 #include "blkid/blkid.h"
 #include "util.h"
 
@@ -183,7 +189,7 @@ void parse_journal_opts(const char *opts)
 		       arg ? arg : "NONE");
 #endif
 		if (strcmp(token, "device") == 0) {
-			journal_device = blkid_get_devname(NULL, arg, NULL);
+			journal_device = get_devname(NULL, arg, NULL);
 			if (!journal_device) {
 				if (arg)
 					fprintf(stderr, _("\nCould not find "

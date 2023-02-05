@@ -19,6 +19,7 @@ cc_library {
     unique_host_soname: true,
     defaults: ["e2fsprogs-defaults"],
     srcs: [
+        "devname.c",
         "dict.c",
         "mkquota.c",
         "parse_qtype.c",
@@ -38,7 +39,7 @@ cc_library {
 
     target: {
         windows: {
-            enabled: true
+            enabled: true,
         },
     },
 

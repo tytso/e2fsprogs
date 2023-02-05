@@ -79,8 +79,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 static void mark_table_blocks(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
-static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
-static void add_casefolded_dir(e2fsck_t ctx, ino_t ino);
+static void mark_inode_bad(e2fsck_t ctx, ext2_ino_t ino);
+static void add_casefolded_dir(e2fsck_t ctx, ext2_ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -331,7 +331,7 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 				      blk64_t *quota_blocks)
 {
 	struct ext2_inode inode;
-	__u32 hash;
+	__u32 hash, signed_hash;
 	errcode_t retval;
 
 	/* Check if inode is within valid range */
@@ -343,7 +343,8 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 
 	e2fsck_read_inode(ctx, entry->e_value_inum, &inode, "pass1");
 
-	retval = ext2fs_ext_attr_hash_entry2(ctx->fs, entry, NULL, &hash);
+	retval = ext2fs_ext_attr_hash_entry3(ctx->fs, entry, NULL, &hash,
+					     &signed_hash);
 	if (retval) {
 		com_err("check_large_ea_inode", retval,
 			_("while hashing entry with e_value_inum = %u"),
@@ -351,7 +352,7 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 		fatal_error(ctx, 0);
 	}
 
-	if (hash == entry->e_hash) {
+	if ((hash == entry->e_hash) || (signed_hash == entry->e_hash)) {
 		*quota_blocks = size_to_quota_blocks(ctx->fs,
 						     entry->e_value_size);
 	} else {
@@ -389,13 +390,13 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
 			      struct ext2_ext_attr_entry *first, void *end)
 {
-	struct ext2_ext_attr_entry *entry;
+	struct ext2_ext_attr_entry *entry = first;
+	struct ext2_ext_attr_entry *np = EXT2_EXT_ATTR_NEXT(entry);
 
-	for (entry = first;
-	     (void *)entry < end && !EXT2_EXT_IS_LAST_ENTRY(entry);
-	     entry = EXT2_EXT_ATTR_NEXT(entry)) {
+	while ((void *) entry < end && (void *) np < end &&
+	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		if (!entry->e_value_inum)
-			continue;
+			goto next;
 		if (!ctx->ea_inode_refs) {
 			pctx->errcode = ea_refcount_create(0,
 							   &ctx->ea_inode_refs);
@@ -408,6 +409,9 @@ static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		ea_refcount_increment(ctx->ea_inode_refs, entry->e_value_inum,
 				      0);
+	next:
+		entry = np;
+		np = EXT2_EXT_ATTR_NEXT(entry);
 	}
 }
 
@@ -492,7 +496,10 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
 			}
 
 			hash = ext2fs_ext_attr_hash_entry(entry,
-							  start + entry->e_value_offs);
+						start + entry->e_value_offs);
+			if (entry->e_hash != 0 && entry->e_hash != hash)
+				hash = ext2fs_ext_attr_hash_entry_signed(entry,
+						start + entry->e_value_offs);
 
 			/* e_hash may be 0 in older inode's ea */
 			if (entry->e_hash != 0 && entry->e_hash != hash) {
@@ -1326,7 +1333,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		goto endit;
 	}
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
-						    "block interate buffer");
+						    "block iterate buffer");
 	if (EXT2_INODE_SIZE(fs->super) == EXT2_GOOD_OLD_INODE_SIZE)
 		e2fsck_use_inode_shortcuts(ctx, 1);
 	e2fsck_intercept_block_allocations(ctx);
@@ -2202,7 +2209,7 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 /*
  * Mark an inode as being bad in some what
  */
-static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
+static void mark_inode_bad(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct		problem_context pctx;
 
@@ -2223,7 +2230,7 @@ static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
 	ext2fs_mark_inode_bitmap2(ctx->inode_bad_map, ino);
 }
 
-static void add_casefolded_dir(e2fsck_t ctx, ino_t ino)
+static void add_casefolded_dir(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct		problem_context pctx;
 
@@ -2553,8 +2560,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			break;
 		}
 		if (entry->e_value_inum == 0) {
-			if (entry->e_value_offs + entry->e_value_size >
-			    fs->blocksize) {
+			if (entry->e_value_size > EXT2_XATTR_SIZE_MAX ||
+			    (entry->e_value_offs + entry->e_value_size >
+			     fs->blocksize)) {
 				if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
 					goto clear_extattr;
 				break;
@@ -2569,6 +2577,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 			hash = ext2fs_ext_attr_hash_entry(entry, block_buf +
 							  entry->e_value_offs);
+			if (entry->e_hash != hash)
+				hash = ext2fs_ext_attr_hash_entry_signed(entry,
+					block_buf + entry->e_value_offs);
 
 			if (entry->e_hash != hash) {
 				pctx->num = entry->e_hash;
@@ -2838,7 +2849,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	if (pctx->errcode)
 		return;
 	if (!(ctx->options & E2F_OPT_FIXES_ONLY) &&
-	    !pb->eti.force_rebuild) {
+	    !pb->eti.force_rebuild &&
+	    info.curr_level < MAX_EXTENT_DEPTH_COUNT) {
 		struct extent_tree_level *etl;
 
 		etl = pb->eti.ext_info + info.curr_level;
@@ -4062,7 +4074,7 @@ static void new_table_block(e2fsck_t ctx, blk64_t first_block, dgrp_t group,
 	 */
 	is_flexbg = ext2fs_has_feature_flex_bg(fs->super);
 	if (is_flexbg) {
-		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+		flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 		flexbg = group / flexbg_size;
 		first_block = ext2fs_group_first_block2(fs,
 							flexbg_size * flexbg);

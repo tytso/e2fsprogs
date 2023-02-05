@@ -16,6 +16,7 @@
  *
  * $Id: dict.c,v 1.40.2.7 2000/11/13 01:36:44 kaz Exp $
  * $Name: kazlib_1_20 $
+ * The work has been modified.
  */
 
 #define DICT_NODEBUG

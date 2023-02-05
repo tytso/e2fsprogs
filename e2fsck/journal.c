@@ -578,7 +578,7 @@ static int ext4_del_extent_from_list(e2fsck_t ctx, struct extent_list *list,
 	return ext4_modify_extent_list(ctx, list, ex, 1 /* delete */);
 }
 
-static int ext4_fc_read_extents(e2fsck_t ctx, ino_t ino)
+static int ext4_fc_read_extents(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -597,7 +597,7 @@ static int ext4_fc_read_extents(e2fsck_t ctx, ino_t ino)
  * for the inode so that we can flush all of them at once and it also saves us
  * from continuously growing and shrinking the extent tree.
  */
-static void ext4_fc_flush_extents(e2fsck_t ctx, ino_t ino)
+static void ext4_fc_flush_extents(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
 
@@ -610,9 +610,9 @@ static void ext4_fc_flush_extents(e2fsck_t ctx, ino_t ino)
 
 /* Helper struct for dentry replay routines */
 struct dentry_info_args {
-	ino_t parent_ino;
+	ext2_ino_t parent_ino;
 	int dname_len;
-	ino_t ino;
+	ext2_ino_t ino;
 	char *dname;
 };
 
@@ -620,7 +620,6 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 			     struct  ext4_fc_tl *tl, __u8 *val)
 {
 	struct ext4_fc_dentry_info fcd;
-	int tag = le16_to_cpu(tl->fc_tag);
 
 	memcpy(&fcd, val, sizeof(fcd));
 
@@ -635,11 +634,11 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 	       val + sizeof(struct ext4_fc_dentry_info),
 	       darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
-	jbd_debug(1, "%s: %s, ino %lu, parent %lu\n",
-		tag == EXT4_FC_TAG_CREAT ? "create" :
-		(tag == EXT4_FC_TAG_LINK ? "link" :
-		(tag == EXT4_FC_TAG_UNLINK ? "unlink" : "error")),
-		darg->dname, darg->ino, darg->parent_ino);
+	jbd_debug(1, "%s: %s, ino %u, parent %u\n",
+		  le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_CREAT ? "create" :
+		  (le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_LINK ? "link" :
+		   (le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_UNLINK ? "unlink" :
+		    "error")), darg->dname, darg->ino, darg->parent_ino);
 	return 0;
 }
 
@@ -652,11 +651,11 @@ static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, darg.ino);
-	ret = errcode_to_errno(
-		       ext2fs_unlink(ctx->fs, darg.parent_ino,
-				     darg.dname, darg.ino, 0));
+	ret = errcode_to_errno(ext2fs_unlink(ctx->fs, darg.parent_ino,
+					     darg.dname, darg.ino, 0));
 	/* It's okay if the above call fails */
 	free(darg.dname);
+
 	return ret;
 }
 
@@ -748,9 +747,19 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 	fc_raw_inode = val + sizeof(fc_ino);
 	ino = le32_to_cpu(fc_ino);
 
-	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
-		inode_len += ext2fs_le16_to_cpu(
+	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
+		__u16 extra_isize = ext2fs_le16_to_cpu(
 			((struct ext2_inode_large *)fc_raw_inode)->i_extra_isize);
+
+		if ((extra_isize < (sizeof(inode->i_extra_isize) +
+				    sizeof(inode->i_checksum_hi))) ||
+		    (extra_isize > (EXT2_INODE_SIZE(ctx->fs->super) -
+				    EXT2_GOOD_OLD_INODE_SIZE))) {
+			err = EFSCORRUPTED;
+			goto out;
+		}
+		inode_len += extra_isize;
+	}
 	err = ext2fs_get_mem(inode_len, &inode);
 	if (err)
 		goto out;
@@ -800,7 +809,7 @@ static int ext4_fc_handle_add_extent(e2fsck_t ctx, __u8 *val)
 {
 	struct ext2fs_extent extent;
 	struct ext4_fc_add_range add_range;
-	ino_t ino;
+	ext2_ino_t ino;
 	int ret = 0;
 
 	memcpy(&add_range, val, sizeof(add_range));
@@ -879,7 +888,7 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 		/*
 		 * Mark the file system to indicate it contains errors. That's
 		 * because the updates performed by fast commit replay code are
-		 * not atomic and may result in incosistent file system if it
+		 * not atomic and may result in inconsistent file system if it
 		 * crashes before the replay is complete.
 		 */
 		ctx->fs->super->s_state |= EXT2_ERROR_FS;
@@ -989,7 +998,14 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	journal->j_blocksize = ctx->fs->blocksize;
 
 	if (uuid_is_null(sb->s_journal_uuid)) {
-		if (!sb->s_journal_inum) {
+		/*
+		 * The full set of superblock sanity checks haven't
+		 * been performed yet, so we need to do some basic
+		 * checks here to avoid potential array overruns.
+		 */
+		if (!sb->s_journal_inum ||
+		    (sb->s_journal_inum >
+		     (ctx->fs->group_desc_count * sb->s_inodes_per_group))) {
 			retval = EXT2_ET_BAD_INODE_NUM;
 			goto errout;
 		}
@@ -1023,7 +1039,8 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			tried_backup_jnl++;
 		}
 		if (!j_inode->i_ext2.i_links_count ||
-		    !LINUX_S_ISREG(j_inode->i_ext2.i_mode)) {
+		    !LINUX_S_ISREG(j_inode->i_ext2.i_mode) ||
+		    (j_inode->i_ext2.i_flags & EXT4_ENCRYPT_FL)) {
 			retval = EXT2_ET_NO_JOURNAL;
 			goto try_backup_journal;
 		}

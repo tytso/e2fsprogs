@@ -24,9 +24,13 @@ void sort_r(void *base, size_t nel, size_t width,
 
 #define _SORT_R_INLINE inline
 
-#if (defined __gnu_hurd__ || defined __GNU__ || \
-       defined __linux__ || defined __MINGW32__ || defined __GLIBC__)
-#  define _SORT_R_LINUX
+#if (defined HAVE_GNU_QSORT_R)
+#  define _SORT_R_GNU
+#elif (defined HAVE_BSD_QSORT_R)
+#  define _SORT_R_BSD
+#elif (defined __gnu_hurd__ || defined __GNU__ || \
+       defined __MINGW32__ || defined __GLIBC__)
+#  define _SORT_R_GNU
 #elif (defined __APPLE__ || defined __MACH__ || defined __DARWIN__ || \
      defined __FreeBSD__ || defined __DragonFly__)
 #  define _SORT_R_BSD
@@ -260,7 +264,7 @@ static _SORT_R_INLINE void sort_r_simple(void *base, size_t nel, size_t w,
 
   #endif
 
-  #if defined _SORT_R_LINUX
+  #if defined _SORT_R_GNU
 
     typedef int(* __compar_d_fn_t)(const void *, const void *, void *);
     extern void qsort_r(void *base, size_t nel, size_t width,
@@ -276,7 +280,7 @@ static _SORT_R_INLINE void sort_r_simple(void *base, size_t nel, size_t w,
                                                   const void *_b, void *_arg),
                                     void *arg)
   {
-    #if defined _SORT_R_LINUX
+    #if defined _SORT_R_GNU
 
       #if defined __GLIBC__ && ((__GLIBC__ < 2) || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 8))
 
@@ -315,7 +319,7 @@ static _SORT_R_INLINE void sort_r_simple(void *base, size_t nel, size_t w,
 
 #undef _SORT_R_INLINE
 #undef _SORT_R_WINDOWS
-#undef _SORT_R_LINUX
+#undef _SORT_R_GNU
 #undef _SORT_R_BSD
 
 #endif /* SORT_R_H_ */

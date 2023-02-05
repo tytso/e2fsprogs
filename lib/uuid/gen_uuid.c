@@ -41,11 +41,6 @@
 
 #include "config.h"
 
-#ifdef _WIN32
-#define _WIN32_WINNT 0x0500
-#include <windows.h>
-#define UUID MYUUID
-#endif
 #include <stdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -115,27 +110,6 @@
 #if defined(__linux__) && defined(__NR_gettid) && defined(HAVE_JRAND48)
 #define DO_JRAND_MIX
 THREAD_LOCAL unsigned short jrand_seed[3];
-#endif
-
-#ifdef _WIN32
-#ifndef USE_MINGW
-static void gettimeofday (struct timeval *tv, void *dummy)
-{
-	FILETIME	ftime;
-	uint64_t	n;
-
-	GetSystemTimeAsFileTime (&ftime);
-	n = (((uint64_t) ftime.dwHighDateTime << 32)
-	     + (uint64_t) ftime.dwLowDateTime);
-	if (n) {
-		n /= 10;
-		n -= ((369 * 365 + 89) * (uint64_t) 86400) * 1000000;
-	}
-
-	tv->tv_sec = n / 1000000;
-	tv->tv_usec = n % 1000000;
-}
-#endif
 #endif
 
 static int get_random_fd(void)

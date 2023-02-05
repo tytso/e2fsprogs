@@ -59,6 +59,7 @@ extern int optind;
 #include "et/com_err.h"
 #include "support/plausible.h"
 #include "support/quotaio.h"
+#include "support/devname.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
 #include "util.h"
@@ -929,7 +930,7 @@ static void rewrite_inodes(ext2_filsys fs, unsigned int flags)
 	ext2fs_free_mem(&ctx.ea_buf);
 }
 
-static void rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
+static errcode_t rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
 {
 	errcode_t retval;
 	dgrp_t i;
@@ -944,7 +945,9 @@ static void rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
 	rewrite_inodes(fs, flags);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
-	ext2fs_mmp_update2(fs, 1);
+	retval = ext2fs_mmp_update2(fs, 1);
+	if (retval)
+		return retval;
 	fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
 	if (ext2fs_has_feature_metadata_csum(fs->super))
@@ -952,6 +955,7 @@ static void rewrite_metadata_checksums(ext2_filsys fs, unsigned int flags)
 	else
 		fs->super->s_checksum_type = 0;
 	ext2fs_mark_super_dirty(fs);
+	return 0;
 }
 
 static void enable_uninit_bg(ext2_filsys fs)
@@ -1774,7 +1778,7 @@ static void parse_e2label_options(int argc, char ** argv)
 	io_options = strchr(argv[1], '?');
 	if (io_options)
 		*io_options++ = 0;
-	device_name = blkid_get_devname(NULL, argv[1], NULL);
+	device_name = get_devname(NULL, argv[1], NULL);
 	if (!device_name) {
 		com_err("e2label", 0, _("Unable to resolve '%s'"),
 			argv[1]);
@@ -2074,7 +2078,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	io_options = strchr(argv[optind], '?');
 	if (io_options)
 		*io_options++ = 0;
-	device_name = blkid_get_devname(NULL, argv[optind], NULL);
+	device_name = get_devname(NULL, argv[optind], NULL);
 	if (!device_name) {
 		com_err(program_name, 0, _("Unable to resolve '%s'"),
 			argv[optind]);
@@ -2951,6 +2955,8 @@ int tune2fs_main(int argc, char **argv)
 #endif
 	if (argc && *argv)
 		program_name = *argv;
+	else
+		usage();
 	add_error_table(&et_ext2_error_table);
 
 #ifdef CONFIG_BUILD_FINDFS
@@ -3102,9 +3108,9 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		if (retval) {
 			com_err("tune2fs", retval,
 				"while recovering journal.\n");
-			printf(_("Please run e2fsck -fy %s.\n"), argv[1]);
-			if (fs)
-				ext2fs_close_free(&fs);
+			printf(_("Please run e2fsck -fy %s.\n"), device_name);
+			if (!fs)
+				exit(1);
 			rc = 1;
 			goto closefs;
 		}
@@ -3242,6 +3248,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 			fputs(_("Error in using clear_mmp. "
 				"It must be used with -f\n"),
 			      stderr);
+			rc = 1;
 			goto closefs;
 		}
 	}
@@ -3408,8 +3415,14 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		}
 	}
 
-	if (rewrite_checksums)
-		rewrite_metadata_checksums(fs, rewrite_checksums);
+	if (rewrite_checksums) {
+		retval = rewrite_metadata_checksums(fs, rewrite_checksums);
+		if (retval != 0) {
+			printf("Failed to rewrite metadata checksums\n");
+			rc = 1;
+			goto closefs;
+		}
+	}
 
 	if (l_flag)
 		list_super(sb);
@@ -3446,5 +3459,13 @@ closefs:
 
 	if (feature_64bit)
 		convert_64bit(fs, feature_64bit);
-	return (ext2fs_close_free(&fs) ? 1 : 0);
+
+	retval = ext2fs_close_free(&fs);
+	if (retval) {
+		com_err("tune2fs", retval,
+			_("while writing out and closing file system"));
+		rc = 1;
+	}
+
+	return rc;
 }

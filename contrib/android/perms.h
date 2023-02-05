@@ -1,7 +1,6 @@
 #ifndef ANDROID_PERMS_H
 # define ANDROID_PERMS_H
 
-# include "config.h"
 # include <ext2fs/ext2fs.h>
 
 typedef void (*fs_config_f)(const char *path, int dir,

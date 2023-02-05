@@ -150,6 +150,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	mtrace_print("Pass 2");
 #endif
 
+	fs->flags |= EXT2_FLAG_IGNORE_SWAP_DIRENT;
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_2_PASS_HEADER, &cd.pctx);
 
@@ -317,6 +318,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	print_resource_track(ctx, _("Pass 2"), &rtrack, fs->io);
 cleanup:
 	ext2fs_free_mem(&buf);
+	fs->flags &= ~EXT2_FLAG_IGNORE_SWAP_DIRENT;
 }
 
 #define MAX_DEPTH 32000
@@ -1809,7 +1811,7 @@ struct del_block {
 };
 
 /*
- * This function is called to deallocate a block, and is an interator
+ * This function is called to deallocate a block, and is an iterator
  * functioned called by deallocate inode via ext2fs_iterate_block().
  */
 static int deallocate_inode_block(ext2_filsys fs,

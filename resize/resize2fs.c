@@ -1116,7 +1116,6 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 	ext2_filsys	fs = rfs->new_fs;
 	int		adj = 0;
 	errcode_t	retval;
-	blk64_t		group_block;
 	unsigned long	i;
 	unsigned long	max_group;
 
@@ -1181,8 +1180,6 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 		goto errout;
 
 	memset(rfs->itable_buf, 0, fs->blocksize * fs->inode_blocks_per_group);
-	group_block = ext2fs_group_first_block2(fs,
-						rfs->old_fs->group_desc_count);
 	adj = rfs->old_fs->group_desc_count;
 	max_group = fs->group_desc_count - adj;
 	if (rfs->progress) {
@@ -1209,7 +1206,6 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk64_t new_size)
 			if (retval)
 				goto errout;
 		}
-		group_block += fs->super->s_blocks_per_group;
 	}
 	io_channel_flush(fs->io);
 	retval = 0;
@@ -1781,11 +1777,11 @@ static errcode_t block_mover(ext2_resize_t rfs)
 					fs->inode_blocks_per_group,
 					&rfs->itable_buf);
 		if (retval)
-			return retval;
+			goto errout;
 	}
 	retval = ext2fs_create_extent_table(&rfs->bmap, 0);
 	if (retval)
-		return retval;
+		goto errout;
 
 	/*
 	 * The first step is to figure out where all of the blocks
@@ -2266,7 +2262,8 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		if (inode->i_flags & EXT4_EA_INODE_FL)
 			update_ea_inode_refs = 1;
 		else
-			inode->i_ctime = time(0);
+			inode->i_ctime = rfs->old_fs->now ?
+				rfs->old_fs->now : time(0);
 
 		retval = ext2fs_write_inode_full(rfs->old_fs, new_inode,
 						inode, inode_size);
@@ -2419,7 +2416,8 @@ static int check_and_change_inodes(ext2_ino_t dir,
 	/* Update the directory mtime and ctime */
 	retval = ext2fs_read_inode(is->rfs->old_fs, dir, &inode);
 	if (retval == 0) {
-		inode.i_mtime = inode.i_ctime = time(0);
+		inode.i_mtime = inode.i_ctime = is->rfs->old_fs->now ?
+			is->rfs->old_fs->now : time(0);
 		is->err = ext2fs_write_inode(is->rfs->old_fs, dir, &inode);
 		if (is->err)
 			return ret | DIRENT_ABORT;
@@ -2847,7 +2845,7 @@ static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs)
 	errcode_t	retval;
 	blk64_t		blk = fs->super->s_first_data_block;
 	ext2_ino_t	ino;
-	unsigned int	n, c, group, count;
+	unsigned int	n, group, count;
 	blk64_t		total_clusters_free = 0;
 	int		total_inodes_free = 0;
 	int		group_free = 0;
@@ -2971,7 +2969,7 @@ blk64_t calculate_minimum_resize_size(ext2_filsys fs, int flags)
 	blk64_t grp, data_needed, last_start;
 	blk64_t overhead = 0;
 	int old_desc_blocks;
-	int flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+	unsigned flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 
 	/*
 	 * first figure out how many group descriptors we need to

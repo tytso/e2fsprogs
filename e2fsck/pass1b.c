@@ -90,7 +90,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 			struct dup_inode *dp, char *block_buf);
 static errcode_t clone_file(e2fsck_t ctx, ext2_ino_t ino,
 			    struct dup_inode *dp, char* block_buf);
-static int check_if_fs_block(e2fsck_t ctx, blk64_t test_block);
+static int check_if_fs_block(e2fsck_t ctx, blk64_t block);
 static int check_if_fs_cluster(e2fsck_t ctx, blk64_t cluster);
 
 static void pass1b(e2fsck_t ctx, char *block_buf);
@@ -815,8 +815,6 @@ static int clone_file_block(ext2_filsys fs,
 		should_write = 0;
 
 	c = EXT2FS_B2C(fs, blockcnt);
-	if (check_if_fs_cluster(ctx, EXT2FS_B2C(fs, *block_nr)))
-		is_meta = 1;
 
 	if (c == cs->dup_cluster && cs->alloc_block) {
 		new_block = cs->alloc_block;
@@ -894,6 +892,8 @@ cluster_alloc_ok:
 				return BLOCK_ABORT;
 			}
 		}
+		if (check_if_fs_cluster(ctx, EXT2FS_B2C(fs, *block_nr)))
+			is_meta = 1;
 		cs->save_dup_cluster = (is_meta ? NULL : p);
 		cs->save_blocknr = *block_nr;
 		*block_nr = new_block;
@@ -1021,37 +1021,9 @@ errout:
  * This routine returns 1 if a block overlaps with one of the superblocks,
  * group descriptors, inode bitmaps, or block bitmaps.
  */
-static int check_if_fs_block(e2fsck_t ctx, blk64_t test_block)
+static int check_if_fs_block(e2fsck_t ctx, blk64_t block)
 {
-	ext2_filsys fs = ctx->fs;
-	blk64_t	first_block;
-	dgrp_t	i;
-
-	first_block = fs->super->s_first_data_block;
-	for (i = 0; i < fs->group_desc_count; i++) {
-
-		/* Check superblocks/block group descriptors */
-		if (ext2fs_bg_has_super(fs, i)) {
-			if (test_block >= first_block &&
-			    (test_block <= first_block + fs->desc_blocks))
-				return 1;
-		}
-
-		/* Check the inode table */
-		if ((ext2fs_inode_table_loc(fs, i)) &&
-		    (test_block >= ext2fs_inode_table_loc(fs, i)) &&
-		    (test_block < (ext2fs_inode_table_loc(fs, i) +
-				   fs->inode_blocks_per_group)))
-			return 1;
-
-		/* Check the bitmap blocks */
-		if ((test_block == ext2fs_block_bitmap_loc(fs, i)) ||
-		    (test_block == ext2fs_inode_bitmap_loc(fs, i)))
-			return 1;
-
-		first_block += fs->super->s_blocks_per_group;
-	}
-	return 0;
+	return ext2fs_test_block_bitmap2(ctx->block_metadata_map, block);
 }
 
 /*
@@ -1061,37 +1033,14 @@ static int check_if_fs_block(e2fsck_t ctx, blk64_t test_block)
 static int check_if_fs_cluster(e2fsck_t ctx, blk64_t cluster)
 {
 	ext2_filsys fs = ctx->fs;
-	blk64_t	first_block;
-	dgrp_t	i;
+	blk64_t	block = EXT2FS_C2B(fs, cluster);
+	int i;
 
-	first_block = fs->super->s_first_data_block;
-	for (i = 0; i < fs->group_desc_count; i++) {
-
-		/* Check superblocks/block group descriptors */
-		if (ext2fs_bg_has_super(fs, i)) {
-			if (cluster >= EXT2FS_B2C(fs, first_block) &&
-			    (cluster <= EXT2FS_B2C(fs, first_block +
-						   fs->desc_blocks)))
-				return 1;
-		}
-
-		/* Check the inode table */
-		if ((ext2fs_inode_table_loc(fs, i)) &&
-		    (cluster >= EXT2FS_B2C(fs,
-					   ext2fs_inode_table_loc(fs, i))) &&
-		    (cluster <= EXT2FS_B2C(fs,
-					   ext2fs_inode_table_loc(fs, i) +
-					   fs->inode_blocks_per_group - 1)))
+	for (i = 0; i < EXT2FS_CLUSTER_RATIO(fs); i++) {
+		if (ext2fs_test_block_bitmap2(ctx->block_metadata_map,
+					      block + i))
 			return 1;
-
-		/* Check the bitmap blocks */
-		if ((cluster == EXT2FS_B2C(fs,
-					   ext2fs_block_bitmap_loc(fs, i))) ||
-		    (cluster == EXT2FS_B2C(fs,
-					   ext2fs_inode_bitmap_loc(fs, i))))
-			return 1;
-
-		first_block += fs->super->s_blocks_per_group;
 	}
+
 	return 0;
 }

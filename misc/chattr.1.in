@@ -23,44 +23,77 @@ chattr \- change file attributes on a Linux file system
 .B chattr
 changes the file attributes on a Linux file system.
 .PP
-The format of a symbolic mode is +-=[aAcCdDeFijmPsStTux].
+The format of a symbolic
+.I mode
+is
+.BR +-= [ aAcCdDeFijmPsStTux ].
 .PP
-The operator '+' causes the selected attributes to be added to the
-existing attributes of the files; '-' causes them to be removed; and '='
+The operator
+.RB ' + '
+causes the selected attributes to be added to the
+existing attributes of the files;
+.RB ' - '
+causes them to be removed; and
+.RB ' = '
 causes them to be the only attributes that the files have.
 .PP
-The letters 'aAcCdDeFijmPsStTux' select the new attributes for the files:
-append only (a),
-no atime updates (A),
-compressed (c),
-no copy on write (C),
-no dump (d),
-synchronous directory updates (D),
-extent format (e),
-case-insensitive directory lookups (F),
-immutable (i),
-data journaling (j),
-don't compress (m),
-project hierarchy (P),
-secure deletion (s),
-synchronous updates (S),
-no tail-merging (t),
-top of directory hierarchy (T),
-undeletable (u),
-and direct access for files (x).
+The letters
+.RB ' aAcCdDeFijmPsStTux '
+select the new attributes for the files:
+append only
+.RB ( a ),
+no atime updates
+.RB ( A ),
+compressed
+.RB ( c ),
+no copy on write
+.RB ( C ),
+no dump
+.RB ( d ),
+synchronous directory updates
+.RB ( D ),
+extent format
+.RB ( e ),
+case-insensitive directory lookups
+.RB ( F ),
+immutable
+.RB ( i ),
+data journaling
+.RB ( j ),
+don't compress
+.RB ( m ),
+project hierarchy
+.RB ( P ),
+secure deletion
+.RB ( s ),
+synchronous updates
+.RB ( S ),
+no tail-merging
+.RB ( t ),
+top of directory hierarchy
+.RB ( T ),
+undeletable
+.RB ( u ),
+and direct access for files
+.RB ( x ).
 .PP
 The following attributes are read-only, and may be listed by
 .BR lsattr (1)
 but not modified by chattr:
-encrypted (E),
-indexed directory (I),
-inline data (N),
-and verity (V).
+encrypted
+.RB ( E ),
+indexed directory
+.RB ( I ),
+inline data
+.RB ( N ),
+and verity
+.RB ( V ).
 .PP
 Not all flags are supported or utilized by all file systems; refer to
 file system-specific man pages such as
 .BR btrfs (5),
 .BR ext4 (5),
+.BR mkfs.f2fs (8),
 and
 .BR xfs (5)
 for more file system-specific details.
@@ -219,12 +252,16 @@ make sure to read the bugs and limitations section at the end of this
 document.
 .TP
 .B x
-The 'x' attribute can be set on a directory or file.  If the attribute
-is set on an existing directory, it will be inherited by all files and
-subdirectories that are subsequently created in the directory.  If an
-existing directory has contained some files and subdirectories, modifying
-the attribute on the parent directory doesn't change the attributes on
-these files and subdirectories.
+A file with the 'x' requests the use of direct access (dax) mode, if the
+kernel supports DAX.  This can be overridden by the 'dax=never' mount
+option.  For more information see the kernel documentation for dax:
+<https://www.kernel.org/doc/html/latest/filesystems/dax.html>.
+.IP
+If the attribute is set on an existing directory, it will be inherited
+by all files and subdirectories that are subsequently created in the
+directory.  If an existing directory has contained some files and
+subdirectories, modifying the attribute on the parent directory doesn't
+change the attributes on these files and subdirectories.
 .TP
 .B V
 A file with the 'V' attribute set has fs-verity enabled.  It cannot be
@@ -258,4 +295,5 @@ http://e2fsprogs.sourceforge.net.
 .BR lsattr (1),
 .BR btrfs (5),
 .BR ext4 (5),
+.BR mkfs.f2fs (8),
 .BR xfs (5).

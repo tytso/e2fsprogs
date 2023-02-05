@@ -195,10 +195,6 @@ static struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
 #error posix_fadvise not available!
 #endif
 
-#ifndef HAVE_FALLOCATE64
-#error fallocate64 not available!
-#endif /* ! HAVE_FALLOCATE64 */
-
 /*
  * get_mount_point() -	Get device's mount point.
  *
@@ -258,12 +254,12 @@ static int get_mount_point(const char *devname, char *mount_point,
  *
  * @file:		the file's name.
  */
-static int is_ext4(const char *file, char *devname)
+static int is_ext4(const char *file, char devname[PATH_MAX + 1])
 {
 	int 	maxlen = 0;
 	int	len, ret;
+	int	type_is_ext4 = 0;
 	FILE	*fp = NULL;
-	char	*mnt_type = NULL;
 	/* Refer to /etc/mtab */
 	const char	*mtab = MOUNTED;
 	char	file_path[PATH_MAX + 1];
@@ -307,26 +303,16 @@ static int is_ext4(const char *file, char *devname)
 
 		maxlen = len;
 
-		mnt_type = realloc(mnt_type, strlen(mnt->mnt_type) + 1);
-		if (mnt_type == NULL) {
-			endmntent(fp);
-			return -1;
-		}
-		memset(mnt_type, 0, strlen(mnt->mnt_type) + 1);
-		strncpy(mnt_type, mnt->mnt_type, strlen(mnt->mnt_type));
+		type_is_ext4 = !strcmp(mnt->mnt_type, FS_EXT4);
 		strncpy(lost_found_dir, mnt->mnt_dir, PATH_MAX);
-		strncpy(devname, mnt->mnt_fsname, strlen(mnt->mnt_fsname) + 1);
+		strncpy(devname, mnt->mnt_fsname, PATH_MAX);
 	}
 
 	endmntent(fp);
-	if (mnt_type && strcmp(mnt_type, FS_EXT4) == 0) {
-		FREE(mnt_type);
+	if (type_is_ext4)
 		return 0;
-	} else {
-		FREE(mnt_type);
-		PRINT_ERR_MSG(NGMSG_EXT4);
-		return -1;
-	}
+	PRINT_ERR_MSG(NGMSG_EXT4);
+	return -1;
 }
 
 /*
@@ -1021,7 +1007,7 @@ static int get_best_count(ext4_fsblk_t block_count)
 		return 1;
 
 	if (feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
-		flex_bg_num = 1 << log_groups_per_flex;
+		flex_bg_num = 1U << log_groups_per_flex;
 		ret = ((block_count - 1) /
 			((ext4_fsblk_t)blocks_per_group *
 				flex_bg_num)) + 1;
@@ -1051,7 +1037,7 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 	__u64	size_per_ext = 0;
 	float	ratio = 0.0;
 	ext4_fsblk_t	blk_count = 0;
-	char	msg_buffer[PATH_MAX + 24];
+	char	msg_buffer[PATH_MAX + 48];
 	struct fiemap_extent_list *physical_list_head = NULL;
 	struct fiemap_extent_list *logical_list_head = NULL;
 
@@ -1220,8 +1206,9 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 
 	if (mode_flag & DETAIL) {
 		/* Print statistic info */
-		sprintf(msg_buffer, "[%u/%u]%s",
-				defraged_file_count, total_count, file);
+		sprintf(msg_buffer, "[%u/%u]%.*s",
+				defraged_file_count, total_count,
+			PATH_MAX, file);
 		if (current_uid == ROOT_UID) {
 			if (strlen(msg_buffer) > 40)
 				printf("\033[79;0H\033[K%s\n"
@@ -1568,7 +1555,7 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 	/* Allocate space for donor inode */
 	orig_group_tmp = orig_group_head;
 	do {
-		ret = fallocate64(donor_fd, 0,
+		ret = fallocate(donor_fd, 0,
 		  (ext2_loff_t)orig_group_tmp->start->data.logical * block_size,
 		  (ext2_loff_t)orig_group_tmp->len * block_size);
 		if (ret < 0) {
@@ -1865,11 +1852,9 @@ int main(int argc, char *argv[])
 			/* fall through */
 		case DEVNAME:
 			if (arg_type == DEVNAME) {
-				strncpy(lost_found_dir, dir_name,
-					strnlen(dir_name, PATH_MAX));
+				strcpy(lost_found_dir, dir_name);
 				strncat(lost_found_dir, "/lost+found/",
-					PATH_MAX - strnlen(lost_found_dir,
-							   PATH_MAX));
+					PATH_MAX - strlen(lost_found_dir));
 			}
 
 			nftw64(dir_name, calc_entry_counts, FTW_OPEN_FD, flags);

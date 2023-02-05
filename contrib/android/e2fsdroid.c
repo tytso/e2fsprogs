@@ -1,11 +1,11 @@
 #define _GNU_SOURCE
 
+#include "config.h"
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
-#include <ext2fs/ext2fs.h>
 
 #include "perms.h"
 #include "base_fs.h"

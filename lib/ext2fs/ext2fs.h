@@ -219,6 +219,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_BBITMAP_TAIL_PROBLEM	0x1000000
 #define EXT2_FLAG_IBITMAP_TAIL_PROBLEM	0x2000000
 #define EXT2_FLAG_THREADS		0x4000000
+#define EXT2_FLAG_IGNORE_SWAP_DIRENT	0x8000000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -354,9 +355,9 @@ struct struct_ext2_filsys {
 #define BLOCK_INLINE_DATA_CHANGED	8
 
 /*
- * Block interate flags
+ * Block iterate flags
  *
- * BLOCK_FLAG_APPEND, or BLOCK_FLAG_HOLE, indicates that the interator
+ * BLOCK_FLAG_APPEND, or BLOCK_FLAG_HOLE, indicates that the iterator
  * function should be called on blocks where the block number is zero.
  * This is used by ext2fs_expand_dir() to be able to add a new block
  * to an inode.  It can also be used for programs that want to be able
@@ -1262,9 +1263,15 @@ extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir);
 /* ext_attr.c */
 extern __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry,
 					void *data);
+extern __u32 ext2fs_ext_attr_hash_entry_signed(struct ext2_ext_attr_entry *entry,
+					       void *data);
 extern errcode_t ext2fs_ext_attr_hash_entry2(ext2_filsys fs,
 					     struct ext2_ext_attr_entry *entry,
 					     void *data, __u32 *hash);
+extern errcode_t ext2fs_ext_attr_hash_entry3(ext2_filsys fs,
+					     struct ext2_ext_attr_entry *entry,
+					     void *data, __u32 *hash,
+					     __u32 *signed_hash);
 extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
 extern errcode_t ext2fs_read_ext_attr2(ext2_filsys fs, blk64_t block,
 				       void *buf);

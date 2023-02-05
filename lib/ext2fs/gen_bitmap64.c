@@ -183,11 +183,9 @@ static void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap_64 bitmap)
 #ifdef ENABLE_BMAP_STATS_OPS
 	float mark_seq_perc = 0.0, test_seq_perc = 0.0;
 	float mark_back_perc = 0.0, test_back_perc = 0.0;
-#endif
-	double inuse;
 	struct timeval now;
+	double inuse;
 
-#ifdef ENABLE_BMAP_STATS_OPS
 	if (stats->test_count) {
 		test_seq_perc = ((float)stats->test_seq /
 				 stats->test_count) * 100;
@@ -201,7 +199,6 @@ static void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap_64 bitmap)
 		mark_back_perc = ((float)stats->mark_back /
 				  stats->mark_count) * 100;
 	}
-#endif
 
 	if (gettimeofday(&now, (struct timezone *) NULL) == -1) {
 		perror("gettimeofday");
@@ -212,6 +209,7 @@ static void ext2fs_print_bmap_statistics(ext2fs_generic_bitmap_64 bitmap)
 		(((double) now.tv_usec) * 0.000001);
 	inuse -= (double) stats->created.tv_sec + \
 		(((double) stats->created.tv_usec) * 0.000001);
+#endif /* ENABLE_BMAP_STATS_OPS */
 
 	fprintf(stderr, "\n[+] %s bitmap (type %d)\n", bitmap->description,
 		stats->type);
@@ -629,10 +627,14 @@ errcode_t ext2fs_compare_generic_bmap(errcode_t neq,
 	    (bm1->end != bm2->end))
 		return neq;
 
-	for (i = bm1->end - ((bm1->end - bm1->start) % 8); i <= bm1->end; i++)
-		if (ext2fs_test_generic_bmap(gen_bm1, i) !=
-		    ext2fs_test_generic_bmap(gen_bm2, i))
+	for (i = bm1->start; i < bm1->end; i++) {
+		int ret1, ret2;
+		ret1 = !!ext2fs_test_generic_bmap(gen_bm1, i);
+		ret2 = !!ext2fs_test_generic_bmap(gen_bm2, i);
+		if (ret1 != ret2) {
 			return neq;
+		}
+	}
 
 	return 0;
 }
@@ -684,7 +686,7 @@ int ext2fs_test_block_bitmap_range2(ext2fs_block_bitmap gen_bmap,
 
 	/* convert to clusters if necessary */
 	block >>= bmap->cluster_bits;
-	end += (1 << bmap->cluster_bits) - 1;
+	end += (1ULL << bmap->cluster_bits) - 1;
 	end >>= bmap->cluster_bits;
 	num = end - block;
 
@@ -725,7 +727,7 @@ void ext2fs_mark_block_bitmap_range2(ext2fs_block_bitmap gen_bmap,
 
 	/* convert to clusters if necessary */
 	block >>= bmap->cluster_bits;
-	end += (1 << bmap->cluster_bits) - 1;
+	end += (1ULL << bmap->cluster_bits) - 1;
 	end >>= bmap->cluster_bits;
 	num = end - block;
 
@@ -766,7 +768,7 @@ void ext2fs_unmark_block_bitmap_range2(ext2fs_block_bitmap gen_bmap,
 
 	/* convert to clusters if necessary */
 	block >>= bmap->cluster_bits;
-	end += (1 << bmap->cluster_bits) - 1;
+	end += (1ULL << bmap->cluster_bits) - 1;
 	end >>= bmap->cluster_bits;
 	num = end - block;
 

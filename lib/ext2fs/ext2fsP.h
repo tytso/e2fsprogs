@@ -93,7 +93,7 @@ struct ext2_inode_cache_ent {
 };
 
 /*
- * NLS defintions
+ * NLS definitions
  */
 struct ext2fs_nls_table {
 	int version;

@@ -58,7 +58,7 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	 * the MMP block by the io_manager or the VM.  It needs to be fresh. */
 	if (fs->mmp_fd <= 0) {
 		struct stat st;
-		int flags = O_RDWR | O_DIRECT;
+		int flags = O_RDONLY | O_DIRECT;
 
 		/*
 		 * There is no reason for using O_DIRECT if we're working with
@@ -356,7 +356,7 @@ clean_seq:
 #ifdef HAVE_GETHOSTNAME
 	gethostname((char *) mmp_s->mmp_nodename, sizeof(mmp_s->mmp_nodename));
 #else
-	strcpy(mmp_s->mmp_nodename, "unknown host");
+	strcpy((char *) mmp_s->mmp_nodename, "unknown host");
 #endif
 	strncpy((char *) mmp_s->mmp_bdevname, fs->device_name,
 		sizeof(mmp_s->mmp_bdevname));
@@ -407,7 +407,7 @@ errcode_t ext2fs_mmp_stop(ext2_filsys fs)
 	    (fs->mmp_buf == NULL) || (fs->mmp_cmp == NULL))
 		goto mmp_error;
 
-	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, fs->mmp_buf);
+	retval = ext2fs_mmp_read(fs, fs->super->s_mmp_block, NULL);
 	if (retval)
 		goto mmp_error;
 

@@ -223,7 +223,7 @@ static int v2_check_file(struct quota_handle *h, int type, int fmt)
 
 	be_magic = ext2fs_be32_to_cpu((__force __be32)dqh.dqh_magic);
 	if (be_magic == file_magics[type]) {
-		log_err("Your quota file is stored in wrong endianity");
+		log_err("Your quota file is stored in wrong endianness");
 		return 0;
 	}
 	if (V2_VERSION_R0 != ext2fs_le32_to_cpu(dqh.dqh_version) &&

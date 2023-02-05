@@ -22,16 +22,13 @@ cc_library {
 
     target: {
         windows: {
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
             enabled: true,
-            cflags: ["-Wno-unused-variable"],
         },
     },
 
     srcs: [
         "create_inode.c",
     ],
-    cflags: ["-Wno-error=format-extra-args"],
     shared_libs: [
         "libext2fs",
         "libext2_com_err",
@@ -43,9 +40,8 @@ cc_library {
 //########################################################################
 // Build mke2fs
 
-cc_binary {
-    name: "mke2fs",
-    host_supported: true,
+cc_defaults {
+    name: "mke2fs_defaults",
     recovery_available: true,
     defaults: ["e2fsprogs-defaults"],
 
@@ -55,11 +51,14 @@ cc_binary {
         "mk_hugefiles.c",
         "default_profile.c",
     ],
-    cflags: [
-        "-Wno-error=format",
-        "-Wno-error=type-limits",
-        "-Wno-format-extra-args",
-    ],
+    stl: "libc++_static",
+    include_dirs: ["external/e2fsprogs/e2fsck"],
+}
+
+cc_binary {
+    name: "mke2fs",
+    host_supported: true,
+    defaults: ["mke2fs_defaults"],
     target: {
         host: {
             static_libs: [
@@ -81,18 +80,8 @@ cc_binary {
             ],
         },
         windows: {
-            include_dirs: [ "external/e2fsprogs/include/mingw" ],
-            cflags: [
-                "-D_POSIX",
-                "-D__USE_MINGW_ALARM",
-                // mke2fs.c has a warning from gcc which cannot be suppressed:
-                // passing argument 3 of 'ext2fs_get_device_size' from
-                // incompatible pointer type
-                "-Wno-error"
-            ],
             ldflags: ["-static"],
-            host_ldlibs: ["-lws2_32"],
-            enabled: true
+            enabled: true,
         },
         android: {
             required: [
@@ -107,11 +96,39 @@ cc_binary {
                 "libext2_com_err",
                 "libext2_e2p",
             ],
-            symlinks: ["mkfs.ext2", "mkfs.ext3", "mkfs.ext4"],
+            symlinks: [
+                "mkfs.ext2",
+                "mkfs.ext3",
+                "mkfs.ext4",
+            ],
         },
     },
-    stl: "libc++_static",
-    include_dirs: ["external/e2fsprogs/e2fsck"],
+}
+
+cc_binary {
+    name: "mke2fs.microdroid",
+    defaults: ["mke2fs_defaults"],
+    bootstrap: true,
+    target: {
+        android: {
+            required: [
+                "mke2fs.conf",
+            ],
+            shared_libs: [
+                "libext2fs",
+                "libext2_blkid",
+                "libext2_misc",
+                "libext2_uuid",
+                "libext2_quota",
+                "libext2_com_err",
+                "libext2_e2p",
+            ],
+            symlinks: ["mkfs.ext4.microdroid"],
+        },
+    },
+    installable: false,
+    stem: "mke2fs",
+    visibility: ["//packages/modules/Virtualization/microdroid"],
 }
 
 //##########################################################################
@@ -239,6 +256,7 @@ cc_binary {
 
 cc_binary {
     name: "blkid",
+    host_supported: true,
     defaults: ["e2fsprogs-defaults"],
 
     srcs: ["blkid.c"],
@@ -247,6 +265,22 @@ cc_binary {
         "libext2_blkid",
         "libext2_com_err",
         "libext2_e2p",
+    ],
+}
+
+cc_binary {
+    name: "blkid_static",
+    host_supported: true,
+    static_executable: true,
+    defaults: ["e2fsprogs-defaults"],
+
+    srcs: ["blkid.c"],
+    static_libs: [
+        "libext2fs",
+        "libext2_blkid",
+        "libext2_com_err",
+        "libext2_e2p",
+        "libext2_uuid",
     ],
 }
 
