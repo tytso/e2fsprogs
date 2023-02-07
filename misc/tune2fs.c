@@ -52,6 +52,9 @@ extern int optind;
 #include <sys/types.h>
 #include <libgen.h>
 #include <limits.h>
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
@@ -71,11 +74,34 @@ extern int optind;
 #define QOPT_ENABLE	(1)
 #define QOPT_DISABLE	(-1)
 
+#ifndef FS_IOC_SETFSLABEL
+#define FSLABEL_MAX 256
+#define FS_IOC_SETFSLABEL	_IOW(0x94, 50, char[FSLABEL_MAX])
+#endif
+
+#ifndef FS_IOC_GETFSLABEL
+#define FS_IOC_GETFSLABEL	_IOR(0x94, 49, char[FSLABEL_MAX])
+#endif
+
+struct fsuuid {
+	__u32   fsu_len;
+	__u32   fsu_flags;
+	__u8    fsu_uuid[];
+};
+
+#ifndef EXT4_IOC_GETFSUUID
+#define EXT4_IOC_GETFSUUID	_IOR('f', 44, struct fsuuid)
+#endif
+
+#ifndef EXT4_IOC_SETFSUUID
+#define EXT4_IOC_SETFSUUID	_IOW('f', 44, struct fsuuid)
+#endif
+
 extern int ask_yn(const char *string, int def);
 
 const char *program_name = "tune2fs";
 char *device_name;
-char *new_label, *new_last_mounted, *new_UUID;
+char *new_label, *new_last_mounted, *requested_uuid;
 char *io_options;
 static int c_flag, C_flag, e_flag, f_flag, g_flag, i_flag, l_flag, L_flag;
 static int m_flag, M_flag, Q_flag, r_flag, s_flag = -1, u_flag, U_flag, T_flag;
@@ -107,6 +133,7 @@ int enabling_casefold;
 int journal_size, journal_fc_size, journal_flags;
 char *journal_device;
 static blk64_t journal_location = ~0LL;
+static e2_blkcnt_t orphan_file_blocks;
 
 static struct list_head blk_move_list;
 
@@ -153,7 +180,8 @@ static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
 		EXT4_FEATURE_COMPAT_FAST_COMMIT |
-		EXT4_FEATURE_COMPAT_STABLE_INODES,
+		EXT4_FEATURE_COMPAT_STABLE_INODES |
+		EXT4_FEATURE_COMPAT_ORPHAN_FILE,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE |
 		EXT3_FEATURE_INCOMPAT_EXTENTS |
@@ -184,13 +212,15 @@ static __u32 clear_ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
-		EXT4_FEATURE_COMPAT_FAST_COMMIT,
+		EXT4_FEATURE_COMPAT_FAST_COMMIT |
+		EXT4_FEATURE_COMPAT_ORPHAN_FILE,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE |
 		EXT4_FEATURE_INCOMPAT_FLEX_BG |
 		EXT4_FEATURE_INCOMPAT_MMP |
 		EXT4_FEATURE_INCOMPAT_64BIT |
-		EXT4_FEATURE_INCOMPAT_CSUM_SEED,
+		EXT4_FEATURE_INCOMPAT_CSUM_SEED |
+		EXT4_FEATURE_INCOMPAT_CASEFOLD,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
 		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
@@ -1009,6 +1039,41 @@ out:
 	return retval;
 }
 
+static int has_casefold_inode(ext2_filsys fs)
+{
+	int length = EXT2_INODE_SIZE(fs->super);
+	struct ext2_inode *inode = NULL;
+	ext2_inode_scan	scan;
+	errcode_t	retval;
+	ext2_ino_t	ino;
+	int found_casefold = 0;
+
+	retval = ext2fs_get_mem(length, &inode);
+	if (retval)
+		fatal_err(retval, "while allocating memory");
+
+	retval = ext2fs_open_inode_scan(fs, 0, &scan);
+	if (retval)
+		fatal_err(retval, "while opening inode scan");
+
+	do {
+		retval = ext2fs_get_next_inode_full(scan, &ino, inode, length);
+		if (retval)
+			fatal_err(retval, "while getting next inode");
+		if (!ino)
+			break;
+
+		if(inode->i_flags & EXT4_CASEFOLD_FL) {
+			found_casefold = 1;
+			break;
+		}
+	} while(1);
+
+	ext2fs_free_mem(&inode);
+	ext2fs_close_inode_scan(scan);
+	return found_casefold;
+}
+
 static errcode_t disable_uninit_bg(ext2_filsys fs, __u32 csum_feature_flag)
 {
 	struct ext2_group_desc *gd;
@@ -1147,6 +1212,56 @@ static int update_feature_set(ext2_filsys fs, char *features)
 			if (remove_journal_device(fs))
 				return 1;
 		}
+	}
+
+	if (FEATURE_OFF(E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_ORPHAN_FILE)) {
+		ext2_ino_t ino;
+
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("The orphan_file feature may only be cleared "
+				"when the filesystem is unmounted.\n"), stderr);
+			return 1;
+		}
+		if (ext2fs_has_feature_orphan_present(sb) && f_flag < 2) {
+			fputs(_("The orphan_present feature is set. Please "
+				"run e2fsck before clearing orphan_file "
+				"feature.\n"),
+			      stderr);
+			return 1;
+		}
+		err = ext2fs_read_bitmaps(fs);
+		if (err) {
+			com_err(program_name, err, "%s",
+				_("while loading bitmaps"));
+			return 1;
+		}
+		err = ext2fs_truncate_orphan_file(fs);
+		if (err) {
+			com_err(program_name, err,
+				_("\n\twhile trying to delete orphan file\n"));
+			return 1;
+		}
+		ino = sb->s_orphan_file_inum;
+		sb->s_orphan_file_inum = 0;
+		ext2fs_inode_alloc_stats2(fs, ino, -1, 0);
+		ext2fs_clear_feature_orphan_file(sb);
+		ext2fs_clear_feature_orphan_present(sb);
+		ext2fs_mark_super_dirty(fs);
+	}
+
+	if (FEATURE_ON(E2P_FEATURE_COMPAT, EXT4_FEATURE_COMPAT_ORPHAN_FILE)) {
+		if (!ext2fs_has_feature_journal(sb)) {
+			fputs(_("orphan_file feature can be set only for "
+				"filesystems with journal.\n"), stderr);
+			return 1;
+		}
+		/*
+		 * If adding an orphan file, let the create orphan file
+		 * code below handle setting the flag and creating it.
+		 * We supply a default size if necessary.
+		 */
+		orphan_file_blocks = ext2fs_default_orphan_file_blocks(fs);
+		ext2fs_set_feature_orphan_file(sb);
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
@@ -1491,6 +1606,22 @@ mmp_error:
 		fs->super->s_encoding = EXT4_ENC_UTF8_12_1;
 		fs->super->s_encoding_flags = e2p_get_encoding_flags(EXT4_ENC_UTF8_12_1);
 		enabling_casefold = 1;
+	}
+
+	if (FEATURE_OFF(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_CASEFOLD)) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			fputs(_("The casefold feature may only be disabled when "
+				"the filesystem is unmounted.\n"), stderr);
+			return 1;
+		}
+		if (has_casefold_inode(fs)) {
+			fputs(_("The casefold feature can't be cleared when "
+					"there are inodes with +F flag.\n"), stderr);
+			return 1;
+		}
+		fs->super->s_encoding = 0;
+		fs->super->s_encoding_flags = 0;
+		enabling_casefold = 0;
 	}
 
 	if (FEATURE_ON(E2P_FEATURE_INCOMPAT,
@@ -2041,7 +2172,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 				open_flag = EXT2_FLAG_RW;
 				break;
 		case 'U':
-			new_UUID = optarg;
+			requested_uuid = optarg;
 			U_flag = 1;
 			open_flag = EXT2_FLAG_RW |
 				EXT2_FLAG_JOURNAL_DEV_OK;
@@ -2273,6 +2404,21 @@ static int parse_extended_opts(ext2_filsys fs, const char *opts)
 				continue;
 			}
 			encoding_flags = arg;
+		} else if (!strcmp(token, "orphan_file_size")) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			orphan_file_blocks = parse_num_blocks2(arg,
+						 fs->super->s_log_block_size);
+
+			if (orphan_file_blocks < 1) {
+				fprintf(stderr,
+					_("Invalid size of orphan file %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
 		} else
 			r_usage++;
 	}
@@ -2933,6 +3079,80 @@ fs_update_journal_user(struct ext2_super_block *sb, __u8 old_uuid[UUID_SIZE])
 	return 0;
 }
 
+/*
+ * Use FS_IOC_SETFSLABEL or FS_IOC_GETFSLABEL to set/get file system label
+ * Return:	0 on success
+ *		1 on error
+ *		-1 when the old method should be used
+ */
+static int handle_fslabel(int setlabel)
+{
+#ifdef __linux__
+	errcode_t ret;
+	int mnt_flags, fd;
+	char label[FSLABEL_MAX];
+	int maxlen = FSLABEL_MAX - 1;
+	char mntpt[PATH_MAX + 1];
+
+	ret = ext2fs_check_mount_point(device_name, &mnt_flags,
+					  mntpt, sizeof(mntpt));
+	if (ret) {
+		com_err(device_name, ret, _("while checking mount status"));
+		return 1;
+	}
+	if (!(mnt_flags & EXT2_MF_MOUNTED) ||
+	    (setlabel && (mnt_flags & EXT2_MF_READONLY)))
+		return -1;
+
+	if (!mntpt[0]) {
+		fprintf(stderr,_("Unknown mount point for %s\n"), device_name);
+		return 1;
+	}
+
+	fd = open(mntpt, O_RDONLY);
+	if (fd < 0) {
+		com_err(mntpt, errno, _("while opening mount point"));
+		return 1;
+	}
+
+	/* Get fs label */
+	if (!setlabel) {
+		if (ioctl(fd, FS_IOC_GETFSLABEL, &label)) {
+			close(fd);
+			if (errno == ENOTTY)
+				return -1;
+			com_err(mntpt, errno, _("while trying to get fs label"));
+			return 1;
+		}
+		close(fd);
+		printf("%.*s\n", EXT2_LEN_STR(label));
+		return 0;
+	}
+
+	/* If it's extN file system, truncate the label to appropriate size */
+	if (mnt_flags & EXT2_MF_EXTFS)
+		maxlen = EXT2_LABEL_LEN;
+	if (strlen(new_label) > maxlen) {
+		fputs(_("Warning: label too long, truncating.\n"),
+		      stderr);
+		new_label[maxlen] = '\0';
+	}
+
+	/* Set fs label */
+	if (ioctl(fd, FS_IOC_SETFSLABEL, new_label)) {
+		close(fd);
+		if (errno == ENOTTY)
+			return -1;
+		com_err(mntpt, errno, _("while trying to set fs label"));
+		return 1;
+	}
+	close(fd);
+	return 0;
+#else
+	return -1;
+#endif
+}
+
 #ifndef BUILD_AS_LIB
 int main(int argc, char **argv)
 #else
@@ -2945,6 +3165,9 @@ int tune2fs_main(int argc, char **argv)
 	io_manager io_ptr, io_ptr_orig = NULL;
 	int rc = 0;
 	char default_undo_file[1] = { 0 };
+	char mntpt[PATH_MAX + 1] = { 0 };
+	int fd = -1;
+	struct fsuuid *fsuuid = NULL;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -2975,6 +3198,21 @@ int tune2fs_main(int argc, char **argv)
 	} else
 #endif
 		io_ptr = unix_io_manager;
+
+	/*
+	 * Try the get/set fs label using ioctls before we even attempt
+	 * to open the file system.
+	 */
+	if (L_flag || print_label) {
+		rc = handle_fslabel(L_flag);
+		if (rc != -1) {
+#ifndef BUILD_AS_LIB
+			exit(rc);
+#endif
+			return rc;
+		}
+		rc = 0;
+	}
 
 retry_open:
 	if ((open_flag & EXT2_FLAG_RW) == 0 || f_flag)
@@ -3079,9 +3317,10 @@ retry_open:
 		goto closefs;
 	}
 
-	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	retval = ext2fs_check_mount_point(device_name, &mount_flags,
+					mntpt, sizeof(mntpt));
 	if (retval) {
-		com_err("ext2fs_check_if_mount", retval,
+		com_err("ext2fs_check_mount_point", retval,
 			_("while determining whether %s is mounted."),
 			device_name);
 		rc = 1;
@@ -3261,6 +3500,24 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		if (rc)
 			goto closefs;
 	}
+	if (orphan_file_blocks) {
+		errcode_t err;
+
+		err = ext2fs_read_bitmaps(fs);
+		if (err) {
+			com_err(program_name, err, "%s",
+				_("while loading bitmaps"));
+			rc = 1;
+			goto closefs;
+		}
+		err = ext2fs_create_orphan_file(fs, orphan_file_blocks);
+		if (err) {
+			com_err(program_name, err, "%s",
+				_("while creating orphan file"));
+			rc = 1;
+			goto closefs;
+		}
+	}
 
 	if (Q_flag) {
 		if (mount_flags & EXT2_MF_MOUNTED) {
@@ -3279,6 +3536,8 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		dgrp_t i;
 		char buf[SUPERBLOCK_SIZE] __attribute__ ((aligned(8)));
 		__u8 old_uuid[UUID_SIZE];
+		uuid_t new_uuid;
+		errcode_t ret = -1;
 
 		if (ext2fs_has_feature_stable_inodes(fs->super)) {
 			fputs(_("Cannot change the UUID of this filesystem "
@@ -3332,25 +3591,62 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 				set_csum = 1;
 		}
 
-		memcpy(old_uuid, sb->s_uuid, UUID_SIZE);
-		if ((strcasecmp(new_UUID, "null") == 0) ||
-		    (strcasecmp(new_UUID, "clear") == 0)) {
-			uuid_clear(sb->s_uuid);
-		} else if (strcasecmp(new_UUID, "time") == 0) {
-			uuid_generate_time(sb->s_uuid);
-		} else if (strcasecmp(new_UUID, "random") == 0) {
-			uuid_generate(sb->s_uuid);
-		} else if (uuid_parse(new_UUID, sb->s_uuid)) {
+#ifdef __linux__
+		if ((mount_flags & EXT2_MF_MOUNTED) &&
+		    !(mount_flags & EXT2_MF_READONLY) && mntpt[0]) {
+			fd = open(mntpt, O_RDONLY);
+			if (fd >= 0)
+				fsuuid = malloc(sizeof(*fsuuid) + UUID_SIZE);
+			if (fsuuid) {
+				fsuuid->fsu_len = UUID_SIZE;
+				fsuuid->fsu_flags = 0;
+				ret = ioctl(fd, EXT4_IOC_GETFSUUID, fsuuid);
+				if (ret || fsuuid->fsu_len != UUID_SIZE) {
+					free(fsuuid);
+					fsuuid = NULL;
+				}
+			}
+		}
+#endif
+
+		memcpy(old_uuid, fsuuid ? fsuuid->fsu_uuid : sb->s_uuid,
+		       UUID_SIZE);
+		if ((strcasecmp(requested_uuid, "null") == 0) ||
+		    (strcasecmp(requested_uuid, "clear") == 0)) {
+			uuid_clear(new_uuid);
+		} else if (strcasecmp(requested_uuid, "time") == 0) {
+			uuid_generate_time(new_uuid);
+		} else if (strcasecmp(requested_uuid, "random") == 0) {
+			uuid_generate(new_uuid);
+		} else if (uuid_parse(requested_uuid, new_uuid)) {
 			com_err(program_name, 0, "%s",
 				_("Invalid UUID format\n"));
 			rc = 1;
 			goto closefs;
 		}
-		ext2fs_init_csum_seed(fs);
-		if (set_csum) {
-			for (i = 0; i < fs->group_desc_count; i++)
-				ext2fs_group_desc_csum_set(fs, i);
-			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+
+		ret = -1;
+#ifdef __linux__
+		if (fsuuid) {
+			fsuuid->fsu_len = UUID_SIZE;
+			fsuuid->fsu_flags = 0;
+			memcpy(&fsuuid->fsu_uuid, new_uuid, UUID_SIZE);
+			ret = ioctl(fd, EXT4_IOC_SETFSUUID, fsuuid);
+		}
+#endif
+		/*
+		 * If we can't set the UUID via the ioctl, fall
+		 * back to directly modifying the superblock
+		 .*/
+		if (ret) {
+			memcpy(sb->s_uuid, new_uuid, UUID_SIZE);
+			ext2fs_init_csum_seed(fs);
+			if (set_csum) {
+				for (i = 0; i < fs->group_desc_count; i++)
+					ext2fs_group_desc_csum_set(fs, i);
+				fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+			}
+			ext2fs_mark_super_dirty(fs);
 		}
 
 		/* If this is a journal dev, we need to copy UUID into jsb */
@@ -3374,8 +3670,6 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 			if ((rc = fs_update_journal_user(sb, old_uuid)))
 				goto closefs;
 		}
-
-		ext2fs_mark_super_dirty(fs);
 	}
 
 	if (I_flag) {
@@ -3450,6 +3744,10 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	remove_error_table(&et_ext2_error_table);
 
 closefs:
+	if (fd >= 0)
+		close(fd);
+	if (fsuuid)
+		free(fsuuid);
 	if (rc) {
 		ext2fs_mmp_stop(fs);
 #ifndef BUILD_AS_LIB

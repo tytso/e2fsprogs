@@ -526,6 +526,26 @@ static struct e2fsck_problem problem_table[] = {
 	     "not compatible. Resize @i should be disabled.  "),
 	  PROMPT_FIX, 0, 0, 0, 0 },
 
+	/* Orphan file contains holes */
+	{ PR_0_ORPHAN_FILE_HOLE,
+	  N_("Orphan file (@i %i) contains hole at @b %b. Terminating orphan file recovery.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Orphan file block has wrong magic */
+	{ PR_0_ORPHAN_FILE_BAD_MAGIC,
+	  N_("Orphan file (@i %i) @b %b contains wrong magic. Terminating orphan file recovery.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Orphan file block has wrong checksum */
+	{ PR_0_ORPHAN_FILE_BAD_CHECKSUM,
+	  N_("Orphan file (@i %i) @b %b contains wrong checksum. Terminating orphan file recovery.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Orphan file size isn't multiple of blocks size */
+	{ PR_0_ORPHAN_FILE_WRONG_SIZE,
+	  N_("Orphan file (@i %i) size is not multiple of block size. Terminating orphan file recovery.\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */
@@ -1279,6 +1299,15 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@h %i uses SipHash, but should not.  "),
 	  PROMPT_CLEAR_HTREE, PR_PREEN_OK, 0, 0, 0 },
 
+	/* Orphan file has bad mode */
+	{ PR_1_ORPHAN_FILE_BAD_MODE,
+	  N_("Orphan file @i %i is not regular file.  "),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Orphan file inode is not in use, but contains data */
+	{ PR_1_ORPHAN_FILE_NOT_CLEAR,
+	  N_("Orphan file @i %i is not in use, but contains data.  "),
+	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Pass 1b errors */
 
@@ -2264,6 +2293,56 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_6_WRITE_QUOTAS,
 	  N_("Error writing quota info for quota type %N: %m\n"),
 	  PROMPT_NULL, 0, 0, 0, 0 },
+
+	/* Orphan file without a journal */
+	{ PR_6_ORPHAN_FILE_WITHOUT_JOURNAL,
+	  N_("@S has orphan file without @j.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Orphan file truncation failed */
+	{ PR_6_ORPHAN_FILE_TRUNC_FAILED,
+	  N_("Failed to truncate orphan file.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Failed to initialize orphan file */
+	{ PR_6_ORPHAN_FILE_CORRUPTED,
+	  N_("Failed to initialize orphan file.\n"),
+	  PROMPT_RECREATE, PR_PREEN_OK },
+
+	/* Cannot fix corrupted orphan file with invalid bitmaps */
+	{ PR_6_ORPHAN_FILE_BITMAP_INVALID,
+	  N_("Cannot fix corrupted orphan file with invalid bitmaps.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Orphan file creation failed */
+	{ PR_6_ORPHAN_FILE_CREATE_FAILED,
+	  N_("Failed to truncate orphan file (@i %i).\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Orphan file block contains data */
+	{ PR_6_ORPHAN_BLOCK_DIRTY,
+	  N_("Orphan file (@i %i) @b %b is not clean.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* orphan_present set but orphan file is empty */
+	{ PR_6_ORPHAN_PRESENT_CLEAN_FILE,
+	  N_("Feature orphan_present is set but orphan file is clean.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* orphan_present set but orphan_file is not */
+	{ PR_6_ORPHAN_PRESENT_NO_FILE,
+	  N_("Feature orphan_present is set but feature orphan_file is not.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Orphan file size isn't multiple of blocks size */
+	{ PR_6_ORPHAN_FILE_WRONG_SIZE,
+	  N_("Orphan file (@i %i) size is not multiple of block size.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Orphan file contains holes */
+	{ PR_6_ORPHAN_FILE_HOLE,
+	  N_("Orphan file (@i %i) contains hole at @b %b.\n"),
+	  PROMPT_NONE, 0 },
 
 	{ 0 }
 };

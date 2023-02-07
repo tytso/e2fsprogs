@@ -532,6 +532,7 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
 #define EXT2_MF_READONLY	4
 #define EXT2_MF_SWAP		8
 #define EXT2_MF_BUSY		16
+#define EXT2_MF_EXTFS		32
 
 /*
  * Ext2/linux mode flags.  We define them here so that we don't need
@@ -633,7 +634,8 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT2_FEATURE_COMPAT_EXT_ATTR|\
 					 EXT4_FEATURE_COMPAT_SPARSE_SUPER2|\
 					 EXT4_FEATURE_COMPAT_FAST_COMMIT|\
-					 EXT4_FEATURE_COMPAT_STABLE_INODES)
+					 EXT4_FEATURE_COMPAT_STABLE_INODES|\
+					 EXT4_FEATURE_COMPAT_ORPHAN_FILE)
 
 #ifdef CONFIG_MMP
 #define EXT4_LIB_INCOMPAT_MMP		EXT4_FEATURE_INCOMPAT_MMP
@@ -668,7 +670,8 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT4_FEATURE_RO_COMPAT_READONLY |\
 					 EXT4_FEATURE_RO_COMPAT_PROJECT |\
 					 EXT4_FEATURE_RO_COMPAT_SHARED_BLOCKS |\
-					 EXT4_FEATURE_RO_COMPAT_VERITY)
+					 EXT4_FEATURE_RO_COMPAT_VERITY |\
+					 EXT4_FEATURE_RO_COMPAT_ORPHAN_PRESENT)
 
 /*
  * These features are only allowed if EXT2_FLAG_SOFTSUPP_FEATURES is passed
@@ -1295,6 +1298,8 @@ extern errcode_t ext2fs_adjust_ea_refcount3(ext2_filsys fs, blk64_t blk,
 					   ext2_ino_t inum);
 errcode_t ext2fs_xattrs_write(struct ext2_xattr_handle *handle);
 errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle);
+errcode_t ext2fs_xattrs_read_inode(struct ext2_xattr_handle *handle,
+				   struct ext2_inode_large *inode);
 errcode_t ext2fs_xattrs_iterate(struct ext2_xattr_handle *h,
 				int (*func)(char *name, char *value,
 					    size_t value_len, void *data),
@@ -1706,6 +1711,19 @@ errcode_t ext2fs_get_data_io(ext2_filsys fs, io_channel *old_io);
 errcode_t ext2fs_set_data_io(ext2_filsys fs, io_channel new_io);
 errcode_t ext2fs_rewrite_to_io(ext2_filsys fs, io_channel new_io);
 
+/* orphan.c */
+extern errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks);
+extern errcode_t ext2fs_truncate_orphan_file(ext2_filsys fs);
+extern e2_blkcnt_t ext2fs_default_orphan_file_blocks(ext2_filsys fs);
+extern __u32 ext2fs_do_orphan_file_block_csum(ext2_filsys fs, ext2_ino_t ino,
+					      __u32 gen, blk64_t blk,
+					      char *buf);
+extern errcode_t ext2fs_orphan_file_block_csum_set(ext2_filsys fs,
+						   ext2_ino_t ino, blk64_t blk,
+						   char *buf);
+extern int ext2fs_orphan_file_block_csum_verify(ext2_filsys fs, ext2_ino_t ino,
+						blk64_t blk, char *buf);
+
 /* get_pathname.c */
 extern errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino,
 			       char **name);
@@ -1859,7 +1877,9 @@ extern int ext2fs_dirent_file_type(const struct ext2_dir_entry *entry);
 extern void ext2fs_dirent_set_file_type(struct ext2_dir_entry *entry, int type);
 extern struct ext2_inode *ext2fs_inode(struct ext2_inode_large * large_inode);
 extern const struct ext2_inode *ext2fs_const_inode(const struct ext2_inode_large * large_inode);
-
+extern int ext2fs_inodes_per_orphan_block(ext2_filsys fs);
+extern struct ext4_orphan_block_tail *ext2fs_orphan_block_tail(ext2_filsys fs,
+							       char *buf);
 #endif
 
 /*
@@ -2167,6 +2187,19 @@ ext2fs_const_inode(const struct ext2_inode_large * large_inode)
 {
 	/* It is always safe to convert large inode to a small inode */
 	return (const struct ext2_inode *) large_inode;
+}
+
+_INLINE_ int ext2fs_inodes_per_orphan_block(ext2_filsys fs)
+{
+	return (fs->blocksize - sizeof(struct ext4_orphan_block_tail)) /
+		sizeof(__u32);
+}
+
+_INLINE_ struct ext4_orphan_block_tail *
+ext2fs_orphan_block_tail(ext2_filsys fs, char *buf)
+{
+	return (struct ext4_orphan_block_tail *)(buf + fs->blocksize -
+		sizeof(struct ext4_orphan_block_tail));
 }
 
 #undef _INLINE_

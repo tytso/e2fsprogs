@@ -1446,7 +1446,8 @@ skip_checksum:
 		    (dirent->inode > fs->super->s_inodes_count) ||
 		    (dirent->inode == fs->super->s_usr_quota_inum) ||
 		    (dirent->inode == fs->super->s_grp_quota_inum) ||
-		    (dirent->inode == fs->super->s_prj_quota_inum)) {
+		    (dirent->inode == fs->super->s_prj_quota_inum) ||
+		    (dirent->inode == fs->super->s_orphan_file_inum)) {
 			problem = PR_2_BAD_INO;
 		} else if (ctx->inode_bb_map &&
 			   (ext2fs_test_inode_bitmap2(ctx->inode_bb_map,

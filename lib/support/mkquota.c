@@ -509,7 +509,8 @@ errcode_t quota_compute_usage(quota_ctx_t qctx)
 			continue;
 		if (ino == EXT2_ROOT_INO ||
 		    (ino >= EXT2_FIRST_INODE(fs->super) &&
-		     ino != quota_type2inum(PRJQUOTA, fs->super))) {
+		     ino != quota_type2inum(PRJQUOTA, fs->super) &&
+		     ino != fs->super->s_orphan_file_inum)) {
 			space = ext2fs_get_stat_i_blocks(fs,
 						EXT2_INODE(inode)) << 9;
 			quota_data_add(qctx, inode, ino, space);

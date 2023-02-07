@@ -365,6 +365,13 @@ small risk if the system crashes before the journal has been overwritten
 entirely one time.  If the option value is omitted, it defaults to 1 to
 enable lazy journal inode zeroing.
 .TP
+.B assume_storage_prezeroed\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
+If enabled,
+.BR mke2fs
+assumes that the storage device has been prezeroed, skips zeroing the journal
+and inode tables, and annotates the block group flags to signal that the inode
+table has been zeroed.
+.TP
 .B no_copy_xattrs
 Normally
 .B mke2fs
@@ -402,6 +409,11 @@ file system to change based on the user running \fBmke2fs\fR.
 .B test_fs
 Set a flag in the file system superblock indicating that it may be
 mounted using experimental kernel code, such as the ext4dev file system.
+.TP
+.BI orphan_file_size= size
+Set size of the file for tracking unlinked but still open inodes and inodes
+with truncate in progress. Larger file allows for better scalability, reserving
+a few blocks per cpu is ideal.
 .TP
 .B discard
 Attempt to discard blocks at mkfs time (discarding blocks initially is useful

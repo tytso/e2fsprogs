@@ -610,10 +610,10 @@ static void ext4_fc_flush_extents(e2fsck_t ctx, ext2_ino_t ino)
 
 /* Helper struct for dentry replay routines */
 struct dentry_info_args {
-	ext2_ino_t parent_ino;
-	int dname_len;
-	ext2_ino_t ino;
-	char *dname;
+	ext2_ino_t	parent_ino;
+	ext2_ino_t	ino;
+	int		dname_len;
+	char		*dname;
 };
 
 static inline int tl_to_darg(struct dentry_info_args *darg,

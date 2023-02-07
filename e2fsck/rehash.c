@@ -89,9 +89,9 @@ struct fill_dir_struct {
 };
 
 struct hash_entry {
-	ext2_dirhash_t	hash;
-	ext2_dirhash_t	minor_hash;
-	ext2_ino_t	ino;
+	ext2_dirhash_t		hash;
+	ext2_dirhash_t		minor_hash;
+	ext2_ino_t		ino;
 	struct ext2_dir_entry	*dir;
 };
 
