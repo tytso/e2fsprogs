@@ -27,6 +27,10 @@ jobs:
     - run: make -j8 check V=1 CFLAGS_WARN="-Werror"
     - run: make -j8 install V=1 DESTDIR=$PWD/installdir
     - run: make -j8 uninstall V=1 DESTDIR=$PWD/installdir
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ubuntu-config.h
+        path: lib/config.h
 
   i386-build-and-test:
     name: Build and test with gcc -m32
@@ -79,6 +83,10 @@ jobs:
     - run: make -j8 check V=1 CFLAGS_WARN="-Werror -Wno-error=deprecated-declarations"
     - run: make -j8 install DESTDIR=$PWD/installdir
     - run: make -j8 uninstall DESTDIR=$PWD/installdir
+    - uses: actions/upload-artifact@v3
+      with:
+        name: macOS-config.h
+        path: lib/config.h
 
   windows-msys2-build:
     name: Build mke2fs on Windows with ${{matrix.sys}}
@@ -114,3 +122,7 @@ jobs:
     - run: make -j8 -C misc/ mke2fs V=1 CFLAGS_WARN="-Werror"
     - run: touch image.ext4
     - run: misc/mke2fs.exe -T ext4 image.ext4 128M
+    - uses: actions/upload-artifact@v3
+      with:
+        name: windows-${{matrix.env}}-config.h
+        path: lib/config.h
