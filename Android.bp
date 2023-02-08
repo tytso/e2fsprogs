@@ -63,8 +63,8 @@ cc_defaults {
             ],
         },
         darwin: {
-            // Still has unfixed/unsuppressed warnings.
-            cflags: ["-Wno-error"],
+            // This matches what the upstream CI uses
+            cflags: ["-Wno-error=deprecated-declarations"],
         },
         windows: {
             include_dirs: ["external/e2fsprogs/include/mingw"],
