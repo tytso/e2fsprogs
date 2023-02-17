@@ -789,6 +789,8 @@ errcode_t ext2fs_run_ext3_journal(ext2_filsys *fsp)
 	char *fsname;
 	int fsflags;
 	int fsblocksize;
+	char *save;
+	__u16 s_error_state;
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_FILE_RO;
@@ -808,6 +810,12 @@ errcode_t ext2fs_run_ext3_journal(ext2_filsys *fsp)
 	if (stats && stats->bytes_written)
 		kbytes_written = stats->bytes_written >> 10;
 
+	save = malloc(EXT4_S_ERR_LEN);
+	if (save)
+		memcpy(save, ((char *) fs->super) + EXT4_S_ERR_START,
+		       EXT4_S_ERR_LEN);
+	s_error_state = fs->super->s_state & EXT2_ERROR_FS;
+
 	ext2fs_mmp_stop(fs);
 	fsname = fs->device_name;
 	fs->device_name = NULL;
@@ -818,11 +826,15 @@ errcode_t ext2fs_run_ext3_journal(ext2_filsys *fsp)
 	retval = ext2fs_open(fsname, fsflags, 0, fsblocksize, io_ptr, fsp);
 	ext2fs_free_mem(&fsname);
 	if (retval)
-		return retval;
+		goto outfree;
 
 	fs = *fsp;
 	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 	fs->super->s_kbytes_written += kbytes_written;
+	fs->super->s_state |= s_error_state;
+	if (save)
+		memcpy(((char *) fs->super) + EXT4_S_ERR_START, save,
+		       EXT4_S_ERR_LEN);
 
 	/* Set the superblock flags */
 	ext2fs_clear_recover(fs, recover_retval != 0);
@@ -832,6 +844,9 @@ errcode_t ext2fs_run_ext3_journal(ext2_filsys *fsp)
 	 * the EXT2_ERROR_FS flag in the fs superblock if needed.
 	 */
 	retval = ext2fs_check_ext3_journal(fs);
+
+outfree:
+	free(save);
 	return retval ? retval : recover_retval;
 }
 
