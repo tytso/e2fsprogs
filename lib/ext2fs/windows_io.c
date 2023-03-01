@@ -857,17 +857,6 @@ static errcode_t windows_write_byte(io_channel channel, unsigned long offset,
 	return EXT2_ET_UNIMPLEMENTED;
 }
 
-HANDLE windows_get_handle(io_channel channel)
-{
-	struct windows_private_data *data;
-
-	EXT2_CHECK_MAGIC_RETURN(channel, EXT2_ET_MAGIC_IO_CHANNEL, INVALID_HANDLE_VALUE);
-	data = (struct windows_private_data *) channel->private_data;
-	EXT2_CHECK_MAGIC_RETURN(data, EXT2_ET_MAGIC_WINDOWS_IO_CHANNEL, INVALID_HANDLE_VALUE);
-
-	return data->handle;
-}
-
 /*
  * Flush data buffers to disk.
  */
