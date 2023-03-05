@@ -1,3 +1,10 @@
+e2fsprogs (1.47.0-2) unstable; urgency=medium
+
+  * Don't enable metadata_csum_seed and orhpan_file by default (Closes:
+    #1031622, #1030939)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 04 Mar 2023 22:16:08 -0500
+
 e2fsprogs (1.47.0-1) unstable; urgency=medium
 
   * New upstream version
