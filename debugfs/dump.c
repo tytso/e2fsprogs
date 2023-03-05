@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include <utime.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -67,45 +68,64 @@ static mode_t mode_xlate(__u16 lmode)
 	return mode;
 }
 
-static void fix_perms(const char *cmd, const struct ext2_inode *inode,
-		      int fd, const char *name)
+static void fix_attrs(const char *cmd, const struct ext2_inode *inode,
+		      int fd, const char *name, int preserve)
 {
-	struct utimbuf ut;
 	int i;
 
-	if (fd != -1)
-		i = fchmod(fd, mode_xlate(inode->i_mode));
-	else
-		i = chmod(name, mode_xlate(inode->i_mode));
-	if (i == -1)
-		com_err(cmd, errno, "while setting permissions of %s", name);
-
-#ifndef HAVE_FCHOWN
-	i = chown(name, inode_uid(*inode), inode_gid(*inode));
+#ifndef HAVE_UTIMENSAT
+	i = utime(name, &((struct utimbuf) {
+			.actime = inode->i_atime,
+			.modtime = inode->i_mtime
+		}));
 #else
-	if (fd != -1)
-		i = fchown(fd, inode_uid(*inode), inode_gid(*inode));
-	else
-		i = chown(name, inode_uid(*inode), inode_gid(*inode));
+	i = utimensat(AT_FDCWD, name, (struct timespec []) {
+			[0] = { .tv_sec = inode->i_atime },
+			[1] = { .tv_sec = inode->i_mtime }
+		}, AT_SYMLINK_NOFOLLOW);
 #endif
 	if (i == -1)
-		com_err(cmd, errno, "while changing ownership of %s", name);
-
-	ut.actime = inode->i_atime;
-	ut.modtime = inode->i_mtime;
-	if (utime(name, &ut) == -1)
 		com_err(cmd, errno, "while setting times of %s", name);
+
+	if (!S_ISLNK(inode->i_mode)) {
+		if (fd != -1) {
+			if (preserve)
+				i = fchmod(fd, mode_xlate(inode->i_mode));
+			else
+				i = fchmod(fd, mode_xlate(inode->i_mode) & ~umask(0));
+		} else {
+			if (preserve)
+				i = chmod(name, mode_xlate(inode->i_mode));
+			else
+				i = chmod(name, mode_xlate(inode->i_mode) & ~umask(0));
+		}
+		if (i == -1)
+			com_err(cmd, errno, "while setting permissions of %s", name);
+	}
+
+	if (preserve) {
+#ifndef HAVE_FCHOWN
+		i = lchown(name, inode_uid(*inode), inode_gid(*inode));
+#else
+		if (fd != -1)
+			i = fchown(fd, inode_uid(*inode), inode_gid(*inode));
+		else
+			i = lchown(name, inode_uid(*inode), inode_gid(*inode));
+#endif
+		if (i == -1)
+			com_err(cmd, errno, "while changing ownership of %s", name);
+	}
 }
 
 static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
-		      int preserve, char *outname)
+		      char *outname, int preserve)
 {
 	errcode_t retval;
-	struct ext2_inode	inode;
-	char		*buf = 0;
-	ext2_file_t	e2_file;
-	int		nbytes;
-	unsigned int	got, blocksize = current_fs->blocksize;
+	struct ext2_inode inode;
+	char *buf = 0;
+	ext2_file_t e2_file;
+	int nbytes;
+	unsigned int got, blocksize = current_fs->blocksize;
 
 	if (debugfs_read_inode(ino, &inode, cmdname))
 		return;
@@ -138,8 +158,9 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 		return;
 	}
 
-	if (preserve)
-		fix_perms("dump_file", &inode, fd, outname);
+	/* Don't touch attributes if fd is stdout (for cat command) */
+	if (fd != 1)
+		fix_attrs("dump_file", &inode, fd, outname, preserve);
 
 	return;
 }
@@ -147,11 +168,11 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 void do_dump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 	     void *infop EXT2FS_ATTR((unused)))
 {
-	ext2_ino_t	inode;
-	int		fd;
-	int		c;
-	int		preserve = 0;
-	char		*in_fn, *out_fn;
+	ext2_ino_t inode;
+	int fd;
+	int c;
+	int preserve = 0;
+	char *in_fn, *out_fn;
 
 	reset_getopt();
 	while ((c = getopt (argc, argv, "p")) != EOF) {
@@ -186,7 +207,7 @@ void do_dump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		return;
 	}
 
-	dump_file(argv[0], inode, fd, preserve, out_fn);
+	dump_file(argv[0], inode, fd, out_fn, preserve);
 	if (close(fd) != 0) {
 		com_err(argv[0], errno, "while closing %s for dump_inode",
 			out_fn);
@@ -197,7 +218,7 @@ void do_dump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 }
 
 static void rdump_symlink(ext2_ino_t ino, struct ext2_inode *inode,
-			  const char *fullname)
+			  const char *fullname, int preserve)
 {
 	ext2_file_t e2_file;
 	char *buf;
@@ -242,14 +263,21 @@ static void rdump_symlink(ext2_ino_t ino, struct ext2_inode *inode,
 		goto errout;
 	}
 
+	fix_attrs("rdump_symlink", inode, -1, fullname, preserve);
+
 errout:
 	free(buf);
 }
 
+struct rdump_dirctx {
+	const char *dumproot;
+	int preserve;
+};
+
 static int rdump_dirent(struct ext2_dir_entry *, int, int, char *, void *);
 
 static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
-			const char *name, const char *dumproot)
+			const char *name, const char *dumproot, int preserve)
 {
 	char *fullname;
 
@@ -263,7 +291,7 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 	sprintf(fullname, "%s/%s", dumproot, name);
 
 	if (LINUX_S_ISLNK(inode->i_mode))
-		rdump_symlink(ino, inode, fullname);
+		rdump_symlink(ino, inode, fullname, preserve);
 	else if (LINUX_S_ISREG(inode->i_mode)) {
 		int fd;
 		fd = open(fullname, O_WRONLY | O_CREAT | O_TRUNC | O_LARGEFILE, S_IRWXU);
@@ -271,7 +299,7 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 			com_err("rdump", errno, "while opening %s", fullname);
 			goto errout;
 		}
-		dump_file("rdump", ino, fd, 1, fullname);
+		dump_file("rdump", ino, fd, fullname, preserve);
 		if (close(fd) != 0) {
 			com_err("rdump", errno, "while closing %s", fullname);
 			goto errout;
@@ -279,6 +307,10 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 	}
 	else if (LINUX_S_ISDIR(inode->i_mode) && strcmp(name, ".") && strcmp(name, "..")) {
 		errcode_t retval;
+		struct rdump_dirctx ctx = {
+			.dumproot = fullname,
+			.preserve = preserve
+		};
 
 		/* Create the directory with 0700 permissions, because we
 		 * expect to have to create entries it.  Then fix its perms
@@ -289,11 +321,11 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 		}
 
 		retval = ext2fs_dir_iterate(current_fs, ino, 0, 0,
-					    rdump_dirent, (void *) fullname);
+					    rdump_dirent, (void *) &ctx);
 		if (retval)
 			com_err("rdump", retval, "while dumping %s", fullname);
 
-		fix_perms("rdump", inode, -1, fullname);
+		fix_attrs("rdump", inode, -1, fullname, preserve);
 	}
 	/* else do nothing (don't dump device files, sockets, fifos, etc.) */
 
@@ -308,7 +340,9 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 {
 	char name[EXT2_NAME_LEN + 1];
 	int thislen;
-	const char *dumproot = private;
+	struct rdump_dirctx *ctx = private;
+	const char *dumproot = ctx->dumproot;
+	int preserve = ctx->preserve;
 	struct ext2_inode inode;
 
 	thislen = ext2fs_dirent_name_len(dirent);
@@ -318,7 +352,7 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 	if (debugfs_read_inode(dirent->inode, &inode, name))
 		return 0;
 
-	rdump_inode(dirent->inode, &inode, name, dumproot);
+	rdump_inode(dirent->inode, &inode, name, dumproot, preserve);
 
 	return 0;
 }
@@ -328,10 +362,28 @@ void do_rdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 {
 	struct stat st;
 	char *dest_dir;
+	int preserve = 0;
+	int c;
 	int i;
 
-	if (common_args_process(argc, argv, 3, INT_MAX, "rdump",
-				"<directory>... <native directory>", 0))
+	reset_getopt();
+	while ((c = getopt (argc, argv, "p")) != EOF) {
+		switch (c) {
+		case 'p':
+			preserve++;
+			break;
+		default:
+		print_usage:
+			com_err(argv[0], 0, "Usage: rdump [-p] "
+				"<directory>... <native directory>");
+			return;
+		}
+	}
+
+	argc -= optind;
+	argv += optind;
+	if (common_args_process(argc, argv, 2, INT_MAX, "rdump",
+				"[-p] <directory>... <native directory>", 0))
 		return;
 
 	/* Pull out last argument */
@@ -348,7 +400,7 @@ void do_rdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		return;
 	}
 
-	for (i = 1; i < argc; i++) {
+	for (i = 0; i < argc; i++) {
 		char *arg = argv[i], *basename;
 		struct ext2_inode inode;
 		ext2_ino_t ino = string_to_inode(arg);
@@ -364,21 +416,21 @@ void do_rdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 		else
 			basename = arg;
 
-		rdump_inode(ino, &inode, basename, dest_dir);
+		rdump_inode(ino, &inode, basename, dest_dir, preserve);
 	}
 }
 
 void do_cat(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 	    void *infop EXT2FS_ATTR((unused)))
 {
-	ext2_ino_t	inode;
+	ext2_ino_t inode;
 
 	if (common_inode_args_process(argc, argv, &inode, 0))
 		return;
 
 	fflush(stdout);
 	fflush(stderr);
-	dump_file(argv[0], inode, 1, 0, argv[2]);
+	dump_file(argv[0], inode, 1, argv[2], 0);
 
 	return;
 }
