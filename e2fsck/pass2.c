@@ -1341,7 +1341,18 @@ skip_checksum:
 			    (rec_len < min_dir_len) ||
 			    ((rec_len % 4) != 0) ||
 			    ((ext2fs_dir_rec_len(ext2fs_dirent_name_len(dirent),
-						 extended)) > rec_len)) {
+						 extended)) > rec_len))
+				problem = PR_2_DIR_CORRUPTED;
+			if (problem) {
+				if ((offset == 0) &&
+				    (rec_len == fs->blocksize) &&
+				    (dirent->inode == 0) &&
+				    e2fsck_dir_will_be_rehashed(ctx, ino)) {
+					problem = 0;
+					max_block_size = fs->blocksize;
+				}
+			}
+			if (problem) {
 				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
 						&cd->pctx)) {
 #ifdef WORDS_BIGENDIAN
@@ -1573,7 +1584,8 @@ skip_checksum:
 		 */
 		if (!(ctx->flags & E2F_FLAG_RESTART_LATER) &&
 		    !(ext2fs_test_inode_bitmap2(ctx->inode_used_map,
-						dirent->inode)))
+						dirent->inode))
+			)
 			problem = PR_2_UNUSED_INODE;
 
 		if (problem) {
