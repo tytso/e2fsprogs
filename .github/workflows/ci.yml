@@ -126,3 +126,36 @@ jobs:
       with:
         name: windows-${{matrix.env}}-config.h
         path: lib/config.h
+
+  # Jobs that cross-compile e2fsprogs for Android using the Android NDK.  Note
+  # that these use the autotools-based build system, which makes them a bit
+  # different from the actual Android builds from the Android source tree.
+  cross-compile-for-android:
+    name: Cross-compile for Android (${{matrix.arch}})
+    strategy:
+      matrix:
+        include:
+        - { arch: aarch64, target: aarch64-linux-android }
+        - { arch: armv7a, target: armv7a-linux-androideabi }
+        - { arch: i686, target: i686-linux-android }
+        - { arch: x86_64, target: x86_64-linux-android }
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    # See https://developer.android.com/ndk/guides/other_build_systems#autoconf
+    - name: configure
+      run: |
+        TOOLCHAIN=$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64
+        API_LEVEL=29 # Android 10
+        export AR=$TOOLCHAIN/bin/llvm-ar
+        export CC=$TOOLCHAIN/bin/${{matrix.target}}${API_LEVEL}-clang
+        export AS=$CC
+        export LD=$TOOLCHAIN/bin/ld
+        export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
+        export STRIP=$TOOLCHAIN/bin/llvm-strip
+        ./configure --host=${{matrix.target}} CFLAGS="$DEF_CFLAGS"
+    - run: make -j8 V=1 CFLAGS_WARN="-Werror"
+    - uses: actions/upload-artifact@v3
+      with:
+        name: android-${{matrix.arch}}-config.h
+        path: lib/config.h
