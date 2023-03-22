@@ -8678,7 +8678,7 @@ else $as_nop
       *-*-aix*)
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#if defined __powerpc64__ || defined _ARCH_PPC64
+#if defined __powerpc64__ || defined __LP64__
                 int ok;
                #else
                 error fail
@@ -8969,7 +8969,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
            # be generating 64-bit code.
            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#if defined __powerpc64__ || defined _ARCH_PPC64
+#if defined __powerpc64__ || defined __LP64__
                    int ok;
                   #else
                    error fail
@@ -9076,7 +9076,7 @@ then :
 else $as_nop
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#ifdef __ELF__
+#if defined __ELF__ || (defined __linux__ && defined __EDG__)
         Extensible Linking Format
         #endif
 
@@ -9094,7 +9094,7 @@ rm -rf conftest*
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $gl_cv_elf" >&5
 printf "%s\n" "$gl_cv_elf" >&6; }
-  if test $gl_cv_elf; then
+  if test $gl_cv_elf = yes; then
     # Extract the ELF class of a file (5th byte) in decimal.
     # Cf. https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header
     if od -A x < /dev/null >/dev/null 2>/dev/null; then
@@ -9111,19 +9111,22 @@ printf "%s\n" "$gl_cv_elf" >&6; }
         echo
       }
     fi
+    # Use 'expr', not 'test', to compare the values of func_elfclass, because on
+    # Solaris 11 OpenIndiana and Solaris 11 OmniOS, the result is 001 or 002,
+    # not 1 or 2.
     case $HOST_CPU_C_ABI_32BIT in
       yes)
         # 32-bit ABI.
         acl_is_expected_elfclass ()
         {
-          test "`func_elfclass | sed -e 's/[ 	]//g'`" = 1
+          expr "`func_elfclass | sed -e 's/[ 	]//g'`" = 1 > /dev/null
         }
         ;;
       no)
         # 64-bit ABI.
         acl_is_expected_elfclass ()
         {
-          test "`func_elfclass | sed -e 's/[ 	]//g'`" = 2
+          expr "`func_elfclass | sed -e 's/[ 	]//g'`" = 2 > /dev/null
         }
         ;;
       *)
@@ -9653,7 +9656,14 @@ fi
                     fi
                     ;;
                   -l*)
-                                        names_next_round="$names_next_round "`echo "X$dep" | sed -e 's/^X-l//'`
+                                                                                                                                                                dep=`echo "X$dep" | sed -e 's/^X-l//'`
+                    if test "X$dep" != Xc \
+                       || case $host_os in
+                            linux* | gnu* | k*bsd*-gnu) false ;;
+                            *)                          true ;;
+                          esac; then
+                      names_next_round="$names_next_round $dep"
+                    fi
                     ;;
                   *.la)
                                                                                 names_next_round="$names_next_round "`echo "X$dep" | sed -e 's,^X.*/,,' -e 's,^lib,,' -e 's,\.la$,,'`
@@ -10015,8 +10025,9 @@ int
 main (void)
 {
 int result = 0;
-  /* Test against AIX 5.1 bug: Failures are not distinguishable from successful
-     returns.  */
+  /* Test against AIX 5.1...7.2 bug: Failures are not distinguishable from
+     successful returns.  This is even documented in
+     <https://www.ibm.com/support/knowledgecenter/ssw_aix_72/i_bostechref/iconv.html> */
   {
     iconv_t cd_utf8_to_88591 = iconv_open ("ISO8859-1", "UTF-8");
     if (cd_utf8_to_88591 != (iconv_t)(-1))
@@ -10598,7 +10609,14 @@ fi
                     fi
                     ;;
                   -l*)
-                                        names_next_round="$names_next_round "`echo "X$dep" | sed -e 's/^X-l//'`
+                                                                                                                                                                dep=`echo "X$dep" | sed -e 's/^X-l//'`
+                    if test "X$dep" != Xc \
+                       || case $host_os in
+                            linux* | gnu* | k*bsd*-gnu) false ;;
+                            *)                          true ;;
+                          esac; then
+                      names_next_round="$names_next_round $dep"
+                    fi
                     ;;
                   *.la)
                                                                                 names_next_round="$names_next_round "`echo "X$dep" | sed -e 's,^X.*/,,' -e 's,^lib,,' -e 's,\.la$,,'`
@@ -12335,6 +12353,15 @@ if test "x$ac_cv_have_decl_lseek64" = xyes
 then :
 
 printf "%s\n" "#define HAVE_LSEEK64_PROTOTYPE 1" >>confdefs.h
+
+fi
+
+ac_fn_check_decl "$LINENO" "fsmap_sizeof" "ac_cv_have_decl_fsmap_sizeof" "#include <linux/fsmap.h>
+" "$ac_c_undeclared_builtin_options" "CFLAGS"
+if test "x$ac_cv_have_decl_fsmap_sizeof" = xyes
+then :
+
+printf "%s\n" "#define HAVE_FSMAP_SIZEOF 1" >>confdefs.h
 
 fi
 # The cast to long int works around a bug in the HP C Compiler
@@ -14776,11 +14803,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_cxx11+y}
+if test ${ac_cv_prog_cxx_11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_cxx11=no
+  ac_cv_prog_cxx_11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -14822,11 +14849,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_cxx98+y}
+if test ${ac_cv_prog_cxx_98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_cxx98=no
+  ac_cv_prog_cxx_98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -15166,7 +15193,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15175,25 +15202,25 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                udev_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "udev" 2>&1`
+	        udev_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "udev" 2>&1`
         else
-                udev_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "udev" 2>&1`
+	        udev_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "udev" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$udev_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$udev_PKG_ERRORS" >&5
 
 
 			with_udev_rules_dir=""
 
 elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 			with_udev_rules_dir=""
 
 else
-        udev_CFLAGS=$pkg_cv_udev_CFLAGS
-        udev_LIBS=$pkg_cv_udev_LIBS
+	udev_CFLAGS=$pkg_cv_udev_CFLAGS
+	udev_LIBS=$pkg_cv_udev_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -15335,7 +15362,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15344,25 +15371,25 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                systemd_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "systemd" 2>&1`
+	        systemd_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "systemd" 2>&1`
         else
-                systemd_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "systemd" 2>&1`
+	        systemd_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "systemd" 2>&1`
         fi
-        # Put the nasty error message in config.log where it belongs
-        echo "$systemd_PKG_ERRORS" >&5
+	# Put the nasty error message in config.log where it belongs
+	echo "$systemd_PKG_ERRORS" >&5
 
 
 			with_systemd_unit_dir=""
 
 elif test $pkg_failed = untried; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 			with_systemd_unit_dir=""
 
 else
-        systemd_CFLAGS=$pkg_cv_systemd_CFLAGS
-        systemd_LIBS=$pkg_cv_systemd_LIBS
+	systemd_CFLAGS=$pkg_cv_systemd_CFLAGS
+	systemd_LIBS=$pkg_cv_systemd_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -17029,7 +17056,9 @@ printf "%s\n" "$as_me: executing $ac_file commands" >&6;}
                 #      presentlang can be used as a fallback for messages
                 #      which are not translated in the desiredlang catalog).
                 case "$desiredlang" in
-                  "$presentlang"*) useit=yes;;
+                  "$presentlang" | "$presentlang"_* | "$presentlang".* | "$presentlang"@*)
+                    useit=yes
+                    ;;
                 esac
               done
               if test $useit = yes; then

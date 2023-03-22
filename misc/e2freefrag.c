@@ -38,7 +38,7 @@ extern int optind;
 #include "e2freefrag.h"
 
 #if defined(HAVE_EXT2_IOCTLS) && !defined(DEBUGFS)
-# ifdef HAVE_LINUX_FSMAP_H
+# if defined(HAVE_LINUX_FSMAP_H) && defined(HAVE_FSMAP_SIZEOF)
 #  include <linux/fsmap.h>
 # endif
 # include "fsmap.h"
