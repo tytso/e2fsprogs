@@ -80,7 +80,11 @@ static void add_chunk(ext2_filsys fs, struct sparse_file *s,
 	}
 
 	/* The input file will be overwritten, so make a copy of the blocks. */
+	if (len > SIZE_MAX - sizeof(*bi))
+		sparse_fatal("filesystem is too large");
 	bi = calloc(1, sizeof(*bi) + len);
+	if (!bi)
+		sparse_fatal("out of memory");
 	bi->next = buf_list;
 	buf_list = bi;
 	retval = io_channel_read_blk64(fs->io, chunk_start, num_blks, bi->buf);
@@ -102,6 +106,16 @@ static void free_chunks(void)
 	}
 }
 
+static blk_t fs_blocks_count(ext2_filsys fs)
+{
+	blk64_t blks = ext2fs_blocks_count(fs->super);
+
+	/* libsparse assumes 32-bit block numbers. */
+	if ((blk_t)blks != blks)
+		sparse_fatal("filesystem is too large");
+	return blks;
+}
+
 static struct sparse_file *ext_to_sparse(const char *in_file)
 {
 	errcode_t retval;
@@ -118,7 +132,7 @@ static struct sparse_file *ext_to_sparse(const char *in_file)
 	if (retval)
 		ext2fs_fatal(retval, "while reading block bitmap of %s", in_file);
 
-	fs_blks = ext2fs_blocks_count(fs->super);
+	fs_blks = fs_blocks_count(fs);
 
 	s = sparse_file_new(fs->blocksize, (uint64_t)fs_blks * fs->blocksize);
 	if (!s)
@@ -132,7 +146,7 @@ static struct sparse_file *ext_to_sparse(const char *in_file)
 	 * larger than INT32_MAX (32-bit _and_ 64-bit systems).
 	 * Make sure we do not create chunks larger than this limit.
 	 */
-	int64_t max_blk_per_chunk = (INT32_MAX - 12) / fs->blocksize;
+	int32_t max_blk_per_chunk = (INT32_MAX - 12) / fs->blocksize;
 
 	/*
 	 * Iterate through the filesystem's blocks, identifying "chunks" that
