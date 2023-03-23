@@ -188,13 +188,13 @@ static bool same_file(const char *in, const char *out)
 {
 	struct stat st1, st2;
 
-	if (access(out, F_OK) == -1)
-		return false;
-
-	if (lstat(in, &st1) == -1)
+	if (stat(in, &st1) == -1)
 		ext2fs_fatal(errno, "stat %s\n", in);
-	if (lstat(out, &st2) == -1)
+	if (stat(out, &st2) == -1) {
+		if (errno == ENOENT)
+			return false;
 		ext2fs_fatal(errno, "stat %s\n", out);
+	}
 	return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
 }
 
