@@ -88,7 +88,7 @@ static void add_chunk(ext2_filsys fs, struct sparse_file *s,
 	bi->next = buf_list;
 	buf_list = bi;
 	retval = io_channel_read_blk64(fs->io, chunk_start, num_blks, bi->buf);
-	if (retval < 0)
+	if (retval)
 		ext2fs_fatal(retval, "reading data from %s", params.in_file);
 
 	if (sparse_file_add_data(s, bi->buf, len, chunk_start) < 0)
