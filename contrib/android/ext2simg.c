@@ -24,16 +24,14 @@
 #include <sparse/sparse.h>
 
 struct {
-	int	crc;
-	int	sparse;
-	int	gzip;
+	bool	crc;
+	bool	sparse;
+	bool	gzip;
 	char	*in_file;
 	char	*out_file;
 	bool	overwrite_input;
 } params = {
-	.crc	    = 0,
-	.sparse	    = 1,
-	.gzip	    = 0,
+	.sparse	    = true,
 };
 
 #define ext2fs_fatal(Retval, Format, ...) \
@@ -201,13 +199,13 @@ int main(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "czS")) != -1) {
 		switch(opt) {
 		case 'c':
-			params.crc = 1;
+			params.crc = true;
 			break;
 		case 'z':
-			params.gzip = 1;
+			params.gzip = true;
 			break;
 		case 'S':
-			params.sparse = 0;
+			params.sparse = false;
 			break;
 		default:
 			usage(argv[0]);
