@@ -68,33 +68,27 @@ static struct buf_item {
 static void add_chunk(ext2_filsys fs, struct sparse_file *s,
 		      blk_t chunk_start, int num_blks)
 {
-	int retval;
 	uint64_t len = (uint64_t)num_blks * fs->blocksize;
 	int64_t offset = (int64_t)chunk_start * fs->blocksize;
+	struct buf_item *bi;
+	int retval;
 
-	if (params.overwrite_input == false) {
+	if (!params.overwrite_input) {
 		if (sparse_file_add_file(s, params.in_file, offset, len, chunk_start) < 0)
 			sparse_fatal("adding data to the sparse file");
-	} else {
-		/*
-		 * The input file will be overwritten, make a copy of
-		 * the blocks
-		 */
-		struct buf_item *bi = calloc(1, sizeof(struct buf_item) + len);
-		if (buf_list == NULL)
-			buf_list = bi;
-		else {
-			bi->next = buf_list;
-			buf_list = bi;
-		}
-
-		retval = io_channel_read_blk64(fs->io, chunk_start, num_blks, bi->buf);
-		if (retval < 0)
-			ext2fs_fatal(retval, "reading data from %s", params.in_file);
-
-		if (sparse_file_add_data(s, bi->buf, len, chunk_start) < 0)
-			sparse_fatal("adding data to the sparse file");
+		return;
 	}
+
+	/* The input file will be overwritten, so make a copy of the blocks. */
+	bi = calloc(1, sizeof(*bi) + len);
+	bi->next = buf_list;
+	buf_list = bi;
+	retval = io_channel_read_blk64(fs->io, chunk_start, num_blks, bi->buf);
+	if (retval < 0)
+		ext2fs_fatal(retval, "reading data from %s", params.in_file);
+
+	if (sparse_file_add_data(s, bi->buf, len, chunk_start) < 0)
+		sparse_fatal("adding data to the sparse file");
 }
 
 static void free_chunks(void)
