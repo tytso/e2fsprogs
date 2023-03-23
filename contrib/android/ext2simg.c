@@ -63,12 +63,16 @@ static struct buf_item {
 	void		    *buf[0];
 } *buf_list;
 
-static void add_chunk(ext2_filsys fs, struct sparse_file *s, blk_t chunk_start, blk_t chunk_end)
+/*
+ * Add @num_blks blocks, starting at index @chunk_start, of the filesystem @fs
+ * to the sparse file @s.
+ */
+static void add_chunk(ext2_filsys fs, struct sparse_file *s,
+		      blk_t chunk_start, int num_blks)
 {
 	int retval;
-	unsigned int nb_blk = chunk_end - chunk_start;
-	size_t len = nb_blk * fs->blocksize;
-	int64_t offset = (int64_t)chunk_start * (int64_t)fs->blocksize;
+	uint64_t len = (uint64_t)num_blks * fs->blocksize;
+	int64_t offset = (int64_t)chunk_start * fs->blocksize;
 
 	if (params.overwrite_input == false) {
 		if (sparse_file_add_file(s, params.in_file, offset, len, chunk_start) < 0)
@@ -86,9 +90,9 @@ static void add_chunk(ext2_filsys fs, struct sparse_file *s, blk_t chunk_start, 
 			buf_list = bi;
 		}
 
-		retval = io_channel_read_blk64(fs->io, chunk_start, nb_blk, bi->buf);
+		retval = io_channel_read_blk64(fs->io, chunk_start, num_blks, bi->buf);
 		if (retval < 0)
-			ext2fs_fatal(retval, "reading block %u - %u", chunk_start, chunk_end);
+			ext2fs_fatal(retval, "reading data from %s", params.in_file);
 
 		if (sparse_file_add_data(s, bi->buf, len, chunk_start) < 0)
 			sparse_fatal("adding data to the sparse file");
@@ -112,7 +116,7 @@ static struct sparse_file *ext_to_sparse(const char *in_file)
 	ext2_filsys fs;
 	struct sparse_file *s;
 	int64_t chunk_start = -1;
-	blk_t first_blk, last_blk, nb_blk, cur_blk;
+	blk_t fs_blks, cur_blk;
 
 	retval = ext2fs_open(in_file, 0, 0, 0, unix_io_manager, &fs);
 	if (retval)
@@ -122,11 +126,9 @@ static struct sparse_file *ext_to_sparse(const char *in_file)
 	if (retval)
 		ext2fs_fatal(retval, "while reading block bitmap of %s", in_file);
 
-	first_blk = ext2fs_get_block_bitmap_start2(fs->block_map);
-	last_blk = ext2fs_get_block_bitmap_end2(fs->block_map);
-	nb_blk = last_blk - first_blk + 1;
+	fs_blks = ext2fs_blocks_count(fs->super);
 
-	s = sparse_file_new(fs->blocksize, (uint64_t)fs->blocksize * (uint64_t)nb_blk);
+	s = sparse_file_new(fs->blocksize, (uint64_t)fs_blks * fs->blocksize);
 	if (!s)
 		sparse_fatal("creating sparse file");
 
@@ -140,22 +142,37 @@ static struct sparse_file *ext_to_sparse(const char *in_file)
 	 */
 	int64_t max_blk_per_chunk = (INT32_MAX - 12) / fs->blocksize;
 
-	/* Iter on the blocks to merge contiguous chunk */
-	for (cur_blk = first_blk; cur_blk <= last_blk; ++cur_blk) {
+	/*
+	 * Iterate through the filesystem's blocks, identifying "chunks" that
+	 * are contiguous ranges of blocks that are in-use by the filesystem.
+	 * Add each chunk to the sparse_file.
+	 */
+	for (cur_blk = ext2fs_get_block_bitmap_start2(fs->block_map);
+	     cur_blk < fs_blks; ++cur_blk) {
 		if (ext2fs_test_block_bitmap2(fs->block_map, cur_blk)) {
+			/*
+			 * @cur_blk is in-use.  Append it to the pending chunk
+			 * if there is one, otherwise start a new chunk.
+			 */
 			if (chunk_start == -1) {
 				chunk_start = cur_blk;
 			} else if (cur_blk - chunk_start + 1 == max_blk_per_chunk) {
-				add_chunk(fs, s, chunk_start, cur_blk);
+				/*
+				 * Appending @cur_blk to the pending chunk made
+				 * it reach the maximum length, so end it.
+				 */
+				add_chunk(fs, s, chunk_start, max_blk_per_chunk);
 				chunk_start = -1;
 			}
 		} else if (chunk_start != -1) {
-			add_chunk(fs, s, chunk_start, cur_blk);
+			/* @cur_blk is not in-use, so end the pending chunk. */
+			add_chunk(fs, s, chunk_start, cur_blk - chunk_start);
 			chunk_start = -1;
 		}
 	}
+	/* If there's still a pending chunk, end it. */
 	if (chunk_start != -1)
-		add_chunk(fs, s, chunk_start, cur_blk - 1);
+		add_chunk(fs, s, chunk_start, cur_blk - chunk_start);
 
 	ext2fs_free(fs);
 	return s;
