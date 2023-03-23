@@ -189,7 +189,7 @@ static bool same_file(const char *in, const char *out)
 		ext2fs_fatal(errno, "stat %s\n", in);
 	if (lstat(out, &st2) == -1)
 		ext2fs_fatal(errno, "stat %s\n", out);
-	return st1.st_ino == st2.st_ino;
+	return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
 }
 
 int main(int argc, char *argv[])
