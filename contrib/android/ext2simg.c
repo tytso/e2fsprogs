@@ -58,7 +58,7 @@ static void usage(char *path)
 
 static struct buf_item {
 	struct buf_item	    *next;
-	void		    *buf[0];
+	void		    *buf[];
 } *buf_list;
 
 /*
