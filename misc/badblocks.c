@@ -608,6 +608,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	int i, try, got, nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
 	blk_t recover_block = ~0;
+	errcode_t errcode;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
@@ -640,6 +641,17 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
 		pattern_fill(buffer, pattern[pat_idx],
 			     blocks_at_once * block_size);
+
+		errcode = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+		if (errcode) {
+			com_err(program_name, errcode, "%s",
+				_("while beginning bad block list iteration"));
+			exit (1);
+		}
+		do {
+			ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+		} while (next_bad && next_bad < first_block);
+
 		num_blocks = last_block - 1;
 		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
@@ -652,6 +664,15 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					fputs(_("Too many bad blocks, aborting test\n"), stderr);
 				}
 				break;
+			}
+			if (next_bad) {
+				if (currently_testing == next_bad) {
+					ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+					currently_testing++;
+					continue;
+				}
+				else if (currently_testing + try > next_bad)
+					try = next_bad - currently_testing;
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
@@ -675,6 +696,8 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			}
 		}
 
+		ext2fs_badblocks_list_iterate_end(bb_iter);
+
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
@@ -682,6 +705,17 @@ static unsigned int test_rw (int dev, blk_t last_block,
 		flush_bufs();
 		if (s_flag | v_flag)
 			fputs(_("Reading and comparing: "), stderr);
+
+		errcode = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+		if (errcode) {
+			com_err(program_name, errcode, "%s",
+				_("while beginning bad block list iteration"));
+			exit (1);
+		}
+		do {
+			ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+		} while (next_bad && next_bad < first_block);
+
 		num_blocks = last_block;
 		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
@@ -694,6 +728,15 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					fputs(_("Too many bad blocks, aborting test\n"), stderr);
 				}
 				break;
+			}
+			if (next_bad) {
+				if (currently_testing == next_bad) {
+					ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+					currently_testing++;
+					continue;
+				}
+				else if (currently_testing + try > next_bad)
+					try = next_bad - currently_testing;
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
@@ -721,6 +764,8 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			if (v_flag > 1)
 				print_status();
 		}
+
+		ext2fs_badblocks_list_iterate_end(bb_iter);
 
 		num_blocks = 0;
 		alarm (0);
