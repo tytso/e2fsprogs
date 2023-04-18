@@ -761,15 +761,6 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	blk_t recover_block = ~0U;
 
 	bb_count = 0;
-	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
-	if (errcode) {
-		com_err(program_name, errcode, "%s",
-			_("while beginning bad block list iteration"));
-		exit (1);
-	}
-	do {
-		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-	} while (next_bad && next_bad < first_block);
 
 	blkbuf = allocate_buffer((size_t) 3 * blocks_at_once * block_size);
 	test_record = malloc(blocks_at_once * sizeof(struct saved_blk_record));
@@ -825,6 +816,16 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
 		pattern_fill(test_base, pattern[pat_idx],
 			     blocks_at_once * block_size);
+
+		errcode = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+		if (errcode) {
+			com_err(program_name, errcode, "%s",
+				_("while beginning bad block list iteration"));
+			exit (1);
+		}
+		do {
+			ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+		} while (next_bad && next_bad < first_block);
 
 		buf_used = 0;
 		bb_count = 0;
@@ -979,13 +980,12 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			fputs(_(done_string), stderr);
 
 		flush_bufs();
+		ext2fs_badblocks_list_iterate_end(bb_iter);
 	}
 	uncapture_terminate();
 	fflush(stderr);
 	free(blkbuf);
 	free(test_record);
-
-	ext2fs_badblocks_list_iterate_end(bb_iter);
 
 	return bb_count;
 }
