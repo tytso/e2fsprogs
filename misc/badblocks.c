@@ -828,7 +828,6 @@ static unsigned int test_nd (int dev, blk_t last_block,
 		} while (next_bad && next_bad < first_block);
 
 		buf_used = 0;
-		bb_count = 0;
 		save_ptr = save_base;
 		test_ptr = test_base;
 		currently_testing = first_block;
