@@ -553,8 +553,10 @@ static unsigned int test_ro (int dev, blk_t last_block,
 				currently_testing++;
 				continue;
 			}
-			else if (currently_testing + try > next_bad)
+			else if (currently_testing + try > next_bad) {
 				try = next_bad - currently_testing;
+				recover_block = next_bad;
+			}
 		}
 		if (currently_testing + try > last_block)
 			try = last_block - currently_testing;
@@ -578,7 +580,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 				recover_block = currently_testing - got +
 					blocks_at_once;
 			continue;
-		} else if (currently_testing == recover_block) {
+		} else if (currently_testing >= recover_block) {
 			try = blocks_at_once;
 			recover_block = ~0;
 		}
@@ -671,8 +673,10 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					currently_testing++;
 					continue;
 				}
-				else if (currently_testing + try > next_bad)
+				else if (currently_testing + try > next_bad) {
 					try = next_bad - currently_testing;
+					recover_block = next_bad;
+				}
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
@@ -690,7 +694,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					recover_block = currently_testing -
 						got + blocks_at_once;
 				continue;
-			} else if (currently_testing == recover_block) {
+			} else if (currently_testing >= recover_block) {
 				try = blocks_at_once;
 				recover_block = ~0;
 			}
@@ -735,8 +739,10 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					currently_testing++;
 					continue;
 				}
-				else if (currently_testing + try > next_bad)
+				else if (currently_testing + try > next_bad) {
 					try = next_bad - currently_testing;
+					recover_block = next_bad;
+				}
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
@@ -751,7 +757,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					recover_block = currently_testing -
 						got + blocks_at_once;
 				continue;
-			} else if (currently_testing == recover_block) {
+			} else if (currently_testing >= recover_block) {
 				try = blocks_at_once;
 				recover_block = ~0U;
 			}
@@ -895,8 +901,10 @@ static unsigned int test_nd (int dev, blk_t last_block,
 					currently_testing++;
 					goto check_for_more;
 				}
-				else if (currently_testing + try > next_bad)
+				else if (currently_testing + try > next_bad) {
 					try = next_bad - currently_testing;
+					recover_block = next_bad;
+				}
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
