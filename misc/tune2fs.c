@@ -3100,24 +3100,19 @@ static int handle_fslabel(int setlabel)
 
 	ret = ext2fs_check_mount_point(device_name, &mnt_flags,
 					  mntpt, sizeof(mntpt));
-	if (ret) {
-		com_err(device_name, ret, _("while checking mount status"));
-		return 1;
-	}
+	if (ret)
+		return -1;
+
 	if (!(mnt_flags & EXT2_MF_MOUNTED) ||
 	    (setlabel && (mnt_flags & EXT2_MF_READONLY)))
 		return -1;
 
-	if (!mntpt[0]) {
-		fprintf(stderr,_("Unknown mount point for %s\n"), device_name);
-		return 1;
-	}
+	if (!mntpt[0])
+		return -1;
 
 	fd = open(mntpt, O_RDONLY);
-	if (fd < 0) {
-		com_err(mntpt, errno, _("while opening mount point"));
-		return 1;
-	}
+	if (fd < 0)
+		return -1;
 
 	/* Get fs label */
 	if (!setlabel) {
