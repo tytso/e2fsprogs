@@ -2327,7 +2327,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* orphan_present set but orphan file is empty */
 	{ PR_6_ORPHAN_PRESENT_CLEAN_FILE,
 	  N_("Feature orphan_present is set but orphan file is clean.\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK },
+	  PROMPT_CLEAR, PR_PREEN_OK | PR_NO_OK | PR_PREEN_NOMSG },
 
 	/* orphan_present set but orphan_file is not */
 	{ PR_6_ORPHAN_PRESENT_NO_FILE,
