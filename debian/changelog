@@ -1,3 +1,12 @@
+e2fsprogs (1.47.0-3) unstable; urgency=medium
+
+  * Re-enable metadata_csum_seed and orphan_file by default now that
+    Debian Bookworm is released
+  * Suppress "Feature orphan_present is set but orphan file is
+    clean" nessage when running in preen mode.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 30 May 2023 16:16:28 -0400
+
 e2fsprogs (1.47.0-2) unstable; urgency=medium
 
   * Don't enable metadata_csum_seed and orhpan_file by default (Closes:
