@@ -109,6 +109,9 @@
 /* Define to 1 if you have the `fdatasync' function. */
 #undef HAVE_FDATASYNC
 
+/* Define to 1 if fsmap_sizeof() is declared in linux/fsmap.h */
+#undef HAVE_FSMAP_SIZEOF
+
 /* Define to 1 if you have the `fstat64' function. */
 #undef HAVE_FSTAT64
 

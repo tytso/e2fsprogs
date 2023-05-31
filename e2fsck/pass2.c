@@ -1341,57 +1341,68 @@ skip_checksum:
 			    (rec_len < min_dir_len) ||
 			    ((rec_len % 4) != 0) ||
 			    ((ext2fs_dir_rec_len(ext2fs_dirent_name_len(dirent),
-						 extended)) > rec_len)) {
-				if (fix_problem(ctx, PR_2_DIR_CORRUPTED,
-						&cd->pctx)) {
+						 extended)) > rec_len))
+				problem = PR_2_DIR_CORRUPTED;
+			if (problem) {
+				if ((offset == 0) &&
+				    (rec_len == fs->blocksize) &&
+				    (dirent->inode == 0) &&
+				    e2fsck_dir_will_be_rehashed(ctx, ino)) {
+					problem = 0;
+					max_block_size = fs->blocksize;
+				}
+			}
+			if (problem) {
 #ifdef WORDS_BIGENDIAN
-					/*
-					 * On big-endian systems, if the dirent
-					 * swap routine finds a rec_len that it
-					 * doesn't like, it continues
-					 * processing the block as if rec_len
-					 * == EXT2_DIR_ENTRY_HEADER_LEN.  This means that the name
-					 * field gets byte swapped, which means
-					 * that salvage will not detect the
-					 * correct name length (unless the name
-					 * has a length that's an exact
-					 * multiple of four bytes), and it'll
-					 * discard the entry (unnecessarily)
-					 * and the rest of the dirent block.
-					 * Therefore, swap the rest of the
-					 * block back to disk order, run
-					 * salvage, and re-swap anything after
-					 * the salvaged dirent.
-					 */
-					int need_reswab = 0;
-					if (rec_len < EXT2_DIR_ENTRY_HEADER_LEN || rec_len % 4) {
-						need_reswab = 1;
-						ext2fs_dirent_swab_in2(fs,
-							((char *)dirent) + EXT2_DIR_ENTRY_HEADER_LEN,
-							max_block_size - offset - EXT2_DIR_ENTRY_HEADER_LEN,
-							0);
-					}
+				int need_reswab = 0;
 #endif
-					salvage_directory(fs, dirent, prev,
-							  &offset,
-							  max_block_size,
-							  hash_in_dirent);
-#ifdef WORDS_BIGENDIAN
-					if (need_reswab) {
-						unsigned int len;
 
-						(void) ext2fs_get_rec_len(fs,
-							dirent, &len);
-						len += offset;
-						if (max_block_size > len)
-							ext2fs_dirent_swab_in2(fs,
-				((char *)dirent) + len, max_block_size - len, 0);
-					}
-#endif
-					dir_modified++;
-					continue;
-				} else
+				if (!fix_problem(ctx, PR_2_DIR_CORRUPTED,
+						&cd->pctx))
 					goto abort_free_dict;
+#ifdef WORDS_BIGENDIAN
+				/*
+				 * On big-endian systems, if the dirent
+				 * swap routine finds a rec_len that it
+				 * doesn't like, it continues processing
+				 * the block as if rec_len ==
+				 * EXT2_DIR_ENTRY_HEADER_LEN.  This means
+				 * that the name field gets byte swapped,
+				 * which means that salvage will not detect
+				 * the correct name length (unless the name
+				 * has a length that's an exact multiple of
+				 * four bytes), and it'll discard the entry
+				 * (unnecessarily) and the rest of the
+				 * dirent block.  Therefore, swap the rest
+				 * of the block back to disk order, run
+				 * salvage, and re-swap anything after the
+				 * salvaged dirent.
+				 */
+				if (rec_len < EXT2_DIR_ENTRY_HEADER_LEN ||
+				    rec_len % 4) {
+					need_reswab = 1;
+					ext2fs_dirent_swab_in2(fs,
+			((char *)dirent) + EXT2_DIR_ENTRY_HEADER_LEN,
+			max_block_size - offset - EXT2_DIR_ENTRY_HEADER_LEN, 0);
+				}
+#endif
+				salvage_directory(fs, dirent, prev, &offset,
+						  max_block_size,
+						  hash_in_dirent);
+#ifdef WORDS_BIGENDIAN
+				if (need_reswab) {
+					unsigned int len;
+
+					(void) ext2fs_get_rec_len(fs, dirent,
+								  &len);
+					len += offset;
+					if (max_block_size > len)
+						ext2fs_dirent_swab_in2(fs,
+			((char *)dirent) + len, max_block_size - len, 0);
+				}
+#endif
+				dir_modified++;
+				continue;
 			}
 		} else {
 			if (dot_state == 0) {
@@ -1574,7 +1585,8 @@ skip_checksum:
 		 */
 		if (!(ctx->flags & E2F_FLAG_RESTART_LATER) &&
 		    !(ext2fs_test_inode_bitmap2(ctx->inode_used_map,
-						dirent->inode)))
+						dirent->inode))
+			)
 			problem = PR_2_UNUSED_INODE;
 
 		if (problem) {

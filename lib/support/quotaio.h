@@ -16,8 +16,7 @@
  *		AND/OR
  *		quota_data_add/quota_data_sub/quota_data_inodes();
  *	}
- *	quota_write_inode(qctx, USRQUOTA);
- *	quota_write_inode(qctx, GRPQUOTA);
+ *	quota_write_inode(qctx, (1 << USRQUOTA) | (1 << GRPQUOTA));
  *	quota_release_context(&qctx);
  * }
  *
@@ -223,7 +222,7 @@ void quota_data_add(quota_ctx_t qctx, struct ext2_inode_large *inode,
 		    ext2_ino_t ino, qsize_t space);
 void quota_data_sub(quota_ctx_t qctx, struct ext2_inode_large *inode,
 		    ext2_ino_t ino, qsize_t space);
-errcode_t quota_write_inode(quota_ctx_t qctx, enum quota_type qtype);
+errcode_t quota_write_inode(quota_ctx_t qctx, unsigned int qtype_bits);
 /* Flags for quota_read_all_dquots() */
 #define QREAD_USAGE  0x01
 #define QREAD_LIMITS 0x02

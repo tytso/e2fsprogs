@@ -23,8 +23,11 @@
 #endif
 
 #include <blkid/blkid.h>
-
 #include <blkid/list.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __GNUC__
 #define __BLKID_ATTR(x) __attribute__(x)

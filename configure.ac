@@ -1107,6 +1107,12 @@ AC_CHECK_DECL(lseek64,[AC_DEFINE(HAVE_LSEEK64_PROTOTYPE, 1,
 		[#define _LARGEFILE_SOURCE
 		 #define _LARGEFILE64_SOURCE
 		 #include <unistd.h>])
+
+dnl The Android NDK has <linux/fsmap.h>, but it is missing the inline functions
+dnl fsmap_sizeof() and fsmap_advance().  Check whether this is the case.
+AC_CHECK_DECL(fsmap_sizeof,[AC_DEFINE(HAVE_FSMAP_SIZEOF, 1,
+			    [Define to 1 if fsmap_sizeof() is declared in linux/fsmap.h])],,
+		[#include <linux/fsmap.h>])
 dnl
 dnl Word sizes...
 dnl
