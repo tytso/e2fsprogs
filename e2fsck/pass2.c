@@ -1513,7 +1513,7 @@ skip_checksum:
 					     dirent->inode)) {
 			if (e2fsck_process_bad_inode(ctx, ino,
 						     dirent->inode,
-						     buf + fs->blocksize)) {
+						     cd->buf + fs->blocksize)) {
 				dirent->inode = 0;
 				dir_modified++;
 				goto next;
