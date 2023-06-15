@@ -1,1 +1,2 @@
 suppress-orphan-file-is-clean-message-in-preen-mode.patch
+e2fsck-fix-handling-of-a-invalid-symlink-in-an-inline-dir.patch

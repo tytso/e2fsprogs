@@ -1,0 +1,39 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Description: e2fsck: fix handling of a invalid symlink in an inline_data directory
+ .
+ If there is an inline directory that contains a directory entry to an
+ invalid symlink, and that invalid symlink is the portion of the inline
+ directory stored in an xattr portion of the inode, this can result in
+ a buffer overrun.
+ .
+ When check_dir_block() is handling the in-xattr portion of the inline
+ directory, it sets the buf pointer to the beginning of that part of
+ the inline directory.  This results in the scratch buffer passed to
+ e2fsck_process_bad_inode() to incorrect, resulting in a buffer overrun
+ if e2fsck_pass1_check_symlink() needs to read the symlink target (when
+ the symlink is too long to fit in the i_blocks[] space).
+ .
+ This commit fixes this by using the original cd->buf instead of buf,
+ since it can get modified when handling inline directories.
+ .
+Origin: upstream,https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git/commit/?h=next&id=8798bbb81687103b0c0f56a42b096884c6032101
+---
+ e2fsck/pass2.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/e2fsck/pass2.c b/e2fsck/pass2.c
+index 47f9206f..42f3e5ef 100644
+--- a/e2fsck/pass2.c
++++ b/e2fsck/pass2.c
+@@ -1523,7 +1523,7 @@ skip_checksum:
+ 					     dirent->inode)) {
+ 			if (e2fsck_process_bad_inode(ctx, ino,
+ 						     dirent->inode,
+-						     buf + fs->blocksize)) {
++						     cd->buf + fs->blocksize)) {
+ 				dirent->inode = 0;
+ 				dir_modified++;
+ 				goto next;
+-- 
+2.31.0
+
