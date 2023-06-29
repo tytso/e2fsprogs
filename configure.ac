@@ -1116,6 +1116,7 @@ AC_CHECK_DECL(fsmap_sizeof,[AC_DEFINE(HAVE_FSMAP_SIZEOF, 1,
 dnl
 dnl Word sizes...
 dnl
+AC_SYS_LARGEFILE
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
@@ -1900,8 +1901,6 @@ OS_IO_FILE=""
   ;;
 esac]
 AC_SUBST(OS_IO_FILE)
-
-AC_SYS_LARGEFILE
 
 dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
