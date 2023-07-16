@@ -91,6 +91,7 @@ static unsigned int d_flag;		/* delay factor between reads */
 static struct timeval time_start;
 
 #define T_INC 32
+#define S_BUF 128
 
 static unsigned int sys_page_size = 4096;
 
@@ -148,43 +149,6 @@ static void *allocate_buffer(size_t size)
 	return ret;
 }
 
-/*
- * This routine reports a new bad block.  If the bad block has already
- * been seen before, then it returns 0; otherwise it returns 1.
- */
-static int bb_output (blk_t bad, enum error_types error_type)
-{
-	errcode_t errcode;
-
-	if (ext2fs_badblocks_list_test(bb_list, bad))
-		return 0;
-
-	fprintf(out, "%lu\n", (unsigned long) bad);
-	fflush(out);
-
-	errcode = ext2fs_badblocks_list_add (bb_list, bad);
-	if (errcode) {
-		com_err (program_name, errcode, "adding to in-memory bad block list");
-		exit (1);
-	}
-
-	/* kludge:
-	   increment the iteration through the bb_list if
-	   an element was just added before the current iteration
-	   position.  This should not cause next_bad to change. */
-	if (bb_iter && bad < next_bad)
-		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-
-	if (error_type == READ_ERROR) {
-	  num_read_errors++;
-	} else if (error_type == WRITE_ERROR) {
-	  num_write_errors++;
-	} else if (error_type == CORRUPTION_ERROR) {
-	  num_corruption_errors++;
-	}
-	return 1;
-}
-
 static char *time_diff_format(struct timeval *tv1,
 			      struct timeval *tv2, char *buf)
 {
@@ -218,9 +182,9 @@ static float calc_percent(unsigned long current, unsigned long total) {
 static void print_status(void)
 {
 	struct timeval time_end;
-	char diff_buf[32], line_buf[128];
+	char diff_buf[32], line_buf[S_BUF];
 #ifdef HAVE_MBSTOWCS
-	wchar_t wline_buf[128];
+	wchar_t wline_buf[S_BUF];
 #endif
 	int len;
 
@@ -483,6 +447,55 @@ static void flush_bufs(void)
 	if (retval)
 		com_err(program_name, retval, "%s",
 			_("during ext2fs_sync_device"));
+}
+
+/*
+ * This routine reports a new bad block.  If the bad block has already
+ * been seen before, then it returns 0; otherwise it returns 1.
+ */
+static int bb_output (blk_t bad, enum error_types error_type)
+{
+	errcode_t errcode;
+	char status_buf[S_BUF*2];
+
+	if (ext2fs_badblocks_list_test(bb_list, bad))
+		return 0;
+
+	if (v_flag > 1) {
+		memset(status_buf, ' ', S_BUF-1);
+		memset(status_buf+S_BUF-1, '\b', S_BUF-1);
+		status_buf[S_BUF*2-2] = 0;
+		fputs(status_buf, stderr);
+		fflush(stderr);
+	}
+
+	fprintf(out, "%lu\n", (unsigned long) bad);
+	fflush(out);
+
+	if (v_flag > 1)
+		print_status();
+
+	errcode = ext2fs_badblocks_list_add (bb_list, bad);
+	if (errcode) {
+		com_err (program_name, errcode, "adding to in-memory bad block list");
+		exit (1);
+	}
+
+	/* kludge:
+	   increment the iteration through the bb_list if
+	   an element was just added before the current iteration
+	   position.  This should not cause next_bad to change. */
+	if (bb_iter && bad < next_bad)
+		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
+
+	if (error_type == READ_ERROR) {
+	  num_read_errors++;
+	} else if (error_type == WRITE_ERROR) {
+	  num_write_errors++;
+	} else if (error_type == CORRUPTION_ERROR) {
+	  num_corruption_errors++;
+	}
+	return 1;
 }
 
 static unsigned int test_ro (int dev, blk_t last_block,
