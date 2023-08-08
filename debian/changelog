@@ -5,8 +5,10 @@ e2fsprogs (1.47.0-3) unstable; urgency=medium
   * Suppress "Feature orphan_present is set but orphan file is
     clean" nessage when running in preen mode.
   * Fix e2fsck's handling of an invalid symlink in an inline directory
+  * Fix how dumpe2fs reports free ranges for bigalloc file systems
+  * Update debian/changelog with missing information
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 15 Jun 2023 00:46:33 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 08 Aug 2023 16:08:06 -0400
 
 e2fsprogs (1.47.0-2) unstable; urgency=medium
 
