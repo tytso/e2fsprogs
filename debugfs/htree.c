@@ -336,11 +336,18 @@ void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	errcode_t	err;
 	int		c;
 	int		hash_version = 0;
-	__u32		hash_seed[4];
+	__u32		hash_seed[4] = { 0, };
 	int		hash_flags = 0;
 	const struct ext2fs_nls_table *encoding = NULL;
 
-	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
+	if (current_fs) {
+		hash_seed[0] = current_fs->super->s_hash_seed[0];
+		hash_seed[1] = current_fs->super->s_hash_seed[1];
+		hash_seed[2] = current_fs->super->s_hash_seed[2];
+		hash_seed[3] = current_fs->super->s_hash_seed[3];
+
+		hash_version = current_fs->super->s_def_hash_version;
+	}
 
 	reset_getopt();
 	while ((c = getopt(argc, argv, "h:s:ce:")) != EOF) {
