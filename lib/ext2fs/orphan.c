@@ -127,22 +127,21 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 	struct mkorphan_info oi;
 	struct ext4_orphan_block_tail *ob_tail;
 
-	if (!ino) {
+	if (ino) {
+		err = ext2fs_read_inode(fs, ino, &inode);
+		if (err)
+			return err;
+		if (EXT2_I_SIZE(&inode)) {
+			err = ext2fs_truncate_orphan_file(fs);
+			if (err)
+				return err;
+		}
+	} else {
 		err = ext2fs_new_inode(fs, EXT2_ROOT_INO, LINUX_S_IFREG | 0600,
 				       0, &ino);
 		if (err)
 			return err;
 		ext2fs_inode_alloc_stats2(fs, ino, +1, 0);
-		ext2fs_mark_ib_dirty(fs);
-	}
-
-	err = ext2fs_read_inode(fs, ino, &inode);
-	if (err)
-		return err;
-	if (EXT2_I_SIZE(&inode)) {
-		err = ext2fs_truncate_orphan_file(fs);
-		if (err)
-			return err;
 	}
 
 	memset(&inode, 0, sizeof(struct ext2_inode));
