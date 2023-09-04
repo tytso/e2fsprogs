@@ -1535,6 +1535,8 @@ errcode_t ext2fs_convert_subcluster_bitmap(ext2_filsys fs,
 					   ext2fs_block_bitmap *bitmap);
 errcode_t ext2fs_count_used_clusters(ext2_filsys fs, blk64_t start,
 				     blk64_t end, blk64_t *out);
+extern unsigned int ext2fs_list_backups(ext2_filsys fs, unsigned int *three,
+				unsigned int *five, unsigned int *seven);
 
 /* get_num_dirs.c */
 extern errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs);
