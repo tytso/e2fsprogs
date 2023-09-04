@@ -415,9 +415,9 @@ static errcode_t packed_allocate_tables(ext2_filsys fs)
 static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 {
 	errcode_t	retval;
-	blk64_t		blk;
+	blk64_t		start = 0;
 	dgrp_t		i;
-	int		num;
+	int		len = 0;
 	struct ext2fs_numeric_progress_struct progress;
 
 	ext2fs_numeric_progress_init(fs, &progress,
@@ -425,10 +425,10 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 				     fs->group_desc_count);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		ext2fs_numeric_progress_update(fs, &progress, i);
+		blk64_t blk = ext2fs_inode_table_loc(fs, i);
+		int num = fs->inode_blocks_per_group;
 
-		blk = ext2fs_inode_table_loc(fs, i);
-		num = fs->inode_blocks_per_group;
+		ext2fs_numeric_progress_update(fs, &progress, i);
 
 		if (lazy_flag)
 			num = ext2fs_div_ceil((fs->super->s_inodes_per_group -
@@ -441,14 +441,26 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 			ext2fs_group_desc_csum_set(fs, i);
 		}
 		if (!itable_zeroed) {
-			retval = ext2fs_zero_blocks2(fs, blk, num, &blk, &num);
+			if (len == 0) {
+				start = blk;
+				len = num;
+				continue;
+			}
+			/* 'len' must not overflow 2^31 blocks for ext2fs_zero_blocks2() */
+			if (start + len == blk && len + num >= len) {
+				len += num;
+				continue;
+			}
+			retval = ext2fs_zero_blocks2(fs, start, len, &start, &len);
 			if (retval) {
 				fprintf(stderr, _("\nCould not write %d "
 					  "blocks in inode table starting at %llu: %s\n"),
-					num, (unsigned long long) blk,
+					len, (unsigned long long) start,
 					error_message(retval));
 				exit(1);
 			}
+			start = blk;
+			len = num;
 		}
 		if (sync_kludge) {
 			if (sync_kludge == 1)
@@ -456,6 +468,18 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 			else if ((i % sync_kludge) == 0)
 				io_channel_flush(fs->io);
 		}
+	}
+	if (len) {
+		retval = ext2fs_zero_blocks2(fs, start, len, &start, &len);
+		if (retval) {
+			fprintf(stderr, _("\nCould not write %d "
+				  "blocks in inode table starting at %llu: %s\n"),
+				len, (unsigned long long) start,
+				error_message(retval));
+			exit(1);
+		}
+		if (sync_kludge)
+			io_channel_flush(fs->io);
 	}
 	ext2fs_numeric_progress_close(fs, &progress,
 				      _("done                            \n"));
