@@ -847,6 +847,10 @@ errcode_t ext2fs_alloc_range(ext2_filsys fs, int flags, blk64_t goal,
 extern int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
 					dgrp_t group,
 					ext2fs_block_bitmap bmap);
+extern errcode_t ext2fs_reserve_super_and_bgd2(ext2_filsys fs,
+					       dgrp_t group,
+					       ext2fs_block_bitmap bmap,
+					       blk_t *desc_blocks);
 extern void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs,
 						  void (*func)(ext2_filsys fs,
 							       blk64_t blk,
@@ -1535,6 +1539,8 @@ errcode_t ext2fs_convert_subcluster_bitmap(ext2_filsys fs,
 					   ext2fs_block_bitmap *bitmap);
 errcode_t ext2fs_count_used_clusters(ext2_filsys fs, blk64_t start,
 				     blk64_t end, blk64_t *out);
+errcode_t ext2fs_count_used_blocks(ext2_filsys fs, blk64_t start,
+				   blk64_t end, blk64_t *out);
 extern unsigned int ext2fs_list_backups(ext2_filsys fs, unsigned int *three,
 				unsigned int *five, unsigned int *seven);
 

@@ -945,8 +945,8 @@ errcode_t ext2fs_find_first_set_generic_bmap(ext2fs_generic_bitmap bitmap,
 	return ENOENT;
 }
 
-errcode_t ext2fs_count_used_clusters(ext2_filsys fs, blk64_t start,
-				     blk64_t end, blk64_t *out)
+errcode_t ext2fs_count_used_blocks(ext2_filsys fs, blk64_t start,
+				   blk64_t end, blk64_t *out)
 {
 	blk64_t		next;
 	blk64_t		tot_set = 0;
@@ -974,6 +974,19 @@ errcode_t ext2fs_count_used_clusters(ext2_filsys fs, blk64_t start,
 		} else
 			break;
 	}
+
+	if (!retval)
+		*out = tot_set;
+	return retval;
+}
+
+errcode_t ext2fs_count_used_clusters(ext2_filsys fs, blk64_t start,
+				     blk64_t end, blk64_t *out)
+{
+	blk64_t		tot_set = 0;
+	errcode_t	retval = 0;
+
+	retval = ext2fs_count_used_blocks(fs, start, end, &tot_set);
 
 	if (!retval)
 		*out = EXT2FS_NUM_B2C(fs, tot_set);

@@ -3546,7 +3546,7 @@ no_journal:
 			       fs->super->s_mmp_update_interval);
 	}
 
-	overhead += fs->super->s_first_data_block;
+	overhead += EXT2FS_NUM_B2C(fs, fs->super->s_first_data_block);
 	if (!super_only)
 		fs->super->s_overhead_clusters = overhead;
 

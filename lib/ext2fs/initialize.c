@@ -524,6 +524,15 @@ ipg_retry:
 	csum_flag = ext2fs_has_group_desc_csum(fs);
 	reserved_inos = super->s_first_ino;
 	for (i = 0; i < fs->group_desc_count; i++) {
+		blk_t grp_free_blocks;
+		ext2_ino_t inodes;
+
+		retval = ext2fs_reserve_super_and_bgd2(fs, i,
+						       fs->block_map,
+						       &numblocks);
+		if (retval)
+			goto cleanup;
+
 		/*
 		 * Don't set the BLOCK_UNINIT group for the last group
 		 * because the block bitmap needs to be padded.
@@ -533,24 +542,25 @@ ipg_retry:
 				ext2fs_bg_flags_set(fs, i,
 						    EXT2_BG_BLOCK_UNINIT);
 			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_UNINIT);
-			numblocks = super->s_inodes_per_group;
+			inodes = super->s_inodes_per_group;
 			if (reserved_inos) {
-				if (numblocks > reserved_inos) {
-					numblocks -= reserved_inos;
+				if (inodes > reserved_inos) {
+					inodes -= reserved_inos;
 					reserved_inos = 0;
 				} else {
-					reserved_inos -= numblocks;
-					numblocks = 0;
+					reserved_inos -= inodes;
+					inodes = 0;
 				}
 			}
-			ext2fs_bg_itable_unused_set(fs, i, numblocks);
+			ext2fs_bg_itable_unused_set(fs, i, inodes);
 		}
-		numblocks = ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
-		if (fs->super->s_log_groups_per_flex)
+
+		if (!fs->super->s_log_groups_per_flex)
 			numblocks += 2 + fs->inode_blocks_per_group;
 
-		free_blocks += numblocks;
-		ext2fs_bg_free_blocks_count_set(fs, i, numblocks);
+		grp_free_blocks = ext2fs_group_blocks_count(fs, i) - numblocks;
+		free_blocks += grp_free_blocks;
+		ext2fs_bg_free_blocks_count_set(fs, i, grp_free_blocks);
 		ext2fs_bg_free_inodes_count_set(fs, i, fs->super->s_inodes_per_group);
 		ext2fs_bg_used_dirs_count_set(fs, i, 0);
 		ext2fs_group_desc_csum_set(fs, i);
