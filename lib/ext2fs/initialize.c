@@ -538,7 +538,7 @@ ipg_retry:
 		 * because the block bitmap needs to be padded.
 		 */
 		if (csum_flag) {
-			if (i != fs->group_desc_count - 1)
+			if (i != fs->group_desc_count - 1 && numblocks == 0)
 				ext2fs_bg_flags_set(fs, i,
 						    EXT2_BG_BLOCK_UNINIT);
 			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_UNINIT);
