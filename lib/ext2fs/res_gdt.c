@@ -227,7 +227,10 @@ out_inode:
 	       EXT2_I_SIZE(&inode));
 #endif
 	if (inode_dirty) {
-		inode.i_atime = inode.i_mtime = fs->now ? fs->now : time(0);
+		time_t now = fs->now ? fs->now : time(0);
+
+		ext2fs_inode_xtime_set(&inode, i_atime, now);
+		ext2fs_inode_xtime_set(&inode, i_mtime, now);
 		retval2 = ext2fs_write_new_inode(fs, EXT2_RESIZE_INO, &inode);
 		if (!retval)
 			retval = retval2;

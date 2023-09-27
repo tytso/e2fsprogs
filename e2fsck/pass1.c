@@ -1181,6 +1181,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	ext2_ino_t	ino_threshold = 0;
 	dgrp_t		ra_group = 0;
 	struct ea_quota	ea_ibody_quota;
+	time_t		tm;
 
 	init_resource_track(&rtrack, ctx->fs->io);
 	clear_problem_context(&pctx);
@@ -1357,12 +1358,13 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (ctx->progress && ((ctx->progress)(ctx, 1, 0,
 					      ctx->fs->group_desc_count)))
 		goto endit;
-	if ((fs->super->s_wtime &&
-	     fs->super->s_wtime < fs->super->s_inodes_count) ||
-	    (fs->super->s_mtime &&
-	     fs->super->s_mtime < fs->super->s_inodes_count) ||
-	    (fs->super->s_mkfs_time &&
-	     fs->super->s_mkfs_time < fs->super->s_inodes_count))
+
+	if (((tm = ext2fs_get_tstamp(fs->super, s_wtime)) &&
+	     tm < fs->super->s_inodes_count) ||
+	    ((tm = ext2fs_get_tstamp(fs->super, s_mtime)) &&
+	     tm < fs->super->s_inodes_count) ||
+	    ((tm = ext2fs_get_tstamp(fs->super, s_mkfs_time)) &&
+	     tm < fs->super->s_inodes_count))
 		low_dtime_check = 0;
 
 	if (ext2fs_has_feature_mmp(fs->super) &&
@@ -2076,7 +2078,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (!pctx.errcode) {
 			e2fsck_read_inode(ctx, EXT2_RESIZE_INO, inode,
 					  "recreate inode");
-			inode->i_mtime = ctx->now;
+			ext2fs_inode_xtime_set(inode, i_mtime, ctx->now);
 			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
 					   "recreate inode");
 		}

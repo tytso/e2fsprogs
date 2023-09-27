@@ -313,27 +313,23 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (sb->s_log_groups_per_flex)
 		fprintf(f, "Flex block group size:    %u\n",
 			1U << sb->s_log_groups_per_flex);
-	if (sb->s_mkfs_time) {
-		tm = sb->s_mkfs_time;
+	tm = ext2fs_get_tstamp(sb, s_mkfs_time);
+	if (tm)
 		fprintf(f, "Filesystem created:       %s", ctime(&tm));
-	}
-	tm = sb->s_mtime;
-	fprintf(f, "Last mount time:          %s",
-		sb->s_mtime ? ctime(&tm) : "n/a\n");
-	tm = sb->s_wtime;
+	tm = ext2fs_get_tstamp(sb, s_mtime);
+	fprintf(f, "Last mount time:          %s", tm ? ctime(&tm) : "n/a\n");
+	tm = ext2fs_get_tstamp(sb, s_wtime);
 	fprintf(f, "Last write time:          %s", ctime(&tm));
 	fprintf(f, "Mount count:              %u\n", sb->s_mnt_count);
 	fprintf(f, "Maximum mount count:      %d\n", sb->s_max_mnt_count);
-	tm = sb->s_lastcheck;
+	tm = ext2fs_get_tstamp(sb, s_lastcheck);
 	fprintf(f, "Last checked:             %s", ctime(&tm));
 	fprintf(f, "Check interval:           %u (%s)\n", sb->s_checkinterval,
 	       interval_string(sb->s_checkinterval));
 	if (sb->s_checkinterval)
 	{
-		time_t next;
-
-		next = sb->s_lastcheck + sb->s_checkinterval;
-		fprintf(f, "Next check after:         %s", ctime(&next));
+		tm += sb->s_checkinterval;
+		fprintf(f, "Next check after:         %s", ctime(&tm));
 	}
 #define POW2(x) ((__u64) 1 << (x))
 	if (sb->s_kbytes_written) {
@@ -419,8 +415,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (sb->s_error_count)
 		fprintf(f, "FS Error count:           %u\n",
 			sb->s_error_count);
-	if (sb->s_first_error_time) {
-		tm = sb->s_first_error_time;
+	tm = ext2fs_get_tstamp(sb, s_first_error_time);
+	if (tm) {
 		fprintf(f, "First error time:         %s", ctime(&tm));
 		fprintf(f, "First error function:     %.*s\n",
 			EXT2_LEN_STR(sb->s_first_error_func));
@@ -436,8 +432,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 			fprintf(f, "First error err:          %s\n",
 				e2p_errcode2str(sb->s_first_error_errcode));
 	}
-	if (sb->s_last_error_time) {
-		tm = sb->s_last_error_time;
+	tm = ext2fs_get_tstamp(sb, s_last_error_time);
+	if (tm) {
 		fprintf(f, "Last error time:          %s", ctime(&tm));
 		fprintf(f, "Last error function:      %.*s\n",
 			EXT2_LEN_STR(sb->s_last_error_func));

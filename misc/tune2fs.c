@@ -470,7 +470,8 @@ static int check_fsck_needed(ext2_filsys fs, const char *prompt)
 	/* Refuse to modify anything but a freshly checked valid filesystem. */
 	if (!(fs->super->s_state & EXT2_VALID_FS) ||
 	    (fs->super->s_state & EXT2_ERROR_FS) ||
-	    (fs->super->s_lastcheck < fs->super->s_mtime)) {
+	    (ext2fs_get_tstamp(fs->super, s_lastcheck) <
+	     ext2fs_get_tstamp(fs->super, s_mtime))) {
 		puts(_(fsck_explain));
 		puts(_(please_fsck));
 		if (mount_flags & EXT2_MF_READONLY)
@@ -524,7 +525,8 @@ static void convert_64bit(ext2_filsys fs, int direction)
 	if (!fsck_requested &&
 	    ((fs->super->s_state & EXT2_ERROR_FS) ||
 	     !(fs->super->s_state & EXT2_VALID_FS) ||
-	     fs->super->s_lastcheck < fs->super->s_mtime))
+	     ext2fs_get_tstamp(fs->super, s_lastcheck) <
+	     ext2fs_get_tstamp(fs->super, s_mtime)))
 		request_fsck_afterwards(fs);
 	if (fsck_requested)
 		fprintf(stderr, _("After running e2fsck, please run `resize2fs %s %s"),

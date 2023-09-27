@@ -126,6 +126,7 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 	char *buf = NULL, *zerobuf = NULL;
 	struct mkorphan_info oi;
 	struct ext4_orphan_block_tail *ob_tail;
+	time_t now;
 
 	if (ino) {
 		err = ext2fs_read_inode(fs, ino, &inode);
@@ -184,8 +185,10 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 	if (err)
 		goto out;
 	ext2fs_iblk_set(fs, &inode, 0);
-	inode.i_atime = inode.i_mtime =
-		inode.i_ctime = fs->now ? fs->now : time(0);
+	now = fs->now ? fs->now : time(0);
+	ext2fs_inode_xtime_set(&inode, i_atime, now);
+	ext2fs_inode_xtime_set(&inode, i_ctime, now);
+	ext2fs_inode_xtime_set(&inode, i_mtime, now);
 	inode.i_links_count = 1;
 	inode.i_mode = LINUX_S_IFREG | 0600;
 	ext2fs_iblk_add_blocks(fs, &inode, oi.alloc_blocks);

@@ -245,6 +245,8 @@ void wait_on_buffer(struct buffer_head *bh)
 
 static void ext2fs_clear_recover(ext2_filsys fs, int error)
 {
+	time_t s_mtime;
+
 	ext2fs_clear_feature_journal_needs_recovery(fs->super);
 
 	/* if we had an error doing journal recovery, we need a full fsck */
@@ -254,8 +256,9 @@ static void ext2fs_clear_recover(ext2_filsys fs, int error)
 	 * If we replayed the journal by definition the file system
 	 * was mounted since the last time it was checked
 	 */
-	if (fs->super->s_lastcheck >= fs->super->s_mtime)
-		fs->super->s_lastcheck = fs->super->s_mtime - 1;
+	s_mtime = ext2fs_get_tstamp(fs->super, s_mtime);
+	if (ext2fs_get_tstamp(fs->super, s_lastcheck) >= s_mtime)
+		ext2fs_set_tstamp(fs->super, s_lastcheck, s_mtime - 1);
 	ext2fs_mark_super_dirty(fs);
 }
 

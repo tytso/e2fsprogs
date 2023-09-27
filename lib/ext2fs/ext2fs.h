@@ -579,6 +579,58 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
  */
 #define EXT2_I_SIZE(i)	((i)->i_size | ((__u64) (i)->i_size_high << 32))
 
+static inline __u32 __encode_extra_time(time_t seconds, __u32 nsec)
+{
+	__u32 extra = ((seconds - (__s32)seconds) >> 32) & EXT4_EPOCH_MASK;
+	return extra | (nsec << EXT4_EPOCH_BITS);
+}
+static inline time_t __decode_extra_sec(time_t seconds, __u32 extra)
+{
+	if (extra & EXT4_EPOCH_MASK)
+		seconds += ((time_t)(extra & EXT4_EPOCH_MASK) << 32);
+	return seconds;
+}
+static inline __u32 __decode_extra_nsec(__u32 extra)
+{
+	return (extra & EXT4_NSEC_MASK) >> EXT4_EPOCH_BITS;
+}
+#define ext2fs_inode_actual_size(inode)				      \
+	(EXT2_GOOD_OLD_INODE_SIZE +					      \
+	 (sizeof(*inode) > EXT2_GOOD_OLD_INODE_SIZE ?			      \
+		((struct ext2_inode_large *)(inode))->i_extra_isize : 0))
+#define clamp(val, min, max) ((val) < (min) ? (min) : ((val) > (max) ?	      \
+						       (max) : (val)))
+#define ext2fs_inode_xtime_set(inode, field, sec)			      \
+do {									      \
+	if (ext2fs_inode_includes(ext2fs_inode_actual_size(inode),	      \
+				  field ## _extra)) {			      \
+		(inode)->field = (__s32)sec;				      \
+		((struct ext2_inode_large *)(inode))->field ## _extra =       \
+			__encode_extra_time(sec, 0);			      \
+	} else {							      \
+		(inode)->field = clamp(sec, INT32_MIN, INT32_MAX);	      \
+	}								      \
+} while (0)
+#define ext2fs_inode_xtime_get(inode, field)				      \
+(ext2fs_inode_includes(ext2fs_inode_actual_size(inode), field ## _extra) ?    \
+	__decode_extra_sec((inode)->field,				      \
+		((struct ext2_inode_large *)(inode))->field ## _extra) :      \
+		(time_t)(inode)->field)
+
+static inline void __sb_set_tstamp(__u32 *lo, __u8 *hi, time_t seconds)
+{
+	*lo = seconds & 0xffffffff;
+	*hi = seconds >> 32;
+}
+static inline time_t __sb_get_tstamp(__u32 *lo, __u8 *hi)
+{
+	return ((time_t)(*hi) << 32) | *lo;
+}
+#define ext2fs_set_tstamp(sb, field, seconds) \
+	__sb_set_tstamp(&(sb)->field, &(sb)->field ## _hi, seconds)
+#define ext2fs_get_tstamp(sb, field) \
+	__sb_get_tstamp(&(sb)->field, &(sb)->field ## _hi)
+
 /*
  * ext2_icount_t abstraction
  */

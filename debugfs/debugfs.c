@@ -831,11 +831,13 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	char frag, fsize;
 	int os = current_fs->super->s_creator_os;
 	struct ext2_inode_large *large_inode;
-	int is_large_inode = 0;
+	size_t inode_size;
 
-	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
-		is_large_inode = 1;
 	large_inode = (struct ext2_inode_large *) inode;
+	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
+		inode_size = ext2fs_inode_actual_size(large_inode);
+	else
+		inode_size = EXT2_GOOD_OLD_INODE_SIZE;
 
 	if (LINUX_S_ISDIR(inode->i_mode)) i_type = "directory";
 	else if (LINUX_S_ISREG(inode->i_mode)) i_type = "regular";
@@ -848,7 +850,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	fprintf(out, "%sInode: %u   Type: %s    ", prefix, inode_num, i_type);
 	fprintf(out, "%sMode:  0%03o   Flags: 0x%x\n",
 		prefix, inode->i_mode & 07777, inode->i_flags);
-	if (is_large_inode && large_inode->i_extra_isize >= 24) {
+	if (ext2fs_inode_includes(inode_size, i_version_hi)) {
 		fprintf(out, "%sGeneration: %u    Version: 0x%08x:%08x\n",
 			prefix, inode->i_generation, large_inode->i_version_hi,
 			inode->osd1.linux1.l_i_version);
@@ -858,7 +860,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	}
 	fprintf(out, "%sUser: %5d   Group: %5d",
 		prefix, inode_uid(*inode), inode_gid(*inode));
-	if (is_large_inode && large_inode->i_extra_isize >= 32)
+	if (ext2fs_inode_includes(inode_size, i_projid))
 		fprintf(out, "   Project: %5d", large_inode->i_projid);
 	fputs("   Size: ", out);
 	if (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode))
@@ -895,39 +897,48 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	}
 	fprintf(out, "%sFragment:  Address: %u    Number: %u    Size: %u\n",
 		prefix, inode->i_faddr, frag, fsize);
-	if (is_large_inode && large_inode->i_extra_isize >= 24) {
+	if (ext2fs_inode_includes(inode_size, i_ctime_extra))
 		fprintf(out, "%s ctime: 0x%08x:%08x -- %s", prefix,
 			inode->i_ctime, large_inode->i_ctime_extra,
-			inode_time_to_string(inode->i_ctime,
-					     large_inode->i_ctime_extra));
-		fprintf(out, "%s atime: 0x%08x:%08x -- %s", prefix,
-			inode->i_atime, large_inode->i_atime_extra,
-			inode_time_to_string(inode->i_atime,
-					     large_inode->i_atime_extra));
-		fprintf(out, "%s mtime: 0x%08x:%08x -- %s", prefix,
-			inode->i_mtime, large_inode->i_mtime_extra,
-			inode_time_to_string(inode->i_mtime,
-					     large_inode->i_mtime_extra));
-		fprintf(out, "%scrtime: 0x%08x:%08x -- %s", prefix,
-			large_inode->i_crtime, large_inode->i_crtime_extra,
-			inode_time_to_string(large_inode->i_crtime,
-					     large_inode->i_crtime_extra));
-		if (inode->i_dtime)
-			fprintf(out, "%s dtime: 0x%08x:(%08x) -- %s", prefix,
-				large_inode->i_dtime, large_inode->i_ctime_extra,
-				inode_time_to_string(inode->i_dtime,
-						     large_inode->i_ctime_extra));
-	} else {
+			time_to_string(ext2fs_inode_xtime_get(inode, i_ctime)));
+	else
 		fprintf(out, "%sctime: 0x%08x -- %s", prefix, inode->i_ctime,
 			time_to_string((__s32) inode->i_ctime));
+	if (ext2fs_inode_includes(inode_size, i_atime_extra))
+		fprintf(out, "%s atime: 0x%08x:%08x -- %s", prefix,
+			inode->i_atime, large_inode->i_atime_extra,
+			time_to_string(ext2fs_inode_xtime_get(inode, i_atime)));
+	else
 		fprintf(out, "%satime: 0x%08x -- %s", prefix, inode->i_atime,
 			time_to_string((__s32) inode->i_atime));
+	if (ext2fs_inode_includes(inode_size, i_mtime_extra))
+		fprintf(out, "%s mtime: 0x%08x:%08x -- %s", prefix,
+			inode->i_mtime, large_inode->i_mtime_extra,
+			time_to_string(ext2fs_inode_xtime_get(inode, i_mtime)));
+	else
 		fprintf(out, "%smtime: 0x%08x -- %s", prefix, inode->i_mtime,
 			time_to_string((__s32) inode->i_mtime));
-		if (inode->i_dtime)
+	if (ext2fs_inode_includes(inode_size, i_crtime_extra))
+		fprintf(out, "%scrtime: 0x%08x:%08x -- %s", prefix,
+			large_inode->i_crtime, large_inode->i_crtime_extra,
+			time_to_string(ext2fs_inode_xtime_get(large_inode,
+							      i_crtime)));
+	if (inode->i_dtime) {
+		if (ext2fs_inode_includes(inode_size, i_ctime_extra)) {
+			time_t tm;
+
+			/* dtime doesn't have its own i_dtime_extra field, so
+			 * approximate this with i_ctime_extra instead. */
+			tm = __decode_extra_sec(inode->i_dtime,
+						large_inode->i_ctime_extra);
+			fprintf(out, "%s dtime: 0x%08x:(%08x) -- %s", prefix,
+				inode->i_dtime, large_inode->i_ctime_extra,
+				time_to_string(tm));
+		} else {
 			fprintf(out, "%sdtime: 0x%08x -- %s", prefix,
 				inode->i_dtime,
 				time_to_string((__s32) inode->i_dtime));
+		}
 	}
 	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
 		internal_dump_inode_extra(out, prefix, inode_num,
@@ -935,11 +946,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	dump_inode_attributes(out, inode_num);
 	if (ext2fs_has_feature_metadata_csum(current_fs->super)) {
 		__u32 crc = inode->i_checksum_lo;
-		if (is_large_inode &&
-		    large_inode->i_extra_isize >=
-				(offsetof(struct ext2_inode_large,
-					  i_checksum_hi) -
-				 EXT2_GOOD_OLD_INODE_SIZE))
+		if (ext2fs_inode_includes(inode_size, i_checksum_hi))
 			crc |= ((__u32)large_inode->i_checksum_hi) << 16;
 		fprintf(out, "Inode checksum: 0x%08x\n", crc);
 	}

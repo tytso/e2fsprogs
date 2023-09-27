@@ -1320,25 +1320,25 @@ void check_super_block(e2fsck_t ctx)
 	 */
 	if (((ctx->options & E2F_OPT_FORCE) || fs->super->s_checkinterval) &&
 	    !broken_system_clock && !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
-	    (fs->super->s_mtime > (__u32) ctx->now)) {
-		pctx.num = fs->super->s_mtime;
+	    (ext2fs_get_tstamp(fs->super, s_mtime) > ctx->now)) {
+		pctx.num = ext2fs_get_tstamp(fs->super, s_mtime);
 		problem = PR_0_FUTURE_SB_LAST_MOUNT;
-		if (fs->super->s_mtime <= (__u32) ctx->now + ctx->time_fudge)
+		if (pctx.num <= ctx->now + ctx->time_fudge)
 			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
-			fs->super->s_mtime = ctx->now;
+			ext2fs_set_tstamp(fs->super, s_mtime, ctx->now);
 			fs->flags |= EXT2_FLAG_DIRTY;
 		}
 	}
 	if (((ctx->options & E2F_OPT_FORCE) || fs->super->s_checkinterval) &&
 	    !broken_system_clock && !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
-	    (fs->super->s_wtime > (__u32) ctx->now)) {
-		pctx.num = fs->super->s_wtime;
+	    (ext2fs_get_tstamp(fs->super, s_wtime) > ctx->now)) {
+		pctx.num = ext2fs_get_tstamp(fs->super, s_wtime);
 		problem = PR_0_FUTURE_SB_LAST_WRITE;
-		if (fs->super->s_wtime <= (__u32) ctx->now + ctx->time_fudge)
+		if (pctx.num <= ctx->now + ctx->time_fudge)
 			problem = PR_0_FUTURE_SB_LAST_WRITE_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
-			fs->super->s_wtime = ctx->now;
+			ext2fs_set_tstamp(fs->super, s_wtime, ctx->now);
 			fs->flags |= EXT2_FLAG_DIRTY;
 		}
 	}

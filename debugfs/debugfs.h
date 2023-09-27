@@ -36,7 +36,6 @@ extern int check_fs_not_open(char *name);
 extern int check_fs_read_write(char *name);
 extern int check_fs_bitmaps(char *name);
 extern ext2_ino_t string_to_inode(char *str);
-extern char *inode_time_to_string(__u32 xtime, __u32 xtime_extra);
 extern char *time_to_string(__s64);
 extern __s64 string_to_time(const char *);
 extern unsigned long parse_ulong(const char *str, const char *cmd,

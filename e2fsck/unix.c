@@ -2080,7 +2080,7 @@ cleanup:
 		} else
 			sb->s_state &= ~EXT2_VALID_FS;
 		if (!(ctx->flags & E2F_FLAG_TIME_INSANE))
-			sb->s_lastcheck = ctx->now;
+			ext2fs_set_tstamp(sb, s_lastcheck, ctx->now);
 		sb->s_mnt_count = 0;
 		memset(((char *) sb) + EXT4_S_ERR_START, 0, EXT4_S_ERR_LEN);
 		pctx.errcode = ext2fs_set_gdt_csum(ctx->fs);

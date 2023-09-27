@@ -746,7 +746,7 @@ static void *op_init(struct fuse_conn_info *conn)
 #endif
 	if (fs->flags & EXT2_FLAG_RW) {
 		fs->super->s_mnt_count++;
-		fs->super->s_mtime = time(NULL);
+		ext2fs_set_tstamp(fs->super, s_mtime, time(NULL));
 		fs->super->s_state &= ~EXT2_VALID_FS;
 		ext2fs_mark_super_dirty(fs);
 		err = ext2fs_flush2(fs, 0);
@@ -3984,14 +3984,14 @@ no_translation:
 
 	/* Make a note in the error log */
 	get_now(&now);
-	fs->super->s_last_error_time = now.tv_sec;
+	ext2fs_set_tstamp(fs->super, s_last_error_time, now.tv_sec);
 	fs->super->s_last_error_ino = ino;
 	fs->super->s_last_error_line = line;
 	fs->super->s_last_error_block = err; /* Yeah... */
 	strncpy((char *)fs->super->s_last_error_func, file,
 		sizeof(fs->super->s_last_error_func));
-	if (fs->super->s_first_error_time == 0) {
-		fs->super->s_first_error_time = now.tv_sec;
+	if (ext2fs_get_tstamp(fs->super, s_first_error_time) == 0) {
+		ext2fs_set_tstamp(fs->super, s_first_error_time, now.tv_sec);
 		fs->super->s_first_error_ino = ino;
 		fs->super->s_first_error_line = line;
 		fs->super->s_first_error_block = err;

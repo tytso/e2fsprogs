@@ -191,14 +191,6 @@ int check_fs_bitmaps(char *name)
 	return 0;
 }
 
-char *inode_time_to_string(__u32 xtime, __u32 xtime_extra)
-{
-	__s64 t = (__s32) xtime;
-
-	t += (__s64) (xtime_extra & EXT4_EPOCH_MASK) << 32;
-	return time_to_string(t);
-}
-
 /*
  * This function takes a __s64 time value and converts it to a string,
  * using ctime

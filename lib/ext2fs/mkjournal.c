@@ -285,6 +285,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	unsigned long long	inode_size;
 	int			falloc_flags = EXT2_FALLOCATE_FORCE_INIT;
 	blk64_t			zblk;
+	time_t			now;
 
 	if ((retval = ext2fs_create_journal_superblock2(fs, jparams, flags,
 						       &buf)))
@@ -312,7 +313,9 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 
 	inode_size = (unsigned long long)fs->blocksize *
 			(jparams->num_journal_blocks + jparams->num_fc_blocks);
-	inode.i_mtime = inode.i_ctime = fs->now ? fs->now : time(0);
+	now = fs->now ? fs->now : time(0);
+	ext2fs_inode_xtime_set(&inode, i_mtime, now);
+	ext2fs_inode_xtime_set(&inode, i_ctime, now);
 	inode.i_links_count = 1;
 	inode.i_mode = LINUX_S_IFREG | 0600;
 	retval = ext2fs_inode_size_set(fs, &inode, inode_size);

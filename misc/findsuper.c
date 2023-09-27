@@ -230,10 +230,9 @@ int main(int argc, char *argv[])
 			WHY("free_inodes_count > inodes_count (%u > %u)\n",
 			    ext2.s_free_inodes_count, ext2.s_inodes_count);
 
-		if (ext2.s_mkfs_time != 0)
-			tm = ext2.s_mkfs_time;
-		else
-			tm = ext2.s_mtime;
+		tm = ext2fs_get_tstamp(ext2, s_mkfs_time);
+		if (tm == 0)
+			tm = ext2fs_get_tstamp(ext2, s_mtime);
 		s = ctime(&tm);
 		s[24] = 0;
 		bsize = 1 << (ext2.s_log_block_size + 10);
