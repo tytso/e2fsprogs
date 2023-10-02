@@ -74,6 +74,8 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	closefs.o \
 	crc16.o \
 	crc32c.o \
+	crc32c_intel.o \
+	crc32c_intel_pcl.o \
 	csum.o \
 	dblist.o \
 	dblist_dir.o \
@@ -154,6 +156,8 @@ SRCS= ext2_err.c \
 	$(srcdir)/closefs.c \
 	$(srcdir)/crc16.c \
 	$(srcdir)/crc32c.c \
+	$(srcdir)/crc32c_intel.c \
+	$(srcdir)/crc32c_intel_pcl.S \
 	$(srcdir)/gen_crc32ctable.c \
 	$(srcdir)/csum.c \
 	$(srcdir)/dblist.c \
@@ -520,8 +524,12 @@ tst_csum: csum.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) $(STATIC_LIBE2P) \
 		$(ALL_CFLAGS) $(ALL_LDFLAGS) $(STATIC_LIBEXT2FS) \
 		$(STATIC_LIBCOM_ERR) $(STATIC_LIBE2P) $(SYSLIBS)
 
-tst_crc32c: $(srcdir)/crc32c.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
-	$(Q) $(CC) $(ALL_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32c $(srcdir)/crc32c.c \
+tst_crc32c: $(srcdir)/crc32c.c $(srcdir)/crc32c_intel.c \
+		$(srcdir)/crc32c_intel_pcl.S \
+		$(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+	$(Q) $(CC) $(ALL_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32c \
+		$(srcdir)/crc32c.c $(srcdir)/crc32c_intel.c \
+		$(srcdir)/crc32c_intel_pcl.S \
 		-DUNITTEST $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
 		$(SYSLIBS)
 
@@ -766,6 +774,8 @@ crc32c.o: $(srcdir)/crc32c.c $(top_builddir)/lib/config.h \
  $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/ext2_ext_attr.h \
  $(srcdir)/hashmap.h $(srcdir)/bitops.h crc32c_table.h
+crc32c_intel.o: $(srcdir)/crc32c_intel.c
+crc32c_intel_pcl.o: $(srcdir)/crc32c_intel_pcl.S
 gen_crc32ctable.o: $(srcdir)/gen_crc32ctable.c $(srcdir)/crc32c_defs.h
 csum.o: $(srcdir)/csum.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
