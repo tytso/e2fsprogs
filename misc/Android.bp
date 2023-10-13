@@ -191,9 +191,8 @@ cc_library_static {
 //########################################################################
 // Build badblocks
 
-cc_binary {
+cc_binary_host {
     name: "badblocks",
-    host_supported: true,
     defaults: ["e2fsprogs-defaults"],
 
     srcs: ["badblocks.c"],
