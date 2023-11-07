@@ -1863,7 +1863,6 @@ static errcode_t block_mover(ext2_resize_t rfs)
 			old_blk += c;
 			moved += c;
 			if (rfs->progress) {
-				io_channel_flush(fs->io);
 				retval = (rfs->progress)(rfs,
 						E2_RSZ_BLOCK_RELOC_PASS,
 						moved, to_move);
@@ -1871,8 +1870,9 @@ static errcode_t block_mover(ext2_resize_t rfs)
 					goto errout;
 			}
 		} while (size > 0);
-		io_channel_flush(fs->io);
 	}
+
+	io_channel_flush(fs->io);
 
 errout:
 	if (badblock_list) {
