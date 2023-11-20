@@ -51,9 +51,13 @@ extern int optind;
 #include <unistd.h>
 #include <sys/types.h>
 #include <libgen.h>
-#include <limits.h>
+#include <limits.h>	/* for PATH_MAX */
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
 #endif
 
 #include "ext2fs/ext2_fs.h"
