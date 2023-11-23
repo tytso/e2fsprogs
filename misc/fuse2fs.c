@@ -1129,7 +1129,7 @@ static int op_mkdir(const char *path, mode_t mode)
 	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
 	inode.i_gid = ctxt->gid;
 	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
-	inode.i_mode = LINUX_S_IFDIR | (mode & ~(S_ISUID | fs->umask)) |
+	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID) |
 		       parent_sgid;
 	inode.i_generation = ff->next_generation++;
 
