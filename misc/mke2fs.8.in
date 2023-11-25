@@ -406,6 +406,11 @@ The \fBroot_owner=\fR option allows explicitly specifying these values,
 and avoid side-effects for users that do not expect the contents of the
 file system to change based on the user running \fBmke2fs\fR.
 .TP
+.BI root_perms [=permissions]
+Specify the root directory permissions in octal format. If no permissions
+are specified then the root directory permissions would be set in accordance with
+the default filesystem umask.
+.TP
 .B test_fs
 Set a flag in the file system superblock indicating that it may be
 mounted using experimental kernel code, such as the ext4dev file system.
