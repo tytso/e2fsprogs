@@ -11,11 +11,9 @@ BINARY_TYPE=bin
 dnl
 dnl This is to figure out the version number and the date....
 dnl
-E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
-	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
-E2FSPROGS_DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
-	| tr \" " " | awk '{print $1}'`
-E2FSPROGS_DAY=$(echo $E2FSPROGS_DATE | awk -F- '{print $1}' | sed -e '/^[[1-9]]$/s/^/0/')
+E2FSPROGS_VERSION=`awk -F\" '/E2FSPROGS_VERS/ { print $2 }' ${srcdir}/version.h`
+E2FSPROGS_DATE=`awk -F\" '/E2FSPROGS_DATE/ { print $2 }' ${srcdir}/version.h`
+E2FSPROGS_DAY=$(echo $E2FSPROGS_DATE | awk -F- '{ printf "%02d", $1 }')
 MONTH=`echo $E2FSPROGS_DATE | awk -F- '{print $2}'`
 YEAR=`echo $E2FSPROGS_DATE | awk -F- '{print $3}'`
 
@@ -43,27 +41,31 @@ Dec)	MONTH_NUM=12; E2FSPROGS_MONTH="December" ;;
 *)	AC_MSG_WARN([Unknown month $MONTH??]) ;;
 esac
 
-base_ver=`echo $E2FSPROGS_VERSION | \
-	       sed -e 's/-WIP//' -e 's/pre-//' -e 's/-PLUS//'`
+base_ver=`echo $E2FSPROGS_VERSION | sed -e 's/pre-//' -e 's/-.*//'`
+base_rel=`echo $E2FSPROGS_VERSION | awk -F- '{ print $2 }'`
 
 date_spec=${E2FSPROGS_YEAR}.${MONTH_NUM}.${E2FSPROGS_DAY}
 
 case $E2FSPROGS_VERSION in
 *-WIP|pre-*)
-	E2FSPROGS_PKGVER="$base_ver~WIP.$date_spec"
+	E2FSPROGS_PKGVER="$base_ver"
+	E2FSPROGS_PKGREL="WIP.$date_spec"
 	;;
 *)
 	E2FSPROGS_PKGVER="$base_ver"
+	E2FSPROGS_PKGREL="$base_rel"
 	;;
 esac
 
 unset DATE MONTH YEAR base_ver pre_vers date_spec
 AC_MSG_RESULT([Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION])
+AC_MSG_RESULT([Package version ${E2FSPROGS_PKGVER} release ${E2FSPROGS_PKGREL}])
 AC_MSG_RESULT([Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}])
 AC_SUBST(E2FSPROGS_YEAR)
 AC_SUBST(E2FSPROGS_MONTH)
 AC_SUBST(E2FSPROGS_DAY)
 AC_SUBST(E2FSPROGS_VERSION)
+AC_SUBST(E2FSPROGS_PKGREL)
 AC_SUBST(E2FSPROGS_PKGVER)
 AC_SUBST(E2FSPROGS_DATE)
 dnl
