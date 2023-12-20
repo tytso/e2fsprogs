@@ -1303,7 +1303,7 @@ dnl
 AC_CHECK_LIB(rt, clock_gettime, [CLOCK_GETTIME_LIB=-lrt])
 AC_SUBST(CLOCK_GETTIME_LIB)
 dnl
-dnl Check to see if the FUSE library is -lfuse or -losxfuse
+dnl Check to see if the FUSE library is -lfuse3, -losxfuse, or -lfuse
 dnl
 FUSE_CMT=
 FUSE_LIB=
@@ -1315,27 +1315,35 @@ then
 	FUSE_CMT="#"
 	AC_MSG_RESULT([Disabling fuse2fs])
 else
-	AC_CHECK_HEADERS([pthread.h fuse.h], [],
-[AC_MSG_FAILURE([Cannot find fuse2fs headers.])],
-[#define _FILE_OFFSET_BITS	64
-#define FUSE_USE_VERSION 29])
-
 	AC_PREPROC_IFELSE(
-[AC_LANG_PROGRAM([[#define FUSE_USE_VERSION 29
-#ifdef __linux__
+[AC_LANG_PROGRAM([[#ifdef __linux__
 #include <linux/fs.h>
 #include <linux/falloc.h>
 #include <linux/xattr.h>
 #endif
 ]], [])], [], [AC_MSG_FAILURE([Cannot find fuse2fs Linux headers.])])
 
-	AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
-		[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse],
-			      [AC_MSG_FAILURE([Cannot find fuse library.])])])
+	PKG_CHECK_MODULES([fuse3], [fuse3],
+	  [
+		FUSE_LIB=-lfuse3
+	  ], [
+		AC_CHECK_HEADERS([pthread.h fuse.h], [],
+			[AC_MSG_FAILURE([Cannot find fuse2fs headers.])],
+[#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 29])
+
+		AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
+			[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse],
+				[AC_MSG_FAILURE([Cannot find fuse library.])])])
+	  ])
 	AC_MSG_RESULT([Enabling fuse2fs])
 fi
 ,
-AC_CHECK_HEADERS([pthread.h fuse.h], [], [FUSE_CMT="#"],
+PKG_CHECK_MODULES([fuse3], [fuse3],
+  [
+	FUSE_LIB=-lfuse3
+  ], [
+	AC_CHECK_HEADERS([pthread.h fuse.h], [], [FUSE_CMT="#"], 
 [#define _FILE_OFFSET_BITS	64
 #define FUSE_USE_VERSION 29
 #ifdef __linux__
@@ -1343,11 +1351,13 @@ AC_CHECK_HEADERS([pthread.h fuse.h], [], [FUSE_CMT="#"],
 # include <linux/falloc.h>
 # include <linux/xattr.h>
 #endif])
-if test -z "$FUSE_CMT"
-then
-	AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
-[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse], [FUSE_CMT="#"])])
-fi
+	if test -z "$FUSE_CMT"
+	then
+		AC_CHECK_LIB(osxfuse, fuse_main, [FUSE_LIB=-losxfuse],
+			[AC_CHECK_LIB(fuse, fuse_main, [FUSE_LIB=-lfuse],
+				[FUSE_CMT="#"])])
+	fi
+  ])
 if test -z "$FUSE_CMT"
 then
 	AC_MSG_RESULT([Enabling fuse2fs by default.])
@@ -1355,6 +1365,29 @@ fi
 )
 AC_SUBST(FUSE_LIB)
 AC_SUBST(FUSE_CMT)
+if test "$FUSE_LIB" = "-lfuse3"
+then
+	FUSE_USE_VERSION=35
+	CFLAGS="$CFLAGS $fuse3_CFLAGS"
+	LDFLAGS="$LDFLAGS $fuse3_LDFLAGS"
+	AC_CHECK_HEADERS([pthread.h fuse.h], [],
+		[AC_MSG_FAILURE([Cannot find fuse3 fuse2fs headers.])],
+[#define _FILE_OFFSET_BITS	64
+#define FUSE_USE_VERSION 35
+#ifdef __linux__
+#include <linux/fs.h>
+#include <linux/falloc.h>
+#include <linux/xattr.h>
+#endif])
+elif test -n "$FUSE_LIB"
+then
+	FUSE_USE_VERSION=29
+fi
+if test -n "$FUSE_USE_VERSION"
+then
+	AC_DEFINE_UNQUOTED(FUSE_USE_VERSION, $FUSE_USE_VERSION,
+		[Define to the version of FUSE to use])
+fi
 dnl
 dnl See if optreset exists
 dnl
