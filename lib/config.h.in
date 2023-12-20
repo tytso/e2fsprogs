@@ -37,6 +37,9 @@
    language is requested. */
 #undef ENABLE_NLS
 
+/* Define to the version of FUSE to use */
+#undef FUSE_USE_VERSION
+
 /* Define to 1 if you have the `add_key' function. */
 #undef HAVE_ADD_KEY
 
