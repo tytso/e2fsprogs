@@ -125,9 +125,14 @@ static errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
 	inode.i_gid = st->st_gid;
 	ext2fs_set_i_gid_high(inode, st->st_gid >> 16);
 	inode.i_mode = (LINUX_S_IFMT & inode.i_mode) | (~S_IFMT & st->st_mode);
-	inode.i_atime = st->st_atime;
-	inode.i_mtime = st->st_mtime;
-	inode.i_ctime = st->st_ctime;
+
+	if (fs->now) {
+		inode.i_atime = inode.i_mtime = inode.i_ctime = fs->now;
+	} else {
+		inode.i_atime = st->st_atime;
+		inode.i_mtime = st->st_mtime;
+		inode.i_ctime = st->st_ctime;
+	}
 
 	retval = ext2fs_write_inode(fs, ino, &inode);
 	if (retval)
