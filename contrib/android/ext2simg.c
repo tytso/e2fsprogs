@@ -63,6 +63,9 @@ static struct buf_item {
 	void		    *buf[0];
 } *buf_list;
 
+/* Add the blocks [chunk_start, chunk_end) in the filesystem specificed by fs
+ * to the sparse file s. Note that the block at chunk_end is NOT included in
+ * the output. */
 static void add_chunk(ext2_filsys fs, struct sparse_file *s, blk_t chunk_start, blk_t chunk_end)
 {
 	int retval;
@@ -146,16 +149,24 @@ static struct sparse_file *ext_to_sparse(const char *in_file)
 			if (chunk_start == -1) {
 				chunk_start = cur_blk;
 			} else if (cur_blk - chunk_start + 1 == max_blk_per_chunk) {
-				add_chunk(fs, s, chunk_start, cur_blk);
+				/* cur_blk is used, so we must add [chunk_start, cur_blk], i.e.
+				 * pass cur_blk + 1 here. */
+				add_chunk(fs, s, chunk_start, cur_blk + 1);
 				chunk_start = -1;
 			}
 		} else if (chunk_start != -1) {
+			/* cur_blk is unused, so add [chunk_start, cur_blk) */
 			add_chunk(fs, s, chunk_start, cur_blk);
 			chunk_start = -1;
 		}
 	}
-	if (chunk_start != -1)
-		add_chunk(fs, s, chunk_start, cur_blk - 1);
+	if (chunk_start != -1) {
+		/* (cur_blk - 1) must be used, otherwise the code for unused blocks
+		 * above would have processed this. We must include the block, but the
+		 * upper boundary for add_chunk is exclusive, so to add [chunk_start,
+		 * cur_blk - 1] to the sparse image, pass cur_blk. */
+		add_chunk(fs, s, chunk_start, cur_blk);
+	}
 
 	ext2fs_free(fs);
 	return s;
