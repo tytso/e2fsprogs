@@ -874,6 +874,10 @@ sector size of the
 .B MKE2FS_SKIP_CHECK_MSG
 If set, do not show the message of file system automatic check caused by
 mount count or check interval.
+.TP
+.B MKE2FS_POPULATE_UID MKE2FS_POPULATE_GID
+With \fB-d\fR option, set UID and GID of the copied files in the newly created
+file system.
 .SH AUTHOR
 This version of
 .B mke2fs

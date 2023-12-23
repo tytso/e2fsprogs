@@ -31,6 +31,9 @@ struct fs_ops_callbacks {
 	errcode_t (* end_create_new_inode)(ext2_filsys fs,
 		const char *target_path, const char *name,
 		ext2_ino_t parent_ino, ext2_ino_t root, mode_t mode);
+	errcode_t (* new_inode_extra)(ext2_filsys fs, const char *target_path,
+		const char *name, ext2_ino_t parent_ino, ext2_ino_t root,
+		struct stat *st);
 };
 
 extern int no_copy_xattrs; 	/* this should eventually be a flag

@@ -119,6 +119,9 @@ static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 char **fs_types;
 const char *src_root_dir;  /* Copy files from the specified directory */
 static char *undo_file;
+static int use_populate_id;
+static uid_t populate_uid;
+static gid_t populate_gid;
 
 static int android_sparse_file; /* -E android_sparse */
 
@@ -1713,6 +1716,16 @@ profile_error:
 			break;
 		case 'd':
 			src_root_dir = optarg;
+			tmp = getenv("MKE2FS_POPULATE_UID");
+			if (tmp) {
+				populate_uid = atoi(tmp);
+				use_populate_id = 1;
+			}
+			tmp = getenv("MKE2FS_POPULATE_GID");
+			if (tmp) {
+				populate_gid = atoi(tmp);
+				use_populate_id = 1;
+			}
 			break;
 		case 'D':
 			direct_io = 1;
@@ -3012,6 +3025,16 @@ try_user:
 	return 0;
 }
 
+errcode_t cb_populate_new_inode_extra (ext2_filsys fs, const char *target_path,
+	const char *name, ext2_ino_t parent_ino, ext2_ino_t root,
+	struct stat *st)
+{
+	st->st_uid = populate_uid;
+	st->st_gid = populate_gid;
+
+	return 0;
+}
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -3553,11 +3576,18 @@ no_journal:
 		com_err(program_name, retval, "while creating huge files");
 	/* Copy files from the specified directory */
 	if (src_root_dir) {
+		struct fs_ops_callbacks fs_ops_callbacks;
+
+		memset(&fs_ops_callbacks, 0, sizeof(fs_ops_callbacks));
+		if (use_populate_id)
+			fs_ops_callbacks.new_inode_extra =
+				cb_populate_new_inode_extra;
+
 		if (!quiet)
 			printf("%s", _("Copying files into the device: "));
 
-		retval = populate_fs(fs, EXT2_ROOT_INO, src_root_dir,
-				     EXT2_ROOT_INO);
+		retval = populate_fs2(fs, EXT2_ROOT_INO, src_root_dir,
+				     EXT2_ROOT_INO, &fs_ops_callbacks);
 		if (retval) {
 			com_err(program_name, retval, "%s",
 				_("while populating file system"));
