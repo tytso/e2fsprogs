@@ -553,8 +553,10 @@ static unsigned int test_ro (int dev, blk_t last_block,
 				currently_testing++;
 				continue;
 			}
-			else if (currently_testing + try > next_bad)
+			else if (currently_testing + try > next_bad) {
 				try = next_bad - currently_testing;
+				recover_block = next_bad;
+			}
 		}
 		if (currently_testing + try > last_block)
 			try = last_block - currently_testing;
@@ -578,7 +580,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 				recover_block = currently_testing - got +
 					blocks_at_once;
 			continue;
-		} else if (currently_testing == recover_block) {
+		} else if (currently_testing >= recover_block) {
 			try = blocks_at_once;
 			recover_block = ~0;
 		}
@@ -608,6 +610,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	int i, try, got, nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
 	blk_t recover_block = ~0;
+	errcode_t errcode;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
@@ -640,6 +643,17 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
 		pattern_fill(buffer, pattern[pat_idx],
 			     blocks_at_once * block_size);
+
+		errcode = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+		if (errcode) {
+			com_err(program_name, errcode, "%s",
+				_("while beginning bad block list iteration"));
+			exit (1);
+		}
+		do {
+			ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+		} while (next_bad && next_bad < first_block);
+
 		num_blocks = last_block - 1;
 		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
@@ -652,6 +666,17 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					fputs(_("Too many bad blocks, aborting test\n"), stderr);
 				}
 				break;
+			}
+			if (next_bad) {
+				if (currently_testing == next_bad) {
+					ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+					currently_testing++;
+					continue;
+				}
+				else if (currently_testing + try > next_bad) {
+					try = next_bad - currently_testing;
+					recover_block = next_bad;
+				}
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
@@ -669,11 +694,13 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					recover_block = currently_testing -
 						got + blocks_at_once;
 				continue;
-			} else if (currently_testing == recover_block) {
+			} else if (currently_testing >= recover_block) {
 				try = blocks_at_once;
 				recover_block = ~0;
 			}
 		}
+
+		ext2fs_badblocks_list_iterate_end(bb_iter);
 
 		num_blocks = 0;
 		alarm (0);
@@ -682,6 +709,17 @@ static unsigned int test_rw (int dev, blk_t last_block,
 		flush_bufs();
 		if (s_flag | v_flag)
 			fputs(_("Reading and comparing: "), stderr);
+
+		errcode = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+		if (errcode) {
+			com_err(program_name, errcode, "%s",
+				_("while beginning bad block list iteration"));
+			exit (1);
+		}
+		do {
+			ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+		} while (next_bad && next_bad < first_block);
+
 		num_blocks = last_block;
 		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
@@ -694,6 +732,17 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					fputs(_("Too many bad blocks, aborting test\n"), stderr);
 				}
 				break;
+			}
+			if (next_bad) {
+				if (currently_testing == next_bad) {
+					ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+					currently_testing++;
+					continue;
+				}
+				else if (currently_testing + try > next_bad) {
+					try = next_bad - currently_testing;
+					recover_block = next_bad;
+				}
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
@@ -708,7 +757,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					recover_block = currently_testing -
 						got + blocks_at_once;
 				continue;
-			} else if (currently_testing == recover_block) {
+			} else if (currently_testing >= recover_block) {
 				try = blocks_at_once;
 				recover_block = ~0U;
 			}
@@ -721,6 +770,8 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			if (v_flag > 1)
 				print_status();
 		}
+
+		ext2fs_badblocks_list_iterate_end(bb_iter);
 
 		num_blocks = 0;
 		alarm (0);
@@ -761,15 +812,6 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	blk_t recover_block = ~0U;
 
 	bb_count = 0;
-	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
-	if (errcode) {
-		com_err(program_name, errcode, "%s",
-			_("while beginning bad block list iteration"));
-		exit (1);
-	}
-	do {
-		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-	} while (next_bad && next_bad < first_block);
 
 	blkbuf = allocate_buffer((size_t) 3 * blocks_at_once * block_size);
 	test_record = malloc(blocks_at_once * sizeof(struct saved_blk_record));
@@ -826,8 +868,17 @@ static unsigned int test_nd (int dev, blk_t last_block,
 		pattern_fill(test_base, pattern[pat_idx],
 			     blocks_at_once * block_size);
 
+		errcode = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+		if (errcode) {
+			com_err(program_name, errcode, "%s",
+				_("while beginning bad block list iteration"));
+			exit (1);
+		}
+		do {
+			ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+		} while (next_bad && next_bad < first_block);
+
 		buf_used = 0;
-		bb_count = 0;
 		save_ptr = save_base;
 		test_ptr = test_base;
 		currently_testing = first_block;
@@ -850,8 +901,10 @@ static unsigned int test_nd (int dev, blk_t last_block,
 					currently_testing++;
 					goto check_for_more;
 				}
-				else if (currently_testing + try > next_bad)
+				else if (currently_testing + try > next_bad) {
 					try = next_bad - currently_testing;
+					recover_block = next_bad;
+				}
 			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
@@ -979,13 +1032,12 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			fputs(_(done_string), stderr);
 
 		flush_bufs();
+		ext2fs_badblocks_list_iterate_end(bb_iter);
 	}
 	uncapture_terminate();
 	fflush(stderr);
 	free(blkbuf);
 	free(test_record);
-
-	ext2fs_badblocks_list_iterate_end(bb_iter);
 
 	return bb_count;
 }
