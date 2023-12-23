@@ -360,7 +360,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	print_group(sb->s_def_resgid, f);
 	if (sb->s_rev_level >= EXT2_DYNAMIC_REV) {
 		fprintf(f, "First inode:              %d\n", sb->s_first_ino);
-		fprintf(f, "Inode size:	          %d\n", sb->s_inode_size);
+		fprintf(f, "Inode size:               %d\n", sb->s_inode_size);
 		if (sb->s_min_extra_isize)
 			fprintf(f, "Required extra isize:     %d\n",
 				sb->s_min_extra_isize);
@@ -375,7 +375,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Journal inode:            %u\n",
 			sb->s_journal_inum);
 	if (sb->s_journal_dev)
-		fprintf(f, "Journal device:	          0x%04x\n",
+		fprintf(f, "Journal device:           0x%04x\n",
 			sb->s_journal_dev);
 	if (sb->s_last_orphan)
 		fprintf(f, "First orphan inode:       %u\n",
