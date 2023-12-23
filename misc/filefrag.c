@@ -53,6 +53,7 @@ extern int optind;
 #include <ext2fs/fiemap.h>
 #include "../version.h"
 
+int one_arg_only = 0;
 int verbose = 0;
 unsigned int blocksize;	/* Use specified blocksize (default 1kB) */
 int sync_file = 0;	/* fsync file before getting the mapping */
@@ -502,8 +503,13 @@ static int frag_report(const char *filename)
 	if (verbose) {
 		__u32 state;
 
-		printf("File size of %s is %llu (%llu block%s of %d bytes)",
-		       filename, (unsigned long long) st.st_size,
+		if (one_arg_only)
+			printf("File size ");
+		else
+			printf("File size of %s ", filename);
+
+		printf("is %llu (%llu block%s of %d bytes)",
+		       (unsigned long long) st.st_size,
 		       (unsigned long long) (numblocks * blksize >> blk_shift),
 		       numblocks == 1 ? "" : "s", 1 << blk_shift);
 		if (use_extent_cache &&
@@ -551,10 +557,12 @@ static int frag_report(const char *filename)
 		expected = expected / data_blocks_per_cyl + 1;
 	}
 
+	if (!one_arg_only)
+		printf("%s: ", filename);
 	if (num_extents == 1)
-		printf("%s: 1 extent found", filename);
+		printf("1 extent found");
 	else
-		printf("%s: %d extents found", filename, num_extents);
+		printf("%d extents found", num_extents);
 	/* count, and thus expected, only set for indirect FIBMAP'd files */
 	if (is_ext2 && expected && expected < num_extents)
 		printf(", perfection would be %d extent%s\n", expected,
@@ -682,6 +690,9 @@ int main(int argc, char**argv)
 
 	if (optind == argc)
 		usage(argv[0]);
+
+	if (optind + 1 == argc)
+		one_arg_only = 1;
 
 	for (cpp = argv + optind; *cpp != NULL; cpp++) {
 		int rc2 = frag_report(*cpp);
