@@ -95,8 +95,8 @@ installdirs-crond:
 	$(Q) $(MKDIR_P) $(DESTDIR)$(CROND_DIR)
 
 installdirs-libprogs:
-	$(E) "	MKDIR_P $(pkglibdir)"
-	$(Q) $(MKDIR_P) $(DESTDIR)$(pkglibdir)
+	$(E) "	MKDIR_P $(pkglibexecdir)"
+	$(Q) $(MKDIR_P) $(DESTDIR)$(pkglibexecdir)
 
 installdirs-systemd:
 	$(E) "	MKDIR_P $(SYSTEMD_SYSTEM_UNIT_DIR)"
@@ -125,8 +125,8 @@ install-crond: installdirs-crond
 
 install-libprogs: $(LIBPROGS) installdirs-libprogs
 	$(Q) for i in $(LIBPROGS); do \
-		$(ES) "	INSTALL $(pkglibdir)/$$i"; \
-		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(pkglibdir)/$$i; \
+		$(ES) "	INSTALL $(pkglibexecdir)/$$i"; \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(pkglibexecdir)/$$i; \
 	done
 
 install-systemd: $(SERVICE_FILES) installdirs-systemd
@@ -169,7 +169,7 @@ uninstall-crond:
 
 uninstall-libprogs:
 	for i in $(LIBPROGS); do \
-		$(RM) -f $(DESTDIR)$(pkglibdir)/$$i; \
+		$(RM) -f $(DESTDIR)$(pkglibexecdir)/$$i; \
 	done
 
 uninstall-systemd:

@@ -4,7 +4,7 @@ Documentation=man:e2scrub(8)
 
 [Service]
 Type=oneshot
-ExecStart=@pkglibdir@/e2scrub_fail "%f"
+ExecStart=@pkglibexecdir@/e2scrub_fail "%f"
 User=mail
 Group=mail
 SupplementaryGroups=systemd-journal
