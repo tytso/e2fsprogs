@@ -117,7 +117,7 @@ static char *mount_dir;
 char *journal_device;
 static int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 char **fs_types;
-const char *src_root_dir;  /* Copy files from the specified directory */
+const char *src_root;  /* Copy files from the specified directory or tarball */
 static char *undo_file;
 
 static int android_sparse_file; /* -E android_sparse */
@@ -134,7 +134,7 @@ static void usage(void)
 	"[-C cluster-size]\n\t[-i bytes-per-inode] [-I inode-size] "
 	"[-J journal-options]\n"
 	"\t[-G flex-group-size] [-N number-of-inodes] "
-	"[-d root-directory]\n"
+	"[-d root-directory|tarball]\n"
 	"\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
@@ -1712,7 +1712,7 @@ profile_error:
 			}
 			break;
 		case 'd':
-			src_root_dir = optarg;
+			src_root = optarg;
 			break;
 		case 'D':
 			direct_io = 1;
@@ -3551,12 +3551,12 @@ no_journal:
 	retval = mk_hugefiles(fs, device_name);
 	if (retval)
 		com_err(program_name, retval, "while creating huge files");
-	/* Copy files from the specified directory */
-	if (src_root_dir) {
+	/* Copy files from the specified directory or tarball */
+	if (src_root) {
 		if (!quiet)
 			printf("%s", _("Copying files into the device: "));
 
-		retval = populate_fs(fs, EXT2_ROOT_INO, src_root_dir,
+		retval = populate_fs(fs, EXT2_ROOT_INO, src_root,
 				     EXT2_ROOT_INO);
 		if (retval) {
 			com_err(program_name, retval, "%s",
