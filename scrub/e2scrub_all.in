@@ -125,6 +125,10 @@ ls_scan_targets() {
 	while read vars ; do
 		eval "${vars}"
 
+		# Skip unjournalled filesystems; they are inconsistent when
+		# mounted
+		dumpe2fs -h "${NAME}" | grep -q 'has_journal' || continue
+
 		if [ "${scrub_all}" -eq 1 ] || [ -n "${MOUNTPOINT}" ]; then
 		    echo ${MOUNTPOINT:-${NAME}}
 		fi
