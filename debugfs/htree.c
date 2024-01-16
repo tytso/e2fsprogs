@@ -347,6 +347,9 @@ void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 		hash_seed[3] = current_fs->super->s_hash_seed[3];
 
 		hash_version = current_fs->super->s_def_hash_version;
+		if (hash_version <= EXT2_HASH_TEA &&
+		    current_fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH)
+			hash_version += 3;
 	}
 
 	reset_getopt();
