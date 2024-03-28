@@ -308,13 +308,6 @@ retry:
 		set_field(s_inodes_count, ext2fs_blocks_count(super) / i);
 
 	/*
-	 * Make sure we have at least EXT2_FIRST_INO + 1 inodes, so
-	 * that we have enough inodes for the filesystem(!)
-	 */
-	if (super->s_inodes_count < EXT2_FIRST_INODE(super)+1)
-		super->s_inodes_count = EXT2_FIRST_INODE(super)+1;
-
-	/*
 	 * There should be at least as many inodes as the user
 	 * requested.  Figure out how many inodes per group that
 	 * should be.  But make sure that we don't allocate more than
@@ -375,6 +368,15 @@ ipg_retry:
 	}
 	super->s_inodes_count = super->s_inodes_per_group *
 		fs->group_desc_count;
+	/*
+	 * Make sure we have at least EXT2_FIRST_INO + 1 inodes, so
+	 * that we have enough inodes for the filesystem(!)
+	 */
+	if (super->s_inodes_count < EXT2_FIRST_INODE(super)+1) {
+		ipg += 8;
+		goto ipg_retry;
+	}
+
 	super->s_free_inodes_count = super->s_inodes_count;
 
 	/*

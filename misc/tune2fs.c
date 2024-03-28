@@ -3519,9 +3519,9 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	}
 
 	if (Q_flag) {
-		if (mount_flags & EXT2_MF_MOUNTED) {
+		if (mount_flags & (EXT2_MF_BUSY | EXT2_MF_MOUNTED)) {
 			fputs(_("The quota feature may only be changed when "
-				"the filesystem is unmounted.\n"), stderr);
+				"the filesystem is unmounted and not in use.\n"), stderr);
 			rc = 1;
 			goto closefs;
 		}
@@ -3672,10 +3672,10 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 	}
 
 	if (I_flag) {
-		if (mount_flags & EXT2_MF_MOUNTED) {
+		if (mount_flags & (EXT2_MF_BUSY | EXT2_MF_MOUNTED)) {
 			fputs(_("The inode size may only be "
 				"changed when the filesystem is "
-				"unmounted.\n"), stderr);
+				"unmounted and not in use.\n"), stderr);
 			rc = 1;
 			goto closefs;
 		}
