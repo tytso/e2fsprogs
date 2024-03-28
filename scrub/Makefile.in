@@ -18,6 +18,7 @@ CONFFILES=	e2scrub.conf
 
 ifeq ($(HAVE_UDEV),yes)
 UDEV_RULES	= e2scrub.rules
+UDISKS_RULES	= ext4.rules
 INSTALLDIRS_TGT	+= installdirs-udev
 INSTALL_TGT	+= install-udev
 UNINSTALL_TGT	+= uninstall-udev
@@ -39,7 +40,7 @@ INSTALL_TGT	+= install-systemd install-libprogs
 UNINSTALL_TGT	+= uninstall-systemd uninstall-libprogs
 endif
 
-all:: $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES) $(SERVICE_FILES) $(CRONTABS) $(LIBPROGS)
+all:: $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES) $(UDISKS_RULES) $(SERVICE_FILES) $(CRONTABS) $(LIBPROGS)
 
 e2scrub: $(DEP_SUBSTITUTE) e2scrub.in
 	$(E) "	SUBST $@"
@@ -111,6 +112,10 @@ install-udev: installdirs-udev
 		$(ES) "	INSTALL $(UDEV_RULES_DIR)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(UDEV_RULES_DIR)/96-$$i; \
 	done
+	$(Q) for i in $(UDISKS_RULES); do \
+		$(ES) "	INSTALL $(UDEV_RULES_DIR)/$$i"; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(UDEV_RULES_DIR)/64-$$i; \
+	done
 
 install-crond: installdirs-crond
 	$(Q) if test -n "$(CRONTABS)" ; then \
@@ -153,6 +158,9 @@ uninstall-udev:
 	for i in $(UDEV_RULES); do \
 		$(RM) -f $(DESTDIR)$(UDEV_RULES_DIR)/96-$$i; \
 	done
+	for i in $(UDISKS_RULES); do \
+		$(RM) -f $(DESTDIR)$(UDEV_RULES_DIR)/64-$$i; \
+	done
 
 uninstall-crond:
 	if test -n "$(CRONTABS)" ; then \
@@ -181,7 +189,7 @@ uninstall: $(UNINSTALL_TGT)
 	done
 
 clean::
-	$(RM) -f $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES) $(SERVICE_FILES) $(CRONTABS) $(LIBPROGS)
+	$(RM) -f $(PROGS) $(MANPAGES) $(CONFFILES) $(UDEV_RULES) $(UDISKS_RULES) $(SERVICE_FILES) $(CRONTABS) $(LIBPROGS)
 
 mostlyclean: clean
 distclean: clean
