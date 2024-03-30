@@ -49,5 +49,5 @@ usr/share/man/man8/mklost+found.8
 usr/share/man/man8/resize2fs.8
 usr/share/man/man8/tune2fs.8
 etc
-[linux-any] lib/udev/rules.d
-[linux-any] lib/systemd/system
+[linux-any] ${deb_udevudevdir}/rules.d
+[linux-any] ${deb_systemdsystemunitdir}

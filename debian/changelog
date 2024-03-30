@@ -1,3 +1,49 @@
+e2fsprogs (1.47.0-2.4) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Upload to unstable.
+  * Version Provides and Breaks (thanks to Matthias Klose).
+
+ -- Helmut Grohne <helmut@subdivi.de>  Wed, 13 Mar 2024 07:20:06 +0100
+
+e2fsprogs (1.47.0-2.4~exp1) experimental; urgency=medium
+
+  * Non-maintainer upload.
+  * Revert time64 transitions for libss2 and libcom-err2.
+  * Enable dh_movetousr (DEP17). (Closes: #1060000)
+    + Mitigate file loss in libext2fs2 -> libext2fs2t64 upgrade and /usr-move.
+
+ -- Helmut Grohne <helmut@subdivi.de>  Sun, 10 Mar 2024 21:02:48 +0100
+
+e2fsprogs (1.47.0-2.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix package names in d/*.shlibs.local. (Closes: #1065087)
+  * Update sonames in d/libext2fs2t64.lintian-overrides.
+  * Fix packages names in code for updating symbols fies in d/rules.
+
+ -- Michael Hudson-Doyle <michael.hudson@ubuntu.com>  Fri, 01 Mar 2024 08:01:06 +1300
+
+e2fsprogs (1.47.0-2.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+
+  [ Helmut Grohne ]
+  * Fix FTBFS when systemd.pc changes systemdsystemunitdir. (Closes: #1053111)
+
+  [ Michael Hudson-Doyle ]
+  * Account for changes in udevudevdir as well.
+  * Rename libraries for 64-bit time_t transition.
+
+ -- Michael Hudson-Doyle <mwhudson@debian.org>  Wed, 28 Feb 2024 23:40:42 +0000
+
+e2fsprogs (1.47.0-2) unstable; urgency=medium
+
+  * Don't enable metadata_csum_seed and orhpan_file by default (Closes:
+    #1031622, #1030939)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 04 Mar 2023 22:16:08 -0500
+
 e2fsprogs (1.47.0-1) unstable; urgency=medium
 
   * New upstream version
