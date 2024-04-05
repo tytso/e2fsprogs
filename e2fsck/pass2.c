@@ -1854,17 +1854,26 @@ static int deallocate_inode_block(ext2_filsys fs,
 }
 
 /*
- * This function deallocates an inode
+ * This function reverts various counters and bitmaps incremented in
+ * pass1 for the inode, blocks, and quotas before it was decided the
+ * inode was corrupt and needed to be cleared.  This avoids the need
+ * to run e2fsck a second time (or have it restart itself) to repair
+ * these counters.
+ *
+ * It does not modify any on-disk state, so even if the inode is bad
+ * it _should_ reset in-memory state to before the inode was first
+ * processed.
  */
 static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 {
 	ext2_filsys fs = ctx->fs;
-	struct ext2_inode	inode;
+	struct ext2_inode_large	inode;
 	struct problem_context	pctx;
 	__u32			count;
 	struct del_block	del_block;
 
-	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
+	e2fsck_read_inode_full(ctx, ino, EXT2_INODE(&inode),
+			       sizeof(inode), "deallocate_inode");
 	clear_problem_context(&pctx);
 	pctx.ino = ino;
 
@@ -1874,29 +1883,29 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	e2fsck_read_bitmaps(ctx);
 	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
 
-	if (ext2fs_file_acl_block(fs, &inode) &&
+	if (ext2fs_file_acl_block(fs, EXT2_INODE(&inode)) &&
 	    ext2fs_has_feature_xattr(fs->super)) {
 		pctx.errcode = ext2fs_adjust_ea_refcount3(fs,
-				ext2fs_file_acl_block(fs, &inode),
+				ext2fs_file_acl_block(fs, EXT2_INODE(&inode)),
 				block_buf, -1, &count, ino);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
 			count = 1;
 		}
 		if (pctx.errcode) {
-			pctx.blk = ext2fs_file_acl_block(fs, &inode);
+			pctx.blk = ext2fs_file_acl_block(fs, EXT2_INODE(&inode));
 			fix_problem(ctx, PR_2_ADJ_EA_REFCOUNT, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
 		}
 		if (count == 0) {
 			ext2fs_block_alloc_stats2(fs,
-				  ext2fs_file_acl_block(fs, &inode), -1);
+				  ext2fs_file_acl_block(fs, EXT2_INODE(&inode)), -1);
 		}
-		ext2fs_file_acl_block_set(fs, &inode, 0);
+		ext2fs_file_acl_block_set(fs, EXT2_INODE(&inode), 0);
 	}
 
-	if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
+	if (!ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&inode)))
 		goto clear_inode;
 
 	/* Inline data inodes don't have blocks to iterate */
@@ -1921,10 +1930,22 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
+
+	if ((ino != quota_type2inum(PRJQUOTA, fs->super)) &&
+	    (ino != fs->super->s_orphan_file_inum) &&
+	    (ino == EXT2_ROOT_INO || ino >= EXT2_FIRST_INODE(ctx->fs->super)) &&
+	    !(inode.i_flags & EXT4_EA_INODE_FL)) {
+		if (del_block.num > 0)
+			quota_data_sub(ctx->qctx, &inode, ino,
+				       del_block.num * EXT2_CLUSTER_SIZE(fs->super));
+		quota_data_inodes(ctx->qctx, (struct ext2_inode_large *)&inode,
+				  ino, -1);
+	}
+
 clear_inode:
 	/* Inode may have changed by block_iterate, so reread it */
-	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
-	e2fsck_clear_inode(ctx, ino, &inode, 0, "deallocate_inode");
+	e2fsck_read_inode(ctx, ino, EXT2_INODE(&inode), "deallocate_inode");
+	e2fsck_clear_inode(ctx, ino, EXT2_INODE(&inode), 0, "deallocate_inode");
 }
 
 /*
