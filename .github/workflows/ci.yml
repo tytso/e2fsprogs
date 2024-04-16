@@ -120,7 +120,6 @@ jobs:
     - run: make -j8 -C lib/support/ all V=1 CFLAGS_WARN="-Werror"
     - run: make -j8 -C lib/e2p/ all V=1 CFLAGS_WARN="-Werror"
     - run: make -j8 -C misc/ mke2fs V=1 CFLAGS_WARN="-Werror"
-    - run: touch image.ext4
     - run: misc/mke2fs.exe -T ext4 image.ext4 128M
     - uses: actions/upload-artifact@v3
       with:
