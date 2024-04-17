@@ -588,16 +588,26 @@ blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 
 	for (; blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
 		dgrp_t grp, three = 1, five = 5, seven = 7;
-		dgrp_t limit = (dgrp_t)-1;
+		dgrp_t limit;
 		blk_t this_bpg = bpg ? bpg : blocksize * 8;
+		blk64_t	num_blocks;
 
-		if (ctx->num_blocks && limit > ctx->num_blocks / this_bpg)
-			limit = ctx->num_blocks / this_bpg;
+		if (ext2fs_get_device_size2(ctx->filesystem_name,
+					    blocksize,
+					    &num_blocks) == 0) {
+			limit = num_blocks / this_bpg;
+		} else {
+			/* If we can't figure out the device size,
+			 * arbitrarily set a limit which is enough for
+			 * 8 block groups or so...
+			 */
+			limit = 128;
+		}
 
 		io_channel_set_blksize(io, blocksize);
 
 		while ((grp = ext2fs_list_backups(NULL, &three,
-						  &five, &seven)) < limit) {
+						  &five, &seven)) <= limit) {
 			blk64_t superblock = (blk64_t)grp * this_bpg;
 
 			if (blocksize == 1024)
