@@ -508,8 +508,8 @@ The default inode size is controlled by the
 file.  In the
 .B mke2fs.conf
 file shipped with e2fsprogs, the default inode size is 256 bytes for
-most file systems, except for small file systems where the inode size
-will be 128 bytes.
+all file systems, except for the GNU Hurd since it only supports
+128-byte inodes.
 .TP
 .B \-j
 Create the file system with an ext3 journal.  If the
