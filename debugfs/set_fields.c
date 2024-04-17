@@ -456,7 +456,8 @@ static errcode_t parse_uint(struct field_set_info *info, char *field,
 	int suffix = check_suffix(field);
 	char *tmp;
 	void *field1 = info->ptr, *field2 = info->ptr2;
-	int size = (info->size == 6 || info->size == 5) ? 4 : info->size;
+	unsigned int size = (info->size == 6 || info->size == 5) ? 4 :
+		info->size;
 	union {
 		__u64	*ptr64;
 		__u32	*ptr32;
@@ -484,7 +485,7 @@ static errcode_t parse_uint(struct field_set_info *info, char *field,
 	}
 	mask = ~0ULL >> ((8 - size) * 8);
 	limit = ~0ULL >> ((8 - info->size) * 8);
-	if (field2 && (info->size != 6 || info->size != 5))
+	if (field2 && (info->size != 6 && info->size != 5))
 		limit = ~0ULL >> ((8 - info->size*2) * 8);
 
 	if (num > limit) {
