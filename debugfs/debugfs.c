@@ -900,21 +900,24 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (ext2fs_inode_includes(inode_size, i_ctime_extra))
 		fprintf(out, "%s ctime: 0x%08x:%08x -- %s", prefix,
 			inode->i_ctime, large_inode->i_ctime_extra,
-			time_to_string(ext2fs_inode_xtime_get(inode, i_ctime)));
+			time_to_string(ext2fs_inode_xtime_get(large_inode,
+							      i_ctime)));
 	else
 		fprintf(out, "%sctime: 0x%08x -- %s", prefix, inode->i_ctime,
 			time_to_string((__s32) inode->i_ctime));
 	if (ext2fs_inode_includes(inode_size, i_atime_extra))
 		fprintf(out, "%s atime: 0x%08x:%08x -- %s", prefix,
 			inode->i_atime, large_inode->i_atime_extra,
-			time_to_string(ext2fs_inode_xtime_get(inode, i_atime)));
+			time_to_string(ext2fs_inode_xtime_get(large_inode,
+							      i_atime)));
 	else
 		fprintf(out, "%satime: 0x%08x -- %s", prefix, inode->i_atime,
 			time_to_string((__s32) inode->i_atime));
 	if (ext2fs_inode_includes(inode_size, i_mtime_extra))
 		fprintf(out, "%s mtime: 0x%08x:%08x -- %s", prefix,
 			inode->i_mtime, large_inode->i_mtime_extra,
-			time_to_string(ext2fs_inode_xtime_get(inode, i_mtime)));
+			time_to_string(ext2fs_inode_xtime_get(large_inode,
+							      i_mtime)));
 	else
 		fprintf(out, "%smtime: 0x%08x -- %s", prefix, inode->i_mtime,
 			time_to_string((__s32) inode->i_mtime));
