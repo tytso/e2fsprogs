@@ -1299,6 +1299,15 @@ if test "$ac_cv_func_dlopen" = yes ; then
 fi
 AC_SUBST(MAGIC_LIB)
 dnl
+dnl libarchive
+dnl
+AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIB=-larchive
+AC_CHECK_HEADERS([archive.h])])
+if test "$ac_cv_func_dlopen" = yes ; then
+   ARCHIVE_LIB=$DLOPEN_LIB
+fi
+AC_SUBST(ARCHIVE_LIB)
+dnl
 dnl Check to see if librt is required for clock_gettime() (glibc < 2.17)
 dnl
 AC_CHECK_LIB(rt, clock_gettime, [CLOCK_GETTIME_LIB=-lrt])
