@@ -14,6 +14,7 @@ MKFS_TAR="$TMPFILE.tar"
 MKFS_DIR="$TMPFILE.dir"
 OUT="$test_name.log"
 EXP="$test_dir/expect"
+DEBUGFS_EXE_MTIME=$(perl -e 'print((stat ($ARGV[0]))[9])' "$DEBUGFS_EXE")
 
 # we put everything in a subdir because we cannot rdump the root as that would
 # require permissions to changing ownership of /lost+found
@@ -44,15 +45,15 @@ if false; then
 	tar --sort=name -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu -cf "$MKFS_TAR.uniq" test
 else
 	# same as above but without using GNU tar
-	perl $test_dir/mkgnutar.pl --nopadding --directory="$MKFS_DIR" --mtime "$(stat -c %Y $DEBUGFS_EXE)" test > "$MKFS_TAR.dupl"
+	perl $test_dir/mkgnutar.pl --nopadding --directory="$MKFS_DIR" --mtime "$DEBUGFS_EXE_MTIME" test > "$MKFS_TAR.dupl"
 	echo "Test me" > "$MKFS_DIR/test/dir/file"
-	perl $test_dir/mkgnutar.pl --nopadding --directory="$MKFS_DIR" --mtime "$(stat -c %Y $DEBUGFS_EXE)" test/dir/file >> "$MKFS_TAR.dupl"
-	perl $test_dir/mkgnutar.pl --nopadding --directory="$MKFS_DIR" --mtime "$(stat -c %Y $DEBUGFS_EXE)" --no-recursion test/ >> "$MKFS_TAR.dupl"
+	perl $test_dir/mkgnutar.pl --nopadding --directory="$MKFS_DIR" --mtime "$DEBUGFS_EXE_MTIME" test/dir/file >> "$MKFS_TAR.dupl"
+	perl $test_dir/mkgnutar.pl --nopadding --directory="$MKFS_DIR" --mtime "$DEBUGFS_EXE_MTIME" --no-recursion test/ >> "$MKFS_TAR.dupl"
 	# add end-of-archive entry
 	truncate -s +1024 "$MKFS_TAR.dupl"
 	# pad to a multiple of the record size
 	truncate -s %10240 "$MKFS_TAR.dupl"
-	perl $test_dir/mkgnutar.pl --directory="$MKFS_DIR" --mtime "$(stat -c %Y $DEBUGFS_EXE)" test > "$MKFS_TAR.uniq"
+	perl $test_dir/mkgnutar.pl --directory="$MKFS_DIR" --mtime "$DEBUGFS_EXE_MTIME" test > "$MKFS_TAR.uniq"
 fi
 
 rm -r "$MKFS_DIR"
@@ -105,7 +106,7 @@ for ext in uniq dupl; do
 		if false; then
 			tar --sort=name -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu -cvf "$TMPFILE.new.tar" test 2>&1;
 		else
-			perl $test_dir/mkgnutar.pl --verbose --directory="$MKFS_DIR" --mtime "$(stat -c %Y $DEBUGFS_EXE)" test 2>&1 > "$TMPFILE.new.tar";
+			perl $test_dir/mkgnutar.pl --verbose --directory="$MKFS_DIR" --mtime "$DEBUGFS_EXE_MTIME" test 2>&1 > "$TMPFILE.new.tar";
 		fi;
 		echo Exit status is $?;
 		$FSCK -f -n "$TMPFILE.$ext" 2>&1;
