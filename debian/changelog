@@ -1,3 +1,9 @@
+e2fsprogs (1.47.1~rc1-1) experimental; urgency=medium
+
+  * New upstream version
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 21 Apr 2024 23:58:04 -0400
+
 e2fsprogs (1.47.0-2.4) unstable; urgency=medium
 
   * Non-maintainer upload.
