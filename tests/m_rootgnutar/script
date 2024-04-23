@@ -1,5 +1,7 @@
 # vim: filetype=sh
 
+use_mkgnutar=
+
 test_description="create fs image from GNU tarball"
 if ! test -x "$DEBUGFS_EXE"; then
 	echo "$test_name: $test_description: skipped (no debugfs)"
@@ -8,6 +10,21 @@ fi
 if [ "$(grep -c 'define HAVE_ARCHIVE_H' ../lib/config.h)" -eq 0 ]; then
 	echo "$test_name: $test_description: skipped (no libarchive)"
 	exit 0
+fi
+
+if test -z "$use_mkgnutar" ; then
+    if type ztar > /dev/null 2>&1 && \
+	    tar --version 2>&1 | head -1 | grep -q "GNU tar" ; then
+	TAR=tar
+    elif type gtar > /dev/null 2>&1 && \
+	    gtar --version 2>&1 | head -1 | grep -q "GNU tar" ; then
+	TAR=gtar
+    else
+	# if GNU tar is not available, fall back to using mkgnutar.pl
+	use_mkgnutar=yes
+#	echo "$test_name: $test_description: skipped (no GNU tar)"
+#	exit 0
+    fi
 fi
 
 MKFS_TAR="$TMPFILE.tar"
@@ -28,21 +45,26 @@ mkdir "$MKFS_DIR/test/emptydir"
 mkdir "$MKFS_DIR/test/dir"
 echo "will be overwritten" > "$MKFS_DIR/test/dir/file"
 
-if false; then
+if test -z "$use_mkgnutar"; then
 	# debugfs rdump does not preserve the timestamps when it extracts the
 	# files so we ignore them by using tar --clamp-mtime
 	# first write a partial tar
-	tar --sort=name -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu -cf "$MKFS_TAR.dupl" test
+    $TAR --sort=name -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime \
+	 --format=gnu -cf "$MKFS_TAR.dupl" test
 	# now overwrite the contents of a file
 	echo "Test me" > "$MKFS_DIR/test/dir/file"
 	# and update the tar so that it contains two entries for the same file
 	# we need this to test the code path that first unlinks and then overwrites an
 	# existing file
-	tar -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu -rf "$MKFS_TAR.dupl" test/dir/file
+	$TAR -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime \
+	     --format=gnu -rf "$MKFS_TAR.dupl" test/dir/file
 	# also add a duplicate directory entry because those must not be unlinked
-	echo test | tar -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu -rf "$MKFS_TAR.dupl" --no-recursion --verbatim-files-from --files-from=-
+	echo test | $TAR -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime \
+			 --format=gnu -rf "$MKFS_TAR.dupl" --no-recursion \
+			 --verbatim-files-from --files-from=-
 	# also create a tarball of the directory with only one entry per file
-	tar --sort=name -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu -cf "$MKFS_TAR.uniq" test
+	$TAR --sort=name -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime \
+	     --format=gnu -cf "$MKFS_TAR.uniq" test
 else
 	# same as above but without using GNU tar
 	perl $test_dir/mkgnutar.pl --nopadding --directory="$MKFS_DIR" --mtime "$DEBUGFS_EXE_MTIME" test > "$MKFS_TAR.dupl"
@@ -102,9 +124,11 @@ for ext in uniq dupl; do
 		$DEBUGFS -R "rdump /test $MKFS_DIR" "$TMPFILE.$ext" 2>&1;
 		echo Exit status is $?;
 		# debugfs rdump does not preserve the timestamps when it extracts the
-		# files so we ignore them by using tar --clamp-mtime
-		if false; then
-			tar --sort=name -C "$MKFS_DIR" --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu -cvf "$TMPFILE.new.tar" test 2>&1;
+		if test -z "$use_mkgnutar"; then
+			# files so we ignore them by using tar --clamp-mtime
+		    $TAR --sort=name -C "$MKFS_DIR" \
+			 --mtime="$DEBUGFS_EXE" --clamp-mtime --format=gnu \
+			 -cvf "$TMPFILE.new.tar" test 2>&1;
 		else
 			perl $test_dir/mkgnutar.pl --verbose --directory="$MKFS_DIR" --mtime "$DEBUGFS_EXE_MTIME" test 2>&1 > "$TMPFILE.new.tar";
 		fi;
@@ -140,5 +164,6 @@ else
 	diff $DIFF_OPTS "$EXP" "$OUT" > "$test_name.failed"
 fi
 
-rm -rf "$MKFS_TAR.dupl" "$MKFS_TAR.uniq" "$TMPFILE.cmd1" "$TMPFILE.cmd2" "$TMPFILE.log"
+rm -rf "$MKFS_TAR.dupl" "$MKFS_TAR.uniq" "$TMPFILE.cmd1" "$TMPFILE.cmd2" \
+   "$TMPFILE.log" "$TMPFILE.dupl" "$TMPFILE.uniq" "$TMPFILE.testme"
 unset MKFS_TAR MKFS_DIR OUT EXP

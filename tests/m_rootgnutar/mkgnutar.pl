@@ -59,6 +59,7 @@ foreach my $fname (@entries) {
     my $content = "";
     my $type;
     my $linkname = "";
+    my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
     if (S_ISLNK($mode)) {
         $type     = 2;
         $linkname = readlink $fname;
@@ -74,17 +75,18 @@ foreach my $fname (@entries) {
         'a100 a8 a8 a8 a12 a12 A8 a1 a100 a6 a2 a32 a32 a8 a8 a155 x12',
         $fname,
         sprintf('%07o',  $mode & 07777),
-        sprintf('%07o',  1000),               # uid
-        sprintf('%07o',  1000),               # gid
+        sprintf('%07o',  $<),                 # uid
+        sprintf('%07o',  $(),                 # gid
         sprintf('%011o', length $content),    # size
-        sprintf('%011o', $mtime),             # mtime
+        sprintf('%011o', $mtime),
+         # mtime
         '',                                   # checksum
         $type,
         $linkname,                            # linkname
         "ustar ",                             # magic
         " ",                                  # version
-        "josch",                              # username
-        "josch",                              # groupname
+        "$username",                          # username
+        "$username",                          # groupname
         '',                                   # dev major
         '',                                   # dev minor
         '',                                   # prefix
