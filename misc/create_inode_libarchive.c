@@ -16,6 +16,7 @@
 #include "config.h"
 #include <ext2fs/ext2_types.h>
 #include "create_inode.h"
+#include "create_inode_libarchive.h"
 #include "support/nls-enable.h"
 
 #ifdef HAVE_ARCHIVE_H
@@ -180,7 +181,7 @@ static int libarchive_available(void)
 static errcode_t __find_path(ext2_filsys fs, ext2_ino_t root, const char *name,
 			     ext2_ino_t *inode)
 {
-	errcode_t retval;
+	errcode_t retval = 0;
 	ext2_ino_t tmpino;
 	char *p, *n, *n2 = strdup(name);
 
@@ -519,10 +520,10 @@ static errcode_t handle_entry(ext2_filsys fs, ext2_ino_t root_ino,
 		break;
 	default:
 		if (dl_archive_entry_hardlink(entry) != NULL) {
-			if (retval = __find_path(
-				    fs, root_ino,
-				    dl_archive_entry_hardlink(entry),
-				    &tmpino)) {
+			if ((retval = __find_path(
+				     fs, root_ino,
+				     dl_archive_entry_hardlink(entry),
+				     &tmpino))) {
 				com_err(__func__, retval,
 					_("cannot find hardlink destination \"%s\" "
 					  "to create \"%s\""),
@@ -557,8 +558,7 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 	return 1;
 #else
 	char *path2, *path3, *dir, *name;
-	unsigned int uid, gid, mode, dir_exists;
-	unsigned long ctime, mtime;
+	unsigned int dir_exists;
 	struct archive *a;
 	struct archive_entry *entry;
 	errcode_t retval = 0;
@@ -614,7 +614,7 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 		path3 = strdup(dl_archive_entry_pathname(entry));
 		name = basename(path2);
 		dir = dirname(path3);
-		if (retval = __find_path(fs, root_ino, dir, &dirinode)) {
+		if ((retval = __find_path(fs, root_ino, dir, &dirinode))) {
 			com_err(__func__, retval,
 				_("cannot find directory \"%s\" to create \"%s\""),
 				dir, name);
