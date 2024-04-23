@@ -86,7 +86,7 @@ static void do_hexdump (FILE *, char *, int);
 		wrapped_flag = true;					\
 	}
 
-void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+void do_logdump(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		    void *infop EXT2FS_ATTR((unused)))
 {
 	int		c;

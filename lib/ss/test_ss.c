@@ -136,9 +136,9 @@ int main(int argc, char **argv)
 }
 
 
-void test_cmd (argc, argv)
-    int argc;
-    char **argv;
+void test_cmd(int argc, const char * const *argv,
+	      int sci_idx __SS_ATTR((unused)),
+	      void *infop __SS_ATTR((unused)))
 {
     printf("Hello, world!\n");
     printf("Args: ");

@@ -844,7 +844,7 @@ static void print_possible_fields(struct field_set_info *fields)
 }
 
 
-void do_set_super(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+void do_set_super(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		  void *infop EXT2FS_ATTR((unused)))
 {
 	const char *usage = "<field> <value>\n"
@@ -872,7 +872,7 @@ void do_set_super(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	}
 }
 
-void do_set_inode(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+void do_set_inode(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		  void *infop EXT2FS_ATTR((unused)))
 {
 	const char *usage = "<inode> <field> <value>\n"
@@ -914,7 +914,7 @@ void do_set_inode(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 	}
 }
 
-void do_set_block_group_descriptor(int argc, char *argv[],
+void do_set_block_group_descriptor(int argc, ss_argv_t argv,
 				   int sci_idx EXT2FS_ATTR((unused)),
 				   void *infop EXT2FS_ATTR((unused)))
 {
@@ -994,7 +994,7 @@ static errcode_t parse_mmp_clear(struct field_set_info *info,
 }
 
 #ifdef CONFIG_MMP
-void do_set_mmp_value(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+void do_set_mmp_value(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		      void *infop EXT2FS_ATTR((unused)))
 {
 	const char *usage = "<field> <value>\n"
@@ -1054,7 +1054,7 @@ void do_set_mmp_value(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
 }
 #else
 void do_set_mmp_value(int argc EXT2FS_ATTR((unused)),
-		      char *argv[] EXT2FS_ATTR((unused)),
+		      ss_argv_t argv EXT2FS_ATTR((unused)),
 		      int sci_idx EXT2FS_ATTR((unused)),
 		      void *infop EXT2FS_ATTR((unused)))
 {

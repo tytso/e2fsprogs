@@ -245,7 +245,7 @@ errout:
 
 
 
-void do_htree_dump(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+void do_htree_dump(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		   void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t	ino;
@@ -329,7 +329,7 @@ errout:
 /*
  * This function prints the hash of a given file.
  */
-void do_dx_hash(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+void do_dx_hash(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_dirhash_t hash, minor_hash;
@@ -425,7 +425,7 @@ static int search_dir_block(ext2_filsys fs, blk64_t *blocknr,
 			    e2_blkcnt_t blockcnt, blk64_t ref_blk,
 			    int ref_offset, void *priv_data);
 
-void do_dirsearch(int argc, char *argv[], int sci_idx EXT2FS_ATTR((unused)),
+void do_dirsearch(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		  void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t	inode;
