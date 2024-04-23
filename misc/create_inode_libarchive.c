@@ -55,10 +55,16 @@ static int (*dl_archive_read_support_format_all)(struct archive *);
 
 static void *libarchive_handle;
 
+#if defined(__FreeBSD__)
+#define LIBARCHIVE_SO "libarchive.so.7"
+#else
+#define LIBARCHIVE_SO "libarchive.so.13"
+#endif
+
 static int libarchive_available(void)
 {
 	if (!libarchive_handle) {
-		libarchive_handle = dlopen("libarchive.so.13", RTLD_NOW);
+		libarchive_handle = dlopen(LIBARCHIVE_SO, RTLD_NOW);
 		if (!libarchive_handle)
 			return 0;
 
