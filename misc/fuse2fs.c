@@ -735,7 +735,7 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 
 static void *op_init(struct fuse_conn_info *conn
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_config *cfg
+			, struct fuse_config *cfg EXT2FS_ATTR((unused))
 #endif
 			)
 {
@@ -809,7 +809,7 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 
 static int op_getattr(const char *path, struct stat *statbuf
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi
+			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
 #endif
 			)
 {
@@ -1557,7 +1557,7 @@ static int update_dotdot_helper(ext2_ino_t dir EXT2FS_ATTR((unused)),
 
 static int op_rename(const char *from, const char *to
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, unsigned int flags
+			, unsigned int flags EXT2FS_ATTR((unused))
 #endif
 			)
 {
@@ -1890,7 +1890,7 @@ out:
 
 static int op_chmod(const char *path, mode_t mode
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi
+			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
 #endif
 			)
 {
@@ -1953,7 +1953,7 @@ out:
 
 static int op_chown(const char *path, uid_t owner, gid_t group
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi
+			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
 #endif
 			)
 {
@@ -2027,7 +2027,7 @@ out:
 
 static int op_truncate(const char *path, off_t len
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi
+			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
 #endif
 			)
 {
@@ -2798,7 +2798,7 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 		      off_t offset EXT2FS_ATTR((unused)),
 		      struct fuse_file_info *fp
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, enum fuse_readdir_flags flags
+			, enum fuse_readdir_flags flags EXT2FS_ATTR((unused))
 #endif
 			)
 {
@@ -3066,7 +3066,7 @@ static int op_fgetattr(const char *path EXT2FS_ATTR((unused)),
 
 static int op_utimens(const char *path, const struct timespec ctv[2]
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi
+			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
 #endif
 			)
 {

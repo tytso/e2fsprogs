@@ -2689,7 +2689,7 @@ void print_e2fsck_message(FILE *f, e2fsck_t ctx, const char *msg,
 
 void fatal_error(e2fsck_t ctx, const char *msg)
 {
-	return;
+	exit(0);
 }
 
 void preenhalt(e2fsck_t ctx)

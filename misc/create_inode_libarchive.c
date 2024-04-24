@@ -352,7 +352,6 @@ static errcode_t do_write_internal_tar(ext2_filsys fs, ext2_ino_t cwd,
 	ext2_ino_t newfile;
 	errcode_t retval;
 	struct ext2_inode inode;
-	char *cp;
 
 	retval = ext2fs_new_inode(fs, cwd, 010755, 0, &newfile);
 	if (retval)
@@ -547,7 +546,7 @@ static errcode_t handle_entry(ext2_filsys fs, ext2_ino_t root_ino,
 
 errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 				 const char *source_tar, ext2_ino_t root,
-				 struct hdlinks_s *hdlinks,
+				 struct hdlinks_s *hdlinks EXT2FS_ATTR((unused)),
 				 struct file_info *target,
 				 struct fs_ops_callbacks *fs_callbacks)
 {

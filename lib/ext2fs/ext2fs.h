@@ -601,10 +601,10 @@ static inline __u32 __decode_extra_nsec(__u32 extra)
 {
 	return (extra & EXT4_NSEC_MASK) >> EXT4_EPOCH_BITS;
 }
-#define ext2fs_inode_actual_size(inode)				      \
-	(EXT2_GOOD_OLD_INODE_SIZE +					      \
-	 (sizeof(*inode) > EXT2_GOOD_OLD_INODE_SIZE ?			      \
-		((struct ext2_inode_large *)(inode))->i_extra_isize : 0))
+#define ext2fs_inode_actual_size(inode)					      \
+	((size_t)(EXT2_GOOD_OLD_INODE_SIZE +				      \
+		  (sizeof(*inode) > EXT2_GOOD_OLD_INODE_SIZE ?		      \
+		   ((struct ext2_inode_large *)(inode))->i_extra_isize : 0)))
 #define clamp(val, min, max) ((val) < (min) ? (min) : ((val) > (max) ?	      \
 						       (max) : (val)))
 #define ext2fs_inode_xtime_set(inode, field, sec)			      \

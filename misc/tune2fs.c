@@ -3097,7 +3097,7 @@ static int handle_fslabel(int setlabel)
 	errcode_t ret;
 	int mnt_flags, fd;
 	char label[FSLABEL_MAX];
-	int maxlen = FSLABEL_MAX - 1;
+	unsigned int maxlen = FSLABEL_MAX - 1;
 	char mntpt[PATH_MAX + 1];
 
 	ret = ext2fs_check_mount_point(device_name, &mnt_flags,

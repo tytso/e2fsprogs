@@ -560,7 +560,7 @@ blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 	struct ext2_super_block *sb;
 	io_channel		io = NULL;
 	void			*buf = NULL;
-	int			blocksize = EXT2_MIN_BLOCK_SIZE;
+	unsigned int		blocksize = EXT2_MIN_BLOCK_SIZE;
 	int			blocksize_known = 0;
 	blk_t			bpg = 0;
 	blk64_t			ret_sb = 8193;
@@ -593,7 +593,7 @@ blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 		blk64_t	num_blocks;
 
 		if (fs && fs->super) {
-			num_blocks = ext2fs_blocks_count(fs->super);
+			limit = ext2fs_blocks_count(fs->super) / this_bpg;
 		} else if (ctx && ext2fs_get_device_size2(ctx->filesystem_name,
 							  blocksize,
 							  &num_blocks) == 0) {
@@ -622,7 +622,7 @@ blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 				ext2fs_swap_super(sb);
 #endif
 			if ((sb->s_magic == EXT2_SUPER_MAGIC) &&
-			    (EXT2_BLOCK_SIZE(sb) == blocksize)) {
+			    ((unsigned) EXT2_BLOCK_SIZE(sb) == blocksize)) {
 				ret_sb = superblock;
 				if (ctx) {
 					ctx->superblock = superblock;

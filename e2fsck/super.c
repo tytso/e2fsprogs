@@ -1323,7 +1323,7 @@ void check_super_block(e2fsck_t ctx)
 	    (ext2fs_get_tstamp(fs->super, s_mtime) > ctx->now)) {
 		pctx.num = ext2fs_get_tstamp(fs->super, s_mtime);
 		problem = PR_0_FUTURE_SB_LAST_MOUNT;
-		if (pctx.num <= ctx->now + ctx->time_fudge)
+		if ((time_t) pctx.num <= ctx->now + ctx->time_fudge)
 			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
 			ext2fs_set_tstamp(fs->super, s_mtime, ctx->now);
@@ -1335,7 +1335,7 @@ void check_super_block(e2fsck_t ctx)
 	    (ext2fs_get_tstamp(fs->super, s_wtime) > ctx->now)) {
 		pctx.num = ext2fs_get_tstamp(fs->super, s_wtime);
 		problem = PR_0_FUTURE_SB_LAST_WRITE;
-		if (pctx.num <= ctx->now + ctx->time_fudge)
+		if ((time_t) pctx.num <= ctx->now + ctx->time_fudge)
 			problem = PR_0_FUTURE_SB_LAST_WRITE_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
 			ext2fs_set_tstamp(fs->super, s_wtime, ctx->now);
