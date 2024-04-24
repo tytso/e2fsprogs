@@ -149,6 +149,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_copy_generic_bitmap@Base 1.41.0
  ext2fs_copy_generic_bmap@Base 1.42
  ext2fs_count_blocks@Base 1.46.0
+ ext2fs_count_used_blocks@Base 1.47.1~rc1
  ext2fs_count_used_clusters@Base 1.46.0
  ext2fs_crc16@Base 1.41.1
  ext2fs_crc32_be@Base 1.43
@@ -413,6 +414,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_is_fast_symlink@Base 1.44.0~rc1
  ext2fs_journal_sb_start@Base 1.42.12
  ext2fs_link@Base 1.37
+ ext2fs_list_backups@Base 1.47.1~rc1
  ext2fs_llseek@Base 1.37
  ext2fs_lookup@Base 1.37
  ext2fs_make_generic_bitmap@Base 1.41.0
@@ -496,6 +498,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_read_inode_bitmap@Base 1.37
  ext2fs_read_inode_full@Base 1.37
  ext2fs_remove_exit_fn@Base 1.43
+ ext2fs_reserve_super_and_bgd2@Base 1.47.1~rc1
  ext2fs_reserve_super_and_bgd@Base 1.37
  ext2fs_resize_array@Base 1.45.6
  ext2fs_resize_block_bitmap2@Base 1.42
