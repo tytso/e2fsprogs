@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 }
 
 
-void test_cmd(int argc, const char * const *argv,
+void test_cmd(int argc, ss_argv_t argv,
 	      int sci_idx __SS_ATTR((unused)),
 	      void *infop __SS_ATTR((unused)))
 {
