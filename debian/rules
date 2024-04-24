@@ -40,7 +40,7 @@ INSTALL ?= install
 INSTALL_PROGRAM ?= $(INSTALL) -p -m 0755
 
 ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
-SYMBOL_LIBS := libext2fst64 libcomerr2 libss2
+SYMBOL_LIBS := libext2fs libcomerr2 libss2
 endif
 
 CFLAGS_SHLIB = $(CFLAGS)
