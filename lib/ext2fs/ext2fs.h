@@ -584,7 +584,8 @@ static inline __u32 __encode_extra_time(time_t seconds, __u32 nsec)
 	__u32 extra = 0;
 
 #if (SIZEOF_TIME_T > 4)
-	extra = ((seconds - (__s32)seconds) >> 32) & EXT4_EPOCH_MASK;
+	extra = ((seconds - (__s32)(seconds & 0xffffffff)) >> 32) &
+		EXT4_EPOCH_MASK;
 #endif
 	return extra | (nsec << EXT4_EPOCH_BITS);
 }
@@ -610,7 +611,7 @@ static inline __u32 __decode_extra_nsec(__u32 extra)
 do {									      \
 	if (ext2fs_inode_includes(ext2fs_inode_actual_size(inode),	      \
 				  field ## _extra)) {			      \
-		(inode)->field = (__s32)sec;				      \
+		(inode)->field = (__s32)(sec & 0xfffffff);		      \
 		((struct ext2_inode_large *)(inode))->field ## _extra =       \
 			__encode_extra_time(sec, 0);			      \
 	} else {							      \
@@ -627,7 +628,7 @@ static inline void __sb_set_tstamp(__u32 *lo, __u8 *hi, time_t seconds)
 {
 	*lo = seconds & 0xffffffff;
 #if (SIZEOF_TIME_T > 4)
-	*hi = seconds >> 32;
+	*hi = (seconds >> 32) & EXT4_EPOCH_MASK;
 #else
 	*hi = 0;
 #endif
