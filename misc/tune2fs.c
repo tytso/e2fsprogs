@@ -3445,7 +3445,7 @@ _("Warning: The journal is dirty. You may wish to replay the journal like:\n\n"
 		goto closefs;
 	}
 	if (T_flag) {
-		sb->s_lastcheck = last_check_time;
+		ext2fs_set_tstamp(sb, s_lastcheck, last_check_time);
 		ext2fs_mark_super_dirty(fs);
 		printf(_("Setting time filesystem last checked to %s\n"),
 		       ctime(&last_check_time));
