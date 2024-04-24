@@ -592,9 +592,11 @@ blk64_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 		blk_t this_bpg = bpg ? bpg : blocksize * 8;
 		blk64_t	num_blocks;
 
-		if (ext2fs_get_device_size2(ctx->filesystem_name,
-					    blocksize,
-					    &num_blocks) == 0) {
+		if (fs && fs->super) {
+			num_blocks = ext2fs_blocks_count(fs->super);
+		} else if (ctx && ext2fs_get_device_size2(ctx->filesystem_name,
+							  blocksize,
+							  &num_blocks) == 0) {
 			limit = num_blocks / this_bpg;
 		} else {
 			/* If we can't figure out the device size,
