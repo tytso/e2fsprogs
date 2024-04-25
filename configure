@@ -1596,7 +1596,7 @@ Optional Features:
   --enable-bsd-shlibs     select BSD shared libraries
   --enable-profile        build profiling libraries
   --enable-gcov           build for coverage testing using gcov
-  --enable-hardening      build for coverage testing using gcov
+  --enable-hardening      build with hardening flags such as fortify
   --enable-jbd-debug      enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --disable-testio-debug  disable the use of the test I/O manager for
@@ -5961,7 +5961,7 @@ if test ${enable_hardening+y}
 then :
   enableval=$enable_hardening; if test "$enableval" = "yes"
 then
-	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=3 -fstack-protector-strong"
 	HARDEN_LDFLAGS="-Wl,-z,relro -Wl,-z,now"
 	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
 	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"

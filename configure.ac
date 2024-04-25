@@ -365,10 +365,10 @@ CFLAGS_STLIB="${CFLAGS_STLIB:-$CFLAGS}"
 LDFLAGS_SHLIB=${LDFLAGS_SHLIB:-$LDFLAGS}
 LDFLAGS_STATIC=${LDFLAGS_STATIC:-$LDFLAGS}
 AC_ARG_ENABLE([hardening],
-AS_HELP_STRING([--enable-hardening],[build for coverage testing using gcov]),
+AS_HELP_STRING([--enable-hardening],[build with hardening flags such as fortify]),
 if test "$enableval" = "yes"
 then
-	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+	HARDEN_CFLAGS="-D_FORTIFY_SOURCE=3 -fstack-protector-strong"
 	HARDEN_LDFLAGS=["-Wl,-z,relro -Wl,-z,now"]
 	CFLAGS="$CFLAGS $HARDEN_CFLAGS -fPIE"
 	CFLAGS_SHLIB="$CFLAGS_SHLIB $HARDEN_CFLAGS"
