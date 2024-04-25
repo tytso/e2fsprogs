@@ -90,6 +90,7 @@ static int	force;
 static int	noaction;
 static int	num_backups = 2; /* number of backup bg's for sparse_super2 */
 static uid_t	root_uid;
+static mode_t 	root_perms = (mode_t)-1;
 static gid_t	root_gid;
 int	journal_size;
 int	journal_flags;
@@ -493,6 +494,7 @@ static void create_root_dir(ext2_filsys fs)
 {
 	errcode_t		retval;
 	struct ext2_inode	inode;
+	int need_inode_change;
 
 	retval = ext2fs_mkdir(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, 0);
 	if (retval) {
@@ -500,19 +502,30 @@ static void create_root_dir(ext2_filsys fs)
 			_("while creating root dir"));
 		exit(1);
 	}
-	if (root_uid != 0 || root_gid != 0) {
+
+	need_inode_change = (int)(root_uid != 0 || root_gid != 0 || root_perms != (mode_t)-1);
+
+	if (need_inode_change) {
 		retval = ext2fs_read_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_read_inode", retval, "%s",
 				_("while reading root inode"));
 			exit(1);
 		}
+	}
 
+	if (root_uid != 0 || root_gid != 0) {
 		inode.i_uid = root_uid;
 		ext2fs_set_i_uid_high(inode, root_uid >> 16);
 		inode.i_gid = root_gid;
 		ext2fs_set_i_gid_high(inode, root_gid >> 16);
+	}
 
+	if (root_perms != (mode_t)-1) {
+		inode.i_mode = LINUX_S_IFDIR | root_perms;
+	}
+
+	if (need_inode_change) {
 		retval = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_write_inode", retval, "%s",
@@ -1072,6 +1085,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				root_uid = getuid();
 				root_gid = getgid();
 			}
+		} else if (!strcmp(token, "root_perms")) {
+			if (arg) {
+				root_perms = strtoul(arg, &p, 8);
+			}
 		} else if (!strcmp(token, "discard")) {
 			discard = 1;
 		} else if (!strcmp(token, "nodiscard")) {
@@ -1156,6 +1173,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
 			"\troot_owner=<uid of root dir>:<gid of root dir>\n"
+			"\troot_perms=<octal root directory permissions>\n"
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n"
