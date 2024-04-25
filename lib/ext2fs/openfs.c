@@ -149,7 +149,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 	fs->umask = 022;
 
-	time_env = getenv("E2FSPROGS_FAKE_TIME");
+	time_env = ext2fs_safe_getenv("E2FSPROGS_FAKE_TIME");
 	if (time_env)
 		fs->now = strtoul(time_env, NULL, 0);
 

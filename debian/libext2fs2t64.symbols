@@ -414,7 +414,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_is_fast_symlink@Base 1.44.0~rc1
  ext2fs_journal_sb_start@Base 1.42.12
  ext2fs_link@Base 1.37
- ext2fs_list_backups@Base 1.47.1~rc1
+ Ext2fs_list_backups@Base 1.47.1~rc1
  ext2fs_llseek@Base 1.37
  ext2fs_lookup@Base 1.37
  ext2fs_make_generic_bitmap@Base 1.41.0
@@ -511,6 +511,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_rewrite_to_io@Base 1.37
  ext2fs_rw_bitmaps@Base 1.46.0
  ext2fs_set_alloc_block_callback@Base 1.41.0
+ ext2fs_safe_getenv@Base 1.47.1~rc1
  ext2fs_set_bit64@Base 1.42
  ext2fs_set_bit@Base 1.37
  ext2fs_set_bitmap_padding@Base 1.37

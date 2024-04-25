@@ -257,7 +257,7 @@ void ext2fs_free_generic_bmap(ext2fs_generic_bitmap gen_bmap)
 		return;
 
 #ifdef ENABLE_BMAP_STATS
-	if (getenv("E2FSPROGS_BITMAP_STATS")) {
+	if (ext2fs_safe_getenv("E2FSPROGS_BITMAP_STATS")) {
 		ext2fs_print_bmap_statistics(bmap);
 		bmap->bitmap_ops->print_stats(bmap);
 	}

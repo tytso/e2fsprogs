@@ -53,11 +53,6 @@
 #ifdef HAVE_SYS_MOUNT_H
 #include <sys/mount.h>
 #endif
-#ifdef HAVE_SYS_PRCTL_H
-#include <sys/prctl.h>
-#else
-#define PR_GET_DUMPABLE 3
-#endif
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -180,29 +175,6 @@ static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 	}
 
 	return retval;
-}
-
-static char *safe_getenv(const char *arg)
-{
-	if ((getuid() != geteuid()) || (getgid() != getegid()))
-		return NULL;
-#ifdef HAVE_PRCTL
-	if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
-		return NULL;
-#else
-#if (defined(linux) && defined(SYS_prctl))
-	if (syscall(SYS_prctl, PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
-		return NULL;
-#endif
-#endif
-
-#if defined(HAVE_SECURE_GETENV)
-	return secure_getenv(arg);
-#elif defined(HAVE___SECURE_GETENV)
-	return __secure_getenv(arg);
-#else
-	return getenv(arg);
-#endif
 }
 
 /*
@@ -728,7 +700,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 	struct		utsname ut;
 #endif
 
-	if (safe_getenv("UNIX_IO_FORCE_BOUNCE"))
+	if (ext2fs_safe_getenv("UNIX_IO_FORCE_BOUNCE"))
 		flags |= IO_FLAG_FORCE_BOUNCE;
 
 #ifdef __linux__
@@ -761,7 +733,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 	io->refcount = 1;
 	io->flags = 0;
 
-	if (safe_getenv("UNIX_IO_NOZEROOUT"))
+	if (ext2fs_safe_getenv("UNIX_IO_NOZEROOUT"))
 		io->flags |= CHANNEL_FLAGS_NOZEROOUT;
 
 	memset(data, 0, sizeof(struct unix_private_data));

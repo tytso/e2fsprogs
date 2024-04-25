@@ -125,7 +125,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	fs->flags |= EXT2_FLAG_SWAP_BYTES;
 #endif
 
-	time_env = getenv("E2FSPROGS_FAKE_TIME");
+	time_env = ext2fs_safe_getenv("E2FSPROGS_FAKE_TIME");
 	if (time_env)
 		fs->now = strtoul(time_env, NULL, 0);
 

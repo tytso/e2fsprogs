@@ -1559,6 +1559,9 @@ errcode_t ext2fs_count_used_blocks(ext2_filsys fs, blk64_t start,
 extern unsigned int ext2fs_list_backups(ext2_filsys fs, unsigned int *three,
 				unsigned int *five, unsigned int *seven);
 
+/* getenv.c */
+extern char *ext2fs_safe_getenv(const char *arg);
+
 /* get_num_dirs.c */
 extern errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs);
 
