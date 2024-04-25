@@ -109,6 +109,13 @@ errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 	return retval;
 }
 
+static time_t clamped_time(ext2_filsys fs, time_t t)
+{
+	if ((fs->flags2 & EXT2_FLAG2_USE_FAKE_TIME) && t > fs->now)
+		return fs->now;
+	return t;
+}
+
 /* Set the uid, gid, mode and time for the inode */
 errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
 				 const struct stat *st)
@@ -127,9 +134,9 @@ errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
 	inode.i_gid = st->st_gid;
 	ext2fs_set_i_gid_high(inode, st->st_gid >> 16);
 	inode.i_mode = (LINUX_S_IFMT & inode.i_mode) | (~S_IFMT & st->st_mode);
-	ext2fs_inode_xtime_set(&inode, i_atime, st->st_atime);
-	ext2fs_inode_xtime_set(&inode, i_ctime, st->st_ctime);
-	ext2fs_inode_xtime_set(&inode, i_mtime, st->st_mtime);
+	ext2fs_inode_xtime_set(&inode, i_atime, clamped_time(fs, st->st_atime));
+	ext2fs_inode_xtime_set(&inode, i_ctime, clamped_time(fs, st->st_ctime));
+	ext2fs_inode_xtime_set(&inode, i_mtime, clamped_time(fs, st->st_mtime));
 
 	retval = ext2fs_write_inode(fs, ino, &inode);
 	if (retval)
