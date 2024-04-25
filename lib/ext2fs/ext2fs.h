@@ -222,6 +222,11 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_IGNORE_SWAP_DIRENT	0x8000000
 
 /*
+ * Internal flags for use by the ext2fs library only
+ */
+#define EXT2_FLAG2_USE_FAKE_TIME	0x000000001
+
+/*
  * Special flag in the ext2 inode i_flag field that means that this is
  * a new inode.  (So that ext2_write_inode() can clear extra fields.)
  */
@@ -275,10 +280,11 @@ struct struct_ext2_filsys {
 	int				cluster_ratio_bits;
 	__u16				default_bitmap_type;
 	__u16				pad;
+	__u32				flags2;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[5];
+	__u32				reserved[4];
 
 	/*
 	 * Reserved for the use of the calling application.

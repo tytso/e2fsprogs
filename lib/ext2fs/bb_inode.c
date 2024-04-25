@@ -20,7 +20,6 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
-#include <time.h>
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -29,7 +28,7 @@
 #endif
 
 #include "ext2_fs.h"
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 struct set_badblock_record {
 	ext2_badblocks_iterate	bb_iter;
@@ -125,7 +124,7 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	if (retval)
 		goto cleanup;
 
-	now = fs->now ? fs->now : time(0);
+	now = ext2fsP_get_time(fs);
 	ext2fs_inode_xtime_set(&inode, i_atime, now);
 	if (!ext2fs_inode_xtime_get(&inode, i_ctime))
 		ext2fs_inode_xtime_set(&inode, i_ctime, now);

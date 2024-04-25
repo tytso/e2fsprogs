@@ -185,7 +185,7 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 	if (err)
 		goto out;
 	ext2fs_iblk_set(fs, &inode, 0);
-	now = fs->now ? fs->now : time(0);
+	now = ext2fsP_get_time(fs);
 	ext2fs_inode_xtime_set(&inode, i_atime, now);
 	ext2fs_inode_xtime_set(&inode, i_ctime, now);
 	ext2fs_inode_xtime_set(&inode, i_mtime, now);

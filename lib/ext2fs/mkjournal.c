@@ -20,7 +20,6 @@
 #include <errno.h>
 #endif
 #include <fcntl.h>
-#include <time.h>
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -36,7 +35,7 @@
 
 #include "ext2_fs.h"
 #include "e2p/e2p.h"
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 #include "kernel-jbd.h"
 
@@ -313,7 +312,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 
 	inode_size = (unsigned long long)fs->blocksize *
 			(jparams->num_journal_blocks + jparams->num_fc_blocks);
-	now = fs->now ? fs->now : time(0);
+	now = ext2fsP_get_time(fs);
 	ext2fs_inode_xtime_set(&inode, i_mtime, now);
 	ext2fs_inode_xtime_set(&inode, i_ctime, now);
 	inode.i_links_count = 1;

@@ -15,7 +15,7 @@
 #include <string.h>
 #include <time.h>
 #include "ext2_fs.h"
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 /*
  * Iterate through the groups which hold BACKUP superblock/GDT copies in an
@@ -143,7 +143,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 		retval = ext2fs_inode_size_set(fs, &inode, inode_size);
 		if (retval)
 			goto out_free;
-		inode.i_ctime = fs->now ? fs->now : time(0);
+		inode.i_ctime = ext2fsP_get_time(fs);
 	}
 
 	for (rsv_off = 0, gdt_off = fs->desc_blocks,
@@ -235,7 +235,7 @@ out_inode:
 	       EXT2_I_SIZE(&inode));
 #endif
 	if (inode_dirty) {
-		time_t now = fs->now ? fs->now : time(0);
+		time_t now = ext2fsP_get_time(fs);
 
 		ext2fs_inode_xtime_set(&inode, i_atime, now);
 		ext2fs_inode_xtime_set(&inode, i_mtime, now);

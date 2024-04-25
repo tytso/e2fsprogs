@@ -149,9 +149,15 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 	fs->umask = 022;
 
-	time_env = ext2fs_safe_getenv("E2FSPROGS_FAKE_TIME");
-	if (time_env)
+	time_env = ext2fs_safe_getenv("SOURCE_DATE_EPOCH");
+	if (time_env) {
 		fs->now = strtoul(time_env, NULL, 0);
+		fs->flags2 |= EXT2_FLAG2_USE_FAKE_TIME;
+	} else {
+		time_env = ext2fs_safe_getenv("E2FSPROGS_FAKE_TIME");
+		if (time_env)
+			fs->now = strtoul(time_env, NULL, 0);
+	}
 
 	retval = ext2fs_get_mem(strlen(name)+1, &fs->device_name);
 	if (retval)

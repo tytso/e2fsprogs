@@ -26,7 +26,7 @@
 #endif
 
 #include "ext2_fs.h"
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -125,9 +125,15 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	fs->flags |= EXT2_FLAG_SWAP_BYTES;
 #endif
 
-	time_env = ext2fs_safe_getenv("E2FSPROGS_FAKE_TIME");
-	if (time_env)
+	time_env = ext2fs_safe_getenv("SOURCE_DATE_EPOCH");
+	if (time_env) {
 		fs->now = strtoul(time_env, NULL, 0);
+		fs->flags2 |= EXT2_FLAG2_USE_FAKE_TIME;
+	} else {
+		time_env = ext2fs_safe_getenv("E2FSPROGS_FAKE_TIME");
+		if (time_env)
+			fs->now = strtoul(time_env, NULL, 0);
+	}
 
 	io_flags = IO_FLAG_RW;
 	if (flags & EXT2_FLAG_EXCLUSIVE)
@@ -218,8 +224,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	}
 
 	set_field(s_checkinterval, 0);
-	ext2fs_set_tstamp(super, s_mkfs_time, fs->now ? fs->now : time(NULL));
-	ext2fs_set_tstamp(super, s_lastcheck, fs->now ? fs->now : time(NULL));
+	ext2fs_set_tstamp(super, s_mkfs_time, ext2fsP_get_time(fs));
+	ext2fs_set_tstamp(super, s_lastcheck, ext2fsP_get_time(fs));
 
 	super->s_creator_os = CREATOR_OS;
 
