@@ -2301,6 +2301,30 @@ static inline unsigned int ext2_dir_htree_level(ext2_filsys fs)
 	return EXT4_HTREE_LEVEL_COMPAT;
 }
 
+/*
+ * We explicitly decided not to reserve space for a 64-bit dtime,
+ * since it's never displayed or exposed to userspace.  The dtime
+ * field is used a linked list for the ophan list, and for forensic
+ * purposes when trying to determine when an inode was deleted.  So
+ * right after the 2038 epoch, a deleted inode might end up with a
+ * dtime which is zero or smaller than the number of inodes, which
+ * will result in e2fsck reporting a potential problems.  So when we
+ * set the dtime, make sure that the dtime won't be mistaken for an
+ * inode number.
+ */
+static inline void ext2fs_set_dtime(ext2_filsys fs, struct ext2_inode *inode)
+{
+	__u32	t;
+
+	if (fs->now || (fs->flags2 & EXT2_FLAG2_USE_FAKE_TIME))
+		t = fs->now & 0xFFFFFFFF;
+	else
+		t = time(NULL) & 0xFFFFFFFF;
+	if (t < fs->super->s_inodes_count)
+		t = fs->super->s_inodes_count;
+	inode->i_dtime = t;
+}
+
 #ifdef __cplusplus
 }
 #endif

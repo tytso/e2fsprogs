@@ -1483,7 +1483,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (!inode->i_dtime && inode->i_mode) {
 				if (fix_problem(ctx,
 					    PR_1_ZERO_DTIME, &pctx)) {
-					inode->i_dtime = ctx->now;
+					ext2fs_set_dtime(fs, inode);
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
 					failed_csum = 0;
@@ -2793,7 +2793,7 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 	inode->i_flags = 0;
 	inode->i_links_count = 0;
 	ext2fs_icount_store(ctx->inode_link_info, ino, 0);
-	inode->i_dtime = ctx->now;
+	ext2fs_set_dtime(ctx->fs, inode);
 
 	/*
 	 * If a special inode has such rotten block mappings that we

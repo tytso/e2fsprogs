@@ -1342,7 +1342,7 @@ static errcode_t xattr_inode_dec_ref(ext2_filsys fs, ext2_ino_t ino)
 		goto write_out;
 
 	inode.i_links_count = 0;
-	inode.i_dtime = ext2fsP_get_time(fs);
+	ext2fs_set_dtime(fs, EXT2_INODE(&inode));
 
 	ret = ext2fs_free_ext_attr(fs, ino, &inode);
 	if (ret)

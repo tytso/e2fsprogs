@@ -237,7 +237,7 @@ static int remove_inode(ext2_filsys fs, ext2_ino_t ino)
 		return 0; /* XXX: already done? */
 	case 1:
 		inode.i_links_count--;
-		inode.i_dtime = fs->now ? fs->now : time(0);
+		ext2fs_set_dtime(fs, EXT2_INODE(&inode));
 		break;
 	default:
 		inode.i_links_count--;

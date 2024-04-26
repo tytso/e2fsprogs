@@ -1876,7 +1876,7 @@ static void kill_file_by_inode(ext2_ino_t inode)
 
 	if (debugfs_read_inode(inode, &inode_buf, 0))
 		return;
-	inode_buf.i_dtime = current_fs->now ? current_fs->now : time(0);
+	ext2fs_set_dtime(current_fs,  &inode_buf);
 	if (debugfs_write_inode(inode, &inode_buf, 0))
 		return;
 	if (ext2fs_inode_has_valid_blocks2(current_fs, &inode_buf)) {

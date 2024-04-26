@@ -348,7 +348,7 @@ static int release_orphan_inode(e2fsck_t ctx, ext2_ino_t *ino, char *block_buf)
 		ext2fs_inode_alloc_stats2(fs, *ino, -1,
 					  LINUX_S_ISDIR(inode.i_mode));
 		ctx->free_inodes++;
-		inode.i_dtime = ctx->now;
+		ext2fs_set_dtime(fs, EXT2_INODE(&inode));
 	} else {
 		inode.i_dtime = 0;
 	}

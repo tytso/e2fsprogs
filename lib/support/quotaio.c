@@ -119,7 +119,7 @@ errcode_t quota_inode_truncate(ext2_filsys fs, ext2_ino_t ino)
 			break;
 
 	if (qtype != MAXQUOTAS) {
-		inode.i_dtime = fs->now ? fs->now : time(0);
+		ext2fs_set_dtime(fs, &inode);
 		if (!ext2fs_inode_has_valid_blocks2(fs, &inode))
 			return 0;
 		err = ext2fs_punch(fs, ino, &inode, NULL, 0, ~0ULL);
