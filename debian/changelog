@@ -1,5 +1,7 @@
 e2fsprogs (1.47.1~rc1-1) unstable; urgency=medium
 
+  * Re-enable metadata_csum_seed and orphan_file by default now that
+    Debian Bookworm is released
   * New upstream version
   * Add support for post-2038 timestamps on platforms with 64-bit time_t.
   * Mke2fs -d can now support an input tar file if the libarchive library
@@ -59,7 +61,7 @@ e2fsprogs (1.47.1~rc1-1) unstable; urgency=medium
   * Fix a potential deadlock caused by e2fsck being run in Direct I/O mode
     with the threading optimization enabled.
   * Update and clarify various man pages.  (Closes: #1038286)
-  * Add support for SOURCE_DATE_EPOCH environment variable 
+  * Add support for SOURCE_DATE_EPOCH environment variable
   * Improve resize2fs's performance by eliminating extra cache flushes.
   * Improve mke2fs's performance when zeroing a large number of inode
     table blocks (when lazy inode table initialization is not enabled) by
@@ -70,7 +72,7 @@ e2fsprogs (1.47.1~rc1-1) unstable; urgency=medium
   * Build the binaries using FORTIFY_SOURCE=3 for better hardening
   * Add Romainian translation.
   * Update Malay translation.
-  
+
  -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 26 Apr 2024 22:23:25 -0400
 
 e2fsprogs (1.47.0-2.4) unstable; urgency=medium
