@@ -61,6 +61,11 @@ CC ?= $(DEB_HOST_GNU_TYPE)-gcc
 COMMON_CONF_FLAGS += --build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
 endif
 
+# work around Debian Bug #1070042
+ifeq ($(DEB_HOST_ARCH),mips64el)
+COMMON_CONF_FLAGS += --without-libarchive
+endif
+
 %:
 	dh $@ -B${stdbuilddir}
 
