@@ -12,6 +12,9 @@
 /* Define to 1 for features for use by ext4 developers */
 #undef CONFIG_DEVELOPER_FEATURES
 
+/* Define to 1 if using dlopen to access libarchive */
+#undef CONFIG_DLOPEN_LIBARCHIVE
+
 /* Define to 1 if debugging ext3/4 journal code */
 #undef CONFIG_JBD_DEBUG
 
