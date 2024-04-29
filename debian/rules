@@ -153,9 +153,10 @@ override_dh_installinfo:
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -plibext2fs-dev ${stdbuilddir}/doc/libext2fs.info
 
+ifneq ($(DEB_HOST_ARCH_OS), hurd)
 override_dh_installsystemd:
 	dh_installsystemd -p e2fsprogs --no-restart-after-upgrade --no-stop-on-upgrade e2scrub_all.timer e2scrub_reap.service
-	dh_installsystemd --name=service1
+endif
 
 override_dh_makeshlibs:
 	for i in $(SYMBOL_LIBS); \
