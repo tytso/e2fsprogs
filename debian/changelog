@@ -1,3 +1,16 @@
+e2fsprogs (1.47.1~rc1-2) unstable; urgency=medium
+
+  * Remove duplicated work in release notes
+  * Fix resize2fs's calculation of free clusters in the last block group
+    for file systems larger than 4TB
+  * Fix FTBFS on Hurd caused by trying to install e2scrub's systemd unit
+    files which aren't built since e2scrub isn't supported on Hurd
+  * Don't build mke2fs with libarchive support on mips64el since a bug in
+    libarchive only on that architecture causes a FTBFS due to the
+    regression test suite failing.  (See Debian Bug 1070042 for more details)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 29 Apr 2024 21:57:42 -0400
+
 e2fsprogs (1.47.1~rc1-1) unstable; urgency=medium
 
   * Re-enable metadata_csum_seed and orphan_file by default now that
