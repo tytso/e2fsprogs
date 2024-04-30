@@ -1301,10 +1301,39 @@ AC_SUBST(MAGIC_LIB)
 dnl
 dnl libarchive
 dnl
-AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIB=-larchive
-AC_CHECK_HEADERS([archive.h])])
-if test "$ac_cv_func_dlopen" = yes ; then
-   ARCHIVE_LIB=$DLOPEN_LIB
+AC_ARG_WITH([libarchive],
+AS_HELP_STRING([--without-libarchive],[disable use of libarchive]),
+[if test "$withval" = "no"
+then
+	try_libarchive=""
+	AC_MSG_RESULT([Disabling libarchive support])
+elif test "$withval" = "direct"
+then
+	try_libarchive="direct"
+	AC_MSG_RESULT([Testing for libarchive support (forced direct link)])
+else
+	try_libarchive="yes"
+	AC_MSG_RESULT([Testing for libarchive support (with dlopen)])
+fi]
+,
+try_libarchive="yes"
+AC_MSG_RESULT([Try testing for libarchive support (with dlopen) by default])
+)
+ARCHIVE_LIB=
+if test -n "$try_libarchive"
+then
+    AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIB=-larchive
+    AC_CHECK_HEADERS([archive.h])])
+    if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
+        ARCHIVE_LIB=$DLOPEN_LIB
+	AC_DEFINE(CONFIG_DLOPEN_LIBARCHIVE, 1,
+		[Define to 1 if using dlopen to access libarchive])
+
+    fi
+    if test "$ac_cv_header_archive_h" != "yes"
+    then
+        ARCHIVE_LIB=
+    fi
 fi
 AC_SUBST(ARCHIVE_LIB)
 dnl

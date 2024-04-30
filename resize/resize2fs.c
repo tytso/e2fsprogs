@@ -2870,7 +2870,8 @@ static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs)
 		if ((group == fs->group_desc_count - 1) && (max & 7)) {
 			n = 0;
 			for (b = (fs->super->s_first_data_block +
-				  (fs->super->s_blocks_per_group * group));
+				  ((blk64_t) fs->super->s_blocks_per_group *
+				   group));
 			     b < ext2fs_blocks_count(fs->super);
 			     b += EXT2FS_CLUSTER_RATIO(fs)) {
 				if (ext2fs_test_block_bitmap2(fs->block_map, b))

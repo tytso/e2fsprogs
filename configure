@@ -930,6 +930,7 @@ enable_rpath
 with_libiconv_prefix
 with_libintl_prefix
 enable_largefile
+with_libarchive
 enable_fuse2fs
 enable_lto
 enable_ubsan
@@ -1646,6 +1647,7 @@ Optional Packages:
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
+  --without-libarchive    disable use of libarchive
   --with-multiarch=ARCH   specify the multiarch triplet
   --with-udev-rules-dir[=DIR]
                           Install udev rules into DIR.
@@ -13734,7 +13736,37 @@ if test "$ac_cv_func_dlopen" = yes ; then
    MAGIC_LIB=$DLOPEN_LIB
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for archive_read_new in -larchive" >&5
+
+# Check whether --with-libarchive was given.
+if test ${with_libarchive+y}
+then :
+  withval=$with_libarchive; if test "$withval" = "no"
+then
+	try_libarchive=""
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling libarchive support" >&5
+printf "%s\n" "Disabling libarchive support" >&6; }
+elif test "$withval" = "direct"
+then
+	try_libarchive="direct"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Testing for libarchive support (forced direct link)" >&5
+printf "%s\n" "Testing for libarchive support (forced direct link)" >&6; }
+else
+	try_libarchive="yes"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Testing for libarchive support (with dlopen)" >&5
+printf "%s\n" "Testing for libarchive support (with dlopen)" >&6; }
+fi
+
+else $as_nop
+  try_libarchive="yes"
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Try testing for libarchive support (with dlopen) by default" >&5
+printf "%s\n" "Try testing for libarchive support (with dlopen) by default" >&6; }
+
+fi
+
+ARCHIVE_LIB=
+if test -n "$try_libarchive"
+then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for archive_read_new in -larchive" >&5
 printf %s "checking for archive_read_new in -larchive... " >&6; }
 if test ${ac_cv_lib_archive_archive_read_new+y}
 then :
@@ -13772,7 +13804,7 @@ printf "%s\n" "$ac_cv_lib_archive_archive_read_new" >&6; }
 if test "x$ac_cv_lib_archive_archive_read_new" = xyes
 then :
   ARCHIVE_LIB=-larchive
-ac_fn_c_check_header_compile "$LINENO" "archive.h" "ac_cv_header_archive_h" "$ac_includes_default"
+    ac_fn_c_check_header_compile "$LINENO" "archive.h" "ac_cv_header_archive_h" "$ac_includes_default"
 if test "x$ac_cv_header_archive_h" = xyes
 then :
   printf "%s\n" "#define HAVE_ARCHIVE_H 1" >>confdefs.h
@@ -13781,8 +13813,17 @@ fi
 
 fi
 
-if test "$ac_cv_func_dlopen" = yes ; then
-   ARCHIVE_LIB=$DLOPEN_LIB
+    if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
+        ARCHIVE_LIB=$DLOPEN_LIB
+
+printf "%s\n" "#define CONFIG_DLOPEN_LIBARCHIVE 1" >>confdefs.h
+
+
+    fi
+    if test "$ac_cv_header_archive_h" != "yes"
+    then
+        ARCHIVE_LIB=
+    fi
 fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5

@@ -51,7 +51,7 @@ static int (*dl_archive_read_open_filename)(struct archive *,
 static int (*dl_archive_read_support_filter_all)(struct archive *);
 static int (*dl_archive_read_support_format_all)(struct archive *);
 
-#ifdef HAVE_DLOPEN
+#ifdef CONFIG_DLOPEN_LIBARCHIVE
 #include <dlfcn.h>
 
 static void *libarchive_handle;

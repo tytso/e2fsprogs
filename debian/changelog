@@ -50,7 +50,7 @@ e2fsprogs (1.47.1~rc1-1) unstable; urgency=medium
   * Fix a potential e2fsck divide by zero crash caused by a maliciously
     fuzzed file system.
   * Fix dumpe2fs to report free block ranges correctly for bigalloc file
-    file systems.
+    systems.
   * Fix resize2fs where resizing a bigalloc file system can result in the
     free cluster count in the last block group and the total free clusters
     count to be incorrect.
