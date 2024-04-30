@@ -1,4 +1,4 @@
-e2fsprogs (1.47.1~rc1-2) unstable; urgency=medium
+e2fsprogs (1.47.1~rc1-3) unstable; urgency=medium
 
   * Remove duplicated work in release notes
   * Fix resize2fs's calculation of free clusters in the last block group
