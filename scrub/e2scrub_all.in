@@ -161,7 +161,7 @@ mapfile -t targets < <(ls_targets)
 for tgt in "${targets[@]}"; do
 	# If we're not reaping and systemd is present, try invoking the
 	# systemd service.
-	if [ "${reap}" -ne 1 ] && type systemctl > /dev/null 2>&1; then
+	if [ "${reap}" -ne 1 ] && [ -e /run/systemd/system ]; then
 		svcname="$(escape_path_for_systemd "${tgt}")"
 		${DBG} systemctl start "${svcname}" 2> /dev/null
 		res=$?
