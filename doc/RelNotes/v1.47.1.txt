@@ -1,5 +1,5 @@
-E2fsprogs 1.47.1 (April 26, 2024)
-=================================
+E2fsprogs 1.47.1 (May 1, 2024)
+==============================
 
 Updates/Fixes since v1.47.0:
 
@@ -118,6 +118,9 @@ a block size of 1k, and an inode size of 256 bytes.
 Fix a potential deadlock caused by e2fsck being run in Direct I/O mode
 with the threading optimization enabled.
 
+Fix e2scrub when the "systemctl" package is installed instead of
+systemd.  (Addresses Debian Bug #1070107)
+
 Fixed/improved various Debian packaging issues.
 
 Update and clarify various man pages.  (Addresses Debian Bug #1038286)
@@ -168,4 +171,5 @@ Fix various sanitizer, static code analysis, and compiler warnings.
 
 Add Romainian translation.
 
-Update Malay translation.
+Update Chinese, Czech, French, Malay, Polish, Swedish, and Ukrainian
+translations.
