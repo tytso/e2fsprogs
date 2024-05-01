@@ -1,3 +1,14 @@
+e2fsprogs (1.47.1~rc2-1) unstable; urgency=medium
+
+  * Update Chinese, Czech, French, Polish Romainian, Swedish, and
+    Ukrainian translations
+  * Fix libarchive support in mke2fs on mips64el (Closes: #1070042)
+  * Fix e2scrub when the "systemctl" package is installed instead of
+    systemd.  (Closes: #1070107)
+  * Update to standards 4.7.0
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 01 May 2024 00:50:49 -0400
+
 e2fsprogs (1.47.1~rc1-3) unstable; urgency=medium
 
   * Remove duplicated work in release notes

@@ -81,8 +81,6 @@
  *
  */
 
-#define _FILE_OFFSET_BITS 64
-
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
