@@ -2595,8 +2595,8 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		retval = io_channel_write_blk64(fs->io, new_blk,
 						num, rfs->itable_buf);
 		if (retval) {
-			io_channel_write_blk64(fs->io, old_blk,
-					       num, rfs->itable_buf);
+			(void) io_channel_write_blk64(fs->io, old_blk,
+						      num, rfs->itable_buf);
 			goto errout;
 		}
 		if (n > diff) {
