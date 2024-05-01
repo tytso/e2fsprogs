@@ -128,7 +128,7 @@ cc_binary {
             symlinks: ["mkfs.ext4.microdroid"],
         },
     },
-    installable: false,
+    no_full_install: true,
     stem: "mke2fs",
     visibility: ["//packages/modules/Virtualization/microdroid"],
 }
