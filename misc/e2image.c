@@ -297,7 +297,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 #if (SIZEOF_TIME_T > 4)
 	hdr.image_time_hi = ext2fs_cpu_to_le32(now >> 32);
 #else
-	hdr_image_time_hi = 0;
+	hdr.image_time_hi = 0;
 #endif
 	write_header(fd, &hdr, sizeof(struct ext2_image_hdr), fs->blocksize);
 }
