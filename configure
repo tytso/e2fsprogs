@@ -15646,9 +15646,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 fi
-if test "$enable_fuzzer" = "yes" && test "$have_fuzzer" != "yes"; then
-	as_fn_error $? "Fuzzing not supported by compiler." "$LINENO" 5
-fi
 
 LINUX_CMT="#"
 CYGWIN_CMT="#"
