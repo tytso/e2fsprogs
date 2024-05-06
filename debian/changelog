@@ -1,3 +1,9 @@
+e2fsprogs (1.47.1~rc2-1~bpo12+1) bookworm-backports; urgency=medium
+
+  * Rebuild for bookworm-backports.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 06 May 2024 00:50:10 -0400
+
 e2fsprogs (1.47.1~rc2-1) unstable; urgency=medium
 
   * Update Chinese, Czech, French, Polish Romainian, Swedish, and
