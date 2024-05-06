@@ -1309,6 +1309,16 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Orphan file @i %i is not in use, but contains data.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
+	/* EA_INODE flag set on a non-regular file */
+	{ PR_1_EA_INODE_NONREG,
+	  N_("@i %i has the ea_inode flag set but is not a regular file.  "),
+	  PROMPT_CLEAR_FLAG, 0, 0, 0, 0 },
+
+	/* EA_INODE present but the file system is missing the ea_inode feature */
+	{ PR_1_EA_INODE_FEATURE,
+	  N_("@i %i references EA inode but @S is missing EA_INODE feature\n"),
+	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -1860,6 +1870,10 @@ static struct e2fsck_problem problem_table[] = {
 	   N_("Duplicate filename @E found.  "),
 	   PROMPT_CLEAR, 0, 0, 0, 0 },
 
+	/* Directory filename is null */
+	{ PR_2_EA_INODE_DIR_LINK,
+	  N_("@E references EA @i %Di.\n"),
+	  PROMPT_CLEAR, 0, 0, 0, 0 },
 
 	/* Pass 3 errors */
 
@@ -2101,6 +2115,10 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_4_DIR_OVERFLOW_REF_COUNT,
 	  N_("@d @i %i ref count set to overflow but could be exact value %N.  "),
 	  PROMPT_FIX, PR_PREEN_OK, 0, 0, 0 },
+
+	{ PR_4_EA_INODE_SPURIOUS_FLAG,
+	  N_("Regular @f @i %i has EA_INODE flag set. "),
+	  PROMPT_CLEAR, PR_PREEN_OK, 0, 0, 0 },
 
 	/* Pass 5 errors */
 

@@ -387,32 +387,69 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 	return 0;
 }
 
+static int alloc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx)
+{
+	pctx->errcode = ea_refcount_create(0, &ctx->ea_inode_refs);
+	if (pctx->errcode) {
+		pctx->num = 4;
+		fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return 0;
+	}
+	return 1;
+}
+
 static void inc_ea_inode_refs(e2fsck_t ctx, struct problem_context *pctx,
 			      struct ext2_ext_attr_entry *first, void *end)
 {
 	struct ext2_ext_attr_entry *entry = first;
 	struct ext2_ext_attr_entry *np = EXT2_EXT_ATTR_NEXT(entry);
+	ea_value_t refs;
 
 	while ((void *) entry < end && (void *) np < end &&
 	       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
 		if (!entry->e_value_inum)
 			goto next;
-		if (!ctx->ea_inode_refs) {
-			pctx->errcode = ea_refcount_create(0,
-							   &ctx->ea_inode_refs);
-			if (pctx->errcode) {
-				pctx->num = 4;
-				fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
-				ctx->flags |= E2F_FLAG_ABORT;
-				return;
-			}
-		}
-		ea_refcount_increment(ctx->ea_inode_refs, entry->e_value_inum,
-				      0);
+		if (!ctx->ea_inode_refs && !alloc_ea_inode_refs(ctx, pctx))
+			return;
+		ea_refcount_fetch(ctx->ea_inode_refs, entry->e_value_inum,
+				  &refs);
+		if (refs == EA_INODE_NO_REFS)
+			refs = 1;
+		else
+			refs += 1;
+		ea_refcount_store(ctx->ea_inode_refs, entry->e_value_inum, refs);
 	next:
 		entry = np;
 		np = EXT2_EXT_ATTR_NEXT(entry);
 	}
+}
+
+/*
+ * Make sure inode is tracked as EA inode. We use special EA_INODE_NO_REFS
+ * value if we didn't find any xattrs referencing this inode yet.
+ */
+static int track_ea_inode(e2fsck_t ctx, struct problem_context *pctx,
+			  ext2_ino_t ino)
+{
+	ea_value_t refs;
+
+	if (!ctx->ea_inode_refs && !alloc_ea_inode_refs(ctx, pctx))
+		return 0;
+
+	ea_refcount_fetch(ctx->ea_inode_refs, ino, &refs);
+	if (refs > 0)
+		return 1;
+
+	pctx->errcode = ea_refcount_store(ctx->ea_inode_refs, ino,
+					  EA_INODE_NO_REFS);
+	if (pctx->errcode) {
+		pctx->num = 5;
+		fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return 0;
+	}
+	return 1;
 }
 
 static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
@@ -509,6 +546,12 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx,
 			}
 		} else {
 			blk64_t quota_blocks;
+
+			if (!ext2fs_has_feature_ea_inode(sb) &&
+			    fix_problem(ctx, PR_1_EA_INODE_FEATURE, pctx)) {
+				ext2fs_set_feature_ea_inode(sb);
+				ext2fs_mark_super_dirty(ctx->fs);
+			}
 
 			problem = check_large_ea_inode(ctx, entry, pctx,
 						       &quota_blocks);
@@ -1500,6 +1543,17 @@ void e2fsck_pass1(e2fsck_t ctx)
 		      fix_problem(ctx, PR_1_CASEFOLD_FEATURE, &pctx)))) {
 			inode->i_flags &= ~EXT4_CASEFOLD_FL;
 			e2fsck_write_inode(ctx, ino, inode, "pass1");
+		}
+
+		if (inode->i_flags & EXT4_EA_INODE_FL) {
+			if (!LINUX_S_ISREG(inode->i_mode) &&
+			    fix_problem(ctx, PR_1_EA_INODE_NONREG, &pctx)) {
+				inode->i_flags &= ~EXT4_EA_INODE_FL;
+				e2fsck_write_inode(ctx, ino, inode, "pass1");
+			}
+			if (inode->i_flags & EXT4_EA_INODE_FL)
+				if (!track_ea_inode(ctx, &pctx, ino))
+					continue;
 		}
 
 		/* Conflicting inlinedata/extents inode flags? */
@@ -2621,6 +2675,12 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		} else {
 			problem_t problem;
 			blk64_t entry_quota_blocks;
+
+			if (!ext2fs_has_feature_ea_inode(fs->super) &&
+			    fix_problem(ctx, PR_1_EA_INODE_FEATURE, pctx)) {
+				ext2fs_set_feature_ea_inode(fs->super);
+				ext2fs_mark_super_dirty(fs);
+			}
 
 			problem = check_large_ea_inode(ctx, entry, pctx,
 						       &entry_quota_blocks);
