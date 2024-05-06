@@ -257,6 +257,11 @@ program.
 This superblock setting is only honored in 2.6.35+ kernels;
 and not at all by the ext2 and ext3 file system drivers.
 .TP
+.BI orphan_file_size= size
+Set size of the file for tracking unlinked but still open inodes and inodes
+with truncate in progress. Larger file allows for better scalability, reserving
+a few blocks per cpu is ideal.
+.TP
 .B force_fsck
 Set a flag in the file system superblock indicating that errors have been found.
 This will force fsck to run at the next mount.
@@ -452,8 +457,12 @@ Ext2 file system labels can be at most 16 characters long; if
 .I volume-label
 is longer than 16 characters,
 .B tune2fs
-will truncate it and print a warning.  The volume label can be used
-by
+will truncate it and print a warning.  For other file systems that
+support online label manipulation and are mounted
+.B tune2fs
+will work as well, but it will not attempt to truncate the
+.I volume-label
+at all.  The volume label can be used by
 .BR mount (8),
 .BR fsck (8),
 and
@@ -584,8 +593,10 @@ Enable the file system to be larger than 2^32 blocks.
 .TP
 .B casefold
 Enable support for file system level casefolding.
-.B Tune2fs
-currently only supports setting this file system feature.
+The option can be cleared only if filesystem has no
+directories with
+.B F
+attribute.
 .TP
 .B dir_index
 Use hashed b-trees to speed up lookups for large directories.

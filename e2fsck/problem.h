@@ -288,6 +288,18 @@ struct problem_context {
 /* Meta_bg and resize_inode are not compatible, remove resize_inode*/
 #define PR_0_DISABLE_RESIZE_INODE		0x000051
 
+/* Orphan file contains holes */
+#define PR_0_ORPHAN_FILE_HOLE			0x000052
+
+/* Orphan file block has wrong magic */
+#define PR_0_ORPHAN_FILE_BAD_MAGIC		0x000053
+
+/* Orphan file block has wrong checksum */
+#define PR_0_ORPHAN_FILE_BAD_CHECKSUM		0x000054
+
+/* Orphan file size isn't multiple of blocks size */
+#define PR_0_ORPHAN_FILE_WRONG_SIZE		0x000055
+
 /*
  * Pass 1 errors
  */
@@ -716,6 +728,11 @@ struct problem_context {
 /* Htree directory uses SipHash but should not */
 #define PR_1_HTREE_CANNOT_SIPHASH		0x01008E
 
+/* Orphan file inode is not a regular file */
+#define PR_1_ORPHAN_FILE_BAD_MODE		0x01008F
+
+/* Orphan file inode is not in use, but contains data */
+#define PR_1_ORPHAN_FILE_NOT_CLEAR		0x010090
 
 /*
  * Pass 1b errors
@@ -1296,6 +1313,35 @@ struct problem_context {
 /* Error updating quota information */
 #define PR_6_WRITE_QUOTAS		0x060006
 
+/* Orphan file without a journal */
+#define PR_6_ORPHAN_FILE_WITHOUT_JOURNAL	0x060007
+
+/* Orphan file truncation failed */
+#define PR_6_ORPHAN_FILE_TRUNC_FAILED	0x060008
+
+/* Failed to initialize orphan file */
+#define PR_6_ORPHAN_FILE_CORRUPTED	0x060009
+
+/* Cannot fix corrupted orphan file with invalid bitmaps */
+#define PR_6_ORPHAN_FILE_BITMAP_INVALID	0x06000A
+
+/* Orphan file creation failed */
+#define PR_6_ORPHAN_FILE_CREATE_FAILED	0x06000B
+
+/* Orphan file block contains data */
+#define PR_6_ORPHAN_BLOCK_DIRTY		0x06000C
+
+/* orphan_present set but orphan file is empty */
+#define PR_6_ORPHAN_PRESENT_CLEAN_FILE	0x06000D
+
+/* orphan_present set but orphan_file is not */
+#define PR_6_ORPHAN_PRESENT_NO_FILE	0x06000E
+
+/* Orphan file size isn't multiple of blocks size */
+#define PR_6_ORPHAN_FILE_WRONG_SIZE	0x06000F
+
+/* Orphan file contains holes */
+#define PR_6_ORPHAN_FILE_HOLE		0x060010
 
 /*
  * Function declarations

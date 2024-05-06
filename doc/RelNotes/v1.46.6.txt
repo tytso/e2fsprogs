@@ -1,4 +1,4 @@
-E2fsprogs 1.46.6 (September 12, 2022)
+E2fsprogs 1.46.6 (February 1, 2023)
 =====================================
 
 Updates/Fixes since v1.46.5:

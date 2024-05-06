@@ -656,13 +656,15 @@ void sigcatcher_setup(void);
 void check_super_block(e2fsck_t ctx);
 int check_backup_super_block(e2fsck_t ctx);
 void check_resize_inode(e2fsck_t ctx);
+int check_init_orphan_file(e2fsck_t ctx);
 
 /* util.c */
 extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned long size,
 				    const char *description);
 extern int ask(e2fsck_t ctx, const char * string, int def);
 extern int ask_yn(e2fsck_t ctx, const char * string, int def);
-extern void fatal_error(e2fsck_t ctx, const char * fmt_string);
+extern void fatal_error(e2fsck_t ctx, const char * fmt_string)
+	E2FSCK_ATTR((noreturn));
 extern void log_out(e2fsck_t ctx, const char *fmt, ...)
 	E2FSCK_ATTR((format(printf, 2, 3)));
 extern void log_err(e2fsck_t ctx, const char *fmt, ...)

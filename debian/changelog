@@ -1,8 +1,168 @@
-e2fsprogs (1.46.6-1~bpo11+1) unstable; urgency=medium
+e2fsprogs (1.47.1~rc2-1) unstable; urgency=medium
 
-  * Rebuild for bullseye-backports.
+  * Update Chinese, Czech, French, Polish Romainian, Swedish, and
+    Ukrainian translations
+  * Fix libarchive support in mke2fs on mips64el (Closes: #1070042)
+  * Fix e2scrub when the "systemctl" package is installed instead of
+    systemd.  (Closes: #1070107)
+  * Update to standards 4.7.0
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 05 Feb 2023 15:19:15 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 01 May 2024 00:50:49 -0400
+
+e2fsprogs (1.47.1~rc1-3) unstable; urgency=medium
+
+  * Remove duplicated work in release notes
+  * Fix resize2fs's calculation of free clusters in the last block group
+    for file systems larger than 4TB
+  * Fix FTBFS on Hurd caused by trying to install e2scrub's systemd unit
+    files which aren't built since e2scrub isn't supported on Hurd
+  * Don't build mke2fs with libarchive support on mips64el since a bug in
+    libarchive only on that architecture causes a FTBFS due to the
+    regression test suite failing.  (See Debian Bug 1070042 for more details)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 29 Apr 2024 21:57:42 -0400
+
+e2fsprogs (1.47.1~rc1-1) unstable; urgency=medium
+
+  * Re-enable metadata_csum_seed and orphan_file by default now that
+    Debian Bookworm is released
+  * New upstream version
+  * Add support for post-2038 timestamps on platforms with 64-bit time_t.
+  * Mke2fs -d can now support an input tar file if the libarchive library
+    is available.
+  * Install a udev rule to inihibit ext4 file systesm from being
+    automounted by udisks.
+  * Debugfs's 'hash' command has been enhanced to use the hash seed and
+    algorithm from a superblock if a file system is opened and to display
+    the hash seed and algorithm if the -v flag is given.
+  * Teach mke2fs with a new extended options, root_perms, which overrides
+    the permissions for the root directory for the new file system.
+  * Preserve any error indicator in the superblock when replaying the
+    journal so that a subsequent fsck can repair the file system afterwards.
+  * Fix potential mke2fs failures when creating a file system with an
+    orphan file when the storage device has a previous file system and
+    does not support discard/trim commands.
+  * E2fsck will clear the orphan_present feature silently in preen mode.
+  * Fix potential checksum failures when performing an online resize when
+    the mounted file system is actively modifying the superblock.
+  * Fix a bug where a checksum failure in an htree directory can cause
+    e2fsck's preen mode to abort unnecessarily.
+  * Fix e2fsck's handling of an invalid symlink in an inline_data
+    directory.
+  * Fix e4crypt from issuing a spurious "success" error message when
+    trying to set a policy on a non-directory.
+  * Fix a potential infinite loop in debugfs's logdump command in some
+    edge cases.
+  * Fix e2fsck to correctly update quota usage after optimizing
+    directories or deleting corrupted inodes.
+  * Fix fuse2fs so that directories are created with the correct
+    permissions instead of having the other and group write permissions
+    masked off.
+  * Fix a potential e2fsck divide by zero crash caused by a maliciously
+    fuzzed file system.
+  * Fix dumpe2fs to report free block ranges correctly for bigalloc file
+    systems.
+  * Fix resize2fs where resizing a bigalloc file system can result in the
+    free cluster count in the last block group and the total free clusters
+    count to be incorrect.
+  * Avoid spurious e2scrub failures caused by trying to scrub file
+    syustems that do not have the journal enabled, and by aborting scrub
+    runs while upgrading the e2fsprogs package
+  * Teach tune2fs to detect a file system which is mounted but is not
+    mentioned in the mount namespace where tune2fs is run by treating a
+    block device which is busy as if it is mounted.
+  * If tune2fs can't find the mountpoint for a file system which is
+    apparently mounted (perhaps because it's not present in the current
+    mount namespace) when attempting to set the label or UUID in the
+    superblock, fall back to the old method of modifying block device and
+    silence printing any error messages.
+  * If both the primary superblock and first block group's backup
+    superblock are corrupted, e2fsck will now try additional backup
+    superblocks if they are available.
+  * Avoid mke2fs from creating an invalid file system with an insufficient
+    number of inodes when creating a file system which is very small
+    (100k), a block size of 1k, and an inode size of 256 bytes.
+  * Fix a potential deadlock caused by e2fsck being run in Direct I/O mode
+    with the threading optimization enabled.
+  * Update and clarify various man pages.  (Closes: #1038286)
+  * Add support for SOURCE_DATE_EPOCH environment variable
+  * Improve resize2fs's performance by eliminating extra cache flushes.
+  * Improve mke2fs's performance when zeroing a large number of inode
+    table blocks (when lazy inode table initialization is not enabled) by
+    batching calls to ext2fs_zero_blocks.
+  * Use a safe_getenv function for all calls to fetch the environment
+    variable in libext2fs.
+  * Upgrade fuse2fs to use fuse v3.
+  * Build the binaries using FORTIFY_SOURCE=3 for better hardening
+  * Add Romainian translation.
+  * Update Malay translation.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 26 Apr 2024 22:23:25 -0400
+
+e2fsprogs (1.47.0-2.4) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Upload to unstable.
+  * Version Provides and Breaks (thanks to Matthias Klose).
+
+ -- Helmut Grohne <helmut@subdivi.de>  Wed, 13 Mar 2024 07:20:06 +0100
+
+e2fsprogs (1.47.0-2.4~exp1) experimental; urgency=medium
+
+  * Non-maintainer upload.
+  * Revert time64 transitions for libss2 and libcom-err2.
+  * Enable dh_movetousr (DEP17). (Closes: #1060000)
+    + Mitigate file loss in libext2fs2 -> libext2fs2t64 upgrade and /usr-move.
+
+ -- Helmut Grohne <helmut@subdivi.de>  Sun, 10 Mar 2024 21:02:48 +0100
+
+e2fsprogs (1.47.0-2.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix package names in d/*.shlibs.local. (Closes: #1065087)
+  * Update sonames in d/libext2fs2t64.lintian-overrides.
+  * Fix packages names in code for updating symbols fies in d/rules.
+
+ -- Michael Hudson-Doyle <michael.hudson@ubuntu.com>  Fri, 01 Mar 2024 08:01:06 +1300
+
+e2fsprogs (1.47.0-2.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+
+  [ Helmut Grohne ]
+  * Fix FTBFS when systemd.pc changes systemdsystemunitdir. (Closes: #1053111)
+
+  [ Michael Hudson-Doyle ]
+  * Account for changes in udevudevdir as well.
+  * Rename libraries for 64-bit time_t transition.
+
+ -- Michael Hudson-Doyle <mwhudson@debian.org>  Wed, 28 Feb 2024 23:40:42 +0000
+
+e2fsprogs (1.47.0-2) unstable; urgency=medium
+
+  * Don't enable metadata_csum_seed and orhpan_file by default (Closes:
+    #1031622, #1030939)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 04 Mar 2023 22:16:08 -0500
+
+e2fsprogs (1.47.0-1) unstable; urgency=medium
+
+  * New upstream version
+  * Add support for the new orphan_file feature, which speeds up workloads
+    that are deleting or truncating a large number files in parallel.
+  * Mke2fs now enables the orphan_file and metadata_csum_seed feature.
+  * Mke2fs now supports the extended option "assume_storage_prezeroed"
+    which causes mke2fs to skip zeroing the journal and inode tables and
+    to mark the inode tables as zeroed.
+  * Tune2fs and e2label will more reliably modify the label and UUID for a
+    mounted file system using new kernel ioctls.
+  * Tune2fs can now disable the casefold feature after scanning all of the
+    directories do not have the casefold flag set.
+  * Fix a potential unbalanced mutex unlock when there is a short read
+    while using the bounce buffer when using direct I/O.
+  * Update to standards 4.6.2
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 06 Feb 2023 22:07:49 -0500
 
 e2fsprogs (1.46.6-1) unstable; urgency=medium
 
@@ -74,19 +234,6 @@ e2fsprogs (1.46.6~rc1-1) unstable; urgency=medium
     sure its exit status is non-zero if there is some failure.
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 12 Sep 2022 08:27:55 -0400
-
-e2fsprogs (1.46.5-2~bpo11+2) bullseye-backports; urgency=medium
-
-  * Rebuild without using digt so that the build schroot *actually* gets
-    used.  (Closes: #1003583)
-
- -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 12 Jan 2022 12:31:42 -0500
-
-e2fsprogs (1.46.5-2~bpo11+1) bullseye-backports; urgency=medium
-
-  * Rebuild for bullseye-backports.
-
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 06 Jan 2022 15:32:24 -0500
 
 e2fsprogs (1.46.5-2) unstable; urgency=medium
 
@@ -208,20 +355,6 @@ e2fsprogs (1.46.2-2) unstable; urgency=medium
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 07 Jun 2021 07:27:15 -0400
 
-e2fsprogs (1.46.2-1~bpo10+2) buster-backports; urgency=medium
-
-  * Rebuild to fix incorrect build environment for x86_64 (no source
-    changes were needed between 1.46.2-1~bpo10+1 and 1.46.2-1~bpo10+2)
-    (Closes: #985296)
-
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 18 Mar 2021 19:44:28 -0400
-
-e2fsprogs (1.46.2-1~bpo10+1) buster-backports; urgency=medium
-
-  * Rebuild for buster-backports.
-
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 11 Mar 2021 09:02:02 -0500
-
 e2fsprogs (1.46.2-1) unstable; urgency=medium
 
   * New upstream release
@@ -247,12 +380,6 @@ e2fsprogs (1.46.2-1) unstable; urgency=medium
   * Update the Spanish translation from the translation project.
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 28 Feb 2021 21:24:34 -0500
-
-e2fsprogs (1.46.1-1~bpo10+1) buster-backports; urgency=medium
-
-  * Rebuild for buster-backports.
-
- -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 16 Feb 2021 13:47:36 -0500
 
 e2fsprogs (1.46.1-1) unstable; urgency=medium
 
@@ -387,12 +514,6 @@ e2fsprogs (1.45.6-1) unstable; urgency=medium
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 20 Mar 2020 23:49:33 -0400
 
-e2fsprogs (1.45.5-2~bpo10+1) buster-backports; urgency=medium
-
-  * Rebuild for buster-backports.
-
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 25 Jan 2020 11:40:10 -0500
-
 e2fsprogs (1.45.5-2) unstable; urgency=medium
 
   * Fix com_err support on Hurd, which has POSIX E* error code starting at
@@ -473,12 +594,6 @@ e2fsprogs (1.45.3-4) unstable; urgency=medium
   * fix e2fsprogs build problems on non-Linux ports
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 06 Aug 2019 15:22:30 -0400
-
-e2fsprogs (1.45.3-3~bpo10+1) buster-backports; urgency=medium
-
-  * Rebuild for buster-backports.
-
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 01 Aug 2019 22:34:56 -0400
 
 e2fsprogs (1.45.3-3) unstable; urgency=medium
 

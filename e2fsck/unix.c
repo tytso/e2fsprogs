@@ -342,6 +342,7 @@ static int is_on_batt(void)
 static void check_if_skip(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
+	struct ext2_super_block *sb = fs->super;
 	struct problem_context pctx;
 	const char *reason = NULL;
 	unsigned int reason_arg = 0;
@@ -370,7 +371,7 @@ static void check_if_skip(e2fsck_t ctx)
 	if (ctx->options & E2F_OPT_JOURNAL_ONLY)
 		goto skip;
 
-	lastcheck = fs->super->s_lastcheck;
+	lastcheck = ext2fs_get_tstamp(sb, s_lastcheck);
 	if (lastcheck > ctx->now)
 		lastcheck -= ctx->time_fudge;
 	if ((fs->super->s_state & EXT2_ERROR_FS) ||
@@ -397,8 +398,9 @@ static void check_if_skip(e2fsck_t ctx)
 		   ((ctx->now - lastcheck) >=
 		    ((time_t) fs->super->s_checkinterval))) {
 		reason = _(" has gone %u days without being checked");
-		reason_arg = (ctx->now - fs->super->s_lastcheck)/(3600*24);
-		if (batt && ((ctx->now - fs->super->s_lastcheck) <
+		reason_arg = (ctx->now - ext2fs_get_tstamp(sb, s_lastcheck)) /
+			(3600*24);
+		if (batt && ((ctx->now - ext2fs_get_tstamp(sb, s_lastcheck)) <
 			     fs->super->s_checkinterval*2))
 			reason = 0;
 	} else if (broken_system_clock && fs->super->s_checkinterval) {
@@ -457,7 +459,8 @@ static void check_if_skip(e2fsck_t ctx)
 			next_check = 1;
 	}
 	if (!broken_system_clock && fs->super->s_checkinterval &&
-	    ((ctx->now - fs->super->s_lastcheck) >= fs->super->s_checkinterval))
+	    ((ctx->now - ext2fs_get_tstamp(sb, s_lastcheck)) >=
+	     fs->super->s_checkinterval))
 		next_check = 1;
 	if (next_check <= 5) {
 		if (next_check == 1) {
@@ -1954,15 +1957,82 @@ print_unsupp_features:
 				_("\n*** journal has been regenerated ***\n"));
 		}
 	}
-no_journal:
 
+no_journal:
 	if (run_result & E2F_FLAG_ABORT) {
 		fatal_error(ctx, _("aborted"));
 	} else if (run_result & E2F_FLAG_CANCEL) {
 		log_out(ctx, _("%s: e2fsck canceled.\n"), ctx->device_name ?
 			ctx->device_name : ctx->filesystem_name);
 		exit_value |= FSCK_CANCELED;
-	} else if (ctx->qctx && !ctx->invalid_bitmaps) {
+		goto cleanup;
+	}
+
+	if (ext2fs_has_feature_orphan_file(fs->super)) {
+		int ret;
+
+		/* No point in orphan file without a journal... */
+		if (!ext2fs_has_feature_journal(fs->super) &&
+		    fix_problem(ctx, PR_6_ORPHAN_FILE_WITHOUT_JOURNAL, &pctx)) {
+			retval = ext2fs_truncate_orphan_file(fs);
+			if (retval) {
+				/* Huh, failed to delete file */
+				fix_problem(ctx, PR_6_ORPHAN_FILE_TRUNC_FAILED,
+					    &pctx);
+				goto check_quotas;
+			}
+			ext2fs_clear_feature_orphan_file(fs->super);
+			ext2fs_mark_super_dirty(fs);
+			goto check_quotas;
+		}
+		ret = check_init_orphan_file(ctx);
+		if (ret == 2 ||
+		    (ret == 0 && ext2fs_has_feature_orphan_present(fs->super) &&
+		     fix_problem(ctx, PR_6_ORPHAN_PRESENT_CLEAN_FILE, &pctx))) {
+			ext2fs_clear_feature_orphan_present(fs->super);
+			ext2fs_mark_super_dirty(fs);
+		} else if (ret == 1 &&
+		    fix_problem(ctx, PR_6_ORPHAN_FILE_CORRUPTED, &pctx)) {
+			int orphan_file_blocks;
+
+			if (ctx->invalid_bitmaps) {
+				fix_problem(ctx,
+					    PR_6_ORPHAN_FILE_BITMAP_INVALID,
+					    &pctx);
+				goto check_quotas;
+			}
+
+			retval = ext2fs_truncate_orphan_file(fs);
+			if (retval) {
+				/* Huh, failed to truncate file */
+				fix_problem(ctx, PR_6_ORPHAN_FILE_TRUNC_FAILED,
+					    &pctx);
+				goto check_quotas;
+			}
+
+			orphan_file_blocks =
+				ext2fs_default_orphan_file_blocks(fs);
+			log_out(ctx, _("Creating orphan file (%d blocks): "),
+				orphan_file_blocks);
+			fflush(stdout);
+			retval = ext2fs_create_orphan_file(fs,
+							   orphan_file_blocks);
+			if (retval) {
+				log_out(ctx, "%s: while trying to create "
+					"orphan file\n", error_message(retval));
+				fix_problem(ctx, PR_6_ORPHAN_FILE_CREATE_FAILED,
+					    &pctx);
+				goto check_quotas;
+			}
+			log_out(ctx, "%s", _(" Done.\n"));
+		}
+	} else if (ext2fs_has_feature_orphan_present(fs->super) &&
+		   fix_problem(ctx, PR_6_ORPHAN_PRESENT_NO_FILE, &pctx)) {
+			ext2fs_clear_feature_orphan_present(fs->super);
+			ext2fs_mark_super_dirty(fs);
+	}
+check_quotas:
+	if (ctx->qctx && !ctx->invalid_bitmaps) {
 		int needs_writeout;
 
 		for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
@@ -1997,6 +2067,7 @@ no_journal:
 		goto restart;
 	}
 
+cleanup:
 #ifdef MTRACE
 	mtrace_print("Cleanup");
 #endif
@@ -2012,7 +2083,7 @@ no_journal:
 		} else
 			sb->s_state &= ~EXT2_VALID_FS;
 		if (!(ctx->flags & E2F_FLAG_TIME_INSANE))
-			sb->s_lastcheck = ctx->now;
+			ext2fs_set_tstamp(sb, s_lastcheck, ctx->now);
 		sb->s_mnt_count = 0;
 		memset(((char *) sb) + EXT4_S_ERR_START, 0, EXT4_S_ERR_LEN);
 		pctx.errcode = ext2fs_set_gdt_csum(ctx->fs);

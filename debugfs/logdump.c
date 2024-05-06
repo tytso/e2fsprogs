@@ -48,9 +48,11 @@ enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 #define ANY_BLOCK ((blk64_t) -1)
 
 static int		dump_all, dump_super, dump_old, dump_contents, dump_descriptors;
+static int64_t		dump_counts;
 static blk64_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
 static unsigned int	group_to_dump, inode_offset_to_dump;
 static ext2_ino_t	inode_to_dump;
+static bool		wrapped_flag;
 
 struct journal_source
 {
@@ -79,10 +81,12 @@ static void dump_fc_block(FILE *out_file, char *buf, int blocksize,
 static void do_hexdump (FILE *, char *, int);
 
 #define WRAP(jsb, blocknr, maxlen)					\
-	if (blocknr >= (maxlen))					\
-	    blocknr -= (maxlen - be32_to_cpu((jsb)->s_first));
+	if (blocknr >= (maxlen)) {					\
+		blocknr -= (maxlen - be32_to_cpu((jsb)->s_first));	\
+		wrapped_flag = true;					\
+	}
 
-void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+void do_logdump(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		    void *infop EXT2FS_ATTR((unused)))
 {
 	int		c;
@@ -113,9 +117,11 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 	bitmap_to_dump = -1;
 	inode_block_to_dump = ANY_BLOCK;
 	inode_to_dump = -1;
+	dump_counts = -1;
+	wrapped_flag = false;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "ab:ci:f:OsS")) != EOF) {
+	while ((c = getopt (argc, argv, "ab:ci:f:OsSn:")) != EOF) {
 		switch (c) {
 		case 'a':
 			dump_all++;
@@ -147,6 +153,14 @@ void do_logdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 			break;
 		case 'S':
 			dump_super++;
+			break;
+		case 'n':
+			dump_counts = strtol(optarg, &tmp, 10);
+			if (*tmp) {
+				com_err(argv[0], 0,
+					"Bad log counts number - %s", optarg);
+				return;
+			}
 			break;
 		default:
 			goto print_usage;
@@ -289,7 +303,7 @@ cleanup:
 	return;
 
 print_usage:
-	fprintf(stderr, "%s: Usage: logdump [-acsOS] [-b<block>] [-i<filespec>]\n\t"
+	fprintf(stderr, "%s: Usage: logdump [-acsOS] [-n<num_trans>] [-b<block>] [-i<filespec>]\n\t"
 		"[-f<journal_file>] [output_file]\n", argv[0]);
 }
 
@@ -366,9 +380,12 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	journal_header_t	*header;
 	tid_t			transaction;
 	unsigned int		blocknr = 0;
+	unsigned int		first_transaction_blocknr;
 	int			fc_done;
 	__u64			total_len;
 	__u32			maxlen;
+	int64_t			cur_counts = 0;
+	bool			exist_no_magic = false;
 
 	/* First, check to see if there's an ext2 superblock header */
 	retval = read_journal_block(cmdname, source, 0, buf, 2048);
@@ -458,7 +475,18 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			blocknr = 1;
 	}
 
+	first_transaction_blocknr = blocknr;
+
 	while (1) {
+		if (dump_old && (dump_counts != -1) && (cur_counts >= dump_counts))
+			break;
+
+		if ((blocknr == first_transaction_blocknr) && dump_old && wrapped_flag) {
+			fprintf(out_file, "Dump all %lld journal records.\n",
+				(long long) cur_counts);
+			break;
+		}
+
 		retval = read_journal_block(cmdname, source,
 				((ext2_loff_t) blocknr) * blocksize,
 				buf, blocksize);
@@ -472,8 +500,16 @@ static void dump_journal(char *cmdname, FILE *out_file,
 		blocktype = be32_to_cpu(header->h_blocktype);
 
 		if (magic != JBD2_MAGIC_NUMBER) {
-			fprintf (out_file, "No magic number at block %u: "
-				 "end of journal.\n", blocknr);
+			if (exist_no_magic == false) {
+				exist_no_magic = true;
+				fprintf(out_file, "No magic number at block %u: "
+					"end of journal.\n", blocknr);
+			}
+			if (dump_old && (dump_counts != -1)) {
+				blocknr++;
+				WRAP(jsb, blocknr, maxlen);
+				continue;
+			}
 			break;
 		}
 
@@ -500,6 +536,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			continue;
 
 		case JBD2_COMMIT_BLOCK:
+			cur_counts++;
 			transaction++;
 			blocknr++;
 			WRAP(jsb, blocknr, maxlen);

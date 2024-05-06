@@ -23,7 +23,7 @@
 #include "ext2_ext_attr.h"
 #include "ext4_acl.h"
 
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 static errcode_t read_ea_inode_hash(ext2_filsys fs, ext2_ino_t ino, __u32 *hash)
 {
@@ -1043,30 +1043,18 @@ static void xattrs_free_keys(struct ext2_xattr_handle *h)
 	h->ibody_count = 0;
 }
 
-errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
+/* fetch xattrs from an already-loaded inode */
+errcode_t ext2fs_xattrs_read_inode(struct ext2_xattr_handle *handle,
+				   struct ext2_inode_large *inode)
 {
-	struct ext2_inode_large *inode;
 	struct ext2_ext_attr_header *header;
 	__u32 ea_inode_magic;
 	unsigned int storage_size;
 	char *start, *block_buf = NULL;
 	blk64_t blk;
-	size_t i;
-	errcode_t err;
+	errcode_t err = 0;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
-	i = EXT2_INODE_SIZE(handle->fs->super);
-	if (i < sizeof(*inode))
-		i = sizeof(*inode);
-	err = ext2fs_get_memzero(i, &inode);
-	if (err)
-		return err;
-
-	err = ext2fs_read_inode_full(handle->fs, handle->ino,
-				     (struct ext2_inode *)inode,
-				     EXT2_INODE_SIZE(handle->fs->super));
-	if (err)
-		goto out;
 
 	xattrs_free_keys(handle);
 
@@ -1102,7 +1090,7 @@ errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
 
 read_ea_block:
 	/* Look for EA in a separate EA block */
-	blk = ext2fs_file_acl_block(handle->fs, (struct ext2_inode *)inode);
+	blk = ext2fs_file_acl_block(handle->fs, EXT2_INODE(inode));
 	if (blk != 0) {
 		if ((blk < handle->fs->super->s_first_data_block) ||
 		    (blk >= ext2fs_blocks_count(handle->fs->super))) {
@@ -1133,20 +1121,39 @@ read_ea_block:
 		err = read_xattrs_from_buffer(handle, inode,
 					(struct ext2_ext_attr_entry *) start,
 					storage_size, block_buf);
-		if (err)
-			goto out3;
-
-		ext2fs_free_mem(&block_buf);
 	}
 
-	ext2fs_free_mem(&block_buf);
-	ext2fs_free_mem(&inode);
-	return 0;
-
 out3:
-	ext2fs_free_mem(&block_buf);
+	if (block_buf)
+		ext2fs_free_mem(&block_buf);
+out:
+	return err;
+}
+
+errcode_t ext2fs_xattrs_read(struct ext2_xattr_handle *handle)
+{
+	struct ext2_inode_large *inode;
+	size_t inode_size = EXT2_INODE_SIZE(handle->fs->super);
+	errcode_t err;
+
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EA_HANDLE);
+
+	if (inode_size < sizeof(*inode))
+		inode_size = sizeof(*inode);
+	err = ext2fs_get_memzero(inode_size, &inode);
+	if (err)
+		return err;
+
+	err = ext2fs_read_inode_full(handle->fs, handle->ino, EXT2_INODE(inode),
+				     EXT2_INODE_SIZE(handle->fs->super));
+	if (err)
+		goto out;
+
+	err = ext2fs_xattrs_read_inode(handle, inode);
+
 out:
 	ext2fs_free_mem(&inode);
+
 	return err;
 }
 
@@ -1335,7 +1342,7 @@ static errcode_t xattr_inode_dec_ref(ext2_filsys fs, ext2_ino_t ino)
 		goto write_out;
 
 	inode.i_links_count = 0;
-	inode.i_dtime = fs->now ? fs->now : time(0);
+	ext2fs_set_dtime(fs, EXT2_INODE(&inode));
 
 	ret = ext2fs_free_ext_attr(fs, ino, &inode);
 	if (ret)

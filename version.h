@@ -9,5 +9,5 @@
  * License v2.
  */
 
-#define E2FSPROGS_VERSION "1.46.6"
-#define E2FSPROGS_DATE "1-Feb-2023"
+#define E2FSPROGS_VERSION "1.47.1-rc2"
+#define E2FSPROGS_DATE "01-May-2024"
