@@ -1,5 +1,24 @@
+e2fsprogs (1.47.1-1) unstable; urgency=medium
+
+  * New upstream version
+  * Clarify the lsattr and mklost+found man pages that they are applicable
+    for ext2, ext3, and ext4 file systems and not just for ext2.  (Closes:
+    #1041115)
+  * Replace the build-depend on pkg-config with pkgconf to fix a Lintian
+    warning.
+  * E2fsck will now perform more consistency checks on EA (extended
+    attribute value) inodes.
+  * Fix a big where e2fsck could potentially leak an acl block when
+    releasing an orphan inode.
+  * Avoid a divide by zero crash in libext2fs if the container
+    infrastructure, such as lxcfs, reports that the system has zero CPU's
+    via sysconf(_SC_NPROCESSORS_CONF).
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 20 May 2024 15:28:06 -0400
+
 e2fsprogs (1.47.1~rc2-1) unstable; urgency=medium
 
+  * New upstream version
   * Update Chinese, Czech, French, Polish Romainian, Swedish, and
     Ukrainian translations
   * Fix libarchive support in mke2fs on mips64el (Closes: #1070042)
@@ -7,7 +26,7 @@ e2fsprogs (1.47.1~rc2-1) unstable; urgency=medium
     systemd.  (Closes: #1070107)
   * Update to standards 4.7.0
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 01 May 2024 00:50:49 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 20 May 2024 15:24:47 -0400
 
 e2fsprogs (1.47.1~rc1-3) unstable; urgency=medium
 

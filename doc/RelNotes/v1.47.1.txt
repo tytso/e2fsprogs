@@ -1,5 +1,5 @@
-E2fsprogs 1.47.1 (May 1, 2024)
-==============================
+E2fsprogs 1.47.1 (May 20, 2024)
+===============================
 
 Updates/Fixes since v1.47.0:
 
@@ -59,6 +59,16 @@ the case when mke2fs calls this library function).
 In the case where e2fsck comes across an orphan file which is empty but
 the orphan_present feature is set, in preen mode, e2fsck will now clear
 the orphan_present feature flag silently.
+
+E2fsck will now perform more consistency checks on EA (extended
+attribute value) inodes.
+
+Fix a big where e2fsck could potentially leak an acl block when
+releasing an orphan inode.
+
+Avoid a divide by zero crash in libext2fs if the container
+infrastructure, such as lxcfs, reports that the system has zero CPU's
+via sysconf(_SC_NPROCESSORS_CONF).
 
 When resize2fs is performing an online resize, it's possible for reading
 the superblock can race with a kernel modifying the superblock with the
@@ -123,7 +133,8 @@ systemd.  (Addresses Debian Bug #1070107)
 
 Fixed/improved various Debian packaging issues.
 
-Update and clarify various man pages.  (Addresses Debian Bug #1038286)
+Update and clarify various man pages.  (Addresses Debian Bugs #1038286,
+#1041115)
 
 
 
@@ -168,6 +179,10 @@ GNU/Hurd and Android.  (Addresses Debian Bug: #1056145)
 Fix various portability problems in the regression test suite.
 
 Fix various sanitizer, static code analysis, and compiler warnings.
+
+Synchronized changes from Android's AOSP e2fsprogs tree.
+
+Updated config.guess and config.sub with newer versions from the FSF.
 
 Add Romainian translation.
 
