@@ -363,16 +363,18 @@ create_inode.o: $(srcdir)/../misc/create_inode.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/ext2fs/fiemap.h \
  $(srcdir)/../misc/create_inode.h $(top_srcdir)/lib/e2p/e2p.h \
- $(top_srcdir)/lib/support/nls-enable.h
+ $(top_srcdir)/lib/support/nls-enable.h \
+ $(srcdir)/../misc/create_inode_libarchive.h
 create_inode_libarchive.o: $(srcdir)/../misc/create_inode_libarchive.c \
- $(top_builddir)/lib/config.h $(srcdir)/../misc/create_inode_libarchive.h \
- $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
- $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_builddir)/lib/config.h $(top_builddir)/lib/dirpaths.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/../misc/create_inode.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/ext2fs/fiemap.h \
- $(srcdir)/../misc/create_inode.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/../misc/create_inode_libarchive.h \
  $(top_srcdir)/lib/support/nls-enable.h
 xattrs.o: $(srcdir)/xattrs.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/support/cstring.h \
