@@ -196,7 +196,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	__u32				count;
 
 	if (!ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(inode)))
-		return 0;
+		goto release_acl;
 
 	pb.buf = block_buf + 3 * ctx->fs->blocksize;
 	pb.ctx = ctx;
@@ -235,7 +235,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	if (pb.truncated_blocks)
 		ext2fs_iblk_sub_blocks(fs, EXT2_INODE(inode),
 				pb.truncated_blocks);
-
+release_acl:
 	blk = ext2fs_file_acl_block(fs, EXT2_INODE(inode));
 	if (blk) {
 		retval = ext2fs_adjust_ea_refcount3(fs, blk, block_buf, -1,

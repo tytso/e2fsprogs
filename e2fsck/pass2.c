@@ -1501,6 +1501,21 @@ skip_checksum:
 			problem = PR_2_NULL_NAME;
 		}
 
+		/*
+		 * Check if inode was tracked as EA inode and has actual
+		 * references from xattrs. In that case dir entry is likely
+		 * bogus and we want to clear it. The case of EA inode without
+		 * references from xattrs will be handled in pass 4.
+		 */
+		if (!problem && ctx->ea_inode_refs) {
+			ea_value_t refs;
+
+			ea_refcount_fetch(ctx->ea_inode_refs, dirent->inode,
+					  &refs);
+			if (refs && refs != EA_INODE_NO_REFS)
+				problem = PR_2_EA_INODE_DIR_LINK;
+		}
+
 		if (problem) {
 			if (fix_problem(ctx, problem, &cd->pctx)) {
 				dirent->inode = 0;

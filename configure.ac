@@ -1664,9 +1664,6 @@ if test "$enable_fuzzing" = "yes" || test "$enable_fuzzing" = "probe"; then
 	AC_SUBST(fuzzer_cflags)
 	AC_SUBST(fuzzer_ldflags)
 fi
-if test "$enable_fuzzer" = "yes" && test "$have_fuzzer" != "yes"; then
-	AC_MSG_ERROR([Fuzzing not supported by compiler.])
-fi
 AC_SUBST(FUZZING_CMT)
 dnl
 dnl OS-specific uncomment control

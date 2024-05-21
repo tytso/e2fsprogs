@@ -101,8 +101,8 @@ struct quotafile_ops;
 
 /* Generic information about quotafile */
 struct util_dqinfo {
-	time_t dqi_bgrace;	/* Block grace time for given quotafile */
-	time_t dqi_igrace;	/* Inode grace time for given quotafile */
+	__u32 dqi_bgrace;	/* Block grace time for given quotafile */
+	__u32 dqi_igrace;	/* Inode grace time for given quotafile */
 	union {
 		struct v2_mem_dqinfo v2_mdqi;
 	} u;			/* Format specific info about quotafile */
@@ -137,8 +137,8 @@ struct util_dqblk {
 	qsize_t dqb_bhardlimit;
 	qsize_t dqb_bsoftlimit;
 	qsize_t dqb_curspace;
-	time_t dqb_btime;
-	time_t dqb_itime;
+	__u64 dqb_btime;
+	__u64 dqb_itime;
 	union {
 		struct v2_mem_dqblk v2_mdqb;
 	} u;			/* Format specific dquot information */
