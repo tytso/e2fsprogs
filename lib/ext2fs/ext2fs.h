@@ -585,7 +585,8 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
  */
 #define EXT2_I_SIZE(i)	((i)->i_size | ((__u64) (i)->i_size_high << 32))
 
-static inline __u32 __encode_extra_time(time_t seconds, __u32 nsec)
+static inline __u32 __encode_extra_time(time_t seconds EXT2FS_ATTR((unused)),
+					__u32 nsec)
 {
 	__u32 extra = 0;
 
@@ -595,7 +596,8 @@ static inline __u32 __encode_extra_time(time_t seconds, __u32 nsec)
 #endif
 	return extra | (nsec << EXT4_EPOCH_BITS);
 }
-static inline time_t __decode_extra_sec(time_t seconds, __u32 extra)
+static inline time_t __decode_extra_sec(time_t seconds,
+					__u32 extra EXT2FS_ATTR((unused)))
 {
 #if (SIZEOF_TIME_T > 4)
 	if (extra & EXT4_EPOCH_MASK)
@@ -630,7 +632,8 @@ do {									      \
 		((struct ext2_inode_large *)(inode))->field ## _extra) :      \
 		(time_t)(inode)->field)
 
-static inline void __sb_set_tstamp(__u32 *lo, __u8 *hi, time_t seconds)
+static inline void __sb_set_tstamp(__u32 *lo, __u8 *hi EXT2FS_ATTR((unused)),
+				   time_t seconds)
 {
 	*lo = seconds & 0xffffffff;
 #if (SIZEOF_TIME_T > 4)
@@ -639,7 +642,7 @@ static inline void __sb_set_tstamp(__u32 *lo, __u8 *hi, time_t seconds)
 	*hi = 0;
 #endif
 }
-static inline time_t __sb_get_tstamp(__u32 *lo, __u8 *hi)
+static inline time_t __sb_get_tstamp(__u32 *lo, __u8 *hi EXT2FS_ATTR((unused)))
 {
 #if (SIZEOF_TIME_T == 4)
 	return *lo;
