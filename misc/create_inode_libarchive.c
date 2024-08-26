@@ -443,7 +443,7 @@ static errcode_t set_inode_xattr_tar(ext2_filsys fs, ext2_ino_t ino,
 	dl_archive_entry_xattr_reset(entry);
 	while (dl_archive_entry_xattr_next(entry, &name, &value, &value_size) ==
 	       ARCHIVE_OK) {
-		if (strcmp(name, "security.capability") != 0)
+		if (strcmp(name, "security.capability") != 0 && strcmp(name, "gnu.translator"))
 			continue;
 
 		retval = ext2fs_xattr_set(handle, name, value, value_size);
