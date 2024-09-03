@@ -1312,6 +1312,8 @@ AS_HELP_STRING([--without-libarchive],[disable use of libarchive]),
 then
 	try_libarchive=""
 	AC_MSG_RESULT([Disabling libarchive support])
+	AC_DEFINE(CONFIG_DISABLE_LIBARCHIVE, 1,
+		[Define to 1 to completely disable libarchive])
 elif test "$withval" = "direct"
 then
 	try_libarchive="direct"
