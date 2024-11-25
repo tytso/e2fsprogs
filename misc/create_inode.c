@@ -430,6 +430,26 @@ static ssize_t my_pread(int fd, void *buf, size_t count, off_t offset)
 }
 #endif /* !defined HAVE_PREAD64 && !defined HAVE_PREAD */
 
+static errcode_t write_all(ext2_file_t e2_file, ext2_off_t off, const char *buf, unsigned int n_bytes) {
+	errcode_t err = ext2fs_file_llseek(e2_file, off, EXT2_SEEK_SET, NULL);
+	if (err)
+		return err;
+
+	const char *ptr = buf;
+	while (n_bytes) {
+		unsigned int written;
+		err = ext2fs_file_write(e2_file, ptr, n_bytes, &written);
+		if (err)
+			return err;
+		if (written == 0)
+			return EIO;
+		n_bytes -= written;
+		ptr += written;
+	}
+
+	return 0;
+}
+
 static errcode_t copy_file_chunk(ext2_filsys fs, int fd, ext2_file_t e2_file,
 				 off_t start, off_t end, char *buf,
 				 char *zerobuf)
@@ -460,22 +480,10 @@ static errcode_t copy_file_chunk(ext2_filsys fs, int fd, ext2_file_t e2_file,
 				ptr += blen;
 				continue;
 			}
-			err = ext2fs_file_llseek(e2_file, off + bpos,
-						 EXT2_SEEK_SET, NULL);
+			err = write_all(e2_file, off + bpos, ptr, blen);
 			if (err)
 				goto fail;
-			while (blen > 0) {
-				err = ext2fs_file_write(e2_file, ptr, blen,
-							&written);
-				if (err)
-					goto fail;
-				if (written == 0) {
-					err = EIO;
-					goto fail;
-				}
-				blen -= written;
-				ptr += written;
-			}
+			ptr += blen;
 		}
 	}
 fail:
