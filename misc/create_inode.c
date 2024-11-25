@@ -599,18 +599,18 @@ static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 
 #if defined(SEEK_DATA) && defined(SEEK_HOLE)
 	err = try_lseek_copy(fs, fd, statbuf, e2_file, buf, zerobuf);
-	if (err != EXT2_ET_UNIMPLEMENTED)
-		goto out;
+#else
+	err = EXT2_ET_UNIMPLEMENTED;
 #endif
 
 #if defined(FS_IOC_FIEMAP)
-	err = try_fiemap_copy(fs, fd, e2_file, buf, zerobuf);
-	if (err != EXT2_ET_UNIMPLEMENTED)
-		goto out;
+	if (err == EXT2_ET_UNIMPLEMENTED)
+		err = try_fiemap_copy(fs, fd, e2_file, buf, zerobuf);
 #endif
 
-	err = copy_file_chunk(fs, fd, e2_file, 0, statbuf->st_size, buf,
-			      zerobuf);
+	if (err == EXT2_ET_UNIMPLEMENTED)
+		err = copy_file_chunk(fs, fd, e2_file, 0, statbuf->st_size, buf,
+				      zerobuf);
 out:
 	ext2fs_free_mem(&zerobuf);
 	ext2fs_free_mem(&buf);
