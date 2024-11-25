@@ -63,7 +63,7 @@ extern errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd,
 				   const char *name, ext2_ino_t root);
 extern errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd,
 				   const char *src, const char *dest,
-				   ext2_ino_t root);
+				   unsigned long flags, ext2_ino_t root);
 extern errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 			  ext2_ino_t ino, const char *name);
 extern errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,

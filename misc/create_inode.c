@@ -30,6 +30,10 @@
 #ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
 #endif
+#ifdef HAVE_LINUX_FSVERITY_H
+#include <linux/fsverity.h>
+#include <linux/fs.h>
+#endif
 
 #include <ext2fs/ext2fs.h>
 #include <ext2fs/ext2_types.h>
@@ -457,7 +461,6 @@ static errcode_t copy_file_chunk(ext2_filsys fs, int fd, ext2_file_t e2_file,
 {
 	off_t off, bpos;
 	ssize_t got, blen;
-	unsigned int written;
 	char *ptr;
 	errcode_t err = 0;
 
@@ -587,8 +590,110 @@ out:
 }
 #endif /* FS_IOC_FIEMAP */
 
+#ifdef HAVE_LINUX_FSVERITY_H
+static inline off_t round_up(off_t n, off_t blksz, off_t bias)
+{
+  return ((n - bias + (blksz - 1)) & ~(blksz - 1)) + bias;
+}
+
+static errcode_t copy_fs_verity_data(ext2_file_t e2_file, ext2_off_t e2_offset,
+				     int fd, uint64_t metadata_type,
+				     __u32 *written)
+{
+	errcode_t err;
+	char buf[COPY_FILE_BUFLEN];
+	int size;
+
+	*written = 0;
+
+	do {
+		struct fsverity_read_metadata_arg arg = {
+		  .metadata_type = metadata_type,
+		  .buf_ptr = (uint64_t) buf,
+		  .length = sizeof(buf),
+		  .offset = *written,
+		};
+
+		size = ioctl(fd, FS_IOC_READ_VERITY_METADATA, &arg);
+		if (size < 0) {
+			if (errno == EINTR)
+				continue;
+			return errno;
+		}
+		err = write_all(e2_file, e2_offset, buf, size);
+		if (err)
+			return err;
+
+		e2_offset += size;
+		*written += size;
+	} while (size != 0);
+
+	return 0;
+}
+
+static errcode_t copy_fs_verity(ext2_filsys fs, int fd,
+				ext2_file_t e2_file, off_t st_size)
+{
+	ext2_ino_t ino = ext2fs_file_get_inode_num(e2_file);
+	struct ext2_inode *inode = ext2fs_file_get_inode(e2_file);
+	off_t offset = round_up(st_size, 65536, 0);
+	__u32 written;
+	errcode_t err;
+
+	if (!ino || !inode ||
+	    !(inode->i_flags & EXT4_EXTENTS_FL) ||
+	    (inode->i_flags & EXT4_INLINE_DATA_FL))
+		return 0;
+
+	/* We read the existing fs-verity data out of the host
+	 * filesystem and write it verbatim into the file we're
+	 * creating, as blocks following the end of the file.
+	 *
+	 * https://docs.kernel.org/filesystems/fsverity.html#fs-ioc-read-verity-metadata
+	 * https://docs.kernel.org/filesystems/ext4/overview.html#verity-files
+	 */
+
+	/*  Copy Merkel tree data: might be empty (for empty files) */
+	err = copy_fs_verity_data(e2_file, offset, fd,
+				  FS_VERITY_METADATA_TYPE_MERKLE_TREE,
+				  &written);
+	/* These errors are if the file/filesystem/kernel doesn't have
+	 * fs-verity.  If those happened before we wrote anything,
+	 * then we already did the right thing.
+	 */
+	if ((err == ENODATA || err == ENOTTY || err == ENOTSUP) && !written)
+		return 0;
+	if (err)
+		return err;
+	offset = round_up(offset+written, fs->blocksize, 0);
+
+	/*
+	 * Write the verity descriptor (we don't handle signature blobs),
+	 * starting at the next file system block boundary
+	 */
+	err = copy_fs_verity_data(e2_file, offset, fd,
+				  FS_VERITY_METADATA_TYPE_DESCRIPTOR,
+				  &written);
+	offset = round_up(offset+written, fs->blocksize, -4);
+
+	/*
+	 * Write the size of the verity descriptor in bytes, as a
+	 * 4-byte little endian integer.
+	 */
+	written = ext2fs_cpu_to_le32(written);
+	err = write_all(e2_file, offset, (const char *) &written, 4);
+	if (err)
+		return err;
+
+	/* Reset size in the inode to the original file size */;
+	ext2fs_inode_size_set(fs, inode, st_size);
+	inode->i_flags |= EXT4_VERITY_FL;
+	return ext2fs_write_inode(fs, ino, inode);
+}
+#endif
+
 static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
-			   ext2_ino_t ino)
+			   unsigned long flags, ext2_ino_t ino)
 {
 	ext2_file_t e2_file;
 	char *buf = NULL, *zerobuf = NULL;
@@ -606,10 +711,9 @@ static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 	if (err)
 		goto out;
 
+	err = EXT2_ET_UNIMPLEMENTED;
 #if defined(SEEK_DATA) && defined(SEEK_HOLE)
 	err = try_lseek_copy(fs, fd, statbuf, e2_file, buf, zerobuf);
-#else
-	err = EXT2_ET_UNIMPLEMENTED;
 #endif
 
 #if defined(FS_IOC_FIEMAP)
@@ -620,6 +724,12 @@ static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 	if (err == EXT2_ET_UNIMPLEMENTED)
 		err = copy_file_chunk(fs, fd, e2_file, 0, statbuf->st_size, buf,
 				      zerobuf);
+
+#ifdef HAVE_LINUX_FSVERITY_H
+	if (!err && (flags & EXT4_VERITY_FL))
+		err = copy_fs_verity(fs, fd, e2_file, statbuf->st_size);
+#endif
+
 out:
 	ext2fs_free_mem(&zerobuf);
 	ext2fs_free_mem(&buf);
@@ -643,7 +753,8 @@ static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ino_t ino)
 
 /* Copy the native file to the fs */
 errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
-			    const char *dest, ext2_ino_t root)
+			    const char *dest, unsigned long flags,
+			    ext2_ino_t root)
 {
 	int		fd;
 	struct stat	statbuf;
@@ -735,7 +846,7 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 			goto out;
 	}
 	if (LINUX_S_ISREG(inode.i_mode)) {
-		retval = copy_file(fs, fd, &statbuf, newfile);
+		retval = copy_file(fs, fd, &statbuf, flags, newfile);
 		if (retval)
 			goto out;
 	}
@@ -828,6 +939,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 	const char	*name;
 	struct dirent	**dent;
 	struct stat	st;
+	unsigned long	fl;
 	unsigned int	save_inode;
 	ext2_ino_t	ino;
 	errcode_t	retval = 0;
@@ -862,6 +974,8 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 				name);
 			goto out;
 		}
+		if (fgetflags(name, &fl) < 0)
+			fl = 0;
 
 		/* Check for hardlinks */
 		save_inode = 0;
@@ -955,7 +1069,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 #endif /* !_WIN32 */
 		case S_IFREG:
 			retval = do_write_internal(fs, parent_ino, name, name,
-						   root);
+						   fl, root);
 			if (retval) {
 				com_err(__func__, retval,
 					_("while writing file \"%s\""), name);

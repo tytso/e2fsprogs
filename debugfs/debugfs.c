@@ -1766,7 +1766,7 @@ void do_write(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 				"<native file> <new file>", CHECK_FS_RW))
 		return;
 
-	retval = do_write_internal(current_fs, cwd, argv[1], argv[2], root);
+	retval = do_write_internal(current_fs, cwd, argv[1], argv[2], 0, root);
 	if (retval)
 		com_err(argv[0], retval, 0);
 }
