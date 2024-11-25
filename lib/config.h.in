@@ -199,6 +199,9 @@
 /* Define to 1 if you have the <linux/fsmap.h> header file. */
 #undef HAVE_LINUX_FSMAP_H
 
+/* Define to 1 if you have the <linux/fsverity.h> header file. */
+#undef HAVE_LINUX_FSVERITY_H
+
 /* Define to 1 if you have the <linux/loop.h> header file. */
 #undef HAVE_LINUX_LOOP_H
 

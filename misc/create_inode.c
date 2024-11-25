@@ -16,6 +16,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <assert.h>
 #include <unistd.h>
 #include <limits.h> /* for PATH_MAX */
 #include <dirent.h> /* for scandir() and alphasort() */
@@ -29,6 +30,10 @@
 #endif
 #ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
+#endif
+#ifdef HAVE_LINUX_FSVERITY_H
+#include <linux/fsverity.h>
+#include <linux/fs.h>
 #endif
 
 #include <ext2fs/ext2fs.h>
@@ -586,6 +591,116 @@ out:
 }
 #endif /* FS_IOC_FIEMAP */
 
+#ifdef HAVE_LINUX_FSVERITY_H
+// add to n until (n == bias) mod blksz.  blksz is power of 2.
+static inline off_t round_up(off_t n, off_t blksz, off_t bias)
+{
+  return ((n - bias + (blksz - 1)) & ~(blksz - 1)) + bias;
+}
+
+static errcode_t copy_fs_verity_data(ext2_file_t e2_file, ext2_off_t e2_offset,
+				     int fd, uint64_t metadata_type, ext2_off_t *written)
+{
+	char buf[COPY_FILE_BUFLEN];
+	int size; // return type of ioctl()
+
+	*written = 0;
+
+	do {
+		struct fsverity_read_metadata_arg arg = {
+		  .metadata_type = metadata_type,
+		  .buf_ptr = (uint64_t) buf,
+		  .length = sizeof buf,
+		  .offset = *written,
+		};
+
+		size = ioctl(fd, FS_IOC_READ_VERITY_METADATA, &arg);
+		if (size == -1 && errno == EINTR)
+			continue;
+		else if (size == -1)
+			return errno;
+
+		errcode_t err = write_all(e2_file, e2_offset, buf, size);
+		if (err)
+			return err;
+
+		e2_offset += size;
+		*written += size;
+	} while (size != 0);
+
+	return 0;
+}
+
+static errcode_t copy_fs_verity(ext2_filsys fs, int fd,
+				ext2_file_t e2_file, off_t st_size)
+{
+	/* We read the existing fs-verity data out of the host
+	 * filesystem and write it verbatim into the file we're
+	 * creating, as blocks following the end of the file.
+	 *
+	 * https://docs.kernel.org/filesystems/fsverity.html#fs-ioc-read-verity-metadata
+	 * https://docs.kernel.org/filesystems/ext4/overview.html#verity-files
+	 *
+	 *  1. Zero-pad to the next 64KiB boundary (sparsely)
+	 */
+	off_t offset = round_up(st_size, 65536, 0);
+
+	/*  2. Merkel tree data: might be empty (for empty files) */
+	ext2_off_t written;
+	errcode_t err = copy_fs_verity_data(e2_file, offset,
+					    fd, FS_VERITY_METADATA_TYPE_MERKLE_TREE, &written);
+	if (err) {
+		/* These three errors are if the file/filesystem/kernel
+		 * doesn't have fs-verity.  If those happened before we
+		 * wrote anything, then we already did the right thing.
+		 */
+		if ((err == ENODATA || err == ENOTTY || err == ENOTSUP) && !written) {
+			err = 0;
+		}
+		return err;
+	}
+	offset += written;
+
+	/*  3. Zero-padding to the next filesystem block boundary. */
+	offset = round_up(offset, fs->blocksize, 0);
+
+	/*  4. The verity descriptor (we don't handle signature blobs). */
+	err = copy_fs_verity_data(e2_file, offset,
+				  fd, FS_VERITY_METADATA_TYPE_DESCRIPTOR, &written);
+	offset += written;
+
+	/*  5. Zero-padding to the next offset that is 4 bytes before a
+	 *     filesystem block boundary. */
+	offset = round_up(offset, fs->blocksize, -4);
+
+	/*  6. The size of the verity descriptor in bytes, as a 4-byte
+	 *     little endian integer. */
+	uint32_t dsize = written;
+	uint8_t size_le[4] = { dsize, dsize >> 8, dsize >> 16, dsize >> 24 };
+	err = write_all(e2_file, offset, (const char *) size_le, sizeof size_le);
+	if (err)
+		return err;
+
+	/* Verity inodes have EXT4_VERITY_FL set, and they must use
+	 * extents, i.e. EXT4_EXTENTS_FL must be set and
+	 * EXT4_INLINE_DATA_FL must be clear.
+	 */
+	ext2_ino_t ino = ext2fs_file_get_inode_num(e2_file);
+	struct ext2_inode inode;
+	err = ext2fs_read_inode(fs, ino, &inode);
+	if (err)
+		return err;
+	assert(!(inode.i_flags & EXT4_INLINE_DATA_FL));
+	assert(inode.i_flags & EXT4_EXTENTS_FL);
+
+	// The st_size of the inode should be the original file size
+	ext2fs_inode_size_set(fs, &inode, st_size);
+
+	inode.i_flags |= EXT4_VERITY_FL;
+	return ext2fs_write_inode(fs, ino, &inode);
+}
+#endif
+
 static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 			   ext2_ino_t ino)
 {
@@ -619,6 +734,15 @@ static errcode_t copy_file(ext2_filsys fs, int fd, struct stat *statbuf,
 	if (err == EXT2_ET_UNIMPLEMENTED)
 		err = copy_file_chunk(fs, fd, e2_file, 0, statbuf->st_size, buf,
 				      zerobuf);
+
+#ifdef HAVE_LINUX_FSVERITY_H
+	if (!err &&
+	    ext2fs_has_feature_extents(fs->super) &&
+	    ext2fs_has_feature_verity(fs->super)) {
+		err = copy_fs_verity(fs, fd, e2_file, statbuf->st_size);
+        }
+#endif
+
 out:
 	ext2fs_free_mem(&zerobuf);
 	ext2fs_free_mem(&buf);
