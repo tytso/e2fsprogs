@@ -2864,6 +2864,7 @@ static int resize_inode(ext2_filsys fs, unsigned long new_size)
 	int new_ino_blks_per_grp;
 	ext2fs_block_bitmap bmap;
 
+	ext2fs_update_dynamic_rev(fs);
 	retval = ext2fs_read_inode_bitmap(fs);
 	if (retval) {
 		fputs(_("Failed to read inode bitmap\n"), stderr);
