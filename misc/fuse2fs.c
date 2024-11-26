@@ -3775,7 +3775,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"\n",
 			outargs->argv[0]);
 		if (key == FUSE2FS_HELPFULL) {
-			fuse_opt_add_arg(outargs, "-ho");
+			fuse_opt_add_arg(outargs, "-h");
 			fuse_main(outargs->argc, outargs->argv, &fs_ops, NULL);
 		} else {
 			fprintf(stderr, "Try --helpfull to get a list of "
