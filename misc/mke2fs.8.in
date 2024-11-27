@@ -74,10 +74,6 @@ mke2fs \- create an ext2/ext3/ext4 file system
 .B \-q
 ]
 [
-.B \-r
-.I fs-revision-level
-]
-[
 .B \-E
 .I extended-options
 ]
@@ -405,6 +401,13 @@ to support a file system that has
 .I max-online-resize
 blocks.
 .TP
+.BI revision= fs-revision
+Specify the file system revision number.   Revision 0 file systems
+provide compatibility with pre-1.2 Linux kernels (dating from before
+1995).   This is only needed for testing or people who want to use
+very early, historical Linux systems.  The current default (supported
+by all modern Linux systems) is revision 1.
+.TP
 .BI root_owner [=uid:gid]
 Specify the numeric user and group ID of the root directory.  If no UID:GID
 is specified, use the user and group ID of the user running \fBmke2fs\fR.
@@ -720,12 +723,6 @@ the manual page
 Quiet execution.  Useful if
 .B mke2fs
 is run in a script.
-.TP
-.BI \-r " revision"
-Set the file system revision for the new file system.  Note that 1.2
-kernels only support revision 0 file systems.  The default is to
-create revision 1 file systems.
-.TP
 .B \-S
 Write superblock and group descriptors only.  This is an extreme
 measure to be taken only in the very unlikely case that all of
