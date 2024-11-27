@@ -98,7 +98,7 @@ device
 allows the system administrator to adjust various tunable file system
 parameters on Linux ext2, ext3, or ext4 file systems.  The current values
 of these options can be displayed by using the
-.B -l
+.B \-l
 option to
 .BR tune2fs (8)
 program, or by using the
@@ -175,7 +175,7 @@ The following extended options are supported:
 .B clear_mmp
 Reset the MMP block (if any) back to the clean state.  Use only if
 absolutely certain the device is not currently mounted or being
-fscked, or major file system corruption can result.  Needs '-f'.
+fscked, or major file system corruption can result.  Needs '\-f'.
 .TP
 .BI encoding= encoding-name
 Enable the
@@ -227,7 +227,7 @@ feature be enabled.
 Set a set of default mount options which will be used when the file
 system is mounted.  Unlike the bitmask-based default mount options which
 can be specified with the
-.B -o
+.B \-o
 option,
 .I mount_option_string
 is an arbitrary string with a maximum length of 63 bytes, which is
@@ -378,7 +378,7 @@ The following journal options are supported:
 @JDEV@The external
 @JDEV@journal must have been already created using the command
 @JDEV@.IP
-@JDEV@.B mke2fs -O journal_dev
+@JDEV@.B mke2fs \-O journal_dev
 @JDEV@.I external-journal
 @JDEV@.IP
 @JDEV@Note that
@@ -401,7 +401,7 @@ The following journal options are supported:
 @JDEV@stored in the ext2 superblock at the start of the journal.  Use
 @JDEV@.BR dumpe2fs (8)
 @JDEV@to display a journal device's volume label and UUID.  See also the
-@JDEV@.B -L
+@JDEV@.B \-L
 @JDEV@option of
 @JDEV@.BR tune2fs (8).
 .TP
@@ -437,7 +437,7 @@ beginning of the file system.
 Create a journal stored in the file system of size
 .I journal-size
 megabytes.   The size of the journal must be at least 1024 file system blocks
-(i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.)
+(i.e., 1\~MiB if using 1k blocks, 4\~MiB if using 4k blocks, etc.)
 and may be no more than 10,240,000 file system blocks.
 There must be enough free space in the file system to create a journal of
 that size.
@@ -642,7 +642,6 @@ Setting the file system feature is equivalent to using the
 .B \-j
 option.
 .TP
-.TP
 .B fast_commit
 Enable fast commit journaling feature to improve fsync latency.
 .TP
@@ -655,7 +654,7 @@ currently only supports setting this file system feature.
 Support files larger than 2 terabytes in size.
 .TP
 .B large_file
-File System can contain files that are greater than 2GB.
+File System can contain files that are greater than 2\~GiB.
 .TP
 .B metadata_csum
 Store a checksum to protect the contents in each metadata block.
@@ -727,7 +726,7 @@ will print a message requesting that the system administrator run
 if necessary.  After setting the
 .B dir_index
 feature,
-.B e2fsck -D
+.B e2fsck \-D
 can be run to convert existing directories to the hashed B-tree format.
 Enabling certain file system features may prevent the file system from being
 mounted by kernels which do not support those features.  In particular, the
@@ -756,7 +755,7 @@ Sets/clears project quota inode in the superblock.
 .TP
 .BI \-T " time-last-checked"
 Set the time the file system was last checked using
-.BR  e2fsck .
+.BR e2fsck .
 The time is interpreted using the current (local) timezone.
 This can be useful in scripts which use a Logical Volume Manager to make
 a consistent snapshot of a file system, and then check the file system
