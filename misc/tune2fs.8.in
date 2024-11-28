@@ -669,6 +669,11 @@ feature while it is mounted.
 .B mmp
 Enable or disable multiple mount protection (MMP) feature.
 .TP
+.B orphan_file
+Store the list of orphan inodes in multiple blocks instead of a single
+linked-list to avoid potential scalability bottlenecks for workloads
+that perform a large number of file truncations or extensions in parallel.
+.TP
 .B project
 Enable project ID tracking.  This is used for project quota tracking.
 .TP

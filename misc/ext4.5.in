@@ -245,6 +245,13 @@ This ext4 feature provides multiple mount protection (MMP).  MMP helps to
 protect the file system from being multiply mounted and is useful in
 shared storage environments.
 .TP
+.B orphan_file
+.br
+This ext4 feature fixes a potential scalability bottleneck for workloads
+that are doing a large number of truncate or file extensions in
+parallel.  It is supported by Linux kernels starting version 5.15, and
+by e2fsprogs starting with version 1.47.0.
+.TP
 .B project
 .br
 This ext4 feature provides project quota support. With this feature,
