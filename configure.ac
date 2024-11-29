@@ -1156,6 +1156,11 @@ if grep HAVE_SYS_TYPES_H confdefs.h > tmp_config.$$; then
 else
   echo "#undef HAVE_SYS_TYPES_H" >> public_config.h
 fi
+if grep SIZEOF_TIME_T confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef SIZEOF_TIME_T" >> public_config.h
+fi
 if grep WORDS_BIGENDIAN confdefs.h > tmp_config.$$; then
   uniq tmp_config.$$ >> public_config.h
 else

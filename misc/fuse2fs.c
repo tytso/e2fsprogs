@@ -26,7 +26,23 @@
 #endif
 #include <sys/ioctl.h>
 #include <unistd.h>
+#ifdef __SET_FOB_FOR_FUSE
+# error Do not set magic value __SET_FOB_FOR_FUSE!!!!
+#endif
+#ifndef _FILE_OFFSET_BITS
+/*
+ * Old versions of libfuse (e.g. Debian 2.9.9 package) required that the build
+ * system set _FILE_OFFSET_BITS explicitly, even if doing so isn't required to
+ * get a 64-bit off_t.  AC_SYS_LARGEFILE doesn't set any _FILE_OFFSET_BITS if
+ * it's not required (such as on aarch64), so we must inject it here.
+ */
+# define __SET_FOB_FOR_FUSE
+# define _FILE_OFFSET_BITS 64
+#endif /* _FILE_OFFSET_BITS */
 #include <fuse.h>
+#ifdef __SET_FOB_FOR_FUSE
+# undef _FILE_OFFSET_BITS
+#endif /* __SET_FOB_FOR_FUSE */
 #include <inttypes.h>
 #include "ext2fs/ext2fs.h"
 #include "ext2fs/ext2_fs.h"
@@ -3759,7 +3775,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"\n",
 			outargs->argv[0]);
 		if (key == FUSE2FS_HELPFULL) {
-			fuse_opt_add_arg(outargs, "-ho");
+			fuse_opt_add_arg(outargs, "-h");
 			fuse_main(outargs->argc, outargs->argv, &fs_ops, NULL);
 		} else {
 			fprintf(stderr, "Try --helpfull to get a list of "

@@ -13,11 +13,22 @@ Package: fuse2fs
 Build-Profiles: <!pkg.e2fsprogs.no-fuse2fs>
 Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Breaks: fuseext2 (<< 1.47.1-2~)
+Replaces: fuseext2 (<< 1.47.1-2~)
 Architecture: linux-any kfreebsd-any
 Description: ext2 / ext3 / ext4 file system driver for FUSE
  fuse2fs is a FUSE file system client that supports reading and
  writing from devices or image files containing ext2, ext3, and ext4
  file systems.
+
+Package: fuseext2
+Build-Profiles: <!pkg.e2fsprogs.no-fuse2fs>
+Depends: fuse2fs (>= 1.47.1-2), ${misc:Depends}
+Architecture: all
+Priority: optional
+Section: oldlibs
+Description: transitional package
+ This is a transitional package. It can safely be removed.
 
 Package: logsave
 Priority: optional

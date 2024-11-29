@@ -836,10 +836,9 @@ static int set_os(struct ext2_super_block *sb, char *os)
 static void parse_extended_opts(struct ext2_super_block *param,
 				const char *opts)
 {
+	unsigned long ulong;
 	char	*buf, *token, *next, *p, *arg, *badopt = 0;
-	int	len;
-	int	r_usage = 0;
-	int	ret;
+	int	len, ret, r_usage = 0;
 	int	encoding = -1;
 	char 	*encoding_flags = NULL;
 
@@ -865,8 +864,6 @@ static void parse_extended_opts(struct ext2_super_block *param,
 		}
 		if (strcmp(token, "desc-size") == 0 ||
 		    strcmp(token, "desc_size") == 0) {
-			int desc_size;
-
 			if (!ext2fs_has_feature_64bit(&fs_param)) {
 				fprintf(stderr,
 					_("%s requires '-O 64bit'\n"), token);
@@ -885,14 +882,14 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				badopt = token;
 				continue;
 			}
-			desc_size = strtoul(arg, &p, 0);
-			if (*p || (desc_size & (desc_size - 1))) {
+			ulong = strtoul(arg, &p, 0);
+			if (*p || (ulong & (ulong - 1))) {
 				fprintf(stderr,
 					_("Invalid desc_size: '%s'\n"), arg);
 				r_usage++;
 				continue;
 			}
-			param->s_desc_size = desc_size;
+			param->s_desc_size = ulong;
 		} else if (strcmp(token, "hash_seed") == 0) {
 			if (!arg) {
 				r_usage++;
@@ -1044,6 +1041,24 @@ static void parse_extended_opts(struct ext2_super_block *param,
 
 				param->s_reserved_gdt_blocks = rsv_gdb;
 			}
+		} else if (!strcmp(token, "revision")) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			param->s_rev_level = strtoul(arg, &p, 0);
+			if (*p) {
+				com_err(program_name, 0,
+					_("bad revision level - %s"), arg);
+				exit(1);
+			}
+			if (param->s_rev_level > EXT2_MAX_SUPP_REV) {
+				com_err(program_name, EXT2_ET_REV_TOO_HIGH,
+					_("while trying to create revision %d"),
+					param->s_rev_level);
+				exit(1);
+			}
 		} else if (!strcmp(token, "test_fs")) {
 			param->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 		} else if (!strcmp(token, "lazy_itable_init")) {
@@ -1177,6 +1192,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n"
+			"\trevision=<revision>\n"
 			"\tencoding=<encoding>\n"
 			"\tencoding_flags=<flags>\n"
 			"\tquotatype=<quota type(s) to be enabled>\n"
@@ -1640,7 +1656,6 @@ static void PRS(int argc, char *argv[])
 	 * Finally, we complain about fs_blocks_count > 2^32 on a non-64bit fs.
 	 */
 	blk64_t		fs_blocks_count = 0;
-	int		s_opt = -1, r_opt = -1;
 	char		*fs_features = 0;
 	int		fs_features_size = 0;
 	int		use_bsize;
@@ -1917,22 +1932,16 @@ profile_error:
 			quiet = 1;
 			break;
 		case 'r':
-			r_opt = strtoul(optarg, &tmp, 0);
-			if (*tmp) {
-				com_err(program_name, 0,
-					_("bad revision level - %s"), optarg);
-				exit(1);
-			}
-			if (r_opt > EXT2_MAX_SUPP_REV) {
-				com_err(program_name, EXT2_ET_REV_TOO_HIGH,
-					_("while trying to create revision %d"), r_opt);
-				exit(1);
-			}
-			fs_param.s_rev_level = r_opt;
-			break;
-		case 's':	/* deprecated */
-			s_opt = atoi(optarg);
-			break;
+			com_err(program_name, 0,
+				_("the -r option has been removed.\n\n"
+	"If you really need compatibility with pre-1995 Linux systems, use the\n"
+	"command-line option \"-E revision=0\".\n"));
+			exit(1);
+		case 's':
+			com_err(program_name, 0,
+				_("the -s option has been removed.\n\n"
+	"Use the -O option to set or clear the sparse_super feature.\n"));
+			exit(1);
 		case 'S':
 			super_only = 1;
 			break;
@@ -2191,7 +2200,6 @@ profile_error:
 		ext2fs_clear_feature_csum_seed(&fs_param);
 	if (tmp)
 		free(tmp);
-	(void) ext2fs_free_mem(&fs_features);
 	/*
 	 * If the user specified features incompatible with the Hurd, complain
 	 */
@@ -2329,33 +2337,8 @@ profile_error:
 		print_str_list(fs_types);
 	}
 
-	if (r_opt == EXT2_GOOD_OLD_REV &&
-	    (fs_param.s_feature_compat || fs_param.s_feature_incompat ||
-	     fs_param.s_feature_ro_compat)) {
-		fprintf(stderr, "%s", _("Filesystem features not supported "
-					"with revision 0 filesystems\n"));
-		exit(1);
-	}
-
-	if (s_opt > 0) {
-		if (r_opt == EXT2_GOOD_OLD_REV) {
-			fprintf(stderr, "%s",
-				_("Sparse superblocks not supported "
-				  "with revision 0 filesystems\n"));
-			exit(1);
-		}
-		ext2fs_set_feature_sparse_super(&fs_param);
-	} else if (s_opt == 0)
-		ext2fs_clear_feature_sparse_super(&fs_param);
-
-	if (journal_size != 0) {
-		if (r_opt == EXT2_GOOD_OLD_REV) {
-			fprintf(stderr, "%s", _("Journals not supported with "
-						"revision 0 filesystems\n"));
-			exit(1);
-		}
+	if (journal_size != 0)
 		ext2fs_set_feature_journal(&fs_param);
-	}
 
 	/* Get reserved_ratio from profile if not specified on cmd line. */
 	if (reserved_ratio < 0.0) {
@@ -2560,6 +2543,28 @@ profile_error:
 	if (extended_opts)
 		parse_extended_opts(&fs_param, extended_opts);
 
+	if (fs_param.s_rev_level == EXT2_GOOD_OLD_REV) {
+		if (fs_features) {
+			fprintf(stderr, "%s",
+				_("Filesystem features not supported "
+				  "with revision 0 filesystems\n"));
+			exit(1);
+		}
+		if (journal_size != 0) {
+			fprintf(stderr, "%s", _("Journals not supported with "
+						"revision 0 filesystems\n"));
+			exit(1);
+		}
+		if (fs_param.s_inode_size > EXT2_GOOD_OLD_INODE_SIZE) {
+			fprintf(stderr, "%s", _("Inode size incompatible with "
+						"revision 0 filesystems\n"));
+			exit(1);
+		}
+		fs_param.s_feature_compat = fs_param.s_feature_ro_compat =
+			fs_param.s_feature_incompat = 0;
+		fs_param.s_default_mount_opts = 0;
+	}
+
 	if (explicit_fssize == 0 && offset > 0) {
 		fs_blocks_count -= offset / EXT2_BLOCK_SIZE(&fs_param);
 		ext2fs_blocks_count_set(&fs_param, fs_blocks_count);
@@ -2761,6 +2766,7 @@ _("128-byte inodes cannot handle dates beyond 2038 and are deprecated\n"));
 
 	free(fs_type);
 	free(usage_types);
+	(void) ext2fs_free_mem(&fs_features);
 
 	/* The isatty() test is so we don't break existing scripts */
 	flags = CREATE_FILE;

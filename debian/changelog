@@ -1,3 +1,35 @@
+e2fsprogs (1.47.2~rc1-1) unstable; urgency=medium
+
+  * New upstream version
+  * Remove the -r option from tune2fs and replace it with an extended
+    option since most users will never need to request a file system
+    suitable for pre-1995 1.2 version kernels and a typo will just end up
+    confusing the user and leaving them with a file system missing most
+    modern ext4 features, including no support for on-line resizing and no
+    support for post-2038 timestamps.   Closes: #1086603)
+  * Add support for gnu.translator extended attrbitues in tar files fed to
+    mke2fs -d.
+  * Avoid a spurious failure in badblocks when -n or -w is specified
+    twice.  (Closes: #1087341)
+  * Fix a bug which caused e2fsck to skip checking a file system with the
+    orphan_file feature if there are orphaned files which need to be
+    cleaned up.
+  * Fix a bug which caused tune2fs to corrupt a revision 0 file system
+    when changing the inode size by updating the revision to the current
+    standard revision supported by all Linux kernels since 1995.
+  * Fix fuse2fs --helpfull so that it displays the full help message.
+  * Allow resize2fs to perform an offline resize past the 256 TiB boundary
+  * Fix unused parameter warnings for packages which including ext2fs.h.
+    (Closes: #1082500)
+  * Provide fuseext2 to replace the debian package src:fuse-umfuse-ext2.
+    (Closes: #1085590)
+  * Clean up groff warnings in man pages.  (Closes: #1086892, #1082787,
+    #1072866, #1087898)
+  * Document the orphan_file feature in the ext4(5) and tune2fs(8) man
+    pages.  (Closes: #1073062)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 28 Nov 2024 23:35:35 -0500
+
 e2fsprogs (1.47.1-1) unstable; urgency=medium
 
   * New upstream version
