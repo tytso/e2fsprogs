@@ -1656,6 +1656,7 @@ static void PRS(int argc, char *argv[])
 	 * Finally, we complain about fs_blocks_count > 2^32 on a non-64bit fs.
 	 */
 	blk64_t		fs_blocks_count = 0;
+	int		r_opt = -1;
 	char		*fs_features = 0;
 	int		fs_features_size = 0;
 	int		use_bsize;
@@ -1932,11 +1933,26 @@ profile_error:
 			quiet = 1;
 			break;
 		case 'r':
-			com_err(program_name, 0,
-				_("the -r option has been removed.\n\n"
+			r_opt = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					_("bad revision level - %s"), optarg);
+				exit(1);
+			}
+			if (r_opt > EXT2_MAX_SUPP_REV) {
+				com_err(program_name, EXT2_ET_REV_TOO_HIGH,
+					_("while trying to create revision %d"), r_opt);
+				exit(1);
+			}
+			if (r_opt != EXT2_DYNAMIC_REV) {
+				com_err(program_name, 0,
+	_("the -r option has been removed.\n\n"
 	"If you really need compatibility with pre-1995 Linux systems, use the\n"
 	"command-line option \"-E revision=0\".\n"));
-			exit(1);
+				exit(1);
+			}
+			fs_param.s_rev_level = r_opt;
+			break;
 		case 's':
 			com_err(program_name, 0,
 				_("the -s option has been removed.\n\n"
