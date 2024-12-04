@@ -13750,6 +13750,9 @@ then
 	try_libarchive=""
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling libarchive support" >&5
 printf "%s\n" "Disabling libarchive support" >&6; }
+
+printf "%s\n" "#define CONFIG_DISABLE_LIBARCHIVE 1" >>confdefs.h
+
 elif test "$withval" = "direct"
 then
 	try_libarchive="direct"

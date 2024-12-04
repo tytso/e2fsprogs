@@ -605,8 +605,9 @@ return_abort:
 		 * Update checksum to match expected buffer contents with
 		 * appropriate block number.
 		 */
-		tail->ob_checksum = ext2fs_do_orphan_file_block_csum(fs,
-				pd->ino, pd->generation, blk, pd->buf);
+		tail->ob_checksum =
+			ext2fs_cpu_to_le32(ext2fs_do_orphan_file_block_csum(fs,
+				    pd->ino, pd->generation, blk, pd->buf));
 	}
 	if (!pd->clear) {
 		pd->errcode = io_channel_read_blk64(fs->io, blk, 1,

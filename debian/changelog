@@ -1,3 +1,13 @@
+e2fsprogs (1.47.2~rc1-2) unstable; urgency=medium
+
+  * Fix fuseext2 transition to account for /usr-move (Closes: #1088838)
+  * Fix orphan_file support on big endian systems.
+  * Mke2fs will allow "-r 1" since fsarchiver uses it rather pointlessly
+  * Allow building e2fsprogs without libarchive-dev installed to make life
+    easier for bootstrapping for new Debian ports (Closes: #1078693)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 03 Dec 2024 23:40:01 -0500
+
 e2fsprogs (1.47.2~rc1-1) unstable; urgency=medium
 
   * New upstream version
@@ -6,8 +16,8 @@ e2fsprogs (1.47.2~rc1-1) unstable; urgency=medium
     suitable for pre-1995 1.2 version kernels and a typo will just end up
     confusing the user and leaving them with a file system missing most
     modern ext4 features, including no support for on-line resizing and no
-    support for post-2038 timestamps.   Closes: #1086603)
-  * Add support for gnu.translator extended attrbitues in tar files fed to
+    support for post-2038 timestamps.   (Closes: #1086603)
+  * Add support for gnu.translator extended attrbutes in tar files fed to
     mke2fs -d.
   * Avoid a spurious failure in badblocks when -n or -w is specified
     twice.  (Closes: #1087341)
