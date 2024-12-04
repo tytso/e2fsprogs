@@ -1,4 +1,4 @@
-E2fsprogs 1.47.2 (November 28, 2024) 6ba18ef7bf4b
+E2fsprogs 1.47.2 (November 28, 2024) 283fcab2c9af
 ====================================
 
 Updates/Fixes since v1.47.1:
@@ -21,6 +21,8 @@ https://github.com/tytso/e2fsprogs/issues/192)
 
 Fixes
 -----
+
+Fix orphan_file support on big endian systems.
 
 Avoid a spurious failure in badblocks when -n or -w is specified twice.
 (Addresses Debian Bug #1087341)
@@ -68,7 +70,7 @@ Enable Continuous Integration testing in Debian's Salsa forge.
 Fix a memory leak in oss-fuzz test programs.
 
 Provide fuseext2 to replace the debian package src:fuse-umfuse-ext2.
-(Addresses Debian Bug #1085590)
+(Addresses Debian Bug #1085590, #1088838)
 
 Fix the f_badjour_encrypted test to write the error output from mke2fs
 and debugfs to a log file so it doesn't mess up the "make check" output
@@ -82,4 +84,9 @@ Clean up groff warnings in man pages.  (Addresses Debian Bugs #1086892,
 Document the orphan_file feature in the ext4(5) and tune2fs(8) man
 pages.  (Addresses Debian Bug #1073062)
 
+Allow building e2fsprogs without libarchive-dev installed to make life
+easier for bootstrapping for new Debian ports (Addresses Debian Bug
+#1078693)
+
 Various man page cleanups.
+
