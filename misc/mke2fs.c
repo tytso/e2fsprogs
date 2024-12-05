@@ -2098,7 +2098,8 @@ profile_error:
 			dev_size = 0;
 			retval = 0;
 			close(fd);
-			printf(_("Creating regular file %s\n"), device_name);
+			if (!quiet)
+				printf(_("Creating regular file %s\n"), device_name);
 		}
 	}
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
