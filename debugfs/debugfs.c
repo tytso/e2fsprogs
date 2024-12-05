@@ -16,6 +16,7 @@
 #include <string.h>
 #include <time.h>
 #include <libgen.h>
+#include <locale.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -2570,6 +2571,8 @@ int main(int argc, char **argv)
 #ifdef CONFIG_JBD_DEBUG
 	char		*jbd_debug;
 #endif
+
+	setlocale(LC_CTYPE, "");
 
 	if (debug_prog_name == 0)
 #ifdef READ_ONLY

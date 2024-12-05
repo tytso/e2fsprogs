@@ -58,7 +58,6 @@ typedef ssize_t la_ssize_t;
 #endif /* HAVE_ARCHIVE_H */
 
 #include <libgen.h>
-#include <locale.h>
 
 static const char *(*dl_archive_entry_hardlink)(struct archive_entry *);
 static const char *(*dl_archive_entry_pathname)(struct archive_entry *);
@@ -583,8 +582,6 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 	struct archive *a;
 	struct archive_entry *entry;
 	errcode_t retval = 0;
-	locale_t archive_locale;
-	locale_t old_locale;
 	ext2_ino_t dirinode, tmpino;
 	const struct stat *st;
 
@@ -594,8 +591,6 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 		return 1;
 	}
 
-	archive_locale = newlocale(LC_CTYPE_MASK, "", (locale_t)0);
-	old_locale = uselocale(archive_locale);
 	a = dl_archive_read_new();
 	if (a == NULL) {
 		retval = 1;
@@ -720,8 +715,6 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 out:
 	dl_archive_read_close(a);
 	dl_archive_read_free(a);
-	uselocale(old_locale);
-	freelocale(archive_locale);
 	return retval;
 }
 
