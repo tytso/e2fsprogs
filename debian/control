@@ -193,7 +193,7 @@ XB-Important: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Depends: logsave
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static
+Suggests: gpart, parted, fuse2fs, e2fsck-static, libarchive13t64
 Recommends: e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities
