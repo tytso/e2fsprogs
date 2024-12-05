@@ -1009,6 +1009,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	linux/falloc.h
 	linux/fd.h
 	linux/fsmap.h
+	linux/fsverity.h
 	linux/major.h
 	linux/loop.h
 	linux/types.h
