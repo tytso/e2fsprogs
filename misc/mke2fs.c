@@ -139,8 +139,8 @@ static void usage(void)
 	"\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
-	"[-r fs-revision] [-E extended-option[,...]]\n"
-	"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior]"
+	"[-E extended-option[,...]] [-t fs-type]\n"
+	"\t[-T usage-type ] [-U UUID] [-e errors_behavior]"
 	"[-z undo_file]\n"
 	"\t[-jnqvDFSV] device [blocks-count]\n"),
 		program_name);
