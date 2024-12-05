@@ -292,8 +292,6 @@ static int remove_inode(ext2_filsys fs, ext2_ino_t ino)
 write_out:
 	ret = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
 				      sizeof(inode));
-	if (ret)
-		goto out;
 out:
 	return ret;
 }
@@ -578,7 +576,7 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 				 struct file_info *target,
 				 struct fs_ops_callbacks *fs_callbacks)
 {
-	char *path2, *path3, *dir, *name;
+	char *path2=NULL, *path3=NULL, *dir, *name;
 	unsigned int dir_exists;
 	struct archive *a;
 	struct archive_entry *entry;
@@ -629,6 +627,10 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 		}
 		path2 = strdup(dl_archive_entry_pathname(entry));
 		path3 = strdup(dl_archive_entry_pathname(entry));
+		if (!path2 || !path3) {
+			retval = ENOMEM;
+			goto out;
+		}
 		name = basename(path2);
 		dir = dirname(path3);
 		if ((retval = __find_path(fs, root_ino, dir, &dirinode))) {
@@ -709,11 +711,13 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 				goto out;
 		}
 
-		free(path2);
-		free(path3);
+		free(path2); path2 = NULL;
+		free(path3); path3 = NULL;
 	}
 
 out:
+	free(path2);
+	free(path3);
 	dl_archive_read_close(a);
 	dl_archive_read_free(a);
 	return retval;
