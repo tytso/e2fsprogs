@@ -1156,6 +1156,11 @@ if grep HAVE_SYS_TYPES_H confdefs.h > tmp_config.$$; then
 else
   echo "#undef HAVE_SYS_TYPES_H" >> public_config.h
 fi
+if grep SIZEOF_TIME_T confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef SIZEOF_TIME_T" >> public_config.h
+fi
 if grep WORDS_BIGENDIAN confdefs.h > tmp_config.$$; then
   uniq tmp_config.$$ >> public_config.h
 else
@@ -1307,6 +1312,8 @@ AS_HELP_STRING([--without-libarchive],[disable use of libarchive]),
 then
 	try_libarchive=""
 	AC_MSG_RESULT([Disabling libarchive support])
+	AC_DEFINE(CONFIG_DISABLE_LIBARCHIVE, 1,
+		[Define to 1 to completely disable libarchive])
 elif test "$withval" = "direct"
 then
 	try_libarchive="direct"
@@ -1663,9 +1670,6 @@ if test "$enable_fuzzing" = "yes" || test "$enable_fuzzing" = "probe"; then
 	AC_SUBST(have_fuzzer)
 	AC_SUBST(fuzzer_cflags)
 	AC_SUBST(fuzzer_ldflags)
-fi
-if test "$enable_fuzzer" = "yes" && test "$have_fuzzer" != "yes"; then
-	AC_MSG_ERROR([Fuzzing not supported by compiler.])
 fi
 AC_SUBST(FUZZING_CMT)
 dnl

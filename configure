@@ -13018,6 +13018,11 @@ if grep HAVE_SYS_TYPES_H confdefs.h > tmp_config.$$; then
 else
   echo "#undef HAVE_SYS_TYPES_H" >> public_config.h
 fi
+if grep SIZEOF_TIME_T confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef SIZEOF_TIME_T" >> public_config.h
+fi
 if grep WORDS_BIGENDIAN confdefs.h > tmp_config.$$; then
   uniq tmp_config.$$ >> public_config.h
 else
@@ -13745,6 +13750,9 @@ then
 	try_libarchive=""
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling libarchive support" >&5
 printf "%s\n" "Disabling libarchive support" >&6; }
+
+printf "%s\n" "#define CONFIG_DISABLE_LIBARCHIVE 1" >>confdefs.h
+
 elif test "$withval" = "direct"
 then
 	try_libarchive="direct"
@@ -15645,9 +15653,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-fi
-if test "$enable_fuzzer" = "yes" && test "$have_fuzzer" != "yes"; then
-	as_fn_error $? "Fuzzing not supported by compiler." "$LINENO" 5
 fi
 
 LINUX_CMT="#"

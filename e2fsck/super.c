@@ -196,7 +196,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	__u32				count;
 
 	if (!ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(inode)))
-		return 0;
+		goto release_acl;
 
 	pb.buf = block_buf + 3 * ctx->fs->blocksize;
 	pb.ctx = ctx;
@@ -235,7 +235,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	if (pb.truncated_blocks)
 		ext2fs_iblk_sub_blocks(fs, EXT2_INODE(inode),
 				pb.truncated_blocks);
-
+release_acl:
 	blk = ext2fs_file_acl_block(fs, EXT2_INODE(inode));
 	if (blk) {
 		retval = ext2fs_adjust_ea_refcount3(fs, blk, block_buf, -1,
@@ -605,8 +605,9 @@ return_abort:
 		 * Update checksum to match expected buffer contents with
 		 * appropriate block number.
 		 */
-		tail->ob_checksum = ext2fs_do_orphan_file_block_csum(fs,
-				pd->ino, pd->generation, blk, pd->buf);
+		tail->ob_checksum =
+			ext2fs_cpu_to_le32(ext2fs_do_orphan_file_block_csum(fs,
+				    pd->ino, pd->generation, blk, pd->buf));
 	}
 	if (!pd->clear) {
 		pd->errcode = io_channel_read_blk64(fs->io, blk, 1,

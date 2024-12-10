@@ -12,6 +12,9 @@
 /* Define to 1 for features for use by ext4 developers */
 #undef CONFIG_DEVELOPER_FEATURES
 
+/* Define to 1 to completely disable libarchive */
+#undef CONFIG_DISABLE_LIBARCHIVE
+
 /* Define to 1 if using dlopen to access libarchive */
 #undef CONFIG_DLOPEN_LIBARCHIVE
 
