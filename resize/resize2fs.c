@@ -2909,6 +2909,7 @@ static errcode_t fix_orphan_file_inode(ext2_filsys fs)
 	retval = ext2fs_block_iterate3(fs, fs->super->s_orphan_file_inum,
 				       BLOCK_FLAG_DATA_ONLY,
 				       orphan_buf, process_orphan_block, &pd);
+	free(orphan_buf);
 	return (retval ? retval : pd.errcode);
 }
 
