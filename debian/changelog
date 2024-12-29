@@ -1,8 +1,9 @@
-e2fsprogs (1.47.2~rc1-2~bpo12+1) bookworm-backports; urgency=medium
+e2fsprogs (1.47.2~rc1-2~bpo12+2) bookworm-backports; urgency=medium
 
   * Rebuild for bookworm-backports.
+  * Undo the libext2fs2 -> libext2fs2t64 and UsrMerge transitions from Trixie
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 09 Dec 2024 22:40:25 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 29 Dec 2024 00:20:48 -0500
 
 e2fsprogs (1.47.2~rc1-2) unstable; urgency=medium
 
