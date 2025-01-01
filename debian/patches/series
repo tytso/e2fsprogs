@@ -1,4 +1,0 @@
-0001-Decouple-without-libarchive-and-HAVE_ARCHIVE_H.patch
-0002-mke2fs-allow-specifying-the-revision-1-via-r-1.patch
-0003-e2fsck-fix-big-endian-support-for-orphan_file-file-s.patch
-0004-More-reease-note-updates
