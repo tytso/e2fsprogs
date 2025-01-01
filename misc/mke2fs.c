@@ -139,8 +139,8 @@ static void usage(void)
 	"\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
-	"[-r fs-revision] [-E extended-option[,...]]\n"
-	"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior]"
+	"[-E extended-option[,...]] [-t fs-type]\n"
+	"\t[-T usage-type ] [-U UUID] [-e errors_behavior]"
 	"[-z undo_file]\n"
 	"\t[-jnqvDFSV] device [blocks-count]\n"),
 		program_name);
@@ -2098,7 +2098,8 @@ profile_error:
 			dev_size = 0;
 			retval = 0;
 			close(fd);
-			printf(_("Creating regular file %s\n"), device_name);
+			if (!quiet)
+				printf(_("Creating regular file %s\n"), device_name);
 		}
 	}
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {

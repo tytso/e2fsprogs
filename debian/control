@@ -1,6 +1,6 @@
 Source: e2fsprogs
 Section: admin
-Priority: required
+Priority: important
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: dpkg-dev (>= 1.22.5), gettext, texinfo, pkgconf, libarchive-dev <!nocheck>, libfuse3-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, debhelper-compat (= 12), dh-exec, libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], systemd-dev [linux-any], cron [linux-any], dh-sequence-movetousr
 Rules-Requires-Root: no
@@ -193,7 +193,7 @@ XB-Important: yes
 Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, libblkid1, libuuid1
 Depends: logsave
 Multi-Arch: foreign
-Suggests: gpart, parted, fuse2fs, e2fsck-static
+Suggests: gpart, parted, fuse2fs, e2fsck-static, libarchive13t64
 Recommends: e2fsprogs-l10n
 Architecture: any
 Description: ext2/ext3/ext4 file system utilities

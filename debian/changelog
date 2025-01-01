@@ -1,3 +1,21 @@
+e2fsprogs (1.47.2-1) unstable; urgency=medium
+
+  * New upstream version
+  * Update Chinese, Czech, French, Malay, Polish, Romainian, Spanish,
+    Swedish, and Ukrainian translations.
+  * Teach dumpe2fs and e2mmpstatus to support LABEL= and UUID= specifiers
+    since the e2mmpstatus man page claims those specifiers are supported.
+  * Suppress mke2fs's "Creating regular file" message when the -q option
+    is in force.
+  * Add Suggests: libarchive13t64 to e2fsprogs (Closes: #1089085)
+  * Decrease priority of e2fsprogs from required to important (Closes: 897277)
+  * Fix resize2fs to update the checksums in blocks belonging to the
+    orphan file if it needs to move them.
+  * Fix e2fsck to clear the orphan file after processing it so that "e2fsck
+    -E journal_only" doesn't leave the file system in a corrupted state.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 01 Jan 2025 00:30:02 -0500
+
 e2fsprogs (1.47.2~rc1-2) unstable; urgency=medium
 
   * Fix fuseext2 transition to account for /usr-move (Closes: #1088838)
