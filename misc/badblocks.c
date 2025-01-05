@@ -73,6 +73,8 @@ extern int optind;
 
 static const char * program_name = "badblocks";
 static const char * done_string = N_("done                                                 \n");
+static const char * curs_off = "\e[?25l";
+static const char * curs_on  = "\e[?25h";
 
 static int v_flag;			/* verbose */
 static int w_flag;			/* do r/w test: 0=no, 1=yes,
@@ -124,6 +126,11 @@ static blk_t next_bad = 0;
 static ext2_badblocks_iterate bb_iter = NULL;
 
 enum error_types { READ_ERROR, WRITE_ERROR, CORRUPTION_ERROR };
+
+void cursor_on(void)
+{
+        fputs(curs_on, stderr);
+}
 
 static void *allocate_buffer(size_t size)
 {
@@ -1311,6 +1318,9 @@ int main (int argc, char ** argv)
 	}
 	else
 		out = stdout;
+
+        if (! atexit(cursor_on))
+                fputs(curs_off, stderr);
 
 	errcode = ext2fs_badblocks_list_create(&bb_list,0);
 	if (errcode) {
