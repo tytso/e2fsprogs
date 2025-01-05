@@ -115,6 +115,7 @@ static void exclusive_usage(void)
 
 static blk_t currently_testing = 0;
 static blk_t num_blocks = 0;
+static blk_t start_block = 0;
 static blk_t num_read_errors = 0;
 static blk_t num_write_errors = 0;
 static blk_t num_corruption_errors = 0;
@@ -225,11 +226,11 @@ static void print_status(void)
 	int len;
 
 	gettimeofday(&time_end, 0);
-	len = snprintf(line_buf, sizeof(line_buf), 
-		       _("%6.2f%% done, %s elapsed. "
+	len = snprintf(line_buf, sizeof(line_buf),
+		       _("%.2f%% done, %s elapsed. "
 		         "(%d/%d/%d errors)"),
-		       calc_percent((unsigned long) currently_testing,
-				    (unsigned long) num_blocks), 
+		       calc_percent(((unsigned long) currently_testing - (unsigned long) start_block),
+				    ((unsigned long) num_blocks        - (unsigned long) start_block)),
 		       time_diff_format(&time_end, &time_start, diff_buf),
 		       num_read_errors,
 		       num_write_errors,
@@ -1263,6 +1264,7 @@ int main (int argc, char ** argv)
 			(unsigned long long) last_block);
 		exit(1);
 	}
+        start_block = first_block;
 	if (w_flag)
 		check_mount(device_name);
 
