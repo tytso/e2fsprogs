@@ -227,7 +227,7 @@ static void print_status(void)
 
 	gettimeofday(&time_end, 0);
 	len = snprintf(line_buf, sizeof(line_buf),
-		       _("%.2f%% done, %s elapsed. "
+		       _("%6.2f%% done, %s elapsed. "
 		         "(%d/%d/%d errors)"),
 		       calc_percent(((unsigned long) currently_testing - (unsigned long) start_block),
 				    ((unsigned long) num_blocks        - (unsigned long) start_block)),
