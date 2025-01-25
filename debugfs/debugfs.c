@@ -653,18 +653,6 @@ static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 	fprintf(f,"\n");
 }
 
-static int int_log10(unsigned long long arg)
-{
-	int     l = 0;
-
-	arg = arg / 10;
-	while (arg) {
-		l++;
-		arg = arg / 10;
-	}
-	return l;
-}
-
 #define DUMP_LEAF_EXTENTS	0x01
 #define DUMP_NODE_EXTENTS	0x02
 #define DUMP_EXTENT_TABLE	0x04
@@ -1076,11 +1064,12 @@ void do_dump_extents(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused))
 		return;
 	}
 
-	logical_width = int_log10((EXT2_I_SIZE(&inode)+current_fs->blocksize-1)/
-				  current_fs->blocksize) + 1;
+	logical_width = ext2fs_log10_u32((EXT2_I_SIZE(&inode) +
+					  current_fs->blocksize - 1) /
+					 current_fs->blocksize) + 1;
 	if (logical_width < 5)
 		logical_width = 5;
-	physical_width = int_log10(ext2fs_blocks_count(current_fs->super)) + 1;
+	physical_width = ext2fs_log10_u64(ext2fs_blocks_count(current_fs->super)) + 1;
 	if (physical_width < 5)
 		physical_width = 5;
 

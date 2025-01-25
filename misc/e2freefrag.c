@@ -57,28 +57,16 @@ static void usage(const char *prog)
 #endif
 }
 
-static int ul_log2(unsigned long arg)
-{
-        int     l = 0;
-
-        arg >>= 1;
-        while (arg) {
-                l++;
-                arg >>= 1;
-        }
-        return l;
-}
-
 static void init_chunk_info(ext2_filsys fs, struct chunk_info *info)
 {
 	int i;
 
-	info->blocksize_bits = ul_log2((unsigned long)fs->blocksize);
+	info->blocksize_bits = ext2fs_log2_u32(fs->blocksize);
 	if (info->chunkbytes) {
-		info->chunkbits = ul_log2(info->chunkbytes);
+		info->chunkbits = ext2fs_log2_u32(info->chunkbytes);
 		info->blks_in_chunk = info->chunkbytes >> info->blocksize_bits;
 	} else {
-		info->chunkbits = ul_log2(DEFAULT_CHUNKSIZE);
+		info->chunkbits = ext2fs_log2_u32(DEFAULT_CHUNKSIZE);
 		info->blks_in_chunk = DEFAULT_CHUNKSIZE >> info->blocksize_bits;
 	}
 
@@ -97,7 +85,7 @@ static void update_chunk_stats(struct chunk_info *info,
 {
 	unsigned long idx;
 
-	idx = ul_log2(chunk_size) + 1;
+	idx = ext2fs_log2_u32(chunk_size) + 1;
 	if (idx >= MAX_HIST)
 		idx = MAX_HIST-1;
 	info->histogram.fc_chunks[idx]++;

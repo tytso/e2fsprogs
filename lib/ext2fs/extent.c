@@ -1743,18 +1743,6 @@ errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 	return 0;
 }
 
-static int ul_log2(unsigned long arg)
-{
-	int	l = 0;
-
-	arg >>= 1;
-	while (arg) {
-		l++;
-		arg >>= 1;
-	}
-	return l;
-}
-
 size_t ext2fs_max_extent_depth(ext2_extent_handle_t handle)
 {
 	size_t iblock_sz = sizeof(((struct ext2_inode *)NULL)->i_block);
@@ -1769,8 +1757,9 @@ size_t ext2fs_max_extent_depth(ext2_extent_handle_t handle)
 	if (last_blocksize && last_blocksize == handle->fs->blocksize)
 		return last_result;
 
-	last_result = 1 + ((ul_log2(EXT_MAX_EXTENT_LBLK) - ul_log2(iblock_extents)) /
-		    ul_log2(extents_per_block));
+	last_result = 1 + ((ext2fs_log2_u64(EXT_MAX_EXTENT_LBLK) -
+			    ext2fs_log2_u64(iblock_extents)) /
+			   ext2fs_log2_u32(extents_per_block));
 	last_blocksize = handle->fs->blocksize;
 	return last_result;
 }

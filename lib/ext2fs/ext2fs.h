@@ -2227,6 +2227,66 @@ _INLINE_ int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks)
 }
 
 /*
+ * log base 2, rounded down
+ */
+_INLINE_ int ext2fs_log2_u32(__u32 arg)
+{
+	int l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
+/*
+ * log base 2, rounded down
+ */
+_INLINE_ int ext2fs_log2_u64(__u64 arg)
+{
+	int l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
+/*
+ * log base 10, rounded down
+ */
+_INLINE_ int ext2fs_log10_u32(__u32 arg)
+{
+	int l = 0;
+
+	arg /= 10;
+	while (arg) {
+		l++;
+		arg /= 10;
+	}
+	return l;
+}
+
+/*
+ * log base 10, rounded down
+ */
+_INLINE_ int ext2fs_log10_u64(__u64 arg)
+{
+	int l = 0;
+
+	arg /= 10;
+	while (arg) {
+		l++;
+		arg /= 10;
+	}
+	return l;
+}
+
+/*
  * This is an efficient, overflow safe way of calculating ceil((1.0 * a) / b)
  */
 _INLINE_ unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b)
