@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.47.2">E2fsprogs 1.47.2 (January 1, 2025)</A>
 <LI><A HREF="#1.47.1">E2fsprogs 1.47.1 (May 20, 2024)</A>
 <LI><A HREF="#1.47.0">E2fsprogs 1.47.0 (February 5, 2023)</A>
 <LI><A HREF="#1.46.6">E2fsprogs 1.46.6 (February 1, 2023)</A>
@@ -145,6 +146,119 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.47.1">E2fsprogs 1.47.2 (January 1, 2025)</A></H2>
+
+<H3>UI and Features</H3>
+
+<P>Drop the tune2fs -r option and replace it with -E revision=<fs-rev>.
+Revision 0 file systems are needed for compatibility with pre-1995 Linux
+kernels (older that version 1.2).  Most of the time, users shouldn't be
+using the -r option and they can confuse themselves and end up creating
+a file system that is missing most modern ext4 features, including no
+online resizing, no support for post-2038 timestamps, etc.  (Addresses
+Debian Bug #1086603)</P>
+
+<P>Add support for gnu.translator extended attributes in tar files fed to
+mke2fs -d.  (Addresses Github issue
+https://github.com/tytso/e2fsprogs/issues/192)</P>
+
+<P>Add a debugfs command to list all of the inodes in the orphan list.</P>
+
+
+<H3>Fixes</H3>
+
+<P>Fix orphan_file support on big endian systems.</P>
+
+<P>Fix resize2fs to update the checksums in blocks belonging to the orphan
+file if it needs to move them.</P>
+
+<P>Fix e2fsck to clear the orphan file after processing it so that e2fsck
+-E journal_only doesn't leave the file system in a corrupted state.</P>
+
+<P>Avoid a spurious failure in badblocks when -n or -w is specified twice.
+(Addresses Debian Bug #1087341)</P>
+
+<P>Fix a bug where e2fsck could skip checking a file systems with the
+orphan_file feature if there are orphaned files that need to be cleaned
+up.  (Addresses Red Hat Bugzilla 2318710, SuSE Bugzilla #1226043)</P>
+
+<P>Tune2fs will now upgrade a revision 0 file system to revision 1 before
+trying to change the inode size.  Otherwise, this could result in a
+corrupted file system.</P>
+
+<P>Fix fuse2fs --helpfull so that it displays the full help message.</P>
+
+<P>Allow resize2fs to perform an offline resize past the 256 TiB boundary
+(which the kernel could do as part of an online resize).</P>
+
+
+<h3>Performance, Internal Implementation, Development Support etc.</H3>
+
+<P>Fix various Coverity and compiler warnings.</P>
+
+<P>Speed up tune2fs -g when the group is not changed by the command.</P>
+
+<P>Fix build failures on GCC 15 due to it switched to using -std=c23 by
+default.  (Addresses https://github.com/tytso/e2fsprogs/issues/202)</P>
+
+<P>Fix build failure when linking fuse2fs with old (2.9.9) version of
+libfuse2 on aarch64.  This hack was needed to fix a regression caused by
+another hacky workaround needed to work around a build failure on
+mipsel64 thanks to glibc using different struct stat layouts depending
+_FILE_OFFSET_BITS is set and this caused failures when dynamic linking
+against libarchive on Debian's mipsel64.  (Sigh.)</P>
+
+<P>Fix unused parameter warnings for packages which including ext2fs.h.
+(Addresses Debian Bug #1082500)</P>
+
+<P>Fix bug where packages including ext2fs.h would get the 32-bit versions
+of the timestamp routines even on 64-bit platforms due to a missing
+SIZEOF_TIME_T autoconf definiton in public_config.h.</P>
+
+<P>Teach dumpe2fs and e2mmpstatus to support LABEL= and UUID= specifiers
+since the e2mmpstatus man page claims that it supports LABEL= and UUID=.
+This support was accidentally dropped when e2mmpstatus was reimplemented
+in terms of dumpe2fs.  (Addresses
+https://github.com/tytso/e2fsprogs/issues/106)</P>
+
+<P>Suppress mke2fs's "Creating regular file" message when the -q option is
+in force.</P>
+
+<P>Enable Continuous Integration testing in Debian's Salsa forge.</P>
+
+<P>Fix a memory leak in oss-fuzz test programs.</P>
+
+<P>Provide fuseext2 to replace the debian package src:fuse-umfuse-ext2.
+(Addresses Debian Bug #1085590, #1088838)</P>
+
+<P>In the Debian package for e2fsprogs, add a suggestion to install the
+package libarchive13t64.  (Addresses DebianBug #1089085)</P>
+
+<P>In the Debian package for e2fsprogs, decrease the priority from required
+to important.   (Addresses Debian Bug #897277)</P>
+
+<P>Fix the f_badjour_encrypted test to write the error output from mke2fs
+and debugfs to a log file so it doesn't mess up the "make check" output
+and to make those error messages available in the case of test failure.</P>
+
+<P>Fix my_llseek() declaration when building against musl libc.</P>
+
+<P>Clean up groff warnings in man pages.  (Addresses Debian Bugs #1086892,
+#1082787, #1072866, #1087898)</P>
+
+<P>Document the orphan_file feature in the ext4(5) and tune2fs(8) man
+pages.  (Addresses Debian Bug #1073062)</P>
+
+<P>Allow building e2fsprogs without libarchive-dev installed to make life
+easier for bootstrapping for new Debian ports (Addresses Debian Bug
+#1078693)</P>
+
+<P>Various man page cleanups.</P>
+
+<P>Update Chinese, Czech, French, Malay, Polish, Romainian, Spanish,
+Swedish, and Ukrainian translations.</P>
+
 
 <H2><A NAME="1.47.1">E2fsprogs 1.47.1 (May 20, 2024)</A></H2>
 
