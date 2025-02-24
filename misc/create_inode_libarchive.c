@@ -18,7 +18,7 @@
 #include "support/nls-enable.h"
 
 #if (!(defined(CONFIG_DLOPEN_LIBARCHIVE) || defined(HAVE_ARCHIVE_H)) || \
-     defined(CONFIG_DIABLE_LIBARCHIVE))
+     defined(CONFIG_DISABLE_LIBARCHIVE))
 
 /* If ./configure was run with --without-libarchive, then only
  * __populate_fs_from_tar() remains in this file and will return an error. */
