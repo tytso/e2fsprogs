@@ -154,7 +154,8 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 	dirent.name[1] = '\0';
 	ctx->buf = (char *)&dirent;
 	ext2fs_get_rec_len(fs, &dirent, &ctx->buflen);
-	ret |= ext2fs_process_dir_block(fs, 0, blockcnt++, 0, 0, priv_data);
+	ret |= (fs->process_dir_block ? fs->process_dir_block :
+		ext2fs_process_dir_block)(fs, 0, blockcnt++, 0, 0, priv_data);
 	if (ret & BLOCK_ABORT)
 		goto out;
 
@@ -166,7 +167,8 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 	dirent.name[2] = '\0';
 	ctx->buf = (char *)&dirent;
 	ext2fs_get_rec_len(fs, &dirent, &ctx->buflen);
-	ret |= ext2fs_process_dir_block(fs, 0, blockcnt++, 0, 0, priv_data);
+	ret |= (fs->process_dir_block ? fs->process_dir_block :
+		ext2fs_process_dir_block)(fs, 0, blockcnt++, 0, 0, priv_data);
 	if (ret & BLOCK_INLINE_DATA_CHANGED) {
 		errcode_t err;
 
@@ -188,7 +190,8 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 		goto out;
 	}
 #endif
-	ret |= ext2fs_process_dir_block(fs, 0, blockcnt++, 0, 0, priv_data);
+	ret |= (fs->process_dir_block ? fs->process_dir_block :
+		ext2fs_process_dir_block)(fs, 0, blockcnt++, 0, 0, priv_data);
 	if (ret & BLOCK_INLINE_DATA_CHANGED) {
 #ifdef WORDS_BIGENDIAN
 		ctx->errcode = ext2fs_dirent_swab_out2(fs, ctx->buf,
@@ -226,7 +229,8 @@ int ext2fs_inline_data_dir_iterate(ext2_filsys fs, ext2_ino_t ino,
 	}
 #endif
 
-	ret |= ext2fs_process_dir_block(fs, 0, blockcnt++, 0, 0, priv_data);
+	ret |= (fs->process_dir_block ? fs->process_dir_block :
+		ext2fs_process_dir_block)(fs, 0, blockcnt++, 0, 0, priv_data);
 	if (ret & BLOCK_INLINE_DATA_CHANGED) {
 #ifdef WORDS_BIGENDIAN
 		ctx->errcode = ext2fs_dirent_swab_out2(fs, ctx->buf,

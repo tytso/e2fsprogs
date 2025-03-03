@@ -124,6 +124,8 @@ errcode_t ext2fs_dir_iterate2(ext2_filsys fs,
 	ctx.priv_data = priv_data;
 	ctx.errcode = 0;
 	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_READ_ONLY, 0,
+				       fs->process_dir_block ?
+				       fs->process_dir_block :
 				       ext2fs_process_dir_block, &ctx);
 	if (!block_buf)
 		ext2fs_free_mem(&ctx.buf);
