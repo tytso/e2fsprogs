@@ -305,9 +305,6 @@ struct struct_ext2_filsys {
 	errcode_t (*get_alloc_block2)(ext2_filsys fs, blk64_t goal,
 				      blk64_t *ret, struct blk_alloc_ctx *ctx);
 	void (*block_alloc_stats)(ext2_filsys fs, blk64_t blk, int inuse);
-	int (*process_dir_block)(ext2_filsys fs, blk64_t *blocknr,
-	     e2_blkcnt_t blockcnt, blk64_t ref_block, int ref_offset,
-	     void *priv_data);
 
 	/*
 	 * Buffers for Multiple mount protection(MMP) block.
@@ -340,6 +337,11 @@ struct struct_ext2_filsys {
 	struct ext2fs_hashmap* block_sha_map;
 
 	const struct ext2fs_nls_table *encoding;
+
+	/* ext2fs_process_dir_block() hook */
+	int (*process_dir_block)(ext2_filsys fs, blk64_t *blocknr,
+	     e2_blkcnt_t blockcnt, blk64_t ref_block, int ref_offset,
+	     void *priv_data);
 };
 
 #if EXT2_FLAT_INCLUDES
