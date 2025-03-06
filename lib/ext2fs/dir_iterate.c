@@ -315,3 +315,25 @@ next:
 		return retval | BLOCK_ABORT;
 	return retval;
 }
+
+void ext2fs_set_process_dir_block_callback(ext2_filsys fs,
+                			   int (*func)(ext2_filsys fs,
+                                                       blk64_t *blocknr,
+                                                       e2_blkcnt_t blockcnt,
+                                                       blk64_t ref_block,
+                                                       int ref_offset,
+                                                       void *priv_data),
+                                           int (**old)(ext2_filsys fs,
+                                                       blk64_t *blocknr,
+                                                       e2_blkcnt_t blockcnt,
+                                                       blk64_t ref_block,
+                                                       int ref_offset,
+                                                       void *priv_data))
+{
+        if (!fs || fs->magic != EXT2_ET_MAGIC_EXT2FS_FILSYS)
+                return;
+        if (old)
+                *old = fs->process_dir_block;
+
+        fs->process_dir_block = func;
+}
