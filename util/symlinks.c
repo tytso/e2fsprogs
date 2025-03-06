@@ -17,6 +17,16 @@
 #include <stddef.h>
 #include <errno.h>
 
+#if (defined _WIN32 || defined _WIN64 || defined __WINDOWS__)
+
+int main(int argc, char **argv)
+{
+	printf("symlinks not supported on Windows\n");
+	return 1;
+}
+
+#else
+
 #ifndef S_ISLNK
 #define S_ISLNK(mode) (((mode) & (_S_IFMT)) == (_S_IFLNK))
 #endif
@@ -381,3 +391,5 @@ int main(int argc, char **argv)
 		usage_error();
 	exit (0);
 }
+
+#endif /* !(defined _WIN32 || defined _WIN64 || defined __WINDOWS__) */
