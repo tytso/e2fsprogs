@@ -860,6 +860,11 @@ extern void ext2fs_set_block_alloc_stats_range_callback(ext2_filsys fs,
 				    blk_t num, int inuse),
 	void (**old)(ext2_filsys fs, blk64_t blk,
 				    blk_t num, int inuse));
+extern void ext2fs_set_process_dir_block_callback(ext2_filsys fs,
+        int (*func)(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
+                    blk64_t ref_block, int ref_offset, void *priv_data),
+	int (**old)(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
+                    blk64_t ref_block, int ref_offset, void *priv_data));
 #define EXT2_NEWRANGE_FIXED_GOAL	(0x1)
 #define EXT2_NEWRANGE_MIN_LENGTH	(0x2)
 #define EXT2_NEWRANGE_ALL_FLAGS		(0x3)
