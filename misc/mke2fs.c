@@ -2385,6 +2385,14 @@ profile_error:
 		exit(1);
 	}
 
+	/* fs-verity support requires extents */
+	if (ext2fs_has_feature_verity(&fs_param) &&
+	    !ext2fs_has_feature_extents(&fs_param)) {
+		printf("%s", _("Extents MUST be enabled for fs-verity "
+			       "support.  Pass -O extents to rectify.\n"));
+		exit(1);
+	}
+
 	/* Set first meta blockgroup via an environment variable */
 	/* (this is mostly for debugging purposes) */
 	if (ext2fs_has_feature_meta_bg(&fs_param) &&
