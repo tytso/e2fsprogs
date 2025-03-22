@@ -289,7 +289,8 @@ static errcode_t add_dirent_to_buf(ext2_filsys fs, e2_blkcnt_t blockcnt,
 	ls.blocksize = fs->blocksize;
 	ls.err = 0;
 
-	ext2fs_process_dir_block(fs, pblkp, blockcnt, 0, 0, &ctx);
+	(fs->process_dir_block ? fs->process_dir_block :
+	 ext2fs_process_dir_block)(fs, pblkp, blockcnt, 0, 0, &ctx);
 	if (ctx.errcode)
 		return ctx.errcode;
 	if (ls.err)
