@@ -11977,6 +11977,12 @@ then :
   printf "%s\n" "#define HAVE_LINUX_FSMAP_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "linux/fsverity.h" "ac_cv_header_linux_fsverity_h" "$ac_includes_default"
+if test "x$ac_cv_header_linux_fsverity_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LINUX_FSVERITY_H 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "linux/major.h" "ac_cv_header_linux_major_h" "$ac_includes_default"
 if test "x$ac_cv_header_linux_major_h" = xyes
 then :
