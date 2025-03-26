@@ -67,6 +67,8 @@ SMP systems.
 make
 make check
 
+rel_notes=$(readlink RELEASE-NOTES); rm -f RELEASE-NOTES && cp $rel_notes RELEASE-NOTES
+
 %install
 rm -rf $RPM_BUILD_ROOT
 export PATH=/sbin:$PATH
