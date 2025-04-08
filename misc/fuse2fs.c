@@ -3889,7 +3889,12 @@ int main(int argc, char *argv[])
 
 	if (!fctx.ro) {
 		if (ext2fs_has_feature_journal(global_fs->super))
-			printf(_("%s: Writing to the journal is not supported.\n"),
+			printf(_("%s: Warning: fuse2fs does not support "
+				 "using the\n"
+				 "journal.  There may be file system "
+				 "corruption or data loss if\n"
+				 "the file system is not gracefully "
+				 "unmounted.\n"),
 			       fctx.device);
 		err = ext2fs_read_inode_bitmap(global_fs);
 		if (err) {
