@@ -701,6 +701,21 @@ static int probe_ntfs(struct blkid_probe *probe,
 	bytes_per_sector = ns->bios_parameter_block[0] +
 		(ns->bios_parameter_block[1]  << 8);
 	sectors_per_cluster = ns->bios_parameter_block[2];
+	if (sectors_per_cluster >= 244 && sectors_per_cluster <= 248 &&
+	    (bytes_per_sector << (256 - sectors_per_cluster)) <= 2097152)
+	{
+		/* Special case: Above the value 128, the number of sectors per
+		 * cluster is encoded as a power of 2 / bitshift value, but only
+		 * up to and including the maximum cluster size, 2 MiB. */
+		sectors_per_cluster = 1 << (256 - sectors_per_cluster);
+	}
+	else if (sectors_per_cluster > 128 ||
+		(sectors_per_cluster & (sectors_per_cluster - 1)))
+	{
+		/* Sectors per cluster out of range or not a power of 2. Not a
+		 * valid NTFS volume. */
+		return 1;
+	}
 
 	if ((bytes_per_sector < 512) || (sectors_per_cluster == 0))
 		return 1;
