@@ -52,6 +52,7 @@
 #endif
 
 #include "../version.h"
+#include "uuid/uuid.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -156,6 +157,7 @@ struct fuse2fs {
 	int fakeroot;
 	int alloc_all_blocks;
 	int norecovery;
+	int kernel;
 	unsigned long offset;
 	unsigned int next_generation;
 };
@@ -556,6 +558,13 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 		if (err)
 			translate_error(fs, 0, err);
 	}
+
+	if (ff->kernel) {
+		char uuid[UUID_STR_SIZE];
+
+		uuid_unparse(fs->super->s_uuid, uuid);
+		log_printf(ff, "%s %s.\n", _("unmounting filesystem"), uuid);
+	}
 }
 
 static void *op_init(struct fuse_conn_info *conn
@@ -589,6 +598,13 @@ static void *op_init(struct fuse_conn_info *conn
 	}
 	if (ff->debug)
 		cfg->debug = 1;
+
+	if (ff->kernel) {
+		char uuid[UUID_STR_SIZE];
+
+		uuid_unparse(fs->super->s_uuid, uuid);
+		log_printf(ff, "%s %s.\n", _("mounted filesystem"), uuid);
+	}
 	return ff;
 }
 
@@ -3506,6 +3522,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("no_default_opts",	no_default_opts,	1),
 	FUSE2FS_OPT("norecovery",	norecovery,		1),
 	FUSE2FS_OPT("offset=%lu",	offset,			0),
+	FUSE2FS_OPT("kernel",		kernel,			1),
 
 	FUSE_OPT_KEY("acl",		FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
@@ -3551,6 +3568,8 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
 	"    -o norecovery          don't replay the journal\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
+	"    -o kernel              run this as if it were the kernel, which sets:\n"
+	"                           allow_others,default_permissions,suid,dev\n"
 	"\n",
 			outargs->argv[0]);
 		if (key == FUSE2FS_HELPFULL) {
@@ -3636,6 +3655,13 @@ int main(int argc, char *argv[])
 		}
 		stderr = fp;
 		stdout = fp;
+	} else if (fctx.kernel) {
+		/* in kernel mode, try to log errors to the kernel log */
+		FILE *fp = fopen("/dev/ttyprintk", "a");
+		if (fp) {
+			stderr = fp;
+			stdout = fp;
+		}
 	}
 
 	/* Will we allow users to allocate every last block? */
@@ -3767,6 +3793,10 @@ int main(int argc, char *argv[])
 		fuse_opt_add_arg(&args,"-onosuid");
 #endif
 	}
+
+	if (fctx.kernel)
+		fuse_opt_insert_arg(&args, 1,
+ "-oallow_other,default_permissions,suid,dev");
 
 	if (fctx.debug) {
 		int	i;
