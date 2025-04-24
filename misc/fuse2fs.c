@@ -491,6 +491,18 @@ static inline int is_superuser(struct fuse2fs *ff, struct fuse_context *ctxt)
 	return ctxt->uid == 0;
 }
 
+static inline int want_check_owner(struct fuse2fs *ff,
+				   struct fuse_context *ctxt)
+{
+	/*
+	 * The kernel is responsible for access control, so we allow anything
+	 * that the superuser can do.
+	 */
+	if (ff->kernel)
+		return 0;
+	return !is_superuser(ff, ctxt);
+}
+
 static int check_inum_access(ext2_filsys fs, ext2_ino_t ino, mode_t mask)
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -522,6 +534,10 @@ static int check_inum_access(ext2_filsys fs, ext2_ino_t ino, mode_t mask)
 	if ((mask & W_OK) &&
 	    (inode.i_flags & EXT2_IMMUTABLE_FL))
 		return -EACCES;
+
+	/* If kernel is responsible for mode and acl checks, we're done. */
+	if (ff->kernel)
+		return 0;
 
 	/* Figure out what root's allowed to do */
 	if (is_superuser(ff, ctxt)) {
@@ -1808,7 +1824,7 @@ static int op_chmod(const char *path, mode_t mode
 		goto out;
 	}
 
-	if (!is_superuser(ff, ctxt) && ctxt->uid != inode_uid(inode)) {
+	if (want_check_owner(ff, ctxt) && ctxt->uid != inode_uid(inode)) {
 		ret = -EPERM;
 		goto out;
 	}
@@ -1875,7 +1891,7 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 	/* FUSE seems to feed us ~0 to mean "don't change" */
 	if (owner != (uid_t) ~0) {
 		/* Only root gets to change UID. */
-		if (!is_superuser(ff, ctxt) &&
+		if (want_check_owner(ff, ctxt) &&
 		    !(inode_uid(inode) == ctxt->uid && owner == ctxt->uid)) {
 			ret = -EPERM;
 			goto out;
@@ -1886,7 +1902,7 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 
 	if (group != (gid_t) ~0) {
 		/* Only root or the owner get to change GID. */
-		if (!is_superuser(ff, ctxt) &&
+		if (want_check_owner(ff, ctxt) &&
 		    inode_uid(inode) != ctxt->uid) {
 			ret = -EPERM;
 			goto out;
@@ -3051,7 +3067,7 @@ static int ioctl_setflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
-	if (!is_superuser(ff, ctxt) && inode_uid(inode) != ctxt->uid)
+	if (want_check_owner(ff, ctxt) && inode_uid(inode) != ctxt->uid)
 		return -EPERM;
 
 	ret = set_iflags(&inode, flags);
@@ -3107,7 +3123,7 @@ static int ioctl_setversion(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
-	if (!is_superuser(ff, ctxt) && inode_uid(inode) != ctxt->uid)
+	if (want_check_owner(ff, ctxt) && inode_uid(inode) != ctxt->uid)
 		return -EPERM;
 
 	inode.i_generation = generation;
@@ -3213,7 +3229,7 @@ static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
-	if (!is_superuser(ff, ctxt) && inode_uid(inode) != ctxt->uid)
+	if (want_check_owner(ff, ctxt) && inode_uid(inode) != ctxt->uid)
 		return -EPERM;
 
 	ret = set_iflags(&inode, flags);
