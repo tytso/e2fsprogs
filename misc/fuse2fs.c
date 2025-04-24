@@ -26,6 +26,7 @@
 #endif
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <ctype.h>
 #ifdef __SET_FOB_FOR_FUSE
 # error Do not set magic value __SET_FOB_FOR_FUSE!!!!
 #endif
@@ -3812,6 +3813,23 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	return 1;
 }
 
+static const char *get_subtype(const char *argv0)
+{
+	size_t argvlen = strlen(argv0);
+
+	if (argvlen < 4)
+		goto out_default;
+
+	if (argv0[argvlen - 4] == 'e' &&
+	    argv0[argvlen - 3] == 'x' &&
+	    argv0[argvlen - 2] == 't' &&
+	    isdigit(argv0[argvlen - 1]))
+		return &argv0[argvlen - 4];
+
+out_default:
+	return "ext4";
+}
+
 int main(int argc, char *argv[])
 {
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
@@ -3960,8 +3978,9 @@ int main(int argc, char *argv[])
 	get_random_bytes(&fctx.next_generation, sizeof(unsigned int));
 
 	/* Set up default fuse parameters */
-	snprintf(extra_args, BUFSIZ, "-okernel_cache,subtype=ext4,"
+	snprintf(extra_args, BUFSIZ, "-okernel_cache,subtype=%s,"
 		 "fsname=%s,attr_timeout=0" FUSE_PLATFORM_OPTS,
+		 get_subtype(argv[0]),
 		 fctx.device);
 	if (fctx.no_default_opts == 0)
 		fuse_opt_add_arg(&args, extra_args);
