@@ -2271,7 +2271,7 @@ static int op_getxattr(const char *path, const char *key, char *value,
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf(ff, "%s: ino=%d\n", __func__, ino);
+	dbg_printf(ff, "%s: ino=%d name=%s\n", __func__, ino, key);
 
 	ret = check_inum_access(fs, ino, R_OK);
 	if (ret)
@@ -2438,7 +2438,7 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf(ff, "%s: ino=%d\n", __func__, ino);
+	dbg_printf(ff, "%s: ino=%d name=%s\n", __func__, ino, key);
 
 	ret = check_inum_access(fs, ino, W_OK);
 	if (ret == -EACCES) {
@@ -2504,7 +2504,7 @@ static int op_removexattr(const char *path, const char *key)
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf(ff, "%s: ino=%d\n", __func__, ino);
+	dbg_printf(ff, "%s: ino=%d name=%s\n", __func__, ino, key);
 
 	ret = check_inum_access(fs, ino, W_OK);
 	if (ret)
