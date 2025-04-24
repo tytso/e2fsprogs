@@ -3206,17 +3206,27 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 {
 	ext2_filsys fs = ff->fs;
 	struct fstrim_range *fr = data;
-	blk64_t start, end, max_blocks, b, cleared;
+	blk64_t start, end, max_blocks, b, cleared, minlen;
+	blk64_t max_blks = ext2fs_blocks_count(fs->super);
 	errcode_t err = 0;
+
+	if (!fs_writeable(fs))
+		return -EROFS;
 
 	start = fr->start / fs->blocksize;
 	end = (fr->start + fr->len - 1) / fs->blocksize;
-	dbg_printf(ff, "%s: start=%llu end=%llu\n", __func__, start, end);
+	minlen = fr->minlen / fs->blocksize;
+
+	if (EXT2FS_NUM_B2C(fs, minlen) > EXT2_CLUSTERS_PER_GROUP(fs->super) ||
+	    start >= max_blks ||
+	    fr->len < fs->blocksize)
+		return -EINVAL;
+
+	dbg_printf(ff, "%s: start=%llu end=%llu minlen=%llu\n", __func__,
+		   start, end, minlen);
 
 	if (start < fs->super->s_first_data_block)
 		start = fs->super->s_first_data_block;
-	if (start >= ext2fs_blocks_count(fs->super))
-		start = ext2fs_blocks_count(fs->super) - 1;
 
 	if (end < fs->super->s_first_data_block)
 		end = fs->super->s_first_data_block;
@@ -3230,17 +3240,23 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	while (start <= end) {
 		err = ext2fs_find_first_zero_block_bitmap2(fs->block_map,
 							   start, end, &start);
-		if (err == ENOENT)
-			return 0;
-		else if (err)
+		switch (err) {
+		case 0:
+			break;
+		case ENOENT:
+			/* no free blocks found, so we're done */
+			err = 0;
+			goto out;
+		default:
 			return translate_error(fs, fh->ino, err);
+		}
 
 		b = start + max_blocks < end ? start + max_blocks : end;
 		err =  ext2fs_find_first_set_block_bitmap2(fs->block_map,
 							   start, b, &b);
 		if (err && err != ENOENT)
 			return translate_error(fs, fh->ino, err);
-		if (b - start >= fr->minlen) {
+		if (b - start >= minlen) {
 			err = io_channel_discard(fs->io, start, b - start);
 			if (err)
 				return translate_error(fs, fh->ino, err);
@@ -3250,6 +3266,8 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 		start = b + 1;
 	}
 
+out:
+	fr->len = cleared;
 	return err;
 }
 #endif /* FITRIM */
