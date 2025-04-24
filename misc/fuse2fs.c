@@ -2594,8 +2594,35 @@ out:
 
 struct readdir_iter {
 	void *buf;
+	ext2_filsys fs;
 	fuse_fill_dir_t func;
 };
+
+static inline mode_t dirent_fmode(ext2_filsys fs,
+				   const struct ext2_dir_entry *dirent)
+{
+	if (!ext2fs_has_feature_filetype(fs->super))
+		return 0;
+
+	switch (ext2fs_dirent_file_type(dirent)) {
+	case EXT2_FT_REG_FILE:
+		return S_IFREG;
+	case EXT2_FT_DIR:
+		return S_IFDIR;
+	case EXT2_FT_CHRDEV:
+		return S_IFCHR;
+	case EXT2_FT_BLKDEV:
+		return S_IFBLK;
+	case EXT2_FT_FIFO:
+		return S_IFIFO;
+	case EXT2_FT_SOCK:
+		return S_IFSOCK;
+	case EXT2_FT_SYMLINK:
+		return S_IFLNK;
+	}
+
+	return 0;
+}
 
 static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			   int entry EXT2FS_ATTR((unused)),
@@ -2606,11 +2633,15 @@ static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 {
 	struct readdir_iter *i = data;
 	char namebuf[EXT2_NAME_LEN + 1];
+	struct stat stat = {
+		.st_ino = dirent->inode,
+		.st_mode = dirent_fmode(i->fs, dirent),
+	};
 	int ret;
 
 	memcpy(namebuf, dirent->name, dirent->name_len & 0xFF);
 	namebuf[dirent->name_len & 0xFF] = 0;
-	ret = i->func(i->buf, namebuf, NULL, 0
+	ret = i->func(i->buf, namebuf, &stat, 0
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, 0
 #endif
@@ -2634,26 +2665,25 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	struct fuse2fs_file_handle *fh =
 		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
-	ext2_filsys fs;
 	errcode_t err;
 	struct readdir_iter i;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
-	fs = ff->fs;
-	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
+	i.fs = ff->fs;
+	FUSE2FS_CHECK_MAGIC(i.fs, fh, FUSE2FS_FILE_MAGIC);
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
 	pthread_mutex_lock(&ff->bfl);
 	i.buf = buf;
 	i.func = fill_func;
-	err = ext2fs_dir_iterate2(fs, fh->ino, 0, NULL, op_readdir_iter, &i);
+	err = ext2fs_dir_iterate2(i.fs, fh->ino, 0, NULL, op_readdir_iter, &i);
 	if (err) {
-		ret = translate_error(fs, fh->ino, err);
+		ret = translate_error(i.fs, fh->ino, err);
 		goto out;
 	}
 
-	if (fs_writeable(fs)) {
-		ret = update_atime(fs, fh->ino);
+	if (fs_writeable(i.fs)) {
+		ret = update_atime(i.fs, fh->ino);
 		if (ret)
 			goto out;
 	}
