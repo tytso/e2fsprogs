@@ -158,6 +158,7 @@ struct fuse2fs {
 	int alloc_all_blocks;
 	int norecovery;
 	int kernel;
+	int directio;
 	unsigned long offset;
 	unsigned int next_generation;
 };
@@ -3776,6 +3777,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("noload",		norecovery,		1),
 	FUSE2FS_OPT("offset=%lu",	offset,			0),
 	FUSE2FS_OPT("kernel",		kernel,			1),
+	FUSE2FS_OPT("directio",		directio,		1),
 
 	FUSE_OPT_KEY("acl",		FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
@@ -3824,6 +3826,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
 	"    -o kernel              run this as if it were the kernel, which sets:\n"
 	"                           allow_others,default_permissions,suid,dev\n"
+	"    -o directio            use O_DIRECT to read and write the disk\n"
 	"\n",
 			outargs->argv[0]);
 		if (key == FUSE2FS_HELPFULL) {
@@ -3929,6 +3932,8 @@ int main(int argc, char *argv[])
 	ret = 2;
 	char options[50];
 	sprintf(options, "offset=%lu", fctx.offset);
+	if (fctx.directio)
+		flags |= EXT2_FLAG_DIRECT_IO;
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
 	if (err) {

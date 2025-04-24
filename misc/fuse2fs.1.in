@@ -62,6 +62,9 @@ Enables setuid and device files.
 Note that these options can still be overridden (e.g.
 .I nosuid
 ) later.
+.TP
+.BR -o direct
+Use O_DIRECT to access the block device.
 .SS "FUSE options:"
 .TP
 \fB-d -o\fR debug
