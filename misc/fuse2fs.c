@@ -89,6 +89,12 @@ static ext2_filsys global_fs; /* Try not to use this directly */
 		break; \
 	}
 
+#define err_printf(fuse2fs, format, ...) \
+	do { \
+		fprintf(stderr, "FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
+		fflush(stderr); \
+	} while (0)
+
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 8)
 # ifdef _IOR
 #  ifdef _IOW
@@ -344,7 +350,6 @@ struct fuse2fs {
 	int alloc_all_blocks;
 	int norecovery;
 	unsigned long offset;
-	FILE *err_fp;
 	unsigned int next_generation;
 };
 
@@ -3839,13 +3844,13 @@ int main(int argc, char *argv[])
 	/* Set up error logging */
 	logfile = getenv("FUSE2FS_LOGFILE");
 	if (logfile) {
-		fctx.err_fp = fopen(logfile, "a");
-		if (!fctx.err_fp) {
+		FILE *fp = fopen(logfile, "a");
+		if (!fp) {
 			perror(logfile);
 			goto out;
 		}
-	} else
-		fctx.err_fp = stderr;
+		stderr = fp;
+	}
 
 	/* Will we allow users to allocate every last block? */
 	if (getenv("FUSE2FS_ALLOC_ALL_BLOCKS")) {
@@ -4057,14 +4062,11 @@ no_translation:
 		return ret;
 
 	if (ino)
-		fprintf(ff->err_fp, "FUSE2FS (%s): %s (inode #%d) at %s:%d.\n",
-			fs->device_name ? fs->device_name : "???",
+		err_printf(ff, "%s (inode #%d) at %s:%d.\n",
 			error_message(err), ino, file, line);
 	else
-		fprintf(ff->err_fp, "FUSE2FS (%s): %s at %s:%d.\n",
-			fs->device_name ? fs->device_name : "???",
+		err_printf(ff, "%s at %s:%d.\n",
 			error_message(err), file, line);
-	fflush(ff->err_fp);
 
 	/* Make a note in the error log */
 	get_now(&now);
