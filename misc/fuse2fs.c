@@ -1405,6 +1405,12 @@ static int op_rename(const char *from, const char *to
 	struct update_dotdot ud;
 	int ret = 0;
 
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+	/* renameat2 is not supported */
+	if (flags)
+		return -ENOSYS;
+#endif
+
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	dbg_printf("%s: renaming %s to %s\n", __func__, from, to);
