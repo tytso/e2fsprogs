@@ -587,6 +587,9 @@ static void *op_init(struct fuse_conn_info *conn
 #ifdef FUSE_CAP_IOCTL_DIR
 	conn->want |= FUSE_CAP_IOCTL_DIR;
 #endif
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+	conn->time_gran = 1;
+#endif
 	if (fs->flags & EXT2_FLAG_RW) {
 		fs->super->s_mnt_count++;
 		ext2fs_set_tstamp(fs->super, s_mtime, time(NULL));
@@ -635,10 +638,13 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 						(struct ext2_inode *)&inode);
 	EXT4_INODE_GET_XTIME(i_atime, &tv, &inode);
 	statbuf->st_atime = tv.tv_sec;
+	statbuf->st_atim.tv_nsec = tv.tv_nsec;
 	EXT4_INODE_GET_XTIME(i_mtime, &tv, &inode);
 	statbuf->st_mtime = tv.tv_sec;
+	statbuf->st_mtim.tv_nsec = tv.tv_nsec;
 	EXT4_INODE_GET_XTIME(i_ctime, &tv, &inode);
 	statbuf->st_ctime = tv.tv_sec;
+	statbuf->st_ctim.tv_nsec = tv.tv_nsec;
 	if (LINUX_S_ISCHR(inode.i_mode) ||
 	    LINUX_S_ISBLK(inode.i_mode)) {
 		if (inode.i_block[0])
