@@ -75,6 +75,40 @@
 #include "ext2fs.h"
 #include "ext2fsP.h"
 
+static inline int fls(int x)
+{
+	int r = 32;
+
+	if (!x)
+		return 0;
+	if (!(x & 0xffff0000u)) {
+		x = (x & 0xffffu) << 16;
+		r -= 16;
+	}
+	if (!(x & 0xff000000u)) {
+		x = (x & 0xffffffu) << 8;
+		r -= 8;
+	}
+	if (!(x & 0xf0000000u)) {
+		x = (x & 0xfffffffu) << 4;
+		r -= 4;
+	}
+	if (!(x & 0xc0000000u)) {
+		x = (x & 0x3fffffffu) << 2;
+		r -= 2;
+	}
+	if (!(x & 0x80000000u)) {
+		r -= 1;
+	}
+	return r;
+}
+
+/* Get high bit set out of 32-bit argument, -1 if none set */
+static inline int highbit32(uint32_t v)
+{
+	return fls(v) - 1;
+}
+
 /*
  * For checking structure magic numbers...
  */
@@ -104,6 +138,7 @@ struct unix_private_data {
 	ext2_loff_t offset;
 	struct unix_cache *cache;
 	unsigned int cache_size;
+	unsigned int cache_hash_shift;
 	void	*bounce;
 	struct struct_io_stats io_stats;
 #ifdef HAVE_PTHREAD
@@ -516,6 +551,27 @@ static void free_cache(struct unix_private_data *data)
 }
 
 #ifndef NO_IO_CACHE
+
+/*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
+#define GOLDEN_RATIO_PRIME	0x9e37fffffffc0001UL
+#define CACHE_LINE_SIZE		64
+
+/* buffer cache hashing function, crudely stolen from xfsprogs */
+unsigned int
+cache_hash(struct unix_private_data *data, blk64_t blkno)
+{
+	uint64_t	hashval = blkno;
+	uint64_t	tmp;
+
+	/* the default cache size is small, just do a linear scan */
+	if (data->cache_size <= DEFAULT_CACHE_SIZE)
+		return 0;
+
+	tmp = hashval ^ (GOLDEN_RATIO_PRIME + hashval) / CACHE_LINE_SIZE;
+	tmp = tmp ^ ((tmp ^ GOLDEN_RATIO_PRIME) >> data->cache_hash_shift);
+	return tmp % data->cache_size;
+}
+
 /*
  * Try to find a block in the cache.  If the block is not found, and
  * eldest is a non-zero pointer, then fill in eldest with the cache
@@ -526,10 +582,30 @@ static struct unix_cache *find_cached_block(struct unix_private_data *data,
 					    struct unix_cache **eldest)
 {
 	struct unix_cache	*cache, *unused_cache, *oldest_cache;
+	unsigned int		hash = cache_hash(data, block);
 	int			i;
 
 	unused_cache = oldest_cache = 0;
-	for (i=0, cache = data->cache; i < data->cache_size; i++, cache++) {
+	/* walk [hash..] cache elements */
+	for (i = hash, cache = data->cache + hash;
+	     i < data->cache_size;
+	     i++, cache++) {
+		if (!cache->in_use) {
+			if (!unused_cache)
+				unused_cache = cache;
+			continue;
+		}
+		if (cache->block == block) {
+			cache->access_time = ++data->access_time;
+			data->io_stats.cache_hits++;
+			return cache;
+		}
+		if (!oldest_cache ||
+		    (cache->access_time < oldest_cache->access_time))
+			oldest_cache = cache;
+	}
+	/* walk [..hash] since we didnt find a good slot yet */
+	for (i = 0, cache = data->cache; i < hash; i++, cache++) {
 		if (!cache->in_use) {
 			if (!unused_cache)
 				unused_cache = cache;
@@ -685,6 +761,7 @@ static errcode_t shrink_cache(io_channel channel,
 
 	data->cache = new_cache;
 	data->cache_size = new_size;
+	data->cache_hash_shift = highbit32(data->cache_size);
 
 unlock:
 	mutex_unlock(data, CACHE_MTX);
@@ -727,6 +804,7 @@ static errcode_t grow_cache(io_channel channel,
 
 	data->cache = new_cache;
 	data->cache_size = new_size;
+	data->cache_hash_shift = highbit32(data->cache_size);
 
 unlock:
 	mutex_unlock(data, CACHE_MTX);
@@ -828,6 +906,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 	data->dev = fd;
 
 	data->cache_size = DEFAULT_CACHE_SIZE;
+	data->cache_hash_shift = highbit32(data->cache_size);
 	data->cache = calloc(DEFAULT_CACHE_SIZE, sizeof(struct unix_cache));
 	if (!data->cache) {
 		retval = EXT2_ET_NO_MEMORY;
