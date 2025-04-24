@@ -3728,6 +3728,7 @@ static int get_random_bytes(void *p, size_t sz)
 }
 
 enum {
+	FUSE2FS_IGNORED,
 	FUSE2FS_VERSION,
 	FUSE2FS_HELP,
 	FUSE2FS_HELPFULL,
@@ -3743,7 +3744,10 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("fuse2fs_debug",	debug,			1),
 	FUSE2FS_OPT("no_default_opts",	no_default_opts,	1),
 	FUSE2FS_OPT("norecovery",	norecovery,		1),
-	FUSE2FS_OPT("offset=%lu",	offset,		0),
+	FUSE2FS_OPT("offset=%lu",	offset,			0),
+
+	FUSE_OPT_KEY("acl",		FUSE2FS_IGNORED),
+	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -3766,6 +3770,8 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 			return 0;
 		}
 		return 1;
+	case FUSE2FS_IGNORED:
+		return 0;
 	case FUSE2FS_HELP:
 	case FUSE2FS_HELPFULL:
 		fprintf(stderr,
