@@ -2954,9 +2954,8 @@ out:
 }
 
 #define FUSE2FS_MODIFIABLE_IFLAGS \
-	(EXT2_IMMUTABLE_FL | EXT2_APPEND_FL | EXT2_NODUMP_FL | \
-	 EXT2_NOATIME_FL | EXT3_JOURNAL_DATA_FL | EXT2_DIRSYNC_FL | \
-	 EXT2_TOPDIR_FL)
+	(EXT2_FL_USER_MODIFIABLE & ~(EXT4_EXTENTS_FL | EXT4_CASEFOLD_FL | \
+				     EXT3_JOURNAL_DATA_FL))
 
 static inline int set_iflags(struct ext2_inode_large *inode, __u32 iflags)
 {
