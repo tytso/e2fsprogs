@@ -2953,6 +2953,21 @@ out:
 	return ret;
 }
 
+#define FUSE2FS_MODIFIABLE_IFLAGS \
+	(EXT2_IMMUTABLE_FL | EXT2_APPEND_FL | EXT2_NODUMP_FL | \
+	 EXT2_NOATIME_FL | EXT3_JOURNAL_DATA_FL | EXT2_DIRSYNC_FL | \
+	 EXT2_TOPDIR_FL)
+
+static inline int set_iflags(struct ext2_inode_large *inode, __u32 iflags)
+{
+	if ((inode->i_flags ^ iflags) & ~FUSE2FS_MODIFIABLE_IFLAGS)
+		return -EINVAL;
+
+	inode->i_flags = (inode->i_flags & ~FUSE2FS_MODIFIABLE_IFLAGS) |
+			 (iflags & FUSE2FS_MODIFIABLE_IFLAGS);
+	return 0;
+}
+
 #ifdef SUPPORT_I_FLAGS
 static int ioctl_getflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			  void *data)
@@ -2972,11 +2987,6 @@ static int ioctl_getflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	*(__u32 *)data = inode.i_flags & EXT2_FL_USER_VISIBLE;
 	return 0;
 }
-
-#define FUSE2FS_MODIFIABLE_IFLAGS \
-	(EXT2_IMMUTABLE_FL | EXT2_APPEND_FL | EXT2_NODUMP_FL | \
-	 EXT2_NOATIME_FL | EXT3_JOURNAL_DATA_FL | EXT2_DIRSYNC_FL | \
-	 EXT2_TOPDIR_FL)
 
 static int ioctl_setflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			  void *data)
@@ -2999,11 +3009,9 @@ static int ioctl_setflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (!ff->fakeroot && ctxt->uid != 0 && inode_uid(inode) != ctxt->uid)
 		return -EPERM;
 
-	if ((inode.i_flags ^ flags) & ~FUSE2FS_MODIFIABLE_IFLAGS)
-		return -EINVAL;
-
-	inode.i_flags = (inode.i_flags & ~FUSE2FS_MODIFIABLE_IFLAGS) |
-			(flags & FUSE2FS_MODIFIABLE_IFLAGS);
+	ret = set_iflags(&inode, flags);
+	if (ret)
+		return ret;
 
 	ret = update_ctime(fs, fh->ino, &inode);
 	if (ret)
@@ -3071,6 +3079,118 @@ static int ioctl_setversion(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	return 0;
 }
 #endif /* SUPPORT_I_FLAGS */
+
+#ifdef FS_IOC_FSGETXATTR
+static __u32 iflags_to_fsxflags(__u32 iflags)
+{
+	__u32 xflags = 0;
+
+	if (iflags & FS_SYNC_FL)
+		xflags |= FS_XFLAG_SYNC;
+	if (iflags & FS_IMMUTABLE_FL)
+		xflags |= FS_XFLAG_IMMUTABLE;
+	if (iflags & FS_APPEND_FL)
+		xflags |= FS_XFLAG_APPEND;
+	if (iflags & FS_NODUMP_FL)
+		xflags |= FS_XFLAG_NODUMP;
+	if (iflags & FS_NOATIME_FL)
+		xflags |= FS_XFLAG_NOATIME;
+	if (iflags & FS_DAX_FL)
+		xflags |= FS_XFLAG_DAX;
+	if (iflags & FS_PROJINHERIT_FL)
+		xflags |= FS_XFLAG_PROJINHERIT;
+	return xflags;
+}
+
+static int ioctl_fsgetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
+			    void *data)
+{
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+	struct ext2_inode_large inode;
+	struct fsxattr *fsx = data;
+	unsigned int inode_size;
+
+	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	memset(&inode, 0, sizeof(inode));
+	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
+				     sizeof(inode));
+	if (err)
+		return translate_error(fs, fh->ino, err);
+
+	memset(fsx, 0, sizeof(*fsx));
+	inode_size = EXT2_GOOD_OLD_INODE_SIZE + inode.i_extra_isize;
+	if (ext2fs_inode_includes(inode_size, i_projid))
+		fsx->fsx_projid = inode_projid(inode);
+	fsx->fsx_xflags = iflags_to_fsxflags(inode.i_flags);
+	return 0;
+}
+
+static __u32 fsxflags_to_iflags(__u32 xflags)
+{
+	__u32 iflags = 0;
+
+	if (xflags & FS_XFLAG_IMMUTABLE)
+		iflags |= FS_IMMUTABLE_FL;
+	if (xflags & FS_XFLAG_APPEND)
+		iflags |= FS_APPEND_FL;
+	if (xflags & FS_XFLAG_SYNC)
+		iflags |= FS_SYNC_FL;
+	if (xflags & FS_XFLAG_NOATIME)
+		iflags |= FS_NOATIME_FL;
+	if (xflags & FS_XFLAG_NODUMP)
+		iflags |= FS_NODUMP_FL;
+	if (xflags & FS_XFLAG_DAX)
+		iflags |= FS_DAX_FL;
+	if (xflags & FS_XFLAG_PROJINHERIT)
+		iflags |= FS_PROJINHERIT_FL;
+	return iflags;
+}
+
+static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
+			    void *data)
+{
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+	struct ext2_inode_large inode;
+	int ret;
+	struct fuse_context *ctxt = fuse_get_context();
+	struct fsxattr *fsx = data;
+	__u32 flags = fsxflags_to_iflags(fsx->fsx_xflags);
+	unsigned int inode_size;
+
+	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	memset(&inode, 0, sizeof(inode));
+	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
+				     sizeof(inode));
+	if (err)
+		return translate_error(fs, fh->ino, err);
+
+	if (!ff->fakeroot && ctxt->uid != 0 && inode_uid(inode) != ctxt->uid)
+		return -EPERM;
+
+	ret = set_iflags(&inode, flags);
+	if (ret)
+		return ret;
+
+	inode_size = EXT2_GOOD_OLD_INODE_SIZE + inode.i_extra_isize;
+	if (ext2fs_inode_includes(inode_size, i_projid))
+		inode.i_projid = fsx->fsx_projid;
+
+	ret = update_ctime(fs, fh->ino, &inode);
+	if (ret)
+		return ret;
+
+	err = ext2fs_write_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
+				      sizeof(inode));
+	if (err)
+		return translate_error(fs, fh->ino, err);
+
+	return 0;
+}
+#endif /* FS_IOC_FSGETXATTR */
 
 #ifdef FITRIM
 static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
@@ -3158,6 +3278,14 @@ static int op_ioctl(const char *path EXT2FS_ATTR((unused)),
 		break;
 	case EXT2_IOC_SETVERSION:
 		ret = ioctl_setversion(ff, fh, data);
+		break;
+#endif
+#ifdef FS_IOC_FSGETXATTR
+	case FS_IOC_FSGETXATTR:
+		ret = ioctl_fsgetxattr(ff, fh, data);
+		break;
+	case FS_IOC_FSSETXATTR:
+		ret = ioctl_fssetxattr(ff, fh, data);
 		break;
 #endif
 #ifdef FITRIM
