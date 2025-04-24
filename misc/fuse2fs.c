@@ -3856,6 +3856,7 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 		stderr = fp;
+		stdout = fp;
 	}
 
 	/* Will we allow users to allocate every last block? */
