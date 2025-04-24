@@ -3902,6 +3902,26 @@ int main(int argc, char *argv[])
 
 	ret = 3;
 
+	if (ext2fs_has_feature_quota(global_fs->super)) {
+		err_printf(&fctx, "%s", _("quotas not supported."));
+		goto out;
+	}
+	if (ext2fs_has_feature_verity(global_fs->super)) {
+		err_printf(&fctx, "%s", _("verity not supported."));
+		goto out;
+	}
+	if (ext2fs_has_feature_encrypt(global_fs->super)) {
+		err_printf(&fctx, "%s", _("encryption not supported."));
+		goto out;
+	}
+	if (ext2fs_has_feature_casefold(global_fs->super)) {
+		err_printf(&fctx, "%s", _("casefolding not supported."));
+		goto out;
+	}
+
+	if (ext2fs_has_feature_shared_blocks(global_fs->super))
+		fctx.ro = 1;
+
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (fctx.norecovery) {
 			log_printf(&fctx, "%s\n",
