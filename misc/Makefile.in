@@ -422,11 +422,11 @@ filefrag.profiled: $(FILEFRAG_OBJS)
 		$(PROFILED_FILEFRAG_OBJS) 
 
 fuse2fs: $(FUSE2FS_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
-		$(LIBEXT2FS)
+		$(LIBEXT2FS) $(DEPLIBS_E2P)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o fuse2fs $(FUSE2FS_OBJS) $(LIBS) \
 		$(LIBFUSE) $(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(LIBINTL) \
-		$(CLOCK_GETTIME_LIB) $(SYSLIBS)
+		$(CLOCK_GETTIME_LIB) $(SYSLIBS) $(LIBS_E2P)
 
 journal.o: $(srcdir)/../debugfs/journal.c
 	$(E) "	CC $<"
@@ -875,7 +875,8 @@ fuse2fs.o: $(srcdir)/fuse2fs.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/version.h
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/version.h \
+ $(top_srcdir)/lib/e2p/e2p.h
 e2fuzz.o: $(srcdir)/e2fuzz.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \

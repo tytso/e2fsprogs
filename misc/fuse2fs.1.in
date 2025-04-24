@@ -65,6 +65,12 @@ Note that these options can still be overridden (e.g.
 .TP
 .BR -o direct
 Use O_DIRECT to access the block device.
+.TP
+.BR -o cache_size
+Set the disk cache size to this quantity.
+The quantity may contain the suffixes k, m, or g.
+By default, the size is 32MB.
+The size may not be larger than 2GB.
 .SS "FUSE options:"
 .TP
 \fB-d -o\fR debug

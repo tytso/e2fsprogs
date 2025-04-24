@@ -53,6 +53,7 @@
 
 #include "../version.h"
 #include "uuid/uuid.h"
+#include "e2p/e2p.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -161,6 +162,7 @@ struct fuse2fs {
 	int directio;
 	unsigned long offset;
 	unsigned int next_generation;
+	unsigned long long cache_size;
 };
 
 #define FUSE2FS_CHECK_MAGIC(fs, ptr, num) do {if ((ptr)->magic != (num)) \
@@ -3760,6 +3762,7 @@ enum {
 	FUSE2FS_VERSION,
 	FUSE2FS_HELP,
 	FUSE2FS_HELPFULL,
+	FUSE2FS_CACHE_SIZE,
 };
 
 #define FUSE2FS_OPT(t, p, v) { t, offsetof(struct fuse2fs, p), v }
@@ -3782,6 +3785,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE_OPT_KEY("acl",		FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
+	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -3804,6 +3808,16 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 			return 0;
 		}
 		return 1;
+	case FUSE2FS_CACHE_SIZE:
+		ff->cache_size = parse_num_blocks2(arg + 12, -1);
+		if (ff->cache_size < 1 || ff->cache_size > INT32_MAX) {
+			fprintf(stderr, "%s: %s\n", arg,
+ _("cache size must be between 1 block and 2GB."));
+			return -1;
+		}
+
+		/* do not pass through to libfuse */
+		return 0;
 	case FUSE2FS_IGNORED:
 		return 0;
 	case FUSE2FS_HELP:
@@ -3827,6 +3841,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o kernel              run this as if it were the kernel, which sets:\n"
 	"                           allow_others,default_permissions,suid,dev\n"
 	"    -o directio            use O_DIRECT to read and write the disk\n"
+	"    -o cache_size=N[KMG]   use a disk cache of this size\n"
 	"\n",
 			outargs->argv[0]);
 		if (key == FUSE2FS_HELPFULL) {
@@ -3863,6 +3878,25 @@ static const char *get_subtype(const char *argv0)
 
 out_default:
 	return "ext4";
+}
+
+/* Figure out a reasonable default size for the disk cache */
+static unsigned long long default_cache_size(void)
+{
+	long pages = 0, pagesize = 0;
+
+#ifdef _SC_PHYS_PAGES
+	pages = sysconf(_SC_PHYS_PAGES);
+#endif
+#ifdef _SC_PAGESIZE
+	pagesize = sysconf(_SC_PAGESIZE);
+#endif
+	long long max_cache = (long long)pagesize * pages / 20;
+	unsigned long long ret = 32ULL << 20; /* 32 MB */
+
+	if (max_cache > 0 && ret > max_cache)
+		return max_cache;
+	return ret;
 }
 
 int main(int argc, char *argv[])
@@ -3943,6 +3977,23 @@ int main(int argc, char *argv[])
 	}
 	fctx.fs = global_fs;
 	global_fs->priv_data = &fctx;
+
+	if (!fctx.cache_size)
+		fctx.cache_size = default_cache_size();
+	if (fctx.cache_size) {
+		char buf[55];
+
+		snprintf(buf, sizeof(buf), "cache_blocks=%llu",
+				fctx.cache_size / global_fs->blocksize);
+		err = io_channel_set_options(global_fs->io, buf);
+		if (err) {
+			err_printf(&fctx, "%s %lluk: %s\n",
+				   _("cannot set disk cache size to"),
+				   fctx.cache_size >> 10,
+				   error_message(err));
+			goto out;
+		}
+	}
 
 	ret = 3;
 
