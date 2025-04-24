@@ -89,6 +89,12 @@ static ext2_filsys global_fs; /* Try not to use this directly */
 		break; \
 	}
 
+#define log_printf(fuse2fs, format, ...) \
+	do { \
+		printf("FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
+		fflush(stdout); \
+	} while (0)
+
 #define err_printf(fuse2fs, format, ...) \
 	do { \
 		fprintf(stderr, "FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
@@ -3830,7 +3836,7 @@ int main(int argc, char *argv[])
 	if (fctx.norecovery)
 		fctx.ro = 1;
 	if (fctx.ro)
-		printf("%s", _("Mounting read-only.\n"));
+		log_printf(&fctx, "%s\n", _("Mounting read-only."));
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -3854,8 +3860,8 @@ int main(int argc, char *argv[])
 
 	/* Will we allow users to allocate every last block? */
 	if (getenv("FUSE2FS_ALLOC_ALL_BLOCKS")) {
-		printf(_("%s: Allowing users to allocate all blocks. "
-		       "This is dangerous!\n"), fctx.device);
+		log_printf(&fctx, "%s\n",
+ _("Allowing users to allocate all blocks. This is dangerous!"));
 		fctx.alloc_all_blocks = 1;
 	}
 
@@ -3879,11 +3885,11 @@ int main(int argc, char *argv[])
 
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (fctx.norecovery) {
-			printf(_("%s: mounting read-only without "
-				 "recovering journal\n"),
-			       fctx.device);
+			log_printf(&fctx, "%s\n",
+				   _("Mounting read-only without "
+				     "recovering journal."));
 		} else if (!fctx.ro) {
-			printf(_("%s: recovering journal\n"), fctx.device);
+			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
 			if (err) {
 				err_printf(&fctx, "%s.\n", error_message(err));
@@ -3902,13 +3908,13 @@ int main(int argc, char *argv[])
 
 	if (!fctx.ro) {
 		if (ext2fs_has_feature_journal(global_fs->super))
-			printf(_("%s: Warning: fuse2fs does not support "
-				 "using the\n"
-				 "journal.  There may be file system "
-				 "corruption or data loss if\n"
-				 "the file system is not gracefully "
-				 "unmounted.\n"),
-			       fctx.device);
+			log_printf(&fctx, "%s\n",
+				   _("Warning: fuse2fs does not support "
+				     "using the\n"
+				     "journal.  There may be file system "
+				     "corruption or data loss if\n"
+				     "the file system is not gracefully "
+				     "unmounted.\n"));
 		err = ext2fs_read_inode_bitmap(global_fs);
 		if (err) {
 			translate_error(global_fs, 0, err);
