@@ -768,6 +768,9 @@ static void *op_init(struct fuse_conn_info *conn
 #ifdef FUSE_CAP_IOCTL_DIR
 	conn->want |= FUSE_CAP_IOCTL_DIR;
 #endif
+#ifdef FUSE_CAP_ATOMIC_O_TRUNC
+	conn->want &= ~FUSE_CAP_ATOMIC_O_TRUNC;
+#endif
 	if (fs->flags & EXT2_FLAG_RW) {
 		fs->super->s_mnt_count++;
 		ext2fs_set_tstamp(fs->super, s_mtime, time(NULL));
