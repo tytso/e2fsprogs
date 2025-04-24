@@ -3739,6 +3739,7 @@ enum {
 
 static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("ro",		ro,			1),
+	FUSE2FS_OPT("rw",		ro,			0),
 	FUSE2FS_OPT("errors=panic",	panic_on_error,		1),
 	FUSE2FS_OPT("minixdf",		minixdf,		1),
 	FUSE2FS_OPT("fakeroot",		fakeroot,		1),
@@ -3784,13 +3785,12 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -V   --version   print version\n"
 	"\n"
 	"fuse2fs options:\n"
-	"    -o ro                  read-only mount\n"
 	"    -o errors=panic        dump core on error\n"
 	"    -o minixdf             minix-style df\n"
 	"    -o fakeroot            pretend to be root for permission checks\n"
 	"    -o no_default_opts     do not include default fuse options\n"
 	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
-	"    -o norecovery	    don't replay the journal (implies ro)\n"
+	"    -o norecovery          don't replay the journal\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
 	"\n",
 			outargs->argv[0]);
@@ -3838,7 +3838,8 @@ int main(int argc, char *argv[])
 	char *logfile;
 	char extra_args[BUFSIZ];
 	int ret = 0;
-	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE;
+	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE |
+		    EXT2_FLAG_RW;
 
 	memset(&fctx, 0, sizeof(fctx));
 	fctx.magic = FUSE2FS_MAGIC;
@@ -3856,11 +3857,6 @@ int main(int argc, char *argv[])
 		fctx.shortdev++;
 	else
 		fctx.shortdev = fctx.device;
-
-	if (fctx.norecovery)
-		fctx.ro = 1;
-	if (fctx.ro)
-		log_printf(&fctx, "%s\n", _("Mounting read-only."));
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -3892,8 +3888,6 @@ int main(int argc, char *argv[])
 
 	/* Start up the fs (while we still can use stdout) */
 	ret = 2;
-	if (!fctx.ro)
-		flags |= EXT2_FLAG_RW;
 	char options[50];
 	sprintf(options, "offset=%lu", fctx.offset);
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
@@ -3913,7 +3907,9 @@ int main(int argc, char *argv[])
 			log_printf(&fctx, "%s\n",
 				   _("Mounting read-only without "
 				     "recovering journal."));
-		} else if (!fctx.ro) {
+			fctx.ro = 1;
+			global_fs->flags &= ~EXT2_FLAG_RW;
+		} else {
 			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
 			if (err) {
@@ -3924,14 +3920,10 @@ int main(int argc, char *argv[])
 			}
 			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
 			ext2fs_mark_super_dirty(global_fs);
-		} else {
-			err_printf(&fctx, "%s\n",
- _("Journal needs recovery; running `e2fsck -E journal_only' is required."));
-			goto out;
 		}
 	}
 
-	if (!fctx.ro) {
+	if (global_fs->flags & EXT2_FLAG_RW) {
 		if (ext2fs_has_feature_journal(global_fs->super))
 			log_printf(&fctx, "%s\n",
 				   _("Warning: fuse2fs does not support "
@@ -3984,6 +3976,9 @@ int main(int argc, char *argv[])
 		 fctx.device);
 	if (fctx.no_default_opts == 0)
 		fuse_opt_add_arg(&args, extra_args);
+
+	if (fctx.ro)
+		fuse_opt_add_arg(&args, "-oro");
 
 	if (fctx.fakeroot) {
 #ifdef HAVE_MOUNT_NODEV
