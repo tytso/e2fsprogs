@@ -536,6 +536,7 @@ static struct unix_cache *find_cached_block(struct unix_private_data *data,
 		}
 		if (cache->block == block) {
 			cache->access_time = ++data->access_time;
+			data->io_stats.cache_hits++;
 			return cache;
 		}
 		if (!oldest_cache ||
@@ -544,6 +545,7 @@ static struct unix_cache *find_cached_block(struct unix_private_data *data,
 	}
 	if (eldest)
 		*eldest = (unused_cache) ? unused_cache : oldest_cache;
+	data->io_stats.cache_misses++;
 	return 0;
 }
 
@@ -737,7 +739,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 
 	memset(data, 0, sizeof(struct unix_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
-	data->io_stats.num_fields = 2;
+	data->io_stats.num_fields = 4;
 	data->flags = flags;
 	data->dev = fd;
 

@@ -604,6 +604,19 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 			translate_error(fs, 0, err);
 	}
 
+	if (ff->debug && fs->io->manager->get_stats) {
+		io_stats stats = NULL;
+
+		fs->io->manager->get_stats(fs->io, &stats);
+		dbg_printf(ff, "read: %lluk\n",  stats->bytes_read >> 10);
+		dbg_printf(ff, "write: %lluk\n", stats->bytes_written >> 10);
+		dbg_printf(ff, "hits: %llu\n",   stats->cache_hits);
+		dbg_printf(ff, "misses: %llu\n", stats->cache_misses);
+		dbg_printf(ff, "hit_ratio: %.1f%%\n",
+				(100.0 * stats->cache_hits) /
+				(stats->cache_hits + stats->cache_misses));
+	}
+
 	if (ff->kernel) {
 		char uuid[UUID_STR_SIZE];
 
