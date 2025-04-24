@@ -3630,7 +3630,7 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 
 	/* Catch unknown flags */
 	if (mode & ~(FL_PUNCH_HOLE_FLAG | FL_KEEP_SIZE_FLAG))
-		return -EINVAL;
+		return -EOPNOTSUPP;
 
 	pthread_mutex_lock(&ff->bfl);
 	if (!fs_writeable(fs)) {
