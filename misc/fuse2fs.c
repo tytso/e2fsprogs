@@ -611,6 +611,7 @@ static void *op_init(struct fuse_conn_info *conn
 #endif
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 	conn->time_gran = 1;
+	cfg->use_ino = 1;
 #endif
 	if (fs->flags & EXT2_FLAG_RW) {
 		fs->super->s_mnt_count++;
