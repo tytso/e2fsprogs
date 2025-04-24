@@ -1016,6 +1016,7 @@ static int op_mkdir(const char *path, mode_t mode)
 	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID) |
 		       parent_sgid;
 	inode.i_generation = ff->next_generation++;
+	init_times(&inode);
 
 	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
 				      sizeof(inode));
@@ -1390,6 +1391,7 @@ static int op_symlink(const char *src, const char *dest)
 	inode.i_gid = ctxt->gid;
 	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
 	inode.i_generation = ff->next_generation++;
+	init_times(&inode);
 
 	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
 				      sizeof(inode));
