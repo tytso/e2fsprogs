@@ -209,21 +209,43 @@ static inline void ext4_decode_extra_time(struct timespec *time, __u32 extra)
 	time->tv_nsec = ((extra) & EXT4_NSEC_MASK) >> EXT4_EPOCH_BITS;
 }
 
+#define EXT4_CLAMP_TIMESTAMP(xtime, timespec, raw_inode)		       \
+do {									       \
+	if ((timespec)->tv_sec < EXT4_TIMESTAMP_MIN)			       \
+		(timespec)->tv_sec = EXT4_TIMESTAMP_MIN;		       \
+	if ((timespec)->tv_sec < EXT4_TIMESTAMP_MIN)			       \
+		(timespec)->tv_sec = EXT4_TIMESTAMP_MIN;		       \
+									       \
+	if (EXT4_FITS_IN_INODE(raw_inode, xtime ## _extra)) {		       \
+		if ((timespec)->tv_sec > EXT4_EXTRA_TIMESTAMP_MAX)	       \
+			(timespec)->tv_sec = EXT4_EXTRA_TIMESTAMP_MAX;	       \
+	} else {							       \
+		if ((timespec)->tv_sec > EXT4_NON_EXTRA_TIMESTAMP_MAX)	       \
+			(timespec)->tv_sec = EXT4_NON_EXTRA_TIMESTAMP_MAX;     \
+	}								       \
+} while (0)
+
 #define EXT4_INODE_SET_XTIME(xtime, timespec, raw_inode)		       \
 do {									       \
-	(raw_inode)->xtime = (timespec)->tv_sec;			       \
+	typeof(*(timespec)) _ts = *(timespec);				       \
+									       \
+	EXT4_CLAMP_TIMESTAMP(xtime, &_ts, raw_inode);			       \
+	(raw_inode)->xtime = _ts.tv_sec;				       \
 	if (EXT4_FITS_IN_INODE(raw_inode, xtime ## _extra))		       \
 		(raw_inode)->xtime ## _extra =				       \
-				ext4_encode_extra_time(timespec);	       \
+				ext4_encode_extra_time(&_ts);		       \
 } while (0)
 
 #define EXT4_EINODE_SET_XTIME(xtime, timespec, raw_inode)		       \
 do {									       \
+	typeof(*(timespec)) _ts = *(timespec);				       \
+									       \
+	EXT4_CLAMP_TIMESTAMP(xtime, &_ts, raw_inode);			       \
 	if (EXT4_FITS_IN_INODE(raw_inode, xtime))			       \
-		(raw_inode)->xtime = (timespec)->tv_sec;		       \
+		(raw_inode)->xtime = _ts.tv_sec;			       \
 	if (EXT4_FITS_IN_INODE(raw_inode, xtime ## _extra))		       \
 		(raw_inode)->xtime ## _extra =				       \
-				ext4_encode_extra_time(timespec);	       \
+				ext4_encode_extra_time(&_ts);		       \
 } while (0)
 
 #define EXT4_INODE_GET_XTIME(xtime, timespec, raw_inode)		       \
@@ -2843,7 +2865,10 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d\n", __func__, ino);
+	dbg_printf("%s: ino=%d atime=%lld.%ld mtime=%lld.%ld\n", __func__,
+			ino,
+			(long long int)ctv[0].tv_sec, ctv[0].tv_nsec,
+			(long long int)ctv[1].tv_sec, ctv[1].tv_nsec);
 
 	ret = check_inum_access(fs, ino, W_OK);
 	if (ret)
@@ -2867,9 +2892,9 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 #endif /* UTIME_NOW */
 #ifdef UTIME_OMIT
 	if (tv[0].tv_nsec != UTIME_OMIT)
-		EXT4_INODE_SET_XTIME(i_atime, tv, &inode);
+		EXT4_INODE_SET_XTIME(i_atime, &tv[0], &inode);
 	if (tv[1].tv_nsec != UTIME_OMIT)
-		EXT4_INODE_SET_XTIME(i_mtime, tv + 1, &inode);
+		EXT4_INODE_SET_XTIME(i_mtime, &tv[1], &inode);
 #endif /* UTIME_OMIT */
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
