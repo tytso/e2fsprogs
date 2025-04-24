@@ -3863,6 +3863,26 @@ int main(int argc, char *argv[])
 
 	ret = 3;
 
+	if (ext2fs_has_feature_quota(global_fs->super)) {
+		printf(_("%s: quotas not supported."), fctx.device);
+		goto out;
+	}
+	if (ext2fs_has_feature_verity(global_fs->super)) {
+		printf(_("%s: verity not supported."), fctx.device);
+		goto out;
+	}
+	if (ext2fs_has_feature_encrypt(global_fs->super)) {
+		printf(_("%s: encryption not supported."), fctx.device);
+		goto out;
+	}
+	if (ext2fs_has_feature_casefold(global_fs->super)) {
+		printf(_("%s: casefolding not supported."), fctx.device);
+		goto out;
+	}
+
+	if (ext2fs_has_feature_shared_blocks(global_fs->super))
+		fctx.ro = 1;
+
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (fctx.norecovery) {
 			printf(_("%s: mounting read-only without "
