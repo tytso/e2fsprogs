@@ -3868,8 +3868,8 @@ int main(int argc, char *argv[])
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
 	if (err) {
-		printf(_("%s: %s.\n"), fctx.device, error_message(err));
-		printf(_("Please run e2fsck -fy %s.\n"), fctx.device);
+		err_printf(&fctx, "%s.\n", error_message(err));
+		err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
 		goto out;
 	}
 	fctx.fs = global_fs;
@@ -3886,17 +3886,16 @@ int main(int argc, char *argv[])
 			printf(_("%s: recovering journal\n"), fctx.device);
 			err = ext2fs_run_ext3_journal(&global_fs);
 			if (err) {
-				printf(_("%s: %s.\n"), fctx.device,
-				       error_message(err));
-				printf(_("Please run e2fsck -fy %s.\n"),
-				       fctx.device);
+				err_printf(&fctx, "%s.\n", error_message(err));
+				err_printf(&fctx, "%s\n",
+						_("Please run e2fsck -fy."));
 				goto out;
 			}
 			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
 			ext2fs_mark_super_dirty(global_fs);
 		} else {
-			printf("%s", _("Journal needs recovery; running "
-			       "`e2fsck -E journal_only' is required.\n"));
+			err_printf(&fctx, "%s\n",
+ _("Journal needs recovery; running `e2fsck -E journal_only' is required."));
 			goto out;
 		}
 	}
@@ -3923,24 +3922,24 @@ int main(int argc, char *argv[])
 	}
 
 	if (!(global_fs->super->s_state & EXT2_VALID_FS))
-		printf("%s", _("Warning: Mounting unchecked fs, running e2fsck "
-		       "is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Warning: Mounting unchecked fs, running e2fsck is recommended."));
 	if (global_fs->super->s_max_mnt_count > 0 &&
 	    global_fs->super->s_mnt_count >= global_fs->super->s_max_mnt_count)
-		printf("%s", _("Warning: Maximal mount count reached, running "
-		       "e2fsck is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Warning: Maximal mount count reached, running e2fsck is recommended."));
 	if (global_fs->super->s_checkinterval > 0 &&
 	    (time_t) (global_fs->super->s_lastcheck +
 		      global_fs->super->s_checkinterval) <= time(0))
-		printf("%s", _("Warning: Check time reached; running e2fsck "
-		       "is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Warning: Check time reached; running e2fsck is recommended."));
 	if (global_fs->super->s_last_orphan)
-		printf("%s",
-		       _("Orphans detected; running e2fsck is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Orphans detected; running e2fsck is recommended."));
 
 	if (global_fs->super->s_state & EXT2_ERROR_FS) {
-		printf("%s",
-		       _("Errors detected; running e2fsck is required.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Errors detected; running e2fsck is required."));
 		goto out;
 	}
 
