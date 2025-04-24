@@ -123,6 +123,12 @@ static ext2_filsys global_fs; /* Try not to use this directly */
 # define FL_PUNCH_HOLE_FLAG (0)
 #endif
 
+#ifdef FALLOC_FL_ZERO_RANGE
+# define FL_ZERO_RANGE_FLAG FALLOC_FL_ZERO_RANGE
+#else
+# define FL_ZERO_RANGE_FLAG (0)
+#endif
+
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
 #ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
@@ -3619,6 +3625,16 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	return 0;
 }
 
+static int zero_helper(struct fuse_file_info *fp, int mode, off_t offset,
+		       off_t len)
+{
+	int ret = punch_helper(fp, mode | FL_KEEP_SIZE_FLAG, offset, len);
+
+	if (!ret)
+		ret = fallocate_helper(fp, mode, offset, len);
+	return ret;
+}
+
 static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 			off_t offset, off_t len,
 			struct fuse_file_info *fp)
@@ -3637,7 +3653,9 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 		ret = -EROFS;
 		goto out;
 	}
-	if (mode & FL_PUNCH_HOLE_FLAG)
+	if (mode & FL_ZERO_RANGE_FLAG)
+		ret = zero_helper(fp, mode, offset, len);
+	else if (mode & FL_PUNCH_HOLE_FLAG)
 		ret = punch_helper(fp, mode, offset, len);
 	else
 		ret = fallocate_helper(fp, mode, offset, len);
