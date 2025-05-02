@@ -165,7 +165,7 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 	return;
 }
 
-void do_dump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+void do_dump(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 	     void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t inode;
@@ -357,7 +357,7 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 	return 0;
 }
 
-void do_rdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+void do_rdump(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 	      void *infop EXT2FS_ATTR((unused)))
 {
 	struct stat st;
@@ -420,7 +420,7 @@ void do_rdump(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
 	}
 }
 
-void do_cat(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
+void do_cat(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 	    void *infop EXT2FS_ATTR((unused)))
 {
 	ext2_ino_t inode;

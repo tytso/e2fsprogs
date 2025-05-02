@@ -49,6 +49,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs);
 static errcode_t inode_ref_fix(ext2_resize_t rfs);
 static errcode_t move_itables(ext2_resize_t rfs);
 static errcode_t fix_resize_inode(ext2_filsys fs);
+static errcode_t fix_orphan_file_inode(ext2_filsys fs);
 static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs);
 static errcode_t fix_sb_journal_backup(ext2_filsys fs);
 static errcode_t mark_table_blocks(ext2_filsys fs,
@@ -218,6 +219,12 @@ errcode_t resize_fs(ext2_filsys fs, blk64_t *new_size, int flags,
 
 	init_resource_track(&rtrack, "fix_resize_inode", fs->io);
 	retval = fix_resize_inode(rfs->new_fs);
+	if (retval)
+		goto errout;
+	print_resource_track(rfs, &rtrack, fs->io);
+
+	init_resource_track(&rtrack, "fix_orphan_file_inode", fs->io);
+	retval = fix_orphan_file_inode(rfs->new_fs);
 	if (retval)
 		goto errout;
 	print_resource_track(rfs, &rtrack, fs->io);
@@ -803,8 +810,8 @@ retry:
 					    fs->inode_map);
 	if (retval) goto errout;
 
-	real_end = EXT2_GROUPS_TO_BLOCKS(fs->super, fs->group_desc_count) - 1 +
-		fs->super->s_first_data_block;
+	real_end = EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count) -
+		1 + EXT2FS_B2C(fs, fs->super->s_first_data_block);
 	retval = ext2fs_resize_block_bitmap2(new_size - 1,
 					     real_end, fs->block_map);
 	if (retval) goto errout;
@@ -1863,7 +1870,6 @@ static errcode_t block_mover(ext2_resize_t rfs)
 			old_blk += c;
 			moved += c;
 			if (rfs->progress) {
-				io_channel_flush(fs->io);
 				retval = (rfs->progress)(rfs,
 						E2_RSZ_BLOCK_RELOC_PASS,
 						moved, to_move);
@@ -1871,8 +1877,9 @@ static errcode_t block_mover(ext2_resize_t rfs)
 					goto errout;
 			}
 		} while (size > 0);
-		io_channel_flush(fs->io);
 	}
+
+	io_channel_flush(fs->io);
 
 errout:
 	if (badblock_list) {
@@ -2595,8 +2602,8 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		retval = io_channel_write_blk64(fs->io, new_blk,
 						num, rfs->itable_buf);
 		if (retval) {
-			io_channel_write_blk64(fs->io, old_blk,
-					       num, rfs->itable_buf);
+			(void) io_channel_write_blk64(fs->io, old_blk,
+						      num, rfs->itable_buf);
 			goto errout;
 		}
 		if (n > diff) {
@@ -2837,15 +2844,84 @@ errout:
 	return retval;
 }
 
+struct process_orphan_block_data {
+	char 		*buf;
+	errcode_t	errcode;
+	ext2_ino_t	ino;
+	__u32		generation;
+};
+
+static int process_orphan_block(ext2_filsys fs,
+			       blk64_t	*block_nr,
+			       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+			       blk64_t	ref_blk EXT2FS_ATTR((unused)),
+			       int	ref_offset EXT2FS_ATTR((unused)),
+			       void *priv_data)
+{
+	struct process_orphan_block_data *pd = priv_data;
+	struct ext4_orphan_block_tail *tail;
+	blk64_t			blk = *block_nr;
+	__le32			new_crc;
+
+	pd->errcode = io_channel_read_blk64(fs->io, blk, 1, pd->buf);
+	if (pd->errcode)
+		return BLOCK_ABORT;
+	tail = ext2fs_orphan_block_tail(fs, pd->buf);
+	new_crc = ext2fs_cpu_to_le32(ext2fs_do_orphan_file_block_csum(fs,
+			pd->ino, pd->generation, blk, pd->buf));
+	if (new_crc == tail->ob_checksum)
+		return 0;
+	tail->ob_checksum = new_crc;
+	pd->errcode = io_channel_write_blk64(fs->io, blk, 1, pd->buf);
+	if (pd->errcode)
+		return BLOCK_ABORT;
+	return 0;
+}
+
+/*
+ * Fix the checksums in orphan_file inode
+ */
+static errcode_t fix_orphan_file_inode(ext2_filsys fs)
+{
+	struct process_orphan_block_data pd;
+	struct ext2_inode	inode;
+	errcode_t		retval;
+	ext2_ino_t		orphan_inum;
+	char			*orphan_buf;
+
+	if (!ext2fs_has_feature_orphan_file(fs->super) ||
+	    !ext2fs_has_feature_metadata_csum(fs->super))
+		return 0;
+
+	orphan_inum = fs->super->s_orphan_file_inum;
+	retval = ext2fs_read_inode(fs, orphan_inum, &inode);
+	if (retval)
+		return retval;
+	orphan_buf = malloc(fs->blocksize * 4);
+	if (!orphan_buf)
+		return ENOMEM;
+
+	pd.errcode = 0;
+	pd.buf = orphan_buf + 3 * fs->blocksize;
+	pd.ino = orphan_inum;
+	pd.generation = inode.i_generation;
+
+	retval = ext2fs_block_iterate3(fs, fs->super->s_orphan_file_inum,
+				       BLOCK_FLAG_DATA_ONLY,
+				       orphan_buf, process_orphan_block, &pd);
+	free(orphan_buf);
+	return (retval ? retval : pd.errcode);
+}
+
 /*
  * Finally, recalculate the summary information
  */
 static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs)
 {
 	errcode_t	retval;
-	blk64_t		blk = fs->super->s_first_data_block;
+	blk64_t		b, blk = fs->super->s_first_data_block;
 	ext2_ino_t	ino;
-	unsigned int	n, group, count;
+	unsigned int	n, max, group, count;
 	blk64_t		total_clusters_free = 0;
 	int		total_inodes_free = 0;
 	int		group_free = 0;
@@ -2858,17 +2934,29 @@ static errcode_t resize2fs_calculate_summary_stats(ext2_filsys fs)
 	bitmap_buf = malloc(fs->blocksize);
 	if (!bitmap_buf)
 		return ENOMEM;
-	for (group = 0; group < fs->group_desc_count;
-	     group++) {
+	for (group = 0; group < fs->group_desc_count; group++) {
 		retval = ext2fs_get_block_bitmap_range2(fs->block_map,
 			B2C(blk), fs->super->s_clusters_per_group, bitmap_buf);
 		if (retval) {
 			free(bitmap_buf);
 			return retval;
 		}
-		n = ext2fs_bitcount(bitmap_buf,
-				    fs->super->s_clusters_per_group / 8);
-		group_free = fs->super->s_clusters_per_group - n;
+		max = ext2fs_group_blocks_count(fs, group) >>
+		       fs->cluster_ratio_bits;
+		if ((group == fs->group_desc_count - 1) && (max & 7)) {
+			n = 0;
+			for (b = (fs->super->s_first_data_block +
+				  ((blk64_t) fs->super->s_blocks_per_group *
+				   group));
+			     b < ext2fs_blocks_count(fs->super);
+			     b += EXT2FS_CLUSTER_RATIO(fs)) {
+				if (ext2fs_test_block_bitmap2(fs->block_map, b))
+					n++;
+			}
+		} else {
+			n = ext2fs_bitcount(bitmap_buf, (max + 7) / 8);
+		}
+		group_free = max - n;
 		total_clusters_free += group_free;
 		ext2fs_bg_free_blocks_count_set(fs, group, group_free);
 		ext2fs_group_desc_csum_set(fs, group);

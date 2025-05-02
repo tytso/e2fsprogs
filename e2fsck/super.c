@@ -196,7 +196,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	__u32				count;
 
 	if (!ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(inode)))
-		return 0;
+		goto release_acl;
 
 	pb.buf = block_buf + 3 * ctx->fs->blocksize;
 	pb.ctx = ctx;
@@ -235,7 +235,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	if (pb.truncated_blocks)
 		ext2fs_iblk_sub_blocks(fs, EXT2_INODE(inode),
 				pb.truncated_blocks);
-
+release_acl:
 	blk = ext2fs_file_acl_block(fs, EXT2_INODE(inode));
 	if (blk) {
 		retval = ext2fs_adjust_ea_refcount3(fs, blk, block_buf, -1,
@@ -348,7 +348,7 @@ static int release_orphan_inode(e2fsck_t ctx, ext2_ino_t *ino, char *block_buf)
 		ext2fs_inode_alloc_stats2(fs, *ino, -1,
 					  LINUX_S_ISDIR(inode.i_mode));
 		ctx->free_inodes++;
-		inode.i_dtime = ctx->now;
+		ext2fs_set_dtime(fs, EXT2_INODE(&inode));
 	} else {
 		inode.i_dtime = 0;
 	}
@@ -424,7 +424,16 @@ return_abort:
 		ino = ext2fs_le32_to_cpu(bdata[j]);
 		if (release_orphan_inode(ctx, &ino, pd->block_buf))
 			goto return_abort;
+		bdata[j] = 0;
 	}
+	if (ext2fs_has_feature_metadata_csum(fs->super)) {
+		tail->ob_checksum =
+			ext2fs_cpu_to_le32(ext2fs_do_orphan_file_block_csum(fs,
+				    pd->ino, pd->generation, blk, pd->buf));
+	}
+	pd->errcode = io_channel_write_blk64(fs->io, blk, 1, pd->buf);
+	if (pd->errcode)
+		goto return_abort;
 	return 0;
 }
 
@@ -465,6 +474,8 @@ static int process_orphan_file(e2fsck_t ctx, char *block_buf)
 	pd.ctx = ctx;
 	pd.abort = 0;
 	pd.errcode = 0;
+	pd.ino = orphan_inum;
+	pd.generation = orphan_inode.i_generation;
 	retval = ext2fs_block_iterate3(fs, orphan_inum,
 				       BLOCK_FLAG_DATA_ONLY | BLOCK_FLAG_HOLE,
 				       orphan_buf, process_orphan_block, &pd);
@@ -482,6 +493,9 @@ static int process_orphan_file(e2fsck_t ctx, char *block_buf)
 				orphan_inum);
 		}
 		ret = 1;
+	} else {
+		ext2fs_clear_feature_orphan_present(fs->super);
+		ext2fs_mark_super_dirty(fs);
 	}
 out:
 	ext2fs_free_mem(&orphan_buf);
@@ -605,8 +619,9 @@ return_abort:
 		 * Update checksum to match expected buffer contents with
 		 * appropriate block number.
 		 */
-		tail->ob_checksum = ext2fs_do_orphan_file_block_csum(fs,
-				pd->ino, pd->generation, blk, pd->buf);
+		tail->ob_checksum =
+			ext2fs_cpu_to_le32(ext2fs_do_orphan_file_block_csum(fs,
+				    pd->ino, pd->generation, blk, pd->buf));
 	}
 	if (!pd->clear) {
 		pd->errcode = io_channel_read_blk64(fs->io, blk, 1,
@@ -1320,25 +1335,25 @@ void check_super_block(e2fsck_t ctx)
 	 */
 	if (((ctx->options & E2F_OPT_FORCE) || fs->super->s_checkinterval) &&
 	    !broken_system_clock && !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
-	    (fs->super->s_mtime > (__u32) ctx->now)) {
-		pctx.num = fs->super->s_mtime;
+	    (ext2fs_get_tstamp(fs->super, s_mtime) > ctx->now)) {
+		pctx.num = ext2fs_get_tstamp(fs->super, s_mtime);
 		problem = PR_0_FUTURE_SB_LAST_MOUNT;
-		if (fs->super->s_mtime <= (__u32) ctx->now + ctx->time_fudge)
+		if ((time_t) pctx.num <= ctx->now + ctx->time_fudge)
 			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
-			fs->super->s_mtime = ctx->now;
+			ext2fs_set_tstamp(fs->super, s_mtime, ctx->now);
 			fs->flags |= EXT2_FLAG_DIRTY;
 		}
 	}
 	if (((ctx->options & E2F_OPT_FORCE) || fs->super->s_checkinterval) &&
 	    !broken_system_clock && !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
-	    (fs->super->s_wtime > (__u32) ctx->now)) {
-		pctx.num = fs->super->s_wtime;
+	    (ext2fs_get_tstamp(fs->super, s_wtime) > ctx->now)) {
+		pctx.num = ext2fs_get_tstamp(fs->super, s_wtime);
 		problem = PR_0_FUTURE_SB_LAST_WRITE;
-		if (fs->super->s_wtime <= (__u32) ctx->now + ctx->time_fudge)
+		if ((time_t) pctx.num <= ctx->now + ctx->time_fudge)
 			problem = PR_0_FUTURE_SB_LAST_WRITE_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
-			fs->super->s_wtime = ctx->now;
+			ext2fs_set_tstamp(fs->super, s_wtime, ctx->now);
 			fs->flags |= EXT2_FLAG_DIRTY;
 		}
 	}
@@ -1388,7 +1403,8 @@ void check_super_block(e2fsck_t ctx)
  * away.
  */
 #define FEATURE_RO_COMPAT_IGNORE	(EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
-					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK)
+					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK| \
+					 EXT4_FEATURE_RO_COMPAT_ORPHAN_PRESENT)
 #define FEATURE_INCOMPAT_IGNORE		(EXT3_FEATURE_INCOMPAT_EXTENTS| \
 					 EXT3_FEATURE_INCOMPAT_RECOVER)
 
