@@ -46,6 +46,9 @@ extern int optind;
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 #include <libgen.h>
 #include <limits.h>
 #include <blkid/blkid.h>
@@ -1550,6 +1553,36 @@ struct device_param {
 };
 
 #ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
+static int is_rotational (const char *device_name EXT2FS_ATTR((unused)))
+{
+	int		rotational = -1;
+#ifdef __linux__
+	char		path[1024];
+	struct stat	st;
+	FILE		*f;
+
+	if ((stat(device_name, &st) < 0) || !S_ISBLK(st.st_mode))
+		return -1;
+
+	snprintf(path, sizeof(path), "/sys/dev/block/%d:%d/queue/rotational",
+		major(st.st_rdev), minor(st.st_rdev));
+	f = fopen(path, "r");
+	if (!f) {
+		snprintf(path, sizeof(path),
+			"/sys/dev/block/%d:%d/../queue/rotational",
+			major(st.st_rdev), minor(st.st_rdev));
+		f = fopen(path, "r");
+	}
+	if (f) {
+		if (fscanf(f, "%d", &rotational) != 1)
+			rotational = -1;
+		fclose(f);
+	}
+#endif
+	return rotational;
+}
+
+
 /*
  * Sets the geometry of a device (stripe/stride), and returns the
  * device's alignment offset, if any, or a negative error.
@@ -2409,13 +2442,47 @@ profile_error:
 			_("warning: Unable to get device geometry for %s\n"),
 			device_name);
 	} else {
+		int set_stripe, set_stride, rotational;
+
 		/* setting stripe/stride to blocksize is pointless */
-		if (dev_param.min_io > (unsigned) blocksize)
+		set_stride = dev_param.min_io > (unsigned) blocksize;
+		set_stripe = dev_param.opt_io > (unsigned) blocksize;
+		rotational = is_rotational(device_name) != 0;
+
+		/*
+		 * allow mke2fs.conf settings to control whether the
+		 * raid stripe/stride is set.  The default is to
+		 * always set the stride regardless of whether the
+		 * storage device is using HDD's or SSD's.  But only
+		 * set the stripe size if the storage device is
+		 * HDD-based by default because the ext4's block
+		 * allocator is very inefficient and especially for
+		 * SSD-based RAID arrays, trying to do raid-aligned
+		 * allocations is not worth it.
+		 */
+		tmp = get_string_from_profile(fs_types, "set_raid_stride",
+					      "always");
+		if (tmp && *tmp) {
+			if ((strcmp(tmp, "never") == 0) ||
+			    ((strcmp(tmp, "always") != 0) && !rotational))
+				set_stride = 0;
+		}
+		free(tmp);
+
+		tmp = get_string_from_profile(fs_types, "set_raid_stripe",
+					      "disk");
+		if (tmp && *tmp) {
+			if ((strcmp(tmp, "never") == 0) ||
+			    ((strcmp(tmp, "always") != 0) && !rotational))
+				set_stripe = 0;
+		}
+		free(tmp);
+
+		if (set_stride)
 			fs_param.s_raid_stride = dev_param.min_io / blocksize;
-		if (dev_param.opt_io > (unsigned) blocksize) {
+		if (set_stripe)
 			fs_param.s_raid_stripe_width =
 						dev_param.opt_io / blocksize;
-		}
 
 		if (dev_param.alignment_offset) {
 			printf(_("%s alignment is offset by %lu bytes.\n"),
