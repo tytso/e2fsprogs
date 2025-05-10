@@ -1015,6 +1015,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	net/if_dl.h
 	netinet/in.h
 	sys/acl.h
+	sys/auxv.h
 	sys/disklabel.h
 	sys/disk.h
 	sys/file.h
