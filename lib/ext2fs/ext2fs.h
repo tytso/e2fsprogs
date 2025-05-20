@@ -795,6 +795,20 @@ struct ext2_xattr_handle;
 #define EXT2FS_BITMAPS_VALID_FLAGS	0x0007
 
 /*
+ * flags for ext2fs_unlink()
+ */
+
+/* Forcefully unlink even if the inode number doesn't match the dirent */
+#define EXT2FS_UNLINK_FORCE		0x1
+
+/*
+ * flags for ext2fs_link()
+ *
+ */
+#define EXT2FS_LINK_FT_MASK	0x0007
+#define EXT2FS_LINK_APPEND	0x0010
+
+/*
  * function prototypes
  */
 static inline int ext2fs_has_group_desc_csum(ext2_filsys fs)
@@ -1816,10 +1830,6 @@ extern errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t 
 			       char **name);
 
 /* link.c */
-#define EXT2FS_UNLINK_FORCE		0x1	/* Forcefully unlink even if
-						 * the inode number doesn't
-						 * match the dirent
-						 */
 errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 		      ext2_ino_t ino, int flags);
 errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir, const char *name,
