@@ -153,9 +153,6 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 	char				*list = NULL;
 	int				i;
 
-	if (no_copy_xattrs)
-		return 0;
-
 	size = llistxattr(filename, NULL, 0);
 	if (size == -1) {
 		if (errno == ENOTSUP)
@@ -812,6 +809,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			       const char *source_dir, ext2_ino_t root,
 			       struct hdlinks_s *hdlinks,
 			       struct file_info *target,
+			       int flags,
 			       struct fs_ops_callbacks *fs_callbacks)
 {
 	const char	*name;
@@ -972,7 +970,7 @@ find_lnf:
 			}
 			/* Populate the dir recursively*/
 			retval = __populate_fs(fs, ino, name, root, hdlinks,
-					       target, fs_callbacks);
+					       target, flags, fs_callbacks);
 			if (retval)
 				goto out;
 			if (chdir("..")) {
@@ -1001,11 +999,14 @@ find_lnf:
 			goto out;
 		}
 
-		retval = set_inode_xattr(fs, ino, name);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while setting xattrs for \"%s\""), name);
-			goto out;
+		if ((flags & POPULATE_FS_NO_COPY_XATTRS) == 0) {
+			retval = set_inode_xattr(fs, ino, name);
+			if (retval) {
+				com_err(__func__, retval,
+					_("while setting xattrs for \"%s\""),
+					name);
+				goto out;
+			}
 		}
 
 		if (fs_callbacks && fs_callbacks->end_create_new_inode) {
@@ -1051,8 +1052,8 @@ out:
 	return retval;
 }
 
-errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
-		       const char *source, ext2_ino_t root,
+errcode_t populate_fs3(ext2_filsys fs, ext2_ino_t parent_ino,
+		       const char *source, ext2_ino_t root, int flags,
 		       struct fs_ops_callbacks *fs_callbacks)
 {
 	struct file_info file_info;
@@ -1081,8 +1082,9 @@ errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
 	 * a regular file (or a symlink pointing to a regular file)
 	 */
 	if (strcmp(source, "-") == 0) {
-		retval = __populate_fs_from_tar(fs, parent_ino, NULL, root, &hdlinks,
-					   &file_info, fs_callbacks);
+		retval = __populate_fs_from_tar(fs, parent_ino, NULL, root,
+						&hdlinks, &file_info, flags,
+						fs_callbacks);
 		goto out;
 	}
 
@@ -1093,20 +1095,23 @@ errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
 		return retval;
 	}
 	if (S_ISREG(st.st_mode)) {
-		retval = __populate_fs_from_tar(fs, parent_ino, source, root, &hdlinks,
-					   &file_info, fs_callbacks);
+		retval = __populate_fs_from_tar(fs, parent_ino, source, root,
+						&hdlinks, &file_info, flags,
+						fs_callbacks);
 		goto out;
 	}
 
-	retval = set_inode_xattr(fs, root, source);
-	if (retval) {
-		com_err(__func__, retval,
-			_("while copying xattrs on root directory"));
-		goto out;
+	if ((flags & POPULATE_FS_NO_COPY_XATTRS) == 0) {
+		retval = set_inode_xattr(fs, root, source);
+		if (retval) {
+			com_err(__func__, retval,
+				_("while copying xattrs on root directory"));
+			goto out;
+		}
 	}
 
 	retval = __populate_fs(fs, parent_ino, source, root, &hdlinks,
-			       &file_info, fs_callbacks);
+			       &file_info, flags, fs_callbacks);
 
 out:
 	free(file_info.path);
@@ -1114,8 +1119,15 @@ out:
 	return retval;
 }
 
+errcode_t populate_fs2(ext2_filsys fs, ext2_ino_t parent_ino,
+		       const char *source, ext2_ino_t root,
+		       struct fs_ops_callbacks *fs_callbacks)
+{
+	return populate_fs3(fs, parent_ino, source, root, 0, fs_callbacks);
+}
+
 errcode_t populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 		      const char *source, ext2_ino_t root)
 {
-	return populate_fs2(fs, parent_ino, source, root, NULL);
+	return populate_fs3(fs, parent_ino, source, root, 0, NULL);
 }

@@ -448,9 +448,6 @@ static errcode_t set_inode_xattr_tar(ext2_filsys fs, ext2_ino_t ino,
 	const void *value;
 	size_t value_size;
 
-	if (no_copy_xattrs)
-		return 0;
-
 	size = dl_archive_entry_xattr_count(entry);
 	if (size == 0)
 		return 0;
@@ -577,6 +574,7 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 				 const char *source_tar, ext2_ino_t root,
 				 struct hdlinks_s *hdlinks EXT2FS_ATTR((unused)),
 				 struct file_info *target,
+				 int flags,
 				 struct fs_ops_callbacks *fs_callbacks)
 {
 	char *path2=NULL, *path3=NULL, *dir, *name;
@@ -699,11 +697,14 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 			goto out;
 		}
 
-		retval = set_inode_xattr_tar(fs, tmpino, entry);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while setting xattrs for \"%s\""), name);
-			goto out;
+		if ((flags & POPULATE_FS_NO_COPY_XATTRS) == 0) {
+			retval = set_inode_xattr_tar(fs, tmpino, entry);
+			if (retval) {
+				com_err(__func__, retval,
+					_("while setting xattrs for \"%s\""),
+					name);
+				goto out;
+			}
 		}
 
 		if (fs_callbacks && fs_callbacks->end_create_new_inode) {

@@ -102,7 +102,7 @@ static e2_blkcnt_t	orphan_file_blocks;
 static int	lazy_itable_init;
 static int	assume_storage_prezeroed;
 static int	packed_meta_blocks;
-int		no_copy_xattrs;
+static int	populate_flags;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 /* Initialize usr/grp quotas by default */
@@ -913,7 +913,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 		} else if (strcmp(token, "no_copy_xattrs") == 0) {
-			no_copy_xattrs = 1;
+			populate_flags |= POPULATE_FS_NO_COPY_XATTRS;
 			continue;
 		} else if (strcmp(token, "num_backup_sb") == 0) {
 			if (!arg) {
@@ -3668,8 +3668,8 @@ no_journal:
 		if (!quiet)
 			printf("%s", _("Copying files into the device: "));
 
-		retval = populate_fs(fs, EXT2_ROOT_INO, src_root,
-				     EXT2_ROOT_INO);
+		retval = populate_fs3(fs, EXT2_ROOT_INO, src_root,
+				      EXT2_ROOT_INO, populate_flags, NULL);
 		if (retval) {
 			com_err(program_name, retval, "%s",
 				_("while populating file system"));
