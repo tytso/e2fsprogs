@@ -17,6 +17,8 @@
 #include "create_inode_libarchive.h"
 #include "support/nls-enable.h"
 
+extern int link_append_flag;
+
 #if (!(defined(CONFIG_DLOPEN_LIBARCHIVE) || defined(HAVE_ARCHIVE_H)) || \
      defined(CONFIG_DISABLE_LIBARCHIVE))
 
@@ -389,12 +391,14 @@ static errcode_t do_write_internal_tar(ext2_filsys fs, ext2_ino_t cwd,
 #ifdef DEBUGFS
 	printf("Allocated inode: %u\n", newfile);
 #endif
-	retval = ext2fs_link(fs, cwd, dest, newfile, EXT2_FT_REG_FILE);
+	retval = ext2fs_link(fs, cwd, dest, newfile,
+			     EXT2_FT_REG_FILE | link_append_flag);
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		retval = ext2fs_expand_dir(fs, cwd);
 		if (retval)
 			goto out;
-		retval = ext2fs_link(fs, cwd, dest, newfile, EXT2_FT_REG_FILE);
+		retval = ext2fs_link(fs, cwd, dest, newfile,
+				     EXT2_FT_REG_FILE | link_append_flag);
 	}
 	if (retval)
 		goto out;

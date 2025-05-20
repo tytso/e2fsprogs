@@ -32,6 +32,7 @@ struct file_info {
 
 /* flags for populate_fs3 */
 #define POPULATE_FS_NO_COPY_XATTRS	0x0001
+#define POPULATE_FS_LINK_APPEND		0x0002
 
 struct fs_ops_callbacks {
 	errcode_t (* create_new_inode)(ext2_filsys fs, const char *target_path,

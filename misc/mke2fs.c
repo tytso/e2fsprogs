@@ -102,7 +102,7 @@ static e2_blkcnt_t	orphan_file_blocks;
 static int	lazy_itable_init;
 static int	assume_storage_prezeroed;
 static int	packed_meta_blocks;
-static int	populate_flags;
+static int	populate_flags = POPULATE_FS_LINK_APPEND;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 /* Initialize usr/grp quotas by default */
