@@ -529,6 +529,30 @@ static inline int want_check_owner(struct fuse2fs *ff,
 	return !is_superuser(ff, ctxt);
 }
 
+static int check_iflags_access(struct fuse2fs *ff, ext2_ino_t ino,
+			       const struct ext2_inode *inode, int mask)
+{
+	ext2_filsys fs = ff->fs;
+
+	/* no writing to read-only or broken fs */
+	if ((mask & W_OK) && !fs_writeable(fs))
+		return -EROFS;
+
+	dbg_printf(ff, "access ino=%d mask=e%s%s%s iflags=0x%x\n",
+		   ino,
+		   (mask & R_OK ? "r" : ""),
+		   (mask & W_OK ? "w" : ""),
+		   (mask & X_OK ? "x" : ""),
+		   inode->i_flags);
+
+	/* is immutable? */
+	if ((mask & W_OK) &&
+	    (inode->i_flags & EXT2_IMMUTABLE_FL))
+		return -EPERM;
+
+	return 0;
+}
+
 static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -536,6 +560,7 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 	struct ext2_inode inode;
 	mode_t perms;
 	errcode_t err;
+	int ret;
 
 	/* no writing to read-only or broken fs */
 	if ((mask & W_OK) && !fs_writeable(fs))
@@ -559,10 +584,9 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 	if (mask == 0)
 		return 0;
 
-	/* is immutable? */
-	if ((mask & W_OK) &&
-	    (inode.i_flags & EXT2_IMMUTABLE_FL))
-		return -EPERM;
+	ret = check_iflags_access(ff, ino, &inode, mask);
+	if (ret)
+		return ret;
 
 	/* If kernel is responsible for mode and acl checks, we're done. */
 	if (ff->kernel)
@@ -1249,6 +1273,10 @@ static int __op_unlink(struct fuse2fs *ff, const char *path)
 		goto out;
 	}
 
+	ret = check_inum_access(ff, ino, W_OK);
+	if (ret)
+		goto out;
+
 	ret = unlink_file_by_name(ff, path);
 	if (ret)
 		goto out;
@@ -1317,6 +1345,10 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 	}
 	dbg_printf(ff, "%s: rmdir path=%s ino=%d\n", __func__, path, child);
 
+	ret = check_inum_access(ff, child, W_OK);
+	if (ret)
+		goto out;
+
 	rds.parent = 0;
 	rds.empty = 1;
 
@@ -1325,6 +1357,16 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 		ret = translate_error(fs, child, err);
 		goto out;
 	}
+
+	/* the kernel checks parent permissions before emptiness */
+	if (rds.parent == 0) {
+		ret = translate_error(fs, child, EXT2_ET_FILESYSTEM_CORRUPTED);
+		goto out;
+	}
+
+	ret = check_inum_access(ff, rds.parent, W_OK);
+	if (ret)
+		goto out;
 
 	if (rds.empty == 0) {
 		ret = -ENOTEMPTY;
@@ -1561,6 +1603,16 @@ static int op_rename(const char *from, const char *to
 		goto out;
 	}
 
+	ret = check_inum_access(ff, from_ino, W_OK);
+	if (ret)
+		goto out;
+
+	if (to_ino) {
+		ret = check_inum_access(ff, to_ino, W_OK);
+		if (ret)
+			goto out;
+	}
+
 	temp_to = strdup(to);
 	if (!temp_to) {
 		ret = -ENOMEM;
@@ -1790,7 +1842,6 @@ static int op_link(const char *src, const char *dest)
 	if (ret)
 		goto out2;
 
-
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, src, &ino);
 	if (err || ino == 0) {
 		ret = translate_error(fs, 0, err);
@@ -1804,6 +1855,10 @@ static int op_link(const char *src, const char *dest)
 		ret = translate_error(fs, ino, err);
 		goto out2;
 	}
+
+	ret = check_iflags_access(ff, ino, EXT2_INODE(&inode), W_OK);
+	if (ret)
+		goto out2;
 
 	inode.i_links_count++;
 	ret = update_ctime(fs, ino, &inode);
@@ -1879,6 +1934,10 @@ static int op_chmod(const char *path, mode_t mode
 		goto out;
 	}
 
+	ret = check_iflags_access(ff, ino, EXT2_INODE(&inode), W_OK);
+	if (ret)
+		goto out;
+
 	if (want_check_owner(ff, ctxt) && ctxt->uid != inode_uid(inode)) {
 		ret = -EPERM;
 		goto out;
@@ -1942,6 +2001,10 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 		ret = translate_error(fs, ino, err);
 		goto out;
 	}
+
+	ret = check_iflags_access(ff, ino, EXT2_INODE(&inode), W_OK);
+	if (ret)
+		goto out;
 
 	/* FUSE seems to feed us ~0 to mean "don't change" */
 	if (owner != (uid_t) ~0) {
