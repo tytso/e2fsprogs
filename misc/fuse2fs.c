@@ -2621,6 +2621,8 @@ static int op_removexattr(const char *path, const char *key)
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
 	struct ext2_xattr_handle *h;
+	void *buf;
+	size_t buflen;
 	ext2_ino_t ino;
 	errcode_t err;
 	int ret = 0;
@@ -2657,6 +2659,27 @@ static int op_removexattr(const char *path, const char *key)
 
 	err = ext2fs_xattrs_read(h);
 	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out2;
+	}
+
+	err = ext2fs_xattr_get(h, key, &buf, &buflen);
+	switch (err) {
+	case EXT2_ET_EA_KEY_NOT_FOUND:
+		/*
+		 * ACLs are special snowflakes that require a 0 return when
+		 * the ACL never existed in the first place.
+		 */
+		if (!strncmp(XATTR_SECURITY_PREFIX, key,
+			     XATTR_SECURITY_PREFIX_LEN))
+			ret = 0;
+		else
+			ret = -ENODATA;
+		goto out2;
+	case 0:
+		ext2fs_free_mem(&buf);
+		break;
+	default:
 		ret = translate_error(fs, ino, err);
 		goto out2;
 	}
