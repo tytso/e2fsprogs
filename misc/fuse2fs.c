@@ -4035,8 +4035,7 @@ int main(int argc, char *argv[])
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (fctx.norecovery) {
 			log_printf(&fctx, "%s\n",
-				   _("Mounting read-only without "
-				     "recovering journal."));
+ _("Mounting read-only without recovering journal."));
 			fctx.ro = 1;
 			global_fs->flags &= ~EXT2_FLAG_RW;
 		} else {
@@ -4055,13 +4054,10 @@ int main(int argc, char *argv[])
 
 	if (global_fs->flags & EXT2_FLAG_RW) {
 		if (ext2fs_has_feature_journal(global_fs->super))
-			log_printf(&fctx, "%s\n",
-				   _("Warning: fuse2fs does not support "
-				     "using the\n"
-				     "journal.  There may be file system "
-				     "corruption or data loss if\n"
-				     "the file system is not gracefully "
-				     "unmounted.\n"));
+			log_printf(&fctx, "%s",
+ _("Warning: fuse2fs does not support using the journal.\n"
+   "There may be file system corruption or data loss if\n"
+   "the file system is not gracefully unmounted.\n"));
 		err = ext2fs_read_inode_bitmap(global_fs);
 		if (err) {
 			translate_error(global_fs, 0, err);
