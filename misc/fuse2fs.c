@@ -4105,6 +4105,7 @@ int main(int argc, char *argv[])
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	struct fuse2fs fctx;
 	errcode_t err;
+	FILE *orig_stderr = stderr;
 	char *logfile;
 	char extra_args[BUFSIZ];
 	int ret = 0;
@@ -4322,11 +4323,43 @@ int main(int argc, char *argv[])
 	}
 
 	pthread_mutex_init(&fctx.bfl, NULL);
-	fuse_main(args.argc, args.argv, &fs_ops, &fctx);
+	ret = fuse_main(args.argc, args.argv, &fs_ops, &fctx);
 	pthread_mutex_destroy(&fctx.bfl);
 
-	ret = 0;
+	switch(ret) {
+	case 0:
+		/* success */
+		ret = 0;
+		break;
+	case 1:
+	case 2:
+		/* invalid option or no mountpoint */
+		ret = 1;
+		break;
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		/* setup or mounting failed */
+		ret = 32;
+		break;
+	default:
+		/* fuse started up enough to call op_init */
+		ret = 0;
+		break;
+	}
 out:
+	if (ret & 1) {
+		fprintf(orig_stderr, "%s\n",
+ _("Mount failed due to unrecognized options.  Check dmesg(1) for details."));
+		fflush(orig_stderr);
+	}
+	if (ret & 32) {
+		fprintf(orig_stderr, "%s\n",
+ _("Mount failed while opening filesystem.  Check dmesg(1) for details."));
+		fflush(orig_stderr);
+	}
 	if (global_fs) {
 		err = ext2fs_close(global_fs);
 		if (err)
