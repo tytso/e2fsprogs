@@ -1976,8 +1976,12 @@ static int op_truncate(const char *path, off_t len
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
-	if (err || ino == 0) {
+	if (err) {
 		ret = translate_error(fs, 0, err);
+		goto out;
+	}
+	if (!ino) {
+		ret = -ESTALE;
 		goto out;
 	}
 	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, ino, (intmax_t) len);
