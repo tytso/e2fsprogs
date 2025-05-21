@@ -546,11 +546,14 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 		return translate_error(fs, ino, err);
 	perms = inode.i_mode & 0777;
 
-	dbg_printf(ff, "access ino=%d mask=e%s%s%s perms=0%o fuid=%d fgid=%d "
-		   "uid=%d gid=%d\n", ino,
-		   (mask & R_OK ? "r" : ""), (mask & W_OK ? "w" : ""),
-		   (mask & X_OK ? "x" : ""), perms, inode_uid(inode),
-		   inode_gid(inode), ctxt->uid, ctxt->gid);
+	dbg_printf(ff, "access ino=%d mask=e%s%s%s perms=0%o iflags=0x%x "
+		   "fuid=%d fgid=%d uid=%d gid=%d\n", ino,
+		   (mask & R_OK ? "r" : ""),
+		   (mask & W_OK ? "w" : ""),
+		   (mask & X_OK ? "x" : ""),
+		   perms, inode.i_flags,
+		   inode_uid(inode), inode_gid(inode),
+		   ctxt->uid, ctxt->gid);
 
 	/* existence check */
 	if (mask == 0)
@@ -559,7 +562,7 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 	/* is immutable? */
 	if ((mask & W_OK) &&
 	    (inode.i_flags & EXT2_IMMUTABLE_FL))
-		return -EACCES;
+		return -EPERM;
 
 	/* If kernel is responsible for mode and acl checks, we're done. */
 	if (ff->kernel)
