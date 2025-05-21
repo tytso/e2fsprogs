@@ -75,7 +75,7 @@
 #include "ext2fs.h"
 #include "ext2fsP.h"
 
-static inline int fls(int x)
+static inline int find_last_bit_set(int x)
 {
 	int r = 32;
 
@@ -106,7 +106,7 @@ static inline int fls(int x)
 /* Get high bit set out of 32-bit argument, -1 if none set */
 static inline int highbit32(uint32_t v)
 {
-	return fls(v) - 1;
+	return find_last_bit_set(v) - 1;
 }
 
 /*
