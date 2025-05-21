@@ -4119,6 +4119,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 
 	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
+	FUSE_OPT_KEY("nodelalloc",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
