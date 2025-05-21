@@ -912,6 +912,96 @@ out:
 	return ret;
 }
 
+static int __getxattr(struct fuse2fs *ff, ext2_ino_t ino, const char *name,
+		      void **value, size_t *value_len)
+{
+	ext2_filsys fs = ff->fs;
+	struct ext2_xattr_handle *h;
+	errcode_t err;
+	int ret = 0;
+
+	err = ext2fs_xattrs_open(fs, ino, &h);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_xattrs_read(h);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+	err = ext2fs_xattr_get(h, name, value, value_len);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+out_close:
+	err = ext2fs_xattrs_close(&h);
+	if (err && !ret)
+		ret = translate_error(fs, ino, err);
+	return ret;
+}
+
+static int __setxattr(struct fuse2fs *ff, ext2_ino_t ino, const char *name,
+		      void *value, size_t valuelen)
+{
+	ext2_filsys fs = ff->fs;
+	struct ext2_xattr_handle *h;
+	errcode_t err;
+	int ret = 0;
+
+	err = ext2fs_xattrs_open(fs, ino, &h);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_xattrs_read(h);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+	err = ext2fs_xattr_set(h, name, value, valuelen);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+out_close:
+	err = ext2fs_xattrs_close(&h);
+	if (err && !ret)
+		ret = translate_error(fs, ino, err);
+	return ret;
+}
+
+static int propagate_default_acls(struct fuse2fs *ff, ext2_ino_t parent,
+				  ext2_ino_t child)
+{
+	void *def;
+	size_t deflen;
+	int ret;
+
+	if (!ff->acl)
+		return 0;
+
+	ret = __getxattr(ff, parent, XATTR_NAME_POSIX_ACL_DEFAULT, &def,
+			 &deflen);
+	switch (ret) {
+	case -ENODATA:
+	case -ENOENT:
+		/* no default acl */
+		return 0;
+	case 0:
+		break;
+	default:
+		return ret;
+	}
+
+	ret = __setxattr(ff, child, XATTR_NAME_POSIX_ACL_DEFAULT, def, deflen);
+	ext2fs_free_mem(&def);
+	return ret;
+}
+
 static int op_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -1035,6 +1125,9 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
 
+	ret = propagate_default_acls(ff, parent, child);
+	if (ret)
+		goto out2;
 out2:
 	pthread_mutex_unlock(&ff->bfl);
 out:
@@ -1175,6 +1268,10 @@ static int op_mkdir(const char *path, mode_t mode)
 		ret = translate_error(fs, child, err);
 		goto out3;
 	}
+
+	ret = propagate_default_acls(ff, parent, child);
+	if (ret)
+		goto out3;
 
 out3:
 	ext2fs_free_mem(&block);
@@ -2600,7 +2697,6 @@ static int op_getxattr(const char *path, const char *key, char *value,
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
-	struct ext2_xattr_handle *h;
 	void *ptr;
 	size_t plen;
 	ext2_ino_t ino;
@@ -2629,23 +2725,9 @@ static int op_getxattr(const char *path, const char *key, char *value,
 	if (ret)
 		goto out;
 
-	err = ext2fs_xattrs_open(fs, ino, &h);
-	if (err) {
-		ret = translate_error(fs, ino, err);
+	ret = __getxattr(ff, ino, key, &ptr, &plen);
+	if (ret)
 		goto out;
-	}
-
-	err = ext2fs_xattrs_read(h);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out2;
-	}
-
-	err = ext2fs_xattr_get(h, key, &ptr, &plen);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out2;
-	}
 
 	if (!len) {
 		ret = plen;
@@ -2657,10 +2739,6 @@ static int op_getxattr(const char *path, const char *key, char *value,
 	}
 
 	ext2fs_free_mem(&ptr);
-out2:
-	err = ext2fs_xattrs_close(&h);
-	if (err && !ret)
-		ret = translate_error(fs, ino, err);
 out:
 	pthread_mutex_unlock(&ff->bfl);
 
@@ -3198,6 +3276,10 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	}
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
+
+	ret = propagate_default_acls(ff, parent, child);
+	if (ret)
+		goto out2;
 
 	ret = __op_open(ff, path, fp);
 	if (ret)
