@@ -1406,6 +1406,7 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 			   size_t value_len);
 errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
 			      const char *key);
+errcode_t ext2fs_xattr_remove_all(struct ext2_xattr_handle *handle);
 errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_xattr_handle **handle);
 errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle);
