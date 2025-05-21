@@ -670,6 +670,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_xattr_get@Base 1.43
  ext2fs_xattr_inode_max_size@Base 1.43
  ext2fs_xattr_remove@Base 1.43
+ ext2fs_xattr_remove_all@Base 1.47.3
  ext2fs_xattr_set@Base 1.43
  ext2fs_xattrs_close@Base 1.43
  ext2fs_xattrs_count@Base 1.43
