@@ -2066,6 +2066,70 @@ out:
 	return ret;
 }
 
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+/* Obtain group ids of the process that sent us a command(?) */
+static int get_req_groups(struct fuse2fs *ff, gid_t **gids, size_t *nr_gids)
+{
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+	gid_t *array;
+	int nr = 32;	/* nobody has more than 32 groups right? */
+	int ret;
+
+	do {
+		err = ext2fs_get_array(nr, sizeof(gid_t), &array);
+		if (err)
+			return translate_error(fs, 0, err);
+
+		ret = fuse_getgroups(nr, array);
+		if (ret < 0)
+			return ret;
+
+		if (ret <= nr) {
+			*gids = array;
+			*nr_gids = ret;
+			return 0;
+		}
+
+		ext2fs_free_mem(&array);
+		nr = ret;
+	} while (0);
+
+	/* shut up gcc */
+	return -ENOMEM;
+}
+
+/*
+ * Is this file's group id in the set of groups associated with the process
+ * that initiated the fuse request?  Returns 1 for yes, 0 for no, or a negative
+ * errno.
+ */
+static int in_file_group(struct fuse_context *ctxt,
+			 const struct ext2_inode_large *inode)
+{
+	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
+	gid_t *gids = NULL;
+	size_t i, nr_gids = 0;
+	gid_t gid = inode_gid(*inode);
+	int ret;
+
+	ret = get_req_groups(ff, &gids, &nr_gids);
+	if (ret < 0)
+		return ret;
+
+	for (i = 0; i < nr_gids; i++)
+		if (gids[i] == gid)
+			return 1;
+	return 0;
+}
+#else
+static int in_file_group(struct fuse_context *ctxt,
+			 const struct ext2_inode_large *inode)
+{
+	return ctxt->gid == inode_gid(*inode);
+}
+#endif
+
 static int op_chmod(const char *path, mode_t mode
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
@@ -2112,11 +2176,21 @@ static int op_chmod(const char *path, mode_t mode
 	 * of the user's groups, but FUSE only tells us about the primary
 	 * group.
 	 */
-	if (!is_superuser(ff, ctxt) && ctxt->gid != inode_gid(inode))
-		mode &= ~S_ISGID;
+	if (!is_superuser(ff, ctxt)) {
+		ret = in_file_group(ctxt, &inode);
+		if (ret < 0)
+			goto out;
+
+		if (!ret)
+			mode &= ~S_ISGID;
+	}
 
 	inode.i_mode &= ~0xFFF;
 	inode.i_mode |= mode & 0xFFF;
+
+	dbg_printf(ff, "%s: path=%s new_mode=0%o ino=%d\n", __func__,
+		   path, inode.i_mode, ino);
+
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
 		goto out;
