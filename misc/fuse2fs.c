@@ -3821,7 +3821,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 		}
 		return 1;
 	case FUSE2FS_CACHE_SIZE:
-		ff->cache_size = parse_num_blocks2(arg + 12, -1);
+		ff->cache_size = parse_num_blocks2(arg + 11, -1);
 		if (ff->cache_size < 1 || ff->cache_size > INT32_MAX) {
 			fprintf(stderr, "%s: %s\n", arg,
  _("cache size must be between 1 block and 2GB."));
