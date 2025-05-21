@@ -412,9 +412,10 @@ check_fuzzer: check_fuzzer.o $(DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o check_fuzzer check_fuzzer.o $(LIBS)
 
-filefrag: $(FILEFRAG_OBJS)
+filefrag: $(FILEFRAG_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
-	$(Q) $(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) $(SYSLIBS)
+	$(Q) $(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) $(LIBS) \
+		$(SYSLIBS)
 
 filefrag.profiled: $(FILEFRAG_OBJS)
 	$(E) "	LD $@"
