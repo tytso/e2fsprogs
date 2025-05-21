@@ -19,6 +19,9 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_SYS_AUXV_H
+#include <sys/auxv.h> // for getauxval()
+#endif
 #ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>
 #else
@@ -37,8 +40,13 @@ int blkid_debug_mask = 0;
 
 static char *safe_getenv(const char *arg)
 {
+#if defined(HAVE_SYS_AUXV_H) && defined(AT_SECURE)
+	if (getauxval(AT_SECURE))
+		return NULL;
+#else
 	if ((getuid() != geteuid()) || (getgid() != getegid()))
 		return NULL;
+#endif
 #if HAVE_PRCTL
 	if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
 		return NULL;

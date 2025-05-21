@@ -27,6 +27,9 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include <signal.h>
+#ifdef HAVE_SYS_AUXV_H
+#include <sys/auxv.h> // for getauxval()
+#endif
 #ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>
 #else
@@ -41,8 +44,13 @@ extern char *getenv PROTOTYPE((const char *));
 
 char *ss_safe_getenv(const char *arg)
 {
+#if defined(HAVE_SYS_AUXV_H) && defined(AT_SECURE)
+	if (getauxval(AT_SECURE))
+		return NULL;
+#else
 	if ((getuid() != geteuid()) || (getgid() != getegid()))
 		return NULL;
+#endif
 #if HAVE_PRCTL
 	if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
 		return NULL;

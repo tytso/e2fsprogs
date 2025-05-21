@@ -409,6 +409,9 @@
 /* Define to 1 if you have the <sys/acl.h> header file. */
 #undef HAVE_SYS_ACL_H
 
+/* Define to 1 if you have the <sys/auxv.h> header file. */
+#undef HAVE_SYS_AUXV_H
+
 /* Define to 1 if you have the <sys/disklabel.h> header file. */
 #undef HAVE_SYS_DISKLABEL_H
 

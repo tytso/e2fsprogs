@@ -22,6 +22,9 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_SYS_AUXV_H
+#include <sys/auxv.h> // for getauxval()
+#endif
 #ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>
 #else
@@ -35,8 +38,13 @@
 
 char *ext2fs_safe_getenv(const char *arg)
 {
+#if defined(HAVE_SYS_AUXV_H) && defined(AT_SECURE)
+	if (getauxval(AT_SECURE))
+		return NULL;
+#else
 	if ((getuid() != geteuid()) || (getgid() != getegid()))
 		return NULL;
+#endif
 #ifdef HAVE_PRCTL
 	if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0) == 0)
 		return NULL;
