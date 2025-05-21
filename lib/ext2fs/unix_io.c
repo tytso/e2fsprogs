@@ -670,20 +670,24 @@ static errcode_t flush_cached_blocks(io_channel channel,
 	if ((flags & FLUSH_NOLOCK) == 0)
 		mutex_lock(data, CACHE_MTX);
 	for (i=0, cache = data->cache; i < data->cache_size; i++, cache++) {
-		if (!cache->in_use || !cache->dirty)
+		if (!cache->in_use)
 			continue;
-		retval = raw_write_blk(channel, data,
-				       cache->block, 1, cache->buf,
-				       RAW_WRITE_NO_HANDLER);
-		if (retval) {
-			cache->write_err = 1;
-			errors_found = 1;
-			retval2 = retval;
-		} else {
-			cache->dirty = 0;
-			cache->write_err = 0;
-			if (flags & FLUSH_INVALIDATE)
-				cache->in_use = 0;
+		if (cache->dirty) {
+			retval = raw_write_blk(channel, data,
+					       cache->block, 1, cache->buf,
+					       RAW_WRITE_NO_HANDLER);
+			if (retval) {
+				cache->write_err = 1;
+				errors_found = 1;
+				retval2 = retval;
+			} else {
+				cache->dirty = 0;
+				cache->write_err = 0;
+				if (flags & FLUSH_INVALIDATE)
+					cache->in_use = 0;
+			}
+		} else if (flags & FLUSH_INVALIDATE) {
+			cache->in_use = 0;
 		}
 	}
 	if ((flags & FLUSH_NOLOCK) == 0)
