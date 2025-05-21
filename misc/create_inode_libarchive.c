@@ -30,6 +30,7 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs EXT2FS_ATTR((unused)),
 				 ext2_ino_t root EXT2FS_ATTR((unused)),
 				 struct hdlinks_s *hdlinks EXT2FS_ATTR((unused)),
 				 struct file_info *target EXT2FS_ATTR((unused)),
+				 int flags EXT2FS_ATTR((unused)),
 				 struct fs_ops_callbacks *fs_callbacks EXT2FS_ATTR((unused))) {
   com_err(__func__, 0,
           _("you need to compile e2fsprogs without --without-libarchive"
