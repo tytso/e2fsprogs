@@ -4156,9 +4156,15 @@ int main(int argc, char *argv[])
 #endif
 	}
 
-	if (fctx.kernel)
+	if (fctx.kernel) {
+		/*
+		 * ACLs are always enforced when kernel mode is enabled, to
+		 * match the kernel ext4 driver which always enables ACLs.
+		 */
+		fctx.acl = 1;
 		fuse_opt_insert_arg(&args, 1,
  "-oallow_other,default_permissions,suid,dev");
+	}
 
 	if (fctx.debug) {
 		int	i;
