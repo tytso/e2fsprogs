@@ -2114,9 +2114,30 @@ out:
 	return ret;
 }
 
-static int truncate_helper(ext2_filsys fs, ext2_ino_t ino, off_t new_size)
+static int punch_posteof(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
 {
+	ext2_filsys fs = ff->fs;
+	struct ext2_inode_large inode;
+	blk64_t truncate_block = (new_size + fs->blocksize - 1) / fs->blocksize;
+	errcode_t err;
+
+	err = fuse2fs_read_inode(fs, ino, &inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_punch(fs, ino, EXT2_INODE(&inode), 0, truncate_block,
+			   ~0ULL);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	return 0;
+}
+
+static int truncate_helper(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
+{
+	ext2_filsys fs = ff->fs;
 	ext2_file_t file;
+	__u64 old_isize;
 	errcode_t err;
 	int ret = 0;
 
@@ -2124,17 +2145,40 @@ static int truncate_helper(ext2_filsys fs, ext2_ino_t ino, off_t new_size)
 	if (err)
 		return translate_error(fs, ino, err);
 
+	err = ext2fs_file_get_lsize(file, &old_isize);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+	dbg_printf(ff, "%s: ino=%u isize=0x%llx new_size=0x%llx\n", __func__,
+		   ino,
+		   (unsigned long long)old_isize,
+		   (unsigned long long)new_size);
+
 	err = ext2fs_file_set_size2(file, new_size);
 	if (err)
 		ret = translate_error(fs, ino, err);
 
+out_close:
 	err = ext2fs_file_close(file);
 	if (ret)
 		return ret;
 	if (err)
 		return translate_error(fs, ino, err);
 
-	return update_mtime(fs, ino, NULL);
+	ret = update_mtime(fs, ino, NULL);
+	if (ret)
+		return ret;
+
+	/*
+	 * Truncating to the current size is usually understood to mean that
+	 * we should clear out post-EOF preallocations.
+	 */
+	if (new_size == old_isize)
+		return punch_posteof(ff, ino, new_size);
+
+	return 0;
 }
 
 static int op_truncate(const char *path, off_t len
@@ -2168,7 +2212,7 @@ static int op_truncate(const char *path, off_t len
 	if (ret)
 		goto out;
 
-	ret = truncate_helper(fs, ino, len);
+	ret = truncate_helper(ff, ino, len);
 	if (ret)
 		goto out;
 
@@ -2268,7 +2312,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 	}
 
 	if (fp->flags & O_TRUNC) {
-		ret = truncate_helper(fs, file->ino, 0);
+		ret = truncate_helper(ff, file->ino, 0);
 		if (ret)
 			goto out;
 	}
