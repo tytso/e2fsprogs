@@ -315,6 +315,21 @@ do {									       \
 		(timespec)->tv_nsec = 0;				       \
 } while (0)
 
+static inline errcode_t fuse2fs_read_inode(ext2_filsys fs, ext2_ino_t ino,
+					   struct ext2_inode_large *inode)
+{
+	memset(inode, 0, sizeof(*inode));
+	return ext2fs_read_inode_full(fs, ino, EXT2_INODE(inode),
+				      sizeof(*inode));
+}
+
+static inline errcode_t fuse2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
+					    struct ext2_inode_large *inode)
+{
+	return ext2fs_write_inode_full(fs, ino, EXT2_INODE(inode),
+				       sizeof(*inode));
+}
+
 static void get_now(struct timespec *now)
 {
 #ifdef CLOCK_REALTIME
