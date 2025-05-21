@@ -1971,6 +1971,29 @@ out:
 	return ret;
 }
 
+static int truncate_helper(ext2_filsys fs, ext2_ino_t ino, off_t new_size)
+{
+	ext2_file_t file;
+	errcode_t err;
+	int ret = 0;
+
+	err = ext2fs_file_open(fs, ino, EXT2_FILE_WRITE, &file);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_file_set_size2(file, new_size);
+	if (err)
+		ret = translate_error(fs, ino, err);
+
+	err = ext2fs_file_close(file);
+	if (ret)
+		return ret;
+	if (err)
+		return translate_error(fs, ino, err);
+
+	return update_mtime(fs, ino, NULL);
+}
+
 static int op_truncate(const char *path, off_t len
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
@@ -1980,9 +2003,8 @@ static int op_truncate(const char *path, off_t len
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
-	errcode_t err;
 	ext2_ino_t ino;
-	ext2_file_t file;
+	errcode_t err;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
@@ -2003,28 +2025,9 @@ static int op_truncate(const char *path, off_t len
 	if (ret)
 		goto out;
 
-	err = ext2fs_file_open(fs, ino, EXT2_FILE_WRITE, &file);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
-
-	err = ext2fs_file_set_size2(file, len);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out2;
-	}
-
-out2:
-	err = ext2fs_file_close(file);
+	ret = truncate_helper(fs, ino, len);
 	if (ret)
 		goto out;
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
-
-	ret = update_mtime(fs, ino, NULL);
 
 out:
 	pthread_mutex_unlock(&ff->bfl);
@@ -2060,7 +2063,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 	struct fuse2fs_file_handle *file;
 	int check = 0, ret = 0;
 
-	dbg_printf(ff, "%s: path=%s\n", __func__, path);
+	dbg_printf(ff, "%s: path=%s oflags=0o%o\n", __func__, path, fp->flags);
 	err = ext2fs_get_mem(sizeof(*file), &file);
 	if (err)
 		return translate_error(fs, 0, err);
@@ -2111,6 +2114,13 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 		} else
 			goto out;
 	}
+
+	if (fp->flags & O_TRUNC) {
+		ret = truncate_helper(fs, file->ino, 0);
+		if (ret)
+			goto out;
+	}
+
 	fp->fh = (uintptr_t)file;
 
 out:
