@@ -184,6 +184,9 @@ struct fuse2fs {
 	uint8_t kernel;
 	uint8_t directio;
 	uint8_t acl;
+
+	int blocklog;
+	unsigned int blockmask;
 	unsigned long offset;
 	unsigned int next_generation;
 	unsigned long long cache_size;
@@ -210,6 +213,39 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 #ifndef R_OK
 #  define R_OK 4
 #endif
+
+static inline int u_log2(unsigned int arg)
+{
+	int	l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
+static inline blk64_t FUSE2FS_B_TO_FSBT(const struct fuse2fs *ff, off_t pos)
+{
+	return pos >> ff->blocklog;
+}
+
+static inline blk64_t FUSE2FS_B_TO_FSB(const struct fuse2fs *ff, off_t pos)
+{
+	return (pos + ff->blockmask) >> ff->blocklog;
+}
+
+static inline unsigned int FUSE2FS_OFF_IN_FSB(const struct fuse2fs *ff,
+					      off_t pos)
+{
+	return pos & ff->blockmask;
+}
+
+static inline off_t FUSE2FS_FSB_TO_B(const struct fuse2fs *ff, blk64_t bno)
+{
+	return bno << ff->blocklog;
+}
 
 #define EXT4_EPOCH_BITS 2
 #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
@@ -2254,7 +2290,7 @@ static int punch_posteof(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
 {
 	ext2_filsys fs = ff->fs;
 	struct ext2_inode_large inode;
-	blk64_t truncate_block = (new_size + fs->blocksize - 1) / fs->blocksize;
+	blk64_t truncate_block = FUSE2FS_B_TO_FSB(ff, new_size);
 	errcode_t err;
 
 	err = fuse2fs_read_inode(fs, ino, &inode);
@@ -2556,7 +2592,7 @@ static int op_write(const char *path EXT2FS_ATTR((unused)),
 		goto out;
 	}
 
-	if (!fs_can_allocate(ff, len / fs->blocksize)) {
+	if (!fs_can_allocate(ff, FUSE2FS_B_TO_FSB(ff, len))) {
 		ret = -ENOSPC;
 		goto out;
 	}
@@ -3716,9 +3752,9 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (!fs_writeable(fs))
 		return -EROFS;
 
-	start = fr->start / fs->blocksize;
-	end = (fr->start + fr->len - 1) / fs->blocksize;
-	minlen = fr->minlen / fs->blocksize;
+	start = FUSE2FS_B_TO_FSBT(ff, fr->start);
+	end = FUSE2FS_B_TO_FSBT(ff, fr->start + fr->len - 1);
+	minlen = FUSE2FS_B_TO_FSBT(ff, fr->minlen);
 
 	if (EXT2FS_NUM_B2C(fs, minlen) > EXT2_CLUSTERS_PER_GROUP(fs->super) ||
 	    start >= max_blks ||
@@ -3737,7 +3773,7 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 		end = ext2fs_blocks_count(fs->super) - 1;
 
 	cleared = 0;
-	max_blocks = 2048ULL * 1024 * 1024 / fs->blocksize;
+	max_blocks = FUSE2FS_B_TO_FSBT(ff, 2048ULL * 1024 * 1024);
 
 	fr->len = 0;
 	while (start <= end) {
@@ -3764,7 +3800,7 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			if (err)
 				return translate_error(fs, fh->ino, err);
 			cleared += b - start;
-			fr->len = cleared * fs->blocksize;
+			fr->len = FUSE2FS_FSB_TO_B(ff, cleared);
 		}
 		start = b + 1;
 	}
@@ -3882,11 +3918,11 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	start = offset / fs->blocksize;
-	end = (offset + len - 1) / fs->blocksize;
-	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%jd end=%llu\n", __func__,
-		   fh->ino, mode, (intmax_t) offset / fs->blocksize, end);
-	if (!fs_can_allocate(ff, len / fs->blocksize))
+	start = FUSE2FS_B_TO_FSBT(ff, offset);
+	end = FUSE2FS_B_TO_FSBT(ff, offset + len - 1);
+	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
+		   fh->ino, mode, start, end);
+	if (!fs_can_allocate(ff, FUSE2FS_B_TO_FSB(ff, len)))
 		return -ENOSPC;
 
 	err = fuse2fs_read_inode(fs, fh->ino, &inode);
@@ -3925,16 +3961,17 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	return err;
 }
 
-static errcode_t clean_block_middle(ext2_filsys fs, ext2_ino_t ino,
-				  struct ext2_inode_large *inode, off_t offset,
-				  off_t len, char **buf)
+static errcode_t clean_block_middle(struct fuse2fs *ff, ext2_ino_t ino,
+				    struct ext2_inode_large *inode,
+				    off_t offset, off_t len, char **buf)
 {
+	ext2_filsys fs = ff->fs;
 	blk64_t blk;
 	off_t residue;
 	int retflags;
 	errcode_t err;
 
-	residue = offset % fs->blocksize;
+	residue = FUSE2FS_OFF_IN_FSB(ff, offset);
 	if (residue == 0)
 		return 0;
 
@@ -3945,7 +3982,7 @@ static errcode_t clean_block_middle(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	err = ext2fs_bmap2(fs, ino, EXT2_INODE(inode), *buf, 0,
-			   offset / fs->blocksize, &retflags, &blk);
+			   FUSE2FS_B_TO_FSBT(ff, offset), &retflags, &blk);
 	if (err)
 		return err;
 	if (!blk || (retflags & BMAP_RET_UNINIT))
@@ -3960,16 +3997,17 @@ static errcode_t clean_block_middle(ext2_filsys fs, ext2_ino_t ino,
 	return io_channel_write_blk(fs->io, blk, 1, *buf);
 }
 
-static errcode_t clean_block_edge(ext2_filsys fs, ext2_ino_t ino,
+static errcode_t clean_block_edge(struct fuse2fs *ff, ext2_ino_t ino,
 				  struct ext2_inode_large *inode, off_t offset,
 				  int clean_before, char **buf)
 {
+	ext2_filsys fs = ff->fs;
 	blk64_t blk;
 	int retflags;
 	off_t residue;
 	errcode_t err;
 
-	residue = offset % fs->blocksize;
+	residue = FUSE2FS_OFF_IN_FSB(ff, offset);
 	if (residue == 0)
 		return 0;
 
@@ -3980,7 +4018,7 @@ static errcode_t clean_block_edge(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	err = ext2fs_bmap2(fs, ino, EXT2_INODE(inode), *buf, 0,
-			   offset / fs->blocksize, &retflags, &blk);
+			   FUSE2FS_B_TO_FSBT(ff, offset), &retflags, &blk);
 	if (err)
 		return err;
 
@@ -4022,7 +4060,7 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 		return -EINVAL;
 
 	/* Punch out a bunch of blocks */
-	start = (offset + fs->blocksize - 1) / fs->blocksize;
+	start = FUSE2FS_B_TO_FSB(ff, offset);
 	end = (offset + len - fs->blocksize) / fs->blocksize;
 	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
 		   fh->ino, mode, start, end);
@@ -4032,13 +4070,13 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 		return translate_error(fs, fh->ino, err);
 
 	/* Zero everything before the first block and after the last block */
-	if ((offset / fs->blocksize) == ((offset + len) / fs->blocksize))
-		err = clean_block_middle(fs, fh->ino, &inode, offset,
+	if (FUSE2FS_B_TO_FSBT(ff, offset) == FUSE2FS_B_TO_FSBT(ff, offset + len))
+		err = clean_block_middle(ff, fh->ino, &inode, offset,
 					 len, &buf);
 	else {
-		err = clean_block_edge(fs, fh->ino, &inode, offset, 0, &buf);
+		err = clean_block_edge(ff, fh->ino, &inode, offset, 0, &buf);
 		if (!err)
-			err = clean_block_edge(fs, fh->ino, &inode,
+			err = clean_block_edge(ff, fh->ino, &inode,
 					       offset + len, 1, &buf);
 	}
 	if (buf)
@@ -4412,6 +4450,8 @@ int main(int argc, char *argv[])
 	}
 	fctx.fs = global_fs;
 	global_fs->priv_data = &fctx;
+	fctx.blocklog = u_log2(fctx.fs->blocksize);
+	fctx.blockmask = fctx.fs->blocksize - 1;
 
 	if (!fctx.cache_size)
 		fctx.cache_size = default_cache_size();
@@ -4419,7 +4459,7 @@ int main(int argc, char *argv[])
 		char buf[55];
 
 		snprintf(buf, sizeof(buf), "cache_blocks=%llu",
-				fctx.cache_size / global_fs->blocksize);
+			 FUSE2FS_B_TO_FSBT(&fctx, fctx.cache_size));
 		err = io_channel_set_options(global_fs->io, buf);
 		if (err) {
 			err_printf(&fctx, "%s %lluk: %s\n",
