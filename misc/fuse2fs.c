@@ -89,6 +89,16 @@
 #define XATTR_SECURITY_PREFIX_LEN (sizeof (XATTR_SECURITY_PREFIX) - 1)
 #endif
 
+#if !defined(EUCLEAN)
+#if !defined(EBADMSG)
+#define EUCLEAN EBADMSG
+#elif !defined(EPROTO)
+#define EUCLEAN EPROTO
+#else
+#define EUCLEAN EIO
+#endif
+#endif /* !defined(EUCLEAN) */
+
 static ext2_filsys global_fs; /* Try not to use this directly */
 
 #define dbg_printf(fuse2fs, format, ...) \
@@ -4297,6 +4307,19 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		break;
 	case EXT2_ET_UNIMPLEMENTED:
 		ret = -EOPNOTSUPP;
+		break;
+	case EXT2_ET_DIR_CORRUPTED:
+	case EXT2_ET_CORRUPT_SUPERBLOCK:
+	case EXT2_ET_RESIZE_INODE_CORRUPT:
+	case EXT2_ET_TDB_ERR_CORRUPT:
+	case EXT2_ET_UNDO_FILE_CORRUPT:
+	case EXT2_ET_FILESYSTEM_CORRUPTED:
+	case EXT2_ET_CORRUPT_JOURNAL_SB:
+	case EXT2_ET_INODE_CORRUPTED:
+	case EXT2_ET_EA_INODE_CORRUPTED:
+		/* same errno that linux uses */
+		is_err = 1;
+		ret = -EUCLEAN;
 		break;
 	default:
 		is_err = 1;
