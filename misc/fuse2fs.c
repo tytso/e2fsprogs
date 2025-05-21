@@ -45,6 +45,7 @@
 #include <inttypes.h>
 #include "ext2fs/ext2fs.h"
 #include "ext2fs/ext2_fs.h"
+#include "ext2fs/ext2fsP.h"
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 # define FUSE_PLATFORM_OPTS	""
 #else
@@ -529,25 +530,35 @@ static inline int want_check_owner(struct fuse2fs *ff,
 	return !is_superuser(ff, ctxt);
 }
 
+/* Test for append permission */
+#define A_OK	16
+
 static int check_iflags_access(struct fuse2fs *ff, ext2_ino_t ino,
 			       const struct ext2_inode *inode, int mask)
 {
 	ext2_filsys fs = ff->fs;
 
-	/* no writing to read-only or broken fs */
-	if ((mask & W_OK) && !fs_writeable(fs))
+	EXT2FS_BUILD_BUG_ON((A_OK & (R_OK | W_OK | X_OK | F_OK)) != 0);
+
+	/* no writing or metadata changes to read-only or broken fs */
+	if ((mask & (W_OK | A_OK)) && !fs_writeable(fs))
 		return -EROFS;
 
-	dbg_printf(ff, "access ino=%d mask=e%s%s%s iflags=0x%x\n",
+	dbg_printf(ff, "access ino=%d mask=e%s%s%s%s iflags=0x%x\n",
 		   ino,
 		   (mask & R_OK ? "r" : ""),
 		   (mask & W_OK ? "w" : ""),
 		   (mask & X_OK ? "x" : ""),
+		   (mask & A_OK ? "a" : ""),
 		   inode->i_flags);
 
 	/* is immutable? */
 	if ((mask & W_OK) &&
 	    (inode->i_flags & EXT2_IMMUTABLE_FL))
+		return -EPERM;
+
+	/* is append-only? */
+	if ((inode->i_flags & EXT2_APPEND_FL) && (mask & W_OK) && !(mask & A_OK))
 		return -EPERM;
 
 	return 0;
@@ -563,7 +574,7 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 	int ret;
 
 	/* no writing to read-only or broken fs */
-	if ((mask & W_OK) && !fs_writeable(fs))
+	if ((mask & (W_OK | A_OK)) && !fs_writeable(fs))
 		return -EROFS;
 
 	err = ext2fs_read_inode(fs, ino, &inode);
@@ -571,11 +582,12 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 		return translate_error(fs, ino, err);
 	perms = inode.i_mode & 0777;
 
-	dbg_printf(ff, "access ino=%d mask=e%s%s%s perms=0%o iflags=0x%x "
+	dbg_printf(ff, "access ino=%d mask=e%s%s%s%s perms=0%o iflags=0x%x "
 		   "fuid=%d fgid=%d uid=%d gid=%d\n", ino,
 		   (mask & R_OK ? "r" : ""),
 		   (mask & W_OK ? "w" : ""),
 		   (mask & X_OK ? "x" : ""),
+		   (mask & A_OK ? "a" : ""),
 		   perms, inode.i_flags,
 		   inode_uid(inode), inode_gid(inode),
 		   ctxt->uid, ctxt->gid);
@@ -929,7 +941,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 		goto out2;
 	}
 
-	ret = check_inum_access(ff, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
@@ -1060,7 +1072,7 @@ static int op_mkdir(const char *path, mode_t mode)
 		goto out2;
 	}
 
-	ret = check_inum_access(ff, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
@@ -1463,7 +1475,7 @@ static int op_symlink(const char *src, const char *dest)
 		goto out2;
 	}
 
-	ret = check_inum_access(ff, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
@@ -1838,7 +1850,7 @@ static int op_link(const char *src, const char *dest)
 		goto out2;
 	}
 
-	ret = check_inum_access(ff, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
@@ -2158,6 +2170,15 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 		check = R_OK | W_OK;
 		file->open_flags |= EXT2_FILE_WRITE;
 		break;
+	}
+	if (fp->flags & O_APPEND) {
+		/* the kernel doesn't allow truncation of an append-only file */
+		if (fp->flags & O_TRUNC) {
+			ret = -EPERM;
+			goto out;
+		}
+
+		check |= A_OK;
 	}
 
 	detect_linux_executable_open(fp->flags, &check, &file->open_flags);
@@ -2969,7 +2990,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 		goto out2;
 	}
 
-	ret = check_inum_access(ff, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
@@ -3142,6 +3163,7 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 	errcode_t err;
 	ext2_ino_t ino;
 	struct ext2_inode_large inode;
+	int access = W_OK;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
@@ -3157,7 +3179,13 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 			(long long int)ctv[0].tv_sec, ctv[0].tv_nsec,
 			(long long int)ctv[1].tv_sec, ctv[1].tv_nsec);
 
-	ret = check_inum_access(ff, ino, W_OK);
+	/*
+	 * ext4 allows timestamp updates of append-only files but only if we're
+	 * setting to current time
+	 */
+	if (ctv[0].tv_nsec == UTIME_NOW && ctv[1].tv_nsec == UTIME_NOW)
+		access |= A_OK;
+	ret = check_inum_access(ff, ino, access);
 	if (ret)
 		goto out;
 
