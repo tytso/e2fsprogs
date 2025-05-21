@@ -164,6 +164,7 @@ struct fuse2fs {
 	uint8_t norecovery;
 	uint8_t kernel;
 	uint8_t directio;
+	uint8_t acl;
 	unsigned long offset;
 	unsigned int next_generation;
 	unsigned long long cache_size;
@@ -651,6 +652,10 @@ static void *op_init(struct fuse_conn_info *conn
 	dbg_printf(ff, "%s: dev=%s\n", __func__, fs->device_name);
 #ifdef FUSE_CAP_IOCTL_DIR
 	conn->want |= FUSE_CAP_IOCTL_DIR;
+#endif
+#ifdef FUSE_CAP_POSIX_ACL
+	if (ff->acl)
+		conn->want |= FUSE_CAP_POSIX_ACL;
 #endif
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 	conn->time_gran = 1;
@@ -3828,8 +3833,9 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("offset=%lu",	offset,			0),
 	FUSE2FS_OPT("kernel",		kernel,			1),
 	FUSE2FS_OPT("directio",		directio,		1),
+	FUSE2FS_OPT("acl",		acl,			1),
+	FUSE2FS_OPT("noacl",		acl,			0),
 
-	FUSE_OPT_KEY("acl",		FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
