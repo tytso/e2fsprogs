@@ -344,7 +344,8 @@ error_unlock:
 	return retval;
 }
 
-#define RAW_WRITE_NO_HANDLER	1
+#define RAW_WRITE_NO_HANDLER	(1U << 0)
+#define RAW_WRITE_NOLOCK	(1U << 1)
 
 static errcode_t raw_write_blk(io_channel channel,
 			       struct unix_private_data *data,
@@ -404,13 +405,15 @@ static errcode_t raw_write_blk(io_channel channel,
 	    (IS_ALIGNED(buf, channel->align) &&
 	     IS_ALIGNED(location, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
-		mutex_lock(data, BOUNCE_MTX);
+		if (!(flags & RAW_WRITE_NOLOCK))
+			mutex_lock(data, BOUNCE_MTX);
 		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 			goto error_unlock;
 		}
 		actual = write(data->dev, buf, size);
-		mutex_unlock(data, BOUNCE_MTX);
+		if (!(flags & RAW_WRITE_NOLOCK))
+			mutex_unlock(data, BOUNCE_MTX);
 		if (actual < 0) {
 			retval = errno;
 			goto error_out;
@@ -445,7 +448,8 @@ bounce_write:
 	while (size > 0) {
 		int actual_w;
 
-		mutex_lock(data, BOUNCE_MTX);
+		if (!(flags & RAW_WRITE_NOLOCK))
+			mutex_lock(data, BOUNCE_MTX);
 		if (size < align_size || offset) {
 			if (ext2fs_llseek(data->dev, aligned_blk * align_size,
 					  SEEK_SET) < 0) {
@@ -474,7 +478,8 @@ bounce_write:
 			goto error_unlock;
 		}
 		actual_w = write(data->dev, data->bounce, align_size);
-		mutex_unlock(data, BOUNCE_MTX);
+		if (!(flags & RAW_WRITE_NOLOCK))
+			mutex_unlock(data, BOUNCE_MTX);
 		if (actual_w < 0) {
 			retval = errno;
 			goto error_out;
@@ -490,7 +495,8 @@ bounce_write:
 	return 0;
 
 error_unlock:
-	mutex_unlock(data, BOUNCE_MTX);
+	if (!(flags & RAW_WRITE_NOLOCK))
+		mutex_unlock(data, BOUNCE_MTX);
 error_out:
 	if (((flags & RAW_WRITE_NO_HANDLER) == 0) && channel->write_error)
 		retval = (channel->write_error)(channel, block, count, buf,
@@ -673,9 +679,14 @@ static errcode_t flush_cached_blocks(io_channel channel,
 		if (!cache->in_use)
 			continue;
 		if (cache->dirty) {
+			int raw_flags = RAW_WRITE_NO_HANDLER;
+
+			if (flags & FLUSH_NOLOCK)
+				raw_flags |= RAW_WRITE_NOLOCK;
+
 			retval = raw_write_blk(channel, data,
 					       cache->block, 1, cache->buf,
-					       RAW_WRITE_NO_HANDLER);
+					       raw_flags);
 			if (retval) {
 				cache->write_err = 1;
 				errors_found = 1;
