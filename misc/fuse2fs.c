@@ -18,6 +18,9 @@
 # include <linux/falloc.h>
 # include <linux/xattr.h>
 #endif
+#ifdef HAVE_SYS_XATTR_H
+#include <sys/xattr.h>
+#endif
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -2517,7 +2520,7 @@ out:
 
 static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 		       const char *key, const char *value,
-		       size_t len, int flags EXT2FS_ATTR((unused)))
+		       size_t len, int flags)
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
@@ -2526,6 +2529,9 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 	ext2_ino_t ino;
 	errcode_t err;
 	int ret = 0;
+
+	if (flags & ~(XATTR_CREATE | XATTR_REPLACE))
+		return -EOPNOTSUPP;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
@@ -2559,6 +2565,31 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out2;
+	}
+
+	if (flags & (XATTR_CREATE | XATTR_REPLACE)) {
+		void *buf;
+		size_t buflen;
+
+		err = ext2fs_xattr_get(h, key, &buf, &buflen);
+		switch (err) {
+		case EXT2_ET_EA_KEY_NOT_FOUND:
+			if (flags & XATTR_REPLACE) {
+				ret = -ENODATA;
+				goto out2;
+			}
+			break;
+		case 0:
+			ext2fs_free_mem(&buf);
+			if (flags & XATTR_CREATE) {
+				ret = -EEXIST;
+				goto out2;
+			}
+			break;
+		default:
+			ret = translate_error(fs, ino, err);
+			goto out2;
+		}
 	}
 
 	err = ext2fs_xattr_set(h, key, value, len);
