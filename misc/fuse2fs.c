@@ -3853,7 +3853,7 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 	int ret;
 
 	/* Catch unknown flags */
-	if (mode & ~(FL_PUNCH_HOLE_FLAG | FL_KEEP_SIZE_FLAG))
+	if (mode & ~(FL_ZERO_RANGE_FLAG | FL_PUNCH_HOLE_FLAG | FL_KEEP_SIZE_FLAG))
 		return -EOPNOTSUPP;
 
 	pthread_mutex_lock(&ff->bfl);
