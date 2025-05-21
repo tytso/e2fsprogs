@@ -2474,6 +2474,27 @@ static int op_statfs(const char *path EXT2FS_ATTR((unused)),
 	return 0;
 }
 
+static const char *valid_xattr_prefixes[] = {
+	"user.",
+	"trusted.",
+	"security.",
+	"gnu.",
+	"system.",
+};
+
+static int validate_xattr_name(const char *name)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(valid_xattr_prefixes); i++) {
+		if (!strncmp(name, valid_xattr_prefixes[i],
+					strlen(valid_xattr_prefixes[i])))
+			return 1;
+	}
+
+	return 0;
+}
+
 static int op_getxattr(const char *path, const char *key, char *value,
 		       size_t len)
 {
@@ -2486,6 +2507,9 @@ static int op_getxattr(const char *path, const char *key, char *value,
 	ext2_ino_t ino;
 	errcode_t err;
 	int ret = 0;
+
+	if (!validate_xattr_name(key))
+		return -ENODATA;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
@@ -2657,6 +2681,9 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 	if (flags & ~(XATTR_CREATE | XATTR_REPLACE))
 		return -EOPNOTSUPP;
 
+	if (!validate_xattr_name(key))
+		return -EINVAL;
+
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
@@ -2744,6 +2771,16 @@ static int op_removexattr(const char *path, const char *key)
 	ext2_ino_t ino;
 	errcode_t err;
 	int ret = 0;
+
+	/*
+	 * Once in a while libfuse gives us a no-name xattr to delete as part
+	 * of clearing ACLs.  Just pretend we cleared them.
+	 */
+	if (key[0] == 0)
+		return 0;
+
+	if (!validate_xattr_name(key))
+		return -ENODATA;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
