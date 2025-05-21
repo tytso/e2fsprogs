@@ -3884,6 +3884,8 @@ out_default:
 static unsigned long long default_cache_size(void)
 {
 	long pages = 0, pagesize = 0;
+	unsigned long long max_cache;
+	unsigned long long ret = 32ULL << 20; /* 32 MB */
 
 #ifdef _SC_PHYS_PAGES
 	pages = sysconf(_SC_PHYS_PAGES);
@@ -3891,11 +3893,12 @@ static unsigned long long default_cache_size(void)
 #ifdef _SC_PAGESIZE
 	pagesize = sysconf(_SC_PAGESIZE);
 #endif
-	long long max_cache = (long long)pagesize * pages / 20;
-	unsigned long long ret = 32ULL << 20; /* 32 MB */
+	if (pages > 0 && pagesize > 0) {
+		max_cache = (unsigned long long)pagesize * pages / 20;
 
-	if (max_cache > 0 && ret > max_cache)
-		return max_cache;
+		if (max_cache > 0 && ret > max_cache)
+			ret = max_cache;
+	}
 	return ret;
 }
 

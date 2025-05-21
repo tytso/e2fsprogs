@@ -509,7 +509,7 @@ static errcode_t alloc_cache(io_channel channel,
 {
 	errcode_t		retval;
 	struct unix_cache	*cache;
-	int			i;
+	unsigned int		i;
 
 	data->access_time = 0;
 	for (i=0, cache = data->cache; i < data->cache_size; i++, cache++) {
@@ -535,7 +535,7 @@ static errcode_t alloc_cache(io_channel channel,
 static void free_cache(struct unix_private_data *data)
 {
 	struct unix_cache	*cache;
-	int			i;
+	unsigned int		i;
 
 	data->access_time = 0;
 	for (i=0, cache = data->cache; i < data->cache_size; i++, cache++) {
@@ -557,7 +557,7 @@ static void free_cache(struct unix_private_data *data)
 #define CACHE_LINE_SIZE		64
 
 /* buffer cache hashing function, crudely stolen from xfsprogs */
-unsigned int
+static unsigned int
 cache_hash(struct unix_private_data *data, blk64_t blkno)
 {
 	uint64_t	hashval = blkno;
@@ -583,7 +583,7 @@ static struct unix_cache *find_cached_block(struct unix_private_data *data,
 {
 	struct unix_cache	*cache, *unused_cache, *oldest_cache;
 	unsigned int		hash = cache_hash(data, block);
-	int			i;
+	unsigned int		i;
 
 	unused_cache = oldest_cache = 0;
 	/* walk [hash..] cache elements */
@@ -664,7 +664,7 @@ static errcode_t flush_cached_blocks(io_channel channel,
 {
 	struct unix_cache	*cache;
 	errcode_t		retval, retval2 = 0;
-	int			i;
+	unsigned int		i;
 	int			errors_found = 0;
 
 	if ((flags & FLUSH_NOLOCK) == 0)
@@ -732,7 +732,7 @@ static errcode_t shrink_cache(io_channel channel,
 			      unsigned int new_size)
 {
 	struct unix_cache	*cache, *new_cache;
-	int			i;
+	unsigned int		i;
 	errcode_t		retval;
 
 	mutex_lock(data, CACHE_MTX);
@@ -774,7 +774,7 @@ static errcode_t grow_cache(io_channel channel,
 			    unsigned int new_size)
 {
 	struct unix_cache	*cache, *new_cache;
-	int			i;
+	unsigned int		i;
 	errcode_t		retval;
 
 	mutex_lock(data, CACHE_MTX);
