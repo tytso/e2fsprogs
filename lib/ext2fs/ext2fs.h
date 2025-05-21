@@ -1966,6 +1966,10 @@ extern blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group);
 extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks);
+extern int ext2fs_log2_u32(__u32 arg);
+extern int ext2fs_log2_u64(__u64 arg);
+extern int ext2fs_log10_u32(__u32 arg);
+extern int ext2fs_log10_u64(__u64 arg);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
 extern int ext2fs_dirent_name_len(const struct ext2_dir_entry *entry);
