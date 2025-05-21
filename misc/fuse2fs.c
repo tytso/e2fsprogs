@@ -174,9 +174,9 @@ struct fuse2fs {
 	return translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC); \
 } while (0)
 
-static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
+static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			     const char *file, int line);
-#define translate_error(fs, ino, err) __translate_error((fs), (err), (ino), \
+#define translate_error(fs, ino, err) __translate_error((fs), (ino), (err), \
 			__FILE__, __LINE__)
 
 /* for macosx */
@@ -4176,7 +4176,7 @@ out:
 	return ret;
 }
 
-static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
+static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			     const char *file, int line)
 {
 	struct timespec now;
