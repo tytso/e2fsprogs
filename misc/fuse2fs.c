@@ -362,17 +362,14 @@ static int update_ctime(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	/* Otherwise we have to read-modify-write the inode */
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
 	increment_version(&inode);
 	EXT4_INODE_SET_XTIME(i_ctime, &now, &inode);
 
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -387,9 +384,7 @@ static int update_atime(ext2_filsys fs, ext2_ino_t ino)
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return 0;
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -405,8 +400,7 @@ static int update_atime(ext2_filsys fs, ext2_ino_t ino)
 		return 0;
 	EXT4_INODE_SET_XTIME(i_atime, &now, &inode);
 
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -428,9 +422,7 @@ static int update_mtime(ext2_filsys fs, ext2_ino_t ino,
 		return 0;
 	}
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -439,8 +431,7 @@ static int update_mtime(ext2_filsys fs, ext2_ino_t ino,
 	EXT4_INODE_SET_XTIME(i_ctime, &now, &inode);
 	increment_version(&inode);
 
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -741,9 +732,7 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 	int ret = 0;
 	struct timespec tv;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -1095,8 +1084,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
-	err = ext2fs_write_inode_full(fs, child, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -1164,8 +1152,7 @@ static int op_mkdir(const char *path, mode_t mode)
 		goto out2;
 
 	/* Is the parent dir sgid? */
-	err = ext2fs_read_inode_full(fs, parent, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, parent, &inode);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;
@@ -1203,9 +1190,7 @@ static int op_mkdir(const char *path, mode_t mode)
 	dbg_printf(ff, "%s: created ino=%d/path=%s in dir=%d\n", __func__, child,
 		   node_name, parent);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, child, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -1220,8 +1205,7 @@ static int op_mkdir(const char *path, mode_t mode)
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
 
-	err = ext2fs_write_inode_full(fs, child, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -1341,9 +1325,7 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 	struct ext2_inode_large inode;
 	int ret = 0;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -1393,8 +1375,7 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 				  LINUX_S_ISDIR(inode.i_mode));
 
 write_out:
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -1530,9 +1511,7 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 	if (rds.parent) {
 		dbg_printf(ff, "%s: decr dir=%d link count\n", __func__,
 			   rds.parent);
-		err = ext2fs_read_inode_full(fs, rds.parent,
-					     EXT2_INODE(&inode),
-					     sizeof(inode));
+		err = fuse2fs_read_inode(fs, rds.parent, &inode);
 		if (err) {
 			ret = translate_error(fs, rds.parent, err);
 			goto out;
@@ -1542,9 +1521,7 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 		ret = update_mtime(fs, rds.parent, &inode);
 		if (ret)
 			goto out;
-		err = ext2fs_write_inode_full(fs, rds.parent,
-					      EXT2_INODE(&inode),
-					      sizeof(inode));
+		err = fuse2fs_write_inode(fs, rds.parent, &inode);
 		if (err) {
 			ret = translate_error(fs, rds.parent, err);
 			goto out;
@@ -1642,9 +1619,7 @@ static int op_symlink(const char *src, const char *dest)
 	dbg_printf(ff, "%s: symlinking ino=%d/name=%s to dir=%d\n", __func__,
 		   child, node_name, parent);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, child, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -1657,8 +1632,7 @@ static int op_symlink(const char *src, const char *dest)
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
 
-	err = ext2fs_write_inode_full(fs, child, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -1991,9 +1965,7 @@ static int op_link(const char *src, const char *dest)
 		goto out2;
 	}
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out2;
@@ -2008,8 +1980,7 @@ static int op_link(const char *src, const char *dest)
 	if (ret)
 		goto out2;
 
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out2;
@@ -2133,9 +2104,7 @@ static int op_chmod(const char *path, mode_t mode
 	}
 	dbg_printf(ff, "%s: path=%s mode=0%o ino=%d\n", __func__, path, mode, ino);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -2174,8 +2143,7 @@ static int op_chmod(const char *path, mode_t mode
 	if (ret)
 		goto out;
 
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -2211,9 +2179,7 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 	dbg_printf(ff, "%s: path=%s owner=%d group=%d ino=%d\n", __func__,
 		   path, owner, group, ino);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -2252,8 +2218,7 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 	if (ret)
 		goto out;
 
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -3321,8 +3286,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
-	err = ext2fs_write_inode_full(fs, child, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -3460,9 +3424,7 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 	if (ret)
 		goto out;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -3486,8 +3448,7 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 	if (ret)
 		goto out;
 
-	err = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -3522,9 +3483,7 @@ static int ioctl_getflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3544,9 +3503,7 @@ static int ioctl_setflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3561,8 +3518,7 @@ static int ioctl_setflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (ret)
 		return ret;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3578,9 +3534,7 @@ static int ioctl_getversion(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3600,9 +3554,7 @@ static int ioctl_setversion(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3615,8 +3567,7 @@ static int ioctl_setversion(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (ret)
 		return ret;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3657,9 +3608,7 @@ static int ioctl_fsgetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3706,9 +3655,7 @@ static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3727,8 +3674,7 @@ static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (ret)
 		return ret;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3922,9 +3868,7 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (!fs_can_allocate(ff, len / fs->blocksize))
 		return -ENOSPC;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return err;
 	fsize = EXT2_I_SIZE(&inode);
@@ -3953,8 +3897,7 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (err)
 		return err;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -4063,9 +4006,7 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
 		   fh->ino, mode, start, end);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -4096,8 +4037,7 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (err)
 		return err;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, EXT2_INODE(&inode),
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
