@@ -789,6 +789,7 @@ static errcode_t grow_cache(io_channel channel,
 		retval = EXT2_ET_NO_MEMORY;
 		goto unlock;
 	}
+	data->cache = new_cache;
 
 	for (i = data->cache_size, cache = new_cache + data->cache_size;
 	     i < new_size;
@@ -798,11 +799,16 @@ static errcode_t grow_cache(io_channel channel,
 		cache->dirty = 0;
 		cache->in_use = 0;
 		retval = io_channel_alloc_buf(channel, 0, &cache->buf);
-		if (retval)
+		if (retval) {
+			while (i > data->cache_size) {
+				cache--; i--;
+				if (cache->buf)
+					ext2fs_free_mem(&cache->buf);
+			}
 			goto unlock;
+		}
 	}
 
-	data->cache = new_cache;
 	data->cache_size = new_size;
 	data->cache_hash_shift = highbit32(data->cache_size);
 
@@ -1038,9 +1044,10 @@ cleanup:
 	if (data) {
 		if (data->dev >= 0)
 			close(data->dev);
-		free_cache(data);
-		if (data->cache)
+		if (data->cache) {
+			free_cache(data);
 			free(data->cache);
+		}
 		ext2fs_free_mem(&data);
 	}
 	if (io) {
