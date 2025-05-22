@@ -56,7 +56,7 @@ static int substr (char *s, char *old, char *new)
 		newlen = strlen(new);
 
 	if (newlen > oldlen) {
-		if ((tmp = malloc(strlen(s))) == NULL) {
+		if ((tmp = malloc(strlen(s)+1)) == NULL) {
 			fprintf(stderr, "no memory\n");
 			exit (1);
 		}
