@@ -699,6 +699,12 @@ static unsigned int test_rw (int dev, blk_t last_block,
 				try = last_block - currently_testing;
 			got = do_read (dev, read_buffer, try, block_size,
 				       currently_testing);
+			for (i=0; i < got; i++) {
+				if (memcmp(read_buffer + i * block_size,
+					   buffer + i * block_size,
+					   block_size))
+					bb_count += bb_output(currently_testing+i, CORRUPTION_ERROR);
+			}
 			if (got == 0 && try == 1)
 				bb_count += bb_output(currently_testing++, READ_ERROR);
 			currently_testing += got;
@@ -711,12 +717,6 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			} else if (currently_testing == recover_block) {
 				try = blocks_at_once;
 				recover_block = ~0U;
-			}
-			for (i=0; i < got; i++) {
-				if (memcmp(read_buffer + i * block_size,
-					   buffer + i * block_size,
-					   block_size))
-					bb_count += bb_output(currently_testing+i, CORRUPTION_ERROR);
 			}
 			if (v_flag > 1)
 				print_status();
