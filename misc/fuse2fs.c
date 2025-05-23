@@ -21,6 +21,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <ctype.h>
+#define FUSE_DARWIN_ENABLE_EXTENSIONS 0
 #ifdef __SET_FOB_FOR_FUSE
 # error Do not set magic value __SET_FOB_FOR_FUSE!!!!
 #endif
@@ -699,14 +700,23 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 	statbuf->st_blocks = ext2fs_get_stat_i_blocks(fs,
 						(struct ext2_inode *)&inode);
 	EXT4_INODE_GET_XTIME(i_atime, &tv, &inode);
+#if HAVE_STRUCT_STAT_ST_ATIM
+	statbuf->st_atim = tv;
+#else
 	statbuf->st_atime = tv.tv_sec;
-	statbuf->st_atim.tv_nsec = tv.tv_nsec;
+#endif
 	EXT4_INODE_GET_XTIME(i_mtime, &tv, &inode);
+#if HAVE_STRUCT_STAT_ST_ATIM
+	statbuf->st_mtim = tv;
+#else
 	statbuf->st_mtime = tv.tv_sec;
-	statbuf->st_mtim.tv_nsec = tv.tv_nsec;
+#endif
 	EXT4_INODE_GET_XTIME(i_ctime, &tv, &inode);
+#if HAVE_STRUCT_STAT_ST_ATIM
+	statbuf->st_ctim = tv;
+#else
 	statbuf->st_ctime = tv.tv_sec;
-	statbuf->st_ctim.tv_nsec = tv.tv_nsec;
+#endif
 	if (LINUX_S_ISCHR(inode.i_mode) ||
 	    LINUX_S_ISBLK(inode.i_mode)) {
 		if (inode.i_block[0])
@@ -1967,7 +1977,7 @@ static int op_truncate(const char *path, off_t len
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, ino, len);
+	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, ino, (intmax_t) len);
 
 	ret = check_inum_access(fs, ino, W_OK);
 	if (ret)
@@ -2119,8 +2129,8 @@ static int op_read(const char *path EXT2FS_ATTR((unused)), char *buf,
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino, offset,
-		   len);
+	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino,
+		   (intmax_t) offset, len);
 	pthread_mutex_lock(&ff->bfl);
 	err = ext2fs_file_open(fs, fh->ino, fh->open_flags, &efp);
 	if (err) {
@@ -2176,8 +2186,8 @@ static int op_write(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino, offset,
-		   len);
+	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino,
+		   (intmax_t) offset, (intmax_t) len);
 	pthread_mutex_lock(&ff->bfl);
 	if (!fs_writeable(fs)) {
 		ret = -EROFS;
@@ -2901,7 +2911,8 @@ static int op_ftruncate(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, fh->ino, len);
+	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, fh->ino,
+		   (intmax_t) len);
 	pthread_mutex_lock(&ff->bfl);
 	if (!fs_writeable(fs)) {
 		ret = -EROFS;
@@ -3451,7 +3462,7 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	start = offset / fs->blocksize;
 	end = (offset + len - 1) / fs->blocksize;
 	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%jd end=%llu\n", __func__,
-		   fh->ino, mode, offset / fs->blocksize, end);
+		   fh->ino, mode, (intmax_t) offset / fs->blocksize, end);
 	if (!fs_can_allocate(ff, len / fs->blocksize))
 		return -ENOSPC;
 
@@ -3583,7 +3594,8 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf(ff, "%s: offset=%jd len=%jd\n", __func__, offset, len);
+	dbg_printf(ff, "%s: offset=%jd len=%jd\n", __func__,
+		   (intmax_t) offset, (intmax_t) len);
 
 	/* kernel ext4 punch requires this flag to be set */
 	if (!(mode & FL_KEEP_SIZE_FLAG))
