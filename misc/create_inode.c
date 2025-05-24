@@ -620,6 +620,36 @@ static errcode_t copy_fs_verity_data(ext2_file_t e2_file, ext2_off_t e2_offset,
 				continue;
 			return errno;
 		}
+		/*
+		 * In order to support copying in signature blob, we
+		 * need to set the descriptor's sig_size field (which
+		 * is the __reserved_0x04 field in the userspace
+		 * version of the structure if there is a signature
+		 * blob.  To deal with this, we rely on the fact that
+		 * size of the fsverity descriptor (256 bytes) is
+		 * significantly smaller than COPY_FILE_BUFLEN (64k
+		 * bytes), and that combined size descriptor and
+		 * signature blob will fit in COPY_FILE_BUFLEN.
+		 */
+		if (metadata_type == FS_VERITY_METADATA_TYPE_DESCRIPTOR) {
+			int	sig_size;
+			struct fsverity_descriptor *desc = (void *) buf;
+
+			arg.metadata_type = FS_VERITY_METADATA_TYPE_SIGNATURE;
+			arg.buf_ptr += size;
+			arg.length -= size;
+			arg.offset = 0;
+			sig_size = ioctl(fd, FS_IOC_READ_VERITY_METADATA, &arg);
+			if (sig_size > 0) {
+				desc->__reserved_0x04 =
+					ext2fs_cpu_to_le32(sig_size);
+				size += sig_size;
+			}
+			err = write_all(e2_file, e2_offset, buf, size);
+			if (err == 0)
+				*written += size;
+			return err;
+		}
 		err = write_all(e2_file, e2_offset, buf, size);
 		if (err)
 			return err;
@@ -668,8 +698,8 @@ static errcode_t copy_fs_verity(ext2_filsys fs, int fd,
 	offset = round_up(offset+written, fs->blocksize, 0);
 
 	/*
-	 * Write the verity descriptor (we don't handle signature blobs),
-	 * starting at the next file system block boundary
+	 * Write the verity descriptor, starting at the next file
+	 * system block boundary
 	 */
 	err = copy_fs_verity_data(e2_file, offset, fd,
 				  FS_VERITY_METADATA_TYPE_DESCRIPTOR,
