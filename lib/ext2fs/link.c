@@ -618,6 +618,7 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
+retry:
 	if ((retval = ext2fs_read_inode(fs, dir, &inode)) != 0)
 		return retval;
 
@@ -667,7 +668,13 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 	if (ls.err)
 		return ls.err;
 
-	if (!ls.done)
-		return EXT2_ET_DIR_NO_SPACE;
+	if (!ls.done) {
+		if (!(flags & EXT2FS_LINK_EXPAND))
+			return EXT2_ET_DIR_NO_SPACE;
+		retval = ext2fs_expand_dir(fs, dir);
+		if (retval)
+			return retval;
+		goto retry;
+	}
 	return 0;
 }

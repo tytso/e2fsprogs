@@ -1098,17 +1098,8 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 
 	dbg_printf(ff, "%s: create ino=%d/name=%s in dir=%d\n", __func__, child,
 		   node_name, parent);
-	err = ext2fs_link(fs, parent, node_name, child, filetype);
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, parent, node_name, child,
-				     filetype);
-	}
+	err = ext2fs_link(fs, parent, node_name, child,
+			  filetype | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;
@@ -1879,17 +1870,7 @@ static int op_rename(const char *from, const char *to
 	dbg_printf(ff, "%s: linking ino=%d/path=%s to dir=%d\n", __func__,
 		   from_ino, cp + 1, to_dir_ino);
 	err = ext2fs_link(fs, to_dir_ino, cp + 1, from_ino,
-			  ext2_file_type(inode.i_mode));
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, to_dir_ino);
-		if (err) {
-			ret = translate_error(fs, to_dir_ino, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, to_dir_ino, cp + 1, from_ino,
-				     ext2_file_type(inode.i_mode));
-	}
+			  ext2_file_type(inode.i_mode) | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, to_dir_ino, err);
 		goto out2;
@@ -2046,17 +2027,7 @@ static int op_link(const char *src, const char *dest)
 	dbg_printf(ff, "%s: linking ino=%d/name=%s to dir=%d\n", __func__, ino,
 		   node_name, parent);
 	err = ext2fs_link(fs, parent, node_name, ino,
-			  ext2_file_type(inode.i_mode));
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, parent, node_name, ino,
-				     ext2_file_type(inode.i_mode));
-	}
+			  ext2_file_type(inode.i_mode) | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;
@@ -3295,17 +3266,8 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 
 	dbg_printf(ff, "%s: creating ino=%d/name=%s in dir=%d\n", __func__, child,
 		   node_name, parent);
-	err = ext2fs_link(fs, parent, node_name, child, filetype);
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, parent, node_name, child,
-				     filetype);
-	}
+	err = ext2fs_link(fs, parent, node_name, child,
+			  filetype | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;

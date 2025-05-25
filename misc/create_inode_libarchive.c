@@ -394,13 +394,6 @@ static errcode_t do_write_internal_tar(ext2_filsys fs, ext2_ino_t cwd,
 #endif
 	retval = ext2fs_link(fs, cwd, dest, newfile,
 			     EXT2_FT_REG_FILE | link_append_flag);
-	if (retval == EXT2_ET_DIR_NO_SPACE) {
-		retval = ext2fs_expand_dir(fs, cwd);
-		if (retval)
-			goto out;
-		retval = ext2fs_link(fs, cwd, dest, newfile,
-				     EXT2_FT_REG_FILE | link_append_flag);
-	}
 	if (retval)
 		goto out;
 	if (ext2fs_test_inode_bitmap2(fs->inode_map, newfile))

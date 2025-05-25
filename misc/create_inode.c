@@ -47,7 +47,7 @@
 /* 64KiB is the minimum blksize to best minimize system call overhead. */
 #define COPY_FILE_BUFLEN	65536
 
-int link_append_flag = 0;
+int link_append_flag = EXT2FS_LINK_EXPAND;
 
 static int ext2_file_type(unsigned int mode)
 {
@@ -90,17 +90,6 @@ errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 
 	retval = ext2fs_link(fs, parent_ino, name, ino,
 			     ext2_file_type(inode.i_mode) | link_append_flag);
-	if (retval == EXT2_ET_DIR_NO_SPACE) {
-		retval = ext2fs_expand_dir(fs, parent_ino);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while expanding directory"));
-			return retval;
-		}
-		retval = ext2fs_link(fs, parent_ino, name, ino,
-				     (ext2_file_type(inode.i_mode) |
-				      link_append_flag));
-	}
 	if (retval) {
 		com_err(__func__, retval, _("while linking \"%s\""), name);
 		return retval;
@@ -304,16 +293,6 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 	printf("Allocated inode: %u\n", ino);
 #endif
 	retval = ext2fs_link(fs, cwd, name, ino, filetype | link_append_flag);
-	if (retval == EXT2_ET_DIR_NO_SPACE) {
-		retval = ext2fs_expand_dir(fs, cwd);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while expanding directory"));
-			return retval;
-		}
-		retval = ext2fs_link(fs, cwd, name, ino,
-				     filetype | link_append_flag);
-	}
 	if (retval) {
 		com_err(name, retval, _("while creating inode \"%s\""), name);
 		return retval;
@@ -833,13 +812,6 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 #endif
 	retval = ext2fs_link(fs, parent_ino, dest, newfile,
 			     EXT2_FT_REG_FILE | link_append_flag);
-	if (retval == EXT2_ET_DIR_NO_SPACE) {
-		retval = ext2fs_expand_dir(fs, parent_ino);
-		if (retval)
-			goto out;
-		retval = ext2fs_link(fs, parent_ino, dest, newfile,
-					EXT2_FT_REG_FILE | link_append_flag);
-	}
 	if (retval)
 		goto out;
 	if (ext2fs_test_inode_bitmap2(fs->inode_map, newfile))
@@ -1235,7 +1207,8 @@ errcode_t populate_fs3(ext2_filsys fs, ext2_ino_t parent_ino,
 	file_info.path_max_len = 255;
 	file_info.path = calloc(file_info.path_max_len, 1);
 
-	link_append_flag = (flags & POPULATE_FS_LINK_APPEND) ?
+	link_append_flag = EXT2FS_LINK_EXPAND;
+	link_append_flag |= (flags & POPULATE_FS_LINK_APPEND) ?
 		EXT2FS_LINK_APPEND : 0;
 
 	/* interpret input as tarball either if it's "-" (stdin) or if it's
@@ -1276,7 +1249,7 @@ errcode_t populate_fs3(ext2_filsys fs, ext2_ino_t parent_ino,
 out:
 	free(file_info.path);
 	free(hdlinks.hdl);
-	link_append_flag = 0;
+	link_append_flag = EXT2FS_LINK_EXPAND;
 	return retval;
 }
 

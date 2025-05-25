@@ -807,6 +807,7 @@ struct ext2_xattr_handle;
  */
 #define EXT2FS_LINK_FT_MASK	0x0007
 #define EXT2FS_LINK_APPEND	0x0010
+#define EXT2FS_LINK_EXPAND	0x0020
 
 /*
  * function prototypes
