@@ -35,9 +35,10 @@
 #include <linux/fs.h>
 #endif
 
-#include <ext2fs/ext2fs.h>
-#include <ext2fs/ext2_types.h>
-#include <ext2fs/fiemap.h>
+#include "ext2fs/ext2_fs.h"
+#include "ext2fs/ext2fs.h"
+#include "ext2fs/ext2_types.h"
+#include "ext2fs/fiemap.h"
 
 #include "create_inode.h"
 #include "support/nls-enable.h"
@@ -48,6 +49,13 @@
 #define COPY_FILE_BUFLEN	65536
 
 int link_append_flag = EXT2FS_LINK_EXPAND;
+
+#define COPY_FLAGS_MASK	(EXT2_SECRM_FL | EXT2_UNRM_FL | EXT2_COMPR_FL | \
+			 EXT2_SYNC_FL | EXT2_IMMUTABLE_FL | EXT2_APPEND_FL | \
+			 EXT2_NODUMP_FL | EXT2_NOATIME_FL | \
+			 EXT3_JOURNAL_DATA_FL | EXT2_NOTAIL_FL | \
+			 EXT2_DIRSYNC_FL | EXT2_TOPDIR_FL | FS_DAX_FL | \
+			 EXT4_PROJINHERIT_FL | EXT4_CASEFOLD_FL)
 
 static int ext2_file_type(unsigned int mode)
 {
@@ -368,7 +376,7 @@ errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 
 /* Make a directory in the fs */
 errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
-			    ext2_ino_t root)
+			    unsigned long flags, ext2_ino_t root)
 {
 	char			*cp;
 	ext2_ino_t		parent_ino;
@@ -388,7 +396,7 @@ errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 	} else
 		parent_ino = cwd;
 
-	retval = ext2fs_mkdir2(fs, parent_ino, 0, 0,
+	retval = ext2fs_mkdir2(fs, parent_ino, 0, (flags & COPY_FLAGS_MASK),
 			       link_append_flag, name, NULL);
 	if (retval)
 		com_err("ext2fs_mkdir2", retval,
@@ -830,6 +838,7 @@ errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
 			goto out;
 		ext2fs_extent_free(handle);
 	}
+	inode.i_flags |= (flags & COPY_FLAGS_MASK);
 
 	retval = ext2fs_write_new_inode(fs, newfile, &inode);
 	if (retval)
@@ -1076,7 +1085,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			    strcmp(name, "lost+found") == 0)
 				goto find_lnf;
 			retval = do_mkdir_internal(fs, parent_ino, name,
-						   root);
+						   fl, root);
 			if (retval) {
 				com_err(__func__, retval,
 					_("while making dir \"%s\""), name);

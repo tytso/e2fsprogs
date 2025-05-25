@@ -1834,7 +1834,7 @@ void do_mkdir(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 				"<filename>", CHECK_FS_RW))
 		return;
 
-	retval = do_mkdir_internal(current_fs, cwd, argv[1], root);
+	retval = do_mkdir_internal(current_fs, cwd, argv[1], 0, root);
 	if (retval)
 		com_err(argv[0], retval, 0);
 

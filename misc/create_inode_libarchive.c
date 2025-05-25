@@ -535,7 +535,7 @@ static errcode_t handle_entry(ext2_filsys fs, ext2_ino_t root_ino,
 		}
 		break;
 	case S_IFDIR:
-		retval = do_mkdir_internal(fs, dirinode, name, root);
+		retval = do_mkdir_internal(fs, dirinode, name, 0, root);
 		if (retval) {
 			com_err(__func__, retval, _("while making dir \"%s\""),
 				name);
