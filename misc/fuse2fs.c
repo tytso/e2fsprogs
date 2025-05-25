@@ -1209,16 +1209,8 @@ static int op_mkdir(const char *path, mode_t mode)
 
 	*node_name = a;
 
-	err = ext2fs_mkdir(fs, parent, 0, node_name);
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_mkdir(fs, parent, 0, node_name);
-	}
+	err = ext2fs_mkdir2(fs, parent, 0, 0, EXT2FS_LINK_EXPAND,
+			    node_name, NULL);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;

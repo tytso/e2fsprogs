@@ -388,18 +388,10 @@ errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 	} else
 		parent_ino = cwd;
 
-	retval = ext2fs_mkdir(fs, parent_ino, 0, name);
-	if (retval == EXT2_ET_DIR_NO_SPACE) {
-		retval = ext2fs_expand_dir(fs, parent_ino);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while expanding directory"));
-			return retval;
-		}
-		retval = ext2fs_mkdir(fs, parent_ino, 0, name);
-	}
+	retval = ext2fs_mkdir2(fs, parent_ino, 0, 0,
+			       link_append_flag, name, NULL);
 	if (retval)
-		com_err("ext2fs_mkdir", retval,
+		com_err("ext2fs_mkdir2", retval,
 			_("while creating directory \"%s\""), name);
 	return retval;
 }

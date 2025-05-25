@@ -1763,6 +1763,10 @@ extern int ext2fs_casefold_cmp(const struct ext2fs_nls_table *table,
 /* mkdir.c */
 extern errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 			      const char *name);
+extern errcode_t ext2fs_mkdir2(ext2_filsys fs, ext2_ino_t parent,
+			       ext2_ino_t ino, unsigned long flags,
+			       int link_flags, const char *name,
+			       ext2_ino_t *ret_ino);
 
 /* mkjournal.c */
 struct ext2fs_journal_params {
