@@ -647,7 +647,7 @@ retry:
 			return retval;
 
 		ctx.dir = dir;
-		ctx.flags = flags;
+		ctx.flags = DIRENT_FLAG_INCLUDE_EMPTY;
 		ctx.func = link_proc;
 		ctx.priv_data = &ls;
 		ctx.errcode = 0;
