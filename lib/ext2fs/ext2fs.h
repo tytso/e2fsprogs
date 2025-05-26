@@ -619,11 +619,11 @@ static inline __u32 __decode_extra_nsec(__u32 extra)
 do {									      \
 	if (ext2fs_inode_includes(ext2fs_inode_actual_size(inode),	      \
 				  field ## _extra)) {			      \
-		(inode)->field = (__s32)(sec & 0xfffffff);		      \
+		(inode)->field = (__u32)(sec & 0xfffffff);		      \
 		((struct ext2_inode_large *)(inode))->field ## _extra =       \
 			__encode_extra_time(sec, 0);			      \
 	} else {							      \
-		(inode)->field = clamp(sec, INT32_MIN, INT32_MAX);	      \
+		(inode)->field = (__u32) clamp(sec, INT32_MIN, INT32_MAX);    \
 	}								      \
 } while (0)
 #define ext2fs_inode_xtime_get(inode, field)				      \
