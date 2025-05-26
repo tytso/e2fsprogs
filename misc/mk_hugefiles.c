@@ -269,7 +269,6 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 	else if (num_files > 1)
 		sprintf(fn_numbuf, "%lu", idx);
 
-retry:
 	retval = ext2fs_link(fs, dir, fn_buf, *ino,
 			     EXT2_FT_REG_FILE | EXT2FS_LINK_EXPAND);
 	if (retval)
