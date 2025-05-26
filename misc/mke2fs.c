@@ -883,7 +883,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 			ulong = strtoul(arg, &p, 0);
-			if (*p || (ulong & (ulong - 1))) {
+			if (*p ||
+			    (ulong < EXT2_MIN_DESC_SIZE_64BIT) ||
+			    (ulong > EXT2_MAX_DESC_SIZE) ||
+			    (ulong & (ulong - 1))) {
 				fprintf(stderr,
 					_("Invalid desc_size: '%s'\n"), arg);
 				r_usage++;
