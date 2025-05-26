@@ -588,7 +588,11 @@ static errcode_t copy_fs_verity_data(ext2_file_t e2_file, ext2_off_t e2_offset,
 	do {
 		struct fsverity_read_metadata_arg arg = {
 		  .metadata_type = metadata_type,
+#if (SIZEOF_VOID_P == 4)
+		  .buf_ptr = (uint32_t) buf,
+#else
 		  .buf_ptr = (uint64_t) buf,
+#endif
 		  .length = sizeof(buf),
 		  .offset = *written,
 		};
