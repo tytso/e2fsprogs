@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 		case 'c':
 			chunk_info.chunkbytes = strtoull(optarg, &end, 0);
-			if (*end != '\0') {
+			if (*end != '\0' || chunk_info.chunkbytes == 0) {
 				fprintf(stderr, "%s: bad chunk size '%s'\n",
 					progname, optarg);
 				usage(progname);
