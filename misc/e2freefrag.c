@@ -409,6 +409,9 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "%s: bad chunk size '%s'\n",
 					progname, optarg);
 				usage(progname);
+#ifdef DEBUFS
+				return;
+#endif
 			}
 			if (chunk_info.chunkbytes &
 			    (chunk_info.chunkbytes - 1)) {
@@ -421,6 +424,9 @@ int main(int argc, char *argv[])
 		case 'h':
 		default:
 			usage(progname);
+#ifdef DEBUGFS
+			return;
+#endif
 			break;
 		}
 	}
@@ -429,6 +435,9 @@ int main(int argc, char *argv[])
 	if (optind == argc) {
 		fprintf(stderr, "%s: missing device name.\n", progname);
 		usage(progname);
+#ifdef DEBUGFS
+		return;
+#endif
 	}
 
 	device_name = argv[optind];
