@@ -759,6 +759,8 @@ static void *op_init(struct fuse_conn_info *conn
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 	conn->time_gran = 1;
 	cfg->use_ino = 1;
+	if (ff->debug)
+		cfg->debug = 1;
 #endif
 	if (fs->flags & EXT2_FLAG_RW) {
 		fs->super->s_mnt_count++;
@@ -769,8 +771,6 @@ static void *op_init(struct fuse_conn_info *conn
 		if (err)
 			translate_error(fs, 0, err);
 	}
-	if (ff->debug)
-		cfg->debug = 1;
 
 	if (ff->kernel) {
 		char uuid[UUID_STR_SIZE];
