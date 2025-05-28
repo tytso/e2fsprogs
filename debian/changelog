@@ -1,4 +1,4 @@
-e2fsprogs (1.47.3~rc1-1) unstable; urgency=medium
+e2fsprogs (1.47.3~rc1-1) experimental; urgency=medium
 
   * Mke2fs -d can now copy the fs-verity metadata and chattr flags
     into newly created file system.
