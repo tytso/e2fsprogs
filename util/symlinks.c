@@ -122,7 +122,7 @@ static int tidy_path (char *path)
 
 static int shorten_path (char *path, char *abspath)
 {
-	static char dir[PATH_MAX];
+	static char dir[PATH_MAX+2];
 	int shortened = 0;
 	char *p;
 
@@ -167,7 +167,8 @@ ughh:
 
 static void fix_symlink (char *path, dev_t my_dev)
 {
-	static char lpath[PATH_MAX], new[PATH_MAX], abspath[PATH_MAX];
+	static char lpath[PATH_MAX+1], new[PATH_MAX+1];
+	static char abspath[2*PATH_MAX+2];
 	char *p, *np, *lp, *tail, *msg;
 	struct stat stbuf, lstbuf;
 	int c, fix_abs = 0, fix_messy = 0, fix_long = 0;
@@ -179,9 +180,9 @@ static void fix_symlink (char *path, dev_t my_dev)
 	lpath[c] = '\0';	/* readlink does not null terminate it */
 
 	/* construct the absolute address of the link */
-	abspath[0] = '\0';
+	abspath[sizeof(abspath)-1] = abspath[0] = '\0';
 	if (lpath[0] != '/') {
-		strcat(abspath,path);
+		strncat(abspath, path, sizeof(abspath)-1);
 		c = strlen(abspath);
 		if ((c > 0) && (abspath[c-1] == '/'))
 			abspath[c-1] = '\0'; /* cut trailing / */
@@ -189,11 +190,12 @@ static void fix_symlink (char *path, dev_t my_dev)
 			*p = '\0'; /* cut last component */
 		strcat(abspath,"/");
 	}
-	strcat(abspath,lpath);
+	strncat(abspath, lpath, sizeof(abspath)-1);
 	(void) tidy_path(abspath);
 
 	/* check for various things */
 	if (stat(abspath, &stbuf) == -1) {
+	failed_stat:
 		printf("dangling: %s -> %s\n", path, lpath);
 		if (delete) {
 			if (unlink (path)) {
@@ -204,8 +206,8 @@ static void fix_symlink (char *path, dev_t my_dev)
 		return;
 	}
 
-	if (single_fs)
-		lstat(abspath, &lstbuf); /* if the above didn't fail, then this shouldn't */
+	if (single_fs && (lstat(abspath, &lstbuf) == -1))
+		goto failed_stat;
 	
 	if (single_fs && lstbuf.st_dev != my_dev) {
 		msg = "other_fs:";
@@ -373,11 +375,13 @@ int main(int argc, char **argv)
 			}
 		} else {
 			struct stat st;
+
+			path[sizeof(path)-1] = '\0';
 			if (*p == '/')
 				*path = '\0';
 			else
-				strcpy(path,cwd);
-			tidy_path(strcat(path, p));
+				strncpy(path, cwd, sizeof(path)-1);
+			tidy_path(strncat(path, p, sizeof(path)-1));
 			if (lstat(path, &st) == -1)
 				perror(path);
 			else if (S_ISLNK(st.st_mode))
