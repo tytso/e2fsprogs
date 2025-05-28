@@ -46,6 +46,9 @@ extern int optind;
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 #include <libgen.h>
 #include <limits.h>
 #include <blkid/blkid.h>
@@ -99,7 +102,7 @@ static e2_blkcnt_t	orphan_file_blocks;
 static int	lazy_itable_init;
 static int	assume_storage_prezeroed;
 static int	packed_meta_blocks;
-int		no_copy_xattrs;
+static int	populate_flags = POPULATE_FS_LINK_APPEND;
 static char	*bad_blocks_filename = NULL;
 static __u32	fs_stride;
 /* Initialize usr/grp quotas by default */
@@ -145,27 +148,6 @@ static void usage(void)
 	"\t[-jnqvDFSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
-}
-
-static int int_log2(unsigned long long arg)
-{
-	int	l = 0;
-
-	arg >>= 1;
-	while (arg) {
-		l++;
-		arg >>= 1;
-	}
-	return l;
-}
-
-int int_log10(unsigned long long arg)
-{
-	int	l;
-
-	for (l=0; arg ; l++)
-		arg = arg / 10;
-	return l;
 }
 
 #ifdef __linux__
@@ -782,7 +764,7 @@ skip_details:
 			continue;
 		if (i != 1)
 			printf(", ");
-		need = int_log10(group_block) + 2;
+		need = ext2fs_log10_u64(group_block) + 3;
 		if (need > col_left) {
 			printf("\n\t");
 			col_left = 72;
@@ -883,7 +865,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 			ulong = strtoul(arg, &p, 0);
-			if (*p || (ulong & (ulong - 1))) {
+			if (*p ||
+			    (ulong < EXT2_MIN_DESC_SIZE_64BIT) ||
+			    (ulong > EXT2_MAX_DESC_SIZE) ||
+			    (ulong & (ulong - 1))) {
 				fprintf(stderr,
 					_("Invalid desc_size: '%s'\n"), arg);
 				r_usage++;
@@ -931,7 +916,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				continue;
 			}
 		} else if (strcmp(token, "no_copy_xattrs") == 0) {
-			no_copy_xattrs = 1;
+			populate_flags |= POPULATE_FS_NO_COPY_XATTRS;
 			continue;
 		} else if (strcmp(token, "num_backup_sb") == 0) {
 			if (!arg) {
@@ -1571,6 +1556,36 @@ struct device_param {
 };
 
 #ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
+static int is_rotational (const char *device_name EXT2FS_ATTR((unused)))
+{
+	int		rotational = -1;
+#ifdef __linux__
+	char		path[1024];
+	struct stat	st;
+	FILE		*f;
+
+	if ((stat(device_name, &st) < 0) || !S_ISBLK(st.st_mode))
+		return -1;
+
+	snprintf(path, sizeof(path), "/sys/dev/block/%d:%d/queue/rotational",
+		major(st.st_rdev), minor(st.st_rdev));
+	f = fopen(path, "r");
+	if (!f) {
+		snprintf(path, sizeof(path),
+			"/sys/dev/block/%d:%d/../queue/rotational",
+			major(st.st_rdev), minor(st.st_rdev));
+		f = fopen(path, "r");
+	}
+	if (f) {
+		if (fscanf(f, "%d", &rotational) != 1)
+			rotational = -1;
+		fclose(f);
+	}
+#endif
+	return rotational;
+}
+
+
 /*
  * Sets the geometry of a device (stripe/stride), and returns the
  * device's alignment offset, if any, or a negative error.
@@ -1753,8 +1768,8 @@ profile_error:
 					blocksize);
 			if (blocksize > 0)
 				fs_param.s_log_block_size =
-					int_log2(blocksize >>
-						 EXT2_MIN_BLOCK_LOG_SIZE);
+					ext2fs_log2_u32(blocksize >>
+						       EXT2_MIN_BLOCK_LOG_SIZE);
 			break;
 		case 'c':	/* Check for bad blocks */
 			cflag++;
@@ -2042,7 +2057,7 @@ profile_error:
 		blocksize = jfs->blocksize;
 		printf(_("Using journal device's blocksize: %d\n"), blocksize);
 		fs_param.s_log_block_size =
-			int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+			ext2fs_log2_u32(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 		ext2fs_close_free(&jfs);
 	}
 
@@ -2297,7 +2312,7 @@ profile_error:
 	}
 
 	fs_param.s_log_block_size =
-		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+		ext2fs_log2_u32(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 
 	/*
 	 * We now need to do a sanity check of fs_blocks_count for
@@ -2385,6 +2400,14 @@ profile_error:
 		exit(1);
 	}
 
+	/* fs-verity support requires extents */
+	if (ext2fs_has_feature_verity(&fs_param) &&
+	    !ext2fs_has_feature_extents(&fs_param)) {
+		printf("%s", _("Extents MUST be enabled for fs-verity "
+			       "support.  Pass -O extents to rectify.\n"));
+		exit(1);
+	}
+
 	/* Set first meta blockgroup via an environment variable */
 	/* (this is mostly for debugging purposes) */
 	if (ext2fs_has_feature_meta_bg(&fs_param) &&
@@ -2396,7 +2419,8 @@ profile_error:
 							    "cluster_size",
 							    blocksize*16);
 		fs_param.s_log_cluster_size =
-			int_log2(cluster_size >> EXT2_MIN_CLUSTER_LOG_SIZE);
+			ext2fs_log2_u32(cluster_size >>
+					EXT2_MIN_CLUSTER_LOG_SIZE);
 		if (fs_param.s_log_cluster_size &&
 		    fs_param.s_log_cluster_size < fs_param.s_log_block_size) {
 			com_err(program_name, 0, "%s",
@@ -2429,13 +2453,47 @@ profile_error:
 			_("warning: Unable to get device geometry for %s\n"),
 			device_name);
 	} else {
+		int set_stripe, set_stride, rotational;
+
 		/* setting stripe/stride to blocksize is pointless */
-		if (dev_param.min_io > (unsigned) blocksize)
+		set_stride = dev_param.min_io > (unsigned) blocksize;
+		set_stripe = dev_param.opt_io > (unsigned) blocksize;
+		rotational = is_rotational(device_name) != 0;
+
+		/*
+		 * allow mke2fs.conf settings to control whether the
+		 * raid stripe/stride is set.  The default is to
+		 * always set the stride regardless of whether the
+		 * storage device is using HDD's or SSD's.  But only
+		 * set the stripe size if the storage device is
+		 * HDD-based by default because the ext4's block
+		 * allocator is very inefficient and especially for
+		 * SSD-based RAID arrays, trying to do raid-aligned
+		 * allocations is not worth it.
+		 */
+		tmp = get_string_from_profile(fs_types, "set_raid_stride",
+					      "always");
+		if (tmp && *tmp) {
+			if ((strcmp(tmp, "never") == 0) ||
+			    ((strcmp(tmp, "always") != 0) && !rotational))
+				set_stride = 0;
+		}
+		free(tmp);
+
+		tmp = get_string_from_profile(fs_types, "set_raid_stripe",
+					      "disk");
+		if (tmp && *tmp) {
+			if ((strcmp(tmp, "never") == 0) ||
+			    ((strcmp(tmp, "always") != 0) && !rotational))
+				set_stripe = 0;
+		}
+		free(tmp);
+
+		if (set_stride)
 			fs_param.s_raid_stride = dev_param.min_io / blocksize;
-		if (dev_param.opt_io > (unsigned) blocksize) {
+		if (set_stripe)
 			fs_param.s_raid_stripe_width =
 						dev_param.opt_io / blocksize;
-		}
 
 		if (dev_param.alignment_offset) {
 			printf(_("%s alignment is offset by %lu bytes.\n"),
@@ -2686,7 +2744,7 @@ profile_error:
 				  "flex_bg size may not be specified"));
 			exit(1);
 		}
-		fs_param.s_log_groups_per_flex = int_log2(flex_bg_size);
+		fs_param.s_log_groups_per_flex = ext2fs_log2_u32(flex_bg_size);
 	}
 
 	if (inode_size && fs_param.s_rev_level >= EXT2_DYNAMIC_REV) {
@@ -3621,8 +3679,8 @@ no_journal:
 		if (!quiet)
 			printf("%s", _("Copying files into the device: "));
 
-		retval = populate_fs(fs, EXT2_ROOT_INO, src_root,
-				     EXT2_ROOT_INO);
+		retval = populate_fs3(fs, EXT2_ROOT_INO, src_root,
+				      EXT2_ROOT_INO, populate_flags, NULL);
 		if (retval) {
 			com_err(program_name, retval, "%s",
 				_("while populating file system"));

@@ -1657,6 +1657,7 @@ out:
 	free_ext(orig_list_physical);
 	free_ext(orig_list_logical);
 	free_ext(donor_list_physical);
+	free_ext(donor_list_logical);
 	free_exts_group(orig_group_head);
 	return 0;
 }

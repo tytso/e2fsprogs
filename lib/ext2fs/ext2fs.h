@@ -619,11 +619,11 @@ static inline __u32 __decode_extra_nsec(__u32 extra)
 do {									      \
 	if (ext2fs_inode_includes(ext2fs_inode_actual_size(inode),	      \
 				  field ## _extra)) {			      \
-		(inode)->field = (__s32)(sec & 0xfffffff);		      \
+		(inode)->field = (__u32)(sec & 0xfffffff);		      \
 		((struct ext2_inode_large *)(inode))->field ## _extra =       \
 			__encode_extra_time(sec, 0);			      \
 	} else {							      \
-		(inode)->field = clamp(sec, INT32_MIN, INT32_MAX);	      \
+		(inode)->field = (__u32) clamp(sec, INT32_MIN, INT32_MAX);    \
 	}								      \
 } while (0)
 #define ext2fs_inode_xtime_get(inode, field)				      \
@@ -793,6 +793,21 @@ struct ext2_xattr_handle;
 #define EXT2FS_BITMAPS_BLOCK		0x0002
 #define EXT2FS_BITMAPS_INODE		0x0004
 #define EXT2FS_BITMAPS_VALID_FLAGS	0x0007
+
+/*
+ * flags for ext2fs_unlink()
+ */
+
+/* Forcefully unlink even if the inode number doesn't match the dirent */
+#define EXT2FS_UNLINK_FORCE		0x1
+
+/*
+ * flags for ext2fs_link()
+ *
+ */
+#define EXT2FS_LINK_FT_MASK	0x0007
+#define EXT2FS_LINK_APPEND	0x0010
+#define EXT2FS_LINK_EXPAND	0x0020
 
 /*
  * function prototypes
@@ -1392,6 +1407,7 @@ errcode_t ext2fs_xattr_set(struct ext2_xattr_handle *handle,
 			   size_t value_len);
 errcode_t ext2fs_xattr_remove(struct ext2_xattr_handle *handle,
 			      const char *key);
+errcode_t ext2fs_xattr_remove_all(struct ext2_xattr_handle *handle);
 errcode_t ext2fs_xattrs_open(ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_xattr_handle **handle);
 errcode_t ext2fs_xattrs_close(struct ext2_xattr_handle **handle);
@@ -1747,6 +1763,10 @@ extern int ext2fs_casefold_cmp(const struct ext2fs_nls_table *table,
 /* mkdir.c */
 extern errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 			      const char *name);
+extern errcode_t ext2fs_mkdir2(ext2_filsys fs, ext2_ino_t parent,
+			       ext2_ino_t ino, unsigned long flags,
+			       int link_flags, const char *name,
+			       ext2_ino_t *ret_ino);
 
 /* mkjournal.c */
 struct ext2fs_journal_params {
@@ -1816,10 +1836,6 @@ extern errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t 
 			       char **name);
 
 /* link.c */
-#define EXT2FS_UNLINK_FORCE		0x1	/* Forcefully unlink even if
-						 * the inode number doesn't
-						 * match the dirent
-						 */
 errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 		      ext2_ino_t ino, int flags);
 errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir, const char *name,
@@ -1956,6 +1972,10 @@ extern blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group);
 extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks);
+extern int ext2fs_log2_u32(__u32 arg);
+extern int ext2fs_log2_u64(__u64 arg);
+extern int ext2fs_log10_u32(__u32 arg);
+extern int ext2fs_log10_u64(__u64 arg);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
 extern int ext2fs_dirent_name_len(const struct ext2_dir_entry *entry);
@@ -2224,6 +2244,66 @@ _INLINE_ int ext2fs_htree_intnode_maxrecs(ext2_filsys fs, int blocks)
 		csum_size = sizeof(struct ext2_dx_tail);
 	return blocks * ((fs->blocksize - (8 + csum_size)) /
 						sizeof(struct ext2_dx_entry));
+}
+
+/*
+ * log base 2, rounded down
+ */
+_INLINE_ int ext2fs_log2_u32(__u32 arg)
+{
+	int l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
+/*
+ * log base 2, rounded down
+ */
+_INLINE_ int ext2fs_log2_u64(__u64 arg)
+{
+	int l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
+/*
+ * log base 10, rounded down
+ */
+_INLINE_ int ext2fs_log10_u32(__u32 arg)
+{
+	int l = 0;
+
+	arg /= 10;
+	while (arg) {
+		l++;
+		arg /= 10;
+	}
+	return l;
+}
+
+/*
+ * log base 10, rounded down
+ */
+_INLINE_ int ext2fs_log10_u64(__u64 arg)
+{
+	int l = 0;
+
+	arg /= 10;
+	while (arg) {
+		l++;
+		arg /= 10;
+	}
+	return l;
 }
 
 /*

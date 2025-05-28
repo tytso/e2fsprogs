@@ -11977,6 +11977,12 @@ then :
   printf "%s\n" "#define HAVE_LINUX_FSMAP_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "linux/fsverity.h" "ac_cv_header_linux_fsverity_h" "$ac_includes_default"
+if test "x$ac_cv_header_linux_fsverity_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LINUX_FSVERITY_H 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "linux/major.h" "ac_cv_header_linux_major_h" "$ac_includes_default"
 if test "x$ac_cv_header_linux_major_h" = xyes
 then :
@@ -12757,6 +12763,39 @@ printf "%s\n" "$ac_cv_sizeof_time_t" >&6; }
 
 
 printf "%s\n" "#define SIZEOF_TIME_T $ac_cv_sizeof_time_t" >>confdefs.h
+
+
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking size of void *" >&5
+printf %s "checking size of void *... " >&6; }
+if test ${ac_cv_sizeof_void_p+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (void *))" "ac_cv_sizeof_void_p"        "$ac_includes_default"
+then :
+
+else $as_nop
+  if test "$ac_cv_type_void_p" = yes; then
+     { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (void *)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_void_p=0
+   fi
+fi
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_void_p" >&5
+printf "%s\n" "$ac_cv_sizeof_void_p" >&6; }
+
+
+
+printf "%s\n" "#define SIZEOF_VOID_P $ac_cv_sizeof_void_p" >>confdefs.h
 
 
 SIZEOF_SHORT=$ac_cv_sizeof_short

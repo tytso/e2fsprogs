@@ -17,19 +17,25 @@
 #include "create_inode_libarchive.h"
 #include "support/nls-enable.h"
 
+extern int link_append_flag;
+
 #if (!(defined(CONFIG_DLOPEN_LIBARCHIVE) || defined(HAVE_ARCHIVE_H)) || \
-     defined(CONFIG_DIABLE_LIBARCHIVE))
+     defined(CONFIG_DISABLE_LIBARCHIVE))
 
 /* If ./configure was run with --without-libarchive, then only
  * __populate_fs_from_tar() remains in this file and will return an error. */
-errcode_t __populate_fs_from_tar(ext2_filsys, ext2_ino_t, const char *,
-                                 ext2_ino_t, struct hdlinks_s *,
-                                 struct file_info *,
-                                 struct fs_ops_callbacks *) {
+errcode_t __populate_fs_from_tar(ext2_filsys fs EXT2FS_ATTR((unused)),
+				 ext2_ino_t root_ino EXT2FS_ATTR((unused)),
+				 const char *source_tar EXT2FS_ATTR((unused)),
+				 ext2_ino_t root EXT2FS_ATTR((unused)),
+				 struct hdlinks_s *hdlinks EXT2FS_ATTR((unused)),
+				 struct file_info *target EXT2FS_ATTR((unused)),
+				 int flags EXT2FS_ATTR((unused)),
+				 struct fs_ops_callbacks *fs_callbacks EXT2FS_ATTR((unused))) {
   com_err(__func__, 0,
           _("you need to compile e2fsprogs without --without-libarchive"
             "be able to process tarballs"));
-  return 1;
+  return ENOTSUP;
 }
 
 #else
@@ -386,13 +392,8 @@ static errcode_t do_write_internal_tar(ext2_filsys fs, ext2_ino_t cwd,
 #ifdef DEBUGFS
 	printf("Allocated inode: %u\n", newfile);
 #endif
-	retval = ext2fs_link(fs, cwd, dest, newfile, EXT2_FT_REG_FILE);
-	if (retval == EXT2_ET_DIR_NO_SPACE) {
-		retval = ext2fs_expand_dir(fs, cwd);
-		if (retval)
-			goto out;
-		retval = ext2fs_link(fs, cwd, dest, newfile, EXT2_FT_REG_FILE);
-	}
+	retval = ext2fs_link(fs, cwd, dest, newfile,
+			     EXT2_FT_REG_FILE | link_append_flag);
 	if (retval)
 		goto out;
 	if (ext2fs_test_inode_bitmap2(fs->inode_map, newfile))
@@ -444,9 +445,6 @@ static errcode_t set_inode_xattr_tar(ext2_filsys fs, ext2_ino_t ino,
 	const char *name;
 	const void *value;
 	size_t value_size;
-
-	if (no_copy_xattrs)
-		return 0;
 
 	size = dl_archive_entry_xattr_count(entry);
 	if (size == 0)
@@ -537,7 +535,7 @@ static errcode_t handle_entry(ext2_filsys fs, ext2_ino_t root_ino,
 		}
 		break;
 	case S_IFDIR:
-		retval = do_mkdir_internal(fs, dirinode, name, root);
+		retval = do_mkdir_internal(fs, dirinode, name, 0, root);
 		if (retval) {
 			com_err(__func__, retval, _("while making dir \"%s\""),
 				name);
@@ -574,6 +572,7 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 				 const char *source_tar, ext2_ino_t root,
 				 struct hdlinks_s *hdlinks EXT2FS_ATTR((unused)),
 				 struct file_info *target,
+				 int flags,
 				 struct fs_ops_callbacks *fs_callbacks)
 {
 	char *path2=NULL, *path3=NULL, *dir, *name;
@@ -696,11 +695,14 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 			goto out;
 		}
 
-		retval = set_inode_xattr_tar(fs, tmpino, entry);
-		if (retval) {
-			com_err(__func__, retval,
-				_("while setting xattrs for \"%s\""), name);
-			goto out;
+		if ((flags & POPULATE_FS_NO_COPY_XATTRS) == 0) {
+			retval = set_inode_xattr_tar(fs, tmpino, entry);
+			if (retval) {
+				com_err(__func__, retval,
+					_("while setting xattrs for \"%s\""),
+					name);
+				goto out;
+			}
 		}
 
 		if (fs_callbacks && fs_callbacks->end_create_new_inode) {
