@@ -1,3 +1,67 @@
+e2fsprogs (1.47.3~rc1-1) unstable; urgency=medium
+
+  * Mke2fs -d can now copy the fs-verity metadata and chattr flags
+    into newly created file system.
+  * Many fuse2fs improvements and bug fixes
+      - Add support for XATTR_CREATE and XATTR_REPLACE flags in setxattr()
+      - Add support for FALLOC_FL_ZERO_RANGE.
+      - Add support to fuse2fs for the setting file attributes via fsxattr,
+        including support for nanosecond timestamps.
+      - Add support to set newer chattr flags.
+      - Fix fuse2fs support for O_APPEND, O_TRUNC, POSIX ACLs, and
+        the immutable flag
+      - Remove the ea_inode when deleting the last file using the ea_inode
+      - Update timestamps after mkdir() and symlink() operations
+      - Fix error code handling for fallocate(), truncate() and
+        removexattr().
+      - Improve handling of corrupted file systems
+      - Refuse to handle renameat2's RENAME_EXCHA?NGE or RENAME_WHITEOUT
+        flags instead of doing something random
+      - Avoid clearing the setgid bit in op_chmod when file's group
+        ownership the calling process's group list (instead of just the
+        primary group id).
+      - Align with the kernel's behaviors:
+          + clearing post-EOF on truncation
+          + validating FITRIM's parameters consistently with how the kernel
+            does things
+          + how the "ro" mount option will replay the journal
+          + only supporting the xattr namespaces supported by the kernel
+          + clamping timestamps to the minimum and maximum value supported
+            by the on-disk format
+          + optionally delegating access control decisions to the kernel
+      - Don't mount file systems which have features that fuse2fs can't
+        deal with.
+      - Return inode and type information in readdir()
+      - Use the actal inode numbers instead of asking fuse to make
+        up inode numbers
+      - Use a larger disk cache to improve performance and optionally
+        use Direct I/O.
+  * Add mke2fs.conf knobs to control whether the RAID stripe or stride
+    sizes from the storage device information depending on whether the
+    storage device is a rotational or non-rotational device.  By default
+    don't set the RAID stripe size for non-rotational devices.
+  * Fix "e2fsck -E unshare_blocks" to clear the shared_blocks flag when
+    there are no shared blocks to clear
+  * Fix "e2fsck -n" to not abort when it trips across an EA inode which
+    is not referenced by any inodes in the file system.
+  * Fix debugfs's dump and rdump commands to avoid looping forever when
+    it runs across an I/O error or corupt filesystem metadata.
+  * Fix debugfs's dirsearch command on big-endian systems.
+  * Optimize ext2fs_extent_set_bmap() to avoid fragmenting the extent
+    tree.  This fixes a problem where resize2fs is trying to relocate
+    all of the blocks in a file leading to the extent tree doubling in
+    size, and potentially leading to a corrupted extent tree.
+  * Fix potential livelock bug in the unix_io manager.
+  * Fix invaidation support in the unix_io manager.
+  * Various man page cleanups.
+  * Improve performance in e2fsck when replaying a journal with a large
+    number of revoke blocks (which can be the case on Lustre servers).
+  * Improve tune2fs's performance by avoiding scanning the file system to
+    update quota inodes in cases when it's not necessary.
+  * Update Dutch, Malay, Portuguese, and Serbian translations.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 28 May 2025 08:50:19 -0400
+
 e2fsprogs (1.47.2-1) unstable; urgency=medium
 
   * New upstream version
