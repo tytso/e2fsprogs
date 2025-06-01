@@ -23,10 +23,10 @@ Add a lockfile command-line option to fuse2fs which is useful for
 scripts that need to know when fuse2fs is done modifying the file system
 after it is unmounted.
 
-Add mke2fs.conf knobs to control whether the RAID stripe or stride sizes
-from the storage device information depending on whether the storage
-device is a rotational or non-rotational device.  By default don't set
-the RAID stripe size for non-rotational devices.
+Add mke2fs.conf configuration settings to control whether the RAID
+stripe or stride sizes from the storage device information depending on
+whether the storage device is a rotational or non-rotational device.  By
+default, don't set the RAID stripe size for non-rotational devices.
 
 E2scrub no longer runs fstrim by default, since util-linux ships with a
 fstrim.timer systemd file which will run fstrim on all mounted file
@@ -38,7 +38,7 @@ Fixes
 -----
 
 Fix "e2fsck -E unshare_blocks" to clear the shared_blocks flag when
-there are no shared blocks to clear
+there are no shared blocks to clear.
 
 Fix "e2fsck -n" to not abort when it trips across an EA inode which
 is not referenced by any inodes in the file system.
@@ -51,7 +51,7 @@ Fix debugfs's dirsearch command on big-endian systems.
 Fix many fuse2fs bugs found by running fstests, including fixing
 support for O_APPEND, O_TRUNC, POSIX ACLs, and the immutable flag.  Also
 fix fuse2fs to correctly remove ea_inodes if the last reference to an
-ea_inode is removed when an inode is removed, and to update timestmps
+ea_inode is removed when an inode is removed, and to update timestamps
 correctly after the mkdir(2) and symlink(2) operations.
 
 Fix fuse2fs's error code handling for fallocate(), truncate() and
@@ -106,7 +106,7 @@ file.
 
 Fix potential livelock bug in the unix_io manager.
 
-Fix invaidation support in the unix_io manager.
+Fix invalidation support in the unix_io manager.
 
 Various man page cleanups.
 
@@ -121,7 +121,7 @@ Improve tune2fs's performance by avoiding scanning the file system to
 update quota inodes in cases when it's not necessary.
 
 Improve fuse2fs's performance by returning inode and type information in
-readdir() and to use the actal inode numbers instead of asking fuse
+readdir() and to use the actual inode numbers instead of asking fuse
 to make up inode numbers.
 
 Fix various Coverity and compiler warnings.
@@ -144,12 +144,12 @@ programs.
         
 Improve debugging and logging in fuse2fs.
 
-General code cleaups in fuse2fs.
+General code cleanups in fuse2fs.
 
 Improve fuse2fs's performance by allowing a larger cache in unix_io and
 using O_DIRECT to read and write the block device.
 
-Fixed Windows portability problems intrduced in 1.47.2.
+Fixed Windows portability problems introduced in 1.47.2.
 
 Fix various FreeBSD compile warnings and test issues.
 
@@ -162,7 +162,7 @@ Fix test failure for m_rootdir_acl when the build tree is hosted on
 btrfs.  (This was caused by btrfs returning extended attributes relating
 to Posix ACL's in a different order than ext4 or xfs.)
 
-Fixed potention races in the Makefiles which could show up when using
+Fixed potential races in the Makefiles which could show up when using
 "make -j install".
 
 Fixed build failures when libarchive is not available.
