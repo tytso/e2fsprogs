@@ -397,7 +397,7 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "%s: bad chunk size '%s'\n",
 					progname, optarg);
 				usage(progname);
-#ifdef DEBUFS
+#ifdef DEBUGFS
 				return;
 #endif
 			}
