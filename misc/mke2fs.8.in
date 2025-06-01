@@ -714,7 +714,7 @@ by commas, that are to be enabled.  To disable a feature, simply
 prefix the feature name with a caret ('^') character.
 Features with dependencies will not be removed successfully.
 The pseudo-file system feature "none" will clear all file system features.
-.TP
+.sp
 For more information about the features which can be set, please see
 the manual page
 .BR ext4 (5).
