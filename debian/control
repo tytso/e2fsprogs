@@ -46,6 +46,7 @@ Description: save the output of a command in a log file
 
 Package: e2fsck-static
 Build-Profiles: <!pkg.e2fsprogs.no-static>
+Built-Using: ${misc:Built-Using}
 Priority: optional
 Depends: ${misc:Depends}
 Recommends: sash | bash-static | zsh-static | busybox-static
