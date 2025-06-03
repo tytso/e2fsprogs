@@ -375,9 +375,7 @@ License: GPL-2+ with Texinfo exception
  General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this texinfo.tex file; see the file COPYING.  If not, write
- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- Boston, MA 02110-1301, USA.
+ along with this program. If not, see <https://www.gnu.org/licenses/>.
  .
  As a special exception, when this file is read by TeX when processing
  a Texinfo source document, you may use the result without
@@ -492,9 +490,7 @@ License: GPL-2+
  GNU General Public License for more details.
  .
  You should have received a copy of the GNU General Public License
- along with this program (in the main directory of the fuse-ext2
- distribution in the file COPYING); if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+ along with this program. If not, see <https://www.gnu.org/licenses/>.
 Comment:
  On Debian systems, the complete text of the GNU General
  Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
