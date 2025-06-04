@@ -90,6 +90,20 @@
 #define XATTR_SECURITY_PREFIX_LEN (sizeof (XATTR_SECURITY_PREFIX) - 1)
 #endif
 
+/*
+ * Linux and MacOS implement the setxattr(2) interface, which defines
+ * XATTR_CREATE and XATTR_REPLACE.  However, FreeBSD uses
+ * extattr_set_file(2), which does not have a flags or options
+ * parameter, and does not define XATTR_CREATE and XATTR_REPLACE.
+ */
+#ifndef XATTR_CREATE
+#define XATTR_CREATE 0
+#endif
+
+#ifndef XATTR_REPLACE
+#define XATTR_REPLACE 0
+#endif
+
 #if !defined(EUCLEAN)
 #if !defined(EBADMSG)
 #define EUCLEAN EBADMSG
