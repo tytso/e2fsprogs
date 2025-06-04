@@ -100,6 +100,14 @@
 #endif
 #endif /* !defined(EUCLEAN) */
 
+#if !defined(ENODATA)
+#ifdef ENOATTR
+#define ENODATA ENOATTR
+#else
+#define ENODATA ENOENT
+#endif
+#endif /* !defined(ENODATA) */
+
 static ext2_filsys global_fs; /* Try not to use this directly */
 
 #define dbg_printf(fuse2fs, format, ...) \
@@ -4649,11 +4657,7 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		ret = -EBUSY;
 		break;
 	case EXT2_ET_EA_KEY_NOT_FOUND:
-#ifdef ENODATA
 		ret = -ENODATA;
-#else
-		ret = -ENOENT;
-#endif
 		break;
 	/* Sometimes fuse returns a garbage file handle pointer to us... */
 	case EXT2_ET_MAGIC_EXT2_FILE:
