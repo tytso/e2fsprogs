@@ -212,6 +212,7 @@ struct fuse2fs {
 	unsigned long offset;
 	unsigned int next_generation;
 	unsigned long long cache_size;
+	char *inusefile;
 };
 
 #define FUSE2FS_CHECK_MAGIC(fs, ptr, num) do {if ((ptr)->magic != (num)) \
@@ -4231,6 +4232,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("nodelalloc",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
+	FUSE2FS_OPT("inusefile=%s",	inusefile,		0),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -4283,6 +4285,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
 	"    -o norecovery          don't replay the journal\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
+	"    -o inusefile=<file>    file to show that fuse is still using the file system image\n"
 	"    -o kernel              run this as if it were the kernel, which sets:\n"
 	"                           allow_others,default_permissions,suid,dev\n"
 	"    -o directio            use O_DIRECT to read and write the disk\n"
@@ -4409,6 +4412,24 @@ int main(int argc, char *argv[])
 		log_printf(&fctx, "%s\n",
  _("Allowing users to allocate all blocks. This is dangerous!"));
 		fctx.alloc_all_blocks = 1;
+	}
+
+	if(fctx.inusefile) {
+		FILE* inusefile=fopen(fctx.inusefile, "w");
+		if(!inusefile) {
+			fprintf(stderr, "Requested inusefile=%s but couldn't open the file for writing\n", fctx.inusefile);
+			exit(1);
+		}
+		fclose(inusefile);
+		char* resolved = realpath(fctx.inusefile, NULL);
+		if (!resolved) {
+			perror("realpath");
+			fprintf(stderr, "Could not resolve realpath for inusefile=%s\n", fctx.inusefile);
+			unlink(fctx.inusefile);
+			exit(1);
+		}
+		free(fctx.inusefile);
+		fctx.inusefile = resolved;
 	}
 
 	/* Start up the fs (while we still can use stdout) */
@@ -4615,6 +4636,14 @@ out:
 			com_err(argv[0], err, "while closing fs");
 		global_fs = NULL;
 	}
+	if(fctx.inusefile) {
+		err = unlink(fctx.inusefile);
+		if (err)
+			com_err(argv[0], errno, "while unlinking '%s'",
+				fctx.inusefile);
+	}
+	if (fctx.inusefile)
+		free(fctx.inusefile);
 	if (fctx.device)
 		free(fctx.device);
 	fuse_opt_free_args(&args);
