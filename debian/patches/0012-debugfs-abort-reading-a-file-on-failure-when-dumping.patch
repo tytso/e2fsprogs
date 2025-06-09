@@ -1,0 +1,36 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: debugfs: abort reading a file on failure when dumping out a file
+
+If ext2fs_file_read() fails --- perhaps due to a corrupted file
+system, or an I/O error --- avoid looping forever in dump_file().
+
+This issue was pointed out in [1] by Quentin Kaiser but the commit
+description was too confusing and specific to the user's particular
+situation.
+
+[1] https://github.com/tytso/e2fsprogs/pull/149
+
+Origin: https://github.com/tytso/e2fsprogs/commit/51d68472456d22b6e64159244be63bce51473691
+---
+ debugfs/dump.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/debugfs/dump.c b/debugfs/dump.c
+index 4ab7cadcb..cc81a5086 100644
+--- a/debugfs/dump.c
++++ b/debugfs/dump.c
+@@ -122,8 +122,10 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
+ 	}
+ 	while (1) {
+ 		retval = ext2fs_file_read(e2_file, buf, blocksize, &got);
+-		if (retval)
++		if (retval) {
+ 			com_err(cmdname, retval, "while reading ext2 file");
++			return;
++		}
+ 		if (got == 0)
+ 			break;
+ 		nbytes = write(fd, buf, got);
+-- 
+2.47.2
+

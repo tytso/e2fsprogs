@@ -1,0 +1,33 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: e2fsck: fix e2fsck -E unshare_blocks when there are no shared blocks
+
+If there are no shared blocks in a ext4 file system, e2fsck -E
+unshare_blocks will not actually clear the shared_blocks feature flag
+since e2fsck_pass1_dupblocks() is never called.  Fix this by adding a
+check in e2fsck_pass1() to clear the shared blocks flag.
+
+Bug: https://github.com/tytso/e2fsprogs/issues/218
+Origin: https://github.com/tytso/e2fsprogs/commit/707af4359e132bc415c3f6339f4ced9f23b28c0b
+---
+ e2fsck/pass1.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/e2fsck/pass1.c b/e2fsck/pass1.c
+index eb73922d3..e7d5d0ae9 100644
+--- a/e2fsck/pass1.c
++++ b/e2fsck/pass1.c
+@@ -2169,6 +2169,11 @@ void e2fsck_pass1(e2fsck_t ctx)
+ 			fix_problem(ctx, PR_1_DUP_BLOCKS_PREENSTOP, &pctx);
+ 		}
+ 		e2fsck_pass1_dupblocks(ctx, block_buf);
++	} else if ((ctx->options & E2F_OPT_UNSHARE_BLOCKS) &&
++		   ext2fs_has_feature_shared_blocks(fs->super) &&
++		   !(ctx->options & E2F_OPT_NO)) {
++		ext2fs_clear_feature_shared_blocks(fs->super);
++		ext2fs_mark_super_dirty(fs);
+ 	}
+ 	ctx->flags |= E2F_FLAG_ALLOC_OK;
+ endit:
+-- 
+2.47.2
+

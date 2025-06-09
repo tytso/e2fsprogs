@@ -1,0 +1,33 @@
+From: "Darrick J. Wong" <djwong@kernel.org>
+Subject: fuse2fs: disable renameat2
+
+Apparently fuse munged rename and renameat2 together into the same
+upcall, so we actually have to filter out nonzero flags because
+otherwise we do a regular rename for a RENAME_EXCHANGE/WHITEOUT, which
+is not what the user asked for.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/b431abbc8fe0fd1de4e414aae3520c4c19411048
+---
+ misc/fuse2fs.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/misc/fuse2fs.c b/misc/fuse2fs.c
+index d123eebb1..36e1173e2 100644
+--- a/misc/fuse2fs.c
++++ b/misc/fuse2fs.c
+@@ -1405,6 +1405,12 @@ static int op_rename(const char *from, const char *to
+ 	struct update_dotdot ud;
+ 	int ret = 0;
+ 
++#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
++	/* renameat2 is not supported */
++	if (flags)
++		return -ENOSYS;
++#endif
++
+ 	FUSE2FS_CHECK_CONTEXT(ff);
+ 	fs = ff->fs;
+ 	dbg_printf("%s: renaming %s to %s\n", __func__, from, to);
+-- 
+2.47.2
+

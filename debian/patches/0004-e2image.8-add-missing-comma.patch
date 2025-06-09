@@ -1,0 +1,21 @@
+From: Jakub Wilk <jwilk@jwilk.net>
+Subject: e2image.8: add missing comma
+Origin: https://github.com/tytso/e2fsprogs/commit/5a6ec683252be78ccda7dec7dac530f2ebc46ce6
+---
+ misc/e2image.8.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/misc/e2image.8.in b/misc/e2image.8.in
+index 384ef3023..0be1c751e 100644
+--- a/misc/e2image.8.in
++++ b/misc/e2image.8.in
+@@ -326,5 +326,5 @@ http://e2fsprogs.sourceforge.net.
+ 
+ .SH SEE ALSO
+ .BR dumpe2fs (8),
+-.BR debugfs (8)
++.BR debugfs (8),
+ .BR e2fsck (8)
+-- 
+2.47.2
+

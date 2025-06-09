@@ -1,0 +1,28 @@
+From: "Darrick J. Wong" <djwong@kernel.org>
+Subject: fuse2fs: return -EOPNOTSUPP when we don't recognize a fallocate mode
+
+If we don't recognize a set bit in the mode parameter to fallocate,
+return EOPNOTSUPP to communicate that we don't support that mode instead
+of EINVAL.  This avoids unnecessary failures in generic/521.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/7775293c08d2255e90b1e003ee532d826af52d95
+---
+ misc/fuse2fs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/misc/fuse2fs.c b/misc/fuse2fs.c
+index 2e0463201..1ec7cd22f 100644
+--- a/misc/fuse2fs.c
++++ b/misc/fuse2fs.c
+@@ -3616,7 +3616,7 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
+ 
+ 	/* Catch unknown flags */
+ 	if (mode & ~(FL_PUNCH_HOLE_FLAG | FL_KEEP_SIZE_FLAG))
+-		return -EINVAL;
++		return -EOPNOTSUPP;
+ 
+ 	pthread_mutex_lock(&ff->bfl);
+ 	if (!fs_writeable(fs)) {
+-- 
+2.47.2
+

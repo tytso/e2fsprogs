@@ -1,0 +1,44 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: test: fix expect files which changed after EA bugfix
+
+The logic bug which was fixed in commit 92b6e93936d7 ("e2fsck: fix
+logic bug when there are no references...") resulted in some silent
+fixes that were never logged, and in some cases, corruption that was
+not cleaned up.   Fix the tests so that they pass as expected.
+
+Fixes: 92b6e93936d7 ("e2fsck: fix logic bug when there are no references..."
+Origin: https://github.com/tytso/e2fsprogs/commit/ddd4f796d9dfdb80e5639ca8411e8e4891d3c7f1
+---
+ tests/f_ea_inode_disconnected/expect.1 | 2 ++
+ tests/f_ea_inode_self_ref/expect.1     | 2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tests/f_ea_inode_disconnected/expect.1 b/tests/f_ea_inode_disconnected/expect.1
+index afc77aea6..539dc5ef9 100644
+--- a/tests/f_ea_inode_disconnected/expect.1
++++ b/tests/f_ea_inode_disconnected/expect.1
+@@ -2,6 +2,8 @@ Pass 1: Checking inodes, blocks, and sizes
+ Pass 2: Checking directory structure
+ Pass 3: Checking directory connectivity
+ Pass 4: Checking reference counts
++Regular filesystem inode 13 has EA_INODE flag set. Clear? yes
++
+ Unattached inode 13
+ Connect to /lost+found? yes
+ 
+diff --git a/tests/f_ea_inode_self_ref/expect.1 b/tests/f_ea_inode_self_ref/expect.1
+index 35bea1417..f94c04d96 100644
+--- a/tests/f_ea_inode_self_ref/expect.1
++++ b/tests/f_ea_inode_self_ref/expect.1
+@@ -7,8 +7,6 @@ Clear? yes
+ Pass 2: Checking directory structure
+ Pass 3: Checking directory connectivity
+ Pass 4: Checking reference counts
+-Regular filesystem inode 16 has EA_INODE flag set. Clear? yes
+-
+ Pass 5: Checking group summary information
+ Block bitmap differences:  -20
+ Fix? yes
+-- 
+2.47.2
+

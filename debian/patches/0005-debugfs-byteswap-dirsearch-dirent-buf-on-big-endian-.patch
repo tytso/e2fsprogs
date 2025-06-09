@@ -1,0 +1,40 @@
+From: Brian Foster <bfoster@redhat.com>
+Subject: debugfs: byteswap dirsearch dirent buf on big endian systems
+
+fstests test ext4/048 fails on big endian systems due to broken
+debugfs dirsearch functionality. On an s390x system and 4k block
+size, the dirsearch command seems to hang indefinitely. On the same
+system with a 1k block size, the command fails to locate an existing
+entry and causes the test to fail due to unexpected results.
+
+The cause of the dirsearch failure is lack of byte swapping of the
+on-disk (little endian) dirent buffer before attempting to iterate
+entries in the given block. This leads to garbage record and name
+length values, for example. To resolve this problem, byte swap the
+directory buffer on big endian systems.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/4be42019388d76c933e3b2ea80284aaf5b8eaecb
+---
+ debugfs/htree.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/debugfs/htree.c b/debugfs/htree.c
+index a10081507..4ea8f30b3 100644
+--- a/debugfs/htree.c
++++ b/debugfs/htree.c
+@@ -482,6 +482,12 @@ static int search_dir_block(ext2_filsys fs, blk64_t *blocknr,
+ 		return BLOCK_ABORT;
+ 	}
+ 
++#ifdef WORDS_BIGENDIAN
++	errcode = ext2fs_dirent_swab_in(fs, p->buf, 0);
++	if (errcode)
++		return BLOCK_ABORT;
++#endif
++
+ 	while (offset < fs->blocksize) {
+ 		dirent = (struct ext2_dir_entry *) (p->buf + offset);
+ 		errcode = ext2fs_get_rec_len(fs, dirent, &rec_len);
+-- 
+2.47.2
+

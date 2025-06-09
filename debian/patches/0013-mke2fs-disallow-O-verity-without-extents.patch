@@ -1,0 +1,34 @@
+From: Allison Karlitskaya <allison.karlitskaya@redhat.com>
+Subject: mke2fs: disallow -O verity without extents
+
+Similar to 64-bit support, fs-verity support requires extents, so don't
+allow to create a filesystem that has -O verity unless it also supports
+extents.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/03fa1a5ee55d0653f5931cea3cab760599bab216
+---
+ misc/mke2fs.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/misc/mke2fs.c b/misc/mke2fs.c
+index f24076bc1..017838d43 100644
+--- a/misc/mke2fs.c
++++ b/misc/mke2fs.c
+@@ -2385,6 +2385,14 @@ profile_error:
+ 		exit(1);
+ 	}
+ 
++	/* fs-verity support requires extents */
++	if (ext2fs_has_feature_verity(&fs_param) &&
++	    !ext2fs_has_feature_extents(&fs_param)) {
++		printf("%s", _("Extents MUST be enabled for fs-verity "
++			       "support.  Pass -O extents to rectify.\n"));
++		exit(1);
++	}
++
+ 	/* Set first meta blockgroup via an environment variable */
+ 	/* (this is mostly for debugging purposes) */
+ 	if (ext2fs_has_feature_meta_bg(&fs_param) &&
+-- 
+2.47.2
+

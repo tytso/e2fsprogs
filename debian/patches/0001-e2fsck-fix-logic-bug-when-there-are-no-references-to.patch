@@ -1,0 +1,36 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: e2fsck: fix logic bug when there are no references to an EA inode
+
+There was a boolean logic error which, among other things, could cause
+an attempt to modify an inode in e2fsck -n mode:
+
+e2fsck 1.47.2 (1-Jan-2025)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+ext2fs_write_inode: Attempt to write to filesystem opened read-only while writing inode 14 in pass4
+e2fsck: aborted
+
+Fixes: 849a9e6e133a ("e2fsck: add more checks for ea inode consistency")
+Origin: https://github.com/tytso/e2fsprogs/commit/92b6e93936d7a0f6d7ce7a9f142e2c0ee9afbeaf
+---
+ e2fsck/pass4.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/e2fsck/pass4.c b/e2fsck/pass4.c
+index cf0cf7c47..cee3be64b 100644
+--- a/e2fsck/pass4.c
++++ b/e2fsck/pass4.c
+@@ -120,7 +120,7 @@ static void check_ea_inode(e2fsck_t ctx, ext2_ino_t i, ext2_ino_t *last_ino,
+ 		 * will get attached to lost+found so clear EA_INODE_FL.
+ 		 * Otherwise this is likely a spuriously set flag so clear it.
+ 		 */
+-		if (*link_counted == 0 ||
++		if (*link_counted == 0 &&
+ 		    fix_problem(ctx, PR_4_EA_INODE_SPURIOUS_FLAG, &pctx)) {
+ 			/* Clear EA_INODE_FL (likely a normal file) */
+ 			inode->i_flags &= ~EXT4_EA_INODE_FL;
+-- 
+2.47.2
+

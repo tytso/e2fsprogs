@@ -1,0 +1,123 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: libext2fs: teach ext2fs_extent_set_bmap() to update extents more optimally
+
+When programs like resize2fs or e2fsck relocates all of the blocks in
+an extent one at a time, the ext2fs_extent_set_bmap() works by
+initially adding a new extent and then moving mapping from the old
+extent to the new extent.  For example:
+
+t=1   EXTENTS: (0-2) 1152-1154
+
+t=2   EXTENTS: (0) 1136, (1-2) 1153-1154
+
+t=3   EXTENTS: (0-1) 1136-1137, (2) 1154
+
+Unfortunately, previously, when the last block is updated, the
+resulting extent tree will have two extents instead of one, like this:
+
+t=4   EXTENTS: (0-1) 1136-1137, (2) 1138
+
+With this commit, the resulting extent tree will be more optimally
+represented with a single extent:
+
+t=4   EXTENTS: (0-2) 1136-1138
+
+The optimization in this commit solves the prolem reproted at:
+https://github.com/tytso/e2fsprogs/issues/146
+
+In that case, the file had a very large, complex (fragmented) extent
+tree, and resize2fs needed to relcate all of its blocks as part of a
+off-line shrink, the lack of the optimization led to an extent block
+overflowing, resulting in the old extent (the one which originally
+mapped logical block 2507128 to physical block 389065080) and the new
+extent landing in two different leaf blocks:
+
+ 2/ 2   1/  1  2507128 -  2507128    640097 -    640097      1
+ 2/ 2   1/135  2507128 -  2507128 389065080 - 389065080      1
+
+This resulted a corrupted extent tree block and data loss.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/ea825a53bcb214de7356c2ebd8a10d005613bec3
+---
+ lib/ext2fs/extent.c       | 25 ++++++++++++++++++++++++-
+ tests/f_badcluster/expect |  8 ++++----
+ 2 files changed, 28 insertions(+), 5 deletions(-)
+
+diff --git a/lib/ext2fs/extent.c b/lib/ext2fs/extent.c
+index 82e75ccd7..c4b95741e 100644
+--- a/lib/ext2fs/extent.c
++++ b/lib/ext2fs/extent.c
+@@ -1444,8 +1444,31 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
+ 		printf("(re/un)mapping only block in extent\n");
+ #endif
+ 		if (physical) {
+-			retval = ext2fs_extent_replace(handle, 0, &newextent);
++			if (has_prev &&
++			    (logical == (prev_extent.e_lblk +
++					 prev_extent.e_len)) &&
++			    (physical == (prev_extent.e_pblk +
++					  prev_extent.e_len)) &&
++			    (new_uninit == prev_uninit) &&
++			    ((int) prev_extent.e_len < max_len-1)) {
++				retval = ext2fs_extent_get(handle,
++					EXT2_EXTENT_PREV_LEAF, &prev_extent);
++				if (retval)
++					goto done;
++				prev_extent.e_len++;
++				retval = ext2fs_extent_replace(handle, 0,
++							       &prev_extent);
++				retval = ext2fs_extent_get(handle,
++							   EXT2_EXTENT_NEXT_LEAF,
++							   &extent);
++				if (retval)
++					goto done;
++				goto delete_node;
++
++			} else
++				retval = ext2fs_extent_replace(handle, 0, &newextent);
+ 		} else {
++		delete_node:
+ 			retval = ext2fs_extent_delete(handle, 0);
+ 			if (retval)
+ 				goto done;
+diff --git a/tests/f_badcluster/expect b/tests/f_badcluster/expect
+index b44e65d00..fe1c1718f 100644
+--- a/tests/f_badcluster/expect
++++ b/tests/f_badcluster/expect
+@@ -119,7 +119,7 @@ ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ EXTENTS:
+-(0-1):1136-1137, (2):1138
++(0-2):1136-1138
+ debugfs: stat /b
+ Inode: 13   Type: regular    Mode:  0644   Flags: 0x80000
+ Generation: 1117152158    Version: 0x00000001
+@@ -143,7 +143,7 @@ ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ EXTENTS:
+-(0-1):1216-1217, (2):1218
++(0-2):1216-1218
+ debugfs: stat /d
+ Inode: 15   Type: regular    Mode:  0644   Flags: 0x80000
+ Generation: 1117152160    Version: 0x00000001
+@@ -178,7 +178,7 @@ ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ EXTENTS:
+-(0):1232, (1):1233, (2):1234
++(0-2):1232-1234
+ debugfs: stat /g
+ Inode: 18   Type: regular    Mode:  0644   Flags: 0x80000
+ Generation: 1117152163    Version: 0x00000001
+@@ -190,5 +190,5 @@ ctime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ atime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ mtime: 0x539ff5b2 -- Tue Jun 17 08:00:50 2014
+ EXTENTS:
+-(0-2):1680-1682, (3):1683
++(0-3):1680-1683
+ debugfs: quit
+-- 
+2.47.2
+

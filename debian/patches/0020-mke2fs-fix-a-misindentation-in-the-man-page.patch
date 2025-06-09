@@ -1,0 +1,26 @@
+From: Benno Schulenberg <bensberg@telfort.nl>
+Subject: mke2fs: fix a misindentation in the man page
+
+Problem existed since commit 3c22bf7e70 from twelve years ago.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/4d6cfa2557de7d0878fed3203ac36d3e91df183f
+---
+ misc/mke2fs.8.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/misc/mke2fs.8.in b/misc/mke2fs.8.in
+index 4ff564baa..13ddef47b 100644
+--- a/misc/mke2fs.8.in
++++ b/misc/mke2fs.8.in
+@@ -714,7 +714,7 @@ by commas, that are to be enabled.  To disable a feature, simply
+ prefix the feature name with a caret ('^') character.
+ Features with dependencies will not be removed successfully.
+ The pseudo-file system feature "none" will clear all file system features.
+-.TP
++.sp
+ For more information about the features which can be set, please see
+ the manual page
+ .BR ext4 (5).
+-- 
+2.47.2
+

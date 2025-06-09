@@ -1,0 +1,45 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: debugfs: return after printing the usage message in the e2freefrag command
+
+Origin: https://github.com/tytso/e2fsprogs/commit/0c675a67c5684252e3a228c824b0accb9f3ab5d7
+---
+ misc/e2freefrag.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/misc/e2freefrag.c b/misc/e2freefrag.c
+index c66e8f22f..05f703966 100644
+--- a/misc/e2freefrag.c
++++ b/misc/e2freefrag.c
+@@ -409,6 +409,9 @@ int main(int argc, char *argv[])
+ 				fprintf(stderr, "%s: bad chunk size '%s'\n",
+ 					progname, optarg);
+ 				usage(progname);
++#ifdef DEBUFS
++				return;
++#endif
+ 			}
+ 			if (chunk_info.chunkbytes &
+ 			    (chunk_info.chunkbytes - 1)) {
+@@ -421,6 +424,9 @@ int main(int argc, char *argv[])
+ 		case 'h':
+ 		default:
+ 			usage(progname);
++#ifdef DEBUGFS
++			return;
++#endif
+ 			break;
+ 		}
+ 	}
+@@ -429,6 +435,9 @@ int main(int argc, char *argv[])
+ 	if (optind == argc) {
+ 		fprintf(stderr, "%s: missing device name.\n", progname);
+ 		usage(progname);
++#ifdef DEBUGFS
++		return;
++#endif
+ 	}
+ 
+ 	device_name = argv[optind];
+-- 
+2.47.2
+

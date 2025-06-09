@@ -1,0 +1,30 @@
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: mke2fs: add range checks for -E desc_size
+
+Prevent the user from specifying group descriptor that result in
+invalid/corrupted file systems.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/326e8ab43503dd9f44338754c84cb03a725ecc49
+---
+ misc/mke2fs.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/misc/mke2fs.c b/misc/mke2fs.c
+index 017838d43..1b7399a51 100644
+--- a/misc/mke2fs.c
++++ b/misc/mke2fs.c
+@@ -883,7 +883,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
+ 				continue;
+ 			}
+ 			ulong = strtoul(arg, &p, 0);
+-			if (*p || (ulong & (ulong - 1))) {
++			if (*p ||
++			    (ulong < EXT2_MIN_DESC_SIZE_64BIT) ||
++			    (ulong > EXT2_MAX_DESC_SIZE) ||
++			    (ulong & (ulong - 1))) {
+ 				fprintf(stderr,
+ 					_("Invalid desc_size: '%s'\n"), arg);
+ 				r_usage++;
+-- 
+2.47.2
+

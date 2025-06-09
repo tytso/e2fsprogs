@@ -1,0 +1,34 @@
+From: "Darrick J. Wong" <djwong@kernel.org>
+Subject: fuse2fs: update new child timestamps during mkdir/symlink
+
+These two file creation functions fail to update the timestamps of the
+new child file, unlike the others (mknod/creat).  Fix that.
+
+Origin: https://github.com/tytso/e2fsprogs/commit/f73fbf8e2cee1f2d49f4e7573eadb9f1cf141879
+---
+ misc/fuse2fs.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/misc/fuse2fs.c b/misc/fuse2fs.c
+index 238804dd4..d123eebb1 100644
+--- a/misc/fuse2fs.c
++++ b/misc/fuse2fs.c
+@@ -976,6 +976,7 @@ static int op_mkdir(const char *path, mode_t mode)
+ 	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID) |
+ 		       parent_sgid;
+ 	inode.i_generation = ff->next_generation++;
++	init_times(&inode);
+ 
+ 	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
+ 				      sizeof(inode));
+@@ -1349,6 +1350,7 @@ static int op_symlink(const char *src, const char *dest)
+ 	inode.i_gid = ctxt->gid;
+ 	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+ 	inode.i_generation = ff->next_generation++;
++	init_times(&inode);
+ 
+ 	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
+ 				      sizeof(inode));
+-- 
+2.47.2
+
