@@ -1,0 +1,68 @@
+From c4dad69036bbc060265931416a1b963d79c60a15 Mon Sep 17 00:00:00 2001
+From: Theodore Ts'o <tytso@mit.edu>
+Date: Mon, 9 Jun 2025 20:55:12 -0400
+Subject: [PATCH 00/22] *** SUBJECT HERE ***
+
+*** BLURB HERE ***
+
+Allison Karlitskaya (1):
+  mke2fs: disallow -O verity without extents
+
+Benno Schulenberg (1):
+  mke2fs: fix a misindentation in the man page
+
+Brian Foster (1):
+  debugfs: byteswap dirsearch dirent buf on big endian systems
+
+Darrick J. Wong (6):
+  fuse2fs: refuse unsupported features
+  fuse2fs: return -EOPNOTSUPP when we don't recognize a fallocate mode
+  fuse2fs: remove posix acl translation
+  fuse2fs: clamp timestamps that are being written to disk
+  fuse2fs: update new child timestamps during mkdir/symlink
+  fuse2fs: disable renameat2
+
+Jakub Wilk (1):
+  e2image.8: add missing comma
+
+Theodore Ts'o (12):
+  e2fsck: fix logic bug when there are no references to an EA inode
+  test: fix expect files which changed after EA bugfix
+  libext2fs: teach ext2fs_extent_set_bmap() to update extents more
+    optimally
+  debugfs: abort reading a file on failure when dumping out a file
+  e2fsck: fix e2fsck -E unshare_blocks when there are no shared blocks
+  e2freefrag: require that the chunksize must be greater than 0
+  mke2fs: add range checks for -E desc_size
+  debugfs: return after printing the usage message in the e2freefrag
+    command
+  debian: remove physical address of the FSF from the copyright file
+  debian: add a Built-Using field to the e2fsck-static package
+  libext2fs: fix a extent tree corruption bug in
+    ext2fs_extent_set_bmap()
+  libext2fs: fix integer overflow in ext2fs_punch() when releasing more
+    than 2**31 blocks
+
+ debian/control                         |   1 +
+ debian/copyright                       |   8 +-
+ debian/rules                           |   2 +-
+ debugfs/dump.c                         |   4 +-
+ debugfs/htree.c                        |   6 +
+ e2fsck/pass1.c                         |   5 +
+ e2fsck/pass4.c                         |   2 +-
+ lib/ext2fs/ext2_fs.h                   |   4 +
+ lib/ext2fs/extent.c                    |  43 +++-
+ lib/ext2fs/punch.c                     |   8 +-
+ misc/e2freefrag.c                      |  11 +-
+ misc/e2image.8.in                      |   2 +-
+ misc/fuse2fs.c                         | 336 +++++--------------------
+ misc/mke2fs.8.in                       |   2 +-
+ misc/mke2fs.c                          |  13 +-
+ tests/f_badcluster/expect              |   8 +-
+ tests/f_ea_inode_disconnected/expect.1 |   2 +
+ tests/f_ea_inode_self_ref/expect.1     |   2 -
+ 18 files changed, 155 insertions(+), 304 deletions(-)
+
+-- 
+2.47.2
+
