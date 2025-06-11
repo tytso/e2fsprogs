@@ -276,6 +276,11 @@ try_merge:
 				max_uninit_len : max_init_len))
 			goto try_left;
 
+		/* Would they even be physically contiguous if merged? */
+		if (left_ext->e_pblk + left_ext->e_len + range_len !=
+				right_ext->e_pblk)
+			goto try_left;
+
 		err = ext2fs_extent_goto(handle, left_ext->e_lblk);
 		if (err)
 			goto try_left;
