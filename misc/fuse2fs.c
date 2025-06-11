@@ -3307,8 +3307,11 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 		inode.i_flags &= ~EXT4_EXTENTS_FL;
 		ret = ext2fs_extent_open2(fs, child,
 					  EXT2_INODE(&inode), &handle);
-		if (ret)
-			return ret;
+		if (ret) {
+			ret = translate_error(fs, child, err);
+			goto out2;
+		}
+
 		ext2fs_extent_free(handle);
 	}
 
