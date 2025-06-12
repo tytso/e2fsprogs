@@ -2639,15 +2639,13 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 		file->open_flags |= EXT2_FILE_WRITE;
 		break;
 	}
-	if (fp->flags & O_APPEND) {
-		/* the kernel doesn't allow truncation of an append-only file */
-		if (fp->flags & O_TRUNC) {
-			ret = -EPERM;
-			goto out;
-		}
 
+	/*
+	 * If the caller wants to truncate the file, we need to ask for full
+	 * write access even if the caller claims to be appending.
+	 */
+	if ((fp->flags & O_APPEND) && !(fp->flags & O_TRUNC))
 		check |= A_OK;
-	}
 
 	detect_linux_executable_open(fp->flags, &check, &file->open_flags);
 
