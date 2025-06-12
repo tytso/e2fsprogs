@@ -4659,9 +4659,9 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 	int is_err = 0;
 
 	/* Translate ext2 error to unix error code */
-	if (err < EXT2_ET_BASE)
-		goto no_translation;
 	switch (err) {
+	case 0:
+		break;
 	case EXT2_ET_NO_MEMORY:
 	case EXT2_ET_TDB_ERR_OOM:
 		ret = -ENOMEM;
@@ -4755,11 +4755,10 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		break;
 	default:
 		is_err = 1;
-		ret = -EIO;
+		ret = (err < 256) ? -err : -EIO;
 		break;
 	}
 
-no_translation:
 	if (!is_err)
 		return ret;
 
