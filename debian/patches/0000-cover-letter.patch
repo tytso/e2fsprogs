@@ -25,7 +25,7 @@ Darrick J. Wong (6):
 Jakub Wilk (1):
   e2image.8: add missing comma
 
-Theodore Ts'o (12):
+Theodore Ts'o (13):
   e2fsck: fix logic bug when there are no references to an EA inode
   test: fix expect files which changed after EA bugfix
   libext2fs: teach ext2fs_extent_set_bmap() to update extents more
@@ -42,9 +42,11 @@ Theodore Ts'o (12):
     ext2fs_extent_set_bmap()
   libext2fs: fix integer overflow in ext2fs_punch() when releasing more
     than 2**31 blocks
+  debian: fix typo in fuse2fs.postrm which breaks a /usr-move mitigation
 
  debian/control                         |   1 +
  debian/copyright                       |   8 +-
+ debian/fuse2fs.postrm                  |   2 +-
  debian/rules                           |   2 +-
  debugfs/dump.c                         |   4 +-
  debugfs/htree.c                        |   6 +
@@ -61,7 +63,7 @@ Theodore Ts'o (12):
  tests/f_badcluster/expect              |   8 +-
  tests/f_ea_inode_disconnected/expect.1 |   2 +
  tests/f_ea_inode_self_ref/expect.1     |   2 -
- 18 files changed, 155 insertions(+), 304 deletions(-)
+ 18 files changed, 156 insertions(+), 305 deletions(-)
 
 -- 
 2.47.2

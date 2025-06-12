@@ -37,7 +37,7 @@ extent landing in two different leaf blocks:
 
 This resulted a corrupted extent tree block and data loss.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/ea825a53bcb214de7356c2ebd8a10d005613bec3
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/ea825a53bcb214de7356c2ebd8a10d005613bec3
 ---
  lib/ext2fs/extent.c       | 25 ++++++++++++++++++++++++-
  tests/f_badcluster/expect |  8 ++++----

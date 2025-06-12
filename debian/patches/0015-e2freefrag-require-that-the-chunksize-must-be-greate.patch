@@ -5,7 +5,7 @@ Subject: e2freefrag: require that the chunksize must be greater than 0
 message if the user specifies a zero chunksize.
 
 Addresses-Coverity-Bug: 1633767
-Origin: https://github.com/tytso/e2fsprogs/commit/3e059df08de94abde1ddd82008d0658584a35e5e
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/3e059df08de94abde1ddd82008d0658584a35e5e
 ---
  misc/e2freefrag.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

@@ -1,7 +1,7 @@
 From: Theodore Ts'o <tytso@mit.edu>
 Subject: debugfs: return after printing the usage message in the e2freefrag command
 
-Origin: https://github.com/tytso/e2fsprogs/commit/0c675a67c5684252e3a228c824b0accb9f3ab5d7
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/0c675a67c5684252e3a228c824b0accb9f3ab5d7
 ---
  misc/e2freefrag.c | 9 +++++++++
  1 file changed, 9 insertions(+)

@@ -7,7 +7,7 @@ since e2fsck_pass1_dupblocks() is never called.  Fix this by adding a
 check in e2fsck_pass1() to clear the shared blocks flag.
 
 Bug: https://github.com/tytso/e2fsprogs/issues/218
-Origin: https://github.com/tytso/e2fsprogs/commit/707af4359e132bc415c3f6339f4ced9f23b28c0b
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/707af4359e132bc415c3f6339f4ced9f23b28c0b
 ---
  e2fsck/pass1.c | 5 +++++
  1 file changed, 5 insertions(+)

@@ -10,7 +10,7 @@ situation.
 
 [1] https://github.com/tytso/e2fsprogs/pull/149
 
-Origin: https://github.com/tytso/e2fsprogs/commit/51d68472456d22b6e64159244be63bce51473691
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/51d68472456d22b6e64159244be63bce51473691
 ---
  debugfs/dump.c | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)

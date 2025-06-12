@@ -5,7 +5,7 @@ If we don't recognize a set bit in the mode parameter to fallocate,
 return EOPNOTSUPP to communicate that we don't support that mode instead
 of EINVAL.  This avoids unnecessary failures in generic/521.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/7775293c08d2255e90b1e003ee532d826af52d95
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/7775293c08d2255e90b1e003ee532d826af52d95
 ---
  misc/fuse2fs.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

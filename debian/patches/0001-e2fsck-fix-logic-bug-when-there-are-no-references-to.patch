@@ -13,7 +13,7 @@ ext2fs_write_inode: Attempt to write to filesystem opened read-only while writin
 e2fsck: aborted
 
 Fixes: 849a9e6e133a ("e2fsck: add more checks for ea inode consistency")
-Origin: https://github.com/tytso/e2fsprogs/commit/92b6e93936d7a0f6d7ce7a9f142e2c0ee9afbeaf
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/92b6e93936d7a0f6d7ce7a9f142e2c0ee9afbeaf
 ---
  e2fsck/pass4.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

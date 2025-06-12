@@ -7,7 +7,7 @@ fixes that were never logged, and in some cases, corruption that was
 not cleaned up.   Fix the tests so that they pass as expected.
 
 Fixes: 92b6e93936d7 ("e2fsck: fix logic bug when there are no references..."
-Origin: https://github.com/tytso/e2fsprogs/commit/ddd4f796d9dfdb80e5639ca8411e8e4891d3c7f1
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/ddd4f796d9dfdb80e5639ca8411e8e4891d3c7f1
 ---
  tests/f_ea_inode_disconnected/expect.1 | 2 ++
  tests/f_ea_inode_self_ref/expect.1     | 2 --

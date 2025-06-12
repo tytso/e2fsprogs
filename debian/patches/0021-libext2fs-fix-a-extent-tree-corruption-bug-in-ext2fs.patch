@@ -20,7 +20,7 @@ ext2fs_extents_fix_parents():
   ext2fs_extent_goto() after calling this function.  Or simply don't map
   the same lblk with two extents, ever.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/b914701223255c116745a11f30563652c9fdbb4b
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/b914701223255c116745a11f30563652c9fdbb4b
 ---
  lib/ext2fs/extent.c | 18 +++++++++---------
  1 file changed, 9 insertions(+), 9 deletions(-)

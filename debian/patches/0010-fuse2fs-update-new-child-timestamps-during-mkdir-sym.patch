@@ -4,7 +4,7 @@ Subject: fuse2fs: update new child timestamps during mkdir/symlink
 These two file creation functions fail to update the timestamps of the
 new child file, unlike the others (mknod/creat).  Fix that.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/f73fbf8e2cee1f2d49f4e7573eadb9f1cf141879
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/f73fbf8e2cee1f2d49f4e7573eadb9f1cf141879
 ---
  misc/fuse2fs.c | 2 ++
  1 file changed, 2 insertions(+)

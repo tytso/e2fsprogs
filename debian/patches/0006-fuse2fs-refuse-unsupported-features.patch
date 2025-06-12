@@ -4,7 +4,7 @@ Subject: fuse2fs: refuse unsupported features
 Don't mount a filesystem with superblock features that we don't actually
 know how to support.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/ccbc6f24fed095b28f9faa7b575159e49787fae0
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/ccbc6f24fed095b28f9faa7b575159e49787fae0
 ---
  misc/fuse2fs.c | 20 ++++++++++++++++++++
  1 file changed, 20 insertions(+)

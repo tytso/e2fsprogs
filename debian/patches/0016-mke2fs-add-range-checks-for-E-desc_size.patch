@@ -4,7 +4,7 @@ Subject: mke2fs: add range checks for -E desc_size
 Prevent the user from specifying group descriptor that result in
 invalid/corrupted file systems.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/326e8ab43503dd9f44338754c84cb03a725ecc49
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/326e8ab43503dd9f44338754c84cb03a725ecc49
 ---
  misc/mke2fs.c | 5 ++++-
  1 file changed, 4 insertions(+), 1 deletion(-)

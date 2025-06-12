@@ -5,7 +5,7 @@ Similar to 64-bit support, fs-verity support requires extents, so don't
 allow to create a filesystem that has -O verity unless it also supports
 extents.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/03fa1a5ee55d0653f5931cea3cab760599bab216
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/03fa1a5ee55d0653f5931cea3cab760599bab216
 ---
  misc/mke2fs.c | 8 ++++++++
  1 file changed, 8 insertions(+)

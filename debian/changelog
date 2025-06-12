@@ -1,3 +1,10 @@
+e2fsprogs (1.47.2-3) unstable; urgency=medium
+
+  * Fix a typo in fuse2fs.postrm which breaks /usr-move mitigation
+    (Closes: #1107595)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 10 Jun 2025 14:59:29 -0400
+
 e2fsprogs (1.47.2-2) unstable; urgency=medium
 
   * Fix integer overflow bug which resulted in fuse2fs failing to delete

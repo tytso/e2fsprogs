@@ -1,6 +1,6 @@
 From: Theodore Ts'o <tytso@mit.edu>
 Subject: libext2fs: fix integer overflow in ext2fs_punch() when releasing more than 2**31 blocks
-Origin: https://github.com/tytso/e2fsprogs/commit/34b2a4a1f9794498ca403393003cc5840c240d42
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/34b2a4a1f9794498ca403393003cc5840c240d42
 Bug-Debian: http://bugs.debian.org/1106241
 ---
  lib/ext2fs/punch.c | 8 ++++----

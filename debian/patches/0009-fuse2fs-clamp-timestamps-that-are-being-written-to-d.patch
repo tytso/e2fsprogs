@@ -5,7 +5,7 @@ Clamp the timestamps that we write to disk to the minimum and maximum
 values permitted given the ondisk format.  This fixes y2038 support, as
 tested by generic/402.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/e13395876d63cebf008101b934ee9e5cdaae0150
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/e13395876d63cebf008101b934ee9e5cdaae0150
 ---
  lib/ext2fs/ext2_fs.h |  4 ++++
  misc/fuse2fs.c       | 39 ++++++++++++++++++++++++++++++++-------

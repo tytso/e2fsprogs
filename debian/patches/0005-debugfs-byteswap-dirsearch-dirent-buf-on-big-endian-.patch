@@ -13,7 +13,7 @@ entries in the given block. This leads to garbage record and name
 length values, for example. To resolve this problem, byte swap the
 directory buffer on big endian systems.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/4be42019388d76c933e3b2ea80284aaf5b8eaecb
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/4be42019388d76c933e3b2ea80284aaf5b8eaecb
 ---
  debugfs/htree.c | 6 ++++++
  1 file changed, 6 insertions(+)

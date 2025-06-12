@@ -6,7 +6,7 @@ upcall, so we actually have to filter out nonzero flags because
 otherwise we do a regular rename for a RENAME_EXCHANGE/WHITEOUT, which
 is not what the user asked for.
 
-Origin: https://github.com/tytso/e2fsprogs/commit/b431abbc8fe0fd1de4e414aae3520c4c19411048
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/b431abbc8fe0fd1de4e414aae3520c4c19411048
 ---
  misc/fuse2fs.c | 6 ++++++
  1 file changed, 6 insertions(+)

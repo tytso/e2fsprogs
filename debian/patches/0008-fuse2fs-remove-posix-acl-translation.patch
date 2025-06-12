@@ -5,7 +5,7 @@ Remove the POSIX ACL format translation since libext2fs takes care of
 that now.
 
 Fixes: 0ee1eaf70c257e ("libext2fs: translate internal ext4 acl to Posix ACL in ext2fs_xattr_[sg]et()")
-Origin: https://github.com/tytso/e2fsprogs/commit/0111bdb70a9c460052387111414a2e2dc8c06822
+Origin: upstream, https://github.com/tytso/e2fsprogs/commit/0111bdb70a9c460052387111414a2e2dc8c06822
 ---
  misc/fuse2fs.c | 267 +------------------------------------------------
  1 file changed, 4 insertions(+), 263 deletions(-)
