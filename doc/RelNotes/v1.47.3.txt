@@ -1,5 +1,5 @@
-E2fsprogs 1.47.3 (May 28, 2025)
-===============================
+E2fsprogs 1.47.3 (June 12, 2025)
+================================
 
 Updates/Fixes since v1.47.2:
 
@@ -18,6 +18,10 @@ Add support to fuse2fs for the setting file attributes via fsxattr,
 including support for nanosecond timestamps.
 
 Add support to fuse2fs to set newer chattr flags.
+
+Add a lockfile command-line option to fuse2fs which is useful for
+scripts that need to know when fuse2fs is done modifying the file system
+after it is unmounted.
 
 Add mke2fs.conf knobs to control whether the RAID stripe or stride sizes
 from the storage device information depending on whether the storage
@@ -47,6 +51,13 @@ correctly after the mkdir(2) and symlink(2) operations.
 Fix fuse2fs's error code handling for fallocate(), truncate() and
 removexattr().
 
+Fix an integer overflow bug which resulted in fuse2fs failing to delete
+very large files.  (Addresses Debian Bug: #1106241)
+
+Fix a (hard to reproduce) extent tree corruption bug which could be
+triggered by resize2fs or fuse2fs if the extent tree was especially
+complex
+
 Improve fuse2fs's handling of corrupted file systems.
 
 Fuse2fs doesn't support renameat2()'s RENAME_EXCHANGE or RENAME_WHITEOUT
@@ -67,6 +78,15 @@ control decisions to the kernel.
 
 Prevent fuse2fs from mounting file systems which have features that
 fuse2fs can't deal with.
+
+Fix error path handling in fuse2fs when servicing an op_create request.
+
+Fix spurious warnings from fuse2fs while servicing an op_fallocate request.
+
+Fix fuse2fs to correctly translate system errors from libext2fs to the
+negative error codes expected by the FUSE kernel driver.  There aren't
+many; but in some cases, when the file system is corrupted, libext2fs
+will return EOVERFLOW and we sent a nonsense error to the kernel.
 
 Optimize ext2fs_extent_set_bmap() to avoid fragmenting the extent tree.
 This fixes a problem where resize2fs is trying to relocate all of the
@@ -125,4 +145,8 @@ Fixed potention races in the Makefiles which could show up when using
 
 Fixed build failures when libarchive is not available.
 
-Update Dutch, Malay, Portuguese, and Serbian translations.
+Fixed various Debian packaging issues.  (Addresses Debian Bugs:
+#1106799, #1107595)
+
+Update Czech, Chinese, Dutch, French, Malay, Portuguese, Polish,
+Romainian, Serbian, Spanish, Swedish, and Ukrainian translations.

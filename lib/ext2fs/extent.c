@@ -1531,6 +1531,15 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 #ifdef DEBUG
 		printf("(re/un)mapping first block in extent\n");
 #endif
+		extent.e_pblk++;
+		extent.e_lblk++;
+		extent.e_len--;
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+		retval = ext2fs_extent_fix_parents(handle);
+		if (retval)
+			goto done;
 		if (physical) {
 			if (has_prev &&
 			    (logical == (prev_extent.e_lblk +
@@ -1560,15 +1569,6 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			if (retval)
 				goto done;
 		}
-		extent.e_pblk++;
-		extent.e_lblk++;
-		extent.e_len--;
-		retval = ext2fs_extent_replace(handle, 0, &extent);
-		if (retval)
-			goto done;
-		retval = ext2fs_extent_fix_parents(handle);
-		if (retval)
-			goto done;
 	} else {
 		__u32	save_length;
 		blk64_t	save_lblk;

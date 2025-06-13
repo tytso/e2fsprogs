@@ -641,7 +641,7 @@ retry:
 		struct dir_context ctx;
 
 		lblk = (inode.i_size / fs->blocksize) - 1;
-		retval = ext2fs_bmap2(fs, ino, &inode, NULL, 0, lblk,
+		retval = ext2fs_bmap2(fs, dir, &inode, NULL, 0, lblk,
 				      NULL, &pblk);
 		if (retval)
 			return retval;

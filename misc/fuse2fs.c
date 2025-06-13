@@ -90,6 +90,20 @@
 #define XATTR_SECURITY_PREFIX_LEN (sizeof (XATTR_SECURITY_PREFIX) - 1)
 #endif
 
+/*
+ * Linux and MacOS implement the setxattr(2) interface, which defines
+ * XATTR_CREATE and XATTR_REPLACE.  However, FreeBSD uses
+ * extattr_set_file(2), which does not have a flags or options
+ * parameter, and does not define XATTR_CREATE and XATTR_REPLACE.
+ */
+#ifndef XATTR_CREATE
+#define XATTR_CREATE 0
+#endif
+
+#ifndef XATTR_REPLACE
+#define XATTR_REPLACE 0
+#endif
+
 #if !defined(EUCLEAN)
 #if !defined(EBADMSG)
 #define EUCLEAN EBADMSG
@@ -99,6 +113,14 @@
 #define EUCLEAN EIO
 #endif
 #endif /* !defined(EUCLEAN) */
+
+#if !defined(ENODATA)
+#ifdef ENOATTR
+#define ENODATA ENOATTR
+#else
+#define ENODATA ENOENT
+#endif
+#endif /* !defined(ENODATA) */
 
 static ext2_filsys global_fs; /* Try not to use this directly */
 
@@ -190,6 +212,7 @@ struct fuse2fs {
 	unsigned long offset;
 	unsigned int next_generation;
 	unsigned long long cache_size;
+	char *lockfile;
 };
 
 #define FUSE2FS_CHECK_MAGIC(fs, ptr, num) do {if ((ptr)->magic != (num)) \
@@ -3284,8 +3307,11 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 		inode.i_flags &= ~EXT4_EXTENTS_FL;
 		ret = ext2fs_extent_open2(fs, child,
 					  EXT2_INODE(&inode), &handle);
-		if (ret)
-			return ret;
+		if (ret) {
+			ret = translate_error(fs, child, err);
+			goto out2;
+		}
+
 		ext2fs_extent_free(handle);
 	}
 
@@ -4209,6 +4235,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("nodelalloc",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
+	FUSE2FS_OPT("lockfile=%s",	lockfile,		0),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -4261,6 +4288,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
 	"    -o norecovery          don't replay the journal\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
+	"    -o lockfile=<file>     file to show that fuse is still using the file system image\n"
 	"    -o kernel              run this as if it were the kernel, which sets:\n"
 	"                           allow_others,default_permissions,suid,dev\n"
 	"    -o directio            use O_DIRECT to read and write the disk\n"
@@ -4387,6 +4415,24 @@ int main(int argc, char *argv[])
 		log_printf(&fctx, "%s\n",
  _("Allowing users to allocate all blocks. This is dangerous!"));
 		fctx.alloc_all_blocks = 1;
+	}
+
+	if(fctx.lockfile) {
+		FILE* lockfile=fopen(fctx.lockfile, "w");
+		if(!lockfile) {
+			fprintf(stderr, "Requested lockfile=%s but couldn't open the file for writing\n", fctx.lockfile);
+			exit(1);
+		}
+		fclose(lockfile);
+		char* resolved = realpath(fctx.lockfile, NULL);
+		if (!resolved) {
+			perror("realpath");
+			fprintf(stderr, "Could not resolve realpath for lockfile=%s\n", fctx.lockfile);
+			unlink(fctx.lockfile);
+			exit(1);
+		}
+		free(fctx.lockfile);
+		fctx.lockfile = resolved;
 	}
 
 	/* Start up the fs (while we still can use stdout) */
@@ -4593,6 +4639,14 @@ out:
 			com_err(argv[0], err, "while closing fs");
 		global_fs = NULL;
 	}
+	if(fctx.lockfile) {
+		err = unlink(fctx.lockfile);
+		if (err)
+			com_err(argv[0], errno, "while unlinking '%s'",
+				fctx.lockfile);
+	}
+	if (fctx.lockfile)
+		free(fctx.lockfile);
 	if (fctx.device)
 		free(fctx.device);
 	fuse_opt_free_args(&args);
@@ -4608,9 +4662,9 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 	int is_err = 0;
 
 	/* Translate ext2 error to unix error code */
-	if (err < EXT2_ET_BASE)
-		goto no_translation;
 	switch (err) {
+	case 0:
+		break;
 	case EXT2_ET_NO_MEMORY:
 	case EXT2_ET_TDB_ERR_OOM:
 		ret = -ENOMEM;
@@ -4649,11 +4703,7 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		ret = -EBUSY;
 		break;
 	case EXT2_ET_EA_KEY_NOT_FOUND:
-#ifdef ENODATA
 		ret = -ENODATA;
-#else
-		ret = -ENOENT;
-#endif
 		break;
 	/* Sometimes fuse returns a garbage file handle pointer to us... */
 	case EXT2_ET_MAGIC_EXT2_FILE:
@@ -4708,11 +4758,10 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		break;
 	default:
 		is_err = 1;
-		ret = -EIO;
+		ret = (err < 256) ? -err : -EIO;
 		break;
 	}
 
-no_translation:
 	if (!is_err)
 		return ret;
 
