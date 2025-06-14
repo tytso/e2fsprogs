@@ -14553,8 +14553,8 @@ fi
 if test "$FUSE_LIB" = "-lfuse3"
 then
 	FUSE_USE_VERSION=35
-	CFLAGS="$CFLAGS $fuse3_CFLAGS"
-	LDFLAGS="$LDFLAGS $fuse3_LDFLAGS"
+	CFLAGS="$fuse3_CFLAGS $CFLAGS"
+	FUSE_LIB="$fuse3_LIBS"
 	       for ac_header in pthread.h fuse.h
 do :
   as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | $as_tr_sh`

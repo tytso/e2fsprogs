@@ -1416,8 +1416,8 @@ AC_SUBST(FUSE_CMT)
 if test "$FUSE_LIB" = "-lfuse3"
 then
 	FUSE_USE_VERSION=35
-	CFLAGS="$CFLAGS $fuse3_CFLAGS"
-	LDFLAGS="$LDFLAGS $fuse3_LDFLAGS"
+	CFLAGS="$fuse3_CFLAGS $CFLAGS"
+	FUSE_LIB="$fuse3_LIBS"
 	AC_CHECK_HEADERS([pthread.h fuse.h], [],
 		[AC_MSG_FAILURE([Cannot find fuse3 fuse2fs headers.])],
 [#define _FILE_OFFSET_BITS	64
