@@ -93,6 +93,8 @@ static void *libarchive_handle;
 
 #if defined(__FreeBSD__)
 #define LIBARCHIVE_SO "libarchive.so.7"
+#elif defined(__APPLE__)
+#define LIBARCHIVE_SO "libarchive.13.dylib"
 #else
 #define LIBARCHIVE_SO "libarchive.so.13"
 #endif
