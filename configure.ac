@@ -1325,9 +1325,18 @@ else
 	AC_MSG_RESULT([Testing for libarchive support (with dlopen)])
 fi]
 ,
-try_libarchive="yes"
-AC_MSG_RESULT([Try testing for libarchive support (with dlopen) by default])
-)
+[
+case "$host_os" in
+    darwin*)
+	try_libarchive="direct"
+	AC_MSG_RESULT([Try testing for libarchive support (with static linking) by default])
+	 ;;
+    *)
+        try_libarchive="yes"
+	AC_MSG_RESULT([Try testing for libarchive support (with dlopen) by default])
+	;;
+esac
+])
 ARCHIVE_LIBS=
 if test -n "$try_libarchive"
 then

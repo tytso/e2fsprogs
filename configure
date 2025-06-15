@@ -13811,9 +13811,19 @@ printf "%s\n" "Testing for libarchive support (with dlopen)" >&6; }
 fi
 
 else $as_nop
-  try_libarchive="yes"
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Try testing for libarchive support (with dlopen) by default" >&5
+
+case "$host_os" in
+    darwin*)
+	try_libarchive="direct"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Try testing for libarchive support (with static linking) by default" >&5
+printf "%s\n" "Try testing for libarchive support (with static linking) by default" >&6; }
+	 ;;
+    *)
+        try_libarchive="yes"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Try testing for libarchive support (with dlopen) by default" >&5
 printf "%s\n" "Try testing for libarchive support (with dlopen) by default" >&6; }
+	;;
+esac
 
 fi
 
