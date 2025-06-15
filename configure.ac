@@ -1328,23 +1328,30 @@ fi]
 try_libarchive="yes"
 AC_MSG_RESULT([Try testing for libarchive support (with dlopen) by default])
 )
-ARCHIVE_LIB=
+ARCHIVE_LIBS=
 if test -n "$try_libarchive"
 then
-    AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIB=-larchive
-    AC_CHECK_HEADERS([archive.h])])
-    if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
-        ARCHIVE_LIB=$DLOPEN_LIB
-	AC_DEFINE(CONFIG_DLOPEN_LIBARCHIVE, 1,
+    PKG_CHECK_MODULES([ARCHIVE],[libarchive],
+    [
+	AC_MSG_RESULT([pkg-config found libarchive])
+	CFLAGS="$ARCHIVE_CFLAGS $CPPFLAGS"
+    ],[
+        AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIBS=-larchive])
+    ])
+    if test -n "$ARCHIVE_LIBS" ; then
+        AC_CHECK_HEADERS([archive.h])
+        if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
+            ARCHIVE_LIBS=$DLOPEN_LIB
+	    AC_DEFINE(CONFIG_DLOPEN_LIBARCHIVE, 1,
 		[Define to 1 if using dlopen to access libarchive])
-
+        fi
     fi
     if test "$ac_cv_header_archive_h" != "yes"
     then
-        ARCHIVE_LIB=
+        ARCHIVE_LIBS=
     fi
 fi
-AC_SUBST(ARCHIVE_LIB)
+AC_SUBST(ARCHIVE_LIBS)
 dnl
 dnl Check to see if librt is required for clock_gettime() (glibc < 2.17)
 dnl

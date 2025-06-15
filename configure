@@ -706,7 +706,8 @@ FUSE_LIB
 fuse3_LIBS
 fuse3_CFLAGS
 CLOCK_GETTIME_LIB
-ARCHIVE_LIB
+ARCHIVE_LIBS
+ARCHIVE_CFLAGS
 MAGIC_LIB
 SOCKET_LIB
 SIZEOF_TIME_T
@@ -954,6 +955,8 @@ CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
+ARCHIVE_CFLAGS
+ARCHIVE_LIBS
 fuse3_CFLAGS
 fuse3_LIBS
 CXX
@@ -1669,6 +1672,10 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
+  ARCHIVE_CFLAGS
+              C compiler flags for ARCHIVE, overriding pkg-config
+  ARCHIVE_LIBS
+              linker flags for ARCHIVE, overriding pkg-config
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
   udev_CFLAGS C compiler flags for udev, overriding pkg-config
@@ -13810,10 +13817,70 @@ printf "%s\n" "Try testing for libarchive support (with dlopen) by default" >&6;
 
 fi
 
-ARCHIVE_LIB=
+ARCHIVE_LIBS=
 if test -n "$try_libarchive"
 then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for archive_read_new in -larchive" >&5
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libarchive" >&5
+printf %s "checking for libarchive... " >&6; }
+
+if test -n "$ARCHIVE_CFLAGS"; then
+    pkg_cv_ARCHIVE_CFLAGS="$ARCHIVE_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libarchive\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libarchive") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARCHIVE_CFLAGS=`$PKG_CONFIG --cflags "libarchive" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$ARCHIVE_LIBS"; then
+    pkg_cv_ARCHIVE_LIBS="$ARCHIVE_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libarchive\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libarchive") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARCHIVE_LIBS=`$PKG_CONFIG --libs "libarchive" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                ARCHIVE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libarchive" 2>&1`
+        else
+                ARCHIVE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libarchive" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$ARCHIVE_PKG_ERRORS" >&5
+
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for archive_read_new in -larchive" >&5
 printf %s "checking for archive_read_new in -larchive... " >&6; }
 if test ${ac_cv_lib_archive_archive_read_new+y}
 then :
@@ -13850,26 +13917,84 @@ fi
 printf "%s\n" "$ac_cv_lib_archive_archive_read_new" >&6; }
 if test "x$ac_cv_lib_archive_archive_read_new" = xyes
 then :
-  ARCHIVE_LIB=-larchive
-    ac_fn_c_check_header_compile "$LINENO" "archive.h" "ac_cv_header_archive_h" "$ac_includes_default"
+  ARCHIVE_LIBS=-larchive
+fi
+
+
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for archive_read_new in -larchive" >&5
+printf %s "checking for archive_read_new in -larchive... " >&6; }
+if test ${ac_cv_lib_archive_archive_read_new+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-larchive  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char archive_read_new ();
+int
+main (void)
+{
+return archive_read_new ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_archive_archive_read_new=yes
+else $as_nop
+  ac_cv_lib_archive_archive_read_new=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_archive_archive_read_new" >&5
+printf "%s\n" "$ac_cv_lib_archive_archive_read_new" >&6; }
+if test "x$ac_cv_lib_archive_archive_read_new" = xyes
+then :
+  ARCHIVE_LIBS=-larchive
+fi
+
+
+else
+        ARCHIVE_CFLAGS=$pkg_cv_ARCHIVE_CFLAGS
+        ARCHIVE_LIBS=$pkg_cv_ARCHIVE_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: pkg-config found libarchive" >&5
+printf "%s\n" "pkg-config found libarchive" >&6; }
+	CFLAGS="$ARCHIVE_CFLAGS $CPPFLAGS"
+
+fi
+    if test -n "$ARCHIVE_LIBS" ; then
+        ac_fn_c_check_header_compile "$LINENO" "archive.h" "ac_cv_header_archive_h" "$ac_includes_default"
 if test "x$ac_cv_header_archive_h" = xyes
 then :
   printf "%s\n" "#define HAVE_ARCHIVE_H 1" >>confdefs.h
 
 fi
 
-fi
-
-    if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
-        ARCHIVE_LIB=$DLOPEN_LIB
+        if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
+            ARCHIVE_LIBS=$DLOPEN_LIB
 
 printf "%s\n" "#define CONFIG_DLOPEN_LIBARCHIVE 1" >>confdefs.h
 
-
+        fi
     fi
     if test "$ac_cv_header_archive_h" != "yes"
     then
-        ARCHIVE_LIB=
+        ARCHIVE_LIBS=
     fi
 fi
 
