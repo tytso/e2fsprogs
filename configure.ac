@@ -991,6 +991,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	errno.h
 	execinfo.h
 	getopt.h
+	libunwind.h
 	malloc.h
 	mntent.h
 	paths.h
