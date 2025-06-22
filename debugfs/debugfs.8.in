@@ -643,6 +643,9 @@ flag causes the file system to be opened in exclusive mode.  The
 options behave the same as the command-line options to
 .BR debugfs .
 .TP
+.B orphan_inodes
+List the orphan inodes in the file system.
+.TP
 .BI punch " filespec start_blk [end_blk]"
 Delete the blocks in the inode ranging from
 .I start_blk

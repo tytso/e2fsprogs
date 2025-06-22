@@ -789,8 +789,8 @@ dumpe2fs.o: $(srcdir)/dumpe2fs.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
  $(top_srcdir)/lib/ext2fs/kernel-jbd.h $(top_srcdir)/lib/ext2fs/jfs_compat.h \
  $(top_srcdir)/lib/ext2fs/kernel-list.h $(top_srcdir)/lib/ext2fs/compiler.h \
- $(top_srcdir)/lib/support/nls-enable.h $(top_srcdir)/lib/support/plausible.h \
- $(top_srcdir)/version.h
+ $(top_srcdir)/lib/support/devname.h $(top_srcdir)/lib/support/nls-enable.h \
+ $(top_srcdir)/lib/support/plausible.h $(top_srcdir)/version.h
 badblocks.o: $(srcdir)/badblocks.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_types.h \
@@ -861,9 +861,9 @@ create_inode.o: $(srcdir)/create_inode.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/support/nls-enable.h $(srcdir)/create_inode_libarchive.h
 create_inode_libarchive.o: $(srcdir)/create_inode_libarchive.c \
  $(top_builddir)/lib/config.h $(top_builddir)/lib/dirpaths.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/create_inode.h \
- $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
- $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(srcdir)/create_inode.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext3_extents.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \

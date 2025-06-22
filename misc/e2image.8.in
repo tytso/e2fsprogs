@@ -326,5 +326,5 @@ http://e2fsprogs.sourceforge.net.
 
 .SH SEE ALSO
 .BR dumpe2fs (8),
-.BR debugfs (8)
+.BR debugfs (8),
 .BR e2fsck (8)

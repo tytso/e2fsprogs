@@ -1,5 +1,5 @@
-E2fsprogs 1.47.2 (November 28, 2024) 283fcab2c9af
-====================================
+E2fsprogs 1.47.2 (January 1, 2025)
+==================================
 
 Updates/Fixes since v1.47.1:
 
@@ -18,11 +18,19 @@ Add support for gnu.translator extended attributes in tar files fed to
 mke2fs -d.  (Addresses Github issue
 https://github.com/tytso/e2fsprogs/issues/192)
 
+Add a debugfs command to list all of the inodes in the orphan list.
+
 
 Fixes
 -----
 
 Fix orphan_file support on big endian systems.
+
+Fix resize2fs to update the checksums in blocks belonging to the orphan
+file if it needs to move them.
+
+Fix e2fsck to clear the orphan file after processing it so that e2fsck
+-E journal_only doesn't leave the file system in a corrupted state.
 
 Avoid a spurious failure in badblocks when -n or -w is specified twice.
 (Addresses Debian Bug #1087341)
@@ -45,11 +53,12 @@ Allow resize2fs to perform an offline resize past the 256 TiB boundary
 Performance, Internal Implementation, Development Support etc.
 --------------------------------------------------------------
 
+Fix various Coverity and compiler warnings.
+
 Speed up tune2fs -g when the group is not changed by the command.
 
 Fix build failures on GCC 15 due to it switched to using -std=c23 by
-default.  (Addresses Github issue
-https://github.com/tytso/e2fsprogs/issues/202)
+default.  (Addresses https://github.com/tytso/e2fsprogs/issues/202)
 
 Fix build failure when linking fuse2fs with old (2.9.9) version of
 libfuse2 on aarch64.  This hack was needed to fix a regression caused by
@@ -65,12 +74,27 @@ Fix bug where packages including ext2fs.h would get the 32-bit versions
 of the timestamp routines even on 64-bit platforms due to a missing
 SIZEOF_TIME_T autoconf definiton in public_config.h.
 
+Teach dumpe2fs and e2mmpstatus to support LABEL= and UUID= specifiers
+since the e2mmpstatus man page claims that it supports LABEL= and UUID=.
+This support was accidentally dropped when e2mmpstatus was reimplemented
+in terms of dumpe2fs.  (Addresses
+https://github.com/tytso/e2fsprogs/issues/106)
+
+Suppress mke2fs's "Creating regular file" message when the -q option is
+in force.
+
 Enable Continuous Integration testing in Debian's Salsa forge.
 
 Fix a memory leak in oss-fuzz test programs.
 
 Provide fuseext2 to replace the debian package src:fuse-umfuse-ext2.
 (Addresses Debian Bug #1085590, #1088838)
+
+In the Debian package for e2fsprogs, add a suggestion to install the
+package libarchive13t64.  (Addresses DebianBug #1089085)
+
+In the Debian package for e2fsprogs, decrease the priority from required
+to important.   (Addresses Debian Bug #897277)
 
 Fix the f_badjour_encrypted test to write the error output from mke2fs
 and debugfs to a log file so it doesn't mess up the "make check" output
@@ -90,3 +114,5 @@ easier for bootstrapping for new Debian ports (Addresses Debian Bug
 
 Various man page cleanups.
 
+Update Chinese, Czech, French, Malay, Polish, Romainian, Spanish,
+Swedish, and Ukrainian translations.

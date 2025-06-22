@@ -17,7 +17,8 @@
 #include "create_inode_libarchive.h"
 #include "support/nls-enable.h"
 
-#ifdef CONFIG_DISABLE_LIBARCHIVE
+#if (!(defined(CONFIG_DLOPEN_LIBARCHIVE) || defined(HAVE_ARCHIVE_H)) || \
+     defined(CONFIG_DIABLE_LIBARCHIVE))
 
 /* If ./configure was run with --without-libarchive, then only
  * __populate_fs_from_tar() remains in this file and will return an error. */
@@ -58,7 +59,6 @@ typedef ssize_t la_ssize_t;
 #endif /* HAVE_ARCHIVE_H */
 
 #include <libgen.h>
-#include <locale.h>
 
 static const char *(*dl_archive_entry_hardlink)(struct archive_entry *);
 static const char *(*dl_archive_entry_pathname)(struct archive_entry *);
@@ -292,8 +292,6 @@ static int remove_inode(ext2_filsys fs, ext2_ino_t ino)
 write_out:
 	ret = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
 				      sizeof(inode));
-	if (ret)
-		goto out;
 out:
 	return ret;
 }
@@ -578,13 +576,11 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 				 struct file_info *target,
 				 struct fs_ops_callbacks *fs_callbacks)
 {
-	char *path2, *path3, *dir, *name;
+	char *path2=NULL, *path3=NULL, *dir, *name;
 	unsigned int dir_exists;
 	struct archive *a;
 	struct archive_entry *entry;
 	errcode_t retval = 0;
-	locale_t archive_locale;
-	locale_t old_locale;
 	ext2_ino_t dirinode, tmpino;
 	const struct stat *st;
 
@@ -594,8 +590,6 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 		return 1;
 	}
 
-	archive_locale = newlocale(LC_CTYPE_MASK, "", (locale_t)0);
-	old_locale = uselocale(archive_locale);
 	a = dl_archive_read_new();
 	if (a == NULL) {
 		retval = 1;
@@ -633,6 +627,10 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 		}
 		path2 = strdup(dl_archive_entry_pathname(entry));
 		path3 = strdup(dl_archive_entry_pathname(entry));
+		if (!path2 || !path3) {
+			retval = ENOMEM;
+			goto out;
+		}
 		name = basename(path2);
 		dir = dirname(path3);
 		if ((retval = __find_path(fs, root_ino, dir, &dirinode))) {
@@ -713,15 +711,15 @@ errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
 				goto out;
 		}
 
-		free(path2);
-		free(path3);
+		free(path2); path2 = NULL;
+		free(path3); path3 = NULL;
 	}
 
 out:
+	free(path2);
+	free(path3);
 	dl_archive_read_close(a);
 	dl_archive_read_free(a);
-	uselocale(old_locale);
-	freelocale(archive_locale);
 	return retval;
 }
 

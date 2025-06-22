@@ -250,14 +250,18 @@ errcode_t ext2fs_orphan_file_block_csum_set(ext2_filsys fs, ext2_ino_t ino,
 					    blk64_t blk, char *buf)
 {
 	struct ext4_orphan_block_tail *tail;
-	__u32 crc;
+	errcode_t ret;
+	__u32 crc = 0;
 
 	if (!ext2fs_has_feature_metadata_csum(fs->super))
 		return 0;
 
 	tail = ext2fs_orphan_block_tail(fs, buf);
-	return ext2fs_orphan_file_block_csum(fs, ino, blk, buf, &crc);
+	ret = ext2fs_orphan_file_block_csum(fs, ino, blk, buf, &crc);
+	if (ret)
+		return 0;
 	tail->ob_checksum = ext2fs_cpu_to_le32(crc);
+	return ret;
 }
 
 int ext2fs_orphan_file_block_csum_verify(ext2_filsys fs, ext2_ino_t ino,
