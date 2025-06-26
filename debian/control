@@ -4,7 +4,7 @@ Priority: important
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: dpkg-dev (>= 1.22.5), gettext, texinfo, pkgconf, libarchive-dev <!nocheck>, libfuse3-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, debhelper-compat (= 12), dh-exec, libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], systemd-dev [linux-any], cron [linux-any], dh-sequence-movetousr
 Rules-Requires-Root: no
-Standards-Version: 4.7.0
+Standards-Version: 4.7.2
 Homepage: http://e2fsprogs.sourceforge.net
 Vcs-Browser: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
 Vcs-Git: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git -b debian/master
