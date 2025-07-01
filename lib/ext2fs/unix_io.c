@@ -560,7 +560,10 @@ static void free_cache(struct unix_private_data *data)
 
 /*  2^63 + 2^61 - 2^57 + 2^54 - 2^51 - 2^18 + 1 */
 #define GOLDEN_RATIO_PRIME	0x9e37fffffffc0001UL
+#ifndef CACHE_LINE_SIZE
+/* if the system didn't tell us, guess something reasonable */
 #define CACHE_LINE_SIZE		64
+#endif
 
 /* buffer cache hashing function, crudely stolen from xfsprogs */
 static unsigned int
