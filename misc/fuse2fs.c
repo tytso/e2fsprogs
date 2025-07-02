@@ -687,6 +687,9 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 		return -EACCES;
 	}
 
+	/* Remove the O_APPEND flag before testing permissions */
+	mask &= ~A_OK;
+
 	/* allow owner, if perms match */
 	if (inode_uid(inode) == ctxt->uid) {
 		if ((mask & (perms >> 6)) == mask)
