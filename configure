@@ -13984,7 +13984,7 @@ printf "%s\n" "yes" >&6; }
 
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: pkg-config found libarchive" >&5
 printf "%s\n" "pkg-config found libarchive" >&6; }
-	CFLAGS="$ARCHIVE_CFLAGS $CPPFLAGS"
+	CFLAGS="$ARCHIVE_CFLAGS $CFLAGS"
 
 fi
     if test -n "$ARCHIVE_LIBS" ; then

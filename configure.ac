@@ -1343,7 +1343,7 @@ then
     PKG_CHECK_MODULES([ARCHIVE],[libarchive],
     [
 	AC_MSG_RESULT([pkg-config found libarchive])
-	CFLAGS="$ARCHIVE_CFLAGS $CPPFLAGS"
+	CFLAGS="$ARCHIVE_CFLAGS $CFLAGS"
     ],[
         AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIBS=-larchive])
     ])
