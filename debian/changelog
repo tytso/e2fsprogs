@@ -1,3 +1,18 @@
+e2fsprogs (1.47.3~rc3-1) experimental; urgency=medium
+
+  * fix missing dependency in libext2fs2t64 for libcom-err2
+    (Closes: #1108010)
+  * e2scrub no longer runs fstrim by default, since util-linux ships
+    with a fstrim.timer systemd file which will run fstrim on all
+    mounted file systems.
+  * Fix a bounding error in ext2fs_fallocate() which could cause it to
+    allocate far more blocks than was requested.  This caused a
+    failure in fuse2fs while formatting a loopback file system stored
+    in a large sparse file.
+  * update to debian policy 4.7.2
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 02 Jul 2025 13:57:20 -0400
+
 e2fsprogs (1.47.3~rc2-1) experimental; urgency=medium
 
   * Add a lockfile command-line option to fuse2fs which is useful for
@@ -14,7 +29,7 @@ e2fsprogs (1.47.3~rc2-1) experimental; urgency=medium
   * Update Czech, Chinese, Dutch, French, Portuguese, Polish, Romainian,
     Serbian, Spanish, Swedish, and Ukrainian translations.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 13 Jun 2025 14:24:46 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 02 Jul 2025 13:55:59 -0400
 
 e2fsprogs (1.47.3~rc1-1) experimental; urgency=medium
 
