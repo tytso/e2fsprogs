@@ -28,6 +28,12 @@ from the storage device information depending on whether the storage
 device is a rotational or non-rotational device.  By default don't set
 the RAID stripe size for non-rotational devices.
 
+E2scrub no longer runs fstrim by default, since util-linux ships with a
+fstrim.timer systemd file which will run fstrim on all mounted file
+systems.  This can be re-enabled in /etc/e2scrub.conf if for some reason
+it is desireable to run the fstrim out of e2scrub.
+
+
 Fixes
 -----
 
@@ -93,6 +99,11 @@ This fixes a problem where resize2fs is trying to relocate all of the
 blocks in a file leading to the extent tree doubling in size, and
 potentially leading to a corrupted extent tree.
 
+Fix a bounding error in ext2fs_fallocate() which could cause it to
+allocate far more blocks than was requested.  This caused a failure in
+fuse2fs while formatting a loopback file system stored in a large sparse
+file.
+
 Fix potential livelock bug in the unix_io manager.
 
 Fix invaidation support in the unix_io manager.
@@ -139,6 +150,17 @@ Improve fuse2fs's performance by allowing a larger cache in unix_io and
 using O_DIRECT to read and write the block device.
 
 Fixed Windows portability problems intrduced in 1.47.2.
+
+Fix various FreeBSD compile warnings and test issues.
+
+Fix MacOS build issues when compiling with libarchive and FUSE support.
+
+To avoid warning messages on newer versions of GNU grep, use "grep -E"
+instead of "egrep" when possible.
+
+Fix test failure for m_rootdir_acl when the build tree is hosted on
+btrfs.  (This was caused by btrfs returning extended attributes relating
+to Posix ACL's in a different order than ext4 or xfs.)
 
 Fixed potention races in the Makefiles which could show up when using
 "make -j install".

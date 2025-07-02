@@ -687,6 +687,9 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 		return -EACCES;
 	}
 
+	/* Remove the O_APPEND flag before testing permissions */
+	mask &= ~A_OK;
+
 	/* allow owner, if perms match */
 	if (inode_uid(inode) == ctxt->uid) {
 		if ((mask & (perms >> 6)) == mask)
@@ -4417,19 +4420,31 @@ int main(int argc, char *argv[])
 		fctx.alloc_all_blocks = 1;
 	}
 
-	if(fctx.lockfile) {
-		FILE* lockfile=fopen(fctx.lockfile, "w");
-		if(!lockfile) {
-			fprintf(stderr, "Requested lockfile=%s but couldn't open the file for writing\n", fctx.lockfile);
-			exit(1);
+	if (fctx.lockfile) {
+		FILE *lockfile = fopen(fctx.lockfile, "w");
+		char *resolved;
+
+		if (!lockfile) {
+			err = errno;
+			err_printf(&fctx, "%s: %s: %s\n", fctx.lockfile,
+				   _("opening lockfile failed"),
+				   strerror(err));
+			fctx.lockfile = NULL;
+			ret |= 32;
+			goto out;
 		}
 		fclose(lockfile);
-		char* resolved = realpath(fctx.lockfile, NULL);
+
+		resolved = realpath(fctx.lockfile, NULL);
 		if (!resolved) {
-			perror("realpath");
-			fprintf(stderr, "Could not resolve realpath for lockfile=%s\n", fctx.lockfile);
+			err = errno;
+			err_printf(&fctx, "%s: %s: %s\n", fctx.lockfile,
+				   _("resolving lockfile failed"),
+				   strerror(err));
 			unlink(fctx.lockfile);
-			exit(1);
+			fctx.lockfile = NULL;
+			ret |= 32;
+			goto out;
 		}
 		free(fctx.lockfile);
 		fctx.lockfile = resolved;
@@ -4639,14 +4654,15 @@ out:
 			com_err(argv[0], err, "while closing fs");
 		global_fs = NULL;
 	}
-	if(fctx.lockfile) {
-		err = unlink(fctx.lockfile);
-		if (err)
-			com_err(argv[0], errno, "while unlinking '%s'",
-				fctx.lockfile);
-	}
-	if (fctx.lockfile)
+	if (fctx.lockfile) {
+		if (unlink(fctx.lockfile)) {
+			err = errno;
+			err_printf(&fctx, "%s: %s: %s\n", fctx.lockfile,
+				   _("removing lockfile failed"),
+				   strerror(err));
+		}
 		free(fctx.lockfile);
+	}
 	if (fctx.device)
 		free(fctx.device);
 	fuse_opt_free_args(&args);

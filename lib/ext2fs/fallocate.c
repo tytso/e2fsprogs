@@ -718,7 +718,8 @@ start_again:
 		goal = left_extent.e_pblk - (left_extent.e_lblk - start);
 		err = ext_falloc_helper(fs, flags, ino, inode, handle, NULL,
 					&left_extent, start,
-					left_extent.e_lblk - start, goal);
+					min(len, left_extent.e_lblk - start),
+					goal);
 		if (err)
 			goto errout;
 
