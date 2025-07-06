@@ -3831,7 +3831,8 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	}
 
 out:
-	fr->len = cleared;
+	fr->len = FUSE2FS_FSB_TO_B(ff, cleared);
+	dbg_printf(ff, "%s: len=%llu err=%ld\n", __func__, fr->len, err);
 	return err;
 }
 #endif /* FITRIM */
