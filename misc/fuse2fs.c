@@ -3376,6 +3376,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	if (ret)
 		goto out2;
 
+	fp->flags &= ~O_TRUNC;
 	ret = __op_open(ff, path, fp);
 	if (ret)
 		goto out2;
