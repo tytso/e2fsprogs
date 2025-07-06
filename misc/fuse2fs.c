@@ -1053,6 +1053,18 @@ static int propagate_default_acls(struct fuse2fs *ff, ext2_ino_t parent,
 	return ret;
 }
 
+static inline void fuse2fs_set_uid(struct ext2_inode_large *inode, uid_t uid)
+{
+	inode->i_uid = uid;
+	ext2fs_set_i_uid_high(*inode, uid >> 16);
+}
+
+static inline void fuse2fs_set_gid(struct ext2_inode_large *inode, gid_t gid)
+{
+	inode->i_gid = gid;
+	ext2fs_set_i_gid_high(*inode, gid >> 16);
+}
+
 static int op_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -1145,10 +1157,8 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 	inode.i_links_count = 1;
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, ctxt->gid);
 
 	err = ext2fs_write_new_inode(fs, child, EXT2_INODE(&inode));
 	if (err) {
@@ -1262,10 +1272,8 @@ static int op_mkdir(const char *path, mode_t mode)
 		goto out2;
 	}
 
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, ctxt->gid);
 	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID) |
 		       parent_sgid;
 	inode.i_generation = ff->next_generation++;
@@ -1691,10 +1699,8 @@ static int op_symlink(const char *src, const char *dest)
 		goto out2;
 	}
 
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, ctxt->gid);
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
 
@@ -2243,8 +2249,7 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 			ret = -EPERM;
 			goto out;
 		}
-		inode.i_uid = owner;
-		ext2fs_set_i_uid_high(inode, owner >> 16);
+		fuse2fs_set_uid(&inode, owner);
 	}
 
 	if (group != (gid_t) ~0) {
@@ -2256,8 +2261,7 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 		}
 
 		/* XXX: We /should/ check group membership but FUSE */
-		inode.i_gid = group;
-		ext2fs_set_i_gid_high(inode, group >> 16);
+		fuse2fs_set_gid(&inode, group);
 	}
 
 	ret = update_ctime(fs, ino, &inode);
@@ -3300,10 +3304,8 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	inode.i_links_count = 1;
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, ctxt->gid);
 	if (ext2fs_has_feature_extents(fs->super)) {
 		ext2_extent_handle_t handle;
 
