@@ -110,6 +110,9 @@ void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs,
 void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
 				    blk_t num, int inuse)
 {
+	const blk64_t orig_blk = blk;
+	const blk_t orig_num = num;
+
 #ifndef OMIT_COM_ERR
 	if (blk + num > ext2fs_blocks_count(fs->super)) {
 		com_err("ext2fs_block_alloc_stats_range", 0,
@@ -147,7 +150,7 @@ void ext2fs_block_alloc_stats_range(ext2_filsys fs, blk64_t blk,
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
 	if (fs->block_alloc_stats_range)
-		(fs->block_alloc_stats_range)(fs, blk, num, inuse);
+		(fs->block_alloc_stats_range)(fs, orig_blk, orig_num, inuse);
 }
 
 void ext2fs_set_block_alloc_stats_range_callback(ext2_filsys fs,
