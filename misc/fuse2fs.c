@@ -1065,6 +1065,30 @@ static inline void fuse2fs_set_gid(struct ext2_inode_large *inode, gid_t gid)
 	ext2fs_set_i_gid_high(*inode, gid >> 16);
 }
 
+static int fuse2fs_new_child_gid(struct fuse2fs *ff, ext2_ino_t parent,
+				 gid_t *gid, int *parent_sgid)
+{
+	struct ext2_inode_large inode;
+	struct fuse_context *ctxt = fuse_get_context();
+	errcode_t err;
+
+	err = fuse2fs_read_inode(ff->fs, parent, &inode);
+	if (err)
+		return translate_error(ff->fs, parent, err);
+
+	if (inode.i_mode & S_ISGID) {
+		if (parent_sgid)
+			*parent_sgid = 1;
+		*gid = inode.i_gid;
+	} else {
+		if (parent_sgid)
+			*parent_sgid = 0;
+		*gid = ctxt->gid;
+	}
+
+	return 0;
+}
+
 static int op_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -1076,6 +1100,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 	char *node_name, a;
 	int filetype;
 	struct ext2_inode_large inode;
+	gid_t gid;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
@@ -1128,6 +1153,10 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 		goto out2;
 	}
 
+	err = fuse2fs_new_child_gid(ff, parent, &gid, NULL);
+	if (err)
+		goto out2;
+
 	err = ext2fs_new_inode(fs, parent, mode, 0, &child);
 	if (err) {
 		ret = translate_error(fs, 0, err);
@@ -1158,7 +1187,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
 	fuse2fs_set_uid(&inode, ctxt->uid);
-	fuse2fs_set_gid(&inode, ctxt->gid);
+	fuse2fs_set_gid(&inode, gid);
 
 	err = ext2fs_write_new_inode(fs, child, EXT2_INODE(&inode));
 	if (err) {
@@ -1199,7 +1228,8 @@ static int op_mkdir(const char *path, mode_t mode)
 	char *block;
 	blk64_t blk;
 	int ret = 0;
-	mode_t parent_sgid;
+	gid_t gid;
+	int parent_sgid;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
@@ -1235,13 +1265,9 @@ static int op_mkdir(const char *path, mode_t mode)
 	if (ret)
 		goto out2;
 
-	/* Is the parent dir sgid? */
-	err = fuse2fs_read_inode(fs, parent, &inode);
-	if (err) {
-		ret = translate_error(fs, parent, err);
+	err = fuse2fs_new_child_gid(ff, parent, &gid, &parent_sgid);
+	if (err)
 		goto out2;
-	}
-	parent_sgid = inode.i_mode & S_ISGID;
 
 	*node_name = a;
 
@@ -1273,9 +1299,10 @@ static int op_mkdir(const char *path, mode_t mode)
 	}
 
 	fuse2fs_set_uid(&inode, ctxt->uid);
-	fuse2fs_set_gid(&inode, ctxt->gid);
-	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID) |
-		       parent_sgid;
+	fuse2fs_set_gid(&inode, gid);
+	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID);
+	if (parent_sgid)
+		inode.i_mode |= S_ISGID;
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
 
@@ -1629,6 +1656,7 @@ static int op_symlink(const char *src, const char *dest)
 	errcode_t err;
 	char *node_name, a;
 	struct ext2_inode_large inode;
+	gid_t gid;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
@@ -1661,6 +1689,9 @@ static int op_symlink(const char *src, const char *dest)
 	if (ret)
 		goto out2;
 
+	err = fuse2fs_new_child_gid(ff, parent, &gid, NULL);
+	if (err)
+		goto out2;
 
 	/* Create symlink */
 	err = ext2fs_symlink(fs, parent, 0, node_name, src);
@@ -1700,7 +1731,7 @@ static int op_symlink(const char *src, const char *dest)
 	}
 
 	fuse2fs_set_uid(&inode, ctxt->uid);
-	fuse2fs_set_gid(&inode, ctxt->gid);
+	fuse2fs_set_gid(&inode, gid);
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
 
@@ -3240,6 +3271,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	char *node_name, a;
 	int filetype;
 	struct ext2_inode_large inode;
+	gid_t gid;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
@@ -3276,6 +3308,10 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	if (ret)
 		goto out2;
 
+	err = fuse2fs_new_child_gid(ff, parent, &gid, NULL);
+	if (err)
+		goto out2;
+
 	*node_name = a;
 
 	filetype = ext2_file_type(mode);
@@ -3305,7 +3341,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
 	fuse2fs_set_uid(&inode, ctxt->uid);
-	fuse2fs_set_gid(&inode, ctxt->gid);
+	fuse2fs_set_gid(&inode, gid);
 	if (ext2fs_has_feature_extents(fs->super)) {
 		ext2_extent_handle_t handle;
 
