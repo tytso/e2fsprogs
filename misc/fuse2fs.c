@@ -461,6 +461,7 @@ static int update_atime(ext2_filsys fs, ext2_ino_t ino)
 	errcode_t err;
 	struct ext2_inode_large inode, *pinode;
 	struct timespec atime, mtime, now;
+	double datime, dmtime, dnow;
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return 0;
@@ -472,11 +473,17 @@ static int update_atime(ext2_filsys fs, ext2_ino_t ino)
 	EXT4_INODE_GET_XTIME(i_atime, &atime, pinode);
 	EXT4_INODE_GET_XTIME(i_mtime, &mtime, pinode);
 	get_now(&now);
+
+	datime = atime.tv_sec + ((double)atime.tv_nsec / 1000000000);
+	dmtime = mtime.tv_sec + ((double)mtime.tv_nsec / 1000000000);
+	dnow = now.tv_sec + ((double)now.tv_nsec / 1000000000);
+
 	/*
 	 * If atime is newer than mtime and atime hasn't been updated in thirty
-	 * seconds, skip the atime update.  Same idea as Linux "relatime".
+	 * seconds, skip the atime update.  Same idea as Linux "relatime".  Use
+	 * doubles to account for nanosecond resolution.
 	 */
-	if (atime.tv_sec >= mtime.tv_sec && atime.tv_sec >= now.tv_sec - 30)
+	if (datime >= dmtime && datime >= dnow - 30)
 		return 0;
 	EXT4_INODE_SET_XTIME(i_atime, &now, &inode);
 
