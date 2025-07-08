@@ -1,3 +1,10 @@
+e2fsprogs (1.47.3-1) unstable; urgency=medium
+
+  * New upstream version
+  * Update Malay translation
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 08 Jul 2025 17:29:53 -0400
+
 e2fsprogs (1.47.3~rc3-1) experimental; urgency=medium
 
   * fix missing dependency in libext2fs2t64 for libcom-err2

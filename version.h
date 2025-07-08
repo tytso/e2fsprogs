@@ -9,5 +9,5 @@
  * General Public License v2.
  */
 
-#define E2FSPROGS_VERSION "1.47.3-rc3"
-#define E2FSPROGS_DATE "2-Jul-2025"
+#define E2FSPROGS_VERSION "1.47.3"
+#define E2FSPROGS_DATE "8-Jul-2025"
