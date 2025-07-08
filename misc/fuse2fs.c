@@ -4723,6 +4723,12 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
+	if (global_fs->super->s_state & EXT2_ERROR_FS) {
+		err_printf(&fctx, "%s\n",
+ _("Errors detected; running e2fsck is required."));
+		goto out;
+	}
+
 	/*
 	 * ext4 can't do COW of shared blocks, so if the feature is enabled,
 	 * we must force ro mode.
@@ -4783,12 +4789,6 @@ int main(int argc, char *argv[])
 	if (global_fs->super->s_last_orphan)
 		err_printf(&fctx, "%s\n",
  _("Orphans detected; running e2fsck is recommended."));
-
-	if (global_fs->super->s_state & EXT2_ERROR_FS) {
-		err_printf(&fctx, "%s\n",
- _("Errors detected; running e2fsck is required."));
-		goto out;
-	}
 
 	/* Clear the valid flag so that an unclean shutdown forces a fsck */
 	if (global_fs->flags & EXT2_FLAG_RW) {
