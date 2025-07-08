@@ -4473,11 +4473,15 @@ int main(int argc, char *argv[])
 	}
 
 	if (fctx.lockfile) {
-		FILE *lockfile = fopen(fctx.lockfile, "w");
 		char *resolved;
+		int lockfd;
 
-		if (!lockfile) {
-			err = errno;
+		lockfd = open(fctx.lockfile, O_RDWR | O_CREAT | O_EXCL, 0400);
+		if (lockfd < 0) {
+			if (errno == EEXIST)
+				err = EWOULDBLOCK;
+			else
+				err = errno;
 			err_printf(&fctx, "%s: %s: %s\n", fctx.lockfile,
 				   _("opening lockfile failed"),
 				   strerror(err));
@@ -4485,7 +4489,7 @@ int main(int argc, char *argv[])
 			ret |= 32;
 			goto out;
 		}
-		fclose(lockfile);
+		close(lockfd);
 
 		resolved = realpath(fctx.lockfile, NULL);
 		if (!resolved) {
