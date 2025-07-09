@@ -728,7 +728,10 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 		translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC);
 		return;
 	}
+
+	pthread_mutex_lock(&ff->bfl);
 	fs = ff->fs;
+
 	dbg_printf(ff, "%s: dev=%s\n", __func__, fs->device_name);
 	if (fs->flags & EXT2_FLAG_RW) {
 		fs->super->s_state |= EXT2_VALID_FS;
@@ -763,6 +766,8 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 		uuid_unparse(fs->super->s_uuid, uuid);
 		log_printf(ff, "%s %s.\n", _("unmounting filesystem"), uuid);
 	}
+
+	pthread_mutex_unlock(&ff->bfl);
 }
 
 static void *op_init(struct fuse_conn_info *conn
