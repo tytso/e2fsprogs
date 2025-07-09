@@ -2743,8 +2743,9 @@ static int op_statfs(const char *path EXT2FS_ATTR((unused)),
 	blk64_t overhead, reserved, free;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
-	fs = ff->fs;
 	dbg_printf(ff, "%s: path=%s\n", __func__, path);
+	fs = ff->fs;
+	pthread_mutex_lock(&ff->bfl);
 	buf->f_bsize = fs->blocksize;
 	buf->f_frsize = 0;
 
@@ -2777,6 +2778,7 @@ static int op_statfs(const char *path EXT2FS_ATTR((unused)),
 	if (fs->flags & EXT2_FLAG_RW)
 		buf->f_flag |= ST_RDONLY;
 	buf->f_namemax = EXT2_NAME_LEN;
+	pthread_mutex_unlock(&ff->bfl);
 
 	return 0;
 }
