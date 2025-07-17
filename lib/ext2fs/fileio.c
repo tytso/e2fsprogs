@@ -255,9 +255,13 @@ ext2fs_file_read_inline_data(ext2_file_t file, void *buf,
 			     unsigned int wanted, unsigned int *got)
 {
 	ext2_filsys fs;
-	errcode_t retval;
+	errcode_t retval = 0;
 	unsigned int count = 0;
+	uint64_t isize = EXT2_I_SIZE(&file->inode);
 	size_t size;
+
+	if (file->pos >= isize)
+		goto out;
 
 	fs = file->fs;
 	retval = ext2fs_inline_data_get(fs, file->ino, &file->inode,
@@ -265,8 +269,12 @@ ext2fs_file_read_inline_data(ext2_file_t file, void *buf,
 	if (retval)
 		return retval;
 
-	if (file->pos >= size)
-		goto out;
+	/*
+	 * size is the number of bytes available for inline data storage, which
+	 * means it can exceed isize.
+	 */
+	if (size > isize)
+		size = isize;
 
 	count = size - file->pos;
 	if (count > wanted)
@@ -274,6 +282,14 @@ ext2fs_file_read_inline_data(ext2_file_t file, void *buf,
 	memcpy(buf, file->buf + file->pos, count);
 	file->pos += count;
 	buf = (char *) buf + count;
+
+	/* zero-fill the rest of the buffer */
+	wanted -= count;
+	if (wanted > 0) {
+		memset(buf, 0, wanted);
+		file->pos += wanted;
+		count += wanted;
+	}
 
 out:
 	if (got)
