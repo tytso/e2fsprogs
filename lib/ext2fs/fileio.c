@@ -349,9 +349,13 @@ ext2fs_file_write_inline_data(ext2_file_t file, const void *buf,
 			      unsigned int nbytes, unsigned int *written)
 {
 	ext2_filsys fs;
+	uint64_t old_isize = EXT2_I_SIZE(&file->inode);
+	uint64_t new_isize = old_isize;
 	errcode_t retval;
-	unsigned int count = 0;
 	size_t size;
+
+	if (file->pos + nbytes > old_isize)
+		new_isize = file->pos + nbytes;
 
 	fs = file->fs;
 	retval = ext2fs_inline_data_get(fs, file->ino, &file->inode,
@@ -359,21 +363,28 @@ ext2fs_file_write_inline_data(ext2_file_t file, const void *buf,
 	if (retval)
 		return retval;
 
-	if (file->pos < size) {
-		count = nbytes - file->pos;
-		memcpy(file->buf + file->pos, buf, count);
+	/*
+	 * Only try to set new inline data if it won't go past the end of
+	 * @file->buf; if there's not enough space in the ondisk inode, we'll
+	 * jump out to the expand code.
+	 */
+	if (new_isize < fs->blocksize) {
+		if (file->pos > old_isize)
+			memset(file->buf + old_isize, 0, file->pos - old_isize);
+
+		memcpy(file->buf + file->pos, buf, nbytes);
 
 		retval = ext2fs_inline_data_set(fs, file->ino, &file->inode,
-						file->buf, count);
+						file->buf, new_isize);
 		if (retval == EXT2_ET_INLINE_DATA_NO_SPACE)
 			goto expand;
 		if (retval)
 			return retval;
 
-		file->pos += count;
+		file->pos += nbytes;
 
 		/* Update inode size */
-		if (count != 0 && EXT2_I_SIZE(&file->inode) < file->pos) {
+		if (old_isize < new_isize) {
 			errcode_t	rc;
 
 			rc = ext2fs_file_set_size2(file, file->pos);
@@ -382,7 +393,7 @@ ext2fs_file_write_inline_data(ext2_file_t file, const void *buf,
 		}
 
 		if (written)
-			*written = count;
+			*written = nbytes;
 		return 0;
 	}
 
