@@ -229,6 +229,7 @@ struct fuse2fs {
 	uint8_t directio;
 	uint8_t acl;
 
+	int logfd;
 	int blocklog;
 	unsigned int blockmask;
 	unsigned long offset;
@@ -792,6 +793,111 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 	pthread_mutex_unlock(&ff->bfl);
 }
 
+/* Reopen @stream with @fileno */
+static int fuse2fs_freopen_stream(const char *path, int fileno, FILE *stream)
+{
+	char _fdpath[256];
+	const char *fdpath;
+	FILE *fp;
+	int ret;
+
+	ret = snprintf(_fdpath, sizeof(_fdpath), "/dev/fd/%d", fileno);
+	if (ret >= sizeof(_fdpath))
+		fdpath = path;
+	else
+		fdpath = _fdpath;
+
+	/*
+	 * C23 defines std{out,err} as an expression of type FILE* that need
+	 * not be an lvalue.  What this means is that we can't just assign to
+	 * stdout: we have to use freopen, which takes a path.
+	 *
+	 * There's no guarantee that the OS provides a /dev/fd/X alias for open
+	 * file descriptors, so if that fails, fall back to the original log
+	 * file path.  We'd rather not do a path-based reopen because that
+	 * exposes us to rename race attacks.
+	 */
+	fp = freopen(fdpath, "a", stream);
+	if (!fp && errno == ENOENT && fdpath == _fdpath)
+		fp = freopen(path, "a", stream);
+	if (!fp) {
+		perror(fdpath);
+		return -1;
+	}
+
+	return 0;
+}
+
+/* Redirect stdout/stderr to a file, or return a mount-compatible error. */
+static int fuse2fs_capture_output(struct fuse2fs *ff, const char *path)
+{
+	int ret;
+	int fd;
+
+	/*
+	 * First, open the log file path with system calls so that we can
+	 * redirect the stdout/stderr file numbers (typically 1 and 2) to our
+	 * logfile descriptor.  We'd like to avoid allocating extra file
+	 * objects in the kernel if we can because pos will be the same between
+	 * stdout and stderr.
+	 */
+	if (ff->logfd < 0) {
+		fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+		if (fd < 0) {
+			perror(path);
+			return -1;
+		}
+
+		/*
+		 * Save the newly opened fd in case we have to do this again in
+		 * op_init.
+		 */
+		ff->logfd = fd;
+	}
+
+	ret = dup2(ff->logfd, STDOUT_FILENO);
+	if (ret < 0) {
+		perror(path);
+		return -1;
+	}
+
+	ret = dup2(ff->logfd, STDERR_FILENO);
+	if (ret < 0) {
+		perror(path);
+		return -1;
+	}
+
+	/*
+	 * Now that we've changed STD{OUT,ERR}_FILENO to be the log file, use
+	 * freopen to make sure that std{out,err} (the C library abstractions)
+	 * point to the STDXXX_FILENO because any of our library dependencies
+	 * might decide to printf to one of those streams and we want to
+	 * capture all output in the log.
+	 */
+	ret = fuse2fs_freopen_stream(path, STDOUT_FILENO, stdout);
+	if (ret)
+		return ret;
+	ret = fuse2fs_freopen_stream(path, STDERR_FILENO, stderr);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+/* Set up debug and error logging files */
+static int fuse2fs_setup_logging(struct fuse2fs *ff)
+{
+	char *logfile = getenv("FUSE2FS_LOGFILE");
+	if (logfile)
+		return fuse2fs_capture_output(ff, logfile);
+
+	/* in kernel mode, try to log errors to the kernel log */
+	if (ff->kernel)
+		fuse2fs_capture_output(ff, "/dev/ttyprintk");
+
+	return 0;
+}
+
 static void *op_init(struct fuse_conn_info *conn
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, struct fuse_config *cfg EXT2FS_ATTR((unused))
@@ -807,6 +913,17 @@ static void *op_init(struct fuse_conn_info *conn
 		translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC);
 		return NULL;
 	}
+
+	/*
+	 * Configure logging a second time, because libfuse might have
+	 * redirected std{out,err} as part of daemonization.  If this fails,
+	 * give up and move on.
+	 */
+	fuse2fs_setup_logging(ff);
+	if (ff->logfd >= 0)
+		close(ff->logfd);
+	ff->logfd = -1;
+
 	fs = ff->fs;
 	dbg_printf(ff, "%s: dev=%s\n", __func__, fs->device_name);
 #ifdef FUSE_CAP_IOCTL_DIR
@@ -4448,7 +4565,6 @@ int main(int argc, char *argv[])
 	struct fuse2fs fctx;
 	errcode_t err;
 	FILE *orig_stderr = stderr;
-	char *logfile;
 	char extra_args[BUFSIZ];
 	int ret;
 	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE |
@@ -4456,6 +4572,7 @@ int main(int argc, char *argv[])
 
 	memset(&fctx, 0, sizeof(fctx));
 	fctx.magic = FUSE2FS_MAGIC;
+	fctx.logfd = -1;
 
 	ret = fuse_opt_parse(&args, &fctx, fuse2fs_opts, fuse2fs_opt_proc);
 	if (ret)
@@ -4482,23 +4599,11 @@ int main(int argc, char *argv[])
 #endif
 	add_error_table(&et_ext2_error_table);
 
-	/* Set up error logging */
-	logfile = getenv("FUSE2FS_LOGFILE");
-	if (logfile) {
-		FILE *fp = fopen(logfile, "a");
-		if (!fp) {
-			perror(logfile);
-			goto out;
-		}
-		stderr = fp;
-		stdout = fp;
-	} else if (fctx.kernel) {
-		/* in kernel mode, try to log errors to the kernel log */
-		FILE *fp = fopen("/dev/ttyprintk", "a");
-		if (fp) {
-			stderr = fp;
-			stdout = fp;
-		}
+	ret = fuse2fs_setup_logging(&fctx);
+	if (ret) {
+		/* operational error */
+		ret = 2;
+		goto out;
 	}
 
 	/* Will we allow users to allocate every last block? */
