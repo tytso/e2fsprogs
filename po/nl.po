@@ -4133,8 +4133,8 @@ msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is 
 msgstr "ONVERWACHTE INCONSISTENTIE: het bestandssysteem wordt gewijzigd terwijl 'fsck' uitgevoerd wordt.\n"
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
-msgstr "voltooid                                             \n"
+msgid "done                                                                  \n"
+msgstr "voltooid                                                              \n"
 
 #: misc/badblocks.c:100
 #, c-format
@@ -4161,8 +4161,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% gedaan, %s verlopen  (%d/%d/%d fouten)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% gedaan, %s verlopen  (%d/%d/%d fouten), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "

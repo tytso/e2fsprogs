@@ -3937,7 +3937,7 @@ msgid ""
 msgstr ""
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
+msgid "done                                                                  \n"
 msgstr ""
 
 #: misc/badblocks.c:100
@@ -3959,7 +3959,7 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
 msgstr ""
 
 #: misc/badblocks.c:337

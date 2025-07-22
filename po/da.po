@@ -3785,8 +3785,8 @@ msgid ""
 msgstr "UVENTET UOVERENSSTEMMELSE: filsystemet ændres mens fsck kører.\n"
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
-msgstr "færdig                                               \n"
+msgid "done                                                                  \n"
+msgstr "færdig                                                                \n"
 
 #: misc/badblocks.c:100
 #, c-format
@@ -3814,8 +3814,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% færdig, %s forløbet. (%d/%d/%d fejl)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% færdig, %s forløbet. (%d/%d/%d fejl), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "

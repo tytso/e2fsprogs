@@ -3836,7 +3836,7 @@ msgid ""
 msgstr ""
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
+msgid "done                                                                  \n"
 msgstr ""
 
 #: misc/badblocks.c:100
@@ -3858,8 +3858,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% fariĝis, %s pasis. (%d/%d/%d eraroj)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% fariĝis, %s pasis. (%d/%d/%d eraroj), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "
