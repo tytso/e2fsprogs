@@ -4969,9 +4969,23 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		is_err = 1;
 		ret = -EUCLEAN;
 		break;
-	default:
+	case EIO:
+#ifdef EILSEQ
+	case EILSEQ:
+#endif
+	case EUCLEAN:
+		/* these errnos usually denote corruption or persistence fail */
 		is_err = 1;
-		ret = (err < 256) ? -err : -EIO;
+		ret = -err;
+		break;
+	default:
+		if (err < 256) {
+			/* other errno are usually operational errors */
+			ret = -err;
+		} else {
+			is_err = 1;
+			ret = -EIO;
+		}
 		break;
 	}
 
