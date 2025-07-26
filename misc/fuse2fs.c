@@ -2461,7 +2461,8 @@ out:
 	return ret;
 }
 
-static int punch_posteof(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
+static int fuse2fs_punch_posteof(struct fuse2fs *ff, ext2_ino_t ino,
+				 off_t new_size)
 {
 	ext2_filsys fs = ff->fs;
 	struct ext2_inode_large inode;
@@ -2477,10 +2478,14 @@ static int punch_posteof(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
 	if (err)
 		return translate_error(fs, ino, err);
 
+	err = fuse2fs_write_inode(fs, ino, &inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
 	return 0;
 }
 
-static int truncate_helper(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
+static int fuse2fs_truncate(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
 {
 	ext2_filsys fs = ff->fs;
 	ext2_file_t file;
@@ -2523,7 +2528,7 @@ out_close:
 	 * we should clear out post-EOF preallocations.
 	 */
 	if (new_size == old_isize)
-		return punch_posteof(ff, ino, new_size);
+		return fuse2fs_punch_posteof(ff, ino, new_size);
 
 	return 0;
 }
@@ -2559,7 +2564,7 @@ static int op_truncate(const char *path, off_t len
 	if (ret)
 		goto out;
 
-	ret = truncate_helper(ff, ino, len);
+	ret = fuse2fs_truncate(ff, ino, len);
 	if (ret)
 		goto out;
 
@@ -2659,7 +2664,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 	}
 
 	if (fp->flags & O_TRUNC) {
-		ret = truncate_helper(ff, file->ino, 0);
+		ret = fuse2fs_truncate(ff, file->ino, 0);
 		if (ret)
 			goto out;
 	}
