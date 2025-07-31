@@ -4007,13 +4007,9 @@ static errcode_t clean_block_middle(struct fuse2fs *ff, ext2_ino_t ino,
 {
 	ext2_filsys fs = ff->fs;
 	blk64_t blk;
-	off_t residue;
+	off_t residue = FUSE2FS_OFF_IN_FSB(ff, offset);
 	int retflags;
 	errcode_t err;
-
-	residue = FUSE2FS_OFF_IN_FSB(ff, offset);
-	if (residue == 0)
-		return 0;
 
 	if (!*buf) {
 		err = ext2fs_get_mem(fs->blocksize, buf);
