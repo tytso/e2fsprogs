@@ -2503,10 +2503,9 @@ profile_error:
 		}
 
 		if (dev_param.dax && blocksize != sys_page_size) {
-			fprintf(stderr,
-				_("%s is capable of DAX but current block size "
-				  "%u is different from system page size %u so "
-				  "filesystem will not support DAX.\n"),
+			printf(_("%s is capable of DAX but current block size "
+				 "%u is different from system page size %u so "
+				 "filesystem will not support DAX.\n"),
 				device_name, blocksize, sys_page_size);
 		}
 	}
