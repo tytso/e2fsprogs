@@ -124,6 +124,28 @@
 
 static ext2_filsys global_fs; /* Try not to use this directly */
 
+static inline uint64_t round_up(uint64_t b, unsigned int align)
+{
+	unsigned int m;
+
+	if (align == 0)
+		return b;
+	m = b % align;
+	if (m)
+		b += align - m;
+	return b;
+}
+
+static inline uint64_t round_down(uint64_t b, unsigned int align)
+{
+	unsigned int m;
+
+	if (align == 0)
+		return b;
+	m = b % align;
+	return b - m;
+}
+
 #define dbg_printf(fuse2fs, format, ...) \
 	while ((fuse2fs)->debug) { \
 		printf("FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
@@ -4095,11 +4117,18 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (!(mode & FL_KEEP_SIZE_FLAG))
 		return -EINVAL;
 
-	/* Punch out a bunch of blocks */
-	start = FUSE2FS_B_TO_FSB(ff, offset);
-	end = (offset + len - fs->blocksize) / fs->blocksize;
-	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
-		   fh->ino, mode, start, end);
+	/*
+	 * Unmap out all full blocks in the middle of the range being punched.
+	 * The start of the unmap range should be the first byte of the first
+	 * fsblock that starts within the range.  The end of the range should
+	 * be the next byte after the last fsblock to end in the range.
+	 */
+	start = FUSE2FS_B_TO_FSBT(ff, round_up(offset, fs->blocksize));
+	end = FUSE2FS_B_TO_FSBT(ff, round_down(offset + len, fs->blocksize));
+
+	dbg_printf(ff,
+ "%s: ino=%d mode=0x%x offset=0x%jx len=0x%jx start=0x%llx end=0x%llx\n",
+		   __func__, fh->ino, mode, offset, len, start, end);
 
 	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
@@ -4120,10 +4149,14 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
-	/* Unmap full blocks in the middle */
-	if (start <= end) {
+	/*
+	 * Unmap full blocks in the middle, which is to say that start - end
+	 * must be at least one fsblock.  ext2fs_punch takes a closed interval
+	 * as its argument, so we pass [start, end - 1].
+	 */
+	if (start < end) {
 		err = ext2fs_punch(fs, fh->ino, EXT2_INODE(&inode),
-				   NULL, start, end);
+				   NULL, start, end - 1);
 		if (err)
 			return translate_error(fs, fh->ino, err);
 	}
