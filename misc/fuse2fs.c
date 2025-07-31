@@ -3775,7 +3775,10 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 		return -EROFS;
 
 	start = FUSE2FS_B_TO_FSBT(ff, fr->start);
-	end = FUSE2FS_B_TO_FSBT(ff, fr->start + fr->len - 1);
+	if (fr->len == -1ULL)
+		end = -1ULL;
+	else
+		end = FUSE2FS_B_TO_FSBT(ff, fr->start + fr->len - 1);
 	minlen = FUSE2FS_B_TO_FSBT(ff, fr->minlen);
 
 	if (EXT2FS_NUM_B2C(fs, minlen) > EXT2_CLUSTERS_PER_GROUP(fs->super) ||
