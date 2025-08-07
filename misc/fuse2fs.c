@@ -1086,13 +1086,11 @@ static int op_readlink(const char *path, char *buf, size_t len)
 		}
 
 		err = ext2fs_file_read(file, buf, len, &got);
-		if (err || got != len) {
-			ext2fs_file_close(file);
+		if (err)
 			ret = translate_error(fs, ino, err);
-			goto out2;
-		}
+		else if (got != len)
+			ret = translate_error(fs, ino, EXT2_ET_INODE_CORRUPTED);
 
-out2:
 		err = ext2fs_file_close(file);
 		if (ret)
 			goto out;
