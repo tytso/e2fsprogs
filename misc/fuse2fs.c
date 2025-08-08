@@ -2264,8 +2264,17 @@ static int get_req_groups(struct fuse2fs *ff, gid_t **gids, size_t *nr_gids)
 			return translate_error(fs, 0, err);
 
 		ret = fuse_getgroups(nr, array);
-		if (ret < 0)
-			return ret;
+		if (ret < 0) {
+			/*
+			 * If there's an error, we failed to find the group
+			 * membership of the process that initiated the file
+			 * change, either because the process went away or
+			 * because there's no Linux procfs.  Regardless of the
+			 * cause, we return -ENOENT.
+			 */
+			ext2fs_free_mem(&array);
+			return -ENOENT;
+		}
 
 		if (ret <= nr) {
 			*gids = array;
@@ -2296,13 +2305,23 @@ static int in_file_group(struct fuse_context *ctxt,
 	int ret;
 
 	ret = get_req_groups(ff, &gids, &nr_gids);
+	if (ret == -ENOENT) {
+		/* magic return code for "could not get caller group info" */
+		return ctxt->gid == inode_gid(*inode);
+	}
 	if (ret < 0)
 		return ret;
 
-	for (i = 0; i < nr_gids; i++)
-		if (gids[i] == gid)
-			return 1;
-	return 0;
+	ret = 0;
+	for (i = 0; i < nr_gids; i++) {
+		if (gids[i] == gid) {
+			ret = 1;
+			break;
+		}
+	}
+
+	ext2fs_free_mem(&gids);
+	return ret;
 }
 #else
 static int in_file_group(struct fuse_context *ctxt,
