@@ -3991,8 +3991,20 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 		b = start + max_blocks < end ? start + max_blocks : end;
 		err =  ext2fs_find_first_set_block_bitmap2(fs->block_map,
 							   start, b, &b);
-		if (err && err != ENOENT)
+		switch (err) {
+		case 0:
+			break;
+		case ENOENT:
+			/*
+			 * No free blocks found between start and b; discard
+			 * the entire range.
+			 */
+			err = 0;
+			break;
+		default:
 			return translate_error(fs, fh->ino, err);
+		}
+
 		if (b - start >= minlen) {
 			err = io_channel_discard(fs->io, start, b - start);
 			if (err)
