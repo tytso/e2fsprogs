@@ -907,7 +907,6 @@ static void *op_init(struct fuse_conn_info *conn
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
-	errcode_t err;
 
 	if (ff->magic != FUSE2FS_MAGIC) {
 		translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC);
@@ -939,15 +938,6 @@ static void *op_init(struct fuse_conn_info *conn
 	if (ff->debug)
 		cfg->debug = 1;
 #endif
-	if (fs->flags & EXT2_FLAG_RW) {
-		fs->super->s_mnt_count++;
-		ext2fs_set_tstamp(fs->super, s_mtime, time(NULL));
-		fs->super->s_state &= ~EXT2_VALID_FS;
-		ext2fs_mark_super_dirty(fs);
-		err = ext2fs_flush2(fs, 0);
-		if (err)
-			translate_error(fs, 0, err);
-	}
 
 	if (ff->kernel) {
 		char uuid[UUID_STR_SIZE];
@@ -4733,6 +4723,10 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
+	/*
+	 * ext4 can't do COW of shared blocks, so if the feature is enabled,
+	 * we must force ro mode.
+	 */
 	if (ext2fs_has_feature_shared_blocks(global_fs->super))
 		fctx.ro = 1;
 
@@ -4794,6 +4788,20 @@ int main(int argc, char *argv[])
 		err_printf(&fctx, "%s\n",
  _("Errors detected; running e2fsck is required."));
 		goto out;
+	}
+
+	/* Clear the valid flag so that an unclean shutdown forces a fsck */
+	if (global_fs->flags & EXT2_FLAG_RW) {
+		global_fs->super->s_mnt_count++;
+		ext2fs_set_tstamp(global_fs->super, s_mtime, time(NULL));
+		global_fs->super->s_state &= ~EXT2_VALID_FS;
+		ext2fs_mark_super_dirty(global_fs);
+		err = ext2fs_flush2(global_fs, 0);
+		if (err) {
+			translate_error(global_fs, 0, err);
+			ret |= 32;
+			goto out;
+		}
 	}
 
 	/* Initialize generation counter */
