@@ -1577,10 +1577,9 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 	int ret = 0;
 
 	err = fuse2fs_read_inode(fs, ino, &inode);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
+	if (err)
+		return translate_error(fs, ino, err);
+
 	dbg_printf(ff, "%s: put ino=%d links=%d\n", __func__, ino,
 		   inode.i_links_count);
 
@@ -1597,7 +1596,7 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
-		goto out;
+		return ret;
 
 	if (inode.i_links_count)
 		goto write_out;
@@ -1605,21 +1604,19 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 	if (ext2fs_has_feature_ea_inode(fs->super)) {
 		ret = remove_ea_inodes(ff, ino, &inode);
 		if (ret)
-			goto write_out;
+			return ret;
 	}
 
 	/* Nobody holds this file; free its blocks! */
 	err = ext2fs_free_ext_attr(fs, ino, &inode);
 	if (err)
-		goto write_out;
+		return translate_error(fs, ino, err);
 
 	if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&inode))) {
 		err = ext2fs_punch(fs, ino, EXT2_INODE(&inode), NULL,
 				   0, ~0ULL);
-		if (err) {
-			ret = translate_error(fs, ino, err);
-			goto write_out;
-		}
+		if (err)
+			return translate_error(fs, ino, err);
 	}
 
 	ext2fs_inode_alloc_stats2(fs, ino, -1,
@@ -1627,12 +1624,10 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 
 write_out:
 	err = fuse2fs_write_inode(fs, ino, &inode);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
-out:
-	return ret;
+	if (err)
+		return translate_error(fs, ino, err);
+
+	return 0;
 }
 
 static int __op_unlink(struct fuse2fs *ff, const char *path)
