@@ -5062,6 +5062,7 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			sizeof(fs->super->s_first_error_func));
 	}
 
+	fs->super->s_state |= EXT2_ERROR_FS;
 	fs->super->s_error_count++;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_flush(fs);
