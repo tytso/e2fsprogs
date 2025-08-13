@@ -1524,12 +1524,13 @@ static int unlink_file_by_name(struct fuse2fs *ff, const char *path)
 	return update_mtime(fs, dir, NULL);
 }
 
-static errcode_t remove_ea_inodes(struct fuse2fs *ff, ext2_ino_t ino,
-				  struct ext2_inode_large *inode)
+static int remove_ea_inodes(struct fuse2fs *ff, ext2_ino_t ino,
+			    struct ext2_inode_large *inode)
 {
 	ext2_filsys fs = ff->fs;
 	struct ext2_xattr_handle *h;
 	errcode_t err;
+	int ret = 0;
 
 	/*
 	 * The xattr handle maintains its own private copy of the inode, so
@@ -1537,25 +1538,35 @@ static errcode_t remove_ea_inodes(struct fuse2fs *ff, ext2_ino_t ino,
 	 */
 	err = fuse2fs_write_inode(fs, ino, inode);
 	if (err)
-		return err;
+		return translate_error(fs, ino, err);
 
 	err = ext2fs_xattrs_open(fs, ino, &h);
 	if (err)
-		return err;
+		return translate_error(fs, ino, err);
 
 	err = ext2fs_xattrs_read(h);
-	if (err)
+	if (err) {
+		ret = translate_error(fs, ino, err);
 		goto out_close;
+	}
 
 	err = ext2fs_xattr_remove_all(h);
-	if (err)
+	if (err) {
+		ret = translate_error(fs, ino, err);
 		goto out_close;
+	}
 
 out_close:
 	ext2fs_xattrs_close(&h);
+	if (ret)
+		return ret;
 
 	/* Now read the inode back in. */
-	return fuse2fs_read_inode(fs, ino, inode);
+	err = fuse2fs_read_inode(fs, ino, inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	return 0;
 }
 
 static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
@@ -1592,8 +1603,8 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 		goto write_out;
 
 	if (ext2fs_has_feature_ea_inode(fs->super)) {
-		err = remove_ea_inodes(ff, ino, &inode);
-		if (err)
+		ret = remove_ea_inodes(ff, ino, &inode);
+		if (ret)
 			goto write_out;
 	}
 
