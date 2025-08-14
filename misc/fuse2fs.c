@@ -4137,6 +4137,10 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 		return err;
 	fsize = EXT2_I_SIZE(&inode);
 
+	/* Indirect files do not support unwritten extents */
+	if (!(inode.i_flags & EXT4_EXTENTS_FL))
+		return -EOPNOTSUPP;
+
 	/* Allocate a bunch of blocks */
 	flags = (mode & FL_KEEP_SIZE_FLAG ? 0 :
 			EXT2_FALLOCATE_INIT_BEYOND_EOF);
@@ -4278,6 +4282,14 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
+
+	/*
+	 * Indirect files do not support unwritten extents, which means we
+	 * can't support zero range.  Punch goes first in zero-range, which
+	 * is why the check is here.
+	 */
+	if ((mode & FL_ZERO_RANGE_FLAG) && !(inode.i_flags & EXT4_EXTENTS_FL))
+		return -EOPNOTSUPP;
 
 	/* Zero everything before the first block and after the last block */
 	if (FUSE2FS_B_TO_FSBT(ff, offset) == FUSE2FS_B_TO_FSBT(ff, offset + len))
