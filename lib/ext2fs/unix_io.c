@@ -734,6 +734,7 @@ retry:
 					retval2);
 				if (err_buf)
 					ext2fs_free_mem(&err_buf);
+				mutex_lock(data, CACHE_MTX);
 				goto retry;
 			} else
 				cache->write_err = 0;
