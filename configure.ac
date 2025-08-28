@@ -1482,6 +1482,25 @@ then
 fi
 
 dnl
+dnl see if CLOCK_MONOTONIC exists
+dnl
+AC_MSG_CHECKING(for CLOCK_MONOTONIC)
+AC_LINK_IFELSE(
+[	AC_LANG_PROGRAM([[
+#define _GNU_SOURCE
+#include <time.h>
+	]], [[
+struct timespec nuts;
+clock_gettime(CLOCK_MONOTONIC, &nuts);
+	]])
+], have_clock_monotonic=yes
+   AC_MSG_RESULT(yes),
+   AC_MSG_RESULT(no))
+if test "$have_clock_monotonic" = yes; then
+  AC_DEFINE(HAVE_CLOCK_MONOTONIC, 1, [Define to 1 if CLOCK_MONOTONIC is present])
+fi
+
+dnl
 dnl See if optreset exists
 dnl
 AC_MSG_CHECKING(for optreset)

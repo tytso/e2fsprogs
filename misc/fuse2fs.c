@@ -166,6 +166,12 @@ static inline uint64_t round_down(uint64_t b, unsigned int align)
 		fflush(stderr); \
 	} while (0)
 
+#define timing_printf(fuse2fs, format, ...) \
+	while ((fuse2fs)->timing) { \
+		printf("FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
+		break; \
+	}
+
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 8)
 # ifdef _IOR
 #  ifdef _IOW
@@ -245,6 +251,13 @@ struct fuse2fs {
 #ifdef CONFIG_MMP
 	struct bthread *mmp_thread;
 	unsigned int mmp_update_interval;
+#endif
+#ifdef HAVE_CLOCK_MONOTONIC
+	double lock_start_time;
+	double op_start_time;
+
+	/* options set by fuse_opt_parse must be of type int */
+	int timing;
 #endif
 };
 
@@ -494,13 +507,38 @@ static inline errcode_t fuse2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 
 static inline ext2_filsys fuse2fs_start(struct fuse2fs *ff)
 {
-	pthread_mutex_lock(&ff->bfl);
+	if (ff->timing) {
+		double lock_time = gettime_monotonic();
+
+		pthread_mutex_lock(&ff->bfl);
+
+		ff->op_start_time = gettime_monotonic();
+		ff->lock_start_time = lock_time;
+	} else {
+		pthread_mutex_lock(&ff->bfl);
+	}
+
 	return ff->fs;
+}
+
+static inline void fuse2fs_finish_timing(struct fuse2fs *ff, const char *func)
+{
+	double now;
+
+	if (!ff->timing)
+		return;
+
+	now = gettime_monotonic();
+
+	timing_printf(ff, "%s: lock=%.2fms elapsed=%.2fms\n", func,
+		      (ff->op_start_time - ff->lock_start_time) * 1000.0,
+		      (now - ff->op_start_time) * 1000.0);
 }
 
 static inline void __fuse2fs_finish(struct fuse2fs *ff, int ret,
 				    const char *func)
 {
+	fuse2fs_finish_timing(ff, func);
 	if (ret)
 		dbg_printf(ff, "%s: libfuse ret=%d\n", func, ret);
 	pthread_mutex_unlock(&ff->bfl);
@@ -4966,6 +5004,9 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("acl",		acl,			1),
 	FUSE2FS_OPT("noacl",		acl,			0),
 	FUSE2FS_OPT("lockfile=%s",	lockfile,		0),
+#ifdef HAVE_CLOCK_MONOTONIC
+	FUSE2FS_OPT("timing",		timing,			1),
+#endif
 
 	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
