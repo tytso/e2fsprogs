@@ -1090,11 +1090,10 @@ static errcode_t unixfd_open(const char *str_fd, int flags,
 	if (fd_flags == -1)
 		return EBADF;
 
-	flags = 0;
+	/* O_EXCL is cleared by Linux at open and not returned by F_GETFL */
+	flags &= IO_FLAG_EXCLUSIVE;
 	if (fd_flags & O_RDWR)
 		flags |= IO_FLAG_RW;
-	if (fd_flags & O_EXCL)
-		flags |= IO_FLAG_EXCLUSIVE;
 #if defined(O_DIRECT)
 	if (fd_flags & O_DIRECT)
 		flags |= IO_FLAG_DIRECT_IO;
