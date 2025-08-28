@@ -4773,6 +4773,19 @@ int main(int argc, char *argv[])
 		flags |= EXT2_FLAG_DIRECT_IO;
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
+	if (err == EPERM || err == EACCES) {
+		/*
+		 * Source device cannot be opened for write.  Under these
+		 * circumstances, mount(8) will try again with a ro mount,
+		 * and the kernel will open the block device readonly.
+		 */
+		log_printf(&fctx, "%s\n",
+ _("WARNING: source write-protected, mounted read-only."));
+		flags &= ~EXT2_FLAG_RW;
+		fctx.ro = 1;
+		err = ext2fs_open2(fctx.device, options, flags, 0, 0,
+				   unix_io_manager, &global_fs);
+	}
 	if (err) {
 		err_printf(&fctx, "%s.\n", error_message(err));
 		err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
