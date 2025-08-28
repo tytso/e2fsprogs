@@ -1035,6 +1035,7 @@ static void *op_init(struct fuse_conn_info *conn
 	cfg->use_ino = 1;
 	if (ff->debug)
 		cfg->debug = 1;
+	cfg->nullpath_ok = 1;
 #endif
 
 	if (ff->kernel) {
@@ -1102,9 +1103,49 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 	return ret;
 }
 
+static int __fuse2fs_file_ino(struct fuse2fs *ff, const char *path,
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+			      struct fuse_file_info *fp EXT2FS_ATTR((unused)),
+#endif
+			      ext2_ino_t *inop,
+			      const char *func,
+			      int line)
+{
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+	if (fp) {
+		struct fuse2fs_file_handle *fh =
+			(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
+
+		if (fh->ino == 0)
+			return -ESTALE;
+
+		*inop = fh->ino;
+		dbg_printf(ff, "%s: get ino=%d\n", func, fh->ino);
+		return 0;
+	}
+#endif
+	dbg_printf(ff, "%s: get path=%s\n", func, path);
+	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, inop);
+	if (err)
+		return __translate_error(fs, 0, err, func, line);
+
+	return 0;
+}
+
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+# define fuse2fs_file_ino(ff, path, fp, inop) \
+	__fuse2fs_file_ino((ff), (path), (fp), (inop), __func__, __LINE__)
+#else
+# define fuse2fs_file_ino(ff, path, fp, inop) \
+	__fuse2fs_file_ino((ff), (path), NULL, (inop), __func__, __LINE__)
+#endif
+
 static int op_getattr(const char *path, struct stat *statbuf
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
+			, struct fuse_file_info *fi
 #endif
 			)
 {
@@ -1112,18 +1153,14 @@ static int op_getattr(const char *path, struct stat *statbuf
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
 	ext2_ino_t ino;
-	errcode_t err;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf(ff, "%s: path=%s\n", __func__, path);
 	pthread_mutex_lock(&ff->bfl);
-	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
-	if (err) {
-		ret = translate_error(fs, 0, err);
+	ret = fuse2fs_file_ino(ff, path, fi, &ino);
+	if (ret)
 		goto out;
-	}
 	ret = stat_inode(fs, ino, statbuf);
 out:
 	pthread_mutex_unlock(&ff->bfl);
@@ -2439,7 +2476,7 @@ static int in_file_group(struct fuse_context *ctxt,
 
 static int op_chmod(const char *path, mode_t mode
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
+			, struct fuse_file_info *fi
 #endif
 			)
 {
@@ -2454,11 +2491,9 @@ static int op_chmod(const char *path, mode_t mode
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
-	if (err) {
-		ret = translate_error(fs, 0, err);
+	ret = fuse2fs_file_ino(ff, path, fi, &ino);
+	if (ret)
 		goto out;
-	}
 	dbg_printf(ff, "%s: path=%s mode=0%o ino=%d\n", __func__, path, mode, ino);
 
 	err = fuse2fs_read_inode(fs, ino, &inode);
@@ -2513,7 +2548,7 @@ out:
 
 static int op_chown(const char *path, uid_t owner, gid_t group
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
+			, struct fuse_file_info *fi
 #endif
 			)
 {
@@ -2528,11 +2563,9 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
-	if (err) {
-		ret = translate_error(fs, 0, err);
+	ret = fuse2fs_file_ino(ff, path, fi, &ino);
+	if (ret)
 		goto out;
-	}
 	dbg_printf(ff, "%s: path=%s owner=%d group=%d ino=%d\n", __func__,
 		   path, owner, group, ino);
 
@@ -2658,29 +2691,20 @@ out_close:
 
 static int op_truncate(const char *path, off_t len
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
+			, struct fuse_file_info *fi
 #endif
 			)
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	ext2_filsys fs;
 	ext2_ino_t ino;
-	errcode_t err;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
-	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
-	if (err) {
-		ret = translate_error(fs, 0, err);
+	ret = fuse2fs_file_ino(ff, path, fi, &ino);
+	if (ret)
 		goto out;
-	}
-	if (!ino) {
-		ret = -ESTALE;
-		goto out;
-	}
 	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, ino, (intmax_t) len);
 
 	ret = check_inum_access(ff, ino, W_OK);
@@ -2693,7 +2717,7 @@ static int op_truncate(const char *path, off_t len
 
 out:
 	pthread_mutex_unlock(&ff->bfl);
-	return err;
+	return ret;
 }
 
 #ifdef __linux__
@@ -3754,7 +3778,7 @@ static int op_fgetattr(const char *path EXT2FS_ATTR((unused)),
 
 static int op_utimens(const char *path, const struct timespec ctv[2]
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, struct fuse_file_info *fi EXT2FS_ATTR((unused))
+			, struct fuse_file_info *fi
 #endif
 			)
 {
@@ -3771,11 +3795,9 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
-	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
-	if (err) {
-		ret = translate_error(fs, 0, err);
+	ret = fuse2fs_file_ino(ff, path, fi, &ino);
+	if (ret)
 		goto out;
-	}
 	dbg_printf(ff, "%s: ino=%d atime=%lld.%ld mtime=%lld.%ld\n", __func__,
 			ino,
 			(long long int)ctv[0].tv_sec, ctv[0].tv_nsec,
