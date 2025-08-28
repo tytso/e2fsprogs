@@ -5277,6 +5277,14 @@ int main(int argc, char *argv[])
  "-oallow_other,default_permissions,suid,dev");
 	}
 
+	/*
+	 * Since there's a Big Kernel Lock around all the libext2fs code, we
+	 * only need to start four threads -- one to decode a request, another
+	 * to do the filesystem work, a third to transmit the reply, and a
+	 * fourth to handle fuse notifications.
+	 */
+	fuse_opt_insert_arg(&args, 1, "-omax_threads=4");
+
 	if (fctx.debug) {
 		int	i;
 
