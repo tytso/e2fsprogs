@@ -4818,6 +4818,11 @@ int main(int argc, char *argv[])
  _("Mounting read-only without recovering journal."));
 			fctx.ro = 1;
 			global_fs->flags &= ~EXT2_FLAG_RW;
+		} else if (!(global_fs->flags & EXT2_FLAG_RW)) {
+			err_printf(&fctx, "%s\n",
+ _("Cannot replay journal on read-only device."));
+			ret = 32;
+			goto out;
 		} else {
 			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
