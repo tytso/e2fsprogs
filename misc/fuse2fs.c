@@ -17,6 +17,7 @@
 # include <linux/fs.h>
 # include <linux/falloc.h>
 # include <linux/xattr.h>
+# include <sys/prctl.h>
 #endif
 #ifdef HAVE_SYS_XATTR_H
 #include <sys/xattr.h>
@@ -5490,6 +5491,30 @@ static void fuse2fs_compute_libfuse_args(struct fuse2fs *ff,
 	}
 }
 
+/*
+ * Try to register as a filesystem I/O server process so that our memory
+ * allocations don't cause io reclaim.
+ */
+static void try_set_io_flusher(struct fuse2fs *ff)
+{
+#ifdef HAVE_PR_SET_IO_FLUSHER
+	int ret = prctl(PR_GET_IO_FLUSHER, 0, 0, 0, 0);
+
+	/*
+	 * positive ret means it's already set, negative means we can't even
+	 * look at the value so don't bother setting it
+	 */
+	if (ret)
+		return;
+
+	ret = prctl(PR_SET_IO_FLUSHER, 1, 0, 0, 0);
+	if (ret < 0)
+		err_printf(ff, "%s: %s.\n",
+ _("Could not register as IO flusher thread"),
+			   strerror(errno));
+#endif
+}
+
 int main(int argc, char *argv[])
 {
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
@@ -5534,6 +5559,8 @@ int main(int argc, char *argv[])
 		ret = 2;
 		goto out;
 	}
+
+	try_set_io_flusher(&fctx);
 
 	/* Will we allow users to allocate every last block? */
 	if (getenv("FUSE2FS_ALLOC_ALL_BLOCKS")) {
