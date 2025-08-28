@@ -224,7 +224,7 @@ struct fuse2fs {
 	int ro;
 	int debug;
 	int no_default_opts;
-	int panic_on_error;
+	int errors_behavior; /* actually an enum */
 	int minixdf;
 	int fakeroot;
 	int alloc_all_blocks;
@@ -4778,6 +4778,7 @@ enum {
 	FUSE2FS_HELPFULL,
 	FUSE2FS_CACHE_SIZE,
 	FUSE2FS_DIRSYNC,
+	FUSE2FS_ERRORS_BEHAVIOR,
 };
 
 #define FUSE2FS_OPT(t, p, v) { t, offsetof(struct fuse2fs, p), v }
@@ -4785,7 +4786,6 @@ enum {
 static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("ro",		ro,			1),
 	FUSE2FS_OPT("rw",		ro,			0),
-	FUSE2FS_OPT("errors=panic",	panic_on_error,		1),
 	FUSE2FS_OPT("minixdf",		minixdf,		1),
 	FUSE2FS_OPT("bsddf",		minixdf,		0),
 	FUSE2FS_OPT("fakeroot",		fakeroot,		1),
@@ -4805,6 +4805,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE_OPT_KEY("nodelalloc",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
 	FUSE_OPT_KEY("dirsync",		FUSE2FS_DIRSYNC),
+	FUSE_OPT_KEY("errors=%s",	FUSE2FS_ERRORS_BEHAVIOR),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -4841,6 +4842,21 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 
 		/* do not pass through to libfuse */
 		return 0;
+	case FUSE2FS_ERRORS_BEHAVIOR:
+		if (strcmp(arg + 7, "continue") == 0)
+			ff->errors_behavior = EXT2_ERRORS_CONTINUE;
+		else if (strcmp(arg + 7, "remount-ro") == 0)
+			ff->errors_behavior = EXT2_ERRORS_RO;
+		else if (strcmp(arg + 7, "panic") == 0)
+			ff->errors_behavior = EXT2_ERRORS_PANIC;
+		else {
+			fprintf(stderr, "%s: %s\n", arg,
+ _("unknown errors behavior."));
+			return -1;
+		}
+
+		/* do not pass through to libfuse */
+		return 0;
 	case FUSE2FS_IGNORED:
 		return 0;
 	case FUSE2FS_HELP:
@@ -4866,6 +4882,8 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"                           allow_others,default_permissions,suid,dev\n"
 	"    -o directio            use O_DIRECT to read and write the disk\n"
 	"    -o cache_size=N[KMG]   use a disk cache of this size\n"
+	"    -o errors=             behavior when an error is encountered:\n"
+	"                           continue|remount-ro|panic\n"
 	"\n",
 			outargs->argv[0]);
 		if (key == FUSE2FS_HELPFULL) {
@@ -5244,6 +5262,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (!fctx.errors_behavior)
+		fctx.errors_behavior = global_fs->super->s_errors;
+
 	/* Initialize generation counter */
 	get_random_bytes(&fctx.next_generation, sizeof(unsigned int));
 
@@ -5510,8 +5531,23 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 	fs->super->s_error_count++;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_flush(fs);
-	if (ff->panic_on_error)
+	switch (ff->errors_behavior) {
+	case EXT2_ERRORS_CONTINUE:
+		err_printf(ff, "%s\n",
+ _("Continuing after errors; is this a good idea?"));
+		break;
+	case EXT2_ERRORS_RO:
+		if (fs->flags & EXT2_FLAG_RW)
+			err_printf(ff, "%s\n",
+ _("Remounting read-only due to errors."));
+		fs->flags &= ~EXT2_FLAG_RW;
+		break;
+	case EXT2_ERRORS_PANIC:
+		err_printf(ff, "%s\n",
+ _("Aborting filesystem mount due to errors."));
 		abort();
+		break;
+	}
 
 	return ret;
 }
