@@ -3450,6 +3450,9 @@ struct readdir_iter {
 	fuse_fill_dir_t func;
 
 	struct fuse2fs *ff;
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+	enum fuse_readdir_flags flags;
+#endif
 	unsigned int nr;
 	off_t startpos;
 	off_t dirpos;
@@ -3500,8 +3503,23 @@ static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	if (i->startpos >= i->dirpos)
 		return 0;
 
-	dbg_printf(i->ff, "READDIR %u dirpos %llu\n", i->nr++,
+	dbg_printf(i->ff, "READDIR%s %u dirpos %llu\n",
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+			i->flags == FUSE_READDIR_PLUS ? "PLUS" : "",
+#else
+			"",
+#endif
+			i->nr++,
 			(unsigned long long)i->dirpos);
+
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+	if (i->flags == FUSE_READDIR_PLUS) {
+		ret = stat_inode(i->fs, dirent->inode, &stat);
+		if (ret)
+			return DIRENT_ABORT;
+	}
+#endif
+
 	memcpy(namebuf, dirent->name, dirent->name_len & 0xFF);
 	namebuf[dirent->name_len & 0xFF] = 0;
 	ret = i->func(i->buf, namebuf, &stat, i->dirpos
@@ -3520,7 +3538,7 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 		      off_t offset,
 		      struct fuse_file_info *fp
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
-			, enum fuse_readdir_flags flags EXT2FS_ATTR((unused))
+			, enum fuse_readdir_flags flags
 #endif
 			)
 {
@@ -3533,6 +3551,9 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 		.ff = ff,
 		.dirpos = 0,
 		.startpos = offset,
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+		.flags = flags,
+#endif
 	};
 	int ret = 0;
 
