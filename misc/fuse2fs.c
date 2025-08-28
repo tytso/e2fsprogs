@@ -297,6 +297,55 @@ static inline off_t FUSE2FS_FSB_TO_B(const struct fuse2fs *ff, blk64_t bno)
 	return bno << ff->blocklog;
 }
 
+static double gettime_monotonic(void)
+{
+#ifdef CLOCK_MONOTONIC
+	struct timespec ts;
+#endif
+	struct timeval tv;
+	static pthread_mutex_t fake_lock = PTHREAD_MUTEX_INITIALIZER;
+	static double fake_time = 0;
+	double dret;
+	int ret;
+
+#ifdef CLOCK_MONOTONIC
+	ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (ret == 0)
+		return (double)ts.tv_sec + (ts.tv_nsec / 1000000000.0);
+#endif
+	ret = gettimeofday(&tv, NULL);
+	if (ret == 0)
+		return (double)tv.tv_sec + (tv.tv_usec / 1000000.0);
+
+	/* If we have no clock sources at all, fake it */
+	pthread_mutex_lock(&fake_lock);
+	fake_time += 1.0;
+	dret = fake_time;
+	pthread_mutex_unlock(&fake_lock);
+
+	return dret;
+}
+
+static double init_deadline(double timeout)
+{
+	return gettime_monotonic() + timeout;
+}
+
+static int retry_before_deadline(double deadline)
+{
+	double now = gettime_monotonic();
+
+	if (now >= deadline)
+		return 0;
+
+	/* sleep for 0.1s before trying again */
+	usleep(100000);
+	return 1;
+}
+
+/* Wait this many seconds to acquire the filesystem device */
+#define FUSE2FS_OPEN_TIMEOUT	(15.0)
+
 #define EXT4_EPOCH_BITS 2
 #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
 #define EXT4_NSEC_MASK  (~0UL << EXT4_EPOCH_BITS)
@@ -4684,6 +4733,7 @@ int main(int argc, char *argv[])
 	errcode_t err;
 	FILE *orig_stderr = stderr;
 	char extra_args[BUFSIZ];
+	double deadline;
 	int ret;
 	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE |
 		    EXT2_FLAG_RW;
@@ -4791,6 +4841,34 @@ int main(int argc, char *argv[])
 		err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
 		goto out;
 	}
+
+	/*
+	 * If the filesystem is stored in a regular file, take an (advisory)
+	 * exclusive lock to prevent other instances of e2fsprogs from writing
+	 * to the filesystem image.  On Linux we don't want to do this for
+	 * block devices because udev will spin forever trying to settle a
+	 * uevent and cause weird userspace stalls, and block devices have
+	 * O_EXCL so we don't need this there.
+	 */
+	if (!(global_fs->io->flags & CHANNEL_FLAGS_BLOCK_DEVICE)) {
+		unsigned int lock_flags = IO_CHANNEL_FLOCK_TRYLOCK;
+
+		if (global_fs->flags & IO_FLAG_RW)
+			lock_flags |= IO_CHANNEL_FLOCK_EXCLUSIVE;
+		else
+			lock_flags |= IO_CHANNEL_FLOCK_SHARED;
+
+		deadline = init_deadline(FUSE2FS_OPEN_TIMEOUT);
+		do {
+			err = io_channel_flock(global_fs->io, lock_flags);
+		} while (err == EWOULDBLOCK && retry_before_deadline(deadline));
+		if (err) {
+			err_printf(&fctx, "%s: %s\n",
+ _("Could not lock filesystem image"), error_message(err));
+			goto out;
+		}
+	}
+
 	fctx.fs = global_fs;
 	global_fs->priv_data = &fctx;
 	fctx.blocklog = u_log2(fctx.fs->blocksize);
