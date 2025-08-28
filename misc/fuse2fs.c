@@ -222,6 +222,7 @@ struct fuse2fs_file_handle {
 enum fuse2fs_opstate {
 	F2OP_READONLY,
 	F2OP_WRITABLE,
+	F2OP_SHUTDOWN,
 };
 
 /* Main program context */
@@ -280,7 +281,7 @@ struct fuse2fs {
 		} \
 	} while (0)
 
-#define __FUSE2FS_CHECK_CONTEXT(ff, retcode) \
+#define __FUSE2FS_CHECK_CONTEXT(ff, retcode, shutcode) \
 	do { \
 		if ((ff) == NULL || (ff)->magic != FUSE2FS_MAGIC) { \
 			fprintf(stderr, \
@@ -289,14 +290,17 @@ struct fuse2fs {
 			fflush(stderr); \
 			retcode; \
 		} \
+		if ((ff)->opstate == F2OP_SHUTDOWN) { \
+			shutcode; \
+		} \
 	} while (0)
 
 #define FUSE2FS_CHECK_CONTEXT(ff) \
-	__FUSE2FS_CHECK_CONTEXT((ff), return -EUCLEAN)
+	__FUSE2FS_CHECK_CONTEXT((ff), return -EUCLEAN, return -EIO)
 #define FUSE2FS_CHECK_CONTEXT_DESTROY(ff) \
-	__FUSE2FS_CHECK_CONTEXT((ff), return)
+	__FUSE2FS_CHECK_CONTEXT((ff), return, /* do not return */)
 #define FUSE2FS_CHECK_CONTEXT_INIT(ff) \
-	__FUSE2FS_CHECK_CONTEXT((ff), abort())
+	__FUSE2FS_CHECK_CONTEXT((ff), abort(), abort())
 
 static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			     const char *func, int line);
@@ -4870,6 +4874,36 @@ out:
 }
 #endif /* FITRIM */
 
+#ifndef EXT4_IOC_SHUTDOWN
+# define EXT4_IOC_SHUTDOWN	_IOR('X', 125, __u32)
+#endif
+
+static int ioctl_shutdown(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
+			  void *data)
+{
+	struct fuse_context *ctxt = fuse_get_context();
+	ext2_filsys fs = ff->fs;
+
+	if (!is_superuser(ff, ctxt))
+		return -EPERM;
+
+	err_printf(ff, "%s.\n", _("shut down requested"));
+
+	fuse2fs_mmp_cancel(ff);
+
+	/*
+	 * EXT4_IOC_SHUTDOWN inherited the inverted polarity on the ioctl
+	 * direction from XFS.  Unfortunately, that means we can't implement
+	 * any of the flags.  Flush whatever is dirty and shut down.
+	 */
+	if (ff->opstate == F2OP_WRITABLE)
+		ext2fs_flush2(fs, 0);
+	ff->opstate = F2OP_SHUTDOWN;
+	fs->flags &= ~EXT2_FLAG_RW;
+
+	return 0;
+}
+
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 8)
 static int op_ioctl(const char *path EXT2FS_ATTR((unused)),
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
@@ -4916,6 +4950,9 @@ static int op_ioctl(const char *path EXT2FS_ATTR((unused)),
 		ret = ioctl_fitrim(ff, fh, data);
 		break;
 #endif
+	case EXT4_IOC_SHUTDOWN:
+		ret = ioctl_shutdown(ff, fh, data);
+		break;
 	default:
 		dbg_printf(ff, "%s: Unknown ioctl %d\n", __func__, cmd);
 		ret = -ENOTTY;
