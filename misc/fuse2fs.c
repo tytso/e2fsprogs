@@ -1095,6 +1095,27 @@ static void fuse2fs_release_lockfile(struct fuse2fs *ff)
 	free(ff->lockfile);
 }
 
+static void fuse2fs_unmount(struct fuse2fs *ff)
+{
+	char uuid[UUID_STR_SIZE];
+	errcode_t err;
+
+	if (ff->fs) {
+		uuid_unparse(ff->fs->super->s_uuid, uuid);
+		err = ext2fs_close_free(&ff->fs);
+		if (err)
+			err_printf(ff, "%s: %s\n", _("while closing fs"),
+				   error_message(err));
+
+		if (ff->kernel)
+			log_printf(ff, "%s %s.\n", _("unmounted filesystem"),
+				   uuid);
+	}
+
+	if (ff->lockfile)
+		fuse2fs_release_lockfile(ff);
+}
+
 static void op_destroy(void *p EXT2FS_ATTR((unused)))
 {
 	struct fuse2fs *ff = fuse2fs_get();
@@ -1131,13 +1152,6 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 		dbg_printf(ff, "hit_ratio: %.1f%%\n",
 				(100.0 * stats->cache_hits) /
 				(stats->cache_hits + stats->cache_misses));
-	}
-
-	if (ff->kernel) {
-		char uuid[UUID_STR_SIZE];
-
-		uuid_unparse(fs->super->s_uuid, uuid);
-		log_printf(ff, "%s %s.\n", _("unmounting filesystem"), uuid);
 	}
 
 	fuse2fs_finish(ff, 0);
@@ -5579,13 +5593,7 @@ out:
 		fflush(orig_stderr);
 	}
 	fuse2fs_mmp_destroy(&fctx);
-	if (fctx.fs) {
-		err = ext2fs_close_free(&fctx.fs);
-		if (err)
-			com_err(argv[0], err, "while closing fs");
-	}
-	if (fctx.lockfile)
-		fuse2fs_release_lockfile(&fctx);
+	fuse2fs_unmount(&fctx);
 	if (fctx.device)
 		free(fctx.device);
 	pthread_mutex_destroy(&fctx.bfl);
