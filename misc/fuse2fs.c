@@ -252,9 +252,23 @@ struct fuse2fs {
 	return translate_error((fs), 0, EXT2_ET_FILESYSTEM_CORRUPTED); \
 } while (0)
 
-#define FUSE2FS_CHECK_CONTEXT(ptr) do {if ((ptr)->magic != FUSE2FS_MAGIC) \
-	return translate_error(global_fs, 0, EXT2_ET_FILESYSTEM_CORRUPTED); \
-} while (0)
+#define __FUSE2FS_CHECK_CONTEXT(ff, retcode) \
+	do { \
+		if ((ff) == NULL || (ff)->magic != FUSE2FS_MAGIC) { \
+			fprintf(stderr, \
+				"FUSE2FS: Corrupt in-memory data at %s:%d!\n", \
+				__func__, __LINE__); \
+			fflush(stderr); \
+			retcode; \
+		} \
+	} while (0)
+
+#define FUSE2FS_CHECK_CONTEXT(ff) \
+	__FUSE2FS_CHECK_CONTEXT((ff), return -EUCLEAN)
+#define FUSE2FS_CHECK_CONTEXT_DESTROY(ff) \
+	__FUSE2FS_CHECK_CONTEXT((ff), return)
+#define FUSE2FS_CHECK_CONTEXT_INIT(ff) \
+	__FUSE2FS_CHECK_CONTEXT((ff), abort())
 
 static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			     const char *file, int line);
@@ -963,10 +977,7 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 	ext2_filsys fs;
 	errcode_t err;
 
-	if (ff->magic != FUSE2FS_MAGIC) {
-		translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC);
-		return;
-	}
+	FUSE2FS_CHECK_CONTEXT_DESTROY(ff);
 
 	pthread_mutex_lock(&ff->bfl);
 	fs = ff->fs;
@@ -1139,10 +1150,7 @@ static void *op_init(struct fuse_conn_info *conn
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
 
-	if (ff->magic != FUSE2FS_MAGIC) {
-		translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC);
-		return NULL;
-	}
+	FUSE2FS_CHECK_CONTEXT_INIT(ff);
 
 	/*
 	 * Configure logging a second time, because libfuse might have
@@ -5620,16 +5628,13 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 	case EXT2_ET_EA_KEY_NOT_FOUND:
 		ret = -ENODATA;
 		break;
-	/* Sometimes fuse returns a garbage file handle pointer to us... */
-	case EXT2_ET_MAGIC_EXT2_FILE:
-		ret = -EFAULT;
-		break;
 	case EXT2_ET_UNIMPLEMENTED:
 		ret = -EOPNOTSUPP;
 		break;
 	case EXT2_ET_RO_FILSYS:
 		ret = -EROFS;
 		break;
+	case EXT2_ET_MAGIC_EXT2_FILE:
 	case EXT2_ET_MAGIC_EXT2FS_FILSYS:
 	case EXT2_ET_MAGIC_BADBLOCKS_LIST:
 	case EXT2_ET_MAGIC_BADBLOCKS_ITERATE:
