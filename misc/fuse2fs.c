@@ -744,6 +744,36 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 	return -EACCES;
 }
 
+static errcode_t fuse2fs_check_support(struct fuse2fs *ff)
+{
+	ext2_filsys fs = ff->fs;
+
+	if (ext2fs_has_feature_quota(fs->super)) {
+		err_printf(ff, "%s\n", _("quotas not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_verity(fs->super)) {
+		err_printf(ff, "%s\n", _("verity not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_encrypt(fs->super)) {
+		err_printf(ff, "%s\n", _("encryption not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_casefold(fs->super)) {
+		err_printf(ff, "%s\n", _("casefolding not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+
+	if (fs->super->s_state & EXT2_ERROR_FS) {
+		err_printf(ff, "%s\n",
+ _("Errors detected; running e2fsck is required."));
+		return EXT2_ET_FILESYSTEM_CORRUPTED;
+	}
+
+	return 0;
+}
+
 static void op_destroy(void *p EXT2FS_ATTR((unused)))
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -4771,29 +4801,9 @@ int main(int argc, char *argv[])
 	}
 
 	ret = 3;
-
-	if (ext2fs_has_feature_quota(global_fs->super)) {
-		err_printf(&fctx, "%s", _("quotas not supported."));
+	err = fuse2fs_check_support(&fctx);
+	if (err)
 		goto out;
-	}
-	if (ext2fs_has_feature_verity(global_fs->super)) {
-		err_printf(&fctx, "%s", _("verity not supported."));
-		goto out;
-	}
-	if (ext2fs_has_feature_encrypt(global_fs->super)) {
-		err_printf(&fctx, "%s", _("encryption not supported."));
-		goto out;
-	}
-	if (ext2fs_has_feature_casefold(global_fs->super)) {
-		err_printf(&fctx, "%s", _("casefolding not supported."));
-		goto out;
-	}
-
-	if (global_fs->super->s_state & EXT2_ERROR_FS) {
-		err_printf(&fctx, "%s\n",
- _("Errors detected; running e2fsck is required."));
-		goto out;
-	}
 
 	/*
 	 * ext4 can't do COW of shared blocks, so if the feature is enabled,
@@ -4817,8 +4827,10 @@ int main(int argc, char *argv[])
 						_("Please run e2fsck -fy."));
 				goto out;
 			}
-			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
-			ext2fs_mark_super_dirty(global_fs);
+
+			err = fuse2fs_check_support(&fctx);
+			if (err)
+				goto out;
 		}
 	} else if (ext2fs_has_feature_journal(global_fs->super)) {
 		err = ext2fs_check_ext3_journal(global_fs);
