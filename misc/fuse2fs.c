@@ -4636,23 +4636,17 @@ out:
 
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 9)
 # ifdef SUPPORT_FALLOCATE
-static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
-			    off_t len)
+static int fuse2fs_allocate_range(struct fuse2fs *ff,
+				  struct fuse2fs_file_handle *fh, int mode,
+				  off_t offset, off_t len)
 {
-	struct fuse_context *ctxt = fuse_get_context();
-	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh =
-		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
-	ext2_filsys fs;
+	ext2_filsys fs = ff->fs;
 	struct ext2_inode_large inode;
 	blk64_t start, end;
 	__u64 fsize;
 	errcode_t err;
 	int flags;
 
-	FUSE2FS_CHECK_CONTEXT(ff);
-	FUSE2FS_CHECK_HANDLE(ff, fh);
-	fs = ff->fs;
 	start = FUSE2FS_B_TO_FSBT(ff, offset);
 	end = FUSE2FS_B_TO_FSBT(ff, offset + len - 1);
 	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
@@ -4771,22 +4765,16 @@ static errcode_t clean_block_edge(struct fuse2fs *ff, ext2_ino_t ino,
 	return io_channel_write_blk64(fs->io, blk, 1, *buf);
 }
 
-static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
-			off_t len)
+static int fuse2fs_punch_range(struct fuse2fs *ff,
+			       struct fuse2fs_file_handle *fh, int mode,
+			       off_t offset, off_t len)
 {
-	struct fuse_context *ctxt = fuse_get_context();
-	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	struct fuse2fs_file_handle *fh =
-		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
-	ext2_filsys fs;
+	ext2_filsys fs = ff->fs;
 	struct ext2_inode_large inode;
 	blk64_t start, end;
 	errcode_t err;
 	char *buf = NULL;
 
-	FUSE2FS_CHECK_CONTEXT(ff);
-	FUSE2FS_CHECK_HANDLE(ff, fh);
-	fs = ff->fs;
 	dbg_printf(ff, "%s: offset=%jd len=%jd\n", __func__,
 		   (intmax_t) offset, (intmax_t) len);
 
@@ -4857,13 +4845,15 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	return 0;
 }
 
-static int zero_helper(struct fuse_file_info *fp, int mode, off_t offset,
-		       off_t len)
+static int fuse2fs_zero_range(struct fuse2fs *ff,
+			      struct fuse2fs_file_handle *fh, int mode,
+			      off_t offset, off_t len)
 {
-	int ret = punch_helper(fp, mode | FL_KEEP_SIZE_FLAG, offset, len);
+	int ret = fuse2fs_punch_range(ff, fh, mode | FL_KEEP_SIZE_FLAG, offset,
+				      len);
 
 	if (!ret)
-		ret = fallocate_helper(fp, mode, offset, len);
+		ret = fuse2fs_allocate_range(ff, fh, mode, offset, len);
 	return ret;
 }
 
@@ -4873,24 +4863,29 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
-	ext2_filsys fs = ff->fs;
+	struct fuse2fs_file_handle *fh =
+		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
+	ext2_filsys fs;
 	int ret;
 
 	/* Catch unknown flags */
 	if (mode & ~(FL_ZERO_RANGE_FLAG | FL_PUNCH_HOLE_FLAG | FL_KEEP_SIZE_FLAG))
 		return -EOPNOTSUPP;
 
+	FUSE2FS_CHECK_CONTEXT(ff);
+	FUSE2FS_CHECK_HANDLE(ff, fh);
+	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
 	if (!fs_writeable(fs)) {
 		ret = -EROFS;
 		goto out;
 	}
 	if (mode & FL_ZERO_RANGE_FLAG)
-		ret = zero_helper(fp, mode, offset, len);
+		ret = fuse2fs_zero_range(ff, fh, mode, offset, len);
 	else if (mode & FL_PUNCH_HOLE_FLAG)
-		ret = punch_helper(fp, mode, offset, len);
+		ret = fuse2fs_punch_range(ff, fh, mode, offset, len);
 	else
-		ret = fallocate_helper(fp, mode, offset, len);
+		ret = fuse2fs_allocate_range(ff, fh, mode, offset, len);
 out:
 	pthread_mutex_unlock(&ff->bfl);
 
