@@ -3448,6 +3448,11 @@ struct readdir_iter {
 	void *buf;
 	ext2_filsys fs;
 	fuse_fill_dir_t func;
+
+	struct fuse2fs *ff;
+	unsigned int nr;
+	off_t startpos;
+	off_t dirpos;
 };
 
 static inline mode_t dirent_fmode(ext2_filsys fs,
@@ -3491,9 +3496,15 @@ static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	};
 	int ret;
 
+	i->dirpos++;
+	if (i->startpos >= i->dirpos)
+		return 0;
+
+	dbg_printf(i->ff, "READDIR %u dirpos %llu\n", i->nr++,
+			(unsigned long long)i->dirpos);
 	memcpy(namebuf, dirent->name, dirent->name_len & 0xFF);
 	namebuf[dirent->name_len & 0xFF] = 0;
-	ret = i->func(i->buf, namebuf, &stat, 0
+	ret = i->func(i->buf, namebuf, &stat, i->dirpos
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, 0
 #endif
@@ -3506,7 +3517,7 @@ static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 
 static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 		      void *buf, fuse_fill_dir_t fill_func,
-		      off_t offset EXT2FS_ATTR((unused)),
+		      off_t offset,
 		      struct fuse_file_info *fp
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, enum fuse_readdir_flags flags EXT2FS_ATTR((unused))
@@ -3518,13 +3529,18 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 	struct fuse2fs_file_handle *fh =
 		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
 	errcode_t err;
-	struct readdir_iter i;
+	struct readdir_iter i = {
+		.ff = ff,
+		.dirpos = 0,
+		.startpos = offset,
+	};
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	i.fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(i.fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	dbg_printf(ff, "%s: ino=%d offset=%llu\n", __func__, fh->ino,
+			(unsigned long long)offset);
 	pthread_mutex_lock(&ff->bfl);
 	i.buf = buf;
 	i.func = fill_func;
