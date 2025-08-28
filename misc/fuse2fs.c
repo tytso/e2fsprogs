@@ -232,6 +232,7 @@ struct fuse2fs {
 	int kernel;
 	int directio;
 	int acl;
+	int dirsync;
 
 	int logfd;
 	int blocklog;
@@ -1367,6 +1368,41 @@ static int fuse2fs_new_child_gid(struct fuse2fs *ff, ext2_ino_t parent,
 	return 0;
 }
 
+/*
+ * Flush dirty data to disk if we're running in dirsync mode.  If @flushed is a
+ * non-null pointer, this function sets @flushed to 1 if we decided to flush
+ * data, or 0 if not.
+ */
+static inline int fuse2fs_dirsync_flush(struct fuse2fs *ff, ext2_ino_t ino,
+					int *flushed)
+{
+	struct ext2_inode_large inode;
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+
+	if (ff->dirsync)
+		goto flush;
+
+	err = fuse2fs_read_inode(fs, ino, &inode);
+	if (err)
+		return translate_error(fs, 0, err);
+
+	if (inode.i_flags & EXT2_DIRSYNC_FL)
+		goto flush;
+
+	if (flushed)
+		*flushed = 0;
+	return 0;
+flush:
+	err = ext2fs_flush2(fs, 0);
+	if (err)
+		return translate_error(fs, 0, err);
+
+	if (flushed)
+		*flushed = 1;
+	return 0;
+}
+
 static int op_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -1486,6 +1522,11 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
 	if (ret)
 		goto out2;
+
+	ret = fuse2fs_dirsync_flush(ff, parent, NULL);
+	if (ret)
+		goto out2;
+
 out2:
 	pthread_mutex_unlock(&ff->bfl);
 out:
@@ -1615,6 +1656,10 @@ static int op_mkdir(const char *path, mode_t mode)
 	if (ret)
 		goto out3;
 
+	ret = fuse2fs_dirsync_flush(ff, parent, NULL);
+	if (ret)
+		goto out3;
+
 out3:
 	ext2fs_free_mem(&block);
 out2:
@@ -1624,7 +1669,8 @@ out:
 	return ret;
 }
 
-static int unlink_file_by_name(struct fuse2fs *ff, const char *path)
+static int fuse2fs_unlink(struct fuse2fs *ff, const char *path,
+			  ext2_ino_t *parent)
 {
 	ext2_filsys fs = ff->fs;
 	errcode_t err;
@@ -1660,7 +1706,13 @@ static int unlink_file_by_name(struct fuse2fs *ff, const char *path)
 	if (err)
 		return translate_error(fs, dir, err);
 
-	return update_mtime(fs, dir, NULL);
+	ret = update_mtime(fs, dir, NULL);
+	if (ret)
+		return ret;
+
+	if (parent)
+		*parent = dir;
+	return 0;
 }
 
 static int remove_ea_inodes(struct fuse2fs *ff, ext2_ino_t ino,
@@ -1772,7 +1824,7 @@ write_out:
 static int __op_unlink(struct fuse2fs *ff, const char *path)
 {
 	ext2_filsys fs = ff->fs;
-	ext2_ino_t ino;
+	ext2_ino_t parent, ino;
 	errcode_t err;
 	int ret = 0;
 
@@ -1786,13 +1838,18 @@ static int __op_unlink(struct fuse2fs *ff, const char *path)
 	if (ret)
 		goto out;
 
-	ret = unlink_file_by_name(ff, path);
+	ret = fuse2fs_unlink(ff, path, &parent);
 	if (ret)
 		goto out;
 
 	ret = remove_inode(ff, ino);
 	if (ret)
 		goto out;
+
+	ret = fuse2fs_dirsync_flush(ff, parent, NULL);
+	if (ret)
+		goto out;
+
 out:
 	return ret;
 }
@@ -1841,7 +1898,7 @@ static int rmdir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 static int __op_rmdir(struct fuse2fs *ff, const char *path)
 {
 	ext2_filsys fs = ff->fs;
-	ext2_ino_t child;
+	ext2_ino_t parent, child;
 	errcode_t err;
 	struct ext2_inode_large inode;
 	struct rd_struct rds;
@@ -1882,7 +1939,7 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 		goto out;
 	}
 
-	ret = unlink_file_by_name(ff, path);
+	ret = fuse2fs_unlink(ff, path, &parent);
 	if (ret)
 		goto out;
 	/* Directories have to be "removed" twice. */
@@ -1912,6 +1969,10 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 			goto out;
 		}
 	}
+
+	ret = fuse2fs_dirsync_flush(ff, parent, NULL);
+	if (ret)
+		goto out;
 
 out:
 	return ret;
@@ -2028,6 +2089,11 @@ static int op_symlink(const char *src, const char *dest)
 		ret = translate_error(fs, child, err);
 		goto out2;
 	}
+
+	ret = fuse2fs_dirsync_flush(ff, parent, NULL);
+	if (ret)
+		goto out2;
+
 out2:
 	pthread_mutex_unlock(&ff->bfl);
 out:
@@ -2073,6 +2139,7 @@ static int op_rename(const char *from, const char *to
 	char *cp, a;
 	struct ext2_inode inode;
 	struct update_dotdot ud;
+	int flushed = 0;
 	int ret = 0;
 
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
@@ -2276,14 +2343,19 @@ static int op_rename(const char *from, const char *to
 		goto out2;
 
 	/* Remove the old file */
-	ret = unlink_file_by_name(ff, from);
+	ret = fuse2fs_unlink(ff, from, NULL);
 	if (ret)
 		goto out2;
 
-	/* Flush the whole mess out */
-	err = ext2fs_flush2(fs, 0);
-	if (err)
-		ret = translate_error(fs, 0, err);
+	ret = fuse2fs_dirsync_flush(ff, from_dir_ino, &flushed);
+	if (ret)
+		goto out2;
+
+	if (from_dir_ino != to_dir_ino && !flushed) {
+		ret = fuse2fs_dirsync_flush(ff, to_dir_ino, NULL);
+		if (ret)
+			goto out2;
+	}
 
 out2:
 	free(temp_from);
@@ -2377,6 +2449,10 @@ static int op_link(const char *src, const char *dest)
 	}
 
 	ret = update_mtime(fs, parent, NULL);
+	if (ret)
+		goto out2;
+
+	ret = fuse2fs_dirsync_flush(ff, parent, NULL);
 	if (ret)
 		goto out2;
 
@@ -3729,6 +3805,11 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	ret = __op_open(ff, path, fp);
 	if (ret)
 		goto out2;
+
+	ret = fuse2fs_dirsync_flush(ff, parent, NULL);
+	if (ret)
+		goto out2;
+
 out2:
 	pthread_mutex_unlock(&ff->bfl);
 out:
@@ -4668,6 +4749,7 @@ enum {
 	FUSE2FS_HELP,
 	FUSE2FS_HELPFULL,
 	FUSE2FS_CACHE_SIZE,
+	FUSE2FS_DIRSYNC,
 };
 
 #define FUSE2FS_OPT(t, p, v) { t, offsetof(struct fuse2fs, p), v }
@@ -4688,12 +4770,13 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("directio",		directio,		1),
 	FUSE2FS_OPT("acl",		acl,			1),
 	FUSE2FS_OPT("noacl",		acl,			0),
+	FUSE2FS_OPT("lockfile=%s",	lockfile,		0),
 
 	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("nodelalloc",	FUSE2FS_IGNORED),
 	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
-	FUSE2FS_OPT("lockfile=%s",	lockfile,		0),
+	FUSE_OPT_KEY("dirsync",		FUSE2FS_DIRSYNC),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -4710,6 +4793,10 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	struct fuse2fs *ff = data;
 
 	switch (key) {
+	case FUSE2FS_DIRSYNC:
+		ff->dirsync = 1;
+		/* pass through to libfuse */
+		return 1;
 	case FUSE_OPT_KEY_NONOPT:
 		if (!ff->device) {
 			ff->device = strdup(arg);
