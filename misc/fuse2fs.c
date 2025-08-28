@@ -1031,6 +1031,9 @@ static void *op_init(struct fuse_conn_info *conn
 	if (ff->acl)
 		conn->want |= FUSE_CAP_POSIX_ACL;
 #endif
+#ifdef FUSE_CAP_CACHE_SYMLINKS
+	conn->want |= FUSE_CAP_CACHE_SYMLINKS;
+#endif
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 	conn->time_gran = 1;
 	cfg->use_ino = 1;
