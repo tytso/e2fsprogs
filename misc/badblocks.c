@@ -1375,5 +1375,5 @@ int main (int argc, char ** argv)
 	if (out != stdout)
 		fclose (out);
 	free(t_patts);
-	return 0;
+	return !!(!passes_clean || num_read_errors || num_write_errors || num_corruption_errors);
 }
