@@ -2303,10 +2303,14 @@ static int in_file_group(struct fuse_context *ctxt,
 	gid_t gid = inode_gid(*inode);
 	int ret;
 
+	/* If the inode gid matches the process' primary group, we're done. */
+	if (ctxt->gid == gid)
+		return 1;
+
 	ret = get_req_groups(ff, &gids, &nr_gids);
 	if (ret == -ENOENT) {
 		/* magic return code for "could not get caller group info" */
-		return ctxt->gid == inode_gid(*inode);
+		return 0;
 	}
 	if (ret < 0)
 		return ret;
