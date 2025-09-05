@@ -1167,13 +1167,13 @@ out_close:
 }
 
 static int propagate_default_acls(struct fuse2fs *ff, ext2_ino_t parent,
-				  ext2_ino_t child)
+				  ext2_ino_t child, mode_t mode)
 {
 	void *def;
 	size_t deflen;
 	int ret;
 
-	if (!ff->acl)
+	if (!ff->acl || S_ISDIR(mode))
 		return 0;
 
 	ret = __getxattr(ff, parent, XATTR_NAME_POSIX_ACL_DEFAULT, &def,
@@ -1346,7 +1346,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
 
-	ret = propagate_default_acls(ff, parent, child);
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
 	if (ret)
 		goto out2;
 out2:
@@ -1474,7 +1474,7 @@ static int op_mkdir(const char *path, mode_t mode)
 		goto out3;
 	}
 
-	ret = propagate_default_acls(ff, parent, child);
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
 	if (ret)
 		goto out3;
 
@@ -3543,7 +3543,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
 
-	ret = propagate_default_acls(ff, parent, child);
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
 	if (ret)
 		goto out2;
 
