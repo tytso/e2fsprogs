@@ -207,6 +207,7 @@ struct fuse2fs_file_handle {
 	unsigned long magic;
 	ext2_ino_t ino;
 	int open_flags;
+	int check_flags;
 };
 
 /* Main program context */
@@ -2672,6 +2673,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 			ret = check_inum_access(ff, file->ino, X_OK);
 			if (ret)
 				goto out;
+			check = X_OK;
 		} else
 			goto out;
 	}
@@ -2682,6 +2684,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 			goto out;
 	}
 
+	file->check_flags = check;
 	fp->fh = (uintptr_t)file;
 
 out:
@@ -2750,7 +2753,7 @@ out2:
 		goto out;
 	}
 
-	if (fs_writeable(fs)) {
+	if (fh->check_flags != X_OK && fs_writeable(fs)) {
 		ret = update_atime(fs, fh->ino);
 		if (ret)
 			goto out;
