@@ -95,6 +95,7 @@ static int	num_backups = 2; /* number of backup bg's for sparse_super2 */
 static uid_t	root_uid;
 static mode_t 	root_perms = (mode_t)-1;
 static gid_t	root_gid;
+static char	*root_selinux = NULL;
 int	journal_size;
 int	journal_flags;
 int	journal_fc_size;
@@ -512,6 +513,35 @@ static void create_root_dir(ext2_filsys fs)
 		if (retval) {
 			com_err("ext2fs_write_inode", retval, "%s",
 				_("while setting root inode ownership"));
+			exit(1);
+		}
+	}
+
+	if (root_selinux) {
+		struct ext2_xattr_handle *handle;
+		retval = ext2fs_xattrs_open(fs, EXT2_ROOT_INO, &handle);
+		if (retval) {
+			com_err("ext2fs_xattrs_open", retval,
+				_("while setting root inode label"));
+			exit(1);
+		}
+		retval = ext2fs_xattrs_read(handle);
+		if (retval) {
+			com_err("ext2fs_xattrs_read", retval,
+				_("while setting root inode label"));
+			exit(1);
+		}
+		retval = ext2fs_xattr_set(handle, "security.selinux",
+					  root_selinux, strlen(root_selinux));
+		if (retval) {
+			com_err("ext2fs_xattr_set", retval,
+				_("while setting root inode label"));
+			exit(1);
+		}
+		retval = ext2fs_xattrs_close(&handle);
+		if (retval) {
+			com_err("ext2fs_xattrs_close", retval,
+				_("while setting root inode label"));
 			exit(1);
 		}
 	}
@@ -1089,6 +1119,21 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			if (arg) {
 				root_perms = strtoul(arg, &p, 8);
 			}
+		} else if (!strcmp(token, "root_selinux")) {
+			if (arg) {
+				root_selinux = realloc(root_selinux,
+						       strlen(arg) + 1);
+				if (!root_selinux) {
+					com_err(program_name, ENOMEM, "%s",
+						_("in malloc for root_selinux"));
+					exit(1);
+				}
+				strcpy(root_selinux, arg);
+			} else {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
 		} else if (!strcmp(token, "discard")) {
 			discard = 1;
 		} else if (!strcmp(token, "nodiscard")) {
@@ -1174,6 +1219,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tlazy_journal_init=<0 to disable, 1 to enable>\n"
 			"\troot_owner=<uid of root dir>:<gid of root dir>\n"
 			"\troot_perms=<octal root directory permissions>\n"
+			"\troot_selinux=<selinux root directory label>\n"
 			"\ttest_fs\n"
 			"\tdiscard\n"
 			"\tnodiscard\n"

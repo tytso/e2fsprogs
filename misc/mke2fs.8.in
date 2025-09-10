@@ -428,6 +428,16 @@ Specify the root directory permissions in octal format. If no permissions
 are specified then the root directory permissions would be set in accordance with
 the default filesystem umask.
 .TP
+.BI root_selinux= label
+Specify the root directory SELinux security context as
+.IR label ,
+typically
+.nh
+.B system_u:object_r:root_t
+with an optional level/range suffix such as
+.B :s0
+for MCS/MLS policy types.
+.TP
 .BI stride= stride-size
 Configure the file system for a RAID array with
 .I stride-size
