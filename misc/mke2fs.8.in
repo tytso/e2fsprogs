@@ -320,6 +320,10 @@ In the default configuration, the
 .I strict
 flag is disabled.
 .TP
+.BI hash_seed= UUID
+Use the specified UUID as the seed for hashing, rather than generating a
+random seed each time. Intended for use with reproducible builds.
+.TP
 .B lazy_itable_init\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
 If enabled and the uninit_bg feature is enabled, the inode table will
 not be fully initialized by
