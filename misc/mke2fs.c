@@ -1653,7 +1653,7 @@ static void PRS(int argc, char *argv[])
 	int		default_csum_seed = 0;
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
-	char *		extended_opts = 0;
+	struct str_list extended_opts;
 	char *		fs_type = 0;
 	char *		usage_types = 0;
 	/*
@@ -1751,6 +1751,13 @@ profile_error:
 			journal_size = -1;
 	}
 
+	retval = init_list(&extended_opts);
+	if (retval) {
+		com_err(program_name, retval, "%s",
+			_("in malloc for extended_opts"));
+		exit(1);
+	}
+
 	while ((c = getopt (argc, argv,
 		    "b:cd:e:g:i:jl:m:no:qr:s:t:vC:DE:FG:I:J:KL:M:N:O:R:ST:U:Vz:")) != EOF) {
 		switch (c) {
@@ -1796,7 +1803,7 @@ profile_error:
 				_("'-R' is deprecated, use '-E' instead"));
 			/* fallthrough */
 		case 'E':
-			extended_opts = optarg;
+			push_string(&extended_opts, optarg);
 			break;
 		case 'e':
 			if (strcmp(optarg, "continue") == 0)
@@ -2615,8 +2622,9 @@ profile_error:
 			free(tmp);
 	}
 
-	if (extended_opts)
-		parse_extended_opts(&fs_param, extended_opts);
+	/* Get options from commandline */
+	for (cpp = extended_opts.list; *cpp; cpp++)
+		parse_extended_opts(&fs_param, *cpp);
 
 	if (fs_param.s_rev_level == EXT2_GOOD_OLD_REV) {
 		if (fs_features) {

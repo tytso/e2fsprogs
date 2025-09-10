@@ -268,7 +268,9 @@ Cause a kernel panic.
 .TP
 .BI \-E " extended-options"
 Set extended options for the file system.  Extended options are comma
-separated, and may take an argument using the equals ('=') sign.  The
+separated, and may take an argument using the equals ('=') sign.  Multiple
+.B \-E
+options may also be used. The
 .B \-E
 option used to be
 .B \-R
