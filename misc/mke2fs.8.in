@@ -739,6 +739,7 @@ the manual page
 Quiet execution.  Useful if
 .B mke2fs
 is run in a script.
+.TP
 .B \-S
 Write superblock and group descriptors only.  This is an extreme
 measure to be taken only in the very unlikely case that all of
