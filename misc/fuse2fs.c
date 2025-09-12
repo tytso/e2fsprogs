@@ -4733,6 +4733,19 @@ static unsigned long long default_cache_size(void)
 	return ret;
 }
 
+/* Make sure the root directory is readable. */
+static errcode_t fuse2fs_check_root_dir(ext2_filsys fs)
+{
+	struct ext2_inode_large inode;
+	errcode_t err;
+
+	err = fuse2fs_read_inode(fs, EXT2_ROOT_INO, &inode);
+	if (err)
+		return translate_error(fs, EXT2_ROOT_INO, err);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
@@ -4995,6 +5008,10 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 	}
+
+	ret = fuse2fs_check_root_dir(global_fs);
+	if (ret)
+		goto out;
 
 	if (global_fs->flags & EXT2_FLAG_RW) {
 		if (ext2fs_has_feature_journal(global_fs->super))
