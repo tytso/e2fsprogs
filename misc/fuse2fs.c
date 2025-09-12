@@ -1825,6 +1825,10 @@ static int op_symlink(const char *src, const char *dest)
 	*node_name = 0;
 
 	pthread_mutex_lock(&ff->bfl);
+	if (!fs_can_allocate(ff, 1)) {
+		ret = -ENOSPC;
+		goto out2;
+	}
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, temp_path,
 			   &parent);
 	*node_name = a;
