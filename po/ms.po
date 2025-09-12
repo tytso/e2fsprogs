@@ -77,7 +77,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.47.3-rc1\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2025-05-28 08:29-0400\n"
-"PO-Revision-Date: 2025-07-04 21:01+0800\n"
+"PO-Revision-Date: 2025-09-02 21:50+0800\n"
 "Last-Translator: Sharuzzaman Ahmat Raslan <sharuzzaman@gmail.com>\n"
 "Language-Team: Malay <translation-team-ms@lists.sourceforge.net>\n"
 "Language: ms\n"
@@ -86,7 +86,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.7\n"
 
 #: e2fsck/badblocks.c:23 misc/mke2fs.c:206
 #, c-format
@@ -153,7 +153,7 @@ msgstr "Abai ralat dan teruskan ke modul berikutnya"
 #: e2fsck/ehandler.c:68
 #, fuzzy
 msgid "Force rewrite"
-msgstr "Gagal menulis semula pengepala\n"
+msgstr "Paksa"
 
 #: e2fsck/ehandler.c:72
 #, fuzzy, c-format
@@ -310,7 +310,7 @@ msgstr ""
 #: e2fsck/message.c:129
 #, fuzzy
 msgid "hHTREE @d @i"
-msgstr "%b %d %I∶%M %p"
+msgstr "%a %m/%d/%Y %I %p"
 
 #: e2fsck/message.c:130
 msgid "iinode"
@@ -468,7 +468,7 @@ msgstr "soket"
 #: e2fsck/message.c:339
 #, fuzzy, c-format
 msgid "unknown file type with mode 0%o"
-msgstr "Jenis fail tak diketahui"
+msgstr "Fail jenis yang tidak diketahui"
 
 #: e2fsck/message.c:410
 #, fuzzy
@@ -488,7 +488,9 @@ msgstr "Blok tidak langsung dua kali yang tidak sah dijumpai"
 #: e2fsck/message.c:416
 #, fuzzy
 msgid "translator block"
-msgstr "Mahrazi Mohd Kamal <mahrazi@gmail.com>, 2006."
+msgstr ""
+"abuyop\n"
+"Hasbullah Bin Pit <sebol@my-penguin.org>"
 
 #: e2fsck/message.c:418
 #, fuzzy
@@ -567,7 +569,7 @@ msgstr "Inode Ext2 adalah bukan direktori"
 #: e2fsck/pass1.c:1292
 #, fuzzy
 msgid "regular file inode map"
-msgstr "fail biasa"
+msgstr "Bukan satu fail nalar."
 
 #: e2fsck/pass1.c:1301 misc/e2image.c:1296
 #, fuzzy
@@ -721,7 +723,7 @@ msgstr "Tempat semula"
 #: e2fsck/problem.c:57
 #, fuzzy
 msgid "Allocate"
-msgstr "tak dapat memperuntukkan warna \"%s\""
+msgstr "BMP: Gagal sediakan memori."
 
 #: e2fsck/problem.c:58
 msgid "Expand"
@@ -784,7 +786,7 @@ msgstr "Nyahpaut"
 #: e2fsck/problem.c:71
 #, fuzzy
 msgid "Clear HTree index"
-msgstr "kosongkan"
+msgstr "Padam"
 
 #: e2fsck/problem.c:72
 msgid "Recreate"
@@ -1295,7 +1297,7 @@ msgstr ""
 #: e2fsck/problem.c:440
 #, fuzzy
 msgid "Hiding %U @q @i %i (%Q).\n"
-msgstr "@i %i (%Q) adalah soket @I.\n"
+msgstr "@i %i (%Q) adalah @I FIFO.\n"
 
 #. @-expanded: superblock has invalid MMP block.  
 #: e2fsck/problem.c:445
@@ -1529,7 +1531,7 @@ msgstr "<b><i>Perintah</i></b>"
 #: e2fsck/problem.c:652
 #, fuzzy
 msgid "Bad @b @i has illegal @b(s).  "
-msgstr "@A baru @d @b untuk @i %i (%s): %m\n"
+msgstr "<b>%s</b> (versi <i>%s</i>) akan dipasang semula\n"
 
 #. @-expanded: Duplicate or bad block in use!\n
 #: e2fsck/problem.c:657
@@ -1663,7 +1665,7 @@ msgstr "Nombor ajaib yang salah untuk struktur icount"
 #: e2fsck/problem.c:763
 #, fuzzy, no-c-format
 msgid "@A @d @b array: %m\n"
-msgstr "%a, %b %d / %H∶%M"
+msgstr "%a, %b %d / %H:%M"
 
 #. @-expanded: Error while scanning inodes (%i): %m\n
 #: e2fsck/problem.c:769
@@ -1753,7 +1755,7 @@ msgstr "Ralat membaca @d @b %b (@i %i): %m\n"
 #: e2fsck/problem.c:856
 #, fuzzy, c-format
 msgid "@i %i has a bad @a @b %b.  "
-msgstr "<b><i>Perintah</i></b>"
+msgstr "<b><i>Output</i></b>"
 
 #. @-expanded: Error reading extended attribute block %b (%m).  
 #: e2fsck/problem.c:861
@@ -1800,7 +1802,7 @@ msgstr "<b>Nama Profil</b>"
 #: e2fsck/problem.c:896
 #, fuzzy, c-format
 msgid "@a @b %b is corrupt (@n value).  "
-msgstr "@A @i @B (%N): %m\n"
+msgstr "<b>%n:</b> kiraan"
 
 #. @-expanded: inode %i is too big.  
 #: e2fsck/problem.c:902
@@ -2025,7 +2027,7 @@ msgstr ""
 #: e2fsck/problem.c:1090
 #, fuzzy, no-c-format
 msgid "@i %i seems to contain garbage.  "
-msgstr "(%i, %i)"
+msgstr "Inode kelihatan mengandungi sampah"
 
 #. @-expanded: inode %i passes checks, but checksum does not match inode.  
 #: e2fsck/problem.c:1096
@@ -2156,7 +2158,7 @@ msgstr ""
 #: e2fsck/problem.c:1214
 #, fuzzy
 msgid "@A @x region allocation structure.  "
-msgstr "Tetapkan kawasan klip untuk jejak peruntukan pelakon"
+msgstr "Struktur utama yang mengandungi maklumat berasaskan kawasan"
 
 #. @-expanded: inode %i has a duplicate extent mapping\n
 #. @-expanded: \t(logical block %c, invalid physical block %b, len %N)\n
@@ -2448,7 +2450,7 @@ msgstr ""
 #: e2fsck/problem.c:1502
 #, fuzzy
 msgid "@E @L to @d %P (%Di).\n"
-msgstr "%-e %b %l:%M %p"
+msgstr "%A %-e %B, %-l:%M %p"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to the root inode.\n
 #: e2fsck/problem.c:1507
@@ -2615,7 +2617,7 @@ msgstr "Ralat menyahumpuk @i %i: %m\n"
 #: e2fsck/problem.c:1662
 #, fuzzy, no-c-format
 msgid "@d @e for '.' in %p (%i) is big.\n"
-msgstr "%b %e %Y, %I∶%M %p"
+msgstr "%B %e %Y, %I∶%M∶%S %p"
 
 #. @-expanded: inode %i (%Q) is an illegal FIFO.\n
 #: e2fsck/problem.c:1667
@@ -3007,13 +3009,13 @@ msgstr ""
 #: e2fsck/problem.c:2032
 #, fuzzy
 msgid "/@l is encrypted\n"
-msgstr "Disulitkan oleh:"
+msgstr "L"
 
 #. @-expanded: Recursively looped directory inode %i (%p)\n
 #: e2fsck/problem.c:2038
 #, fuzzy, no-c-format
 msgid "Recursively looped @d @i %i (%p)\n"
-msgstr "'..' dalam %Q (%i) adalah %P (%j), @s %q (%d).\n"
+msgstr "%a %m/%d/%Y %I:%M:%S %p"
 
 #: e2fsck/problem.c:2045
 #, fuzzy
@@ -3329,7 +3331,7 @@ msgstr "Mengosongkan"
 #: e2fsck/super.c:462
 #, fuzzy, c-format
 msgid "while reading inode %d"
-msgstr "ketika membaca inod root"
+msgstr "ketika membaca inod jurnal"
 
 #: e2fsck/super.c:484 e2fsck/super.c:692
 #, c-format
@@ -3339,7 +3341,7 @@ msgstr ""
 #: e2fsck/super.c:492 e2fsck/super.c:700
 #, fuzzy, c-format
 msgid "while reading blocks of inode %d"
-msgstr "ketika membaca inod jurnal"
+msgstr "ketika membaca inod root"
 
 #: e2fsck/unix.c:79
 #, c-format
@@ -3418,7 +3420,7 @@ msgstr[0] ""
 #, fuzzy, c-format
 msgid "%12u bad block\n"
 msgid_plural "%12u bad blocks\n"
-msgstr[0] "%12u fifo\n"
+msgstr[0] "Blok atribut lanjutan mempunyai pengepala buruk"
 
 #: e2fsck/unix.c:203
 #, fuzzy, c-format
@@ -3630,7 +3632,7 @@ msgstr "Versi EA tidak sah.\n"
 #: e2fsck/unix.c:796
 #, fuzzy
 msgid "\treadahead_kb=<buffer size>\n"
-msgstr "Saiz penimbal FIFO (dalam kb)"
+msgstr "Saiz Penampan Segera (KB)"
 
 #: e2fsck/unix.c:809
 #, c-format
@@ -3691,7 +3693,7 @@ msgstr ""
 #: e2fsck/unix.c:1102
 #, fuzzy, c-format
 msgid "while opening %s for flushing"
-msgstr "Ralat semasa membuka imej %s."
+msgstr "ketika membuka %s"
 
 #: e2fsck/unix.c:1108 resize/main.c:389
 #, fuzzy, c-format
@@ -3800,9 +3802,7 @@ msgstr "%s: %s mencuba backup blok...\n"
 #: e2fsck/unix.c:1574
 #, fuzzy, c-format
 msgid "%s: going back to original superblock\n"
-msgstr ""
-"Terdapat ralat ketika pergi ke %s:\n"
-"%s"
+msgstr "%s: %s tetapi tidak akan dipasang"
 
 #: e2fsck/unix.c:1603
 msgid ""
@@ -3879,7 +3879,7 @@ msgstr "ralat checksum"
 #: e2fsck/unix.c:1813
 #, fuzzy, c-format
 msgid "Journal corrupted in %s\n"
-msgstr "%s: Fail rosak, atau bukan satu fail DVI\n"
+msgstr "Menulis ke jurnal (%s)"
 
 #: e2fsck/unix.c:1817
 #, fuzzy, c-format
@@ -3993,7 +3993,7 @@ msgstr "aA"
 #: e2fsck/util.c:197
 #, fuzzy
 msgid " ('a' enables 'yes' to all) "
-msgstr "Ya untuk se_mua"
+msgstr "Anggap ya untuk semua pertanyaan"
 
 #: e2fsck/util.c:214
 msgid "<y>"
@@ -4145,7 +4145,7 @@ msgstr ""
 #: misc/badblocks.c:337
 #, fuzzy
 msgid "Testing with random pattern: "
-msgstr "Pengujian"
+msgstr "Cuba, ..."
 
 #: misc/badblocks.c:355
 #, fuzzy
@@ -4271,7 +4271,7 @@ msgstr ""
 #: misc/badblocks.c:1167
 #, fuzzy, c-format
 msgid "can't allocate memory for test_pattern - %s"
-msgstr "Tidak dapat peruntukkan ingatan untuk struktur arkib:"
+msgstr "Tidak dapat memperuntukkan ingatan untuk struktur arkib!"
 
 #: misc/badblocks.c:1197
 msgid "Maximum of one test_pattern may be specified in read-only mode"
@@ -4305,7 +4305,7 @@ msgstr ""
 #: misc/badblocks.c:1240
 #, fuzzy
 msgid "while trying to determine device size"
-msgstr "Tidak boleh tentukan saiz imej."
+msgstr "Tidak dapat menentukan saiz pangkalan data."
 
 #: misc/badblocks.c:1245
 msgid "last block"
@@ -4398,7 +4398,7 @@ msgstr "Versi %s ditetapkan sebagai %lu\n"
 #: misc/chattr.c:277
 #, fuzzy, c-format
 msgid "while setting project on %s"
-msgstr "ketika menetapkan penanda pada %s"
+msgstr "ketika menetapkan versi pada %s"
 
 #: misc/chattr.c:299
 msgid "Couldn't allocate path variable in chattr_dir_proc"
@@ -4452,7 +4452,7 @@ msgstr "ketika mengumpukkan penimbal"
 #: misc/create_inode.c:209 misc/create_inode.c:225
 #, fuzzy, c-format
 msgid "while reading attribute \"%s\" of \"%s\""
-msgstr "Ketika membaca versi pada %s"
+msgstr "Ketika membaca penanda pada %s"
 
 #: misc/create_inode.c:234
 #, fuzzy, c-format
@@ -4487,7 +4487,7 @@ msgstr "Terdapat ralat ketika mencipta pautan simbolik di dalam %s."
 #: misc/create_inode.c:391 misc/create_inode.c:797 misc/create_inode.c:1124
 #, fuzzy, c-format
 msgid "while looking up \"%s\""
-msgstr "Mencari %s\n"
+msgstr "Mencari %s"
 
 #: misc/create_inode.c:403
 #, c-format
@@ -4708,7 +4708,7 @@ msgstr "ketika membaca inod jurnal"
 #: misc/dumpe2fs.c:382
 #, fuzzy
 msgid "while opening journal inode"
-msgstr "ketika membaca inod jurnal"
+msgstr "ketika mengosongkan inod jurnal"
 
 #: misc/dumpe2fs.c:388
 #, fuzzy
@@ -4741,7 +4741,7 @@ msgstr "Ralat membaca blok %lu (%s) ketika %s.  "
 #: misc/dumpe2fs.c:521 misc/mke2fs.c:831 misc/tune2fs.c:2276
 #, fuzzy
 msgid "Couldn't allocate memory to parse options!\n"
-msgstr "Tak dapat memperuntukkan memori bagi pengepala"
+msgstr "TIFF: Gagal menempatkan memori"
 
 #: misc/dumpe2fs.c:547
 #, c-format
@@ -4786,7 +4786,7 @@ msgstr "Ciri ini diaktifkan!"
 #: misc/dumpe2fs.c:769
 #, fuzzy, c-format
 msgid "while trying to read '%s' bitmaps\n"
-msgstr "ketika cuba untuk memadam %s"
+msgstr "ketika cuba untuk memangkas %s"
 
 #: misc/dumpe2fs.c:778
 #, fuzzy
@@ -5127,7 +5127,7 @@ msgstr "UUID:"
 #: misc/e2undo.c:159
 #, fuzzy
 msgid "Last mount time does not match.\n"
-msgstr "Saiz fail tidak sepadan!"
+msgstr "Respons pelayan tidak sepadan"
 
 #: misc/e2undo.c:162
 #, fuzzy
@@ -5241,7 +5241,7 @@ msgstr "Gagal memulakan sesi SSH: %s"
 #: misc/e2undo.c:558
 #, fuzzy, c-format
 msgid "%s: block %llu is too long."
-msgstr "Nama hos \"%s\" terlalu panjang untuk protokol SOCKSv5"
+msgstr "Nama hos \"%s\" terlalu panjang untuk protokol SOCKSv4"
 
 #: misc/e2undo.c:571 misc/e2undo.c:608
 #, fuzzy, c-format
@@ -5592,7 +5592,7 @@ msgstr ""
 #: misc/mke2fs.c:330 misc/mke2fs.c:3497
 #, fuzzy
 msgid "while marking bad blocks as used"
-msgstr "ketika memeriksa kewarasan blok inode buruk"
+msgstr "ketika membaca dalam senarai blok buruk dari fail"
 
 #: misc/mke2fs.c:355
 #, fuzzy
@@ -5861,12 +5861,12 @@ msgstr "Tetapkan pemilik \"%s\" kepadad \"%s\""
 #: misc/mke2fs.c:1128
 #, fuzzy, c-format
 msgid "Invalid encoding: %s"
-msgstr "%s: pengekodan tidak sah."
+msgstr "%s: pengekodan tidak sah.⏎\n"
 
 #: misc/mke2fs.c:1150 misc/tune2fs.c:2439
 #, fuzzy, c-format
 msgid "Invalid size of orphan file %s\n"
-msgstr "saiz blok tidak sah - %s"
+msgstr "Saiz tab \"%s\" yang diminta tidak sah"
 
 #: misc/mke2fs.c:1161
 #, c-format
@@ -5963,7 +5963,7 @@ msgstr "jenis terminal `%s' tidak ditakrifkan"
 #: misc/mke2fs.c:1689
 #, fuzzy
 msgid "Couldn't allocate memory for new PATH.\n"
-msgstr "Tak dapat memperuntukkan memori bagi pengepala"
+msgstr "BMP: Gagal sediakan memori."
 
 #: misc/mke2fs.c:1729
 #, c-format
@@ -6102,7 +6102,7 @@ msgstr "Menggunakan saiz blok peranti jurnal: %d\n"
 #: misc/mke2fs.c:2069
 #, fuzzy, c-format
 msgid "invalid blocks '%s' on device '%s'"
-msgstr "nombor peranti minor tidak sah %s"
+msgstr "nombor peranti major tidak sah %s"
 
 #: misc/mke2fs.c:2089
 msgid "filesystem"
@@ -6260,7 +6260,7 @@ msgstr ""
 #: misc/mke2fs.c:2589
 #, fuzzy, c-format
 msgid "Unknown filename encoding from profile: %s"
-msgstr "pengekodan tidak diketahui `%s'"
+msgstr "Tidak dapat tukar nama fail \"%s\" ke pengekodan setempat"
 
 #: misc/mke2fs.c:2600
 #, fuzzy, c-format
@@ -6427,7 +6427,7 @@ msgstr "Ralat ketika membaiki sistem fail"
 #: misc/mke2fs.c:3468
 #, fuzzy
 msgid "while unmarking bad blocks"
-msgstr "ketika memeriksa kewarasan blok inode buruk"
+msgstr "ketika membaca dalam senarai blok buruk dari fail"
 
 #: misc/mke2fs.c:3479
 #, fuzzy
@@ -6439,7 +6439,7 @@ msgstr "ketika menulis bitmap blok"
 #: misc/mke2fs.c:3488
 #, fuzzy
 msgid "while calculating overhead"
-msgstr "Menghitungkan..."
+msgstr "Mengira..."
 
 #: misc/mke2fs.c:3507
 #, fuzzy, c-format
@@ -6616,12 +6616,12 @@ msgstr ""
 #: misc/tune2fs.c:154
 #, fuzzy
 msgid "Please run e2fsck -f on the filesystem.\n"
-msgstr "Sila pilih fail pemasangan untuk dijalankan."
+msgstr "Sila pilih satu sesi suai untuk dijalankan"
 
 #: misc/tune2fs.c:156
 #, fuzzy
 msgid "Please run e2fsck -fD on the filesystem.\n"
-msgstr "Sila pilih fail pemasangan untuk dijalankan."
+msgstr "Sila pilih satu sesi suai untuk dijalankan"
 
 #: misc/tune2fs.c:169
 #, c-format
@@ -6722,7 +6722,7 @@ msgstr ""
 #: misc/tune2fs.c:1185
 #, fuzzy, c-format
 msgid "Clearing filesystem feature '%s' not supported.\n"
-msgstr "Sistem fail mempunyai ciri baca-sahaja yang tidak disokong"
+msgstr "Sistem fail mempunyai ciri yang tidak disokong"
 
 #: misc/tune2fs.c:1191
 #, fuzzy, c-format
@@ -6827,7 +6827,7 @@ msgstr ""
 #: misc/tune2fs.c:1410
 #, fuzzy
 msgid "Enabling checksums could take some time."
-msgstr "Peranti \"%s\" sedang dilenting. Ia mengambil sedikit masa"
+msgstr "Peranti \"%s\" sedang dikeluarkan. Ia akan mengambil sedikit masa"
 
 #: misc/tune2fs.c:1413
 msgid "Cannot enable metadata_csum on a mounted filesystem!\n"
@@ -6844,7 +6844,7 @@ msgstr ""
 #: misc/tune2fs.c:1452
 #, fuzzy
 msgid "Disabling checksums could take some time."
-msgstr "Peranti \"%s\" sedang dilenting. Ia mengambil sedikit masa"
+msgstr "Peranti \"%s\" sedang dikeluarkan. Ia akan mengambil sedikit masa"
 
 #: misc/tune2fs.c:1455
 msgid "Cannot disable metadata_csum on a mounted filesystem!\n"
@@ -6910,7 +6910,7 @@ msgstr ""
 #: misc/tune2fs.c:1660
 #, fuzzy
 msgid "Recalculating checksums could take some time."
-msgstr "Peranti \"%s\" sedang dilenting. Ia mengambil sedikit masa"
+msgstr "Peranti \"%s\" sedang dikeluarkan. Ia akan mengambil sedikit masa"
 
 #: misc/tune2fs.c:1703
 msgid "The filesystem already has a journal.\n"
@@ -6931,7 +6931,7 @@ msgstr "Mencipta jurnal pada peranti %s: "
 #: misc/tune2fs.c:1735
 #, fuzzy, c-format
 msgid "while adding filesystem to journal on %s"
-msgstr "Menambah jurnal ke peranti %s: "
+msgstr "Menambah jurnal ke peranti %s:"
 
 #: misc/tune2fs.c:1741
 msgid "Creating journal inode: "
@@ -7080,7 +7080,7 @@ msgstr "Tidak jumpa pengekodan: %1"
 #: misc/tune2fs.c:2414
 #, fuzzy, c-format
 msgid "Invalid encoding: %s\n"
-msgstr "%s: pengekodan tidak sah."
+msgstr "%s: pengekodan tidak sah.⏎\n"
 
 #: misc/tune2fs.c:2420
 #, fuzzy, c-format
@@ -7196,7 +7196,7 @@ msgstr "Menetapkan saiz inod %lu\n"
 #: misc/tune2fs.c:3304
 #, fuzzy
 msgid "Resizing inodes could take some time."
-msgstr "Peranti \"%s\" sedang dilenting. Ia mengambil sedikit masa"
+msgstr "Peranti \"%s\" sedang dikeluarkan. Ia akan mengambil sedikit masa"
 
 #: misc/tune2fs.c:3354
 #, c-format
@@ -7402,7 +7402,7 @@ msgstr "mke2fs dipaksa juga.\n"
 #: misc/util.c:171
 #, fuzzy
 msgid "Couldn't allocate memory to parse journal options!\n"
-msgstr "PNM: Gagal menempatkan memori"
+msgstr "Tak dapat memperuntukkan memori untuk penimbal konteks"
 
 #: misc/util.c:196
 #, fuzzy, c-format
@@ -8415,7 +8415,7 @@ msgstr "Operasi Ext2fs tidak disokong"
 #: lib/ext2fs/ext2_err.c:141
 #, fuzzy
 msgid "No room to insert extent in node"
-msgstr "# Loggokan extent:\n"
+msgstr "“<node/>”"
 
 #: lib/ext2fs/ext2_err.c:142
 #, fuzzy
@@ -8473,9 +8473,8 @@ msgid "MMP: filesystem still in use"
 msgstr "MMP: sistem fail masih digunakan"
 
 #: lib/ext2fs/ext2_err.c:155
-#, fuzzy
 msgid "MMP: open with O_DIRECT failed"
-msgstr "Buka anak arah aktif"
+msgstr "MMP: buka dengan O_DIRECT gagal"
 
 #: lib/ext2fs/ext2_err.c:156
 msgid "Block group descriptor size incorrect"
@@ -8542,9 +8541,8 @@ msgid "Extended attribute has an incorrect hash"
 msgstr "Atribut lanjutan mempunyai hash yang salah"
 
 #: lib/ext2fs/ext2_err.c:172
-#, fuzzy
 msgid "Extended attribute block has a bad header"
-msgstr "Semakan blok atribut lanjutan tidak sepadan dengan blok"
+msgstr "Blok atribut lanjutan mempunyai pengepala buruk"
 
 #: lib/ext2fs/ext2_err.c:173
 msgid "Extended attribute key not found"
@@ -8575,9 +8573,8 @@ msgid "Wrong magic number for extended attribute structure"
 msgstr "Nombor ajaib yang salah untuk struktur sifat lanjutan"
 
 #: lib/ext2fs/ext2_err.c:180
-#, fuzzy
 msgid "Inode seems to contain garbage"
-msgstr "Inod"
+msgstr "Inode kelihatan mengandungi sampah"
 
 #: lib/ext2fs/ext2_err.c:181
 msgid "Extended attribute has an invalid value offset"
@@ -8600,9 +8597,8 @@ msgid "File system is corrupted"
 msgstr "Sistem fail rosak"
 
 #: lib/ext2fs/ext2_err.c:186
-#, fuzzy
 msgid "Bad CRC detected in file system"
-msgstr "membaca strim zip (masukan %s): crc buruk"
+msgstr "CRC buruk dikesan dalam system fail"
 
 #: lib/ext2fs/ext2_err.c:187
 msgid "The journal superblock is corrupt"
@@ -8613,9 +8609,8 @@ msgid "Inode is corrupted"
 msgstr "Inode rosak"
 
 #: lib/ext2fs/ext2_err.c:189
-#, fuzzy
 msgid "Inode containing extended attribute value is corrupted"
-msgstr "Atribut lanjutan mempunyai nilai anjakan yang tidak sah"
+msgstr "Inode mengandungi atribut lanjutan yang rosak"
 
 #: lib/ext2fs/ext2_err.c:190
 msgid "Group descriptors not loaded"
