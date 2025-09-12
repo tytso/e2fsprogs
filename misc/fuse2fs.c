@@ -981,6 +981,21 @@ static int fuse2fs_setup_logging(struct fuse2fs *ff)
 	return 0;
 }
 
+static int fuse2fs_read_bitmaps(struct fuse2fs *ff)
+{
+	errcode_t err;
+
+	err = ext2fs_read_inode_bitmap(ff->fs);
+	if (err)
+		return translate_error(ff->fs, 0, err);
+
+	err = ext2fs_read_block_bitmap(ff->fs);
+	if (err)
+		return translate_error(ff->fs, 0, err);
+
+	return 0;
+}
+
 static void *op_init(struct fuse_conn_info *conn
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, struct fuse_config *cfg EXT2FS_ATTR((unused))
@@ -1028,6 +1043,10 @@ static void *op_init(struct fuse_conn_info *conn
 		uuid_unparse(fs->super->s_uuid, uuid);
 		log_printf(ff, "%s %s.\n", _("mounted filesystem"), uuid);
 	}
+
+	if (global_fs->flags & EXT2_FLAG_RW)
+		fuse2fs_read_bitmaps(ff);
+
 	return ff;
 }
 
@@ -5019,16 +5038,6 @@ int main(int argc, char *argv[])
  _("Warning: fuse2fs does not support using the journal.\n"
    "There may be file system corruption or data loss if\n"
    "the file system is not gracefully unmounted.\n"));
-		err = ext2fs_read_inode_bitmap(global_fs);
-		if (err) {
-			translate_error(global_fs, 0, err);
-			goto out;
-		}
-		err = ext2fs_read_block_bitmap(global_fs);
-		if (err) {
-			translate_error(global_fs, 0, err);
-			goto out;
-		}
 	}
 
 	if (!(global_fs->super->s_state & EXT2_VALID_FS))
