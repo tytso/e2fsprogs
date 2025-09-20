@@ -375,7 +375,6 @@ be 0, 1, or 2 backup superblocks created in the file system.
 Create the file system at an offset from the beginning of the device or
 file.  This can be useful when creating disk images for virtual machines.
 .TP
-.TP
 .BI orphan_file_size= size
 Set size of the file for tracking unlinked but still open inodes and inodes
 with truncate in progress. Larger file allows for better scalability, reserving
