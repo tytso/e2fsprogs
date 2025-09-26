@@ -1,0 +1,30 @@
+Pass 1: Checking inodes, blocks, and sizes
+Extended attribute in inode 12 has a value size (0) which is invalid
+Clear? yes
+
+Inode 12, i_blocks is 8, should be 0.  Fix? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Regular filesystem inode 14 has EA_INODE flag set. Clear? yes
+
+Unattached inode 14
+Connect to /lost+found? yes
+
+Inode 14 ref count is 2, should be 1.  Fix? yes
+
+Pass 5: Checking group summary information
+Block bitmap differences:  -13
+Fix? yes
+
+Free blocks count wrong for group #0 (46, counted=47).
+Fix? yes
+
+Free blocks count wrong (46, counted=47).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 21/32 files (0.0% non-contiguous), 17/64 blocks
+Exit status is 1
