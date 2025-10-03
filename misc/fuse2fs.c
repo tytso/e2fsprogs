@@ -1798,21 +1798,34 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 	dbg_printf(ff, "%s: put ino=%d links=%d\n", __func__, ino,
 		   inode.i_links_count);
 
-	switch (inode.i_links_count) {
-	case 0:
-		return 0; /* XXX: already done? */
-	case 1:
-		inode.i_links_count--;
+	if (S_ISDIR(inode.i_mode)) {
+		/*
+		 * Caller should have checked that this is an empty directory
+		 * before starting the unlink process.  nlink is usually 2, but
+		 * it could be 1 if this dir ever had more than 65000 subdirs.
+		 * Zero the link count.
+		 */
+		if (!ext2fs_dir_link_empty(EXT2_INODE(&inode)))
+			return translate_error(fs, ino, EXT2_ET_INODE_CORRUPTED);
+		inode.i_links_count = 0;
 		ext2fs_set_dtime(fs, EXT2_INODE(&inode));
-		break;
-	default:
+	} else {
+		/*
+		 * Any other file type can be hardlinked, so all we need to do
+		 * is decrement the nlink.
+		 */
+		if (inode.i_links_count == 0)
+			return translate_error(fs, ino, EXT2_ET_INODE_CORRUPTED);
 		inode.i_links_count--;
+		if (!inode.i_links_count)
+			ext2fs_set_dtime(fs, EXT2_INODE(&inode));
 	}
 
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
 		return ret;
 
+	/* Still linked?  Leave it be. */
 	if (inode.i_links_count)
 		goto write_out;
 
@@ -1966,10 +1979,6 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 	ret = fuse2fs_unlink(ff, path, &parent);
 	if (ret)
 		goto out;
-	/* Directories have to be "removed" twice. */
-	ret = remove_inode(ff, child);
-	if (ret)
-		goto out;
 	ret = remove_inode(ff, child);
 	if (ret)
 		goto out;
@@ -1982,8 +1991,7 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 			ret = translate_error(fs, rds.parent, err);
 			goto out;
 		}
-		if (inode.i_links_count > 1)
-			inode.i_links_count--;
+		ext2fs_dec_nlink(EXT2_INODE(&inode));
 		ret = update_mtime(fs, rds.parent, &inode);
 		if (ret)
 			goto out;
@@ -2149,6 +2157,41 @@ static int update_dotdot_helper(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	return 0;
 }
 
+/*
+ * If we're moving a directory, make sure that the new parent of that directory
+ * can handle the nlink bump.
+ */
+static int fuse2fs_check_from_dir_nlink(struct fuse2fs *ff, ext2_ino_t from_ino,
+					ext2_ino_t to_ino,
+					ext2_ino_t from_dir_ino,
+					ext2_ino_t to_dir_ino)
+{
+	struct ext2_inode_large inode;
+	errcode_t err;
+
+	err = fuse2fs_read_inode(ff->fs, from_ino, &inode);
+	if (err)
+		return translate_error(ff->fs, from_ino, err);
+
+	if (!S_ISDIR(inode.i_mode))
+		return 0;
+
+	if (to_ino != 0)
+		return 0;
+
+	if (to_dir_ino == from_dir_ino)
+		return 0;
+
+	err = fuse2fs_read_inode(ff->fs, to_dir_ino, &inode);
+	if (err)
+		return translate_error(ff->fs, from_ino, err);
+
+	if (ext2fs_dir_link_max(ff->fs, &inode))
+		return -EMLINK;
+
+	return 0;
+}
+
 static int op_rename(const char *from, const char *to
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, unsigned int flags EXT2FS_ATTR((unused))
@@ -2275,6 +2318,11 @@ static int op_rename(const char *from, const char *to
 	if (ret)
 		goto out2;
 
+	ret = fuse2fs_check_from_dir_nlink(ff, from_ino, to_ino, from_dir_ino,
+					   to_dir_ino);
+	if (ret)
+		goto out2;
+
 	/* If the target exists, unlink it first */
 	if (to_ino != 0) {
 		err = ext2fs_read_inode(fs, to_ino, &inode);
@@ -2337,7 +2385,7 @@ static int op_rename(const char *from, const char *to
 			ret = translate_error(fs, from_dir_ino, err);
 			goto out2;
 		}
-		inode.i_links_count--;
+		ext2fs_dec_nlink(&inode);
 		err = ext2fs_write_inode(fs, from_dir_ino, &inode);
 		if (err) {
 			ret = translate_error(fs, from_dir_ino, err);
@@ -2350,7 +2398,7 @@ static int op_rename(const char *from, const char *to
 			ret = translate_error(fs, to_dir_ino, err);
 			goto out2;
 		}
-		inode.i_links_count++;
+		ext2fs_inc_nlink(fs, &inode);
 		err = ext2fs_write_inode(fs, to_dir_ino, &inode);
 		if (err) {
 			ret = translate_error(fs, to_dir_ino, err);
@@ -2453,7 +2501,12 @@ static int op_link(const char *src, const char *dest)
 	if (ret)
 		goto out2;
 
-	inode.i_links_count++;
+	if (ext2fs_dir_link_max(ff->fs, &inode)) {
+		ret = -EMLINK;
+		goto out2;
+	}
+
+	ext2fs_inc_nlink(fs, EXT2_INODE(&inode));
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
 		goto out2;
