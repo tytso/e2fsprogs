@@ -599,6 +599,237 @@ free_buf:
 	return retval;
 }
 
+struct fake_dirent
+{
+	__le32 inode;
+	__le16 rec_len;
+	__u8 name_len;
+	__u8 file_type;
+};
+
+/*
+ * dx_root_info is laid out so that if it should somehow get overlaid by a
+ * dirent the two low bits of the hash version will be zero.  Therefore, the
+ * hash version mod 4 should never be 0.  Sincerely, the paranoia department.
+ */
+
+struct dx_root
+{
+	struct fake_dirent dot;
+	char dot_name[4];
+	struct fake_dirent dotdot;
+	char dotdot_name[4];
+	struct ext2_dx_root_info info;
+	struct ext2_dx_entry entries[];
+};
+
+static int check_dx_root(ext2_filsys fs, ext2_ino_t ino, struct dx_root *root)
+{
+	struct fake_dirent *fde;
+	char *error_msg;
+	unsigned int rlen;
+	char *blockend = (char *)root + fs->blocksize;
+
+	fde = &root->dot;
+	if (fde->name_len != 1) {
+		error_msg = "invalid name_len for '.'";
+		goto corrupted;
+	}
+	if (strncmp(root->dot_name, ".", fde->name_len)) {
+		error_msg = "invalid name for '.'";
+		goto corrupted;
+	}
+
+	ext2fs_get_rec_len(fs, (struct ext2_dir_entry *)fde, &rlen);
+	if ((char *)fde + rlen >= blockend) {
+		error_msg = "invalid rec_len for '.'";
+		goto corrupted;
+	}
+
+	fde = &root->dotdot;
+	if (fde->name_len != 2) {
+		error_msg = "invalid name_len for '..'";
+		goto corrupted;
+	}
+	if (strncmp(root->dotdot_name, "..", fde->name_len)) {
+		error_msg = "invalid name for '..'";
+		goto corrupted;
+	}
+	ext2fs_get_rec_len(fs, (struct ext2_dir_entry *)fde, &rlen);
+	if ((char *)fde + rlen >= blockend) {
+		error_msg = "invalid rec_len for '..'";
+		goto corrupted;
+	}
+
+	return 1;
+
+corrupted:
+	fprintf(stderr, "Corrupt dir %u: %s, running e2fsck is recommended\n",
+			 ino, error_msg);
+	return 0;
+}
+
+static inline struct ext2_dir_entry *
+ext2fs_next_entry(ext2_filsys fs, struct ext2_dir_entry *p)
+{
+	unsigned int rlen;
+
+	ext2fs_get_rec_len(fs, p, &rlen);
+	return (struct ext2_dir_entry *)((char *)p + rlen);
+}
+
+static inline void dx_set_block(struct ext2_dx_entry *entry, unsigned value)
+{
+	entry->block = ext2fs_cpu_to_le32(value);
+}
+
+static inline void dx_set_count(struct ext2_dx_entry *entries, unsigned value)
+{
+	((struct ext2_dx_countlimit *) entries)->count = ext2fs_cpu_to_le16(value);
+}
+
+static inline void dx_set_limit(struct ext2_dx_entry *entries, unsigned value)
+{
+	((struct ext2_dx_countlimit *) entries)->limit = ext2fs_cpu_to_le16(value);
+}
+
+static inline unsigned dx_root_limit(ext2_filsys fs, unsigned infosize)
+{
+	unsigned int entry_space = fs->blocksize -
+			ext2fs_dir_rec_len(1, 0) -
+			ext2fs_dir_rec_len(2, 0) - infosize;
+
+	if (ext2fs_has_feature_metadata_csum(fs->super))
+		entry_space -= sizeof(struct ext2_dx_tail);
+	return entry_space / sizeof(struct ext2_dx_entry);
+}
+
+/*
+ * This converts a one block unindexed directory to a 3 block indexed
+ * directory, and adds the dentry to the indexed directory.  Returns 0 if the
+ * index was not created; EAGAIN if it was; or an errcode_t on error.
+ */
+static errcode_t try_make_indexed_dir(ext2_filsys fs, ext2_ino_t dir,
+				      const char *name, ext2_ino_t ino,
+				      int flags)
+{
+	struct ext2_inode inode;
+	char *buf0, *buf1, *top;
+	struct dx_root *root;
+	struct ext2_dx_entry *entries;
+	struct fake_dirent *fde;
+	struct ext2_dir_entry *de, *de2;
+	blk64_t pblk0, pblk1;
+	unsigned int len;
+	const unsigned int blocksize = fs->blocksize;
+	int csum_size = 0;
+	errcode_t retval;
+
+	retval = ext2fs_read_inode(fs, dir, &inode);
+	if (retval)
+		return retval;
+
+	if (inode.i_size > fs->blocksize || (inode.i_flags & EXT2_INDEX_FL))
+		return 0;
+
+	if (ext2fs_has_feature_metadata_csum(fs->super))
+		csum_size = sizeof(struct ext2_dir_entry_tail);
+
+	retval = ext2fs_get_mem(blocksize, &buf0);
+	if (retval)
+		return retval;
+
+	retval = ext2fs_get_mem(blocksize, &buf1);
+	if (retval)
+		goto out_buf0;
+
+	retval = ext2fs_bmap2(fs, dir, &inode, NULL, 0, 0, NULL, &pblk0);
+	if (retval)
+		goto out_buf1;
+
+	retval = ext2fs_read_dir_block4(fs, pblk0, buf0, 0, dir);
+	if (retval)
+		goto out_buf1;
+
+	root = (struct dx_root *)buf0;
+	if (!check_dx_root(fs, dir, root)) {
+		retval = EXT2_ET_DIR_CORRUPTED;
+		goto out_buf1;
+	}
+
+	/* The 0th block becomes the root, move the dirents out */
+	fde = &root->dotdot;
+	de = ext2fs_next_entry(fs, (struct ext2_dir_entry *)fde);
+	len = ((char *) root) + (blocksize - csum_size) - (char *) de;
+
+	/* Allocate new block for the 0th block's dirents */
+	retval = ext2fs_bmap2(fs, dir, &inode, NULL, BMAP_ALLOC | BMAP_ZERO, 1,
+			      NULL, &pblk1);
+	if (retval)
+		goto out_buf1;
+
+	memcpy(buf1, de, len);
+	memset(de, 0, len); /* wipe old data */
+
+	de = (struct ext2_dir_entry *)buf1;
+	top = buf1 + len;
+	while ((char *)(de2 = ext2fs_next_entry(fs, de)) < top) {
+#if 0
+		if (ext4_check_dir_entry(dir, NULL, de, bh2, buf1, len,
+					(char *)de - buf1)) {
+			retval = EXT2_ET_DIR_CORRUPTED;
+			goto out_buf1;
+		}
+#endif
+		de = de2;
+	}
+	retval = ext2fs_set_rec_len(fs,
+			buf1 + (blocksize - csum_size) - (char *) de, de);
+	if (retval)
+		goto out_buf1;
+
+	if (csum_size)
+		ext2fs_initialize_dirent_tail(fs,
+				EXT2_DIRENT_TAIL(buf1, fs->blocksize));
+
+	/* Initialize the root; the dot dirents already exist */
+	de = (struct ext2_dir_entry *) (&root->dotdot);
+	retval = ext2fs_set_rec_len(fs, blocksize - ext2fs_dir_rec_len(2, 0),
+				    de);
+	memset (&root->info, 0, sizeof(root->info));
+	root->info.info_length = sizeof(root->info);
+	if (ext4_hash_in_dirent(&inode))
+		root->info.hash_version = EXT2_HASH_SIPHASH;
+	else
+		root->info.hash_version = fs->super->s_def_hash_version;
+
+	entries = root->entries;
+	dx_set_block(entries, 1);
+	dx_set_count(entries, 1);
+	dx_set_limit(entries, dx_root_limit(fs, sizeof(root->info)));
+
+	retval = ext2fs_write_dir_block4(fs, pblk1, buf1, 0, dir);
+	if (retval)
+		goto out_buf1;
+
+	retval = ext2fs_write_dir_block4(fs, pblk0, buf0, 0, dir);
+	if (retval)
+		goto out_buf1;
+
+	inode.i_flags |= EXT2_INDEX_FL;
+	inode.i_size += fs->blocksize;
+	retval = ext2fs_write_inode(fs, dir, &inode);
+	if (retval)
+		goto out_buf1;
+
+	retval = EAGAIN;
+out_buf1:
+	ext2fs_free_mem(&buf1);
+out_buf0:
+	ext2fs_free_mem(&buf0);
+	return retval;
+}
+
 /*
  * Note: the low 3 bits of the flags field are used as the directory
  * entry filetype.
@@ -671,6 +902,16 @@ retry:
 	if (!ls.done) {
 		if (!(flags & EXT2FS_LINK_EXPAND))
 			return EXT2_ET_DIR_NO_SPACE;
+
+		if (ext2fs_has_feature_dir_index(fs->super)) {
+			retval = try_make_indexed_dir(fs, dir, name, ino,
+						      flags);
+			if (retval == EAGAIN)
+				goto retry;
+			if (retval)
+				return retval;
+		}
+
 		retval = ext2fs_expand_dir(fs, dir);
 		if (retval)
 			return retval;
