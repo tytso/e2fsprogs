@@ -919,3 +919,52 @@ retry:
 	}
 	return 0;
 }
+
+/* Does this directory have an htree index? */
+int ext2fs_dir_is_dx(ext2_filsys fs, const struct ext2_inode *inode)
+{
+	return ext2fs_has_feature_dir_index(fs->super) &&
+		S_ISDIR(inode->i_mode) && (inode->i_flags & EXT2_INDEX_FL);
+}
+
+/*
+ * Set directory link count to 1 if nlinks > EXT2_LINK_MAX, or if nlinks == 2
+ * since this indicates that nlinks count was previously 1 to avoid overflowing
+ * the 16-bit i_links_count field on disk.  Directories with i_nlink == 1 mean
+ * that subdirectory link counts are not being maintained accurately.
+ *
+ * The caller has already checked for i_nlink overflow in case the DIR_LINK
+ * feature is not enabled and returned -EMLINK.  The is_dx() check is a proxy
+ * for checking S_ISDIR(inode) (since the INODE_INDEX feature will not be set
+ * on regular files) and to avoid creating huge/slow non-HTREE directories.
+ */
+void ext2fs_inc_nlink(ext2_filsys fs, struct ext2_inode *inode)
+{
+	inode->i_links_count++;
+
+	if (ext2fs_dir_is_dx(fs, inode) &&
+	    (inode->i_links_count > EXT2_LINK_MAX || inode->i_links_count == 2))
+		inode->i_links_count = 1;
+}
+
+/*
+ * If a directory had nlink == 1, then we should let it be 1. This indicates
+ * directory has >EXT2_LINK_MAX subdirs.
+ */
+void ext2fs_dec_nlink(struct ext2_inode *inode)
+{
+	if (!S_ISDIR(inode->i_mode) || inode->i_links_count > 2)
+		inode->i_links_count--;
+}
+
+int ext2fs_dir_link_max(ext2_filsys fs, struct ext2_inode_large *inode)
+{
+	return inode->i_links_count >= EXT2_LINK_MAX &&
+	       !(ext2fs_dir_is_dx(fs, EXT2_INODE(inode)) &&
+		 ext2fs_has_feature_dir_nlink(fs->super));
+}
+
+int ext2fs_dir_link_empty(struct ext2_inode *inode)
+{
+	return inode->i_links_count == 2 || inode->i_links_count == 1;
+}

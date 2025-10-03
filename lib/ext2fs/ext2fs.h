@@ -1842,6 +1842,11 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 		      ext2_ino_t ino, int flags);
 errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir, const char *name,
 			ext2_ino_t ino, int flags);
+int ext2fs_dir_is_dx(ext2_filsys fs, const struct ext2_inode *inode);
+void ext2fs_inc_nlink(ext2_filsys fs, struct ext2_inode *inode);
+void ext2fs_dec_nlink(struct ext2_inode *inode);
+int ext2fs_dir_link_max(ext2_filsys fs, struct ext2_inode_large *inode);
+int ext2fs_dir_link_empty(struct ext2_inode *inode);
 
 /* symlink.c */
 errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
