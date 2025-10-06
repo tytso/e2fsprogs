@@ -469,6 +469,12 @@ errcode_t ext2fs_mmp_update2(ext2_filsys fs, int immediately)
 	if (memcmp(mmp, mmp_cmp, sizeof(*mmp_cmp)))
 		return EXT2_ET_MMP_CHANGE_ABORT;
 
+	/*
+	 * Believe it or not, ext2fs_mmp_read actually overwrites fs->mmp_cmp
+	 * and leaves fs->mmp_buf untouched.  Hence we copy mmp_cmp into
+	 * mmp_buf, update mmp_buf, and write mmp_buf out to disk.
+	 */
+	memcpy(mmp, mmp_cmp, sizeof(*mmp_cmp));
 	mmp->mmp_time = tv.tv_sec;
 	mmp->mmp_seq = EXT4_MMP_SEQ_FSCK;
 	retval = ext2fs_mmp_write(fs, fs->super->s_mmp_block, fs->mmp_buf);
