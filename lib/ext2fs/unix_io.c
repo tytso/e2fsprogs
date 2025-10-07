@@ -1061,7 +1061,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 
 cleanup:
 	if (data) {
-		if (data->dev >= 0)
+		if (io->manager != unixfd_io_manager && data->dev >= 0)
 			close(data->dev);
 		if (data->cache) {
 			free_cache(data);
@@ -1147,7 +1147,7 @@ static errcode_t unix_close(io_channel channel)
 	retval = flush_cached_blocks(channel, data, 0);
 #endif
 
-	if (close(data->dev) < 0)
+	if (channel->manager != unixfd_io_manager && close(data->dev) < 0)
 		retval = errno;
 	free_cache(data);
 	free(data->cache);
