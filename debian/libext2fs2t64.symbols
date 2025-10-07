@@ -448,6 +448,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_mmp_clear@Base 1.42
  ext2fs_mmp_csum_set@Base 1.43
  ext2fs_mmp_csum_verify@Base 1.43
+ ext2fs_mmp_get_mem@Base 1.47.4
  ext2fs_mmp_init@Base 1.42
  ext2fs_mmp_new_seq@Base 1.42
  ext2fs_mmp_read@Base 1.42

@@ -41,6 +41,13 @@
 #endif
 #endif
 
+errcode_t ext2fs_mmp_get_mem(ext2_filsys fs, void **ptr)
+{
+	int align = ext2fs_get_dio_alignment(fs->mmp_fd);
+
+	return ext2fs_get_memalign(fs->blocksize, align, ptr);
+}
+
 errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 {
 #ifdef CONFIG_MMP
@@ -78,10 +85,7 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	}
 
 	if (fs->mmp_cmp == NULL) {
-		int align = ext2fs_get_dio_alignment(fs->mmp_fd);
-
-		retval = ext2fs_get_memalign(fs->blocksize, align,
-					     &fs->mmp_cmp);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_cmp);
 		if (retval)
 			return retval;
 	}

@@ -104,10 +104,7 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 		}
 	}
 	if (src->mmp_cmp) {
-		int align = ext2fs_get_dio_alignment(src->mmp_fd);
-
-		retval = ext2fs_get_memalign(src->blocksize, align,
-					     &fs->mmp_cmp);
+		retval = ext2fs_mmp_get_mem(src, &fs->mmp_cmp);
 		if (retval)
 			goto errout;
 		memcpy(fs->mmp_cmp, src->mmp_cmp, src->blocksize);

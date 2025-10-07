@@ -1863,6 +1863,7 @@ errcode_t ext2fs_mmp_update(ext2_filsys fs);
 errcode_t ext2fs_mmp_update2(ext2_filsys fs, int immediately);
 errcode_t ext2fs_mmp_stop(ext2_filsys fs);
 unsigned ext2fs_mmp_new_seq(void);
+errcode_t ext2fs_mmp_get_mem(ext2_filsys fs, void **ptr);
 
 /* read_bb.c */
 extern errcode_t ext2fs_read_bb_inode(ext2_filsys fs,
