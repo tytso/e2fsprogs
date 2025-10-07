@@ -91,7 +91,7 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 			goto errout;
 	}
 	if (src->mmp_buf) {
-		retval = ext2fs_get_mem(src->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(src, &fs->mmp_buf);
 		if (retval)
 			goto errout;
 		memcpy(fs->mmp_buf, src->mmp_buf, src->blocksize);

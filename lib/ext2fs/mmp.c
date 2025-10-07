@@ -204,7 +204,7 @@ static errcode_t ext2fs_mmp_reset(ext2_filsys fs)
 	errcode_t retval = 0;
 
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval)
 			goto out;
 	}
@@ -268,7 +268,7 @@ errcode_t ext2fs_mmp_init(ext2_filsys fs)
 		return EXT2_ET_INVALID_ARGUMENT;
 
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval)
 			goto out;
 	}
@@ -306,7 +306,7 @@ errcode_t ext2fs_mmp_start(ext2_filsys fs)
 	errcode_t retval = 0;
 
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval)
 			goto mmp_error;
 	}
