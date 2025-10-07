@@ -192,6 +192,7 @@ static inline uint64_t round_down(uint64_t b, unsigned int align)
 # define FL_ZERO_RANGE_FLAG (0)
 #endif
 
+errcode_t ext2fs_check_ext3_journal(ext2_filsys fs);
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
 #ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
@@ -4818,6 +4819,12 @@ int main(int argc, char *argv[])
 			}
 			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
 			ext2fs_mark_super_dirty(global_fs);
+		}
+	} else if (ext2fs_has_feature_journal(global_fs->super)) {
+		err = ext2fs_check_ext3_journal(global_fs);
+		if (err) {
+			translate_error(global_fs, 0, err);
+			goto out;
 		}
 	}
 
