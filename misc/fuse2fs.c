@@ -4532,7 +4532,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o fakeroot            pretend to be root for permission checks\n"
 	"    -o no_default_opts     do not include default fuse options\n"
 	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
-	"    -o norecovery          don't replay the journal\n"
+	"    -o norecovery          don't replay the journal (implies ro)\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
 	"    -o lockfile=<file>     file to show that fuse is still using the file system image\n"
 	"    -o kernel              run this as if it were the kernel, which sets:\n"
@@ -4689,6 +4689,10 @@ int main(int argc, char *argv[])
 
 	/* Start up the fs (while we still can use stdout) */
 	ret = 2;
+	if (fctx.norecovery) {
+		fctx.ro = 1;
+		flags &= ~EXT2_FLAG_RW;
+	}
 	char options[50];
 	sprintf(options, "offset=%lu", fctx.offset);
 	if (fctx.directio)
@@ -4758,8 +4762,6 @@ int main(int argc, char *argv[])
 		if (fctx.norecovery) {
 			log_printf(&fctx, "%s\n",
  _("Mounting read-only without recovering journal."));
-			fctx.ro = 1;
-			global_fs->flags &= ~EXT2_FLAG_RW;
 		} else {
 			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
