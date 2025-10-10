@@ -4607,8 +4607,7 @@ int main(int argc, char *argv[])
 	FILE *orig_stderr = stderr;
 	char extra_args[BUFSIZ];
 	int ret;
-	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE |
-		    EXT2_FLAG_RW;
+	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE;
 
 	memset(&fctx, 0, sizeof(fctx));
 	fctx.magic = FUSE2FS_MAGIC;
@@ -4689,6 +4688,8 @@ int main(int argc, char *argv[])
 
 	/* Start up the fs (while we still can use stdout) */
 	ret = 2;
+	if (!fctx.ro)
+		flags |= EXT2_FLAG_RW;
 	char options[50];
 	sprintf(options, "offset=%lu", fctx.offset);
 	if (fctx.directio)
@@ -4751,8 +4752,12 @@ int main(int argc, char *argv[])
 	 * ext4 can't do COW of shared blocks, so if the feature is enabled,
 	 * we must force ro mode.
 	 */
-	if (ext2fs_has_feature_shared_blocks(global_fs->super))
+	if (ext2fs_has_feature_shared_blocks(global_fs->super) && !fctx.ro) {
+		log_printf(&fctx, "%s\n",
+ _("Mounting read-only because shared blocks feature is enabled."));
 		fctx.ro = 1;
+		/* Note that EXT2_FLAG_RW is left set */
+	}
 
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (fctx.norecovery) {
@@ -4761,6 +4766,27 @@ int main(int argc, char *argv[])
 			fctx.ro = 1;
 			global_fs->flags &= ~EXT2_FLAG_RW;
 		} else {
+			if (!(flags & EXT2_FLAG_RW)) {
+				/* Attempt to re-open read-write */
+				err = ext2fs_close(global_fs);
+				if (err)
+					com_err(argv[0], err,
+						"while closing filesystem");
+				global_fs = NULL;
+				flags |= EXT2_FLAG_RW;
+				err = ext2fs_open2(fctx.device, options, flags,
+						   0, 0, unix_io_manager,
+						   &global_fs);
+				if (err) {
+					err_printf(&fctx, "%s.\n",
+						   error_message(err));
+					err_printf(&fctx, "%s\n",
+ _("Journal needs recovery but filesystem cannot be reopened read-write."));
+					err_printf(&fctx, "%s\n",
+ _("Please run e2fsck -fy."));
+					goto out;
+				}
+			}
 			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
 			if (err) {
@@ -4772,12 +4798,32 @@ int main(int argc, char *argv[])
 			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
 			ext2fs_mark_super_dirty(global_fs);
 		}
+	} else if (fctx.ro && !(flags & EXT2_FLAG_RW)) {
+		log_printf(&fctx, "%s\n", _("Mounting read-only."));
 	}
 
-	if (global_fs->flags & EXT2_FLAG_RW) {
+	if (fctx.ro && (flags & EXT2_FLAG_RW)) {
+		/* Re-open read-only */
+		err = ext2fs_close(global_fs);
+		if (err)
+			com_err(argv[0], err, "while closing filesystem");
+		global_fs = NULL;
+		flags &= ~EXT2_FLAG_RW;
+		err = ext2fs_open2(fctx.device, options, flags, 0, 0,
+				   unix_io_manager, &global_fs);
+		if (err) {
+			err_printf(&fctx, "%s.\n", error_message(err));
+			err_printf(&fctx, "%s\n",
+ _("Failed to remount read-only."));
+			goto out;
+		}
+		log_printf(&fctx, "%s\n", _("Remounted read-only."));
+	}
+
+	if (!fctx.ro) {
 		if (ext2fs_has_feature_journal(global_fs->super))
 			log_printf(&fctx, "%s",
- _("Warning: fuse2fs does not support using the journal.\n"
+ _("Warning: fuse2fs does not support writing the journal.\n"
    "There may be file system corruption or data loss if\n"
    "the file system is not gracefully unmounted.\n"));
 		err = ext2fs_read_inode_bitmap(global_fs);
@@ -4833,8 +4879,10 @@ int main(int argc, char *argv[])
 	if (fctx.no_default_opts == 0)
 		fuse_opt_add_arg(&args, extra_args);
 
-	if (fctx.ro)
+	if (fctx.ro) {
+		/* This is in case ro was implied above and not passed in */
 		fuse_opt_add_arg(&args, "-oro");
+	}
 
 	if (fctx.fakeroot) {
 #ifdef HAVE_MOUNT_NODEV
@@ -4892,7 +4940,6 @@ int main(int argc, char *argv[])
 		ret = 0;
 		break;
 	}
-out:
 	if (ret & 1) {
 		fprintf(orig_stderr, "%s\n",
  _("Mount failed due to unrecognized options.  Check dmesg(1) for details."));
@@ -4903,6 +4950,7 @@ out:
  _("Mount failed while opening filesystem.  Check dmesg(1) for details."));
 		fflush(orig_stderr);
 	}
+out:
 	if (global_fs) {
 		err = ext2fs_close(global_fs);
 		if (err)
