@@ -4696,9 +4696,24 @@ int main(int argc, char *argv[])
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
 	if (err) {
-		err_printf(&fctx, "%s.\n", error_message(err));
-		err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
-		goto out;
+		if ((err == EACCES) || (err == EPERM)) {
+			if (fctx.ro) {
+				dbg_printf(&fctx, "%s: %s\n", __func__,
+ _("Permission denied with writable, trying without.\n"));
+			} else {
+				dbg_printf(&fctx, "%s: %s\n", __func__,
+ _("No write access, opening read-only.\n"));
+				fctx.ro = 1;
+			}
+			flags &= ~EXT2_FLAG_RW;
+			err = ext2fs_open2(fctx.device, options, flags, 0, 0, 
+					   unix_io_manager, &global_fs);
+		}
+		if (err) {
+			err_printf(&fctx, "%s.\n", error_message(err));
+			err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
+			goto out;
+		}
 	}
 	fctx.fs = global_fs;
 	global_fs->priv_data = &fctx;
@@ -4741,6 +4756,8 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
+	ret = 2;
+
 	if (global_fs->super->s_state & EXT2_ERROR_FS) {
 		err_printf(&fctx, "%s\n",
  _("Errors detected; running e2fsck is required."));
@@ -4760,6 +4777,11 @@ int main(int argc, char *argv[])
  _("Mounting read-only without recovering journal."));
 			fctx.ro = 1;
 			global_fs->flags &= ~EXT2_FLAG_RW;
+		} else if (fctx.ro && !(flags & EXT2_FLAG_RW)) {
+			err_printf(&fctx, "%s\n",
+ _("Journal needs recovery but filesystem could not be opened read-write."));
+			err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
+			goto out;
 		} else {
 			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
@@ -4833,8 +4855,10 @@ int main(int argc, char *argv[])
 	if (fctx.no_default_opts == 0)
 		fuse_opt_add_arg(&args, extra_args);
 
-	if (fctx.ro)
+	if (fctx.ro) {
+		/* This is in case ro was implied above and not passed in */
 		fuse_opt_add_arg(&args, "-oro");
+	}
 
 	if (fctx.fakeroot) {
 #ifdef HAVE_MOUNT_NODEV
