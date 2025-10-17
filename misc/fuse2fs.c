@@ -4774,12 +4774,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (global_fs->flags & EXT2_FLAG_RW) {
+	if (!fctx.ro) {
 		if (ext2fs_has_feature_journal(global_fs->super))
 			log_printf(&fctx, "%s",
- _("Warning: fuse2fs does not support using the journal.\n"
+ _("Warning: fuse2fs does not support writing the journal.\n"
    "There may be file system corruption or data loss if\n"
    "the file system is not gracefully unmounted.\n"));
+	}
+
+	if (global_fs->flags & EXT2_FLAG_RW) {
 		err = ext2fs_read_inode_bitmap(global_fs);
 		if (err) {
 			translate_error(global_fs, 0, err);
