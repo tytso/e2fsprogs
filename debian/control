@@ -181,6 +181,7 @@ Breaks: e2fslibs-dev (<< 1.43.9-1~)
 Provides: e2fslibs-dev (= ${binary:Version})
 Suggests: doc-base
 Architecture: any
+Multi-Arch: same
 Description: ext2/ext3/ext4 file system libraries - headers and static libraries
  The ext2, ext3 and ext4 file systems are successors of the original ext
  ("extended") file system. They are the main file system types used for
