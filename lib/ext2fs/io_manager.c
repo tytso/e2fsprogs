@@ -150,3 +150,19 @@ errcode_t io_channel_cache_readahead(io_channel io, unsigned long long block,
 
 	return io->manager->cache_readahead(io, block, count);
 }
+
+errcode_t io_channel_flock(io_channel io, unsigned int flock_flags)
+{
+	if (!io->manager->flock)
+		return EXT2_ET_OP_NOT_SUPPORTED;
+
+	return io->manager->flock(io, flock_flags);
+}
+
+errcode_t io_channel_funlock(io_channel io)
+{
+	if (!io->manager->flock)
+		return EXT2_ET_OP_NOT_SUPPORTED;
+
+	return io->manager->flock(io, 0);
+}

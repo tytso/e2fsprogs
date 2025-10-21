@@ -102,7 +102,8 @@ struct struct_io_manager {
 				     unsigned long long count);
 	errcode_t (*zeroout)(io_channel channel, unsigned long long block,
 			     unsigned long long count);
-	long	reserved[14];
+	errcode_t (*flock)(io_channel channel, unsigned int flock_flags);
+	long	reserved[13];
 };
 
 #define IO_FLAG_RW		0x0001
@@ -111,6 +112,13 @@ struct struct_io_manager {
 #define IO_FLAG_FORCE_BOUNCE	0x0008
 #define IO_FLAG_THREADS		0x0010
 #define IO_FLAG_NOCACHE		0x0020
+
+/* Prevent other programs from reading or writing to underlying storage */
+#define IO_CHANNEL_FLOCK_EXCLUSIVE	0x1
+/* Prevent other programs from writing to underlying storage */
+#define IO_CHANNEL_FLOCK_SHARED		0x2
+/* Return EBUSY if the lock cannot be taken immediately */
+#define IO_CHANNEL_FLOCK_TRYLOCK	0x4
 
 /*
  * Convenience functions....
@@ -145,6 +153,8 @@ extern errcode_t io_channel_alloc_buf(io_channel channel,
 extern errcode_t io_channel_cache_readahead(io_channel io,
 					    unsigned long long block,
 					    unsigned long long count);
+extern errcode_t io_channel_flock(io_channel io, unsigned int flock_flags);
+extern errcode_t io_channel_funlock(io_channel io);
 
 #ifdef _WIN32
 /* windows_io.c */

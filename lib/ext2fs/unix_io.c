@@ -64,6 +64,9 @@
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
 #endif
+#ifdef HAVE_SYS_FILE_H
+#include <sys/file.h>
+#endif
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKROGET)
 #define BLKROGET   _IO(0x12, 94) /* Get read-only status (0 = read_write).  */
@@ -135,6 +138,7 @@ struct unix_private_data {
 	int	flags;
 	int	align;
 	int	access_time;
+	int	unix_flock_flags;
 	ext2_loff_t offset;
 	struct unix_cache *cache;
 	unsigned int cache_size;
@@ -875,6 +879,68 @@ int ext2fs_fstat(int fd, ext2fs_struct_stat *buf)
 #endif
 }
 
+#ifdef HAVE_SYS_FILE_H
+static errcode_t unix_funlock(io_channel channel)
+{
+	struct unix_private_data *data;
+	int ret;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (data->unix_flock_flags) {
+		ret = flock(data->dev, LOCK_UN);
+		if (ret)
+			return errno;
+
+		data->unix_flock_flags = 0;
+	}
+
+	return 0;
+}
+
+static errcode_t unix_flock(io_channel channel, unsigned int flock_flags)
+{
+	struct unix_private_data *data;
+	int unix_flock_flags = 0;
+	errcode_t ret;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	ret = unix_funlock(channel);
+	if (ret)
+		return ret;
+
+	if (flock_flags & IO_CHANNEL_FLOCK_EXCLUSIVE)
+		unix_flock_flags |= LOCK_EX;
+
+	if (flock_flags & IO_CHANNEL_FLOCK_SHARED)
+		unix_flock_flags |= LOCK_SH;
+
+	if (flock_flags & IO_CHANNEL_FLOCK_TRYLOCK)
+		unix_flock_flags |= LOCK_NB;
+
+	if (!unix_flock_flags)
+		return 0;
+
+	ret = flock(data->dev, unix_flock_flags);
+	if (ret < 0)
+		return errno;
+
+	data->unix_flock_flags = unix_flock_flags & ~LOCK_NB;
+	return 0;
+}
+#else
+#define unix_flock		NULL
+
+static errcode_t unix_funlock(io_channel channel)
+{
+	return 0;
+}
+#endif /* HAVE_SYS_FILE_H */
 
 static errcode_t unix_open_channel(const char *name, int fd,
 				   int flags, io_channel *channel,
@@ -1061,6 +1127,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 
 cleanup:
 	if (data) {
+		unix_funlock(io);
 		if (io->manager != unixfd_io_manager && data->dev >= 0)
 			close(data->dev);
 		if (data->cache) {
@@ -1146,6 +1213,8 @@ static errcode_t unix_close(io_channel channel)
 #ifndef NO_IO_CACHE
 	retval = flush_cached_blocks(channel, data, 0);
 #endif
+
+	unix_funlock(channel);
 
 	if (channel->manager != unixfd_io_manager && close(data->dev) < 0)
 		retval = errno;
@@ -1683,6 +1752,7 @@ static struct struct_io_manager struct_unix_manager = {
 	.discard	= unix_discard,
 	.cache_readahead	= unix_cache_readahead,
 	.zeroout	= unix_zeroout,
+	.flock		= unix_flock,
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
@@ -1704,6 +1774,7 @@ static struct struct_io_manager struct_unixfd_manager = {
 	.discard	= unix_discard,
 	.cache_readahead	= unix_cache_readahead,
 	.zeroout	= unix_zeroout,
+	.flock		= unix_flock,
 };
 
 io_manager unixfd_io_manager = &struct_unixfd_manager;
