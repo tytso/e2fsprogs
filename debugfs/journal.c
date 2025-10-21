@@ -681,7 +681,7 @@ static void ext2fs_journal_release(ext2_filsys fs, journal_t *journal,
  * This function makes sure that the superblock fields regarding the
  * journal are consistent.
  */
-static errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
+errcode_t ext2fs_check_ext3_journal(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 	journal_t *journal;

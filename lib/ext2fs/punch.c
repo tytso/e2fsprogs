@@ -54,6 +54,7 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 	blk_t		b;
 	int		i;
 	blk64_t		offset, incr;
+	const blk64_t	end = start + count;
 	int		freed = 0;
 
 #ifdef PUNCH_DEBUG
@@ -62,13 +63,14 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 #endif
 	incr = 1ULL << ((EXT2_BLOCK_SIZE_BITS(fs->super) - 2) * level);
 	for (i = 0, offset = 0; i < max; i++, p++, offset += incr) {
-		if (offset >= start + count)
+		if (offset >= end)
 			break;
 		if (*p == 0 || (offset+incr) <= start)
 			continue;
 		b = *p;
 		if (level > 0) {
 			blk_t start2;
+			blk_t count2;
 #ifdef PUNCH_DEBUG
 			printf("Reading indirect block %u\n", b);
 #endif
@@ -76,9 +78,15 @@ static errcode_t ind_punch(ext2_filsys fs, struct ext2_inode *inode,
 			if (retval)
 				return retval;
 			start2 = (start > offset) ? start - offset : 0;
+			count2 = end - ((start > offset) ? start : offset);
+#ifdef PUNCH_DEBUG
+			printf("start %llu offset %llu count %llu end %llu "
+			       "incr %llu start2 %u count2 %u\n", start,
+			       offset, count, end, incr, start2, count2);
+#endif
 			retval = ind_punch(fs, inode, block_buf + fs->blocksize,
 					   (blk_t *) block_buf, level - 1,
-					   start2, count - offset,
+					   start2, count2,
 					   fs->blocksize >> 2);
 			if (retval)
 				return retval;

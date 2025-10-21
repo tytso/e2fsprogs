@@ -192,6 +192,7 @@ static inline uint64_t round_down(uint64_t b, unsigned int align)
 # define FL_ZERO_RANGE_FLAG (0)
 #endif
 
+errcode_t ext2fs_check_ext3_journal(ext2_filsys fs);
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
 #ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
@@ -207,6 +208,7 @@ struct fuse2fs_file_handle {
 	unsigned long magic;
 	ext2_ino_t ino;
 	int open_flags;
+	int check_flags;
 };
 
 /* Main program context */
@@ -217,17 +219,19 @@ struct fuse2fs {
 	pthread_mutex_t bfl;
 	char *device;
 	char *shortdev;
-	uint8_t ro;
-	uint8_t debug;
-	uint8_t no_default_opts;
-	uint8_t panic_on_error;
-	uint8_t minixdf;
-	uint8_t fakeroot;
-	uint8_t alloc_all_blocks;
-	uint8_t norecovery;
-	uint8_t kernel;
-	uint8_t directio;
-	uint8_t acl;
+
+	/* options set by fuse_opt_parse must be of type int */
+	int ro;
+	int debug;
+	int no_default_opts;
+	int panic_on_error;
+	int minixdf;
+	int fakeroot;
+	int alloc_all_blocks;
+	int norecovery;
+	int kernel;
+	int directio;
+	int acl;
 
 	int logfd;
 	int blocklog;
@@ -740,6 +744,36 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 	return -EACCES;
 }
 
+static errcode_t fuse2fs_check_support(struct fuse2fs *ff)
+{
+	ext2_filsys fs = ff->fs;
+
+	if (ext2fs_has_feature_quota(fs->super)) {
+		err_printf(ff, "%s\n", _("quotas not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_verity(fs->super)) {
+		err_printf(ff, "%s\n", _("verity not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_encrypt(fs->super)) {
+		err_printf(ff, "%s\n", _("encryption not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_casefold(fs->super)) {
+		err_printf(ff, "%s\n", _("casefolding not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+
+	if (fs->super->s_state & EXT2_ERROR_FS) {
+		err_printf(ff, "%s\n",
+ _("Errors detected; running e2fsck is required."));
+		return EXT2_ET_FILESYSTEM_CORRUPTED;
+	}
+
+	return 0;
+}
+
 static void op_destroy(void *p EXT2FS_ATTR((unused)))
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -1165,13 +1199,13 @@ out_close:
 }
 
 static int propagate_default_acls(struct fuse2fs *ff, ext2_ino_t parent,
-				  ext2_ino_t child)
+				  ext2_ino_t child, mode_t mode)
 {
 	void *def;
 	size_t deflen;
 	int ret;
 
-	if (!ff->acl)
+	if (!ff->acl || S_ISDIR(mode))
 		return 0;
 
 	ret = __getxattr(ff, parent, XATTR_NAME_POSIX_ACL_DEFAULT, &def,
@@ -1344,7 +1378,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
 
-	ret = propagate_default_acls(ff, parent, child);
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
 	if (ret)
 		goto out2;
 out2:
@@ -1472,7 +1506,7 @@ static int op_mkdir(const char *path, mode_t mode)
 		goto out3;
 	}
 
-	ret = propagate_default_acls(ff, parent, child);
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
 	if (ret)
 		goto out3;
 
@@ -1822,6 +1856,10 @@ static int op_symlink(const char *src, const char *dest)
 	*node_name = 0;
 
 	pthread_mutex_lock(&ff->bfl);
+	if (!fs_can_allocate(ff, 1)) {
+		ret = -ENOSPC;
+		goto out2;
+	}
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, temp_path,
 			   &parent);
 	*node_name = a;
@@ -2300,10 +2338,14 @@ static int in_file_group(struct fuse_context *ctxt,
 	gid_t gid = inode_gid(*inode);
 	int ret;
 
+	/* If the inode gid matches the process' primary group, we're done. */
+	if (ctxt->gid == gid)
+		return 1;
+
 	ret = get_req_groups(ff, &gids, &nr_gids);
 	if (ret == -ENOENT) {
 		/* magic return code for "could not get caller group info" */
-		return ctxt->gid == inode_gid(*inode);
+		return 0;
 	}
 	if (ret < 0)
 		return ret;
@@ -2670,6 +2712,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 			ret = check_inum_access(ff, file->ino, X_OK);
 			if (ret)
 				goto out;
+			check = X_OK;
 		} else
 			goto out;
 	}
@@ -2680,6 +2723,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 			goto out;
 	}
 
+	file->check_flags = check;
 	fp->fh = (uintptr_t)file;
 
 out:
@@ -2748,7 +2792,7 @@ out2:
 		goto out;
 	}
 
-	if (fs_writeable(fs)) {
+	if (fh->check_flags != X_OK && fs_writeable(fs)) {
 		ret = update_atime(fs, fh->ino);
 		if (ret)
 			goto out;
@@ -3541,7 +3585,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
 
-	ret = propagate_default_acls(ff, parent, child);
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
 	if (ret)
 		goto out2;
 
@@ -3889,6 +3933,33 @@ static __u32 fsxflags_to_iflags(__u32 xflags)
 	return iflags;
 }
 
+#define FUSE2FS_MODIFIABLE_XFLAGS (FS_XFLAG_IMMUTABLE | \
+				   FS_XFLAG_APPEND | \
+				   FS_XFLAG_SYNC | \
+				   FS_XFLAG_NOATIME | \
+				   FS_XFLAG_NODUMP | \
+				   FS_XFLAG_PROJINHERIT)
+
+#define FUSE2FS_MODIFIABLE_IXFLAGS (FS_IMMUTABLE_FL | \
+				    FS_APPEND_FL | \
+				    FS_SYNC_FL | \
+				    FS_NOATIME_FL | \
+				    FS_NODUMP_FL | \
+				    FS_PROJINHERIT_FL)
+
+static inline int set_xflags(struct ext2_inode_large *inode, __u32 xflags)
+{
+	__u32 iflags;
+
+	if (xflags & ~FUSE2FS_MODIFIABLE_XFLAGS)
+		return -EINVAL;
+
+	iflags = fsxflags_to_iflags(xflags);
+	inode->i_flags = (inode->i_flags & ~FUSE2FS_MODIFIABLE_IXFLAGS) |
+			 (iflags & FUSE2FS_MODIFIABLE_IXFLAGS);
+	return 0;
+}
+
 static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			    void *data)
 {
@@ -3898,7 +3969,6 @@ static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	int ret;
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fsxattr *fsx = data;
-	__u32 flags = fsxflags_to_iflags(fsx->fsx_xflags);
 	unsigned int inode_size;
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
@@ -3910,7 +3980,7 @@ static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	if (want_check_owner(ff, ctxt) && inode_uid(inode) != ctxt->uid)
 		return -EPERM;
 
-	ret = set_iflags(&inode, flags);
+	ret = set_xflags(&inode, fsx->fsx_xflags);
 	if (ret)
 		return ret;
 
@@ -4003,6 +4073,14 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 
 		if (b - start >= minlen) {
 			err = io_channel_discard(fs->io, start, b - start);
+			if (err == EBUSY) {
+				/*
+				 * Apparently dm-thinp can return EBUSY when
+				 * it's too busy deallocating thinp units to
+				 * deallocate more.  Swallow these errors.
+				 */
+				err = 0;
+			}
 			if (err)
 				return translate_error(fs, fh->ino, err);
 			cleared += b - start;
@@ -4695,6 +4773,19 @@ int main(int argc, char *argv[])
 		flags |= EXT2_FLAG_DIRECT_IO;
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
+	if (err == EPERM || err == EACCES) {
+		/*
+		 * Source device cannot be opened for write.  Under these
+		 * circumstances, mount(8) will try again with a ro mount,
+		 * and the kernel will open the block device readonly.
+		 */
+		log_printf(&fctx, "%s\n",
+ _("WARNING: source write-protected, mounted read-only."));
+		flags &= ~EXT2_FLAG_RW;
+		fctx.ro = 1;
+		err = ext2fs_open2(fctx.device, options, flags, 0, 0,
+				   unix_io_manager, &global_fs);
+	}
 	if (err) {
 		err_printf(&fctx, "%s.\n", error_message(err));
 		err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
@@ -4723,29 +4814,9 @@ int main(int argc, char *argv[])
 	}
 
 	ret = 3;
-
-	if (ext2fs_has_feature_quota(global_fs->super)) {
-		err_printf(&fctx, "%s", _("quotas not supported."));
+	err = fuse2fs_check_support(&fctx);
+	if (err)
 		goto out;
-	}
-	if (ext2fs_has_feature_verity(global_fs->super)) {
-		err_printf(&fctx, "%s", _("verity not supported."));
-		goto out;
-	}
-	if (ext2fs_has_feature_encrypt(global_fs->super)) {
-		err_printf(&fctx, "%s", _("encryption not supported."));
-		goto out;
-	}
-	if (ext2fs_has_feature_casefold(global_fs->super)) {
-		err_printf(&fctx, "%s", _("casefolding not supported."));
-		goto out;
-	}
-
-	if (global_fs->super->s_state & EXT2_ERROR_FS) {
-		err_printf(&fctx, "%s\n",
- _("Errors detected; running e2fsck is required."));
-		goto out;
-	}
 
 	/*
 	 * ext4 can't do COW of shared blocks, so if the feature is enabled,
@@ -4760,6 +4831,11 @@ int main(int argc, char *argv[])
  _("Mounting read-only without recovering journal."));
 			fctx.ro = 1;
 			global_fs->flags &= ~EXT2_FLAG_RW;
+		} else if (!(global_fs->flags & EXT2_FLAG_RW)) {
+			err_printf(&fctx, "%s\n",
+ _("Cannot replay journal on read-only device."));
+			ret = 32;
+			goto out;
 		} else {
 			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
@@ -4769,8 +4845,16 @@ int main(int argc, char *argv[])
 						_("Please run e2fsck -fy."));
 				goto out;
 			}
-			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
-			ext2fs_mark_super_dirty(global_fs);
+
+			err = fuse2fs_check_support(&fctx);
+			if (err)
+				goto out;
+		}
+	} else if (ext2fs_has_feature_journal(global_fs->super)) {
+		err = ext2fs_check_ext3_journal(global_fs);
+		if (err) {
+			translate_error(global_fs, 0, err);
+			goto out;
 		}
 	}
 
@@ -4904,10 +4988,9 @@ out:
 		fflush(orig_stderr);
 	}
 	if (global_fs) {
-		err = ext2fs_close(global_fs);
+		err = ext2fs_close_free(&global_fs);
 		if (err)
 			com_err(argv[0], err, "while closing fs");
-		global_fs = NULL;
 	}
 	if (fctx.lockfile) {
 		if (unlink(fctx.lockfile)) {
@@ -4982,6 +5065,9 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		break;
 	case EXT2_ET_UNIMPLEMENTED:
 		ret = -EOPNOTSUPP;
+		break;
+	case EXT2_ET_RO_FILSYS:
+		ret = -EROFS;
 		break;
 	case EXT2_ET_MAGIC_EXT2FS_FILSYS:
 	case EXT2_ET_MAGIC_BADBLOCKS_LIST:

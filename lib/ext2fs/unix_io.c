@@ -1061,7 +1061,7 @@ static errcode_t unix_open_channel(const char *name, int fd,
 
 cleanup:
 	if (data) {
-		if (data->dev >= 0)
+		if (io->manager != unixfd_io_manager && data->dev >= 0)
 			close(data->dev);
 		if (data->cache) {
 			free_cache(data);
@@ -1086,15 +1086,14 @@ static errcode_t unixfd_open(const char *str_fd, int flags,
 
 	fd = atoi(str_fd);
 #if defined(HAVE_FCNTL)
-	fd_flags = fcntl(fd, F_GETFD);
+	fd_flags = fcntl(fd, F_GETFL);
 	if (fd_flags == -1)
 		return EBADF;
 
-	flags = 0;
+	/* O_EXCL is cleared by Linux at open and not returned by F_GETFL */
+	flags &= IO_FLAG_EXCLUSIVE;
 	if (fd_flags & O_RDWR)
 		flags |= IO_FLAG_RW;
-	if (fd_flags & O_EXCL)
-		flags |= IO_FLAG_EXCLUSIVE;
 #if defined(O_DIRECT)
 	if (fd_flags & O_DIRECT)
 		flags |= IO_FLAG_DIRECT_IO;
@@ -1148,7 +1147,7 @@ static errcode_t unix_close(io_channel channel)
 	retval = flush_cached_blocks(channel, data, 0);
 #endif
 
-	if (close(data->dev) < 0)
+	if (channel->manager != unixfd_io_manager && close(data->dev) < 0)
 		retval = errno;
 	free_cache(data);
 	free(data->cache);

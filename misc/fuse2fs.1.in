@@ -36,20 +36,32 @@ print version
 \fB-o\fR ro
 read-only mount
 .TP
-\fB-o\fR errors=panic
-dump core on error
+\fB-o\fR rw
+read-write mount (default)
+.TP
+\fB-o\fR bsddf
+bsd-style df (default)
 .TP
 \fB-o\fR minixdf
 minix-style df
 .TP
+\fB-o\fR acl
+enable file access control lists
+.TP
+\fB-o\fR cache_size
+Set the disk cache size to this quantity.
+The quantity may contain the suffixes k, m, or g.
+By default, the size is 32MB.
+The size may not be larger than 2GB.
+.TP
+\fB-o\fR direct
+Use O_DIRECT to access the block device.
+.TP
+\fB-o\fR errors=panic
+dump core on error
+.TP
 \fB-o\fR fakeroot
 pretend to be root for permission checks
-.TP
-\fB-o\fR no_default_opts
-do not include default fuse options
-.TP
-\fB-o\fR norecovery
-do not replay the journal and mount the file system read-only
 .TP
 \fB-o\fR fuse2fs_debug
 enable fuse2fs debugging
@@ -63,14 +75,14 @@ Note that these options can still be overridden (e.g.
 .I nosuid
 ) later.
 .TP
-\fB-o\fR direct
-Use O_DIRECT to access the block device.
+\fB-o\fR lockfile=path
+use this file to control access to the filesystem
 .TP
-\fB-o\fR cache_size
-Set the disk cache size to this quantity.
-The quantity may contain the suffixes k, m, or g.
-By default, the size is 32MB.
-The size may not be larger than 2GB.
+\fB-o\fR no_default_opts
+do not include default fuse options
+.TP
+\fB-o\fR norecovery
+do not replay the journal and mount the file system read-only
 .SS "FUSE options:"
 .TP
 \fB-d -o\fR debug
