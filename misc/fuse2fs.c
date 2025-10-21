@@ -4821,21 +4821,62 @@ int main(int argc, char *argv[])
 	sprintf(options, "offset=%lu", fctx.offset);
 	if (fctx.directio)
 		flags |= EXT2_FLAG_DIRECT_IO;
-	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
-			   &global_fs);
-	if ((err == EPERM || err == EACCES) &&
-	    (!fctx.ro || (flags & EXT2_FLAG_RW))) {
-		/*
-		 * Source device cannot be opened for write.  Under these
-		 * circumstances, mount(8) will try again with a ro mount,
-		 * and the kernel will open the block device readonly.
-		 */
-		log_printf(&fctx, "%s\n",
- _("WARNING: source write-protected, mounted read-only."));
-		flags &= ~EXT2_FLAG_RW;
-		fctx.ro = 1;
+
+	/*
+	 * If the filesystem is stored on a block device, the _EXCLUSIVE flag
+	 * causes libext2fs to try to open the block device with O_EXCL.  If
+	 * the block device is already opened O_EXCL by something else, the
+	 * open call returns EBUSY.
+	 *
+	 * Unfortunately, there's a nasty race between fuse2fs going through
+	 * its startup sequence (open fs, parse superblock, daemonize, create
+	 * mount, respond to FUSE_INIT) in response to a mount(8) invocation
+	 * and another process that calls umount(2) on the same mount.
+	 *
+	 * If fuse2fs is being run as a mount(8) helper and has daemonized, the
+	 * original fuse2fs subprocess exits and so will mount(8).  This can
+	 * occur before the kernel issues a FUSE_INIT request to fuse2fs.  If
+	 * a process then umount(2)'s the mount, the kernel will abort the
+	 * fuse connection.  If the FUSE_INIT request hasn't been issued, now
+	 * it won't ever be issued.  The kernel tears down the mount and
+	 * returns from umount(2), but fuse2fs has no idea that any of this has
+	 * happened because it receives no requests.
+	 *
+	 * At this point, the original fuse2fs server holds the block device
+	 * open O_EXCL.  If mount(8) is invoked again on the same device, the
+	 * new fuse2fs server will try to open the block device O_EXCL and
+	 * fail.  A crappy solution here is to retry for 5 seconds, hoping that
+	 * the first fuse2fs server will wake up and exit.
+	 *
+	 * If the filesystem is in a regular file, O_EXCL (without O_CREAT) has
+	 * no defined behavior, but it never returns EBUSY.
+	 */
+	deadline = init_deadline(FUSE2FS_OPEN_TIMEOUT);
+	do {
 		err = ext2fs_open2(fctx.device, options, flags, 0, 0,
 				   unix_io_manager, &global_fs);
+		if ((err == EPERM || err == EACCES) &&
+		    (!fctx.ro || (flags & EXT2_FLAG_RW))) {
+			/*
+			 * Source device cannot be opened for write.  Under
+			 * these circumstances, mount(8) will try again with a
+			 * ro mount, and the kernel will open the block device
+			 * readonly.
+			 */
+			log_printf(&fctx, "%s\n",
+ _("WARNING: source write-protected, mounted read-only."));
+			flags &= ~EXT2_FLAG_RW;
+			fctx.ro = 1;
+
+			/* Force the loop to run once more */
+			err = -1;
+		}
+	} while (err == -1 ||
+		 (err == EBUSY && retry_before_deadline(deadline)));
+	if (err == EBUSY) {
+		err_printf(&fctx, "%s: %s.\n",
+ _("Could not lock filesystem block device"), error_message(err));
+		goto out;
 	}
 	if (err) {
 		err_printf(&fctx, "%s.\n", error_message(err));
