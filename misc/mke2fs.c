@@ -238,12 +238,17 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 {
 	FILE		*f;
 	errcode_t	retval;
+	int len;
 	char		buf[1024];
 
-	sprintf(buf, "badblocks -b %d -X %s%s%s %llu", fs->blocksize,
-		quiet ? "" : "-s ", (cflag > 1) ? "-w " : "",
-		fs->device_name,
-		(unsigned long long) ext2fs_blocks_count(fs->super)-1);
+	len = snprintf(buf, sizeof(buf), "badblocks -b %d -X %s%s%s %llu", fs->blocksize,
+         quiet ? "" : "-s ", (cflag > 1) ? "-w " : "",
+         fs->device_name,
+         (unsigned long long) ext2fs_blocks_count(fs->super)-1);
+	if (len >= sizeof(buf)) {
+		com_err(program_name, 0, _("Device name too long for badblocks command"));
+		exit(1);
+	}
 	if (verbose)
 		printf(_("Running command: %s\n"), buf);
 	f = popen(buf, "r");
