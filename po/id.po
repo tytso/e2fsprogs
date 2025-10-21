@@ -3898,8 +3898,8 @@ msgstr ""
 
 #: misc/badblocks.c:75
 #, fuzzy
-msgid "done                                                 \n"
-msgstr "selesai                              \n"
+msgid "done                                                                  \n"
+msgstr "selesai                                                               \n"
 
 #: misc/badblocks.c:100
 #, fuzzy, c-format
@@ -3928,8 +3928,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, fuzzy, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% selesai, %s berjalan"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% selesai, %s berjalan. (%d/%d/%d errors), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "
