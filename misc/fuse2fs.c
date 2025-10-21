@@ -4823,7 +4823,8 @@ int main(int argc, char *argv[])
 		flags |= EXT2_FLAG_DIRECT_IO;
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
-	if (err == EPERM || err == EACCES) {
+	if ((err == EPERM || err == EACCES) &&
+	    (!fctx.ro || (flags & EXT2_FLAG_RW))) {
 		/*
 		 * Source device cannot be opened for write.  Under these
 		 * circumstances, mount(8) will try again with a ro mount,
