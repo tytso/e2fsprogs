@@ -13681,6 +13681,12 @@ then :
   printf "%s\n" "#define HAVE_UTIME 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "utimensat" "ac_cv_func_utimensat"
+if test "x$ac_cv_func_utimensat" = xyes
+then :
+  printf "%s\n" "#define HAVE_UTIMENSAT 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "utimes" "ac_cv_func_utimes"
 if test "x$ac_cv_func_utimes" = xyes
 then :
