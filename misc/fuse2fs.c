@@ -242,6 +242,7 @@ struct fuse2fs {
 
 	int logfd;
 	int blocklog;
+	int oom_score_adj;
 	unsigned int blockmask;
 	unsigned long offset;
 	unsigned int next_generation;
@@ -5305,6 +5306,7 @@ static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("norecovery",	norecovery,		1),
 	FUSE2FS_OPT("noload",		norecovery,		1),
 	FUSE2FS_OPT("offset=%lu",	offset,			0),
+	FUSE2FS_OPT("oom_score_adj=%d",	oom_score_adj,		-500),
 	FUSE2FS_OPT("kernel",		kernel,			1),
 	FUSE2FS_OPT("directio",		directio,		1),
 	FUSE2FS_OPT("acl",		acl,			1),
@@ -5515,18 +5517,30 @@ static void try_set_io_flusher(struct fuse2fs *ff)
 #endif
 }
 
+/* Try to adjust the OOM score so that we don't get killed */
+static void try_adjust_oom_score(struct fuse2fs *ff)
+{
+	FILE *fp = fopen("/proc/self/oom_score_adj", "w+");
+
+	if (!fp)
+		return;
+
+	fprintf(fp, "%d\n", ff->oom_score_adj);
+	fclose(fp);
+}
+
 int main(int argc, char *argv[])
 {
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-	struct fuse2fs fctx;
+	struct fuse2fs fctx = {
+		.magic = FUSE2FS_MAGIC,
+		.logfd = -1,
+		.bfl = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER,
+		.oom_score_adj = -500,
+	};
 	errcode_t err;
 	FILE *orig_stderr = stderr;
 	int ret;
-
-	memset(&fctx, 0, sizeof(fctx));
-	fctx.magic = FUSE2FS_MAGIC;
-	fctx.logfd = -1;
-	fctx.bfl = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 
 	ret = fuse_opt_parse(&args, &fctx, fuse2fs_opts, fuse2fs_opt_proc);
 	if (ret)
@@ -5561,6 +5575,7 @@ int main(int argc, char *argv[])
 	}
 
 	try_set_io_flusher(&fctx);
+	try_adjust_oom_score(&fctx);
 
 	/* Will we allow users to allocate every last block? */
 	if (getenv("FUSE2FS_ALLOC_ALL_BLOCKS")) {
