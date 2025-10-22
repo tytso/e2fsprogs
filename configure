@@ -931,6 +931,7 @@ enable_rpath
 with_libiconv_prefix
 with_libintl_prefix
 enable_largefile
+with_libmagic
 with_libarchive
 enable_fuse2fs
 enable_lto
@@ -1650,6 +1651,7 @@ Optional Packages:
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
+  --without-libmagic      disable use of libmagic
   --without-libarchive    disable use of libarchive
   --with-multiarch=ARCH   specify the multiarch triplet
   --with-udev-rules-dir[=DIR]
@@ -13736,7 +13738,110 @@ then :
 fi
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for magic_file in -lmagic" >&5
+
+# Check whether --with-libmagic was given.
+if test ${with_libmagic+y}
+then :
+  withval=$with_libmagic; if test "$withval" = "no"
+then
+	try_libmagic=""
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling libmagic support" >&5
+printf "%s\n" "Disabling libmagic support" >&6; }
+
+printf "%s\n" "#define CONFIG_DISABLE_LIBMAGIC 1" >>confdefs.h
+
+elif test "$withval" = "direct"
+then
+	try_libmagic="direct"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Testing for libmagic support (forced direct link)" >&5
+printf "%s\n" "Testing for libmagic support (forced direct link)" >&6; }
+else
+	try_libmagic="yes"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Testing for libmagic support (with dlopen)" >&5
+printf "%s\n" "Testing for libmagic support (with dlopen)" >&6; }
+fi
+
+else $as_nop
+
+case "$host_os" in
+    darwin*)
+	try_libmagic="direct"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Try testing for libmagic support (with static linking) by default" >&5
+printf "%s\n" "Try testing for libmagic support (with static linking) by default" >&6; }
+	 ;;
+    *)
+        try_libmagic="yes"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Try testing for libmagic support (with dlopen) by default" >&5
+printf "%s\n" "Try testing for libmagic support (with dlopen) by default" >&6; }
+	;;
+esac
+
+fi
+
+MAGIC_LIB=
+if test -n "$try_libmagic"
+then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libmagic" >&5
+printf %s "checking for libmagic... " >&6; }
+
+if test -n "$ARCHIVE_CFLAGS"; then
+    pkg_cv_ARCHIVE_CFLAGS="$ARCHIVE_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libmagic\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libmagic") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARCHIVE_CFLAGS=`$PKG_CONFIG --cflags "libmagic" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$ARCHIVE_LIBS"; then
+    pkg_cv_ARCHIVE_LIBS="$ARCHIVE_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libmagic\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libmagic") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARCHIVE_LIBS=`$PKG_CONFIG --libs "libmagic" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                ARCHIVE_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libmagic" 2>&1`
+        else
+                ARCHIVE_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libmagic" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$ARCHIVE_PKG_ERRORS" >&5
+
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for magic_file in -lmagic" >&5
 printf %s "checking for magic_file in -lmagic... " >&6; }
 if test ${ac_cv_lib_magic_magic_file+y}
 then :
@@ -13774,17 +13879,84 @@ printf "%s\n" "$ac_cv_lib_magic_magic_file" >&6; }
 if test "x$ac_cv_lib_magic_magic_file" = xyes
 then :
   MAGIC_LIB=-lmagic
-ac_fn_c_check_header_compile "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+fi
+
+
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for magic_file in -lmagic" >&5
+printf %s "checking for magic_file in -lmagic... " >&6; }
+if test ${ac_cv_lib_magic_magic_file+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lmagic  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char magic_file ();
+int
+main (void)
+{
+return magic_file ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_magic_magic_file=yes
+else $as_nop
+  ac_cv_lib_magic_magic_file=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_magic_magic_file" >&5
+printf "%s\n" "$ac_cv_lib_magic_magic_file" >&6; }
+if test "x$ac_cv_lib_magic_magic_file" = xyes
+then :
+  MAGIC_LIB=-lmagic
+fi
+
+
+else
+        ARCHIVE_CFLAGS=$pkg_cv_ARCHIVE_CFLAGS
+        ARCHIVE_LIBS=$pkg_cv_ARCHIVE_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: pkg-config found libmagic" >&5
+printf "%s\n" "pkg-config found libmagic" >&6; }
+	CFLAGS="$ARCHIVE_CFLAGS $CFLAGS"
+
+fi
+    if test -n "$MAGIC_LIB" ; then
+        ac_fn_c_check_header_compile "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
 if test "x$ac_cv_header_magic_h" = xyes
 then :
   printf "%s\n" "#define HAVE_MAGIC_H 1" >>confdefs.h
 
 fi
 
-fi
+        if test "$ac_cv_func_dlopen" = yes -a "$try_libmagic" != "direct"; then
+            MAGIC_LIB=$DLOPEN_LIB
 
-if test "$ac_cv_func_dlopen" = yes ; then
-   MAGIC_LIB=$DLOPEN_LIB
+printf "%s\n" "#define CONFIG_DLOPEN_LIBMAGIC 1" >>confdefs.h
+
+	fi
+    fi
+    if test "$ac_cv_header_magic_h" != "yes"
+    then
+        MAGIC_LIB=
+    fi
 fi
 
 
