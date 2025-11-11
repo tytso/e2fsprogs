@@ -2578,7 +2578,8 @@ profile_error:
 		fs_param.s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
 
 	/* This check should happen beyond the last assignment to blocksize */
-	if (blocksize > sys_page_size) {
+	if (blocksize > sys_page_size &&
+	    access("/sys/fs/ext4/features/blocksize_gt_pagesize", F_OK)) {
 		if (!force) {
 			com_err(program_name, 0,
 				_("%d-byte blocks too big for system (max %d)"),
