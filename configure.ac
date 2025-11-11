@@ -1,6 +1,6 @@
 AC_INIT
 AC_CONFIG_SRCDIR([version.h])
-AC_PREREQ([2.71])
+AC_PREREQ([2.72])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADERS([lib/config.h])
 AH_BOTTOM([#include <dirpaths.h>])
@@ -943,7 +943,7 @@ dnl End of configuration options
 dnl
 AC_SUBST(BINARY_TYPE)
 AC_PROG_MAKE_SET
-CHECK_GNU_MAKE
+AX_CHECK_GNU_MAKE
 AC_PATH_PROG(LN, ln, ln)
 AC_PROG_MKDIR_P
 dnl

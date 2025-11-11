@@ -1,6 +1,6 @@
-# generated automatically by aclocal 1.16.5 -*- Autoconf -*-
+# generated automatically by aclocal 1.17 -*- Autoconf -*-
 
-# Copyright (C) 1996-2021 Free Software Foundation, Inc.
+# Copyright (C) 1996-2024 Free Software Foundation, Inc.
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -12,6 +12,102 @@
 # PARTICULAR PURPOSE.
 
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
+# ===========================================================================
+#    https://www.gnu.org/software/autoconf-archive/ax_check_gnu_make.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_CHECK_GNU_MAKE([run-if-true],[run-if-false])
+#
+# DESCRIPTION
+#
+#   This macro searches for a GNU version of make. If a match is found:
+#
+#     * The makefile variable `ifGNUmake' is set to the empty string, otherwise
+#       it is set to "#". This is useful for including a special features in a
+#       Makefile, which cannot be handled by other versions of make.
+#     * The makefile variable `ifnGNUmake' is set to #, otherwise
+#       it is set to the empty string. This is useful for including a special
+#       features in a Makefile, which can be handled
+#       by other versions of make or to specify else like clause.
+#     * The variable `_cv_gnu_make_command` is set to the command to invoke
+#       GNU make if it exists, the empty string otherwise.
+#     * The variable `ax_cv_gnu_make_command` is set to the command to invoke
+#       GNU make by copying `_cv_gnu_make_command`, otherwise it is unset.
+#     * If GNU Make is found, its version is extracted from the output of
+#       `make --version` as the last field of a record of space-separated
+#       columns and saved into the variable `ax_check_gnu_make_version`.
+#     * Additionally if GNU Make is found, run shell code run-if-true
+#       else run shell code run-if-false.
+#
+#   Here is an example of its use:
+#
+#   Makefile.in might contain:
+#
+#     # A failsafe way of putting a dependency rule into a makefile
+#     $(DEPEND):
+#             $(CC) -MM $(srcdir)/*.c > $(DEPEND)
+#
+#     @ifGNUmake@ ifeq ($(DEPEND),$(wildcard $(DEPEND)))
+#     @ifGNUmake@ include $(DEPEND)
+#     @ifGNUmake@ else
+#     fallback code
+#     @ifGNUmake@ endif
+#
+#   Then configure.in would normally contain:
+#
+#     AX_CHECK_GNU_MAKE()
+#     AC_OUTPUT(Makefile)
+#
+#   Then perhaps to cause gnu make to override any other make, we could do
+#   something like this (note that GNU make always looks for GNUmakefile
+#   first):
+#
+#     if  ! test x$_cv_gnu_make_command = x ; then
+#             mv Makefile GNUmakefile
+#             echo .DEFAULT: > Makefile ;
+#             echo \  $_cv_gnu_make_command \$@ >> Makefile;
+#     fi
+#
+#   Then, if any (well almost any) other make is called, and GNU make also
+#   exists, then the other make wraps the GNU make.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 John Darrington <j.darrington@elvis.murdoch.edu.au>
+#   Copyright (c) 2015 Enrico M. Crisostomo <enrico.m.crisostomo@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 12
+
+AC_DEFUN([AX_CHECK_GNU_MAKE],dnl
+  [AC_PROG_AWK
+  AC_CACHE_CHECK([for GNU make],[_cv_gnu_make_command],[dnl
+    _cv_gnu_make_command="" ;
+dnl Search all the common names for GNU make
+    for a in "$MAKE" make gmake gnumake ; do
+      if test -z "$a" ; then continue ; fi ;
+      if "$a" --version 2> /dev/null | grep GNU 2>&1 > /dev/null ; then
+        _cv_gnu_make_command=$a ;
+        AX_CHECK_GNU_MAKE_HEADLINE=$("$a" --version 2> /dev/null | grep "GNU Make")
+        ax_check_gnu_make_version=$(echo ${AX_CHECK_GNU_MAKE_HEADLINE} | ${AWK} -F " " '{ print $(NF); }')
+        break ;
+      fi
+    done ;])
+dnl If there was a GNU version, then set @ifGNUmake@ to the empty string, '#' otherwise
+  AS_VAR_IF([_cv_gnu_make_command], [""], [AS_VAR_SET([ifGNUmake], ["#"])],   [AS_VAR_SET([ifGNUmake], [""])])
+  AS_VAR_IF([_cv_gnu_make_command], [""], [AS_VAR_SET([ifnGNUmake], [""])],   [AS_VAR_SET([ifnGNUmake], ["#"])])
+  AS_VAR_IF([_cv_gnu_make_command], [""], [AS_UNSET(ax_cv_gnu_make_command)], [AS_VAR_SET([ax_cv_gnu_make_command], [${_cv_gnu_make_command}])])
+  AS_VAR_IF([_cv_gnu_make_command], [""],[$2],[$1])
+  AC_SUBST([ifGNUmake])
+  AC_SUBST([ifnGNUmake])
+])
+
 # ===========================================================================
 #        https://www.gnu.org/software/autoconf-archive/ax_pthread.html
 # ===========================================================================
@@ -535,8 +631,356 @@ fi
 AC_LANG_POP
 ])dnl AX_PTHREAD
 
-# gettext.m4 serial 71 (gettext-0.20.2)
-dnl Copyright (C) 1995-2014, 2016, 2018-2020 Free Software Foundation, Inc.
+# ===========================================================================
+#          https://www.gnu.org/software/autoconf-archive/ax_tls.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_TLS([action-if-found], [action-if-not-found])
+#
+# DESCRIPTION
+#
+#   Provides a test for the compiler support of thread local storage (TLS)
+#   extensions. Defines TLS if it is found. Currently knows about C++11,
+#   GCC/ICC, and MSVC. I think SunPro uses the same as GCC, and Borland
+#   apparently supports either.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Alan Woodland <ajw05@aber.ac.uk>
+#   Copyright (c) 2010 Diego Elio Petteno` <flameeyes@gmail.com>
+#
+#   This program is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by the
+#   Free Software Foundation, either version 3 of the License, or (at your
+#   option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#   Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License along
+#   with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+#   As a special exception, the respective Autoconf Macro's copyright owner
+#   gives unlimited permission to copy, distribute and modify the configure
+#   scripts that are the output of Autoconf when processing the Macro. You
+#   need not follow the terms of the GNU General Public License when using
+#   or distributing such scripts, even though portions of the text of the
+#   Macro appear in them. The GNU General Public License (GPL) does govern
+#   all other use of the material that constitutes the Autoconf Macro.
+#
+#   This special exception to the GPL applies to versions of the Autoconf
+#   Macro released by the Autoconf Archive. When you make and distribute a
+#   modified version of the Autoconf Macro, you may extend this special
+#   exception to the GPL to apply to your modified version as well.
+
+#serial 15
+
+AC_DEFUN([AX_TLS], [
+  AC_MSG_CHECKING([for thread local storage (TLS) class])
+  AC_CACHE_VAL([ac_cv_tls],
+   [for ax_tls_keyword in thread_local _Thread_local __thread '__declspec(thread)' none; do
+       AS_CASE([$ax_tls_keyword],
+          [none], [ac_cv_tls=none ; break],
+          [AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+              [#include <stdlib.h>],
+              [static  $ax_tls_keyword  int bar;]
+            )],
+            [ac_cv_tls=$ax_tls_keyword ; break],
+            [ac_cv_tls=none]
+          )]
+        )
+    done ]
+  )
+  AC_MSG_RESULT([$ac_cv_tls])
+
+  AS_IF([test "$ac_cv_tls" != "none"],
+    [AC_DEFINE_UNQUOTED([TLS],[$ac_cv_tls],[If the compiler supports a TLS storage class, define it to that here])
+     m4_ifnblank([$1],[$1],[[:]])],
+    [m4_ifnblank([$2],[$2],[[:]])])
+])
+
+# build-to-host.m4
+# serial 5
+dnl Copyright (C) 2023-2024 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
+
+dnl Written by Bruno Haible.
+
+dnl When the build environment ($build_os) is different from the target runtime
+dnl environment ($host_os), file names may need to be converted from the build
+dnl environment syntax to the target runtime environment syntax. This is
+dnl because the Makefiles are executed (mostly) by build environment tools and
+dnl therefore expect file names in build environment syntax, whereas the runtime
+dnl expects file names in target runtime environment syntax.
+dnl
+dnl For example, if $build_os = cygwin and $host_os = mingw32, filenames need
+dnl be converted from Cygwin syntax to native Windows syntax:
+dnl   /cygdrive/c/foo/bar -> C:\foo\bar
+dnl   /usr/local/share    -> C:\cygwin64\usr\local\share
+dnl
+dnl gl_BUILD_TO_HOST([somedir])
+dnl This macro takes as input an AC_SUBSTed variable 'somedir', which must
+dnl already have its final value assigned, and produces two additional
+dnl AC_SUBSTed variables 'somedir_c' and 'somedir_c_make', that designate the
+dnl same file name value, just in different syntax:
+dnl   - somedir_c       is the file name in target runtime environment syntax,
+dnl                     as a C string (starting and ending with a double-quote,
+dnl                     and with escaped backslashes and double-quotes in
+dnl                     between).
+dnl   - somedir_c_make  is the same thing, escaped for use in a Makefile.
+
+AC_DEFUN([gl_BUILD_TO_HOST],
+[
+  AC_REQUIRE([AC_CANONICAL_BUILD])
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  AC_REQUIRE([gl_BUILD_TO_HOST_INIT])
+
+  dnl Define somedir_c.
+  gl_final_[$1]="$[$1]"
+  dnl Translate it from build syntax to host syntax.
+  case "$build_os" in
+    cygwin*)
+      case "$host_os" in
+        mingw* | windows*)
+          gl_final_[$1]=`cygpath -w "$gl_final_[$1]"` ;;
+      esac
+      ;;
+  esac
+  dnl Convert it to C string syntax.
+  [$1]_c=`printf '%s\n' "$gl_final_[$1]" | sed -e "$gl_sed_double_backslashes" -e "$gl_sed_escape_doublequotes" | tr -d "$gl_tr_cr"`
+  [$1]_c='"'"$[$1]_c"'"'
+  AC_SUBST([$1_c])
+
+  dnl Define somedir_c_make.
+  [$1]_c_make=`printf '%s\n' "$[$1]_c" | sed -e "$gl_sed_escape_for_make_1" -e "$gl_sed_escape_for_make_2" | tr -d "$gl_tr_cr"`
+  dnl Use the substituted somedir variable, when possible, so that the user
+  dnl may adjust somedir a posteriori when there are no special characters.
+  if test "$[$1]_c_make" = '\"'"${gl_final_[$1]}"'\"'; then
+    [$1]_c_make='\"$([$1])\"'
+  fi
+  AC_SUBST([$1_c_make])
+])
+
+dnl Some initializations for gl_BUILD_TO_HOST.
+AC_DEFUN([gl_BUILD_TO_HOST_INIT],
+[
+  gl_sed_double_backslashes='s/\\/\\\\/g'
+  gl_sed_escape_doublequotes='s/"/\\"/g'
+changequote(,)dnl
+  gl_sed_escape_for_make_1="s,\\([ \"&'();<>\\\\\`|]\\),\\\\\\1,g"
+changequote([,])dnl
+  gl_sed_escape_for_make_2='s,\$,\\$$,g'
+  dnl Find out how to remove carriage returns from output. Solaris /usr/ucb/tr
+  dnl does not understand '\r'.
+  case `echo r | tr -d '\r'` in
+    '') gl_tr_cr='\015' ;;
+    *)  gl_tr_cr='\r' ;;
+  esac
+])
+
+
+dnl The following macros are convenience invocations of gl_BUILD_TO_HOST
+dnl for some of the variables that are defined by Autoconf.
+dnl To do so for _all_ the possible variables, use the module 'configmake'.
+
+dnl Defines bindir_c and bindir_c_make.
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_BINDIR],
+[
+  dnl Find the final value of bindir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_exec_prefix="${exec_prefix}"
+  gl_saved_bindir="${bindir}"
+  dnl Unfortunately, prefix and exec_prefix get only finally determined
+  dnl at the end of configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  if test "X$exec_prefix" = "XNONE"; then
+    exec_prefix='${prefix}'
+  fi
+  eval exec_prefix="$exec_prefix"
+  eval bindir="$bindir"
+  gl_BUILD_TO_HOST([bindir])
+  bindir="${gl_saved_bindir}"
+  exec_prefix="${gl_saved_exec_prefix}"
+  prefix="${gl_saved_prefix}"
+])
+
+dnl Defines datadir_c and datadir_c_make,
+dnl where datadir = $(datarootdir)
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_DATADIR],
+[
+  dnl Find the final value of datadir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_datarootdir="${datarootdir}"
+  gl_saved_datadir="${datadir}"
+  dnl Unfortunately, prefix gets only finally determined at the end of
+  dnl configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  eval datarootdir="$datarootdir"
+  eval datadir="$datadir"
+  gl_BUILD_TO_HOST([datadir])
+  datadir="${gl_saved_datadir}"
+  datarootdir="${gl_saved_datarootdir}"
+  prefix="${gl_saved_prefix}"
+])
+
+dnl Defines libdir_c and libdir_c_make.
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_LIBDIR],
+[
+  dnl Find the final value of libdir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_exec_prefix="${exec_prefix}"
+  gl_saved_libdir="${libdir}"
+  dnl Unfortunately, prefix and exec_prefix get only finally determined
+  dnl at the end of configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  if test "X$exec_prefix" = "XNONE"; then
+    exec_prefix='${prefix}'
+  fi
+  eval exec_prefix="$exec_prefix"
+  eval libdir="$libdir"
+  gl_BUILD_TO_HOST([libdir])
+  libdir="${gl_saved_libdir}"
+  exec_prefix="${gl_saved_exec_prefix}"
+  prefix="${gl_saved_prefix}"
+])
+
+dnl Defines libexecdir_c and libexecdir_c_make.
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_LIBEXECDIR],
+[
+  dnl Find the final value of libexecdir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_exec_prefix="${exec_prefix}"
+  gl_saved_libexecdir="${libexecdir}"
+  dnl Unfortunately, prefix and exec_prefix get only finally determined
+  dnl at the end of configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  if test "X$exec_prefix" = "XNONE"; then
+    exec_prefix='${prefix}'
+  fi
+  eval exec_prefix="$exec_prefix"
+  eval libexecdir="$libexecdir"
+  gl_BUILD_TO_HOST([libexecdir])
+  libexecdir="${gl_saved_libexecdir}"
+  exec_prefix="${gl_saved_exec_prefix}"
+  prefix="${gl_saved_prefix}"
+])
+
+dnl Defines localedir_c and localedir_c_make.
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_LOCALEDIR],
+[
+  dnl Find the final value of localedir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_datarootdir="${datarootdir}"
+  gl_saved_localedir="${localedir}"
+  dnl Unfortunately, prefix gets only finally determined at the end of
+  dnl configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  eval datarootdir="$datarootdir"
+  eval localedir="$localedir"
+  gl_BUILD_TO_HOST([localedir])
+  localedir="${gl_saved_localedir}"
+  datarootdir="${gl_saved_datarootdir}"
+  prefix="${gl_saved_prefix}"
+])
+
+dnl Defines pkgdatadir_c and pkgdatadir_c_make,
+dnl where pkgdatadir = $(datadir)/$(PACKAGE)
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_PKGDATADIR],
+[
+  dnl Find the final value of pkgdatadir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_datarootdir="${datarootdir}"
+  gl_saved_datadir="${datadir}"
+  gl_saved_pkgdatadir="${pkgdatadir}"
+  dnl Unfortunately, prefix gets only finally determined at the end of
+  dnl configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  eval datarootdir="$datarootdir"
+  eval datadir="$datadir"
+  eval pkgdatadir="$pkgdatadir"
+  gl_BUILD_TO_HOST([pkgdatadir])
+  pkgdatadir="${gl_saved_pkgdatadir}"
+  datadir="${gl_saved_datadir}"
+  datarootdir="${gl_saved_datarootdir}"
+  prefix="${gl_saved_prefix}"
+])
+
+dnl Defines pkglibdir_c and pkglibdir_c_make,
+dnl where pkglibdir = $(libdir)/$(PACKAGE)
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_PKGLIBDIR],
+[
+  dnl Find the final value of pkglibdir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_exec_prefix="${exec_prefix}"
+  gl_saved_libdir="${libdir}"
+  gl_saved_pkglibdir="${pkglibdir}"
+  dnl Unfortunately, prefix and exec_prefix get only finally determined
+  dnl at the end of configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  if test "X$exec_prefix" = "XNONE"; then
+    exec_prefix='${prefix}'
+  fi
+  eval exec_prefix="$exec_prefix"
+  eval libdir="$libdir"
+  eval pkglibdir="$pkglibdir"
+  gl_BUILD_TO_HOST([pkglibdir])
+  pkglibdir="${gl_saved_pkglibdir}"
+  libdir="${gl_saved_libdir}"
+  exec_prefix="${gl_saved_exec_prefix}"
+  prefix="${gl_saved_prefix}"
+])
+
+dnl Defines pkglibexecdir_c and pkglibexecdir_c_make,
+dnl where pkglibexecdir = $(libexecdir)/$(PACKAGE)
+AC_DEFUN_ONCE([gl_BUILD_TO_HOST_PKGLIBEXECDIR],
+[
+  dnl Find the final value of pkglibexecdir.
+  gl_saved_prefix="${prefix}"
+  gl_saved_exec_prefix="${exec_prefix}"
+  gl_saved_libexecdir="${libexecdir}"
+  gl_saved_pkglibexecdir="${pkglibexecdir}"
+  dnl Unfortunately, prefix and exec_prefix get only finally determined
+  dnl at the end of configure.
+  if test "X$prefix" = "XNONE"; then
+    prefix="$ac_default_prefix"
+  fi
+  if test "X$exec_prefix" = "XNONE"; then
+    exec_prefix='${prefix}'
+  fi
+  eval exec_prefix="$exec_prefix"
+  eval libexecdir="$libexecdir"
+  eval pkglibexecdir="$pkglibexecdir"
+  gl_BUILD_TO_HOST([pkglibexecdir])
+  pkglibexecdir="${gl_saved_pkglibexecdir}"
+  libexecdir="${gl_saved_libexecdir}"
+  exec_prefix="${gl_saved_exec_prefix}"
+  prefix="${gl_saved_prefix}"
+])
+
+# gettext.m4
+# serial 81 (gettext-0.23)
+dnl Copyright (C) 1995-2014, 2016, 2018-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -552,16 +996,18 @@ dnl They are *not* in the public domain.
 
 dnl Authors:
 dnl   Ulrich Drepper <drepper@cygnus.com>, 1995-2000.
-dnl   Bruno Haible <haible@clisp.cons.org>, 2000-2006, 2008-2010.
+dnl   Bruno Haible <bruno@clisp.org>, 2000-2024.
 
 dnl Macro to add for using GNU gettext.
 
 dnl Usage: AM_GNU_GETTEXT([INTLSYMBOL], [NEEDSYMBOL], [INTLDIR]).
-dnl INTLSYMBOL must be one of 'external', 'use-libtool'.
-dnl    INTLSYMBOL should be 'external' for packages other than GNU gettext, and
-dnl    'use-libtool' for the packages 'gettext-runtime' and 'gettext-tools'.
-dnl    If INTLSYMBOL is 'use-libtool', then a libtool library
-dnl    $(top_builddir)/intl/libintl.la will be created (shared and/or static,
+dnl INTLSYMBOL must be one of 'external', 'use-libtool', 'here'.
+dnl    INTLSYMBOL should be 'external' for packages other than GNU gettext.
+dnl    It should be 'use-libtool' for the packages 'gettext-runtime' and
+dnl    'gettext-tools'.
+dnl    It should be 'here' for the package 'gettext-runtime/intl'.
+dnl    If INTLSYMBOL is 'here', then a libtool library
+dnl    $(top_builddir)/libintl.la will be created (shared and/or static,
 dnl    depending on --{enable,disable}-{shared,static} and on the presence of
 dnl    AM-DISABLE-SHARED).
 dnl If NEEDSYMBOL is specified and is 'need-ngettext', then GNU gettext
@@ -592,24 +1038,21 @@ dnl
 AC_DEFUN([AM_GNU_GETTEXT],
 [
   dnl Argument checking.
-  ifelse([$1], [], , [ifelse([$1], [external], , [ifelse([$1], [use-libtool], ,
+  m4_if([$1], [], , [m4_if([$1], [external], , [m4_if([$1], [use-libtool], , [m4_if([$1], [here], ,
     [errprint([ERROR: invalid first argument to AM_GNU_GETTEXT
-])])])])
-  ifelse(ifelse([$1], [], [old])[]ifelse([$1], [no-libtool], [old]), [old],
+])])])])])
+  m4_if(m4_if([$1], [], [old])[]m4_if([$1], [no-libtool], [old]), [old],
     [errprint([ERROR: Use of AM_GNU_GETTEXT without [external] argument is no longer supported.
 ])])
-  ifelse([$2], [], , [ifelse([$2], [need-ngettext], , [ifelse([$2], [need-formatstring-macros], ,
+  m4_if([$2], [], , [m4_if([$2], [need-ngettext], , [m4_if([$2], [need-formatstring-macros], ,
     [errprint([ERROR: invalid second argument to AM_GNU_GETTEXT
 ])])])])
-  define([gt_included_intl],
-    ifelse([$1], [external], [no], [yes]))
+  define([gt_building_libintl_in_same_build_tree],
+    m4_if([$1], [use-libtool], [yes], [m4_if([$1], [here], [yes], [no])]))
   gt_NEEDS_INIT
   AM_GNU_GETTEXT_NEED([$2])
 
   AC_REQUIRE([AM_PO_SUBDIRS])dnl
-  ifelse(gt_included_intl, yes, [
-    AC_REQUIRE([AM_INTL_SUBDIR])dnl
-  ])
 
   dnl Prerequisites of AC_LIB_LINKFLAGS_BODY.
   AC_REQUIRE([AC_LIB_PREPARE_PREFIX])
@@ -619,13 +1062,13 @@ AC_DEFUN([AM_GNU_GETTEXT],
   dnl Ideally we would do this search only after the
   dnl      if test "$USE_NLS" = "yes"; then
   dnl        if { eval "gt_val=\$$gt_func_gnugettext_libc"; test "$gt_val" != "yes"; }; then
-  dnl tests. But if configure.in invokes AM_ICONV after AM_GNU_GETTEXT
+  dnl tests. But if configure.ac invokes AM_ICONV after AM_GNU_GETTEXT
   dnl the configure script would need to contain the same shell code
   dnl again, outside any 'if'. There are two solutions:
   dnl - Invoke AM_ICONV_LINKFLAGS_BODY here, outside any 'if'.
   dnl - Control the expansions in more detail using AC_PROVIDE_IFELSE.
   dnl Since AC_PROVIDE_IFELSE is not documented, we avoid it.
-  ifelse(gt_included_intl, yes, , [
+  m4_if(gt_building_libintl_in_same_build_tree, yes, , [
     AC_REQUIRE([AM_ICONV_LINKFLAGS_BODY])
   ])
 
@@ -635,8 +1078,7 @@ AC_DEFUN([AM_GNU_GETTEXT],
   dnl Set USE_NLS.
   AC_REQUIRE([AM_NLS])
 
-  ifelse(gt_included_intl, yes, [
-    BUILD_INCLUDED_LIBINTL=no
+  m4_if(gt_building_libintl_in_same_build_tree, yes, [
     USE_INCLUDED_LIBINTL=no
   ])
   LIBINTL=
@@ -655,7 +1097,7 @@ AC_DEFUN([AM_GNU_GETTEXT],
   dnl If we use NLS figure out what method
   if test "$USE_NLS" = "yes"; then
     gt_use_preinstalled_gnugettext=no
-    ifelse(gt_included_intl, yes, [
+    m4_if(gt_building_libintl_in_same_build_tree, yes, [
       AC_MSG_CHECKING([whether included gettext is requested])
       AC_ARG_WITH([included-gettext],
         [  --with-included-gettext use the GNU gettext library included here],
@@ -711,7 +1153,7 @@ return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
 
         if { eval "gt_val=\$$gt_func_gnugettext_libc"; test "$gt_val" != "yes"; }; then
           dnl Sometimes libintl requires libiconv, so first search for libiconv.
-          ifelse(gt_included_intl, yes, , [
+          m4_if(gt_building_libintl_in_same_build_tree, yes, , [
             AM_ICONV_LINK
           ])
           dnl Search for libintl and define LIBINTL, LTLIBINTL and INCINTL
@@ -721,9 +1163,9 @@ return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
           AC_LIB_LINKFLAGS_BODY([intl])
           AC_CACHE_CHECK([for GNU gettext in libintl],
             [$gt_func_gnugettext_libintl],
-           [gt_save_CPPFLAGS="$CPPFLAGS"
+           [gt_saved_CPPFLAGS="$CPPFLAGS"
             CPPFLAGS="$CPPFLAGS $INCINTL"
-            gt_save_LIBS="$LIBS"
+            gt_saved_LIBS="$LIBS"
             LIBS="$LIBS $LIBINTL"
             dnl Now see whether libintl exists and does not depend on libiconv.
             AC_LINK_IFELSE(
@@ -749,9 +1191,16 @@ return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
                  ]])],
               [eval "$gt_func_gnugettext_libintl=yes"],
               [eval "$gt_func_gnugettext_libintl=no"])
-            dnl Now see whether libintl exists and depends on libiconv.
-            if { eval "gt_val=\$$gt_func_gnugettext_libintl"; test "$gt_val" != yes; } && test -n "$LIBICONV"; then
-              LIBS="$LIBS $LIBICONV"
+            dnl Now see whether libintl exists and depends on libiconv or other
+            dnl OS dependent libraries, specifically on macOS and AIX.
+            gt_LIBINTL_EXTRA="$INTL_MACOSX_LIBS"
+            AC_REQUIRE([AC_CANONICAL_HOST])
+            case "$host_os" in
+              aix*) gt_LIBINTL_EXTRA="-lpthread" ;;
+            esac
+            if { eval "gt_val=\$$gt_func_gnugettext_libintl"; test "$gt_val" != yes; } \
+               && { test -n "$LIBICONV" || test -n "$gt_LIBINTL_EXTRA"; }; then
+              LIBS="$LIBS $LIBICONV $gt_LIBINTL_EXTRA"
               AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM(
                    [[
@@ -773,13 +1222,13 @@ $gt_revision_test_code
 bindtextdomain ("", "");
 return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
                    ]])],
-                [LIBINTL="$LIBINTL $LIBICONV"
-                 LTLIBINTL="$LTLIBINTL $LTLIBICONV"
+                [LIBINTL="$LIBINTL $LIBICONV $gt_LIBINTL_EXTRA"
+                 LTLIBINTL="$LTLIBINTL $LTLIBICONV $gt_LIBINTL_EXTRA"
                  eval "$gt_func_gnugettext_libintl=yes"
                 ])
             fi
-            CPPFLAGS="$gt_save_CPPFLAGS"
-            LIBS="$gt_save_LIBS"])
+            CPPFLAGS="$gt_saved_CPPFLAGS"
+            LIBS="$gt_saved_LIBS"])
         fi
 
         dnl If an already present or preinstalled GNU gettext() is found,
@@ -789,7 +1238,8 @@ return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
         if { eval "gt_val=\$$gt_func_gnugettext_libc"; test "$gt_val" = "yes"; } \
            || { { eval "gt_val=\$$gt_func_gnugettext_libintl"; test "$gt_val" = "yes"; } \
                 && test "$PACKAGE" != gettext-runtime \
-                && test "$PACKAGE" != gettext-tools; }; then
+                && test "$PACKAGE" != gettext-tools \
+                && test "$PACKAGE" != libintl; }; then
           gt_use_preinstalled_gnugettext=yes
         else
           dnl Reset the values set by searching for libintl.
@@ -798,7 +1248,7 @@ return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
           INCINTL=
         fi
 
-    ifelse(gt_included_intl, yes, [
+    m4_if(gt_building_libintl_in_same_build_tree, yes, [
         if test "$gt_use_preinstalled_gnugettext" != "yes"; then
           dnl GNU gettext is not found in the C library.
           dnl Fall back on included GNU gettext library.
@@ -808,10 +1258,9 @@ return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
 
       if test "$nls_cv_use_gnu_gettext" = "yes"; then
         dnl Mark actions used to generate GNU NLS library.
-        BUILD_INCLUDED_LIBINTL=yes
         USE_INCLUDED_LIBINTL=yes
-        LIBINTL="ifelse([$3],[],\${top_builddir}/intl,[$3])/libintl.la $LIBICONV $LIBTHREAD"
-        LTLIBINTL="ifelse([$3],[],\${top_builddir}/intl,[$3])/libintl.la $LTLIBICONV $LTLIBTHREAD"
+        LIBINTL="m4_if([$3],[],\${top_builddir}/intl,[$3])/libintl.la $LIBICONV $LIBTHREAD"
+        LTLIBINTL="m4_if([$3],[],\${top_builddir}/intl,[$3])/libintl.la $LTLIBICONV $LTLIBTHREAD"
         LIBS=`echo " $LIBS " | sed -e 's/ -lintl / /' -e 's/^ //' -e 's/ $//'`
       fi
 
@@ -878,25 +1327,25 @@ return * gettext ("")$gt_expression_test_code + __GNU_GETTEXT_SYMBOL_EXPRESSION
     POSUB=po
   fi
 
-  ifelse(gt_included_intl, yes, [
-    dnl In GNU gettext we have to set BUILD_INCLUDED_LIBINTL to 'yes'
-    dnl because some of the testsuite requires it.
-    BUILD_INCLUDED_LIBINTL=yes
-
+  m4_if(gt_building_libintl_in_same_build_tree, yes, [
     dnl Make all variables we use known to autoconf.
-    AC_SUBST([BUILD_INCLUDED_LIBINTL])
     AC_SUBST([USE_INCLUDED_LIBINTL])
     AC_SUBST([CATOBJEXT])
   ])
 
-  dnl For backward compatibility. Some Makefiles may be using this.
-  INTLLIBS="$LIBINTL"
-  AC_SUBST([INTLLIBS])
+  m4_if(gt_building_libintl_in_same_build_tree, yes, [], [
+    dnl For backward compatibility. Some Makefiles may be using this.
+    INTLLIBS="$LIBINTL"
+    AC_SUBST([INTLLIBS])
+  ])
 
   dnl Make all documented variables known to autoconf.
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
   AC_SUBST([POSUB])
+
+  dnl Define localedir_c and localedir_c_make.
+  gl_BUILD_TO_HOST_LOCALEDIR
 ])
 
 
@@ -922,11 +1371,13 @@ AC_DEFUN([AM_GNU_GETTEXT_VERSION], [])
 dnl Usage: AM_GNU_GETTEXT_REQUIRE_VERSION([gettext-version])
 AC_DEFUN([AM_GNU_GETTEXT_REQUIRE_VERSION], [])
 
-# host-cpu-c-abi.m4 serial 13
-dnl Copyright (C) 2002-2020 Free Software Foundation, Inc.
+# host-cpu-c-abi.m4
+# serial 18
+dnl Copyright (C) 2002-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible and Sam Steingold.
 
@@ -959,7 +1410,7 @@ dnl * The same canonical name is used for different endiannesses. You can
 dnl   determine the endianness through preprocessor symbols:
 dnl   - 'arm': test __ARMEL__.
 dnl   - 'mips', 'mipsn32', 'mips64': test _MIPSEB vs. _MIPSEL.
-dnl   - 'powerpc64': test _BIG_ENDIAN vs. _LITTLE_ENDIAN.
+dnl   - 'powerpc64': test __BIG_ENDIAN__ vs. __LITTLE_ENDIAN__.
 dnl * The same name 'i386' is used for CPUs of type i386, i486, i586
 dnl   (Pentium), AMD K7, Pentium II, Pentium IV, etc., because
 dnl   - Instructions that do not exist on all of these CPUs (cmpxchg,
@@ -1135,7 +1586,7 @@ changequote([,])dnl
          # be generating 64-bit code.
          AC_COMPILE_IFELSE(
            [AC_LANG_SOURCE(
-              [[#if defined __powerpc64__ || defined _ARCH_PPC64
+              [[#if defined __powerpc64__ || defined __LP64__
                  int ok;
                 #else
                  error fail
@@ -1306,6 +1757,9 @@ EOF
 #ifndef __ia64__
 #undef __ia64__
 #endif
+#ifndef __loongarch64__
+#undef __loongarch64__
+#endif
 #ifndef __m68k__
 #undef __m68k__
 #endif
@@ -1382,230 +1836,87 @@ EOF
 
 dnl Sets the HOST_CPU_C_ABI_32BIT variable to 'yes' if the C language ABI
 dnl (application binary interface) is a 32-bit one, to 'no' if it is a 64-bit
-dnl one, or to 'unknown' if unknown.
+dnl one.
 dnl This is a simplified variant of gl_HOST_CPU_C_ABI.
 AC_DEFUN([gl_HOST_CPU_C_ABI_32BIT],
 [
   AC_REQUIRE([AC_CANONICAL_HOST])
   AC_CACHE_CHECK([32-bit host C ABI], [gl_cv_host_cpu_c_abi_32bit],
-    [if test -n "$gl_cv_host_cpu_c_abi"; then
-       case "$gl_cv_host_cpu_c_abi" in
-         i386 | x86_64-x32 | arm | armhf | arm64-ilp32 | hppa | ia64-ilp32 | mips | mipsn32 | powerpc | riscv*-ilp32* | s390 | sparc)
-           gl_cv_host_cpu_c_abi_32bit=yes ;;
-         x86_64 | alpha | arm64 | hppa64 | ia64 | mips64 | powerpc64 | powerpc64-elfv2 | riscv*-lp64* | s390x | sparc64 )
-           gl_cv_host_cpu_c_abi_32bit=no ;;
-         *)
-           gl_cv_host_cpu_c_abi_32bit=unknown ;;
-       esac
-     else
-       case "$host_cpu" in
+    [case "$host_cpu" in
 
-         # CPUs that only support a 32-bit ABI.
-         arc \
-         | bfin \
-         | cris* \
-         | csky \
-         | epiphany \
-         | ft32 \
-         | h8300 \
-         | m68k \
-         | microblaze | microblazeel \
-         | nds32 | nds32le | nds32be \
-         | nios2 | nios2eb | nios2el \
-         | or1k* \
-         | or32 \
-         | sh | sh[1234] | sh[1234]e[lb] \
-         | tic6x \
-         | xtensa* )
-           gl_cv_host_cpu_c_abi_32bit=yes
-           ;;
+       # CPUs that only support a 32-bit ABI.
+       arc \
+       | bfin \
+       | cris* \
+       | csky \
+       | epiphany \
+       | ft32 \
+       | h8300 \
+       | m68k \
+       | microblaze | microblazeel \
+       | nds32 | nds32le | nds32be \
+       | nios2 | nios2eb | nios2el \
+       | or1k* \
+       | or32 \
+       | sh | sh[1234] | sh[1234]e[lb] \
+       | tic6x \
+       | xtensa* )
+         gl_cv_host_cpu_c_abi_32bit=yes
+         ;;
 
-         # CPUs that only support a 64-bit ABI.
+       # CPUs that only support a 64-bit ABI.
 changequote(,)dnl
-         alpha | alphaev[4-8] | alphaev56 | alphapca5[67] | alphaev6[78] \
-         | mmix )
+       alpha | alphaev[4-8] | alphaev56 | alphapca5[67] | alphaev6[78] \
+       | mmix )
 changequote([,])dnl
-           gl_cv_host_cpu_c_abi_32bit=no
-           ;;
+         gl_cv_host_cpu_c_abi_32bit=no
+         ;;
 
-changequote(,)dnl
-         i[34567]86 )
-changequote([,])dnl
-           gl_cv_host_cpu_c_abi_32bit=yes
-           ;;
-
-         x86_64 )
-           # On x86_64 systems, the C compiler may be generating code in one of
-           # these ABIs:
-           # - 64-bit instruction set, 64-bit pointers, 64-bit 'long': x86_64.
-           # - 64-bit instruction set, 64-bit pointers, 32-bit 'long': x86_64
-           #   with native Windows (mingw, MSVC).
-           # - 64-bit instruction set, 32-bit pointers, 32-bit 'long': x86_64-x32.
-           # - 32-bit instruction set, 32-bit pointers, 32-bit 'long': i386.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#if (defined __x86_64__ || defined __amd64__ \
-                       || defined _M_X64 || defined _M_AMD64) \
-                      && !(defined __ILP32__ || defined _ILP32)
-                   int ok;
-                  #else
-                   error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         arm* | aarch64 )
-           # Assume arm with EABI.
-           # On arm64 systems, the C compiler may be generating code in one of
-           # these ABIs:
-           # - aarch64 instruction set, 64-bit pointers, 64-bit 'long': arm64.
-           # - aarch64 instruction set, 32-bit pointers, 32-bit 'long': arm64-ilp32.
-           # - 32-bit instruction set, 32-bit pointers, 32-bit 'long': arm or armhf.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#if defined __aarch64__ && !(defined __ILP32__ || defined _ILP32)
-                   int ok;
-                  #else
-                   error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         hppa1.0 | hppa1.1 | hppa2.0* | hppa64 )
-           # On hppa, the C compiler may be generating 32-bit code or 64-bit
-           # code. In the latter case, it defines _LP64 and __LP64__.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#ifdef __LP64__
-                   int ok;
-                  #else
-                   error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         ia64* )
-           # On ia64 on HP-UX, the C compiler may be generating 64-bit code or
-           # 32-bit code. In the latter case, it defines _ILP32.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#ifdef _ILP32
-                   int ok;
-                  #else
-                   error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=yes],
-             [gl_cv_host_cpu_c_abi_32bit=no])
-           ;;
-
-         mips* )
-           # We should also check for (_MIPS_SZPTR == 64), but gcc keeps this
-           # at 32.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#if defined _MIPS_SZLONG && (_MIPS_SZLONG == 64)
-                   int ok;
-                  #else
-                   error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         powerpc* )
-           # Different ABIs are in use on AIX vs. Mac OS X vs. Linux,*BSD.
-           # No need to distinguish them here; the caller may distinguish
-           # them based on the OS.
-           # On powerpc64 systems, the C compiler may still be generating
-           # 32-bit code. And on powerpc-ibm-aix systems, the C compiler may
-           # be generating 64-bit code.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#if defined __powerpc64__ || defined _ARCH_PPC64
-                   int ok;
-                  #else
-                   error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         rs6000 )
-           gl_cv_host_cpu_c_abi_32bit=yes
-           ;;
-
-         riscv32 | riscv64 )
-           # There are 6 ABIs: ilp32, ilp32f, ilp32d, lp64, lp64f, lp64d.
-           # Size of 'long' and 'void *':
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#if defined __LP64__
-                    int ok;
-                  #else
-                    error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         s390* )
-           # On s390x, the C compiler may be generating 64-bit (= s390x) code
-           # or 31-bit (= s390) code.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#if defined __LP64__ || defined __s390x__
-                    int ok;
-                  #else
-                    error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         sparc | sparc64 )
-           # UltraSPARCs running Linux have `uname -m` = "sparc64", but the
-           # C compiler still generates 32-bit code.
-           AC_COMPILE_IFELSE(
-             [AC_LANG_SOURCE(
-                [[#if defined __sparcv9 || defined __arch64__
-                   int ok;
-                  #else
-                   error fail
-                  #endif
-                ]])],
-             [gl_cv_host_cpu_c_abi_32bit=no],
-             [gl_cv_host_cpu_c_abi_32bit=yes])
-           ;;
-
-         *)
+       *)
+         if test -n "$gl_cv_host_cpu_c_abi"; then
+           dnl gl_HOST_CPU_C_ABI has already been run. Use its result.
+           case "$gl_cv_host_cpu_c_abi" in
+             i386 | x86_64-x32 | arm | armhf | arm64-ilp32 | hppa | ia64-ilp32 | mips | mipsn32 | powerpc | riscv*-ilp32* | s390 | sparc)
+               gl_cv_host_cpu_c_abi_32bit=yes ;;
+             x86_64 | alpha | arm64 | aarch64c | hppa64 | ia64 | mips64 | powerpc64 | powerpc64-elfv2 | riscv*-lp64* | s390x | sparc64 )
+               gl_cv_host_cpu_c_abi_32bit=no ;;
+             *)
+               gl_cv_host_cpu_c_abi_32bit=unknown ;;
+           esac
+         else
            gl_cv_host_cpu_c_abi_32bit=unknown
-           ;;
-       esac
-     fi
+         fi
+         if test $gl_cv_host_cpu_c_abi_32bit = unknown; then
+           AC_COMPILE_IFELSE(
+             [AC_LANG_SOURCE(
+                [[int test_pointer_size[sizeof (void *) - 5];
+                ]])],
+             [gl_cv_host_cpu_c_abi_32bit=no],
+             [gl_cv_host_cpu_c_abi_32bit=yes])
+         fi
+         ;;
+     esac
     ])
 
   HOST_CPU_C_ABI_32BIT="$gl_cv_host_cpu_c_abi_32bit"
 ])
 
-# iconv.m4 serial 21
-dnl Copyright (C) 2000-2002, 2007-2014, 2016-2020 Free Software Foundation,
+# iconv.m4
+# serial 28
+dnl Copyright (C) 2000-2002, 2007-2014, 2016-2024 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible.
+
+AC_PREREQ([2.64])
+
+dnl Note: AM_ICONV is documented in the GNU gettext manual
+dnl <https://www.gnu.org/software/gettext/manual/html_node/AM_005fICONV.html>.
+dnl Don't make changes that are incompatible with that documentation!
 
 AC_DEFUN([AM_ICONV_LINKFLAGS_BODY],
 [
@@ -1632,7 +1943,7 @@ AC_DEFUN([AM_ICONV_LINK],
   dnl because if the user has installed libiconv and not disabled its use
   dnl via --without-libiconv-prefix, he wants to use it. The first
   dnl AC_LINK_IFELSE will then fail, the second AC_LINK_IFELSE will succeed.
-  am_save_CPPFLAGS="$CPPFLAGS"
+  gl_saved_CPPFLAGS="$CPPFLAGS"
   AC_LIB_APPENDTOVAR([CPPFLAGS], [$INCICONV])
 
   AC_CACHE_CHECK([for iconv], [am_cv_func_iconv], [
@@ -1649,7 +1960,7 @@ AC_DEFUN([AM_ICONV_LINK],
            iconv_close(cd);]])],
       [am_cv_func_iconv=yes])
     if test "$am_cv_func_iconv" != yes; then
-      am_save_LIBS="$LIBS"
+      gl_saved_LIBS="$LIBS"
       LIBS="$LIBS $LIBICONV"
       AC_LINK_IFELSE(
         [AC_LANG_PROGRAM(
@@ -1662,14 +1973,14 @@ AC_DEFUN([AM_ICONV_LINK],
              iconv_close(cd);]])],
         [am_cv_lib_iconv=yes]
         [am_cv_func_iconv=yes])
-      LIBS="$am_save_LIBS"
+      LIBS="$gl_saved_LIBS"
     fi
   ])
   if test "$am_cv_func_iconv" = yes; then
     AC_CACHE_CHECK([for working iconv], [am_cv_func_iconv_works], [
       dnl This tests against bugs in AIX 5.1, AIX 6.1..7.1, HP-UX 11.11,
-      dnl Solaris 10.
-      am_save_LIBS="$LIBS"
+      dnl Solaris 10, macOS 14.4.
+      gl_saved_LIBS="$LIBS"
       if test $am_cv_lib_iconv = yes; then
         LIBS="$LIBS $LIBICONV"
       fi
@@ -1686,8 +1997,9 @@ AC_DEFUN([AM_ICONV_LINK],
 #endif
              ]],
              [[int result = 0;
-  /* Test against AIX 5.1 bug: Failures are not distinguishable from successful
-     returns.  */
+  /* Test against AIX 5.1...7.2 bug: Failures are not distinguishable from
+     successful returns.  This is even documented in
+     <https://www.ibm.com/support/knowledgecenter/ssw_aix_72/i_bostechref/iconv.html> */
   {
     iconv_t cd_utf8_to_88591 = iconv_open ("ISO8859-1", "UTF-8");
     if (cd_utf8_to_88591 != (iconv_t)(-1))
@@ -1703,6 +2015,35 @@ AC_DEFUN([AM_ICONV_LINK],
                             &outptr, &outbytesleft);
         if (res == 0)
           result |= 1;
+        iconv_close (cd_utf8_to_88591);
+      }
+  }
+  /* Test against macOS 14.4 bug: Failures are not distinguishable from
+     successful returns.
+     POSIX:2018 says: "The iconv() function shall ... return the number of
+     non-identical conversions performed."
+     But here, the conversion always does transliteration (the suffixes
+     "//TRANSLIT" and "//IGNORE" have no effect, nor does iconvctl()) and
+     does not report when it does a non-identical conversion.  */
+  {
+    iconv_t cd_utf8_to_88591 = iconv_open ("ISO-8859-1", "UTF-8");
+    if (cd_utf8_to_88591 != (iconv_t)(-1))
+      {
+        static ICONV_CONST char input[] = "\305\202"; /* LATIN SMALL LETTER L WITH STROKE */
+        char buf[10];
+        ICONV_CONST char *inptr = input;
+        size_t inbytesleft = strlen (input);
+        char *outptr = buf;
+        size_t outbytesleft = sizeof (buf);
+        size_t res = iconv (cd_utf8_to_88591,
+                            &inptr, &inbytesleft,
+                            &outptr, &outbytesleft);
+        /* Here:
+           With glibc, GNU libiconv (including macOS up to 13): res == (size_t)-1, errno == EILSEQ.
+           With musl libc, NetBSD 10, Solaris 11: res == 1.
+           With macOS 14.4: res == 0, output is "l".  */
+        if (res == 0)
+          result |= 2;
         iconv_close (cd_utf8_to_88591);
       }
   }
@@ -1722,7 +2063,7 @@ AC_DEFUN([AM_ICONV_LINK],
                             &inptr, &inbytesleft,
                             &outptr, &outbytesleft);
         if (res == 0)
-          result |= 2;
+          result |= 4;
         iconv_close (cd_ascii_to_88591);
       }
   }
@@ -1741,7 +2082,7 @@ AC_DEFUN([AM_ICONV_LINK],
                             &inptr, &inbytesleft,
                             &outptr, &outbytesleft);
         if (res != (size_t)(-1) || outptr - buf > 1 || buf[1] != (char)0xAD)
-          result |= 4;
+          result |= 8;
         iconv_close (cd_88591_to_utf8);
       }
   }
@@ -1761,7 +2102,7 @@ AC_DEFUN([AM_ICONV_LINK],
                             &inptr, &inbytesleft,
                             &outptr, &outbytesleft);
         if ((int)res > 0)
-          result |= 8;
+          result |= 16;
         iconv_close (cd_88591_to_utf8);
       }
   }
@@ -1779,7 +2120,7 @@ AC_DEFUN([AM_ICONV_LINK],
     iconv_t cd4 = iconv_open ("utf8", "eucJP");
     if (cd1 == (iconv_t)(-1) && cd2 == (iconv_t)(-1)
         && cd3 == (iconv_t)(-1) && cd4 == (iconv_t)(-1))
-      result |= 16;
+      result |= 32;
     if (cd1 != (iconv_t)(-1))
       iconv_close (cd1);
     if (cd2 != (iconv_t)(-1))
@@ -1798,7 +2139,7 @@ AC_DEFUN([AM_ICONV_LINK],
            esac])
         test "$am_cv_func_iconv_works" = no || break
       done
-      LIBS="$am_save_LIBS"
+      LIBS="$gl_saved_LIBS"
     ])
     case "$am_cv_func_iconv_works" in
       *no) am_func_iconv=no am_cv_lib_iconv=no ;;
@@ -1817,7 +2158,7 @@ AC_DEFUN([AM_ICONV_LINK],
   else
     dnl If $LIBICONV didn't lead to a usable library, we don't need $INCICONV
     dnl either.
-    CPPFLAGS="$am_save_CPPFLAGS"
+    CPPFLAGS="$gl_saved_CPPFLAGS"
     LIBICONV=
     LTLIBICONV=
   fi
@@ -1825,73 +2166,73 @@ AC_DEFUN([AM_ICONV_LINK],
   AC_SUBST([LTLIBICONV])
 ])
 
-dnl Define AM_ICONV using AC_DEFUN_ONCE for Autoconf >= 2.64, in order to
-dnl avoid warnings like
+dnl Define AM_ICONV using AC_DEFUN_ONCE, in order to avoid warnings like
 dnl "warning: AC_REQUIRE: `AM_ICONV' was expanded before it was required".
-dnl This is tricky because of the way 'aclocal' is implemented:
-dnl - It requires defining an auxiliary macro whose name ends in AC_DEFUN.
-dnl   Otherwise aclocal's initial scan pass would miss the macro definition.
-dnl - It requires a line break inside the AC_DEFUN_ONCE and AC_DEFUN expansions.
-dnl   Otherwise aclocal would emit many "Use of uninitialized value $1"
-dnl   warnings.
-m4_define([gl_iconv_AC_DEFUN],
-  m4_version_prereq([2.64],
-    [[AC_DEFUN_ONCE(
-        [$1], [$2])]],
-    [m4_ifdef([gl_00GNULIB],
-       [[AC_DEFUN_ONCE(
-           [$1], [$2])]],
-       [[AC_DEFUN(
-           [$1], [$2])]])]))
-gl_iconv_AC_DEFUN([AM_ICONV],
+AC_DEFUN_ONCE([AM_ICONV],
 [
   AM_ICONV_LINK
   if test "$am_cv_func_iconv" = yes; then
-    AC_MSG_CHECKING([for iconv declaration])
-    AC_CACHE_VAL([am_cv_proto_iconv], [
-      AC_COMPILE_IFELSE(
-        [AC_LANG_PROGRAM(
-           [[
+    AC_CACHE_CHECK([whether iconv is compatible with its POSIX signature],
+      [gl_cv_iconv_nonconst],
+      [AC_COMPILE_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[
 #include <stdlib.h>
 #include <iconv.h>
 extern
 #ifdef __cplusplus
 "C"
 #endif
-#if defined(__STDC__) || defined(_MSC_VER) || defined(__cplusplus)
 size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
-           ]],
-           [[]])],
-        [am_cv_proto_iconv_arg1=""],
-        [am_cv_proto_iconv_arg1="const"])
-      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"])
-    am_cv_proto_iconv=`echo "[$]am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-    AC_MSG_RESULT([
-         $am_cv_proto_iconv])
+            ]],
+            [[]])],
+         [gl_cv_iconv_nonconst=yes],
+         [gl_cv_iconv_nonconst=no])
+      ])
   else
     dnl When compiling GNU libiconv on a system that does not have iconv yet,
     dnl pick the POSIX compliant declaration without 'const'.
-    am_cv_proto_iconv_arg1=""
+    gl_cv_iconv_nonconst=yes
   fi
-  AC_DEFINE_UNQUOTED([ICONV_CONST], [$am_cv_proto_iconv_arg1],
+  if test $gl_cv_iconv_nonconst = yes; then
+    iconv_arg1=""
+  else
+    iconv_arg1="const"
+  fi
+  AC_DEFINE_UNQUOTED([ICONV_CONST], [$iconv_arg1],
     [Define as const if the declaration of iconv() needs const.])
   dnl Also substitute ICONV_CONST in the gnulib generated <iconv.h>.
   m4_ifdef([gl_ICONV_H_DEFAULTS],
     [AC_REQUIRE([gl_ICONV_H_DEFAULTS])
-     if test -n "$am_cv_proto_iconv_arg1"; then
+     if test $gl_cv_iconv_nonconst != yes; then
        ICONV_CONST="const"
      fi
     ])
+
+  dnl A summary result, for those packages which want to print a summary at the
+  dnl end of the configuration.
+  if test "$am_func_iconv" = yes; then
+    if test -n "$LIBICONV"; then
+      am_cv_func_iconv_summary='yes, in libiconv'
+    else
+      am_cv_func_iconv_summary='yes, in libc'
+    fi
+  else
+    if test "$am_cv_func_iconv" = yes; then
+      am_cv_func_iconv_summary='not working, consider installing GNU libiconv'
+    else
+      am_cv_func_iconv_summary='no, consider installing GNU libiconv'
+    fi
+  fi
 ])
 
-# intlmacosx.m4 serial 8 (gettext-0.20.2)
-dnl Copyright (C) 2004-2014, 2016, 2019-2020 Free Software Foundation, Inc.
+# intlmacosx.m4
+# serial 10 (gettext-0.23)
+dnl Copyright (C) 2004-2014, 2016, 2019-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 dnl
 dnl This file can be used in projects which are not available under
 dnl the GNU General Public License or the GNU Lesser General Public
@@ -1909,7 +2250,7 @@ AC_DEFUN([gt_INTL_MACOSX],
   dnl Check for API introduced in Mac OS X 10.4.
   AC_CACHE_CHECK([for CFPreferencesCopyAppValue],
     [gt_cv_func_CFPreferencesCopyAppValue],
-    [gt_save_LIBS="$LIBS"
+    [gt_saved_LIBS="$LIBS"
      LIBS="$LIBS -Wl,-framework -Wl,CoreFoundation"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM(
@@ -1917,7 +2258,7 @@ AC_DEFUN([gt_INTL_MACOSX],
           [[CFPreferencesCopyAppValue(NULL, NULL)]])],
        [gt_cv_func_CFPreferencesCopyAppValue=yes],
        [gt_cv_func_CFPreferencesCopyAppValue=no])
-     LIBS="$gt_save_LIBS"])
+     LIBS="$gt_saved_LIBS"])
   if test $gt_cv_func_CFPreferencesCopyAppValue = yes; then
     AC_DEFINE([HAVE_CFPREFERENCESCOPYAPPVALUE], [1],
       [Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in the CoreFoundation framework.])
@@ -1932,7 +2273,7 @@ AC_DEFUN([gt_INTL_MACOSX],
   dnl CFPreferencesCopyAppValue still returns, namely ll_CC where ll is the
   dnl first among the preferred languages and CC is the territory.
   AC_CACHE_CHECK([for CFLocaleCopyPreferredLanguages], [gt_cv_func_CFLocaleCopyPreferredLanguages],
-    [gt_save_LIBS="$LIBS"
+    [gt_saved_LIBS="$LIBS"
      LIBS="$LIBS -Wl,-framework -Wl,CoreFoundation"
      AC_LINK_IFELSE(
        [AC_LANG_PROGRAM(
@@ -1940,7 +2281,7 @@ AC_DEFUN([gt_INTL_MACOSX],
           [[CFLocaleCopyPreferredLanguages();]])],
        [gt_cv_func_CFLocaleCopyPreferredLanguages=yes],
        [gt_cv_func_CFLocaleCopyPreferredLanguages=no])
-     LIBS="$gt_save_LIBS"])
+     LIBS="$gt_saved_LIBS"])
   if test $gt_cv_func_CFLocaleCopyPreferredLanguages = yes; then
     AC_DEFINE([HAVE_CFLOCALECOPYPREFERREDLANGUAGES], [1],
       [Define to 1 if you have the Mac OS X function CFLocaleCopyPreferredLanguages in the CoreFoundation framework.])
@@ -1948,16 +2289,22 @@ AC_DEFUN([gt_INTL_MACOSX],
   INTL_MACOSX_LIBS=
   if test $gt_cv_func_CFPreferencesCopyAppValue = yes \
      || test $gt_cv_func_CFLocaleCopyPreferredLanguages = yes; then
-    INTL_MACOSX_LIBS="-Wl,-framework -Wl,CoreFoundation"
+    dnl Starting with macOS version 14, CoreFoundation relies on CoreServices,
+    dnl and we have to link it in explicitly, otherwise an exception
+    dnl NSInvalidArgumentException "unrecognized selector sent to instance"
+    dnl occurs.
+    INTL_MACOSX_LIBS="-Wl,-framework -Wl,CoreFoundation -Wl,-framework -Wl,CoreServices"
   fi
   AC_SUBST([INTL_MACOSX_LIBS])
 ])
 
-# lib-ld.m4 serial 9
-dnl Copyright (C) 1996-2003, 2009-2020 Free Software Foundation, Inc.
+# lib-ld.m4
+# serial 13
+dnl Copyright (C) 1996-2003, 2009-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl Subroutines of libtool.m4,
 dnl with replacements s/_*LT_PATH/AC_LIB_PROG/ and s/lt_/acl_/ to avoid
@@ -1984,7 +2331,7 @@ AC_DEFUN([AC_LIB_PROG_LD],
 AC_REQUIRE([AC_CANONICAL_HOST])dnl
 
 AC_ARG_WITH([gnu-ld],
-    [AS_HELP_STRING([--with-gnu-ld],
+    [AS_HELP_STRING([[--with-gnu-ld]],
         [assume the C compiler uses GNU ld [default=no]])],
     [test "$withval" = no || with_gnu_ld=yes],
     [with_gnu_ld=no])dnl
@@ -2022,7 +2369,7 @@ else
     if test "$GCC" = yes; then
       # Check if gcc -print-prog-name=ld gives a path.
       case $host in
-        *-*-mingw*)
+        *-*-mingw* | windows*)
           # gcc leaves a trailing carriage return which upsets mingw
           acl_output=`($CC -print-prog-name=ld) 2>&5 | tr -d '\015'` ;;
         *)
@@ -2052,9 +2399,9 @@ else
     fi
     if test -n "$ac_prog"; then
       # Search for $ac_prog in $PATH.
-      acl_save_ifs="$IFS"; IFS=$PATH_SEPARATOR
+      acl_saved_IFS="$IFS"; IFS=$PATH_SEPARATOR
       for ac_dir in $PATH; do
-        IFS="$acl_save_ifs"
+        IFS="$acl_saved_IFS"
         test -z "$ac_dir" && ac_dir=.
         if test -f "$ac_dir/$ac_prog" || test -f "$ac_dir/$ac_prog$ac_exeext"; then
           acl_cv_path_LD="$ac_dir/$ac_prog"
@@ -2071,13 +2418,13 @@ else
           esac
         fi
       done
-      IFS="$acl_save_ifs"
+      IFS="$acl_saved_IFS"
     fi
     case $host in
       *-*-aix*)
         AC_COMPILE_IFELSE(
           [AC_LANG_SOURCE(
-             [[#if defined __powerpc64__ || defined _ARCH_PPC64
+             [[#if defined __powerpc64__ || defined __LP64__
                 int ok;
                #else
                 error fail
@@ -2122,11 +2469,13 @@ fi
 AC_LIB_PROG_LD_GNU
 ])
 
-# lib-link.m4 serial 31
-dnl Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# lib-link.m4
+# serial 34
+dnl Copyright (C) 2001-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible.
 
@@ -2193,11 +2542,11 @@ AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
   dnl Add $INC[]NAME to CPPFLAGS before performing the following checks,
   dnl because if the user has installed lib[]Name and not disabled its use
   dnl via --without-lib[]Name-prefix, he wants to use it.
-  ac_save_CPPFLAGS="$CPPFLAGS"
+  acl_saved_CPPFLAGS="$CPPFLAGS"
   AC_LIB_APPENDTOVAR([CPPFLAGS], [$INC]NAME)
 
   AC_CACHE_CHECK([for lib[]$1], [ac_cv_lib[]Name], [
-    ac_save_LIBS="$LIBS"
+    acl_saved_LIBS="$LIBS"
     dnl If $LIB[]NAME contains some -l options, add it to the end of LIBS,
     dnl because these -l options might require -L options that are present in
     dnl LIBS. -l options benefit only from the -L options listed before it.
@@ -2213,7 +2562,7 @@ AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
       [AC_LANG_PROGRAM([[$3]], [[$4]])],
       [ac_cv_lib[]Name=yes],
       [ac_cv_lib[]Name='m4_if([$5], [], [no], [[$5]])'])
-    LIBS="$ac_save_LIBS"
+    LIBS="$acl_saved_LIBS"
   ])
   if test "$ac_cv_lib[]Name" = yes; then
     HAVE_LIB[]NAME=yes
@@ -2224,7 +2573,7 @@ AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
     HAVE_LIB[]NAME=no
     dnl If $LIB[]NAME didn't lead to a usable library, we don't need
     dnl $INC[]NAME either.
-    CPPFLAGS="$ac_save_CPPFLAGS"
+    CPPFLAGS="$acl_saved_CPPFLAGS"
     LIB[]NAME=
     LTLIB[]NAME=
     LIB[]NAME[]_PREFIX=
@@ -2320,8 +2669,8 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
     eval additional_libdir3=\"$exec_prefix/$acl_libdirstem3\"
   ])
   AC_ARG_WITH(PACK[-prefix],
-[[  --with-]]PACK[[-prefix[=DIR]  search for ]PACKLIBS[ in DIR/include and DIR/lib
-  --without-]]PACK[[-prefix     don't search for ]PACKLIBS[ in includedir and libdir]],
+[[  --with-]]PACK[[-prefix[=DIR]  search for ]]PACKLIBS[[ in DIR/include and DIR/lib
+  --without-]]PACK[[-prefix     don't search for ]]PACKLIBS[[ in includedir and libdir]],
 [
     if test "X$withval" = "Xno"; then
       use_additional=no
@@ -2348,7 +2697,7 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
     additional_libdir3=
   fi
   dnl Search the library and its dependencies in $additional_libdir and
-  dnl $LDFLAGS. Using breadth-first-seach.
+  dnl $LDFLAGS. Use breadth-first search.
   LIB[]NAME=
   LTLIB[]NAME=
   INC[]NAME=
@@ -2661,12 +3010,12 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
               dnl Read the .la file. It defines the variables
               dnl dlname, library_names, old_library, dependency_libs, current,
               dnl age, revision, installed, dlopen, dlpreopen, libdir.
-              save_libdir="$libdir"
+              saved_libdir="$libdir"
               case "$found_la" in
                 */* | *\\*) . "$found_la" ;;
                 *) . "./$found_la" ;;
               esac
-              libdir="$save_libdir"
+              libdir="$saved_libdir"
               dnl We use only dependency_libs.
               for dep in $dependency_libs; do
                 case "$dep" in
@@ -2755,7 +3104,20 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
                     ;;
                   -l*)
                     dnl Handle this in the next round.
-                    names_next_round="$names_next_round "`echo "X$dep" | sed -e 's/^X-l//'`
+                    dnl But on GNU systems, ignore -lc options, because
+                    dnl   - linking with libc is the default anyway,
+                    dnl   - linking with libc.a may produce an error
+                    dnl     "/usr/bin/ld: dynamic STT_GNU_IFUNC symbol `strcmp' with pointer equality in `/usr/lib/libc.a(strcmp.o)' can not be used when making an executable; recompile with -fPIE and relink with -pie"
+                    dnl     or may produce an executable that always crashes, see
+                    dnl     <https://lists.gnu.org/archive/html/grep-devel/2020-09/msg00052.html>.
+                    dep=`echo "X$dep" | sed -e 's/^X-l//'`
+                    if test "X$dep" != Xc \
+                       || case $host_os in
+                            linux* | gnu* | k*bsd*-gnu) false ;;
+                            *)                          true ;;
+                          esac; then
+                      names_next_round="$names_next_round $dep"
+                    fi
                     ;;
                   *.la)
                     dnl Handle this in the next round. Throw away the .la's
@@ -2793,18 +3155,18 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
         alldirs="${alldirs}${alldirs:+$acl_hardcode_libdir_separator}$found_dir"
       done
       dnl Note: acl_hardcode_libdir_flag_spec uses $libdir and $wl.
-      acl_save_libdir="$libdir"
+      acl_saved_libdir="$libdir"
       libdir="$alldirs"
       eval flag=\"$acl_hardcode_libdir_flag_spec\"
-      libdir="$acl_save_libdir"
+      libdir="$acl_saved_libdir"
       LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }$flag"
     else
       dnl The -rpath options are cumulative.
       for found_dir in $rpathdirs; do
-        acl_save_libdir="$libdir"
+        acl_saved_libdir="$libdir"
         libdir="$found_dir"
         eval flag=\"$acl_hardcode_libdir_flag_spec\"
-        libdir="$acl_save_libdir"
+        libdir="$acl_saved_libdir"
         LIB[]NAME="${LIB[]NAME}${LIB[]NAME:+ }$flag"
       done
     fi
@@ -2901,18 +3263,18 @@ AC_DEFUN([AC_LIB_LINKFLAGS_FROM_LIBS],
             for dir in $rpathdirs; do
               alldirs="${alldirs}${alldirs:+$acl_hardcode_libdir_separator}$dir"
             done
-            acl_save_libdir="$libdir"
+            acl_saved_libdir="$libdir"
             libdir="$alldirs"
             eval flag=\"$acl_hardcode_libdir_flag_spec\"
-            libdir="$acl_save_libdir"
+            libdir="$acl_saved_libdir"
             $1="$flag"
           else
             dnl The -rpath options are cumulative.
             for dir in $rpathdirs; do
-              acl_save_libdir="$libdir"
+              acl_saved_libdir="$libdir"
               libdir="$dir"
               eval flag=\"$acl_hardcode_libdir_flag_spec\"
-              libdir="$acl_save_libdir"
+              libdir="$acl_saved_libdir"
               $1="${$1}${$1:+ }$flag"
             done
           fi
@@ -2923,11 +3285,13 @@ AC_DEFUN([AC_LIB_LINKFLAGS_FROM_LIBS],
   AC_SUBST([$1])
 ])
 
-# lib-prefix.m4 serial 17
-dnl Copyright (C) 2001-2005, 2008-2020 Free Software Foundation, Inc.
+# lib-prefix.m4
+# serial 23
+dnl Copyright (C) 2001-2005, 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
+dnl This file is offered as-is, without any warranty.
 
 dnl From Bruno Haible.
 
@@ -3051,10 +3415,10 @@ AC_DEFUN([AC_LIB_PREPARE_PREFIX],
   else
     acl_final_exec_prefix="$exec_prefix"
   fi
-  acl_save_prefix="$prefix"
+  acl_saved_prefix="$prefix"
   prefix="$acl_final_prefix"
   eval acl_final_exec_prefix=\"$acl_final_exec_prefix\"
-  prefix="$acl_save_prefix"
+  prefix="$acl_saved_prefix"
 ])
 
 dnl AC_LIB_WITH_FINAL_PREFIX([statement]) evaluates statement, with the
@@ -3062,13 +3426,13 @@ dnl variables prefix and exec_prefix bound to the values they will have
 dnl at the end of the configure script.
 AC_DEFUN([AC_LIB_WITH_FINAL_PREFIX],
 [
-  acl_save_prefix="$prefix"
+  acl_saved_prefix="$prefix"
   prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
+  acl_saved_exec_prefix="$exec_prefix"
   exec_prefix="$acl_final_exec_prefix"
   $1
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
+  exec_prefix="$acl_saved_exec_prefix"
+  prefix="$acl_saved_prefix"
 ])
 
 dnl AC_LIB_PREPARE_MULTILIB creates
@@ -3099,14 +3463,14 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
 
   AC_CACHE_CHECK([for ELF binary format], [gl_cv_elf],
     [AC_EGREP_CPP([Extensible Linking Format],
-       [#ifdef __ELF__
+       [#if defined __ELF__ || (defined __linux__ && (defined __EDG__ || defined __SUNPRO_C))
         Extensible Linking Format
         #endif
        ],
        [gl_cv_elf=yes],
        [gl_cv_elf=no])
-     ])
-  if test $gl_cv_elf; then
+    ])
+  if test $gl_cv_elf = yes; then
     # Extract the ELF class of a file (5th byte) in decimal.
     # Cf. https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header
     if od -A x < /dev/null >/dev/null 2>/dev/null; then
@@ -3123,20 +3487,23 @@ AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
         echo
       }
     fi
+    # Use 'expr', not 'test', to compare the values of func_elfclass, because on
+    # Solaris 11 OpenIndiana and Solaris 11 OmniOS, the result is 001 or 002,
+    # not 1 or 2.
 changequote(,)dnl
     case $HOST_CPU_C_ABI_32BIT in
       yes)
         # 32-bit ABI.
         acl_is_expected_elfclass ()
         {
-          test "`func_elfclass | sed -e 's/[ 	]//g'`" = 1
+          expr "`func_elfclass | sed -e 's/[ 	]//g'`" = 1 > /dev/null
         }
         ;;
       no)
         # 64-bit ABI.
         acl_is_expected_elfclass ()
         {
-          test "`func_elfclass | sed -e 's/[ 	]//g'`" = 2
+          expr "`func_elfclass | sed -e 's/[ 	]//g'`" = 2 > /dev/null
         }
         ;;
       *)
@@ -3178,6 +3545,15 @@ changequote([,])dnl
            esac
          fi
          ;;
+       netbsd*)
+         dnl On NetBSD/sparc64, there is a 'sparc' subdirectory that contains
+         dnl 32-bit libraries.
+         if test $HOST_CPU_C_ABI_32BIT != no; then
+           case "$host_cpu" in
+             sparc*) acl_libdirstem2=lib/sparc ;;
+           esac
+         fi
+         ;;
        *)
          dnl If $CC generates code for a 32-bit ABI, the libraries are
          dnl surely under $prefix/lib or $prefix/lib32, not $prefix/lib64.
@@ -3202,7 +3578,7 @@ changequote([,])dnl
            fi
          fi
          if test -n "$searchpath"; then
-           acl_save_IFS="${IFS= 	}"; IFS=":"
+           acl_saved_IFS="${IFS= 	}"; IFS=":"
            for searchdir in $searchpath; do
              if test -d "$searchdir"; then
                case "$searchdir" in
@@ -3219,7 +3595,7 @@ changequote([,])dnl
                esac
              fi
            done
-           IFS="$acl_save_IFS"
+           IFS="$acl_saved_IFS"
            if test $HOST_CPU_C_ABI_32BIT = yes; then
              # 32-bit ABI.
              acl_libdirstem3=
@@ -3244,8 +3620,9 @@ changequote(,)dnl
 changequote([,])dnl
 ])
 
-# nls.m4 serial 6 (gettext-0.20.2)
-dnl Copyright (C) 1995-2003, 2005-2006, 2008-2014, 2016, 2019-2020 Free
+# nls.m4
+# serial 6 (gettext-0.20.2)
+dnl Copyright (C) 1995-2003, 2005-2006, 2008-2014, 2016, 2019-2024 Free
 dnl Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -3621,8 +3998,10 @@ AS_IF([test "$AS_TR_SH([with_]m4_tolower([$1]))" = "yes"],
         [AC_DEFINE([HAVE_][$1], 1, [Enable ]m4_tolower([$1])[ support])])
 ])dnl PKG_HAVE_DEFINE_WITH_MODULES
 
-# po.m4 serial 31 (gettext-0.20.2)
-dnl Copyright (C) 1995-2014, 2016, 2018-2020 Free Software Foundation, Inc.
+# po.m4
+# serial 33 (gettext-0.23)
+dnl Copyright (C) 1995-2014, 2016, 2018-2022, 2024 Free Software Foundation,
+dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -3638,7 +4017,7 @@ dnl They are *not* in the public domain.
 
 dnl Authors:
 dnl   Ulrich Drepper <drepper@cygnus.com>, 1995-2000.
-dnl   Bruno Haible <haible@clisp.cons.org>, 2000-2003.
+dnl   Bruno Haible <bruno@clisp.org>, 2000-2024.
 
 AC_PREREQ([2.60])
 
@@ -3653,7 +4032,7 @@ AC_DEFUN([AM_PO_SUBDIRS],
 
   dnl Release version of the gettext macros. This is used to ensure that
   dnl the gettext macros and po/Makefile.in.in are in sync.
-  AC_SUBST([GETTEXT_MACRO_VERSION], [0.20])
+  AC_SUBST([GETTEXT_MACRO_VERSION], [0.22])
 
   dnl Perform the following tests also if --disable-nls has been given,
   dnl because they are needed for "make dist" to work.
@@ -3802,7 +4181,9 @@ changequote([,])dnl
                 #      presentlang can be used as a fallback for messages
                 #      which are not translated in the desiredlang catalog).
                 case "$desiredlang" in
-                  "$presentlang"*) useit=yes;;
+                  "$presentlang" | "$presentlang"_* | "$presentlang".* | "$presentlang"@*)
+                    useit=yes
+                    ;;
                 esac
               done
               if test $useit = yes; then
@@ -4002,7 +4383,9 @@ changequote([,])dnl
         #      presentlang can be used as a fallback for messages
         #      which are not translated in the desiredlang catalog).
         case "$desiredlang" in
-          "$presentlang"*) useit=yes;;
+          "$presentlang" | "$presentlang"_* | "$presentlang".* | "$presentlang"@*)
+            useit=yes
+            ;;
         esac
       done
       if test $useit = yes; then
@@ -4072,8 +4455,9 @@ AC_DEFUN([AM_XGETTEXT_OPTION],
   XGETTEXT_EXTRA_OPTIONS="$XGETTEXT_EXTRA_OPTIONS $1"
 ])
 
-# progtest.m4 serial 8 (gettext-0.20.2)
-dnl Copyright (C) 1996-2003, 2005, 2008-2020 Free Software Foundation, Inc.
+# progtest.m4
+# serial 10 (gettext-0.23)
+dnl Copyright (C) 1996-2003, 2005, 2008-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -4090,7 +4474,7 @@ dnl They are *not* in the public domain.
 dnl Authors:
 dnl   Ulrich Drepper <drepper@cygnus.com>, 1996.
 
-AC_PREREQ([2.50])
+AC_PREREQ([2.53])
 
 # Search path for a program which passes the given test.
 
@@ -4134,9 +4518,9 @@ AC_CACHE_VAL([ac_cv_path_$1],
     ac_cv_path_$1="[$]$1" # Let the user override the test with a path.
     ;;
   *)
-    ac_save_IFS="$IFS"; IFS=$PATH_SEPARATOR
-    for ac_dir in ifelse([$5], , $PATH, [$5]); do
-      IFS="$ac_save_IFS"
+    gt_saved_IFS="$IFS"; IFS=$PATH_SEPARATOR
+    for ac_dir in m4_if([$5], , $PATH, [$5]); do
+      IFS="$gt_saved_IFS"
       test -z "$ac_dir" && ac_dir=.
       for ac_exec_ext in '' $ac_executable_extensions; do
         if $ac_executable_p "$ac_dir/$ac_word$ac_exec_ext"; then
@@ -4148,15 +4532,15 @@ AC_CACHE_VAL([ac_cv_path_$1],
         fi
       done
     done
-    IFS="$ac_save_IFS"
+    IFS="$gt_saved_IFS"
 dnl If no 4th arg is given, leave the cache variable unset,
 dnl so AC_PATH_PROGS will keep looking.
-ifelse([$4], , , [  test -z "[$]ac_cv_path_$1" && ac_cv_path_$1="$4"
+m4_if([$4], , , [  test -z "[$]ac_cv_path_$1" && ac_cv_path_$1="$4"
 ])dnl
     ;;
 esac])dnl
 $1="$ac_cv_path_$1"
-if test ifelse([$4], , [-n "[$]$1"], ["[$]$1" != "$4"]); then
+if test m4_if([$4], , [-n "[$]$1"], ["[$]$1" != "$4"]); then
   AC_MSG_RESULT([$][$1])
 else
   AC_MSG_RESULT([no])

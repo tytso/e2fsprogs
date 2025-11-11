@@ -59,9 +59,9 @@ SYSTEMD_SYSTEM_UNIT_DIR = @systemd_system_unit_dir@
 @ifGNUmake@    Q =
 @ifGNUmake@ endif
 
-@ifNotGNUmake@ E = @E@
-@ifNotGNUmake@ ES = @ES@
-@ifNotGNUmake@ Q = @Q@
+@ifnGNUmake@ E = @E@
+@ifnGNUmake@ ES = @ES@
+@ifnGNUmake@ Q = @Q@
 
 @ifGNUmake@ CHECK=sparse
 @ifGNUmake@ CHECK_OPTS=-Wsparse-all -Wno-transparent-union -Wno-return-void -Wno-undef -Wno-non-pointer-null
@@ -80,8 +80,8 @@ SYSTEMD_SYSTEM_UNIT_DIR = @systemd_system_unit_dir@
 @ifGNUmake@   endif
 @ifGNUmake@ endif
 
-@ifNotGNUmake@ CHECK_CMD=true
-@ifNotGNUmake@ CPPCHECK_CMD=true
+@ifnGNUmake@ CHECK_CMD=true
+@ifnGNUmake@ CPPCHECK_CMD=true
 
 SANITIZER_CFLAGS = @lto_cflags@ @ubsan_cflags@ @addrsan_cflags@ @threadsan_cflags@
 SANITIZER_LDFLAGS = @lto_ldflags@ @ubsan_ldflags@ @addrsan_ldflags@ @threadsan_ldflags@
