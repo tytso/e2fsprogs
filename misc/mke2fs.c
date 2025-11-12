@@ -1816,7 +1816,8 @@ profile_error:
 					_("invalid block size - %s"), optarg);
 				exit(1);
 			}
-			if (blocksize > 4096)
+			if (blocksize > 4096 &&
+			    access("/sys/fs/ext4/features/blocksize_gt_pagesize", F_OK))
 				fprintf(stderr, _("Warning: blocksize %d not "
 						  "usable on most systems.\n"),
 					blocksize);
