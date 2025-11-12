@@ -1351,6 +1351,15 @@ static errcode_t init_list(struct str_list *sl)
 	return 0;
 }
 
+static void free_strlist(char **list)
+{
+	int	i;
+
+	for (i=0; list[i]; i++)
+		free(list[i]);
+	free(list);
+}
+
 static errcode_t push_string(struct str_list *sl, const char *str)
 {
 	char **new_list;
@@ -2673,6 +2682,7 @@ profile_error:
 	/* Get options from commandline */
 	for (cpp = extended_opts.list; *cpp; cpp++)
 		parse_extended_opts(&fs_param, *cpp);
+	free_strlist(extended_opts.list);
 
 	if (fs_param.s_rev_level == EXT2_GOOD_OLD_REV) {
 		if (fs_features) {
@@ -3764,8 +3774,6 @@ no_journal:
 	remove_error_table(&et_ext2_error_table);
 	remove_error_table(&et_prof_error_table);
 	profile_release(profile);
-	for (i=0; fs_types[i]; i++)
-		free(fs_types[i]);
-	free(fs_types);
+	free_strlist(fs_types);
 	return retval;
 }
