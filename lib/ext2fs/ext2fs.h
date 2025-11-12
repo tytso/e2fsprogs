@@ -1819,6 +1819,8 @@ errcode_t ext2fs_set_data_io(ext2_filsys fs, io_channel new_io);
 errcode_t ext2fs_rewrite_to_io(ext2_filsys fs, io_channel new_io);
 
 /* orphan.c */
+#define EXT4_MAX_ORPHAN_FILE_SIZE	8 << 20
+#define EXT4_DEFAULT_ORPHAN_FILE_SIZE	2 << 20
 extern errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks);
 extern errcode_t ext2fs_truncate_orphan_file(ext2_filsys fs);
 extern e2_blkcnt_t ext2fs_default_orphan_file_blocks(ext2_filsys fs);
