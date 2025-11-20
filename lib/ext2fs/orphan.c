@@ -15,6 +15,8 @@
 #include "ext2_fs.h"
 #include "ext2fsP.h"
 
+#define EXT4_MAX_ORPHAN_FILE_BLOCKS 512
+
 errcode_t ext2fs_truncate_orphan_file(ext2_filsys fs)
 {
 	struct ext2_inode inode;
@@ -128,6 +130,9 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 	struct mkorphan_info oi;
 	struct ext4_orphan_block_tail *ob_tail;
 	time_t now;
+
+	if (num_blocks > EXT4_MAX_ORPHAN_FILE_BLOCKS)
+		num_blocks = EXT4_MAX_ORPHAN_FILE_BLOCKS;
 
 	if (ino) {
 		err = ext2fs_read_inode(fs, ino, &inode);
