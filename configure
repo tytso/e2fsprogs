@@ -16823,6 +16823,44 @@ case "$host_os" in
 esac
 
 
+if test "${ac_cv_header_linux_fsverity_h}" = "yes"; then
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FS_IOC_READ_VERITY_METADATA ioctl" >&5
+printf %s "checking for FS_IOC_READ_VERITY_METADATA ioctl... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <linux/fsverity.h>
+#ifndef FS_IOC_READ_VERITY_METADATA
+# error "FS_IOC_READ_VERITY_METADATA not available"
+#endif
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"
+then :
+
+
+printf "%s\n" "#define HAVE_FS_IOC_READ_VERITY_METADATA 1" >>confdefs.h
+
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else case e in #(
+  e)
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    ;;
+esac
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+fi
+
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux

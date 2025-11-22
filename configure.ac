@@ -1997,6 +1997,24 @@ OS_IO_FILE=""
 esac]
 AC_SUBST(OS_IO_FILE)
 
+dnl Check for fsverity ioctl
+if test "${ac_cv_header_linux_fsverity_h}" = "yes"; then
+   AC_MSG_CHECKING([for FS_IOC_READ_VERITY_METADATA ioctl])
+   AC_PREPROC_IFELSE(
+   [AC_LANG_PROGRAM([[
+#include <linux/fsverity.h>
+#ifndef FS_IOC_READ_VERITY_METADATA
+# error "FS_IOC_READ_VERITY_METADATA not available"
+#endif
+]], [])], [
+   AC_DEFINE([HAVE_FS_IOC_READ_VERITY_METADATA], [1], [Define to 1 if FS_IOC_READ_VERITY_METADATA ioctl is available])
+   AC_MSG_RESULT([yes])
+   ],
+   [
+   AC_MSG_RESULT([no])
+   ])
+fi
+
 dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
