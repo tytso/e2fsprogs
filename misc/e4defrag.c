@@ -1461,6 +1461,18 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 		return 0;
 	}
 
+	/* Files with inline data result in orig_group_head being NULL.
+	 * Assuming an inode size of 256 and a block size of 4k,
+	 * this is always undefragmentable, and might be inline data.
+	 */
+	if (buf->st_blocks == 1) {
+		if (mode_flag & DETAIL) {
+			PRINT_FILE_NAME(file);
+			STATISTIC_ERR_MSG("File might be using inline data");
+		}
+		return 0;
+	}
+
 	fd = open64(file, O_RDWR);
 	if (fd < 0) {
 		if (mode_flag & DETAIL) {
