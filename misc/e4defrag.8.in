@@ -57,6 +57,9 @@ is never defragmented.
 .B \-v
 Print error messages and the fragmentation count before and after defrag for
 each file.
+.TP
+.BI \-b " best_frags_count"
+Skip files with fragmentation count not greater than the given value.
 .SH NOTES
 .B e4defrag
 does not support swap file, files in lost+found directory, and files allocated
