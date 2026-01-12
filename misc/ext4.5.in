@@ -46,9 +46,7 @@ what had traditionally been known as the block allocation bitmap now
 indicates whether a cluster is in use or not, where a cluster is by
 default composed of 16 blocks.  This feature can decrease the time
 spent on doing block allocation and brings smaller fragmentation, especially
-for large files.  The size can be specified using the
-.B mke2fs \-C
-option.
+for large files.  The size can be specified using the \fBmke2fs \-C\fR option.
 .IP
 .B WARNING:
 The \fBbigalloc\fR feature is still under development, and may not be fully
@@ -152,8 +150,7 @@ entries.  This feature is supported by ext2, ext3, and ext4.
 This ext4 feature allows the per-block group metadata (allocation
 bitmaps
 and inode tables)
-to be placed anywhere on the storage media.  In addition,
-.B mke2fs
+to be placed anywhere on the storage media.  In addition, \fBmke2fs\fR(8)
 will place the per-block group metadata together starting at the first
 block group of each "flex_bg group".   The size of the flex_bg group
 can be specified using the
@@ -164,9 +161,7 @@ option.
 .br
 Create a journal to ensure file system consistency even across unclean
 shutdowns.  Setting the file system feature is equivalent to using the
-.B \-j
-option with
-.BR mke2fs " or " tune2fs.
+\fB\-j\fR option with \fBmke2fs\fR(8) or \fBtune2fs\fR(8).
 This feature is supported by ext3 and ext4, and ignored by the
 ext2 file system driver.
 .TP
@@ -271,14 +266,9 @@ file system.  The online resize operation
 is carried out by the kernel, triggered by \fBresize2fs\fR(8).  By default
 \fBmke2fs\fR(8) will attempt to reserve enough space so that the
 file system may grow to 1024 times its initial size.  This can be changed
-using the
-.B resize
-extended option.
+using the \fBresize\fR extended option.
 .IP
-This feature requires that the
-.B sparse_super
-or
-.B sparse_super2
+This feature requires that the \fBsparse_super\fR or \fBsparse_super2\fR
 feature be enabled.
 .TP
 .B sparse_super
@@ -301,31 +291,23 @@ contiguous blocks available for data files.
 .TP
 .B stable_inodes
 .br
-Marks the file system's inode numbers and UUID as stable.
-.BR resize2fs (8)
+Marks the file system's inode numbers and UUID as stable. \fBresize2fs\fR(8)
 will not allow shrinking a file system with this feature, nor
-will
-.BR tune2fs (8)
+will \fBtune2fs\fR(8)
 allow changing its UUID.  This feature allows the use of specialized encryption
 settings that make use of the inode numbers and UUID.  Note that the
-.B encrypt
-feature still needs to be enabled separately.
-.B stable_inodes
+\fBencrypt\fR feature still needs to be enabled separately. \fBstable_inodes\fR
 is a "compat" feature, so old kernels will allow it.
 .TP
 .B uninit_bg
 .br
 This ext4 file system feature indicates that the block group descriptors
-will be protected using checksums, making it safe for
-.BR mke2fs (8)
+will be protected using checksums, making it safe for \fBmke2fs\fR(8)
 to create a file system without initializing all of the block groups.
 The kernel will keep a high watermark of unused inodes, and initialize
 inode tables and blocks lazily.  This feature speeds up the time to check
-the file system using
-.BR e2fsck (8),
-and it also speeds up the time required for
-.BR mke2fs (8)
-to create the file system.
+the file system using \fBe2fsck\fR(8) and it also speeds up the time required for
+\fBmke2fs\fR(8) to create the file system.
 .TP
 .B verity
 .br
@@ -346,8 +328,7 @@ for details.
 .SH "Mount options for ext2"
 The ext2 file system is the standard Linux file system.
 Since Linux 2.5.46, for most mount options the default
-is determined by the file system superblock. Set them with
-.BR tune2fs (8).
+is determined by the file system superblock. Set them with \fBtune2fs\fR(8).
 .TP
 .BR acl " | " noacl
 Support POSIX Access Control Lists (or not).  See the \fBacl\fR(5) manual page.
@@ -401,8 +382,7 @@ changed using
 .TP
 .BR grpid " | " bsdgroups " and " nogrpid " | " sysvgroups
 These options define what group id a newly created file gets.
-When
-.B grpid
+When \fBgrpid\fR
 is set, it takes the group id of the directory in which it is created;
 otherwise (the default) it takes the fsgid of the current process, unless
 the directory has the setgid bit set, in which case it takes the gid
@@ -424,17 +404,13 @@ Use old allocator or Orlov allocator for new inodes. Orlov is default.
 .TP
 \fBresgid=\fP\,\fIn\fP and \fBresuid=\fP\,\fIn\fP
 The ext2 file system reserves a certain percentage of the available
-space (by default 5%, see
-.BR mke2fs (8)
-and
-.BR tune2fs (8)).
+space (by default 5%, see \fBmke2fs\fR(8) and \fBtune2fs\fR(8).
 These options determine who can use the reserved blocks.
 (Roughly: whoever has the specified uid, or belongs to the specified group.)
 .TP
 .BI sb= n
 Instead of using the normal superblock, use an alternative superblock
-specified by
-.IR n .
+specified by \fIn\fR.
 This option is normally used when the primary superblock has been
 corrupted.  The location of backup superblocks is dependent on the
 file system's blocksize, the number of blocks per group, and features
@@ -445,9 +421,7 @@ Additional backup superblocks can be determined by using the \fBmke2fs\fR(8)
 program using the \fB\-n\fR
 option to print out where the superblocks exist, supposing \fBmke2fs\fR(8)
 is supplied with arguments that are consistent with the file system's layout
-(e.g., blocksize, blocks per group,
-.BR sparse_super ,
-etc.).
+(e.g., blocksize, blocks per group, \fBsparse_super\fR, etc.).
 .IP
 The block number here uses 1\ k units. Thus, if you want to use logical
 block 32768 on a file system with 4\ k blocks, use "sb=131072".
@@ -516,14 +490,11 @@ performance penalty.  If your disks are battery-backed in one way or another,
 disabling barriers may safely improve performance.
 .TP
 .BI commit= nrsec
-Start a journal commit every
-.I nrsec
+Start a journal commit every \fInrsec\fR
 seconds.  The default value is 5 seconds.  Zero means default.
 .TP
 .B user_xattr
-Enable Extended User Attributes. See the
-.BR attr (5)
-manual page.
+Enable Extended User Attributes. See the \fBattr\fR(5) manual page.
 .TP
 .BR jqfmt= { vfsold | vfsv0 | vfsv1 }
 Apart from the old quota system (as in ext2, \fBjqfmt=vfsold\fR aka version 1 quota)
@@ -603,7 +574,7 @@ The value must be a power of 2. The default value is 32 blocks.
 .TP
 .BI stripe= n
 Number of file system blocks that mballoc will try to use for allocation size
-and alignment. For RAID5/6 systems this should be the number of data disks *
+and alignment.  For RAID5/6 systems this should be the number of data disks *
 RAID chunk size in file system blocks.
 .TP
 .B delalloc
@@ -615,7 +586,7 @@ to page cache.
 .TP
 .BI max_batch_time= max_usec
 Maximum amount of time ext4 should wait for additional file system operations to
-be batch together with a synchronous write operation. Since a synchronous
+be batch together with a synchronous write operation.  Since a synchronous
 write operation is going to force a commit and then a wait for the I/O
 complete, it doesn't cost much, and can be a huge throughput win, we wait for a
 small amount of time to see if any other transactions can piggyback on the
@@ -623,7 +594,7 @@ synchronous write.
 .sp
 The algorithm used is designed to automatically tune for
 the speed of the disk, by measuring the amount of time (on average) that it
-takes to finish committing a transaction. Call this time the "commit time".
+takes to finish committing a transaction.  Call this time the "commit time".
 If the time that the transaction has been running is less than the commit time,
 ext4 will try sleeping for the commit time to see if other operations will join
 the transaction. The commit time is capped at \fImax_usec\fR, which
@@ -750,8 +721,7 @@ Finally, the ext4 file system also supports the following flag:
 .BR e " \- extents format"
 .P
 For descriptions of these attribute flags, please refer to the
-.BR chattr (1)
-man page.
+\fBchattr\fR(1) man page.
 .SH KERNEL SUPPORT
 This section lists the file system driver (e.g., ext2, ext3, ext4) and
 upstream kernel version where a particular file system feature was
