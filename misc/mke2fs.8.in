@@ -22,8 +22,7 @@ mke2fs \- create an ext2/ext3/ext4 file system
 .I cluster-size
 ]
 [
-.B \-d
-.I root-directory|tarball
+.B \-d\fR \fIroot-directory\fR|\fItarball\fR|\fI-\fR
 ]
 [
 .B \-D
@@ -203,48 +202,41 @@ manual page for more details.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"
-Specify the size of blocks in bytes.  Valid block-size values are powers of two
-from 1024 up to 65536 (however note that the kernel is able to mount only
-file systems with block-size smaller or equal to the system page size - 4k on
-x86 systems, up to 64k on ppc64 or aarch64 depending on kernel configuration).
-If omitted, block-size is heuristically determined by the file system size and
-the expected usage of the file system (see the
-.B \-T
-option).  In most common cases, the default block size is 4k. If
-.I block-size
-is preceded by a negative sign ('-'), then
-.B mke2fs
-will use heuristics to determine the
-appropriate block size, with the constraint that the block size will be
-at least
-.I block-size
-bytes.  This is useful for certain hardware devices which require that
-the blocksize be a multiple of 2k.
+Specify the size of blocks in bytes.  Valid \fIblock-size\fR values are powers
+of two from 1024 up to 65536 (however note that the kernel is able to mount only
+file systems with \fIblock-size\fR smaller or equal to the system page size - 4k
+on x86 systems, up to 64k on ppc64 or aarch64 depending on kernel configuration).
+If omitted, \fIblock-size\fR is heuristically determined by the file system size
+and the expected usage of the file system (see the \fB\-T\fR option).  In most
+common cases, the default block size is 4k. If \fIblock-size\fR is preceded by a
+negative sign ('-'), then \fBmke2fs\fR will use heuristics to determine the
+appropriate block size, with the constraint that the block size will be at least
+\fIblock-size\fR bytes.  This is useful for certain hardware devices which require
+that the blocksize be a multiple of 2k.
 .TP
 .B \-c
 Check the device for bad blocks before creating the file system.  If
 this option is specified twice, then a slower read-write
 test is used instead of a fast read-only test.
 .TP
-.B \-C " cluster-size"
-Specify the size of cluster in bytes for file systems using the bigalloc
-feature.  Valid cluster-size values range from 2 to 32768 times the
-filesystem blocksize and must be a power of 2.  The cluster-size can
-only be specified if the bigalloc feature is enabled.  (See the
-.B ext4 (5)
-man page for more details about bigalloc.)   The default cluster size if
-bigalloc is enabled is 16 times the block size.
+.BI \-C " cluster-size"
+Specify the size of clusters in bytes for file systems using the \fBbigalloc\fR
+feature.  Valid \fIcluster-size\fR values range from 2 to 32768 times the
+filesystem block size and must be a power of 2.  The \fIcluster-size\fR can
+only be specified if the \fBbigalloc\fR feature is enabled.  (See the
+\fBext4\fR(5) man page for more details about \fBbigalloc\fR.)  The
+default cluster size if \fBbigalloc\fR is enabled is 16 times the block size.
 .TP
-.BI \-d " root-directory|tarball"
+.B \-d\fR \fIroot-directory\fR|\fItarball\fR|\fI-\fR
 Copy the contents of the given directory or tarball into the root directory of the
-file system. Tarball input is only available if mke2fs was compiled with
+file system. Tarball input is only available if \fBmke2fs\fR was compiled with
 libarchive support enabled and if the libarchive shared library is available
-at run-time. The special value "-" will read a tarball from standard input.
+at run-time. The special value "\fB-\fR" will read a tarball from standard input.
 .TP
 .B \-D
-Use direct I/O when writing to the disk.  This avoids mke2fs dirtying a
+Use direct I/O when writing to the disk.  This avoids \fBmke2fs\fR dirtying a
 lot of buffer cache memory, which may impact other applications running
-on a busy server.  This option will cause mke2fs to run much more
+on a busy server.  This option will cause \fBmke2fs\fR to run much more
 slowly, however, so there is a tradeoff to using direct I/O.
 .TP
 .BI \-e " error-behavior"
@@ -282,9 +274,8 @@ option is still accepted for backwards compatibility, but is deprecated.
 The following extended options are supported:
 .RS 1.2i
 .TP
-.B assume_storage_prezeroed\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
-If enabled,
-.BR mke2fs
+.BR assume_storage_prezeroed [ = < 0 " to disable | " 1 " to enable>]
+If enabled, \fBmke2fs\fR
 assumes that the storage device has been prezeroed, skips zeroing the journal
 and inode tables, and annotates the block group flags to signal that the inode
 table has been zeroed.
@@ -298,15 +289,9 @@ zeroed. This significantly speeds up file system initialization. This is set
 as default.
 .TP
 .BI encoding= encoding-name
-Enable the
-.I casefold
-feature in the super block and set
-.I encoding-name
-as the encoding to be used.  If
-.I encoding-name
-is not specified, the encoding defined in
-.BR mke2fs.conf (5)
-is used.
+Enable the \fBcasefold\fR feature in the super block and set \fIencoding-name\fR
+as the encoding to be used.  If \fIencoding-name\fR is not specified, the
+encoding defined in \fBmke2fs.conf\fR(5) is used.
 .TP
 .BI encoding_flags= encoding-flags
 Define parameters for file name character encoding operations.  If a
@@ -326,19 +311,16 @@ flag is disabled.
 Use the specified UUID as the seed for hashing, rather than generating a
 random seed each time. Intended for use with reproducible builds.
 .TP
-.B lazy_itable_init\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
-If enabled and the uninit_bg feature is enabled, the inode table will
-not be fully initialized by
-.BR mke2fs .
-This speeds up file system
+.BR lazy_itable_init [ = < 0 " to disable | " 1 " to enable>]
+If enabled and the \fBuninit_bg\fR feature is enabled, the inode table will
+not be fully initialized by \fBmke2fs\fR. This speeds up file system
 initialization noticeably, but it requires the kernel to finish
 initializing the file system in the background when the file system is
 first mounted.  If the option value is omitted, it defaults to 1 to
 enable lazy inode table zeroing.
 .TP
-.B lazy_journal_init\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
-If enabled, the journal inode will not be fully zeroed out by
-.BR mke2fs .
+.BR lazy_journal_init [ = < 0 " to disable | " 1 " to enable>]
+If enabled, the journal inode will not be fully zeroed out by \fBmke2fs\fR.
 This speeds up file system initialization noticeably, but carries some
 small risk if the system crashes before the journal has been overwritten
 entirely one time.  If the option value is omitted, it defaults to 1 to
@@ -365,9 +347,8 @@ hierarchy specified via the (optional)
 option.  This will disable the copy and leaves the files in the newly
 created file system without any extended attributes.
 .TP
-.BI num_backup_sb= <0|1|2>
-If the
-.B sparse_super2
+.BR num_backup_sb= < 0 | 1 | 2 >
+If the \fBsparse_super2\fR
 file system feature is enabled this option controls whether there will
 be 0, 1, or 2 backup superblocks created in the file system.
 .TP
@@ -378,11 +359,11 @@ file.  This can be useful when creating disk images for virtual machines.
 .BI orphan_file_size= size
 Set size of the file for tracking unlinked but still open inodes and inodes
 with truncate in progress. Larger file allows for better scalability, reserving
-a few blocks per cpu is ideal.
+a few blocks per CPU is ideal.
 .TP
-.B packed_meta_blocks\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
+.BR packed_meta_blocks [ = < 0 " to disable | " 1 " to enable>]
 Place the allocation bitmaps and the inode table at the beginning of the
-disk.  This option requires that the flex_bg file system feature to be
+disk.  This option requires that the \fBflex_bg\fR file system feature to be
 enabled in order for it to have effect, and will also create the journal
 at the beginning of the file system.  This option is useful for flash
 devices that use SLC flash at the beginning of the disk.
@@ -390,15 +371,14 @@ It also maximizes the range of contiguous data blocks, which
 can be useful for certain specialized use cases, such as supported
 Shingled Drives.
 .TP
-.B quotatype
-Specify the which  quota types (usrquota, grpquota, prjquota) which
-should be enabled in the created file system.  The argument of this
+.B quotatype=\fIquota-type\fR[:...]
+Specify the which quota types (\fIusrquota\fR, \fIgrpquota\fR, \fIprjquota\fR)
+which should be enabled in the created file system.  The argument of this
 extended option should be a colon separated list.  This option has
-effect only if the
-.B quota
-feature is set.   The default quota types to be initialized if this
-option is not specified is both user and group quotas.  If the project
-feature is enabled that project quotas will be initialized as well.
+effect only if the \fBquota\fR
+feature is set.  The default quota types to be initialized if this
+option is not specified is both user and group quotas.  If the \fBproject\fR
+feature is enabled then the project quotas will be initialized as well.
 .TP
 .BI resize= max-online-resize
 Reserve enough space so that the block group descriptor table can grow
@@ -413,7 +393,7 @@ provide compatibility with pre-1.2 Linux kernels (dating from before
 very early, historical Linux systems.  The current default (supported
 by all modern Linux systems) is revision 1.
 .TP
-.BI root_owner [=uid:gid]
+.B root_owner\fR[\fB=\fIuid:gid\fR]
 Specify the numeric user and group ID of the root directory.  If no UID:GID
 is specified, use the user and group ID of the user running \fBmke2fs\fR.
 In \fBmke2fs\fR 1.42 and earlier the UID and GID of the root directory were
@@ -422,7 +402,7 @@ The \fBroot_owner=\fR option allows explicitly specifying these values,
 and avoid side-effects for users that do not expect the contents of the
 file system to change based on the user running \fBmke2fs\fR.
 .TP
-.BI root_perms [=permissions]
+.B root_perms\fR[\fB=\fIpermissions\fR]
 Specify the root directory permissions in octal format. If no permissions
 are specified then the root directory permissions would be set in accordance with
 the default filesystem umask.
@@ -442,9 +422,8 @@ Configure the file system for a RAID array with
 .I stride-size
 file system blocks. This is the number of blocks read or written to disk
 before moving to the next disk, which is sometimes referred to as the
-.I chunk size.
-This mostly affects placement of file system metadata like bitmaps at
-.B mke2fs
+.IR "chunk size" .
+This mostly affects placement of file system metadata like bitmaps at \fBmke2fs\fR
 time to avoid placing them on a single disk, which can hurt performance.
 It may also be used by the block allocator.
 .TP
@@ -477,13 +456,9 @@ specified twice.
 Specify the number of blocks in a block group.  There is generally no
 reason for the user to ever set this parameter, as the default is optimal
 for the file system.  (For administrators who are creating
-file systems on RAID arrays, it is preferable to use the
-.I stride
-RAID parameter as part of the
-.B \-E
-option rather than manipulating the number of blocks per group.)
-This option is generally used by developers who
-are developing test cases.
+file systems on RAID arrays, it is preferable to use the \fB \-E stride=\fR
+extended option rather than manipulating the number of blocks per group.)
+This option is generally used by developers who are developing test cases.
 .IP
 If the bigalloc feature is enabled, the
 .B \-g
@@ -506,7 +481,7 @@ creates an inode for every
 bytes of space on the disk.  The larger the
 .I bytes-per-inode
 ratio, the fewer inodes will be created.  This value generally shouldn't
-be smaller than the blocksize of the file system, since in that case more
+be smaller than the \fIblock-size\fR of the file system, since in that case more
 inodes would be made than can ever be used.  Be warned that it is not
 possible to change this ratio on a file system after it is created, so be
 careful deciding the correct value for this parameter.  Note that resizing
@@ -637,11 +612,8 @@ As a result, the
 option to
 .B mke2fs
 is a much simpler and less error-prone method of checking a disk for bad
-blocks before formatting it, as
-.B mke2fs
-will automatically pass the correct parameters to the
-.B badblocks
-program.
+blocks before formatting it, as \fBmke2fs\fR
+will automatically pass the correct parameters to the \fBbadblocks\fR(8) program.
 .TP
 .BI \-L " new-volume-label"
 Set the volume label for the file system to
@@ -728,7 +700,7 @@ The file system feature set is comprised of a list of features, separated
 by commas, that are to be enabled.  To disable a feature, simply
 prefix the feature name with a caret ('^') character.
 Features with dependencies will not be removed successfully.
-The pseudo-file system feature "none" will clear all file system features.
+The pseudo-file system feature "\fBnone\fR" will clear all file system features.
 .sp
 For more information about the features which can be set, please see
 the manual page
@@ -746,14 +718,13 @@ the superblock and backup superblocks are corrupted, and a last-ditch
 recovery method is desired by experienced users.  It causes
 .B mke2fs
 to reinitialize the superblock and group descriptors, while not
-touching the inode table and the block and inode bitmaps.  The
-.B e2fsck
+touching the inode table and the block and inode bitmaps.  The \fBe2fsck\fR(8)
 program should be run immediately after this option is used, and there
-is no guarantee that any data will be salvageable.  Due to the wide
-variety of possible options to
-.B mke2fs
-that affect the on-disk layout, it is critical to specify exactly
-the same format options, such as blocksize, fs-type, feature flags, and
+is no guarantee that any data will be salvageable.
+.sp
+Due to the wide variety of possible options to \fBmke2fs\fR that affect the
+on-disk layout, it is critical to specify exactly the same format options, such
+as \fIblock-size\fR, \fIfs-type\fR, feature flags, and
 other tunables when using this option, or the file system will be further
 corrupted.  In some cases, such as file systems that have been resized,
 or have had features enabled after format time, it is impossible to
@@ -768,17 +739,12 @@ file system so other options can be tried if this doesn't work.
 .BI \-t " fs-type"
 Specify the file system type (i.e., ext2, ext3, ext4, etc.) that is
 to be created.
-If this option is not specified,
-.B mke2fs
-will pick a default either via how
-the command was run (for example, using a name of the form mkfs.ext2,
-mkfs.ext3, etc.) or via a default as defined by the
-.B /etc/mke2fs.conf
+If this option is not specified, \fBmke2fs\fR will pick a default either via how
+the command was run (for example, using a name of the form \fBmkfs.ext2\fR,
+\fBmkfs.ext3\fR, etc.) or via a default as defined by the \fB/etc/mke2fs.conf\fR
 file.   This option controls which file system options are used by
-default, based on the
-.B fstypes
-configuration stanza in
-.BR /etc/mke2fs.conf .
+default, based on the \fI[fs_types]\fR configuration stanza in
+\fB/etc/mke2fs.conf\fR.
 .sp
 If the
 .B \-O
@@ -797,9 +763,8 @@ Specify how the file system is going to be used, so that
 .B mke2fs
 can choose optimal file system parameters for that use.  The usage
 types that are supported are defined in the configuration file
-.BR /etc/mke2fs.conf .
-The user may specify one or more usage types
-using a comma separated list.
+\fB/etc/mke2fs.conf\fR(5).
+The user may specify one or more usage types using a comma separated list.
 .sp
 If this option is is not specified,
 .B mke2fs
@@ -809,23 +774,12 @@ be created.  If the file system size is less than 3 megabytes,
 will use the file system type
 .IR floppy .
 If the file system size is greater than or equal to 3 but less than
-512 megabytes,
-.BR mke2fs (8)
-will use the file system type
-.IR small .
+512 megabytes, \fBmke2fs\fR will use the file system type \fIsmall\fR.
 If the file system size is greater than or equal to 4 terabytes but less than
-16 terabytes,
-.BR mke2fs (8)
-will use the file system type
-.IR big .
+16 terabytes, \fBmke2fs\fR will use the file system type \fIbig\fR.
 If the file system size is greater than or equal to 16 terabytes,
-.BR mke2fs (8)
-will use the file system type
-.IR huge .
-Otherwise,
-.BR mke2fs (8)
-will use the default file system type
-.IR default .
+\fBmke2fs\fR will use the file system type \fIhuge\fR.
+Otherwise, \fBmke2fs\fR will use the default file system type \fIdefault\fR.
 .TP
 .BI \-U " UUID"
 Set the universally unique identifier (UUID) of the file system to
@@ -838,13 +792,13 @@ The
 parameter may also be one of the following:
 .RS 1.2i
 .TP
-.I clear
+.B clear
 clear the file system UUID
 .TP
-.I random
+.B random
 generate a new randomly-generated UUID
 .TP
-.I time
+.B time
 generate a new time-based UUID
 .RE
 .TP
@@ -858,14 +812,15 @@ and exit.
 .TP
 .BI \-z " undo_file"
 Before overwriting a file system block, write the old contents of the block to
-an undo file.  This undo file can be used with e2undo(8) to restore the old
+an undo file.  This undo file can be used with \fBe2undo\fR(8) to restore the old
 contents of the file system should something go wrong.  If the empty string is
 passed as the undo_file argument, the undo file will be written to a file named
 mke2fs-\fIdevice\fR.e2undo in the directory specified via the
-\fIE2FSPROGS_UNDO_DIR\fR environment variable or the \fIundo_dir\fR directive
+\fBE2FSPROGS_UNDO_DIR\fR environment variable or the \fIundo_dir\fR directive
 in the configuration file.
-
-WARNING: The undo file cannot be used to recover from a power or system crash.
+.sp
+.B WARNING:
+The undo file cannot be used to recover from a power or system crash.
 .SH ENVIRONMENT
 .TP
 .B MKE2FS_SYNC

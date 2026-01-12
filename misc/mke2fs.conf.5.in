@@ -70,25 +70,20 @@ file.  They will be described in more detail in future sections of this
 document.
 .TP
 .I [options]
-Contains relations which influence how mke2fs behaves.
+Contains relations which influence how \fBmke2fs\fR(8) behaves.
 .TP
 .I [defaults]
 Contains relations which define the default parameters
 used by
 .BR mke2fs (8).
 In general, these defaults may be overridden by a definition in the
-.B fs_types
-stanza, or by a command-line option provided by the user.
+\fI[fs_types]\fR stanza, or by a command-line option provided by the user.
 .TP
 .I [fs_types]
 Contains relations which define defaults that should be used for specific
 file system and usage types.  The file system type and usage type can be
-specified explicitly using
-the
-.BR \-t and \-T
-options to
-.BR mke2fs (8),
-respectively.
+specified explicitly using the \fB\-t\fR and \fB\-T\fR options to
+\fBmke2fs\fR(8), respectively.
 .TP
 .I [devices]
 Contains relations which define defaults for specific devices.
@@ -98,17 +93,15 @@ The following relations are defined in the
 stanza.
 .TP
 .I proceed_delay
-If this relation is set to a positive integer, then mke2fs will
-wait
-.I proceed_delay
-seconds after asking the user for permission to proceed and
+If this relation is set to a positive integer, then \fBmke2fs\fR(8) will wait
+.\fIproceed_delay\fR seconds after asking the user for permission to proceed and
 then continue, even if the
 user has not answered the question.  Defaults to 0, which means to wait
 until the user answers the question one way or another.
 .TP
 .I sync_kludge
 If this relation is set to a positive integer, then while writing the
-inode table, mke2fs will request the operating system flush out pending
+inode table, \fBmke2fs\fR(8) will request the operating system flush out pending
 writes to initialize the inode table every
 .I sync_kludge
 block groups.   This is needed to work around buggy kernels that don't
@@ -121,35 +114,23 @@ stanza.
 .I creator_os
 This relation specifies the "creator operating system" for the
 file system unless it is overridden on the command line.
-The default value is the OS for which the
-.B mke2fs
-executable was compiled.
+The default value is the OS for which the \fBmke2fs\fR(8) executable was compiled.
 .TP
 .I fs_type
 This relation specifies the default file system type if the user does not
-specify it via the
-.B \-t
-option, or if
-.B mke2fs
-is not started using a program name of the form
-.BI mkfs. fs-type\fR.
-If both the user and the
-.B mke2fs.conf
-file do not specify a default file system type, mke2fs will use a
-default file system type of
-.I ext3
-if a journal was requested via a command-line option, or
-.I ext2
-if not.
+specify it via the \fB\-t\fR option, or if \fBmke2fs\fR(8)
+is not started using a program name of the form \fBmkfs.\fIfs-type\fR.
+If both the user and the \fImke2fs.conf\fR
+file do not specify a default file system type, \fBmke2fs\fR will use a
+default file system type of \fIext3\fR
+if a journal was requested via a command-line option, or \fIext2\fR if not.
 .TP
 .I undo_dir
 This relation specifies the directory where the undo file should be
 stored.  It can be overridden via the
 .B E2FSPROGS_UNDO_DIR
 environment variable.  If the directory location is set to the value
-.IR none ,
-.B mke2fs
-will not create an undo file.
+\fInone\fR, \fBmke2fs\fR(8) will not create an undo file.
 .PP
 In addition, any tags that can be specified in a per-file system tags
 subsection as defined below (e.g.,
@@ -174,20 +155,14 @@ options to
 .BR mke2fs (8),
 respectively.
 .P
-The
-.B mke2fs
+The \fBmke2fs\fR(8)
 program constructs a list of fs_types by concatenating the file system
 type (i.e., ext2, ext3, etc.) with the usage type list.  For most
-configuration options,
-.B mke2fs
-will look for a subsection in the
-.I [fs_types]
+configuration options, \fBmke2fs\fR(8) will look for a subsection in the
+\fI[fs_types]\fR
 stanza corresponding with each entry in the constructed list, with later
 entries overriding earlier file system or usage types.
-For
-example, consider the following
-.B mke2fs.conf
-fragment:
+For example, consider the following \fImke2fs.conf\fR fragment:
 .P
 [defaults]
 .br
@@ -239,30 +214,35 @@ If mke2fs started with a program name of
 .BR mke2fs.ext4 ,
 then the file system type of ext4 will be used.  If the file system is
 smaller than 3 megabytes, and no usage type is specified, then
-.B mke2fs
-will use a default
-usage type of
-.IR floppy .
-This results in an fs_types list of "ext4, floppy".   Both the ext4
-subsection and the floppy subsection define an
-.I inode_size
-relation, but since the later entries in the fs_types list supersede
-earlier ones, the configuration parameter for fs_types.floppy.inode_size
+\fBmke2fs\fR will use a default usage type of \fIfloppy\fR.
+This results in an fs_types list of "ext4, floppy".  Both the ext4
+subsection and the floppy subsection define an \fIinode_size\fR
+relation, but since the later entries in the \fI[fs_types]\fR list supersede
+earlier ones, the configuration parameter for \fIfs_types.floppy.inode_size\fR
 will be used, so the file system  will have an inode size of 128.
 .P
 The exception to this resolution is the
 .I features
 tag, which specifies a set of changes to the features used by the
 file system, and which is cumulative.  So in the above example, first
-the configuration relation defaults.base_features would enable an
-initial feature set with the sparse_super, filetype, resize_inode, and
-dir_index features enabled.  Then configuration relation
-fs_types.ext4.features would enable the extents and flex_bg
+the configuration relation \fIdefaults.base_features\fR would enable an
+initial feature set with the
+.BR sparse_super ,
+.BR filetype ,
+.BR resize_inode ", and"
+.B dir_index
+features enabled.  Then configuration relation
+\fIfs_types.ext4.features\fR would enable the \fBextents\fR and \fBflex_bg\fR
 features, and finally the configuration relation
-fs_types.floppy.features would remove
-the resize_inode feature, resulting in a file system feature set
-consisting of the sparse_super, filetype, dir_index,
-extents_and flex_bg features.
+\fIfs_types.floppy.features\fR would remove
+the \fBresize_inode\fR feature, resulting in a file system feature set
+consisting of the
+.BR sparse_super ,
+.BR filetype ,
+.BR dir_index ,
+.BR extents " and"
+.B flex_bg
+features.
 .P
 For each file system type, the following tags may be used in that
 fs_type's subsection.   These tags may also be used in the
@@ -317,10 +297,9 @@ used by the newly constructed file system.  The syntax is the same as the
 command-line option to
 .BR mke2fs (8);
 that is, a feature can be prefixed by a caret ('^') symbol to disable
-a named feature.  Each
-.I feature
-relation specified in the fs_types list will be applied in the order
-found in the fs_types list.
+a named feature.  Each \fIfeatures\fR
+relation specified in the \fI[fs_types]\fR list will be applied in the order
+found in the \fI[fs_types]\fR list.
 .TP
 .I force_undo
 This boolean relation, if set to a value of true, forces
@@ -341,10 +320,9 @@ command-line option to
 .BR mke2fs (8).
 .TP
 .I auto_64-bit_support
-This relation is a boolean which specifies whether
-.BR mke2fs (8)
-should automatically add the 64bit feature if the number of blocks for
-the file system requires this feature to be enabled.  The resize_inode
+This relation is a boolean which specifies whether \fBmke2fs\fR(8)
+should automatically add the \fB64bit\fR feature if the number of blocks for
+the file system requires this feature to be enabled.  \fBThe resize_inode\fR
 feature is also automatically disabled since it doesn't support 64-bit
 block numbers.
 .TP
@@ -356,16 +334,14 @@ command-line option to
 .BR tune2fs (8).
 .TP
 .I blocksize
-This relation specifies the default blocksize if the user does not
-specify a blocksize on the command line.
+This relation specifies the default block size if the user does not
+specify a block size on the command line.
 .TP
 .I lazy_itable_init
 This boolean relation specifies whether the inode table should
 be lazily initialized.  It only has meaning if the uninit_bg feature is
-enabled.  If lazy_itable_init is true and the uninit_bg feature is
-enabled,  the inode table will
-not be fully initialized by
-.BR mke2fs (8).
+enabled.  If \fIlazy_itable_init\fR is true and the \fBuninit_bg\fR feature is
+enabled,  the inode table will not be fully initialized by \fBmke2fs\fR(8).
 This speeds up file system
 initialization noticeably, but it requires the kernel to finish
 initializing the file system in the background when the file system is
@@ -373,10 +349,9 @@ first mounted.
 .TP
 .I lazy_journal_init
 This boolean relation specifies whether the journal inode should be
-lazily initialized. It only has meaning if the has_journal feature is
-enabled. If lazy_journal_init is true, the journal inode will not be
-fully zeroed out by
-.BR mke2fs .
+lazily initialized.  It only has meaning if the \fBhas_journal\fR feature is
+enabled. If \fIlazy_journal_init\fR is true, the journal inode will not be
+fully zeroed out by \fBmke2fs\fR.
 This speeds up file system initialization noticeably, but carries some
 small risk if the system crashes before the journal has been overwritten
 entirely one time.
@@ -420,7 +395,7 @@ This relation specifies the number of block groups that will be packed
 together to create one large virtual block group on an ext4 file system.
 This improves meta-data locality and performance on meta-data heavy
 workloads.  The number of groups must be a power of 2 and may only be
-specified if the flex_bg file system feature is enabled.
+specified if the \fBflex_bg\fR file system feature is enabled.
 .TP
 .I options
 This relation specifies additional extended options which should be
@@ -457,7 +432,7 @@ The default value is
 .IR disk .
 .TP
 .I cluster_size
-This relation specifies the default cluster size if the bigalloc file
+This relation specifies the default cluster size if the \fBbigalloc\fR file
 system feature is enabled.  It can be overridden via the
 .B \-C
 command line option to
@@ -519,7 +494,7 @@ requirement will be imposed on the huge files.
 .I hugefiles_align_disk
 This relations specifies whether the alignment should be relative to the
 beginning of the hard drive (assuming that the starting offset of the
-partition is available to mke2fs).  The default value is false, which
+partition is available to \fBmke2fs\fR(8)).  The default value is false, which
 will cause hugefile alignment to be relative to the beginning of the
 file system.
 .TP
@@ -531,7 +506,7 @@ This relation specifies the (zero-padded) width of the field for the
 huge file number.
 .TP
 .I warn_y2038_dates
-This boolean relation specifies whether mke2fs will issue a warning
+This boolean relation specifies whether \fBmke2fs\fR(8) will issue a warning
 when creating a file system with 128 byte inodes (and so therefore will
 not support dates after January 19th, 2038).  The default value is true,
 except for file systems created for the GNU Hurd since it only supports
