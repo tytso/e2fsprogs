@@ -1783,7 +1783,7 @@ void do_mknod(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		return;
 	if (argc < 3 || argv[2][1]) {
 	usage:
-		com_err(argv[0], 0, "Usage: mknod <name> [p| [c|b] <major> <minor>]");
+		com_err(argv[0], 0, "Usage: mknod <name> [p|s| [c|b] <major> <minor>]");
 		return;
 	}
 
@@ -1791,6 +1791,10 @@ void do_mknod(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 	switch (argv[2][0]) {
 		case 'p':
 			st.st_mode = S_IFIFO;
+			nr = 3;
+			break;
+		case 's':
+			st.st_mode = S_IFSOCK;
 			nr = 3;
 			break;
 		case 'c':
