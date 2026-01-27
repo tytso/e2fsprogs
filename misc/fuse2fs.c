@@ -2775,6 +2775,13 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 	file->check_flags = check;
 	fp->fh = (uintptr_t)file;
 
+	/* fuse 2.4: do not purge pagecache on open */
+	fp->keep_cache = 1;
+#ifdef HAVE_FUSE_CACHE_READDIR
+	/* fuse 3.5: cache dirents from readdir contents */
+	fp->cache_readdir = 1;
+#endif
+
 out:
 	if (ret)
 		ext2fs_free_mem(&file);
