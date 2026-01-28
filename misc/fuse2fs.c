@@ -4945,6 +4945,17 @@ int main(int argc, char *argv[])
 	if (ext2fs_has_feature_shared_blocks(global_fs->super))
 		fctx.ro = 1;
 
+	/*
+	 * libext2fs' extent tree modification code has severe problems with
+	 * implied cluster deallocation, so we must force ro mode.
+	 */
+	if (ext2fs_has_feature_bigalloc(global_fs->super) &&
+	    EXT2FS_CLUSTER_RATIO(global_fs) > 1) {
+		log_printf(&fctx, "%s\n",
+ _("Mounting read-only because writes with large cluster sizes is not supported."));
+		fctx.ro = 1;
+	}
+
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (fctx.norecovery) {
 			log_printf(&fctx, "%s\n",
