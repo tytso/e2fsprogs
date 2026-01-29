@@ -35,7 +35,7 @@ tune2fs \- adjust tunable file system parameters on ext2/ext3/ext4 file systems
 .BI \-m " reserved-blocks-percentage"
 ]
 [
-.B \-o\fR [^]\fImount-options\fR[,...]
+.B \-o\fR [\fB^\fR]\fImount-options\fR[,...]
 ]
 [
 .BI \-r " reserved-blocks-count"
@@ -59,8 +59,7 @@ tune2fs \- adjust tunable file system parameters on ext2/ext3/ext4 file systems
 .BI \-M " last-mounted-directory"
 ]
 [
-.B \-O
-.RI [^] feature [,...]
+.B \-O\fR [\fB^\fR]\fIfeature\fR[,...]
 ]
 [
 .BI \-Q " quota-options"
@@ -145,8 +144,8 @@ fscked, or major file system corruption can result.  Needs \fB\-f\fR.
 .BI encoding= encoding-name
 Enable the \fBcasefold\fR feature in the super block and set
 \fIencoding-name\fR as the encoding to be used.  If \fIencoding-name\fR
-is not specified, "utf8" is used. The encoding cannot be altered if \fBcasefold\fR
-was previously enabled.
+is not specified, "utf8" is used.  The encoding cannot be altered if
+\fBcasefold\fR was previously enabled.
 .TP
 .BI encoding_flags= encoding-flags
 Define parameters for file name character encoding operations.  If a
@@ -193,20 +192,20 @@ and not at all by the ext2 and ext3 file system drivers.
 .TP
 .BI orphan_file_size= size
 Set size of the file for tracking unlinked but still open inodes and inodes
-with truncate in progress. Larger file allows for better scalability, reserving
-a few blocks per CPU is ideal.
+with truncate in progress.  Larger file allows for better scalability,
+reserving a few blocks per CPU is ideal.
 .TP
 .BI stride= stride-size
 Configure the file system for a RAID array with \fIstride-size\fR
-file system blocks. This is the number of blocks read or written to disk
-before moving to next disk. This mostly affects placement of file system
+file system blocks.  This is the number of blocks read or written to disk
+before moving to next disk.  This mostly affects placement of file system
 metadata like bitmaps at \fBmke2fs\fR(8)
 time to avoid placing them on a single disk, which can hurt the performance.
 It may also be used by block allocator.
 .TP
 .BI stripe_width= stripe-width
 Configure the file system for a RAID array with \fIstripe-width\fR
-file system blocks per stripe. This is typically be stride-size * N, where
+file system blocks per stripe.  This is typically be stride-size * N, where
 N is the number of data disks in the RAID (e.g. RAID 5 N+1, RAID 6 N+2).
 This allows the block allocator to prevent read-modify-write of the
 parity in a RAID stripe if possible when the data is written.
@@ -226,7 +225,7 @@ option is useful when removing the \fBhas_journal\fR
 file system feature from a file system which has
 an external journal (or is corrupted
 such that it appears to have an external journal), but that
-external journal is not available.   If the file system appears to require
+external journal is not available.  If the file system appears to require
 journal replay, the \fB\-f\fR flag must be specified twice to proceed.
 .sp
 .B Warning:
@@ -249,7 +248,7 @@ There are pros and cons to disabling these periodic checks; see the
 discussion under the \fB\-c\fR (mount-count-dependent check) option for details.
 .TP
 .B \-I
-Change the inode size used by the file system.   This requires rewriting
+Change the inode size used by the file system.  This requires rewriting
 the inode table, so it requires that the file system is checked for
 consistency first using \fBe2fsck\fR(8).
 This operation can also take a while and the file system can be
@@ -291,7 +290,7 @@ avoid requiring the use of a rescue floppy to add an ext3 journal to
 the root file system.
 .TP
 .BR \-J " journal-options"
-Override the default ext3 journal parameters. Journal options are comma
+Override the default ext3 journal parameters.  Journal options are comma
 separated, and may take an argument using the equals ('=')  sign.
 The following journal options are supported:
 .RS 1.2i
@@ -324,9 +323,9 @@ Create an additional fast commit journal area of size \fIfast-commit-size\fR
 kilobytes.  This option is only valid if \fBfast_commit\fR feature is enabled
 on the file system.  If this option is not specified and if \fBfast_commit\fR
 feature is turned on, fast commit area size defaults to \fIjournal-size\fR
-/ 64 megabytes. The total size of the journal with \fBfast_commit\fR
+/ 64 megabytes.  The total size of the journal with \fBfast_commit\fR
 feature set is \fIjournal-size\fR + ( \fIfast-commit-size\fR * 1024 )
-megabytes. The total journal size may be no more than
+megabytes.  The total journal size may be no more than
 10,240,000 file system blocks or half the total file system size
 (whichever is smaller).
 .TP
@@ -377,7 +376,7 @@ of reserved blocks is 5%.
 .BI \-M " last-mounted-directory"
 Set the last-mounted directory for the file system.
 .TP
-.BR \-o " [^]\fImount-option\fR[,...]"
+.B \-o "\fR[\fB^\fR]\fImount-option\fR[,...]"
 Set or clear the indicated default mount options in the file system.
 Default mount options can be overridden by mount options specified
 either in \fB/etc/fstab\fR(5) or on the command line arguments to \fBmount\fR(8).
@@ -461,7 +460,7 @@ will disable the delayed allocation feature.  (This option is currently
 only supported by the ext4 file system driver in 2.6.35+ kernels.)
 .RE
 .TP
-.BR \-O " [^]\fIfeature\fR[,...]"
+.B \-O "\fR[\fB^\fR]\fIfeature\fR[,...]"
 Set or clear the indicated file system features (options) in the file system.
 More than one file system feature can be cleared or set by separating
 features with commas.  File System features prefixed with a
@@ -606,7 +605,7 @@ Set the number of reserved file system blocks.
 .TP
 .BI \-Q " quota-options"
 Sets the \fBquota\fR feature on the superblock and works on the quota files for the
-given quota type. Quota options could be one or more of the following:
+given quota type.  Quota options could be one or more of the following:
 .RS 1.2i
 .TP
 .RB [ ^ ] usrquota

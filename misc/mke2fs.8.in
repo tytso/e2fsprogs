@@ -160,7 +160,7 @@ file systems with \fIblock-size\fR smaller or equal to the system page size - 4k
 on x86 systems, up to 64k on ppc64 or aarch64 depending on kernel configuration).
 If omitted, \fIblock-size\fR is heuristically determined by the file system size
 and the expected usage of the file system (see the \fB\-T\fR option).  In most
-common cases, the default block size is 4k. If \fIblock-size\fR is preceded by a
+common cases, the default block size is 4k.  If \fIblock-size\fR is preceded by a
 negative sign ('-'), then \fBmke2fs\fR will use heuristics to determine the
 appropriate block size, with the constraint that the block size will be at least
 \fIblock-size\fR bytes.  This is useful for certain hardware devices which require
@@ -211,8 +211,8 @@ Cause a kernel panic.
 .BI \-E " extended-options"
 Set extended options for the file system.  Extended options are comma
 separated, and may take an argument using the equals ('=') sign.  Multiple
-\fB\-E\fR options may also be used. The \fB\-E\fR option used to be \fB\-R\fR
-in earlier versions of \fBmke2fs\fR. The \fB\-R\fR
+\fB\-E\fR options may also be used.  The \fB\-E\fR option used to be \fB\-R\fR
+in earlier versions of \fBmke2fs\fR.  The \fB\-R\fR
 option is still accepted for backwards compatibility, but is deprecated.
 The following extended options are supported:
 .RS 1.2i
@@ -225,10 +225,10 @@ table has been zeroed.
 .TP
 .B discard
 Attempt to discard blocks at mkfs time (discarding blocks initially is useful
-on solid state devices and sparse / thin-provisioned storage). When the device
+on solid state devices and sparse / thin-provisioned storage).  When the device
 advertises that discard also zeroes data (any subsequent read after the discard
 and before write returns zero), then mark all not-yet-zeroed inode tables as
-zeroed. This significantly speeds up file system initialization. This is set
+zeroed.  This significantly speeds up file system initialization.  This is set
 as default.
 .TP
 .BI encoding= encoding-name
@@ -437,7 +437,7 @@ which has ext3 support in order to actually make use of the journal.
 .BI \-J " journal-options"
 Create the ext3 journal using options specified on the command-line.
 Journal options are comma
-separated, and may take an argument using the equals ('=')  sign.
+separated, and may take an argument using the equals ('=') sign.
 The following journal options are supported:
 .RS 1.2i
 @JDEV@.TP
@@ -600,7 +600,7 @@ to be created.
 If this option is not specified, \fBmke2fs\fR will pick a default either via how
 the command was run (for example, using a name of the form \fBmkfs.ext2\fR,
 \fBmkfs.ext3\fR, etc.) or via a default as defined by the \fB/etc/mke2fs.conf\fR
-file.   This option controls which file system options are used by
+file.  This option controls which file system options are used by
 default, based on the \fI[fs_types]\fR configuration stanza in
 \fB/etc/mke2fs.conf\fR.
 .sp

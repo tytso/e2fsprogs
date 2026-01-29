@@ -95,7 +95,7 @@ If this relation is set to a positive integer, then while writing the
 inode table, \fBmke2fs\fR(8) will request the operating system flush out pending
 writes to initialize the inode table every
 \fIsync_kludge\fR
-block groups.   This is needed to work around buggy kernels that don't
+block groups.  This is needed to work around buggy kernels that don't
 handle writeback throttling correctly.
 .SH THE [defaults] STANZA
 The following relations are defined in the \fI[defaults]\fR stanza.
@@ -309,7 +309,7 @@ first mounted.
 .I lazy_journal_init
 This boolean relation specifies whether the journal inode should be
 lazily initialized.  It only has meaning if the \fBhas_journal\fR feature is
-enabled. If \fIlazy_journal_init\fR is true, the journal inode will not be
+enabled.  If \fIlazy_journal_init\fR is true, the journal inode will not be
 fully zeroed out by \fBmke2fs\fR.
 This speeds up file system initialization noticeably, but carries some
 small risk if the system crashes before the journal has been overwritten
