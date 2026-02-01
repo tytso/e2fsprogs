@@ -242,8 +242,11 @@ $(GMOFILES): $(srcdir)/$(DOMAIN).pot
 	rm -f $${lang}.gpo
 
 
-all-yes: $(srcdir)/stamp-po
+all-yes: $(srcdir)/@MAINTAINER_CMT@stamp-po
 all-no:
+all-static:
+depend:
+coverage.txt:
 
 # Ensure that the gettext macros and this Makefile.in.in are in sync.
 CHECK_MACRO_VERSION = \
@@ -285,7 +288,7 @@ $(srcdir)/stamp-po: $(srcdir)/$(DOMAIN).pot
 # The determination of whether the package xyz is a GNU one is based on the
 # heuristic whether some file in the top level directory mentions "GNU xyz".
 # If GNU 'find' is available, we avoid grepping through monster files.
-$(DOMAIN).pot-update: $(POTFILES_DEPS) $(srcdir)/POTFILES.in
+$(DOMAIN).pot-update: $(POTFILES_DEPS) $(srcdir)/POTFILES.in $(srcdir)/at-expand.pl
 	package_gnu="$(PACKAGE_GNU)"; \
 	test -n "$$package_gnu" || { \
 	  if { if (LC_ALL=C find --version) 2>/dev/null | grep GNU >/dev/null; then \
@@ -312,6 +315,7 @@ $(DOMAIN).pot-update: $(POTFILES_DEPS) $(srcdir)/POTFILES.in
 	case `$(XGETTEXT) --version | sed 1q | sed -e 's,^[^0-9]*,,'` in \
 	  '' | 0.[0-9] | 0.[0-9].* | 0.1[0-5] | 0.1[0-5].* | 0.16 | 0.16.[0-1]*) \
 	    $(XGETTEXT) --default-domain=$(DOMAIN) --directory=$(top_srcdir) \
+	      --directory=$(top_builddir) \
 	      --add-comments=TRANSLATORS: \
 	      --files-from=$(srcdir)/POTFILES.in \
 	      --copyright-holder='$(COPYRIGHT_HOLDER)' \
@@ -320,6 +324,7 @@ $(DOMAIN).pot-update: $(POTFILES_DEPS) $(srcdir)/POTFILES.in
 	    ;; \
 	  *) \
 	    $(XGETTEXT) --default-domain=$(DOMAIN) --directory=$(top_srcdir) \
+	      --directory=$(top_builddir) \
 	      --add-comments=TRANSLATORS: \
 	      --files-from=$(srcdir)/POTFILES.in \
 	      --copyright-holder='$(COPYRIGHT_HOLDER)' \
@@ -329,6 +334,9 @@ $(DOMAIN).pot-update: $(POTFILES_DEPS) $(srcdir)/POTFILES.in
 	      $(XGETTEXT_OPTIONS) @XGETTEXT_EXTRA_OPTIONS@ \
 	    ;; \
 	esac
+	perl $(srcdir)/at-expand.pl < $(DOMAIN).po > $(DOMAIN).po.new
+	mv $(DOMAIN).po $(DOMAIN).po.bak
+	mv $(DOMAIN).po.new $(DOMAIN).po
 	test ! -f $(DOMAIN).po || { \
 	  if test -f $(srcdir)/$(DOMAIN).pot-header; then \
 	    sed -e '1,/^#$$/d' < $(DOMAIN).po > $(DOMAIN).1po && \
@@ -465,7 +473,7 @@ uninstall-data-yes:
 	  done; \
 	done
 
-check: all
+fullcheck check: all
 
 info dvi ps pdf html tags TAGS ctags CTAGS ID:
 
@@ -474,6 +482,7 @@ install-dvi install-ps install-pdf install-html:
 mostlyclean:
 	rm -f $(srcdir)/stamp-poT
 	rm -f core core.* $(DOMAIN).po $(DOMAIN).1po $(DOMAIN).2po *.gpo *.new.po
+	rm -f $(DOMAIN).po.bak
 	rm -fr *.o
 
 clean: mostlyclean
@@ -556,7 +565,7 @@ include $(RULES_FILES)
 # scripts, not $(SHELL) which is hardwired to /bin/sh and may be deficient.
 Makefile: Makefile.in.in Makevars $(top_builddir)/config.status
 	cd $(top_builddir) \
-	  && @SHELL@ ./config.status $(subdir)/$@.in po-directories
+	  && CONFIG_FILES=$(subdir)/$@.in @SHELL@ ./config.status po-directories
 
 force:
 
