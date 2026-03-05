@@ -1,0 +1,133 @@
+E2fsprogs 1.47.4 (November 15, 2025)   WIP 4aba12dc19a9
+====================================
+
+Updates/Fixes since v1.47.3:
+
+UI and Features
+---------------
+
+Suppress warnings in mke2fs regarding large block sizes if the kernel
+supports blocksize greater than page size.
+
+Add mke2fs extended option in root_selinux to set a SELinux security
+context label for the root directory.
+
+Enable mke2fs to support multiple -E options in the command line.
+
+
+Fixes
+-----
+
+Fix e2fsck incorrectly flagging fast symlinks with a large external
+extended attribute (using an EA inode) as having an invalid number of
+blocks.
+
+Add a check in e2fsck for an extended attributes with a value stored in
+an EA inode that has an invalid zero size.
+
+Fix e2scrub so that it the retry loop for lvremove works properly (in
+case of a temporary busy failure).
+
+Mke2fs warnings about dax are now printed to stdout instead of stderr,
+since they aren't failures.
+
+Fix mke2fs so it won't create an orphan file inode which is larger than
+what the kernel now permits when using a 64k blocksize.
+
+Many bug fixes for fuse2fs and libext2fs to make fuse2fs behave more
+like the Linux kernel's implementation of ext4.  These were found when
+running fuse2fs under xfstests, and fixing the resulting test failures.
+  - Set the EXT2_ERRORS_FS flag when recording errors in the superblock,
+    so that e2fsck will automatically try to fix the corrupted file system
+  - Restrict which error codes that will be recorded in the superblock to
+    those which indicate file system corruption, and not those that are
+    cuased by operational failures
+  - Refuse to mount a file system which is marked as having inconsistencies
+  - Abort and avoid mounting the file systems if there are errors parsing
+    the command line options
+  - Fix parsing the offset= option so the mount options structure doesn't
+    get corrupted.
+  - Move operations which could fail while mounting the file system to
+    before the fuse2fs is daemonized so that errors can be reported to the
+    user
+  - Fix the locking logic for the "-o lockfile" command-line option
+  - Fix a memory leak if ext2fs_close() fails
+  - Avoid failures when mounting a file system read-only and the user does
+    not have write access to the file system image or block device
+  - Handle the case where the underlying storage (e.g., block device) of
+    the file system is read-only more like the kernel.  (Fixes generic/050)
+  - Handle the case where the user requested a read-only mount, the
+    underying file system storage is writeable, and there is a journal
+    which needs to be replayed so that it is safe to reference the file
+    system image.  (Fixes ext4/271)
+  - Recheck the file system feature flags after replaying the journal in
+    case an unsupported feature was enabled by a journal transaction and
+    this causes fuse2fs to have a bellyache.
+  - Recheck the journal to make sure it is consistent to catch problems
+    caused by replaying (possibly maliciously) corrupted journals
+  - Make sure there is enough free space to create a symlink before
+    trying to create it
+  - Correctly report errors when deleting files back to fuse
+  - Always check the process gid when checking file permissions
+  - Don't update atime when reading executable file contents
+  - Correctly propagate default acls to non-directory inodes
+  - Set the group id ownership for newly created files in setgid directories
+  - Fix fssetxattr() by preserving iflags bits that don't exist in xflags
+  - Fix various bugs when punching holes in a file
+  - Fix various bugs in FITRIM
+  - Prevent fallocation or zero range indirect-mapped files, which don't
+    support unwritten extents
+  - Fix error handing for fuse_getgroups() and readlink(2)
+  - Fix various data corruption bugs when reading and writing to inline
+    data files
+  - Correctly set the ST_RDONLY flag returned by statfs(2)
+  - Fix potential races in op_statfs and op_destroy
+  - Fix relatime handling to pay attention to nanosecond portion of the
+    timestamp
+  - Fix permission checks when opening a file with O_APPEND and O_TRUNC at
+    the same time
+  - Don't truncate a newly created file so the ctime/mtime timestamps are
+    consistent
+
+Various man page cleanups.
+
+
+Performance, Internal Implementation, Development Support etc.
+--------------------------------------------------------------
+
+Fixed various Debian packaging issues.  (Addresses Debian Bugs: #1118461)
+
+Remove extra "pkg-config pkgconfig" in the Debian rules file.  This
+appears to be harmless, but it's not correct.
+
+Update autoconf and libtool to be based on autoconf 2.72.   Also updated
+config.{guess,sub,rpath} to be the latest from FSF.
+
+Fix ext2fs_block_alloc_stats_range() to pass the original parameters to
+its callback function.
+
+Change the unixfd I/O manager to close the file descriptor when it is
+passed into the manager.
+
+In the unixfd_io_manager, trust the caller to assert that the file
+descriptor was opened using O_EXCL, since we can't find out whether
+it's the case by checking the file flags usign fcntl's F_GETFL.  Also
+check using F_GETFL instead of F_GETFD.
+
+Fix a bug in the unix_io where if there is an error when writing the I/O
+channel, and a write_error handler is registered, and it requests that
+the failed write is tried, the cache mutex wasn't getting reocked,
+leaving the lock state inconsistent.
+
+Fix a portability issue in fuse2fs regarding how to redirect
+stdout/stderr which works across multiple C libraries.  (For a detailed
+description of the challenges created by different standards
+specification see commit f79abd8554e6.)
+
+Fix a portability issue so e2fsprogs can compile when the
+linux/fsverity.h header file exists, but it doesn't define
+FS_IOC_READ_VERITY_METADATA.
+
+Update the Malay translations.
+
+

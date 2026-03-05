@@ -1,3 +1,30 @@
+e2fsprogs (1.47.4-1) unstable; urgency=medium
+
+  * Mark libext2fs-dev as Multi-Arch: same (Closes: #1118461)
+  * Suppress warnings in mke2fs regarding large block sizes if the kernel
+    supports blocksize greater than page size
+  * Add mke2fs extended option in root_selinux to set a SELinux security
+    context label for the root directory
+  * Enable mke2fs to support multiple -E options in the command line.
+  * Fix e2fsck incorrectly flagging fast symlinks with a large external
+    extended attribute (using an EA inode) as having an invalid number of
+    blocks
+  * Add a check in e2fsck for an extended attributes with a value stored
+    in an EA inode that has an invalid zero size
+  * Fix e2scrub so that it the retry loop for lvremove works properly (in
+    case of a temporary busy failure)
+  * Many bug fixes for fuse2fs and libext2fs to make fuse2fs behave more
+    like the Linux kernel's implementation of ext4.  These were found when
+    running fuse2fs under xfstests, and fixing the resulting test failures
+  * Mke2fs warnings about dax are now printed to stdout instead of stderr,
+    since they aren't failures
+  * Fix mke2fs so it won't create an orphan file inode which is larger than
+    what the kernel now permits when using a 64k blocksize
+  * Update Malay translation
+  * Various man page cleanups.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 05 Mar 2026 10:26:12 -0500
+
 e2fsprogs (1.47.3-1) unstable; urgency=medium
 
   * New upstream version
