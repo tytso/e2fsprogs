@@ -85,7 +85,7 @@ The following relations are defined in the \fI[options]\fR stanza.
 .TP
 .I proceed_delay
 If this relation is set to a positive integer, then \fBmke2fs\fR(8) will wait
-.\fIproceed_delay\fR seconds after asking the user for permission to proceed and
+\fIproceed_delay\fR seconds after asking the user for permission to proceed and
 then continue, even if the
 user has not answered the question.  Defaults to 0, which means to wait
 until the user answers the question one way or another.
