@@ -119,17 +119,24 @@ jobs:
         path: lib/config.h
 
   windows-msys2-build:
-    name: Build mke2fs on Windows with mingw64
+    name: Build mke2fs on Windows with ${{matrix.sys}}
     runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+        - { sys: mingw64, env: x86_64 }
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
     - uses: actions/checkout@v4
     - uses: msys2/setup-msys2@v2
       with:
-        msystem: mingw64
+        msystem: ${{matrix.sys}}
         update: true
         install: >
           make
-          mingw-w64-x86_64-cc
+          mingw-w64-${{matrix.env}}-cc
     # For now the only parts that actually build for Windows are mke2fs and its
     # dependencies: all libraries except libss.  The build system doesn't want
     # to build just those parts, though, so do it one step at a time...
@@ -145,7 +152,7 @@ jobs:
     - run: misc/mke2fs.exe -T ext4 image.ext4 128M
     - uses: actions/upload-artifact@v4
       with:
-        name: windows-mingw64-config.h
+        name: windows-${{matrix.env}}-config.h
         path: lib/config.h
 
   # Jobs that cross-compile e2fsprogs for Android using the Android NDK.  Note
