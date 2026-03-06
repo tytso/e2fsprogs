@@ -801,6 +801,10 @@ struct ext2_super_block {
 
 #define EXT2_GOOD_OLD_INODE_SIZE 128
 
+#define EXT4_EXTRA_TIMESTAMP_MAX	(((int64_t)1 << 34) - 1  + INT32_MIN)
+#define EXT4_NON_EXTRA_TIMESTAMP_MAX	INT32_MAX
+#define EXT4_TIMESTAMP_MIN		INT32_MIN
+
 /*
  * Journal inode backup types
  */

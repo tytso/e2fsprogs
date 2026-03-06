@@ -1800,10 +1800,26 @@ static int handle_quota_options(ext2_filsys fs)
 	}
 
 	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
+		if (quota_enable[qtype] == QOPT_ENABLE &&
+		    *quota_sb_inump(fs->super, qtype) == 0) {
+			/* Some work needed to match the configuration. */
+			break;
+		}
+		if (quota_enable[qtype] == QOPT_DISABLE &&
+		    *quota_sb_inump(fs->super, qtype)) {
+			/* Some work needed to match the configuration. */
+			break;
+		}
+	}
+	if (qtype == MAXQUOTAS) {
+		/* Nothing to do. */
+		return 0;
+	}
+
+	for (qtype = 0; qtype < MAXQUOTAS; qtype++) {
 		if (quota_enable[qtype] == QOPT_ENABLE)
 			qtype_bits |= 1 << qtype;
 	}
-
 	retval = quota_init_context(&qctx, fs, qtype_bits);
 	if (retval) {
 		com_err(program_name, retval,

@@ -46,12 +46,10 @@ what had traditionally been known as the block allocation bitmap now
 indicates whether a cluster is in use or not, where a cluster is by
 default composed of 16 blocks.  This feature can decrease the time
 spent on doing block allocation and brings smaller fragmentation, especially
-for large files.  The size can be specified using the
-.B mke2fs \-C
-option.
+for large files.  The size can be specified using the \fBmke2fs \-C\fR option.
 .IP
-.B Warning:
-The bigalloc feature is still under development, and may not be fully
+.B WARNING:
+The \fBbigalloc\fR feature is still under development, and may not be fully
 supported with your kernel or may have various bugs.  Please see the web
 page http://ext4.wiki.kernel.org/index.php/Bigalloc for details.
 May clash with delayed allocation (see
@@ -90,7 +88,7 @@ count might exceed the maximum count limit.
 .B ea_inode
 .br
 Normally, a file's extended attributes and associated metadata must fit within
-the inode or the inode's associated extended attribute block. This feature
+the inode or the inode's associated extended attribute block.  This feature
 allows the value of each extended attribute to be placed in the data blocks of a
 separate inode if necessary, increasing the limit on the size and number of
 extended attributes per file.
@@ -152,10 +150,9 @@ entries.  This feature is supported by ext2, ext3, and ext4.
 This ext4 feature allows the per-block group metadata (allocation
 bitmaps
 and inode tables)
-to be placed anywhere on the storage media.  In addition,
-.B mke2fs
+to be placed anywhere on the storage media.  In addition, \fBmke2fs\fR(8)
 will place the per-block group metadata together starting at the first
-block group of each "flex_bg group".   The size of the flex_bg group
+block group of each "flex_bg group".  The size of the flex_bg group
 can be specified using the
 .B \-G
 option.
@@ -164,9 +161,7 @@ option.
 .br
 Create a journal to ensure file system consistency even across unclean
 shutdowns.  Setting the file system feature is equivalent to using the
-.B \-j
-option with
-.BR mke2fs " or " tune2fs.
+\fB\-j\fR option with \fBmke2fs\fR(8) or \fBtune2fs\fR(8).
 This feature is supported by ext3 and ext4, and ignored by the
 ext2 file system driver.
 .TP
@@ -184,13 +179,8 @@ device.  The block size for the external journal must be the same as the
 file system which uses it.
 .IP
 The external journal device can be used by a file system by specifying
-the
-.B \-J
-.BR device= <external-device>
-option to
-.BR mke2fs (8)
-or
-.BR tune2fs 8) .
+the \fB\-J device=\fR<\fIexternal-device\fR> option to
+\fBmke2fs\fR(8) or \fBtune2fs\fR(8).
 .TP
 .B large_dir
 .br
@@ -254,7 +244,7 @@ by e2fsprogs starting with version 1.47.0.
 .TP
 .B project
 .br
-This ext4 feature provides project quota support. With this feature,
+This ext4 feature provides project quota support.  With this feature,
 the project ID of inode will be managed when the file system is mounted.
 .TP
 .B quota
@@ -273,20 +263,12 @@ in the older quota design) to be hidden inodes.
 This file system feature indicates that space has been reserved so that
 the block group descriptor table can be extended while resizing a mounted
 file system.  The online resize operation
-is carried out by the kernel, triggered by
-.BR resize2fs (8).
-By default
-.B mke2fs
-will attempt to reserve enough space so that the
+is carried out by the kernel, triggered by \fBresize2fs\fR(8).  By default
+\fBmke2fs\fR(8) will attempt to reserve enough space so that the
 file system may grow to 1024 times its initial size.  This can be changed
-using the
-.B resize
-extended option.
+using the \fBresize\fR extended option.
 .IP
-This feature requires that the
-.B sparse_super
-or
-.B sparse_super2
+This feature requires that the \fBsparse_super\fR or \fBsparse_super2\fR
 feature be enabled.
 .TP
 .B sparse_super
@@ -303,37 +285,29 @@ superblocks and block group descriptors.  The block groups used to store
 the backup superblock(s) and blockgroup descriptor(s) are stored in the
 superblock, but typically, one will be located at the beginning of block
 group #1, and one in the last block group in the file system.  This
-feature is essentially a more extreme version of sparse_super and is
+feature is essentially a more extreme version of \fBsparse_super\fR and is
 designed to allow a much larger percentage of the disk to have
 contiguous blocks available for data files.
 .TP
 .B stable_inodes
 .br
-Marks the file system's inode numbers and UUID as stable.
-.BR resize2fs (8)
+Marks the file system's inode numbers and UUID as stable. \fBresize2fs\fR(8)
 will not allow shrinking a file system with this feature, nor
-will
-.BR tune2fs (8)
+will \fBtune2fs\fR(8)
 allow changing its UUID.  This feature allows the use of specialized encryption
 settings that make use of the inode numbers and UUID.  Note that the
-.B encrypt
-feature still needs to be enabled separately.
-.B stable_inodes
+\fBencrypt\fR feature still needs to be enabled separately. \fBstable_inodes\fR
 is a "compat" feature, so old kernels will allow it.
 .TP
 .B uninit_bg
 .br
 This ext4 file system feature indicates that the block group descriptors
-will be protected using checksums, making it safe for
-.BR mke2fs (8)
+will be protected using checksums, making it safe for \fBmke2fs\fR(8)
 to create a file system without initializing all of the block groups.
 The kernel will keep a high watermark of unused inodes, and initialize
 inode tables and blocks lazily.  This feature speeds up the time to check
-the file system using
-.BR e2fsck (8),
-and it also speeds up the time required for
-.BR mke2fs (8)
-to create the file system.
+the file system using \fBe2fsck\fR(8) and it also speeds up the time required for
+\fBmke2fs\fR(8) to create the file system.
 .TP
 .B verity
 .br
@@ -352,27 +326,19 @@ and ext4.  Other generic mount options may be used as well; see
 .BR mount (8)
 for details.
 .SH "Mount options for ext2"
-The `ext2' file system is the standard Linux file system.
+The ext2 file system is the standard Linux file system.
 Since Linux 2.5.46, for most mount options the default
-is determined by the file system superblock. Set them with
-.BR tune2fs (8).
+is determined by the file system superblock.  Set them with \fBtune2fs\fR(8).
 .TP
-.BR acl | noacl
-Support POSIX Access Control Lists (or not).  See the
-.BR acl (5)
-manual page.
+.BR acl " | " noacl
+Support POSIX Access Control Lists (or not).  See the \fBacl\fR(5) manual page.
 .TP
-.BR bsddf | minixdf
-Set the behavior for the
-.I statfs
-system call. The
-.B minixdf
-behavior is to return in the
-.I f_blocks
-field the total number of blocks of the file system, while the
-.B bsddf
+.BR bsddf " | " minixdf
+Set the behavior for the \fIstatfs\fR system call.  The \fBminixdf\fR
+behavior is to return in the \fIf_blocks\fR
+field the total number of blocks of the file system, while the \fBbsddf\fR
 behavior (which is the default) is to subtract the overhead blocks
-used by the ext2 file system and not available for file storage. Thus
+used by the ext2 file system and not available for file storage.  Thus
 .sp 1
 % mount /k \-o minixdf; df /k; umount /k
 .TS
@@ -396,12 +362,11 @@ File System#1024-blocks#Used#Available#Capacity#Mounted on
 to the options given in
 .IR /etc/fstab .)
 .TP
-.BR check=none " or " nocheck
-No checking is done at mount time. This is the default. This is fast.
-It is wise to invoke
-.BR e2fsck (8)
-every now and then, e.g.\& at boot time. The non-default behavior is unsupported
-(check=normal and check=strict options have been removed). Note that these mount options
+.BR check=none " | " nocheck
+No checking is done at mount time.  This is the default.  This is fast.
+It is wise to invoke \fBe2fsck\fR(8) every now and then, e.g.\& at boot time.
+The non-default behavior is unsupported (\fBcheck=normal\fR and
+\fBcheck=strict\fR options have been removed).  Note that these mount options
 don't have to be supported if ext4 kernel driver is used for ext2 and ext3 file systems.
 .TP
 .B debug
@@ -415,62 +380,53 @@ The default is set in the file system superblock, and can be
 changed using
 .BR tune2fs (8).
 .TP
-.BR grpid | bsdgroups " and " nogrpid | sysvgroups
+.BR grpid " | " bsdgroups " and " nogrpid " | " sysvgroups
 These options define what group id a newly created file gets.
-When
-.B grpid
+When \fBgrpid\fR
 is set, it takes the group id of the directory in which it is created;
 otherwise (the default) it takes the fsgid of the current process, unless
 the directory has the setgid bit set, in which case it takes the gid
 from the parent directory, and also gets the setgid bit set
 if it is a directory itself.
 .TP
-.BR grpquota | noquota | quota | usrquota
-The usrquota (same as quota) mount option enables user quota support on the
-file system. grpquota enables group quotas support. You need the quota utilities
-to actually enable and manage the quota system.
+.BR grpquota " | " usrquota " | " quota " | " noquota
+The \fBusrquota\fR (same as \fBquota\fR) mount option enables user quota
+support on the file system.  \fBgrpquota\fR enables group quotas support.
+You need the \fBquota\fR(1) utilities to actually enable and manage the quota
+system.
 .TP
 .B nouid32
 Disables 32-bit UIDs and GIDs.  This is for interoperability with older
 kernels which only store and expect 16-bit values.
 .TP
-.BR oldalloc " or " orlov
-Use old allocator or Orlov allocator for new inodes. Orlov is default.
+.BR oldalloc " | " orlov
+Use old allocator or Orlov allocator for new inodes.  Orlov is default.
 .TP
 \fBresgid=\fP\,\fIn\fP and \fBresuid=\fP\,\fIn\fP
 The ext2 file system reserves a certain percentage of the available
-space (by default 5%, see
-.BR mke2fs (8)
-and
-.BR tune2fs (8)).
+space (by default 5%, see \fBmke2fs\fR(8) and \fBtune2fs\fR(8).
 These options determine who can use the reserved blocks.
 (Roughly: whoever has the specified uid, or belongs to the specified group.)
 .TP
 .BI sb= n
 Instead of using the normal superblock, use an alternative superblock
-specified by
-.IR n .
+specified by \fIn\fR.
 This option is normally used when the primary superblock has been
 corrupted.  The location of backup superblocks is dependent on the
 file system's blocksize, the number of blocks per group, and features
 such as
 .BR sparse_super .
 .IP
-Additional backup superblocks can be determined by using the
-.B mke2fs
-program using the
-.B \-n
-option to print out where the superblocks exist, supposing
-.B mke2fs
+Additional backup superblocks can be determined by using the \fBmke2fs\fR(8)
+program using the \fB\-n\fR
+option to print out where the superblocks exist, supposing \fBmke2fs\fR(8)
 is supplied with arguments that are consistent with the file system's layout
-(e.g., blocksize, blocks per group,
-.BR sparse_super ,
-etc.).
+(e.g., blocksize, blocks per group, \fBsparse_super\fR, etc.).
 .IP
-The block number here uses 1\ k units. Thus, if you want to use logical
+The block number here uses 1\ k units.  Thus, if you want to use logical
 block 32768 on a file system with 4\ k blocks, use "sb=131072".
 .TP
-.BR user_xattr | nouser_xattr
+.BR user_xattr " | " nouser_xattr
 Support "user." extended attributes (or not).
 
 
@@ -479,14 +435,14 @@ The ext3 file system is a version of the ext2 file system which has been
 enhanced with journaling.  It supports the same options as ext2 as
 well as the following additions:
 .TP
-.BR journal_dev=devnum / journal_path=path
+.B journal_dev=\fIdevnum\fR | \fBjournal_path=\fIpath\fR
 When the external journal device's major/minor numbers
 have changed, these options allow the user to specify
 the new journal location.  The journal device is
 identified either through its new major/minor numbers encoded
 in devnum, or via a path to the device.
 .TP
-.BR norecovery / noload
+.BR norecovery " | " noload
 Don't load the journal on mounting.  Note that
 if the file system was not unmounted cleanly,
 skipping the journal replay will lead to the
@@ -517,16 +473,16 @@ internal file system integrity, however it can allow old data to appear
 in files after a crash and journal recovery.
 .RE
 .TP
-.B data_err=ignore
-Just print an error message if an error occurs in a file data buffer in
-ordered mode.
+.BR data_err= { abort | ignore }
+If an error occurs in a file data buffer in ordered mode:
+.sp
+When \fBdata_err=abort\fR, abort the journal.
+.sp
+When \fBdata_err=ignore\fR, just print an error message.
 .TP
-.B data_err=abort
-Abort the journal if an error occurs in a file data buffer in ordered mode.
-.TP
-.BR barrier=0 " / " barrier=1
-This disables / enables the use of write barriers in the jbd code.  barrier=0
-disables, barrier=1 enables (default). This also requires an IO stack which can
+.BR barrier= { 0 | 1 }
+This disables / enables the use of write barriers in the jbd code.  \fBbarrier=0\fR
+disables, \fBbarrier=1\fR enables (default).  This also requires an IO stack which can
 support barriers, and if jbd gets an error on a barrier write, it will disable
 barriers again with a warning.  Write barriers enforce proper on-disk ordering
 of journal commits, making volatile disk write caches safe to use, at some
@@ -534,31 +490,26 @@ performance penalty.  If your disks are battery-backed in one way or another,
 disabling barriers may safely improve performance.
 .TP
 .BI commit= nrsec
-Start a journal commit every
-.I nrsec
+Start a journal commit every \fInrsec\fR
 seconds.  The default value is 5 seconds.  Zero means default.
 .TP
 .B user_xattr
-Enable Extended User Attributes. See the
-.BR attr (5)
-manual page.
+Enable Extended User Attributes.  See the \fBattr\fR(5) manual page.
 .TP
 .BR jqfmt= { vfsold | vfsv0 | vfsv1 }
-Apart from the old quota system (as in ext2, jqfmt=vfsold aka version 1 quota)
-ext3 also supports journaled quotas (version 2 quota). jqfmt=vfsv0 or
-jqfmt=vfsv1 enables journaled quotas. Journaled quotas have the advantage that
-even after a crash no quota check is required. When the
-.B quota
+Apart from the old quota system (as in ext2, \fBjqfmt=vfsold\fR aka version 1 quota)
+ext3 also supports journaled quotas (version 2 quota).  \fBjqfmt=vfsv0\fR or
+\fBjqfmt=vfsv1\fR enables journaled quotas.  Journaled quotas have the advantage
+that even after a crash no quota check is required.  When the \fBquota\fR
 file system feature is enabled, journaled quotas are used automatically, and
 this mount option is ignored.
 .TP
-.BR usrjquota=aquota.user | grpjquota=aquota.group
-For journaled quotas (jqfmt=vfsv0 or jqfmt=vfsv1), the mount options
-usrjquota=aquota.user and grpjquota=aquota.group are required to tell the
-quota system which quota database files to use. When the
-.B quota
-file system feature is enabled, journaled quotas are used automatically, and
-this mount option is ignored.
+.BR usrjquota=aquota.user " | " grpjquota=aquota.group
+For journaled quotas (\fBjqfmt=vfsv0\fR or \fBjqfmt=vfsv1\fR), the mount
+options \fBusrjquota=aquota.user\fR and \fBgrpjquota=aquota.group\fR are
+required to tell the quota system which quota database files to use.  When the
+\fBquota\fR file system feature is enabled, journaled quotas are used
+automatically, and this mount option is ignored.
 
 .SH "Mount options for ext4"
 The ext4 file system is an advanced level of the ext3 file system which
@@ -566,64 +517,93 @@ incorporates scalability and reliability enhancements for supporting large
 file system.
 
 The options
-.B journal_dev, journal_path, norecovery, noload, data, commit, orlov,
-.B oldalloc, [no]user_xattr, [no]acl, bsddf, minixdf, debug, errors,
-.B data_err, grpid, bsdgroups, nogrpid, sysvgroups, resgid, resuid, sb,
-.B quota, noquota, nouid32, grpquota, usrquota, usrjquota, grpjquota,
-.B and jqfmt are backwardly compatible with ext3 or ext2.
+.BR journal_dev ,
+.BR journal_path ,
+.BR norecovery ,
+.BR noload ,
+.BR data ,
+.BR commit ,
+.BR orlov ,
+.BR oldalloc ,
+.RB [ no ] user_xattr ,
+.RB [ no ] acl ,
+.BR bsddf ,
+.BR minixdf ,
+.BR debug ,
+.BR errors ,
+.BR data_err ,
+.BR grpid ,
+.BR bsdgroups ,
+.BR nogrpid ,
+.BR sysvgroups ,
+.BR resgid ,
+.BR resuid ,
+.BR sb ,
+.BR quota ,
+.BR noquota ,
+.BR nouid32 ,
+.BR grpquota ,
+.BR usrquota ,
+.BR usrjquota ,
+.BR grpjquota ", and"
+.B jqfmt
+are backwardly compatible with ext3 or ext2.
 .TP
-.B journal_checksum | nojournal_checksum
+.BR journal_checksum " | " nojournal_checksum
 The journal_checksum option enables checksumming of the journal transactions.
-This will allow the recovery code in e2fsck and the kernel to detect corruption
-in the kernel. It is a compatible change and will be ignored by older kernels.
+This will allow the recovery code in \fBe2fsck\fR(8) and the kernel to detect
+corruption in the kernel.  It is a compatible change and will be ignored by older
+kernels.
 .TP
 .B journal_async_commit
-Commit block can be written to disk without waiting for descriptor blocks. If
+Commit block can be written to disk without waiting for descriptor blocks.  If
 enabled older kernels cannot mount the device.
-This will enable 'journal_checksum' internally.
+This will enable \fBjournal_checksum\fR internally.
 .TP
-.BR barrier=0 " / " barrier=1 " / " barrier " / " nobarrier
+.BR barrier= { 0 | 1 "} | " barrier " | " nobarrier
 These mount options have the same effect as in ext3.  The mount options
-"barrier" and "nobarrier" are added for consistency with other ext4 mount
-options.
+\fBbarrier\fR and \fBnobarrier\fR are added for consistency with other
+ext4 mount options.
 
 The ext4 file system enables write barriers by default.
 .TP
 .BI inode_readahead_blks= n
 This tuning parameter controls the maximum number of inode table blocks that
 ext4's inode table readahead algorithm will pre-read into the buffer cache.
-The value must be a power of 2. The default value is 32 blocks.
+The value must be a power of 2.  The default value is 32 blocks.
 .TP
 .BI stripe= n
 Number of file system blocks that mballoc will try to use for allocation size
-and alignment. For RAID5/6 systems this should be the number of data disks *
+and alignment.  For RAID5/6 systems this should be the number of data disks *
 RAID chunk size in file system blocks.
 .TP
 .B delalloc
 Deferring block allocation until write-out time.
 .TP
 .B nodelalloc
-Disable delayed allocation. Blocks are allocated when data is copied from user
+Disable delayed allocation.  Blocks are allocated when data is copied from user
 to page cache.
 .TP
-.BI max_batch_time= usec
+.BI max_batch_time= max_usec
 Maximum amount of time ext4 should wait for additional file system operations to
-be batch together with a synchronous write operation. Since a synchronous
+be batch together with a synchronous write operation.  Since a synchronous
 write operation is going to force a commit and then a wait for the I/O
 complete, it doesn't cost much, and can be a huge throughput win, we wait for a
 small amount of time to see if any other transactions can piggyback on the
-synchronous write. The algorithm used is designed to automatically tune for
+synchronous write.
+.sp
+The algorithm used is designed to automatically tune for
 the speed of the disk, by measuring the amount of time (on average) that it
-takes to finish committing a transaction. Call this time the "commit time".
+takes to finish committing a transaction.  Call this time the "commit time".
 If the time that the transaction has been running is less than the commit time,
 ext4 will try sleeping for the commit time to see if other operations will join
-the transaction. The commit time is capped by the max_batch_time, which
-defaults to 15000\ \[mc]s (15\ ms). This optimization can be turned off entirely by
-setting max_batch_time to 0.
+the transaction.  The commit time is capped at \fImax_usec\fR, which
+defaults to 15000\ \[mc]s (15\ ms).  This optimization can be turned off entirely
+by setting \fBmax_batch_time=0\fR.
 .TP
-.BI min_batch_time= usec
+.BI min_batch_time= min_usec
 This parameter sets the commit time (as described above) to be at least
-min_batch_time. It defaults to zero microseconds. Increasing this parameter
+\fImin_usec\fR.  It defaults to zero microseconds.  Increasing this parameter
 may improve the throughput of multi-threaded, synchronous workloads on very
 fast disks, at the cost of increasing latency.
 .TP
@@ -638,7 +618,7 @@ Simulate the effects of calling ext4_abort() for
 debugging purposes.  This is normally used while
 remounting a file system which is already mounted.
 .TP
-.BR auto_da_alloc | noauto_da_alloc
+.BR auto_da_alloc " | " noauto_da_alloc
 Many broken applications don't use fsync() when
 replacing existing files via patterns such as
 
@@ -657,94 +637,91 @@ ext3, and avoids the "zero-length" problem that can happen when a system
 crashes before the delayed allocation blocks are forced to disk.
 .TP
 .B noinit_itable
-Do not initialize any uninitialized inode table blocks in the background. This
+Do not initialize any uninitialized inode table blocks in the background.  This
 feature may be used by installation CD's so that the install process can
 complete as quickly as possible; the inode table initialization process would
 then be deferred until the next time the file system is mounted.
 .TP
-.B init_itable=n
+.BI init_itable= n
 The lazy itable init code will wait n times the number of milliseconds it took
-to zero out the previous block group's inode table. This minimizes the impact on
+to zero out the previous block group's inode table.  This minimizes the impact on
 system performance while the file system's inode table is being initialized.
 .TP
-.BR discard / nodiscard
+.BR discard " | " nodiscard
 Controls whether ext4 should issue discard/TRIM commands to the underlying
 block device when blocks are freed.  This is useful for SSD devices and
 sparse/thinly-provisioned LUNs, but it is off by default until sufficient
 testing has been done.
 .TP
-.BR block_validity / noblock_validity
+.BR block_validity " | " noblock_validity
 This option enables/disables the in-kernel facility for tracking
-file system metadata blocks within internal data structures. This allows multi-\c
+file system metadata blocks within internal data structures.  This allows multi-\c
 block allocator and other routines to quickly locate extents which might
-overlap with file system metadata blocks. This option is intended for debugging
+overlap with file system metadata blocks.  This option is intended for debugging
 purposes and since it negatively affects the performance, it is off by default.
 .TP
-.BR dioread_lock / dioread_nolock
-Controls whether or not ext4 should use the DIO read locking. If the
-dioread_nolock option is specified ext4 will allocate uninitialized extent
+.BR dioread_lock " | " dioread_nolock
+Controls whether or not ext4 should use the DIO read locking.  If the
+\fBdioread_nolock\fR option is specified ext4 will allocate uninitialized extent
 before buffer write and convert the extent to initialized after IO completes.
 This approach allows ext4 code to avoid using inode mutex, which improves
-scalability on high speed storages. However this does not work with data
-journaling and dioread_nolock option will be ignored with kernel warning.
-Note that dioread_nolock code path is only used for extent-based files.
-Because of the restrictions this options comprises it is off by default
-(e.g.\& dioread_lock).
+scalability on high speed storages.  However this does not work with data
+journaling and \fBdioread_nolock\fR option will be ignored with kernel warning.
+Note that \fBdioread_nolock\fR code path is only used for extent-based files.
+Because of the restrictions this options comprises, it is off by default
+(e.g.\& \fBdioread_lock\fR).
 .TP
-.B max_dir_size_kb=n
+.BI max_dir_size_kb= n
 This limits the size of the directories so that any attempt to expand them
-beyond the specified limit in kilobytes will cause an ENOSPC error. This is
+beyond the specified limit in kilobytes will cause an ENOSPC error.  This is
 useful in memory-constrained environments, where a very large directory can
-cause severe performance problems or even provoke the Out Of Memory killer. (For
+cause severe performance problems or even provoke the Out Of Memory killer.  (For
 example, if there is only 512\~MiB memory available, a 176\~MiB directory may
 seriously cramp the system's style.)
 .TP
 .B i_version
-Enable 64-bit inode version support. This option is off by default.
+Enable 64-bit inode version support.  This option is off by default.
 .TP
 .B nombcache
-This option disables use of mbcache for extended attribute deduplication. On
+This option disables use of mbcache for extended attribute deduplication.  On
 systems where extended attributes are rarely or never shared between files,
 use of mbcache for deduplication adds unnecessary computational overhead.
 .TP
 .B prjquota
-The prjquota mount option enables project quota support on the file system.
-You need the quota utilities to actually enable and manage the quota system.
-This mount option requires the
-.B project
-file system feature.
+This option enables project quota support on the file system.  You need the
+\fBquota\fR(1) utilities to actually enable and manage the quota system.
+This mount option requires the \fBproject\fR file system feature.
 
 .SH FILE ATTRIBUTES
 The ext2, ext3, and ext4 file systems support setting the following file
 attributes on Linux systems using the
 .BR chattr (1)
 utility:
-.sp
+.IP
 .BR a " \- append only"
-.sp
+.IP
 .BR A " \- no atime updates"
-.sp
+.IP
 .BR d " \- no dump"
-.sp
+.IP
 .BR D " \- synchronous directory updates"
-.sp
+.IP
 .BR i " \- immutable"
-.sp
+.IP
 .BR S " \- synchronous updates"
-.sp
+.IP
 .BR u " \- undeletable"
-.sp
+.P
 In addition, the ext3 and ext4 file systems support the following flag:
-.sp
+.IP
 .BR j " \- data journaling"
-.sp
+.P
 Finally, the ext4 file system also supports the following flag:
-.sp
+.IP
 .BR e " \- extents format"
-.sp
+.P
 For descriptions of these attribute flags, please refer to the
-.BR chattr (1)
-man page.
+\fBchattr\fR(1) man page.
 .SH KERNEL SUPPORT
 This section lists the file system driver (e.g., ext2, ext3, ext4) and
 upstream kernel version where a particular file system feature was
@@ -754,64 +731,41 @@ feature may still be considered in an experimental state.  Finally, note
 that some distributions may have backported features into older kernels;
 in particular the kernel versions in certain "enterprise distributions"
 can be extremely misleading.
-.IP "\fBfiletype\fR" 2i
-ext2, 2.2.0
-.IP "\fBsparse_super\fR" 2i
-ext2, 2.2.0
-.IP "\fBlarge_file\fR" 2i
-ext2, 2.2.0
-.IP "\fBhas_journal\fR" 2i
-ext3, 2.4.15
-.IP "\fBext_attr\fR" 2i
-ext2/ext3, 2.6.0
-.IP "\fBdir_index\fR" 2i
-ext3, 2.6.0
-.IP "\fBresize_inode\fR" 2i
-ext3, 2.6.10 (online resizing)
-.IP "\fB64bit\fR" 2i
-ext4, 2.6.28
-.IP "\fBdir_nlink\fR" 2i
-ext4, 2.6.28
-.IP "\fBextent\fR" 2i
-ext4, 2.6.28
-.IP "\fBextra_isize\fR" 2i
-ext4, 2.6.28
-.IP "\fBflex_bg\fR" 2i
-ext4, 2.6.28
-.IP "\fBhuge_file\fR" 2i
-ext4, 2.6.28
-.IP "\fBmeta_bg\fR" 2i
-ext4, 2.6.28
-.IP "\fBuninit_bg\fR" 2i
-ext4, 2.6.28
-.IP "\fBmmp\fR" 2i
-ext4, 3.0
-.IP "\fBbigalloc\fR" 2i
-ext4, 3.2
-.IP "\fBquota\fR" 2i
-ext4, 3.6
-.IP "\fBinline_data\fR" 2i
-ext4, 3.8
-.IP "\fBsparse_super2\fR" 2i
-ext4, 3.16
-.IP "\fBmetadata_csum\fR" 2i
-ext4, 3.18
-.IP "\fBencrypt\fR" 2i
-ext4, 4.1
-.IP "\fBmetadata_csum_seed\fR" 2i
-ext4, 4.4
-.IP "\fBproject\fR" 2i
-ext4, 4.5
-.IP "\fBea_inode\fR" 2i
-ext4, 4.13
-.IP "\fBlarge_dir\fR" 2i
-ext4, 4.13
-.IP "\fBcasefold\fR" 2i
-ext4, 5.2
-.IP "\fBverity\fR" 2i
-ext4, 5.4
-.IP "\fBstable_inodes\fR" 2i
-ext4, 5.5
+.sp
+.TS
+lb l l.
+filetype	ext2	2.2.0
+sparse_super	ext2	2.2.0
+large_file	ext2	2.2.0
+has_journal	ext3	2.4.15
+ext_attr	ext2/ext3	2.6.0
+dir_index	ext3	2.6.0
+resize_inode	ext3	2.6.10 (online resizing)
+64bit	ext4	2.6.28
+dir_nlink	ext4	2.6.28
+extent	ext4	2.6.28
+extra_isize	ext4	2.6.28
+flex_bg	ext4	2.6.28
+huge_file	ext4	2.6.28
+meta_bg	ext4	2.6.28
+uninit_bg	ext4	2.6.28
+mmp	ext4	3.0
+bigalloc	ext4	3.2
+quota	ext4	3.6
+inline_data	ext4	3.8
+sparse_super2	ext4	3.16
+metadata_csum	ext4	3.18
+encrypt	ext4	4.1
+metadata_csum_seed	ext4	4.4
+project	ext4	4.5
+ea_inode	ext4	4.13
+large_dir	ext4	4.13
+casefold	ext4	5.2
+verity	ext4	5.4
+stable_inodes	ext4	5.5
+fast_commit	ext4	5.10
+orphan_file	ext4	5.15
+.TE
 .SH SEE ALSO
 .BR mke2fs (8),
 .BR mke2fs.conf (5),

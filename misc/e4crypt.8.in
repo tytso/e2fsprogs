@@ -19,13 +19,24 @@ Prompts the user for a passphrase and inserts it into the specified
 keyring.  If no keyring is specified, e4crypt will use the session
 keyring if it exists or the user session keyring if it does not.
 .IP
-The
+A salt is used to convert the passphrase into an encryption key, and
+ensures that if the user uses the same passphrase in different contexts,
+different salt values will result in different encryption keys.  By
+default,
+.B e4crypt
+will examine all mounted ext4 file systems, and insert an encryption
+key salted with each file system with encryption enabled with its
+default salt value.
+.IP
+Alternatively, if the user specifies an explicit salt, that salt value
+will be used to calculate the encryption key from the passphrase.
+If the first two characters of
 .I salt
-argument is interpreted in a number of different ways, depending on how
-its prefix value.  If the first two characters are "s:", then the rest
-of the argument will be used as an text string and used as the salt
+are "s:", then the rest
+of the argument will be used as a text string and used as the salt
 value.  If the first two characters are "0x", then the rest of the
-argument will be parsed as a hex string as used as the salt.  If the
+argument will be parsed as a hex string and the hex value will be used
+as the salt.  If the
 first characters are "f:" then the rest of the argument will be
 interpreted as a filename from which the salt value will be read.  If
 the string begins with a '/' character, it will similarly be treated as

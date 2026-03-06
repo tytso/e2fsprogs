@@ -4,7 +4,7 @@
 # zwpwjwtz <zwpwjwtz@126.com>, 2015.
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2016.
 # Boyuan Yang <073plan@gmail.com>, 2019.
-# Wenbin Lv <wenbin816@gmail.com>, 2021, 2022, 2024.
+# Wenbin Lv <wenbin816@gmail.com>, 2021, 2022, 2024, 2025.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -77,10 +77,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.47.2-rc1\n"
+"Project-Id-Version: e2fsprogs 1.47.3-rc1\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2024-11-29 02:11-0500\n"
-"PO-Revision-Date: 2024-12-01 02:55+0800\n"
+"POT-Creation-Date: 2025-05-28 08:29-0400\n"
+"PO-Revision-Date: 2025-05-30 18:35+0800\n"
 "Last-Translator: Wenbin Lv <wenbin816@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -89,10 +89,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.6\n"
 "X-Poedit-Bookmarks: -1,591,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
-#: e2fsck/badblocks.c:23 misc/mke2fs.c:224
+#: e2fsck/badblocks.c:23 misc/mke2fs.c:206
 #, c-format
 msgid "Bad block %u out of range; ignored.\n"
 msgstr "坏块 %u 超出范围；已忽略。\n"
@@ -107,10 +107,10 @@ msgstr "读取坏块 inode 时"
 
 #: e2fsck/badblocks.c:72 e2fsck/scantest.c:107 e2fsck/unix.c:1599
 #: e2fsck/unix.c:1714 misc/badblocks.c:1273 misc/badblocks.c:1281
-#: misc/badblocks.c:1295 misc/badblocks.c:1307 misc/dumpe2fs.c:438
-#: misc/dumpe2fs.c:704 misc/dumpe2fs.c:708 misc/e2image.c:1447
-#: misc/e2image.c:1647 misc/e2image.c:1668 misc/mke2fs.c:240
-#: misc/tune2fs.c:3044 misc/tune2fs.c:3233 resize/main.c:422
+#: misc/badblocks.c:1295 misc/badblocks.c:1307 misc/dumpe2fs.c:439
+#: misc/dumpe2fs.c:710 misc/dumpe2fs.c:714 misc/e2image.c:1447
+#: misc/e2image.c:1647 misc/e2image.c:1668 misc/mke2fs.c:222
+#: misc/tune2fs.c:3060 misc/tune2fs.c:3249 resize/main.c:422
 #, c-format
 msgid "while trying to open %s"
 msgstr "尝试打开 %s 时"
@@ -120,7 +120,7 @@ msgstr "尝试打开 %s 时"
 msgid "while trying popen '%s'"
 msgstr "尝试 popen \"%s\" 时"
 
-#: e2fsck/badblocks.c:95 misc/mke2fs.c:247
+#: e2fsck/badblocks.c:95 misc/mke2fs.c:229
 msgid "while reading in list of bad blocks from file"
 msgstr "从文件中读取坏块列表时"
 
@@ -231,17 +231,17 @@ msgstr "%s: 日志过短\n"
 msgid "%s: incorrect fast commit blocks\n"
 msgstr "%s: 错误的快速提交块\n"
 
-#: e2fsck/journal.c:1688 misc/fuse2fs.c:3872
+#: e2fsck/journal.c:1698
 #, c-format
 msgid "%s: recovering journal\n"
 msgstr "%s: 正在恢复日志\n"
 
-#: e2fsck/journal.c:1690
+#: e2fsck/journal.c:1700
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
 msgstr "%s: 使用只读模式时不会进行日志修复\n"
 
-#: e2fsck/journal.c:1718
+#: e2fsck/journal.c:1728
 #, c-format
 msgid "while trying to re-open %s"
 msgstr "尝试重新打开 %s 时"
@@ -543,49 +543,49 @@ msgstr "inode casefold 映射"
 msgid "opening inode scan"
 msgstr "打开 inode 扫描"
 
-#: e2fsck/pass1.c:2193
+#: e2fsck/pass1.c:2198
 msgid "Pass 1"
 msgstr "第 1 遍"
 
-#: e2fsck/pass1.c:2254
+#: e2fsck/pass1.c:2259
 #, c-format
 msgid "reading indirect blocks of inode %u"
 msgstr "读取 inode %u 的间接块"
 
-#: e2fsck/pass1.c:2305
+#: e2fsck/pass1.c:2310
 msgid "bad inode map"
 msgstr "损坏的 inode 映射"
 
-#: e2fsck/pass1.c:2345
+#: e2fsck/pass1.c:2350
 msgid "inode in bad block map"
 msgstr "坏块映射中的 inode"
 
-#: e2fsck/pass1.c:2365
+#: e2fsck/pass1.c:2370
 msgid "imagic inode map"
 msgstr "imagic inode 映射"
 
-#: e2fsck/pass1.c:2396
+#: e2fsck/pass1.c:2401
 msgid "multiply claimed block map"
 msgstr "重复引用的块映射"
 
-#: e2fsck/pass1.c:2521
+#: e2fsck/pass1.c:2526
 msgid "ext attr block map"
 msgstr "扩展属性块映射"
 
-#: e2fsck/pass1.c:3828
+#: e2fsck/pass1.c:3833
 #, c-format
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
 msgstr "%6lu (%c): 应为 %6lu 但得到物理块 %6lu（块计数 %lld）\n"
 
-#: e2fsck/pass1.c:4249
+#: e2fsck/pass1.c:4254
 msgid "block bitmap"
 msgstr "块位图"
 
-#: e2fsck/pass1.c:4255
+#: e2fsck/pass1.c:4260
 msgid "inode bitmap"
 msgstr "inode 位图"
 
-#: e2fsck/pass1.c:4261
+#: e2fsck/pass1.c:4266
 msgid "inode table"
 msgstr "inode 表"
 
@@ -3255,17 +3255,17 @@ msgstr "正在截断"
 msgid "Clearing"
 msgstr "正在清除"
 
-#: e2fsck/super.c:453
+#: e2fsck/super.c:462
 #, c-format
 msgid "while reading inode %d"
 msgstr "读取 inode %d 时"
 
-#: e2fsck/super.c:473 e2fsck/super.c:677
+#: e2fsck/super.c:484 e2fsck/super.c:692
 #, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
 msgstr "为 inode %d 调用 ext2fs_block_iterate 时"
 
-#: e2fsck/super.c:481 e2fsck/super.c:685
+#: e2fsck/super.c:492 e2fsck/super.c:700
 #, c-format
 msgid "while reading blocks of inode %d"
 msgstr "读取 inode %d 的块时"
@@ -3439,7 +3439,7 @@ msgid "%12u file\n"
 msgid_plural "%12u files\n"
 msgstr[0] "%12u 个文件\n"
 
-#: e2fsck/unix.c:241 misc/badblocks.c:1001 misc/tune2fs.c:3326 misc/util.c:135
+#: e2fsck/unix.c:241 misc/badblocks.c:1001 misc/tune2fs.c:3342 misc/util.c:136
 #: resize/main.c:357
 #, c-format
 msgid "while determining whether %s is mounted."
@@ -3613,8 +3613,9 @@ msgstr "只能使用选项 -p/-a、-n 或 -y 其中之一。"
 msgid "The -t option is not supported on this version of e2fsck.\n"
 msgstr "此版本的 e2fsck 不支持 -t 选项。\n"
 
-#: e2fsck/unix.c:954 e2fsck/unix.c:1032 misc/e2initrd_helper.c:331
-#: misc/tune2fs.c:1920 misc/tune2fs.c:2220 misc/tune2fs.c:2238
+#: e2fsck/unix.c:954 e2fsck/unix.c:1032 misc/dumpe2fs.c:679
+#: misc/e2initrd_helper.c:331 misc/tune2fs.c:1936 misc/tune2fs.c:2236
+#: misc/tune2fs.c:2254
 #, c-format
 msgid "Unable to resolve '%s'"
 msgstr "无法解析 \"%s\""
@@ -3696,8 +3697,8 @@ msgid "while reading MMP block"
 msgstr "读取 MMP 块时"
 
 #: e2fsck/unix.c:1329 e2fsck/unix.c:1381 misc/e2undo.c:242 misc/e2undo.c:287
-#: misc/mke2fs.c:2850 misc/mke2fs.c:2901 misc/tune2fs.c:2961
-#: misc/tune2fs.c:3006 resize/main.c:188 resize/main.c:233
+#: misc/mke2fs.c:2925 misc/mke2fs.c:2976 misc/tune2fs.c:2977
+#: misc/tune2fs.c:3022 resize/main.c:188 resize/main.c:233
 #, c-format
 msgid ""
 "Overwriting existing filesystem; this can be undone using the command:\n"
@@ -3708,13 +3709,13 @@ msgstr ""
 "    e2undo %s %s\n"
 "\n"
 
-#: e2fsck/unix.c:1370 misc/e2undo.c:276 misc/mke2fs.c:2890 misc/tune2fs.c:2995
+#: e2fsck/unix.c:1370 misc/e2undo.c:276 misc/mke2fs.c:2965 misc/tune2fs.c:3011
 #: resize/main.c:222
 #, c-format
 msgid "while trying to delete %s"
 msgstr "尝试删除 %s 时"
 
-#: e2fsck/unix.c:1396 misc/mke2fs.c:2916 resize/main.c:243
+#: e2fsck/unix.c:1396 misc/mke2fs.c:2991 resize/main.c:243
 msgid "while trying to setup undo file\n"
 msgstr "尝试创建撤销文件时\n"
 
@@ -3936,11 +3937,11 @@ msgstr ""
 "%s: ********** 警告：文件系统上仍有错误 **********\n"
 "\n"
 
-#: e2fsck/util.c:191 misc/util.c:99
+#: e2fsck/util.c:191 misc/util.c:100
 msgid "yY"
 msgstr "yY"
 
-#: e2fsck/util.c:192 misc/util.c:118
+#: e2fsck/util.c:192 misc/util.c:119
 msgid "nN"
 msgstr "nN"
 
@@ -4189,7 +4190,7 @@ msgstr ""
 msgid "during test data write, block %lu"
 msgstr "将测试数据写入块 %lu 时"
 
-#: misc/badblocks.c:1006 misc/util.c:140
+#: misc/badblocks.c:1006 misc/util.c:141
 #, c-format
 msgid "%s is mounted; "
 msgstr "%s 已经挂载；"
@@ -4202,7 +4203,7 @@ msgstr "强制进行坏块检查。希望 /etc/mtab 中反映的并非真实情�
 msgid "it's not safe to run badblocks!\n"
 msgstr "进行坏块检查有风险！\n"
 
-#: misc/badblocks.c:1018 misc/util.c:151
+#: misc/badblocks.c:1018 misc/util.c:152
 #, c-format
 msgid "%s is apparently in use by the system; "
 msgstr "%s 似乎正被系统使用；"
@@ -4366,217 +4367,216 @@ msgstr "= 与 - / + 不相容\n"
 msgid "Must use '-v', =, - or +\n"
 msgstr "必须使用 \"-v\"、=、- 或 + 其中之一\n"
 
-#: misc/create_inode.c:81 misc/create_inode.c:127
+#: misc/create_inode.c:95 misc/create_inode.c:131
 #, c-format
 msgid "while reading inode %u"
 msgstr "读取 inode %u 时"
 
-#: misc/create_inode.c:91 misc/create_inode.c:307 misc/create_inode.c:374
-#: misc/create_inode.c:412
-msgid "while expanding directory"
-msgstr "扩充目录时"
-
-#: misc/create_inode.c:98
+#: misc/create_inode.c:102
 #, c-format
 msgid "while linking \"%s\""
 msgstr "链接 \"%s\" 时"
 
-#: misc/create_inode.c:106 misc/create_inode.c:142 misc/create_inode.c:343
+#: misc/create_inode.c:110 misc/create_inode.c:146 misc/create_inode.c:335
 #, c-format
 msgid "while writing inode %u"
 msgstr "写入 inode %u 时"
 
-#: misc/create_inode.c:164 misc/create_inode.c:195
+#: misc/create_inode.c:165 misc/create_inode.c:196
 #, c-format
 msgid "while listing attributes of \"%s\""
 msgstr "尝试列出 \"%s\" 的属性时"
 
-#: misc/create_inode.c:175
+#: misc/create_inode.c:176
 #, c-format
 msgid "while opening inode %u"
 msgstr "打开 inode %u 时"
 
-#: misc/create_inode.c:182
+#: misc/create_inode.c:183
 #, c-format
 msgid "while reading xattrs for inode %u"
 msgstr "读取 inode %u 的 xattr 时"
 
-#: misc/create_inode.c:188 misc/create_inode.c:215 misc/create_inode.c:1072
+#: misc/create_inode.c:189 misc/create_inode.c:216 misc/create_inode.c:1207
 #: misc/e2undo.c:188 misc/e2undo.c:485 misc/e2undo.c:491 misc/e2undo.c:497
-#: misc/mke2fs.c:364
+#: misc/mke2fs.c:346
 msgid "while allocating memory"
 msgstr "分配内存时"
 
-#: misc/create_inode.c:208 misc/create_inode.c:224
+#: misc/create_inode.c:209 misc/create_inode.c:225
 #, c-format
 msgid "while reading attribute \"%s\" of \"%s\""
 msgstr "读取 \"%2$s\" 的 \"%1$s\" 属性时"
 
-#: misc/create_inode.c:233
+#: misc/create_inode.c:234
 #, c-format
 msgid "while writing attribute \"%s\" to inode %u"
 msgstr "写入属性 \"%s\" 到 inode %u 时"
 
-#: misc/create_inode.c:243
+#: misc/create_inode.c:244
 #, c-format
 msgid "while closing inode %u"
 msgstr "关闭 inode %u 时"
 
-#: misc/create_inode.c:294
+#: misc/create_inode.c:295
 #, c-format
 msgid "while allocating inode \"%s\""
 msgstr "分配 inode \"%s\" 时"
 
-#: misc/create_inode.c:313
+#: misc/create_inode.c:305
 #, c-format
 msgid "while creating inode \"%s\""
 msgstr "创建 inode \"%s\" 时"
 
-#: misc/create_inode.c:381
+#: misc/create_inode.c:366
+msgid "while expanding directory"
+msgstr "扩充目录时"
+
+#: misc/create_inode.c:373
 #, c-format
 msgid "while creating symlink \"%s\""
 msgstr "创建符号链接 \"%s\" 时"
 
-#: misc/create_inode.c:399 misc/create_inode.c:664 misc/create_inode.c:992
+#: misc/create_inode.c:391 misc/create_inode.c:797 misc/create_inode.c:1124
 #, c-format
 msgid "while looking up \"%s\""
 msgstr "查找 \"%s\" 时"
 
-#: misc/create_inode.c:419
+#: misc/create_inode.c:403
 #, c-format
 msgid "while creating directory \"%s\""
 msgstr "创建目录 \"%s\" 时"
 
-#: misc/create_inode.c:650
+#: misc/create_inode.c:783
 #, c-format
 msgid "while opening \"%s\" to copy"
 msgstr "打开 \"%s\" 准备拷贝时"
 
-#: misc/create_inode.c:830
+#: misc/create_inode.c:960
 #, c-format
 msgid "while changing working directory to \"%s\""
 msgstr "改变工作目录为 \"%s\" 时"
 
-#: misc/create_inode.c:840
+#: misc/create_inode.c:970
 #, c-format
 msgid "while scanning directory \"%s\""
 msgstr "扫描目录 \"%s\" 时"
 
-#: misc/create_inode.c:850
+#: misc/create_inode.c:980
 #, c-format
 msgid "while lstat \"%s\""
 msgstr "对 \"%s\" 进行 lstat 调用时"
 
-#: misc/create_inode.c:900
+#: misc/create_inode.c:1032
 #, c-format
 msgid "while creating special file \"%s\""
 msgstr "创建特殊文件 \"%s\" 时"
 
-#: misc/create_inode.c:912
+#: misc/create_inode.c:1044
 msgid "malloc failed"
 msgstr "内存分配失败"
 
-#: misc/create_inode.c:920
+#: misc/create_inode.c:1052
 #, c-format
 msgid "while trying to read link \"%s\""
 msgstr "尝试读取链接 \"%s\" 时"
 
-#: misc/create_inode.c:927
+#: misc/create_inode.c:1059
 msgid "symlink increased in size between lstat() and readlink()"
 msgstr "在执行 lstat() 与 readlink() 之间，符号链接的大小增加了"
 
-#: misc/create_inode.c:938
+#: misc/create_inode.c:1070
 #, c-format
 msgid "while writing symlink\"%s\""
 msgstr "写入符号链接 \"%s\" 时"
 
-#: misc/create_inode.c:950
+#: misc/create_inode.c:1082
 #, c-format
 msgid "while writing file \"%s\""
 msgstr "写入文件 \"%s\" 时"
 
-#: misc/create_inode.c:963
+#: misc/create_inode.c:1095
 #, c-format
 msgid "while making dir \"%s\""
 msgstr "创建目录 \"%s\" 时"
 
-#: misc/create_inode.c:981
+#: misc/create_inode.c:1113
 msgid "while changing directory"
 msgstr "改变目录时"
 
-#: misc/create_inode.c:987
+#: misc/create_inode.c:1119
 #, c-format
 msgid "ignoring entry \"%s\""
 msgstr "忽略项 \"%s\""
 
-#: misc/create_inode.c:1000
+#: misc/create_inode.c:1132
 #, c-format
 msgid "while setting inode for \"%s\""
 msgstr "为 \"%s\" 设置 inode 时"
 
-#: misc/create_inode.c:1007
+#: misc/create_inode.c:1140
 #, c-format
 msgid "while setting xattrs for \"%s\""
 msgstr "设置 \"%s\" 的 xattr 时"
 
-#: misc/create_inode.c:1033
+#: misc/create_inode.c:1168
 msgid "while saving inode data"
 msgstr "保存 inode 数据时"
 
-#: misc/create_inode.c:1092
+#: misc/create_inode.c:1232
 msgid "while calling stat"
 msgstr "调用 stat 时"
 
-#: misc/create_inode.c:1104
+#: misc/create_inode.c:1246
 msgid "while copying xattrs on root directory"
 msgstr "将 xattr 复制到根目录时"
 
-#: misc/dumpe2fs.c:56
+#: misc/dumpe2fs.c:57
 #, c-format
 msgid "Usage: %s [-bfghimxV] [-o superblock=<num>] [-o blocksize=<num>] device\n"
 msgstr "用法：%s [-bfghimxV] [-o superblock=<超级块编号>] [-o blocksize=<块大小>] 设备\n"
 
-#: misc/dumpe2fs.c:159
+#: misc/dumpe2fs.c:160
 msgid "blocks"
 msgstr "块"
 
-#: misc/dumpe2fs.c:168
+#: misc/dumpe2fs.c:169
 msgid "clusters"
 msgstr "簇"
 
-#: misc/dumpe2fs.c:219
+#: misc/dumpe2fs.c:220
 #, c-format
 msgid "Group %lu: (Blocks "
 msgstr "组 %lu：(块 "
 
-#: misc/dumpe2fs.c:226
+#: misc/dumpe2fs.c:227
 #, c-format
 msgid " csum 0x%04x"
 msgstr "  校验和 0x%04x"
 
-#: misc/dumpe2fs.c:228
+#: misc/dumpe2fs.c:229
 #, c-format
 msgid " (EXPECTED 0x%04x)"
 msgstr "（应为 0x%04x）"
 
-#: misc/dumpe2fs.c:233
+#: misc/dumpe2fs.c:234
 #, c-format
 msgid "  %s superblock at "
 msgstr "  %s 超级块位于 "
 
-#: misc/dumpe2fs.c:234
+#: misc/dumpe2fs.c:235
 msgid "Primary"
 msgstr "主"
 
-#: misc/dumpe2fs.c:234
+#: misc/dumpe2fs.c:235
 msgid "Backup"
 msgstr "备份"
 
-#: misc/dumpe2fs.c:238
+#: misc/dumpe2fs.c:239
 msgid ", Group descriptors at "
 msgstr "，组描述符位于 "
 
-#: misc/dumpe2fs.c:242
+#: misc/dumpe2fs.c:243
 msgid ""
 "\n"
 "  Reserved GDT blocks at "
@@ -4584,24 +4584,24 @@ msgstr ""
 "\n"
 "  保留的 GDT 块位于 "
 
-#: misc/dumpe2fs.c:249
+#: misc/dumpe2fs.c:250
 msgid " Group descriptor at "
 msgstr " 组描述符位于 "
 
-#: misc/dumpe2fs.c:255
+#: misc/dumpe2fs.c:256
 msgid "  Block bitmap at "
 msgstr "  块位图位于 "
 
-#: misc/dumpe2fs.c:260 misc/dumpe2fs.c:271
+#: misc/dumpe2fs.c:261 misc/dumpe2fs.c:272
 #, c-format
 msgid ", csum 0x%08x"
 msgstr "，校验和 0x%08x"
 
-#: misc/dumpe2fs.c:263
+#: misc/dumpe2fs.c:264
 msgid ","
 msgstr "，"
 
-#: misc/dumpe2fs.c:265
+#: misc/dumpe2fs.c:266
 msgid ""
 "\n"
 " "
@@ -4609,11 +4609,11 @@ msgstr ""
 "\n"
 " "
 
-#: misc/dumpe2fs.c:266
+#: misc/dumpe2fs.c:267
 msgid " Inode bitmap at "
 msgstr " inode 位图位于 "
 
-#: misc/dumpe2fs.c:273
+#: misc/dumpe2fs.c:274
 msgid ""
 "\n"
 "  Inode table at "
@@ -4621,7 +4621,7 @@ msgstr ""
 "\n"
 "  inode 表位于 "
 
-#: misc/dumpe2fs.c:279
+#: misc/dumpe2fs.c:280
 #, c-format
 msgid ""
 "\n"
@@ -4630,76 +4630,76 @@ msgstr ""
 "\n"
 "  %u 个可用%s，%u 个可用 inode，%u 个目录 %s"
 
-#: misc/dumpe2fs.c:286
+#: misc/dumpe2fs.c:287
 #, c-format
 msgid ", %u unused inodes\n"
 msgstr "，%u 个未使用的 inode\n"
 
-#: misc/dumpe2fs.c:289
+#: misc/dumpe2fs.c:290
 msgid "  Free blocks: "
 msgstr "  可用块数："
 
-#: misc/dumpe2fs.c:304
+#: misc/dumpe2fs.c:305
 msgid "  Free inodes: "
 msgstr "  可用 inode 数："
 
-#: misc/dumpe2fs.c:340
+#: misc/dumpe2fs.c:341
 msgid "while printing bad block list"
 msgstr "输出坏块列表时"
 
-#: misc/dumpe2fs.c:347
+#: misc/dumpe2fs.c:348
 #, c-format
 msgid "Bad blocks: %u"
 msgstr "坏块数：%u"
 
-#: misc/dumpe2fs.c:375 misc/tune2fs.c:413
+#: misc/dumpe2fs.c:376 misc/tune2fs.c:413
 msgid "while reading journal inode"
 msgstr "读取日志 inode 时"
 
-#: misc/dumpe2fs.c:381
+#: misc/dumpe2fs.c:382
 msgid "while opening journal inode"
 msgstr "打开日志 inode 时"
 
-#: misc/dumpe2fs.c:387
+#: misc/dumpe2fs.c:388
 msgid "while reading journal super block"
 msgstr "读取日志超级块时"
 
-#: misc/dumpe2fs.c:394
+#: misc/dumpe2fs.c:395
 msgid "Journal superblock magic number invalid!\n"
 msgstr "日志超级块的幻数有错！\n"
 
-#: misc/dumpe2fs.c:414 misc/tune2fs.c:256
+#: misc/dumpe2fs.c:415 misc/tune2fs.c:256
 msgid "while reading journal superblock"
 msgstr "读取日志超级块时"
 
-#: misc/dumpe2fs.c:422
+#: misc/dumpe2fs.c:423
 msgid "Couldn't find journal superblock magic numbers"
 msgstr "无法找到日志超级块的幻数"
 
-#: misc/dumpe2fs.c:477
+#: misc/dumpe2fs.c:478
 msgid "failed to alloc MMP buffer\n"
 msgstr "分配 MMP 缓冲区失败\n"
 
-#: misc/dumpe2fs.c:488
+#: misc/dumpe2fs.c:489
 #, c-format
 msgid "reading MMP block %llu from '%s'\n"
 msgstr "从 \"%2$s\" 读取 MMP 块 %1$llu 时\n"
 
-#: misc/dumpe2fs.c:520 misc/mke2fs.c:849 misc/tune2fs.c:2260
+#: misc/dumpe2fs.c:521 misc/mke2fs.c:831 misc/tune2fs.c:2276
 msgid "Couldn't allocate memory to parse options!\n"
 msgstr "无法为解析选项分配内存！\n"
 
-#: misc/dumpe2fs.c:546
+#: misc/dumpe2fs.c:547
 #, c-format
 msgid "Invalid superblock parameter: %s\n"
 msgstr "无效的超级块参数：%s\n"
 
-#: misc/dumpe2fs.c:561
+#: misc/dumpe2fs.c:562
 #, c-format
 msgid "Invalid blocksize parameter: %s\n"
 msgstr "无效的块大小参数：%s\n"
 
-#: misc/dumpe2fs.c:572
+#: misc/dumpe2fs.c:573
 #, c-format
 msgid ""
 "\n"
@@ -4721,27 +4721,27 @@ msgstr ""
 "\tsuperblock=<超级块编号>\n"
 "\tblocksize=<块大小>\n"
 
-#: misc/dumpe2fs.c:663 misc/mke2fs.c:1990
+#: misc/dumpe2fs.c:664 misc/mke2fs.c:2021
 #, c-format
 msgid "\tUsing %s\n"
 msgstr "\t使用 %s\n"
 
-#: misc/dumpe2fs.c:710 misc/e2image.c:1649 misc/tune2fs.c:3251
+#: misc/dumpe2fs.c:716 misc/e2image.c:1649 misc/tune2fs.c:3267
 #: resize/main.c:424
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "找不到有效的文件系统超级块。\n"
 
-#: misc/dumpe2fs.c:732
+#: misc/dumpe2fs.c:738
 #, c-format
 msgid "%s: MMP feature not enabled.\n"
 msgstr "%s: MMP 特性未启用。\n"
 
-#: misc/dumpe2fs.c:763
+#: misc/dumpe2fs.c:769
 #, c-format
 msgid "while trying to read '%s' bitmaps\n"
 msgstr "尝试读取 \"%s\" 位图时\n"
 
-#: misc/dumpe2fs.c:772
+#: misc/dumpe2fs.c:778
 msgid ""
 "*** Run e2fsck now!\n"
 "\n"
@@ -5023,7 +5023,7 @@ msgstr "e2label: 读取超级块时出错\n"
 msgid "e2label: not an ext2 filesystem\n"
 msgstr "e2label: 不是一个 ext2 文件系统\n"
 
-#: misc/e2label.c:97 misc/tune2fs.c:3138 misc/tune2fs.c:3465
+#: misc/e2label.c:97 misc/tune2fs.c:3154 misc/tune2fs.c:3481
 #, c-format
 msgid "Warning: label too long, truncating.\n"
 msgstr "警告：标签太长，已截短。\n"
@@ -5038,7 +5038,7 @@ msgstr "e2label: 再一次无法定位到超级块\n"
 msgid "e2label: error writing superblock\n"
 msgstr "e2label: 写入超级块时出错\n"
 
-#: misc/e2label.c:117 misc/tune2fs.c:1912
+#: misc/e2label.c:117 misc/tune2fs.c:1928
 #, c-format
 msgid "Usage: e2label device [newlabel]\n"
 msgstr "用法：e2label 设备 [新标签]\n"
@@ -5348,60 +5348,91 @@ msgstr "%s: 设备过多\n"
 msgid "%s: too many arguments\n"
 msgstr "%s: 参数过多\n"
 
-#: misc/fuse2fs.c:3819
-msgid "Mounting read-only.\n"
-msgstr "以只读模式挂载。\n"
+#: misc/fuse2fs.c:731
+msgid "unmounting filesystem"
+msgstr "卸载文件系统时"
 
-#: misc/fuse2fs.c:3843
-#, c-format
-msgid "%s: Allowing users to allocate all blocks. This is dangerous!\n"
-msgstr "%s: 允许用户分配所有块。这样做很危险！\n"
+#: misc/fuse2fs.c:779
+msgid "mounted filesystem"
+msgstr "已挂载的文件系统"
 
-#: misc/fuse2fs.c:3857 misc/fuse2fs.c:3875
-#, c-format
-msgid "%s: %s.\n"
-msgstr "%s: %s。\n"
+#: misc/fuse2fs.c:4238
+msgid "cache size must be between 1 block and 2GB."
+msgstr "缓存大小必须介于 1 块和 2 GB 之间。"
 
-#: misc/fuse2fs.c:3858 misc/fuse2fs.c:3877 misc/tune2fs.c:3352
-#, c-format
-msgid "Please run e2fsck -fy %s.\n"
-msgstr "请先运行 \"e2fsck -fy %s\"。\n"
+#: misc/fuse2fs.c:4388
+msgid "Allowing users to allocate all blocks. This is dangerous!"
+msgstr "允许用户分配所有块。这样做很危险！"
 
-#: misc/fuse2fs.c:3868
-#, c-format
-msgid "%s: mounting read-only without recovering journal\n"
-msgstr "%s: 以只读方式挂载且不恢复日志\n"
+#: misc/fuse2fs.c:4402 misc/fuse2fs.c:4461
+msgid "Please run e2fsck -fy."
+msgstr "请运行 e2fsck -fy。"
 
-#: misc/fuse2fs.c:3884
-msgid "Journal needs recovery; running `e2fsck -E journal_only' is required.\n"
-msgstr "需要恢复日志；请运行 \"e2fsck -E journal_only\"。\n"
+#: misc/fuse2fs.c:4420
+msgid "cannot set disk cache size to"
+msgstr "无法设置磁盘缓存大小为"
 
-#: misc/fuse2fs.c:3892
-#, c-format
-msgid "%s: Writing to the journal is not supported.\n"
-msgstr "%s: 不支持写入日志。\n"
+#: misc/fuse2fs.c:4430
+msgid "quotas not supported."
+msgstr "不支持 quotas。"
 
-#: misc/fuse2fs.c:3907
-msgid "Warning: Mounting unchecked fs, running e2fsck is recommended.\n"
-msgstr "警告：正在挂载未经检查的文件系统，建议您运行 e2fsck。\n"
+#: misc/fuse2fs.c:4434
+msgid "verity not supported."
+msgstr "不支持 verity。"
 
-#: misc/fuse2fs.c:3911
-msgid "Warning: Maximal mount count reached, running e2fsck is recommended.\n"
+#: misc/fuse2fs.c:4438
+msgid "encryption not supported."
+msgstr "不支持加密。"
+
+#: misc/fuse2fs.c:4442
+msgid "casefolding not supported."
+msgstr "不支持 casefolding。"
+
+#: misc/fuse2fs.c:4452
+msgid "Mounting read-only without recovering journal."
+msgstr "以只读方式挂载且不恢复日志。"
+
+#: misc/fuse2fs.c:4456
+msgid "Recovering journal."
+msgstr "正在恢复日志。"
+
+#: misc/fuse2fs.c:4472
+msgid ""
+"Warning: fuse2fs does not support using the journal.\n"
+"There may be file system corruption or data loss if\n"
+"the file system is not gracefully unmounted.\n"
 msgstr ""
-"警告：达到了最大挂载次数，建议您运行 e2fsck。\n"
-"\n"
+"警告：fuse2fs 不支持使用日志。\n"
+"如果文件系统未能正常卸载，可能会\n"
+"造成文件系统损坏或数据丢失。\n"
 
-#: misc/fuse2fs.c:3916
-msgid "Warning: Check time reached; running e2fsck is recommended.\n"
-msgstr "警告：检查时间已到；建议您运行 e2fsck。\n"
+#: misc/fuse2fs.c:4489
+msgid "Warning: Mounting unchecked fs, running e2fsck is recommended."
+msgstr "警告：正在挂载未经检查的文件系统，建议您运行 e2fsck。"
 
-#: misc/fuse2fs.c:3920
-msgid "Orphans detected; running e2fsck is recommended.\n"
-msgstr "检测到孤立块；建议您运行 e2fsck。\n"
+#: misc/fuse2fs.c:4493
+msgid "Warning: Maximal mount count reached, running e2fsck is recommended."
+msgstr "警告：达到了最大挂载次数，建议您运行 e2fsck。"
 
-#: misc/fuse2fs.c:3924
-msgid "Errors detected; running e2fsck is required.\n"
-msgstr "检测到错误；请运行 e2fsck。\n"
+#: misc/fuse2fs.c:4498
+msgid "Warning: Check time reached; running e2fsck is recommended."
+msgstr "警告：检查时间已到；建议您运行 e2fsck。"
+
+#: misc/fuse2fs.c:4501
+msgid "Orphans detected; running e2fsck is recommended."
+msgstr "检测到孤立块；建议您运行 e2fsck。"
+
+#: misc/fuse2fs.c:4505
+msgid "Errors detected; running e2fsck is required."
+msgstr "检测到错误；请运行 e2fsck。"
+
+#: misc/fuse2fs.c:4582
+msgid "Mount failed due to unrecognized options.  Check dmesg(1) for details."
+msgstr "由于无法识别的选项，挂载失败。阅读 dmesg(1) 以获取详细信息。"
+
+#: misc/fuse2fs.c:4587
+msgid "Mount failed while opening filesystem.  Check dmesg(1) for details."
+msgstr "试图打开文件系统时，挂载失败。阅读 dmesg(1) 以获取详细信息。"
 
 #: misc/lsattr.c:75
 #, c-format
@@ -5423,11 +5454,11 @@ msgstr "读取 %s 的项目时"
 msgid "While reading version on %s"
 msgstr "读取 %s 的版本时"
 
-#: misc/lsattr.c:148
+#: misc/lsattr.c:152
 msgid "Couldn't allocate path variable in lsattr_dir_proc\n"
 msgstr "无法在 lsattr_dir_proc 中为路径变量分配内存\n"
 
-#: misc/mke2fs.c:134
+#: misc/mke2fs.c:137
 #, c-format
 msgid ""
 "Usage: %s [-c|-l filename] [-b block-size] [-C cluster-size]\n"
@@ -5435,8 +5466,8 @@ msgid ""
 "\t[-G flex-group-size] [-N number-of-inodes] [-d root-directory|tarball]\n"
 "\t[-m reserved-blocks-percentage] [-o creator-os]\n"
 "\t[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]\n"
-"\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]\n"
-"\t[-t fs-type] [-T usage-type ] [-U UUID] [-e errors_behavior][-z undo_file]\n"
+"\t[-O feature[,...]] [-E extended-option[,...]] [-t fs-type]\n"
+"\t[-T usage-type ] [-U UUID] [-e errors_behavior][-z undo_file]\n"
 "\t[-jnqvDFSV] device [blocks-count]\n"
 msgstr ""
 "用法：%s [-c|-l 文件名] [-b 块大小] [-C 簇大小]\n"
@@ -5444,39 +5475,39 @@ msgstr ""
 "\t[-G 弹性组大小] [-N inode数] [-d 根目录|tar文件]\n"
 "\t[-m 保留块所占百分比] [-o 创始系统名]\n"
 "\t[-g 每组的块数] [-L 卷标] [-M 上一次挂载点]\n"
-"\t[-O 特性[,...]] [-r 文件系统版本] [-E 扩展选项[,...]]\n"
-"\t[-t 文件系统类型] [-T 用法类型] [-U UUID] [-e 错误行为][-z 撤销文件]\n"
+"\t[-O 特性[,...]] [-E 扩展选项[,...]] [-t 文件系统类型]\n"
+"\t[-T 用法类型] [-U UUID] [-e 错误行为][-z 撤销文件]\n"
 "\t[-jnqvDFSV] 设备 [块数]\n"
 
-#: misc/mke2fs.c:266
+#: misc/mke2fs.c:248
 #, c-format
 msgid "Running command: %s\n"
 msgstr "正在执行命令：%s\n"
 
-#: misc/mke2fs.c:270
+#: misc/mke2fs.c:252
 #, c-format
 msgid "while trying to run '%s'"
 msgstr "尝试运行 \"%s\" 时"
 
-#: misc/mke2fs.c:277
+#: misc/mke2fs.c:259
 msgid "while processing list of bad blocks from program"
 msgstr "处理程序提供的坏块列表时"
 
-#: misc/mke2fs.c:304
+#: misc/mke2fs.c:286
 #, c-format
 msgid "Block %d in primary superblock/group descriptor area bad.\n"
 msgstr "主超级块/组描述符区中的块 %d 为坏块。\n"
 
-#: misc/mke2fs.c:306
+#: misc/mke2fs.c:288
 #, c-format
 msgid "Blocks %u through %u must be good in order to build a filesystem.\n"
 msgstr "若要创建文件系统，块 %u 至 %u 必须为好块。\n"
 
-#: misc/mke2fs.c:309
+#: misc/mke2fs.c:291
 msgid "Aborting....\n"
 msgstr "正在中止...\n"
 
-#: misc/mke2fs.c:329
+#: misc/mke2fs.c:311
 #, c-format
 msgid ""
 "Warning: the backup superblock/group descriptors at block %u contain\n"
@@ -5486,19 +5517,19 @@ msgstr ""
 "警告：备份超级块/组描述符中发现坏块 (%u)\n"
 "\n"
 
-#: misc/mke2fs.c:348 misc/mke2fs.c:3422
+#: misc/mke2fs.c:330 misc/mke2fs.c:3497
 msgid "while marking bad blocks as used"
 msgstr "将坏块标记为已使用的"
 
-#: misc/mke2fs.c:373
+#: misc/mke2fs.c:355
 msgid "while writing reserved inodes"
 msgstr "写入预留 inode 时"
 
-#: misc/mke2fs.c:425
+#: misc/mke2fs.c:407
 msgid "Writing inode tables: "
 msgstr "正在写入 inode表："
 
-#: misc/mke2fs.c:457 misc/mke2fs.c:476
+#: misc/mke2fs.c:439 misc/mke2fs.c:458
 #, c-format
 msgid ""
 "\n"
@@ -5507,80 +5538,80 @@ msgstr ""
 "\n"
 "无法写入 %d 个块到起始于%llu的 inode 表：%s\n"
 
-#: misc/mke2fs.c:486 misc/mke2fs.c:2962 misc/mke2fs.c:3382
+#: misc/mke2fs.c:468 misc/mke2fs.c:3037 misc/mke2fs.c:3457
 msgid "done                            \n"
 msgstr "完成                            \n"
 
-#: misc/mke2fs.c:502
+#: misc/mke2fs.c:484
 msgid "while creating root dir"
 msgstr "创建根目录时"
 
-#: misc/mke2fs.c:512
+#: misc/mke2fs.c:494
 msgid "while reading root inode"
 msgstr "读取根 inode 时"
 
-#: misc/mke2fs.c:532
+#: misc/mke2fs.c:514
 msgid "while setting root inode ownership"
 msgstr "设置根 inode 的所有者时"
 
-#: misc/mke2fs.c:550
+#: misc/mke2fs.c:532
 msgid "while creating /lost+found"
 msgstr "创建 /lost+found 时"
 
-#: misc/mke2fs.c:557
+#: misc/mke2fs.c:539
 msgid "while looking up /lost+found"
 msgstr "查找 /lost+found 时"
 
-#: misc/mke2fs.c:570
+#: misc/mke2fs.c:552
 msgid "while expanding /lost+found"
 msgstr "扩充 /lost+found 时"
 
-#: misc/mke2fs.c:585
+#: misc/mke2fs.c:567
 msgid "while setting bad block inode"
 msgstr "设置坏块 inode 时"
 
-#: misc/mke2fs.c:612
+#: misc/mke2fs.c:594
 #, c-format
 msgid "Out of memory erasing sectors %d-%d\n"
 msgstr "擦除扇区 %d-%d 时内存不足\n"
 
-#: misc/mke2fs.c:622
+#: misc/mke2fs.c:604
 #, c-format
 msgid "Warning: could not read block 0: %s\n"
 msgstr "警告：无法读取块 0：%s\n"
 
-#: misc/mke2fs.c:640
+#: misc/mke2fs.c:622
 #, c-format
 msgid "Warning: could not erase sector %d: %s\n"
 msgstr "警告：无法擦除扇区 %d：%s\n"
 
-#: misc/mke2fs.c:656
+#: misc/mke2fs.c:638
 msgid "while splitting the journal size"
 msgstr "分离日志大小时"
 
-#: misc/mke2fs.c:663
+#: misc/mke2fs.c:645
 msgid "while initializing journal superblock"
 msgstr "初始化日志超级块时"
 
-#: misc/mke2fs.c:671
+#: misc/mke2fs.c:653
 msgid "Zeroing journal device: "
 msgstr "正在对日志设备填零："
 
-#: misc/mke2fs.c:683
+#: misc/mke2fs.c:665
 #, c-format
 msgid "while zeroing journal device (block %llu, count %d)"
 msgstr "对日志设备填零时（块 %llu，计数 %d）"
 
-#: misc/mke2fs.c:701
+#: misc/mke2fs.c:683
 msgid "while writing journal superblock"
 msgstr "写入日志超级块时"
 
-#: misc/mke2fs.c:715
+#: misc/mke2fs.c:697
 #, c-format
 msgid "Creating filesystem with %llu %dk blocks and %u inodes\n"
 msgstr "创建含有 %llu 个块（每块 %dk）和 %u 个 inode 的文件系统\n"
 
-#: misc/mke2fs.c:723
+#: misc/mke2fs.c:705
 #, c-format
 msgid ""
 "warning: %llu blocks unused.\n"
@@ -5589,185 +5620,185 @@ msgstr ""
 "警告：%llu 块未使用。\n"
 "\n"
 
-#: misc/mke2fs.c:727
+#: misc/mke2fs.c:709
 #, c-format
 msgid "Filesystem label=%.*s\n"
 msgstr "文件系统标签=%.*s\n"
 
-#: misc/mke2fs.c:731
+#: misc/mke2fs.c:713
 #, c-format
 msgid "OS type: %s\n"
 msgstr "操作系统类型：%s\n"
 
-#: misc/mke2fs.c:733
+#: misc/mke2fs.c:715
 #, c-format
 msgid "Block size=%u (log=%u)\n"
 msgstr "块大小=%u (log=%u)\n"
 
-#: misc/mke2fs.c:736
+#: misc/mke2fs.c:718
 #, c-format
 msgid "Cluster size=%u (log=%u)\n"
 msgstr "簇大小=%u (log=%u)\n"
 
-#: misc/mke2fs.c:740
+#: misc/mke2fs.c:722
 #, c-format
 msgid "Fragment size=%u (log=%u)\n"
 msgstr "分块大小=%u (log=%u)\n"
 
-#: misc/mke2fs.c:742
+#: misc/mke2fs.c:724
 #, c-format
 msgid "Stride=%u blocks, Stripe width=%u blocks\n"
 msgstr "步长=%u 块，带宽=%u 块\n"
 
-#: misc/mke2fs.c:744
+#: misc/mke2fs.c:726
 #, c-format
 msgid "%u inodes, %llu blocks\n"
 msgstr "%u 个 inode，%llu 个块\n"
 
-#: misc/mke2fs.c:746
+#: misc/mke2fs.c:728
 #, c-format
 msgid "%llu blocks (%2.2f%%) reserved for the super user\n"
 msgstr "%llu 个块 (%2.2f%%) 为超级用户保留\n"
 
-#: misc/mke2fs.c:749
+#: misc/mke2fs.c:731
 #, c-format
 msgid "First data block=%u\n"
 msgstr "第一个数据块=%u\n"
 
-#: misc/mke2fs.c:751
+#: misc/mke2fs.c:733
 #, c-format
 msgid "Root directory owner=%u:%u\n"
 msgstr "根目录的所有者=%u:%u\n"
 
-#: misc/mke2fs.c:753
+#: misc/mke2fs.c:735
 #, c-format
 msgid "Maximum filesystem blocks=%lu\n"
 msgstr "文件系统块的最大值=%lu\n"
 
-#: misc/mke2fs.c:757
+#: misc/mke2fs.c:739
 #, c-format
 msgid "%u block groups\n"
 msgstr "%u 个块组\n"
 
-#: misc/mke2fs.c:759
+#: misc/mke2fs.c:741
 #, c-format
 msgid "%u block group\n"
 msgstr "%u 个块组\n"
 
-#: misc/mke2fs.c:761
+#: misc/mke2fs.c:743
 #, c-format
 msgid "%u blocks per group, %u clusters per group\n"
 msgstr ""
 "每组 %u 个块，%u 个簇\n"
 "\n"
 
-#: misc/mke2fs.c:764
+#: misc/mke2fs.c:746
 #, c-format
 msgid "%u blocks per group, %u fragments per group\n"
 msgstr ""
 "每组 %u 个块，%u 个分块\n"
 "\n"
 
-#: misc/mke2fs.c:766
+#: misc/mke2fs.c:748
 #, c-format
 msgid "%u inodes per group\n"
 msgstr "每组 %u 个 inode\n"
 
-#: misc/mke2fs.c:775
+#: misc/mke2fs.c:757
 #, c-format
 msgid "Filesystem UUID: %s\n"
 msgstr "文件系统 UUID：%s\n"
 
-#: misc/mke2fs.c:776
+#: misc/mke2fs.c:758
 msgid "Superblock backups stored on blocks: "
 msgstr "超级块的备份存储于下列块："
 
-#: misc/mke2fs.c:869
+#: misc/mke2fs.c:851
 #, c-format
 msgid "%s requires '-O 64bit'\n"
 msgstr ""
 "%s 需要 \"-O 64bit\" 选项\n"
 "\n"
 
-#: misc/mke2fs.c:875
+#: misc/mke2fs.c:857
 #, c-format
 msgid "'%s' must be before 'resize=%u'\n"
 msgstr "\"%s\" 选项必须位于 \"resize=%u\" 之前\n"
 
-#: misc/mke2fs.c:888
+#: misc/mke2fs.c:873
 #, c-format
 msgid "Invalid desc_size: '%s'\n"
 msgstr "无效的 desc_size：\"%s\"\n"
 
-#: misc/mke2fs.c:902
+#: misc/mke2fs.c:887
 #, c-format
 msgid "Invalid hash seed: %s\n"
 msgstr "无效的 hash 种子：%s\n"
 
-#: misc/mke2fs.c:914
+#: misc/mke2fs.c:899
 #, c-format
 msgid "Invalid offset: %s\n"
 msgstr "无效的偏移量：%s\n"
 
-#: misc/mke2fs.c:928 misc/tune2fs.c:2288
+#: misc/mke2fs.c:913 misc/tune2fs.c:2304
 #, c-format
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr "无效的 mmp_update_interval：%s\n"
 
-#: misc/mke2fs.c:945
+#: misc/mke2fs.c:930
 #, c-format
 msgid "Invalid # of backup superblocks: %s\n"
 msgstr "备份超级块编号无效：%s\n"
 
-#: misc/mke2fs.c:967
+#: misc/mke2fs.c:952
 #, c-format
 msgid "Invalid stride parameter: %s\n"
 msgstr "无效的步长参数：%s\n"
 
-#: misc/mke2fs.c:982
+#: misc/mke2fs.c:967
 #, c-format
 msgid "Invalid stripe-width parameter: %s\n"
 msgstr "无效的带宽参数：%s\n"
 
-#: misc/mke2fs.c:1005
+#: misc/mke2fs.c:990
 #, c-format
 msgid "Invalid resize parameter: %s\n"
 msgstr "无效的 resize 参数：%s\n"
 
-#: misc/mke2fs.c:1012
+#: misc/mke2fs.c:997
 msgid "The resize maximum must be greater than the filesystem size.\n"
 msgstr "resize 参数必须大于文件系统大小。\n"
 
-#: misc/mke2fs.c:1036
+#: misc/mke2fs.c:1021
 msgid "On-line resizing not supported with revision 0 filesystems\n"
 msgstr "文件系统版本 0 不支持在线调整大小。\n"
 
-#: misc/mke2fs.c:1053
+#: misc/mke2fs.c:1038 misc/mke2fs.c:1954
 #, c-format
 msgid "bad revision level - %s"
 msgstr "错误的版本号 - %s"
 
-#: misc/mke2fs.c:1058
+#: misc/mke2fs.c:1043 misc/mke2fs.c:1959
 #, c-format
 msgid "while trying to create revision %d"
 msgstr "尝试创建版本 %d 时"
 
-#: misc/mke2fs.c:1085 misc/mke2fs.c:1094
+#: misc/mke2fs.c:1070 misc/mke2fs.c:1079
 #, c-format
 msgid "Invalid root_owner: '%s'\n"
 msgstr "无效的根目录所有者：\"%s\"\n"
 
-#: misc/mke2fs.c:1143
+#: misc/mke2fs.c:1128
 #, c-format
 msgid "Invalid encoding: %s"
 msgstr "无效的编码：%s"
 
-#: misc/mke2fs.c:1165 misc/tune2fs.c:2423
+#: misc/mke2fs.c:1150 misc/tune2fs.c:2439
 #, c-format
 msgid "Invalid size of orphan file %s\n"
 msgstr "无效的孤立文件大小 %s\n"
 
-#: misc/mke2fs.c:1176
+#: misc/mke2fs.c:1161
 #, c-format
 msgid ""
 "\n"
@@ -5825,7 +5856,7 @@ msgstr ""
 "\tassume_storage_prezeroed=<0（禁用）或 1（启用）>\n"
 "\n"
 
-#: misc/mke2fs.c:1206
+#: misc/mke2fs.c:1191
 #, c-format
 msgid ""
 "\n"
@@ -5836,17 +5867,17 @@ msgstr ""
 "警告：RAID带宽 %u 不是步长 %u 的偶数倍。\n"
 "\n"
 
-#: misc/mke2fs.c:1217 misc/tune2fs.c:2439
+#: misc/mke2fs.c:1202 misc/tune2fs.c:2455
 #, c-format
 msgid "error: Invalid encoding flag: %s\n"
 msgstr "错误：无效的编码标志：%s\n"
 
-#: misc/mke2fs.c:1223 misc/tune2fs.c:2448
+#: misc/mke2fs.c:1208 misc/tune2fs.c:2464
 #, c-format
 msgid "error: An encoding must be explicitly specified when passing encoding-flags\n"
 msgstr "错误：传递 encoding-flags 时需要显式指定 encoding\n"
 
-#: misc/mke2fs.c:1274
+#: misc/mke2fs.c:1259
 #, c-format
 msgid ""
 "Syntax error in mke2fs config file (%s, line #%d)\n"
@@ -5855,17 +5886,17 @@ msgstr ""
 "mke2fs 配置文件中有语法错误（%s，第 %d 行）\n"
 "\t%s\n"
 
-#: misc/mke2fs.c:1287 misc/tune2fs.c:1182
+#: misc/mke2fs.c:1272 misc/tune2fs.c:1182
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr "设置了无效的文件系统选项：%s\n"
 
-#: misc/mke2fs.c:1299 misc/tune2fs.c:459
+#: misc/mke2fs.c:1284 misc/tune2fs.c:459
 #, c-format
 msgid "Invalid mount option set: %s\n"
 msgstr "设置了无效的挂载选项：%s\n"
 
-#: misc/mke2fs.c:1435
+#: misc/mke2fs.c:1420
 #, c-format
 msgid ""
 "\n"
@@ -5874,7 +5905,7 @@ msgstr ""
 "\n"
 "你的 mke2fs.conf 文件中没有定义文件系统类型 %s 。\n"
 
-#: misc/mke2fs.c:1439
+#: misc/mke2fs.c:1424
 msgid ""
 "You probably need to install an updated mke2fs.conf file.\n"
 "\n"
@@ -5882,11 +5913,11 @@ msgstr ""
 "您可能需要升级 mke2fs.conf 文件。\n"
 "\n"
 
-#: misc/mke2fs.c:1443
+#: misc/mke2fs.c:1428
 msgid "Aborting...\n"
 msgstr "正在中止...\n"
 
-#: misc/mke2fs.c:1484
+#: misc/mke2fs.c:1469
 #, c-format
 msgid ""
 "\n"
@@ -5897,79 +5928,79 @@ msgstr ""
 "警告：mke2fs.conf 中未定义文件系统类型 %s\n"
 "\n"
 
-#: misc/mke2fs.c:1673
+#: misc/mke2fs.c:1689
 msgid "Couldn't allocate memory for new PATH.\n"
 msgstr "无法为新的 PATH 分配内存。\n"
 
-#: misc/mke2fs.c:1713
+#: misc/mke2fs.c:1729
 #, c-format
 msgid "Couldn't init profile successfully (error: %ld).\n"
 msgstr "无法成功初始化配置（错误：%ld）。\n"
 
-#: misc/mke2fs.c:1746
+#: misc/mke2fs.c:1762
 #, c-format
 msgid "invalid block size - %s"
 msgstr "无效的块大小 - %s"
 
-#: misc/mke2fs.c:1750
+#: misc/mke2fs.c:1766
 #, c-format
 msgid "Warning: blocksize %d not usable on most systems.\n"
 msgstr "警告：块大小 %d 在很多系统中无法使用。\n"
 
-#: misc/mke2fs.c:1766
+#: misc/mke2fs.c:1782
 #, c-format
 msgid "invalid cluster size - %s"
 msgstr "无效的簇大小 - %s"
 
-#: misc/mke2fs.c:1779
+#: misc/mke2fs.c:1795
 msgid "'-R' is deprecated, use '-E' instead"
 msgstr "\"-R\" 选项已被废弃，请使用 \"-E\" 选项"
 
-#: misc/mke2fs.c:1793 misc/tune2fs.c:2014
+#: misc/mke2fs.c:1809 misc/tune2fs.c:2030
 #, c-format
 msgid "bad error behavior - %s"
 msgstr "出错行为有误 - %s"
 
-#: misc/mke2fs.c:1805
+#: misc/mke2fs.c:1821
 msgid "Illegal number for blocks per group"
 msgstr "非法的每组块数"
 
-#: misc/mke2fs.c:1810
+#: misc/mke2fs.c:1826
 msgid "blocks per group must be multiple of 8"
 msgstr "每组块数必须是 8 的倍数"
 
-#: misc/mke2fs.c:1818
+#: misc/mke2fs.c:1834
 msgid "Illegal number for flex_bg size"
 msgstr "非法的 flex_bg 大小"
 
-#: misc/mke2fs.c:1824
+#: misc/mke2fs.c:1840
 msgid "flex_bg size must be a power of 2"
 msgstr "flex_bg 的大小必须是 2 的幂"
 
-#: misc/mke2fs.c:1829
+#: misc/mke2fs.c:1845
 #, c-format
 msgid "flex_bg size (%lu) must be less than or equal to 2^31"
 msgstr "flex_bg 的大小 (%lu) 必须小于等于 2^31"
 
-#: misc/mke2fs.c:1839
+#: misc/mke2fs.c:1855
 #, c-format
 msgid "invalid inode ratio %s (min %d/max %d)"
 msgstr "无效的 inode 比 %s（最小 %d/最大 %d）"
 
-#: misc/mke2fs.c:1849
+#: misc/mke2fs.c:1865
 #, c-format
 msgid "invalid inode size - %s"
 msgstr "无效的 inode 大小 - %s"
 
-#: misc/mke2fs.c:1864
+#: misc/mke2fs.c:1880
 msgid "Warning: -K option is deprecated and should not be used anymore. Use '-E nodiscard' extended option instead!\n"
 msgstr "警告：-K 选项已被废弃，不应当再被使用。请使用扩展选项 \"-E nodiscard\" 作为替代！\n"
 
-#: misc/mke2fs.c:1875
+#: misc/mke2fs.c:1891
 msgid "in malloc for bad_blocks_filename"
 msgstr "为 bad_blocks_filename 分配内存时"
 
-#: misc/mke2fs.c:1884
+#: misc/mke2fs.c:1900
 #, c-format
 msgid ""
 "Warning: label too long; will be truncated to '%s'\n"
@@ -5978,21 +6009,21 @@ msgstr ""
 "警告：标签太长；将截短为 \"%s\"\n"
 "\n"
 
-#: misc/mke2fs.c:1893
+#: misc/mke2fs.c:1909
 #, c-format
 msgid "invalid reserved blocks percent - %s"
 msgstr "无效的保留块百分比 - %s"
 
-#: misc/mke2fs.c:1908
+#: misc/mke2fs.c:1924
 #, c-format
 msgid "bad num inodes - %s"
 msgstr "错误的 inode 数 - %s"
 
-#: misc/mke2fs.c:1921
+#: misc/mke2fs.c:1937
 msgid "while allocating fs_feature string"
 msgstr "分配 fs_feature 字符串时"
 
-#: misc/mke2fs.c:1936
+#: misc/mke2fs.c:1964
 msgid ""
 "the -r option has been removed.\n"
 "\n"
@@ -6004,7 +6035,7 @@ msgstr ""
 "如果您确实需要兼容 1995 年以前的 Linux 文件系统，请使用\n"
 "命令行选项 \"-E revision=0\"。\n"
 
-#: misc/mke2fs.c:1942
+#: misc/mke2fs.c:1973
 msgid ""
 "the -s option has been removed.\n"
 "\n"
@@ -6014,59 +6045,59 @@ msgstr ""
 "\n"
 "请使用 -O 选项设置或清除 sparse_super 特性。\n"
 
-#: misc/mke2fs.c:1951
+#: misc/mke2fs.c:1982
 msgid "The -t option may only be used once"
 msgstr "-t 选项只能被指定一次"
 
-#: misc/mke2fs.c:1959
+#: misc/mke2fs.c:1990
 msgid "The -T option may only be used once"
 msgstr "-T 选项只能被指定一次"
 
-#: misc/mke2fs.c:2015 misc/mke2fs.c:3505
+#: misc/mke2fs.c:2046 misc/mke2fs.c:3580
 #, c-format
 msgid "while trying to open journal device %s\n"
 msgstr "尝试打开日志设备 %s 时\n"
 
-#: misc/mke2fs.c:2021
+#: misc/mke2fs.c:2052
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
 msgstr "日志设备的块大小 (%d) 低于最小的块大小 %d\n"
 
-#: misc/mke2fs.c:2027
+#: misc/mke2fs.c:2058
 #, c-format
 msgid "Using journal device's blocksize: %d\n"
 msgstr "使用日志设备的块大小：%d\n"
 
-#: misc/mke2fs.c:2038
+#: misc/mke2fs.c:2069
 #, c-format
 msgid "invalid blocks '%s' on device '%s'"
 msgstr "设备 \"%2$s\" 的块数 \"%1$s\" 无效"
 
-#: misc/mke2fs.c:2058
+#: misc/mke2fs.c:2089
 msgid "filesystem"
 msgstr "文件系统"
 
-#: misc/mke2fs.c:2073 lib/support/plausible.c:184
+#: misc/mke2fs.c:2104 lib/support/plausible.c:184
 #, c-format
 msgid "The file %s does not exist and no size was specified.\n"
 msgstr "文件 %s 不存在，也没有指定大小。\n"
 
-#: misc/mke2fs.c:2085 lib/support/plausible.c:192
+#: misc/mke2fs.c:2117 lib/support/plausible.c:192
 #, c-format
 msgid "Creating regular file %s\n"
 msgstr "创建一般文件 %s\n"
 
-#: misc/mke2fs.c:2090 resize/main.c:512
+#: misc/mke2fs.c:2122 resize/main.c:512
 msgid "while trying to determine filesystem size"
 msgstr "尝试确定文件系统大小时"
 
-#: misc/mke2fs.c:2096
+#: misc/mke2fs.c:2128
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size of the filesystem\n"
 msgstr "无法确定设备大小；您必须手动指定文件系统大小\n"
 
-#: misc/mke2fs.c:2103
+#: misc/mke2fs.c:2135
 msgid ""
 "Device size reported to be zero.  Invalid partition specified, or\n"
 "\tpartition table wasn't reread after running fdisk, due to\n"
@@ -6077,48 +6108,48 @@ msgstr ""
 "\t执行 fdisk 后未被重新加载（分区正被占用）导致的。\n"
 "\t您可能需要重启，以重新读取分区表。\n"
 
-#: misc/mke2fs.c:2120
+#: misc/mke2fs.c:2152
 msgid "Filesystem larger than apparent device size."
 msgstr "文件系统大小超过设备的实际大小。"
 
-#: misc/mke2fs.c:2143
+#: misc/mke2fs.c:2175
 msgid "Failed to parse fs types list\n"
 msgstr "解析文件系统类型列表失败\n"
 
-#: misc/mke2fs.c:2208
+#: misc/mke2fs.c:2240
 msgid "The HURD does not support the filetype feature.\n"
 msgstr "HURD 不支持 filetype 特性。\n"
 
-#: misc/mke2fs.c:2213
+#: misc/mke2fs.c:2245
 msgid "The HURD does not support the huge_file feature.\n"
 msgstr "HURD 不支持 huge_file 特性。\n"
 
-#: misc/mke2fs.c:2218
+#: misc/mke2fs.c:2250
 msgid "The HURD does not support the metadata_csum feature.\n"
 msgstr "HURD 不支持 metadata_csum 特性。\n"
 
-#: misc/mke2fs.c:2223
+#: misc/mke2fs.c:2255
 msgid "The HURD does not support the ea_inode feature.\n"
 msgstr "HURD 不支持 ea_inode 特性。\n"
 
-#: misc/mke2fs.c:2233
+#: misc/mke2fs.c:2265
 msgid "while trying to determine hardware sector size"
 msgstr "尝试确定硬件扇区大小时"
 
-#: misc/mke2fs.c:2239
+#: misc/mke2fs.c:2271
 msgid "while trying to determine physical sector size"
 msgstr "尝试确定物理扇区大小时"
 
-#: misc/mke2fs.c:2271
+#: misc/mke2fs.c:2303
 msgid "while setting blocksize; too small for device\n"
 msgstr "设置块大小时；对于设备来说太小\n"
 
-#: misc/mke2fs.c:2276
+#: misc/mke2fs.c:2308
 #, c-format
 msgid "Warning: specified blocksize %d is less than device physical sectorsize %d\n"
 msgstr "警告：指定的块大小 %d 小于设备物理扇区大小 %d\n"
 
-#: misc/mke2fs.c:2300
+#: misc/mke2fs.c:2332
 #, c-format
 msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to be expressed\n"
@@ -6127,7 +6158,7 @@ msgstr ""
 "%1$s: 使用的块大小为 %4$d 时，设备 %3$s 的尺寸\n"
 "（0x%2$llx 个块）太大，无法用 32 位整数表示。\n"
 
-#: misc/mke2fs.c:2314
+#: misc/mke2fs.c:2346
 #, c-format
 msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to create\n"
@@ -6136,84 +6167,88 @@ msgstr ""
 "%1$s: 使用的块大小为 %4$d 时，设备 %3$s 的尺寸\n"
 "（0x%2$llx 个块）太大，无法创建文件系统。\n"
 
-#: misc/mke2fs.c:2336
+#: misc/mke2fs.c:2368
 msgid "fs_types for mke2fs.conf resolution: "
 msgstr "mke2fs.conf 中有关文件系统类型的解释："
 
-#: misc/mke2fs.c:2349
+#: misc/mke2fs.c:2381
 msgid "invalid reserved blocks percent - %lf"
 msgstr "无效的保留块百分比 - %lf"
 
-#: misc/mke2fs.c:2366
+#: misc/mke2fs.c:2398
 msgid "Extents MUST be enabled for a 64-bit filesystem.  Pass -O extents to rectify.\n"
 msgstr "64 位文件系统必须启用 extent 特性。请使用 \"-O extents\" 选项来修正。\n"
 
-#: misc/mke2fs.c:2386
+#: misc/mke2fs.c:2406
+msgid "Extents MUST be enabled for fs-verity support.  Pass -O extents to rectify.\n"
+msgstr "要支持 fs-verity，必须启用 extent 特性。请使用 \"-O extents\" 选项来修正。\n"
+
+#: misc/mke2fs.c:2427
 msgid "The cluster size may not be smaller than the block size.\n"
 msgstr "簇大小不能小于块大小。\n"
 
-#: misc/mke2fs.c:2392
+#: misc/mke2fs.c:2433
 msgid "specifying a cluster size requires the bigalloc feature"
 msgstr "指定簇大小需要启用 bigalloc 特性"
 
-#: misc/mke2fs.c:2412
+#: misc/mke2fs.c:2453
 #, c-format
 msgid "warning: Unable to get device geometry for %s\n"
 msgstr "警告：无法获取设备 %s 的几何参数\n"
 
-#: misc/mke2fs.c:2424
+#: misc/mke2fs.c:2499
 #, c-format
 msgid "%s alignment is offset by %lu bytes.\n"
 msgstr "%s 未对齐，偏移了 %lu 个字节。\n"
 
-#: misc/mke2fs.c:2426
+#: misc/mke2fs.c:2501
 #, c-format
 msgid "This may result in very poor performance, (re)-partitioning suggested.\n"
 msgstr "这可能导致性能明显下降，建议重新进行分区。\n"
 
-#: misc/mke2fs.c:2432
+#: misc/mke2fs.c:2507
 #, c-format
 msgid "%s is capable of DAX but current block size %u is different from system page size %u so filesystem will not support DAX.\n"
 msgstr "%s 支持 DAX，但当前的块大小 %u 与系统的页面大小 %u 不同，所以文件系统将不支持 DAX。\n"
 
-#: misc/mke2fs.c:2456
+#: misc/mke2fs.c:2531
 #, c-format
 msgid "%d-byte blocks too big for system (max %d)"
 msgstr "%d 字节的块对于系统来说太大（最大为 %d）"
 
-#: misc/mke2fs.c:2460
+#: misc/mke2fs.c:2535
 #, c-format
 msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
 msgstr "警告：%d 字节的块对于系统来说太大（最大为 %d），但仍然强制进行操作\n"
 
-#: misc/mke2fs.c:2468
+#: misc/mke2fs.c:2543
 #, c-format
 msgid "Suggestion: Use Linux kernel >= 3.18 for improved stability of the metadata and journal checksum features.\n"
 msgstr "建议：使用 3.18 以上的 Linux 内核以提高元数据稳定性，以及使用日志校验和特性。\n"
 
-#: misc/mke2fs.c:2514
+#: misc/mke2fs.c:2589
 #, c-format
 msgid "Unknown filename encoding from profile: %s"
 msgstr "配置中的文件名编码未知：%s"
 
-#: misc/mke2fs.c:2525
+#: misc/mke2fs.c:2600
 #, c-format
 msgid "Unknown encoding flags from profile: %s"
 msgstr "配置中的编码标志未知：%s"
 
-#: misc/mke2fs.c:2549
+#: misc/mke2fs.c:2624
 msgid "Filesystem features not supported with revision 0 filesystems\n"
 msgstr "文件系统版本 0 不支持文件系统特性\n"
 
-#: misc/mke2fs.c:2554
+#: misc/mke2fs.c:2629
 msgid "Journals not supported with revision 0 filesystems\n"
 msgstr "文件系统版本 0 不支持日志\n"
 
-#: misc/mke2fs.c:2559
+#: misc/mke2fs.c:2634
 msgid "Inode size incompatible with revision 0 filesystems\n"
 msgstr "文件系统版本 0 不支持 Inode 大小\n"
 
-#: misc/mke2fs.c:2572
+#: misc/mke2fs.c:2647
 #, c-format
 msgid ""
 "\n"
@@ -6227,16 +6262,16 @@ msgstr ""
 "将创建含有 %llu 个块的文件系统，这可能与您的预期不符。\n"
 "\n"
 
-#: misc/mke2fs.c:2587
+#: misc/mke2fs.c:2662
 #, c-format
 msgid "%d byte inodes are too small for project quota"
 msgstr "%d 字节的 inode 对于项目配额来说太小"
 
-#: misc/mke2fs.c:2609
+#: misc/mke2fs.c:2684
 msgid "Can't support bigalloc feature without extents feature"
 msgstr "无法在缺乏 extent 特性的情况下支持 bigalloc 特性"
 
-#: misc/mke2fs.c:2616
+#: misc/mke2fs.c:2691
 msgid ""
 "The resize_inode and meta_bg features are not compatible.\n"
 "They can not be both enabled simultaneously.\n"
@@ -6244,7 +6279,7 @@ msgstr ""
 "resize_inode 和 meta_bg 特性不兼容。\n"
 "无法同时启用它们。\n"
 
-#: misc/mke2fs.c:2625
+#: misc/mke2fs.c:2700
 msgid ""
 "\n"
 "Warning: bigalloc file systems with a cluster size greater than\n"
@@ -6254,44 +6289,44 @@ msgstr ""
 "警告：簇大小大于块大小的 16 倍的 bigalloc 文件系统\n"
 "被认为是实验性的\n"
 
-#: misc/mke2fs.c:2637
+#: misc/mke2fs.c:2712
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
 msgstr "非稀疏文件系统不支持为在线调整大小设置保留块"
 
-#: misc/mke2fs.c:2646
+#: misc/mke2fs.c:2721
 msgid "blocks per group count out of range"
 msgstr "每组块数超过允许范围"
 
-#: misc/mke2fs.c:2668
+#: misc/mke2fs.c:2743
 msgid "Flex_bg feature not enabled, so flex_bg size may not be specified"
 msgstr "flex_bg 特性未启用，所以无法指定 flex_bg 尺寸"
 
-#: misc/mke2fs.c:2680
+#: misc/mke2fs.c:2755
 #, c-format
 msgid "invalid inode size %d (min %d/max %d)"
 msgstr "无效的 inode 大小 %d（最小 %d/最大 %d）"
 
-#: misc/mke2fs.c:2695
+#: misc/mke2fs.c:2770
 #, c-format
 msgid "%d byte inodes are too small for inline data; specify larger size"
 msgstr "%d 字节的 inode 对于内联数据来说太小；请指定一个更大的值"
 
-#: misc/mke2fs.c:2710
+#: misc/mke2fs.c:2785
 #, c-format
 msgid "128-byte inodes cannot handle dates beyond 2038 and are deprecated\n"
 msgstr "128 位 inode 不能处理 2038 年以后的日期，已被废弃\n"
 
-#: misc/mke2fs.c:2721
+#: misc/mke2fs.c:2796
 #, c-format
 msgid "too many inodes (%llu), raise inode ratio?"
 msgstr "inode 太多 (%llu)，是否提高 inode 比？"
 
-#: misc/mke2fs.c:2729
+#: misc/mke2fs.c:2804
 #, c-format
 msgid "too many inodes (%llu), specify < 2^32 inodes"
 msgstr "inode 太多 (%llu)，请指定小于 2^32 的 inode 数"
 
-#: misc/mke2fs.c:2743
+#: misc/mke2fs.c:2818
 #, c-format
 msgid ""
 "inode_size (%u) * inodes_count (%u) too big for a\n"
@@ -6302,73 +6337,73 @@ msgstr ""
 "\t的文件系统来说太大，请指定更高的 inode 比 (-i)\n"
 "\t或更少的 inode 数 (-N)。\n"
 
-#: misc/mke2fs.c:2941
+#: misc/mke2fs.c:3016
 msgid "Discarding device blocks: "
 msgstr "丢弃设备块："
 
-#: misc/mke2fs.c:2957
+#: misc/mke2fs.c:3032
 msgid "failed - "
 msgstr "已失败 - "
 
-#: misc/mke2fs.c:3016
+#: misc/mke2fs.c:3091
 msgid "while initializing quota context"
 msgstr "初始化配额上下文时"
 
-#: misc/mke2fs.c:3023
+#: misc/mke2fs.c:3098
 msgid "while writing quota inodes"
 msgstr "写入配额 inode 时"
 
-#: misc/mke2fs.c:3048
+#: misc/mke2fs.c:3123
 #, c-format
 msgid "bad error behavior in profile - %s"
 msgstr "配置中的出错行为有误 - %s"
 
-#: misc/mke2fs.c:3127
+#: misc/mke2fs.c:3202
 msgid "in malloc for android_sparse_params"
 msgstr "为 android_sparse_params 分配内存时"
 
-#: misc/mke2fs.c:3141
+#: misc/mke2fs.c:3216
 msgid "while setting up superblock"
 msgstr "设置超级块时"
 
-#: misc/mke2fs.c:3157
+#: misc/mke2fs.c:3232
 msgid "Extents are not enabled.  The file extent tree can be checksummed, whereas block maps cannot.  Not enabling extents reduces the coverage of metadata checksumming.  Pass -O extents to rectify.\n"
 msgstr "未启用 extent 特性，所以仅对文件 extent 树进行校验，而不会对块映射进行校验。不启用 extent 将降低元数据校验和的覆盖范围。可以使用参数 \"-O extents\" 来进行纠正。\n"
 
-#: misc/mke2fs.c:3164
+#: misc/mke2fs.c:3239
 msgid "64-bit filesystem support is not enabled.  The larger fields afforded by this feature enable full-strength checksumming.  Pass -O 64bit to rectify.\n"
 msgstr "未启用 64 位文件系统支持，将无法使用更大的字段来进行更完整的校验。可以使用参数 \"-O 64bit\" 来进行纠正。\n"
 
-#: misc/mke2fs.c:3172
+#: misc/mke2fs.c:3247
 msgid "The metadata_csum_seed feature requires the metadata_csum feature.\n"
 msgstr "启用 metadata_csum_seed 特性需要同时启用 metadata_csum 特性。\n"
 
-#: misc/mke2fs.c:3193
+#: misc/mke2fs.c:3268
 msgid "Assuming the storage device is prezeroed - skipping inode table and journal wipe\n"
 msgstr "假定存储设备已预先被 0 覆盖 - 跳过擦除 inode 表和日志\n"
 
-#: misc/mke2fs.c:3208
+#: misc/mke2fs.c:3283
 msgid "Discard succeeded and will return 0s - skipping inode table wipe\n"
 msgstr "discard 成功，将会返回 0 值 - 跳过擦除 inode 表\n"
 
-#: misc/mke2fs.c:3307
+#: misc/mke2fs.c:3382
 #, c-format
 msgid "unknown os - %s"
 msgstr "未知的操作系统 - %s"
 
-#: misc/mke2fs.c:3370
+#: misc/mke2fs.c:3445
 msgid "Allocating group tables: "
 msgstr "正在分配组表："
 
-#: misc/mke2fs.c:3378
+#: misc/mke2fs.c:3453
 msgid "while trying to allocate filesystem tables"
 msgstr "尝试分配文件系统表时"
 
-#: misc/mke2fs.c:3393
+#: misc/mke2fs.c:3468
 msgid "while unmarking bad blocks"
 msgstr "取消坏块标记时"
 
-#: misc/mke2fs.c:3404
+#: misc/mke2fs.c:3479
 msgid ""
 "\n"
 "\twhile converting subcluster bitmap"
@@ -6376,34 +6411,34 @@ msgstr ""
 "\n"
 "\t转换子簇位图时"
 
-#: misc/mke2fs.c:3413
+#: misc/mke2fs.c:3488
 msgid "while calculating overhead"
 msgstr "计算额外开销时"
 
-#: misc/mke2fs.c:3432
+#: misc/mke2fs.c:3507
 #, c-format
 msgid "%s may be further corrupted by superblock rewrite\n"
 msgstr "%s 可能因为重写超级块而受到进一步损坏\n"
 
-#: misc/mke2fs.c:3473
+#: misc/mke2fs.c:3548
 #, c-format
 msgid "while zeroing block %llu at end of filesystem"
 msgstr "对文件系统末尾的块 %llu 填零时"
 
-#: misc/mke2fs.c:3486
+#: misc/mke2fs.c:3561
 msgid "while reserving blocks for online resize"
 msgstr "为在线调整大小保留块时"
 
-#: misc/mke2fs.c:3498 misc/tune2fs.c:1710
+#: misc/mke2fs.c:3573 misc/tune2fs.c:1710
 msgid "journal"
 msgstr "日志"
 
-#: misc/mke2fs.c:3510
+#: misc/mke2fs.c:3585
 #, c-format
 msgid "Adding journal to device %s: "
 msgstr "将日志添加到设备 %s："
 
-#: misc/mke2fs.c:3517
+#: misc/mke2fs.c:3592
 #, c-format
 msgid ""
 "\n"
@@ -6412,21 +6447,21 @@ msgstr ""
 "\n"
 "\t尝试将日志添加到设备 %s 时"
 
-#: misc/mke2fs.c:3522 misc/mke2fs.c:3555 misc/mke2fs.c:3614
-#: misc/mk_hugefiles.c:486 misc/tune2fs.c:1739 misc/tune2fs.c:1761
+#: misc/mke2fs.c:3597 misc/mke2fs.c:3630 misc/mke2fs.c:3689
+#: misc/mk_hugefiles.c:479 misc/tune2fs.c:1739 misc/tune2fs.c:1761
 msgid "done\n"
 msgstr "完成\n"
 
-#: misc/mke2fs.c:3529
+#: misc/mke2fs.c:3604
 msgid "Skipping journal creation in super-only mode\n"
 msgstr "跳过创建日志的步骤（唯超级块模式）\n"
 
-#: misc/mke2fs.c:3542
+#: misc/mke2fs.c:3617
 #, c-format
 msgid "Creating journal (%u blocks): "
 msgstr "创建日志（%u 个块）："
 
-#: misc/mke2fs.c:3551
+#: misc/mke2fs.c:3626
 msgid ""
 "\n"
 "\twhile trying to create journal"
@@ -6434,7 +6469,7 @@ msgstr ""
 "\n"
 "\t尝试创建日志时"
 
-#: misc/mke2fs.c:3563 misc/tune2fs.c:1297
+#: misc/mke2fs.c:3638 misc/tune2fs.c:1297
 msgid ""
 "\n"
 "Error while enabling multiple mount protection feature."
@@ -6442,36 +6477,36 @@ msgstr ""
 "\n"
 "启用多重挂载保护特性失败。"
 
-#: misc/mke2fs.c:3568
+#: misc/mke2fs.c:3643
 #, c-format
 msgid "Multiple mount protection is enabled with update interval %d seconds.\n"
 msgstr "多重挂载保护已被启用，更新间隔为 %d 秒。\n"
 
-#: misc/mke2fs.c:3583
+#: misc/mke2fs.c:3658
 msgid "cannot set orphan_file feature without a journal."
 msgstr "没有日志，无法设置 orphan_file 特性。"
 
-#: misc/mke2fs.c:3594 misc/tune2fs.c:3522
+#: misc/mke2fs.c:3669 misc/tune2fs.c:3538
 msgid "while creating orphan file"
 msgstr "创建孤立文件 %lu 时"
 
-#: misc/mke2fs.c:3605
+#: misc/mke2fs.c:3680
 msgid "Copying files into the device: "
 msgstr "将文件复制到设备："
 
-#: misc/mke2fs.c:3611
+#: misc/mke2fs.c:3686
 msgid "while populating file system"
 msgstr "填充文件系统时"
 
-#: misc/mke2fs.c:3618
+#: misc/mke2fs.c:3693
 msgid "Writing superblocks and filesystem accounting information: "
 msgstr "写入超级块和文件系统账户统计信息："
 
-#: misc/mke2fs.c:3625 misc/tune2fs.c:3770
+#: misc/mke2fs.c:3700 misc/tune2fs.c:3786
 msgid "while writing out and closing file system"
 msgstr "写出并关闭文件系统时"
 
-#: misc/mke2fs.c:3628
+#: misc/mke2fs.c:3703
 msgid ""
 "done\n"
 "\n"
@@ -6484,26 +6519,26 @@ msgstr ""
 msgid "while zeroing block %llu for hugefile"
 msgstr "对大文件的块 %llu 填零时"
 
-#: misc/mk_hugefiles.c:400
+#: misc/mk_hugefiles.c:393
 #, c-format
 msgid "Partition offset of %llu (%uk) blocks not compatible with cluster size %u.\n"
 msgstr "分区偏移量 %llu (%uk) 块与簇大小 %u 不相容。\n"
 
-#: misc/mk_hugefiles.c:468
+#: misc/mk_hugefiles.c:461
 msgid "Huge files will be zero'ed\n"
 msgstr "将对大文件填零\n"
 
-#: misc/mk_hugefiles.c:469
+#: misc/mk_hugefiles.c:462
 #, c-format
 msgid "Creating %lu huge file(s) "
 msgstr "创建 %lu 个大文件"
 
-#: misc/mk_hugefiles.c:471
+#: misc/mk_hugefiles.c:464
 #, c-format
 msgid "with %llu blocks each"
 msgstr "每个使用 %llu 个块"
 
-#: misc/mk_hugefiles.c:481
+#: misc/mk_hugefiles.c:474
 #, c-format
 msgid "while creating huge file %lu"
 msgstr "创建大文件 %lu 时"
@@ -6592,12 +6627,12 @@ msgstr "日志超级块未找到！\n"
 msgid "while trying to open external journal"
 msgstr "尝试打开外部日志时"
 
-#: misc/tune2fs.c:327 misc/tune2fs.c:3052
+#: misc/tune2fs.c:327 misc/tune2fs.c:3068
 #, c-format
 msgid "%s is not a journal device.\n"
 msgstr "%s 不是日志设备。\n"
 
-#: misc/tune2fs.c:336 misc/tune2fs.c:3061
+#: misc/tune2fs.c:336 misc/tune2fs.c:3077
 #, c-format
 msgid ""
 "Journal superblock is corrupted, nr_users\n"
@@ -6606,7 +6641,7 @@ msgstr ""
 "日志超级块已损坏，nr_users\n"
 "过高 (%d)。\n"
 
-#: misc/tune2fs.c:343 misc/tune2fs.c:3068
+#: misc/tune2fs.c:343 misc/tune2fs.c:3084
 msgid "Filesystem's UUID not found on journal device.\n"
 msgstr "日志设备中未找到文件系统的 UUID。\n"
 
@@ -6701,7 +6736,7 @@ msgstr "只有当文件系统未挂载时才能移除 orphan_file 特性。\n"
 msgid "The orphan_present feature is set. Please run e2fsck before clearing orphan_file feature.\n"
 msgstr "设置了 orphan_present 特性。请在移除 orphan_file 特性前运行e2fsck。\n"
 
-#: misc/tune2fs.c:1241 misc/tune2fs.c:3515
+#: misc/tune2fs.c:1241 misc/tune2fs.c:3531
 msgid "while loading bitmaps"
 msgstr "加载位图时"
 
@@ -6831,7 +6866,7 @@ msgstr ""
 "\n"
 "警告：\"^quota\" 选项将覆盖 \"-Q\" 的参数。\n"
 
-#: misc/tune2fs.c:1608 misc/tune2fs.c:2386
+#: misc/tune2fs.c:1608 misc/tune2fs.c:2402
 msgid "The casefold feature may only be enabled when the filesystem is unmounted.\n"
 msgstr "只有当文件系统未挂载时才能启用 casefold 特性。\n"
 
@@ -6903,26 +6938,26 @@ msgstr ""
 msgid "Cannot enable project quota; inode size too small.\n"
 msgstr "无法启用项目配额；inode 大小太小。\n"
 
-#: misc/tune2fs.c:1810
+#: misc/tune2fs.c:1826
 msgid "while initializing quota context in support library"
 msgstr "初始化支持库中的配额上下文时"
 
-#: misc/tune2fs.c:1826
+#: misc/tune2fs.c:1842
 #, c-format
 msgid "while updating quota limits (%d)"
 msgstr "更新配额限制 (%d) 时"
 
-#: misc/tune2fs.c:1836
+#: misc/tune2fs.c:1852
 #, c-format
 msgid "while writing quota file (%d)"
 msgstr "写入配额文件 (%d) 时"
 
-#: misc/tune2fs.c:1854
+#: misc/tune2fs.c:1870
 #, c-format
 msgid "while removing quota file (%d)"
 msgstr "移除配额文件 (%d) 时"
 
-#: misc/tune2fs.c:1897
+#: misc/tune2fs.c:1913
 msgid ""
 "\n"
 "Bad quota options specified.\n"
@@ -6944,116 +6979,116 @@ msgstr ""
 "\n"
 "\n"
 
-#: misc/tune2fs.c:1955
+#: misc/tune2fs.c:1971
 #, c-format
 msgid "Couldn't parse date/time specifier: %s"
 msgstr "无法解析日期/时间描述符：%s"
 
-#: misc/tune2fs.c:1987 misc/tune2fs.c:1998
+#: misc/tune2fs.c:2003 misc/tune2fs.c:2014
 #, c-format
 msgid "bad mounts count - %s"
 msgstr "错误的挂载计数 - %s"
 
-#: misc/tune2fs.c:2041
+#: misc/tune2fs.c:2057
 #, c-format
 msgid "bad gid/group name - %s"
 msgstr "错误的 gid/组名 - %s"
 
-#: misc/tune2fs.c:2074
+#: misc/tune2fs.c:2090
 #, c-format
 msgid "bad interval - %s"
 msgstr "错误的间隔 - %s"
 
-#: misc/tune2fs.c:2103
+#: misc/tune2fs.c:2119
 #, c-format
 msgid "bad reserved block ratio - %s"
 msgstr "错误的保留块比 - %s"
 
-#: misc/tune2fs.c:2118
+#: misc/tune2fs.c:2134
 msgid "-o may only be specified once"
 msgstr "-o 只能被指定一次"
 
-#: misc/tune2fs.c:2127
+#: misc/tune2fs.c:2143
 msgid "-O may only be specified once"
 msgstr "-O 只能被指定一次"
 
-#: misc/tune2fs.c:2144
+#: misc/tune2fs.c:2160
 #, c-format
 msgid "bad reserved blocks count - %s"
 msgstr "错误的保留块数 - %s"
 
-#: misc/tune2fs.c:2173
+#: misc/tune2fs.c:2189
 #, c-format
 msgid "bad uid/user name - %s"
 msgstr "错误的 uid/用户名 - %s"
 
-#: misc/tune2fs.c:2190
+#: misc/tune2fs.c:2206
 #, c-format
 msgid "bad inode size - %s"
 msgstr "无效的 inode 大小 - %s"
 
-#: misc/tune2fs.c:2197
+#: misc/tune2fs.c:2213
 #, c-format
 msgid "Inode size must be a power of two- %s"
 msgstr "Inode 大小必须是 2 的幂 - %s"
 
-#: misc/tune2fs.c:2297
+#: misc/tune2fs.c:2313
 #, c-format
 msgid "mmp_update_interval too big: %lu\n"
 msgstr "mmp_update_internal 太大：%lu\n"
 
-#: misc/tune2fs.c:2302
+#: misc/tune2fs.c:2318
 #, c-format
 msgid "Setting multiple mount protection update interval to %lu second\n"
 msgid_plural "Setting multiple mount protection update interval to %lu seconds\n"
 msgstr[0] "设置多重挂载保护更新间隔为 %lu 秒\n"
 
-#: misc/tune2fs.c:2311
+#: misc/tune2fs.c:2327
 #, c-format
 msgid "Setting filesystem error flag to force fsck.\n"
 msgstr "设置文件系统错误标志以强制 fsck。\n"
 
-#: misc/tune2fs.c:2329
+#: misc/tune2fs.c:2345
 #, c-format
 msgid "Invalid RAID stride: %s\n"
 msgstr "无效的 RAID 步长：%s\n"
 
-#: misc/tune2fs.c:2344
+#: misc/tune2fs.c:2360
 #, c-format
 msgid "Invalid RAID stripe-width: %s\n"
 msgstr "无效的 RAID 带宽：%s\n"
 
-#: misc/tune2fs.c:2359
+#: misc/tune2fs.c:2375
 #, c-format
 msgid "Invalid hash algorithm: %s\n"
 msgstr "无效的 hash 算法：%s\n"
 
-#: misc/tune2fs.c:2365
+#: misc/tune2fs.c:2381
 #, c-format
 msgid "Setting default hash algorithm to %s (%d)\n"
 msgstr "将默认 hash 算法设置为 %s (%d)\n"
 
-#: misc/tune2fs.c:2392
+#: misc/tune2fs.c:2408
 #, c-format
 msgid "Cannot alter existing encoding\n"
 msgstr "无法更改已存在的编码\n"
 
-#: misc/tune2fs.c:2398
+#: misc/tune2fs.c:2414
 #, c-format
 msgid "Invalid encoding: %s\n"
 msgstr "无效的编码：%s\n"
 
-#: misc/tune2fs.c:2404
+#: misc/tune2fs.c:2420
 #, c-format
 msgid "Setting encoding to '%s'\n"
 msgstr "设置编码为 \"%s\"\n"
 
-#: misc/tune2fs.c:2443
+#: misc/tune2fs.c:2459
 #, c-format
 msgid "Setting encoding_flags to '%s'\n"
 msgstr "设置 encoding_flags 为 \"%s\"\n"
 
-#: misc/tune2fs.c:2453
+#: misc/tune2fs.c:2469
 msgid ""
 "\n"
 "Bad options specified.\n"
@@ -7093,31 +7128,31 @@ msgstr ""
 "\tencoding_flags=<标志>\n"
 "\n"
 
-#: misc/tune2fs.c:2870
+#: misc/tune2fs.c:2886
 msgid "Failed to read inode bitmap\n"
 msgstr "读取 inode 位图失败\n"
 
-#: misc/tune2fs.c:2875
+#: misc/tune2fs.c:2891
 msgid "Failed to read block bitmap\n"
 msgstr "读取块位图失败\n"
 
-#: misc/tune2fs.c:2892 resize/resize2fs.c:1368
+#: misc/tune2fs.c:2908 resize/resize2fs.c:1375
 msgid "blocks to be moved"
 msgstr "需要移动的块"
 
-#: misc/tune2fs.c:2895
+#: misc/tune2fs.c:2911
 msgid "Failed to allocate block bitmap when increasing inode size\n"
 msgstr "增加 inode 大小时分配块位图失败\n"
 
-#: misc/tune2fs.c:2901
+#: misc/tune2fs.c:2917
 msgid "Not enough space to increase inode size \n"
 msgstr "没有足够的空间用于增加 inode 大小\n"
 
-#: misc/tune2fs.c:2906
+#: misc/tune2fs.c:2922
 msgid "Failed to relocate blocks during inode resize \n"
 msgstr "调整 inode 大小时重定位块失败 \n"
 
-#: misc/tune2fs.c:2938
+#: misc/tune2fs.c:2954
 msgid ""
 "Error in resizing the inode size.\n"
 "Run e2undo to undo the file system changes. \n"
@@ -7125,15 +7160,15 @@ msgstr ""
 "调整 inode 大小时出错。\n"
 "请运行 e2undo 来撤销对文件系统的更改。\n"
 
-#: misc/tune2fs.c:3126
+#: misc/tune2fs.c:3142
 msgid "while trying to get fs label"
 msgstr "尝试获取文件系统标签时"
 
-#: misc/tune2fs.c:3148
+#: misc/tune2fs.c:3164
 msgid "while trying to set fs label"
 msgstr "尝试设置文件系统标签时"
 
-#: misc/tune2fs.c:3238
+#: misc/tune2fs.c:3254
 msgid ""
 "If you are sure the filesystem is not in use on any node, run:\n"
 "'tune2fs -f -E clear_mmp {device}'\n"
@@ -7141,7 +7176,7 @@ msgstr ""
 "如果您确定文件系统并没有挂载到任何节点上，请运行：\n"
 "\"tune2fs -f -E clear_mmp {设备}\"\n"
 
-#: misc/tune2fs.c:3245
+#: misc/tune2fs.c:3261
 #, c-format
 msgid ""
 "MMP block magic is bad. Try to fix it by running:\n"
@@ -7150,29 +7185,29 @@ msgstr ""
 "MMP 块幻数错误。请尝试运行以下命令来修复：\n"
 "\"e2fsck -f %s\"\n"
 
-#: misc/tune2fs.c:3257
+#: misc/tune2fs.c:3273
 msgid "Cannot modify a journal device.\n"
 msgstr "无法修改日志设备。\n"
 
-#: misc/tune2fs.c:3270
+#: misc/tune2fs.c:3286
 #, c-format
 msgid "The inode size is already %lu\n"
 msgstr "inode 大小已经为 %lu\n"
 
-#: misc/tune2fs.c:3277
+#: misc/tune2fs.c:3293
 msgid "Shrinking inode size is not supported\n"
 msgstr "不支持缩小 inode 大小\n"
 
-#: misc/tune2fs.c:3282
+#: misc/tune2fs.c:3298
 #, c-format
 msgid "Invalid inode size %lu (max %d)\n"
 msgstr "无效的 inode 大小 %lu（最大 %d）\n"
 
-#: misc/tune2fs.c:3288
+#: misc/tune2fs.c:3304
 msgid "Resizing inodes could take some time."
 msgstr "调整 inode 大小可能需要花费一段时间。"
 
-#: misc/tune2fs.c:3338
+#: misc/tune2fs.c:3354
 #, c-format
 msgid ""
 "Warning: The journal is dirty. You may wish to replay the journal like:\n"
@@ -7188,62 +7223,67 @@ msgstr ""
 "\n"
 "然后重新运行本命令。否则，任何所做的更改都可能被日志恢复操作所覆盖。\n"
 
-#: misc/tune2fs.c:3347
+#: misc/tune2fs.c:3363
 #, c-format
 msgid "Recovering journal.\n"
 msgstr "正在恢复日志。\n"
 
-#: misc/tune2fs.c:3371
+#: misc/tune2fs.c:3368
+#, c-format
+msgid "Please run e2fsck -fy %s.\n"
+msgstr "请先运行 \"e2fsck -fy %s\"。\n"
+
+#: misc/tune2fs.c:3387
 #, c-format
 msgid "Setting maximal mount count to %d\n"
 msgstr "设置最大挂载次数为 %d\n"
 
-#: misc/tune2fs.c:3377
+#: misc/tune2fs.c:3393
 #, c-format
 msgid "Setting current mount count to %d\n"
 msgstr "设置当前挂载次数为 %d\n"
 
-#: misc/tune2fs.c:3382
+#: misc/tune2fs.c:3398
 #, c-format
 msgid "Setting error behavior to %d\n"
 msgstr "将出错行为设置为 %d\n"
 
-#: misc/tune2fs.c:3388
+#: misc/tune2fs.c:3404
 #, c-format
 msgid "Setting reserved blocks gid to %lu\n"
 msgstr "设置保留块的 gid 为 %lu\n"
 
-#: misc/tune2fs.c:3390
+#: misc/tune2fs.c:3406
 #, c-format
 msgid "Reserved blocks gid already set to %lu\n"
 msgstr "保留块的 gid 已经设置为 %lu\n"
 
-#: misc/tune2fs.c:3396
+#: misc/tune2fs.c:3412
 #, c-format
 msgid "interval between checks is too big (%lu)"
 msgstr "检查间隔太长 (%lu)"
 
-#: misc/tune2fs.c:3403
+#: misc/tune2fs.c:3419
 #, c-format
 msgid "Setting interval between checks to %lu seconds\n"
 msgstr "将检查间隔设置为 %lu 秒\n"
 
-#: misc/tune2fs.c:3410
+#: misc/tune2fs.c:3426
 #, c-format
 msgid "Setting reserved blocks percentage to %g%% (%llu blocks)\n"
 msgstr "将保留块百分比设置为 %g%%（%llu 个块）\n"
 
-#: misc/tune2fs.c:3417
+#: misc/tune2fs.c:3433
 #, c-format
 msgid "reserved blocks count is too big (%llu)"
 msgstr "保留块的数量太大 (%llu)"
 
-#: misc/tune2fs.c:3424
+#: misc/tune2fs.c:3440
 #, c-format
 msgid "Setting reserved blocks count to %llu\n"
 msgstr "设置保留块数为 %llu\n"
 
-#: misc/tune2fs.c:3429
+#: misc/tune2fs.c:3445
 msgid ""
 "\n"
 "The filesystem already has sparse superblocks.\n"
@@ -7251,7 +7291,7 @@ msgstr ""
 "\n"
 "文件系统已经含有稀疏超级块\n"
 
-#: misc/tune2fs.c:3432
+#: misc/tune2fs.c:3448
 msgid ""
 "\n"
 "Setting the sparse superblock flag not supported\n"
@@ -7262,7 +7302,7 @@ msgstr ""
 "sparse superblock 标志。\n"
 "\n"
 
-#: misc/tune2fs.c:3442
+#: misc/tune2fs.c:3458
 #, c-format
 msgid ""
 "\n"
@@ -7271,7 +7311,7 @@ msgstr ""
 "\n"
 "已设置 sparse superblock 标志。%s"
 
-#: misc/tune2fs.c:3447
+#: misc/tune2fs.c:3463
 msgid ""
 "\n"
 "Clearing the sparse superblock flag not supported.\n"
@@ -7279,113 +7319,113 @@ msgstr ""
 "\n"
 "不支持移除 sparse superblock 标志。\n"
 
-#: misc/tune2fs.c:3455
+#: misc/tune2fs.c:3471
 #, c-format
 msgid "Setting time filesystem last checked to %s\n"
 msgstr "设置上一次检查的时间为 %s\n"
 
-#: misc/tune2fs.c:3461
+#: misc/tune2fs.c:3477
 #, c-format
 msgid "Setting reserved blocks uid to %lu\n"
 msgstr "设置保留块的 uid 为 %lu\n"
 
-#: misc/tune2fs.c:3493
+#: misc/tune2fs.c:3509
 msgid "Error in using clear_mmp. It must be used with -f\n"
 msgstr "clear_mmp 选项使用错误。必须和 -f 选项一起使用\n"
 
-#: misc/tune2fs.c:3530
+#: misc/tune2fs.c:3546
 msgid "The quota feature may only be changed when the filesystem is unmounted and not in use.\n"
 msgstr "只有当文件系统未挂载且未使用时才能修改配额特性。\n"
 
-#: misc/tune2fs.c:3549
+#: misc/tune2fs.c:3565
 msgid "Cannot change the UUID of this filesystem because it has the stable_inodes feature flag.\n"
 msgstr "无法更改此文件系统的 UUID，因为它设置了 stable_inodes 特性标志。\n"
 
-#: misc/tune2fs.c:3559
+#: misc/tune2fs.c:3575
 msgid "Setting the UUID on this filesystem could take some time."
 msgstr "在此文件系统上设置 UUID 需要花费一段时间。"
 
-#: misc/tune2fs.c:3576
+#: misc/tune2fs.c:3592
 msgid "The UUID may only be changed when the filesystem is unmounted.\n"
 msgstr "只有当文件系统未挂载时才能改变 UUID。\n"
 
-#: misc/tune2fs.c:3579
+#: misc/tune2fs.c:3595
 msgid "If you only use kernels newer than v4.4, run 'tune2fs -O metadata_csum_seed' and re-run this command.\n"
 msgstr "若您仅使用 v4.4 以上的内核，请运行 \"tune2fs -O metadata_csum_seed\"，然后重新运行此命令。\n"
 
-#: misc/tune2fs.c:3629
+#: misc/tune2fs.c:3645
 msgid "Invalid UUID format\n"
 msgstr "无效的 UUID 格式\n"
 
-#: misc/tune2fs.c:3663
+#: misc/tune2fs.c:3679
 msgid "Need to update journal superblock.\n"
 msgstr "需要更新日志超级块。\n"
 
-#: misc/tune2fs.c:3683
+#: misc/tune2fs.c:3699
 msgid "The inode size may only be changed when the filesystem is unmounted and not in use.\n"
 msgstr "只有当文件系统未挂载且未使用时才能调整 inode 大小。\n"
 
-#: misc/tune2fs.c:3690
+#: misc/tune2fs.c:3706
 msgid ""
 "Changing the inode size not supported for filesystems with the flex_bg\n"
 "feature enabled.\n"
 msgstr "启用了 flex_bg 特性的文件系统不支持调整 inode 大小。\n"
 
-#: misc/tune2fs.c:3708
+#: misc/tune2fs.c:3724
 #, c-format
 msgid "Setting inode size %lu\n"
 msgstr "正在将 inode 大小设置为 %lu\n"
 
-#: misc/tune2fs.c:3712
+#: misc/tune2fs.c:3728
 msgid "Failed to change inode size\n"
 msgstr "调整 inode 大小失败 \n"
 
-#: misc/tune2fs.c:3732
+#: misc/tune2fs.c:3748
 #, c-format
 msgid "Setting stride size to %d\n"
 msgstr "设置步长为 %d\n"
 
-#: misc/tune2fs.c:3737
+#: misc/tune2fs.c:3753
 #, c-format
 msgid "Setting stripe width to %d\n"
 msgstr "设置带宽为 %d\n"
 
-#: misc/tune2fs.c:3744
+#: misc/tune2fs.c:3760
 #, c-format
 msgid "Setting extended default mount options to '%s'\n"
 msgstr "设置扩展的默认挂载选项为 \"%s\"\n"
 
-#: misc/util.c:107
+#: misc/util.c:108
 msgid "<proceeding>\n"
 msgstr "<正在继续>\n"
 
-#: misc/util.c:111
+#: misc/util.c:112
 #, c-format
 msgid "Proceed anyway (or wait %d seconds to proceed) ? (y,N) "
 msgstr "无论如何也要继续（或等待 %d 秒以继续）？(y,N) "
 
-#: misc/util.c:115
+#: misc/util.c:116
 msgid "Proceed anyway? (y,N) "
 msgstr "无论如何也要继续？(y,N) "
 
-#: misc/util.c:142
+#: misc/util.c:143
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
 msgstr "仍然强制执行 mke2fs 。希望 /etc/mtab 中反映的并非真实情况。\n"
 
-#: misc/util.c:147
+#: misc/util.c:148
 #, c-format
 msgid "will not make a %s here!\n"
 msgstr "将不会在此创建%s！\n"
 
-#: misc/util.c:154
+#: misc/util.c:155
 msgid "mke2fs forced anyway.\n"
 msgstr "仍然强制执行 mke2fs。\n"
 
-#: misc/util.c:170
+#: misc/util.c:171
 msgid "Couldn't allocate memory to parse journal options!\n"
 msgstr "无法为解析日志选项分配内存！\n"
 
-#: misc/util.c:195
+#: misc/util.c:196
 #, c-format
 msgid ""
 "\n"
@@ -7394,7 +7434,7 @@ msgstr ""
 "\n"
 "无法找到匹配 %s 的日志设备\n"
 
-#: misc/util.c:230
+#: misc/util.c:231
 msgid ""
 "\n"
 "Bad journal options specified.\n"
@@ -7423,7 +7463,7 @@ msgstr ""
 "日志大小必须介于 1024 至 10240000 个文件系统块之间。\n"
 "\n"
 
-#: misc/util.c:273
+#: misc/util.c:274
 msgid ""
 "\n"
 "Filesystem too small for a journal\n"
@@ -7431,18 +7471,18 @@ msgstr ""
 "\n"
 "文件系统太小，无法容纳日志\n"
 
-#: misc/util.c:290
+#: misc/util.c:295
 #, c-format
 msgid ""
 "\n"
-"The total requested journal size is %d blocks; it must be\n"
-"between 1024 and 10240000 blocks.  Aborting.\n"
+"The total requested journal size is %d blocks;\n"
+"it must be between %d and %u blocks.  Aborting.\n"
 msgstr ""
 "\n"
 "给定的日志总大小为 %d 个块；但该值必须\n"
-"介于 1024 至 10240000 块之间。中止执行。\n"
+"介于 %d 至 %u 块之间。中止执行。\n"
 
-#: misc/util.c:298
+#: misc/util.c:301
 msgid ""
 "\n"
 "Total journal size too big for filesystem.\n"
@@ -7450,7 +7490,7 @@ msgstr ""
 "\n"
 "日志总大小太大，文件系统无法容纳。\n"
 
-#: misc/util.c:311
+#: misc/util.c:314
 #, c-format
 msgid ""
 "This filesystem will be automatically checked every %d mounts or\n"
@@ -7861,38 +7901,38 @@ msgstr "尝试添加组 #%d 时"
 msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
 msgstr "文件系统 %s 被挂载于 %s，并且本系统不支持在线调整大小。\n"
 
-#: resize/resize2fs.c:769
+#: resize/resize2fs.c:776
 #, c-format
 msgid "inodes (%llu) must be less than %u\n"
 msgstr "inode 数 (%llu) 必须小于 %u\n"
 
-#: resize/resize2fs.c:1126
+#: resize/resize2fs.c:1133
 msgid "reserved blocks"
 msgstr "保留块"
 
-#: resize/resize2fs.c:1373
+#: resize/resize2fs.c:1380
 msgid "meta-data blocks"
 msgstr "元数据块"
 
-#: resize/resize2fs.c:1477 resize/resize2fs.c:2521
+#: resize/resize2fs.c:1484 resize/resize2fs.c:2528
 msgid "new meta blocks"
 msgstr "新的元数据块"
 
-#: resize/resize2fs.c:2745
+#: resize/resize2fs.c:2752
 msgid "Should never happen!  No sb in last super_sparse bg?\n"
 msgstr "不应当出现的情况！最后一个 super_sparse 块组中没有超级块？\n"
 
-#: resize/resize2fs.c:2750
+#: resize/resize2fs.c:2757
 msgid "Should never happen!  Unexpected old_desc in super_sparse bg?\n"
 msgstr "不应当出现的情况！super_sparse 块组中有未预期的 old_desc？\n"
 
-#: resize/resize2fs.c:2823
+#: resize/resize2fs.c:2830
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr "不应当出现的情况：调整大小 inode 损坏！\n"
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.47.2-rc1"
-msgstr "EXT2FS 库版本 1.47.2-rc1"
+msgid "EXT2FS Library version 1.47.3-rc1"
+msgstr "EXT2FS 库版本 1.47.3-rc1"
 
 #: lib/ext2fs/ext2_err.c:12
 msgid "Wrong magic number for ext2_filsys structure"
@@ -8803,6 +8843,20 @@ msgstr "%s 有一个 %s 文件系统\n"
 #, c-format
 msgid "%s contains `%s' data\n"
 msgstr "%s 含有 \"%s\" 数据\n"
+
+#~ msgid "Mounting read-only.\n"
+#~ msgstr "以只读模式挂载。\n"
+
+#, c-format
+#~ msgid "%s: %s.\n"
+#~ msgstr "%s: %s。\n"
+
+#~ msgid "Journal needs recovery; running `e2fsck -E journal_only' is required.\n"
+#~ msgstr "需要恢复日志；请运行 \"e2fsck -E journal_only\"。\n"
+
+#, c-format
+#~ msgid "%s: Writing to the journal is not supported.\n"
+#~ msgstr "%s: 不支持写入日志。\n"
 
 #~ msgid "Sparse superblocks not supported with revision 0 filesystems\n"
 #~ msgstr "文件系统版本 0 不支持稀疏超级块\n"

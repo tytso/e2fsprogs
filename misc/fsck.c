@@ -235,6 +235,7 @@ static void parse_escape(char *word)
 static void free_instance(struct fsck_instance *i)
 {
 	free(i->prog);
+	free(i->type);
 	free(i->device);
 	free(i->base_device);
 	free(i);

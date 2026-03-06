@@ -1,6 +1,6 @@
 AC_INIT
 AC_CONFIG_SRCDIR([version.h])
-AC_PREREQ([2.71])
+AC_PREREQ([2.72])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_HEADERS([lib/config.h])
 AH_BOTTOM([#include <dirpaths.h>])
@@ -943,7 +943,7 @@ dnl End of configuration options
 dnl
 AC_SUBST(BINARY_TYPE)
 AC_PROG_MAKE_SET
-CHECK_GNU_MAKE
+AX_CHECK_GNU_MAKE
 AC_PATH_PROG(LN, ln, ln)
 AC_PROG_MKDIR_P
 dnl
@@ -1009,6 +1009,7 @@ AC_CHECK_HEADERS(m4_flatten([
 	linux/falloc.h
 	linux/fd.h
 	linux/fsmap.h
+	linux/fsverity.h
 	linux/major.h
 	linux/loop.h
 	linux/types.h
@@ -1125,6 +1126,7 @@ AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(long long)
 AC_CHECK_SIZEOF(off_t)
 AC_CHECK_SIZEOF(time_t)
+AC_CHECK_SIZEOF(void *)
 SIZEOF_SHORT=$ac_cv_sizeof_short
 SIZEOF_INT=$ac_cv_sizeof_int
 SIZEOF_LONG=$ac_cv_sizeof_long
@@ -1323,26 +1325,42 @@ else
 	AC_MSG_RESULT([Testing for libarchive support (with dlopen)])
 fi]
 ,
-try_libarchive="yes"
-AC_MSG_RESULT([Try testing for libarchive support (with dlopen) by default])
-)
-ARCHIVE_LIB=
+[
+case "$host_os" in
+    darwin*)
+	try_libarchive="direct"
+	AC_MSG_RESULT([Try testing for libarchive support (with static linking) by default])
+	 ;;
+    *)
+        try_libarchive="yes"
+	AC_MSG_RESULT([Try testing for libarchive support (with dlopen) by default])
+	;;
+esac
+])
+ARCHIVE_LIBS=
 if test -n "$try_libarchive"
 then
-    AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIB=-larchive
-    AC_CHECK_HEADERS([archive.h])])
-    if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
-        ARCHIVE_LIB=$DLOPEN_LIB
-	AC_DEFINE(CONFIG_DLOPEN_LIBARCHIVE, 1,
+    PKG_CHECK_MODULES([ARCHIVE],[libarchive],
+    [
+	AC_MSG_RESULT([pkg-config found libarchive])
+	CFLAGS="$ARCHIVE_CFLAGS $CFLAGS"
+    ],[
+        AC_CHECK_LIB(archive, archive_read_new, [ARCHIVE_LIBS=-larchive])
+    ])
+    if test -n "$ARCHIVE_LIBS" ; then
+        AC_CHECK_HEADERS([archive.h])
+        if test "$ac_cv_func_dlopen" = yes -a "$try_libarchive" != "direct"; then
+            ARCHIVE_LIBS=$DLOPEN_LIB
+	    AC_DEFINE(CONFIG_DLOPEN_LIBARCHIVE, 1,
 		[Define to 1 if using dlopen to access libarchive])
-
+        fi
     fi
     if test "$ac_cv_header_archive_h" != "yes"
     then
-        ARCHIVE_LIB=
+        ARCHIVE_LIBS=
     fi
 fi
-AC_SUBST(ARCHIVE_LIB)
+AC_SUBST(ARCHIVE_LIBS)
 dnl
 dnl Check to see if librt is required for clock_gettime() (glibc < 2.17)
 dnl
@@ -1414,8 +1432,8 @@ AC_SUBST(FUSE_CMT)
 if test "$FUSE_LIB" = "-lfuse3"
 then
 	FUSE_USE_VERSION=35
-	CFLAGS="$CFLAGS $fuse3_CFLAGS"
-	LDFLAGS="$LDFLAGS $fuse3_LDFLAGS"
+	CFLAGS="$fuse3_CFLAGS $CFLAGS"
+	FUSE_LIB="$fuse3_LIBS"
 	AC_CHECK_HEADERS([pthread.h fuse.h], [],
 		[AC_MSG_FAILURE([Cannot find fuse3 fuse2fs headers.])],
 [#define _FILE_OFFSET_BITS	64
@@ -1978,6 +1996,24 @@ OS_IO_FILE=""
   ;;
 esac]
 AC_SUBST(OS_IO_FILE)
+
+dnl Check for fsverity ioctl
+if test "${ac_cv_header_linux_fsverity_h}" = "yes"; then
+   AC_MSG_CHECKING([for FS_IOC_READ_VERITY_METADATA ioctl])
+   AC_PREPROC_IFELSE(
+   [AC_LANG_PROGRAM([[
+#include <linux/fsverity.h>
+#ifndef FS_IOC_READ_VERITY_METADATA
+# error "FS_IOC_READ_VERITY_METADATA not available"
+#endif
+]], [])], [
+   AC_DEFINE([HAVE_FS_IOC_READ_VERITY_METADATA], [1], [Define to 1 if FS_IOC_READ_VERITY_METADATA ioctl is available])
+   AC_MSG_RESULT([yes])
+   ],
+   [
+   AC_MSG_RESULT([no])
+   ])
+fi
 
 dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
