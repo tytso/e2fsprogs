@@ -182,7 +182,7 @@ snap_dev="/dev/${LVM2_VG_NAME}/${snap}"
 teardown() {
 	# Remove and wait for removal to succeed.
 	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
-	while [ -e "${snap_dev}" ] && [ "$?" -eq "5" ]; do
+	while [ "$?" -eq "5" ] && [ -e "${snap_dev}" ]; do
 		sleep 0.5
 		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"
 	done
@@ -210,7 +210,7 @@ setup() {
 	# Try to remove snapshot for 30s, bail out if we can't remove it.
 	lvremove_deadline="$(( $(date "+%s") + 30))"
 	${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}" 2>/dev/null
-	while [ -e "${snap_dev}" ] && [ "$?" -eq "5" ] &&
+	while [ "$?" -eq "5" ] && [ -e "${snap_dev}" ] &&
 	      [ "$(date "+%s")" -lt "${lvremove_deadline}" ]; do
 		sleep 0.5
 		${DBG} lvremove -f "${LVM2_VG_NAME}/${snap}"

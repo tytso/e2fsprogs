@@ -18,8 +18,13 @@
 # include <linux/falloc.h>
 # include <linux/xattr.h>
 #endif
+#ifdef HAVE_SYS_XATTR_H
+#include <sys/xattr.h>
+#endif
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <ctype.h>
+#define FUSE_DARWIN_ENABLE_EXTENSIONS 0
 #ifdef __SET_FOB_FOR_FUSE
 # error Do not set magic value __SET_FOB_FOR_FUSE!!!!
 #endif
@@ -40,6 +45,7 @@
 #include <inttypes.h>
 #include "ext2fs/ext2fs.h"
 #include "ext2fs/ext2_fs.h"
+#include "ext2fs/ext2fsP.h"
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 # define FUSE_PLATFORM_OPTS	""
 #else
@@ -51,6 +57,8 @@
 #endif
 
 #include "../version.h"
+#include "uuid/uuid.h"
+#include "e2p/e2p.h"
 
 #ifdef ENABLE_NLS
 #include <libintl.h>
@@ -74,17 +82,88 @@
 #define P_(singular, plural, n) ((n) == 1 ? (singular) : (plural))
 #endif
 
+#ifndef XATTR_NAME_POSIX_ACL_DEFAULT
+#define XATTR_NAME_POSIX_ACL_DEFAULT "posix_acl_default"
+#endif
+#ifndef XATTR_SECURITY_PREFIX
+#define XATTR_SECURITY_PREFIX "security."
+#define XATTR_SECURITY_PREFIX_LEN (sizeof (XATTR_SECURITY_PREFIX) - 1)
+#endif
+
+/*
+ * Linux and MacOS implement the setxattr(2) interface, which defines
+ * XATTR_CREATE and XATTR_REPLACE.  However, FreeBSD uses
+ * extattr_set_file(2), which does not have a flags or options
+ * parameter, and does not define XATTR_CREATE and XATTR_REPLACE.
+ */
+#ifndef XATTR_CREATE
+#define XATTR_CREATE 0
+#endif
+
+#ifndef XATTR_REPLACE
+#define XATTR_REPLACE 0
+#endif
+
+#if !defined(EUCLEAN)
+#if !defined(EBADMSG)
+#define EUCLEAN EBADMSG
+#elif !defined(EPROTO)
+#define EUCLEAN EPROTO
+#else
+#define EUCLEAN EIO
+#endif
+#endif /* !defined(EUCLEAN) */
+
+#if !defined(ENODATA)
+#ifdef ENOATTR
+#define ENODATA ENOATTR
+#else
+#define ENODATA ENOENT
+#endif
+#endif /* !defined(ENODATA) */
+
 static ext2_filsys global_fs; /* Try not to use this directly */
 
-#undef DEBUG
+static inline uint64_t round_up(uint64_t b, unsigned int align)
+{
+	unsigned int m;
 
-#ifdef DEBUG
-# define dbg_printf(f, a...)  do {printf("FUSE2FS-" f, ## a); \
-	fflush(stdout); \
-} while (0)
-#else
-# define dbg_printf(f, a...)
-#endif
+	if (align == 0)
+		return b;
+	m = b % align;
+	if (m)
+		b += align - m;
+	return b;
+}
+
+static inline uint64_t round_down(uint64_t b, unsigned int align)
+{
+	unsigned int m;
+
+	if (align == 0)
+		return b;
+	m = b % align;
+	return b - m;
+}
+
+#define dbg_printf(fuse2fs, format, ...) \
+	while ((fuse2fs)->debug) { \
+		printf("FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
+		fflush(stdout); \
+		break; \
+	}
+
+#define log_printf(fuse2fs, format, ...) \
+	do { \
+		printf("FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
+		fflush(stdout); \
+	} while (0)
+
+#define err_printf(fuse2fs, format, ...) \
+	do { \
+		fprintf(stderr, "FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
+		fflush(stderr); \
+	} while (0)
 
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 8)
 # ifdef _IOR
@@ -107,6 +186,13 @@ static ext2_filsys global_fs; /* Try not to use this directly */
 # define FL_PUNCH_HOLE_FLAG (0)
 #endif
 
+#ifdef FALLOC_FL_ZERO_RANGE
+# define FL_ZERO_RANGE_FLAG FALLOC_FL_ZERO_RANGE
+#else
+# define FL_ZERO_RANGE_FLAG (0)
+#endif
+
+errcode_t ext2fs_check_ext3_journal(ext2_filsys fs);
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
 
 #ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
@@ -122,6 +208,7 @@ struct fuse2fs_file_handle {
 	unsigned long magic;
 	ext2_ino_t ino;
 	int open_flags;
+	int check_flags;
 };
 
 /* Main program context */
@@ -131,6 +218,9 @@ struct fuse2fs {
 	ext2_filsys fs;
 	pthread_mutex_t bfl;
 	char *device;
+	char *shortdev;
+
+	/* options set by fuse_opt_parse must be of type int */
 	int ro;
 	int debug;
 	int no_default_opts;
@@ -139,22 +229,30 @@ struct fuse2fs {
 	int fakeroot;
 	int alloc_all_blocks;
 	int norecovery;
+	int kernel;
+	int directio;
+	int acl;
+
+	int logfd;
+	int blocklog;
+	unsigned int blockmask;
 	unsigned long offset;
-	FILE *err_fp;
 	unsigned int next_generation;
+	unsigned long long cache_size;
+	char *lockfile;
 };
 
 #define FUSE2FS_CHECK_MAGIC(fs, ptr, num) do {if ((ptr)->magic != (num)) \
-	return translate_error((fs), 0, EXT2_ET_MAGIC_EXT2_FILE); \
+	return translate_error((fs), 0, EXT2_ET_FILESYSTEM_CORRUPTED); \
 } while (0)
 
 #define FUSE2FS_CHECK_CONTEXT(ptr) do {if ((ptr)->magic != FUSE2FS_MAGIC) \
-	return translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC); \
+	return translate_error(global_fs, 0, EXT2_ET_FILESYSTEM_CORRUPTED); \
 } while (0)
 
-static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
+static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			     const char *file, int line);
-#define translate_error(fs, ino, err) __translate_error((fs), (err), (ino), \
+#define translate_error(fs, ino, err) __translate_error((fs), (ino), (err), \
 			__FILE__, __LINE__)
 
 /* for macosx */
@@ -165,6 +263,39 @@ static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
 #ifndef R_OK
 #  define R_OK 4
 #endif
+
+static inline int u_log2(unsigned int arg)
+{
+	int	l = 0;
+
+	arg >>= 1;
+	while (arg) {
+		l++;
+		arg >>= 1;
+	}
+	return l;
+}
+
+static inline blk64_t FUSE2FS_B_TO_FSBT(const struct fuse2fs *ff, off_t pos)
+{
+	return pos >> ff->blocklog;
+}
+
+static inline blk64_t FUSE2FS_B_TO_FSB(const struct fuse2fs *ff, off_t pos)
+{
+	return (pos + ff->blockmask) >> ff->blocklog;
+}
+
+static inline unsigned int FUSE2FS_OFF_IN_FSB(const struct fuse2fs *ff,
+					      off_t pos)
+{
+	return pos & ff->blockmask;
+}
+
+static inline off_t FUSE2FS_FSB_TO_B(const struct fuse2fs *ff, blk64_t bno)
+{
+	return bno << ff->blocklog;
+}
 
 #define EXT4_EPOCH_BITS 2
 #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
@@ -270,6 +401,21 @@ do {									       \
 		(timespec)->tv_nsec = 0;				       \
 } while (0)
 
+static inline errcode_t fuse2fs_read_inode(ext2_filsys fs, ext2_ino_t ino,
+					   struct ext2_inode_large *inode)
+{
+	memset(inode, 0, sizeof(*inode));
+	return ext2fs_read_inode_full(fs, ino, EXT2_INODE(inode),
+				      sizeof(*inode));
+}
+
+static inline errcode_t fuse2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
+					    struct ext2_inode_large *inode)
+{
+	return ext2fs_write_inode_full(fs, ino, EXT2_INODE(inode),
+				       sizeof(*inode));
+}
+
 static void get_now(struct timespec *now)
 {
 #ifdef CLOCK_REALTIME
@@ -323,17 +469,14 @@ static int update_ctime(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	/* Otherwise we have to read-modify-write the inode */
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
 	increment_version(&inode);
 	EXT4_INODE_SET_XTIME(i_ctime, &now, &inode);
 
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -345,12 +488,11 @@ static int update_atime(ext2_filsys fs, ext2_ino_t ino)
 	errcode_t err;
 	struct ext2_inode_large inode, *pinode;
 	struct timespec atime, mtime, now;
+	double datime, dmtime, dnow;
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return 0;
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -358,16 +500,21 @@ static int update_atime(ext2_filsys fs, ext2_ino_t ino)
 	EXT4_INODE_GET_XTIME(i_atime, &atime, pinode);
 	EXT4_INODE_GET_XTIME(i_mtime, &mtime, pinode);
 	get_now(&now);
+
+	datime = atime.tv_sec + ((double)atime.tv_nsec / 1000000000);
+	dmtime = mtime.tv_sec + ((double)mtime.tv_nsec / 1000000000);
+	dnow = now.tv_sec + ((double)now.tv_nsec / 1000000000);
+
 	/*
 	 * If atime is newer than mtime and atime hasn't been updated in thirty
-	 * seconds, skip the atime update.  Same idea as Linux "relatime".
+	 * seconds, skip the atime update.  Same idea as Linux "relatime".  Use
+	 * doubles to account for nanosecond resolution.
 	 */
-	if (atime.tv_sec >= mtime.tv_sec && atime.tv_sec >= now.tv_sec - 30)
+	if (datime >= dmtime && datime >= dnow - 30)
 		return 0;
 	EXT4_INODE_SET_XTIME(i_atime, &now, &inode);
 
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -389,9 +536,7 @@ static int update_mtime(ext2_filsys fs, ext2_ino_t ino,
 		return 0;
 	}
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -400,8 +545,7 @@ static int update_mtime(ext2_filsys fs, ext2_ino_t ino,
 	EXT4_INODE_SET_XTIME(i_ctime, &now, &inode);
 	increment_version(&inode);
 
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -439,7 +583,7 @@ static int fs_can_allocate(struct fuse2fs *ff, blk64_t num)
 	ext2_filsys fs = ff->fs;
 	blk64_t reserved;
 
-	dbg_printf("%s: Asking for %llu; alloc_all=%d total=%llu free=%llu "
+	dbg_printf(ff, "%s: Asking for %llu; alloc_all=%d total=%llu free=%llu "
 		   "rsvd=%llu\n", __func__, num, ff->alloc_all_blocks,
 		   ext2fs_blocks_count(fs->super),
 		   ext2fs_free_blocks_count(fs->super),
@@ -466,16 +610,70 @@ static int fs_writeable(ext2_filsys fs)
 	return (fs->flags & EXT2_FLAG_RW) && (fs->super->s_error_count == 0);
 }
 
-static int check_inum_access(ext2_filsys fs, ext2_ino_t ino, mode_t mask)
+static inline int is_superuser(struct fuse2fs *ff, struct fuse_context *ctxt)
+{
+	if (ff->fakeroot)
+		return 1;
+	return ctxt->uid == 0;
+}
+
+static inline int want_check_owner(struct fuse2fs *ff,
+				   struct fuse_context *ctxt)
+{
+	/*
+	 * The kernel is responsible for access control, so we allow anything
+	 * that the superuser can do.
+	 */
+	if (ff->kernel)
+		return 0;
+	return !is_superuser(ff, ctxt);
+}
+
+/* Test for append permission */
+#define A_OK	16
+
+static int check_iflags_access(struct fuse2fs *ff, ext2_ino_t ino,
+			       const struct ext2_inode *inode, int mask)
+{
+	ext2_filsys fs = ff->fs;
+
+	EXT2FS_BUILD_BUG_ON((A_OK & (R_OK | W_OK | X_OK | F_OK)) != 0);
+
+	/* no writing or metadata changes to read-only or broken fs */
+	if ((mask & (W_OK | A_OK)) && !fs_writeable(fs))
+		return -EROFS;
+
+	dbg_printf(ff, "access ino=%d mask=e%s%s%s%s iflags=0x%x\n",
+		   ino,
+		   (mask & R_OK ? "r" : ""),
+		   (mask & W_OK ? "w" : ""),
+		   (mask & X_OK ? "x" : ""),
+		   (mask & A_OK ? "a" : ""),
+		   inode->i_flags);
+
+	/* is immutable? */
+	if ((mask & W_OK) &&
+	    (inode->i_flags & EXT2_IMMUTABLE_FL))
+		return -EPERM;
+
+	/* is append-only? */
+	if ((inode->i_flags & EXT2_APPEND_FL) && (mask & W_OK) && !(mask & A_OK))
+		return -EPERM;
+
+	return 0;
+}
+
+static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 {
 	struct fuse_context *ctxt = fuse_get_context();
-	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
+	ext2_filsys fs = ff->fs;
 	struct ext2_inode inode;
 	mode_t perms;
 	errcode_t err;
+	int ret;
 
 	/* no writing to read-only or broken fs */
-	if ((mask & W_OK) && !fs_writeable(fs))
+	if ((mask & (W_OK | A_OK)) && !fs_writeable(fs))
 		return -EROFS;
 
 	err = ext2fs_read_inode(fs, ino, &inode);
@@ -483,23 +681,30 @@ static int check_inum_access(ext2_filsys fs, ext2_ino_t ino, mode_t mask)
 		return translate_error(fs, ino, err);
 	perms = inode.i_mode & 0777;
 
-	dbg_printf("access ino=%d mask=e%s%s%s perms=0%o fuid=%d fgid=%d "
-		   "uid=%d gid=%d\n", ino,
-		   (mask & R_OK ? "r" : ""), (mask & W_OK ? "w" : ""),
-		   (mask & X_OK ? "x" : ""), perms, inode_uid(inode),
-		   inode_gid(inode), ctxt->uid, ctxt->gid);
+	dbg_printf(ff, "access ino=%d mask=e%s%s%s%s perms=0%o iflags=0x%x "
+		   "fuid=%d fgid=%d uid=%d gid=%d\n", ino,
+		   (mask & R_OK ? "r" : ""),
+		   (mask & W_OK ? "w" : ""),
+		   (mask & X_OK ? "x" : ""),
+		   (mask & A_OK ? "a" : ""),
+		   perms, inode.i_flags,
+		   inode_uid(inode), inode_gid(inode),
+		   ctxt->uid, ctxt->gid);
 
 	/* existence check */
 	if (mask == 0)
 		return 0;
 
-	/* is immutable? */
-	if ((mask & W_OK) &&
-	    (inode.i_flags & EXT2_IMMUTABLE_FL))
-		return -EACCES;
+	ret = check_iflags_access(ff, ino, &inode, mask);
+	if (ret)
+		return ret;
+
+	/* If kernel is responsible for mode and acl checks, we're done. */
+	if (ff->kernel)
+		return 0;
 
 	/* Figure out what root's allowed to do */
-	if (ff->fakeroot || ctxt->uid == 0) {
+	if (is_superuser(ff, ctxt)) {
 		/* Non-file access always ok */
 		if (!LINUX_S_ISREG(inode.i_mode))
 			return 0;
@@ -515,6 +720,9 @@ static int check_inum_access(ext2_filsys fs, ext2_ino_t ino, mode_t mask)
 		/* Trying to execute a file that's not executable. BZZT! */
 		return -EACCES;
 	}
+
+	/* Remove the O_APPEND flag before testing permissions */
+	mask &= ~A_OK;
 
 	/* allow owner, if perms match */
 	if (inode_uid(inode) == ctxt->uid) {
@@ -536,6 +744,36 @@ static int check_inum_access(ext2_filsys fs, ext2_ino_t ino, mode_t mask)
 	return -EACCES;
 }
 
+static errcode_t fuse2fs_check_support(struct fuse2fs *ff)
+{
+	ext2_filsys fs = ff->fs;
+
+	if (ext2fs_has_feature_quota(fs->super)) {
+		err_printf(ff, "%s\n", _("quotas not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_verity(fs->super)) {
+		err_printf(ff, "%s\n", _("verity not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_encrypt(fs->super)) {
+		err_printf(ff, "%s\n", _("encryption not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+	if (ext2fs_has_feature_casefold(fs->super)) {
+		err_printf(ff, "%s\n", _("casefolding not supported."));
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+
+	if (fs->super->s_state & EXT2_ERROR_FS) {
+		err_printf(ff, "%s\n",
+ _("Errors detected; running e2fsck is required."));
+		return EXT2_ET_FILESYSTEM_CORRUPTED;
+	}
+
+	return 0;
+}
+
 static void op_destroy(void *p EXT2FS_ATTR((unused)))
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -547,8 +785,11 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 		translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC);
 		return;
 	}
+
+	pthread_mutex_lock(&ff->bfl);
 	fs = ff->fs;
-	dbg_printf("%s: dev=%s\n", __func__, fs->device_name);
+
+	dbg_printf(ff, "%s: dev=%s\n", __func__, fs->device_name);
 	if (fs->flags & EXT2_FLAG_RW) {
 		fs->super->s_state |= EXT2_VALID_FS;
 		if (fs->super->s_error_count)
@@ -562,6 +803,133 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 		if (err)
 			translate_error(fs, 0, err);
 	}
+
+	if (ff->debug && fs->io->manager->get_stats) {
+		io_stats stats = NULL;
+
+		fs->io->manager->get_stats(fs->io, &stats);
+		dbg_printf(ff, "read: %lluk\n",  stats->bytes_read >> 10);
+		dbg_printf(ff, "write: %lluk\n", stats->bytes_written >> 10);
+		dbg_printf(ff, "hits: %llu\n",   stats->cache_hits);
+		dbg_printf(ff, "misses: %llu\n", stats->cache_misses);
+		dbg_printf(ff, "hit_ratio: %.1f%%\n",
+				(100.0 * stats->cache_hits) /
+				(stats->cache_hits + stats->cache_misses));
+	}
+
+	if (ff->kernel) {
+		char uuid[UUID_STR_SIZE];
+
+		uuid_unparse(fs->super->s_uuid, uuid);
+		log_printf(ff, "%s %s.\n", _("unmounting filesystem"), uuid);
+	}
+
+	pthread_mutex_unlock(&ff->bfl);
+}
+
+/* Reopen @stream with @fileno */
+static int fuse2fs_freopen_stream(const char *path, int fileno, FILE *stream)
+{
+	char _fdpath[256];
+	const char *fdpath;
+	FILE *fp;
+	int ret;
+
+	ret = snprintf(_fdpath, sizeof(_fdpath), "/dev/fd/%d", fileno);
+	if (ret >= sizeof(_fdpath))
+		fdpath = path;
+	else
+		fdpath = _fdpath;
+
+	/*
+	 * C23 defines std{out,err} as an expression of type FILE* that need
+	 * not be an lvalue.  What this means is that we can't just assign to
+	 * stdout: we have to use freopen, which takes a path.
+	 *
+	 * There's no guarantee that the OS provides a /dev/fd/X alias for open
+	 * file descriptors, so if that fails, fall back to the original log
+	 * file path.  We'd rather not do a path-based reopen because that
+	 * exposes us to rename race attacks.
+	 */
+	fp = freopen(fdpath, "a", stream);
+	if (!fp && errno == ENOENT && fdpath == _fdpath)
+		fp = freopen(path, "a", stream);
+	if (!fp) {
+		perror(fdpath);
+		return -1;
+	}
+
+	return 0;
+}
+
+/* Redirect stdout/stderr to a file, or return a mount-compatible error. */
+static int fuse2fs_capture_output(struct fuse2fs *ff, const char *path)
+{
+	int ret;
+	int fd;
+
+	/*
+	 * First, open the log file path with system calls so that we can
+	 * redirect the stdout/stderr file numbers (typically 1 and 2) to our
+	 * logfile descriptor.  We'd like to avoid allocating extra file
+	 * objects in the kernel if we can because pos will be the same between
+	 * stdout and stderr.
+	 */
+	if (ff->logfd < 0) {
+		fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0600);
+		if (fd < 0) {
+			perror(path);
+			return -1;
+		}
+
+		/*
+		 * Save the newly opened fd in case we have to do this again in
+		 * op_init.
+		 */
+		ff->logfd = fd;
+	}
+
+	ret = dup2(ff->logfd, STDOUT_FILENO);
+	if (ret < 0) {
+		perror(path);
+		return -1;
+	}
+
+	ret = dup2(ff->logfd, STDERR_FILENO);
+	if (ret < 0) {
+		perror(path);
+		return -1;
+	}
+
+	/*
+	 * Now that we've changed STD{OUT,ERR}_FILENO to be the log file, use
+	 * freopen to make sure that std{out,err} (the C library abstractions)
+	 * point to the STDXXX_FILENO because any of our library dependencies
+	 * might decide to printf to one of those streams and we want to
+	 * capture all output in the log.
+	 */
+	ret = fuse2fs_freopen_stream(path, STDOUT_FILENO, stdout);
+	if (ret)
+		return ret;
+	ret = fuse2fs_freopen_stream(path, STDERR_FILENO, stderr);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+/* Set up debug and error logging files */
+static int fuse2fs_setup_logging(struct fuse2fs *ff)
+{
+	char *logfile = getenv("FUSE2FS_LOGFILE");
+	if (logfile)
+		return fuse2fs_capture_output(ff, logfile);
+
+	/* in kernel mode, try to log errors to the kernel log */
+	if (ff->kernel)
+		fuse2fs_capture_output(ff, "/dev/ttyprintk");
+
+	return 0;
 }
 
 static void *op_init(struct fuse_conn_info *conn
@@ -573,25 +941,43 @@ static void *op_init(struct fuse_conn_info *conn
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
-	errcode_t err;
 
 	if (ff->magic != FUSE2FS_MAGIC) {
 		translate_error(global_fs, 0, EXT2_ET_BAD_MAGIC);
 		return NULL;
 	}
+
+	/*
+	 * Configure logging a second time, because libfuse might have
+	 * redirected std{out,err} as part of daemonization.  If this fails,
+	 * give up and move on.
+	 */
+	fuse2fs_setup_logging(ff);
+	if (ff->logfd >= 0)
+		close(ff->logfd);
+	ff->logfd = -1;
+
 	fs = ff->fs;
-	dbg_printf("%s: dev=%s\n", __func__, fs->device_name);
+	dbg_printf(ff, "%s: dev=%s\n", __func__, fs->device_name);
 #ifdef FUSE_CAP_IOCTL_DIR
 	conn->want |= FUSE_CAP_IOCTL_DIR;
 #endif
-	if (fs->flags & EXT2_FLAG_RW) {
-		fs->super->s_mnt_count++;
-		ext2fs_set_tstamp(fs->super, s_mtime, time(NULL));
-		fs->super->s_state &= ~EXT2_VALID_FS;
-		ext2fs_mark_super_dirty(fs);
-		err = ext2fs_flush2(fs, 0);
-		if (err)
-			translate_error(fs, 0, err);
+#ifdef FUSE_CAP_POSIX_ACL
+	if (ff->acl)
+		conn->want |= FUSE_CAP_POSIX_ACL;
+#endif
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+	conn->time_gran = 1;
+	cfg->use_ino = 1;
+	if (ff->debug)
+		cfg->debug = 1;
+#endif
+
+	if (ff->kernel) {
+		char uuid[UUID_STR_SIZE];
+
+		uuid_unparse(fs->super->s_uuid, uuid);
+		log_printf(ff, "%s %s.\n", _("mounted filesystem"), uuid);
 	}
 	return ff;
 }
@@ -604,9 +990,7 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 	int ret = 0;
 	struct timespec tv;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
 
@@ -620,13 +1004,25 @@ static int stat_inode(ext2_filsys fs, ext2_ino_t ino, struct stat *statbuf)
 	statbuf->st_size = EXT2_I_SIZE(&inode);
 	statbuf->st_blksize = fs->blocksize;
 	statbuf->st_blocks = ext2fs_get_stat_i_blocks(fs,
-						(struct ext2_inode *)&inode);
+						EXT2_INODE(&inode));
 	EXT4_INODE_GET_XTIME(i_atime, &tv, &inode);
+#if HAVE_STRUCT_STAT_ST_ATIM
+	statbuf->st_atim = tv;
+#else
 	statbuf->st_atime = tv.tv_sec;
+#endif
 	EXT4_INODE_GET_XTIME(i_mtime, &tv, &inode);
+#if HAVE_STRUCT_STAT_ST_ATIM
+	statbuf->st_mtim = tv;
+#else
 	statbuf->st_mtime = tv.tv_sec;
+#endif
 	EXT4_INODE_GET_XTIME(i_ctime, &tv, &inode);
+#if HAVE_STRUCT_STAT_ST_ATIM
+	statbuf->st_ctim = tv;
+#else
 	statbuf->st_ctime = tv.tv_sec;
+#endif
 	if (LINUX_S_ISCHR(inode.i_mode) ||
 	    LINUX_S_ISBLK(inode.i_mode)) {
 		if (inode.i_block[0])
@@ -653,7 +1049,7 @@ static int op_getattr(const char *path, struct stat *statbuf
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: path=%s\n", __func__, path);
+	dbg_printf(ff, "%s: path=%s\n", __func__, path);
 	pthread_mutex_lock(&ff->bfl);
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
 	if (err) {
@@ -680,7 +1076,7 @@ static int op_readlink(const char *path, char *buf, size_t len)
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: path=%s\n", __func__, path);
+	dbg_printf(ff, "%s: path=%s\n", __func__, path);
 	pthread_mutex_lock(&ff->bfl);
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
 	if (err || ino == 0) {
@@ -714,13 +1110,11 @@ static int op_readlink(const char *path, char *buf, size_t len)
 		}
 
 		err = ext2fs_file_read(file, buf, len, &got);
-		if (err || got != len) {
-			ext2fs_file_close(file);
+		if (err)
 			ret = translate_error(fs, ino, err);
-			goto out2;
-		}
+		else if (got != len)
+			ret = translate_error(fs, ino, EXT2_ET_INODE_CORRUPTED);
 
-out2:
 		err = ext2fs_file_close(file);
 		if (ret)
 			goto out;
@@ -742,6 +1136,132 @@ out:
 	return ret;
 }
 
+static int __getxattr(struct fuse2fs *ff, ext2_ino_t ino, const char *name,
+		      void **value, size_t *value_len)
+{
+	ext2_filsys fs = ff->fs;
+	struct ext2_xattr_handle *h;
+	errcode_t err;
+	int ret = 0;
+
+	err = ext2fs_xattrs_open(fs, ino, &h);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_xattrs_read(h);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+	err = ext2fs_xattr_get(h, name, value, value_len);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+out_close:
+	err = ext2fs_xattrs_close(&h);
+	if (err && !ret)
+		ret = translate_error(fs, ino, err);
+	return ret;
+}
+
+static int __setxattr(struct fuse2fs *ff, ext2_ino_t ino, const char *name,
+		      void *value, size_t valuelen)
+{
+	ext2_filsys fs = ff->fs;
+	struct ext2_xattr_handle *h;
+	errcode_t err;
+	int ret = 0;
+
+	err = ext2fs_xattrs_open(fs, ino, &h);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_xattrs_read(h);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+	err = ext2fs_xattr_set(h, name, value, valuelen);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+out_close:
+	err = ext2fs_xattrs_close(&h);
+	if (err && !ret)
+		ret = translate_error(fs, ino, err);
+	return ret;
+}
+
+static int propagate_default_acls(struct fuse2fs *ff, ext2_ino_t parent,
+				  ext2_ino_t child, mode_t mode)
+{
+	void *def;
+	size_t deflen;
+	int ret;
+
+	if (!ff->acl || S_ISDIR(mode))
+		return 0;
+
+	ret = __getxattr(ff, parent, XATTR_NAME_POSIX_ACL_DEFAULT, &def,
+			 &deflen);
+	switch (ret) {
+	case -ENODATA:
+	case -ENOENT:
+		/* no default acl */
+		return 0;
+	case 0:
+		break;
+	default:
+		return ret;
+	}
+
+	ret = __setxattr(ff, child, XATTR_NAME_POSIX_ACL_DEFAULT, def, deflen);
+	ext2fs_free_mem(&def);
+	return ret;
+}
+
+static inline void fuse2fs_set_uid(struct ext2_inode_large *inode, uid_t uid)
+{
+	inode->i_uid = uid;
+	ext2fs_set_i_uid_high(*inode, uid >> 16);
+}
+
+static inline void fuse2fs_set_gid(struct ext2_inode_large *inode, gid_t gid)
+{
+	inode->i_gid = gid;
+	ext2fs_set_i_gid_high(*inode, gid >> 16);
+}
+
+static int fuse2fs_new_child_gid(struct fuse2fs *ff, ext2_ino_t parent,
+				 gid_t *gid, int *parent_sgid)
+{
+	struct ext2_inode_large inode;
+	struct fuse_context *ctxt = fuse_get_context();
+	errcode_t err;
+
+	err = fuse2fs_read_inode(ff->fs, parent, &inode);
+	if (err)
+		return translate_error(ff->fs, parent, err);
+
+	if (inode.i_mode & S_ISGID) {
+		if (parent_sgid)
+			*parent_sgid = 1;
+		*gid = inode.i_gid;
+	} else {
+		if (parent_sgid)
+			*parent_sgid = 0;
+		*gid = ctxt->gid;
+	}
+
+	return 0;
+}
+
 static int op_mknod(const char *path, mode_t mode, dev_t dev)
 {
 	struct fuse_context *ctxt = fuse_get_context();
@@ -753,11 +1273,12 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 	char *node_name, a;
 	int filetype;
 	struct ext2_inode_large inode;
+	gid_t gid;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: path=%s mode=0%o dev=0x%x\n", __func__, path, mode,
+	dbg_printf(ff, "%s: path=%s mode=0%o dev=0x%x\n", __func__, path, mode,
 		   (unsigned int)dev);
 	temp_path = strdup(path);
 	if (!temp_path) {
@@ -786,7 +1307,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 		goto out2;
 	}
 
-	ret = check_inum_access(fs, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
@@ -805,25 +1326,20 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 		goto out2;
 	}
 
+	err = fuse2fs_new_child_gid(ff, parent, &gid, NULL);
+	if (err)
+		goto out2;
+
 	err = ext2fs_new_inode(fs, parent, mode, 0, &child);
 	if (err) {
 		ret = translate_error(fs, 0, err);
 		goto out2;
 	}
 
-	dbg_printf("%s: create ino=%d/name=%s in dir=%d\n", __func__, child,
+	dbg_printf(ff, "%s: create ino=%d/name=%s in dir=%d\n", __func__, child,
 		   node_name, parent);
-	err = ext2fs_link(fs, parent, node_name, child, filetype);
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, parent, node_name, child,
-				     filetype);
-	}
+	err = ext2fs_link(fs, parent, node_name, child,
+			  filetype | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;
@@ -843,12 +1359,10 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 	inode.i_links_count = 1;
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, gid);
 
-	err = ext2fs_write_new_inode(fs, child, (struct ext2_inode *)&inode);
+	err = ext2fs_write_new_inode(fs, child, EXT2_INODE(&inode));
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -856,8 +1370,7 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
-	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -865,6 +1378,9 @@ static int op_mknod(const char *path, mode_t mode, dev_t dev)
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
 
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
+	if (ret)
+		goto out2;
 out2:
 	pthread_mutex_unlock(&ff->bfl);
 out:
@@ -885,11 +1401,12 @@ static int op_mkdir(const char *path, mode_t mode)
 	char *block;
 	blk64_t blk;
 	int ret = 0;
-	mode_t parent_sgid;
+	gid_t gid;
+	int parent_sgid;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: path=%s mode=0%o\n", __func__, path, mode);
+	dbg_printf(ff, "%s: path=%s mode=0%o\n", __func__, path, mode);
 	temp_path = strdup(path);
 	if (!temp_path) {
 		ret = -ENOMEM;
@@ -917,31 +1434,18 @@ static int op_mkdir(const char *path, mode_t mode)
 		goto out2;
 	}
 
-	ret = check_inum_access(fs, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
-	/* Is the parent dir sgid? */
-	err = ext2fs_read_inode_full(fs, parent, (struct ext2_inode *)&inode,
-				     sizeof(inode));
-	if (err) {
-		ret = translate_error(fs, parent, err);
+	err = fuse2fs_new_child_gid(ff, parent, &gid, &parent_sgid);
+	if (err)
 		goto out2;
-	}
-	parent_sgid = inode.i_mode & S_ISGID;
 
 	*node_name = a;
 
-	err = ext2fs_mkdir(fs, parent, 0, node_name);
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_mkdir(fs, parent, 0, node_name);
-	}
+	err = ext2fs_mkdir2(fs, parent, 0, 0, EXT2FS_LINK_EXPAND,
+			    node_name, NULL);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;
@@ -958,28 +1462,24 @@ static int op_mkdir(const char *path, mode_t mode)
 		ret = translate_error(fs, 0, err);
 		goto out2;
 	}
-	dbg_printf("%s: created ino=%d/path=%s in dir=%d\n", __func__, child,
+	dbg_printf(ff, "%s: created ino=%d/path=%s in dir=%d\n", __func__, child,
 		   node_name, parent);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, child, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
 	}
 
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
-	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID) |
-		       parent_sgid;
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, gid);
+	inode.i_mode = LINUX_S_IFDIR | (mode & ~S_ISUID);
+	if (parent_sgid)
+		inode.i_mode |= S_ISGID;
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
 
-	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -994,7 +1494,7 @@ static int op_mkdir(const char *path, mode_t mode)
 		ret = translate_error(fs, child, err);
 		goto out2;
 	}
-	err = ext2fs_bmap2(fs, child, (struct ext2_inode *)&inode, NULL, 0, 0,
+	err = ext2fs_bmap2(fs, child, EXT2_INODE(&inode), NULL, 0, 0,
 			   NULL, &blk);
 	if (err) {
 		ret = translate_error(fs, child, err);
@@ -1006,6 +1506,10 @@ static int op_mkdir(const char *path, mode_t mode)
 		goto out3;
 	}
 
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
+	if (ret)
+		goto out3;
+
 out3:
 	ext2fs_free_mem(&block);
 out2:
@@ -1015,8 +1519,9 @@ out:
 	return ret;
 }
 
-static int unlink_file_by_name(ext2_filsys fs, const char *path)
+static int unlink_file_by_name(struct fuse2fs *ff, const char *path)
 {
+	ext2_filsys fs = ff->fs;
 	errcode_t err;
 	ext2_ino_t dir;
 	char *filename = strdup(path);
@@ -1037,13 +1542,13 @@ static int unlink_file_by_name(ext2_filsys fs, const char *path)
 		base_name = filename;
 	}
 
-	ret = check_inum_access(fs, dir, W_OK);
+	ret = check_inum_access(ff, dir, W_OK);
 	if (ret) {
 		free(filename);
 		return ret;
 	}
 
-	dbg_printf("%s: unlinking name=%s from dir=%d\n", __func__,
+	dbg_printf(ff, "%s: unlinking name=%s from dir=%d\n", __func__,
 		   base_name, dir);
 	err = ext2fs_unlink(fs, dir, base_name, 0, 0);
 	free(filename);
@@ -1053,6 +1558,51 @@ static int unlink_file_by_name(ext2_filsys fs, const char *path)
 	return update_mtime(fs, dir, NULL);
 }
 
+static int remove_ea_inodes(struct fuse2fs *ff, ext2_ino_t ino,
+			    struct ext2_inode_large *inode)
+{
+	ext2_filsys fs = ff->fs;
+	struct ext2_xattr_handle *h;
+	errcode_t err;
+	int ret = 0;
+
+	/*
+	 * The xattr handle maintains its own private copy of the inode, so
+	 * write ours to disk so that we can read it.
+	 */
+	err = fuse2fs_write_inode(fs, ino, inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_xattrs_open(fs, ino, &h);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_xattrs_read(h);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+	err = ext2fs_xattr_remove_all(h);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+out_close:
+	ext2fs_xattrs_close(&h);
+	if (ret)
+		return ret;
+
+	/* Now read the inode back in. */
+	err = fuse2fs_read_inode(fs, ino, inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	return 0;
+}
+
 static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 {
 	ext2_filsys fs = ff->fs;
@@ -1060,14 +1610,11 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 	struct ext2_inode_large inode;
 	int ret = 0;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
-	dbg_printf("%s: put ino=%d links=%d\n", __func__, ino,
+	err = fuse2fs_read_inode(fs, ino, &inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	dbg_printf(ff, "%s: put ino=%d links=%d\n", __func__, ino,
 		   inode.i_links_count);
 
 	switch (inode.i_links_count) {
@@ -1083,37 +1630,38 @@ static int remove_inode(struct fuse2fs *ff, ext2_ino_t ino)
 
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
-		goto out;
+		return ret;
 
 	if (inode.i_links_count)
 		goto write_out;
 
+	if (ext2fs_has_feature_ea_inode(fs->super)) {
+		ret = remove_ea_inodes(ff, ino, &inode);
+		if (ret)
+			return ret;
+	}
+
 	/* Nobody holds this file; free its blocks! */
 	err = ext2fs_free_ext_attr(fs, ino, &inode);
 	if (err)
-		goto write_out;
+		return translate_error(fs, ino, err);
 
-	if (ext2fs_inode_has_valid_blocks2(fs, (struct ext2_inode *)&inode)) {
-		err = ext2fs_punch(fs, ino, (struct ext2_inode *)&inode, NULL,
+	if (ext2fs_inode_has_valid_blocks2(fs, EXT2_INODE(&inode))) {
+		err = ext2fs_punch(fs, ino, EXT2_INODE(&inode), NULL,
 				   0, ~0ULL);
-		if (err) {
-			ret = translate_error(fs, ino, err);
-			goto write_out;
-		}
+		if (err)
+			return translate_error(fs, ino, err);
 	}
 
 	ext2fs_inode_alloc_stats2(fs, ino, -1,
 				  LINUX_S_ISDIR(inode.i_mode));
 
 write_out:
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
-out:
-	return ret;
+	err = fuse2fs_write_inode(fs, ino, &inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	return 0;
 }
 
 static int __op_unlink(struct fuse2fs *ff, const char *path)
@@ -1129,7 +1677,11 @@ static int __op_unlink(struct fuse2fs *ff, const char *path)
 		goto out;
 	}
 
-	ret = unlink_file_by_name(fs, path);
+	ret = check_inum_access(ff, ino, W_OK);
+	if (ret)
+		goto out;
+
+	ret = unlink_file_by_name(ff, path);
 	if (ret)
 		goto out;
 
@@ -1195,7 +1747,11 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: rmdir path=%s ino=%d\n", __func__, path, child);
+	dbg_printf(ff, "%s: rmdir path=%s ino=%d\n", __func__, path, child);
+
+	ret = check_inum_access(ff, child, W_OK);
+	if (ret)
+		goto out;
 
 	rds.parent = 0;
 	rds.empty = 1;
@@ -1206,12 +1762,22 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 		goto out;
 	}
 
+	/* the kernel checks parent permissions before emptiness */
+	if (rds.parent == 0) {
+		ret = translate_error(fs, child, EXT2_ET_FILESYSTEM_CORRUPTED);
+		goto out;
+	}
+
+	ret = check_inum_access(ff, rds.parent, W_OK);
+	if (ret)
+		goto out;
+
 	if (rds.empty == 0) {
 		ret = -ENOTEMPTY;
 		goto out;
 	}
 
-	ret = unlink_file_by_name(fs, path);
+	ret = unlink_file_by_name(ff, path);
 	if (ret)
 		goto out;
 	/* Directories have to be "removed" twice. */
@@ -1223,11 +1789,9 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 		goto out;
 
 	if (rds.parent) {
-		dbg_printf("%s: decr dir=%d link count\n", __func__,
+		dbg_printf(ff, "%s: decr dir=%d link count\n", __func__,
 			   rds.parent);
-		err = ext2fs_read_inode_full(fs, rds.parent,
-					     (struct ext2_inode *)&inode,
-					     sizeof(inode));
+		err = fuse2fs_read_inode(fs, rds.parent, &inode);
 		if (err) {
 			ret = translate_error(fs, rds.parent, err);
 			goto out;
@@ -1237,9 +1801,7 @@ static int __op_rmdir(struct fuse2fs *ff, const char *path)
 		ret = update_mtime(fs, rds.parent, &inode);
 		if (ret)
 			goto out;
-		err = ext2fs_write_inode_full(fs, rds.parent,
-					      (struct ext2_inode *)&inode,
-					      sizeof(inode));
+		err = fuse2fs_write_inode(fs, rds.parent, &inode);
 		if (err) {
 			ret = translate_error(fs, rds.parent, err);
 			goto out;
@@ -1273,11 +1835,12 @@ static int op_symlink(const char *src, const char *dest)
 	errcode_t err;
 	char *node_name, a;
 	struct ext2_inode_large inode;
+	gid_t gid;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: symlink %s to %s\n", __func__, src, dest);
+	dbg_printf(ff, "%s: symlink %s to %s\n", __func__, src, dest);
 	temp_path = strdup(dest);
 	if (!temp_path) {
 		ret = -ENOMEM;
@@ -1293,6 +1856,10 @@ static int op_symlink(const char *src, const char *dest)
 	*node_name = 0;
 
 	pthread_mutex_lock(&ff->bfl);
+	if (!fs_can_allocate(ff, 1)) {
+		ret = -ENOSPC;
+		goto out2;
+	}
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, temp_path,
 			   &parent);
 	*node_name = a;
@@ -1301,10 +1868,13 @@ static int op_symlink(const char *src, const char *dest)
 		goto out2;
 	}
 
-	ret = check_inum_access(fs, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
 
+	err = fuse2fs_new_child_gid(ff, parent, &gid, NULL);
+	if (err)
+		goto out2;
 
 	/* Create symlink */
 	err = ext2fs_symlink(fs, parent, 0, node_name, src);
@@ -1334,26 +1904,21 @@ static int op_symlink(const char *src, const char *dest)
 		ret = translate_error(fs, 0, err);
 		goto out2;
 	}
-	dbg_printf("%s: symlinking ino=%d/name=%s to dir=%d\n", __func__,
+	dbg_printf(ff, "%s: symlinking ino=%d/name=%s to dir=%d\n", __func__,
 		   child, node_name, parent);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, child, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
 	}
 
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, gid);
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
 
-	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -1413,7 +1978,7 @@ static int op_rename(const char *from, const char *to
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: renaming %s to %s\n", __func__, from, to);
+	dbg_printf(ff, "%s: renaming %s to %s\n", __func__, from, to);
 	pthread_mutex_lock(&ff->bfl);
 	if (!fs_can_allocate(ff, 5)) {
 		ret = -ENOSPC;
@@ -1439,6 +2004,16 @@ static int op_rename(const char *from, const char *to
 	if (to_ino != 0 && to_ino == from_ino) {
 		ret = 0;
 		goto out;
+	}
+
+	ret = check_inum_access(ff, from_ino, W_OK);
+	if (ret)
+		goto out;
+
+	if (to_ino) {
+		ret = check_inum_access(ff, to_ino, W_OK);
+		if (ret)
+			goto out;
 	}
 
 	temp_to = strdup(to);
@@ -1474,7 +2049,7 @@ static int op_rename(const char *from, const char *to
 		goto out2;
 	}
 
-	ret = check_inum_access(fs, from_dir_ino, W_OK);
+	ret = check_inum_access(ff, from_dir_ino, W_OK);
 	if (ret)
 		goto out2;
 
@@ -1499,7 +2074,7 @@ static int op_rename(const char *from, const char *to
 		goto out2;
 	}
 
-	ret = check_inum_access(fs, to_dir_ino, W_OK);
+	ret = check_inum_access(ff, to_dir_ino, W_OK);
 	if (ret)
 		goto out2;
 
@@ -1511,7 +2086,7 @@ static int op_rename(const char *from, const char *to
 			goto out2;
 		}
 
-		dbg_printf("%s: unlinking %s ino=%d\n", __func__,
+		dbg_printf(ff, "%s: unlinking %s ino=%d\n", __func__,
 			   LINUX_S_ISDIR(inode.i_mode) ? "dir" : "file",
 			   to_ino);
 		if (LINUX_S_ISDIR(inode.i_mode))
@@ -1530,20 +2105,10 @@ static int op_rename(const char *from, const char *to
 	}
 
 	/* Link in the new file */
-	dbg_printf("%s: linking ino=%d/path=%s to dir=%d\n", __func__,
+	dbg_printf(ff, "%s: linking ino=%d/path=%s to dir=%d\n", __func__,
 		   from_ino, cp + 1, to_dir_ino);
 	err = ext2fs_link(fs, to_dir_ino, cp + 1, from_ino,
-			  ext2_file_type(inode.i_mode));
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, to_dir_ino);
-		if (err) {
-			ret = translate_error(fs, to_dir_ino, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, to_dir_ino, cp + 1, from_ino,
-				     ext2_file_type(inode.i_mode));
-	}
+			  ext2_file_type(inode.i_mode) | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, to_dir_ino, err);
 		goto out2;
@@ -1558,7 +2123,7 @@ static int op_rename(const char *from, const char *to
 
 	if (LINUX_S_ISDIR(inode.i_mode)) {
 		ud.new_dotdot = to_dir_ino;
-		dbg_printf("%s: updating .. entry for dir=%d\n", __func__,
+		dbg_printf(ff, "%s: updating .. entry for dir=%d\n", __func__,
 			   to_dir_ino);
 		err = ext2fs_dir_iterate2(fs, from_ino, 0, NULL,
 					  update_dotdot_helper, &ud);
@@ -1568,7 +2133,7 @@ static int op_rename(const char *from, const char *to
 		}
 
 		/* Decrease from_dir_ino's links_count */
-		dbg_printf("%s: moving linkcount from dir=%d to dir=%d\n",
+		dbg_printf(ff, "%s: moving linkcount from dir=%d to dir=%d\n",
 			   __func__, from_dir_ino, to_dir_ino);
 		err = ext2fs_read_inode(fs, from_dir_ino, &inode);
 		if (err) {
@@ -1606,7 +2171,7 @@ static int op_rename(const char *from, const char *to
 		goto out2;
 
 	/* Remove the old file */
-	ret = unlink_file_by_name(fs, from);
+	ret = unlink_file_by_name(ff, from);
 	if (ret)
 		goto out2;
 
@@ -1637,7 +2202,7 @@ static int op_link(const char *src, const char *dest)
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: src=%s dest=%s\n", __func__, src, dest);
+	dbg_printf(ff, "%s: src=%s dest=%s\n", __func__, src, dest);
 	temp_path = strdup(dest);
 	if (!temp_path) {
 		ret = -ENOMEM;
@@ -1666,10 +2231,9 @@ static int op_link(const char *src, const char *dest)
 		goto out2;
 	}
 
-	ret = check_inum_access(fs, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
 		goto out2;
-
 
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, src, &ino);
 	if (err || ino == 0) {
@@ -1677,40 +2241,31 @@ static int op_link(const char *src, const char *dest)
 		goto out2;
 	}
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out2;
 	}
+
+	ret = check_iflags_access(ff, ino, EXT2_INODE(&inode), W_OK);
+	if (ret)
+		goto out2;
 
 	inode.i_links_count++;
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
 		goto out2;
 
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out2;
 	}
 
-	dbg_printf("%s: linking ino=%d/name=%s to dir=%d\n", __func__, ino,
+	dbg_printf(ff, "%s: linking ino=%d/name=%s to dir=%d\n", __func__, ino,
 		   node_name, parent);
 	err = ext2fs_link(fs, parent, node_name, ino,
-			  ext2_file_type(inode.i_mode));
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, parent, node_name, ino,
-				     ext2_file_type(inode.i_mode));
-	}
+			  ext2_file_type(inode.i_mode) | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;
@@ -1726,6 +2281,93 @@ out:
 	free(temp_path);
 	return ret;
 }
+
+#if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
+/* Obtain group ids of the process that sent us a command(?) */
+static int get_req_groups(struct fuse2fs *ff, gid_t **gids, size_t *nr_gids)
+{
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+	gid_t *array;
+	int nr = 32;	/* nobody has more than 32 groups right? */
+	int ret;
+
+	do {
+		err = ext2fs_get_array(nr, sizeof(gid_t), &array);
+		if (err)
+			return translate_error(fs, 0, err);
+
+		ret = fuse_getgroups(nr, array);
+		if (ret < 0) {
+			/*
+			 * If there's an error, we failed to find the group
+			 * membership of the process that initiated the file
+			 * change, either because the process went away or
+			 * because there's no Linux procfs.  Regardless of the
+			 * cause, we return -ENOENT.
+			 */
+			ext2fs_free_mem(&array);
+			return -ENOENT;
+		}
+
+		if (ret <= nr) {
+			*gids = array;
+			*nr_gids = ret;
+			return 0;
+		}
+
+		ext2fs_free_mem(&array);
+		nr = ret;
+	} while (0);
+
+	/* shut up gcc */
+	return -ENOMEM;
+}
+
+/*
+ * Is this file's group id in the set of groups associated with the process
+ * that initiated the fuse request?  Returns 1 for yes, 0 for no, or a negative
+ * errno.
+ */
+static int in_file_group(struct fuse_context *ctxt,
+			 const struct ext2_inode_large *inode)
+{
+	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
+	gid_t *gids = NULL;
+	size_t i, nr_gids = 0;
+	gid_t gid = inode_gid(*inode);
+	int ret;
+
+	/* If the inode gid matches the process' primary group, we're done. */
+	if (ctxt->gid == gid)
+		return 1;
+
+	ret = get_req_groups(ff, &gids, &nr_gids);
+	if (ret == -ENOENT) {
+		/* magic return code for "could not get caller group info" */
+		return 0;
+	}
+	if (ret < 0)
+		return ret;
+
+	ret = 0;
+	for (i = 0; i < nr_gids; i++) {
+		if (gids[i] == gid) {
+			ret = 1;
+			break;
+		}
+	}
+
+	ext2fs_free_mem(&gids);
+	return ret;
+}
+#else
+static int in_file_group(struct fuse_context *ctxt,
+			 const struct ext2_inode_large *inode)
+{
+	return ctxt->gid == inode_gid(*inode);
+}
+#endif
 
 static int op_chmod(const char *path, mode_t mode
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
@@ -1749,17 +2391,19 @@ static int op_chmod(const char *path, mode_t mode
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: path=%s mode=0%o ino=%d\n", __func__, path, mode, ino);
+	dbg_printf(ff, "%s: path=%s mode=0%o ino=%d\n", __func__, path, mode, ino);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
 	}
 
-	if (!ff->fakeroot && ctxt->uid != 0 && ctxt->uid != inode_uid(inode)) {
+	ret = check_iflags_access(ff, ino, EXT2_INODE(&inode), W_OK);
+	if (ret)
+		goto out;
+
+	if (want_check_owner(ff, ctxt) && ctxt->uid != inode_uid(inode)) {
 		ret = -EPERM;
 		goto out;
 	}
@@ -1769,17 +2413,26 @@ static int op_chmod(const char *path, mode_t mode
 	 * of the user's groups, but FUSE only tells us about the primary
 	 * group.
 	 */
-	if (!ff->fakeroot && ctxt->uid != 0 && ctxt->gid != inode_gid(inode))
-		mode &= ~S_ISGID;
+	if (!is_superuser(ff, ctxt)) {
+		ret = in_file_group(ctxt, &inode);
+		if (ret < 0)
+			goto out;
+
+		if (!ret)
+			mode &= ~S_ISGID;
+	}
 
 	inode.i_mode &= ~0xFFF;
 	inode.i_mode |= mode & 0xFFF;
+
+	dbg_printf(ff, "%s: path=%s new_mode=0%o ino=%d\n", __func__,
+		   path, inode.i_mode, ino);
+
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
 		goto out;
 
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -1812,48 +2465,47 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: path=%s owner=%d group=%d ino=%d\n", __func__,
+	dbg_printf(ff, "%s: path=%s owner=%d group=%d ino=%d\n", __func__,
 		   path, owner, group, ino);
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
 	}
 
+	ret = check_iflags_access(ff, ino, EXT2_INODE(&inode), W_OK);
+	if (ret)
+		goto out;
+
 	/* FUSE seems to feed us ~0 to mean "don't change" */
 	if (owner != (uid_t) ~0) {
 		/* Only root gets to change UID. */
-		if (!ff->fakeroot && ctxt->uid != 0 &&
+		if (want_check_owner(ff, ctxt) &&
 		    !(inode_uid(inode) == ctxt->uid && owner == ctxt->uid)) {
 			ret = -EPERM;
 			goto out;
 		}
-		inode.i_uid = owner;
-		ext2fs_set_i_uid_high(inode, owner >> 16);
+		fuse2fs_set_uid(&inode, owner);
 	}
 
 	if (group != (gid_t) ~0) {
 		/* Only root or the owner get to change GID. */
-		if (!ff->fakeroot && ctxt->uid != 0 &&
+		if (want_check_owner(ff, ctxt) &&
 		    inode_uid(inode) != ctxt->uid) {
 			ret = -EPERM;
 			goto out;
 		}
 
 		/* XXX: We /should/ check group membership but FUSE */
-		inode.i_gid = group;
-		ext2fs_set_i_gid_high(inode, group >> 16);
+		fuse2fs_set_gid(&inode, group);
 	}
 
 	ret = update_ctime(fs, ino, &inode);
 	if (ret)
 		goto out;
 
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -1862,6 +2514,78 @@ static int op_chown(const char *path, uid_t owner, gid_t group
 out:
 	pthread_mutex_unlock(&ff->bfl);
 	return ret;
+}
+
+static int fuse2fs_punch_posteof(struct fuse2fs *ff, ext2_ino_t ino,
+				 off_t new_size)
+{
+	ext2_filsys fs = ff->fs;
+	struct ext2_inode_large inode;
+	blk64_t truncate_block = FUSE2FS_B_TO_FSB(ff, new_size);
+	errcode_t err;
+
+	err = fuse2fs_read_inode(fs, ino, &inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_punch(fs, ino, EXT2_INODE(&inode), 0, truncate_block,
+			   ~0ULL);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = fuse2fs_write_inode(fs, ino, &inode);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	return 0;
+}
+
+static int fuse2fs_truncate(struct fuse2fs *ff, ext2_ino_t ino, off_t new_size)
+{
+	ext2_filsys fs = ff->fs;
+	ext2_file_t file;
+	__u64 old_isize;
+	errcode_t err;
+	int ret = 0;
+
+	err = ext2fs_file_open(fs, ino, EXT2_FILE_WRITE, &file);
+	if (err)
+		return translate_error(fs, ino, err);
+
+	err = ext2fs_file_get_lsize(file, &old_isize);
+	if (err) {
+		ret = translate_error(fs, ino, err);
+		goto out_close;
+	}
+
+	dbg_printf(ff, "%s: ino=%u isize=0x%llx new_size=0x%llx\n", __func__,
+		   ino,
+		   (unsigned long long)old_isize,
+		   (unsigned long long)new_size);
+
+	err = ext2fs_file_set_size2(file, new_size);
+	if (err)
+		ret = translate_error(fs, ino, err);
+
+out_close:
+	err = ext2fs_file_close(file);
+	if (ret)
+		return ret;
+	if (err)
+		return translate_error(fs, ino, err);
+
+	ret = update_mtime(fs, ino, NULL);
+	if (ret)
+		return ret;
+
+	/*
+	 * Truncating to the current size is usually understood to mean that
+	 * we should clear out post-EOF preallocations.
+	 */
+	if (new_size == old_isize)
+		return fuse2fs_punch_posteof(ff, ino, new_size);
+
+	return 0;
 }
 
 static int op_truncate(const char *path, off_t len
@@ -1873,47 +2597,31 @@ static int op_truncate(const char *path, off_t len
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
-	errcode_t err;
 	ext2_ino_t ino;
-	ext2_file_t file;
+	errcode_t err;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
-	if (err || ino == 0) {
+	if (err) {
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d len=%jd\n", __func__, ino, len);
+	if (!ino) {
+		ret = -ESTALE;
+		goto out;
+	}
+	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, ino, (intmax_t) len);
 
-	ret = check_inum_access(fs, ino, W_OK);
+	ret = check_inum_access(ff, ino, W_OK);
 	if (ret)
 		goto out;
 
-	err = ext2fs_file_open(fs, ino, EXT2_FILE_WRITE, &file);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
-
-	err = ext2fs_file_set_size2(file, len);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out2;
-	}
-
-out2:
-	err = ext2fs_file_close(file);
+	ret = fuse2fs_truncate(ff, ino, len);
 	if (ret)
 		goto out;
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out;
-	}
-
-	ret = update_mtime(fs, ino, NULL);
 
 out:
 	pthread_mutex_unlock(&ff->bfl);
@@ -1949,7 +2657,7 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 	struct fuse2fs_file_handle *file;
 	int check = 0, ret = 0;
 
-	dbg_printf("%s: path=%s\n", __func__, path);
+	dbg_printf(ff, "%s: path=%s oflags=0o%o\n", __func__, path, fp->flags);
 	err = ext2fs_get_mem(sizeof(*file), &file);
 	if (err)
 		return translate_error(fs, 0, err);
@@ -1970,6 +2678,13 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 		break;
 	}
 
+	/*
+	 * If the caller wants to truncate the file, we need to ask for full
+	 * write access even if the caller claims to be appending.
+	 */
+	if ((fp->flags & O_APPEND) && !(fp->flags & O_TRUNC))
+		check |= A_OK;
+
 	detect_linux_executable_open(fp->flags, &check, &file->open_flags);
 
 	if (fp->flags & O_CREAT)
@@ -1980,9 +2695,9 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d\n", __func__, file->ino);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, file->ino);
 
-	ret = check_inum_access(fs, file->ino, check);
+	ret = check_inum_access(ff, file->ino, check);
 	if (ret) {
 		/*
 		 * In a regular (Linux) fs driver, the kernel will open
@@ -1994,12 +2709,21 @@ static int __op_open(struct fuse2fs *ff, const char *path,
 		 * also employ undocumented hacks (see above).
 		 */
 		if (check == R_OK) {
-			ret = check_inum_access(fs, file->ino, X_OK);
+			ret = check_inum_access(ff, file->ino, X_OK);
 			if (ret)
 				goto out;
+			check = X_OK;
 		} else
 			goto out;
 	}
+
+	if (fp->flags & O_TRUNC) {
+		ret = fuse2fs_truncate(ff, file->ino, 0);
+		if (ret)
+			goto out;
+	}
+
+	file->check_flags = check;
 	fp->fh = (uintptr_t)file;
 
 out:
@@ -2038,8 +2762,8 @@ static int op_read(const char *path EXT2FS_ATTR((unused)), char *buf,
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino, offset,
-		   len);
+	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino,
+		   (intmax_t) offset, len);
 	pthread_mutex_lock(&ff->bfl);
 	err = ext2fs_file_open(fs, fh->ino, fh->open_flags, &efp);
 	if (err) {
@@ -2068,7 +2792,7 @@ out2:
 		goto out;
 	}
 
-	if (fs_writeable(fs)) {
+	if (fh->check_flags != X_OK && fs_writeable(fs)) {
 		ret = update_atime(fs, fh->ino);
 		if (ret)
 			goto out;
@@ -2095,15 +2819,15 @@ static int op_write(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino, offset,
-		   len);
+	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino,
+		   (intmax_t) offset, (intmax_t) len);
 	pthread_mutex_lock(&ff->bfl);
 	if (!fs_writeable(fs)) {
 		ret = -EROFS;
 		goto out;
 	}
 
-	if (!fs_can_allocate(ff, len / fs->blocksize)) {
+	if (!fs_can_allocate(ff, FUSE2FS_B_TO_FSB(ff, len))) {
 		ret = -ENOSPC;
 		goto out;
 	}
@@ -2165,7 +2889,7 @@ static int op_release(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
 	pthread_mutex_lock(&ff->bfl);
 	if (fs_writeable(fs) && fh->open_flags & EXT2_FILE_WRITE) {
 		err = ext2fs_flush2(fs, EXT2_FLAG_FLUSH_NO_SYNC);
@@ -2195,7 +2919,7 @@ static int op_fsync(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
 	/* For now, flush everything, even if it's slow */
 	pthread_mutex_lock(&ff->bfl);
 	if (fs_writeable(fs) && fh->open_flags & EXT2_FILE_WRITE) {
@@ -2218,8 +2942,9 @@ static int op_statfs(const char *path EXT2FS_ATTR((unused)),
 	blk64_t overhead, reserved, free;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
+	dbg_printf(ff, "%s: path=%s\n", __func__, path);
 	fs = ff->fs;
-	dbg_printf("%s: path=%s\n", __func__, path);
+	pthread_mutex_lock(&ff->bfl);
 	buf->f_bsize = fs->blocksize;
 	buf->f_frsize = 0;
 
@@ -2249,9 +2974,31 @@ static int op_statfs(const char *path EXT2FS_ATTR((unused)),
 	fsid ^= *f;
 	buf->f_fsid = fsid;
 	buf->f_flag = 0;
-	if (fs->flags & EXT2_FLAG_RW)
+	if (!(fs->flags & EXT2_FLAG_RW))
 		buf->f_flag |= ST_RDONLY;
 	buf->f_namemax = EXT2_NAME_LEN;
+	pthread_mutex_unlock(&ff->bfl);
+
+	return 0;
+}
+
+static const char *valid_xattr_prefixes[] = {
+	"user.",
+	"trusted.",
+	"security.",
+	"gnu.",
+	"system.",
+};
+
+static int validate_xattr_name(const char *name)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(valid_xattr_prefixes); i++) {
+		if (!strncmp(name, valid_xattr_prefixes[i],
+					strlen(valid_xattr_prefixes[i])))
+			return 1;
+	}
 
 	return 0;
 }
@@ -2262,12 +3009,14 @@ static int op_getxattr(const char *path, const char *key, char *value,
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
-	struct ext2_xattr_handle *h;
 	void *ptr;
 	size_t plen;
 	ext2_ino_t ino;
 	errcode_t err;
 	int ret = 0;
+
+	if (!validate_xattr_name(key))
+		return -ENODATA;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
@@ -2282,29 +3031,15 @@ static int op_getxattr(const char *path, const char *key, char *value,
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d\n", __func__, ino);
+	dbg_printf(ff, "%s: ino=%d name=%s\n", __func__, ino, key);
 
-	ret = check_inum_access(fs, ino, R_OK);
+	ret = check_inum_access(ff, ino, R_OK);
 	if (ret)
 		goto out;
 
-	err = ext2fs_xattrs_open(fs, ino, &h);
-	if (err) {
-		ret = translate_error(fs, ino, err);
+	ret = __getxattr(ff, ino, key, &ptr, &plen);
+	if (ret)
 		goto out;
-	}
-
-	err = ext2fs_xattrs_read(h);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out2;
-	}
-
-	err = ext2fs_xattr_get(h, key, &ptr, &plen);
-	if (err) {
-		ret = translate_error(fs, ino, err);
-		goto out2;
-	}
 
 	if (!len) {
 		ret = plen;
@@ -2316,10 +3051,6 @@ static int op_getxattr(const char *path, const char *key, char *value,
 	}
 
 	ext2fs_free_mem(&ptr);
-out2:
-	err = ext2fs_xattrs_close(&h);
-	if (err)
-		ret = translate_error(fs, ino, err);
 out:
 	pthread_mutex_unlock(&ff->bfl);
 
@@ -2372,9 +3103,9 @@ static int op_listxattr(const char *path, char *names, size_t len)
 		ret = translate_error(fs, ino, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d\n", __func__, ino);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, ino);
 
-	ret = check_inum_access(fs, ino, R_OK);
+	ret = check_inum_access(ff, ino, R_OK);
 	if (ret)
 		goto out;
 
@@ -2416,7 +3147,7 @@ static int op_listxattr(const char *path, char *names, size_t len)
 	ret = bufsz;
 out2:
 	err = ext2fs_xattrs_close(&h);
-	if (err)
+	if (err && !ret)
 		ret = translate_error(fs, ino, err);
 out:
 	pthread_mutex_unlock(&ff->bfl);
@@ -2426,7 +3157,7 @@ out:
 
 static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 		       const char *key, const char *value,
-		       size_t len, int flags EXT2FS_ATTR((unused)))
+		       size_t len, int flags)
 {
 	struct fuse_context *ctxt = fuse_get_context();
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
@@ -2435,6 +3166,12 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 	ext2_ino_t ino;
 	errcode_t err;
 	int ret = 0;
+
+	if (flags & ~(XATTR_CREATE | XATTR_REPLACE))
+		return -EOPNOTSUPP;
+
+	if (!validate_xattr_name(key))
+		return -EINVAL;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
@@ -2449,9 +3186,9 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d\n", __func__, ino);
+	dbg_printf(ff, "%s: ino=%d name=%s\n", __func__, ino, key);
 
-	ret = check_inum_access(fs, ino, W_OK);
+	ret = check_inum_access(ff, ino, W_OK);
 	if (ret == -EACCES) {
 		ret = -EPERM;
 		goto out;
@@ -2468,6 +3205,31 @@ static int op_setxattr(const char *path EXT2FS_ATTR((unused)),
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out2;
+	}
+
+	if (flags & (XATTR_CREATE | XATTR_REPLACE)) {
+		void *buf;
+		size_t buflen;
+
+		err = ext2fs_xattr_get(h, key, &buf, &buflen);
+		switch (err) {
+		case EXT2_ET_EA_KEY_NOT_FOUND:
+			if (flags & XATTR_REPLACE) {
+				ret = -ENODATA;
+				goto out2;
+			}
+			break;
+		case 0:
+			ext2fs_free_mem(&buf);
+			if (flags & XATTR_CREATE) {
+				ret = -EEXIST;
+				goto out2;
+			}
+			break;
+		default:
+			ret = translate_error(fs, ino, err);
+			goto out2;
+		}
 	}
 
 	err = ext2fs_xattr_set(h, key, value, len);
@@ -2493,9 +3255,21 @@ static int op_removexattr(const char *path, const char *key)
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	ext2_filsys fs;
 	struct ext2_xattr_handle *h;
+	void *buf;
+	size_t buflen;
 	ext2_ino_t ino;
 	errcode_t err;
 	int ret = 0;
+
+	/*
+	 * Once in a while libfuse gives us a no-name xattr to delete as part
+	 * of clearing ACLs.  Just pretend we cleared them.
+	 */
+	if (key[0] == 0)
+		return 0;
+
+	if (!validate_xattr_name(key))
+		return -ENODATA;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
@@ -2515,9 +3289,9 @@ static int op_removexattr(const char *path, const char *key)
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d\n", __func__, ino);
+	dbg_printf(ff, "%s: ino=%d name=%s\n", __func__, ino, key);
 
-	ret = check_inum_access(fs, ino, W_OK);
+	ret = check_inum_access(ff, ino, W_OK);
 	if (ret)
 		goto out;
 
@@ -2533,6 +3307,27 @@ static int op_removexattr(const char *path, const char *key)
 		goto out2;
 	}
 
+	err = ext2fs_xattr_get(h, key, &buf, &buflen);
+	switch (err) {
+	case EXT2_ET_EA_KEY_NOT_FOUND:
+		/*
+		 * ACLs are special snowflakes that require a 0 return when
+		 * the ACL never existed in the first place.
+		 */
+		if (!strncmp(XATTR_SECURITY_PREFIX, key,
+			     XATTR_SECURITY_PREFIX_LEN))
+			ret = 0;
+		else
+			ret = -ENODATA;
+		goto out2;
+	case 0:
+		ext2fs_free_mem(&buf);
+		break;
+	default:
+		ret = translate_error(fs, ino, err);
+		goto out2;
+	}
+
 	err = ext2fs_xattr_remove(h, key);
 	if (err) {
 		ret = translate_error(fs, ino, err);
@@ -2542,7 +3337,7 @@ static int op_removexattr(const char *path, const char *key)
 	ret = update_ctime(fs, ino, NULL);
 out2:
 	err = ext2fs_xattrs_close(&h);
-	if (err)
+	if (err && !ret)
 		ret = translate_error(fs, ino, err);
 out:
 	pthread_mutex_unlock(&ff->bfl);
@@ -2552,8 +3347,35 @@ out:
 
 struct readdir_iter {
 	void *buf;
+	ext2_filsys fs;
 	fuse_fill_dir_t func;
 };
+
+static inline mode_t dirent_fmode(ext2_filsys fs,
+				   const struct ext2_dir_entry *dirent)
+{
+	if (!ext2fs_has_feature_filetype(fs->super))
+		return 0;
+
+	switch (ext2fs_dirent_file_type(dirent)) {
+	case EXT2_FT_REG_FILE:
+		return S_IFREG;
+	case EXT2_FT_DIR:
+		return S_IFDIR;
+	case EXT2_FT_CHRDEV:
+		return S_IFCHR;
+	case EXT2_FT_BLKDEV:
+		return S_IFBLK;
+	case EXT2_FT_FIFO:
+		return S_IFIFO;
+	case EXT2_FT_SOCK:
+		return S_IFSOCK;
+	case EXT2_FT_SYMLINK:
+		return S_IFLNK;
+	}
+
+	return 0;
+}
 
 static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			   int entry EXT2FS_ATTR((unused)),
@@ -2564,11 +3386,15 @@ static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 {
 	struct readdir_iter *i = data;
 	char namebuf[EXT2_NAME_LEN + 1];
+	struct stat stat = {
+		.st_ino = dirent->inode,
+		.st_mode = dirent_fmode(i->fs, dirent),
+	};
 	int ret;
 
 	memcpy(namebuf, dirent->name, dirent->name_len & 0xFF);
 	namebuf[dirent->name_len & 0xFF] = 0;
-	ret = i->func(i->buf, namebuf, NULL, 0
+	ret = i->func(i->buf, namebuf, &stat, 0
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			, 0
 #endif
@@ -2592,26 +3418,25 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	struct fuse2fs_file_handle *fh =
 		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
-	ext2_filsys fs;
 	errcode_t err;
 	struct readdir_iter i;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
-	fs = ff->fs;
-	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
+	i.fs = ff->fs;
+	FUSE2FS_CHECK_MAGIC(i.fs, fh, FUSE2FS_FILE_MAGIC);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
 	pthread_mutex_lock(&ff->bfl);
 	i.buf = buf;
 	i.func = fill_func;
-	err = ext2fs_dir_iterate2(fs, fh->ino, 0, NULL, op_readdir_iter, &i);
+	err = ext2fs_dir_iterate2(i.fs, fh->ino, 0, NULL, op_readdir_iter, &i);
 	if (err) {
-		ret = translate_error(fs, fh->ino, err);
+		ret = translate_error(i.fs, fh->ino, err);
 		goto out;
 	}
 
-	if (fs_writeable(fs)) {
-		ret = update_atime(fs, fh->ino);
+	if (fs_writeable(i.fs)) {
+		ret = update_atime(i.fs, fh->ino);
 		if (ret)
 			goto out;
 	}
@@ -2631,7 +3456,7 @@ static int op_access(const char *path, int mask)
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: path=%s mask=0x%x\n", __func__, path, mask);
+	dbg_printf(ff, "%s: path=%s mask=0x%x\n", __func__, path, mask);
 	pthread_mutex_lock(&ff->bfl);
 	err = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
 	if (err || ino == 0) {
@@ -2639,7 +3464,7 @@ static int op_access(const char *path, int mask)
 		goto out;
 	}
 
-	ret = check_inum_access(fs, ino, mask);
+	ret = check_inum_access(ff, ino, mask);
 	if (ret)
 		goto out;
 
@@ -2659,11 +3484,12 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	char *node_name, a;
 	int filetype;
 	struct ext2_inode_large inode;
+	gid_t gid;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
-	dbg_printf("%s: path=%s mode=0%o\n", __func__, path, mode);
+	dbg_printf(ff, "%s: path=%s mode=0%o\n", __func__, path, mode);
 	temp_path = strdup(path);
 	if (!temp_path) {
 		ret = -ENOMEM;
@@ -2691,8 +3517,12 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 		goto out2;
 	}
 
-	ret = check_inum_access(fs, parent, W_OK);
+	ret = check_inum_access(ff, parent, A_OK | W_OK);
 	if (ret)
+		goto out2;
+
+	err = fuse2fs_new_child_gid(ff, parent, &gid, NULL);
+	if (err)
 		goto out2;
 
 	*node_name = a;
@@ -2705,19 +3535,10 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 		goto out2;
 	}
 
-	dbg_printf("%s: creating ino=%d/name=%s in dir=%d\n", __func__, child,
+	dbg_printf(ff, "%s: creating ino=%d/name=%s in dir=%d\n", __func__, child,
 		   node_name, parent);
-	err = ext2fs_link(fs, parent, node_name, child, filetype);
-	if (err == EXT2_ET_DIR_NO_SPACE) {
-		err = ext2fs_expand_dir(fs, parent);
-		if (err) {
-			ret = translate_error(fs, parent, err);
-			goto out2;
-		}
-
-		err = ext2fs_link(fs, parent, node_name, child,
-				     filetype);
-	}
+	err = ext2fs_link(fs, parent, node_name, child,
+			  filetype | EXT2FS_LINK_EXPAND);
 	if (err) {
 		ret = translate_error(fs, parent, err);
 		goto out2;
@@ -2732,22 +3553,23 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 	inode.i_links_count = 1;
 	inode.i_extra_isize = sizeof(struct ext2_inode_large) -
 		EXT2_GOOD_OLD_INODE_SIZE;
-	inode.i_uid = ctxt->uid;
-	ext2fs_set_i_uid_high(inode, ctxt->uid >> 16);
-	inode.i_gid = ctxt->gid;
-	ext2fs_set_i_gid_high(inode, ctxt->gid >> 16);
+	fuse2fs_set_uid(&inode, ctxt->uid);
+	fuse2fs_set_gid(&inode, gid);
 	if (ext2fs_has_feature_extents(fs->super)) {
 		ext2_extent_handle_t handle;
 
 		inode.i_flags &= ~EXT4_EXTENTS_FL;
 		ret = ext2fs_extent_open2(fs, child,
-					  (struct ext2_inode *)&inode, &handle);
-		if (ret)
-			return ret;
+					  EXT2_INODE(&inode), &handle);
+		if (ret) {
+			ret = translate_error(fs, child, err);
+			goto out2;
+		}
+
 		ext2fs_extent_free(handle);
 	}
 
-	err = ext2fs_write_new_inode(fs, child, (struct ext2_inode *)&inode);
+	err = ext2fs_write_new_inode(fs, child, EXT2_INODE(&inode));
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -2755,8 +3577,7 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 
 	inode.i_generation = ff->next_generation++;
 	init_times(&inode);
-	err = ext2fs_write_inode_full(fs, child, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, child, &inode);
 	if (err) {
 		ret = translate_error(fs, child, err);
 		goto out2;
@@ -2764,6 +3585,11 @@ static int op_create(const char *path, mode_t mode, struct fuse_file_info *fp)
 
 	ext2fs_inode_alloc_stats2(fs, child, 1, 0);
 
+	ret = propagate_default_acls(ff, parent, child, inode.i_mode);
+	if (ret)
+		goto out2;
+
+	fp->flags &= ~O_TRUNC;
 	ret = __op_open(ff, path, fp);
 	if (ret)
 		goto out2;
@@ -2790,7 +3616,8 @@ static int op_ftruncate(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d len=%jd\n", __func__, fh->ino, len);
+	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, fh->ino,
+		   (intmax_t) len);
 	pthread_mutex_lock(&ff->bfl);
 	if (!fs_writeable(fs)) {
 		ret = -EROFS;
@@ -2824,7 +3651,7 @@ out2:
 
 out:
 	pthread_mutex_unlock(&ff->bfl);
-	return 0;
+	return ret;
 }
 
 static int op_fgetattr(const char *path EXT2FS_ATTR((unused)),
@@ -2841,7 +3668,7 @@ static int op_fgetattr(const char *path EXT2FS_ATTR((unused)),
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
 	pthread_mutex_lock(&ff->bfl);
 	ret = stat_inode(fs, fh->ino, statbuf);
 	pthread_mutex_unlock(&ff->bfl);
@@ -2863,6 +3690,7 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 	errcode_t err;
 	ext2_ino_t ino;
 	struct ext2_inode_large inode;
+	int access = W_OK;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
@@ -2873,18 +3701,22 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d atime=%lld.%ld mtime=%lld.%ld\n", __func__,
+	dbg_printf(ff, "%s: ino=%d atime=%lld.%ld mtime=%lld.%ld\n", __func__,
 			ino,
 			(long long int)ctv[0].tv_sec, ctv[0].tv_nsec,
 			(long long int)ctv[1].tv_sec, ctv[1].tv_nsec);
 
-	ret = check_inum_access(fs, ino, W_OK);
+	/*
+	 * ext4 allows timestamp updates of append-only files but only if we're
+	 * setting to current time
+	 */
+	if (ctv[0].tv_nsec == UTIME_NOW && ctv[1].tv_nsec == UTIME_NOW)
+		access |= A_OK;
+	ret = check_inum_access(ff, ino, access);
 	if (ret)
 		goto out;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -2908,8 +3740,7 @@ static int op_utimens(const char *path, const struct timespec ctv[2]
 	if (ret)
 		goto out;
 
-	err = ext2fs_write_inode_full(fs, ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, ino, &inode);
 	if (err) {
 		ret = translate_error(fs, ino, err);
 		goto out;
@@ -2920,18 +3751,31 @@ out:
 	return ret;
 }
 
+#define FUSE2FS_MODIFIABLE_IFLAGS \
+	(EXT2_FL_USER_MODIFIABLE & ~(EXT4_EXTENTS_FL | EXT4_CASEFOLD_FL | \
+				     EXT3_JOURNAL_DATA_FL))
+
+static inline int set_iflags(struct ext2_inode_large *inode, __u32 iflags)
+{
+	if ((inode->i_flags ^ iflags) & ~FUSE2FS_MODIFIABLE_IFLAGS)
+		return -EINVAL;
+
+	inode->i_flags = (inode->i_flags & ~FUSE2FS_MODIFIABLE_IFLAGS) |
+			 (iflags & FUSE2FS_MODIFIABLE_IFLAGS);
+	return 0;
+}
+
 #ifdef SUPPORT_I_FLAGS
-static int ioctl_getflags(ext2_filsys fs, struct fuse2fs_file_handle *fh,
+static int ioctl_getflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			  void *data)
 {
+	ext2_filsys fs = ff->fs;
 	errcode_t err;
 	struct ext2_inode_large inode;
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -2939,61 +3783,50 @@ static int ioctl_getflags(ext2_filsys fs, struct fuse2fs_file_handle *fh,
 	return 0;
 }
 
-#define FUSE2FS_MODIFIABLE_IFLAGS \
-	(EXT2_IMMUTABLE_FL | EXT2_APPEND_FL | EXT2_NODUMP_FL | \
-	 EXT2_NOATIME_FL | EXT3_JOURNAL_DATA_FL | EXT2_DIRSYNC_FL | \
-	 EXT2_TOPDIR_FL)
-
-static int ioctl_setflags(ext2_filsys fs, struct fuse2fs_file_handle *fh,
+static int ioctl_setflags(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			  void *data)
 {
+	ext2_filsys fs = ff->fs;
 	errcode_t err;
 	struct ext2_inode_large inode;
 	int ret;
 	__u32 flags = *(__u32 *)data;
 	struct fuse_context *ctxt = fuse_get_context();
-	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
-	if (!ff->fakeroot && ctxt->uid != 0 && inode_uid(inode) != ctxt->uid)
+	if (want_check_owner(ff, ctxt) && inode_uid(inode) != ctxt->uid)
 		return -EPERM;
 
-	if ((inode.i_flags ^ flags) & ~FUSE2FS_MODIFIABLE_IFLAGS)
-		return -EINVAL;
-
-	inode.i_flags = (inode.i_flags & ~FUSE2FS_MODIFIABLE_IFLAGS) |
-			(flags & FUSE2FS_MODIFIABLE_IFLAGS);
+	ret = set_iflags(&inode, flags);
+	if (ret)
+		return ret;
 
 	ret = update_ctime(fs, fh->ino, &inode);
 	if (ret)
 		return ret;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
 	return 0;
 }
 
-static int ioctl_getversion(ext2_filsys fs, struct fuse2fs_file_handle *fh,
+static int ioctl_getversion(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			    void *data)
 {
+	ext2_filsys fs = ff->fs;
 	errcode_t err;
 	struct ext2_inode_large inode;
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3001,25 +3834,23 @@ static int ioctl_getversion(ext2_filsys fs, struct fuse2fs_file_handle *fh,
 	return 0;
 }
 
-static int ioctl_setversion(ext2_filsys fs, struct fuse2fs_file_handle *fh,
+static int ioctl_setversion(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			    void *data)
 {
+	ext2_filsys fs = ff->fs;
 	errcode_t err;
 	struct ext2_inode_large inode;
 	int ret;
 	__u32 generation = *(__u32 *)data;
 	struct fuse_context *ctxt = fuse_get_context();
-	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: ino=%d\n", __func__, fh->ino);
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
-	if (!ff->fakeroot && ctxt->uid != 0 && inode_uid(inode) != ctxt->uid)
+	if (want_check_owner(ff, ctxt) && inode_uid(inode) != ctxt->uid)
 		return -EPERM;
 
 	inode.i_generation = generation;
@@ -3028,8 +3859,7 @@ static int ioctl_setversion(ext2_filsys fs, struct fuse2fs_file_handle *fh,
 	if (ret)
 		return ret;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
@@ -3037,22 +3867,169 @@ static int ioctl_setversion(ext2_filsys fs, struct fuse2fs_file_handle *fh,
 }
 #endif /* SUPPORT_I_FLAGS */
 
+#ifdef FS_IOC_FSGETXATTR
+static __u32 iflags_to_fsxflags(__u32 iflags)
+{
+	__u32 xflags = 0;
+
+	if (iflags & FS_SYNC_FL)
+		xflags |= FS_XFLAG_SYNC;
+	if (iflags & FS_IMMUTABLE_FL)
+		xflags |= FS_XFLAG_IMMUTABLE;
+	if (iflags & FS_APPEND_FL)
+		xflags |= FS_XFLAG_APPEND;
+	if (iflags & FS_NODUMP_FL)
+		xflags |= FS_XFLAG_NODUMP;
+	if (iflags & FS_NOATIME_FL)
+		xflags |= FS_XFLAG_NOATIME;
+	if (iflags & FS_DAX_FL)
+		xflags |= FS_XFLAG_DAX;
+	if (iflags & FS_PROJINHERIT_FL)
+		xflags |= FS_XFLAG_PROJINHERIT;
+	return xflags;
+}
+
+static int ioctl_fsgetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
+			    void *data)
+{
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+	struct ext2_inode_large inode;
+	struct fsxattr *fsx = data;
+	unsigned int inode_size;
+
+	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
+	if (err)
+		return translate_error(fs, fh->ino, err);
+
+	memset(fsx, 0, sizeof(*fsx));
+	inode_size = EXT2_GOOD_OLD_INODE_SIZE + inode.i_extra_isize;
+	if (ext2fs_inode_includes(inode_size, i_projid))
+		fsx->fsx_projid = inode_projid(inode);
+	fsx->fsx_xflags = iflags_to_fsxflags(inode.i_flags);
+	return 0;
+}
+
+static __u32 fsxflags_to_iflags(__u32 xflags)
+{
+	__u32 iflags = 0;
+
+	if (xflags & FS_XFLAG_IMMUTABLE)
+		iflags |= FS_IMMUTABLE_FL;
+	if (xflags & FS_XFLAG_APPEND)
+		iflags |= FS_APPEND_FL;
+	if (xflags & FS_XFLAG_SYNC)
+		iflags |= FS_SYNC_FL;
+	if (xflags & FS_XFLAG_NOATIME)
+		iflags |= FS_NOATIME_FL;
+	if (xflags & FS_XFLAG_NODUMP)
+		iflags |= FS_NODUMP_FL;
+	if (xflags & FS_XFLAG_DAX)
+		iflags |= FS_DAX_FL;
+	if (xflags & FS_XFLAG_PROJINHERIT)
+		iflags |= FS_PROJINHERIT_FL;
+	return iflags;
+}
+
+#define FUSE2FS_MODIFIABLE_XFLAGS (FS_XFLAG_IMMUTABLE | \
+				   FS_XFLAG_APPEND | \
+				   FS_XFLAG_SYNC | \
+				   FS_XFLAG_NOATIME | \
+				   FS_XFLAG_NODUMP | \
+				   FS_XFLAG_PROJINHERIT)
+
+#define FUSE2FS_MODIFIABLE_IXFLAGS (FS_IMMUTABLE_FL | \
+				    FS_APPEND_FL | \
+				    FS_SYNC_FL | \
+				    FS_NOATIME_FL | \
+				    FS_NODUMP_FL | \
+				    FS_PROJINHERIT_FL)
+
+static inline int set_xflags(struct ext2_inode_large *inode, __u32 xflags)
+{
+	__u32 iflags;
+
+	if (xflags & ~FUSE2FS_MODIFIABLE_XFLAGS)
+		return -EINVAL;
+
+	iflags = fsxflags_to_iflags(xflags);
+	inode->i_flags = (inode->i_flags & ~FUSE2FS_MODIFIABLE_IXFLAGS) |
+			 (iflags & FUSE2FS_MODIFIABLE_IXFLAGS);
+	return 0;
+}
+
+static int ioctl_fssetxattr(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
+			    void *data)
+{
+	ext2_filsys fs = ff->fs;
+	errcode_t err;
+	struct ext2_inode_large inode;
+	int ret;
+	struct fuse_context *ctxt = fuse_get_context();
+	struct fsxattr *fsx = data;
+	unsigned int inode_size;
+
+	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
+	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
+	if (err)
+		return translate_error(fs, fh->ino, err);
+
+	if (want_check_owner(ff, ctxt) && inode_uid(inode) != ctxt->uid)
+		return -EPERM;
+
+	ret = set_xflags(&inode, fsx->fsx_xflags);
+	if (ret)
+		return ret;
+
+	inode_size = EXT2_GOOD_OLD_INODE_SIZE + inode.i_extra_isize;
+	if (ext2fs_inode_includes(inode_size, i_projid))
+		inode.i_projid = fsx->fsx_projid;
+
+	ret = update_ctime(fs, fh->ino, &inode);
+	if (ret)
+		return ret;
+
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
+	if (err)
+		return translate_error(fs, fh->ino, err);
+
+	return 0;
+}
+#endif /* FS_IOC_FSGETXATTR */
+
 #ifdef FITRIM
-static int ioctl_fitrim(ext2_filsys fs, struct fuse2fs_file_handle *fh,
+static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 			void *data)
 {
+	ext2_filsys fs = ff->fs;
 	struct fstrim_range *fr = data;
-	blk64_t start, end, max_blocks, b, cleared;
+	blk64_t start, end, max_blocks, b, cleared, minlen;
+	blk64_t max_blks = ext2fs_blocks_count(fs->super);
 	errcode_t err = 0;
 
-	start = fr->start / fs->blocksize;
-	end = (fr->start + fr->len - 1) / fs->blocksize;
-	dbg_printf("%s: start=%llu end=%llu\n", __func__, start, end);
+	if (!fs_writeable(fs))
+		return -EROFS;
+
+	start = FUSE2FS_B_TO_FSBT(ff, fr->start);
+	if (fr->len == -1ULL)
+		end = -1ULL;
+	else
+		end = FUSE2FS_B_TO_FSBT(ff, fr->start + fr->len - 1);
+	minlen = FUSE2FS_B_TO_FSBT(ff, fr->minlen);
+
+	if (EXT2FS_NUM_B2C(fs, minlen) > EXT2_CLUSTERS_PER_GROUP(fs->super) ||
+	    start >= max_blks ||
+	    fr->len < fs->blocksize)
+		return -EINVAL;
+
+	dbg_printf(ff, "%s: start=%llu end=%llu minlen=%llu\n", __func__,
+		   start, end, minlen);
 
 	if (start < fs->super->s_first_data_block)
 		start = fs->super->s_first_data_block;
-	if (start >= ext2fs_blocks_count(fs->super))
-		start = ext2fs_blocks_count(fs->super) - 1;
 
 	if (end < fs->super->s_first_data_block)
 		end = fs->super->s_first_data_block;
@@ -3060,32 +4037,61 @@ static int ioctl_fitrim(ext2_filsys fs, struct fuse2fs_file_handle *fh,
 		end = ext2fs_blocks_count(fs->super) - 1;
 
 	cleared = 0;
-	max_blocks = 2048ULL * 1024 * 1024 / fs->blocksize;
+	max_blocks = FUSE2FS_B_TO_FSBT(ff, 2048ULL * 1024 * 1024);
 
 	fr->len = 0;
 	while (start <= end) {
 		err = ext2fs_find_first_zero_block_bitmap2(fs->block_map,
 							   start, end, &start);
-		if (err == ENOENT)
-			return 0;
-		else if (err)
+		switch (err) {
+		case 0:
+			break;
+		case ENOENT:
+			/* no free blocks found, so we're done */
+			err = 0;
+			goto out;
+		default:
 			return translate_error(fs, fh->ino, err);
+		}
 
 		b = start + max_blocks < end ? start + max_blocks : end;
 		err =  ext2fs_find_first_set_block_bitmap2(fs->block_map,
 							   start, b, &b);
-		if (err && err != ENOENT)
+		switch (err) {
+		case 0:
+			break;
+		case ENOENT:
+			/*
+			 * No free blocks found between start and b; discard
+			 * the entire range.
+			 */
+			err = 0;
+			break;
+		default:
 			return translate_error(fs, fh->ino, err);
-		if (b - start >= fr->minlen) {
+		}
+
+		if (b - start >= minlen) {
 			err = io_channel_discard(fs->io, start, b - start);
+			if (err == EBUSY) {
+				/*
+				 * Apparently dm-thinp can return EBUSY when
+				 * it's too busy deallocating thinp units to
+				 * deallocate more.  Swallow these errors.
+				 */
+				err = 0;
+			}
 			if (err)
 				return translate_error(fs, fh->ino, err);
 			cleared += b - start;
-			fr->len = cleared * fs->blocksize;
+			fr->len = FUSE2FS_FSB_TO_B(ff, cleared);
 		}
 		start = b + 1;
 	}
 
+out:
+	fr->len = FUSE2FS_FSB_TO_B(ff, cleared);
+	dbg_printf(ff, "%s: len=%llu err=%ld\n", __func__, fr->len, err);
 	return err;
 }
 #endif /* FITRIM */
@@ -3105,34 +4111,40 @@ static int op_ioctl(const char *path EXT2FS_ATTR((unused)),
 	struct fuse2fs *ff = (struct fuse2fs *)ctxt->private_data;
 	struct fuse2fs_file_handle *fh =
 		(struct fuse2fs_file_handle *)(uintptr_t)fp->fh;
-	ext2_filsys fs;
 	int ret = 0;
 
 	FUSE2FS_CHECK_CONTEXT(ff);
-	fs = ff->fs;
 	pthread_mutex_lock(&ff->bfl);
 	switch ((unsigned long) cmd) {
 #ifdef SUPPORT_I_FLAGS
 	case EXT2_IOC_GETFLAGS:
-		ret = ioctl_getflags(fs, fh, data);
+		ret = ioctl_getflags(ff, fh, data);
 		break;
 	case EXT2_IOC_SETFLAGS:
-		ret = ioctl_setflags(fs, fh, data);
+		ret = ioctl_setflags(ff, fh, data);
 		break;
 	case EXT2_IOC_GETVERSION:
-		ret = ioctl_getversion(fs, fh, data);
+		ret = ioctl_getversion(ff, fh, data);
 		break;
 	case EXT2_IOC_SETVERSION:
-		ret = ioctl_setversion(fs, fh, data);
+		ret = ioctl_setversion(ff, fh, data);
+		break;
+#endif
+#ifdef FS_IOC_FSGETXATTR
+	case FS_IOC_FSGETXATTR:
+		ret = ioctl_fsgetxattr(ff, fh, data);
+		break;
+	case FS_IOC_FSSETXATTR:
+		ret = ioctl_fssetxattr(ff, fh, data);
 		break;
 #endif
 #ifdef FITRIM
 	case FITRIM:
-		ret = ioctl_fitrim(fs, fh, data);
+		ret = ioctl_fitrim(ff, fh, data);
 		break;
 #endif
 	default:
-		dbg_printf("%s: Unknown ioctl %d\n", __func__, cmd);
+		dbg_printf(ff, "%s: Unknown ioctl %d\n", __func__, cmd);
 		ret = -ENOTTY;
 	}
 	pthread_mutex_unlock(&ff->bfl);
@@ -3159,7 +4171,7 @@ static int op_bmap(const char *path, size_t blocksize EXT2FS_ATTR((unused)),
 		ret = translate_error(fs, 0, err);
 		goto out;
 	}
-	dbg_printf("%s: ino=%d blk=%"PRIu64"\n", __func__, ino, *idx);
+	dbg_printf(ff, "%s: ino=%d blk=%"PRIu64"\n", __func__, ino, *idx);
 
 	err = ext2fs_bmap2(fs, ino, NULL, NULL, 0, *idx, 0, (blk64_t *)idx);
 	if (err) {
@@ -3191,25 +4203,27 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	start = offset / fs->blocksize;
-	end = (offset + len - 1) / fs->blocksize;
-	dbg_printf("%s: ino=%d mode=0x%x start=%jd end=%llu\n", __func__,
-		   fh->ino, mode, offset / fs->blocksize, end);
-	if (!fs_can_allocate(ff, len / fs->blocksize))
+	start = FUSE2FS_B_TO_FSBT(ff, offset);
+	end = FUSE2FS_B_TO_FSBT(ff, offset + len - 1);
+	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
+		   fh->ino, mode, start, end);
+	if (!fs_can_allocate(ff, FUSE2FS_B_TO_FSB(ff, len)))
 		return -ENOSPC;
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return err;
 	fsize = EXT2_I_SIZE(&inode);
+
+	/* Indirect files do not support unwritten extents */
+	if (!(inode.i_flags & EXT4_EXTENTS_FL))
+		return -EOPNOTSUPP;
 
 	/* Allocate a bunch of blocks */
 	flags = (mode & FL_KEEP_SIZE_FLAG ? 0 :
 			EXT2_FALLOCATE_INIT_BEYOND_EOF);
 	err = ext2fs_fallocate(fs, flags, fh->ino,
-			       (struct ext2_inode *)&inode,
+			       EXT2_INODE(&inode),
 			       ~0ULL, start, end - start + 1);
 	if (err && err != EXT2_ET_BLOCK_ALLOC_FAIL)
 		return translate_error(fs, fh->ino, err);
@@ -3218,7 +4232,7 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (!(mode & FL_KEEP_SIZE_FLAG)) {
 		if ((__u64) offset + len > fsize) {
 			err = ext2fs_inode_size_set(fs,
-						(struct ext2_inode *)&inode,
+						EXT2_INODE(&inode),
 						offset + len);
 			if (err)
 				return translate_error(fs, fh->ino, err);
@@ -3229,26 +4243,22 @@ static int fallocate_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (err)
 		return err;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
 	return err;
 }
 
-static errcode_t clean_block_middle(ext2_filsys fs, ext2_ino_t ino,
-				  struct ext2_inode_large *inode, off_t offset,
-				  off_t len, char **buf)
+static errcode_t clean_block_middle(struct fuse2fs *ff, ext2_ino_t ino,
+				    struct ext2_inode_large *inode,
+				    off_t offset, off_t len, char **buf)
 {
+	ext2_filsys fs = ff->fs;
 	blk64_t blk;
-	off_t residue;
+	off_t residue = FUSE2FS_OFF_IN_FSB(ff, offset);
 	int retflags;
 	errcode_t err;
-
-	residue = offset % fs->blocksize;
-	if (residue == 0)
-		return 0;
 
 	if (!*buf) {
 		err = ext2fs_get_mem(fs->blocksize, buf);
@@ -3256,32 +4266,33 @@ static errcode_t clean_block_middle(ext2_filsys fs, ext2_ino_t ino,
 			return err;
 	}
 
-	err = ext2fs_bmap2(fs, ino, (struct ext2_inode *)inode, *buf, 0,
-			   offset / fs->blocksize, &retflags, &blk);
+	err = ext2fs_bmap2(fs, ino, EXT2_INODE(inode), *buf, 0,
+			   FUSE2FS_B_TO_FSBT(ff, offset), &retflags, &blk);
 	if (err)
 		return err;
 	if (!blk || (retflags & BMAP_RET_UNINIT))
 		return 0;
 
-	err = io_channel_read_blk(fs->io, blk, 1, *buf);
+	err = io_channel_read_blk64(fs->io, blk, 1, *buf);
 	if (err)
 		return err;
 
 	memset(*buf + residue, 0, len);
 
-	return io_channel_write_blk(fs->io, blk, 1, *buf);
+	return io_channel_write_blk64(fs->io, blk, 1, *buf);
 }
 
-static errcode_t clean_block_edge(ext2_filsys fs, ext2_ino_t ino,
+static errcode_t clean_block_edge(struct fuse2fs *ff, ext2_ino_t ino,
 				  struct ext2_inode_large *inode, off_t offset,
 				  int clean_before, char **buf)
 {
+	ext2_filsys fs = ff->fs;
 	blk64_t blk;
 	int retflags;
 	off_t residue;
 	errcode_t err;
 
-	residue = offset % fs->blocksize;
+	residue = FUSE2FS_OFF_IN_FSB(ff, offset);
 	if (residue == 0)
 		return 0;
 
@@ -3291,12 +4302,12 @@ static errcode_t clean_block_edge(ext2_filsys fs, ext2_ino_t ino,
 			return err;
 	}
 
-	err = ext2fs_bmap2(fs, ino, (struct ext2_inode *)inode, *buf, 0,
-			   offset / fs->blocksize, &retflags, &blk);
+	err = ext2fs_bmap2(fs, ino, EXT2_INODE(inode), *buf, 0,
+			   FUSE2FS_B_TO_FSBT(ff, offset), &retflags, &blk);
 	if (err)
 		return err;
 
-	err = io_channel_read_blk(fs->io, blk, 1, *buf);
+	err = io_channel_read_blk64(fs->io, blk, 1, *buf);
 	if (err)
 		return err;
 	if (!blk || (retflags & BMAP_RET_UNINIT))
@@ -3307,7 +4318,7 @@ static errcode_t clean_block_edge(ext2_filsys fs, ext2_ino_t ino,
 	else
 		memset(*buf + residue, 0, fs->blocksize - residue);
 
-	return io_channel_write_blk(fs->io, blk, 1, *buf);
+	return io_channel_write_blk64(fs->io, blk, 1, *buf);
 }
 
 static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
@@ -3326,32 +4337,46 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	FUSE2FS_CHECK_CONTEXT(ff);
 	fs = ff->fs;
 	FUSE2FS_CHECK_MAGIC(fs, fh, FUSE2FS_FILE_MAGIC);
-	dbg_printf("%s: offset=%jd len=%jd\n", __func__, offset, len);
+	dbg_printf(ff, "%s: offset=%jd len=%jd\n", __func__,
+		   (intmax_t) offset, (intmax_t) len);
 
 	/* kernel ext4 punch requires this flag to be set */
 	if (!(mode & FL_KEEP_SIZE_FLAG))
 		return -EINVAL;
 
-	/* Punch out a bunch of blocks */
-	start = (offset + fs->blocksize - 1) / fs->blocksize;
-	end = (offset + len - fs->blocksize) / fs->blocksize;
-	dbg_printf("%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
-		   fh->ino, mode, start, end);
+	/*
+	 * Unmap out all full blocks in the middle of the range being punched.
+	 * The start of the unmap range should be the first byte of the first
+	 * fsblock that starts within the range.  The end of the range should
+	 * be the next byte after the last fsblock to end in the range.
+	 */
+	start = FUSE2FS_B_TO_FSBT(ff, round_up(offset, fs->blocksize));
+	end = FUSE2FS_B_TO_FSBT(ff, round_down(offset + len, fs->blocksize));
 
-	memset(&inode, 0, sizeof(inode));
-	err = ext2fs_read_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				     sizeof(inode));
+	dbg_printf(ff,
+ "%s: ino=%d mode=0x%x offset=0x%jx len=0x%jx start=0x%llx end=0x%llx\n",
+		   __func__, fh->ino, mode, offset, len, start, end);
+
+	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
+	/*
+	 * Indirect files do not support unwritten extents, which means we
+	 * can't support zero range.  Punch goes first in zero-range, which
+	 * is why the check is here.
+	 */
+	if ((mode & FL_ZERO_RANGE_FLAG) && !(inode.i_flags & EXT4_EXTENTS_FL))
+		return -EOPNOTSUPP;
+
 	/* Zero everything before the first block and after the last block */
-	if ((offset / fs->blocksize) == ((offset + len) / fs->blocksize))
-		err = clean_block_middle(fs, fh->ino, &inode, offset,
+	if (FUSE2FS_B_TO_FSBT(ff, offset) == FUSE2FS_B_TO_FSBT(ff, offset + len))
+		err = clean_block_middle(ff, fh->ino, &inode, offset,
 					 len, &buf);
 	else {
-		err = clean_block_edge(fs, fh->ino, &inode, offset, 0, &buf);
+		err = clean_block_edge(ff, fh->ino, &inode, offset, 0, &buf);
 		if (!err)
-			err = clean_block_edge(fs, fh->ino, &inode,
+			err = clean_block_edge(ff, fh->ino, &inode,
 					       offset + len, 1, &buf);
 	}
 	if (buf)
@@ -3359,10 +4384,14 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
-	/* Unmap full blocks in the middle */
-	if (start <= end) {
-		err = ext2fs_punch(fs, fh->ino, (struct ext2_inode *)&inode,
-				   NULL, start, end);
+	/*
+	 * Unmap full blocks in the middle, which is to say that start - end
+	 * must be at least one fsblock.  ext2fs_punch takes a closed interval
+	 * as its argument, so we pass [start, end - 1].
+	 */
+	if (start < end) {
+		err = ext2fs_punch(fs, fh->ino, EXT2_INODE(&inode),
+				   NULL, start, end - 1);
 		if (err)
 			return translate_error(fs, fh->ino, err);
 	}
@@ -3371,12 +4400,21 @@ static int punch_helper(struct fuse_file_info *fp, int mode, off_t offset,
 	if (err)
 		return err;
 
-	err = ext2fs_write_inode_full(fs, fh->ino, (struct ext2_inode *)&inode,
-				      sizeof(inode));
+	err = fuse2fs_write_inode(fs, fh->ino, &inode);
 	if (err)
 		return translate_error(fs, fh->ino, err);
 
 	return 0;
+}
+
+static int zero_helper(struct fuse_file_info *fp, int mode, off_t offset,
+		       off_t len)
+{
+	int ret = punch_helper(fp, mode | FL_KEEP_SIZE_FLAG, offset, len);
+
+	if (!ret)
+		ret = fallocate_helper(fp, mode, offset, len);
+	return ret;
 }
 
 static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
@@ -3389,7 +4427,7 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 	int ret;
 
 	/* Catch unknown flags */
-	if (mode & ~(FL_PUNCH_HOLE_FLAG | FL_KEEP_SIZE_FLAG))
+	if (mode & ~(FL_ZERO_RANGE_FLAG | FL_PUNCH_HOLE_FLAG | FL_KEEP_SIZE_FLAG))
 		return -EOPNOTSUPP;
 
 	pthread_mutex_lock(&ff->bfl);
@@ -3397,7 +4435,9 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 		ret = -EROFS;
 		goto out;
 	}
-	if (mode & FL_PUNCH_HOLE_FLAG)
+	if (mode & FL_ZERO_RANGE_FLAG)
+		ret = zero_helper(fp, mode, offset, len);
+	else if (mode & FL_PUNCH_HOLE_FLAG)
 		ret = punch_helper(fp, mode, offset, len);
 	else
 		ret = fallocate_helper(fp, mode, offset, len);
@@ -3489,22 +4529,37 @@ static int get_random_bytes(void *p, size_t sz)
 }
 
 enum {
+	FUSE2FS_IGNORED,
 	FUSE2FS_VERSION,
 	FUSE2FS_HELP,
 	FUSE2FS_HELPFULL,
+	FUSE2FS_CACHE_SIZE,
 };
 
 #define FUSE2FS_OPT(t, p, v) { t, offsetof(struct fuse2fs, p), v }
 
 static struct fuse_opt fuse2fs_opts[] = {
 	FUSE2FS_OPT("ro",		ro,			1),
+	FUSE2FS_OPT("rw",		ro,			0),
 	FUSE2FS_OPT("errors=panic",	panic_on_error,		1),
 	FUSE2FS_OPT("minixdf",		minixdf,		1),
+	FUSE2FS_OPT("bsddf",		minixdf,		0),
 	FUSE2FS_OPT("fakeroot",		fakeroot,		1),
 	FUSE2FS_OPT("fuse2fs_debug",	debug,			1),
 	FUSE2FS_OPT("no_default_opts",	no_default_opts,	1),
 	FUSE2FS_OPT("norecovery",	norecovery,		1),
-	FUSE2FS_OPT("offset=%lu",	offset,		0),
+	FUSE2FS_OPT("noload",		norecovery,		1),
+	FUSE2FS_OPT("offset=%lu",	offset,			0),
+	FUSE2FS_OPT("kernel",		kernel,			1),
+	FUSE2FS_OPT("directio",		directio,		1),
+	FUSE2FS_OPT("acl",		acl,			1),
+	FUSE2FS_OPT("noacl",		acl,			0),
+
+	FUSE_OPT_KEY("user_xattr",	FUSE2FS_IGNORED),
+	FUSE_OPT_KEY("noblock_validity", FUSE2FS_IGNORED),
+	FUSE_OPT_KEY("nodelalloc",	FUSE2FS_IGNORED),
+	FUSE_OPT_KEY("cache_size=%s",	FUSE2FS_CACHE_SIZE),
+	FUSE2FS_OPT("lockfile=%s",	lockfile,		0),
 
 	FUSE_OPT_KEY("-V",             FUSE2FS_VERSION),
 	FUSE_OPT_KEY("--version",      FUSE2FS_VERSION),
@@ -3527,6 +4582,18 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 			return 0;
 		}
 		return 1;
+	case FUSE2FS_CACHE_SIZE:
+		ff->cache_size = parse_num_blocks2(arg + 11, -1);
+		if (ff->cache_size < 1 || ff->cache_size > INT32_MAX) {
+			fprintf(stderr, "%s: %s\n", arg,
+ _("cache size must be between 1 block and 2GB."));
+			return -1;
+		}
+
+		/* do not pass through to libfuse */
+		return 0;
+	case FUSE2FS_IGNORED:
+		return 0;
 	case FUSE2FS_HELP:
 	case FUSE2FS_HELPFULL:
 		fprintf(stderr,
@@ -3538,14 +4605,18 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -V   --version   print version\n"
 	"\n"
 	"fuse2fs options:\n"
-	"    -o ro                  read-only mount\n"
 	"    -o errors=panic        dump core on error\n"
 	"    -o minixdf             minix-style df\n"
 	"    -o fakeroot            pretend to be root for permission checks\n"
 	"    -o no_default_opts     do not include default fuse options\n"
 	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
-	"    -o norecovery	    don't replay the journal (implies ro)\n"
+	"    -o norecovery          don't replay the journal\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
+	"    -o lockfile=<file>     file to show that fuse is still using the file system image\n"
+	"    -o kernel              run this as if it were the kernel, which sets:\n"
+	"                           allow_others,default_permissions,suid,dev\n"
+	"    -o directio            use O_DIRECT to read and write the disk\n"
+	"    -o cache_size=N[KMG]   use a disk cache of this size\n"
 	"\n",
 			outargs->argv[0]);
 		if (key == FUSE2FS_HELPFULL) {
@@ -3567,30 +4638,75 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	return 1;
 }
 
+static const char *get_subtype(const char *argv0)
+{
+	size_t argvlen = strlen(argv0);
+
+	if (argvlen < 4)
+		goto out_default;
+
+	if (argv0[argvlen - 4] == 'e' &&
+	    argv0[argvlen - 3] == 'x' &&
+	    argv0[argvlen - 2] == 't' &&
+	    isdigit(argv0[argvlen - 1]))
+		return &argv0[argvlen - 4];
+
+out_default:
+	return "ext4";
+}
+
+/* Figure out a reasonable default size for the disk cache */
+static unsigned long long default_cache_size(void)
+{
+	long pages = 0, pagesize = 0;
+	unsigned long long max_cache;
+	unsigned long long ret = 32ULL << 20; /* 32 MB */
+
+#ifdef _SC_PHYS_PAGES
+	pages = sysconf(_SC_PHYS_PAGES);
+#endif
+#ifdef _SC_PAGESIZE
+	pagesize = sysconf(_SC_PAGESIZE);
+#endif
+	if (pages > 0 && pagesize > 0) {
+		max_cache = (unsigned long long)pagesize * pages / 20;
+
+		if (max_cache > 0 && ret > max_cache)
+			ret = max_cache;
+	}
+	return ret;
+}
+
 int main(int argc, char *argv[])
 {
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	struct fuse2fs fctx;
 	errcode_t err;
-	char *logfile;
+	FILE *orig_stderr = stderr;
 	char extra_args[BUFSIZ];
-	int ret = 0;
-	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE;
+	int ret;
+	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE |
+		    EXT2_FLAG_RW;
 
 	memset(&fctx, 0, sizeof(fctx));
 	fctx.magic = FUSE2FS_MAGIC;
+	fctx.logfd = -1;
 
-	fuse_opt_parse(&args, &fctx, fuse2fs_opts, fuse2fs_opt_proc);
+	ret = fuse_opt_parse(&args, &fctx, fuse2fs_opts, fuse2fs_opt_proc);
+	if (ret)
+		exit(1);
 	if (fctx.device == NULL) {
 		fprintf(stderr, "Missing ext4 device/image\n");
 		fprintf(stderr, "See '%s -h' for usage\n", argv[0]);
 		exit(1);
 	}
 
-	if (fctx.norecovery)
-		fctx.ro = 1;
-	if (fctx.ro)
-		printf("%s", _("Mounting read-only.\n"));
+	/* /dev/sda -> sda for reporting */
+	fctx.shortdev = strrchr(fctx.device, '/');
+	if (fctx.shortdev)
+		fctx.shortdev++;
+	else
+		fctx.shortdev = fctx.device;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -3601,90 +4717,153 @@ int main(int argc, char *argv[])
 #endif
 	add_error_table(&et_ext2_error_table);
 
-	/* Set up error logging */
-	logfile = getenv("FUSE2FS_LOGFILE");
-	if (logfile) {
-		fctx.err_fp = fopen(logfile, "a");
-		if (!fctx.err_fp) {
-			perror(logfile);
-			goto out;
-		}
-	} else
-		fctx.err_fp = stderr;
+	ret = fuse2fs_setup_logging(&fctx);
+	if (ret) {
+		/* operational error */
+		ret = 2;
+		goto out;
+	}
 
 	/* Will we allow users to allocate every last block? */
 	if (getenv("FUSE2FS_ALLOC_ALL_BLOCKS")) {
-		printf(_("%s: Allowing users to allocate all blocks. "
-		       "This is dangerous!\n"), fctx.device);
+		log_printf(&fctx, "%s\n",
+ _("Allowing users to allocate all blocks. This is dangerous!"));
 		fctx.alloc_all_blocks = 1;
+	}
+
+	if (fctx.lockfile) {
+		char *resolved;
+		int lockfd;
+
+		lockfd = open(fctx.lockfile, O_RDWR | O_CREAT | O_EXCL, 0400);
+		if (lockfd < 0) {
+			if (errno == EEXIST)
+				err = EWOULDBLOCK;
+			else
+				err = errno;
+			err_printf(&fctx, "%s: %s: %s\n", fctx.lockfile,
+				   _("opening lockfile failed"),
+				   strerror(err));
+			fctx.lockfile = NULL;
+			ret |= 32;
+			goto out;
+		}
+		close(lockfd);
+
+		resolved = realpath(fctx.lockfile, NULL);
+		if (!resolved) {
+			err = errno;
+			err_printf(&fctx, "%s: %s: %s\n", fctx.lockfile,
+				   _("resolving lockfile failed"),
+				   strerror(err));
+			unlink(fctx.lockfile);
+			fctx.lockfile = NULL;
+			ret |= 32;
+			goto out;
+		}
+		free(fctx.lockfile);
+		fctx.lockfile = resolved;
 	}
 
 	/* Start up the fs (while we still can use stdout) */
 	ret = 2;
-	if (!fctx.ro)
-		flags |= EXT2_FLAG_RW;
 	char options[50];
 	sprintf(options, "offset=%lu", fctx.offset);
+	if (fctx.directio)
+		flags |= EXT2_FLAG_DIRECT_IO;
 	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
 			   &global_fs);
+	if (err == EPERM || err == EACCES) {
+		/*
+		 * Source device cannot be opened for write.  Under these
+		 * circumstances, mount(8) will try again with a ro mount,
+		 * and the kernel will open the block device readonly.
+		 */
+		log_printf(&fctx, "%s\n",
+ _("WARNING: source write-protected, mounted read-only."));
+		flags &= ~EXT2_FLAG_RW;
+		fctx.ro = 1;
+		err = ext2fs_open2(fctx.device, options, flags, 0, 0,
+				   unix_io_manager, &global_fs);
+	}
 	if (err) {
-		printf(_("%s: %s.\n"), fctx.device, error_message(err));
-		printf(_("Please run e2fsck -fy %s.\n"), fctx.device);
+		err_printf(&fctx, "%s.\n", error_message(err));
+		err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
 		goto out;
 	}
 	fctx.fs = global_fs;
 	global_fs->priv_data = &fctx;
+	fctx.blocklog = u_log2(fctx.fs->blocksize);
+	fctx.blockmask = fctx.fs->blocksize - 1;
+
+	if (!fctx.cache_size)
+		fctx.cache_size = default_cache_size();
+	if (fctx.cache_size) {
+		char buf[55];
+
+		snprintf(buf, sizeof(buf), "cache_blocks=%llu",
+			 FUSE2FS_B_TO_FSBT(&fctx, fctx.cache_size));
+		err = io_channel_set_options(global_fs->io, buf);
+		if (err) {
+			err_printf(&fctx, "%s %lluk: %s\n",
+				   _("cannot set disk cache size to"),
+				   fctx.cache_size >> 10,
+				   error_message(err));
+			goto out;
+		}
+	}
 
 	ret = 3;
+	err = fuse2fs_check_support(&fctx);
+	if (err)
+		goto out;
 
-	if (ext2fs_has_feature_quota(global_fs->super)) {
-		printf(_("%s: quotas not supported."), fctx.device);
-		goto out;
-	}
-	if (ext2fs_has_feature_verity(global_fs->super)) {
-		printf(_("%s: verity not supported."), fctx.device);
-		goto out;
-	}
-	if (ext2fs_has_feature_encrypt(global_fs->super)) {
-		printf(_("%s: encryption not supported."), fctx.device);
-		goto out;
-	}
-	if (ext2fs_has_feature_casefold(global_fs->super)) {
-		printf(_("%s: casefolding not supported."), fctx.device);
-		goto out;
-	}
-
+	/*
+	 * ext4 can't do COW of shared blocks, so if the feature is enabled,
+	 * we must force ro mode.
+	 */
 	if (ext2fs_has_feature_shared_blocks(global_fs->super))
 		fctx.ro = 1;
 
 	if (ext2fs_has_feature_journal_needs_recovery(global_fs->super)) {
 		if (fctx.norecovery) {
-			printf(_("%s: mounting read-only without "
-				 "recovering journal\n"),
-			       fctx.device);
-		} else if (!fctx.ro) {
-			printf(_("%s: recovering journal\n"), fctx.device);
+			log_printf(&fctx, "%s\n",
+ _("Mounting read-only without recovering journal."));
+			fctx.ro = 1;
+			global_fs->flags &= ~EXT2_FLAG_RW;
+		} else if (!(global_fs->flags & EXT2_FLAG_RW)) {
+			err_printf(&fctx, "%s\n",
+ _("Cannot replay journal on read-only device."));
+			ret = 32;
+			goto out;
+		} else {
+			log_printf(&fctx, "%s\n", _("Recovering journal."));
 			err = ext2fs_run_ext3_journal(&global_fs);
 			if (err) {
-				printf(_("%s: %s.\n"), fctx.device,
-				       error_message(err));
-				printf(_("Please run e2fsck -fy %s.\n"),
-				       fctx.device);
+				err_printf(&fctx, "%s.\n", error_message(err));
+				err_printf(&fctx, "%s\n",
+						_("Please run e2fsck -fy."));
 				goto out;
 			}
-			ext2fs_clear_feature_journal_needs_recovery(global_fs->super);
-			ext2fs_mark_super_dirty(global_fs);
-		} else {
-			printf("%s", _("Journal needs recovery; running "
-			       "`e2fsck -E journal_only' is required.\n"));
+
+			err = fuse2fs_check_support(&fctx);
+			if (err)
+				goto out;
+		}
+	} else if (ext2fs_has_feature_journal(global_fs->super)) {
+		err = ext2fs_check_ext3_journal(global_fs);
+		if (err) {
+			translate_error(global_fs, 0, err);
 			goto out;
 		}
 	}
 
-	if (!fctx.ro) {
+	if (global_fs->flags & EXT2_FLAG_RW) {
 		if (ext2fs_has_feature_journal(global_fs->super))
-			printf(_("%s: Writing to the journal is not supported.\n"),
-			       fctx.device);
+			log_printf(&fctx, "%s",
+ _("Warning: fuse2fs does not support using the journal.\n"
+   "There may be file system corruption or data loss if\n"
+   "the file system is not gracefully unmounted.\n"));
 		err = ext2fs_read_inode_bitmap(global_fs);
 		if (err) {
 			translate_error(global_fs, 0, err);
@@ -3698,36 +4877,48 @@ int main(int argc, char *argv[])
 	}
 
 	if (!(global_fs->super->s_state & EXT2_VALID_FS))
-		printf("%s", _("Warning: Mounting unchecked fs, running e2fsck "
-		       "is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Warning: Mounting unchecked fs, running e2fsck is recommended."));
 	if (global_fs->super->s_max_mnt_count > 0 &&
 	    global_fs->super->s_mnt_count >= global_fs->super->s_max_mnt_count)
-		printf("%s", _("Warning: Maximal mount count reached, running "
-		       "e2fsck is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Warning: Maximal mount count reached, running e2fsck is recommended."));
 	if (global_fs->super->s_checkinterval > 0 &&
 	    (time_t) (global_fs->super->s_lastcheck +
 		      global_fs->super->s_checkinterval) <= time(0))
-		printf("%s", _("Warning: Check time reached; running e2fsck "
-		       "is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Warning: Check time reached; running e2fsck is recommended."));
 	if (global_fs->super->s_last_orphan)
-		printf("%s",
-		       _("Orphans detected; running e2fsck is recommended.\n"));
+		err_printf(&fctx, "%s\n",
+ _("Orphans detected; running e2fsck is recommended."));
 
-	if (global_fs->super->s_state & EXT2_ERROR_FS) {
-		printf("%s",
-		       _("Errors detected; running e2fsck is required.\n"));
-		goto out;
+	/* Clear the valid flag so that an unclean shutdown forces a fsck */
+	if (global_fs->flags & EXT2_FLAG_RW) {
+		global_fs->super->s_mnt_count++;
+		ext2fs_set_tstamp(global_fs->super, s_mtime, time(NULL));
+		global_fs->super->s_state &= ~EXT2_VALID_FS;
+		ext2fs_mark_super_dirty(global_fs);
+		err = ext2fs_flush2(global_fs, 0);
+		if (err) {
+			translate_error(global_fs, 0, err);
+			ret |= 32;
+			goto out;
+		}
 	}
 
 	/* Initialize generation counter */
 	get_random_bytes(&fctx.next_generation, sizeof(unsigned int));
 
 	/* Set up default fuse parameters */
-	snprintf(extra_args, BUFSIZ, "-okernel_cache,subtype=ext4,"
+	snprintf(extra_args, BUFSIZ, "-okernel_cache,subtype=%s,"
 		 "fsname=%s,attr_timeout=0" FUSE_PLATFORM_OPTS,
+		 get_subtype(argv[0]),
 		 fctx.device);
 	if (fctx.no_default_opts == 0)
 		fuse_opt_add_arg(&args, extra_args);
+
+	if (fctx.ro)
+		fuse_opt_add_arg(&args, "-oro");
 
 	if (fctx.fakeroot) {
 #ifdef HAVE_MOUNT_NODEV
@@ -3738,31 +4929,85 @@ int main(int argc, char *argv[])
 #endif
 	}
 
+	if (fctx.kernel) {
+		/*
+		 * ACLs are always enforced when kernel mode is enabled, to
+		 * match the kernel ext4 driver which always enables ACLs.
+		 */
+		fctx.acl = 1;
+		fuse_opt_insert_arg(&args, 1,
+ "-oallow_other,default_permissions,suid,dev");
+	}
+
 	if (fctx.debug) {
 		int	i;
 
-		printf("fuse arguments:");
+		printf("FUSE2FS (%s): fuse arguments:", fctx.shortdev);
 		for (i = 0; i < args.argc; i++)
 			printf(" '%s'", args.argv[i]);
 		printf("\n");
+		fflush(stdout);
 	}
 
 	pthread_mutex_init(&fctx.bfl, NULL);
-	fuse_main(args.argc, args.argv, &fs_ops, &fctx);
+	ret = fuse_main(args.argc, args.argv, &fs_ops, &fctx);
 	pthread_mutex_destroy(&fctx.bfl);
 
-	ret = 0;
+	switch(ret) {
+	case 0:
+		/* success */
+		ret = 0;
+		break;
+	case 1:
+	case 2:
+		/* invalid option or no mountpoint */
+		ret = 1;
+		break;
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+		/* setup or mounting failed */
+		ret = 32;
+		break;
+	default:
+		/* fuse started up enough to call op_init */
+		ret = 0;
+		break;
+	}
 out:
+	if (ret & 1) {
+		fprintf(orig_stderr, "%s\n",
+ _("Mount failed due to unrecognized options.  Check dmesg(1) for details."));
+		fflush(orig_stderr);
+	}
+	if (ret & 32) {
+		fprintf(orig_stderr, "%s\n",
+ _("Mount failed while opening filesystem.  Check dmesg(1) for details."));
+		fflush(orig_stderr);
+	}
 	if (global_fs) {
-		err = ext2fs_close(global_fs);
+		err = ext2fs_close_free(&global_fs);
 		if (err)
 			com_err(argv[0], err, "while closing fs");
-		global_fs = NULL;
 	}
+	if (fctx.lockfile) {
+		if (unlink(fctx.lockfile)) {
+			err = errno;
+			err_printf(&fctx, "%s: %s: %s\n", fctx.lockfile,
+				   _("removing lockfile failed"),
+				   strerror(err));
+		}
+		free(fctx.lockfile);
+	}
+	if (fctx.device)
+		free(fctx.device);
+	fuse_opt_free_args(&args);
 	return ret;
 }
 
-static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
+static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			     const char *file, int line)
 {
 	struct timespec now;
@@ -3771,9 +5016,9 @@ static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
 	int is_err = 0;
 
 	/* Translate ext2 error to unix error code */
-	if (err < EXT2_ET_BASE)
-		goto no_translation;
 	switch (err) {
+	case 0:
+		break;
 	case EXT2_ET_NO_MEMORY:
 	case EXT2_ET_TDB_ERR_OOM:
 		ret = -ENOMEM;
@@ -3812,11 +5057,7 @@ static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
 		ret = -EBUSY;
 		break;
 	case EXT2_ET_EA_KEY_NOT_FOUND:
-#ifdef ENODATA
 		ret = -ENODATA;
-#else
-		ret = -ENOENT;
-#endif
 		break;
 	/* Sometimes fuse returns a garbage file handle pointer to us... */
 	case EXT2_ET_MAGIC_EXT2_FILE:
@@ -3825,25 +5066,82 @@ static int __translate_error(ext2_filsys fs, errcode_t err, ext2_ino_t ino,
 	case EXT2_ET_UNIMPLEMENTED:
 		ret = -EOPNOTSUPP;
 		break;
-	default:
+	case EXT2_ET_RO_FILSYS:
+		ret = -EROFS;
+		break;
+	case EXT2_ET_MAGIC_EXT2FS_FILSYS:
+	case EXT2_ET_MAGIC_BADBLOCKS_LIST:
+	case EXT2_ET_MAGIC_BADBLOCKS_ITERATE:
+	case EXT2_ET_MAGIC_INODE_SCAN:
+	case EXT2_ET_MAGIC_IO_CHANNEL:
+	case EXT2_ET_MAGIC_UNIX_IO_CHANNEL:
+	case EXT2_ET_MAGIC_IO_MANAGER:
+	case EXT2_ET_MAGIC_BLOCK_BITMAP:
+	case EXT2_ET_MAGIC_INODE_BITMAP:
+	case EXT2_ET_MAGIC_GENERIC_BITMAP:
+	case EXT2_ET_MAGIC_TEST_IO_CHANNEL:
+	case EXT2_ET_MAGIC_DBLIST:
+	case EXT2_ET_MAGIC_ICOUNT:
+	case EXT2_ET_MAGIC_PQ_IO_CHANNEL:
+	case EXT2_ET_MAGIC_E2IMAGE:
+	case EXT2_ET_MAGIC_INODE_IO_CHANNEL:
+	case EXT2_ET_MAGIC_EXTENT_HANDLE:
+	case EXT2_ET_BAD_MAGIC:
+	case EXT2_ET_MAGIC_EXTENT_PATH:
+	case EXT2_ET_MAGIC_GENERIC_BITMAP64:
+	case EXT2_ET_MAGIC_BLOCK_BITMAP64:
+	case EXT2_ET_MAGIC_INODE_BITMAP64:
+	case EXT2_ET_MAGIC_RESERVED_13:
+	case EXT2_ET_MAGIC_RESERVED_14:
+	case EXT2_ET_MAGIC_RESERVED_15:
+	case EXT2_ET_MAGIC_RESERVED_16:
+	case EXT2_ET_MAGIC_RESERVED_17:
+	case EXT2_ET_MAGIC_RESERVED_18:
+	case EXT2_ET_MAGIC_RESERVED_19:
+	case EXT2_ET_MMP_MAGIC_INVALID:
+	case EXT2_ET_MAGIC_EA_HANDLE:
+	case EXT2_ET_DIR_CORRUPTED:
+	case EXT2_ET_CORRUPT_SUPERBLOCK:
+	case EXT2_ET_RESIZE_INODE_CORRUPT:
+	case EXT2_ET_TDB_ERR_CORRUPT:
+	case EXT2_ET_UNDO_FILE_CORRUPT:
+	case EXT2_ET_FILESYSTEM_CORRUPTED:
+	case EXT2_ET_CORRUPT_JOURNAL_SB:
+	case EXT2_ET_INODE_CORRUPTED:
+	case EXT2_ET_EA_INODE_CORRUPTED:
+		/* same errno that linux uses */
 		is_err = 1;
-		ret = -EIO;
+		ret = -EUCLEAN;
+		break;
+	case EIO:
+#ifdef EILSEQ
+	case EILSEQ:
+#endif
+	case EUCLEAN:
+		/* these errnos usually denote corruption or persistence fail */
+		is_err = 1;
+		ret = -err;
+		break;
+	default:
+		if (err < 256) {
+			/* other errno are usually operational errors */
+			ret = -err;
+		} else {
+			is_err = 1;
+			ret = -EIO;
+		}
 		break;
 	}
 
-no_translation:
 	if (!is_err)
 		return ret;
 
 	if (ino)
-		fprintf(ff->err_fp, "FUSE2FS (%s): %s (inode #%d) at %s:%d.\n",
-			fs->device_name ? fs->device_name : "???",
+		err_printf(ff, "%s (inode #%d) at %s:%d.\n",
 			error_message(err), ino, file, line);
 	else
-		fprintf(ff->err_fp, "FUSE2FS (%s): %s at %s:%d.\n",
-			fs->device_name ? fs->device_name : "???",
+		err_printf(ff, "%s at %s:%d.\n",
 			error_message(err), file, line);
-	fflush(ff->err_fp);
 
 	/* Make a note in the error log */
 	get_now(&now);
@@ -3862,6 +5160,7 @@ no_translation:
 			sizeof(fs->super->s_first_error_func));
 	}
 
+	fs->super->s_state |= EXT2_ERROR_FS;
 	fs->super->s_error_count++;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_flush(fs);

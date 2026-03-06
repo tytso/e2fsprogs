@@ -343,6 +343,12 @@ static problem_t check_large_ea_inode(e2fsck_t ctx,
 
 	e2fsck_read_inode(ctx, entry->e_value_inum, &inode, "pass1");
 
+	if (entry->e_value_size == 0 ||
+	    entry->e_value_size != EXT2_I_SIZE(&inode)) {
+		pctx->num = entry->e_value_size;
+		return PR_1_ATTR_VALUE_SIZE;
+	}
+
 	retval = ext2fs_ext_attr_hash_entry3(ctx->fs, entry, NULL, &hash,
 					     &signed_hash);
 	if (retval) {

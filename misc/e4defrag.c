@@ -1091,11 +1091,11 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 		return 0;
 	}
 
-	/* Has no blocks */
-	if (buf->st_blocks == 0) {
+	/* Has 0 or 1 blocks, no point to defragment */
+	if (buf->st_blocks <= buf->st_blksize / 512) {
 		if (mode_flag & DETAIL) {
 			PRINT_FILE_NAME(file);
-			STATISTIC_ERR_MSG("File has no blocks");
+			STATISTIC_ERR_MSG("# of file blocks <= 1");
 		}
 		return 0;
 	}
@@ -1452,11 +1452,11 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 		return 0;
 	}
 
-	/* Has no blocks */
-	if (buf->st_blocks == 0) {
+	/* Has 0 or 1 blocks, no point to defragment */
+	if (buf->st_blocks <= buf->st_blksize / 512) {
 		if (mode_flag & DETAIL) {
 			PRINT_FILE_NAME(file);
-			STATISTIC_ERR_MSG("File has no blocks");
+			IN_FTW_PRINT_ERR_MSG("# of file blocks <= 1");
 		}
 		return 0;
 	}
@@ -1657,6 +1657,7 @@ out:
 	free_ext(orig_list_physical);
 	free_ext(orig_list_logical);
 	free_ext(donor_list_physical);
+	free_ext(donor_list_logical);
 	free_exts_group(orig_group_head);
 	return 0;
 }

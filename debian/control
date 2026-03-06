@@ -2,9 +2,9 @@ Source: e2fsprogs
 Section: admin
 Priority: important
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: gettext, texinfo, pkgconf, libarchive-dev, libfuse3-dev [linux-any kfreebsd-any] <!pkg.e2fsprogs.no-fuse2fs>, debhelper-compat (= 12), dh-exec, libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], systemd-dev [linux-any], cron [linux-any], dh-sequence-movetousr
+Build-Depends: dpkg-dev (>= 1.22.5), gettext, texinfo, pkgconf, libarchive-dev <!nocheck>, libfuse3-dev [linux-any] <!pkg.e2fsprogs.no-fuse2fs>, debhelper-compat (= 12), dh-exec, libblkid-dev, uuid-dev, m4, udev [linux-any], systemd [linux-any], systemd-dev [linux-any], cron [linux-any], dh-sequence-movetousr
 Rules-Requires-Root: no
-Standards-Version: 4.7.0
+Standards-Version: 4.7.2
 Homepage: http://e2fsprogs.sourceforge.net
 Vcs-Browser: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
 Vcs-Git: https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git -b debian/master
@@ -15,7 +15,7 @@ Priority: optional
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Breaks: fuseext2 (<< 1.47.1-2~)
 Replaces: fuseext2 (<< 1.47.1-2~)
-Architecture: linux-any kfreebsd-any
+Architecture: linux-any
 Description: ext2 / ext3 / ext4 file system driver for FUSE
  fuse2fs is a FUSE file system client that supports reading and
  writing from devices or image files containing ext2, ext3, and ext4
@@ -111,7 +111,7 @@ Provides: libss2t64 (= ${binary:Version})
 Breaks: libss2t64 (<< 1.47.0-2.4~exp1~)
 Section: libs
 Priority: optional
-Depends: libcom-err2, ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Replaces: libss2t64, e2fsprogs (<< 1.34-1)
 Architecture: any
 Multi-Arch: same
@@ -181,6 +181,7 @@ Breaks: e2fslibs-dev (<< 1.43.9-1~)
 Provides: e2fslibs-dev (= ${binary:Version})
 Suggests: doc-base
 Architecture: any
+Multi-Arch: same
 Description: ext2/ext3/ext4 file system libraries - headers and static libraries
  The ext2, ext3 and ext4 file systems are successors of the original ext
  ("extended") file system. They are the main file system types used for
