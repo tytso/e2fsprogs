@@ -1,3 +1,9 @@
+e2fsprogs (1.47.4-1~bpo13+1) trixie-backports; urgency=medium
+
+  * Rebuild for trixie-backports.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 06 Mar 2026 15:55:47 -0500
+
 e2fsprogs (1.47.4-1) unstable; urgency=medium
 
   * New upstream version
