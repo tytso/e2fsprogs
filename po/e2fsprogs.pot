@@ -2,9 +2,7 @@
 # Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
 #     2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
 #     2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
-#     2023, 2024, 2025 by Theodore Ts'o
-# This file is distributed under the same license as the e2fsprogs package.
-# Theodore Ts'o <tytso@mit.edu>, 2025.
+#     2023, 2024, 2025, 2026 by Theodore Ts'o
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -78,9 +76,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.47.3-rc1\n"
+"Project-Id-Version: e2fsprogs 1.47.4\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2025-05-28 08:29-0400\n"
+"POT-Creation-Date: 2026-03-06 11:22-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,7 +88,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: e2fsck/badblocks.c:23 misc/mke2fs.c:206
+#: e2fsck/badblocks.c:23 misc/mke2fs.c:207
 #, c-format
 msgid "Bad block %u out of range; ignored.\n"
 msgstr ""
@@ -107,7 +105,7 @@ msgstr ""
 #: e2fsck/unix.c:1714 misc/badblocks.c:1273 misc/badblocks.c:1281
 #: misc/badblocks.c:1295 misc/badblocks.c:1307 misc/dumpe2fs.c:439
 #: misc/dumpe2fs.c:710 misc/dumpe2fs.c:714 misc/e2image.c:1447
-#: misc/e2image.c:1647 misc/e2image.c:1668 misc/mke2fs.c:222
+#: misc/e2image.c:1647 misc/e2image.c:1668 misc/mke2fs.c:223
 #: misc/tune2fs.c:3060 misc/tune2fs.c:3249 resize/main.c:422
 #, c-format
 msgid "while trying to open %s"
@@ -118,7 +116,7 @@ msgstr ""
 msgid "while trying popen '%s'"
 msgstr ""
 
-#: e2fsck/badblocks.c:95 misc/mke2fs.c:229
+#: e2fsck/badblocks.c:95 misc/mke2fs.c:230
 msgid "while reading in list of bad blocks from file"
 msgstr ""
 
@@ -500,90 +498,90 @@ msgstr ""
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr ""
 
-#: e2fsck/pass1.c:350
+#: e2fsck/pass1.c:356
 #, c-format
 msgid "while hashing entry with e_value_inum = %u"
 msgstr ""
 
-#: e2fsck/pass1.c:817 e2fsck/pass2.c:1155
+#: e2fsck/pass1.c:823 e2fsck/pass2.c:1155
 msgid "reading directory block"
 msgstr ""
 
-#: e2fsck/pass1.c:1218
+#: e2fsck/pass1.c:1224
 msgid "getting next inode from scan"
 msgstr ""
 
-#: e2fsck/pass1.c:1271
+#: e2fsck/pass1.c:1277
 msgid "in-use inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:1282
+#: e2fsck/pass1.c:1288
 msgid "directory inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:1292
+#: e2fsck/pass1.c:1298
 msgid "regular file inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:1301 misc/e2image.c:1296
+#: e2fsck/pass1.c:1307 misc/e2image.c:1296
 msgid "in-use block map"
 msgstr ""
 
-#: e2fsck/pass1.c:1310
+#: e2fsck/pass1.c:1316
 msgid "metadata block map"
 msgstr ""
 
-#: e2fsck/pass1.c:1321
+#: e2fsck/pass1.c:1327
 msgid "inode casefold map"
 msgstr ""
 
-#: e2fsck/pass1.c:1386
+#: e2fsck/pass1.c:1392
 msgid "opening inode scan"
 msgstr ""
 
-#: e2fsck/pass1.c:2198
+#: e2fsck/pass1.c:2204
 msgid "Pass 1"
 msgstr ""
 
-#: e2fsck/pass1.c:2259
+#: e2fsck/pass1.c:2265
 #, c-format
 msgid "reading indirect blocks of inode %u"
 msgstr ""
 
-#: e2fsck/pass1.c:2310
+#: e2fsck/pass1.c:2316
 msgid "bad inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:2350
+#: e2fsck/pass1.c:2356
 msgid "inode in bad block map"
 msgstr ""
 
-#: e2fsck/pass1.c:2370
+#: e2fsck/pass1.c:2376
 msgid "imagic inode map"
 msgstr ""
 
-#: e2fsck/pass1.c:2401
+#: e2fsck/pass1.c:2407
 msgid "multiply claimed block map"
 msgstr ""
 
-#: e2fsck/pass1.c:2526
+#: e2fsck/pass1.c:2532
 msgid "ext attr block map"
 msgstr ""
 
-#: e2fsck/pass1.c:3833
+#: e2fsck/pass1.c:3839
 #, c-format
 msgid "%6lu(%c): expecting %6lu got phys %6lu (blkcnt %lld)\n"
 msgstr ""
 
-#: e2fsck/pass1.c:4254
+#: e2fsck/pass1.c:4260
 msgid "block bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4260
+#: e2fsck/pass1.c:4266
 msgid "inode bitmap"
 msgstr ""
 
-#: e2fsck/pass1.c:4266
+#: e2fsck/pass1.c:4272
 msgid "inode table"
 msgstr ""
 
@@ -3577,7 +3575,7 @@ msgid "while reading MMP block"
 msgstr ""
 
 #: e2fsck/unix.c:1329 e2fsck/unix.c:1381 misc/e2undo.c:242 misc/e2undo.c:287
-#: misc/mke2fs.c:2925 misc/mke2fs.c:2976 misc/tune2fs.c:2977
+#: misc/mke2fs.c:2991 misc/mke2fs.c:3042 misc/tune2fs.c:2977
 #: misc/tune2fs.c:3022 resize/main.c:188 resize/main.c:233
 #, c-format
 msgid ""
@@ -3586,13 +3584,13 @@ msgid ""
 "\n"
 msgstr ""
 
-#: e2fsck/unix.c:1370 misc/e2undo.c:276 misc/mke2fs.c:2965 misc/tune2fs.c:3011
+#: e2fsck/unix.c:1370 misc/e2undo.c:276 misc/mke2fs.c:3031 misc/tune2fs.c:3011
 #: resize/main.c:222
 #, c-format
 msgid "while trying to delete %s"
 msgstr ""
 
-#: e2fsck/unix.c:1396 misc/mke2fs.c:2991 resize/main.c:243
+#: e2fsck/unix.c:1396 misc/mke2fs.c:3057 resize/main.c:243
 msgid "while trying to setup undo file\n"
 msgstr ""
 
@@ -4251,7 +4249,7 @@ msgstr ""
 
 #: misc/create_inode.c:189 misc/create_inode.c:216 misc/create_inode.c:1207
 #: misc/e2undo.c:188 misc/e2undo.c:485 misc/e2undo.c:491 misc/e2undo.c:497
-#: misc/mke2fs.c:346
+#: misc/mke2fs.c:347
 msgid "while allocating memory"
 msgstr ""
 
@@ -4530,7 +4528,7 @@ msgstr ""
 msgid "reading MMP block %llu from '%s'\n"
 msgstr ""
 
-#: misc/dumpe2fs.c:521 misc/mke2fs.c:831 misc/tune2fs.c:2276
+#: misc/dumpe2fs.c:521 misc/mke2fs.c:861 misc/tune2fs.c:2276
 msgid "Couldn't allocate memory to parse options!\n"
 msgstr ""
 
@@ -4558,7 +4556,7 @@ msgid ""
 "\tblocksize=<blocksize>\n"
 msgstr ""
 
-#: misc/dumpe2fs.c:664 misc/mke2fs.c:2021
+#: misc/dumpe2fs.c:664 misc/mke2fs.c:2085
 #, c-format
 msgid "\tUsing %s\n"
 msgstr ""
@@ -5089,17 +5087,17 @@ msgid ""
 "%11Lu: finished with errno %d\n"
 msgstr ""
 
-#: misc/fsck.c:344
+#: misc/fsck.c:345
 #, c-format
 msgid "WARNING: couldn't open %s: %s\n"
 msgstr ""
 
-#: misc/fsck.c:354
+#: misc/fsck.c:355
 #, c-format
 msgid "WARNING: bad format on line %d of %s\n"
 msgstr ""
 
-#: misc/fsck.c:371
+#: misc/fsck.c:372
 msgid ""
 "WARNING: Your /etc/fstab does not contain the fsck passno\n"
 "\tfield.  I will kludge around things for you, but you\n"
@@ -5107,163 +5105,183 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/fsck.c:486
+#: misc/fsck.c:487
 #, c-format
 msgid "fsck: %s: not found\n"
 msgstr ""
 
-#: misc/fsck.c:604
+#: misc/fsck.c:605
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
 msgstr ""
 
-#: misc/fsck.c:626
+#: misc/fsck.c:627
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
 msgstr ""
 
-#: misc/fsck.c:632
+#: misc/fsck.c:633
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
 msgstr ""
 
-#: misc/fsck.c:671
+#: misc/fsck.c:672
 #, c-format
 msgid "Finished with %s (exit status %d)\n"
 msgstr ""
 
-#: misc/fsck.c:731
+#: misc/fsck.c:732
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
 msgstr ""
 
-#: misc/fsck.c:752
+#: misc/fsck.c:753
 msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
 msgstr ""
 
-#: misc/fsck.c:771
+#: misc/fsck.c:772
 msgid "Couldn't allocate memory for filesystem types\n"
 msgstr ""
 
-#: misc/fsck.c:895
+#: misc/fsck.c:896
 #, c-format
 msgid ""
 "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
 "number\n"
 msgstr ""
 
-#: misc/fsck.c:922
+#: misc/fsck.c:923
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
 msgstr ""
 
-#: misc/fsck.c:978
+#: misc/fsck.c:979
 msgid "Checking all file systems.\n"
 msgstr ""
 
-#: misc/fsck.c:1069
+#: misc/fsck.c:1070
 #, c-format
 msgid "--waiting-- (pass %d)\n"
 msgstr ""
 
-#: misc/fsck.c:1089
+#: misc/fsck.c:1090
 msgid ""
 "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
 msgstr ""
 
-#: misc/fsck.c:1131
+#: misc/fsck.c:1132
 #, c-format
 msgid "%s: too many devices\n"
 msgstr ""
 
-#: misc/fsck.c:1164 misc/fsck.c:1250
+#: misc/fsck.c:1165 misc/fsck.c:1251
 #, c-format
 msgid "%s: too many arguments\n"
 msgstr ""
 
-#: misc/fuse2fs.c:731
-msgid "unmounting filesystem"
-msgstr ""
-
-#: misc/fuse2fs.c:779
-msgid "mounted filesystem"
-msgstr ""
-
-#: misc/fuse2fs.c:4238
-msgid "cache size must be between 1 block and 2GB."
-msgstr ""
-
-#: misc/fuse2fs.c:4388
-msgid "Allowing users to allocate all blocks. This is dangerous!"
-msgstr ""
-
-#: misc/fuse2fs.c:4402 misc/fuse2fs.c:4461
-msgid "Please run e2fsck -fy."
-msgstr ""
-
-#: misc/fuse2fs.c:4420
-msgid "cannot set disk cache size to"
-msgstr ""
-
-#: misc/fuse2fs.c:4430
+#: misc/fuse2fs.c:752
 msgid "quotas not supported."
 msgstr ""
 
-#: misc/fuse2fs.c:4434
+#: misc/fuse2fs.c:756
 msgid "verity not supported."
 msgstr ""
 
-#: misc/fuse2fs.c:4438
+#: misc/fuse2fs.c:760
 msgid "encryption not supported."
 msgstr ""
 
-#: misc/fuse2fs.c:4442
+#: misc/fuse2fs.c:764
 msgid "casefolding not supported."
 msgstr ""
 
-#: misc/fuse2fs.c:4452
+#: misc/fuse2fs.c:770
+msgid "Errors detected; running e2fsck is required."
+msgstr ""
+
+#: misc/fuse2fs.c:824
+msgid "unmounting filesystem"
+msgstr ""
+
+#: misc/fuse2fs.c:980
+msgid "mounted filesystem"
+msgstr ""
+
+#: misc/fuse2fs.c:4589
+msgid "cache size must be between 1 block and 2GB."
+msgstr ""
+
+#: misc/fuse2fs.c:4730
+msgid "Allowing users to allocate all blocks. This is dangerous!"
+msgstr ""
+
+#: misc/fuse2fs.c:4745
+msgid "opening lockfile failed"
+msgstr ""
+
+#: misc/fuse2fs.c:4757
+msgid "resolving lockfile failed"
+msgstr ""
+
+#: misc/fuse2fs.c:4783
+msgid "WARNING: source write-protected, mounted read-only."
+msgstr ""
+
+#: misc/fuse2fs.c:4791 misc/fuse2fs.c:4845
+msgid "Please run e2fsck -fy."
+msgstr ""
+
+#: misc/fuse2fs.c:4809
+msgid "cannot set disk cache size to"
+msgstr ""
+
+#: misc/fuse2fs.c:4831
 msgid "Mounting read-only without recovering journal."
 msgstr ""
 
-#: misc/fuse2fs.c:4456
+#: misc/fuse2fs.c:4836
+msgid "Cannot replay journal on read-only device."
+msgstr ""
+
+#: misc/fuse2fs.c:4840
 msgid "Recovering journal."
 msgstr ""
 
-#: misc/fuse2fs.c:4472
+#: misc/fuse2fs.c:4864
 msgid ""
 "Warning: fuse2fs does not support using the journal.\n"
 "There may be file system corruption or data loss if\n"
 "the file system is not gracefully unmounted.\n"
 msgstr ""
 
-#: misc/fuse2fs.c:4489
+#: misc/fuse2fs.c:4881
 msgid "Warning: Mounting unchecked fs, running e2fsck is recommended."
 msgstr ""
 
-#: misc/fuse2fs.c:4493
+#: misc/fuse2fs.c:4885
 msgid "Warning: Maximal mount count reached, running e2fsck is recommended."
 msgstr ""
 
-#: misc/fuse2fs.c:4498
+#: misc/fuse2fs.c:4890
 msgid "Warning: Check time reached; running e2fsck is recommended."
 msgstr ""
 
-#: misc/fuse2fs.c:4501
+#: misc/fuse2fs.c:4893
 msgid "Orphans detected; running e2fsck is recommended."
 msgstr ""
 
-#: misc/fuse2fs.c:4505
-msgid "Errors detected; running e2fsck is required."
-msgstr ""
-
-#: misc/fuse2fs.c:4582
+#: misc/fuse2fs.c:4982
 msgid "Mount failed due to unrecognized options.  Check dmesg(1) for details."
 msgstr ""
 
-#: misc/fuse2fs.c:4587
+#: misc/fuse2fs.c:4987
 msgid "Mount failed while opening filesystem.  Check dmesg(1) for details."
+msgstr ""
+
+#: misc/fuse2fs.c:4999
+msgid "removing lockfile failed"
 msgstr ""
 
 #: misc/lsattr.c:75
@@ -5290,7 +5308,7 @@ msgstr ""
 msgid "Couldn't allocate path variable in lsattr_dir_proc\n"
 msgstr ""
 
-#: misc/mke2fs.c:137
+#: misc/mke2fs.c:138
 #, c-format
 msgid ""
 "Usage: %s [-c|-l filename] [-b block-size] [-C cluster-size]\n"
@@ -5303,35 +5321,35 @@ msgid ""
 "\t[-jnqvDFSV] device [blocks-count]\n"
 msgstr ""
 
-#: misc/mke2fs.c:248
+#: misc/mke2fs.c:249
 #, c-format
 msgid "Running command: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:252
+#: misc/mke2fs.c:253
 #, c-format
 msgid "while trying to run '%s'"
 msgstr ""
 
-#: misc/mke2fs.c:259
+#: misc/mke2fs.c:260
 msgid "while processing list of bad blocks from program"
 msgstr ""
 
-#: misc/mke2fs.c:286
+#: misc/mke2fs.c:287
 #, c-format
 msgid "Block %d in primary superblock/group descriptor area bad.\n"
 msgstr ""
 
-#: misc/mke2fs.c:288
+#: misc/mke2fs.c:289
 #, c-format
 msgid "Blocks %u through %u must be good in order to build a filesystem.\n"
 msgstr ""
 
-#: misc/mke2fs.c:291
+#: misc/mke2fs.c:292
 msgid "Aborting....\n"
 msgstr ""
 
-#: misc/mke2fs.c:311
+#: misc/mke2fs.c:312
 #, c-format
 msgid ""
 "Warning: the backup superblock/group descriptors at block %u contain\n"
@@ -5339,278 +5357,286 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:330 misc/mke2fs.c:3497
+#: misc/mke2fs.c:331 misc/mke2fs.c:3563
 msgid "while marking bad blocks as used"
 msgstr ""
 
-#: misc/mke2fs.c:355
+#: misc/mke2fs.c:356
 msgid "while writing reserved inodes"
 msgstr ""
 
-#: misc/mke2fs.c:407
+#: misc/mke2fs.c:408
 msgid "Writing inode tables: "
 msgstr ""
 
-#: misc/mke2fs.c:439 misc/mke2fs.c:458
+#: misc/mke2fs.c:440 misc/mke2fs.c:459
 #, c-format
 msgid ""
 "\n"
 "Could not write %d blocks in inode table starting at %llu: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:468 misc/mke2fs.c:3037 misc/mke2fs.c:3457
+#: misc/mke2fs.c:469 misc/mke2fs.c:3103 misc/mke2fs.c:3523
 msgid "done                            \n"
 msgstr ""
 
-#: misc/mke2fs.c:484
+#: misc/mke2fs.c:485
 msgid "while creating root dir"
 msgstr ""
 
-#: misc/mke2fs.c:494
+#: misc/mke2fs.c:495
 msgid "while reading root inode"
 msgstr ""
 
-#: misc/mke2fs.c:514
+#: misc/mke2fs.c:515
 msgid "while setting root inode ownership"
 msgstr ""
 
-#: misc/mke2fs.c:532
+#: misc/mke2fs.c:525 misc/mke2fs.c:531 misc/mke2fs.c:538 misc/mke2fs.c:544
+msgid "while setting root inode label"
+msgstr ""
+
+#: misc/mke2fs.c:562
 msgid "while creating /lost+found"
 msgstr ""
 
-#: misc/mke2fs.c:539
+#: misc/mke2fs.c:569
 msgid "while looking up /lost+found"
 msgstr ""
 
-#: misc/mke2fs.c:552
+#: misc/mke2fs.c:582
 msgid "while expanding /lost+found"
 msgstr ""
 
-#: misc/mke2fs.c:567
+#: misc/mke2fs.c:597
 msgid "while setting bad block inode"
 msgstr ""
 
-#: misc/mke2fs.c:594
+#: misc/mke2fs.c:624
 #, c-format
 msgid "Out of memory erasing sectors %d-%d\n"
 msgstr ""
 
-#: misc/mke2fs.c:604
+#: misc/mke2fs.c:634
 #, c-format
 msgid "Warning: could not read block 0: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:622
+#: misc/mke2fs.c:652
 #, c-format
 msgid "Warning: could not erase sector %d: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:638
+#: misc/mke2fs.c:668
 msgid "while splitting the journal size"
 msgstr ""
 
-#: misc/mke2fs.c:645
+#: misc/mke2fs.c:675
 msgid "while initializing journal superblock"
 msgstr ""
 
-#: misc/mke2fs.c:653
+#: misc/mke2fs.c:683
 msgid "Zeroing journal device: "
 msgstr ""
 
-#: misc/mke2fs.c:665
+#: misc/mke2fs.c:695
 #, c-format
 msgid "while zeroing journal device (block %llu, count %d)"
 msgstr ""
 
-#: misc/mke2fs.c:683
+#: misc/mke2fs.c:713
 msgid "while writing journal superblock"
 msgstr ""
 
-#: misc/mke2fs.c:697
+#: misc/mke2fs.c:727
 #, c-format
 msgid "Creating filesystem with %llu %dk blocks and %u inodes\n"
 msgstr ""
 
-#: misc/mke2fs.c:705
+#: misc/mke2fs.c:735
 #, c-format
 msgid ""
 "warning: %llu blocks unused.\n"
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:709
+#: misc/mke2fs.c:739
 #, c-format
 msgid "Filesystem label=%.*s\n"
 msgstr ""
 
-#: misc/mke2fs.c:713
+#: misc/mke2fs.c:743
 #, c-format
 msgid "OS type: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:715
+#: misc/mke2fs.c:745
 #, c-format
 msgid "Block size=%u (log=%u)\n"
 msgstr ""
 
-#: misc/mke2fs.c:718
+#: misc/mke2fs.c:748
 #, c-format
 msgid "Cluster size=%u (log=%u)\n"
 msgstr ""
 
-#: misc/mke2fs.c:722
+#: misc/mke2fs.c:752
 #, c-format
 msgid "Fragment size=%u (log=%u)\n"
 msgstr ""
 
-#: misc/mke2fs.c:724
+#: misc/mke2fs.c:754
 #, c-format
 msgid "Stride=%u blocks, Stripe width=%u blocks\n"
 msgstr ""
 
-#: misc/mke2fs.c:726
+#: misc/mke2fs.c:756
 #, c-format
 msgid "%u inodes, %llu blocks\n"
 msgstr ""
 
-#: misc/mke2fs.c:728
+#: misc/mke2fs.c:758
 #, c-format
 msgid "%llu blocks (%2.2f%%) reserved for the super user\n"
 msgstr ""
 
-#: misc/mke2fs.c:731
+#: misc/mke2fs.c:761
 #, c-format
 msgid "First data block=%u\n"
 msgstr ""
 
-#: misc/mke2fs.c:733
+#: misc/mke2fs.c:763
 #, c-format
 msgid "Root directory owner=%u:%u\n"
 msgstr ""
 
-#: misc/mke2fs.c:735
+#: misc/mke2fs.c:765
 #, c-format
 msgid "Maximum filesystem blocks=%lu\n"
 msgstr ""
 
-#: misc/mke2fs.c:739
+#: misc/mke2fs.c:769
 #, c-format
 msgid "%u block groups\n"
 msgstr ""
 
-#: misc/mke2fs.c:741
+#: misc/mke2fs.c:771
 #, c-format
 msgid "%u block group\n"
 msgstr ""
 
-#: misc/mke2fs.c:743
+#: misc/mke2fs.c:773
 #, c-format
 msgid "%u blocks per group, %u clusters per group\n"
 msgstr ""
 
-#: misc/mke2fs.c:746
+#: misc/mke2fs.c:776
 #, c-format
 msgid "%u blocks per group, %u fragments per group\n"
 msgstr ""
 
-#: misc/mke2fs.c:748
+#: misc/mke2fs.c:778
 #, c-format
 msgid "%u inodes per group\n"
 msgstr ""
 
-#: misc/mke2fs.c:757
+#: misc/mke2fs.c:787
 #, c-format
 msgid "Filesystem UUID: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:758
+#: misc/mke2fs.c:788
 msgid "Superblock backups stored on blocks: "
 msgstr ""
 
-#: misc/mke2fs.c:851
+#: misc/mke2fs.c:881
 #, c-format
 msgid "%s requires '-O 64bit'\n"
 msgstr ""
 
-#: misc/mke2fs.c:857
+#: misc/mke2fs.c:887
 #, c-format
 msgid "'%s' must be before 'resize=%u'\n"
 msgstr ""
 
-#: misc/mke2fs.c:873
+#: misc/mke2fs.c:903
 #, c-format
 msgid "Invalid desc_size: '%s'\n"
 msgstr ""
 
-#: misc/mke2fs.c:887
+#: misc/mke2fs.c:917
 #, c-format
 msgid "Invalid hash seed: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:899
+#: misc/mke2fs.c:929
 #, c-format
 msgid "Invalid offset: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:913 misc/tune2fs.c:2304
+#: misc/mke2fs.c:943 misc/tune2fs.c:2304
 #, c-format
 msgid "Invalid mmp_update_interval: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:930
+#: misc/mke2fs.c:960
 #, c-format
 msgid "Invalid # of backup superblocks: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:952
+#: misc/mke2fs.c:982
 #, c-format
 msgid "Invalid stride parameter: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:967
+#: misc/mke2fs.c:997
 #, c-format
 msgid "Invalid stripe-width parameter: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:990
+#: misc/mke2fs.c:1020
 #, c-format
 msgid "Invalid resize parameter: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:997
+#: misc/mke2fs.c:1027
 msgid "The resize maximum must be greater than the filesystem size.\n"
 msgstr ""
 
-#: misc/mke2fs.c:1021
+#: misc/mke2fs.c:1051
 msgid "On-line resizing not supported with revision 0 filesystems\n"
 msgstr ""
 
-#: misc/mke2fs.c:1038 misc/mke2fs.c:1954
+#: misc/mke2fs.c:1068 misc/mke2fs.c:2018
 #, c-format
 msgid "bad revision level - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1043 misc/mke2fs.c:1959
+#: misc/mke2fs.c:1073 misc/mke2fs.c:2023
 #, c-format
 msgid "while trying to create revision %d"
 msgstr ""
 
-#: misc/mke2fs.c:1070 misc/mke2fs.c:1079
+#: misc/mke2fs.c:1100 misc/mke2fs.c:1109
 #, c-format
 msgid "Invalid root_owner: '%s'\n"
 msgstr ""
 
 #: misc/mke2fs.c:1128
+msgid "in malloc for root_selinux"
+msgstr ""
+
+#: misc/mke2fs.c:1173
 #, c-format
 msgid "Invalid encoding: %s"
 msgstr ""
 
-#: misc/mke2fs.c:1150 misc/tune2fs.c:2439
+#: misc/mke2fs.c:1195 misc/tune2fs.c:2439
 #, c-format
 msgid "Invalid size of orphan file %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:1161
+#: misc/mke2fs.c:1206
 #, c-format
 msgid ""
 "\n"
@@ -5631,18 +5657,20 @@ msgid ""
 "\tlazy_journal_init=<0 to disable, 1 to enable>\n"
 "\troot_owner=<uid of root dir>:<gid of root dir>\n"
 "\troot_perms=<octal root directory permissions>\n"
+"\troot_selinux=<selinux root directory label>\n"
 "\ttest_fs\n"
 "\tdiscard\n"
 "\tnodiscard\n"
 "\trevision=<revision>\n"
 "\tencoding=<encoding>\n"
 "\tencoding_flags=<flags>\n"
+"\thash_seed=<UUID for hash seed>\n"
 "\tquotatype=<quota type(s) to be enabled>\n"
 "\tassume_storage_prezeroed=<0 to disable, 1 to enable>\n"
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:1191
+#: misc/mke2fs.c:1238
 #, c-format
 msgid ""
 "\n"
@@ -5650,52 +5678,52 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:1202 misc/tune2fs.c:2455
+#: misc/mke2fs.c:1249 misc/tune2fs.c:2455
 #, c-format
 msgid "error: Invalid encoding flag: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:1208 misc/tune2fs.c:2464
+#: misc/mke2fs.c:1255 misc/tune2fs.c:2464
 #, c-format
 msgid ""
 "error: An encoding must be explicitly specified when passing encoding-flags\n"
 msgstr ""
 
-#: misc/mke2fs.c:1259
+#: misc/mke2fs.c:1306
 #, c-format
 msgid ""
 "Syntax error in mke2fs config file (%s, line #%d)\n"
 "\t%s\n"
 msgstr ""
 
-#: misc/mke2fs.c:1272 misc/tune2fs.c:1182
+#: misc/mke2fs.c:1319 misc/tune2fs.c:1182
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:1284 misc/tune2fs.c:459
+#: misc/mke2fs.c:1331 misc/tune2fs.c:459
 #, c-format
 msgid "Invalid mount option set: %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:1420
+#: misc/mke2fs.c:1476
 #, c-format
 msgid ""
 "\n"
 "Your mke2fs.conf file does not define the %s filesystem type.\n"
 msgstr ""
 
-#: misc/mke2fs.c:1424
+#: misc/mke2fs.c:1480
 msgid ""
 "You probably need to install an updated mke2fs.conf file.\n"
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:1428
+#: misc/mke2fs.c:1484
 msgid "Aborting...\n"
 msgstr ""
 
-#: misc/mke2fs.c:1469
+#: misc/mke2fs.c:1525
 #, c-format
 msgid ""
 "\n"
@@ -5703,102 +5731,106 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:1689
+#: misc/mke2fs.c:1745
 msgid "Couldn't allocate memory for new PATH.\n"
 msgstr ""
 
-#: misc/mke2fs.c:1729
+#: misc/mke2fs.c:1785
 #, c-format
 msgid "Couldn't init profile successfully (error: %ld).\n"
 msgstr ""
 
-#: misc/mke2fs.c:1762
+#: misc/mke2fs.c:1812
+msgid "in malloc for extended_opts"
+msgstr ""
+
+#: misc/mke2fs.c:1825
 #, c-format
 msgid "invalid block size - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1766
+#: misc/mke2fs.c:1830
 #, c-format
 msgid "Warning: blocksize %d not usable on most systems.\n"
 msgstr ""
 
-#: misc/mke2fs.c:1782
+#: misc/mke2fs.c:1846
 #, c-format
 msgid "invalid cluster size - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1795
+#: misc/mke2fs.c:1859
 msgid "'-R' is deprecated, use '-E' instead"
 msgstr ""
 
-#: misc/mke2fs.c:1809 misc/tune2fs.c:2030
+#: misc/mke2fs.c:1873 misc/tune2fs.c:2030
 #, c-format
 msgid "bad error behavior - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1821
+#: misc/mke2fs.c:1885
 msgid "Illegal number for blocks per group"
 msgstr ""
 
-#: misc/mke2fs.c:1826
+#: misc/mke2fs.c:1890
 msgid "blocks per group must be multiple of 8"
 msgstr ""
 
-#: misc/mke2fs.c:1834
+#: misc/mke2fs.c:1898
 msgid "Illegal number for flex_bg size"
 msgstr ""
 
-#: misc/mke2fs.c:1840
+#: misc/mke2fs.c:1904
 msgid "flex_bg size must be a power of 2"
 msgstr ""
 
-#: misc/mke2fs.c:1845
+#: misc/mke2fs.c:1909
 #, c-format
 msgid "flex_bg size (%lu) must be less than or equal to 2^31"
 msgstr ""
 
-#: misc/mke2fs.c:1855
+#: misc/mke2fs.c:1919
 #, c-format
 msgid "invalid inode ratio %s (min %d/max %d)"
 msgstr ""
 
-#: misc/mke2fs.c:1865
+#: misc/mke2fs.c:1929
 #, c-format
 msgid "invalid inode size - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1880
+#: misc/mke2fs.c:1944
 msgid ""
 "Warning: -K option is deprecated and should not be used anymore. Use '-E "
 "nodiscard' extended option instead!\n"
 msgstr ""
 
-#: misc/mke2fs.c:1891
+#: misc/mke2fs.c:1955
 msgid "in malloc for bad_blocks_filename"
 msgstr ""
 
-#: misc/mke2fs.c:1900
+#: misc/mke2fs.c:1964
 #, c-format
 msgid ""
 "Warning: label too long; will be truncated to '%s'\n"
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:1909
+#: misc/mke2fs.c:1973
 #, c-format
 msgid "invalid reserved blocks percent - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1924
+#: misc/mke2fs.c:1988
 #, c-format
 msgid "bad num inodes - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1937
+#: misc/mke2fs.c:2001
 msgid "while allocating fs_feature string"
 msgstr ""
 
-#: misc/mke2fs.c:1964
+#: misc/mke2fs.c:2028
 msgid ""
 "the -r option has been removed.\n"
 "\n"
@@ -5806,66 +5838,66 @@ msgid ""
 "command-line option \"-E revision=0\".\n"
 msgstr ""
 
-#: misc/mke2fs.c:1973
+#: misc/mke2fs.c:2037
 msgid ""
 "the -s option has been removed.\n"
 "\n"
 "Use the -O option to set or clear the sparse_super feature.\n"
 msgstr ""
 
-#: misc/mke2fs.c:1982
+#: misc/mke2fs.c:2046
 msgid "The -t option may only be used once"
 msgstr ""
 
-#: misc/mke2fs.c:1990
+#: misc/mke2fs.c:2054
 msgid "The -T option may only be used once"
 msgstr ""
 
-#: misc/mke2fs.c:2046 misc/mke2fs.c:3580
+#: misc/mke2fs.c:2110 misc/mke2fs.c:3646
 #, c-format
 msgid "while trying to open journal device %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:2052
+#: misc/mke2fs.c:2116
 #, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
 msgstr ""
 
-#: misc/mke2fs.c:2058
+#: misc/mke2fs.c:2122
 #, c-format
 msgid "Using journal device's blocksize: %d\n"
 msgstr ""
 
-#: misc/mke2fs.c:2069
+#: misc/mke2fs.c:2133
 #, c-format
 msgid "invalid blocks '%s' on device '%s'"
 msgstr ""
 
-#: misc/mke2fs.c:2089
+#: misc/mke2fs.c:2153
 msgid "filesystem"
 msgstr ""
 
-#: misc/mke2fs.c:2104 lib/support/plausible.c:184
+#: misc/mke2fs.c:2168 lib/support/plausible.c:184
 #, c-format
 msgid "The file %s does not exist and no size was specified.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2117 lib/support/plausible.c:192
+#: misc/mke2fs.c:2181 lib/support/plausible.c:192
 #, c-format
 msgid "Creating regular file %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:2122 resize/main.c:512
+#: misc/mke2fs.c:2186 resize/main.c:512
 msgid "while trying to determine filesystem size"
 msgstr ""
 
-#: misc/mke2fs.c:2128
+#: misc/mke2fs.c:2192
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size of the filesystem\n"
 msgstr ""
 
-#: misc/mke2fs.c:2135
+#: misc/mke2fs.c:2199
 msgid ""
 "Device size reported to be zero.  Invalid partition specified, or\n"
 "\tpartition table wasn't reread after running fdisk, due to\n"
@@ -5873,153 +5905,153 @@ msgid ""
 "\tto re-read your partition table.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2152
+#: misc/mke2fs.c:2216
 msgid "Filesystem larger than apparent device size."
 msgstr ""
 
-#: misc/mke2fs.c:2175
+#: misc/mke2fs.c:2239
 msgid "Failed to parse fs types list\n"
 msgstr ""
 
-#: misc/mke2fs.c:2240
+#: misc/mke2fs.c:2304
 msgid "The HURD does not support the filetype feature.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2245
+#: misc/mke2fs.c:2309
 msgid "The HURD does not support the huge_file feature.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2250
+#: misc/mke2fs.c:2314
 msgid "The HURD does not support the metadata_csum feature.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2255
+#: misc/mke2fs.c:2319
 msgid "The HURD does not support the ea_inode feature.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2265
+#: misc/mke2fs.c:2329
 msgid "while trying to determine hardware sector size"
 msgstr ""
 
-#: misc/mke2fs.c:2271
+#: misc/mke2fs.c:2335
 msgid "while trying to determine physical sector size"
 msgstr ""
 
-#: misc/mke2fs.c:2303
+#: misc/mke2fs.c:2367
 msgid "while setting blocksize; too small for device\n"
 msgstr ""
 
-#: misc/mke2fs.c:2308
+#: misc/mke2fs.c:2372
 #, c-format
 msgid ""
 "Warning: specified blocksize %d is less than device physical sectorsize %d\n"
 msgstr ""
 
-#: misc/mke2fs.c:2332
+#: misc/mke2fs.c:2396
 #, c-format
 msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to be expressed\n"
 "\tin 32 bits using a blocksize of %d.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2346
+#: misc/mke2fs.c:2410
 #, c-format
 msgid ""
 "%s: Size of device (0x%llx blocks) %s too big to create\n"
 "\ta filesystem using a blocksize of %d.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2368
+#: misc/mke2fs.c:2432
 msgid "fs_types for mke2fs.conf resolution: "
 msgstr ""
 
-#: misc/mke2fs.c:2381
+#: misc/mke2fs.c:2445
 msgid "invalid reserved blocks percent - %lf"
 msgstr ""
 
-#: misc/mke2fs.c:2398
+#: misc/mke2fs.c:2462
 msgid ""
 "Extents MUST be enabled for a 64-bit filesystem.  Pass -O extents to "
 "rectify.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2406
+#: misc/mke2fs.c:2470
 msgid ""
 "Extents MUST be enabled for fs-verity support.  Pass -O extents to rectify.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2427
+#: misc/mke2fs.c:2491
 msgid "The cluster size may not be smaller than the block size.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2433
+#: misc/mke2fs.c:2497
 msgid "specifying a cluster size requires the bigalloc feature"
 msgstr ""
 
-#: misc/mke2fs.c:2453
+#: misc/mke2fs.c:2517
 #, c-format
 msgid "warning: Unable to get device geometry for %s\n"
 msgstr ""
 
-#: misc/mke2fs.c:2499
+#: misc/mke2fs.c:2563
 #, c-format
 msgid "%s alignment is offset by %lu bytes.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2501
+#: misc/mke2fs.c:2565
 #, c-format
 msgid ""
 "This may result in very poor performance, (re)-partitioning suggested.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2507
+#: misc/mke2fs.c:2570
 #, c-format
 msgid ""
 "%s is capable of DAX but current block size %u is different from system page "
 "size %u so filesystem will not support DAX.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2531
+#: misc/mke2fs.c:2595
 #, c-format
 msgid "%d-byte blocks too big for system (max %d)"
 msgstr ""
 
-#: misc/mke2fs.c:2535
+#: misc/mke2fs.c:2599
 #, c-format
 msgid ""
 "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
 msgstr ""
 
-#: misc/mke2fs.c:2543
+#: misc/mke2fs.c:2607
 #, c-format
 msgid ""
 "Suggestion: Use Linux kernel >= 3.18 for improved stability of the metadata "
 "and journal checksum features.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2589
+#: misc/mke2fs.c:2653
 #, c-format
 msgid "Unknown filename encoding from profile: %s"
 msgstr ""
 
-#: misc/mke2fs.c:2600
+#: misc/mke2fs.c:2664
 #, c-format
 msgid "Unknown encoding flags from profile: %s"
 msgstr ""
 
-#: misc/mke2fs.c:2624
+#: misc/mke2fs.c:2690
 msgid "Filesystem features not supported with revision 0 filesystems\n"
 msgstr ""
 
-#: misc/mke2fs.c:2629
+#: misc/mke2fs.c:2695
 msgid "Journals not supported with revision 0 filesystems\n"
 msgstr ""
 
-#: misc/mke2fs.c:2634
+#: misc/mke2fs.c:2700
 msgid "Inode size incompatible with revision 0 filesystems\n"
 msgstr ""
 
-#: misc/mke2fs.c:2647
+#: misc/mke2fs.c:2713
 #, c-format
 msgid ""
 "\n"
@@ -6029,66 +6061,66 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:2662
+#: misc/mke2fs.c:2728
 #, c-format
 msgid "%d byte inodes are too small for project quota"
 msgstr ""
 
-#: misc/mke2fs.c:2684
+#: misc/mke2fs.c:2750
 msgid "Can't support bigalloc feature without extents feature"
 msgstr ""
 
-#: misc/mke2fs.c:2691
+#: misc/mke2fs.c:2757
 msgid ""
 "The resize_inode and meta_bg features are not compatible.\n"
 "They can not be both enabled simultaneously.\n"
 msgstr ""
 
-#: misc/mke2fs.c:2700
+#: misc/mke2fs.c:2766
 msgid ""
 "\n"
 "Warning: bigalloc file systems with a cluster size greater than\n"
 "16 times the block size is considered experimental\n"
 msgstr ""
 
-#: misc/mke2fs.c:2712
+#: misc/mke2fs.c:2778
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
 msgstr ""
 
-#: misc/mke2fs.c:2721
+#: misc/mke2fs.c:2787
 msgid "blocks per group count out of range"
 msgstr ""
 
-#: misc/mke2fs.c:2743
+#: misc/mke2fs.c:2809
 msgid "Flex_bg feature not enabled, so flex_bg size may not be specified"
 msgstr ""
 
-#: misc/mke2fs.c:2755
+#: misc/mke2fs.c:2821
 #, c-format
 msgid "invalid inode size %d (min %d/max %d)"
 msgstr ""
 
-#: misc/mke2fs.c:2770
+#: misc/mke2fs.c:2836
 #, c-format
 msgid "%d byte inodes are too small for inline data; specify larger size"
 msgstr ""
 
-#: misc/mke2fs.c:2785
+#: misc/mke2fs.c:2851
 #, c-format
 msgid "128-byte inodes cannot handle dates beyond 2038 and are deprecated\n"
 msgstr ""
 
-#: misc/mke2fs.c:2796
+#: misc/mke2fs.c:2862
 #, c-format
 msgid "too many inodes (%llu), raise inode ratio?"
 msgstr ""
 
-#: misc/mke2fs.c:2804
+#: misc/mke2fs.c:2870
 #, c-format
 msgid "too many inodes (%llu), specify < 2^32 inodes"
 msgstr ""
 
-#: misc/mke2fs.c:2818
+#: misc/mke2fs.c:2884
 #, c-format
 msgid ""
 "inode_size (%u) * inodes_count (%u) too big for a\n"
@@ -6096,175 +6128,175 @@ msgid ""
 "\tor lower inode count (-N).\n"
 msgstr ""
 
-#: misc/mke2fs.c:3016
+#: misc/mke2fs.c:3082
 msgid "Discarding device blocks: "
 msgstr ""
 
-#: misc/mke2fs.c:3032
+#: misc/mke2fs.c:3098
 msgid "failed - "
 msgstr ""
 
-#: misc/mke2fs.c:3091
+#: misc/mke2fs.c:3157
 msgid "while initializing quota context"
 msgstr ""
 
-#: misc/mke2fs.c:3098
+#: misc/mke2fs.c:3164
 msgid "while writing quota inodes"
 msgstr ""
 
-#: misc/mke2fs.c:3123
+#: misc/mke2fs.c:3189
 #, c-format
 msgid "bad error behavior in profile - %s"
 msgstr ""
 
-#: misc/mke2fs.c:3202
+#: misc/mke2fs.c:3268
 msgid "in malloc for android_sparse_params"
 msgstr ""
 
-#: misc/mke2fs.c:3216
+#: misc/mke2fs.c:3282
 msgid "while setting up superblock"
 msgstr ""
 
-#: misc/mke2fs.c:3232
+#: misc/mke2fs.c:3298
 msgid ""
 "Extents are not enabled.  The file extent tree can be checksummed, whereas "
 "block maps cannot.  Not enabling extents reduces the coverage of metadata "
 "checksumming.  Pass -O extents to rectify.\n"
 msgstr ""
 
-#: misc/mke2fs.c:3239
+#: misc/mke2fs.c:3305
 msgid ""
 "64-bit filesystem support is not enabled.  The larger fields afforded by "
 "this feature enable full-strength checksumming.  Pass -O 64bit to rectify.\n"
 msgstr ""
 
-#: misc/mke2fs.c:3247
+#: misc/mke2fs.c:3313
 msgid "The metadata_csum_seed feature requires the metadata_csum feature.\n"
 msgstr ""
 
-#: misc/mke2fs.c:3268
+#: misc/mke2fs.c:3334
 msgid ""
 "Assuming the storage device is prezeroed - skipping inode table and journal "
 "wipe\n"
 msgstr ""
 
-#: misc/mke2fs.c:3283
+#: misc/mke2fs.c:3349
 msgid "Discard succeeded and will return 0s - skipping inode table wipe\n"
 msgstr ""
 
-#: misc/mke2fs.c:3382
+#: misc/mke2fs.c:3448
 #, c-format
 msgid "unknown os - %s"
 msgstr ""
 
-#: misc/mke2fs.c:3445
+#: misc/mke2fs.c:3511
 msgid "Allocating group tables: "
 msgstr ""
 
-#: misc/mke2fs.c:3453
+#: misc/mke2fs.c:3519
 msgid "while trying to allocate filesystem tables"
 msgstr ""
 
-#: misc/mke2fs.c:3468
+#: misc/mke2fs.c:3534
 msgid "while unmarking bad blocks"
 msgstr ""
 
-#: misc/mke2fs.c:3479
+#: misc/mke2fs.c:3545
 msgid ""
 "\n"
 "\twhile converting subcluster bitmap"
 msgstr ""
 
-#: misc/mke2fs.c:3488
+#: misc/mke2fs.c:3554
 msgid "while calculating overhead"
 msgstr ""
 
-#: misc/mke2fs.c:3507
+#: misc/mke2fs.c:3573
 #, c-format
 msgid "%s may be further corrupted by superblock rewrite\n"
 msgstr ""
 
-#: misc/mke2fs.c:3548
+#: misc/mke2fs.c:3614
 #, c-format
 msgid "while zeroing block %llu at end of filesystem"
 msgstr ""
 
-#: misc/mke2fs.c:3561
+#: misc/mke2fs.c:3627
 msgid "while reserving blocks for online resize"
 msgstr ""
 
-#: misc/mke2fs.c:3573 misc/tune2fs.c:1710
+#: misc/mke2fs.c:3639 misc/tune2fs.c:1710
 msgid "journal"
 msgstr ""
 
-#: misc/mke2fs.c:3585
+#: misc/mke2fs.c:3651
 #, c-format
 msgid "Adding journal to device %s: "
 msgstr ""
 
-#: misc/mke2fs.c:3592
+#: misc/mke2fs.c:3658
 #, c-format
 msgid ""
 "\n"
 "\twhile trying to add journal to device %s"
 msgstr ""
 
-#: misc/mke2fs.c:3597 misc/mke2fs.c:3630 misc/mke2fs.c:3689
+#: misc/mke2fs.c:3663 misc/mke2fs.c:3696 misc/mke2fs.c:3755
 #: misc/mk_hugefiles.c:479 misc/tune2fs.c:1739 misc/tune2fs.c:1761
 msgid "done\n"
 msgstr ""
 
-#: misc/mke2fs.c:3604
+#: misc/mke2fs.c:3670
 msgid "Skipping journal creation in super-only mode\n"
 msgstr ""
 
-#: misc/mke2fs.c:3617
+#: misc/mke2fs.c:3683
 #, c-format
 msgid "Creating journal (%u blocks): "
 msgstr ""
 
-#: misc/mke2fs.c:3626
+#: misc/mke2fs.c:3692
 msgid ""
 "\n"
 "\twhile trying to create journal"
 msgstr ""
 
-#: misc/mke2fs.c:3638 misc/tune2fs.c:1297
+#: misc/mke2fs.c:3704 misc/tune2fs.c:1297
 msgid ""
 "\n"
 "Error while enabling multiple mount protection feature."
 msgstr ""
 
-#: misc/mke2fs.c:3643
+#: misc/mke2fs.c:3709
 #, c-format
 msgid "Multiple mount protection is enabled with update interval %d seconds.\n"
 msgstr ""
 
-#: misc/mke2fs.c:3658
+#: misc/mke2fs.c:3724
 msgid "cannot set orphan_file feature without a journal."
 msgstr ""
 
-#: misc/mke2fs.c:3669 misc/tune2fs.c:3538
+#: misc/mke2fs.c:3735 misc/tune2fs.c:3538
 msgid "while creating orphan file"
 msgstr ""
 
-#: misc/mke2fs.c:3680
+#: misc/mke2fs.c:3746
 msgid "Copying files into the device: "
 msgstr ""
 
-#: misc/mke2fs.c:3686
+#: misc/mke2fs.c:3752
 msgid "while populating file system"
 msgstr ""
 
-#: misc/mke2fs.c:3693
+#: misc/mke2fs.c:3759
 msgid "Writing superblocks and filesystem accounting information: "
 msgstr ""
 
-#: misc/mke2fs.c:3700 misc/tune2fs.c:3786
+#: misc/mke2fs.c:3766 misc/tune2fs.c:3786
 msgid "while writing out and closing file system"
 msgstr ""
 
-#: misc/mke2fs.c:3703
+#: misc/mke2fs.c:3769
 msgid ""
 "done\n"
 "\n"
@@ -7600,7 +7632,7 @@ msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:11
-msgid "EXT2FS Library version 1.47.3-rc1"
+msgid "EXT2FS Library version 1.47.3"
 msgstr ""
 
 #: lib/ext2fs/ext2_err.c:12

@@ -1,5 +1,6 @@
 e2fsprogs (1.47.4-1) unstable; urgency=medium
 
+  * New upstream version
   * Mark libext2fs-dev as Multi-Arch: same (Closes: #1118461)
   * Suppress warnings in mke2fs regarding large block sizes if the kernel
     supports blocksize greater than page size
@@ -16,14 +17,21 @@ e2fsprogs (1.47.4-1) unstable; urgency=medium
   * Many bug fixes for fuse2fs and libext2fs to make fuse2fs behave more
     like the Linux kernel's implementation of ext4.  These were found when
     running fuse2fs under xfstests, and fixing the resulting test failures
+    (Closes: #1108534)
   * Mke2fs warnings about dax are now printed to stdout instead of stderr,
     since they aren't failures
   * Fix mke2fs so it won't create an orphan file inode which is larger than
     what the kernel now permits when using a 64k blocksize
-  * Update Malay translation
-  * Various man page cleanups.
+  * Fix mke2fs -d so it can handle copying a file larger than 2 GiB
+  * Fix e4defrag crashing when it tries to defragment an inline data f
+  * Various man page cleanups (Closes: #1125176)
+  * Set Multi-Arch same: on libext2fs2-dev to allow co-installation on
+    platforms such as amd64 and arm64
+  * Fix a FTBFS caused by a doubled pkg-config in the debian/rules which
+    previously silently worked, but now fails with a newer version of
+    pkg-config (Closes: #1126636)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 05 Mar 2026 10:26:12 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 06 Mar 2026 11:16:31 -0500
 
 e2fsprogs (1.47.3-1) unstable; urgency=medium
 

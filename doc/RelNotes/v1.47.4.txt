@@ -1,5 +1,5 @@
-E2fsprogs 1.47.4 (November 15, 2025)   WIP 4aba12dc19a9
-====================================
+E2fsprogs 1.47.4 (March 6, 2025)
+================================
 
 Updates/Fixes since v1.47.3:
 
@@ -13,6 +13,8 @@ Add mke2fs extended option in root_selinux to set a SELinux security
 context label for the root directory.
 
 Enable mke2fs to support multiple -E options in the command line.
+
+Fix e4defrag crashing when it tries to defragment an inline data file.
 
 
 Fixes
@@ -33,6 +35,8 @@ since they aren't failures.
 
 Fix mke2fs so it won't create an orphan file inode which is larger than
 what the kernel now permits when using a 64k blocksize.
+
+Fix mke2fs -d so it can handle copying a file larger than 2 GiB.
 
 Many bug fixes for fuse2fs and libext2fs to make fuse2fs behave more
 like the Linux kernel's implementation of ext4.  These were found when
@@ -98,7 +102,12 @@ Performance, Internal Implementation, Development Support etc.
 Fixed various Debian packaging issues.  (Addresses Debian Bugs: #1118461)
 
 Remove extra "pkg-config pkgconfig" in the Debian rules file.  This
-appears to be harmless, but it's not correct.
+appears to be harmless, but it's not correct.  (Addresses "Debian Bugs: #1126636)
+
+Stop trying to test building e2fsprogs on mingw32 using Github Actions.
+Sometime between November and December 2025, probably coincident with
+github uploading a newer Windows 11 to windows-latest, running the test
+mke2fs is now taking over 4 hours, when previously it took 8 seconds.
 
 Update autoconf and libtool to be based on autoconf 2.72.   Also updated
 config.{guess,sub,rpath} to be the latest from FSF.
