@@ -339,7 +339,7 @@ errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 #endif
 
 /* Make a symlink name -> target */
-errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
+errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, char *name,
 			      char *target, ext2_ino_t root)
 {
 	char			*cp;
@@ -375,7 +375,7 @@ errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
 }
 
 /* Make a directory in the fs */
-errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, const char *name,
+errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd, char *name,
 			    unsigned long flags, ext2_ino_t root)
 {
 	char			*cp;
@@ -766,7 +766,7 @@ static int is_hardlink(struct hdlinks_s *hdlinks, dev_t dev, ino_t ino)
 
 /* Copy the native file to the fs */
 errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd, const char *src,
-			    const char *dest, unsigned long flags,
+			    char *dest, unsigned long flags,
 			    ext2_ino_t root)
 {
 	int		fd;
@@ -943,7 +943,7 @@ static errcode_t __populate_fs(ext2_filsys fs, ext2_ino_t parent_ino,
 			       int flags,
 			       struct fs_ops_callbacks *fs_callbacks)
 {
-	const char	*name;
+	char		*name;
 	struct dirent	**dent;
 	struct stat	st;
 	unsigned long	fl;

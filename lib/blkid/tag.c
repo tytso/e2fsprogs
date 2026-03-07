@@ -225,16 +225,17 @@ errout:
 int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val)
 {
 	char *name, *value, *cp;
+	const char *tokenp;
 
 	DBG(DEBUG_TAG, printf("trying to parse '%s' as a tag\n", token));
 
-	if (!token || !(cp = strchr(token, '=')))
+	if (!token || !(tokenp = strchr(token, '=')))
 		return -1;
 
 	name = blkid_strdup(token);
 	if (!name)
 		return -1;
-	value = name + (cp - token);
+	value = name + (tokenp - token);
 	*value++ = '\0';
 	if (*value == '"' || *value == '\'') {
 		char c = *value++;
