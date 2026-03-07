@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.47.4">E2fsprogs 1.47.4 (March, 6, 2026)</A>
 <LI><A HREF="#1.47.3">E2fsprogs 1.47.3 (July 8, 2025)</A>
 <LI><A HREF="#1.47.2">E2fsprogs 1.47.2 (January 1, 2025)</A>
 <LI><A HREF="#1.47.1">E2fsprogs 1.47.1 (May 20, 2024)</A>
@@ -147,6 +148,144 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.47.4">E2fsprogs 1.47.4 (March, 6, 2026)</A></H2>
+
+<h3>UI and Features</h3>
+
+<P>Suppress warnings in mke2fs regarding large block sizes if the kernel
+supports blocksize greater than page size.</P>
+
+<P>Add mke2fs extended option in root_selinux to set a SELinux security
+context label for the root directory.</P>
+
+<P>Enable mke2fs to support multiple -E options in the command line.</P>
+
+<P>Fix e4defrag crashing when it tries to defragment an inline data file.</P>
+
+
+<h3>Fixes</h3>
+
+<P>Fix e2fsck incorrectly flagging fast symlinks with a large external
+extended attribute (using an EA inode) as having an invalid number of
+blocks.</P>
+
+<P>Add a check in e2fsck for an extended attributes with a value stored in
+an EA inode that has an invalid zero size.</P>
+
+<P>Fix e2scrub so that it the retry loop for lvremove works properly (in
+case of a temporary busy failure).</P>
+
+<P>Mke2fs warnings about dax are now printed to stdout instead of stderr,
+since they aren't failures.</P>
+
+<P>Fix mke2fs so it won't create an orphan file inode which is larger than
+what the kernel now permits when using a 64k blocksize.</P>
+
+<P>Fix mke2fs -d so it can handle copying a file larger than 2 GiB.</P>
+
+<P>Many bug fixes for fuse2fs and libext2fs to make fuse2fs behave more
+like the Linux kernel's implementation of ext4.  These were found when
+running fuse2fs under xfstests, and fixing the resulting test failures.
+<UL>
+<LI> Set the EXT2_ERRORS_FS flag when recording errors in the superblock,
+    so that e2fsck will automatically try to fix the corrupted file system
+<LI> Restrict which error codes that will be recorded in the superblock to
+    those which indicate file system corruption, and not those that are
+    cuased by operational failures
+<LI> Refuse to mount a file system which is marked as having inconsistencies
+<LI> Abort and avoid mounting the file systems if there are errors parsing
+    the command line options
+<LI> Fix parsing the offset= option so the mount options structure doesn't
+    get corrupted.
+<LI> Move operations which could fail while mounting the file system to
+    before the fuse2fs is daemonized so that errors can be reported to the
+    user
+<LI> Fix the locking logic for the "-o lockfile" command-line option
+<LI> Fix a memory leak if ext2fs_close() fails
+<LI> Avoid failures when mounting a file system read-only and the user does
+    not have write access to the file system image or block device
+<LI> Handle the case where the underlying storage (e.g., block device) of
+    the file system is read-only more like the kernel.  (Fixes generic/050)
+<LI> Handle the case where the user requested a read-only mount, the
+    underying file system storage is writeable, and there is a journal
+    which needs to be replayed so that it is safe to reference the file
+    system image.  (Fixes ext4/271)
+<LI> Recheck the file system feature flags after replaying the journal in
+    case an unsupported feature was enabled by a journal transaction and
+    this causes fuse2fs to have a bellyache.
+<LI> Recheck the journal to make sure it is consistent to catch problems
+    caused by replaying (possibly maliciously) corrupted journals
+<LI> Make sure there is enough free space to create a symlink before
+    trying to create it
+<LI> Correctly report errors when deleting files back to fuse
+<LI> Always check the process gid when checking file permissions
+<LI> Don't update atime when reading executable file contents
+<LI> Correctly propagate default acls to non-directory inodes
+<LI> Set the group id ownership for newly created files in setgid directories
+<LI> Fix fssetxattr() by preserving iflags bits that don't exist in xflags
+<LI> Fix various bugs when punching holes in a file
+<LI> Fix various bugs in FITRIM
+<LI> Prevent fallocation or zero range indirect-mapped files, which don't
+    support unwritten extents
+<LI> Fix error handing for fuse_getgroups() and readlink(2)
+<LI> Fix various data corruption bugs when reading and writing to inline
+    data files
+<LI> Correctly set the ST_RDONLY flag returned by statfs(2)
+<LI> Fix potential races in op_statfs and op_destroy
+<LI> Fix relatime handling to pay attention to nanosecond portion of the
+    timestamp
+<LI> Fix permission checks when opening a file with O_APPEND and O_TRUNC at
+    the same time
+<LI> Don't truncate a newly created file so the ctime/mtime timestamps are
+  consistent
+</UL>
+
+<P>Various man page cleanups.</P>
+
+
+<h3>Performance, Internal Implementation, Development Support etc.</h3>
+
+<P>Fixed various Debian packaging issues.  (Addresses Debian Bugs: #1118461)</P>
+
+<P>Remove extra "pkg-config pkgconfig" in the Debian rules file.  This
+appears to be harmless, but it's not correct.  (Addresses "Debian Bugs: #1126636)</P>
+
+<P>Stop trying to test building e2fsprogs on mingw32 using Github Actions.
+Sometime between November and December 2025, probably coincident with
+github uploading a newer Windows 11 to windows-latest, running the test
+mke2fs is now taking over 4 hours, when previously it took 8 seconds.</P>
+
+<P>Update autoconf and libtool to be based on autoconf 2.72.   Also updated
+config.{guess,sub,rpath} to be the latest from FSF.</P>
+
+<P>Fix ext2fs_block_alloc_stats_range() to pass the original parameters to
+its callback function.</P>
+
+<P>Change the unixfd I/O manager to close the file descriptor when it is
+passed into the manager.</P>
+
+<P>In the unixfd_io_manager, trust the caller to assert that the file
+descriptor was opened using O_EXCL, since we can't find out whether
+it's the case by checking the file flags usign fcntl's F_GETFL.  Also
+check using F_GETFL instead of F_GETFD.</P>
+
+<P>Fix a bug in the unix_io where if there is an error when writing the I/O
+channel, and a write_error handler is registered, and it requests that
+the failed write is tried, the cache mutex wasn't getting reocked,
+leaving the lock state inconsistent.</P>
+
+<P>Fix a portability issue in fuse2fs regarding how to redirect
+stdout/stderr which works across multiple C libraries.  (For a detailed
+description of the challenges created by different standards
+specification see commit f79abd8554e6.)</P>
+
+<P>Fix a portability issue so e2fsprogs can compile when the
+linux/fsverity.h header file exists, but it doesn't define
+FS_IOC_READ_VERITY_METADATA.</P>
+
+<P>Update the Malay translations.</P>
+
 
 <H2><A NAME="1.47.3">E2fsprogs 1.47.3 (July 8, 2025)</A></H2>
 
