@@ -114,7 +114,7 @@
 
 /* The following macros are error message */
 #define MSG_USAGE		\
-"Usage	: e4defrag [-v] file...| directory...| device...\n\
+"Usage	: e4defrag [-b best_frags_count] [-v] file...| directory...| device...\n\
 	: e4defrag  -c  file...| directory...| device...\n"
 
 #define NGMSG_EXT4		"Filesystem is not ext4 filesystem"
@@ -166,6 +166,7 @@ struct frag_statistic_ino {
 
 static char	lost_found_dir[PATH_MAX + 1];
 static int	block_size;
+static int	best_frags_count = 1;
 static int	extents_before_defrag;
 static int	extents_after_defrag;
 static int	mode_flag;
@@ -1510,6 +1511,8 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 	}
 
 	best = get_best_count(blk_count);
+	if (best < best_frags_count)
+		best = best_frags_count;
 
 	if (file_frags_start <= best)
 		goto check_improvement;
@@ -1687,8 +1690,13 @@ int main(int argc, char *argv[])
 	if (argc == 1)
 		goto out;
 
-	while ((opt = getopt(argc, argv, "vc")) != EOF) {
+	while ((opt = getopt(argc, argv, "b:vc")) != EOF) {
 		switch (opt) {
+		case 'b':
+			best_frags_count = atoi(optarg);
+			if (best_frags_count < 1)
+				best_frags_count = 1;
+			break;
 		case 'v':
 			mode_flag |= DETAIL;
 			break;
