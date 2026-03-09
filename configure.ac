@@ -1297,12 +1297,59 @@ SOCKET_LIB=''
 AC_CHECK_LIB(socket, socket, [SOCKET_LIB=-lsocket])
 AC_SUBST(SOCKET_LIB)
 dnl
-dnl See if libmagic exists
+dnl libmagic
 dnl
-AC_CHECK_LIB(magic, magic_file, [MAGIC_LIB=-lmagic
-AC_CHECK_HEADERS([magic.h])])
-if test "$ac_cv_func_dlopen" = yes ; then
-   MAGIC_LIB=$DLOPEN_LIB
+AC_ARG_WITH([libmagic],
+AS_HELP_STRING([--without-libmagic],[disable use of libmagic]),
+[if test "$withval" = "no"
+then
+	try_libmagic=""
+	AC_MSG_RESULT([Disabling libmagic support])
+	AC_DEFINE(CONFIG_DISABLE_LIBMAGIC, 1,
+		[Define to 1 to completely disable libmagic])
+elif test "$withval" = "direct"
+then
+	try_libmagic="direct"
+	AC_MSG_RESULT([Testing for libmagic support (forced direct link)])
+else
+	try_libmagic="yes"
+	AC_MSG_RESULT([Testing for libmagic support (with dlopen)])
+fi]
+,
+[
+case "$host_os" in
+    darwin*)
+	try_libmagic="direct"
+	AC_MSG_RESULT([Try testing for libmagic support (with static linking) by default])
+	 ;;
+    *)
+        try_libmagic="yes"
+	AC_MSG_RESULT([Try testing for libmagic support (with dlopen) by default])
+	;;
+esac
+])
+MAGIC_LIB=
+if test -n "$try_libmagic"
+then
+    PKG_CHECK_MODULES([ARCHIVE],[libmagic],
+    [
+	AC_MSG_RESULT([pkg-config found libmagic])
+	CFLAGS="$ARCHIVE_CFLAGS $CFLAGS"
+    ],[
+        AC_CHECK_LIB(magic, magic_file, [MAGIC_LIB=-lmagic])
+    ])
+    if test -n "$MAGIC_LIB" ; then
+        AC_CHECK_HEADERS([magic.h])
+        if test "$ac_cv_func_dlopen" = yes -a "$try_libmagic" != "direct"; then
+            MAGIC_LIB=$DLOPEN_LIB
+            AC_DEFINE(CONFIG_DLOPEN_LIBMAGIC, 1,
+		[Define to 1 if using dlopen to access libmagic])
+	fi
+    fi
+    if test "$ac_cv_header_magic_h" != "yes"
+    then
+        MAGIC_LIB=
+    fi
 fi
 AC_SUBST(MAGIC_LIB)
 dnl
