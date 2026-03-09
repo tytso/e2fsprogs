@@ -3817,8 +3817,8 @@ msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is 
 msgstr "MÂU THUẪN: hệ thống tập tin đang được sửa chữa trong khi lệnh fsck đang chạy.\n"
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
-msgstr "hoàn tất                                             \n"
+msgid "done                                                                  \n"
+msgstr "hoàn tất                                                              \n"
 
 #: misc/badblocks.c:100
 #, c-format
@@ -3844,8 +3844,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% hoàn tất, %s đã trôi qua. (%d/%d/%d lỗi)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% hoàn tất, %s đã trôi qua. (%d/%d/%d lỗi), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "

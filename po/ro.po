@@ -4204,8 +4204,8 @@ msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is 
 msgstr "INCONSISTENȚĂ NEAȘTEPTATĂ: sistemul de fișiere este în curs de modificare în timp ce «fsck» rulează.\n"
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
-msgstr "gata, s-a făcut                                      \n"
+msgid "done                                                                  \n"
+msgstr "gata, s-a făcut                                                       \n"
 
 #: misc/badblocks.c:100
 #, c-format
@@ -4232,8 +4232,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% făcut, %s s-a scurs. (%d/%d/%d erori)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% făcut, %s s-a scurs. (%d/%d/%d erori), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "
