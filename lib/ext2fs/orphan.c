@@ -164,8 +164,6 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 	memset(zerobuf, 0, fs->blocksize);
 	ob_tail = ext2fs_orphan_block_tail(fs, buf);
 	ob_tail->ob_magic = ext2fs_cpu_to_le32(EXT4_ORPHAN_BLOCK_MAGIC);
-	if (num_blocks * fs->blocksize > EXT4_MAX_ORPHAN_FILE_SIZE)
-		num_blocks = EXT4_MAX_ORPHAN_FILE_SIZE / fs->blocksize;
 	oi.num_blocks = num_blocks;
 	oi.alloc_blocks = 0;
 	oi.last_blk = 0;
@@ -218,18 +216,18 @@ out:
 
 /*
  * Find reasonable size for orphan file. We choose orphan file size to be
- * between 32 filesystem blocks and EXT4_DEFAULT_ORPHAN_FILE_SIZE, and not
- * more than 1/fs->blocksize of the filesystem unless it is really small.
+ * between 32 and 512 filesystem blocks and not more than 1/4096 of the
+ * filesystem unless it is really small.
  */
 e2_blkcnt_t ext2fs_default_orphan_file_blocks(ext2_filsys fs)
 {
 	__u64 num_blocks = ext2fs_blocks_count(fs->super);
-	e2_blkcnt_t blks = EXT4_DEFAULT_ORPHAN_FILE_SIZE / fs->blocksize;
+	e2_blkcnt_t blks = 512;
 
 	if (num_blocks < 128 * 1024)
 		blks = 32;
-	else if (num_blocks < EXT4_DEFAULT_ORPHAN_FILE_SIZE)
-		blks = num_blocks / fs->blocksize;
+	else if (num_blocks < 2 * 1024 * 1024)
+		blks = num_blocks / 4096;
 	return (blks + EXT2FS_CLUSTER_MASK(fs)) & ~EXT2FS_CLUSTER_MASK(fs);
 }
 
