@@ -1452,6 +1452,35 @@ then
 	AC_DEFINE_UNQUOTED(FUSE_USE_VERSION, $FUSE_USE_VERSION,
 		[Define to the version of FUSE to use])
 fi
+
+dnl
+dnl Check if the FUSE cache_readdir flag is supported
+dnl
+have_fuse_cache_readdir=
+if test -n "$FUSE_USE_VERSION"
+then
+	AC_MSG_CHECKING(for cache_readdir support in libfuse)
+	AC_LINK_IFELSE(
+	[	AC_LANG_PROGRAM([[
+	#define _GNU_SOURCE
+	#define _FILE_OFFSET_BITS	64
+	#define FUSE_USE_VERSION	314
+	#include <fuse.h>
+		]], [[
+	struct fuse_file_info fs_ops = {
+		.cache_readdir = 1,
+	};
+		]])
+	], have_fuse_cache_readdir=yes
+	   AC_MSG_RESULT(yes),
+	   AC_MSG_RESULT(no))
+fi
+if test -n "$have_fuse_cache_readdir"
+then
+	AC_DEFINE(HAVE_FUSE_CACHE_READDIR, 1,
+		  [Define to 1 if fuse supports cache_readdir])
+fi
+
 dnl
 dnl See if optreset exists
 dnl

@@ -182,7 +182,7 @@ errcode_t ext2fs_mkdir2(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 		retval = ext2fs_read_inode(fs, parent, &parent_inode);
 		if (retval)
 			goto cleanup;
-		parent_inode.i_links_count++;
+		ext2fs_inc_nlink(fs, &parent_inode);
 		retval = ext2fs_write_inode(fs, parent, &parent_inode);
 		if (retval)
 			goto cleanup;

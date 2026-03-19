@@ -46,6 +46,9 @@
 /* Define to the version of FUSE to use */
 #undef FUSE_USE_VERSION
 
+/* Define to 1 if fuse supports cache_readdir */
+#undef HAVE_FUSE_CACHE_READDIR
+
 /* Define to 1 if you have the 'add_key' function. */
 #undef HAVE_ADD_KEY
 

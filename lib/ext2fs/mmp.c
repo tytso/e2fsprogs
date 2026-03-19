@@ -41,6 +41,13 @@
 #endif
 #endif
 
+errcode_t ext2fs_mmp_get_mem(ext2_filsys fs, void **ptr)
+{
+	int align = ext2fs_get_dio_alignment(fs->mmp_fd);
+
+	return ext2fs_get_memalign(fs->blocksize, align, ptr);
+}
+
 errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 {
 #ifdef CONFIG_MMP
@@ -78,10 +85,7 @@ errcode_t ext2fs_mmp_read(ext2_filsys fs, blk64_t mmp_blk, void *buf)
 	}
 
 	if (fs->mmp_cmp == NULL) {
-		int align = ext2fs_get_dio_alignment(fs->mmp_fd);
-
-		retval = ext2fs_get_memalign(fs->blocksize, align,
-					     &fs->mmp_cmp);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_cmp);
 		if (retval)
 			return retval;
 	}
@@ -200,7 +204,7 @@ static errcode_t ext2fs_mmp_reset(ext2_filsys fs)
 	errcode_t retval = 0;
 
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval)
 			goto out;
 	}
@@ -264,7 +268,7 @@ errcode_t ext2fs_mmp_init(ext2_filsys fs)
 		return EXT2_ET_INVALID_ARGUMENT;
 
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval)
 			goto out;
 	}
@@ -302,7 +306,7 @@ errcode_t ext2fs_mmp_start(ext2_filsys fs)
 	errcode_t retval = 0;
 
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval)
 			goto mmp_error;
 	}
@@ -469,6 +473,12 @@ errcode_t ext2fs_mmp_update2(ext2_filsys fs, int immediately)
 	if (memcmp(mmp, mmp_cmp, sizeof(*mmp_cmp)))
 		return EXT2_ET_MMP_CHANGE_ABORT;
 
+	/*
+	 * Believe it or not, ext2fs_mmp_read actually overwrites fs->mmp_cmp
+	 * and leaves fs->mmp_buf untouched.  Hence we copy mmp_cmp into
+	 * mmp_buf, update mmp_buf, and write mmp_buf out to disk.
+	 */
+	memcpy(mmp, mmp_cmp, sizeof(*mmp_cmp));
 	mmp->mmp_time = tv.tv_sec;
 	mmp->mmp_seq = EXT4_MMP_SEQ_FSCK;
 	retval = ext2fs_mmp_write(fs, fs->super->s_mmp_block, fs->mmp_buf);

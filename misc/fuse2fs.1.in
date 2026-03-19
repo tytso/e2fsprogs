@@ -57,6 +57,15 @@ The size may not be larger than 2GB.
 \fB-o\fR direct
 Use O_DIRECT to access the block device.
 .TP
+\fB-o\fR dirsync
+Flush dirty metadata to disk after every directory update.
+.TP
+\fB-o\fR errors=continue
+ignore errors
+.TP
+\fB-o\fR errors=remount-ro
+stop allowing writes after errors
+.TP
 \fB-o\fR errors=panic
 dump core on error
 .TP

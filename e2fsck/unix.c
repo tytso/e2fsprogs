@@ -1230,7 +1230,7 @@ static errcode_t e2fsck_check_mmp(ext2_filsys fs, e2fsck_t ctx)
 
 	clear_problem_context(&pctx);
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval)
 			goto check_error;
 	}

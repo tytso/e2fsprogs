@@ -472,7 +472,7 @@ static void print_mmp_block(ext2_filsys fs)
 	errcode_t retval;
 
 	if (fs->mmp_buf == NULL) {
-		retval = ext2fs_get_mem(fs->blocksize, &fs->mmp_buf);
+		retval = ext2fs_mmp_get_mem(fs, &fs->mmp_buf);
 		if (retval) {
 			com_err(program_name, retval,
 				_("failed to alloc MMP buffer\n"));

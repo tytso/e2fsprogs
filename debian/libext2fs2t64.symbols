@@ -173,6 +173,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_dblist_iterate@Base 1.37
  ext2fs_dblist_sort2@Base 1.42
  ext2fs_dblist_sort@Base 1.37
+ ext2fs_dec_nlink@Base 1.47.4
  ext2fs_decode_extent@Base 1.46.0
  ext2fs_default_journal_size@Base 1.40
  ext2fs_default_orphan_file_blocks@Base 1.47.0
@@ -182,6 +183,9 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_dir_block_csum_verify@Base 1.43
  ext2fs_dir_iterate2@Base 1.37
  ext2fs_dir_iterate@Base 1.37
+ ext2fs_dir_is_dx@Base 1.47.4
+ ext2fs_dir_link_empty@Base 1.47.4
+ ext2fs_dir_link_max@Base 1.47.4
  ext2fs_dirent_csum_verify@Base 1.43
  ext2fs_dirent_file_type@Base 1.43
  ext2fs_dirent_has_tail@Base 1.43
@@ -376,6 +380,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_image_inode_write@Base 1.37
  ext2fs_image_super_read@Base 1.37
  ext2fs_image_super_write@Base 1.37
+ ext2fs_inc_nlink@Base 1.47.4
  ext2fs_init_csum_seed@Base 1.43
  ext2fs_init_dblist@Base 1.37
  ext2fs_initialize@Base 1.37
@@ -443,6 +448,7 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  ext2fs_mmp_clear@Base 1.42
  ext2fs_mmp_csum_set@Base 1.43
  ext2fs_mmp_csum_verify@Base 1.43
+ ext2fs_mmp_get_mem@Base 1.47.4
  ext2fs_mmp_init@Base 1.42
  ext2fs_mmp_new_seq@Base 1.42
  ext2fs_mmp_read@Base 1.42

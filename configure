@@ -15154,6 +15154,53 @@ then
 printf "%s\n" "#define FUSE_USE_VERSION $FUSE_USE_VERSION" >>confdefs.h
 
 fi
+
+have_fuse_cache_readdir=
+if test -n "$FUSE_USE_VERSION"
+then
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for cache_readdir support in libfuse" >&5
+printf %s "checking for cache_readdir support in libfuse... " >&6; }
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+	#define _GNU_SOURCE
+	#define _FILE_OFFSET_BITS	64
+	#define FUSE_USE_VERSION	314
+	#include <fuse.h>
+
+int
+main (void)
+{
+
+	struct fuse_file_info fs_ops = {
+		.cache_readdir = 1,
+	};
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_fuse_cache_readdir=yes
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+if test -n "$have_fuse_cache_readdir"
+then
+
+printf "%s\n" "#define HAVE_FUSE_CACHE_READDIR 1" >>confdefs.h
+
+fi
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for optreset" >&5
 printf %s "checking for optreset... " >&6; }
 if test ${ac_cv_have_optreset+y}
