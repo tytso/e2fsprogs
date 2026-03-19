@@ -693,6 +693,8 @@ libext2fs.so.2 libext2fs2t64 #MINVER#
  io_channel_alloc_buf@Base 1.42.3
  io_channel_cache_readahead@Base 1.43
  io_channel_discard@Base 1.42
+ io_channel_flock@Base 1.47.99
+ io_channel_funlock@Base 1.47.99
  io_channel_read_blk64@Base 1.41.1
  io_channel_set_options@Base 1.37
  io_channel_write_blk64@Base 1.41.1

@@ -297,6 +297,55 @@ static inline off_t FUSE2FS_FSB_TO_B(const struct fuse2fs *ff, blk64_t bno)
 	return bno << ff->blocklog;
 }
 
+static double gettime_monotonic(void)
+{
+#ifdef CLOCK_MONOTONIC
+	struct timespec ts;
+#endif
+	struct timeval tv;
+	static pthread_mutex_t fake_lock = PTHREAD_MUTEX_INITIALIZER;
+	static double fake_time = 0;
+	double dret;
+	int ret;
+
+#ifdef CLOCK_MONOTONIC
+	ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+	if (ret == 0)
+		return (double)ts.tv_sec + (ts.tv_nsec / 1000000000.0);
+#endif
+	ret = gettimeofday(&tv, NULL);
+	if (ret == 0)
+		return (double)tv.tv_sec + (tv.tv_usec / 1000000.0);
+
+	/* If we have no clock sources at all, fake it */
+	pthread_mutex_lock(&fake_lock);
+	fake_time += 1.0;
+	dret = fake_time;
+	pthread_mutex_unlock(&fake_lock);
+
+	return dret;
+}
+
+static double init_deadline(double timeout)
+{
+	return gettime_monotonic() + timeout;
+}
+
+static int retry_before_deadline(double deadline)
+{
+	double now = gettime_monotonic();
+
+	if (now >= deadline)
+		return 0;
+
+	/* sleep for 0.1s before trying again */
+	usleep(100000);
+	return 1;
+}
+
+/* Wait this many seconds to acquire the filesystem device */
+#define FUSE2FS_OPEN_TIMEOUT	(15.0)
+
 #define EXT4_EPOCH_BITS 2
 #define EXT4_EPOCH_MASK ((1 << EXT4_EPOCH_BITS) - 1)
 #define EXT4_NSEC_MASK  (~0UL << EXT4_EPOCH_BITS)
@@ -4684,6 +4733,7 @@ int main(int argc, char *argv[])
 	errcode_t err;
 	FILE *orig_stderr = stderr;
 	char extra_args[BUFSIZ];
+	double deadline;
 	int ret;
 	int flags = EXT2_FLAG_64BITS | EXT2_FLAG_THREADS | EXT2_FLAG_EXCLUSIVE |
 		    EXT2_FLAG_RW;
@@ -4771,26 +4821,96 @@ int main(int argc, char *argv[])
 	sprintf(options, "offset=%lu", fctx.offset);
 	if (fctx.directio)
 		flags |= EXT2_FLAG_DIRECT_IO;
-	err = ext2fs_open2(fctx.device, options, flags, 0, 0, unix_io_manager,
-			   &global_fs);
-	if (err == EPERM || err == EACCES) {
-		/*
-		 * Source device cannot be opened for write.  Under these
-		 * circumstances, mount(8) will try again with a ro mount,
-		 * and the kernel will open the block device readonly.
-		 */
-		log_printf(&fctx, "%s\n",
- _("WARNING: source write-protected, mounted read-only."));
-		flags &= ~EXT2_FLAG_RW;
-		fctx.ro = 1;
+
+	/*
+	 * If the filesystem is stored on a block device, the _EXCLUSIVE flag
+	 * causes libext2fs to try to open the block device with O_EXCL.  If
+	 * the block device is already opened O_EXCL by something else, the
+	 * open call returns EBUSY.
+	 *
+	 * Unfortunately, there's a nasty race between fuse2fs going through
+	 * its startup sequence (open fs, parse superblock, daemonize, create
+	 * mount, respond to FUSE_INIT) in response to a mount(8) invocation
+	 * and another process that calls umount(2) on the same mount.
+	 *
+	 * If fuse2fs is being run as a mount(8) helper and has daemonized, the
+	 * original fuse2fs subprocess exits and so will mount(8).  This can
+	 * occur before the kernel issues a FUSE_INIT request to fuse2fs.  If
+	 * a process then umount(2)'s the mount, the kernel will abort the
+	 * fuse connection.  If the FUSE_INIT request hasn't been issued, now
+	 * it won't ever be issued.  The kernel tears down the mount and
+	 * returns from umount(2), but fuse2fs has no idea that any of this has
+	 * happened because it receives no requests.
+	 *
+	 * At this point, the original fuse2fs server holds the block device
+	 * open O_EXCL.  If mount(8) is invoked again on the same device, the
+	 * new fuse2fs server will try to open the block device O_EXCL and
+	 * fail.  A crappy solution here is to retry for 5 seconds, hoping that
+	 * the first fuse2fs server will wake up and exit.
+	 *
+	 * If the filesystem is in a regular file, O_EXCL (without O_CREAT) has
+	 * no defined behavior, but it never returns EBUSY.
+	 */
+	deadline = init_deadline(FUSE2FS_OPEN_TIMEOUT);
+	do {
 		err = ext2fs_open2(fctx.device, options, flags, 0, 0,
 				   unix_io_manager, &global_fs);
+		if ((err == EPERM || err == EACCES) &&
+		    (!fctx.ro || (flags & EXT2_FLAG_RW))) {
+			/*
+			 * Source device cannot be opened for write.  Under
+			 * these circumstances, mount(8) will try again with a
+			 * ro mount, and the kernel will open the block device
+			 * readonly.
+			 */
+			log_printf(&fctx, "%s\n",
+ _("WARNING: source write-protected, mounted read-only."));
+			flags &= ~EXT2_FLAG_RW;
+			fctx.ro = 1;
+
+			/* Force the loop to run once more */
+			err = -1;
+		}
+	} while (err == -1 ||
+		 (err == EBUSY && retry_before_deadline(deadline)));
+	if (err == EBUSY) {
+		err_printf(&fctx, "%s: %s.\n",
+ _("Could not lock filesystem block device"), error_message(err));
+		goto out;
 	}
 	if (err) {
 		err_printf(&fctx, "%s.\n", error_message(err));
 		err_printf(&fctx, "%s\n", _("Please run e2fsck -fy."));
 		goto out;
 	}
+
+	/*
+	 * If the filesystem is stored in a regular file, take an (advisory)
+	 * exclusive lock to prevent other instances of e2fsprogs from writing
+	 * to the filesystem image.  On Linux we don't want to do this for
+	 * block devices because udev will spin forever trying to settle a
+	 * uevent and cause weird userspace stalls, and block devices have
+	 * O_EXCL so we don't need this there.
+	 */
+	if (!(global_fs->io->flags & CHANNEL_FLAGS_BLOCK_DEVICE)) {
+		unsigned int lock_flags = IO_CHANNEL_FLOCK_TRYLOCK;
+
+		if (global_fs->flags & IO_FLAG_RW)
+			lock_flags |= IO_CHANNEL_FLOCK_EXCLUSIVE;
+		else
+			lock_flags |= IO_CHANNEL_FLOCK_SHARED;
+
+		deadline = init_deadline(FUSE2FS_OPEN_TIMEOUT);
+		do {
+			err = io_channel_flock(global_fs->io, lock_flags);
+		} while (err == EWOULDBLOCK && retry_before_deadline(deadline));
+		if (err) {
+			err_printf(&fctx, "%s: %s\n",
+ _("Could not lock filesystem image"), error_message(err));
+			goto out;
+		}
+	}
+
 	fctx.fs = global_fs;
 	global_fs->priv_data = &fctx;
 	fctx.blocklog = u_log2(fctx.fs->blocksize);
