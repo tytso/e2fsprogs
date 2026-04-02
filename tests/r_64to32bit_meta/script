@@ -11,7 +11,7 @@ CONF=$TMPFILE.conf
 cat > $CONF << ENDL
 [fs_types]
 	ext4h = {
-		features = has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,meta_bg,^resize_inode,64bit
+		features = has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,^dir_index,ext_attr,meta_bg,^resize_inode,64bit
 		blocksize = 1024
 		inode_size = 256
 		make_hugefiles = true

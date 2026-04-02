@@ -6,7 +6,7 @@ CONF=$TMPFILE.conf
 cat > $CONF << ENDL
 [fs_types]
 	ext4h = {
-		features = has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,resize_inode,64bit,metadata_csum
+		features = has_journal,extent,huge_file,flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,^dir_index,ext_attr,resize_inode,64bit,metadata_csum
 		blocksize = 1024
 		inode_size = 256
 		make_hugefiles = true
@@ -23,6 +23,7 @@ echo "tune2fs metadata_csum test" > $OUT
 
 MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4h -o Linux $TMPFILE 524288 >> $OUT 2>&1
 rm -f $CONF
+tune2fs -O dir_index $TMPFILE >> $OUT 2>&1
 
 # dump and check
 $DUMPE2FS $TMPFILE 2> /dev/null | grep '^Group 0:' -B99 -A20 | sed -f $cmd_dir/filter.sed > $OUT.before

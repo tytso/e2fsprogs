@@ -19,7 +19,7 @@ CONF=$TMPFILE.conf
 cat > $CONF << ENDL
 [fs_types]
 	ext4h = {
-		features = has_journal,extent,huge_file,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,^resize_inode,^meta_bg,^flex_bg,metadata_csum,64bit
+		features = has_journal,extent,huge_file,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,^dir_index,ext_attr,^resize_inode,^meta_bg,^flex_bg,metadata_csum,64bit
 		blocksize = 1024
 		inode_size = 256
 		make_hugefiles = true
@@ -36,7 +36,7 @@ echo "tune2fs test" > $OUT
 
 MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4h -o Linux -I 128 $TMPFILE 786432 >> $OUT 2>&1
 rm -f $CONF
-
+/bin/cp $TMPFILE /tmp/script.img
 # dump and check
 ($DUMPE2FS -h $TMPFILE; $DUMPE2FS -g $TMPFILE) 2>&1 | sed -f $cmd_dir/filter.sed -e '/^Checksum:.*/d' >> $OUT.before 2> /dev/null
 $FSCK $FSCK_OPT -N test_filesys $TMPFILE >> $OUT 2>&1

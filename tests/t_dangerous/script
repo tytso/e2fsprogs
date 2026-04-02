@@ -6,7 +6,7 @@ CONF=$TMPFILE.conf
 cat > $CONF << ENDL
 [fs_types]
 	ext4h = {
-		features = has_journal,extent,huge_file,^flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,resize_inode,64bit
+		features = has_journal,extent,huge_file,^flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,^dir_index,ext_attr,resize_inode,64bit
 		blocksize = 1024
 		inode_size = 256
 		make_hugefiles = true
@@ -18,7 +18,7 @@ cat > $CONF << ENDL
 		zero_hugefiles = false
 	}
 	ext4m = {
-		features = has_journal,extent,huge_file,^flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,dir_index,ext_attr,resize_inode,64bit,metadata_csum
+		features = has_journal,extent,huge_file,^flex_bg,uninit_bg,dir_nlink,extra_isize,sparse_super,filetype,^dir_index,ext_attr,resize_inode,64bit,metadata_csum
 		blocksize = 1024
 		inode_size = 256
 		make_hugefiles = true
@@ -38,7 +38,9 @@ MKE2FS_CONFIG=$CONF $MKE2FS -F -T ext4h -o Linux -U 6fc3daa4-180d-4f2b-a6f2-f7a5
 # trigger a filesystem check
 $DEBUGFS -w -R 'ssv mtime now' $TMPFILE > /dev/null 2>&1
 $DEBUGFS -w -R 'ssv lastcheck 20000' $TMPFILE > /dev/null 2>&1
+$DEBUGFS -w -R 'features dir_index' $TMPFILE > /dev/null 2>&1
 
+cp $TMPFILE /tmp/script.img
 # add mcsum
 echo "tune2fs -O metadata_csum test.img" >> $OUT
 $TUNE2FS -O metadata_csum $TMPFILE >> $OUT 2>&1

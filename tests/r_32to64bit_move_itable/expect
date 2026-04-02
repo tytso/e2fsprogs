@@ -26,8 +26,8 @@ Change in FS metadata:
  Last mounted on:          <not available>
  Filesystem magic number:  0xEF53
  Filesystem revision #:    1 (dynamic)
--Filesystem features:      has_journal ext_attr dir_index filetype extent sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
-+Filesystem features:      has_journal ext_attr dir_index filetype extent 64bit sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
+-Filesystem features:      has_journal ext_attr filetype extent sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
++Filesystem features:      has_journal ext_attr filetype extent 64bit sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
  Default mount options:    user_xattr acl
  Filesystem state:         clean
  Errors behavior:          Continue

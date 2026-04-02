@@ -38,20 +38,11 @@ Change in FS metadata:
  Last mounted on:          <not available>
  Filesystem magic number:  0xEF53
  Filesystem revision #:    1 (dynamic)
--Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize
-+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
+-Filesystem features:      has_journal ext_attr resize_inode filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize
++Filesystem features:      has_journal ext_attr resize_inode filetype extent 64bit flex_bg sparse_super large_file huge_file dir_nlink extra_isize metadata_csum
  Default mount options:    user_xattr acl
  Filesystem state:         clean
  Errors behavior:          Continue
-@@ -11,7 +11,7 @@
- Block count:              524288
- Reserved block count:     26214
- Overhead clusters:        35246
--Free blocks:              571
-+Free blocks:              568
- Free inodes:              65048
- First block:              1
- Block size:               1024
 @@ -34,6 +34,7 @@
  Journal inode:            8
  Default directory hash:   half_md4
@@ -72,9 +63,8 @@ Change in FS metadata:
    Inode bitmap at 278 (+277)
    Inode table at 294-549 (+293)
 -  21 free blocks, 536 free inodes, 2 directories
--  Free blocks: 4413-4433
-+  18 free blocks, 536 free inodes, 2 directories, 536 unused inodes
-+  Free blocks: 4413, 4417-4433
++  21 free blocks, 536 free inodes, 2 directories, 536 unused inodes
+   Free blocks: 4413-4433
    Free inodes: 489-1024
 -Group 1: (Blocks 8193-16384)
 +Group 1: (Blocks 8193-16384) [INODE_UNINIT, ITABLE_ZEROED]
