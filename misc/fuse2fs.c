@@ -148,7 +148,7 @@ static inline uint64_t round_down(uint64_t b, unsigned int align)
 
 #define dbg_printf(fuse2fs, format, ...) \
 	while ((fuse2fs)->debug) { \
-		printf("FUSE2FS (%s): " format, (fuse2fs)->shortdev, ##__VA_ARGS__); \
+		printf("FUSE2FS (%s): tid=%d " format, (fuse2fs)->shortdev, gettid(), ##__VA_ARGS__); \
 		fflush(stdout); \
 		break; \
 	}
@@ -200,6 +200,8 @@ static inline uint64_t round_down(uint64_t b, unsigned int align)
 
 errcode_t ext2fs_check_ext3_journal(ext2_filsys fs);
 errcode_t ext2fs_run_ext3_journal(ext2_filsys *fs);
+
+const char *err_shortdev;
 
 #ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jbd-debug */
 int journal_enable_debug = -1;
@@ -291,9 +293,9 @@ struct fuse2fs {
 	__FUSE2FS_CHECK_CONTEXT((ff), abort())
 
 static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
-			     const char *file, int line);
+			     const char *func, int line);
 #define translate_error(fs, ino, err) __translate_error((fs), (ino), (err), \
-			__FILE__, __LINE__)
+			__func__, __LINE__)
 
 /* for macosx */
 #ifndef W_OK
@@ -3524,8 +3526,8 @@ static int op_read(const char *path EXT2FS_ATTR((unused)), char *buf,
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	FUSE2FS_CHECK_HANDLE(ff, fh);
-	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino,
-		   (intmax_t) offset, len);
+	dbg_printf(ff, "%s: ino=%d off=0x%llx len=0x%zx\n", __func__, fh->ino,
+		   (unsigned long long)offset, len);
 	fs = fuse2fs_start(ff);
 	err = ext2fs_file_open(fs, fh->ino, fh->open_flags, &efp);
 	if (err) {
@@ -3578,8 +3580,8 @@ static int op_write(const char *path EXT2FS_ATTR((unused)),
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	FUSE2FS_CHECK_HANDLE(ff, fh);
-	dbg_printf(ff, "%s: ino=%d off=%jd len=%jd\n", __func__, fh->ino,
-		   (intmax_t) offset, (intmax_t) len);
+	dbg_printf(ff, "%s: ino=%d off=0x%llx len=0x%zx\n", __func__, fh->ino,
+		   (unsigned long long) offset, len);
 	fs = fuse2fs_start(ff);
 	if (!fs_writeable(fs)) {
 		ret = -EROFS;
@@ -4151,12 +4153,13 @@ static int op_readdir_iter(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	if (i->startpos >= i->dirpos)
 		return 0;
 
-	dbg_printf(i->ff, "READDIR%s %u dirpos %llu\n",
+	dbg_printf(i->ff, "READDIR%s ino=%d %u offset=0x%llx\n",
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 			i->flags == FUSE_READDIR_PLUS ? "PLUS" : "",
 #else
 			"",
 #endif
+			dir,
 			i->nr++,
 			(unsigned long long)i->dirpos);
 
@@ -4205,7 +4208,7 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	FUSE2FS_CHECK_HANDLE(ff, fh);
-	dbg_printf(ff, "%s: ino=%d offset=%llu\n", __func__, fh->ino,
+	dbg_printf(ff, "%s: ino=%d offset=0x%llx\n", __func__, fh->ino,
 			(unsigned long long)offset);
 	i.fs = fuse2fs_start(ff);
 	i.buf = buf;
@@ -4791,7 +4794,7 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	    fr->len < fs->blocksize)
 		return -EINVAL;
 
-	dbg_printf(ff, "%s: start=%llu end=%llu minlen=%llu\n", __func__,
+	dbg_printf(ff, "%s: start=0x%llx end=0x%llx minlen=0x%llx\n", __func__,
 		   start, end, minlen);
 
 	if (start < fs->super->s_first_data_block)
@@ -4962,8 +4965,12 @@ static int fuse2fs_allocate_range(struct fuse2fs *ff,
 
 	start = FUSE2FS_B_TO_FSBT(ff, offset);
 	end = FUSE2FS_B_TO_FSBT(ff, offset + len - 1);
-	dbg_printf(ff, "%s: ino=%d mode=0x%x start=%llu end=%llu\n", __func__,
-		   fh->ino, mode, start, end);
+	dbg_printf(ff, "%s: ino=%d mode=0x%x offset=0x%llx len=0x%llx start=0x%llx end=0x%llx\n",
+		   __func__, fh->ino, mode,
+		   (unsigned long long)offset,
+		   (unsigned long long)len,
+		   (unsigned long long)start,
+		   (unsigned long long)end);
 	if (!fs_can_allocate(ff, FUSE2FS_B_TO_FSB(ff, len)))
 		return -ENOSPC;
 
@@ -5034,6 +5041,10 @@ static errcode_t clean_block_middle(struct fuse2fs *ff, ext2_ino_t ino,
 	if (err)
 		return err;
 
+	dbg_printf(ff, "%s: ino=%d offset=0x%llx len=0x%llx\n",
+		   __func__, ino,
+		   (unsigned long long)offset + residue,
+		   (unsigned long long)len);
 	memset(*buf + residue, 0, len);
 
 	return io_channel_write_blk64(fs->io, blk, 1, *buf);
@@ -5070,10 +5081,19 @@ static errcode_t clean_block_edge(struct fuse2fs *ff, ext2_ino_t ino,
 	if (!blk || (retflags & BMAP_RET_UNINIT))
 		return 0;
 
-	if (clean_before)
+	if (clean_before) {
+		dbg_printf(ff, "%s: ino=%d before offset=0x%llx len=0x%llx\n",
+			   __func__, ino,
+			   (unsigned long long)offset,
+			   (unsigned long long)residue);
 		memset(*buf, 0, residue);
-	else
+	} else {
+		dbg_printf(ff, "%s: ino=%d after offset=0x%llx len=0x%llx\n",
+			   __func__, ino,
+			   (unsigned long long)offset,
+			   (unsigned long long)fs->blocksize - residue);
 		memset(*buf + residue, 0, fs->blocksize - residue);
+	}
 
 	return io_channel_write_blk64(fs->io, blk, 1, *buf);
 }
@@ -5087,9 +5107,6 @@ static int fuse2fs_punch_range(struct fuse2fs *ff,
 	blk64_t start, end;
 	errcode_t err;
 	char *buf = NULL;
-
-	dbg_printf(ff, "%s: offset=%jd len=%jd\n", __func__,
-		   (intmax_t) offset, (intmax_t) len);
 
 	/* kernel ext4 punch requires this flag to be set */
 	if (!(mode & FL_KEEP_SIZE_FLAG))
@@ -5105,8 +5122,12 @@ static int fuse2fs_punch_range(struct fuse2fs *ff,
 	end = FUSE2FS_B_TO_FSBT(ff, round_down(offset + len, fs->blocksize));
 
 	dbg_printf(ff,
- "%s: ino=%d mode=0x%x offset=0x%jx len=0x%jx start=0x%llx end=0x%llx\n",
-		   __func__, fh->ino, mode, offset, len, start, end);
+ "%s: ino=%d mode=0x%x offset=0x%llx len=0x%llx start=0x%llx end=0x%llx\n",
+		   __func__, fh->ino, mode,
+		   (unsigned long long)offset,
+		   (unsigned long long)len,
+		   (unsigned long long)start,
+		   (unsigned long long)end);
 
 	err = fuse2fs_read_inode(fs, fh->ino, &inode);
 	if (err)
@@ -5190,6 +5211,12 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 		ret = -EROFS;
 		goto out;
 	}
+
+	dbg_printf(ff, "%s: ino=%d mode=0x%x start=0x%llx end=0x%llx\n", __func__,
+		   fh->ino, mode,
+		   (unsigned long long)offset,
+		   (unsigned long long)offset + len);
+
 	if (mode & FL_ZERO_RANGE_FLAG)
 		ret = fuse2fs_zero_range(ff, fh, mode, offset, len);
 	else if (mode & FL_PUNCH_HOLE_FLAG)
@@ -5529,6 +5556,18 @@ static void try_adjust_oom_score(struct fuse2fs *ff)
 	fclose(fp);
 }
 
+static void fuse2fs_com_err_proc(const char *whoami, errcode_t code,
+				 const char *fmt, va_list args)
+{
+	fprintf(stderr, "FUSE2FS (%s): ", err_shortdev ? err_shortdev : "?");
+	if (whoami)
+		fprintf(stderr, "%s: ", whoami);
+	fprintf(stderr, "%s ", error_message(code));
+        vfprintf(stderr, fmt, args);
+	fprintf(stderr, "\n");
+	fflush(stderr);
+}
+
 int main(int argc, char *argv[])
 {
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
@@ -5557,6 +5596,10 @@ int main(int argc, char *argv[])
 		fctx.shortdev++;
 	else
 		fctx.shortdev = fctx.device;
+
+	/* capture library error messages */
+	err_shortdev = fctx.shortdev;
+	set_com_err_hook(fuse2fs_com_err_proc);
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -5668,6 +5711,8 @@ out:
 	}
 	fuse2fs_mmp_destroy(&fctx);
 	fuse2fs_unmount(&fctx);
+	reset_com_err_hook();
+	err_shortdev = NULL;
 	if (fctx.device)
 		free(fctx.device);
 	pthread_mutex_destroy(&fctx.bfl);
@@ -5676,7 +5721,7 @@ out:
 }
 
 static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
-			     const char *file, int line)
+			     const char *func, int line)
 {
 	struct timespec now;
 	int ret = err;
@@ -5803,10 +5848,10 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 
 	if (ino)
 		err_printf(ff, "%s (inode #%d) at %s:%d.\n",
-			error_message(err), ino, file, line);
+			error_message(err), ino, func, line);
 	else
 		err_printf(ff, "%s at %s:%d.\n",
-			error_message(err), file, line);
+			error_message(err), func, line);
 
 	/* Make a note in the error log */
 	get_now(&now);
@@ -5814,14 +5859,14 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 	fs->super->s_last_error_ino = ino;
 	fs->super->s_last_error_line = line;
 	fs->super->s_last_error_block = err; /* Yeah... */
-	strncpy((char *)fs->super->s_last_error_func, file,
+	strncpy((char *)fs->super->s_last_error_func, func,
 		sizeof(fs->super->s_last_error_func));
 	if (ext2fs_get_tstamp(fs->super, s_first_error_time) == 0) {
 		ext2fs_set_tstamp(fs->super, s_first_error_time, now.tv_sec);
 		fs->super->s_first_error_ino = ino;
 		fs->super->s_first_error_line = line;
 		fs->super->s_first_error_block = err;
-		strncpy((char *)fs->super->s_first_error_func, file,
+		strncpy((char *)fs->super->s_first_error_func, func,
 			sizeof(fs->super->s_first_error_func));
 	}
 
