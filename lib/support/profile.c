@@ -394,8 +394,8 @@ errcode_t profile_set_default(profile_t profile, const char *def_string)
 	struct parse_state	state;
 	prf_file_t		prf;
 	errcode_t		retval;
-	const char		*in;
-	char			*line, *p, *end;
+	const char		*in, *end;
+	char			*line, *p;
 	int			line_size, len;
 
 	if (!def_string || !profile || profile->magic != PROF_MAGIC_PROFILE)

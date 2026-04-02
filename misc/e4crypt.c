@@ -144,7 +144,7 @@ static int hex2byte(const char *hex, size_t hex_size, unsigned char *bytes,
 		    size_t bytes_size)
 {
 	size_t x;
-	unsigned char *h, *l;
+	const unsigned char *h, *l;
 
 	if (hex_size % 2)
 		return -EINVAL;
@@ -301,7 +301,7 @@ static void parse_salt(char *salt_str, int flags)
 		cp += 2;
 		goto salt_from_filename;
 	} else if (strncmp(cp, "0x", 2) == 0) {
-		unsigned char *h, *l;
+		const unsigned char *h, *l;
 
 		cp += 2;
 		if (strlen(cp) & 1)

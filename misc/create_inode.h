@@ -57,13 +57,13 @@ extern errcode_t do_mknod_internal(ext2_filsys fs, ext2_ino_t cwd,
 				   const char *name, unsigned int st_mode,
 				   unsigned int st_rdev);
 extern errcode_t do_symlink_internal(ext2_filsys fs, ext2_ino_t cwd,
-				     const char *name, char *target,
+				     char *name, char *target,
 				     ext2_ino_t root);
 extern errcode_t do_mkdir_internal(ext2_filsys fs, ext2_ino_t cwd,
-				   const char *name, unsigned long flags,
+				   char *name, unsigned long flags,
 				   ext2_ino_t root);
 extern errcode_t do_write_internal(ext2_filsys fs, ext2_ino_t cwd,
-				   const char *src, const char *dest,
+				   const char *src, char *dest,
 				   unsigned long flags, ext2_ino_t root);
 extern errcode_t add_link(ext2_filsys fs, ext2_ino_t parent_ino,
 			  ext2_ino_t ino, const char *name);
