@@ -219,6 +219,12 @@ struct fuse2fs_file_handle {
 	int check_flags;
 };
 
+enum fuse2fs_opstate {
+	F2OP_READONLY,
+	F2OP_WRITABLE,
+	F2OP_SHUTDOWN,
+};
+
 /* Main program context */
 #define FUSE2FS_MAGIC		(0xEF53DEADUL)
 struct fuse2fs {
@@ -242,6 +248,7 @@ struct fuse2fs {
 	int acl;
 	int dirsync;
 
+	enum fuse2fs_opstate opstate;
 	int logfd;
 	int blocklog;
 	int oom_score_adj;
@@ -274,7 +281,7 @@ struct fuse2fs {
 		} \
 	} while (0)
 
-#define __FUSE2FS_CHECK_CONTEXT(ff, retcode) \
+#define __FUSE2FS_CHECK_CONTEXT(ff, retcode, shutcode) \
 	do { \
 		if ((ff) == NULL || (ff)->magic != FUSE2FS_MAGIC) { \
 			fprintf(stderr, \
@@ -283,14 +290,17 @@ struct fuse2fs {
 			fflush(stderr); \
 			retcode; \
 		} \
+		if ((ff)->opstate == F2OP_SHUTDOWN) { \
+			shutcode; \
+		} \
 	} while (0)
 
 #define FUSE2FS_CHECK_CONTEXT(ff) \
-	__FUSE2FS_CHECK_CONTEXT((ff), return -EUCLEAN)
+	__FUSE2FS_CHECK_CONTEXT((ff), return -EUCLEAN, return -EIO)
 #define FUSE2FS_CHECK_CONTEXT_DESTROY(ff) \
-	__FUSE2FS_CHECK_CONTEXT((ff), return)
+	__FUSE2FS_CHECK_CONTEXT((ff), return, /* do not return */)
 #define FUSE2FS_CHECK_CONTEXT_INIT(ff) \
-	__FUSE2FS_CHECK_CONTEXT((ff), abort())
+	__FUSE2FS_CHECK_CONTEXT((ff), abort(), abort())
 
 static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 			     const char *func, int line);
@@ -553,7 +563,7 @@ static bool fuse2fs_mmp_wanted(const struct fuse2fs *ff)
 	ext2_filsys fs = ff->fs;
 
 	if (!fs || !ext2fs_has_feature_mmp(fs->super) ||
-	    !(fs->flags & EXT2_FLAG_RW) || (fs->flags & EXT2_FLAG_SKIP_MMP))
+	    ff->opstate != F2OP_WRITABLE || (fs->flags & EXT2_FLAG_SKIP_MMP))
 		return false;
 	return true;
 }
@@ -767,8 +777,6 @@ static int update_atime(ext2_filsys fs, ext2_ino_t ino)
 	struct timespec atime, mtime, now;
 	double datime, dmtime, dnow;
 
-	if (!(fs->flags & EXT2_FLAG_RW))
-		return 0;
 	err = fuse2fs_read_inode(fs, ino, &inode);
 	if (err)
 		return translate_error(fs, ino, err);
@@ -882,9 +890,10 @@ static int fs_can_allocate(struct fuse2fs *ff, blk64_t num)
 	return ext2fs_free_blocks_count(fs->super) > reserved + num;
 }
 
-static int fs_writeable(ext2_filsys fs)
+static int fuse2fs_is_writeable(struct fuse2fs *ff)
 {
-	return (fs->flags & EXT2_FLAG_RW) && (fs->super->s_error_count == 0);
+	return ff->opstate == F2OP_WRITABLE &&
+		(ff->fs->super->s_error_count == 0);
 }
 
 static inline int is_superuser(struct fuse2fs *ff, struct fuse_context *ctxt)
@@ -912,12 +921,10 @@ static inline int want_check_owner(struct fuse2fs *ff,
 static int check_iflags_access(struct fuse2fs *ff, ext2_ino_t ino,
 			       const struct ext2_inode *inode, int mask)
 {
-	ext2_filsys fs = ff->fs;
-
 	EXT2FS_BUILD_BUG_ON((A_OK & (R_OK | W_OK | X_OK | F_OK)) != 0);
 
 	/* no writing or metadata changes to read-only or broken fs */
-	if ((mask & (W_OK | A_OK)) && !fs_writeable(fs))
+	if ((mask & (W_OK | A_OK)) && !fuse2fs_is_writeable(ff))
 		return -EROFS;
 
 	dbg_printf(ff, "access ino=%d mask=e%s%s%s%s iflags=0x%x\n",
@@ -950,7 +957,7 @@ static int check_inum_access(struct fuse2fs *ff, ext2_ino_t ino, int mask)
 	int ret;
 
 	/* no writing to read-only or broken fs */
-	if ((mask & (W_OK | A_OK)) && !fs_writeable(fs))
+	if ((mask & (W_OK | A_OK)) && !fuse2fs_is_writeable(ff))
 		return -EROFS;
 
 	err = ext2fs_read_inode(fs, ino, &inode);
@@ -1135,6 +1142,7 @@ static errcode_t fuse2fs_open(struct fuse2fs *ff)
 	}
 
 	snprintf(options, sizeof(options) - 1, "offset=%lu", ff->offset);
+	ff->opstate = F2OP_READONLY;
 
 	if (ff->directio)
 		flags |= EXT2_FLAG_DIRECT_IO;
@@ -1337,6 +1345,7 @@ static int fuse2fs_mount(struct fuse2fs *ff)
  _("Warning: fuse2fs does not support using the journal.\n"
    "There may be file system corruption or data loss if\n"
    "the file system is not gracefully unmounted.\n"));
+		ff->opstate = F2OP_WRITABLE;
 	}
 
 	if (!(fs->super->s_state & EXT2_VALID_FS))
@@ -1359,7 +1368,7 @@ static int fuse2fs_mount(struct fuse2fs *ff)
 		ff->errors_behavior = fs->super->s_errors;
 
 	/* Clear the valid flag so that an unclean shutdown forces a fsck */
-	if (fs->flags & EXT2_FLAG_RW) {
+	if (ff->opstate == F2OP_WRITABLE) {
 		fs->super->s_mnt_count++;
 		ext2fs_set_tstamp(fs->super, s_mtime, time(NULL));
 		fs->super->s_state &= ~EXT2_VALID_FS;
@@ -1383,7 +1392,7 @@ static void op_destroy(void *p EXT2FS_ATTR((unused)))
 	fs = fuse2fs_start(ff);
 
 	dbg_printf(ff, "%s: dev=%s\n", __func__, fs->device_name);
-	if (fs->flags & EXT2_FLAG_RW) {
+	if (ff->opstate == F2OP_WRITABLE) {
 		fs->super->s_state |= EXT2_VALID_FS;
 		if (fs->super->s_error_count)
 			fs->super->s_state |= EXT2_ERROR_FS;
@@ -1574,7 +1583,7 @@ static void *op_init(struct fuse_conn_info *conn
 	cfg->nullpath_ok = 1;
 #endif
 
-	if (ff->fs->flags & EXT2_FLAG_RW)
+	if (ff->opstate == F2OP_WRITABLE)
 		fuse2fs_read_bitmaps(ff);
 
 	/*
@@ -1761,7 +1770,7 @@ static int op_readlink(const char *path, char *buf, size_t len)
 	}
 	buf[len] = 0;
 
-	if (fs_writeable(fs)) {
+	if (fuse2fs_is_writeable(ff)) {
 		ret = update_atime(fs, ino);
 		if (ret)
 			goto out;
@@ -3556,7 +3565,7 @@ out2:
 		goto out;
 	}
 
-	if (fh->check_flags != X_OK && fs_writeable(fs)) {
+	if (fh->check_flags != X_OK && fuse2fs_is_writeable(ff)) {
 		ret = update_atime(fs, fh->ino);
 		if (ret)
 			goto out;
@@ -3583,7 +3592,7 @@ static int op_write(const char *path EXT2FS_ATTR((unused)),
 	dbg_printf(ff, "%s: ino=%d off=0x%llx len=0x%zx\n", __func__, fh->ino,
 		   (unsigned long long) offset, len);
 	fs = fuse2fs_start(ff);
-	if (!fs_writeable(fs)) {
+	if (!fuse2fs_is_writeable(ff)) {
 		ret = -EROFS;
 		goto out;
 	}
@@ -3651,7 +3660,7 @@ static int op_release(const char *path EXT2FS_ATTR((unused)),
 	fs = fuse2fs_start(ff);
 
 	if ((fp->flags & O_SYNC) &&
-	    fs_writeable(fs) &&
+	    fuse2fs_is_writeable(ff) &&
 	    (fh->open_flags & EXT2_FILE_WRITE)) {
 		err = ext2fs_flush2(fs, EXT2_FLAG_FLUSH_NO_SYNC);
 		if (err)
@@ -3681,7 +3690,7 @@ static int op_fsync(const char *path EXT2FS_ATTR((unused)),
 	dbg_printf(ff, "%s: ino=%d\n", __func__, fh->ino);
 	fs = fuse2fs_start(ff);
 	/* For now, flush everything, even if it's slow */
-	if (fs_writeable(fs) && fh->open_flags & EXT2_FILE_WRITE) {
+	if (fuse2fs_is_writeable(ff) && fh->open_flags & EXT2_FILE_WRITE) {
 		err = ext2fs_flush2(fs, 0);
 		if (err)
 			ret = translate_error(fs, fh->ino, err);
@@ -3731,7 +3740,7 @@ static int op_statfs(const char *path EXT2FS_ATTR((unused)),
 	fsid ^= *f;
 	buf->f_fsid = fsid;
 	buf->f_flag = 0;
-	if (!(fs->flags & EXT2_FLAG_RW))
+	if (ff->opstate != F2OP_WRITABLE)
 		buf->f_flag |= ST_RDONLY;
 	buf->f_namemax = EXT2_NAME_LEN;
 	fuse2fs_finish(ff, 0);
@@ -4219,7 +4228,7 @@ static int op_readdir(const char *path EXT2FS_ATTR((unused)),
 		goto out;
 	}
 
-	if (fs_writeable(i.fs)) {
+	if (fuse2fs_is_writeable(ff)) {
 		ret = update_atime(i.fs, fh->ino);
 		if (ret)
 			goto out;
@@ -4401,7 +4410,7 @@ static int op_ftruncate(const char *path EXT2FS_ATTR((unused)),
 	dbg_printf(ff, "%s: ino=%d len=%jd\n", __func__, fh->ino,
 		   (intmax_t) len);
 	fs = fuse2fs_start(ff);
-	if (!fs_writeable(fs)) {
+	if (!fuse2fs_is_writeable(ff)) {
 		ret = -EROFS;
 		goto out;
 	}
@@ -4779,7 +4788,7 @@ static int ioctl_fitrim(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
 	blk64_t max_blks = ext2fs_blocks_count(fs->super);
 	errcode_t err = 0;
 
-	if (!fs_writeable(fs))
+	if (!fuse2fs_is_writeable(ff))
 		return -EROFS;
 
 	start = FUSE2FS_B_TO_FSBT(ff, fr->start);
@@ -4865,6 +4874,36 @@ out:
 }
 #endif /* FITRIM */
 
+#ifndef EXT4_IOC_SHUTDOWN
+# define EXT4_IOC_SHUTDOWN	_IOR('X', 125, __u32)
+#endif
+
+static int ioctl_shutdown(struct fuse2fs *ff, struct fuse2fs_file_handle *fh,
+			  void *data)
+{
+	struct fuse_context *ctxt = fuse_get_context();
+	ext2_filsys fs = ff->fs;
+
+	if (!is_superuser(ff, ctxt))
+		return -EPERM;
+
+	err_printf(ff, "%s.\n", _("shut down requested"));
+
+	fuse2fs_mmp_cancel(ff);
+
+	/*
+	 * EXT4_IOC_SHUTDOWN inherited the inverted polarity on the ioctl
+	 * direction from XFS.  Unfortunately, that means we can't implement
+	 * any of the flags.  Flush whatever is dirty and shut down.
+	 */
+	if (ff->opstate == F2OP_WRITABLE)
+		ext2fs_flush2(fs, 0);
+	ff->opstate = F2OP_SHUTDOWN;
+	fs->flags &= ~EXT2_FLAG_RW;
+
+	return 0;
+}
+
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(2, 8)
 static int op_ioctl(const char *path EXT2FS_ATTR((unused)),
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
@@ -4911,6 +4950,9 @@ static int op_ioctl(const char *path EXT2FS_ATTR((unused)),
 		ret = ioctl_fitrim(ff, fh, data);
 		break;
 #endif
+	case EXT4_IOC_SHUTDOWN:
+		ret = ioctl_shutdown(ff, fh, data);
+		break;
 	default:
 		dbg_printf(ff, "%s: Unknown ioctl %d\n", __func__, cmd);
 		ret = -ENOTTY;
@@ -5197,7 +5239,6 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 {
 	struct fuse2fs *ff = fuse2fs_get();
 	struct fuse2fs_file_handle *fh = fuse2fs_get_handle(fp);
-	ext2_filsys fs;
 	int ret;
 
 	/* Catch unknown flags */
@@ -5206,8 +5247,8 @@ static int op_fallocate(const char *path EXT2FS_ATTR((unused)), int mode,
 
 	FUSE2FS_CHECK_CONTEXT(ff);
 	FUSE2FS_CHECK_HANDLE(ff, fh);
-	fs = fuse2fs_start(ff);
-	if (!fs_writeable(fs)) {
+	fuse2fs_start(ff);
+	if (!fuse2fs_is_writeable(ff)) {
 		ret = -EROFS;
 		goto out;
 	}
@@ -5576,6 +5617,7 @@ int main(int argc, char *argv[])
 		.logfd = -1,
 		.bfl = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER,
 		.oom_score_adj = -500,
+		.opstate = F2OP_WRITABLE,
 	};
 	errcode_t err;
 	FILE *orig_stderr = stderr;
@@ -5880,9 +5922,11 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
  _("Continuing after errors; is this a good idea?"));
 		break;
 	case EXT2_ERRORS_RO:
-		if (fs->flags & EXT2_FLAG_RW)
+		if (ff->opstate == F2OP_WRITABLE) {
 			err_printf(ff, "%s\n",
  _("Remounting read-only due to errors."));
+			ff->opstate = F2OP_READONLY;
+		}
 		fuse2fs_mmp_cancel(ff);
 		fs->flags &= ~EXT2_FLAG_RW;
 		break;
