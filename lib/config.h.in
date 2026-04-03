@@ -181,6 +181,9 @@
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
+/* Define to 1 if you have the 'gettid' function. */
+#undef HAVE_GETTID
+
 /* Define to 1 if you have the GNU-style 'qsort_r' function. */
 #undef HAVE_GNU_QSORT_R
 
@@ -330,6 +333,9 @@
 
 /* Define to 1 if you have the 'pthread_setname_np' function. */
 #undef HAVE_PTHREAD_SETNAME_NP
+
+/* Define to 1 if you have the 'pthread_threadid_np' function. */
+#undef HAVE_PTHREAD_THREADID_NP
 
 /* Define to 1 if you have the 'pwrite' function. */
 #undef HAVE_PWRITE

@@ -13750,6 +13750,12 @@ then :
   printf "%s\n" "#define HAVE_GETRUSAGE 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "gettid" "ac_cv_func_gettid"
+if test "x$ac_cv_func_gettid" = xyes
+then :
+  printf "%s\n" "#define HAVE_GETTID 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "jrand48" "ac_cv_func_jrand48"
 if test "x$ac_cv_func_jrand48" = xyes
 then :
@@ -13892,6 +13898,12 @@ ac_fn_c_check_func "$LINENO" "pthread_setname_np" "ac_cv_func_pthread_setname_np
 if test "x$ac_cv_func_pthread_setname_np" = xyes
 then :
   printf "%s\n" "#define HAVE_PTHREAD_SETNAME_NP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "pthread_threadid_np" "ac_cv_func_pthread_threadid_np"
+if test "x$ac_cv_func_pthread_threadid_np" = xyes
+then :
+  printf "%s\n" "#define HAVE_PTHREAD_THREADID_NP 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "qsort_r" "ac_cv_func_qsort_r"

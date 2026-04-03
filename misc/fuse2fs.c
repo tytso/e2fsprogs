@@ -48,6 +48,7 @@
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fsP.h"
 #include "support/bthread.h"
+#include "support/thread.h"
 #if FUSE_VERSION >= FUSE_MAKE_VERSION(3, 0)
 # define FUSE_PLATFORM_OPTS	""
 #else
@@ -148,7 +149,7 @@ static inline uint64_t round_down(uint64_t b, unsigned int align)
 
 #define dbg_printf(fuse2fs, format, ...) \
 	while ((fuse2fs)->debug) { \
-		printf("FUSE2FS (%s): tid=%d " format, (fuse2fs)->shortdev, gettid(), ##__VA_ARGS__); \
+		printf("FUSE2FS (%s): tid=%llu " format, (fuse2fs)->shortdev, get_thread_id(), ##__VA_ARGS__); \
 		fflush(stdout); \
 		break; \
 	}

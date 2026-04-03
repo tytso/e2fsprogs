@@ -25,6 +25,7 @@ OBJS=		bthread.o \
 		quotaio.o \
 		quotaio_v2.o \
 		quotaio_tree.o \
+		thread.o \
 		dict.o \
 		devname.o
 
@@ -41,6 +42,7 @@ SRCS=		$(srcdir)/argv_parse.c \
 		$(srcdir)/quotaio.c \
 		$(srcdir)/quotaio_tree.c \
 		$(srcdir)/quotaio_v2.c \
+		$(srcdir)/thread.c \
 		$(srcdir)/dict.c \
 		$(srcdir)/devname.c
 
@@ -81,10 +83,15 @@ test_cstring: $(srcdir)/cstring.c
 	$(Q) $(CC) -o test_cstring -DDEBUG_PROGRAM $(srcdir)/cstring.c \
 		$(ALL_CFLAGS)
 
+test_thread: $(srcdir)/thread.c
+	$(E) " CC $@"
+	$(Q) $(CC) -o test_thread -DDEBUG_PROGRAM $(srcdir)/thread.c \
+		$(ALL_CFLAGS)
+
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* \
 		../libsupport.a ../libsupport_p.a $(SMANPAGES) \
-		prof_err.c prof_err.h test_profile test_cstring
+		prof_err.c prof_err.h test_profile test_cstring test_thread
 
 #fullcheck check:: tst_uuid
 #	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_uuid
@@ -111,7 +118,7 @@ $(OBJS):
 argv_parse.o: $(srcdir)/argv_parse.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/argv_parse.h
 bthread.o: $(srcdir)/bthread.c $(top_builddir)/lib/config.h \
- $(srcdir)/bthread.h
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/bthread.h
 cstring.o: $(srcdir)/cstring.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/cstring.h
 mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \
@@ -183,6 +190,8 @@ quotaio_v2.o: $(srcdir)/quotaio_v2.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/dqblk_v2.h \
  $(srcdir)/quotaio_tree.h
+thread.o: $(srcdir)/thread.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/thread.h
 dict.o: $(srcdir)/dict.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/dict.h
 devname.o: $(srcdir)/devname.c $(top_builddir)/lib/config.h \

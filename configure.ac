@@ -1246,6 +1246,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	getrandom
 	getrlimit
 	getrusage
+	gettid
 	jrand48
 	keyctl
 	llistxattr
@@ -1270,6 +1271,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	pread64
 	pwrite64
 	pthread_setname_np
+	pthread_threadid_np
 	qsort_r
 	secure_getenv
 	setmntent
