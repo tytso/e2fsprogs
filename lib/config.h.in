@@ -46,9 +46,6 @@
 /* Define to the version of FUSE to use */
 #undef FUSE_USE_VERSION
 
-/* Define to 1 if fuse supports cache_readdir */
-#undef HAVE_FUSE_CACHE_READDIR
-
 /* Define to 1 if you have the 'add_key' function. */
 #undef HAVE_ADD_KEY
 
@@ -73,9 +70,6 @@
 /* Define to 1 if you have the BSD-style 'qsort_r' function. */
 #undef HAVE_BSD_QSORT_R
 
-/* Define to 1 if PR_SET_IO_FLUSHER is present */
-#undef HAVE_PR_SET_IO_FLUSHER
-
 /* Define to 1 if you have the Mac OS X function
    CFLocaleCopyPreferredLanguages in the CoreFoundation framework. */
 #undef HAVE_CFLOCALECOPYPREFERREDLANGUAGES
@@ -86,6 +80,9 @@
 
 /* Define to 1 if you have the 'chflags' function. */
 #undef HAVE_CHFLAGS
+
+/* Define to 1 if CLOCK_MONOTONIC is present */
+#undef HAVE_CLOCK_MONOTONIC
 
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
@@ -136,8 +133,14 @@
 /* Define to 1 if you have the 'fsync' function. */
 #undef HAVE_FSYNC
 
+/* Define to 1 if FS_IOC_READ_VERITY_METADATA ioctl is available */
+#undef HAVE_FS_IOC_READ_VERITY_METADATA
+
 /* Define to 1 if you have the 'ftruncate64' function. */
 #undef HAVE_FTRUNCATE64
+
+/* Define to 1 if fuse supports cache_readdir */
+#undef HAVE_FUSE_CACHE_READDIR
 
 /* Define to 1 if you have the <fuse.h> header file. */
 #undef HAVE_FUSE_H
@@ -313,6 +316,9 @@
 /* Define to 1 if you have the 'pread64' function. */
 #undef HAVE_PREAD64
 
+/* Define to 1 if PR_SET_IO_FLUSHER is present */
+#undef HAVE_PR_SET_IO_FLUSHER
+
 /* Define if you have POSIX threads libraries and header files. */
 #undef HAVE_PTHREAD
 
@@ -321,6 +327,9 @@
 
 /* Have PTHREAD_PRIO_INHERIT. */
 #undef HAVE_PTHREAD_PRIO_INHERIT
+
+/* Define to 1 if you have the 'pthread_setname_np' function. */
+#undef HAVE_PTHREAD_SETNAME_NP
 
 /* Define to 1 if you have the 'pwrite' function. */
 #undef HAVE_PWRITE
@@ -698,8 +707,5 @@
 
 /* Define to 1 on platforms where this makes time_t a 64-bit type. */
 #undef __MINGW_USE_VC2005_COMPAT
-
-/* Define to 1 if CLOCK_MONOTONIC is present */
-#undef HAVE_CLOCK_MONOTONIC
 
 #include <dirpaths.h>

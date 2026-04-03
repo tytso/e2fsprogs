@@ -13888,6 +13888,12 @@ then :
   printf "%s\n" "#define HAVE_PWRITE64 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "pthread_setname_np" "ac_cv_func_pthread_setname_np"
+if test "x$ac_cv_func_pthread_setname_np" = xyes
+then :
+  printf "%s\n" "#define HAVE_PTHREAD_SETNAME_NP 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "qsort_r" "ac_cv_func_qsort_r"
 if test "x$ac_cv_func_qsort_r" = xyes
 then :

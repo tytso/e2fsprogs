@@ -1269,6 +1269,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	pwrite
 	pread64
 	pwrite64
+	pthread_setname_np
 	qsort_r
 	secure_getenv
 	setmntent

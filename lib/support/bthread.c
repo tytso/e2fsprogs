@@ -9,6 +9,7 @@
  * %End-Header%
  */
 #include "config.h"
+#ifdef HAVE_PTHREAD
 #include <stdlib.h>
 #include <errno.h>
 #include <pthread.h>
@@ -33,7 +34,7 @@ struct bthread {
 	bthread_fn_t fn;
 	void *data;
 	unsigned int period; /* seconds */
-	int can_join:1;
+	unsigned int can_join:1;
 };
 
 /* Wait for a signal or for the periodic interval */
@@ -101,7 +102,13 @@ int bthread_create(const char *name,  bthread_fn_t fn, void *data,
 	if (error)
 		goto out_cond;
 
+#ifdef HAVE_PTHREAD_SETNAME_NP
+#ifdef __APPLE__
+	pthread_setname_np(name);
+#else
 	pthread_setname_np(bt->thread, name);
+#endif
+#endif
 
 	*btp = bt;
 	return 0;
@@ -178,7 +185,7 @@ int bthread_cancel(struct bthread *bt)
 /* Ask the thread to cancel itself and wait for it */
 void bthread_stop(struct bthread *bt)
 {
-	int need_join = 0;
+	unsigned int need_join = 0;
 
 	pthread_mutex_lock(&bt->lock);
 	switch (bt->state) {
@@ -199,3 +206,4 @@ void bthread_stop(struct bthread *bt)
 	if (need_join)
 		pthread_join(bt->thread, NULL);
 }
+#endif /* HAVE_PTHREAD */
