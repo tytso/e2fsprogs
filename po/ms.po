@@ -4118,8 +4118,8 @@ msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is 
 msgstr ""
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
-msgstr "selesai                                              \n"
+msgid "done                                                                  \n"
+msgstr "selesai                                                               \n"
 
 #: misc/badblocks.c:100
 #, c-format
@@ -4139,7 +4139,7 @@ msgstr "Konflik kekal 'a' dan 'w' adalah ekslusif secara bersama."
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
 msgstr ""
 
 #: misc/badblocks.c:337
