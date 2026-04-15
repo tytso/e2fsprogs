@@ -54,7 +54,7 @@ static void (*dl_magic_close)(magic_t);
 #define MAGIC_NO_CHECK_ELF 0x0010000
 #endif
 
-#ifdef HAVE_DLOPEN
+#ifdef CONFIG_DLOPEN_LIBMAGIC
 #include <dlfcn.h>
 
 static void *magic_handle;
