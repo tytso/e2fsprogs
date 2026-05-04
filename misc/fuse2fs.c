@@ -339,6 +339,27 @@ static inline off_t FUSE2FS_FSB_TO_B(const struct fuse2fs *ff, blk64_t bno)
 	return bno << ff->blocklog;
 }
 
+#ifdef __clang__
+#define SUPPRESS_UNUSED_FUNCTION(func)    (void)func
+/*
+ * These functions might or might not be used depending on the version
+ * of the fuse library installed on the system.  Unfortunately while
+ * gcc won't complain if there are static inline functions which are
+ * not used, clang will only suppress such complaints if the static
+ * inline functions are in a header file.
+ */
+void fuse2fs_shut_up_stupid_clang_warnings(void)
+{
+	SUPPRESS_UNUSED_FUNCTION(fuse2fs_shut_up_stupid_clang_warnings);
+	SUPPRESS_UNUSED_FUNCTION(round_up);
+	SUPPRESS_UNUSED_FUNCTION(round_down);
+	SUPPRESS_UNUSED_FUNCTION(FUSE2FS_B_TO_FSBT);
+	SUPPRESS_UNUSED_FUNCTION(FUSE2FS_OFF_IN_FSB);
+	SUPPRESS_UNUSED_FUNCTION(FUSE2FS_B_TO_FSB);
+	SUPPRESS_UNUSED_FUNCTION(FUSE2FS_FSB_TO_B);
+}
+#endif
+
 static double gettime_monotonic(void)
 {
 #ifdef CLOCK_MONOTONIC
