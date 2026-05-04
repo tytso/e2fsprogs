@@ -36,8 +36,17 @@ static inline void list_head_destroy(struct list_head *list)
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
+#if 0
+/*
+ * This conflicts with the LIST_HEAD defined in <sys/queue.h>.  We
+ * don't include it in e2fsprogs, but some systems' header files might
+ * pull it in, leading to the macro redefinition conflict.
+ * Fortunately, we also don't need LIST_HEAD in e2fsprogs, so just
+ * drop this convenience macro.
+ */
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
+#endif
 
 /**
  * INIT_LIST_HEAD - Initialize a list_head structure
