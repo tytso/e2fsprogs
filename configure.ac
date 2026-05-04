@@ -1459,6 +1459,7 @@ AS_HELP_STRING([--disable-fuse2fs],[do not build fuse2fs]),
 	then
 		AC_MSG_RESULT([Enabling fuse2fs by default])
 	else
+		FUSE2FS_CMT="#"
 		AC_MSG_RESULT([Disabling fuse2fs by default])
 	fi
 ]
@@ -1496,6 +1497,7 @@ AS_HELP_STRING([--disable-fuse4fs],[do not build fuse4fs]),
 	then
 		AC_MSG_RESULT([Enabling fuse4fs by default])
 	else
+		FUSE4FS_CMT="#"
 		AC_MSG_RESULT([Disabling fuse4fs by default])
 	fi
 ]

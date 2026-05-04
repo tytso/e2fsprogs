@@ -14737,6 +14737,7 @@ else case e in #(
 		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Enabling fuse2fs by default" >&5
 printf "%s\n" "Enabling fuse2fs by default" >&6; }
 	else
+		FUSE2FS_CMT="#"
 		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling fuse2fs by default" >&5
 printf "%s\n" "Disabling fuse2fs by default" >&6; }
 	fi
@@ -14804,6 +14805,7 @@ else case e in #(
 		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Enabling fuse4fs by default" >&5
 printf "%s\n" "Enabling fuse4fs by default" >&6; }
 	else
+		FUSE4FS_CMT="#"
 		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Disabling fuse4fs by default" >&5
 printf "%s\n" "Disabling fuse4fs by default" >&6; }
 	fi
