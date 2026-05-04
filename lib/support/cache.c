@@ -850,7 +850,7 @@ cache_report(
 {
 	int		i;
 	unsigned long	count, index, total;
-	unsigned long	hash_bucket_lengths[HASH_REPORT + 2];
+	unsigned long	hash_bucket_lengths[HASH_REPORT + 2] = { 0 };
 
 	if ((cache->c_hits + cache->c_misses) == 0)
 		return;
@@ -886,8 +886,6 @@ cache_report(
 		cache->c_mrus[i].cm_count * 100 / cache->c_count);
 
 	/* report hash bucket lengths */
-	bzero(hash_bucket_lengths, sizeof(hash_bucket_lengths));
-
 	for (i = 0; i < cache->c_hashsize; i++) {
 		count = cache->c_hash[i].ch_count;
 		if (count > HASH_REPORT)
