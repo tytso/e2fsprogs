@@ -199,4 +199,4 @@ dict.o: $(srcdir)/dict.c $(top_builddir)/lib/config.h \
 devname.o: $(srcdir)/devname.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/devname.h $(srcdir)/nls-enable.h
 cache.o: $(srcdir)/cache.c $(top_builddir)/lib/config.h \
- $(srcdir)/cache.h $(srcdir)/list.h $(srcdir)/xbitops.h
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/list.h $(srcdir)/cache.h
