@@ -14,8 +14,13 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+#if defined(HAVE_BACKTRACE) && !defined(DISABLE_BACKTRACE)
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
+#elif HAVE_LIBUNWIND_H
+#define UNW_LOCAL_ONLY
+#include <libunwind.h>
+#endif
 #endif
 
 #include "e2fsck.h"
@@ -331,6 +336,22 @@ static const char *lookup_table_fallback(int num, struct str_table *table)
 	return buf;
 }
 
+#if defined(HAVE_BACKTRACE) && !defined(DISABLE_BACKTRACE) \
+    && !defined(HAVE_EXECINFO_H) && defined(HAVE_LIBUNWIND_H)
+static void show_backtrace (void) {
+    unw_cursor_t cursor; unw_context_t uc;
+    unw_word_t ip, sp;
+
+    unw_getcontext(&uc);
+    unw_init_local(&cursor, &uc);
+    while (unw_step(&cursor) > 0) {
+        unw_get_reg(&cursor, UNW_REG_IP, &ip);
+        unw_get_reg(&cursor, UNW_REG_SP, &sp);
+        fprintf(stderr, "ip = %lx, sp = %lx\n", (long) ip, (long) sp);
+    }
+}
+#endif
+
 static void die_signal_handler(int signum, siginfo_t *siginfo,
 			       void *context EXT2FS_ATTR((unused)))
 {
@@ -372,6 +393,7 @@ static void die_signal_handler(int signum, siginfo_t *siginfo,
        fprintf(stderr, "\n");
 
 #if defined(HAVE_BACKTRACE) && !defined(DISABLE_BACKTRACE)
+#if defined(HAVE_EXECINFO_H)
        {
 	       void *stack_syms[32];
 	       int frames;
@@ -379,6 +401,9 @@ static void die_signal_handler(int signum, siginfo_t *siginfo,
 	       frames = backtrace(stack_syms, 32);
 	       backtrace_symbols_fd(stack_syms, frames, 2);
        }
+#elif defined(HAVE_LIBUNWIND_H)
+       show_backtrace();
+#endif
 #endif
        exit(FSCK_ERROR);
 }
