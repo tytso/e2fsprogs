@@ -621,6 +621,9 @@ static inline int tl_to_darg(struct dentry_info_args *darg,
 {
 	struct ext4_fc_dentry_info fcd;
 
+	if (ext4_fc_tag_len(tl) < sizeof(struct ext4_fc_dentry_info))
+		return -EINVAL;
+
 	memcpy(&fcd, val, sizeof(fcd));
 
 	darg->parent_ino = le32_to_cpu(fcd.fc_parent_ino);
