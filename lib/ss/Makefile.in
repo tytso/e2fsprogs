@@ -58,7 +58,7 @@ SRCS=	$(srcdir)/invocation.c $(srcdir)/help.c \
 	$(srcdir)/list_rqs.c $(srcdir)/pager.c $(srcdir)/requests.c \
 	$(srcdir)/data.c $(srcdir)/get_readline.c
 
-all:: mk_cmds
+all:: mk_cmds libss.a ss.pc
 
 @MAKEFILE_LIBRARY@
 @MAKEFILE_ELF@
@@ -105,6 +105,8 @@ ss_err.c ss_err.h: ss_err.et
 	$(E) "	COMPILE_ET ss_err.et"
 	$(Q) $(COMPILE_ET) $(srcdir)/ss_err.et
 
+ss_err.h: ss_err.c
+
 ct.tab.c ct.tab.h: ct.y
 	$(RM) -f ct.tab.* y.*
 	$(YACC) -d $(srcdir)/ct.y
@@ -136,6 +138,9 @@ install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds ss.pc
 	$(Q) $(INSTALL_DATA) libss.a $(DESTDIR)$(libdir)/libss.a
 	-$(Q) $(RANLIB) $(DESTDIR)$(libdir)/libss.a
 	$(Q) $(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libss.a
+	$(Q) $(MKDIR_P) $(DESTDIR)$(includedir)/ss \
+		$(DESTDIR)$(datadir)/ss $(DESTDIR)$(bindir) \
+		$(DESTDIR)$(pkgconfigdir) $(DESTDIR)$(man1dir)
 	$(Q) $(RM) -f $(DESTDIR)$(includedir)/ss/*
 	$(Q) for i in $(INSTALL_HFILES); do \
 		echo "	INSTALL_DATA $(DESTDIR)$(includedir)/ss/$$i"; \
