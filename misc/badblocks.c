@@ -91,8 +91,10 @@ static unsigned int d_flag;		/* delay factor between reads */
 static struct timeval time_start;
 
 #define T_INC 32
+static unsigned int dio_align = 512;
 
 static unsigned int sys_page_size = 4096;
+static uint64_t random_state;
 
 static void usage(void)
 {
@@ -261,8 +263,12 @@ static void *terminate_addr = NULL;
 static void terminate_intr(int signo EXT2FS_ATTR((unused)))
 {
 	fflush(out);
-	fprintf(stderr, "\n\nInterrupted at block %llu\n", 
-		(unsigned long long) currently_testing);
+	fprintf(stderr,
+		"\n\nInterrupted at block %llu (%lu/%lu/%lu errors)\n",
+		(unsigned long long) currently_testing,
+		(unsigned long) num_read_errors,
+		(unsigned long) num_write_errors,
+		(unsigned long) num_corruption_errors);
 	fflush(stderr);
 	if (terminate_addr)
 		longjmp(terminate_addr,1);
@@ -291,10 +297,6 @@ static void uncapture_terminate(void)
 	signal (SIGUSR2, SIG_DFL);
 }
 
-/* Linux requires that O_DIRECT I/Os be 512-byte sector aligned */
-
-#define O_DIRECT_SIZE 512
-
 static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 			 ext2_loff_t offset)
 {
@@ -306,7 +308,7 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 	if ((use_buffered_io != 0) ||
 	    (((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
 	    ((size & (sys_page_size - 1)) != 0) ||
-	    ((offset & (O_DIRECT_SIZE - 1)) != 0))
+	    ((offset & (dio_align - 1)) != 0))
 		new_flag = 0;
 
 	if (new_flag != current_O_DIRECT) {
@@ -322,6 +324,15 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 #endif
 }
 
+static uint64_t xorshift64(uint64_t *state)
+{
+	uint64_t x = *state;
+
+	x ^= x << 13;
+	x ^= x >> 7;
+	x ^= x << 17;
+	return *state = x;
+}
 
 static void pattern_fill(unsigned char *buffer, unsigned int pattern,
 			 size_t n)
@@ -330,9 +341,16 @@ static void pattern_fill(unsigned char *buffer, unsigned int pattern,
 	unsigned char	bpattern[sizeof(pattern)], *ptr;
 
 	if (pattern == (unsigned int) ~0) {
-		for (ptr = buffer; ptr < buffer + n; ptr++) {
-			(*ptr) = random() % (1 << (8 * sizeof(char)));
+		uint64_t state = random_state;
+
+		for (ptr = buffer; ptr + 8 <= buffer + n; ptr += 8) {
+			uint64_t v = xorshift64(&state);
+
+			memcpy(ptr, &v, 8);
 		}
+		while (ptr < buffer + n)
+			*ptr++ = (unsigned char)(xorshift64(&state) & 0xff);
+		random_state = state;
 		if (s_flag | v_flag)
 			fputs(_("Testing with random pattern: "), stderr);
 	} else {
@@ -475,10 +493,6 @@ static void flush_bufs(void)
 {
 	errcode_t	retval;
 
-#ifdef O_DIRECT
-	if (!use_buffered_io)
-		return;
-#endif
 	retval = ext2fs_sync_device(host_dev, 1);
 	if (retval)
 		com_err(program_name, retval, "%s",
@@ -1080,6 +1094,7 @@ int main (int argc, char ** argv)
 	set_com_err_gettext(gettext);
 #endif
 	srandom((unsigned int)time(NULL));  /* simple randomness is enough */
+	random_state = ((uint64_t)random() << 32) ^ random();
 	test_func = test_ro;
 
 	/* Determine the system page size if possible */
@@ -1284,6 +1299,10 @@ int main (int argc, char ** argv)
 		}
 	} else
 		host_dev = dev;
+	dio_align = ext2fs_get_dio_alignment(dev);
+	if (dio_align == 0)
+		dio_align = 512;
+
 	if (input_file) {
 		if (strcmp (input_file, "-") == 0)
 			in = stdin;

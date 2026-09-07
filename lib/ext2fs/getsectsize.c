@@ -87,10 +87,15 @@ errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize)
 int ext2fs_get_dio_alignment(int fd)
 {
 	int align = 0;
+	int phys = 0;
 
 #ifdef BLKSSZGET
 	if (ioctl(fd, BLKSSZGET, &align) < 0)
 		align = 0;
+#endif
+#ifdef BLKPBSZGET
+	if (ioctl(fd, BLKPBSZGET, &phys) >= 0 && phys > align)
+		align = phys;
 #endif
 #ifdef DIOCGSECTORSIZE
 	if (align <= 0 &&
