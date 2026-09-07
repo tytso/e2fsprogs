@@ -48,11 +48,11 @@ int main (int argc, char ** argv)
 	if (argc != 1) {
 		(void)argv; /* avoid unused argument warning */
 		fprintf (stderr, "%s", _("Usage: mklost+found\n"));
-		exit(1);
+		return 1;
 	}
 	if (mkdir (LPF, 0700) == -1) {
 		perror ("mkdir");
-		exit(1);
+		return 1;
 	}
 
 	i = 0;
@@ -64,13 +64,13 @@ int main (int argc, char ** argv)
 		strcat (path, name);
 		if ((d = creat (path, 0644)) == -1) {
 			perror ("creat");
-			exit (1);
+			return 1;
 		}
 		i++;
 		close (d);
 		if (stat (LPF, &st) == -1) {
 			perror ("stat");
-			exit (1);
+			return 1;
 		}
 	} while (st.st_size <= (EXT2_NDIR_BLOCKS - 1) * st.st_blksize);
 	for (j = 0; j < i; j++) {
@@ -80,8 +80,8 @@ int main (int argc, char ** argv)
 		strcat (path, name);
 		if (unlink (path) == -1) {
 			perror ("unlink");
-			exit (1);
+			return 1;
 		}
 	}
-	exit (0);
+	return 0;
 }
