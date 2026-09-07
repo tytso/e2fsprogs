@@ -22,11 +22,11 @@ COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../et ../et/compile_et
 @IMAGER_CMT@E2IMAGE_LIB_OBJS = imager.o
 
 DEBUG_OBJS= debug_cmds.o extent_cmds.o tst_cmds.o debugfs.o util.o \
-	ncheck.o icheck.o ls.o lsdel.o dump.o set_fields.o logdump.o \
-	htree.o unused.o e2freefrag.o filefrag.o extent_inode.o zap.o \
-	xattrs.o quota.o tst_libext2fs.o create_inode.o \
-	create_inode_libarchive.o journal.o revoke.o recovery.o \
-	do_journal.o do_orphan.o
+	ncheck.o icheck.o ls.o lsdel.o dump.o dump_tar.o set_fields.o \
+	logdump.o htree.o unused.o e2freefrag.o filefrag.o \
+	extent_inode.o zap.o xattrs.o quota.o tst_libext2fs.o \
+	create_inode.o create_inode_libarchive.o journal.o revoke.o \
+	recovery.o do_journal.o do_orphan.o
 
 DEBUG_SRCS= debug_cmds.c extent_cmds.c tst_cmds.c \
 	$(top_srcdir)/debugfs/debugfs.c \
@@ -36,6 +36,7 @@ DEBUG_SRCS= debug_cmds.c extent_cmds.c tst_cmds.c \
 	$(top_srcdir)/debugfs/ls.c \
 	$(top_srcdir)/debugfs/lsdel.c \
 	$(top_srcdir)/debugfs/dump.c \
+	$(top_srcdir)/debugfs/dump_tar.c \
 	$(top_srcdir)/debugfs/set_fields.c \
 	$(top_srcdir)/debugfs/logdump.c \
 	$(top_srcdir)/debugfs/htree.c \
@@ -412,6 +413,10 @@ lsdel.o: $(top_srcdir)/debugfs/lsdel.c
 	$(Q) $(CC) $(DEBUGFS_CFLAGS) -c $< -o $@
 
 dump.o: $(top_srcdir)/debugfs/dump.c
+	$(E) "	CC $<"
+	$(Q) $(CC) $(DEBUGFS_CFLAGS) -c $< -o $@
+
+dump_tar.o: $(top_srcdir)/debugfs/dump_tar.c
 	$(E) "	CC $<"
 	$(Q) $(CC) $(DEBUGFS_CFLAGS) -c $< -o $@
 
@@ -1321,6 +1326,17 @@ lsdel.o: $(top_srcdir)/debugfs/lsdel.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/support/dqblk_v2.h \
  $(top_srcdir)/lib/support/quotaio_tree.h
 dump.o: $(top_srcdir)/debugfs/dump.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(top_srcdir)/debugfs/debugfs.h \
+ $(top_srcdir)/lib/ss/ss.h $(top_builddir)/lib/ss/ss_err.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext3_extents.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/ext2_ext_attr.h \
+ $(srcdir)/hashmap.h $(srcdir)/bitops.h \
+ $(top_srcdir)/debugfs/../misc/create_inode.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(top_srcdir)/lib/support/quotaio.h $(top_srcdir)/lib/support/dqblk_v2.h \
+ $(top_srcdir)/lib/support/quotaio_tree.h
+dump_tar.o: $(top_srcdir)/debugfs/dump_tar.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(top_srcdir)/debugfs/debugfs.h \
  $(top_srcdir)/lib/ss/ss.h $(top_builddir)/lib/ss/ss_err.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_fs.h \

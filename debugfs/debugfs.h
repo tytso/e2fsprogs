@@ -70,6 +70,9 @@ extern void do_dump(int argc, ss_argv_t argv, int sci_idx, void *infop);
 extern void do_cat(int argc, ss_argv_t argv, int sci_idx, void *infop);
 extern void do_rdump(int argc, ss_argv_t argv, int sci_idx, void *infop);
 
+/* dump_tar.c */
+extern void do_rdump_tar(int argc, ss_argv_t argv, int sci_idx, void *infop);
+
 /* extent_inode.c */
 extern void do_extent_open(int argc, ss_argv_t argv, int sci_idx, void *infop);
 extern void do_extent_close(int argc, ss_argv_t argv, int sci_idx, void *infop);

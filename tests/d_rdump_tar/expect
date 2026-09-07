@@ -1,0 +1,216 @@
+debugfs create special files
+mke2fs -Fq -b 1024 test.img 512
+Exit status is 0
+debugfs -R ''stat tmp'' -w test.img
+Inode: 12   Type: directory    Mode:  01777   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 1024
+File ACL: 0
+Links: 2   Blockcount: 2
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+(0):36
+TOTAL: 1
+
+Exit status is 0
+debugfs -R ''stat tmp/symlink'' -w test.img
+Inode: 13   Type: symlink    Mode:  0777   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User: 65534   Group: 65534   Project:     0   Size: 3
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+Fast link dest: "bar"
+Exit status is 0
+debugfs -R ''stat tmp/symlinklong'' -w test.img
+Inode: 14   Type: symlink    Mode:  0777   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User: 16777215   Group: 16777215   Project:     0   Size: 80
+File ACL: 0
+Links: 1   Blockcount: 2
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+(0):37
+TOTAL: 1
+
+Exit status is 0
+debugfs -R ''stat tmp/fifo'' -w test.img
+Inode: 15   Type: FIFO    Mode:  0600   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User: 65534   Group: 65534   Project:     0   Size: 0
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+
+Exit status is 0
+debugfs -R ''stat tmp/sock'' -w test.img
+Inode: 16   Type: socket    Mode:  0600   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     1   Group:     1   Project:     0   Size: 0
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+
+Exit status is 0
+debugfs -R ''stat tmp/emptyfile'' -w test.img
+Inode: 17   Type: regular    Mode:  0640   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:  1000   Group:  1000   Project:     0   Size: 0
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+
+Exit status is 0
+debugfs -R ''stat tmp/bigfile'' -w test.img
+Inode: 18   Type: regular    Mode:  0640   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:  1000   Group:  1000   Project:     0   Size: 32768
+File ACL: 0
+Links: 1   Blockcount: 66
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+(0-11):38-49, (IND):50, (12-31):51-70
+TOTAL: 33
+
+Exit status is 0
+debugfs -R ''stat tmp/execfile'' -w test.img
+Inode: 19   Type: regular    Mode:  06755   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 15
+File ACL: 0
+Links: 1   Blockcount: 2
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+(0):71
+TOTAL: 1
+
+Exit status is 0
+debugfs -R ''stat dev'' -w test.img
+Inode: 20   Type: directory    Mode:  0755   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 1024
+File ACL: 0
+Links: 2   Blockcount: 2
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+BLOCKS:
+(0):72
+TOTAL: 1
+
+Exit status is 0
+debugfs -R ''stat dev/sda'' -w test.img
+Inode: 21   Type: block special    Mode:  0660   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 0
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+Device major/minor number: 00:06 (hex 00:06)
+Exit status is 0
+debugfs -R ''stat dev/console'' -w test.img
+Inode: 22   Type: character special    Mode:  0666   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 0
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+Device major/minor number: 05:01 (hex 05:01)
+Exit status is 0
+debugfs -R ''stat dev/blockrom0'' -w test.img
+Inode: 23   Type: block special    Mode:  0660   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 0
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+Device major/minor number: 02:00 (hex 02:00)
+Exit status is 0
+debugfs -R ''stat dev/osd0'' -w test.img
+Inode: 24   Type: character special    Mode:  0660   Flags: 0x0
+Generation: 0    Version: 0x00000000:00000000
+User:     0   Group:     0   Project:     0   Size: 0
+File ACL: 0
+Links: 1   Blockcount: 0
+Fragment:  Address: 0    Number: 0    Size: 0
+ ctime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ atime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+ mtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+crtime: 0x69651a80:00000000 -- Mon Jan 12 16:00:00 2026
+Size of extra inode fields: 32
+Device major/minor number: 04:00 (hex 04:00)
+Exit status is 0
+drwx------ 0/0 0 2026-01-12 16:00 lost+found/
+drwxrwxrwt 0/0 0 2026-01-12 16:00 tmp/
+lrwxrwxrwx 65534/65534 0 2026-01-12 16:00 tmp/symlink -> bar
+lrwxrwxrwx 16777215/16777215 0 2026-01-12 16:00 tmp/symlinklong -> 12345678901234567890123456789012345678901234567890123456789012345678901234567890
+prw------- 65534/65534 0 2026-01-12 16:00 tmp/fifo
+-rw-r----- 1000/1000 0 2026-01-12 16:00 tmp/emptyfile
+-rw-r----- 1000/1000 32768 2026-01-12 16:00 tmp/bigfile
+-rwsr-sr-x 0/0 15 2026-01-12 16:00 tmp/execfile
+drwxr-xr-x 0/0 0 2026-01-12 16:00 dev/
+brw-rw---- 0/0 0,6 2026-01-12 16:00 dev/sda
+crw-rw-rw- 0/0 5,1 2026-01-12 16:00 dev/console
+brw-rw---- 0/0 2,0 2026-01-12 16:00 dev/blockrom0
+crw-rw---- 0/0 4,0 2026-01-12 16:00 dev/osd0
