@@ -1,0 +1,54 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+# Block-mapped (non-extent) files only: the bug lives in the transition from
+# the direct blocks in i_block[] to the first indirect block, which an extent
+# mapped file never makes.
+$MKE2FS -Fq -o Linux -b 1024 -O ^extents,^64bit,^metadata_csum,^dir_index -I 128 \
+	$TMPFILE 2048 > /dev/null 2>&1
+
+# Grow /d to 12 blocks, the most that fit in i_block[], then free a directory
+# block and make /d take its first indirect block.  The allocator hands back
+# the block mkdir just released, and that block is still in the io cache
+# holding the '.' and '..' entries mkdir wrote into it.  If the zeroout that
+# prepares it as an indirect block does not drop the cached copy, the stale
+# directory entries get written back as the indirect block and e2fsck reads
+# them as block pointers.
+{
+	echo "mkdir /d"
+	i=1
+	while test $i -lt 12 ; do
+		echo "expand_dir /d"
+		i=$(expr $i + 1)
+	done
+	echo "mkdir /d/sub"
+	echo "rmdir /d/sub"
+	echo "expand_dir /d"
+} > $TMPFILE.cmd
+
+$DEBUGFS -w -f $TMPFILE.cmd $TMPFILE > /dev/null 2>&1
+
+$FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $TMPFILE.cmd $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset OUT EXP
