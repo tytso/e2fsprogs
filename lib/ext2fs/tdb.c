@@ -99,7 +99,7 @@ static char *rep_strdup(const char *s)
 #endif
 
 #ifndef PRINTF_ATTRIBUTE
-#if (__GNUC__ >= 3) && (__GNUC_MINOR__ >= 1 )
+#if (__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1))
 /** Use gcc attribute to check printf fns.  a1 is the 1-based index of
  * the parameter containing the format, and a2 the index of the first
  * argument. Note that some gcc 2.x versions don't handle this
