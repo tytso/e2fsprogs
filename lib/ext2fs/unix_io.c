@@ -1676,6 +1676,40 @@ static int __unix_zeroout(int fd, off_t offset, off_t len)
 	return ret;
 }
 
+/*
+ * A zeroout goes straight to the device, behind the block cache's back, so
+ * any cached copy of those blocks is stale the moment it succeeds. Drop the
+ * affected entries; the next read then picks the zeroes up from disk.
+ *
+ * Dirty entries inside the range are discarded on purpose: the zeroout has
+ * already superseded them, and writing them back later would reinstate the
+ * very data the caller asked to erase.
+ */
+static void unix_invalidate_cache_range(struct unix_private_data *data,
+					unsigned long long block,
+					unsigned long long count)
+{
+#ifndef NO_IO_CACHE
+	struct unix_cache	*cache;
+	unsigned int		i;
+
+	if (data->flags & IO_FLAG_NOCACHE)
+		return;
+
+	mutex_lock(data, CACHE_MTX);
+	for (i = 0, cache = data->cache; i < data->cache_size; i++, cache++) {
+		if (!cache->in_use)
+			continue;
+		if (cache->block < block || cache->block >= block + count)
+			continue;
+		cache->in_use = 0;
+		cache->dirty = 0;
+		cache->write_err = 0;
+	}
+	mutex_unlock(data, CACHE_MTX);
+#endif
+}
+
 /* parameters might not be used if OS doesn't support zeroout */
 #if __GNUC_PREREQ (4, 6)
 #pragma GCC diagnostic push
@@ -1727,6 +1761,7 @@ err:
 		}
 		return errno;
 	}
+	unix_invalidate_cache_range(data, block, count);
 	return 0;
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
