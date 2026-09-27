@@ -72,6 +72,22 @@ static errcode_t ext2fs_inline_data_ea_get(struct ext2_inline_data *data)
 	} else if (retval)
 		goto err;
 
+	/*
+	 * The kernel only stores as much inline data in an inode as will
+	 * expand into a single file system block, so a "system.data" value
+	 * larger than this means the inode is corrupt.  Reject it here so
+	 * that callers can rely on the total inline data size (which is
+	 * EXT4_MIN_INLINE_DATA_SIZE + ea_size) never exceeding
+	 * fs->blocksize.
+	 */
+	if (data->ea_size >
+	    data->fs->blocksize - EXT4_MIN_INLINE_DATA_SIZE) {
+		ext2fs_free_mem(&data->ea_data);
+		data->ea_size = 0;
+		retval = EXT2_ET_EA_BAD_VALUE_SIZE;
+		goto err;
+	}
+
 err:
 	(void) ext2fs_xattrs_close(&handle);
 	return retval;
@@ -280,6 +296,16 @@ static errcode_t ext2fs_inline_data_convert_dir(ext2_filsys fs, ext2_ino_t ino,
 	unsigned int rec_len;
 	int csum_size = 0;
 	int filetype = 0;
+
+	/*
+	 * bbuf is a single file system block; the directory entries
+	 * copied from the inline data must fit after the synthesized
+	 * '.' and '..' entries.
+	 */
+	if (size > (int) (fs->blocksize - EXT2_DIR_REC_LEN(1) -
+			  EXT2_DIR_REC_LEN(2) +
+			  EXT4_INLINE_DATA_DOTDOT_SIZE))
+		return EXT2_ET_EA_BAD_VALUE_SIZE;
 
 	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
