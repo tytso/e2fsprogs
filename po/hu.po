@@ -4019,8 +4019,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% kész, %s telt el. (%d/%d/%d hiba)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% kész, %s telt el. (%d/%d/%d hiba), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "
@@ -4835,7 +4835,8 @@ msgid ""
 "Use -f option if you really want to do that.\n"
 msgstr ""
 "\n"
-" Az e2image írásra/olvasásra csatolt fájlrendszeren való használata "
+"
+Az e2image írásra/olvasásra csatolt fájlrendszeren való használata "
 "inkonzisztens\n"
 "lemezképet eredményezhet, ami nem hasznos hibakeresési célokra.\n"
 "Használja a -f kapcsolót, ha tényleg ezt szeretné.\n"
@@ -5416,8 +5417,8 @@ msgstr ""
 "Nem sikerült %d blokk írása az inode táblába innen kezdve: %llu: %s\n"
 
 #: misc/mke2fs.c:456 misc/mke2fs.c:2726 misc/mke2fs.c:3131
-msgid "done                            \n"
-msgstr "kész                            \n"
+msgid "done                                                                  \n"
+msgstr "kész                                                                  \n"
 
 #: misc/mke2fs.c:471
 msgid "while creating root dir"

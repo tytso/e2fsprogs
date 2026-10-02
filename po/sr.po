@@ -4122,8 +4122,8 @@ msgid "UNEXPECTED INCONSISTENCY: the filesystem is being modified while fsck is 
 msgstr "НЕОЧЕКИВАНА НЕДОСЛЕДНОСТ: систем датотека је измењен док је „fsck“ био покренут.\n"
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
-msgstr "готово                                                 \n"
+msgid "done                                                                  \n"
+msgstr "готово                                                                \n"
 
 #: misc/badblocks.c:100
 #, c-format
@@ -4149,8 +4149,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% урађено, %s протекло. (%d/%d/%d грешака)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% урађено, %s протекло. (%d/%d/%d грешака), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "

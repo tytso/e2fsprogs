@@ -72,7 +72,7 @@ extern int optind;
 #define MAX_BAD_BLOCKS (INT_MAX/2)
 
 static const char * program_name = "badblocks";
-static const char * done_string = N_("done                                                 \n");
+static const char * done_string = N_("done                                                                  \n");
 
 static int v_flag;			/* verbose */
 static int w_flag;			/* do r/w test: 0=no, 1=yes,
@@ -89,6 +89,7 @@ static unsigned int max_bb = MAX_BAD_BLOCKS;	/* Abort test if more than this
 						 * encountered */
 static unsigned int d_flag;		/* delay factor between reads */
 static struct timeval time_start;
+static struct timeval time_start_curtest;
 
 #define T_INC 32
 
@@ -113,6 +114,7 @@ static void exclusive_usage(void)
 	exit(1);
 }
 
+static unsigned int block_size = 1024;
 static blk_t currently_testing = 0;
 static blk_t num_blocks = 0;
 static blk_t num_read_errors = 0;
@@ -203,6 +205,20 @@ static char *time_diff_format(struct timeval *tv1,
 	return buf;
 }
 
+static char *time_diff_get_avg_speed(struct timeval *tv1,
+				     struct timeval *tv2,
+				     unsigned long current_block,
+				     unsigned long block_size,
+				     char *buf)
+{
+	time_t	diff = (tv1->tv_sec - tv2->tv_sec);
+	unsigned long processed_bytes = current_block * block_size;
+	if (!diff) diff = 1;
+
+	sprintf(buf, "%6.2f", (double)processed_bytes / 1000 / 1000 / diff);
+	return buf;
+}
+
 static float calc_percent(unsigned long current, unsigned long total) {
 	float percent = 0.0;
 	if (total <= 0)
@@ -218,22 +234,28 @@ static float calc_percent(unsigned long current, unsigned long total) {
 static void print_status(void)
 {
 	struct timeval time_end;
-	char diff_buf[32], line_buf[128];
+	char diff_buf[32], speed_buf[32], line_buf[140];
 #ifdef HAVE_MBSTOWCS
-	wchar_t wline_buf[128];
+	wchar_t wline_buf[140];
 #endif
 	int len;
 
 	gettimeofday(&time_end, 0);
 	len = snprintf(line_buf, sizeof(line_buf), 
 		       _("%6.2f%% done, %s elapsed. "
-		         "(%d/%d/%d errors)"),
+		         "(%d/%d/%d errors), %s MB/s"),
 		       calc_percent((unsigned long) currently_testing,
 				    (unsigned long) num_blocks), 
 		       time_diff_format(&time_end, &time_start, diff_buf),
 		       num_read_errors,
 		       num_write_errors,
-		       num_corruption_errors);
+		       num_corruption_errors,
+		       time_diff_get_avg_speed(
+			    &time_end, &time_start_curtest,
+			    (unsigned long) currently_testing,
+			    block_size,
+			    speed_buf
+		       ));
 #ifdef HAVE_MBSTOWCS
 	mbstowcs(wline_buf, line_buf, sizeof(line_buf));
 	len = wcswidth(wline_buf, sizeof(line_buf));
@@ -638,6 +660,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 		nr_pattern = sizeof(patterns) / sizeof(patterns[0]);
 	}
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
+		gettimeofday(&time_start_curtest, 0);
 		pattern_fill(buffer, pattern[pat_idx],
 			     blocks_at_once * block_size);
 		num_blocks = last_block - 1;
@@ -688,6 +711,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			alarm_intr(SIGALRM);
 
 		try = blocks_at_once;
+		gettimeofday(&time_start_curtest, 0);
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
 				if (s_flag || v_flag) {
@@ -823,6 +847,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 		nr_pattern = sizeof(patterns) / sizeof(patterns[0]);
 	}
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
+		gettimeofday(&time_start_curtest, 0);
 		pattern_fill(test_base, pattern[pat_idx],
 			     blocks_at_once * block_size);
 
@@ -1055,7 +1080,6 @@ int main (int argc, char ** argv)
 	char * input_file = NULL;
 	char * output_file = NULL;
 	FILE * in = NULL;
-	unsigned int block_size = 1024;
 	unsigned int blocks_at_once = 64;
 	blk64_t last_block, first_block;
 	int num_passes = 0;
@@ -1267,6 +1291,7 @@ int main (int argc, char ** argv)
 		check_mount(device_name);
 
 	gettimeofday(&time_start, 0);
+	gettimeofday(&time_start_curtest, 0);
 	open_flag = O_LARGEFILE | (w_flag ? O_RDWR : O_RDONLY);
 	dev = open (device_name, open_flag);
 	if (dev == -1) {

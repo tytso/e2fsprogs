@@ -3959,8 +3959,8 @@ msgstr ""
 "s'està executant.\n"
 
 #: misc/badblocks.c:75
-msgid "done                                                 \n"
-msgstr "fet                                                  \n"
+msgid "done                                                                  \n"
+msgstr "fet                                                                   \n"
 
 #: misc/badblocks.c:100
 #, fuzzy, c-format
@@ -3989,8 +3989,8 @@ msgstr ""
 
 #: misc/badblocks.c:229
 #, c-format
-msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors)"
-msgstr "%6.2f%% fet, %s transcorreguts. (%d/%d/%d errors)"
+msgid "%6.2f%% done, %s elapsed. (%d/%d/%d errors), %s MB/s"
+msgstr "%6.2f%% fet, %s transcorreguts. (%d/%d/%d errors), %s MB/s"
 
 #: misc/badblocks.c:337
 msgid "Testing with random pattern: "
