@@ -35,6 +35,7 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 	errcode_t retval;
 	struct ext2_inode ei;
 	blk64_t blk;
+	size_t pathlen;
 
 #ifdef NAMEI_DEBUG
 	printf("follow_link: root=%lu, dir=%lu, inode=%lu, lc=%d\n",
@@ -50,10 +51,23 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 	if (link_count++ >= EXT2FS_MAX_NESTED_LINKS)
 		return EXT2_ET_SYMLINK_LOOP;
 
+	pathlen = ei.i_size;
 	if (ext2fs_is_fast_symlink(&ei))
 		pathname = (char *)&(ei.i_block[0]);
 	else if (ei.i_flags & EXT4_INLINE_DATA_FL) {
-		retval = ext2fs_get_memzero(ei.i_size, &buffer);
+		size_t inline_sz;
+
+		/*
+		 * i_size can't be trusted: ext2fs_inline_data_get() writes
+		 * EXT4_MIN_INLINE_DATA_SIZE + the "system.data" value size,
+		 * which is independent of i_size, so size the buffer (and
+		 * the path length we parse) from the actual inline data.
+		 */
+		retval = ext2fs_inline_data_size(fs, inode, &inline_sz);
+		if (retval)
+			return retval;
+
+		retval = ext2fs_get_memzero(inline_sz + 1, &buffer);
 		if (retval)
 			return retval;
 
@@ -64,6 +78,7 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 			return retval;
 		}
 		pathname = buffer;
+		pathlen = inline_sz;
 	} else {
 		retval = ext2fs_bmap2(fs, inode, &ei, NULL, 0, 0, NULL, &blk);
 		if (retval)
@@ -81,7 +96,7 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 		pathname = buffer;
 	}
 
-	retval = open_namei(fs, root, dir, pathname, ei.i_size, 1,
+	retval = open_namei(fs, root, dir, pathname, pathlen, 1,
 			    link_count, buf, res_inode);
 	if (buffer)
 		ext2fs_free_mem(&buffer);
