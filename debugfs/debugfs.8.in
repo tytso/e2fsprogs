@@ -616,9 +616,9 @@ Also available as
 .BI mkdir " filespec"
 Make a directory.
 .TP
-.BI mknod " filespec [p|[[c|b] major minor]]"
-Create a special device file (a named pipe, character or block device).
-If a character or block device is to be made, the
+.BI mknod " filespec [p|s|[[c|b] major minor]]"
+Create a special device file (a named pipe, unix socket, character or
+block device).  If a character or block device is to be made, the
 .I major
 and
 .I minor
@@ -677,6 +677,32 @@ and all its contents (including regular files, symbolic links, and other
 directories) into the named
 .IR destination ,
 which should be an existing directory on the native file system.
+.TP
+.BI rdump_tar " [-H format] [-JjZz] directory[...] destination"
+Recursively dump
+.IR directory ,
+or multiple
+.IR directories ,
+and all its contents (including regular files, symbolic links, and other
+directories) into the named
+.IR destination ,
+which specifies a tar file to be created on the native file system.
+The option
+.I \-H
+specifies the tar format:
+.IR bsdtar ", " gnutar ", " pax ", " posix " (default, same as pax),"
+.IR ustar ", " v7
+as well as any format string recognized by
+.BR archive_write_format(3) .
+The rest of the options specify the compression method:
+.I \-J
+(xz),
+.I \-j
+(bzip2),
+.I \-Z
+(compress), and
+.I \-z
+(gzip).
 .TP
 .BI rm " pathname"
 Unlink

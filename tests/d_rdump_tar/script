@@ -1,0 +1,148 @@
+# -*- mode: sh -*-
+# vim: filetype=sh
+
+# Notes:
+#   - libarchive does not support writing sparse files.
+#   - mke2fs import from tar does not preserve file times.
+#   - mknod device major minor numbers:
+#     https://www.kernel.org/doc/Documentation/admin-guide/devices.txt
+
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+if [ "$(grep -c 'define HAVE_ARCHIVE_H' ../lib/config.h)" -eq 0 ]; then
+	echo "$test_name: skipped (no libarchive)"
+	exit 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+VERIFY_FSCK_OPT=-yf
+
+TEST_DIR=$TMPFILE.dir
+TEST_TAR=$TMPFILE.tar
+
+echo "debugfs create special files" > $OUT.new
+
+rm -rf $TEST_DIR
+mkdir -p $TEST_DIR
+touch $TEST_DIR/emptyfile
+dd if=/dev/zero bs=1024 count=32 2> /dev/null | tr '\0' 'a' > $TEST_DIR/bigfile
+cat << EOF > $TEST_DIR/execfile
+#!/bin/sh
+true
+EOF
+
+echo "mke2fs -Fq -b 1024 test.img 512" >> $OUT.new
+
+$MKE2FS -Fq -b 1024 -o linux $TMPFILE 512 > /dev/null 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+$DEBUGFS -w $TMPFILE << EOF > /dev/null 2>&1
+set_current_time 20260112160000
+set_super_value lastcheck 0
+set_super_value hash_seed null
+set_super_value mkfs_time 0
+set_inode_field lost+found mtime 20260112160000
+
+mkdir tmp
+set_inode_field tmp mode 041777
+
+cd tmp
+
+symlink symlink bar
+set_inode_field symlink uid 65534
+set_inode_field symlink gid 65534
+
+symlink symlinklong 12345678901234567890123456789012345678901234567890123456789012345678901234567890
+set_inode_field symlinklong uid 16777215
+set_inode_field symlinklong gid 16777215
+
+mknod fifo p
+set_inode_field fifo mode 010600
+set_inode_field fifo uid 65534
+set_inode_field fifo gid 65534
+
+mknod sock s
+set_inode_field sock mode 0140600
+set_inode_field sock uid 1
+set_inode_field sock gid 1
+
+write $TEST_DIR/emptyfile emptyfile
+set_inode_field emptyfile mode 0100640
+set_inode_field emptyfile uid 1000
+set_inode_field emptyfile gid 1000
+
+write $TEST_DIR/bigfile bigfile
+set_inode_field bigfile mode 0100640
+set_inode_field bigfile uid 1000
+set_inode_field bigfile gid 1000
+
+write $TEST_DIR/execfile execfile
+set_inode_field execfile mode 0106755
+
+cd ..
+
+mkdir dev
+set_inode_field dev mode 040755
+
+cd dev
+
+mknod sda b 0 6
+set_inode_field sda mode 060660
+
+mknod console c 5 1
+set_inode_field console mode 020666
+
+mknod blockrom0 b 258 0
+set_inode_field blockrom0 mode 060660
+
+mknod osd0 c 260 0
+set_inode_field osd0 mode 020660
+
+cd ..
+
+EOF
+
+for f in tmp tmp/symlink tmp/symlinklong tmp/fifo tmp/sock \
+	 tmp/emptyfile tmp/bigfile tmp/execfile \
+	 dev dev/sda dev/console dev/blockrom0 dev/osd0
+do
+	echo "debugfs -R ''stat $f'' -w test.img" >> $OUT.new
+	$DEBUGFS -R "stat $f" $TMPFILE >> $OUT.new 2>&1
+	status=$?
+	echo Exit status is $status >> $OUT.new
+done
+
+echo rdump_tar / $TEST_TAR | $DEBUGFS $TMPFILE > /dev/null 2>&1
+
+# Homogenize the verbose output differences between gnutar and bsdtar.
+#   - gnutar: drwxrwxrwt 0/0               0 2026-01-12 16:00 tmp/
+#   - bsdtar: drwxrwxrwt  0 0      0           0 Jan 12 16:00 tmp/
+tar tvf $TEST_TAR |
+	awk '$2 ~ /\// { print; next } { print $1, $3 "/" $4, $5, "2026-01-" $7, $8, $9, $10, $11 }' | \
+		while read -a FIELDS; do
+			echo "${FIELDS[@]}"
+		done >> $OUT.new
+
+#
+# Do the verification
+#
+
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $TEST_TAR $OUT.new
+rm -rf $TEST_DIR
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset VERIFY_FSCK_OPT NATIVE_FSCK_OPT OUT EXP TEST_DIR TEST_TAR FIELDS
