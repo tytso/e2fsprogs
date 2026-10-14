@@ -311,8 +311,18 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 
 	state->fc_replay_expected_off++;
 	for (cur = start; cur < end; cur = cur + le16_to_cpu(tl.fc_len) + sizeof(tl)) {
+		if (cur + sizeof(tl) > end) {
+			ret = state->fc_replay_num_tags ?
+				JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+			break;
+		}
 		memcpy(&tl, cur, sizeof(tl));
 		val = cur + sizeof(tl);
+		if (val + ext4_fc_tag_len(&tl) > end) {
+			ret = state->fc_replay_num_tags ?
+				JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+			break;
+		}
 
 		jbd_debug(3, "Scan phase, tag:%s, blk %lld\n",
 			  tag2str(le16_to_cpu(tl.fc_tag)), bh->b_blocknr);
@@ -901,8 +911,16 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 	end = (__u8 *)bh->b_data + journal->j_blocksize - 1;
 
 	for (cur = start; cur < end; cur = cur + le16_to_cpu(tl.fc_len) + sizeof(tl)) {
+		if (cur + sizeof(tl) > end) {
+			ret = -EFSCORRUPTED;
+			break;
+		}
 		memcpy(&tl, cur, sizeof(tl));
 		val = cur + sizeof(tl);
+		if (val + ext4_fc_tag_len(&tl) > end) {
+			ret = -EFSCORRUPTED;
+			break;
+		}
 
 		if (state->fc_replay_num_tags == 0)
 			goto replay_done;
