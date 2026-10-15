@@ -145,7 +145,7 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_dx_tail		*tail;
 	int				hash, i;
 	int				limit, count;
-	int				remainder;
+	int				remainder, header, max_entries;
 
 	dx_countlimit = *((struct ext2_dx_countlimit *) ent);
 	count = ext2fs_le16_to_cpu(dx_countlimit.count);
@@ -154,11 +154,28 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 	fprintf(pager, "Number of entries (count): %d\n", count);
 	fprintf(pager, "Number of entries (limit): %d\n", limit);
 
-	remainder = fs->blocksize - (limit * sizeof(struct ext2_dx_entry));
 	if (ent == (struct ext2_dx_entry *)(rootnode + 1))
-		remainder -= sizeof(struct ext2_dx_root_info) + 24;
+		header = sizeof(struct ext2_dx_root_info) + 24;
 	else
-		remainder -= 8;
+		header = 8;
+
+	/*
+	 * count and limit are read straight from the on-disk index block, so
+	 * a crafted directory can set them larger than the block can hold.
+	 * Clamp them to what fits before walking ent[] below, otherwise the
+	 * entry loops read off the end of the block buffer.
+	 */
+	max_entries = (fs->blocksize - header) / sizeof(struct ext2_dx_entry);
+	if (count > max_entries) {
+		fprintf(pager, "Warning: count (%d) exceeds block capacity, "
+			"limiting to %d\n", count, max_entries);
+		count = max_entries;
+	}
+	if (limit > max_entries)
+		limit = max_entries;
+
+	remainder = fs->blocksize - (limit * sizeof(struct ext2_dx_entry)) -
+		header;
 	if (ext2fs_has_feature_metadata_csum(fs->super) &&
 	    remainder == sizeof(struct ext2_dx_tail)) {
 		tail = (struct ext2_dx_tail *)(ent + limit);
