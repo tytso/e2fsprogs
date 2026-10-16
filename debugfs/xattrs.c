@@ -449,8 +449,8 @@ static void dump_xattr_raw_entries(FILE *f, unsigned char *buf,
 		fprintf(f, "value = ");
 		if (ent.e_value_inum)
 			fprintf(f, "<ino %u>", ent.e_value_inum);
-		else if (ent.e_value_offs >= len ||
-			 (vstart + ent.e_value_size) > len)
+		else if (ent.e_value_offs >= len || vstart >= len ||
+			 ent.e_value_size > len - vstart)
 			fprintf(f, "<runs off end>");
 		else if (is_mostly_printable((char *)(buf + vstart),
 					ent.e_value_size))
