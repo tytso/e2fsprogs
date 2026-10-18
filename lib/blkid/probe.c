@@ -1338,6 +1338,8 @@ static int probe_hfsplus(struct blkid_probe *probe,
 		return 0;
 
 	label_len = blkid_be16(key->unicode_len) * 2;
+	if (label_len > sizeof(key->unicode))
+		label_len = sizeof(key->unicode);
 	unicode_16be_to_utf8((unsigned char *)label, sizeof(label),
 			     key->unicode, label_len);
 	blkid_set_tag(probe->dev, "LABEL", label, 0);
@@ -1520,7 +1522,11 @@ static int probe_exfat(struct blkid_probe *probe,
     label = find_exfat_entry_label(probe, sb);
     if (label) {
         unsigned char utf8_label[128];
-        unicode_16le_to_utf8(utf8_label, sizeof(utf8_label), label->name, label->length * 2);
+        unsigned int label_len = label->length * 2;
+
+        if (label_len > sizeof(label->name))
+            label_len = sizeof(label->name);
+        unicode_16le_to_utf8(utf8_label, sizeof(utf8_label), label->name, label_len);
         blkid_set_tag(probe->dev, "LABEL", (char *) utf8_label, 0);
     } else {
         blkid_set_tag(probe->dev, "LABEL", "disk", 4);
