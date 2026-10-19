@@ -122,6 +122,8 @@ static ext2_badblocks_list bb_list = NULL;
 static FILE *out;
 static blk_t next_bad = 0;
 static ext2_badblocks_iterate bb_iter = NULL;
+static unsigned long perf_last_count = 0;
+static struct timespec perf_last_time;
 
 enum error_types { READ_ERROR, WRITE_ERROR, CORRUPTION_ERROR };
 
@@ -215,6 +217,20 @@ static float calc_percent(unsigned long current, unsigned long total) {
 	return percent;
 }
 
+static float calc_performance(unsigned long current_count) {
+	float blocks_per_second = 0.0;
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+
+    float secs = (current_time.tv_sec-perf_last_time.tv_sec) + (current_time.tv_nsec-perf_last_time.tv_nsec)/1e9;
+    if (secs > 0)
+	    blocks_per_second = ( (float) (current_count-perf_last_count) ) / secs;
+
+    perf_last_time = current_time;
+    perf_last_count = current_count;
+	return blocks_per_second;
+}
+
 static void print_status(void)
 {
 	struct timeval time_end;
@@ -226,10 +242,11 @@ static void print_status(void)
 
 	gettimeofday(&time_end, 0);
 	len = snprintf(line_buf, sizeof(line_buf), 
-		       _("%6.2f%% done, %s elapsed. "
+		       _("%6.2f%% done, %6.f blk/sec, %s elapsed. "
 		         "(%d/%d/%d errors)"),
 		       calc_percent((unsigned long) currently_testing,
 				    (unsigned long) num_blocks), 
+		       calc_performance((unsigned long) currently_testing), 
 		       time_diff_format(&time_end, &time_start, diff_buf),
 		       num_read_errors,
 		       num_write_errors,
