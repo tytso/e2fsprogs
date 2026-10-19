@@ -1170,7 +1170,7 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1_INLINE_DATA_NO_ATTR,
 	  /* xgettext:no-c-format */
 	  N_("@i %i has INLINE_DATA_FL flag but @a not found.  "),
-	  PROMPT_TRUNCATE, 0, 0, 0, 0 },
+	  PROMPT_TRUNCATE, PR_PREEN_OK, 0, 0, 0 },
 
 	/* Special (device/socket/fifo) file (inode num) has extents
 	 * or inline-data flag set */
