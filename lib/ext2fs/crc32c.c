@@ -70,6 +70,10 @@
 
 #include "crc32c_table.h"
 
+#if defined(__x86_64__) || defined(__i386__)
+int crc32c_intel_le(uint32_t *crc, unsigned char const *data, size_t length);
+#endif
+
 #if CRC_LE_BITS > 8 || CRC_BE_BITS > 8
 
 #if CRC_LE_BITS < 64 && CRC_BE_BITS < 64
@@ -191,6 +195,10 @@ static inline uint32_t crc32_le_generic(uint32_t crc, unsigned char const *p,
 
 uint32_t ext2fs_crc32c_le(uint32_t crc, unsigned char const *p, size_t len)
 {
+#if defined(__x86_64__) || defined(__i386__)
+	if (crc32c_intel_le(&crc, p, len))
+		return crc;
+#endif
 	return crc32_le_generic(crc, p, len, crc32ctable_le, CRC32C_POLY_LE);
 }
 
