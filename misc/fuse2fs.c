@@ -18,13 +18,17 @@
 # include <linux/falloc.h>
 # include <linux/xattr.h>
 # include <sys/prctl.h>
+# include <sys/file.h>
 #endif
 #ifdef HAVE_SYS_XATTR_H
 #include <sys/xattr.h>
 #endif
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <limits.h>
 #define FUSE_DARWIN_ENABLE_EXTENSIONS 0
 #ifdef __SET_FOB_FOR_FUSE
 # error Do not set magic value __SET_FOB_FOR_FUSE!!!!
@@ -258,6 +262,7 @@ struct fuse2fs {
 
 	enum fuse2fs_opstate opstate;
 	int logfd;
+	int image_lock_fd;
 	int blocklog;
 	int oom_score_adj;
 	unsigned int blockmask;
@@ -1154,6 +1159,55 @@ static void fuse2fs_unmount(struct fuse2fs *ff)
 
 	if (ff->lockfile)
 		fuse2fs_release_lockfile(ff);
+	if (ff->image_lock_fd >= 0) {
+		close(ff->image_lock_fd);
+		ff->image_lock_fd = -1;
+	}
+}
+
+static errcode_t fuse2fs_lock_image(struct fuse2fs *ff, unsigned int flags)
+{
+#ifdef __linux__
+	const char prefix[] = "/proc/self/fd/";
+	struct stat st;
+	char *end;
+	long fd;
+	int operation;
+
+	/*
+	 * A caller can pass an already locked image descriptor.  Reopening
+	 * /proc/self/fd/N creates a different open file description, whose
+	 * flock conflicts with the caller's lock.  On Lustre this also
+	 * happens when the caller holds an OFD record lock, as Apptainer does.
+	 * Take the usual BSD lock on the inherited description instead;
+	 * keeping the same lock type still excludes ordinary pathname users.
+	 */
+	if (!strncmp(ff->device, prefix, sizeof(prefix) - 1)) {
+		if (ff->image_lock_fd < 0) {
+			if (!isdigit((unsigned char)ff->device[sizeof(prefix) - 1]))
+				return io_channel_flock(ff->fs->io, flags);
+			errno = 0;
+			fd = strtol(ff->device + sizeof(prefix) - 1, &end, 10);
+			if (errno || *end || fd < 0 || fd > INT_MAX)
+				return io_channel_flock(ff->fs->io, flags);
+			if (fstat((int)fd, &st) < 0)
+				return errno;
+			if (!S_ISREG(st.st_mode))
+				return EINVAL;
+			/* Retain the description across libfuse daemonization. */
+			ff->image_lock_fd = fcntl((int)fd, F_DUPFD_CLOEXEC, 3);
+			if (ff->image_lock_fd < 0)
+				return errno;
+		}
+		operation = (flags & IO_CHANNEL_FLOCK_EXCLUSIVE) ? LOCK_EX : LOCK_SH;
+		if (flags & IO_CHANNEL_FLOCK_TRYLOCK)
+			operation |= LOCK_NB;
+		if (flock(ff->image_lock_fd, operation) < 0)
+			return errno;
+		return 0;
+	}
+#endif
+	return io_channel_flock(ff->fs->io, flags);
 }
 
 static errcode_t fuse2fs_open(struct fuse2fs *ff)
@@ -1256,7 +1310,7 @@ static errcode_t fuse2fs_open(struct fuse2fs *ff)
 
 		deadline = init_deadline(FUSE2FS_OPEN_TIMEOUT);
 		do {
-			err = io_channel_flock(ff->fs->io, lock_flags);
+			err = fuse2fs_lock_image(ff, lock_flags);
 		} while (err == EWOULDBLOCK && retry_before_deadline(deadline));
 		if (err) {
 			err_printf(ff, "%s: %s\n",
@@ -5513,6 +5567,7 @@ int main(int argc, char *argv[])
 	struct fuse2fs fctx = {
 		.magic = FUSE2FS_MAGIC,
 		.logfd = -1,
+		.image_lock_fd = -1,
 		.bfl = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER,
 		.oom_score_adj = -500,
 		.opstate = F2OP_WRITABLE,
