@@ -91,7 +91,19 @@ use this file to control access to the filesystem
 do not include default fuse options
 .TP
 \fB-o\fR norecovery
-do not replay the journal and mount the file system read-only
+Do not replay the journal and open the backing device or image read-only,
+even when the file system is clean.  This also prevents mount metadata,
+access times, and error reports from modifying the image.
+This option implies a read-only mount regardless of any
+.I rw
+option.
+The alias
+.I noload
+has the same effect.
+Skipping recovery on a file system with an unreplayed journal may expose
+inconsistent data.  A plain
+.I ro
+mount can still replay the journal when write access is available.
 .SS "FUSE options:"
 .TP
 \fB-d -o\fR debug
