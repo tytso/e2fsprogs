@@ -1173,6 +1173,12 @@ static errcode_t fuse2fs_open(struct fuse2fs *ff)
 	snprintf(options, sizeof(options) - 1, "offset=%lu", ff->offset);
 	ff->opstate = F2OP_READONLY;
 
+	/* norecovery promises a read-only mount even for a clean image. */
+	if (ff->norecovery) {
+		ff->ro = 1;
+		flags &= ~EXT2_FLAG_RW;
+	}
+
 	if (ff->directio)
 		flags |= EXT2_FLAG_DIRECT_IO;
 
@@ -5357,7 +5363,7 @@ static int fuse2fs_opt_proc(void *data, const char *arg,
 	"    -o fakeroot            pretend to be root for permission checks\n"
 	"    -o no_default_opts     do not include default fuse options\n"
 	"    -o offset=<bytes>      similar to mount -o offset=<bytes>, mount the partition starting at <bytes>\n"
-	"    -o norecovery          don't replay the journal\n"
+	"    -o norecovery          don't replay the journal; open read-only\n"
 	"    -o fuse2fs_debug       enable fuse2fs debugging\n"
 	"    -o lockfile=<file>     file to show that fuse is still using the file system image\n"
 	"    -o kernel              run this as if it were the kernel, which sets:\n"
@@ -5795,6 +5801,10 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 		err_printf(ff, "%s at %s:%d.\n",
 			error_message(err), func, line);
 
+	/* Error reporting must not write to an explicitly read-only image. */
+	if (!(fs->flags & EXT2_FLAG_RW))
+		goto handle_error;
+
 	/* Make a note in the error log */
 	get_now(&now);
 	ext2fs_set_tstamp(fs->super, s_last_error_time, now.tv_sec);
@@ -5816,6 +5826,7 @@ static int __translate_error(ext2_filsys fs, ext2_ino_t ino, errcode_t err,
 	fs->super->s_error_count++;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_flush(fs);
+handle_error:
 	switch (ff->errors_behavior) {
 	case EXT2_ERRORS_CONTINUE:
 		err_printf(ff, "%s\n",
