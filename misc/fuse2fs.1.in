@@ -20,6 +20,17 @@ fuse2fs \- FUSE file system client for ext2/ext3/ext4 file systems
 .B fuse2fs
 is a FUSE file system client that supports reading and writing from
 devices or image files containing ext2, ext3, and ext4 file systems.
+.PP
+On Linux, an image passed as
+.I /proc/self/fd/N
+is locked using the inherited open file description.  This allows a caller
+that already holds a lock on that description to pass the image to fuse2fs.
+The inherited descriptor must refer to a regular file.  The lock covers the
+entire image file, including when the
+.I offset
+option is used.  As with any inherited flock, the lock remains held until
+all references to that open file description have been closed; a caller
+retaining a copy of the descriptor must close it when the mount is finished.
 .SH OPTIONS
 .SS "general options:"
 .TP
