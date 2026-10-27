@@ -1,0 +1,45 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+OUT=$test_name.log
+EXP=$test_dir/expect
+echo "debugfs rdump fast symlink not NUL-terminated" > $OUT.new
+
+$MKE2FS -Fq -b 1024 -o linux $TMPFILE 512 > /dev/null 2>&1
+
+# A fast symlink whose i_size is 1 but whose i_block has no NUL terminator
+$DEBUGFS -w $TMPFILE << EOF2 > /dev/null 2>&1
+symlink lnk a
+sif lnk block[0] 0x41414141
+sif lnk block[1] 0x41414141
+sif lnk block[2] 0x41414141
+sif lnk block[3] 0x41414141
+sif lnk block[4] 0x41414141
+sif lnk block[5] 0x41414141
+sif lnk block[6] 0x41414141
+sif lnk block[7] 0x41414141
+sif lnk block[8] 0x41414141
+sif lnk block[9] 0x41414141
+sif lnk block[10] 0x41414141
+sif lnk block[11] 0x41414141
+sif lnk block[12] 0x41414141
+sif lnk block[13] 0x41414141
+sif lnk block[14] 0x41414141
+sif lnk generation 0x41414141
+sif lnk size 1
+EOF2
+
+DEST=$test_name.d
+rm -rf $DEST; mkdir -p $DEST
+echo "debugfs -R ''rdump lnk DEST'' image" >> $OUT.new
+$DEBUGFS -R "rdump lnk `pwd`/$DEST" $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+echo "link target: `readlink $DEST/lnk`" >> $OUT.new
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -rf $DEST $TMPFILE $OUT.new
+cmp -s $OUT $EXP
+status=$?
+if [ "$status" = 0 ] ; then echo "$test_name: $test_description: ok"; touch $test_name.ok
+else echo "$test_name: $test_description: failed"; diff $DIFF_OPTS $EXP $OUT > $test_name.failed; fi
+unset OUT EXP DEST

@@ -211,9 +211,10 @@ static void rdump_symlink(ext2_ino_t ino, struct ext2_inode *inode,
 		goto errout;
 	}
 
-	if (ext2fs_is_fast_symlink(inode))
-		strcpy(buf, (char *) inode->i_block);
-	else {
+	if (ext2fs_is_fast_symlink(inode)) {
+		memcpy(buf, (char *) inode->i_block, inode->i_size);
+		buf[inode->i_size] = 0;
+	} else {
 		unsigned bytes = inode->i_size;
 		char *p = buf;
 		retval = ext2fs_file_open(current_fs, ino, 0, &e2_file);
