@@ -123,8 +123,9 @@ make -j$(nproc) fullcheck
 - `u_*`: `e2undo` undo-log tests
 - `e_*`: `libext2fs` data structure (`icount`, `irel`, `brel`) tests
 
-### Writing Reproducers and New Regression Tests
-Before creating a bug reproducer or adding a new regression test, read:
+### Writing Unit Tests, Reproducers, and New Regression Tests
+Before writing a unit test, creating a bug reproducer, or adding a new regression test, read:
+- [`doc/developers/writing-unit-tests.md`](doc/developers/writing-unit-tests.md) — Guide to designing and implementing C and `libss` command-driven unit tests (such as `tst_bitmaps`, `tst_extents`, `tst_libext2fs`, and other `tst_*` binaries in `lib/ext2fs/`).
 - [`doc/developers/create-a-regression-test.md`](doc/developers/create-a-regression-test.md) — Step-by-step instructions, script templates (`run_e2fsck`, `run_mke2fs`, custom scripts), determinism rules, and verification steps.
 - [`doc/developers/create-a-reproducer.md`](doc/developers/create-a-reproducer.md) — Guide to synthesizing minimal ext4 images (`64 KB`–`1 MB`) and crafting on-disk corruptions from scratch using `mke2fs` and `debugfs` (without root or loop mounts).
 

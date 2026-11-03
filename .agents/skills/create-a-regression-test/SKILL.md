@@ -1,6 +1,6 @@
 ---
 name: create-a-regression-test
-description: Create a new, self-contained e2fsprogs regression test under tests/<prefix>_<name>/ (or convert an existing reproducer into a test) and verify it with tests/test_script. Use when asked to add, write, or convert a regression test or unit test for e2fsck, mke2fs, debugfs, tune2fs, resize2fs, dumpe2fs, e2image, e2undo, or libext2fs.
+description: Create a new, self-contained e2fsprogs regression test under tests/<prefix>_<name>/ (or convert an existing reproducer into a test) and verify it with tests/test_script. Use when asked to add, write, or convert a regression test under tests/ for e2fsck, mke2fs, debugfs, tune2fs, resize2fs, dumpe2fs, e2image, e2undo, or libext2fs (for C or libss unit tests such as tst_* in lib/ext2fs/, use writing-unit-tests instead).
 ---
 
 # Creating an `e2fsprogs` Regression Test
