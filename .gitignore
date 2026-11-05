@@ -219,6 +219,13 @@ resize/test_extent
 resize/test_extent.out
 tags
 TAGS
+scrub/e2scrub
+scrub/e2scrub.8
+scrub/e2scrub.conf
+scrub/e2scrub_all
+scrub/e2scrub_all.8
+scrub/e2scrub_all.cron
+scrub/e2scrub_all_cron
 tests/progs/test_icount
 tests/progs/test_icount_cmds.c
 tests/progs/crcsum
@@ -236,4 +243,5 @@ util/gen-tarball
 util/install-symlink
 util/subst
 util/subst.conf
+util/symlinks
 Meta
