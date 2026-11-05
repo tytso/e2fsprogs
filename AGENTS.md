@@ -25,40 +25,45 @@
 
 ## Building `e2fsprogs`
 
-### Standard Build
-`e2fsprogs` uses Autoconf and hand-written `Makefile.in` templates (with shared rules in `MCONFIG.in`). Both in-tree and out-of-tree builds are supported:
+### Standard Build (Out-of-Tree / VPATH)
+`e2fsprogs` uses Autoconf and hand-written `Makefile.in` templates (with shared rules in `MCONFIG.in`). Normal builds should always be done out-of-tree using VPATH by creating a `build` subdirectory in the top-level directory (if necessary), running `../configure` from inside `build`, and then running `make` in the `build` subdirectory:
 
 ```sh
-./configure
-make -j$(nproc)
+mkdir -p build
+(cd build && ../configure)
+make -C build -j$(nproc)
 ```
 
+**Why VPATH builds are required**: Running `make depend` in a VPATH build generates header dependency rules with the proper `$(srcdir)`, `$(top_srcdir)`, and `$(top_builddir)` substitutions. Building directly in the source directory causes `make depend` to generate broken dependency paths that cause VPATH builds to fail.
+
 ### Partial Rebuilds
-- You can rebuild an individual directory with `make -C <dir>` (e.g., `make -C lib/ext2fs`, `make -C e2fsck`, `make -C misc`, `make -C debugfs`, `make -C resize`).
-- By default (without `--enable-elf-shlibs`), utilities link statically against `lib/libext2fs.a` and other libraries in `lib/`. After modifying code under `lib/`, rebuild both the library directory and the dependent program directory (or run `make -j$(nproc)` at the top level).
+- You can rebuild an individual directory with `make -C build/<dir>` (e.g., `make -C build/lib/ext2fs`, `make -C build/e2fsck`, `make -C build/misc`, `make -C build/debugfs`, `make -C build/resize`).
+- By default (without `--enable-elf-shlibs`), utilities link statically against `lib/libext2fs.a` and other libraries in `lib/`. After modifying code under `lib/`, rebuild both the library directory and the dependent program directory (or run `make -C build -j$(nproc)`).
 
 ### Warnings, Sanitizers, and Static Analysis
 - **Treat warnings as errors (CI default)**:
   ```sh
-  make -j$(nproc) V=1 CFLAGS_WARN="-Werror"
+  make -C build -j$(nproc) V=1 CFLAGS_WARN="-Werror"
   ```
 - **Strict compiler warning sweep**:
   ```sh
-  make gcc-wall          # cleans and builds with extensive -W* flags
-  make gcc-wall-new      # incremental build with strict -W* flags
+  make -C build gcc-wall          # cleans and builds with extensive -W* flags
+  make -C build gcc-wall-new      # incremental build with strict -W* flags
   ```
 - **Static analysis (`sparse` and `cppcheck`)**:
   ```sh
-  make C=1 V=1           # runs sparse and cppcheck alongside compilation
-  make C=2 V=1           # adds -Wbitwise -D__CHECK_ENDIAN__ endianness checks
+  make -C build C=1 V=1           # runs sparse and cppcheck alongside compilation
+  make -C build C=2 V=1           # adds -Wbitwise -D__CHECK_ENDIAN__ endianness checks
   ```
 - **Sanitizers (ASAN / UBSAN)**:
   ```sh
-  ./configure CC=clang CFLAGS="-O2 -g -Wall -fsanitize=address,undefined -fno-sanitize-recover=address,undefined" \
-              LDFLAGS="-fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
-  make -j$(nproc) check
+  mkdir -p build
+  (cd build && ../configure CC=clang \
+      CFLAGS="-O2 -g -Wall -fsanitize=address,undefined -fno-sanitize-recover=address,undefined" \
+      LDFLAGS="-fsanitize=address,undefined -fno-sanitize-recover=address,undefined")
+  make -C build -j$(nproc) check
   ```
-- **Header dependencies**: If you add or remove `#include` directives, run `make depend` to refresh the dependency lists at the bottom of `Makefile.in`.
+- **Header dependencies**: If you add or remove `#include` directives, run `make -C build depend` to refresh the dependency lists at the bottom of `Makefile.in` with proper `$(srcdir)`, `$(top_srcdir)`, and `$(top_builddir)` substitutions.
 
 ---
 
@@ -68,10 +73,10 @@ make -j$(nproc)
 Always verify changes by running `make check` (supports parallel execution with `-j`):
 
 ```sh
-make -j$(nproc) check
+make -C build -j$(nproc) check
 ```
 
-Running `make check` from the top level:
+Running `make -C build check`:
 1. Builds all libraries, utilities, and documentation (`make all`).
 2. Builds and runs **unit test binaries** in each subdirectory:
    - `lib/ext2fs/`: `tst_bitops`, `tst_badblocks`, `tst_iscan`, `tst_types`, `tst_icount`, `tst_super_size`, `tst_inode_size`, `tst_csum`, `tst_crc32c`, `tst_bitmaps`, `tst_inline`, `tst_inline_data`, `tst_sha256`, `tst_sha512`, `tst_digest_encode`, etc.
@@ -87,30 +92,30 @@ Running `make check` from the top level:
 To run all tests **including slow tests**:
 
 ```sh
-make -j$(nproc) fullcheck
+make -C build -j$(nproc) fullcheck
 ```
 
 ### Running Individual Tests or Subsets in `tests/`
 - **Run only the `tests/` directory in parallel**:
   ```sh
-  make -C tests -j$(nproc) check
+  make -C build/tests -j$(nproc) check
   ```
 - **Run a single test or category via `test_script`**:
   ```sh
-  make -C tests test_script
-  (cd tests && ./test_script f_extent_oobounds)           # Run a single test
-  (cd tests && ./test_script f)                           # Run all f_* (e2fsck) tests
-  (cd tests && ./test_script --valgrind f_extent_oobounds) # Run under valgrind
+  make -C build/tests test_script
+  (cd build/tests && ./test_script f_extent_oobounds)           # Run a single test
+  (cd build/tests && ./test_script f)                           # Run all f_* (e2fsck) tests
+  (cd build/tests && ./test_script --valgrind f_extent_oobounds) # Run under valgrind
   ```
 - **Re-run only failed tests**:
   ```sh
-  make -C tests check-failed
+  make -C build/tests check-failed
   # or:
-  (cd tests && ./test_script --failed)
+  (cd build/tests && ./test_script --failed)
   ```
 - **Inspecting test outputs**:
-  - Passing a test creates `tests/<test_name>.ok`.
-  - Failing a test creates `tests/<test_name>.failed`, which contains the unified diff between the expected golden output (`tests/<test_name>/expect` or `expect.1`/`expect.2`) and the actual filtered log (`tests/<test_name>.log` or `<test_name>.1.log`/`<test_name>.2.log`).
+  - Passing a test creates `build/tests/<test_name>.ok`.
+  - Failing a test creates `build/tests/<test_name>.failed`, which contains the unified diff between the expected golden output (`tests/<test_name>/expect` or `expect.1`/`expect.2`) and the actual filtered log (`build/tests/<test_name>.log` or `<test_name>.1.log`/`<test_name>.2.log`).
 
 ### Test Categories (`tests/<prefix>_<name>/`)
 - `f_*`: `e2fsck` filesystem corruption detection and repair tests
