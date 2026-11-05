@@ -1,6 +1,27 @@
 command_table libext2fs_cmds;
 
-request do_block_iterate, "block_iterate",
+request do_block_iterate, "Iterate over blocks of an inode",
 	block_iterate;
+
+request do_setup_test_fs, "Setup in-memory test filesystem",
+	setup_test_fs, setup;
+
+request do_teardown_test_fs, "Close and free test filesystem",
+	teardown_test_fs, teardown;
+
+request do_init_inode, "Initialize test inode",
+	init_inode;
+
+request do_check_inode_blocks, "Print inode i_blocks count",
+	check_inode_blocks;
+
+request do_corrupt_extent_block, "Corrupt an extent block for testing",
+	corrupt_extent_block;
+
+request do_fix_extents_csum, "Fix extent block checksums on an inode",
+	fix_extents_csum;
+
+request do_test_extent_apis, "Run direct unit tests for extent C APIs",
+	test_extent_apis;
 
 end;

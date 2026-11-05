@@ -29,8 +29,6 @@
 #include "ext2fsP.h"
 #include "e2image.h"
 
-#undef DEBUG
-
 /*
  * Definitions to be dropped in lib/ext2fs/ext2fs.h
  */
@@ -86,6 +84,31 @@ static void dbg_show_header(struct ext3_extent_header *eh)
 			ext2fs_le32_to_cpu(eh->eh_generation));
 }
 
+static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
+{
+	if (desc)
+		printf("%s: ", desc);
+	printf("extent: lblk %llu--%llu, len %u, pblk %llu, flags: ",
+	       (unsigned long long) extent->e_lblk,
+	       (unsigned long long) extent->e_lblk + extent->e_len - 1,
+	       extent->e_len, (unsigned long long) extent->e_pblk);
+	if (extent->e_flags & EXT2_EXTENT_FLAGS_LEAF)
+		fputs("LEAF ", stdout);
+	if (extent->e_flags & EXT2_EXTENT_FLAGS_UNINIT)
+		fputs("UNINIT ", stdout);
+	if (extent->e_flags & EXT2_EXTENT_FLAGS_SECOND_VISIT)
+		fputs("2ND_VISIT ", stdout);
+	if (!extent->e_flags)
+		fputs("(none)", stdout);
+	fputc('\n', stdout);
+
+}
+#else
+#define dbg_show_header(eh) do { } while (0)
+#define dbg_print_extent(desc, ex) do { } while (0)
+#endif
+
+#ifdef DEBUG_DUMP_PATH
 static void dbg_show_index(struct ext3_extent_idx *ix)
 {
 	printf("index: block=%u leaf=%u leaf_hi=%u unused=%u\n",
@@ -106,25 +129,6 @@ static void dbg_show_extent(struct ext3_extent *ex)
 			ext2fs_le16_to_cpu(ex->ee_start_hi));
 }
 
-static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
-{
-	if (desc)
-		printf("%s: ", desc);
-	printf("extent: lblk %llu--%llu, len %u, pblk %llu, flags: ",
-	       extent->e_lblk, extent->e_lblk + extent->e_len - 1,
-	       extent->e_len, extent->e_pblk);
-	if (extent->e_flags & EXT2_EXTENT_FLAGS_LEAF)
-		fputs("LEAF ", stdout);
-	if (extent->e_flags & EXT2_EXTENT_FLAGS_UNINIT)
-		fputs("UNINIT ", stdout);
-	if (extent->e_flags & EXT2_EXTENT_FLAGS_SECOND_VISIT)
-		fputs("2ND_VISIT ", stdout);
-	if (!extent->e_flags)
-		fputs("(none)", stdout);
-	fputc('\n', stdout);
-
-}
-
 static void dump_path(const char *tag, struct ext2_extent_handle *handle,
 		      struct extent_path *path)
 {
@@ -136,7 +140,8 @@ static void dump_path(const char *tag, struct ext2_extent_handle *handle,
 		       "visit_num=%d flags=0x%x end_blk=%llu curr=%p(%ld)\n",
 		       tag, (ppp - handle->path), ppp->buf, ppp->entries,
 		       ppp->max_entries, ppp->left, ppp->visit_num, ppp->flags,
-		       ppp->end_blk, ppp->curr, ppp->curr - (void *)ppp->buf);
+		       (unsigned long long) ppp->end_blk, ppp->curr,
+		       (long) ((char *) ppp->curr - ppp->buf));
 		printf("  ");
 		dbg_show_header((struct ext3_extent_header *)ppp->buf);
 		if (ppp->curr) {
@@ -151,12 +156,9 @@ static void dump_path(const char *tag, struct ext2_extent_handle *handle,
 
 	return;
 }
-
 #else
-#define dbg_show_header(eh) do { } while (0)
 #define dbg_show_index(ix) do { } while (0)
 #define dbg_show_extent(ex) do { } while (0)
-#define dbg_print_extent(desc, ex) do { } while (0)
 #define dump_path(tag, handle, path) do { } while (0)
 #endif
 
@@ -686,7 +688,7 @@ errcode_t ext2fs_extent_goto2(ext2_extent_handle_t handle,
 
 #ifdef DEBUG
 	printf("goto extent ino %u, level %d, %llu\n", handle->ino,
-	       leaf_level, blk);
+	       leaf_level, (unsigned long long) blk);
 #endif
 
 #ifdef DEBUG_GOTO_EXTENTS
@@ -1285,7 +1287,7 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 
 #ifdef DEBUG
 	printf("set_bmap ino %u log %lld phys %lld flags %d\n",
-	       handle->ino, logical, physical, flags);
+	       handle->ino, (long long) logical, (long long) physical, flags);
 #endif
 
 	if (!(handle->fs->flags & EXT2_FLAG_RW))
@@ -1338,7 +1340,7 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			if (!physical) {
 #ifdef DEBUG
 				printf("block %llu already unmapped\n",
-					logical);
+				       (unsigned long long) logical);
 #endif
 				goto done;
 			}
@@ -1392,14 +1394,16 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 	if (mapped && (new_uninit == extent_uninit) &&
 	    (extent.e_pblk + (logical - extent.e_lblk) == physical)) {
 #ifdef DEBUG
-		printf("physical block (at %llu) unchanged\n", logical);
+		printf("physical block (at %llu) unchanged\n",
+		       (unsigned long long) logical);
 #endif
 		goto done;
 	}
 
 	if (!mapped) {
 #ifdef DEBUG
-		printf("mapping unmapped logical block %llu\n", logical);
+		printf("mapping unmapped logical block %llu\n",
+		       (unsigned long long) logical);
 #endif
 		if ((logical == extent.e_lblk + extent.e_len) &&
 		    (physical == extent.e_pblk + extent.e_len) &&
@@ -1878,12 +1882,4 @@ out:
 
 	return 0;
 }
-
-#ifdef DEBUG
-/*
- * Override debugfs's prompt
- */
-const char *debug_prog_name = "tst_extents";
-
-#endif
 

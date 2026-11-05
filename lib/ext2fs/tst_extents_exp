@@ -1,0 +1,1617 @@
+#
+# Unit tests for lib/ext2fs/extent.c driven via tst_extents
+#
+debugfs: 
+# =========================================================================
+# 1. Opening extent handles, empty tree operations, and open error cases
+# =========================================================================
+debugfs: setup
+Test filesystem initialized: 256 blocks, 64 inodes, blocksize 1024
+debugfs: extent_open
+No current inode
+debugfs: extent_open <999>
+<999>: Ext2 inode is not a directory 
+debugfs: init_inode -n 12
+Initialized inode 12 (size 102400)
+debugfs: extent_open <12>
+<12>: Inode does not use extents while opening extent handle
+debugfs: init_inode -x 13
+Initialized inode 13 (size 102400)
+debugfs: extent_open <13>
+header: magic=beef entries=57005 max=0 depth=0 generation=0
+<13>: Corrupt extent header while opening extent handle
+debugfs: init_inode 14
+Initialized inode 14 (size 102400)
+debugfs: extent_open <14>
+header: magic=f30a entries=0 max=4 depth=0 generation=0
+debugfs: extent_open
+Current inode is 14
+debugfs: info
+info: No current node 
+debugfs: current_node
+current_node: No current node 
+debugfs: root_node
+root_node: No 'next' extent 
+debugfs: goto_block 0
+goto_block: Extent not found while trying to go to block 0, level 0
+debugfs: delete_node
+delete_node: No current node 
+debugfs: replace_node 0 1 20
+replace_node: No current node 
+debugfs: fix_parents
+fix_parents: No current node 
+debugfs: extent_close
+debugfs: extent_open
+No current inode
+debugfs: 
+# =========================================================================
+# 2. Root-level insertions, uninit extents, 48-bit pblks, and length limits
+# =========================================================================
+debugfs: init_inode 15
+Initialized inode 15 (size 102400)
+debugfs: extent_open <15>
+header: magic=f30a entries=0 max=4 depth=0 generation=0
+debugfs: insert_node 10 5 100
+extent insert: 15 extent: lblk 10--14, len 5, pblk 100, flags: (none)
+extent replace: 15 extent: lblk 10--14, len 5, pblk 100, flags: (none)
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 2ND_VISIT 
+debugfs: info
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 2ND_VISIT 
+Current handle location: 1/1 (max: 4, bytes 36), level 0/0
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: insert_node 0 4 50
+extent insert: 15 extent: lblk 0--3, len 4, pblk 50, flags: (none)
+extent replace: 15 extent: lblk 0--3, len 4, pblk 50, flags: (none)
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 4 6 60
+extent insert: 15 extent: lblk 4--9, len 6, pblk 60, flags: (none)
+extent replace: 15 extent: lblk 4--9, len 6, pblk 60, flags: (none)
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 2ND_VISIT 
+debugfs: last_sib
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+debugfs: insert_node --after --uninit 20 10 200
+extent insert: 15 extent: lblk 20--29, len 10, pblk 200, flags: UNINIT 
+extent replace: 15 extent: lblk 20--29, len 10, pblk 200, flags: UNINIT 
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: info
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+Current handle location: 4/4 (max: 4, bytes 0), level 0/0
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+# Root node is now full (4/4); test --nosplit rejection
+debugfs: insert_node --nosplit --after 30 5 300
+extent insert: 15 extent: lblk 30--34, len 5, pblk 300, flags: (none)
+insert_node: No room to insert extent in node 
+# Test replace_node max initialized/uninitialized length boundaries & 48-bit pblk
+debugfs: replace_node 20 32768 200
+extent replace: 15 extent: lblk 20--32787, len 32768, pblk 200, flags: (none)
+extent: lblk 20--32787, len 32768, pblk 200, flags: LEAF 
+debugfs: replace_node 20 32769 200
+extent replace: 15 extent: lblk 20--32788, len 32769, pblk 200, flags: (none)
+replace_node: Extent length is invalid 
+debugfs: replace_node --uninit 20 32767 200
+extent replace: 15 extent: lblk 20--32786, len 32767, pblk 200, flags: UNINIT 
+extent: lblk 20--32786, len 32767, pblk 200, flags: LEAF UNINIT 
+debugfs: replace_node --uninit 20 32768 200
+extent replace: 15 extent: lblk 20--32787, len 32768, pblk 200, flags: UNINIT 
+--uninit: Extent length is invalid 
+debugfs: replace_node --uninit 20 10 4294967552
+extent replace: 15 extent: lblk 20--29, len 10, pblk 4294967552, flags: UNINIT 
+extent: lblk 20--29, len 10, pblk 4294967552, flags: LEAF UNINIT 
+debugfs: replace_node --uninit 20 10 200
+extent replace: 15 extent: lblk 20--29, len 10, pblk 200, flags: UNINIT 
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+# Test insert_node error rollback when replace fails due to invalid length
+debugfs: first_sib
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: delete_node
+extent delete 15 extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+debugfs: info
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+Current handle location: 1/3 (max: 4, bytes 12), level 0/0
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: insert_node 0 40000 50
+extent insert: 15 extent: lblk 0--39999, len 40000, pblk 50, flags: (none)
+extent replace: 15 extent: lblk 0--39999, len 40000, pblk 50, flags: (none)
+extent delete 15 extent: lblk 0--5, len 6, pblk 50, flags: LEAF 
+insert_node: Extent length is invalid 
+debugfs: info
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+Current handle location: 1/3 (max: 4, bytes 12), level 0/0
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: insert_node 0 4 50
+extent insert: 15 extent: lblk 0--3, len 4, pblk 50, flags: (none)
+extent replace: 15 extent: lblk 0--3, len 4, pblk 50, flags: (none)
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: print_all
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: print_all --reverse
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: 
+# =========================================================================
+# 3. Node splitting (root, leaf, and recursive parent split to depth 2)
+# =========================================================================
+debugfs: check_inode_blocks 15
+Inode 15: i_blocks=0
+debugfs: last_sib
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: insert_node --after 30 5 210
+extent insert: 15 extent: lblk 30--34, len 5, pblk 210, flags: (none)
+node full (level 0) - splitting
+splitting node at level 0
+will copy out 4 of 4 entries at level 0
+will copy to new node at block 49
+extent replace: 15 extent: lblk 0--99, len 100, pblk 49, flags: (none)
+goto extent ino 15, level 0, 20
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+extent replace: 15 extent: lblk 30--34, len 5, pblk 210, flags: (none)
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: info
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+Current handle location: 5/5 (max: 84, bytes 948), level 1/1
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: check_inode_blocks 15 49
+Inode 15: i_blocks=2, block 49 allocated=1
+debugfs: print_all
+extent: lblk 0--99, len 100, pblk 49, flags: (none)
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+extent: lblk 0--99, len 100, pblk 49, flags: 2ND_VISIT 
+# Split 5-entry leaf node at level 1 into two leaf nodes (3 and 2 entries)
+debugfs: goto_block 0
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: split_node
+splitting node at level 1
+will copy out 2 of 5 entries at level 1
+will copy to new node at block 50
+extent replace: 15 extent: lblk 0--79, len 80, pblk 49, flags: (none)
+extent insert: 15 extent: lblk 20--39, len 20, pblk 50, flags: (none)
+extent replace: 15 extent: lblk 20--39, len 20, pblk 50, flags: (none)
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=3 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: print_all
+extent: lblk 0--19, len 20, pblk 49, flags: (none)
+header: magic=f30a entries=3 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 0--19, len 20, pblk 49, flags: 2ND_VISIT 
+extent: lblk 20--99, len 80, pblk 50, flags: (none)
+header: magic=f30a entries=2 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+extent: lblk 20--99, len 80, pblk 50, flags: 2ND_VISIT 
+# Navigate to second leaf node (2 entries: [20..29], [30..34]) and split it
+debugfs: goto_block 20
+goto extent ino 15, level 0, 20
+header: magic=f30a entries=2 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: split_node
+splitting node at level 1
+will copy out 1 of 2 entries at level 1
+will copy to new node at block 199
+extent replace: 15 extent: lblk 20--89, len 70, pblk 50, flags: (none)
+extent insert: 15 extent: lblk 30--39, len 10, pblk 199, flags: (none)
+extent replace: 15 extent: lblk 30--39, len 10, pblk 199, flags: (none)
+goto extent ino 15, level 0, 20
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: print_all
+extent: lblk 0--19, len 20, pblk 49, flags: (none)
+header: magic=f30a entries=3 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 0--19, len 20, pblk 49, flags: 2ND_VISIT 
+extent: lblk 20--29, len 10, pblk 50, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent: lblk 20--29, len 10, pblk 50, flags: 2ND_VISIT 
+extent: lblk 30--99, len 70, pblk 199, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+extent: lblk 30--99, len 70, pblk 199, flags: 2ND_VISIT 
+# Second leaf node now has only 1 entry ([20..29]); splitting it must fail
+debugfs: goto_block 20
+goto extent ino 15, level 0, 20
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: split_node
+splitting node at level 1
+will copy out 0 of 1 entries at level 1
+Nothing to copy to new block!
+split_node: Splitting would result in empty node 
+# Root (level 0) currently has 3/4 index entries. Split first leaf (3 entries)
+# so root reaches 4/4 index entries.
+debugfs: goto_block 0
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=3 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: split_node
+splitting node at level 1
+will copy out 1 of 3 entries at level 1
+will copy to new node at block 51
+extent replace: 15 extent: lblk 0--9, len 10, pblk 49, flags: 2ND_VISIT 
+extent insert: 15 extent: lblk 10--19, len 10, pblk 51, flags: 2ND_VISIT 
+extent replace: 15 extent: lblk 10--19, len 10, pblk 51, flags: 2ND_VISIT 
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=2 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: root_node
+extent: lblk 0--9, len 10, pblk 49, flags: (none)
+debugfs: info
+extent: lblk 0--9, len 10, pblk 49, flags: (none)
+Current handle location: 1/4 (max: 4, bytes 0), level 0/1
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+# Now split first leaf (2 entries: [0..3], [4..9]) while parent (level 0) is full!
+# This triggers a recursive parent split ("parent level 0 full; splitting it too")
+# and creates a 3-level (depth = 2) extent tree.
+debugfs: goto_block 0
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=2 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: split_node
+splitting node at level 1
+parent level 0 full; splitting it too
+splitting node at level 0
+will copy out 4 of 4 entries at level 0
+will copy to new node at block 48
+extent replace: 15 extent: lblk 0--99, len 100, pblk 48, flags: (none)
+goto extent ino 15, level 1, 0
+header: magic=f30a entries=4 max=84 depth=1 generation=0
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=4 max=84 depth=1 generation=0
+header: magic=f30a entries=2 max=84 depth=0 generation=0
+will copy out 1 of 2 entries at level 2
+will copy to new node at block 52
+extent replace: 15 extent: lblk 0--5, len 6, pblk 49, flags: 2ND_VISIT 
+extent insert: 15 extent: lblk 4--7, len 4, pblk 52, flags: 2ND_VISIT 
+extent replace: 15 extent: lblk 4--7, len 4, pblk 52, flags: 2ND_VISIT 
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: info
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+Current handle location: 1/1 (max: 84, bytes 996), level 2/2
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: check_inode_blocks 15
+Inode 15: i_blocks=12
+debugfs: 
+# =========================================================================
+# 4. Multi-level tree navigation and goto_block search (depth = 2)
+# =========================================================================
+debugfs: print_all
+extent: lblk 0--99, len 100, pblk 48, flags: (none)
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+extent: lblk 0--3, len 4, pblk 49, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+extent: lblk 0--3, len 4, pblk 49, flags: 2ND_VISIT 
+extent: lblk 4--9, len 6, pblk 52, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 52, flags: 2ND_VISIT 
+extent: lblk 10--19, len 10, pblk 51, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 10--19, len 10, pblk 51, flags: 2ND_VISIT 
+extent: lblk 20--29, len 10, pblk 50, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent: lblk 20--29, len 10, pblk 50, flags: 2ND_VISIT 
+extent: lblk 30--99, len 70, pblk 199, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+extent: lblk 30--99, len 70, pblk 199, flags: 2ND_VISIT 
+extent: lblk 0--99, len 100, pblk 48, flags: 2ND_VISIT 
+debugfs: print_all --leaf-only
+extent: lblk 0--99, len 100, pblk 48, flags: (none)
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: print_all --reverse
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+extent: lblk 30--99, len 70, pblk 199, flags: (none)
+extent: lblk 20--29, len 10, pblk 50, flags: 2ND_VISIT 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent: lblk 20--29, len 10, pblk 50, flags: (none)
+extent: lblk 10--19, len 10, pblk 51, flags: 2ND_VISIT 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 10--19, len 10, pblk 51, flags: (none)
+extent: lblk 4--9, len 6, pblk 52, flags: 2ND_VISIT 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 52, flags: (none)
+extent: lblk 0--3, len 4, pblk 49, flags: 2ND_VISIT 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+extent: lblk 0--3, len 4, pblk 49, flags: (none)
+extent: lblk 0--99, len 100, pblk 48, flags: (none)
+debugfs: print_all --reverse-leaf
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+# Step-by-step navigation and boundary error checks
+debugfs: root_node
+extent: lblk 0--99, len 100, pblk 48, flags: (none)
+debugfs: up_node
+up_node: No 'up' extent 
+debugfs: prev_sib
+prev_sib: No 'previous' extent 
+debugfs: prev
+prev: No 'previous' extent 
+debugfs: down_node
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+extent: lblk 0--3, len 4, pblk 49, flags: (none)
+debugfs: info
+extent: lblk 0--3, len 4, pblk 49, flags: (none)
+Current handle location: 1/5 (max: 84, bytes 948), level 1/2
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: first_sib
+extent: lblk 0--3, len 4, pblk 49, flags: (none)
+debugfs: next_sib
+extent: lblk 4--9, len 6, pblk 52, flags: (none)
+debugfs: last_sib
+extent: lblk 30--99, len 70, pblk 199, flags: (none)
+debugfs: next_sib
+next_sib: No 'next' extent 
+debugfs: down_node --last
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: info
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+Current handle location: 1/1 (max: 84, bytes 996), level 2/2
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: down_node
+down_node: No 'down' extent 
+debugfs: last_leaf
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: next_leaf
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: next
+extent: lblk 30--99, len 70, pblk 199, flags: 2ND_VISIT 
+debugfs: prev_leaf
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: prev_leaf
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: prev_leaf
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+debugfs: prev_leaf
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+debugfs: prev_leaf
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+# Searching with goto_block across exact hits, holes, and interior levels
+debugfs: goto_block 0
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: goto_block 2
+goto extent ino 15, level 0, 2
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: goto_block 3
+goto extent ino 15, level 0, 3
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: goto_block 4
+goto extent ino 15, level 0, 4
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+debugfs: goto_block 9
+goto extent ino 15, level 0, 9
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+debugfs: goto_block 10
+goto extent ino 15, level 0, 10
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+debugfs: goto_block 25
+goto extent ino 15, level 0, 25
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: goto_block 34
+goto extent ino 15, level 0, 34
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+# Hole between [10..14] and [20..29] leaves handle at [10..14]
+debugfs: goto_block 15
+goto extent ino 15, level 0, 15
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+goto_block: Extent not found while trying to go to block 15, level 0
+debugfs: current_node
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+# Hole after last extent [30..34] leaves handle at [30..34]
+debugfs: goto_block 50
+goto extent ino 15, level 0, 50
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+goto_block: Extent not found while trying to go to block 50, level 0
+debugfs: current_node
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+# Goto at interior levels (level 1 and level 2 above leaf)
+debugfs: goto_block 20 1
+goto extent ino 15, level 1, 20
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+extent: lblk 20--29, len 10, pblk 50, flags: (none)
+debugfs: info
+extent: lblk 20--29, len 10, pblk 50, flags: (none)
+Current handle location: 4/5 (max: 84, bytes 948), level 1/2
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+debugfs: goto_block 20 2
+goto extent ino 15, level 2, 20
+extent: lblk 0--99, len 100, pblk 48, flags: (none)
+debugfs: info
+extent: lblk 0--99, len 100, pblk 48, flags: (none)
+Current handle location: 1/1 (max: 4, bytes 36), level 0/2
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+# Goto with level > max_depth returns EXT2_ET_OP_NOT_SUPPORTED
+debugfs: goto_block 0 3
+leaf level 3 greater than tree depth 2
+goto_block: Ext2fs operation not supported while trying to go to block 0, level 3
+debugfs: 
+# =========================================================================
+# 5. Updating parent indices (fix_parents) and deleting extents / shrinking
+# =========================================================================
+debugfs: goto_block 0
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--3, len 4, pblk 50, flags: LEAF 
+debugfs: replace_node 1 3 51
+extent replace: 15 extent: lblk 1--3, len 3, pblk 51, flags: (none)
+extent: lblk 1--3, len 3, pblk 51, flags: LEAF 
+debugfs: fix_parents
+extent replace: 15 extent: lblk 1--3, len 3, pblk 49, flags: 2ND_VISIT 
+extent replace: 15 extent: lblk 1--99, len 99, pblk 48, flags: (none)
+goto extent ino 15, level 0, 1
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+debugfs: print_all
+extent: lblk 1--99, len 99, pblk 48, flags: (none)
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+extent: lblk 1--3, len 3, pblk 49, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 1--3, len 3, pblk 51, flags: LEAF 
+extent: lblk 1--3, len 3, pblk 49, flags: 2ND_VISIT 
+extent: lblk 4--9, len 6, pblk 52, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent: lblk 4--9, len 6, pblk 52, flags: 2ND_VISIT 
+extent: lblk 10--19, len 10, pblk 51, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent: lblk 10--19, len 10, pblk 51, flags: 2ND_VISIT 
+extent: lblk 20--29, len 10, pblk 50, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent: lblk 20--29, len 10, pblk 50, flags: 2ND_VISIT 
+extent: lblk 30--99, len 70, pblk 199, flags: (none)
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+extent: lblk 30--99, len 70, pblk 199, flags: 2ND_VISIT 
+extent: lblk 1--99, len 99, pblk 48, flags: 2ND_VISIT 
+# Hole before very first extent [1..3]
+debugfs: goto_block 0
+goto extent ino 15, level 0, 0
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+goto_block: Extent not found while trying to go to block 0, level 0
+debugfs: current_node
+extent: lblk 1--3, len 3, pblk 51, flags: LEAF 
+# Test delete_node --keep-empty on single-entry leaf [30..34]
+debugfs: goto_block 30
+goto extent ino 15, level 0, 30
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: delete_node --keep-empty
+extent delete 15 extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: info
+info: No current node 
+debugfs: insert_node 30 5 210
+extent insert: 15 extent: lblk 30--34, len 5, pblk 210, flags: (none)
+extent replace: 15 extent: lblk 30--34, len 5, pblk 210, flags: (none)
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: print_all --leaf-only
+extent: lblk 1--99, len 99, pblk 48, flags: (none)
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 1--3, len 3, pblk 51, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+# Delete all leaf extents and verify metadata blocks are freed and tree shrinks
+debugfs: goto_block 30
+goto extent ino 15, level 0, 30
+header: magic=f30a entries=5 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+debugfs: delete_node
+extent delete 15 extent: lblk 30--34, len 5, pblk 210, flags: LEAF 
+extent delete 15 extent: lblk 30--99, len 70, pblk 199, flags: (none)
+extent: lblk 20--99, len 80, pblk 50, flags: (none)
+debugfs: goto_block 20
+goto extent ino 15, level 0, 20
+header: magic=f30a entries=4 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+debugfs: delete_node
+extent delete 15 extent: lblk 20--29, len 10, pblk 200, flags: LEAF UNINIT 
+extent delete 15 extent: lblk 20--99, len 80, pblk 50, flags: (none)
+extent: lblk 10--99, len 90, pblk 51, flags: (none)
+debugfs: goto_block 10
+goto extent ino 15, level 0, 10
+header: magic=f30a entries=3 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+debugfs: delete_node
+extent delete 15 extent: lblk 10--14, len 5, pblk 100, flags: LEAF 
+extent delete 15 extent: lblk 10--99, len 90, pblk 51, flags: (none)
+extent: lblk 4--99, len 96, pblk 52, flags: (none)
+debugfs: goto_block 4
+goto extent ino 15, level 0, 4
+header: magic=f30a entries=2 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+debugfs: delete_node
+extent delete 15 extent: lblk 4--9, len 6, pblk 60, flags: LEAF 
+extent delete 15 extent: lblk 4--99, len 96, pblk 52, flags: (none)
+extent: lblk 1--99, len 99, pblk 49, flags: (none)
+debugfs: goto_block 1
+goto extent ino 15, level 0, 1
+header: magic=f30a entries=1 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 1--3, len 3, pblk 51, flags: LEAF 
+debugfs: delete_node
+extent delete 15 extent: lblk 1--3, len 3, pblk 51, flags: LEAF 
+extent delete 15 extent: lblk 1--99, len 99, pblk 49, flags: (none)
+extent delete 15 extent: lblk 1--99, len 99, pblk 48, flags: (none)
+debugfs: info
+info: No current node 
+debugfs: check_inode_blocks 15 49
+Inode 15: i_blocks=0, block 49 allocated=0
+debugfs: extent_close
+debugfs: 
+# =========================================================================
+# 6. Comprehensive set_bmap test matrix (ext2fs_extent_set_bmap)
+# =========================================================================
+debugfs: init_inode 16
+Initialized inode 16 (size 102400)
+debugfs: extent_open <16>
+header: magic=f30a entries=0 max=4 depth=0 generation=0
+# 6a. Map into empty tree, unmap already-unmapped, remap unchanged
+debugfs: set_bmap 10 110
+set_bmap ino 16 log 10 phys 110 flags 0
+extent insert: 16 extent: lblk 10--10, len 1, pblk 110, flags: LEAF 
+extent replace: 16 extent: lblk 10--10, len 1, pblk 110, flags: LEAF 
+extent: lblk 10--10, len 1, pblk 110, flags: LEAF 2ND_VISIT 
+debugfs: set_bmap 5 0
+set_bmap ino 16 log 5 phys 0 flags 0
+goto extent ino 16, level 0, 5
+block 5 already unmapped
+goto extent ino 16, level 0, 10
+extent: lblk 10--10, len 1, pblk 110, flags: LEAF 
+debugfs: set_bmap 20 0
+set_bmap ino 16 log 20 phys 0 flags 0
+goto extent ino 16, level 0, 20
+block 20 already unmapped
+goto extent ino 16, level 0, 10
+extent: lblk 10--10, len 1, pblk 110, flags: LEAF 
+debugfs: set_bmap 10 110
+set_bmap ino 16 log 10 phys 110 flags 0
+goto extent ino 16, level 0, 10
+goto extent ino 16, level 0, 10
+goto extent ino 16, level 0, 10
+physical block (at 10) unchanged
+goto extent ino 16, level 0, 10
+extent: lblk 10--10, len 1, pblk 110, flags: LEAF 
+# 6b. Map unmapped blocks: append to extent, prepend to first extent
+debugfs: set_bmap 11 111
+set_bmap ino 16 log 11 phys 111 flags 0
+goto extent ino 16, level 0, 11
+goto extent ino 16, level 0, 11
+goto extent ino 16, level 0, 11
+mapping unmapped logical block 11
+extent replace: 16 extent: lblk 10--11, len 2, pblk 110, flags: LEAF 
+goto extent ino 16, level 0, 10
+goto extent ino 16, level 0, 10
+extent: lblk 10--11, len 2, pblk 110, flags: LEAF 
+debugfs: set_bmap 12 112
+set_bmap ino 16 log 12 phys 112 flags 0
+goto extent ino 16, level 0, 12
+goto extent ino 16, level 0, 12
+goto extent ino 16, level 0, 12
+mapping unmapped logical block 12
+extent replace: 16 extent: lblk 10--12, len 3, pblk 110, flags: LEAF 
+goto extent ino 16, level 0, 10
+goto extent ino 16, level 0, 10
+extent: lblk 10--12, len 3, pblk 110, flags: LEAF 
+debugfs: set_bmap 9 109
+set_bmap ino 16 log 9 phys 109 flags 0
+goto extent ino 16, level 0, 9
+goto extent ino 16, level 0, 9
+goto extent ino 16, level 0, 9
+mapping unmapped logical block 9
+extent replace: 16 extent: lblk 9--12, len 4, pblk 109, flags: LEAF 
+goto extent ino 16, level 0, 9
+goto extent ino 16, level 0, 10
+extent: lblk 9--12, len 4, pblk 109, flags: LEAF 
+debugfs: set_bmap 8 108
+set_bmap ino 16 log 8 phys 108 flags 0
+goto extent ino 16, level 0, 8
+goto extent ino 16, level 0, 8
+goto extent ino 16, level 0, 8
+mapping unmapped logical block 8
+extent replace: 16 extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+goto extent ino 16, level 0, 8
+goto extent ino 16, level 0, 9
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+debugfs: print_all --leaf-only
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+# 6c. Map unmapped blocks: standalone before first, standalone after, prepend to next_extent
+debugfs: set_bmap 2 52
+set_bmap ino 16 log 2 phys 52 flags 0
+goto extent ino 16, level 0, 2
+goto extent ino 16, level 0, 2
+goto extent ino 16, level 0, 2
+mapping unmapped logical block 2
+extent insert: 16 extent: lblk 2--2, len 1, pblk 52, flags: LEAF 
+extent replace: 16 extent: lblk 2--2, len 1, pblk 52, flags: LEAF 
+goto extent ino 16, level 0, 2
+goto extent ino 16, level 0, 8
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+debugfs: set_bmap 20 120
+set_bmap ino 16 log 20 phys 120 flags 0
+goto extent ino 16, level 0, 20
+goto extent ino 16, level 0, 20
+set_bmap: prev_extent: extent: lblk 2--2, len 1, pblk 52, flags: LEAF 
+goto extent ino 16, level 0, 20
+mapping unmapped logical block 20
+extent insert: 16 extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+extent replace: 16 extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+goto extent ino 16, level 0, 20
+goto extent ino 16, level 0, 8
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+debugfs: set_bmap 19 119
+set_bmap ino 16 log 19 phys 119 flags 0
+goto extent ino 16, level 0, 19
+set_bmap: next_extent: extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+goto extent ino 16, level 0, 19
+set_bmap: prev_extent: extent: lblk 2--2, len 1, pblk 52, flags: LEAF 
+goto extent ino 16, level 0, 19
+mapping unmapped logical block 19
+extent replace: 16 extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+goto extent ino 16, level 0, 19
+goto extent ino 16, level 0, 8
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+debugfs: print_all --leaf-only
+extent: lblk 2--2, len 1, pblk 52, flags: LEAF 
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+# 6d. Map unmapped blocks with --uninit (does not merge with init; merges with uninit)
+debugfs: set_bmap --uninit 21 121
+set_bmap ino 16 log 21 phys 121 flags 1
+goto extent ino 16, level 0, 21
+goto extent ino 16, level 0, 21
+set_bmap: prev_extent: extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+goto extent ino 16, level 0, 21
+mapping unmapped logical block 21
+extent insert: 16 extent: lblk 21--21, len 1, pblk 121, flags: LEAF UNINIT 
+extent replace: 16 extent: lblk 21--21, len 1, pblk 121, flags: LEAF UNINIT 
+goto extent ino 16, level 0, 21
+goto extent ino 16, level 0, 19
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+debugfs: set_bmap --uninit 22 122
+set_bmap ino 16 log 22 phys 122 flags 1
+goto extent ino 16, level 0, 22
+goto extent ino 16, level 0, 22
+set_bmap: prev_extent: extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+goto extent ino 16, level 0, 22
+mapping unmapped logical block 22
+extent replace: 16 extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+goto extent ino 16, level 0, 21
+goto extent ino 16, level 0, 19
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+debugfs: print_all --leaf-only
+extent: lblk 2--2, len 1, pblk 52, flags: LEAF 
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+# 6e. Modify only block in a 1-block extent ([2..2]): remap, toggle uninit, merge with prev, unmap
+debugfs: set_bmap 2 62
+set_bmap ino 16 log 2 phys 62 flags 0
+goto extent ino 16, level 0, 2
+set_bmap: next_extent: extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+goto extent ino 16, level 0, 2
+goto extent ino 16, level 0, 2
+(re/un)mapping only block in extent
+extent replace: 16 extent: lblk 2--2, len 1, pblk 62, flags: LEAF 
+goto extent ino 16, level 0, 21
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: set_bmap --uninit 2 62
+set_bmap ino 16 log 2 phys 62 flags 1
+goto extent ino 16, level 0, 2
+set_bmap: next_extent: extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+goto extent ino 16, level 0, 2
+goto extent ino 16, level 0, 2
+(re/un)mapping only block in extent
+extent replace: 16 extent: lblk 2--2, len 1, pblk 62, flags: LEAF UNINIT 
+goto extent ino 16, level 0, 21
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: set_bmap 4 64
+set_bmap ino 16 log 4 phys 64 flags 0
+goto extent ino 16, level 0, 4
+set_bmap: next_extent: extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+goto extent ino 16, level 0, 4
+goto extent ino 16, level 0, 4
+mapping unmapped logical block 4
+extent insert: 16 extent: lblk 4--4, len 1, pblk 64, flags: LEAF 
+node full (level 0) - splitting
+splitting node at level 0
+will copy out 4 of 4 entries at level 0
+will copy to new node at block 61
+extent replace: 16 extent: lblk 2--99, len 98, pblk 61, flags: (none)
+goto extent ino 16, level 0, 2
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+extent replace: 16 extent: lblk 4--4, len 1, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 4
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 0, 21
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: set_bmap 5 99
+set_bmap ino 16 log 5 phys 99 flags 0
+goto extent ino 16, level 0, 5
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+goto extent ino 16, level 0, 5
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 2--2, len 1, pblk 62, flags: LEAF UNINIT 
+goto extent ino 16, level 0, 5
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+mapping unmapped logical block 5
+extent insert: 16 extent: lblk 5--5, len 1, pblk 99, flags: LEAF 
+extent replace: 16 extent: lblk 5--5, len 1, pblk 99, flags: LEAF 
+goto extent ino 16, level 0, 5
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+goto extent ino 16, level 0, 21
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: print_all --leaf-only
+extent: lblk 2--99, len 98, pblk 61, flags: (none)
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+extent: lblk 2--2, len 1, pblk 62, flags: LEAF UNINIT 
+extent: lblk 4--4, len 1, pblk 64, flags: LEAF 
+extent: lblk 5--5, len 1, pblk 99, flags: LEAF 
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: set_bmap 5 65
+set_bmap ino 16 log 5 phys 65 flags 0
+goto extent ino 16, level 0, 5
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+goto extent ino 16, level 0, 5
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 4--4, len 1, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 5
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+(re/un)mapping only block in extent
+extent replace: 16 extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent delete 16 extent: lblk 5--5, len 1, pblk 99, flags: LEAF 
+goto extent ino 16, level 0, 8
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 1, 2
+extent: lblk 2--99, len 98, pblk 61, flags: (none)
+debugfs: set_bmap 2 0
+set_bmap ino 16 log 2 phys 0 flags 0
+goto extent ino 16, level 0, 2
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 2
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 0, 2
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+(re/un)mapping only block in extent
+extent delete 16 extent: lblk 2--2, len 1, pblk 62, flags: LEAF UNINIT 
+extent replace: 16 extent: lblk 4--99, len 96, pblk 61, flags: (none)
+goto extent ino 16, level 0, 4
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+goto extent ino 16, level 1, 2
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--12, len 5, pblk 108, flags: LEAF 
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+# 6f. Modify last block of multi-block extent ([8..12]): unmap, remap non-contig, remap contig with next
+debugfs: set_bmap 12 0
+set_bmap ino 16 log 12 phys 0 flags 0
+goto extent ino 16, level 0, 12
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+goto extent ino 16, level 0, 12
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 12
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+(re/un)mapping last block in extent
+extent replace: 16 extent: lblk 8--11, len 4, pblk 108, flags: LEAF 
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: set_bmap 11 211
+set_bmap ino 16 log 11 phys 211 flags 0
+goto extent ino 16, level 0, 11
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+goto extent ino 16, level 0, 11
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 11
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+(re/un)mapping last block in extent
+extent insert: 16 extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+extent replace: 16 extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+goto extent ino 16, level 0, 11
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 0, 11
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent replace: 16 extent: lblk 8--10, len 3, pblk 108, flags: LEAF 
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--10, len 3, pblk 108, flags: LEAF 
+extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: set_bmap 10 210
+set_bmap ino 16 log 10 phys 210 flags 0
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+(re/un)mapping last block in extent
+extent replace: 16 extent: lblk 10--11, len 2, pblk 210, flags: LEAF 
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent replace: 16 extent: lblk 8--9, len 2, pblk 108, flags: LEAF 
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--9, len 2, pblk 108, flags: LEAF 
+extent: lblk 10--11, len 2, pblk 210, flags: LEAF 
+extent: lblk 19--20, len 2, pblk 119, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+# 6g. Modify first block of multi-block extent: unmap, remap non-contig, remap contig with prev
+debugfs: set_bmap 19 0
+set_bmap ino 16 log 19 phys 0 flags 0
+goto extent ino 16, level 0, 19
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+goto extent ino 16, level 0, 19
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 10--11, len 2, pblk 210, flags: LEAF 
+goto extent ino 16, level 0, 19
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+(re/un)mapping first block in extent
+extent replace: 16 extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+goto extent ino 16, level 0, 20
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: set_bmap 8 180
+set_bmap ino 16 log 8 phys 180 flags 0
+goto extent ino 16, level 0, 8
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 10--11, len 2, pblk 210, flags: LEAF 
+goto extent ino 16, level 0, 8
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 8
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+(re/un)mapping first block in extent
+extent replace: 16 extent: lblk 9--9, len 1, pblk 109, flags: LEAF 
+goto extent ino 16, level 0, 9
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent insert: 16 extent: lblk 8--8, len 1, pblk 180, flags: LEAF 
+extent replace: 16 extent: lblk 8--8, len 1, pblk 180, flags: LEAF 
+goto extent ino 16, level 0, 8
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: set_bmap 9 181
+set_bmap ino 16 log 9 phys 181 flags 0
+goto extent ino 16, level 0, 9
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 10--11, len 2, pblk 210, flags: LEAF 
+goto extent ino 16, level 0, 9
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 8--8, len 1, pblk 180, flags: LEAF 
+goto extent ino 16, level 0, 9
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+(re/un)mapping only block in extent
+extent replace: 16 extent: lblk 8--9, len 2, pblk 180, flags: LEAF 
+extent delete 16 extent: lblk 9--9, len 1, pblk 109, flags: LEAF 
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--9, len 2, pblk 180, flags: LEAF 
+extent: lblk 10--11, len 2, pblk 210, flags: LEAF 
+extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: set_bmap 10 182
+set_bmap ino 16 log 10 phys 182 flags 0
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 8--9, len 2, pblk 180, flags: LEAF 
+goto extent ino 16, level 0, 10
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+(re/un)mapping first block in extent
+extent replace: 16 extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+goto extent ino 16, level 0, 11
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent replace: 16 extent: lblk 8--10, len 3, pblk 180, flags: LEAF 
+goto extent ino 16, level 0, 8
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--10, len 3, pblk 180, flags: LEAF 
+extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+# 6h. Modify middle block of multi-block extent: punch hole, remap middle, toggle uninit in middle
+debugfs: last_leaf
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+debugfs: insert_node --after 30 7 130
+extent insert: 16 extent: lblk 30--36, len 7, pblk 130, flags: (none)
+extent replace: 16 extent: lblk 30--36, len 7, pblk 130, flags: (none)
+extent: lblk 30--36, len 7, pblk 130, flags: LEAF 
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--10, len 3, pblk 180, flags: LEAF 
+extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+extent: lblk 30--36, len 7, pblk 130, flags: LEAF 
+debugfs: set_bmap 33 0
+set_bmap ino 16 log 33 phys 0 flags 0
+goto extent ino 16, level 0, 33
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 33
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+goto extent ino 16, level 0, 33
+header: magic=f30a entries=6 max=84 depth=0 generation=0
+(re/un)mapping in middle of extent
+extent replace: 16 extent: lblk 30--32, len 3, pblk 130, flags: LEAF 
+extent insert: 16 extent: lblk 34--36, len 3, pblk 134, flags: LEAF 
+extent replace: 16 extent: lblk 34--36, len 3, pblk 134, flags: LEAF 
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=7 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--10, len 3, pblk 180, flags: LEAF 
+extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+extent: lblk 30--32, len 3, pblk 130, flags: LEAF 
+extent: lblk 34--36, len 3, pblk 134, flags: LEAF 
+debugfs: set_bmap 31 231
+set_bmap ino 16 log 31 phys 231 flags 0
+goto extent ino 16, level 0, 31
+header: magic=f30a entries=7 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 34--36, len 3, pblk 134, flags: LEAF 
+goto extent ino 16, level 0, 31
+header: magic=f30a entries=7 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+goto extent ino 16, level 0, 31
+header: magic=f30a entries=7 max=84 depth=0 generation=0
+(re/un)mapping in middle of extent
+extent replace: 16 extent: lblk 30--30, len 1, pblk 130, flags: LEAF 
+extent insert: 16 extent: lblk 31--31, len 1, pblk 231, flags: LEAF 
+extent replace: 16 extent: lblk 31--31, len 1, pblk 231, flags: LEAF 
+extent insert: 16 extent: lblk 32--32, len 1, pblk 132, flags: LEAF 
+extent replace: 16 extent: lblk 32--32, len 1, pblk 132, flags: LEAF 
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=9 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--10, len 3, pblk 180, flags: LEAF 
+extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+extent: lblk 30--30, len 1, pblk 130, flags: LEAF 
+extent: lblk 31--31, len 1, pblk 231, flags: LEAF 
+extent: lblk 32--32, len 1, pblk 132, flags: LEAF 
+extent: lblk 34--36, len 3, pblk 134, flags: LEAF 
+debugfs: set_bmap --uninit 35 135
+set_bmap ino 16 log 35 phys 135 flags 1
+goto extent ino 16, level 0, 35
+header: magic=f30a entries=9 max=84 depth=0 generation=0
+header: magic=f30a entries=9 max=84 depth=0 generation=0
+set_bmap: next_extent: extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+goto extent ino 16, level 0, 35
+header: magic=f30a entries=9 max=84 depth=0 generation=0
+set_bmap: prev_extent: extent: lblk 32--32, len 1, pblk 132, flags: LEAF 
+goto extent ino 16, level 0, 35
+header: magic=f30a entries=9 max=84 depth=0 generation=0
+(re/un)mapping in middle of extent
+extent replace: 16 extent: lblk 34--34, len 1, pblk 134, flags: LEAF 
+extent insert: 16 extent: lblk 35--35, len 1, pblk 135, flags: LEAF UNINIT 
+extent replace: 16 extent: lblk 35--35, len 1, pblk 135, flags: LEAF UNINIT 
+extent insert: 16 extent: lblk 36--36, len 1, pblk 136, flags: LEAF 
+extent replace: 16 extent: lblk 36--36, len 1, pblk 136, flags: LEAF 
+goto extent ino 16, level 1, 4
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+debugfs: print_all --leaf-only
+extent: lblk 4--99, len 96, pblk 61, flags: (none)
+header: magic=f30a entries=11 max=84 depth=0 generation=0
+extent: lblk 4--5, len 2, pblk 64, flags: LEAF 
+extent: lblk 8--10, len 3, pblk 180, flags: LEAF 
+extent: lblk 11--11, len 1, pblk 211, flags: LEAF 
+extent: lblk 20--20, len 1, pblk 120, flags: LEAF 
+extent: lblk 21--22, len 2, pblk 121, flags: LEAF UNINIT 
+extent: lblk 30--30, len 1, pblk 130, flags: LEAF 
+extent: lblk 31--31, len 1, pblk 231, flags: LEAF 
+extent: lblk 32--32, len 1, pblk 132, flags: LEAF 
+extent: lblk 34--34, len 1, pblk 134, flags: LEAF 
+extent: lblk 35--35, len 1, pblk 135, flags: LEAF UNINIT 
+extent: lblk 36--36, len 1, pblk 136, flags: LEAF 
+debugfs: extent_close
+debugfs: 
+# =========================================================================
+# 7. Metadata checksums, corruption detection, cycle detection, and repair
+# =========================================================================
+debugfs: setup -c
+Test filesystem initialized: 256 blocks, 64 inodes, blocksize 1024, metadata_csum
+debugfs: init_inode -n 12
+Initialized inode 12 (size 102400)
+debugfs: fix_extents_csum 12
+ext2fs_fix_extents_checksums(ino 12): OK
+debugfs: init_inode 13
+Initialized inode 13 (size 102400)
+debugfs: extent_open <13>
+header: magic=f30a entries=0 max=4 depth=0 generation=0
+debugfs: insert_node 0 2 100
+extent insert: 13 extent: lblk 0--1, len 2, pblk 100, flags: (none)
+extent replace: 13 extent: lblk 0--1, len 2, pblk 100, flags: (none)
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 4 2 104
+extent insert: 13 extent: lblk 4--5, len 2, pblk 104, flags: (none)
+extent replace: 13 extent: lblk 4--5, len 2, pblk 104, flags: (none)
+extent: lblk 4--5, len 2, pblk 104, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 8 2 108
+extent insert: 13 extent: lblk 8--9, len 2, pblk 108, flags: (none)
+extent replace: 13 extent: lblk 8--9, len 2, pblk 108, flags: (none)
+extent: lblk 8--9, len 2, pblk 108, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 12 2 112
+extent insert: 13 extent: lblk 12--13, len 2, pblk 112, flags: (none)
+extent replace: 13 extent: lblk 12--13, len 2, pblk 112, flags: (none)
+extent: lblk 12--13, len 2, pblk 112, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 16 2 116
+extent insert: 13 extent: lblk 16--17, len 2, pblk 116, flags: (none)
+node full (level 0) - splitting
+splitting node at level 0
+will copy out 4 of 4 entries at level 0
+will copy to new node at block 99
+extent replace: 13 extent: lblk 0--99, len 100, pblk 99, flags: (none)
+goto extent ino 13, level 0, 12
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+extent replace: 13 extent: lblk 16--17, len 2, pblk 116, flags: (none)
+extent: lblk 16--17, len 2, pblk 116, flags: LEAF 
+debugfs: print_all
+extent: lblk 0--99, len 100, pblk 99, flags: (none)
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 
+extent: lblk 4--5, len 2, pblk 104, flags: LEAF 
+extent: lblk 8--9, len 2, pblk 108, flags: LEAF 
+extent: lblk 12--13, len 2, pblk 112, flags: LEAF 
+extent: lblk 16--17, len 2, pblk 116, flags: LEAF 
+extent: lblk 0--99, len 100, pblk 99, flags: 2ND_VISIT 
+debugfs: extent_close
+# Corrupt extent block checksum and verify EXT2_ET_EXTENT_CSUM_INVALID
+debugfs: corrupt_extent_block --csum 99
+Corrupted extent block 99 (--csum)
+debugfs: extent_open <13>
+header: magic=f30a entries=1 max=4 depth=1 generation=0
+debugfs: root_node
+extent: lblk 0--99, len 100, pblk 99, flags: (none)
+debugfs: down_node
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+down_node: Extent block checksum does not match extent block 
+debugfs: extent_close
+# Repair extent block checksums via ext2fs_fix_extents_checksums
+debugfs: fix_extents_csum 13
+header: magic=f30a entries=1 max=4 depth=1 generation=0
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+ext2fs_fix_extents_checksums(ino 13): OK
+debugfs: fix_extents_csum --with-inode 13
+header: magic=f30a entries=1 max=4 depth=1 generation=0
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+ext2fs_fix_extents_checksums(ino 13, with_inode): OK
+debugfs: extent_open <13>
+header: magic=f30a entries=1 max=4 depth=1 generation=0
+debugfs: print_all
+extent: lblk 0--99, len 100, pblk 99, flags: (none)
+header: magic=f30a entries=5 max=84 depth=0 generation=0
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 
+extent: lblk 4--5, len 2, pblk 104, flags: LEAF 
+extent: lblk 8--9, len 2, pblk 108, flags: LEAF 
+extent: lblk 12--13, len 2, pblk 112, flags: LEAF 
+extent: lblk 16--17, len 2, pblk 116, flags: LEAF 
+extent: lblk 0--99, len 100, pblk 99, flags: 2ND_VISIT 
+debugfs: extent_close
+# Test child block with 0 entries (EXT2_ET_EXTENT_NO_DOWN) and bad magic (EXT2_ET_EXTENT_HEADER_BAD)
+debugfs: corrupt_extent_block --entries 99 13
+Corrupted extent block 99 (--entries)
+debugfs: extent_open <13>
+header: magic=f30a entries=1 max=4 depth=1 generation=0
+debugfs: root_node
+extent: lblk 0--99, len 100, pblk 99, flags: (none)
+debugfs: down_node
+header: magic=f30a entries=0 max=84 depth=0 generation=0
+down_node: No 'down' extent 
+debugfs: extent_close
+debugfs: corrupt_extent_block --magic 99
+Corrupted extent block 99 (--magic)
+debugfs: extent_open <13>
+header: magic=f30a entries=1 max=4 depth=1 generation=0
+debugfs: root_node
+extent: lblk 0--99, len 100, pblk 99, flags: (none)
+debugfs: down_node
+header: magic=dead entries=0 max=84 depth=0 generation=0
+down_node: Corrupt extent header 
+debugfs: extent_close
+# Test interior node cycle detection (EXT2_ET_EXTENT_CYCLE)
+debugfs: init_inode 14
+Initialized inode 14 (size 102400)
+debugfs: extent_open <14>
+header: magic=f30a entries=0 max=4 depth=0 generation=0
+debugfs: insert_node 0 2 100
+extent insert: 14 extent: lblk 0--1, len 2, pblk 100, flags: (none)
+extent replace: 14 extent: lblk 0--1, len 2, pblk 100, flags: (none)
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 4 2 104
+extent insert: 14 extent: lblk 4--5, len 2, pblk 104, flags: (none)
+extent replace: 14 extent: lblk 4--5, len 2, pblk 104, flags: (none)
+extent: lblk 4--5, len 2, pblk 104, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 8 2 108
+extent insert: 14 extent: lblk 8--9, len 2, pblk 108, flags: (none)
+extent replace: 14 extent: lblk 8--9, len 2, pblk 108, flags: (none)
+extent: lblk 8--9, len 2, pblk 108, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 12 2 112
+extent insert: 14 extent: lblk 12--13, len 2, pblk 112, flags: (none)
+extent replace: 14 extent: lblk 12--13, len 2, pblk 112, flags: (none)
+extent: lblk 12--13, len 2, pblk 112, flags: LEAF 2ND_VISIT 
+debugfs: insert_node --after 16 2 116
+extent insert: 14 extent: lblk 16--17, len 2, pblk 116, flags: (none)
+node full (level 0) - splitting
+splitting node at level 0
+will copy out 4 of 4 entries at level 0
+will copy to new node at block 100
+extent replace: 14 extent: lblk 0--99, len 100, pblk 100, flags: (none)
+goto extent ino 14, level 0, 12
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+extent replace: 14 extent: lblk 16--17, len 2, pblk 116, flags: (none)
+extent: lblk 16--17, len 2, pblk 116, flags: LEAF 
+debugfs: first_sib
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 
+debugfs: split_node
+splitting node at level 1
+will copy out 2 of 5 entries at level 1
+will copy to new node at block 101
+extent replace: 14 extent: lblk 0--87, len 88, pblk 100, flags: (none)
+extent insert: 14 extent: lblk 12--23, len 12, pblk 101, flags: (none)
+extent replace: 14 extent: lblk 12--23, len 12, pblk 101, flags: (none)
+goto extent ino 14, level 0, 0
+header: magic=f30a entries=3 max=84 depth=0 generation=0
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 
+debugfs: goto_block 8
+goto extent ino 14, level 0, 8
+header: magic=f30a entries=3 max=84 depth=0 generation=0
+extent: lblk 8--9, len 2, pblk 108, flags: LEAF 
+debugfs: split_node
+splitting node at level 1
+will copy out 1 of 3 entries at level 1
+will copy to new node at block 102
+extent replace: 14 extent: lblk 0--3, len 4, pblk 100, flags: 2ND_VISIT 
+extent insert: 14 extent: lblk 8--15, len 8, pblk 102, flags: 2ND_VISIT 
+extent replace: 14 extent: lblk 8--15, len 8, pblk 102, flags: 2ND_VISIT 
+goto extent ino 14, level 0, 8
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 8--9, len 2, pblk 108, flags: LEAF 
+debugfs: goto_block 0
+goto extent ino 14, level 0, 0
+header: magic=f30a entries=2 max=84 depth=0 generation=0
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 
+debugfs: split_node
+splitting node at level 1
+will copy out 1 of 2 entries at level 1
+will copy to new node at block 103
+extent replace: 14 extent: lblk 0--3, len 4, pblk 100, flags: 2ND_VISIT 
+extent insert: 14 extent: lblk 4--7, len 4, pblk 103, flags: 2ND_VISIT 
+extent replace: 14 extent: lblk 4--7, len 4, pblk 103, flags: 2ND_VISIT 
+goto extent ino 14, level 0, 0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 
+debugfs: goto_block 0
+goto extent ino 14, level 0, 0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent: lblk 0--1, len 2, pblk 100, flags: LEAF 
+debugfs: split_node
+splitting node at level 1
+parent level 0 full; splitting it too
+splitting node at level 0
+will copy out 4 of 4 entries at level 0
+will copy to new node at block 104
+extent replace: 14 extent: lblk 0--99, len 100, pblk 104, flags: (none)
+goto extent ino 14, level 1, 0
+header: magic=f30a entries=4 max=84 depth=1 generation=0
+goto extent ino 14, level 0, 0
+header: magic=f30a entries=4 max=84 depth=1 generation=0
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+will copy out 0 of 1 entries at level 2
+Nothing to copy to new block!
+split_node: Splitting would result in empty node 
+debugfs: root_node
+extent: lblk 0--99, len 100, pblk 104, flags: (none)
+debugfs: down_node
+header: magic=f30a entries=4 max=84 depth=1 generation=0
+extent: lblk 0--3, len 4, pblk 100, flags: (none)
+debugfs: info
+extent: lblk 0--3, len 4, pblk 100, flags: (none)
+Current handle location: 1/4 (max: 84, bytes 960), level 1/2
+	max lblk: 4294967295, max pblk: 281474976710655
+	max_len: 32768, max_uninit_len: 32767
+# Point level-1 index entry to its own physical block (104) to create a cycle
+debugfs: replace_node 0 100 104
+extent replace: 14 extent: lblk 0--99, len 100, pblk 104, flags: (none)
+extent: lblk 0--3, len 4, pblk 104, flags: (none)
+debugfs: down_node
+down_node: Found cyclic loop in extent tree 
+debugfs: extent_close
+debugfs: 
+# =========================================================================
+# 8. Direct C API unit tests & full leaf block EOF vs mid-tree split
+# =========================================================================
+debugfs: test_extent_apis
+--- Testing ext2fs_extent_header_verify ---
+header: magic=f30a entries=2 max=4 depth=0 generation=0
+verify valid inode header: OK
+header: magic=1234 entries=2 max=4 depth=0 generation=0
+verify bad magic: Corrupt extent header
+header: magic=f30a entries=5 max=4 depth=0 generation=0
+verify entries > max: Corrupt extent header
+header: magic=f30a entries=2 max=5 depth=0 generation=0
+verify eh_max too large: Corrupt extent header
+header: magic=f30a entries=2 max=82 depth=1 generation=0
+verify 1024B block eh_max=82 depth=1: OK
+header: magic=f30a entries=2 max=81 depth=1 generation=0
+verify 1024B block eh_max=81 (too small): Corrupt extent header
+--- Testing ext2fs_decode_extent ---
+decode_extent bad len: Invalid argument passed to ext2 library
+decode_extent init: status=OK lblk=42 len=32768 pblk=0x512345678 flags=0x1
+decode_extent uninit: status=OK lblk=1000 len=32767 pblk=2000 flags=0x3
+--- Testing ext2fs_extent_open2 (in-memory inode) & RO_FILSYS / magic checks ---
+header: magic=f30a entries=0 max=4 depth=0 generation=0
+extent_open2(ino=14, &inode): OK, i_flags has EXTENTS_FL=1
+ext2fs_max_extent_depth: 5 (cached: 5)
+extent insert: 14 extent: lblk 0--9, len 10, pblk 100, flags: LEAF 
+extent replace: 14 extent: lblk 0--9, len 10, pblk 100, flags: LEAF 
+insert into in-memory inode: OK
+extent_get unsupported op: Ext2fs operation not supported
+RO extent_insert: Attempt to write to filesystem opened read-only
+RO extent_replace: Attempt to write to filesystem opened read-only
+RO extent_delete: Attempt to write to filesystem opened read-only
+RO extent_node_split: Attempt to write to filesystem opened read-only
+set_bmap ino 14 log 0 phys 200 flags 0
+RO extent_set_bmap: Attempt to write to filesystem opened read-only
+RO extent_fix_parents: Attempt to write to filesystem opened read-only
+bad magic extent_get: Wrong magic number for ext4 extent handle
+bad magic extent_get_info: Wrong magic number for ext4 extent handle
+--- Testing full leaf block EOF split vs mid-tree split ---
+header: magic=f30a entries=0 max=4 depth=0 generation=0
+extent insert: 20 extent: lblk 2--2, len 1, pblk 500, flags: LEAF 
+extent replace: 20 extent: lblk 2--2, len 1, pblk 500, flags: LEAF 
+extent insert: 20 extent: lblk 4--4, len 1, pblk 502, flags: LEAF 
+extent replace: 20 extent: lblk 4--4, len 1, pblk 502, flags: LEAF 
+extent insert: 20 extent: lblk 6--6, len 1, pblk 504, flags: LEAF 
+extent replace: 20 extent: lblk 6--6, len 1, pblk 504, flags: LEAF 
+extent insert: 20 extent: lblk 8--8, len 1, pblk 506, flags: LEAF 
+extent replace: 20 extent: lblk 8--8, len 1, pblk 506, flags: LEAF 
+extent insert: 20 extent: lblk 10--10, len 1, pblk 508, flags: LEAF 
+node full (level 0) - splitting
+splitting node at level 0
+will copy out 4 of 4 entries at level 0
+will copy to new node at block 13
+extent replace: 20 extent: lblk 2--1023, len 1022, pblk 13, flags: (none)
+goto extent ino 20, level 0, 8
+header: magic=f30a entries=4 max=84 depth=0 generation=0
+extent replace: 20 extent: lblk 10--10, len 1, pblk 508, flags: LEAF 
+extent insert: 20 extent: lblk 12--12, len 1, pblk 510, flags: LEAF 
+extent replace: 20 extent: lblk 12--12, len 1, pblk 510, flags: LEAF 
+extent insert: 20 extent: lblk 14--14, len 1, pblk 512, flags: LEAF 
+extent replace: 20 extent: lblk 14--14, len 1, pblk 512, flags: LEAF 
+extent insert: 20 extent: lblk 16--16, len 1, pblk 514, flags: LEAF 
+extent replace: 20 extent: lblk 16--16, len 1, pblk 514, flags: LEAF 
+extent insert: 20 extent: lblk 18--18, len 1, pblk 516, flags: LEAF 
+extent replace: 20 extent: lblk 18--18, len 1, pblk 516, flags: LEAF 
+extent insert: 20 extent: lblk 20--20, len 1, pblk 518, flags: LEAF 
+extent replace: 20 extent: lblk 20--20, len 1, pblk 518, flags: LEAF 
+extent insert: 20 extent: lblk 22--22, len 1, pblk 520, flags: LEAF 
+extent replace: 20 extent: lblk 22--22, len 1, pblk 520, flags: LEAF 
+extent insert: 20 extent: lblk 24--24, len 1, pblk 522, flags: LEAF 
+extent replace: 20 extent: lblk 24--24, len 1, pblk 522, flags: LEAF 
+extent insert: 20 extent: lblk 26--26, len 1, pblk 524, flags: LEAF 
+extent replace: 20 extent: lblk 26--26, len 1, pblk 524, flags: LEAF 
+extent insert: 20 extent: lblk 28--28, len 1, pblk 526, flags: LEAF 
+extent replace: 20 extent: lblk 28--28, len 1, pblk 526, flags: LEAF 
+extent insert: 20 extent: lblk 30--30, len 1, pblk 528, flags: LEAF 
+extent replace: 20 extent: lblk 30--30, len 1, pblk 528, flags: LEAF 
+extent insert: 20 extent: lblk 32--32, len 1, pblk 530, flags: LEAF 
+extent replace: 20 extent: lblk 32--32, len 1, pblk 530, flags: LEAF 
+extent insert: 20 extent: lblk 34--34, len 1, pblk 532, flags: LEAF 
+extent replace: 20 extent: lblk 34--34, len 1, pblk 532, flags: LEAF 
+extent insert: 20 extent: lblk 36--36, len 1, pblk 534, flags: LEAF 
+extent replace: 20 extent: lblk 36--36, len 1, pblk 534, flags: LEAF 
+extent insert: 20 extent: lblk 38--38, len 1, pblk 536, flags: LEAF 
+extent replace: 20 extent: lblk 38--38, len 1, pblk 536, flags: LEAF 
+extent insert: 20 extent: lblk 40--40, len 1, pblk 538, flags: LEAF 
+extent replace: 20 extent: lblk 40--40, len 1, pblk 538, flags: LEAF 
+extent insert: 20 extent: lblk 42--42, len 1, pblk 540, flags: LEAF 
+extent replace: 20 extent: lblk 42--42, len 1, pblk 540, flags: LEAF 
+extent insert: 20 extent: lblk 44--44, len 1, pblk 542, flags: LEAF 
+extent replace: 20 extent: lblk 44--44, len 1, pblk 542, flags: LEAF 
+extent insert: 20 extent: lblk 46--46, len 1, pblk 544, flags: LEAF 
+extent replace: 20 extent: lblk 46--46, len 1, pblk 544, flags: LEAF 
+extent insert: 20 extent: lblk 48--48, len 1, pblk 546, flags: LEAF 
+extent replace: 20 extent: lblk 48--48, len 1, pblk 546, flags: LEAF 
+extent insert: 20 extent: lblk 50--50, len 1, pblk 548, flags: LEAF 
+extent replace: 20 extent: lblk 50--50, len 1, pblk 548, flags: LEAF 
+extent insert: 20 extent: lblk 52--52, len 1, pblk 550, flags: LEAF 
+extent replace: 20 extent: lblk 52--52, len 1, pblk 550, flags: LEAF 
+extent insert: 20 extent: lblk 54--54, len 1, pblk 552, flags: LEAF 
+extent replace: 20 extent: lblk 54--54, len 1, pblk 552, flags: LEAF 
+extent insert: 20 extent: lblk 56--56, len 1, pblk 554, flags: LEAF 
+extent replace: 20 extent: lblk 56--56, len 1, pblk 554, flags: LEAF 
+extent insert: 20 extent: lblk 58--58, len 1, pblk 556, flags: LEAF 
+extent replace: 20 extent: lblk 58--58, len 1, pblk 556, flags: LEAF 
+extent insert: 20 extent: lblk 60--60, len 1, pblk 558, flags: LEAF 
+extent replace: 20 extent: lblk 60--60, len 1, pblk 558, flags: LEAF 
+extent insert: 20 extent: lblk 62--62, len 1, pblk 560, flags: LEAF 
+extent replace: 20 extent: lblk 62--62, len 1, pblk 560, flags: LEAF 
+extent insert: 20 extent: lblk 64--64, len 1, pblk 562, flags: LEAF 
+extent replace: 20 extent: lblk 64--64, len 1, pblk 562, flags: LEAF 
+extent insert: 20 extent: lblk 66--66, len 1, pblk 564, flags: LEAF 
+extent replace: 20 extent: lblk 66--66, len 1, pblk 564, flags: LEAF 
+extent insert: 20 extent: lblk 68--68, len 1, pblk 566, flags: LEAF 
+extent replace: 20 extent: lblk 68--68, len 1, pblk 566, flags: LEAF 
+extent insert: 20 extent: lblk 70--70, len 1, pblk 568, flags: LEAF 
+extent replace: 20 extent: lblk 70--70, len 1, pblk 568, flags: LEAF 
+extent insert: 20 extent: lblk 72--72, len 1, pblk 570, flags: LEAF 
+extent replace: 20 extent: lblk 72--72, len 1, pblk 570, flags: LEAF 
+extent insert: 20 extent: lblk 74--74, len 1, pblk 572, flags: LEAF 
+extent replace: 20 extent: lblk 74--74, len 1, pblk 572, flags: LEAF 
+extent insert: 20 extent: lblk 76--76, len 1, pblk 574, flags: LEAF 
+extent replace: 20 extent: lblk 76--76, len 1, pblk 574, flags: LEAF 
+extent insert: 20 extent: lblk 78--78, len 1, pblk 576, flags: LEAF 
+extent replace: 20 extent: lblk 78--78, len 1, pblk 576, flags: LEAF 
+extent insert: 20 extent: lblk 80--80, len 1, pblk 578, flags: LEAF 
+extent replace: 20 extent: lblk 80--80, len 1, pblk 578, flags: LEAF 
+extent insert: 20 extent: lblk 82--82, len 1, pblk 580, flags: LEAF 
+extent replace: 20 extent: lblk 82--82, len 1, pblk 580, flags: LEAF 
+extent insert: 20 extent: lblk 84--84, len 1, pblk 582, flags: LEAF 
+extent replace: 20 extent: lblk 84--84, len 1, pblk 582, flags: LEAF 
+extent insert: 20 extent: lblk 86--86, len 1, pblk 584, flags: LEAF 
+extent replace: 20 extent: lblk 86--86, len 1, pblk 584, flags: LEAF 
+extent insert: 20 extent: lblk 88--88, len 1, pblk 586, flags: LEAF 
+extent replace: 20 extent: lblk 88--88, len 1, pblk 586, flags: LEAF 
+extent insert: 20 extent: lblk 90--90, len 1, pblk 588, flags: LEAF 
+extent replace: 20 extent: lblk 90--90, len 1, pblk 588, flags: LEAF 
+extent insert: 20 extent: lblk 92--92, len 1, pblk 590, flags: LEAF 
+extent replace: 20 extent: lblk 92--92, len 1, pblk 590, flags: LEAF 
+extent insert: 20 extent: lblk 94--94, len 1, pblk 592, flags: LEAF 
+extent replace: 20 extent: lblk 94--94, len 1, pblk 592, flags: LEAF 
+extent insert: 20 extent: lblk 96--96, len 1, pblk 594, flags: LEAF 
+extent replace: 20 extent: lblk 96--96, len 1, pblk 594, flags: LEAF 
+extent insert: 20 extent: lblk 98--98, len 1, pblk 596, flags: LEAF 
+extent replace: 20 extent: lblk 98--98, len 1, pblk 596, flags: LEAF 
+extent insert: 20 extent: lblk 100--100, len 1, pblk 598, flags: LEAF 
+extent replace: 20 extent: lblk 100--100, len 1, pblk 598, flags: LEAF 
+extent insert: 20 extent: lblk 102--102, len 1, pblk 600, flags: LEAF 
+extent replace: 20 extent: lblk 102--102, len 1, pblk 600, flags: LEAF 
+extent insert: 20 extent: lblk 104--104, len 1, pblk 602, flags: LEAF 
+extent replace: 20 extent: lblk 104--104, len 1, pblk 602, flags: LEAF 
+extent insert: 20 extent: lblk 106--106, len 1, pblk 604, flags: LEAF 
+extent replace: 20 extent: lblk 106--106, len 1, pblk 604, flags: LEAF 
+extent insert: 20 extent: lblk 108--108, len 1, pblk 606, flags: LEAF 
+extent replace: 20 extent: lblk 108--108, len 1, pblk 606, flags: LEAF 
+extent insert: 20 extent: lblk 110--110, len 1, pblk 608, flags: LEAF 
+extent replace: 20 extent: lblk 110--110, len 1, pblk 608, flags: LEAF 
+extent insert: 20 extent: lblk 112--112, len 1, pblk 610, flags: LEAF 
+extent replace: 20 extent: lblk 112--112, len 1, pblk 610, flags: LEAF 
+extent insert: 20 extent: lblk 114--114, len 1, pblk 612, flags: LEAF 
+extent replace: 20 extent: lblk 114--114, len 1, pblk 612, flags: LEAF 
+extent insert: 20 extent: lblk 116--116, len 1, pblk 614, flags: LEAF 
+extent replace: 20 extent: lblk 116--116, len 1, pblk 614, flags: LEAF 
+extent insert: 20 extent: lblk 118--118, len 1, pblk 616, flags: LEAF 
+extent replace: 20 extent: lblk 118--118, len 1, pblk 616, flags: LEAF 
+extent insert: 20 extent: lblk 120--120, len 1, pblk 618, flags: LEAF 
+extent replace: 20 extent: lblk 120--120, len 1, pblk 618, flags: LEAF 
+extent insert: 20 extent: lblk 122--122, len 1, pblk 620, flags: LEAF 
+extent replace: 20 extent: lblk 122--122, len 1, pblk 620, flags: LEAF 
+extent insert: 20 extent: lblk 124--124, len 1, pblk 622, flags: LEAF 
+extent replace: 20 extent: lblk 124--124, len 1, pblk 622, flags: LEAF 
+extent insert: 20 extent: lblk 126--126, len 1, pblk 624, flags: LEAF 
+extent replace: 20 extent: lblk 126--126, len 1, pblk 624, flags: LEAF 
+extent insert: 20 extent: lblk 128--128, len 1, pblk 626, flags: LEAF 
+extent replace: 20 extent: lblk 128--128, len 1, pblk 626, flags: LEAF 
+extent insert: 20 extent: lblk 130--130, len 1, pblk 628, flags: LEAF 
+extent replace: 20 extent: lblk 130--130, len 1, pblk 628, flags: LEAF 
+extent insert: 20 extent: lblk 132--132, len 1, pblk 630, flags: LEAF 
+extent replace: 20 extent: lblk 132--132, len 1, pblk 630, flags: LEAF 
+extent insert: 20 extent: lblk 134--134, len 1, pblk 632, flags: LEAF 
+extent replace: 20 extent: lblk 134--134, len 1, pblk 632, flags: LEAF 
+extent insert: 20 extent: lblk 136--136, len 1, pblk 634, flags: LEAF 
+extent replace: 20 extent: lblk 136--136, len 1, pblk 634, flags: LEAF 
+extent insert: 20 extent: lblk 138--138, len 1, pblk 636, flags: LEAF 
+extent replace: 20 extent: lblk 138--138, len 1, pblk 636, flags: LEAF 
+extent insert: 20 extent: lblk 140--140, len 1, pblk 638, flags: LEAF 
+extent replace: 20 extent: lblk 140--140, len 1, pblk 638, flags: LEAF 
+extent insert: 20 extent: lblk 142--142, len 1, pblk 640, flags: LEAF 
+extent replace: 20 extent: lblk 142--142, len 1, pblk 640, flags: LEAF 
+extent insert: 20 extent: lblk 144--144, len 1, pblk 642, flags: LEAF 
+extent replace: 20 extent: lblk 144--144, len 1, pblk 642, flags: LEAF 
+extent insert: 20 extent: lblk 146--146, len 1, pblk 644, flags: LEAF 
+extent replace: 20 extent: lblk 146--146, len 1, pblk 644, flags: LEAF 
+extent insert: 20 extent: lblk 148--148, len 1, pblk 646, flags: LEAF 
+extent replace: 20 extent: lblk 148--148, len 1, pblk 646, flags: LEAF 
+extent insert: 20 extent: lblk 150--150, len 1, pblk 648, flags: LEAF 
+extent replace: 20 extent: lblk 150--150, len 1, pblk 648, flags: LEAF 
+extent insert: 20 extent: lblk 152--152, len 1, pblk 650, flags: LEAF 
+extent replace: 20 extent: lblk 152--152, len 1, pblk 650, flags: LEAF 
+extent insert: 20 extent: lblk 154--154, len 1, pblk 652, flags: LEAF 
+extent replace: 20 extent: lblk 154--154, len 1, pblk 652, flags: LEAF 
+extent insert: 20 extent: lblk 156--156, len 1, pblk 654, flags: LEAF 
+extent replace: 20 extent: lblk 156--156, len 1, pblk 654, flags: LEAF 
+extent insert: 20 extent: lblk 158--158, len 1, pblk 656, flags: LEAF 
+extent replace: 20 extent: lblk 158--158, len 1, pblk 656, flags: LEAF 
+extent insert: 20 extent: lblk 160--160, len 1, pblk 658, flags: LEAF 
+extent replace: 20 extent: lblk 160--160, len 1, pblk 658, flags: LEAF 
+extent insert: 20 extent: lblk 162--162, len 1, pblk 660, flags: LEAF 
+extent replace: 20 extent: lblk 162--162, len 1, pblk 660, flags: LEAF 
+extent insert: 20 extent: lblk 164--164, len 1, pblk 662, flags: LEAF 
+extent replace: 20 extent: lblk 164--164, len 1, pblk 662, flags: LEAF 
+extent insert: 20 extent: lblk 166--166, len 1, pblk 664, flags: LEAF 
+extent replace: 20 extent: lblk 166--166, len 1, pblk 664, flags: LEAF 
+extent insert: 20 extent: lblk 168--168, len 1, pblk 666, flags: LEAF 
+extent replace: 20 extent: lblk 168--168, len 1, pblk 666, flags: LEAF 
+extent insert: 20 extent: lblk 170--170, len 1, pblk 668, flags: LEAF 
+node full (level 1) - splitting
+splitting node at level 1
+will copy out 1 of 84 entries at level 1
+will copy to new node at block 14
+extent replace: 20 extent: lblk 2--857, len 856, pblk 13, flags: (none)
+extent insert: 20 extent: lblk 168--333, len 166, pblk 14, flags: (none)
+extent replace: 20 extent: lblk 168--333, len 166, pblk 14, flags: (none)
+goto extent ino 20, level 0, 168
+header: magic=f30a entries=1 max=84 depth=0 generation=0
+extent replace: 20 extent: lblk 170--170, len 1, pblk 668, flags: LEAF 
+goto extent ino 20, level 0, 2
+header: magic=f30a entries=83 max=84 depth=0 generation=0
+extent insert: 20 extent: lblk 1--1, len 1, pblk 499, flags: LEAF 
+extent replace: 20 extent: lblk 1--1, len 1, pblk 499, flags: LEAF 
+extent insert: 20 extent: lblk 0--0, len 1, pblk 498, flags: LEAF 
+node full (level 1) - splitting
+splitting node at level 1
+will copy out 42 of 84 entries at level 1
+will copy to new node at block 15
+extent replace: 20 extent: lblk 2--85, len 84, pblk 13, flags: 2ND_VISIT 
+extent insert: 20 extent: lblk 84--165, len 82, pblk 15, flags: 2ND_VISIT 
+extent replace: 20 extent: lblk 84--165, len 82, pblk 15, flags: 2ND_VISIT 
+goto extent ino 20, level 0, 1
+header: magic=f30a entries=42 max=84 depth=0 generation=0
+extent replace: 20 extent: lblk 0--0, len 1, pblk 498, flags: LEAF 
+after mid-tree split: status=OK, leaf0 entries=43/84, level=1/1
+debugfs: teardown
+debugfs: quit

@@ -504,8 +504,9 @@ tst_extents: $(srcdir)/extent.c $(DEBUG_OBJS) $(DEPSTATIC_LIBSS) libext2fs.a \
 	$(Q) $(CC) -o tst_extents $(srcdir)/extent.c \
 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DDEBUG $(DEBUG_OBJS) \
 		$(STATIC_LIBSS) $(STATIC_LIBE2P) $(LIBSUPPORT) \
-		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) \
-		$(STATIC_LIBCOM_ERR) $(SYSLIBS) -I $(top_srcdir)/debugfs
+		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) $(LIBMAGIC) \
+		$(STATIC_LIBCOM_ERR) $(SYSLIBS) $(LIBARCHIVE) \
+		-I $(top_srcdir)/debugfs
 
 tst_libext2fs: $(DEBUG_OBJS) \
 	$(DEPSTATIC_LIBSS) $(STATIC_LIBE2P) $(DEPLIBUUID) libext2fs.a \
@@ -547,8 +548,8 @@ mkjournal: mkjournal.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 
 fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
     tst_super_size tst_types tst_inode_size tst_csum tst_crc32c tst_bitmaps \
-    tst_inline tst_inline_data tst_libext2fs tst_sha256 tst_sha512 \
-    tst_digest_encode tst_getsize tst_getsectsize
+    tst_inline tst_inline_data tst_libext2fs tst_extents tst_sha256 \
+    tst_sha512 tst_digest_encode tst_getsize tst_getsectsize
 	$(TESTENV) ./tst_bitops
 	$(TESTENV) ./tst_badblocks
 	$(TESTENV) ./tst_iscan
@@ -570,6 +571,8 @@ fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
 	diff $(srcdir)/tst_bitmaps_exp tst_bitmaps_out
 	$(TESTENV) ./tst_bitmaps -l -f $(srcdir)/tst_bitmaps_cmds > tst_bitmaps_out
 	diff $(srcdir)/tst_bitmaps_exp tst_bitmaps_out
+	$(TESTENV) ./tst_extents -f $(srcdir)/tst_extents_cmds > tst_extents_out
+	diff $(srcdir)/tst_extents_exp tst_extents_out
 	$(TESTENV) ./tst_digest_encode
 
 installdirs::
@@ -603,8 +606,8 @@ clean::
 		tst_badblocks tst_iscan ext2_err.et ext2_err.c ext2_err.h \
 		tst_byteswap tst_ismounted tst_getsize tst_getsectsize \
 		tst_bitops tst_types tst_icount tst_super_size tst_csum \
-		tst_bitmaps tst_bitmaps_out tst_extents tst_inline \
-		tst_inline_data tst_inode_size tst_bitmaps_cmd.c \
+		tst_bitmaps tst_bitmaps_out tst_extents tst_extents_out \
+		tst_inline tst_inline_data tst_inode_size tst_bitmaps_cmd.c \
 		tst_digest_encode tst_sha256 tst_sha512 \
 		ext2_tdbtool mkjournal debug_cmds.c tst_cmds.c extent_cmds.c \
 		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a \
