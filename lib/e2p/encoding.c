@@ -86,7 +86,12 @@ int e2p_get_encoding_flags(int encoding)
 
 int e2p_str2encoding_flags(int encoding, char *param, __u16 *flags)
 {
+#ifdef HAVE_STRTOK_R
+	char *saveptr;
+	char *f = strtok_r(param, "-", &saveptr);
+#else
 	char *f = strtok(param, "-");
+#endif
 	const struct enc_flags *fl;
 	unsigned int i, neg = 0;
 
@@ -112,7 +117,11 @@ int e2p_str2encoding_flags(int encoding, char *param, __u16 *flags)
 		}
 		return -EINVAL;
 	next_flag:
+#ifdef HAVE_STRTOK_R
+		f = strtok_r(NULL, "-", &saveptr);
+#else
 		f = strtok(NULL, "-");
+#endif
 	}
 	return 0;
 }

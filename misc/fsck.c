@@ -405,11 +405,18 @@ static char *find_fsck(char *type)
   static char prog[256];
   char *p = string_copy(fsck_path);
   struct stat st;
+#ifdef HAVE_STRTOK_R
+  char *saveptr;
+#endif
 
   /* Are we looking for a program or just a type? */
   tpl = (strncmp(type, "fsck.", 5) ? "%s/fsck.%s" : "%s/%s");
 
+#ifdef HAVE_STRTOK_R
+  for (s = strtok_r(p, ":", &saveptr); s; s = strtok_r(NULL, ":", &saveptr)) {
+#else
   for(s = strtok(p, ":"); s; s = strtok(NULL, ":")) {
+#endif
 	  int len = snprintf(prog, sizeof(prog), tpl, s, type);
 
 	  if ((len < 0) || (len >= (int) sizeof(prog)))
@@ -756,6 +763,9 @@ N_("Either all or none of the filesystem types passed to -t must be prefixed\n"
 static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
 {
 	char 	*cp, *list, *s;
+#ifdef HAVE_STRTOK_R
+	char	*saveptr;
+#endif
 	int	num = 2;
 	int	negate, first_negate = 1;
 
@@ -782,7 +792,11 @@ static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
 
 	list = string_copy(fs_type);
 	num = 0;
+#ifdef HAVE_STRTOK_R
+	s = strtok_r(list, ",", &saveptr);
+#else
 	s = strtok(list, ",");
+#endif
 	while(s) {
 		negate = 0;
 		if (strncmp(s, "no", 2) == 0) {
@@ -815,7 +829,11 @@ static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
 		printf("Adding %s to list (type %d).\n", s, cmp->type[num]);
 #endif
 	        cmp->list[num++] = string_copy(s);
+#ifdef HAVE_STRTOK_R
+		s = strtok_r(NULL, ",", &saveptr);
+#else
 		s = strtok(NULL, ",");
+#endif
 	}
 	free(list);
 }
@@ -827,18 +845,29 @@ static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
 static int opt_in_list(const char *opt, char *optlist)
 {
 	char	*list, *s;
+#ifdef HAVE_STRTOK_R
+	char	*saveptr;
+#endif
 
 	if (!optlist)
 		return 0;
 	list = string_copy(optlist);
 
+#ifdef HAVE_STRTOK_R
+	s = strtok_r(list, ",", &saveptr);
+#else
 	s = strtok(list, ",");
+#endif
 	while(s) {
 		if (strcmp(s, opt) == 0) {
 			free(list);
 			return 1;
 		}
+#ifdef HAVE_STRTOK_R
+		s = strtok_r(NULL, ",", &saveptr);
+#else
 		s = strtok(NULL, ",");
+#endif
 	}
         free(list);
 	return 0;

@@ -1282,6 +1282,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	strdup
 	strnlen
 	strptime
+	strtok_r
 	strtoull
 	sync_file_range
 	syscall

@@ -403,6 +403,9 @@
 /* Define to 1 if you have the 'strptime' function. */
 #undef HAVE_STRPTIME
 
+/* Define to 1 if you have the 'strtok_r' function. */
+#undef HAVE_STRTOK_R
+
 /* Define to 1 if you have the 'strtoull' function. */
 #undef HAVE_STRTOULL
 

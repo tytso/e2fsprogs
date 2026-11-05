@@ -210,6 +210,9 @@ int main(int argc, char *argv[])
 	ext2_filsys fs = NULL;
 	struct fs_ops_callbacks fs_callbacks = { NULL, NULL };
 	char *token;
+#ifdef HAVE_STRTOK_R
+	char *saveptr;
+#endif
 	int nr_opt = 0;
 	ext2_ino_t inodes_count;
 	ext2_ino_t free_inodes_count;
@@ -230,7 +233,11 @@ int main(int argc, char *argv[])
 			android_configure = 1;
 			break;
 		case 'S':
+#ifdef HAVE_STRTOK_R
+			token = strtok_r(optarg, ",", &saveptr);
+#else
 			token = strtok(optarg, ",");
+#endif
 			while (token) {
 				if (nr_opt == max_nr_opt) {
 					fprintf(stderr, "Expected at most %d selinux opts\n",
@@ -240,7 +247,11 @@ int main(int argc, char *argv[])
 				seopt_file[nr_opt].type = SELABEL_OPT_PATH;
 				seopt_file[nr_opt].value = absolute_path(token);
 				nr_opt++;
+#ifdef HAVE_STRTOK_R
+				token = strtok_r(NULL, ",", &saveptr);
+#else
 				token = strtok(NULL, ",");
+#endif
 			}
 			android_configure = 1;
 			break;

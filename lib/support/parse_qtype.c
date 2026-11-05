@@ -17,7 +17,10 @@
 int parse_quota_types(const char *in_str, unsigned int *qtype_bits,
 		      char **err_token)
 {
-	char	*buf, *token, *next, *tmp;
+	char	*buf, *token, *next;
+#ifdef HAVE_STRTOK_R
+	char	*tmp;
+#endif
 	unsigned int qtype = *qtype_bits;
 	int	len, ret = 0;
 
@@ -30,7 +33,11 @@ int parse_quota_types(const char *in_str, unsigned int *qtype_bits,
 		return ENOMEM;
 	strcpy(buf, in_str);
 
+#ifdef HAVE_STRTOK_R
 	for (token = buf, next = strtok_r(buf, PARSE_DELIM, &tmp);
+#else
+	for (token = buf, next = strtok(buf, PARSE_DELIM);
+#endif
 	     token && *token; token = next) {
 		int	not = 0;
 		char	*p = token;
@@ -66,7 +73,11 @@ int parse_quota_types(const char *in_str, unsigned int *qtype_bits,
 #ifdef DEBUG_PROGRAM
 		printf("word: %s\n", token);
 #endif
+#ifdef HAVE_STRTOK_R
 		next = strtok_r(NULL, PARSE_DELIM, &tmp);
+#else
+		next = strtok(NULL, PARSE_DELIM);
+#endif
 	}
 	*qtype_bits = qtype;
 errout:
