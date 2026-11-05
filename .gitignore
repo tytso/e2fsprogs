@@ -109,6 +109,7 @@ lib/ext2fs/tst_bitmaps
 lib/ext2fs/tst_bitmaps_cmd.c
 lib/ext2fs/tst_bitmaps_out
 lib/ext2fs/tst_bitops
+lib/ext2fs/tst_block
 lib/ext2fs/tst_cmds.c
 lib/ext2fs/tst_csum
 lib/ext2fs/tst_crc32c
