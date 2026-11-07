@@ -244,6 +244,100 @@ static void test_dblist_core(ext2_filsys fs)
 	ext2fs_free_dblist(db);
 }
 
+/*
+ * Add the n entries of "in" to a new dblist, let ext2fs_dblist_iterate2()
+ * sort them with the default comparator, and check that the result
+ * matches "exp".  Returns 1 if it does, 0 otherwise.
+ */
+static int default_sort_matches(ext2_filsys fs,
+				const struct ext2_db_entry2 *in,
+				const struct ext2_db_entry2 *exp, int n)
+{
+	ext2_dblist	db = NULL;
+	struct iter_log	log;
+	int		i, ok = 0;
+
+	if (n > 16 || ext2fs_init_dblist(fs, &db))
+		return 0;
+	for (i = 0; i < n; i++) {
+		if (ext2fs_add_dir_block2(db, in[i].ino, in[i].blk,
+					  in[i].blockcnt))
+			goto out;
+	}
+	memset(&log, 0, sizeof(log));
+	if (ext2fs_dblist_iterate2(db, record_db2_cb, &log) || log.count != n)
+		goto out;
+	for (i = 0; i < n; i++) {
+		if (log.entries[i].ino != exp[i].ino ||
+		    log.entries[i].blk != exp[i].blk ||
+		    log.entries[i].blockcnt != exp[i].blockcnt) {
+			fprintf(stderr, "sorted entry %d is (%u, %llu, %lld), "
+				"expected (%u, %llu, %lld)\n", i,
+				log.entries[i].ino,
+				(unsigned long long) log.entries[i].blk,
+				(long long) log.entries[i].blockcnt,
+				exp[i].ino, (unsigned long long) exp[i].blk,
+				(long long) exp[i].blockcnt);
+			goto out;
+		}
+	}
+	ok = 1;
+out:
+	ext2fs_free_dblist(db);
+	return ok;
+}
+
+/*
+ * The default sort order (blk, ino, blockcnt) must also hold when the
+ * differences between the values do not fit in an int.  Entries are
+ * listed as { ino, blk, blockcnt }.
+ */
+static void test_dblist_sort_wide(ext2_filsys fs)
+{
+	static const struct ext2_db_entry2 blk_in[] = {
+		{ 2, (1ULL << 32) + 100, 0 },
+		{ 2, 100, 0 },
+		{ 2, 0x90000000ULL, 0 },
+		{ 2, 0x50000000ULL, 0 },
+		{ 2, 1, 0 },
+	};
+	static const struct ext2_db_entry2 blk_exp[] = {
+		{ 2, 1, 0 },
+		{ 2, 100, 0 },
+		{ 2, 0x50000000ULL, 0 },
+		{ 2, 0x90000000ULL, 0 },
+		{ 2, (1ULL << 32) + 100, 0 },
+	};
+	static const struct ext2_db_entry2 ino_in[] = {
+		{ 1, 5000, 0 },
+		{ 0x90000000U, 5000, 0 },
+	};
+	static const struct ext2_db_entry2 ino_exp[] = {
+		{ 1, 5000, 0 },
+		{ 0x90000000U, 5000, 0 },
+	};
+	static const struct ext2_db_entry2 cnt_in[] = {
+		{ 7, 6000, 1LL << 32 },
+		{ 7, 6000, 0 },
+		{ 7, 6000, 0x80000000LL },
+	};
+	static const struct ext2_db_entry2 cnt_exp[] = {
+		{ 7, 6000, 0 },
+		{ 7, 6000, 0x80000000LL },
+		{ 7, 6000, 1LL << 32 },
+	};
+
+	CHECK(default_sort_matches(fs, blk_in, blk_exp,
+				   (int) (sizeof(blk_in) / sizeof(blk_in[0]))),
+	      "default sort orders blk values more than 2^31 apart");
+	CHECK(default_sort_matches(fs, ino_in, ino_exp,
+				   (int) (sizeof(ino_in) / sizeof(ino_in[0]))),
+	      "default sort orders ino values more than 2^31 apart");
+	CHECK(default_sort_matches(fs, cnt_in, cnt_exp,
+				   (int) (sizeof(cnt_in) / sizeof(cnt_in[0]))),
+	      "default sort orders blockcnt values more than 2^31 apart");
+}
+
 struct dir_visit {
 	int	seen_blk_sub;
 	int	seen_inl_sub;
@@ -391,6 +485,7 @@ int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 	}
 
 	test_dblist_core(fs);
+	test_dblist_sort_wide(fs);
 	test_dblist_dir_iterate(fs);
 
 	ext2fs_close_free(&fs);
