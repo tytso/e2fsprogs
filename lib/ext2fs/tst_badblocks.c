@@ -11,6 +11,7 @@
 
 #include "config.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -169,7 +170,7 @@ static void do_test_seq(badblocks_list bb, blk_t *vec)
 }
 
 
-int file_test(badblocks_list bb)
+static int file_test(badblocks_list bb)
 {
 	badblocks_list new_bb = 0;
 	errcode_t	retval;
@@ -205,7 +206,7 @@ int file_test(badblocks_list bb)
 	return 0;
 }
 
-static void invalid_proc(ext2_filsys fs, blk_t blk)
+static void invalid_proc(ext2_filsys fs EXT2FS_ATTR((unused)), blk_t blk)
 {
 	if (blk == 34500) {
 		printf("Expected invalid block\n");
@@ -216,7 +217,7 @@ static void invalid_proc(ext2_filsys fs, blk_t blk)
 	}
 }
 
-void file_test_invalid(badblocks_list bb)
+static void file_test_invalid(badblocks_list bb)
 {
 	badblocks_list new_bb = 0;
 	errcode_t	retval;
@@ -273,7 +274,215 @@ out:
 	free(fs);
 }
 
-int main(int argc, char **argv)
+#define CHECK_BB(cond, msg) do { \
+	if (!(cond)) { \
+		fprintf(stderr, "FAIL [%s:%d]: %s\n", __FILE__, __LINE__, msg); \
+		test_fail++; \
+	} \
+} while (0)
+
+static void bb_inode_test(badblocks_list sample)
+{
+	struct ext2_super_block		param;
+	struct struct_ext2_filsys	bad_fs;
+	struct ext2_inode		inode;
+	ext2fs_block_bitmap		saved_bmap;
+	ext2_filsys			fs = NULL;
+	ext2_badblocks_list		bb_copy = NULL, bb_direct = NULL;
+	ext2_badblocks_list		bb_ind = NULL, bb_ind2 = NULL;
+	ext2_badblocks_list		read_bb = NULL, pre_bb = NULL;
+	blk64_t				initial_free;
+	blk_t				ind_blk;
+	char				path[64];
+	int				fd, i;
+
+	/* 1. Copy and count helpers */
+	CHECK_BB(ext2fs_badblocks_copy(sample, &bb_copy) == 0,
+		 "ext2fs_badblocks_copy");
+	CHECK_BB(ext2fs_badblocks_equal(sample, bb_copy) == 1,
+		 "copied badblocks list equals original");
+	CHECK_BB(ext2fs_u32_list_count((ext2_u32_list) bb_copy) ==
+		 ext2fs_u32_list_count((ext2_u32_list) sample),
+		 "ext2fs_u32_list_count matches");
+	CHECK_BB(ext2fs_badblocks_list_add(bb_copy, 999) == 0,
+		 "mutate copied list");
+	CHECK_BB(ext2fs_badblocks_equal(sample, bb_copy) == 0,
+		 "mutated copy leaves original unchanged");
+	ext2fs_badblocks_list_free(bb_copy);
+
+	/* 2. Set up a 1024-block (1K blocksize) filesystem backed by /tmp */
+	strcpy(path, "/tmp/tst_badblocks.XXXXXX");
+	fd = mkstemp(path);
+	if (fd < 0) {
+		perror("mkstemp");
+		test_fail++;
+		return;
+	}
+	if (ftruncate(fd, 1024 * 1024) < 0) {
+		perror("ftruncate");
+		close(fd);
+		unlink(path);
+		test_fail++;
+		return;
+	}
+
+	memset(&param, 0, sizeof(param));
+	ext2fs_blocks_count_set(&param, 1024);
+	param.s_inodes_count = 128;
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+	param.s_inode_size = 128;
+	if (ext2fs_initialize(path, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+			      &param, unix_io_manager, &fs) ||
+	    ext2fs_allocate_tables(fs)) {
+		fprintf(stderr, "Failed to initialize test filesystem\n");
+		close(fd);
+		unlink(path);
+		test_fail++;
+		return;
+	}
+	fs->now = 1700000000;
+	initial_free = ext2fs_free_blocks_count(fs->super);
+
+	/* 3. Error paths: bad magic and missing block_map */
+	memset(&bad_fs, 0, sizeof(bad_fs));
+	CHECK_BB(ext2fs_update_bb_inode(&bad_fs, NULL) ==
+		 EXT2_ET_MAGIC_EXT2FS_FILSYS, "update_bb_inode bad magic");
+	CHECK_BB(ext2fs_read_bb_inode(&bad_fs, &read_bb) ==
+		 EXT2_ET_MAGIC_EXT2FS_FILSYS, "read_bb_inode bad magic");
+
+	saved_bmap = fs->block_map;
+	fs->block_map = NULL;
+	CHECK_BB(ext2fs_update_bb_inode(fs, NULL) == EXT2_ET_NO_BLOCK_BITMAP,
+		 "update_bb_inode without block_map");
+	fs->block_map = saved_bmap;
+
+	/* 4. Direct bad blocks (<= 12) */
+	CHECK_BB(ext2fs_badblocks_list_create(&bb_direct, 8) == 0,
+		 "create bb_direct");
+	for (i = 0; i < 5; i++)
+		CHECK_BB(ext2fs_badblocks_list_add(bb_direct, 100 + i * 5) == 0,
+			 "add direct bad block");
+
+	CHECK_BB(ext2fs_update_bb_inode(fs, bb_direct) == 0,
+		 "update_bb_inode with 5 direct blocks");
+	for (i = 0; i < 5; i++)
+		CHECK_BB(ext2fs_test_block_bitmap2(fs->block_map,
+						   100 + i * 5) != 0,
+			 "direct bad block marked in block_map");
+	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free - 5,
+		 "free_blocks_count decremented by 5");
+	CHECK_BB(ext2fs_read_inode(fs, EXT2_BAD_INO, &inode) == 0 &&
+		 EXT2_I_SIZE(&inode) == 5 * fs->blocksize &&
+		 inode.i_block[EXT2_IND_BLOCK] == 0,
+		 "EXT2_BAD_INO size and no IND block");
+
+	read_bb = NULL;
+	CHECK_BB(ext2fs_read_bb_inode(fs, &read_bb) == 0,
+		 "read_bb_inode direct");
+	CHECK_BB(ext2fs_badblocks_equal(bb_direct, read_bb) == 1,
+		 "read_bb_inode matches direct list");
+	ext2fs_badblocks_list_free(read_bb);
+
+	/* 5. Indirect bad blocks (> 12, early free blocks available first) */
+	CHECK_BB(ext2fs_badblocks_list_create(&bb_ind, 24) == 0,
+		 "create bb_ind");
+	for (i = 0; i < 20; i++)
+		CHECK_BB(ext2fs_badblocks_list_add(bb_ind, 200 + i * 2) == 0,
+			 "add indirect bad block");
+
+	CHECK_BB(ext2fs_update_bb_inode(fs, bb_ind) == 0,
+		 "update_bb_inode with 20 bad blocks (indirect)");
+	for (i = 0; i < 5; i++)
+		CHECK_BB(ext2fs_test_block_bitmap2(fs->block_map,
+						   100 + i * 5) == 0,
+			 "old direct bad block freed");
+	for (i = 0; i < 20; i++)
+		CHECK_BB(ext2fs_test_block_bitmap2(fs->block_map,
+						   200 + i * 2) != 0,
+			 "new bad block marked");
+	CHECK_BB(ext2fs_read_inode(fs, EXT2_BAD_INO, &inode) == 0,
+		 "read EXT2_BAD_INO after indirect update");
+	ind_blk = inode.i_block[EXT2_IND_BLOCK];
+	CHECK_BB(ind_blk != 0 &&
+		 ext2fs_test_block_bitmap2(fs->block_map, ind_blk) != 0,
+		 "indirect block allocated and marked");
+	CHECK_BB(EXT2_I_SIZE(&inode) == 20 * fs->blocksize,
+		 "EXT2_BAD_INO size == 20 blocks");
+	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free - 21,
+		 "free_blocks_count reflects 20 bad + 1 indirect");
+
+	read_bb = NULL;
+	CHECK_BB(ext2fs_read_bb_inode(fs, &read_bb) == 0,
+		 "read_bb_inode indirect (auto-create)");
+	CHECK_BB(ext2fs_badblocks_equal(bb_ind, read_bb) == 1,
+		 "read_bb_inode matches 20 bad blocks without ind_blk");
+	ext2fs_badblocks_list_free(read_bb);
+
+	/* Merge into pre-allocated badblocks list */
+	CHECK_BB(ext2fs_badblocks_list_create(&pre_bb, 4) == 0 &&
+		 ext2fs_badblocks_list_add(pre_bb, 90) == 0,
+		 "create pre-populated badblocks list");
+	CHECK_BB(ext2fs_read_bb_inode(fs, &pre_bb) == 0 &&
+		 ext2fs_u32_list_count((ext2_u32_list) pre_bb) == 21 &&
+		 ext2fs_badblocks_list_test(pre_bb, 90) == 1 &&
+		 ext2fs_badblocks_list_test(pre_bb, 238) == 1,
+		 "read_bb_inode merges into existing list");
+	ext2fs_badblocks_list_free(pre_bb);
+
+	/* 6. Replace indirect list -> reuses saved indirect block */
+	CHECK_BB(ext2fs_badblocks_list_create(&bb_ind2, 20) == 0,
+		 "create bb_ind2");
+	for (i = 0; i < 16; i++)
+		CHECK_BB(ext2fs_badblocks_list_add(bb_ind2, 300 + i * 3) == 0,
+			 "add replacement bad block");
+	CHECK_BB(ext2fs_update_bb_inode(fs, bb_ind2) == 0,
+		 "replace indirect badblocks list");
+	CHECK_BB(ext2fs_read_inode(fs, EXT2_BAD_INO, &inode) == 0 &&
+		 inode.i_block[EXT2_IND_BLOCK] == ind_blk,
+		 "saved indirect block reused");
+	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free - 17,
+		 "free_blocks_count reflects 16 bad + 1 indirect");
+	read_bb = NULL;
+	CHECK_BB(ext2fs_read_bb_inode(fs, &read_bb) == 0 &&
+		 ext2fs_badblocks_equal(bb_ind2, read_bb) == 1,
+		 "replacement indirect list round-trip matches");
+	ext2fs_badblocks_list_free(read_bb);
+
+	/* 7. Clear badblocks inode (bb_list == NULL) */
+	CHECK_BB(ext2fs_update_bb_inode(fs, NULL) == 0,
+		 "clear EXT2_BAD_INO with NULL list");
+	CHECK_BB(ext2fs_test_block_bitmap2(fs->block_map, ind_blk) == 0,
+		 "indirect block freed on clear");
+	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free,
+		 "all bad and indirect blocks returned to free count");
+	CHECK_BB(ext2fs_read_inode(fs, EXT2_BAD_INO, &inode) == 0 &&
+		 EXT2_I_SIZE(&inode) == 0 && inode.i_blocks == 0 &&
+		 inode.i_block[0] == 0 && inode.i_block[EXT2_IND_BLOCK] == 0,
+		 "EXT2_BAD_INO completely cleared");
+
+	/* 8. Illegal block number in EXT2_BAD_INO ignored/cleared safely */
+	inode.i_block[0] = 5000;
+	CHECK_BB(ext2fs_write_inode(fs, EXT2_BAD_INO, &inode) == 0,
+		 "plant out-of-range block in EXT2_BAD_INO");
+	read_bb = NULL;
+	CHECK_BB(ext2fs_read_bb_inode(fs, &read_bb) == 0 &&
+		 ext2fs_u32_list_count((ext2_u32_list) read_bb) == 0,
+		 "read_bb_inode ignores out-of-range block");
+	ext2fs_badblocks_list_free(read_bb);
+	CHECK_BB(ext2fs_update_bb_inode(fs, NULL) == 0 &&
+		 ext2fs_free_blocks_count(fs->super) == initial_free,
+		 "update_bb_inode clears out-of-range block safely");
+
+	ext2fs_badblocks_list_free(bb_direct);
+	ext2fs_badblocks_list_free(bb_ind);
+	ext2fs_badblocks_list_free(bb_ind2);
+	CHECK_BB(ext2fs_close_free(&fs) == 0, "close test filesystem");
+	close(fd);
+	unlink(path);
+	printf("Badblocks inode update and read tests checked out OK!\n");
+}
+
+int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 {
 	badblocks_list bb1, bb2, bb3, bb4, bb5;
 	int	equal;
@@ -349,6 +558,8 @@ int main(int argc, char **argv)
 	file_test(bb4);
 
 	file_test_invalid(bb4);
+
+	bb_inode_test(bb4);
 
 	if (test_fail == 0)
 		printf("ext2fs library badblocks tests checks out OK!\n");
