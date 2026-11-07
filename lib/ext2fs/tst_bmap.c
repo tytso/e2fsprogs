@@ -851,6 +851,94 @@ static void test_ind_block_io_and_errors(void)
 	printf("test_ind_block_io_and_errors: completed\n");
 }
 
+/*
+ * Suite 7: the allocation context that ext2fs_bmap2() hands to the
+ * fs->get_alloc_block2 callback must describe the inode, even when the
+ * caller passes inode == NULL and lets ext2fs_bmap2() read it.
+ */
+static int		alloc_cb_ctx_calls;
+static int		alloc_cb_ctx_no_inode;
+static ext2_ino_t	alloc_cb_ino;
+static __u16		alloc_cb_mode;
+
+static void reset_alloc_cb(void)
+{
+	alloc_cb_ctx_calls = 0;
+	alloc_cb_ctx_no_inode = 0;
+	alloc_cb_ino = 0;
+	alloc_cb_mode = 0;
+}
+
+static errcode_t alloc_cb(ext2_filsys fs, blk64_t goal, blk64_t *ret,
+			  struct blk_alloc_ctx *ctx)
+{
+	/* Blocks allocated by block_ind_bmap() and friends have no ctx */
+	if (ctx) {
+		alloc_cb_ctx_calls++;
+		alloc_cb_ino = ctx->ino;
+		if (ctx->inode)
+			alloc_cb_mode = ctx->inode->i_mode;
+		else
+			alloc_cb_ctx_no_inode++;
+	}
+	return ext2fs_new_block2(fs, goal, fs->block_map, ret);
+}
+
+static void test_alloc_ctx_inode(void)
+{
+	ext2_filsys		fs = NULL;
+	struct ext2_inode	inode;
+	blk64_t			pblk = 0;
+	blk64_t			tind_lblk = 12 + 256 + (256 * 256) + 5;
+	errcode_t		retval;
+
+	setup_fs(&fs, 1024, 64);
+	init_reg_inode(fs, 12, 0, &inode);
+	fs->get_alloc_block2 = alloc_cb;
+
+	/* Direct block: the data block is allocated with a context */
+	reset_alloc_cb();
+	retval = ext2fs_bmap2(fs, 12, NULL, NULL, BMAP_ALLOC, 0, NULL, &pblk);
+	check_err("ctx_dir_alloc", retval, 0);
+	check_u64("ctx_dir_calls", alloc_cb_ctx_calls, 1);
+	check_u64("ctx_dir_no_inode", alloc_cb_ctx_no_inode, 0);
+	check_u64("ctx_dir_ino", alloc_cb_ino, 12);
+	check_u64("ctx_dir_mode", alloc_cb_mode, LINUX_S_IFREG | 0644);
+
+	/* Block 12: the IND block is allocated with a context */
+	reset_alloc_cb();
+	retval = ext2fs_bmap2(fs, 12, NULL, NULL, BMAP_ALLOC, 12, NULL, &pblk);
+	check_err("ctx_ind_alloc", retval, 0);
+	check_u64("ctx_ind_calls", alloc_cb_ctx_calls, 1);
+	check_u64("ctx_ind_no_inode", alloc_cb_ctx_no_inode, 0);
+	check_u64("ctx_ind_ino", alloc_cb_ino, 12);
+	check_u64("ctx_ind_mode", alloc_cb_mode, LINUX_S_IFREG | 0644);
+
+	/* Block 268: the DIND block is allocated with a context */
+	reset_alloc_cb();
+	retval = ext2fs_bmap2(fs, 12, NULL, NULL, BMAP_ALLOC, 268, NULL,
+			      &pblk);
+	check_err("ctx_dind_alloc", retval, 0);
+	check_u64("ctx_dind_calls", alloc_cb_ctx_calls, 1);
+	check_u64("ctx_dind_no_inode", alloc_cb_ctx_no_inode, 0);
+	check_u64("ctx_dind_ino", alloc_cb_ino, 12);
+	check_u64("ctx_dind_mode", alloc_cb_mode, LINUX_S_IFREG | 0644);
+
+	/* TIND-mapped block: the TIND block is allocated with a context */
+	reset_alloc_cb();
+	retval = ext2fs_bmap2(fs, 12, NULL, NULL, BMAP_ALLOC, tind_lblk, NULL,
+			      &pblk);
+	check_err("ctx_tind_alloc", retval, 0);
+	check_u64("ctx_tind_calls", alloc_cb_ctx_calls, 1);
+	check_u64("ctx_tind_no_inode", alloc_cb_ctx_no_inode, 0);
+	check_u64("ctx_tind_ino", alloc_cb_ino, 12);
+	check_u64("ctx_tind_mode", alloc_cb_mode, LINUX_S_IFREG | 0644);
+
+	fs->get_alloc_block2 = NULL;
+	teardown_fs(&fs);
+	printf("test_alloc_ctx_inode: completed\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -861,6 +949,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_bigalloc_cluster_bmap();
 	test_legacy_bmap32();
 	test_ind_block_io_and_errors();
+	test_alloc_ctx_inode();
 
 	if (test_fail == 0)
 		printf("libext2fs bmap and ind_block unit tests passed!\n");
