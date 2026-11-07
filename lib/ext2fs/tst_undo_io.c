@@ -621,11 +621,49 @@ static void test_undo_reopen_full_keyblock(void)
 	printf("  test_undo_reopen_full_keyblock: ok\n");
 }
 
+/*
+ * Suite 6: undo_open() must fail cleanly, instead of crashing or
+ *          returning success without an I/O channel, if no undo file
+ *          has been set or if the undo file cannot be created.
+ */
+static void test_undo_open_errors(void)
+{
+	char		img_path[64], undo_path[80];
+	int		img_fd;
+	io_channel	io = NULL;
+
+	img_fd = make_temp_file(img_path, 0);
+
+	CHECK_RC(set_undo_io_backing_manager(unix_io_manager), 0,
+		 "set backing");
+
+	/* No undo file has been set yet */
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io),
+		 EXT2_ET_INVALID_ARGUMENT, "undo_open without an undo file");
+	CHECK(io == NULL, "no channel returned without an undo file");
+
+	/* The undo file can't be created since img_path isn't a directory */
+	snprintf(undo_path, sizeof(undo_path), "%s/undo", img_path);
+	CHECK_RC(set_undo_io_backup_file(undo_path), 0, "set backup");
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io), ENOTDIR,
+		 "undo_open with an undo file which can't be created");
+	CHECK(io == NULL, "no channel returned if undo file can't be created");
+
+	close(img_fd);
+	unlink(img_path);
+	printf("  test_undo_open_errors: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
 	printf("Running tst_undo_io unit tests...\n");
 
+	/*
+	 * This must run first, since it needs to call undo_open() before
+	 * any undo file has been set, and the undo file can't be unset.
+	 */
+	test_undo_open_errors();
 	test_undo_coalesce_reopen_and_replay();
 	test_undo_multi_keyblock_and_offset();
 	test_undo_reopen_errors();

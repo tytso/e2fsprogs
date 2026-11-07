@@ -743,18 +743,26 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 	data->undo_blk_num = 3;
 
 	if (undo_io_backing_manager) {
+		if (!tdb_file) {
+			retval = EXT2_ET_INVALID_ARGUMENT;
+			goto cleanup;
+		}
 		retval = undo_io_backing_manager->open(name, flags,
 						       &data->real);
 		if (retval)
 			goto cleanup;
 
 		data->tdb_file = strdup(tdb_file);
-		if (data->tdb_file == NULL)
+		if (data->tdb_file == NULL) {
+			retval = EXT2_ET_NO_MEMORY;
 			goto cleanup;
+		}
 		undo_fd = ext2fs_open_file(data->tdb_file, O_RDWR | O_CREAT,
 					   0600);
-		if (undo_fd < 0)
+		if (undo_fd < 0) {
+			retval = errno;
 			goto cleanup;
+		}
 
 		retval = undo_io_backing_manager->open(data->tdb_file,
 						       IO_FLAG_RW,
