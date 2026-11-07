@@ -125,6 +125,7 @@ lib/ext2fs/tst_fileio
 lib/ext2fs/tst_getsectsize
 lib/ext2fs/tst_getsize
 lib/ext2fs/tst_icount
+lib/ext2fs/tst_imager
 lib/ext2fs/tst_inline
 lib/ext2fs/tst_inline_data
 lib/ext2fs/tst_inode_size
