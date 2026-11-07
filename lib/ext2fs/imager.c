@@ -362,7 +362,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 				return retval;
 		}
 		bmap = fs->block_map;
-		itr = fs->super->s_first_data_block;
+		itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 		cnt = EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count);
 		size = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	}
@@ -384,7 +384,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		if (actual == -1)
 			return errno;
 		if (actual != (int) size)
-			return EXT2_ET_SHORT_READ;
+			return EXT2_ET_SHORT_WRITE;
 
 		itr += size << 3;
 		cnt -= size << 3;
@@ -440,9 +440,9 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 				return retval;
 		}
 		bmap = fs->block_map;
-		itr = fs->super->s_first_data_block;
-		cnt = EXT2_GROUPS_TO_BLOCKS(fs->super, fs->group_desc_count);
-		size = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+		itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
+		cnt = EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count);
+		size = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	}
 
 	while (cnt > 0) {
