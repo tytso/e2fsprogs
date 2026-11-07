@@ -2139,11 +2139,21 @@ void e2fsck_pass1(e2fsck_t ctx)
 			pctx.errcode = 0;
 		}
 		if (!pctx.errcode) {
-			e2fsck_read_inode(ctx, EXT2_RESIZE_INO, inode,
-					  "recreate inode");
-			ext2fs_inode_xtime_set(inode, i_mtime, ctx->now);
-			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
-					   "recreate inode");
+			struct ext2_inode_large *large_inode =
+				(struct ext2_inode_large *) inode;
+
+			/*
+			 * Set the mtime in the large inode, so that its
+			 * epoch bits get updated too.  With 128-byte
+			 * inodes, i_extra_isize stays zero and only the
+			 * 32-bit i_mtime is set.
+			 */
+			memset(inode, 0, bufsize);
+			e2fsck_read_inode_full(ctx, EXT2_RESIZE_INO, inode,
+					       inode_size, "recreate inode");
+			ext2fs_inode_xtime_set(large_inode, i_mtime, ctx->now);
+			e2fsck_write_inode_full(ctx, EXT2_RESIZE_INO, inode,
+						inode_size, "recreate inode");
 		}
 		ctx->flags &= ~E2F_FLAG_RESIZE_INODE;
 	}
