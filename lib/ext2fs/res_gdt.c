@@ -83,12 +83,13 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 {
 	errcode_t		retval, retval2;
 	struct ext2_super_block	*sb;
-	struct ext2_inode	inode;
+	struct ext2_inode_large	inode;
 	__u32			*dindir_buf, *gdt_buf;
 	unsigned long long	apb, inode_size;
 	/* FIXME-64 - can't deal with extents */
 	blk_t			dindir_blk, rsv_off, gdt_off, gdt_blk;
 	int			dindir_dirty = 0, inode_dirty = 0, sb_blk = 0;
+	int			new_inode = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -99,7 +100,14 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 		return retval;
 	gdt_buf = (__u32 *)((char *)dindir_buf + fs->blocksize);
 
-	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
+	/*
+	 * Use the large inode, so that updating an existing resize
+	 * inode keeps its extra fields; zero it first, since only
+	 * EXT2_INODE_SIZE bytes of it get read.
+	 */
+	memset(&inode, 0, sizeof(inode));
+	retval = ext2fs_read_inode_full(fs, EXT2_RESIZE_INO,
+					EXT2_INODE(&inode), sizeof(inode));
 	if (retval)
 		goto out_free;
 
@@ -132,18 +140,18 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 		inode.i_mode = LINUX_S_IFREG | 0600;
 		inode.i_links_count = 1;
 		inode.i_block[EXT2_DIND_BLOCK] = dindir_blk;
-		ext2fs_iblk_set(fs, &inode, 1);
+		ext2fs_iblk_set(fs, EXT2_INODE(&inode), 1);
 		memset(dindir_buf, 0, fs->blocksize);
 #ifdef RES_GDT_DEBUG
 		printf("allocated GDT dindir %u\n", dindir_blk);
 #endif
-		dindir_dirty = inode_dirty = 1;
+		dindir_dirty = inode_dirty = new_inode = 1;
 		inode_size = apb*apb + apb + EXT2_NDIR_BLOCKS;
 		inode_size *= fs->blocksize;
-		retval = ext2fs_inode_size_set(fs, &inode, inode_size);
+		retval = ext2fs_inode_size_set(fs, EXT2_INODE(&inode),
+					       inode_size);
 		if (retval)
 			goto out_free;
-		inode.i_ctime = ext2fsP_get_time(fs);
 	}
 
 	for (rsv_off = 0, gdt_off = fs->desc_blocks,
@@ -170,7 +178,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 			gdt_dirty = dindir_dirty = inode_dirty = 1;
 			memset(gdt_buf, 0, fs->blocksize);
 			dindir_buf[gdt_off] = gdt_blk;
-			ext2fs_iblk_add_blocks(fs, &inode, 1);
+			ext2fs_iblk_add_blocks(fs, EXT2_INODE(&inode), 1);
 #ifdef RES_GDT_DEBUG
 			printf("added primary GDT block %u at %u[%u]\n",
 			       gdt_blk, dindir_blk, gdt_off);
@@ -201,7 +209,8 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 				       expect, grp, gdt_blk, last);
 #endif
 				gdt_buf[last] = expect;
-				ext2fs_iblk_add_blocks(fs, &inode, 1);
+				ext2fs_iblk_add_blocks(fs, EXT2_INODE(&inode),
+						       1);
 				gdt_dirty = inode_dirty = 1;
 			} else if (gdt_buf[last] != expect) {
 #ifdef RES_GDT_DEBUG
@@ -235,11 +244,20 @@ out_inode:
 	       EXT2_I_SIZE(&inode));
 #endif
 	if (inode_dirty) {
-		time_t now = ext2fsP_get_time(fs);
+		if (new_inode) {
+			/* Let ext2fs_write_new_inode() set all timestamps */
+			inode.i_atime = inode.i_ctime = inode.i_mtime = 0;
+			retval2 = ext2fs_write_new_inode(fs, EXT2_RESIZE_INO,
+							 EXT2_INODE(&inode));
+		} else {
+			time_t now = ext2fsP_get_time(fs);
 
-		ext2fs_inode_xtime_set(&inode, i_atime, now);
-		ext2fs_inode_xtime_set(&inode, i_mtime, now);
-		retval2 = ext2fs_write_new_inode(fs, EXT2_RESIZE_INO, &inode);
+			ext2fs_inode_xtime_set(&inode, i_atime, now);
+			ext2fs_inode_xtime_set(&inode, i_mtime, now);
+			retval2 = ext2fs_write_inode_full(fs, EXT2_RESIZE_INO,
+							  EXT2_INODE(&inode),
+							  sizeof(inode));
+		}
 		if (!retval)
 			retval = retval2;
 	}
