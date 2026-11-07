@@ -82,6 +82,29 @@ static void test_invalid_and_empty_ops(void)
 }
 
 #ifndef _WIN32
+/*
+ * Read everything written to the pipe until the child exits and the
+ * pipe is closed.  The exit callbacks each write() one byte, so a
+ * single read() may return only some of them.
+ */
+static ssize_t read_pipe(int fd, char *buf, size_t size)
+{
+	size_t	n = 0;
+	ssize_t	r;
+
+	while (n < size) {
+		r = read(fd, buf + n, size - n);
+		if (r < 0 && errno == EINTR)
+			continue;
+		if (r < 0)
+			return -1;
+		if (r == 0)
+			break;
+		n += r;
+	}
+	return n;
+}
+
 static void test_fork_lifo_and_slot_reuse(void)
 {
 	int	pfd[2];
@@ -141,7 +164,7 @@ static void test_fork_lifo_and_slot_reuse(void)
 	}
 	close(pfd[1]);
 	memset(buf, 0, sizeof(buf));
-	n = read(pfd[0], buf, sizeof(buf) - 1);
+	n = read_pipe(pfd[0], buf, sizeof(buf) - 1);
 	close(pfd[0]);
 	CHECK(waitpid(pid, &status, 0) == pid, "waitpid child 1");
 	CHECK(WIFEXITED(status) && WEXITSTATUS(status) == 0,
@@ -182,7 +205,7 @@ static void test_fork_lifo_and_slot_reuse(void)
 	}
 	close(pfd[1]);
 	memset(buf, 0, sizeof(buf));
-	n = read(pfd[0], buf, sizeof(buf) - 1);
+	n = read_pipe(pfd[0], buf, sizeof(buf) - 1);
 	close(pfd[0]);
 	CHECK(waitpid(pid, &status, 0) == pid, "waitpid child 2");
 	CHECK(WIFEXITED(status) && WEXITSTATUS(status) == 0,
