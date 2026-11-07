@@ -54,6 +54,34 @@ static void test_djb2_hash(void)
 	      "djb2 hashes past embedded NUL bytes");
 }
 
+static void test_create_invalid_args(void)
+{
+	struct ext2fs_hashmap	*h;
+
+	/*
+	 * A map without buckets would divide by zero in the first add or
+	 * lookup, so ext2fs_hashmap_create() must refuse to create one.
+	 */
+	h = ext2fs_hashmap_create(ext2fs_djb2_hash, NULL, 0);
+	CHECK(h == NULL, "hashmap_create(size=0) fails");
+	if (h)
+		ext2fs_hashmap_free(h);
+
+	h = ext2fs_hashmap_create(NULL, NULL, 16);
+	CHECK(h == NULL, "hashmap_create(hash_fct=NULL) fails");
+	if (h)
+		ext2fs_hashmap_free(h);
+
+#if SIZE_MAX > UINT32_MAX
+	/* The number of buckets is stored in 32 bits */
+	h = ext2fs_hashmap_create(ext2fs_djb2_hash, NULL,
+				  (size_t) UINT32_MAX + 1);
+	CHECK(h == NULL, "hashmap_create(size=2^32) fails");
+	if (h)
+		ext2fs_hashmap_free(h);
+#endif
+}
+
 static void test_lookup_and_binary_keys(void)
 {
 	struct ext2fs_hashmap		*h;
@@ -158,6 +186,7 @@ static void test_collisions_iter_and_free_cb(void)
 int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 {
 	test_djb2_hash();
+	test_create_invalid_args();
 	test_lookup_and_binary_keys();
 	test_collisions_iter_and_free_cb();
 
