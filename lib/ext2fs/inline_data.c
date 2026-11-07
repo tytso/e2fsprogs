@@ -1040,6 +1040,25 @@ static int walk_inline_dir_cb(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	return 0;
 }
 
+/*
+ * Store a directory entry in its on-disk (little-endian) format at @p.
+ * A struct ext2_dir_entry can't be used for this, since it would extend
+ * past the end of the small buffers used for inline directories.
+ */
+static void put_test_dirent(char *p, ext2_ino_t ino, unsigned int rec_len,
+			    const char *name, unsigned int name_len,
+			    unsigned int file_type)
+{
+	__u32	ino_le = ext2fs_cpu_to_le32(ino);
+	__u16	rec_len_le = ext2fs_cpu_to_le16(rec_len);
+
+	memcpy(p, &ino_le, sizeof(ino_le));
+	memcpy(p + 4, &rec_len_le, sizeof(rec_len_le));
+	p[6] = name_len;
+	p[7] = file_type;
+	memcpy(p + 8, name, name_len);
+}
+
 static errcode_t dir_test(ext2_filsys fs)
 {
 	const char		*dot_name = ".";
@@ -1097,7 +1116,6 @@ static errcode_t dir_test(ext2_filsys fs)
 	 */
 	{
 		char ibuf[124];
-		struct ext2_dir_entry *de;
 		size_t cur_sz = 0;
 
 		memset(ibuf, 0, sizeof(ibuf));
@@ -1106,19 +1124,8 @@ static errcode_t dir_test(ext2_filsys fs)
 		if (retval || cur_sz != EXT4_MIN_INLINE_DATA_SIZE)
 			return 1;
 
-		de = (struct ext2_dir_entry *) (ibuf + 60);
-		de->inode = 11;
-		ext2fs_dirent_set_name_len(de, 2);
-		ext2fs_dirent_set_file_type(de, EXT2_FT_DIR);
-		de->rec_len = 12;
-		memcpy(de->name, "e0", 2);
-
-		de = (struct ext2_dir_entry *) (ibuf + 72);
-		de->inode = 11;
-		ext2fs_dirent_set_name_len(de, 2);
-		ext2fs_dirent_set_file_type(de, EXT2_FT_DIR);
-		de->rec_len = 52;
-		memcpy(de->name, "e1", 2);
+		put_test_dirent(ibuf + 60, 11, 12, "e0", 2, EXT2_FT_DIR);
+		put_test_dirent(ibuf + 72, 11, 52, "e1", 2, EXT2_FT_DIR);
 
 		retval = ext2fs_read_inode(fs, parent, &inode);
 		if (retval)
@@ -1215,12 +1222,18 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	initialize_ext2_error_table();
 
 	fs = setup_test_fs(1024, 128, 256, 1);
-	if (file_test(fs) || inode128_test()) {
+	if (file_test(fs)) {
 		fprintf(stderr, "tst_inline_data(FILE): FAILED\n");
 		teardown_test_fs(&fs);
 		return 1;
 	}
 	teardown_test_fs(&fs);
+
+	/* inode128_test() sets up its own file system */
+	if (inode128_test()) {
+		fprintf(stderr, "tst_inline_data(FILE): FAILED\n");
+		return 1;
+	}
 	printf("tst_inline_data(FILE): OK\n");
 
 	fs = setup_test_fs(1024, 128, 256, 1);
