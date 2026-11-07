@@ -22,6 +22,12 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -475,6 +481,77 @@ static void test_undo_multi_keyblock_and_offset(void)
 	printf("  test_undo_multi_keyblock_and_offset: ok\n");
 }
 
+/*
+ * Suite 4: reopening an undo file must fail cleanly, without leaking
+ *          the in-memory undo state, if a key block is corrupt or if
+ *          the undo file can't be written.
+ */
+static void test_undo_reopen_errors(void)
+{
+	char			img_path[64], undo_path[64];
+	unsigned char		blk[1024];
+	struct tst_undo_header	hdr;
+	int			img_fd, undo_fd;
+	io_channel		io = NULL;
+	size_t			img_size = 256 * 1024;
+#if defined(RLIMIT_FSIZE) && defined(SIGXFSZ)
+	struct rlimit		old_rlim, rlim;
+	errcode_t		rc;
+#endif
+
+	img_fd = make_temp_file(img_path, img_size);
+	undo_fd = make_temp_file(undo_path, 0);
+	init_ext2_image(img_path, 256, 0);
+
+	CHECK_RC(set_undo_io_backing_manager(unix_io_manager), 0,
+		 "set backing");
+	CHECK_RC(set_undo_io_backup_file(undo_path), 0, "set backup");
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io), 0,
+		 "open undo RW");
+	CHECK_RC(io_channel_set_blksize(io, 1024), 0, "set_blksize 1024");
+	memset(blk, 0x5a, sizeof(blk));
+	CHECK_RC(io_channel_write_blk64(io, 20, 1, blk), 0, "write blk 20");
+	CHECK_RC(io_channel_close(io), 0, "close undo file");
+
+	/* Corrupt the magic of the first key block */
+	CHECK(pread(undo_fd, &hdr, sizeof(hdr), 0) == (ssize_t) sizeof(hdr),
+	      "read undo header");
+	CHECK(pwrite(undo_fd, "BADMAGIC", 8,
+		     (off_t) (ext2fs_le64_to_cpu(hdr.key_offset) *
+			      ext2fs_le32_to_cpu(hdr.block_size))) == 8,
+	      "corrupt key block magic");
+	io = NULL;
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io),
+		 EXT2_ET_UNDO_FILE_CORRUPT, "corrupt key block rejected");
+	CHECK(io == NULL, "no channel returned for a corrupt key block");
+
+#if defined(RLIMIT_FSIZE) && defined(SIGXFSZ)
+	/*
+	 * Cut the undo file down to its header and superblock blocks, and
+	 * limit the file size so that writing back the key block fails
+	 * when the undo file is reopened.
+	 */
+	CHECK(ftruncate(undo_fd, 2 * 1024) == 0, "truncate undo file");
+	signal(SIGXFSZ, SIG_IGN);
+	CHECK(getrlimit(RLIMIT_FSIZE, &old_rlim) == 0, "getrlimit");
+	rlim = old_rlim;
+	rlim.rlim_cur = 2 * 1024;
+	CHECK(setrlimit(RLIMIT_FSIZE, &rlim) == 0, "lower RLIMIT_FSIZE");
+	rc = undo_io_manager->open(img_path, IO_FLAG_RW, &io);
+	CHECK(setrlimit(RLIMIT_FSIZE, &old_rlim) == 0, "restore RLIMIT_FSIZE");
+	signal(SIGXFSZ, SIG_DFL);
+	CHECK_RC(rc, EXT2_ET_UNDO_FILE_CORRUPT,
+		 "unwritable undo file rejected");
+	CHECK(io == NULL, "no channel returned for an unwritable undo file");
+#endif
+
+	close(undo_fd);
+	close(img_fd);
+	unlink(undo_path);
+	unlink(img_path);
+	printf("  test_undo_reopen_errors: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -482,6 +559,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 
 	test_undo_coalesce_reopen_and_replay();
 	test_undo_multi_keyblock_and_offset();
+	test_undo_reopen_errors();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_undo_io: %d checks run, %d failed\n",
