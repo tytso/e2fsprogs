@@ -148,7 +148,7 @@ static void run_super_roundtrip(unsigned int blocksize, blk64_t blocks,
 	/* Mutate superblock and group descriptors with distinct values */
 	memset(src_fs->super->s_volume_name, 0,
 	       sizeof(src_fs->super->s_volume_name));
-	strcpy(src_fs->super->s_volume_name, "imager_unit_tst");
+	strcpy((char *) src_fs->super->s_volume_name, "imager_unit_tst");
 	src_fs->super->s_mnt_count = 37;
 	src_fs->super->s_max_mnt_count = 99;
 	ext2fs_bg_free_inodes_count_set(src_fs, 0, 19);
@@ -164,14 +164,15 @@ static void run_super_roundtrip(unsigned int blocksize, blk64_t blocks,
 
 	/* Rewind and read into dst_fs */
 	CHECK(lseek(ifd, 0, SEEK_SET) == 0, "rewind super image");
-	strcpy(dst_fs->super->s_volume_name, "corrupted_name");
+	strcpy((char *) dst_fs->super->s_volume_name, "corrupted_name");
 	dst_fs->super->s_mnt_count = 1;
 	ext2fs_bg_free_inodes_count_set(dst_fs, 0, 0);
 
 	CHECK_RC(ext2fs_image_super_read(dst_fs, ifd, 0), 0,
 		 "ext2fs_image_super_read");
 
-	CHECK(strcmp(dst_fs->super->s_volume_name, "imager_unit_tst") == 0,
+	CHECK(strcmp((char *) dst_fs->super->s_volume_name,
+		     "imager_unit_tst") == 0,
 	      "volume name restored");
 	CHECK(dst_fs->super->s_mnt_count == 37 &&
 	      dst_fs->super->s_max_mnt_count == 99,
