@@ -830,6 +830,32 @@ unlock:
 	mutex_unlock(data, CACHE_MTX);
 	return retval;
 }
+
+/*
+ * Drop the blocks in the range [block, block + count) from the cache,
+ * throwing away any unwritten changes.  This is called before the
+ * range is discarded or zeroed out on disk, so that later reads don't
+ * return stale data and stale dirty blocks don't get written back
+ * over the range.
+ */
+static void invalidate_cached_blocks(struct unix_private_data *data,
+				     unsigned long long block,
+				     unsigned long long count)
+{
+	struct unix_cache	*cache;
+	unsigned int		i;
+
+	mutex_lock(data, CACHE_MTX);
+	for (i = 0, cache = data->cache; i < data->cache_size; i++, cache++) {
+		if (cache->in_use && cache->block >= block &&
+		    cache->block - block < count) {
+			cache->in_use = 0;
+			cache->dirty = 0;
+			cache->write_err = 0;
+		}
+	}
+	mutex_unlock(data, CACHE_MTX);
+}
 #endif /* NO_IO_CACHE */
 
 #ifdef __linux__
@@ -1546,6 +1572,10 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 	if (channel->flags & CHANNEL_FLAGS_NODISCARD)
 		goto unimplemented;
 
+#ifndef NO_IO_CACHE
+	invalidate_cached_blocks(data, block, count);
+#endif
+
 	if (channel->flags & CHANNEL_FLAGS_BLOCK_DEVICE) {
 #ifdef BLKDISCARD
 		__u64 range[2];
@@ -1647,6 +1677,10 @@ static errcode_t unix_zeroout(io_channel channel, unsigned long long block,
 
 	if (channel->flags & CHANNEL_FLAGS_NOZEROOUT)
 		goto unimplemented;
+
+#ifndef NO_IO_CACHE
+	invalidate_cached_blocks(data, block, count);
+#endif
 
 	ret = __unix_zeroout(data->dev,
 			(off_t)(block) * channel->block_size + data->offset,
