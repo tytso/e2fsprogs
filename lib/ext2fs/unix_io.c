@@ -1111,8 +1111,13 @@ static errcode_t unixfd_open(const char *str_fd, int flags,
 	if (fd_flags == -1)
 		return EBADF;
 
-	/* O_EXCL is cleared by Linux at open and not returned by F_GETFL */
-	flags &= IO_FLAG_EXCLUSIVE;
+	/*
+	 * The access mode and O_DIRECT are taken from the fd; the other
+	 * flags (e.g. IO_FLAG_THREADS) are passed through.  O_EXCL is
+	 * cleared by Linux at open and not returned by F_GETFL, so the
+	 * caller's IO_FLAG_EXCLUSIVE is trusted.
+	 */
+	flags &= ~(IO_FLAG_RW | IO_FLAG_DIRECT_IO);
 	if (fd_flags & O_RDWR)
 		flags |= IO_FLAG_RW;
 #if defined(O_DIRECT)
