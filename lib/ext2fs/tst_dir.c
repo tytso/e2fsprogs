@@ -1388,6 +1388,9 @@ static void test_symlinks_namei_and_pathname(void)
 	while (strlen(big_target) < 220)
 		strcat(big_target, "./");
 	strcat(big_target, "tgt");
+#if (SIZEOF_TIME_T > 4)
+	fs->now = 3000000000LL;		/* 2065-01-24, 0xb2d05e00 */
+#endif
 	CHECK_RC(ext2fs_symlink(fs, EXT2_ROOT_INO, 0, "fallback_sym",
 				big_target), 0,
 		 "create >ibody symlink falling back to block");
@@ -1402,6 +1405,26 @@ static void test_symlinks_namei_and_pathname(void)
 				    sym_ino, &resolved), 0,
 		 "follow_link fallback symlink");
 	CHECK(resolved == file_ino, "fallback symlink resolved to /tgt");
+#if (SIZEOF_TIME_T > 4)
+	/* The fallback must not lose the epoch bits of the timestamps */
+	{
+		struct ext2_inode_large large;
+
+		memset(&large, 0, sizeof(large));
+		CHECK_RC(ext2fs_read_inode_full(fs, sym_ino, EXT2_INODE(&large),
+						sizeof(large)), 0,
+			 "read_inode_full fallback_sym");
+		CHECK(large.i_atime == 0xb2d05e00U &&
+		      large.i_atime_extra == 1 &&
+		      large.i_ctime == 0xb2d05e00U &&
+		      large.i_ctime_extra == 1 &&
+		      large.i_mtime == 0xb2d05e00U &&
+		      large.i_mtime_extra == 1 &&
+		      large.i_crtime == 0xb2d05e00U &&
+		      large.i_crtime_extra == 1,
+		      "fallback symlink has post-2038 timestamps");
+	}
+#endif
 
 	teardown_fs(&fs);
 	printf("  test_symlinks_namei_and_pathname: ok\n");
