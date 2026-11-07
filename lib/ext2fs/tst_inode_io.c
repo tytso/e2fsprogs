@@ -248,7 +248,7 @@ static void test_nested_filesystem_in_inode(void)
 	CHECK_RC(ext2fs_initialize(intern_name, EXT2_FLAG_RW, &inner_param,
 				   inode_io_manager, &inner_fs), 0,
 		 "ext2fs_initialize nested fs");
-	strcpy(inner_fs->super->s_volume_name, "nested_ext2");
+	strcpy((char *) inner_fs->super->s_volume_name, "nested_ext2");
 	CHECK_RC(ext2fs_allocate_tables(inner_fs), 0,
 		 "allocate_tables nested fs");
 	CHECK_RC(ext2fs_mkdir(inner_fs, EXT2_ROOT_INO, EXT2_ROOT_INO, 0), 0,
@@ -265,7 +265,8 @@ static void test_nested_filesystem_in_inode(void)
 			     &inner_fs), 0,
 		 "ext2fs_open nested fs RO");
 	CHECK_RC(ext2fs_read_bitmaps(inner_fs), 0, "read nested bitmaps");
-	CHECK(strcmp(inner_fs->super->s_volume_name, "nested_ext2") == 0,
+	CHECK(strcmp((char *) inner_fs->super->s_volume_name,
+		     "nested_ext2") == 0,
 	      "nested superblock volume name persisted");
 	CHECK_RC(ext2fs_namei(inner_fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
 			      "/subdir", &found_ino), 0,
