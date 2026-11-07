@@ -104,6 +104,7 @@ lib/ext2fs/ext2fs.pc
 lib/ext2fs/extent_cmds.c
 lib/ext2fs/gen_crc32ctable
 lib/ext2fs/subdirs
+lib/ext2fs/tst_alloc
 lib/ext2fs/tst_badblocks
 lib/ext2fs/tst_bitmaps
 lib/ext2fs/tst_bitmaps_cmd.c
