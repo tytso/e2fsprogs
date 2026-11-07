@@ -131,6 +131,8 @@ errcode_t ext2fs_mkdir2(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	if (inline_data) {
 		/* init "system.data" for new dir */
 		retval = ext2fs_inline_data_init(fs, ino);
+		if (retval)
+			goto cleanup;
 	} else {
 		retval = ext2fs_write_dir_block4(fs, blk, block, 0, ino);
 		if (retval)

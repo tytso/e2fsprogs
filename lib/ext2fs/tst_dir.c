@@ -447,6 +447,45 @@ static void test_mkdir_and_expanddir(void)
 }
 
 /*
+ * ext2fs_mkdir2() must fail cleanly if the system.data xattr of a new
+ * inline data directory can't be created, as is always the case on a
+ * file system with 128 byte inodes.
+ */
+static void test_mkdir_inline_data_init_failure(void)
+{
+	ext2_filsys		fs;
+	ext2_ino_t		ino = 0, scratch_ino;
+	struct ext2_inode	root_inode;
+	__u16			root_links;
+	__u32			free_inodes;
+
+	fs = setup_fs(1024, 512, 128, EXT2_GOOD_OLD_INODE_SIZE,
+		      EXT2_FEATURE_COMPAT_EXT_ATTR,
+		      EXT4_FEATURE_INCOMPAT_INLINE_DATA |
+		      EXT2_FEATURE_INCOMPAT_FILETYPE, 0);
+	CHECK_RC(ext2fs_read_inode(fs, EXT2_ROOT_INO, &root_inode), 0,
+		 "read root inode");
+	root_links = root_inode.i_links_count;
+	free_inodes = fs->super->s_free_inodes_count;
+
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "dir", &ino),
+		 EXT2_ET_EA_NO_SPACE, "mkdir2 without room for system.data");
+	CHECK_RC(ext2fs_lookup(fs, EXT2_ROOT_INO, "dir", 3, NULL,
+			       &scratch_ino), EXT2_ET_FILE_NOT_FOUND,
+		 "failed mkdir2 did not link the new directory");
+	CHECK_RC(ext2fs_read_inode(fs, EXT2_ROOT_INO, &root_inode), 0,
+		 "reread root inode");
+	CHECK(root_inode.i_links_count == root_links,
+	      "failed mkdir2 left parent links_count alone");
+	CHECK(fs->super->s_free_inodes_count == free_inodes,
+	      "failed mkdir2 left free inodes count alone");
+	CHECK(ino && !ext2fs_test_inode_bitmap2(fs->inode_map, ino),
+	      "failed mkdir2 left the new inode unallocated");
+	teardown_fs(&fs);
+	printf("  test_mkdir_inline_data_init_failure: ok\n");
+}
+
+/*
  * Suite 3: ext2fs_link, ext2fs_unlink, ext2fs_lookup, and
  *          ext2fs_dir_iterate / ext2fs_dir_iterate2.
  */
@@ -1494,6 +1533,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 
 	test_dirblock_and_reclen();
 	test_mkdir_and_expanddir();
+	test_mkdir_inline_data_init_failure();
 	test_link_unlink_and_iterate();
 	test_htree_dx_link();
 	test_link_merges_unused_entries();
