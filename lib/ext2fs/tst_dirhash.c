@@ -356,6 +356,51 @@ static void test_dirhash2_casefold(void)
 	printf("test_dirhash2_casefold: completed\n");
 }
 
+/*
+ * Suite 5: ext2fs_dirhash2() opaque fallback for invalid UTF-8 that is
+ * only detected after the first byte of the name.  Like the kernel, the
+ * name must then be hashed as an opaque byte sequence.
+ */
+static void test_dirhash2_invalid_utf8(void)
+{
+	static const struct {
+		const char	*label;
+		const char	*name;
+		int		len;
+	} tests[] = {
+		{ "bad_byte_after_ascii",	"foo\xff",		4 },
+		{ "overlong_nul",		"\xc0\x80",		2 },
+		{ "truncated_3byte",		"ok\xe2\x82",		4 },
+		{ "utf16_surrogate",		"\xed\xa0\x80",		3 },
+		{ "above_max_codepoint",	"\xf4\x90\x80\x80",	4 },
+	};
+	const struct ext2fs_nls_table	*tbl;
+	ext2_dirhash_t			h1, m1, h2, m2;
+	errcode_t			retval;
+	char				label[64];
+	unsigned int			i;
+
+	tbl = ext2fs_load_nls_table(EXT4_ENC_UTF8_12_1);
+
+	for (i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+		snprintf(label, sizeof(label), "dirhash2_opaque_%s",
+			 tests[i].label);
+		h1 = m1 = h2 = m2 = 0;
+		retval = ext2fs_dirhash2(EXT2_HASH_HALF_MD4_UNSIGNED,
+					 tests[i].name, tests[i].len, tbl,
+					 EXT4_CASEFOLD_FL, NULL, &h1, &m1);
+		check_err(label, retval, 0);
+		retval = ext2fs_dirhash(EXT2_HASH_HALF_MD4_UNSIGNED,
+					tests[i].name, tests[i].len, NULL,
+					&h2, &m2);
+		check_err(label, retval, 0);
+		check_u64(label, h1, h2);
+		check_u64(label, m1, m2);
+	}
+
+	printf("test_dirhash2_invalid_utf8: completed\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -364,6 +409,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_nls_utf8_validation();
 	test_nls_utf8_casefold_cmp();
 	test_dirhash2_casefold();
+	test_dirhash2_invalid_utf8();
 
 	if (test_fail == 0)
 		printf("libext2fs dirhash and nls_utf8 unit tests passed!\n");
