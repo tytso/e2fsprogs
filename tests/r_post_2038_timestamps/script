@@ -1,0 +1,73 @@
+if ! test -x $RESIZE2FS_EXE -o ! -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs/resize2fs)"
+	return 0
+fi
+if test $SIZEOF_TIME_T -le 4; then
+	echo "$test_name: $test_description: skipped (32-bit time_t)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+CMDS=$TMPFILE.cmds
+
+# Fill the 16 inodes of the first block group, so that d/moved ends up
+# in the second one, and then free an inode in the first block group.
+cat > $CMDS << ENDL
+write /dev/null f1
+write /dev/null f2
+write /dev/null f3
+write /dev/null f4
+mkdir d
+cd d
+write /dev/null moved
+cd /
+rm f1
+ENDL
+
+# Shrinking the file system to one block group moves d/moved, which
+# sets its ctime and the mtime and ctime of d.  Do this for a file
+# system created in 2023 and resized in 2065, which needs the epoch
+# bits of the timestamps, and the other way around.
+> $OUT.new
+for times in 1700000000:3000000000 3000000000:1700000000; do
+	mkfs_time=${times%:*}
+	resize_time=${times#*:}
+	echo "mke2fs at $mkfs_time, resize2fs at $resize_time" >> $OUT.new
+	> $TMPFILE
+	E2FSPROGS_FAKE_TIME=$mkfs_time $MKE2FS -F -o Linux -q -b 1024 \
+		-g 1024 -N 32 -I 256 $TMPFILE 2048 >> $OUT.new 2>&1
+	E2FSPROGS_FAKE_TIME=$mkfs_time $DEBUGFS -w -f $CMDS $TMPFILE \
+		> /dev/null 2>&1
+	E2FSPROGS_FAKE_TIME=$resize_time $RESIZE2FS $TMPFILE 1024 \
+		>> $OUT.new 2>&1
+	status=$?
+	echo Exit status is $status >> $OUT.new
+
+	echo "stat /d" >> $OUT.new
+	$DEBUGFS -R "stat /d" $TMPFILE 2>&1 | $EGREP "^ (c|m)time:" >> $OUT.new
+	echo "stat /d/moved" >> $OUT.new
+	$DEBUGFS -R "stat /d/moved" $TMPFILE 2>&1 | $EGREP "^Inode:|^ ctime:" |
+		sed -e 's/ *Type:.*//' >> $OUT.new
+
+	E2FSCK_TIME=$resize_time $FSCK -fn -N test_filesys $TMPFILE \
+		>> $OUT.new 2>&1
+	status=$?
+	echo Exit status is $status >> $OUT.new
+done
+
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $CMDS $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset OUT EXP CMDS times mkfs_time resize_time status
