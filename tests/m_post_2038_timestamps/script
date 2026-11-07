@@ -1,0 +1,64 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+if test $SIZEOF_TIME_T -le 4; then
+	echo "$test_name: $test_description: skipped (32-bit time_t)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+CONF=$TMPFILE.conf
+
+cat > $CONF << ENDL
+[fs_types]
+	hugefile = {
+		features = extent
+		make_hugefiles = true
+		hugefiles_dir = /
+		hugefiles_name = huge
+		hugefiles_digits = 0
+		hugefiles_size = 64K
+		hugefiles_slack = 0
+		num_hugefiles = 1
+		zero_hugefiles = false
+	}
+ENDL
+
+# Create the file system at a time in 2065, which needs the epoch bits
+# of the timestamps, setting the owner of the root directory and
+# creating a huge file, which both rewrite an inode after creating it.
+> $TMPFILE
+E2FSPROGS_FAKE_TIME=3000000000 MKE2FS_CONFIG=$CONF $MKE2FS -F -o Linux -q \
+	-T hugefile -b 1024 -I 256 -E root_owner=1234:1234 $TMPFILE 1024 \
+	> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+rm -f $CONF
+
+for i in / /lost+found /huge; do
+	echo "stat $i" >> $OUT.new
+	$DEBUGFS -R "stat $i" $TMPFILE 2>&1 |
+		$EGREP "^ ?(a|c|m|cr)time:" >> $OUT.new
+done
+
+E2FSCK_TIME=3000000000 $FSCK -fn -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -f $TMPFILE $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset OUT EXP CONF status i
