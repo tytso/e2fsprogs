@@ -70,6 +70,14 @@ static int make_temp_file(char *path_out, off_t size)
 	return fd;
 }
 
+static errcode_t fail_write_blk64(io_channel channel EXT2FS_ATTR((unused)),
+				  unsigned long long blk EXT2FS_ATTR((unused)),
+				  int count EXT2FS_ATTR((unused)),
+				  const void *data EXT2FS_ATTR((unused)))
+{
+	return EIO;
+}
+
 static void test_initialize_and_backups(void)
 {
 	struct ext2_super_block	param;
@@ -245,6 +253,7 @@ static void test_open_flush_close(void)
 {
 	struct ext2_super_block	param;
 	struct ext2_image_hdr	hdr;
+	struct struct_io_manager fail_mgr;
 	ext2_filsys		fs = NULL, fs2 = NULL, img_fs = NULL;
 	io_channel		orig_io = NULL, clone_io = NULL;
 	char			path[64], path2[64], img_path[64], opt_name[96];
@@ -324,6 +333,23 @@ static void test_open_flush_close(void)
 	CHECK(fs != NULL && fs->group_desc == NULL,
 	      "SUPER_ONLY leaves group_desc NULL");
 	CHECK_RC(ext2fs_close_free(&fs), 0, "close SUPER_ONLY");
+
+	/* A failed flush must restore s_state and s_feature_incompat */
+	CHECK_RC(ext2fs_open2(path, NULL, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+			      0, 0, unix_io_manager, &fs),
+		 0, "open RW for failing flush");
+	ext2fs_set_feature_journal_needs_recovery(fs->super);
+	fail_mgr = *fs->io->manager;
+	fail_mgr.write_blk64 = fail_write_blk64;
+	fs->io->manager = &fail_mgr;
+	CHECK_RC(ext2fs_flush(fs), EIO, "flush fails on write error");
+	fs->io->manager = unix_io_manager;
+	CHECK(ext2fs_has_feature_journal_needs_recovery(fs->super),
+	      "failed flush keeps needs_recovery");
+	CHECK(fs->super->s_state & EXT2_VALID_FS,
+	      "failed flush keeps EXT2_VALID_FS");
+	ext2fs_free(fs);
+	fs = NULL;
 
 	/* Corrupt primary superblock magic, verify backup superblock open */
 	CHECK(pread(fd, &orig_magic, 2, 1024 + 56) == 2, "pread s_magic");
