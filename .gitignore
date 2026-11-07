@@ -135,6 +135,7 @@ lib/ext2fs/tst_inode_io
 lib/ext2fs/tst_inode_size
 lib/ext2fs/tst_iscan
 lib/ext2fs/tst_libext2fs
+lib/ext2fs/tst_mkjournal
 lib/ext2fs/tst_orphan
 lib/ext2fs/tst_punch
 lib/ext2fs/tst_qcow2
