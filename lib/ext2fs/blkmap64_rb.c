@@ -285,6 +285,11 @@ static errcode_t rb_copy_bmap(ext2fs_generic_bitmap_64 src,
 		src_node = ext2fs_rb_next(src_node);
 	}
 
+	if (retval) {
+		/* ext2fs_copy_generic_bmap() won't free the partial copy */
+		rb_free_bmap(dest);
+		dest->private = NULL;
+	}
 	return retval;
 }
 
