@@ -605,20 +605,26 @@ static errcode_t ext2fs_file_zero_past_offset(ext2_file_t file,
 	ext2_filsys fs = file->fs;
 	char *b = NULL;
 	ext2_off64_t off = offset % fs->blocksize;
+	blk64_t lblock = offset / fs->blocksize;
 	blk64_t blk;
 	int ret_flags;
 	errcode_t retval;
 
-	if (off == 0)
+	if (off == 0 || (file->inode.i_flags & EXT4_INLINE_DATA_FL))
 		return 0;
 
-	retval = sync_buffer_position(file);
+	retval = ext2fs_file_flush(file);
 	if (retval)
 		return retval;
 
+	if ((file->flags & EXT2_FILE_BUF_VALID) && file->blockno == lblock) {
+		file->flags &= ~EXT2_FILE_BUF_VALID;
+		file->physblock = 0;
+	}
+
 	/* Is there an initialized block at the end? */
-	retval = ext2fs_bmap2(fs, file->ino, NULL, NULL, 0,
-			      offset / fs->blocksize, &ret_flags, &blk);
+	retval = ext2fs_bmap2(fs, file->ino, &file->inode, NULL, 0,
+			      lblock, &ret_flags, &blk);
 	if (retval)
 		return retval;
 	if ((blk == 0) || (ret_flags & BMAP_RET_UNINIT))
@@ -682,6 +688,12 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 
 	if (truncate_block >= old_truncate)
 		return 0;
+
+	if ((file->flags & EXT2_FILE_BUF_VALID) &&
+	    file->blockno >= truncate_block) {
+		file->flags &= ~(EXT2_FILE_BUF_VALID | EXT2_FILE_BUF_DIRTY);
+		file->physblock = 0;
+	}
 
 	return ext2fs_punch(file->fs, file->ino, &file->inode, 0,
 			    truncate_block, ~0ULL);

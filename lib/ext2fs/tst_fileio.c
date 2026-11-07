@@ -502,6 +502,97 @@ static void test_uninit_extent_and_truncate(void)
 	retval = ext2fs_file_close(file);
 	check_err("close_ind_13", retval, 0);
 
+	/*
+	 * Dirty buffer coherency across ext2fs_file_set_size2():
+	 * Write 1024 bytes of 0x44, flush, overwrite [50..149] with 0x99
+	 * (dirty in file->buf only), then shrink to 300 bytes and close.
+	 * [50..149] must retain 0x99 and [300..1023] must stay zeroed on disk.
+	 */
+	init_reg_inode(fs, 14, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_file_open(fs, 14, EXT2_FILE_WRITE, &file);
+	check_err("open_dirty_trunc_14", retval, 0);
+	memset(buf, 0x44, 1024);
+	retval = ext2fs_file_write(file, buf, 1024, &written);
+	check_err("write_1024_0x44", retval, 0);
+	retval = ext2fs_file_flush(file);
+	check_err("flush_1024_0x44", retval, 0);
+	retval = ext2fs_file_llseek(file, 50, EXT2_SEEK_SET, NULL);
+	check_err("seek_50_14", retval, 0);
+	memset(buf, 0x99, 100);
+	retval = ext2fs_file_write(file, buf, 100, &written);
+	check_err("overwrite_50_149", retval, 0);
+	retval = ext2fs_file_set_size2(file, 300);
+	check_err("set_size2_dirty_300", retval, 0);
+	retval = ext2fs_file_close(file);
+	check_err("close_dirty_300", retval, 0);
+
+	retval = ext2fs_read_inode(fs, 14, &inode);
+	check_err("reread_14", retval, 0);
+	retval = ext2fs_bmap2(fs, 14, &inode, NULL, 0, 0, NULL, &pblk);
+	check_err("bmap_14_blk0", retval, 0);
+	check_u64("dirty_trunc_prefix_0x44",
+		  mem_disk[pblk * fs->blocksize + 49], 0x44);
+	check_u64("dirty_trunc_patch_0x99",
+		  mem_disk[pblk * fs->blocksize + 50], 0x99);
+	check_u64("dirty_trunc_after_patch_0x44",
+		  mem_disk[pblk * fs->blocksize + 299], 0x44);
+	check_u64("dirty_trunc_tail_zeroed",
+		  ext2fs_mem_is_zero((char *) mem_disk +
+				     pblk * fs->blocksize + 300,
+				     fs->blocksize - 300), 1);
+
+	/*
+	 * Block-aligned shrink with dirty buffer in a punched block (off == 0):
+	 * close() must not write dirty file->buf onto freed physical block 2.
+	 */
+	init_reg_inode(fs, 15, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_file_open(fs, 15, EXT2_FILE_WRITE, &file);
+	check_err("open_punch_dirty_15", retval, 0);
+	memset(buf, 0x66, 2500);
+	retval = ext2fs_file_write(file, buf, 2500, &written);
+	check_err("write_2500_15", retval, 0);
+	retval = ext2fs_bmap2(fs, 15, ext2fs_file_get_inode(file), NULL, 0,
+			      2, NULL, &pblk1);
+	check_err("bmap_15_blk2_before", retval, 0);
+	retval = ext2fs_file_llseek(file, 2100, EXT2_SEEK_SET, NULL);
+	check_err("seek_2100_15", retval, 0);
+	memset(buf, 0xEE, 50);
+	retval = ext2fs_file_write(file, buf, 50, &written);
+	check_err("dirty_blk2_15", retval, 0);
+	retval = ext2fs_file_set_size2(file, 1024);
+	check_err("set_size2_1024_15", retval, 0);
+	memset(mem_disk + pblk1 * fs->blocksize, 0xAA, fs->blocksize);
+	retval = ext2fs_file_close(file);
+	check_err("close_1024_15", retval, 0);
+	check_u64("freed_blk2_not_clobbered_on_close",
+		  mem_disk[pblk1 * fs->blocksize + 2100 - 2048], 0xAA);
+	retval = ext2fs_read_inode(fs, 15, &inode);
+	check_err("reread_15", retval, 0);
+	retval = ext2fs_bmap2(fs, 15, &inode, NULL, 0, 2, NULL, &pblk);
+	check_err("bmap_15_blk2", retval, 0);
+	check_u64("dirty_punched_blk2_unmapped", pblk, 0);
+
+	/*
+	 * ext2fs_file_open2() with ino == 0 (caller-supplied in-memory inode):
+	 * ext2fs_file_set_size2() must map via &file->inode rather than NULL.
+	 */
+	retval = ext2fs_read_inode(fs, 15, &inode);
+	check_err("read_15_for_ino0", retval, 0);
+	retval = ext2fs_file_open2(fs, 0, &inode, EXT2_FILE_WRITE, &file);
+	check_err("open2_ino0", retval, 0);
+	retval = ext2fs_file_set_size2(file, 200);
+	check_err("set_size2_ino0_200", retval, 0);
+	retval = ext2fs_file_close(file);
+	check_err("close_ino0", retval, 0);
+	retval = ext2fs_bmap2(fs, 0, &inode, NULL, 0, 0, NULL, &pblk);
+	check_err("bmap_ino0_blk0", retval, 0);
+	check_u64("ino0_head_preserved",
+		  mem_disk[pblk * fs->blocksize + 199], 0x66);
+	check_u64("ino0_tail_zeroed",
+		  ext2fs_mem_is_zero((char *) mem_disk +
+				     pblk * fs->blocksize + 200,
+				     fs->blocksize - 200), 1);
+
 	teardown_fs(&fs);
 	printf("test_uninit_extent_and_truncate: completed\n");
 }
