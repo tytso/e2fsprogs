@@ -787,6 +787,200 @@ struct test_program extended[] = {
 	{ EXIT, 0, 0, 0 }
 };
 
+static struct test_program nonseq[] = {
+	{ STORE, 200, 3, 3 },
+	{ STORE, 50,  4, 4 },
+	{ STORE, 150, 2, 2 },
+	{ STORE, 25,  5, 5 },
+	{ STORE, 175, 6, 6 },
+	{ STORE, 100, 2, 2 },
+	{ STORE, 75,  3, 3 },
+	{ STORE, 125, 4, 4 },
+	{ STORE, 10,  7, 7 },
+	{ STORE, 300, 8, 8 },
+	{ INCREMENT, 100, 0, 3 },
+	{ INCREMENT, 25,  0, 6 },
+	{ DECREMENT, 150, 0, 1 },
+	{ DECREMENT, 150, 0, 0 },
+	{ FETCH, 200, 0, 3 },
+	{ FETCH, 10,  0, 7 },
+	{ FETCH, 125, 0, 4 },
+	{ FETCH, 75,  0, 3 },
+	{ FETCH, 300, 0, 8 },
+	{ FETCH, 150, 0, 0 },
+	{ EXIT, 0, 0, 0 }
+};
+
+#define CHECK_TST(cond, msg) do { \
+	if (!(cond)) { \
+		fprintf(stderr, "FAIL [%s:%d]: %s\n", __FILE__, __LINE__, msg); \
+		problems++; \
+	} \
+} while (0)
+
+static int run_extra_tests(void)
+{
+	ext2_icount_t		ic = NULL, hint = NULL;
+	struct ext2_icount	bad_ic;
+	ext2_ino_t		oob_ino, tmp_ino, saved_cnt;
+	__u16			val = 0;
+	int			b, problems = 0;
+	int			backends[3] = {
+		0,
+		EXT2_ICOUNT_OPT_INCREMENT,
+		EXT2_ICOUNT_OPT_FULLMAP | EXT2_ICOUNT_OPT_INCREMENT
+	};
+	FILE			*devnull;
+
+	oob_ino = test_fs->super->s_inodes_count + 1;
+	memset(&bad_ic, 0, sizeof(bad_ic));
+	bad_ic.num_inodes = 10;
+
+	/* 1. NULL and bad-magic lifecycle helpers */
+	ext2fs_free_icount(NULL);
+	CHECK_TST(ext2fs_get_icount_size(NULL) == 0,
+		  "get_icount_size(NULL) == 0");
+	CHECK_TST(ext2fs_get_icount_size(&bad_ic) == 0,
+		  "get_icount_size(bad_magic) == 0");
+	CHECK_TST(ext2fs_icount_fetch(&bad_ic, 1, &val) ==
+		  EXT2_ET_MAGIC_ICOUNT, "fetch bad magic");
+	CHECK_TST(ext2fs_icount_store(&bad_ic, 1, 2) ==
+		  EXT2_ET_MAGIC_ICOUNT, "store bad magic");
+	CHECK_TST(ext2fs_icount_increment(&bad_ic, 1, &val) ==
+		  EXT2_ET_MAGIC_ICOUNT, "increment bad magic");
+	CHECK_TST(ext2fs_icount_decrement(&bad_ic, 1, &val) ==
+		  EXT2_ET_MAGIC_ICOUNT, "decrement bad magic");
+	CHECK_TST(ext2fs_icount_validate(&bad_ic, stdout) ==
+		  EXT2_ET_MAGIC_ICOUNT, "validate bad magic");
+	CHECK_TST(ext2fs_create_icount2(test_fs, 0, 4, &bad_ic, &ic) ==
+		  EXT2_ET_MAGIC_ICOUNT, "create_icount2 bad hint magic");
+
+	/* 2. FULLMAP without INCREMENT falls back to bitmap + sorted list */
+	CHECK_TST(ext2fs_create_icount(test_fs, EXT2_ICOUNT_OPT_FULLMAP,
+				       4, &ic) == 0,
+		  "create_icount(FULLMAP without INCREMENT)");
+	CHECK_TST(ic->fullmap == NULL && ic->single != NULL &&
+		  ic->multiple == NULL && ic->list != NULL,
+		  "FULLMAP without INCREMENT falls back to single+list");
+	ext2fs_free_icount(ic);
+
+	/* 3. Bounds, zero-decrement, ret out-param, and 65500 saturation */
+	for (b = 0; b < 3; b++) {
+		CHECK_TST(ext2fs_create_icount(test_fs, backends[b], 4, &ic) == 0,
+			  "create_icount backend");
+		if (b == 2)
+			CHECK_TST(ic->fullmap != NULL, "fullmap allocated");
+
+		/* Bounds checks: ino == 0 and ino > num_inodes */
+		CHECK_TST(ext2fs_icount_fetch(ic, 0, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "fetch ino 0");
+		CHECK_TST(ext2fs_icount_fetch(ic, oob_ino, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "fetch oob ino");
+		CHECK_TST(ext2fs_icount_store(ic, 0, 1) ==
+			  EXT2_ET_INVALID_ARGUMENT, "store ino 0");
+		CHECK_TST(ext2fs_icount_store(ic, oob_ino, 1) ==
+			  EXT2_ET_INVALID_ARGUMENT, "store oob ino");
+		CHECK_TST(ext2fs_icount_increment(ic, 0, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "increment ino 0");
+		CHECK_TST(ext2fs_icount_increment(ic, oob_ino, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "increment oob ino");
+		CHECK_TST(ext2fs_icount_decrement(ic, 0, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "decrement ino 0");
+		CHECK_TST(ext2fs_icount_decrement(ic, oob_ino, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "decrement oob ino");
+
+		/* Decrementing a zero-count inode fails */
+		CHECK_TST(ext2fs_icount_decrement(ic, 7, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "decrement zero count");
+
+		/* Non-NULL ret output across 0 -> 1 -> 2 -> 3 -> 2 -> 1 -> 0 */
+		CHECK_TST(ext2fs_icount_increment(ic, 8, &val) == 0 && val == 1,
+			  "inc 0->1 ret");
+		CHECK_TST(ext2fs_icount_increment(ic, 8, &val) == 0 && val == 2,
+			  "inc 1->2 ret");
+		CHECK_TST(ext2fs_icount_increment(ic, 8, &val) == 0 && val == 3,
+			  "inc 2->3 ret");
+		CHECK_TST(ext2fs_icount_decrement(ic, 8, &val) == 0 && val == 2,
+			  "dec 3->2 ret");
+		CHECK_TST(ext2fs_icount_decrement(ic, 8, &val) == 0 && val == 1,
+			  "dec 2->1 ret");
+		CHECK_TST(ext2fs_icount_decrement(ic, 8, &val) == 0 && val == 0,
+			  "dec 1->0 ret");
+		CHECK_TST(ext2fs_icount_decrement(ic, 8, &val) ==
+			  EXT2_ET_INVALID_ARGUMENT, "dec after 0 fails");
+
+		/* 16-bit saturation via icount_16_xlate at 65500 */
+		CHECK_TST(ext2fs_icount_store(ic, 9, 65535) == 0,
+			  "store 65535");
+		CHECK_TST(ext2fs_icount_fetch(ic, 9, &val) == 0 &&
+			  val == 65500, "fetch 65535 saturates to 65500");
+		CHECK_TST(ext2fs_icount_store(ic, 9, 65499) == 0,
+			  "store 65499");
+		CHECK_TST(ext2fs_icount_increment(ic, 9, &val) == 0 &&
+			  val == 65500, "inc 65499 -> 65500");
+		CHECK_TST(ext2fs_icount_increment(ic, 9, &val) == 0 &&
+			  val == 65500, "inc 65500 saturates at 65500");
+
+		ext2fs_free_icount(ic);
+	}
+
+	/* 4. Hint icount pre-population and ext2fs_icount_validate corruption */
+	CHECK_TST(ext2fs_create_icount2(test_fs, 0, 12, NULL, &hint) == 0,
+		  "create hint icount");
+	CHECK_TST(ext2fs_icount_store(hint, 30, 3) == 0 &&
+		  ext2fs_icount_store(hint, 10, 2) == 0 &&
+		  ext2fs_icount_store(hint, 20, 4) == 0,
+		  "populate hint list out of order");
+	CHECK_TST(hint->count == 3 &&
+		  hint->list[0].ino == 10 &&
+		  hint->list[1].ino == 20 &&
+		  hint->list[2].ino == 30,
+		  "hint list kept sorted");
+
+	CHECK_TST(ext2fs_create_icount2(test_fs, EXT2_ICOUNT_OPT_INCREMENT,
+					2, hint, &ic) == 0,
+		  "create icount from hint");
+	CHECK_TST(ext2fs_get_icount_size(ic) == ext2fs_get_icount_size(hint),
+		  "icount adopts larger hint size");
+	CHECK_TST(ic->count == 3 &&
+		  ic->list[0].ino == 10 && ic->list[0].count == 0 &&
+		  ic->list[1].ino == 20 && ic->list[1].count == 0 &&
+		  ic->list[2].ino == 30 && ic->list[2].count == 0,
+		  "icount pre-populated with zeroed hint entries");
+	CHECK_TST(ext2fs_icount_validate(ic, stdout) == 0,
+		  "validate hinted icount");
+	CHECK_TST(ext2fs_icount_fetch(ic, 20, &val) == 0 && val == 0,
+		  "pre-populated hint entry fetches 0 before store");
+	CHECK_TST(ext2fs_icount_increment(ic, 20, &val) == 0 && val == 1 &&
+		  ext2fs_icount_increment(ic, 20, &val) == 0 && val == 2,
+		  "incrementing pre-populated hint entry reuses list slot");
+	CHECK_TST(ic->count == 3, "no duplicate slot added for hinted ino");
+
+	devnull = fopen("/dev/null", "w");
+	if (devnull) {
+		saved_cnt = ic->count;
+		ic->count = ic->size + 1;
+		CHECK_TST(ext2fs_icount_validate(ic, devnull) ==
+			  EXT2_ET_INVALID_ARGUMENT,
+			  "validate detects count > size");
+		ic->count = saved_cnt;
+
+		tmp_ino = ic->list[0].ino;
+		ic->list[0].ino = ic->list[1].ino;
+		CHECK_TST(ext2fs_icount_validate(ic, devnull) ==
+			  EXT2_ET_INVALID_ARGUMENT,
+			  "validate detects unsorted/duplicate list");
+		ic->list[0].ino = tmp_ino;
+		fclose(devnull);
+	}
+	CHECK_TST(ext2fs_icount_validate(ic, stdout) == 0,
+		  "validate succeeds after restoring list");
+
+	ext2fs_free_icount(ic);
+	ext2fs_free_icount(hint);
+	return problems;
+}
+
 /*
  * Setup the variables for doing the inode scan test.
  */
@@ -815,7 +1009,7 @@ static void setup(void)
 	}
 }
 
-int run_test(int flags, int size, char *dir, struct test_program *prog)
+static int run_test(int flags, int size, char *dir, struct test_program *prog)
 {
 	errcode_t	retval;
 	ext2_icount_t	icount;
@@ -899,7 +1093,7 @@ int run_test(int flags, int size, char *dir, struct test_program *prog)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 {
 	int failed = 0;
 
@@ -908,14 +1102,24 @@ int main(int argc, char **argv)
 	failed += run_test(0, 0, 0, prog);
 	printf("\nMultiple bitmap test:\n");
 	failed += run_test(EXT2_ICOUNT_OPT_INCREMENT, 0, 0, prog);
+	printf("\nFullmap icount test:\n");
+	failed += run_test(EXT2_ICOUNT_OPT_FULLMAP | EXT2_ICOUNT_OPT_INCREMENT,
+			   0, 0, prog);
 	printf("\nResizing icount:\n");
 	failed += run_test(0, 3, 0, extended);
+	printf("\nNon-sequential insertion and binary search:\n");
+	failed += run_test(EXT2_ICOUNT_OPT_INCREMENT, 3, 0, nonseq);
 	printf("\nStandard icount run with tdb:\n");
 	failed += run_test(0, 0, ".", prog);
 	printf("\nMultiple bitmap test with tdb:\n");
 	failed += run_test(EXT2_ICOUNT_OPT_INCREMENT, 0, ".", prog);
+	printf("\nExtra icount unit tests:\n");
+	failed += run_extra_tests();
+	ext2fs_free(test_fs);
 	if (failed)
 		printf("FAILED!\n");
-	return failed;
+	else
+		printf("Extra icount unit tests: OK\n");
+	return failed ? 1 : 0;
 }
 #endif
