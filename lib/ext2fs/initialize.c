@@ -601,17 +601,21 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 	ext2_ino_t	ino;
 	unsigned int	group = 0;
 	unsigned int	count = 0;
-	int		total_free = 0;
-	int		group_free = 0;
-	int		last_allocated = 0;
-	int		uninit;
+	blk64_t		total_free = 0;
+	unsigned int	group_free = 0;
+	ext2_ino_t	last_allocated = 0;
+	int		uninit, last;
+	int		csum_flag = ext2fs_has_group_desc_csum(fs);
 
 	/*
-	 * First calculate the block statistics
+	 * First calculate the block statistics.  The block bitmap and
+	 * the per-group free block counts are in units of clusters, so
+	 * test one block per cluster.
 	 */
 	uninit = 1;
 	for (blk = fs->super->s_first_data_block;
-	     blk < ext2fs_blocks_count(fs->super); blk++) {
+	     blk < ext2fs_blocks_count(fs->super);
+	     blk += EXT2FS_CLUSTER_RATIO(fs)) {
 		if (!ext2fs_fast_test_block_bitmap2(fs->block_map, blk)) {
 			group_free++;
 			total_free++;
@@ -619,13 +623,13 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 			uninit = 0;
 		}
 		count++;
-		if ((count == fs->super->s_blocks_per_group) ||
-		    (blk == ext2fs_blocks_count(fs->super)-1)) {
+		last = (EXT2FS_B2C(fs, blk) ==
+			EXT2FS_B2C(fs, ext2fs_blocks_count(fs->super) - 1));
+		if ((count == fs->super->s_clusters_per_group) || last) {
 			ext2fs_bg_free_blocks_count_set(fs, group,
 							group_free);
-			if (!super_only) {
-				if (uninit && blk !=
-					ext2fs_blocks_count(fs->super) - 1)
+			if (!super_only && csum_flag) {
+				if (uninit && !last)
 					ext2fs_bg_flags_set(fs, group,
 							EXT2_BG_BLOCK_UNINIT);
 				else
@@ -638,8 +642,7 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 			group++;
 		}
 	}
-	total_free = EXT2FS_C2B(fs, total_free);
-	ext2fs_free_blocks_count_set(fs->super, total_free);
+	ext2fs_free_blocks_count_set(fs->super, EXT2FS_C2B(fs, total_free));
 
 	/*
 	 * Next, calculate the inode statistics
@@ -661,23 +664,27 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 		count++;
 		if ((count == fs->super->s_inodes_per_group) ||
 		    (ino == fs->super->s_inodes_count)) {
-			if (!super_only) {
+			if (!super_only && csum_flag) {
+				/*
+				 * ino is the last inode of this group, so
+				 * ino - last_allocated inodes are unused
+				 * at the end of its inode table.
+				 */
 				if (last_allocated) {
 					ext2fs_bg_flags_clear(fs, group,
 						EXT2_BG_INODE_UNINIT);
 					ext2fs_bg_itable_unused_set(fs, group,
-						fs->super->s_inodes_per_group -
-						(last_allocated %
-						fs->super->s_inodes_per_group));
+						ino - last_allocated);
 				} else {
 					ext2fs_bg_flags_set(fs, group,
 						EXT2_BG_INODE_UNINIT);
 					ext2fs_bg_itable_unused_set(fs, group,
 									0);
 				}
+			}
+			if (!super_only)
 				ext2fs_bg_free_inodes_count_set(fs, group,
 								group_free);
-			}
 			group++;
 			count = 0;
 			group_free = 0;

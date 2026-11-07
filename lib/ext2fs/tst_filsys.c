@@ -727,6 +727,178 @@ static void test_rw_bitmaps_and_stats(void)
 	unlink(path);
 }
 
+static void test_calculate_summary_stats(void)
+{
+	struct ext2_super_block	param;
+	ext2_filsys		fs = NULL;
+	char			path[64];
+	int			fd;
+	dgrp_t			i;
+	unsigned int		bad;
+
+	fd = make_temp_file(path, (off_t) 4096 * 1024);
+
+	/*
+	 * 1. bigalloc: 1K blocks, 4-block clusters and 256 clusters (1024
+	 * blocks) per group.  3840 blocks give three full groups and a
+	 * last group of 192 clusters.  The free counts are in clusters.
+	 */
+	memset(&param, 0, sizeof(param));
+	ext2fs_blocks_count_set(&param, 3840);
+	param.s_log_cluster_size = 2;
+	param.s_clusters_per_group = 256;
+	param.s_inodes_count = 128;
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+	param.s_inode_size = 128;
+	ext2fs_set_feature_sparse_super(&param);
+	ext2fs_set_feature_extents(&param);
+	ext2fs_set_feature_bigalloc(&param);
+	ext2fs_set_feature_gdt_csum(&param);
+	CHECK_RC(ext2fs_initialize(path, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+				   &param, unix_io_manager, &fs),
+		 0, "init 1K bigalloc fs for summary stats");
+	CHECK(fs->group_desc_count == 4 && fs->super->s_first_data_block == 0,
+	      "1K bigalloc fs has 4 groups starting at block 0");
+	CHECK_RC(ext2fs_convert_subcluster_bitmap(fs, &fs->block_map), 0,
+		 "convert_subcluster_bitmap for summary stats");
+	ext2fs_clear_block_bitmap(fs->block_map);
+	ext2fs_mark_block_bitmap2(fs->block_map, 0);	/* cluster 0 */
+	ext2fs_mark_block_bitmap2(fs->block_map, 6);	/* cluster 1 */
+	ext2fs_mark_block_bitmap2(fs->block_map, 1023);	/* cluster 255 */
+	/* Start with BLOCK_UNINIT wrong for every group */
+	for (i = 0; i < fs->group_desc_count; i++)
+		ext2fs_bg_flags_zap(fs, i);
+	ext2fs_bg_flags_set(fs, 0, EXT2_BG_BLOCK_UNINIT);
+	ext2fs_bg_flags_set(fs, 3, EXT2_BG_BLOCK_UNINIT);
+	CHECK_RC(ext2fs_calculate_summary_stats(fs, 0), 0,
+		 "calculate_summary_stats on bigalloc");
+	CHECK(ext2fs_bg_free_blocks_count(fs, 0) == 253,
+	      "bigalloc group 0 has 253 free clusters");
+	CHECK(ext2fs_bg_free_blocks_count(fs, 1) == 256,
+	      "bigalloc group 1 has 256 free clusters");
+	CHECK(ext2fs_bg_free_blocks_count(fs, 2) == 256,
+	      "bigalloc group 2 has 256 free clusters");
+	CHECK(ext2fs_bg_free_blocks_count(fs, 3) == 192,
+	      "bigalloc last group has 192 free clusters");
+	CHECK(ext2fs_free_blocks_count(fs->super) == 957 * 4,
+	      "bigalloc free blocks count is 957 free clusters * 4");
+	CHECK(!ext2fs_bg_flags_test(fs, 0, EXT2_BG_BLOCK_UNINIT) &&
+	      ext2fs_bg_flags_test(fs, 1, EXT2_BG_BLOCK_UNINIT) &&
+	      ext2fs_bg_flags_test(fs, 2, EXT2_BG_BLOCK_UNINIT) &&
+	      !ext2fs_bg_flags_test(fs, 3, EXT2_BG_BLOCK_UNINIT),
+	      "bigalloc BLOCK_UNINIT only on empty groups before the last");
+	ext2fs_free(fs);
+
+	/*
+	 * 2. bg_itable_unused is the number of inodes after the last one
+	 * in use, so it is 0 if a group's last inode is in use.  4 groups
+	 * of 32 inodes with uninit_bg.
+	 */
+	memset(&param, 0, sizeof(param));
+	ext2fs_blocks_count_set(&param, 4096);
+	param.s_blocks_per_group = 1024;
+	param.s_inodes_count = 128;
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+	param.s_inode_size = 128;
+	ext2fs_set_feature_sparse_super(&param);
+	ext2fs_set_feature_gdt_csum(&param);
+	CHECK_RC(ext2fs_initialize(path, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+				   &param, unix_io_manager, &fs),
+		 0, "init uninit_bg fs for summary stats");
+	CHECK(fs->group_desc_count == 4 && fs->super->s_inodes_per_group == 32,
+	      "uninit_bg fs has 4 groups of 32 inodes");
+	ext2fs_mark_inode_bitmap2(fs->inode_map, 5);	/* group 0 */
+	ext2fs_mark_inode_bitmap2(fs->inode_map, 64);	/* group 1, last */
+	ext2fs_mark_inode_bitmap2(fs->inode_map, 97);	/* group 3 */
+	ext2fs_mark_inode_bitmap2(fs->inode_map, 100);	/* group 3 */
+	CHECK_RC(ext2fs_calculate_summary_stats(fs, 0), 0,
+		 "calculate_summary_stats on uninit_bg fs");
+	CHECK(ext2fs_bg_itable_unused(fs, 0) == 27 &&
+	      !ext2fs_bg_flags_test(fs, 0, EXT2_BG_INODE_UNINIT),
+	      "group 0 itable_unused == 27");
+	CHECK(ext2fs_bg_itable_unused(fs, 1) == 0 &&
+	      !ext2fs_bg_flags_test(fs, 1, EXT2_BG_INODE_UNINIT),
+	      "group 1 with its last inode in use has itable_unused == 0");
+	CHECK(ext2fs_bg_flags_test(fs, 2, EXT2_BG_INODE_UNINIT),
+	      "group 2 without inodes in use is INODE_UNINIT");
+	CHECK(ext2fs_bg_itable_unused(fs, 3) == 28 &&
+	      !ext2fs_bg_flags_test(fs, 3, EXT2_BG_INODE_UNINIT),
+	      "group 3 itable_unused == 28");
+	CHECK(ext2fs_bg_free_inodes_count(fs, 0) == 31 &&
+	      ext2fs_bg_free_inodes_count(fs, 1) == 31 &&
+	      ext2fs_bg_free_inodes_count(fs, 2) == 32 &&
+	      ext2fs_bg_free_inodes_count(fs, 3) == 30 &&
+	      fs->super->s_free_inodes_count == 124,
+	      "free inode counts on uninit_bg fs");
+	ext2fs_free(fs);
+
+	/*
+	 * 3. Without uninit_bg or metadata_csum, the uninit flags and
+	 * bg_itable_unused must stay clear (e2fsck rejects them).
+	 */
+	memset(&param, 0, sizeof(param));
+	ext2fs_blocks_count_set(&param, 4096);
+	param.s_blocks_per_group = 1024;
+	param.s_inodes_count = 128;
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+	param.s_inode_size = 128;
+	ext2fs_set_feature_sparse_super(&param);
+	CHECK_RC(ext2fs_initialize(path, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+				   &param, unix_io_manager, &fs),
+		 0, "init fs without group descriptor checksums");
+	ext2fs_mark_inode_bitmap2(fs->inode_map, 5);
+	CHECK_RC(ext2fs_calculate_summary_stats(fs, 0), 0,
+		 "calculate_summary_stats without group descriptor checksums");
+	bad = 0;
+	for (i = 0; i < fs->group_desc_count; i++)
+		if (ext2fs_bg_flags(fs, i) || ext2fs_bg_itable_unused(fs, i))
+			bad++;
+	CHECK(bad == 0, "no uninit flags or itable_unused without checksums");
+	CHECK(ext2fs_bg_free_inodes_count(fs, 0) == 31 &&
+	      fs->super->s_free_inodes_count == 127,
+	      "free inode counts without group descriptor checksums");
+	ext2fs_free(fs);
+
+	/*
+	 * 4. More than 2^32 free blocks: 4K blocks, 1M clusters and 513
+	 * groups of 32768 clusters.  This fs is never written to disk.
+	 */
+	memset(&param, 0, sizeof(param));
+	ext2fs_set_feature_sparse_super(&param);
+	ext2fs_set_feature_extents(&param);
+	ext2fs_set_feature_64bit(&param);	/* before blocks_count_set */
+	ext2fs_set_feature_bigalloc(&param);
+	ext2fs_blocks_count_set(&param, (1ULL << 32) + (1ULL << 23));
+	param.s_log_block_size = 2;
+	param.s_log_cluster_size = 10;
+	param.s_inodes_count = 513 * 16;
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+	param.s_inode_size = 256;
+	param.s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
+	CHECK_RC(ext2fs_initialize(path, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+				   &param, unix_io_manager, &fs),
+		 0, "init 16 TiB bigalloc fs");
+	CHECK(fs->group_desc_count == 513 &&
+	      fs->super->s_clusters_per_group == 32768,
+	      "16 TiB bigalloc fs has 513 groups of 32768 clusters");
+	CHECK_RC(ext2fs_convert_subcluster_bitmap(fs, &fs->block_map), 0,
+		 "convert_subcluster_bitmap for 16 TiB fs");
+	ext2fs_clear_block_bitmap(fs->block_map);
+	ext2fs_mark_block_bitmap2(fs->block_map, 0);	/* cluster 0 */
+	CHECK_RC(ext2fs_calculate_summary_stats(fs, 0), 0,
+		 "calculate_summary_stats on 16 TiB fs");
+	CHECK(ext2fs_free_blocks_count(fs->super) ==
+	      (1ULL << 32) + (1ULL << 23) - 256,
+	      "16 TiB fs free blocks count is not truncated");
+	CHECK(ext2fs_bg_free_blocks_count(fs, 0) == 32767 &&
+	      ext2fs_bg_free_blocks_count(fs, 512) == 32768,
+	      "16 TiB fs group free cluster counts");
+	ext2fs_free(fs);
+
+	close(fd);
+	unlink(path);
+}
+
 static void test_dup_handle_and_resize_inode(void)
 {
 	struct ext2_super_block	param;
@@ -927,6 +1099,7 @@ int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 	test_open_flush_close();
 	test_check_desc();
 	test_rw_bitmaps_and_stats();
+	test_calculate_summary_stats();
 	test_dup_handle_and_resize_inode();
 	test_resize_inode_times();
 
