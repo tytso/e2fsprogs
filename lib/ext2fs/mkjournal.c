@@ -165,9 +165,9 @@ errfree:
 errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 			      blk64_t *ret_blk, int *ret_count)
 {
-	int		j, count;
+	int		j, count, stride_length;
 	static void	*buf;
-	static int	stride_length;
+	static size_t	buf_size;
 	errcode_t	retval;
 
 	/* If fs is null, clean up the static buffer and return */
@@ -175,7 +175,7 @@ errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 		if (buf) {
 			free(buf);
 			buf = 0;
-			stride_length = 0;
+			buf_size = 0;
 		}
 		return 0;
 	}
@@ -189,19 +189,26 @@ errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 	if (retval == 0)
 		return 0;
 
-	/* Allocate the zeroizing buffer if necessary */
+	/*
+	 * Allocate the zeroizing buffer if necessary.  The buffer may
+	 * have been sized for a file system with a different block
+	 * size, so its stride length has to be computed from its size
+	 * in bytes.
+	 */
+	stride_length = buf_size / fs->blocksize;
 	if (num > stride_length && stride_length < MAX_STRIDE_LENGTH) {
 		void *p;
 		int new_stride = num;
 
 		if (new_stride > MAX_STRIDE_LENGTH)
 			new_stride = MAX_STRIDE_LENGTH;
-		p = realloc(buf, fs->blocksize * new_stride);
+		p = realloc(buf, (size_t) fs->blocksize * new_stride);
 		if (!p)
 			return EXT2_ET_NO_MEMORY;
 		buf = p;
+		buf_size = (size_t) fs->blocksize * new_stride;
 		stride_length = new_stride;
-		memset(buf, 0, fs->blocksize * stride_length);
+		memset(buf, 0, buf_size);
 	}
 	/* OK, do the write loop */
 	j=0;
@@ -235,7 +242,7 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 	errcode_t retval;
 
 	retval = ext2fs_zero_blocks2(fs, blk, num, &ret_blk2, ret_count);
-	if (retval)
+	if (retval && ret_blk)
 		*ret_blk = (blk_t) ret_blk2;
 	return retval;
 }
@@ -465,6 +472,9 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 			break;
 	}
 	if (i >= nr_users) {
+		/* No room left in the journal's user table */
+		if (nr_users >= JBD2_USERS_MAX)
+			return EXT2_ET_TOO_MANY_REFS;
 		memcpy(&jsb->s_users[nr_users*16],
 		       fs->super->s_uuid, 16);
 		jsb->s_nr_users = htonl(nr_users+1);

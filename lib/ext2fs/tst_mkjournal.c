@@ -25,6 +25,9 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -338,12 +341,72 @@ static void test_zero_blocks(void)
 		 "zero_blocks propagates write error");
 	CHECK(err_blk32 == 60 && err_cnt > 0,
 	      "zero_blocks sets ret_blk and ret_count on error");
+	/* ret_blk and ret_count are optional */
+	CHECK_RC(ext2fs_zero_blocks(fs, 60, 3, NULL, NULL), EIO,
+		 "zero_blocks propagates write error with NULL ret_blk");
 
 	fs->io->manager = unix_io_manager;
 	ext2fs_zero_blocks2(NULL, 0, 0, NULL, NULL);
 	ext2fs_free(fs);
 	close(fd);
 	unlink(path);
+}
+
+/*
+ * The buffer used when the io channel cannot zero out blocks by itself
+ * is kept across calls, and thus across filesystems.  Zeroing blocks of
+ * a filesystem with a larger block size must not write from a buffer
+ * that was sized for a smaller block size.
+ */
+static void test_zero_blocks_blocksize_change(void)
+{
+	struct struct_io_manager	nozero_mgr;
+	ext2_filsys			fs1k, fs4k;
+	char				path1k[64], path4k[64];
+	char				*dirty = NULL, *verify = NULL;
+	char				*zeros = NULL;
+	size_t				len = (size_t) 256 * 4096;
+	int				fd1k, fd4k;
+
+	fd1k = make_temp_file(path1k, (off_t) 1024 * 1024);
+	fs1k = create_fs(path1k, 1024, 0, 1, 0, 0, 0);
+	fd4k = make_temp_file(path4k, (off_t) 1024 * 4096);
+	fs4k = create_fs(path4k, 1024, 2, 1, 0, 0, 0);
+	nozero_mgr = *unix_io_manager;
+	nozero_mgr.zeroout = NULL;
+	fs1k->io->manager = &nozero_mgr;
+	fs4k->io->manager = &nozero_mgr;
+
+	/* Zeroing 256 1K blocks sizes the buffer for 256 KiB */
+	CHECK_RC(ext2fs_zero_blocks2(fs1k, 512, 256, NULL, NULL), 0,
+		 "zero 256 blocks on 1K-block fs");
+
+	/* Zeroing 256 4K blocks needs 1 MiB of zeroes */
+	CHECK_RC(ext2fs_get_mem(len, &dirty), 0, "alloc dirty buf");
+	CHECK_RC(ext2fs_get_mem(len, &verify), 0, "alloc verify buf");
+	CHECK_RC(ext2fs_get_memzero(len, &zeros), 0, "alloc zero buf");
+	memset(dirty, 0xaa, len);
+	CHECK(pwrite(fd4k, dirty, len, (off_t) 512 * 4096) == (ssize_t) len,
+	      "dirty 4K blocks 512..767");
+	CHECK_RC(ext2fs_zero_blocks2(fs4k, 512, 256, NULL, NULL), 0,
+		 "zero 256 blocks on 4K-block fs");
+	CHECK_RC(io_channel_flush(fs4k->io), 0, "flush 4K io_channel");
+	CHECK(pread(fd4k, verify, len, (off_t) 512 * 4096) == (ssize_t) len &&
+	      memcmp(verify, zeros, len) == 0,
+	      "4K blocks 512..767 zeroed after zeroing 1K blocks");
+
+	ext2fs_free_mem(&zeros);
+	ext2fs_free_mem(&verify);
+	ext2fs_free_mem(&dirty);
+	fs1k->io->manager = unix_io_manager;
+	fs4k->io->manager = unix_io_manager;
+	ext2fs_zero_blocks2(NULL, 0, 0, NULL, NULL);
+	ext2fs_free(fs4k);
+	ext2fs_free(fs1k);
+	close(fd4k);
+	unlink(path4k);
+	close(fd1k);
+	unlink(path1k);
 }
 
 static void test_add_journal_inode_and_device(void)
@@ -443,13 +506,130 @@ static void test_add_journal_inode_and_device(void)
 	unlink(path);
 }
 
+/*
+ * ext2fs_add_journal_device() only accepts a block device, but merely
+ * stat()s its name; all I/O goes through journal_dev->io.  Find any
+ * block device node to stand in for the name of a journal image file.
+ */
+static int find_block_device(char *path_out, size_t len)
+{
+	DIR		*dir;
+	struct dirent	*de;
+	struct stat	st;
+	int		found = 0;
+
+	dir = opendir("/dev");
+	if (!dir)
+		return 0;
+	while (!found && (de = readdir(dir)) != NULL) {
+		snprintf(path_out, len, "/dev/%s", de->d_name);
+		if (stat(path_out, &st) == 0 && S_ISBLK(st.st_mode))
+			found = 1;
+	}
+	closedir(dir);
+	return found;
+}
+
+static void write_journal_users(ext2_filsys jdev, char *jsb_buf,
+				__u32 nr_users)
+{
+	journal_superblock_t	*jsb = (journal_superblock_t *) jsb_buf;
+	__u32			i;
+
+	jsb->s_nr_users = ext2fs_cpu_to_be32(nr_users);
+	memset(jsb->s_users, 0, sizeof(jsb->s_users));
+	for (i = 0; i < nr_users; i++)
+		memset(&jsb->s_users[i * 16], i + 1, 16);
+	CHECK_RC(io_channel_write_blk64(jdev->io,
+				ext2fs_journal_sb_start(jdev->blocksize),
+				1, jsb_buf),
+		 0, "write journal superblock users");
+}
+
+/*
+ * The journal superblock has room for JBD2_USERS_MAX filesystem UUIDs.
+ * Adding another filesystem to a journal whose user table is full must
+ * fail instead of writing past the end of the table.
+ */
+static void test_add_journal_device_users(void)
+{
+	ext2_filsys			fs, jdev;
+	struct ext2fs_journal_params	jparams;
+	journal_superblock_t		*jsb;
+	char				path[64], jpath[64], bdev[300];
+	char				buf[1024], *saved_name;
+	char				*jsb_buf = NULL;
+	int				fd, jfd;
+
+	if (!find_block_device(bdev, sizeof(bdev))) {
+		printf("tst_mkjournal: no block device in /dev, "
+		       "skipping journal user table test\n");
+		return;
+	}
+
+	fd = make_temp_file(path, (off_t) 2048 * 1024);
+	fs = create_fs(path, 2048, 0, 0, 0, 0, 0);
+	jfd = make_temp_file(jpath, (off_t) 2048 * 1024);
+	jdev = create_fs(jpath, 2048, 0, 0, 0, 0, 1);
+	CHECK_RC(ext2fs_get_journal_params(&jparams, jdev), 0,
+		 "journal_dev params for user table test");
+	CHECK_RC(ext2fs_create_journal_superblock2(jdev, &jparams, 0,
+						   &jsb_buf),
+		 0, "create journal_dev superblock for user table test");
+	saved_name = jdev->device_name;
+	jdev->device_name = bdev;
+
+	/* 1. Full user table without our UUID: nothing may be added */
+	write_journal_users(jdev, jsb_buf, JBD2_USERS_MAX);
+	CHECK_RC(ext2fs_add_journal_device(fs, jdev), EXT2_ET_TOO_MANY_REFS,
+		 "add_journal_device rejects a full journal user table");
+	CHECK_RC(io_channel_read_blk64(jdev->io,
+				       ext2fs_journal_sb_start(jdev->blocksize),
+				       1, buf),
+		 0, "reread full journal superblock");
+	jsb = (journal_superblock_t *) buf;
+	CHECK(ext2fs_be32_to_cpu(jsb->s_nr_users) == JBD2_USERS_MAX,
+	      "full journal user table left unchanged");
+	CHECK(!ext2fs_has_feature_journal(fs->super),
+	      "rejected journal device not added to fs");
+
+	/* 2. One free slot left: our UUID goes into the last slot */
+	write_journal_users(jdev, jsb_buf, JBD2_USERS_MAX - 1);
+	CHECK_RC(ext2fs_add_journal_device(fs, jdev), 0,
+		 "add_journal_device fills the last journal user slot");
+	CHECK_RC(io_channel_read_blk64(jdev->io,
+				       ext2fs_journal_sb_start(jdev->blocksize),
+				       1, buf),
+		 0, "reread journal superblock");
+	jsb = (journal_superblock_t *) buf;
+	CHECK(ext2fs_be32_to_cpu(jsb->s_nr_users) == JBD2_USERS_MAX &&
+	      memcmp(&jsb->s_users[(JBD2_USERS_MAX - 1) * 16],
+		     fs->super->s_uuid, 16) == 0,
+	      "fs UUID stored in the last journal user slot");
+	CHECK(ext2fs_has_feature_journal(fs->super) &&
+	      fs->super->s_journal_inum == 0,
+	      "fs now uses the external journal");
+
+	jdev->device_name = saved_name;
+	ext2fs_free_mem(&jsb_buf);
+	CHECK_RC(ext2fs_close_free(&jdev), 0, "close user table jdev");
+	ext2fs_free(fs);
+	ext2fs_zero_blocks2(NULL, 0, 0, NULL, NULL);
+	close(jfd);
+	unlink(jpath);
+	close(fd);
+	unlink(path);
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
 
 	test_sizing_and_superblock();
 	test_zero_blocks();
+	test_zero_blocks_blocksize_change();
 	test_add_journal_inode_and_device();
+	test_add_journal_device_users();
 
 	remove_error_table(&et_ext2_error_table);
 
