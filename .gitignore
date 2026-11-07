@@ -128,6 +128,7 @@ lib/ext2fs/tst_icount
 lib/ext2fs/tst_imager
 lib/ext2fs/tst_inline
 lib/ext2fs/tst_inline_data
+lib/ext2fs/tst_inode
 lib/ext2fs/tst_inode_io
 lib/ext2fs/tst_inode_size
 lib/ext2fs/tst_iscan
