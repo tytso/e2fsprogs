@@ -287,17 +287,22 @@ try_merge:
 
 		/* Allocate blocks */
 		y = left_ext->e_pblk + left_ext->e_len;
-		err = ext2fs_new_range(fs, EXT2_NEWRANGE_FIXED_GOAL |
-				       EXT2_NEWRANGE_MIN_LENGTH, y,
-				       right_ext->e_pblk - y + 1, NULL,
-				       &pblk, &plen);
-		if (err)
-			goto try_left;
-		if (pblk + plen != right_ext->e_pblk)
-			goto try_left;
-		err = claim_range(fs, inode, pblk, plen);
-		if (err)
-			goto out;
+		if (right_ext->e_pblk > y) {
+			err = ext2fs_new_range(fs, EXT2_NEWRANGE_FIXED_GOAL |
+					       EXT2_NEWRANGE_MIN_LENGTH, y,
+					       right_ext->e_pblk - y, NULL,
+					       &pblk, &plen);
+			if (err)
+				goto try_left;
+			if (pblk != y || pblk + plen != right_ext->e_pblk)
+				goto try_left;
+			err = claim_range(fs, inode, pblk, plen);
+			if (err)
+				goto out;
+		} else {
+			pblk = y;
+			plen = 0;
+		}
 
 		/* Modify extents */
 		left_ext->e_len = x;
@@ -320,9 +325,9 @@ try_merge:
 		*right_ext = *left_ext;
 
 		/* Zero blocks */
-		if (!(left_ext->e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
+		if (plen && !(left_ext->e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
 		    (flags & EXT2_FALLOCATE_ZERO_BLOCKS)) {
-			err = ext2fs_zero_blocks2(fs, range_start, range_len,
+			err = ext2fs_zero_blocks2(fs, pblk, plen,
 						  NULL, NULL);
 			if (err)
 				goto out;
@@ -486,8 +491,7 @@ try_right:
 		/* Zero blocks if necessary */
 		if (!(right_ext->e_flags & EXT2_EXTENT_FLAGS_UNINIT) &&
 		    (flags & EXT2_FALLOCATE_ZERO_BLOCKS)) {
-			err = ext2fs_zero_blocks2(fs, pblk,
-					plen + cluster_fill, NULL, NULL);
+			err = ext2fs_zero_blocks2(fs, pblk, plen, NULL, NULL);
 			if (err)
 				goto out;
 		}

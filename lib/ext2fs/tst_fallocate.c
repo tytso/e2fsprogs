@@ -534,6 +534,65 @@ static void test_extent_growth_and_holes(void)
 		}
 	}
 
+	/*
+	 * Two-extent merge (try_merge): allocate [0..5] UNINIT, punch middle
+	 * [2..3] so physical gap [pblk0+2..pblk0+3] is free, then fallocate
+	 * [2..3] and verify both extents merge into a single [0..5] extent.
+	 */
+	init_reg_inode(fs, 16, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_fallocate(fs, EXT2_FALLOCATE_FORCE_UNINIT,
+				  16, &inode, 500, 0, 6);
+	check_err("merge_uninit_seed", retval, 0);
+	retval = ext2fs_bmap2(fs, 16, &inode, NULL, 0, 0, NULL, &pblk0);
+	check_err("merge_uninit_bmap0", retval, 0);
+	retval = ext2fs_punch(fs, 16, &inode, NULL, 2, 3);
+	check_err("merge_uninit_punch_hole", retval, 0);
+	check_u64("merge_uninit_two_before",
+		  count_leaf_extents(fs, 16, &inode), 2);
+	retval = ext2fs_fallocate(fs, 0, 16, &inode, ~0ULL, 2, 2);
+	check_err("merge_uninit_fill_hole", retval, 0);
+	check_u64("merge_uninit_one_after",
+		  count_leaf_extents(fs, 16, &inode), 1);
+
+	/*
+	 * Two-extent merge with INIT + ZERO_BLOCKS at lblk 1: verify both
+	 * extents merge into 1, physical block pblk0+1 is zeroed, and physical
+	 * block 1 (primary superblock on 1 KiB fs, == range_start!) is intact.
+	 */
+	init_reg_inode(fs, 17, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_inode_size_set(fs, &inode, 3 * fs->blocksize);
+	check_err("merge_init_isize", retval, 0);
+	retval = ext2fs_fallocate(fs,
+				  EXT2_FALLOCATE_FORCE_INIT |
+				  EXT2_FALLOCATE_ZERO_BLOCKS,
+				  17, &inode, 550, 0, 3);
+	check_err("merge_init_seed", retval, 0);
+	retval = ext2fs_bmap2(fs, 17, &inode, NULL, 0, 0, NULL, &pblk0);
+	check_err("merge_init_bmap0", retval, 0);
+	retval = ext2fs_punch(fs, 17, &inode, NULL, 1, 1);
+	check_err("merge_init_punch_1", retval, 0);
+	check_u64("merge_init_two_before",
+		  count_leaf_extents(fs, 17, &inode), 2);
+	poison_free_blocks(fs, 0xA5);
+	memset(mem_disk + 1 * fs->blocksize, 0x5E, fs->blocksize);
+
+	retval = ext2fs_fallocate(fs,
+				  EXT2_FALLOCATE_FORCE_INIT |
+				  EXT2_FALLOCATE_ZERO_BLOCKS,
+				  17, &inode, ~0ULL, 1, 1);
+	check_err("merge_init_fill_1", retval, 0);
+	check_u64("merge_init_one_after",
+		  count_leaf_extents(fs, 17, &inode), 1);
+	retval = ext2fs_bmap2(fs, 17, &inode, NULL, 0, 1, &ret_flags, &pblk);
+	check_err("merge_init_bmap1", retval, 0);
+	check_u64("merge_init_pblk1_contig", pblk, pblk0 + 1);
+	check_u64("merge_init_pblk1_init", ret_flags, 0);
+	check_u64("merge_init_pblk1_zeroed",
+		  ext2fs_mem_is_zero((char *) mem_disk + pblk * fs->blocksize,
+				     fs->blocksize), 1);
+	check_u64("merge_init_phys_blk1_untouched",
+		  mem_disk[1 * fs->blocksize], 0x5E);
+
 	teardown_fs(&fs);
 	printf("test_extent_growth_and_holes: completed\n");
 }
