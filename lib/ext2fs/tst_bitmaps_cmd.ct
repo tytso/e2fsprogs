@@ -48,4 +48,28 @@ request do_ffsi, "Find first set inode",
 request do_zeroi, "Clear inode bitmap",
 	clear_inode_bitmap, zeroi;
 
+request do_copy_cmp, "Copy and compare block/inode bitmaps",
+	copy_cmp;
+
+request do_fudge_b, "Fudge block bitmap end",
+	fudge_b;
+
+request do_fudge_i, "Fudge inode bitmap end",
+	fudge_i;
+
+request do_resize_b, "Resize block bitmap",
+	resize_b;
+
+request do_resize_i, "Resize inode bitmap",
+	resize_i;
+
+request do_pad_b, "Set block bitmap padding and dump",
+	pad_b;
+
+request do_set_range_b, "Set and verify block bitmap range",
+	set_range_b;
+
+request do_count_b, "Count used blocks in range",
+	count_b;
+
 end;

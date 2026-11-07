@@ -686,6 +686,7 @@ fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
 	diff $(srcdir)/tst_bitmaps_exp tst_bitmaps_out
 	$(TESTENV) ./tst_bitmaps -l -f $(srcdir)/tst_bitmaps_cmds > tst_bitmaps_out
 	diff $(srcdir)/tst_bitmaps_exp tst_bitmaps_out
+	$(TESTENV) ./tst_bitmaps -c
 	$(TESTENV) ./tst_extents -f $(srcdir)/tst_extents_cmds > tst_extents_out
 	diff $(srcdir)/tst_extents_exp tst_extents_out
 	$(TESTENV) ./tst_digest_encode

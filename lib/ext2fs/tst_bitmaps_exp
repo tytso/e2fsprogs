@@ -309,5 +309,67 @@ tst_bitmaps: ffzb 50 127
 First unmarked block is 50
 tst_bitmaps: ffzb 51 127
 First unmarked block is 53
+tst_bitmaps: seti 2
+Setting inode 2, was clear before
+tst_bitmaps: seti 7
+Setting inode 7, was clear before
+tst_bitmaps: copy_cmp
+Copy and compare block/inode bitmaps: OK
+tst_bitmaps: count_b 1 52
+Used blocks in [1..52]: 25
+tst_bitmaps: count_b 10 30
+Used blocks in [10..30]: 9
+tst_bitmaps: count_b 60 127
+Used blocks in [60..127]: 0
+tst_bitmaps: fudge_b 9000
+fudge_b(9000) returned Attempt to fudge end of block bitmap past the real end
+tst_bitmaps: fudge_b 100
+Fudged block bitmap end from 127 to 100
+tst_bitmaps: fudge_b 127
+Fudged block bitmap end from 100 to 127
+tst_bitmaps: fudge_i 9000
+fudge_i(9000) returned Attempt to fudge end of inode bitmap past the real end
+tst_bitmaps: fudge_i 24
+Fudged inode bitmap end from 32 to 24
+tst_bitmaps: fudge_i 32
+Fudged inode bitmap end from 24 to 32
+tst_bitmaps: set_range_b 32 0xa5
+Set/get block bitmap range (32 bits, 0xa5): OK
+tst_bitmaps: dump_bb
+block bitmap: a5a5a5a5000000000000000000000000
+bits set: 16
+tst_bitmaps: zerob
+Clearing block bitmap.
+tst_bitmaps: setb 3
+Setting block 3, was clear before
+tst_bitmaps: setb 19
+Setting block 19, was clear before
+tst_bitmaps: resize_b 20 24
+Resized block bitmap to end=20, real_end=24
+tst_bitmaps: pad_b 24
+padded block bitmap: 0400f4
+bits set: 6
+tst_bitmaps: resize_b 160 160
+Resized block bitmap to end=160, real_end=160
+tst_bitmaps: testb 3
+Block 3 is set
+tst_bitmaps: testb 19
+Block 19 is set
+tst_bitmaps: testb 21
+Block 21 is clear
+tst_bitmaps: testb 155
+Block 155 is clear
+tst_bitmaps: setb 155
+Setting block 155, was clear before
+tst_bitmaps: testb 155
+Block 155 is set
+tst_bitmaps: resize_i 48 64
+Resized inode bitmap to end=48, real_end=64
+tst_bitmaps: testi 45
+Inode 45 is clear
+tst_bitmaps: seti 45
+Setting inode 45, was clear before
+tst_bitmaps: testi 45
+Inode 45 is set
 tst_bitmaps: quit
 tst_bitmaps: 

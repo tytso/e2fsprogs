@@ -146,5 +146,36 @@ ffzb 48 127
 ffzb 49 127
 ffzb 50 127
 ffzb 51 127
+# Copy, compare, count, fudge, resize, padding, and range operations
+seti 2
+seti 7
+copy_cmp
+count_b 1 52
+count_b 10 30
+count_b 60 127
+fudge_b 9000
+fudge_b 100
+fudge_b 127
+fudge_i 9000
+fudge_i 24
+fudge_i 32
+set_range_b 32 0xa5
+dump_bb
+zerob
+setb 3
+setb 19
+resize_b 20 24
+pad_b 24
+resize_b 160 160
+testb 3
+testb 19
+testb 21
+testb 155
+setb 155
+testb 155
+resize_i 48 64
+testi 45
+seti 45
+testi 45
 quit
 
