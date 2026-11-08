@@ -1,3 +1,4 @@
+#include "config.h"
 #include "hashmap.h"
 #include <string.h>
 
@@ -20,7 +21,7 @@ struct ext2fs_hashmap {
 uint32_t ext2fs_djb2_hash(const void *str, size_t size)
 {
 	int c;
-	const char *s = str;
+	const unsigned char *s = str;
 	uint32_t hash = 5381;
 
 	while (size-- > 0) {
@@ -34,8 +35,15 @@ struct ext2fs_hashmap *ext2fs_hashmap_create(
 				uint32_t(*hash_fct)(const void*, size_t),
 				void(*free_fct)(void*), size_t size)
 {
-	struct ext2fs_hashmap *h = calloc(1, sizeof(struct ext2fs_hashmap) +
-				sizeof(struct ext2fs_hashmap_entry) * size);
+	struct ext2fs_hashmap *h;
+
+	if (size == 0 || size > UINT32_MAX || !hash_fct ||
+	    size > (SIZE_MAX - sizeof(struct ext2fs_hashmap)) /
+		   sizeof(struct ext2fs_hashmap_entry *))
+		return NULL;
+
+	h = calloc(1, sizeof(struct ext2fs_hashmap) +
+		      sizeof(struct ext2fs_hashmap_entry *) * size);
 	if (!h)
 		return NULL;
 
@@ -91,9 +99,45 @@ void *ext2fs_hashmap_iter_in_order(struct ext2fs_hashmap *h,
 	return *it ? (*it)->data : NULL;
 }
 
+void ext2fs_hashmap_del(struct ext2fs_hashmap *h,
+			struct ext2fs_hashmap_entry *e)
+{
+	struct ext2fs_hashmap_entry **pp;
+	uint32_t hash;
+
+	if (!h || !e)
+		return;
+
+	hash = h->hash(e->key, e->key_len) % h->size;
+	for (pp = &h->entries[hash]; *pp; pp = &(*pp)->next) {
+		if (*pp == e)
+			break;
+	}
+	if (!*pp)
+		return;
+	*pp = e->next;
+
+	if (e->list_prev)
+		e->list_prev->list_next = e->list_next;
+	else
+		h->first = e->list_next;
+
+	if (e->list_next)
+		e->list_next->list_prev = e->list_prev;
+	else
+		h->last = e->list_prev;
+
+	if (h->free)
+		h->free(e->data);
+	free(e);
+}
+
 void ext2fs_hashmap_free(struct ext2fs_hashmap *h)
 {
 	size_t	i;
+
+	if (!h)
+		return;
 
 	for (i = 0; i < h->size; ++i) {
 		struct ext2fs_hashmap_entry *it = h->entries[i];

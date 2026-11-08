@@ -52,6 +52,10 @@ static void test_djb2_hash(void)
 	      "djb2 honors explicit size parameter");
 	CHECK(ext2fs_djb2_hash("ab\0cd", 5) != ext2fs_djb2_hash("ab\0ef", 5),
 	      "djb2 hashes past embedded NUL bytes");
+	/* High-bit bytes 0x80..0xff must hash as unsigned across all arches */
+	CHECK(ext2fs_djb2_hash("\x80\xff", 2) ==
+	      ((5381U * 33U + 0x80U) * 33U + 0xffU),
+	      "djb2 treats bytes >= 0x80 as unsigned");
 }
 
 static void test_lookup_and_binary_keys(void)
@@ -62,6 +66,18 @@ static void test_lookup_and_binary_keys(void)
 	int				v4 = 404, v5 = 505;
 	const char			bin1[5] = { 'a', 'b', '\0', 'c', 'd' };
 	const char			bin2[5] = { 'a', 'b', '\0', 'e', 'f' };
+
+	CHECK(ext2fs_hashmap_create(ext2fs_djb2_hash, NULL, 0) == NULL,
+	      "hashmap_create rejects size == 0");
+	CHECK(ext2fs_hashmap_create(NULL, NULL, 8) == NULL,
+	      "hashmap_create rejects NULL hash_fct");
+	CHECK(ext2fs_hashmap_create(ext2fs_djb2_hash, NULL, SIZE_MAX) == NULL,
+	      "hashmap_create rejects overflowing size");
+#if SIZE_MAX > UINT32_MAX
+	CHECK(ext2fs_hashmap_create(ext2fs_djb2_hash, NULL,
+				    (size_t) UINT32_MAX + 1) == NULL,
+	      "hashmap_create rejects size > UINT32_MAX");
+#endif
 
 	h = ext2fs_hashmap_create(ext2fs_djb2_hash, NULL, 16);
 	CHECK(h != NULL, "hashmap_create(size=16)");
@@ -150,9 +166,54 @@ static void test_collisions_iter_and_free_cb(void)
 	CHECK(step == 5 && it == NULL,
 	      "iter_in_order visited all 5 entries and terminated cleanly");
 
+	/*
+	 * Delete middle ("k2"), head ("k4" == h->first), and tail ("k0" ==
+	 * h->last) entries via ext2fs_hashmap_del(), verifying bucket chain,
+	 * doubly-linked iteration list, and free_fct on each removal.
+	 */
+	ext2fs_hashmap_del(NULL, NULL);
+	ext2fs_hashmap_del(h, NULL);
+	it = NULL;
+	while (ext2fs_hashmap_iter_in_order(h, &it) != NULL) {
+		if (strcmp(it->key, "k2") == 0) {
+			ext2fs_hashmap_del(h, it);
+			break;
+		}
+	}
+	CHECK(freed_items == 1 && ext2fs_hashmap_lookup(h, "k2", 2) == NULL,
+	      "hashmap_del unlinks and frees middle entry 'k2'");
+
+	it = NULL;
+	CHECK(ext2fs_hashmap_iter_in_order(h, &it) == vals[4] && it != NULL,
+	      "h->first is still 'k4'");
+	ext2fs_hashmap_del(h, it);
+	CHECK(freed_items == 2 && ext2fs_hashmap_lookup(h, "k4", 2) == NULL,
+	      "hashmap_del unlinks and frees head entry 'k4'");
+
+	it = NULL;
+	while (ext2fs_hashmap_iter_in_order(h, &it) != NULL) {
+		if (strcmp(it->key, "k0") == 0) {
+			ext2fs_hashmap_del(h, it);
+			break;
+		}
+	}
+	CHECK(freed_items == 3 && ext2fs_hashmap_lookup(h, "k0", 2) == NULL,
+	      "hashmap_del unlinks and frees tail entry 'k0'");
+
+	/* Remaining entries must be ["k3", "k1"] in order */
+	CHECK(ext2fs_hashmap_lookup(h, "k3", 2) == vals[3] &&
+	      ext2fs_hashmap_lookup(h, "k1", 2) == vals[1],
+	      "remaining entries 'k3' and 'k1' still found by lookup");
+	it = NULL;
+	CHECK(ext2fs_hashmap_iter_in_order(h, &it) == vals[3] &&
+	      ext2fs_hashmap_iter_in_order(h, &it) == vals[1] &&
+	      ext2fs_hashmap_iter_in_order(h, &it) == NULL,
+	      "iter_in_order walks ['k3', 'k1'] cleanly after deletions");
+
 	ext2fs_hashmap_free(h);
+	ext2fs_hashmap_free(NULL);
 	CHECK(freed_items == 5,
-	      "hashmap_free invoked custom free_fct on all 5 entries");
+	      "hashmap_del + hashmap_free invoked free_fct on all 5 entries");
 }
 
 int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
