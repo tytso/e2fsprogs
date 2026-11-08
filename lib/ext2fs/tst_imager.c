@@ -70,8 +70,10 @@ static int make_temp_file(char *tmpl, size_t size)
 	return fd;
 }
 
-static ext2_filsys create_fs_on_file(const char *path, unsigned int blocksize,
-				     blk64_t blocks, ext2_ino_t inodes)
+static ext2_filsys create_fs_on_file_ex(const char *path,
+					unsigned int blocksize,
+					unsigned int cluster_shift,
+					blk64_t blocks, ext2_ino_t inodes)
 {
 	ext2_filsys		fs = NULL;
 	struct ext2_super_block	param;
@@ -81,7 +83,11 @@ static ext2_filsys create_fs_on_file(const char *path, unsigned int blocksize,
 	ext2fs_blocks_count_set(&param, blocks);
 	param.s_inodes_count = inodes;
 	param.s_log_block_size = (blocksize == 4096) ? 2 : 0;
-	param.s_log_cluster_size = param.s_log_block_size;
+	param.s_log_cluster_size = param.s_log_block_size + cluster_shift;
+	if (cluster_shift) {
+		ext2fs_set_feature_extents(&param);
+		ext2fs_set_feature_bigalloc(&param);
+	}
 	param.s_rev_level = EXT2_DYNAMIC_REV;
 	param.s_inode_size = 128;
 
@@ -96,6 +102,9 @@ static ext2_filsys create_fs_on_file(const char *path, unsigned int blocksize,
 		com_err("create_fs_on_file", retval, "allocating tables");
 		exit(1);
 	}
+	if (cluster_shift &&
+	    ext2fs_convert_subcluster_bitmap(fs, &fs->block_map))
+		exit(1);
 	/* Zero inode tables on disk so unallocated slots start deterministic */
 	{
 		dgrp_t g;
@@ -118,6 +127,12 @@ static ext2_filsys create_fs_on_file(const char *path, unsigned int blocksize,
 	if (ext2fs_flush(fs))
 		exit(1);
 	return fs;
+}
+
+static ext2_filsys create_fs_on_file(const char *path, unsigned int blocksize,
+				     blk64_t blocks, ext2_ino_t inodes)
+{
+	return create_fs_on_file_ex(path, blocksize, 0, blocks, inodes);
 }
 
 /*
@@ -319,26 +334,32 @@ static void test_image_inode(void)
  *          for both block bitmaps and IMAGER_FLAG_INODEMAP (including
  *          block-alignment tail padding and lazy bitmap loading).
  */
-static void run_bitmap_roundtrip(unsigned int blocksize, blk64_t blocks,
-				 ext2_ino_t inodes)
+static void run_bitmap_roundtrip(unsigned int blocksize,
+				 unsigned int cluster_shift,
+				 blk64_t blocks, ext2_ino_t inodes)
 {
 	char		src_p[64], dst_p[64], bb_p[64], ib_p[64];
 	int		sfd, dfd, bbfd, ibfd;
 	ext2_filsys	src_fs, dst_fs;
 	struct stat	st;
+	blk64_t		blk_a = 120, blk_b = 211, blk_z = 160;
 
 	sfd = make_temp_file(src_p, (size_t) blocks * blocksize);
 	dfd = make_temp_file(dst_p, (size_t) blocks * blocksize);
 	bbfd = make_temp_file(bb_p, 0);
 	ibfd = make_temp_file(ib_p, 0);
 
-	src_fs = create_fs_on_file(src_p, blocksize, blocks, inodes);
-	dst_fs = create_fs_on_file(dst_p, blocksize, blocks, inodes);
+	src_fs = create_fs_on_file_ex(src_p, blocksize, cluster_shift,
+				      blocks, inodes);
+	dst_fs = create_fs_on_file_ex(dst_p, blocksize, cluster_shift,
+				      blocks, inodes);
 
-	/* Mark distinct data blocks and inodes in src_fs */
-	ext2fs_mark_block_bitmap2(src_fs->block_map, 55);
-	ext2fs_mark_block_bitmap2(src_fs->block_map, 211);
-	ext2fs_unmark_block_bitmap2(src_fs->block_map, 60);
+	/* Mark distinct data blocks/clusters and inodes in src_fs */
+	ext2fs_mark_block_bitmap2(src_fs->block_map, blk_a);
+	ext2fs_unmark_block_bitmap2(src_fs->block_map,
+				    blk_a + EXT2FS_CLUSTER_RATIO(src_fs));
+	ext2fs_mark_block_bitmap2(src_fs->block_map, blk_b);
+	ext2fs_unmark_block_bitmap2(src_fs->block_map, blk_z);
 
 	ext2fs_mark_inode_bitmap2(src_fs->inode_map, 17);
 	ext2fs_mark_inode_bitmap2(src_fs->inode_map, 63);
@@ -396,9 +417,13 @@ static void run_bitmap_roundtrip(unsigned int blocksize, blk64_t blocks,
 	CHECK_RC(ext2fs_image_bitmap_read(dst_fs, ibfd, IMAGER_FLAG_INODEMAP),
 		 0, "image_bitmap_read inode_map");
 
-	CHECK(ext2fs_test_block_bitmap2(dst_fs->block_map, 55) != 0 &&
-	      ext2fs_test_block_bitmap2(dst_fs->block_map, 211) != 0 &&
-	      ext2fs_test_block_bitmap2(dst_fs->block_map, 60) == 0,
+	CHECK(ext2fs_test_block_bitmap2(dst_fs->block_map, blk_a) != 0 &&
+	      ext2fs_test_block_bitmap2(dst_fs->block_map,
+			blk_a + EXT2FS_CLUSTER_RATIO(dst_fs)) == 0 &&
+	      ext2fs_test_block_bitmap2(dst_fs->block_map, blk_b) != 0 &&
+	      ext2fs_test_block_bitmap2(dst_fs->block_map, blk_z) == 0 &&
+	      ext2fs_test_block_bitmap2(dst_fs->block_map,
+					dst_fs->super->s_first_data_block) != 0,
 	      "block bitmap bits restored accurately");
 	CHECK(ext2fs_test_inode_bitmap2(dst_fs->inode_map, 17) != 0 &&
 	      ext2fs_test_inode_bitmap2(dst_fs->inode_map, 63) != 0 &&
@@ -421,10 +446,13 @@ static void test_image_bitmap(void)
 {
 	/*
 	 * 1K blocks (2 groups = 16384 bits = 2048B; 256 inodes = 32B ->
-	 * exercises non-zero tail padding to 1024B) and 4K blocks.
+	 * exercises non-zero tail padding to 1024B), 4K blocks, and both
+	 * 1K-block/4K-cluster and 4K-block/16K-cluster bigalloc filesystems.
 	 */
-	run_bitmap_roundtrip(1024, 16384, 256);
-	run_bitmap_roundtrip(4096, 32768, 256);
+	run_bitmap_roundtrip(1024, 0, 16384, 256);
+	run_bitmap_roundtrip(4096, 0, 32768, 256);
+	run_bitmap_roundtrip(1024, 2, 16384, 256);
+	run_bitmap_roundtrip(4096, 2, 32768, 256);
 	printf("  test_image_bitmap: ok\n");
 }
 
