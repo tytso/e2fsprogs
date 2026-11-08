@@ -244,6 +244,33 @@ static void test_inode_rw_and_icache(void)
 	CHECK(out256.i_uid == 5678 && out256.i_projid == 4242,
 	      "128B write_inode updated i_uid and preserved upper i_projid");
 
+	/*
+	 * Failed write on RO fs must NOT poison a live icache entry, and
+	 * 128B write_inode hit in icache must preserve upper 128B fields.
+	 */
+	fs->flags &= ~EXT2_FLAG_RW;
+	out256.i_uid = 9999;
+	CHECK_RC(ext2fs_write_inode_full(fs, 12, (struct ext2_inode *) &out256,
+					 sizeof(out256)),
+		 EXT2_ET_RO_FILSYS, "write cached inode on RO fs rejected");
+	memset(&out256, 0, sizeof(out256));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &out256,
+					sizeof(out256)), 0,
+		 "read cached inode after failed RO write");
+	CHECK(out256.i_uid == 5678 && out256.i_projid == 4242,
+	      "failed RO write did not poison icache entry");
+	fs->flags |= EXT2_FLAG_RW;
+
+	ino128.i_uid = 6789;
+	CHECK_RC(ext2fs_write_inode(fs, 12, &ino128), 0,
+		 "128B write_inode while 256B inode cached");
+	memset(&out256, 0, sizeof(out256));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &out256,
+					sizeof(out256)), 0,
+		 "read 256B inode from icache after 128B write");
+	CHECK(out256.i_uid == 6789 && out256.i_projid == 4242,
+	      "icache hit after 128B write preserved upper fields");
+
 	/* Exercise icache wrap-around (> 4 distinct inodes) */
 	for (i = 20; i <= 26; i++) {
 		memset(&ino128, 0, sizeof(ino128));
@@ -307,6 +334,24 @@ static void test_inode_csum_handling(void)
 					sizeof(out)), 0,
 		 "read_inode_full verifies valid csum");
 	CHECK(out.i_uid == 3333, "valid csum inode data matches");
+
+	/*
+	 * Overwrite cached inode with zeroed checksum fields; icache hit must
+	 * reflect the newly computed i_checksum_lo/hi, not the caller's zeros.
+	 */
+	ino.i_uid = 3456;
+	ino.i_checksum_lo = 0;
+	ino.i_checksum_hi = 0;
+	CHECK_RC(ext2fs_write_inode_full(fs, 14, (struct ext2_inode *) &ino,
+					 sizeof(ino)), 0,
+		 "write cached inode with zeroed csum fields");
+	memset(&out, 0, sizeof(out));
+	CHECK_RC(ext2fs_read_inode_full(fs, 14, (struct ext2_inode *) &out,
+					sizeof(out)), 0,
+		 "read updated inode from icache");
+	CHECK(out.i_uid == 3456 &&
+	      (out.i_checksum_lo != 0 || out.i_checksum_hi != 0),
+	      "icache stores freshly computed inode checksum");
 
 	/* Mutate i_uid and write with WRITE_INODE_NOCSUM -> stale checksum! */
 	out.i_uid = 4444;

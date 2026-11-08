@@ -919,6 +919,9 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 	if ((ino == 0) || (ino > fs->super->s_inodes_count))
 		return EXT2_ET_BAD_INODE_NUM;
 
+	if (!(fs->flags & EXT2_FLAG_RW))
+		return EXT2_ET_RO_FILSYS;
+
 	/* Prepare our shadow buffer for read/modify/byteswap/write */
 	retval = ext2fs_get_mem(length, &w_inode);
 	if (retval)
@@ -932,26 +935,12 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 			goto errout;
 	}
 
-	/* Check to see if the inode cache needs to be updated */
-	if (fs->icache) {
-		for (i=0; i < fs->icache->cache_size; i++) {
-			if (fs->icache->cache[i].ino == ino) {
-				memcpy(fs->icache->cache[i].inode, inode,
-				       (bufsize > length) ? length : bufsize);
-				break;
-			}
-		}
-	} else {
+	if (!fs->icache) {
 		retval = ext2fs_create_inode_cache(fs, 4);
 		if (retval)
 			goto errout;
 	}
 	memcpy(w_inode, inode, (bufsize > length) ? length : bufsize);
-
-	if (!(fs->flags & EXT2_FLAG_RW)) {
-		retval = EXT2_ET_RO_FILSYS;
-		goto errout;
-	}
 
 #ifdef WORDS_BIGENDIAN
 	ext2fs_swap_inode_full(fs, w_inode, w_inode, 1, length);
@@ -1003,13 +992,37 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 
 		retval = io_channel_write_blk64(fs->io, block_nr, 1,
 					      fs->icache->buffer);
-		if (retval)
+		if (retval) {
+			fs->icache->buffer_blk = 0;
+			for (i = 0; i < fs->icache->cache_size; i++) {
+				if (fs->icache->cache[i].ino == ino) {
+					fs->icache->cache[i].ino = 0;
+					break;
+				}
+			}
 			goto errout;
+		}
 
 		offset = 0;
 		ptr += clen;
 		length -= clen;
 		block_nr++;
+	}
+
+	/* Check to see if the inode cache needs to be updated */
+	for (i = 0; i < fs->icache->cache_size; i++) {
+		if (fs->icache->cache[i].ino == ino) {
+#ifdef WORDS_BIGENDIAN
+			ext2fs_swap_inode_full(fs,
+				(struct ext2_inode_large *)
+				fs->icache->cache[i].inode,
+				w_inode, 0, EXT2_INODE_SIZE(fs->super));
+#else
+			memcpy(fs->icache->cache[i].inode, w_inode,
+			       EXT2_INODE_SIZE(fs->super));
+#endif
+			break;
+		}
 	}
 
 	fs->flags |= EXT2_FLAG_CHANGED;
