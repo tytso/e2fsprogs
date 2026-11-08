@@ -742,6 +742,45 @@ static void test_link_unlink_and_iterate(void)
 	ext2fs_free_mem(&blkbuf);
 
 	teardown_fs(&fs);
+
+	/*
+	 * 64 KiB blocksize unlink: merging the only two entries in a 64 KiB
+	 * directory block must encode rec_len via ext2fs_set_rec_len()
+	 * (EXT4_MAX_REC_LEN == 0xffff) instead of wrapping 16-bit addition
+	 * to 0.
+	 */
+	fs = setup_fs(65536, 64, 256, 256, 0,
+		      EXT3_FEATURE_INCOMPAT_EXTENTS |
+		      EXT2_FEATURE_INCOMPAT_FILETYPE, 0);
+	dir = 0;
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "d64k", &dir), 0,
+		 "mkdir d64k");
+	CHECK_RC(ext2fs_expand_dir(fs, dir), 0, "expand d64k to 2x64KiB");
+	f1 = alloc_reg_inode(fs);
+	f2 = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_link(fs, dir, "first", f1,
+			     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+		 "link first in 64KiB blk1");
+	CHECK_RC(ext2fs_link(fs, dir, "second", f2,
+			     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+		 "link second in 64KiB blk1");
+	CHECK_RC(ext2fs_unlink(fs, dir, "second", f2, 0), 0,
+		 "unlink second in 64KiB blk1");
+	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read d64k inode");
+	CHECK_RC(ext2fs_bmap2(fs, dir, &inode, NULL, 0, 1, NULL, &blk1), 0,
+		 "bmap d64k blk1");
+	CHECK_RC(ext2fs_get_mem(fs->blocksize, &blkbuf), 0, "alloc 64k buf");
+	CHECK_RC(ext2fs_read_dir_block4(fs, blk1, blkbuf, 0, dir), 0,
+		 "read d64k blk1");
+	CHECK(((struct ext2_dir_entry *) blkbuf)->rec_len == 0xffff,
+	      "64KiB merged rec_len encoded as 0xffff, not wrapped to 0");
+	CHECK_RC(ext2fs_lookup(fs, dir, "first", 5, NULL, &found), 0,
+		 "lookup first after 64KiB unlink");
+	CHECK(found == f1, "first still resolves to f1");
+	CHECK_RC(ext2fs_lookup(fs, dir, "second", 6, NULL, &found),
+		 EXT2_ET_FILE_NOT_FOUND, "second gone after 64KiB unlink");
+	ext2fs_free_mem(&blkbuf);
+	teardown_fs(&fs);
 	printf("  test_link_unlink_and_iterate: ok\n");
 }
 
