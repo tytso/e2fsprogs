@@ -56,7 +56,7 @@ struct ext2_qcow2_hdr *qcow2_read_header(int fd)
 {
 	void *buffer = NULL;
 	struct ext2_qcow2_hdr *hdr = NULL;
-	size_t size;
+	ssize_t size;
 	errcode_t ret;
 
 	ret = ext2fs_get_mem(sizeof(struct ext2_qcow2_hdr), &buffer);
@@ -64,13 +64,13 @@ struct ext2_qcow2_hdr *qcow2_read_header(int fd)
 		return NULL;
 	memset(buffer, 0, sizeof(struct ext2_qcow2_hdr));
 
-	if (ext2fs_llseek(fd, 0, SEEK_SET < 0)) {
+	if (ext2fs_llseek(fd, 0, SEEK_SET) < 0) {
 		ext2fs_free_mem(&buffer);
 		return NULL;
 	}
 
 	size = read(fd, buffer, sizeof(struct ext2_qcow2_hdr));
-	if (size != sizeof(struct ext2_qcow2_hdr)) {
+	if (size != (ssize_t)sizeof(struct ext2_qcow2_hdr)) {
 		ext2fs_free_mem(&buffer);
 		return NULL;
 	}
@@ -89,7 +89,8 @@ struct ext2_qcow2_hdr *qcow2_read_header(int fd)
 static int qcow2_read_l1_table(struct ext2_qcow2_image *img)
 {
 	int fd = img->fd;
-	size_t size, l1_size = img->l1_size * sizeof(blk64_t);
+	size_t l1_size = (size_t)img->l1_size * sizeof(blk64_t);
+	ssize_t size;
 	blk64_t *table;
 	errcode_t ret;
 
@@ -98,14 +99,17 @@ static int qcow2_read_l1_table(struct ext2_qcow2_image *img)
 		return ret;
 
 	if (ext2fs_llseek(fd, img->l1_offset, SEEK_SET) < 0) {
+		ret = errno ? errno : EIO;
 		ext2fs_free_mem(&table);
-		return errno;
+		return ret;
 	}
 
+	errno = 0;
 	size = read(fd, table, l1_size);
-	if (size != l1_size) {
+	if (size != (ssize_t)l1_size) {
+		ret = (size < 0 && errno) ? errno : -QCOW_CORRUPTED;
 		ext2fs_free_mem(&table);
-		return errno;
+		return ret;
 	}
 
 	img->l1_table = table;
@@ -117,16 +121,17 @@ static int qcow2_read_l2_table(struct ext2_qcow2_image *img,
 			       __u64 offset, blk64_t **l2_table)
 {
 	int fd = img->fd;
-	size_t size;
+	ssize_t size;
 
 	assert(*l2_table);
 
 	if (ext2fs_llseek(fd, offset, SEEK_SET) < 0)
-		return errno;
+		return errno ? errno : EIO;
 
+	errno = 0;
 	size = read(fd, *l2_table, img->cluster_size);
-	if (size != img->cluster_size)
-		return errno;
+	if (size != (ssize_t)img->cluster_size)
+		return (size < 0 && errno) ? errno : -QCOW_CORRUPTED;
 
 	return 0;
 }
@@ -156,11 +161,11 @@ static int qcow2_copy_data(int fdin, int fdout, __u64 off_in,
 
 		for (ptr = buf, c = c1; c > 0; ptr += c2, c -= c2) {
 			errno = 0;
-			c2 = write(fdout, ptr, c1);
+			c2 = write(fdout, ptr, c);
 			if (c2 < 0 || ((c2 == 0) && errno))
 				return errno;
 			if (c2 == 0 && --retries <= 0)
-				break; /* This should never happen...  */
+				return EIO;
 		}
 		count -= c1;
 	}
@@ -172,12 +177,12 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 			      struct ext2_qcow2_hdr *hdr)
 {
 	struct ext2_qcow2_image img;
-	errcode_t ret = 0;
+	ext2fs_struct_stat st;
+	int ret = 0;
 	unsigned int l1_index, l2_index;
 	__u64 offset;
 	blk64_t *l1_table, *l2_table = NULL;
 	void *copy_buf = NULL;
-	size_t size;
 	unsigned int max_l1_size;
 
 	if (hdr->crypt_method)
@@ -190,10 +195,10 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 	img.cluster_bits = ext2fs_be32_to_cpu(hdr->cluster_bits);
 	if (img.cluster_bits < 9 || img.cluster_bits > 31)
 		return -QCOW_CORRUPTED;
-	img.cluster_size = 1 << img.cluster_bits;
+	img.cluster_size = 1U << img.cluster_bits;
 	img.l1_size = ext2fs_be32_to_cpu(hdr->l1_size);
 	img.l1_offset = ext2fs_be64_to_cpu(hdr->l1_table_offset);
-	img.l2_size = 1 << (img.cluster_bits - 3);
+	img.l2_size = 1U << (img.cluster_bits - 3);
 	img.image_size = ext2fs_be64_to_cpu(hdr->size);
 
 	if (img.l1_offset & (img.cluster_size - 1))
@@ -208,7 +213,7 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 	if (ret)
 		goto out;
 
-	ret = ext2fs_get_memzero(1 << img.cluster_bits, &copy_buf);
+	ret = ext2fs_get_memzero(img.cluster_size, &copy_buf);
 	if (ret)
 		goto out;
 
@@ -229,8 +234,7 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 		offset = ext2fs_be64_to_cpu(l1_table[l1_index]) &
 			 ~QCOW_OFLAG_COPIED;
 
-		if ((offset > img.image_size) ||
-		    (offset <= 0))
+		if (offset == 0)
 			continue;
 
 		if (offset & QCOW_OFLAG_COMPRESSED) {
@@ -238,14 +242,23 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 			goto out;
 		}
 
+		if (offset & (img.cluster_size - 1)) {
+			ret = -QCOW_CORRUPTED;
+			goto out;
+		}
+
 		ret = qcow2_read_l2_table(&img, offset, &l2_table);
 		if (ret)
-			break;
+			goto out;
 
 		/* Walk through l2 table and copy data blocks into raw image */
 		for (l2_index = 0; l2_index < img.l2_size; l2_index++) {
-			offset = ext2fs_be64_to_cpu(l2_table[l2_index]) &
-				 ~QCOW_OFLAG_COPIED;
+			offset = ext2fs_be64_to_cpu(l2_table[l2_index]);
+			if (offset & QCOW_OFLAG_COMPRESSED) {
+				ret = -QCOW_COMPRESSED;
+				goto out;
+			}
+			offset &= ~QCOW_OFLAG_COPIED;
 
 			if (offset == 0)
 				continue;
@@ -261,16 +274,15 @@ int qcow2_write_raw_image(int qcow2_fd, int raw_fd,
 	}
 
 	/* Resize the output image to the filesystem size */
-	if (ext2fs_llseek(raw_fd, img.image_size - 1, SEEK_SET) < 0) {
+	if (ext2fs_fstat(raw_fd, &st) < 0) {
 		ret = errno;
 		goto out;
 	}
-
-	((char *)copy_buf)[0] = 0;
-	size = write(raw_fd, copy_buf, 1);
-	if (size != 1) {
-		ret = errno;
-		goto out;
+	if (S_ISREG(st.st_mode) && (__u64)st.st_size < img.image_size) {
+		if (ftruncate(raw_fd, img.image_size) < 0) {
+			ret = errno;
+			goto out;
+		}
 	}
 
 out:

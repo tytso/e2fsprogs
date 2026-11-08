@@ -142,28 +142,19 @@ static void test_qcow2_header_validation(void)
  * Helper to synthesize and convert a multi-L1, sparse QCOW2 v2 image for a
  * given cluster_bits (e.g. 9 -> 512B clusters, 10 -> 1KiB clusters).
  *
- * For cluster_size = C, l2_size = C / 8 entries per L2 table:
- *   Virtual image spans 3 L1 entries: image_size = 3 * l2_size * C.
- *   QCOW2 layout (all offsets <= image_size):
- *     cluster 0: header
- *     cluster 1: L1 table (3 entries: L1[0] -> cl 2 | COPIED,
- *                                     L1[1] -> 0 (unallocated L1 hole),
- *                                     L1[2] -> cl 3)
- *     cluster 2: L2 table for L1[0] (slot 0 -> cl 4 | COPIED,
- *                                    slot 5 -> cl 5, rest 0)
- *     cluster 3: L2 table for L1[2] (slot 1 -> cl 6,
- *                                    slot (l2_size - 1) -> 0 (sparse tail))
- *     cluster 4: data pattern A
- *     cluster 5: data pattern B
- *     cluster 6: data pattern C
+ * Tests both L2 tables stored at host offsets > image_size and preserving a
+ * non-zero final byte when final_alloc != 0 (vs. extending a sparse tail when
+ * final_alloc == 0).
  */
-static void run_qcow2_conversion_case(unsigned int cluster_bits)
+static void run_qcow2_conversion_case(unsigned int cluster_bits,
+				      int final_alloc)
 {
 	char			qpath[64], rpath[64];
 	int			qfd, rfd;
 	unsigned int		csz = 1U << cluster_bits;
 	unsigned int		l2_entries = 1U << (cluster_bits - 3);
 	__u64			image_size = (__u64) 3 * l2_entries * csz;
+	__u64			high_l2_off = image_size + csz;
 	struct ext2_qcow2_hdr	raw_hdr, *hdr;
 	__u64			l1_tab[3];
 	__u64			*l2_tab = NULL;
@@ -187,6 +178,7 @@ static void run_qcow2_conversion_case(unsigned int cluster_bits)
 		pat_b[i] = (unsigned char) ((i * 7 + 0x5a) & 0xff);
 		pat_c[i] = (unsigned char) ((i * 13 + 0xa5) & 0xff);
 	}
+	pat_c[csz - 1] = 0xfe;
 
 	/* Cluster 0: QCOW2 header */
 	memset(&raw_hdr, 0, sizeof(raw_hdr));
@@ -199,10 +191,10 @@ static void run_qcow2_conversion_case(unsigned int cluster_bits)
 	CHECK(pwrite(qfd, &raw_hdr, sizeof(raw_hdr), 0) ==
 	      (ssize_t) sizeof(raw_hdr), "write qcow2 hdr");
 
-	/* Cluster 1: L1 table */
+	/* Cluster 1: L1 table (L1[2] placed past virtual image_size!) */
 	l1_tab[0] = ext2fs_cpu_to_be64(((__u64) 2 * csz) | QCOW_OFLAG_COPIED);
 	l1_tab[1] = 0;
-	l1_tab[2] = ext2fs_cpu_to_be64((__u64) 3 * csz);
+	l1_tab[2] = ext2fs_cpu_to_be64(high_l2_off);
 	CHECK(pwrite(qfd, l1_tab, sizeof(l1_tab), (off_t) (1 * csz)) ==
 	      (ssize_t) sizeof(l1_tab), "write L1 table");
 
@@ -213,11 +205,13 @@ static void run_qcow2_conversion_case(unsigned int cluster_bits)
 	CHECK(pwrite(qfd, l2_tab, csz, (off_t) (2 * csz)) == (ssize_t) csz,
 	      "write L2[0] table");
 
-	/* Cluster 3: L2 table for L1[2] */
+	/* L2 table for L1[2] at host offset > image_size */
 	memset(l2_tab, 0, csz);
 	l2_tab[1] = ext2fs_cpu_to_be64((__u64) 6 * csz);
-	CHECK(pwrite(qfd, l2_tab, csz, (off_t) (3 * csz)) == (ssize_t) csz,
-	      "write L2[2] table");
+	if (final_alloc)
+		l2_tab[l2_entries - 1] = ext2fs_cpu_to_be64((__u64) 6 * csz);
+	CHECK(pwrite(qfd, l2_tab, csz, (off_t) high_l2_off) == (ssize_t) csz,
+	      "write L2[2] table past image_size");
 
 	/* Clusters 4, 5, 6: out-of-order/packed data clusters */
 	CHECK(pwrite(qfd, pat_a, csz, (off_t) (4 * csz)) == (ssize_t) csz,
@@ -231,7 +225,11 @@ static void run_qcow2_conversion_case(unsigned int cluster_bits)
 	memcpy(expected + (size_t) 0 * csz, pat_a, csz);
 	memcpy(expected + (size_t) 5 * csz, pat_b, csz);
 	memcpy(expected + ((size_t) (2 * l2_entries + 1) * csz), pat_c, csz);
+	if (final_alloc)
+		memcpy(expected + image_size - csz, pat_c, csz);
 
+	/* Also verify qcow2_read_header seeks back to 0 from non-zero pos */
+	CHECK(lseek(qfd, 128, SEEK_SET) == 128, "seek away from 0");
 	hdr = qcow2_read_header(qfd);
 	CHECK(hdr != NULL, "qcow2_read_header for conversion");
 	if (hdr) {
@@ -246,6 +244,9 @@ static void run_qcow2_conversion_case(unsigned int cluster_bits)
 	      "read entire raw image");
 	CHECK(memcmp(actual, expected, image_size) == 0,
 	      "raw image matches expected data and sparse holes byte-for-byte");
+	if (final_alloc)
+		CHECK(actual[image_size - 1] == 0xfe,
+		      "final byte of raw image not clobbered with 0x00");
 
 	ext2fs_free_mem(&actual);
 	ext2fs_free_mem(&expected);
@@ -259,11 +260,77 @@ static void run_qcow2_conversion_case(unsigned int cluster_bits)
 	unlink(qpath);
 }
 
+static void test_qcow2_corrupt_and_compressed(void)
+{
+	char			qpath[64], rpath[64];
+	int			qfd, rfd;
+	struct ext2_qcow2_hdr	raw_hdr, *hdr;
+	__u64			l1_entry;
+	__u64			l2_tab[64]; /* 512B cluster */
+
+	qfd = make_temp_file(qpath);
+	rfd = make_temp_file(rpath);
+
+	memset(&raw_hdr, 0, sizeof(raw_hdr));
+	raw_hdr.magic = ext2fs_cpu_to_be32(QCOW_MAGIC);
+	raw_hdr.version = ext2fs_cpu_to_be32(QCOW_VERSION);
+	raw_hdr.cluster_bits = ext2fs_cpu_to_be32(9);
+	raw_hdr.size = ext2fs_cpu_to_be64(32768ULL);
+	raw_hdr.l1_size = ext2fs_cpu_to_be32(1);
+	raw_hdr.l1_table_offset = ext2fs_cpu_to_be64(512ULL);
+	CHECK(pwrite(qfd, &raw_hdr, sizeof(raw_hdr), 0) ==
+	      (ssize_t) sizeof(raw_hdr), "write hdr");
+
+	/* 1. L2 table pointing past EOF must return -QCOW_CORRUPTED */
+	l1_entry = ext2fs_cpu_to_be64(1024ULL);
+	CHECK(pwrite(qfd, &l1_entry, sizeof(l1_entry), 512) ==
+	      (ssize_t) sizeof(l1_entry), "write L1 -> truncated L2");
+	hdr = qcow2_read_header(qfd);
+	CHECK(hdr != NULL, "read hdr for truncated L2");
+	if (hdr) {
+		CHECK(qcow2_write_raw_image(qfd, rfd, hdr) == -QCOW_CORRUPTED,
+		      "truncated L2 table at EOF returns -QCOW_CORRUPTED");
+		ext2fs_free_mem(&hdr);
+	}
+
+	/* 2. L2 entry with QCOW_OFLAG_COMPRESSED must return -QCOW_COMPRESSED */
+	memset(l2_tab, 0, sizeof(l2_tab));
+	l2_tab[0] = ext2fs_cpu_to_be64(QCOW_OFLAG_COMPRESSED | 2048ULL);
+	CHECK(pwrite(qfd, l2_tab, sizeof(l2_tab), 1024) ==
+	      (ssize_t) sizeof(l2_tab), "write compressed L2");
+	hdr = qcow2_read_header(qfd);
+	CHECK(hdr != NULL, "read hdr for compressed L2");
+	if (hdr) {
+		CHECK(qcow2_write_raw_image(qfd, rfd, hdr) == -QCOW_COMPRESSED,
+		      "compressed L2 entry returns -QCOW_COMPRESSED");
+		ext2fs_free_mem(&hdr);
+	}
+
+	/* 3. Truncated L1 table at EOF must return -QCOW_CORRUPTED, not crash */
+	fflush(stdout);
+	fflush(stderr);
+	CHECK(ftruncate(qfd, sizeof(raw_hdr)) == 0, "truncate before L1");
+	hdr = qcow2_read_header(qfd);
+	CHECK(hdr != NULL, "read hdr for truncated L1");
+	if (hdr) {
+		CHECK(qcow2_write_raw_image(qfd, rfd, hdr) == -QCOW_CORRUPTED,
+		      "truncated L1 table at EOF returns -QCOW_CORRUPTED");
+		ext2fs_free_mem(&hdr);
+	}
+
+	close(rfd);
+	close(qfd);
+	unlink(rpath);
+	unlink(qpath);
+	printf("  test_qcow2_corrupt_and_compressed: ok\n");
+}
+
 static void test_qcow2_raw_conversion(void)
 {
 	/* Test minimum cluster size (512B, cluster_bits=9) and 1KiB (10) */
-	run_qcow2_conversion_case(9);
-	run_qcow2_conversion_case(10);
+	run_qcow2_conversion_case(9, 1);
+	run_qcow2_conversion_case(10, 0);
+	run_qcow2_conversion_case(10, 1);
 	printf("  test_qcow2_raw_conversion: ok\n");
 }
 
@@ -274,6 +341,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 
 	test_qcow2_header_validation();
 	test_qcow2_raw_conversion();
+	test_qcow2_corrupt_and_compressed();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_qcow2: %d checks run, %d failed\n",
