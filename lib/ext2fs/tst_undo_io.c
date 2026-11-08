@@ -290,6 +290,22 @@ static void test_undo_coalesce_reopen_and_replay(void)
 
 	CHECK_RC(set_undo_io_backing_manager(unix_io_manager), 0,
 		 "set_undo_io_backing_manager");
+
+	/* Opening with an unopenable backup path must fail, not return 0 */
+	CHECK_RC(set_undo_io_backup_file(
+			"/tmp/e2fs_nonexistent_undo_dir_7f3a9c/sub.e2undo"), 0,
+		 "set unopenable backup path");
+	io = (io_channel) (uintptr_t) 0x1;
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io), ENOENT,
+		 "undo_open fails with ENOENT on missing backup directory");
+	fflush(stdout);
+
+	/* Opening without a configured backup file must fail cleanly */
+	CHECK_RC(set_undo_io_backup_file(NULL), 0, "clear backup file");
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io),
+		 EXT2_ET_INVALID_ARGUMENT,
+		 "undo_open rejects NULL backup file");
+
 	CHECK_RC(set_undo_io_backup_file(undo_path), 0,
 		 "set_undo_io_backup_file");
 
