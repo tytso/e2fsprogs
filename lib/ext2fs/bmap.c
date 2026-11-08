@@ -235,7 +235,7 @@ static errcode_t extent_bmap(ext2_filsys fs, ext2_ino_t ino,
 	if (retval)
 		return retval;
 	offset = block - extent.e_lblk;
-	if (block >= extent.e_lblk && (offset <= extent.e_len)) {
+	if (block >= extent.e_lblk && (offset < extent.e_len)) {
 		*phys_blk = extent.e_pblk + offset;
 		if (ret_flags && extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT)
 			*ret_flags |= BMAP_RET_UNINIT;
@@ -331,6 +331,7 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 			return retval;
 		inode = &inode_buf;
 	}
+	alloc_ctx.inode = inode;
 	addr_per_block = (blk_t) fs->blocksize >> 2;
 
 	if (ext2fs_file_block_offset_too_big(fs, inode, block))

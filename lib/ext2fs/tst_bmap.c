@@ -333,6 +333,25 @@ static void test_preconditions_and_bounds(void)
 	printf("test_preconditions_and_bounds: completed\n");
 }
 
+static int alloc_cb_ctx_calls;
+static int alloc_cb_null_inode;
+static ext2_ino_t alloc_cb_last_ino;
+static __u16 alloc_cb_last_mode;
+
+static errcode_t track_alloc_block2(ext2_filsys fs, blk64_t goal,
+				    blk64_t *ret, struct blk_alloc_ctx *ctx)
+{
+	if (ctx) {
+		alloc_cb_ctx_calls++;
+		alloc_cb_last_ino = ctx->ino;
+		if (!ctx->inode)
+			alloc_cb_null_inode++;
+		else
+			alloc_cb_last_mode = ctx->inode->i_mode;
+	}
+	return ext2fs_new_block3(fs, goal, fs->block_map, ret, ctx);
+}
+
 /*
  * Suite 2: Indirect block mapping (direct, IND, DIND, TIND; BMAP_ALLOC,
  * BMAP_SET, BMAP_ZERO, caller block_buf vs NULL, inode == NULL)
@@ -499,14 +518,34 @@ static void test_indirect_bmap(void)
 	check_err("lookup_ind15_cleared", retval, 0);
 	check_u64("lookup_ind15_zero", pblk, 0);
 
-	/* Verify inode == NULL BMAP_ALLOC persists to disk */
+	/*
+	 * Verify inode == NULL BMAP_ALLOC persists to disk and passes a
+	 * non-NULL ctx->inode to get_alloc_block2 for direct and IND blocks
+	 */
 	init_reg_inode(fs, 13, 0, &disk_inode);
+	alloc_cb_ctx_calls = 0;
+	alloc_cb_null_inode = 0;
+	alloc_cb_last_ino = 0;
+	alloc_cb_last_mode = 0;
+	fs->get_alloc_block2 = track_alloc_block2;
 	retval = ext2fs_bmap2(fs, 13, NULL, NULL, BMAP_ALLOC, 2, NULL, &pblk);
 	check_err("alloc_null_inode_ptr", retval, 0);
+	check_u64("alloc_null_inode_cb_calls1", alloc_cb_ctx_calls, 1);
+	check_u64("alloc_null_inode_cb_nonnull1", alloc_cb_null_inode, 0);
+	check_u64("alloc_null_inode_cb_ino", alloc_cb_last_ino, 13);
+	check_u64("alloc_null_inode_cb_isreg",
+		  LINUX_S_ISREG(alloc_cb_last_mode), 1);
 	retval = ext2fs_read_inode(fs, 13, &disk_inode);
 	check_err("read_ino13", retval, 0);
 	check_u64("ino13_iblock2", disk_inode.i_block[2], pblk);
 	check_u64("ino13_iblocks", ext2fs_inode_i_blocks(fs, &disk_inode), 2);
+
+	retval = ext2fs_bmap2(fs, 13, NULL, block_buf, BMAP_ALLOC, 12,
+			      NULL, &pblk);
+	check_err("alloc_null_inode_ind12", retval, 0);
+	check_u64("alloc_null_inode_cb_calls2", alloc_cb_ctx_calls, 2);
+	check_u64("alloc_null_inode_cb_nonnull2", alloc_cb_null_inode, 0);
+	fs->get_alloc_block2 = NULL;
 
 	ext2fs_free_mem(&block_buf);
 	teardown_fs(&fs);
@@ -563,14 +602,24 @@ static void test_extent_bmap(void)
 	check_err("ext_lookup_uninit_null_flags", retval, 0);
 	check_u64("ext_lookup_uninit_null_pblk", pblk, b_uninit);
 
-	/* Sparse holes before, between, and after extents */
+	/* Sparse holes before, exact upper boundary (e_lblk + e_len), between,
+	 * and after extents */
 	retval = ext2fs_bmap2(fs, 12, &inode, NULL, 0, 5, &ret_flags, &pblk);
 	check_err("ext_hole_before", retval, 0);
 	check_u64("ext_hole_before_pblk", pblk, 0);
 
+	retval = ext2fs_bmap2(fs, 12, &inode, NULL, 0, 11, &ret_flags, &pblk);
+	check_err("ext_hole_exact_end_init", retval, 0);
+	check_u64("ext_hole_exact_end_init_pblk", pblk, 0);
+
 	retval = ext2fs_bmap2(fs, 12, &inode, NULL, 0, 15, &ret_flags, &pblk);
 	check_err("ext_hole_between", retval, 0);
 	check_u64("ext_hole_between_pblk", pblk, 0);
+
+	retval = ext2fs_bmap2(fs, 12, &inode, NULL, 0, 21, &ret_flags, &pblk);
+	check_err("ext_hole_exact_end_uninit", retval, 0);
+	check_u64("ext_hole_exact_end_uninit_pblk", pblk, 0);
+	check_u64("ext_hole_exact_end_uninit_flags", ret_flags, 0);
 
 	retval = ext2fs_bmap2(fs, 12, &inode, NULL, 0, 99, &ret_flags, &pblk);
 	check_err("ext_hole_after", retval, 0);
