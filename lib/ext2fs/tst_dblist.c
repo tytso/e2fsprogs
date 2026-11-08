@@ -242,6 +242,54 @@ static void test_dblist_core(ext2_filsys fs)
 	      "32-bit passthrough wrote modified blk back to entries");
 
 	ext2fs_free_dblist(db);
+
+	/*
+	 * 4. 64-bit blk, high-bit ext2_ino_t, and 64-bit e2_blkcnt_t sort
+	 *    ordering without 32-bit int subtraction truncation/wraparound.
+	 */
+	CHECK_RC(ext2fs_init_dblist(fs, &db), 0, "init 64-bit sort dblist");
+	CHECK_RC(ext2fs_add_dir_block2(db, 10, (1ULL << 32) + 100, 0), 0,
+		 "add blk 2^32+100");
+	CHECK_RC(ext2fs_add_dir_block2(db, 10, 0x90000000ULL, 0), 0,
+		 "add blk 0x90000000");
+	CHECK_RC(ext2fs_add_dir_block2(db, 10, 100ULL, 0), 0,
+		 "add blk 100");
+	CHECK_RC(ext2fs_add_dir_block2(db, 10, 0x50000000ULL, 0), 0,
+		 "add blk 0x50000000");
+	CHECK_RC(ext2fs_add_dir_block2(db, 10, 1ULL, 0), 0,
+		 "add blk 1");
+	CHECK_RC(ext2fs_add_dir_block2(db, 0x90000000U, (1ULL << 33),
+				       (1LL << 32) + 5), 0,
+		 "add high ino + high blockcnt");
+	CHECK_RC(ext2fs_add_dir_block2(db, 0x90000000U, (1ULL << 33), 5), 0,
+		 "add high ino + low blockcnt");
+	CHECK_RC(ext2fs_add_dir_block2(db, 0x90000000U, (1ULL << 33), -1), 0,
+		 "add high ino + negative blockcnt");
+	CHECK_RC(ext2fs_add_dir_block2(db, 12U, (1ULL << 33), 0), 0,
+		 "add low ino at 2^33");
+	CHECK_RC(ext2fs_add_dir_block2(db, 0x50000000U, (1ULL << 33), 0), 0,
+		 "add mid ino at 2^33");
+
+	memset(&log, 0, sizeof(log));
+	CHECK_RC(ext2fs_dblist_iterate2(db, record_db2_cb, &log), 0,
+		 "dblist_iterate2 sorts 64-bit values");
+	CHECK(log.count == 10 &&
+	      log.entries[0].blk == 1ULL &&
+	      log.entries[1].blk == 100ULL &&
+	      log.entries[2].blk == 0x50000000ULL &&
+	      log.entries[3].blk == 0x90000000ULL &&
+	      log.entries[4].blk == (1ULL << 32) + 100,
+	      "64-bit blk values sorted monotonically");
+	CHECK(log.entries[5].ino == 12U &&
+	      log.entries[6].ino == 0x50000000U &&
+	      log.entries[7].ino == 0x90000000U &&
+	      log.entries[7].blockcnt == -1 &&
+	      log.entries[8].ino == 0x90000000U &&
+	      log.entries[8].blockcnt == 5 &&
+	      log.entries[9].ino == 0x90000000U &&
+	      log.entries[9].blockcnt == (1LL << 32) + 5,
+	      "high-bit ino and 64-bit blockcnt sorted monotonically");
+	ext2fs_free_dblist(db);
 }
 
 struct dir_visit {
