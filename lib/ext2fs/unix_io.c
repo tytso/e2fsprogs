@@ -831,6 +831,31 @@ unlock:
 	mutex_unlock(data, CACHE_MTX);
 	return retval;
 }
+
+/*
+ * Drop any cached copies (including unflushed dirty writes) covering
+ * [block, block + count) after discard or zeroout updates the backing file.
+ */
+static void invalidate_cached_range(struct unix_private_data *data,
+				    unsigned long long block,
+				    unsigned long long count)
+{
+	struct unix_cache *cache;
+	unsigned int i;
+
+	if ((data->flags & IO_FLAG_NOCACHE) || !data->cache || !count)
+		return;
+	mutex_lock(data, CACHE_MTX);
+	for (i = 0, cache = data->cache; i < data->cache_size; i++, cache++) {
+		if (cache->in_use && cache->block >= block &&
+		    cache->block - block < count) {
+			cache->dirty = 0;
+			cache->in_use = 0;
+			cache->write_err = 0;
+		}
+	}
+	mutex_unlock(data, CACHE_MTX);
+}
 #endif /* NO_IO_CACHE */
 
 #ifdef __linux__
@@ -1086,8 +1111,11 @@ static errcode_t unixfd_open(const char *str_fd, int flags,
 	if (fd_flags == -1)
 		return EBADF;
 
-	/* O_EXCL is cleared by Linux at open and not returned by F_GETFL */
-	flags &= IO_FLAG_EXCLUSIVE;
+	/*
+	 * Recompute RW and DIRECT_IO from F_GETFL while preserving caller
+	 * flags not reflected by F_GETFL (EXCLUSIVE, NOCACHE, THREADS, etc.).
+	 */
+	flags &= ~(IO_FLAG_RW | IO_FLAG_DIRECT_IO);
 	if (fd_flags & O_RDWR)
 		flags |= IO_FLAG_RW;
 #if defined(O_DIRECT)
@@ -1574,6 +1602,9 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 		}
 		return errno;
 	}
+#ifndef NO_IO_CACHE
+	invalidate_cached_range(data, block, count);
+#endif
 	return 0;
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
@@ -1655,6 +1686,9 @@ err:
 		}
 		return errno;
 	}
+#ifndef NO_IO_CACHE
+	invalidate_cached_range(data, block, count);
+#endif
 	return 0;
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;

@@ -224,8 +224,22 @@ static void test_unix_open_and_unixfd(void)
 
 	reopen_fd = ext2fs_open_file(path, O_RDONLY, 0);
 	CHECK(reopen_fd >= 0, "ext2fs_open_file");
-	if (reopen_fd >= 0)
+	if (reopen_fd >= 0) {
+		snprintf(fd_str, sizeof(fd_str), "%d", reopen_fd);
+		CHECK_RC(unixfd_io_manager->open(fd_str,
+						 IO_FLAG_NOCACHE |
+						 IO_FLAG_THREADS, &io),
+			 0, "unixfd_open preserves NOCACHE | THREADS");
+#ifdef HAVE_PTHREAD
+		CHECK((io->flags & CHANNEL_FLAGS_THREADS) != 0,
+		      "unixfd_open preserved IO_FLAG_THREADS");
+#endif
+		memset(wbuf, 0x33, sizeof(wbuf));
+		CHECK_RC(io_channel_write_blk64(io, 0, 1, wbuf), EBADF,
+			 "unixfd_open preserved IO_FLAG_NOCACHE");
+		CHECK_RC(io_channel_close(io), 0, "close RO unixfd io");
 		close(reopen_fd);
+	}
 
 	snprintf(fd_str, sizeof(fd_str), "%d", fd);
 	CHECK_RC(unixfd_io_manager->open(fd_str, 0, &io), 0, "unixfd_open");
@@ -477,35 +491,63 @@ static void test_options_bounce_byte_zero_discard_threads(void)
 	CHECK(memcmp(rbuf + 500, "0123456789", 10) == 0,
 	      "write_byte payload verified");
 
-	/* io_channel_zeroout (flush before zeroout!) & NOZEROOUT flag */
+	/*
+	 * io_channel_zeroout: must invalidate dirty/clean cached entries so
+	 * subsequent cached reads see zeroes and flush does not resurrect
+	 * stale dirty data!
+	 */
 	memset(buf, 0xdd, sizeof(buf));
-	CHECK_RC(io_channel_write_blk64(io, 2, 1, buf), 0, "write blk 2");
-	CHECK_RC(io_channel_flush(io), 0, "flush before zeroout");
+	CHECK(pwrite(fd, buf, sizeof(buf), 2 * 1024) == 1024,
+	      "seed disk blk 2 with 0xdd");
+	memset(buf, 0xee, sizeof(buf));
+	CHECK_RC(io_channel_write_blk64(io, 2, 1, buf), 0,
+		 "dirty cached write blk 2 (0xee)");
 	rc = io_channel_zeroout(io, 2, 1);
 	CHECK(rc == 0 || rc == EXT2_ET_UNIMPLEMENTED,
 	      "zeroout succeeded or cleanly reported UNIMPLEMENTED");
 	if (rc == 0) {
-		io_channel_set_options(io, "cache=off");
 		memset(rbuf, 0xff, sizeof(rbuf));
 		CHECK_RC(io_channel_read_blk64(io, 2, 1, rbuf), 0,
-			 "read zeroed blk 2");
+			 "cached read of zeroed blk 2");
 		all_zero = 1;
 		for (i = 0; i < 1024; i++)
 			if (rbuf[i] != 0)
 				all_zero = 0;
-		CHECK(all_zero, "zeroout zeroed block on disk");
+		CHECK(all_zero, "cached read after zeroout returned zeroes");
+		CHECK_RC(io_channel_flush(io), 0, "flush after zeroout");
+		memset(rbuf, 0xff, sizeof(rbuf));
+		CHECK(pread(fd, rbuf, 1024, 2 * 1024) == 1024 && rbuf[0] == 0,
+		      "flush after zeroout did not resurrect dirty 0xee");
 	}
 	io->flags |= CHANNEL_FLAGS_NOZEROOUT;
 	CHECK_RC(io_channel_zeroout(io, 2, 1), EXT2_ET_UNIMPLEMENTED,
 		 "CHANNEL_FLAGS_NOZEROOUT honored");
 
-	/* io_channel_discard & NODISCARD flag, plus cache_readahead */
-	CHECK_RC(io_channel_flush(io), 0, "flush before discard");
-	rc = io_channel_discard(io, 3, 1);
+	/*
+	 * io_channel_discard: must invalidate dirty/clean cached entries on
+	 * success (and honor NODISCARD), plus cache_readahead.
+	 */
+	memset(buf, 0xcc, sizeof(buf));
+	CHECK(pwrite(fd, buf, sizeof(buf), 4 * 1024) == 1024,
+	      "seed disk blk 4 with 0xcc");
+	CHECK_RC(io_channel_write_blk64(io, 4, 4, buf), 0,
+		 "dirty cached write blks 4..7 (4 KiB aligned)");
+	rc = io_channel_discard(io, 4, 4);
 	CHECK(rc == 0 || rc == EXT2_ET_UNIMPLEMENTED,
 	      "discard succeeded or cleanly reported UNIMPLEMENTED");
+	if (rc == 0 && (io->flags & CHANNEL_FLAGS_DISCARD_ZEROES)) {
+		memset(rbuf, 0xff, sizeof(rbuf));
+		CHECK_RC(io_channel_read_blk64(io, 4, 1, rbuf), 0,
+			 "cached read of discarded blk 4");
+		CHECK(rbuf[0] == 0,
+		      "cached read after discard returned zeroes");
+		CHECK_RC(io_channel_flush(io), 0, "flush after discard");
+		memset(rbuf, 0xff, sizeof(rbuf));
+		CHECK(pread(fd, rbuf, 1024, 4 * 1024) == 1024 && rbuf[0] == 0,
+		      "flush after discard did not resurrect dirty 0xcc");
+	}
 	io->flags |= CHANNEL_FLAGS_NODISCARD;
-	CHECK_RC(io_channel_discard(io, 3, 1), EXT2_ET_UNIMPLEMENTED,
+	CHECK_RC(io_channel_discard(io, 4, 4), EXT2_ET_UNIMPLEMENTED,
 		 "CHANNEL_FLAGS_NODISCARD honored");
 
 	rc = io_channel_cache_readahead(io, 0, 4);
