@@ -249,7 +249,7 @@ static void test_open_flush_close(void)
 	io_channel		orig_io = NULL, clone_io = NULL;
 	char			path[64], path2[64], img_path[64], opt_name[96];
 	char			copy_buf[16384];
-	int			fd, fd2, img_fd;
+	int			fd, fd2, img_fd, fd_before, fd_after;
 	__u16			orig_magic, bad_magic = 0;
 	__u8			orig_byte, flipped;
 
@@ -290,6 +290,24 @@ static void test_open_flush_close(void)
 		 EXT2_ET_UNEXPECTED_BLOCK_SIZE,
 		 "open wrong expected block_size");
 
+	/* Opening non-e2image with EXT2_FLAG_IMAGE_FILE must clean up fs/io */
+	fd_before = open("/dev/null", O_RDONLY);
+	CHECK(fd_before >= 0, "probe lowest free fd before open2");
+	if (fd_before >= 0)
+		close(fd_before);
+	fs = (ext2_filsys) (uintptr_t) 1;
+	CHECK_RC(ext2fs_open2(path, NULL,
+			      EXT2_FLAG_IMAGE_FILE | EXT2_FLAG_64BITS,
+			      0, 0, unix_io_manager, &fs),
+		 EXT2_ET_MAGIC_E2IMAGE,
+		 "open non-e2image with EXT2_FLAG_IMAGE_FILE fails");
+	CHECK(fs == NULL, "open EXT2_FLAG_IMAGE_FILE failure clears ret_fs");
+	fd_after = open("/dev/null", O_RDONLY);
+	if (fd_after >= 0)
+		close(fd_after);
+	CHECK(fd_after == fd_before,
+	      "open EXT2_FLAG_IMAGE_FILE failure does not leak fd");
+
 	/* SUPER_ONLY open skips group descriptors */
 	CHECK_RC(ext2fs_open2(path, NULL,
 			      EXT2_FLAG_64BITS | EXT2_FLAG_SUPER_ONLY, 0, 0,
@@ -325,6 +343,17 @@ static void test_open_flush_close(void)
 		 0, "open with IGNORE_CSUM_ERRORS succeeds");
 	ext2fs_mark_super_dirty(fs);
 	CHECK_RC(ext2fs_close_free(&fs), 0, "close flushes repaired csum");
+	CHECK_RC(ext2fs_open2(path, NULL, EXT2_FLAG_64BITS, 0, 0,
+			      unix_io_manager, &fs),
+		 0, "reopen read-only for flush2 errout check");
+	fs->super->s_state |= EXT2_VALID_FS;
+	ext2fs_set_feature_journal_needs_recovery(fs->super);
+	CHECK(ext2fs_flush2(fs, 0) != 0,
+	      "flush2 on read-only io_channel fails");
+	CHECK((fs->super->s_state & EXT2_VALID_FS) != 0 &&
+	      ext2fs_has_feature_journal_needs_recovery(fs->super) != 0,
+	      "flush2 errout restores s_state and s_feature_incompat");
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close read-only fs");
 	CHECK_RC(ext2fs_open2(path, NULL, EXT2_FLAG_64BITS, 0, 0,
 			      unix_io_manager, &fs),
 		 0, "reopen after csum repair succeeds");
