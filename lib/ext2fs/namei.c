@@ -50,10 +50,16 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 	if (link_count++ >= EXT2FS_MAX_NESTED_LINKS)
 		return EXT2_ET_SYMLINK_LOOP;
 
-	if (ext2fs_is_fast_symlink(&ei))
-		pathname = (char *)&(ei.i_block[0]);
-	else if (ei.i_flags & EXT4_INLINE_DATA_FL) {
-		retval = ext2fs_get_memzero(ei.i_size, &buffer);
+	if (ei.i_flags & EXT4_INLINE_DATA_FL) {
+		size_t inline_size = 0;
+
+		retval = ext2fs_inline_data_size(fs, inode, &inline_size);
+		if (retval)
+			return retval;
+		if (EXT2_I_SIZE(&ei) == 0 || EXT2_I_SIZE(&ei) > inline_size)
+			return EXT2_ET_DIR_CORRUPTED;
+
+		retval = ext2fs_get_memzero(inline_size, &buffer);
 		if (retval)
 			return retval;
 
@@ -64,10 +70,22 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 			return retval;
 		}
 		pathname = buffer;
+	} else if (ext2fs_is_fast_symlink(&ei)) {
+		pathname = (char *)&(ei.i_block[0]);
 	} else {
-		retval = ext2fs_bmap2(fs, inode, &ei, NULL, 0, 0, NULL, &blk);
+		int ret_flags = 0;
+
+		if (EXT2_I_SIZE(&ei) == 0 || EXT2_I_SIZE(&ei) >= fs->blocksize)
+			return EXT2_ET_DIR_CORRUPTED;
+
+		retval = ext2fs_bmap2(fs, inode, &ei, NULL, 0, 0, &ret_flags,
+				      &blk);
 		if (retval)
 			return retval;
+		if ((ret_flags & BMAP_RET_UNINIT) ||
+		    blk < fs->super->s_first_data_block ||
+		    blk >= ext2fs_blocks_count(fs->super))
+			return EXT2_ET_DIR_CORRUPTED;
 
 		retval = ext2fs_get_mem(fs->blocksize, &buffer);
 		if (retval)

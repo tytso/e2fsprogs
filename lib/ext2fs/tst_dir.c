@@ -1134,6 +1134,93 @@ static void test_symlinks_namei_and_pathname(void)
 				     "/loop1", &resolved),
 		 EXT2_ET_SYMLINK_LOOP, "symlink loop detected");
 
+	/*
+	 * Corrupted slow symlinks: i_size == 0, i_size >= blocksize,
+	 * i_size_high != 0, sparse hole (blk == 0, even if boot block 0
+	 * contains a valid path), and out-of-range pblk must all be rejected
+	 * with EXT2_ET_DIR_CORRUPTED without over-reading buffer or block 0.
+	 */
+	{
+		ext2_ino_t	bad_sym = 0;
+		blk64_t		sblk = 0;
+		char		*sbuf = NULL;
+
+		/* Plant a valid 64B symlink target in boot block 0 */
+		memcpy(mem_disk, med_target, strlen(med_target));
+
+		CHECK_RC(ext2fs_new_inode(fs, EXT2_ROOT_INO,
+					  LINUX_S_IFLNK | 0777, 0, &bad_sym),
+			 0, "alloc bad_sym inode");
+		ext2fs_inode_alloc_stats2(fs, bad_sym, +1, 0);
+		memset(&inode, 0, sizeof(inode));
+		inode.i_mode = LINUX_S_IFLNK | 0777;
+		inode.i_links_count = 1;
+
+		/* 1) i_size == 0 must not silently resolve to cwd */
+		inode.i_size = 0;
+		CHECK_RC(ext2fs_write_new_inode(fs, bad_sym, &inode), 0,
+			 "write zero-size symlink");
+		CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+					    bad_sym, &resolved),
+			 EXT2_ET_DIR_CORRUPTED,
+			 "zero-size symlink rejected");
+
+		/* 2) Sparse slow symlink (blk == 0) must not read block 0 */
+		inode.i_size = strlen(med_target);
+		CHECK_RC(ext2fs_write_inode(fs, bad_sym, &inode), 0,
+			 "write sparse slow symlink");
+		CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+					    bad_sym, &resolved),
+			 EXT2_ET_DIR_CORRUPTED,
+			 "sparse slow symlink (blk 0) rejected");
+		memset(mem_disk, 0, strlen(med_target));
+
+		/* 3) Out-of-range physical block rejected */
+		inode.i_block[0] = ext2fs_blocks_count(fs->super) + 10;
+		CHECK_RC(ext2fs_write_inode(fs, bad_sym, &inode), 0,
+			 "write oob-blk slow symlink");
+		CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+					    bad_sym, &resolved),
+			 EXT2_ET_DIR_CORRUPTED,
+			 "out-of-range symlink blk rejected");
+
+		/* 4) i_size >= fs->blocksize and i_size_high != 0 rejected */
+		CHECK_RC(ext2fs_new_block2(fs, 0, NULL, &sblk), 0,
+			 "alloc bad_sym block");
+		ext2fs_block_alloc_stats2(fs, sblk, +1);
+		CHECK_RC(ext2fs_get_memzero(fs->blocksize, &sbuf), 0,
+			 "alloc sbuf");
+		for (resolved = 0; resolved + 2 <= fs->blocksize - 2;
+		     resolved += 2) {
+			sbuf[resolved] = '.';
+			sbuf[resolved + 1] = '/';
+		}
+		sbuf[fs->blocksize - 2] = 'a';
+		sbuf[fs->blocksize - 1] = '/';
+		CHECK_RC(io_channel_write_blk64(fs->io, sblk, 1, sbuf), 0,
+			 "write 1024B non-NUL path block");
+		ext2fs_free_mem(&sbuf);
+
+		inode.i_block[0] = (blk_t) sblk;
+		ext2fs_iblk_set(fs, &inode, 1);
+		inode.i_size = fs->blocksize;
+		CHECK_RC(ext2fs_write_inode(fs, bad_sym, &inode), 0,
+			 "write blocksize symlink");
+		CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+					    bad_sym, &resolved),
+			 EXT2_ET_DIR_CORRUPTED,
+			 "i_size == blocksize symlink rejected");
+
+		inode.i_size = 10;
+		inode.i_size_high = 1;
+		CHECK_RC(ext2fs_write_inode(fs, bad_sym, &inode), 0,
+			 "write i_size_high symlink");
+		CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+					    bad_sym, &resolved),
+			 EXT2_ET_DIR_CORRUPTED,
+			 "i_size_high != 0 symlink rejected");
+	}
+
 	/* ext2fs_get_pathname */
 	CHECK_RC(ext2fs_get_pathname(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, &path),
 		 0, "get_pathname root");
@@ -1212,6 +1299,15 @@ static void test_symlinks_namei_and_pathname(void)
 				    sym_ino, &resolved), 0,
 		 "follow_link inline symlink");
 	CHECK(resolved == file_ino, "inline symlink resolved to /tgt");
+
+	/* Corrupt inline-data symlink i_size > inline_size rejected */
+	inode.i_size = 512;
+	CHECK_RC(ext2fs_write_inode(fs, sym_ino, &inode), 0,
+		 "corrupt inl_sym i_size = 512");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved),
+		 EXT2_ET_DIR_CORRUPTED,
+		 "inline symlink with i_size > inline_size rejected");
 
 	memset(big_target, 0, sizeof(big_target));
 	while (strlen(big_target) < 220)
