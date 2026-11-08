@@ -870,9 +870,9 @@ static const struct utf8data *utf8nfdi(unsigned int maxage)
 {
 	int i = ARRAY_SIZE(utf8nfdidata) - 1;
 
-	while (maxage < utf8nfdidata[i].maxage)
+	while (i >= 0 && maxage < utf8nfdidata[i].maxage)
 		i--;
-	if (maxage > utf8nfdidata[i].maxage)
+	if (i < 0 || maxage > utf8nfdidata[i].maxage)
 		return NULL;
 	return &utf8nfdidata[i];
 }
@@ -882,9 +882,9 @@ static const struct utf8data *utf8nfdicf(unsigned int maxage)
 {
 	int i = ARRAY_SIZE(utf8nfdicfdata) - 1;
 
-	while (maxage < utf8nfdicfdata[i].maxage)
+	while (i >= 0 && maxage < utf8nfdicfdata[i].maxage)
 		i--;
-	if (maxage > utf8nfdicfdata[i].maxage)
+	if (i < 0 || maxage > utf8nfdicfdata[i].maxage)
 		return NULL;
 	return &utf8nfdicfdata[i];
 }
@@ -903,11 +903,11 @@ static int utf8_casefold(const struct ext2fs_nls_table *table,
 	for (nlen = 0; nlen < dlen; nlen++) {
 		int c = utf8byte(&cur);
 
+		if (c == -1)
+			goto invalid_seq;
 		dest[nlen] = c;
 		if (!c)
 			return nlen;
-		if (c == -1)
-			break;
 	}
 
 	return -ENAMETOOLONG;

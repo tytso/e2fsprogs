@@ -227,6 +227,37 @@ static void test_nls_utf8_validation(void)
 	check_u64("validate_maxcp_rc", rc, 1);
 	check_u64("validate_maxcp_pos", pos == bad_maxcp, 1);
 
+	/* Unknown/future or zero table->version handled safely (no OOB) */
+	{
+		struct ext2fs_nls_table future_ver = {
+			.version = (99 << 16),
+			.ops = tbl->ops,
+		};
+		struct ext2fs_nls_table zero_ver = {
+			.version = 0,
+			.ops = tbl->ops,
+		};
+		unsigned char dest[16];
+
+		pos = NULL;
+		rc = ext2fs_check_encoded_name(&future_ver, valid_ascii,
+					       strlen(valid_ascii), &pos);
+		check_u64("validate_future_version_rc", rc == -1, 1);
+		rc = future_ver.ops->casefold(&future_ver,
+					      (const unsigned char *) "abc", 3,
+					      dest, sizeof(dest));
+		check_u64("casefold_future_version_einval", rc == -EINVAL, 1);
+		rc = future_ver.ops->casefold(&future_ver,
+					      (const unsigned char *) "abc", 3,
+					      dest, 2);
+		check_u64("casefold_future_short_enametoolong",
+			  rc == -ENAMETOOLONG, 1);
+
+		rc = ext2fs_check_encoded_name(&zero_ver, valid_ascii,
+					       strlen(valid_ascii), &pos);
+		check_u64("validate_zero_version_ok", rc, 0);
+	}
+
 	printf("test_nls_utf8_validation: completed\n");
 }
 
@@ -307,7 +338,6 @@ static void test_dirhash2_casefold(void)
 	const char			*nfd = "cafe\xcc\x81";
 	const char			*eszett = "stra\xc3\x9f" "e";
 	const char			*strasse = "STRASSE";
-	const char			*bad_lead = "\x80opaque";
 	ext2_dirhash_t			h1 = 0, m1 = 0, h2 = 0, m2 = 0;
 	errcode_t			retval;
 
@@ -342,16 +372,40 @@ static void test_dirhash2_casefold(void)
 	check_u64("dirhash2_cf_eszett_eq_h", h1, h2);
 	check_u64("dirhash2_cf_eszett_eq_m", m1, m2);
 
-	/* Leading continuation byte (-EINVAL) falls back to opaque byte hash */
-	retval = ext2fs_dirhash2(EXT2_HASH_HALF_MD4_UNSIGNED,
-				 bad_lead, strlen(bad_lead),
-				 tbl, EXT4_CASEFOLD_FL, NULL, &h1, &m1);
-	check_err("dirhash2_opaque_fallback", retval, 0);
-	retval = ext2fs_dirhash(EXT2_HASH_HALF_MD4_UNSIGNED,
-				bad_lead, strlen(bad_lead), NULL, &h2, &m2);
-	check_err("dirhash_raw_bad_lead", retval, 0);
-	check_u64("dirhash2_fallback_matches_raw_h", h1, h2);
-	check_u64("dirhash2_fallback_matches_raw_m", m1, m2);
+	/*
+	 * All invalid UTF-8 forms (leading continuation byte, trailing 0xff,
+	 * overlong 2-byte, UTF-16 surrogate, truncated multibyte, > U+10FFFF)
+	 * must return -EINVAL from utf8_casefold() so ext2fs_dirhash2()
+	 * falls back to opaque byte hashing (matching Linux kernel ext4).
+	 */
+	{
+		static const char * const invalid_names[] = {
+			"\x80opaque",
+			"foo\xff" "bar",
+			"\xc0\xaf",
+			"\xed\xa0\x80",
+			"ok\xe2\x82",
+			"\xf4\x90\x80\x80",
+		};
+		size_t k;
+
+		for (k = 0; k < sizeof(invalid_names) / sizeof(invalid_names[0]);
+		     k++) {
+			const char *bad = invalid_names[k];
+			int blen = (int) strlen(bad);
+
+			retval = ext2fs_dirhash2(EXT2_HASH_HALF_MD4_UNSIGNED,
+						 bad, blen, tbl,
+						 EXT4_CASEFOLD_FL, NULL,
+						 &h1, &m1);
+			check_err("dirhash2_opaque_fallback", retval, 0);
+			retval = ext2fs_dirhash(EXT2_HASH_HALF_MD4_UNSIGNED,
+						bad, blen, NULL, &h2, &m2);
+			check_err("dirhash_raw_bad", retval, 0);
+			check_u64("dirhash2_fallback_matches_raw_h", h1, h2);
+			check_u64("dirhash2_fallback_matches_raw_m", m1, m2);
+		}
+	}
 
 	printf("test_dirhash2_casefold: completed\n");
 }
