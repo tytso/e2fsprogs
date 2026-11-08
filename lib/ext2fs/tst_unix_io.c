@@ -363,6 +363,7 @@ static void test_cache_lru_resize_and_writethrough(void)
  */
 static int read_err_called;
 static int write_err_called;
+static errcode_t last_write_err;
 
 static errcode_t test_read_err_cb(io_channel ch EXT2FS_ATTR((unused)),
 				  unsigned long block EXT2FS_ATTR((unused)),
@@ -385,6 +386,7 @@ static errcode_t test_write_err_cb(io_channel ch EXT2FS_ATTR((unused)),
 				   errcode_t error)
 {
 	write_err_called++;
+	last_write_err = error;
 	return error;
 }
 
@@ -528,6 +530,25 @@ static void test_options_bounce_byte_zero_discard_threads(void)
 		 "write on RO fd returns EBADF");
 	CHECK(write_err_called == 1, "write_error callback invoked");
 	CHECK_RC(io_channel_close(io), 0, "close RO io");
+
+	/*
+	 * Cached write-back LRU eviction failure must propagate the error
+	 * both to channel->write_error and as unix_write_blk64()'s return
+	 * value instead of silently returning 0.
+	 */
+	CHECK_RC(unix_io_manager->open(path, 0, &io), 0, "open RO cached");
+	io->write_error = test_write_err_cb;
+	write_err_called = 0;
+	last_write_err = 0;
+	memset(buf, 0x66, sizeof(buf));
+	for (i = 0; i < 8; i++)
+		CHECK_RC(io_channel_write_blk64(io, i, 1, buf), 0,
+			 "fill RO write-back cache");
+	CHECK_RC(io_channel_write_blk64(io, 8, 1, buf), EBADF,
+		 "dirty LRU eviction error returned from write_blk64");
+	CHECK(write_err_called == 1 && last_write_err == EBADF,
+	      "write_error received EBADF on dirty cache eviction");
+	(void) io_channel_close(io);
 
 #ifdef HAVE_PTHREAD
 	/* Concurrent multi-threaded R/W under IO_FLAG_THREADS */
