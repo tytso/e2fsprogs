@@ -432,7 +432,8 @@ errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
 		if (retval)
 			return retval;
 		start = *pblk;
-		end = *pblk + *plen;
+		end = (*plen >= max_blocks - start) ? max_blocks :
+			start + *plen;
 		goto allocated;
 	}
 	if (!map)
@@ -483,10 +484,18 @@ errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
 				   __func__, goal, goal + len - 1,
 				   *pblk, *pblk + *plen - 1, *plen);
 allocated:
-			for (b = start; b < end;
-			     b += fs->super->s_blocks_per_group)
-				ext2fs_clear_block_uninit(fs,
-						ext2fs_group_of_blk2(fs, b));
+			if (end > max_blocks)
+				end = max_blocks;
+			if (start < fs->super->s_first_data_block)
+				start = fs->super->s_first_data_block;
+			if (start < end) {
+				dgrp_t g = ext2fs_group_of_blk2(fs, start);
+				dgrp_t g_end = ext2fs_group_of_blk2(fs,
+								    end - 1);
+
+				for (; g <= g_end; g++)
+					ext2fs_clear_block_uninit(fs, g);
+			}
 			return 0;
 		}
 

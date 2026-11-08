@@ -395,6 +395,25 @@ static void test_goal_and_range_alloc(void)
 		 "FIXED_GOAL fails when run at goal is too short");
 
 	/*
+	 * ext2fs_new_range straddling group 1 -> group 2 (16382..16387) must
+	 * clear EXT2_BG_BLOCK_UNINIT on BOTH group 1 and group 2 so bitmap
+	 * updates in group 2 are actually flushed to disk.
+	 */
+	ext2fs_bg_flags_set(fs, 1, EXT2_BG_BLOCK_UNINIT);
+	ext2fs_group_desc_csum_set(fs, 1);
+	ext2fs_bg_flags_set(fs, 2, EXT2_BG_BLOCK_UNINIT);
+	ext2fs_group_desc_csum_set(fs, 2);
+	CHECK_RC(ext2fs_new_range(fs,
+			EXT2_NEWRANGE_FIXED_GOAL | EXT2_NEWRANGE_MIN_LENGTH,
+			16382, 6, NULL, &pblk, &plen), 0,
+		 "new_range straddling group 1 -> group 2");
+	CHECK(pblk == 16382 && plen == 6,
+	      "cross-group new_range returned 16382..16387");
+	CHECK(!ext2fs_bg_flags_test(fs, 1, EXT2_BG_BLOCK_UNINIT) &&
+	      !ext2fs_bg_flags_test(fs, 2, EXT2_BG_BLOCK_UNINIT),
+	      "cross-group new_range cleared BLOCK_UNINIT on both groups");
+
+	/*
 	 * Straddle group 1 -> group 2 boundary (16382..16387, since group 2
 	 * has no sparse_super backup and flex_bg placed its metadata in grp 0)
 	 * with EXT2_ALLOCRANGE_ZERO_BLOCKS.
