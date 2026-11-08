@@ -22,6 +22,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -136,11 +139,23 @@ static void test_mmp_ops(void)
 		 EXT2_ET_MMP_BAD_BLOCK,
 		 "mmp_read block == blocks_count -> MMP_BAD_BLOCK");
 
-	fs->super->s_mmp_block = ext2fs_blocks_count(fs->super) + 1;
-	CHECK_RC(ext2fs_mmp_write(fs, saved_mmp_blk, fs->mmp_buf),
+	/*
+	 * mmp_write must bounds-check its mmp_blk parameter (rejecting
+	 * <= s_first_data_block and >= blocks_count) without touching
+	 * fs->mmp_last_written, even when s_mmp_block itself is valid.
+	 */
+	fs->mmp_last_written = 12345;
+	memcpy(mmp_blk_buf, fs->mmp_buf, fs->blocksize);
+	CHECK_RC(ext2fs_mmp_write(fs, fs->super->s_first_data_block,
+				  mmp_blk_buf),
 		 EXT2_ET_MMP_BAD_BLOCK,
-		 "mmp_write invalid s_mmp_block -> MMP_BAD_BLOCK");
-	fs->super->s_mmp_block = saved_mmp_blk;
+		 "mmp_write mmp_blk == s_first_data_block -> MMP_BAD_BLOCK");
+	CHECK_RC(ext2fs_mmp_write(fs, ext2fs_blocks_count(fs->super),
+				  mmp_blk_buf),
+		 EXT2_ET_MMP_BAD_BLOCK,
+		 "mmp_write mmp_blk == blocks_count -> MMP_BAD_BLOCK");
+	CHECK(fs->mmp_last_written == 12345,
+	      "failed mmp_write leaves fs->mmp_last_written unchanged");
 
 	CHECK_RC(ext2fs_mmp_read(fs, saved_mmp_blk, mmp_blk_buf), 0,
 		 "mmp_read clean block");
@@ -221,6 +236,33 @@ static void test_mmp_ops(void)
 		 "read after SKIP_MMP update2");
 	CHECK(mmp_blk_buf->mmp_seq == EXT4_MMP_SEQ_CLEAN,
 	      "SKIP_MMP left mmp_seq untouched");
+
+#ifdef HAVE_SYS_WAIT_H
+	/* NULL fs->mmp_buf (e.g. opened with SKIP_MMP later cleared) is safe */
+	{
+		void *saved_mmp_buf = fs->mmp_buf;
+		pid_t pid;
+		int status = 0;
+
+		fs->mmp_buf = NULL;
+		fflush(NULL);
+		pid = fork();
+		if (pid == 0) {
+			errcode_t rc = ext2fs_mmp_update2(fs, 1);
+
+			_exit(rc == 0 ? 0 : 2);
+		}
+		fs->mmp_buf = saved_mmp_buf;
+		CHECK(pid > 0 && waitpid(pid, &status, 0) == pid &&
+		      WIFEXITED(status) && WEXITSTATUS(status) == 0,
+		      "mmp_update2 returns 0 safely when fs->mmp_buf is NULL");
+	}
+#endif
+
+	/* Re-stamp fs->mmp_last_written right before throttled check */
+	CHECK_RC(ext2fs_mmp_clear(fs), 0, "refresh mmp_last_written");
+	CHECK_RC(ext2fs_mmp_read(fs, saved_mmp_blk, fs->mmp_buf), 0,
+		 "re-sync mmp_buf before throttled update");
 
 	/* Throttled update (immediately == 0) skips write when recent */
 	CHECK_RC(ext2fs_mmp_update(fs), 0, "throttled mmp_update");
