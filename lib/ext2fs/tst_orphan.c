@@ -240,6 +240,13 @@ static void test_extent_orphan_and_csums(void)
 	      "csum_verify detects wrong block number");
 	CHECK(ext2fs_orphan_file_block_csum_verify(fs, 999999, pblk, buf) == 0,
 	      "csum_verify returns 0 on invalid inode");
+	CHECK_RC(ext2fs_orphan_file_block_csum_set(fs, 999999, pblk, buf),
+		 EXT2_ET_BAD_INODE_NUM,
+		 "csum_set propagates invalid inode error");
+
+	/* Reject num_blocks == 0 without exhausting free blocks */
+	CHECK_RC(ext2fs_create_orphan_file(fs, 0), EXT2_ET_INVALID_ARGUMENT,
+		 "create_orphan_file rejects num_blocks == 0");
 
 	/* 3. Recreate orphan file on existing s_orphan_file_inum */
 	CHECK_RC(ext2fs_create_orphan_file(fs, 4), 0,
@@ -278,6 +285,26 @@ static void test_extent_orphan_and_csums(void)
 	CHECK(inode.i_links_count == 0 && EXT2_I_SIZE(&inode) == 0,
 	      "truncated orphan inode zeroed");
 
+	/*
+	 * 6. Fragmented extent orphan file (> 4 discontiguous extents) must
+	 * preserve external extent-tree leaf blocks in inode.i_blocks.
+	 */
+	fs->super->s_orphan_file_inum = 0;
+	for (pblk = fs->super->s_first_data_block;
+	     pblk < ext2fs_blocks_count(fs->super); pblk++) {
+		if ((pblk & 1) && !ext2fs_test_block_bitmap2(fs->block_map, pblk))
+			ext2fs_block_alloc_stats2(fs, pblk, +1);
+	}
+	CHECK_RC(ext2fs_create_orphan_file(fs, 6), 0,
+		 "create 6-block fragmented extent orphan file");
+	ino = fs->super->s_orphan_file_inum;
+	CHECK_RC(ext2fs_read_inode(fs, ino, &inode), 0,
+		 "read fragmented extent orphan inode");
+	CHECK(inode.i_blocks == 7 * (fs->blocksize / 512),
+	      "fragmented extent orphan i_blocks includes extent leaf (7 blocks)");
+	CHECK_RC(ext2fs_truncate_orphan_file(fs), 0,
+		 "truncate fragmented extent orphan file");
+
 	ext2fs_free_mem(&buf);
 	CHECK_RC(ext2fs_close_free(&fs), 0, "close extent orphan fs");
 	close(fd);
@@ -294,20 +321,45 @@ static void test_indirect_and_bigalloc_orphan(void)
 	ext2_ino_t			ino;
 	blk64_t				pblk0, pblk1, pblk15;
 
-	/* 1. Indirect-mapped 16-block orphan file (12 direct + 1 ind + 4) */
+	/*
+	 * 1. Indirect-mapped 16-block orphan file (12 direct + 1 ind + 4),
+	 * with stale deleted-file fields planted in the reused inode slot.
+	 */
 	fs = create_test_fs(path, &fd, 8192, 0, 0, 0, 0);
 	CHECK_RC(ext2fs_get_mem(fs->blocksize, &buf), 0, "alloc ind buf");
+	memset(buf, 0xaa, fs->blocksize);
+	CHECK_RC(io_channel_write_blk64(fs->io, 500, 1, buf), 0,
+		 "plant garbage pattern in block 500");
+	memset(&inode, 0, sizeof(inode));
+	inode.i_block[EXT2_DIND_BLOCK] = 500;
+	inode.i_dtime = 12345;
+	ext2fs_iblk_set(fs, &inode, 1);
+	CHECK_RC(ext2fs_write_inode(fs, EXT2_GOOD_OLD_FIRST_INO, &inode), 0,
+		 "plant stale deleted inode in first free slot");
 	CHECK_RC(ext2fs_create_orphan_file(fs, 16), 0,
 		 "create 16-block indirect orphan file");
 	ino = fs->super->s_orphan_file_inum;
 	CHECK_RC(ext2fs_read_inode(fs, ino, &inode), 0, "read ind orphan ino");
 	CHECK((inode.i_flags & EXT4_EXTENTS_FL) == 0, "indirect mapped");
 	CHECK(inode.i_block[EXT2_IND_BLOCK] != 0, "IND block allocated");
+	CHECK(inode.i_block[EXT2_DIND_BLOCK] == 0,
+	      "stale i_block[EXT2_DIND_BLOCK] cleared before allocation");
 	CHECK(EXT2_I_SIZE(&inode) == (ext2_off64_t) 16 * fs->blocksize,
 	      "indirect orphan size == 16 blocks");
 	CHECK(ext2fs_inode_data_blocks2(fs, &inode) ==
 	      (blk64_t) 17 * (fs->blocksize / 512),
 	      "indirect orphan total blocks == 17 (16 data + 1 ind)");
+	pblk0 = 0;
+	CHECK_RC(ext2fs_bmap2(fs, ino, &inode, NULL, 0, 0, NULL, &pblk0), 0,
+		 "bmap indirect block 0");
+	CHECK(pblk0 != 0 && pblk0 != 500 &&
+	      ext2fs_test_block_bitmap2(fs->block_map, pblk0),
+	      "stale i_block[0] ignored and fresh block 0 allocated");
+	CHECK_RC(io_channel_read_blk64(fs->io, pblk0, 1, buf), 0,
+		 "read indirect block 0");
+	tail = ext2fs_orphan_block_tail(fs, buf);
+	CHECK(ext2fs_le32_to_cpu(tail->ob_magic) == EXT4_ORPHAN_BLOCK_MAGIC,
+	      "indirect block 0 has ORPHAN_BLOCK_MAGIC");
 
 	pblk15 = 0;
 	CHECK_RC(ext2fs_bmap2(fs, ino, &inode, NULL, 0, 15, NULL, &pblk15), 0,
