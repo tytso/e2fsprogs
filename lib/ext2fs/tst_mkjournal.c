@@ -309,6 +309,7 @@ static void test_zero_blocks(void)
 	      (ssize_t) sizeof(dirty), "dirty blocks 50..53");
 	CHECK_RC(ext2fs_zero_blocks2(fs, 50, 4, &err_blk64, &err_cnt), 0,
 		 "zero_blocks2 50..53");
+	CHECK_RC(io_channel_flush(fs->io), 0, "flush io_channel");
 	CHECK(pread(fd, verify, sizeof(verify), 50 * 1024) ==
 	      (ssize_t) sizeof(verify) &&
 	      memcmp(verify, zeros, sizeof(zeros)) == 0,
