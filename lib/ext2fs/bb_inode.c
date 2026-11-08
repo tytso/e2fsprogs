@@ -33,6 +33,7 @@
 struct set_badblock_record {
 	ext2_badblocks_iterate	bb_iter;
 	int		bad_block_count;
+	int		ind_block_count;
 	blk_t		*ind_blocks;
 	int		max_ind_blocks;
 	int		ind_blocks_size;
@@ -100,6 +101,19 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	 * block inode (!).
 	 */
 	if (bb_list) {
+		blk_t	blk;
+
+		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
+							     &rec.bb_iter);
+		if (retval)
+			goto cleanup;
+		while (ext2fs_badblocks_list_iterate(rec.bb_iter, &blk)) {
+			if (blk >= fs->super->s_first_data_block &&
+			    blk < ext2fs_blocks_count(fs->super))
+				ext2fs_mark_block_bitmap2(fs->block_map, blk);
+		}
+		ext2fs_badblocks_list_iterate_end(rec.bb_iter);
+
 		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
 							     &rec.bb_iter);
 		if (retval)
@@ -129,9 +143,14 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	if (!ext2fs_inode_xtime_get(&inode, i_ctime))
 		ext2fs_inode_xtime_set(&inode, i_ctime, now);
 	ext2fs_inode_xtime_set(&inode, i_mtime, now);
-	ext2fs_iblk_set(fs, &inode, rec.bad_block_count);
+	retval = ext2fs_iblk_set(fs, &inode,
+				 (blk64_t) rec.bad_block_count +
+				 rec.ind_block_count);
+	if (retval)
+		goto cleanup;
 	retval = ext2fs_inode_size_set(fs, &inode,
-				       rec.bad_block_count * fs->blocksize);
+				       (ext2_off64_t) rec.bad_block_count *
+				       fs->blocksize);
 	if (retval)
 		goto cleanup;
 
@@ -226,8 +245,11 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 		/*
 		 * Get the next bad block.
 		 */
-		if (!ext2fs_badblocks_list_iterate(rec->bb_iter, &blk))
-			return BLOCK_ABORT;
+		do {
+			if (!ext2fs_badblocks_list_iterate(rec->bb_iter, &blk))
+				return BLOCK_ABORT;
+		} while (blk < fs->super->s_first_data_block ||
+			 blk >= ext2fs_blocks_count(fs->super));
 		rec->bad_block_count++;
 	} else {
 		/*
@@ -254,6 +276,7 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 			rec->err = retval;
 			return BLOCK_ABORT;
 		}
+		rec->ind_block_count++;
 	}
 
 	/*
