@@ -1072,6 +1072,84 @@ static int run_subcluster_tests(void)
 		ext2fs_clear_feature_journal_dev(fs->super);
 		ext2fs_close_free(&fs);
 	}
+
+	/*
+	 * Verify EXT2FS_BMAP64_RBTREE get_bmap_range / set_bmap_range edge
+	 * cases: empty-tree output zeroing, overwriting set bits with zero
+	 * bits, and non-byte-aligned trailing 0xff bytes.
+	 */
+	{
+		struct ext2_super_block param;
+		ext2_filsys fs = NULL;
+		ext2fs_block_bitmap rbmap = NULL;
+		unsigned char buf[8];
+		blk64_t b;
+
+		memset(&param, 0, sizeof(param));
+		ext2fs_blocks_count_set(&param, 128);
+		param.s_inodes_count = 32;
+		param.s_rev_level = EXT2_DYNAMIC_REV;
+		param.s_inode_size = 256;
+		if (ext2fs_initialize("rbtest", EXT2_FLAG_64BITS, &param,
+				      test_io_manager, &fs) != 0)
+			return 1;
+		fs->default_bitmap_type = EXT2FS_BMAP64_RBTREE;
+		if (ext2fs_allocate_block_bitmap(fs, "rb", &rbmap) != 0) {
+			ext2fs_close_free(&fs);
+			return 1;
+		}
+
+		/* 1. Empty rbtree must zero caller's output buffer */
+		memset(buf, 0xa5, sizeof(buf));
+		if (ext2fs_get_block_bitmap_range2(rbmap, 1, 20, buf) != 0 ||
+		    buf[0] != 0 || buf[1] != 0 || buf[2] != 0) {
+			fprintf(stderr,
+				"FAIL: empty rbtree get_range left garbage\n");
+			fails++;
+		}
+
+		/* 2. set_bmap_range must clear previously set 1-bits to 0 */
+		ext2fs_mark_block_bitmap_range2(rbmap, 1, 32);
+		memset(buf, 0, sizeof(buf));
+		if (ext2fs_set_block_bitmap_range2(rbmap, 9, 16, buf) != 0 ||
+		    !ext2fs_test_block_bitmap2(rbmap, 8) ||
+		    ext2fs_test_block_bitmap2(rbmap, 9) ||
+		    ext2fs_test_block_bitmap2(rbmap, 24) ||
+		    !ext2fs_test_block_bitmap2(rbmap, 25)) {
+			fprintf(stderr,
+				"FAIL: rbtree set_range failed to clear bits\n");
+			fails++;
+		}
+
+		/* 3. Non-multiple-of-8 num=12 with 0xff tail must not overrun */
+		ext2fs_clear_block_bitmap(rbmap);
+		buf[0] = 0xff;
+		buf[1] = 0xff;
+		if (ext2fs_set_block_bitmap_range2(rbmap, 40, 12, buf) != 0) {
+			fprintf(stderr, "FAIL: rbtree set_range(40, 12)\n");
+			fails++;
+		}
+		for (b = 40; b < 52; b++) {
+			if (!ext2fs_test_block_bitmap2(rbmap, b)) {
+				fprintf(stderr, "FAIL: bit %llu unset\n",
+					(unsigned long long) b);
+				fails++;
+				break;
+			}
+		}
+		for (b = 52; b < 56; b++) {
+			if (ext2fs_test_block_bitmap2(rbmap, b)) {
+				fprintf(stderr,
+					"FAIL: trailing 0xff overran bit %llu\n",
+					(unsigned long long) b);
+				fails++;
+				break;
+			}
+		}
+
+		ext2fs_free_block_bitmap(rbmap);
+		ext2fs_close_free(&fs);
+	}
 	printf("tst_bitmaps subcluster tests: %s\n", fails ? "FAILED" : "OK");
 	return fails ? 1 : 0;
 }

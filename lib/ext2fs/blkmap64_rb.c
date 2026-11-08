@@ -240,7 +240,7 @@ static void rb_free_bmap(ext2fs_generic_bitmap_64 bitmap)
 
 	rb_free_tree(&bp->root);
 	ext2fs_free_mem(&bp);
-	bp = 0;
+	bitmap->private = NULL;
 }
 
 static errcode_t rb_copy_bmap(ext2fs_generic_bitmap_64 src,
@@ -265,8 +265,10 @@ static errcode_t rb_copy_bmap(ext2fs_generic_bitmap_64 src,
 		src_ext = node_to_extent(src_node);
 		retval = ext2fs_get_mem(sizeof (struct bmap_rb_extent),
 					&dest_ext);
-		if (retval)
-			break;
+		if (retval) {
+			rb_free_bmap(dest);
+			return retval;
+		}
 
 		memcpy(dest_ext, src_ext, sizeof(struct bmap_rb_extent));
 
@@ -705,39 +707,48 @@ static errcode_t rb_set_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 {
 	struct ext2fs_rb_private *bp;
 	unsigned char *cp = in;
-	size_t i;
-	int first_set = -1;
+	size_t i, first_set = 0;
+	int in_extent = 0;
+
+	if (num == 0)
+		return 0;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
+	rb_remove_extent(start - bitmap->start, num, bp);
+	check_tree(&bp->root, __func__);
 
 	for (i = 0; i < num; i++) {
-		if ((i & 7) == 0) {
-			unsigned char c = cp[i/8];
+		if ((i & 7) == 0 && (num - i) >= 8) {
+			unsigned char c = cp[i / 8];
 			if (c == 0xFF) {
-				if (first_set == -1)
+				if (!in_extent) {
 					first_set = i;
+					in_extent = 1;
+				}
 				i += 7;
 				continue;
 			}
-			if ((c == 0x00) && (first_set == -1)) {
+			if ((c == 0x00) && !in_extent) {
 				i += 7;
 				continue;
 			}
 		}
 		if (ext2fs_test_bit(i, in)) {
-			if (first_set == -1)
+			if (!in_extent) {
 				first_set = i;
+				in_extent = 1;
+			}
 			continue;
 		}
-		if (first_set == -1)
+		if (!in_extent)
 			continue;
 
 		rb_insert_extent(start + first_set - bitmap->start,
 				 i - first_set, bp);
 		check_tree(&bp->root, __func__);
-		first_set = -1;
+		in_extent = 0;
 	}
-	if (first_set != -1) {
+	if (in_extent) {
 		rb_insert_extent(start + first_set - bitmap->start,
 				 num - first_set, bp);
 		check_tree(&bp->root, __func__);
@@ -759,6 +770,8 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 	n = &bp->root.rb_node;
 	start -= bitmap->start;
 
+	memset(out, 0, (num + 7) >> 3);
+
 	if (ext2fs_rb_empty_root(&bp->root))
 		return 0;
 
@@ -773,8 +786,6 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 			break;
 	}
 
-	memset(out, 0, (num + 7) >> 3);
-
 	for (; parent != NULL; parent = next) {
 		next = ext2fs_rb_next(parent);
 		ext = node_to_extent(parent);
@@ -784,7 +795,7 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 		if (pos >= start + num)
 			break;
 		if (pos < start) {
-			if (pos + count <  start)
+			if (pos + count <= start)
 				continue;
 			count -= start - pos;
 			pos = start;
@@ -795,12 +806,12 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 		while (count > 0) {
 			if ((count >= 8) &&
 			    ((pos - start) % 8) == 0) {
-				int nbytes = count >> 3;
-				int offset = (pos - start) >> 3;
+				size_t nbytes = count >> 3;
+				size_t offset = (pos - start) >> 3;
 
 				memset(((char *) out) + offset, 0xFF, nbytes);
-				pos += nbytes << 3;
-				count -= nbytes << 3;
+				pos += (__u64) nbytes << 3;
+				count -= (__u64) nbytes << 3;
 				continue;
 			}
 			ext2fs_fast_set_bit64((pos - start), out);
