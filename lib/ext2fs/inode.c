@@ -1040,36 +1040,48 @@ errcode_t ext2fs_write_new_inode(ext2_filsys fs, ext2_ino_t ino,
 {
 	struct ext2_inode	*buf;
 	int			size = EXT2_INODE_SIZE(fs->super);
+	int			alloc_size;
 	struct ext2_inode_large	*large_inode;
 	errcode_t		retval;
 	time_t			t = ext2fsP_get_time(fs);
 
-	if (!ext2fs_inode_xtime_get(inode, i_atime))
-		ext2fs_inode_xtime_set(inode, i_atime, t);
-	if (!ext2fs_inode_xtime_get(inode, i_ctime))
-		ext2fs_inode_xtime_set(inode, i_ctime, t);
-	if (!ext2fs_inode_xtime_get(inode, i_mtime))
-		ext2fs_inode_xtime_set(inode, i_mtime, t);
-
-	if (size == sizeof(struct ext2_inode))
+	if (size <= (int) sizeof(struct ext2_inode)) {
+		if (!ext2fs_inode_xtime_get(inode, i_atime))
+			ext2fs_inode_xtime_set(inode, i_atime, t);
+		if (!ext2fs_inode_xtime_get(inode, i_ctime))
+			ext2fs_inode_xtime_set(inode, i_ctime, t);
+		if (!ext2fs_inode_xtime_get(inode, i_mtime))
+			ext2fs_inode_xtime_set(inode, i_mtime, t);
 		return ext2fs_write_inode_full(fs, ino, inode,
 					       sizeof(struct ext2_inode));
+	}
 
-	buf = malloc(size);
-	if (!buf)
-		return ENOMEM;
+	alloc_size = size;
+	if (alloc_size < (int) sizeof(struct ext2_inode_large))
+		alloc_size = sizeof(struct ext2_inode_large);
+	retval = ext2fs_get_memzero(alloc_size, &buf);
+	if (retval)
+		return retval;
 
-	memset(buf, 0, size);
 	*buf = *inode;
 
 	large_inode = (struct ext2_inode_large *) buf;
-	large_inode->i_extra_isize = sizeof(struct ext2_inode_large) -
+	large_inode->i_extra_isize = (size < (int) sizeof(*large_inode) ?
+				      size : (int) sizeof(*large_inode)) -
 		EXT2_GOOD_OLD_INODE_SIZE;
-	if (!large_inode->i_crtime)
-		large_inode->i_crtime = t;
+	if (!ext2fs_inode_xtime_get(large_inode, i_atime))
+		ext2fs_inode_xtime_set(large_inode, i_atime, t);
+	if (!ext2fs_inode_xtime_get(large_inode, i_ctime))
+		ext2fs_inode_xtime_set(large_inode, i_ctime, t);
+	if (!ext2fs_inode_xtime_get(large_inode, i_mtime))
+		ext2fs_inode_xtime_set(large_inode, i_mtime, t);
+	if (ext2fs_inode_includes(size, i_crtime) &&
+	    !ext2fs_inode_xtime_get(large_inode, i_crtime))
+		ext2fs_inode_xtime_set(large_inode, i_crtime, t);
+	*inode = *buf;
 
 	retval = ext2fs_write_inode_full(fs, ino, buf, size);
-	free(buf);
+	ext2fs_free_mem(&buf);
 	return retval;
 }
 

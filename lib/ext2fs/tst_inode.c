@@ -551,6 +551,91 @@ static void test_get_blocks_and_check_dir(void)
 	printf("  test_get_blocks_and_check_dir: ok\n");
 }
 
+/*
+ * Suite 5: Extended 34-bit inode timestamps (ext2fs_inode_xtime_set/get
+ *          and ext2fs_write_new_inode post-2038 / pre-1970 handling).
+ */
+static void test_inode_timestamps(void)
+{
+	struct ext2_inode_large	large;
+	struct ext2_inode	small;
+#if (SIZEOF_TIME_T > 4)
+	static const time_t cases[] = {
+		(time_t) -2147483648LL,	/* 1901-12-13 (INT32_MIN) */
+		(time_t) -86400,	/* 1969-12-31 */
+		(time_t) 0x6af01234LL,	/* 2026 (bits 28..30 set) */
+		(time_t) 0x7fffffffLL,	/* 2038-01-19 03:14:07 */
+		(time_t) 0x80000000LL,	/* 2038-01-19 03:14:08 */
+		(time_t) 0xffffffffLL,	/* 2106-02-07 06:28:15 */
+		(time_t) 0x100000000LL,	/* 2106-02-07 06:28:16 (lo == 0) */
+		(time_t) 0x180000000LL,	/* 2174-02-25 (extra == 2, bit 31) */
+		(time_t) 0x37fffffffLL,	/* 2446-05-10 (max 34-bit signed) */
+	};
+	size_t			i;
+	char			path[64];
+	int			fd;
+	ext2_filsys		fs;
+	struct ext2_inode	new_ino;
+	struct ext2_inode_large	disk_ino;
+	time_t			future = (time_t) 0x90001234LL;
+#endif
+
+	memset(&large, 0, sizeof(large));
+	large.i_extra_isize = sizeof(struct ext2_inode_large) -
+			      EXT2_GOOD_OLD_INODE_SIZE;
+	ext2fs_inode_xtime_set(&large, i_mtime, (time_t) 0x6af01234);
+	CHECK(large.i_mtime == 0x6af01234U,
+	      "xtime_set preserves bits 28..31 on large inode");
+	CHECK(ext2fs_inode_xtime_get(&large, i_mtime) == (time_t) 0x6af01234,
+	      "xtime_get round-trips 0x6af01234 on large inode");
+
+	ext2fs_inode_xtime_set(&large, i_atime, (time_t) -86400);
+	CHECK(ext2fs_inode_xtime_get(&large, i_atime) == (time_t) -86400,
+	      "xtime_get sign-extends pre-1970 timestamp on large inode");
+
+	memset(&small, 0, sizeof(small));
+	ext2fs_inode_xtime_set(&small, i_mtime, (time_t) -86400);
+	CHECK(ext2fs_inode_xtime_get(&small, i_mtime) == (time_t) -86400,
+	      "xtime_get sign-extends pre-1970 timestamp on 128B inode");
+
+#if (SIZEOF_TIME_T > 4)
+	for (i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+		ext2fs_inode_xtime_set(&large, i_mtime, cases[i]);
+		CHECK(ext2fs_inode_xtime_get(&large, i_mtime) == cases[i],
+		      "large inode 34-bit mtime round-trip");
+		ext2fs_inode_xtime_set(&large, i_crtime, cases[i]);
+		CHECK(ext2fs_inode_xtime_get(&large, i_crtime) == cases[i],
+		      "large inode 34-bit crtime round-trip");
+	}
+
+	ext2fs_inode_xtime_set(&small, i_ctime, future);
+	CHECK(ext2fs_inode_xtime_get(&small, i_ctime) == (time_t) INT32_MAX,
+	      "128B inode clamps post-2038 timestamp to INT32_MAX");
+
+	fs = create_test_fs(path, &fd, 2048, 64, 256, 1);
+	fs->now = future;
+	memset(&new_ino, 0, sizeof(new_ino));
+	new_ino.i_mode = LINUX_S_IFREG | 0644;
+	new_ino.i_links_count = 1;
+	CHECK_RC(ext2fs_write_new_inode(fs, 12, &new_ino), 0,
+		 "write_new_inode with post-2038 fs->now");
+	ext2fs_flush_icache(fs);
+	memset(&disk_ino, 0, sizeof(disk_ino));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &disk_ino,
+					sizeof(disk_ino)), 0,
+		 "read_inode_full post-2038 new inode");
+	CHECK(ext2fs_inode_xtime_get(&disk_ino, i_atime) == future &&
+	      ext2fs_inode_xtime_get(&disk_ino, i_ctime) == future &&
+	      ext2fs_inode_xtime_get(&disk_ino, i_mtime) == future &&
+	      ext2fs_inode_xtime_get(&disk_ino, i_crtime) == future,
+	      "write_new_inode encodes 34-bit post-2038 atime/ctime/mtime/crtime");
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close post-2038 fs");
+	close(fd);
+	unlink(path);
+#endif
+	printf("  test_inode_timestamps: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -560,6 +645,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_inode_csum_handling();
 	test_inode_scanner();
 	test_get_blocks_and_check_dir();
+	test_inode_timestamps();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_inode: %d checks run, %d failed\n",
