@@ -356,7 +356,7 @@ ext2fs_inline_data_dir_expand(ext2_filsys fs, ext2_ino_t ino,
 
 #ifdef WORDS_BIGENDIAN
 	retval = ext2fs_dirent_swab_in2(fs, buf + EXT4_INLINE_DATA_DOTDOT_SIZE,
-					size, 0);
+					size - EXT4_INLINE_DATA_DOTDOT_SIZE, 0);
 	if (retval)
 		goto errout;
 #endif
@@ -542,6 +542,8 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 	errcode_t retval;
 	size_t free_ea_size, existing_size, free_inode_size;
 
+	char empty[1] = { '\0' };
+
 	if (!inode) {
 		retval = ext2fs_read_inode(fs, ino, &inode_buf);
 		if (retval)
@@ -550,7 +552,10 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 	}
 
 	if (size <= EXT4_MIN_INLINE_DATA_SIZE) {
-		memcpy((void *)inode->i_block, buf, size);
+		memset((void *)inode->i_block, 0, EXT4_MIN_INLINE_DATA_SIZE);
+		if (size)
+			memcpy((void *)inode->i_block, buf, size);
+		data.ea_data = empty;
 	} else {
 		retval = ext2fs_xattr_inode_max_size(fs, ino, &free_ea_size);
 		if (retval)
@@ -871,6 +876,35 @@ static errcode_t file_test(ext2_filsys fs)
 		retval = 1;
 		goto err;
 	}
+
+	/*
+	 * 3b. Shrink from 76B down to 10B (inside i_block) and verify no
+	 *     stale trailing bytes remain in i_block[10..59] or EA area,
+	 *     then grow back to 76B for NO_SPACE check.
+	 */
+	retval = ext2fs_inline_data_set(fs, newfile, NULL, buf + 20, 10);
+	if (retval)
+		goto err;
+	memset(cmpbuf, 0xff, 512);
+	retval = ext2fs_inline_data_get(fs, newfile, NULL, cmpbuf, &size);
+	if (retval || size != EXT4_MIN_INLINE_DATA_SIZE ||
+	    memcmp(buf + 20, cmpbuf, 10) != 0) {
+		fprintf(stderr, "tst_inline_data: 10B shrink data failed\n");
+		retval = 1;
+		goto err;
+	}
+	for (i = 10; i < EXT4_MIN_INLINE_DATA_SIZE; i++) {
+		if (cmpbuf[i] != 0) {
+			fprintf(stderr,
+				"tst_inline_data: stale i_block byte at %d\n",
+				i);
+			retval = 1;
+			goto err;
+		}
+	}
+	retval = ext2fs_inline_data_set(fs, newfile, NULL, buf + 10, 76);
+	if (retval)
+		goto err;
 
 	/* 4. Exceeding ibody space returns EXT2_ET_INLINE_DATA_NO_SPACE */
 	if (ext2fs_inline_data_set(fs, newfile, NULL, buf, 400) !=
