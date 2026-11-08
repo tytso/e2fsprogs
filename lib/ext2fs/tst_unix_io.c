@@ -27,6 +27,7 @@
 #endif
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
+#include <sys/wait.h>
 #endif
 
 #include "ext2_fs.h"
@@ -556,6 +557,49 @@ static void test_options_bounce_byte_zero_discard_threads(void)
 		CHECK(!a1.failed && !a2.failed,
 		      "concurrent IO_FLAG_THREADS workers succeeded");
 		CHECK_RC(io_channel_close(io), 0, "close threaded io");
+	}
+
+	/*
+	 * Verify flush_cached_blocks() with IO_FLAG_THREADS + write_error
+	 * does not self-deadlock on CACHE_MTX (both normal flush and
+	 * FLUSH_NOLOCK via set_blksize).  Run in a child with alarm(1) so
+	 * a deadlock fails cleanly instead of hanging the test suite.
+	 */
+	{
+		pid_t	pid;
+		int	status = 0;
+
+		fflush(NULL);
+		pid = fork();
+		if (pid == 0) {
+			io_channel tio = NULL;
+
+			alarm(1);
+			if (unix_io_manager->open(path, IO_FLAG_THREADS,
+						  &tio) != 0)
+				_exit(2);
+			tio->write_error = test_write_err_cb;
+			write_err_called = 0;
+			memset(buf, 0x55, sizeof(buf));
+			if (io_channel_write_blk64(tio, 0, 1, buf) != 0 ||
+			    io_channel_write_blk64(tio, 1, 1, buf) != 0)
+				_exit(3);
+			if (io_channel_flush(tio) != EBADF ||
+			    write_err_called != 2)
+				_exit(4);
+			if (io_channel_write_blk64(tio, 2, 1, buf) != 0)
+				_exit(5);
+			if (io_channel_set_blksize(tio, 2048) != EBADF ||
+			    write_err_called != 3)
+				_exit(6);
+			if (io_channel_close(tio) != 0)
+				_exit(7);
+			_exit(0);
+		}
+		CHECK(pid > 0 && waitpid(pid, &status, 0) == pid,
+		      "waitpid for threaded flush write_error child");
+		CHECK(WIFEXITED(status) && WEXITSTATUS(status) == 0,
+		      "IO_FLAG_THREADS flush + set_blksize with write_error did not deadlock");
 	}
 #endif
 

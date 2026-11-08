@@ -682,14 +682,9 @@ static errcode_t flush_cached_blocks(io_channel channel,
 		if (!cache->in_use)
 			continue;
 		if (cache->dirty) {
-			int raw_flags = RAW_WRITE_NO_HANDLER;
-
-			if (flags & FLUSH_NOLOCK)
-				raw_flags |= RAW_WRITE_NOLOCK;
-
 			retval = raw_write_blk(channel, data,
 					       cache->block, 1, cache->buf,
-					       raw_flags);
+					       RAW_WRITE_NO_HANDLER);
 			if (retval) {
 				cache->write_err = 1;
 				errors_found = 1;
@@ -734,7 +729,8 @@ retry:
 					retval2);
 				if (err_buf)
 					ext2fs_free_mem(&err_buf);
-				mutex_lock(data, CACHE_MTX);
+				if (flags & FLUSH_NOLOCK)
+					mutex_lock(data, CACHE_MTX);
 				goto retry;
 			} else
 				cache->write_err = 0;
@@ -1177,15 +1173,14 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 
 	if (channel->block_size != blksize) {
 		mutex_lock(data, CACHE_MTX);
-		mutex_lock(data, BOUNCE_MTX);
 #ifndef NO_IO_CACHE
 		if ((retval = flush_cached_blocks(channel, data, FLUSH_NOLOCK))){
-			mutex_unlock(data, BOUNCE_MTX);
 			mutex_unlock(data, CACHE_MTX);
 			return retval;
 		}
 #endif
 
+		mutex_lock(data, BOUNCE_MTX);
 		channel->block_size = blksize;
 		free_cache(data);
 		retval = alloc_cache(channel, data);
