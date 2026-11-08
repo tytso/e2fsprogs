@@ -657,6 +657,12 @@ static errcode_t try_reopen_undo_file(int undo_fd,
 			data->keys_in_block = j + 1;
 		}
 	}
+	if (data->keys_in_block == keys_per_block) {
+		memset(data->keyb, 0, blocksize);
+		data->keys_in_block = 0;
+		data->key_blk_num = data->undo_blk_num;
+		data->undo_blk_num++;
+	}
 	dbg_printf("Reopen undo, keyblk=%llu undoblk=%llu nrkeys=%zu kib=%zu\n",
 		   data->key_blk_num, data->undo_blk_num, data->num_keys,
 		   data->keys_in_block);

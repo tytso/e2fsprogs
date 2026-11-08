@@ -421,14 +421,24 @@ static void test_undo_multi_keyblock_and_offset(void)
 	CHECK_RC(io_channel_set_blksize(io, 1024), 0, "set_blksize 1024");
 
 	/*
-	 * Write 70 non-contiguous blocks (20, 22, ..., 158) so no two
-	 * adjacent writes coalesce; overflows keyblock 1 (63 keys) into
-	 * keyblock 2 (7 keys).
+	 * Write exactly 63 non-contiguous blocks (20, 22, ..., 144) to fill
+	 * keyblock 1 completely (keys_per_block == 63 for 1K blocks), close,
+	 * reopen the undo file, and append 7 more non-contiguous blocks
+	 * (146, ..., 158) into keyblock 2 without overflowing data->keyb.
 	 */
 	memset(blk, 0xff, sizeof(blk));
-	for (i = 0; i < 70; i++)
+	for (i = 0; i < 63; i++)
 		CHECK_RC(io_channel_write_blk64(io, 20 + i * 2, 1, blk), 0,
-			 "write non-contiguous block");
+			 "write non-contiguous block (session 1)");
+	CHECK_RC(io_channel_close(io), 0, "close full-63-keyblock undo file");
+
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io), 0,
+		 "reopen full-63-keyblock undo file");
+	CHECK_RC(io_channel_set_blksize(io, 1024), 0,
+		 "set_blksize 1024 after 63-key reopen");
+	for (i = 63; i < 70; i++)
+		CHECK_RC(io_channel_write_blk64(io, 20 + i * 2, 1, blk), 0,
+			 "write non-contiguous block after full-kb reopen");
 	CHECK_RC(io_channel_close(io), 0, "close 70-key undo file");
 
 	CHECK(verify_and_replay_undo(undo_fd, img_fd, 70, &kb_seen) == 1,
