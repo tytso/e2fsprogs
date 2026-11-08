@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "ext2fsP.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -35,6 +36,14 @@ static struct struct_io_manager struct_sparsefd_manager = {
 	.close			= sparse_close,
 };
 #else
+#include <stdbool.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <string.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <sparse/sparse.h>
 
 struct sparse_map {
@@ -83,11 +92,12 @@ static errcode_t io_manager_import_sparse(struct sparse_io_params *params,
 					  struct sparse_map *sm, io_channel io)
 {
 	int fd;
+	int64_t s_len;
 	errcode_t retval;
 	struct sparse_file *sparse_file;
 
 	if (params->fd < 0) {
-		fd = open(params->file, O_RDONLY);
+		fd = open(params->file, O_RDONLY | O_BINARY);
 		if (fd < 0) {
 			retval = -1;
 			goto err_open;
@@ -101,8 +111,12 @@ static errcode_t io_manager_import_sparse(struct sparse_io_params *params,
 	}
 
 	sm->block_size = sparse_file_block_size(sparse_file);
-	sm->blocks_count = (sparse_file_len(sparse_file, 0, 0) - 1)
-				/ sm->block_size + 1;
+	s_len = sparse_file_len(sparse_file, 0, 0);
+	if (sm->block_size <= 0 || s_len <= 0) {
+		retval = -1;
+		goto err_alloc;
+	}
+	sm->blocks_count = ((uint64_t)s_len - 1) / sm->block_size + 1;
 	sm->blocks = calloc(sm->blocks_count, sizeof(char*));
 	if (!sm->blocks) {
 		retval = -1;
@@ -118,7 +132,8 @@ static errcode_t io_manager_import_sparse(struct sparse_io_params *params,
 err_alloc:
 	sparse_file_destroy(sparse_file);
 err_sparse:
-	close(fd);
+	if (params->fd < 0)
+		close(fd);
 err_open:
 	return retval;
 }
@@ -178,6 +193,7 @@ err_open:
 err_alloc:
 	free_sparse_blocks(sm);
 err_params:
+	free(sm->file);
 	free(sm);
 	return retval;
 }
@@ -189,6 +205,10 @@ static errcode_t sparse_open_channel(struct sparse_io_params *sparse_params,
 	io_channel io;
 
 	io = calloc(1, sizeof(struct struct_io_channel));
+	if (!io) {
+		free(sparse_params->file);
+		return EXT2_ET_NO_MEMORY;
+	}
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
 	io->block_size = 0;
 	io->refcount = 1;
@@ -298,6 +318,26 @@ static errcode_t sparse_merge_blocks(struct sparse_map *sm, uint64_t start,
 	return retval;
 }
 
+static errcode_t sparse_merge_range(struct sparse_map *sm, uint64_t start,
+				    uint64_t num)
+{
+	uint64_t max_blocks, chunk;
+	errcode_t retval;
+
+	max_blocks = 0x80000000ULL / (unsigned int)sm->block_size;
+	if (!max_blocks)
+		max_blocks = 1;
+	while (num > 0) {
+		chunk = (num > max_blocks) ? max_blocks : num;
+		retval = sparse_merge_blocks(sm, start, chunk);
+		if (retval)
+			return retval;
+		start += chunk;
+		num -= chunk;
+	}
+	return 0;
+}
+
 static errcode_t sparse_close_channel(io_channel channel)
 {
 	uint64_t i;
@@ -305,10 +345,14 @@ static errcode_t sparse_close_channel(io_channel channel)
 	struct sparse_map *sm = channel->private_data;
 
 	if (sm->sparse_file) {
-		int64_t chunk_start = (sm->blocks[0] == NULL) ? -1 : 0;
+		int64_t chunk_start = -1;
+
+		if (sm->blocks_count > 0 && sm->blocks[0] != NULL)
+			chunk_start = 0;
 		for (i = 0; i < sm->blocks_count; ++i) {
 			if (!sm->blocks[i] && chunk_start != -1) {
-				retval = sparse_merge_blocks(sm, chunk_start, i - chunk_start);
+				retval = sparse_merge_range(sm, chunk_start,
+							    i - chunk_start);
 				chunk_start = -1;
 			} else if (sm->blocks[i] && chunk_start == -1) {
 				chunk_start = i;
@@ -317,10 +361,21 @@ static errcode_t sparse_close_channel(io_channel channel)
 				goto ret;
 		}
 		if (chunk_start != -1) {
-			retval = sparse_merge_blocks(sm, chunk_start,
-							sm->blocks_count - chunk_start);
+			retval = sparse_merge_range(sm, chunk_start,
+						    sm->blocks_count -
+						    chunk_start);
 			if (retval)
 				goto ret;
+		}
+		if (channel->manager == sparsefd_io_manager &&
+		    sm->fd >= 0 && lseek(sm->fd, 0, SEEK_SET) == 0) {
+			struct stat st;
+
+			if (fstat(sm->fd, &st) == 0 && S_ISREG(st.st_mode) &&
+			    ftruncate(sm->fd, 0) < 0) {
+				retval = errno ? errno : EIO;
+				goto ret;
+			}
 		}
 		retval = sparse_file_write(sm->sparse_file, sm->fd,
 					   /*gzip*/0, /*sparse*/1, /*crc*/0);
@@ -341,9 +396,13 @@ static errcode_t sparse_close(io_channel channel)
 	errcode_t retval;
 	struct sparse_map *sm = channel->private_data;
 	int fd = sm->fd;
+	int close_fd = (channel->manager != sparsefd_io_manager);
+
+	if (--channel->refcount > 0)
+		return 0;
 
 	retval = sparse_close_channel(channel);
-	if (fd >= 0)
+	if (close_fd && fd >= 0)
 		close(fd);
 
 	return retval;
@@ -351,6 +410,8 @@ static errcode_t sparse_close(io_channel channel)
 
 static errcode_t sparse_set_blksize(io_channel channel, int blksize)
 {
+	if (blksize <= 0)
+		return EXT2_ET_INVALID_ARGUMENT;
 	channel->block_size = blksize;
 	return 0;
 }
@@ -370,7 +431,8 @@ static blk64_t block_to_sparse_block(blk64_t block, blk64_t *offset,
 
 static errcode_t check_block_size(io_channel channel, struct sparse_map *sm)
 {
-	if (sm->block_size >= channel->block_size)
+	if (channel->block_size > 0 && sm->block_size >= channel->block_size &&
+	    (sm->block_size % channel->block_size) == 0)
 		return 0;
 	return EXT2_ET_UNEXPECTED_BLOCK_SIZE;
 }
@@ -386,24 +448,47 @@ static errcode_t sparse_read_blk64(io_channel channel, blk64_t block,
 	if (check_block_size(channel, sm))
 		return EXT2_ET_UNEXPECTED_BLOCK_SIZE;
 
-	if (count < 0) { //partial read
-		count = -count;
+	if (count < 0) {
+		size_t rem = (size_t)-count;
+		size_t chunk;
+
 		cur_block = block_to_sparse_block(block, &offset, channel, sm);
-		if (sm->blocks[cur_block])
-			memcpy(out, (sm->blocks[cur_block]) + offset, count);
-		else
-			memset(out, 0, count);
+		while (rem > 0) {
+			if (cur_block >= sm->blocks_count) {
+				memset(out, 0, rem);
+				return EXT2_ET_BAD_BLOCK_NUM;
+			}
+			chunk = (size_t)sm->block_size - (size_t)offset;
+			if (chunk > rem)
+				chunk = rem;
+			if (sm->blocks && sm->blocks[cur_block])
+				memcpy(out, sm->blocks[cur_block] + offset,
+				       chunk);
+			else
+				memset(out, 0, chunk);
+			out += chunk;
+			rem -= chunk;
+			cur_block++;
+			offset = 0;
+		}
 	} else {
 		for (i = 0; i < count; ++i) {
 			cur_block = block_to_sparse_block(block + i, &offset,
 						    channel, sm);
-			if (sm->blocks[cur_block])
-				memcpy(out + (i * channel->block_size),
+			if (cur_block >= sm->blocks_count) {
+				memset(out + ((size_t)i * channel->block_size),
+				       0,
+				       (size_t)(count - i) *
+				       channel->block_size);
+				return EXT2_ET_BAD_BLOCK_NUM;
+			}
+			if (sm->blocks && sm->blocks[cur_block])
+				memcpy(out + ((size_t)i * channel->block_size),
 				       sm->blocks[cur_block] + offset,
 				       channel->block_size);
-			else if (sm->blocks)
-				memset(out + (i * channel->block_size), 0,
-				       channel->block_size);
+			else
+				memset(out + ((size_t)i * channel->block_size),
+				       0, channel->block_size);
 		}
 	}
 	return 0;
@@ -426,22 +511,35 @@ static errcode_t sparse_write_blk64(io_channel channel, blk64_t block,
 	if (check_block_size(channel, sm))
 		return EXT2_ET_UNEXPECTED_BLOCK_SIZE;
 
-	if (count < 0) { //partial write
-		count = -count;
-		cur_block = block_to_sparse_block(block, &offset, channel,
-						  sm);
-		if (!sm->blocks[cur_block]) {
-			sm->blocks[cur_block] = calloc(1, sm->block_size);
-			if (!sm->blocks[cur_block])
-				return EXT2_ET_NO_MEMORY;
+	if (count < 0) {
+		size_t rem = (size_t)-count;
+		size_t chunk;
+
+		cur_block = block_to_sparse_block(block, &offset, channel, sm);
+		while (rem > 0) {
+			if (cur_block >= sm->blocks_count)
+				return EXT2_ET_BAD_BLOCK_NUM;
+			chunk = (size_t)sm->block_size - (size_t)offset;
+			if (chunk > rem)
+				chunk = rem;
+			if (!sm->blocks[cur_block]) {
+				sm->blocks[cur_block] =
+					calloc(1, sm->block_size);
+				if (!sm->blocks[cur_block])
+					return EXT2_ET_NO_MEMORY;
+			}
+			memcpy(sm->blocks[cur_block] + offset, in, chunk);
+			in += chunk;
+			rem -= chunk;
+			cur_block++;
+			offset = 0;
 		}
-		memcpy(sm->blocks[cur_block] + offset, in, count);
 	} else {
 		for (i = 0; i < count; ++i) {
-			if (block + i >= sm->blocks_count)
-				return 0;
 			cur_block = block_to_sparse_block(block + i, &offset,
 						    channel, sm);
+			if (cur_block >= sm->blocks_count)
+				return EXT2_ET_BAD_BLOCK_NUM;
 			if (!sm->blocks[cur_block]) {
 				sm->blocks[cur_block] =
 					calloc(1, sm->block_size);
@@ -449,7 +547,7 @@ static errcode_t sparse_write_blk64(io_channel channel, blk64_t block,
 					return EXT2_ET_NO_MEMORY;
 			}
 			memcpy(sm->blocks[cur_block] + offset,
-			       in + (i * channel->block_size),
+			       in + ((size_t)i * channel->block_size),
 			       channel->block_size);
 		}
 	}
@@ -462,24 +560,35 @@ static errcode_t sparse_write_blk(io_channel channel, unsigned long block,
 	return sparse_write_blk64(channel, block, count, buf);
 }
 
-static errcode_t sparse_discard(io_channel channel __attribute__((unused)),
+static errcode_t sparse_discard(io_channel channel,
 				blk64_t blk, unsigned long long count)
 {
+	unsigned long long i;
 	blk64_t cur_block, offset;
 	struct sparse_map *sm = channel->private_data;
 
 	if (check_block_size(channel, sm))
 		return EXT2_ET_UNEXPECTED_BLOCK_SIZE;
 
-	for (unsigned long long i = 0; i < count; ++i) {
-		if (blk + i >= sm->blocks_count)
-			return 0;
+	for (i = 0; i < count; ++i) {
 		cur_block = block_to_sparse_block(blk + i, &offset, channel,
 						  sm);
+		if (cur_block >= sm->blocks_count)
+			return 0;
 		if (!sm->blocks[cur_block])
 			continue;
-		free(sm->blocks[cur_block]);
-		sm->blocks[cur_block] = NULL;
+		if (channel->block_size == sm->block_size) {
+			free(sm->blocks[cur_block]);
+			sm->blocks[cur_block] = NULL;
+		} else {
+			memset(sm->blocks[cur_block] + offset, 0,
+			       channel->block_size);
+			if (ext2fs_mem_is_zero(sm->blocks[cur_block],
+					       sm->block_size)) {
+				free(sm->blocks[cur_block]);
+				sm->blocks[cur_block] = NULL;
+			}
+		}
 	}
 	return 0;
 }
