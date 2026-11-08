@@ -114,7 +114,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_block_bitmap_csum_set(fs, i, block_buf,
 						      block_nbytes);
 		if (retval)
-			return retval;
+			goto errout;
 		ext2fs_group_desc_csum_set(fs, i);
 		fs->flags |= EXT2_FLAG_DIRTY;
 
@@ -527,9 +527,8 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	pthread_mutex_t rbt_mutex = PTHREAD_MUTEX_INITIALIZER;
 	errcode_t retval;
 	errcode_t rc;
-	unsigned flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 	dgrp_t average_group;
-	int i, tail_flags = 0;
+	int i, started = 0, tail_flags = 0;
 #endif
 
 	if (flags & ~EXT2FS_BITMAPS_VALID_FLAGS)
@@ -560,10 +559,17 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	if (num_threads <= 0)
 		num_threads = 4;
 
+	if (fs->group_desc_count == 0)
+		return 0;
 	if ((unsigned) num_threads > fs->group_desc_count)
 		num_threads = fs->group_desc_count;
 	average_group = fs->group_desc_count / num_threads;
 	if (ext2fs_has_feature_flex_bg(fs->super)) {
+		unsigned int flexbg_size;
+
+		if (fs->super->s_log_groups_per_flex > 30)
+			goto fallback;
+		flexbg_size = 1U << fs->super->s_log_groups_per_flex;
 		average_group = (average_group / flexbg_size) * flexbg_size;
 	}
 	if ((num_threads <= 1) || (average_group == 0))
@@ -571,21 +577,27 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 
 	io_channel_set_options(fs->io, "cache=off");
 	retval = pthread_attr_init(&attr);
-	if (retval)
+	if (retval) {
+		io_channel_set_options(fs->io, "cache=on");
 		return retval;
+	}
 
 	thread_ids = calloc(sizeof(pthread_t), num_threads);
-	if (!thread_ids)
-		return ENOMEM;
+	if (!thread_ids) {
+		retval = EXT2_ET_NO_MEMORY;
+		goto out_attr;
+	}
 
 	thread_infos = calloc(sizeof(struct read_bitmaps_thread_info),
 				num_threads);
-	if (!thread_infos)
-		goto out;
+	if (!thread_infos) {
+		retval = EXT2_ET_NO_MEMORY;
+		goto out_attr;
+	}
 
 	retval = read_bitmaps_range_prepare(fs, flags);
 	if (retval)
-		goto out;
+		goto out_attr;
 
 //	fprintf(stdout, "Multiple threads triggered to read bitmaps\n");
 	for (i = 0; i < num_threads; i++) {
@@ -593,23 +605,20 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 		thread_infos[i].rbt_flags = flags;
 		thread_infos[i].rbt_mutex = &rbt_mutex;
 		thread_infos[i].rbt_tail_flags = 0;
-		if (i == 0)
-			thread_infos[i].rbt_grp_start = 0;
-		else
-			thread_infos[i].rbt_grp_start = average_group * i + 1;
-
+		thread_infos[i].rbt_grp_start = average_group * i;
 		if (i == num_threads - 1)
 			thread_infos[i].rbt_grp_end = fs->group_desc_count - 1;
 		else
-			thread_infos[i].rbt_grp_end = average_group * (i + 1);
+			thread_infos[i].rbt_grp_end =
+				thread_infos[i].rbt_grp_start +
+				average_group - 1;
 		retval = pthread_create(&thread_ids[i], &attr,
 					&read_bitmaps_thread, &thread_infos[i]);
 		if (retval)
 			break;
+		started++;
 	}
-	for (i = 0; i < num_threads; i++) {
-		if (!thread_ids[i])
-			break;
+	for (i = 0; i < started; i++) {
 		rc = pthread_join(thread_ids[i], NULL);
 		if (rc && !retval)
 			retval = rc;
@@ -618,17 +627,16 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 			retval = rc;
 		tail_flags |= thread_infos[i].rbt_tail_flags;
 	}
-out:
+	if (retval == 0)
+		retval = read_bitmaps_range_end(fs, flags, tail_flags);
+	if (retval)
+		read_bitmaps_cleanup_on_error(fs, flags);
+out_attr:
 	rc = pthread_attr_destroy(&attr);
 	if (rc && !retval)
 		retval = rc;
 	free(thread_infos);
 	free(thread_ids);
-
-	if (retval == 0)
-		retval = read_bitmaps_range_end(fs, flags, tail_flags);
-	if (retval)
-		read_bitmaps_cleanup_on_error(fs, flags);
 	/* XXX should save and restore cache setting */
 	io_channel_set_options(fs->io, "cache=on");
 	return retval;

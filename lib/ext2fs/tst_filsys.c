@@ -688,6 +688,39 @@ static void test_rw_bitmaps_and_stats(void)
 	      ext2fs_test_inode_bitmap2(fs->inode_map, 80) &&
 	      !ext2fs_test_inode_bitmap2(fs->inode_map, 200),
 	      "multi-threaded bitmaps match");
+
+	/*
+	 * Exercise num_threads == group_desc_count (4) and uneven 3-thread
+	 * partitioning alongside an out-of-range s_log_groups_per_flex value.
+	 */
+	fs->super->s_log_groups_per_flex = 40;
+	CHECK_RC(ext2fs_rw_bitmaps(fs,
+				   EXT2FS_BITMAPS_BLOCK | EXT2FS_BITMAPS_INODE,
+				   4),
+		 0, "rw_bitmaps 4 threads on 4 groups with garbage log_flex");
+	CHECK(ext2fs_test_block_bitmap2(fs->block_map, 500) &&
+	      ext2fs_test_block_bitmap2(fs->block_map, 9000) &&
+	      ext2fs_test_inode_bitmap2(fs->inode_map, 15) &&
+	      ext2fs_test_inode_bitmap2(fs->inode_map, 80) &&
+	      !ext2fs_test_block_bitmap2(fs->block_map, 25000),
+	      "4-thread full-group slice bitmaps match");
+	CHECK_RC(ext2fs_rw_bitmaps(fs,
+				   EXT2FS_BITMAPS_BLOCK | EXT2FS_BITMAPS_INODE,
+				   3),
+		 0, "rw_bitmaps 3 threads on 4 groups");
+	CHECK(ext2fs_test_block_bitmap2(fs->block_map, 500) &&
+	      ext2fs_test_block_bitmap2(fs->block_map, 9000) &&
+	      ext2fs_test_inode_bitmap2(fs->inode_map, 15) &&
+	      ext2fs_test_inode_bitmap2(fs->inode_map, 80),
+	      "3-thread uneven slice bitmaps match");
+	ext2fs_set_feature_flex_bg(fs->super);
+	CHECK_RC(ext2fs_rw_bitmaps(fs,
+				   EXT2FS_BITMAPS_BLOCK | EXT2FS_BITMAPS_INODE,
+				   4),
+		 0, "rw_bitmaps falls back cleanly on flex_bg log_flex > 30");
+	CHECK(ext2fs_test_block_bitmap2(fs->block_map, 500) &&
+	      ext2fs_test_inode_bitmap2(fs->inode_map, 80),
+	      "flex_bg fallback bitmaps match");
 	CHECK_RC(ext2fs_close_free(&fs), 0, "close multi-threaded");
 
 	/* Non-0xff inode bitmap tail padding with valid checksum -> TAIL flag */
