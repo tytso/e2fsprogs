@@ -204,6 +204,50 @@ static void test_inode_io_channel_ops(void)
 	CHECK(rbuf[0] == 0xee && rbuf[511] == 0xee,
 	      "sub-block data at block 3 verified");
 
+	/*
+	 * Short read spanning EOF (block 3 is 512 bytes valid + 1536 past
+	 * i_size == 6656) and read completely past EOF must zero unread tail
+	 * bytes and return EXT2_ET_SHORT_READ instead of leaving caller garbage.
+	 */
+	memset(rbuf, 0xa5, 2048);
+	CHECK_RC(io_channel_read_blk64(io2, 3, 1, rbuf), EXT2_ET_SHORT_READ,
+		 "partial block read at EOF returns EXT2_ET_SHORT_READ");
+	CHECK(rbuf[0] == 0xee && rbuf[511] == 0xee &&
+	      rbuf[512] == 0 && rbuf[2047] == 0,
+	      "partial block read keeps valid prefix and zeroes unread tail");
+
+	memset(rbuf, 0xa5, 2048);
+	CHECK_RC(io_channel_read_blk64(io2, 10, 1, rbuf), EXT2_ET_SHORT_READ,
+		 "read past EOF returns EXT2_ET_SHORT_READ");
+	CHECK(rbuf[0] == 0 && rbuf[2047] == 0,
+	      "read past EOF zeroes caller buffer");
+
+#if SIZEOF_LONG > 4
+	/*
+	 * 64-bit write_byte offset > 4 GiB must seek via ext2fs_file_llseek()
+	 * rather than truncating to 32-bit offset 32 in block 0!
+	 */
+	{
+		unsigned long hi_off = (unsigned long) ((1ULL << 32) + 32);
+		unsigned long long hi_blk = (1ULL << 32) / 2048;
+
+		CHECK_RC(io_channel_write_byte(io2, hi_off, 6, "HI4GIB"), 0,
+			 "inode_write_byte past 4 GiB");
+		CHECK_RC(io_channel_flush(io2), 0, "flush after 4 GiB write");
+		memset(rbuf, 0, 64);
+		CHECK_RC(io_channel_read_blk64(io2, 0, -64, rbuf), 0,
+			 "re-read block 0 prefix after 4 GiB write_byte");
+		CHECK(memcmp(rbuf + 32, "HI4GIB", 6) != 0 &&
+		      rbuf[32] == ((32 * 5 + 0x21) & 0xff),
+		      "block 0 offset 32 not clobbered by 32-bit wrap");
+		memset(rbuf, 0, 64);
+		CHECK_RC(io_channel_read_blk64(io2, hi_blk, -38, rbuf), 0,
+			 "read 4 GiB sparse block prefix");
+		CHECK(memcmp(rbuf + 32, "HI4GIB", 6) == 0,
+		      "4 GiB write_byte payload verified");
+	}
+#endif
+
 	/* First close only decrements refcount; second close finalizes */
 	CHECK_RC(io_channel_close(io2), 0, "close bumped io2 (refcount -> 1)");
 	CHECK_RC(io_channel_close(io2), 0, "final close io2");
@@ -235,6 +279,16 @@ static void test_nested_filesystem_in_inode(void)
 
 	outer_fs = setup_outer_fs(outer_path, &outer_fd);
 	host_ino = alloc_reg_inode(outer_fs);
+	/* Pre-size sparse backing file to 128 KiB like ftruncate on an image */
+	{
+		ext2_file_t f = NULL;
+
+		CHECK_RC(ext2fs_file_open(outer_fs, host_ino, EXT2_FILE_WRITE,
+					  &f), 0, "open host_ino to size");
+		CHECK_RC(ext2fs_file_set_size2(f, 128 * 1024), 0,
+			 "set host_ino size to 128 KiB");
+		CHECK_RC(ext2fs_file_close(f), 0, "close sized host_ino");
+	}
 
 	/* Format a 128-block 1KiB ext2 filesystem inside host_ino */
 	CHECK_RC(ext2fs_inode_io_intern(outer_fs, host_ino, &intern_name), 0,
