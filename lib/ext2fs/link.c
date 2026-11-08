@@ -679,15 +679,18 @@ retry:
 	ls.err = 0;
 
 	if ((flags & EXT2FS_LINK_APPEND) &&
-	    !(inode.i_flags & EXT4_INLINE_DATA_FL)) {
+	    !(inode.i_flags & EXT4_INLINE_DATA_FL) &&
+	    (EXT2_I_SIZE(&inode) >= fs->blocksize)) {
 		blk64_t		lblk, pblk = 0;
 		struct dir_context ctx;
 
-		lblk = (inode.i_size / fs->blocksize) - 1;
+		lblk = (EXT2_I_SIZE(&inode) / fs->blocksize) - 1;
 		retval = ext2fs_bmap2(fs, dir, &inode, NULL, 0, lblk,
 				      NULL, &pblk);
 		if (retval)
 			return retval;
+		if (!pblk)
+			goto iterate_dir;
 
 		ctx.dir = dir;
 		ctx.flags = DIRENT_FLAG_INCLUDE_EMPTY;
@@ -702,6 +705,7 @@ retry:
 		retval = ctx.errcode;
 		ext2fs_free_mem(&ctx.buf);
 	} else {
+	iterate_dir:
 		retval = ext2fs_dir_iterate2(fs, dir,
 					     DIRENT_FLAG_INCLUDE_EMPTY,
 					     NULL, link_proc, &ls);

@@ -667,6 +667,62 @@ static void test_link_unlink_and_iterate(void)
 		ext2fs_free_mem(&cbuf);
 	}
 
+	/*
+	 * EXT2FS_LINK_APPEND with i_size < blocksize must not underflow
+	 * lblk to UINT64_MAX (EXT2_ET_FILE_TOO_BIG), and trailing sparse
+	 * hole blocks must not read/overwrite physical block 0.
+	 */
+	{
+		ext2_ino_t		udir = 0, edir = 0, uf = 0;
+		struct ext2_inode	uinode;
+		unsigned char		blk0_save[64];
+
+		CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0,
+				       "under_dir", &udir), 0,
+			 "mkdir under_dir");
+		CHECK_RC(ext2fs_read_inode(fs, udir, &uinode), 0,
+			 "read under_dir");
+		uinode.i_size = 0;
+		CHECK_RC(ext2fs_write_inode(fs, udir, &uinode), 0,
+			 "set under_dir i_size = 0");
+		CHECK_RC(ext2fs_link(fs, udir, "append_zero_isize", f2,
+				     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+			 "EXT2FS_LINK_APPEND with i_size == 0");
+		CHECK_RC(ext2fs_lookup(fs, udir, "append_zero_isize", 17,
+				       NULL, &uf), 0,
+			 "lookup append_zero_isize");
+		CHECK(uf == f2, "append_zero_isize linked to f2");
+
+		/* Trailing sparse hole at lblk 1 must not clobber pblk 0 */
+		memset(mem_disk, 0x5a, sizeof(blk0_save));
+		memcpy(blk0_save, mem_disk, sizeof(blk0_save));
+		CHECK_RC(ext2fs_read_inode(fs, udir, &uinode), 0,
+			 "re-read under_dir");
+		uinode.i_size = 2 * fs->blocksize;
+		CHECK_RC(ext2fs_write_inode(fs, udir, &uinode), 0,
+			 "set under_dir sparse lblk 1");
+		CHECK_RC(ext2fs_link(fs, udir, "append_sparse_tail", f3,
+				     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+			 "EXT2FS_LINK_APPEND falls back on sparse tail");
+		CHECK(memcmp(mem_disk, blk0_save, sizeof(blk0_save)) == 0,
+		      "physical block 0 untouched by sparse EXT2FS_LINK_APPEND");
+
+		/* Unallocated 0-byte dir returns DIR_NO_SPACE, not FILE_TOO_BIG */
+		CHECK_RC(ext2fs_new_inode(fs, EXT2_ROOT_INO,
+					  LINUX_S_IFDIR | 0755, 0, &edir), 0,
+			 "alloc empty dir ino");
+		ext2fs_inode_alloc_stats2(fs, edir, +1, 1);
+		memset(&uinode, 0, sizeof(uinode));
+		uinode.i_mode = LINUX_S_IFDIR | 0755;
+		uinode.i_links_count = 2;
+		CHECK_RC(ext2fs_write_new_inode(fs, edir, &uinode), 0,
+			 "write 0-byte empty dir");
+		CHECK_RC(ext2fs_link(fs, edir, "x", f1,
+				     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND),
+			 EXT2_ET_DIR_NO_SPACE,
+			 "0-byte unallocated dir returns DIR_NO_SPACE");
+	}
+
 	/* Corrupt rec_len in block 1 returns EXT2_ET_DIR_CORRUPTED */
 	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read dir inode");
 	CHECK_RC(ext2fs_bmap2(fs, dir, &inode, NULL, 0, 0, NULL, &blk0), 0,
