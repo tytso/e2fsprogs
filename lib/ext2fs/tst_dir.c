@@ -443,6 +443,34 @@ static void test_mkdir_and_expanddir(void)
 	      "inline dir i_size == 60");
 	teardown_fs(&fs);
 
+	/*
+	 * ext2fs_mkdir2() must propagate ext2fs_inline_data_init() failure
+	 * (e.g., 128-byte inodes lack ibody EA space for system.data) without
+	 * allocating the inode, linking the uninitialized directory, or
+	 * incrementing parent i_links_count.
+	 */
+	fs = setup_fs(1024, 512, 128, EXT2_GOOD_OLD_INODE_SIZE,
+		      EXT2_FEATURE_COMPAT_EXT_ATTR,
+		      EXT4_FEATURE_INCOMPAT_INLINE_DATA |
+		      EXT2_FEATURE_INCOMPAT_FILETYPE, 0);
+	inl_sub = 0;
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "bad_inldir",
+			       &inl_sub),
+		 EXT2_ET_EA_NO_SPACE,
+		 "mkdir2 propagates inline_data_init failure on 128B inode");
+	CHECK(inl_sub != 0 &&
+	      !ext2fs_test_inode_bitmap2(fs->inode_map, inl_sub),
+	      "failed inline mkdir2 did not mark child inode in-use");
+	CHECK_RC(ext2fs_lookup(fs, EXT2_ROOT_INO, "bad_inldir", 10, NULL,
+			       &sub_dup),
+		 EXT2_ET_FILE_NOT_FOUND,
+		 "failed inline mkdir2 did not link bad_inldir into parent");
+	CHECK_RC(ext2fs_read_inode(fs, EXT2_ROOT_INO, &root_inode), 0,
+		 "read root after failed inline mkdir2");
+	CHECK(root_inode.i_links_count == 2,
+	      "failed inline mkdir2 did not increment root i_links_count");
+	teardown_fs(&fs);
+
 	printf("  test_mkdir_and_expanddir: ok\n");
 }
 
