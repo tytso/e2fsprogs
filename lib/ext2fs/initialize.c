@@ -597,21 +597,28 @@ cleanup:
 
 errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 {
-	blk64_t		blk;
+	blk64_t		blk, blocks_count, total_free = 0;
+	unsigned int	cluster_ratio = EXT2FS_CLUSTER_RATIO(fs);
+	unsigned int	clusters_per_group;
+	unsigned int	group_free = 0;
 	ext2_ino_t	ino;
+	ext2_ino_t	total_free_inodes = 0;
+	ext2_ino_t	group_free_inodes = 0;
+	ext2_ino_t	last_allocated = 0;
 	unsigned int	group = 0;
 	unsigned int	count = 0;
-	int		total_free = 0;
-	int		group_free = 0;
-	int		last_allocated = 0;
 	int		uninit;
 
 	/*
 	 * First calculate the block statistics
 	 */
+	blocks_count = ext2fs_blocks_count(fs->super);
+	clusters_per_group = ext2fs_has_feature_bigalloc(fs->super) ?
+		fs->super->s_clusters_per_group :
+		fs->super->s_blocks_per_group;
 	uninit = 1;
-	for (blk = fs->super->s_first_data_block;
-	     blk < ext2fs_blocks_count(fs->super); blk++) {
+	for (blk = fs->super->s_first_data_block & ~EXT2FS_CLUSTER_MASK(fs);
+	     blk < blocks_count; blk += cluster_ratio) {
 		if (!ext2fs_fast_test_block_bitmap2(fs->block_map, blk)) {
 			group_free++;
 			total_free++;
@@ -619,13 +626,13 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 			uninit = 0;
 		}
 		count++;
-		if ((count == fs->super->s_blocks_per_group) ||
-		    (blk == ext2fs_blocks_count(fs->super)-1)) {
+		if ((count == clusters_per_group) ||
+		    (blk + cluster_ratio >= blocks_count)) {
 			ext2fs_bg_free_blocks_count_set(fs, group,
 							group_free);
-			if (!super_only) {
-				if (uninit && blk !=
-					ext2fs_blocks_count(fs->super) - 1)
+			if (!super_only && ext2fs_has_group_desc_csum(fs)) {
+				if (uninit &&
+				    (blk + cluster_ratio < blocks_count))
 					ext2fs_bg_flags_set(fs, group,
 							EXT2_BG_BLOCK_UNINIT);
 				else
@@ -644,8 +651,6 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 	/*
 	 * Next, calculate the inode statistics
 	 */
-	group_free = 0;
-	total_free = 0;
 	last_allocated = 0;
 	count = 0;
 	group = 0;
@@ -653,8 +658,8 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 	/* Protect loop from wrap-around if s_inodes_count maxed */
 	for (ino = 1; ino <= fs->super->s_inodes_count && ino > 0; ino++) {
 		if (!ext2fs_test_inode_bitmap2(fs->inode_map, ino)) {
-			group_free++;
-			total_free++;
+			group_free_inodes++;
+			total_free_inodes++;
 		} else {
 			last_allocated = ino;
 		}
@@ -662,29 +667,34 @@ errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs, int super_only)
 		if ((count == fs->super->s_inodes_per_group) ||
 		    (ino == fs->super->s_inodes_count)) {
 			if (!super_only) {
-				if (last_allocated) {
-					ext2fs_bg_flags_clear(fs, group,
-						EXT2_BG_INODE_UNINIT);
-					ext2fs_bg_itable_unused_set(fs, group,
-						fs->super->s_inodes_per_group -
-						(last_allocated %
-						fs->super->s_inodes_per_group));
-				} else {
-					ext2fs_bg_flags_set(fs, group,
-						EXT2_BG_INODE_UNINIT);
-					ext2fs_bg_itable_unused_set(fs, group,
-									0);
+				if (ext2fs_has_group_desc_csum(fs)) {
+					if (last_allocated) {
+						__u32 unused;
+
+						ext2fs_bg_flags_clear(fs, group,
+							EXT2_BG_INODE_UNINIT);
+						unused = fs->super->s_inodes_per_group -
+							1 - ((last_allocated - 1) %
+							fs->super->s_inodes_per_group);
+						ext2fs_bg_itable_unused_set(fs,
+							group, unused);
+					} else {
+						ext2fs_bg_flags_set(fs, group,
+							EXT2_BG_INODE_UNINIT);
+						ext2fs_bg_itable_unused_set(fs,
+							group, 0);
+					}
 				}
 				ext2fs_bg_free_inodes_count_set(fs, group,
-								group_free);
+							group_free_inodes);
 			}
 			group++;
 			count = 0;
-			group_free = 0;
+			group_free_inodes = 0;
 			last_allocated = 0;
 		}
 	}
-	fs->super->s_free_inodes_count = total_free;
+	fs->super->s_free_inodes_count = total_free_inodes;
 	ext2fs_mark_super_dirty(fs);
 	return 0;
 }

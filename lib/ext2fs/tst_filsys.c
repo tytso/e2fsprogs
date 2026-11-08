@@ -579,6 +579,69 @@ static void test_rw_bitmaps_and_stats(void)
 	      fs->super->s_free_inodes_count == expect_free_inos,
 	      "super_only restores superblock free counts");
 
+	/*
+	 * Allocating the final inode in group 0 (ino == s_inodes_per_group)
+	 * must yield bg_itable_unused == 0, not s_inodes_per_group.
+	 */
+	ext2fs_mark_inode_bitmap2(fs->inode_map, 64);
+	CHECK_RC(ext2fs_calculate_summary_stats(fs, 0), 0,
+		 "calculate_summary_stats with last group inode allocated");
+	CHECK(ext2fs_bg_itable_unused(fs, 0) == 0,
+	      "group 0 last inode allocated -> itable_unused == 0");
+	ext2fs_unmark_inode_bitmap2(fs->inode_map, 64);
+	CHECK_RC(ext2fs_calculate_summary_stats(fs, 0), 0,
+		 "restore summary stats after unmarking ino 64");
+
+	/*
+	 * Verify ext2fs_calculate_summary_stats() on a bigalloc filesystem
+	 * counts bg_free_blocks_count in clusters and s_free_blocks_count
+	 * in blocks without multiplying by cluster_ratio twice.
+	 */
+	{
+		struct ext2_super_block ba_param;
+		ext2_filsys ba_fs = NULL;
+		blk64_t used_clusters = 0, expect_clusters;
+
+		memset(&ba_param, 0, sizeof(ba_param));
+		ext2fs_blocks_count_set(&ba_param, 8192);
+		ba_param.s_inodes_count = 128;
+		ba_param.s_rev_level = EXT2_DYNAMIC_REV;
+		ba_param.s_inode_size = 256;
+		ba_param.s_log_block_size = 0;   /* 1 KiB blocks */
+		ba_param.s_log_cluster_size = 2; /* 4 KiB clusters (ratio=4) */
+		ba_param.s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
+		ext2fs_set_feature_sparse_super(&ba_param);
+		ext2fs_set_feature_extents(&ba_param);
+		ext2fs_set_feature_64bit(&ba_param);
+		ext2fs_set_feature_bigalloc(&ba_param);
+		ext2fs_set_feature_metadata_csum(&ba_param);
+		CHECK_RC(ext2fs_initialize("bigalloc_mem",
+					   EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+					   &ba_param, test_io_manager, &ba_fs),
+			 0, "init bigalloc fs");
+		CHECK_RC(ext2fs_allocate_tables(ba_fs), 0,
+			 "alloc_tables bigalloc fs");
+		CHECK_RC(ext2fs_convert_subcluster_bitmap(ba_fs,
+							  &ba_fs->block_map),
+			 0, "convert subcluster bitmap");
+		CHECK_RC(ext2fs_count_used_clusters(ba_fs,
+				ba_fs->super->s_first_data_block,
+				ext2fs_blocks_count(ba_fs->super) - 1,
+				&used_clusters),
+			 0, "count_used_clusters bigalloc");
+		expect_clusters = (8192 / 4) - used_clusters;
+		ext2fs_free_blocks_count_set(ba_fs->super, 1);
+		ext2fs_bg_free_blocks_count_set(ba_fs, 0, 1);
+		CHECK_RC(ext2fs_calculate_summary_stats(ba_fs, 0), 0,
+			 "calculate_summary_stats bigalloc");
+		CHECK(ext2fs_bg_free_blocks_count(ba_fs, 0) == expect_clusters,
+		      "bigalloc bg_free_blocks_count counted in clusters");
+		CHECK(ext2fs_free_blocks_count(ba_fs->super) ==
+		      expect_clusters * 4,
+		      "bigalloc s_free_blocks_count matches exact blocks");
+		ext2fs_free(ba_fs);
+	}
+
 	/* Write bitmaps via ext2fs_rw_bitmaps(WRITE) + flush */
 	CHECK_RC(ext2fs_rw_bitmaps(fs, 0x4000, 1), EXT2_ET_INVALID_ARGUMENT,
 		 "rw_bitmaps rejects invalid flag");
