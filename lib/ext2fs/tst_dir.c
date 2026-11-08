@@ -612,6 +612,61 @@ static void test_link_unlink_and_iterate(void)
 		 "DIRENT_ABORT early termination");
 	CHECK(wi.total == 3, "DIRENT_ABORT stopped after 3 entries");
 
+	/*
+	 * Coalescing >= 3 consecutive deleted (inode == 0) entries in a
+	 * single link_proc() pass without expanding the directory.
+	 */
+	{
+		ext2_ino_t		cdir = 0, cf = 0;
+		struct ext2_inode	cinode;
+		blk64_t			cblk = 0;
+		char			*cbuf = NULL;
+		unsigned int		off = 0, rlen = 0;
+		int			cleared = 0;
+		const char		*long_name =
+			"coalesced_four_deleted_entries_ok"; /* 33B -> 44B */
+
+		CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0,
+				       "coal_dir", &cdir), 0, "mkdir coal_dir");
+		for (i = 0; i < 100; i++) {
+			snprintf(name, sizeof(name), "s%02d", i); /* 12B rec */
+			rc = ext2fs_link(fs, cdir, name, f1, EXT2_FT_REG_FILE);
+			if (rc == EXT2_ET_DIR_NO_SPACE)
+				break;
+			CHECK_RC(rc, 0, "fill coal_dir");
+		}
+		CHECK_RC(ext2fs_read_inode(fs, cdir, &cinode), 0,
+			 "read coal_dir");
+		CHECK_RC(ext2fs_bmap2(fs, cdir, &cinode, NULL, 0, 0, NULL,
+				      &cblk), 0, "bmap coal_dir");
+		CHECK_RC(ext2fs_get_mem(fs->blocksize, &cbuf), 0,
+			 "alloc cbuf");
+		CHECK_RC(ext2fs_read_dir_block4(fs, cblk, cbuf, 0, cdir), 0,
+			 "read coal_dir blk0");
+		for (off = 0; off < fs->blocksize - 12; off += rlen) {
+			struct ext2_dir_entry *cde =
+				(struct ext2_dir_entry *) (cbuf + off);
+
+			CHECK_RC(ext2fs_get_rec_len(fs, cde, &rlen), 0,
+				 "get cde rec_len");
+			if (off >= 24 && cleared < 4) {
+				cde->inode = 0;
+				cleared++;
+			}
+		}
+		CHECK(cleared == 4, "cleared 4 adjacent 12B entries (48B)");
+		CHECK_RC(ext2fs_write_dir_block4(fs, cblk, cbuf, 0, cdir), 0,
+			 "write coal_dir blk0");
+		CHECK_RC(ext2fs_link(fs, cdir, long_name, f3,
+				     EXT2_FT_REG_FILE), 0,
+			 "link 44B entry into 4x12B deleted run");
+		CHECK_RC(ext2fs_lookup(fs, cdir, long_name, strlen(long_name),
+				       NULL, &cf), 0,
+			 "lookup coalesced entry");
+		CHECK(cf == f3, "coalesced entry points to f3");
+		ext2fs_free_mem(&cbuf);
+	}
+
 	/* Corrupt rec_len in block 1 returns EXT2_ET_DIR_CORRUPTED */
 	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read dir inode");
 	CHECK_RC(ext2fs_bmap2(fs, dir, &inode, NULL, 0, 0, NULL, &blk0), 0,
@@ -734,6 +789,143 @@ static void test_htree_dx_link(void)
 				       NULL, &found), 0,
 			 "lookup HTree entry");
 		CHECK(found == target_ino, "HTree lookup matched target_ino");
+	}
+
+	/*
+	 * Verify HTree split zeroes slack bytes in repacked leaf blocks (no
+	 * leaked heap garbage or leftover dirents from the sibling block).
+	 */
+	{
+		blk64_t		leaf_blk = 0;
+		unsigned int	off = 0, rlen = 0, used;
+		int		slack_nonzero = 0;
+
+		CHECK_RC(ext2fs_read_inode(fs, hdir, &inode), 0,
+			 "re-read hdir inode");
+		CHECK_RC(ext2fs_bmap2(fs, hdir, &inode, NULL, 0, 1, NULL,
+				      &leaf_blk), 0, "bmap hdir leaf 1");
+		CHECK_RC(ext2fs_read_dir_block4(fs, leaf_blk, lbuf, 0, hdir),
+			 0, "read split leaf 1");
+		for (off = 0; off < fs->blocksize - 12; off += rlen) {
+			de = (struct ext2_dir_entry *) (lbuf + off);
+			CHECK_RC(ext2fs_get_rec_len(fs, de, &rlen), 0,
+				 "get split leaf rec_len");
+			if (de->inode != 0)
+				used = EXT2_DIR_REC_LEN(
+					ext2fs_dirent_name_len(de));
+			else
+				used = 8;
+			for (i = (int) used; i < (int) rlen; i++) {
+				if (lbuf[off + i] != 0)
+					slack_nonzero++;
+			}
+		}
+		CHECK(slack_nonzero == 0,
+		      "split HTree leaf has zeroed slack space");
+	}
+
+	/*
+	 * Test HTree leaf with only deleted small entries (coalesced cleanly)
+	 * and corrupt nameless entries (rejected without map[-1] OOB or
+	 * writing uninitialized blocks).
+	 */
+	{
+		ext2_ino_t	hdir2 = 0, found2 = 0;
+		blk64_t		hb0 = 0, hb1 = 0;
+		unsigned int	off;
+		const char	*big60 =
+			"sixty_char_htree_entry_into_fragmented_deleted_leaf_12345678";
+
+		CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0,
+				       "htree2", &hdir2), 0, "mkdir htree2");
+		CHECK_RC(ext2fs_expand_dir(fs, hdir2), 0, "expand htree2");
+		CHECK_RC(ext2fs_read_inode(fs, hdir2, &inode), 0, "read hdir2");
+		CHECK_RC(ext2fs_bmap2(fs, hdir2, &inode, NULL, 0, 0, NULL,
+				      &hb0), 0, "bmap hdir2 0");
+		CHECK_RC(ext2fs_bmap2(fs, hdir2, &inode, NULL, 0, 1, NULL,
+				      &hb1), 0, "bmap hdir2 1");
+
+		memset(rbuf, 0, fs->blocksize);
+		de = (struct ext2_dir_entry *) rbuf;
+		de->inode = hdir2;
+		ext2fs_dirent_set_name_len(de, 1);
+		ext2fs_dirent_set_file_type(de, EXT2_FT_DIR);
+		de->rec_len = 12;
+		de->name[0] = '.';
+		de = (struct ext2_dir_entry *) (rbuf + 12);
+		de->inode = EXT2_ROOT_INO;
+		ext2fs_dirent_set_name_len(de, 2);
+		ext2fs_dirent_set_file_type(de, EXT2_FT_DIR);
+		de->rec_len = fs->blocksize - 12;
+		de->name[0] = '.';
+		de->name[1] = '.';
+		root = (struct ext2_dx_root_info *) (rbuf + 24);
+		root->hash_version = EXT2_HASH_HALF_MD4;
+		root->info_length = sizeof(struct ext2_dx_root_info);
+		cl = (struct ext2_dx_countlimit *) (rbuf + 32);
+		cl->limit = ext2fs_cpu_to_le16(8);
+		cl->count = ext2fs_cpu_to_le16(1);
+		ent = (struct ext2_dx_entry *) cl;
+		ent[0].block = ext2fs_cpu_to_le32(1);
+		CHECK_RC(ext2fs_write_dir_block4(fs, hb0, rbuf, 0, hdir2), 0,
+			 "write htree2 root");
+
+		/* Fill leaf 1 with fragmented 12B deleted slots (inode = 0) */
+		memset(lbuf, 0, fs->blocksize);
+		for (off = 0; off + 12 <= fs->blocksize - 12; off += 12) {
+			unsigned int rlen = (off + 24 > fs->blocksize - 12) ?
+				(fs->blocksize - 12 - off) : 12;
+
+			de = (struct ext2_dir_entry *) (lbuf + off);
+			de->rec_len = rlen;
+		}
+		ext2fs_initialize_dirent_tail(fs,
+			EXT2_DIRENT_TAIL(lbuf, fs->blocksize));
+		CHECK_RC(ext2fs_write_dir_block4(fs, hb1, lbuf, 0, hdir2), 0,
+			 "write fragmented empty htree2 leaf");
+		inode.i_flags |= EXT2_INDEX_FL;
+		CHECK_RC(ext2fs_write_inode(fs, hdir2, &inode), 0,
+			 "mark hdir2 indexed");
+
+		/* Poison freed 1 KiB heap chunk to catch uninit buf2 writes */
+		{
+			char *poison = NULL;
+
+			if (ext2fs_get_mem(fs->blocksize, &poison) == 0) {
+				memset(poison, 0xaa, fs->blocksize);
+				ext2fs_free_mem(&poison);
+			}
+		}
+
+		CHECK_RC(ext2fs_link(fs, hdir2, big60, target_ino,
+				     EXT2_FT_REG_FILE), 0,
+			 "dx_link 60B into fragmented deleted leaf");
+		CHECK_RC(ext2fs_lookup(fs, hdir2, big60, strlen(big60),
+				       NULL, &found2), 0,
+			 "lookup big60 in htree2");
+		CHECK(found2 == target_ino, "big60 points to target_ino");
+
+		/* Corrupt nameless live entries rejected cleanly */
+		memset(lbuf, 0, fs->blocksize);
+		for (off = 0; off + 12 <= fs->blocksize - 12; off += 12) {
+			unsigned int rlen = (off + 24 > fs->blocksize - 12) ?
+				(fs->blocksize - 12 - off) : 12;
+
+			de = (struct ext2_dir_entry *) (lbuf + off);
+			de->inode = target_ino;
+			de->rec_len = rlen;
+		}
+		ext2fs_initialize_dirent_tail(fs,
+			EXT2_DIRENT_TAIL(lbuf, fs->blocksize));
+		CHECK_RC(ext2fs_write_dir_block4(fs, hb1, lbuf, 0, hdir2), 0,
+			 "write corrupt nameless htree2 leaf");
+		CHECK_RC(ext2fs_link(fs, hdir2, "another_entry", target_ino,
+				     EXT2_FT_REG_FILE), EXT2_ET_DIR_CORRUPTED,
+			 "dx_link rejects corrupt nameless leaf");
+		CHECK_RC(ext2fs_read_inode(fs, hdir2, &inode), 0,
+			 "re-read hdir2 after corrupt rejection");
+		CHECK(EXT2_I_SIZE(&inode) == 2048,
+		      "corrupt leaf rejection did not grow hdir2 i_size");
 	}
 
 	ext2fs_free_mem(&lbuf);

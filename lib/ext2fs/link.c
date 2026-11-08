@@ -206,14 +206,23 @@ static int link_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	if (ext2fs_has_feature_metadata_csum(ls->fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 	/*
-	 * See if the following directory entry (if any) is unused;
-	 * if so, absorb it into this one.
+	 * See if the following directory entries (if any) are unused;
+	 * if so, absorb them into this one.
 	 */
-	next = (struct ext2_dir_entry *) (buf + offset + curr_rec_len);
-	if ((offset + (int) curr_rec_len < blocksize - (8 + csum_size)) &&
-	    (next->inode == 0) &&
-	    (offset + (int) curr_rec_len + (int) next->rec_len <= blocksize)) {
-		curr_rec_len += next->rec_len;
+	while (offset + (int) curr_rec_len < blocksize - (8 + csum_size)) {
+		unsigned int next_rec_len;
+
+		next = (struct ext2_dir_entry *) (buf + offset + curr_rec_len);
+		if (next->inode != 0)
+			break;
+		ls->err = ext2fs_get_rec_len(ls->fs, next, &next_rec_len);
+		if (ls->err)
+			return DIRENT_ABORT;
+		if (next_rec_len < 8 ||
+		    offset + curr_rec_len + next_rec_len >
+		    (unsigned int) (blocksize - csum_size))
+			break;
+		curr_rec_len += next_rec_len;
 		ls->err = ext2fs_set_rec_len(ls->fs, curr_rec_len, dirent);
 		if (ls->err)
 			return DIRENT_ABORT;
@@ -233,8 +242,7 @@ static int link_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		ls->err = ext2fs_set_rec_len(ls->fs, min_rec_len, dirent);
 		if (ls->err)
 			return DIRENT_ABORT;
-		next = (struct ext2_dir_entry *) (buf + offset +
-						  dirent->rec_len);
+		next = (struct ext2_dir_entry *) (buf + offset + min_rec_len);
 		next->inode = 0;
 		ext2fs_dirent_set_name_len(next, 0);
 		ext2fs_dirent_set_file_type(next, 0);
@@ -330,6 +338,7 @@ static errcode_t dx_move_dirents(ext2_filsys fs, struct dx_hash_map *map,
 	if (ext2fs_has_feature_metadata_csum(fs->super))
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 
+	memset(to, 0, fs->blocksize);
 	for (i = 0; i < count; i++) {
 		de = (struct ext2_dir_entry *) ((char *)from + map[i].off);
 		rec_len = EXT2_DIR_REC_LEN(ext2fs_dirent_name_len(de));
@@ -371,11 +380,39 @@ static errcode_t dx_insert_entry(ext2_filsys fs, ext2_ino_t dir,
 				       info->frames[level].buf, 0, dir);
 }
 
+static errcode_t dx_alloc_dir_block(ext2_filsys fs, ext2_ino_t dir,
+				    struct ext2_inode *diri,
+				    blk64_t *ret_lblk, blk64_t *ret_pblk)
+{
+	errcode_t retval;
+	ext2_off64_t size = EXT2_I_SIZE(diri);
+	blk64_t lblk = size / fs->blocksize;
+	blk64_t pblk = 0;
+
+	size += fs->blocksize;
+	retval = ext2fs_inode_size_set(fs, diri, size);
+	if (retval)
+		return retval;
+	retval = ext2fs_fallocate(fs,
+			EXT2_FALLOCATE_FORCE_INIT | EXT2_FALLOCATE_ZERO_BLOCKS,
+			dir, diri, 0, lblk, 1);
+	if (retval)
+		return retval;
+	retval = ext2fs_write_inode(fs, dir, diri);
+	if (retval)
+		return retval;
+	retval = ext2fs_bmap2(fs, dir, diri, NULL, 0, lblk, NULL, &pblk);
+	if (retval)
+		return retval;
+	*ret_lblk = lblk;
+	*ret_pblk = pblk;
+	return 0;
+}
+
 static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 			       struct ext2_inode *diri,
 			       struct dx_lookup_info *info, void *buf,
-			       blk64_t leaf_pblk, blk64_t new_lblk,
-			       blk64_t new_pblk)
+			       blk64_t leaf_pblk)
 {
 	int hash_flags = diri->i_flags & EXT4_CASEFOLD_FL;
 	struct ext2_dir_entry *de;
@@ -387,11 +424,12 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 	struct dx_hash_map *map;
 	int continued;
 	__u32 minor_hash;
+	blk64_t new_lblk = 0, new_pblk = 0;
 
-	retval = ext2fs_get_mem(fs->blocksize, &buf2);
+	retval = ext2fs_get_memzero(fs->blocksize, &buf2);
 	if (retval)
 		return retval;
-	retval = ext2fs_get_array(fs->blocksize / 12,
+	retval = ext2fs_get_array(fs->blocksize / 8,
 				  sizeof(struct dx_hash_map), &map);
 	if (retval) {
 		ext2fs_free_mem(&buf2);
@@ -402,7 +440,15 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 		retval = ext2fs_get_rec_len(fs, de, &rec_len);
 		if (retval)
 			goto out;
-		if (ext2fs_dirent_name_len(de) > 0 && de->inode) {
+		if (rec_len < 8 || offset + rec_len > fs->blocksize) {
+			retval = EXT2_ET_DIR_CORRUPTED;
+			goto out;
+		}
+		if (de->inode) {
+			if (ext2fs_dirent_name_len(de) == 0) {
+				retval = EXT2_ET_DIR_CORRUPTED;
+				goto out;
+			}
 			map[count].off = offset;
 			map[count].size = rec_len;
 			retval = ext2fs_dirhash2(info->hash_alg, de->name,
@@ -416,6 +462,13 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 			count++;
 		}
 	}
+	if (count < 2) {
+		retval = EXT2_ET_DIR_NO_SPACE;
+		goto out;
+	}
+	retval = dx_alloc_dir_block(fs, dir, diri, &new_lblk, &new_pblk);
+	if (retval)
+		goto out;
 	qsort(map, count, sizeof(struct dx_hash_map), dx_hash_map_cmp);
 	move_size = 0;
 	/* Find place to split block */
@@ -424,8 +477,12 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 			break;
 		move_size += map[i].size;
 	}
-	/* Let i be the first entry to move */
+	/* Let i be the first entry to move, keeping both leaves non-empty */
 	i++;
+	if (i <= 0)
+		i = 1;
+	else if (i >= count)
+		i = count - 1;
 	/* Move selected directory entries to new block */
 	retval = dx_move_dirents(fs, map + i, count - i, buf, buf2);
 	if (retval)
@@ -457,7 +514,6 @@ static errcode_t dx_grow_tree(ext2_filsys fs, ext2_ino_t dir,
 {
 	int i;
 	errcode_t retval;
-	ext2_off64_t size = EXT2_I_SIZE(diri);
 	blk64_t lblk, pblk;
 	struct ext2_dir_entry *de;
 	struct ext2_dx_countlimit *head;
@@ -475,26 +531,13 @@ static errcode_t dx_grow_tree(ext2_filsys fs, ext2_ino_t dir,
 	/* Need to grow tree depth? */
 	if (i < 0 && info->levels >= ext2_dir_htree_level(fs))
 		return EXT2_ET_DIR_NO_SPACE;
-	lblk = size / fs->blocksize;
-	size += fs->blocksize;
-	retval = ext2fs_inode_size_set(fs, diri, size);
-	if (retval)
-		return retval;
-	retval = ext2fs_fallocate(fs,
-			EXT2_FALLOCATE_FORCE_INIT | EXT2_FALLOCATE_ZERO_BLOCKS,
-			dir, diri, 0, lblk, 1);
-	if (retval)
-		return retval;
-	retval = ext2fs_write_inode(fs, dir, diri);
-	if (retval)
-		return retval;
-	retval = ext2fs_bmap2(fs, dir, diri, NULL, 0, lblk, NULL, &pblk);
-	if (retval)
-		return retval;
 	/* Only leaf addition needed? */
 	if (i == (int)info->levels - 1)
-		return dx_split_leaf(fs, dir, diri, info, buf, leaf_pblk,
-				     lblk, pblk);
+		return dx_split_leaf(fs, dir, diri, info, buf, leaf_pblk);
+
+	retval = dx_alloc_dir_block(fs, dir, diri, &lblk, &pblk);
+	if (retval)
+		return retval;
 
 	de = buf;
 	de->inode = 0;
