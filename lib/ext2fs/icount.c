@@ -115,13 +115,13 @@ static errcode_t alloc_icount(ext2_filsys fs, int flags, ext2_icount_t *ret)
 	icount->num_inodes = fs->super->s_inodes_count;
 
 	if ((flags & EXT2_ICOUNT_OPT_FULLMAP) &&
-	    (flags & EXT2_ICOUNT_OPT_INCREMENT)) {
-		unsigned sz = sizeof(*icount->fullmap) * icount->num_inodes;
-
-		retval = ext2fs_get_mem(sz, &icount->fullmap);
+	    (flags & EXT2_ICOUNT_OPT_INCREMENT) &&
+	    (icount->num_inodes < (ext2_ino_t) ~0U)) {
+		retval = ext2fs_get_arrayzero(icount->num_inodes + 1,
+					      sizeof(*icount->fullmap),
+					      &icount->fullmap);
 		/* If we can't allocate, fall back */
 		if (!retval) {
-			memset(icount->fullmap, 0, sz);
 			*ret = icount;
 			return 0;
 		}
@@ -615,10 +615,10 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
 {
 	__u32			curr_value;
 
+	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
+
 	if (!ino || (ino > icount->num_inodes))
 		return EXT2_ET_INVALID_ARGUMENT;
-
-	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (icount->fullmap) {
 		if (!icount->fullmap[ino])
@@ -666,10 +666,10 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
 errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
 			      __u16 count)
 {
+	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
+
 	if (!ino || (ino > icount->num_inodes))
 		return EXT2_ET_INVALID_ARGUMENT;
-
-	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (icount->fullmap)
 		return set_inode_count(icount, ino, count);
@@ -850,6 +850,10 @@ static int run_extra_tests(void)
 		  EXT2_ET_MAGIC_ICOUNT, "increment bad magic");
 	CHECK_TST(ext2fs_icount_decrement(&bad_ic, 1, &val) ==
 		  EXT2_ET_MAGIC_ICOUNT, "decrement bad magic");
+	CHECK_TST(ext2fs_icount_decrement(&bad_ic, 999, &val) ==
+		  EXT2_ET_MAGIC_ICOUNT, "decrement bad magic before bounds");
+	CHECK_TST(ext2fs_icount_store(&bad_ic, 999, 2) ==
+		  EXT2_ET_MAGIC_ICOUNT, "store bad magic before bounds");
 	CHECK_TST(ext2fs_icount_validate(&bad_ic, stdout) ==
 		  EXT2_ET_MAGIC_ICOUNT, "validate bad magic");
 	CHECK_TST(ext2fs_create_icount2(test_fs, 0, 4, &bad_ic, &ic) ==
@@ -920,6 +924,19 @@ static int run_extra_tests(void)
 			  val == 65500, "inc 65499 -> 65500");
 		CHECK_TST(ext2fs_icount_increment(ic, 9, &val) == 0 &&
 			  val == 65500, "inc 65500 saturates at 65500");
+
+		/* Final valid inode (ino == s_inodes_count) boundary */
+		tmp_ino = test_fs->super->s_inodes_count;
+		CHECK_TST(ext2fs_icount_fetch(ic, tmp_ino, &val) == 0 &&
+			  val == 0, "fetch last_ino initial 0");
+		CHECK_TST(ext2fs_icount_increment(ic, tmp_ino, &val) == 0 &&
+			  val == 1, "inc last_ino 0->1");
+		CHECK_TST(ext2fs_icount_store(ic, tmp_ino, 5) == 0,
+			  "store last_ino 5");
+		CHECK_TST(ext2fs_icount_decrement(ic, tmp_ino, &val) == 0 &&
+			  val == 4, "dec last_ino 5->4");
+		CHECK_TST(ext2fs_icount_fetch(ic, tmp_ino, &val) == 0 &&
+			  val == 4, "fetch last_ino 4");
 
 		ext2fs_free_icount(ic);
 	}
