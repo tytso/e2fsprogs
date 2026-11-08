@@ -829,6 +829,14 @@ static void test_ind_block_io_and_errors(void)
 
 	retval = ext2fs_write_ind_block(fs, (blk_t) ind_blk, wbuf);
 	check_err("write_ind_block", retval, 0);
+	for (i = 0; i < nentries; i++) {
+		if (wbuf[i] != (blk_t) (1000 + i * 3)) {
+			printf("FAIL [write_ind_preserves_buf]: idx %d got %u != %u\n",
+			       i, wbuf[i], 1000 + i * 3);
+			test_fail++;
+			break;
+		}
+	}
 
 	retval = ext2fs_read_ind_block(fs, (blk_t) ind_blk, rbuf);
 	check_err("read_ind_block", retval, 0);
@@ -841,12 +849,27 @@ static void test_ind_block_io_and_errors(void)
 		}
 	}
 
+	/* Rewriting a reused caller buffer must not double-swap prior entries */
+	wbuf[0] = 4242;
+	retval = ext2fs_write_ind_block(fs, (blk_t) ind_blk, wbuf);
+	check_err("rewrite_ind_block", retval, 0);
+	check_u64("rewrite_preserves_wbuf0", wbuf[0], 4242);
+	check_u64("rewrite_preserves_wbuf1", wbuf[1], 1003);
+	retval = ext2fs_read_ind_block(fs, (blk_t) ind_blk, rbuf);
+	check_err("read_rewritten_ind", retval, 0);
+	check_u64("read_rewritten_ind0", rbuf[0], 4242);
+	check_u64("read_rewritten_ind1", rbuf[1], 1003);
+	wbuf[0] = 1000;
+	retval = ext2fs_write_ind_block(fs, (blk_t) ind_blk, wbuf);
+	check_err("restore_ind_block", retval, 0);
+
 	/* EXT2_FLAG_IMAGE_FILE write is a no-op; read zeroes when io != image_io */
 	fs->flags |= EXT2_FLAG_IMAGE_FILE;
 	for (i = 0; i < nentries; i++)
 		wbuf[i] = 0xdeadbeefU;
 	retval = ext2fs_write_ind_block(fs, (blk_t) ind_blk, wbuf);
 	check_err("write_ind_image_noop", retval, 0);
+	check_u64("write_ind_image_preserves_buf", wbuf[0], 0xdeadbeefU);
 
 	/* When fs->io == fs->image_io, ext2fs_read_ind_block still reads */
 	memset(rbuf, 0, fs->blocksize);

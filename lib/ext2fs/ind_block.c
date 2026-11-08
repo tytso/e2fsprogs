@@ -48,7 +48,8 @@ errcode_t ext2fs_read_ind_block(ext2_filsys fs, blk_t blk, void *buf)
 errcode_t ext2fs_write_ind_block(ext2_filsys fs, blk_t blk, void *buf)
 {
 #ifdef WORDS_BIGENDIAN
-	blk_t		*block_nr;
+	errcode_t	retval;
+	blk_t		*src = (blk_t *) buf, *dst, *tmp_buf;
 	int		i;
 	int		limit = fs->blocksize >> 2;
 #endif
@@ -57,11 +58,17 @@ errcode_t ext2fs_write_ind_block(ext2_filsys fs, blk_t blk, void *buf)
 		return 0;
 
 #ifdef WORDS_BIGENDIAN
-	block_nr = (blk_t *) buf;
-	for (i = 0; i < limit; i++, block_nr++)
-		*block_nr = ext2fs_swab32(*block_nr);
+	retval = ext2fs_get_mem(fs->blocksize, &tmp_buf);
+	if (retval)
+		return retval;
+	for (i = 0, dst = tmp_buf; i < limit; i++)
+		*dst++ = ext2fs_swab32(*src++);
+	retval = io_channel_write_blk64(fs->io, blk, 1, tmp_buf);
+	ext2fs_free_mem(&tmp_buf);
+	return retval;
+#else
+	return io_channel_write_blk64(fs->io, blk, 1, buf);
 #endif
-	return io_channel_write_blk(fs->io, blk, 1, buf);
 }
 
 
