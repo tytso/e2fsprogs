@@ -25,6 +25,12 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -273,6 +279,26 @@ static void test_sizing_and_superblock(void)
 	unlink(path);
 }
 
+static int saw_nonzero_write;
+static unsigned long zero_bytes_checked;
+
+static errcode_t check_zero_write_blk64(io_channel channel,
+					unsigned long long block EXT2FS_ATTR((unused)),
+					int count, const void *data)
+{
+	const unsigned char *p = (const unsigned char *) data;
+	size_t n, i;
+
+	n = (count < 0) ? (size_t) (-count) :
+			  (size_t) count * (size_t) channel->block_size;
+	for (i = 0; i < n; i++) {
+		if (p[i] != 0)
+			saw_nonzero_write = 1;
+	}
+	zero_bytes_checked += n;
+	return 0;
+}
+
 static errcode_t fail_write_blk64(io_channel channel EXT2FS_ATTR((unused)),
 				  unsigned long long block,
 				  int count EXT2FS_ATTR((unused)),
@@ -338,6 +364,67 @@ static void test_zero_blocks(void)
 		 "zero_blocks propagates write error");
 	CHECK(err_blk32 == 60 && err_cnt > 0,
 	      "zero_blocks sets ret_blk and ret_count on error");
+
+#ifdef HAVE_SYS_WAIT_H
+	/* 4. NULL ret_blk/ret_count on error must not SIGSEGV */
+	{
+		pid_t pid;
+		int status = 0;
+
+		fflush(NULL);
+		pid = fork();
+		if (pid == 0) {
+			errcode_t rc;
+
+			rc = ext2fs_zero_blocks(fs, 60, 3, NULL, NULL);
+			_exit(rc == EIO ? 0 : 2);
+		}
+		CHECK(pid > 0 && waitpid(pid, &status, 0) == pid &&
+		      WIFEXITED(status) && WEXITSTATUS(status) == 0,
+		      "ext2fs_zero_blocks handles NULL ret_blk on error");
+
+		/*
+		 * 5. Growing blocksize from 1K to 4K without resetting the
+		 * static zero buffer must reallocate instead of over-reading
+		 * 1 MiB from a 256 KiB allocation.
+		 */
+		fflush(NULL);
+		pid = fork();
+		if (pid == 0) {
+			void *canary;
+			errcode_t rc;
+
+			nozero_mgr.write_blk64 = check_zero_write_blk64;
+			ext2fs_zero_blocks2(NULL, 0, 0, NULL, NULL);
+			saw_nonzero_write = 0;
+			zero_bytes_checked = 0;
+			canary = malloc(512 * 1024);
+			if (canary)
+				memset(canary, 0x5a, 512 * 1024);
+			free(canary);
+			/* Allocate 256 * 1K = 256 KiB static buf */
+			fs->blocksize = 1024;
+			io_channel_set_blksize(fs->io, 1024);
+			rc = ext2fs_zero_blocks2(fs, 0, 256, NULL, NULL);
+			if (rc)
+				_exit(3);
+			/* Switch to 4K: 256 * 4K = 1 MiB must grow buf */
+			saw_nonzero_write = 0;
+			zero_bytes_checked = 0;
+			fs->blocksize = 4096;
+			io_channel_set_blksize(fs->io, 4096);
+			rc = ext2fs_zero_blocks2(fs, 0, 256, NULL, NULL);
+			ext2fs_zero_blocks2(NULL, 0, 0, NULL, NULL);
+			if (rc || saw_nonzero_write ||
+			    zero_bytes_checked != 256UL * 4096UL)
+				_exit(4);
+			_exit(0);
+		}
+		CHECK(pid > 0 && waitpid(pid, &status, 0) == pid &&
+		      WIFEXITED(status) && WEXITSTATUS(status) == 0,
+		      "ext2fs_zero_blocks2 grows buffer across blocksize increase");
+	}
+#endif
 
 	fs->io->manager = unix_io_manager;
 	ext2fs_zero_blocks2(NULL, 0, 0, NULL, NULL);
@@ -433,6 +520,84 @@ static void test_add_journal_inode_and_device(void)
 	CHECK_RC(ext2fs_add_journal_device(fs, jdev), ENOENT,
 		 "add_journal_device returns ENOENT on missing path");
 	jdev->device_name = saved_name;
+
+#if defined(HAVE_DIRENT_H) && defined(HAVE_SYS_WAIT_H)
+	/*
+	 * 4. Verify JBD2_USERS_MAX bounds check in ext2fs_add_journal_device()
+	 * using an existing /dev block node only for stat() S_ISBLK while all
+	 * I/O goes through jdev->io backed by our temp file jpath.
+	 */
+	{
+		DIR *dirp = opendir("/dev");
+		struct dirent *de;
+		struct stat st;
+		char blkdev_path[300];
+		char *raw_jsb = NULL;
+		int found_blkdev = 0, u, start, status = 0;
+		pid_t pid;
+
+		if (dirp) {
+			while ((de = readdir(dirp)) != NULL) {
+				if (de->d_name[0] == '.')
+					continue;
+				snprintf(blkdev_path, sizeof(blkdev_path),
+					 "/dev/%s", de->d_name);
+				if (stat(blkdev_path, &st) == 0 &&
+				    S_ISBLK(st.st_mode)) {
+					found_blkdev = 1;
+					break;
+				}
+			}
+			closedir(dirp);
+		}
+		if (found_blkdev) {
+			CHECK_RC(ext2fs_create_journal_superblock(jdev, 2048,
+								  0, &raw_jsb),
+				 0, "create jdev superblock for max users");
+			jsb = (journal_superblock_t *) raw_jsb;
+			jsb->s_nr_users = ext2fs_cpu_to_be32(JBD2_USERS_MAX);
+			for (u = 0; u < JBD2_USERS_MAX; u++)
+				memset(&jsb->s_users[u * 16], u + 1, 16);
+			start = ext2fs_journal_sb_start(jdev->blocksize);
+			CHECK_RC(io_channel_write_blk64(jdev->io, start,
+							-SUPERBLOCK_SIZE,
+							raw_jsb),
+				 0, "write full 48-user jsb");
+			CHECK_RC(io_channel_flush(jdev->io), 0, "flush jdev");
+			ext2fs_free_mem(&raw_jsb);
+
+			/* Remove internal journal metadata for external attach */
+			fs->super->s_journal_inum = 0;
+			ext2fs_clear_feature_journal(fs->super);
+			jdev->device_name = blkdev_path;
+
+			fflush(NULL);
+			pid = fork();
+			if (pid == 0) {
+				errcode_t rc;
+
+				rc = ext2fs_add_journal_device(fs, jdev);
+				_exit(rc == EXT2_ET_TOO_MANY_REFS ? 0 : 2);
+			}
+			CHECK(pid > 0 && waitpid(pid, &status, 0) == pid &&
+			      WIFEXITED(status) && WEXITSTATUS(status) == 0,
+			      "add_journal_device rejects 49th distinct user");
+
+			/* Existing 48th user UUID is still accepted cleanly */
+			memset(fs->super->s_uuid, JBD2_USERS_MAX, 16);
+			CHECK_RC(ext2fs_add_journal_device(fs, jdev), 0,
+				 "add_journal_device accepts existing user at max");
+			CHECK_RC(io_channel_read_blk64(jdev->io, start,
+						       -SUPERBLOCK_SIZE, buf),
+				 0, "re-read jsb after existing user attach");
+			jsb = (journal_superblock_t *) buf;
+			CHECK(ext2fs_be32_to_cpu(jsb->s_nr_users) ==
+			      JBD2_USERS_MAX,
+			      "s_nr_users stays at JBD2_USERS_MAX");
+			jdev->device_name = saved_name;
+		}
+	}
+#endif
 
 	CHECK_RC(ext2fs_close_free(&jdev), 0, "close jdev");
 	CHECK_RC(ext2fs_close_free(&fs), 0, "close flex_bg fs");

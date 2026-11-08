@@ -161,13 +161,14 @@ errfree:
  * attempt to free the static zeroizing buffer.  (This is to keep
  * programs that check for memory leaks happy.)
  */
-#define MAX_STRIDE_LENGTH (4194304 / (int) fs->blocksize)
+#define MAX_ZERO_BYTES	4194304U
 errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 			      blk64_t *ret_blk, int *ret_count)
 {
-	int		j, count;
+	int		j, count, stride_length, max_stride;
 	static void	*buf;
-	static int	stride_length;
+	static size_t	buf_bytes;
+	size_t		need_bytes;
 	errcode_t	retval;
 
 	/* If fs is null, clean up the static buffer and return */
@@ -175,7 +176,7 @@ errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 		if (buf) {
 			free(buf);
 			buf = 0;
-			stride_length = 0;
+			buf_bytes = 0;
 		}
 		return 0;
 	}
@@ -189,20 +190,26 @@ errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
 	if (retval == 0)
 		return 0;
 
-	/* Allocate the zeroizing buffer if necessary */
-	if (num > stride_length && stride_length < MAX_STRIDE_LENGTH) {
-		void *p;
-		int new_stride = num;
+	/* Allocate or grow the zeroizing buffer if necessary */
+	max_stride = (int) (MAX_ZERO_BYTES / fs->blocksize);
+	if (max_stride < 1)
+		max_stride = 1;
+	stride_length = (num > max_stride) ? max_stride : num;
+	need_bytes = (size_t) stride_length * fs->blocksize;
+	if (need_bytes > buf_bytes) {
+		void *p = realloc(buf, need_bytes);
 
-		if (new_stride > MAX_STRIDE_LENGTH)
-			new_stride = MAX_STRIDE_LENGTH;
-		p = realloc(buf, fs->blocksize * new_stride);
-		if (!p)
-			return EXT2_ET_NO_MEMORY;
-		buf = p;
-		stride_length = new_stride;
-		memset(buf, 0, fs->blocksize * stride_length);
+		if (!p) {
+			if (buf_bytes < fs->blocksize)
+				return EXT2_ET_NO_MEMORY;
+		} else {
+			memset((char *) p + buf_bytes, 0,
+			       need_bytes - buf_bytes);
+			buf = p;
+			buf_bytes = need_bytes;
+		}
 	}
+	stride_length = (int) (buf_bytes / fs->blocksize);
 	/* OK, do the write loop */
 	j=0;
 	while (j < num) {
@@ -235,7 +242,7 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 	errcode_t retval;
 
 	retval = ext2fs_zero_blocks2(fs, blk, num, &ret_blk2, ret_count);
-	if (retval)
+	if (retval && ret_blk)
 		*ret_blk = (blk_t) ret_blk2;
 	return retval;
 }
@@ -247,12 +254,14 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
  */
 static blk64_t get_midpoint_journal_block(ext2_filsys fs)
 {
-	dgrp_t	group, start, end, i, log_flex;
+	dgrp_t	group, start, end, i, log_flex = 0;
 
 	group = ext2fs_group_of_blk2(fs, (ext2fs_blocks_count(fs->super) -
 					 fs->super->s_first_data_block) / 2);
-	log_flex = 1U << fs->super->s_log_groups_per_flex;
-	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
+	if (fs->super->s_log_groups_per_flex &&
+	    fs->super->s_log_groups_per_flex < 32)
+		log_flex = 1U << fs->super->s_log_groups_per_flex;
+	if (log_flex && (group > log_flex)) {
 		group = group & ~(log_flex - 1);
 		while ((group < fs->group_desc_count) &&
 		       ext2fs_bg_free_blocks_count(fs, group) == 0)
@@ -465,6 +474,8 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 			break;
 	}
 	if (i >= nr_users) {
+		if (nr_users >= JBD2_USERS_MAX)
+			return EXT2_ET_TOO_MANY_REFS;
 		memcpy(&jsb->s_users[nr_users*16],
 		       fs->super->s_uuid, 16);
 		jsb->s_nr_users = htonl(nr_users+1);
