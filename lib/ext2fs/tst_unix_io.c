@@ -28,6 +28,9 @@
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
 #endif
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -564,6 +567,110 @@ static void test_options_bounce_byte_zero_discard_threads(void)
 	printf("  test_options_bounce_byte_zero_discard_threads: ok\n");
 }
 
+#ifdef HAVE_PTHREAD
+/*
+ * Suite 5: write errors while flushing the cache of a channel opened
+ *          with IO_FLAG_THREADS must not deadlock.
+ */
+#ifdef SIGALRM
+static void watchdog_expired(int sig EXT2FS_ATTR((unused)))
+{
+	static const char msg[] = "FAIL: watchdog timer expired (deadlock?)\n";
+
+	if (write(2, msg, sizeof(msg) - 1) < 0)
+		_exit(2);
+	_exit(1);
+}
+#endif
+
+/* Fail instead of hanging forever if the code under test deadlocks */
+static void start_watchdog(void)
+{
+#ifdef SIGALRM
+	signal(SIGALRM, watchdog_expired);
+	alarm(10);
+#endif
+}
+
+static void stop_watchdog(void)
+{
+#ifdef SIGALRM
+	alarm(0);
+	signal(SIGALRM, SIG_DFL);
+#endif
+}
+
+static errcode_t reread_rc;
+
+/* A write error handler which reads from the channel */
+static errcode_t reread_write_err_cb(io_channel ch,
+				     unsigned long block EXT2FS_ATTR((unused)),
+				     int count EXT2FS_ATTR((unused)),
+				     const void *data EXT2FS_ATTR((unused)),
+				     size_t size EXT2FS_ATTR((unused)),
+				     int actual_bytes EXT2FS_ATTR((unused)),
+				     errcode_t error)
+{
+	unsigned char	buf[1024];
+
+	write_err_called++;
+	reread_rc = io_channel_read_blk64(ch, 5, 1, buf);
+	return error;
+}
+
+static void test_flush_write_error_threads(void)
+{
+	char		path[64];
+	unsigned char	buf[1024];
+	int		fd;
+	io_channel	io = NULL;
+
+	fd = create_temp_image(path, 32 * 1024);
+	memset(buf, 0x5c, sizeof(buf));
+
+	/*
+	 * A channel opened read-only accepts writes into its write-back
+	 * cache, but writing the dirty blocks to the file fails (EBADF).
+	 */
+	CHECK_RC(unix_io_manager->open(path, IO_FLAG_THREADS, &io), 0,
+		 "open RO | THREADS");
+	io->write_error = test_write_err_cb;
+	write_err_called = 0;
+	CHECK_RC(io_channel_write_blk64(io, 1, 1, buf), 0,
+		 "cached write to RO channel");
+	start_watchdog();
+	CHECK_RC(io_channel_flush(io), EBADF,
+		 "flush returns the write-back error");
+	stop_watchdog();
+	CHECK(write_err_called == 1, "flush called write_error handler");
+	CHECK_RC(io_channel_close(io), 0, "close RO | THREADS");
+
+	/*
+	 * Changing the block size flushes the cache; the write error
+	 * handler must be able to do bounce-buffered I/O on the channel.
+	 */
+	CHECK_RC(unix_io_manager->open(path, IO_FLAG_THREADS |
+				       IO_FLAG_FORCE_BOUNCE, &io), 0,
+		 "open RO | THREADS | FORCE_BOUNCE");
+	io->write_error = reread_write_err_cb;
+	write_err_called = 0;
+	reread_rc = -1;
+	CHECK_RC(io_channel_write_blk64(io, 1, 1, buf), 0,
+		 "cached write to RO bounce channel");
+	start_watchdog();
+	CHECK_RC(io_channel_set_blksize(io, 2048), EBADF,
+		 "set_blksize returns the write-back error");
+	stop_watchdog();
+	CHECK(write_err_called == 1, "set_blksize called write_error handler");
+	CHECK_RC(reread_rc, 0, "read from write_error handler");
+	CHECK_RC(io_channel_close(io), 0, "close RO | THREADS | FORCE_BOUNCE");
+
+	close(fd);
+	unlink(path);
+	printf("  test_flush_write_error_threads: ok\n");
+}
+#endif
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -573,6 +680,9 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_unix_open_and_unixfd();
 	test_cache_lru_resize_and_writethrough();
 	test_options_bounce_byte_zero_discard_threads();
+#ifdef HAVE_PTHREAD
+	test_flush_write_error_threads();
+#endif
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_unix_io: %d checks run, %d failed\n",
