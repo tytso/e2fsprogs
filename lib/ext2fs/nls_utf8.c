@@ -907,7 +907,7 @@ static int utf8_casefold(const struct ext2fs_nls_table *table,
 		if (!c)
 			return nlen;
 		if (c == -1)
-			break;
+			goto invalid_seq;
 	}
 
 	return -ENAMETOOLONG;
