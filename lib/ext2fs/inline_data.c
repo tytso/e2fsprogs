@@ -551,6 +551,8 @@ errcode_t ext2fs_inline_data_set(ext2_filsys fs, ext2_ino_t ino,
 
 	if (size <= EXT4_MIN_INLINE_DATA_SIZE) {
 		memcpy((void *)inode->i_block, buf, size);
+		memset((char *)inode->i_block + size, 0,
+		       EXT4_MIN_INLINE_DATA_SIZE - size);
 	} else {
 		retval = ext2fs_xattr_inode_max_size(fs, ino, &free_ea_size);
 		if (retval)
@@ -870,6 +872,32 @@ static errcode_t file_test(ext2_filsys fs)
 		fprintf(stderr, "tst_inline_data: 76B shrink failed\n");
 		retval = 1;
 		goto err;
+	}
+
+	/*
+	 * 3a. Shrink from 76B back into i_block (20B): the EA must be
+	 *     emptied and the old data must not be left behind in the
+	 *     unused tail of i_block.
+	 */
+	retval = ext2fs_inline_data_set(fs, newfile, NULL, buf + 200, 20);
+	if (retval)
+		goto err;
+	memset(cmpbuf, 0xff, 512);
+	retval = ext2fs_inline_data_get(fs, newfile, NULL, cmpbuf, &size);
+	if (retval || size != EXT4_MIN_INLINE_DATA_SIZE ||
+	    memcmp(buf + 200, cmpbuf, 20) != 0) {
+		fprintf(stderr, "tst_inline_data: 20B shrink failed\n");
+		retval = 1;
+		goto err;
+	}
+	for (i = 20; i < (int) EXT4_MIN_INLINE_DATA_SIZE; i++) {
+		if (cmpbuf[i] != 0) {
+			fprintf(stderr, "tst_inline_data: stale byte 0x%02x "
+				"at offset %d after 20B shrink\n",
+				(unsigned char) cmpbuf[i], i);
+			retval = 1;
+			goto err;
+		}
 	}
 
 	/* 4. Exceeding ibody space returns EXT2_ET_INLINE_DATA_NO_SPACE */
