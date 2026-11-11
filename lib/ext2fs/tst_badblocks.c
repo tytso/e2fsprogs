@@ -291,7 +291,8 @@ static void bb_inode_test(badblocks_list sample)
 	ext2_badblocks_list		bb_copy = NULL, bb_direct = NULL;
 	ext2_badblocks_list		bb_ind = NULL, bb_ind2 = NULL;
 	ext2_badblocks_list		read_bb = NULL, pre_bb = NULL;
-	blk64_t				initial_free;
+	ext2_badblocks_list		bb_low = NULL, bb_low2 = NULL;
+	blk64_t				initial_free, first_free;
 	blk_t				ind_blk;
 	char				path[64];
 	int				fd, i;
@@ -408,6 +409,9 @@ static void bb_inode_test(badblocks_list sample)
 		 "indirect block allocated and marked");
 	CHECK_BB(EXT2_I_SIZE(&inode) == 20 * fs->blocksize,
 		 "EXT2_BAD_INO size == 20 blocks");
+	/* i_blocks is in 512-byte units, i.e. 2 per 1k block */
+	CHECK_BB(inode.i_blocks == 21 * 2,
+		 "i_blocks counts 20 bad + 1 indirect block");
 	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free - 21,
 		 "free_blocks_count reflects 20 bad + 1 indirect");
 
@@ -440,6 +444,8 @@ static void bb_inode_test(badblocks_list sample)
 	CHECK_BB(ext2fs_read_inode(fs, EXT2_BAD_INO, &inode) == 0 &&
 		 inode.i_block[EXT2_IND_BLOCK] == ind_blk,
 		 "saved indirect block reused");
+	CHECK_BB(inode.i_blocks == 17 * 2,
+		 "i_blocks counts 16 bad + 1 indirect block");
 	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free - 17,
 		 "free_blocks_count reflects 16 bad + 1 indirect");
 	read_bb = NULL;
@@ -473,9 +479,70 @@ static void bb_inode_test(badblocks_list sample)
 		 ext2fs_free_blocks_count(fs->super) == initial_free,
 		 "update_bb_inode clears out-of-range block safely");
 
+	/*
+	 * 9. Bad blocks starting at the lowest free block: no bad
+	 * block may be used as the bad block inode's indirect block.
+	 */
+	CHECK_BB(ext2fs_new_block2(fs, 0, NULL, &first_free) == 0,
+		 "find lowest free block");
+	CHECK_BB(ext2fs_badblocks_list_create(&bb_low, 16) == 0,
+		 "create bb_low");
+	for (i = 0; i < 16; i++)
+		CHECK_BB(ext2fs_badblocks_list_add(bb_low,
+						   (blk_t) first_free + i) == 0,
+			 "add bad block at lowest free block");
+	CHECK_BB(ext2fs_update_bb_inode(fs, bb_low) == 0,
+		 "update_bb_inode with bad blocks at lowest free block");
+	CHECK_BB(ext2fs_read_inode(fs, EXT2_BAD_INO, &inode) == 0,
+		 "read EXT2_BAD_INO after low bad block update");
+	ind_blk = inode.i_block[EXT2_IND_BLOCK];
+	CHECK_BB(ind_blk == first_free + 16,
+		 "indirect block allocated after the bad blocks");
+	CHECK_BB(ext2fs_test_block_bitmap2(fs->block_map, ind_blk) != 0,
+		 "indirect block marked in block_map");
+	CHECK_BB(inode.i_blocks == 17 * 2,
+		 "i_blocks counts 16 bad + 1 indirect block");
+	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free - 17,
+		 "free_blocks_count reflects 16 bad + 1 indirect");
+	read_bb = NULL;
+	CHECK_BB(ext2fs_read_bb_inode(fs, &read_bb) == 0 &&
+		 ext2fs_badblocks_equal(bb_low, read_bb) == 1,
+		 "low bad block list round-trip matches");
+	ext2fs_badblocks_list_free(read_bb);
+
+	/* The saved indirect block goes bad too: it must not be reused */
+	CHECK_BB(ext2fs_badblocks_list_create(&bb_low2, 16) == 0,
+		 "create bb_low2");
+	for (i = 0; i < 12; i++)
+		CHECK_BB(ext2fs_badblocks_list_add(bb_low2,
+						   (blk_t) first_free + i) == 0,
+			 "add bad block at lowest free block");
+	for (i = 0; i < 4; i++)
+		CHECK_BB(ext2fs_badblocks_list_add(bb_low2, ind_blk + i) == 0,
+			 "add bad block at saved indirect block");
+	CHECK_BB(ext2fs_update_bb_inode(fs, bb_low2) == 0,
+		 "update_bb_inode with bad saved indirect block");
+	CHECK_BB(ext2fs_read_inode(fs, EXT2_BAD_INO, &inode) == 0,
+		 "read EXT2_BAD_INO after bad saved indirect block update");
+	CHECK_BB(inode.i_block[EXT2_IND_BLOCK] == first_free + 12 &&
+		 !ext2fs_badblocks_list_test(bb_low2,
+					     inode.i_block[EXT2_IND_BLOCK]),
+		 "bad saved indirect block not reused");
+	CHECK_BB(inode.i_blocks == 17 * 2,
+		 "i_blocks counts 16 bad + 1 indirect block");
+	CHECK_BB(ext2fs_free_blocks_count(fs->super) == initial_free - 17,
+		 "free_blocks_count reflects 16 bad + 1 indirect");
+	read_bb = NULL;
+	CHECK_BB(ext2fs_read_bb_inode(fs, &read_bb) == 0 &&
+		 ext2fs_badblocks_equal(bb_low2, read_bb) == 1,
+		 "bad saved indirect block list round-trip matches");
+	ext2fs_badblocks_list_free(read_bb);
+
 	ext2fs_badblocks_list_free(bb_direct);
 	ext2fs_badblocks_list_free(bb_ind);
 	ext2fs_badblocks_list_free(bb_ind2);
+	ext2fs_badblocks_list_free(bb_low);
+	ext2fs_badblocks_list_free(bb_low2);
 	CHECK_BB(ext2fs_close_free(&fs) == 0, "close test filesystem");
 	close(fd);
 	unlink(path);
