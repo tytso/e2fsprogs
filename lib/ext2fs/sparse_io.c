@@ -118,7 +118,9 @@ static errcode_t io_manager_import_sparse(struct sparse_io_params *params,
 err_alloc:
 	sparse_file_destroy(sparse_file);
 err_sparse:
-	close(fd);
+	/* The fd passed to sparsefd_io_manager belongs to the caller */
+	if (params->fd < 0)
+		close(fd);
 err_open:
 	return retval;
 }
@@ -322,6 +324,24 @@ static errcode_t sparse_close_channel(io_channel channel)
 			if (retval)
 				goto ret;
 		}
+		/*
+		 * Replace the old contents of the caller's file (which
+		 * io_manager_import_sparse() may have read), as the
+		 * O_TRUNC open does for sparse_io_manager, instead of
+		 * writing the image wherever the file offset is now.
+		 * Pipes can't be rewound and devices can't be truncated.
+		 */
+		if (channel->manager == sparsefd_io_manager &&
+		    lseek(sm->fd, 0, SEEK_SET) == 0) {
+			ext2fs_struct_stat st;
+
+			if (ext2fs_fstat(sm->fd, &st) == 0 &&
+			    S_ISREG(st.st_mode) &&
+			    ftruncate(sm->fd, 0) < 0) {
+				retval = errno;
+				goto ret;
+			}
+		}
 		retval = sparse_file_write(sm->sparse_file, sm->fd,
 					   /*gzip*/0, /*sparse*/1, /*crc*/0);
 	}
@@ -342,6 +362,9 @@ static errcode_t sparse_close(io_channel channel)
 	struct sparse_map *sm = channel->private_data;
 	int fd = sm->fd;
 
+	/* The fd passed to sparsefd_io_manager belongs to the caller */
+	if (channel->manager == sparsefd_io_manager)
+		fd = -1;
 	retval = sparse_close_channel(channel);
 	if (fd >= 0)
 		close(fd);
