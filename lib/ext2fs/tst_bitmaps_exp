@@ -333,6 +333,8 @@ tst_bitmaps: fudge_i 24
 Fudged inode bitmap end from 32 to 24
 tst_bitmaps: fudge_i 32
 Fudged inode bitmap end from 24 to 32
+tst_bitmaps: set_range_b 32 0
+Set/get block bitmap range (32 bits, 0x00): OK
 tst_bitmaps: set_range_b 32 0xa5
 Set/get block bitmap range (32 bits, 0xa5): OK
 tst_bitmaps: dump_bb
