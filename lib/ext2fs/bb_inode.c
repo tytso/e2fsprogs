@@ -33,6 +33,7 @@
 struct set_badblock_record {
 	ext2_badblocks_iterate	bb_iter;
 	int		bad_block_count;
+	int		ind_block_count;
 	blk_t		*ind_blocks;
 	int		max_ind_blocks;
 	int		ind_blocks_size;
@@ -49,6 +50,32 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 				e2_blkcnt_t blockcnt,
 				blk_t ref_block, int ref_offset,
 				void *priv_data);
+
+/*
+ * Mark the bad blocks as in use in the block bitmap, so that none of
+ * them will be allocated as an indirect block for the bad block inode.
+ * Only the bitmap is changed here; the free block counts are updated
+ * by set_bad_block_proc() as each bad block is added to the inode,
+ * since the caller (e.g., mke2fs) may have already marked the bad
+ * blocks in the bitmap without adjusting the free block counts.
+ */
+static errcode_t mark_bad_blocks(ext2_filsys fs, ext2_badblocks_list bb_list)
+{
+	ext2_badblocks_iterate	bb_iter;
+	blk_t			blk;
+	errcode_t		retval;
+
+	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+	if (retval)
+		return retval;
+	while (ext2fs_badblocks_list_iterate(bb_iter, &blk)) {
+		if (blk >= fs->super->s_first_data_block &&
+		    blk < ext2fs_blocks_count(fs->super))
+			ext2fs_mark_block_bitmap2(fs->block_map, blk);
+	}
+	ext2fs_badblocks_list_iterate_end(bb_iter);
+	return 0;
+}
 
 /*
  * Given a bad blocks bitmap, update the bad blocks inode to reflect
@@ -100,6 +127,9 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	 * block inode (!).
 	 */
 	if (bb_list) {
+		retval = mark_bad_blocks(fs, bb_list);
+		if (retval)
+			goto cleanup;
 		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
 							     &rec.bb_iter);
 		if (retval)
@@ -129,9 +159,10 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	if (!ext2fs_inode_xtime_get(&inode, i_ctime))
 		ext2fs_inode_xtime_set(&inode, i_ctime, now);
 	ext2fs_inode_xtime_set(&inode, i_mtime, now);
-	ext2fs_iblk_set(fs, &inode, rec.bad_block_count);
+	ext2fs_iblk_set(fs, &inode,
+			rec.bad_block_count + rec.ind_block_count);
 	retval = ext2fs_inode_size_set(fs, &inode,
-				       rec.bad_block_count * fs->blocksize);
+			(ext2_off64_t) rec.bad_block_count * fs->blocksize);
 	if (retval)
 		goto cleanup;
 
@@ -254,6 +285,7 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 			rec->err = retval;
 			return BLOCK_ABORT;
 		}
+		rec->ind_block_count++;
 	}
 
 	/*
