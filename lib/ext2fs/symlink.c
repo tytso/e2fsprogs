@@ -55,6 +55,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 	unsigned int		target_len;
 	char			*block_buf = 0;
 	int			drop_refcount = 0;
+	int			inode_written = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -117,6 +118,7 @@ errcode_t ext2fs_symlink(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t ino,
 		retval = ext2fs_write_new_inode(fs, ino, &inode);
 		if (retval)
 			goto cleanup;
+		inode_written = 1;
 		retval = ext2fs_inline_data_set(fs, ino, &inode, block_buf,
 						target_len);
 		if (retval) {
@@ -144,8 +146,13 @@ need_block:
 	 * Write out the inode and inode data block.  The inode generation
 	 * number is assigned by write_new_inode, which means that the
 	 * operations using ino must come after it.
+	 *
+	 * If the inline data attempt already wrote the inode, only update
+	 * it, even if we fell back to a block: writing it as a new inode
+	 * again would zero the extra fields of a large inode, including
+	 * the epoch bits of the timestamps set by the first write.
 	 */
-	if (inlinelink)
+	if (inode_written)
 		retval = ext2fs_write_inode(fs, ino, &inode);
 	else
 		retval = ext2fs_write_new_inode(fs, ino, &inode);
