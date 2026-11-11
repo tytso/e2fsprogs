@@ -356,7 +356,7 @@ ext2fs_inline_data_dir_expand(ext2_filsys fs, ext2_ino_t ino,
 
 #ifdef WORDS_BIGENDIAN
 	retval = ext2fs_dirent_swab_in2(fs, buf + EXT4_INLINE_DATA_DOTDOT_SIZE,
-					size, 0);
+					size - EXT4_INLINE_DATA_DOTDOT_SIZE, 0);
 	if (retval)
 		goto errout;
 #endif
