@@ -751,6 +751,300 @@ static void test_htree_dx_link(void)
 }
 
 /*
+ * Helpers for the ext2fs_link() free space and leaf split tests below.
+ */
+static void put_dirent(ext2_filsys fs, char *buf, unsigned int offset,
+		       ext2_ino_t ino, const char *name, unsigned int rec_len)
+{
+	struct ext2_dir_entry	*de = (struct ext2_dir_entry *) (buf + offset);
+	int			len = name ? strlen(name) : 0;
+
+	de->inode = ino;
+	ext2fs_set_rec_len(fs, rec_len, de);
+	ext2fs_dirent_set_name_len(de, len);
+	ext2fs_dirent_set_file_type(de, ino ? EXT2_FT_REG_FILE : 0);
+	if (len)
+		memcpy(de->name, name, len);
+}
+
+struct name_count {
+	const char	*name;
+	int		count;
+};
+
+static int count_name_cb(ext2_ino_t dir EXT2FS_ATTR((unused)),
+			 int entry EXT2FS_ATTR((unused)),
+			 struct ext2_dir_entry *dirent,
+			 int offset EXT2FS_ATTR((unused)),
+			 int blocksize EXT2FS_ATTR((unused)),
+			 char *buf EXT2FS_ATTR((unused)),
+			 void *priv_data)
+{
+	struct name_count	*nc = (struct name_count *) priv_data;
+	int			len = ext2fs_dirent_name_len(dirent);
+
+	if (len == (int) strlen(nc->name) &&
+	    strncmp(dirent->name, nc->name, len) == 0)
+		nc->count++;
+	return 0;
+}
+
+/* Number of times name occurs in dir, or -1 if dir can't be iterated */
+static int count_name(ext2_filsys fs, ext2_ino_t dir, const char *name)
+{
+	struct name_count	nc;
+
+	nc.name = name;
+	nc.count = 0;
+	if (ext2fs_dir_iterate2(fs, dir, 0, NULL, count_name_cb, &nc))
+		return -1;
+	return nc.count;
+}
+
+/*
+ * Create an HTree directory whose root has room for only 4 index
+ * entries and points at a single leaf (logical block 1) holding the
+ * entries in leaf; the leaf's checksum tail is set up here.
+ */
+static ext2_ino_t make_htree_dir(ext2_filsys fs, const char *name, char *leaf)
+{
+	ext2_ino_t			dir = 0;
+	struct ext2_inode		inode;
+	struct ext2_dir_entry		*de;
+	struct ext2_dx_root_info	*root;
+	struct ext2_dx_countlimit	*cl;
+	struct ext2_dx_entry		*ent;
+	blk64_t				b0 = 0, b1 = 0;
+	char				*rbuf = NULL;
+
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, name, &dir), 0,
+		 "mkdir htree dir");
+	CHECK_RC(ext2fs_expand_dir(fs, dir), 0, "expand htree dir");
+	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read htree dir");
+	CHECK_RC(ext2fs_bmap2(fs, dir, &inode, NULL, 0, 0, NULL, &b0), 0,
+		 "bmap htree dir lblk 0");
+	CHECK_RC(ext2fs_bmap2(fs, dir, &inode, NULL, 0, 1, NULL, &b1), 0,
+		 "bmap htree dir lblk 1");
+
+	CHECK_RC(ext2fs_get_memzero(fs->blocksize, &rbuf), 0, "alloc rbuf");
+	de = (struct ext2_dir_entry *) rbuf;
+	de->inode = dir;
+	ext2fs_dirent_set_name_len(de, 1);
+	ext2fs_dirent_set_file_type(de, EXT2_FT_DIR);
+	de->rec_len = 12;
+	de->name[0] = '.';
+	de = (struct ext2_dir_entry *) (rbuf + 12);
+	de->inode = EXT2_ROOT_INO;
+	ext2fs_dirent_set_name_len(de, 2);
+	ext2fs_dirent_set_file_type(de, EXT2_FT_DIR);
+	de->rec_len = fs->blocksize - 12;
+	de->name[0] = '.';
+	de->name[1] = '.';
+	root = (struct ext2_dx_root_info *) (rbuf + 24);
+	root->hash_version = EXT2_HASH_HALF_MD4;
+	root->info_length = sizeof(struct ext2_dx_root_info);
+	cl = (struct ext2_dx_countlimit *) (rbuf + 32);
+	cl->limit = ext2fs_cpu_to_le16(4);
+	cl->count = ext2fs_cpu_to_le16(1);
+	ent = (struct ext2_dx_entry *) cl;
+	ent[0].block = ext2fs_cpu_to_le32(1);
+	CHECK_RC(ext2fs_write_dir_block4(fs, b0, rbuf, 0, dir), 0,
+		 "write dx root block");
+	ext2fs_free_mem(&rbuf);
+
+	ext2fs_initialize_dirent_tail(fs,
+				      EXT2_DIRENT_TAIL(leaf, fs->blocksize));
+	CHECK_RC(ext2fs_write_dir_block4(fs, b1, leaf, 0, dir), 0,
+		 "write htree leaf block");
+	inode.i_flags |= EXT2_INDEX_FL;
+	CHECK_RC(ext2fs_write_inode(fs, dir, &inode), 0,
+		 "set EXT2_INDEX_FL");
+	return dir;
+}
+
+/*
+ * Entries cleared in place (e.g. by e2fsck) can leave a run of several
+ * consecutive unused directory entries.  ext2fs_link() must merge the
+ * whole run when looking for room for a new name, not just pairs of
+ * entries, both in linear directories and in HTree leaves (where
+ * failing to find room splits the leaf).
+ */
+static void test_link_merges_unused_entries(void)
+{
+	ext2_filsys		fs;
+	ext2_ino_t		dir = 0, hdir, ino, found = 0;
+	struct ext2_inode	inode;
+	blk64_t			blk = 0;
+	char			*buf = NULL;
+	const char		*name;
+	unsigned int		off;
+
+	fs = setup_fs(1024, 1024, 256, 256,
+		      EXT2_FEATURE_COMPAT_DIR_INDEX |
+		      EXT2_FEATURE_COMPAT_EXT_ATTR,
+		      EXT3_FEATURE_INCOMPAT_EXTENTS |
+		      EXT2_FEATURE_INCOMPAT_FILETYPE,
+		      EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+	ino = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_get_memzero(fs->blocksize, &buf), 0, "alloc buf");
+	/* 40 characters, so the new entry needs 48 bytes */
+	name = "a_forty_character_name_for_the_new_entry";
+
+	/*
+	 * Linear directory: ".", "..", then 988 free bytes split into
+	 * 81 12-byte and one 16-byte unused entries.  No two adjacent
+	 * entries add up to 48 bytes.
+	 */
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "linear", &dir), 0,
+		 "mkdir linear");
+	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read linear");
+	CHECK_RC(ext2fs_bmap2(fs, dir, &inode, NULL, 0, 0, NULL, &blk), 0,
+		 "bmap linear lblk 0");
+	CHECK_RC(ext2fs_read_dir_block4(fs, blk, buf, 0, dir), 0,
+		 "read linear block");
+	ext2fs_set_rec_len(fs, 12, (struct ext2_dir_entry *) (buf + 12));
+	for (off = 24; off < 996; off += 12)
+		put_dirent(fs, buf, off, 0, NULL, 12);
+	put_dirent(fs, buf, 996, 0, NULL, 16);
+	CHECK_RC(ext2fs_write_dir_block4(fs, blk, buf, 0, dir), 0,
+		 "write fragmented linear block");
+
+	CHECK_RC(ext2fs_link(fs, dir, name, ino, EXT2_FT_REG_FILE), 0,
+		 "link into a run of unused entries");
+	CHECK_RC(ext2fs_lookup(fs, dir, name, strlen(name), NULL, &found), 0,
+		 "lookup name in linear dir");
+	CHECK(found == ino, "linear dir name -> ino");
+
+	/*
+	 * HTree leaf made up of 83 12-byte and one 16-byte unused
+	 * entries: the new name fits without splitting the leaf.
+	 */
+	memset(buf, 0, fs->blocksize);
+	for (off = 0; off < 996; off += 12)
+		put_dirent(fs, buf, off, 0, NULL, 12);
+	put_dirent(fs, buf, 996, 0, NULL, 16);
+	hdir = make_htree_dir(fs, "htree", buf);
+
+	CHECK_RC(ext2fs_link(fs, hdir, name, ino, EXT2_FT_REG_FILE), 0,
+		 "link into a run of unused HTree leaf entries");
+	CHECK_RC(ext2fs_read_inode(fs, hdir, &inode), 0, "read htree");
+	CHECK(EXT2_I_SIZE(&inode) == 2 * fs->blocksize,
+	      "HTree leaf was not split");
+	CHECK_RC(ext2fs_lookup(fs, hdir, name, strlen(name), NULL, &found), 0,
+		 "lookup name in HTree dir");
+	CHECK(found == ino, "HTree dir name -> ino");
+
+	/*
+	 * An unused entry followed by a corrupt one (rec_len 0) must not
+	 * make ext2fs_link() loop forever.  The block is written raw, so
+	 * patch it in on-disk (little endian) byte order.
+	 */
+	CHECK_RC(io_channel_read_blk64(fs->io, blk, 1, buf), 0,
+		 "re-read linear block");
+	memset(buf + 24, 0, 20);
+	((struct ext2_dir_entry *) (buf + 24))->rec_len =
+		ext2fs_cpu_to_le16(12);
+	fs->flags |= EXT2_FLAG_IGNORE_CSUM_ERRORS;
+	CHECK_RC(io_channel_write_blk64(fs->io, blk, 1, buf), 0,
+		 "write corrupt linear block");
+	CHECK_RC(ext2fs_link(fs, dir, name, ino, EXT2_FT_REG_FILE),
+		 EXT2_ET_DIR_CORRUPTED, "rec_len 0 after unused entry");
+	fs->flags &= ~EXT2_FLAG_IGNORE_CSUM_ERRORS;
+
+	ext2fs_free_mem(&buf);
+	teardown_fs(&fs);
+	printf("  test_link_merges_unused_entries: ok\n");
+}
+
+/*
+ * Split of an HTree leaf whose entries all fit into half a block (the
+ * leaf only overflowed because its free space was spread out), and of
+ * a corrupt leaf with fewer than two named entries.
+ */
+static void test_htree_split_leaf_edge_cases(void)
+{
+	ext2_filsys		fs;
+	ext2_ino_t		hdir, ino, found = 0;
+	ext2_dirhash_t		hx = 0, hy = 0;
+	char			*buf = NULL, *tmp;
+	char			*xname, *yname, zname[256];
+	char			names[2][256];
+	int			hash_alg = EXT2_HASH_HALF_MD4;
+	unsigned int		off;
+
+	fs = setup_fs(1024, 1024, 256, 256,
+		      EXT2_FEATURE_COMPAT_DIR_INDEX |
+		      EXT2_FEATURE_COMPAT_EXT_ATTR,
+		      EXT3_FEATURE_INCOMPAT_EXTENTS |
+		      EXT2_FEATURE_INCOMPAT_FILETYPE,
+		      EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+	ino = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_get_memzero(fs->blocksize, &buf), 0, "alloc buf");
+	if (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH)
+		hash_alg += 3;
+
+	/* Three 255-character names; xname gets the lower hash of x/y */
+	memset(names[0], 'x', 255);
+	names[0][255] = '\0';
+	memset(names[1], 'y', 255);
+	names[1][255] = '\0';
+	memset(zname, 'z', 255);
+	zname[255] = '\0';
+	xname = names[0];
+	yname = names[1];
+	CHECK_RC(ext2fs_dirhash2(hash_alg, xname, 255, fs->encoding, 0,
+				 fs->super->s_hash_seed, &hx, NULL), 0,
+		 "hash xname");
+	CHECK_RC(ext2fs_dirhash2(hash_alg, yname, 255, fs->encoding, 0,
+				 fs->super->s_hash_seed, &hy, NULL), 0,
+		 "hash yname");
+	CHECK(hx != hy, "xname and yname hash differently");
+	if (hx > hy) {
+		tmp = xname;
+		xname = yname;
+		yname = tmp;
+	}
+
+	/*
+	 * Leaf: 260 unused bytes, xname (264 bytes used of 480), yname
+	 * (264 used of 272).  The 264-byte entry for zname fits nowhere,
+	 * and both named entries together fit into half a block.
+	 */
+	put_dirent(fs, buf, 0, 0, NULL, 260);
+	put_dirent(fs, buf, 260, ino, xname, 480);
+	put_dirent(fs, buf, 740, ino, yname, 272);
+	hdir = make_htree_dir(fs, "split", buf);
+
+	CHECK_RC(ext2fs_link(fs, hdir, zname, ino, EXT2_FT_REG_FILE), 0,
+		 "link zname, splitting the leaf");
+	CHECK(count_name(fs, hdir, xname) == 1, "xname present once");
+	CHECK(count_name(fs, hdir, yname) == 1, "yname present once");
+	CHECK(count_name(fs, hdir, zname) == 1, "zname present once");
+	CHECK_RC(ext2fs_lookup(fs, hdir, zname, 255, NULL, &found), 0,
+		 "lookup zname");
+	CHECK(found == ino, "zname -> ino");
+
+	/*
+	 * Corrupt leaf: one named entry, the rest in-use entries with
+	 * empty names.  Splitting it is impossible; ext2fs_link() must
+	 * report the corruption.
+	 */
+	memset(buf, 0, fs->blocksize);
+	put_dirent(fs, buf, 0, ino, "a", 12);
+	for (off = 12; off < 996; off += 12)
+		put_dirent(fs, buf, off, ino, NULL, 12);
+	put_dirent(fs, buf, 996, ino, NULL, 16);
+	hdir = make_htree_dir(fs, "corrupt", buf);
+
+	CHECK_RC(ext2fs_link(fs, hdir, "bb", ino, EXT2_FT_REG_FILE),
+		 EXT2_ET_DIR_CORRUPTED, "split of leaf with < 2 names");
+
+	ext2fs_free_mem(&buf);
+	teardown_fs(&fs);
+	printf("  test_htree_split_leaf_edge_cases: ok\n");
+}
+
+/*
  * Suite 5: ext2fs_symlink, ext2fs_is_fast_symlink, ext2fs_namei,
  *          ext2fs_namei_follow, ext2fs_follow_link, and ext2fs_get_pathname.
  */
@@ -966,6 +1260,8 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_mkdir_and_expanddir();
 	test_link_unlink_and_iterate();
 	test_htree_dx_link();
+	test_link_merges_unused_entries();
+	test_htree_split_leaf_edge_cases();
 	test_symlinks_namei_and_pathname();
 
 	remove_error_table(&et_ext2_error_table);
