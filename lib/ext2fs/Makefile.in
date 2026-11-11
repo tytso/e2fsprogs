@@ -235,6 +235,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/tst_inode.c \
 	$(srcdir)/tst_inode_io.c \
 	$(srcdir)/tst_iscan.c \
+	$(srcdir)/tst_mkjournal.c \
 	$(srcdir)/tst_orphan.c \
 	$(srcdir)/tst_punch.c \
 	$(srcdir)/tst_qcow2.c \
@@ -398,6 +399,12 @@ tst_filsys: tst_filsys.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_filsys tst_filsys.o $(ALL_CFLAGS) $(ALL_LDFLAGS) \
 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+
+tst_mkjournal: tst_mkjournal.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_mkjournal tst_mkjournal.o $(ALL_CFLAGS) \
+		$(ALL_LDFLAGS) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
+		$(SYSLIBS)
 
 tst_orphan: tst_orphan.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 	$(E) "	LD $@"
@@ -660,7 +667,7 @@ fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
     tst_sha512 tst_digest_encode tst_getsize tst_getsectsize tst_block \
     tst_bmap tst_punch tst_fallocate tst_fileio tst_dir tst_dirhash \
     tst_ext_attr tst_swapfs tst_unix_io tst_undo_io tst_qcow2 tst_imager \
-    tst_inode_io tst_inode tst_alloc tst_filsys tst_orphan
+    tst_inode_io tst_inode tst_alloc tst_filsys tst_orphan tst_mkjournal
 	$(TESTENV) ./tst_bitops
 	$(TESTENV) ./tst_badblocks
 	$(TESTENV) ./tst_block
@@ -681,6 +688,7 @@ fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
 	$(TESTENV) ./tst_alloc
 	$(TESTENV) ./tst_filsys
 	$(TESTENV) ./tst_orphan
+	$(TESTENV) ./tst_mkjournal
 	$(TESTENV) ./tst_iscan
 	$(TESTENV) ./tst_types
 	$(TESTENV) ./tst_icount
@@ -738,7 +746,8 @@ clean::
 		tst_bitops tst_block tst_bmap tst_punch tst_fallocate \
 		tst_fileio tst_dir tst_dirhash tst_ext_attr tst_swapfs \
 		tst_unix_io tst_undo_io tst_qcow2 tst_imager tst_inode_io \
-		tst_inode tst_alloc tst_filsys tst_orphan tst_types \
+		tst_inode tst_alloc tst_filsys tst_orphan tst_mkjournal \
+		tst_types \
 		tst_icount \
 		tst_super_size tst_csum \
 		tst_bitmaps tst_bitmaps_out tst_extents tst_extents_out \
@@ -1405,6 +1414,14 @@ tst_iscan.o: $(srcdir)/tst_iscan.c $(top_builddir)/lib/config.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(srcdir)/ext2_ext_attr.h $(srcdir)/hashmap.h $(srcdir)/bitops.h
+tst_mkjournal.o: $(srcdir)/tst_mkjournal.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(srcdir)/ext2_ext_attr.h $(srcdir)/hashmap.h $(srcdir)/bitops.h \
+ $(srcdir)/ext2fsP.h $(srcdir)/kernel-jbd.h $(srcdir)/jfs_compat.h \
+ $(srcdir)/kernel-list.h $(srcdir)/compiler.h
 tst_orphan.o: $(srcdir)/tst_orphan.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
