@@ -159,6 +159,7 @@ fudge_b 127
 fudge_i 9000
 fudge_i 24
 fudge_i 32
+set_range_b 32 0
 set_range_b 32 0xa5
 dump_bb
 zerob

@@ -706,9 +706,13 @@ static errcode_t rb_set_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 	struct ext2fs_rb_private *bp;
 	unsigned char *cp = in;
 	size_t i;
-	int first_set = -1;
+	__s64 first_set = -1;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
+
+	/* Replace the whole range, as ba_set_bmap_range() does */
+	rb_remove_extent(start - bitmap->start, num, bp);
+	check_tree(&bp->root, __func__);
 
 	for (i = 0; i < num; i++) {
 		if ((i & 7) == 0) {
@@ -759,6 +763,8 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 	n = &bp->root.rb_node;
 	start -= bitmap->start;
 
+	memset(out, 0, (num + 7) >> 3);
+
 	if (ext2fs_rb_empty_root(&bp->root))
 		return 0;
 
@@ -772,8 +778,6 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 		} else
 			break;
 	}
-
-	memset(out, 0, (num + 7) >> 3);
 
 	for (; parent != NULL; parent = next) {
 		next = ext2fs_rb_next(parent);
