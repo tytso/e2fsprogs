@@ -20,12 +20,14 @@
 #include "ext2fs.h"
 
 struct link_struct  {
+	ext2_filsys	fs;
 	const char	*name;
 	int		namelen;
 	ext2_ino_t	inode;
 	int		flags;
 	struct ext2_dir_entry *prev;
 	int		done;
+	errcode_t	err;
 };
 
 #ifdef __TURBOC__
@@ -39,6 +41,7 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 {
 	struct link_struct *ls = (struct link_struct *) priv_data;
 	struct ext2_dir_entry *prev;
+	unsigned int prev_rec_len, rec_len;
 
 	prev = ls->prev;
 	ls->prev = dirent;
@@ -57,10 +60,23 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 			return 0;
 	}
 
-	if (offset)
-		prev->rec_len += dirent->rec_len;
-	else
+	if (offset) {
+		/*
+		 * Merge the entry into the previous one.  The result may
+		 * span a whole 64KiB block, so use the rec_len helpers.
+		 */
+		ls->err = ext2fs_get_rec_len(ls->fs, prev, &prev_rec_len);
+		if (!ls->err)
+			ls->err = ext2fs_get_rec_len(ls->fs, dirent, &rec_len);
+		if (!ls->err)
+			ls->err = ext2fs_set_rec_len(ls->fs,
+						     prev_rec_len + rec_len,
+						     prev);
+		if (ls->err)
+			return DIRENT_ABORT;
+	} else {
 		dirent->inode = 0;
+	}
 	ls->done++;
 	return DIRENT_ABORT|DIRENT_CHANGED;
 }
@@ -83,17 +99,21 @@ errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir,
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
+	ls.fs = fs;
 	ls.name = name;
 	ls.namelen = name ? strlen(name) : 0;
 	ls.inode = ino;
 	ls.flags = flags;
 	ls.done = 0;
 	ls.prev = 0;
+	ls.err = 0;
 
 	retval = ext2fs_dir_iterate(fs, dir, DIRENT_FLAG_INCLUDE_EMPTY,
 				    0, unlink_proc, &ls);
 	if (retval)
 		return retval;
+	if (ls.err)
+		return ls.err;
 
 	return (ls.done) ? 0 : EXT2_ET_DIR_NO_SPACE;
 }

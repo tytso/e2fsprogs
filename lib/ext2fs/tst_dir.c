@@ -1115,6 +1115,61 @@ static void test_link_append_fallback(void)
 }
 
 /*
+ * On a 64KiB-block filesystem, a directory entry spanning a whole block
+ * has a rec_len of 65536, which is stored on disk as 0xFFFF
+ * (EXT4_MAX_REC_LEN).  ext2fs_unlink() must use that encoding when it
+ * merges the removed entry into the one before it.
+ */
+static void test_unlink_64k_block(void)
+{
+	ext2_filsys		fs;
+	ext2_ino_t		dir = 0, ino, found = 0;
+	struct ext2_inode	inode;
+	struct ext2_dir_entry	*de;
+	blk64_t			blk = 0;
+	unsigned int		rec_len = 0;
+	char			*buf = NULL;
+
+	fs = setup_fs(65536, 64, 256, 256, 0,
+		      EXT2_FEATURE_INCOMPAT_FILETYPE, 0);
+	ino = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "big", &dir), 0,
+		 "mkdir big");
+	CHECK_RC(ext2fs_expand_dir(fs, dir), 0, "expand big");
+
+	/* Logical block 1 now holds "first" and "second", in that order */
+	CHECK_RC(ext2fs_link(fs, dir, "first", ino,
+			     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+		 "append first");
+	CHECK_RC(ext2fs_link(fs, dir, "second", ino,
+			     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+		 "append second");
+	CHECK_RC(ext2fs_unlink(fs, dir, "second", ino, 0), 0,
+		 "unlink second");
+
+	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read big");
+	CHECK_RC(ext2fs_bmap2(fs, dir, &inode, NULL, 0, 1, NULL, &blk), 0,
+		 "bmap big lblk 1");
+	CHECK_RC(ext2fs_get_mem(fs->blocksize, &buf), 0, "alloc buf");
+	CHECK_RC(ext2fs_read_dir_block4(fs, blk, buf, 0, dir), 0,
+		 "read big lblk 1");
+	de = (struct ext2_dir_entry *) buf;
+	CHECK(ext2fs_dirent_name_len(de) == 5 &&
+	      strncmp(de->name, "first", 5) == 0, "first entry is first");
+	CHECK(de->rec_len == 0xFFFF, "rec_len 65536 stored as 0xFFFF");
+	CHECK_RC(ext2fs_get_rec_len(fs, de, &rec_len), 0, "get rec_len");
+	CHECK(rec_len == 65536, "first entry spans the block");
+	CHECK_RC(ext2fs_lookup(fs, dir, "first", 5, NULL, &found), 0,
+		 "lookup first");
+	CHECK_RC(ext2fs_lookup(fs, dir, "second", 6, NULL, &found),
+		 EXT2_ET_FILE_NOT_FOUND, "second is gone");
+
+	ext2fs_free_mem(&buf);
+	teardown_fs(&fs);
+	printf("  test_unlink_64k_block: ok\n");
+}
+
+/*
  * Suite 5: ext2fs_symlink, ext2fs_is_fast_symlink, ext2fs_namei,
  *          ext2fs_namei_follow, ext2fs_follow_link, and ext2fs_get_pathname.
  */
@@ -1333,6 +1388,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_link_merges_unused_entries();
 	test_htree_split_leaf_edge_cases();
 	test_link_append_fallback();
+	test_unlink_64k_block();
 	test_symlinks_namei_and_pathname();
 
 	remove_error_table(&et_ext2_error_table);
