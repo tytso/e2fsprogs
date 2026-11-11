@@ -114,14 +114,19 @@ static errcode_t alloc_icount(ext2_filsys fs, int flags, ext2_icount_t *ret)
 	icount->magic = EXT2_ET_MAGIC_ICOUNT;
 	icount->num_inodes = fs->super->s_inodes_count;
 
+	/*
+	 * Inode numbers run from 1 to num_inodes inclusive, and the
+	 * fullmap is indexed by inode number, so it needs num_inodes + 1
+	 * entries.
+	 */
 	if ((flags & EXT2_ICOUNT_OPT_FULLMAP) &&
-	    (flags & EXT2_ICOUNT_OPT_INCREMENT)) {
-		unsigned sz = sizeof(*icount->fullmap) * icount->num_inodes;
-
-		retval = ext2fs_get_mem(sz, &icount->fullmap);
+	    (flags & EXT2_ICOUNT_OPT_INCREMENT) &&
+	    (icount->num_inodes < ~((ext2_ino_t) 0))) {
+		retval = ext2fs_get_arrayzero(icount->num_inodes + 1,
+					      sizeof(*icount->fullmap),
+					      &icount->fullmap);
 		/* If we can't allocate, fall back */
 		if (!retval) {
-			memset(icount->fullmap, 0, sz);
 			*ret = icount;
 			return 0;
 		}
@@ -822,7 +827,7 @@ static int run_extra_tests(void)
 {
 	ext2_icount_t		ic = NULL, hint = NULL;
 	struct ext2_icount	bad_ic;
-	ext2_ino_t		oob_ino, tmp_ino, saved_cnt;
+	ext2_ino_t		oob_ino, last_ino, tmp_ino, saved_cnt;
 	__u16			val = 0;
 	int			b, problems = 0;
 	int			backends[3] = {
@@ -832,7 +837,8 @@ static int run_extra_tests(void)
 	};
 	FILE			*devnull;
 
-	oob_ino = test_fs->super->s_inodes_count + 1;
+	last_ino = test_fs->super->s_inodes_count;
+	oob_ino = last_ino + 1;
 	memset(&bad_ic, 0, sizeof(bad_ic));
 	bad_ic.num_inodes = 10;
 
@@ -920,6 +926,16 @@ static int run_extra_tests(void)
 			  val == 65500, "inc 65499 -> 65500");
 		CHECK_TST(ext2fs_icount_increment(ic, 9, &val) == 0 &&
 			  val == 65500, "inc 65500 saturates at 65500");
+
+		/* The last inode (ino == num_inodes) is a valid inode too */
+		CHECK_TST(ext2fs_icount_increment(ic, last_ino, &val) == 0 &&
+			  val == 1, "inc last ino 0->1");
+		CHECK_TST(ext2fs_icount_store(ic, last_ino, 5) == 0,
+			  "store 5 to last ino");
+		CHECK_TST(ext2fs_icount_fetch(ic, last_ino, &val) == 0 &&
+			  val == 5, "fetch last ino");
+		CHECK_TST(ext2fs_icount_decrement(ic, last_ino, &val) == 0 &&
+			  val == 4, "dec last ino 5->4");
 
 		ext2fs_free_icount(ic);
 	}
