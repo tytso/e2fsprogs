@@ -739,6 +739,83 @@ static void test_write_evict_error(void)
 	printf("  test_write_evict_error: ok\n");
 }
 
+/*
+ * Suite 7: discard and zeroout must drop the affected blocks from the
+ *          cache, so that reads return zeroes afterwards and dirty
+ *          blocks don't get written back over the zeroed range.
+ */
+static int is_zeroed(const unsigned char *buf, size_t len)
+{
+	size_t	i;
+
+	for (i = 0; i < len; i++)
+		if (buf[i])
+			return 0;
+	return 1;
+}
+
+static void test_discard_zeroout_cache(void)
+{
+	char		path[64];
+	unsigned char	buf[1024], rbuf[1024];
+	int		fd;
+	io_channel	io = NULL;
+	errcode_t	rc;
+
+	fd = create_temp_image(path, 32 * 1024);
+	memset(buf, 0xc3, sizeof(buf));
+	CHECK(pwrite(fd, buf, sizeof(buf), 4 * 1024) == 1024 &&
+	      pwrite(fd, buf, sizeof(buf), 6 * 1024) == 1024,
+	      "pwrite blocks 4 and 6");
+	CHECK_RC(unix_io_manager->open(path, IO_FLAG_RW, &io), 0, "open RW");
+
+	/* Cache a clean copy of block 4 and a dirty copy of block 5 */
+	CHECK_RC(io_channel_read_blk64(io, 4, 1, rbuf), 0, "read blk 4");
+	CHECK_RC(io_channel_write_blk64(io, 5, 1, buf), 0, "write blk 5");
+	rc = io_channel_zeroout(io, 4, 2);
+	if (rc != EXT2_ET_UNIMPLEMENTED) {
+		CHECK_RC(rc, 0, "zeroout blks 4-5");
+		CHECK_RC(io_channel_read_blk64(io, 4, 1, rbuf), 0,
+			 "read blk 4 after zeroout");
+		CHECK(is_zeroed(rbuf, sizeof(rbuf)),
+		      "zeroout dropped clean cached blk 4");
+		CHECK_RC(io_channel_read_blk64(io, 5, 1, rbuf), 0,
+			 "read blk 5 after zeroout");
+		CHECK(is_zeroed(rbuf, sizeof(rbuf)),
+		      "zeroout dropped dirty cached blk 5");
+		CHECK_RC(io_channel_flush(io), 0, "flush after zeroout");
+		CHECK(pread(fd, rbuf, sizeof(rbuf), 5 * 1024) == 1024 &&
+		      is_zeroed(rbuf, sizeof(rbuf)),
+		      "dirty blk 5 not written back after zeroout");
+	}
+
+	/* Same for discard (which zeroes blocks of regular files) */
+	CHECK_RC(io_channel_read_blk64(io, 6, 1, rbuf), 0, "read blk 6");
+	CHECK_RC(io_channel_write_blk64(io, 7, 1, buf), 0, "write blk 7");
+	rc = io_channel_discard(io, 6, 2);
+	if (rc != EXT2_ET_UNIMPLEMENTED &&
+	    io_channel_discard_zeroes_data(io)) {
+		CHECK_RC(rc, 0, "discard blks 6-7");
+		CHECK_RC(io_channel_read_blk64(io, 6, 1, rbuf), 0,
+			 "read blk 6 after discard");
+		CHECK(is_zeroed(rbuf, sizeof(rbuf)),
+		      "discard dropped clean cached blk 6");
+		CHECK_RC(io_channel_read_blk64(io, 7, 1, rbuf), 0,
+			 "read blk 7 after discard");
+		CHECK(is_zeroed(rbuf, sizeof(rbuf)),
+		      "discard dropped dirty cached blk 7");
+		CHECK_RC(io_channel_flush(io), 0, "flush after discard");
+		CHECK(pread(fd, rbuf, sizeof(rbuf), 7 * 1024) == 1024 &&
+		      is_zeroed(rbuf, sizeof(rbuf)),
+		      "dirty blk 7 not written back after discard");
+	}
+
+	CHECK_RC(io_channel_close(io), 0, "close RW");
+	close(fd);
+	unlink(path);
+	printf("  test_discard_zeroout_cache: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -752,6 +829,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_flush_write_error_threads();
 #endif
 	test_write_evict_error();
+	test_discard_zeroout_cache();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_unix_io: %d checks run, %d failed\n",
