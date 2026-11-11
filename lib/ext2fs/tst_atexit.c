@@ -212,6 +212,63 @@ static void test_fork_lifo_and_slot_reuse(void)
 	      "child 2 exited with status 0");
 	CHECK(n == 2 && strcmp(buf, "CA") == 0,
 	      "handle_exit skips trailing NULL slot and runs 'CA'");
+
+	/*
+	 * Child 3: register "A", "B", "C", remove "A" and "B" so that
+	 * two slots are free, then register and remove "D".  "D" must
+	 * really be removed, so handle_exit() only writes "C".
+	 */
+	if (pipe(pfd) < 0) {
+		perror("pipe");
+		fail_count++;
+		return;
+	}
+	fflush(stdout);
+	fflush(stderr);
+	pid = fork();
+	if (pid < 0) {
+		perror("fork");
+		close(pfd[0]);
+		close(pfd[1]);
+		fail_count++;
+		return;
+	}
+	if (pid == 0) {
+		static char	a[] = "A", b[] = "B", c[] = "C", d[] = "D";
+
+		close(pfd[0]);
+		pipe_write_fd = pfd[1];
+
+		if (ext2fs_add_exit_fn(exit_cb_alpha, a) != 0 ||
+		    ext2fs_add_exit_fn(exit_cb_beta, b) != 0 ||
+		    ext2fs_add_exit_fn(exit_cb_alpha, c) != 0 ||
+		    ext2fs_remove_exit_fn(exit_cb_alpha, a) != 0 ||
+		    ext2fs_remove_exit_fn(exit_cb_beta, b) != 0 ||
+		    ext2fs_add_exit_fn(exit_cb_beta, d) != 0 ||
+		    ext2fs_remove_exit_fn(exit_cb_beta, d) != 0)
+			_exit(30);
+
+		exit(0);
+	}
+	close(pfd[1]);
+	memset(buf, 0, sizeof(buf));
+	/* Read until EOF, in case the callbacks' writes arrive separately */
+	n = 0;
+	while (n < (ssize_t) sizeof(buf) - 1) {
+		ssize_t r = read(pfd[0], buf + n, sizeof(buf) - 1 - n);
+
+		if (r <= 0)
+			break;
+		n += r;
+	}
+	close(pfd[0]);
+	CHECK(waitpid(pid, &status, 0) == pid, "waitpid child 3");
+	CHECK(WIFEXITED(status) && WEXITSTATUS(status) == 0,
+	      "child 3 exited with status 0");
+	if (n != 1 || strcmp(buf, "C") != 0)
+		fprintf(stderr, "child 3 exit callbacks wrote '%s'\n", buf);
+	CHECK(n == 1 && strcmp(buf, "C") == 0,
+	      "removed callback 'D' not run after slot reuse, 'C' run");
 }
 #endif
 
