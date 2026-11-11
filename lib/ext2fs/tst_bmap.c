@@ -760,6 +760,8 @@ static void test_ind_block_io_and_errors(void)
 	blk_t			*wbuf = NULL, *rbuf = NULL;
 	blk64_t			ind_blk = 0, pblk = 0;
 	io_channel		saved_image_io;
+	unsigned char		*disk;
+	__u32			le;
 	int			i, nentries;
 	errcode_t		retval;
 
@@ -780,6 +782,29 @@ static void test_ind_block_io_and_errors(void)
 
 	retval = ext2fs_write_ind_block(fs, (blk_t) ind_blk, wbuf);
 	check_err("write_ind_block", retval, 0);
+
+	/*
+	 * The block must be little-endian on disk, and the caller's buffer
+	 * must be left in CPU byte order (big-endian hosts byte-swap it).
+	 */
+	for (i = 0; i < nentries; i++) {
+		if (wbuf[i] != (blk_t) (1000 + i * 3)) {
+			printf("FAIL [ind_buf_kept]: idx %d got %u != %u\n",
+			       i, wbuf[i], 1000 + i * 3);
+			test_fail++;
+			break;
+		}
+	}
+	disk = mem_disk + ind_blk * fs->blocksize;
+	for (i = 0; i < nentries; i++) {
+		memcpy(&le, disk + i * 4, sizeof(le));
+		if (ext2fs_le32_to_cpu(le) != (__u32) (1000 + i * 3)) {
+			printf("FAIL [ind_disk_le]: idx %d got %u != %u\n",
+			       i, ext2fs_le32_to_cpu(le), 1000 + i * 3);
+			test_fail++;
+			break;
+		}
+	}
 
 	retval = ext2fs_read_ind_block(fs, (blk_t) ind_blk, rbuf);
 	check_err("read_ind_block", retval, 0);
