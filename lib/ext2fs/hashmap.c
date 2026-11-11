@@ -1,3 +1,4 @@
+#include "config.h"
 #include "hashmap.h"
 #include <string.h>
 
@@ -34,8 +35,21 @@ struct ext2fs_hashmap *ext2fs_hashmap_create(
 				uint32_t(*hash_fct)(const void*, size_t),
 				void(*free_fct)(void*), size_t size)
 {
-	struct ext2fs_hashmap *h = calloc(1, sizeof(struct ext2fs_hashmap) +
-				sizeof(struct ext2fs_hashmap_entry) * size);
+	struct ext2fs_hashmap *h;
+
+	/*
+	 * Keys are mapped to buckets with "% h->size", and h->size is a
+	 * uint32_t, so the number of buckets must be non-zero and fit in
+	 * 32 bits.  Also make sure that the size of the allocation below
+	 * does not overflow.
+	 */
+	if (!hash_fct || size == 0 || (uint32_t) size != size ||
+	    size > (SIZE_MAX - sizeof(struct ext2fs_hashmap)) /
+		   sizeof(struct ext2fs_hashmap_entry *))
+		return NULL;
+
+	h = calloc(1, sizeof(struct ext2fs_hashmap) +
+		   sizeof(struct ext2fs_hashmap_entry *) * size);
 	if (!h)
 		return NULL;
 
