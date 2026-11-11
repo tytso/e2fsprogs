@@ -249,7 +249,7 @@ static void test_open_flush_close(void)
 	io_channel		orig_io = NULL, clone_io = NULL;
 	char			path[64], path2[64], img_path[64], opt_name[96];
 	char			copy_buf[16384];
-	int			fd, fd2, img_fd;
+	int			fd, fd2, img_fd, probe_fd, new_fd;
 	__u16			orig_magic, bad_magic = 0;
 	__u8			orig_byte, flipped;
 
@@ -289,6 +289,32 @@ static void test_open_flush_close(void)
 			      unix_io_manager, &fs),
 		 EXT2_ET_UNEXPECTED_BLOCK_SIZE,
 		 "open wrong expected block_size");
+
+	/*
+	 * A plain filesystem is not an e2image file: opening it with
+	 * EXT2_FLAG_IMAGE_FILE must fail without leaking the fs and
+	 * its file descriptor, or return the fs if NOFREE_ON_ERROR.
+	 */
+	probe_fd = dup(fd);
+	close(probe_fd);
+	CHECK_RC(ext2fs_open2(path, NULL,
+			      EXT2_FLAG_IMAGE_FILE | EXT2_FLAG_64BITS, 0, 0,
+			      unix_io_manager, &fs),
+		 EXT2_ET_MAGIC_E2IMAGE, "open non-image with IMAGE_FILE");
+	new_fd = dup(fd);
+	CHECK(new_fd == probe_fd, "failed IMAGE_FILE open closes its fd");
+	close(new_fd);
+	CHECK_RC(ext2fs_open2(path, NULL,
+			      EXT2_FLAG_IMAGE_FILE | EXT2_FLAG_64BITS |
+			      EXT2_FLAG_NOFREE_ON_ERROR, 0, 0,
+			      unix_io_manager, &fs),
+		 EXT2_ET_MAGIC_E2IMAGE,
+		 "open non-image with IMAGE_FILE | NOFREE_ON_ERROR");
+	CHECK(fs != NULL, "NOFREE_ON_ERROR returns fs on bad e2image magic");
+	if (fs) {
+		ext2fs_free(fs);
+		fs = NULL;
+	}
 
 	/* SUPER_ONLY open skips group descriptors */
 	CHECK_RC(ext2fs_open2(path, NULL,
