@@ -816,6 +816,42 @@ static void test_discard_zeroout_cache(void)
 	printf("  test_discard_zeroout_cache: ok\n");
 }
 
+/*
+ * Suite 8: unixfd_io_manager must honor flags such as IO_FLAG_THREADS
+ *          and IO_FLAG_NOCACHE which can't be derived from the fd.
+ */
+static void test_unixfd_flags(void)
+{
+	char		path[64], fd_str[32];
+	unsigned char	buf[1024], rbuf[1024];
+	int		fd;
+	io_channel	io = NULL;
+
+	fd = create_temp_image(path, 32 * 1024);
+	snprintf(fd_str, sizeof(fd_str), "%d", fd);
+	CHECK_RC(unixfd_io_manager->open(fd_str,
+					 IO_FLAG_THREADS | IO_FLAG_NOCACHE,
+					 &io), 0,
+		 "unixfd_open THREADS | NOCACHE");
+#ifdef HAVE_PTHREAD
+	CHECK(io->flags & CHANNEL_FLAGS_THREADS,
+	      "unixfd_open honored IO_FLAG_THREADS");
+#endif
+	/* Without a cache, the write must reach the file immediately */
+	memset(buf, 0x3e, sizeof(buf));
+	CHECK_RC(io_channel_write_blk64(io, 2, 1, buf), 0,
+		 "unixfd write blk 2");
+	memset(rbuf, 0, sizeof(rbuf));
+	CHECK(pread(fd, rbuf, sizeof(rbuf), 2 * 1024) == 1024 &&
+	      memcmp(buf, rbuf, sizeof(buf)) == 0,
+	      "unixfd_open honored IO_FLAG_NOCACHE");
+	CHECK_RC(io_channel_close(io), 0, "close unixfd");
+
+	close(fd);
+	unlink(path);
+	printf("  test_unixfd_flags: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -830,6 +866,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 #endif
 	test_write_evict_error();
 	test_discard_zeroout_cache();
+	test_unixfd_flags();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_unix_io: %d checks run, %d failed\n",
