@@ -454,6 +454,7 @@ write_primary_superblock_only:
 	}
 errout:
 	fs->super->s_state = fs_state;
+	fs->super->s_feature_incompat = feature_incompat;
 #ifdef WORDS_BIGENDIAN
 	if (super_shadow)
 		ext2fs_free_mem(&super_shadow);
