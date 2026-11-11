@@ -221,20 +221,25 @@ static void print_pathname(FILE *f, ext2_filsys fs, ext2_ino_t dir,
 static void print_time(FILE *f, time_t t)
 {
 	const char *		time_str;
+	struct tm *		tm;
 	static int		do_gmt = -1;
 
 #ifdef __dietlibc__
-		/* The diet libc doesn't respect the TZ environment variable */
-		if (do_gmt == -1) {
-			time_str = getenv("TZ");
-			if (!time_str)
-				time_str = "";
-			do_gmt = !strcmp(time_str, "GMT") ||
-				!strcmp(time_str, "GMT0");
-		}
+	/* The diet libc doesn't respect the TZ environment variable */
+	if (do_gmt == -1) {
+		time_str = getenv("TZ");
+		if (!time_str)
+			time_str = "";
+		do_gmt = !strcmp(time_str, "GMT") ||
+			!strcmp(time_str, "GMT0");
+	}
 #endif
-		time_str = asctime((do_gmt > 0) ? gmtime(&t) : localtime(&t));
+	tm = (do_gmt > 0) ? gmtime(&t) : localtime(&t);
+	time_str = tm ? asctime(tm) : NULL;
+	if (time_str)
 		fprintf(f, "%.24s", time_str);
+	else
+		fprintf(f, "(%lld)", (long long) t);
 }
 
 /*
@@ -301,7 +306,12 @@ static _INLINE_ void expand_inode_expression(FILE *f, ext2_filsys fs, char ch,
 		fprintf(f, "0%o", inode->i_mode);
 		break;
 	case 'M':
-		print_time(f, ext2fs_inode_xtime_get(inode, i_mtime));
+		/* Only a large inode has the epoch bits of the mtime */
+		if (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
+			print_time(f, ext2fs_inode_xtime_get(large_inode,
+							     i_mtime));
+		else
+			print_time(f, ext2fs_inode_xtime_get(inode, i_mtime));
 		break;
 	case 'F':
 		fprintf(f, "%u", inode->i_faddr);
