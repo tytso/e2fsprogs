@@ -164,6 +164,18 @@ static void check_u64(const char *label, unsigned long long got,
 	}
 }
 
+/* Return 1 if all len bytes at buf are equal to c, 0 otherwise. */
+static int mem_is_filled(const unsigned char *buf, unsigned char c,
+			 size_t len)
+{
+	size_t	i;
+
+	for (i = 0; i < len; i++)
+		if (buf[i] != c)
+			return 0;
+	return 1;
+}
+
 static void setup_fs(ext2_filsys *ret_fs, unsigned int blocks,
 		     unsigned int inodes)
 {
@@ -658,6 +670,210 @@ static void test_share_dup_dedup(void)
 	printf("test_share_dup_dedup: completed\n");
 }
 
+/*
+ * Suite 6: ext2fs_file_set_size2() must keep the file's block buffer
+ * coherent with the blocks it zeroes or deallocates, and must work on
+ * handles opened by ext2fs_file_open2() with inode number 0.
+ */
+static void test_set_size_buffer_coherency(void)
+{
+	ext2_filsys		fs = NULL;
+	struct ext2_inode	inode;
+	ext2_file_t		file = NULL;
+	unsigned char		buf[3072];
+	unsigned char		*disk;
+	unsigned int		written = 0, got = 0;
+	blk64_t			pblk = 0, pblk2 = 0;
+	errcode_t		retval;
+
+	setup_fs(&fs, 512, 64);
+
+	/*
+	 * Part A: the buffer for the new last block is dirty.  Block 0
+	 * holds 0xC3 on disk, and 512 bytes of 0x5A have been written to
+	 * it but not flushed when the file is truncated to 100 bytes.
+	 * Bytes 100..1023 must read back as zeroes after the file is
+	 * extended again, and must be zero on disk after close.
+	 */
+	init_reg_inode(fs, 12, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_file_open(fs, 12, EXT2_FILE_WRITE, &file);
+	check_err("a_open", retval, 0);
+	memset(buf, 0xC3, 1024);
+	retval = ext2fs_file_write(file, buf, 1024, &written);
+	check_err("a_write_c3", retval, 0);
+	retval = ext2fs_file_flush(file);
+	check_err("a_flush_c3", retval, 0);
+	retval = ext2fs_file_llseek(file, 0, EXT2_SEEK_SET, NULL);
+	check_err("a_seek_0", retval, 0);
+	memset(buf, 0x5A, 512);
+	retval = ext2fs_file_write(file, buf, 512, &written);
+	check_err("a_write_5a", retval, 0);
+
+	retval = ext2fs_file_set_size2(file, 100);
+	check_err("a_set_size2_100", retval, 0);
+	retval = ext2fs_file_set_size2(file, 1024);
+	check_err("a_set_size2_1024", retval, 0);
+	retval = ext2fs_file_llseek(file, 0, EXT2_SEEK_SET, NULL);
+	check_err("a_seek_0_reread", retval, 0);
+	retval = ext2fs_file_read(file, buf, 1024, &got);
+	check_err("a_read_1024", retval, 0);
+	check_u64("a_read_got_1024", got, 1024);
+	check_u64("a_read_head_5a", mem_is_filled(buf, 0x5A, 100), 1);
+	check_u64("a_read_tail_zero", mem_is_filled(buf + 100, 0, 924), 1);
+	retval = ext2fs_file_close(file);
+	check_err("a_close", retval, 0);
+
+	retval = ext2fs_bmap2(fs, 12, NULL, NULL, 0, 0, NULL, &pblk);
+	check_err("a_bmap_blk0", retval, 0);
+	disk = mem_disk + pblk * fs->blocksize;
+	check_u64("a_disk_head_5a", mem_is_filled(disk, 0x5A, 100), 1);
+	check_u64("a_disk_tail_zero", mem_is_filled(disk + 100, 0, 924), 1);
+
+	/*
+	 * Part B: the buffer for the new last block is valid but clean.
+	 * After truncating to 100 bytes and extending the file again,
+	 * reads must not return the cached contents of bytes 100..1023.
+	 */
+	init_reg_inode(fs, 13, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_file_open(fs, 13, EXT2_FILE_WRITE, &file);
+	check_err("b_open", retval, 0);
+	memset(buf, 0x3C, 1024);
+	retval = ext2fs_file_write(file, buf, 1024, &written);
+	check_err("b_write_3c", retval, 0);
+	retval = ext2fs_file_close(file);
+	check_err("b_close_3c", retval, 0);
+
+	retval = ext2fs_file_open(fs, 13, EXT2_FILE_WRITE, &file);
+	check_err("b_reopen", retval, 0);
+	retval = ext2fs_file_read(file, buf, 200, &got);
+	check_err("b_read_200", retval, 0);
+	retval = ext2fs_file_set_size2(file, 100);
+	check_err("b_set_size2_100", retval, 0);
+	retval = ext2fs_file_set_size2(file, 1024);
+	check_err("b_set_size2_1024", retval, 0);
+	retval = ext2fs_file_llseek(file, 0, EXT2_SEEK_SET, NULL);
+	check_err("b_seek_0", retval, 0);
+	retval = ext2fs_file_read(file, buf, 1024, &got);
+	check_err("b_read_1024", retval, 0);
+	check_u64("b_read_got_1024", got, 1024);
+	check_u64("b_read_head_3c", mem_is_filled(buf, 0x3C, 100), 1);
+	check_u64("b_read_tail_zero", mem_is_filled(buf + 100, 0, 924), 1);
+	retval = ext2fs_file_close(file);
+	check_err("b_close", retval, 0);
+
+	/*
+	 * Part C: the buffer holds dirty data for block 2, which the
+	 * truncation to 1024 bytes deallocates.  The freed block may be
+	 * reused at once (simulated by reallocating it and filling it
+	 * with 0xE7), so closing the handle must not write to it.
+	 */
+	init_reg_inode(fs, 14, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_file_open(fs, 14, EXT2_FILE_WRITE, &file);
+	check_err("c_open", retval, 0);
+	memset(buf, 0x6B, 3072);
+	retval = ext2fs_file_write(file, buf, 3072, &written);
+	check_err("c_write_3072", retval, 0);
+	retval = ext2fs_bmap2(fs, 14, NULL, NULL, 0, 2, NULL, &pblk2);
+	check_err("c_bmap_blk2", retval, 0);
+
+	retval = ext2fs_file_set_size2(file, 1024);
+	check_err("c_set_size2_1024", retval, 0);
+	check_u64("c_blk2_freed",
+		  ext2fs_test_block_bitmap2(fs->block_map, pblk2) != 0, 0);
+	ext2fs_block_alloc_stats2(fs, pblk2, +1);
+	disk = mem_disk + pblk2 * fs->blocksize;
+	memset(disk, 0xE7, fs->blocksize);
+	retval = ext2fs_file_close(file);
+	check_err("c_close", retval, 0);
+	check_u64("c_freed_blk_untouched",
+		  mem_is_filled(disk, 0xE7, fs->blocksize), 1);
+
+	/*
+	 * Part D: the buffer holds clean data for block 2, which the
+	 * truncation to 1024 bytes deallocates.  Once the file has been
+	 * extended again, block 2 is a hole: reading it must return
+	 * zeroes, and writing to it must allocate a new block instead of
+	 * writing into the freed (and here reallocated) block.
+	 */
+	init_reg_inode(fs, 15, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_file_open(fs, 15, EXT2_FILE_WRITE, &file);
+	check_err("d_open", retval, 0);
+	memset(buf, 0x6B, 3072);
+	retval = ext2fs_file_write(file, buf, 3072, &written);
+	check_err("d_write_3072", retval, 0);
+	retval = ext2fs_file_close(file);
+	check_err("d_close_3072", retval, 0);
+	retval = ext2fs_bmap2(fs, 15, NULL, NULL, 0, 2, NULL, &pblk2);
+	check_err("d_bmap_blk2", retval, 0);
+
+	retval = ext2fs_file_open(fs, 15, EXT2_FILE_WRITE, &file);
+	check_err("d_reopen", retval, 0);
+	retval = ext2fs_file_llseek(file, 2048, EXT2_SEEK_SET, NULL);
+	check_err("d_seek_2048", retval, 0);
+	retval = ext2fs_file_read(file, buf, 100, &got);
+	check_err("d_read_100", retval, 0);
+	retval = ext2fs_file_set_size2(file, 1024);
+	check_err("d_set_size2_1024", retval, 0);
+	ext2fs_block_alloc_stats2(fs, pblk2, +1);
+	disk = mem_disk + pblk2 * fs->blocksize;
+	memset(disk, 0xE7, fs->blocksize);
+	retval = ext2fs_file_set_size2(file, 3072);
+	check_err("d_set_size2_3072", retval, 0);
+
+	retval = ext2fs_file_llseek(file, 2048, EXT2_SEEK_SET, NULL);
+	check_err("d_seek_2048_hole", retval, 0);
+	retval = ext2fs_file_read(file, buf, 100, &got);
+	check_err("d_read_hole", retval, 0);
+	check_u64("d_read_hole_zero", mem_is_filled(buf, 0, 100), 1);
+	retval = ext2fs_file_llseek(file, 2048, EXT2_SEEK_SET, NULL);
+	check_err("d_seek_2048_write", retval, 0);
+	retval = ext2fs_file_write(file, "0123456789", 10, &written);
+	check_err("d_write_10", retval, 0);
+	retval = ext2fs_file_close(file);
+	check_err("d_close", retval, 0);
+	check_u64("d_freed_blk_untouched",
+		  mem_is_filled(disk, 0xE7, fs->blocksize), 1);
+
+	retval = ext2fs_bmap2(fs, 15, NULL, NULL, 0, 2, NULL, &pblk);
+	check_err("d_bmap_blk2_new", retval, 0);
+	check_u64("d_blk2_newly_mapped", pblk != 0 && pblk != pblk2, 1);
+	disk = mem_disk + pblk * fs->blocksize;
+	check_u64("d_new_blk_data", memcmp(disk, "0123456789", 10) == 0, 1);
+	check_u64("d_new_blk_rest_zero", mem_is_filled(disk + 10, 0, 1014), 1);
+
+	/*
+	 * Part E: a handle opened by ext2fs_file_open2() with an in-memory
+	 * inode and inode number 0 must be able to truncate the file to a
+	 * size that is not a multiple of the block size.
+	 */
+	init_reg_inode(fs, 16, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_file_open(fs, 16, EXT2_FILE_WRITE, &file);
+	check_err("e_open", retval, 0);
+	memset(buf, 0x47, 1024);
+	retval = ext2fs_file_write(file, buf, 1024, &written);
+	check_err("e_write_47", retval, 0);
+	retval = ext2fs_file_close(file);
+	check_err("e_close_47", retval, 0);
+	retval = ext2fs_read_inode(fs, 16, &inode);
+	check_err("e_read_inode", retval, 0);
+	retval = ext2fs_bmap2(fs, 16, &inode, NULL, 0, 0, NULL, &pblk);
+	check_err("e_bmap_blk0", retval, 0);
+
+	retval = ext2fs_file_open2(fs, 0, &inode, EXT2_FILE_WRITE, &file);
+	check_err("e_open2_ino0", retval, 0);
+	retval = ext2fs_file_set_size2(file, 100);
+	check_err("e_set_size2_100", retval, 0);
+	check_u64("e_size_100", ext2fs_file_get_size(file), 100);
+	retval = ext2fs_file_close(file);
+	check_err("e_close_ino0", retval, 0);
+	disk = mem_disk + pblk * fs->blocksize;
+	check_u64("e_disk_head_47", mem_is_filled(disk, 0x47, 100), 1);
+	check_u64("e_disk_tail_zero", mem_is_filled(disk + 100, 0, 924), 1);
+
+	teardown_fs(&fs);
+	printf("test_set_size_buffer_coherency: completed\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -667,6 +883,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_uninit_extent_and_truncate();
 	test_inline_data_fileio();
 	test_share_dup_dedup();
+	test_set_size_buffer_coherency();
 
 	if (test_fail == 0)
 		printf("libext2fs fileio unit tests passed!\n");

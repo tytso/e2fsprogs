@@ -605,6 +605,7 @@ static errcode_t ext2fs_file_zero_past_offset(ext2_file_t file,
 	ext2_filsys fs = file->fs;
 	char *b = NULL;
 	ext2_off64_t off = offset % fs->blocksize;
+	blk64_t lblk = offset / fs->blocksize;
 	blk64_t blk;
 	int ret_flags;
 	errcode_t retval;
@@ -612,13 +613,21 @@ static errcode_t ext2fs_file_zero_past_offset(ext2_file_t file,
 	if (off == 0)
 		return 0;
 
-	retval = sync_buffer_position(file);
-	if (retval)
-		return retval;
+	/*
+	 * The block is zeroed directly on disk.  If the block buffer
+	 * caches it, write back any dirty data first, and then invalidate
+	 * the buffer so that the zeroed tail is reread from disk.
+	 */
+	if ((file->flags & EXT2_FILE_BUF_VALID) && file->blockno == lblk) {
+		retval = ext2fs_file_flush(file);
+		if (retval)
+			return retval;
+		file->flags &= ~EXT2_FILE_BUF_VALID;
+	}
 
 	/* Is there an initialized block at the end? */
-	retval = ext2fs_bmap2(fs, file->ino, NULL, NULL, 0,
-			      offset / fs->blocksize, &ret_flags, &blk);
+	retval = ext2fs_bmap2(fs, file->ino, &file->inode, BMAP_BUFFER, 0,
+			      lblk, &ret_flags, &blk);
 	if (retval)
 		return retval;
 	if ((blk == 0) || (ret_flags & BMAP_RET_UNINIT))
@@ -682,6 +691,16 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 
 	if (truncate_block >= old_truncate)
 		return 0;
+
+	/*
+	 * Discard the block buffer if it caches a block which is about to
+	 * be freed, so that its stale contents are neither returned by
+	 * later reads nor written back to a block which may have been
+	 * reused in the meantime.
+	 */
+	if ((file->flags & EXT2_FILE_BUF_VALID) &&
+	    file->blockno >= truncate_block)
+		file->flags &= ~(EXT2_FILE_BUF_VALID | EXT2_FILE_BUF_DIRTY);
 
 	return ext2fs_punch(file->fs, file->ino, &file->inode, 0,
 			    truncate_block, ~0ULL);
