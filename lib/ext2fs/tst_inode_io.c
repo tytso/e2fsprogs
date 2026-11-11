@@ -48,6 +48,18 @@ static int fail_count;
 	} \
 } while (0)
 
+/* Return 1 if all len bytes at buf are equal to c, 0 otherwise. */
+static int mem_is_filled(const unsigned char *buf, unsigned char c,
+			 size_t len)
+{
+	size_t	i;
+
+	for (i = 0; i < len; i++)
+		if (buf[i] != c)
+			return 0;
+	return 1;
+}
+
 static ext2_filsys setup_outer_fs(char *path_out, int *fd_out)
 {
 	ext2_filsys		fs = NULL;
@@ -281,6 +293,123 @@ static void test_nested_filesystem_in_inode(void)
 	printf("  test_nested_filesystem_in_inode: ok\n");
 }
 
+/*
+ * Suite 3: Reads extending past i_size.  The inode is treated like a
+ *          sparse device: bytes beyond EOF read back as zeros, just
+ *          like a hole, instead of leaving the caller's buffer as is.
+ */
+static void test_read_past_eof(void)
+{
+	char			outer_path[64];
+	char			*name = NULL;
+	int			outer_fd;
+	ext2_filsys		fs;
+	ext2_ino_t		ino;
+	io_channel		io = NULL;
+	struct ext2_inode	inode;
+	unsigned char		wbuf[1024], rbuf[1024];
+
+	fs = setup_outer_fs(outer_path, &outer_fd);
+	ino = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_inode_io_intern(fs, ino, &name), 0, "intern ino");
+	CHECK_RC(inode_io_manager->open(name, IO_FLAG_RW, &io), 0,
+		 "open inode channel");
+
+	/* Write 1024 + 476 bytes: i_size is 1500, block 1 straddles EOF */
+	memset(wbuf, 0x5a, sizeof(wbuf));
+	CHECK_RC(io_channel_write_blk64(io, 0, 1, wbuf), 0, "write block 0");
+	CHECK_RC(io_channel_write_blk64(io, 1, -476, wbuf), 0,
+		 "write 476 bytes at block 1");
+
+	memset(rbuf, 0x99, sizeof(rbuf));
+	CHECK_RC(io_channel_read_blk64(io, 1, 1, rbuf), 0,
+		 "read block straddling EOF");
+	CHECK(mem_is_filled(rbuf, 0x5a, 476), "data before EOF read back");
+	CHECK(mem_is_filled(rbuf + 476, 0, 548),
+	      "bytes past EOF read as zeros");
+
+	memset(rbuf, 0x99, sizeof(rbuf));
+	CHECK_RC(io_channel_read_blk64(io, 2, 1, rbuf), 0,
+		 "read block entirely past EOF");
+	CHECK(mem_is_filled(rbuf, 0, sizeof(rbuf)),
+	      "block past EOF reads as zeros");
+
+	CHECK_RC(io_channel_close(io), 0, "close inode channel");
+	CHECK_RC(ext2fs_read_inode(fs, ino, &inode), 0, "read inode");
+	CHECK(EXT2_I_SIZE(&inode) == 1500, "reads past EOF leave i_size alone");
+
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close outer fs");
+	close(outer_fd);
+	unlink(outer_path);
+	printf("  test_read_past_eof: ok\n");
+}
+
+/*
+ * Suite 4: write_byte at byte offsets which overflow a signed (>= 2 GiB)
+ *          or unsigned (>= 4 GiB) 32-bit offset must land exactly there.
+ */
+static void test_write_byte_large_offset(void)
+{
+	char			outer_path[64];
+	char			*name = NULL;
+	int			outer_fd;
+	ext2_filsys		fs;
+	ext2_ino_t		ino;
+	io_channel		io = NULL;
+	struct ext2_inode	inode;
+	unsigned char		rbuf[1024];
+#if SIZEOF_LONG >= 8
+	unsigned long long	off_4g = (4ULL << 30) + 3 * 1024 + 16;
+#endif
+
+	fs = setup_outer_fs(outer_path, &outer_fd);
+	ino = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_inode_io_intern(fs, ino, &name), 0, "intern ino");
+	CHECK_RC(inode_io_manager->open(name, IO_FLAG_RW, &io), 0,
+		 "open inode channel");
+
+	/* 3 GiB + 16 does not fit in a signed 32-bit offset */
+	CHECK_RC(io_channel_write_byte(io, 0xC0000010UL, 8, "OFF_3GIB"), 0,
+		 "write_byte at 3 GiB + 16");
+	CHECK_RC(ext2fs_read_inode(fs, ino, &inode), 0,
+		 "read inode after 3 GiB write_byte");
+	CHECK(EXT2_I_SIZE(&inode) == 0xC0000018ULL,
+	      "i_size after write_byte at 3 GiB + 16");
+	memset(rbuf, 0x99, sizeof(rbuf));
+	CHECK_RC(io_channel_read_blk64(io, 0xC0000000ULL / 1024, 1, rbuf), 0,
+		 "read block at 3 GiB");
+	CHECK(memcmp(rbuf + 16, "OFF_3GIB", 8) == 0,
+	      "write_byte payload found at 3 GiB + 16");
+
+#if SIZEOF_LONG >= 8
+	/* 4 GiB + 3 KiB + 16 does not fit in an unsigned 32-bit offset */
+	CHECK_RC(io_channel_write_byte(io, (unsigned long) off_4g, 8,
+				       "OFF_4GIB"), 0,
+		 "write_byte at 4 GiB + 3 KiB + 16");
+	CHECK_RC(ext2fs_read_inode(fs, ino, &inode), 0,
+		 "read inode after 4 GiB write_byte");
+	CHECK(EXT2_I_SIZE(&inode) == off_4g + 8,
+	      "i_size after write_byte at 4 GiB + 3 KiB + 16");
+	memset(rbuf, 0x99, sizeof(rbuf));
+	CHECK_RC(io_channel_read_blk64(io, (off_4g - 16) / 1024, 1, rbuf), 0,
+		 "read block at 4 GiB + 3 KiB");
+	CHECK(memcmp(rbuf + 16, "OFF_4GIB", 8) == 0,
+	      "write_byte payload found at 4 GiB + 3 KiB + 16");
+	/* Nothing may land at the offset truncated to 32 bits (3 KiB + 16) */
+	memset(rbuf, 0x99, sizeof(rbuf));
+	CHECK_RC(io_channel_read_blk64(io, 3, 1, rbuf), 0,
+		 "read block at 3 KiB");
+	CHECK(mem_is_filled(rbuf, 0, sizeof(rbuf)),
+	      "no write_byte payload at truncated offset 3 KiB + 16");
+#endif
+
+	CHECK_RC(io_channel_close(io), 0, "close inode channel");
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close outer fs");
+	close(outer_fd);
+	unlink(outer_path);
+	printf("  test_write_byte_large_offset: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -288,6 +417,8 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 
 	test_inode_io_channel_ops();
 	test_nested_filesystem_in_inode();
+	test_read_past_eof();
+	test_write_byte_large_offset();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_inode_io: %d checks run, %d failed\n",
