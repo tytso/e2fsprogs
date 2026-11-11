@@ -259,7 +259,8 @@ void dump_bitmap(ext2fs_generic_bitmap bmap, unsigned int start, unsigned num)
 		com_err("dump_bitmap", 0, "couldn't allocate buffer");
 		return;
 	}
-	memset(buf, 0, len);
+	/* Poison the buffer: get_range must initialize all of it */
+	memset(buf, 0xff, len);
 	retval = ext2fs_get_generic_bmap_range(bmap, (__u64) start, num, buf);
 	if (retval) {
 		com_err("dump_bitmap", retval, 
@@ -897,14 +898,19 @@ void do_set_range_b(int argc, ss_argv_t argv,
 		return;
 	bytes = (num + 7) / 8;
 	inbuf = malloc(bytes);
-	outbuf = calloc(1, bytes);
+	outbuf = malloc(bytes);
 	if (!inbuf || !outbuf) {
 		free(inbuf);
 		free(outbuf);
 		exit(1);
 	}
 	memset(inbuf, (int) fill, bytes);
+	/* Poison the output buffer: get_range must initialize all of it */
+	memset(outbuf, (int) ~fill, bytes);
+	/* set_range must also clear the bits which are clear in inbuf */
 	ext2fs_clear_block_bitmap(test_fs->block_map);
+	ext2fs_mark_block_bitmap_range2(test_fs->block_map,
+			test_fs->super->s_first_data_block, num);
 	retval = ext2fs_set_block_bitmap_range2(test_fs->block_map,
 			test_fs->super->s_first_data_block, num, inbuf);
 	if (retval) {
