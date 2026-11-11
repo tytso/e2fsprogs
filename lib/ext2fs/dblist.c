@@ -238,12 +238,15 @@ static EXT2_QSORT_TYPE dir_block_cmp2(const void *a, const void *b)
 		(const struct ext2_db_entry2 *) b;
 
 	if (db_a->blk != db_b->blk)
-		return (int) (db_a->blk - db_b->blk);
+		return (db_a->blk > db_b->blk) ? 1 : -1;
 
 	if (db_a->ino != db_b->ino)
-		return (int) (db_a->ino - db_b->ino);
+		return (db_a->ino > db_b->ino) ? 1 : -1;
 
-	return (db_a->blockcnt - db_b->blockcnt);
+	if (db_a->blockcnt != db_b->blockcnt)
+		return (db_a->blockcnt > db_b->blockcnt) ? 1 : -1;
+
+	return 0;
 }
 
 blk64_t ext2fs_dblist_count2(ext2_dblist dblist)
