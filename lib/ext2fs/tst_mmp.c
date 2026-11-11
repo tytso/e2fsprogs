@@ -136,10 +136,36 @@ static void test_mmp_ops(void)
 		 EXT2_ET_MMP_BAD_BLOCK,
 		 "mmp_read block == blocks_count -> MMP_BAD_BLOCK");
 
+	/* A rejected mmp_write must not touch the MMP state */
 	fs->super->s_mmp_block = ext2fs_blocks_count(fs->super) + 1;
-	CHECK_RC(ext2fs_mmp_write(fs, saved_mmp_blk, fs->mmp_buf),
+	fs->mmp_last_written = 0;
+	CHECK_RC(ext2fs_mmp_write(fs, fs->super->s_mmp_block, fs->mmp_buf),
 		 EXT2_ET_MMP_BAD_BLOCK,
 		 "mmp_write invalid s_mmp_block -> MMP_BAD_BLOCK");
+	CHECK(fs->mmp_last_written == 0,
+	      "rejected mmp_write leaves mmp_last_written alone");
+
+	/* mmp_write checks the block it writes, using mmp_read's bounds */
+	fs->super->s_mmp_block = saved_mmp_blk;
+	CHECK_RC(ext2fs_mmp_write(fs, fs->super->s_first_data_block,
+				  fs->mmp_buf),
+		 EXT2_ET_MMP_BAD_BLOCK,
+		 "mmp_write block == s_first_data_block -> MMP_BAD_BLOCK");
+	CHECK_RC(ext2fs_mmp_write(fs, ext2fs_blocks_count(fs->super),
+				  fs->mmp_buf),
+		 EXT2_ET_MMP_BAD_BLOCK,
+		 "mmp_write block == blocks_count -> MMP_BAD_BLOCK");
+	fs->super->s_mmp_block = ext2fs_blocks_count(fs->super) + 1;
+	CHECK_RC(ext2fs_mmp_write(fs, saved_mmp_blk, fs->mmp_buf), 0,
+		 "mmp_write valid block with invalid s_mmp_block");
+
+	/* mmp_clear must not write to a corrupted s_mmp_block */
+	fs->super->s_mmp_block = fs->super->s_first_data_block;
+	CHECK_RC(ext2fs_mmp_clear(fs), EXT2_ET_MMP_BAD_BLOCK,
+		 "mmp_clear with s_mmp_block == s_first_data_block");
+	fs->super->s_mmp_block = ext2fs_blocks_count(fs->super);
+	CHECK_RC(ext2fs_mmp_clear(fs), EXT2_ET_MMP_BAD_BLOCK,
+		 "mmp_clear with s_mmp_block == blocks_count");
 	fs->super->s_mmp_block = saved_mmp_blk;
 
 	CHECK_RC(ext2fs_mmp_read(fs, saved_mmp_blk, mmp_blk_buf), 0,
@@ -272,6 +298,23 @@ static void test_mmp_ops(void)
 
 	ext2fs_free_mem(&mmp_blk_buf);
 	CHECK_RC(ext2fs_close_free(&fs), 0, "close_free MMP test fs");
+
+	/*
+	 * 8. Opening with EXT2_FLAG_SKIP_MMP skips ext2fs_mmp_start(), so
+	 * there is no fs->mmp_buf.  ext2fs_mmp_update2() must cope with
+	 * that when the flag is cleared later on.
+	 */
+	CHECK_RC(ext2fs_open(path, EXT2_FLAG_RW | EXT2_FLAG_SKIP_MMP, 0, 0,
+			     unix_io_manager, &fs),
+		 0, "reopen MMP test fs with EXT2_FLAG_SKIP_MMP");
+	if (fs) {
+		CHECK(fs->mmp_buf == NULL, "SKIP_MMP open left mmp_buf unset");
+		fs->flags &= ~EXT2_FLAG_SKIP_MMP;
+		CHECK_RC(ext2fs_mmp_update2(fs, 1), 0,
+			 "mmp_update2 without mmp_buf");
+		CHECK_RC(ext2fs_close_free(&fs), 0,
+			 "close_free reopened MMP test fs");
+	}
 	close(fd);
 	unlink(path);
 }
