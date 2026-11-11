@@ -118,6 +118,7 @@ lib/ext2fs/tst_digest_encode
 lib/ext2fs/tst_ext_attr
 lib/ext2fs/tst_extents
 lib/ext2fs/tst_extents_out
+lib/ext2fs/tst_fallocate
 lib/ext2fs/tst_getsectsize
 lib/ext2fs/tst_getsize
 lib/ext2fs/tst_icount
