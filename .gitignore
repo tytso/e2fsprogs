@@ -115,6 +115,7 @@ lib/ext2fs/tst_bmap
 lib/ext2fs/tst_cmds.c
 lib/ext2fs/tst_csum
 lib/ext2fs/tst_crc32c
+lib/ext2fs/tst_dblist
 lib/ext2fs/tst_digest_encode
 lib/ext2fs/tst_dir
 lib/ext2fs/tst_dirhash
