@@ -551,6 +551,145 @@ static void test_get_blocks_and_check_dir(void)
 	printf("  test_get_blocks_and_check_dir: ok\n");
 }
 
+/*
+ * Suite 5: ext4 extended timestamps (signed 32-bit seconds plus two epoch
+ *          bits in *_extra) via ext2fs_inode_xtime_set(),
+ *          ext2fs_inode_xtime_get() and ext2fs_write_new_inode().
+ */
+static void test_inode_timestamps(void)
+{
+	static const struct {
+		time_t	sec;
+		__u32	field;
+		__u32	extra;
+	} cases[] = {
+		{ 1700000000, 0x6553f100, 0 },		/* 2023-11-14 */
+		{ -1000000000, 0xc4653600, 0 },		/* 1938-04-24 */
+#if (SIZEOF_TIME_T > 4)
+		{ 0x80000000LL, 0x80000000, 1 },	/* 2038-01-19 */
+		{ 0x2c0000000LL, 0xc0000000, 3 },	/* 2344-04-13 */
+		{ 0x37fffffffLL, 0x7fffffff, 3 },	/* 2446-05-10 */
+#endif
+	};
+	struct ext2_inode_large	large;
+	struct ext2_inode	small;
+	unsigned int		i;
+	int			ok;
+#if (SIZEOF_TIME_T > 4)
+	char			path[64];
+	int			fd;
+	ext2_filsys		fs;
+	struct ext2_inode	ino128;
+#endif
+
+	for (i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+		memset(&large, 0, sizeof(large));
+		large.i_extra_isize = sizeof(struct ext2_inode_large) -
+				      EXT2_GOOD_OLD_INODE_SIZE;
+		ext2fs_inode_xtime_set(&large, i_mtime, cases[i].sec);
+		ok = (large.i_mtime == cases[i].field &&
+		      large.i_mtime_extra == cases[i].extra);
+		CHECK(ok, "xtime_set encodes timestamp in large inode");
+		if (!ok)
+			fprintf(stderr,
+				"  %lld: got 0x%08x:%u, want 0x%08x:%u\n",
+				(long long) cases[i].sec, large.i_mtime,
+				large.i_mtime_extra, cases[i].field,
+				cases[i].extra);
+
+		large.i_ctime = cases[i].field;
+		large.i_ctime_extra = cases[i].extra;
+		ok = (ext2fs_inode_xtime_get(&large, i_ctime) == cases[i].sec);
+		CHECK(ok, "xtime_get decodes timestamp from large inode");
+		if (!ok)
+			fprintf(stderr, "  0x%08x:%u: got %lld, want %lld\n",
+				cases[i].field, cases[i].extra,
+				(long long) ext2fs_inode_xtime_get(&large,
+								   i_ctime),
+				(long long) cases[i].sec);
+	}
+
+	/* A 128-byte inode holds signed 32-bit seconds */
+	memset(&small, 0, sizeof(small));
+	ext2fs_inode_xtime_set(&small, i_mtime, (time_t) -1000000000);
+	CHECK(small.i_mtime == 0xc4653600U &&
+	      ext2fs_inode_xtime_get(&small, i_mtime) == (time_t) -1000000000,
+	      "pre-1970 timestamp round-trips in small inode");
+#if (SIZEOF_TIME_T > 4)
+	ext2fs_inode_xtime_set(&small, i_mtime, (time_t) 0x80000000LL);
+	CHECK(small.i_mtime == 0x7fffffffU &&
+	      ext2fs_inode_xtime_get(&small, i_mtime) == (time_t) 0x7fffffff,
+	      "post-2038 timestamp clamped in small inode");
+
+	/* write_new_inode must not clamp post-2038 times on large inodes */
+	fs = create_test_fs(path, &fd, 2048, 64, 256, 0);
+	fs->now = 3000000000LL;		/* 2065-01-24, 0xb2d05e00 */
+	memset(&ino128, 0, sizeof(ino128));
+	ino128.i_mode = LINUX_S_IFREG | 0644;
+	ino128.i_links_count = 1;
+	CHECK_RC(ext2fs_write_new_inode(fs, 12, &ino128), 0,
+		 "write_new_inode with post-2038 fs->now");
+	CHECK(ino128.i_atime == 0xb2d05e00U && ino128.i_ctime == 0xb2d05e00U &&
+	      ino128.i_mtime == 0xb2d05e00U,
+	      "write_new_inode returns on-disk low 32 bits to caller");
+	memset(&large, 0, sizeof(large));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &large,
+					sizeof(large)), 0,
+		 "read_inode_full after post-2038 write_new_inode");
+	CHECK(large.i_atime == 0xb2d05e00U && large.i_atime_extra == 1 &&
+	      large.i_ctime == 0xb2d05e00U && large.i_ctime_extra == 1 &&
+	      large.i_mtime == 0xb2d05e00U && large.i_mtime_extra == 1 &&
+	      large.i_crtime == 0xb2d05e00U && large.i_crtime_extra == 1,
+	      "write_new_inode encodes post-2038 epoch bits");
+	CHECK(ext2fs_inode_xtime_get(&large, i_atime) == 3000000000LL &&
+	      ext2fs_inode_xtime_get(&large, i_ctime) == 3000000000LL &&
+	      ext2fs_inode_xtime_get(&large, i_mtime) == 3000000000LL &&
+	      ext2fs_inode_xtime_get(&large, i_crtime) == 3000000000LL,
+	      "write_new_inode timestamps decode to fs->now");
+
+	/* Caller-supplied (non-zero) times are kept as signed 32-bit */
+	memset(&ino128, 0, sizeof(ino128));
+	ino128.i_mode = LINUX_S_IFREG | 0644;
+	ino128.i_links_count = 1;
+	ino128.i_atime = 1234567891;
+	ino128.i_ctime = 1234567892;
+	ino128.i_mtime = 1234567893;
+	CHECK_RC(ext2fs_write_new_inode(fs, 13, &ino128), 0,
+		 "write_new_inode with caller-supplied times");
+	memset(&large, 0, sizeof(large));
+	CHECK_RC(ext2fs_read_inode_full(fs, 13, (struct ext2_inode *) &large,
+					sizeof(large)), 0,
+		 "read_inode_full after write_new_inode");
+	CHECK(large.i_atime == 1234567891U && large.i_atime_extra == 0 &&
+	      large.i_ctime == 1234567892U && large.i_ctime_extra == 0 &&
+	      large.i_mtime == 1234567893U && large.i_mtime_extra == 0 &&
+	      large.i_crtime == 0xb2d05e00U && large.i_crtime_extra == 1,
+	      "write_new_inode kept caller-supplied times");
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close 256B fs");
+	close(fd);
+	unlink(path);
+
+	/* ... but must still clamp them on 128-byte inodes */
+	fs = create_test_fs(path, &fd, 2048, 64, 128, 0);
+	fs->now = 3000000000LL;
+	memset(&ino128, 0, sizeof(ino128));
+	ino128.i_mode = LINUX_S_IFREG | 0644;
+	ino128.i_links_count = 1;
+	CHECK_RC(ext2fs_write_new_inode(fs, 12, &ino128), 0,
+		 "write_new_inode on 128B fs with post-2038 fs->now");
+	memset(&small, 0, sizeof(small));
+	CHECK_RC(ext2fs_read_inode(fs, 12, &small), 0,
+		 "read_inode after 128B write_new_inode");
+	CHECK(small.i_atime == 0x7fffffffU && small.i_ctime == 0x7fffffffU &&
+	      small.i_mtime == 0x7fffffffU,
+	      "write_new_inode clamps post-2038 times on 128B inodes");
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close 128B fs");
+	close(fd);
+	unlink(path);
+#endif
+	printf("  test_inode_timestamps: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -560,6 +699,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_inode_csum_handling();
 	test_inode_scanner();
 	test_get_blocks_and_check_dir();
+	test_inode_timestamps();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_inode: %d checks run, %d failed\n",
