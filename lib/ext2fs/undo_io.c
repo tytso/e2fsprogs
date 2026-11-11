@@ -658,6 +658,18 @@ static errcode_t try_reopen_undo_file(int undo_fd,
 			data->keys_in_block = j + 1;
 		}
 	}
+
+	/*
+	 * If the last key block is full, move on to a new one, just as
+	 * write_undo_indexes() does after filling a key block; otherwise
+	 * the next key would be stored past the end of the key block.
+	 */
+	if (data->keys_in_block == keys_per_block) {
+		memset(data->keyb, 0, data->tdb_data_size);
+		data->keys_in_block = 0;
+		data->key_blk_num = data->undo_blk_num;
+		data->undo_blk_num++;
+	}
 	dbg_printf("Reopen undo, keyblk=%llu undoblk=%llu nrkeys=%zu kib=%zu\n",
 		   data->key_blk_num, data->undo_blk_num, data->num_keys,
 		   data->keys_in_block);
