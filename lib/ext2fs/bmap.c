@@ -313,7 +313,6 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 	int		blocks_alloc = 0, inode_dirty = 0;
 	struct blk_alloc_ctx alloc_ctx = {
 		.ino	= ino,
-		.inode	= inode,
 		.lblk	= 0,
 		.flags	= BLOCK_ALLOC_DATA,
 	};
@@ -331,6 +330,7 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 			return retval;
 		inode = &inode_buf;
 	}
+	alloc_ctx.inode = inode;
 	addr_per_block = (blk_t) fs->blocksize >> 2;
 
 	if (ext2fs_file_block_offset_too_big(fs, inode, block))
