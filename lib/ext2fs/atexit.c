@@ -63,7 +63,7 @@ errcode_t ext2fs_add_exit_fn(ext2_exit_fn func, void *data)
 	for (x = 0, ed = items; x < nr_items; x++, ed++) {
 		if (ed->func == func && ed->data == data)
 			return EXT2_ET_FILE_EXISTS;
-		if (ed->func == NULL)
+		if (ed->func == NULL && free_ed == NULL)
 			free_ed = ed;
 	}
 
@@ -102,13 +102,14 @@ errcode_t ext2fs_remove_exit_fn(ext2_exit_fn func, void *data)
 
 	for (x = 0, ed = items; x < nr_items; x++, ed++) {
 		if (ed->func == NULL)
-			return 0;
+			continue;
 		if (ed->func == func && ed->data == data) {
 			size_t sz = (nr_items - (x + 1)) *
 				    sizeof(struct exit_data);
 			memmove(ed, ed + 1, sz);
 			memset(items + nr_items - 1, 0,
 			       sizeof(struct exit_data));
+			break;
 		}
 	}
 
