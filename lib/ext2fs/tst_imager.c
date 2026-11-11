@@ -25,6 +25,12 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -428,6 +434,140 @@ static void test_image_bitmap(void)
 	printf("  test_image_bitmap: ok\n");
 }
 
+/*
+ * Suite 4: block bitmap round trip on bigalloc file systems (with 16
+ *          blocks per cluster and two block groups), where the block
+ *          bitmap has one bit per cluster, using both the bitarray and
+ *          the rbtree bitmap backends.
+ */
+static void run_bigalloc_bitmap_roundtrip(unsigned int blocksize,
+					  __u32 clusters_per_group,
+					  int bitmap_type)
+{
+	char			fs_p[64], bb_p[64];
+	int			fsfd, bbfd;
+	ext2_filsys		fs = NULL;
+	struct ext2_super_block	param;
+	/* First block of group 1, and number of blocks in the file system */
+	blk64_t			g1_start = (blk64_t) clusters_per_group * 16;
+	blk64_t			nblocks = 2 * g1_start;
+	errcode_t		retval;
+
+	fsfd = make_temp_file(fs_p, 0);
+	bbfd = make_temp_file(bb_p, 0);
+
+	memset(&param, 0, sizeof(param));
+	ext2fs_blocks_count_set(&param, nblocks);
+	param.s_inodes_count = 256;
+	param.s_log_block_size = (blocksize == 4096) ? 2 : 0;
+	param.s_log_cluster_size = param.s_log_block_size + 4;
+	param.s_clusters_per_group = clusters_per_group;
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+	param.s_inode_size = 128;
+	ext2fs_set_feature_bigalloc(&param);
+	retval = ext2fs_initialize(fs_p, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+				   &param, unix_io_manager, &fs);
+	if (retval) {
+		com_err("run_bigalloc_bitmap_roundtrip", retval,
+			"initializing %s", fs_p);
+		exit(1);
+	}
+
+	/*
+	 * ext2fs_initialize() sets up a per-block bitmap for bigalloc;
+	 * replace it with a regular per-cluster bitmap of the given type.
+	 */
+	ext2fs_free_block_bitmap(fs->block_map);
+	fs->default_bitmap_type = bitmap_type;
+	CHECK_RC(ext2fs_allocate_block_bitmap(fs, "src", &fs->block_map), 0,
+		 "allocate source cluster bitmap");
+
+	/* Mark the first and last cluster of each block group */
+	ext2fs_mark_block_bitmap2(fs->block_map, 0);
+	ext2fs_mark_block_bitmap2(fs->block_map, g1_start - 16);
+	ext2fs_mark_block_bitmap2(fs->block_map, g1_start);
+	ext2fs_mark_block_bitmap2(fs->block_map, nblocks - 16);
+	CHECK_RC(ext2fs_image_bitmap_write(fs, bbfd, 0), 0,
+		 "image_bitmap_write bigalloc block_map");
+
+	/* Read the bitmap image back into an empty bitmap */
+	ext2fs_free_block_bitmap(fs->block_map);
+	CHECK_RC(ext2fs_allocate_block_bitmap(fs, "dst", &fs->block_map), 0,
+		 "allocate destination cluster bitmap");
+	CHECK(lseek(bbfd, 0, SEEK_SET) == 0, "rewind block bitmap image");
+	CHECK_RC(ext2fs_image_bitmap_read(fs, bbfd, 0), 0,
+		 "image_bitmap_read bigalloc block_map");
+
+	CHECK(ext2fs_test_block_bitmap2(fs->block_map, 0) &&
+	      ext2fs_test_block_bitmap2(fs->block_map, g1_start - 16) &&
+	      ext2fs_test_block_bitmap2(fs->block_map, g1_start) &&
+	      ext2fs_test_block_bitmap2(fs->block_map, nblocks - 16),
+	      "bigalloc block bitmap bits restored");
+	CHECK(!ext2fs_test_block_bitmap2(fs->block_map, 16) &&
+	      !ext2fs_test_block_bitmap2(fs->block_map, g1_start - 32) &&
+	      !ext2fs_test_block_bitmap2(fs->block_map, g1_start + 16) &&
+	      !ext2fs_test_block_bitmap2(fs->block_map, nblocks - 32),
+	      "bigalloc block bitmap clear bits restored");
+
+	ext2fs_free(fs);
+	close(bbfd);
+	close(fsfd);
+	unlink(bb_p);
+	unlink(fs_p);
+}
+
+static void test_image_bitmap_bigalloc(void)
+{
+	run_bigalloc_bitmap_roundtrip(1024, 1024, EXT2FS_BMAP64_BITARRAY);
+	run_bigalloc_bitmap_roundtrip(1024, 1024, EXT2FS_BMAP64_RBTREE);
+	run_bigalloc_bitmap_roundtrip(4096, 8192, EXT2FS_BMAP64_BITARRAY);
+	run_bigalloc_bitmap_roundtrip(4096, 8192, EXT2FS_BMAP64_RBTREE);
+	printf("  test_image_bitmap_bigalloc: ok\n");
+}
+
+/*
+ * Suite 5: a short write of the bitmap data is reported as
+ *          EXT2_ET_SHORT_WRITE.
+ */
+static void test_image_bitmap_short_write(void)
+{
+#if defined(RLIMIT_FSIZE) && defined(SIGXFSZ)
+	char		fs_p[64], bb_p[64];
+	int		fsfd, bbfd;
+	ext2_filsys	fs;
+	struct rlimit	old_rlim, rlim;
+	errcode_t	retval;
+
+	fsfd = make_temp_file(fs_p, (size_t) 16384 * 1024);
+	bbfd = make_temp_file(bb_p, 0);
+	fs = create_fs_on_file(fs_p, 1024, 16384, 256);
+
+	/*
+	 * The block bitmap is written in two chunks of 1024 bytes; limit
+	 * the file size so that the second write is short.
+	 */
+	signal(SIGXFSZ, SIG_IGN);
+	CHECK(getrlimit(RLIMIT_FSIZE, &old_rlim) == 0, "getrlimit");
+	rlim = old_rlim;
+	rlim.rlim_cur = 1536;
+	CHECK(setrlimit(RLIMIT_FSIZE, &rlim) == 0, "lower RLIMIT_FSIZE");
+	retval = ext2fs_image_bitmap_write(fs, bbfd, 0);
+	CHECK(setrlimit(RLIMIT_FSIZE, &old_rlim) == 0, "restore RLIMIT_FSIZE");
+	signal(SIGXFSZ, SIG_DFL);
+	CHECK_RC(retval, EXT2_ET_SHORT_WRITE,
+		 "short bitmap write returns EXT2_ET_SHORT_WRITE");
+
+	ext2fs_close_free(&fs);
+	close(bbfd);
+	close(fsfd);
+	unlink(bb_p);
+	unlink(fs_p);
+	printf("  test_image_bitmap_short_write: ok\n");
+#else
+	printf("  test_image_bitmap_short_write: skipped\n");
+#endif
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -436,6 +576,8 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_image_super();
 	test_image_inode();
 	test_image_bitmap();
+	test_image_bitmap_bigalloc();
+	test_image_bitmap_short_write();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_imager: %d checks run, %d failed\n",
