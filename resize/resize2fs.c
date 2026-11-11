@@ -2190,6 +2190,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	ext2_ino_t		start_to_move;
 	int			inode_size;
 	int			update_ea_inode_refs = 0;
+	time_t			now;
 
 	if ((rfs->old_fs->group_desc_count <=
 	     rfs->new_fs->group_desc_count) &&
@@ -2266,11 +2267,22 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		 * i_ctime field in xattr inodes contain a portion of the ref
 		 * count, do not overwrite.
 		 */
-		if (inode->i_flags & EXT4_EA_INODE_FL)
+		if (inode->i_flags & EXT4_EA_INODE_FL) {
 			update_ea_inode_refs = 1;
-		else
-			inode->i_ctime = rfs->old_fs->now ?
-				rfs->old_fs->now : time(0);
+		} else {
+			now = rfs->old_fs->now ? rfs->old_fs->now : time(0);
+			/*
+			 * Only treat the buffer as a large inode, with
+			 * room for the epoch bits, if the inodes are
+			 * larger than 128 bytes.
+			 */
+			if (inode_size > EXT2_GOOD_OLD_INODE_SIZE)
+				ext2fs_inode_xtime_set(
+					(struct ext2_inode_large *) inode,
+					i_ctime, now);
+			else
+				ext2fs_inode_xtime_set(inode, i_ctime, now);
+		}
 
 		retval = ext2fs_write_inode_full(rfs->old_fs, new_inode,
 						inode, inode_size);
@@ -2382,10 +2394,11 @@ static int check_and_change_inodes(ext2_ino_t dir,
 				   void *priv_data)
 {
 	struct istruct *is = (struct istruct *) priv_data;
-	struct ext2_inode 	inode;
+	struct ext2_inode_large	inode;
 	ext2_ino_t		new_inode;
 	errcode_t		retval;
 	int			ret = 0;
+	time_t			now;
 
 	if (is->rfs->progress && offset == 0) {
 		io_channel_flush(is->rfs->old_fs->io);
@@ -2421,11 +2434,16 @@ static int check_and_change_inodes(ext2_ino_t dir,
 	dirent->inode = new_inode;
 
 	/* Update the directory mtime and ctime */
-	retval = ext2fs_read_inode(is->rfs->old_fs, dir, &inode);
+	memset(&inode, 0, sizeof(inode));
+	retval = ext2fs_read_inode_full(is->rfs->old_fs, dir,
+					EXT2_INODE(&inode), sizeof(inode));
 	if (retval == 0) {
-		inode.i_mtime = inode.i_ctime = is->rfs->old_fs->now ?
-			is->rfs->old_fs->now : time(0);
-		is->err = ext2fs_write_inode(is->rfs->old_fs, dir, &inode);
+		now = is->rfs->old_fs->now ? is->rfs->old_fs->now : time(0);
+		ext2fs_inode_xtime_set(&inode, i_mtime, now);
+		ext2fs_inode_xtime_set(&inode, i_ctime, now);
+		is->err = ext2fs_write_inode_full(is->rfs->old_fs, dir,
+						  EXT2_INODE(&inode),
+						  sizeof(inode));
 		if (is->err)
 			return ret | DIRENT_ABORT;
 	}
