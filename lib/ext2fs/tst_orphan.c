@@ -240,6 +240,9 @@ static void test_extent_orphan_and_csums(void)
 	      "csum_verify detects wrong block number");
 	CHECK(ext2fs_orphan_file_block_csum_verify(fs, 999999, pblk, buf) == 0,
 	      "csum_verify returns 0 on invalid inode");
+	CHECK_RC(ext2fs_orphan_file_block_csum_set(fs, 999999, pblk, buf),
+		 EXT2_ET_BAD_INODE_NUM,
+		 "csum_set reports the error on invalid inode");
 
 	/* 3. Recreate orphan file on existing s_orphan_file_inum */
 	CHECK_RC(ext2fs_create_orphan_file(fs, 4), 0,
@@ -355,6 +358,138 @@ static void test_indirect_and_bigalloc_orphan(void)
 	unlink(path);
 }
 
+/*
+ * The inode allocated for a new orphan file may still hold the contents
+ * of a deleted file.  None of it may leak into the orphan file, also on
+ * filesystems without the extents feature.
+ */
+static void test_orphan_over_stale_inode(void)
+{
+	ext2_filsys			fs;
+	struct ext2_inode		inode, stale;
+	char				path[64], *buf = NULL;
+	int				fd, i;
+	ext2_ino_t			ino;
+	blk64_t				pblk;
+
+	fs = create_test_fs(path, &fd, 8192, 0, 0, 0, 1);
+	CHECK_RC(ext2fs_get_mem(fs->blocksize, &buf), 0, "alloc stale buf");
+
+	/* Leave a deleted file behind in the next free inode */
+	CHECK_RC(ext2fs_new_inode(fs, EXT2_ROOT_INO, LINUX_S_IFREG | 0600,
+				  0, &ino), 0, "find next free inode");
+	memset(&stale, 0, sizeof(stale));
+	stale.i_mode = LINUX_S_IFREG | 0644;
+	stale.i_dtime = 1600000000;
+	stale.i_generation = 0xdeadbeef;
+	stale.i_flags = EXT2_NODUMP_FL;
+	stale.i_blocks = 30;
+	ext2fs_file_acl_block_set(fs, &stale, 7000);
+	for (i = 0; i < EXT2_N_BLOCKS; i++)
+		stale.i_block[i] = 7001 + i;
+	CHECK_RC(ext2fs_write_inode(fs, ino, &stale), 0,
+		 "write deleted file into free inode");
+
+	CHECK_RC(ext2fs_create_orphan_file(fs, 4), 0,
+		 "create 4-block orphan file over stale inode");
+	CHECK(fs->super->s_orphan_file_inum == ino,
+	      "orphan file reuses the stale inode");
+	CHECK_RC(ext2fs_read_inode(fs, ino, &inode), 0,
+		 "read orphan inode created over stale inode");
+	for (i = 4; i < EXT2_N_BLOCKS; i++)
+		CHECK(inode.i_block[i] == 0,
+		      "no stale block pointers beyond the orphan file data");
+	CHECK(inode.i_dtime == 0, "no stale i_dtime");
+	CHECK(inode.i_flags == 0, "no stale i_flags");
+	CHECK(ext2fs_file_acl_block(fs, &inode) == 0, "no stale i_file_acl");
+	CHECK(ext2fs_get_stat_i_blocks(fs, &inode) ==
+	      (blk64_t) 4 * (fs->blocksize / 512),
+	      "orphan i_blocks == 4 fs blocks, ignoring stale i_blocks");
+	for (i = 0; i < 4; i++) {
+		pblk = 0;
+		CHECK_RC(ext2fs_bmap2(fs, ino, &inode, NULL, 0, i, NULL, &pblk),
+			 0, "bmap orphan block over stale inode");
+		CHECK_RC(io_channel_read_blk64(fs->io, pblk, 1, buf), 0,
+			 "read orphan block over stale inode");
+		CHECK(ext2fs_orphan_file_block_csum_verify(fs, ino, pblk,
+							   buf) == 1,
+		      "orphan block csum matches the inode generation");
+	}
+
+	ext2fs_free_mem(&buf);
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close stale inode fs");
+	close(fd);
+	unlink(path);
+}
+
+/*
+ * With fragmented free space the orphan file needs more extents than
+ * fit into the inode, so an extent tree block gets allocated while the
+ * file is created.  i_blocks must account for that block too.
+ */
+static void test_orphan_fragmented_extents(void)
+{
+	ext2_filsys			fs;
+	struct ext2_inode		inode;
+	ext2_extent_handle_t		handle;
+	struct ext2_extent_info		info;
+	char				path[64];
+	int				fd;
+	ext2_ino_t			ino;
+	blk64_t				first_free, blk;
+
+	fs = create_test_fs(path, &fd, 8192, 0, 0, 1, 0);
+
+	/* Use every other block so only single-block holes remain */
+	CHECK_RC(ext2fs_find_first_zero_block_bitmap2(fs->block_map,
+			fs->super->s_first_data_block,
+			ext2fs_blocks_count(fs->super) - 1, &first_free),
+		 0, "find first free block");
+	for (blk = first_free + 1; blk < first_free + 64; blk += 2)
+		ext2fs_block_alloc_stats2(fs, blk, +1);
+
+	CHECK_RC(ext2fs_create_orphan_file(fs, 8), 0,
+		 "create 8-block orphan file in fragmented free space");
+	ino = fs->super->s_orphan_file_inum;
+	CHECK_RC(ext2fs_read_inode(fs, ino, &inode), 0,
+		 "read fragmented orphan inode");
+	CHECK_RC(ext2fs_extent_open2(fs, ino, &inode, &handle), 0,
+		 "open fragmented orphan extent tree");
+	CHECK_RC(ext2fs_extent_get_info(handle, &info), 0,
+		 "get fragmented orphan extent tree info");
+	CHECK(info.max_depth == 1,
+	      "8 single-block extents need an extent tree block");
+	ext2fs_extent_free(handle);
+	CHECK(ext2fs_get_stat_i_blocks(fs, &inode) ==
+	      (blk64_t) 9 * (fs->blocksize / 512),
+	      "orphan i_blocks == 8 data blocks + 1 extent tree block");
+
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close fragmented fs");
+	close(fd);
+	unlink(path);
+}
+
+static void test_orphan_zero_blocks(void)
+{
+	ext2_filsys	fs;
+	char		path[64];
+	int		fd;
+	blk64_t		free_blocks;
+
+	fs = create_test_fs(path, &fd, 8192, 0, 0, 1, 0);
+	free_blocks = ext2fs_free_blocks_count(fs->super);
+	CHECK_RC(ext2fs_create_orphan_file(fs, 0), EXT2_ET_INVALID_ARGUMENT,
+		 "create_orphan_file rejects num_blocks == 0");
+	CHECK(ext2fs_free_blocks_count(fs->super) == free_blocks,
+	      "num_blocks == 0 allocates no blocks");
+	CHECK(fs->super->s_orphan_file_inum == 0 &&
+	      !ext2fs_has_feature_orphan_file(fs->super),
+	      "num_blocks == 0 creates no orphan file");
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close zero-length orphan fs");
+	close(fd);
+	unlink(path);
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -362,6 +497,9 @@ int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 	test_default_orphan_blocks();
 	test_extent_orphan_and_csums();
 	test_indirect_and_bigalloc_orphan();
+	test_orphan_over_stale_inode();
+	test_orphan_fragmented_extents();
+	test_orphan_zero_blocks();
 
 	remove_error_table(&et_ext2_error_table);
 
