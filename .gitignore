@@ -126,6 +126,7 @@ lib/ext2fs/tst_inline_data
 lib/ext2fs/tst_inode_size
 lib/ext2fs/tst_iscan
 lib/ext2fs/tst_libext2fs
+lib/ext2fs/tst_punch
 lib/ext2fs/tst_sha256
 lib/ext2fs/tst_sha512
 lib/ext2fs/tst_super_size
