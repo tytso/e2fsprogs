@@ -407,6 +407,7 @@ errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
 {
 	errcode_t retval;
 	blk64_t start, end, b;
+	dgrp_t g;
 	int looped = 0;
 	blk64_t max_blocks = ext2fs_blocks_count(fs->super);
 	errcode_t (*nrf)(ext2_filsys fs, int flags, blk64_t goal,
@@ -484,9 +485,10 @@ errcode_t ext2fs_new_range(ext2_filsys fs, int flags, blk64_t goal,
 				   *pblk, *pblk + *plen - 1, *plen);
 allocated:
 			for (b = start; b < end;
-			     b += fs->super->s_blocks_per_group)
-				ext2fs_clear_block_uninit(fs,
-						ext2fs_group_of_blk2(fs, b));
+			     b = ext2fs_group_last_block2(fs, g) + 1) {
+				g = ext2fs_group_of_blk2(fs, b);
+				ext2fs_clear_block_uninit(fs, g);
+			}
 			return 0;
 		}
 
