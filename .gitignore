@@ -136,6 +136,7 @@ lib/ext2fs/tst_sha512
 lib/ext2fs/tst_super_size
 lib/ext2fs/tst_swapfs
 lib/ext2fs/tst_types
+lib/ext2fs/tst_unix_io
 lib/quota/subdirs
 lib/ss/mk_cmds
 lib/ss/ss.pc
