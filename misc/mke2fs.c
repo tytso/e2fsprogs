@@ -509,7 +509,7 @@ static void create_root_dir(ext2_filsys fs)
 	}
 
 	if (need_inode_change) {
-		retval = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
+		retval = ext2fs_write_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_write_inode", retval, "%s",
 				_("while setting root inode ownership"));

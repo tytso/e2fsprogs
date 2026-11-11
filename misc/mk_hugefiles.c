@@ -260,7 +260,7 @@ static errcode_t mk_hugefile(ext2_filsys fs, blk64_t num,
 	if (retval)
 		goto errout;
 
-	retval = ext2fs_write_new_inode(fs, *ino, &inode);
+	retval = ext2fs_write_inode(fs, *ino, &inode);
 	if (retval)
 		goto errout;
 
