@@ -124,9 +124,17 @@ errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
 				 const struct stat *st)
 {
 	errcode_t		retval;
-	struct ext2_inode	inode;
+	struct ext2_inode_large	inode;
 
-	retval = ext2fs_read_inode(fs, ino, &inode);
+	/*
+	 * Use the whole large inode, so that the timestamps get their
+	 * epoch bits.  With only its first 128 bytes, they would be
+	 * clamped to 2038 and combined with the epoch bits set when the
+	 * inode was created.
+	 */
+	memset(&inode, 0, sizeof(inode));
+	retval = ext2fs_read_inode_full(fs, ino, EXT2_INODE(&inode),
+					sizeof(inode));
         if (retval) {
 		com_err(__func__, retval, _("while reading inode %u"), ino);
 		return retval;
@@ -141,7 +149,8 @@ errcode_t set_inode_extra(ext2_filsys fs, ext2_ino_t ino,
 	ext2fs_inode_xtime_set(&inode, i_ctime, clamped_time(fs, st->st_ctime));
 	ext2fs_inode_xtime_set(&inode, i_mtime, clamped_time(fs, st->st_mtime));
 
-	retval = ext2fs_write_inode(fs, ino, &inode);
+	retval = ext2fs_write_inode_full(fs, ino, EXT2_INODE(&inode),
+					 sizeof(inode));
 	if (retval)
 		com_err(__func__, retval, _("while writing inode %u"), ino);
 	return retval;
