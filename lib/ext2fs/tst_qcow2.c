@@ -267,6 +267,215 @@ static void test_qcow2_raw_conversion(void)
 	printf("  test_qcow2_raw_conversion: ok\n");
 }
 
+/*
+ * Helpers for the following suites, which use small images with 512
+ * byte clusters, so that each L2 table maps 64 clusters (32KiB).  The
+ * L1 table is always stored in cluster 1.
+ */
+#define TST_CSZ		512U
+
+static void write_test_hdr(int fd, __u64 image_size, __u32 l1_size)
+{
+	struct ext2_qcow2_hdr	hdr;
+
+	memset(&hdr, 0, sizeof(hdr));
+	hdr.magic = ext2fs_cpu_to_be32(QCOW_MAGIC);
+	hdr.version = ext2fs_cpu_to_be32(QCOW_VERSION);
+	hdr.cluster_bits = ext2fs_cpu_to_be32(9);
+	hdr.size = ext2fs_cpu_to_be64(image_size);
+	hdr.l1_size = ext2fs_cpu_to_be32(l1_size);
+	hdr.l1_table_offset = ext2fs_cpu_to_be64(TST_CSZ);
+	CHECK(pwrite(fd, &hdr, sizeof(hdr), 0) == (ssize_t) sizeof(hdr),
+	      "write test header");
+}
+
+/* Set entry idx of the L1 or L2 table in cluster cl to val */
+static void set_test_entry(int fd, unsigned int cl, unsigned int idx,
+			   __u64 val)
+{
+	__u64	be_val = ext2fs_cpu_to_be64(val);
+
+	CHECK(pwrite(fd, &be_val, sizeof(be_val),
+		     (off_t) (cl * TST_CSZ + idx * sizeof(be_val))) ==
+	      (ssize_t) sizeof(be_val), "write table entry");
+}
+
+/* Write a whole table to cluster cl, with only entry idx set to val */
+static void write_test_table(int fd, unsigned int cl, unsigned int idx,
+			     __u64 val)
+{
+	unsigned char	buf[TST_CSZ];
+
+	memset(buf, 0, sizeof(buf));
+	CHECK(pwrite(fd, buf, sizeof(buf), (off_t) (cl * TST_CSZ)) ==
+	      (ssize_t) sizeof(buf), "write table cluster");
+	set_test_entry(fd, cl, idx, val);
+}
+
+/* Fill data cluster cl with byte c */
+static void write_test_cluster(int fd, unsigned int cl, int c)
+{
+	unsigned char	buf[TST_CSZ];
+
+	memset(buf, c, sizeof(buf));
+	CHECK(pwrite(fd, buf, sizeof(buf), (off_t) (cl * TST_CSZ)) ==
+	      (ssize_t) sizeof(buf), "write data cluster");
+}
+
+static int convert_test_image(int qfd, int rfd)
+{
+	struct ext2_qcow2_hdr	*hdr;
+	int			ret;
+
+	hdr = qcow2_read_header(qfd);
+	CHECK(hdr != NULL, "read test header");
+	if (!hdr)
+		return EXT2_ET_BAD_MAGIC;
+	ret = qcow2_write_raw_image(qfd, rfd, hdr);
+	ext2fs_free_mem(&hdr);
+	return ret;
+}
+
+/*
+ * Return 1 if the raw image is 64 clusters long, and all zeroes except
+ * for cluster cl, which must be filled with byte c.
+ */
+static int check_raw_image(int rfd, unsigned int cl, int c)
+{
+	unsigned char	buf[TST_CSZ], exp[TST_CSZ];
+	struct stat	st;
+	unsigned int	i;
+
+	if (fstat(rfd, &st) < 0 || st.st_size != (off_t) (64 * TST_CSZ))
+		return 0;
+	for (i = 0; i < 64; i++) {
+		memset(exp, (i == cl) ? c : 0, sizeof(exp));
+		if (pread(rfd, buf, sizeof(buf), (off_t) (i * TST_CSZ)) !=
+		    (ssize_t) sizeof(buf) ||
+		    memcmp(buf, exp, sizeof(buf)) != 0)
+			return 0;
+	}
+	return 1;
+}
+
+static void reset_test_files(int qfd, int rfd)
+{
+	CHECK(ftruncate(qfd, 0) == 0 && ftruncate(rfd, 0) == 0,
+	      "truncate test files");
+}
+
+/*
+ * Suite 3: L2 tables are used wherever they are stored in the qcow2
+ *          file, even past the virtual image size, while compressed
+ *          clusters are rejected with -QCOW_COMPRESSED.
+ */
+static void test_qcow2_l2_tables(void)
+{
+	char	qpath[64], rpath[64];
+	int	qfd, rfd;
+
+	qfd = make_temp_file(qpath);
+	rfd = make_temp_file(rpath);
+
+	/* L2 table in cluster 70, past the end of the 64-cluster image */
+	write_test_hdr(qfd, 64 * TST_CSZ, 1);
+	write_test_table(qfd, 1, 0, (70 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	write_test_cluster(qfd, 2, 0x5a);
+	write_test_table(qfd, 70, 5, (2 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	CHECK(convert_test_image(qfd, rfd) == 0,
+	      "convert image with L2 table past image_size");
+	CHECK(check_raw_image(rfd, 5, 0x5a),
+	      "cluster mapped by L2 table past image_size copied");
+
+	/* Compressed cluster */
+	reset_test_files(qfd, rfd);
+	write_test_hdr(qfd, 64 * TST_CSZ, 1);
+	write_test_table(qfd, 1, 0, (2 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	write_test_table(qfd, 2, 0, (3 * TST_CSZ) | QCOW_OFLAG_COMPRESSED);
+	write_test_cluster(qfd, 3, 0x5a);
+	CHECK(convert_test_image(qfd, rfd) == -QCOW_COMPRESSED,
+	      "compressed cluster rejected");
+
+	close(rfd);
+	close(qfd);
+	unlink(rpath);
+	unlink(qpath);
+	printf("  test_qcow2_l2_tables: ok\n");
+}
+
+/*
+ * Suite 4: The raw image is extended to the virtual image size without
+ *          clobbering the last byte of an allocated final cluster.
+ */
+static void test_qcow2_raw_size(void)
+{
+	char		qpath[64], rpath[64];
+	int		qfd, rfd;
+	struct stat	st;
+
+	qfd = make_temp_file(qpath);
+	rfd = make_temp_file(rpath);
+
+	/* Allocated final cluster ending with a non-zero byte */
+	write_test_hdr(qfd, 64 * TST_CSZ, 1);
+	write_test_table(qfd, 1, 0, (2 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	write_test_table(qfd, 2, 63, (3 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	write_test_cluster(qfd, 3, 0xa5);
+	CHECK(convert_test_image(qfd, rfd) == 0,
+	      "convert image with allocated final cluster");
+	CHECK(check_raw_image(rfd, 63, 0xa5),
+	      "final cluster copied intact");
+
+	/* Empty image */
+	reset_test_files(qfd, rfd);
+	write_test_hdr(qfd, 0, 1);
+	write_test_table(qfd, 1, 0, 0);
+	CHECK(convert_test_image(qfd, rfd) == 0, "convert empty image");
+	CHECK(fstat(rfd, &st) == 0 && st.st_size == 0,
+	      "raw image of empty image is empty");
+
+	close(rfd);
+	close(qfd);
+	unlink(rpath);
+	unlink(qpath);
+	printf("  test_qcow2_raw_size: ok\n");
+}
+
+/*
+ * Suite 5: Truncated L1 and L2 tables are rejected with -QCOW_CORRUPTED.
+ */
+static void test_qcow2_truncated_tables(void)
+{
+	char	qpath[64], rpath[64];
+	int	qfd, rfd;
+
+	qfd = make_temp_file(qpath);
+	rfd = make_temp_file(rpath);
+
+	/* Second L2 table cut short after its first entry */
+	write_test_hdr(qfd, 128 * TST_CSZ, 2);
+	write_test_table(qfd, 1, 0, (2 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	set_test_entry(qfd, 1, 1, (4 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	write_test_table(qfd, 2, 0, (3 * TST_CSZ) | QCOW_OFLAG_COPIED);
+	write_test_cluster(qfd, 3, 0x5a);
+	CHECK(ftruncate(qfd, 4 * TST_CSZ + 8) == 0, "truncate L2 table");
+	CHECK(convert_test_image(qfd, rfd) == -QCOW_CORRUPTED,
+	      "truncated L2 table rejected");
+
+	/* L1 table cut short after its first entry */
+	reset_test_files(qfd, rfd);
+	write_test_hdr(qfd, 128 * TST_CSZ, 2);
+	CHECK(ftruncate(qfd, TST_CSZ + 8) == 0, "truncate L1 table");
+	CHECK(convert_test_image(qfd, rfd) == -QCOW_CORRUPTED,
+	      "truncated L1 table rejected");
+
+	close(rfd);
+	close(qfd);
+	unlink(rpath);
+	unlink(qpath);
+	printf("  test_qcow2_truncated_tables: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -274,6 +483,9 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 
 	test_qcow2_header_validation();
 	test_qcow2_raw_conversion();
+	test_qcow2_l2_tables();
+	test_qcow2_raw_size();
+	test_qcow2_truncated_tables();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_qcow2: %d checks run, %d failed\n",
