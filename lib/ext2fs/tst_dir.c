@@ -1045,6 +1045,76 @@ static void test_htree_split_leaf_edge_cases(void)
 }
 
 /*
+ * EXT2FS_LINK_APPEND makes ext2fs_link() try the directory's last
+ * block first.  If the directory's size or block map doesn't lead to
+ * such a block, it must fall back to searching the whole directory.
+ */
+static void test_link_append_fallback(void)
+{
+	ext2_filsys		fs;
+	ext2_ino_t		dir = 0, ino, found = 0;
+	struct ext2_inode	inode;
+	char			*bait = NULL, *before = NULL, *after = NULL;
+
+	fs = setup_fs(1024, 1024, 256, 256,
+		      EXT2_FEATURE_COMPAT_EXT_ATTR,
+		      EXT3_FEATURE_INCOMPAT_EXTENTS |
+		      EXT2_FEATURE_INCOMPAT_FILETYPE,
+		      EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+	ino = alloc_reg_inode(fs);
+
+	/* i_size smaller than a block: there is no last block */
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "small", &dir), 0,
+		 "mkdir small");
+	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read small");
+	inode.i_size = 0;
+	CHECK_RC(ext2fs_write_inode(fs, dir, &inode), 0, "set i_size to 0");
+	CHECK_RC(ext2fs_link(fs, dir, "f1", ino,
+			     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+		 "append to directory with i_size 0");
+	CHECK_RC(ext2fs_lookup(fs, dir, "f1", 2, NULL, &found), 0,
+		 "lookup f1");
+	CHECK(found == ino, "f1 -> ino");
+
+	/*
+	 * The last block is a hole.  Physical block 0 contains an empty
+	 * directory block, which must not be mistaken for it.
+	 */
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "sparse", &dir), 0,
+		 "mkdir sparse");
+	CHECK_RC(ext2fs_expand_dir(fs, dir), 0, "expand sparse");
+	CHECK_RC(ext2fs_read_inode(fs, dir, &inode), 0, "read sparse");
+	CHECK_RC(ext2fs_punch(fs, dir, &inode, NULL, 1, ~0ULL), 0,
+		 "punch out last block of sparse");
+	CHECK(EXT2_I_SIZE(&inode) == 2 * fs->blocksize,
+	      "sparse still has two blocks' worth of i_size");
+	CHECK_RC(ext2fs_new_dir_block(fs, 0, 0, &bait), 0, "new bait block");
+	CHECK_RC(ext2fs_write_dir_block4(fs, 0, bait, 0, dir), 0,
+		 "write bait to block 0");
+	CHECK_RC(ext2fs_get_mem(fs->blocksize, &before), 0, "alloc before");
+	CHECK_RC(ext2fs_get_mem(fs->blocksize, &after), 0, "alloc after");
+	CHECK_RC(io_channel_read_blk64(fs->io, 0, 1, before), 0,
+		 "read block 0");
+
+	CHECK_RC(ext2fs_link(fs, dir, "f2", ino,
+			     EXT2_FT_REG_FILE | EXT2FS_LINK_APPEND), 0,
+		 "append to directory ending in a hole");
+	CHECK_RC(ext2fs_lookup(fs, dir, "f2", 2, NULL, &found), 0,
+		 "lookup f2");
+	CHECK(found == ino, "f2 -> ino");
+	CHECK_RC(io_channel_read_blk64(fs->io, 0, 1, after), 0,
+		 "re-read block 0");
+	CHECK(memcmp(before, after, fs->blocksize) == 0,
+	      "block 0 left alone");
+
+	ext2fs_free_mem(&after);
+	ext2fs_free_mem(&before);
+	ext2fs_free_mem(&bait);
+	teardown_fs(&fs);
+	printf("  test_link_append_fallback: ok\n");
+}
+
+/*
  * Suite 5: ext2fs_symlink, ext2fs_is_fast_symlink, ext2fs_namei,
  *          ext2fs_namei_follow, ext2fs_follow_link, and ext2fs_get_pathname.
  */
@@ -1262,6 +1332,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_htree_dx_link();
 	test_link_merges_unused_entries();
 	test_htree_split_leaf_edge_cases();
+	test_link_append_fallback();
 	test_symlinks_namei_and_pathname();
 
 	remove_error_table(&et_ext2_error_table);
