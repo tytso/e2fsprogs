@@ -301,7 +301,12 @@ static _INLINE_ void expand_inode_expression(FILE *f, ext2_filsys fs, char ch,
 		fprintf(f, "0%o", inode->i_mode);
 		break;
 	case 'M':
-		print_time(f, ext2fs_inode_xtime_get(inode, i_mtime));
+		/* Only a large inode has the epoch bits of the mtime */
+		if (EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
+			print_time(f, ext2fs_inode_xtime_get(large_inode,
+							     i_mtime));
+		else
+			print_time(f, ext2fs_inode_xtime_get(inode, i_mtime));
 		break;
 	case 'F':
 		fprintf(f, "%u", inode->i_faddr);
