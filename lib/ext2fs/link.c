@@ -639,6 +639,7 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 	errcode_t		retval;
 	struct link_struct	ls;
 	struct ext2_inode	inode;
+	blk64_t			lblk = 0, pblk;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -662,16 +663,23 @@ retry:
 	ls.blocksize = fs->blocksize;
 	ls.err = 0;
 
+	/*
+	 * With EXT2FS_LINK_APPEND, only look at the last block of the
+	 * directory.  If i_size or the block map don't lead us to it,
+	 * fall back to searching the whole directory.
+	 */
+	pblk = 0;
 	if ((flags & EXT2FS_LINK_APPEND) &&
-	    !(inode.i_flags & EXT4_INLINE_DATA_FL)) {
-		blk64_t		lblk, pblk = 0;
-		struct dir_context ctx;
-
-		lblk = (inode.i_size / fs->blocksize) - 1;
+	    !(inode.i_flags & EXT4_INLINE_DATA_FL) &&
+	    (EXT2_I_SIZE(&inode) >= fs->blocksize)) {
+		lblk = (EXT2_I_SIZE(&inode) / fs->blocksize) - 1;
 		retval = ext2fs_bmap2(fs, dir, &inode, NULL, 0, lblk,
 				      NULL, &pblk);
 		if (retval)
 			return retval;
+	}
+	if (pblk) {
+		struct dir_context ctx;
 
 		ctx.dir = dir;
 		ctx.flags = DIRENT_FLAG_INCLUDE_EMPTY;
