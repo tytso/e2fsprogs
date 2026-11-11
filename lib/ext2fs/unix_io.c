@@ -1346,8 +1346,10 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 
 			cache = reuse;
 			err = reuse_cache(channel, data, cache, block);
-			if (err)
+			if (err) {
+				retval = err;
 				goto call_write_handler;
+			}
 		}
 		if (cache->buf != cp)
 			memcpy(cache->buf, cp, channel->block_size);
