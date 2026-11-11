@@ -299,6 +299,17 @@ static void range_stats_cb(ext2_filsys fs EXT2FS_ATTR((unused)),
 	range_cb_inuse = inuse;
 }
 
+/* A new_range handler which always returns exactly the requested range */
+static errcode_t goal_new_range_cb(ext2_filsys fs EXT2FS_ATTR((unused)),
+				   int flags EXT2FS_ATTR((unused)),
+				   blk64_t goal, blk64_t len,
+				   blk64_t *pblk, blk64_t *plen)
+{
+	*pblk = goal;
+	*plen = len;
+	return 0;
+}
+
 /*
  * Suite 3: ext2fs_find_inode_goal(), ext2fs_new_range(), ext2fs_alloc_range(),
  *          and ext2fs_block_alloc_stats_range().
@@ -393,6 +404,35 @@ static void test_goal_and_range_alloc(void)
 				    &pblk),
 		 EXT2_ET_BLOCK_ALLOC_FAIL,
 		 "FIXED_GOAL fails when run at goal is too short");
+
+	/*
+	 * ext2fs_new_range() must clear BLOCK_UNINIT in every group touched
+	 * by the returned range, also when the range does not start at the
+	 * beginning of a group: 16382..16387 straddles groups 1 and 2.
+	 */
+	ext2fs_bg_flags_set(fs, 1, EXT2_BG_BLOCK_UNINIT);
+	ext2fs_bg_flags_set(fs, 2, EXT2_BG_BLOCK_UNINIT);
+	CHECK_RC(ext2fs_new_range(fs, EXT2_NEWRANGE_FIXED_GOAL |
+				  EXT2_NEWRANGE_MIN_LENGTH, 16382, 6, NULL,
+				  &pblk, &plen), 0,
+		 "new_range straddling group 1 -> group 2");
+	CHECK(pblk == 16382 && plen == 6, "new_range returned 16382..16387");
+	CHECK(!ext2fs_bg_flags_test(fs, 1, EXT2_BG_BLOCK_UNINIT) &&
+	      !ext2fs_bg_flags_test(fs, 2, EXT2_BG_BLOCK_UNINIT),
+	      "new_range cleared BLOCK_UNINIT in groups 1 and 2");
+
+	/* ... and so must ranges returned by a new_range handler */
+	ext2fs_bg_flags_set(fs, 1, EXT2_BG_BLOCK_UNINIT);
+	ext2fs_bg_flags_set(fs, 2, EXT2_BG_BLOCK_UNINIT);
+	ext2fs_set_new_range_callback(fs, goal_new_range_cb, NULL);
+	CHECK_RC(ext2fs_new_range(fs, 0, 16382, 6, NULL, &pblk, &plen), 0,
+		 "new_range handler straddling group 1 -> group 2");
+	ext2fs_set_new_range_callback(fs, NULL, NULL);
+	CHECK(pblk == 16382 && plen == 6,
+	      "new_range handler returned 16382..16387");
+	CHECK(!ext2fs_bg_flags_test(fs, 1, EXT2_BG_BLOCK_UNINIT) &&
+	      !ext2fs_bg_flags_test(fs, 2, EXT2_BG_BLOCK_UNINIT),
+	      "new_range handler range cleared BLOCK_UNINIT in groups 1, 2");
 
 	/*
 	 * Straddle group 1 -> group 2 boundary (16382..16387, since group 2
