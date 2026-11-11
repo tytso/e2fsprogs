@@ -1435,6 +1435,21 @@ static void test_dirent_swab(void)
 	check_err("dirent_swab_in2_56", retval, 0);
 	check_mem("dirent_swab2_56_roundtrip", buf, orig_buf, 64);
 
+	/* Trailing 8-byte empty dirent at size - 8 must also be swapped */
+	memset(orig_buf, 0, 64);
+	write_dirent_host(orig_buf + 0, 12, 48,
+			  (EXT2_FT_REG_FILE << 8) | 4, "file");
+	write_dirent_host(orig_buf + 48, 0, 8, 0, "");
+	orig_buf[56] = 0x5a;
+	memcpy(buf, orig_buf, 64);
+	retval = ext2fs_dirent_swab_out2(fs, buf, 56, 0);
+	check_err("dirent_swab_out2_trailing_8", retval, 0);
+	retval = ext2fs_dirent_swab_in2(fs, buf, 56, 0);
+	check_err("dirent_swab_in2_trailing_8", retval, 0);
+	check_mem("dirent_swab2_trailing_8_roundtrip", buf, orig_buf, 64);
+	retval = ext2fs_dirent_swab_in2(fs, buf, 4, 0);
+	check_err("dirent_swab_in2_short_4", retval, 0);
+
 	/* 64KB blocksize where rec_len = 0xFFFF represents 65536 */
 	setup_test_fs(&fs64k, 65536, 256, 64, 0, EXT2_OS_LINUX);
 	memset(buf, 0, 64);

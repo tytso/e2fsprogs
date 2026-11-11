@@ -415,14 +415,14 @@ errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf,
 				 size_t size, int flags)
 {
 	errcode_t	retval;
-	char		*p, *end;
+	char		*p;
 	struct ext2_dir_entry *dirent;
-	unsigned int	name_len, rec_len, left;
+	unsigned int	name_len, rec_len;
+	size_t		left;
 
 	p = (char *) buf;
-	end = (char *) buf + size;
 	left = size;
-	while (p < end-8) {
+	while (left >= 8) {
 		dirent = (struct ext2_dir_entry *) p;
 		dirent->inode = ext2fs_swab32(dirent->inode);
 		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
@@ -440,9 +440,11 @@ errcode_t ext2fs_dirent_swab_in2(ext2_filsys fs, char *buf,
 		} else if (((name_len & 0xFF) + 8) > rec_len)
 			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
 				return EXT2_ET_DIR_CORRUPTED;
-		if (rec_len > left)
+		if (rec_len > left) {
 			if (!(fs->flags & EXT2_FLAG_IGNORE_SWAP_DIRENT))
 				return EXT2_ET_DIR_CORRUPTED;
+			break;
+		}
 		left -= rec_len;
 		p += rec_len;
 	}
