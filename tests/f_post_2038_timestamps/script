@@ -1,0 +1,47 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+if test $SIZEOF_TIME_T -le 4; then
+	echo "$test_name: $test_description: skipped (32-bit time_t)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+TEST_DATA="$test_name.tmp"
+
+echo "/ Murphy Magic.  The SeCrEt of the UnIvErSe is 43, NOT 42" > $TEST_DATA
+
+# foo has an mtime in 2065, which needs the epoch bits in i_mtime_extra,
+# and bar has an mtime in 1938.  bar shares foo's data block, so that
+# e2fsck prints both mtimes.  Clear the resize inode, so that e2fsck
+# recreates it and sets its mtime.
+touch $TMPFILE
+$MKE2FS -F -o Linux -b 1024 -I 256 -O resize_inode $TMPFILE 1024 \
+	> /dev/null 2>&1
+$DEBUGFS -w $TMPFILE << EOF > /dev/null 2>&1
+set_current_time 20070410210000
+set_super_value lastcheck 0
+set_super_value hash_seed null
+set_super_value mkfs_time 0
+write $TEST_DATA foo
+write $TEST_DATA bar
+set_inode_field foo mtime @3000000000
+set_inode_field bar mtime @-1000000000
+set_inode_field bar block[0] 54
+clri <7>
+q
+EOF
+
+E2FSCK_TIME=3000000000
+export E2FSCK_TIME
+
+AFTER_CMD='$DEBUGFS -R "stat <7>" $TMPFILE 2>&1 | $EGREP "^ mtime:" |
+	sed "s/ --.*//" > $test_name.0.log'
+PASS_ZERO="true"
+
+. $cmd_dir/run_e2fsck
+
+rm -f $TEST_DATA
+
+unset E2FSCK_TIME TEST_DATA
