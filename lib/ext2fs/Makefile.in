@@ -230,6 +230,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/tst_fileio.c \
 	$(srcdir)/tst_getsize.c \
 	$(srcdir)/tst_imager.c \
+	$(srcdir)/tst_inode.c \
 	$(srcdir)/tst_inode_io.c \
 	$(srcdir)/tst_iscan.c \
 	$(srcdir)/tst_punch.c \
@@ -316,6 +317,11 @@ tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 tst_imager: tst_imager.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_imager tst_imager.o $(ALL_CFLAGS) $(ALL_LDFLAGS) \
+		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
+
+tst_inode: tst_inode.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_inode tst_inode.o $(ALL_CFLAGS) $(ALL_LDFLAGS) \
 		$(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(SYSLIBS)
 
 tst_inode_io: tst_inode_io.o $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
@@ -636,7 +642,7 @@ fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
     tst_sha512 tst_digest_encode tst_getsize tst_getsectsize tst_block \
     tst_bmap tst_punch tst_fallocate tst_fileio tst_dir tst_dirhash \
     tst_ext_attr tst_swapfs tst_unix_io tst_undo_io tst_qcow2 tst_imager \
-    tst_inode_io
+    tst_inode_io tst_inode
 	$(TESTENV) ./tst_bitops
 	$(TESTENV) ./tst_badblocks
 	$(TESTENV) ./tst_block
@@ -653,6 +659,7 @@ fullcheck check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount \
 	$(TESTENV) ./tst_qcow2
 	$(TESTENV) ./tst_imager
 	$(TESTENV) ./tst_inode_io
+	$(TESTENV) ./tst_inode
 	$(TESTENV) ./tst_iscan
 	$(TESTENV) ./tst_types
 	$(TESTENV) ./tst_icount
@@ -709,7 +716,7 @@ clean::
 		tst_bitops tst_block tst_bmap tst_punch tst_fallocate \
 		tst_fileio tst_dir tst_dirhash tst_ext_attr tst_swapfs \
 		tst_unix_io tst_undo_io tst_qcow2 tst_imager tst_inode_io \
-		tst_types \
+		tst_inode tst_types \
 		tst_icount \
 		tst_super_size tst_csum \
 		tst_bitmaps tst_bitmaps_out tst_extents tst_extents_out \
@@ -1339,6 +1346,12 @@ tst_getsize.o: $(srcdir)/tst_getsize.c $(top_builddir)/lib/config.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(srcdir)/ext2_ext_attr.h $(srcdir)/hashmap.h $(srcdir)/bitops.h
 tst_imager.o: $(srcdir)/tst_imager.c $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(srcdir)/ext2_ext_attr.h $(srcdir)/hashmap.h $(srcdir)/bitops.h
+tst_inode.o: $(srcdir)/tst_inode.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
