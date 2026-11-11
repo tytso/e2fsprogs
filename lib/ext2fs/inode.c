@@ -898,7 +898,7 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 	dgrp_t group;
 	unsigned long block, offset;
 	errcode_t retval = 0;
-	struct ext2_inode_large *w_inode;
+	struct ext2_inode_large *w_inode, *cached;
 	char *ptr;
 	unsigned i;
 	int clen;
@@ -932,16 +932,8 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 			goto errout;
 	}
 
-	/* Check to see if the inode cache needs to be updated */
-	if (fs->icache) {
-		for (i=0; i < fs->icache->cache_size; i++) {
-			if (fs->icache->cache[i].ino == ino) {
-				memcpy(fs->icache->cache[i].inode, inode,
-				       (bufsize > length) ? length : bufsize);
-				break;
-			}
-		}
-	} else {
+	/* The inode cache provides the block buffer used below */
+	if (!fs->icache) {
 		retval = ext2fs_create_inode_cache(fs, 4);
 		if (retval)
 			goto errout;
@@ -1003,13 +995,38 @@ errcode_t ext2fs_write_inode2(ext2_filsys fs, ext2_ino_t ino,
 
 		retval = io_channel_write_blk64(fs->io, block_nr, 1,
 					      fs->icache->buffer);
-		if (retval)
+		if (retval) {
+			fs->icache->buffer_blk = 0;
+			for (i = 0; i < fs->icache->cache_size; i++) {
+				if (fs->icache->cache[i].ino == ino) {
+					fs->icache->cache[i].ino = 0;
+					break;
+				}
+			}
 			goto errout;
+		}
 
 		offset = 0;
 		ptr += clen;
 		length -= clen;
 		block_nr++;
+	}
+
+	/*
+	 * Update the inode cache only now that the inode has been
+	 * written, and with what was written, including the checksum, so
+	 * that it never returns data which is not on disk.
+	 */
+	for (i = 0; i < fs->icache->cache_size; i++) {
+		if (fs->icache->cache[i].ino != ino)
+			continue;
+		cached = (struct ext2_inode_large *) fs->icache->cache[i].inode;
+		memcpy(cached, w_inode, EXT2_INODE_SIZE(fs->super));
+#ifdef WORDS_BIGENDIAN
+		ext2fs_swap_inode_full(fs, cached, cached, 0,
+				       EXT2_INODE_SIZE(fs->super));
+#endif
+		break;
 	}
 
 	fs->flags |= EXT2_FLAG_CHANGED;

@@ -714,6 +714,113 @@ static void test_inode_timestamps(void)
 	printf("  test_inode_timestamps: ok\n");
 }
 
+/*
+ * Suite 6: ext2fs_write_inode2() may only update a cached copy of the
+ *          inode once the write has succeeded, and must cache what it
+ *          wrote, including the inode checksum.
+ */
+static errcode_t fail_write_blk64(io_channel channel EXT2FS_ATTR((unused)),
+				  unsigned long long block EXT2FS_ATTR((unused)),
+				  int count EXT2FS_ATTR((unused)),
+				  const void *data EXT2FS_ATTR((unused)))
+{
+	return EIO;
+}
+
+static void test_inode_write_icache(void)
+{
+	struct struct_io_manager fail_mgr;
+	char			path[64];
+	int			fd;
+	ext2_filsys		fs;
+	struct ext2_inode_large	ino, cached, ondisk;
+	blk64_t			saved_itbl;
+
+	fs = create_test_fs(path, &fd, 2048, 64, 256, 1);
+
+	memset(&ino, 0, sizeof(ino));
+	ino.i_mode = LINUX_S_IFREG | 0644;
+	ino.i_links_count = 1;
+	ino.i_uid = 1313;
+	ino.i_extra_isize = sizeof(struct ext2_inode_large) -
+			    EXT2_GOOD_OLD_INODE_SIZE;
+	CHECK_RC(ext2fs_write_inode_full(fs, 13, (struct ext2_inode *) &ino,
+					 sizeof(ino)), 0, "write inode 13");
+	ino.i_uid = 1111;
+	CHECK_RC(ext2fs_write_inode_full(fs, 12, (struct ext2_inode *) &ino,
+					 sizeof(ino)), 0, "write inode 12");
+	ext2fs_flush_icache(fs);
+	/* Reading inode 12 caches it and loads the shared itable block */
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &cached,
+					sizeof(cached)), 0, "read inode 12");
+
+	/* Failed writes must not touch the cached copy */
+	fs->flags &= ~EXT2_FLAG_RW;
+	ino.i_uid = 2222;
+	CHECK_RC(ext2fs_write_inode_full(fs, 12, (struct ext2_inode *) &ino,
+					 sizeof(ino)),
+		 EXT2_ET_RO_FILSYS, "write_inode of cached inode on RO fs");
+	fs->flags |= EXT2_FLAG_RW;
+	memset(&cached, 0, sizeof(cached));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &cached,
+					sizeof(cached)), 0,
+		 "read inode 12 after RO write");
+	CHECK(cached.i_uid == 1111, "rejected RO write did not update icache");
+
+	saved_itbl = ext2fs_inode_table_loc(fs, 0);
+	ext2fs_inode_table_loc_set(fs, 0, 0);
+	ino.i_uid = 2223;
+	CHECK_RC(ext2fs_write_inode_full(fs, 12, (struct ext2_inode *) &ino,
+					 sizeof(ino)),
+		 EXT2_ET_MISSING_INODE_TABLE,
+		 "write_inode of cached inode without inode table");
+	ext2fs_inode_table_loc_set(fs, 0, saved_itbl);
+	memset(&cached, 0, sizeof(cached));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &cached,
+					sizeof(cached)), 0,
+		 "read inode 12 after failed write");
+	CHECK(cached.i_uid == 1111, "failed write did not update icache");
+
+	/* A failing block write must invalidate icache->buffer_blk too */
+	fail_mgr = *unix_io_manager;
+	fail_mgr.write_blk64 = fail_write_blk64;
+	fs->io->manager = &fail_mgr;
+	ino.i_uid = 4444;
+	CHECK_RC(ext2fs_write_inode_full(fs, 13, (struct ext2_inode *) &ino,
+					 sizeof(ino)), EIO,
+		 "write_inode of sibling inode fails with EIO");
+	fs->io->manager = unix_io_manager;
+	memset(&cached, 0, sizeof(cached));
+	CHECK_RC(ext2fs_read_inode_full(fs, 13, (struct ext2_inode *) &cached,
+					sizeof(cached)), 0,
+		 "read uncached inode 13 after EIO write");
+	CHECK(cached.i_uid == 1313,
+	      "failed block write did not poison icache block buffer");
+
+	/* A successful write caches exactly what is on disk */
+	ino.i_uid = 3333;
+	CHECK_RC(ext2fs_write_inode_full(fs, 12, (struct ext2_inode *) &ino,
+					 sizeof(ino)), 0, "rewrite inode 12");
+	memset(&cached, 0, sizeof(cached));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &cached,
+					sizeof(cached)), 0,
+		 "read inode 12 from icache");
+	ext2fs_flush_icache(fs);
+	memset(&ondisk, 0, sizeof(ondisk));
+	CHECK_RC(ext2fs_read_inode_full(fs, 12, (struct ext2_inode *) &ondisk,
+					sizeof(ondisk)), 0,
+		 "read inode 12 from disk");
+	CHECK(cached.i_uid == 3333 && ondisk.i_uid == 3333,
+	      "successful write updated icache and disk");
+	CHECK(memcmp(&cached, &ondisk, sizeof(cached)) == 0,
+	      "cached inode, including checksum, matches the disk");
+
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close meta_csum fs");
+	close(fd);
+	unlink(path);
+	printf("  test_inode_write_icache: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -724,6 +831,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_inode_scanner();
 	test_get_blocks_and_check_dir();
 	test_inode_timestamps();
+	test_inode_write_icache();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_inode: %d checks run, %d failed\n",
