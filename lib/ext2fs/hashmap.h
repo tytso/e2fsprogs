@@ -33,8 +33,6 @@ void *ext2fs_hashmap_lookup(struct ext2fs_hashmap *h, const void *key,
 			    size_t key_len);
 void *ext2fs_hashmap_iter_in_order(struct ext2fs_hashmap *h,
 				   struct ext2fs_hashmap_entry **it);
-void ext2fs_hashmap_del(struct ext2fs_hashmap *h,
-			struct ext2fs_hashmap_entry *e);
 void ext2fs_hashmap_free(struct ext2fs_hashmap *h);
 
 uint32_t ext2fs_djb2_hash(const void *str, size_t size);
