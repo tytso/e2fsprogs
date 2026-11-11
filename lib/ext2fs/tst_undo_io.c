@@ -552,6 +552,75 @@ static void test_undo_reopen_errors(void)
 	printf("  test_undo_reopen_errors: ok\n");
 }
 
+/*
+ * Suite 5: Reopen an undo file whose last key block is exactly full
+ *          (63 keys for 1K undo blocks) and append another key.  The
+ *          new key must go into a fresh key block, and the resulting
+ *          undo file must still replay correctly.
+ */
+static void test_undo_reopen_full_keyblock(void)
+{
+	char		img_path[64], undo_path[64];
+	unsigned char	*orig_img = NULL, *cur_img = NULL;
+	unsigned char	blk[1024];
+	int		img_fd, undo_fd, i, kb_seen = 0;
+	io_channel	io = NULL;
+	size_t		img_size = 256 * 1024;
+
+	img_fd = make_temp_file(img_path, img_size);
+	undo_fd = make_temp_file(undo_path, 0);
+	init_ext2_image(img_path, 256, 0);
+
+	for (i = 20; i < 160; i++) {
+		memset(blk, (unsigned char) (i ^ 0xa5), sizeof(blk));
+		CHECK(pwrite(img_fd, blk, sizeof(blk), i * 1024) == 1024,
+		      "seed full-keyblock block");
+	}
+	fsync(img_fd);
+
+	CHECK_RC(ext2fs_get_mem(img_size, &orig_img), 0, "alloc orig_img");
+	CHECK_RC(ext2fs_get_mem(img_size, &cur_img), 0, "alloc cur_img");
+	CHECK(pread(img_fd, orig_img, img_size, 0) == (ssize_t) img_size,
+	      "snapshot orig_img");
+
+	CHECK_RC(set_undo_io_backing_manager(unix_io_manager), 0,
+		 "set backing");
+	CHECK_RC(set_undo_io_backup_file(undo_path), 0, "set backup");
+
+	/* Session 1: 63 non-contiguous writes (20, 22, ..., 144) */
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io), 0,
+		 "open undo session 1");
+	CHECK_RC(io_channel_set_blksize(io, 1024), 0, "set_blksize 1024");
+	memset(blk, 0xee, sizeof(blk));
+	for (i = 0; i < 63; i++)
+		CHECK_RC(io_channel_write_blk64(io, 20 + i * 2, 1, blk), 0,
+			 "write non-contiguous block");
+	CHECK_RC(io_channel_close(io), 0, "close undo session 1 (63 keys)");
+
+	/* Session 2: reopen and add a 64th, non-contiguous key (blk 150) */
+	CHECK_RC(undo_io_manager->open(img_path, IO_FLAG_RW, &io), 0,
+		 "reopen undo file with a full key block");
+	CHECK_RC(io_channel_set_blksize(io, 1024), 0, "set_blksize reopen");
+	CHECK_RC(io_channel_write_blk64(io, 150, 1, blk), 0,
+		 "write blk 150 after reopen");
+	CHECK_RC(io_channel_close(io), 0, "close undo session 2 (64 keys)");
+
+	CHECK(verify_and_replay_undo(undo_fd, img_fd, 64, &kb_seen) == 1,
+	      "verify and replay 64 keys after reopening a full key block");
+	CHECK(kb_seen == 2, "64th key starts a second keyblock (63 + 1)");
+	CHECK(pread(img_fd, cur_img, img_size, 0) == (ssize_t) img_size &&
+	      memcmp(orig_img, cur_img, img_size) == 0,
+	      "all 64 blocks restored identically");
+
+	ext2fs_free_mem(&cur_img);
+	ext2fs_free_mem(&orig_img);
+	close(undo_fd);
+	close(img_fd);
+	unlink(undo_path);
+	unlink(img_path);
+	printf("  test_undo_reopen_full_keyblock: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -560,6 +629,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_undo_coalesce_reopen_and_replay();
 	test_undo_multi_keyblock_and_offset();
 	test_undo_reopen_errors();
+	test_undo_reopen_full_keyblock();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_undo_io: %d checks run, %d failed\n",
