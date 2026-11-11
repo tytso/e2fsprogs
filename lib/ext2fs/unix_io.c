@@ -830,6 +830,33 @@ unlock:
 	mutex_unlock(data, CACHE_MTX);
 	return retval;
 }
+
+/*
+ * Drop the blocks in the range [block, block + count) from the cache,
+ * throwing away any unwritten changes.  This is called once the range
+ * has been discarded or zeroed out on disk, so that later reads don't
+ * return stale data and stale dirty blocks don't get written back
+ * over the range, while failed or unsupported calls leave cached
+ * blocks intact.
+ */
+static void invalidate_cached_blocks(struct unix_private_data *data,
+				     unsigned long long block,
+				     unsigned long long count)
+{
+	struct unix_cache	*cache;
+	unsigned int		i;
+
+	mutex_lock(data, CACHE_MTX);
+	for (i = 0, cache = data->cache; i < data->cache_size; i++, cache++) {
+		if (cache->in_use && cache->block >= block &&
+		    cache->block - block < count) {
+			cache->in_use = 0;
+			cache->dirty = 0;
+			cache->write_err = 0;
+		}
+	}
+	mutex_unlock(data, CACHE_MTX);
+}
 #endif /* NO_IO_CACHE */
 
 #ifdef __linux__
@@ -1578,6 +1605,9 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 		}
 		return errno;
 	}
+#ifndef NO_IO_CACHE
+	invalidate_cached_blocks(data, block, count);
+#endif
 	return 0;
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
@@ -1659,6 +1689,9 @@ err:
 		}
 		return errno;
 	}
+#ifndef NO_IO_CACHE
+	invalidate_cached_blocks(data, block, count);
+#endif
 	return 0;
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
