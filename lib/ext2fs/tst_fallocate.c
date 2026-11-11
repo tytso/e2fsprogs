@@ -298,6 +298,17 @@ static unsigned int count_leaf_extents(ext2_filsys fs, ext2_ino_t ino,
 	return cnt;
 }
 
+static int block_is_filled(ext2_filsys fs, blk64_t blk, unsigned char byte)
+{
+	unsigned char	*p = mem_disk + blk * fs->blocksize;
+	unsigned int	i;
+
+	for (i = 0; i < fs->blocksize; i++)
+		if (p[i] != byte)
+			return 0;
+	return 1;
+}
+
 /*
  * Suite 1: Flag validation, bounds checks, len==0 no-op, and inline-data error
  */
@@ -742,6 +753,219 @@ static void test_indirect_fallocate(void)
 	printf("test_indirect_fallocate: completed\n");
 }
 
+/*
+ * Suite 7: Filling a hole between two extents whose physical blocks are
+ * exactly the hole's length apart merges them into one extent (try_merge);
+ * with EXT2_FALLOCATE_ZERO_BLOCKS only the newly allocated blocks may be
+ * zeroed.  Also checks the zeroing done when an initialized bigalloc
+ * extent is extended to the left (expand_right + try_right).
+ */
+static void test_extent_merge(void)
+{
+	ext2_filsys		fs = NULL;
+	struct ext2_inode	inode;
+	ext2_extent_handle_t	handle = NULL;
+	struct ext2fs_extent	ext;
+	blk64_t			pblk = 0;
+	blk64_t			free_before;
+	int			ret_flags = 0;
+	int			i;
+	errcode_t		retval;
+
+	setup_fs(&fs, 1024, 64);
+
+	/*
+	 * Part A: UNINIT [10..13] -> 300..303 and UNINIT [16..19] ->
+	 * 306..309.  Filling [14..15] allocates the free blocks 304..305
+	 * and must leave one extent [10..19] -> 300..309.
+	 */
+	init_reg_inode(fs, 12, EXT4_EXTENTS_FL, &inode);
+	ext2fs_block_alloc_stats_range(fs, 300, 4, +1);
+	ext2fs_block_alloc_stats_range(fs, 306, 4, +1);
+	ext2fs_iblk_add_blocks(fs, &inode, 8);
+	retval = ext2fs_extent_open2(fs, 12, &inode, &handle);
+	check_err("merge_uninit_open", retval, 0);
+	memset(&ext, 0, sizeof(ext));
+	ext.e_lblk = 10;
+	ext.e_pblk = 300;
+	ext.e_len = 4;
+	ext.e_flags = EXT2_EXTENT_FLAGS_LEAF | EXT2_EXTENT_FLAGS_UNINIT;
+	retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &ext);
+	check_err("merge_uninit_insert_left", retval, 0);
+	ext.e_lblk = 16;
+	ext.e_pblk = 306;
+	retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &ext);
+	check_err("merge_uninit_insert_right", retval, 0);
+	ext2fs_extent_free(handle);
+
+	retval = ext2fs_fallocate(fs, 0, 12, &inode, ~0ULL, 14, 2);
+	check_err("merge_uninit_falloc", retval, 0);
+	check_u64("merge_uninit_one_extent",
+		  count_leaf_extents(fs, 12, &inode), 1);
+	check_u64("merge_uninit_iblocks",
+		  ext2fs_inode_i_blocks(fs, &inode), 20);
+	for (i = 10; i < 20; i++) {
+		retval = ext2fs_bmap2(fs, 12, &inode, NULL, 0, i,
+				      &ret_flags, &pblk);
+		check_err("merge_uninit_bmap", retval, 0);
+		check_u64("merge_uninit_pblk", pblk, 290 + i);
+		check_u64("merge_uninit_flag", ret_flags, BMAP_RET_UNINIT);
+	}
+
+	/*
+	 * Part B: initialized [200..201] -> 400..401 and [204..205] ->
+	 * 404..405 inside i_size, filled with FORCE_INIT | ZERO_BLOCKS.
+	 * The new blocks 402..403 must be zeroed, while block 202 (whose
+	 * number equals the logical start of the hole) belongs to someone
+	 * else and the free block 203 must not be touched.
+	 */
+	init_reg_inode(fs, 13, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_inode_size_set(fs, &inode, 206 * fs->blocksize);
+	check_err("merge_init_isize", retval, 0);
+	ext2fs_block_alloc_stats_range(fs, 400, 2, +1);
+	ext2fs_block_alloc_stats_range(fs, 404, 2, +1);
+	ext2fs_iblk_add_blocks(fs, &inode, 4);
+	retval = ext2fs_extent_open2(fs, 13, &inode, &handle);
+	check_err("merge_init_open", retval, 0);
+	memset(&ext, 0, sizeof(ext));
+	ext.e_lblk = 200;
+	ext.e_pblk = 400;
+	ext.e_len = 2;
+	ext.e_flags = EXT2_EXTENT_FLAGS_LEAF;
+	retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &ext);
+	check_err("merge_init_insert_left", retval, 0);
+	ext.e_lblk = 204;
+	ext.e_pblk = 404;
+	retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &ext);
+	check_err("merge_init_insert_right", retval, 0);
+	ext2fs_extent_free(handle);
+	ext2fs_block_alloc_stats2(fs, 202, +1);
+	memset(mem_disk + 202 * fs->blocksize, 0x3C, fs->blocksize);
+	poison_free_blocks(fs, 0xAA);
+
+	retval = ext2fs_fallocate(fs,
+				  EXT2_FALLOCATE_FORCE_INIT |
+				  EXT2_FALLOCATE_ZERO_BLOCKS,
+				  13, &inode, ~0ULL, 202, 2);
+	check_err("merge_init_falloc", retval, 0);
+	check_u64("merge_init_one_extent",
+		  count_leaf_extents(fs, 13, &inode), 1);
+	check_u64("merge_init_iblocks",
+		  ext2fs_inode_i_blocks(fs, &inode), 12);
+	for (i = 202; i < 204; i++) {
+		retval = ext2fs_bmap2(fs, 13, &inode, NULL, 0, i,
+				      &ret_flags, &pblk);
+		check_err("merge_init_bmap", retval, 0);
+		check_u64("merge_init_pblk", pblk, 200 + i);
+		check_u64("merge_init_flag", ret_flags, 0);
+		check_u64("merge_init_new_blk_zeroed",
+			  block_is_filled(fs, pblk, 0), 1);
+	}
+	check_u64("merge_init_blk202_untouched",
+		  block_is_filled(fs, 202, 0x3C), 1);
+	check_u64("merge_init_blk203_untouched",
+		  block_is_filled(fs, 203, 0xAA), 1);
+	teardown_fs(&fs);
+
+	/* 1 KiB blocks, 4 KiB clusters (cluster_ratio = 4) */
+	setup_fs_opts(&fs, 1024, 64, 0, 2,
+		      EXT3_FEATURE_INCOMPAT_EXTENTS |
+		      EXT4_FEATURE_INCOMPAT_64BIT,
+		      EXT4_FEATURE_RO_COMPAT_BIGALLOC |
+		      EXT4_FEATURE_RO_COMPAT_HUGE_FILE);
+
+	/*
+	 * Part C: UNINIT [0..5] -> 400..405 and UNINIT [14..15] -> 414..415.
+	 * Filling [6..13] first extends both extents to their cluster
+	 * boundaries and must then merge them through the free cluster
+	 * 408..411, claiming exactly one new cluster.
+	 */
+	init_reg_inode(fs, 12, EXT4_EXTENTS_FL, &inode);
+	ext2fs_block_alloc_stats_range(fs, 400, 8, +1);
+	ext2fs_block_alloc_stats_range(fs, 412, 4, +1);
+	ext2fs_iblk_add_blocks(fs, &inode, 3);
+	retval = ext2fs_extent_open2(fs, 12, &inode, &handle);
+	check_err("bigalloc_merge_open", retval, 0);
+	memset(&ext, 0, sizeof(ext));
+	ext.e_lblk = 0;
+	ext.e_pblk = 400;
+	ext.e_len = 6;
+	ext.e_flags = EXT2_EXTENT_FLAGS_LEAF | EXT2_EXTENT_FLAGS_UNINIT;
+	retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &ext);
+	check_err("bigalloc_merge_insert_left", retval, 0);
+	ext.e_lblk = 14;
+	ext.e_pblk = 414;
+	ext.e_len = 2;
+	retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &ext);
+	check_err("bigalloc_merge_insert_right", retval, 0);
+	ext2fs_extent_free(handle);
+
+	free_before = ext2fs_free_blocks_count(fs->super);
+	retval = ext2fs_fallocate(fs, 0, 12, &inode, ~0ULL, 6, 8);
+	check_err("bigalloc_merge_falloc", retval, 0);
+	check_u64("bigalloc_merge_one_extent",
+		  count_leaf_extents(fs, 12, &inode), 1);
+	check_u64("bigalloc_merge_one_new_cluster",
+		  free_before - ext2fs_free_blocks_count(fs->super), 4);
+	check_u64("bigalloc_merge_iblocks",
+		  ext2fs_inode_i_blocks(fs, &inode), 32);
+	for (i = 0; i < 16; i++) {
+		retval = ext2fs_bmap2(fs, 12, &inode, NULL, 0, i,
+				      &ret_flags, &pblk);
+		check_err("bigalloc_merge_bmap", retval, 0);
+		check_u64("bigalloc_merge_pblk", pblk, 400 + i);
+		check_u64("bigalloc_merge_flag", ret_flags, BMAP_RET_UNINIT);
+	}
+
+	/*
+	 * Part D: INIT [6..7] -> 506..507 holds file data; the unmapped
+	 * blocks 504..505 of its cluster and the free cluster 500..503 hold
+	 * stale bytes.  Filling [0..5] with FORCE_INIT | ZERO_BLOCKS must
+	 * zero exactly 500..505 and leave the file data alone.
+	 */
+	init_reg_inode(fs, 13, EXT4_EXTENTS_FL, &inode);
+	retval = ext2fs_inode_size_set(fs, &inode, 8 * fs->blocksize);
+	check_err("bigalloc_prepend_isize", retval, 0);
+	ext2fs_block_alloc_stats_range(fs, 504, 4, +1);
+	ext2fs_iblk_add_blocks(fs, &inode, 1);
+	retval = ext2fs_extent_open2(fs, 13, &inode, &handle);
+	check_err("bigalloc_prepend_open", retval, 0);
+	memset(&ext, 0, sizeof(ext));
+	ext.e_lblk = 6;
+	ext.e_pblk = 506;
+	ext.e_len = 2;
+	ext.e_flags = EXT2_EXTENT_FLAGS_LEAF;
+	retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &ext);
+	check_err("bigalloc_prepend_insert", retval, 0);
+	ext2fs_extent_free(handle);
+	poison_free_blocks(fs, 0xAA);
+	memset(mem_disk + 504 * fs->blocksize, 0xAA, 2 * fs->blocksize);
+	memset(mem_disk + 506 * fs->blocksize, 0x3C, 2 * fs->blocksize);
+
+	free_before = ext2fs_free_blocks_count(fs->super);
+	retval = ext2fs_fallocate(fs,
+				  EXT2_FALLOCATE_FORCE_INIT |
+				  EXT2_FALLOCATE_ZERO_BLOCKS,
+				  13, &inode, ~0ULL, 0, 6);
+	check_err("bigalloc_prepend_falloc", retval, 0);
+	check_u64("bigalloc_prepend_one_extent",
+		  count_leaf_extents(fs, 13, &inode), 1);
+	check_u64("bigalloc_prepend_one_new_cluster",
+		  free_before - ext2fs_free_blocks_count(fs->super), 4);
+	for (i = 0; i < 8; i++) {
+		retval = ext2fs_bmap2(fs, 13, &inode, NULL, 0, i,
+				      &ret_flags, &pblk);
+		check_err("bigalloc_prepend_bmap", retval, 0);
+		check_u64("bigalloc_prepend_pblk", pblk, 500 + i);
+		check_u64("bigalloc_prepend_flag", ret_flags, 0);
+		check_u64("bigalloc_prepend_contents",
+			  block_is_filled(fs, pblk, i < 6 ? 0 : 0x3C), 1);
+	}
+
+	teardown_fs(&fs);
+	printf("test_extent_merge: completed\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -752,6 +976,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_max_extent_len_splitting();
 	test_bigalloc_fallocate();
 	test_indirect_fallocate();
+	test_extent_merge();
 
 	if (test_fail == 0)
 		printf("libext2fs fallocate unit tests passed!\n");
