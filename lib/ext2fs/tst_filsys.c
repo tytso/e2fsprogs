@@ -836,6 +836,89 @@ static void test_dup_handle_and_resize_inode(void)
 	unlink(path);
 }
 
+/*
+ * ext2fs_create_resize_inode() must set all the timestamps of a new
+ * resize inode, epoch bits included, and when it rebuilds an existing
+ * resize inode, it must only update the atime and mtime.
+ */
+static void test_resize_inode_times(void)
+{
+#if (SIZEOF_TIME_T > 4)
+	struct ext2_super_block	param;
+	struct ext2_inode_large	inode;
+	ext2_filsys		fs = NULL;
+	char			path[64], *zero_buf = NULL;
+	__u32			blocks;
+	int			fd;
+
+	fd = make_temp_file(path, (off_t) 16384 * 1024);
+
+	memset(&param, 0, sizeof(param));
+	ext2fs_blocks_count_set(&param, 16384); /* 2 groups @ 1K */
+	param.s_inodes_count = 256;
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+	param.s_inode_size = 256;
+	param.s_reserved_gdt_blocks = 4;
+	ext2fs_set_feature_sparse_super(&param);
+	ext2fs_set_feature_resize_inode(&param);
+	CHECK_RC(ext2fs_initialize(path, EXT2_FLAG_RW | EXT2_FLAG_64BITS,
+				   &param, unix_io_manager, &fs),
+		 0, "init fs with resize_inode and 256-byte inodes");
+	CHECK_RC(ext2fs_allocate_tables(fs), 0, "alloc_tables");
+
+	fs->now = 3000000000LL;		/* 2065-01-24, 0xb2d05e00 */
+	CHECK_RC(ext2fs_create_resize_inode(fs), 0,
+		 "create_resize_inode with post-2038 fs->now");
+	memset(&inode, 0, sizeof(inode));
+	CHECK_RC(ext2fs_read_inode_full(fs, EXT2_RESIZE_INO,
+					EXT2_INODE(&inode), sizeof(inode)),
+		 0, "read new resize inode");
+	CHECK(inode.i_atime == 0xb2d05e00U && inode.i_atime_extra == 1 &&
+	      inode.i_ctime == 0xb2d05e00U && inode.i_ctime_extra == 1 &&
+	      inode.i_mtime == 0xb2d05e00U && inode.i_mtime_extra == 1 &&
+	      inode.i_crtime == 0xb2d05e00U && inode.i_crtime_extra == 1,
+	      "new resize inode has post-2038 timestamps");
+	blocks = inode.i_blocks;
+
+	/*
+	 * Rebuild the resize inode like resize2fs does: reset i_blocks
+	 * and zero the DIND block.  Add nanoseconds to the ctime and the
+	 * crtime, which the rebuild must keep.
+	 */
+	ext2fs_iblk_set(fs, EXT2_INODE(&inode), 1);
+	inode.i_ctime_extra |= 1234 << EXT4_EPOCH_BITS;
+	inode.i_crtime_extra |= 5678 << EXT4_EPOCH_BITS;
+	CHECK_RC(ext2fs_write_inode_full(fs, EXT2_RESIZE_INO,
+					 EXT2_INODE(&inode), sizeof(inode)),
+		 0, "write resize inode with nanoseconds");
+	CHECK_RC(ext2fs_get_memzero(fs->blocksize, &zero_buf), 0,
+		 "alloc zeroed block");
+	CHECK_RC(ext2fs_write_ind_block(fs, inode.i_block[EXT2_DIND_BLOCK],
+					zero_buf),
+		 0, "zero resize inode DIND block");
+	ext2fs_free_mem(&zero_buf);
+	fs->now = 3000000100LL;		/* 0xb2d05e64 */
+	CHECK_RC(ext2fs_create_resize_inode(fs), 0, "rebuild resize inode");
+	memset(&inode, 0, sizeof(inode));
+	CHECK_RC(ext2fs_read_inode_full(fs, EXT2_RESIZE_INO,
+					EXT2_INODE(&inode), sizeof(inode)),
+		 0, "read rebuilt resize inode");
+	CHECK(inode.i_blocks == blocks, "rebuild restored i_blocks");
+	CHECK(inode.i_atime == 0xb2d05e64U && inode.i_atime_extra == 1 &&
+	      inode.i_mtime == 0xb2d05e64U && inode.i_mtime_extra == 1,
+	      "rebuild updated the atime and mtime");
+	CHECK(inode.i_ctime == 0xb2d05e00U &&
+	      inode.i_ctime_extra == (1 | (1234 << EXT4_EPOCH_BITS)) &&
+	      inode.i_crtime == 0xb2d05e00U &&
+	      inode.i_crtime_extra == (1 | (5678 << EXT4_EPOCH_BITS)),
+	      "rebuild kept the ctime and crtime");
+
+	CHECK_RC(ext2fs_close_free(&fs), 0, "close resize inode times fs");
+	close(fd);
+	unlink(path);
+#endif
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -845,6 +928,7 @@ int main(int argc EXT2FS_ATTR((unused)), char **argv EXT2FS_ATTR((unused)))
 	test_check_desc();
 	test_rw_bitmaps_and_stats();
 	test_dup_handle_and_resize_inode();
+	test_resize_inode_times();
 
 	remove_error_table(&et_ext2_error_table);
 
