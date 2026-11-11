@@ -596,14 +596,16 @@ static inline __u32 __encode_extra_time(time_t seconds EXT2FS_ATTR((unused)),
 #endif
 	return extra | (nsec << EXT4_EPOCH_BITS);
 }
-static inline time_t __decode_extra_sec(time_t seconds,
+static inline time_t __decode_extra_sec(__s32 seconds,
 					__u32 extra EXT2FS_ATTR((unused)))
 {
+	time_t t = seconds;
+
 #if (SIZEOF_TIME_T > 4)
 	if (extra & EXT4_EPOCH_MASK)
-		seconds += ((time_t)(extra & EXT4_EPOCH_MASK) << 32);
+		t += ((time_t)(extra & EXT4_EPOCH_MASK) << 32);
 #endif
-	return seconds;
+	return t;
 }
 static inline __u32 __decode_extra_nsec(__u32 extra)
 {
@@ -619,7 +621,7 @@ static inline __u32 __decode_extra_nsec(__u32 extra)
 do {									      \
 	if (ext2fs_inode_includes(ext2fs_inode_actual_size(inode),	      \
 				  field ## _extra)) {			      \
-		(inode)->field = (__u32)(sec & 0xfffffff);		      \
+		(inode)->field = (__u32)((sec) & 0xffffffff);		      \
 		((struct ext2_inode_large *)(inode))->field ## _extra =       \
 			__encode_extra_time(sec, 0);			      \
 	} else {							      \
@@ -628,9 +630,9 @@ do {									      \
 } while (0)
 #define ext2fs_inode_xtime_get(inode, field)				      \
 (ext2fs_inode_includes(ext2fs_inode_actual_size(inode), field ## _extra) ?    \
-	__decode_extra_sec((inode)->field,				      \
+	__decode_extra_sec((__s32)(inode)->field,			      \
 		((struct ext2_inode_large *)(inode))->field ## _extra) :      \
-		(time_t)(inode)->field)
+		(time_t)(__s32)(inode)->field)
 
 static inline void __sb_set_tstamp(__u32 *lo, __u8 *hi EXT2FS_ATTR((unused)),
 				   time_t seconds)
