@@ -671,6 +671,74 @@ static void test_flush_write_error_threads(void)
 }
 #endif
 
+/*
+ * Suite 6: an error writing back a dirty block evicted from the cache
+ *          must be returned by io_channel_write_blk64().
+ */
+static errcode_t last_write_err;
+static unsigned long last_write_err_blk;
+
+static errcode_t record_write_err_cb(io_channel ch EXT2FS_ATTR((unused)),
+				     unsigned long block,
+				     int count EXT2FS_ATTR((unused)),
+				     const void *data EXT2FS_ATTR((unused)),
+				     size_t size EXT2FS_ATTR((unused)),
+				     int actual_bytes EXT2FS_ATTR((unused)),
+				     errcode_t error)
+{
+	write_err_called++;
+	last_write_err = error;
+	last_write_err_blk = block;
+	return error;
+}
+
+static void test_write_evict_error(void)
+{
+	char		path[64];
+	unsigned char	buf[1024];
+	int		fd, i;
+	io_channel	io = NULL;
+
+	fd = create_temp_image(path, 32 * 1024);
+
+	/* Writing back dirty blocks of a read-only channel fails (EBADF) */
+	CHECK_RC(unix_io_manager->open(path, 0, &io), 0, "open RO");
+	/* Fill all 8 (DEFAULT_CACHE_SIZE) cache slots with dirty blocks */
+	for (i = 0; i < 8; i++) {
+		memset(buf, 0x60 + i, sizeof(buf));
+		CHECK_RC(io_channel_write_blk64(io, 10 + i, 1, buf), 0,
+			 "cached write to RO channel");
+	}
+	/* Caching block 18 requires writing back block 10 */
+	memset(buf, 0x70, sizeof(buf));
+	CHECK_RC(io_channel_write_blk64(io, 18, 1, buf), EBADF,
+		 "eviction write error returned without write_error handler");
+
+	io->write_error = record_write_err_cb;
+	write_err_called = 0;
+	last_write_err = 0;
+	last_write_err_blk = 0;
+	CHECK_RC(io_channel_write_blk64(io, 19, 1, buf), EBADF,
+		 "eviction write error returned with write_error handler");
+	CHECK(write_err_called == 1, "write_error handler called");
+	CHECK_RC(last_write_err, EBADF, "write_error handler got the error");
+	CHECK(last_write_err_blk == 10, "write_error handler got block 10");
+	io->write_error = NULL;
+
+	/* A write error in writethrough mode must not get lost either */
+	io->flags |= CHANNEL_FLAGS_WRITETHROUGH;
+	CHECK_RC(io_channel_write_blk64(io, 20, 1, buf), EBADF,
+		 "writethrough write error returned");
+	io->flags &= ~CHANNEL_FLAGS_WRITETHROUGH;
+
+	/* Blocks 11..17 are still dirty and can't be written either */
+	CHECK_RC(io_channel_close(io), EBADF, "close RO");
+
+	close(fd);
+	unlink(path);
+	printf("  test_write_evict_error: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -683,6 +751,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 #ifdef HAVE_PTHREAD
 	test_flush_write_error_threads();
 #endif
+	test_write_evict_error();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_unix_io: %d checks run, %d failed\n",
