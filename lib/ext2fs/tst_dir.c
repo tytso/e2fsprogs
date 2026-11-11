@@ -1376,6 +1376,125 @@ static void test_symlinks_namei_and_pathname(void)
 	printf("  test_symlinks_namei_and_pathname: ok\n");
 }
 
+/*
+ * ext2fs_follow_link() on corrupted symlinks: the target may only be
+ * read from where the inode says it is, and only as far as i_size
+ * bytes of a buffer which is large enough.
+ */
+static void test_follow_corrupt_symlinks(void)
+{
+	ext2_filsys		fs;
+	ext2_ino_t		dir_a = 0, dir_b = 0, file_ino;
+	ext2_ino_t		sym_ino = 0, resolved = 0;
+	struct ext2_inode	inode;
+	char			target[96], *buf = NULL;
+	__u32			size;
+
+	/* Slow symlink on a block-mapped filesystem */
+	fs = setup_fs(1024, 1024, 256, 256,
+		      EXT2_FEATURE_COMPAT_EXT_ATTR,
+		      EXT2_FEATURE_INCOMPAT_FILETYPE, 0);
+	CHECK_RC(ext2fs_mkdir2(fs, EXT2_ROOT_INO, 0, 0, 0, "a", &dir_a), 0,
+		 "mkdir /a");
+	CHECK_RC(ext2fs_mkdir2(fs, dir_a, 0, 0, 0, "b", &dir_b), 0,
+		 "mkdir /a/b");
+	file_ino = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_link(fs, dir_b, "hello.txt", file_ino,
+			     EXT2_FT_REG_FILE), 0, "link /a/b/hello.txt");
+	memset(target, 0, sizeof(target));
+	while (strlen(target) < 64)
+		strcat(target, "./");
+	strcat(target, "a/b/hello.txt");
+	CHECK_RC(ext2fs_symlink(fs, EXT2_ROOT_INO, 0, "slow", target), 0,
+		 "create slow symlink");
+	CHECK_RC(ext2fs_lookup(fs, EXT2_ROOT_INO, "slow", 4, NULL, &sym_ino),
+		 0, "lookup slow");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved), 0,
+		 "follow intact slow symlink");
+	CHECK(resolved == file_ino, "intact slow symlink -> hello.txt");
+	CHECK_RC(ext2fs_read_inode(fs, sym_ino, &inode), 0, "read slow");
+	size = inode.i_size;
+
+	/* Empty target */
+	inode.i_size = 0;
+	CHECK_RC(ext2fs_write_inode(fs, sym_ino, &inode), 0,
+		 "set i_size to 0");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved),
+		 EXT2_ET_INODE_CORRUPTED, "slow symlink with i_size 0");
+
+	/* i_size larger than the block holding the target */
+	inode.i_size = 4 * fs->blocksize;
+	CHECK_RC(ext2fs_write_inode(fs, sym_ino, &inode), 0,
+		 "set i_size > blocksize");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved),
+		 EXT2_ET_INODE_CORRUPTED,
+		 "slow symlink with i_size > blocksize");
+	inode.i_size = size;
+
+	/* Block number beyond the end of the filesystem */
+	inode.i_block[0] = ext2fs_blocks_count(fs->super) + 10;
+	CHECK_RC(ext2fs_write_inode(fs, sym_ino, &inode), 0,
+		 "set out of range block");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved),
+		 EXT2_ET_INODE_CORRUPTED, "slow symlink block out of range");
+
+	/* No block at all, while physical block 0 contains a valid target */
+	inode.i_block[0] = 0;
+	CHECK_RC(ext2fs_write_inode(fs, sym_ino, &inode), 0,
+		 "unmap symlink block");
+	CHECK_RC(ext2fs_get_memzero(fs->blocksize, &buf), 0, "alloc buf");
+	strcpy(buf, target);
+	CHECK_RC(io_channel_write_blk64(fs->io, 0, 1, buf), 0,
+		 "write target to block 0");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved),
+		 EXT2_ET_INODE_CORRUPTED, "slow symlink without a block");
+	ext2fs_free_mem(&buf);
+	teardown_fs(&fs);
+
+	/* Inline-data symlink whose i_size doesn't match its inline data */
+	fs = setup_fs(1024, 512, 128, 256,
+		      EXT2_FEATURE_COMPAT_EXT_ATTR,
+		      EXT4_FEATURE_INCOMPAT_INLINE_DATA |
+		      EXT3_FEATURE_INCOMPAT_EXTENTS |
+		      EXT2_FEATURE_INCOMPAT_FILETYPE,
+		      EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
+	file_ino = alloc_reg_inode(fs);
+	CHECK_RC(ext2fs_link(fs, EXT2_ROOT_INO, "tgt", file_ino,
+			     EXT2_FT_REG_FILE | EXT2FS_LINK_EXPAND), 0,
+		 "link /tgt");
+	memset(target, 0, sizeof(target));
+	while (strlen(target) < 70)
+		strcat(target, "./");
+	strcat(target, "tgt");
+	CHECK_RC(ext2fs_symlink(fs, EXT2_ROOT_INO, 0, "inl", target), 0,
+		 "create inline symlink");
+	CHECK_RC(ext2fs_lookup(fs, EXT2_ROOT_INO, "inl", 3, NULL, &sym_ino),
+		 0, "lookup inl");
+	CHECK_RC(ext2fs_read_inode(fs, sym_ino, &inode), 0, "read inl");
+	CHECK((inode.i_flags & EXT4_INLINE_DATA_FL) != 0,
+	      "symlink stored as inline data");
+	inode.i_size = strlen(target) + 1;
+	CHECK_RC(ext2fs_write_inode(fs, sym_ino, &inode), 0,
+		 "set i_size > inline data size");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved),
+		 EXT2_ET_INODE_CORRUPTED,
+		 "inline symlink with i_size > inline data size");
+	inode.i_size = 0;
+	CHECK_RC(ext2fs_write_inode(fs, sym_ino, &inode), 0,
+		 "set i_size to 0");
+	CHECK_RC(ext2fs_follow_link(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
+				    sym_ino, &resolved),
+		 EXT2_ET_INODE_CORRUPTED, "inline symlink with i_size 0");
+	teardown_fs(&fs);
+	printf("  test_follow_corrupt_symlinks: ok\n");
+}
+
 int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 {
 	add_error_table(&et_ext2_error_table);
@@ -1390,6 +1509,7 @@ int main(int argc EXT2FS_ATTR((unused)), char *argv[] EXT2FS_ATTR((unused)))
 	test_link_append_fallback();
 	test_unlink_64k_block();
 	test_symlinks_namei_and_pathname();
+	test_follow_corrupt_symlinks();
 
 	remove_error_table(&et_ext2_error_table);
 	printf("tst_dir: %d checks run, %d failed\n", test_count, fail_count);

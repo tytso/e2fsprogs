@@ -35,6 +35,7 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 	errcode_t retval;
 	struct ext2_inode ei;
 	blk64_t blk;
+	size_t inline_size;
 
 #ifdef NAMEI_DEBUG
 	printf("follow_link: root=%lu, dir=%lu, inode=%lu, lc=%d\n",
@@ -53,7 +54,18 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 	if (ext2fs_is_fast_symlink(&ei))
 		pathname = (char *)&(ei.i_block[0]);
 	else if (ei.i_flags & EXT4_INLINE_DATA_FL) {
-		retval = ext2fs_get_memzero(ei.i_size, &buffer);
+		/*
+		 * ext2fs_inline_data_get() copies out all of the inline
+		 * data, which can be more than i_size bytes if the inode
+		 * is corrupted.
+		 */
+		retval = ext2fs_inline_data_size(fs, inode, &inline_size);
+		if (retval)
+			return retval;
+		if (!EXT2_I_SIZE(&ei) || EXT2_I_SIZE(&ei) > inline_size)
+			return EXT2_ET_INODE_CORRUPTED;
+
+		retval = ext2fs_get_memzero(inline_size, &buffer);
 		if (retval)
 			return retval;
 
@@ -65,9 +77,19 @@ static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 		}
 		pathname = buffer;
 	} else {
+		/*
+		 * The target of a slow symlink must fit, together with
+		 * its NUL terminator, in the symlink's first block, and
+		 * that block must be mapped.
+		 */
+		if (!EXT2_I_SIZE(&ei) || EXT2_I_SIZE(&ei) >= fs->blocksize)
+			return EXT2_ET_INODE_CORRUPTED;
+
 		retval = ext2fs_bmap2(fs, inode, &ei, NULL, 0, 0, NULL, &blk);
 		if (retval)
 			return retval;
+		if (!blk || blk >= ext2fs_blocks_count(fs->super))
+			return EXT2_ET_INODE_CORRUPTED;
 
 		retval = ext2fs_get_mem(fs->blocksize, &buffer);
 		if (retval)
