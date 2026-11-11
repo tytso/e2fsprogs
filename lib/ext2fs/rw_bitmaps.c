@@ -114,7 +114,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		retval = ext2fs_block_bitmap_csum_set(fs, i, block_buf,
 						      block_nbytes);
 		if (retval)
-			return retval;
+			goto errout;
 		ext2fs_group_desc_csum_set(fs, i);
 		fs->flags |= EXT2_FLAG_DIRTY;
 
@@ -247,8 +247,10 @@ static errcode_t read_bitmaps_range_prepare(ext2_filsys fs, int flags)
 		return retval;
 
 	if (flags & EXT2FS_BITMAPS_BLOCK) {
-		if (fs->block_map)
+		if (fs->block_map) {
 			ext2fs_free_block_bitmap(fs->block_map);
+			fs->block_map = NULL;
+		}
 		strcpy(buf, "block bitmap for ");
 		strcat(buf, fs->device_name);
 		retval = ext2fs_allocate_block_bitmap(fs, buf, &fs->block_map);
@@ -257,8 +259,10 @@ static errcode_t read_bitmaps_range_prepare(ext2_filsys fs, int flags)
 	}
 
 	if (flags & EXT2FS_BITMAPS_INODE) {
-		if (fs->inode_map)
+		if (fs->inode_map) {
 			ext2fs_free_inode_bitmap(fs->inode_map);
+			fs->inode_map = NULL;
+		}
 		strcpy(buf, "inode bitmap for ");
 		strcat(buf, fs->device_name);
 		retval = ext2fs_allocate_inode_bitmap(fs, buf, &fs->inode_map);
@@ -569,20 +573,19 @@ errcode_t ext2fs_rw_bitmaps(ext2_filsys fs, int flags, int num_threads)
 	if ((num_threads <= 1) || (average_group == 0))
 		goto fallback;
 
-	io_channel_set_options(fs->io, "cache=off");
 	retval = pthread_attr_init(&attr);
 	if (retval)
 		return retval;
 
 	thread_ids = calloc(sizeof(pthread_t), num_threads);
-	if (!thread_ids)
-		return ENOMEM;
-
 	thread_infos = calloc(sizeof(struct read_bitmaps_thread_info),
 				num_threads);
-	if (!thread_infos)
+	if (!thread_ids || !thread_infos) {
+		retval = EXT2_ET_NO_MEMORY;
 		goto out;
+	}
 
+	io_channel_set_options(fs->io, "cache=off");
 	retval = read_bitmaps_range_prepare(fs, flags);
 	if (retval)
 		goto out;
