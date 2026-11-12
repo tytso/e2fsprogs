@@ -601,7 +601,8 @@ static inline time_t __decode_extra_sec(time_t seconds,
 {
 #if (SIZEOF_TIME_T > 4)
 	if (extra & EXT4_EPOCH_MASK)
-		seconds += ((time_t)(extra & EXT4_EPOCH_MASK) << 32);
+		seconds = (time_t)(__s32)seconds +
+			((time_t)(extra & EXT4_EPOCH_MASK) << 32);
 #endif
 	return seconds;
 }
@@ -619,7 +620,7 @@ static inline __u32 __decode_extra_nsec(__u32 extra)
 do {									      \
 	if (ext2fs_inode_includes(ext2fs_inode_actual_size(inode),	      \
 				  field ## _extra)) {			      \
-		(inode)->field = (__u32)(sec & 0xfffffff);		      \
+		(inode)->field = (__u32)(sec & 0xffffffff);		      \
 		((struct ext2_inode_large *)(inode))->field ## _extra =       \
 			__encode_extra_time(sec, 0);			      \
 	} else {							      \
