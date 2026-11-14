@@ -415,7 +415,7 @@ void do_init_inode(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 			non_extent = 1;
 			break;
 		case 's':
-			err = strtoblk(argv[0], optarg, "size", &size);
+			size = parse_ulonglong(optarg, argv[0], "size", &err);
 			if (err)
 				return;
 			break;
