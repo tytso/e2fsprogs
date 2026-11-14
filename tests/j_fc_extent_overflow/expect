@@ -1,0 +1,427 @@
+=== Case 1: extent DAG with DEL_RANGE replay ===
+test_filesys: recovering journal
+Journal corrupted in test_filesys
+Pass 1: Checking inodes, blocks, and sizes
+Interior extent node level 3 of inode 12:
+Logical start 1 does not match logical start 0 at next level.  Fix? yes
+
+Inode 12 has a duplicate extent mapping
+	(logical block 0, invalid physical block 1300, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 2, physical block 1301, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 4, physical block 1302, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 6, physical block 1303, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 8, physical block 1304, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 10, physical block 1305, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 12, physical block 1306, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 14, physical block 1307, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 16, physical block 1308, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 18, physical block 1309, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 20, physical block 1310, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 22, physical block 1311, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 24, physical block 1312, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 26, physical block 1313, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 28, physical block 1314, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 30, physical block 1315, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 32, physical block 1316, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 34, physical block 1317, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 36, physical block 1318, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 38, physical block 1319, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 40, physical block 1320, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 42, physical block 1321, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 44, physical block 1322, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 46, physical block 1323, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 48, physical block 1324, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 50, physical block 1325, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 52, physical block 1326, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 54, physical block 1327, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 56, physical block 1328, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 58, physical block 1329, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 60, physical block 1330, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 62, physical block 1331, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 64, physical block 1332, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 66, physical block 1333, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 68, physical block 1334, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 70, physical block 1335, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 72, physical block 1336, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 74, physical block 1337, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 76, physical block 1338, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 78, physical block 1339, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 80, physical block 1340, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 82, physical block 1341, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 84, physical block 1342, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 86, physical block 1343, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 88, physical block 1344, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 90, physical block 1345, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 92, physical block 1346, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 94, physical block 1347, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 96, physical block 1348, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 98, physical block 1349, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 100, physical block 1350, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 102, physical block 1351, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 104, physical block 1352, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 106, physical block 1353, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 108, physical block 1354, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 110, physical block 1355, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 112, physical block 1356, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 114, physical block 1357, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 116, physical block 1358, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 118, physical block 1359, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 120, physical block 1360, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 122, physical block 1361, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 124, physical block 1362, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 126, physical block 1363, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 128, physical block 1364, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 130, physical block 1365, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 132, physical block 1366, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 134, physical block 1367, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 136, physical block 1368, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 138, physical block 1369, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 140, physical block 1370, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 142, physical block 1371, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 144, physical block 1372, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 146, physical block 1373, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 148, physical block 1374, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 150, physical block 1375, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 152, physical block 1376, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 154, physical block 1377, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 156, physical block 1378, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 158, physical block 1379, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 160, physical block 1380, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 162, physical block 1381, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 164, physical block 1382, len 1)
+Clear? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 166, physical block 1383, len 1)
+Clear? yes
+
+Interior extent node level 2 of inode 12:
+Logical start 3 does not match logical start 0 at next level.  Fix? yes
+
+Interior extent node level 3 of inode 12:
+Logical start 0 does not match logical start 166 at next level.  Fix? yes
+
+Inode 12, end of extent exceeds allowed value
+	(logical block 166, physical block 1383, len 1)
+Clear? yes
+
+Failed to iterate extents in inode 12
+	(op ext2fs_extent_fix_parents, blk 1383, lblk 166): Extent not found
+Clear inode? yes
+
+Inode 12, i_size is 0, should be 171008.  Fix? yes
+
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Entry 'probe' in / (2) has deleted/unused inode 12.  Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Free blocks count wrong for group #0 (1414, counted=1412).
+Fix? yes
+
+Free blocks count wrong (1414, counted=1412).
+Fix? yes
+
+Inode bitmap differences:  -12
+Fix? yes
+
+Free inodes count wrong for group #0 (308, counted=309).
+Fix? yes
+
+Free inodes count wrong (308, counted=309).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/320 files (9.1% non-contiguous), 1148/2560 blocks
+Exit status is 1
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/320 files (9.1% non-contiguous), 1148/2560 blocks
+Exit status is 0
+=== Case 2: zero-length DEL_RANGE and out-of-bounds ADD_RANGE ===
+test_filesys: recovering journal
+Journal corrupted in test_filesys
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 12/320 files (8.3% non-contiguous), 1149/2560 blocks
+Exit status is 1
+Links: 1   Blockcount: 2
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 12/320 files (8.3% non-contiguous), 1149/2560 blocks
+Exit status is 0
+test_filesys: recovering journal
+Journal corrupted in test_filesys
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 12/320 files (8.3% non-contiguous), 1148/2560 blocks
+Exit status is 1
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 12/320 files (8.3% non-contiguous), 1148/2560 blocks
+Exit status is 0

@@ -1,0 +1,168 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+if ! perl -e 'exit 0' >/dev/null 2>&1; then
+	echo "$test_name: $test_description: skipped (no perl)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+E2FSPROGS_FAKE_TIME=1176238800
+export E2FSPROGS_FAKE_TIME
+E2FSCK_TIME=1176238800
+export E2FSCK_TIME
+
+setup_fc_ext_fs() {
+	_img=$1
+	_src=$2
+	rm -f "$_img"
+	$MKE2FS -q -F -o Linux -t ext4 -b 1024 -I 256 \
+		-O fast_commit,^metadata_csum,^orphan_file \
+		-E lazy_itable_init=0,lazy_journal_init=0 \
+		-U 11111111-1111-1111-1111-111111111111 "$_img" 2560 >/dev/null 2>&1
+	$DEBUGFS -w -R "write $_src /probe" "$_img" >/dev/null 2>&1
+	_jsb_blk=$($DEBUGFS -R "bmap <8> 0" "$_img" 2>/dev/null)
+	# s_sequence=1, s_start=1, s_feature_incompat=0x20 (fast_commit)
+	printf '\000\000\000\001\000\000\000\001' |
+		$DD of="$_img" bs=1 seek=$((_jsb_blk * 1024 + 24)) conv=notrunc >/dev/null 2>&1
+	printf '\000\000\000\040' |
+		$DD of="$_img" bs=1 seek=$((_jsb_blk * 1024 + 40)) conv=notrunc >/dev/null 2>&1
+	$DEBUGFS -w -R "feature needs_recovery" "$_img" >/dev/null 2>&1
+}
+
+echo "=== Case 1: extent DAG with DEL_RANGE replay ===" > $OUT.new
+setup_fc_ext_fs "$TMPFILE" /dev/null
+fc0=$($DEBUGFS -R "bmap <8> 1025" "$TMPFILE" 2>/dev/null)
+imap=$($DEBUGFS -R "imap <12>" "$TMPFILE" 2>/dev/null)
+perl -e '
+use strict; use warnings;
+my ($img, $fc0, $imap) = @ARGV;
+$imap =~ /located at block (\d+), offset (0x[\da-f]+)/i or die "bad imap: $imap";
+my ($iblk, $ioff) = ($1, hex($2));
+sub crc32c_raw {
+	my ($crc, $data) = @_;
+	for my $b (unpack("C*", $data)) {
+		$crc ^= $b;
+		for (1..8) {
+			$crc = ($crc & 1) ? (($crc >> 1) ^ 0x82f63b78) : ($crc >> 1);
+		}
+	}
+	return $crc;
+}
+sub hdr { my ($e, $m, $d) = @_; return pack("vvvvV", 0xf30a, $e, $m, $d, 0); }
+sub idx { my ($l, $p) = @_; return pack("VVvv", $l, $p, 0, 0); }
+sub leaf { my ($l, $p) = @_; return pack("VvvV", $l, 1, 0, $p); }
+sub tlv { my ($t, $p) = @_; return pack("vv", $t, length($p)) . $p; }
+open(my $fh, "+<:raw", $img) or die $!;
+seek($fh, $iblk * 1024 + $ioff + 40, 0) or die $!;
+print $fh hdr(4, 4, 4) . join("", map { idx($_, 1200) } 0..3);
+for my $lvl (0..2) {
+	my $depth = 3 - $lvl;
+	seek($fh, (1200 + $lvl) * 1024, 0) or die $!;
+	my $blk = hdr(84, 84, $depth) . join("", map { idx($_, 1200 + $lvl + 1) } 0..83);
+	print $fh $blk . ("\0" x (1024 - length($blk)));
+}
+seek($fh, 1203 * 1024, 0) or die $!;
+my $lblk = hdr(84, 84, 0) . join("", map { leaf($_ * 2, 1300 + $_) } 0..83);
+print $fh $lblk . ("\0" x (1024 - length($lblk)));
+
+my $body = tlv(9, pack("VV", 0, 1)) . tlv(2, pack("VVV", 12, 1000, 1));
+my $tail_hdr = pack("vvV", 8, 8, 1);
+my $crc = crc32c_raw(0, $body . $tail_hdr);
+my $fc = $body . $tail_hdr . pack("V", $crc);
+$fc .= "\0" x (1024 - length($fc));
+seek($fh, $fc0 * 1024, 0) or die $!;
+print $fh $fc;
+close($fh);
+' "$TMPFILE" "$fc0" "$imap"
+$FSCK -fy -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$FSCK -fn -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+echo "=== Case 2: zero-length DEL_RANGE and out-of-bounds ADD_RANGE ===" >> $OUT.new
+perl -e 'print "A" x 1024' > "$TMPFILE.data"
+setup_fc_ext_fs "$TMPFILE" "$TMPFILE.data"
+rm -f "$TMPFILE.data"
+fc0=$($DEBUGFS -R "bmap <8> 1025" "$TMPFILE" 2>/dev/null)
+perl -e '
+use strict; use warnings;
+my ($img, $fc0) = @ARGV;
+sub crc32c_raw {
+	my ($crc, $data) = @_;
+	for my $b (unpack("C*", $data)) {
+		$crc ^= $b;
+		for (1..8) {
+			$crc = ($crc & 1) ? (($crc >> 1) ^ 0x82f63b78) : ($crc >> 1);
+		}
+	}
+	return $crc;
+}
+sub tlv { my ($t, $p) = @_; return pack("vv", $t, length($p)) . $p; }
+my $body = tlv(9, pack("VV", 0, 1)) . tlv(2, pack("VVV", 12, 0, 0));
+my $tail_hdr = pack("vvV", 8, 8, 1);
+my $crc = crc32c_raw(0, $body . $tail_hdr);
+my $fc = $body . $tail_hdr . pack("V", $crc);
+$fc .= "\0" x (1024 - length($fc));
+open(my $fh, "+<:raw", $img) or die $!;
+seek($fh, $fc0 * 1024, 0) or die $!;
+print $fh $fc;
+close($fh);
+' "$TMPFILE" "$fc0"
+$FSCK -fy -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$DEBUGFS -R "stat /probe" "$TMPFILE" 2>/dev/null | grep "Blockcount:" >> $OUT.new 2>&1
+$FSCK -fn -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+setup_fc_ext_fs "$TMPFILE" /dev/null
+fc0=$($DEBUGFS -R "bmap <8> 1025" "$TMPFILE" 2>/dev/null)
+perl -e '
+use strict; use warnings;
+my ($img, $fc0) = @ARGV;
+sub crc32c_raw {
+	my ($crc, $data) = @_;
+	for my $b (unpack("C*", $data)) {
+		$crc ^= $b;
+		for (1..8) {
+			$crc = ($crc & 1) ? (($crc >> 1) ^ 0x82f63b78) : ($crc >> 1);
+		}
+	}
+	return $crc;
+}
+sub tlv { my ($t, $p) = @_; return pack("vv", $t, length($p)) . $p; }
+my $add = pack("VVvvV", 12, 1, 1, 0, 9999);
+my $body = tlv(9, pack("VV", 0, 1)) . tlv(1, $add);
+my $tail_hdr = pack("vvV", 8, 8, 1);
+my $crc = crc32c_raw(0, $body . $tail_hdr);
+my $fc = $body . $tail_hdr . pack("V", $crc);
+$fc .= "\0" x (1024 - length($fc));
+open(my $fh, "+<:raw", $img) or die $!;
+seek($fh, $fc0 * 1024, 0) or die $!;
+print $fh $fc;
+close($fh);
+' "$TMPFILE" "$fc0"
+$FSCK -fy -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$FSCK -fn -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new > $OUT
+rm -f $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset OUT EXP fc0 imap _img _src _jsb_blk status E2FSPROGS_FAKE_TIME E2FSCK_TIME
+unset -f setup_fc_ext_fs 2>/dev/null || true
