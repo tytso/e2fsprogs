@@ -1,0 +1,47 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+$MKE2FS -q -F -o Linux -t ext4 -b 1024 -O fast_commit,^metadata_csum \
+	-E lazy_itable_init=0,lazy_journal_init=0 \
+	-U 11111111-1111-1111-1111-111111111111 $TMPFILE 2560 >/dev/null 2>&1
+
+jsb_blk=$($DEBUGFS -R "bmap <8> 0" $TMPFILE 2>/dev/null)
+fc0=$($DEBUGFS -R "bmap <8> 1025" $TMPFILE 2>/dev/null)
+
+# s_sequence=1, s_start=1, s_feature_incompat=0x20 (fast_commit)
+printf '\000\000\000\001\000\000\000\001' |
+	$DD of=$TMPFILE bs=1 seek=$((jsb_blk * 1024 + 24)) conv=notrunc >/dev/null 2>&1
+printf '\000\000\000\040' |
+	$DD of=$TMPFILE bs=1 seek=$((jsb_blk * 1024 + 40)) conv=notrunc >/dev/null 2>&1
+$DEBUGFS -w -R "feature needs_recovery" $TMPFILE >/dev/null 2>&1
+
+# HEAD(tid=1) + CREAT(len=7, parent=2, ino=12) + TAIL(tid=1, valid CRC32C)
+printf '\011\000\010\000\000\000\000\000\001\000\000\000\003\000\007\000\002\000\000\000\014\000\000\010\000\010\000\001\000\000\000\320\315\227\377' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024)) conv=notrunc >/dev/null 2>&1
+
+$FSCK -fy -N test_filesys $TMPFILE > $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+$FSCK -fn -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new > $OUT
+rm -f $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset OUT EXP jsb_blk fc0 status
