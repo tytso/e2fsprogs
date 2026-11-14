@@ -477,7 +477,13 @@ static void test_raw_block_io_and_refcount(void)
 	retval = ext2fs_read_ext_attr3(fs, blk, read_buf, ino);
 	check_err("read_ext_attr3_ok", retval, 0);
 
-	/* Corrupting h_checksum on disk fails checksum verification */
+	/*
+	 * Corrupting h_checksum on disk fails checksum verification.  Read
+	 * the block raw before writing it back raw: ext2fs_read_ext_attr3()
+	 * returned it in CPU byte order.
+	 */
+	retval = io_channel_read_blk64(fs->io, blk, 1, read_buf);
+	check_err("read_ext_attr_raw", retval, 0);
 	((struct ext2_ext_attr_header *) read_buf)->h_checksum ^= 1;
 	retval = io_channel_write_blk64(fs->io, blk, 1, read_buf);
 	check_err("write_corrupt_csum_raw", retval, 0);
