@@ -1,0 +1,62 @@
+=== Case 1: aliased fast commit block overwritten during replay ===
+test_filesys: recovering journal
+Backing up journal inode block information.
+
+test_filesys contains a file system with errors, check forced.
+Pass 1: Checking inodes, blocks, and sizes
+Inode 17 is in use, but has dtime set.  Fix? yes
+
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 8: 48
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 0 inodes containing multiply-claimed blocks.)
+
+File <The journal inode> (inode #8, mod time Tue Apr 10 21:00:00 2007) 
+  has 1 multiply-claimed block(s), shared with 1 file(s):
+	<filesystem metadata>
+Clone multiply-claimed blocks? yes
+
+Pass 2: Checking directory structure
+Inode 17 (/target) has invalid mode (05).
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 16/320 files (6.3% non-contiguous), 1148/2560 blocks
+Exit status is 1
+Inode: 13   Type: regular    Mode:  0666   Flags: 0x80000
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 16/320 files (6.3% non-contiguous), 1148/2560 blocks
+Exit status is 0
+=== Case 2: journal s_num_fc_blks underflow ===
+../e2fsck/e2fsck: The journal superblock is corrupt test_filesys: incorrect fast commit blocks
+
+Journal superblock is corrupt.
+Fix? yes
+
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/320 files (9.1% non-contiguous), 1148/2560 blocks
+Exit status is 1
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 11/320 files (9.1% non-contiguous), 1148/2560 blocks
+Exit status is 0

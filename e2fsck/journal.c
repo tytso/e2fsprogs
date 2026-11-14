@@ -428,10 +428,21 @@ static int fc_validate_del_range_tag(ext2_filsys fs, size_t tag_len,
 static void ext4_fc_replay_cleanup(e2fsck_t ctx)
 {
 	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
+	unsigned int i;
 
 	if (state->fc_extent_list.extents)
 		ext2fs_free_mem(&state->fc_extent_list.extents);
 	memset(&state->fc_extent_list, 0, sizeof(state->fc_extent_list));
+
+	if (state->fc_blocks) {
+		for (i = 0; i < state->fc_blocks_count; i++) {
+			if (state->fc_blocks[i])
+				ext2fs_free_mem(&state->fc_blocks[i]);
+		}
+		ext2fs_free_mem(&state->fc_blocks);
+	}
+	state->fc_blocks_size = 0;
+	state->fc_blocks_count = 0;
 }
 
 static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
@@ -442,9 +453,12 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 	int ret = JBD2_FC_REPLAY_CONTINUE;
 	struct ext4_fc_tl tl;
 	struct ext4_fc_tail tail;
-	__u8 *start, *cur, *end, *val;
+	__u8 *start, *cur, *end, *val, *blk_copy = NULL;
 	struct ext4_fc_head head;
 	size_t tag_len;
+
+	if (off < 0)
+		return -EFSCORRUPTED;
 
 	state = &ctx->fc_replay_state;
 
@@ -470,6 +484,34 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 		goto out_err;
 	}
 
+	if ((unsigned int)off >= state->fc_blocks_size) {
+		unsigned long new_cap, new_bytes;
+
+		if (state->fc_blocks_size > (~0U) - 64) {
+			ret = -ENOMEM;
+			goto out_err;
+		}
+		new_cap = (unsigned long)state->fc_blocks_size + 64;
+		new_bytes = new_cap * sizeof(*state->fc_blocks);
+		if (new_bytes / sizeof(*state->fc_blocks) != new_cap) {
+			ret = -ENOMEM;
+			goto out_err;
+		}
+		if (ext2fs_resize_mem(0, new_bytes, &state->fc_blocks)) {
+			ret = -ENOMEM;
+			goto out_err;
+		}
+		state->fc_blocks_size = (unsigned int)new_cap;
+	}
+	if (ext2fs_get_mem(j->j_blocksize, &blk_copy)) {
+		ret = -ENOMEM;
+		goto out_err;
+	}
+	memcpy(blk_copy, bh->b_data, j->j_blocksize);
+	state->fc_blocks[state->fc_blocks_count++] = blk_copy;
+
+	start = blk_copy;
+	end = start + j->j_blocksize;
 	state->fc_replay_expected_off++;
 	for (cur = start; (size_t)(end - cur) >= sizeof(tl);
 	     cur = val + tag_len) {
@@ -1078,6 +1120,10 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 	if (state->fc_replay_num_tags == 0)
 		goto replay_done;
 
+	if (off < 0 || (unsigned int)off >= state->fc_blocks_count ||
+	    !state->fc_blocks || !state->fc_blocks[off])
+		return -EFSCORRUPTED;
+
 	if (state->fc_current_pass != pass) {
 		/* Starting replay phase */
 		state->fc_current_pass = pass;
@@ -1101,8 +1147,12 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 		ext2fs_flush(ctx->fs);
 	}
 
-	start = (__u8 *)bh->b_data;
+	start = state->fc_blocks[off];
 	end = start + journal->j_blocksize;
+	if (memcmp(bh->b_data, start, journal->j_blocksize) != 0)
+		state->fc_super_state =
+			(state->fc_super_state & ~EXT2_VALID_FS) |
+			EXT2_ERROR_FS;
 
 	for (cur = start; (size_t)(end - cur) >= sizeof(tl);
 	     cur = val + tag_len) {
@@ -1591,16 +1641,18 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	journal->j_tail = ntohl(jsb->s_start);
 	journal->j_first = ntohl(jsb->s_first);
 	if (jbd2_has_feature_fast_commit(journal)) {
-		if (ntohl(jsb->s_maxlen) - jbd2_journal_get_num_fc_blks(jsb)
-			< JBD2_MIN_JOURNAL_BLOCKS) {
+		__u32 maxlen = ntohl(jsb->s_maxlen);
+		__u32 num_fc_blks = jbd2_journal_get_num_fc_blks(jsb);
+
+		if (maxlen < JBD2_MIN_JOURNAL_BLOCKS ||
+		    maxlen - JBD2_MIN_JOURNAL_BLOCKS < num_fc_blks) {
 			com_err(ctx->program_name, EXT2_ET_CORRUPT_JOURNAL_SB,
 				_("%s: incorrect fast commit blocks\n"),
 				ctx->device_name);
 			return EXT2_ET_CORRUPT_JOURNAL_SB;
 		}
-		journal->j_fc_last = ntohl(jsb->s_maxlen);
-		journal->j_last = journal->j_fc_last -
-					jbd2_journal_get_num_fc_blks(jsb);
+		journal->j_fc_last = maxlen;
+		journal->j_last = maxlen - num_fc_blks;
 		journal->j_fc_first = journal->j_last + 1;
 	} else {
 		journal->j_last = ntohl(jsb->s_maxlen);
