@@ -1376,17 +1376,11 @@ debugfs:
 # =========================================================================
 debugfs: test_extent_apis
 --- Testing ext2fs_extent_header_verify ---
-header: magic=f30a entries=2 max=4 depth=0 generation=0
 verify valid inode header: OK
-header: magic=1234 entries=2 max=4 depth=0 generation=0
 verify bad magic: Corrupt extent header
-header: magic=f30a entries=5 max=4 depth=0 generation=0
 verify entries > max: Corrupt extent header
-header: magic=f30a entries=2 max=5 depth=0 generation=0
 verify eh_max too large: Corrupt extent header
-header: magic=f30a entries=2 max=82 depth=1 generation=0
 verify 1024B block eh_max=82 depth=1: OK
-header: magic=f30a entries=2 max=81 depth=1 generation=0
 verify 1024B block eh_max=81 (too small): Corrupt extent header
 --- Testing ext2fs_decode_extent ---
 decode_extent bad len: Invalid argument passed to ext2 library

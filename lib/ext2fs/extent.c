@@ -170,7 +170,6 @@ errcode_t ext2fs_extent_header_verify(void *ptr, int size)
 	int eh_max, entry_size;
 	struct ext3_extent_header *eh = ptr;
 
-	dbg_show_header(eh);
 	if (ext2fs_le16_to_cpu(eh->eh_magic) != EXT3_EXT_MAGIC)
 		return EXT2_ET_EXTENT_HEADER_BAD;
 	if (ext2fs_le16_to_cpu(eh->eh_entries) > ext2fs_le16_to_cpu(eh->eh_max))
@@ -269,6 +268,7 @@ errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
 		goto errout;
 	}
 
+	dbg_show_header(eh);
 	retval = ext2fs_extent_header_verify(eh, sizeof(handle->inode->i_block));
 	if (retval)
 		goto errout;
@@ -489,6 +489,7 @@ retry:
 
 		eh = (struct ext3_extent_header *) newpath->buf;
 
+		dbg_show_header(eh);
 		retval = ext2fs_extent_header_verify(eh, handle->fs->blocksize);
 		if (retval) {
 			handle->level--;
