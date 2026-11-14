@@ -275,6 +275,49 @@ static int process_journal_block(ext2_filsys fs,
 	return 0;
 }
 
+static int fc_valid_ino(ext2_filsys fs, ext2_ino_t ino)
+{
+	struct ext2_super_block *sb = fs->super;
+
+	if (ino == 0 || ino > sb->s_inodes_count ||
+	    (__u64)ino > (__u64)fs->group_desc_count *
+			 EXT2_INODES_PER_GROUP(sb))
+		return 0;
+	if (ino != EXT2_ROOT_INO && ino < EXT2_GOOD_OLD_FIRST_INO)
+		return 0;
+	if (uuid_is_null(sb->s_journal_uuid) && ino == sb->s_journal_inum)
+		return 0;
+	return 1;
+}
+
+static int fc_validate_dentry_tag(ext2_filsys fs, size_t tag_len,
+				  const __u8 *val)
+{
+	struct ext4_fc_dentry_info fcd;
+	const __u8 *dname;
+	size_t dname_len;
+
+	if (tag_len <= sizeof(fcd))
+		return -EFSCORRUPTED;
+	dname_len = tag_len - sizeof(fcd);
+	if (dname_len > EXT2_NAME_LEN)
+		return -EFSCORRUPTED;
+
+	memcpy(&fcd, val, sizeof(fcd));
+	if (!fc_valid_ino(fs, le32_to_cpu(fcd.fc_parent_ino)) ||
+	    !fc_valid_ino(fs, le32_to_cpu(fcd.fc_ino)))
+		return -EFSCORRUPTED;
+
+	dname = val + sizeof(fcd);
+	if (memchr(dname, '\0', dname_len) || memchr(dname, '/', dname_len))
+		return -EFSCORRUPTED;
+	if ((dname_len == 1 && dname[0] == '.') ||
+	    (dname_len == 2 && dname[0] == '.' && dname[1] == '.'))
+		return -EFSCORRUPTED;
+
+	return 0;
+}
+
 static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 				int off, tid_t expected_tid)
 {
@@ -351,10 +394,16 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
 				break;
 			}
-			/* fallthrough */
+			goto chksum_tag;
 		case EXT4_FC_TAG_LINK:
 		case EXT4_FC_TAG_UNLINK:
 		case EXT4_FC_TAG_CREAT:
+			if (fc_validate_dentry_tag(ctx->fs, tag_len, val)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
+			goto chksum_tag;
 		case EXT4_FC_TAG_INODE:
 		case EXT4_FC_TAG_PAD:
 chksum_tag:
@@ -651,23 +700,26 @@ struct dentry_info_args {
 	char		*dname;
 };
 
-static inline int tl_to_darg(struct dentry_info_args *darg,
-			     struct  ext4_fc_tl *tl, __u8 *val)
+static inline int tl_to_darg(ext2_filsys fs, struct dentry_info_args *darg,
+			     struct ext4_fc_tl *tl, __u8 *val)
 {
 	struct ext4_fc_dentry_info fcd;
+	size_t tag_len = ext4_fc_tag_len(tl);
+	int ret;
+
+	ret = fc_validate_dentry_tag(fs, tag_len, val);
+	if (ret)
+		return ret;
 
 	memcpy(&fcd, val, sizeof(fcd));
 
 	darg->parent_ino = le32_to_cpu(fcd.fc_parent_ino);
 	darg->ino = le32_to_cpu(fcd.fc_ino);
-	darg->dname_len = ext4_fc_tag_len(tl) -
-			sizeof(struct ext4_fc_dentry_info);
-	darg->dname = malloc(darg->dname_len + 1);
+	darg->dname_len = (int)(tag_len - sizeof(fcd));
+	darg->dname = malloc((size_t)darg->dname_len + 1);
 	if (!darg->dname)
 		return -ENOMEM;
-	memcpy(darg->dname,
-	       val + sizeof(struct ext4_fc_dentry_info),
-	       darg->dname_len);
+	memcpy(darg->dname, val + sizeof(fcd), (size_t)darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
 	jbd_debug(1, "%s: %s, ino %u, parent %u\n",
 		  le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_CREAT ? "create" :
@@ -682,7 +734,7 @@ static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 	struct dentry_info_args darg;
 	int ret;
 
-	ret = tl_to_darg(&darg, tl, val);
+	ret = tl_to_darg(ctx->fs, &darg, tl, val);
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, darg.ino);
@@ -701,7 +753,7 @@ static int ext4_fc_handle_link_and_create(e2fsck_t ctx, struct ext4_fc_tl *tl, _
 	struct ext2_inode_large inode_large;
 	int ret, filetype, mode;
 
-	ret = tl_to_darg(&darg, tl, val);
+	ret = tl_to_darg(fs, &darg, tl, val);
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, 0);
@@ -721,7 +773,7 @@ static int ext4_fc_handle_link_and_create(e2fsck_t ctx, struct ext4_fc_tl *tl, _
 	else if (LINUX_S_ISBLK(mode))
 		filetype = EXT2_FT_BLKDEV;
 	else if (LINUX_S_ISLNK(mode))
-		return EXT2_FT_SYMLINK;
+		filetype = EXT2_FT_SYMLINK;
 	else if (LINUX_S_ISFIFO(mode))
 		filetype = EXT2_FT_FIFO;
 	else if (LINUX_S_ISSOCK(mode))
