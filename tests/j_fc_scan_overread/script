@@ -1,0 +1,75 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+E2FSPROGS_FAKE_TIME=1176238800
+export E2FSPROGS_FAKE_TIME
+E2FSCK_TIME=1176238800
+export E2FSCK_TIME
+
+write_fc_jsb() {
+	_img=$1
+	_jsb_blk=$($DEBUGFS -R "bmap <8> 0" $_img 2>/dev/null)
+	# s_sequence=1, s_start=1, s_feature_incompat=0x20 (fast_commit)
+	printf '\000\000\000\001\000\000\000\001' |
+		$DD of=$_img bs=1 seek=$((_jsb_blk * 1024 + 24)) conv=notrunc >/dev/null 2>&1
+	printf '\000\000\000\040' |
+		$DD of=$_img bs=1 seek=$((_jsb_blk * 1024 + 40)) conv=notrunc >/dev/null 2>&1
+	$DEBUGFS -w -R "feature needs_recovery" $_img >/dev/null 2>&1
+}
+
+# Case 1: oversized PAD tag length overflowing a 1024-byte fast-commit block
+echo "=== Case 1: oversized PAD tag ===" > $OUT.new
+$MKE2FS -q -F -o Linux -t ext4 -b 1024 -O fast_commit,^metadata_csum \
+	-E lazy_itable_init=0,lazy_journal_init=0 \
+	-U 11111111-1111-1111-1111-111111111111 $TMPFILE 2560 >/dev/null 2>&1
+write_fc_jsb $TMPFILE
+fc0=$($DEBUGFS -R "bmap <8> 1025" $TMPFILE 2>/dev/null)
+# HEAD(tag=9, len=8, features=0, tid=1) + PAD(tag=7, len=2048)
+printf '\011\000\010\000\000\000\000\000\001\000\000\000\007\000\000\010' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024)) conv=notrunc >/dev/null 2>&1
+
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+# Case 2: valid 2-block fast commit transaction where block 0 leaves 2 bytes
+# (< sizeof(struct ext4_fc_tl)) before block end and continues into block 1
+echo "=== Case 2: multi-block trailing padding ===" >> $OUT.new
+$MKE2FS -q -F -o Linux -t ext4 -b 1024 -O fast_commit,^metadata_csum \
+	-E lazy_itable_init=0,lazy_journal_init=0 \
+	-U 11111111-1111-1111-1111-111111111111 $TMPFILE 2560 >/dev/null 2>&1
+write_fc_jsb $TMPFILE
+fc0=$($DEBUGFS -R "bmap <8> 1025" $TMPFILE 2>/dev/null)
+fc1=$($DEBUGFS -R "bmap <8> 1026" $TMPFILE 2>/dev/null)
+# fc_0: HEAD(tid=1, len=8) + PAD(len=1006) -> ends at offset 1022
+printf '\011\000\010\000\000\000\000\000\001\000\000\000\007\000\356\003' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024)) conv=notrunc >/dev/null 2>&1
+# fc_1: TAIL(tag=8, len=8, tid=1, fc_crc=0xa0c0a6c3)
+printf '\010\000\010\000\001\000\000\000\303\246\300\240' |
+	$DD of=$TMPFILE bs=1 seek=$((fc1 * 1024)) conv=notrunc >/dev/null 2>&1
+
+$FSCK -fy -E journal_only -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$DEBUGFS -R "show_super_stats" $TMPFILE 2>/dev/null |
+	grep "^Filesystem state:" >> $OUT.new
+
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new > $OUT
+rm -f $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset OUT EXP fc0 fc1 _img _jsb_blk status SKIP_GUNZIP E2FSPROGS_FAKE_TIME E2FSCK_TIME
+unset -f write_fc_jsb 2>/dev/null || true
