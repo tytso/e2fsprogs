@@ -318,6 +318,53 @@ static int fc_validate_dentry_tag(ext2_filsys fs, size_t tag_len,
 	return 0;
 }
 
+static int fc_validate_inode_tag(ext2_filsys fs, size_t tag_len,
+				 const __u8 *val, ext2_ino_t *ret_ino,
+				 size_t *ret_inode_len)
+{
+	__le32 fc_ino;
+	ext2_ino_t ino;
+	size_t inode_len = EXT2_GOOD_OLD_INODE_SIZE;
+
+	if (tag_len < sizeof(fc_ino) + EXT2_GOOD_OLD_INODE_SIZE)
+		return -EFSCORRUPTED;
+
+	memcpy(&fc_ino, val, sizeof(fc_ino));
+	ino = le32_to_cpu(fc_ino);
+	if (!fc_valid_ino(fs, ino))
+		return -EFSCORRUPTED;
+
+	if ((size_t)EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
+		__le16 raw_extra_isize;
+		__u16 extra_isize;
+		size_t extra_off = sizeof(fc_ino) +
+			offsetof(struct ext2_inode_large, i_extra_isize);
+
+		if (tag_len < extra_off + sizeof(raw_extra_isize))
+			return -EFSCORRUPTED;
+		memcpy(&raw_extra_isize, val + extra_off,
+		       sizeof(raw_extra_isize));
+		extra_isize = le16_to_cpu(raw_extra_isize);
+		if ((extra_isize & 3) ||
+		    extra_isize <
+		    (sizeof(((struct ext2_inode_large *)0)->i_extra_isize) +
+		     sizeof(((struct ext2_inode_large *)0)->i_checksum_hi)) ||
+		    extra_isize > ((size_t)EXT2_INODE_SIZE(fs->super) -
+				   EXT2_GOOD_OLD_INODE_SIZE))
+			return -EFSCORRUPTED;
+		inode_len += extra_isize;
+	}
+
+	if (tag_len < sizeof(fc_ino) + inode_len)
+		return -EFSCORRUPTED;
+
+	if (ret_ino)
+		*ret_ino = ino;
+	if (ret_inode_len)
+		*ret_inode_len = inode_len;
+	return 0;
+}
+
 static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 				int off, tid_t expected_tid)
 {
@@ -405,6 +452,13 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 			}
 			goto chksum_tag;
 		case EXT4_FC_TAG_INODE:
+			if (fc_validate_inode_tag(ctx->fs, tag_len, val,
+						  NULL, NULL)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
+			/* fallthrough */
 		case EXT4_FC_TAG_PAD:
 chksum_tag:
 			state->fc_cur_tag++;
@@ -821,32 +875,22 @@ static void ext4_fc_replay_fixup_iblocks(struct ext2_inode_large *ondisk_inode,
 	}
 }
 
-static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
+static int ext4_fc_handle_inode(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 {
-	int ino, inode_len = EXT2_GOOD_OLD_INODE_SIZE;
+	ext2_ino_t ino;
+	size_t inode_len;
 	struct ext2_inode_large *inode = NULL, *fc_inode = NULL;
-	__le32 fc_ino;
 	__u8 *fc_raw_inode;
 	errcode_t err;
 	blk64_t blks;
+	int ret;
 
-	memcpy(&fc_ino, val, sizeof(fc_ino));
-	fc_raw_inode = val + sizeof(fc_ino);
-	ino = le32_to_cpu(fc_ino);
+	ret = fc_validate_inode_tag(ctx->fs, (size_t)ext4_fc_tag_len(tl),
+				    val, &ino, &inode_len);
+	if (ret)
+		return ret;
 
-	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
-		__u16 extra_isize = ext2fs_le16_to_cpu(
-			((struct ext2_inode_large *)fc_raw_inode)->i_extra_isize);
-
-		if ((extra_isize < (sizeof(inode->i_extra_isize) +
-				    sizeof(inode->i_checksum_hi))) ||
-		    (extra_isize > (EXT2_INODE_SIZE(ctx->fs->super) -
-				    EXT2_GOOD_OLD_INODE_SIZE))) {
-			err = EFSCORRUPTED;
-			goto out;
-		}
-		inode_len += extra_isize;
-	}
+	fc_raw_inode = val + sizeof(__le32);
 	err = ext2fs_get_mem(inode_len, &inode);
 	if (err)
 		goto out;
@@ -856,12 +900,12 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 	ext4_fc_flush_extents(ctx, ino);
 
 	err = ext2fs_read_inode_full(ctx->fs, ino, (struct ext2_inode *)inode,
-					inode_len);
+				     (int)inode_len);
 	if (err)
 		goto out;
 	memcpy(fc_inode, fc_raw_inode, inode_len);
 #ifdef WORDS_BIGENDIAN
-	ext2fs_swap_inode_full(ctx->fs, fc_inode, fc_inode, 0, inode_len);
+	ext2fs_swap_inode_full(ctx->fs, fc_inode, fc_inode, 0, (int)inode_len);
 #endif
 	memcpy(inode, fc_inode, offsetof(struct ext2_inode_large, i_block));
 	memcpy(&inode->i_generation, &fc_inode->i_generation,
@@ -871,10 +915,9 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 	if (err)
 		goto out;
 	ext2fs_iblk_set(ctx->fs, EXT2_INODE(inode), blks);
-	ext2fs_inode_csum_set(ctx->fs, ino, inode);
 
 	err = ext2fs_write_inode_full(ctx->fs, ino, (struct ext2_inode *)inode,
-					inode_len);
+				      (int)inode_len);
 	if (err)
 		goto out;
 	if (inode->i_links_count)
@@ -1023,7 +1066,7 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 			ret = ext4_fc_handle_del_range(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_INODE:
-			ret = ext4_fc_handle_inode(ctx, val);
+			ret = ext4_fc_handle_inode(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_TAIL:
 			ext4_fc_flush_extents(ctx, 0);

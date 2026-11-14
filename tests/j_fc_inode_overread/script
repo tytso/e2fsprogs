@@ -1,0 +1,92 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+E2FSPROGS_FAKE_TIME=1176238800
+export E2FSPROGS_FAKE_TIME
+E2FSCK_TIME=1176238800
+export E2FSCK_TIME
+
+setup_fc_fs() {
+	_img=$1
+	_create_foo=$2
+	$MKE2FS -q -F -o Linux -t ext4 -b 1024 -I 256 \
+		-O fast_commit,metadata_csum \
+		-E lazy_itable_init=0,lazy_journal_init=0 \
+		-U 11111111-1111-1111-1111-111111111111 $_img 2560 >/dev/null 2>&1
+	if [ "$_create_foo" = "yes" ]; then
+		$DEBUGFS -w -R "write /dev/null /foo" $_img >/dev/null 2>&1
+	fi
+	_jsb_blk=$($DEBUGFS -R "bmap <8> 0" $_img 2>/dev/null)
+	# s_sequence=1, s_start=1, s_feature_incompat=0x20 (fast_commit)
+	printf '\000\000\000\001\000\000\000\001' |
+		$DD of=$_img bs=1 seek=$((_jsb_blk * 1024 + 24)) conv=notrunc >/dev/null 2>&1
+	printf '\000\000\000\040' |
+		$DD of=$_img bs=1 seek=$((_jsb_blk * 1024 + 40)) conv=notrunc >/dev/null 2>&1
+	$DEBUGFS -w -R "feature needs_recovery" $_img >/dev/null 2>&1
+}
+
+echo "=== Case 1: truncated INODE tag ===" > $OUT.new
+setup_fc_fs $TMPFILE no
+fc0=$($DEBUGFS -R "bmap <8> 1025" $TMPFILE 2>/dev/null)
+printf '\011\000\010\000\000\000\000\000\001\000\000\000\006\000\010\000\014\000\000\000\000\000\000\000\010\000\010\000\001\000\000\000\303\377\260\272' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024)) conv=notrunc >/dev/null 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$FSCK -fn -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+echo "=== Case 2: 132-byte INODE tag missing i_extra_isize ===" >> $OUT.new
+setup_fc_fs $TMPFILE no
+fc0=$($DEBUGFS -R "bmap <8> 1025" $TMPFILE 2>/dev/null)
+fc1=$($DEBUGFS -R "bmap <8> 1026" $TMPFILE 2>/dev/null)
+# fc0: HEAD(tid=1) + PAD(len=872) + INODE(len=132, fc_ino=12, 128-byte inode) ends at byte 1024
+printf '\011\000\010\000\000\000\000\000\001\000\000\000\007\000\150\003' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024)) conv=notrunc >/dev/null 2>&1
+printf '\006\000\204\000\014\000\000\000\244\201' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024 + 888)) conv=notrunc >/dev/null 2>&1
+printf '\001\000' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024 + 922)) conv=notrunc >/dev/null 2>&1
+# fc1: TAIL(tid=1, valid CRC32C)
+printf '\010\000\010\000\001\000\000\000\316\145\254\134' |
+	$DD of=$TMPFILE bs=1 seek=$((fc1 * 1024)) conv=notrunc >/dev/null 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+echo "=== Case 3: valid 160-byte INODE replay on metadata_csum ===" >> $OUT.new
+setup_fc_fs $TMPFILE yes
+fc0=$($DEBUGFS -R "bmap <8> 1025" $TMPFILE 2>/dev/null)
+# HEAD(tid=1) + INODE(len=164, fc_ino=12, 160-byte raw inode w/ i_extra_isize=32) + TAIL(tid=1)
+printf '\011\000\010\000\000\000\000\000\001\000\000\000\006\000\244\000\014\000\000\000' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024)) conv=notrunc >/dev/null 2>&1
+printf '\244\201\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\001\000\000\000\000\000\000\000\010\000\000\000\000\000\012\363\000\000\004\000\000\000' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024 + 20)) conv=notrunc >/dev/null 2>&1
+printf '\040\000' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024 + 20 + 128)) conv=notrunc >/dev/null 2>&1
+printf '\010\000\010\000\001\000\000\000\323\266\201\222' |
+	$DD of=$TMPFILE bs=1 seek=$((fc0 * 1024 + 180)) conv=notrunc >/dev/null 2>&1
+$FSCK -fy -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$FSCK -fn -N test_filesys $TMPFILE >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new > $OUT
+rm -f $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset OUT EXP fc0 fc1 _img _create_foo _jsb_blk status SKIP_GUNZIP E2FSPROGS_FAKE_TIME E2FSCK_TIME
+unset -f setup_fc_fs 2>/dev/null || true
