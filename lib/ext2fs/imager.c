@@ -304,6 +304,9 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 	dgrp_t		j;
 #endif
 
+	if (fs->group_desc == NULL)
+		return EXT2_ET_NO_GDESC;
+
 	size = (ssize_t)fs->blocksize * (fs->desc_blocks + 1);
 	buf = malloc(size);
 	if (!buf)

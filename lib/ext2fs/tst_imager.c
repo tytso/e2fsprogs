@@ -168,6 +168,17 @@ static void run_super_roundtrip(unsigned int blocksize, blk64_t blocks,
 	CHECK_RC(ext2fs_image_super_read(dst_fs, ifd, 0), EXT2_ET_SHORT_READ,
 		 "super_read at EOF returns EXT2_ET_SHORT_READ");
 
+	/* Missing group_desc check (e.g. EXT2_FLAG_SUPER_ONLY) */
+	{
+		void *saved_gd = dst_fs->group_desc;
+
+		dst_fs->group_desc = NULL;
+		CHECK_RC(ext2fs_image_super_read(dst_fs, ifd, 0),
+			 EXT2_ET_NO_GDESC,
+			 "super_read without group_desc returns EXT2_ET_NO_GDESC");
+		dst_fs->group_desc = saved_gd;
+	}
+
 	/* Rewind and read into dst_fs */
 	CHECK(lseek(ifd, 0, SEEK_SET) == 0, "rewind super image");
 	strcpy((char *) dst_fs->super->s_volume_name, "corrupted_name");
