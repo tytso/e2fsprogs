@@ -298,6 +298,11 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 	char		*buf;
 	ssize_t		actual, size;
 	errcode_t	retval;
+#ifdef WORDS_BIGENDIAN
+	unsigned int	groups_per_block;
+	struct		ext2_group_desc *gdp;
+	dgrp_t		j;
+#endif
 
 	size = (ssize_t)fs->blocksize * (fs->desc_blocks + 1);
 	buf = malloc(size);
@@ -318,12 +323,27 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 	}
 
 	/*
-	 * Now copy in the superblock and group descriptors
+	 * Now copy in the group descriptors and the superblock.  They
+	 * were written in little-endian byte order, so convert them to
+	 * CPU byte order.  Do the group descriptors first, while fs->super
+	 * is still the superblock which describes how fs->group_desc was
+	 * laid out, and not the one which has just been read.
 	 */
-	memcpy(fs->super, buf, SUPERBLOCK_SIZE);
-
 	memcpy(fs->group_desc, buf + fs->blocksize,
 	       (ssize_t)fs->blocksize * fs->desc_blocks);
+#ifdef WORDS_BIGENDIAN
+	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
+	for (j = 0; j < groups_per_block * fs->desc_blocks; j++) {
+		gdp = ext2fs_group_desc(fs, fs->group_desc, j);
+		if (gdp)
+			ext2fs_swap_group_desc2(fs, gdp);
+	}
+#endif
+
+	memcpy(fs->super, buf, SUPERBLOCK_SIZE);
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_super(fs->super);
+#endif
 
 	retval = 0;
 
