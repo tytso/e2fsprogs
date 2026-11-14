@@ -715,6 +715,12 @@ static errcode_t rb_set_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 
+	if ((start < bitmap->start) || (start > bitmap->real_end) ||
+	    (num && (num - 1 > bitmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
+	if (num == 0)
+		return 0;
+
 	/* Replace the whole range, as ba_set_bmap_range() does */
 	rb_remove_extent(start - bitmap->start, num, bp);
 	check_tree(&bp->root, __func__);
@@ -763,6 +769,12 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 	struct ext2fs_rb_private *bp;
 	struct bmap_rb_extent *ext;
 	__u64 count, pos;
+
+	if ((start < bitmap->start) || (start > bitmap->real_end) ||
+	    (num && (num - 1 > bitmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
+	if (num == 0)
+		return 0;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	n = &bp->root.rb_node;

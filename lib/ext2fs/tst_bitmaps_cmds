@@ -178,5 +178,24 @@ resize_i 48 64
 testi 45
 seti 45
 testi 45
+# Non-zero s_first_data_block >= 8 and bitmap range bounds checks
+setup -b 144 -i 32 -d 16
+setb 16
+setb 19
+dump_bb
+set_range_b 32 0xa5
+dump_bb
+setb 16 128
+set_range_b 32 0x3c 32
+dump_bb
+resize_b 143 143
+set_range_b 128 0x5a
+dump_bb
+set_range_b 16 0xa5 8
+set_range_b 129 0xa5 16
+set_range_b 32 0xa5 128
+set_range_b 16 0xa5 200
+set_range_b 0 0xa5 16
+dump_bb
 quit
 

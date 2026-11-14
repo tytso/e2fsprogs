@@ -36,6 +36,7 @@ ext2_filsys	test_fs;
 int		exit_status = 0;
 static unsigned int saved_type = EXT2FS_BMAP64_BITARRAY;
 static int	saved_flags = EXT2_FLAG_64BITS;
+static unsigned int saved_first_data_block = 0;
 
 static int source_file(const char *cmd_file, int sci_idx)
 {
@@ -153,6 +154,7 @@ int check_fs_open(const char *name)
 
 static void setup_filesystem(const char *name,
 			     unsigned int blocks, unsigned int inodes,
+			     unsigned int first_data_block,
 			     unsigned int type, int flags)
 {
 	struct ext2_super_block param;
@@ -161,6 +163,8 @@ static void setup_filesystem(const char *name,
 	memset(&param, 0, sizeof(param));
 	ext2fs_blocks_count_set(&param, blocks);
 	param.s_inodes_count = inodes;
+	if (first_data_block)
+		param.s_first_data_block = first_data_block;
 
 	retval = ext2fs_initialize("test fs", flags, &param,
 				   test_io_manager, &test_fs);
@@ -199,6 +203,7 @@ void setup_cmd(int argc, ss_argv_t argv,
 	int		c, err;
 	unsigned int	blocks = 128;
 	unsigned int	inodes = 0;
+	unsigned int	first_data_block = saved_first_data_block;
 	unsigned int	type = saved_type;
 	int		flags = saved_flags;
 
@@ -206,11 +211,18 @@ void setup_cmd(int argc, ss_argv_t argv,
 		ext2fs_close_free(&test_fs);
 
 	reset_getopt();
-	while ((c = getopt(argc, argv, "b:i:lt:")) != EOF) {
+	while ((c = getopt(argc, argv, "b:d:i:lt:")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocks = parse_ulong(optarg, argv[0],
 					     "number of blocks", &err);
+			if (err)
+				return;
+			break;
+		case 'd':
+			first_data_block = parse_ulong(optarg, argv[0],
+						       "first data block",
+						       &err);
 			if (err)
 				return;
 			break;
@@ -231,11 +243,13 @@ void setup_cmd(int argc, ss_argv_t argv,
 			break;
 		default:
 			fprintf(stderr, "%s: usage: setup [-b blocks] "
-				"[-i inodes] [-t type]\n", argv[0]);
+				"[-d first_data_block] [-i inodes] "
+				"[-t type]\n", argv[0]);
 			return;
 		}
 	}
-	setup_filesystem(argv[0], blocks, inodes, type, flags);
+	setup_filesystem(argv[0], blocks, inodes, first_data_block,
+			 type, flags);
 }
 
 void close_cmd(int argc, char **argv, int sci_idx EXT2FS_ATTR((unused)),
@@ -252,9 +266,9 @@ void dump_bitmap(ext2fs_generic_bitmap bmap, unsigned int start, unsigned num)
 {
 	unsigned char	*buf;
 	errcode_t	retval;
-	int		i, len = (num - start + 7) / 8;
+	int		i, len = (num + 7) / 8;
 
-	buf = malloc(len);
+	buf = malloc(len ? len : 1);
 	if (!buf) {
 		com_err("dump_bitmap", 0, "couldn't allocate buffer");
 		return;
@@ -295,7 +309,8 @@ void dump_block_bitmap_cmd(int argc, ss_argv_t argv,
 
 	printf("block bitmap: ");
 	dump_bitmap(test_fs->block_map, test_fs->super->s_first_data_block,
-		    test_fs->super->s_blocks_count);
+		    ext2fs_blocks_count(test_fs->super) -
+		    test_fs->super->s_first_data_block);
 }
 	
 void do_setb(int argc, ss_argv_t argv,
@@ -878,15 +893,15 @@ void do_set_range_b(int argc, ss_argv_t argv,
 		    int sci_idx EXT2FS_ATTR((unused)),
 		    void *infop EXT2FS_ATTR((unused)))
 {
-	unsigned int num, fill, bytes;
+	unsigned int num, fill, bytes, start, i;
 	unsigned char *inbuf, *outbuf;
 	int err;
-	errcode_t retval;
+	errcode_t retval, retval2;
 
 	if (check_fs_open(argv[0]))
 		return;
-	if (argc != 3) {
-		com_err(argv[0], 0, "Usage: set_range_b <num> <byte>");
+	if (argc != 3 && argc != 4) {
+		com_err(argv[0], 0, "Usage: set_range_b <num> <byte> [start]");
 		exit_status++;
 		return;
 	}
@@ -896,9 +911,15 @@ void do_set_range_b(int argc, ss_argv_t argv,
 	fill = parse_ulong(argv[2], argv[0], "byte", &err) & 0xff;
 	if (err)
 		return;
+	start = test_fs->super->s_first_data_block;
+	if (argc == 4) {
+		start = parse_ulong(argv[3], argv[0], "start", &err);
+		if (err)
+			return;
+	}
 	bytes = (num + 7) / 8;
-	inbuf = malloc(bytes);
-	outbuf = malloc(bytes);
+	inbuf = malloc(bytes ? bytes : 1);
+	outbuf = malloc(bytes ? bytes : 1);
 	if (!inbuf || !outbuf) {
 		free(inbuf);
 		free(outbuf);
@@ -907,19 +928,30 @@ void do_set_range_b(int argc, ss_argv_t argv,
 	memset(inbuf, (int) fill, bytes);
 	/* Poison the output buffer: get_range must initialize all of it */
 	memset(outbuf, (int) ~fill, bytes);
-	/* set_range must also clear the bits which are clear in inbuf */
-	ext2fs_clear_block_bitmap(test_fs->block_map);
-	ext2fs_mark_block_bitmap_range2(test_fs->block_map,
-			test_fs->super->s_first_data_block, num);
+	if (argc == 3) {
+		/* set_range must also clear the bits which are clear in inbuf */
+		ext2fs_clear_block_bitmap(test_fs->block_map);
+		if (num > 0)
+			ext2fs_mark_block_bitmap_range2(test_fs->block_map,
+							start, num);
+	}
 	retval = ext2fs_set_block_bitmap_range2(test_fs->block_map,
-			test_fs->super->s_first_data_block, num, inbuf);
+						start, num, inbuf);
 	if (retval) {
-		com_err(argv[0], retval, "set_block_bitmap_range2");
-		exit_status++;
+		retval2 = ext2fs_get_block_bitmap_range2(test_fs->block_map,
+							 start, num, outbuf);
+		if (retval2 != retval) {
+			com_err(argv[0], retval2,
+				"get_block_bitmap_range2 mismatch (expected %ld)",
+				(long) retval);
+			exit_status++;
+		}
+		printf("set_block_bitmap_range2(%u, %u) returned %s\n",
+		       start, num, error_message(retval));
 		goto out;
 	}
 	retval = ext2fs_get_block_bitmap_range2(test_fs->block_map,
-			test_fs->super->s_first_data_block, num, outbuf);
+						start, num, outbuf);
 	if (retval) {
 		com_err(argv[0], retval, "get_block_bitmap_range2");
 		exit_status++;
@@ -930,8 +962,25 @@ void do_set_range_b(int argc, ss_argv_t argv,
 		exit_status++;
 		goto out;
 	}
-	printf("Set/get block bitmap range (%u bits, 0x%02x): OK\n",
-	       num, fill);
+	for (i = 0; i < num; i++) {
+		if (start + i > ext2fs_get_block_bitmap_end2(test_fs->block_map))
+			break;
+		if (!!ext2fs_test_block_bitmap2(test_fs->block_map,
+						start + i) !=
+		    !!ext2fs_test_bit(i, inbuf)) {
+			com_err(argv[0], 0,
+				"bit %u mismatch after set_block_bitmap_range2!",
+				start + i);
+			exit_status++;
+			break;
+		}
+	}
+	if (argc == 3)
+		printf("Set/get block bitmap range (%u bits, 0x%02x): OK\n",
+		       num, fill);
+	else
+		printf("Set/get block bitmap range (%u bits at %u, 0x%02x): OK\n",
+		       num, start, fill);
 out:
 	free(inbuf);
 	free(outbuf);
@@ -1086,6 +1135,7 @@ int main(int argc, char **argv)
 {
 	unsigned int	blocks = 128;
 	unsigned int	inodes = 0;
+	unsigned int	first_data_block = 0;
 	unsigned int	type = EXT2FS_BMAP64_BITARRAY;
 	int		c, err, code;
 	char		*request = (char *)NULL;
@@ -1096,7 +1146,7 @@ int main(int argc, char **argv)
 
 	add_error_table(&et_ss_error_table);
 	add_error_table(&et_ext2_error_table);
-	while ((c = getopt (argc, argv, "b:ci:lt:R:f:")) != EOF) {
+	while ((c = getopt(argc, argv, "b:cd:i:lt:R:f:")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocks = parse_ulong(optarg, argv[0],
@@ -1106,6 +1156,13 @@ int main(int argc, char **argv)
 			break;
 		case 'c':
 			subcluster_mode = 1;
+			break;
+		case 'd':
+			first_data_block = parse_ulong(optarg, argv[0],
+						       "first data block",
+						       &err);
+			if (err)
+				exit(1);
 			break;
 		case 'i':
 			inodes = parse_ulong(optarg, argv[0],
@@ -1140,6 +1197,7 @@ int main(int argc, char **argv)
 
 	saved_type = type;
 	saved_flags = flags;
+	saved_first_data_block = first_data_block;
 
 	sci_idx = ss_create_invocation(subsystem_name, version,
 				       (char *)NULL, &tst_bitmaps_cmds, &code);
@@ -1157,7 +1215,8 @@ int main(int argc, char **argv)
 	printf("%s %s.  Type '?' for a list of commands.\n\n",
 	       subsystem_name, version);
 
-	setup_filesystem(argv[0], blocks, inodes, type, flags);
+	setup_filesystem(argv[0], blocks, inodes, first_data_block,
+			 type, flags);
 
 	if (request) {
 		code = ss_execute_line(sci_idx, request);
