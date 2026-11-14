@@ -776,8 +776,8 @@ static int fill_index(struct fill_index_ctx *ctx, int level,
 		start = (void *)(out->buf + dx_offset);
 	}
 
-	lim->count = ext2fs_cpu_to_le32(start - (struct ext2_dx_entry *)lim);
-	lim->limit = ext2fs_cpu_to_le32(lim->limit);
+	lim->count = ext2fs_cpu_to_le16(start - (struct ext2_dx_entry *)lim);
+	lim->limit = ext2fs_cpu_to_le16(lim->limit);
 
 	return ret;
 }

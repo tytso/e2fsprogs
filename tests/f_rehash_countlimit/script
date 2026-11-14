@@ -1,0 +1,45 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+FSCK_OPT=-fyD
+
+# With 1k blocks, the root of an htree index has room for 124 entries and
+# an interior node has room for 127.  A 255 byte name needs a 264 byte
+# directory entry, so e2fsck -D packs three of them into each leaf block.
+# 390 names need 130 leaf blocks, which is more than the root can point
+# to, so the index gets a second level with two interior nodes: the first
+# one is full, with 127 leaf blocks, and the second one has the other 3.
+ENTRIES=390
+
+touch $TMPFILE
+$MKE2FS -q -F -o Linux -b 1024 -O dir_index $TMPFILE 256 > /dev/null 2>&1
+{
+	echo "mkdir /d"
+	echo "cd /d"
+	echo "write /dev/null foofile"
+	i=0
+	while [ $i -lt $ENTRIES ]; do
+		# ln does not expand the directory, and three names fill
+		# a block
+		if [ $((i % 3)) -eq 0 ]; then
+			echo "expand_dir ."
+		fi
+		printf "ln foofile f%0254u\n" $i
+		i=$((i + 1))
+	done
+	# adjust the link count, because ln doesn't
+	echo "set_inode_field foofile links_count $((ENTRIES + 1))"
+} | $DEBUGFS -w $TMPFILE > /dev/null 2>&1
+
+# The count and limit of the root and of each interior node of the index
+# which e2fsck created.
+AFTER_CMD='$DEBUGFS -R "htree_dump /d" $TMPFILE 2> /dev/null |
+	$EGREP "Indirect levels|Number of entries" > $test_name.0.log'
+PASS_ZERO="true"
+
+. $cmd_dir/run_e2fsck
+
+unset ENTRIES
