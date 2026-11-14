@@ -365,18 +365,91 @@ static int fc_validate_inode_tag(ext2_filsys fs, size_t tag_len,
 	return 0;
 }
 
+static int fc_validate_add_range_tag(ext2_filsys fs, size_t tag_len,
+				     const __u8 *val, ext2_ino_t *ret_ino,
+				     struct ext2fs_extent *ret_ex)
+{
+	struct ext4_fc_add_range add_range;
+	struct ext2fs_extent ex;
+	ext2_ino_t ino;
+
+	if (tag_len < sizeof(add_range))
+		return -EFSCORRUPTED;
+
+	memcpy(&add_range, val, sizeof(add_range));
+	ino = le32_to_cpu(add_range.fc_ino);
+	if (!fc_valid_ino(fs, ino))
+		return -EFSCORRUPTED;
+
+	memset(&ex, 0, sizeof(ex));
+	if (ext2fs_decode_extent(&ex, (void *)add_range.fc_ex,
+				 sizeof(add_range.fc_ex)))
+		return -EFSCORRUPTED;
+
+	if (ex.e_len == 0 ||
+	    ex.e_pblk < fs->super->s_first_data_block ||
+	    ex.e_pblk >= ext2fs_blocks_count(fs->super) ||
+	    ex.e_len > ext2fs_blocks_count(fs->super) - ex.e_pblk ||
+	    ex.e_lblk + ex.e_len > (1ULL << 32))
+		return -EFSCORRUPTED;
+
+	if (ret_ino)
+		*ret_ino = ino;
+	if (ret_ex)
+		*ret_ex = ex;
+	return 0;
+}
+
+static int fc_validate_del_range_tag(ext2_filsys fs, size_t tag_len,
+				     const __u8 *val, ext2_ino_t *ret_ino,
+				     struct ext2fs_extent *ret_ex)
+{
+	struct ext4_fc_del_range del_range;
+	ext2_ino_t ino;
+	__u32 lblk, len;
+
+	if (tag_len < sizeof(del_range))
+		return -EFSCORRUPTED;
+
+	memcpy(&del_range, val, sizeof(del_range));
+	ino = le32_to_cpu(del_range.fc_ino);
+	if (!fc_valid_ino(fs, ino))
+		return -EFSCORRUPTED;
+
+	lblk = le32_to_cpu(del_range.fc_lblk);
+	len = le32_to_cpu(del_range.fc_len);
+	if (len == 0 || (blk64_t)lblk + len > (1ULL << 32))
+		return -EFSCORRUPTED;
+
+	if (ret_ino)
+		*ret_ino = ino;
+	if (ret_ex) {
+		memset(ret_ex, 0, sizeof(*ret_ex));
+		ret_ex->e_lblk = lblk;
+		ret_ex->e_len = len;
+	}
+	return 0;
+}
+
+static void ext4_fc_replay_cleanup(e2fsck_t ctx)
+{
+	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
+
+	if (state->fc_extent_list.extents)
+		ext2fs_free_mem(&state->fc_extent_list.extents);
+	memset(&state->fc_extent_list, 0, sizeof(state->fc_extent_list));
+}
+
 static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 				int off, tid_t expected_tid)
 {
 	e2fsck_t ctx = j->j_fs_dev->k_ctx;
 	struct e2fsck_fc_replay_state *state;
 	int ret = JBD2_FC_REPLAY_CONTINUE;
-	struct ext4_fc_add_range ext;
 	struct ext4_fc_tl tl;
 	struct ext4_fc_tail tail;
 	__u8 *start, *cur, *end, *val;
 	struct ext4_fc_head head;
-	struct ext2fs_extent ext2fs_ex = {0};
 	size_t tag_len;
 
 	state = &ctx->fc_replay_state;
@@ -386,6 +459,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 
 	jbd_debug(1, "Scan phase starting, expected %d", expected_tid);
 	if (state->fc_replay_expected_off == 0) {
+		ext4_fc_replay_cleanup(ctx);
 		memset(state, 0, sizeof(*state));
 		if ((size_t)(end - start) < sizeof(tl))
 			return -EFSCORRUPTED;
@@ -420,23 +494,16 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 			  tag2str(le16_to_cpu(tl.fc_tag)), bh->b_blocknr);
 		switch (le16_to_cpu(tl.fc_tag)) {
 		case EXT4_FC_TAG_ADD_RANGE:
-			if (tag_len < sizeof(ext)) {
+			if (fc_validate_add_range_tag(ctx->fs, tag_len, val,
+						      NULL, NULL)) {
 				ret = state->fc_replay_num_tags ?
 					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
 				break;
 			}
-			memcpy(&ext, val, sizeof(ext));
-			ret = ext2fs_decode_extent(&ext2fs_ex,
-						   (void *)&ext.fc_ex,
-						   sizeof(ext.fc_ex));
-			if (ret) {
-				ret = JBD2_FC_REPLAY_STOP;
-				break;
-			}
-			ret = JBD2_FC_REPLAY_CONTINUE;
 			goto chksum_tag;
 		case EXT4_FC_TAG_DEL_RANGE:
-			if (tag_len < sizeof(struct ext4_fc_del_range)) {
+			if (fc_validate_del_range_tag(ctx->fs, tag_len, val,
+						      NULL, NULL)) {
 				ret = state->fc_replay_num_tags ?
 					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
 				break;
@@ -536,14 +603,21 @@ static int __errcode_to_errno(errcode_t err, const char *func, int line)
 #define ex_end(__ex) ((__ex)->e_lblk + (__ex)->e_len - 1)
 #define ex_pend(__ex) ((__ex)->e_pblk + (__ex)->e_len - 1)
 
-static int make_room(struct extent_list *list, int i)
+static int make_room(struct extent_list *list, unsigned int i)
 {
 	int ret;
 
 	if (list->count == list->size) {
-		unsigned int new_size = (list->size + 341) *
-					sizeof(struct ext2fs_extent);
-		ret = errcode_to_errno(ext2fs_resize_mem(0, new_size, &list->extents));
+		unsigned long new_count, new_size;
+
+		if (list->size > (~0U) - 341)
+			return -ENOMEM;
+		new_count = (unsigned long)list->size + 341;
+		new_size = new_count * sizeof(*list->extents);
+		if (new_size / sizeof(*list->extents) != new_count)
+			return -ENOMEM;
+		ret = errcode_to_errno(ext2fs_resize_mem(0, new_size,
+							 &list->extents));
 		if (ret)
 			return ret;
 		list->size += 341;
@@ -564,20 +638,10 @@ static int ex_compar(const void *arg1, const void *arg2)
 		return -1;
 	if (ex1->e_lblk > ex2->e_lblk)
 		return 1;
-	return ex1->e_len - ex2->e_len;
-}
-
-static int ex_len_compar(const void *arg1, const void *arg2)
-{
-	const struct ext2fs_extent *ex1 = (const struct ext2fs_extent *)arg1;
-	const struct ext2fs_extent *ex2 = (const struct ext2fs_extent *)arg2;
-
 	if (ex1->e_len < ex2->e_len)
-		return 1;
-
-	if (ex1->e_lblk > ex2->e_lblk)
 		return -1;
-
+	if (ex1->e_len > ex2->e_len)
+		return 1;
 	return 0;
 }
 
@@ -585,24 +649,18 @@ static void ex_sort_and_merge(struct extent_list *list)
 {
 	unsigned int i, j;
 
-	if (list->count < 2)
-		return;
-
-	/*
-	 * Reverse sort by length, that way we strip off all the 0 length
-	 * extents
-	 */
-	qsort(list->extents, list->count, sizeof(struct ext2fs_extent),
-		ex_len_compar);
-
+	/* Strip out all zero-length extents first */
+	j = 0;
 	for (i = 0; i < list->count; i++) {
-		if (list->extents[i].e_len == 0) {
-			list->count = i;
-			break;
-		}
+		if (list->extents[i].e_len == 0)
+			continue;
+		if (j != i)
+			list->extents[j] = list->extents[i];
+		j++;
 	}
+	list->count = j;
 
-	if (list->count == 0)
+	if (list->count < 2)
 		return;
 
 	/* Now sort by logical offset */
@@ -614,6 +672,8 @@ static void ex_sort_and_merge(struct extent_list *list)
 	while (i < list->count - 1) {
 		if (ex_end(&list->extents[i]) + 1 != list->extents[i + 1].e_lblk ||
 			ex_pend(&list->extents[i]) + 1 != list->extents[i + 1].e_pblk ||
+			(blk64_t)list->extents[i].e_len +
+				list->extents[i + 1].e_len >= (1ULL << 32) ||
 			(list->extents[i].e_flags & EXT2_EXTENT_FLAGS_UNINIT) !=
 				(list->extents[i + 1].e_flags & EXT2_EXTENT_FLAGS_UNINIT)) {
 			i++;
@@ -631,7 +691,8 @@ static void ex_sort_and_merge(struct extent_list *list)
 static int ext4_modify_extent_list(e2fsck_t ctx, struct extent_list *list,
 					struct ext2fs_extent *ex, int del)
 {
-	int ret, offset;
+	int ret;
+	blk64_t offset;
 	unsigned int i;
 	struct ext2fs_extent add_ex = *ex;
 
@@ -689,7 +750,9 @@ static int ext4_modify_extent_list(e2fsck_t ctx, struct extent_list *list,
 	}
 
 	if (add_ex.e_len && !del) {
-		make_room(list, list->count);
+		ret = make_room(list, list->count);
+		if (ret)
+			return ret;
 		list->extents[list->count - 1] = add_ex;
 	}
 
@@ -719,12 +782,21 @@ static int ext4_del_extent_from_list(e2fsck_t ctx, struct extent_list *list,
 static int ext4_fc_read_extents(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
+	errcode_t err;
+
+	if (!fc_valid_ino(ctx->fs, ino))
+		return -EFSCORRUPTED;
 
 	if (extent_list->ino == ino)
 		return 0;
 
 	extent_list->ino = ino;
-	return errcode_to_errno(e2fsck_read_extents(ctx, extent_list));
+	err = e2fsck_read_extents(ctx, extent_list);
+	if (!err)
+		return 0;
+	if (err == EXT2_ET_NO_MEMORY || err == ENOMEM)
+		return -ENOMEM;
+	return -EFSCORRUPTED;
 }
 
 /*
@@ -939,23 +1011,16 @@ static int ext4_fc_handle_add_extent(e2fsck_t ctx, struct ext4_fc_tl *tl,
 				     __u8 *val)
 {
 	struct ext2fs_extent extent;
-	struct ext4_fc_add_range add_range;
 	ext2_ino_t ino;
-	int ret = 0;
+	int ret;
 
-	if ((size_t)ext4_fc_tag_len(tl) < sizeof(add_range))
-		return -EFSCORRUPTED;
-	memcpy(&add_range, val, sizeof(add_range));
-	ino = le32_to_cpu(add_range.fc_ino);
+	ret = fc_validate_add_range_tag(ctx->fs, (size_t)ext4_fc_tag_len(tl),
+					val, &ino, &extent);
+	if (ret)
+		return ret;
 	ext4_fc_flush_extents(ctx, ino);
 
 	ret = ext4_fc_read_extents(ctx, ino);
-	if (ret)
-		return ret;
-	memset(&extent, 0, sizeof(extent));
-	ret = errcode_to_errno(ext2fs_decode_extent(
-			&extent, (void *)add_range.fc_ex,
-			sizeof(add_range.fc_ex)));
 	if (ret)
 		return ret;
 	return ext4_add_extent_to_list(ctx,
@@ -969,18 +1034,15 @@ static int ext4_fc_handle_del_range(e2fsck_t ctx, struct ext4_fc_tl *tl,
 				    __u8 *val)
 {
 	struct ext2fs_extent extent;
-	struct ext4_fc_del_range del_range;
-	int ret, ino;
+	ext2_ino_t ino;
+	int ret;
 
-	if ((size_t)ext4_fc_tag_len(tl) < sizeof(del_range))
-		return -EFSCORRUPTED;
-	memcpy(&del_range, val, sizeof(del_range));
-	ino = le32_to_cpu(del_range.fc_ino);
+	ret = fc_validate_del_range_tag(ctx->fs, (size_t)ext4_fc_tag_len(tl),
+					val, &ino, &extent);
+	if (ret)
+		return ret;
 	ext4_fc_flush_extents(ctx, ino);
 
-	memset(&extent, 0, sizeof(extent));
-	extent.e_lblk = le32_to_cpu(del_range.fc_lblk);
-	extent.e_len = le32_to_cpu(del_range.fc_len);
 	ret = ext4_fc_read_extents(ctx, ino);
 	if (ret)
 		return ret;
@@ -1613,6 +1675,8 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
 				   int reset, int drop)
 {
 	journal_superblock_t *jsb;
+
+	ext4_fc_replay_cleanup(ctx);
 
 	if (drop)
 		mark_buffer_clean(journal->j_sb_buffer);

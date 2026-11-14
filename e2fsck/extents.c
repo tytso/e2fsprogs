@@ -58,11 +58,30 @@ int e2fsck_ino_will_be_rebuilt(e2fsck_t ctx, ext2_ino_t ino)
 	return ext2fs_test_inode_bitmap2(ctx->inodes_to_rebuild, ino);
 }
 
+static errcode_t expand_extent_list(struct extent_list *list)
+{
+	unsigned long new_count, new_size;
+	errcode_t retval;
+
+	if (list->size > (~0U) - NUM_EXTENTS)
+		return EXT2_ET_NO_MEMORY;
+	new_count = (unsigned long)list->size + NUM_EXTENTS;
+	new_size = new_count * sizeof(*list->extents);
+	if (new_size / sizeof(*list->extents) != new_count)
+		return EXT2_ET_NO_MEMORY;
+	retval = ext2fs_resize_mem(0, new_size, &list->extents);
+	if (retval)
+		return retval;
+	list->size += NUM_EXTENTS;
+	return 0;
+}
+
 static errcode_t load_extents(e2fsck_t ctx, struct extent_list *list)
 {
 	ext2_filsys		fs = ctx->fs;
 	ext2_extent_handle_t	handle;
 	struct ext2fs_extent	extent;
+	ext2fs_block_bitmap	etb_map = NULL;
 	errcode_t		retval;
 
 	retval = ext2fs_extent_open(fs, list->ino, &handle);
@@ -77,15 +96,38 @@ static errcode_t load_extents(e2fsck_t ctx, struct extent_list *list)
 		if (extent.e_flags & EXT2_EXTENT_FLAGS_SECOND_VISIT)
 			goto next;
 
-		/* Internal node; free it and we'll re-allocate it later */
+		/* Internal node; track unique ETBs and free once validated */
 		if (!(extent.e_flags & EXT2_EXTENT_FLAGS_LEAF)) {
-#if defined(DEBUG) || defined(DEBUG_FREE)
-			printf("ino=%d free=%llu bf=%llu\n", list->ino,
-					extent.e_pblk, list->blocks_freed + 1);
-#endif
-			list->blocks_freed++;
-			ext2fs_block_alloc_stats2(fs, extent.e_pblk, -1);
+			if (extent.e_pblk < fs->super->s_first_data_block ||
+			    extent.e_pblk >= ext2fs_blocks_count(fs->super)) {
+				retval = EXT2_ET_BAD_BLOCK_NUM;
+				goto out;
+			}
+			if (!etb_map) {
+				retval = e2fsck_allocate_subcluster_bitmap(fs,
+						_("extent tree block map"),
+						EXT2FS_BMAP64_RBTREE,
+						"extent_tree_block_map",
+						&etb_map);
+				if (retval)
+					goto out;
+			}
+			if (ext2fs_test_block_bitmap2(etb_map, extent.e_pblk)) {
+				retval = EXT2_ET_EXTENT_CYCLE;
+				goto out;
+			}
+			ext2fs_mark_block_bitmap2(etb_map, extent.e_pblk);
 			goto next;
+		}
+
+		if (extent.e_len == 0 ||
+		    extent.e_pblk < fs->super->s_first_data_block ||
+		    extent.e_pblk >= ext2fs_blocks_count(fs->super) ||
+		    extent.e_len >
+		    ext2fs_blocks_count(fs->super) - extent.e_pblk ||
+		    extent.e_lblk + extent.e_len > (1ULL << 32)) {
+			retval = EXT2_ET_EXTENT_INVALID_LENGTH;
+			goto out;
 		}
 
 		list->ext_read++;
@@ -93,7 +135,12 @@ static errcode_t load_extents(e2fsck_t ctx, struct extent_list *list)
 		if (list->count) {
 			struct ext2fs_extent *last = list->extents +
 						     list->count - 1;
-			blk64_t end = last->e_len + extent.e_len;
+			blk64_t end = (blk64_t)last->e_len + extent.e_len;
+
+			if (extent.e_lblk < last->e_lblk + last->e_len) {
+				retval = EXT2_ET_EXTENT_INVALID_LENGTH;
+				goto out;
+			}
 
 			if (last->e_pblk + last->e_len == extent.e_pblk &&
 			    last->e_lblk + last->e_len == extent.e_lblk &&
@@ -111,12 +158,9 @@ static errcode_t load_extents(e2fsck_t ctx, struct extent_list *list)
 
 		/* Do we need to expand? */
 		if (list->count == list->size) {
-			unsigned int new_size = (list->size + NUM_EXTENTS) *
-						sizeof(struct ext2fs_extent);
-			retval = ext2fs_resize_mem(0, new_size, &list->extents);
+			retval = expand_extent_list(list);
 			if (retval)
 				goto out;
-			list->size += NUM_EXTENTS;
 		}
 
 		/* Add a new extent */
@@ -134,6 +178,27 @@ out:
 	/* Ok if we run off the end */
 	if (retval == EXT2_ET_EXTENT_NO_NEXT)
 		retval = 0;
+	if (retval == 0 && etb_map) {
+		blk64_t blk = fs->super->s_first_data_block;
+		blk64_t end_blk = ext2fs_blocks_count(fs->super) - 1;
+
+		while (blk <= end_blk &&
+		       ext2fs_find_first_set_block_bitmap2(etb_map, blk,
+							   end_blk, &blk) == 0) {
+#if defined(DEBUG) || defined(DEBUG_FREE)
+			printf("ino=%u free=%llu bf=%llu\n", list->ino,
+			       (unsigned long long)blk,
+			       (unsigned long long)list->blocks_freed + 1);
+#endif
+			list->blocks_freed++;
+			ext2fs_block_alloc_stats2(fs, blk, -1);
+			if (blk == end_blk)
+				break;
+			blk++;
+		}
+	}
+	if (etb_map)
+		ext2fs_free_block_bitmap(etb_map);
 	ext2fs_extent_free(handle);
 	return retval;
 }
@@ -147,8 +212,9 @@ static int find_blocks(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
 	/* Internal node? */
 	if (blockcnt < 0) {
 #if defined(DEBUG) || defined(DEBUG_FREE)
-		printf("ino=%d free=%llu bf=%llu\n", list->ino, *blocknr,
-				list->blocks_freed + 1);
+		printf("ino=%u free=%llu bf=%llu\n", list->ino,
+		       (unsigned long long)*blocknr,
+		       (unsigned long long)list->blocks_freed + 1);
 #endif
 		list->blocks_freed++;
 		ext2fs_block_alloc_stats2(fs, *blocknr, -1);
@@ -159,7 +225,7 @@ static int find_blocks(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
 	if (list->count) {
 		struct ext2fs_extent *last = list->extents +
 					     list->count - 1;
-		blk64_t end = last->e_len + 1;
+		blk64_t end = (blk64_t)last->e_len + 1;
 
 		if (last->e_lblk + last->e_len == (__u64) blockcnt &&
 		    last->e_pblk + last->e_len == *blocknr &&
@@ -174,12 +240,9 @@ static int find_blocks(ext2_filsys fs, blk64_t *blocknr, e2_blkcnt_t blockcnt,
 
 	/* Do we need to expand? */
 	if (list->count == list->size) {
-		unsigned int new_size = (list->size + NUM_EXTENTS) *
-					sizeof(struct ext2fs_extent);
-		list->retval = ext2fs_resize_mem(0, new_size, &list->extents);
+		list->retval = expand_extent_list(list);
 		if (list->retval)
 			return BLOCK_ABORT;
-		list->size += NUM_EXTENTS;
 	}
 
 	/* Add a new extent */
@@ -329,12 +392,19 @@ errcode_t e2fsck_read_extents(e2fsck_t ctx, struct extent_list *extents)
 	extents->size = NUM_EXTENTS;
 	retval = ext2fs_get_array(NUM_EXTENTS, sizeof(struct ext2fs_extent),
 				  &extents->extents);
-	if (retval)
-		return ENOMEM;
+	if (retval) {
+		retval = ENOMEM;
+		goto err_out;
+	}
 
 	retval = ext2fs_read_inode(ctx->fs, extents->ino, EXT2_INODE(&inode));
 	if (retval)
 		goto err_out;
+
+	if (inode.i_flags & EXT4_INLINE_DATA_FL) {
+		retval = EXT2_ET_INODE_NOT_EXTENT;
+		goto err_out;
+	}
 
 	retval = load_extents(ctx, extents);
 	if (!retval)
@@ -343,6 +413,7 @@ err_out:
 	ext2fs_free_mem(&extents->extents);
 	extents->size = 0;
 	extents->count = 0;
+	extents->ino = 0;
 	return retval;
 }
 
