@@ -287,7 +287,13 @@ static errcode_t ba_set_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 {
 	ext2fs_ba_private bp = (ext2fs_ba_private) bitmap->private;
 
-	memcpy (bp->bitarray + (start >> 3), in, (num + 7) >> 3);
+	if ((start < bitmap->start) || (start > bitmap->real_end) ||
+	    (num && (num - 1 > bitmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
+
+	if (num)
+		memcpy(bp->bitarray + ((start - bitmap->start) >> 3), in,
+		       ((num - 1) >> 3) + 1);
 
 	return 0;
 }
@@ -297,7 +303,13 @@ static errcode_t ba_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 {
 	ext2fs_ba_private bp = (ext2fs_ba_private) bitmap->private;
 
-	memcpy (out, bp->bitarray + (start >> 3), (num + 7) >> 3);
+	if ((start < bitmap->start) || (start > bitmap->real_end) ||
+	    (num && (num - 1 > bitmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
+
+	if (num)
+		memcpy(out, bp->bitarray + ((start - bitmap->start) >> 3),
+		       ((num - 1) >> 3) + 1);
 
 	return 0;
 }

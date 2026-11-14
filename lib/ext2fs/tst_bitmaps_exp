@@ -373,5 +373,45 @@ tst_bitmaps: seti 45
 Setting inode 45, was clear before
 tst_bitmaps: testi 45
 Inode 45 is set
+tst_bitmaps: setup -b 144 -i 32 -d 16
+tst_bitmaps: setb 16
+Setting block 16, was clear before
+tst_bitmaps: setb 19
+Setting block 19, was clear before
+tst_bitmaps: dump_bb
+block bitmap: 09000000000000000000000000000000
+bits set: 2
+tst_bitmaps: set_range_b 32 0xa5
+Set/get block bitmap range (32 bits, 0xa5): OK
+tst_bitmaps: dump_bb
+block bitmap: a5a5a5a5000000000000000000000000
+bits set: 16
+tst_bitmaps: setb 16 128
+Marking blocks 16 to 143
+tst_bitmaps: set_range_b 32 0x3c 32
+Set/get block bitmap range (32 bits at 32, 0x3c): OK
+tst_bitmaps: dump_bb
+block bitmap: ffff3c3c3c3cffffffffffffffffffff
+bits set: 112
+tst_bitmaps: resize_b 143 143
+Resized block bitmap to end=143, real_end=143
+tst_bitmaps: set_range_b 128 0x5a
+Set/get block bitmap range (128 bits, 0x5a): OK
+tst_bitmaps: dump_bb
+block bitmap: 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+bits set: 64
+tst_bitmaps: set_range_b 16 0xa5 8
+set_block_bitmap_range2(8, 16) returned Invalid argument passed to ext2 library
+tst_bitmaps: set_range_b 129 0xa5 16
+set_block_bitmap_range2(16, 129) returned Invalid argument passed to ext2 library
+tst_bitmaps: set_range_b 32 0xa5 128
+set_block_bitmap_range2(128, 32) returned Invalid argument passed to ext2 library
+tst_bitmaps: set_range_b 16 0xa5 200
+set_block_bitmap_range2(200, 16) returned Invalid argument passed to ext2 library
+tst_bitmaps: set_range_b 0 0xa5 16
+Set/get block bitmap range (0 bits at 16, 0xa5): OK
+tst_bitmaps: dump_bb
+block bitmap: 5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a
+bits set: 64
 tst_bitmaps: quit
 tst_bitmaps: 
