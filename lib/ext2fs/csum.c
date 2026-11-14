@@ -1328,6 +1328,7 @@ static void test_mmp_and_superblock_csum(void)
 	struct mmp_struct	mmp;
 	struct ext2_super_block	le_sb;
 	__u32			exp_crc, saved_seed;
+	int			saved_flags;
 	errcode_t		retval;
 
 	setup_fs(&fs, 256, 32, 256, 64, EXT4_FEATURE_INCOMPAT_64BIT, 0);
@@ -1411,7 +1412,14 @@ static void test_mmp_and_superblock_csum(void)
 	check_int("sb_csum_verify_disabled",
 		  ext2fs_superblock_csum_verify(fs, &le_sb), 1);
 
-	/* 3e. Superblock checksum with METADATA_CSUM enabled (native order) */
+	/*
+	 * 3e. Superblock checksum with METADATA_CSUM enabled while fs->super
+	 * is still in on-disk byte order (as in ext2fs_open2() before the
+	 * superblock is swapped).  ext2fs_initialize() sets
+	 * EXT2_FLAG_SWAP_BYTES on big-endian hosts, so clear it explicitly.
+	 */
+	saved_flags = fs->flags;
+	fs->flags &= ~EXT2_FLAG_SWAP_BYTES;
 	fs->super->s_feature_ro_compat |=
 		ext2fs_cpu_to_le32(EXT4_FEATURE_RO_COMPAT_METADATA_CSUM);
 	retval = ext2fs_superblock_csum_set(fs, &le_sb);
@@ -1460,7 +1468,7 @@ static void test_mmp_and_superblock_csum(void)
 		  ext2fs_le32_to_cpu(le_sb.s_checksum), 0x11111111U);
 	check_int("sb_csum_verify_swap_disabled",
 		  ext2fs_superblock_csum_verify(fs, &le_sb), 1);
-	fs->flags &= ~EXT2_FLAG_SWAP_BYTES;
+	fs->flags = saved_flags;
 
 	teardown_fs(&fs);
 	printf("test_mmp_and_superblock_csum: completed\n");
