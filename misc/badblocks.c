@@ -648,7 +648,7 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 	int got;
 	unsigned int granularity = blocks_at_once;
 	unsigned int bb_count = 0;
-	blk_t recover_block = ~0;
+	blk64_t recover_block = ~0ULL;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
@@ -691,10 +691,10 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 			}
 			break;
 		}
-		if (recover_block != ~0U &&
-		    currently_testing >= recover_block) {
+		if (recover_block != ~0ULL &&
+		    (blk64_t) currently_testing >= recover_block) {
 			granularity = blocks_at_once;
-			recover_block = ~0U;
+			recover_block = ~0ULL;
 		}
 		try = granularity;
 		if (next_bad_valid) {
@@ -703,11 +703,12 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 				bb_iter_next();
 				currently_testing++;
 				continue;
-			}
-			else if (currently_testing + try > next_bad)
+			} else if (next_bad > currently_testing &&
+				   (blk64_t) try >
+				   (blk64_t) next_bad - currently_testing)
 				try = next_bad - currently_testing;
 		}
-		if (currently_testing + try > last_block)
+		if ((blk64_t) try > (blk64_t) last_block - currently_testing)
 			try = last_block - currently_testing;
 		got = do_read (dev, blkbuf, try, block_size, currently_testing);
 		if (t_flag) {
@@ -725,8 +726,8 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 		currently_testing += got;
 		if (got != try) {
 			granularity = 1;
-			if (recover_block == ~0U)
-				recover_block = currently_testing - got +
+			if (recover_block == ~0ULL)
+				recover_block = (blk64_t) (currently_testing - got) +
 					blocks_at_once;
 		}
 	}
@@ -755,7 +756,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 	int i, try, got, nr_pattern, pat_idx;
 	unsigned int granularity = blocks_at_once;
 	unsigned int bb_count = 0;
-	blk_t recover_block = ~0;
+	blk64_t recover_block = ~0ULL;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
@@ -798,7 +799,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 			alarm_intr(SIGALRM);
 
 		granularity = blocks_at_once;
-		recover_block = ~0U;
+		recover_block = ~0ULL;
 		bb_iter_begin(first_block);
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
@@ -807,10 +808,10 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				}
 				break;
 			}
-			if (recover_block != ~0U &&
-			    currently_testing >= recover_block) {
+			if (recover_block != ~0ULL &&
+			    (blk64_t) currently_testing >= recover_block) {
 				granularity = blocks_at_once;
-				recover_block = ~0U;
+				recover_block = ~0ULL;
 			}
 			try = granularity;
 			if (next_bad_valid) {
@@ -818,10 +819,12 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 					bb_iter_next();
 					currently_testing++;
 					continue;
-				} else if (currently_testing + try > next_bad)
+				} else if (next_bad > currently_testing &&
+					   (blk64_t) try >
+					   (blk64_t) next_bad - currently_testing)
 					try = next_bad - currently_testing;
 			}
-			if (currently_testing + try > last_block)
+			if ((blk64_t) try > (blk64_t) last_block - currently_testing)
 				try = last_block - currently_testing;
 			got = do_write(dev, buffer, try, block_size,
 					currently_testing);
@@ -833,9 +836,9 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 			currently_testing += got;
 			if (got != try) {
 				granularity = 1;
-				if (recover_block == ~0U)
-					recover_block = currently_testing -
-						got + blocks_at_once;
+				if (recover_block == ~0ULL)
+					recover_block = (blk64_t) (currently_testing -
+						got) + blocks_at_once;
 				continue;
 			}
 		}
@@ -854,7 +857,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 			alarm_intr(SIGALRM);
 
 		granularity = blocks_at_once;
-		recover_block = ~0U;
+		recover_block = ~0ULL;
 		bb_iter_begin(first_block);
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
@@ -863,10 +866,10 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				}
 				break;
 			}
-			if (recover_block != ~0U &&
-			    currently_testing >= recover_block) {
+			if (recover_block != ~0ULL &&
+			    (blk64_t) currently_testing >= recover_block) {
 				granularity = blocks_at_once;
-				recover_block = ~0U;
+				recover_block = ~0ULL;
 			}
 			try = granularity;
 			if (next_bad_valid) {
@@ -874,10 +877,12 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 					bb_iter_next();
 					currently_testing++;
 					continue;
-				} else if (currently_testing + try > next_bad)
+				} else if (next_bad > currently_testing &&
+					   (blk64_t) try >
+					   (blk64_t) next_bad - currently_testing)
 					try = next_bad - currently_testing;
 			}
-			if (currently_testing + try > last_block)
+			if ((blk64_t) try > (blk64_t) last_block - currently_testing)
 				try = last_block - currently_testing;
 			got = do_read (dev, read_buffer, try, block_size,
 				       currently_testing);
@@ -893,9 +898,9 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 			currently_testing += got;
 			if (got != try) {
 				granularity = 1;
-				if (recover_block == ~0U)
-					recover_block = currently_testing -
-						got + blocks_at_once;
+				if (recover_block == ~0ULL)
+					recover_block = (blk64_t) (currently_testing -
+						got) + blocks_at_once;
 				continue;
 			}
 			if (v_flag > 1)
@@ -938,7 +943,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 	unsigned long buf_used;
 	static unsigned int bb_count;
 	unsigned int granularity = blocks_at_once;
-	blk_t recover_block = ~0U;
+	blk64_t recover_block = ~0ULL;
 
 	bb_count = 0;
 
@@ -1004,7 +1009,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 
 		buf_used = 0;
 		granularity = blocks_at_once;
-		recover_block = ~0U;
+		recover_block = ~0ULL;
 		save_ptr = save_base;
 		test_ptr = test_base;
 		currently_testing = first_block;
@@ -1028,17 +1033,18 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 					bb_iter_next();
 					currently_testing++;
 					goto check_for_more;
-				}
-				else if (currently_testing + try > next_bad)
+				} else if (next_bad > currently_testing &&
+					   (blk64_t) try >
+					   (blk64_t) next_bad - currently_testing)
 					try = next_bad - currently_testing;
 			}
-			if (currently_testing + try > last_block)
+			if ((blk64_t) try > (blk64_t) last_block - currently_testing)
 				try = last_block - currently_testing;
 			got = do_read (dev, save_ptr, try, block_size,
 				       currently_testing);
 			if (got == 0) {
-				if (recover_block == ~0U)
-					recover_block = currently_testing +
+				if (recover_block == ~0ULL)
+					recover_block = (blk64_t) currently_testing +
 						blocks_at_once;
 				if (granularity != 1) {
 					granularity = 1;
@@ -1072,9 +1078,9 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			currently_testing += got;
 			if (got != try) {
 				granularity = 1;
-				if (recover_block == ~0U)
-					recover_block = currently_testing -
-						got + blocks_at_once;
+				if (recover_block == ~0ULL)
+					recover_block = (blk64_t) (currently_testing -
+						got) + blocks_at_once;
 			}
 
 		check_for_more:
@@ -1087,9 +1093,10 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			    (currently_testing < last_block))
 				continue;
 
-			if (currently_testing >= recover_block) {
+			if (recover_block != ~0ULL &&
+			    (blk64_t) currently_testing >= recover_block) {
 				granularity = blocks_at_once;
-				recover_block = ~0;
+				recover_block = ~0ULL;
 			}
 
 			flush_bufs();

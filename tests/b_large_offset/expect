@@ -1,0 +1,41 @@
+=== 16T -b 4096 -r near 2^32 ===
+Checking blocks 4294967275 to 4294967294
+Checking for bad blocks (read-only test): 4294967280
+done                                                 
+Pass completed, 1 bad blocks found. (1/0/0 errors)
+sim: reads=21 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== 16T -b 4096 -w -t 0xaa near 2^32 ===
+Checking for bad blocks in read-write mode
+From block 4294967275 to 4294967294
+Testing with pattern 0xaa: done                                                 
+Reading and comparing: 4294967280
+4294967290
+done                                                 
+Pass completed, 2 bad blocks found. (1/0/1 errors)
+sim: reads=21 writes=1 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: modified (160 sectors changed); chunks-live=2 peak-bytes=131072
+exit status: 0
+=== 16T -b 4096 -n near 2^32 ===
+Using random seed 1
+Checking for bad blocks in non-destructive read-write mode
+From block 4294967275 to 4294967294
+Testing with random pattern: 4294967280
+4294967290
+Pass completed, 2 bad blocks found. (1/0/1 errors)
+sim: reads=40 writes=38 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: restored (excluding 8 faulty sectors); chunks-live=1 peak-bytes=65536
+exit status: 0
+=== 4T -b 1024 -r highest 32-bit block ===
+Checking blocks 4294967275 to 4294967294
+Checking for bad blocks (read-only test): 4294967294
+done                                                 
+Pass completed, 1 bad blocks found. (1/0/0 errors)
+sim: reads=21 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
