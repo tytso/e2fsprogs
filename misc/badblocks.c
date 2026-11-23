@@ -100,7 +100,7 @@ static void usage(void)
 	fprintf(stderr, _(
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnfBX]\n"
 "       [-c blocks_at_once] [-d delay_factor_between_reads] [-e max_bad_blocks]\n"
-"       [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
+"       [-p num_passes] [-S random_seed] [-t test_pattern [-t test_pattern [...]]]\n"
 "       device [last_block [first_block]]\n"),
 		 program_name);
 	exit (1);
@@ -404,6 +404,23 @@ static void set_o_direct(struct bb_dev *dev EXT2FS_ATTR((unused)),
 }
 
 
+static __u32 bb_rand_state;
+
+static void bb_srand(unsigned int seed)
+{
+	bb_rand_state = (__u32) seed;
+}
+
+static unsigned char bb_rand_byte(void)
+{
+	__u32 z = (bb_rand_state += 0x9e3779b9U);
+
+	z = (z ^ (z >> 16)) * 0x85ebca6bU;
+	z = (z ^ (z >> 13)) * 0xc2b2ae35U;
+	z = z ^ (z >> 16);
+	return (unsigned char) (z & 0xff);
+}
+
 static void pattern_fill(unsigned char *buffer, unsigned int pattern,
 			 size_t n)
 {
@@ -411,9 +428,8 @@ static void pattern_fill(unsigned char *buffer, unsigned int pattern,
 	unsigned char	bpattern[sizeof(pattern)], *ptr;
 
 	if (pattern == (unsigned int) ~0) {
-		for (ptr = buffer; ptr < buffer + n; ptr++) {
-			(*ptr) = random() % (1 << (8 * sizeof(char)));
-		}
+		for (ptr = buffer; ptr < buffer + n; ptr++)
+			*ptr = bb_rand_byte();
 		if (s_flag | v_flag)
 			fputs(_("Testing with random pattern: "), stderr);
 	} else {
@@ -1138,6 +1154,8 @@ int main (int argc, char ** argv)
 	struct bb_dev host_dev_rec;
 	errcode_t errcode;
 	unsigned int pattern;
+	unsigned int random_seed;
+	int uses_random = 0;
 	unsigned int (*test_func)(struct bb_dev *, blk_t,
 				  int, blk_t,
 				  unsigned int);
@@ -1153,7 +1171,7 @@ int main (int argc, char ** argv)
 	textdomain(NLS_CAT_NAME);
 	set_com_err_gettext(gettext);
 #endif
-	srandom((unsigned int)time(NULL));  /* simple randomness is enough */
+	random_seed = (unsigned int) time(NULL);
 	test_func = test_ro;
 
 	/* Determine the system page size if possible */
@@ -1172,7 +1190,7 @@ int main (int argc, char ** argv)
 		program_name = *argv;
 	else
 		usage();
-	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:BX")) != EOF) {
+	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:BXS:")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = parse_uint(optarg, "block size");
@@ -1261,6 +1279,9 @@ int main (int argc, char ** argv)
 		case 'X':
 			exclusive_ok++;
 			break;
+		case 'S':
+			random_seed = parse_uint(optarg, "random seed");
+			break;
 		default:
 			usage();
 		}
@@ -1295,6 +1316,20 @@ int main (int argc, char ** argv)
 			block_size, blocks_at_once);
 		exit(1);
 	}
+
+	if (w_flag == 2 && !t_flag) {
+		uses_random = 1;
+	} else {
+		int i;
+
+		for (i = 0; i < t_flag; i++) {
+			if (t_patts[i] == (unsigned int) ~0) {
+				uses_random = 1;
+				break;
+			}
+		}
+	}
+	bb_srand(random_seed);
 
 	if (optind > argc - 1)
 		usage();
@@ -1434,6 +1469,9 @@ int main (int argc, char ** argv)
 		if (in != stdin)
 			fclose (in);
 	}
+
+	if (v_flag && uses_random)
+		fprintf(stderr, _("Using random seed %u\n"), random_seed);
 
 	do {
 		unsigned int bb_count;

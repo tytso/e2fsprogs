@@ -36,6 +36,10 @@ badblocks \- search a device for bad blocks
 .I num_passes
 ]
 [
+.B \-S
+.I random_seed
+]
+[
 .B \-t
 .I test_pattern
 ]
@@ -164,6 +168,14 @@ multiple test passes over the disk, in particular if the
 or
 .B \-w
 option is requested by the user.
+.TP
+.BI \-S " random_seed"
+Specify the seed used to generate random test patterns (for
+.B \-t random
+and the default pattern in
+.B \-n
+mode).  By default, the current time is used.  Passing the same seed allows
+a test pattern sequence to be reproduced.
 .TP
 .BI \-t " test_pattern"
 Specify a test pattern to be read (and written) to disk blocks.   The
