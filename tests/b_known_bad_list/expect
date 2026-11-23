@@ -1,0 +1,25 @@
+=== -r with -i containing block 0 ===
+Checking blocks 0 to 63
+Checking for bad blocks (read-only test): done                                                 
+Pass completed, 0 bad blocks found. (0/0/0 errors)
+sim: reads=6 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 0-1,10-11,50-51
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== -r with -i containing block 0, first_block=2 ===
+Checking blocks 2 to 63
+Checking for bad blocks (read-only test): done                                                 
+Pass completed, 0 bad blocks found. (0/0/0 errors)
+sim: reads=6 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 10-11,50-51
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== -n with -i containing block 0 ===
+Using random seed 1
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with random pattern: Pass completed, 0 bad blocks found. (0/0/0 errors)
+sim: reads=12 writes=12 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 0-1,10-11,50-51
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 0

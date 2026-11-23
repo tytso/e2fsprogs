@@ -1,0 +1,1 @@
+badblocks: skip known-bad blocks from -i including block 0

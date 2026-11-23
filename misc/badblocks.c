@@ -153,9 +153,40 @@ static blk_t num_corruption_errors = 0;
 static ext2_badblocks_list bb_list = NULL;
 static FILE *out;
 static blk_t next_bad = 0;
+static int next_bad_valid = 0;
 static ext2_badblocks_iterate bb_iter = NULL;
 
 enum error_types { READ_ERROR, WRITE_ERROR, CORRUPTION_ERROR };
+
+static void bb_iter_next(void)
+{
+	next_bad_valid = ext2fs_badblocks_list_iterate(bb_iter, &next_bad);
+}
+
+static void bb_iter_begin(blk_t first_block)
+{
+	errcode_t errcode;
+
+	errcode = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+	if (errcode) {
+		com_err(program_name, errcode, "%s",
+			_("while beginning bad block list iteration"));
+		exit(1);
+	}
+	do {
+		bb_iter_next();
+	} while (next_bad_valid && next_bad < first_block);
+}
+
+static void bb_iter_end(void)
+{
+	if (bb_iter) {
+		ext2fs_badblocks_list_iterate_end(bb_iter);
+		bb_iter = NULL;
+	}
+	next_bad = 0;
+	next_bad_valid = 0;
+}
 
 static void *allocate_buffer(size_t size)
 {
@@ -204,8 +235,8 @@ static int bb_output (blk_t bad, enum error_types error_type)
 	   increment the iteration through the bb_list if
 	   an element was just added before the current iteration
 	   position.  This should not cause next_bad to change. */
-	if (bb_iter && bad < next_bad)
-		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
+	if (bb_iter && next_bad_valid && bad < next_bad)
+		bb_iter_next();
 
 	if (error_type == READ_ERROR) {
 	  num_read_errors++;
@@ -617,21 +648,12 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 	int got;
 	unsigned int granularity = blocks_at_once;
 	unsigned int bb_count = 0;
-	errcode_t errcode;
 	blk_t recover_block = ~0;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
 
-	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
-	if (errcode) {
-		com_err(program_name, errcode, "%s",
-			_("while beginning bad block list iteration"));
-		exit (1);
-	}
-	do {
-		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-	} while (next_bad && next_bad < first_block);
+	bb_iter_begin(first_block);
 
 	if (t_flag) {
 		blkbuf = allocate_buffer(((size_t) blocks_at_once + 1) * block_size);
@@ -675,10 +697,10 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 			recover_block = ~0U;
 		}
 		try = granularity;
-		if (next_bad) {
+		if (next_bad_valid) {
 			if (currently_testing == next_bad) {
 				/* fprintf (out, "%lu\n", nextbad); */
-				ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
+				bb_iter_next();
 				currently_testing++;
 				continue;
 			}
@@ -716,7 +738,7 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 	fflush (stderr);
 	free (blkbuf);
 
-	ext2fs_badblocks_list_iterate_end(bb_iter);
+	bb_iter_end();
 
 	uncapture_terminate();
 
@@ -893,22 +915,13 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 	/* This is static to prevent being clobbered by the longjmp */
 	static int num_saved;
 	jmp_buf terminate_env;
-	errcode_t errcode;
 	unsigned long buf_used;
 	static unsigned int bb_count;
 	unsigned int granularity = blocks_at_once;
 	blk_t recover_block = ~0U;
 
 	bb_count = 0;
-	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
-	if (errcode) {
-		com_err(program_name, errcode, "%s",
-			_("while beginning bad block list iteration"));
-		exit (1);
-	}
-	do {
-		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-	} while (next_bad && next_bad < first_block);
+	bb_iter_begin(first_block);
 
 	blkbuf = allocate_buffer((size_t) 3 * blocks_at_once * block_size);
 	test_record = malloc(blocks_at_once * sizeof(struct saved_blk_record));
@@ -950,10 +963,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 		fflush (out);
 		free(blkbuf);
 		free(test_record);
-		if (bb_iter) {
-			ext2fs_badblocks_list_iterate_end(bb_iter);
-			bb_iter = NULL;
-		}
+		bb_iter_end();
 		free(t_patts);
 		t_patts = NULL;
 		exit(1);
@@ -990,10 +1000,10 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 				break;
 			}
 			got = try = granularity - buf_used;
-			if (next_bad) {
+			if (next_bad_valid) {
 				if (currently_testing == next_bad) {
 					/* fprintf (out, "%lu\n", nextbad); */
-					ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
+					bb_iter_next();
 					currently_testing++;
 					goto check_for_more;
 				}
@@ -1132,7 +1142,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 	free(blkbuf);
 	free(test_record);
 
-	ext2fs_badblocks_list_iterate_end(bb_iter);
+	bb_iter_end();
 
 	return bb_count;
 }
