@@ -761,8 +761,12 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 		nr_pattern = sizeof(patterns) / sizeof(patterns[0]);
 	}
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
-		pattern_fill(buffer, pattern[pat_idx],
-			     blocks_at_once * block_size);
+		unsigned int blk_i;
+
+		pattern_fill(buffer, pattern[pat_idx], block_size);
+		for (blk_i = 1; blk_i < blocks_at_once; blk_i++)
+			memcpy(buffer + (size_t) blk_i * block_size,
+			       buffer, block_size);
 		num_blocks = last_block - 1;
 		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
