@@ -678,7 +678,7 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 	}
 	flush_bufs();
 	currently_testing = first_block;
-	num_blocks = last_block - 1;
+	num_blocks = last_block;
 	if (!t_flag && (s_flag || v_flag))
 		fputs(_("Checking for bad blocks (read-only test): "), stderr);
 	if (s_flag && v_flag <= 1)
@@ -793,7 +793,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 		for (blk_i = 1; blk_i < blocks_at_once; blk_i++)
 			memcpy(buffer + (size_t) blk_i * block_size,
 			       buffer, block_size);
-		num_blocks = last_block - 1;
+		num_blocks = last_block;
 		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
@@ -1013,7 +1013,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 		save_ptr = save_base;
 		test_ptr = test_base;
 		currently_testing = first_block;
-		num_blocks = last_block - 1;
+		num_blocks = last_block;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 
