@@ -615,6 +615,7 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 	unsigned char * blkbuf;
 	int try;
 	int got;
+	unsigned int granularity = blocks_at_once;
 	unsigned int bb_count = 0;
 	errcode_t errcode;
 	blk_t recover_block = ~0;
@@ -654,7 +655,6 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 			     t_patts[0], block_size);
 	}
 	flush_bufs();
-	try = blocks_at_once;
 	currently_testing = first_block;
 	num_blocks = last_block - 1;
 	if (!t_flag && (s_flag || v_flag))
@@ -669,6 +669,12 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 			}
 			break;
 		}
+		if (recover_block != ~0U &&
+		    currently_testing >= recover_block) {
+			granularity = blocks_at_once;
+			recover_block = ~0U;
+		}
+		try = granularity;
 		if (next_bad) {
 			if (currently_testing == next_bad) {
 				/* fprintf (out, "%lu\n", nextbad); */
@@ -696,14 +702,10 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 			bb_count += bb_output(currently_testing++, READ_ERROR);
 		currently_testing += got;
 		if (got != try) {
-			try = 1;
+			granularity = 1;
 			if (recover_block == ~0U)
 				recover_block = currently_testing - got +
 					blocks_at_once;
-			continue;
-		} else if (currently_testing == recover_block) {
-			try = blocks_at_once;
-			recover_block = ~0;
 		}
 	}
 	num_blocks = 0;
@@ -729,6 +731,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 	const unsigned int patterns[] = {0xaa, 0x55, 0xff, 0x00};
 	const unsigned int *pattern;
 	int i, try, got, nr_pattern, pat_idx;
+	unsigned int granularity = blocks_at_once;
 	unsigned int bb_count = 0;
 	blk_t recover_block = ~0;
 
@@ -772,7 +775,8 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 
-		try = blocks_at_once;
+		granularity = blocks_at_once;
+		recover_block = ~0U;
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
 				if (s_flag || v_flag) {
@@ -780,6 +784,12 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				}
 				break;
 			}
+			if (recover_block != ~0U &&
+			    currently_testing >= recover_block) {
+				granularity = blocks_at_once;
+				recover_block = ~0U;
+			}
+			try = granularity;
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
 			got = do_write(dev, buffer, try, block_size,
@@ -791,14 +801,11 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				bb_count += bb_output(currently_testing++, WRITE_ERROR);
 			currently_testing += got;
 			if (got != try) {
-				try = 1;
+				granularity = 1;
 				if (recover_block == ~0U)
 					recover_block = currently_testing -
 						got + blocks_at_once;
 				continue;
-			} else if (currently_testing == recover_block) {
-				try = blocks_at_once;
-				recover_block = ~0;
 			}
 		}
 
@@ -814,7 +821,8 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 
-		try = blocks_at_once;
+		granularity = blocks_at_once;
+		recover_block = ~0U;
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
 				if (s_flag || v_flag) {
@@ -822,6 +830,12 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				}
 				break;
 			}
+			if (recover_block != ~0U &&
+			    currently_testing >= recover_block) {
+				granularity = blocks_at_once;
+				recover_block = ~0U;
+			}
+			try = granularity;
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
 			got = do_read (dev, read_buffer, try, block_size,
@@ -837,14 +851,11 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				bb_count += bb_output(currently_testing++, READ_ERROR);
 			currently_testing += got;
 			if (got != try) {
-				try = 1;
+				granularity = 1;
 				if (recover_block == ~0U)
 					recover_block = currently_testing -
 						got + blocks_at_once;
 				continue;
-			} else if (currently_testing == recover_block) {
-				try = blocks_at_once;
-				recover_block = ~0U;
 			}
 			if (v_flag > 1)
 				print_status();

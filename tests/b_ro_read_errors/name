@@ -1,0 +1,1 @@
+badblocks -r: batch size recovery after read errors and -i clamping
