@@ -1,0 +1,21 @@
+=== errmode=short partial read before rerr ===
+Using random seed 1
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with random pattern: 10
+20
+Pass completed, 2 bad blocks found. (1/0/1 errors)
+sim: reads=19 writes=18 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: restored (excluding 1 faulty sectors); chunks-live=1 peak-bytes=65536
+exit status: 0
+=== errmode=eio partial batch after -i block ===
+Using random seed 1
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with random pattern: 6
+Pass completed, 1 bad blocks found. (1/0/0 errors)
+sim: reads=40 writes=38 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 10-11
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 0

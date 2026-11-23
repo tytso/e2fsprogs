@@ -1,0 +1,29 @@
+if ! test -x $BADBLOCKS_SIM_EXE; then
+	echo "$test_name: $test_description: skipped (no tst_badblocks_sim)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+printf "5\n" > $TMPFILE
+
+{
+	echo "=== errmode=short partial read before rerr ==="
+	$BADBLOCKS_SIM -n -S 1 -v -b 1024 -c 16 \
+		'sim:size=64K,rerr=20,corrupt=40,errmode=short'
+	echo "exit status: $?"
+	echo "=== errmode=eio partial batch after -i block ==="
+	$BADBLOCKS_SIM -n -S 1 -v -b 1024 -c 16 -i $TMPFILE \
+		'sim:size=64K,rerr=12,errmode=eio'
+	echo "exit status: $?"
+} > $OUT 2>&1
+
+if cmp -s $OUT $EXP; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+unset OUT EXP

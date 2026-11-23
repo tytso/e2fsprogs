@@ -994,7 +994,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 						blocks_at_once;
 				if (granularity != 1) {
 					granularity = 1;
-					continue;
+					goto check_for_more;
 				}
 				/* First block must have been bad. */
 				bb_count += bb_output(currently_testing++, READ_ERROR);
@@ -1023,10 +1023,10 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			test_ptr += got * block_size;
 			currently_testing += got;
 			if (got != try) {
+				granularity = 1;
 				if (recover_block == ~0U)
 					recover_block = currently_testing -
 						got + blocks_at_once;
-				continue;
 			}
 
 		check_for_more:
@@ -1035,7 +1035,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			 * around, and we're not done yet testing the disk, go
 			 * back and get some more blocks.
 			 */
-			if ((buf_used != granularity) &&
+			if ((buf_used < granularity) &&
 			    (currently_testing < last_block))
 				continue;
 
