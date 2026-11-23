@@ -1,0 +1,40 @@
+if ! test -x $BADBLOCKS_SIM_EXE; then
+	echo "$test_name: $test_description: skipped (no tst_badblocks_sim)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+{
+	echo "=== mke2fs -c read-only ==="
+	$BADBLOCKS_SIM -b 4096 -X 'sim:size=256K,rerr=9' 63
+	echo "exit status: $?"
+	echo "=== e2fsck -c non-destructive ==="
+	$BADBLOCKS_SIM -b 4096 -X -n 'sim:size=256K,rerr=9' 63
+	echo "exit status: $?"
+	echo "=== mke2fs -cc read-write ==="
+	$BADBLOCKS_SIM -b 4096 -X -w 'sim:size=256K' 63
+	echo "exit status: $?"
+	echo "=== busy without -X ==="
+	$BADBLOCKS_SIM -b 4096 -w 'sim:size=256K,busy' 63
+	echo "exit status: $?"
+	echo "=== busy with -X ==="
+	$BADBLOCKS_SIM -b 4096 -X -w 'sim:size=256K,busy' 63
+	echo "exit status: $?"
+	echo "=== mounted without -f ==="
+	$BADBLOCKS_SIM -b 4096 -X -w 'sim:size=256K,mounted' 63
+	echo "exit status: $?"
+	echo "=== mounted with -f ==="
+	$BADBLOCKS_SIM -b 4096 -X -f -w 'sim:size=256K,mounted' 63
+	echo "exit status: $?"
+} > $OUT 2>&1
+
+if cmp -s $OUT $EXP; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+unset OUT EXP

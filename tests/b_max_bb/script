@@ -1,0 +1,31 @@
+if ! test -x $BADBLOCKS_SIM_EXE; then
+	echo "$test_name: $test_description: skipped (no tst_badblocks_sim)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+{
+	echo "=== read-only -e 3 ==="
+	$BADBLOCKS_SIM -e 3 -v -b 1024 -c 16 \
+		'sim:size=64K,rerr=4,rerr=8,rerr=12,rerr=16,rerr=20'
+	echo "exit status: $?"
+	echo "=== read-write -e 3 ==="
+	$BADBLOCKS_SIM -w -e 3 -v -b 1024 -c 16 \
+		'sim:size=64K,werr=4,werr=8,werr=12,werr=16,werr=20'
+	echo "exit status: $?"
+	echo "=== non-destructive -e 3 ==="
+	$BADBLOCKS_SIM -n -S 1 -e 3 -v -b 1024 -c 16 \
+		'sim:size=64K,rerr=4,rerr=8,rerr=12,rerr=16,rerr=20'
+	echo "exit status: $?"
+} > $OUT 2>&1
+
+if cmp -s $OUT $EXP; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+unset OUT EXP

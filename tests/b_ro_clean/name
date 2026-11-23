@@ -1,0 +1,1 @@
+badblocks -r: clean read-only scan with direct and buffered I/O

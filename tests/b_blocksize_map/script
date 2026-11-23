@@ -1,0 +1,20 @@
+if ! test -x $BADBLOCKS_SIM_EXE; then
+	echo "$test_name: $test_description: skipped (no tst_badblocks_sim)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+$BADBLOCKS_SIM -n -S 1 -v -b 4096 -c 8 \
+	'sim:size=256K,rerr=9,corrupt=31' > $OUT 2>&1
+echo "exit status: $?" >> $OUT
+
+if cmp -s $OUT $EXP; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+unset OUT EXP

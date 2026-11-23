@@ -1,0 +1,9 @@
+
+
+Interrupted at block 8
+
+Interrupt caught, cleaning up
+sim: reads=3 writes=4 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 32-127
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 1

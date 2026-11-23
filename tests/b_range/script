@@ -1,0 +1,28 @@
+if ! test -x $BADBLOCKS_SIM_EXE; then
+	echo "$test_name: $test_description: skipped (no tst_badblocks_sim)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+{
+	echo "=== subrange 10..40 ==="
+	$BADBLOCKS_SIM -v -b 1024 -c 16 'sim:size=64K' 40 10
+	echo "exit status: $?"
+	echo "=== past EOF (non-sector-aligned) ==="
+	$BADBLOCKS_SIM -v -b 1024 -c 16 'sim:size=33000B' 35 30
+	echo "exit status: $?"
+	echo "=== invalid first > last ==="
+	$BADBLOCKS_SIM -b 1024 'sim:size=64K' 10 20
+	echo "exit status: $?"
+} 2>&1 | sed -e "s|^$BADBLOCKS_SIM_EXE:|tst_badblocks_sim:|" > $OUT
+
+if cmp -s $OUT $EXP; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+unset OUT EXP

@@ -1,0 +1,25 @@
+=== subrange 10..40 ===
+Checking blocks 10 to 40
+Checking for bad blocks (read-only test): done                                                 
+Pass completed, 0 bad blocks found. (0/0/0 errors)
+sim: reads=2 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== past EOF (non-sector-aligned) ===
+Checking blocks 30 to 35
+Checking for bad blocks (read-only test): Weird value (2280) in do_read
+Weird value (232) in do_read
+32
+33
+34
+35
+done                                                 
+Pass completed, 4 bad blocks found. (4/0/0 errors)
+sim: reads=5 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== invalid first > last ===
+tst_badblocks_sim: invalid starting block (20): must be less than 11
+exit status: 1

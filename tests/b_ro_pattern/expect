@@ -1,0 +1,10 @@
+Checking blocks 0 to 63
+Checking for bad blocks in read-only mode
+Testing with pattern 0x55: 10
+31
+done                                                 
+Pass completed, 2 bad blocks found. (0/0/2 errors)
+sim: reads=4 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0

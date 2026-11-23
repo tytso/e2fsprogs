@@ -1,0 +1,9 @@
+=== auto-size >= 2^32 blocks ===
+tst_badblocks_sim: EOVERFLOW invalid end block (8589934592): must be 32-bit value
+exit status: 1
+=== CLI last_block >= 2^32 ===
+tst_badblocks_sim: last block too large - 4294967296
+exit status: 1
+=== -i input list >= 2^32 ===
+tst_badblocks_sim: EOVERFLOW while adding to in-memory bad block list
+exit status: 1

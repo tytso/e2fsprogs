@@ -1,0 +1,52 @@
+=== read-only -e 3 ===
+Checking blocks 0 to 63
+Checking for bad blocks (read-only test): 2
+4
+6
+Too many bad blocks, aborting test
+done                                                 
+Pass completed, 3 bad blocks found. (3/0/0 errors)
+sim: reads=8 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 32-127
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== read-write -e 3 ===
+Checking for bad blocks in read-write mode
+From block 0 to 63
+Testing with pattern 0xaa: 2
+4
+6
+Too many bad blocks, aborting test
+done                                                 
+Reading and comparing: Too many bad blocks, aborting test
+done                                                 
+Testing with pattern 0x55: Too many bad blocks, aborting test
+done                                                 
+Reading and comparing: Too many bad blocks, aborting test
+done                                                 
+Testing with pattern 0xff: Too many bad blocks, aborting test
+done                                                 
+Reading and comparing: Too many bad blocks, aborting test
+done                                                 
+Testing with pattern 0x00: Too many bad blocks, aborting test
+done                                                 
+Reading and comparing: Too many bad blocks, aborting test
+done                                                 
+Pass completed, 3 bad blocks found. (0/3/0 errors)
+sim: reads=0 writes=8 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 0-127
+sim: content: modified (8 sectors changed); chunks-live=1 peak-bytes=65536
+exit status: 0
+=== non-destructive -e 3 ===
+Using random seed 1
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with random pattern: 2
+4
+6
+Too many bad blocks, aborting test
+Pass completed, 3 bad blocks found. (3/0/0 errors)
+sim: reads=12 writes=8 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 32-127
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 0
