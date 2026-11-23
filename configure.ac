@@ -1271,6 +1271,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	pread64
 	pwrite64
 	qsort_r
+	sbrk
 	secure_getenv
 	setmntent
 	setresgid

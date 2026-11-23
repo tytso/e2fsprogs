@@ -13900,6 +13900,12 @@ then :
   printf "%s\n" "#define HAVE_QSORT_R 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "sbrk" "ac_cv_func_sbrk"
+if test "x$ac_cv_func_sbrk" = xyes
+then :
+  printf "%s\n" "#define HAVE_SBRK 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "secure_getenv" "ac_cv_func_secure_getenv"
 if test "x$ac_cv_func_secure_getenv" = xyes
 then :

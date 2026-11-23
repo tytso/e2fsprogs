@@ -14,6 +14,7 @@ MKDIR_P = @MKDIR_P@
 all::
 
 OBJS=		cstring.o \
+		compat.o \
 		mkquota.o \
 		plausible.o \
 		profile.o \
@@ -28,6 +29,7 @@ OBJS=		cstring.o \
 		devname.o
 
 SRCS=		$(srcdir)/argv_parse.c \
+		$(srcdir)/compat.c \
 		$(srcdir)/cstring.c \
 		$(srcdir)/mkquota.c \
 		$(srcdir)/parse_qtype.c \
@@ -108,6 +110,8 @@ $(OBJS):
 #
 argv_parse.o: $(srcdir)/argv_parse.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/argv_parse.h
+compat.o: $(srcdir)/compat.c $(srcdir)/compat.h $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h
 cstring.o: $(srcdir)/cstring.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/cstring.h
 mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \

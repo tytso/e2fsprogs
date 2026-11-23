@@ -337,6 +337,9 @@
 /* Define to 1 if if struct sockaddr contains sa_len */
 #undef HAVE_SA_LEN
 
+/* Define to 1 if you have the 'sbrk' function. */
+#undef HAVE_SBRK
+
 /* Define to 1 if you have the 'secure_getenv' function. */
 #undef HAVE_SECURE_GETENV
 
