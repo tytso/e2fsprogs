@@ -63,6 +63,7 @@ extern int optind;
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "support/nls-enable.h"
+#include "badblocks.h"
 
 #ifndef O_LARGEFILE
 #define O_LARGEFILE 0
@@ -295,13 +296,97 @@ static void uncapture_terminate(void)
 
 #define O_DIRECT_SIZE 512
 
-static void set_o_direct(int dev, unsigned char *buffer, size_t size,
-			 ext2_loff_t offset)
+static ext2_loff_t bb_blk_to_off(blk_t blk, unsigned int block_size)
+{
+	return (ext2_loff_t) blk * block_size;
+}
+
+static errcode_t unix_open(struct bb_dev *dev, int rw)
+{
+	int open_flag = O_LARGEFILE | (rw ? O_RDWR : O_RDONLY);
+
+	dev->fd = open(dev->name, open_flag);
+	if (dev->fd == -1)
+		return errno ? errno : EIO;
+	return 0;
+}
+
+static ssize_t unix_pread(struct bb_dev *dev, void *buf, size_t count,
+			  ext2_loff_t offset)
+{
+	if (ext2fs_llseek(dev->fd, offset, SEEK_SET) != offset)
+		com_err(program_name, errno, "%s", _("during seek"));
+
+	return read(dev->fd, buf, count);
+}
+
+static ssize_t unix_pwrite(struct bb_dev *dev, const void *buf, size_t count,
+			   ext2_loff_t offset)
+{
+	if (ext2fs_llseek(dev->fd, offset, SEEK_SET) != offset)
+		com_err(program_name, errno, "%s", _("during seek"));
+
+	return write(dev->fd, buf, count);
+}
+
+static errcode_t unix_get_size(struct bb_dev *dev, unsigned int block_size,
+			       blk64_t *blocks)
+{
+	return ext2fs_get_device_size2(dev->name, (int) block_size, blocks);
+}
+
+static errcode_t unix_check_mounted(struct bb_dev *dev, int *mount_flags)
+{
+	return ext2fs_check_if_mounted(dev->name, mount_flags);
+}
+
+#ifdef O_DIRECT
+static void unix_set_direct(struct bb_dev *dev, int direct)
+{
+	int flag;
+
+	flag = fcntl(dev->fd, F_GETFL);
+	if (flag > 0) {
+		flag = (flag & ~O_DIRECT) | (direct ? O_DIRECT : 0);
+		if (fcntl(dev->fd, F_SETFL, flag) < 0)
+			perror("set_o_direct");
+	}
+}
+#endif
+
+static errcode_t unix_flush(struct bb_dev *dev)
+{
+	return ext2fs_sync_device(dev->fd, 1);
+}
+
+static void unix_close(struct bb_dev *dev)
+{
+	if (dev->fd >= 0) {
+		close(dev->fd);
+		dev->fd = -1;
+	}
+}
+
+static const struct bb_dev_ops unix_dev_ops = {
+	.open		= unix_open,
+	.pread		= unix_pread,
+	.pwrite		= unix_pwrite,
+	.get_size	= unix_get_size,
+	.check_mounted	= unix_check_mounted,
+#ifdef O_DIRECT
+	.set_direct	= unix_set_direct,
+#endif
+	.flush		= unix_flush,
+	.close		= unix_close,
+};
+
+static void set_o_direct(struct bb_dev *dev EXT2FS_ATTR((unused)),
+			 const unsigned char *buffer EXT2FS_ATTR((unused)),
+			 size_t size EXT2FS_ATTR((unused)),
+			 ext2_loff_t offset EXT2FS_ATTR((unused)))
 {
 #ifdef O_DIRECT
-	static int current_O_DIRECT;	/* Current status of O_DIRECT flag */
-	int new_flag = O_DIRECT;
-	int flag;
+	int new_flag = 1;
 
 	if ((use_buffered_io != 0) ||
 	    (((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
@@ -309,15 +394,11 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 	    ((offset & (O_DIRECT_SIZE - 1)) != 0))
 		new_flag = 0;
 
-	if (new_flag != current_O_DIRECT) {
-	     /* printf("%s O_DIRECT\n", new_flag ? "Setting" : "Clearing"); */
-		flag = fcntl(dev, F_GETFL);
-		if (flag > 0) {
-			flag = (flag & ~O_DIRECT) | new_flag;
-			if (fcntl(dev, F_SETFL, flag) < 0)
-				perror("set_o_direct");
-		}
-		current_O_DIRECT = new_flag;
+	if (new_flag != dev->current_o_direct) {
+		/* printf("%s O_DIRECT\n", new_flag ? "Setting" : "Clearing"); */
+		if (dev->ops->set_direct)
+			dev->ops->set_direct(dev, new_flag);
+		dev->current_o_direct = new_flag;
 	}
 #endif
 }
@@ -364,10 +445,12 @@ static void pattern_fill(unsigned char *buffer, unsigned int pattern,
  * Perform a read of a sequence of blocks; return the number of blocks
  *    successfully sequentially read.
  */
-static int do_read (int dev, unsigned char * buffer, int try, int block_size,
-		    blk_t current_block)
+static int do_read (struct bb_dev *dev, unsigned char * buffer, int try,
+		    int block_size, blk_t current_block)
 {
 	long got;
+	size_t io_bytes = (size_t) try * block_size;
+	ext2_loff_t offset = bb_blk_to_off(current_block, block_size);
 	struct timeval tv1, tv2;
 #define NANOSEC (1000000000L)
 #define MILISEC (1000L)
@@ -375,21 +458,15 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 #if 0
 	printf("do_read: block %d, try %d\n", current_block, try);
 #endif
-	set_o_direct(dev, buffer, try * block_size,
-		     ((ext2_loff_t) current_block) * block_size);
+	set_o_direct(dev, buffer, io_bytes, offset);
 
 	if (v_flag > 1)
 		print_status();
 
-	/* Seek to the correct loc. */
-	if (ext2fs_llseek (dev, (ext2_loff_t) current_block * block_size,
-			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
-		com_err (program_name, errno, "%s", _("during seek"));
-
 	/* Try the read */
 	if (d_flag)
 		gettimeofday(&tv1, NULL);
-	got = read (dev, buffer, (size_t) try * block_size);
+	got = (long) dev->ops->pread(dev, buffer, io_bytes, offset);
 	if (d_flag)
 		gettimeofday(&tv2, NULL);
 	if (got < 0)
@@ -440,27 +517,24 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
  * Perform a write of a sequence of blocks; return the number of blocks
  *    successfully sequentially written.
  */
-static int do_write(int dev, unsigned char * buffer, int try, int block_size,
-		    unsigned long current_block)
+static int do_write(struct bb_dev *dev, unsigned char * buffer, int try,
+		    int block_size, blk_t current_block)
 {
 	long got;
+	size_t io_bytes = (size_t) try * block_size;
+	ext2_loff_t offset = bb_blk_to_off(current_block, block_size);
 
 #if 0
-	printf("do_write: block %lu, try %d\n", current_block, try);
+	printf("do_write: block %lu, try %d\n",
+	       (unsigned long) current_block, try);
 #endif
-	set_o_direct(dev, buffer, try * block_size,
-		     ((ext2_loff_t) current_block) * block_size);
+	set_o_direct(dev, buffer, io_bytes, offset);
 
 	if (v_flag > 1)
 		print_status();
 
-	/* Seek to the correct loc. */
-	if (ext2fs_llseek (dev, (ext2_loff_t) current_block * block_size,
-			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
-		com_err (program_name, errno, "%s", _("during seek"));
-
 	/* Try the write */
-	got = write (dev, buffer, (size_t) try * block_size);
+	got = (long) dev->ops->pwrite(dev, buffer, io_bytes, offset);
 	if (got < 0)
 		got = 0;
 	if (got & 511)
@@ -469,7 +543,7 @@ static int do_write(int dev, unsigned char * buffer, int try, int block_size,
 	return got;
 }
 
-static int host_dev;
+static struct bb_dev *host_dev;
 
 static void flush_bufs(void)
 {
@@ -479,13 +553,13 @@ static void flush_bufs(void)
 	if (!use_buffered_io)
 		return;
 #endif
-	retval = ext2fs_sync_device(host_dev, 1);
+	retval = host_dev->ops->flush(host_dev);
 	if (retval)
 		com_err(program_name, retval, "%s",
 			_("during ext2fs_sync_device"));
 }
 
-static unsigned int test_ro (int dev, blk_t last_block,
+static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 			     int block_size, blk_t first_block,
 			     unsigned int blocks_at_once)
 {
@@ -598,7 +672,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	return bb_count;
 }
 
-static unsigned int test_rw (int dev, blk_t last_block,
+static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 			     int block_size, blk_t first_block,
 			     unsigned int blocks_at_once)
 {
@@ -738,7 +812,7 @@ struct saved_blk_record {
 	int	num;
 };
 
-static unsigned int test_nd (int dev, blk_t last_block,
+static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			     int block_size, blk_t first_block,
 			     unsigned int blocks_at_once)
 {
@@ -990,20 +1064,20 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	return bb_count;
 }
 
-static void check_mount(char *device_name)
+static void check_mount(struct bb_dev *dev)
 {
 	errcode_t	retval;
 	int		mount_flags;
 
-	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	retval = dev->ops->check_mounted(dev, &mount_flags);
 	if (retval) {
 		com_err("ext2fs_check_if_mount", retval,
 			_("while determining whether %s is mounted."),
-			device_name);
+			dev->name);
 		return;
 	}
 	if (mount_flags & EXT2_MF_MOUNTED) {
-		fprintf(stderr, _("%s is mounted; "), device_name);
+		fprintf(stderr, _("%s is mounted; "), dev->name);
 		if (force) {
 			fputs(_("badblocks forced anyway.  "
 				"Hope /etc/mtab is incorrect.\n"), stderr);
@@ -1016,7 +1090,7 @@ static void check_mount(char *device_name)
 
 	if ((mount_flags & EXT2_MF_BUSY) && !exclusive_ok) {
 		fprintf(stderr, _("%s is apparently in use by the system; "),
-			device_name);
+			dev->name);
 		if (force)
 			fputs(_("badblocks forced anyway.\n"), stderr);
 		else
@@ -1060,13 +1134,13 @@ int main (int argc, char ** argv)
 	blk64_t last_block, first_block;
 	int num_passes = 0;
 	int passes_clean = 0;
-	int dev;
+	struct bb_dev dev_rec;
+	struct bb_dev host_dev_rec;
 	errcode_t errcode;
 	unsigned int pattern;
-	unsigned int (*test_func)(int, blk_t,
+	unsigned int (*test_func)(struct bb_dev *, blk_t,
 				  int, blk_t,
 				  unsigned int);
-	int open_flag;
 	long sysval;
 	unsigned long long inblk;
 
@@ -1225,10 +1299,13 @@ int main (int argc, char ** argv)
 	if (optind > argc - 1)
 		usage();
 	device_name = argv[optind++];
+	memset(&dev_rec, 0, sizeof(dev_rec));
+	dev_rec.ops = &unix_dev_ops;
+	dev_rec.name = device_name;
+	dev_rec.fd = -1;
 	if (optind > argc - 1) {
-		errcode = ext2fs_get_device_size2(device_name,
-						 (int) block_size,
-						 &last_block);
+		errcode = dev_rec.ops->get_size(&dev_rec, block_size,
+						&last_block);
 		if (errcode == EXT2_ET_UNIMPLEMENTED) {
 			com_err(program_name, 0, "%s",
 				_("Couldn't determine device size; you "
@@ -1264,26 +1341,30 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 	if (w_flag)
-		check_mount(device_name);
+		check_mount(&dev_rec);
 
-	gettimeofday(&time_start, 0);
-	open_flag = O_LARGEFILE | (w_flag ? O_RDWR : O_RDONLY);
-	dev = open (device_name, open_flag);
-	if (dev == -1) {
-		com_err (program_name, errno, _("while trying to open %s"),
-			 device_name);
-		exit (1);
+	gettimeofday(&time_start, NULL);
+	errcode = dev_rec.ops->open(&dev_rec, w_flag != 0);
+	if (errcode) {
+		com_err(program_name, errcode, _("while trying to open %s"),
+			dev_rec.name);
+		exit(1);
 	}
 	if (host_device_name) {
-		host_dev = open (host_device_name, open_flag);
-		if (host_dev == -1) {
-			com_err (program_name, errno,
-				 _("while trying to open %s"),
-				 host_device_name);
-			exit (1);
+		memset(&host_dev_rec, 0, sizeof(host_dev_rec));
+		host_dev_rec.ops = &unix_dev_ops;
+		host_dev_rec.name = host_device_name;
+		host_dev_rec.fd = -1;
+		errcode = host_dev_rec.ops->open(&host_dev_rec, w_flag != 0);
+		if (errcode) {
+			com_err(program_name, errcode,
+				_("while trying to open %s"),
+				host_dev_rec.name);
+			exit(1);
 		}
+		host_dev = &host_dev_rec;
 	} else
-		host_dev = dev;
+		host_dev = &dev_rec;
 	if (input_file) {
 		if (strcmp (input_file, "-") == 0)
 			in = stdin;
@@ -1357,7 +1438,7 @@ int main (int argc, char ** argv)
 	do {
 		unsigned int bb_count;
 
-		bb_count = test_func(dev, last_block, (int) block_size,
+		bb_count = test_func(&dev_rec, last_block, (int) block_size,
 				     first_block, blocks_at_once);
 		if (bb_count)
 			passes_clean = 0;
@@ -1371,7 +1452,9 @@ int main (int argc, char ** argv)
 
 	} while (passes_clean < num_passes);
 
-	close (dev);
+	if (host_dev != &dev_rec)
+		host_dev->ops->close(host_dev);
+	dev_rec.ops->close(&dev_rec);
 	if (out != stdout)
 		fclose (out);
 	free(t_patts);
