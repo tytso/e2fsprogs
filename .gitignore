@@ -181,6 +181,7 @@ lib/uuid/uuid_types.h
 lib/uuid/uuid_unparse.3
 misc/badblocks
 misc/badblocks.8
+misc/tst_badblocks_sim
 misc/base_device
 misc/base_device.out
 misc/blkid

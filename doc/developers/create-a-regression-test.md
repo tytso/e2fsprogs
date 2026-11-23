@@ -18,6 +18,7 @@ Create a new, self-contained **regression test** in `./tests/<prefix>_<name>/` t
    - `i_*`: `e2image` metadata image tests
    - `u_*`: `e2undo` undo-log tests
    - `e_*`: `libext2fs` data structure (`icount`, `irel`, `brel`) unit tests
+   - `b_*`: `badblocks` functional and fault-injection tests
 
 2. **How `test_script` and `test_one` Execute Tests (`tests/test_script.in`, `tests/test_one.in` & `tests/test_config`)**:
    - **`./test_script` is the primary interface for manually running tests** from the `tests/` directory (generated from `tests/test_script.in` via `make -C tests test_script`):

@@ -34,4 +34,12 @@ struct bb_dev {
 	void			*priv;
 };
 
+#ifdef BADBLOCKS_SIM
+int bb_sim_is_sim_device(const char *name);
+void bb_sim_setup(const char *spec, struct bb_dev *dev,
+		  unsigned int *page_size_out);
+void bb_sim_begin_scan(struct bb_dev *dev, unsigned int block_size,
+		       blk64_t first_block, blk64_t last_block);
+#endif
+
 #endif /* BADBLOCKS_H */

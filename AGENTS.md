@@ -127,6 +127,7 @@ make -C build -j$(nproc) fullcheck
 - `i_*`: `e2image` metadata image tests
 - `u_*`: `e2undo` undo-log tests
 - `e_*`: `libext2fs` data structure (`icount`, `irel`, `brel`) tests
+- `b_*`: `badblocks` functional and fault-injection tests
 
 ### Writing Unit Tests, Reproducers, and New Regression Tests
 Before writing a unit test, creating a bug reproducer, or adding a new regression test, read:

@@ -94,6 +94,37 @@ static struct timeval time_start;
 #define T_INC 32
 
 static unsigned int sys_page_size = 4096;
+#ifdef BADBLOCKS_SIM
+static int sim_mode;
+#endif
+
+static void bb_gettime(struct timeval *tv)
+{
+#ifdef BADBLOCKS_SIM
+	if (sim_mode) {
+		tv->tv_sec = 0;
+		tv->tv_usec = 0;
+		return;
+	}
+#endif
+	gettimeofday(tv, NULL);
+}
+
+static void alarm_intr(int alnum);
+
+static void bb_schedule_alarm(unsigned int secs)
+{
+#ifdef BADBLOCKS_SIM
+	if (sim_mode)
+		return;
+#endif
+	if (secs) {
+		signal(SIGALRM, alarm_intr);
+		alarm(secs);
+	} else {
+		alarm(0);
+	}
+}
 
 static void usage(void)
 {
@@ -225,7 +256,7 @@ static void print_status(void)
 #endif
 	int len;
 
-	gettimeofday(&time_end, 0);
+	bb_gettime(&time_end);
 	len = snprintf(line_buf, sizeof(line_buf), 
 		       _("%6.2f%% done, %s elapsed. "
 		         "(%d/%d/%d errors)"),
@@ -250,8 +281,7 @@ static void print_status(void)
 
 static void alarm_intr(int alnum EXT2FS_ATTR((unused)))
 {
-	signal (SIGALRM, alarm_intr);
-	alarm(1);
+	bb_schedule_alarm(1);
 	if (!num_blocks)
 		return;
 	print_status();
@@ -385,7 +415,7 @@ static void set_o_direct(struct bb_dev *dev EXT2FS_ATTR((unused)),
 			 size_t size EXT2FS_ATTR((unused)),
 			 ext2_loff_t offset EXT2FS_ATTR((unused)))
 {
-#ifdef O_DIRECT
+#if defined(O_DIRECT) || defined(BADBLOCKS_SIM)
 	int new_flag = 1;
 
 	if ((use_buffered_io != 0) ||
@@ -481,10 +511,10 @@ static int do_read (struct bb_dev *dev, unsigned char * buffer, int try,
 
 	/* Try the read */
 	if (d_flag)
-		gettimeofday(&tv1, NULL);
+		bb_gettime(&tv1);
 	got = (long) dev->ops->pread(dev, buffer, io_bytes, offset);
 	if (d_flag)
-		gettimeofday(&tv2, NULL);
+		bb_gettime(&tv2);
 	if (got < 0)
 		got = 0;
 	if (got & 511)
@@ -567,6 +597,9 @@ static void flush_bufs(void)
 
 #ifdef O_DIRECT
 	if (!use_buffered_io)
+		return;
+#elif defined(BADBLOCKS_SIM)
+	if (sim_mode && !use_buffered_io)
 		return;
 #endif
 	retval = host_dev->ops->flush(host_dev);
@@ -674,7 +707,7 @@ static unsigned int test_ro (struct bb_dev *dev, blk_t last_block,
 		}
 	}
 	num_blocks = 0;
-	alarm(0);
+	bb_schedule_alarm(0);
 	if (s_flag || v_flag)
 		fputs(_(done_string), stderr);
 
@@ -766,7 +799,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 		}
 
 		num_blocks = 0;
-		alarm (0);
+		bb_schedule_alarm(0);
 		if (s_flag | v_flag)
 			fputs(_(done_string), stderr);
 		flush_bufs();
@@ -813,7 +846,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 		}
 
 		num_blocks = 0;
-		alarm (0);
+		bb_schedule_alarm(0);
 		if (s_flag | v_flag)
 			fputs(_(done_string), stderr);
 		flush_bufs();
@@ -899,6 +932,14 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			save_ptr += test_record[i].num * block_size;
 		}
 		fflush (out);
+		free(blkbuf);
+		free(test_record);
+		if (bb_iter) {
+			ext2fs_badblocks_list_iterate_end(bb_iter);
+			bb_iter = NULL;
+		}
+		free(t_patts);
+		t_patts = NULL;
 		exit(1);
 	}
 
@@ -1064,7 +1105,7 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			currently_testing = save_currently_testing;
 		}
 		num_blocks = 0;
-		alarm(0);
+		bb_schedule_alarm(0);
 		if (s_flag || v_flag > 1)
 			fputs(_(done_string), stderr);
 
@@ -1155,6 +1196,9 @@ int main (int argc, char ** argv)
 	errcode_t errcode;
 	unsigned int pattern;
 	unsigned int random_seed;
+#ifdef BADBLOCKS_SIM
+	int seed_set = 0;
+#endif
 	int uses_random = 0;
 	unsigned int (*test_func)(struct bb_dev *, blk_t,
 				  int, blk_t,
@@ -1281,6 +1325,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'S':
 			random_seed = parse_uint(optarg, "random seed");
+#ifdef BADBLOCKS_SIM
+			seed_set = 1;
+#endif
 			break;
 		default:
 			usage();
@@ -1329,15 +1376,24 @@ int main (int argc, char ** argv)
 			}
 		}
 	}
-	bb_srand(random_seed);
-
 	if (optind > argc - 1)
 		usage();
 	device_name = argv[optind++];
-	memset(&dev_rec, 0, sizeof(dev_rec));
-	dev_rec.ops = &unix_dev_ops;
-	dev_rec.name = device_name;
-	dev_rec.fd = -1;
+#ifdef BADBLOCKS_SIM
+	if (bb_sim_is_sim_device(device_name)) {
+		sim_mode = 1;
+		if (!seed_set)
+			random_seed = 1;
+		bb_sim_setup(device_name, &dev_rec, &sys_page_size);
+	} else
+#endif
+	{
+		memset(&dev_rec, 0, sizeof(dev_rec));
+		dev_rec.ops = &unix_dev_ops;
+		dev_rec.name = device_name;
+		dev_rec.fd = -1;
+	}
+	bb_srand(random_seed);
 	if (optind > argc - 1) {
 		errcode = dev_rec.ops->get_size(&dev_rec, block_size,
 						&last_block);
@@ -1378,7 +1434,7 @@ int main (int argc, char ** argv)
 	if (w_flag)
 		check_mount(&dev_rec);
 
-	gettimeofday(&time_start, NULL);
+	bb_gettime(&time_start);
 	errcode = dev_rec.ops->open(&dev_rec, w_flag != 0);
 	if (errcode) {
 		com_err(program_name, errcode, _("while trying to open %s"),
@@ -1472,6 +1528,11 @@ int main (int argc, char ** argv)
 
 	if (v_flag && uses_random)
 		fprintf(stderr, _("Using random seed %u\n"), random_seed);
+
+#ifdef BADBLOCKS_SIM
+	if (sim_mode)
+		bb_sim_begin_scan(&dev_rec, block_size, first_block, last_block);
+#endif
 
 	do {
 		unsigned int bb_count;
