@@ -1,0 +1,37 @@
+=== errmode=eio ===
+Checking for bad blocks in read-write mode
+From block 0 to 63
+Testing with pattern 0xaa: 5
+done                                                 
+Reading and comparing: 10
+25
+done                                                 
+Testing with pattern 0x55: done                                                 
+Reading and comparing: done                                                 
+Testing with pattern 0xff: done                                                 
+Reading and comparing: done                                                 
+Testing with pattern 0x00: done                                                 
+Reading and comparing: done                                                 
+Pass completed, 3 bad blocks found. (1/1/1 errors)
+sim: reads=80 writes=80 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: modified (126 sectors changed); chunks-live=1 peak-bytes=65536
+exit status: 0
+=== errmode=short corrupt before rerr ===
+Checking for bad blocks in read-write mode
+From block 0 to 63
+Testing with pattern 0xaa: done                                                 
+Reading and comparing: 5
+10
+done                                                 
+Testing with pattern 0x55: done                                                 
+Reading and comparing: done                                                 
+Testing with pattern 0xff: done                                                 
+Reading and comparing: done                                                 
+Testing with pattern 0x00: done                                                 
+Reading and comparing: done                                                 
+Pass completed, 2 bad blocks found. (1/0/1 errors)
+sim: reads=40 writes=16 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: modified (128 sectors changed); chunks-live=1 peak-bytes=65536
+exit status: 0

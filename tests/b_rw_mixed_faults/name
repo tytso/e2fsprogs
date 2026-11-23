@@ -1,0 +1,1 @@
+badblocks -w: read, write, and corruption errors across eio and short modes
