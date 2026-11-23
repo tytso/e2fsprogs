@@ -799,6 +799,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 
 		granularity = blocks_at_once;
 		recover_block = ~0U;
+		bb_iter_begin(first_block);
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
 				if (s_flag || v_flag) {
@@ -812,6 +813,14 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				recover_block = ~0U;
 			}
 			try = granularity;
+			if (next_bad_valid) {
+				if (currently_testing == next_bad) {
+					bb_iter_next();
+					currently_testing++;
+					continue;
+				} else if (currently_testing + try > next_bad)
+					try = next_bad - currently_testing;
+			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
 			got = do_write(dev, buffer, try, block_size,
@@ -830,6 +839,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				continue;
 			}
 		}
+		bb_iter_end();
 
 		num_blocks = 0;
 		bb_schedule_alarm(0);
@@ -845,6 +855,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 
 		granularity = blocks_at_once;
 		recover_block = ~0U;
+		bb_iter_begin(first_block);
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
 				if (s_flag || v_flag) {
@@ -858,6 +869,14 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 				recover_block = ~0U;
 			}
 			try = granularity;
+			if (next_bad_valid) {
+				if (currently_testing == next_bad) {
+					bb_iter_next();
+					currently_testing++;
+					continue;
+				} else if (currently_testing + try > next_bad)
+					try = next_bad - currently_testing;
+			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
 			got = do_read (dev, read_buffer, try, block_size,
@@ -882,6 +901,7 @@ static unsigned int test_rw (struct bb_dev *dev, blk_t last_block,
 			if (v_flag > 1)
 				print_status();
 		}
+		bb_iter_end();
 
 		num_blocks = 0;
 		bb_schedule_alarm(0);

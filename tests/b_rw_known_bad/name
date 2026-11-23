@@ -1,0 +1,1 @@
+badblocks -w: skip known-bad blocks from -i in read-write mode

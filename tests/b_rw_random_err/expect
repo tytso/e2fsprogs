@@ -8,7 +8,7 @@ done
 Testing with pattern 0x123456: done                                                 
 Reading and comparing: done                                                 
 Pass completed, 2 bad blocks found. (1/1/0 errors)
-sim: reads=40 writes=40 flushes=0 direct-misaligned=0 out-of-range=0
-sim: never-read: none
+sim: reads=26 writes=25 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 10-11
 sim: content: modified (126 sectors changed); chunks-live=1 peak-bytes=65536
 exit status: 0
