@@ -941,7 +941,6 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 	blk_t recover_block = ~0U;
 
 	bb_count = 0;
-	bb_iter_begin(first_block);
 
 	blkbuf = allocate_buffer((size_t) 3 * blocks_at_once * block_size);
 	test_record = malloc(blocks_at_once * sizeof(struct saved_blk_record));
@@ -1004,13 +1003,16 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			     blocks_at_once * block_size);
 
 		buf_used = 0;
-		bb_count = 0;
+		granularity = blocks_at_once;
+		recover_block = ~0U;
 		save_ptr = save_base;
 		test_ptr = test_base;
 		currently_testing = first_block;
 		num_blocks = last_block - 1;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
+
+		bb_iter_begin(first_block);
 
 		while (currently_testing < last_block) {
 			if (bb_count >= max_bb) {
@@ -1156,13 +1158,12 @@ static unsigned int test_nd (struct bb_dev *dev, blk_t last_block,
 			fputs(_(done_string), stderr);
 
 		flush_bufs();
+		bb_iter_end();
 	}
 	uncapture_terminate();
 	fflush(stderr);
 	free(blkbuf);
 	free(test_record);
-
-	bb_iter_end();
 
 	return bb_count;
 }

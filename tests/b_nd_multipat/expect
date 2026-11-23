@@ -1,0 +1,23 @@
+=== -n -i -t 0xaa -t 0x55 -p 1 ===
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with pattern 0xaa: 10
+Testing with pattern 0x55: Pass completed, 1 bad blocks found. (1/0/0 errors)
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with pattern 0xaa: Testing with pattern 0x55: Pass completed, 0 bad blocks found. (1/0/0 errors)
+sim: reads=76 writes=74 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 0-1,50-51
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 0
+=== -n -t 0xaa -t 0x55 -e 2 ===
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with pattern 0xaa: 10
+Testing with pattern 0x55: 20
+Too many bad blocks, aborting test
+Pass completed, 2 bad blocks found. (2/0/0 errors)
+sim: reads=50 writes=46 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 0

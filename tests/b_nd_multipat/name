@@ -1,0 +1,1 @@
+badblocks -n: multi-pattern bb_count, -p/-e accounting, and -i skipping
