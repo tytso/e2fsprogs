@@ -104,8 +104,8 @@ int fgetflags (const char * name, unsigned long * flags)
 		if (errno == ENOTTY)
 			errno = EOPNOTSUPP;
 		save_errno = errno;
-	}
-	*flags = f;
+	} else
+		*flags = f;
 	close(fd);
 	if (save_errno)
 		errno = save_errno;
