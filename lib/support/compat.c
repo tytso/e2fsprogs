@@ -12,9 +12,12 @@ int compat_daemon(int nochdir, int noclose)
 {
 #if defined(HAVE_DAEMON) && !defined(__APPLE__)
 	return daemon(nochdir, noclose);
+#elif defined(_WIN32)
+	/* No fork() or setsid() on Windows */
+	errno = ENOSYS;
+	return -1;
 #else
 	pid_t pid;
-	uid_t euid;
 
 	pid = fork();
 	if (pid == -1) {
