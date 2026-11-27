@@ -1,0 +1,4 @@
+debugfs rdump fast symlink not NUL-terminated
+debugfs -R ''rdump lnk DEST'' image
+Exit status is 0
+link target: A
