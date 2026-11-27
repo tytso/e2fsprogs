@@ -15,6 +15,9 @@ printf "4294967296\n" > $TMPFILE
 	echo "=== CLI last_block >= 2^32 ==="
 	$BADBLOCKS_SIM -b 4096 'sim:size=32T' 4294967296
 	echo "exit status: $?"
+	echo "=== CLI last_block >= 2^64 ==="
+	$BADBLOCKS_SIM -b 4096 'sim:size=32T' 18446744073709551616
+	echo "exit status: $?"
 	echo "=== -i input list >= 2^32 ==="
 	$BADBLOCKS_SIM -b 4096 -i $TMPFILE 'sim:size=64K'
 	echo "exit status: $?"

@@ -1217,16 +1217,19 @@ static void check_mount(struct bb_dev *dev)
 static unsigned int parse_uint(const char *str, const char *descr)
 {
 	char		*tmp;
-	unsigned long	ret;
+	unsigned long long	ret;
 
+	/*
+	 * Use strtoull() so that a value which doesn't fit in 32 bits is
+	 * reported the same way regardless of the size of unsigned long.
+	 */
 	errno = 0;
-	ret = strtoul(str, &tmp, 0);
-	if (*tmp || errno) {
+	ret = strtoull(str, &tmp, 0);
+	if (*tmp || (errno && errno != ERANGE)) {
 		com_err (program_name, 0, _("invalid %s - %s"), descr, str);
 		exit (1);
-	} else if ((ret > UINT_MAX) ||
-	    (ret == ULONG_MAX && errno == ERANGE)) {
-		com_err (program_name, 0, _("%s too large - %lu"), descr, ret);
+	} else if ((ret > UINT_MAX) || errno == ERANGE) {
+		com_err (program_name, 0, _("%s too large - %s"), descr, str);
 		exit (1);
 	}
 	return ret;
