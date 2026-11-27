@@ -190,7 +190,7 @@ static int link_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 {
 	struct link_struct *ls = (struct link_struct *) priv_data;
 	struct ext2_dir_entry *next;
-	unsigned int rec_len, min_rec_len, curr_rec_len;
+	unsigned int rec_len, min_rec_len, curr_rec_len, next_rec_len;
 	int ret = 0;
 	int csum_size = 0;
 
@@ -203,21 +203,33 @@ static int link_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	if (ls->err)
 		return DIRENT_ABORT;
 
-	if (ext2fs_has_feature_metadata_csum(ls->fs->super))
+	if (ext2fs_has_feature_metadata_csum(ls->fs->super) &&
+	    blocksize == (int) ls->fs->blocksize)
 		csum_size = sizeof(struct ext2_dir_entry_tail);
 	/*
-	 * See if the following directory entry (if any) is unused;
-	 * if so, absorb it into this one.
+	 * See if the following directory entries (if any) are unused;
+	 * if so, absorb them into this one.  Stop at anything which
+	 * doesn't look like a sane directory entry; the directory
+	 * iterator will complain about it if necessary.
 	 */
-	next = (struct ext2_dir_entry *) (buf + offset + curr_rec_len);
-	if ((offset + (int) curr_rec_len < blocksize - (8 + csum_size)) &&
-	    (next->inode == 0) &&
-	    (offset + (int) curr_rec_len + (int) next->rec_len <= blocksize)) {
-		curr_rec_len += next->rec_len;
+	while (offset + (int) curr_rec_len <= blocksize - (8 + csum_size)) {
+		next = (struct ext2_dir_entry *) (buf + offset + curr_rec_len);
+		if (next->inode)
+			break;
+		ls->err = ext2fs_get_rec_len(ls->fs, next, &next_rec_len);
+		if (ls->err)
+			return DIRENT_ABORT;
+		if ((next_rec_len < 8) || (next_rec_len % 4) ||
+		    (offset + (int) (curr_rec_len + next_rec_len) >
+		     blocksize - csum_size))
+			break;
+		curr_rec_len += next_rec_len;
+		ret = DIRENT_CHANGED;
+	}
+	if (ret) {
 		ls->err = ext2fs_set_rec_len(ls->fs, curr_rec_len, dirent);
 		if (ls->err)
 			return DIRENT_ABORT;
-		ret = DIRENT_CHANGED;
 	}
 
 	/*
@@ -388,7 +400,7 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 	int continued;
 	__u32 minor_hash;
 
-	retval = ext2fs_get_mem(fs->blocksize, &buf2);
+	retval = ext2fs_get_memzero(fs->blocksize, &buf2);
 	if (retval)
 		return retval;
 	retval = ext2fs_get_array(fs->blocksize / 12,
@@ -416,6 +428,16 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 			count++;
 		}
 	}
+	/*
+	 * link_proc() has merged all of the unused space it could, so a
+	 * valid leaf without room for a name of up to EXT2_NAME_LEN
+	 * characters holds at least two named entries.  Anything else
+	 * can't be split.
+	 */
+	if (count < 2) {
+		retval = EXT2_ET_DIR_CORRUPTED;
+		goto out;
+	}
 	qsort(map, count, sizeof(struct dx_hash_map), dx_hash_map_cmp);
 	move_size = 0;
 	/* Find place to split block */
@@ -426,6 +448,13 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 	}
 	/* Let i be the first entry to move */
 	i++;
+	/*
+	 * If the entries take up no more than half of the block (it was
+	 * full only because its free space was spread out), split them
+	 * in half by count, so that neither block ends up empty.
+	 */
+	if (i == 0)
+		i = count / 2;
 	/* Move selected directory entries to new block */
 	retval = dx_move_dirents(fs, map + i, count - i, buf, buf2);
 	if (retval)
@@ -434,6 +463,7 @@ static errcode_t dx_split_leaf(ext2_filsys fs, ext2_ino_t dir,
 	if (retval)
 		goto out;
 	/* Repack remaining entries in the old block */
+	memset(buf2, 0, fs->blocksize);
 	retval = dx_move_dirents(fs, map, i, buf, buf2);
 	if (retval)
 		goto out;
@@ -843,6 +873,7 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 	errcode_t		retval;
 	struct link_struct	ls;
 	struct ext2_inode	inode;
+	blk64_t			lblk = 0, pblk;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -866,16 +897,32 @@ retry:
 	ls.blocksize = fs->blocksize;
 	ls.err = 0;
 
+	/*
+	 * With EXT2FS_LINK_APPEND, only look at the last block of the
+	 * directory.  If i_size or the block map don't lead us to it,
+	 * fall back to searching the whole directory.
+	 */
+	pblk = 0;
 	if ((flags & EXT2FS_LINK_APPEND) &&
-	    !(inode.i_flags & EXT4_INLINE_DATA_FL)) {
-		blk64_t		lblk, pblk = 0;
-		struct dir_context ctx;
+	    !(inode.i_flags & EXT4_INLINE_DATA_FL) &&
+	    (EXT2_I_SIZE(&inode) >= fs->blocksize)) {
+		int ret_flags = 0;
 
-		lblk = (inode.i_size / fs->blocksize) - 1;
+		lblk = (EXT2_I_SIZE(&inode) / fs->blocksize) - 1;
 		retval = ext2fs_bmap2(fs, dir, &inode, NULL, 0, lblk,
-				      NULL, &pblk);
-		if (retval)
+				      &ret_flags, &pblk);
+		if (retval == EXT2_ET_FILE_TOO_BIG) {
+			retval = 0;
+			pblk = 0;
+		} else if (retval) {
 			return retval;
+		} else if ((ret_flags & BMAP_RET_UNINIT) ||
+			   pblk >= ext2fs_blocks_count(fs->super)) {
+			pblk = 0;
+		}
+	}
+	if (pblk) {
+		struct dir_context ctx;
 
 		ctx.dir = dir;
 		ctx.flags = DIRENT_FLAG_INCLUDE_EMPTY;

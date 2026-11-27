@@ -1,0 +1,17 @@
+Checking blocks 0 to 63
+Checking for bad blocks (read-only test): done                                                 
+Pass completed, 0 bad blocks found. (0/0/0 errors)
+Checking blocks 0 to 63
+Checking for bad blocks (read-only test): 40
+done                                                 
+Pass completed, 1 bad blocks found. (1/0/0 errors)
+Checking blocks 0 to 63
+Checking for bad blocks (read-only test): done                                                 
+Pass completed, 0 bad blocks found. (1/0/0 errors)
+Checking blocks 0 to 63
+Checking for bad blocks (read-only test): done                                                 
+Pass completed, 0 bad blocks found. (1/0/0 errors)
+sim: reads=70 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0

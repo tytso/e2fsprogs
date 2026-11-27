@@ -275,69 +275,316 @@ static int process_journal_block(ext2_filsys fs,
 	return 0;
 }
 
+static int fc_valid_ino(ext2_filsys fs, ext2_ino_t ino)
+{
+	struct ext2_super_block *sb = fs->super;
+
+	if (ino == 0 || ino > sb->s_inodes_count ||
+	    (__u64)ino > (__u64)fs->group_desc_count *
+			 EXT2_INODES_PER_GROUP(sb))
+		return 0;
+	if (ino != EXT2_ROOT_INO && ino < EXT2_GOOD_OLD_FIRST_INO)
+		return 0;
+	if (uuid_is_null(sb->s_journal_uuid) && ino == sb->s_journal_inum)
+		return 0;
+	return 1;
+}
+
+static int fc_validate_dentry_tag(ext2_filsys fs, size_t tag_len,
+				  const __u8 *val)
+{
+	struct ext4_fc_dentry_info fcd;
+	const __u8 *dname;
+	size_t dname_len;
+
+	if (tag_len <= sizeof(fcd))
+		return -EFSCORRUPTED;
+	dname_len = tag_len - sizeof(fcd);
+	if (dname_len > EXT2_NAME_LEN)
+		return -EFSCORRUPTED;
+
+	memcpy(&fcd, val, sizeof(fcd));
+	if (!fc_valid_ino(fs, le32_to_cpu(fcd.fc_parent_ino)) ||
+	    !fc_valid_ino(fs, le32_to_cpu(fcd.fc_ino)))
+		return -EFSCORRUPTED;
+
+	dname = val + sizeof(fcd);
+	if (memchr(dname, '\0', dname_len) || memchr(dname, '/', dname_len))
+		return -EFSCORRUPTED;
+	if ((dname_len == 1 && dname[0] == '.') ||
+	    (dname_len == 2 && dname[0] == '.' && dname[1] == '.'))
+		return -EFSCORRUPTED;
+
+	return 0;
+}
+
+static int fc_validate_inode_tag(ext2_filsys fs, size_t tag_len,
+				 const __u8 *val, ext2_ino_t *ret_ino,
+				 size_t *ret_inode_len)
+{
+	__le32 fc_ino;
+	ext2_ino_t ino;
+	size_t inode_len = EXT2_GOOD_OLD_INODE_SIZE;
+
+	if (tag_len < sizeof(fc_ino) + EXT2_GOOD_OLD_INODE_SIZE)
+		return -EFSCORRUPTED;
+
+	memcpy(&fc_ino, val, sizeof(fc_ino));
+	ino = le32_to_cpu(fc_ino);
+	if (!fc_valid_ino(fs, ino))
+		return -EFSCORRUPTED;
+
+	if ((size_t)EXT2_INODE_SIZE(fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
+		__le16 raw_extra_isize;
+		__u16 extra_isize;
+		size_t extra_off = sizeof(fc_ino) +
+			offsetof(struct ext2_inode_large, i_extra_isize);
+
+		if (tag_len < extra_off + sizeof(raw_extra_isize))
+			return -EFSCORRUPTED;
+		memcpy(&raw_extra_isize, val + extra_off,
+		       sizeof(raw_extra_isize));
+		extra_isize = le16_to_cpu(raw_extra_isize);
+		if ((extra_isize & 3) ||
+		    extra_isize <
+		    (sizeof(((struct ext2_inode_large *)0)->i_extra_isize) +
+		     sizeof(((struct ext2_inode_large *)0)->i_checksum_hi)) ||
+		    extra_isize > ((size_t)EXT2_INODE_SIZE(fs->super) -
+				   EXT2_GOOD_OLD_INODE_SIZE))
+			return -EFSCORRUPTED;
+		inode_len += extra_isize;
+	}
+
+	if (tag_len < sizeof(fc_ino) + inode_len)
+		return -EFSCORRUPTED;
+
+	if (ret_ino)
+		*ret_ino = ino;
+	if (ret_inode_len)
+		*ret_inode_len = inode_len;
+	return 0;
+}
+
+static int fc_validate_add_range_tag(ext2_filsys fs, size_t tag_len,
+				     const __u8 *val, ext2_ino_t *ret_ino,
+				     struct ext2fs_extent *ret_ex)
+{
+	struct ext4_fc_add_range add_range;
+	struct ext2fs_extent ex;
+	ext2_ino_t ino;
+
+	if (tag_len < sizeof(add_range))
+		return -EFSCORRUPTED;
+
+	memcpy(&add_range, val, sizeof(add_range));
+	ino = le32_to_cpu(add_range.fc_ino);
+	if (!fc_valid_ino(fs, ino))
+		return -EFSCORRUPTED;
+
+	memset(&ex, 0, sizeof(ex));
+	if (ext2fs_decode_extent(&ex, (void *)add_range.fc_ex,
+				 sizeof(add_range.fc_ex)))
+		return -EFSCORRUPTED;
+
+	if (ex.e_len == 0 ||
+	    ex.e_pblk < fs->super->s_first_data_block ||
+	    ex.e_pblk >= ext2fs_blocks_count(fs->super) ||
+	    ex.e_len > ext2fs_blocks_count(fs->super) - ex.e_pblk ||
+	    ex.e_lblk + ex.e_len > (1ULL << 32))
+		return -EFSCORRUPTED;
+
+	if (ret_ino)
+		*ret_ino = ino;
+	if (ret_ex)
+		*ret_ex = ex;
+	return 0;
+}
+
+static int fc_validate_del_range_tag(ext2_filsys fs, size_t tag_len,
+				     const __u8 *val, ext2_ino_t *ret_ino,
+				     struct ext2fs_extent *ret_ex)
+{
+	struct ext4_fc_del_range del_range;
+	ext2_ino_t ino;
+	__u32 lblk, len;
+
+	if (tag_len < sizeof(del_range))
+		return -EFSCORRUPTED;
+
+	memcpy(&del_range, val, sizeof(del_range));
+	ino = le32_to_cpu(del_range.fc_ino);
+	if (!fc_valid_ino(fs, ino))
+		return -EFSCORRUPTED;
+
+	lblk = le32_to_cpu(del_range.fc_lblk);
+	len = le32_to_cpu(del_range.fc_len);
+	if (len == 0 || (blk64_t)lblk + len > (1ULL << 32))
+		return -EFSCORRUPTED;
+
+	if (ret_ino)
+		*ret_ino = ino;
+	if (ret_ex) {
+		memset(ret_ex, 0, sizeof(*ret_ex));
+		ret_ex->e_lblk = lblk;
+		ret_ex->e_len = len;
+	}
+	return 0;
+}
+
+static void ext4_fc_replay_cleanup(e2fsck_t ctx)
+{
+	struct e2fsck_fc_replay_state *state = &ctx->fc_replay_state;
+	unsigned int i;
+
+	if (state->fc_extent_list.extents)
+		ext2fs_free_mem(&state->fc_extent_list.extents);
+
+	if (state->fc_blocks) {
+		for (i = 0; i < state->fc_blocks_count; i++) {
+			if (state->fc_blocks[i])
+				ext2fs_free_mem(&state->fc_blocks[i]);
+		}
+		ext2fs_free_mem(&state->fc_blocks);
+	}
+	memset(state, 0, sizeof(*state));
+}
+
 static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 				int off, tid_t expected_tid)
 {
 	e2fsck_t ctx = j->j_fs_dev->k_ctx;
 	struct e2fsck_fc_replay_state *state;
 	int ret = JBD2_FC_REPLAY_CONTINUE;
-	struct ext4_fc_add_range ext;
 	struct ext4_fc_tl tl;
 	struct ext4_fc_tail tail;
-	__u8 *start, *cur, *end, *val;
+	__u8 *start, *cur, *end, *val, *blk_copy = NULL;
 	struct ext4_fc_head head;
-	struct ext2fs_extent ext2fs_ex = {0};
+	unsigned long max_fc_blks;
+	size_t tag_len;
+
+	if (off < 0 || j->j_fc_last < j->j_fc_first)
+		return -EFSCORRUPTED;
+	max_fc_blks = j->j_fc_last - j->j_fc_first + 1;
+	if ((unsigned long)off >= max_fc_blks)
+		return -EFSCORRUPTED;
 
 	state = &ctx->fc_replay_state;
 
 	start = (__u8 *)bh->b_data;
-	end = (__u8 *)bh->b_data + j->j_blocksize - 1;
+	end = start + j->j_blocksize;
 
 	jbd_debug(1, "Scan phase starting, expected %d", expected_tid);
 	if (state->fc_replay_expected_off == 0) {
+		ext4_fc_replay_cleanup(ctx);
 		memset(state, 0, sizeof(*state));
+		if ((size_t)(end - start) < sizeof(tl))
+			return -EFSCORRUPTED;
+		memcpy(&tl, start, sizeof(tl));
 		/* Check if we can stop early */
-		if (le16_to_cpu(((struct ext4_fc_tl *)start)->fc_tag)
-			!= EXT4_FC_TAG_HEAD) {
+		if (le16_to_cpu(tl.fc_tag) != EXT4_FC_TAG_HEAD) {
 			jbd_debug(1, "Ending early!, not a head tag");
 			return 0;
 		}
 	}
 
-	if (off != state->fc_replay_expected_off) {
+	if (off != state->fc_replay_expected_off ||
+	    state->fc_replay_expected_off == INT_MAX) {
 		ret = -EFSCORRUPTED;
 		goto out_err;
 	}
 
+	if ((unsigned int)off >= state->fc_blocks_size) {
+		unsigned long new_cap, new_bytes;
+
+		new_cap = state->fc_blocks_size ?
+			(unsigned long)state->fc_blocks_size * 2 : 64;
+		if (new_cap > max_fc_blks)
+			new_cap = max_fc_blks;
+		if (new_cap <= (unsigned int)off || new_cap > ~0U) {
+			ret = -ENOMEM;
+			goto out_err;
+		}
+		new_bytes = new_cap * sizeof(*state->fc_blocks);
+		if (new_bytes / sizeof(*state->fc_blocks) != new_cap) {
+			ret = -ENOMEM;
+			goto out_err;
+		}
+		if (ext2fs_resize_mem(0, new_bytes, &state->fc_blocks)) {
+			ret = -ENOMEM;
+			goto out_err;
+		}
+		state->fc_blocks_size = (unsigned int)new_cap;
+	}
+	if (ext2fs_get_mem(j->j_blocksize, &blk_copy)) {
+		ret = -ENOMEM;
+		goto out_err;
+	}
+	memcpy(blk_copy, bh->b_data, j->j_blocksize);
+	state->fc_blocks[state->fc_blocks_count++] = blk_copy;
+
+	start = blk_copy;
+	end = start + j->j_blocksize;
 	state->fc_replay_expected_off++;
-	for (cur = start; cur < end; cur = cur + le16_to_cpu(tl.fc_len) + sizeof(tl)) {
+	for (cur = start; (size_t)(end - cur) >= sizeof(tl);
+	     cur = val + tag_len) {
 		memcpy(&tl, cur, sizeof(tl));
 		val = cur + sizeof(tl);
+		tag_len = ext4_fc_tag_len(&tl);
+		if (tag_len > (size_t)(end - val) ||
+		    state->fc_cur_tag == INT_MAX) {
+			ret = state->fc_replay_num_tags ?
+				JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+			break;
+		}
 
 		jbd_debug(3, "Scan phase, tag:%s, blk %lld\n",
 			  tag2str(le16_to_cpu(tl.fc_tag)), bh->b_blocknr);
 		switch (le16_to_cpu(tl.fc_tag)) {
 		case EXT4_FC_TAG_ADD_RANGE:
-			memcpy(&ext, val, sizeof(ext));
-			ret = ext2fs_decode_extent(&ext2fs_ex,
-						   (void *)&ext.fc_ex,
-						   sizeof(ext.fc_ex));
-			if (ret)
-				ret = JBD2_FC_REPLAY_STOP;
-			else
-				ret = JBD2_FC_REPLAY_CONTINUE;
-			/* fallthrough */
+			if (fc_validate_add_range_tag(ctx->fs, tag_len, val,
+						      NULL, NULL)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
+			goto chksum_tag;
 		case EXT4_FC_TAG_DEL_RANGE:
+			if (fc_validate_del_range_tag(ctx->fs, tag_len, val,
+						      NULL, NULL)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
+			goto chksum_tag;
 		case EXT4_FC_TAG_LINK:
 		case EXT4_FC_TAG_UNLINK:
 		case EXT4_FC_TAG_CREAT:
+			if (fc_validate_dentry_tag(ctx->fs, tag_len, val)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
+			goto chksum_tag;
 		case EXT4_FC_TAG_INODE:
+			if (fc_validate_inode_tag(ctx->fs, tag_len, val,
+						  NULL, NULL)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
+			/* fallthrough */
 		case EXT4_FC_TAG_PAD:
+chksum_tag:
 			state->fc_cur_tag++;
 			state->fc_crc = jbd2_chksum(j, state->fc_crc, cur,
-					sizeof(tl) + ext4_fc_tag_len(&tl));
+					sizeof(tl) + tag_len);
 			break;
 		case EXT4_FC_TAG_TAIL:
+			if (tag_len < sizeof(tail)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
 			state->fc_cur_tag++;
 			memcpy(&tail, val, sizeof(tail));
 			state->fc_crc = jbd2_chksum(j, state->fc_crc, cur,
@@ -356,6 +603,11 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 			state->fc_crc = 0;
 			break;
 		case EXT4_FC_TAG_HEAD:
+			if (tag_len < sizeof(head)) {
+				ret = state->fc_replay_num_tags ?
+					JBD2_FC_REPLAY_STOP : -EFSCORRUPTED;
+				break;
+			}
 			memcpy(&head, val, sizeof(head));
 			if (le32_to_cpu(head.fc_features) &
 			    ~EXT4_FC_SUPPORTED_FEATURES) {
@@ -368,7 +620,7 @@ static int ext4_fc_replay_scan(journal_t *j, struct buffer_head *bh,
 			}
 			state->fc_cur_tag++;
 			state->fc_crc = jbd2_chksum(j, state->fc_crc, cur,
-					sizeof(tl) + ext4_fc_tag_len(&tl));
+					sizeof(tl) + tag_len);
 			break;
 		default:
 			ret = state->fc_replay_num_tags ?
@@ -398,14 +650,21 @@ static int __errcode_to_errno(errcode_t err, const char *func, int line)
 #define ex_end(__ex) ((__ex)->e_lblk + (__ex)->e_len - 1)
 #define ex_pend(__ex) ((__ex)->e_pblk + (__ex)->e_len - 1)
 
-static int make_room(struct extent_list *list, int i)
+static int make_room(struct extent_list *list, unsigned int i)
 {
 	int ret;
 
 	if (list->count == list->size) {
-		unsigned int new_size = (list->size + 341) *
-					sizeof(struct ext2fs_extent);
-		ret = errcode_to_errno(ext2fs_resize_mem(0, new_size, &list->extents));
+		unsigned long new_count, new_size;
+
+		if (list->size > (~0U) - 341)
+			return -ENOMEM;
+		new_count = (unsigned long)list->size + 341;
+		new_size = new_count * sizeof(*list->extents);
+		if (new_size / sizeof(*list->extents) != new_count)
+			return -ENOMEM;
+		ret = errcode_to_errno(ext2fs_resize_mem(0, new_size,
+							 &list->extents));
 		if (ret)
 			return ret;
 		list->size += 341;
@@ -426,20 +685,10 @@ static int ex_compar(const void *arg1, const void *arg2)
 		return -1;
 	if (ex1->e_lblk > ex2->e_lblk)
 		return 1;
-	return ex1->e_len - ex2->e_len;
-}
-
-static int ex_len_compar(const void *arg1, const void *arg2)
-{
-	const struct ext2fs_extent *ex1 = (const struct ext2fs_extent *)arg1;
-	const struct ext2fs_extent *ex2 = (const struct ext2fs_extent *)arg2;
-
 	if (ex1->e_len < ex2->e_len)
-		return 1;
-
-	if (ex1->e_lblk > ex2->e_lblk)
 		return -1;
-
+	if (ex1->e_len > ex2->e_len)
+		return 1;
 	return 0;
 }
 
@@ -447,24 +696,18 @@ static void ex_sort_and_merge(struct extent_list *list)
 {
 	unsigned int i, j;
 
-	if (list->count < 2)
-		return;
-
-	/*
-	 * Reverse sort by length, that way we strip off all the 0 length
-	 * extents
-	 */
-	qsort(list->extents, list->count, sizeof(struct ext2fs_extent),
-		ex_len_compar);
-
+	/* Strip out all zero-length extents first */
+	j = 0;
 	for (i = 0; i < list->count; i++) {
-		if (list->extents[i].e_len == 0) {
-			list->count = i;
-			break;
-		}
+		if (list->extents[i].e_len == 0)
+			continue;
+		if (j != i)
+			list->extents[j] = list->extents[i];
+		j++;
 	}
+	list->count = j;
 
-	if (list->count == 0)
+	if (list->count < 2)
 		return;
 
 	/* Now sort by logical offset */
@@ -476,6 +719,8 @@ static void ex_sort_and_merge(struct extent_list *list)
 	while (i < list->count - 1) {
 		if (ex_end(&list->extents[i]) + 1 != list->extents[i + 1].e_lblk ||
 			ex_pend(&list->extents[i]) + 1 != list->extents[i + 1].e_pblk ||
+			(blk64_t)list->extents[i].e_len +
+				list->extents[i + 1].e_len >= (1ULL << 32) ||
 			(list->extents[i].e_flags & EXT2_EXTENT_FLAGS_UNINIT) !=
 				(list->extents[i + 1].e_flags & EXT2_EXTENT_FLAGS_UNINIT)) {
 			i++;
@@ -493,7 +738,8 @@ static void ex_sort_and_merge(struct extent_list *list)
 static int ext4_modify_extent_list(e2fsck_t ctx, struct extent_list *list,
 					struct ext2fs_extent *ex, int del)
 {
-	int ret, offset;
+	int ret;
+	blk64_t offset;
 	unsigned int i;
 	struct ext2fs_extent add_ex = *ex;
 
@@ -551,7 +797,9 @@ static int ext4_modify_extent_list(e2fsck_t ctx, struct extent_list *list,
 	}
 
 	if (add_ex.e_len && !del) {
-		make_room(list, list->count);
+		ret = make_room(list, list->count);
+		if (ret)
+			return ret;
 		list->extents[list->count - 1] = add_ex;
 	}
 
@@ -581,12 +829,21 @@ static int ext4_del_extent_from_list(e2fsck_t ctx, struct extent_list *list,
 static int ext4_fc_read_extents(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct extent_list *extent_list = &ctx->fc_replay_state.fc_extent_list;
+	errcode_t err;
+
+	if (!fc_valid_ino(ctx->fs, ino))
+		return -EFSCORRUPTED;
 
 	if (extent_list->ino == ino)
 		return 0;
 
 	extent_list->ino = ino;
-	return errcode_to_errno(e2fsck_read_extents(ctx, extent_list));
+	err = e2fsck_read_extents(ctx, extent_list);
+	if (!err)
+		return 0;
+	if (err == EXT2_ET_NO_MEMORY || err == ENOMEM)
+		return -ENOMEM;
+	return -EFSCORRUPTED;
 }
 
 /*
@@ -616,23 +873,26 @@ struct dentry_info_args {
 	char		*dname;
 };
 
-static inline int tl_to_darg(struct dentry_info_args *darg,
-			     struct  ext4_fc_tl *tl, __u8 *val)
+static inline int tl_to_darg(ext2_filsys fs, struct dentry_info_args *darg,
+			     struct ext4_fc_tl *tl, __u8 *val)
 {
 	struct ext4_fc_dentry_info fcd;
+	size_t tag_len = ext4_fc_tag_len(tl);
+	int ret;
+
+	ret = fc_validate_dentry_tag(fs, tag_len, val);
+	if (ret)
+		return ret;
 
 	memcpy(&fcd, val, sizeof(fcd));
 
 	darg->parent_ino = le32_to_cpu(fcd.fc_parent_ino);
 	darg->ino = le32_to_cpu(fcd.fc_ino);
-	darg->dname_len = ext4_fc_tag_len(tl) -
-			sizeof(struct ext4_fc_dentry_info);
-	darg->dname = malloc(darg->dname_len + 1);
+	darg->dname_len = (int)(tag_len - sizeof(fcd));
+	darg->dname = malloc((size_t)darg->dname_len + 1);
 	if (!darg->dname)
 		return -ENOMEM;
-	memcpy(darg->dname,
-	       val + sizeof(struct ext4_fc_dentry_info),
-	       darg->dname_len);
+	memcpy(darg->dname, val + sizeof(fcd), (size_t)darg->dname_len);
 	darg->dname[darg->dname_len] = 0;
 	jbd_debug(1, "%s: %s, ino %u, parent %u\n",
 		  le16_to_cpu(tl->fc_tag) == EXT4_FC_TAG_CREAT ? "create" :
@@ -647,7 +907,7 @@ static int ext4_fc_handle_unlink(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 	struct dentry_info_args darg;
 	int ret;
 
-	ret = tl_to_darg(&darg, tl, val);
+	ret = tl_to_darg(ctx->fs, &darg, tl, val);
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, darg.ino);
@@ -666,7 +926,7 @@ static int ext4_fc_handle_link_and_create(e2fsck_t ctx, struct ext4_fc_tl *tl, _
 	struct ext2_inode_large inode_large;
 	int ret, filetype, mode;
 
-	ret = tl_to_darg(&darg, tl, val);
+	ret = tl_to_darg(fs, &darg, tl, val);
 	if (ret)
 		return ret;
 	ext4_fc_flush_extents(ctx, 0);
@@ -686,7 +946,7 @@ static int ext4_fc_handle_link_and_create(e2fsck_t ctx, struct ext4_fc_tl *tl, _
 	else if (LINUX_S_ISBLK(mode))
 		filetype = EXT2_FT_BLKDEV;
 	else if (LINUX_S_ISLNK(mode))
-		return EXT2_FT_SYMLINK;
+		filetype = EXT2_FT_SYMLINK;
 	else if (LINUX_S_ISFIFO(mode))
 		filetype = EXT2_FT_FIFO;
 	else if (LINUX_S_ISSOCK(mode))
@@ -734,32 +994,22 @@ static void ext4_fc_replay_fixup_iblocks(struct ext2_inode_large *ondisk_inode,
 	}
 }
 
-static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
+static int ext4_fc_handle_inode(e2fsck_t ctx, struct ext4_fc_tl *tl, __u8 *val)
 {
-	int ino, inode_len = EXT2_GOOD_OLD_INODE_SIZE;
+	ext2_ino_t ino;
+	size_t inode_len;
 	struct ext2_inode_large *inode = NULL, *fc_inode = NULL;
-	__le32 fc_ino;
 	__u8 *fc_raw_inode;
 	errcode_t err;
 	blk64_t blks;
+	int ret;
 
-	memcpy(&fc_ino, val, sizeof(fc_ino));
-	fc_raw_inode = val + sizeof(fc_ino);
-	ino = le32_to_cpu(fc_ino);
+	ret = fc_validate_inode_tag(ctx->fs, (size_t)ext4_fc_tag_len(tl),
+				    val, &ino, &inode_len);
+	if (ret)
+		return ret;
 
-	if (EXT2_INODE_SIZE(ctx->fs->super) > EXT2_GOOD_OLD_INODE_SIZE) {
-		__u16 extra_isize = ext2fs_le16_to_cpu(
-			((struct ext2_inode_large *)fc_raw_inode)->i_extra_isize);
-
-		if ((extra_isize < (sizeof(inode->i_extra_isize) +
-				    sizeof(inode->i_checksum_hi))) ||
-		    (extra_isize > (EXT2_INODE_SIZE(ctx->fs->super) -
-				    EXT2_GOOD_OLD_INODE_SIZE))) {
-			err = EFSCORRUPTED;
-			goto out;
-		}
-		inode_len += extra_isize;
-	}
+	fc_raw_inode = val + sizeof(__le32);
 	err = ext2fs_get_mem(inode_len, &inode);
 	if (err)
 		goto out;
@@ -769,12 +1019,12 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 	ext4_fc_flush_extents(ctx, ino);
 
 	err = ext2fs_read_inode_full(ctx->fs, ino, (struct ext2_inode *)inode,
-					inode_len);
+				     (int)inode_len);
 	if (err)
 		goto out;
 	memcpy(fc_inode, fc_raw_inode, inode_len);
 #ifdef WORDS_BIGENDIAN
-	ext2fs_swap_inode_full(ctx->fs, fc_inode, fc_inode, 0, inode_len);
+	ext2fs_swap_inode_full(ctx->fs, fc_inode, fc_inode, 0, (int)inode_len);
 #endif
 	memcpy(inode, fc_inode, offsetof(struct ext2_inode_large, i_block));
 	memcpy(&inode->i_generation, &fc_inode->i_generation,
@@ -784,10 +1034,9 @@ static int ext4_fc_handle_inode(e2fsck_t ctx, __u8 *val)
 	if (err)
 		goto out;
 	ext2fs_iblk_set(ctx->fs, EXT2_INODE(inode), blks);
-	ext2fs_inode_csum_set(ctx->fs, ino, inode);
 
 	err = ext2fs_write_inode_full(ctx->fs, ino, (struct ext2_inode *)inode,
-					inode_len);
+				      (int)inode_len);
 	if (err)
 		goto out;
 	if (inode->i_links_count)
@@ -805,24 +1054,20 @@ out:
 /*
  * Handle add extent replay tag.
  */
-static int ext4_fc_handle_add_extent(e2fsck_t ctx, __u8 *val)
+static int ext4_fc_handle_add_extent(e2fsck_t ctx, struct ext4_fc_tl *tl,
+				     __u8 *val)
 {
 	struct ext2fs_extent extent;
-	struct ext4_fc_add_range add_range;
 	ext2_ino_t ino;
-	int ret = 0;
+	int ret;
 
-	memcpy(&add_range, val, sizeof(add_range));
-	ino = le32_to_cpu(add_range.fc_ino);
+	ret = fc_validate_add_range_tag(ctx->fs, (size_t)ext4_fc_tag_len(tl),
+					val, &ino, &extent);
+	if (ret)
+		return ret;
 	ext4_fc_flush_extents(ctx, ino);
 
 	ret = ext4_fc_read_extents(ctx, ino);
-	if (ret)
-		return ret;
-	memset(&extent, 0, sizeof(extent));
-	ret = errcode_to_errno(ext2fs_decode_extent(
-			&extent, (void *)add_range.fc_ex,
-			sizeof(add_range.fc_ex)));
 	if (ret)
 		return ret;
 	return ext4_add_extent_to_list(ctx,
@@ -832,19 +1077,19 @@ static int ext4_fc_handle_add_extent(e2fsck_t ctx, __u8 *val)
 /*
  * Handle delete logical range replay tag.
  */
-static int ext4_fc_handle_del_range(e2fsck_t ctx, __u8 *val)
+static int ext4_fc_handle_del_range(e2fsck_t ctx, struct ext4_fc_tl *tl,
+				    __u8 *val)
 {
 	struct ext2fs_extent extent;
-	struct ext4_fc_del_range del_range;
-	int ret, ino;
+	ext2_ino_t ino;
+	int ret;
 
-	memcpy(&del_range, val, sizeof(del_range));
-	ino = le32_to_cpu(del_range.fc_ino);
+	ret = fc_validate_del_range_tag(ctx->fs, (size_t)ext4_fc_tag_len(tl),
+					val, &ino, &extent);
+	if (ret)
+		return ret;
 	ext4_fc_flush_extents(ctx, ino);
 
-	memset(&extent, 0, sizeof(extent));
-	extent.e_lblk = le32_to_cpu(del_range.fc_lblk);
-	extent.e_len = le32_to_cpu(del_range.fc_len);
 	ret = ext4_fc_read_extents(ctx, ino);
 	if (ret)
 		return ret;
@@ -865,6 +1110,7 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 	int ret = JBD2_FC_REPLAY_CONTINUE;
 	struct ext4_fc_tl tl;
 	__u8 *start, *end, *cur, *val;
+	size_t tag_len;
 
 	if (pass == PASS_SCAN) {
 		state->fc_current_pass = PASS_SCAN;
@@ -873,6 +1119,10 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 
 	if (state->fc_replay_num_tags == 0)
 		goto replay_done;
+
+	if (off < 0 || (unsigned int)off >= state->fc_blocks_count ||
+	    !state->fc_blocks || !state->fc_blocks[off])
+		return -EFSCORRUPTED;
 
 	if (state->fc_current_pass != pass) {
 		/* Starting replay phase */
@@ -897,15 +1147,24 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 		ext2fs_flush(ctx->fs);
 	}
 
-	start = (__u8 *)bh->b_data;
-	end = (__u8 *)bh->b_data + journal->j_blocksize - 1;
+	start = state->fc_blocks[off];
+	end = start + journal->j_blocksize;
+	if (memcmp(bh->b_data, start, journal->j_blocksize) != 0)
+		state->fc_super_state =
+			(state->fc_super_state & ~EXT2_VALID_FS) |
+			EXT2_ERROR_FS;
 
-	for (cur = start; cur < end; cur = cur + le16_to_cpu(tl.fc_len) + sizeof(tl)) {
-		memcpy(&tl, cur, sizeof(tl));
-		val = cur + sizeof(tl);
-
+	for (cur = start; (size_t)(end - cur) >= sizeof(tl);
+	     cur = val + tag_len) {
 		if (state->fc_replay_num_tags == 0)
 			goto replay_done;
+
+		memcpy(&tl, cur, sizeof(tl));
+		val = cur + sizeof(tl);
+		tag_len = ext4_fc_tag_len(&tl);
+		if (tag_len > (size_t)(end - val))
+			return -EFSCORRUPTED;
+
 		jbd_debug(3, "Replay phase processing %s tag\n",
 				tag2str(le16_to_cpu(tl.fc_tag)));
 		state->fc_replay_num_tags--;
@@ -918,16 +1177,17 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 			ret = ext4_fc_handle_unlink(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_ADD_RANGE:
-			ret = ext4_fc_handle_add_extent(ctx, val);
+			ret = ext4_fc_handle_add_extent(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_DEL_RANGE:
-			ret = ext4_fc_handle_del_range(ctx, val);
+			ret = ext4_fc_handle_del_range(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_INODE:
-			ret = ext4_fc_handle_inode(ctx, val);
+			ret = ext4_fc_handle_inode(ctx, &tl, val);
 			break;
 		case EXT4_FC_TAG_TAIL:
 			ext4_fc_flush_extents(ctx, 0);
+			/* fallthrough */
 		case EXT4_FC_TAG_PAD:
 		case EXT4_FC_TAG_HEAD:
 			break;
@@ -937,6 +1197,8 @@ static int ext4_fc_replay(journal_t *journal, struct buffer_head *bh,
 		}
 		if (ret < 0)
 			break;
+		if (state->fc_replay_num_tags == 0)
+			goto replay_done;
 		ret = JBD2_FC_REPLAY_CONTINUE;
 	}
 	return ret;
@@ -952,6 +1214,48 @@ replay_done:
 	ext2fs_set_gdt_csum(ctx->fs);
 	ctx->fs->super->s_state = state->fc_super_state;
 	ext2fs_flush(ctx->fs);
+	if ((state->fc_super_state & EXT2_VALID_FS) ||
+	    !(state->fc_super_state & EXT2_ERROR_FS)) {
+		unsigned int i;
+
+		for (i = 0; i < state->fc_blocks_count; i++) {
+			unsigned long long blocknr;
+			struct buffer_head *check_bh;
+
+			if (jbd2_journal_bmap(journal,
+					      journal->j_fc_first + i,
+					      &blocknr) != 0) {
+				state->fc_super_state =
+					(state->fc_super_state &
+					 ~EXT2_VALID_FS) | EXT2_ERROR_FS;
+				break;
+			}
+			check_bh = getblk(journal->j_dev, blocknr,
+					  journal->j_blocksize);
+			if (!check_bh) {
+				state->fc_super_state =
+					(state->fc_super_state &
+					 ~EXT2_VALID_FS) | EXT2_ERROR_FS;
+				break;
+			}
+			ll_rw_block(REQ_OP_READ, 0, 1, &check_bh);
+			if (!buffer_uptodate(check_bh) ||
+			    memcmp(check_bh->b_data, state->fc_blocks[i],
+				   journal->j_blocksize) != 0) {
+				brelse(check_bh);
+				state->fc_super_state =
+					(state->fc_super_state &
+					 ~EXT2_VALID_FS) | EXT2_ERROR_FS;
+				break;
+			}
+			brelse(check_bh);
+		}
+		if (ctx->fs->super->s_state != state->fc_super_state) {
+			ctx->fs->super->s_state = state->fc_super_state;
+			ext2fs_mark_super_dirty(ctx->fs);
+			ext2fs_flush(ctx->fs);
+		}
+	}
 
 	return JBD2_FC_REPLAY_STOP;
 }
@@ -1379,16 +1683,18 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	journal->j_tail = ntohl(jsb->s_start);
 	journal->j_first = ntohl(jsb->s_first);
 	if (jbd2_has_feature_fast_commit(journal)) {
-		if (ntohl(jsb->s_maxlen) - jbd2_journal_get_num_fc_blks(jsb)
-			< JBD2_MIN_JOURNAL_BLOCKS) {
+		__u32 maxlen = ntohl(jsb->s_maxlen);
+		__u32 num_fc_blks = jbd2_journal_get_num_fc_blks(jsb);
+
+		if (maxlen < JBD2_MIN_JOURNAL_BLOCKS ||
+		    maxlen - JBD2_MIN_JOURNAL_BLOCKS < num_fc_blks) {
 			com_err(ctx->program_name, EXT2_ET_CORRUPT_JOURNAL_SB,
 				_("%s: incorrect fast commit blocks\n"),
 				ctx->device_name);
 			return EXT2_ET_CORRUPT_JOURNAL_SB;
 		}
-		journal->j_fc_last = ntohl(jsb->s_maxlen);
-		journal->j_last = journal->j_fc_last -
-					jbd2_journal_get_num_fc_blks(jsb);
+		journal->j_fc_last = maxlen;
+		journal->j_last = maxlen - num_fc_blks;
 		journal->j_fc_first = journal->j_last + 1;
 	} else {
 		journal->j_last = ntohl(jsb->s_maxlen);
@@ -1468,6 +1774,8 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
 				   int reset, int drop)
 {
 	journal_superblock_t *jsb;
+
+	ext4_fc_replay_cleanup(ctx);
 
 	if (drop)
 		mark_buffer_clean(journal->j_sb_buffer);

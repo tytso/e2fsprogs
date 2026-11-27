@@ -285,6 +285,11 @@ static errcode_t rb_copy_bmap(ext2fs_generic_bitmap_64 src,
 		src_node = ext2fs_rb_next(src_node);
 	}
 
+	if (retval) {
+		/* ext2fs_copy_generic_bmap() won't free the partial copy */
+		rb_free_bmap(dest);
+		dest->private = NULL;
+	}
 	return retval;
 }
 
@@ -706,12 +711,22 @@ static errcode_t rb_set_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 	struct ext2fs_rb_private *bp;
 	unsigned char *cp = in;
 	size_t i;
-	int first_set = -1;
+	__s64 first_set = -1;
 
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 
+	if ((start < bitmap->start) || (start > bitmap->real_end) ||
+	    (num && (num - 1 > bitmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
+	if (num == 0)
+		return 0;
+
+	/* Replace the whole range, as ba_set_bmap_range() does */
+	rb_remove_extent(start - bitmap->start, num, bp);
+	check_tree(&bp->root, __func__);
+
 	for (i = 0; i < num; i++) {
-		if ((i & 7) == 0) {
+		if ((i & 7) == 0 && (num - i > 7)) {
 			unsigned char c = cp[i/8];
 			if (c == 0xFF) {
 				if (first_set == -1)
@@ -755,9 +770,17 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 	struct bmap_rb_extent *ext;
 	__u64 count, pos;
 
+	if ((start < bitmap->start) || (start > bitmap->real_end) ||
+	    (num && (num - 1 > bitmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
+	if (num == 0)
+		return 0;
+
 	bp = (struct ext2fs_rb_private *) bitmap->private;
 	n = &bp->root.rb_node;
 	start -= bitmap->start;
+
+	memset(out, 0, ((num - 1) >> 3) + 1);
 
 	if (ext2fs_rb_empty_root(&bp->root))
 		return 0;
@@ -772,8 +795,6 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 		} else
 			break;
 	}
-
-	memset(out, 0, (num + 7) >> 3);
 
 	for (; parent != NULL; parent = next) {
 		next = ext2fs_rb_next(parent);
@@ -795,12 +816,12 @@ static errcode_t rb_get_bmap_range(ext2fs_generic_bitmap_64 bitmap,
 		while (count > 0) {
 			if ((count >= 8) &&
 			    ((pos - start) % 8) == 0) {
-				int nbytes = count >> 3;
-				int offset = (pos - start) >> 3;
+				size_t nbytes = count >> 3;
+				size_t offset = (pos - start) >> 3;
 
 				memset(((char *) out) + offset, 0xFF, nbytes);
-				pos += nbytes << 3;
-				count -= nbytes << 3;
+				pos += (__u64) nbytes << 3;
+				count -= (__u64) nbytes << 3;
 				continue;
 			}
 			ext2fs_fast_set_bit64((pos - start), out);

@@ -1,0 +1,1 @@
+badblocks -w: multi-block buffer repeatability with random and 3-byte patterns

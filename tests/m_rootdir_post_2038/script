@@ -1,0 +1,51 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+if test $SIZEOF_TIME_T -le 4; then
+	echo "$test_name: $test_description: skipped (32-bit time_t)"
+	return 0
+fi
+
+MKFS_DIR=$TMPFILE.dir
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+rm -rf $MKFS_DIR
+mkdir -p $MKFS_DIR
+mkdir $MKFS_DIR/dir
+touch $MKFS_DIR/file
+touch -t 202311142213.20 $MKFS_DIR/dir $MKFS_DIR/file
+
+# Create the file system at a time in 2065, which needs the epoch bits
+# of the timestamps, from files last modified in 2023.
+> $TMPFILE
+E2FSPROGS_FAKE_TIME=3000000000 $MKE2FS -F -o Linux -q -b 1024 -I 256 \
+	-d $MKFS_DIR $TMPFILE 1024 > $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+for i in /dir /file; do
+	echo "stat $i" >> $OUT.new
+	$DEBUGFS -R "stat $i" $TMPFILE 2>&1 | $EGREP "^ mtime:" >> $OUT.new
+done
+
+E2FSCK_TIME=3000000000 $FSCK -fn -N test_filesys $TMPFILE >> $OUT.new 2>&1
+status=$?
+echo Exit status is $status >> $OUT.new
+
+sed -f $cmd_dir/filter.sed $OUT.new > $OUT
+rm -rf $TMPFILE $OUT.new $MKFS_DIR
+
+cmp -s $OUT $EXP
+status=$?
+
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset MKFS_DIR OUT EXP status i

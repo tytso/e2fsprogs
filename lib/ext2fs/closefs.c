@@ -434,7 +434,7 @@ write_primary_superblock_only:
 
 	retval = ext2fs_superblock_csum_set(fs, super_shadow);
 	if (retval)
-		return retval;
+		goto errout;
 
 	if (!(flags & EXT2_FLAG_FLUSH_NO_SYNC)) {
 		retval = io_channel_flush(fs->io);
@@ -454,6 +454,7 @@ write_primary_superblock_only:
 	}
 errout:
 	fs->super->s_state = fs_state;
+	fs->super->s_feature_incompat = feature_incompat;
 #ifdef WORDS_BIGENDIAN
 	if (super_shadow)
 		ext2fs_free_mem(&super_shadow);

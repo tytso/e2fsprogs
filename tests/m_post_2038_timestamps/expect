@@ -1,0 +1,23 @@
+Exit status is 0
+stat /
+ ctime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+ atime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+ mtime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+crtime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+stat /lost+found
+ ctime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+ atime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+ mtime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+crtime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+stat /huge
+ ctime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+ atime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+ mtime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+crtime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 12/128 files (0.0% non-contiguous), 118/1024 blocks
+Exit status is 0

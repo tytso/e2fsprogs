@@ -605,6 +605,7 @@ static errcode_t ext2fs_file_zero_past_offset(ext2_file_t file,
 	ext2_filsys fs = file->fs;
 	char *b = NULL;
 	ext2_off64_t off = offset % fs->blocksize;
+	blk64_t lblk = offset / fs->blocksize;
 	blk64_t blk;
 	int ret_flags;
 	errcode_t retval;
@@ -612,17 +613,33 @@ static errcode_t ext2fs_file_zero_past_offset(ext2_file_t file,
 	if (off == 0)
 		return 0;
 
-	retval = sync_buffer_position(file);
-	if (retval)
-		return retval;
+	/*
+	 * If the block buffer caches this block, zero the tail in the
+	 * buffer itself so extending writes do not flush and reread the
+	 * block on every call.  When the buffer is already dirty, the
+	 * zeroed tail will be written out when the buffer is flushed;
+	 * when it is clean, write the updated buffer out below.
+	 */
+	if ((file->flags & EXT2_FILE_BUF_VALID) && file->blockno == lblk) {
+		memset(file->buf + off, 0, fs->blocksize - off);
+		if (file->flags & EXT2_FILE_BUF_DIRTY)
+			return 0;
+	}
 
 	/* Is there an initialized block at the end? */
-	retval = ext2fs_bmap2(fs, file->ino, NULL, NULL, 0,
-			      offset / fs->blocksize, &ret_flags, &blk);
+	retval = ext2fs_bmap2(fs, file->ino, &file->inode, BMAP_BUFFER, 0,
+			      lblk, &ret_flags, &blk);
 	if (retval)
 		return retval;
 	if ((blk == 0) || (ret_flags & BMAP_RET_UNINIT))
 		return 0;
+
+	if ((file->flags & EXT2_FILE_BUF_VALID) && file->blockno == lblk) {
+		retval = io_channel_write_blk64(fs->io, blk, 1, file->buf);
+		if (retval)
+			file->flags &= ~EXT2_FILE_BUF_VALID;
+		return retval;
+	}
 
 	/* Zero to the end of the block */
 	retval = ext2fs_get_mem(fs->blocksize, &b);
@@ -682,6 +699,16 @@ errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 
 	if (truncate_block >= old_truncate)
 		return 0;
+
+	/*
+	 * Discard the block buffer if it caches a block which is about to
+	 * be freed, so that its stale contents are neither returned by
+	 * later reads nor written back to a block which may have been
+	 * reused in the meantime.
+	 */
+	if ((file->flags & EXT2_FILE_BUF_VALID) &&
+	    file->blockno >= truncate_block)
+		file->flags &= ~(EXT2_FILE_BUF_VALID | EXT2_FILE_BUF_DIRTY);
 
 	return ext2fs_punch(file->fs, file->ino, &file->inode, 0,
 			    truncate_block, ~0ULL);

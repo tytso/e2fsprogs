@@ -1,0 +1,10 @@
+Using random seed 1
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 63
+Testing with random pattern: 10
+20
+Pass completed, 2 bad blocks found. (1/0/1 errors)
+sim: reads=38 writes=36 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: restored (excluding 1 faulty sectors); chunks-live=1 peak-bytes=65536
+exit status: 0

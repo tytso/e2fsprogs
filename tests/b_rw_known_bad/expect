@@ -1,0 +1,16 @@
+Checking for bad blocks in read-write mode
+From block 0 to 63
+Testing with pattern 0xaa: done                                                 
+Reading and comparing: 20
+done                                                 
+Testing with pattern 0x55: done                                                 
+Reading and comparing: done                                                 
+Testing with pattern 0xff: done                                                 
+Reading and comparing: done                                                 
+Testing with pattern 0x00: done                                                 
+Reading and comparing: done                                                 
+Pass completed, 1 bad blocks found. (1/0/0 errors)
+sim: reads=40 writes=24 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: 0-1,10-11,50-51
+sim: content: modified (122 sectors changed); chunks-live=1 peak-bytes=65536
+exit status: 0

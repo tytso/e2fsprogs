@@ -349,7 +349,6 @@ error_unlock:
 }
 
 #define RAW_WRITE_NO_HANDLER	(1U << 0)
-#define RAW_WRITE_NOLOCK	(1U << 1)
 
 static errcode_t raw_write_blk(io_channel channel,
 			       struct unix_private_data *data,
@@ -409,15 +408,13 @@ static errcode_t raw_write_blk(io_channel channel,
 	    (IS_ALIGNED(buf, channel->align) &&
 	     IS_ALIGNED(location, channel->align) &&
 	     IS_ALIGNED(size, channel->align))) {
-		if (!(flags & RAW_WRITE_NOLOCK))
-			mutex_lock(data, BOUNCE_MTX);
+		mutex_lock(data, BOUNCE_MTX);
 		if (ext2fs_llseek(data->dev, location, SEEK_SET) < 0) {
 			retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 			goto error_unlock;
 		}
 		actual = write(data->dev, buf, size);
-		if (!(flags & RAW_WRITE_NOLOCK))
-			mutex_unlock(data, BOUNCE_MTX);
+		mutex_unlock(data, BOUNCE_MTX);
 		if (actual < 0) {
 			retval = errno;
 			goto error_out;
@@ -452,8 +449,7 @@ bounce_write:
 	while (size > 0) {
 		int actual_w;
 
-		if (!(flags & RAW_WRITE_NOLOCK))
-			mutex_lock(data, BOUNCE_MTX);
+		mutex_lock(data, BOUNCE_MTX);
 		if (size < align_size || offset) {
 			if (ext2fs_llseek(data->dev, aligned_blk * align_size,
 					  SEEK_SET) < 0) {
@@ -482,8 +478,7 @@ bounce_write:
 			goto error_unlock;
 		}
 		actual_w = write(data->dev, data->bounce, align_size);
-		if (!(flags & RAW_WRITE_NOLOCK))
-			mutex_unlock(data, BOUNCE_MTX);
+		mutex_unlock(data, BOUNCE_MTX);
 		if (actual_w < 0) {
 			retval = errno;
 			goto error_out;
@@ -499,8 +494,7 @@ bounce_write:
 	return 0;
 
 error_unlock:
-	if (!(flags & RAW_WRITE_NOLOCK))
-		mutex_unlock(data, BOUNCE_MTX);
+	mutex_unlock(data, BOUNCE_MTX);
 error_out:
 	if (((flags & RAW_WRITE_NO_HANDLER) == 0) && channel->write_error)
 		retval = (channel->write_error)(channel, block, count, buf,
@@ -686,14 +680,9 @@ static errcode_t flush_cached_blocks(io_channel channel,
 		if (!cache->in_use)
 			continue;
 		if (cache->dirty) {
-			int raw_flags = RAW_WRITE_NO_HANDLER;
-
-			if (flags & FLUSH_NOLOCK)
-				raw_flags |= RAW_WRITE_NOLOCK;
-
 			retval = raw_write_blk(channel, data,
 					       cache->block, 1, cache->buf,
-					       raw_flags);
+					       RAW_WRITE_NO_HANDLER);
 			if (retval) {
 				cache->write_err = 1;
 				errors_found = 1;
@@ -738,7 +727,13 @@ retry:
 					retval2);
 				if (err_buf)
 					ext2fs_free_mem(&err_buf);
-				mutex_lock(data, CACHE_MTX);
+				/*
+				 * With FLUSH_NOLOCK our caller expects
+				 * the cache mutex to be held; otherwise
+				 * the top of the loop retakes it.
+				 */
+				if (flags & FLUSH_NOLOCK)
+					mutex_lock(data, CACHE_MTX);
 				goto retry;
 			} else
 				cache->write_err = 0;
@@ -838,6 +833,33 @@ static errcode_t grow_cache(io_channel channel,
 unlock:
 	mutex_unlock(data, CACHE_MTX);
 	return retval;
+}
+
+/*
+ * Drop the blocks in the range [block, block + count) from the cache,
+ * throwing away any unwritten changes.  This is called once the range
+ * has been discarded or zeroed out on disk, so that later reads don't
+ * return stale data and stale dirty blocks don't get written back
+ * over the range, while failed or unsupported calls leave cached
+ * blocks intact.
+ */
+static void invalidate_cached_blocks(struct unix_private_data *data,
+				     unsigned long long block,
+				     unsigned long long count)
+{
+	struct unix_cache	*cache;
+	unsigned int		i;
+
+	mutex_lock(data, CACHE_MTX);
+	for (i = 0, cache = data->cache; i < data->cache_size; i++, cache++) {
+		if (cache->in_use && cache->block >= block &&
+		    cache->block - block < count) {
+			cache->in_use = 0;
+			cache->dirty = 0;
+			cache->write_err = 0;
+		}
+	}
+	mutex_unlock(data, CACHE_MTX);
 }
 #endif /* NO_IO_CACHE */
 
@@ -1157,11 +1179,17 @@ static errcode_t unixfd_open(const char *str_fd, int flags,
 	if (fd_flags == -1)
 		return EBADF;
 
-	/* O_EXCL is cleared by Linux at open and not returned by F_GETFL */
-	flags &= IO_FLAG_EXCLUSIVE;
+	/*
+	 * The access mode and O_DIRECT are taken from the fd; the other
+	 * flags (e.g. IO_FLAG_THREADS) are passed through.  O_EXCL is
+	 * cleared by Linux at open and not returned by F_GETFL, so the
+	 * caller's IO_FLAG_EXCLUSIVE is trusted.
+	 */
+	flags &= ~IO_FLAG_RW;
 	if (fd_flags & O_RDWR)
 		flags |= IO_FLAG_RW;
 #if defined(O_DIRECT)
+	flags &= ~IO_FLAG_DIRECT_IO;
 	if (fd_flags & O_DIRECT)
 		flags |= IO_FLAG_DIRECT_IO;
 #endif
@@ -1246,15 +1274,19 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 
 	if (channel->block_size != blksize) {
 		mutex_lock(data, CACHE_MTX);
-		mutex_lock(data, BOUNCE_MTX);
 #ifndef NO_IO_CACHE
 		if ((retval = flush_cached_blocks(channel, data, FLUSH_NOLOCK))){
-			mutex_unlock(data, BOUNCE_MTX);
 			mutex_unlock(data, CACHE_MTX);
 			return retval;
 		}
 #endif
 
+		/*
+		 * Take the bounce mutex only after the cache has been
+		 * flushed, since raw_write_blk() and the write error
+		 * handler called by flush_cached_blocks() may need it.
+		 */
+		mutex_lock(data, BOUNCE_MTX);
 		channel->block_size = blksize;
 		free_cache(data);
 		retval = alloc_cache(channel, data);
@@ -1416,8 +1448,10 @@ static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 
 			cache = reuse;
 			err = reuse_cache(channel, data, cache, block);
-			if (err)
+			if (err) {
+				retval = err;
 				goto call_write_handler;
+			}
 		}
 		if (cache->buf != cp)
 			memcpy(cache->buf, cp, channel->block_size);
@@ -1646,6 +1680,9 @@ static errcode_t unix_discard(io_channel channel, unsigned long long block,
 		}
 		return errno;
 	}
+#ifndef NO_IO_CACHE
+	invalidate_cached_blocks(data, block, count);
+#endif
 	return 0;
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;
@@ -1727,6 +1764,9 @@ err:
 		}
 		return errno;
 	}
+#ifndef NO_IO_CACHE
+	invalidate_cached_blocks(data, block, count);
+#endif
 	return 0;
 unimplemented:
 	return EXT2_ET_UNIMPLEMENTED;

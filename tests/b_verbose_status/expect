@@ -1,0 +1,72 @@
+=== -r -v -v ===
+Checking blocks 0 to 15
+Checking for bad blocks (read-only test):   0.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+done                                                 
+Pass completed, 0 bad blocks found. (0/0/0 errors)
+sim: reads=4 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== -w -t 0xaa -v -v ===
+Checking for bad blocks in read-write mode
+From block 0 to 15
+Testing with pattern 0xaa:   0.00% done, 0:00 elapsed. (0/0/0 errors)
+  0.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+done                                                 
+Reading and comparing:   0.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+100.00% done, 0:00 elapsed. (0/0/0 errors)
+done                                                 
+Pass completed, 0 bad blocks found. (0/0/0 errors)
+sim: reads=4 writes=4 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: modified (32 sectors changed); chunks-live=1 peak-bytes=65536
+exit status: 0
+=== -n -v -v ===
+Using random seed 1
+Checking for bad blocks in non-destructive read-write mode
+From block 0 to 15
+Checking for bad blocks (non-destructive read-write test)
+Testing with random pattern:   0.00% done, 0:00 elapsed. (0/0/0 errors)
+  0.00% done, 0:00 elapsed. (0/0/0 errors)
+  0.00% done, 0:00 elapsed. (0/0/0 errors)
+  0.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 25.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 50.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+ 75.00% done, 0:00 elapsed. (0/0/0 errors)
+done                                                 
+Pass completed, 0 bad blocks found. (0/0/0 errors)
+sim: reads=8 writes=8 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 0
+=== 1-block scan 0 0 with -s ===
+Checking for bad blocks (read-only test):   0.00% done, 0:00 elapsed. (0/0/0 errors)
+done                                                 
+sim: reads=1 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0

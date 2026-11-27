@@ -1,0 +1,29 @@
+if ! test -x $BADBLOCKS_SIM_EXE; then
+	echo "$test_name: $test_description: skipped (no tst_badblocks_sim)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+printf "0\n25\n" > $TMPFILE
+
+{
+	echo "=== -n -i -t 0xaa -t 0x55 -p 1 ==="
+	$BADBLOCKS_SIM -n -i $TMPFILE -t 0xaa -t 0x55 -p 1 -v -b 1024 -c 16 \
+		'sim:size=64K,rerr=0,rerr=50,flaky=20:2:0'
+	echo "exit status: $?"
+	echo "=== -n -t 0xaa -t 0x55 -e 2 ==="
+	$BADBLOCKS_SIM -n -t 0xaa -t 0x55 -e 2 -v -b 1024 -c 16 \
+		'sim:size=64K,flaky=20:2:0,flaky=40:2:2,flaky=60:2:2'
+	echo "exit status: $?"
+} > $OUT 2>&1
+
+if cmp -s $OUT $EXP; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+unset OUT EXP

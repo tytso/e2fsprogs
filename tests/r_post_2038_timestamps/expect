@@ -1,0 +1,36 @@
+mke2fs at 1700000000, resize2fs at 3000000000
+Resizing the filesystem on test.img to 1024 (1k) blocks.
+The filesystem on test.img is now 1024 (1k) blocks long.
+
+Exit status is 0
+stat /d
+ ctime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+ mtime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+stat /d/moved
+Inode: 12
+ ctime: 0xb2d05e00:00000001 -- Sat Jan 24 05:20:00 2065
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 16/16 files (0.0% non-contiguous), 87/1024 blocks
+Exit status is 0
+mke2fs at 3000000000, resize2fs at 1700000000
+Resizing the filesystem on test.img to 1024 (1k) blocks.
+The filesystem on test.img is now 1024 (1k) blocks long.
+
+Exit status is 0
+stat /d
+ ctime: 0x6553f100:00000000 -- Tue Nov 14 22:13:20 2023
+ mtime: 0x6553f100:00000000 -- Tue Nov 14 22:13:20 2023
+stat /d/moved
+Inode: 12
+ ctime: 0x6553f100:00000000 -- Tue Nov 14 22:13:20 2023
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+test_filesys: 16/16 files (0.0% non-contiguous), 87/1024 blocks
+Exit status is 0

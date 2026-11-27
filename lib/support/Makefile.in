@@ -15,6 +15,7 @@ all::
 
 OBJS=		bthread.o \
 		cstring.o \
+		compat.o \
 		mkquota.o \
 		plausible.o \
 		profile.o \
@@ -32,6 +33,7 @@ OBJS=		bthread.o \
 
 SRCS=		$(srcdir)/argv_parse.c \
 		$(srcdir)/bthread.c \
+		$(srcdir)/compat.c \
 		$(srcdir)/cstring.c \
 		$(srcdir)/mkquota.c \
 		$(srcdir)/parse_qtype.c \
@@ -121,6 +123,8 @@ argv_parse.o: $(srcdir)/argv_parse.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/argv_parse.h
 bthread.o: $(srcdir)/bthread.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/bthread.h
+compat.o: $(srcdir)/compat.c $(srcdir)/compat.h $(top_builddir)/lib/config.h \
+ $(top_builddir)/lib/dirpaths.h
 cstring.o: $(srcdir)/cstring.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/cstring.h
 mkquota.o: $(srcdir)/mkquota.c $(top_builddir)/lib/config.h \

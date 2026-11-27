@@ -1,0 +1,1 @@
+badblocks -r -t: read-only pattern comparison

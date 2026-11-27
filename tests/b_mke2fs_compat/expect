@@ -1,0 +1,34 @@
+=== mke2fs -c read-only ===
+1
+sim: reads=65 writes=0 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: unchanged; chunks-live=0 peak-bytes=0
+exit status: 0
+=== e2fsck -c non-destructive ===
+1
+sim: reads=128 writes=126 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: restored; chunks-live=0 peak-bytes=65536
+exit status: 0
+=== mke2fs -cc read-write ===
+sim: reads=4 writes=4 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: modified (512 sectors changed); chunks-live=4 peak-bytes=262144
+exit status: 0
+=== busy without -X ===
+sim:size=256K,busy is apparently in use by the system; it's not safe to run badblocks!
+exit status: 1
+=== busy with -X ===
+sim: reads=4 writes=4 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: modified (512 sectors changed); chunks-live=4 peak-bytes=262144
+exit status: 0
+=== mounted without -f ===
+sim:size=256K,mounted is mounted; it's not safe to run badblocks!
+exit status: 1
+=== mounted with -f ===
+sim:size=256K,mounted is mounted; badblocks forced anyway.  Hope /etc/mtab is incorrect.
+sim: reads=4 writes=4 flushes=0 direct-misaligned=0 out-of-range=0
+sim: never-read: none
+sim: content: modified (512 sectors changed); chunks-live=4 peak-bytes=262144
+exit status: 0

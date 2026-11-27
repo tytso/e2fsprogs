@@ -16,9 +16,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <pwd.h>
 
 #include "e2fsck.h"
-#include <pwd.h>
+#include "support/compat.h"
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
 
@@ -205,40 +206,6 @@ static int do_read(int fd)
 	return c;
 }
 
-
-#ifndef HAVE_DAEMON
-static int my_daemon(int nochdir, int noclose)
-{
-	pid_t pid;
-	uid_t euid;
-
-	pid = fork();
-	if (pid == -1) {
-		return -1;
-	} else if (pid != 0) {
-	    exit(0);
-	}
-	if (setsid() < 0)
-		return -1;
-
-	if (!noclose) {
-		close(0);
-		close(1);
-		close(2);
-		open("/dev/null", O_RDWR);
-		open("/dev/null", O_RDWR);
-		open("/dev/null", O_RDWR);
-	}
-
-	if (!nochdir) {
-		if (chdir("/")) {}	/* Silence warn_unused_result warning */
-	}
-	return 0;
-}
-#else
-#define my_daemon(no_chdir, no_close)	daemon(no_chdir, no_close)
-#endif
-
 /*
  * Fork a child process to save the output of the logfile until the
  * appropriate file system is mounted read/write.
@@ -274,7 +241,7 @@ static FILE *save_output(const char *s0, const char *s1, const char *s2)
 	if (pid == 0) {
 		if (e2fsck_global_ctx && e2fsck_global_ctx->progress_fd)
 			close(e2fsck_global_ctx->progress_fd);
-		if (my_daemon(0, 0) < 0) {
+		if (compat_daemon(0, 0) < 0) {
 			perror("daemon");
 			exit(1);
 		}

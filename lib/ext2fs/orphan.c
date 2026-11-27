@@ -131,6 +131,8 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 	struct ext4_orphan_block_tail *ob_tail;
 	time_t now;
 
+	if (num_blocks == 0)
+		return EXT2_ET_INVALID_ARGUMENT;
 	if (num_blocks > EXT4_MAX_ORPHAN_FILE_BLOCKS)
 		num_blocks = EXT4_MAX_ORPHAN_FILE_BLOCKS;
 
@@ -151,13 +153,17 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 		ext2fs_inode_alloc_stats2(fs, ino, +1, 0);
 	}
 
+	/*
+	 * Start from a clean inode: a newly allocated inode may still
+	 * contain the block map and other fields of a deleted file, and
+	 * ext2fs_block_iterate3() works on the on-disk copy.
+	 */
 	memset(&inode, 0, sizeof(struct ext2_inode));
-	if (ext2fs_has_feature_extents(fs->super)) {
+	if (ext2fs_has_feature_extents(fs->super))
 		inode.i_flags |= EXT4_EXTENTS_FL;
-		err = ext2fs_write_inode(fs, ino, &inode);
-		if (err)
-			return err;
-	}
+	err = ext2fs_write_inode(fs, ino, &inode);
+	if (err)
+		return err;
 
 	err = ext2fs_get_mem(fs->blocksize, &buf);
 	if (err)
@@ -186,11 +192,14 @@ errcode_t ext2fs_create_orphan_file(ext2_filsys fs, blk_t num_blocks)
 		goto out;
 	}
 
-	/* Reread inode after blocks were allocated */
+	/*
+	 * Reread inode after blocks were allocated.  i_blocks already
+	 * accounts for any extent tree blocks allocated while mapping
+	 * the file, so just add the blocks allocated by mkorphan_proc().
+	 */
 	err = ext2fs_read_inode(fs, ino, &inode);
 	if (err)
 		goto out;
-	ext2fs_iblk_set(fs, &inode, 0);
 	now = ext2fsP_get_time(fs);
 	ext2fs_inode_xtime_set(&inode, i_atime, now);
 	ext2fs_inode_xtime_set(&inode, i_ctime, now);
@@ -264,7 +273,7 @@ errcode_t ext2fs_orphan_file_block_csum_set(ext2_filsys fs, ext2_ino_t ino,
 	tail = ext2fs_orphan_block_tail(fs, buf);
 	ret = ext2fs_orphan_file_block_csum(fs, ino, blk, buf, &crc);
 	if (ret)
-		return 0;
+		return ret;
 	tail->ob_checksum = ext2fs_cpu_to_le32(crc);
 	return ret;
 }

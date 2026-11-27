@@ -558,7 +558,8 @@ errcode_t ext2fs_set_generic_bmap_range(ext2fs_generic_bitmap gen_bmap,
 		return EINVAL;
 
 	if (EXT2FS_IS_32_BITMAP(bmap)) {
-		if ((start+num-1) & ~0xffffffffULL) {
+		if ((start & ~0xffffffffULL) ||
+		    (num && ((start + num - 1) & ~0xffffffffULL))) {
 			ext2fs_warn_bitmap2(gen_bmap, EXT2FS_UNMARK_ERROR,
 					    0xffffffff);
 			return EINVAL;
@@ -569,6 +570,10 @@ errcode_t ext2fs_set_generic_bmap_range(ext2fs_generic_bitmap gen_bmap,
 
 	if (!EXT2FS_IS_64_BITMAP(bmap))
 		return EINVAL;
+
+	if ((start < bmap->start) || (start > bmap->real_end) ||
+	    (num && (num - 1 > bmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
 
 	INC_STAT(bmap, set_range_count);
 
@@ -585,7 +590,8 @@ errcode_t ext2fs_get_generic_bmap_range(ext2fs_generic_bitmap gen_bmap,
 		return EINVAL;
 
 	if (EXT2FS_IS_32_BITMAP(bmap)) {
-		if ((start+num-1) & ~0xffffffffULL) {
+		if ((start & ~0xffffffffULL) ||
+		    (num && ((start + num - 1) & ~0xffffffffULL))) {
 			ext2fs_warn_bitmap2(gen_bmap,
 					    EXT2FS_UNMARK_ERROR, 0xffffffff);
 			return EINVAL;
@@ -596,6 +602,10 @@ errcode_t ext2fs_get_generic_bmap_range(ext2fs_generic_bitmap gen_bmap,
 
 	if (!EXT2FS_IS_64_BITMAP(bmap))
 		return EINVAL;
+
+	if ((start < bmap->start) || (start > bmap->real_end) ||
+	    (num && (num - 1 > bmap->real_end - start)))
+		return EXT2_ET_INVALID_ARGUMENT;
 
 	INC_STAT(bmap, get_range_count);
 

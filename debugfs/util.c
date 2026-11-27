@@ -513,9 +513,16 @@ errcode_t read_list(char *str, blk64_t **list, size_t *len)
 	blk64_t *lst = *list;
 	size_t ln = *len;
 	char *tok, *p = str;
+#ifdef HAVE_STRTOK_R
+	char *saveptr;
+#endif
 	errcode_t retval = 0;
 
+#ifdef HAVE_STRTOK_R
+	while ((tok = strtok_r(p, ",", &saveptr))) {
+#else
 	while ((tok = strtok(p, ","))) {
+#endif
 		blk64_t *l;
 		blk64_t x, y;
 		char *e;

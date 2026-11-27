@@ -591,19 +591,25 @@ static inline __u32 __encode_extra_time(time_t seconds EXT2FS_ATTR((unused)),
 	__u32 extra = 0;
 
 #if (SIZEOF_TIME_T > 4)
-	extra = ((seconds - (__s32)(seconds & 0xffffffff)) >> 32) &
+	if (seconds < (time_t) EXT4_TIMESTAMP_MIN)
+		seconds = (time_t) EXT4_TIMESTAMP_MIN;
+	else if (seconds > (time_t) EXT4_EXTRA_TIMESTAMP_MAX)
+		seconds = (time_t) EXT4_EXTRA_TIMESTAMP_MAX;
+	extra = ((__u64)(seconds - (__s32)((__u32) seconds)) >> 32) &
 		EXT4_EPOCH_MASK;
 #endif
 	return extra | (nsec << EXT4_EPOCH_BITS);
 }
-static inline time_t __decode_extra_sec(time_t seconds,
+static inline time_t __decode_extra_sec(__s32 seconds,
 					__u32 extra EXT2FS_ATTR((unused)))
 {
+	time_t t = seconds;
+
 #if (SIZEOF_TIME_T > 4)
 	if (extra & EXT4_EPOCH_MASK)
-		seconds += ((time_t)(extra & EXT4_EPOCH_MASK) << 32);
+		t += ((time_t)(extra & EXT4_EPOCH_MASK) << 32);
 #endif
-	return seconds;
+	return t;
 }
 static inline __u32 __decode_extra_nsec(__u32 extra)
 {
@@ -611,26 +617,38 @@ static inline __u32 __decode_extra_nsec(__u32 extra)
 }
 #define ext2fs_inode_actual_size(inode)					      \
 	((size_t)(EXT2_GOOD_OLD_INODE_SIZE +				      \
-		  (sizeof(*inode) > EXT2_GOOD_OLD_INODE_SIZE ?		      \
+		  (sizeof(*(inode)) > EXT2_GOOD_OLD_INODE_SIZE ?	      \
 		   ((struct ext2_inode_large *)(inode))->i_extra_isize : 0)))
 #define clamp(val, min, max) ((val) < (min) ? (min) : ((val) > (max) ?	      \
 						       (max) : (val)))
+#if (SIZEOF_TIME_T > 4)
+#define __ext2fs_clamp_time(sec, min, max)				      \
+	clamp((sec), (time_t)(min), (time_t)(max))
+#else
+#define __ext2fs_clamp_time(sec, min, max) (sec)
+#endif
 #define ext2fs_inode_xtime_set(inode, field, sec)			      \
 do {									      \
+	time_t __xtime_sec = (sec);					      \
 	if (ext2fs_inode_includes(ext2fs_inode_actual_size(inode),	      \
 				  field ## _extra)) {			      \
-		(inode)->field = (__u32)(sec & 0xfffffff);		      \
+		__xtime_sec = __ext2fs_clamp_time(__xtime_sec,		      \
+						  EXT4_TIMESTAMP_MIN,	      \
+						  EXT4_EXTRA_TIMESTAMP_MAX);  \
+		(inode)->field = (__u32) __xtime_sec;			      \
 		((struct ext2_inode_large *)(inode))->field ## _extra =       \
-			__encode_extra_time(sec, 0);			      \
+			__encode_extra_time(__xtime_sec, 0);		      \
 	} else {							      \
-		(inode)->field = (__u32) clamp(sec, INT32_MIN, INT32_MAX);    \
+		(inode)->field = (__u32) __ext2fs_clamp_time(		      \
+			__xtime_sec, EXT4_TIMESTAMP_MIN,		      \
+			EXT4_NON_EXTRA_TIMESTAMP_MAX);			      \
 	}								      \
 } while (0)
 #define ext2fs_inode_xtime_get(inode, field)				      \
 (ext2fs_inode_includes(ext2fs_inode_actual_size(inode), field ## _extra) ?    \
-	__decode_extra_sec((inode)->field,				      \
+	__decode_extra_sec((__s32)(inode)->field,			      \
 		((struct ext2_inode_large *)(inode))->field ## _extra) :      \
-		(time_t)(inode)->field)
+		(time_t)(__s32)(inode)->field)
 
 static inline void __sb_set_tstamp(__u32 *lo, __u8 *hi EXT2FS_ATTR((unused)),
 				   time_t seconds)

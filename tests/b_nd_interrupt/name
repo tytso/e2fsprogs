@@ -1,0 +1,1 @@
+badblocks -n: interrupt cleanup restores original contents

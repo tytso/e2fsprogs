@@ -268,6 +268,8 @@ errcode_t ext2fs_set_inode_bitmap_range2(ext2fs_inode_bitmap bmap,
 					 __u64 start, size_t num,
 					 void *in)
 {
+	if (num > ~0U)
+		return EXT2_ET_INVALID_ARGUMENT;
 	return (ext2fs_set_generic_bmap_range(bmap, start, num, in));
 }
 
@@ -284,6 +286,8 @@ errcode_t ext2fs_get_inode_bitmap_range2(ext2fs_inode_bitmap bmap,
 					 __u64 start, size_t num,
 					 void *out)
 {
+	if (num > ~0U)
+		return EXT2_ET_INVALID_ARGUMENT;
 	return (ext2fs_get_generic_bmap_range(bmap, start, num, out));
 }
 
@@ -300,6 +304,8 @@ errcode_t ext2fs_set_block_bitmap_range2(ext2fs_block_bitmap bmap,
 					 blk64_t start, size_t num,
 					 void *in)
 {
+	if (num > ~0U)
+		return EXT2_ET_INVALID_ARGUMENT;
 	return (ext2fs_set_generic_bmap_range(bmap, start, num, in));
 }
 
@@ -316,5 +322,7 @@ errcode_t ext2fs_get_block_bitmap_range2(ext2fs_block_bitmap bmap,
 					 blk64_t start, size_t num,
 					 void *out)
 {
+	if (num > ~0U)
+		return EXT2_ET_INVALID_ARGUMENT;
 	return (ext2fs_get_generic_bmap_range(bmap, start, num, out));
 }

@@ -159,7 +159,8 @@ resource_track.o: $(srcdir)/resource_track.c $(top_builddir)/lib/config.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h $(top_srcdir)/lib/ext2fs/hashmap.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(top_srcdir)/lib/support/compat.h
 sim_progress.o: $(srcdir)/sim_progress.c $(top_builddir)/lib/config.h \
  $(top_builddir)/lib/dirpaths.h $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \

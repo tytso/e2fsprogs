@@ -298,6 +298,14 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 	char		*buf;
 	ssize_t		actual, size;
 	errcode_t	retval;
+#ifdef WORDS_BIGENDIAN
+	unsigned int	groups_per_block;
+	struct		ext2_group_desc *gdp;
+	dgrp_t		j;
+#endif
+
+	if (fs->group_desc == NULL)
+		return EXT2_ET_NO_GDESC;
 
 	size = (ssize_t)fs->blocksize * (fs->desc_blocks + 1);
 	buf = malloc(size);
@@ -318,12 +326,27 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 	}
 
 	/*
-	 * Now copy in the superblock and group descriptors
+	 * Now copy in the group descriptors and the superblock.  They
+	 * were written in little-endian byte order, so convert them to
+	 * CPU byte order.  Do the group descriptors first, while fs->super
+	 * is still the superblock which describes how fs->group_desc was
+	 * laid out, and not the one which has just been read.
 	 */
-	memcpy(fs->super, buf, SUPERBLOCK_SIZE);
-
 	memcpy(fs->group_desc, buf + fs->blocksize,
 	       (ssize_t)fs->blocksize * fs->desc_blocks);
+#ifdef WORDS_BIGENDIAN
+	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
+	for (j = 0; j < groups_per_block * fs->desc_blocks; j++) {
+		gdp = ext2fs_group_desc(fs, fs->group_desc, j);
+		if (gdp)
+			ext2fs_swap_group_desc2(fs, gdp);
+	}
+#endif
+
+	memcpy(fs->super, buf, SUPERBLOCK_SIZE);
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_super(fs->super);
+#endif
 
 	retval = 0;
 
@@ -362,7 +385,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 				return retval;
 		}
 		bmap = fs->block_map;
-		itr = fs->super->s_first_data_block;
+		itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
 		cnt = EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count);
 		size = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	}
@@ -384,7 +407,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		if (actual == -1)
 			return errno;
 		if (actual != (int) size)
-			return EXT2_ET_SHORT_READ;
+			return EXT2_ET_SHORT_WRITE;
 
 		itr += size << 3;
 		cnt -= size << 3;
@@ -440,9 +463,9 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 				return retval;
 		}
 		bmap = fs->block_map;
-		itr = fs->super->s_first_data_block;
-		cnt = EXT2_GROUPS_TO_BLOCKS(fs->super, fs->group_desc_count);
-		size = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+		itr = EXT2FS_B2C(fs, fs->super->s_first_data_block);
+		cnt = EXT2_GROUPS_TO_CLUSTERS(fs->super, fs->group_desc_count);
+		size = EXT2_CLUSTERS_PER_GROUP(fs->super) / 8;
 	}
 
 	while (cnt > 0) {

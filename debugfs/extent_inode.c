@@ -236,7 +236,10 @@ void do_up(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 void do_down(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 	     void *infop EXT2FS_ATTR((unused)))
 {
-	generic_goto_node("down", argc, argv, EXT2_EXTENT_DOWN);
+	if (argc == 2 && !strcmp(argv[1], "--last"))
+		generic_goto_node(NULL, argc, argv, EXT2_EXTENT_DOWN_AND_LAST);
+	else
+		generic_goto_node("down", argc, argv, EXT2_EXTENT_DOWN);
 }
 
 void do_delete_node(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
@@ -244,12 +247,23 @@ void do_delete_node(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 {
 	struct ext2fs_extent extent;
 	errcode_t	retval;
+	int		flags = 0;
 
-	if (common_extent_args_process(argc, argv, 1, 1, "delete_node",
-				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
+	if (common_extent_args_process(argc, argv, 1, 2, "delete_node",
+				       "[--keep-empty]",
+				       CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
-	retval = ext2fs_extent_delete(current_handle, 0);
+	if (argc == 2) {
+		if (!strcmp(argv[1], "--keep-empty")) {
+			flags |= EXT2_EXTENT_DELETE_KEEP_EMPTY;
+		} else {
+			com_err(argv[0], 0, "Usage: delete_node [--keep-empty]");
+			return;
+		}
+	}
+
+	retval = ext2fs_extent_delete(current_handle, flags);
 	if (retval) {
 		com_err(argv[0], retval, 0);
 		return;
@@ -327,14 +341,14 @@ void do_split_node(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 void do_insert_node(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 		    void *infop EXT2FS_ATTR((unused)))
 {
-	const char	*usage = "[--after] [--uninit] <lblk> <len> <pblk>";
+	const char	*usage = "[--after] [--uninit] [--nosplit] <lblk> <len> <pblk>";
 	errcode_t	retval;
 	struct ext2fs_extent extent;
 	char *cmd;
 	int err;
 	int flags = 0;
 
-	if (common_extent_args_process(argc, argv, 3, 6, "insert_node",
+	if (common_extent_args_process(argc, argv, 3, 7, "insert_node",
 				       usage, CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
@@ -353,6 +367,12 @@ void do_insert_node(int argc, ss_argv_t argv, int sci_idx EXT2FS_ATTR((unused)),
 			argc--;
 			argv++;
 			extent.e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
+			continue;
+		}
+		if (!strcmp(argv[1], "--nosplit")) {
+			argc--;
+			argv++;
+			flags |= EXT2_EXTENT_INSERT_NOSPLIT;
 			continue;
 		}
 		break;

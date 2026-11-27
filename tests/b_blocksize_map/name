@@ -1,0 +1,1 @@
+badblocks -b 4096: auto-size and sector-to-block fault mapping

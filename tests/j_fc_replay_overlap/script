@@ -1,0 +1,224 @@
+if ! test -x $DEBUGFS_EXE; then
+	echo "$test_name: $test_description: skipped (no debugfs)"
+	return 0
+fi
+if ! perl -e 'exit 0' >/dev/null 2>&1; then
+	echo "$test_name: $test_description: skipped (no perl)"
+	return 0
+fi
+
+SKIP_GUNZIP="true"
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+E2FSPROGS_FAKE_TIME=1176238800
+export E2FSPROGS_FAKE_TIME
+E2FSCK_TIME=1176238800
+export E2FSCK_TIME
+
+echo "=== Case 1: aliased fast commit block overwritten during replay ===" > $OUT.new
+$MKE2FS -q -F -o Linux -t ext4 -b 1024 -I 256 \
+	-O fast_commit,^metadata_csum,^orphan_file \
+	-E lazy_itable_init=0,lazy_journal_init=0 \
+	-U 11111111-1111-1111-1111-111111111111 "$TMPFILE" 2560 >/dev/null 2>&1
+$DEBUGFS -w "$TMPFILE" <<'EOF' >/dev/null 2>&1
+write /dev/null /f12
+write /dev/null /canary
+write /dev/null /f14
+write /dev/null /f15
+write /dev/null /f16
+write /dev/null /target
+EOF
+imap8=$($DEBUGFS -R "imap <8>" "$TMPFILE" 2>/dev/null)
+imap17=$($DEBUGFS -R "imap <17>" "$TMPFILE" 2>/dev/null)
+blk0=$($DEBUGFS -R "bmap <8> 0" "$TMPFILE" 2>/dev/null)
+blk2=$($DEBUGFS -R "bmap <8> 2" "$TMPFILE" 2>/dev/null)
+blk17=$($DEBUGFS -R "bmap <8> 17" "$TMPFILE" 2>/dev/null)
+blk1038=$($DEBUGFS -R "bmap <8> 1038" "$TMPFILE" 2>/dev/null)
+perl -e '
+use strict; use warnings;
+my ($img, $imap8, $imap17, $blk0, $blk2, $blk17, $blk1038) = @ARGV;
+$imap8 =~ /located at block (\d+), offset (0x[\da-f]+)/i or die "bad imap8: $imap8";
+my ($j_iblk, $j_ioff) = ($1, hex($2));
+$imap17 =~ /located at block (\d+), offset (0x[\da-f]+)/i or die "bad imap17: $imap17";
+my ($itb17, $off17) = ($1, hex($2));
+die "expected inode 17 at offset 0" if $off17 != 0;
+
+sub crc32c_raw {
+	my ($crc, $data) = @_;
+	for my $b (unpack("C*", $data)) {
+		$crc ^= $b;
+		for (1..8) {
+			$crc = ($crc & 1) ? (($crc >> 1) ^ 0x82f63b78) : ($crc >> 1);
+		}
+	}
+	return $crc;
+}
+sub tlv { my ($t, $p) = @_; return pack("vv", $t, length($p)) . $p; }
+
+open(my $fh, "+<:raw", $img) or die $!;
+my $new_ext = pack("vvvvV", 0xf30a, 4, 4, 0, 0)
+	. pack("VvvV", 0, 2, 0, $blk0)
+	. pack("VvvV", 2, 15, 0, $blk2)
+	. pack("VvvV", 17, 1022, 0, $blk17)
+	. pack("VvvV", 1039, 1, 0, $itb17);
+seek($fh, $j_iblk * 1024 + $j_ioff + 40, 0) or die $!;
+print $fh $new_ext;
+
+# JSB: s_sequence=1, s_start=1 (+24); s_feature_incompat=0x20 (+40); s_num_fc_blks=3 (+84)
+seek($fh, $blk0 * 1024 + 24, 0) or die $!;
+print $fh pack("NN", 1, 1);
+seek($fh, $blk0 * 1024 + 40, 0) or die $!;
+print $fh pack("N", 0x20);
+seek($fh, $blk0 * 1024 + 84, 0) or die $!;
+print $fh pack("N", 3);
+
+# Forged UNLINK(parent=2, ino=13, "canary") + TAIL(tid=1) in first 30 bytes of inode 17
+my $forged = tlv(5, pack("VV", 2, 13) . "canary") . pack("vvVV", 8, 8, 1, 0);
+substr($forged, 26, 2, pack("v", 1)); # keep i_links_count = 1
+my $raw_ino17 = "\0" x 160;
+substr($raw_ino17, 0, length($forged), $forged);
+substr($raw_ino17, 32, 4, pack("V", 0x80000)); # EXT4_EXTENTS_FL
+substr($raw_ino17, 128, 2, pack("v", 32));     # i_extra_isize = 32
+
+my $fc0_head = tlv(9, pack("VV", 0, 1)) . tlv(6, pack("V", 17) . $raw_ino17);
+my $fc0 = $fc0_head . tlv(7, "\0" x (1024 - length($fc0_head) - 4));
+
+seek($fh, $itb17 * 1024, 0) or die $!;
+read($fh, my $fc1, 1024);
+my $pad1 = tlv(7, "\0" x 26); # 30 bytes covering bytes 0..29
+my $tail_hdr = pack("vvV", 8, 8, 1);
+my $crc = crc32c_raw(0, $fc0 . $pad1 . $tail_hdr);
+my $tail = $tail_hdr . pack("V", $crc);
+substr($fc1, 0, length($pad1 . $tail), $pad1 . $tail);
+
+seek($fh, $blk1038 * 1024, 0) or die $!;
+print $fh $fc0;
+seek($fh, $itb17 * 1024, 0) or die $!;
+print $fh $fc1;
+close($fh);
+' "$TMPFILE" "$imap8" "$imap17" "$blk0" "$blk2" "$blk17" "$blk1038"
+$DEBUGFS -w -R "feature needs_recovery" "$TMPFILE" >/dev/null 2>&1
+$FSCK -y -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$DEBUGFS -R "stat /canary" "$TMPFILE" 2>&1 | $EGREP "^Inode:|^/canary:" >> $OUT.new
+$FSCK -fn -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+echo "=== Case 2: journal s_num_fc_blks underflow ===" >> $OUT.new
+$MKE2FS -q -F -o Linux -t ext4 -b 1024 -I 256 \
+	-O fast_commit,^metadata_csum,^orphan_file \
+	-E lazy_itable_init=0,lazy_journal_init=0 \
+	-U 11111111-1111-1111-1111-111111111111 "$TMPFILE" 2560 >/dev/null 2>&1
+blk0=$($DEBUGFS -R "bmap <8> 0" "$TMPFILE" 2>/dev/null)
+perl -e '
+use strict; use warnings;
+my ($img, $blk0) = @ARGV;
+open(my $fh, "+<:raw", $img) or die $!;
+seek($fh, $blk0 * 1024 + 24, 0) or die $!;
+print $fh pack("NN", 1, 1);
+seek($fh, $blk0 * 1024 + 40, 0) or die $!;
+print $fh pack("N", 0x20);
+seek($fh, $blk0 * 1024 + 84, 0) or die $!;
+print $fh pack("N", 2000);
+close($fh);
+' "$TMPFILE" "$blk0"
+$DEBUGFS -w -R "feature needs_recovery" "$TMPFILE" >/dev/null 2>&1
+$FSCK -fy -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$FSCK -fn -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+echo "=== Case 3: self-aliased single fast commit block ===" >> $OUT.new
+$MKE2FS -q -F -o Linux -t ext4 -b 1024 -I 256 \
+	-O fast_commit,^metadata_csum,^orphan_file \
+	-E lazy_itable_init=0,lazy_journal_init=0 \
+	-U 11111111-1111-1111-1111-111111111111 "$TMPFILE" 2560 >/dev/null 2>&1
+$DEBUGFS -w "$TMPFILE" <<'EOF' >/dev/null 2>&1
+write /dev/null /f12
+write /dev/null /canary
+write /dev/null /f14
+write /dev/null /f15
+write /dev/null /f16
+write /dev/null /target
+EOF
+imap8=$($DEBUGFS -R "imap <8>" "$TMPFILE" 2>/dev/null)
+imap17=$($DEBUGFS -R "imap <17>" "$TMPFILE" 2>/dev/null)
+blk0=$($DEBUGFS -R "bmap <8> 0" "$TMPFILE" 2>/dev/null)
+blk2=$($DEBUGFS -R "bmap <8> 2" "$TMPFILE" 2>/dev/null)
+blk17=$($DEBUGFS -R "bmap <8> 17" "$TMPFILE" 2>/dev/null)
+perl -e '
+use strict; use warnings;
+my ($img, $imap8, $imap17, $blk0, $blk2, $blk17) = @ARGV;
+$imap8 =~ /located at block (\d+), offset (0x[\da-f]+)/i or die "bad imap8: $imap8";
+my ($j_iblk, $j_ioff) = ($1, hex($2));
+$imap17 =~ /located at block (\d+), offset (0x[\da-f]+)/i or die "bad imap17: $imap17";
+my ($itb17, $off17) = ($1, hex($2));
+die "expected inode 17 at offset 0" if $off17 != 0;
+
+sub crc32c_raw {
+	my ($crc, $data) = @_;
+	for my $b (unpack("C*", $data)) {
+		$crc ^= $b;
+		for (1..8) {
+			$crc = ($crc & 1) ? (($crc >> 1) ^ 0x82f63b78) : ($crc >> 1);
+		}
+	}
+	return $crc;
+}
+sub tlv { my ($t, $p) = @_; return pack("vv", $t, length($p)) . $p; }
+
+open(my $fh, "+<:raw", $img) or die $!;
+my $new_ext = pack("vvvvV", 0xf30a, 4, 4, 0, 0)
+	. pack("VvvV", 0, 2, 0, $blk0)
+	. pack("VvvV", 2, 15, 0, $blk2)
+	. pack("VvvV", 17, 1022, 0, $blk17)
+	. pack("VvvV", 1039, 1, 0, $itb17);
+seek($fh, $j_iblk * 1024 + $j_ioff + 40, 0) or die $!;
+print $fh $new_ext;
+
+# JSB: s_sequence=1, s_start=1 (+24); s_feature_incompat=0x20 (+40); s_num_fc_blks=2 (+84)
+seek($fh, $blk0 * 1024 + 24, 0) or die $!;
+print $fh pack("NN", 1, 1);
+seek($fh, $blk0 * 1024 + 40, 0) or die $!;
+print $fh pack("N", 0x20);
+seek($fh, $blk0 * 1024 + 84, 0) or die $!;
+print $fh pack("N", 2);
+
+my $raw_ino17 = "\0" x 160;
+substr($raw_ino17, 0, 2, pack("v", 0100644));
+substr($raw_ino17, 26, 2, pack("v", 1));
+substr($raw_ino17, 32, 4, pack("V", 0x80000));
+substr($raw_ino17, 40, 12, pack("vvvvV", 0xf30a, 0, 4, 0, 0));
+substr($raw_ino17, 128, 2, pack("v", 32));
+
+my $body = tlv(9, pack("VV", 0, 1)) . tlv(6, pack("V", 17) . $raw_ino17);
+my $tail_hdr = pack("vvV", 8, 8, 1);
+my $crc = crc32c_raw(0, $body . $tail_hdr);
+my $fc0 = $body . $tail_hdr . pack("V", $crc);
+$fc0 .= "\0" x (1024 - length($fc0));
+
+seek($fh, $itb17 * 1024, 0) or die $!;
+print $fh $fc0;
+close($fh);
+' "$TMPFILE" "$imap8" "$imap17" "$blk0" "$blk2" "$blk17"
+$DEBUGFS -w -R "feature needs_recovery" "$TMPFILE" >/dev/null 2>&1
+$FSCK -y -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+$FSCK -fn -N test_filesys "$TMPFILE" >> $OUT.new 2>&1
+echo "Exit status is $?" >> $OUT.new
+
+sed -f $cmd_dir/filter.sed -e "s;$TMPFILE;test.img;" $OUT.new > $OUT
+rm -f $OUT.new
+
+cmp -s $OUT $EXP
+status=$?
+if [ "$status" = 0 ] ; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+
+unset SKIP_GUNZIP OUT EXP imap8 imap17 blk0 blk2 blk17 blk1038 status E2FSPROGS_FAKE_TIME E2FSCK_TIME

@@ -1275,6 +1275,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	pthread_setname_np
 	pthread_threadid_np
 	qsort_r
+	sbrk
 	secure_getenv
 	setmntent
 	setresgid
@@ -1286,6 +1287,7 @@ AC_CHECK_FUNCS(m4_flatten([
 	strdup
 	strnlen
 	strptime
+	strtok_r
 	strtoull
 	sync_file_range
 	syscall

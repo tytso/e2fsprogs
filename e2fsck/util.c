@@ -38,6 +38,7 @@
 #endif
 
 #include "e2fsck.h"
+#include "support/compat.h"
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
 
@@ -375,7 +376,7 @@ void init_resource_track(struct resource_track *track, io_channel channel)
 #endif
 	io_stats io_start = 0;
 
-	track->brk_start = sbrk(0);
+	track->brk_start = compat_sbrk(0);
 	gettimeofday(&track->time_start, 0);
 #ifdef HAVE_GETRUSAGE
 #ifdef sun
@@ -441,7 +442,7 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 	} else
 #elif defined HAVE_MALLINFO
 	/* don't use mallinfo() if over 2GB used, since it returns "int" */
-	if ((unsigned long)((char *)sbrk(0) - (char *)track->brk_start) <
+	if ((unsigned long)((char *)compat_sbrk(0) - (char *)track->brk_start) <
 	    2UL << 30) {
 		struct mallinfo	malloc_info = mallinfo();
 
@@ -452,7 +453,7 @@ void print_resource_track(e2fsck_t ctx, const char *desc,
 	} else
 #endif
 	log_out(ctx, _("Memory used: %lluk, "),
-		kbytes(((char *)sbrk(0)) - ((char *)track->brk_start)));
+		kbytes(((char *)compat_sbrk(0)) - ((char *)track->brk_start)));
 
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);

@@ -1,0 +1,34 @@
+if ! test -x $BADBLOCKS_SIM_EXE; then
+	echo "$test_name: $test_description: skipped (no tst_badblocks_sim)"
+	return 0
+fi
+
+OUT=$test_name.log
+EXP=$test_dir/expect
+
+printf "4294967296\n" > $TMPFILE
+
+{
+	echo "=== auto-size >= 2^32 blocks ==="
+	$BADBLOCKS_SIM -b 4096 'sim:size=32T'
+	echo "exit status: $?"
+	echo "=== CLI last_block >= 2^32 ==="
+	$BADBLOCKS_SIM -b 4096 'sim:size=32T' 4294967296
+	echo "exit status: $?"
+	echo "=== -i input list >= 2^32 ==="
+	$BADBLOCKS_SIM -b 4096 -i $TMPFILE 'sim:size=64K'
+	echo "exit status: $?"
+} 2>&1 | sed \
+	-e "s|^$BADBLOCKS_SIM_EXE:|tst_badblocks_sim:|" \
+	-e "s|: Value too large[^ ]* .* \(invalid end block\)|: EOVERFLOW \1|" \
+	-e "s|: Value too large[^ ]* .* \(while adding\)|: EOVERFLOW \1|" \
+	> $OUT
+
+if cmp -s $OUT $EXP; then
+	echo "$test_name: $test_description: ok"
+	touch $test_name.ok
+else
+	echo "$test_name: $test_description: failed"
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
+fi
+unset OUT EXP

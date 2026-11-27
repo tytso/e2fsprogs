@@ -252,6 +252,9 @@ struct extent_list {
 /* State structure for fast commit replay */
 struct e2fsck_fc_replay_state {
 	struct extent_list fc_extent_list;
+	__u8 **fc_blocks;
+	unsigned int fc_blocks_size;
+	unsigned int fc_blocks_count;
 	int fc_replay_num_tags;
 	int fc_replay_expected_off;
 	enum passtype fc_current_pass;

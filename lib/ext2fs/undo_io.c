@@ -176,12 +176,13 @@ errcode_t set_undo_io_backing_manager(io_manager manager)
 
 errcode_t set_undo_io_backup_file(char *file_name)
 {
-	tdb_file = strdup(file_name);
+	char *new_file = strdup(file_name);
 
-	if (tdb_file == NULL) {
+	if (new_file == NULL)
 		return EXT2_ET_NO_MEMORY;
-	}
 
+	free(tdb_file);
+	tdb_file = new_file;
 	return 0;
 }
 
@@ -657,6 +658,18 @@ static errcode_t try_reopen_undo_file(int undo_fd,
 			data->keys_in_block = j + 1;
 		}
 	}
+
+	/*
+	 * If the last key block is full, move on to a new one, just as
+	 * write_undo_indexes() does after filling a key block; otherwise
+	 * the next key would be stored past the end of the key block.
+	 */
+	if (data->keys_in_block == keys_per_block) {
+		memset(data->keyb, 0, data->tdb_data_size);
+		data->keys_in_block = 0;
+		data->key_blk_num = data->undo_blk_num;
+		data->undo_blk_num++;
+	}
 	dbg_printf("Reopen undo, keyblk=%llu undoblk=%llu nrkeys=%zu kib=%zu\n",
 		   data->key_blk_num, data->undo_blk_num, data->num_keys,
 		   data->keys_in_block);
@@ -671,7 +684,8 @@ bad_key_replay:
 	data->key_blk_num = data->undo_blk_num = 0;
 	data->keys_in_block = 0;
 	ext2fs_free_mem(&data->keyb);
-	ext2fs_free_generic_bitmap(data->written_block_map);
+	ext2fs_free_generic_bmap(data->written_block_map);
+	data->written_block_map = NULL;
 	data->tdb_written = 0;
 	goto out;
 bad_file:
@@ -707,7 +721,7 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 		goto cleanup;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
-	retval = ext2fs_get_mem(sizeof(struct undo_private_data), &data);
+	retval = ext2fs_get_memzero(sizeof(struct undo_private_data), &data);
 	if (retval)
 		goto cleanup;
 
@@ -723,25 +737,32 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 	io->write_error = 0;
 	io->refcount = 1;
 
-	memset(data, 0, sizeof(struct undo_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
 	data->super_blk_num = 1;
 	data->first_key_blk = 2;
 	data->undo_blk_num = 3;
 
 	if (undo_io_backing_manager) {
+		if (!tdb_file) {
+			retval = EXT2_ET_INVALID_ARGUMENT;
+			goto cleanup;
+		}
 		retval = undo_io_backing_manager->open(name, flags,
 						       &data->real);
 		if (retval)
 			goto cleanup;
 
 		data->tdb_file = strdup(tdb_file);
-		if (data->tdb_file == NULL)
+		if (data->tdb_file == NULL) {
+			retval = EXT2_ET_NO_MEMORY;
 			goto cleanup;
+		}
 		undo_fd = ext2fs_open_file(data->tdb_file, O_RDWR | O_CREAT,
 					   0600);
-		if (undo_fd < 0)
+		if (undo_fd < 0) {
+			retval = errno;
 			goto cleanup;
+		}
 
 		retval = undo_io_backing_manager->open(data->tdb_file,
 						       IO_FLAG_RW,
@@ -788,8 +809,11 @@ cleanup:
 		free(data->tdb_file);
 	if (data && data->real)
 		io_channel_close(data->real);
-	if (data)
+	if (data) {
+		ext2fs_free_mem(&data->keyb);
+		ext2fs_free_generic_bmap(data->written_block_map);
 		ext2fs_free_mem(&data);
+	}
 	if (io && io->name)
 		ext2fs_free_mem(&io->name);
 	if (io)
@@ -820,8 +844,7 @@ static errcode_t undo_close(io_channel channel)
 	if (data->undo_file)
 		io_channel_close(data->undo_file);
 	ext2fs_free_mem(&data->keyb);
-	if (data->written_block_map)
-		ext2fs_free_generic_bitmap(data->written_block_map);
+	ext2fs_free_generic_bmap(data->written_block_map);
 	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
 		ext2fs_free_mem(&channel->name);
