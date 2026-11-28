@@ -213,6 +213,8 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 
 		value_size = lgetxattr(filename, name, NULL, 0);
 		if (value_size == -1) {
+			if (errno == ENOTSUP)
+				continue;
 			retval = errno;
 			com_err(__func__, retval,
 				_("while reading attribute \"%s\" of \"%s\""),
@@ -229,6 +231,8 @@ static errcode_t set_inode_xattr(ext2_filsys fs, ext2_ino_t ino,
 		value_size = lgetxattr(filename, name, value, value_size);
 		if (value_size == -1) {
 			ext2fs_free_mem(&value);
+			if (errno == ENOTSUP)
+				continue;
 			retval = errno;
 			com_err(__func__, retval,
 				_("while reading attribute \"%s\" of \"%s\""),
