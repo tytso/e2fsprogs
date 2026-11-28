@@ -1215,7 +1215,7 @@ errcode_t ext2fs_xattr_get(struct ext2_xattr_handle *h, const char *key,
 errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 				      size_t *size)
 {
-	struct ext2_ext_attr_entry *entry;
+	struct ext2_ext_attr_entry *entry, *end;
 	struct ext2_inode_large *inode;
 	__u32 ea_inode_magic;
 	unsigned int minoff;
@@ -1251,13 +1251,29 @@ errcode_t ext2fs_xattr_inode_max_size(ext2_filsys fs, ext2_ino_t ino,
 		start= ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
 			inode->i_extra_isize + sizeof(__u32);
 		entry = (struct ext2_ext_attr_entry *) start;
-		while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+		end = (struct ext2_ext_attr_entry *) ((char *) inode + i);
+		while ((char *) entry + sizeof(*entry) <= (char *) end &&
+		       !EXT2_EXT_IS_LAST_ENTRY(entry)) {
+			/* A corrupted e_name_len could make
+			 * EXT2_EXT_ATTR_NEXT() step past the end of
+			 * the inode buffer. */
+			if ((char *) entry +
+			    EXT2_EXT_ATTR_SIZE(entry->e_name_len) >
+			    (char *) end) {
+				err = EXT2_ET_EA_BAD_NAME_LEN;
+				goto out;
+			}
 			if (!entry->e_value_inum && entry->e_value_size) {
 				unsigned int offs = entry->e_value_offs;
 				if (offs < minoff)
 					minoff = offs;
 			}
 			entry = EXT2_EXT_ATTR_NEXT(entry);
+		}
+		if ((size_t) ((char *) entry - (char *) start) +
+		    sizeof(__u32) > minoff) {
+			err = EXT2_ET_EA_BAD_NAME_LEN;
+			goto out;
 		}
 		*size = minoff - ((char *)entry - (char *)start) - sizeof(__u32);
 	} else {
