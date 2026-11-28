@@ -23,7 +23,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   static const char* fname = "/tmp/ext2_test_file";
 
   // Write our data to a temp file.
-  int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC);
+  int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC, 0644);
   write(fd, data, size);
   close(fd);
 
